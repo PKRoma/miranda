@@ -243,62 +243,7 @@ static void freeEvent(struct EventData *event) {
 	mir_free(event);
 }
 
-static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen)
-{
-	int textCharsCount = 0;
-	char *d;
-	int wasEOL = 0;
-	unsigned char *maxLine = line + maxLen;
-	int lineLen = strlen(line) * 9 + 8;
-	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
-		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
-		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
-	}
-
-	d = *buffer + *cbBufferEnd;
-	strcpy(d, "{");
-	d += 1;
-
-	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
-		wasEOL = 0;
-		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\line ", 6);
-			wasEOL = 1;
-			d += 6;
-			line++;
-		}
-		else if (*line == '\n') {
-			CopyMemory(d, "\\line ", 6);
-			wasEOL = 1;
-			d += 6;
-		}
-		else if (*line == '\t') {
-			CopyMemory(d, "\\tab ", 5);
-			d += 5;
-		}
-		else if (*line == '\\' || *line == '{' || *line == '}') {
-			*d++ = '\\';
-			*d++ = (char) *line;
-		}
-		else if (*line < 128) {
-			*d++ = (char) *line;
-		}
-		else
-			d += sprintf(d, "\\'%x", *line);
-	}
-	if (wasEOL) {
-		CopyMemory(d, " ", 1);
-		d++;
-	}
-	strcpy(d, "}");
-	d++;
-
-	*cbBufferEnd = (int) (d - *buffer);
-	return textCharsCount;
-}
-
-
-static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line, int maxLen)
+static int AppendUnicodeOrAnsiiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line, int maxLen, BOOL isAnsii)
 {
 	int textCharsCount = 0;
 	char *d;
@@ -311,8 +256,13 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 	}
 
 	d = *buffer + *cbBufferEnd;
-	strcpy(d, "{\\uc1 ");
-	d += 6;
+	if (isAnsii) {
+		strcpy(d, "{");
+		d++;
+	} else {
+		strcpy(d, "{\\uc1 ");
+		d += 6;
+	}
 
 	for (; *line && (maxLen < 0 || line < maxLine); line++, textCharsCount++) {
 		wasEOL = 0;
@@ -338,8 +288,12 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 		else if (*line < 128) {
 			*d++ = (char) *line;
 		}
-		else
+		else if (isAnsii) {
+			d += sprintf(d, "\\'%02x", (*line) & 0xFF);
+		}
+		else {
 			d += sprintf(d, "\\u%d ?", *line);
+		}
 	}
 	if (wasEOL) {
 		CopyMemory(d, " ", 1);
@@ -350,6 +304,20 @@ static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBuffer
 
 	*cbBufferEnd = (int) (d - *buffer);
 	return textCharsCount;
+}
+
+static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen)
+{
+	WCHAR *wline = a2w(line, maxLen);
+	int end = *cbBufferEnd;
+	int i = AppendUnicodeOrAnsiiToBufferL(buffer, cbBufferEnd, cbBufferAlloced, wline, maxLen, TRUE);
+	mir_free(wline);
+	return i;
+}
+
+static int AppendUnicodeToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, WCHAR * line, int maxLen)
+{
+	return AppendUnicodeOrAnsiiToBufferL(buffer, cbBufferEnd, cbBufferAlloced, line, maxLen, FALSE);
 }
 
 static int AppendAnsiToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line)
@@ -527,7 +495,7 @@ int isSameDate(time_t time1, time_t time2)
 	return 0;
 }
 
-static int DetectURLW(wchar_t *text, BOOL firstChar) {
+static int DetectURL(wchar_t *text, BOOL firstChar) {
 	wchar_t c;
 	struct prefix_s {
 		wchar_t *text;
@@ -571,68 +539,28 @@ static int DetectURLW(wchar_t *text, BOOL firstChar) {
 	return 0;
 }
 
-static int DetectURL(const char* text, BOOL firstChar) {
-	char c;
-	struct prefix_s {
-		char *text;
-		int length;
-	} prefixes[12] = {
-		{"http:", 5},
-		{"file:", 5},
-		{"mailto:", 7},
-		{"ftp:", 4},
-		{"https:", 6},
-		{"gopher:", 7},
-		{"nntp:", 5},
-		{"prospero:", 9},
-		{"telnet:", 7},
-		{"news:", 5},
-		{"wais:", 5},
-		{"www.", 4}
-	};
-	c = firstChar ? ' ' : text[-1];
-	if (!((c >= '0' && c<='9') || (c >= 'A' && c<='Z') || (c >= 'a' && c<='z'))) {
-		int found = 0;
-		int i, len = 0;
-		int prefixlen = SIZEOF(prefixes);
-		for (i = 0; i < prefixlen; i++) {
-			if (!strncmp(text, prefixes[i].text, prefixes[i].length)) {
-				len = prefixes[i].length;
-				found = 1;
-				break;
-			}
-		}
-		if (found) {
-			for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
-			for (; len > 0; len --) {
-				if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
-					break;
-				}
-			}
-			return len;
-		}
-	}
-	return 0;
+static void ChangeLinksAndBBCodes() {
+
 }
 
 static void AppendWithCustomLinks(struct EventData *event, int style, char **buffer, int *bufferEnd, int *bufferAlloced) {
 	int lasttoken = 0, newtoken = 0;
 	int laststart = 0, newlen = 0;
 	int j, len;
-	if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-		len = wcslen(event->pszTextW);
-	} else {
+	WCHAR *wText;
+	BOOL isAnsii = (event->dwFlags & IEEDF_UNICODE_TEXT) == 0;
+	if (isAnsii) {
 		len = strlen(event->pszText);
+		wText = a2w(event->pszText, len);
+	} else {
+		wText = event->pszTextW;
+		len = wcslen(event->pszTextW);
 	}
 	for (j = 0; j < len ; j+=newlen) {
 		int l;
 		newtoken = 0;
 		newlen = 1;
-		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-			l = DetectURLW(event->pszTextW+j, j==0);
-		} else {
-			l = DetectURL(event->pszText+j, j==0);
-		}
+		l = DetectURL(wText + j, j==0);
 		if (l > 0) {
 			newtoken = 1;
 			newlen = l;
@@ -646,11 +574,7 @@ static void AppendWithCustomLinks(struct EventData *event, int style, char **buf
 			} else {
 				AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
 			}
-			if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-				AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, j - laststart);
-			} else {
-				AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, j - laststart);
-			}
+			AppendUnicodeOrAnsiiToBufferL(buffer, bufferEnd, bufferAlloced, wText + laststart, j - laststart, isAnsii);
 			laststart = j;
 			lasttoken = newtoken;
 		}
@@ -661,11 +585,10 @@ static void AppendWithCustomLinks(struct EventData *event, int style, char **buf
 		} else {
 			AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYURL : MSGFONTID_YOURURL));
 		}
-		if (event->dwFlags & IEEDF_UNICODE_TEXT) {
-			AppendUnicodeToBufferL(buffer, bufferEnd, bufferAlloced, event->pszTextW + laststart, len - laststart);
-		} else {
-			AppendAnsiToBufferL(buffer, bufferEnd, bufferAlloced, event->pszText + laststart, len - laststart);
-		}
+		AppendUnicodeOrAnsiiToBufferL(buffer, bufferEnd, bufferAlloced, wText + laststart, len - laststart, isAnsii);
+	}
+	if (isAnsii) {
+		mir_free(wText);
 	}
 }
 

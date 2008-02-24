@@ -220,6 +220,7 @@ static int GetTabFromHWND(ParentWindowData *dat, HWND child)
 	int l, i;
 	l = TabCtrl_GetItemCount(dat->hwndTabs);
 	for (i = 0; i < l; i++) {
+		ZeroMemory(&tci, sizeof(TCITEM));
 		tci.mask = TCIF_PARAM;
 		TabCtrl_GetItem(dat->hwndTabs, i, &tci);
 		mwtd = (MessageWindowTabData *) tci.lParam;
@@ -249,6 +250,7 @@ static MessageWindowTabData * GetChildFromHWND(ParentWindowData *dat, HWND hwnd)
 	int l, i;
 	l = TabCtrl_GetItemCount(dat->hwndTabs);
 	for (i = 0; i < l; i++) {
+		ZeroMemory(&tci, sizeof(TCITEM));
 		tci.mask = TCIF_PARAM;
 		TabCtrl_GetItem(dat->hwndTabs, i, &tci);
 		mwtd = (MessageWindowTabData *) tci.lParam;
@@ -300,7 +302,10 @@ static int AddOrReplaceIcon(HIMAGELIST hList, int prevIndex, HICON hIcon) {
     int usageIdx = -1;
     int i;
     for (i = 0; i < g_dat->tabIconListUsageSize; i++) {
-        if (!g_dat->tabIconListUsage[i].used || g_dat->tabIconListUsage[i].index == prevIndex) {
+		if (!g_dat->tabIconListUsage[i].used && usageIdx == -1) {
+            usageIdx = i;
+		}
+        if (g_dat->tabIconListUsage[i].index == prevIndex) {
             usageIdx = i;
             break;
         }
@@ -325,7 +330,6 @@ static void ReleaseIcon(int index) {
         }
     }
 }
-
 
 static void ActivateChild(ParentWindowData *dat, HWND child) {
 	int i;
