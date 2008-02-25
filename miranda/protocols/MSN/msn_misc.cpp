@@ -226,7 +226,15 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	else 
 		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", msnProtocolName );
 		
-	if (_access(pszDest, 0))
+	bool exist = _access(pszDest, 0) == 0;
+	
+	if (type == 0)
+	{
+		if (!exist) pszDest[0] = 0;
+		return;
+	}
+
+	if (!exist)
 		MSN_CallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
 
 	if ( type == MSN_APPID_CUSTOMSMILEY )
