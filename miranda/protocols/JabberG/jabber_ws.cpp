@@ -32,7 +32,13 @@ BOOL CJabberProto::WsInit( void )
 	NETLIBUSER nlu = {0};
 	char name[128];
 
-	sprintf( name, "%s %s", m_szModuleName, JTranslate( "connection" ));
+#ifdef UNICODE
+	char *szTmp = mir_u2a(m_tszUserName);
+	sprintf( name, "%s %s", szTmp, JTranslate( "connection" ));
+	mir_free(szTmp);
+#else
+	sprintf( name, "%s %s", m_tszUserName, JTranslate( "connection" ));
+#endif
 
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;

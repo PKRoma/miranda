@@ -825,7 +825,7 @@ int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );
-			odp.pszTitle = m_szModuleName;
+			odp.pszTitle = m_szModuleName;	// title!!!!!!!!!!!
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;

@@ -470,20 +470,25 @@ void CJabberProto::InitXStatusIcons()
 	if ( p != NULL )
 		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
 
-	char szSection[ 100 ];
-	mir_snprintf( szSection, sizeof( szSection ), "Status Icons/%s/Moods", m_szModuleName);
+	TCHAR szSection[ 100 ];
+	TCHAR szDescription[ 100 ];
+
+	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/") _T(TCHAR_STR_PARAM) _T("/Moods"), m_szModuleName);
+//	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = szSection;
+	sid.ptszSection = szSection;
+	sid.ptszDescription = szDescription;
+	sid.flags = SIDF_TCHAR;
 
 	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, g_arrMoods[i].szName );
+		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName, g_arrMoods[i].szName );
 		sid.pszName = szSettingName;
-		sid.pszDescription = g_arrMoods[i].szName;
+		mir_sntprintf(szDescription, SIZEOF(szDescription), _T(TCHAR_STR_PARAM), g_arrMoods[i].szName);
 		sid.iDefaultIndex = -( i+200 );
 		m_xstatusIcons[ i ].hIcon = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 	}

@@ -510,23 +510,23 @@ static BOOL CALLBACK JabberConsoleDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			static struct
 			{
 				int idc;
-				TCHAR *title;
+				char *title;
 				char *icon;
 				bool push;
 				BOOL pushed;
 			} buttons[] =
 			{
-				{IDC_BTN_MSG,				_T("Messages"),		"pl_msg_allow",		true,	ppro->m_filterInfo.msg},
-				{IDC_BTN_PRESENCE,			_T("Presences"),	"pl_prin_allow",	true,	ppro->m_filterInfo.presence},
-				{IDC_BTN_IQ,				_T("Queries"),		"pl_iq_allow",		true,	ppro->m_filterInfo.iq},
-				{IDC_BTN_FILTER,			_T("Filter mode"),	"sd_filter_apply",	true,	FALSE},
-				{IDC_BTN_FILTER_REFRESH,	_T("Refresh list"),	"sd_nav_refresh",	false,	FALSE},
+				{IDC_BTN_MSG,				"Messages",		"pl_msg_allow",		true,	ppro->m_filterInfo.msg},
+				{IDC_BTN_PRESENCE,			"Presences",	"pl_prin_allow",	true,	ppro->m_filterInfo.presence},
+				{IDC_BTN_IQ,				"Queries",		"pl_iq_allow",		true,	ppro->m_filterInfo.iq},
+				{IDC_BTN_FILTER,			"Filter mode",	"sd_filter_apply",	true,	FALSE},
+				{IDC_BTN_FILTER_REFRESH,	"Refresh list",	"sd_nav_refresh",	false,	FALSE},
 			};
 			for (i = 0; i < SIZEOF(buttons); ++i)
 			{
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)ppro->LoadIconEx(buttons[i].icon));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)buttons[i].title, 0);
 				if (buttons[i].push) SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 				if (buttons[i].pushed) CheckDlgButton(hwndDlg, buttons[i].idc, TRUE);
 			}

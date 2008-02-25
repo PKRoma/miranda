@@ -34,9 +34,11 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 
+#include "sdk/m_assocmgr.h"
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
+#include "sdk/m_toolbar.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -86,6 +88,16 @@ void JabberUserInfoInit(void);
 
 int bSecureIM;
 
+/////////////////////////////////////////////////////////////////////////////
+// Protocol instances
+static int sttCompareProtocols(const CJabberProto *p1, const CJabberProto *p2)
+{
+	return lstrcmp(p1->m_tszUserName, p2->m_tszUserName);
+}
+
+LIST<CJabberProto> g_Instances(1, sttCompareProtocols);
+/////////////////////////////////////////////////////////////////////////////
+
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
 {
 	#ifdef _DEBUG
@@ -116,83 +128,27 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	if ( m_hwndJabberAgents ) {
-		::SendMessage( m_hwndJabberAgents, WM_CLOSE, 0, 0 );
-		m_hwndJabberAgents = NULL;
-	}
-	if ( m_hwndJabberGroupchat ) {
-		::SendMessage( m_hwndJabberGroupchat, WM_CLOSE, 0, 0 );
-		m_hwndJabberGroupchat = NULL;
-	}
-	if ( m_hwndJabberJoinGroupchat ) {
-		::SendMessage( m_hwndJabberJoinGroupchat, WM_CLOSE, 0, 0 );
-		m_hwndJabberJoinGroupchat = NULL;
-	}
-	if ( m_hwndAgentReg ) {
-		::SendMessage( m_hwndAgentReg, WM_CLOSE, 0, 0 );
-		m_hwndAgentReg = NULL;
-	}
-	if ( m_hwndAgentRegInput ) {
-		::SendMessage( m_hwndAgentRegInput, WM_CLOSE, 0, 0 );
-		m_hwndAgentRegInput = NULL;
-	}
-	if ( m_hwndRegProgress ) {
-		::SendMessage( m_hwndRegProgress, WM_CLOSE, 0, 0 );
-		m_hwndRegProgress = NULL;
-	}
-	if ( m_hwndJabberVcard ) {
-		::SendMessage( m_hwndJabberVcard, WM_CLOSE, 0, 0 );
-		m_hwndJabberVcard = NULL;
-	}
-	if ( m_hwndMucVoiceList ) {
-		::SendMessage( m_hwndMucVoiceList, WM_CLOSE, 0, 0 );
-		m_hwndMucVoiceList = NULL;
-	}
-	if ( m_hwndMucMemberList ) {
-		::SendMessage( m_hwndMucMemberList, WM_CLOSE, 0, 0 );
-		m_hwndMucMemberList = NULL;
-	}
-	if ( m_hwndMucModeratorList ) {
-		::SendMessage( m_hwndMucModeratorList, WM_CLOSE, 0, 0 );
-		m_hwndMucModeratorList = NULL;
-	}
-	if ( m_hwndMucBanList ) {
-		::SendMessage( m_hwndMucBanList, WM_CLOSE, 0, 0 );
-		m_hwndMucBanList = NULL;
-	}
-	if ( m_hwndMucAdminList ) {
-		::SendMessage( m_hwndMucAdminList, WM_CLOSE, 0, 0 );
-		m_hwndMucAdminList = NULL;
-	}
-	if ( m_hwndMucOwnerList ) {
-		::SendMessage( m_hwndMucOwnerList, WM_CLOSE, 0, 0 );
-		m_hwndMucOwnerList = NULL;
-	}
-	if ( m_hwndJabberChangePassword ) {
-		::SendMessage( m_hwndJabberChangePassword, WM_CLOSE, 0, 0 );
-		m_hwndJabberChangePassword = NULL;
-	}
-	if ( m_hwndJabberBookmarks ) {
-		::SendMessage( m_hwndJabberBookmarks, WM_CLOSE, 0, 0 );
-		m_hwndJabberBookmarks = NULL;
-	}
-	if ( m_hwndJabberAddBookmark ) {
-		::SendMessage( m_hwndJabberAddBookmark, WM_CLOSE, 0, 0 );
-		m_hwndJabberAddBookmark = NULL;
-	}
-	if ( m_hwndPrivacyRule ) {
-		::SendMessage( m_hwndPrivacyRule, WM_CLOSE, 0, 0 );
-		m_hwndPrivacyRule = NULL;
-	}
-	if ( m_pDlgPrivacyLists ) {
-		m_pDlgPrivacyLists->Close();
-		m_pDlgPrivacyLists = NULL;
-	}
-	if ( m_hwndServiceDiscovery ) {
-		::SendMessage( m_hwndServiceDiscovery, WM_CLOSE, 0, 0 );
-		m_hwndServiceDiscovery = NULL;
-	}
-	m_hwndAgentManualReg = NULL;
+	UI_SAFE_CLOSE_HWND(m_hwndJabberAgents);
+	UI_SAFE_CLOSE_HWND(m_hwndJabberGroupchat);
+	UI_SAFE_CLOSE_HWND(m_hwndJabberJoinGroupchat);
+	UI_SAFE_CLOSE_HWND(m_hwndAgentReg);
+	UI_SAFE_CLOSE_HWND(m_hwndAgentRegInput);
+	UI_SAFE_CLOSE_HWND(m_hwndRegProgress);
+	UI_SAFE_CLOSE_HWND(m_hwndJabberVcard);
+	UI_SAFE_CLOSE_HWND(m_hwndMucVoiceList);
+	UI_SAFE_CLOSE_HWND(m_hwndMucMemberList);
+	UI_SAFE_CLOSE_HWND(m_hwndMucModeratorList);
+	UI_SAFE_CLOSE_HWND(m_hwndMucBanList);
+	UI_SAFE_CLOSE_HWND(m_hwndMucAdminList);
+	UI_SAFE_CLOSE_HWND(m_hwndMucOwnerList);
+	UI_SAFE_CLOSE_HWND(m_hwndJabberChangePassword);
+	UI_SAFE_CLOSE_HWND(m_hwndJabberAddBookmark);
+	UI_SAFE_CLOSE_HWND(m_hwndPrivacyRule);
+	UI_SAFE_CLOSE_HWND(m_hwndServiceDiscovery);
+	UI_SAFE_CLOSE_HWND(m_hwndAgentManualReg);
+
+	UI_SAFE_CLOSE(m_pDlgPrivacyLists);
+	UI_SAFE_CLOSE(m_pDlgBookmarks);
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();
@@ -203,9 +159,23 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 ///////////////////////////////////////////////////////////////////////////////
 // OnModulesLoaded - execute some code when all plugins are initialized
 
+static int g_SvcParseXmppUri(WPARAM w, LPARAM l)
+{
+	if (CJabberProto *ppro = JabberChooseInstance(false))
+		return ppro->JabberServiceParseXmppURI(w, l);
+	return 0;
+}
+
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
+
+	// file associations manager plugin support
+	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
+		CreateServiceFunction("JABBER/*" JS_PARSE_XMPP_URI, g_SvcParseXmppUri );
+		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, "JABBER/*" JS_PARSE_XMPP_URI, 0 );
+	}
+
 	return 0;
 }
 
@@ -214,11 +184,14 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 static CJabberProto* jabberProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	return new CJabberProto( pszProtoName, tszUserName );
+	CJabberProto *ppro = new CJabberProto( pszProtoName, tszUserName );
+	g_Instances.insert(ppro);
+	return ppro;
 }
 
 static int jabberProtoUninit( CJabberProto* ppro )
 {
+	g_Instances.remove(ppro);
 	delete ppro;
 	return 0;
 }
@@ -259,8 +232,12 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	}	}
 
 	srand(( unsigned ) time( NULL ));
+
 	g_IconsInit();
+	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+	HookEvent(ME_TB_MODULELOADED, g_OnModernToolbarInit);
 	JabberUserInfoInit();
+
 	return 0;
 }
 

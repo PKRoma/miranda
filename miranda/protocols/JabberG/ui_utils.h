@@ -37,6 +37,10 @@ Last change by : $Author$
 
 struct CCallbackImp
 {
+	struct CDummy
+	{	int foo;
+	};
+
 public:
 	__inline CCallbackImp(): m_object(NULL), m_func(NULL) {}
 
@@ -52,14 +56,14 @@ public:
 
 protected:
 	template<typename TClass, typename TArgument>
-	__inline CCallbackImp(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): m_object(object), m_func(*(TFnCallback *)(void *)&func) {}
+	__inline CCallbackImp(TClass *object, void ( TClass::*func)(TArgument *argument)): m_object(( CDummy* )object), m_func((TFnCallback)func) {}
 
-	__inline void Invoke(void *argument) const { if (m_func && m_object) m_func(m_object, argument); }
+	__inline void Invoke(void *argument) const { if (m_func && m_object) (m_object->*m_func)(argument); }
 
 private:
-	typedef void (__cdecl *TFnCallback)(void *object, void *argument);
+	typedef void ( CDummy::*TFnCallback)( void *argument );
 
-	void *m_object;
+	CDummy* m_object;
 	TFnCallback m_func;
 };
 
@@ -70,13 +74,15 @@ public:
 	__inline CCallback() {}
 
 	template<typename TClass>
-	__inline CCallback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
+	__inline CCallback(TClass *object, void ( TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
+
+	__inline CCallback& operator=( const CCallbackImp& x ) { CCallbackImp::operator =( x ); return *this; }
 
 	__inline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
 
 template<typename TClass, typename TArgument>
-__inline CCallback<TArgument> Callback(TClass *object, void (__cdecl TClass::*func)(TArgument *argument))
+__inline CCallback<TArgument> Callback(TClass *object, void (TClass::*func)(TArgument *argument))
 	{ return CCallback<TArgument>(object, func); }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +178,7 @@ protected:
 	void Unsubclass();
 
 private:
+
 	WNDPROC m_wndproc;
 	static LRESULT CALLBACK GlobalSubclassWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
@@ -208,6 +215,7 @@ public:
 	virtual void OnInit();
 
 protected:
+	char m_flags;
 	HICON m_hIcon;
 	const char* m_toolTip;
 };
@@ -388,7 +396,7 @@ public:
 			TCHAR *buf = (TCHAR *)_alloca(sizeof(TCHAR) * len);
 			GetWindowText(m_hwnd, buf, len);
 			SaveText(buf);
-		} 
+		}
 		else if (GetDataType() != DBVT_DELETED)
 		{
 			SaveInt(GetInt());
@@ -521,7 +529,194 @@ public:
 class CCtrlListView : public CCtrlBase
 {
 public:
+	CCtrlListView( CDlgBase* dlg, int ctrlId );
+
+	// Classic LV interface
+	DWORD ApproximateViewRect(int cx, int cy, int iCount);
+	void Arrange(UINT code);
+	void CancelEditLabel();
+	HIMAGELIST CreateDragImage(int iItem, LPPOINT lpptUpLeft);
+	void DeleteAllItems();
+	void DeleteColumn(int iCol);
+	void DeleteItem(int iItem);
+	HWND EditLabel(int iItem);
+	int EnableGroupView(BOOL fEnable);
+	BOOL EnsureVisible(int i, BOOL fPartialOK);
+	int FindItem(int iStart, const LVFINDINFO *plvfi);
+	COLORREF GetBkColor();
+	void GetBkImage(LPLVBKIMAGE plvbki);
+	UINT GetCallbackMask();
+	BOOL GetCheckState(UINT iIndex);
+	void GetColumn(int iCol, LPLVCOLUMN pcol);
+	void GetColumnOrderArray(int iCount, int *lpiArray);
+	int GetColumnWidth(int iCol);
+	int GetCountPerPage();
+	HWND GetEditControl();
+	//void GetEmptyText(PWSTR pszText, UINT cchText);
+	DWORD GetExtendedListViewStyle();
+	INT GetFocusedGroup();
+	//void GetFooterInfo(LVFOOTERINFO *plvfi);
+	//void GetFooterItem(UINT iItem, LVFOOTERITEM *pfi);
+	//void GetFooterItemRect(UINT iItem,  RECT *prc);
+	//void GetFooterRect(RECT *prc);
+	int GetGroupCount();
+	//HIMAGELIST GetGroupHeaderImageList();
+	void GetGroupInfo(int iGroupId, PLVGROUP pgrp);
+	void GetGroupInfoByIndex(int iIndex, PLVGROUP pgrp);
+	void GetGroupMetrics(LVGROUPMETRICS *pGroupMetrics);
+	//BOOL GetGroupRect(int iGroupId, RECT *prc);
+	UINT GetGroupState(UINT dwGroupId, UINT dwMask);
+	HWND GetHeader();
+	HCURSOR GetHotCursor();
+	INT GetHotItem();
+	DWORD GetHoverTime();
+	HIMAGELIST GetImageList(int iImageList);
+	BOOL GetInsertMark(LVINSERTMARK *plvim);
+	COLORREF GetInsertMarkColor();
+	int GetInsertMarkRect(LPRECT prc);
+	BOOL GetISearchString(LPSTR lpsz);
+	void GetItem(LPLVITEM pitem);
+	int GetItemCount();
+	//void GetItemIndexRect(LVITEMINDEX *plvii, LONG iSubItem, LONG code, LPRECT prc);
+	void GetItemPosition(int i, POINT *ppt);
+	void GetItemRect(int i, RECT *prc, int code);
+	DWORD GetItemSpacing(BOOL fSmall);
+	UINT GetItemState(int i, UINT mask);
+	void GetItemText(int iItem, int iSubItem, LPTSTR pszText, int cchTextMax);
+	int GetNextItem(int iStart, UINT flags);
+	//BOOL GetNextItemIndex(LVITEMINDEX *plvii, LPARAM flags);
+	BOOL GetNumberOfWorkAreas(LPUINT lpuWorkAreas);
+	BOOL GetOrigin(LPPOINT lpptOrg);
+	COLORREF GetOutlineColor();
+	UINT GetSelectedColumn();
+	UINT GetSelectedCount();
+	INT GetSelectionMark();
+	int GetStringWidth(LPCSTR psz);
+	BOOL GetSubItemRect(int iItem, int iSubItem, int code, LPRECT lpRect);
+	COLORREF GetTextBkColor();
+	COLORREF GetTextColor();
+	void GetTileInfo(PLVTILEINFO plvtinfo);
+	void GetTileViewInfo(PLVTILEVIEWINFO plvtvinfo);
+	HWND GetToolTips();
+	int GetTopIndex();
+	BOOL GetUnicodeFormat();
+	DWORD GetView();
+	BOOL GetViewRect(RECT *prc);
+	void GetWorkAreas(INT nWorkAreas, LPRECT lprc);
+	BOOL HasGroup(int dwGroupId);
+	int HitTest(LPLVHITTESTINFO pinfo);
+	int HitTestEx(LPLVHITTESTINFO pinfo);
+	int InsertColumn(int iCol, const LPLVCOLUMN pcol);
+	int InsertGroup(int index, PLVGROUP pgrp);
+	void InsertGroupSorted(PLVINSERTGROUPSORTED structInsert);
+	int InsertItem(const LPLVITEM pitem);
+	BOOL InsertMarkHitTest(LPPOINT point, LVINSERTMARK *plvim);
+	BOOL IsGroupViewEnabled();
+	UINT IsItemVisible(UINT index);
+	UINT MapIDToIndex(UINT id);
+	UINT MapIndexToID(UINT index);
+	BOOL RedrawItems(int iFirst, int iLast);
+	void RemoveAllGroups();
+	int RemoveGroup(int iGroupId);
+	BOOL Scroll(int dx, int dy);
+	BOOL SetBkColor(COLORREF clrBk);
+	BOOL SetBkImage(LPLVBKIMAGE plvbki);
+	BOOL SetCallbackMask(UINT mask);
+	void SetCheckState(UINT iIndex, BOOL fCheck);
+	BOOL SetColumn(int iCol, LPLVCOLUMN pcol);
+	BOOL SetColumnOrderArray(int iCount, int *lpiArray);
+	BOOL SetColumnWidth(int iCol, int cx);
+	void SetExtendedListViewStyle(DWORD dwExStyle);
+	void SetExtendedListViewStyleEx(DWORD dwExMask, DWORD dwExStyle);
+	//HIMAGELIST SetGroupHeaderImageList(HIMAGELIST himl);
+	int SetGroupInfo(int iGroupId, PLVGROUP pgrp);
+	void SetGroupMetrics(PLVGROUPMETRICS pGroupMetrics);
+	void SetGroupState(UINT dwGroupId, UINT dwMask, UINT dwState);
+	HCURSOR SetHotCursor(HCURSOR hCursor);
+	INT SetHotItem(INT iIndex);
+	void SetHoverTime(DWORD dwHoverTime);
+	DWORD SetIconSpacing(int cx, int cy);
+	HIMAGELIST SetImageList(HIMAGELIST himl, int iImageList);
+	BOOL SetInfoTip(PLVSETINFOTIP plvSetInfoTip);
+	BOOL SetInsertMark(LVINSERTMARK *plvim);
+	COLORREF SetInsertMarkColor(COLORREF color);
+	BOOL SetItem(const LPLVITEM pitem);
+	void SetItemCount(int cItems);
+	void SetItemCountEx(int cItems, DWORD dwFlags);
+	//HRESULT SetItemIndexState(LVITEMINDEX *plvii, UINT data, UINT mask);
+	BOOL SetItemPosition(int i, int x, int y);
+	void SetItemPosition32(int iItem, int x, int y);
+	void SetItemState(int i, UINT state, UINT mask);
+	void SetItemText(int i, int iSubItem, TCHAR *pszText);
+	COLORREF SetOutlineColor(COLORREF color);
+	void SetSelectedColumn(int iCol);
+	INT SetSelectionMark(INT iIndex);
+	BOOL SetTextBkColor(COLORREF clrText);
+	BOOL SetTextColor(COLORREF clrText);
+	BOOL SetTileInfo(PLVTILEINFO plvtinfo);
+	BOOL SetTileViewInfo(PLVTILEVIEWINFO plvtvinfo);
+	HWND SetToolTips(HWND ToolTip);
+	BOOL SetUnicodeFormat(BOOL fUnicode);
+	int SetView(DWORD iView);
+	void SetWorkAreas(INT nWorkAreas, LPRECT lprc);
+	int SortGroups(PFNLVGROUPCOMPARE pfnGroupCompare, LPVOID plv);
+	BOOL SortItems(PFNLVCOMPARE pfnCompare, LPARAM lParamSort);
+	BOOL SortItemsEx(PFNLVCOMPARE pfnCompare, LPARAM lParamSort);
+	INT SubItemHitTest(LPLVHITTESTINFO pInfo);
+	INT SubItemHitTestEx(LPLVHITTESTINFO plvhti);
+	BOOL Update(int iItem);
+
+	// Additional APIs
+	HIMAGELIST CreateImageList(int iImageList);
+	void AddColumn(int iSubItem, TCHAR *name, int cx);
+	void AddGroup(int iGroupId, TCHAR *name);
+	int AddItem(TCHAR *text, int iIcon, LPARAM lParam = 0, int iGroupId = -1);
+	void SetItem(int iItem, int iSubItem, TCHAR *text, int iIcon = -1);
+	LPARAM GetItemData(int iItem);
+
+	// Events
+	struct TEventInfo {
+		CCtrlListView *treeviewctrl;
+		union {
+			NMHDR			*nmhdr;
+			NMLISTVIEW		*nmlv;
+			NMLVDISPINFO	*nmlvdi;
+			NMLVSCROLL		*nmlvscr;
+			NMLVGETINFOTIP	*nmlvit;
+			NMLVFINDITEM	*nmlvfi;
+			NMITEMACTIVATE	*nmlvia;
+			NMLVKEYDOWN		*nmlvkey;
+		};
+	};
+
+	CCallback<TEventInfo> OnBeginDrag;
+	CCallback<TEventInfo> OnBeginLabelEdit;
+	CCallback<TEventInfo> OnBeginRDrag;
+	CCallback<TEventInfo> OnBeginScroll;
+	CCallback<TEventInfo> OnColumnClick;
+	//CCallback<TEventInfo> OnColumnDropdown;
+	//CCallback<TEventInfo> OnColumnOverflowClick;
+	CCallback<TEventInfo> OnDeleteAllItems;
+	CCallback<TEventInfo> OnDeleteItem;
+	CCallback<TEventInfo> OnDoubleClick;
+	CCallback<TEventInfo> OnEndLabelEdit;
+	CCallback<TEventInfo> OnEndScroll;
+	CCallback<TEventInfo> OnGetDispInfo;
+	//CCallback<TEventInfo> OnGetEmptyMarkup;
+	CCallback<TEventInfo> OnGetInfoTip;
+	CCallback<TEventInfo> OnHotTrack;
+	CCallback<TEventInfo> OnIncrementalSearch;
+	CCallback<TEventInfo> OnInsertItem;
+	CCallback<TEventInfo> OnItemActivate;
+	CCallback<TEventInfo> OnItemChanged;
+	CCallback<TEventInfo> OnItemChanging;
+	CCallback<TEventInfo> OnKeyDown;
+	//CCallback<TEventInfo> OnLinkClick;
+	CCallback<TEventInfo> OnMarqueeBegin;
+	CCallback<TEventInfo> OnSetDispInfo;
+
 protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -729,10 +924,6 @@ public:
 	__inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
 	__inline const MSG *ActiveMessage() const { return &m_msg; }
 
-	// global jabber events
-	virtual void OnJabberOffline() {}
-	virtual void OnJabberOnline() {}
-
 	// dynamic creation support (mainly to avoid leaks in options)
 	struct CreateParam
 	{
@@ -781,8 +972,12 @@ protected:
 	// resister controls
 	void AddControl(CCtrlBase *ctrl);
 
+	// options
+	void CreateWhiteHeader(int idcWhiteRect, int idcTitle, int idcDescription, int idcFrame);
+
 private:
 	LIST<CCtrlBase> m_controls;
+	int m_idcWhiteRect, m_idcTitle, m_idcDescription, m_idcFrame;
 
 	void NotifyControls(void (CCtrlBase::*fn)());
 	CCtrlBase *FindControl(int idCtrl);
@@ -793,6 +988,13 @@ private:
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // CProtoDlgBase
+
+#define WM_PROTO_REFRESH              (WM_USER + 100)
+#define WM_PROTO_CHECK_ONLINE         (WM_USER + 101)
+#define WM_PROTO_ACTIVATE             (WM_USER + 102)
+#define WM_PROTO_LAST                 (WM_USER + 200)
+
+void UIRenderTitleBarInfo(HWND hwnd, HICON hIcon, TCHAR *szText);
 
 template<typename TProto>
 class CProtoDlgBase : public CDlgBase
@@ -817,9 +1019,118 @@ public:
 
 protected:
 	TProto* m_proto;
+	WNDPROC m_oldWndProc;
+
+	static LRESULT CALLBACK GlobalWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		CProtoDlgBase<TProto> *wnd = (CProtoDlgBase<TProto> *)GetWindowLong(hwnd, GWL_USERDATA);
+		if (!wnd) return DefDlgProc(hwnd, msg, wParam, lParam);
+		return wnd->WndProc(msg, wParam, lParam);
+	}
+
+	BOOL WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msg)
+		{
+			// Insert protocol icon
+			case WM_SETTEXT:
+			case WM_NCACTIVATE:
+			case WM_NCPAINT:
+			{
+				// Draw default background
+				CallWindowProc(m_oldWndProc, m_hwnd, msg, wParam, lParam);
+				UIRenderTitleBarInfo(m_hwnd, LoadSkinnedProtoIcon(m_proto->m_szModuleName, m_proto->m_iStatus), m_proto->m_tszUserName);
+				return TRUE;
+			}
+
+		}
+
+		return CallWindowProc(m_oldWndProc, m_hwnd, msg, wParam, lParam);
+	}
+
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msg)
+		{
+			case WM_INITDIALOG:
+				m_oldWndProc = (WNDPROC)SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)GlobalWndProc);
+				break;
+			case WM_DESTROY:
+				SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)m_oldWndProc);
+				break;
+
+			// Protocol events
+			case WM_PROTO_ACTIVATE:
+				OnProtoActivate();
+				return m_lresult;
+			case WM_PROTO_CHECK_ONLINE:
+				OnProtoCheckOnline();
+				return m_lresult;
+			case WM_PROTO_REFRESH:
+				OnProtoRefresh();
+				return m_lresult;
+		}
+
+		return CDlgBase::DlgProc(msg, wParam, lParam);
+	}
+
+	virtual void OnProtoRefresh() {}
+	virtual void OnProtoActivate() {}
+	virtual void OnProtoCheckOnline() {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
+#define UI_SAFE_OPEN(dlgClass, dlgPtr)	\
+	do {	\
+		if (dlgPtr)	\
+		{	\
+			SetForegroundWindow((dlgPtr)->GetHwnd());	\
+		} else	\
+		{	\
+			(dlgPtr) = new dlgClass(this);	\
+			(dlgPtr)->Show();	\
+		}	\
+	} while (0)
+
+#define UI_SAFE_OPEN_EX(dlgClass, dlgPtr, dlgLocal)	\
+	if (dlgPtr)	\
+	{	\
+		::SetForegroundWindow((dlgPtr)->GetHwnd());	\
+	} else	\
+	{	\
+		(dlgPtr) = new dlgClass(this);	\
+		(dlgPtr)->Show();	\
+	}	\
+	dlgClass *dlgLocal = (dlgClass *)(dlgPtr);
+
+#define UI_SAFE_CLOSE(dlg)	\
+	do {	\
+		if ( dlg ) {	\
+			(dlg)->Close();	\
+			(dlg) = NULL;	\
+		}	\
+	} while (0)
+
+#define UI_SAFE_CLOSE_HWND(hwnd)	\
+	do {	\
+		if ( hwnd ) {	\
+			::SendMessage( (hwnd), WM_CLOSE, 0, 0 );	\
+			m_hwndJabberAgents = NULL;	\
+		}	\
+	} while (0)
+
+#define UI_SAFE_NOTIFY(dlg, msg)	\
+	do {	\
+		if ( dlg )	\
+			::SendMessage((dlg)->GetHwnd(), msg, 0, 0);	\
+	} while (0)
+
+#define UI_SAFE_NOTIFY_HWND(hwnd, msg)	\
+	do {	\
+		if ( hwnd )	\
+			::SendMessage(hwnd, msg, 0, 0);	\
+	} while (0)
 
 int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
 void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow);

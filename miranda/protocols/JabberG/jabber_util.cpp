@@ -1470,6 +1470,119 @@ BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, 
 }
 
 ////////////////////////////////////////////////////////////////////////
+// Choose protocol instance
+static LRESULT CALLBACK sttJabberChooseInstanceMenuHostWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+		case WM_MEASUREITEM:
+		{
+			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+			if (lpmis->CtlType != ODT_MENU) return FALSE;
+
+			lpmis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
+			lpmis->itemHeight = GetSystemMetrics(SM_CXSMICON) + 2;
+
+			return TRUE;
+		}
+
+		case WM_DRAWITEM:
+		{
+			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+			if (lpdis->CtlType != ODT_MENU) return FALSE;
+
+			HICON hIcon = ((lpdis->itemID) > 0 && ((int)lpdis->itemID <= g_Instances.getCount())) ?
+				LoadSkinnedProtoIcon(g_Instances[lpdis->itemID-1]->m_szModuleName, g_Instances[lpdis->itemID-1]->m_iStatus) :
+				LoadSkinnedIcon(SKINICON_OTHER_DELETE);
+
+			DrawIconEx(lpdis->hDC,
+				lpdis->rcItem.left - GetSystemMetrics(SM_CXMENUCHECK),
+				(lpdis->rcItem.top + lpdis->rcItem.bottom - GetSystemMetrics(SM_CYSMICON))/2,
+				hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+				0, NULL, DI_NORMAL);
+
+			return TRUE;
+		}
+	}
+
+	return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
+{
+	if (g_Instances.getCount() == 0) return NULL;
+	if (g_Instances.getCount() == 1) return g_Instances[0];
+
+	static bool needWindowClass = true;
+	if (needWindowClass)
+	{
+		WNDCLASSEX wcl = {0};
+		wcl.cbSize = sizeof(wcl);
+		wcl.lpfnWndProc = sttJabberChooseInstanceMenuHostWndProc;
+		wcl.style = 0;
+		wcl.cbClsExtra = 0;
+		wcl.cbWndExtra = 0;
+		wcl.hInstance = hInst;
+		wcl.hIcon = NULL;
+		wcl.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wcl.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+		wcl.lpszMenuName = NULL;
+		wcl.lpszClassName = _T("JabberChooseInstance_MenuHostClass");
+		wcl.hIconSm = NULL;
+		RegisterClassEx(&wcl);
+
+		needWindowClass = false;
+	}
+
+	HWND hwndMenuHost = CreateWindow(_T("JabberChooseInstance_MenuHostClass"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hInst, NULL);
+	SetWindowPos(hwndMenuHost, 0, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_DEFERERASE|SWP_NOSENDCHANGING|SWP_HIDEWINDOW);
+	HMENU hMenu = CreatePopupMenu();
+
+	int nItems = 0;
+	int lastItemId = 0;
+	for (int i = 0; i < g_Instances.getCount(); ++i)
+	{
+		if (bAllowOffline || (g_Instances[i]->m_iStatus != ID_STATUS_OFFLINE))
+		{
+			MENUITEMINFO mii = {0};
+			mii.cbSize = sizeof(mii);
+			mii.fMask = MIIM_BITMAP|MIIM_FTYPE|MIIM_ID|MIIM_STATE|MIIM_STRING;
+			mii.fType = MFT_STRING;
+			lastItemId = mii.wID = i + 1;
+			mii.hbmpItem = HBMMENU_CALLBACK;
+			mii.dwTypeData = g_Instances[nItems]->m_tszUserName;
+			InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
+		}
+	}
+
+	int res = lastItemId;
+	if (nItems > 1)
+	{
+		MENUITEMINFO mii = {0};
+		mii.cbSize = sizeof(mii);
+
+		mii.fMask = MIIM_FTYPE;
+		mii.fType = MFT_SEPARATOR;
+		InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
+
+		mii.fMask = MIIM_BITMAP|MIIM_FTYPE|MIIM_ID|MIIM_STATE|MIIM_STRING;
+		mii.fType = MFT_STRING;
+		mii.wID = 0;
+		mii.hbmpItem = HBMMENU_CALLBACK;
+		mii.dwTypeData = TranslateT("Cancel");
+		InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
+
+		POINT pt; GetCursorPos(&pt);
+		res = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndMenuHost, NULL);
+	}
+
+	DestroyMenu(hMenu);
+	DestroyWindow(hwndMenuHost);
+
+	return res ? g_Instances[res-1] : NULL;
+};
+
+////////////////////////////////////////////////////////////////////////
 // Premultiply bitmap channels for 32-bit bitmaps
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 {

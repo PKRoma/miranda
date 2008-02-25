@@ -154,7 +154,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	int  __cdecl OnDbSettingChanged( WPARAM, LPARAM );
 	int  __cdecl OnIdleChanged( WPARAM, LPARAM );
 	int  __cdecl OnModernOptInit( WPARAM, LPARAM );
-	int  __cdecl OnModernToolbarInit( WPARAM, LPARAM );
 	int  __cdecl OnModulesLoadedEx( WPARAM, LPARAM );
 	int  __cdecl OnOptionsInit( WPARAM, LPARAM );
 	int  __cdecl OnPreShutdown( WPARAM, LPARAM );
@@ -225,13 +224,13 @@ struct CJabberProto : public PROTO_INTERFACE
 	HWND   m_hwndMucBanList;
 	HWND   m_hwndMucAdminList;
 	HWND   m_hwndMucOwnerList;
-	HWND   m_hwndJabberBookmarks;
 	HWND   m_hwndJabberAddBookmark;
 	HWND   m_hwndJabberInfo;
 	HWND   m_hwndPrivacyRule;
 	HWND   m_hwndServiceDiscovery;
 
-	CJabberDlgPrivacyLists *m_pDlgPrivacyLists;
+	CJabberDlgBase *m_pDlgPrivacyLists;
+	CJabberDlgBase *m_pDlgBookmarks;
 
 	// Service and event handles
 	HANDLE m_hEventNudge;
@@ -807,5 +806,7 @@ private:
 
 	HANDLE* m_phIconLibItems;
 };
+
+extern LIST<CJabberProto> g_Instances;
 
 #endif

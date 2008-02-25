@@ -548,14 +548,10 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 
 	EnableMenuItems( TRUE );
 
-	if ( m_hwndJabberGroupchat )
-		SendMessage( m_hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( m_hwndJabberJoinGroupchat )
-		SendMessage( m_hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( m_hwndJabberBookmarks )
-		SendMessage( m_hwndJabberBookmarks, WM_JABBER_CHECK_ONLINE, 0, 0 );
-	if ( m_hwndJabberAddBookmark)
-		SendMessage( m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE);
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
+	UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE);
 
 
 
@@ -569,12 +565,9 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 	}
 	li.List_Destroy( &chatRooms );
 
-	if ( m_hwndJabberAgents )
-		SendMessage( m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-	if ( m_hwndServiceDiscovery )
-		SendMessage( m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-	if ( m_hwndJabberVcard )
-		SendMessage( m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE, 0, 0 );
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
+	UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE);
 
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
@@ -1207,8 +1200,8 @@ void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		}
 		else if ( hContact != NULL )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-		else if ( m_hwndJabberVcard )
-			SendMessage( m_hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
+		else
+			UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_REFRESH);
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( hContact != NULL )
@@ -1222,8 +1215,7 @@ void CJabberProto::OnIqResultSetVcard( XmlNode *iqNode, void *userdata )
 	if ( type == NULL )
 		return;
 
-	if ( m_hwndJabberVcard )
-		SendMessage( m_hwndJabberVcard, WM_JABBER_REFRESH, 0, 0 );
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_REFRESH);
 }
 
 void CJabberProto::OnIqResultSetSearch( XmlNode *iqNode, void *userdata )
@@ -1514,8 +1506,7 @@ void CJabberProto::OnIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 								item->type = mir_tstrdup( _T("url") );
 			}	}	}	}	}
 
-			if ( m_hwndJabberBookmarks != NULL )
-				SendMessage( m_hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
+			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_REFRESH);
 			info->bBookmarksLoaded = TRUE;
 			OnProcessLoginRq(info, JABBER_LOGIN_BOOKMARKS);
 		}
@@ -1524,8 +1515,7 @@ void CJabberProto::OnIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata )
 		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
 			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
 			EnableMenuItems( TRUE );
-			if ( m_hwndJabberBookmarks != NULL )
-				SendMessage( m_hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
+			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_ACTIVATE);
 			return;
 		}
 }	}
@@ -1576,16 +1566,14 @@ void CJabberProto::OnIqResultSetBookmarks( XmlNode *iqNode, void *userdata )
 		return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		if ( m_hwndJabberBookmarks != NULL )
-			SendMessage( m_hwndJabberBookmarks, WM_JABBER_REFRESH, 0, 0);
+		UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_REFRESH);
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		XmlNode* errorNode = JabberXmlGetChild( iqNode, "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
 		MessageBox( NULL, str, TranslateT( "Jabber Bookmarks Error" ), MB_OK|MB_SETFOREGROUND );
 		mir_free( str );
-		if ( m_hwndJabberBookmarks != NULL )
-			SendMessage( m_hwndJabberBookmarks, WM_JABBER_ACTIVATE, 0, 0);
+		UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_ACTIVATE);
 }	}
 
 // last activity (XEP-0012) support

@@ -106,35 +106,43 @@ void CJabberProto::IconsInit( void )
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
+	sid.flags = SIDF_TCHAR;
+
+	char szSettingName[100];
+	TCHAR szSectionName[100];
+	TCHAR szDescription[100];
+
+	sid.pszName = szSettingName;
+	sid.ptszSection = szSectionName;
+	sid.ptszDescription = szDescription;
 
 	m_phIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
 
 	char *szRootSection = "Jabber/Accounts";
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
-		char tmp[100];
-		char szSettingName[100];
-		char szSectionName[100];
-		char szDescription[100];
+		TCHAR tmp[100];
 
 		if ( iconList[i].szSection ) {
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, iconList[i].szSection );
-			if (strstr(szSectionName, "%s")) {
-				mir_snprintf(tmp, SIZEOF(tmp), szSectionName, m_szModuleName);
-				lstrcpyA(szSectionName, tmp);
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T(TCHAR_STR_PARAM) _T("/") _T(TCHAR_STR_PARAM), szRootSection, iconList[i].szSection );
+			if (_tcsstr(szSectionName, _T("%s"))) {
+				mir_sntprintf(tmp, SIZEOF(tmp), szSectionName, m_tszUserName);
+				lstrcpy(szSectionName, tmp);
 			}
-			sid.pszSection = szSectionName;
 		}
-		else sid.pszSection = szRootSection;
+		else {
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T(TCHAR_STR_PARAM), szRootSection );
+		}
 
 		if (strstr(iconList[i].szDescr, "%s")) {
-			mir_snprintf( szDescription, sizeof( szDescription ), iconList[i].szDescr, m_szModuleName );
-			sid.pszDescription = szDescription;
+			mir_sntprintf( tmp, SIZEOF(tmp), _T(TCHAR_STR_PARAM), iconList[i].szDescr );
+			mir_sntprintf( szDescription, SIZEOF(szDescription), tmp, m_tszUserName );
 		}
-		else sid.pszDescription = iconList[i].szDescr;
+		else {
+			mir_sntprintf( szDescription, SIZEOF(szDescription), _T(TCHAR_STR_PARAM), iconList[i].szDescr );
+		}
 
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
-		sid.pszName = szSettingName;
+		mir_snprintf( szSettingName, SIZEOF(szSettingName), "%s_%s", m_szModuleName, iconList[i].szName );
 
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		m_phIconLibItems[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
@@ -240,7 +248,7 @@ static HICON ExtractIconFromPath(const char *path, BOOL * needFree)
 	return hIcon;
 }
 
-static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectName,char *Description,int internalidx, BOOL * needFree)
+static HICON LoadTransportIcon(char *filename,int i,char *IconName,TCHAR *SectName,TCHAR *Description,int internalidx, BOOL * needFree)
 {
 	char szPath[MAX_PATH],szMyPath[MAX_PATH], szFullPath[MAX_PATH],*str;
 	HICON hIcon=NULL;
@@ -269,11 +277,12 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,char *SectNam
 			sid.cx=16;
 			sid.cy=16;
 			sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.pszSection = SectName;
+			sid.ptszSection = SectName;
 			sid.pszName=IconName;
-			sid.pszDescription=Description;
+			sid.ptszDescription=Description;
 			sid.pszDefaultFile=szMyPath;
 			sid.iDefaultIndex=i;
+			sid.flags = SIDF_TCHAR;
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
 		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
@@ -294,15 +303,16 @@ static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
 int CJabberProto::LoadAdvancedIcons(int iID)
 {
 	int i;
-	char * proto=TransportProtoTable[iID].proto;
-	char * defFile[MAX_PATH]={0};
-	char * Group[255];
-	char * Uname[255];
+	char *proto = TransportProtoTable[iID].proto;
+	char defFile[MAX_PATH] = {0};
+	TCHAR Group[255];
+	char Uname[255];
 	int first=-1;
 	HICON empty=LoadSmallIcon(NULL,MAKEINTRESOURCE(102));
 
-	_snprintf((char *)Group, sizeof(Group),"%s/%s/%s %s","Status Icons", m_szModuleName, proto, "transport");
-	_snprintf((char *)defFile, sizeof(defFile),"proto_%s.dll",proto);
+	mir_sntprintf(Group, SIZEOF(Group), _T("Status Icons/") _T(TCHAR_STR_PARAM) _T("/") _T(TCHAR_STR_PARAM) _T(" transport"), m_szModuleName, proto);
+	//mir_sntprintf(Group, SIZEOF(Group), _T("Status Icons/%s/") _T(TCHAR_STR_PARAM) _T(" transport"), m_tszUserName, proto);
+	mir_snprintf(defFile, SIZEOF(defFile), "proto_%s.dll",proto);
 	if (!hAdvancedStatusIcon)
 		hAdvancedStatusIcon=(HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
 
@@ -311,9 +321,9 @@ int CJabberProto::LoadAdvancedIcons(int iID)
 		HICON hicon;
 		BOOL needFree;
 		int n=skinStatusToJabberStatus[i];
-		char * descr=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,n+ID_STATUS_OFFLINE,0);
-		_snprintf((char *)Uname, sizeof(Uname),"%s_Transport_%s_%d",m_szModuleName,proto,n);
-		hicon=(HICON)LoadTransportIcon((char*)defFile,-skinIconStatusToResourceId[i],(char*)Uname,(char*)Group,(char*)descr,-(n+ID_STATUS_OFFLINE),&needFree);
+		TCHAR *descr = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, n+ID_STATUS_OFFLINE, GCMDF_TCHAR);
+		mir_snprintf(Uname, SIZEOF(Uname), "%s_Transport_%s_%d", m_szModuleName, proto, n);
+		hicon=(HICON)LoadTransportIcon(defFile,-skinIconStatusToResourceId[i],Uname,Group,descr,-(n+ID_STATUS_OFFLINE),&needFree);
 		int index=(TransportProtoTable[iID].startIndex == -1)?-1:TransportProtoTable[iID].startIndex+n;
 		int added=ImageList_ReplaceIcon(hAdvancedStatusIcon,index,hicon?hicon:empty);
 		if (first == -1) first=added;

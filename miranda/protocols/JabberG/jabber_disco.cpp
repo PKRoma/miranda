@@ -666,25 +666,25 @@ BOOL CALLBACK JabberServiceDiscoveryDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 			static struct
 			{
 				int idc;
-				TCHAR *title;
+				char *title;
 				char *icon;
 				bool push;
 			} buttons[] =
 			{
-				{IDC_BTN_NAVHOME,		_T("Navigate home"),	"sd_nav_home",		false},
-				{IDC_BTN_REFRESH,		_T("Refresh node"),		"sd_nav_refresh",	false},
-				{IDC_BTN_VIEWLIST,		_T("View as list"),		"sd_view_list",		true},
-				{IDC_BTN_VIEWTREE,		_T("View as tree"),		"sd_view_tree",		true},
-				{IDC_BUTTON_BROWSE,		_T("Browse"),			"sd_browse",		false},
-				{IDC_BTN_FAVORITE,		_T("Favorites"),		"bookmarks",		true},	// this is checked during menu loop
-				{IDC_BTN_FILTERAPPLY,	_T("Apply filter"),		"sd_filter_apply",	false},
-				{IDC_BTN_FILTERRESET,	_T("Reset filter"),		"sd_filter_reset",	false},
+				{IDC_BTN_NAVHOME,		"Navigate home",	"sd_nav_home",		false},
+				{IDC_BTN_REFRESH,		"Refresh node",		"sd_nav_refresh",	false},
+				{IDC_BTN_VIEWLIST,		"View as list",		"sd_view_list",		true},
+				{IDC_BTN_VIEWTREE,		"View as tree",		"sd_view_tree",		true},
+				{IDC_BUTTON_BROWSE,		"Browse",			"sd_browse",		false},
+				{IDC_BTN_FAVORITE,		"Favorites",		"bookmarks",		true},	// this is checked during menu loop
+				{IDC_BTN_FILTERAPPLY,	"Apply filter",		"sd_filter_apply",	false},
+				{IDC_BTN_FILTERRESET,	"Reset filter",		"sd_filter_reset",	false},
 			};
 			for (i = 0; i < SIZEOF(buttons); ++i)
 			{
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)ppro->LoadIconEx(buttons[i].icon));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)buttons[i].title, 0);
 				if (buttons[i].push)
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}

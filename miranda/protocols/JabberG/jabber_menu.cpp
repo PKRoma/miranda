@@ -663,7 +663,7 @@ void CJabberProto::MenuInit()
 	hkd.cbSize = sizeof(hkd);
 	hkd.pszName = text;
 	hkd.pszService = text;
-	hkd.pszSection = m_szModuleName;
+	hkd.pszSection = m_szModuleName;	// title!!!!!!!!!!!
 
 	strcpy(tDest, "/Groupchat");
 	hkd.pszDescription = "Join conference";
@@ -682,40 +682,51 @@ void CJabberProto::MenuInit()
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 }
 
-int CJabberProto::OnModernToolbarInit(WPARAM, LPARAM)
+static int g_ToolbarHandleJoinGroupchat(WPARAM w, LPARAM l)
 {
-	char text[100], tmpbuf[256];
-	strcpy( text, m_szModuleName );
-	char* tDest = text + strlen( text );
+	if (CJabberProto *ppro = JabberChooseInstance())
+		return ppro->OnMenuHandleJoinGroupchat(w, l);
+	return 0;
+}
 
+static int g_ToolbarHandleBookmarks(WPARAM w, LPARAM l)
+{
+	if (CJabberProto *ppro = JabberChooseInstance())
+		return ppro->OnMenuHandleBookmarks(w, l);
+	return 0;
+}
+
+static int g_ToolbarHandleServiceDiscovery(WPARAM w, LPARAM l)
+{
+	if (CJabberProto *ppro = JabberChooseInstance())
+		return ppro->OnMenuHandleServiceDiscovery(w, l);
+	return 0;
+}
+
+int g_OnModernToolbarInit(WPARAM, LPARAM)
+{
 	TBButton button = {0};
 	button.cbSize = sizeof(button);
-	button.pszButtonID = text;
-	button.pszServiceName = text;
-	button.pszTooltipUp = button.pszTooltipUp = button.pszButtonName = tmpbuf;
 	button.defPos = 1000;
 	button.tbbFlags = TBBF_SHOWTOOLTIP|TBBF_VISIBLE;
 
-	JCreateService( "/Groupchat", &CJabberProto::OnMenuHandleJoinGroupchat );
-
-	strcpy(tDest, "/Groupchat");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Join conference (%s)", m_szModuleName);
-	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_GROUP);
+	CreateServiceFunction("JABBER/*/Groupchat", g_ToolbarHandleJoinGroupchat);
+	button.pszButtonID = button.pszServiceName = "JABBER/*/Groupchat";
+	button.pszTooltipUp = button.pszTooltipUp = button.pszButtonName = "Join conference";
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)g_GetIconHandle(IDI_GROUP);
 	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 
-	JCreateService( "/Bookmarks", &CJabberProto::OnMenuHandleBookmarks );
-
-	strcpy(tDest, "/Bookmarks");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Open bookmarks (%s)", m_szModuleName);
-	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_BOOKMARKS);
+	CreateServiceFunction("JABBER/*/Bookmarks", g_ToolbarHandleBookmarks);
+	button.pszButtonID = button.pszServiceName = "JABBER/*/Bookmarks";
+	button.pszTooltipUp = button.pszTooltipUp = button.pszButtonName = "Open bookmarks";
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)g_GetIconHandle(IDI_BOOKMARKS);
 	button.defPos++;
 	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 
-	JCreateService( "/ServiceDiscovery", &CJabberProto::OnMenuHandleServiceDiscovery );
-
-	strcpy(tDest, "/ServiceDiscovery");
-	mir_snprintf(tmpbuf, SIZEOF(tmpbuf), "Service discovery (%s)", m_szModuleName);
-	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)GetIconHandle(IDI_SERVICE_DISCOVERY);
+	CreateServiceFunction("JABBER/*/ServiceDiscovery", g_ToolbarHandleServiceDiscovery);
+	button.pszButtonID = button.pszServiceName = "JABBER/*/ServiceDiscovery";
+	button.pszTooltipUp = button.pszTooltipUp = button.pszButtonName = "Service discovery";
+	button.hSecondaryIconHandle = button.hPrimaryIconHandle = (HANDLE)g_GetIconHandle(IDI_SERVICE_DISCOVERY);
 	button.defPos++;
 	JCallService(MS_TB_ADDBUTTON, 0, (LPARAM)&button);
 	return 0;

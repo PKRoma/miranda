@@ -44,10 +44,8 @@ Last change by : $Author: m_mluhov $
 #include "jabber_disco.h"
 #include "jabber_ssl.h"
 
-#include "sdk/m_assocmgr.h"
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_modernopt.h"
-#include "sdk/m_toolbar.h"
 
 #include "resource.h"
 
@@ -207,7 +205,6 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
-	JHookEvent( ME_TB_MODULELOADED, &CJabberProto::OnModernToolbarInit );
 	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
@@ -258,13 +255,6 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	dbEventType.module = m_szModuleName;
 	dbEventType.descr = "Chat state notifications";
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
-
-	// file associations manager plugin support
-	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
-		char szService[ MAXMODULELABELLENGTH ];
-		mir_snprintf( szService, SIZEOF( szService ), "%s%s", m_szModuleName, JS_PARSE_XMPP_URI );
-		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, szService, 0 );
-	}
 
 	CheckAllContactsAreTransported();
 

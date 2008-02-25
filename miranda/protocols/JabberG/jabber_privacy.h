@@ -449,26 +449,26 @@ protected:
 	int Resizer(UTILRESIZECONTROL *urc);
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	void __cdecl btnSimple_OnClick(CCtrlButton *);
-	void __cdecl btnAdvanced_OnClick(CCtrlButton *);
-	void __cdecl btnAddJid_OnClick(CCtrlButton *);
-	void __cdecl btnActivate_OnClick(CCtrlButton *);
-	void __cdecl btnSetDefault_OnClick(CCtrlButton *);
-	void __cdecl lbLists_OnSelChange(CCtrlListBox *);
-	void __cdecl lbLists_OnDblClick(CCtrlListBox *);
-	void __cdecl lbRules_OnSelChange(CCtrlListBox *);
-	void __cdecl lbRules_OnDblClick(CCtrlListBox *);
-	void __cdecl btnEditRule_OnClick(CCtrlButton *);
-	void __cdecl btnAddRule_OnClick(CCtrlButton *);
-	void __cdecl btnRemoveRule_OnClick(CCtrlButton *);
-	void __cdecl btnUpRule_OnClick(CCtrlButton *);
-	void __cdecl btnDownRule_OnClick(CCtrlButton *);
-	void __cdecl btnAddList_OnClick(CCtrlButton *);
-	void __cdecl btnRemoveList_OnClick(CCtrlButton *);
-	void __cdecl btnApply_OnClick(CCtrlButton *);
-	void __cdecl clcClist_OnUpdate(CCtrlClc::TEventInfo *evt);
-	void __cdecl clcClist_OnOptionsChanged(CCtrlClc::TEventInfo *evt);
-	void __cdecl clcClist_OnClick(CCtrlClc::TEventInfo *evt);
+	void btnSimple_OnClick(CCtrlButton *);
+	void btnAdvanced_OnClick(CCtrlButton *);
+	void btnAddJid_OnClick(CCtrlButton *);
+	void btnActivate_OnClick(CCtrlButton *);
+	void btnSetDefault_OnClick(CCtrlButton *);
+	void lbLists_OnSelChange(CCtrlListBox *);
+	void lbLists_OnDblClick(CCtrlListBox *);
+	void lbRules_OnSelChange(CCtrlListBox *);
+	void lbRules_OnDblClick(CCtrlListBox *);
+	void btnEditRule_OnClick(CCtrlButton *);
+	void btnAddRule_OnClick(CCtrlButton *);
+	void btnRemoveRule_OnClick(CCtrlButton *);
+	void btnUpRule_OnClick(CCtrlButton *);
+	void btnDownRule_OnClick(CCtrlButton *);
+	void btnAddList_OnClick(CCtrlButton *);
+	void btnRemoveList_OnClick(CCtrlButton *);
+	void btnApply_OnClick(CCtrlButton *);
+	void clcClist_OnUpdate(CCtrlClc::TEventInfo *evt);
+	void clcClist_OnOptionsChanged(CCtrlClc::TEventInfo *evt);
+	void clcClist_OnClick(CCtrlClc::TEventInfo *evt);
 
 	void OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 

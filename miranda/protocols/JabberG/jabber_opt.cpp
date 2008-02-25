@@ -411,6 +411,8 @@ public:
 protected:
 	void OnInitDialog()
 	{
+		CJabberDlgBase::OnInitDialog();
+
 		int i;
 		DBVARIANT dbv;
 
@@ -539,7 +541,7 @@ protected:
 private:
 	bool m_gotservers;
 
-	void __cdecl btnRegister_OnClick(CCtrlButton *)
+	void btnRegister_OnClick(CCtrlButton *)
 	{
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
@@ -559,7 +561,7 @@ private:
 			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
 	}
 
-	void __cdecl btnUnregister_OnClick(CCtrlButton *)
+	void btnUnregister_OnClick(CCtrlButton *)
 	{
 		int res = MessageBox(NULL,
 			TranslateT("This operation will kill your account, roster and all another information stored at the server. Are you ready to do that?"),
@@ -573,12 +575,12 @@ private:
 		}
 	}
 
-	void __cdecl cbServer_OnDropdown(CCtrlCombo *sender)
+	void cbServer_OnDropdown(CCtrlCombo *sender)
 	{
 		if (!m_gotservers) mir_forkthread(QueryServerListThread, (void *)this);
 	}
 
-	void __cdecl chkManualHost_OnChange(CCtrlData *sender)
+	void chkManualHost_OnChange(CCtrlData *sender)
 	{
 		CCtrlCheck *chk = (CCtrlCheck *)sender;
 
@@ -595,7 +597,7 @@ private:
 		}
 	}
 
-	void __cdecl chkUseHostnameAsResource_OnChange(CCtrlData *sender)
+	void chkUseHostnameAsResource_OnChange(CCtrlData *sender)
 	{
 		CCtrlCheck *chk = (CCtrlCheck *)sender;
 
@@ -609,7 +611,7 @@ private:
 		}
 	}
 
-	void __cdecl chkUseSsl_OnChange(CCtrlData *sender)
+	void chkUseSsl_OnChange(CCtrlData *sender)
 	{
 		if (m_chkManualHost.GetState() != BST_CHECKED)
 		{
@@ -802,7 +804,7 @@ public:
 		m_proto->SendPresence( m_proto->m_iStatus, true );
 	}
 
-	void __cdecl chkDirect_OnChange(CCtrlData *)
+	void chkDirect_OnChange(CCtrlData *)
 	{
 		if (m_chkDirect.GetState() == BST_CHECKED)
 		{
@@ -819,7 +821,7 @@ public:
 		}
 	}
 
-	void __cdecl chkProxy_OnChange(CCtrlData *)
+	void chkProxy_OnChange(CCtrlData *)
 	{
 		if (m_chkProxy.GetState() == BST_CHECKED)
 			m_txtProxy.Enable();
@@ -1579,11 +1581,11 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 
 	odp.cbSize      = sizeof( odp );
 	odp.hInstance   = hInst;
-	odp.pszGroup    = LPGEN("Network");
-	odp.pszTitle    = m_szModuleName;
-	odp.flags       = ODPF_BOLDGROUPS;
+	odp.ptszGroup   = LPGENT("Network");
+	odp.ptszTitle   = m_tszUserName;	// title!!!!!!!!!!!
+	odp.flags       = ODPF_BOLDGROUPS|ODPF_TCHAR;
 
-	odp.pszTab      = LPGEN("Account");
+	odp.ptszTab     = LPGENT("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER);
 	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam	= (LPARAM)&OptCreateAccount;
@@ -1591,7 +1593,7 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 	OptCreateAccount.param = this;
 	JCallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 
-	odp.pszTab      = LPGEN("Conferences");
+	odp.ptszTab     = LPGENT("Conferences");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER4);
 	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam	= (LPARAM)&OptCreateGc;
@@ -1601,7 +1603,7 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 
 	odp.flags |= ODPF_EXPERTONLY;
 
-	odp.pszTab      = LPGEN("Advanced");
+	odp.ptszTab     = LPGENT("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_JABBER2 );
 	odp.pfnDlgProc  = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam	= (LPARAM)&OptCreateAdvanced;
@@ -1632,12 +1634,12 @@ int CJabberProto::OnModernOptInit( WPARAM wParam, LPARAM lParam )
 	obj.hInstance = hInst;
 	obj.iSection = MODERNOPT_PAGE_ACCOUNTS;
 	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
-	obj.lptzSubsection = mir_a2t(m_szModuleName);
+	obj.lptzSubsection = mir_a2t(m_szModuleName);	// title!!!!!!!!!!!
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT);
 	obj.iBoldControls = iBoldControls;
 	obj.pfnDlgProc = JabberWizardDlgProc;
 	obj.lpszClassicGroup = "Network";
-	obj.lpszClassicPage = m_szModuleName;
+	obj.lpszClassicPage = m_szModuleName;	// title!!!!!!!!!!!
 	obj.lpszHelpUrl = "http://forums.miranda-im.org/showthread.php?t=14294";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	mir_free(obj.lptzSubsection); */

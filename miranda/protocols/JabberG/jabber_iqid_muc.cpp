@@ -277,19 +277,19 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 			static struct
 			{
 				int idc;
-				TCHAR *title;
+				char *title;
 				char *icon;
 				bool push;
 			} buttons[] =
 			{
-				{IDC_BTN_FILTERAPPLY,	_T("Apply filter"),		"sd_filter_apply",	false},
-				{IDC_BTN_FILTERRESET,	_T("Reset filter"),		"sd_filter_reset",	false},
+				{IDC_BTN_FILTERAPPLY,	"Apply filter",		"sd_filter_apply",	false},
+				{IDC_BTN_FILTERRESET,	"Reset filter",		"sd_filter_reset",	false},
 			};
 			for (int i = 0; i < SIZEOF(buttons); ++i)
 			{
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->ppro->LoadIconEx(buttons[i].icon));
 				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0);
-				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(buttons[i].title), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, (WPARAM)buttons[i].title, 0);
 				if (buttons[i].push)
 					SendDlgItemMessage(hwndDlg, buttons[i].idc, BUTTONSETASPUSHBTN, 0, 0);
 			}

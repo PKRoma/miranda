@@ -240,7 +240,7 @@ void CJabberProto::InitCustomFolders( void )
 		char AvatarsFolder[MAX_PATH]; AvatarsFolder[0] = 0;
 		CallService( MS_DB_GETPROFILEPATH, ( WPARAM )MAX_PATH, ( LPARAM )AvatarsFolder );
 		strcat( AvatarsFolder, "\\Jabber" );
-		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
+		hJabberAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);	// title!!!!!!!!!!!
 }	}
 
 void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )

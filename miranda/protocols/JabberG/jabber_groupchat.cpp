@@ -818,7 +818,7 @@ static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 
 			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BM_SETIMAGE, IMAGE_ICON, (LPARAM)param->ppro->LoadIconEx("bookmarks"));
 			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Bookmarks"), BATF_TCHAR);
+			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONADDTOOLTIP, (WPARAM)"Bookmarks", 0);
 			SendDlgItemMessage(hwndDlg, IDC_BOOKMARKS, BUTTONSETASPUSHBTN, 0, 0);
 
 			param->ppro->ComboLoadRecentStrings(hwndDlg, IDC_SERVER, "joinWnd_rcSvr");

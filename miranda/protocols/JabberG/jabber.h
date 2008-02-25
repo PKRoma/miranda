@@ -103,23 +103,23 @@ typedef CProtoDlgBase<CJabberProto> CJabberDlgBase;
 #define JABBER_DB_EVENT_CHATSTATES_GONE          1
 
 // User-defined message
-#define WM_JABBER_REGDLG_UPDATE        WM_USER + 100
-#define WM_JABBER_AGENT_REFRESH        WM_USER + 101
-#define WM_JABBER_TRANSPORT_REFRESH    WM_USER + 102
-#define WM_JABBER_REGINPUT_ACTIVATE    WM_USER + 103
-#define WM_JABBER_REFRESH              WM_USER + 104
-#define WM_JABBER_CHECK_ONLINE         WM_USER + 105
-#define WM_JABBER_CHANGED              WM_USER + 106
-#define WM_JABBER_ACTIVATE             WM_USER + 107
-#define WM_JABBER_SET_FONT             WM_USER + 108
-#define WM_JABBER_FLASHWND             WM_USER + 109
-#define WM_JABBER_GC_MEMBER_ADD        WM_USER + 110
-#define WM_JABBER_GC_FORCE_QUIT        WM_USER + 111
-#define WM_JABBER_SHUTDOWN             WM_USER + 112
-#define WM_JABBER_SMILEY               WM_USER + 113
-#define WM_JABBER_JOIN                 WM_USER + 114
-#define WM_JABBER_ADD_TO_ROSTER        WM_USER + 115
-#define WM_JABBER_ADD_TO_BOOKMARKS     WM_USER + 116
+#define WM_JABBER_REGDLG_UPDATE        (WM_PROTO_LAST + 100)
+#define WM_JABBER_AGENT_REFRESH        (WM_PROTO_LAST + 101)
+#define WM_JABBER_TRANSPORT_REFRESH    (WM_PROTO_LAST + 102)
+#define WM_JABBER_REGINPUT_ACTIVATE    (WM_PROTO_LAST + 103)
+#define WM_JABBER_REFRESH              WM_PROTO_REFRESH
+#define WM_JABBER_CHECK_ONLINE         WM_PROTO_CHECK_ONLINE
+#define WM_JABBER_ACTIVATE             WM_PROTO_ACTIVATE
+#define WM_JABBER_CHANGED              (WM_PROTO_LAST + 106)
+#define WM_JABBER_SET_FONT             (WM_PROTO_LAST + 108)
+#define WM_JABBER_FLASHWND             (WM_PROTO_LAST + 109)
+#define WM_JABBER_GC_MEMBER_ADD        (WM_PROTO_LAST + 110)
+#define WM_JABBER_GC_FORCE_QUIT        (WM_PROTO_LAST + 111)
+#define WM_JABBER_SHUTDOWN             (WM_PROTO_LAST + 112)
+#define WM_JABBER_SMILEY               (WM_PROTO_LAST + 113)
+#define WM_JABBER_JOIN                 (WM_PROTO_LAST + 114)
+#define WM_JABBER_ADD_TO_ROSTER        (WM_PROTO_LAST + 115)
+#define WM_JABBER_ADD_TO_BOOKMARKS     (WM_PROTO_LAST + 116)
 
 // Error code
 #define JABBER_ERROR_REDIRECT                    302
@@ -503,6 +503,10 @@ char* __stdcall rtrim( char *string );
 	TCHAR* __stdcall rtrim( TCHAR *string );
 #endif
 
+//---- jabber_menu.c ------------------------------------------------
+
+int g_OnModernToolbarInit(WPARAM, LPARAM);
+
 //---- jabber_misc.c ------------------------------------------------
 
 void   JabberChatDllError( void );
@@ -615,6 +619,7 @@ int           __stdcall JabberGetPacketID( XmlNode* n );
 TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr);
 void JabberCopyText(HWND hwnd, TCHAR *text);
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
+CJabberProto *JabberChooseInstance(bool bAllowOffline=false, bool atCursor=true);
 
 //---- jabber_xml.cpp -------------------------------------------------------------------
 
