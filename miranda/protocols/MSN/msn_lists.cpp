@@ -182,20 +182,24 @@ void MSN_CleanupLists(void)
 		char szEmail[MSN_MAX_EMAIL_LEN];
 		if (MSN_GetStaticString("e-mail", hContact, szEmail, sizeof(szEmail)) == 0 && Lists_IsInList(-1, szEmail))
 		{
-			char path[MAX_PATH];
-			MSN_GetCustomSmileyFileName(hContact, path, sizeof(path), "", 0);
-			if (path[0])
+			const int mask = Lists_GetMask(szEmail);
+			if (mask & LIST_FL)
 			{
-				SMADD_CONT cont;
-				cont.cbSize = sizeof(SMADD_CONT);
-				cont.hContact = hContact;
-				cont.type = 0;
-				cont.path = mir_a2t(path);
+				char path[MAX_PATH];
+				MSN_GetCustomSmileyFileName(hContact, path, sizeof(path), "", 0);
+				if (path[0])
+				{
+					SMADD_CONT cont;
+					cont.cbSize = sizeof(SMADD_CONT);
+					cont.hContact = hContact;
+					cont.type = 0;
+					cont.path = mir_a2t(path);
 
-				MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
-				mir_free(cont.path);
+					MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
+					mir_free(cont.path);
+				}
 			}
-			continue;
+			if (mask != 0) continue;
 		}
 
 		MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
