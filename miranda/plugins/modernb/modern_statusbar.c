@@ -200,7 +200,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		ProtosData=mir_alloc(sizeof(ProtoItemData)*protoCount);
 		memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
 		protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
-		for (j=0; j<protcnt; j++)
+		for (j=0; j<protoCount; j++)
 		{
 			int vis;
 			char buf[40];
