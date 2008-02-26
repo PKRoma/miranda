@@ -7,7 +7,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -15,13 +17,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -33,7 +35,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -41,13 +45,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -59,7 +63,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -67,13 +73,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -85,7 +91,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -93,13 +101,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -111,7 +119,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -119,13 +129,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -137,7 +147,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -145,13 +157,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -163,7 +175,10 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -171,13 +186,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -193,7 +208,10 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -201,13 +219,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -219,7 +237,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -227,13 +247,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	
@@ -245,7 +265,9 @@
 	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_popup.h"\
@@ -253,13 +275,13 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
-	".\IcoLib.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
 	

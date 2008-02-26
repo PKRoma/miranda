@@ -835,14 +835,12 @@ CIrcIgnoreItem::CIrcIgnoreItem( const TCHAR* _mask, const TCHAR* _flags, const T
 {
 }
 
-#if defined( _UNICODE )
 CIrcIgnoreItem::CIrcIgnoreItem( int codepage, const char* _mask, const char* _flags, const char* _network ) :
 	mask( _A2T( _mask, codepage )),
 	flags( _A2T( _flags, codepage )),
 	network( _A2T( _network, codepage ))
 {
 }
-#endif
 
 CIrcIgnoreItem::~CIrcIgnoreItem()
 {

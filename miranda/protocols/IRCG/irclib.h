@@ -166,9 +166,7 @@ public:
 struct CIrcIgnoreItem
 {
 	CIrcIgnoreItem( const TCHAR*, const TCHAR*, const TCHAR* );
-	#if defined( _UNICODE )
-		CIrcIgnoreItem( int codepage, const char*, const char*, const char* );
-	#endif
+	CIrcIgnoreItem( int codepage, const char*, const char*, const char* );
 	~CIrcIgnoreItem();
 
    TString mask, flags, network;

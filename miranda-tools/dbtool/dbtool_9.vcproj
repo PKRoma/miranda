@@ -1353,42 +1353,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="dbtool.exe.manifest"
-			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug Unicode|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release Unicode|Win32"
-				ExcludedFromBuild="true"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-				/>
-			</FileConfiguration>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

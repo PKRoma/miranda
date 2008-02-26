@@ -65,23 +65,25 @@ void CIrcProto::ReadSettings( TDbSetting* sets, int count )
 					*( char** )ptr = NULL;
 			}
 			break;
-		case DBVT_TCHAR:
-			if ( !getTString( p->name, &dbv )) {
-				if ( p->size != -1 ) {
-					size_t len = min( p->size-1, _tcslen( dbv.ptszVal ));
-					memcpy( ptr, dbv.pszVal, len*sizeof(TCHAR));
-					*( TCHAR* )&ptr[len*sizeof(TCHAR)] = 0;
+		#if defined( _UNICODE )
+			case DBVT_TCHAR:
+				if ( !getTString( p->name, &dbv )) {
+					if ( p->size != -1 ) {
+						size_t len = min( p->size-1, _tcslen( dbv.ptszVal ));
+						memcpy( ptr, dbv.pszVal, len*sizeof(TCHAR));
+						*( TCHAR* )&ptr[len*sizeof(TCHAR)] = 0;
+					}
+					else *( TCHAR** )ptr = mir_tstrdup( dbv.ptszVal );
+					DBFreeVariant( &dbv );
 				}
-				else *( TCHAR** )ptr = mir_tstrdup( dbv.ptszVal );
-				DBFreeVariant( &dbv );
-			}
-			else {
-				if ( p->size != -1 )
-					*( TCHAR* )ptr = 0;
-				else
-					*( TCHAR** )ptr = NULL;
-			}
-			break;
+				else {
+					if ( p->size != -1 )
+						*( TCHAR* )ptr = 0;
+					else
+						*( TCHAR** )ptr = NULL;
+				}
+				break;
+		#endif
 }	}	}
 
 void CIrcProto::WriteSettings( TDbSetting* sets, int count )
@@ -103,12 +105,14 @@ void CIrcProto::WriteSettings( TDbSetting* sets, int count )
 					setString( p->name, (char*)ptr );
 				break;
 
+		#if defined( _UNICODE )
 			case DBVT_TCHAR:
 				if ( p->size == -1 )
 					setTString( p->name, *(TCHAR**)ptr );
 				else
 					setTString( p->name, (TCHAR*)ptr );
 				break;
+		#endif
 }	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1113,7 +1117,7 @@ void COtherPrefsDlg::OnInitDialog()
 	}	}
 
 	#if !defined( _UNICODE )
-		EnableWindow( hWnd, FALSE );
+		m_codepage.Enable( FALSE );
 	#endif
 
 	if ( m_proto->m_codepage == CP_UTF8 )
