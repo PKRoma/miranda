@@ -242,6 +242,7 @@ int MSN_GCEventHook(WPARAM wParam,LPARAM lParam) {
 				gce.bIsMe = TRUE;
 				CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
+				mir_free(( void* )gce.pszUID );
 				if ( !bError )
 					MSN_FreeVariant( &dbv );
 			}
