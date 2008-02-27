@@ -71,8 +71,7 @@ static TCHAR* sttGetXStatus( const char* szProto )
 
 TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 {
-	char szProtoName[32];
-	TCHAR *szStatus, *szSeparator, *sztProto;
+	TCHAR *szStatus, *szSeparator;
 	TCHAR *ProtoXStatus=NULL;
 	int t;
 	PROTOACCOUNT* pa;
@@ -103,88 +102,73 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 
 		for ( t = 0; t < accounts.count; t++ ) {
 			int i = cli.pfnGetAccountIndexByPos( t );
-			if ( i == -1 ) {
-				ulock;
-				return _T("???");
-			}
-			pa = accounts.items[i];
+			if ( i == -1 )
+				continue;
 
-			if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
-				ProtoXStatus = sttGetXStatus( pa->szModuleName );
-			else
-				ProtoXStatus = NULL;
-			CallProtoService( pa->szModuleName, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName );
+			pa = accounts.items[i];
+			if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+				continue;
+
 			szStatus = cli.pfnGetStatusModeDescription( CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0), 0);
-			if ( szStatus ) {
-				if ( mToolTipTrayTips ) {
-					TCHAR tipline[256];
-					#if defined( _UNICODE )
-						mir_sntprintf(tipline, SIZEOF(tipline), _T("<b>%-12.12S</b>\t%s"), szProtoName, szStatus);
-					#else
-						mir_sntprintf(tipline, SIZEOF(tipline), _T("<b>%-12.12s</b>\t%s"), szProtoName, szStatus);
-					#endif
+			if ( !szStatus )
+				continue;
+
+			ProtoXStatus = sttGetXStatus( pa->szModuleName );
+
+			if ( mToolTipTrayTips ) {
+				TCHAR tipline[256];
+				mir_sntprintf(tipline, SIZEOF(tipline), _T("<b>%-12.12s</b>\t%s"), pa->tszAccountName, szStatus);
+				if ( cli.szTip[0] )
+					_tcsncat(cli.szTip, szSeparator, MAX_TIP_SIZE - _tcslen(cli.szTip));
+				_tcsncat(cli.szTip, tipline, MAX_TIP_SIZE - _tcslen(cli.szTip));
+				if (ProtoXStatus) {
+					mir_sntprintf(tipline, SIZEOF(tipline), _T("%-24.24s\n"), ProtoXStatus);
 					if ( cli.szTip[0] )
 						_tcsncat(cli.szTip, szSeparator, MAX_TIP_SIZE - _tcslen(cli.szTip));
 					_tcsncat(cli.szTip, tipline, MAX_TIP_SIZE - _tcslen(cli.szTip));
-					if (ProtoXStatus) {
-						mir_sntprintf(tipline, SIZEOF(tipline), _T("%-24.24s\n"), ProtoXStatus);
-						if ( cli.szTip[0] )
-							_tcsncat(cli.szTip, szSeparator, MAX_TIP_SIZE - _tcslen(cli.szTip));
-						_tcsncat(cli.szTip, tipline, MAX_TIP_SIZE - _tcslen(cli.szTip));
-						mir_free( ProtoXStatus );
-					}
 				}
-				else {
-					if (cli.szTip[0])
-						_tcsncat(cli.szTip, szSeparator, MAX_TIP_SIZE - _tcslen(cli.szTip));
-					#if defined( _UNICODE )
-					{
-						TCHAR* p = a2u( szProtoName );
-						_tcsncat(cli.szTip, p, MAX_TIP_SIZE - _tcslen(cli.szTip));
-						mir_free( p );
-					}
-					#else
-						_tcsncat(cli.szTip, szProtoName, MAX_TIP_SIZE - _tcslen(cli.szTip));
-					#endif
-					_tcsncat(cli.szTip, _T(" "), MAX_TIP_SIZE - _tcslen(cli.szTip));
-					_tcsncat(cli.szTip, szStatus, MAX_TIP_SIZE - _tcslen(cli.szTip));
-	}	}	}	}
+			}
+			else {
+				if (cli.szTip[0])
+					_tcsncat(cli.szTip, szSeparator, MAX_TIP_SIZE - _tcslen(cli.szTip));
+
+				_tcsncat(cli.szTip, pa->tszAccountName, MAX_TIP_SIZE - _tcslen(cli.szTip));
+				_tcsncat(cli.szTip, _T(" "), MAX_TIP_SIZE - _tcslen(cli.szTip));
+				_tcsncat(cli.szTip, szStatus, MAX_TIP_SIZE - _tcslen(cli.szTip));
+			}
+			mir_free( ProtoXStatus );
+		}	
+	}
 	else {
-		CallProtoService(szProto, PS_GETNAME, sizeof(szProtoName), (LPARAM) szProtoName);
-		#if defined( _UNICODE )
-			sztProto = a2u( szProtoName );
-		#else
-			sztProto = szProtoName;
-		#endif
-		ProtoXStatus = sttGetXStatus( szProto );
-		szStatus = cli.pfnGetStatusModeDescription(CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
-		if ( szPrefix && szPrefix[0] ) {
-			if ( DBGetContactSettingByte( NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT )) {
+		if (( pa = Proto_GetAccount( szProto )) != NULL ) {
+			ProtoXStatus = sttGetXStatus( szProto );
+			szStatus = cli.pfnGetStatusModeDescription(CallProtoService(szProto, PS_GETSTATUS, 0, 0), 0);
+			if ( szPrefix && szPrefix[0] ) {
+				if ( DBGetContactSettingByte( NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT )) {
+					if ( mToolTipTrayTips ) {
+						if ( ProtoXStatus )
+							mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s<b>%-12.12s</b>\t%s%s%-24.24s"), szPrefix, szSeparator, pa->tszAccountName, szStatus,szSeparator,ProtoXStatus);
+						else
+							mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s<b>%-12.12s</b>\t%s"), szPrefix, szSeparator, pa->tszAccountName, szStatus);
+					}
+					else mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s%s %s"), szPrefix, szSeparator, pa->tszAccountName, szStatus);
+				}
+				else lstrcpyn(cli.szTip, szPrefix, MAX_TIP_SIZE);
+			}
+			else {
 				if ( mToolTipTrayTips ) {
 					if ( ProtoXStatus )
-						mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s<b>%-12.12s</b>\t%s%s%-24.24s"), szPrefix, szSeparator, sztProto, szStatus,szSeparator,ProtoXStatus);
+						mir_sntprintf( cli.szTip, MAX_TIP_SIZE, _T("<b>%-12.12s</b>\t%s\n%-24.24s"), pa->tszAccountName, szStatus,ProtoXStatus);
 					else
-						mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s<b>%-12.12s</b>\t%s"), szPrefix, szSeparator, sztProto, szStatus);
+						mir_sntprintf( cli.szTip, MAX_TIP_SIZE, _T("<b>%-12.12s</b>\t%s"), pa->tszAccountName, szStatus);
 				}
-				else mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s%s%s %s"), szPrefix, szSeparator, sztProto, szStatus);
+				else mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s %s"), pa->tszAccountName, szStatus);
 			}
-			else lstrcpyn(cli.szTip, szPrefix, MAX_TIP_SIZE);
-		}
-		else {
-			if ( mToolTipTrayTips ) {
-				if ( ProtoXStatus )
-					mir_sntprintf( cli.szTip, MAX_TIP_SIZE, _T("<b>%-12.12s</b>\t%s\n%-24.24s"), sztProto, szStatus,ProtoXStatus);
-				else
-					mir_sntprintf( cli.szTip, MAX_TIP_SIZE, _T("<b>%-12.12s</b>\t%s"), sztProto, szStatus);
-			}
-			else mir_sntprintf(cli.szTip, MAX_TIP_SIZE, _T("%s %s"), sztProto, szStatus);
-		}
-		if (ProtoXStatus) mir_free(ProtoXStatus);
-		#if defined( _UNICODE )
-			mir_free(sztProto);
-		#endif
-	}
-	{ ulock;  return cli.szTip; }
+			mir_free(ProtoXStatus);
+	}	}
+
+	ulock;
+	return cli.szTip;
 }
 
 int fnTrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int status)
