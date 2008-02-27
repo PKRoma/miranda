@@ -851,14 +851,14 @@ public:
 		CreateLink(m_txtSlap, "GcMsgSlap", TranslateTS(JABBER_GC_MSG_SLAP));
 		CreateLink(m_txtQuit, "GcMsgQuit", TranslateTS(JABBER_GC_MSG_QUIT));
 
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),		"AutoAcceptMUC",		FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),		"AutoJoinConferences",	FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"),		"IgnoreMUCInvites",		FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),		"AutoJoinBookmarks",	TRUE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),						"GcLogBans",			TRUE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),				"GcLogConfig",			FALSE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),						"GcLogAffiliations",	FALSE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),								"GcLogRoles",			FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),   "AutoAcceptMUC",       FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),   "AutoJoinBookmarks",   FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"), "AutoJoinConferences", FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),  "IgnoreMUCInvites",    TRUE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),                    "GcLogBans",           TRUE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),           "GcLogConfig",         FALSE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),                  "GcLogAffiliations",   FALSE);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),                         "GcLogRoles",          FALSE);
 	}
 
 	static CDlgBase *Create(void *param) { return new CDlgOptGc((CJabberProto *)param); }
