@@ -31,311 +31,270 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
-static BOOL CALLBACK JabberAgentsDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-static BOOL CALLBACK JabberAgentManualRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
+/////////////////////////////////////////////////////////////////////////////////////////
+// Agent registration progress dialog
 
-struct TJabberRegWndData
+class CAgentRegProgressDlg : public CJabberDlgBase
 {
-	CJabberProto* ppro;
-	int curPos;
-	int formHeight, frameHeight;
-	RECT frameRect;
+	CCtrlButton m_ok, m_cancel2;
+
+public:  
+	CAgentRegProgressDlg( CJabberProto* _ppro, HWND _owner ) :
+		CJabberDlgBase( _ppro, IDD_OPT_REGISTER, _owner ),
+		m_ok( this, IDOK2 ),
+		m_cancel2( this, IDCANCEL2 )
+	{
+		m_ok.OnClick = m_cancel2.OnClick = Callback( this, &CAgentRegProgressDlg::OnOk );
+	}
+
+	virtual void OnInitDialog()
+	{
+		m_proto->m_hwndRegProgress = m_hwnd;
+		SetWindowTextA( m_hwnd, "Jabber Agent Registration" );
+		TranslateDialogDefault( m_hwnd );
+		ShowWindow( GetDlgItem( m_hwnd, IDOK ), SW_HIDE );
+		ShowWindow( GetDlgItem( m_hwnd, IDCANCEL ), SW_HIDE );
+		ShowWindow( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ), SW_SHOW );
+		ShowWindow( GetDlgItem( m_hwnd, IDCANCEL2 ), SW_SHOW );
+	}
+
+	virtual BOOL DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
+	{
+		if ( msg == WM_JABBER_REGDLG_UPDATE ) {
+			if (( TCHAR* )lParam == NULL )
+				SetDlgItemText( m_hwnd, IDC_REG_STATUS, TranslateT( "No message" ));
+			else
+				SetDlgItemText( m_hwnd, IDC_REG_STATUS, ( TCHAR* )lParam );
+			if ( wParam >= 0 )
+				SendMessage( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
+			if ( wParam >= 100 ) {
+				ShowWindow( GetDlgItem( m_hwnd, IDCANCEL2 ), SW_HIDE );
+				ShowWindow( GetDlgItem( m_hwnd, IDOK2 ), SW_SHOW );
+				SetFocus( GetDlgItem( m_hwnd, IDOK2 ));
+			}
+			else
+				SetFocus( GetDlgItem( m_hwnd, IDCANCEL2 ));
+		}
+
+		return CJabberDlgBase::DlgProc( msg, wParam, lParam );
+	}
+
+	void OnOk( CCtrlButton* )
+	{
+		m_proto->m_hwndRegProgress = NULL;
+		EndDialog( m_hwnd, 0 );
+	}
 };
 
-/*
-int __cdecl CJabberProto::JabberMenuHandleAgents( WPARAM wParam, LPARAM lParam )
+/////////////////////////////////////////////////////////////////////////////////////////
+// Transport registration form
+
+class CAgentRegDlg : public CJabberDlgBase
 {
-	if ( IsWindow( hwndJabberAgents ))
-		SetForegroundWindow( hwndJabberAgents );
-	else
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_AGENTS ), NULL, JabberAgentsDlgProc, ( LPARAM )this );
-
-	return 0;
-}
-*/
-
-struct JabberAgentRegInputDlgProcParam {
-	CJabberProto* ppro;
+	int m_curPos;
+	int m_formHeight, m_frameHeight;
+	RECT m_frameRect;
+	XmlNode* m_agentRegIqNode;
 	TCHAR* m_jid;
+
+	CCtrlButton m_submit;
+
+public:
+	CAgentRegDlg( CJabberProto* _ppro, TCHAR* _jid ) :
+		CJabberDlgBase( _ppro, IDD_FORM, NULL ),
+		m_submit( this, IDC_SUBMIT ),
+		m_jid( _jid )
+	{
+		m_submit.OnClick = Callback( this, &CAgentRegDlg::OnSubmit );
+	}
+
+	virtual void OnInitDialog()
+	{
+		EnableWindow( GetParent( m_hwnd ), FALSE );
+		m_agentRegIqNode = NULL;
+		m_proto->m_hwndAgentRegInput = m_hwnd;
+		SetWindowText( m_hwnd, TranslateT( "Jabber Agent Registration" ));
+		SetDlgItemText( m_hwnd, IDC_SUBMIT, TranslateT( "Register" ));
+		SetDlgItemText( m_hwnd, IDC_FRAME_TEXT, TranslateT( "Please wait..." ));
+
+		int iqId = m_proto->SerialNext();
+		m_proto->IqAdd( iqId, IQ_PROC_GETREGISTER, &CJabberProto::OnIqResultGetRegister );
+		XmlNodeIq iq( "get", iqId, m_jid );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
+		m_proto->m_ThreadInfo->send( iq );
+
+		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
+		LONG frameExStyle = GetWindowLong( GetDlgItem( m_hwnd, IDC_FRAME ), GWL_EXSTYLE );
+		frameExStyle |= WS_EX_CONTROLPARENT;
+		SetWindowLong( GetDlgItem( m_hwnd, IDC_FRAME ), GWL_EXSTYLE, frameExStyle );
+	}
+
+	virtual void OnDestroy()
+	{
+		JabberFormDestroyUI(GetDlgItem(m_hwnd, IDC_FRAME));
+		m_proto->m_hwndAgentRegInput = NULL;
+		EnableWindow( GetParent( m_hwnd ), TRUE );
+		SetActiveWindow( GetParent( m_hwnd ));
+	}
+
+	virtual BOOL DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
+	{
+		switch( msg ) {
+		case WM_CTLCOLORSTATIC:
+			switch( GetDlgCtrlID(( HWND )lParam )) {
+			case IDC_WHITERECT: case IDC_INSTRUCTION: case IDC_TITLE:
+				return (BOOL)GetStockObject(WHITE_BRUSH);
+			default:
+				return NULL;
+			}
+
+		case WM_JABBER_REGINPUT_ACTIVATE:
+			if ( wParam == 1 ) { // success
+				// lParam = <iq/> node from agent JID as a result of "get jabber:iq:register"
+				HWND hFrame = GetDlgItem( m_hwnd, IDC_FRAME );
+				HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
+				ShowWindow( GetDlgItem( m_hwnd, IDC_FRAME_TEXT ), SW_HIDE );
+
+				XmlNode *queryNode, *xNode, *n;
+				if (( m_agentRegIqNode=( XmlNode * ) lParam ) == NULL ) return TRUE;
+				if (( queryNode = JabberXmlGetChild( m_agentRegIqNode, "query" )) == NULL ) return TRUE;
+				int id = 0, ypos = 14;
+
+				RECT rect;
+				
+				m_curPos = 0;
+				GetClientRect( GetDlgItem( m_hwnd, IDC_FRAME ), &( m_frameRect ));
+				GetClientRect( GetDlgItem( m_hwnd, IDC_VSCROLL ), &rect );
+				m_frameRect.right -= ( rect.right - rect.left );
+				GetClientRect( GetDlgItem( m_hwnd, IDC_FRAME ), &rect );
+				m_frameHeight = rect.bottom - rect.top;
+
+				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
+					// use new jabber:x:data form
+					if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
+						JabberFormSetInstruction( m_hwnd, n->text );
+
+					JabberFormCreateUI( hFrame, xNode, &m_formHeight /*dummy*/ );
+				}
+				else {
+					// use old registration information form
+					HJFORMLAYOUT layout_info = JabberFormCreateLayout(hFrame);
+					for ( int i=0; i<queryNode->numChild; i++ ) {
+						n = queryNode->child[i];
+						if ( n->name ) {
+							if ( !strcmp( n->name, "instructions" )) {
+								JabberFormSetInstruction( m_hwnd, n->text );
+							}
+							else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
+								// do nothing
+							}
+							else if ( !strcmp( n->name, "password" )) {
+								TCHAR *name = mir_a2t(n->name);
+								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
+								mir_free(name);
+							}
+							else {	// everything else is a normal text field
+								TCHAR *name = mir_a2t(n->name);
+								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, name, n->text);
+								mir_free(name);
+					}	}	}
+					JabberFormLayoutControls(hFrame, layout_info, &m_formHeight);
+					mir_free(layout_info);
+				}
+
+				if ( m_formHeight > m_frameHeight ) {
+					HWND hwndScroll;
+
+					hwndScroll = GetDlgItem( m_hwnd, IDC_VSCROLL );
+					EnableWindow( hwndScroll, TRUE );
+					SetScrollRange( hwndScroll, SB_CTL, 0, m_formHeight - m_frameHeight, FALSE );
+					m_curPos = 0;
+				}
+
+				EnableWindow( GetDlgItem( m_hwnd, IDC_SUBMIT ), TRUE );
+			}
+			else if ( wParam == 0 ) {
+				// lParam = error message
+				SetDlgItemText( m_hwnd, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
+			}
+			return TRUE;
+
+		case WM_VSCROLL:
+			int pos = m_curPos;
+			switch ( LOWORD( wParam )) {
+				case SB_LINEDOWN:   pos += 10;   break;
+				case SB_LINEUP:     pos -= 10;   break;
+				case SB_PAGEDOWN:   pos += ( m_frameHeight - 10 );  break;
+				case SB_PAGEUP:     pos -= ( m_frameHeight - 10 );  break;
+				case SB_THUMBTRACK: pos = HIWORD( wParam );            break;
+			}
+			if ( pos > ( m_formHeight - m_frameHeight ))
+				pos = m_formHeight - m_frameHeight;
+			if ( pos < 0 )
+				pos = 0;
+			if ( m_curPos != pos ) {
+				ScrollWindow( GetDlgItem( m_hwnd, IDC_FRAME ), 0, m_curPos - pos, NULL, &( m_frameRect ));
+				SetScrollPos( GetDlgItem( m_hwnd, IDC_VSCROLL ), SB_CTL, pos, TRUE );
+				m_curPos = pos;
+		}	}
+
+		return CJabberDlgBase::DlgProc( msg, wParam, lParam );
+	}
+
+	void OnSubmit( CCtrlButton* )
+	{
+		XmlNode *queryNode, *xNode, *n;
+		TCHAR *from;
+
+		if ( m_agentRegIqNode == NULL ) return;
+		if (( from = JabberXmlGetAttrValue( m_agentRegIqNode, "from" )) == NULL ) return;
+		if (( queryNode = JabberXmlGetChild( m_agentRegIqNode, "query" )) == NULL ) return;
+		HWND hFrame = GetDlgItem( m_hwnd, IDC_FRAME );
+
+		TCHAR *str = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
+		TCHAR *str2 = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
+		int id = 0;
+
+		int iqId = m_proto->SerialNext();
+		m_proto->IqAdd( iqId, IQ_PROC_SETREGISTER, &CJabberProto::OnIqResultSetRegister );
+
+		XmlNodeIq iq( "set", iqId, from );
+		XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
+
+		if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
+			// use new jabber:x:data form
+			query->addChild( JabberFormGetData( hFrame, xNode ));
+		}
+		else {
+			// use old registration information form
+			for ( int i=0; i<queryNode->numChild; i++ ) {
+				n = queryNode->child[i];
+				if ( n->name ) {
+					if ( !strcmp( n->name, "key" )) {
+						// field that must be passed along with the registration
+						if ( n->text )
+							query->addChild( n->name, n->text );
+						else
+							query->addChild( n->name );
+					}
+					else if ( !strcmp( n->name, "registered" ) || !strcmp( n->name, "instructions" )) {
+						// do nothing, we will skip these
+					}
+					else {
+						GetDlgItemText( hFrame, id, str2, 128 );
+						query->addChild( n->name, str2 );
+						id++;
+		}	}	}	}
+
+		m_proto->m_ThreadInfo->send( iq );
+
+		CAgentRegProgressDlg( m_proto, m_hwnd ).DoModal();
+
+		Close();
+	}
 };
 
 void CJabberProto::RegisterAgent( HWND hwndDlg, TCHAR* jid )
 {
-	JabberAgentRegInputDlgProcParam param;
-	param.ppro = this;
-	param.m_jid = jid;
-	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ),
-		hwndDlg, JabberAgentRegInputDlgProc, ( LPARAM )&param );
-}
-
-static BOOL CALLBACK JabberAgentRegInputDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	static XmlNode *agentRegIqNode;
-
-	int id, ypos, i;
-	TCHAR *from, *str, *str2;
-
-	TJabberRegWndData *dat = (TJabberRegWndData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-	switch ( msg ) {
-	case WM_INITDIALOG:
-	{
-		JabberAgentRegInputDlgProcParam* param = (JabberAgentRegInputDlgProcParam*)lParam;
-		SetWindowLong(hwndDlg, GWL_USERDATA, ( LPARAM )param->ppro );
-
-		EnableWindow( GetParent( hwndDlg ), FALSE );
-		TranslateDialogDefault( hwndDlg );
-		agentRegIqNode = NULL;
-		param->ppro->m_hwndAgentRegInput = hwndDlg;
-		SetWindowText( hwndDlg, TranslateT( "Jabber Agent Registration" ));
-		SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "Register" ));
-		SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, TranslateT( "Please wait..." ));
-
-		{	int iqId = param->ppro->SerialNext();
-			param->ppro->IqAdd( iqId, IQ_PROC_GETREGISTER, &CJabberProto::OnIqResultGetRegister );
-			XmlNodeIq iq( "get", iqId, param->m_jid );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
-			param->ppro->m_ThreadInfo->send( iq );
-		}
-
-		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
-		LONG frameExStyle = GetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE );
-		frameExStyle |= WS_EX_CONTROLPARENT;
-		SetWindowLong( GetDlgItem( hwndDlg, IDC_FRAME ), GWL_EXSTYLE, frameExStyle );
-
-		return TRUE;
-	}
-	case WM_CTLCOLORSTATIC:
-		if ((GetWindowLong((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
-			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
-			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
-		{
-			//MessageBeep(MB_ICONSTOP);
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-		} else
-		{
-			return NULL;
-		}
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_SUBMIT:
-		{
-			XmlNode *queryNode, *xNode, *n;
-
-			if ( agentRegIqNode == NULL ) return TRUE;
-			if (( from=JabberXmlGetAttrValue( agentRegIqNode, "from" )) == NULL ) return TRUE;
-			if (( queryNode=JabberXmlGetChild( agentRegIqNode, "query" )) == NULL ) return TRUE;
-			HWND hFrame = GetDlgItem( hwndDlg, IDC_FRAME );
-
-			str = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
-			str2 = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
-			id = 0;
-
-			int iqId = dat->ppro->SerialNext();
-			dat->ppro->IqAdd( iqId, IQ_PROC_SETREGISTER, &CJabberProto::OnIqResultSetRegister );
-
-			XmlNodeIq iq( "set", iqId, from );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_REGISTER );
-
-			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
-				// use new jabber:x:data form
-				query->addChild( JabberFormGetData( hFrame, xNode ));
-			}
-			else {
-				// use old registration information form
-				for ( i=0; i<queryNode->numChild; i++ ) {
-					n = queryNode->child[i];
-					if ( n->name ) {
-						if ( !strcmp( n->name, "key" )) {
-							// field that must be passed along with the registration
-							if ( n->text )
-								query->addChild( n->name, n->text );
-							else
-								query->addChild( n->name );
-						}
-						else if ( !strcmp( n->name, "registered" ) || !strcmp( n->name, "instructions" )) {
-							// do nothing, we will skip these
-						}
-						else {
-							GetDlgItemText( hFrame, id, str2, 128 );
-							query->addChild( n->name, str2 );
-							id++;
-			}	}	}	}
-
-			dat->ppro->m_ThreadInfo->send( iq );
-			DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_OPT_REGISTER ), hwndDlg, JabberAgentRegDlgProc, (LPARAM)dat->ppro );
-			// Fall through to IDCANCEL
-		}
-		case IDCANCEL:
-		case IDCLOSE:
-			if ( agentRegIqNode )
-				delete agentRegIqNode;
-			DestroyWindow( hwndDlg );
-			return TRUE;
-		}
-		break;
-	case WM_JABBER_REGINPUT_ACTIVATE:
-		if ( wParam == 1 ) { // success
-			// lParam = <iq/> node from agent JID as a result of "get jabber:iq:register"
-			HWND hFrame = GetDlgItem( hwndDlg, IDC_FRAME );
-			HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
-			ShowWindow( GetDlgItem( hwndDlg, IDC_FRAME_TEXT ), SW_HIDE );
-
-			XmlNode *queryNode, *xNode, *n;
-			if (( agentRegIqNode=( XmlNode * ) lParam ) == NULL ) return TRUE;
-			if (( queryNode=JabberXmlGetChild( agentRegIqNode, "query" )) == NULL ) return TRUE;
-			id = 0;
-			ypos = 14;
-
-			RECT rect;
-			dat = (TJabberRegWndData *)mir_alloc(sizeof(TJabberRegWndData));
-			dat->curPos = 0;
-			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &( dat->frameRect ));
-			GetClientRect( GetDlgItem( hwndDlg, IDC_VSCROLL ), &rect );
-			dat->frameRect.right -= ( rect.right - rect.left );
-			GetClientRect( GetDlgItem( hwndDlg, IDC_FRAME ), &rect );
-			dat->frameHeight = rect.bottom - rect.top;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
-
-			if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
-				// use new jabber:x:data form
-				if (( n=JabberXmlGetChild( xNode, "instructions" ))!=NULL && n->text!=NULL )
-					JabberFormSetInstruction( hwndDlg, n->text );
-
-				JabberFormCreateUI( hFrame, xNode, &dat->formHeight /*dummy*/ );
-			}
-			else {
-				// use old registration information form
-				HJFORMLAYOUT layout_info = JabberFormCreateLayout(hFrame);
-				for ( i=0; i<queryNode->numChild; i++ ) {
-					n = queryNode->child[i];
-					if ( n->name ) {
-						if ( !strcmp( n->name, "instructions" )) {
-							JabberFormSetInstruction( hwndDlg, n->text );
-						}
-						else if ( !strcmp( n->name, "key" ) || !strcmp( n->name, "registered" )) {
-							// do nothing
-						}
-						else if ( !strcmp( n->name, "password" )) {
-							TCHAR *name = mir_a2t(n->name);
-							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, name, n->text);
-							mir_free(name);
-						}
-						else {	// everything else is a normal text field
-							TCHAR *name = mir_a2t(n->name);
-							JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, name, n->text);
-							mir_free(name);
-				}	}	}
-				JabberFormLayoutControls(hFrame, layout_info, &dat->formHeight);
-				mir_free(layout_info);
-			}
-
-			if ( dat->formHeight > dat->frameHeight ) {
-				HWND hwndScroll;
-
-				hwndScroll = GetDlgItem( hwndDlg, IDC_VSCROLL );
-				EnableWindow( hwndScroll, TRUE );
-				SetScrollRange( hwndScroll, SB_CTL, 0, dat->formHeight - dat->frameHeight, FALSE );
-				dat->curPos = 0;
-			}
-
-			EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
-		}
-		else if ( wParam == 0 ) {
-			// lParam = error message
-			SetDlgItemText( hwndDlg, IDC_FRAME_TEXT, ( LPCTSTR ) lParam );
-		}
-		return TRUE;
-	case WM_VSCROLL:
-		{
-			int pos;
-
-			if ( dat != NULL ) {
-				pos = dat->curPos;
-				switch ( LOWORD( wParam )) {
-				case SB_LINEDOWN:
-					pos += 10;
-					break;
-				case SB_LINEUP:
-					pos -= 10;
-					break;
-				case SB_PAGEDOWN:
-					pos += ( dat->frameHeight - 10 );
-					break;
-				case SB_PAGEUP:
-					pos -= ( dat->frameHeight - 10 );
-					break;
-				case SB_THUMBTRACK:
-					pos = HIWORD( wParam );
-					break;
-				}
-				if ( pos > ( dat->formHeight - dat->frameHeight ))
-					pos = dat->formHeight - dat->frameHeight;
-				if ( pos < 0 )
-					pos = 0;
-				if ( dat->curPos != pos ) {
-					ScrollWindow( GetDlgItem( hwndDlg, IDC_FRAME ), 0, dat->curPos - pos, NULL, &( dat->frameRect ));
-					SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, pos, TRUE );
-					dat->curPos = pos;
-				}
-			}
-		}
-		break;
-	case WM_DESTROY:
-		JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
-		dat->ppro->m_hwndAgentRegInput = NULL;
-		EnableWindow( GetParent( hwndDlg ), TRUE );
-		SetActiveWindow( GetParent( hwndDlg ));
-		if (dat) mir_free(dat);
-		break;
-	}
-
-	return FALSE;
-}
-
-static BOOL CALLBACK JabberAgentRegDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		ppro = (CJabberProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )ppro );
-
-		ppro->m_hwndRegProgress = hwndDlg;
-		SetWindowTextA( hwndDlg, "Jabber Agent Registration" );
-		TranslateDialogDefault( hwndDlg );
-		ShowWindow( GetDlgItem( hwndDlg, IDOK ), SW_HIDE );
-		ShowWindow( GetDlgItem( hwndDlg, IDCANCEL ), SW_HIDE );
-		ShowWindow( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), SW_SHOW );
-		ShowWindow( GetDlgItem( hwndDlg, IDCANCEL2 ), SW_SHOW );
-		return TRUE;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDCANCEL2:
-		case IDOK2:
-			ppro->m_hwndRegProgress = NULL;
-			EndDialog( hwndDlg, 0 );
-			return TRUE;
-		}
-		break;
-	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
-		if (( TCHAR* )lParam == NULL )
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, TranslateT( "No message" ));
-		else
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, ( TCHAR* )lParam );
-		if ( wParam >= 0 )
-			SendMessage( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
-		if ( wParam >= 100 ) {
-			ShowWindow( GetDlgItem( hwndDlg, IDCANCEL2 ), SW_HIDE );
-			ShowWindow( GetDlgItem( hwndDlg, IDOK2 ), SW_SHOW );
-			SetFocus( GetDlgItem( hwndDlg, IDOK2 ));
-		}
-		else
-			SetFocus( GetDlgItem( hwndDlg, IDCANCEL2 ));
-		return TRUE;
-	}
-
-	return FALSE;
+	( new CAgentRegDlg( this, jid ))->Show();
 }
