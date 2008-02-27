@@ -1171,23 +1171,6 @@ static void __cdecl phase2(void * lParam)
 		PostMessage(si->hWnd, GC_REDRAWLOG3, 0, 0);
 }
 
-extern HANDLE hHookWinEvt;
-
-void NotifyLocalWinEvent(HANDLE hContact, HWND hwnd, unsigned int type) 
-{
-	MessageWindowEventData mwe = { 0 };
-	if (hContact==NULL || hwnd==NULL) return;
-	mwe.cbSize = sizeof(mwe);
-	mwe.hContact = hContact;
-	mwe.hwndWindow = hwnd;
-	mwe.szModule = "Chat";
-	mwe.uType = type;
-	mwe.uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
-	mwe.hwndInput = GetDlgItem(hwnd, IDC_MESSAGE);
-	mwe.hwndLog = GetDlgItem(hwnd, IDC_LOG);
-	NotifyEventHooks(hHookWinEvt, 0, (LPARAM)&mwe);
-}
-
 BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	SESSION_INFO* si;
@@ -1198,7 +1181,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SESSION_INFO* psi = (SESSION_INFO*)lParam;
 			int mask;
 			HWND hNickList = GetDlgItem(hwndDlg,IDC_LIST);
-			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)psi);
@@ -1267,7 +1249,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendMessage(hwndDlg, GC_UPDATESTATUSBAR, 0, 0);
 			SendMessage(hwndDlg, GC_UPDATETITLE, 0, 0);
 			SendMessage(hwndDlg, GC_SETWINDOWPOS, 0, 0);
-			NotifyLocalWinEvent(psi->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 		}
 		break;
 
@@ -2719,7 +2700,6 @@ LABEL_SHOWWINDOW:
 		break;
 
 	case WM_DESTROY:
-		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		SendMessage(hwndDlg,GC_SAVEWNDPOS,0,0);
 
 		si->hWnd = NULL;
@@ -2748,7 +2728,6 @@ LABEL_SHOWWINDOW:
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_FILTER),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_COLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_BKGCOLOR),GWL_WNDPROC,(LONG)OldFilterButtonProc);
-		NotifyLocalWinEvent(si->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		break;
 	}
 	return(FALSE);
