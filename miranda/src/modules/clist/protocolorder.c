@@ -74,8 +74,6 @@ int CheckProtocolOrder()
 int FillTree(HWND hwnd)
 {
 	ProtocolData *PD;
-	char szName[64];
-	TCHAR *buf2=NULL;
 	int i;
 
 	TVINSERTSTRUCT tvis;
@@ -90,10 +88,7 @@ int FillTree(HWND hwnd)
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( !pa->bIsEnabled )
-			continue;
-
-		if ( CALLSERVICE_NOTFOUND == CallProtoService( pa->szModuleName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName ))
+		if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			continue;
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
@@ -102,18 +97,9 @@ int FillTree(HWND hwnd)
 		PD->protopos = pa->iOrder;
 
 		tvis.item.lParam = ( LPARAM )PD;
-		#ifdef UNICODE
-			buf2 = a2u( szName );
-			tvis.item.pszText = TranslateTS( buf2 );
-		#else
-			tvis.item.pszText = Translate( szName );
-		#endif			
-
+		tvis.item.pszText = TranslateTS( pa->tszAccountName );
 		tvis.item.iImage = tvis.item.iSelectedImage = PD->show;
 		TreeView_InsertItem( hwnd, &tvis );
-		#ifdef UNICODE
-			mir_free( buf2 );
-		#endif
 	}
 
 	return 0;
