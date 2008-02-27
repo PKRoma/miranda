@@ -33,7 +33,6 @@ Last change by : $Author: m_mluhov $
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"

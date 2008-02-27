@@ -33,7 +33,6 @@ Last change by : $Author$
 #include "jabber.h"
 #include <CommCtrl.h>
 #include "jabber_iq.h"
-#include "resource.h"
 #include "m_clui.h"
 #include "jabber_caps.h"
 

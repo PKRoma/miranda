@@ -28,7 +28,6 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_list.h"
-#include "resource.h"
 #include "jabber_caps.h"
 #include "jabber_privacy.h"
 #include "jabber_disco.h"

@@ -26,13 +26,11 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
-#include <commctrl.h>
 #include "jabber_caps.h"
 
-
+/*
 void CJabberProto::OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
@@ -73,16 +71,9 @@ void CJabberProto::OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
 								if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
 									item->type = mir_tstrdup( str );
 		}	}	}	}	}	}
-
-		if ( m_hwndJabberGroupchat != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( m_hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( m_hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )info->server );
-		}
 	}
 }
-
+*/
 void CJabberProto::SetMucConfig( XmlNode* node, void *from )
 {
 	if ( m_ThreadInfo && from ) {
@@ -112,7 +103,7 @@ void CJabberProto::OnIqResultGetMuc( XmlNode *iqNode, void *userdata )
 					if ( !lstrcmp( str, _T(JABBER_FEAT_DATA_FORMS)))
 						FormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), &CJabberProto::SetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
-
+/*
 void CJabberProto::OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
@@ -137,13 +128,6 @@ void CJabberProto::OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 						item = ListAdd( LIST_ROOM, jid );
 						item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
 		}	}	}	}
-
-		if ( m_hwndJabberGroupchat != NULL ) {
-			if (( jid=JabberXmlGetAttrValue( iqNode, "from" )) != NULL )
-				SendMessage( m_hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )jid );
-			else
-				SendMessage( m_hwndJabberGroupchat, WM_JABBER_REFRESH, 0, ( LPARAM )info->server );
-		}
 	}
 	else if ( !_tcscmp( type, _T("error"))) {
 		// disco is not supported, try browse
@@ -154,7 +138,7 @@ void CJabberProto::OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
 		XmlNode* query = iq.addQuery( JABBER_FEAT_BROWSE );
 		m_ThreadInfo->send( iq );
 }	}
-
+*/
 static void sttFillJidList(HWND hwndDlg)
 {
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;

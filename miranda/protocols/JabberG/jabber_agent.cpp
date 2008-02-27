@@ -26,8 +26,6 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include <commctrl.h>
-#include "resource.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 

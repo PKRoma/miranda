@@ -31,8 +31,6 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 #include "jabber_rc.h"
-#include "resource.h"
-#include "version.h"
 
 #include "sdk/m_assocmgr.h"
 #include "sdk/m_icolib.h"
@@ -128,10 +126,6 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	UI_SAFE_CLOSE_HWND(m_hwndJabberAgents);
-	UI_SAFE_CLOSE_HWND(m_hwndJabberGroupchat);
-	UI_SAFE_CLOSE_HWND(m_hwndJabberJoinGroupchat);
-	UI_SAFE_CLOSE_HWND(m_hwndAgentReg);
 	UI_SAFE_CLOSE_HWND(m_hwndAgentRegInput);
 	UI_SAFE_CLOSE_HWND(m_hwndRegProgress);
 	UI_SAFE_CLOSE_HWND(m_hwndJabberVcard);
@@ -144,11 +138,11 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 	UI_SAFE_CLOSE_HWND(m_hwndJabberChangePassword);
 	UI_SAFE_CLOSE_HWND(m_hwndJabberAddBookmark);
 	UI_SAFE_CLOSE_HWND(m_hwndPrivacyRule);
-	UI_SAFE_CLOSE_HWND(m_hwndServiceDiscovery);
-	UI_SAFE_CLOSE_HWND(m_hwndAgentManualReg);
 
 	UI_SAFE_CLOSE(m_pDlgPrivacyLists);
 	UI_SAFE_CLOSE(m_pDlgBookmarks);
+	UI_SAFE_CLOSE(m_pDlgServiceDiscovery);
+	UI_SAFE_CLOSE(m_pDlgJabberJoinGroupchat);
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();

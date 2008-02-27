@@ -54,6 +54,7 @@ Last change by : $Author$
 #include <m_netlib.h>
 #include <m_protomod.h>
 #include <m_protosvc.h>
+#include <m_protoint.h>
 #include <m_clist.h>
 #include <m_clui.h>
 #include <m_options.h>
@@ -72,6 +73,9 @@ Last change by : $Author$
 
 #include "../../plugins/zlib/zlib.h"
 
+#include "resource.h"
+#include "version.h"
+
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 #include "jabber_ibb.h"
@@ -79,6 +83,60 @@ Last change by : $Author$
 
 struct CJabberProto;
 typedef CProtoDlgBase<CJabberProto> CJabberDlgBase;
+
+class CJabberDlgFancy: public CJabberDlgBase
+{
+	typedef CJabberDlgBase CSuper;
+public:
+	__inline CJabberDlgFancy(CJabberProto *proto, int idDialog, HWND parent, bool show_label=true ) :
+		CJabberDlgBase( proto, idDialog, parent, show_label )
+	{
+	}
+
+protected:
+	void OnInitDialog()
+	{
+		CSuper::OnInitDialog();
+
+		LOGFONT lf;
+		GetObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0), sizeof(lf), &lf);
+		lf.lfWeight = FW_BOLD;
+		HFONT hfnt = CreateFontIndirect(&lf);
+		SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hfnt, TRUE);
+	}
+
+	void OnDestroy()
+	{
+		DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TITLE, WM_GETFONT, 0, 0));
+
+		CSuper::OnDestroy();
+	}
+
+	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		if (msg == WM_CTLCOLORSTATIC )
+			switch( GetDlgCtrlID((HWND)lParam )) {
+			case IDC_WHITERECT: case IDC_TITLE: case IDC_DESCRIPTION:
+				return (BOOL)GetStockObject(WHITE_BRUSH);
+			}
+
+		return CSuper::DlgProc(msg, wParam, lParam);
+	}
+
+	int Resizer(UTILRESIZECONTROL *urc)
+	{
+		switch (urc->wId) {
+		case IDC_WHITERECT:
+		case IDC_TITLE:
+		case IDC_DESCRIPTION:
+		case IDC_FRAME1:
+			urc->rcItem.right = urc->dlgNewSize.cx;
+			return 0;
+		}
+
+		return CSuper::Resizer(urc);
+	}
+};
 
 #if !defined(OPENFILENAME_SIZE_VERSION_400)
 	#define OPENFILENAME_SIZE_VERSION_400 sizeof(OPENFILENAME)

@@ -29,8 +29,6 @@ Last change by : $Author: m_mluhov $
 #ifndef _JABBER_PROTO_H_
 #define _JABBER_PROTO_H_
 
-#include "m_protoint.h"
-
 #include "jabber_disco.h"
 #include "jabber_rc.h"
 #include "jabber_privacy.h"
@@ -87,6 +85,8 @@ struct TFilterInfo
 
 struct CJabberProto : public PROTO_INTERFACE
 {
+	typedef PROTO_INTERFACE CSuper;
+
 				CJabberProto( const char*, const TCHAR* );
 				~CJabberProto();
 
@@ -209,15 +209,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL   m_bSendKeepAlive;
 	BOOL   m_bPepSupported;
 
-	HWND   m_hwndJabberAgents;
-	HWND   m_hwndAgentReg;
 	HWND   m_hwndAgentRegInput;
-	HWND   m_hwndAgentManualReg;
 	HWND   m_hwndRegProgress;
 	HWND   m_hwndJabberVcard;
 	HWND   m_hwndJabberChangePassword;
-	HWND   m_hwndJabberGroupchat;
-	HWND   m_hwndJabberJoinGroupchat;
 	HWND   m_hwndMucVoiceList;
 	HWND   m_hwndMucMemberList;
 	HWND   m_hwndMucModeratorList;
@@ -225,12 +220,14 @@ struct CJabberProto : public PROTO_INTERFACE
 	HWND   m_hwndMucAdminList;
 	HWND   m_hwndMucOwnerList;
 	HWND   m_hwndJabberAddBookmark;
-	HWND   m_hwndJabberInfo;
 	HWND   m_hwndPrivacyRule;
-	HWND   m_hwndServiceDiscovery;
 
 	CJabberDlgBase *m_pDlgPrivacyLists;
 	CJabberDlgBase *m_pDlgBookmarks;
+	CJabberDlgBase *m_pDlgServiceDiscovery;
+	CJabberDlgBase *m_pDlgJabberJoinGroupchat;
+
+	HANDLE m_windowList;
 
 	// Service and event handles
 	HANDLE m_hEventNudge;
@@ -251,7 +248,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	CPrivacyListManager m_privacyListManager;
 	CJabberSDManager m_SDManager;
 
-	HWND m_hwndConsole;
+	//HWND m_hwndConsole;
+	CJabberDlgBase *m_pDlgConsole;
 	HANDLE m_hThreadConsole;
 	UINT m_dwConsoleThreadId;
 
@@ -387,6 +385,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_disco.cpp --------------------------------------------------------------
 
+	void   LaunchServiceDiscovery(TCHAR *jid);
 	int    __cdecl OnMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
@@ -472,14 +471,14 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   IqExpire();
 		  
 	void   OnIqResultBind( XmlNode *iqNode, void *userdata );
-	void   OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
-	void   OnIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
-	void   OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
-	void   OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
+	//void   OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
+	//void   OnIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
+	//void   OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
+	//void   OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
 	void   OnIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
 	void   OnIqResultSetBookmarks( XmlNode *iqNode, void *userdata );
 	void   OnIqResultExtSearch( XmlNode *iqNode, void *userdata );
-	void   OnIqResultGetAgents( XmlNode *iqNode, void *userdata );
+	//void   OnIqResultGetAgents( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetAuth( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetAvatar( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetMuc( XmlNode *iqNode, void *userdata );
@@ -631,6 +630,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_proto.cpp --------------------------------------------------------------
 
 	HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
+	void WindowSubscribe(HWND hwnd);
+	void WindowUnsubscribe(HWND hwnd);
+	void WindowNotify(UINT msg, bool async = false);
 
 	//---- jabber_rc.cpp -----------------------------------------------------------------
 

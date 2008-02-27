@@ -30,12 +30,12 @@ Last change by : $Author$
 #ifndef __jabber_opttree_h__
 #define __jabber_opttree_h__
 
-#include <commctrl.h>
-
 #define OPTTREE_CHECK	0
 
 class CCtrlTreeOpts : public CCtrlTreeView
 {
+	typedef CCtrlTreeView CSuper;
+
 public:
 	CCtrlTreeOpts( CDlgBase* dlg, int ctrlId, char *szModule );
 	~CCtrlTreeOpts();

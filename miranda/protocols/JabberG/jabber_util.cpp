@@ -31,7 +31,6 @@ Last change by : $Author$
 #include "jabber_ssl.h"
 #include "jabber_list.h"
 #include "jabber_caps.h"
-#include "resource.h"
 
 #include "m_clistint.h"
 
@@ -1542,7 +1541,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 	int lastItemId = 0;
 	for (int i = 0; i < g_Instances.getCount(); ++i)
 	{
-		if (bAllowOffline || (g_Instances[i]->m_iStatus != ID_STATUS_OFFLINE))
+		if (bAllowOffline || ((g_Instances[i]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[i]->m_iStatus != ID_STATUS_CONNECTING)))
 		{
 			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);

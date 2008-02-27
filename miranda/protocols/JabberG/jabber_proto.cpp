@@ -47,8 +47,6 @@ Last change by : $Author: m_mluhov $
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_modernopt.h"
 
-#include "resource.h"
-
 #pragma warning(disable:4355)
 
 static int compareTransports( const TCHAR* p1, const TCHAR* p2 )
@@ -90,6 +88,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	_strlwr( m_szProtoName );
 	m_szProtoName[0] = toupper( m_szProtoName[0] );
 	Log( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
+
+	// Jabber dialog list
+	m_windowList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
 	// Protocol services and events...
 	m_hEventNudge = JCreateHookableEvent( JE_NUDGE );
@@ -1430,6 +1431,27 @@ int __cdecl CJabberProto::UserIsTyping( HANDLE hContact, int type )
 
 	JFreeVariant( &dbv );
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Notify dialogs
+
+void CJabberProto::WindowSubscribe(HWND hwnd)
+{
+	WindowList_Add(m_windowList, hwnd, NULL);
+}
+
+void CJabberProto::WindowUnsubscribe(HWND hwnd)
+{
+	WindowList_Remove(m_windowList, hwnd);
+}
+
+void CJabberProto::WindowNotify(UINT msg, bool async)
+{
+	if (async)
+		WindowList_BroadcastAsync(m_windowList, msg, 0, 0);
+	else
+		WindowList_Broadcast(m_windowList, msg, 0, 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

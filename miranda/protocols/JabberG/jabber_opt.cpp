@@ -29,8 +29,6 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_list.h"
 #include "jabber_ssl.h"
-#include <commctrl.h>
-#include "resource.h"
 #include <uxtheme.h>
 #include "jabber_caps.h"
 #include "jabber_opttree.h"
@@ -299,6 +297,8 @@ static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 
 class CCtrlEditJid: public CCtrlEdit
 {
+	typedef CCtrlEdit CSuper;
+
 public:
 	CCtrlEditJid( CDlgBase* dlg, int ctrlId );
 
@@ -332,6 +332,8 @@ CCtrlEditJid::CCtrlEditJid( CDlgBase* dlg, int ctrlId ):
 
 class CDlgOptAccount: public CJabberDlgBase
 {
+	typedef CJabberDlgBase CSuper;
+
 	CCtrlEditJid	m_txtUsername;
 	CCtrlEdit		m_txtPassword;
 	CCtrlEdit		m_txtPriority;
@@ -356,7 +358,7 @@ class CDlgOptAccount: public CJabberDlgBase
 
 public:
 	CDlgOptAccount(CJabberProto *proto):
-		CJabberDlgBase(proto, IDD_OPT_JABBER, NULL),
+		CJabberDlgBase(proto, IDD_OPT_JABBER, NULL, false ),
 		m_txtUsername(this, IDC_EDIT_USERNAME),
 		m_txtPassword(this, IDC_EDIT_PASSWORD),
 		m_txtPriority(this, IDC_PRIORITY),
@@ -411,7 +413,7 @@ public:
 protected:
 	void OnInitDialog()
 	{
-		CJabberDlgBase::OnInitDialog();
+		CSuper::OnInitDialog();
 
 		int i;
 		DBVARIANT dbv;
@@ -535,7 +537,7 @@ protected:
 			RefreshServers((XmlNode *)lParam);
 			break;
 		}
-		return CDlgBase::DlgProc(msg, wParam, lParam);
+		return CSuper::DlgProc(msg, wParam, lParam);
 	}
 
 private:
@@ -727,6 +729,8 @@ private:
 
 class CDlgOptAdvanced: public CJabberDlgBase
 {
+	typedef CJabberDlgBase CSuper;
+
 	CCtrlCheck		m_chkDirect;
 	CCtrlCheck		m_chkDirectManual;
 	CCtrlCheck		m_chkProxy;
@@ -736,7 +740,7 @@ class CDlgOptAdvanced: public CJabberDlgBase
 
 public:
 	CDlgOptAdvanced(CJabberProto *proto):
-		CJabberDlgBase(proto, IDD_OPT_JABBER2, NULL),
+		CJabberDlgBase(proto, IDD_OPT_JABBER2, NULL, false),
 		m_chkDirect(this, IDC_DIRECT),
 		m_chkDirectManual(this, IDC_DIRECT_MANUAL),
 		m_chkProxy(this, IDC_PROXY_MANUAL),
@@ -775,7 +779,7 @@ public:
 
 	void OnInitDialog()
 	{
-		CJabberDlgBase::OnInitDialog();
+		CSuper::OnInitDialog();
 
 		chkDirect_OnChange(&m_chkDirect);
 		chkProxy_OnChange(&m_chkProxy);
@@ -837,13 +841,15 @@ public:
 
 class CDlgOptGc: public CJabberDlgBase
 {
+	typedef CJabberDlgBase CSuper;
+
 	CCtrlEdit		m_txtSlap;
 	CCtrlEdit		m_txtQuit;
 	CCtrlTreeOpts	m_otvOptions;
 
 public:
 	CDlgOptGc(CJabberProto *proto):
-		CJabberDlgBase(proto, IDD_OPT_JABBER4, NULL),
+		CJabberDlgBase(proto, IDD_OPT_JABBER4, NULL, false),
 		m_txtSlap(this, IDC_TXT_SLAP),
 		m_txtQuit(this, IDC_TXT_QUIT),
 		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)

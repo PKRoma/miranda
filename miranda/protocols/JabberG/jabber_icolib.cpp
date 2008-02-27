@@ -30,10 +30,7 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_list.h"
 
-#include <commctrl.h>
 #include "m_icolib.h"
-
-#include "resource.h"
 
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105

@@ -34,7 +34,6 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_secur.h"
-#include "resource.h"
 #include "jabber_caps.h"
 #include "jabber_privacy.h"
 #include "jabber_rc.h"
@@ -525,11 +524,10 @@ LBL_FatalError:
 
 			ListRemoveList( LIST_CHATROOM );
 			ListRemoveList( LIST_BOOKMARK );
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_CHECK_ONLINE);
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE);
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
+			//UI_SAFE_NOTIFY(m_pDlgJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
 			UI_SAFE_NOTIFY_HWND(m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE);
-			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
+			//UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
+			WindowNotify(WM_JABBER_CHECK_ONLINE);
 
 			// Set status to offline
 			oldStatus = m_iStatus;
@@ -552,10 +550,7 @@ LBL_FatalError:
 			m_szJabberJID = NULL;
 			m_tmJabberLoggedInTime = 0;
 			ListWipe();
-			if ( m_hwndJabberAgents ) {
-				SendMessage( m_hwndJabberAgents, WM_JABBER_AGENT_REFRESH, 0, ( LPARAM )"" );
-				SendMessage( m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH, 0, 0 );
-			}
+
 			UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE);
 		}
 		else if ( info->type==JABBER_SESSION_REGISTER && !info->reg_done )
@@ -1583,8 +1578,7 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 		UpdateJidDbSettings( from );
 
 		if ( _tcschr( from, '@' )==NULL ) {
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
-			UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+			UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 		}
 		Log( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %s", nick, from, JCallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)status,0 ));
 		mir_free( nick );
@@ -1653,8 +1647,7 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 		UpdateJidDbSettings( from );
 
 		if ( _tcschr( from, '@' )==NULL ) {
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
-			UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+			UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 		}
 		DBCheckIsTransportedContact(from, hContact);
 		return;
@@ -1692,8 +1685,7 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 			else if ( item->subscription == SUB_NONE ) {
 				item->subscription = SUB_TO;
 				if ( _tcschr( from, '@' )==NULL ) {
-					UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
-					UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+					UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 }	}	}	}	}
 
 void CJabberProto::OnIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )

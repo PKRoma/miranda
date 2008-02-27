@@ -360,8 +360,7 @@ void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIq
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 	}	}
 
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
-	UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 }
 
 void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )

@@ -56,6 +56,8 @@ public:
 
 class TPlainAuth : public TJabberAuth
 {
+	typedef TJabberAuth CSuper;
+
 
 public:		TPlainAuth( ThreadData* );
 	virtual ~TPlainAuth();
@@ -67,6 +69,8 @@ public:		TPlainAuth( ThreadData* );
 
 class TMD5Auth : public TJabberAuth
 {
+	typedef TJabberAuth CSuper;
+
 				int iCallCount;
 public:		
 				TMD5Auth( ThreadData* );
@@ -79,6 +83,8 @@ public:
 
 class TNtlmAuth : public TJabberAuth
 {
+	typedef TJabberAuth CSuper;
+
 				HANDLE hProvider;
 public:		
 				TNtlmAuth( ThreadData* );
@@ -87,5 +93,6 @@ public:
 	virtual	char* getInitialRequest();
 	virtual	char* getChallenge( const TCHAR* challenge );
 };
+
 
 

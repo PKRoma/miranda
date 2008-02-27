@@ -25,8 +25,6 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include <commctrl.h>
-#include "resource.h"
 #include "jabber_iq.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -169,8 +167,10 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks manager window
 
-class CJabberDlgBookmarks : public CJabberDlgBase
+class CJabberDlgBookmarks : public CJabberDlgFancy
 {
+	typedef CJabberDlgFancy CSuper;
+
 public:
 	CJabberDlgBookmarks(CJabberProto *proto);
 
@@ -183,8 +183,8 @@ protected:
 	int Resizer(UTILRESIZECONTROL *urc);
 
 	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-	void OnProtoCheckOnline();
-	void OnProtoRefresh();
+	void OnProtoCheckOnline(WPARAM wParam, LPARAM lParam);
+	void OnProtoRefresh(WPARAM wParam, LPARAM lParam);
 	void OpenBookmark();
 
 private:
@@ -259,7 +259,7 @@ private:
 };
 
 CJabberDlgBookmarks::CJabberDlgBookmarks(CJabberProto *proto) :
-	CJabberDlgBase(proto, IDD_BOOKMARKS, NULL),
+	CJabberDlgFancy(proto, IDD_BOOKMARKS, NULL),
 	m_btnAdd(this,      IDC_ADD,    SKINICON_OTHER_ADDCONTACT, LPGEN("Add")),
 	m_btnEdit(this,     IDC_EDIT,   SKINICON_OTHER_RENAME,     LPGEN("Edit")),
 	m_btnRemove(this,   IDC_REMOVE, SKINICON_OTHER_DELETE,     LPGEN("Remove")),
@@ -269,8 +269,6 @@ CJabberDlgBookmarks::CJabberDlgBookmarks(CJabberProto *proto) :
 	m_btnAdd.OnClick = Callback(this, &CJabberDlgBookmarks::btnAdd_OnClick);
 	m_btnEdit.OnClick = Callback(this, &CJabberDlgBookmarks::btnEdit_OnClick);
 	m_btnRemove.OnClick = Callback(this, &CJabberDlgBookmarks::btnRemove_OnClick);
-
-	CreateWhiteHeader(IDC_WHITERECT, IDC_TITLE, IDC_DESCRIPTION, IDC_FRAME1);
 }
 
 void CJabberDlgBookmarks::UpdateData()
@@ -290,7 +288,7 @@ void CJabberDlgBookmarks::UpdateData()
 
 void CJabberDlgBookmarks::OnInitDialog()
 {
-	CJabberDlgBase::OnInitDialog();
+	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("bookmarks"));
 
@@ -327,11 +325,15 @@ void CJabberDlgBookmarks::OnClose()
 	m_proto->JSetWord(NULL, "bookmarksWnd_cx2", lvc.cx);
 
 	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "bookmarksWnd_");
+
+	CSuper::OnClose();
 }
 
 void CJabberDlgBookmarks::OnDestroy()
 {
 	m_proto->m_pDlgBookmarks = NULL;
+
+	CSuper::OnDestroy();
 }
 
 void CJabberDlgBookmarks::OpenBookmark()
@@ -394,12 +396,23 @@ BOOL CJabberDlgBookmarks::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			lpmmi->ptMinTrackSize.y = 320;
 			return 0;
 		}
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+			case IDOK:
+			{
+				OpenBookmark();
+				return TRUE;
+			}
+		}
+		break;
 	}
 
-	return CJabberDlgBase::DlgProc(msg, wParam, lParam);
+	return CSuper::DlgProc(msg, wParam, lParam);
 }
 
-void CJabberDlgBookmarks::OnProtoCheckOnline()
+void CJabberDlgBookmarks::OnProtoCheckOnline(WPARAM wParam, LPARAM lParam)
 {
 	if (!m_proto->m_bJabberOnline)
 	{
@@ -410,9 +423,10 @@ void CJabberDlgBookmarks::OnProtoCheckOnline()
 	{
 		UpdateData();
 	}
+
 }
 
-void CJabberDlgBookmarks::OnProtoRefresh()
+void CJabberDlgBookmarks::OnProtoRefresh(WPARAM wParam, LPARAM lParam)
 {
 	m_lvBookmarks.DeleteAllItems();
 
@@ -452,7 +466,7 @@ int CJabberDlgBookmarks::Resizer(UTILRESIZECONTROL *urc)
 		case IDC_REMOVE:
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 	}
-	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
+	return CSuper::Resizer(urc);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

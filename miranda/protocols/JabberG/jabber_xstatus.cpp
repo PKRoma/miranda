@@ -32,7 +32,6 @@ Last change by : $Author$
 #include "m_genmenu.h"
 #include "m_icolib.h"
 #include "sdk/m_cluiframes.h"
-#include "resource.h"
 
 #include "sdk/m_proto_listeningto.h"
 

@@ -61,7 +61,7 @@ int CDlgBase::DoModal()
 
 int CDlgBase::Resizer(UTILRESIZECONTROL *urc)
 {
-	return 0;
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
 BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -73,15 +73,6 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			m_initialized = false;
 			TranslateDialogDefault(m_hwnd);
 
-			if (m_idcTitle)
-			{
-				LOGFONT lf;
-				GetObject((HFONT)SendDlgItemMessage(m_hwnd, m_idcTitle, WM_GETFONT, 0, 0), sizeof(lf), &lf);
-				lf.lfWeight = FW_BOLD;
-				HFONT hfnt = CreateFontIndirect(&lf);
-				SendDlgItemMessage(m_hwnd, m_idcTitle, WM_SETFONT, (WPARAM)hfnt, TRUE);
-			}
-
 			for ( CCtrlBase* p = m_first; p != NULL; p = p->m_next )
 				AddControl( p );
 
@@ -90,18 +81,6 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			m_initialized = true;
 			return TRUE;
-		}
-
-		case WM_CTLCOLORSTATIC:
-		{
-			if (m_idcWhiteRect && m_idcTitle && m_idcDescription)
-			{
-				if ( ((HWND)lParam == GetDlgItem(m_hwnd, m_idcWhiteRect)) ||
-					 ((HWND)lParam == GetDlgItem(m_hwnd, m_idcTitle)) ||
-					 ((HWND)lParam == GetDlgItem(m_hwnd, m_idcDescription)) )
-					return (BOOL)GetStockObject(WHITE_BRUSH);
-			}
-			break;
 		}
 
 		case WM_MEASUREITEM:
@@ -173,14 +152,17 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_SIZE:
 		{
-			UTILRESIZEDIALOG urd;
-			urd.cbSize = sizeof(urd);
-			urd.hwndDlg = m_hwnd;
-			urd.hInstance = hInst;
-			urd.lpTemplate = MAKEINTRESOURCEA(m_idDialog);
-			urd.lParam = 0;
-			urd.pfnResizer = GlobalDlgResizer;
-			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			if (GetWindowLong(m_hwnd, GWL_STYLE) & WS_SIZEBOX)
+			{
+				UTILRESIZEDIALOG urd;
+				urd.cbSize = sizeof(urd);
+				urd.hwndDlg = m_hwnd;
+				urd.hInstance = hInst;
+				urd.lpTemplate = MAKEINTRESOURCEA(m_idDialog);
+				urd.lParam = 0;
+				urd.pfnResizer = GlobalDlgResizer;
+				CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			}
 			return TRUE;
 		}
 
@@ -202,9 +184,6 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			OnDestroy();
 			NotifyControls(&CCtrlBase::OnDestroy);
-
-			if (m_idcTitle)
-				DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, m_idcTitle, WM_GETFONT, 0, 0));
 
 			SetWindowLong(m_hwnd, GWL_USERDATA, 0);
 			m_hwnd = NULL;
@@ -249,26 +228,12 @@ int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc)
 	CDlgBase *wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
 	if (!wnd) return 0;
 
-	if (urc->wId == wnd->m_idcWhiteRect ||
-		urc->wId == wnd->m_idcTitle ||
-		urc->wId == wnd->m_idcDescription ||
-		urc->wId == wnd->m_idcFrame)
-		return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
-
 	return wnd->Resizer(urc);
 }
 
 void CDlgBase::AddControl(CCtrlBase *ctrl)
 {
 	m_controls.insert(ctrl);
-}
-
-void CDlgBase::CreateWhiteHeader(int idcWhiteRect, int idcTitle, int idcDescription, int idcFrame)
-{
-	m_idcWhiteRect = idcWhiteRect;
-	m_idcTitle = idcTitle;
-	m_idcDescription = idcDescription;
-	m_idcFrame = idcFrame;
 }
 
 void CDlgBase::NotifyControls(void (CCtrlBase::*fn)())
@@ -1910,6 +1875,117 @@ void CDbLink::SaveText(TCHAR *value)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// Base protocol dialog
+
+void CProtoIntDlgBase::SetStatusText(TCHAR *statusText)
+{
+	if (m_hwndStatus)
+		SendMessage(m_hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
+}
+
+BOOL CProtoIntDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg)
+	{
+		case WM_INITDIALOG:
+			if (m_show_label)
+			{
+				m_hwndStatus = CreateStatusWindow(WS_CHILD|WS_VISIBLE, NULL, m_hwnd, IDC_STATUSBAR);
+				SetWindowPos(m_hwndStatus, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE);
+				UpdateStatusBar();
+				UpdateProtoTitle();
+			}
+			break;
+
+		case WM_SETTEXT:
+#ifdef UNICODE
+			if (m_show_label && IsWindowUnicode(m_hwnd))
+#else
+			if (m_show_label && !IsWindowUnicode(m_hwnd))
+#endif
+			{
+				TCHAR *szTitle = (TCHAR *)lParam;
+				if (!_tcsstr(szTitle, m_proto_interface->m_tszUserName))
+				{
+					UpdateProtoTitle(szTitle);
+					return TRUE;
+				}
+			}
+			break;
+
+		case WM_SIZE:
+			if (m_hwndStatus)
+			{
+				RECT rcStatus; GetWindowRect(m_hwndStatus, &rcStatus);
+				RECT rcClient; GetClientRect(m_hwnd, &rcClient);
+				SetWindowPos(m_hwndStatus, NULL, 0, rcClient.bottom-(rcStatus.bottom-rcStatus.top), rcClient.right, (rcStatus.bottom-rcStatus.top), SWP_NOZORDER);
+				UpdateStatusBar();
+			}
+			break;
+
+		// Protocol events
+		case WM_PROTO_ACTIVATE:
+			OnProtoActivate(wParam, lParam);
+			return m_lresult;
+		case WM_PROTO_CHECK_ONLINE:
+			if (m_hwndStatus)
+				UpdateStatusBar();
+			OnProtoCheckOnline(wParam, lParam);
+			return m_lresult;
+		case WM_PROTO_REFRESH:
+			OnProtoRefresh(wParam, lParam);
+			return m_lresult;
+	}
+
+	return CSuper::DlgProc(msg, wParam, lParam);
+}
+
+void CProtoIntDlgBase::UpdateProtoTitle(TCHAR *szText)
+{
+	if (!m_show_label) return;
+
+	int curLength;
+	TCHAR *curText;
+
+	if (szText)
+	{
+		curText = szText;
+		curLength = lstrlen(curText);;
+	} else
+	{
+		curLength = GetWindowTextLength(m_hwnd) + 1;
+		curText = (TCHAR *)_alloca(curLength * sizeof(TCHAR));
+		GetWindowText(m_hwnd, curText, curLength);
+	}
+
+	if (!_tcsstr(curText, m_proto_interface->m_tszUserName))
+	{
+		int length = curLength + lstrlen(m_proto_interface->m_tszUserName) + 256;
+		TCHAR *text = (TCHAR *)_alloca(length * sizeof(TCHAR));
+		mir_sntprintf(text, length, _T("%s [%s: %s]"), curText, TranslateT("Account"), m_proto_interface->m_tszUserName);
+		SetWindowText(m_hwnd, text);
+	}
+}
+
+void CProtoIntDlgBase::UpdateStatusBar()
+{
+	SIZE sz;
+
+	HDC hdc = GetDC(m_hwndStatus);
+	HFONT hFntSave = (HFONT)SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	GetTextExtentPoint32(hdc, m_proto_interface->m_tszUserName, lstrlen(m_proto_interface->m_tszUserName), &sz);
+	sz.cx += GetSystemMetrics(SM_CXSMICON) * 3;
+	SelectObject(hdc, hFntSave);
+	ReleaseDC(m_hwndStatus, hdc);
+
+	RECT rcStatus; GetWindowRect(m_hwndStatus, &rcStatus);
+	int parts[] = { rcStatus.right-rcStatus.left - sz.cx, -1 };
+	SendMessage(m_hwndStatus, SB_SETPARTS, 2, (LPARAM)parts);
+	SendMessage(m_hwndStatus, SB_SETICON, 1, (LPARAM)LoadSkinnedProtoIcon(m_proto_interface->m_szModuleName, m_proto_interface->m_iStatus));
+	SendMessage(m_hwndStatus, SB_SETTEXT, 1, (LPARAM)m_proto_interface->m_tszUserName);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // Misc utilities
 
 int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton)
@@ -1923,78 +1999,4 @@ void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow)
 {
 	for (; *idList; ++idList)
 		ShowWindow(GetDlgItem(hwndDlg, *idList), nCmdShow);
-}
-
-void UIRenderTitleBarInfo(HWND hwnd, HICON hIcon, TCHAR *szText)
-{
-	RECT rc;
-	GetWindowRect(hwnd, &rc);
-
-	int cxIcon, cyIcon, cxBtn, cyBtn, cxFrame, cyFrame, cyTitle, cxPos;
-
-	cxPos = rc.right - rc.left;
-
-	cxIcon = GetSystemMetrics(SM_CXSMICON);
-	cyIcon = GetSystemMetrics(SM_CYSMICON);
-
-	DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	DWORD dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-
-	if(dwExStyle & WS_EX_TOOLWINDOW)
-	{
-		cxBtn = GetSystemMetrics(SM_CXSMSIZE);
-		cyBtn = GetSystemMetrics(SM_CYSMSIZE);
-		cyTitle = GetSystemMetrics(SM_CYSMCAPTION);
-
-		if(dwStyle & WS_SYSMENU)	
-			cxPos -= cxBtn + 2;
-	} else
-	{
-		cxBtn = GetSystemMetrics(SM_CXSIZE);
-		cyBtn = GetSystemMetrics(SM_CYSIZE);
-		cyTitle = GetSystemMetrics(SM_CYCAPTION);
-
-		if(dwStyle & WS_SYSMENU)	
-			cxPos -= cxBtn + 2;
-
-		if(dwStyle & (WS_MINIMIZEBOX | WS_MAXIMIZEBOX))
-			cxPos -= 2 + cxBtn * 2;
-		else if(dwExStyle & WS_EX_CONTEXTHELP)
-			cxPos -= 2 + cxBtn;
-	}
-
-	if(dwStyle & WS_THICKFRAME)
-	{
-		cxFrame = GetSystemMetrics(SM_CXSIZEFRAME);
-		cyFrame = GetSystemMetrics(SM_CYSIZEFRAME);
-	} else
-	{
-		cxFrame = GetSystemMetrics(SM_CXFIXEDFRAME);
-		cyFrame = GetSystemMetrics(SM_CYFIXEDFRAME);
-	}
-
-	cxPos -= cxFrame + cxIcon;
-
-	SIZE sz;
-	HDC hdc = GetWindowDC(hwnd);
-
-	LOGFONT lf;
-	GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
-	lf.lfQuality = ANTIALIASED_QUALITY; // ClearType causes weird look :(
-	HFONT hFntSave = (HFONT)SelectObject(hdc, CreateFontIndirect(&lf));
-
-	int length = lstrlen(szText);
-	GetTextExtentPoint32(hdc, szText, length, &sz);
-	cxPos -= sz.cx;
-
-	DrawIconEx(hdc, cxPos, cyFrame + (cyTitle - cyIcon)/2, hIcon, cxIcon, cyIcon, 0, NULL, DI_NORMAL);
-
-	SetBkMode(hdc, TRANSPARENT);
-	bool bActive = GetForegroundWindow() == hwnd;
-	SetTextColor(hdc, GetSysColor(bActive ? COLOR_CAPTIONTEXT : COLOR_INACTIVECAPTIONTEXT));
-	SetRect(&rc, cxPos + cxIcon + 1, cyFrame, rc.right-rc.left, cyFrame + cyTitle);
-	DrawText(hdc, szText, length, &rc, DT_SINGLELINE|DT_VCENTER|DT_NOPREFIX);
-
-	DeleteObject(SelectObject(hdc, hFntSave));
-	ReleaseDC(hwnd, hdc);
 }

@@ -29,8 +29,6 @@ Last change by : $Author$
 #ifndef _JABBER_DISCO_H_
 #define _JABBER_DISCO_H_
 
-#include "commctrl.h"
-
 #ifdef _UNICODE
 	#define	CHR_BULLET	((WCHAR)0x2022)
 //	#define	STR_BULLET	L" \u2022 "

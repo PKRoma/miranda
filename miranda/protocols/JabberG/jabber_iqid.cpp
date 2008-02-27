@@ -27,7 +27,6 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include "resource.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
@@ -548,13 +547,6 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 
 	EnableMenuItems( TRUE );
 
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberGroupchat, WM_JABBER_CHECK_ONLINE);
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
-	UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE);
-
-
-
 	Log( "Status changed via THREADSTART" );
 	m_bModeMsgStatusChangePending = FALSE;
 	SetServerStatus( m_iDesiredStatus );
@@ -565,9 +557,14 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 	}
 	li.List_Destroy( &chatRooms );
 
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberAgents, WM_JABBER_TRANSPORT_REFRESH);
-	UI_SAFE_NOTIFY_HWND(m_hwndServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+
+	//UI_SAFE_NOTIFY(m_pDlgJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
+	//UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
+	UI_SAFE_NOTIFY_HWND(m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE);
 	UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE);
+	WindowNotify(WM_JABBER_CHECK_ONLINE);
+
+	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
@@ -1352,13 +1349,13 @@ void CJabberProto::OnIqResultSetPassword( XmlNode *iqNode, void *userdata )
 	else if ( !lstrcmp( type, _T("error")))
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
-
+/*
 void CJabberProto::OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
 }
-
+*/
 void CJabberProto::OnIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;

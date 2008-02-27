@@ -27,7 +27,6 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_iq.h"
-#include "resource.h"
 #include "jabber_caps.h"
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );

@@ -32,9 +32,7 @@ Last change by : $Author$
 #include <io.h>
 #include <sys/stat.h>
 
-#include <commctrl.h>
 #include "jabber_list.h"
-#include "resource.h"
 
 static HANDLE hUserInfoList = NULL;
 

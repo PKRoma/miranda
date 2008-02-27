@@ -29,9 +29,7 @@ Last change by : $Author$
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <io.h>
-#include <commctrl.h>
 #include "jabber_iq.h"
-#include "resource.h"
 #include "jabber_caps.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////

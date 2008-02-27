@@ -28,13 +28,6 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-#ifdef _WIN32_WINNT
-	#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT 0x501
-
-#include <commctrl.h>
-
 #define TLIF_VISIBLE	0x01
 #define TLIF_EXPANDED	0x02
 #define TLIF_MODIFIED	0x04

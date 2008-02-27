@@ -95,6 +95,7 @@
 #define IDD_GROUPCHAT_INFO              224
 #define IDD_NOTES                       225
 #define IDD_OPT_JABBER4                 226
+#define IDC_STATUSBAR                   999
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
 #define IDC_EDIT_PASSWORD               1001
@@ -332,7 +333,6 @@
 #define IDC_RESET                       1268
 #define IDC_CUSTOM1                     1270
 #define IDC_BOOKMARKS                   1270
-#define IDC_STATUSBAR                   1270
 #define IDC_BTN_MSG                     1270
 #define IDC_BTN_ROLE                    1270
 #define IDC_BTN_PRESENCE                1271

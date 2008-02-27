@@ -70,13 +70,15 @@ private:
 template<typename TArgument>
 struct CCallback: public CCallbackImp
 {
+	typedef CCallbackImp CSuper;
+
 public:
 	__inline CCallback() {}
 
 	template<typename TClass>
 	__inline CCallback(TClass *object, void ( TClass::*func)(TArgument *argument)): CCallbackImp(object, func) {}
 
-	__inline CCallback& operator=( const CCallbackImp& x ) { CCallbackImp::operator =( x ); return *this; }
+	__inline CCallback& operator=( const CCallbackImp& x ) { CSuper::operator =( x ); return *this; }
 
 	__inline void operator()(TArgument *argument) const { Invoke((void *)argument); }
 };
@@ -195,6 +197,8 @@ private:
 
 class CCtrlButton : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlButton( CDlgBase* dlg, int ctrlId );
 
@@ -205,6 +209,8 @@ public:
 
 class CCtrlMButton : public CCtrlButton
 {
+	typedef CCtrlButton CSuper;
+
 public:
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
@@ -222,6 +228,8 @@ protected:
 
 class CCtrlHyperlink : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlHyperlink( CDlgBase* dlg, int ctrlId, const char* url );
 
@@ -235,6 +243,8 @@ protected:
 // CCtrlClc
 class CCtrlClc: public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlClc( CDlgBase* dlg, int ctrlId );
 
@@ -313,6 +323,8 @@ protected:
 
 class CCtrlData : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlData( CDlgBase* dlg, int ctrlId );
 
@@ -349,12 +361,14 @@ protected:
 
 class CCtrlCheck : public CCtrlData
 {
+	typedef CCtrlData CSuper;
+
 public:
 	CCtrlCheck( CDlgBase* dlg, int ctrlId );
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { NotifyChange(); return TRUE; }
 	virtual void OnInit()
 	{
-		CCtrlData::OnInit();
+		CSuper::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -375,6 +389,8 @@ public:
 
 class CCtrlEdit : public CCtrlData
 {
+	typedef CCtrlData CSuper;
+
 public:
 	CCtrlEdit( CDlgBase* dlg, int ctrlId );
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
@@ -385,7 +401,7 @@ public:
 	}
 	virtual void OnInit()
 	{
-		CCtrlData::OnInit();
+		CSuper::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -416,6 +432,8 @@ public:
 
 class CCtrlListBox : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlListBox( CDlgBase* dlg, int ctrlId );
 
@@ -452,6 +470,8 @@ protected:
 
 class CCtrlCombo : public CCtrlData
 {
+	typedef CCtrlData CSuper;
+
 public:
 	CCtrlCombo( CDlgBase* dlg, int ctrlId );
 
@@ -474,7 +494,7 @@ public:
 
 	virtual void OnInit()
 	{
-		CCtrlData::OnInit();
+		CSuper::OnInit();
 		OnReset();
 	}
 	virtual void OnApply()
@@ -528,6 +548,8 @@ public:
 
 class CCtrlListView : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlListView( CDlgBase* dlg, int ctrlId );
 
@@ -724,6 +746,8 @@ protected:
 
 class CCtrlTreeView : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 public:
 	CCtrlTreeView( CDlgBase* dlg, int ctrlId );
 
@@ -833,6 +857,8 @@ protected:
 template<typename TDlg>
 class CCtrlCustom : public CCtrlBase
 {
+	typedef CCtrlBase CSuper;
+
 private:
 	void (TDlg::*m_pfnOnCommand)(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 	void (TDlg::*m_pfnOnNotify)(int idCtrl, NMHDR *pnmh);
@@ -972,12 +998,8 @@ protected:
 	// resister controls
 	void AddControl(CCtrlBase *ctrl);
 
-	// options
-	void CreateWhiteHeader(int idcWhiteRect, int idcTitle, int idcDescription, int idcFrame);
-
 private:
 	LIST<CCtrlBase> m_controls;
-	int m_idcWhiteRect, m_idcTitle, m_idcDescription, m_idcFrame;
 
 	void NotifyControls(void (CCtrlBase::*fn)());
 	CCtrlBase *FindControl(int idCtrl);
@@ -994,93 +1016,85 @@ private:
 #define WM_PROTO_ACTIVATE             (WM_USER + 102)
 #define WM_PROTO_LAST                 (WM_USER + 200)
 
-void UIRenderTitleBarInfo(HWND hwnd, HICON hIcon, TCHAR *szText);
+typedef struct tagPROTO_INTERFACE PROTO_INTERFACE;
+
+class CProtoIntDlgBase : public CDlgBase
+{
+	typedef CDlgBase CSuper;
+
+public:
+	__inline CProtoIntDlgBase(PROTO_INTERFACE *proto, int idDialog, HWND parent, bool show_label=true) :
+		CDlgBase( idDialog, parent ),
+		m_proto_interface( proto ),
+		m_show_label( show_label ),
+		m_hwndStatus( NULL )
+	{
+	}
+
+	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, BYTE type, DWORD iValue )
+	{
+		ctrl.CreateDbLink(m_proto_interface->m_szModuleName, szSetting, type, iValue);
+	}
+	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue )
+	{
+		ctrl.CreateDbLink(m_proto_interface->m_szModuleName, szSetting, szValue);
+	}
+
+	__inline PROTO_INTERFACE *GetProtoInterface() { return m_proto_interface; }
+
+	void SetStatusText(TCHAR *statusText);
+
+protected:
+	PROTO_INTERFACE *m_proto_interface;
+	bool m_show_label;
+	HWND m_hwndStatus;
+
+	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	virtual void OnProtoRefresh(WPARAM wParam, LPARAM lParam) {}
+	virtual void OnProtoActivate(WPARAM wParam, LPARAM lParam) {}
+	virtual void OnProtoCheckOnline(WPARAM wParam, LPARAM lParam) {}
+
+private:
+	void UpdateProtoTitle(TCHAR *szText = NULL);
+	void UpdateStatusBar();
+};
 
 template<typename TProto>
-class CProtoDlgBase : public CDlgBase
+class CProtoDlgBase : public CProtoIntDlgBase
 {
+	typedef CProtoIntDlgBase CSuper;
+
 public:
-	__inline CProtoDlgBase<TProto>(TProto *proto, int idDialog, HWND parent ) :
-		CDlgBase( idDialog, parent ),
+	__inline CProtoDlgBase<TProto>(TProto *proto, int idDialog, HWND parent, bool show_label=true ) :
+		CProtoIntDlgBase( proto, idDialog, parent, show_label ),
 		m_proto( proto )
 	{
-	}
-
-	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, BYTE type, DWORD iValue)
-	{
-		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, type, iValue );
-	}
-	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue)
-	{
-		ctrl.CreateDbLink((( PROTO_INTERFACE* )m_proto)->m_szModuleName, szSetting, szValue );
 	}
 
 	__inline TProto *GetProto() { return m_proto; }
 
 protected:
 	TProto* m_proto;
-	WNDPROC m_oldWndProc;
 
-	static LRESULT CALLBACK GlobalWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		CProtoDlgBase<TProto> *wnd = (CProtoDlgBase<TProto> *)GetWindowLong(hwnd, GWL_USERDATA);
-		if (!wnd) return DefDlgProc(hwnd, msg, wParam, lParam);
-		return wnd->WndProc(msg, wParam, lParam);
-	}
-
-	BOOL WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		switch (msg)
-		{
-			// Insert protocol icon
-			case WM_SETTEXT:
-			case WM_NCACTIVATE:
-			case WM_NCPAINT:
-			{
-				// Draw default background
-				CallWindowProc(m_oldWndProc, m_hwnd, msg, wParam, lParam);
-				UIRenderTitleBarInfo(m_hwnd, LoadSkinnedProtoIcon(m_proto->m_szModuleName, m_proto->m_iStatus), m_proto->m_tszUserName);
-				return TRUE;
-			}
-
-		}
-
-		return CallWindowProc(m_oldWndProc, m_hwnd, msg, wParam, lParam);
-	}
-
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg)
 		{
 			case WM_INITDIALOG:
-				m_oldWndProc = (WNDPROC)SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)GlobalWndProc);
+				m_proto->WindowSubscribe(m_hwnd);
 				break;
 			case WM_DESTROY:
-				SetWindowLong(m_hwnd, GWL_WNDPROC, (LONG)m_oldWndProc);
+				m_proto->WindowUnsubscribe(m_hwnd);
 				break;
-
-			// Protocol events
-			case WM_PROTO_ACTIVATE:
-				OnProtoActivate();
-				return m_lresult;
-			case WM_PROTO_CHECK_ONLINE:
-				OnProtoCheckOnline();
-				return m_lresult;
-			case WM_PROTO_REFRESH:
-				OnProtoRefresh();
-				return m_lresult;
 		}
 
-		return CDlgBase::DlgProc(msg, wParam, lParam);
+		return CSuper::DlgProc(msg, wParam, lParam);
 	}
-
-	virtual void OnProtoRefresh() {}
-	virtual void OnProtoActivate() {}
-	virtual void OnProtoCheckOnline() {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
+// Safe open/close dialogs
 #define UI_SAFE_OPEN(dlgClass, dlgPtr)	\
 	do {	\
 		if (dlgPtr)	\
@@ -1116,10 +1130,12 @@ protected:
 	do {	\
 		if ( hwnd ) {	\
 			::SendMessage( (hwnd), WM_CLOSE, 0, 0 );	\
-			m_hwndJabberAgents = NULL;	\
+			(hwnd) = NULL;	\
 		}	\
 	} while (0)
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// NULL-Safe dialog notifications
 #define UI_SAFE_NOTIFY(dlg, msg)	\
 	do {	\
 		if ( dlg )	\
@@ -1129,9 +1145,46 @@ protected:
 #define UI_SAFE_NOTIFY_HWND(hwnd, msg)	\
 	do {	\
 		if ( hwnd )	\
-			::SendMessage(hwnd, msg, 0, 0);	\
+			::SendMessage((hwnd), msg, 0, 0);	\
 	} while (0)
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Define message maps
+#define UI_MESSAGE_MAP(dlgClass, baseDlgClass)	\
+	typedef baseDlgClass CMessageMapSuperClass;	\
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)	\
+	{	\
+		switch (msg)	\
+		{	\
+		case 0:	\
+			break	/* just to handle ";" symbol after macro */
+
+#define UI_MESSAGE(msg, proc)	\
+		case msg:	\
+			proc(msg, wParam, lParam);	\
+			break
+
+#define UI_MESSAGE_EX(msg, func)	\
+		case msg:	\
+			return func(msg, wParam, lParam)
+
+#define UI_POSTPROCESS_MESSAGE(msg, proc)	\
+		case msg:	\
+			CMessageMapSuperClass::DlgProc(msg, wParam, lParam);	\
+			return FALSE
+
+#define UI_POSTPROCESS_MESSAGE_EX(msg, func)	\
+		case msg:	\
+			CMessageMapSuperClass::DlgProc(msg, wParam, lParam);	\
+			return func(msg, wParam, lParam)
+
+#define UI_MESSAGE_MAP_END()	\
+		}	\
+		return CMessageMapSuperClass::DlgProc(msg, wParam, lParam);	\
+	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Misc utitlities
 int UIEmulateBtnClick(HWND hwndDlg, UINT idcButton);
 void UIShowControls(HWND hwndDlg, int *idList, int nCmdShow);
 
