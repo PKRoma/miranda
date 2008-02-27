@@ -36,15 +36,14 @@ Last change by : $Author$
 
 class CAgentRegProgressDlg : public CJabberDlgBase
 {
-	CCtrlButton m_ok, m_cancel2;
+	CCtrlButton m_ok;
 
 public:  
 	CAgentRegProgressDlg( CJabberProto* _ppro, HWND _owner ) :
 		CJabberDlgBase( _ppro, IDD_OPT_REGISTER, _owner ),
-		m_ok( this, IDOK2 ),
-		m_cancel2( this, IDCANCEL2 )
+		m_ok( this, IDOK )
 	{
-		m_ok.OnClick = m_cancel2.OnClick = Callback( this, &CAgentRegProgressDlg::OnOk );
+		m_ok.OnClick = Callback( this, &CAgentRegProgressDlg::OnOk );
 	}
 
 	virtual void OnInitDialog()
@@ -52,10 +51,6 @@ public:
 		m_proto->m_hwndRegProgress = m_hwnd;
 		SetWindowTextA( m_hwnd, "Jabber Agent Registration" );
 		TranslateDialogDefault( m_hwnd );
-		ShowWindow( GetDlgItem( m_hwnd, IDOK ), SW_HIDE );
-		ShowWindow( GetDlgItem( m_hwnd, IDCANCEL ), SW_HIDE );
-		ShowWindow( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ), SW_SHOW );
-		ShowWindow( GetDlgItem( m_hwnd, IDCANCEL2 ), SW_SHOW );
 	}
 
 	virtual BOOL DlgProc( UINT msg, WPARAM wParam, LPARAM lParam )
@@ -67,13 +62,8 @@ public:
 				SetDlgItemText( m_hwnd, IDC_REG_STATUS, ( TCHAR* )lParam );
 			if ( wParam >= 0 )
 				SendMessage( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
-			if ( wParam >= 100 ) {
-				ShowWindow( GetDlgItem( m_hwnd, IDCANCEL2 ), SW_HIDE );
-				ShowWindow( GetDlgItem( m_hwnd, IDOK2 ), SW_SHOW );
-				SetFocus( GetDlgItem( m_hwnd, IDOK2 ));
-			}
-			else
-				SetFocus( GetDlgItem( m_hwnd, IDCANCEL2 ));
+			if ( wParam >= 100 )
+				m_ok.SetText( TranslateT( "OK" ));
 		}
 
 		return CJabberDlgBase::DlgProc( msg, wParam, lParam );
