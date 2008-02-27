@@ -299,7 +299,6 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{	
 			int i,netProtoCount;
 			COMBOBOXEXITEM cbei;
-			char szProtoName[64];
 			HICON hIcon;
 
 			TranslateDialogDefault(hwndDlg);
@@ -350,7 +349,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
 			}
 			{
-				char *szProto = NULL;
+				TCHAR *szProto = NULL;
 				int index = 0;
 				DBVARIANT dbv={0};
 				HDC hdc;
@@ -358,8 +357,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				RECT rect;
 				int cbwidth = 0;
 
-				if(!DBGetContactSettingString(NULL, "FindAdd", "LastSearched", &dbv))
-					szProto=(char*)dbv.pszVal;
+				if ( !DBGetContactSettingTString( NULL, "FindAdd", "LastSearched", &dbv ))
+					szProto = dbv.ptszVal;
 				
 				for( i=0, netProtoCount=0; i < accounts.count; i++ ) {
 					DWORD caps = (DWORD)CallProtoService( accounts.items[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
@@ -387,15 +386,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if ( !(caps&PF1_BASICSEARCH) && !(caps&PF1_EXTSEARCH) && !(caps&PF1_SEARCHBYEMAIL) && !(caps&PF1_SEARCHBYNAME))
 						continue;
 					
-					CallProtoService( pa->szModuleName, PS_GETNAME, SIZEOF(szProtoName),(LPARAM)szProtoName );
-					#if !defined( _UNICODE )
-						cbei.pszText=(char*)szProtoName;
-					#else
-					{	TCHAR wszProtoName[ 64 ];
-						MultiByteToWideChar( CP_ACP, 0, szProtoName, 64, wszProtoName, 64 );
-						cbei.pszText = wszProtoName;
-					}
-					#endif
+					cbei.pszText = pa->tszAccountName;
 					GetTextExtentPoint32(hdc,cbei.pszText,lstrlen(cbei.pszText),&textSize);
 					if (textSize.cx>cbwidth) cbwidth = textSize.cx;
 					hIcon=(HICON)CallProtoService( pa->szModuleName,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
@@ -403,7 +394,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					DestroyIcon(hIcon);
 					cbei.lParam=(LPARAM)pa->szModuleName;
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
-					if (szProto && cbei.pszText && !lstrcmpA(szProto,szProtoName)) index=cbei.iItem;
+					if (szProto && cbei.pszText && !lstrcmp( szProto, pa->tszAccountName ))
+						index = cbei.iItem;
 					cbei.iItem++;
 				}
 				cbwidth+=32;

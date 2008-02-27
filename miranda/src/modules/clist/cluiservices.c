@@ -176,7 +176,6 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 		HDC hdc;
 		SIZE textSize;
 		BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
-		char szName[32];
 
 		hdc = GetDC(NULL);
 		SelectObject(hdc, (HFONT) SendMessage(cli.hwndStatus, WM_GETFONT, 0, 0));
@@ -185,10 +184,16 @@ int fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
 			if ( showOpts & 1 )
 				x += g_IconWidth;
 			if ( showOpts & 2 ) {
-				CallProtoService( cli.menuProtos[i].szProto, PS_GETNAME, SIZEOF(szName), (LPARAM) szName);
-				if ( showOpts & 4 && lstrlenA(szName) < SIZEOF(szName)-1 )
-					lstrcatA( szName, " " );
-				GetTextExtentPoint32A(hdc, szName, lstrlenA(szName), &textSize);
+				TCHAR tszName[64];
+				PROTOACCOUNT* pa = Proto_GetAccount( cli.menuProtos[i].szProto );
+				if ( pa )
+					mir_sntprintf( tszName, SIZEOF(tszName), _T("%s "), pa->tszAccountName );
+				else
+					tszName[0] = 0;
+
+				if ( showOpts & 4 && lstrlen(tszName) < SIZEOF(tszName)-1 )
+					lstrcat( tszName, _T(" "));
+				GetTextExtentPoint32(hdc, tszName, lstrlen(tszName), &textSize);
 				x += textSize.cx;
 				x += GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}

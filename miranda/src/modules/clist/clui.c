@@ -981,14 +981,15 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				else
 					x += 2;
 				if (showOpts & 2) {
-					char szName[64];
-					szName[0] = 0;
-					if (CallProtoService(szProto, PS_GETNAME, sizeof(szName), (LPARAM) szName))
-						strcpy(szName, szProto);
-					if (lstrlenA(szName) < SIZEOF(szName) - 1)
-						lstrcatA(szName, " ");
-					GetTextExtentPoint32A(dis->hDC, szName, lstrlenA(szName), &textSize);
-					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szName, lstrlenA(szName));
+					PROTOACCOUNT* pa;
+					TCHAR tszName[64];
+					if (( pa = Proto_GetAccount( szProto )) != NULL )
+						mir_sntprintf( tszName, SIZEOF(tszName), _T("%s "), pa->tszAccountName );
+					else
+						tszName[0] = 0;
+
+					GetTextExtentPoint32(dis->hDC, tszName, lstrlen(tszName), &textSize);
+					TextOut(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, tszName, lstrlen(tszName));
 					x += textSize.cx;
 				}
 				if (showOpts & 4) {

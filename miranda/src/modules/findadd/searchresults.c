@@ -277,26 +277,22 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 	return 0;
 }
 
+// !!!!!!!! this code is dangerous like a hell
 void SetStatusBarSearchInfo(HWND hwndStatus,struct FindAddDlgData *dat)
 {
 	TCHAR str[256];
 
 	if (dat->searchCount != 0 ) {
-		char szProtoName[64];
 		int i;
 
 		lstrcpy( str, TranslateT("Searching"));
-		for( i=0; i <dat->searchCount; i++ ) {
+		for( i=0; i < dat->searchCount; i++ ) {
+			PROTOACCOUNT* pa = Proto_GetAccount( dat->search[i].szProto );
+			if ( !pa )
+				continue;
+
 			lstrcat(str, i ? _T(",") : _T( " " ));
-			CallProtoService(dat->search[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
-			#if !defined( _UNICODE )
-				lstrcatA( str, szProtoName );
-			#else
-				{	TCHAR* p = a2u(szProtoName);
-					lstrcat(str, p);
-					mir_free(p);
-				}
-			#endif
+			lstrcat(str, pa->tszAccountName );
 	}	}
 	else lstrcpy(str, TranslateT("Idle"));
 		
@@ -337,43 +333,29 @@ void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
 		}
 	}
 	if ( total != 0 ) {
-		char szProtoName[64];
 		TCHAR substr[64];
-		TCHAR* ptszProto;
-
-		CallProtoService( subtotal[0].szProto, PS_GETNAME, SIZEOF(szProtoName), (LPARAM)szProtoName );
-		#if defined( _UNICODE )
-			ptszProto = a2u( szProtoName );
-		#else
-			ptszProto = szProtoName;
-		#endif
+		PROTOACCOUNT* pa = Proto_GetAccount( subtotal[0].szProto );
+		if ( pa == NULL )
+			return;
 
 		if ( subtotalCount == 1 ) {
-			if(total==1) mir_sntprintf( str, SIZEOF(str), TranslateT("1 %s user found"), ptszProto );
-			else         mir_sntprintf( str, SIZEOF(str), TranslateT("%d %s users found"), total, ptszProto );
+			if(total==1) mir_sntprintf( str, SIZEOF(str), TranslateT("1 %s user found"), pa->tszAccountName );
+			else         mir_sntprintf( str, SIZEOF(str), TranslateT("%d %s users found"), total, pa->tszAccountName );
 		}
 		else {
 			mir_sntprintf( str, SIZEOF(str), TranslateT("%d users found ("),total);
 			for( i=0; i < subtotalCount; i++ ) {
-				if(i) {
-					CallProtoService(subtotal[i].szProto,PS_GETNAME,SIZEOF(szProtoName),(LPARAM)szProtoName);
-					#if defined( _UNICODE )
-						mir_free( ptszProto );
-						ptszProto = a2u( szProtoName );
-					#else
-						ptszProto = szProtoName;
-					#endif
+				if ( i ) {
+					if (( pa = Proto_GetAccount( subtotal[i].szProto )) == NULL )
+						return;
 					lstrcat( str, _T(", "));
 				}
-				mir_sntprintf( substr, SIZEOF(substr), _T("%d %s"), subtotal[i].count, ptszProto );
+				mir_sntprintf( substr, SIZEOF(substr), _T("%d %s"), subtotal[i].count, pa->tszAccountName );
 				lstrcat( str, substr );
 			}
 			lstrcat( str, _T(")"));
 		}
 		mir_free(subtotal);
-		#if defined( _UNICODE )
-			mir_free( ptszProto );
-		#endif
 	}
 	else lstrcpy(str, TranslateT("No users found"));
 	SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)str );
@@ -439,4 +421,5 @@ void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y)
 	DestroyMenu(hPopupMenu);
 	DestroyMenu(hMenu);
 }
+
 

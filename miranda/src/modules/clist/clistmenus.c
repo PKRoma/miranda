@@ -976,21 +976,28 @@ void RebuildMenuOrder( void )
 			memset( &tmi, 0, sizeof( tmi ));
 			memset( protoName, 0, 128 );
 			tmi.cbSize = sizeof(tmi);
-			tmi.flags = CMIF_CHILDPOPUP | CMIF_ROOTPOPUP;
+			tmi.flags = CMIF_TCHAR | CMIF_CHILDPOPUP | CMIF_ROOTPOPUP;
 			tmi.position = pos++;
 			tmi.hIcon=(HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
 			ic = tmi.hIcon;
 			tmi.root = -1;
 			CallProtoService( pa->szModuleName, PS_GETNAME, sizeof(protoName), (LPARAM)protoName );
-			tmi.pszName = protoName;
+			tmi.ptszName = pa->tszAccountName;
+			{
+				//owner data
+				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
+				memset( smep, 0, sizeof( *smep ));
+				smep->proto = mir_strdup(pa->szModuleName);
+				tmi.ownerdata = smep;
+			}
 			rootmenu = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 
 			memset(&tmi,0,sizeof(tmi));
 			tmi.cbSize = sizeof(tmi);
-			tmi.flags = CMIF_CHILDPOPUP;
+			tmi.flags = CMIF_TCHAR | CMIF_CHILDPOPUP;
 			tmi.root = rootmenu;
 			tmi.position = pos++;
-			tmi.pszName = protoName;
+			tmi.ptszName = pa->tszAccountName;
 			tmi.hIcon = ic;
 			{
 				//owner data
