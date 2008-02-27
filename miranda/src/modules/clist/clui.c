@@ -992,7 +992,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					x += textSize.cx;
 				}
 				if (showOpts & 4) {
-					TCHAR* szStatus = ( TCHAR* )CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, status, GCMDF_TCHAR );
+					TCHAR* szStatus = cli.pfnGetStatusModeDescription( status, 0 );
 					if ( !szStatus )
 						szStatus = _T("");
 					GetTextExtentPoint32( dis->hDC, szStatus, lstrlen(szStatus), &textSize );

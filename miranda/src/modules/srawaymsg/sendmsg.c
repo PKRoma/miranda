@@ -182,7 +182,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	TCHAR str[256],format[128];
 				GetWindowText( hwndDlg, format, SIZEOF( format ));
-				mir_sntprintf( str, SIZEOF(str), format, CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->statusMode, GCMDF_TCHAR ));
+				mir_sntprintf( str, SIZEOF(str), format, cli.pfnGetStatusModeDescription( dat->statusMode, 0 ));
 				SetWindowText( hwndDlg, str );
 			}
 			GetDlgItemTextA(hwndDlg,IDOK,dat->okButtonFormat,SIZEOF(dat->okButtonFormat));
@@ -298,10 +298,9 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))
 					continue;
 
-				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0,
-					CallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, statusModes[i], GCMDF_TCHAR ));
-
+				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
 				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
+
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);
 				dat->info[j].usePrevious=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"UsePrev"),0);

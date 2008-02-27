@@ -227,31 +227,31 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (*uin)
 				SetDlgItemInt(hwndDlg,IDC_UIN,*uin,FALSE);
 			else {
-                if (hcontact == INVALID_HANDLE_VALUE)
-                    SetDlgItemText(hwndDlg,IDC_UIN,TranslateT("(Unknown)"));
-                else {
-                    CONTACTINFO ci;
-                    char buf[128];
-                    buf[0] = 0;
-                    ZeroMemory(&ci, sizeof(ci));
-                    ci.cbSize = sizeof(ci);
-                    ci.hContact = hcontact;
-                    ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hcontact, 0);
-                    ci.dwFlag = CNF_UNIQUEID;
-                    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-                        switch (ci.type) {
-                            case CNFT_ASCIIZ:
-                                mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-                                mir_free(ci.pszVal);
-                                break;
-                            case CNFT_DWORD:
-                                mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
-                                break;
-                        }
-                    }
-                    SetDlgItemTextA(hwndDlg,IDC_UIN,buf[0]?buf:Translate("(Unknown)"));
-                }
-            }
+				if (hcontact == INVALID_HANDLE_VALUE)
+					SetDlgItemText(hwndDlg,IDC_UIN,TranslateT("(Unknown)"));
+				else {
+					CONTACTINFO ci;
+					char buf[128];
+					buf[0] = 0;
+					ZeroMemory(&ci, sizeof(ci));
+					ci.cbSize = sizeof(ci);
+					ci.hContact = hcontact;
+					ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hcontact, 0);
+					ci.dwFlag = CNF_UNIQUEID;
+					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+						switch (ci.type) {
+						case CNFT_ASCIIZ:
+							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
+							mir_free(ci.pszVal);
+							break;
+						case CNFT_DWORD:
+							mir_snprintf(buf, SIZEOF(buf), "%u", ci.dVal);
+							break;
+						}
+					}
+					SetDlgItemTextA(hwndDlg,IDC_UIN,buf[0]?buf:Translate("(Unknown)"));
+				}
+			}
 			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
 			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
 			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
@@ -288,36 +288,39 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDC_ADD:
-			{	HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			{	
+				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
 				ADDCONTACTSTRUCT acs={0};
 
 				acs.handle=hDbEvent;
 				acs.handleType=HANDLE_EVENT;
 				acs.szProto="";
 				CallService(MS_ADDCONTACT_SHOW,(WPARAM)hwndDlg,(LPARAM)&acs);
-                {
-                    DBEVENTINFO dbei;
-                    HANDLE hcontact;
-                    
-                    ZeroMemory(&dbei,sizeof(dbei));
-                    dbei.cbSize=sizeof(dbei);
-                    dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-                    dbei.pBlob=mir_alloc(dbei.cbBlob);
-                    CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
-                    hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
-                    mir_free(dbei.pBlob);
-                    if ((hcontact == INVALID_HANDLE_VALUE) || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
-                        ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
-                }
+				{
+					DBEVENTINFO dbei;
+					HANDLE hcontact;
+
+					ZeroMemory(&dbei,sizeof(dbei));
+					dbei.cbSize=sizeof(dbei);
+					dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
+					dbei.pBlob=mir_alloc(dbei.cbBlob);
+					CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
+					hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+					mir_free(dbei.pBlob);
+					if ((hcontact == INVALID_HANDLE_VALUE) || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
+						ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
+				}
 			}
 			return TRUE;
 		case IDC_DETAILS:
-			{	HANDLE hcontact=(HANDLE)GetWindowLong((HANDLE)lParam,GWL_USERDATA);
+			{	
+				HANDLE hcontact=(HANDLE)GetWindowLong((HANDLE)lParam,GWL_USERDATA);
 				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hcontact,0);
 			}
 			return TRUE;
 		case IDOK:
-			{	HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			{	
+				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
 				DBEVENTINFO dbei;
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
@@ -328,7 +331,8 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			DestroyWindow(hwndDlg);
 			return TRUE;
 		case IDCANCEL:
-			{	HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			{	
+				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
 				DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DENYREASON),hwndDlg,DenyReasonProc,(LPARAM)hDbEvent);
 			}
 			DestroyWindow(hwndDlg);

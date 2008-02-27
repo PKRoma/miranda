@@ -129,7 +129,7 @@ static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 		if ( !( lParam & GCMDF_TCHAR ))
 		{
 			static char szMode[64]={0};
-			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription(wParam,lParam);
+			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription( wParam, lParam );
 			char *buf2 = u2a(buf1);
 			_snprintf(szMode,sizeof(szMode),"%s",buf2);
 			mir_free(buf2);

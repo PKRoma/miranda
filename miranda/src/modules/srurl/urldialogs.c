@@ -27,6 +27,55 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 extern HANDLE hUrlWindowList;
 
+static void sttUpdateTitle( HWND hwndDlg, HANDLE hContact )
+{
+	TCHAR newtitle[256],oldtitle[256];
+	TCHAR *szStatus, *contactName, *pszNewTitleStart = TranslateT("Send URL to");
+	char  *szProto;
+
+	if ( hContact ) {
+		szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+		if ( szProto ) {
+			CONTACTINFO ci;
+			int hasName = 0;
+			char buf[128];
+			ZeroMemory(&ci,sizeof(ci));
+			
+			ci.cbSize = sizeof(ci);
+			ci.hContact = hContact;
+			ci.szProto = szProto;
+			ci.dwFlag = CNF_UNIQUEID;
+			if (!CallService(MS_CONTACT_GETCONTACTINFO,0,(LPARAM)&ci)) {
+				switch(ci.type) {
+				case CNFT_ASCIIZ:
+					hasName = 1;
+					mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
+					mir_free(ci.pszVal);
+					break;
+				case CNFT_DWORD:
+					hasName = 1;
+					mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
+					break;
+			}	}
+
+			contactName = cli.pfnGetContactDisplayName( hContact, 0 );
+			if ( hasName )
+				SetDlgItemTextA( hwndDlg, IDC_NAME, buf );
+			else 
+				SetDlgItemText( hwndDlg, IDC_NAME, contactName );
+
+			szStatus = cli.pfnGetStatusModeDescription( szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord( hContact, szProto, "Status", ID_STATUS_OFFLINE ), 0 );
+			mir_sntprintf( newtitle, SIZEOF(newtitle), _T("%s %s (%s)"), pszNewTitleStart, contactName, szStatus);
+		}
+	}
+	else lstrcpyn( newtitle, pszNewTitleStart, SIZEOF(newtitle));
+
+	GetWindowText( hwndDlg, oldtitle, SIZEOF(oldtitle));
+
+	if ( lstrcmp( newtitle, oldtitle ))	   //swt() flickers even if the title hasn't actually changed
+		SetWindowText( hwndDlg, newtitle );
+}
+
 BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct UrlRcvData *dat = (struct UrlRcvData *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -108,52 +157,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
 	
 	case DM_UPDATETITLE:
-		{
-			char newtitle[256],oldtitle[256];
-			char *szStatus,*contactName,*pszNewTitleStart;
-			char *szProto;
-
-			pszNewTitleStart=Translate("URL from ");
-
-			if (dat->hContact) {
-				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
-				if (szProto) {
-					CONTACTINFO ci;
-					int hasName = 0;
-					char buf[128];
-					ZeroMemory(&ci,sizeof(ci));
-					
-					ci.cbSize = sizeof(ci);
-					ci.hContact = dat->hContact;
-					ci.szProto = szProto;
-					ci.dwFlag = CNF_UNIQUEID;
-					if (!CallService(MS_CONTACT_GETCONTACTINFO,0,(LPARAM)&ci)) {
-						switch(ci.type) {
-						case CNFT_ASCIIZ:
-							hasName = 1;
-							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-							mir_free(ci.pszVal);
-							break;
-						case CNFT_DWORD:
-							hasName = 1;
-							mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
-							break;
-					}	}
-
-					contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-					SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
-
-					szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-					mir_snprintf(newtitle,SIZEOF(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
-				}
-			}
-			else lstrcpynA(newtitle, pszNewTitleStart, SIZEOF(newtitle));
-
-			GetWindowTextA(hwndDlg,oldtitle,SIZEOF(oldtitle));
-
-			if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
-				SetWindowTextA(hwndDlg,newtitle);
-		}
+		sttUpdateTitle( hwndDlg, dat->hContact );
 		break;
 
 	case WM_COMMAND:
@@ -531,56 +535,8 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
 
 	case DM_UPDATETITLE:
-		{
-			char newtitle[256],oldtitle[256];
-			char *szStatus,*contactName,*pszNewTitleStart;
-			char *szProto;
-
-			pszNewTitleStart=Translate("Send URL to");
-
-			if (dat->hContact) {
-				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
-				if (szProto) {
-					CONTACTINFO ci;
-					int hasName = 0;
-					char buf[128];
-					ZeroMemory(&ci,sizeof(ci));
-					
-					ci.cbSize = sizeof(ci);
-					ci.hContact = dat->hContact;
-					ci.szProto = szProto;
-					ci.dwFlag = CNF_UNIQUEID;
-					if (!CallService(MS_CONTACT_GETCONTACTINFO,0,(LPARAM)&ci)) {
-						switch(ci.type) {
-						case CNFT_ASCIIZ:
-							hasName = 1;
-							mir_snprintf(buf, SIZEOF(buf), "%s", ci.pszVal);
-							mir_free(ci.pszVal);
-							break;
-						case CNFT_DWORD:
-							hasName = 1;
-							mir_snprintf(buf, SIZEOF(buf),"%u",ci.dVal);
-							break;
-						}
-					}
-
-					contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,0);
-					SetDlgItemTextA(hwndDlg,IDC_NAME,hasName?buf:contactName);
-
-					szStatus=(char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,szProto==NULL?ID_STATUS_OFFLINE:DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE),0);
-					mir_snprintf(newtitle,SIZEOF(newtitle),"%s %s (%s)", pszNewTitleStart, contactName, szStatus);
-				}
-			}
-			else
-				lstrcpynA(newtitle, pszNewTitleStart, SIZEOF(newtitle));
-
-			GetWindowTextA(hwndDlg,oldtitle,SIZEOF(oldtitle));
-
-			if(lstrcmpA(newtitle,oldtitle))	   //swt() flickers even if the title hasn't actually changed
-				SetWindowTextA(hwndDlg,newtitle);
-
-			break;
-		}
+		sttUpdateTitle( hwndDlg, dat->hContact );
+		break;
 
 	case WM_COMMAND:
 		if(CallService(MS_CLIST_MENUPROCESSCOMMAND,MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU),(LPARAM)dat->hContact))

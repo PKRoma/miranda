@@ -1041,7 +1041,7 @@ void RebuildMenuOrder( void )
 					tmi.flags |= CMIF_CHECKED;
 				tmi.root = rootmenu;
 				tmi.position = pos++;
-				tmi.ptszName = cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR | GSMDF_UNTRANSLATED );
+				tmi.ptszName = cli.pfnGetStatusModeDescription( statusModeList[j], GSMDF_UNTRANSLATED );
 				tmi.hIcon = LoadSkinProtoIcon( pa->szModuleName, statusModeList[j] );
 				{
 					//owner data
@@ -1113,7 +1113,7 @@ void RebuildMenuOrder( void )
 			{
 				TCHAR buf[ 256 ];
 				mir_sntprintf( buf, SIZEOF( buf ), _T("%s\tCtrl+%c"),
-					cli.pfnGetStatusModeDescription( statusModeList[j], GCMDF_TCHAR ), '0'+j );
+					cli.pfnGetStatusModeDescription( statusModeList[j], 0 ), '0'+j );
 				tmi.ptszName = buf;
 				hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 			}
