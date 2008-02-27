@@ -22,19 +22,19 @@ int callProxied_FindFrameID(HWND FrameHwnd);
 
 typedef struct
 {
-    HICON icon;
-    HICON extraIcon;
-    int iconIndex;
-    char * ProtoName;
-    int ProtoStatus;
-    char *ProtoHumanName;
+	HICON icon;
+	HICON extraIcon;
+	int iconIndex;
+	char * ProtoName;
+	int ProtoStatus;
+	TCHAR *ProtoHumanName;
 	char *ProtoEMailCount;
-    char * ProtoStatusText;
-    TCHAR * ProtoXStatus;
-    int ProtoPos;
-    int fullWidth;
-    RECT protoRect;
-    BOOL DoubleIcons;
+	char * ProtoStatusText;
+	TCHAR * ProtoXStatus;
+	int ProtoPos;
+	int fullWidth;
+	RECT protoRect;
+	BOOL DoubleIcons;
 }
 ProtoItemData;
 
@@ -203,7 +203,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		for (j=0; j<protoCount; j++)
 		{
 			int vis;
-			char buf[40];
 			i=pcli->pfnGetAccountIndexByPos(j);
 			if (i==-1) 
 				vis=FALSE;
@@ -222,10 +221,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 					ProtosData[visProtoCount].ProtoEMailCount=mir_strdup(protoNameExt);
 				}
 			}	
-			if(!CallProtoService(accs[i]->szModuleName,PS_GETNAME,(WPARAM)SIZEOF(buf),(LPARAM)buf))
-				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(buf);
-			else
-				ProtosData[visProtoCount].ProtoHumanName=mir_strdup(accs[i]->szModuleName);
+			ProtosData[visProtoCount].ProtoHumanName=mir_tstrdup(accs[i]->tszAccountName);
 			ProtosData[visProtoCount].ProtoName=mir_strdup(accs[i]->szModuleName);
 			ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
 			ProtosData[visProtoCount].ProtoPos=visProtoCount;
@@ -336,7 +332,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 							}
 							if (g_StatusBarData.showProtoName)
 							{
-								GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
+								GetTextExtentPoint32(hDC,ProtosData[i].ProtoHumanName,lstrlen(ProtosData[i].ProtoHumanName),&textSize);
 								w+=textSize.cx+3+spaceWidth;
 							}
 							if (g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount )
@@ -501,11 +497,10 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								RECT rt=r;
 								rt.left=x+(spaceWidth>>1);
 								rt.top=textY;
-								ske_DrawTextA(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&rt,0);
-								//TextOutS(hDC,x,textY,ProtosData[i].ProtoName,lstrlenA(ProtosData[i].ProtoName));
+								ske_DrawText(hDC,ProtosData[i].ProtoHumanName,lstrlen(ProtosData[i].ProtoHumanName),&rt,0);
 								if ((g_StatusBarData.showProtoEmails && ProtosData[i].ProtoEMailCount!=NULL) || g_StatusBarData.showStatusName || ((g_StatusBarData.xStatusMode&8) && ProtosData[i].ProtoXStatus))
 								{
-									GetTextExtentPoint32A(hDC,ProtosData[i].ProtoHumanName,lstrlenA(ProtosData[i].ProtoHumanName),&textSize);
+									GetTextExtentPoint32(hDC,ProtosData[i].ProtoHumanName,lstrlen(ProtosData[i].ProtoHumanName),&textSize);
 									x+=textSize.cx+3;
 								}
 							}
