@@ -38,10 +38,16 @@ char* DBGetStringA( HANDLE hContact,const char *szModule,const char *szSetting )
 	return str;
 }
 
+static int __inline isProtoSuitable( const char* szProto )
+{
+   return CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_2, 0 ) & 
+				~CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_5, 0 );
+}
+
 int CheckProtocolOrder()
 {
 	BOOL protochanged = FALSE;
-	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 );
+	int ver = DBGetContactSettingDword( 0, "Protocols", "PrVer", -1 ), i;
 	if ( ver != 4 )
 		protochanged = TRUE;
 
@@ -49,6 +55,14 @@ int CheckProtocolOrder()
 		protochanged = TRUE;
 	else if ( accounts.count != DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
 		protochanged = TRUE;
+
+	for ( i=0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		int bCalcVisibility = isProtoSuitable( pa->szModuleName ) ? 1 : 0;
+		if ( pa->bIsVisible != bCalcVisibility ) {
+			pa->bIsVisible = bCalcVisibility;
+			protochanged = TRUE;
+	}	}
 
 	if ( !protochanged )
 		return 0;
