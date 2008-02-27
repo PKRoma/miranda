@@ -2292,24 +2292,24 @@ buttons_done:
 						x -= (g_CluiData.bCRight / 2);
 				}
 				if (showOpts & 2) {
-					char szName[64];
-					szName[0] = 0;
-					if (CallProtoService(szProto, PS_GETNAME, sizeof(szName), (LPARAM) szName)) {
-						strcpy(szName, szProto);
-					} //if
-					if (lstrlenA(szName) < sizeof(szName) - 1)
-						lstrcatA(szName, " ");
-					GetTextExtentPoint32A(dis->hDC, szName, lstrlenA(szName), &textSize);
-					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szName, lstrlenA(szName));
+					TCHAR szName[64];
+					PROTOACCOUNT* pa = ProtoGetAccount( szProto );
+					if ( pa ) {
+						lstrcpyn( szName, pa->tszAccountName, SIZEOF(szName));
+						szName[ SIZEOF(szName)-1 ] = 0;
+					}
+					else szName[0] = 0;
+
+					if (lstrlen(szName) < sizeof(szName) - 1)
+						lstrcat(szName, _T(" "));
+					GetTextExtentPoint32(dis->hDC, szName, lstrlen(szName), &textSize);
+					TextOut(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szName, lstrlen(szName));
 					x += textSize.cx;
 				}
 				if (showOpts & 4) {
-					char *szStatus;
-					szStatus = (char*) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0);
-					if (!szStatus)
-						szStatus = "";
-					GetTextExtentPoint32A(dis->hDC, szStatus, lstrlenA(szStatus), &textSize);
-					TextOutA(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szStatus, lstrlenA(szStatus));
+					TCHAR *szStatus = pcli->pfnGetStatusModeDescription( status, 0 );
+					GetTextExtentPoint32(dis->hDC, szStatus, lstrlen(szStatus), &textSize);
+					TextOut(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - textSize.cy) >> 1, szStatus, lstrlen(szStatus));
 				}
 			} else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU)
