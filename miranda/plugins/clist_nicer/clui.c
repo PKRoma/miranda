@@ -2038,9 +2038,10 @@ buttons_done:
 						HMENU hMenu;
 						RECT rc;
 						POINT pt;
-						char *szBuf = NULL, szBuffer[200];
 						int pos = 0;
 						ProtocolData *pd = 0;
+						PROTOACCOUNT* pa;
+						char szBuffer[ 200 ];
 
 						hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
 						nParts = SendMessage(pcli->hwndStatus, SB_GETPARTS, 0, 0);
@@ -2056,23 +2057,15 @@ buttons_done:
 						//if (nParts > 1)
 						//    hMenu = GetSubMenu(hMenu, nPanel);
 
-						szBuffer[0] = 0;
 						pd = (ProtocolData *)SendMessageA(pcli->hwndStatus, SB_GETTEXTA, (WPARAM)nPanel, (LPARAM)szBuffer);
 						if (pd == NULL)
 							break;
-						szBuf = pd->RealName;
-						SendMessage(pcli->hwndStatus, SB_GETRECT, nPanel, (LPARAM) &rc);
-						if (szBuf && lstrlenA(szBuf)) {
-							MENUITEMINFOA mii = {0};
-							char szName[102];
+						if (( pa = ProtoGetAccount( pd->RealName )) != NULL ) {
+							TCHAR szName[102];
 							int i;
 							HMENU hSubmenu = 0;
-							char szProtoName[80];
 
-							szProtoName[0] = 0;
-							if (!CallProtoService(szBuf, PS_GETNAME, 75, (LPARAM)szProtoName))
-								szBuf = szProtoName;
-
+							MENUITEMINFO mii = {0};
 							mii.cbSize = sizeof(mii);
 							mii.fMask = MIIM_STRING;
 							mii.dwTypeData = szName;
@@ -2083,13 +2076,14 @@ buttons_done:
 									break;
 								mii.dwTypeData = szName;
 								mii.cch = 100;
-								GetMenuItemInfoA(hSubmenu, 0, TRUE, &mii);
-								if (mii.dwTypeData && !strcmp(szBuf, mii.dwTypeData)) {
+								GetMenuItemInfo(hSubmenu, 0, TRUE, &mii);
+								if (mii.dwTypeData && !lstrcmp(pa->tszAccountName, mii.dwTypeData)) {
 									hMenu = hSubmenu;
 									break;
 								}
 							}
 						}
+						SendMessage(pcli->hwndStatus, SB_GETRECT, nPanel, (LPARAM) &rc);
 						pt.x = rc.left;
 						pt.y = rc.top;
 						ClientToScreen(pcli->hwndStatus, &pt);
