@@ -178,6 +178,14 @@ static void sttClickButton(HWND hwndDlg, int idcButton)
 		PostMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(idcButton, BN_CLICKED), (LPARAM)GetDlgItem(hwndDlg, idcButton));
 }
 
+static void sttUpdateClist( void )
+{
+	cli.pfnReloadProtoMenus();
+	cli.pfnTrayIconIconsChanged();
+	cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
+	cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
+}
+
 static LRESULT CALLBACK sttEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -562,10 +570,18 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				break;
 			case LBN_MY_CHECK:
 				{
-					PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
-					if (acc) {
-						acc->bIsEnabled = !acc->bIsEnabled;
+					PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
+					if ( pa ) {
+						pa->bIsEnabled = !pa->bIsEnabled;
+						NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
+						if ( pa->bIsEnabled ) {
+							if ( ActivateAccount( pa ))
+								pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
+						}
+						else DeactivateAccount( pa, TRUE );
+						WriteDbAccounts();
 						RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
+						sttUpdateClist();
 					}
 					break;
 				}
@@ -585,6 +601,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						sttSelectItem(dat, hwndList, iItem);
 
 						RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
+						sttUpdateClist();
 					}
 					break;
 				}

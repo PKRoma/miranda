@@ -139,6 +139,7 @@ int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
 
 BOOL ActivateAccount( PROTOACCOUNT* pa );
 void EraseAccount( PROTOACCOUNT* pa );
+void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 
 void LoadDbAccounts( void );

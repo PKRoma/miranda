@@ -285,6 +285,23 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	return pa->bIsEnabled = FALSE;
 }
 
+void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
+{
+	if ( !pa->ppro )
+		return;
+
+	KillObjectServices( pa->ppro );
+	KillObjectEventHooks( pa->ppro );
+
+	if ( bIsDynamic ) {
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
+	}
+
+	UninitAccount( pa );
+	pa->ppro = NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void EraseAccount( PROTOACCOUNT* pa )
@@ -295,17 +312,8 @@ void EraseAccount( PROTOACCOUNT* pa )
 
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 {
-	if ( pa->ppro ) {
-		KillObjectServices( pa->ppro );
-		KillObjectEventHooks( pa->ppro );
+	DeactivateAccount( pa, bIsDynamic );
 
-		if ( bIsDynamic ) {
-			pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
-			pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
-		}
-
-		UninitAccount( pa );
-	}
 	mir_free( pa->tszAccountName );
 	mir_free( pa->szProtoName );
 	// szModuleName should be freed only on a program's exit.
@@ -323,8 +331,10 @@ void UnloadAccountsModule()
 
 	if ( !bModuleInitialized ) return;
 
-	for( i=accounts.count-1; i >= 0; i--, accounts.count-- )
-		UnloadAccount( accounts.items[ i ], FALSE );
+	for( i=accounts.count-1; i >= 0; i--, accounts.count-- ) {
+		PROTOACCOUNT* pa = accounts.items[ i ];
+		UnloadAccount( pa, FALSE );
+	}
 
 	List_Destroy(( SortedList* )&accounts );
 }
