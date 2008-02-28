@@ -194,9 +194,9 @@ static void sttSavePicture2disk( filetransfer* ft )
 
 			MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
 			mir_free(cont.path);
-	}
-		else
-			MSN_ShowError( "Unable to save custom smiley file '%s', error %d", fileName, errno );
+		}
+//		else
+//			MSN_ShowError( "Unable to save custom smiley file '%s', error %d", fileName, errno );
 		return;
 	}
 
