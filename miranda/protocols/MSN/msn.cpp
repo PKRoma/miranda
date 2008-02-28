@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "msn_global.h"
 #include "version.h"
+#include "sdk/m_smileyadd.h"
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
@@ -336,6 +337,20 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 			MSN_DeleteSetting( hContact, "p2pMsgId" );
 			MSN_DeleteSetting( hContact, "AccList" );
 //			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
+
+			char path[MAX_PATH];
+			MSN_GetCustomSmileyFileName(hContact, path, sizeof(path), "", 0);
+			if (path[0])
+			{
+				SMADD_CONT cont;
+				cont.cbSize = sizeof(SMADD_CONT);
+				cont.hContact = hContact;
+				cont.type = 0;
+				cont.path = mir_a2t(path);
+
+				MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
+				mir_free(cont.path);
+			}
 		}
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT,( WPARAM )hContact, 0 );
 	}

@@ -329,6 +329,10 @@ SOURCE=..\..\SDK\headers_c\m_skin.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\SDK\m_smileyadd.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\SDK\headers_c\m_system.h
 # End Source File
 # Begin Source File

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "sdk/m_smileyadd.h"
 
 #pragma pack(1)
 
@@ -184,9 +185,18 @@ static void sttSavePicture2disk( filetransfer* ft )
 		{
 			_write( fileId, ft->fileBuffer, ft->std.currentFileSize );
 			_close( fileId );
+			
+			SMADD_CONT cont;
+			cont.cbSize = sizeof(SMADD_CONT);
+			cont.hContact = ft->std.hContact;
+			cont.type = 1;
+			cont.path = mir_a2t(fileName);
+
+			MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
+			mir_free(cont.path);
 		}
-		else
-			MSN_ShowError( "Unable to save custom smiley file '%s', error %d", fileName, errno );
+//		else
+//			MSN_ShowError( "Unable to save custom smiley file '%s', error %d", fileName, errno );
 		return;
 	}
 
