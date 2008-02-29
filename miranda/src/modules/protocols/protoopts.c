@@ -100,8 +100,10 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 		switch( LOWORD(wParam)) {
 		case IDOK:
 			{
+				int iAction = 2;
 				PROTOACCOUNT* pa = ( PROTOACCOUNT* )GetWindowLong( hwndDlg, GWL_USERDATA );
 				if ( pa == NULL ) {
+					iAction = 1;
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
 					pa->bIsEnabled = pa->bIsVisible = TRUE;
@@ -128,15 +130,16 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					if ( ActivateAccount( pa ))
 						pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
-					NotifyEventHooks( hAccListChanged, 1, ( LPARAM )pa );
 				}
-				else NotifyEventHooks( hAccListChanged, 2, ( LPARAM )pa );
 				{
 					TCHAR buf[256];
 					GetDlgItemText( hwndDlg, IDC_ACCNAME, buf, sizeof( buf )); buf[SIZEOF(buf)-1] = 0;
 					mir_free(pa->tszAccountName);
 					pa->tszAccountName = mir_tstrdup( buf );
 				}
+				
+				NotifyEventHooks( hAccListChanged, iAction, ( LPARAM )pa );
+
 				WriteDbAccounts();
 			}
 			EndDialog( hwndDlg, TRUE );
