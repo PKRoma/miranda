@@ -180,6 +180,10 @@ static void sttSavePicture2disk( filetransfer* ft )
 		char fileName[ MAX_PATH ];
 		MSN_GetCustomSmileyFileName( ft->std.hContact, fileName, sizeof( fileName ), ft->std.currentFile, ft->p2p_type);
 
+		char* ext;
+		MSN_GetImageFormat(ft->fileBuffer, &ext);
+		strcpy(strchr(fileName, '\0'), ext);
+
 		int fileId = _open( fileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
 		if ( fileId > -1 ) 
 		{
@@ -221,28 +225,10 @@ static void sttSavePicture2disk( filetransfer* ft )
 		AI.cbSize = sizeof( AI );
 		AI.hContact = ft->std.hContact;
 		MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ) - 3);
-		char* end = strchr(AI.filename, '\0');
 
-		if ( *(unsigned short*)ft->fileBuffer == 0xd8ff )
-		{
-			AI.format =  PA_FORMAT_JPEG;
-			strcpy( end, "jpg" ); 
-		}
-		else if ( *(unsigned*)ft->fileBuffer == 0x474e5089 )
-		{
-			AI.format =  PA_FORMAT_PNG;
-			strcpy( end, "png" ); 
-		}
-		else if ( *(unsigned*)ft->fileBuffer == 0x38464947 )
-		{
-			AI.format =  PA_FORMAT_GIF;
-			strcpy( end, "gif" ); 
-		}
-		else 
-		{
-			AI.format =  PA_FORMAT_UNKNOWN;
-			strcpy( end, "unk" ); 
-		}
+		char* ext;
+		AI.format = MSN_GetImageFormat(ft->fileBuffer, &ext);
+		strcpy(strchr(AI.filename, '\0'), ext);
 
 		int fileId = _open( AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE );
 		if ( fileId > -1 ) {

@@ -195,6 +195,37 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", msnProtocolName );
 }
 
+int MSN_GetImageFormat(void* buf, char** ext)
+{
+	int res;
+	if ( *(unsigned short*)buf == 0xd8ff )
+	{
+		res =  PA_FORMAT_JPEG;
+		*ext = "jpg"; 
+	}
+	else if ( *(unsigned short*)buf == 0x4d42 )
+	{
+		res = PA_FORMAT_BMP;
+		*ext = "bmp"; 
+	}
+	else if ( *(unsigned*)buf == 0x474e5089 )
+	{
+		res = PA_FORMAT_PNG;
+		*ext = "png"; 
+	}
+	else if ( *(unsigned*)buf == 0x38464947 )
+	{
+		res = PA_FORMAT_GIF;
+		*ext = "gif"; 
+	}
+	else 
+	{
+		res = PA_FORMAT_UNKNOWN;
+		*ext = "unk"; 
+	}
+	return res;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
@@ -237,10 +268,7 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	if (!exist)
 		MSN_CallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
 
-	if ( type == MSN_APPID_CUSTOMSMILEY )
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.png", SmileyName );
-	else
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.gif", SmileyName );
+	mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.", SmileyName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

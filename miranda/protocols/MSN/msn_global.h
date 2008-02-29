@@ -180,6 +180,7 @@ void		__cdecl MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void*
 void        MSN_GoOffline( void );
 char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
+int			MSN_GetImageFormat(void* buf, char** ext);
 void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
 LPTSTR      MSN_GetErrorText( DWORD parErrorCode );
 void        MSN_SendStatusMessage( const char* msg );
