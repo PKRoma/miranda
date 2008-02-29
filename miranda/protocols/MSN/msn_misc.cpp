@@ -1,11 +1,8 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-7 Boris Krasnovskiy.
-Copyright (c) 2003-5 George Hazan.
-Copyright (c) 2002-3 Richard Hughes (original version).
-
-Miranda IM: the free icq client for MS Windows
-Copyright (C) 2000-2002 Richard Hughes, Roland Rabien & Tristan Van de Vreede
+Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2003-2005 George Hazan.
+Copyright (c) 2002-2003 Richard Hughes (original version).
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -18,8 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
@@ -258,6 +254,37 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", msnProtocolName );
 }
 
+int MSN_GetImageFormat(void* buf, char** ext)
+{
+	int res;
+	if ( *(unsigned short*)buf == 0xd8ff )
+	{
+		res =  PA_FORMAT_JPEG;
+		*ext = "jpg"; 
+	}
+	else if ( *(unsigned short*)buf == 0x4d42 )
+	{
+		res = PA_FORMAT_BMP;
+		*ext = "bmp"; 
+	}
+	else if ( *(unsigned*)buf == 0x474e5089 )
+	{
+		res = PA_FORMAT_PNG;
+		*ext = "png"; 
+	}
+	else if ( *(unsigned*)buf == 0x38464947 )
+	{
+		res = PA_FORMAT_GIF;
+		*ext = "gif"; 
+	}
+	else 
+	{
+		res = PA_FORMAT_UNKNOWN;
+		*ext = "unk"; 
+	}
+	return res;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
@@ -289,19 +316,24 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	else 
 		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", msnProtocolName );
 		
-	if (_access(pszDest, 0))
+	bool exist = _access(pszDest, 0) == 0;
+	
+	if (type == 0)
+	{
+		if (!exist) pszDest[0] = 0;
+		return;
+	}
+
+	if (!exist)
 		MSN_CallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
 
-	if ( type == MSN_APPID_CUSTOMSMILEY )
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.png", SmileyName );
-	else
-		mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.gif", SmileyName );
+	mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.", SmileyName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GoOffline - performs several actions when a server goes offline
 
-void 	MSN_GoOffline()
+void MSN_GoOffline(void)
 {
 	int msnOldStatus = msnStatusMode; msnStatusMode = msnDesiredStatus = ID_STATUS_OFFLINE; 
 	MSN_SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
