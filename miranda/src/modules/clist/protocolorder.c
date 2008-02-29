@@ -58,9 +58,8 @@ int CheckProtocolOrder()
 
 	for ( i=0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		int bCalcVisibility = isProtoSuitable( pa->szModuleName ) ? 1 : 0;
-		if ( pa->bIsVisible != bCalcVisibility ) {
-			pa->bIsVisible = bCalcVisibility;
+		if ( pa->bIsVisible && !isProtoSuitable( pa->szModuleName )) {
+			pa->bIsVisible = FALSE;
 			protochanged = TRUE;
 	}	}
 
