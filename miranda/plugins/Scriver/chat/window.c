@@ -821,18 +821,18 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	if (result != -1) {
 		return result;
 	}
-   switch (msg) {
-   case WM_ERASEBKGND:
-      {
-         HDC dc = (HDC)wParam;
-         if (dc) {
-            int height, index, items = 0;
+	switch (msg) {
+	case WM_ERASEBKGND:
+		{
+			HDC dc = (HDC)wParam;
+			if (dc) {
+				int height, index, items = 0;
 
-            index = SendMessage(hwnd, LB_GETTOPINDEX, 0, 0);
-            if (index == LB_ERR || si->nUsersInNicklist <= 0)
-               return 0;
+				index = SendMessage(hwnd, LB_GETTOPINDEX, 0, 0);
+				if (index == LB_ERR || si->nUsersInNicklist <= 0)
+					return 0;
 
-            items = si->nUsersInNicklist - index;
+			items = si->nUsersInNicklist - index;
             height = SendMessage(hwnd, LB_GETITEMHEIGHT, 0, 0);
 
             if (height != LB_ERR) {
@@ -918,6 +918,66 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
             return TRUE;
       }   }
       break;
+
+	case WM_KEYDOWN:
+		if (wParam == VK_ESCAPE || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_NEXT ||
+				wParam == VK_PRIOR || wParam == VK_TAB || wParam == VK_HOME || wParam == VK_END) {
+			si->szSearch[0] = 0;
+			si->iSearchItem = -1;
+		}
+		break;
+	case WM_CHAR:
+	case WM_UNICHAR: 
+		/*
+		* simple incremental search for the user (nick) - list control
+		* typing esc or movement keys will clear the current search string
+		*/
+
+		if (wParam == 27 && si->szSearch[0]) {						// escape - reset everything
+			si->szSearch[0] = 0;
+			si->iSearchItem = -1;
+			break;
+		}
+		else if (wParam == '\b' && si->szSearch[0])					// backspace
+			si->szSearch[lstrlen(si->szSearch) - 1] = '\0';
+		else if (wParam < ' ')
+			break;
+		else {
+			TCHAR szNew[2];
+			szNew[0] = (TCHAR) wParam;
+			szNew[1] = '\0';
+			if (lstrlen(si->szSearch) >= SIZEOF(si->szSearch) - 2) {
+				MessageBeep(MB_OK);
+				break;
+			}
+			_tcscat(si->szSearch, szNew);
+		}
+		if (si->szSearch[0]) {
+			int     iItems = SendMessage(hwnd, LB_GETCOUNT, 0, 0);
+			int     i;
+			USERINFO *ui;
+			/*
+			* iterate over the (sorted) list of nicknames and search for the
+			* string we have
+			*/
+
+			for (i = 0; i < iItems; i++) {
+				ui = UM_FindUserFromIndex(si->pUsers, i);
+				if (ui) {
+					if (!_tcsnicmp(ui->pszNick, si->szSearch, lstrlen(si->szSearch))) {
+						SendMessage(hwnd, LB_SETCURSEL, i, 0);
+						si->iSearchItem = i;
+						InvalidateRect(hwnd, NULL, FALSE);
+						return 0;
+					}
+				}
+			}
+			if (i == iItems) {
+				MessageBeep(MB_OK);
+				si->iSearchItem = -1;
+			}
+		}
+		break;
 
 	case WM_MOUSEMOVE:
 		{
@@ -1052,8 +1112,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)sizeof(TCHAR)*0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 
-
-			if (FALSE) {
+			if (DBGetContactSettingByte(NULL, "Chat", "UseIEView", 0)) {
 				IEVIEWWINDOW ieWindow;
 				IEVIEWEVENT iee;
 
@@ -1077,8 +1136,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				iee.codepage = si->windowData.codePage;
 				iee.pszProto = si->pszModule;
 				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&iee);
-				if (si->windowData.hwndLog == NULL) {
-				}
 			}
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_SMILEY), TRUE);
