@@ -87,7 +87,7 @@ int FillTree(HWND hwnd)
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+		if ( !pa->bIsEnabled || !isProtoSuitable( pa->szModuleName ))
 			continue;
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
