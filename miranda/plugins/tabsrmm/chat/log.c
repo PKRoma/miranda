@@ -743,7 +743,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		streamData.bRedraw = bRedraw;
 		SendMessage(hwndRich, EM_STREAMIN, wp, (LPARAM) & stream);
 
-		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
 		/*
 		 * for new added events, only replace in message or action events.
 		 * no need to replace smileys or math formulas elswhere
@@ -823,6 +822,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
 			SMADD_RICHEDIT3 sm = {0};
 
+			newsel.cpMax = -1;
 			newsel.cpMin = sel.cpMin;
 			if (newsel.cpMin < 0)
 				newsel.cpMin = 0;
