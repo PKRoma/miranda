@@ -827,7 +827,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		SendMessage(hwndRich, EM_STREAMIN, wp, (LPARAM) & stream);
 
 		// do smileys
-		SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
 		if (g_dat->smileyAddInstalled && (bRedraw
 			|| (lin->ptszText
 			&& lin->iType != GC_EVENT_JOIN
@@ -837,6 +836,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		{
 			SMADD_RICHEDIT3 sm;
 
+			newsel.cpMax = -1;
 			newsel.cpMin = sel.cpMin;
 			if (newsel.cpMin < 0)
 				newsel.cpMin = 0;
