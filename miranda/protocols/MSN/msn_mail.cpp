@@ -121,10 +121,8 @@ void getOIMs(ezxml_t xmli)
 				}
 			}
 
-			char* szMsg = mailInfo.decodeMailBody((char*)mailbody);
-
 			PROTORECVEVENT pre = {0};
-			pre.szMessage = szMsg;
+			pre.szMessage = mailInfo.decodeMailBody((char*)mailbody);
 			pre.flags = PREF_UTF /*+ (( isRtl ) ? PREF_RTL : 0)*/;
 			pre.timestamp = evtm;
 
@@ -138,7 +136,6 @@ void getOIMs(ezxml_t xmli)
 			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
 			ezxml_set_txt(delmid, szId);
 			
-			mir_free( szMsg );
 			ezxml_free(tokm);
 		}
 		mir_free( tResult );
