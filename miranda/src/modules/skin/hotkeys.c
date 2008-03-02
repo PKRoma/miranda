@@ -136,7 +136,7 @@ int LoadSkinHotkeys(void)
 			wsprintfA( szSetting, "HKEn%s", oldSettings[i] );
 			if (( key = DBGetContactSettingByte( NULL, "Clist", szSetting, 0 ))) {
 				DBDeleteContactSetting( NULL, "Clist", szSetting );
-				DBWriteContactSettingByte( NULL, DBMODULENAME "Off", newSettings[i], ( key == 0 ) ? TRUE : FALSE );
+				DBWriteContactSettingByte( NULL, DBMODULENAME "Off", newSettings[i], (BYTE)(key == 0) );
 	}	}	}
 
 	return 0;
@@ -706,9 +706,9 @@ static void sttOptionsSaveItem(THotkeyItem *item)
 	item->Enabled = item->OptEnabled;
 
 	DBWriteContactSettingWord(NULL, DBMODULENAME, item->pszName, item->Hotkey);
-	DBWriteContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, item->Enabled ? 0 : 1);
+	DBWriteContactSettingByte(NULL, DBMODULENAME "Off", item->pszName, (BYTE)!item->Enabled);
 	if (item->type != HKT_MANUAL)
-		DBWriteContactSettingByte(NULL, DBMODULENAME "Types", item->pszName, item->type);
+		DBWriteContactSettingByte(NULL, DBMODULENAME "Types", item->pszName, (BYTE)item->type);
 
 	item->nSubHotkeys = 0;
 	for (i = 0; i < lstHotkeys->realCount; i++) {
@@ -721,7 +721,7 @@ static void sttOptionsSaveItem(THotkeyItem *item)
 			mir_snprintf(buf, SIZEOF(buf), "%s$%d", item->pszName, item->nSubHotkeys);
 			DBWriteContactSettingWord(NULL, DBMODULENAME, buf, subItem->Hotkey);
 			if (subItem->type != HKT_MANUAL)
-				DBWriteContactSettingByte(NULL, DBMODULENAME "Types", buf, subItem->type);
+				DBWriteContactSettingByte(NULL, DBMODULENAME "Types", buf, (BYTE)subItem->type);
 
 			++item->nSubHotkeys;
 	}	}
@@ -934,7 +934,7 @@ static LRESULT CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			#endif
 
 			DBWriteContactSettingByte(NULL, DBMODULENAME "UI", szSetting,
-				ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem));
+				(BYTE) ListView_GetCheckState(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), lvi.iItem));
 
 			#ifdef _UNICODE
 			mir_free(szSetting);

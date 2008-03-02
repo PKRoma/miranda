@@ -461,7 +461,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			GetTextExtentPoint32(lps->hDC, text, length, &sz);
 			lps->rcItem.top += max(cxIcon, sz.cy) + 2;
 
-			if (lps->itemID == dat->iSelected) {
+			if (lps->itemID == (unsigned)dat->iSelected) {
 				SelectObject(lps->hDC, dat->hfntText);
 				mir_sntprintf(text, size, _T("%s: ") _T(TCHAR_STR_PARAM), TranslateT("Protocol"), acc->szProtoName);
 				length = lstrlen(text);

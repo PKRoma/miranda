@@ -53,7 +53,7 @@ int CheckProtocolOrder()
 
 	if ( accounts.count == 0 )
 		protochanged = TRUE;
-	else if ( accounts.count != DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
+	else if ( accounts.count != (int)DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
 		protochanged = TRUE;
 
 	for ( i=0; i < accounts.count; i++ ) {
