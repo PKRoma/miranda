@@ -168,7 +168,7 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( pa->ppro )
+		if ( pa->ppro || !pa->bIsEnabled )
 			continue;
 
 		if ( !ActivateAccount( pa )) { // remove damaged account from list
