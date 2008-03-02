@@ -229,9 +229,6 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateResidentSetting("LogonTS");
   ICQCreateResidentSetting("DCStatus");
 
-  // Reset a bunch of session specific settings
-  ResetSettingsOnLoad();
-
   // Setup services
   ICQCreateServiceFunction(PS_GETCAPS, IcqGetCaps);
   ICQCreateServiceFunction(PS_GETNAME, IcqGetName);
@@ -333,6 +330,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   // This must be here - the events are called too early, WTF?
   InitXStatusEvents();
 
+  // Reset a bunch of session specific settings
+  ResetSettingsOnLoad();
   return 0;
 }
 
