@@ -181,14 +181,6 @@ static void sttClickButton(HWND hwndDlg, int idcButton)
 		PostMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(idcButton, BN_CLICKED), (LPARAM)GetDlgItem(hwndDlg, idcButton));
 }
 
-static void sttUpdateClist( void )
-{
-	cli.pfnReloadProtoMenus();
-	cli.pfnTrayIconIconsChanged();
-	cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
-	cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
-}
-
 static LRESULT CALLBACK sttEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -584,7 +576,6 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						else DeactivateAccount( pa, TRUE );
 						WriteDbAccounts();
 						RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
-						sttUpdateClist();
 					}
 					break;
 				}
@@ -605,7 +596,6 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						sttSelectItem(dat, hwndList, iItem);
 
 						RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
-						sttUpdateClist();
 					}
 					break;
 				}
@@ -713,10 +703,25 @@ int OptProtosLoaded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int OnAccListChanged( WPARAM wParam, LPARAM lParam )
+static int OnAccListChanged( WPARAM eventCode, LPARAM lParam )
 {
-	if ( wParam == 1 || wParam == 3 )
+	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+
+	switch( eventCode ) {
+	case PRAC_CHANGED:
+		if ( pa->ppro )
+			pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONRENAME, 0, lParam );
+		// fall through
+
+	case PRAC_ADDED:
+	case PRAC_REMOVED:
+	case PRAC_CHECKED:
 		cli.pfnReloadProtoMenus();
+		cli.pfnTrayIconIconsChanged();
+		cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
+		cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
+		break;
+	}
 
 	return 0;
 }

@@ -299,8 +299,14 @@ __inline static PROTOACCOUNT* ProtoGetAccount( const char* accName )
 }
 
 //this event is fired when the accounts list gets changed
-//wParam = event type (1 - added, 2 - changed, 3 - deleted)
+//wParam = event type (1 - added, 2 - changed, 3 - deleted, 5 - enabled/disabled)
 //lParam = (LPARAM)(PROTOACCOUNT*) - account being changed
+
+#define PRAC_ADDED    1
+#define PRAC_CHANGED  2
+#define PRAC_REMOVED  3
+#define PRAC_CHECKED  5
+
 #define ME_PROTO_ACCLISTCHANGED "Proto/AccListChanged"
 
 //displays the Account Manager
