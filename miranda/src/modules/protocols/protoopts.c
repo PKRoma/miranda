@@ -595,6 +595,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					if (acc) {
 						mir_free(acc->tszAccountName);
 						acc->tszAccountName = (TCHAR *)lParam;
+						NotifyEventHooks( hAccListChanged, 2, ( LPARAM )acc );
 
 						ListBox_DeleteString(hwndList, iItem);
 						iItem = ListBox_AddString(hwndList, acc->tszAccountName);
