@@ -225,6 +225,7 @@ static int Log_AppendIEView(LOGSTREAMDATA* streamData, BOOL simpleMode, TCHAR **
 	int lineLen, textCharsCount=0;
 	TCHAR* line = (TCHAR*)alloca( 8001 * sizeof(TCHAR));
 	TCHAR* d;
+	MODULEINFO *mi = MM_FindModule(streamData->si->pszModule);
 
 	va_start(va, fmt);
 	lineLen = _vsntprintf( line, 8000, fmt, va);
@@ -254,35 +255,34 @@ static int Log_AppendIEView(LOGSTREAMDATA* streamData, BOOL simpleMode, TCHAR **
 
 			case 'c':
 			case 'f':
-				if (g_Settings.StripFormat || streamData->bStripFormat) {
-					line += 2;
+				if (!g_Settings.StripFormat && !streamData->bStripFormat) {
+					if ( line[1] != '\0' && line[2] != '\0') {
+						TCHAR szTemp3[3], c = *line;
+						int col;
+						szTemp3[0] = line[1];
+						szTemp3[1] = line[2];
+						szTemp3[2] = '\0';
+						col = _ttoi(szTemp3);
+						mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%%c#%02X%02X%02X"), c, GetRValue(mi->crColors[col]), GetGValue(mi->crColors[col]), GetBValue(mi->crColors[col]));
+					}
 				}
-				else if ( line[1] != '\0' && line[2] != '\0') {
-				}
+				line += 2;
 				break;
 			case 'C':
 			case 'F':
 				if ( !g_Settings.StripFormat && !streamData->bStripFormat) {
+					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%%c"), *line );
 				}
 				break;
 			case 'b':
 			case 'u':
 			case 'i':
-				if ( !streamData->bStripFormat ) {
-					mir_sntprintf(szTemp, SIZEOF(szTemp), (*line == 'u') ? _T("\\%cl ") : _T("\\%c "), *line );
-				}
-				break;
-
 			case 'B':
 			case 'U':
 			case 'I':
-				if ( !streamData->bStripFormat ) {
-					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%%c"), *line );
-				}
-				break;
-
 			case 'r':
 				if ( !streamData->bStripFormat ) {
+					mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%%c"), *line );
 				}
 				break;
 			}
