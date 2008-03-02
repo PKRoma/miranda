@@ -1460,9 +1460,15 @@ void CJabberProto::WindowNotify(UINT msg, bool async)
 int __cdecl CJabberProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam )
 {
 	switch( eventType ) {
-	case EV_PROTO_ONLOAD:  return OnModulesLoadedEx( 0, 0 );
-	case EV_PROTO_ONEXIT:  return OnPreShutdown( 0, 0 );
-	default:
-		return 1;
-	}	
+	case EV_PROTO_ONLOAD:   return OnModulesLoadedEx( 0, 0 );
+	case EV_PROTO_ONEXIT:   return OnPreShutdown( 0, 0 );
+	case EV_PROTO_ONRENAME:
+		{	
+			CLISTMENUITEM clmi = { 0 };
+			clmi.cbSize = sizeof( CLISTMENUITEM );
+			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.ptszName = m_tszUserName;
+			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuRoot, ( LPARAM )&clmi );
+	}	}	
+	return 1;
 }

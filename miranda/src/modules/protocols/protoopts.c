@@ -709,8 +709,11 @@ static int OnAccListChanged( WPARAM eventCode, LPARAM lParam )
 
 	switch( eventCode ) {
 	case PRAC_CHANGED:
-		if ( pa->ppro )
+		if ( pa->ppro ) {
+			mir_free( pa->ppro->m_tszUserName );
+			pa->ppro->m_tszUserName = mir_tstrdup( pa->tszAccountName );
 			pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONRENAME, 0, lParam );
+		}
 		// fall through
 
 	case PRAC_ADDED:
