@@ -354,6 +354,7 @@ static void	  sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi)
 		mtbi->bSeparator=SEPARATOR_NOT;
 		mtbi->hPrimaryIconHandle=bi->hPrimaryIconHandle;
 		mtbi->hSecondaryIconHandle=bi->hSecondaryIconHandle;
+		mtbi->lParam=bi->lParam;
 	}		
 	else
 	{
