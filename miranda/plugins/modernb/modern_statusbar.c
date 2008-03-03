@@ -222,8 +222,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				}
 			}	
 			ProtosData[visProtoCount].ProtoHumanName=mir_tstrdup(accs[i]->tszAccountName);
-			*/
-			ProtosData[visProtoCount].ProtoHumanName=mir_tstrdup(accs[i]->tszAccountName);
 			ProtosData[visProtoCount].ProtoName=mir_strdup(accs[i]->szModuleName);
 			ProtosData[visProtoCount].ProtoStatusText=mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
 			ProtosData[visProtoCount].ProtoPos=visProtoCount;
