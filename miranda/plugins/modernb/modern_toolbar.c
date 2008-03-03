@@ -481,7 +481,7 @@ static int    sttButtonPressed(MTBINFO * pMTBInfo, HWND hwndbutton)
 	if (mtbi && mtbi->hWindow==hwndbutton && mtbi->hwndToolBar==pMTBInfo->hWnd)
 	{
 		if (mtbi->szService && ServiceExists(mtbi->szService))
-			return CallService(mtbi->szService, 0, 0);
+			return CallService(mtbi->szService, 0, mtbi->lParam);
 	}
 	return 0;
 }
