@@ -122,6 +122,7 @@ struct CluiTopButton top_buttons[] = {
 	0, 0, 0, IDC_TBHIDEOFFLINE, IDI_HIDEOFFLINE, 0,     "CLN_online", NULL, 0, 2, LPGENT("Show / hide offline contacts"),
 	0, 0, 0, IDC_TBHIDEGROUPS, IDI_HIDEGROUPS, 0,       "CLN_groups", NULL, 0, 4, LPGENT("Toggle group mode"),
 	0, 0, 0, IDC_TBFINDANDADD, IDI_FINDANDADD, 0,       "CLN_findadd", NULL, TOPBUTTON_PUSH, 8, LPGENT("Find and add contacts"),
+	0, 0, 0, IDC_TBACCOUNTS, IDI_TBACCOUNTS, 0,         "CLN_accounts", NULL, TOPBUTTON_PUSH, 8192, LPGENT("Accounts"),
 	0, 0, 0, IDC_TBOPTIONS, IDI_TBOPTIONS, 0,           "CLN_options", NULL, TOPBUTTON_PUSH, 16, LPGENT("Open preferences"),
 	0, 0, 0, IDC_TBSOUND, IDI_SOUNDSON, IDI_SOUNDSOFF,  "CLN_sound", "CLN_soundsoff", 0, 32, LPGENT("Toggle sounds"),
 	0, 0, 0, IDC_TBMINIMIZE, IDI_MINIMIZE, 0,           "CLN_minimize", NULL, TOPBUTTON_PUSH, 64, LPGENT("Minimize contact list"),
@@ -152,6 +153,7 @@ static struct IconDesc myIcons[] = {
 	"CLN_CLVM_reset", LPGEN("Reset view mode"), -IDI_DELETE,
 	"CLN_CLVM_options", LPGEN("Configure view modes"), -IDI_CLVM_OPTIONS,
 	"CLN_topmenu", LPGEN("Show menu"), -IDI_TBTOPMENU,
+	"CLN_accounts", LPGEN("Setup accounts"), -IDI_TBACCOUNTS,
 	NULL, NULL, 0
 };
 
@@ -188,9 +190,9 @@ static void LayoutButtons(HWND hwnd, RECT *rc)
 						 SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 			btnItems = btnItems->nextItem;
 		}
-		SetWindowPos(top_buttons[14].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+		SetWindowPos(top_buttons[15].hwnd, 0, 2 + left_offset, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
 					 BUTTON_WIDTH_D * 3, BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
-		SetWindowPos(top_buttons[13].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
+		SetWindowPos(top_buttons[14].hwnd, 0, left_offset + (3 * BUTTON_WIDTH_D) + 3, rect.bottom - g_CluiData.statusBarHeight - BUTTON_HEIGHT_D - 1,
 					 rect.right - delta - (3 * BUTTON_WIDTH_D + 5), BUTTON_HEIGHT_D + 1, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOREDRAW);
 		return;
 	}
@@ -777,7 +779,7 @@ void SetButtonStates(HWND hwnd)
 
 	iMode = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
 	if (!g_ButtonItems) {
-		SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(g_CluiData.soundsOff ? top_buttons[5].hAltIcon : top_buttons[5].hIcon));
+		SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(g_CluiData.soundsOff ? top_buttons[6].hAltIcon : top_buttons[6].hIcon));
 		CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwnd, IDC_TBHIDEOFFLINE, iMode ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwnd, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
@@ -1868,6 +1870,9 @@ skipbg:
 					case IDC_TBFINDANDADD:
 						CallService(MS_FINDADD_FINDADD, 0, 0);
 						return 0;
+					case IDC_TBACCOUNTS:
+						CallService(MS_PROTO_SHOWACCMGR, 0, 0);
+						break;
 					case IDC_TBOPTIONS: {
 						OPENOPTIONSDIALOG ood = {0};
 

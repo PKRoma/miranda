@@ -290,6 +290,7 @@
 #define IDC_TBTOPSTATUS                 1814
 #define IDC_TBFOLDER                    1815
 #define IDC_TBPOPUP                     1816
+#define IDC_TBACCOUNTS                  1817
 #define IDC_TBFIRSTUID                  1820
 #define IDC_NOTIFYBUTTON                1900
 #define IDC_CLNICER                     2002
@@ -317,6 +318,7 @@
 #define IDI_CLINVISIBLE                 2110
 #define IDI_PROTOCONNECTING             2111
 #define IDI_TBTOPMENU                   2112
+#define IDI_TBACCOUNTS                  2113
 #define IDC_FLT_DEFHOVERTIME            2200
 #define IDC_CLUIFRAMESBDR               25492
 #define IDC_FLT_PADLEFTSPIN             25494
@@ -426,7 +428,7 @@
 
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        10

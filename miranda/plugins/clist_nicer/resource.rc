@@ -926,6 +926,7 @@ IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
 IDI_CLVM_SELECT         ICON    DISCARDABLE     "res\\arrow-down.ico"
 IDI_CLVM_OPTIONS        ICON    DISCARDABLE     "res\\options_clvm.ico"
 IDI_TBTOPMENU           ICON    DISCARDABLE     "res\\menu.ico"
+IDI_TBACCOUNTS          ICON    DISCARDABLE     "res\\accounts.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

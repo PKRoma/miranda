@@ -29,7 +29,7 @@ PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 extern CRITICAL_SECTION cs_extcache;
 
-#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64)
+#define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64 | 8192)
 TCHAR *szNoevents = _T("No events...");
 //extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
