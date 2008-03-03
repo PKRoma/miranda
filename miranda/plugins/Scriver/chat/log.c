@@ -800,6 +800,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		//set the insertion point at the bottom
 		sel.cpMin = sel.cpMax = GetRichTextLength(hwndRich, CP_ACP, FALSE);
 		SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & sel);
+		SendMessage(hwndRich, EM_EXGETSEL, 0, (LPARAM) & sel);
 
 		// fix for the indent... must be a M$ bug
 		if (sel.cpMax == 0)
