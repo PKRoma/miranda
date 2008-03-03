@@ -8,7 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
+#include "../../include/statusmodes.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -686,35 +687,6 @@ BEGIN
     END
     POPUP "Logmenu"
     BEGIN
-        POPUP "Message Icons"
-        BEGIN
-            MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
-            MENUITEM "Show Symbols",                ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
-            MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
-        END
-        POPUP "Timestamp Settings"
-        BEGIN
-            MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
-            MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
-            MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
-            MENUITEM SEPARATOR
-            MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
-        END
-        MENUITEM "Use simple Template",         ID_LOGMENU_USESIMPLETEMPLATE
-        MENUITEM SEPARATOR
-        POPUP "Message Log Formatting"
-        BEGIN
-            MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
-            MENUITEM "Show grid",                   ID_MESSAGELOGFORMATTING_SHOWGRID
-            MENUITEM "Use multiple Background Colors", ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
-            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
-            MENUITEM SEPARATOR
-            MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL
-        MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
-        MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
         MENUITEM "Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
     END
@@ -883,40 +855,6 @@ BEGIN
     END
     POPUP "Message &Log"
     BEGIN
-        POPUP "Log Items to show"
-        BEGIN
-            POPUP "Message Icons"
-            BEGIN
-                MENUITEM "Show Icons",                  40131
-                MENUITEM "Show Symbols",                40132
-                MENUITEM "Use Incoming/Outgoing Icons", 40133
-            END
-            MENUITEM SEPARATOR
-            MENUITEM "Grid Lines",                  40068
-            MENUITEM SEPARATOR
-            MENUITEM "Log Status Changes",          40120
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Use simple Templates",        ID_LOGMENU_USESIMPLETEMPLATE
-        POPUP "Timestamp Settings"
-        BEGIN
-            MENUITEM "Show Timestamp",              40047
-            MENUITEM "Show Date",                   40051
-            MENUITEM "Show Seconds",                40052
-            MENUITEM SEPARATOR
-            MENUITEM "Use Contacts local Time",     40050
-        END
-        POPUP "Message Log Formatting"
-        BEGIN
-            MENUITEM "Indent Message Body",         40048
-            MENUITEM SEPARATOR
-            MENUITEM "Use multiple Background Colors", 40069
-            MENUITEM "Use Message Grouping",        40073
-            MENUITEM "Simple Text Formatting",      40130
-            MENUITEM SEPARATOR
-            MENUITEM "Use RTL for this Contact",    40054
-        END
-        MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", 40128
         MENUITEM "Import Message Log Settings...", 40129
     END
@@ -1011,7 +949,8 @@ IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-
+
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -1071,7 +1071,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						ShowHideInfoPanel(hwndParent, mwdat);
 						return 0;
 					case 'B':
-						MsgWindowMenuHandler(hwndParent, mwdat, ID_LOGMENU_ACTIVATERTL, MENU_LOGMENU);
+						// TODO: update Alt-B shortcut !!
+						//MsgWindowMenuHandler(hwndParent, mwdat, ID_LOGMENU_ACTIVATERTL, MENU_LOGMENU);
 						return 0;
 					case 'M':
 						mwdat->sendMode ^= SMODE_MULTIPLE;

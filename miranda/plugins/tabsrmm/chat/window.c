@@ -98,11 +98,11 @@ static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0
  * checking if theres's protected text at the point
  * emulates EN_LINK WM_NOTIFY to parent to process links
  */
-static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL bUrlNeeded)
 {
-	long res = 0;
-	long cpMin = 0,cpMax = 0;
-	RECT r = {0};
+	long res = 0, cnt = 0;
+	long cpMin = 0, cpMax = 0;
+	POINT ptEnd = {0};
 	IRichEditOle* RichEditOle = NULL;
 	ITextDocument* TextDocument = NULL;
 	ITextRange* TextRange = NULL;
@@ -117,17 +117,32 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 		if (RichEditOle->lpVtbl->QueryInterface(RichEditOle, &IID_ITextDocument, (void**)&TextDocument) != S_OK) break;
 		if (TextDocument->lpVtbl->RangeFromPoint(TextDocument, pt.x, pt.y, &TextRange) != S_OK) break;
 
+		TextRange->lpVtbl->GetStart(TextRange,&cpMin);
+		cpMax = cpMin+1;
+		TextRange->lpVtbl->SetEnd(TextRange,cpMax);
+
 		if (TextRange->lpVtbl->GetFont(TextRange, &TextFont) != S_OK) break;
 		TextFont->lpVtbl->GetProtected(TextFont, &res);
-		if (res == tomFalse) break;
+		if (res != tomTrue) break;
 
-		TextRange->lpVtbl->Expand(TextRange, tomCharFormat, NULL);
-		TextRange->lpVtbl->GetPoint(TextRange, tomStart+TA_TOP+TA_LEFT, &r.left, &r.top);
-		TextRange->lpVtbl->GetPoint(TextRange, tomEnd+TA_BOTTOM+TA_RIGHT, &r.right, &r.bottom);
-		if (!PtInRect(&r,pt)) break;
-		
-		TextRange->lpVtbl->GetStart(TextRange,&cpMin);
-		TextRange->lpVtbl->GetEnd(TextRange,&cpMax);
+		TextRange->lpVtbl->GetPoint(TextRange, tomEnd+TA_BOTTOM+TA_RIGHT, &ptEnd.x, &ptEnd.y);
+		if (pt.x > ptEnd.x || pt.y > ptEnd.y) break;
+
+		if (bUrlNeeded) {
+			TextRange->lpVtbl->GetStoryLength(TextRange, &cnt);
+			for (; cpMin > 0; cpMin--) {
+				res = tomTrue;
+				TextRange->lpVtbl->SetIndex(TextRange, tomCharacter, cpMin+1, tomTrue);
+				TextFont->lpVtbl->GetProtected(TextFont, &res);
+				if (res != tomTrue) { cpMin++; break; }
+			}
+			for (cpMax--; cpMax < cnt; cpMax++) {
+				res = tomTrue;
+				TextRange->lpVtbl->SetIndex(TextRange, tomCharacter, cpMax+1, tomTrue);
+				TextFont->lpVtbl->GetProtected(TextFont, &res);
+				if (res != tomTrue) break;
+			}
+		}
 		bIsCustomLink = (cpMin < cpMax);
 	} while(FALSE);
 
@@ -145,7 +160,7 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 		enlink.wParam = wParam;
 		enlink.lParam = lParam;
 		enlink.chrg.cpMin = cpMin;
-		enlink.chrg.cpMax = cpMax;	
+		enlink.chrg.cpMax = cpMax;
 		SendMessage(GetParent(hwndDlg), WM_NOTIFY, (WPARAM)IDC_CHAT_LOG, (LPARAM)&enlink);
 	}
 	return bIsCustomLink;
@@ -1423,7 +1438,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwnd,&pt);
-				if (CheckCustomLink(hwnd, &pt, msg, wParam, lParam)) return TRUE;
+				if (CheckCustomLink(hwnd, &pt, msg, wParam, lParam, FALSE)) return TRUE;
 			}
 			break;
 
@@ -1434,7 +1449,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		case WM_RBUTTONDBLCLK:
 			if (g_Settings.ClickableNicks) {
 				POINT pt={LOWORD(lParam), HIWORD(lParam)};
-				CheckCustomLink(hwnd, &pt, msg, wParam, lParam);
+				CheckCustomLink(hwnd, &pt, msg, wParam, lParam, TRUE);
 			}
 			break;
 
@@ -1442,7 +1457,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			CHARRANGE sel;
 			if (g_Settings.ClickableNicks) {
 				POINT pt={LOWORD(lParam), HIWORD(lParam)};
-				CheckCustomLink(hwnd, &pt, msg, wParam, lParam);
+				CheckCustomLink(hwnd, &pt, msg, wParam, lParam, TRUE);
 			}
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
 			if (sel.cpMin != sel.cpMax) {
