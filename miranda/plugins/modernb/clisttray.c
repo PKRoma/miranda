@@ -639,14 +639,20 @@ void InitTrayMenus(void)
 		mi.position=900000;
 		mi.pszService="CloseAction";
 		mi.pszName=LPGEN("E&xit");
+		mi.flags=CMIF_ICONFROMICOLIB;
+		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_EXIT);
 		AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
+		DestroyIcon_protect(mi.hIcon);
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.position=100000;
 		mi.pszService=MS_CLIST_SHOWHIDE;
 		mi.pszName=LPGEN("&Hide/Show");
+		mi.flags=CMIF_ICONFROMICOLIB;
+		mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_SHOWHIDE);
 		hHideShowMainMenuItem=(HANDLE)AddTrayMenuItem((WPARAM)0,(LPARAM)&mi);
+		DestroyIcon_protect(mi.hIcon);
 
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
