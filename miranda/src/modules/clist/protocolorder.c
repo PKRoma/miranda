@@ -38,10 +38,12 @@ char* DBGetStringA( HANDLE hContact,const char *szModule,const char *szSetting )
 	return str;
 }
 
-static int __inline isProtoSuitable( const char* szProto )
+static int __inline isProtoSuitable( PROTO_INTERFACE* ppi )
 {
-   return CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_2, 0 ) & 
-				~CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_5, 0 );
+	if ( ppi == NULL )
+		return TRUE;
+
+	return ppi->vtbl->GetCaps( ppi, PFLAGNUM_2 ) & ~ppi->vtbl->GetCaps( ppi, PFLAGNUM_5 );
 }
 
 int CheckProtocolOrder()
@@ -58,7 +60,7 @@ int CheckProtocolOrder()
 
 	for ( i=0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( pa->bIsVisible && !isProtoSuitable( pa->szModuleName )) {
+		if ( pa->bIsVisible && !isProtoSuitable( pa->ppro )) {
 			pa->bIsVisible = FALSE;
 			protochanged = TRUE;
 	}	}
@@ -87,7 +89,7 @@ int FillTree(HWND hwnd)
 
 	for ( i = 0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( !pa->bIsEnabled || !isProtoSuitable( pa->szModuleName ))
+		if ( !pa->bIsEnabled || !isProtoSuitable( pa->ppro ))
 			continue;
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
