@@ -568,13 +568,13 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
 					if ( pa ) {
 						pa->bIsEnabled = !pa->bIsEnabled;
-						NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
 						if ( pa->bIsEnabled ) {
 							if ( ActivateAccount( pa ))
 								pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 						}
 						else DeactivateAccount( pa, TRUE );
 						WriteDbAccounts();
+						NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
 						RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 					}
 					break;
