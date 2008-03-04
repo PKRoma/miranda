@@ -40,7 +40,6 @@ typedef struct _SkinListData
 } SkinListData;
 
 HBITMAP hPreviewBitmap=NULL;
-extern HANDLE hEventBkgrChanged;
 static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
 
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
@@ -446,7 +445,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 						/* End of Text colors */
 					}
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					NotifyEventHooks(hEventBkgrChanged,0,0);
+					NotifyEventHooks(g_CluiData.hEventBkgrChanged,0,0);
 					pcli->pfnClcBroadcast( INTM_INVALIDATE,0,0);	
 					RedrawWindow(GetParent(pcli->hwndContactTree),NULL,NULL,RDW_INVALIDATE|RDW_FRAME|RDW_ALLCHILDREN);
 				}

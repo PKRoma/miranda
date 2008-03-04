@@ -3,8 +3,6 @@
 #include "./m_api/m_skin_eng.h"
 #include "commonprototypes.h"
 
-HANDLE  hStatusBarShowToolTipEvent;
-HANDLE  hStatusBarHideToolTipEvent;
 BOOL tooltipshoing;
 POINT lastpnt;
 
@@ -666,7 +664,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             int res;
             int ID;
             if (tooltipshoing){
-                NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+                NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
                 tooltipshoing=FALSE;
             };
             ID=callProxied_FindFrameID(hwnd);
@@ -684,7 +682,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                 KillTimer(hwnd,TM_STATUSBARHIDE);
                 if (tooltipshoing)
                 {
-                    NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+                    NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
                     tooltipshoing=FALSE;
                     ReleaseCapture();
                 };
@@ -704,7 +702,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         rc=ProtosData[i].protoRect;
                         if(PtInRect(&rc,pt))
                         {
-                            NotifyEventHooks(hStatusBarShowToolTipEvent,(WPARAM)ProtosData[i].ProtoName,0);
+                            NotifyEventHooks(g_CluiData.hEventStatusBarShowToolTip,(WPARAM)ProtosData[i].ProtoName,0);
                             CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",SETTING_HIDETOOLTIPTIME_DEFAULT),0);
                             tooltipshoing=TRUE;
                             ClientToScreen(hwnd,&pt);
@@ -726,7 +724,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             if (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
             {
                 KillTimer(hwnd,TM_STATUSBARHIDE);
-                NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+                NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
                 tooltipshoing=FALSE;
                 ReleaseCapture();
             }
@@ -748,7 +746,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                     if  (abs(pt.x-ptToolTipShow.x)>TOOLTIP_TOLERANCE || abs(pt.y-ptToolTipShow.y)>TOOLTIP_TOLERANCE)
                     {
                         KillTimer(hwnd,TM_STATUSBARHIDE);
-                        NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+                        NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
                         tooltipshoing=FALSE;
                         ReleaseCapture();
                     };
@@ -772,7 +770,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             KillTimer(hwnd,TM_STATUSBAR);
 
             if (tooltipshoing){
-                NotifyEventHooks(hStatusBarHideToolTipEvent,0,0);
+                NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
             };
             tooltipshoing=FALSE;
             for (i=0; i<allocedItemData; i++)
@@ -886,8 +884,6 @@ int StatusBar_Create(HWND parent)
     }
 
     LoadStatusBarData();
-    hStatusBarShowToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_SHOW_TOOLTIP);
-    hStatusBarHideToolTipEvent=CreateHookableEvent(ME_CLIST_FRAMES_SB_HIDE_TOOLTIP);
     CLUIServices_ProtocolStatusChanged(0,0);
     CallService(MS_CLIST_FRAMES_UPDATEFRAME,-1,0);
     return (int)hModernStatusBar;

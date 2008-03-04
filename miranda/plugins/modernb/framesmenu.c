@@ -3,8 +3,6 @@
 
 //==========================Frames
 int hFrameMenuObject;
-static HANDLE hPreBuildFrameMenuEvent;
-
 
 //contactmenu exec param(ownerdata)
 //also used in checkservice
@@ -108,7 +106,7 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 
 static int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
 {
-	NotifyEventHooks(hPreBuildFrameMenuEvent,wParam,lParam);
+	NotifyEventHooks(g_CluiData.hEventPreBuildFrameMenu,wParam,lParam);
 	return(0);
 };
 
@@ -207,7 +205,7 @@ int InitFramesMenus(void)
 		CreateServiceFunction(MS_CLIST_ADDCONTEXTFRAMEMENUITEM,AddContextFrameMenuItem);
 		CreateServiceFunction(MS_CLIST_MENUBUILDFRAMECONTEXT,BuildContextFrameMenu);
 		CreateServiceFunction(MS_CLIST_FRAMEMENUNOTIFY,ContextFrameMenuNotify);
-		hPreBuildFrameMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDFRAMEMENU);
+		
 
 		//frame menu object
 		memset(&tmp,0,sizeof(tmp));

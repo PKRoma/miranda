@@ -91,8 +91,8 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 
 void GroupMenus_Init();
 
-int ModernButton_LoadModule();
-int ModernButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
+int ModernSkinButtonLoadModule();
+int ModernSkinButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
 
 void ske_ApplyTransluency();
 HBITMAP ske_CreateDIB32(int cx, int cy);
@@ -116,8 +116,6 @@ int UnhookAll();
 
 /* Global variables */
 
-
-HANDLE  g_hSkinLoadedEvent;
 
 HANDLE  g_hMainThread=NULL;
 
@@ -190,10 +188,6 @@ static BOOL flag_bFirstTimeCall=FALSE;
 static BOOL bTransparentFocus=TRUE,
             bNeedFixSizingRect=FALSE,
             bShowEventStarted=FALSE;
-
-static HANDLE hContactDraggingEvent,
-              hContactDroppedEvent,
-              hContactDragStopEvent;
 
 static HANDLE hRenameMenuItem,
               hShowAvatarMenuItem,

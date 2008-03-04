@@ -22,10 +22,12 @@ static HMODULE _xpt_ThemeAPIHandle = NULL; // handle to uxtheme.dll
 static HANDLE   (WINAPI *_xpt_OpenThemeData)(HWND, LPCWSTR) = NULL;
 static HRESULT  (WINAPI *_xpt_CloseThemeData)(HANDLE)= NULL;
 static BOOL     (WINAPI *_xpt_IsThemeBackgroundPartiallyTransparent)(HANDLE, int,int)= NULL;
+static BOOL		(WINAPI *_xpt_EnableThemeDialogTexture)(HANDLE, DWORD)=NULL;
 static HRESULT  (WINAPI *_xpt_GetThemePartSize)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, RECT *prc, int eSize, SIZE *psz )= NULL;
 static HRESULT  (WINAPI *_xpt_DrawThemeParentBackground)(HWND, HDC, const RECT *)= NULL;
 static HRESULT  (WINAPI *_xpt_DrawThemeBackground)(HANDLE, HDC, int, int,const RECT *, const RECT *)= NULL;								 
 static HRESULT  (WINAPI *_xpt_DrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,DWORD, DWORD, const RECT *)= NULL;
+
 
 #undef  MGPROC
 #define MGPROC(x) GetProcAddress(_xpt_ThemeAPIHandle,x)
@@ -51,6 +53,7 @@ static int _xpt_ThemeSupport()
 				_xpt_DrawThemeBackground = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("DrawThemeBackground");
 				_xpt_DrawThemeText = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))MGPROC("DrawThemeText");				
 				_xpt_GetThemePartSize = (HRESULT(WINAPI *)(HTHEME , HDC , int , int , RECT *, int , SIZE * ))MGPROC("GetThemePartSize");
+				_xpt_EnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD)) MGPROC("EnableThemeDialogTexture");
 			}
 		}
 		// Make sure all of these methods are valid (i would hope either all or none work)
@@ -80,7 +83,7 @@ static void _sttXptReloadThemeData(XPTObject * xptObject)
 }
 
 
-void xpt_InitModule()
+HRESULT XPThemesLoadModule()
 {
 	 if (_xpt_ThemeSupport()) 
 	 {
@@ -88,9 +91,10 @@ void xpt_InitModule()
 		 xptObjectList=li.List_Create(0,1);
 		 xptModuleLoaded=TRUE;
 	 }
+	 return S_OK;
 }
 
-void xpt_UnloadModule()
+void XPThemesUnloadModule()
 {
 	xptcheck;
 	xptlock();
@@ -250,6 +254,15 @@ HRESULT xpt_DrawThemeText(XPTHANDLE xptHandle, HDC hdc, int type, int state, LPC
 	xptunlock();
 	return S_OK;
 #endif
+}
+BOOL xpt_EnableThemeDialogTexture(HWND hwnd, DWORD flags)
+{
+	BOOL res=FALSE;
+	xptcheck res;
+	xptlock();
+	res=_xpt_EnableThemeDialogTexture(hwnd, flags);
+	xptunlock();
+	return res;
 }
 //usage outside
 // add theme data

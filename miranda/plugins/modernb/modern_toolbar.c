@@ -37,7 +37,7 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define MIRANDATOOLBARCLASSNAME "MirandaToolBar"
 
-#define tbcheck if (!tbdat.hehTBModuleLoaded) return
+#define tbcheck if (!g_CluiData.hEventToolBarModuleLoaded) return
 #define tblock EnterCriticalSection(&tbdat.cs)
 #define tbunlock LeaveCriticalSection(&tbdat.cs)
 
@@ -104,7 +104,6 @@ typedef struct _tag_MTB_GLOBALDAT
 	//hooks and services handles
 	HANDLE hehModulesLoaded;
 	HANDLE hehSystemShutdown;
-	HANDLE hehTBModuleLoaded;
 	HANDLE hehSettingsChanged;
 	HANDLE hehOptInit;
 	HANDLE hsvcToolBarAddButton;
@@ -164,11 +163,11 @@ static void   delete_MTB_BUTTONINFO(void * input)
 	mir_safe_free(mtbi);
 }
 
-void          InitToolBarModule()
+HRESULT ToolbarLoadModule()
 {
 
-	tbdat.hehModulesLoaded=HookEvent(ME_SYSTEM_MODULESLOADED, ehhToolbarModulesLoaded);
-	tbdat.hehSystemShutdown=HookEvent(ME_SYSTEM_SHUTDOWN, ehhToolBarSystemShutdown);
+	tbdat.hehModulesLoaded=ModernHookEvent(ME_SYSTEM_MODULESLOADED, ehhToolbarModulesLoaded);
+	tbdat.hehSystemShutdown=ModernHookEvent(ME_SYSTEM_SHUTDOWN, ehhToolBarSystemShutdown);
 	
 	{	//create window class
 		WNDCLASS wndclass={0};
@@ -188,17 +187,17 @@ void          InitToolBarModule()
 		}	  
 	}
 	tbdat.listOfButtons=li.List_Create(0,1);
-	InitializeCriticalSection(&tbdat.cs);
-	tbdat.hehTBModuleLoaded=CreateHookableEvent(ME_TB_MODULELOADED);
+	InitializeCriticalSection(&tbdat.cs);		
+	return S_OK;
 }
 
 static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"ToolBar Background/ToolBar",0);
-	HookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhToolBarBackgroundSettingsChanged);
-	tbdat.hehOptInit=HookEvent(ME_OPT_INITIALISE,ehhToolbarOptInit);
+	ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhToolBarBackgroundSettingsChanged);
+	tbdat.hehOptInit=ModernHookEvent(ME_OPT_INITIALISE,ehhToolbarOptInit);
 	ehhToolBarBackgroundSettingsChanged(0,0);
-	tbdat.hehSettingsChanged=HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhToolBarSettingsChanged );
+	tbdat.hehSettingsChanged=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED, ehhToolBarSettingsChanged );
 	
 	tbdat.hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 	
@@ -209,7 +208,7 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
 		sttCreateToolBarFrame( hwndClist, ("ToolBar"), 24);
 	}
-	NotifyEventHooks(tbdat.hehTBModuleLoaded, 0, 0);
+	NotifyEventHooks(g_CluiData.hEventToolBarModuleLoaded, 0, 0);
 
 	return 0;
 }
@@ -217,12 +216,12 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 static int    ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam)
 {
 	//Remove services;
-	UnhookEvent(tbdat.hehSettingsChanged);
-	UnhookEvent(tbdat.hehModulesLoaded);
-	UnhookEvent(tbdat.hehSystemShutdown);	
-	UnhookEvent(tbdat.hehOptInit);
+	ModernUnhookEvent(tbdat.hehSettingsChanged);
+	ModernUnhookEvent(tbdat.hehModulesLoaded);
+	ModernUnhookEvent(tbdat.hehSystemShutdown);	
+	ModernUnhookEvent(tbdat.hehOptInit);
 	EnterCriticalSection(&tbdat.cs);
-	tbdat.hehTBModuleLoaded=NULL;
+	g_CluiData.hEventToolBarModuleLoaded=NULL;
 
 	li_ListDestruct(tbdat.listOfButtons,delete_MTB_BUTTONINFO);
 

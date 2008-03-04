@@ -211,7 +211,7 @@ int AniAva_InitModule()
 	AniAva.bModuleStarted=TRUE;
 	AniAva.hExitEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	AniAva.AnimationThreadID=(DWORD)mir_forkthread(_AniAva_AnimationTreadProc, (void*)AniAva.hExitEvent);
-	HookEvent(ME_SYSTEM_PRESHUTDOWN,  _AniAva_OnModulesUnload);
+	ModernHookEvent(ME_SYSTEM_PRESHUTDOWN,  _AniAva_OnModulesUnload);
 
 	_AniAva_LoadOptions();
 

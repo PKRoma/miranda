@@ -7,7 +7,7 @@
 #define BUTTON_POLLDELAY    50
 #define b2str(a) ((a) ? "True" : "False")
 
-struct tagSKINBUTTONDATA
+struct tagTBBUTTONDATA
 {
 	HWND	hWnd;			// handle of safe window
 	char	szButtonID[64];	// Unique stringID of button in form Module.Name
@@ -32,13 +32,13 @@ struct tagSKINBUTTONDATA
     XPTHANDLE	hThemeToolbar;
     BOOL	bThemed;
 };
-typedef struct tagSKINBUTTONDATA SKINBUTTONDATA;
+typedef struct tagTBBUTTONDATA TBBUTTONDATA;
 
 
 static CRITICAL_SECTION csTips;
 static HWND hwndToolTips = NULL;
-static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
-static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset);
+static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
+static void PaintWorker(TBBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset);
 static BOOL	bThemed=FALSE;
 
 static HANDLE hButtonWindowList=NULL;
@@ -58,28 +58,28 @@ int Buttons_OnSkinModeSettingsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int LoadSkinButtonModule()
+HRESULT ToolbarButtonLoadModule()
 {
 	WNDCLASSEX wc;
 	ZeroMemory(&wc, sizeof(wc));
 	wc.cbSize = sizeof(wc);
 	wc.lpszClassName =SKINBUTTONCLASS;
-	wc.lpfnWndProc = SkinButtonProc;
+	wc.lpfnWndProc = TollbarButtonProc;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.cbWndExtra = sizeof(SKINBUTTONDATA *);
+	wc.cbWndExtra = sizeof(TBBUTTONDATA *);
 	wc.hbrBackground = 0;
 	wc.style = CS_GLOBALCLASS;
 	RegisterClassEx(&wc);
 	hButtonWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-	hIconChangedHook=HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
-	hBkgChangedHook=HookEvent(ME_BACKGROUNDCONFIG_CHANGED,Buttons_OnSkinModeSettingsChanged);
+	hIconChangedHook=ModernHookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
+	hBkgChangedHook=ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,Buttons_OnSkinModeSettingsChanged);
    
-	return 0;
+	return S_OK;
 }
-int UnloadSkinButtonModule(WPARAM wParam, LPARAM lParam)
+int ToolbarButtonUnloadModule(WPARAM wParam, LPARAM lParam)
 {
-	UnhookEvent(hBkgChangedHook);
-	UnhookEvent(hIconChangedHook);
+	ModernUnhookEvent(hBkgChangedHook);
+	ModernUnhookEvent(hIconChangedHook);
 	return 0;
 }
 
@@ -99,18 +99,18 @@ static void InvalidateParentRect(HWND hwndChild, RECT * lpRect, BOOL fErase)
 		InvalidateRect(hwndChild,lpRect,fErase);
 	}
 }
-static LRESULT CALLBACK SkinButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	SKINBUTTONDATA *lpSBData = (SKINBUTTONDATA *) GetWindowLong(hwndDlg, 0);
+	TBBUTTONDATA *lpSBData = (TBBUTTONDATA *) GetWindowLong(hwndDlg, 0);
 	switch (msg) 
 	{
 		case WM_NCCREATE:
 			{
 				SetWindowLong(hwndDlg, GWL_STYLE, GetWindowLong(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
-				lpSBData = malloc(sizeof(SKINBUTTONDATA));
+				lpSBData = malloc(sizeof(TBBUTTONDATA));
 				if (lpSBData == NULL)
 					return FALSE;
-				memset(lpSBData,0,sizeof(SKINBUTTONDATA)); //I prefer memset to guarantee zeros
+				memset(lpSBData,0,sizeof(TBBUTTONDATA)); //I prefer memset to guarantee zeros
 				lpSBData->hWnd = hwndDlg;
 				lpSBData->nStateId = PBS_NORMAL;
 				lpSBData->fFocused = FALSE;
@@ -521,7 +521,7 @@ static TBStateConvert2Flat(int state)
     return TS_NORMAL;
 }
 
-static void PaintWorker(SKINBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset)
+static void PaintWorker(TBBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset)
 {
 	HDC hdcMem;
 	HBITMAP hbmMem;	

@@ -105,6 +105,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "./m_api/m_smileyadd.h"
 
 #include "./m_api/m_xpTheme.h"
+#include "./m_api/m_toolbar.h"
 
 // module name of MetaContacts plugin
 extern char *g_szMetaModuleName;
@@ -116,8 +117,6 @@ extern char *g_szMetaModuleName;
 #define CLUI_FRAME_AUTOHIDENOTIFY  512
 #define CLUI_FRAME_SHOWALWAYS      1024
 
-extern struct LIST_INTERFACE li;
-extern struct MM_INTERFACE memoryManagerInterface;
 
 //#define alloc(n) mir_alloc(n)
 
@@ -137,25 +136,15 @@ extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
 
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
-#undef HookEvent
-#undef UnhookEvent
-
 #ifdef _DEBUG
-#define HookEvent(a,b)  mod_HookEvent(a,b,__FILE__,__LINE__)
+	#define ModernHookEvent(a,b)  MHookEvent(a,b,__FILE__,__LINE__);
+	extern HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc, char * file, int line);
 #else /* _DEBUG */
-#define HookEvent(a,b)  mod_HookEvent(a,b)
+	#define ModernHookEvent(a,b)  MHookEvent(a,b);
+	extern HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc);
 #endif /* _DEBUG */
 
-#define UnhookEvent(a)  mod_UnhookEvent(a)
-
-extern HANDLE mod_HookEvent(char *EventID, MIRANDAHOOK HookProc
-               #ifdef _DEBUG
-                            , char * file, int line);
-                #else
-                            );
-                #endif
-
-extern int mod_UnhookEvent(HANDLE hHook);
+extern int ModernUnhookEvent(HANDLE hHook);
 extern int UnhookAll();
 
 #ifndef MYCMP
@@ -226,7 +215,6 @@ extern SortedList *clistCache;
 HICON LoadSmallIconShared(HINSTANCE hInstance, LPCTSTR lpIconName);
 HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName);
 BOOL DestroyIcon_protect(HICON icon);
-extern BOOL (WINAPI *pfEnableThemeDialogTexture)(HANDLE, DWORD);
 
 #ifndef ETDT_ENABLETAB
 #define ETDT_DISABLE        0x00000001

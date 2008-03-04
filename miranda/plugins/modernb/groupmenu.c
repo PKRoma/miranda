@@ -31,7 +31,6 @@ HANDLE hGroupMenuObject;
 HANDLE hGroupMainMenuItemProxy;
 HANDLE hHideShowMainMenuItem;
 HANDLE hGroupStatusMenuItemProxy;
-HANDLE hPreBuildGroupMenuEvent;
 
 HANDLE hHideOfflineUsersMenuItem;
 HANDLE hHideOfflineUsersOutHereMenuItem;
@@ -77,7 +76,7 @@ int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	//hMenu=wParam;
 	tick=GetTickCount();
 	
-	NotifyEventHooks(hPreBuildGroupMenuEvent,0,0);
+	NotifyEventHooks(g_CluiData.hEventPreBuildGroupMenu,0,0);
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
@@ -299,8 +298,8 @@ void GroupMenus_Init(void)
 	CreateServiceFunction(MS_CLIST_ADDGROUPMENUITEM,AddGroupMenuItem);
 	CreateServiceFunction(MS_CLIST_REMOVEGROUPMENUITEM,RemoveGroupMenuItem);
 	CreateServiceFunction(MS_CLIST_MENUBUILDGROUP,BuildGroupMenu);
-	hPreBuildGroupMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDGROUPMENU);
-	HookEvent(ME_CLIST_PREBUILDGROUPMENU,OnBuildGroupMenu);
+
+	ModernHookEvent(ME_CLIST_PREBUILDGROUPMENU,OnBuildGroupMenu);
 
 	InitSubGroupMenus();
 
@@ -444,7 +443,7 @@ void GroupMenus_Init(void)
 	hDisableGroupsMenuItem=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
 	
 	
-	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
+	ModernHookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibIconChanged);
 	
 	//MS_CLIST_GROUPCREATE
 
@@ -462,7 +461,6 @@ HANDLE hSubGroupMenuObject;
 HANDLE hSubGroupMainMenuItemProxy;
 HANDLE hHideShowMainMenuItem;
 HANDLE hSubGroupStatusMenuItemProxy;
-HANDLE hPreBuildSubGroupMenuEvent;
 HANDLE hHideOfflineUsersHereMenuItem;
 HANDLE hShowOfflineUsersHereMenuItem;
 
@@ -531,7 +529,7 @@ int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 	//hMenu=wParam;
 	tick=GetTickCount();
 	
-	NotifyEventHooks(hPreBuildSubGroupMenuEvent,wParam,0);
+	NotifyEventHooks(g_CluiData.hEventPreBuildSubGroupMenu,wParam,0);
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
@@ -704,8 +702,8 @@ void InitSubGroupMenus(void)
 	CreateServiceFunction(MS_CLIST_ADDSUBGROUPMENUITEM,AddSubGroupMenuItem);
 	CreateServiceFunction(MS_CLIST_REMOVESUBGROUPMENUITEM,RemoveSubGroupMenuItem);
 	CreateServiceFunction(MS_CLIST_MENUBUILDSUBGROUP,BuildSubGroupMenu);
-	hPreBuildSubGroupMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDSUBGROUPMENU);
-	HookEvent(ME_CLIST_PREBUILDSUBGROUPMENU,OnBuildSubGroupMenu);
+
+	ModernHookEvent(ME_CLIST_PREBUILDSUBGROUPMENU,OnBuildSubGroupMenu);
 
 
 	//SubGroup menu

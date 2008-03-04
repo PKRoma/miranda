@@ -4205,10 +4205,10 @@ int LoadCLUIFramesModule(void)
 
 	InitFramesMenus();
 
-	HookEvent(ME_SYSTEM_MODULESLOADED,CLUIFrameOnModulesLoad);		 
-	HookEvent(ME_CLIST_PREBUILDFRAMEMENU,CLUIFramesModifyContextMenuForFrame); 
-	HookEvent(ME_CLIST_PREBUILDMAINMENU,CLUIFrameOnMainMenuBuild); 
-	HookEvent(ME_SYSTEM_PRESHUTDOWN,  CLUIFrameOnModulesUnload); 
+	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUIFrameOnModulesLoad);		 
+	ModernHookEvent(ME_CLIST_PREBUILDFRAMEMENU,CLUIFramesModifyContextMenuForFrame); 
+	ModernHookEvent(ME_CLIST_PREBUILDMAINMENU,CLUIFrameOnMainMenuBuild); 
+	ModernHookEvent(ME_SYSTEM_PRESHUTDOWN,  CLUIFrameOnModulesUnload); 
 
 	CreateServiceFunction(MS_SKINENG_REGISTERPAINTSUB,syncService_CLUIFrames_Service_RegisterFramePaintCallbackProcedure);
 

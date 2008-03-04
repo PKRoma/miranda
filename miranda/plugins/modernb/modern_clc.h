@@ -163,8 +163,6 @@ struct ClcGroup;
 
 #define TEXT_TEXT_MAX_LENGTH 1024
 
-#define CLUI_SetDrawerService "CLUI/SETDRAWERSERVICE"
-#define CLUI_EXT_FUNC_PAINTCLC	1
 
 #define IsHContactGroup(h)  (((unsigned)(h)^HCONTACT_ISGROUP)<(HCONTACT_ISGROUP^HCONTACT_ISINFO))
 #define IsHContactInfo(h)   (((unsigned)(h)&HCONTACT_ISINFO)==HCONTACT_ISINFO)
@@ -461,20 +459,6 @@ typedef struct tagOVERLAYICONINFO
     int listID;
 } OVERLAYICONINFO;
 
-typedef struct {
-	int cbSize;
-	char *PluginName;
-	char *Comments;
-	char *GetDrawFuncsServiceName;
-
-} DrawerServiceStruct,*pDrawerServiceStruct ;
-
-typedef struct {
-	int cbSize;
-	void (*PaintClc)(HWND,struct ClcData *,HDC,RECT *,int ,ClcProtoStatus *,HIMAGELIST);
-
-} ExternDrawer,*pExternDrawer ;
-
 //clc.c
 void    ClcOptionsChanged(void);
 
@@ -525,7 +509,5 @@ int     RenameGroupT(WPARAM groupID, LPARAM newName);
 
 int     GetContactCachedStatus(HANDLE hContact);
 char   *GetContactCachedProtocol(HANDLE hContact);
-
-ExternDrawer SED;
 
 #endif _CLC_H_

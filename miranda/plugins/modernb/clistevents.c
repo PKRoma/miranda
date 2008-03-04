@@ -105,7 +105,7 @@ struct CListEvent* cliCreateEvent( void )
 
 struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 {
-	struct CListEvent* p = saveAddEvent(cle);
+	struct CListEvent* p = corecli.pfnAddEvent(cle);
 		if ( p == NULL )
 		return NULL;
 
@@ -221,7 +221,7 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
         }	
     }
 
-	res=saveRemoveEvent(hContact, hDbEvent);
+	res=corecli.pfnRemoveEvent(hContact, hDbEvent);
 
 	if (pcli->events.count == 0) 
     {

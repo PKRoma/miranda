@@ -1743,7 +1743,7 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	case WM_DESTROY: 
 		{
-			UnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
+			ModernUnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
 			break;
 		}
 
@@ -2670,7 +2670,6 @@ extern struct MM_INTERFACE mmi;
 
 char **bkgrList = NULL;
 int bkgrCount = 0;
-HANDLE hEventBkgrChanged=NULL;
 /*
 #define mir_alloc(n) mmi.mmi_malloc(n)
 #define mir_free(ptr) mmi.mmi_free(ptr)
@@ -2967,7 +2966,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								}
 								DBWriteContactSettingWord(NULL, module, "BkBmpUse", dat->item[indx].flags);
 								dat->item[indx].changed = FALSE;
-								NotifyEventHooks(hEventBkgrChanged, (WPARAM)module, 0);
+								NotifyEventHooks(g_CluiData.hEventBkgrChanged, (WPARAM)module, 0);
 							}
 							return TRUE;
 						}
@@ -3004,15 +3003,13 @@ static int BkgrCfg_Register(WPARAM wParam,LPARAM lParam)
 }
 
 
-int BGModuleLoad()
+HRESULT BackgroundsLoadModule()
 {	
-	CreateServiceFunction(MS_BACKGROUNDCONFIG_REGISTER, BkgrCfg_Register);
-
-	hEventBkgrChanged = CreateHookableEvent(ME_BACKGROUNDCONFIG_CHANGED);
-	return 0;
+	CreateServiceFunction(MS_BACKGROUNDCONFIG_REGISTER, BkgrCfg_Register);	
+	return S_OK;
 }
 
-int BGModuleUnload(void)
+int BackgroundsUnloadModule(void)
 {
 	if(bkgrList != NULL)
 	{
@@ -3022,8 +3019,8 @@ int BGModuleUnload(void)
 				mir_free(bkgrList[indx]);
 		mir_free(bkgrList);
 	}
-	DestroyHookableEvent(hEventBkgrChanged);
-	hEventBkgrChanged=NULL;
+	DestroyHookableEvent(g_CluiData.hEventBkgrChanged);
+	g_CluiData.hEventBkgrChanged=NULL;
 
 	return 0;
 }

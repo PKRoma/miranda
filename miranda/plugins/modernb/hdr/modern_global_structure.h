@@ -66,8 +66,25 @@ typedef struct tagCLUIDATA
 	BOOL	bInternalAwayMsgDiscovery;
 	BOOL	bRemoveAwayMessageForOffline;
 
-} CluiData;
+	//hEventHandles
 
-EXTERN_C CluiData g_CluiData;
+	HANDLE hEventExtraImageListRebuilding;
+	HANDLE hEventExtraImageApplying;
+	HANDLE hEventBkgrChanged;
+	HANDLE hEventPreBuildTrayMenu;
+	HANDLE hEventContactDragging;
+	HANDLE hEventContactDropped;
+	HANDLE hEventContactDragStop;
+	HANDLE hEventPreBuildFrameMenu;
+	HANDLE hEventPreBuildGroupMenu;
+	HANDLE hEventPreBuildSubGroupMenu;
+	HANDLE hEventStatusBarShowToolTip;
+	HANDLE hEventStatusBarHideToolTip;
+	HANDLE hEventToolBarModuleLoaded;
+	HANDLE hEventSkinServicesCreated;
+
+} CLUIDATA;
+
+EXTERN_C CLUIDATA g_CluiData;
 
 #endif // modern_global_structure_h__

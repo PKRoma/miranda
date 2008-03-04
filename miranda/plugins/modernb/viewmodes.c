@@ -681,8 +681,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             CLCINFOITEM cii = {0};
             HICON hIcon;
             
-            if(IsWinVerXPPlus() && pfEnableThemeDialogTexture)
-                pfEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
+            xpt_EnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
 
             himlViewModes = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 12, 0);
             for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
@@ -1021,7 +1020,7 @@ void BuildViewModeMenu()
 
 }
 
-//#define MODERNBUTTONCLASS "MirandaModernButtonClass"
+//#define MODERNSKINBUTTONCLASS "MirandaModernSkinButtonClass"
 LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     BOOL hasTitleBar = wndFrameViewMode ? wndFrameViewMode->TitleBar.ShowTitleBar : 0;

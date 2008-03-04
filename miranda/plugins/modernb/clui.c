@@ -875,8 +875,6 @@ static LRESULT BroadCastMessageToChild(HWND hwnd, int message, WPARAM wParam, LP
 	return 1;
 }
 
-extern HANDLE hEventBkgrChanged;
-
 int CLUI_ReloadCLUIOptions()
 {
 	KillTimer(pcli->hwndContactList,TM_UPDATEBRINGTIMER);
@@ -902,7 +900,7 @@ int CLUI_ReloadCLUIOptions()
 	}			
 	BroadCastMessageToChild(pcli->hwndContactList, WM_THEMECHANGED, 0, 0);
 
-	NotifyEventHooks(hEventBkgrChanged, 0, 0);
+	NotifyEventHooks(g_CluiData.hEventBkgrChanged, 0, 0);
 	return 0;
 }
 
@@ -1010,7 +1008,7 @@ static int CLUI_CreateCLC(HWND parent)
 		mutex_bDisableAutoUpdate=0;
 
 	}  	
-	hSettingChangedHook=HookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI_OnSettingChanging);
+	hSettingChangedHook=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI_OnSettingChanging);
 	return(0);
 };
 
@@ -1308,7 +1306,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				//reposition buttons and new size applying
 				{
-					ModernButton_ReposButtons(hwnd,FALSE,&work_rect);
+					ModernSkinButton_ReposButtons(hwnd,FALSE,&work_rect);
 					ske_PrepeareImageButDontUpdateIt(&work_rect);
 					g_CluiData.mutexPreventDockMoving=0;			
 					ske_UpdateWindowImageRect(&work_rect);        
@@ -1384,8 +1382,8 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				GetWindowRect(hwnd, &rc);
 				CheckFramesPos(&rc);
-				ModernButton_ReposButtons(hwnd,FALSE,&rc);
-				ModernButton_ReposButtons(hwnd,7,NULL);
+				ModernSkinButton_ReposButtons(hwnd,FALSE,&rc);
+				ModernSkinButton_ReposButtons(hwnd,7,NULL);
 				if (g_CluiData.fLayered)
 					CallService(MS_SKINENG_UPTATEFRAMEIMAGE,(WPARAM)hwnd,0);
 				if (!g_CluiData.fLayered)
@@ -2337,7 +2335,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 
 			if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};
 			UnLoadContactListModule();
-			if(hSettingChangedHook!=0)	UnhookEvent(hSettingChangedHook);
+			if(hSettingChangedHook!=0)	ModernUnhookEvent(hSettingChangedHook);
 			ClcUnloadModule();
 
 
@@ -2376,7 +2374,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			return 0;
 		}	}
 
-	return saveContactListWndProc( hwnd, msg, wParam, lParam );
+	return corecli.pfnContactListWndProc( hwnd, msg, wParam, lParam );
 }
 
 int CLUI_IconsChanged(WPARAM wParam,LPARAM lParam)
@@ -2515,7 +2513,7 @@ void CLUI_cli_LoadCluiGlobalOpts()
 		if (DBGetContactSettingByte(NULL,"CList","WindowShadow",SETTING_WINDOWSHADOW_DEFAULT)==2)
 			DBWriteContactSettingByte(NULL,"CList","WindowShadow",1); 
 	}
-	saveLoadCluiGlobalOpts();
+	corecli.pfnLoadCluiGlobalOpts();
 }
 
 void CLUI_cliOnCreateClc(void)
@@ -2537,12 +2535,10 @@ void CLUI_cliOnCreateClc(void)
 	// Call InitGroup menus before
 	GroupMenus_Init();
 
-	HookEvent(ME_SYSTEM_MODULESLOADED,CLUI_ModulesLoaded);
-	HookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
+	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI_ModulesLoaded);
+	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
 
-	hContactDraggingEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
-	hContactDroppedEvent=CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
-	hContactDragStopEvent=CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
+
 	CLUIServices_LoadModule();
 	//TODO Add Row template loading here.
 
@@ -2583,7 +2579,7 @@ void CLUI_cliOnCreateClc(void)
 		mi.pszService="CList/HideContactAvatar";
 		hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 		DestroyIcon_protect(mi.hIcon);
-		HookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI_MenuItem_PreBuild);
+		ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI_MenuItem_PreBuild);
 	}
 
 	nLastRequiredHeight=0;

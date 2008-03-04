@@ -164,14 +164,14 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
        if (result==-1 || !(LOWORD(result)))
        {
            //Get normal Icon
-           int  basicIcon=saveIconFromStatusMode(szActProto,nActStatus,NULL);
+           int  basicIcon=corecli.pfnIconFromStatusMode(szActProto,nActStatus,NULL);
            if (result!=-1 && basicIcon!=1) result|=basicIcon;
            else result=basicIcon;
        }
    }
    else
    {
-       result=saveIconFromStatusMode(szProto,nStatus,NULL);
+       result=corecli.pfnIconFromStatusMode(szProto,nStatus,NULL);
    }
    return result;
 }
@@ -207,14 +207,14 @@ void UnLoadContactListModule()  //unhooks noncritical events
     UninitCustomMenus();
    // UnloadMainMenu();
    // UnloadStatusMenu();
-    UnhookEvent(hookOptInitialise_CList);
-    UnhookEvent(hookOptInitialise_Skin);
-    UnhookEvent(hSettingChanged);
-    UnhookEvent(hookContactAdded_CListSettings);
+    ModernUnhookEvent(hookOptInitialise_CList);
+    ModernUnhookEvent(hookOptInitialise_Skin);
+    ModernUnhookEvent(hSettingChanged);
+    ModernUnhookEvent(hookContactAdded_CListSettings);
 }
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
-    UnhookEvent(hookSystemShutdown_CListMod);
+    ModernUnhookEvent(hookSystemShutdown_CListMod);
     FreeDisplayNameCache();
     if(g_hMainThread) CloseHandle(g_hMainThread);
     g_hMainThread=NULL;
@@ -254,24 +254,34 @@ int CLUIGetCapsService(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-int PreLoadContactListModule()
+HRESULT PreLoadContactListModule()
 {
+	/* Global data initialization */
+	{
+		g_CluiData.fOnDesktop=FALSE;
+		g_CluiData.fUseKeyColor=TRUE;
+		g_CluiData.dwKeyColor=RGB(255,0,255);
+		g_CluiData.bCurrentAlpha=255;
+	}
+
 	//initialize firstly hooks
 	//clist interface is empty yet so handles should check
-	hSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
-	return 0;
+	hSettingChanged = ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
+	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);
+
+	return S_OK;
 }
 
-int LoadContactListModule(void)
+HRESULT  CluiLoadModule()
 {
 	CreateServiceFunction(MS_CLUI_GETCAPS,CLUIGetCapsService);
 
 	InitDisplayNameCache();
-	hookSystemShutdown_CListMod  = HookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
-	hookOptInitialise_CList      = HookEvent(ME_OPT_INITIALISE,CListOptInit);
-	hookOptInitialise_Skin       = HookEvent(ME_OPT_INITIALISE,SkinOptInit);
+	hookSystemShutdown_CListMod  = ModernHookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
+	hookOptInitialise_CList      = ModernHookEvent(ME_OPT_INITIALISE,CListOptInit);
+	hookOptInitialise_Skin       = ModernHookEvent(ME_OPT_INITIALISE,SkinOptInit);
 	
-	hookContactAdded_CListSettings = HookEvent(ME_DB_CONTACT_ADDED,ContactAdded);	
+	hookContactAdded_CListSettings = ModernHookEvent(ME_DB_CONTACT_ADDED,ContactAdded);	
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);
 	CreateServiceFunction(MS_CLIST_PAUSEAUTOHIDE,TrayIconPauseAutoHide);
 	CreateServiceFunction(MS_CLIST_CONTACTCHANGEGROUP,ContactChangeGroup);
@@ -297,9 +307,9 @@ int LoadContactListModule(void)
 			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
 		#endif
 	}
-	return 0;
+	return S_OK;
 }
-
+HRESULT  CluiLoadModule();
 /*
 Begin of Hrk's code for bug
 */

@@ -205,13 +205,13 @@ int LoadFavoriteContactMenu()
 {
     CreateServiceFunction(CLUI_FAVSETRATE,FAV_SetRate);
     CreateServiceFunction(CLUI_FAVTOGGLESHOWOFFLINE,FAV_ToggleShowOffline);
-    hOnContactMenuBuild_FAV=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,FAV_OnContactMenuBuild);
+    hOnContactMenuBuild_FAV=ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU,FAV_OnContactMenuBuild);
     return 0;
 }
 
 int UnloadFavoriteContactMenu()
 {
-    UnhookEvent(hOnContactMenuBuild_FAV);
+    ModernUnhookEvent(hOnContactMenuBuild_FAV);
 
     if (hFavoriteContactMenuItems)
         free (hFavoriteContactMenuItems);

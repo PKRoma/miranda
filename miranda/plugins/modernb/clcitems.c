@@ -109,7 +109,7 @@ int cli_AddItemToGroup(struct ClcGroup *group,int iAboveItem)
 {
 	if ( group == NULL ) return 0;
 
-	iAboveItem = saveAddItemToGroup( group, iAboveItem );
+	iAboveItem = corecli.pfnAddItemToGroup( group, iAboveItem );
 	ClearRowByIndexCache();
 	return iAboveItem;
 }
@@ -124,7 +124,7 @@ struct ClcGroup *cli_AddGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,
 			ClearRowByIndexCache();
 			return NULL;
 		}
-		result = saveAddGroup( hwnd, dat, szName, flags, groupId, calcTotalMembers);
+		result = corecli.pfnAddGroup( hwnd, dat, szName, flags, groupId, calcTotalMembers);
 		ClearRowByIndexCache();
 		return result;
 }
@@ -148,18 +148,18 @@ void cli_FreeContact(struct ClcContact *p)
 	if ( p->avatar_pos==AVATAR_POS_ANIMATED )
 		AniAva_RemoveAvatar( p->hContact );
 	p->avatar_pos=AVATAR_POS_DONT_HAVE;
-	saveFreeContact( p );
+	corecli.pfnFreeContact( p );
 }
 
 void cli_FreeGroup( struct ClcGroup* group )
 {
-	saveFreeGroup( group );
+	corecli.pfnFreeGroup( group );
 	ClearRowByIndexCache();
 }
 
 int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText)
 {
-	int i = saveAddInfoItemToGroup( group, flags, pszText );
+	int i = corecli.pfnAddInfoItemToGroup( group, flags, pszText );
 	ClearRowByIndexCache();
 	return i;
 }
@@ -280,7 +280,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 	pdisplayNameCacheEntry cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
 	if(dat->IsMetaContactsEnabled && cacheEntry && cacheEntry->m_cache_nHiddenSubcontact) return;		//contact should not be added
 	if(!dat->IsMetaContactsEnabled && cacheEntry && g_szMetaModuleName && !mir_strcmp(cacheEntry->m_cache_cszProto,g_szMetaModuleName)) return;
-	saveAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
+	corecli.pfnAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
 	{
 		if (cont)
@@ -306,7 +306,7 @@ void cli_DeleteItemFromTree(HWND hwnd,HANDLE hItem)
 {
 	struct ClcData *dat = (struct ClcData *) GetWindowLong(hwnd, 0);
 	ClearRowByIndexCache();
-	saveDeleteItemFromTree(hwnd, hItem);
+	corecli.pfnDeleteItemFromTree(hwnd, hItem);
 
 	//check here contacts are not resorting
 	if (hwnd==pcli->hwndContactTree)
@@ -456,7 +456,7 @@ void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 		else
 			hSelItem = pcli->pfnContactToHItem(selcontact);
 	}
-	saveSortCLC(hwnd,dat,useInsertionSort);
+	corecli.pfnSortCLC(hwnd,dat,useInsertionSort);
 	if (hSelItem)
 		if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
 		{
@@ -719,7 +719,7 @@ char* cli_GetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 {
 	char * res;
 	
-	res=saveGetGroupCountsText(dat, contact);
+	res=corecli.pfnGetGroupCountsText(dat, contact);
 	
 	return res;
 }

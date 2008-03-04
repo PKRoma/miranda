@@ -441,7 +441,7 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 		*((LRESULT*)lParam)=0;
 		return TRUE;
 	}
-	return saveTrayIconProcessMessage(wParam, lParam);
+	return corecli.pfnTrayIconProcessMessage(wParam, lParam);
 }
 
 //////////////////////////////TRAY MENU/////////////////////////
@@ -450,7 +450,6 @@ HANDLE hTrayMenuObject;
 HANDLE hTrayMainMenuItemProxy;
 HANDLE hHideShowMainMenuItem;
 HANDLE hTrayStatusMenuItemProxy;
-HANDLE hPreBuildTrayMenuEvent;
 
 //traymenu exec param(ownerdata)
 typedef struct{
@@ -483,7 +482,7 @@ static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	//hMenu=wParam;
 	tick=GetTickCount();
 
-	NotifyEventHooks(hPreBuildTrayMenuEvent,0,0);
+	NotifyEventHooks(g_CluiData.hEventPreBuildTrayMenu,0,0);
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	//DrawMenuBar((HWND)CallService("CLUI/GetHwnd",0,0));
@@ -604,7 +603,7 @@ void InitTrayMenus(void)
 	CreateServiceFunction(MS_CLIST_ADDTRAYMENUITEM,AddTrayMenuItem);
 	CreateServiceFunction(MS_CLIST_REMOVETRAYMENUITEM,RemoveTrayMenuItem);
 	CreateServiceFunction(MS_CLIST_MENUBUILDTRAY,BuildTrayMenu);
-	hPreBuildTrayMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDTRAYMENU);
+	
 
 	//Tray menu
 	memset(&tmp,0,sizeof(tmp));

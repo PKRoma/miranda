@@ -244,5 +244,5 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 			return contact->iWideExtraImage[LOWORD(lParam)];
 		}
 	}
-	return saveProcessExternalMessages(hwnd, dat, msg, wParam, lParam);
+	return corecli.pfnProcessExternalMessages(hwnd, dat, msg, wParam, lParam);
 }

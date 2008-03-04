@@ -91,6 +91,9 @@ static enum tagenumHASHINDEX
     hi_Low,
     hi_Medium,
     hi_High,
+	hi_State,
+	hi_stActive,
+	hi_stInactive,
     //ADD new item above here
     hi_LastItem
 } enumHASHINDEX;
@@ -146,6 +149,9 @@ static char *szQuickHashText[hi_LastItem]=
         "Low",
         "Medium",
         "High",
+		"State",
+		"Active",
+		"Inactive"
         //ADD item here
 };
 
@@ -2369,12 +2375,6 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
 /************************************************************************/
 void CLCPaint_cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint)
 {
-
-    if (SED.cbSize==sizeof(SED)&&SED.PaintClc!=NULL)
-    {
-        SED.PaintClc(hwnd,dat,hdc,rcPaint,pcli->hClcProtoCount,pcli->clcProto,g_himlCListClc);
-        return;
-    }
     if (MirandaExiting()) return;
     g_CluiData.mutexPaintLock++;
     CLCPaint_InternalPaintClc(hwnd,dat,hdc,rcPaint);

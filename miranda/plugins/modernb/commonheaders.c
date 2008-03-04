@@ -243,3 +243,99 @@ void li_SortList(SortedList *pList, FSortFunc pSortFunct)
 	pList->sortFunc=pOldSort;
 }
 
+typedef struct _HookRec
+{
+	HANDLE hHook;
+#ifdef _DEBUG
+	char * HookStr;
+	char *    _debug_file;
+	int       _debug_line;
+#endif
+} HookRec;
+
+static HookRec * hooksrec=NULL;
+static DWORD hooksRecAlloced=0;
+
+
+#ifdef _DEBUG
+	HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc, char * file, int line)
+#else
+	HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc)
+#endif                     
+{
+	HookRec * hr=NULL;
+	DWORD i;
+	//1. Find free
+	for (i=0;i<hooksRecAlloced;i++)
+	{
+		if (hooksrec[i].hHook==NULL)
+		{
+			hr=&(hooksrec[i]);
+			break;
+		}
+	}
+	if (hr==NULL)
+	{
+		//2. Need realloc
+		hooksrec=(HookRec*)mir_realloc(hooksrec,sizeof(HookRec)*(hooksRecAlloced+1));
+		hr=&(hooksrec[hooksRecAlloced]);
+		hooksRecAlloced++;
+	}
+
+	hr->hHook=HookEvent(EventID,HookProc);
+#ifdef _DEBUG
+	//3. Hook and rec
+	hr->HookStr=NULL;
+	if (hr->hHook)
+	{
+		hr->HookStr=mir_strdup(EventID);
+		hr->_debug_file=mir_strdup(file);
+		hr->_debug_line=line;
+	}
+#endif
+	return hr->hHook;
+}
+
+int ModernUnhookEvent(HANDLE hHook)
+{
+	DWORD i;
+	//1. Find free
+
+	for (i=0;i<hooksRecAlloced;i++)
+	{
+		if (hooksrec[i].hHook==hHook)
+		{
+			UnhookEvent(hHook);
+			hooksrec[i].hHook=NULL;
+#ifdef _DEBUG
+			if (hooksrec[i].HookStr) mir_free_and_nill(hooksrec[i].HookStr);
+			if (hooksrec[i]._debug_file) mir_free_and_nill(hooksrec[i]._debug_file);
+#endif
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int UnhookAll()
+{
+	DWORD i;
+	TRACE("Unhooked Events:\n");
+	if (!hooksrec) return 0;
+	for (i=0;i<hooksRecAlloced;i++)
+	{
+		if (hooksrec[i].hHook!=NULL)
+		{
+			UnhookEvent(hooksrec[i].hHook);
+			hooksrec[i].hHook=NULL;
+#ifdef _DEBUG
+			log3("Unhook:%s (hooked at %s Ln %d)",hooksrec[i].HookStr,hooksrec[i]._debug_file,hooksrec[i]._debug_line);
+			mir_free_and_nill(hooksrec[i].HookStr);
+			mir_free_and_nill(hooksrec[i]._debug_file);
+#endif
+		}
+	}
+	mir_free_and_nill(hooksrec);
+	hooksRecAlloced=0;
+	return 1;
+}

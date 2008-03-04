@@ -189,7 +189,7 @@ void InitCacheAsync()
 	InitializeCriticalSection(&gtaCS);
 	hgtaWakeupEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
 	g_dwGetTextAsyncThreadID=(DWORD)mir_forkthread(gtaThreadProc,0);
-	HookEvent(ME_SYSTEM_PRESHUTDOWN,  gtaOnModulesUnload);
+	ModernHookEvent(ME_SYSTEM_PRESHUTDOWN,  gtaOnModulesUnload);
 }
 
 void UninitCacheAsync()

@@ -58,10 +58,11 @@ SortedList * gl_plSkinFonts =NULL;
 
 /* Private module variables */
 
+static HANDLE  hSkinLoadedEvent;
+
 static GLYPHIMAGE * pLoadedImages=NULL;
 static DWORD        dwLoadedImagesCount=0;
 static DWORD        dwLoadedImagesAlocated=0;
-static HANDLE       hEventServicesCreated=NULL;
 
 static BOOL flag_bUpdateQueued=FALSE;
 static BOOL	flag_bJustDrawNonFramedObjects=FALSE;
@@ -120,8 +121,9 @@ static pfnImgGetHandle ImgGetHandle;
 
 static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 
-int ske_LoadModule()
+HRESULT SkinEngineLoadModule()
 {
+	ModernSkinButtonLoadModule();
 	InitializeCriticalSection(&cs_SkinChanging);
 	MainModernMaskList=mir_alloc(sizeof(LISTMODERNMASK));
 	memset(MainModernMaskList,0,sizeof(LISTMODERNMASK));   
@@ -161,51 +163,25 @@ int ske_LoadModule()
 			ImgDeleteDIBSection=(pfnImgDeleteDIBSection)GetProcAddress( hImageDecoderModule, "ImgDeleteDIBSection");
 			ImgGetHandle=(pfnImgGetHandle)GetProcAddress( hImageDecoderModule, "ImgGetHandle");
 		}
-
-
-
-
 	}
 	//create services
-	{       
-		//  CreateServiceFunction(MS_SKIN_REGISTEROBJECT,ske_RegisterObject);
-		CreateServiceFunction(MS_SKIN_DRAWGLYPH,ske_Service_DrawGlyph);
-		//    CreateServiceFunction(MS_SKIN_REGISTERDEFOBJECT,ServCreateGlyphedObjectDefExt);        
-		CreateServiceFunction(MS_SKINENG_UPTATEFRAMEIMAGE,ske_Service_UpdateFrameImage);
-		CreateServiceFunction(MS_SKINENG_INVALIDATEFRAMEIMAGE,ske_Service_InvalidateFrameImage);
+	CreateServiceFunction(MS_SKIN_DRAWGLYPH,ske_Service_DrawGlyph);
+	CreateServiceFunction(MS_SKINENG_UPTATEFRAMEIMAGE,ske_Service_UpdateFrameImage);
+	CreateServiceFunction(MS_SKINENG_INVALIDATEFRAMEIMAGE,ske_Service_InvalidateFrameImage);
+	CreateServiceFunction(MS_SKINENG_ALPHATEXTOUT,ske_Service_AlphaTextOut);
+	CreateServiceFunction(MS_SKINENG_DRAWICONEXFIX,ske_Service_DrawIconEx);
 
-		CreateServiceFunction(MS_SKINENG_ALPHATEXTOUT,ske_Service_AlphaTextOut);
-		//		CreateServiceFunction(MS_SKINENG_IL_REPLACEICONFIX,ImageList_ReplaceIcon_FixAlphaServ);
-		//CreateServiceFunction(MS_SKINENG_IL_ADDICONFIX,ImageList_AddIcon_FixAlphaServ);
-		//CreateServiceFunction(MS_SKINENG_IL_ALPHAFIX,FixAlphaServ);
-		CreateServiceFunction(MS_SKINENG_DRAWICONEXFIX,ske_Service_DrawIconEx);
-	}
 	//create event handle
-	hEventServicesCreated=CreateHookableEvent(ME_SKIN_SERVICESCREATED);
-	g_hSkinLoadedEvent=HookEvent(ME_SKIN_SERVICESCREATED,CLUI_OnSkinLoad);
-
-
-	{
-		BYTE test=SkinDBGetContactSettingByte(NULL,"CLUI","StoreNotUsingElements",0);
-		test=test;
-	}
-
-	//         ske_GetSkinFromDB(DEFAULTSKINSECTION,&g_SkinObjectList);
-
-	//notify services created
-	{
-		int t=NotifyEventHooks(hEventServicesCreated,0,0);
-		t=t;
-
-	}
-
-	return 1;
+	hSkinLoadedEvent=ModernHookEvent(ME_SKIN_SERVICESCREATED,CLUI_OnSkinLoad);
+	NotifyEventHooks(g_CluiData.hEventSkinServicesCreated,0,0);
+	return S_OK;
 }
 
-int ske_UnloadModule()
+int SkinEngineUnloadModule()
 {
 	//unload services
-	ModernButton_UnloadModule(0,0);
+	ModernUnhookEvent(hSkinLoadedEvent);
+	ModernSkinButtonUnloadModule(0,0);
 	ske_UnloadSkin(&g_SkinObjectList);
 	if (g_SkinObjectList.pObjects) 
 		mir_free_and_nill(g_SkinObjectList.pObjects);
@@ -241,7 +217,7 @@ int ske_UnloadModule()
 	GdiFlush();
 	DestroyServiceFunction(MS_SKIN_REGISTEROBJECT);
 	DestroyServiceFunction(MS_SKIN_DRAWGLYPH);
-	DestroyHookableEvent(hEventServicesCreated);
+	DestroyHookableEvent(g_CluiData.hEventSkinServicesCreated);
 	if (hImageDecoderModule) FreeLibrary(hImageDecoderModule);
 	AniAva_UnloadModule();
 	ShutdownGdiPlus();
@@ -1825,7 +1801,7 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 	if (Skin->szSkinPlace) mir_free_and_nill(Skin->szSkinPlace);
 	if (Skin->pTextList) li.List_Destroy(Skin->pTextList);
 	mir_free_and_nill(Skin->pTextList);
-	DeleteButtons();
+	ModernSkinButtonDeleteAll();
 	if (Skin->dwObjLPAlocated==0) { ske_UnlockSkin(); return 0;}
 	for (i=0; i<Skin->dwObjLPAlocated; i++)
 	{
@@ -4058,7 +4034,7 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 					ske_ValidateSingleFrameImage(&Frames[i],IsForceAllPainting);
 	}
 	g_mutex_bLockUpdating=1;
-	RedrawButtons(0);
+	ModernSkinButtonRedrawAll(0);
 	g_mutex_bLockUpdating=0;
 	if (!mutex_bLockUpdate)  ske_UpdateWindowImageRect(&wnd);
 	//-- Clear queue

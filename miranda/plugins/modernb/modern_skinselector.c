@@ -559,8 +559,8 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
              +64*(TL[3]=='B')
              +128*(TL[3]=='C')
              +256*(TL[4]=='I');
-        if (a) res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),Section,Type,MinWidth,MinHeight);
-        else res=ModernButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),NULL,NULL,MinWidth,MinHeight);
+        if (a) res=ModernSkinButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),Section,Type,MinWidth,MinHeight);
+        else res=ModernSkinButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),NULL,NULL,MinWidth,MinHeight);
     }
 return res;
 }
