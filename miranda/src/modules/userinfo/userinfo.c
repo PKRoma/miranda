@@ -41,6 +41,7 @@ struct DetailsPageData {
 	HWND hwnd;
 	HTREEITEM hItem;
 	int changed;
+	TCHAR *ptszTitle, *ptszTab;
 };
 
 struct DetailsData {
@@ -51,7 +52,7 @@ struct DetailsData {
 	int pageCount;
 	int currentPage;
 	struct DetailsPageData *opd;
-	RECT rcDisplay;
+	RECT rcDisplay,  rcDisplayTab;
 	int updateAnimFrame;
 	TCHAR szUpdating[64];
 	int *infosUpdated;
@@ -59,9 +60,16 @@ struct DetailsData {
 
 static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 {
+	int res;
     if (!lstrcmp(item1->ptszTitle, TranslateT("Summary"))) return -1;
     if (!lstrcmp(item2->ptszTitle, TranslateT("Summary"))) return 1;
-    return lstrcmp(item1->ptszTitle, item2->ptszTitle);
+    if (res = lstrcmp(item1->ptszTitle, item2->ptszTitle)) return res;
+	if (item1->ptszTab && !item2->ptszTab) return -1;
+	if (!item1->ptszTab && item2->ptszTab) return 1;
+	if (!item1->ptszTab && !item2->ptszTab) return 0;
+    if (item1->ptszTab && !lstrcmp(item1->ptszTab, TranslateT("General"))) return -1;
+    if (item2->ptszTab && !lstrcmp(item2->ptszTab, TranslateT("General"))) return 1;
+	return lstrcmp(item1->ptszTab, item2->ptszTab);
 }
 
 static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
@@ -93,7 +101,9 @@ static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DETAILS),NULL,DlgProcDetails,(LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
-		mir_free((char*)opi.odp[i].pszTitle);
+		//cleanup moved to WM_DESTROY
+		//mir_free((char*)opi.odp[i].pszTitle);
+		//mir_free((char*)opi.odp[i].pszTab);
 		if(opi.odp[i].pszGroup!=NULL) mir_free(opi.odp[i].pszGroup);
 		if((DWORD)opi.odp[i].pszTemplate&0xFFFF0000) mir_free((char*)opi.odp[i].pszTemplate);
 	}
@@ -122,11 +132,17 @@ static int AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	else dst->pszTemplate = odp->pszTemplate;
 
 	#if defined(_UNICODE)
-	if ( odp->flags == ODPF_UNICODE )
+	if ( odp->flags & ODPF_UNICODE )
+	{
 		dst->ptszTitle = (odp->ptszTitle==0) ? NULL : mir_wstrdup(odp->ptszTitle);
+		dst->ptszTab = (!(odp->flags & ODPF_USERINFOTAB) || !odp->ptszTab) ? NULL : mir_wstrdup(odp->ptszTab);
+	}
 	else
 	#endif
+	{
 		dst->ptszTitle = (odp->pszTitle==0) ? NULL : LangPackPcharToTchar(odp->pszTitle);
+		dst->ptszTab = (!(odp->flags & ODPF_USERINFOTAB) || !odp->pszTab) ? NULL : LangPackPcharToTchar(odp->pszTab);
+	}
 
 	dst->pszGroup = NULL;
 	dst->groupPosition = odp->groupPosition;
@@ -151,11 +167,34 @@ static void ThemeDialogBackground(HWND hwnd)
 	}
 }
 
+static void CreateDetailsTabs( HWND hwndDlg, struct DetailsData* dat, struct DetailsPageData* ppg )
+{
+	HWND hwndTab = GetDlgItem(hwndDlg, IDC_TABS);
+	int i, sel=0, pages=0;
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
+	tie.iImage = -1;
+	TabCtrl_DeleteAllItems(hwndTab);
+	for ( i=0; i < dat->pageCount; i++ ) {
+		if (!dat->opd[i].ptszTab || lstrcmp(dat->opd[i].ptszTitle, ppg->ptszTitle)) continue;
+
+		tie.pszText = TranslateTS(dat->opd[i].ptszTab);
+		tie.lParam = i;
+		TabCtrl_InsertItem(hwndTab, pages, &tie);
+		if (!lstrcmp(dat->opd[i].ptszTab,ppg->ptszTab))
+			sel = pages;
+		pages++;
+	}
+	TabCtrl_SetCurSel(hwndTab,sel);
+}
+
 static void CreateDetailsPageWindow( HWND hwndDlg, struct DetailsData* dat, struct DetailsPageData* ppg )
 {
+	RECT *rc = ppg->ptszTab ? &dat->rcDisplayTab : &dat->rcDisplay;
 	ppg->hwnd=CreateDialogIndirectParam(ppg->hInst,ppg->pTemplate,hwndDlg,ppg->dlgProc,(LPARAM)dat->hContact);
 	ThemeDialogBackground(ppg->hwnd);
-	SetWindowPos(ppg->hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, dat->rcDisplay.right - dat->rcDisplay.left, dat->rcDisplay.bottom - dat->rcDisplay.top, 0);
+	SetWindowPos(ppg->hwnd, HWND_TOP, rc->left, rc->top, rc->right - rc->left, rc->bottom - rc->top, 0);
+	SetWindowPos(ppg->hwnd, HWND_TOP, rc->left, rc->top, rc->right - rc->left, rc->bottom - rc->top, 0);
 	{	
 		PSHNOTIFY pshn;
 		pshn.hdr.code = PSN_PARAMCHANGED;
@@ -235,11 +274,19 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					dat->opd[i].dlgParam = odp[i].dwInitParam;
 					dat->opd[i].hInst = odp[i].hInstance;
 
+					dat->opd[i].ptszTitle = odp[i].ptszTitle;
+					dat->opd[i].ptszTab = odp[i].ptszTab;
+
+					if (i && dat->opd[i].ptszTab && !lstrcmp(dat->opd[i-1].ptszTitle, dat->opd[i].ptszTitle)) {
+						dat->opd[i].hItem = dat->opd[i-1].hItem;
+						continue;
+					}
+
 					tvis.hParent = NULL;
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 					tvis.item.lParam = (LPARAM) i;
-					tvis.item.pszText = odp[i].ptszTitle;
+					tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
 					if ( dbv.type != DBVT_DELETED && !lstrcmp( tvis.item.pszText, dbv.ptszVal ))
 						dat->currentPage = i;
 					dat->opd[i].hItem = TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PAGETREE), &tvis);
@@ -247,13 +294,30 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBFreeVariant(&dbv);
 			}
 
-			GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
-			TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
-			{	POINT pt={0,0};
-				ClientToScreen(hwndDlg,&pt);
-				OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
-			}
+			{	TCITEM tci;
+				tci.mask = TCIF_TEXT | TCIF_IMAGE;
+				tci.iImage = -1;
+				tci.pszText = _T("X");
+				TabCtrl_InsertItem(GetDlgItem(hwndDlg,IDC_TABS),0,&tci);
+
+				GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplayTab);
+				TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplayTab);
+				{	POINT pt={0,0};
+					ClientToScreen(hwndDlg,&pt);
+					OffsetRect(&dat->rcDisplayTab,-pt.x,-pt.y);
+				}
+
+				TabCtrl_DeleteAllItems(GetDlgItem(hwndDlg,IDC_TABS));
+
+				GetWindowRect(GetDlgItem(hwndDlg,IDC_TABS),&dat->rcDisplay);
+				TabCtrl_AdjustRect(GetDlgItem(hwndDlg,IDC_TABS),FALSE,&dat->rcDisplay);
+				{	POINT pt={0,0};
+					ClientToScreen(hwndDlg,&pt);
+					OffsetRect(&dat->rcDisplay,-pt.x,-pt.y);
+			}	}
+
 			TreeView_Select(GetDlgItem(hwndDlg,IDC_PAGETREE), dat->opd[dat->currentPage].hItem, TVGN_CARET);
+			CreateDetailsTabs( hwndDlg, dat, &dat->opd[dat->currentPage] );
 			CreateDetailsPageWindow( hwndDlg, dat, &dat->opd[dat->currentPage] );
 			ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
 			dat->updateAnimFrame = 0;
@@ -361,8 +425,10 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 	case WM_NOTIFY:
 		switch(wParam) {
+		case IDC_TABS:
 		case IDC_PAGETREE:
 			switch(((LPNMHDR)lParam)->code) {
+			case TCN_SELCHANGING:
 			case TVN_SELCHANGING:
 				{	PSHNOTIFY pshn;
 					if(dat->currentPage==-1 || dat->opd[dat->currentPage].hwnd==NULL) break;
@@ -376,21 +442,43 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				}	}
 				break;
 
+			case TCN_SELCHANGE:
 			case TVN_SELCHANGED:
+			{
 				if ( dat->currentPage!=-1 && dat->opd[dat->currentPage].hwnd != NULL ) {
+					BOOL tabChange = (wParam == IDC_TABS);
+					HWND hwndTab = GetDlgItem(hwndDlg,IDC_TABS);
 					ShowWindow(dat->opd[dat->currentPage].hwnd,SW_HIDE);
+					if (tabChange)
+					{
+						TCITEM tie;
+						TVITEM tvi;
+
+						tie.mask = TCIF_PARAM;
+						TabCtrl_GetItem(hwndTab,TabCtrl_GetCurSel(hwndTab),&tie);
+						dat->currentPage=tie.lParam;
+
+						tvi.hItem=TreeView_GetNextItem(GetDlgItem(hwndDlg,IDC_PAGETREE),NULL,TVGN_CARET);
+						tvi.mask=TVIF_PARAM;
+						tvi.lParam=dat->currentPage;
+						TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PAGETREE),&tvi);
+					} else
 					{
 						LPNMTREEVIEW pnmtv = (LPNMTREEVIEW) lParam;
 						TVITEM tvi = pnmtv->itemNew;
 						dat->currentPage=tvi.lParam;
 					}
+
 					if(dat->currentPage!=-1) {
+						if(!tabChange)
+							CreateDetailsTabs( hwndDlg, dat, &dat->opd[dat->currentPage] );
 						if(dat->opd[dat->currentPage].hwnd==NULL)
 							CreateDetailsPageWindow( hwndDlg, dat, &dat->opd[dat->currentPage] );
 						ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
-						SetFocus(GetDlgItem(hwndDlg,IDC_PAGETREE));
+						SetFocus(dat->opd[dat->currentPage].hwnd);
 				}	}
 				break;
+			}
 			}
 			break;
 		}
@@ -476,7 +564,11 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		UnhookEvent(dat->hProtoAckEvent);
 		{	int i;
 			for(i=0;i<dat->pageCount;i++)
+			{
 				if(dat->opd[i].hwnd!=NULL) DestroyWindow(dat->opd[i].hwnd);
+				mir_free(dat->opd[i].ptszTitle);
+				mir_free(dat->opd[i].ptszTab);
+			}
 		}
 		if(dat->infosUpdated!=NULL) mir_free(dat->infosUpdated);
 		mir_free(dat->opd);

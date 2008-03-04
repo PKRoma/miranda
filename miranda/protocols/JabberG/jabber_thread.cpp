@@ -551,7 +551,7 @@ LBL_FatalError:
 			m_tmJabberLoggedInTime = 0;
 			ListWipe();
 
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE);
+			WindowNotify(WM_JABBER_REFRESH_VCARD);
 		}
 		else if ( info->type==JABBER_SESSION_REGISTER && !info->reg_done )
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Connection lost" ));

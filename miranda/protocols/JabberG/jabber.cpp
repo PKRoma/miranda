@@ -128,7 +128,6 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
 	UI_SAFE_CLOSE_HWND(m_hwndAgentRegInput);
 	UI_SAFE_CLOSE_HWND(m_hwndRegProgress);
-	UI_SAFE_CLOSE_HWND(m_hwndJabberVcard);
 	UI_SAFE_CLOSE_HWND(m_hwndMucVoiceList);
 	UI_SAFE_CLOSE_HWND(m_hwndMucMemberList);
 	UI_SAFE_CLOSE_HWND(m_hwndMucModeratorList);

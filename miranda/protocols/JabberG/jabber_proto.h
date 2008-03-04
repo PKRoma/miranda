@@ -211,7 +211,6 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	HWND   m_hwndAgentRegInput;
 	HWND   m_hwndRegProgress;
-	HWND   m_hwndJabberVcard;
 	HWND   m_hwndJabberChangePassword;
 	HWND   m_hwndMucVoiceList;
 	HWND   m_hwndMucMemberList;
@@ -261,9 +260,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	JABBER_IQ_FUNC *m_ppIqList;
 	int m_nIqCount;
 	int m_nIqAlloced;
-
-	TCHAR m_szPhotoFileName[MAX_PATH];
-	BOOL m_bPhotoChanged;
 
 	HANDLE m_hMenuRoot;
 	HANDLE m_hMenuRequestAuth;
@@ -743,13 +739,18 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_vcard.c -----------------------------------------------
 
-	int    __cdecl OnMenuHandleVcard( WPARAM wParam, LPARAM lParam );
+	int m_vCardUpdates;
+	HWND m_hwndPhoto;
+	bool m_bPhotoChanged;
+	char m_szPhotoFileName[MAX_PATH];
+	void OnUserInfoInit_VCard( WPARAM, LPARAM );
 
 	void   GroupchatJoinByHContact( HANDLE hContact );
 	int    SendGetVcard( const TCHAR* jid );
 	void   AppendVcardFromDB( XmlNode* n, char* tag, char* key );
 	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );
-	void   SaveVcardToDB( struct VcardTab *dat );
+	//void   SaveVcardToDB( struct VcardTab *dat );
+	void   SaveVcardToDB( HWND hwndPage, int iPage );
 
 	//---- jabber_ws.c -------------------------------------------------
 

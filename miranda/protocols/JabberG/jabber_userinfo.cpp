@@ -450,7 +450,7 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				HWND hwndTree = GetDlgItem(hwndDlg, IDC_TV_INFO);
 				TreeView_DeleteAllItems( hwndTree );
 				HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, dat->ppro->LoadIconEx( "main" ), _T( "JID" ), dbv.ptszVal, sttInfoLineId(0, INFOLINE_NAME), true );
-				sttFillInfoLine( hwndTree, htiRoot, LoadSkinnedProtoIcon( dat->ppro->m_szModuleName, ID_STATUS_OFFLINE ), NULL, 
+				sttFillInfoLine( hwndTree, htiRoot, dat->ppro->LoadIconEx("vcard"), NULL, 
 					TranslateT("Please switch online to see more details.") );
 
 				JFreeVariant(&dbv);
@@ -588,6 +588,7 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		photoInfo->hBitmap = NULL;
 		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) photoInfo );
 		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
 		return TRUE;
@@ -817,13 +818,15 @@ int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 	odp.dwInitParam = ( LPARAM )this;
 
 	HANDLE hContact = ( HANDLE )lParam;
-	if ( hContact ) {
+	if ( hContact )
+	{
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( szProto != NULL && !strcmp( szProto, m_szModuleName )) {
+		if ( szProto != NULL && !strcmp( szProto, m_szModuleName ))
+		{
 			odp.pfnDlgProc = JabberUserInfoDlgProc;
 			odp.position = -2000000000;
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_INFO_JABBER );
-			odp.pszTitle = m_szModuleName;	// title!!!!!!!!!!!
+			odp.pszTitle = LPGEN("Account");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 			odp.pfnDlgProc = JabberUserPhotoDlgProc;
@@ -831,7 +834,12 @@ int CJabberProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 			odp.pszTemplate = MAKEINTRESOURCEA( IDD_VCARD_PHOTO );
 			odp.pszTitle = LPGEN("Photo");
 			JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
-	}	}
+		}
+	} else
+	{
+		// Show our vcard
+		OnUserInfoInit_VCard(wParam, lParam);
+	}
 
 	return 0;
 }

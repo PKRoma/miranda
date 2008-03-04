@@ -621,14 +621,6 @@ void CJabberProto::MenuInit()
 	m_hMenuChangePassword = ( HANDLE ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM ) m_hMenuChangePassword, ( LPARAM )&clmi );
 
-	// "Personal vCard..."
-	JCreateService( "/Vcard", &CJabberProto::OnMenuHandleVcard );
-	strcpy( tDest, "/Vcard" );
-	mi.pszName = LPGEN("Personal vCard");
-	mi.position = 2000050008;
-	mi.icolibItem = GetIconHandle( IDI_VCARD );
-	JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
-
 	// "Privacy lists..."
 	JCreateService( "/PrivacyLists", &CJabberProto::OnMenuHandlePrivacyLists );
 	strcpy( tDest, "/PrivacyLists" );

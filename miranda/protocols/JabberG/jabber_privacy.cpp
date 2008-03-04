@@ -1001,7 +1001,7 @@ BOOL CJabberDlgPrivacyLists::OnWmDrawItem(UINT msg, WPARAM wParam, LPARAM lParam
 
 		COLORREF clText = GetSysColor(COLOR_BTNTEXT);
 		RECT rc = lpdis->rcItem;
-		rc.left = rc.right - totalWidth;
+		rc.left = (rc.left + rc.right - totalWidth)/2;
 
 		for (i = 0; i < SIZEOF(items); ++i)
 		{
@@ -2191,19 +2191,20 @@ int CJabberDlgPrivacyLists::Resizer(UTILRESIZECONTROL *urc)
 	case IDC_NEWJID:
 	case IDC_CANVAS:
 		return RD_ANCHORX_LEFT|RD_ANCHORX_WIDTH|RD_ANCHORY_BOTTOM;
-	case IDC_APPLY:
 	case IDC_ADD_LIST:
 	case IDC_ACTIVATE:
 	case IDC_REMOVE_LIST:
 	case IDC_SET_DEFAULT:
 	case IDC_TXT_OTHERJID:
-		return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
-	case IDC_ADDJID:
 	case IDC_ADD_RULE:
 	case IDC_UP_RULE:
 	case IDC_EDIT_RULE:
 	case IDC_DOWN_RULE:
 	case IDC_REMOVE_RULE:
+		return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
+	case IDC_ADDJID:
+	case IDC_APPLY:
+	case IDCANCEL:
 		return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 	}
 	return CSuper::Resizer(urc);

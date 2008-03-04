@@ -178,6 +178,8 @@ protected:
 #define WM_JABBER_JOIN                 (WM_PROTO_LAST + 114)
 #define WM_JABBER_ADD_TO_ROSTER        (WM_PROTO_LAST + 115)
 #define WM_JABBER_ADD_TO_BOOKMARKS     (WM_PROTO_LAST + 116)
+#define WM_JABBER_REFRESH_VCARD        (WM_PROTO_LAST + 117)
+
 
 // Error code
 #define JABBER_ERROR_REDIRECT                    302

@@ -458,13 +458,13 @@ int CJabberDlgBookmarks::Resizer(UTILRESIZECONTROL *urc)
 		case IDC_BM_LIST:
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_HEIGHT;
 
-		case IDCLOSE:
+		case IDCANCEL:
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
 
 		case IDC_ADD:
 		case IDC_EDIT:
 		case IDC_REMOVE:
-			return RD_ANCHORX_RIGHT|RD_ANCHORY_BOTTOM;
+			return RD_ANCHORX_LEFT|RD_ANCHORY_BOTTOM;
 	}
 	return CSuper::Resizer(urc);
 }

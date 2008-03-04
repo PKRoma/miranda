@@ -82,7 +82,7 @@ typedef struct {
 			TCHAR* ptszTab;		 //v0.6.0.0+
 		};
 	#endif
-	
+
 	#if MIRANDA_VER >= 0x0720
 	union {
 			LPARAM dwInitParam;	 //v0.7.2.0+  a value to pass to lParam of WM_INITDIALOG message
@@ -99,6 +99,7 @@ typedef struct {
 #define ODPF_EXPERTONLY   2	//         "                 expert mode
 #define ODPF_BOLDGROUPS   4   // give group box titles a bold font
 #define ODPF_UNICODE      8   // string fields in OPTIONSDIALOGPAGE are WCHAR*
+#define ODPF_USERINFOTAB  16  // options page is tabbed
 
 #if defined( _UNICODE )
 	#define ODPF_TCHAR     ODPF_UNICODE

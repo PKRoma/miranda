@@ -561,7 +561,6 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 	//UI_SAFE_NOTIFY(m_pDlgJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
 	//UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
 	UI_SAFE_NOTIFY_HWND(m_hwndJabberAddBookmark, WM_JABBER_CHECK_ONLINE);
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_CHECK_ONLINE);
 	WindowNotify(WM_JABBER_CHECK_ONLINE);
 
 	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
@@ -1198,7 +1197,7 @@ void CJabberProto::OnIqResultGetVcard( XmlNode *iqNode, void *userdata )
 		else if ( hContact != NULL )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 		else
-			UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_REFRESH);
+			WindowNotify(WM_JABBER_REFRESH_VCARD);
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( hContact != NULL )
@@ -1212,7 +1211,7 @@ void CJabberProto::OnIqResultSetVcard( XmlNode *iqNode, void *userdata )
 	if ( type == NULL )
 		return;
 
-	UI_SAFE_NOTIFY_HWND(m_hwndJabberVcard, WM_JABBER_REFRESH);
+	WindowNotify(WM_JABBER_REFRESH_VCARD);
 }
 
 void CJabberProto::OnIqResultSetSearch( XmlNode *iqNode, void *userdata )
