@@ -52,8 +52,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -156,6 +157,7 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -267,6 +269,7 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -367,8 +370,9 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				FloatingPointModel="0"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				AssemblerListingLocation=""
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -449,6 +453,14 @@
 				RelativePath=".\formatting.cpp"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release Unicode|Win32"
 					>
 					<Tool
@@ -462,6 +474,16 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+						PrecompiledHeaderFile=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -477,6 +499,14 @@
 				RelativePath="ImageDataObject.cpp"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release Unicode|Win32"
 					>
 					<Tool
@@ -490,6 +520,16 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+						PrecompiledHeaderFile=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -534,6 +574,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -611,6 +659,16 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\colorchooser.c"
@@ -637,6 +695,16 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 						/>
 					</FileConfiguration>
 				</File>
@@ -667,6 +735,16 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\main.c"
@@ -693,6 +771,16 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 						/>
 					</FileConfiguration>
 				</File>
@@ -723,6 +811,16 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\message.c"
@@ -749,6 +847,16 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 						/>
 					</FileConfiguration>
 				</File>
@@ -779,6 +887,16 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\services.c"
@@ -805,6 +923,16 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 						/>
 					</FileConfiguration>
 				</File>
@@ -835,6 +963,16 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\chat\window.c"
@@ -861,6 +999,16 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="2"
+							PrecompiledHeaderThrough="../commonheaders.h"
+							PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1072,19 +1220,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1108,11 +1256,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -1128,19 +1276,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
 				RelativePath=".\res\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1152,11 +1300,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
@@ -1316,11 +1464,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
