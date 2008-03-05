@@ -387,6 +387,8 @@
 #define CLASS_AWAY                  0x0020
 #define CLASS_ICQ                   0x0040
 #define CLASS_WIRELESS              0x0080
+#define CLASS_FORWARDING            0x0200
+#define CLASS_BOT                   0x0400
 
 // Reply types for SNAC 15/02 & 15/03
 #define CLI_META_INFO_REQ           0x07D0

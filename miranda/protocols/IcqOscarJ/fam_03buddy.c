@@ -43,7 +43,7 @@ static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
@@ -119,16 +119,18 @@ void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
 }
 
 
-// TLV(1) Unknown (x50)
-// TLV(2) Member since (not sent)
-// TLV(3) Online since
-// TLV(4) Idle time (not sent)
+// TLV(1) User class
+// TLV(3) Signon time
+// TLV(4) Idle time (in minutes)
+// TLV(5) Member since
 // TLV(6) New status
 // TLV(A) External IP
 // TLV(C) DC Info
 // TLV(D) Capabilities
 // TLV(F) Session timer (in seconds)
-// TLV(1D) Avatar Hash (20 bytes)
+// TLV(14) Instance number (AIM only)
+// TLV(19) Short capabilities
+// TLV(1D) Avatar Info / Expressions
 static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 {
   HANDLE hContact;
@@ -143,6 +145,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   LPSTR szClient = 0;
   BYTE bClientId = 0;
   WORD wVersion = 0;
+  WORD wClass;
   WORD wTLVCount;
   WORD wWarningLevel;
   WORD wStatusFlags;
@@ -194,6 +197,9 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
     if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
       return;
 
+    // Get Class word
+    wClass = getWordFromChain(pChain, 0x01, 1);
+
     if (dwUIN)
     {
       // Get DC info TLV
@@ -243,11 +249,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
     }
     else
     {
-      // Get Class word
-      WORD wClass = getWordFromChain(pChain, 0x01, 1);
-
       if (wClass & CLASS_AWAY)
         wStatus = ID_STATUS_AWAY;
+      else if (wClass & CLASS_WIRELESS)
+        wStatus = ID_STATUS_ONTHEPHONE;
       else
         wStatus = ID_STATUS_ONLINE;
 
@@ -381,7 +386,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
             handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
           }
 
-          szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+          szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
         }
 
 #ifdef _DEBUG

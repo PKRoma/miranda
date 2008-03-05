@@ -206,7 +206,7 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
   int bMirandaIM = FALSE;
@@ -796,7 +796,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           {
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
               szClient = "Icq2Go! (Java)";
-            else if (bDirectFlag == 0x04)
+            else if (wUserClass & CLASS_WIRELESS)
               szClient = "Pocket Web 1&1";
             else
               szClient = "Icq2Go!";
