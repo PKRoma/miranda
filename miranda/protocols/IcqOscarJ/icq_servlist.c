@@ -1080,7 +1080,10 @@ int countGroupLevel(WORD wGroupId)
   int cnt = -1;
 
   if (szGroupName)
+  {
     cnt = countGroupNameLevel(szGroupName);
+    SAFE_FREE(&szGroupName);
+  }
 
   return cnt;
 }
