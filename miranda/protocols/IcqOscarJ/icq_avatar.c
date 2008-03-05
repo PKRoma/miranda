@@ -266,8 +266,7 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
       strcpy(pszDest + tPathLen, "avatar" );
     else 
     {
-      char* szLastDot = strstr(szBuf, ".");
-      if (szLastDot) while (strstr(szLastDot+1, ".")) szLastDot = strstr(szLastDot+1, ".");
+      char* szLastDot = strrchr(szBuf, '.');
       if (szLastDot) szLastDot[0] = '\0';
       strcpy(pszDest + tPathLen, szBuf);
       strcat(pszDest + tPathLen, "_avt");
