@@ -2257,8 +2257,6 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	if ( !m_bJabberOnline )
 		return 0;
 
-	static int serviceAllocated = -1;
-
 	CLISTMENUITEM mi = { 0 };
 	int i=0;
 	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
@@ -2294,9 +2292,9 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	m_privacyListManager.Lock();
 
 	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
-	if ( i > serviceAllocated ) {
+	if ( i > m_privacyMenuServiceAllocated ) {
 		JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
-		serviceAllocated = i;
+		m_privacyMenuServiceAllocated = i;
 	}
 	mi.position++;
 	mi.icolibItem = LoadSkinnedIconHandle(
@@ -2310,9 +2308,9 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 		++i;
 		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 
-		if ( i > serviceAllocated ) {
+		if ( i > m_privacyMenuServiceAllocated ) {
 			JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
-			serviceAllocated = i;
+			m_privacyMenuServiceAllocated = i;
 		}
 
 		mi.position++;

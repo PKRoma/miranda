@@ -442,10 +442,10 @@ static struct
 	char *icon;
 } filter_modes[] =
 {
-	{TFilterInfo::T_JID,	_T("JID"),				"main"},
-	{TFilterInfo::T_XMLNS,	_T("xmlns"),			"xmlconsole"},
-	{TFilterInfo::T_ANY,	_T("all attributes"),	"sd_filter_apply"},
-	{TFilterInfo::T_OFF,	_T("disabled"),			"sd_filter_reset"},
+	{ TFilterInfo::T_JID,   _T("JID"),            "main" },
+	{ TFilterInfo::T_XMLNS, _T("xmlns"),          "xmlconsole" },
+	{ TFilterInfo::T_ANY,   _T("all attributes"), "sd_filter_apply" },
+	{ TFilterInfo::T_OFF,   _T("disabled"),       "sd_filter_reset" },
 };
 
 class CJabberDlgConsole: public CJabberDlgBase
@@ -643,7 +643,7 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					if (!m_proto->m_bJabberOnline)
 					{
 						MessageBox(m_hwnd, TranslateT("Can't send data while you are offline."), TranslateT("Jabber Error"), MB_ICONSTOP|MB_OK);
-						break;
+						return TRUE;
 					}
 
 					int length = GetWindowTextLength(GetDlgItem(m_hwnd, IDC_CONSOLEIN)) + 1;
@@ -673,13 +673,9 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					mir_free(textToSend);
 
 					SendDlgItemMessage(m_hwnd, IDC_CONSOLEIN, WM_SETTEXT, 0, (LPARAM)_T(""));
-					break;
+					return TRUE;
 				}
-				case IDCANCEL:
-				{
-					PostMessage(m_hwnd, WM_CLOSE, 0, 0);
-					break;
-				}
+
 				case IDC_RESET:
 				{
 					SetDlgItemText(m_hwnd, IDC_CONSOLE, _T(""));
@@ -796,7 +792,7 @@ void CJabberProto::ConsoleInit()
 
 void CJabberProto::ConsoleUninit()
 {
-	if ( m_hThreadConsole ) 
+	if ( m_hThreadConsole )
 		PostThreadMessage(m_dwConsoleThreadId, WM_QUIT, 0, 0);
 
 	m_filterInfo.iq = m_filterInfo.msg = m_filterInfo.presence = FALSE;

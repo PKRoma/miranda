@@ -30,8 +30,6 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_disco.h"
 
-CJabberSDManager g_SDManager;
-
 #define SD_FAKEJID_CONFERENCES	"@@conferences"
 #define SD_FAKEJID_MYAGENTS		"@@my-transports"
 #define SD_FAKEJID_AGENTS		"@@transports"
