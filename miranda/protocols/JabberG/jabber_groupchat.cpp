@@ -196,34 +196,6 @@ private:
 	}
 };
 
-//static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-//static BOOL CALLBACK JabberGroupchatJoinDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
-
-/*
-int JabberMenuHandleGroupchat( WPARAM wParam, LPARAM lParam )
-{
-	int iqId;
-
-	// lParam is the initial conference server to browse ( if any )
-	if ( IsWindow( hwndJabberGroupchat )) {
-		SetForegroundWindow( hwndJabberGroupchat );
-		if ( lParam != 0 ) {
-			SendMessage( hwndJabberGroupchat, WM_JABBER_ACTIVATE, 0, lParam );	// Just to update the IDC_SERVER and clear the list
-			iqId = JabberSerialNext();
-			JabberIqAdd( iqId, IQ_PROC_DISCOROOMSERVER, JabberIqResultDiscoRoomItems );
-
-			XmlNodeIq iq( "get", iqId, ( TCHAR* )lParam );
-			XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
-			jabberThreadInfo->send( iq );
-			// <iq/> result will send WM_JABBER_REFRESH to update the list with real data
-		}
-	}
-	else hwndJabberGroupchat = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT ), NULL, JabberGroupchatDlgProc, lParam );
-
-	return 0;
-}
-*/
-
 int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
 {
 	if ( jabberChatDllPresent )
@@ -264,298 +236,7 @@ static int CALLBACK GroupchatCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 
 	return res;
 }
-/*
-static BOOL CALLBACK JabberGroupchatDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	CJabberProto* ppro = (CJabberProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
-	HWND lv;
-	LVCOLUMN lvCol;
-	LVITEM lvItem;
-	JABBER_LIST_ITEM *item;
 
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		ppro = (CJabberProto*)lParam;
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )ppro );
-
-		// lParam is the initial conference server ( if any ) - FIXME
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "group" ));
-		TranslateDialogDefault( hwndDlg );
-		sortColumn = -1;
-		// Add columns
-		lv = GetDlgItem( hwndDlg, IDC_ROOM );
-		lvCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-		lvCol.pszText = TranslateT( "JID" );
-		lvCol.cx = 210;
-		lvCol.iSubItem = 0;
-		ListView_InsertColumn( lv, 0, &lvCol );
-		lvCol.pszText = TranslateT( "Name" );
-		lvCol.cx = 150;
-		lvCol.iSubItem = 1;
-		ListView_InsertColumn( lv, 1, &lvCol );
-		lvCol.pszText = TranslateT( "Type" );
-		lvCol.cx = 60;
-		lvCol.iSubItem = 2;
-		ListView_InsertColumn( lv, 2, &lvCol );
-		if ( ppro->m_bJabberOnline ) {
-			if (( TCHAR* )lParam != NULL ) {
-				SetDlgItemText( hwndDlg, IDC_SERVER, ( TCHAR* )lParam );
-				int iqId = ppro->SerialNext();
-				ppro->IqAdd( iqId, IQ_PROC_DISCOROOMSERVER, &CJabberProto::OnIqResultDiscoRoomItems );
-
-				XmlNodeIq iq( "get", iqId, ( TCHAR* )lParam );
-				XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
-				ppro->m_ThreadInfo->send( iq );
-			}
-			else {
-				for ( int i=0; i < GC_SERVER_LIST_SIZE; i++ ) {
-					char text[100];
-					mir_snprintf( text, sizeof( text ), "GcServerLast%d", i );
-					DBVARIANT dbv;
-					if ( !ppro->JGetStringT( NULL, text, &dbv )) {
-						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.ptszVal );
-						JFreeVariant( &dbv );
-			}	}	}
-		}
-		else EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
-		return TRUE;
-
-	case WM_JABBER_ACTIVATE:
-		// lParam = server from which agent information is obtained
-		if ( lParam )
-			SetDlgItemText( hwndDlg, IDC_SERVER, ( TCHAR* )lParam );
-		ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_ROOM ));
-		EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-		return TRUE;
-
-	case WM_JABBER_REFRESH:
-		// lParam = server from which agent information is obtained
-		{
-			int i;
-			TCHAR szBuffer[256];
-			char text[128];
-
-			if ( lParam ){
-				_tcsncpy( szBuffer, ( TCHAR* )lParam, SIZEOF( szBuffer ));
-				for ( i=0; i<GC_SERVER_LIST_SIZE; i++ ) {
-					mir_snprintf( text, SIZEOF( text ), "GcServerLast%d", i );
-					DBVARIANT dbv;
-					if ( !ppro->JGetStringT( NULL, text, &dbv )) {
-						ppro->JSetStringT( NULL, text, szBuffer );
-						if ( !_tcsicmp( dbv.ptszVal, ( TCHAR* )lParam )) {
-							JFreeVariant( &dbv );
-							break;
-						}
-						_tcsncpy( szBuffer, dbv.ptszVal, SIZEOF( szBuffer ));
-						JFreeVariant( &dbv );
-					}
-					else {
-						ppro->JSetStringT( NULL, text, szBuffer );
-						break;
-				}	}
-
-				SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_RESETCONTENT, 0, 0 );
-				for ( i=0; i<GC_SERVER_LIST_SIZE; i++ ) {
-					mir_snprintf( text, SIZEOF( text ), "GcServerLast%d", i );
-					DBVARIANT dbv;
-					if ( !ppro->JGetStringT( NULL, text, &dbv )) {
-						SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )dbv.ptszVal );
-						JFreeVariant( &dbv );
-				}	}
-
-				SetDlgItemText( hwndDlg, IDC_SERVER, ( TCHAR* )lParam );
-			}
-			i = 0;
-			lv = GetDlgItem( hwndDlg, IDC_ROOM );
-			ListView_DeleteAllItems( lv );
-			LVITEM lvItem;
-			lvItem.iItem = 0;
-			while (( i=ppro->ListFindNext( LIST_ROOM, i )) >= 0 ) {
-				if (( item=ppro->ListGetItemPtrFromIndex( i )) != NULL ) {
-					lvItem.mask = LVIF_PARAM | LVIF_TEXT;
-					lvItem.iSubItem = 0;
-					_tcsncpy( szBuffer, item->jid, SIZEOF(szBuffer));
-					szBuffer[ SIZEOF(szBuffer)-1 ] = 0;
-					lvItem.lParam = ( LPARAM )item->jid;
-					lvItem.pszText = szBuffer;
-					ListView_InsertItem( lv, &lvItem );
-
-					lvItem.mask = LVIF_TEXT;
-					lvItem.iSubItem = 1;
-					lvItem.pszText = item->name;
-					ListView_SetItem( lv, &lvItem );
-
-					lvItem.iSubItem = 2;
-					lvItem.pszText = item->type;
-					ListView_SetItem( lv, &lvItem );
-					lvItem.iItem++;
-				}
-				i++;
-			}
-			EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), TRUE );
-		}
-		return TRUE;
-	case WM_JABBER_CHECK_ONLINE:
-	{
-		TCHAR text[128];
-		if ( ppro->m_bJabberOnline ) {
-			EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), TRUE );
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
-			EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), ( text[0]!='\0' ));
-		}
-		else {
-			EnableWindow( GetDlgItem( hwndDlg, IDC_JOIN ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-			SetDlgItemTextA( hwndDlg, IDC_SERVER, "" );
-			lv = GetDlgItem( hwndDlg, IDC_ROOM );
-			ListView_DeleteAllItems( lv );
-		}
-		break;
-	}
-	case WM_NOTIFY:
-		switch ( wParam ) {
-		case IDC_ROOM:
-			switch (( ( LPNMHDR )lParam )->code ) {
-			case LVN_COLUMNCLICK:
-				{
-					LPNMLISTVIEW pnmlv = ( LPNMLISTVIEW ) lParam;
-
-					if ( pnmlv->iSubItem>=0 && pnmlv->iSubItem<=1 ) {
-						if ( pnmlv->iSubItem == sortColumn )
-							sortAscending = !sortAscending;
-						else {
-							sortAscending = TRUE;
-							sortColumn = pnmlv->iSubItem;
-						}
-						ListView_SortItems( GetDlgItem( hwndDlg, IDC_ROOM ), GroupchatCompare, sortColumn );
-					}
-				}
-				break;
-			}
-			break;
-		}
-		break;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case WM_JABBER_JOIN:
-			if ( jabberChatDllPresent ) {
-				lv = GetDlgItem( hwndDlg, IDC_ROOM );
-				if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem( lv, &lvItem );
-					ListView_SetItemState( lv, lvItem.iItem, 0, LVIS_SELECTED ); // Unselect the item
-					ppro->GroupchatJoinRoomByJid( hwndDlg, ( TCHAR* )lvItem.lParam );
-				}
-				else {
-					TCHAR text[128];
-					GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
-					ppro->GroupchatJoinRoomByJid( hwndDlg, text );
-				}
-			}
-			return TRUE;
-
-		case WM_JABBER_ADD_TO_ROSTER:
-			lv = GetDlgItem( hwndDlg, IDC_ROOM );
-			if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-				lvItem.iSubItem = 0;
-				lvItem.mask = LVIF_PARAM;
-				ListView_GetItem( lv, &lvItem );
-				CJabberProto* ppro = ppro;
-				TCHAR* jid = ( TCHAR* )lvItem.lParam;
-				{	GCSESSION gcw = {0};
-					gcw.cbSize = sizeof(GCSESSION);
-					gcw.iType = GCW_CHATROOM;
-					gcw.ptszID = jid;
-					gcw.pszModule = ppro->m_szModuleName;
-					gcw.dwFlags = GC_TCHAR;
-					gcw.ptszName = NEWTSTR_ALLOCA(gcw.ptszID);
-					TCHAR* p = ( TCHAR* )_tcschr( gcw.ptszName, '@' );
-					if ( p != NULL )
-						*p = 0;
-					CallService( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
-				}
-				{	XmlNodeIq iq( "set" );
-					XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
-					XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
-					ppro->m_ThreadInfo->send( iq );
-				}
-				{	XmlNode p( "presence" ); p.addAttr( "to", jid ); p.addAttr( "type", "subscribe" );
-					ppro->m_ThreadInfo->send( p );
-			}	}
-			break;
-
-		case WM_JABBER_ADD_TO_BOOKMARKS:
-			lv = GetDlgItem( hwndDlg, IDC_ROOM );
-			if (( lvItem.iItem=ListView_GetNextItem( lv, -1, LVNI_SELECTED )) >= 0 ) {
-				lvItem.iSubItem = 0;
-				lvItem.mask = LVIF_PARAM;
-				ListView_GetItem( lv, &lvItem );
-
-				JABBER_LIST_ITEM* item = ppro->ListGetItemPtr( LIST_BOOKMARK, ( TCHAR* )lvItem.lParam );
-				if ( item == NULL ) {
-					item = ppro->ListGetItemPtr( LIST_ROOM, ( TCHAR* )lvItem.lParam );
-					if (item != NULL) {
-						item->type = _T("conference");
-						ppro->AddEditBookmark( item );
-					}
-				}
-			}
-			break;
-
-		case IDC_SERVER:
-		{	TCHAR text[ 128 ];
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
-			if ( ppro->m_bJabberOnline && ( text[0] || HIWORD( wParam )==CBN_SELCHANGE ))
-				EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), TRUE );
-			break;
-		}
-		case IDC_BROWSE:
-		{	TCHAR text[ 128 ];
-			GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
-			if ( ppro->m_bJabberOnline && text[0] ) {
-				EnableWindow( GetDlgItem( hwndDlg, IDC_BROWSE ), FALSE );
-				ListView_DeleteAllItems( GetDlgItem( hwndDlg, IDC_ROOM ));
-				GetDlgItemText( hwndDlg, IDC_SERVER, text, SIZEOF( text ));
-
-				int iqId = ppro->SerialNext();
-				ppro->IqAdd( iqId, IQ_PROC_DISCOROOMSERVER, &CJabberProto::OnIqResultDiscoRoomItems );
-
-				XmlNodeIq iq( "get", iqId, text );
-				XmlNode* query = iq.addQuery( JABBER_FEAT_DISCO_ITEMS );
-				ppro->m_ThreadInfo->send( iq );
-			}
-			return TRUE;
-		}
-		case IDCANCEL:
-		case IDCLOSE:
-			DestroyWindow( hwndDlg );
-			return TRUE;
-		}
-		break;
-	case WM_CONTEXTMENU:
-		if ( ppro->m_bJabberOnline && ( HWND )wParam == GetDlgItem( hwndDlg, IDC_ROOM )) {
-			HMENU hMenu = CreatePopupMenu();
-			AppendMenu( hMenu, MF_STRING, WM_JABBER_JOIN, TranslateT( "Join" ));
-			AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_ROSTER, TranslateT( "Add to roster" ));
-			if ( ppro->m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) 
-				AppendMenu( hMenu, MF_STRING, WM_JABBER_ADD_TO_BOOKMARKS, TranslateT( "Add to Bookmarks" ));
-			TrackPopupMenu( hMenu, TPM_LEFTALIGN | TPM_NONOTIFY, LOWORD(lParam), HIWORD(lParam), 0, hwndDlg, 0 );
-			::DestroyMenu( hMenu );
-			return TRUE;
-		}
-		break;
-	case WM_CLOSE:
-		DestroyWindow( hwndDlg );
-		break;
-	case WM_DESTROY:
-		if( ppro )
-			ppro->m_hwndJabberGroupchat = NULL;
-		break;
-	}
-	return FALSE;
-}
-*/
 void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password )
 {
 	bool found = false;
@@ -601,6 +282,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 
 ////////////////////////////////////////////////////////////////////////////////
 // Join Dialog
+
 static int sttTextLineHeight = 16;
 
 struct RoomInfo
@@ -932,8 +614,7 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		DrawText(lpdis->hDC, info->line2, lstrlen(info->line2), &rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS);
 
 		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, m_proto->LoadIconEx("group"), 16, 16, 0, NULL, DI_NORMAL);
-		switch (info->overlay)
-		{
+		switch (info->overlay) {
 		case RoomInfo::ROOM_WAIT:
 			DrawIconEx(lpdis->hDC, lpdis->rcItem.left+1, lpdis->rcItem.top+1, m_proto->LoadIconEx("disco_progress"), 16, 16, 0, NULL, DI_NORMAL);
 			break;
@@ -1094,10 +775,8 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 void CJabberProto::GroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid )
 {
 	if (m_pDlgJabberJoinGroupchat)
-	{
 		SetForegroundWindow(m_pDlgJabberJoinGroupchat->GetHwnd());
-	} else
-	{
+	else {
 		m_pDlgJabberJoinGroupchat = new CJabberDlgGcJoin(this, jid);
 		m_pDlgJabberJoinGroupchat->Show();
 	}
