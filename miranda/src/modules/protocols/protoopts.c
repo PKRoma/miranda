@@ -119,12 +119,30 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 			{
 				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
 				PROTOACCOUNT* pa = param->pa;
-				if ( param->action == 1 ) {
+				switch( param->action ) {
+				case 4:
+					{
+						char szPlugin[ MAX_PATH ];
+						strncpy( szPlugin, pa->szProtoName, SIZEOF( szPlugin ));
+						strcat( szPlugin, ".dll" );
+						UnloadAccount( pa, TRUE );
+						List_RemovePtr(( SortedList* )&accounts, pa );
+						if ( UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
+							char szNewName[ MAX_PATH ];
+							strcpy( szNewName, szPlugin );
+							strcat( szNewName, "~" );
+							MoveFileA( szPlugin, szNewName );
+						}
+					}
+					// fall through
+
+				case 1:
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
 					pa->bIsEnabled = pa->bIsVisible = TRUE;
 					pa->iOrder = accounts.count;
 					pa->type = PROTOTYPE_PROTOCOL;
+					break;
 				}
 				{
 					TCHAR buf[256];
@@ -133,7 +151,6 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					pa->tszAccountName = mir_tstrdup( buf );
 				}
 				if ( param->action == 1 || param->action == 4 ) {
-					char* szOldName = NEWSTR_ALLOCA( pa->szProtoName );
 					char buf[200];
 					GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
 					pa->szProtoName = mir_strdup( buf );
@@ -151,22 +168,12 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					pa->szModuleName = mir_strdup( buf );
 
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
+					List_InsertPtr(( SortedList* )&accounts, pa );
 
 					if ( param->action == 1 ) {
-						List_InsertPtr(( SortedList* )&accounts, pa );
 						if ( ActivateAccount( pa ))
 							pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
-					}
-					else {
-						char szPlugin[ MAX_PATH ];
-						strncpy( szPlugin, szOldName, SIZEOF( szPlugin ));
-						strcat( szPlugin, ".dll" );
-						if ( UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
-							char szNewName[ MAX_PATH ];
-							strcpy( szNewName, szPlugin );
-							strcat( szNewName, "~" );
-							MoveFileA( szPlugin, szNewName );
-				}	}	}
+				}	}
 
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
@@ -505,7 +512,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					char *uniqueIdSetting = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDSETTING);
 
 					szIdName = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDTEXT);
-					tszIdName = szIdName ? mir_a2t(szIdName) : mir_tstrdup(TranslateT("Account ID"));
+ 					tszIdName = szIdName ? mir_a2t(szIdName) : mir_tstrdup(TranslateT("Account ID"));
 					if ( PF1_NUMERICUSERID & acc->ppro->vtbl->GetCaps(acc->ppro, PFLAGNUM_1)) {
 						DWORD uid = DBGetContactSettingDword( NULL, acc->szModuleName, uniqueIdSetting, -1 );
 						mir_sntprintf(text, size, _T("%s: %d"), tszIdName, uid);
@@ -669,7 +676,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				if ( idx != -1 ) {
 					PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx );
 					TCHAR buf[ 200 ];
-					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ));
+					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						List_RemovePtr(( SortedList* )&accounts, pa );
 						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
@@ -703,15 +710,20 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				if ( idx != -1 ) {
 					AccFormDlgParam param = { 4, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
 					if ( IDOK == DialogBoxParam( GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
-						if ( IDYES != MessageBox( hwndDlg, TranslateT( upgradeMsg ), TranslateT( "Restart required" ), MB_YESNO ))
-						{
-							SendDlgItemMessage( hwndDlg, IDC_ACCLIST, LB_RESETCONTENT, 0, 0 );
-							SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
-						}
-						else {
+						SendDlgItemMessage( hwndDlg, IDC_ACCLIST, LB_RESETCONTENT, 0, 0 );
+						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
+						if ( IDYES == MessageBox( hwndDlg, TranslateT( upgradeMsg ), TranslateT( "Restart required" ), MB_YESNO )) {
 							EndDialog( hwndDlg, 1 );
 							CallService( "CloseAction", 0, 0 );
-			}	}	}	}
+							{
+								TCHAR mirandaPath[ MAX_PATH ], cmdLine[ 100 ];
+								PROCESS_INFORMATION pi;
+								STARTUPINFO si = { 0 };
+								si.cb = sizeof(si);
+								GetModuleFileName( NULL, mirandaPath, SIZEOF(mirandaPath));
+								mir_sntprintf( cmdLine, SIZEOF( cmdLine ), _T("/restart:%d"), GetCurrentProcessId());
+								CreateProcess( mirandaPath, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
+			}	}	}	}	}
 			break;
 
 		case IDOK:

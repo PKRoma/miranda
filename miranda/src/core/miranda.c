@@ -400,6 +400,17 @@ static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static void ParseCommandLine()
+{
+	char* cmdline = GetCommandLineA();
+	char* p = strstr( cmdline, "/restart:" );
+	if ( p ) {
+		HANDLE hProcess = OpenProcess( SYNCHRONIZE, FALSE, atol( p+9 ));
+		if ( hProcess ) {
+			WaitForSingleObject( hProcess, 60000 );
+			CloseHandle( hProcess );
+}	}	}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	DWORD myPid=0;
@@ -408,6 +419,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	ParseCommandLine();
 
 	if (InitialiseModularEngine())
 	{
