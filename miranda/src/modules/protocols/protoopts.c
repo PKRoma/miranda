@@ -708,8 +708,10 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							SendDlgItemMessage( hwndDlg, IDC_ACCLIST, LB_RESETCONTENT, 0, 0 );
 							SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 						}
-						else PostQuitMessage( 0 );
-			}	}	}
+						else {
+							EndDialog( hwndDlg, 1 );
+							CallService( "CloseAction", 0, 0 );
+			}	}	}	}
 			break;
 
 		case IDOK:
