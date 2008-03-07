@@ -35,24 +35,16 @@ Last change by : $Author$
 ///////////////////////////////////////////////////////////////////////////////
 // JabberAddContactToRoster() - adds a contact to the roster
 
-void CJabberProto::AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription )
+void CJabberProto::AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName )
 {
-	XmlNodeIq iq( "set" );
+	XmlNodeIq iq( "set", SerialNext() );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
 	XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
 	if ( nick )
 		item->addAttr( "name", nick );
-	switch( subscription ) {
-		case SUB_BOTH: item->addAttr( "subscription", "both" ); break;
-		case SUB_TO:   item->addAttr( "subscription", "to" );   break;
-		case SUB_FROM: item->addAttr( "subscription", "from" ); break;
-		default:       item->addAttr( "subscription", "none" ); break;
-	}
-
-	if ( grpName != NULL )
+	if ( grpName )
 		item->addChild( "group", grpName );
 	m_ThreadInfo->send( iq );
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////

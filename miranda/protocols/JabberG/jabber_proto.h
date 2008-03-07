@@ -581,7 +581,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	int    __cdecl OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
 
-	void   AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName, JABBER_SUBSCRIPTION subscription );
+	void   AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName );
 	void   DBAddAuthRequest( TCHAR* jid, TCHAR* nick );
 	HANDLE DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource );
 	void   GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );

@@ -239,7 +239,7 @@ int __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 				nick = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
-			AddContactToRoster(roomID, nick, group, SUB_NONE);
+			AddContactToRoster( roomID, nick, group );
 			if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
 
 				JABBER_LIST_ITEM* item = NULL;

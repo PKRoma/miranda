@@ -130,7 +130,7 @@ void __cdecl CJabberProto::OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hCo
 	if ( cws->value.type == DBVT_DELETED ) {
 		if ( item->group != NULL ) {
 			Log( "Group set to nothing" );
-			AddContactToRoster( item->jid, nick, NULL, item->subscription );
+			AddContactToRoster( item->jid, nick, NULL );
 		}
 	}
 	else {
@@ -138,7 +138,7 @@ void __cdecl CJabberProto::OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hCo
 		if ( cws->value.pszVal != NULL && lstrcmp( p, item->group )) {
 			Log( "Group set to " TCHAR_STR_PARAM, p );
 			if ( p )
-				AddContactToRoster( item->jid, nick, p, item->subscription );
+				AddContactToRoster( item->jid, nick, p );
 		}
 		mir_free( p );
 	}
@@ -158,7 +158,7 @@ void __cdecl CJabberProto::OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE h
 
 	if ( cws->value.type == DBVT_DELETED ) {
 		TCHAR* nick = ( TCHAR* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, ( WPARAM )hContact, GCDNF_NOMYHANDLE | GCDNF_TCHAR );
-		AddContactToRoster( item->jid, nick, item->group, item->subscription );
+		AddContactToRoster( item->jid, nick, item->group );
 		mir_free(nick);
 		return;
 	}
@@ -167,7 +167,7 @@ void __cdecl CJabberProto::OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE h
 	if ( newNick ) {
 		if ( lstrcmp( item->nick, newNick )) {
 			Log( "Renaming contact " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM " -> " TCHAR_STR_PARAM, item->jid, item->nick, newNick );
-			AddContactToRoster( item->jid, newNick, item->group, item->subscription );
+			AddContactToRoster( item->jid, newNick, item->group );
 		}
 		mir_free( newNick );
 }	}
@@ -198,13 +198,12 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 	}
 
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
-	JABBER_SUBSCRIPTION subscription = ( item == NULL ) ? SUB_NONE : item->subscription;
 
 	if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
-		AddContactToRoster( jid.ptszVal, nick, dbv.ptszVal, subscription );
+		AddContactToRoster( jid.ptszVal, nick, dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
-	else AddContactToRoster( jid.ptszVal, NULL, NULL, subscription );
+	else AddContactToRoster( jid.ptszVal, NULL, NULL );
 
 	XmlNode presence( "presence" ); presence.addAttr( "to", jid.ptszVal ); presence.addAttr( "type", "subscribe" );
 	m_ThreadInfo->send( presence );
