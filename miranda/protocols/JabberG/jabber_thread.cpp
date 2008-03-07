@@ -1552,7 +1552,7 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 			Log("Receive presence online from "TCHAR_STR_PARAM" ( who is not in my roster )", from );
 			ListAdd( LIST_ROSTER, from );
 		}
-		DBCheckIsTransportedContact(from,hContact);
+		DBCheckIsTransportedContact( from, hContact );
 		int status = ID_STATUS_ONLINE;
 		if (( showNode = JabberXmlGetChild( node, "show" )) != NULL ) {
 			if (( show = showNode->text ) != NULL ) {
@@ -1654,6 +1654,9 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 	}
 
 	if ( !_tcscmp( type, _T("subscribe"))) {
+		if (hContact = HContactFromJID( from ))
+			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_SUBSCRIBE );
+
 		// automatically send authorization allowed to agent/transport
 		if ( _tcschr( from, '@' ) == NULL || JGetByte("AutoAcceptAuthorization", FALSE )) {
 			ListAdd( LIST_ROSTER, from );
@@ -1679,14 +1682,38 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 		return;
 	}
 
+	if ( !_tcscmp( type, _T("unsubscribe"))) {
+		if (hContact = HContactFromJID( from ))
+			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE );
+	}
+
+	if ( !_tcscmp( type, _T("unsubscribed"))) {
+		if (hContact = HContactFromJID( from ))
+			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED );
+	}
+
+	if ( !_tcscmp( type, _T("error"))) {
+		if (hContact = HContactFromJID( from )) {
+			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_ERROR );
+		}
+	}
+
 	if ( !_tcscmp( type, _T("subscribed"))) {
+
+		if (hContact = HContactFromJID( from ))
+			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_SUBSCRIBED );
+
 		if (( item=ListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			if ( item->subscription == SUB_FROM ) item->subscription = SUB_BOTH;
 			else if ( item->subscription == SUB_NONE ) {
 				item->subscription = SUB_TO;
 				if ( _tcschr( from, '@' )==NULL ) {
 					UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
-}	}	}	}	}
+				}
+			}
+		}
+	}	
+}
 
 void CJabberProto::OnIqResultVersion( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
 {

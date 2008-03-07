@@ -580,9 +580,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_misc.c -----------------------------------------------------------------
 
 	int    __cdecl OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam );
+	int    __cdecl OnGetEventTextPresence( WPARAM wParam, LPARAM lParam );
 
 	void   AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName );
 	void   DBAddAuthRequest( TCHAR* jid, TCHAR* nick );
+	BOOL   AddDbPresenceEvent(HANDLE hContact, BYTE btEventType);
 	HANDLE DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource );
 	void   GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
 	void   ResolveTransportNicks( TCHAR* jid );

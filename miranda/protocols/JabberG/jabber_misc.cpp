@@ -216,6 +216,43 @@ HANDLE CJabberProto::DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, B
 	return hContact;
 }
 
+BOOL CJabberProto::AddDbPresenceEvent(HANDLE hContact, BYTE btEventType)
+{
+	if ( !hContact )
+		return FALSE;
+
+	switch ( btEventType )
+	{
+	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
+	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
+	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
+	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
+		{
+			if ( !JGetByte( "LogPresence", TRUE ))
+				return FALSE;
+			break;
+		}
+	case JABBER_DB_EVENT_PRESENCE_ERROR:
+		{
+			if ( !JGetByte( "LogPresenceErrors", TRUE ))
+				return FALSE;
+			break;
+		}
+	}
+
+	DBEVENTINFO dbei;
+	dbei.cbSize = sizeof( dbei );
+	dbei.pBlob = &btEventType;
+	dbei.cbBlob = sizeof( btEventType );
+	dbei.eventType = JABBER_DB_EVENT_TYPE_PRESENCE;
+	dbei.flags = 0;
+	dbei.timestamp = time( NULL );
+	dbei.szModule = m_szModuleName;
+	CallService( MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei );
+
+	return TRUE;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetAvatarFileName() - gets a file name for the avatar image
 

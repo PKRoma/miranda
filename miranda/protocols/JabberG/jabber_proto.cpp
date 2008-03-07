@@ -116,6 +116,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
 	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::OnGetEventTextChatStates );
+	JCreateService( JS_DB_GETEVENTTEXT_PRESENCE, &CJabberProto::OnGetEventTextPresence );
 
 	// XEP-0224 support (Attention/Nudge)
 	JCreateService( JS_SEND_NUDGE, &CJabberProto::JabberSendNudge );
@@ -256,6 +257,11 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	dbEventType.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
 	dbEventType.module = m_szModuleName;
 	dbEventType.descr = "Chat state notifications";
+	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
+
+	dbEventType.eventType = JABBER_DB_EVENT_TYPE_PRESENCE;
+	dbEventType.module = m_szModuleName;
+	dbEventType.descr = "Presence notifications";
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
 
 	CheckAllContactsAreTransported();

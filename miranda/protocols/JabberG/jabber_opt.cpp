@@ -761,6 +761,8 @@ public:
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"), "MsgAck", FALSE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable avatars"), "EnableAvatars", TRUE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"), "LogChatstates", FALSE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence subscription state changes"), "LogPresence", TRUE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence errors"), "LogPresenceErrors", TRUE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"), "EnableUserMood", TRUE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"), "EnableUserTune", FALSE);
 

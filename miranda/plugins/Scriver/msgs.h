@@ -199,6 +199,7 @@ struct MessageWindowData
 #define EM_UNSUBCLASSED      (WM_USER+0x102)
 
 #define EVENTTYPE_JABBER_CHATSTATES     2000
+#define EVENTTYPE_JABBER_PRESENCE       2001
 #define EVENTTYPE_STATUSCHANGE          25368
 
 struct CREOleCallback

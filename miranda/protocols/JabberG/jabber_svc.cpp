@@ -184,6 +184,72 @@ int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
+// OnGetEventTextPresence - retrieves presence state description from an event
+
+int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
+
+	int nRetVal = 0;
+
+	if ( pdbEvent->dbei->cbBlob > 0 ) {
+		switch ( pdbEvent->dbei->pBlob[0] )
+		{
+		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent subscription request")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("sent subscription request"));
+				break;
+			}
+		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("approved subscription request")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("approved subscription request"));
+				break;
+			}
+		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+				break;
+			}
+		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+				break;
+			}
+		case JABBER_DB_EVENT_PRESENCE_ERROR:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent error presence")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("sent error presence"));
+				break;
+			}
+		default:
+			{
+				if ( pdbEvent->datatype == DBVT_WCHAR )
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent unknown presence type")));
+				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
+					nRetVal = (int)mir_strdup(Translate("sent unknown presence type"));
+				break;
+			}
+		}
+	}
+
+	return nRetVal;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetAvatar - sets an avatar without UI
 
 int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
