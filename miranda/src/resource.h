@@ -380,6 +380,7 @@
 #define IDC_SCREENSAVER                 1642
 #define IDC_LOCKED                      1643
 #define IDC_IDLESHORT                   1644
+#define IDC_UPGRADE                     1645
 #define IDC_IDLE1STTIME                 1646
 #define IDC_IDLEPRIVATE                 1649
 #define IDC_AASTATUS                    1650
@@ -452,7 +453,7 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        285

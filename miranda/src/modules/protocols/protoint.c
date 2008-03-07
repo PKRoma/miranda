@@ -196,6 +196,11 @@ static int fnUserIsTyping( PROTO_INTERFACE* ppi, HANDLE hContact, int type )
 	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 
+static int fnOnEvent( PROTO_INTERFACE* ppi, PROTOEVENTTYPE code, WPARAM wParam, LPARAM lParam )
+{
+	return 0;
+}
+
 // creates the default protocol container for compatibility with the old plugins
 
 static PROTO_INTERFACE_VTBL defaultVtbl;
@@ -244,6 +249,7 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName )
 		ppi->vtbl->SendAwayMsg            = fnSendAwayMsg;
 		ppi->vtbl->SetAwayMsg             = fnSetAwayMsg;
 		ppi->vtbl->UserIsTyping           = fnUserIsTyping;
+		ppi->vtbl->OnEvent                = fnOnEvent;
 	}
 	return ppi;
 }
