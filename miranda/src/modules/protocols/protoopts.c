@@ -35,7 +35,7 @@ BOOL IsProtocolLoaded(char* pszProtocolName);
 int  Proto_EnumProtocols( WPARAM, LPARAM );
 
 #define errMsg \
-"WARNING! The account is goind to be deleted. It means that all its \
+"WARNING! The account is going to be deleted. It means that all its \
 settings, contacts and histories will be also erased.\n\n\
 Are you absolutely sure?"
 
@@ -54,12 +54,12 @@ int UnloadPlugin( char* buf, int bufLen );
 // Account edit form
 // Gets PROTOACCOUNT* as a parameter, or NULL to edit a new one
 
-typedef struct 
+typedef struct
 {
 	int action;
 	PROTOACCOUNT* pa;
 }
-	AccFormDlgParam;	
+	AccFormDlgParam;
 
 static char* rtrim( char* string )
 {
@@ -167,7 +167,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 							strcat( szNewName, "~" );
 							MoveFileA( szPlugin, szNewName );
 				}	}	}
-				
+
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
 				WriteDbAccounts();
@@ -180,7 +180,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 			break;
 		}
 	}
-	
+
 	return FALSE;
 }
 
@@ -517,7 +517,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							DBFreeVariant(&dbv);
 						}
 						else mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
-					} 
+					}
 					mir_free(tszIdName);
 				}
 				else mir_sntprintf(text, size, _T("Protocol is not loaded."));
@@ -618,7 +618,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 					}	}
 					break;
-					
+
 				case LBN_MY_RENAME:
 					{
 						int iItem = ListBox_GetCurSel(hwndList);
