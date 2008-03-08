@@ -56,6 +56,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //wParam=lParam=0
 #define ME_SYSTEM_SHUTDOWN   "Miranda/System/Shutdown"
 
+//restarts miranda ( 0.8+ )
+//wParam=lParam=0
+#define MS_SYSTEM_RESTART    "Miranda/System/Restart"
+
 //miranda/system/oktoexit event
 //called before the app goes into shutdown routine to make sure everyone is
 //happy to exit

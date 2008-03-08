@@ -715,15 +715,8 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						if ( IDYES == MessageBox( hwndDlg, TranslateT( upgradeMsg ), TranslateT( "Restart required" ), MB_YESNO )) {
 							EndDialog( hwndDlg, 1 );
 							CallService( "CloseAction", 0, 0 );
-							{
-								TCHAR mirandaPath[ MAX_PATH ], cmdLine[ 100 ];
-								PROCESS_INFORMATION pi;
-								STARTUPINFO si = { 0 };
-								si.cb = sizeof(si);
-								GetModuleFileName( NULL, mirandaPath, SIZEOF(mirandaPath));
-								mir_sntprintf( cmdLine, SIZEOF( cmdLine ), _T("/restart:%d"), GetCurrentProcessId());
-								CreateProcess( mirandaPath, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
-			}	}	}	}	}
+							CallService( MS_SYSTEM_RESTART, 0, 0 );
+			}	}	}	}
 			break;
 
 		case IDOK:

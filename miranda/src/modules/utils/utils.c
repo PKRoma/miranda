@@ -413,7 +413,7 @@ int GetMD5Interface(WPARAM wParam, LPARAM lParam)
 	md5i->md5_init = md5_init;
 	md5i->md5_append = md5_append;
 	md5i->md5_finish = md5_finish;
-    md5i->md5_hash = md5_hash_string;
+	md5i->md5_hash = md5_hash_string;
 	return 0;
 }
 
@@ -428,9 +428,21 @@ int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
 	sha1i->sha1_init = shaInit;
 	sha1i->sha1_append = shaUpdate;
 	sha1i->sha1_finish = shaFinal;
-    sha1i->sha1_hash = shaBlock;
+	sha1i->sha1_hash = shaBlock;
 	return 0;
 }
+
+static int RestartMiranda(WPARAM wParam, LPARAM lParam)
+{
+	TCHAR mirandaPath[ MAX_PATH ], cmdLine[ 100 ];
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si = { 0 };
+	si.cb = sizeof(si);
+	GetModuleFileName( NULL, mirandaPath, SIZEOF(mirandaPath));
+	mir_sntprintf( cmdLine, SIZEOF( cmdLine ), _T("/restart:%d"), GetCurrentProcessId());
+	CreateProcess( mirandaPath, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
+	return 0;
+}	
 
 int LoadUtilsModule(void)
 {
@@ -441,8 +453,9 @@ int LoadUtilsModule(void)
 	CreateServiceFunction(MS_UTILS_RESTOREWINDOWPOSITION,RestoreWindowPosition);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYBYNUMBER,GetCountryByNumber);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYLIST,GetCountryList);
-    CreateServiceFunction(MS_SYSTEM_GET_MD5I,GetMD5Interface);
-    CreateServiceFunction(MS_SYSTEM_GET_SHA1I,GetSHA1Interface);
+	CreateServiceFunction(MS_SYSTEM_RESTART,RestartMiranda);
+	CreateServiceFunction(MS_SYSTEM_GET_MD5I,GetMD5Interface);
+	CreateServiceFunction(MS_SYSTEM_GET_SHA1I,GetSHA1Interface);
 	InitOpenUrl();
 	InitWindowList();
 	InitHyperlink();
