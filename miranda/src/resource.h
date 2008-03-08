@@ -115,6 +115,7 @@
 #define IDI_ACCMGR                      282
 #define IDD_ACCMGR                      283
 #define IDD_ACCFORM                     284
+#define IDD_WAITRESTART                 285
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -427,6 +428,8 @@
 #define IDC_ACCINTERNALNAME             1716
 #define IDC_OPTIONS                     1717
 #define IDC_BUTTON1                     1718
+#define IDC_PROGRESS1                   1719
+#define IDC_PROGRESSBAR                 1719
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -453,12 +456,12 @@
 #define POPUP_DELETEGROUP               40053
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        285
+#define _APS_NEXT_RESOURCE_VALUE        286
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1719
+#define _APS_NEXT_CONTROL_VALUE         1720
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

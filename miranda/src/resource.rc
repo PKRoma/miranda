@@ -302,8 +302,8 @@ BEGIN
     PUSHBUTTON      "Apply",IDC_APPLY,374,255,50,14
     CONTROL         "Tree1",IDC_PAGETREE,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
-                    TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_TABSTOP,4,30,
-                    102,220,WS_EX_STATICEDGE
+                    TVS_SHOWSELALWAYS | TVS_TRACKSELECT | WS_BORDER | 
+                    WS_TABSTOP | 0x8000,4,30,102,220
     CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,
                     111,4,313,247
     CONTROL         "Show expert options",IDC_EXPERT,"Button",
@@ -1340,7 +1340,8 @@ BEGIN
                     0x1,109,237,201,8
     CONTROL         "Tree1",IDC_CATEGORYLIST,"SysTreeView32",TVS_HASBUTTONS | 
                     TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | 
-                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,4,10,102,235
+                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP | 0x8000,4,10,
+                    102,235
 END
 
 IDD_ICOLIB_IMPORT DIALOGEX 0, 0, 217, 194
@@ -1483,7 +1484,20 @@ BEGIN
     PUSHBUTTON      "&Options",IDC_OPTIONS,236,64,73,14
     PUSHBUTTON      "&Upgrade",IDC_UPGRADE,236,84,73,14
     DEFPUSHBUTTON   "OK",IDOK,236,199,73,14
+END
 
+IDD_WAITRESTART DIALOGEX 0, 0, 167, 70
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Miranda IM"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Miranda IM is being restarted.\nPlease wait...",
+                    IDC_STATIC,7,7,153,18
+    CONTROL         "",IDC_PROGRESSBAR,"msctls_progress32",WS_BORDER,7,30,
+                    153,14
+    PUSHBUTTON      "Close",IDCANCEL,110,49,50,14
 END
 
 
@@ -1901,6 +1915,20 @@ BEGIN
         RIGHTMARGIN, 309
         TOPMARGIN, 7
         BOTTOMMARGIN, 213
+    END
+
+    IDD_WAITRESTART, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 160
+        VERTGUIDE, 83
+        VERTGUIDE, 160
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 63
+        HORZGUIDE, 25
+        HORZGUIDE, 30
+        HORZGUIDE, 44
+        HORZGUIDE, 49
     END
 END
 #endif    // APSTUDIO_INVOKED
