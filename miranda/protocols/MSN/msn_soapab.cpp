@@ -376,8 +376,8 @@ bool MSN_ABGetFull(void)
 	ezxml_set_txt(node, "Full");
 	node = ezxml_add_child(tbdy, "deltasOnly", 0);
 	ezxml_set_txt(node, "false");
-	node = ezxml_add_child(tbdy, "dynamicItemView", 0);
-	ezxml_set_txt(node, "Gleam");
+//	node = ezxml_add_child(tbdy, "dynamicItemView", 0);
+//	ezxml_set_txt(node, "Gleam");
 
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
