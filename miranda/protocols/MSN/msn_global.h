@@ -353,12 +353,8 @@ struct filetransfer
 
 	bool        bCanceled;		// flag to interrupt a transfer
 	bool        bCompleted;		// was a FT ever completed?
-	bool        inmemTransfer;	//	flag: the file being received is to be stored in memory
-
-	union {
-		int      fileId;			// handle of file being transferring (r/w)
-		char*	 fileBuffer;		// buffer of memory to handle the file
-	};
+	
+	int			fileId;			// handle of file being transferring (r/w)
 
 	HANDLE		hLockHandle;
 

@@ -268,7 +268,8 @@ void  MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen,
 	if (!exist)
 		MSN_CallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
 
-	mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.", SmileyName );
+	mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s.%s", SmileyName,
+		type == MSN_APPID_CUSTOMSMILEY ? "png" : "gif");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -817,11 +818,7 @@ filetransfer::~filetransfer( void )
 		MSN_SendBroadcast( std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
 	}
 
-	if ( inmemTransfer ) {
-		if ( fileBuffer != NULL )
-			LocalFree( fileBuffer );
-	}
-	else if ( fileId != -1 )
+	if ( fileId != -1 )
 		_close( fileId );
 
 	mir_free( p2p_branch );
@@ -843,10 +840,9 @@ filetransfer::~filetransfer( void )
 
 void filetransfer::close( void )
 {
-	if ( !inmemTransfer && fileId != -1 ) {
-		_close( fileId );
-		fileId = -1;
-}	}
+	if ( fileId != -1 ) _close( fileId );
+	fileId = -1;
+}
 
 void filetransfer::complete( void )
 {
@@ -858,21 +854,6 @@ void filetransfer::complete( void )
 
 int filetransfer::create( void )
 {
-	if ( inmemTransfer ) {
-		if ( fileBuffer == NULL ) {
-			if ( std.totalBytes == 0 ) {
-				MSN_DebugLog( "Zero buffer size was requested for avatar" );
-				return -1;
-			}
-
-			if (( fileBuffer = ( char* )LocalAlloc( LPTR, DWORD( std.currentFileSize ))) == NULL ) {
-				MSN_DebugLog( "Not enough memory to receive file '%s'", std.currentFile );
-				return -1;
-		}	}
-
-		return ( int )fileBuffer;
-	}
-
 	#if defined( _UNICODE )	
 		if ( wszFileName != NULL ) {
 			WCHAR wszTemp[ MAX_PATH ];

@@ -311,10 +311,13 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 			NETLIBBASE64 nlb = { buf, rlen, (PBYTE)lastsml, slen };
 			MSN_CallService( MS_NETLIB_BASE64ENCODE, 0, LPARAM( &nlb ));
 
-			ft->std.currentFile = (char*)mir_alloc(rlen*3);
-			UrlEncode(buf, ft->std.currentFile, rlen*3);
-
+			char* smileyName = (char*)mir_alloc(rlen*3);
+			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
+
+			ft->std.currentFile = (char*)mir_alloc(MAX_PATH);
+			MSN_GetCustomSmileyFileName(hContact, ft->std.currentFile, MAX_PATH, smileyName, iSmileyType);
+			mir_free(smileyName);
 
 			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
 			p2p_invite( hContact, iSmileyType, ft );
