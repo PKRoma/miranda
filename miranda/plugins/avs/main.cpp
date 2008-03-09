@@ -2426,21 +2426,21 @@ static int LoadAvatarModule()
 	init_mir_thread();
 
 	InitializeCriticalSection(&cachecs);
-    InitializeCriticalSection(&alloccs);
+	InitializeCriticalSection(&alloccs);
 
 	hOptInit = HookEvent(ME_OPT_INITIALISE, OptInit);
-    hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
-    hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
-    hEventDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
-    hProtoAckHook = HookEvent(ME_PROTO_ACK, ProtocolAck);
+	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
+	hEventDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+	hProtoAckHook = HookEvent(ME_PROTO_ACK, ProtocolAck);
 
-    hSvc_MS_AV_GETAVATARBITMAP = CreateServiceFunction(MS_AV_GETAVATARBITMAP, GetAvatarBitmap);
-    hSvc_MS_AV_PROTECTAVATAR = CreateServiceFunction(MS_AV_PROTECTAVATAR, ProtectAvatar);
-    hSvc_MS_AV_SETAVATAR = CreateServiceFunction(MS_AV_SETAVATAR, SetAvatar);
-    hSvc_MS_AV_SETMYAVATAR = CreateServiceFunction(MS_AV_SETMYAVATAR, SetMyAvatar);
-    hSvc_MS_AV_CANSETMYAVATAR = CreateServiceFunction(MS_AV_CANSETMYAVATAR, CanSetMyAvatar);
-    hSvc_MS_AV_CONTACTOPTIONS = CreateServiceFunction(MS_AV_CONTACTOPTIONS, ContactOptions);
-    hSvc_MS_AV_DRAWAVATAR = CreateServiceFunction(MS_AV_DRAWAVATAR, DrawAvatarPicture);
+	hSvc_MS_AV_GETAVATARBITMAP = CreateServiceFunction(MS_AV_GETAVATARBITMAP, GetAvatarBitmap);
+	hSvc_MS_AV_PROTECTAVATAR = CreateServiceFunction(MS_AV_PROTECTAVATAR, ProtectAvatar);
+	hSvc_MS_AV_SETAVATAR = CreateServiceFunction(MS_AV_SETAVATAR, SetAvatar);
+	hSvc_MS_AV_SETMYAVATAR = CreateServiceFunction(MS_AV_SETMYAVATAR, SetMyAvatar);
+	hSvc_MS_AV_CANSETMYAVATAR = CreateServiceFunction(MS_AV_CANSETMYAVATAR, CanSetMyAvatar);
+	hSvc_MS_AV_CONTACTOPTIONS = CreateServiceFunction(MS_AV_CONTACTOPTIONS, ContactOptions);
+	hSvc_MS_AV_DRAWAVATAR = CreateServiceFunction(MS_AV_DRAWAVATAR, DrawAvatarPicture);
 	hSvc_MS_AV_GETMYAVATAR = CreateServiceFunction(MS_AV_GETMYAVATAR, GetMyAvatar);
 	hSvc_MS_AV_REPORTMYAVATARCHANGED = CreateServiceFunction(MS_AV_REPORTMYAVATARCHANGED, ReportMyAvatarChanged);
 	hSvc_MS_AV_LOADBITMAP32 = CreateServiceFunction(MS_AV_LOADBITMAP32, BmpFilterLoadBitmap32);
@@ -2457,16 +2457,15 @@ static int LoadAvatarModule()
 
 	AllocCacheBlock();
 
-    CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szDBPath);
+	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szDBPath);
 	g_szDBPath[MAX_PATH - 1] = 0;
-    _strlwr(g_szDBPath);
+	_strlwr(g_szDBPath);
 #if defined(_UNICODE)
 	MultiByteToWideChar(CP_ACP, 0, g_szDBPath, MAX_PATH, g_wszDBPath, MAX_PATH);
 	g_wszDBPath[MAX_PATH - 1] = 0;
 #endif
 	return 0;
 }
-
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
@@ -2492,7 +2491,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	int result = CALLSERVICE_NOTFOUND;
 
-    pluginLink = link;
+	pluginLink = link;
 
 	if(ServiceExists(MS_IMG_GETINTERFACE))
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
@@ -2502,7 +2501,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 		return 1;
 	}
 	LoadACC();
-    return LoadAvatarModule();
+	return LoadAvatarModule();
 }
 
 extern "C" int __declspec(dllexport) Unload(void)
@@ -2511,10 +2510,10 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 	while(pNode) {
 		//DeleteCriticalSection(&pNode->cs);
-        if(pNode->ace.hbmPic != 0)
-            DeleteObject(pNode->ace.hbmPic);
+		if(pNode->ace.hbmPic != 0)
+			DeleteObject(pNode->ace.hbmPic);
 		pNode = pNode->pNextNode;
-    }
+	}
 
 	int i;
 	for(i = 0; i < g_curBlock; i++)
@@ -2522,17 +2521,20 @@ extern "C" int __declspec(dllexport) Unload(void)
 	free(g_cacheBlocks);
 
 	for(i = 0; i < g_MyAvatarsCount + 1; i++) {
-        if(g_ProtoPictures[i].hbmPic != 0)
-            DeleteObject(g_ProtoPictures[i].hbmPic);
+		if(g_ProtoPictures[i].hbmPic != 0)
+			DeleteObject(g_ProtoPictures[i].hbmPic);
 		if(g_MyAvatars[i].hbmPic != 0)
 			DeleteObject(g_MyAvatars[i].hbmPic);
-    }
-    if(g_ProtoPictures)
-        free(g_ProtoPictures);
+	}
+	if(g_ProtoPictures)
+		free(g_ProtoPictures);
 
 	if(g_MyAvatars)
 		free(g_MyAvatars);
-    return 0;
+
+	DeleteCriticalSection(&alloccs);
+	DeleteCriticalSection(&cachecs);
+	return 0;
 }
 
 /*
