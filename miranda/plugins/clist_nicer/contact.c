@@ -124,6 +124,7 @@ DWORD WINAPI MF_UpdateThread(LPVOID p)
             WaitForSingleObject(hEvent, 1000000);
         ResetEvent(hEvent);
     }
+	 CloseHandle(hEvent);
     return 0;
 }
 
