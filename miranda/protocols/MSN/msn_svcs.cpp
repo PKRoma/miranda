@@ -663,7 +663,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		strcpy( AI->filename + len, "*" );
 
 		_finddata_t c_file;
-		intptr_t hFile = _findfirst(AI->filename, &c_file);
+		long hFile = _findfirst(AI->filename, &c_file);
 
 		// Find first .c file in current directory 
 		if (hFile == -1L)
