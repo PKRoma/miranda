@@ -547,8 +547,9 @@ filetransfer*  p2p_getSessionByID( unsigned id );
 filetransfer*  p2p_getSessionByUniqueID( unsigned id );
 filetransfer*  p2p_getSessionByCallID( const char* CallID );
 
-bool  p2p_sessionRegistered( filetransfer* ft );
-bool  p2p_isAvatarOnly( HANDLE hContact );
+bool     p2p_IsDlFileOk(filetransfer* ft);
+bool     p2p_sessionRegistered( filetransfer* ft );
+bool     p2p_isAvatarOnly( HANDLE hContact );
 unsigned p2p_getMsgId( HANDLE hContact, int inc );
 
 void  p2p_registerDC( directconnection* ft );

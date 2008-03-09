@@ -319,30 +319,17 @@ static void sttCustomSmiley( const char* msgBody, char* email, char* nick, int i
 			MSN_GetCustomSmileyFileName(hContact, ft->std.currentFile, MAX_PATH, smileyName, iSmileyType);
 			mir_free(smileyName);
 
-			MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
-			p2p_invite( hContact, iSmileyType, ft );
+			if (p2p_IsDlFileOk(ft))
+				delete ft;
+			else
+			{
+				MSN_DebugLog( "Custom Smiley p2p invite for object : %s", ft->p2p_object );
+				p2p_invite( hContact, iSmileyType, ft );
+				Sleep(3000);
+			}
 		}
 		parseSmiley = !parseSmiley;
 		tok1 = tok2 + 1;
-	}
-
-	if ( MSN_GetByte( "EnableCustomSmileyPopup", 1 ))
-	{
-		TCHAR popupMessage[500];
-
-		TCHAR* fmt = iSmileyType == MSN_APPID_CUSTOMSMILEY ?
-				TranslateT("sent you %d custom smiley(s):\n%s") :
-				TranslateT("sent you %d custom animated smiley(s):\n%s");
-
-		wchar_t* wsml;
-		mir_utf8decode(smileyList, &wsml);
-#ifdef _UNICODE
-		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, wsml );
-#else
-		mir_sntprintf( popupMessage, SIZEOF( popupMessage ), fmt, iCount, smileyList );
-#endif
-		mir_free(wsml);
-		MSN_ShowPopup( hContact, popupMessage, 0 );
 	}
 }
 

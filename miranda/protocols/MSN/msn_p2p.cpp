@@ -168,41 +168,78 @@ static bool p2p_createListener(filetransfer* ft, directconnection *dc, MimeHeade
 	return true;
 }
 
+bool p2p_IsDlFileOk(filetransfer* ft)
+{
+	mir_sha1_ctx sha1ctx;
+	BYTE sha[MIR_SHA1_HASH_SIZE];
+	mir_sha1_init(&sha1ctx);
+
+	ft->close();
+
+	bool res = false;
+
+	int fileId = _open(ft->std.currentFile, O_RDONLY | _O_BINARY, _S_IREAD);
+	if (fileId != -1) 
+	{
+		BYTE buf[4096];
+		int bytes;
+
+		while((bytes = _read(fileId, buf, sizeof(buf))) > 0)
+			mir_sha1_append(&sha1ctx, buf, bytes);
+
+		_close(fileId);
+		mir_sha1_finish(&sha1ctx, sha);
+
+		char *szSha = arrayToHex(sha, MIR_SHA1_HASH_SIZE);
+		char *szAvatarHash = MSN_GetAvatarHash(ft->p2p_object);
+
+		res = szAvatarHash != NULL && stricmp(szAvatarHash, szSha) == 0;
+
+		mir_free(szSha);
+		mir_free(szAvatarHash);
+	}
+	return res;
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // sttSavePicture2disk - final handler for avatars downloading
 
 static void sttPictureTransferFailed(filetransfer* ft)
 {
-		switch(ft->p2p_type)
+	switch(ft->p2p_type)
+	{
+	case MSN_APPID_AVATAR:
+	case MSN_APPID_AVATAR2:
 		{
-		case MSN_APPID_AVATAR:
-		case MSN_APPID_AVATAR2:
-			{
-				PROTO_AVATAR_INFORMATION AI = {0};
-				AI.cbSize = sizeof( AI );
-				AI.hContact = ft->std.hContact;
-				MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
-				MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
-			}
-			break;
+			PROTO_AVATAR_INFORMATION AI = {0};
+			AI.cbSize = sizeof( AI );
+			AI.hContact = ft->std.hContact;
+			MSN_DeleteSetting( ft->std.hContact, "AvatarHash" );
+			MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
 		}
-		remove(ft->std.currentFile);
+		break;
+	}
+	remove(ft->std.currentFile);
 }
 
 static void sttSavePicture2disk(filetransfer* ft)
 {
-	mir_sha1_ctx sha1ctx;
-	BYTE sha[ MIR_SHA1_HASH_SIZE ];
-	mir_sha1_init( &sha1ctx );
-
 	ft->close();
 
-	BYTE buf[4096];
-	int fileId = _open(ft->std.currentFile, O_RDONLY | _O_BINARY, _S_IREAD);
-	if ( fileId != -1 ) 
+	if (p2p_IsDlFileOk(ft))
 	{
+		int fileId = _open(ft->std.currentFile, O_RDONLY | _O_BINARY, _S_IREAD);
+		if ( fileId == -1 ) 
+		{
+			sttPictureTransferFailed(ft);
+			return;
+		}
+
 		char* ext;
 		int format;
+		BYTE buf[6];
 
 		int bytes = _read(fileId, buf, sizeof(buf));
 		if (bytes > 4)
@@ -212,77 +249,54 @@ static void sttSavePicture2disk(filetransfer* ft)
 			sttPictureTransferFailed(ft);
 			return;
 		}
-	
-		while(bytes > 0)
-		{
-			mir_sha1_append(&sha1ctx, buf, bytes);
-			bytes = _read(fileId, buf, sizeof(buf));
-		}
 		_close(fileId);
-		mir_sha1_finish(&sha1ctx, sha);
 
-		char* szAvatarHash = MSN_GetAvatarHash(ft->p2p_object);
-		if (szAvatarHash == NULL) 
+		switch(ft->p2p_type)
 		{
-			sttPictureTransferFailed(ft);
-			return;
-		}
-
-		char *szSha = arrayToHex(sha, MIR_SHA1_HASH_SIZE);
-		if ( strcmp( szAvatarHash, szSha ) == 0 )
-		{
-			switch(ft->p2p_type)
+		case MSN_APPID_AVATAR:
+		case MSN_APPID_AVATAR2:
 			{
-			case MSN_APPID_AVATAR:
-			case MSN_APPID_AVATAR2:
-				{
-					PROTO_AVATAR_INFORMATION AI = {0};
-					AI.cbSize = sizeof( AI );
-					AI.hContact = ft->std.hContact;
-					MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ) - 3);
+				PROTO_AVATAR_INFORMATION AI = {0};
+				AI.cbSize = sizeof( AI );
+				AI.hContact = ft->std.hContact;
+				MSN_GetAvatarFileName( AI.hContact, AI.filename, sizeof( AI.filename ) - 3);
 
-					AI.format = format;
-					strcpy(strchr(AI.filename, '\0'), ext);
+				AI.format = format;
+				strcpy(strchr(AI.filename, '\0'), ext);
 
-					rename(ft->std.currentFile, AI.filename);
+				rename(ft->std.currentFile, AI.filename);
 
-					MSN_SetString( ft->std.hContact, "PictSavedContext", ft->p2p_object );
-					MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
+				MSN_SetString( ft->std.hContact, "PictSavedContext", ft->p2p_object );
+				MSN_SendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
 
-					// Store also avatar hash
-					MSN_SetString( ft->std.hContact, "AvatarSavedHash", szAvatarHash );
-					MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
-				}
-				break;
-
-			case MSN_APPID_CUSTOMSMILEY:
-			case MSN_APPID_CUSTOMANIMATEDSMILEY:
-				{
-					SMADD_CONT cont;
-					cont.cbSize = sizeof(SMADD_CONT);
-					cont.hContact = ft->std.hContact;
-					cont.type = 1;
-
-					char* pathcpy = mir_strdup(ft->std.currentFile);
-					strcpy(strrchr(pathcpy, '.')+1, ext);
-					rename(ft->std.currentFile, pathcpy);
-
-					cont.path = mir_a2t(pathcpy);
-
-					MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
-					mir_free(cont.path);
-					mir_free(pathcpy);
-				}
-				break;
+				// Store also avatar hash
+				char *szAvatarHash = MSN_GetAvatarHash(ft->p2p_object);
+				MSN_SetString( ft->std.hContact, "AvatarSavedHash", szAvatarHash );
+				MSN_DebugLog( "Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename );
+				mir_free(szAvatarHash);
 			}
+			break;
+
+		case MSN_APPID_CUSTOMSMILEY:
+		case MSN_APPID_CUSTOMANIMATEDSMILEY:
+			{
+				SMADD_CONT cont;
+				cont.cbSize = sizeof(SMADD_CONT);
+				cont.hContact = ft->std.hContact;
+				cont.type = 1;
+
+				char* pathcpy = mir_strdup(ft->std.currentFile);
+				strcpy(strrchr(pathcpy, '.')+1, ext);
+				rename(ft->std.currentFile, pathcpy);
+
+				cont.path = mir_a2t(pathcpy);
+
+				MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
+				mir_free(cont.path);
+				mir_free(pathcpy);
+			}
+			break;
 		}
-		else
-		{
-			sttPictureTransferFailed(ft);
-			return;
-		}
-		mir_free(szSha);
-		mir_free(szAvatarHash);
 	}
 }
 
@@ -1422,6 +1436,10 @@ static void sttCloseTransfer( P2P_Header* hdrdata, ThreadData* info, MimeHeaders
 		return;
 
 	p2p_sendAck( ft->std.hContact, hdrdata );
+
+	ft->close();
+	if (!ft->std.sending) remove(ft->std.currentFile);
+
 	p2p_unregisterSession( ft );
 }
 
