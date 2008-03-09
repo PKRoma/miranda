@@ -162,6 +162,7 @@ CIrcProto::~CIrcProto()
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
+	CloseHandle( m_evWndCreate );
 	DeleteCriticalSection(&m_resolve);
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
