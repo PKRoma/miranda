@@ -180,15 +180,16 @@ void  MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen )
 
 	if ( hContact != NULL ) 
 	{
-		char tContext[ 256 ];
-		if ( MSN_GetStaticString( "PictContext", hContact, tContext, sizeof( tContext )))
-			return;
-
-		char* szAvatarHash = MSN_GetAvatarHash(tContext);
-		if (szAvatarHash != NULL)
+		DBVARIANT dbv;
+		if (DBGetContactSettingString(hContact, msnProtocolName, "PictContext", &dbv) == 0)
 		{
-			tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s.", szAvatarHash );
-			mir_free(szAvatarHash);
+			char* szAvatarHash = MSN_GetAvatarHash(dbv.pszVal);
+			if (szAvatarHash != NULL)
+			{
+				tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s.", szAvatarHash );
+				mir_free(szAvatarHash);
+			}
+			MSN_FreeVariant( &dbv );
 		}
 	}
 	else 
