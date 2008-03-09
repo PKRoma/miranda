@@ -657,7 +657,8 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	MSN_GetAvatarFileName( AI->hContact, AI->filename, sizeof( AI->filename ));
 	AI->format = PA_FORMAT_UNKNOWN;
 
-	if ( AI->hContact ) {
+	if ( AI->hContact ) 
+	{
 		size_t len = strlen( AI->filename );
 		strcpy( AI->filename + len, "png" );
 		if ( _access( AI->filename, 0 ) == 0 )
@@ -670,8 +671,13 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				strcpy( AI->filename + len, "gif" );
 				if ( _access( AI->filename, 0 ) == 0 )
 					AI->format = PA_FORMAT_GIF;
-				else
-					strcpy( AI->filename + len, "unk" );
+				else {
+					strcpy( AI->filename + len, "bmp" );
+					if ( _access( AI->filename, 0 ) == 0 )
+						AI->format = PA_FORMAT_BMP;
+					else
+						strcpy( AI->filename + len, "unk" );
+				}
 			}
 		}
 	}
