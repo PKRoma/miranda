@@ -660,25 +660,45 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if ( AI->hContact ) 
 	{
 		size_t len = strlen( AI->filename );
-		strcpy( AI->filename + len, "png" );
-		if ( _access( AI->filename, 0 ) == 0 )
-			AI->format = PA_FORMAT_PNG;
-		else {
-			strcpy( AI->filename + len, "jpg" );
-			if ( _access( AI->filename, 0 ) == 0 )
-				AI->format = PA_FORMAT_JPEG;
-			else {
-				strcpy( AI->filename + len, "gif" );
-				if ( _access( AI->filename, 0 ) == 0 )
-					AI->format = PA_FORMAT_GIF;
-				else {
-					strcpy( AI->filename + len, "bmp" );
-					if ( _access( AI->filename, 0 ) == 0 )
-						AI->format = PA_FORMAT_BMP;
-					else
-						strcpy( AI->filename + len, "unk" );
-				}
+		strcpy( AI->filename + len, "*" );
+
+		_finddata_t c_file;
+		intptr_t hFile = _findfirst(AI->filename, &c_file);
+
+		// Find first .c file in current directory 
+		if (hFile == -1L)
+		{
+			strcpy( AI->filename + len, "unk" );
+		}
+		else
+		{
+			char *ext = strrchr(c_file.name, '.') + 1;
+			strlwr(ext);
+			
+			if (strcmp(ext, "png") == 0)
+			{
+				AI->format = PA_FORMAT_PNG;
+				strcpy( AI->filename + len, "png" );
 			}
+			else if (strcmp(ext, "jpg") == 0)
+			{
+				AI->format = PA_FORMAT_JPEG;
+				strcpy( AI->filename + len, "jpg" );
+			}
+			else if (strcmp(ext, "gif") == 0)
+			{
+				AI->format = PA_FORMAT_GIF;
+				strcpy( AI->filename + len, "gif" );
+			}
+			else if (strcmp(ext, "bmp") == 0)
+			{
+				AI->format = PA_FORMAT_BMP;
+				strcpy( AI->filename + len, "bmp" );
+			}
+			else
+				strcpy( AI->filename + len, "unk" );
+
+			_findclose(hFile);
 		}
 	}
 	else {
