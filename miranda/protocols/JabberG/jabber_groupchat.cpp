@@ -205,38 +205,6 @@ int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
-static BOOL sortAscending;
-static int sortColumn;
-struct GroupchatCompareParam
-{
-	CJabberProto* ppro;
-	int sortColumn;
-	BOOL sortAscending;
-};
-
-static int CALLBACK GroupchatCompare( LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort )
-{
-	GroupchatCompareParam* param = (GroupchatCompareParam*)lParamSort;
-	JABBER_LIST_ITEM *item1, *item2;
-	int res = 0;
-	item1 = param->ppro->ListGetItemPtr( LIST_ROOM, ( TCHAR* )lParam1 );
-	item2 = param->ppro->ListGetItemPtr( LIST_ROOM, ( TCHAR* )lParam2 );
-	if ( item1!=NULL && item2!=NULL ) {
-		switch ( param->sortColumn ) {
-		case 0:	// sort by JID column
-			res = lstrcmp( item1->jid, item2->jid );
-			break;
-		case 1: // sort by Name column
-			res = lstrcmp( item1->name, item2->name );
-			break;
-	}	}
-
-	if ( !param->sortAscending )
-		res *= -1;
-
-	return res;
-}
-
 void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password )
 {
 	bool found = false;

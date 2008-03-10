@@ -39,27 +39,28 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
 	IrcHookEvent( ME_SYSTEM_PRESHUTDOWN,   &CIrcProto::OnPreShutdown);
 	IrcHookEvent( ME_DB_CONTACT_DELETED,   &CIrcProto::OnDeletedContact );
 
-	CreateProtoService( PS_GETNAME,       &CIrcProto::GetName );
-	CreateProtoService( PS_GETSTATUS,     &CIrcProto::GetStatus );
+	CreateProtoService( PS_GETNAME,        &CIrcProto::GetName );
+	CreateProtoService( PS_GETSTATUS,      &CIrcProto::GetStatus );
+	CreateProtoService( PS_CREATEACCMGRUI, &CIrcProto::SvcCreateAccMgrUI );
 
-	CreateProtoService( IRC_JOINCHANNEL,  &CIrcProto::OnJoinMenuCommand );
-	CreateProtoService( IRC_QUICKCONNECT, &CIrcProto::OnQuickConnectMenuCommand);
-	CreateProtoService( IRC_CHANGENICK,   &CIrcProto::OnChangeNickMenuCommand );
-	CreateProtoService( IRC_SHOWLIST,     &CIrcProto::OnShowListMenuCommand );
-	CreateProtoService( IRC_SHOWSERVER,   &CIrcProto::OnShowServerMenuCommand );
+	CreateProtoService( IRC_JOINCHANNEL,   &CIrcProto::OnJoinMenuCommand );
+	CreateProtoService( IRC_QUICKCONNECT,  &CIrcProto::OnQuickConnectMenuCommand);
+	CreateProtoService( IRC_CHANGENICK,    &CIrcProto::OnChangeNickMenuCommand );
+	CreateProtoService( IRC_SHOWLIST,      &CIrcProto::OnShowListMenuCommand );
+	CreateProtoService( IRC_SHOWSERVER,    &CIrcProto::OnShowServerMenuCommand );
 	CreateProtoService( IRC_UM_SHOWCHANNEL, &CIrcProto::OnMenuShowChannel );
-	CreateProtoService( IRC_UM_JOINLEAVE, &CIrcProto::OnMenuJoinLeave );
+	CreateProtoService( IRC_UM_JOINLEAVE,  &CIrcProto::OnMenuJoinLeave );
 	CreateProtoService( IRC_UM_CHANSETTINGS, &CIrcProto::OnMenuChanSettings );
-	CreateProtoService( IRC_UM_WHOIS,     &CIrcProto::OnMenuWhois );
-	CreateProtoService( IRC_UM_DISCONNECT,&CIrcProto::OnMenuDisconnect );
-	CreateProtoService( IRC_UM_IGNORE,    &CIrcProto::OnMenuIgnore );
+	CreateProtoService( IRC_UM_WHOIS,      &CIrcProto::OnMenuWhois );
+	CreateProtoService( IRC_UM_DISCONNECT, &CIrcProto::OnMenuDisconnect );
+	CreateProtoService( IRC_UM_IGNORE,     &CIrcProto::OnMenuIgnore );
 
-	CreateProtoService( "/DblClickEvent", &CIrcProto::OnDoubleclicked );
-	CreateProtoService( "/InsertRawIn",   &CIrcProto::Scripting_InsertRawIn );
-	CreateProtoService( "/InsertRawOut",  &CIrcProto::Scripting_InsertRawOut );
-	CreateProtoService( "/InsertGuiIn",   &CIrcProto::Scripting_InsertGuiIn );
-	CreateProtoService( "/InsertGuiOut",  &CIrcProto::Scripting_InsertGuiOut);
-	CreateProtoService( "/GetIrcData",    &CIrcProto::Scripting_GetIrcData);
+	CreateProtoService( "/DblClickEvent",  &CIrcProto::OnDoubleclicked );
+	CreateProtoService( "/InsertRawIn",    &CIrcProto::Scripting_InsertRawIn );
+	CreateProtoService( "/InsertRawOut",   &CIrcProto::Scripting_InsertRawOut );
+	CreateProtoService( "/InsertGuiIn",    &CIrcProto::Scripting_InsertGuiIn );
+	CreateProtoService( "/InsertGuiOut",   &CIrcProto::Scripting_InsertGuiOut);
+	CreateProtoService( "/GetIrcData",     &CIrcProto::Scripting_GetIrcData);
 
 	codepage = CP_ACP;
 	InitializeCriticalSection(&m_resolve);

@@ -95,6 +95,8 @@
 #define IDD_GROUPCHAT_INFO              224
 #define IDD_NOTES                       225
 #define IDD_OPT_JABBER4                 226
+#define IDD_DIALOG2                     227
+#define IDD_ACCMGRUI                    227
 #define IDC_STATUSBAR                   999
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
@@ -373,6 +375,7 @@
 #define IDC_CB_FILTER                   1296
 #define IDC_TXT_ROLE                    1296
 #define IDC_TXT_COMBO                   1296
+#define IDC_CB_TYPE                     1296
 #define IDC_BTN_FILTER2                 1297
 #define IDC_BTN_FILTER_REFRESH          1297
 #define IDC_EDIT5                       1298
@@ -427,7 +430,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        227
+#define _APS_NEXT_RESOURCE_VALUE        228
 #define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1305
 #define _APS_NEXT_SYMED_VALUE           101

@@ -131,6 +131,8 @@
 #define IDC_PROXYTYPE                   1009
 #define IDC_STATIC23                    1010
 #define IDC_NAMEVAL                     1010
+#define IDC_LNK_NETWORK                 1010
+#define IDC_LNK_ADDONS                  1011
 #define IDC_SPECIFYPORTS                1013
 #define IDC_ST_ENTERMSG                 1013
 #define IDC_ST_ENTERURL                 1014
@@ -430,6 +432,9 @@
 #define IDC_BUTTON1                     1718
 #define IDC_PROGRESS1                   1719
 #define IDC_PROGRESSBAR                 1719
+#define IDC_TXT_ACCOUNT                 1720
+#define IDC_TXT_ADDITIONAL              1721
+#define IDC_TXT_INFO                    1722
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -461,7 +466,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        286
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1720
+#define _APS_NEXT_CONTROL_VALUE         1723
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

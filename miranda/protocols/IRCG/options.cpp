@@ -133,6 +133,67 @@ static char* getControlText( HWND hWnd, int ctrlID )
 	return result;
 }
 
+static void fillServerCombo( const char* szServerFile, CCtrlCombo& combo )
+{
+	if ( !szServerFile )
+		return;
+
+	const char* p1 = szServerFile;
+	const char* p2 = szServerFile;
+	while (strchr(p2, 'n')) {
+		SERVER_INFO* pData = new SERVER_INFO;
+		p1 = strchr(p2, '=');
+		++p1;
+		p2 = strstr(p1, "SERVER:");
+		pData->m_name = ( char* )mir_alloc( p2-p1+1 );
+		lstrcpynA(pData->m_name, p1, p2-p1+1);
+
+		p1 = strchr(p2, ':');
+		++p1;
+		pData->m_iSSL = 0;
+		if(strstr(p1, "SSL") == p1) {
+			p1 +=3;
+			if(*p1 == '1')
+				pData->m_iSSL = 1;
+			else if(*p1 == '2')
+				pData->m_iSSL = 2;
+			p1++;
+		}
+		p2 = strchr(p1, ':');
+		pData->Address = ( char* )mir_alloc( p2-p1+1 );
+		lstrcpynA( pData->Address, p1, p2-p1+1 );
+
+		p1 = p2;
+		p1++;
+		while (*p2 !='G' && *p2 != '-')
+			p2++;
+		pData->m_portStart = ( char* )mir_alloc( p2-p1+1 );
+		lstrcpynA( pData->m_portStart, p1, p2-p1+1 );
+
+		if (*p2 == 'G'){
+			pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
+			lstrcpyA( pData->m_portEnd, pData->m_portStart );
+		}
+		else {
+			p1 = p2;
+			p1++;
+			p2 = strchr(p1, 'G');
+			pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
+			lstrcpynA(pData->m_portEnd, p1, p2-p1+1);
+		}
+      
+      p1 = strchr(p2, ':');
+		p1++;
+		p2 = strchr(p1, '\r');
+		if (!p2)
+			p2 = strchr(p1, '\n');
+		if (!p2)
+			p2 = strchr(p1, '\0');
+		pData->Group = ( char* )mir_alloc( p2-p1+1 );
+		lstrcpynA(pData->Group, p1, p2-p1+1);
+		combo.AddStringA( pData->m_name, (LPARAM) pData );
+}	}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // add icons to the skinning module
 
@@ -504,63 +565,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_proto->m_hwndConnect = m_hwnd;
 
 	//	Fill the servers combo box and create SERVER_INFO structures
-	if ( m_proto->m_pszServerFile ) {
-		char* p1 = m_proto->m_pszServerFile;
-		char* p2 = m_proto->m_pszServerFile;
-		while (strchr(p2, 'n')) {
-			SERVER_INFO* pData = new SERVER_INFO;
-			p1 = strchr(p2, '=');
-			++p1;
-			p2 = strstr(p1, "SERVER:");
-			pData->m_name = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA(pData->m_name, p1, p2-p1+1);
-
-			p1 = strchr(p2, ':');
-			++p1;
-			pData->m_iSSL = 0;
-			if(strstr(p1, "SSL") == p1) {
-				p1 +=3;
-				if(*p1 == '1')
-					pData->m_iSSL = 1;
-				else if(*p1 == '2')
-					pData->m_iSSL = 2;
-				p1++;
-			}
-			p2 = strchr(p1, ':');
-			pData->Address = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->Address, p1, p2-p1+1 );
-
-			p1 = p2;
-			p1++;
-			while (*p2 !='G' && *p2 != '-')
-				p2++;
-			pData->m_portStart = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->m_portStart, p1, p2-p1+1 );
-
-			if (*p2 == 'G'){
-				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpyA( pData->m_portEnd, pData->m_portStart );
-			}
-			else {
-				p1 = p2;
-				p1++;
-				p2 = strchr(p1, 'G');
-				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpynA(pData->m_portEnd, p1, p2-p1+1);
-			}
-
-			p1 = strchr(p2, ':');
-			p1++;
-			p2 = strchr(p1, '\r');
-			if (!p2)
-				p2 = strchr(p1, '\n');
-			if (!p2)
-				p2 = strchr(p1, '\0');
-			pData->Group = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA(pData->Group, p1, p2-p1+1);
-			m_serverCombo.AddStringA( pData->m_name, (LPARAM) pData );
-	}	}
-
+	fillServerCombo( m_proto->m_pszServerFile, m_serverCombo );
 	m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
 	m_server.SetTextA( m_proto->m_serverName );
 	m_port.SetTextA( m_proto->m_portStart );
@@ -1830,4 +1835,81 @@ void CIrcProto::InitPrefs(void)
 	colors[13] = RGB(255,0,255);
 	colors[14] = RGB(127,127,127); 
 	colors[15] = RGB(210,210,210);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Account manager UI
+
+struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
+{
+	CCtrlCombo m_serverCombo;
+	CCtrlEdit  m_server, m_port, m_port2, m_pass, m_nick, m_nick2, m_name, m_userID;
+
+	CDlgAccMgrUI( CIrcProto* _pro, HWND _owner ) :
+		CProtoDlgBase<CIrcProto>( _pro, IDD_ACCMGRUI, _owner ),
+		m_serverCombo( this, IDC_SERVERCOMBO ),
+		m_server( this, IDC_SERVER ),
+		m_port( this, IDC_PORT ),
+		m_port2( this, IDC_PORT2 ),
+		m_pass( this, IDC_PASS ),
+		m_nick( this, IDC_NICK ),
+		m_nick2( this, IDC_NICK2 ),
+		m_name( this, IDC_NAME ),
+		m_userID( this, IDC_USERID )
+	{
+		m_serverCombo.OnChange = Callback( this, &CDlgAccMgrUI::OnChangeCombo );
+	}
+
+	virtual void OnInitDialog()
+	{
+		fillServerCombo( m_proto->m_pszServerFile, m_serverCombo );
+		m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
+		m_server.SetTextA( m_proto->m_serverName );
+		m_port.SetTextA( m_proto->m_portStart );
+		m_port2.SetTextA( m_proto->m_portEnd );
+		m_pass.SetTextA( m_proto->m_password);
+
+		m_nick.SetText( m_proto->m_nick);
+		m_nick2.SetText( m_proto->m_alternativeNick );
+		m_userID.SetText( m_proto->m_userID);
+		m_name.SetText( m_proto->m_name);
+	}
+
+	virtual void OnApply()
+	{
+		m_proto->m_serverComboSelection = m_serverCombo.GetCurSel();
+		m_server.GetTextA( m_proto->m_serverName, SIZEOF(m_proto->m_serverName));
+		m_port.GetTextA( m_proto->m_portStart, SIZEOF(m_proto->m_portStart));
+		m_port2.GetTextA( m_proto->m_portEnd, SIZEOF(m_proto->m_portEnd));
+		m_pass.GetTextA( m_proto->m_password, SIZEOF(m_proto->m_password));
+		CallService( MS_DB_CRYPT_ENCODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
+		m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
+		CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
+
+		m_nick.GetText( m_proto->m_nick, SIZEOF(m_proto->m_nick));
+		removeSpaces(m_proto->m_nick);
+		m_nick2.GetText( m_proto->m_alternativeNick, SIZEOF(m_proto->m_alternativeNick));
+		removeSpaces(m_proto->m_alternativeNick);
+		m_userID.GetText( m_proto->m_userID, SIZEOF(m_proto->m_userID));
+		removeSpaces(m_proto->m_userID);
+		m_name.GetText( m_proto->m_name, SIZEOF(m_proto->m_name));
+	}
+
+	void OnChangeCombo( CCtrlCombo* )
+	{
+		int i = m_serverCombo.GetCurSel();
+		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
+		if ( pData && (int)pData != CB_ERR ) {
+			m_server.SetTextA( pData->Address );
+			m_port.SetTextA( pData->m_portStart );
+			m_port2.SetTextA( pData->m_portEnd );
+			m_pass.SetTextA( "" );
+	}	}
+};
+
+int CIrcProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+{
+	CDlgAccMgrUI *dlg = new CDlgAccMgrUI(this, (HWND)lParam);
+	dlg->Show();
+	return (int)dlg->GetHwnd();
 }

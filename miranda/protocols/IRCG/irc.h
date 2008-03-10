@@ -318,6 +318,9 @@ struct CIrcProto : public PROTO_INTERFACE
 
 	virtual	int    __cdecl OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam );
 
+	// Services
+	int  __cdecl SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam);
+
 	// Events
 	int __cdecl OnChangeNickMenuCommand( WPARAM, LPARAM );
 	int __cdecl OnDeletedContact( WPARAM, LPARAM );

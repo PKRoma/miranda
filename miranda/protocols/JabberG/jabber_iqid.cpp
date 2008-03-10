@@ -124,7 +124,7 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 			JABBER_LIST_ITEM* item;
 			for ( int i=0; ( i = ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
-					if ( item->bAutoJoin && ListGetItemPtr( LIST_ROOM, item->jid ) == NULL ) {
+					if ( item->bAutoJoin ) {
 						TCHAR room[256], *server, *p;
 						TCHAR text[128];
 						_tcsncpy( text, item->jid, SIZEOF( text ));

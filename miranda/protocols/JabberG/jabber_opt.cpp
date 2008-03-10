@@ -1622,6 +1622,512 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Account manager UI
+
+class CJabberDlgAccMgrUI: public CJabberDlgBase
+{
+	typedef CJabberDlgBase CSuper;
+
+	CCtrlCombo		m_cbType;
+	CCtrlEditJid	m_txtUsername;
+	CCtrlCombo		m_cbServer;
+	CCtrlEdit		m_txtPassword;
+	CCtrlCheck		m_chkSavePassword;
+	CCtrlCombo		m_cbResource;
+	CCtrlCheck		m_chkManualHost;
+	CCtrlEdit		m_txtManualHost;
+	CCtrlEdit		m_txtPort;
+	CCtrlButton		m_btnRegister;
+
+public:
+	CJabberDlgAccMgrUI(CJabberProto *proto, HWND hwndParent):
+		CJabberDlgBase(proto, IDD_ACCMGRUI, hwndParent, false),
+		m_cbType(this, IDC_CB_TYPE),
+		m_txtUsername(this, IDC_EDIT_USERNAME),
+		m_txtPassword(this, IDC_EDIT_PASSWORD),
+		m_chkSavePassword(this, IDC_SAVEPASSWORD),
+		m_cbResource(this, IDC_COMBO_RESOURCE),
+		m_cbServer(this, IDC_EDIT_LOGIN_SERVER),
+		m_txtPort(this, IDC_PORT),
+		m_chkManualHost(this, IDC_MANUAL),
+		m_txtManualHost(this, IDC_HOST),
+		m_btnRegister(this, IDC_BUTTON_REGISTER)
+	{
+		CreateLink(m_txtUsername, "LoginName", _T(""));
+		CreateLink(m_chkSavePassword, "SavePassword", DBVT_BYTE, 1);
+		CreateLink(m_cbResource, "Resource", _T("Miranda"));
+		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
+
+		// Bind events
+		m_cbType.OnChange = Callback(this, &CJabberDlgAccMgrUI::cbType_OnChange);
+		m_cbServer.OnDropdown = Callback(this, &CJabberDlgAccMgrUI::cbServer_OnDropdown);
+		m_chkManualHost.OnChange = Callback(this, &CJabberDlgAccMgrUI::chkManualHost_OnChange);
+
+		m_btnRegister.OnClick = Callback(this, &CJabberDlgAccMgrUI::btnRegister_OnClick);
+	}
+
+protected:
+	enum { ACC_PUBLIC, ACC_TLS, ACC_SSL, ACC_GTALK, ACC_LJTALK };
+
+	void OnInitDialog()
+	{
+		CSuper::OnInitDialog();
+
+		int i;
+		DBVARIANT dbv;
+		char server[256];
+
+		m_gotservers = false;
+
+		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "Password", &dbv))
+		{
+			JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
+			TCHAR *tmp = mir_a2t(dbv.pszVal);
+			m_txtPassword.SetText(tmp);
+			mir_free(tmp);
+			JFreeVariant(&dbv);
+		}
+
+		m_cbServer.AddString(TranslateT("Loading..."));
+
+		// fill predefined resources
+		TCHAR* szResources[] = { _T("Home"), _T("Work"), _T("Office"), _T("Miranda") };
+		for (i = 0; i < SIZEOF(szResources); ++i)
+			m_cbResource.AddString(szResources[i]);
+
+		// append computer name to the resource list
+		TCHAR szCompName[ MAX_COMPUTERNAME_LENGTH + 1];
+		DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+		if (GetComputerName(szCompName, &dwCompNameLength))
+			m_cbResource.AddString(szCompName);
+
+		if (!DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "Resource", &dbv))
+		{
+			m_cbResource.AddString(dbv.ptszVal);
+			m_cbResource.SetText(dbv.ptszVal);
+			JFreeVariant(&dbv);
+		} else
+		{
+			m_cbResource.SetText(_T("Miranda"));
+		}
+
+		m_cbType.AddString(TranslateT("Public XMPP Network"), ACC_PUBLIC);
+		m_cbType.AddString(TranslateT("Secure XMPP Network"), ACC_TLS);
+		m_cbType.AddString(TranslateT("Secure XMPP Network (old style)"), ACC_SSL);
+		m_cbType.AddString(TranslateT("Google Talk!"), ACC_GTALK);
+		m_cbType.AddString(TranslateT("LiveJournal Talk"), ACC_LJTALK);
+
+		m_cbServer.GetTextA(server, SIZEOF(server));
+
+		if (!lstrcmpA(server, "gmail.com"))
+			m_cbType.SetCurSel(ACC_GTALK);
+		else if (!lstrcmpA(server, "livejournal.com"))
+			m_cbType.SetCurSel(ACC_LJTALK);
+		else if (m_proto->JGetByte("UseTLS", TRUE))
+			m_cbType.SetCurSel(ACC_TLS);
+		else if (m_proto->JGetByte("UseSSL", FALSE))
+			m_cbType.SetCurSel(ACC_SSL);
+		else
+			m_cbType.SetCurSel(ACC_PUBLIC);
+		cbType_OnChange(&m_cbType);
+
+		if (m_chkManualHost.Enabled())
+		{
+			if (m_proto->JGetByte("ManualConnect", FALSE))
+			{
+				m_chkManualHost.SetState(BST_CHECKED);
+				m_txtManualHost.Enable();
+				m_txtPort.Enable();
+
+				if (!DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "ManualHost", &dbv))
+				{
+					m_txtManualHost.SetText(dbv.ptszVal);
+					JFreeVariant(&dbv);
+				}
+
+				m_txtPort.SetInt(m_proto->JGetWord(NULL, "ManualPort", m_txtPort.GetInt()));
+			} else
+			{
+				int defPort = m_txtPort.GetInt();
+				int port = m_proto->JGetWord(NULL, "Port", defPort);
+
+				if (port != defPort)
+				{
+					m_chkManualHost.SetState(BST_CHECKED);
+					m_txtManualHost.Enable();
+					m_txtPort.Enable();
+
+					m_txtManualHost.SetTextA(server);
+					m_txtPort.SetInt(port);
+				} else
+				{
+					m_chkManualHost.SetState(BST_UNCHECKED);
+					m_txtManualHost.Disable();
+					m_txtPort.Disable();
+				}
+			}
+		}
+
+		CheckRegistration();
+	}
+
+	void OnApply()
+	{
+		BOOL bUseHostnameAsResource = FALSE;
+		TCHAR szCompName[MAX_COMPUTERNAME_LENGTH + 1], szResource[MAX_COMPUTERNAME_LENGTH + 1];
+		DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
+		if (GetComputerName(szCompName, &dwCompNameLength))
+		{
+			m_cbResource.GetText(szResource, SIZEOF(szResource));
+			if (!lstrcmp(szCompName, szResource))
+				bUseHostnameAsResource = TRUE;
+		}
+		m_proto->JSetByte("HostNameAsResource", bUseHostnameAsResource);
+
+		if (m_chkSavePassword.GetState() == BST_CHECKED)
+		{
+			char *text = m_txtPassword.GetTextA();
+			JCallService(MS_DB_CRYPT_ENCODESTRING, lstrlenA(text), (LPARAM)text);
+			m_proto->JSetString(NULL, "Password", text);
+			mir_free(text);
+		} else
+		{
+			m_proto->JDeleteSetting(NULL, "Password");
+		}
+
+		switch (m_cbType.GetItemData(m_cbType.GetCurSel()))
+		{
+		case ACC_PUBLIC:
+		{
+			m_proto->JSetByte("UseSSL", FALSE);
+			m_proto->JSetByte("UseTLS", FALSE);
+			break;
+		}
+		case ACC_TLS:
+		case ACC_GTALK:
+		case ACC_LJTALK:
+		{
+			m_proto->JSetByte("UseSSL", FALSE);
+			m_proto->JSetByte("UseTLS", TRUE);
+			break;
+		}
+		case ACC_SSL:
+		{
+			m_proto->JSetByte("UseSSL", TRUE);
+			m_proto->JSetByte("UseTLS", FALSE);
+			break;
+		}
+		}
+
+		char server[256];
+		char manualServer[256];
+
+		m_cbServer.GetTextA(server, SIZEOF(server));
+		m_txtManualHost.GetTextA(manualServer, SIZEOF(manualServer));
+
+		if ((m_chkManualHost.GetState() == BST_CHECKED) && lstrcmpA(server, manualServer))
+		{
+			m_proto->JSetByte("ManualConnect", TRUE);
+			m_proto->JSetString(NULL, "ManualHost", manualServer);
+			m_proto->JSetWord(NULL, "ManualPort", m_txtPort.GetInt());
+			m_proto->JSetWord(NULL, "Port", m_txtPort.GetInt());
+		} else
+		{
+			m_proto->JSetByte("ManualConnect", FALSE);
+			m_proto->JDeleteSetting(NULL, "ManualHost");
+			m_proto->JDeleteSetting(NULL, "ManualPort");
+			m_proto->JSetWord(NULL, "Port", m_txtPort.GetInt());
+		}
+
+		if (m_proto->m_bJabberConnected)
+		{
+			if (m_cbType.IsChanged() || m_txtPassword.IsChanged() || m_cbResource.IsChanged() ||
+				m_cbServer.IsChanged() || m_txtPort.IsChanged() || m_txtManualHost.IsChanged())
+			{
+				MessageBox(m_hwnd,
+					TranslateT("Some changes will take effect the next time you connect to the Jabber network."),
+					TranslateT("Jabber Protocol Option"), MB_OK|MB_SETFOREGROUND);
+			}
+
+			m_proto->SendPresence(m_proto->m_iStatus, true);
+		}
+	}
+
+	void OnChange(CCtrlBase *ctrl)
+	{
+		if (m_initialized)
+			CheckRegistration();
+	}
+
+	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msg)
+		{
+		case WM_JABBER_REFRESH:
+			RefreshServers((XmlNode *)lParam);
+			break;
+		}
+		return CSuper::DlgProc(msg, wParam, lParam);
+	}
+
+private:
+	bool m_gotservers;
+	bool m_canregister;
+
+	void btnRegister_OnClick(CCtrlButton *)
+	{
+		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
+		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
+		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+		m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
+		regInfo.port = (WORD)m_txtPort.GetInt();
+		if (m_chkManualHost.GetState() == BST_CHECKED)
+		{
+			m_txtManualHost.GetTextA(regInfo.manualHost, SIZEOF(regInfo.manualHost));
+		} else
+		{
+			regInfo.manualHost[0] = '\0';
+		}
+
+		if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
+			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
+	}
+
+	void cbServer_OnDropdown(CCtrlCombo *sender)
+	{
+		if (!m_gotservers) mir_forkthread(QueryServerListThread, (void *)this);
+	}
+
+	void cbType_OnChange(CCtrlData *sender)
+	{
+		CCtrlCombo *chk = (CCtrlCombo *)sender;
+		setupConnection(chk->GetItemData(chk->GetCurSel()));
+		CheckRegistration();
+	}
+
+	void chkManualHost_OnChange(CCtrlData *sender)
+	{
+		CCtrlCheck *chk = (CCtrlCheck *)sender;
+
+		if (chk->GetState() == BST_CHECKED)
+		{
+			char buf[256];
+			m_cbServer.GetTextA(buf, SIZEOF(buf));
+			m_txtManualHost.SetTextA(buf);
+			m_txtPort.SetInt(5222);
+
+			m_txtManualHost.Enable();
+			m_txtPort.Enable();
+		} else
+		{
+			m_txtManualHost.Disable();
+			m_txtPort.Disable();
+		}
+	}
+
+	void CheckRegistration();
+	void setupConnection(int type);
+	void setupPublic();
+	void setupSecure();
+	void setupSecureSSL();
+	void setupGoogle();
+	void setupLJ();
+	void RefreshServers(XmlNode *node);
+	static void QueryServerListXmlCallback(XmlNode *node, void *userdata);
+	static void QueryServerListThread(void *arg);
+};
+
+void CJabberDlgAccMgrUI::CheckRegistration()
+{
+	if (!m_canregister)
+	{
+		m_btnRegister.Disable();
+		return;
+	}
+
+	ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
+	m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
+	m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+	m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
+	regInfo.port = (WORD)m_txtPort.GetInt();
+	if (m_chkManualHost.GetState() == BST_CHECKED)
+	{
+		m_txtManualHost.GetTextA(regInfo.manualHost, SIZEOF(regInfo.manualHost));
+	} else
+	{
+		regInfo.manualHost[0] = '\0';
+	}
+
+	if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
+		m_btnRegister.Enable();
+	else
+		m_btnRegister.Disable();
+}
+
+void CJabberDlgAccMgrUI::setupConnection(int type)
+{
+	switch (type)
+	{
+		case ACC_PUBLIC: setupPublic(); break;
+		case ACC_TLS: setupSecure(); break;
+		case ACC_SSL: setupSecureSSL(); break;
+		case ACC_GTALK: setupGoogle(); break;
+		case ACC_LJTALK: setupLJ(); break;
+	}
+}
+
+void CJabberDlgAccMgrUI::setupPublic()
+{
+	m_canregister = true;
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Enable();
+	m_chkManualHost.Enable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Enable();
+}
+
+void CJabberDlgAccMgrUI::setupSecure()
+{
+	m_canregister = true;
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Enable();
+	m_chkManualHost.Enable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Enable();
+}
+
+void CJabberDlgAccMgrUI::setupSecureSSL()
+{
+	m_canregister = true;
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5223);
+
+	m_cbServer.Enable();
+	m_chkManualHost.Enable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Enable();
+}
+
+void CJabberDlgAccMgrUI::setupGoogle()
+{
+	m_canregister = false;
+	m_cbServer.SetTextA("gmail.com");
+	m_chkManualHost.SetState(BST_CHECKED);
+	m_txtManualHost.SetTextA("talk.google.com");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Disable();
+	m_chkManualHost.Disable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Disable();
+}
+
+void CJabberDlgAccMgrUI::setupLJ()
+{
+	m_canregister = false;
+	m_cbServer.SetTextA("livejournal.com");
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Disable();
+	m_chkManualHost.Disable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Disable();
+}
+
+void CJabberDlgAccMgrUI::RefreshServers(XmlNode *node)
+{
+	m_gotservers = node ? true : false;
+
+	TCHAR *server = m_cbServer.GetText();
+	bool bDropdown = m_cbServer.GetDroppedState();
+	if (bDropdown) m_cbServer.ShowDropdown(false);
+
+	m_cbServer.ResetContent();
+	if ( node )
+	{
+		for (int i = 0; i < node->numChild; ++i)
+			if (!lstrcmpA(node->child[i]->name, "item"))
+				if (TCHAR *jid = JabberXmlGetAttrValue(node->child[i], "jid"))
+					if (m_cbServer.FindString(jid, -1, true) == CB_ERR)
+						m_cbServer.AddString(jid);
+	}
+
+	m_cbServer.SetText(server);
+
+	if (bDropdown) m_cbServer.ShowDropdown();
+	mir_free(server);
+}
+
+void CJabberDlgAccMgrUI::QueryServerListXmlCallback(XmlNode *node, void *userdata)
+{
+	HWND hwnd = (HWND)userdata;
+
+	TCHAR *xmlns = JabberXmlGetAttrValue(node, "xmlns");
+	if (xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmpA(node->name, "query") && IsWindow(hwnd))
+		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)node);
+	else
+		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+}
+
+void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
+{
+	CDlgOptAccount *wnd = (CDlgOptAccount *)arg;
+	HWND hwnd = wnd->GetHwnd();
+
+	NETLIBHTTPREQUEST request = {0};
+	request.cbSize = sizeof(request);
+	request.requestType = REQUEST_GET;
+	request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	request.szUrl = "http://www.jabber.org/servers.xml";
+
+	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
+
+	if (!result)
+	{
+		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+		return;
+	}
+
+	if (IsWindow(hwnd))
+	{
+		if ((result->resultCode == 200) && result->dataLength && result->pData)
+		{
+			XmlState xmlstate;
+			JabberXmlInitState(&xmlstate);
+			JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, QueryServerListXmlCallback, (void *)hwnd);
+			wnd->GetProto()->OnXmlParse(&xmlstate, result->pData);
+			JabberXmlDestroyState(&xmlstate);
+		} else
+		{
+			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
+		}
+	}
+
+	CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
+}
+
+int CJabberProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+{
+	CJabberDlgAccMgrUI *dlg = new CJabberDlgAccMgrUI(this, (HWND)lParam);
+	dlg->Show();
+	return (int)dlg->GetHwnd();
+}
+
 void CJabberProto::JabberUpdateDialogs( BOOL bEnable )
 {
 	if ( rrud.hwndDlg )

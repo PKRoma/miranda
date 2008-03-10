@@ -1435,7 +1435,7 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 		{
 			JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_BOOKMARK, pNode->GetJid() );
 			if ( item == NULL ) {
-				item = ListGetItemPtr( LIST_ROOM, pNode->GetJid() );
+				item = ListGetItemPtr( LIST_BOOKMARK, pNode->GetJid() );
 				if ( item == NULL ) {
 					item = ListAdd( LIST_ROOM, pNode->GetJid() );
 					item->name = mir_tstrdup( pNode->GetName() );

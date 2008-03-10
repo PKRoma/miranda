@@ -22,6 +22,7 @@
 #define IDD_MESSAGEBOX                  159
 #define IDD_PREFS_IGNORE                160
 #define IDD_ADDIGNORE                   161
+#define IDD_ACCMGRUI                    162
 #define IDI_ADD                         175
 #define IDI_BLOCK                       176
 #define IDI_DELETE                      177

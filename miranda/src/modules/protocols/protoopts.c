@@ -374,6 +374,66 @@ static void sttSelectItem(struct TAccMgrData *dat, HWND hwndList, int iItem)
 	RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 }
 
+static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
+{
+	HWND hwndList = GetDlgItem(hwndDlg, IDC_ACCLIST);
+	int curSel = ListBox_GetCurSel( hwndList );
+	if ( curSel != LB_ERR ) {
+		HWND hwnd;
+		char svc[MAXMODULELABELLENGTH];
+
+		PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, curSel);
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro ? TRUE : FALSE );
+
+		if (dat->iSelected >= 0)
+		{
+			PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
+			if (pa_old && pa_old->hwndAccMgrUI)
+				ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
+		}
+
+		if (pa->hwndAccMgrUI)
+		{
+			ShowWindow(pa->hwndAccMgrUI, SW_SHOW);
+		} else
+		if (!pa->ppro)
+		{
+			ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
+			SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Account is disabled. Please activate it to access options."));
+		} else
+		{
+			mir_snprintf(svc, SIZEOF(svc), "%s%s", pa->szModuleName, PS_CREATEACCMGRUI);
+			hwnd = (HWND)CallService(svc, 0, (LPARAM)hwndDlg);
+			if (hwnd && (hwnd != (HWND)CALLSERVICE_NOTFOUND))
+			{
+				RECT rc;
+
+				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
+
+				GetWindowRect(GetDlgItem(hwndDlg, IDC_TXT_INFO), &rc);
+				MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
+				SetWindowPos(hwnd, NULL, rc.left, rc.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+
+				pa->hwndAccMgrUI = hwnd;
+			} else
+			{
+				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
+				SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("This account uses legacy protocol. Use Miranda IM options dialogs to change login information for it."));
+			}
+		}
+	} else
+	{
+		EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
+		EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
+		SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the \"New\" button underneath the list to set up a new IM account."));
+	}
+}
+
 static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
 	struct TAccMgrData *dat = (struct TAccMgrData *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -388,12 +448,28 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
 
 			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_RENAME ));
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_OPTIONS ));
 
+			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
+			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)"New account", 0);
+			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage( hwndDlg, IDC_EDIT, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_RENAME ));
+			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONADDTOOLTIP, (WPARAM)"Edit", 0);
+			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
+			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONADDTOOLTIP, (WPARAM)"Remove account", 0);
+			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_OPTIONS ));
+			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONADDTOOLTIP, (WPARAM)"Configure...", 0);
+			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ACCMGR ));
+			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONADDTOOLTIP, (WPARAM)"Upgrade account", 0);
+			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONSETASFLATBTN, 0, 0);
+
+			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
+
 			{
 				LOGFONT lf;
 				HDC hdc;
@@ -419,6 +495,10 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 
 				dat->normalHeight = 4 + max(dat->titleHeight, GetSystemMetrics(SM_CYSMICON));
 				dat->selectedHeight = dat->normalHeight + 4 + 2 * dat->textHeight;
+
+				SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)dat->hfntTitle, 0);
+				SendDlgItemMessage(hwndDlg, IDC_TXT_ACCOUNT, WM_SETFONT, (WPARAM)dat->hfntTitle, 0);
+				SendDlgItemMessage(hwndDlg, IDC_TXT_ADDITIONAL, WM_SETFONT, (WPARAM)dat->hfntTitle, 0);
 			}
 
 			dat->iSelected = -1;
@@ -426,6 +506,17 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 		}
 		return TRUE;
+
+	case WM_CTLCOLORSTATIC:
+		switch ( GetDlgCtrlID(( HWND )lParam )) {
+		case IDC_WHITERECT:
+		case IDC_LOGO:
+		case IDC_NAME:
+		case IDC_DESCRIPTION:
+			SetBkColor(( HDC )wParam, GetSysColor( COLOR_WINDOW ));
+			return ( BOOL )GetSysColorBrush( COLOR_WINDOW );
+		}
+		break;
 
 	case WM_MEASUREITEM:
 		{
@@ -542,6 +633,8 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			int i;
 			for (i = 0; i < accounts.count; ++i)
 				SendMessage(hList, LB_SETITEMDATA, SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)accounts.items[i]->tszAccountName), (LPARAM)accounts.items[i]);
+			dat->iSelected = -1;
+			sttUpdateAccountInfo(hwndDlg, dat);
 		}
 		break;
 
@@ -600,13 +693,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				switch (HIWORD(wParam)) {
 				case LBN_SELCHANGE:
 					{
-						int curSel = ListBox_GetCurSel( hwndList );
-						if ( curSel != LB_ERR ) {
-							PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, curSel);
-							EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto );
-						}
-						else EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
-
+						sttUpdateAccountInfo(hwndDlg, dat);
 						sttSelectItem(dat, hwndList, ListBox_GetCurSel(hwndList));
 					}
 					break;
@@ -622,6 +709,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							else DeactivateAccount( pa, TRUE );
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
+							sttUpdateAccountInfo(hwndDlg, dat);
 							RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 					}	}
 					break;
@@ -719,25 +807,89 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			}	}	}	}
 			break;
 
-		case IDOK:
-		case IDCANCEL:
-			EndDialog(hwndDlg,LOWORD(wParam));
+		case IDC_LNK_NETWORK:
+		{
+			OPENOPTIONSDIALOG ood = {0};
+			ood.cbSize = sizeof(ood);
+			ood.pszPage = "Network";
+			CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
 			break;
+		}
+
+		case IDC_LNK_ADDONS:
+		{
+			CallService(MS_UTILS_OPENURL, TRUE, (LPARAM)"http://addons.miranda-im.org/");
+			break;
+		}
+
+		case IDOK:
+		{	int i;
+			PSHNOTIFY pshn = {0};
+			pshn.hdr.code = PSN_APPLY;
+			for (i = 0; i < accounts.count; ++i)
+				if (accounts.items[i]->hwndAccMgrUI && accounts.items[i]->bAccMgrUIChanged)
+				{
+					pshn.hdr.hwndFrom = accounts.items[i]->hwndAccMgrUI;
+					SendMessage(accounts.items[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+					accounts.items[i]->bAccMgrUIChanged = FALSE;
+				}
+			DestroyWindow(hwndDlg);
+			break;
+		}
+
+		case IDCANCEL:
+		{	int i;
+			PSHNOTIFY pshn = {0};
+			pshn.hdr.code = PSN_RESET;
+			for (i = 0; i < accounts.count; ++i)
+				if (accounts.items[i]->hwndAccMgrUI && accounts.items[i]->bAccMgrUIChanged)
+				{
+					pshn.hdr.hwndFrom = accounts.items[i]->hwndAccMgrUI;
+					SendMessage(accounts.items[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+					accounts.items[i]->bAccMgrUIChanged = FALSE;
+				}
+			DestroyWindow(hwndDlg);
+			break;
+		}
 		}
 		break;
 
+	case PSM_CHANGED:
+	{
+		HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
+		int idx = ListBox_GetCurSel( hList );
+		PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
+		if (acc) acc->bAccMgrUIChanged = TRUE;
+		break;
+	}
+
 	case WM_DESTROY:
+	{
+		int i;
+		for (i = 0; i < accounts.count; ++i)
+		{
+			accounts.items[i]->bAccMgrUIChanged = FALSE;
+			if (accounts.items[i]->hwndAccMgrUI)
+			{
+				DestroyWindow(accounts.items[i]->hwndAccMgrUI);
+				accounts.items[i]->hwndAccMgrUI = NULL;
+			}
+		}
+
 		Window_FreeIcon_IcoLib( hwndDlg );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_ADD );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_EDIT );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_REMOVE );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_OPTIONS );
+		Button_FreeIcon_IcoLib( hwndDlg, IDC_UPGRADE );
 		Utils_SaveWindowPosition( hwndDlg, NULL, "AccMgr", "");
 		sttSubclassAccList(GetDlgItem(hwndDlg, IDC_ACCLIST), FALSE);
 		DeleteObject(dat->hfntTitle);
 		DeleteObject(dat->hfntText);
 		mir_free(dat);
+		hAccMgr = NULL;
 		break;
+	}
 	}
 
 	return FALSE;

@@ -100,6 +100,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_hEventXStatusIconChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_EXTRAICON_CHANGED );
 	m_hEventXStatusChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_CHANGED );
 
+	JCreateService( PS_CREATEACCMGRUI, &CJabberProto::SvcCreateAccMgrUI );
+
 	JCreateService( PS_GETNAME, &CJabberProto::JabberGetName );
 	JCreateService( PS_GETAVATARINFO, &CJabberProto::JabberGetAvatarInfo );
 	JCreateService( PS_GETSTATUS, &CJabberProto::JabberGetStatus );

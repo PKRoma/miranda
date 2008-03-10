@@ -290,6 +290,13 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	if ( !pa->ppro )
 		return;
 
+	if ( pa->hwndAccMgrUI )
+	{
+		DestroyWindow(pa->hwndAccMgrUI);
+		pa->hwndAccMgrUI = NULL;
+		pa->bAccMgrUIChanged = FALSE;
+	}
+
 	KillObjectServices( pa->ppro );
 	KillObjectEventHooks( pa->ppro );
 

@@ -30,50 +30,6 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
-/*
-void CJabberProto::OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *confNode, *roomNode;
-	TCHAR* type, *category, *jid, *str;
-	JABBER_LIST_ITEM *item;
-	int i, j;
-
-	// RECVED: room list
-	// ACTION: refresh groupchat room list dialog
-	Log( "<iq/> iqIdBrowseRooms" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		ListRemoveList( LIST_ROOM );
-		for ( i=0; i<iqNode->numChild; i++ ) {
-			if (( confNode=iqNode->child[i] )!=NULL && confNode->name!=NULL ) {
-				if ( !strcmp( confNode->name, "item" )) {
-					if (( category=JabberXmlGetAttrValue( confNode, "category" ))!=NULL && !lstrcmp( category, _T("conference"))) {
-						for ( j=0; j<confNode->numChild; j++ ) {
-							if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "item" )) {
-								if (( category=JabberXmlGetAttrValue( roomNode, "category" ))!=NULL && !lstrcmp( category, _T("conference"))) {
-									if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-										item = ListAdd( LIST_ROOM, jid );
-										if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
-											item->name = mir_tstrdup( str );
-										if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
-											item->type = mir_tstrdup( str );
-					}	}	}	}	}
-				}
-				else if ( !strcmp( confNode->name, "conference" )) {
-					for ( j=0; j<confNode->numChild; j++ ) {
-						if (( roomNode=confNode->child[j] )!=NULL && !strcmp( roomNode->name, "conference" )) {
-							if (( jid=JabberXmlGetAttrValue( roomNode, "jid" )) != NULL ) {
-								item = ListAdd( LIST_ROOM, jid );
-								if (( str=JabberXmlGetAttrValue( roomNode, "name" )) != NULL )
-									item->name = mir_tstrdup( str );
-								if (( str=JabberXmlGetAttrValue( roomNode, "type" )) != NULL )
-									item->type = mir_tstrdup( str );
-		}	}	}	}	}	}
-	}
-}
-*/
 void CJabberProto::SetMucConfig( XmlNode* node, void *from )
 {
 	if ( m_ThreadInfo && from ) {
@@ -103,42 +59,7 @@ void CJabberProto::OnIqResultGetMuc( XmlNode *iqNode, void *userdata )
 					if ( !lstrcmp( str, _T(JABBER_FEAT_DATA_FORMS)))
 						FormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), &CJabberProto::SetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
-/*
-void CJabberProto::OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata )
-{
-	ThreadData* info = ( ThreadData* ) userdata;
-	XmlNode *queryNode, *itemNode;
-	TCHAR* type, *jid, *from;
-	JABBER_LIST_ITEM *item;
-	int i;
-	int iqId;
 
-	// RECVED: room list
-	// ACTION: refresh groupchat room list dialog
-	Log( "<iq/> iqIdDiscoRoomItems" );
-	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL ) return;
-	if (( from=JabberXmlGetAttrValue( iqNode, "from" )) == NULL ) return;
-
-	if ( !lstrcmp( type, _T("result"))) {
-		if (( queryNode=JabberXmlGetChild( iqNode, "query" )) != NULL ) {
-			ListRemoveList( LIST_ROOM );
-			for ( i=0; i<queryNode->numChild; i++ ) {
-				if (( itemNode=queryNode->child[i] )!=NULL && itemNode->name!=NULL && !strcmp( itemNode->name, "item" )) {
-					if (( jid=JabberXmlGetAttrValue( itemNode, "jid" )) != NULL ) {
-						item = ListAdd( LIST_ROOM, jid );
-						item->name = mir_tstrdup( JabberXmlGetAttrValue( itemNode, "name" ));
-		}	}	}	}
-	}
-	else if ( !_tcscmp( type, _T("error"))) {
-		// disco is not supported, try browse
-		iqId = SerialNext();
-		IqAdd( iqId, IQ_PROC_BROWSEROOMS, &CJabberProto::OnIqResultBrowseRooms );
-
-		XmlNodeIq iq( "get", iqId, from );
-		XmlNode* query = iq.addQuery( JABBER_FEAT_BROWSE );
-		m_ThreadInfo->send( iq );
-}	}
-*/
 static void sttFillJidList(HWND hwndDlg)
 {
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;

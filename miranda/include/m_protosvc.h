@@ -274,6 +274,15 @@ will pick this up and everything will be good.
 // Returns 0 on success, nonzero on failure
 #define PSS_ADDED	"/YouWereAdded"
 
+//Create account manager UI form
+//wParam=0
+//lParam=(LPARAM)(HWND)hwndAccMgr
+//Returns handle on newly created form.
+//Size for best fit is 186x134 DLUs, please avoid groupboxes
+//paddind and advanced options. This should provide minimal setup
+//for initial connect.
+#define PS_CREATEACCMGRUI "/CreateAccMgrUI"
+
 //Send a basic search request
 //wParam=0
 //lParam=(LPARAM)(const char*)szId

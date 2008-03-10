@@ -274,8 +274,11 @@ typedef struct tagACCOUNT
 	int    bIsEnabled;      // is account enabled?
 	int    bIsVisible;      // is account visible?
 	int    iOrder;          // account order in various menus & lists
-	BOOL	 bOldProto;       // old-styled account (one instance per dll)
+	BOOL   bOldProto;       // old-styled account (one instance per dll)
 	struct tagPROTO_INTERFACE* ppro;  // pointer to the underlying object
+
+	HWND   hwndAccMgrUI;
+	BOOL   bAccMgrUIChanged;
 }
 	PROTOACCOUNT;
 
