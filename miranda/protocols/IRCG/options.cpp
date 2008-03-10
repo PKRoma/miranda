@@ -277,7 +277,6 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 				m_groupCombo.AddStringA( pData->m_group );
 		}
 
-		int bEnableSsl = FALSE;
 		if ( m_action == 2 ) {
 			int j = m_owner->m_serverCombo.GetCurSel();
 			SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( j );
@@ -291,7 +290,6 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 				m_server.SetTextA( p+1 );
 
 			if ( m_ssleay32 ) {
-				bEnableSsl = TRUE;
 				if ( pData->m_iSSL == 0 )
 					CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
 				if ( pData->m_iSSL == 1 )
@@ -301,10 +299,13 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 			}
 		}
 		else {
+			if ( m_ssleay32 )
+				CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED);
 			m_port.SetInt( 6667 );
 			m_port2.SetInt( 6667 );
 		}
 
+		int bEnableSsl = ( m_ssleay32 != NULL );
 		EnableWindow(GetDlgItem( m_hwnd, IDC_ON), bEnableSsl );
 		EnableWindow(GetDlgItem( m_hwnd, IDC_OFF), bEnableSsl );
 		EnableWindow(GetDlgItem( m_hwnd, IDC_AUTO), bEnableSsl );
