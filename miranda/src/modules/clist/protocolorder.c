@@ -60,10 +60,15 @@ int CheckProtocolOrder()
 
 	for ( i=0; i < accounts.count; i++ ) {
 		PROTOACCOUNT* pa = accounts.items[i];
-		if ( pa->bIsVisible && !isProtoSuitable( pa->ppro )) {
-			pa->bIsVisible = FALSE;
-			protochanged = TRUE;
-	}	}
+		if ( !isProtoSuitable( pa->ppro )) {
+			if ( pa->bIsVisible ) {
+				pa->bIsVisible = FALSE;
+				protochanged = TRUE;
+			}
+			if ( pa->iOrder < 1000000 ) {
+				pa->iOrder = 1000000+i;
+				protochanged = TRUE;
+	}	}	}
 
 	if ( !protochanged )
 		return 0;
@@ -76,6 +81,7 @@ int FillTree(HWND hwnd)
 {
 	ProtocolData *PD;
 	int i;
+	PROTOACCOUNT* pa;
 
 	TVINSERTSTRUCT tvis;
 	tvis.hParent=NULL;
@@ -88,7 +94,11 @@ int FillTree(HWND hwnd)
 		return FALSE;
 
 	for ( i = 0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+		int idx = cli.pfnGetAccountIndexByPos( i );
+		if ( idx == -1 )
+			continue;
+
+		pa = accounts.items[idx];
 		if ( !pa->bIsEnabled || !isProtoSuitable( pa->ppro ))
 			continue;
 
@@ -137,6 +147,13 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		if ( HIWORD( wParam ) == BN_CLICKED ) {
 			if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	{
 				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
+				{
+					int i;
+					for ( i=0; i < accounts.count; i++ ) {
+						PROTOACCOUNT* pa = accounts.items[i];
+						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : i;
+				}	}
+
 				CheckProtocolOrder();
 				FillTree(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER));
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
