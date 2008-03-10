@@ -476,92 +476,40 @@ void CQuickDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
 
-	char * p1 = m_proto->m_pszServerFile;
-	char * p2 = m_proto->m_pszServerFile;
-	if ( m_proto->m_pszServerFile ) {
-		while (strchr(p2, 'n')) {
-			SERVER_INFO* pData = new SERVER_INFO;
-			p1 = strchr(p2, '=');
-			++p1;
-			p2 = strstr(p1, "SERVER:");
-			pData->m_name = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->m_name, p1, p2-p1+1 );
-			
-			p1 = strchr(p2, ':');
-			++p1;
-			pData->m_iSSL = 0;
-			if ( strstr(p1, "SSL") == p1 ) {
-				p1 +=3;
-				if(*p1 == '1')
-					pData->m_iSSL = 1;
-				else if(*p1 == '2')
-					pData->m_iSSL = 2;
-				p1++;
-			}
-
-			p2 = strchr(p1, ':');
-			pData->Address = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->Address, p1, p2-p1+1 );
-			
-			p1 = p2;
-			p1++;
-			while (*p2 !='G' && *p2 != '-')
-				p2++;
-			pData->m_portStart = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA( pData->m_portStart, p1, p2-p1+1 );
-
-			if (*p2 == 'G'){
-				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpyA(pData->m_portEnd, pData->m_portStart);
-			} 
-			else {
-				p1 = p2;
-				p1++;
-				p2 = strchr(p1, 'G');
-				pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-				lstrcpynA(pData->m_portEnd, p1, p2-p1+1);
-			}
-
-			p1 = strchr(p2, ':');
-			p1++;
-			p2 = strchr(p1, '\r');
-			if (!p2)
-				p2 = strchr(p1, '\n');
-			if (!p2)
-				p2 = strchr(p1, '\0');
-			pData->Group = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA(pData->Group, p1, p2-p1+1);
-			m_serverCombo.AddStringA( pData->m_name, ( LPARAM )pData );
+	if ( m_proto->m_servers.getCount() > 0 ) {
+		for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
+			SERVER_INFO* si = m_proto->m_servers[i];
+			m_serverCombo.AddStringA( si->m_name, ( LPARAM )si );
 		}
 	}
 	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);
 	
-	SERVER_INFO* pData = new SERVER_INFO;
-	pData->Group = mir_strdup( "" );
-	pData->m_name = mir_strdup( Translate("---- Not listed server ----"));
+	m_si = new SERVER_INFO;
+	m_si->m_group = mir_strdup( "" );
+	m_si->m_name = mir_strdup( Translate("---- Not listed server ----"));
 
 	DBVARIANT dbv;
 	if ( !m_proto->getString( "ServerName", &dbv )) {
-		pData->Address = mir_strdup( dbv.pszVal );
+		m_si->m_address = mir_strdup( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
-	else pData->Address = mir_strdup( Translate("Type new server address here"));
+	else m_si->m_address = mir_strdup( Translate("Type new server address here"));
 
 	if ( !m_proto->getString( "PortStart", &dbv )) {
-		pData->m_portStart = mir_strdup( dbv.pszVal );
+		m_si->m_portStart = atoi( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
-	else pData->m_portStart = mir_strdup( "6667" );
+	else m_si->m_portStart = 6667;
 
 	if ( !m_proto->getString( "PortEnd", &dbv )) {
-		pData->m_portEnd = mir_strdup( dbv.pszVal );
+		m_si->m_portEnd = atoi( dbv.pszVal );
 		DBFreeVariant(&dbv);
 	}
-	else pData->m_portEnd = mir_strdup( "6667" );
+	else m_si->m_portEnd = 6667;
 
-	pData->m_iSSL = m_proto->getByte( "UseSSL", 0 );
+	m_si->m_iSSL = m_proto->getByte( "UseSSL", 0 );
 	
-	int iItem = m_serverCombo.AddStringA( pData->m_name, ( LPARAM )pData );
+	int iItem = m_serverCombo.AddStringA( m_si->m_name, ( LPARAM )m_si );
 
 	if ( m_proto->m_quickComboSelection != -1 ) {
 		m_serverCombo.SetCurSel( m_proto->m_quickComboSelection );
@@ -574,10 +522,7 @@ void CQuickDlg::OnDestroy()
 {
 	CCoolIrcDlg::OnDestroy();
 	
-	int j = m_serverCombo.GetCount();
-	for ( int index2 = 0; index2 < j; index2++ )
-		delete ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
-	
+	delete m_si;
 	m_proto->m_quickDlg = NULL;
 }
 
@@ -591,12 +536,12 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
-		lstrcpyA( m_proto->m_network, pData->Group ); 
+		lstrcpyA( m_proto->m_network, pData->m_group ); 
 		if( m_ssleay32 ) {
 			pData->m_iSSL = 0;
-			if(IsDlgButtonChecked( m_hwnd, IDC_SSL_ON))
+			if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_ON ))
 				pData->m_iSSL = 2;
-			if(IsDlgButtonChecked( m_hwnd, IDC_SSL_AUTO))
+			if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_AUTO ))
 				pData->m_iSSL = 1;
 			m_proto->m_iSSL = pData->m_iSSL;
 		}
@@ -626,14 +571,14 @@ void CQuickDlg::OnOk( CCtrlButton* )
 void CQuickDlg::OnServerCombo( CCtrlData* )
 {
 	int i = m_serverCombo.GetCurSel();
-	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( i == CB_ERR )
 		return;
 
-	SetDlgItemTextA( m_hwnd,IDC_SERVER, pData->Address );
-	SetDlgItemTextA( m_hwnd,IDC_PORT,   pData->m_portStart );
-	SetDlgItemTextA( m_hwnd,IDC_PORT2,  pData->m_portEnd );
-	SetDlgItemTextA( m_hwnd,IDC_PASS,   "" );
+	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
+	SetDlgItemTextA( m_hwnd, IDC_SERVER, pData->m_address );
+	SetDlgItemTextA( m_hwnd, IDC_PASS,   "" );
+	SetDlgItemInt( m_hwnd, IDC_PORT,   pData->m_portStart, FALSE );
+	SetDlgItemInt( m_hwnd, IDC_PORT2,  pData->m_portEnd, FALSE );
 	if ( m_ssleay32 ) {
 		if ( pData->m_iSSL == 0 ) {
 			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );

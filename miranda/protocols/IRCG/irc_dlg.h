@@ -134,6 +134,9 @@ struct CQuickDlg : public CCoolIrcDlg
 
 	CCtrlButton  m_Ok;
 	void OnOk( CCtrlButton* );
+
+private:
+	struct SERVER_INFO* m_si;
 };
 
 struct CManagerDlg : public CCoolIrcDlg
@@ -195,6 +198,8 @@ private:
 
 struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
+	bool m_serverlistModified;
+
 	CCtrlCombo   m_serverCombo;
 	CCtrlEdit    m_server, m_port, m_port2, m_pass;
 	CCtrlMButton m_add, m_edit, m_del;
@@ -231,32 +236,6 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 	void OnRetry( CCtrlData* );
 };
 
-struct CAddServerDlg : public CProtoDlgBase<CIrcProto>
-{
-	CConnectPrefsDlg* m_owner;
-	CCtrlButton m_OK;
-
-	CAddServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner );
-
-	virtual void OnInitDialog();
-	virtual void OnClose();
-
-	void OnOk( CCtrlButton* );
-};
-
-struct CEditServerDlg : public CProtoDlgBase<CIrcProto>
-{
-	CCtrlButton m_OK;
-	CConnectPrefsDlg* m_owner;
-
-	CEditServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner );
-
-	virtual void OnInitDialog();
-	virtual void OnClose();
-
-	void OnOk( CCtrlButton* );
-};
-
 //---- the second property page: DCC/CTCP -----------------------------------------------
 
 struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
@@ -280,6 +259,8 @@ struct CCtcpPrefsDlg : public CProtoDlgBase<CIrcProto>
 
 struct COtherPrefsDlg : public CProtoDlgBase<CIrcProto>
 {
+	bool m_performlistModified;
+
 	CCtrlButton  m_url;
 	CCtrlMButton m_add, m_delete;
 	CCtrlCombo   m_performCombo, m_codepage;

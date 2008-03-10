@@ -90,6 +90,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define STR_USERINFO     "I'm a happy Miranda IM user! Get it here: http://miranda-im.org"
 #define STR_AWAYMESSAGE  "I'm away from the computer." // Default away
 #define DCCSTRING        " (DCC)"
+#define SERVERSMODULE    "IRC Servers"
 #define SERVERWINDOW	 _T("Network log")
 
 #define DCC_CHAT		1
@@ -204,12 +205,8 @@ struct SERVER_INFO  // Contains info about different servers
 {
 	~SERVER_INFO();
 
-	char* Group;
-	char* Address;
-	char* m_name;
-	char* m_portStart;
-	char* m_portEnd;
-	int   m_iSSL;
+	char *m_name, *m_address, *m_group;
+	int  m_portStart, m_portEnd, m_iSSL;
 };
 
 struct PERFORM_INFO  // Contains 'm_perform buffer' for different networks
@@ -407,7 +404,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	COLORREF colors[16];
 	HICON    hIcon[13];
 
-	char* m_pszServerFile;
+	LIST<SERVER_INFO> m_servers;
 
 	std::vector<TString> vUserhostReasons;
 	std::vector<TString> vWhoInProgress;
@@ -497,8 +494,6 @@ struct CIrcProto : public PROTO_INTERFACE
 	TString        m_namesToWho;
 	TString        m_channelsToWho;
 	TString        m_namesToUserhost;
-
-	bool     m_serverlistModified, m_performlistModified;
 
 	void    InitPrefs(void);
 

@@ -26,7 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <m_genmenu.h>
 
-CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName )
+static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
+{
+	return lstrcmpA( p1->m_name, p2->m_name );
+}
+
+CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
+	m_servers( 20, CompareServers )
 {
 	m_tszUserName = mir_tstrdup( tszUserName );
 	m_szModuleName = mir_strdup( szModuleName );
@@ -158,8 +164,6 @@ CIrcProto::~CIrcProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	mir_free( m_alias );
-	delete []m_pszServerFile;
-
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
@@ -186,6 +190,57 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 			vector<String>* p = ( vector<String>* )lParam;
 			p->push_back( String( szSetting ));
 	}	}
+	return 0;
+}
+
+int sttServerEnum( const char* szSetting, LPARAM lParam )
+{
+	DBVARIANT dbv;
+	if ( DBGetContactSettingString( NULL, SERVERSMODULE, szSetting, &dbv ))
+		return 0;
+
+	SERVER_INFO* pData = new SERVER_INFO;
+	pData->m_name = mir_strdup( szSetting );
+
+	char* p1 = strchr( dbv.pszVal, ':' )+1;
+	pData->m_iSSL = 0;
+	if ( !memicmp( p1, "SSL", 3 )) {
+		p1 +=3;
+		if ( *p1 == '1' )
+			pData->m_iSSL = 1;
+		else if ( *p1 == '2' )
+			pData->m_iSSL = 2;
+		p1++;
+	}
+	char* p2 = strchr(p1, ':');
+	pData->m_address = ( char* )mir_alloc( p2-p1+1 );
+	lstrcpynA( pData->m_address, p1, p2-p1+1 );
+
+	p1 = p2+1;
+	while (*p2 !='G' && *p2 != '-')
+		p2++;
+
+	char* buf = ( char* )alloca( p2-p1+1 );
+	lstrcpynA( buf, p1, p2-p1+1 );
+	pData->m_portStart = atoi( buf );
+
+	if ( *p2 == 'G' )
+		pData->m_portEnd = pData->m_portStart;
+	else {
+		p1 = p2+1;
+		p2 = strchr(p1, 'G');
+		buf = ( char* )alloca( p2-p1+1 );
+		lstrcpynA( buf, p1, p2-p1+1 );
+		pData->m_portEnd = atoi( buf );
+	}
+   
+   p1 = strchr(p2, ':')+1;
+	p2 = strchr(p1, '\0');
+	pData->m_group = ( char* )mir_alloc( p2-p1+1 );
+	lstrcpynA( pData->m_group, p1, p2-p1+1 );
+
+	CIrcProto* ppro = ( CIrcProto* )lParam;
+	ppro->m_servers.insert( pData );
 	return 0;
 }
 
@@ -269,7 +324,33 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, m_szModuleName);
-	m_pszServerFile = IrcLoadFile(szTemp);
+	FILE* serverFile = fopen( szTemp, "r" );
+	if ( serverFile != NULL ) {
+		char buf1[ 500 ], buf2[ 200 ];
+		while ( fgets( buf1, sizeof( buf1 ), serverFile )) {
+			char* p = strchr( buf1, '=' );
+			if ( !p )
+				continue;
+
+			p++;
+			rtrim( p );
+			char* p1 = strstr( p, "SERVER:" );
+			if ( !p1 )
+				continue;
+
+			memcpy( buf2, p, int(p1-p));
+			buf2[ int(p1-p) ] = 0;
+			DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
+		}
+		fclose( serverFile );
+		::remove( szTemp );
+	}
+
+	DBCONTACTENUMSETTINGS dbces;
+	dbces.pfnEnumProc = sttServerEnum;
+	dbces.lParam = ( LPARAM )this;
+	dbces.szModule = SERVERSMODULE;
+	CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );

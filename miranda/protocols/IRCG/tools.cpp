@@ -906,8 +906,6 @@ void CIrcProto::ClearUserhostReasons(int type)
 SERVER_INFO::~SERVER_INFO()
 {
 	mir_free( m_name );
-	mir_free( Address );
-	mir_free( m_portStart );
-	mir_free( m_portEnd );
-	mir_free( Group );
+	mir_free( m_address );
+	mir_free( m_group );
 }

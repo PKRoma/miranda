@@ -133,67 +133,6 @@ static char* getControlText( HWND hWnd, int ctrlID )
 	return result;
 }
 
-static void fillServerCombo( const char* szServerFile, CCtrlCombo& combo )
-{
-	if ( !szServerFile )
-		return;
-
-	const char* p1 = szServerFile;
-	const char* p2 = szServerFile;
-	while (strchr(p2, 'n')) {
-		SERVER_INFO* pData = new SERVER_INFO;
-		p1 = strchr(p2, '=');
-		++p1;
-		p2 = strstr(p1, "SERVER:");
-		pData->m_name = ( char* )mir_alloc( p2-p1+1 );
-		lstrcpynA(pData->m_name, p1, p2-p1+1);
-
-		p1 = strchr(p2, ':');
-		++p1;
-		pData->m_iSSL = 0;
-		if(strstr(p1, "SSL") == p1) {
-			p1 +=3;
-			if(*p1 == '1')
-				pData->m_iSSL = 1;
-			else if(*p1 == '2')
-				pData->m_iSSL = 2;
-			p1++;
-		}
-		p2 = strchr(p1, ':');
-		pData->Address = ( char* )mir_alloc( p2-p1+1 );
-		lstrcpynA( pData->Address, p1, p2-p1+1 );
-
-		p1 = p2;
-		p1++;
-		while (*p2 !='G' && *p2 != '-')
-			p2++;
-		pData->m_portStart = ( char* )mir_alloc( p2-p1+1 );
-		lstrcpynA( pData->m_portStart, p1, p2-p1+1 );
-
-		if (*p2 == 'G'){
-			pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpyA( pData->m_portEnd, pData->m_portStart );
-		}
-		else {
-			p1 = p2;
-			p1++;
-			p2 = strchr(p1, 'G');
-			pData->m_portEnd = ( char* )mir_alloc( p2-p1+1 );
-			lstrcpynA(pData->m_portEnd, p1, p2-p1+1);
-		}
-      
-      p1 = strchr(p2, ':');
-		p1++;
-		p2 = strchr(p1, '\r');
-		if (!p2)
-			p2 = strchr(p1, '\n');
-		if (!p2)
-			p2 = strchr(p1, '\0');
-		pData->Group = ( char* )mir_alloc( p2-p1+1 );
-		lstrcpynA(pData->Group, p1, p2-p1+1);
-		combo.AddStringA( pData->m_name, (LPARAM) pData );
-}	}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // add icons to the skinning module
 
@@ -304,39 +243,97 @@ static BOOL CALLBACK sttLangAddCallback( CHAR* str )
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Add server' dialog
 
-CAddServerDlg::CAddServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_ADDSERVER, _owner->GetHwnd() ),
-	m_owner( _owner ),
-	m_OK( this, IDOK )
-{
-	m_OK.OnClick = Callback( this, &CAddServerDlg::OnOk );
-}
+static int sttRequiredFields[] = { IDC_ADD_SERVER, IDC_ADD_ADDRESS, IDC_ADD_PORT, IDC_ADD_PORT2, IDC_ADD_COMBO };
 
-void CAddServerDlg::OnInitDialog()
+struct CServerDlg : public CProtoDlgBase<CIrcProto>
 {
-	int i = m_owner->m_serverCombo.GetCount();
-	for (int index = 0; index <i; index++) {
-		SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( index );
-		if (SendMessageA(GetDlgItem( m_hwnd, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
-			SendMessageA(GetDlgItem( m_hwnd, IDC_ADD_COMBO), CB_ADDSTRING, 0, (LPARAM) pData->Group);
+	CConnectPrefsDlg* m_owner;
+	int m_action;
+	
+	CCtrlButton m_OK;
+	CCtrlEdit m_server, m_address, m_port, m_port2;
+	CCtrlCombo m_groupCombo;
+
+	CServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner, int _action ) :
+		CProtoDlgBase<CIrcProto>( _pro, IDD_ADDSERVER, _owner->GetHwnd() ),
+		m_owner( _owner ),
+		m_action( _action ),
+		m_OK( this, IDOK ),
+		m_groupCombo( this, IDC_ADD_COMBO ),
+		m_address( this, IDC_ADD_ADDRESS ),
+		m_server( this, IDC_ADD_SERVER ),
+		m_port( this, IDC_ADD_PORT ),
+		m_port2( this, IDC_ADD_PORT2 )
+	{
+		m_OK.OnClick = Callback( this, &CServerDlg::OnOk );
 	}
 
-	if (m_ssleay32)
-		CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED);
-	else {
-		EnableWindow(GetDlgItem( m_hwnd, IDC_ON), FALSE);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_OFF), FALSE);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_AUTO), FALSE);
+	virtual void OnInitDialog()
+	{
+		int i = m_owner->m_serverCombo.GetCount();
+		for ( int index = 0; index < i; index++ ) {
+			SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( index );
+			if ( m_groupCombo.FindStringA( pData->m_group, -1, true ) == CB_ERR )
+				m_groupCombo.AddStringA( pData->m_group );
+		}
+
+		int bEnableSsl = FALSE;
+		if ( m_action == 2 ) {
+			int j = m_owner->m_serverCombo.GetCurSel();
+			SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( j );
+			m_address.SetTextA( pData->m_address );
+			m_groupCombo.SetTextA( pData->m_group );
+			m_port.SetInt( pData->m_portStart );
+			m_port2.SetInt( pData->m_portEnd );
+
+			char* p = strchr( pData->m_name, ' ' );
+			if ( p )
+				m_server.SetTextA( p+1 );
+
+			if ( m_ssleay32 ) {
+				bEnableSsl = TRUE;
+				if ( pData->m_iSSL == 0 )
+					CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
+				if ( pData->m_iSSL == 1 )
+					CheckDlgButton( m_hwnd, IDC_AUTO, BST_CHECKED );
+				if ( pData->m_iSSL == 2 )
+					CheckDlgButton( m_hwnd, IDC_ON, BST_CHECKED );
+			}
+		}
+		else {
+			m_port.SetInt( 6667 );
+			m_port2.SetInt( 6667 );
+		}
+
+		EnableWindow(GetDlgItem( m_hwnd, IDC_ON), bEnableSsl );
+		EnableWindow(GetDlgItem( m_hwnd, IDC_OFF), bEnableSsl );
+		EnableWindow(GetDlgItem( m_hwnd, IDC_AUTO), bEnableSsl );
+
+		SetFocus( m_groupCombo.GetHwnd());
+	}
+	
+	virtual void OnClose()
+	{
+		m_owner->m_serverCombo.Enable();
+		m_owner->m_add.Enable();
+		m_owner->m_edit.Enable();
+		m_owner->m_del.Enable();
 	}
 
-	SetWindowTextA(GetDlgItem( m_hwnd, IDC_ADD_PORT), "6667");
-	SetWindowTextA(GetDlgItem( m_hwnd, IDC_ADD_PORT2), "6667");
-	SetFocus(GetDlgItem( m_hwnd, IDC_ADD_COMBO));
-}
+	void OnOk( CCtrlButton* )
+	{
+		for ( int k = 0; k < SIZEOF(sttRequiredFields); k++ )
+			if ( !GetWindowTextLength( GetDlgItem( m_hwnd, sttRequiredFields[k] ))) {
+				MessageBox( m_hwnd, TranslateT("Please complete all fields"), TranslateT("IRC error"), MB_OK | MB_ICONERROR );
+				return;
+			}
 
-void CAddServerDlg::OnOk( CCtrlButton* )
-{
-	if (GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_COMBO))) {
+		if ( m_action == 2 ) {
+			int i = m_owner->m_serverCombo.GetCurSel();
+			delete ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( i );
+			m_owner->m_serverCombo.DeleteString( i );
+		}
+
 		SERVER_INFO* pData = new SERVER_INFO;
 		pData->m_iSSL = 0;
 		if(IsDlgButtonChecked( m_hwnd, IDC_ON))
@@ -344,14 +341,14 @@ void CAddServerDlg::OnOk( CCtrlButton* )
 		if(IsDlgButtonChecked( m_hwnd, IDC_AUTO))
 			pData->m_iSSL = 1;
 
-		pData->m_portEnd = getControlText( m_hwnd, IDC_ADD_PORT2 );
-		pData->m_portStart = getControlText( m_hwnd, IDC_ADD_PORT );
-		pData->Address = getControlText( m_hwnd, IDC_ADD_ADDRESS );
-		pData->Group = getControlText( m_hwnd, IDC_ADD_COMBO );
-		pData->m_name = getControlText( m_hwnd, IDC_ADD_SERVER );
+		pData->m_portEnd = m_port.GetInt();
+		pData->m_portStart = m_port2.GetInt();
+		pData->m_address = m_address.GetTextA();
+		pData->m_group = m_groupCombo.GetTextA();
+		pData->m_name = m_server.GetTextA();
 
 		char temp[255];
-		mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->m_name );
+		mir_snprintf( temp, sizeof(temp), "%s: %s", pData->m_group, pData->m_name );
 		mir_free( pData->m_name );
 		pData->m_name = mir_strdup( temp );
 
@@ -359,113 +356,9 @@ void CAddServerDlg::OnOk( CCtrlButton* )
 		m_owner->m_serverCombo.SetCurSel( iItem );
 		m_owner->OnServerCombo( NULL );
 
-		//if ( m_owner->m_performCombo.FindStringA( pData->Group, -1, true ) == CB_ERR) !!!!!!!!!!!!!
-		//	m_owner->m_performCombo.AddStringA( pData->Group );
-
-		m_proto->m_serverlistModified = true;
+		m_owner->m_serverlistModified = true;
 	}
-	else MessageBox( m_hwnd, TranslateT("Please complete all fields"), TranslateT("IRC error"), MB_OK | MB_ICONERROR );
-}
-
-void CAddServerDlg::OnClose()
-{
-	m_owner->m_serverCombo.Enable();
-	m_owner->m_add.Enable();
-	m_owner->m_edit.Enable();
-	m_owner->m_del.Enable();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// 'Edit server' dialog
-
-CEditServerDlg::CEditServerDlg( CIrcProto* _pro, CConnectPrefsDlg* _owner ) :
-	CProtoDlgBase<CIrcProto>( _pro, IDD_ADDSERVER, _owner->GetHwnd() ),
-	m_owner( _owner ),
-	m_OK( this, IDOK )
-{
-	m_OK.OnClick = Callback( this, &CEditServerDlg::OnOk );
-}
-
-void CEditServerDlg::OnInitDialog()
-{
-	int i = m_owner->m_serverCombo.GetCount();
-	for (int index = 0; index <i; index++) {
-		SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( index );
-		if (SendMessage(GetDlgItem( m_hwnd, IDC_ADD_COMBO), CB_FINDSTRINGEXACT, -1,(LPARAM) pData->Group) == CB_ERR)
-			SendMessageA(GetDlgItem( m_hwnd, IDC_ADD_COMBO), CB_ADDSTRING, 0, (LPARAM) pData->Group);
-	}
-	int j = m_owner->m_serverCombo.GetCurSel();
-	SERVER_INFO* pData = ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( j );
-	SetDlgItemTextA( m_hwnd, IDC_ADD_ADDRESS, pData->Address );
-	SetDlgItemTextA( m_hwnd, IDC_ADD_COMBO, pData->Group );
-	SetDlgItemTextA( m_hwnd, IDC_ADD_PORT, pData->m_portStart );
-	SetDlgItemTextA( m_hwnd, IDC_ADD_PORT2, pData->m_portEnd );
-	
-	if ( m_ssleay32 ) {
-		if ( pData->m_iSSL == 0 )
-			CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
-		if ( pData->m_iSSL == 1 )
-			CheckDlgButton( m_hwnd, IDC_AUTO, BST_CHECKED );
-		if ( pData->m_iSSL == 2 )
-			CheckDlgButton( m_hwnd, IDC_ON, BST_CHECKED );
-	}
-	else {
-		EnableWindow(GetDlgItem( m_hwnd, IDC_ON), FALSE);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_OFF), FALSE);
-		EnableWindow(GetDlgItem( m_hwnd, IDC_AUTO), FALSE);
-	}
-
-	char* p = strchr( pData->m_name, ' ' );
-	if ( p )
-		SetDlgItemTextA( m_hwnd, IDC_ADD_SERVER, p+1);
-
-	SetFocus(GetDlgItem( m_hwnd, IDC_ADD_COMBO));	
-}
-
-void CEditServerDlg::OnOk( CCtrlButton* )
-{
-	if (GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_SERVER)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_ADDRESS)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_PORT2)) && GetWindowTextLength(GetDlgItem( m_hwnd, IDC_ADD_COMBO))) {
-		int i = m_owner->m_serverCombo.GetCurSel();
-		delete ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( i );
-		m_owner->m_serverCombo.DeleteString( i );
-
-		SERVER_INFO* pData = new SERVER_INFO;
-		pData->m_iSSL = 0;
-		if ( IsDlgButtonChecked( m_hwnd, IDC_ON ))
-			pData->m_iSSL = 2;
-		if ( IsDlgButtonChecked( m_hwnd, IDC_AUTO ))
-			pData->m_iSSL = 1;
-
-		pData->m_portEnd = getControlText( m_hwnd, IDC_ADD_PORT2 );
-		pData->m_portStart = getControlText( m_hwnd, IDC_ADD_PORT );
-		pData->Address = getControlText( m_hwnd, IDC_ADD_ADDRESS );
-		pData->Group = getControlText( m_hwnd, IDC_ADD_COMBO );
-		pData->m_name = getControlText( m_hwnd, IDC_ADD_SERVER );
-
-		char temp[255];
-		mir_snprintf( temp, sizeof(temp), "%s: %s", pData->Group, pData->m_name );
-		mir_free( pData->m_name );
-		pData->m_name = mir_strdup( temp );
-
-		int iItem = m_owner->m_serverCombo.AddStringA( pData->m_name, (LPARAM) pData );
-		m_owner->m_serverCombo.SetCurSel( iItem );
-		m_owner->OnServerCombo( NULL );
-
-		//if ( m_owner->m_performCombo.FindStringA( pData->Group, -1, true ) == CB_ERR) !!!!!!!!!!!!!!!!!!!!!
-		//	m_owner->m_performCombo.AddStringA( pData->Group );
-
-		m_proto->m_serverlistModified = true;
-	}
-	else MessageBox( m_hwnd, TranslateT("Please complete all fields"), TranslateT("IRC error"), MB_OK | MB_ICONERROR );
-}
-
-void CEditServerDlg::OnClose()
-{
-	m_owner->m_serverCombo.Enable();
-	m_owner->m_add.Enable();
-	m_owner->m_edit.Enable();
-	m_owner->m_del.Enable();
-}
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Connect preferences' dialog
@@ -502,7 +395,7 @@ static TDbSetting ConnectSettings[] =
 	{  FIELD_OFFSET(CIrcProto, m_showAddresses), "ShowAddresses", DBVT_BYTE },
 	{  FIELD_OFFSET(CIrcProto, m_oldStyleModes), "OldStyleModes", DBVT_BYTE },
 	{  FIELD_OFFSET(CIrcProto, m_useServer), "UseServer", DBVT_BYTE, 0, 1 },
-	{  FIELD_OFFSET(CIrcProto, m_hideServerWindow), "HideServerWindow", DBVT_BYTE },
+	{  FIELD_OFFSET(CIrcProto, m_hideServerWindow), "HideServerWindow", DBVT_BYTE, 0, 1 },
 	{  FIELD_OFFSET(CIrcProto, m_serverComboSelection), "ServerComboSelection", DBVT_DWORD, 0 },
 	{  FIELD_OFFSET(CIrcProto, m_sendKeepAlive), "SendKeepAlive", DBVT_BYTE, 0, 1 },
 	{  FIELD_OFFSET(CIrcProto, m_autoOnlineNotification), "AutoOnlineNotification", DBVT_BYTE },
@@ -546,7 +439,8 @@ CConnectPrefsDlg::CConnectPrefsDlg( CIrcProto* _pro ) :
 	m_limit( this, IDC_LIMIT ),
 	m_spin1( this, IDC_SPIN1 ),
 	m_spin2( this, IDC_SPIN2 ),
-	m_ssl( this, IDC_SSL )
+	m_ssl( this, IDC_SSL ),
+	m_serverlistModified( false )
 {
 	m_serverCombo.OnChange = Callback( this, &CConnectPrefsDlg::OnServerCombo );
 	m_add.OnClick = Callback( this, &CConnectPrefsDlg::OnAddServer );
@@ -565,7 +459,11 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_proto->m_hwndConnect = m_hwnd;
 
 	//	Fill the servers combo box and create SERVER_INFO structures
-	fillServerCombo( m_proto->m_pszServerFile, m_serverCombo );
+	for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
+		SERVER_INFO* si = m_proto->m_servers[i];
+		m_serverCombo.AddStringA( si->m_name, LPARAM( si ));
+	}
+
 	m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
 	m_server.SetTextA( m_proto->m_serverName );
 	m_port.SetTextA( m_proto->m_portStart );
@@ -583,9 +481,9 @@ void CConnectPrefsDlg::OnInitDialog()
 	if ( m_proto->m_serverComboSelection != -1 ) {
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( m_proto->m_serverComboSelection );
 		if ((int)pData != CB_ERR) {
-			m_server.SetTextA( pData->Address );
-			m_port.SetTextA( pData->m_portStart );
-			m_port2.SetTextA( pData->m_portEnd );
+			m_server.SetTextA( pData->m_address );
+			m_port.SetInt( pData->m_portStart );
+			m_port2.SetInt( pData->m_portEnd );
 	}	}
 
 	m_spin1.SendMsg( UDM_SETRANGE,0,MAKELONG(999,20));
@@ -637,7 +535,6 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_port.Enable( !m_proto->m_disableDefaultServer );
 	m_port2.Enable( !m_proto->m_disableDefaultServer );
 	m_pass.Enable( !m_proto->m_disableDefaultServer );
-	m_proto->m_serverlistModified = false;
 }
 
 void CConnectPrefsDlg::OnServerCombo( CCtrlData* )
@@ -645,9 +542,9 @@ void CConnectPrefsDlg::OnServerCombo( CCtrlData* )
 	int i = m_serverCombo.GetCurSel();
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
-		m_server.SetTextA( pData->Address );
-		m_port.SetTextA( pData->m_portStart );
-		m_port2.SetTextA( pData->m_portEnd );
+		m_server.SetTextA( pData->m_address );
+		m_port.SetInt( pData->m_portStart );
+		m_port2.SetInt( pData->m_portEnd );
 		m_pass.SetTextA( "" );
 		if ( m_ssleay32 ) {
 			if ( pData->m_iSSL == 0 )
@@ -667,7 +564,7 @@ void CConnectPrefsDlg::OnAddServer( CCtrlButton* )
 	m_add.Disable();
 	m_edit.Disable();
 	m_del.Disable();
-	CAddServerDlg* dlg = new CAddServerDlg( m_proto, this );
+	CServerDlg* dlg = new CServerDlg( m_proto, this, 1 );
 	dlg->Show();
 }
 
@@ -693,7 +590,7 @@ void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 			i--;
 		m_serverCombo.SetCurSel( i );
 		OnServerCombo( NULL );
-		m_proto->m_serverlistModified = true;
+		m_serverlistModified = true;
 	}
 
 	m_serverCombo.Enable();
@@ -712,7 +609,7 @@ void CConnectPrefsDlg::OnEditServer( CCtrlButton* )
 	m_add.Disable();
 	m_edit.Disable();
 	m_del.Disable();
-	CEditServerDlg* dlg = new CEditServerDlg( m_proto, this );
+	CServerDlg* dlg = new CServerDlg( m_proto, this, 2 );
 	dlg->Show();
 	SetWindowText( dlg->GetHwnd(), TranslateT( "Edit server" ));
 }
@@ -835,36 +732,30 @@ void CConnectPrefsDlg::OnApply()
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
 		if ( m_enableServer.GetState())
-			lstrcpyA(m_proto->m_network, pData->Group); 
+			lstrcpyA(m_proto->m_network, pData->m_group); 
 		else
 			lstrcpyA(m_proto->m_network, ""); 
 		m_proto->m_iSSL = pData->m_iSSL;
 	}
 
-	if (m_proto->m_serverlistModified) {
-		m_proto->m_serverlistModified = false;
-		char filepath[MAX_PATH];
-		mir_snprintf(filepath, sizeof(filepath), "%s\\%s_servers.ini", mirandapath, m_proto->m_szModuleName);
-		FILE *hFile2 = fopen(filepath,"w");
-		if (hFile2) {
-			int j = m_serverCombo.GetCount();
-			if (j != CB_ERR && j != 0) {
-				for (int index2 = 0; index2 < j; index2++) {
-					SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
-					if (pData != NULL && (int)pData != CB_ERR) {
-						char TextLine[512];
-						if(pData->m_iSSL > 0)
-							mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:SSL%u%s:%s-%sGROUP:%s\n", index2, pData->m_name, pData->m_iSSL, pData->Address, pData->m_portStart, pData->m_portEnd, pData->Group);
-						else
-							mir_snprintf(TextLine, sizeof(TextLine), "n%u=%sSERVER:%s:%s-%sGROUP:%s\n", index2, pData->m_name, pData->Address, pData->m_portStart, pData->m_portEnd, pData->Group);
-						fputs(TextLine, hFile2);
-			}	}	}
+	if ( m_serverlistModified ) {
+		m_serverlistModified = false;
 
-			fclose(hFile2);	
-			delete [] m_proto->m_pszServerFile;
-			m_proto->m_pszServerFile = IrcLoadFile(filepath);
-	}	}
-	
+		int j = m_serverCombo.GetCount();
+		if (j != CB_ERR && j != 0) {
+			for (int index2 = 0; index2 < j; index2++) {
+				SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
+				if (pData == NULL || (int)pData == CB_ERR)
+					continue;
+
+				char TextLine[512];
+				if ( pData->m_iSSL > 0 )
+					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:SSL%u%s:%d-%dGROUP:%s", pData->m_iSSL, pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
+				else
+					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:%s:%d-%dGROUP:%s", pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
+				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
+	}	}	}
+
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 
 	CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
@@ -872,7 +763,6 @@ void CConnectPrefsDlg::OnApply()
 
 void CConnectPrefsDlg::OnDestroy()
 {
-	m_proto->m_serverlistModified = false;
 	int j = m_serverCombo.GetCount();
 	if ( j != CB_ERR && j != 0 ) {
 		for (int index2 = 0; index2 < j; index2++) {
@@ -1084,7 +974,8 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 	m_quitMessage( this, IDC_QUITMESSAGE ),
 	m_alias( this, IDC_ALIASEDIT ),
 	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Click to set commands that will be performed for this event")),
-	m_delete( this, IDC_DELETE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Click to delete the commands for this event"))
+	m_delete( this, IDC_DELETE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Click to delete the commands for this event")),
+	m_performlistModified( false )
 {
 	m_url.OnClick = Callback( this, &COtherPrefsDlg::OnUrl ); 
 	m_performCombo.OnChange = Callback( this, &COtherPrefsDlg::OnPerformCombo );
@@ -1117,7 +1008,8 @@ void COtherPrefsDlg::OnInitDialog()
 	sttCombo = &m_codepage;
 	EnumSystemCodePagesA(sttLangAddCallback, CP_INSTALLED);
 
-	for ( int i = m_codepage.GetCount(); i >= 0; i-- ) {
+	int i;
+	for ( i = m_codepage.GetCount(); i >= 0; i-- ) {
 		if ( m_codepage.GetItemData( i ) == m_proto->getCodepage()) {
 			m_codepage.SetCurSel( i );
 			break;
@@ -1130,40 +1022,22 @@ void COtherPrefsDlg::OnInitDialog()
 	if ( m_proto->m_codepage == CP_UTF8 )
 		m_autodetect.Disable();
 
-	if ( m_proto->m_pszServerFile ) {
-		char * p1 = m_proto->m_pszServerFile;
-		char * p2 = m_proto->m_pszServerFile;
-
-		while(strchr(p2, 'n')) {
-			p1 = strstr(p2, "GROUP:");
-			p1 = p1+ 6;
-			p2 = strchr(p1, '\r');
-			if (!p2)
-				p2 = strchr(p1, '\n');
-			if (!p2)
-				p2 = strchr(p1, '\0');
-
-			char * Group = new char[p2-p1+1];
-			lstrcpynA(Group, p1, p2-p1+1);
-			int i = m_performCombo.FindStringA( Group, -1, true );
-			if (i == CB_ERR) {
-				int idx = m_performCombo.AddStringA( Group );
-				addPerformComboValue( idx, Group );
-			}
-
-			delete []Group;
+	for ( i=0; i < m_proto->m_servers.getCount(); i++ ) {
+		SERVER_INFO* si = m_proto->m_servers[i];
+		int idx = m_performCombo.FindStringA( si->m_group, -1, true );
+		if ( idx == CB_ERR ) {
+			idx = m_performCombo.AddStringA( si->m_group );
+			addPerformComboValue( idx, si->m_group );
 	}	}
 
-	{
-		for ( int i=0; i < SIZEOF(sttPerformEvents); i++ ) {
-			int idx = m_performCombo.InsertString( _A2T( sttPerformEvents[i] ), i );
-			addPerformComboValue( idx, sttPerformEvents[i] );
-	}	}
+	for ( i=0; i < SIZEOF(sttPerformEvents); i++ ) {
+		int idx = m_performCombo.InsertString( _A2T( sttPerformEvents[i] ), i );
+		addPerformComboValue( idx, sttPerformEvents[i] );
+	}
 
 	m_performCombo.SetCurSel( 0 );
 	OnPerformCombo( NULL );
 	m_autodetect.SetState( m_proto->m_utfAutodetect );
-	m_proto->m_performlistModified = false;
 }
 
 void COtherPrefsDlg::OnUrl( CCtrlButton* )
@@ -1224,7 +1098,7 @@ void COtherPrefsDlg::OnAdd( CCtrlButton* )
 				pPerf->mText = temp;
 
 			m_add.Disable();
-			m_proto->m_performlistModified = true;
+			m_performlistModified = true;
 	}	}
 	mir_free( temp );
 }
@@ -1241,13 +1115,11 @@ void COtherPrefsDlg::OnDelete( CCtrlButton* )
 			m_add.Disable();
 		}
 
-		m_proto->m_performlistModified = true;
+		m_performlistModified = true;
 }	}
 
 void COtherPrefsDlg::OnDestroy()
 {
-	m_proto->m_performlistModified = false;
-
 	int i = m_performCombo.GetCount();
 	if ( i != CB_ERR && i != 0 ) {
 		for (int index = 0; index < i; index++) {
@@ -1273,9 +1145,7 @@ void COtherPrefsDlg::OnApply()
 	if ( m_add.Enabled())
 		OnAdd( NULL );
    
-	if ( m_proto->m_performlistModified ) {
-		m_proto->m_performlistModified = false;
-
+	if ( m_performlistModified ) {
 		int count = m_performCombo.GetCount();
 		for ( int i = 0; i < count; i++ ) {
 			PERFORM_INFO* pPerf = ( PERFORM_INFO* )m_performCombo.GetItemData( i );
@@ -1862,7 +1732,10 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog()
 	{
-		fillServerCombo( m_proto->m_pszServerFile, m_serverCombo );
+		for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
+			SERVER_INFO* si = m_proto->m_servers[i];
+			m_serverCombo.AddStringA( si->m_name, LPARAM( si ));
+		}
 		m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
 		m_server.SetTextA( m_proto->m_serverName );
 		m_port.SetTextA( m_proto->m_portStart );
@@ -1900,9 +1773,9 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 		int i = m_serverCombo.GetCurSel();
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 		if ( pData && (int)pData != CB_ERR ) {
-			m_server.SetTextA( pData->Address );
-			m_port.SetTextA( pData->m_portStart );
-			m_port2.SetTextA( pData->m_portEnd );
+			m_server.SetTextA( pData->m_address );
+			m_port.SetInt( pData->m_portStart );
+			m_port2.SetInt( pData->m_portEnd );
 			m_pass.SetTextA( "" );
 	}	}
 };
