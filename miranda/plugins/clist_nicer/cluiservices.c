@@ -129,12 +129,17 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		int x;
 		HFONT hofont;
 		TCHAR szName[32];
+		PROTOACCOUNT* pa;
 
 		hdc=GetDC(NULL);
 		hofont=SelectObject(hdc,(HFONT)SendMessage(pcli->hwndStatus,WM_GETFONT,0,0));
 
 		for ( partCount=0,i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end
-			PROTOACCOUNT* pa = accs[i];
+			int idx = pcli->pfnGetAccountIndexByPos( i );
+			if ( idx == -1 )
+				continue;
+
+			pa = accs[idx];
 			if ( !pcli->pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
@@ -172,17 +177,23 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
 
 	for ( partCount=0, i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end
-		ProtocolData    *PD;
+		ProtocolData *PD;
+		PROTOACCOUNT *pa;
 		int caps1, caps2;
 
-		if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
+		int idx = pcli->pfnGetAccountIndexByPos( i );
+		if ( idx == -1 )
 			continue;
 
-		status = CallProtoService( accs[i]->szModuleName,PS_GETSTATUS,0,0);
+		pa = accs[idx];
+		if ( !pcli->pfnGetProtocolVisibility( pa->szModuleName ))
+			continue;
+
+		status = CallProtoService( pa->szModuleName,PS_GETSTATUS,0,0);
 		PD = ( ProtocolData* )mir_alloc(sizeof(ProtocolData));
-		PD->RealName = mir_strdup( accs[i]->szModuleName );
+		PD->RealName = mir_strdup( pa->szModuleName );
 		PD->statusbarpos = partCount;
-		PD->protopos = accs[i]->iOrder;
+		PD->protopos = pa->iOrder;
 		{
 			int flags;
 			flags = SBT_OWNERDRAW;
@@ -190,14 +201,14 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				flags |= SBT_NOBORDERS;
 			SendMessageA( pcli->hwndStatus, SB_SETTEXTA, partCount|flags,(LPARAM)PD );
 		}
-		caps2 = CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0);
-		caps1 = CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0);
+		caps2 = CallProtoService(pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0);
+		caps1 = CallProtoService(pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0);
 		if((caps1 & PF1_IM) && (caps2 & (PF2_LONGAWAY | PF2_SHORTAWAY))) {
 			onlineness = GetStatusOnlineness(status);
 			if(onlineness > maxOnline) {
 				maxStatus = status;
 				maxOnline = onlineness;
-				szMaxProto = accs[i]->szModuleName;
+				szMaxProto = pa->szModuleName;
 			}
 		}
 		partCount++;
