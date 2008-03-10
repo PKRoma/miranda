@@ -127,24 +127,26 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		SIZE textSize;
 		BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);
 		int x;
-		char szName[32];
 		HFONT hofont;
+		TCHAR szName[32];
 
 		hdc=GetDC(NULL);
 		hofont=SelectObject(hdc,(HFONT)SendMessage(pcli->hwndStatus,WM_GETFONT,0,0));
 
 		for ( partCount=0,i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end
-			if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
+			PROTOACCOUNT* pa = accs[i];
+			if ( !pcli->pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
 			x=2;
 			if (showOpts & 1)
 				x += 16;
 			if (showOpts & 2) {
-				CallProtoService( accs[i]->szModuleName,PS_GETNAME,sizeof(szName),(LPARAM)szName);
-				if (showOpts&4 && lstrlenA(szName)<sizeof(szName)-1)
-					lstrcatA(szName," ");
-				GetTextExtentPoint32A(hdc,szName,lstrlenA(szName),&textSize);
+				lstrcpyn( szName, pa->tszAccountName, SIZEOF(szName));
+				szName[ SIZEOF(szName)-1 ] = 0;
+				if (( showOpts & 4 ) && lstrlen(szName) < sizeof(szName)-1 )
+					lstrcat( szName, _T(" "));
+				GetTextExtentPoint32( hdc, szName, lstrlen(szName), &textSize );
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
 			if (showOpts & 4) {
