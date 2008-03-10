@@ -58,6 +58,7 @@
 #define IDC_NICK2                       1009
 #define IDC_REPLY                       1009
 #define IDC_SSL                         1010
+#define IDC_PORT3                       1010
 #define IDC_INFO_OTHER                  1011
 #define IDC_EDIT                        1012
 #define IDC_RETRYCOUNT                  1013

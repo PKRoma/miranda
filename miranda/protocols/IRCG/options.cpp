@@ -1714,7 +1714,7 @@ void CIrcProto::InitPrefs(void)
 struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 {
 	CCtrlCombo m_serverCombo;
-	CCtrlEdit  m_server, m_port, m_port2, m_pass, m_nick, m_nick2, m_name, m_userID;
+	CCtrlEdit  m_server, m_port, m_port2, m_pass, m_nick, m_nick2, m_name, m_userID, m_ssl;
 
 	CDlgAccMgrUI( CIrcProto* _pro, HWND _owner ) :
 		CProtoDlgBase<CIrcProto>( _pro, IDD_ACCMGRUI, _owner ),
@@ -1726,6 +1726,7 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 		m_nick( this, IDC_NICK ),
 		m_nick2( this, IDC_NICK2 ),
 		m_name( this, IDC_NAME ),
+		m_ssl( this, IDC_SSL ),
 		m_userID( this, IDC_USERID )
 	{
 		m_serverCombo.OnChange = Callback( this, &CDlgAccMgrUI::OnChangeCombo );
@@ -1742,6 +1743,11 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 		m_port.SetTextA( m_proto->m_portStart );
 		m_port2.SetTextA( m_proto->m_portEnd );
 		m_pass.SetTextA( m_proto->m_password);
+		switch ( m_proto->m_iSSL ) {
+			case 0:  m_ssl.SetTextA( "Off" );  break;
+			case 1:  m_ssl.SetTextA( "Auto" ); break;
+			case 2:  m_ssl.SetTextA( "On" );   break;
+		}
 
 		m_nick.SetText( m_proto->m_nick);
 		m_nick2.SetText( m_proto->m_alternativeNick );
@@ -1778,7 +1784,11 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 			m_port.SetInt( pData->m_portStart );
 			m_port2.SetInt( pData->m_portEnd );
 			m_pass.SetTextA( "" );
-	}	}
+			switch ( pData->m_iSSL ) {
+				case 0:  m_ssl.SetTextA( "Off" );  break;
+				case 1:  m_ssl.SetTextA( "Auto" ); break;
+				case 2:  m_ssl.SetTextA( "On" );   break;
+	}	}	}
 };
 
 int CIrcProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
