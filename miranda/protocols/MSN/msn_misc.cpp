@@ -751,11 +751,11 @@ void CALLBACK sttMainThreadCallback( PVOID dwParam )
 	mir_free( ppd );
 }
 
-void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url )
+void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url, HANDLE hContact )
 {
 	LPPOPUPDATAT ppd = ( LPPOPUPDATAT )mir_calloc( sizeof( POPUPDATAT ));
 
-	ppd->lchContact = NULL;
+	ppd->lchContact = hContact;
 	_tcsncpy( ppd->lptzContactName, nickname, MAX_CONTACTNAME );
 	ppd->lptzContactName[MAX_CONTACTNAME-1] = 0;
 	_tcsncpy( ppd->lptzText, msg, MAX_SECONDLINE );
@@ -790,7 +790,7 @@ void MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const ch
 void MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags )
 {
 	const TCHAR* nickname = hContact ? MSN_GetContactNameT( hContact ) : _T("Me");
-	MSN_ShowPopup( nickname, msg, flags, NULL );
+	MSN_ShowPopup( nickname, msg, flags, NULL, hContact );
 }
 
 
