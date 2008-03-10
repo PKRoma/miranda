@@ -1753,15 +1753,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 			ft->p2p_appID = MSN_APPID_AVATAR2;
 
 			{
-				char tBuffer[2048];
-				if ( iAppID == MSN_APPID_AVATAR )
-					MSN_GetStaticString( "PictContext", hContact, tBuffer, sizeof( tBuffer ));
-				else {
-					strncpy( tBuffer, ft->p2p_object, sizeof( tBuffer ));
-					tBuffer[ sizeof( tBuffer )-1 ] = 0;
-				}
-
-				ezxml_t xmlo = ezxml_parse_str(tBuffer, strlen(tBuffer));
+				ezxml_t xmlo = ezxml_parse_str(NEWSTR_ALLOCA(ft->p2p_object), strlen(ft->p2p_object));
 				ezxml_t xmlr = ezxml_new("msnobj");
 				
 				const char* p;

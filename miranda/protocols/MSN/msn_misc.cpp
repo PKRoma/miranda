@@ -136,7 +136,7 @@ char* MSN_GetAvatarHash(char* szContext)
 {
 	char* res  = NULL;
 
-	ezxml_t xmli = ezxml_parse_str(szContext, strlen(szContext));
+	ezxml_t xmli = ezxml_parse_str(NEWSTR_ALLOCA(szContext), strlen(szContext));
 	const char* szAvatarHash = ezxml_attr(xmli, "SHA1D");
 	if (szAvatarHash != NULL)
 	{

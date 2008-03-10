@@ -1196,7 +1196,7 @@ LBL_InvalidCommand:
 				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
 					MSN_SetString( hContact, "PictContext", data.cmdstring );
 
-					char* szAvatarHash = MSN_GetAvatarHash(NEWSTR_ALLOCA(data.cmdstring));
+					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
 					if (szAvatarHash == NULL)
 						MSN_DeleteSetting( hContact, "AvatarHash" );
 					else
@@ -1204,7 +1204,7 @@ LBL_InvalidCommand:
 					mir_free(szAvatarHash);
 
 					if ( hContact != NULL ) {
-						char szSavedContext[ 256 ];
+						char szSavedContext[ 1024 ];
 						int result = MSN_GetStaticString( "PictSavedContext", hContact, szSavedContext, sizeof( szSavedContext ));
 						if ( result || strcmp( szSavedContext, data.cmdstring ))
 							MSN_SendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
