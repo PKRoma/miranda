@@ -746,7 +746,7 @@ void CConnectPrefsDlg::OnApply()
 		if (j != CB_ERR && j != 0) {
 			for (int index2 = 0; index2 < j; index2++) {
 				SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
-				if (pData == NULL || (int)pData == CB_ERR)
+				if ( pData == NULL || (int)pData == CB_ERR )
 					continue;
 
 				char TextLine[512];
@@ -761,16 +761,6 @@ void CConnectPrefsDlg::OnApply()
 
 	CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
 }
-
-void CConnectPrefsDlg::OnDestroy()
-{
-	int j = m_serverCombo.GetCount();
-	if ( j != CB_ERR && j != 0 ) {
-		for (int index2 = 0; index2 < j; index2++) {
-			SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( index2 );
-			if ( pData != NULL && (int)pData != CB_ERR )
-				delete pData;	
-}	}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'CTCP preferences' dialog

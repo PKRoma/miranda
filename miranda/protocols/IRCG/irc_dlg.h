@@ -214,7 +214,6 @@ struct CConnectPrefsDlg : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog();
 	virtual void OnApply();
-	virtual void OnDestroy();
 
 	void OnServerCombo( CCtrlData* );
 	void OnAddServer( CCtrlButton* );

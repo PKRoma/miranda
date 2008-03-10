@@ -163,6 +163,10 @@ CIrcProto::~CIrcProto()
 
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
+	for ( int i=0; i < m_servers.getCount(); i++ )
+		delete m_servers[i];
+	m_servers.destroy();
+
 	mir_free( m_alias );
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -241,6 +245,7 @@ int sttServerEnum( const char* szSetting, LPARAM lParam )
 
 	CIrcProto* ppro = ( CIrcProto* )lParam;
 	ppro->m_servers.insert( pData );
+	DBFreeVariant( &dbv );
 	return 0;
 }
 
