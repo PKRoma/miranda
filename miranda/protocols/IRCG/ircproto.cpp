@@ -244,6 +244,32 @@ int sttServerEnum( const char* szSetting, LPARAM lParam )
 	return 0;
 }
 
+static void sttImportIni( const char* szIniFile )
+{
+	FILE* serverFile = fopen( szIniFile, "r" );
+	if ( serverFile == NULL )
+		return;
+
+	char buf1[ 500 ], buf2[ 200 ];
+	while ( fgets( buf1, sizeof( buf1 ), serverFile )) {
+		char* p = strchr( buf1, '=' );
+		if ( !p )
+			continue;
+
+		p++;
+		rtrim( p );
+		char* p1 = strstr( p, "SERVER:" );
+		if ( !p1 )
+			continue;
+
+		memcpy( buf2, p, int(p1-p));
+		buf2[ int(p1-p) ] = 0;
+		DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
+	}
+	fclose( serverFile );
+	::remove( szIniFile );
+}
+
 int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char szTemp[MAX_PATH];
@@ -324,27 +350,10 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, m_szModuleName);
-	FILE* serverFile = fopen( szTemp, "r" );
-	if ( serverFile != NULL ) {
-		char buf1[ 500 ], buf2[ 200 ];
-		while ( fgets( buf1, sizeof( buf1 ), serverFile )) {
-			char* p = strchr( buf1, '=' );
-			if ( !p )
-				continue;
+	sttImportIni( szTemp );
 
-			p++;
-			rtrim( p );
-			char* p1 = strstr( p, "SERVER:" );
-			if ( !p1 )
-				continue;
-
-			memcpy( buf2, p, int(p1-p));
-			buf2[ int(p1-p) ] = 0;
-			DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
-		}
-		fclose( serverFile );
-		::remove( szTemp );
-	}
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath, m_szModuleName);
+	sttImportIni( szTemp );
 
 	DBCONTACTENUMSETTINGS dbces;
 	dbces.pfnEnumProc = sttServerEnum;
@@ -403,9 +412,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );
 	IrcHookEvent( ME_OPT_INITIALISE, &CIrcProto::OnInitOptionsPages );
 
-	if ( lstrlen(m_nick) == 0 )
-		(new CInitDlg( this ))->Show();
-	else {
+	if ( m_nick[0] ) {
 		TCHAR szBuf[ 40 ];
 		if ( lstrlen( m_alternativeNick ) == 0 ) {
 			mir_sntprintf( szBuf, SIZEOF(szBuf), _T("%s%u"), m_nick, rand()%9999);

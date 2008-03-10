@@ -17,7 +17,6 @@
 #define IDD_USERINFO                    154
 #define IDD_CHANMANAGER                 155
 #define IDD_QUESTION                    156
-#define IDD_INIT                        157
 #define IDD_PREFS_CTCP                  158
 #define IDD_MESSAGEBOX                  159
 #define IDD_PREFS_IGNORE                160

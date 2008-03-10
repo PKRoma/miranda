@@ -114,14 +114,6 @@ struct CJoinDlg : public CCoolIrcDlg
 	void OnOk( CCtrlButton* );
 };
 
-struct CInitDlg : public CCoolIrcDlg
-{
-	CInitDlg( CIrcProto* _pro );
-
-	CCtrlButton  m_Ok;
-	void OnOk( CCtrlButton* );
-};
-
 struct CQuickDlg : public CCoolIrcDlg
 {
 	CQuickDlg( CIrcProto* _pro );

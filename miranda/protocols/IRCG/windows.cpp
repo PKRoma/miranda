@@ -430,37 +430,6 @@ void CJoinDlg::OnOk( CCtrlButton* )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// 'Init' dialog
-
-CInitDlg::CInitDlg(CIrcProto *_pro) :
-	CCoolIrcDlg( _pro, IDD_INIT ),
-	m_Ok( this, IDOK )
-{
-	m_Ok.OnClick = Callback( this, &CInitDlg::OnOk );
-}
-
-void CInitDlg::OnOk( CCtrlButton* )
-{
-	int i = SendMessage( GetDlgItem( m_hwnd, IDC_EDIT), WM_GETTEXTLENGTH, 0, 0);
-	int j = SendMessage( GetDlgItem( m_hwnd, IDC_EDIT2), WM_GETTEXTLENGTH, 0, 0);
-	if (i >0 && j > 0) {
-		TCHAR l[30], m[200];
-		GetDlgItemText( m_hwnd, IDC_EDIT, l, SIZEOF(l));
-		GetDlgItemText( m_hwnd, IDC_EDIT2, m, SIZEOF(m));
-
-		m_proto->setTString("PNick", l);
-		m_proto->setTString("Nick", l);
-		m_proto->setTString("Name", m);
-		lstrcpyn( m_proto->m_nick, l, 30 );
-		lstrcpyn( m_proto->m_name, m, 200 );
-		if ( lstrlen( m_proto->m_alternativeNick ) == 0) {
-			TCHAR szTemp[30];
-			mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%s%u"), l, rand()%9999);
-			m_proto->setTString("AlernativeNick", szTemp);
-			lstrcpyn(m_proto->m_alternativeNick, szTemp, 30);					
-}	}	}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // 'Quick' dialog
 
 CQuickDlg::CQuickDlg(CIrcProto *_pro) :
