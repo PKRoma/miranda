@@ -768,6 +768,7 @@ public:
 
 		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"), "Disable3920auth", FALSE);
 		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"), "EnableZlib", FALSE);
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable XMPP server ping (XEP-0199)"), "EnableServerXMPPPing", FALSE);
 
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"), "EnableRemoteControl", FALSE);
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"), "ShowTransport", TRUE);

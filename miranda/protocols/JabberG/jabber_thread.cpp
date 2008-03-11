@@ -108,6 +108,24 @@ static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Jabber keep-alive thread
 
+void CJabberProto::OnPingReply( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
+{
+	if ( !pInfo )
+		return;
+	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_FAIL ) {
+		// disconnect because of timeout
+		CJabberProto *pProto = (CJabberProto *)pInfo->GetUserData();
+		if ( pProto ) {
+			if ( pProto->m_ThreadInfo ) {
+				pProto->m_ThreadInfo->send( "%s", "</stream:stream>" );
+				HANDLE hSocket = pProto->m_ThreadInfo->s;
+				Sleep( 1000 );
+				Netlib_CloseHandle( hSocket );
+			}
+		}
+	}
+}
+
 static void __cdecl JabberKeepAliveThread( CJabberProto* ppro )
 {
 	NETLIBSELECT nls = {0};
@@ -117,6 +135,13 @@ static void __cdecl JabberKeepAliveThread( CJabberProto* ppro )
 	for ( ;; ) {
 		if ( JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
 			break;
+
+		if ( ppro->m_ThreadInfo && ppro->JGetByte( "EnableServerXMPPPing", FALSE )) {
+			XmlNodeIq iq( ppro->m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, ppro, 0, 45000 ));
+			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_PING );
+			ppro->m_ThreadInfo->send( iq );
+		}
+
 		if ( ppro->m_bSendKeepAlive )
 			ppro->m_ThreadInfo->send( " \t " );
 	}

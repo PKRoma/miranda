@@ -720,6 +720,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   OnProcessIq( XmlNode *node, void *userdata );
 	void   OnProcessRegIq( XmlNode *node, void *userdata );
+	void   OnPingReply( XmlNode* node, void* userdata, CJabberIqInfo* pInfo );
 
 	//---- jabber_util.c -----------------------------------------------------------------
 
