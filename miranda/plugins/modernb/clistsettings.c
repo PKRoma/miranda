@@ -327,6 +327,9 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
                     // what to return here???
 					pdnce->m_cache_tcsName = GetNameForContact(pdnce->m_cache_hContact,0,&pdnce->isUnknown); //TODO UNICODE
 			}	
+#if defined( _UNICODE )
+			if (pdnce->m_cache_szName) mir_free_and_nill(pdnce->m_cache_szName);
+#endif
 		}
 		else
 		{
@@ -397,6 +400,9 @@ void cliCheckCacheItem(pdisplayNameCacheEntry pdnce)
 			pdnce->dwLastMsgTime=DBGetContactSettingDword(pdnce->m_cache_hContact, "CList", "mf_lastmsg", 0);
 			if (pdnce->dwLastMsgTime==0) pdnce->dwLastMsgTime=CompareContacts2_getLMTime(pdnce->m_cache_hContact);
 		}
+#ifdef _UNICODE
+		if (!pdnce->m_cache_szName) pdnce->m_cache_szName=mir_t2a(pdnce->m_cache_tcsName);
+#endif
 	}
 }
 

@@ -806,7 +806,8 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         {
                             HMENU tm=hMenu;
                             hMenu=GetSubMenu(tm,0); 
-                            if (!hMenu) hMenu=GetSubMenu(tm,1); 
+                            if (!hMenu) hMenu=GetSubMenu(tm,2); 
+							if (!hMenu) hMenu=GetSubMenu(tm,1); 
                         }
                     }        
                     if (!hMenu)

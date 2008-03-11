@@ -230,9 +230,6 @@ static HRESULT CreateHookableEvents()
 	g_CluiData.hEventExtraImageApplying			= CreateHookableEvent(ME_CLIST_EXTRA_IMAGE_APPLY);
 	g_CluiData.hEventBkgrChanged				= CreateHookableEvent(ME_BACKGROUNDCONFIG_CHANGED);
 	g_CluiData.hEventPreBuildTrayMenu			= CreateHookableEvent(ME_CLIST_PREBUILDTRAYMENU);
-	g_CluiData.hEventContactDragging			= CreateHookableEvent(ME_CLUI_CONTACTDRAGGING);
-	g_CluiData.hEventContactDropped				= CreateHookableEvent(ME_CLUI_CONTACTDROPPED);
-	g_CluiData.hEventContactDragStop			= CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	g_CluiData.hEventPreBuildFrameMenu			= CreateHookableEvent(ME_CLIST_PREBUILDFRAMEMENU);
 	g_CluiData.hEventPreBuildGroupMenu			= CreateHookableEvent(ME_CLIST_PREBUILDGROUPMENU);
 	g_CluiData.hEventPreBuildSubGroupMenu		= CreateHookableEvent(ME_CLIST_PREBUILDSUBGROUPMENU);
