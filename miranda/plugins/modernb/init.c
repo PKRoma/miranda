@@ -21,14 +21,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//definitions
-#define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
-#define CHECKRES(sub) if (sub!=S_OK) return S_FALSE;
-
 //include
 #include "commonheaders.h"
 #include "commonprototypes.h"
 #include "version.h"
+
+//definitions
+#define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
+#define CHECKRES(sub) if (sub!=S_OK) return S_FALSE;
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK * pluginLink=NULL;
@@ -51,7 +51,7 @@ PLUGININFOEX pluginInfo = {
 	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
 	"ashpynov@gmail.com" ,
 	"Copyright 2000-2008 Miranda-IM project ["__DATE__" "__TIME__"]",
-	"http://miranda-im.org/development",	
+	"http://miranda-im.org/development",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
 #ifdef UNICODE
@@ -80,7 +80,7 @@ _inline int MakeVer(a,b,c,d)
 }
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
-{	
+{
 	if ( mirandaVersion < MINIMAL_COREVERSION_NUM )
 		return NULL;
     pluginInfo.version=MakeVer(PRODUCT_VERSION);
@@ -97,7 +97,7 @@ __declspec(dllexport) int CListInitialise(PLUGINLINK * link)
 	_CrtSetBreakAlloc(11166);
 #endif
 */
-	CallService( MS_SYSTEM_GET_MMI,	 0, (LPARAM)&mmi  ); 
+	CallService( MS_SYSTEM_GET_MMI,	 0, (LPARAM)&mmi  );
 	CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)&utfi );
 	CallService( MS_SYSTEM_GET_LI,   0, (LPARAM)&li   );
 
@@ -106,12 +106,12 @@ __declspec(dllexport) int CListInitialise(PLUGINLINK * link)
 	CHECKRES ( CreateHookableEvents ( )		);
 	CHECKRES ( XPThemesLoadModule ( )		);
 	CHECKRES ( SkinEngineLoadModule ( )		);
-	CHECKRES ( BackgroundsLoadModule ( )	);		
+	CHECKRES ( BackgroundsLoadModule ( )	);
 	CHECKRES ( CluiLoadModule ( )			);
 	CHECKRES ( ClcLoadModule ( )			);
 	CHECKRES ( ToolbarButtonLoadModule( )   );
 	CHECKRES ( ToolbarLoadModule()			);
-	
+
 	TRACE( "CListInitialise Modern Contact List ... Done\r\n" );
 
 	return S_OK;
@@ -127,11 +127,11 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 int __declspec(dllexport) Unload(void)
 {
 
-	TRACE("Unloading ClistMW\r\n");	
+	TRACE("Unloading ClistMW\r\n");
 
 	if (IsWindow(pcli->hwndContactList)) DestroyWindow(pcli->hwndContactList);
 	pcli->hwndContactList=NULL;
-	
+
 	UnhookAll();
 
 	BackgroundsUnloadModule();
@@ -151,7 +151,7 @@ static HRESULT SubclassClistInterface()
 {
 	// get the contact list interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
-	if ( (int)pcli == CALLSERVICE_NOTFOUND || pcli->version < 6 ) 
+	if ( (int)pcli == CALLSERVICE_NOTFOUND || pcli->version < 6 )
 	{
 		MessageBoxA( NULL, "This version of plugin requires Miranda IM " MINIMAL_COREVERSION_STR " or later", "Fatal error", MB_OK );
 		return TRUE;
@@ -159,7 +159,7 @@ static HRESULT SubclassClistInterface()
 	// OVERLOAD CLIST INTERFACE FUNCTIONS
 	//
 	//	Naming convention is:
-	//  'cli*'  - new handler without default core service calling 
+	//  'cli*'  - new handler without default core service calling
 	//  'save*' - pointer to stored default parent handle
 	//	'cli_*'	- new handler with default core service calling
 
@@ -171,7 +171,7 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnFreeCacheItem = (void(*)(ClcCacheEntryBase*)) cliFreeCacheItem;
 	pcli->pfnInvalidateDisplayNameCacheEntry	= cliInvalidateDisplayNameCacheEntry;
 
-	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;	
+	pcli->pfnTrayIconUpdateBase = cliTrayIconUpdateBase;
 	pcli->pfnCluiProtocolStatusChanged	= cliCluiProtocolStatusChanged;
 
 	pcli->pfnBeginRenameSelection		= cliBeginRenameSelection;
@@ -205,20 +205,20 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnIconFromStatusMode = cli_IconFromStatusMode;
 	pcli->pfnLoadCluiGlobalOpts = CLUI_cli_LoadCluiGlobalOpts;
 	pcli->pfnSortCLC			= cli_SortCLC;
-	pcli->pfnAddGroup			= cli_AddGroup;	
+	pcli->pfnAddGroup			= cli_AddGroup;
 	pcli->pfnGetGroupCountsText	= cli_GetGroupCountsText;
 	pcli->pfnAddContactToTree	= cli_AddContactToTree;
-	pcli->pfnAddInfoItemToGroup = cli_AddInfoItemToGroup;	
-	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;	
-	pcli->pfnContactListWndProc = CLUI__cli_ContactListWndProc;	
-	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;	
+	pcli->pfnAddInfoItemToGroup = cli_AddInfoItemToGroup;
+	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;
+	pcli->pfnContactListWndProc = CLUI__cli_ContactListWndProc;
+	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;
 	pcli->pfnFreeContact		= cli_FreeContact;
 	pcli->pfnFreeGroup			= cli_FreeGroup;
-	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;	
-	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;	
+	pcli->pfnChangeContactIcon	= cli_ChangeContactIcon;
+	pcli->pfnTrayIconProcessMessage	= cli_TrayIconProcessMessage;
 	pcli->pfnSaveStateAndRebuildList= cli_SaveStateAndRebuildList;
 	pcli->pfnContactListControlWndProc	= cli_ContactListControlWndProc;
-	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;	
+	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;
 	pcli->pfnAddEvent		= cli_AddEvent;
 	pcli->pfnRemoveEvent	= cli_RemoveEvent;
 	return S_OK;
@@ -239,5 +239,3 @@ static HRESULT CreateHookableEvents()
 	g_CluiData.hEventSkinServicesCreated		= CreateHookableEvent(ME_SKIN_SERVICESCREATED);
 	return S_OK;
 }
-
-
