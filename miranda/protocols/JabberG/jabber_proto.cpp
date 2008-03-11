@@ -1469,8 +1469,9 @@ void CJabberProto::WindowNotify(UINT msg, bool async)
 int __cdecl CJabberProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam )
 {
 	switch( eventType ) {
-	case EV_PROTO_ONLOAD:   return OnModulesLoadedEx( 0, 0 );
-	case EV_PROTO_ONEXIT:   return OnPreShutdown( 0, 0 );
+	case EV_PROTO_ONLOAD:    return OnModulesLoadedEx( 0, 0 );
+	case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
+	case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
 	case EV_PROTO_ONRENAME:
 		{	
 			CLISTMENUITEM clmi = { 0 };

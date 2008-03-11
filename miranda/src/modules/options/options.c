@@ -773,45 +773,73 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	return FALSE;
 }
 
+static void FreeOptionsData( struct OptionsPageInit* popi )
+{
+	int i;
+	for ( i=0; i < popi->pageCount; i++ ) {
+		mir_free(( char* )popi->odp[i].pszTitle );
+		mir_free( popi->odp[i].pszGroup );
+		mir_free( popi->odp[i].pszTab );
+		if (( DWORD )popi->odp[i].pszTemplate & 0xFFFF0000 )
+			mir_free((char*)popi->odp[i].pszTemplate);
+	}
+	mir_free(popi->odp);
+}
+
+void OpenAccountOptions( PROTOACCOUNT* pa )
+{
+	struct OptionsPageInit opi = { 0 };
+	if ( pa->ppro == NULL )
+		return;
+
+	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONOPTIONS, ( WPARAM )&opi, 0 );
+	if ( opi.pageCount > 0 ) {
+		TCHAR tszTitle[ 100 ];
+		OPENOPTIONSDIALOG ood = { 0 };
+		PROPSHEETHEADER psh = { 0 };
+
+		mir_sntprintf( tszTitle, SIZEOF(tszTitle), TranslateT("%s options"), pa->tszAccountName );
+		
+		ood.cbSize = sizeof(ood);
+		ood.pszGroup = LPGEN("Network");
+		ood.pszPage = mir_t2a( pa->tszAccountName );
+
+		psh.dwSize = sizeof(psh);
+		psh.dwFlags = PSH_PROPSHEETPAGE|PSH_NOAPPLYNOW;
+		psh.hwndParent = NULL;
+		psh.nPages = opi.pageCount;
+		psh.pStartPage = (LPCTSTR)&ood;
+		psh.pszCaption = tszTitle;
+		psh.ppsp = (PROPSHEETPAGE*)opi.odp;
+		hwndOptions = CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
+		mir_free(( void* )ood.pszPage );
+		FreeOptionsData( &opi );
+}	}
+
 static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *pszTab)
 {
-	PROPSHEETHEADER psh;
-	struct OptionsPageInit opi;
-	int i;
-	OPENOPTIONSDIALOG ood;
-
-	if(IsWindow(hwndOptions)) {
-		ShowWindow(hwndOptions,SW_RESTORE);
-		SetForegroundWindow(hwndOptions);
-		return;
+	if ( IsWindow( hwndOptions )) {
+		ShowWindow( hwndOptions, SW_RESTORE );
+		SetForegroundWindow( hwndOptions );
 	}
-	opi.pageCount=0;
-	opi.odp=NULL;
-	NotifyEventHooks(hOptionsInitEvent,(WPARAM)&opi,0);
-	if(opi.pageCount==0) return;
-
-	ZeroMemory(&psh,sizeof(psh));
-	psh.dwSize = sizeof(psh);
-	psh.dwFlags = PSH_PROPSHEETPAGE|PSH_NOAPPLYNOW;
-	psh.hwndParent = NULL;
-	psh.nPages = opi.pageCount;
-	ood.pszGroup=pszGroup;
-	ood.pszPage=pszPage;
-	ood.pszTab=pszTab;
-	psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
-	psh.pszCaption = TranslateT("Miranda IM Options");
-	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
-	hwndOptions=CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
-	for ( i=0; i < opi.pageCount; i++ ) {
-		mir_free(( char* )opi.odp[i].pszTitle );
-		mir_free( opi.odp[i].pszGroup );
-		mir_free( opi.odp[i].pszTab );
-		if (( DWORD )opi.odp[i].pszTemplate & 0xFFFF0000 )
-			mir_free((char*)opi.odp[i].pszTemplate);
-	}
-	mir_free(opi.odp);
-
-}
+	else {
+		struct OptionsPageInit opi = { 0 };
+		NotifyEventHooks( hOptionsInitEvent, ( WPARAM )&opi, 0 );
+		if ( opi.pageCount > 0 ) {
+			OPENOPTIONSDIALOG ood = { 0 };
+			PROPSHEETHEADER psh = { 0 };
+			psh.dwSize = sizeof(psh);
+			psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOAPPLYNOW;
+			psh.nPages = opi.pageCount;
+			ood.pszGroup = pszGroup;
+			ood.pszPage = pszPage;
+			ood.pszTab = pszTab;
+			psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
+			psh.pszCaption = TranslateT("Miranda IM Options");
+			psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
+			hwndOptions = CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
+			FreeOptionsData( &opi );
+}	}	}
 
 static int OpenOptions(WPARAM wParam,LPARAM lParam)
 {

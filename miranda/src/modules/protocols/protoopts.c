@@ -799,12 +799,15 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
 					PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx );
-					OPENOPTIONSDIALOG ood;
-					ood.cbSize = sizeof(ood);
-					ood.pszGroup = "Network";
-					ood.pszPage = pa->szModuleName;
-					ood.pszTab = NULL;
-					CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
+					if ( pa->bOldProto ) {
+						OPENOPTIONSDIALOG ood;
+						ood.cbSize = sizeof(ood);
+						ood.pszGroup = "Network";
+						ood.pszPage = pa->szModuleName;
+						ood.pszTab = NULL;
+						CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
+					}
+					else OpenAccountOptions( pa );
 			}	}
 			break;
 

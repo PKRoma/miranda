@@ -84,9 +84,7 @@ typedef struct {
 	#endif
 
 	#if MIRANDA_VER >= 0x0720
-	union {
-			LPARAM dwInitParam;	 //v0.7.2.0+  a value to pass to lParam of WM_INITDIALOG message
-		};
+		LPARAM dwInitParam;	 //v0.7.2.0+  a value to pass to lParam of WM_INITDIALOG message
 	#endif
 }
 	OPTIONSDIALOGPAGE;
