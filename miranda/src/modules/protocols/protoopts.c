@@ -603,22 +603,30 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				if (acc->ppro && CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)acc->szProtoName)) {
 					char *szIdName;
 					TCHAR *tszIdName;
-					char *uniqueIdSetting = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDSETTING);
+					CONTACTINFO ci = { 0 };
 
 					szIdName = (char *)acc->ppro->vtbl->GetCaps(acc->ppro, PFLAG_UNIQUEIDTEXT);
  					tszIdName = szIdName ? mir_a2t(szIdName) : mir_tstrdup(TranslateT("Account ID"));
-					if ( PF1_NUMERICUSERID & acc->ppro->vtbl->GetCaps(acc->ppro, PFLAGNUM_1)) {
-						DWORD uid = DBGetContactSettingDword( NULL, acc->szModuleName, uniqueIdSetting, -1 );
-						mir_sntprintf(text, size, _T("%s: %d"), tszIdName, uid);
-					}
-					else {
-						DBVARIANT dbv = { 0 };
-						if ( !DBGetContactSettingTString( NULL, acc->szModuleName, uniqueIdSetting, &dbv )) {
-							mir_sntprintf(text, size, _T("%s: %s"), tszIdName, dbv.ptszVal );
-							DBFreeVariant(&dbv);
+					
+					ci.cbSize = sizeof(ci);
+					ci.hContact = NULL;
+					ci.szProto = acc->szModuleName;
+					ci.dwFlag = CNF_UNIQUEID;
+					#if defined( _UNICODE )
+						ci.dwFlag |= CNF_UNICODE;
+					#endif
+					if ( !CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+						switch (ci.type) {
+						case CNFT_ASCIIZ:
+							mir_sntprintf( text, size, _T("%s: %s"), tszIdName, ci.pszVal );
+							mir_free(ci.pszVal);
+							break;
+						case CNFT_DWORD:
+							mir_sntprintf( text, size, _T("%s: %d"), tszIdName, ci.dVal );
+							break;
 						}
-						else mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
 					}
+					else mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
 					mir_free(tszIdName);
 				}
 				else mir_sntprintf(text, size, _T("Protocol is not loaded."));
