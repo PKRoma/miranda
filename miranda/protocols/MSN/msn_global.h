@@ -152,7 +152,7 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 #define	MSN_HOTMAIL_POPUP   4
 #define MSN_SHOW_ERROR      8
 #define	MSN_ALERT_POPUP	    16
-void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url );
+void  MSN_ShowPopup( const TCHAR* nickname, const TCHAR* msg, int flags, const char* url, HANDLE hContact = NULL );
 void  MSN_ShowPopup( const HANDLE hContact, const TCHAR* msg, int flags );
 
 LONG		MSN_SendPacket( HANDLE, const char* cmd, const char* params, ... );
