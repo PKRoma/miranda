@@ -761,7 +761,8 @@ static void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
 	pavwi->TimerId=0;
 }
 static void __AniAva_DebugRenderStrip()
-{
+{	
+	return;
 	#ifdef _DEBUG
 	{
 		HDC hDC_debug=GetDC(NULL);
@@ -776,7 +777,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
 	else dat->bPended=FALSE;
 #ifdef _DEBUG
-	//__AniAva_DebugRenderStrip();
+	__AniAva_DebugRenderStrip();
 #endif
 	if (dat->bPlaying && IsWindowVisible(dat->hWindow))
 	{

@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "./m_api/m_metacontacts.h"
 #include "commonprototypes.h"
 
-
-
 void AddSubcontacts(struct ClcData *dat, struct ClcContact * cont, BOOL showOfflineHereGroup)
 {
 	int subcount,i,j;
@@ -164,73 +162,86 @@ int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText
 	return i;
 }
 
-static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup *group,pdisplayNameCacheEntry cacheEntry)
+static void _LoadDataToContact(struct ClcContact * cont, struct ClcGroup *group, struct ClcData *dat, HANDLE hContact)
 {
-	char *szProto;
+	pdisplayNameCacheEntry cacheEntry=NULL;
 	WORD apparentMode;
 	DWORD idleMode;
+	char * szProto;
+
+	if (!cont) return;
+	cont->type=CLCIT_CONTACT;
+	cont->SubAllocated=0;
+	cont->isSubcontact=0;
+	cont->subcontacts=NULL;
+	cont->szText[0]=0;
+	cont->lastPaintCounter=0;
+	cont->image_is_special=FALSE;
+	cont->hContact=hContact;
+
+	pcli->pfnInvalidateDisplayNameCacheEntry(hContact);	
+	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);	
+	
+	szProto=cacheEntry->m_cache_cszProto;
+	cont->proto=szProto;
+
+	if(szProto!=NULL&&!pcli->pfnIsHiddenMode(dat,pdnce___GetStatus( cacheEntry )))
+		cont->flags |= CONTACTF_ONLINE;
+	
+	apparentMode=szProto!=NULL?cacheEntry->ApparentMode:0;
+	
+	if (apparentMode)
+		switch (apparentMode)
+		{
+			case ID_STATUS_OFFLINE:
+				cont->flags|=CONTACTF_INVISTO;
+				break;
+			case ID_STATUS_ONLINE:
+				cont->flags|=CONTACTF_VISTO;
+				break;
+			default:
+				cont->flags|=CONTACTF_VISTO|CONTACTF_INVISTO;
+		}
+	
+	if(cacheEntry->NotOnList) 
+		cont->flags|=CONTACTF_NOTONLIST;
+	idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
+	
+	if (idleMode) 
+		cont->flags|=CONTACTF_IDLE;
+	
+
+	//Add subcontacts
+	if (szProto)
+	{	
+		if (g_szMetaModuleName && mir_strcmp(cont->proto,g_szMetaModuleName)==0) 
+			AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
+	}
+	cont->lastPaintCounter=0;
+	cont->avatar_pos=AVATAR_POS_DONT_HAVE;
+	Cache_GetAvatar(dat,cont);
+	Cache_GetText(dat,cont,1);
+	Cache_GetTimezone(dat,cont->hContact);
+	cont->iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,1);
+	cont->bContactRate=DBGetContactSettingByte(hContact, "CList", "Rate",0);
+}
+
+static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup *group, pdisplayNameCacheEntry cacheEntry)
+{
 	HANDLE hContact;
 	int i;
 	if (cacheEntry==NULL) return NULL;
 	if (group==NULL) return NULL;
 	if (dat==NULL) return NULL;
 	hContact=cacheEntry->m_cache_hContact;
-	//ClearClcContactCache(hContact);
-
 	dat->NeedResort=1;
 	for(i=group->cl.count-1;i>=0;i--)
 		if(group->cl.items[i]->type!=CLCIT_INFO || !(group->cl.items[i]->flags&CLCIIF_BELOWCONTACTS)) break;
 	i=cli_AddItemToGroup(group,i+1);
-	group->cl.items[i]->type=CLCIT_CONTACT;
-	group->cl.items[i]->SubAllocated=0;
-	group->cl.items[i]->isSubcontact=0;
-	group->cl.items[i]->subcontacts=NULL;
-	group->cl.items[i]->szText[0]=0;
-    group->cl.items[i]->lastPaintCounter=0;
-//	group->cl.items[i]->szSecondLineText=NULL;
-//	group->cl.items[i]->szThirdLineText=NULL;
-	group->cl.items[i]->image_is_special=FALSE;
-//	group->cl.items[i]->status=cacheEntry->status;
 
-	group->cl.items[i]->iImage=CallService(MS_CLIST_GETCONTACTICON,(WPARAM)hContact,1);
+	_LoadDataToContact(group->cl.items[i], group, dat, hContact);
 	cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
-	group->cl.items[i]->hContact=hContact;
-
-	group->cl.items[i]->avatar_pos = AVATAR_POS_DONT_HAVE;
-	Cache_GetAvatar(dat, group->cl.items[i]);
-
-	szProto=cacheEntry->m_cache_cszProto;
-	if(szProto!=NULL&&!pcli->pfnIsHiddenMode(dat,pdnce___GetStatus( cacheEntry )))
-		group->cl.items[i]->flags |= CONTACTF_ONLINE;
-	apparentMode=szProto!=NULL?cacheEntry->ApparentMode:0;
-	if(apparentMode==ID_STATUS_OFFLINE)	group->cl.items[i]->flags|=CONTACTF_INVISTO;
-	else if(apparentMode==ID_STATUS_ONLINE) group->cl.items[i]->flags|=CONTACTF_VISTO;
-	else if(apparentMode) group->cl.items[i]->flags|=CONTACTF_VISTO|CONTACTF_INVISTO;
-	if(cacheEntry->NotOnList) group->cl.items[i]->flags|=CONTACTF_NOTONLIST;
-	idleMode=szProto!=NULL?cacheEntry->IdleTS:0;
-	if (idleMode) 
-		group->cl.items[i]->flags|=CONTACTF_IDLE;
-	group->cl.items[i]->proto = szProto;
-//	group->cl.items[i]->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
-/*
-if (group->cl.items[i]->timezone != -1)
-	{
-		int contact_gmt_diff = group->cl.items[i]->timezone;
-		contact_gmt_diff = contact_gmt_diff > 128 ? 256 - contact_gmt_diff : 0 - contact_gmt_diff;
-		contact_gmt_diff *= 60*60/2;
-
-		if (contact_gmt_diff == dat->local_gmt_diff)
-			group->cl.items[i]->timediff = 0;
-		else
-			group->cl.items[i]->timediff = (int)dat->local_gmt_diff_dst - contact_gmt_diff;
-	}
-*/
-                //transports
-	pcli->pfnInvalidateDisplayNameCacheEntry(hContact);	
-	Cache_GetTimezone(dat, group->cl.items[i]->hContact);
-	Cache_GetText(dat, group->cl.items[i],1);
 	ClearRowByIndexCache();
-    group->cl.items[i]->bContactRate=DBGetContactSettingByte(hContact, "CList", "Rate",0);
 	return group->cl.items[i];
 }
 
@@ -282,23 +293,7 @@ void cli_AddContactToTree(HWND hwnd,struct ClcData *dat,HANDLE hContact,int upda
 	if(!dat->IsMetaContactsEnabled && cacheEntry && g_szMetaModuleName && !mir_strcmp(cacheEntry->m_cache_cszProto,g_szMetaModuleName)) return;
 	corecli.pfnAddContactToTree(hwnd,dat,hContact,updateTotalCount,checkHideOffline);
 	if (FindItem(hwnd,dat,hContact,&cont,&group,NULL,FALSE))
-	{
-		if (cont)
-		{
-			//Add subcontacts
-			if (cont && cont->proto)
-			{	
-				cont->SubAllocated=0;
-				if (g_szMetaModuleName && mir_strcmp(cont->proto,g_szMetaModuleName)==0) 
-					AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
-			}
-            cont->lastPaintCounter=0;
-			cont->avatar_pos=AVATAR_POS_DONT_HAVE;
-			Cache_GetAvatar(dat,cont);
-			Cache_GetText(dat,cont,1);
-			Cache_GetTimezone(dat,cont->hContact);
-		}
-	}
+		_LoadDataToContact(cont, group, dat, hContact);
 	return;
 }
 
