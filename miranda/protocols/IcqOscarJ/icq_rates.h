@@ -60,7 +60,7 @@ typedef struct rates_s
   rates_group groups[];
 } rates;
 
-rates* gRates;
+extern rates* gRates;
 
 rates* ratesCreate(BYTE* pBuffer, WORD wLen);
 void ratesRelease(rates** pRates);

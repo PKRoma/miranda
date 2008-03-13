@@ -41,34 +41,36 @@
 typedef char uid_str[MAX_PATH];
 
 // from init.c
-HINSTANCE hInst;
-char gpszICQProtoName[MAX_PATH];
+extern HINSTANCE hInst;
+extern char gpszICQProtoName[MAX_PATH];
 
-HANDLE ghServerNetlibUser;
-HANDLE ghDirectNetlibUser;
+extern HANDLE ghServerNetlibUser;
+extern HANDLE ghDirectNetlibUser;
 
 // from init.h
-BYTE gbGatewayMode;
-BYTE gbSecureLogin;
-BYTE gbAimEnabled;
-BYTE gbUtfEnabled;
-WORD gwAnsiCodepage;
-BYTE gbDCMsgEnabled;
-BYTE gbTempVisListEnabled;
-BYTE gbSsiEnabled;
-BYTE gbAvatarsEnabled;
-BYTE gbXStatusEnabled;
-DWORD MIRANDA_VERSION;
+extern const int moodXStatus[];
+
+extern BYTE gbGatewayMode;
+extern BYTE gbSecureLogin;
+extern BYTE gbAimEnabled;
+extern BYTE gbUtfEnabled;
+extern WORD gwAnsiCodepage;
+extern BYTE gbDCMsgEnabled;
+extern BYTE gbTempVisListEnabled;
+extern BYTE gbSsiEnabled;
+extern BYTE gbAvatarsEnabled;
+extern BYTE gbXStatusEnabled;
+extern DWORD MIRANDA_VERSION;
 
 // from icqosc_svcs.c
-int gnCurrentStatus;
-DWORD dwLocalUIN;
+extern int gnCurrentStatus;
+extern DWORD dwLocalUIN;
 
-char gpszPassword[16];
-BYTE gbRememberPwd;
+extern char gpszPassword[16];
+extern BYTE gbRememberPwd;
 
-BYTE gbUnicodeAPI;
-BYTE gbUnicodeCore;
+extern BYTE gbUnicodeAPI;
+extern BYTE gbUnicodeCore;
 
 // from fam_04message.c
 typedef struct icq_mode_messages_s
@@ -80,8 +82,8 @@ typedef struct icq_mode_messages_s
   char* szFfc;
 } icq_mode_messages;
 
-icq_mode_messages modeMsgs;
-CRITICAL_SECTION modeMsgsMutex;
+extern icq_mode_messages modeMsgs;
+extern CRITICAL_SECTION modeMsgsMutex;
 
 
 #endif /* __GLOBALS_H */

@@ -406,23 +406,23 @@ SOURCE=.\icos\xstatus32.ico
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\chan_01login.c
+SOURCE=.\chan_01login.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_02data.c
+SOURCE=.\chan_02data.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_03error.c
+SOURCE=.\chan_03error.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_04close.c
+SOURCE=.\chan_04close.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_05ping.c
+SOURCE=.\chan_05ping.cpp
 # End Source File
 # End Group
 # Begin Group "SNAC Families"
@@ -430,43 +430,43 @@ SOURCE=.\chan_05ping.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\fam_01service.c
+SOURCE=.\fam_01service.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_02location.c
+SOURCE=.\fam_02location.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_03buddy.c
+SOURCE=.\fam_03buddy.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_04message.c
+SOURCE=.\fam_04message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_09bos.c
+SOURCE=.\fam_09bos.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_0alookup.c
+SOURCE=.\fam_0alookup.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_0bstatus.c
+SOURCE=.\fam_0bstatus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_13servclist.c
+SOURCE=.\fam_13servclist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_15icqserver.c
+SOURCE=.\fam_15icqserver.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_17signon.c
+SOURCE=.\fam_17signon.cpp
 # End Source File
 # End Group
 # Begin Group "Direct Connection"
@@ -474,23 +474,23 @@ SOURCE=.\fam_17signon.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\directpackets.c
+SOURCE=.\directpackets.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_direct.c
+SOURCE=.\icq_direct.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_directmsg.c
+SOURCE=.\icq_directmsg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_filerequests.c
+SOURCE=.\icq_filerequests.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_filetransfer.c
+SOURCE=.\icq_filetransfer.cpp
 # End Source File
 # End Group
 # Begin Group "Miranda Bits"
@@ -498,23 +498,23 @@ SOURCE=.\icq_filetransfer.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\icq_advsearch.c
+SOURCE=.\icq_advsearch.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_db.c
+SOURCE=.\icq_db.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icqosc_svcs.c
+SOURCE=.\icqosc_svcs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\init.c
+SOURCE=.\init.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\log.c
+SOURCE=.\log.cpp
 # End Source File
 # End Group
 # Begin Group "Documentation"
@@ -538,31 +538,31 @@ SOURCE=".\docs\IcqOscarJ-translation.txt"
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\UI\askauthentication.c
+SOURCE=.\UI\askauthentication.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_firstrun.c
+SOURCE=.\icq_firstrun.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_opts.c
+SOURCE=.\icq_opts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_popups.c
+SOURCE=.\icq_popups.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_uploadui.c
+SOURCE=.\icq_uploadui.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\UI\loginpassword.c
+SOURCE=.\UI\loginpassword.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\UI\userinfotab.c
+SOURCE=.\UI\userinfotab.cpp
 # End Source File
 # End Group
 # Begin Group "Change Info"
@@ -574,113 +574,113 @@ SOURCE=.\changeinfo\changeinfo.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\constants.c
+SOURCE=.\changeinfo\constants.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\db.c
+SOURCE=.\changeinfo\db.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\dlgproc.c
+SOURCE=.\changeinfo\dlgproc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\editlist.c
+SOURCE=.\changeinfo\editlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\editstring.c
+SOURCE=.\changeinfo\editstring.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\main.c
+SOURCE=.\changeinfo\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\upload.c
+SOURCE=.\changeinfo\upload.cpp
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=.\capabilities.c
+SOURCE=.\capabilities.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\cookies.c
+SOURCE=.\cookies.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\i18n.c
+SOURCE=.\i18n.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\iconlib.c
+SOURCE=.\iconlib.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_avatar.c
+SOURCE=.\icq_avatar.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_clients.c
+SOURCE=.\icq_clients.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_fieldnames.c
+SOURCE=.\icq_fieldnames.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_http.c
+SOURCE=.\icq_http.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_infoupdate.c
+SOURCE=.\icq_infoupdate.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_packet.c
+SOURCE=.\icq_packet.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_rates.c
+SOURCE=.\icq_rates.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_server.c
+SOURCE=.\icq_server.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_servlist.c
+SOURCE=.\icq_servlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_xstatus.c
+SOURCE=.\icq_xstatus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_xtraz.c
+SOURCE=.\icq_xtraz.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icqoscar.c
+SOURCE=.\icqoscar.cpp
 # ADD CPP /Yc"icqoscar.h"
 # End Source File
 # Begin Source File
 
-SOURCE=.\oscar_filetransfer.c
+SOURCE=.\oscar_filetransfer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\stdpackets.c
+SOURCE=.\stdpackets.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tlv.c
+SOURCE=.\tlv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\utilities.c
+SOURCE=.\utilities.cpp
 # End Source File
 # End Target
 # End Project

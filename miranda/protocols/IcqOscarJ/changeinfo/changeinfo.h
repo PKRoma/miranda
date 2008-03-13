@@ -58,11 +58,11 @@
 #define LIF_PASSWORD     0x20000000
 #define LIF_CHANGEONLY   0x10000000
 
-char Password[10];
-HANDLE hUpload[2];
-HWND hwndList;
-HFONT hListFont;
-int iEditItem;
+extern char Password[10];
+extern HANDLE hUpload[2];
+extern HWND hwndList;
+extern HFONT hListFont;
+extern int iEditItem;
 
 typedef struct {
   char *szDescription;

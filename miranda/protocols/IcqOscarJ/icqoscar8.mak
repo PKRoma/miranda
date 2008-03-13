@@ -1,29 +1,29 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on icqoscar8.dsp
 !IF "$(CFG)" == ""
-CFG=icqoscar8 - Win32 Release
-!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Release.
-!ENDIF
+CFG=icqoscar8 - Win32 Debug
+!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Debug.
+!ENDIF 
 
 !IF "$(CFG)" != "icqoscar8 - Win32 Release" && "$(CFG)" != "icqoscar8 - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "icqoscar8.mak" CFG="icqoscar8 - Win32 Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "icqoscar8 - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "icqoscar8 - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
@@ -170,44 +170,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC=rc.exe
-RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG"
+RSC_PROJ=/l 0x417 /fo"$(INTDIR)\resources.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\chan_01login.sbr" \
 	"$(INTDIR)\chan_02data.sbr" \
@@ -275,7 +275,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -489,44 +489,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yu"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG"
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resources.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\icqoscar8.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\chan_01login.sbr" \
 	"$(INTDIR)\chan_02data.sbr" \
@@ -594,7 +594,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -662,16 +662,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("icqoscar8.dep")
 !INCLUDE "icqoscar8.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "icqoscar8.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "icqoscar8 - Win32 Release" || "$(CFG)" == "icqoscar8 - Win32 Debug"
@@ -681,291 +681,291 @@ SOURCE=.\resources.rc
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 
-SOURCE=.\chan_01login.c
+SOURCE=.\chan_01login.cpp
 
 "$(INTDIR)\chan_01login.obj"	"$(INTDIR)\chan_01login.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\chan_02data.c
+SOURCE=.\chan_02data.cpp
 
 "$(INTDIR)\chan_02data.obj"	"$(INTDIR)\chan_02data.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\chan_03error.c
+SOURCE=.\chan_03error.cpp
 
 "$(INTDIR)\chan_03error.obj"	"$(INTDIR)\chan_03error.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\chan_04close.c
+SOURCE=.\chan_04close.cpp
 
 "$(INTDIR)\chan_04close.obj"	"$(INTDIR)\chan_04close.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\chan_05ping.c
+SOURCE=.\chan_05ping.cpp
 
 "$(INTDIR)\chan_05ping.obj"	"$(INTDIR)\chan_05ping.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_01service.c
+SOURCE=.\fam_01service.cpp
 
 "$(INTDIR)\fam_01service.obj"	"$(INTDIR)\fam_01service.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_02location.c
+SOURCE=.\fam_02location.cpp
 
 "$(INTDIR)\fam_02location.obj"	"$(INTDIR)\fam_02location.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_03buddy.c
+SOURCE=.\fam_03buddy.cpp
 
 "$(INTDIR)\fam_03buddy.obj"	"$(INTDIR)\fam_03buddy.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_04message.c
+SOURCE=.\fam_04message.cpp
 
 "$(INTDIR)\fam_04message.obj"	"$(INTDIR)\fam_04message.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_09bos.c
+SOURCE=.\fam_09bos.cpp
 
 "$(INTDIR)\fam_09bos.obj"	"$(INTDIR)\fam_09bos.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_0alookup.c
+SOURCE=.\fam_0alookup.cpp
 
 "$(INTDIR)\fam_0alookup.obj"	"$(INTDIR)\fam_0alookup.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_0bstatus.c
+SOURCE=.\fam_0bstatus.cpp
 
 "$(INTDIR)\fam_0bstatus.obj"	"$(INTDIR)\fam_0bstatus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_13servclist.c
+SOURCE=.\fam_13servclist.cpp
 
 "$(INTDIR)\fam_13servclist.obj"	"$(INTDIR)\fam_13servclist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_15icqserver.c
+SOURCE=.\fam_15icqserver.cpp
 
 "$(INTDIR)\fam_15icqserver.obj"	"$(INTDIR)\fam_15icqserver.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\fam_17signon.c
+SOURCE=.\fam_17signon.cpp
 
 "$(INTDIR)\fam_17signon.obj"	"$(INTDIR)\fam_17signon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\directpackets.c
+SOURCE=.\directpackets.cpp
 
 "$(INTDIR)\directpackets.obj"	"$(INTDIR)\directpackets.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_direct.c
+SOURCE=.\icq_direct.cpp
 
 "$(INTDIR)\icq_direct.obj"	"$(INTDIR)\icq_direct.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_directmsg.c
+SOURCE=.\icq_directmsg.cpp
 
 "$(INTDIR)\icq_directmsg.obj"	"$(INTDIR)\icq_directmsg.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_filerequests.c
+SOURCE=.\icq_filerequests.cpp
 
 "$(INTDIR)\icq_filerequests.obj"	"$(INTDIR)\icq_filerequests.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_filetransfer.c
+SOURCE=.\icq_filetransfer.cpp
 
 "$(INTDIR)\icq_filetransfer.obj"	"$(INTDIR)\icq_filetransfer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_advsearch.c
+SOURCE=.\icq_advsearch.cpp
 
 "$(INTDIR)\icq_advsearch.obj"	"$(INTDIR)\icq_advsearch.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_db.c
+SOURCE=.\icq_db.cpp
 
 "$(INTDIR)\icq_db.obj"	"$(INTDIR)\icq_db.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icqosc_svcs.c
+SOURCE=.\icqosc_svcs.cpp
 
 "$(INTDIR)\icqosc_svcs.obj"	"$(INTDIR)\icqosc_svcs.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\init.c
+SOURCE=.\init.cpp
 
 "$(INTDIR)\init.obj"	"$(INTDIR)\init.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\log.c
+SOURCE=.\log.cpp
 
 "$(INTDIR)\log.obj"	"$(INTDIR)\log.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\UI\askauthentication.c
+SOURCE=.\UI\askauthentication.cpp
 
 "$(INTDIR)\askauthentication.obj"	"$(INTDIR)\askauthentication.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\icq_firstrun.c
+SOURCE=.\icq_firstrun.cpp
 
 "$(INTDIR)\icq_firstrun.obj"	"$(INTDIR)\icq_firstrun.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_opts.c
+SOURCE=.\icq_opts.cpp
 
 "$(INTDIR)\icq_opts.obj"	"$(INTDIR)\icq_opts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_popups.c
+SOURCE=.\icq_popups.cpp
 
 "$(INTDIR)\icq_popups.obj"	"$(INTDIR)\icq_popups.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_uploadui.c
+SOURCE=.\icq_uploadui.cpp
 
 "$(INTDIR)\icq_uploadui.obj"	"$(INTDIR)\icq_uploadui.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\UI\loginpassword.c
+SOURCE=.\UI\loginpassword.cpp
 
 "$(INTDIR)\loginpassword.obj"	"$(INTDIR)\loginpassword.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\UI\userinfotab.c
+SOURCE=.\UI\userinfotab.cpp
 
 "$(INTDIR)\userinfotab.obj"	"$(INTDIR)\userinfotab.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\constants.c
+SOURCE=.\changeinfo\constants.cpp
 
 "$(INTDIR)\constants.obj"	"$(INTDIR)\constants.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\db.c
+SOURCE=.\changeinfo\db.cpp
 
 "$(INTDIR)\db.obj"	"$(INTDIR)\db.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\dlgproc.c
+SOURCE=.\changeinfo\dlgproc.cpp
 
 "$(INTDIR)\dlgproc.obj"	"$(INTDIR)\dlgproc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\editlist.c
+SOURCE=.\changeinfo\editlist.cpp
 
 "$(INTDIR)\editlist.obj"	"$(INTDIR)\editlist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\editstring.c
+SOURCE=.\changeinfo\editstring.cpp
 
 "$(INTDIR)\editstring.obj"	"$(INTDIR)\editstring.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\main.c
+SOURCE=.\changeinfo\main.cpp
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\changeinfo\upload.c
+SOURCE=.\changeinfo\upload.cpp
 
 "$(INTDIR)\upload.obj"	"$(INTDIR)\upload.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-SOURCE=.\capabilities.c
+SOURCE=.\capabilities.cpp
 
 "$(INTDIR)\capabilities.obj"	"$(INTDIR)\capabilities.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\cookies.c
+SOURCE=.\cookies.cpp
 
 "$(INTDIR)\cookies.obj"	"$(INTDIR)\cookies.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\i18n.c
+SOURCE=.\i18n.cpp
 
 "$(INTDIR)\i18n.obj"	"$(INTDIR)\i18n.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\iconlib.c
+SOURCE=.\iconlib.cpp
 
 "$(INTDIR)\iconlib.obj"	"$(INTDIR)\iconlib.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_avatar.c
+SOURCE=.\icq_avatar.cpp
 
 "$(INTDIR)\icq_avatar.obj"	"$(INTDIR)\icq_avatar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_clients.c
+SOURCE=.\icq_clients.cpp
 
 "$(INTDIR)\icq_clients.obj"	"$(INTDIR)\icq_clients.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_fieldnames.c
+SOURCE=.\icq_fieldnames.cpp
 
 "$(INTDIR)\icq_fieldnames.obj"	"$(INTDIR)\icq_fieldnames.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_http.c
+SOURCE=.\icq_http.cpp
 
 "$(INTDIR)\icq_http.obj"	"$(INTDIR)\icq_http.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_infoupdate.c
+SOURCE=.\icq_infoupdate.cpp
 
 "$(INTDIR)\icq_infoupdate.obj"	"$(INTDIR)\icq_infoupdate.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_packet.c
+SOURCE=.\icq_packet.cpp
 
 "$(INTDIR)\icq_packet.obj"	"$(INTDIR)\icq_packet.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_rates.c
+SOURCE=.\icq_rates.cpp
 
 "$(INTDIR)\icq_rates.obj"	"$(INTDIR)\icq_rates.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_server.c
+SOURCE=.\icq_server.cpp
 
 "$(INTDIR)\icq_server.obj"	"$(INTDIR)\icq_server.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_servlist.c
+SOURCE=.\icq_servlist.cpp
 
 "$(INTDIR)\icq_servlist.obj"	"$(INTDIR)\icq_servlist.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_xstatus.c
+SOURCE=.\icq_xstatus.cpp
 
 "$(INTDIR)\icq_xstatus.obj"	"$(INTDIR)\icq_xstatus.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icq_xtraz.c
+SOURCE=.\icq_xtraz.cpp
 
 "$(INTDIR)\icq_xtraz.obj"	"$(INTDIR)\icq_xtraz.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\icqoscar.c
+SOURCE=.\icqoscar.cpp
 
 !IF  "$(CFG)" == "icqoscar8 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\icqoscar.obj"	"$(INTDIR)\icqoscar.sbr"	"$(INTDIR)\icqoscar8.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -975,7 +975,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\icqoscar8.pch" /Yc"icqoscar.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\icqoscar.obj"	"$(INTDIR)\icqoscar.sbr"	"$(INTDIR)\icqoscar8.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -983,27 +983,28 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 <<
 
 
-!ENDIF
+!ENDIF 
 
-SOURCE=.\oscar_filetransfer.c
+SOURCE=.\oscar_filetransfer.cpp
 
 "$(INTDIR)\oscar_filetransfer.obj"	"$(INTDIR)\oscar_filetransfer.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\stdpackets.c
+SOURCE=.\stdpackets.cpp
 
 "$(INTDIR)\stdpackets.obj"	"$(INTDIR)\stdpackets.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\tlv.c
+SOURCE=.\tlv.cpp
 
 "$(INTDIR)\tlv.obj"	"$(INTDIR)\tlv.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
-SOURCE=.\utilities.c
+SOURCE=.\utilities.cpp
 
 "$(INTDIR)\utilities.obj"	"$(INTDIR)\utilities.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 
-!ENDIF
+!ENDIF 
+

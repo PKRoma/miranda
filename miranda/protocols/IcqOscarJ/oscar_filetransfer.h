@@ -108,7 +108,7 @@ typedef struct {
   // helper data
   DWORD64 qwFileBytesDone;
   int fileId;
-  void* connection;
+  struct oscar_connection* connection;
   void* listener;
   DWORD dwLastNotify;
   int resumeAction;
@@ -123,7 +123,8 @@ typedef struct {
 
 void SafeReleaseFileTransfer(void **ft);
 
-typedef struct {
+struct oscar_connection
+{
   HANDLE hContact;
   HANDLE hConnection;
   int status;
@@ -135,7 +136,7 @@ typedef struct {
   int incoming;
   oscar_filetransfer *ft;
   int wantIdleTime;
-} oscar_connection;
+};
 
 #define OCT_NORMAL      0
 #define OCT_REVERSE     1

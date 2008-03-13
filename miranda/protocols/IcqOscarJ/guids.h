@@ -88,7 +88,7 @@ static __inline void packGUID(icq_packet* packet, plugin_guid guid)
 // capabilities
 typedef unsigned char capstr[0x10];
 
-capstr* MatchCap(char* buf, int bufsize, const capstr* cap, int capsize);
+capstr* MatchCap(BYTE* buf, int bufsize, const capstr* cap, int capsize);
 
 
 #endif /* __GUIDS_H */

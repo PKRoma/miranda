@@ -9,23 +9,228 @@
 	".\icos\srvlist_add.ico"\
 	
 
-.\init.c : \
+.\chan_01login.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\chan_02data.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\chan_03error.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\chan_04close.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\chan_05ping.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_01service.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_02location.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_03buddy.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_04message.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_09bos.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_0alookup.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_0bstatus.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_13servclist.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_15icqserver.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\fam_17signon.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\directpackets.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_direct.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_directmsg.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_filerequests.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_filetransfer.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_advsearch.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_db.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icqosc_svcs.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\init.cpp : \
+	"..\..\include\win2k.h"\
 	".\m_updater.h"\
 	
 
-.\iconlib.c : \
-	"..\..\include\m_icolib.h"\
+.\log.cpp : \
+	"..\..\include\win2k.h"\
 	
 
-.\icq_avatar.c : \
+.\UI\askauthentication.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_firstrun.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_opts.cpp : \
+	"..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
+	"..\..\include\win2k.h"\
+	
+
+.\icq_popups.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_uploadui.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\UI\loginpassword.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\UI\userinfotab.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\constants.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\db.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\dlgproc.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\editlist.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\editstring.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\main.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\changeinfo\upload.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\capabilities.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\cookies.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\i18n.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\iconlib.cpp : \
+	"..\..\include\m_icolib.h"\
+	"..\..\include\win2k.h"\
+	
+
+.\icq_avatar.cpp : \
+	"..\..\include\win2k.h"\
 	".\m_folders.h"\
 	
 
-.\icq_xstatus.c : \
+.\icq_clients.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_fieldnames.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_http.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_infoupdate.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_packet.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_rates.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_server.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_servlist.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icq_xstatus.cpp : \
+	"..\..\include\win2k.h"\
 	".\m_cluiframes.h"\
 	
 
-.\icqoscar.c : \
+.\icq_xtraz.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\icqoscar.cpp : \
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
@@ -45,6 +250,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -88,4 +294,20 @@
 	".\UI\loginpassword.h"\
 	".\UI\userinfotab.h"\
 	".\utilities.h"\
+	
+
+.\oscar_filetransfer.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\stdpackets.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\tlv.cpp : \
+	"..\..\include\win2k.h"\
+	
+
+.\utilities.cpp : \
+	"..\..\include\win2k.h"\
 	
