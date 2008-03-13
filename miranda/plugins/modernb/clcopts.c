@@ -1723,7 +1723,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	}
 	return FALSE;
 }
-TCHAR *sortby[]={_T("Name"), _T("Name (use locale settings)") , _T("Status"), _T("Last message time"), _T("Protocol"),_T("Rate"), _T("-Nothing-")};
+TCHAR *sortby[]={_T("Name"), _T("Name (use locale settings)") , _T("Status"), _T("Last message time"), _T("Profile Name"), _T("Rate"), _T("-Nothing-")};
 int sortbyValue[]={ SORTBY_NAME, SORTBY_NAME_LOCALE, SORTBY_STATUS, SORTBY_LASTMSG, SORTBY_PROTO ,SORTBY_RATE , SORTBY_NOTHING };
 static BOOL 
 CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

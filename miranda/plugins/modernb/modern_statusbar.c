@@ -227,7 +227,9 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			allocedItemData++;
 		}
 
+		visProtoCount=allocedItemData;
 		// Calculate rects
+		if (!ProtosData) return 0;
 
 		//START MULTILINE HERE 
 		{
@@ -251,6 +253,8 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			}
 			protosperline=min(protosperline,orig_visProtoCount);
 			linecount=(orig_visProtoCount+(protosperline-1))/protosperline; //divide with rounding to up
+			visProtoCount=allocedItemData;
+			
 			for (line=0; line<linecount; line++)
 			{    
 				int height;
@@ -287,7 +291,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						else sw=rectwidth;
 						if (ProtoWidth) mir_free_and_nill(ProtoWidth);
 						ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
-						for (i=0; i<visProtoCount; i++)
+						for (i=0; i<allocedItemData; i++)
 						{
 							SIZE textSize;
 							DWORD w=GetSystemMetrics(SM_CXSMICON)+1;

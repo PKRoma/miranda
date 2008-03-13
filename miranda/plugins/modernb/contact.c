@@ -83,27 +83,14 @@ DWORD CompareContacts2_getLMTime(HANDLE hContact)
 
 int GetProtoIndex(char * szName)
 {
-    DWORD i;
-    char buf[11];
-    char * name;
-    DWORD pc;
+	PROTOACCOUNT **accs;
+	int accCount;
+	int i;
     if (!szName) return -1;
-    
-    pc=DBGetContactSettingDword(NULL,"Protocols","ProtoCount",-1);
-    for (i=0; i<pc; i++)
-    {
-        _itoa(i,buf,10);
-        name=DBGetStringA(NULL,"Protocols",buf);
-        if (name)
-        {
-            if (!mir_strcmp(name,szName))
-            {
-                mir_free_and_nill(name);
-                return i;
-            }
-            mir_free_and_nill(name);
-        }
-    }
+	ProtoEnumAccounts( &accCount, &accs );    
+	for (i=0; i<accCount; i++)
+		if(!mir_strcmpi(szName,accs[i]->szModuleName))
+			return accs[i]->iOrder;
     return -1;
 }
 
