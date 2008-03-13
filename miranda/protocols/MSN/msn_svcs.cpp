@@ -708,23 +708,25 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	if ( AI->format != PA_FORMAT_UNKNOWN ) 
 	{
+		bool needupdate = true;
 		if (DBGetContactSettingString(AI->hContact, msnProtocolName, "PictSavedContext", &dbv) == 0)
 		{
-			if (strcmp(dbv.pszVal, szContext ) != 0)
-			{
-				MSN_SetString( AI->hContact, "PictSavedContext", szContext );
-
-				// Store also avatar hash
-				char* szAvatarHash = MSN_GetAvatarHash(szContext);
-				if (szAvatarHash != NULL)
-				{
-					MSN_SetString( AI->hContact, "AvatarSavedHash", szAvatarHash );
-					mir_free(szAvatarHash);
-				}
-			}
+			needupdate = strcmp(dbv.pszVal, szContext) != 0;
 			MSN_FreeVariant( &dbv );
-			return GAIR_SUCCESS;
 		}
+		if (needupdate)
+		{
+			MSN_SetString( AI->hContact, "PictSavedContext", szContext );
+
+			// Store also avatar hash
+			char* szAvatarHash = MSN_GetAvatarHash(szContext);
+			if (szAvatarHash != NULL)
+			{
+				MSN_SetString( AI->hContact, "AvatarSavedHash", szAvatarHash );
+				mir_free(szAvatarHash);
+			}
+		}
+		return GAIR_SUCCESS;
 	}
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )
