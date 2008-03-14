@@ -37,6 +37,8 @@
 #include "icqoscar.h"
 
 
+capstr capShortCaps   = {0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
+
 capstr* MatchCap(BYTE* buf, int bufsize, const capstr* cap, int capsize)
 {
   while (bufsize>0) // search the buffer for a capability
@@ -52,6 +54,17 @@ capstr* MatchCap(BYTE* buf, int bufsize, const capstr* cap, int capsize)
     }
   }
   return 0;
+}
+
+capstr* MatchShortCap(BYTE *buf, int bufsize, const shortcapstr *cap)
+{
+  capstr fullCap;
+
+  memcpy(fullCap, capShortCaps, 0x10);
+  fullCap[2] = (*cap)[0];
+  fullCap[3] = (*cap)[1];
+
+  return MatchCap(buf, bufsize, &fullCap, 0x10);
 }
 
 
@@ -79,7 +92,7 @@ static void verToStr(char* szStr, int v)
 
 
 
-static char* MirandaVersionToStringEx(char* szStr, int bUnicode, char* szPlug, int v, int m)
+static char* MirandaVersionToStringEx(char* szStr, int bUnicode, const char* szPlug, int v, int m)
 {
   if (!v) // this is not Miranda
     return NULL;
@@ -121,7 +134,7 @@ char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m)
 
 
 
-char* MirandaModToString(char* szStr, capstr* capId, int bUnicode, char* szModName)
+char* MirandaModToString(char* szStr, capstr* capId, int bUnicode, const char* szModName)
 { // decode icqj mod version
   char* szClient;
   DWORD mver = (*capId)[0x4] << 0x18 | (*capId)[0x5] << 0x10 | (*capId)[0x6] << 8 | (*capId)[0x7];
@@ -179,9 +192,9 @@ const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x8
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capComm20012 = {0xa0, 0xe9, 0x3f, 0x37, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capStrIcq    = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
-      capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
-const capstr capAimDirect = {0x09, 0x46, 0x13, 0x45, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_DIRECTIM
-const capstr capAimFileShare = {0x09, 0x46, 0x13, 0x48, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_FILE_SHARE
+const shortcapstr capAimIcon   = {0x13, 0x46}; // CAP_AIM_BUDDYICON
+const shortcapstr capAimDirect = {0x13, 0x45}; // CAP_AIM_DIRECTIM
+const shortcapstr capAimFileShare = {0x13, 0x48}; // CAP_AIM_FILE_SHARE
 const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
 const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
@@ -822,7 +835,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
             if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &capIs2001, 0x10) &&
               MatchCap(caps, wLen, &capIs2002, 0x10) && MatchCap(caps, wLen, &capComm20012, 0x10))
               szClient = cliSpamBot;
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimDirect, 0x10) && 
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchShortCap(caps, wLen, &capAimDirect) && 
               CheckContactCapabilities(hContact, CAPF_OSCAR_FILE | CAPF_UTF))
             { // detect libgaim
               if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
@@ -830,20 +843,20 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
               else
                 szClient = "libgaim";
             }
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimDirect, 0x10) &&
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchShortCap(caps, wLen, &capAimDirect) &&
               MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x40)
               szClient = "libgaim"; // Gaim 1.5.1 most probably
             else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x20)
               szClient = "Easy Message";
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
               szClient = "Meebo";
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
               szClient = "PyICQ-t Jabber Transport";
-            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
               szClient = "PyICQ-t Jabber Transport";
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_TYPING) && wLen == 0x40)
               szClient = "Agile Messenger"; // Smartphone 2002
-            else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_OSCAR_FILE) && MatchCap(caps, wLen, &capAimFileShare, 0x10))
+            else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_OSCAR_FILE) && MatchShortCap(caps, wLen, &capAimFileShare))
               szClient = "Slick"; // http://lonelycatgames.com/?app=slick
           }
         }
@@ -894,7 +907,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
         {
           szClient = "naim";
         }
-        else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
+        else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
           szClient = "Meebo";
         else
           szClient = "AIM";

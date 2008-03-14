@@ -41,7 +41,7 @@ static void handleUserOnline(BYTE* buf, WORD wPackLen, serverthread_info* info);
 static void handleReplyBuddy(BYTE* buf, WORD wPackLen);
 static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
-extern capstr capAimIcon;
+extern capstr capShortCaps;
 extern const char* cliSpamBot;
 extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
@@ -354,7 +354,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
               capstr tmp;
               BYTE* capNew = pNewTLV->pData;
 
-              memcpy(tmp, capAimIcon, 0x10); 
+              memcpy(tmp, capShortCaps, 0x10); 
 
               for (i = 0; i<pNewTLV->wLen; i+=2)
               {
@@ -383,7 +383,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
             int moodSize = 0;
 
             extractMoodData(pChain, &moodData, &moodSize);
-            handleXStatusCaps(hContact, (char*)capBuf, capLen, moodData, moodSize);
+            handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
           }
 
           szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
@@ -415,7 +415,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
           int moodSize = 0;
 
           extractMoodData(pChain, &moodData, &moodSize);
-          handleXStatusCaps(hContact, (char*)pTLV->pData, pTLV->wLen, moodData, moodSize);
+          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
         }
       }
     }

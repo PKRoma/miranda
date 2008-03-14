@@ -376,7 +376,7 @@ const int moodXStatus[XSTATUS_COUNT] = {
   -1};
 
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize)
+void handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char *moods, int moodsize)
 {
   int bChanged = FALSE;
   HANDLE hIcon = (HANDLE)-1;
@@ -389,7 +389,7 @@ void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, in
 
     for (i = 0; i < XSTATUS_COUNT; i++)
     {
-      if (MatchCap((LPBYTE)caps, capsize, (const capstr*)capXStatus[i], 0x10))
+      if (MatchCap(caps, capsize, (const capstr*)capXStatus[i], 0x10))
       {
         BYTE bXStatusId = (BYTE)(i+1);
         char str[MAX_PATH];

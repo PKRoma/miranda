@@ -58,7 +58,7 @@ void InitXStatusIcons();
 void ChangedIconsXStatus();
 HICON GetXStatusIcon(int bStatus, UINT flags);
 
-void handleXStatusCaps(HANDLE hContact, char* caps, int capsize, char* moods, int moodsize);
+void handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char *moods, int moodsize);
 
 int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 

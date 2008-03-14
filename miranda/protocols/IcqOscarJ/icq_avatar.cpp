@@ -65,7 +65,7 @@ typedef struct avatarrequest_t
   DWORD dwUin;
   char *szUid;
   HANDLE hContact;
-  char *hash;
+  BYTE *hash;
   unsigned int hashlen;
   char *szFile;
   char *pData;
@@ -342,7 +342,7 @@ int DetectAvatarFormat(char* szFile)
 
 
 
-int IsAvatarSaved(HANDLE hContact, char* pHash, int nHashLen)
+int IsAvatarSaved(HANDLE hContact, BYTE* pHash, int nHashLen)
 {
   DBVARIANT dbvSaved = {0};
 
@@ -459,14 +459,14 @@ static void NetLog_Hash(const char* pszIdent, unsigned char* pHash, int nHashLen
 
 
 // handle Contact's avatar hash
-void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned char* pHash, int nHashLen, WORD wOldStatus)
+void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, BYTE* pHash, int nHashLen, WORD wOldStatus)
 {
   DBVARIANT dbv;
   int bJob = FALSE;
   char szAvatar[MAX_PATH];
   int dwPaFormat;
   int avatarType = -1;
-  char* pAvatarHash = NULL;
+  BYTE* pAvatarHash = NULL;
   int cbAvatarHash;
   BYTE emptyItem[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -496,19 +496,19 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
       // 000E: Custom Status (ICQ6)
       if (itemType == AVATAR_HASH_STATIC && (itemLen == 0x05 || itemLen == 0x10) && avatarType == -1)
       { // normal avatar
-        pAvatarHash = (char*)pHash;
+        pAvatarHash = pHash;
         cbAvatarHash = itemLen + 4;
         avatarType = itemType;
       }
       else if (itemType == AVATAR_HASH_FLASH && itemLen == 0x10 && avatarType == -1)
       { // flash avatar
-        pAvatarHash = (char*)pHash;
+        pAvatarHash = pHash;
         cbAvatarHash = itemLen + 4;
         avatarType = itemType;
       }
       else if (itemType == AVATAR_HASH_PHOTO && itemLen == 0x10)
       { // big avatar (ICQ 6)
-        pAvatarHash = (char*)pHash;
+        pAvatarHash = pHash;
         cbAvatarHash = itemLen + 4;
         avatarType = itemType;
       }
@@ -653,7 +653,7 @@ static avatarrequest* CreateAvatarRequest(int type)
 
 
 // request avatar data from server
-int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigned int hashlen, char* file)
+int GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, BYTE *hash, unsigned int hashlen, char *file)
 {
   avatarthreadstartinfo* atsi;
 
@@ -743,7 +743,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
         if (!ack) return 0; // out of memory, go away
         ack->dwUin = 1; //dwUin; // I should be damned for this - only to identify get request
         ack->hContact = hContact;
-        ack->hash = (char*)SAFE_MALLOC(hashlen);
+        ack->hash = (BYTE*)SAFE_MALLOC(hashlen);
         memcpy(ack->hash, hash, hashlen); // copy the data
         ack->hashlen = hashlen;
         ack->szFile = null_strdup(file); // we duplicate the string
@@ -809,7 +809,7 @@ int GetAvatarData(HANDLE hContact, DWORD dwUin, char* szUid, char* hash, unsigne
     ar->dwUin = dwUin;
     ar->szUid = null_strdup(szUid);
     ar->hContact = hContact;
-    ar->hash = (char*)SAFE_MALLOC(hashlen);
+    ar->hash = (BYTE*)SAFE_MALLOC(hashlen);
     memcpy(ar->hash, hash, hashlen); // copy the data
     ar->hashlen = hashlen;
     ar->szFile = null_strdup(file); // duplicate the string
@@ -1419,7 +1419,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
               { // contact's avatar set hash
                 if (!ICQGetContactSetting(ac->hContact, "AvatarHash", &dbv))
                 {
-                  if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", (char*)dbv.pbVal, dbv.cpbVal))
+                  if (ICQWriteContactSettingBlob(ac->hContact, "AvatarSaved", dbv.pbVal, dbv.cpbVal))
                     NetLog_Server("Failed to set file hash.");
 
                   ICQFreeVariant(&dbv);

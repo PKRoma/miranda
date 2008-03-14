@@ -231,7 +231,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
                 int datalen = getServerDataFromItemTLV(pChain, data);
 
                 if (datalen > 0)
-                  ICQWriteContactSettingBlob(hContact, "ServerData", (char*)data, datalen);
+                  ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
                 else
                   ICQDeleteContactSetting(hContact, "ServerData");
               }
@@ -1145,7 +1145,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
               int datalen = getServerDataFromItemTLV(pChain, data);
 
               if (datalen > 0)
-                ICQWriteContactSettingBlob(hContact, "ServerData", (char*)data, datalen);
+                ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
               else
                 ICQDeleteContactSetting(hContact, "ServerData");
 
@@ -1744,7 +1744,7 @@ void updateServVisibilityCode(BYTE bCode)
 
 // Updates the avatar hash used while in SSI mode. If a server ID is
 // not stored in the local DB, a new ID will be added to the server list.
-void updateServAvatarHash(char* pHash, int size)
+void updateServAvatarHash(BYTE *pHash, int size)
 {
   icq_packet packet;
   WORD wAvatarID;

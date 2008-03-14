@@ -118,7 +118,7 @@ typedef struct avatarcookie_t
   DWORD dwUin;
   HANDLE hContact;
   unsigned int hashlen;
-  char *hash;
+  BYTE *hash;
   unsigned int cbData;
   char *szFile;
 } avatarcookie;

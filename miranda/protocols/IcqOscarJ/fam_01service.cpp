@@ -46,7 +46,7 @@ extern CRITICAL_SECTION modeMsgsMutex;
 
 void setUserInfo();
 
-char* calcMD5Hash(char* szFile);
+BYTE* calcMD5Hash(char* szFile);
 
 
 void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
@@ -468,7 +468,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         }
         else // only change avatar hash to the same one
         {
-          char hash[0x14];
+          BYTE hash[0x14];
 
           memcpy(hash, pBuffer, 0x14);
           hash[2] = 1; // update image status
@@ -483,9 +483,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         case 1: // our avatar is on the server
         {
           char* file;
-          char* hash;
+          BYTE* hash;
 
-          ICQWriteContactSettingBlob(NULL, "AvatarHash", (char*)pBuffer, 0x14);
+          ICQWriteContactSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
           
           setUserInfo();
           // here we need to find a file, check its hash, if invalid get avatar from server
@@ -497,7 +497,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
             NetLog_Server("We have no avatar, requesting from server.");
 #endif
             GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-            GetAvatarData(NULL, dwLocalUIN, NULL, (char*)pBuffer, 0x14, szFile);
+            GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
           }
           else
           { // we know avatar filename
@@ -509,14 +509,14 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
               NetLog_Server("We have no avatar, requesting from server.");
 #endif
               GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-              GetAvatarData(NULL, dwLocalUIN, NULL, (char*)pBuffer, 0x14, szFile);
+              GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
             } // check if we had set any avatar if yes set our, if not download from server
             else if (memcmp(hash, pBuffer+4, 0x10))
             { // we have different avatar, sync that
               if (ICQGetContactSettingByte(NULL, "ForceOurAvatar", 1))
               { // we want our avatar, update hash
                 DWORD dwPaFormat = DetectAvatarFormat(file);
-                char* pHash = (char*)_alloca(0x14);
+                BYTE* pHash = (BYTE*)_alloca(0x14);
 
                 NetLog_Server("Our avatar is different, set our new hash.");
 
@@ -534,7 +534,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
                 NetLog_Server("We have different avatar, requesting new from server.");
 #endif
                 GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-                GetAvatarData(NULL, dwLocalUIN, NULL, (char*)pBuffer, 0x14, szFile);
+                GetAvatarData(NULL, dwLocalUIN, NULL, pBuffer, 0x14, szFile);
               }
             }
             SAFE_FREE((void**)&hash);
@@ -546,7 +546,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
         case 0x81:
         { // request to re-upload avatar data
           char* file;
-          char* hash;
+          BYTE* hash;
           DWORD dwPaFormat;
 
           if (!gbSsiEnabled) break; // we could not change serv-list if it is disabled...
@@ -590,7 +590,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
           }
           else
           {
-            char* pHash = (char*)_alloca(0x14);
+            BYTE* pHash = (BYTE*)_alloca(0x14);
 
             NetLog_Server("Our file is different, set our new hash.");
 
@@ -644,9 +644,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
 #define MD5_BLOCK_SIZE 1024*1024 /* use 1MB blocks */
 
-char* calcMD5Hash(char* szFile)
+BYTE* calcMD5Hash(char* szFile)
 {
-  char* res = NULL;
+  BYTE *res = NULL;
 
   if (szFile)
   {
@@ -658,7 +658,7 @@ char* calcMD5Hash(char* szFile)
       {
         long cbFileSize = GetFileSize( hFile, NULL );
 
-        res = (char*)SAFE_MALLOC(16*sizeof(char));
+        res = (BYTE*)SAFE_MALLOC(16*sizeof(char));
         if (cbFileSize != 0 && res)
         {
           mir_md5_state_t state;

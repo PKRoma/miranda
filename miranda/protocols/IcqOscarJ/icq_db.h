@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -59,13 +59,13 @@ int __stdcall ICQDeleteContactSetting(HANDLE hContact, const char* szSetting);
 int __stdcall ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue);
 int __stdcall ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue);
 int __stdcall ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
-int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, char* szValue);
-int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, char* szValue);
+int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, const char* szValue);
+int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, const char* szValue);
 
-int __stdcall ICQWriteContactSettingBlob(HANDLE hContact,const char *szSetting,const char *val, const int cbVal);
+int __stdcall ICQWriteContactSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal);
 
-char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef);
-int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szValue);
+char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, char* szDef);
+int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue);
 
 int __stdcall ICQFreeVariant(DBVARIANT* dbv);
 

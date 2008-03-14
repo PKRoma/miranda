@@ -52,7 +52,7 @@ extern HANDLE hIconProtocol;
 
 extern WORD wListenPort;
 
-extern char* calcMD5Hash(char* szFile);
+extern BYTE* calcMD5Hash(char* szFile);
 extern filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion);
 extern DWORD addServContact(HANDLE hContact, const char *pszGroup);
 
@@ -250,7 +250,7 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
     pai->format = dwPaFormat;
 
-    if (!IsAvatarSaved(pai->hContact, (char*)dbv.pbVal, dbv.cpbVal))
+    if (!IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
     { // hashes are the same
       if (access(pai->filename, 0) == 0)
       {
@@ -261,12 +261,12 @@ int IcqGetAvatarInfo(WPARAM wParam, LPARAM lParam)
     }
   }
 
-  if (IsAvatarSaved(pai->hContact, (char*)dbv.pbVal, dbv.cpbVal))
+  if (IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
   { // we didn't received the avatar before - this ensures we will not request avatar again and again
     if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
     { // request avatar data
       GetAvatarFileName(dwUIN, szUID, pai->filename, MAX_PATH);
-      GetAvatarData(pai->hContact, dwUIN, szUID, (char*)dbv.pbVal, dbv.cpbVal, pai->filename);
+      GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, pai->filename);
       ICQFreeVariant(&dbv);
 
       return GAIR_WAITFOR;
@@ -364,7 +364,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   { // set file for avatar
     char szMyFile[MAX_PATH+1];
     int dwPaFormat = DetectAvatarFormat(szFile);
-    char* hash;
+    BYTE *hash;
     HBITMAP avt;
 
     if (dwPaFormat != PA_FORMAT_XML)
@@ -384,7 +384,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
     hash = calcMD5Hash(szMyFile);
     if (hash)
     {
-      char* ihash = (char*)_alloca(0x14);
+      BYTE* ihash = (BYTE*)_alloca(0x14);
       // upload hash to server
       ihash[0] = 0;    //unknown
       ihash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC; //hash type
@@ -407,8 +407,8 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
   else
   { // delete user avatar
     ICQDeleteContactSetting(NULL, "AvatarFile");
-    ICQWriteContactSettingBlob(NULL, "AvatarHash", (char*)hashEmptyAvatar, 9);
-    updateServAvatarHash((char*)hashEmptyAvatar, 9); // set blank avatar
+    ICQWriteContactSettingBlob(NULL, "AvatarHash", hashEmptyAvatar, 9);
+    updateServAvatarHash(hashEmptyAvatar, 9); // set blank avatar
     iRet = 0;
   }
 
