@@ -443,6 +443,7 @@ struct ThreadData
 	int            mEhoughData;
 	bool           sessionClosed;
 	bool		   termPending;
+	bool		   gatewayType;
 
 	TQueueItem*	   mFirstQueueItem;
 	unsigned       numQueueItems;
