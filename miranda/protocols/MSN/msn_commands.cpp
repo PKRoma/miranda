@@ -1408,11 +1408,12 @@ LBL_InvalidCommand:
 			//note: unusual message encoding: trid==sessionid
 		{
 			union {
-				char* tWords[ 5 ];
-				struct { char *newServer, *security, *authChallengeInfo, *callerEmail, *callerNick; } data;
+				char* tWords[ 8 ];
+				struct { char *newServer, *security, *authChallengeInfo, *callerEmail, *callerNick,
+							  *type, *srcUrl, *genGateway; } data;
 			};
 
-			if ( sttDivideWords( params, 5, tWords ) != 5 )
+			if ( sttDivideWords( params, 8, tWords ) != 8 )
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
@@ -1425,6 +1426,7 @@ LBL_InvalidCommand:
 
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
+			strcpy( newThread->mGatewayIP, data.genGateway );
 			newThread->mType = SERVER_SWITCHBOARD;
 			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, true, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
@@ -1643,11 +1645,12 @@ LBL_InvalidCommand:
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard
 		{
 			union {
-				char* tWords[ 4 ];
-				struct { char *type, *newServer, *security, *authChallengeInfo; } data;
+				char* tWords[ 7 ];
+				struct { char *type, *newServer, *security, *authChallengeInfo,
+							  *type2, *srcUrl, *genGateway; } data;
 			};
 
-			int numWords = sttDivideWords( params, 4, tWords );
+			int numWords = sttDivideWords( params, 7, tWords );
 			if ( numWords < 2 )
 				goto LBL_InvalidCommand;
 
@@ -1678,6 +1681,7 @@ LBL_InvalidCommand:
 
 				ThreadData* newThread = new ThreadData;
 				strcpy( newThread->mServer, data.newServer );
+				strcpy( newThread->mGatewayIP, data.genGateway );
 				newThread->mType = SERVER_SWITCHBOARD;
 				newThread->mCaller = 1;
 				strcpy( newThread->mCookie, data.authChallengeInfo );

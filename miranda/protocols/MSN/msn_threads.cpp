@@ -83,10 +83,16 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if (MyOptions.UseGateway) 
 	{
-		if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
-			strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
 		if (*info->mServer == 0)
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
+
+		if (strcmp(info->mGatewayIP, "1") == 0)
+			strcpy(info->mGatewayIP, info->mServer);
+		else
+		{
+			if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
+				strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
+		}
 	}
 	else
 	{
@@ -543,7 +549,7 @@ ThreadData::ThreadData()
 {
 	memset( this, 0, sizeof( ThreadData ));
 	mGatewayTimeout = 2;
-	mWaitPeriod = 30;
+	mWaitPeriod = 60;
 	hWaitEvent = CreateSemaphore( NULL, 0, 5, NULL );
 }
 
@@ -669,6 +675,7 @@ void ThreadData::processSessionData( const char* str )
 		s = NULL;
 	}
 	strcpy( mGatewayIP, tGateIP );
+	strcpy( mServer, tGateIP );
 	strcpy( mSessionID, tSessionID );
 }
 
