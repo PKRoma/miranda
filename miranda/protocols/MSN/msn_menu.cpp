@@ -230,14 +230,14 @@ static int SetNicknameUI( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnViewProfile - view a contact's profile at http://members.msn.com
 
-static char sttUrlPrefix[] = "http://members.msn.com/";
+static const char sttUrlPrefix[] = "http://members.msn.com/";
 
 static int MsnViewProfile( WPARAM wParam, LPARAM lParam )
 {
-	char tUrl[ MSN_MAX_EMAIL_LEN + sizeof sttUrlPrefix ];
+	char tUrl[ MSN_MAX_EMAIL_LEN + sizeof(sttUrlPrefix) ];
 	strcpy( tUrl, sttUrlPrefix );
 
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tUrl + sizeof sttUrlPrefix - 1, MSN_MAX_EMAIL_LEN ))
+	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tUrl + sizeof(sttUrlPrefix) - 1, MSN_MAX_EMAIL_LEN ))
 		MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tUrl );
 	return 0;
 }
