@@ -86,7 +86,7 @@ void __cdecl MSNServerThread( ThreadData* info )
 		if (*info->mServer == 0)
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
 
-		if (strcmp(info->mGatewayIP, "1") == 0)
+		if (info->gatewayType)
 			strcpy(info->mGatewayIP, info->mServer);
 		else
 		{
@@ -675,7 +675,7 @@ void ThreadData::processSessionData( const char* str )
 		s = NULL;
 	}
 	strcpy( mGatewayIP, tGateIP );
-	strcpy( mServer, tGateIP );
+	if (gatewayType) strcpy( mServer, tGateIP );
 	strcpy( mSessionID, tSessionID );
 }
 

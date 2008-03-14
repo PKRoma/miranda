@@ -1426,7 +1426,7 @@ LBL_InvalidCommand:
 
 			ThreadData* newThread = new ThreadData;
 			strcpy( newThread->mServer, data.newServer );
-			strcpy( newThread->mGatewayIP, data.genGateway );
+			newThread->gatewayType = atol( data.genGateway ) != 0;
 			newThread->mType = SERVER_SWITCHBOARD;
 			newThread->mInitialContact = MSN_HContactFromEmail( data.callerEmail, data.callerNick, true, true );
 			mir_snprintf( newThread->mCookie, sizeof( newThread->mCookie ), "%s %d", data.authChallengeInfo, trid );
@@ -1681,7 +1681,7 @@ LBL_InvalidCommand:
 
 				ThreadData* newThread = new ThreadData;
 				strcpy( newThread->mServer, data.newServer );
-				strcpy( newThread->mGatewayIP, data.genGateway );
+				newThread->gatewayType = atol( data.genGateway ) != 0;
 				newThread->mType = SERVER_SWITCHBOARD;
 				newThread->mCaller = 1;
 				strcpy( newThread->mCookie, data.authChallengeInfo );
