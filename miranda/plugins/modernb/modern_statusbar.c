@@ -195,8 +195,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			ProtosData=NULL;
 			allocedItemData=0;
 		}
-		ProtosData=mir_alloc(sizeof(ProtoItemData)*protoCount);
-		memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
+		{
+			int size=sizeof(ProtoItemData)*protoCount;
+			ProtosData=mir_alloc(size);
+			memset(ProtosData,0,size);
+		}
 		protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
 		for (j=0; j<protoCount; j++)
 		{
@@ -289,7 +292,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						else sw=rectwidth;
 						if (ProtoWidth) mir_free_and_nill(ProtoWidth);
 						ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
-						for (i=0; i<allocedItemData; i++)
+						for (i=0; i<visProtoCount; i++)
 						{
 							SIZE textSize;
 							DWORD w=GetSystemMetrics(SM_CXSMICON)+1;

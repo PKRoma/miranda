@@ -73,6 +73,8 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_OTHER_WINDOW       231     //v0.8.0.4+
 #define SKINICON_OTHER_WINDOWS      232     //v0.8.0.4+
 #define SKINICON_OTHER_ACCMGR       233     //v0.8.0.4+
+#define SKINICON_OTHER_MAINMENU     234     //v0.8.0.12+
+#define SKINICON_OTHER_STATUS       235     //v0.8.0.12+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide

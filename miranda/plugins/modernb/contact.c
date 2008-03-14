@@ -83,8 +83,8 @@ DWORD CompareContacts2_getLMTime(HANDLE hContact)
 
 int GetProtoIndex(char * szName)
 {
-	PROTOACCOUNT **accs;
-	int accCount;
+	PROTOACCOUNT **accs=NULL;
+	int accCount=0;
 	int i;
     if (!szName) return -1;
 	ProtoEnumAccounts( &accCount, &accs );    

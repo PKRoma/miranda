@@ -71,6 +71,8 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_ACCMGR,      LPGEN("Accounts"),        -IDI_ACCMGR         },
 	{ SKINICON_OTHER_SHOWHIDE,    LPGEN("ShowHide"),         0xFFFFFFFF         },
 	{ SKINICON_OTHER_EXIT,        LPGEN("Exit"),             0xFFFFFFFF         },
+	{ SKINICON_OTHER_MAINMENU,    LPGEN("Main Menu"),       -IDI_MIRANDA        },
+	{ SKINICON_OTHER_STATUS,      LPGEN("Status"),           0xFFFFFFFF         },
 };
 
 struct StandardIconDescription statusIcons[] =

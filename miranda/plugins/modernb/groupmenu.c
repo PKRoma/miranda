@@ -367,15 +367,21 @@ void GroupMenus_Init(void)
 	mi.cbSize=sizeof(mi);
 	mi.position=300000;
 	mi.pszService="";
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_MAINMENU); // eternity #004
 	mi.pszName=LPGEN("&Main Menu");
+	mi.flags=CMIF_ICONFROMICOLIB; // eternity #004
 	hGroupMainMenuItemProxy=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	DestroyIcon_protect(mi.hIcon); // eternity #004
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=300100;
 	mi.pszService="";
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_STATUS); // eternity #004
 	mi.pszName=LPGEN("&Status");
+	mi.flags=CMIF_ICONFROMICOLIB; // eternity #004
 	hGroupStatusMenuItemProxy=(HANDLE)AddGroupMenuItem((WPARAM)0,(LPARAM)&mi);
+	DestroyIcon_protect(mi.hIcon); // eternity #004
 
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
