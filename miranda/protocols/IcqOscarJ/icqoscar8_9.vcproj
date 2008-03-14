@@ -584,7 +584,7 @@
 			Name="FLAP Channels"
 			>
 			<File
-				RelativePath="chan_01login.c"
+				RelativePath="chan_01login.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -626,7 +626,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="chan_02data.c"
+				RelativePath="chan_02data.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -668,7 +668,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="chan_03error.c"
+				RelativePath="chan_03error.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -710,7 +710,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="chan_04close.c"
+				RelativePath="chan_04close.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -752,7 +752,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="chan_05ping.c"
+				RelativePath="chan_05ping.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -798,7 +798,7 @@
 			Name="SNAC Families"
 			>
 			<File
-				RelativePath="fam_01service.c"
+				RelativePath="fam_01service.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -840,7 +840,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="fam_02location.c"
+				RelativePath="fam_02location.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -882,7 +882,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="fam_03buddy.c"
+				RelativePath="fam_03buddy.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -924,7 +924,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="fam_04message.c"
+				RelativePath="fam_04message.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -966,7 +966,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="fam_09bos.c"
+				RelativePath="fam_09bos.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1008,53 +1008,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\fam_0alookup.c"
+				RelativePath=".\fam_0alookup.cpp"
 				>
 			</File>
 			<File
-				RelativePath="fam_0bstatus.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="fam_13servclist.c"
+				RelativePath="fam_0bstatus.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1096,7 +1054,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="fam_15icqserver.c"
+				RelativePath="fam_13servclist.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1138,7 +1096,49 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\fam_17signon.c"
+				RelativePath="fam_15icqserver.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\fam_17signon.cpp"
 				>
 			</File>
 		</Filter>
@@ -1146,7 +1146,7 @@
 			Name="Direct Connection"
 			>
 			<File
-				RelativePath="icq_direct.c"
+				RelativePath="icq_direct.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1188,7 +1188,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_directmsg.c"
+				RelativePath="icq_directmsg.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1230,7 +1230,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_filerequests.c"
+				RelativePath="icq_filerequests.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1272,7 +1272,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_filetransfer.c"
+				RelativePath="icq_filetransfer.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1314,7 +1314,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\oscar_filetransfer.c"
+				RelativePath=".\oscar_filetransfer.cpp"
 				>
 			</File>
 		</Filter>
@@ -1322,7 +1322,7 @@
 			Name="Miranda Bits"
 			>
 			<File
-				RelativePath="icq_advsearch.c"
+				RelativePath="icq_advsearch.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1364,61 +1364,19 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\icq_db.c"
+				RelativePath=".\icq_db.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\icq_popups.c"
+				RelativePath=".\icq_popups.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\icq_xstatus.c"
+				RelativePath=".\icq_xstatus.cpp"
 				>
 			</File>
 			<File
-				RelativePath="icqosc_svcs.c"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="init.c"
+				RelativePath="icqosc_svcs.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1460,7 +1418,49 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="log.c"
+				RelativePath="init.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="log.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1523,7 +1523,7 @@
 			Name="UI"
 			>
 			<File
-				RelativePath="UI\askauthentication.c"
+				RelativePath="UI\askauthentication.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1565,7 +1565,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_firstrun.c"
+				RelativePath="icq_firstrun.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1607,7 +1607,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_opts.c"
+				RelativePath="icq_opts.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1649,7 +1649,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="icq_uploadui.c"
+				RelativePath="icq_uploadui.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1691,7 +1691,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="UI\loginpassword.c"
+				RelativePath="UI\loginpassword.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1733,7 +1733,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="UI\userinfotab.c"
+				RelativePath="UI\userinfotab.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1783,36 +1783,36 @@
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\constants.c"
+				RelativePath=".\changeinfo\constants.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\db.c"
+				RelativePath=".\changeinfo\db.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\dlgproc.c"
+				RelativePath=".\changeinfo\dlgproc.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\editlist.c"
+				RelativePath=".\changeinfo\editlist.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\editstring.c"
+				RelativePath=".\changeinfo\editstring.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\main.c"
+				RelativePath=".\changeinfo\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\changeinfo\upload.c"
+				RelativePath=".\changeinfo\upload.cpp"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="capabilities.c"
+			RelativePath="capabilities.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -1854,61 +1854,15 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\cookies.c"
+			RelativePath=".\cookies.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\directpackets.c"
+			RelativePath=".\directpackets.cpp"
 			>
 		</File>
 		<File
-			RelativePath="i18n.c"
-			>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug Unicode|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release Unicode|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\iconlib.c"
-			>
-		</File>
-		<File
-			RelativePath="icq_avatar.c"
+			RelativePath="i18n.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -1950,53 +1904,11 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\icq_clients.c"
+			RelativePath=".\iconlib.cpp"
 			>
 		</File>
 		<File
-			RelativePath="icq_fieldnames.c"
-			>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Debug Unicode|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="0"
-					AdditionalIncludeDirectories=""
-					BasicRuntimeChecks="3"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release Unicode|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-					Optimization="1"
-					AdditionalIncludeDirectories=""
-				/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath="icq_http.c"
+			RelativePath="icq_avatar.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2038,7 +1950,11 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="icq_infoupdate.c"
+			RelativePath=".\icq_clients.cpp"
+			>
+		</File>
+		<File
+			RelativePath="icq_fieldnames.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2080,7 +1996,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="icq_packet.c"
+			RelativePath="icq_http.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2122,11 +2038,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\icq_rates.c"
-			>
-		</File>
-		<File
-			RelativePath="icq_server.c"
+			RelativePath="icq_infoupdate.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2168,7 +2080,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="icq_servlist.c"
+			RelativePath="icq_packet.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2210,11 +2122,99 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\icq_xtraz.c"
+			RelativePath=".\icq_rates.cpp"
 			>
 		</File>
 		<File
-			RelativePath="icqoscar.c"
+			RelativePath="icq_server.cpp"
+			>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="icq_servlist.cpp"
+			>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					BasicRuntimeChecks="3"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release Unicode|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="1"
+					AdditionalIncludeDirectories=""
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\icq_xtraz.cpp"
+			>
+		</File>
+		<File
+			RelativePath="icqoscar.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2260,7 +2260,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="stdpackets.c"
+			RelativePath="stdpackets.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2302,7 +2302,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="tlv.c"
+			RelativePath="tlv.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
@@ -2344,7 +2344,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="utilities.c"
+			RelativePath="utilities.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"
