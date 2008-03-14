@@ -1109,7 +1109,7 @@ static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin
 					SAFE_FREE((void**)&contacts[i]->hdr.nick);
 					SAFE_FREE((void**)&contacts[i]);
 				}
-				SAFE_FREE((void**)(void**)&contacts);
+				SAFE_FREE((void**)&contacts);
 				return;
 			}
 			nContacts = iContact;
@@ -1201,7 +1201,7 @@ static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin
 				SAFE_FREE((void**)&contacts[i]->hdr.nick);
 				SAFE_FREE((void**)&contacts[i]);
 			}
-			SAFE_FREE((void**)(void**)&contacts);
+			SAFE_FREE((void**)&contacts);
 		}
 		else
 			NetLog_Server("Error: Received unknown contacts message, ignoring.");

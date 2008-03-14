@@ -906,7 +906,7 @@ char *EliminateHtml(const char *string, int len)
     }
     tmp[j] = '\0';
   }
-  SAFE_FREE((void**)(void**)&string);
+  SAFE_FREE((void**)&string);
   res = DemangleXml(tmp, strlennull(tmp));
   SAFE_FREE((void**)&tmp);
 

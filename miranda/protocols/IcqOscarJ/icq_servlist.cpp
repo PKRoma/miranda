@@ -186,7 +186,7 @@ BOOL IsContactJustAdded(HANDLE hContact)
 void FlushJustAddedContacts()
 {
   EnterCriticalSection(&servlistMutex);
-  SAFE_FREE((void**)(void**)&pdwJustAddedList);
+  SAFE_FREE((void**)&pdwJustAddedList);
   nJustAddedSize = 0;
   nJustAddedCount = 0;
   LeaveCriticalSection(&servlistMutex);
@@ -304,9 +304,9 @@ void FlushPendingOperations()
 
   for (i = 0; i<nPendingCount; i++)
   {
-    SAFE_FREE((void**)(void**)&pdwPendingList[i]);
+    SAFE_FREE((void**)&pdwPendingList[i]);
   }
-  SAFE_FREE((void**)(void**)&pdwPendingList);
+  SAFE_FREE((void**)&pdwPendingList);
   nPendingCount = 0;
   nPendingSize = 0;
 

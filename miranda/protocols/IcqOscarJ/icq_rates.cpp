@@ -353,7 +353,7 @@ static void RatesTimer1()
     int i;
 
     for (i=0; i<pendingListSize1; i++) SAFE_FREE((void**)&pendingList1[i]);
-    SAFE_FREE((void**)(void**)&pendingList1);
+    SAFE_FREE((void**)&pendingList1);
     pendingListSize1 = 0;
     LeaveCriticalSection(&ratesListsMutex);
     
@@ -381,7 +381,7 @@ static void RatesTimer1()
     memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
   }
   else
-    SAFE_FREE((void**)(void**)&pendingList1);
+    SAFE_FREE((void**)&pendingList1);
   pendingListSize1--;
 
   if (pendingListSize1)
@@ -480,7 +480,7 @@ static void RatesTimer2()
       SAFE_FREE((void**)&pendingList2[i]->szData);
       SAFE_FREE((void**)&pendingList2[i]);
     }
-    SAFE_FREE((void**)(void**)&pendingList2);
+    SAFE_FREE((void**)&pendingList2);
     pendingListSize2 = 0;
     LeaveCriticalSection(&ratesListsMutex);
     
@@ -508,7 +508,7 @@ static void RatesTimer2()
     memmove(&pendingList2[0], &pendingList2[1], (pendingListSize2 - 1)*sizeof(rate_record*));
   }
   else
-    SAFE_FREE((void**)(void**)&pendingList2);
+    SAFE_FREE((void**)&pendingList2);
   pendingListSize2--;
 
   if (pendingListSize2)
@@ -657,8 +657,8 @@ void InitRates()
 
 void UninitRates()
 {
-  SAFE_FREE((void**)(void**)&pendingList1);
-  SAFE_FREE((void**)(void**)&pendingList2);
+  SAFE_FREE((void**)&pendingList1);
+  SAFE_FREE((void**)&pendingList2);
   DeleteCriticalSection(&ratesMutex);
   DeleteCriticalSection(&ratesListsMutex);
 }

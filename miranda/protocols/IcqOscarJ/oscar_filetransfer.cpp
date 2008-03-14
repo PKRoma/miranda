@@ -317,7 +317,7 @@ void SafeReleaseFileTransfer(void **ft)
 
         for (i = 0; i < oft->wFilesCount; i++)
           SAFE_FREE((void**)&oft->files[i].szFile);
-        SAFE_FREE((void**)(void**)&oft->files);
+        SAFE_FREE((void**)&oft->files);
       }
       if (oft->files_ansi)
       {
@@ -325,7 +325,7 @@ void SafeReleaseFileTransfer(void **ft)
 
         for (i = 0; i < oft->wFilesCount; i++)
           SAFE_FREE((void**)&oft->files_ansi[i]);
-        SAFE_FREE((void**)(void**)&oft->files_ansi);
+        SAFE_FREE((void**)&oft->files_ansi);
       }
       if (oft->file_containers)
       {
@@ -333,7 +333,7 @@ void SafeReleaseFileTransfer(void **ft)
 
         for (i = 0; i < oft->containerCount; i++)
           SAFE_FREE((void**)&oft->file_containers[i]);
-        SAFE_FREE((void**)(void**)&oft->file_containers);
+        SAFE_FREE((void**)&oft->file_containers);
       }
       if (oft->fileId != -1)
       {
@@ -682,7 +682,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           { // Just sanity
             ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
             // Release transfer
-            SafeReleaseFileTransfer((void**)(void**)&ft);
+            SafeReleaseFileTransfer((void**)&ft);
           }
         }
         else
@@ -759,7 +759,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
       // Notify user, that the FT was cancelled // TODO: new ACKRESULT_?
       icq_LogMessage(LOG_ERROR, "The file transfer was aborted by the other user.");
       // Release transfer
-      SafeReleaseFileTransfer((void**)(void**)&ft);
+      SafeReleaseFileTransfer((void**)&ft);
     }
     else
       NetLog_Server("Error: Invalid request, no such transfer");
@@ -816,7 +816,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_DENIED, (HANDLE)oft, 0);
           // Release transfer
-          SafeReleaseFileTransfer((void**)(void**)&oft);
+          SafeReleaseFileTransfer((void**)&oft);
         }
         break;
 

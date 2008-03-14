@@ -61,11 +61,11 @@ _______
 0.3.10 Development
 
 Bugfixes:
-  Do not lose server-list contacts due to too long nicknames/comments
   Fixed receiving of multi-part messages (only first part was received)
 
 Improvements:
   URL events are now received as normal messages
+  Use new offline messages protocol (supports unicode)
   Ability to send/receive contacts to/from ICQ6 and AIM
   Ability to view/set ICQ6 compatible custom statuses (icons only)
 
@@ -74,10 +74,10 @@ Improvements:
 
 Bugfixes:
   Fixed connection problems with many contacts in server-list
+  Do not lose server-list contacts due to too long nicknames/comments
 
 Improvements:
-  Restoration of known spam bot blocking
-  Use new offline messages protocol (supports unicode)
+  Reinvented known spam bot blocking
 
 
 0.3.9.4

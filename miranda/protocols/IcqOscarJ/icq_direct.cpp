@@ -107,7 +107,7 @@ void UninitDirectConns(void)
   DeleteCriticalSection(&directConnListMutex);
   DeleteCriticalSection(&expectedFileRecvMutex);
 
-  SAFE_FREE((void**)(void**)&directConnList);
+  SAFE_FREE((void**)&directConnList);
 }
 
 
