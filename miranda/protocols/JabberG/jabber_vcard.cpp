@@ -902,83 +902,78 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 	TCHAR text[2048];
 
 	// Page 0: Personal
-	switch (iPage)
-	{
-		case 0:
-		{
-			GetDlgItemText( hwndPage, IDC_FULLNAME, text, SIZEOF( text ));
-			JSetStringT( NULL, "FullName", text );
-			GetDlgItemText( hwndPage, IDC_NICKNAME, text, SIZEOF( text ));
-			JSetStringT( NULL, "Nick", text );
-			GetDlgItemText( hwndPage, IDC_FIRSTNAME, text, SIZEOF( text ));
-			JSetStringT( NULL, "FirstName", text );
-			GetDlgItemText( hwndPage, IDC_MIDDLE, text, SIZEOF( text ));
-			JSetStringT( NULL, "MiddleName", text );
-			GetDlgItemText( hwndPage, IDC_LASTNAME, text, SIZEOF( text ));
-			JSetStringT( NULL, "LastName", text );
-			GetDlgItemText( hwndPage, IDC_BIRTH, text, SIZEOF( text ));
-			JSetStringT( NULL, "BirthDate", text );
-			GetDlgItemText( hwndPage, IDC_GENDER, text, SIZEOF( text ));
-			JSetStringT( NULL, "GenderString", text );
-			GetDlgItemText( hwndPage, IDC_OCCUPATION, text, SIZEOF( text ));
-			JSetStringT( NULL, "Role", text );
-			GetDlgItemText( hwndPage, IDC_HOMEPAGE, text, SIZEOF( text ));
-			JSetStringT( NULL, "Homepage", text );
-			break;
-		}
-		// Page 1: Contacts
-		//		no need to save, always in sync with the DB
-		// Page 2: Home
-		case 2:
-		{
-			GetDlgItemText( hwndPage, IDC_ADDRESS1, text, SIZEOF( text ));
-			JSetStringT( NULL, "Street", text );
-			GetDlgItemText( hwndPage, IDC_ADDRESS2, text, SIZEOF( text ));
-			JSetStringT( NULL, "Street2", text );
-			GetDlgItemText( hwndPage, IDC_CITY, text, SIZEOF( text ));
-			JSetStringT( NULL, "City", text );
-			GetDlgItemText( hwndPage, IDC_STATE, text, SIZEOF( text ));
-			JSetStringT( NULL, "State", text );
-			GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
-			JSetStringT( NULL, "ZIP", text );
-			GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-			JSetStringT( NULL, "CountryName", text );
-			break;
-		}
-		// Page 3: Work
-		case 3:
-		{
-			GetDlgItemText( hwndPage, IDC_COMPANY, text, SIZEOF( text ));
-			JSetStringT( NULL, "Company", text );
-			GetDlgItemText( hwndPage, IDC_DEPARTMENT, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyDepartment", text );
-			GetDlgItemText( hwndPage, IDC_TITLE, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyPosition", text );
-			GetDlgItemText( hwndPage, IDC_ADDRESS1, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyStreet", text );
-			GetDlgItemText( hwndPage, IDC_ADDRESS2, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyStreet2", text );
-			GetDlgItemText( hwndPage, IDC_CITY, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyCity", text );
-			GetDlgItemText( hwndPage, IDC_STATE, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyState", text );
-			GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyZIP", text );
-			GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-			JSetStringT( NULL, "CompanyCountryName", text );
-			break;
-		}
-		// Page 4: Photo
-		//		not saved in the database
-		// Page 5: Note
-		case 5:
-		{
-			GetDlgItemText( hwndPage, IDC_DESC, text, SIZEOF( text ));
-			JSetStringT( NULL, "About", text );
-			break;
-		}
-	}
-}
+	switch (iPage) {
+	case 0:
+		GetDlgItemText( hwndPage, IDC_FULLNAME, text, SIZEOF( text ));
+		JSetStringT( NULL, "FullName", text );
+		GetDlgItemText( hwndPage, IDC_NICKNAME, text, SIZEOF( text ));
+		JSetStringT( NULL, "Nick", text );
+		GetDlgItemText( hwndPage, IDC_FIRSTNAME, text, SIZEOF( text ));
+		JSetStringT( NULL, "FirstName", text );
+		GetDlgItemText( hwndPage, IDC_MIDDLE, text, SIZEOF( text ));
+		JSetStringT( NULL, "MiddleName", text );
+		GetDlgItemText( hwndPage, IDC_LASTNAME, text, SIZEOF( text ));
+		JSetStringT( NULL, "LastName", text );
+		GetDlgItemText( hwndPage, IDC_BIRTH, text, SIZEOF( text ));
+		JSetStringT( NULL, "BirthDate", text );
+		GetDlgItemText( hwndPage, IDC_GENDER, text, SIZEOF( text ));
+		JSetStringT( NULL, "GenderString", text );
+		GetDlgItemText( hwndPage, IDC_OCCUPATION, text, SIZEOF( text ));
+		JSetStringT( NULL, "Role", text );
+		GetDlgItemText( hwndPage, IDC_HOMEPAGE, text, SIZEOF( text ));
+		JSetStringT( NULL, "Homepage", text );
+		break;
+
+	// Page 1: Home
+	case 1:
+		GetDlgItemText( hwndPage, IDC_ADDRESS1, text, SIZEOF( text ));
+		JSetStringT( NULL, "Street", text );
+		GetDlgItemText( hwndPage, IDC_ADDRESS2, text, SIZEOF( text ));
+		JSetStringT( NULL, "Street2", text );
+		GetDlgItemText( hwndPage, IDC_CITY, text, SIZEOF( text ));
+		JSetStringT( NULL, "City", text );
+		GetDlgItemText( hwndPage, IDC_STATE, text, SIZEOF( text ));
+		JSetStringT( NULL, "State", text );
+		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
+		JSetStringT( NULL, "ZIP", text );
+		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
+		JSetStringT( NULL, "CountryName", text );
+		break;
+
+	// Page 2: Work
+	case 2:
+		GetDlgItemText( hwndPage, IDC_COMPANY, text, SIZEOF( text ));
+		JSetStringT( NULL, "Company", text );
+		GetDlgItemText( hwndPage, IDC_DEPARTMENT, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyDepartment", text );
+		GetDlgItemText( hwndPage, IDC_TITLE, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyPosition", text );
+		GetDlgItemText( hwndPage, IDC_ADDRESS1, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyStreet", text );
+		GetDlgItemText( hwndPage, IDC_ADDRESS2, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyStreet2", text );
+		GetDlgItemText( hwndPage, IDC_CITY, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyCity", text );
+		GetDlgItemText( hwndPage, IDC_STATE, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyState", text );
+		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyZIP", text );
+		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
+		JSetStringT( NULL, "CompanyCountryName", text );
+		break;
+
+	// Page 3: Photo
+	// not needed to be saved into db
+
+	// Page 4: Note
+	case 4:
+		GetDlgItemText( hwndPage, IDC_DESC, text, SIZEOF( text ));
+		JSetStringT( NULL, "About", text );
+		break;
+
+	// Page 5: Contacts
+	// is always synced with db
+}	}
 
 void CJabberProto::AppendVcardFromDB( XmlNode* n, char* tag, char* key )
 {
