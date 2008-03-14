@@ -227,7 +227,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			allocedItemData++;
 		}
 
-		visProtoCount=allocedItemData;
 		// Calculate rects
 		if (!ProtosData) return 0;
 
@@ -253,7 +252,6 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			}
 			protosperline=min(protosperline,orig_visProtoCount);
 			linecount=(orig_visProtoCount+(protosperline-1))/protosperline; //divide with rounding to up
-			visProtoCount=allocedItemData;
 			
 			for (line=0; line<linecount; line++)
 			{    
