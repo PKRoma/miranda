@@ -82,15 +82,15 @@ void UninitServerLists(void);
 
 void* collectGroups(int *count);
 void* collectBuddyGroup(WORD wGroupID, int *count);
-unsigned char *getServerGroupNameUtf(WORD wGroupID);
-void setServerGroupNameUtf(WORD wGroupID, const unsigned char* szGroupNameUtf);
-WORD getServerGroupIDUtf(const char* szPath);
-void setServerGroupIDUtf(const char* szPath, WORD wGroupID);
+unsigned char *getServListGroupName(WORD wGroupID);
+void setServListGroupName(WORD wGroupID, const unsigned char *szGroupName);
+WORD getServListGroupLinkID(const unsigned char *szPath);
+void setServListGroupLinkID(const unsigned char *szPath, WORD wGroupID);
 int IsServerGroupsDefined();
-unsigned char *makeGroupPathUtf(WORD wGroupId);
+unsigned char *getServListGroupCListPath(WORD wGroupId);
 WORD makeGroupId(const unsigned char *szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 void removeGroupPathLinks(WORD wGroupID);
-int countGroupLevel(WORD wGroupId);
+int getServListGroupLevel(WORD wGroupId);
 
 void FlushSrvGroupsCache();
 

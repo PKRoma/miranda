@@ -464,7 +464,7 @@ static DWORD updateServerGroupData(WORD wGroupId, void *groupData, int groupSize
     return 0;
   }
   ack->dwAction = SSA_GROUP_UPDATE;
-  ack->szGroupName = getServerGroupNameUtf(wGroupId);
+  ack->szGroupName = getServListGroupName(wGroupId);
   ack->wGroupId = wGroupId;
   dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
@@ -575,8 +575,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         servlistcookie* ack;
         DWORD dwCookie;
 
-        setServerGroupNameUtf(sc->wGroupId, sc->szGroupName); // add group to namelist
-        setServerGroupIDUtf((char*)makeGroupPathUtf(sc->wGroupId), sc->wGroupId); // add group to known
+        setServListGroupName(sc->wGroupId, sc->szGroupName); // add group to namelist
+        { // add group to known
+          unsigned char *szCListGroup = getServListGroupCListPath(sc->wGroupId);
+
+          setServListGroupLinkID(szCListGroup, sc->wGroupId);
+          SAFE_FREE((void**)&szCListGroup);
+        }
 
         groupData = collectGroups(&groupSize);
         groupData = SAFE_REALLOC(groupData, groupSize+2);
@@ -626,12 +631,12 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         {
           DWORD dwCookie;
 
-          if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
+          if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || getServListGroupLevel((WORD)(sc->wGroupId+1)) == 0)
           { // is next id an sub-group, if yes, we cannot delete this group
             sc->dwAction = SSA_GROUP_REMOVE;
             sc->wContactId = 0;
             sc->hContact = NULL;
-            sc->szGroupName = getServerGroupNameUtf(sc->wGroupId);
+            sc->szGroupName = getServListGroupName(sc->wGroupId);
             dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, sc);
 
             icq_sendGroupUtf(dwCookie, ICQ_LISTS_REMOVEFROMLIST, sc->wGroupId, sc->szGroupName, NULL, 0);
@@ -673,7 +678,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         int groupSize;
         DWORD dwCookie;
 
-        setServerGroupNameUtf(sc->wGroupId, NULL); // clear group from namelist
+        setServListGroupName(sc->wGroupId, NULL); // clear group from namelist
         FreeServerID(sc->wGroupId, SSIT_GROUP);
         removeGroupPathLinks(sc->wGroupId);
 
@@ -748,7 +753,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
           updateServerGroupData(sc->wGroupId, groupData, groupSize);
           SAFE_FREE((void**)&groupData); // free the memory
         }
-        else if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || countGroupLevel((WORD)(sc->wGroupId+1)) == 0)
+        else if (!CheckServerID((WORD)(sc->wGroupId+1), 0) || getServListGroupLevel((WORD)(sc->wGroupId+1)) == 0)
         { // the group is empty and is not followed by sub-groups, delete it
           DWORD dwCookie;
           servlistcookie* ack;
@@ -760,7 +765,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
             break;
           }
           ack->dwAction = SSA_GROUP_REMOVE;
-          ack->szGroupName = getServerGroupNameUtf(sc->wGroupId);
+          ack->szGroupName = getServListGroupName(sc->wGroupId);
           ack->wGroupId = sc->wGroupId;
           dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack);
 
@@ -800,9 +805,14 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       }
       else
       { 
-        setServerGroupNameUtf(sc->wGroupId, sc->szGroupName);
+        setServListGroupName(sc->wGroupId, sc->szGroupName);
         removeGroupPathLinks(sc->wGroupId);
-        setServerGroupIDUtf((char*)makeGroupPathUtf(sc->wGroupId), sc->wGroupId);
+        { // add group to known
+          unsigned char *szCListGroup = getServListGroupCListPath(sc->wGroupId);
+        
+          setServListGroupLinkID(szCListGroup, sc->wGroupId);
+          SAFE_FREE((void**)&szCListGroup);
+        }
       }
       RemoveGroupRename(sc->wGroupId);
       SAFE_FREE((void**)&sc->szGroupName);
@@ -1009,7 +1019,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
             NetLog_Server("SSI added new %s contact '%s'", "ICQ", szRecordName);
 
-            if (szGroup = makeGroupPathUtf(wGroupId))
+            if (szGroup = getServListGroupCListPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
               UniWriteContactSettingUtf(hContact, "CList", "Group", szGroup);
 
@@ -1038,8 +1048,8 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           if (!bAdded && (wOldGroupId != wGroupId) && ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
-            unsigned char* szOldGroup = getServerGroupNameUtf(wOldGroupId);
-            unsigned char* szGroup = getServerGroupNameUtf(wGroupId);
+            unsigned char* szOldGroup = getServListGroupName(wOldGroupId);
+            unsigned char* szGroup = getServListGroupName(wGroupId);
 
             if (!szOldGroup)
             { // old group is not known, most probably not created subgroup
@@ -1072,7 +1082,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
           { // if we should load server details or contact was just added, update its group
             unsigned char *szGroup;
 
-            if (szGroup = makeGroupPathUtf(wGroupId))
+            if (szGroup = getServListGroupCListPath(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
               UniWriteContactSettingUtf(hContact, "CList", "Group", szGroup);
 
@@ -1231,12 +1241,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           ReserveServerID(wGroupId, SSIT_GROUP);
 
-          setServerGroupNameUtf(wGroupId, (unsigned char*)szRecordName);
+          setServListGroupName(wGroupId, (unsigned char*)szRecordName);
 
           NetLog_Server("Group %s added to known groups.", szRecordName);
 
           /* demangle full grouppath, create groups, set it to known */
-          pszName = makeGroupPathUtf(wGroupId); 
+          pszName = getServListGroupCListPath(wGroupId); 
           SAFE_FREE((void**)&pszName);
 
           /* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */

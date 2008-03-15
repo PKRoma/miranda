@@ -451,8 +451,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           int groupSize;
           servlistcookie* ack;
 
-          setServerGroupNameUtf(wNewGroupId, szNewGroupName); // add group to list
-          setServerGroupIDUtf((char*)szNewGroupName, wNewGroupId); // grouppath is known
+          setServListGroupName(wNewGroupId, szNewGroupName); // add group to list
+          setServListGroupLinkID(szNewGroupName, wNewGroupId); // grouppath is known
 
           groupData = collectGroups(&groupSize);
           groupData = SAFE_REALLOC(groupData, groupSize+2);
@@ -485,7 +485,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           servlistcookie* ack;
 
           FreeServerID(wNewGroupId, SSIT_GROUP);
-          setServerGroupNameUtf(wNewGroupId, NULL); // remove group from list
+          setServListGroupName(wNewGroupId, NULL); // remove group from list
           removeGroupPathLinks(wNewGroupId); // grouppath is known
 
           groupData = collectGroups(&groupSize);
@@ -641,15 +641,15 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
               if (isChecked)
               {  // Queue for uploading
-                pszGroup = UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+                pszGroup = ICQGetContactCListGroup(hContact);
                 if (!strlennull(pszGroup)) pszGroup = (unsigned char*)null_strdup(DEFAULT_SS_GROUP);
 
                 // Get group ID from cache, if not ready use parent group, if still not ready create one
-                wNewGroupId = getServerGroupIDUtf((char*)pszGroup);
+                wNewGroupId = getServListGroupLinkID(pszGroup);
                 if (!wNewGroupId && strstrnull(pszGroup, "\\") != NULL)
                 { // if it is sub-group, take master parent
                   strstrnull(pszGroup, "\\")[0] = '\0'; 
-                  wNewGroupId = getServerGroupIDUtf((char*)pszGroup);
+                  wNewGroupId = getServListGroupLinkID(pszGroup);
                 }
                 if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
                 { // if the group still does not exist and there was no try before, try to add group
@@ -713,13 +713,13 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             { // the contact is and should be on server, check if it is in correct group, move otherwise
               WORD wCurrentGroupId = ICQGetContactSettingWord(hContact, "SrvGroupId", 0);
 
-              pszGroup = UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+              pszGroup = ICQGetContactCListGroup(hContact);
               if (!strlennull(pszGroup)) pszGroup = (unsigned char*)null_strdup(DEFAULT_SS_GROUP);
-              wNewGroupId = getServerGroupIDUtf((char*)pszGroup);
+              wNewGroupId = getServListGroupLinkID(pszGroup);
               if (!wNewGroupId && strstrnull(pszGroup, "\\") != NULL)
               { // if it is sub-group, take master parent
                 strstrnull(pszGroup, "\\")[0] = '\0'; 
-                wNewGroupId = getServerGroupIDUtf((char*)pszGroup);
+                wNewGroupId = getServListGroupLinkID(pszGroup);
               }
               if (!wNewGroupId && currentAction != ACTION_ADDGROUP)
               { // if the group still does not exist and there was no try before, try to add group
@@ -858,7 +858,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
           if (groupData = collectBuddyGroup(wNewGroupId, &groupSize))
           { // the group is still not empty, just update it
-            unsigned char* pszGroup = getServerGroupNameUtf(wNewGroupId);
+            unsigned char* pszGroup = getServListGroupName(wNewGroupId);
             servlistcookie* ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
 
             ack->dwAction = SSA_SERVLIST_ACK;
@@ -874,9 +874,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
           }
           else // the group is empty, delete it if it does not have sub-groups
           {
-            if (!CheckServerID((WORD)(wNewGroupId+1), 0) || countGroupLevel((WORD)(wNewGroupId+1)) == 0)
+            if (!CheckServerID((WORD)(wNewGroupId+1), 0) || getServListGroupLevel((WORD)(wNewGroupId+1)) == 0)
             { // is next id an sub-group, if yes, we cannot delete this group
-              unsigned char *pszGroup = getServerGroupNameUtf(wNewGroupId);
+              unsigned char *pszGroup = getServListGroupName(wNewGroupId);
               currentAction = ACTION_REMOVEGROUP;
               AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGENUTF("Deleting group \"%s\"..."), str, MAX_PATH), pszGroup); 
               currentSequence = sendUploadGroup(ICQ_LISTS_REMOVEFROMLIST, wNewGroupId, pszGroup);
@@ -884,7 +884,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
             }
             else // update empty group
             {
-              unsigned char *pszGroup = getServerGroupNameUtf(wNewGroupId);
+              unsigned char *pszGroup = getServListGroupName(wNewGroupId);
               servlistcookie *ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
 
               ack->dwAction = SSA_SERVLIST_ACK;

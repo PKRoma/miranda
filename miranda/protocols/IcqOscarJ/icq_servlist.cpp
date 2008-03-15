@@ -948,10 +948,16 @@ void removeGroupPathLinks(WORD wGroupID)
 
 
 
-unsigned char *getServerGroupNameUtf(WORD wGroupID)
+unsigned char *getServListGroupName(WORD wGroupID)
 {
   char szModule[MAX_PATH+9];
   char szGroup[16];
+
+  if (!wGroupID)
+  {
+    NetLog_Server("Warning: Cannot get group name (Group ID missing)!");
+    return NULL;
+  }
 
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "SrvGroups");
@@ -969,17 +975,23 @@ unsigned char *getServerGroupNameUtf(WORD wGroupID)
 
 
 
-void setServerGroupNameUtf(WORD wGroupID, const unsigned char *szGroupNameUtf)
+void setServListGroupName(WORD wGroupID, const unsigned char *szGroupName)
 {
   char szModule[MAX_PATH+9];
   char szGroup[16];
+
+  if (!wGroupID)
+  {
+    NetLog_Server("Warning: Cannot set group name (Group ID missing)!");
+    return;
+  }
 
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "SrvGroups");
   _itoa(wGroupID, szGroup, 0x10);
 
-  if (szGroupNameUtf)
-    UniWriteContactSettingUtf(NULL, szModule, szGroup, szGroupNameUtf);
+  if (szGroupName)
+    UniWriteContactSettingUtf(NULL, szModule, szGroup, szGroupName);
   else
   {
     DBDeleteContactSetting(NULL, szModule, szGroup);
@@ -990,7 +1002,7 @@ void setServerGroupNameUtf(WORD wGroupID, const unsigned char *szGroupNameUtf)
  
 
 
-WORD getServerGroupIDUtf(const char* szPath)
+WORD getServListGroupLinkID(const unsigned char *szPath)
 {
   char szModule[MAX_PATH+6];
   WORD wGroupId;
@@ -998,12 +1010,12 @@ WORD getServerGroupIDUtf(const char* szPath)
   strcpy(szModule, gpszICQProtoName);
   strcat(szModule, "Groups");
 
-  wGroupId = DBGetContactSettingWord(NULL, szModule, szPath, 0);
+  wGroupId = DBGetContactSettingWord(NULL, szModule, (char*)szPath, 0);
 
   if (wGroupId && !CheckServerID(wGroupId, 0))
   { // known, check if still valid, if not remove
     NetLog_Server("Removing group \"%s\" from cache...", szPath);
-    DBDeleteContactSetting(NULL, szModule, szPath);
+    DBDeleteContactSetting(NULL, szModule, (char*)szPath);
     wGroupId = 0;
   }
 
@@ -1012,7 +1024,7 @@ WORD getServerGroupIDUtf(const char* szPath)
 
 
 
-void setServerGroupIDUtf(const char* szPath, WORD wGroupID)
+void setServListGroupLinkID(const unsigned char *szPath, WORD wGroupID)
 {
   char szModule[MAX_PATH+6];
 
@@ -1020,9 +1032,9 @@ void setServerGroupIDUtf(const char* szPath, WORD wGroupID)
   strcat(szModule, "Groups");
 
   if (wGroupID)
-    DBWriteContactSettingWord(NULL, szModule, szPath, wGroupID);
+    DBWriteContactSettingWord(NULL, szModule, (char*)szPath, wGroupID);
   else
-    DBDeleteContactSetting(NULL, szModule, szPath);
+    DBDeleteContactSetting(NULL, szModule, (char*)szPath);
 
   return;
 }
@@ -1074,22 +1086,7 @@ static int countGroupNameLevel(const unsigned char *szGroupName)
 
 
 
-int countGroupLevel(WORD wGroupId)
-{
-  unsigned char* szGroupName = getServerGroupNameUtf(wGroupId);
-  int cnt = -1;
-
-  if (szGroupName)
-    cnt = countGroupNameLevel(szGroupName);
-
-  SAFE_FREE((void**)&szGroupName);
-
-  return cnt;
-}
-
-
-
-static int countClistGroupLevel(const char *szClistName)
+static int countCListGroupLevel(const unsigned char *szClistName)
 {
   int nNameLen = strlennull(szClistName);
   int i, level = 0;
@@ -1098,6 +1095,26 @@ static int countClistGroupLevel(const char *szClistName)
     if (szClistName[i] == '\\') level++;
 
   return level;
+}
+
+
+
+int getServListGroupLevel(WORD wGroupId)
+{
+  unsigned char *szGroupName = getServListGroupName(wGroupId);
+  int cnt = -1;
+
+  if (szGroupName)
+  { // groupid is valid count group name level
+    if (gbSsiSimpleGroups)
+      cnt = countCListGroupLevel(szGroupName);
+    else
+      cnt = countGroupNameLevel(szGroupName);
+
+    SAFE_FREE((void**)&szGroupName);
+  }
+
+  return cnt;
 }
 
 
@@ -1134,83 +1151,79 @@ int CreateCListGroup(const unsigned char* szGroupName)
 
 
 // demangle group path
-unsigned char *makeGroupPathUtf(WORD wGroupId)
+unsigned char *getServListGroupCListPath(WORD wGroupId)
 {
   unsigned char *szGroup = NULL;
 
-  if (szGroup = getServerGroupNameUtf(wGroupId))
-  { // this groupid is not valid
-    while (strstrnull(szGroup, "\\")!=NULL) *strstrnull(szGroup, "\\") = '_'; // remove invalid char
-    if (getServerGroupIDUtf((char*)szGroup) == wGroupId)
+  if (szGroup = getServListGroupName(wGroupId))
+  { // this groupid is valid
+    if (!gbSsiSimpleGroups)
+      while (strstrnull(szGroup, "\\")) *strstrnull(szGroup, "\\") = '_'; // remove invalid char
+
+    if (getServListGroupLinkID(szGroup) == wGroupId)
     { // this grouppath is known and is for this group, set user group
       return szGroup;
     }
+    else if (gbSsiSimpleGroups)
+    { // with simple groups it is mapped 1:1, give real serv-list group name
+      setServListGroupLinkID(szGroup, wGroupId);
+      return szGroup;
+    }
     else
-    {
-      if (strlennull(szGroup) && (szGroup[0] == '>'))
+    { // advanced groups, determine group level
+      int nGroupLevel = getServListGroupLevel(wGroupId);
+
+      if (nGroupLevel > 0)
       { // it is probably a sub-group
-        WORD wId = wGroupId-1;
-        int level = countGroupLevel(wGroupId);
-        int levnew = countGroupLevel(wId);
-        unsigned char *szTempGroup;
+        WORD wParentGroupId = wGroupId;
+        int nParentGroupLevel;
 
-        if (level == -1)
-        { // this is just an ordinary group
-          int hGroup;
-
-          if (!GroupNameExistsUtf(szGroup, -1))
-          { // if the group does not exist, create it
-            hGroup = CreateCListGroup(szGroup);
-          }
-          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
-          return szGroup;
-        }
-        while ((levnew >= level) && (levnew != -1))
-        { // we look for parent group
-          wId--;
-          levnew = countGroupLevel(wId);
-        }
-        if (levnew == -1)
+        do
+        { // we look for parent group at the correct level
+          wParentGroupId--;
+          nParentGroupLevel = getServListGroupLevel(wParentGroupId);
+        } while ((nParentGroupLevel >= nGroupLevel) && (nParentGroupLevel != -1));
+        if (nParentGroupLevel == -1)
         { // that was not a sub-group, it was just a group starting with >
           if (!GroupNameExistsUtf(szGroup, -1))
           { // if the group does not exist, create it
             int hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
+          setServListGroupLinkID(szGroup, wGroupId);
           return szGroup;
         }
 
-        szTempGroup = makeGroupPathUtf(wId);
+        { // recursively determine parent group clist path
+          unsigned char *szParentGroup = getServListGroupCListPath(wParentGroupId);
 
-        szTempGroup = (unsigned char*)SAFE_REALLOC(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
-        strcat((char*)szTempGroup, "\\");
-        strcat((char*)szTempGroup, (char*)szGroup+level);
-        SAFE_FREE((void**)&szGroup);
-        szGroup = szTempGroup;
+          szParentGroup = (unsigned char*)SAFE_REALLOC(szParentGroup, strlennull(szGroup) + strlennull(szParentGroup) + 2);
+          strcat((char*)szParentGroup, "\\");
+          strcat((char*)szParentGroup, (char*)szGroup + nGroupLevel);
+          SAFE_FREE((void**)&szGroup);
+          szGroup = szParentGroup;
         
-        if (getServerGroupIDUtf((char*)szGroup) == wGroupId)
-        { // known path, give
-          return szGroup;
-        }
-        else
-        { // unknown path, create
-          if (!GroupNameExistsUtf(szGroup, -1))
-          { // if the group does not exist, create it
-            int hGroup = CreateCListGroup(szGroup);
+          if (getServListGroupLinkID(szGroup) == wGroupId)
+          { // known path, give
+            return szGroup;
           }
-          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
-          return szGroup;
+          else
+          { // unknown path, setup a link
+            if (!GroupNameExistsUtf(szGroup, -1))
+            { // if the group does not exist, create it
+              int hGroup = CreateCListGroup(szGroup);
+            }
+            setServListGroupLinkID(szGroup, wGroupId);
+            return szGroup;
+          }
         }
       }
       else
-      { // create that group
-        int hGroup;
-
+      { // normal group, setup a link
         if (!GroupNameExistsUtf(szGroup, -1))
         { // if the group does not exist, create it
-          hGroup = CreateCListGroup(szGroup);
+          int hGroup = CreateCListGroup(szGroup);
         }
-        setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
+        setServListGroupLinkID(szGroup, wGroupId);
         return szGroup;
       }
     }
@@ -1230,7 +1243,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
   int level;
   
   if (wGroupID) // if we got an id count level
-    level = countGroupLevel(wGroupID);
+    level = getServListGroupLevel(wGroupID);
   else
     level = -1;
 
@@ -1246,7 +1259,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
   level++; // we are a sub
 
   // check if on that id is not group of the same or greater level, if yes, try next
-  while (CheckServerID((WORD)(wGroupID+1),0) && (countGroupLevel((WORD)(wGroupID+1)) >= level))
+  while (CheckServerID((WORD)(wGroupID+1),0) && (getServListGroupLevel((WORD)(wGroupID+1)) >= level))
   {
     wGroupID++;
   }
@@ -1306,7 +1319,7 @@ WORD makeGroupId(const unsigned char *szGroupPath, GROUPADDCALLBACK ofCallback, 
 
   if (!szGroup || szGroup[0]=='\0') szGroup = (unsigned char*)DEFAULT_SS_GROUP;
 
-  if (wGroupID = getServerGroupIDUtf((char*)szGroup))
+  if (wGroupID = getServListGroupLinkID(szGroup))
   {
     if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
     return wGroupID; // if the path is known give the id
@@ -1696,7 +1709,7 @@ void renameServGroup(WORD wGroupId, unsigned char* szGroupName)
   servlistcookie* ack;
   DWORD dwCookie;
   unsigned char *szGroup, *szLast;
-  int level = countGroupLevel(wGroupId);
+  int level = getServListGroupLevel(wGroupId);
   int i;
   void* groupData;
   int groupSize;
@@ -1827,7 +1840,7 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     { // Test if group was not renamed...
       WORD wGroupId = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
-      unsigned char *szGroup = makeGroupPathUtf(wGroupId);
+      unsigned char *szGroup = getServListGroupCListPath(wGroupId);
       unsigned char *szNewGroup;
       int bRenamed = 0;
       int bMoved = 1;
@@ -1837,11 +1850,11 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
       if (szNewGroup && wGroupId && !GroupNameExistsUtf(szGroup, -1))
       { // if we moved from non-existing group, it can be rename
-        if (!getServerGroupIDUtf((char*)szNewGroup))
+        if (!getServListGroupLinkID(szNewGroup))
         { // the target group is not known - it is probably rename
-          if (getServerGroupIDUtf((char*)szGroup))
+          if (getServListGroupLinkID(szGroup))
           { // source group not known -> already renamed
-            if (countClistGroupLevel((char*)szNewGroup) == countGroupLevel(wGroupId))
+            if (countCListGroupLevel(szNewGroup) == getServListGroupLevel(wGroupId))
             { // renamed groups can be only in the same level, if not it is move
               if (!IsGroupRenamed(wGroupId))
               { // is rename in progress ?

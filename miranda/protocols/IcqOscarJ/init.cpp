@@ -66,6 +66,7 @@ WORD gwAnsiCodepage;
 BYTE gbDCMsgEnabled;
 BYTE gbTempVisListEnabled;
 BYTE gbSsiEnabled;
+BYTE gbSsiSimpleGroups;
 BYTE gbAvatarsEnabled;
 BYTE gbXStatusEnabled;
 DWORD MIRANDA_VERSION;
@@ -629,6 +630,7 @@ void UpdateGlobalSettings()
   gbDCMsgEnabled = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
   gbTempVisListEnabled = ICQGetContactSettingByte(NULL, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
   gbSsiEnabled = ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED);
+  gbSsiSimpleGroups = FALSE; /// TODO: enable, after server-list revolution is over
   gbAvatarsEnabled = ICQGetContactSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
   gbXStatusEnabled = ICQGetContactSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
 }
