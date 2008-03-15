@@ -518,6 +518,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		if ((int)tContact < 0)
 		{
 			GC_INFO gci = {0};
+			gci.Flags = HCONTACT;
 			gci.pszModule = msnProtocolName;
 			gci.pszID = info->mChatID;
 			CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
