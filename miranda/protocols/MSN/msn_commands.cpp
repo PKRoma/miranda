@@ -513,7 +513,16 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		}
 	}
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
-		HANDLE tContact = MSN_HContactFromEmail(email, nick, true, true );
+		HANDLE tContact = info->mJoinedContacts[0];
+
+		if ((int)tContact < 0)
+		{
+			GC_INFO gci = {0};
+			gci.pszModule = msnProtocolName;
+			gci.pszID = info->mChatID;
+			CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
+			tContact = gci.hContact;
+		}
 
 		MimeHeaders tFileInfo;
 		tFileInfo.readFromBuffer( msgBody );
@@ -524,6 +533,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 			switch (atol(id))
 			{
 				case 1:  // Nudge
+
 					NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
 					break;
 
