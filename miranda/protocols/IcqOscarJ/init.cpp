@@ -86,7 +86,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,10),
+  PLUGIN_MAKE_VERSION(0,3,10,11),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -108,11 +108,11 @@ static BOOL bInited = FALSE;
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-  // Only load for 0.7.0.30 or greater
-  // We need support for UTF-8 messages
-  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 30))
+  // Only load for 0.7.0.34 or greater
+  // We need the new CList Group events
+  if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 34))
   {
-    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.30 or later.", "ICQ Plugin",
+    MessageBox( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.7.0.34 or later.", "ICQ Plugin",
       MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
     return NULL;
   }

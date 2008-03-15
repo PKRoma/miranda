@@ -608,9 +608,9 @@ void __fastcall unpackLEDWord(unsigned char **buf, DWORD *dw)
 
 
 
-void unpackString(unsigned char **buf, char *string, WORD len)
+void unpackString(BYTE **buf, char *string, WORD len)
 {
-  unsigned char *tmp = *buf;
+  BYTE *tmp = *buf;
 
   if (string)
   {
@@ -628,9 +628,9 @@ void unpackString(unsigned char **buf, char *string, WORD len)
 
 
 
-void unpackWideString(unsigned char **buf, WCHAR *string, WORD len)
+void unpackWideString(BYTE **buf, WCHAR *string, WORD len)
 {
-  unsigned char *tmp = *buf;
+  BYTE *tmp = *buf;
 
   while (len > 1)
   {
@@ -657,7 +657,7 @@ void unpackWideString(unsigned char **buf, WCHAR *string, WORD len)
 
 
 
-void unpackTypedTLV(unsigned char *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, char **tlv)
+void unpackTypedTLV(BYTE *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, BYTE **ttlv)
 {
   WORD wType, wLen;
 
@@ -677,16 +677,16 @@ NextTLV:
   if (wLen > buflen) wLen = buflen;
 
   // Make sure we have a good pointer
-  if (tlv)
+  if (ttlv)
   {
     if (wLen)
     { // Unpack and save value
-      *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
-      unpackString(&buf, *tlv, wLen);
-      *(*tlv + wLen) = '\0';
+      *ttlv = (BYTE*)SAFE_MALLOC(wLen + 1); // Add 1 for \0
+      unpackString(&buf, (char*)*ttlv, wLen);
+      *(*ttlv + wLen) = '\0';
     }
     else
-      *tlv = NULL;
+      *ttlv = NULL;
   }
 
   // Save type and length
@@ -698,7 +698,7 @@ NextTLV:
 
 
 
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID)
+BOOL unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID)
 {
   BYTE nUIDLen;
   char szUIN[UINMAXLEN+1];

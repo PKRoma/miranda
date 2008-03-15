@@ -270,6 +270,10 @@ SOURCE=.\resources.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\srvlist_add.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\xstatus.bmp
 # End Source File
 # Begin Source File

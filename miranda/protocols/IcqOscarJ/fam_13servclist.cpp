@@ -1370,7 +1370,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
       }
       break;
 
-    case SSI_ITEM_UNKNOWN1:
+    case SSI_ITEM_CLIENTDATA:
       if (wGroupId == 0)
       {
         /* ICQ2k ShortcutBar Items */
@@ -1419,12 +1419,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
       servlistcookie* ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
       if (ack)
       { 
-        DWORD seq;
+        DWORD dwCookie;
 
         ack->dwAction = SSA_GROUP_UPDATE;
         ack->szGroupName = (unsigned char*)"";
-        seq = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
-        icq_sendGroupUtf(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
+        dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
+        icq_sendGroupUtf(dwCookie, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
       }
     }
     // serv-list sync finished, clear just added contacts
@@ -1844,7 +1844,7 @@ void updateServAvatarHash(BYTE *pHash, int size)
     packWord(&packet, SSI_ITEM_BUDDYICON);      // EntryType
     packWord(&packet, (WORD)(0x8 + hashsize));  // Length in bytes of following TLV
     packTLV(&packet, SSI_TLV_NAME, 0, NULL);                    // TLV (Name)
-    packTLV(&packet, SSI_TLV_AVATARHASH, hashsize, (LPBYTE)pHash + 2);  // TLV (Hash)
+    packTLV(&packet, SSI_TLV_AVATARHASH, hashsize, pHash + 2);  // TLV (Hash)
     sendServPacket(&packet);
     // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
     // ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash

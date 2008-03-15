@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -104,10 +104,10 @@ void __fastcall unpackByte(unsigned char **, BYTE *);
 void __fastcall unpackWord(unsigned char **, WORD *);
 void __fastcall unpackDWord(unsigned char **, DWORD *);
 void __fastcall unpackQWord(unsigned char **, DWORD64 *);
-void unpackString(unsigned char **buf, char *string, WORD len);
-void unpackWideString(unsigned char **buf, WCHAR *string, WORD len);
-void unpackTypedTLV(unsigned char *, int, WORD, WORD *, WORD *, char **);
-BOOL unpackUID(unsigned char** ppBuf, WORD* pwLen, DWORD *pdwUIN, uid_str* ppszUID);
+void unpackString(BYTE **buf, char *string, WORD len);
+void unpackWideString(BYTE **buf, WCHAR *string, WORD len);
+void unpackTypedTLV(BYTE *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, BYTE **ttlv);
+BOOL unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID);
 
 void __fastcall unpackLEWord(unsigned char **, WORD *);
 void __fastcall unpackLEDWord(unsigned char **, DWORD *);

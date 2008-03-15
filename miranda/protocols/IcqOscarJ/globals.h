@@ -58,6 +58,7 @@ extern WORD gwAnsiCodepage;
 extern BYTE gbDCMsgEnabled;
 extern BYTE gbTempVisListEnabled;
 extern BYTE gbSsiEnabled;
+extern BYTE gbSsiSimpleGroups;
 extern BYTE gbAvatarsEnabled;
 extern BYTE gbXStatusEnabled;
 extern DWORD MIRANDA_VERSION;

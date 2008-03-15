@@ -933,7 +933,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
 
     for (i = 0, pbOffset = (char*)dbei.pBlob, pbEnd = pbOffset + dbei.cbBlob; i <= ci; i++)
     {
-      pbOffset += strlennull((char*)pbOffset) + 1;  // Nick
+      pbOffset += strlennull(pbOffset) + 1;  // Nick
       if (pbOffset >= pbEnd) break;
       if (i == ci)
       { // we found the contact, get uid
@@ -945,7 +945,7 @@ int IcqAddToListByEvent(WPARAM wParam, LPARAM lParam)
           strcpy(uid, (char*)pbOffset);
         }
       }
-      pbOffset += strlennull((char*)pbOffset) + 1;  // Uin
+      pbOffset += strlennull(pbOffset) + 1;  // Uin
       if (pbOffset >= pbEnd) break;
     }
   }
@@ -1496,7 +1496,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
       if ((ccs->wParam & PREF_UNICODE) == PREF_UNICODE)
       {
-        puszText = (LPBYTE)make_utf8_string((WCHAR*)((char*)ccs->lParam+strlennull(pszText)+1)); // get the UTF-16 part
+        puszText = make_utf8_string((WCHAR*)((char*)ccs->lParam+strlennull(pszText)+1)); // get the UTF-16 part
         bNeedFreeU = 1;
       }
 
@@ -1504,7 +1504,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
 
       if (puszText)
       { // we have unicode message, check if it is possible and reasonable to send it as unicode
-        BOOL plain_ascii = IsUSASCII((LPBYTE)puszText, strlennull((char*)puszText));
+        BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
 
         if (plain_ascii || !gbUtfEnabled || !CheckContactCapabilities(ccs->hContact, CAPF_UTF) ||
           !ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
@@ -1555,10 +1555,10 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
       {
         message_cookie_data* pCookieData;
 
-        if (!puszText && gbUtfEnabled == 2 && !IsUSASCII((LPBYTE)pszText, strlennull((char*)pszText))
+        if (!puszText && gbUtfEnabled == 2 && !IsUSASCII((LPBYTE)pszText, strlennull(pszText))
           && CheckContactCapabilities(ccs->hContact, CAPF_UTF) && ICQGetContactSettingByte(ccs->hContact, "UnicodeSend", 1))
         { // text is not unicode and contains national chars and we should send all this as Unicode, so do it
-          puszText = (LPBYTE)ansi_to_utf8((char*)pszText);
+          puszText = ansi_to_utf8(pszText);
           bNeedFreeU = 1;
         }
 
@@ -2466,7 +2466,7 @@ int IcqRecvMessage(WPARAM wParam, LPARAM lParam)
 
   cbBlob = strlennull(pre->szMessage) + 1;
   // process utf-8 encoded messages
-  if ((pre->flags & PREF_UTF) && !IsUSASCII((LPBYTE)pre->szMessage, strlennull((char*)pre->szMessage)))
+  if ((pre->flags & PREF_UTF) && !IsUSASCII((LPBYTE)pre->szMessage, strlennull(pre->szMessage)))
     flags |= DBEF_UTF;
   // process unicode ucs-2 messages
   if ((pre->flags & PREF_UNICODE) && !IsUnicodeAscii((WCHAR*)(pre->szMessage+cbBlob), wcslen((WCHAR*)(pre->szMessage+cbBlob))))

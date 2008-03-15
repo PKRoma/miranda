@@ -255,14 +255,14 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 	}
 
 	// Unpack the first TLV(2)
-	unpackTypedTLV(buf, wLen, 2, &wTLVType, &wTLVLen, ( char** )&pMsgTLV);
+	unpackTypedTLV(buf, wLen, 2, &wTLVType, &wTLVLen, &pMsgTLV);
 	NetLog_Server("Message (format %u) - UID: %s", 1, strUID(dwUin, szUID));
 
 	// It must be TLV(2)
 	if (wTLVType == 2)
 	{
 		BYTE *pDataBuf = pMsgTLV;
-		oscar_tlv_chain* pChain;
+		oscar_tlv_chain *pChain;
 
 		pChain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
@@ -419,7 +419,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
 							cookie->nMessages++;
 
-							unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, (char**)&pTimeTLV);
+							unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
 							if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
 							{ // found Offline timestamp
 								BYTE *pBuf = pTimeTLV;
@@ -474,8 +474,8 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 {
 	WORD wTLVType;
 	WORD wTLVLen;
-	char* pDataBuf = NULL;
-	char* pBuf;
+	BYTE *pDataBuf = NULL;
+	BYTE *pBuf;
 
 	if (wLen < 4)
 	{
@@ -506,7 +506,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 			return;
 		}
 
-		unpackWord((LPBYTE*)&pDataBuf, &wCommand);
+		unpackWord(&pDataBuf, &wCommand);
 		wTLVLen -= 2;                             // Command 0x0000 - Normal message/file send request
 #ifdef _DEBUG                                 //         0x0001 - Abort request
 		NetLog_Server("Command is %u", wCommand); //         0x0002 - Acknowledge request
@@ -515,10 +515,10 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 		// Some stuff we don't use
 		pDataBuf += 8;  // dwID1 and dwID2 again
 		wTLVLen -= 8;
-		unpackDWord((LPBYTE*)&pDataBuf, &q1);
-		unpackDWord((LPBYTE*)&pDataBuf, &q2);
-		unpackDWord((LPBYTE*)&pDataBuf, &q3);
-		unpackDWord((LPBYTE*)&pDataBuf, &q4); // Message Capability
+		unpackDWord(&pDataBuf, &q1);
+		unpackDWord(&pDataBuf, &q2);
+		unpackDWord(&pDataBuf, &q3);
+		unpackDWord(&pDataBuf, &q4); // Message Capability
 		wTLVLen -= 16;
 
 		if (CompareGUIDs(q1,q2,q3,q4, MCAP_SRV_RELAY_FMT))
@@ -554,7 +554,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 			// TLV(5): DC port (not to use for filetransfers)
 			// TLV(0x2711): The next message level
 
-			chain = readIntoTLVChain((LPBYTE*)&pDataBuf, wTLVLen, 0);
+			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
 			wAckType = getWordFromChain(chain, 0x0A, 1);
 
@@ -604,7 +604,7 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 				SAFE_FREE((void**)&pBuf);
 				return;
 			}
-			chain = readIntoTLVChain((LPBYTE*)&pDataBuf, wTLVLen, 0);
+			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
 
 			wAckType = getWordFromChain(chain, 0x0A, 1);
 			// Parse the next message level
@@ -669,11 +669,11 @@ static void handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, c
 		}
 		else if (CompareGUIDs(q1,q2,q3,q4, MCAP_FILE_TRANSFER))
 		{ // this is an OFT packet
-			handleRecvServMsgOFT((LPBYTE)pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
+			handleRecvServMsgOFT(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
 		}
 		else if (CompareGUIDs(q1,q2,q3,q4, MCAP_CONTACTS))
 		{ // this is Contacts Transfer
-			handleRecvServMsgContacts((LPBYTE)pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
+			handleRecvServMsgContacts(pDataBuf, wTLVLen, dwUin, szUID, dwID1, dwID2, wCommand);
 		}
 		else // here should be detection of extra data streams (Xtraz)
 		{
@@ -1147,7 +1147,7 @@ static void handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin
 							WORD wNickTLV, wNickTLVLen;
 							char* pNick = NULL;
 
-							unpackTypedTLV(pBuffer, wNickLen, 0x01, &wNickTLV, &wNickTLVLen, &pNick);
+							unpackTypedTLV(pBuffer, wNickLen, 0x01, &wNickTLV, &wNickTLVLen, (LPBYTE*)&pNick);
 							if (wNickTLV == 0x01)
 							{
 								SAFE_FREE((void**)&contacts[iContact]->hdr.nick);
@@ -1246,7 +1246,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
 	}
 
 	// Unpack the first TLV(5)
-	unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, (char**)&pDataBuf);
+	unpackTypedTLV(buf, wLen, 5, &wTLVType, &wTLVLen, &pDataBuf);
 	NetLog_Server("Message (format %u) - UID: %s", 4, strUID(dwUin, szUID));
 
 	// It must be TLV(5)
@@ -1282,7 +1282,7 @@ static void handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
 					cookie->nMessages++;
 
-					unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, (char**)&pTimeTLV);
+					unpackTypedTLV(buf, wLen, 0x16, &wTimeTLVType, &wTimeTLVLen, &pTimeTLV);
 					if (pTimeTLV && wTimeTLVType == 0x16 && wTimeTLVLen == 4)
 					{ // found Offline timestamp
 						BYTE *pBuf = pTimeTLV;

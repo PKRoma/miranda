@@ -200,6 +200,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #endif
     serverPacketInit(&packet, 16);
     packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY);
+    // Query flags: 1 = Enable Avatars
+    //              2 = Enable offline status message notification
+    //              4 = Enable Avatars for offline contacts
     packTLVWord(&packet, 0x05, 0x0003); // mimic ICQ 6
     sendServPacket(&packet);
 
