@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/cookies.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -314,6 +314,26 @@ void FreeCookie(DWORD dwCookie)
   { // Cookie found, remove from list
     RemoveCookieIndex(i);
   }
+  RemoveExpiredCookies();
+
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+
+void FreeCookieByData(BYTE bType, void *pvExtra)
+{
+  int i;
+
+  EnterCriticalSection(&cookieMutex);
+
+  for (i = 0; i < cookieCount; i++)
+    if (bType == cookie[i].bType && pvExtra == cookie[i].pvExtra)
+    { // Cookie found, remove from list
+      RemoveCookieIndex(i);
+      break;
+    }
+
   RemoveExpiredCookies();
 
   LeaveCriticalSection(&cookieMutex);

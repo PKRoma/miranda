@@ -137,6 +137,7 @@ void UninitCookies(void);
 
 DWORD AllocateCookie(BYTE bType, WORD wIdent, HANDLE hContact, void *pvExtra);
 void FreeCookie(DWORD dwCookie);
+void FreeCookieByData(BYTE bType, void *pvExtra);
 void ReleaseCookie(DWORD dwCookie);
 DWORD GenerateCookie(WORD wIdent);
 
