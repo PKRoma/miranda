@@ -411,6 +411,8 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
    if (mwid->hContact==NULL) return 1;
    if (mwid->uFlags!=MSG_WINDOW_UFLAG_MSG_BOTH) return 1;
    hwnd = WindowList_Find(g_dat->hMessageWindowList, mwid->hContact);
+   if (hwnd == NULL)
+	   hwnd = SM_FindWindowByContact(mwid->hContact);
    mwd->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
    mwd->hwndWindow = hwnd;
    mwd->local = 0;
