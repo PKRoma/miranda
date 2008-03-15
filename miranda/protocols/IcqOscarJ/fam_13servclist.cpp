@@ -58,6 +58,12 @@ static void handleRecvAdded(unsigned char *buf, WORD wLen);
 void sendRosterAck(void);
 
 
+WORD gwServerListLimits[0x20];
+WORD gwServerListGroupMaxContacts;
+
+WORD gwServerListRecordNameMaxLength;
+
+
 static WORD swapWord(WORD val)
 {
   return (val & 0xFF)<<8 | (val>>8);
@@ -85,7 +91,39 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 #endif
         FreeCookie(pSnacHeader->dwRef); // release cookie
 
-        handleServerCListAck(sc, wError);
+        if (sc->dwAction == SSA_ACTION_GROUP)
+        { // group cookie, handle sub-items
+          int i;
+
+#ifdef _DEBUG
+          NetLog_Server("Server-List: Grouped action contains %d actions.", sc->dwGroupCount);
+#endif
+          pBuffer -= 2; // revoke unpack
+          if (wBufferLength != 2*sc->dwGroupCount)
+            NetLog_Server("Error: Server list ack does not contain expected amount of result codes (%u != %u)", wBufferLength/2, sc->dwGroupCount);
+
+          for (i = 0; i < sc->dwGroupCount; i++)
+          {
+            if (wBufferLength >= 2)
+            { // get proper result code
+              unpackWord(&pBuffer, &wError);
+              wBufferLength -= 2;
+            }
+            else // missing result code, give some special
+              wError = -1;
+
+#ifdef _DEBUG
+            NetLog_Server("Action: %d, ack result: %d", sc->pGroupItems[i]->dwAction, wError);
+#endif
+            // call normal ack handler
+            handleServerCListAck(sc->pGroupItems[i], wError);
+          }
+          // Release cookie
+          SAFE_FREE((void**)&sc->pGroupItems);
+          SAFE_FREE((void**)&sc);
+        }
+        else // single ack
+          handleServerCListAck(sc, wError);
       }
       else
       {
@@ -95,20 +133,35 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
 
   case ICQ_LISTS_SRV_REPLYLISTS:
-    {
-      /* received list rights, we just skip them */
-
+    { /* received list rights, store the item limits for future use */
       oscar_tlv_chain* chain;
+
+      memset(gwServerListLimits, -1, sizeof(gwServerListLimits));
+      gwServerListGroupMaxContacts = 0;
+      gwServerListRecordNameMaxLength = 0xFFFF;
 
       if (chain = readIntoTLVChain(&pBuffer, wBufferLength, 0))
       {
         oscar_tlv* pTLV;
 
-        if ((pTLV = getTLV(chain, 0x04, 1)) && pTLV->wLen>=30)
-        { // limits for item types
-          WORD* pMax = (WORD*)pTLV->pData;
+        // determine max number of contacts in a group
+        gwServerListGroupMaxContacts = getWordFromChain(chain, 0x0C, 1);
+        // determine length limit for server-list item's name
+        gwServerListRecordNameMaxLength = getWordFromChain(chain, 0x06, 1);
 
-          NetLog_Server("SSI: Max %d contacts, %d groups, %d permit, %d deny, %d ignore items.", swapWord(pMax[0]), swapWord(pMax[1]), swapWord(pMax[2]), swapWord(pMax[3]), swapWord(pMax[14]));
+        if (pTLV = getTLV(chain, 0x04, 1))
+        { // limits for item types
+          int i;
+          WORD *pLimits = (WORD*)pTLV->pData;
+
+          for (i = 0; i < pTLV->wLen / 2; i++)
+          {
+            gwServerListLimits[i] = swapWord(pLimits[i]);
+
+            if (i >= SIZEOF(gwServerListLimits)) break;
+          }
+
+          NetLog_Server("SSI: Max %d contacts (%d per group), %d groups, %d permit, %d deny, %d ignore items.", gwServerListLimits[SSI_ITEM_BUDDY], gwServerListGroupMaxContacts, gwServerListLimits[SSI_ITEM_GROUP], gwServerListLimits[SSI_ITEM_PERMIT], gwServerListLimits[SSI_ITEM_DENY], gwServerListLimits[SSI_ITEM_IGNORE]);
         }
 
         disposeChain(&chain);

@@ -55,6 +55,7 @@
 #define SSA_SETAVATAR         0x30
 #define SSA_REMOVEAVATAR      0x31
 #define SSA_IMPORT            7
+#define SSA_ACTION_GROUP      0x80  // grouped action
 
 typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 
@@ -71,6 +72,8 @@ typedef struct servlistcookie_t
   int dwAction; 
   GROUPADDCALLBACK ofCallback;
   LPARAM lParam;
+  int dwGroupCount;
+  struct servlistcookie_t **pGroupItems;
 } servlistcookie;
 
 
