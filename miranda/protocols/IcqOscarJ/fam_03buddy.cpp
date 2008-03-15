@@ -142,7 +142,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   DWORD dwDirectConnCookie = 0;
   DWORD dwWebPort = 0;
   DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
-  LPSTR szClient = 0;
+  unsigned char *szClient = NULL;
   BYTE bClientId = 0;
   WORD wVersion = 0;
   WORD wClass;
@@ -155,7 +155,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   DWORD dwMemberSince;
   WORD wIdleTimer;
   time_t tIdleTS = 0;
-  char szStrBuf[MAX_PATH];
+  unsigned char szStrBuf[MAX_PATH];
 
   // Unpack the sender's user ID
   if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
@@ -386,7 +386,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
             handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
           }
 
-          szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+          szClient = (unsigned char*)detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, (char*)szStrBuf);
         }
 
 #ifdef _DEBUG
@@ -404,7 +404,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
       }
       else
       {
-        szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+        szClient = (unsigned char*)-1; // we don't want to client be overwritten if no capabilities received
 
         // Get Capability Info TLV
         pTLV = getTLV(pChain, 0x0D, 1);
@@ -427,7 +427,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   // Save contacts details in database
   if (hContact != NULL)
   {
-    if (szClient == 0) szClient = ICQTranslateUtfStatic("Unknown", szStrBuf, MAX_PATH); // if no detection, set uknown
+    if (!szClient) szClient = ICQTranslateUtfStatic(LPGENUTF("Unknown"), szStrBuf, MAX_PATH); // if no detection, set uknown
 
     ICQWriteContactSettingDword(hContact, "LogonTS",      dwOnlineSince);
     if (dwMemberSince)
@@ -439,7 +439,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
       ICQWriteContactSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
       ICQWriteContactSettingWord(hContact,  "Version",      wVersion);
     }
-    if (szClient != (char*)-1)
+    if (szClient != (unsigned char*)-1)
     {
       ICQWriteContactSettingUtf(hContact,   "MirVer",       szClient);
       ICQWriteContactSettingByte(hContact,  "ClientID",     bClientId);
@@ -471,14 +471,14 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   NetLog_Server("%s changed status to %s (v%d).", strUID(dwUIN, szUID),
     MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
 
-  if (szClient == cliSpamBot)
+  if ((char*)szClient == cliSpamBot)
   {
     if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
     { // kill spammer
       icq_DequeueUser(dwUIN);
       AddToSpammerList(dwUIN);
       if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-        ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+        ShowPopUpMsg(hContact, LPGENUTF("Spambot Detected"), LPGENUTF("Contact deleted & further events blocked."), POPTYPE_SPAM);
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
       NetLog_Server("Contact %u deleted", dwUIN);

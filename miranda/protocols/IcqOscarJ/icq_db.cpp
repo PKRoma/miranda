@@ -156,17 +156,17 @@ int __stdcall ICQGetContactSettingString(HANDLE hContact, const char* szSetting,
 
 
 
-char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char* szSetting, char* szDef)
+unsigned char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char *szSetting, unsigned char *szDef)
 {
   DBVARIANT dbv = {DBVT_DELETED};
-  char* szRes;
+  unsigned char *szRes;
 
   if (bUtfReadyDB)
   {
     if (DBGetContactSettingUTF8String(hContact, szModule, szSetting, &dbv))
       return null_strdup(szDef);
     
-    szRes = null_strdup(dbv.pszVal);
+    szRes = null_strdup((unsigned char*)dbv.pszVal);
     ICQFreeVariant(&dbv);
   }
   else
@@ -183,7 +183,7 @@ char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,co
 
 
 
-char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char* szSetting, char* szDef)
+unsigned char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char *szSetting, unsigned char *szDef)
 {
   return UniGetContactSettingUtf(hContact, gpszICQProtoName, szSetting, szDef);
 }
@@ -261,10 +261,10 @@ int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSettin
 
 
 
-int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue)
+int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, const unsigned char* szValue)
 {
   if (bUtfReadyDB)
-    return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, szValue);
+    return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, (char*)szValue);
   else
   { // old DB, we need to convert the string to Ansi
     int size = strlennull(szValue) + 2;
@@ -280,7 +280,7 @@ int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, c
 
 
 
-int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, const char* szValue)
+int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, const unsigned char* szValue)
 {
   return UniWriteContactSettingUtf(hContact, gpszICQProtoName, szSetting, szValue);
 }
@@ -364,14 +364,14 @@ HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
 
 
 
-char* __stdcall ICQGetContactCListGroup(HANDLE hContact)
+unsigned char* __stdcall ICQGetContactCListGroup(HANDLE hContact)
 {
   return UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
 }
 
 
 
-int __stdcall ICQSetContactCListGroup(HANDLE hContact, const char *szGroup)
+int __stdcall ICQSetContactCListGroup(HANDLE hContact, const unsigned char *szGroup)
 {
   /// TODO
   return 0;

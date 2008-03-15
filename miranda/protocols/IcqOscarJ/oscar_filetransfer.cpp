@@ -81,11 +81,11 @@ static oscar_filetransfer* FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD
 // Common functions
 /////////////////////////////
 
-char* FindFilePathContainer(const char** files, int iFile, char* szContainer)
+char *FindFilePathContainer(const char **files, int iFile, char *szContainer)
 {
 	int i;
-	const char* szThisFile = files[iFile];
-	char* szFileName = ExtractFileName(szThisFile);
+	const char *szThisFile = files[iFile];
+	char *szFileName = (char*)ExtractFileName((unsigned char*)szThisFile);
 
 	szContainer[0] = '\0';
 
@@ -97,7 +97,7 @@ char* FindFilePathContainer(const char** files, int iFile, char* szContainer)
 
 			if (!_strnicmp(files[i], szThisFile, len) && (szThisFile[len] == '\\' || szThisFile[len] == '/'))
 			{
-				const char* pszLastBackslash;
+				const char *pszLastBackslash;
 
 				if (((pszLastBackslash = strrchr(files[i], '\\')) == NULL) &&
 					((pszLastBackslash = strrchr(files[i], '/')) == NULL))
@@ -461,7 +461,7 @@ void UninitOscarFileTransfer()
 
 
 
-void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
+void handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
 {
   HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
 
@@ -476,8 +476,8 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
       if (wAckType == 1)
       { // This is first request in this OFT
         oscar_filetransfer *ft = CreateOscarTransfer();
-        char* pszFileName = NULL;
-        char* pszDescription = NULL;
+        char *pszFileName = NULL;
+        unsigned char *pszDescription = NULL;
         WORD wFilenameLength;
 
         NetLog_Server("This is a file request");
@@ -516,14 +516,14 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           { // parse User Message
             BYTE* tBuf = tlv->pData;
 
-            pszDescription = (char*)_alloca(tlv->wLen + 2);
-            unpackString(&tBuf, pszDescription, tlv->wLen);
+            pszDescription = (unsigned char*)_alloca(tlv->wLen + 2);
+            unpackString(&tBuf, (char*)pszDescription, tlv->wLen);
             pszDescription[tlv->wLen] = '\0';
             pszDescription[tlv->wLen+1] = '\0';
             { // apply User Message encoding
               oscar_tlv *charset = getTLV(chain, 0x0D, 1);
-              char *str = pszDescription;
-              char *bTag,*eTag;
+              unsigned char *str = pszDescription;
+              unsigned char *bTag,*eTag;
 
               if (charset)
               { // decode charset
@@ -531,17 +531,17 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
                 strncpy(szEnc, (char*)charset->pData, charset->wLen);
                 szEnc[charset->wLen] = '\0';
-                str = ApplyEncoding(pszDescription, szEnc);
+                str = ApplyEncoding((char*)pszDescription, szEnc);
               }
               else 
                 str = null_strdup(str);
               // eliminate HTML tags
               pszDescription = EliminateHtml(str, strlennull(str));
 
-              bTag = strstr(pszDescription, "<DESC>");
+              bTag = strstrnull(pszDescription, "<DESC>");
               if (bTag)
               { // take special Description - ICQJ's extension
-                eTag = strstr(bTag, "</DESC>");
+                eTag = strstrnull(bTag, "</DESC>");
                 if (eTag)
                 {
                   *eTag = '\0';
@@ -552,10 +552,10 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
               }
               else
               {
-                bTag = strstr(pszDescription, "<FS>");
+                bTag = strstrnull(pszDescription, "<FS>");
                 if (bTag)
                 { // take only <FS> - Description tag if present
-                  eTag = strstr(bTag, "</FS>");
+                  eTag = strstrnull(bTag, "</FS>");
                   if (eTag)
                   {
                     *eTag = '\0';
@@ -567,7 +567,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
               }
             }
           }
-          if (!strlennull(pszDescription)) pszDescription = ICQTranslateUtf("No description given");
+          if (!strlennull(pszDescription)) pszDescription = ICQTranslateUtf(LPGENUTF("No description given"));
         }
         { // parse File Transfer Info block
           oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
@@ -582,7 +582,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
           // Filename / Directory Name
           wFilenameLength = tLen - 1;
           pszFileName = (char*)_alloca(tLen);
-          unpackString(&tBuf, pszFileName, wFilenameLength);
+          unpackString(&tBuf, (char*)pszFileName, wFilenameLength);
           pszFileName[wFilenameLength] = '\0';
           { // apply Filename / Directory Name encoding
             oscar_tlv* charset = getTLV(chain, 0x2712, 1);
@@ -593,21 +593,21 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
               strncpy(szEnc, (char*)charset->pData, charset->wLen);
               szEnc[charset->wLen] = '\0';
-              pszFileName = ApplyEncoding(pszFileName, szEnc);
+              pszFileName = (char*)ApplyEncoding(pszFileName, szEnc);
             }
             else
-              pszFileName = ansi_to_utf8(pszFileName);
+              pszFileName = (char*)ansi_to_utf8(pszFileName);
           }
           if (ft->wFilesCount == 1)
           { // Filename - use for DB event (convert to Ansi - File DB events does not support Unicode)
             char* szAnsi = (char*)_alloca(strlennull(pszFileName) + 2);
-            utf8_decode_static(pszFileName, szAnsi, strlennull(pszFileName) + 1);
+            utf8_decode_static((unsigned char*)pszFileName, szAnsi, strlennull(pszFileName) + 1);
             SAFE_FREE((void**)&pszFileName);
             pszFileName = szAnsi;
           }
           else
           { // Save Directory name for future use
-            ft->szThisPath = pszFileName;
+            ft->szThisPath = (unsigned char*)pszFileName;
             // for multi-file transfer we do not display "folder" name, but create only a simple notice
             pszFileName = (char*)_alloca(64);
 
@@ -757,7 +757,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
       ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
       // Notify user, that the FT was cancelled // TODO: new ACKRESULT_?
-      icq_LogMessage(LOG_ERROR, "The file transfer was aborted by the other user.");
+      icq_LogMessage(LOG_ERROR, LPGENUTF("The file transfer was aborted by the other user."));
       // Release transfer
       SafeReleaseFileTransfer((void**)&ft);
     }
@@ -793,7 +793,7 @@ void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUI
 
 
 
-void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft)
+void handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft)
 {
   WORD wDataLen;
 
@@ -822,7 +822,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
       case 4: // Proxy error
         {
-          icq_LogMessage(LOG_ERROR, "The file transfer failed: Proxy error");
+          icq_LogMessage(LOG_ERROR, LPGENUTF("The file transfer failed: Proxy error"));
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
           // Release transfer
@@ -832,7 +832,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
       case 5: // Invalid request
         {
-          icq_LogMessage(LOG_ERROR, "The file transfer failed: Invalid request");
+          icq_LogMessage(LOG_ERROR, LPGENUTF("The file transfer failed: Invalid request"));
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
           // Release transfer
@@ -842,7 +842,7 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
       case 6: // Proxy Failed (IP = 0)
         {
-          icq_LogMessage(LOG_ERROR, "The file transfer failed: Proxy unavailable");
+          icq_LogMessage(LOG_ERROR, LPGENUTF("The file transfer failed: Proxy unavailable"));
 
           ICQBroadcastAck(oft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)oft, 0);
           // Release transfer
@@ -864,16 +864,16 @@ void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char 
 
 
 
-static char* oftGetFileContainer(oscar_filetransfer* oft, const char** files, int iFile)
+static unsigned char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, int iFile)
 {
   char szPath[MAX_PATH];
   char* szFileName = FindFilePathContainer(files, iFile, szPath);
-  char* szPathUtf = ansi_to_utf8(szPath);
+  unsigned char *szPathUtf = ansi_to_utf8(szPath);
   int i;
 
   // try to find existing container
   for (i = 0; i < oft->containerCount; i++)
-    if (!strcmp(szPathUtf, oft->file_containers[i]))
+    if (!strcmpnull(szPathUtf, oft->file_containers[i]))
     {
       SAFE_FREE((void**)&szPathUtf);
 
@@ -882,7 +882,7 @@ static char* oftGetFileContainer(oscar_filetransfer* oft, const char** files, in
 
   // create new container
   i = oft->containerCount++;
-  oft->file_containers = (char**)SAFE_REALLOC(oft->file_containers, (sizeof(char*) * oft->containerCount));
+  oft->file_containers = (unsigned char**)SAFE_REALLOC(oft->file_containers, (sizeof(unsigned char*) * oft->containerCount));
   oft->file_containers[i] = szPathUtf;
 
   return oft->file_containers[i];
@@ -928,7 +928,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   }
   if (!ft->wFilesCount)
   { // found no valid files to send
-    icq_LogMessage(LOG_ERROR, LPGEN("Failed to Initialize File Transfer. No valid files were specified."));
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Failed to Initialize File Transfer. No valid files were specified."));
     // Notify UI
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
     // Release transfer
@@ -938,7 +938,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
   }
   if (ft->qwTotalSize >= 0x100000000 && ft->wFilesCount > 1)
   { // file larger than 4GB can be send only as single
-    icq_LogMessage(LOG_ERROR, "The files are too big to be sent at once. Files bigger than 4GB can be sent only separately.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("The files are too big to be sent at once. Files bigger than 4GB can be sent only separately."));
     // Notify UI
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (HANDLE)ft, 0);
     // Release transfer
@@ -972,7 +972,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
 
   // Send file transfer request
   {
-    char* pszFiles;
+    unsigned char *pszFiles;
 
     if (ft->wFilesCount == 1)
     { // transfering single file, give filename
@@ -980,13 +980,13 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
     }
     else 
     { // check if transfering one directory
-      char *szFirstDiv, *szFirstDir = ft->file_containers[0];
+      unsigned char *szFirstDiv, *szFirstDir = ft->file_containers[0];
       int nFirstDirLen;
 
       // default is no root dir
-      pszFiles = "";
+      pszFiles = (unsigned char*)"";
 
-      if ((szFirstDiv = strstr(szFirstDir, "\\")) || (szFirstDiv = strstr(szFirstDir, "/")))
+      if ((szFirstDiv = strstrnull(szFirstDir, "\\")) || (szFirstDiv = strstrnull(szFirstDir, "/")))
         nFirstDirLen = szFirstDiv - szFirstDir;
       else
         nFirstDirLen = strlennull(szFirstDir);
@@ -995,7 +995,7 @@ int oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char** files, cha
       { // got root dir from first container, check if others are only sub-dirs
         for (i = 0; i < ft->containerCount; i++)
         {
-          if (strnicmp(ft->file_containers[i], szFirstDir, nFirstDirLen))
+          if (strnicmp((char*)ft->file_containers[i], (char*)szFirstDir, nFirstDirLen))
           {
             szFirstDir = NULL;
             break;
@@ -1042,13 +1042,13 @@ DWORD oftFileAllow(HANDLE hContact, WPARAM wParam, LPARAM lParam)
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
     return 0; // Invalid contact
 
-  ft->szSavePath = ansi_to_utf8((char *)lParam);
+  ft->szSavePath = ansi_to_utf8((char*)lParam);
   if (ft->szThisPath)
   { // Append Directory name to the save path, when transfering a directory
-    ft->szSavePath = (char*)SAFE_REALLOC(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
-    NormalizeBackslash(ft->szSavePath);
-    strcat(ft->szSavePath, ft->szThisPath);
-    NormalizeBackslash(ft->szSavePath);
+    ft->szSavePath = (unsigned char*)SAFE_REALLOC(ft->szSavePath, strlennull(ft->szSavePath) + strlennull(ft->szThisPath) + 4);
+    NormalizeBackslash((char*)ft->szSavePath);
+    strcat((char*)ft->szSavePath, (char*)ft->szThisPath);
+    NormalizeBackslash((char*)ft->szSavePath);
   }
 #ifdef _DEBUG
   NetLog_Direct("OFT: Request accepted, saving to '%s'.", ft->szSavePath);
@@ -1180,7 +1180,7 @@ void oftFileResume(oscar_filetransfer *ft, int action, const char *szFilename)
 #ifdef _DEBUG
     NetLog_Direct("OFT: errno=%d", errno);
 #endif
-    icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
 
     ICQBroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
     // Release transfer
@@ -1537,7 +1537,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     { // stage 1
       if (!CreateOscarProxyConnection(&oc))
       { // We failed to init transfer, notify UI
-        icq_LogMessage(LOG_ERROR, "Failed to Initialize File Transfer. Unable to bind local port and File proxy unavailable.");
+        icq_LogMessage(LOG_ERROR, LPGENUTF("Failed to Initialize File Transfer. Unable to bind local port and File proxy unavailable."));
         // Release transfer
         SafeReleaseFileTransfer((void**)&oc.ft);
 
@@ -1627,7 +1627,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     {
       ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
-      icq_LogMessage(LOG_ERROR, "Connection lost during file transfer.");
+      icq_LogMessage(LOG_ERROR, LPGENUTF("Connection lost during file transfer."));
       // Release structure
       SafeReleaseFileTransfer((void**)&oc.ft);
     }
@@ -1635,7 +1635,7 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
     {
       ICQBroadcastAck(oc.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 
-      icq_LogMessage(LOG_ERROR, "File transfer negotiation failed for unknown reason.");
+      icq_LogMessage(LOG_ERROR, LPGENUTF("File transfer negotiation failed for unknown reason."));
       // Release structure
       SafeReleaseFileTransfer((void**)&oc.ft);
     }
@@ -1893,8 +1893,8 @@ static int oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len)
     {
       NetLog_Direct("Error: File checksums does not match!");
       { // Notify UI
-        char *pszMsg = ICQTranslateUtf("The checksum of file \"%s\" does not match, the file is probably damaged.");
-        char szBuf[MAX_PATH];
+        unsigned char *pszMsg = ICQTranslateUtf(LPGENUTF("The checksum of file \"%s\" does not match, the file is probably damaged."));
+        unsigned char szBuf[MAX_PATH];
 
         null_snprintf(szBuf, MAX_PATH, pszMsg, ExtractFileName(ft->szThisFile));
         icq_LogMessage(LOG_ERROR, szBuf);
@@ -1965,7 +1965,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
   case OFT_TYPE_REQUEST:
     { // Sender ready
       oscar_filetransfer *ft = oc->ft;
-      char *szFullPath;
+      unsigned char *szFullPath;
 
       if (ft->sending)
       { // just sanity check - this is only for receiving client
@@ -2067,7 +2067,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
       NetLog_Direct("File '%s', %I64u Bytes", ft->szThisFile, ft->qwThisFileSize);
 
       { // Prepare Path Information
-        char* szFile = strrchr(ft->szThisFile, '\\');
+        unsigned char *szFile = (unsigned char*)strrchr((char*)ft->szThisFile, '\\');
 
         SAFE_FREE((void**)&ft->szThisPath); // release previous path
         if (szFile)
@@ -2076,32 +2076,32 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
           szFile[0] = '\0'; // split that strings
           ft->szThisFile = null_strdup(szFile + 1);
           // no cheating with paths
-          if (!IsValidRelativePath(ft->szThisPath))
+          if (!IsValidRelativePath((char*)ft->szThisPath))
           {
             NetLog_Direct("Invalid path information");
             break;
           }
         }
         else
-          ft->szThisPath = null_strdup("");
+          ft->szThisPath = null_strdup((unsigned char*)"");
       }
 
       /* no cheating with paths */
-      if (!IsValidRelativePath(ft->szThisFile))
+      if (!IsValidRelativePath((char*)ft->szThisFile))
       {
         NetLog_Direct("Invalid path information");
         break;
       }
-      szFullPath = (char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
-      strcpy(szFullPath, ft->szSavePath);
-      NormalizeBackslash(szFullPath);
-      strcat(szFullPath, ft->szThisPath);
-      NormalizeBackslash(szFullPath);
+      szFullPath = (unsigned char*)SAFE_MALLOC(strlennull(ft->szSavePath)+strlennull(ft->szThisPath)+strlennull(ft->szThisFile)+3);
+      strcpy((char*)szFullPath, (char*)ft->szSavePath);
+      NormalizeBackslash((char*)szFullPath);
+      strcat((char*)szFullPath, (char*)ft->szThisPath);
+      NormalizeBackslash((char*)szFullPath);
       // make sure the dest dir exists
       if (MakeDirUtf(szFullPath))
         NetLog_Direct("Failed to create destination directory!");
 
-      strcat(szFullPath, ft->szThisFile);
+      strcat((char*)szFullPath, (char*)ft->szThisFile);
       // we joined the full path to dest file
       SAFE_FREE((void**)&ft->szThisFile);
       ft->szThisFile = szFullPath;
@@ -2133,7 +2133,7 @@ static void handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBu
 #ifdef _DEBUG
           NetLog_Direct("OFT: errno=%d", errno);
 #endif
-          icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
+          icq_LogMessage(LOG_ERROR, LPGENUTF("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
 
           ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
           // Release transfer
@@ -2378,7 +2378,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
 {
   oscar_filetransfer *ft = oc->ft;
   struct _stati64 statbuf;
-  char *pszThisFileName;
+  unsigned char *pszThisFileName;
   wchar_t *pwsThisFile;
 
   // prepare init frame
@@ -2394,7 +2394,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   ft->szThisFile = null_strdup(ft->files[ft->iCurrentFile].szFile);
   if (FileStatUtf(ft->szThisFile, &statbuf))
   {
-    icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
 
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     // Release transfer
@@ -2403,12 +2403,12 @@ static void oft_sendPeerInit(oscar_connection *oc)
   }
 
   { // create full relative filename
-    char* szThisContainer = ft->files[ft->iCurrentFile].szContainer;
+    unsigned char* szThisContainer = ft->files[ft->iCurrentFile].szContainer;
 
-    pszThisFileName = (char*)SAFE_MALLOC(strlennull(ft->szThisFile) + strlennull(szThisContainer) + 4);
-    strcpy(pszThisFileName, szThisContainer);
-    NormalizeBackslash(pszThisFileName);
-    strcat(pszThisFileName, ExtractFileName(ft->szThisFile));
+    pszThisFileName = (unsigned char*)SAFE_MALLOC(strlennull(ft->szThisFile) + strlennull(szThisContainer) + 4);
+    strcpy((char*)pszThisFileName, (char*)szThisContainer);
+    NormalizeBackslash((char*)pszThisFileName);
+    strcat((char*)pszThisFileName, (char*)ExtractFileName(ft->szThisFile));
   }
   { // convert backslashes to dir markings
     DWORD i;
@@ -2431,7 +2431,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
     NetLog_Direct("OFT: errno=%d", errno);
 #endif
     SAFE_FREE((void**)&pszThisFileName);
-    icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
     //
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
     // Release transfer
@@ -2453,7 +2453,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
     ft->cbRawFileName = strlennull(pszThisFileName) + 1;
     if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
     ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
-    strcpy(ft->rawFileName, pszThisFileName);
+    strcpy(ft->rawFileName, (char*)pszThisFileName);
     SAFE_FREE((void**)&pszThisFileName);
   }
   else
@@ -2465,7 +2465,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
     if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
     ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
     // convert to LE ordered string
-    unpackWideString((BYTE**)&pwsThisFile, (wchar_t*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(wchar_t)));
+    unpackWideString((BYTE**)&pwsThisFile, (WCHAR*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(WCHAR)));
     SAFE_FREE((void**)&pwsThisFile);
   }
   ft->wFilesLeft = (WORD)(ft->wFilesCount - ft->iCurrentFile);

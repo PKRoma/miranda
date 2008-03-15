@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_servlist.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -65,7 +65,7 @@ typedef struct servlistcookie_t
   HANDLE hContact;
   WORD wContactId;
   WORD wGroupId;
-  char* szGroupName;
+  unsigned char *szGroupName;
   WORD wNewContactId;
   WORD wNewGroupId;
   int dwAction; 
@@ -79,13 +79,13 @@ void UninitServerLists(void);
 
 void* collectGroups(int *count);
 void* collectBuddyGroup(WORD wGroupID, int *count);
-char* getServerGroupNameUtf(WORD wGroupID);
-void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf);
+unsigned char *getServerGroupNameUtf(WORD wGroupID);
+void setServerGroupNameUtf(WORD wGroupID, const unsigned char* szGroupNameUtf);
 WORD getServerGroupIDUtf(const char* szPath);
 void setServerGroupIDUtf(const char* szPath, WORD wGroupID);
 int IsServerGroupsDefined();
-char* makeGroupPathUtf(WORD wGroupId);
-WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
+unsigned char *makeGroupPathUtf(WORD wGroupId);
+WORD makeGroupId(const unsigned char *szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
 void removeGroupPathLinks(WORD wGroupID);
 int countGroupLevel(WORD wGroupId);
 
@@ -93,7 +93,7 @@ void FlushSrvGroupsCache();
 
 DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId);
 DWORD icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType);
-DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
+DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const unsigned char *szName, void *pContent, int cbContent);
 
 DWORD icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
 DWORD icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);

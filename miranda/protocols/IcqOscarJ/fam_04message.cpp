@@ -231,10 +231,10 @@ static void handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD 
 	}
 }
 
-static char* convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
+static unsigned char *convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 {
 	WORD wCP = ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage);
-	char* usMsg = NULL;
+	unsigned char *usMsg = NULL;
 
 	if (wCP != CP_ACP)
 		usMsg = ansi_to_utf8_codepage(szMsg, wCP);
@@ -313,10 +313,10 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 					if (pMessageTLV->wLen > 4)
 					{
 						WORD wMsgLen;
-						BYTE* pMsgBuf;
+						BYTE *pMsgBuf;
 						WORD wEncoding;
 						WORD wCodePage;
-						char* szMsgPart = NULL;
+						unsigned char *szMsgPart = NULL;
 						int bMsgPartUnicode = FALSE;
 
 						// The message begins with a encoding specification
@@ -354,7 +354,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 						default:
 							{
 								// Copy the message text into a new proper string.
-								szMsgPart = (char *)SAFE_MALLOC(wMsgLen + 1);
+								szMsgPart = (unsigned char*)SAFE_MALLOC(wMsgLen + 1);
 								memcpy(szMsgPart, pMsgBuf, wMsgLen);
 								szMsgPart[wMsgLen] = '\0';
 
@@ -366,16 +366,16 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 						{ // make the resulting message utf-8 encoded - need to append utf-8 encoded part
 							if (szMsg)
 							{ // not necessary to convert - appending first part, only set flags
-								char* szUtfMsg = ansi_to_utf8_codepage(szMsg, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+								unsigned char *szUtfMsg = ansi_to_utf8_codepage(szMsg, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
 
 								SAFE_FREE((void**)&szMsg);
-								szMsg = szUtfMsg;
+								szMsg = (char*)szUtfMsg;
 							}
 							pre.flags = PREF_UTF;
 						}
 						if (!bMsgPartUnicode && pre.flags == PREF_UTF)
 						{ // convert message part to utf-8 and append
-							char* szUtfPart = ansi_to_utf8_codepage(szMsgPart, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
+							unsigned char *szUtfPart = ansi_to_utf8_codepage((char*)szMsgPart, ICQGetContactSettingWord(hContact, "CodePage", gwAnsiCodepage));
 
 							SAFE_FREE((void**)&szMsgPart);
 							szMsgPart = szUtfPart;
@@ -383,7 +383,7 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 						// Append the new message part
 						szMsg = (char*)SAFE_REALLOC(szMsg, strlennull(szMsg) + strlennull(szMsgPart) + 1);
 
-						strcat(szMsg, szMsgPart);
+						strcat(szMsg, (char*)szMsgPart);
 						SAFE_FREE((void**)&szMsgPart);
 					}
 					wMsgPart++;
@@ -397,12 +397,12 @@ static void handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, c
 
 					if (!pre.flags && !IsUSASCII((LPBYTE)szMsg, strlennull(szMsg)))
 					{ // message is Ansi and contains national characters, create Unicode part by codepage
-						char* usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
+						unsigned char *usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
 
 						if (usMsg)
 						{
 							SAFE_FREE((void**)&szMsg);
-							szMsg = usMsg;
+							szMsg = (char*)usMsg;
 							pre.flags = PREF_UTF;
 						}
 					}
@@ -1600,7 +1600,7 @@ static void handleStatusMsgReply(const char* szPrefix, HANDLE hContact, DWORD dw
 
 	if (wVersion == 9)
 	{ // it is probably UTF-8 status reply
-		pszMsg = detect_decode_utf8(pszMsg);
+		pszMsg = detect_decode_utf8((unsigned char*)pszMsg);
 	}
 
 	ccs.szProtoService = PSR_AWAYMSG;
@@ -1757,7 +1757,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 						wcsncpy(usMsg, (WCHAR*)(pMsg + 4), dwExtraLen);
 						usMsg[dwExtraLen] = '\0';
 						SAFE_FREE((void**)&szMsg);
-						szMsg = make_utf8_string(usMsg);
+						szMsg = (char*)make_utf8_string(usMsg);
 
 						if (!IsUnicodeAscii(usMsg, dwExtraLen))
 							pre.flags = PREF_UTF; // only mark real non-ascii messages as unicode
@@ -1797,12 +1797,12 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 
 			if (!pre.flags && !IsUSASCII((LPBYTE)szMsg, strlennull(szMsg)))
 			{ // message is Ansi and contains national characters, create Unicode part by codepage
-				char* usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
+				unsigned char *usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
 
 				if (usMsg)
 				{
 					SAFE_FREE((void**)&szMsg);
-					szMsg = usMsg;
+					szMsg = (char*)usMsg;
 					pre.flags = PREF_UTF;
 				}
 			}
@@ -1834,9 +1834,9 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 			hContact = HContactFromUIN(dwUin, &bAdded);
 			sendMessageTypesAck(hContact, 0, pAckParams);
 
-			szTitle = ICQTranslateUtf("Incoming URL:");
-			szDataDescr = ansi_to_utf8(pszMsgField[0]);
-			szDataUrl = ansi_to_utf8(pszMsgField[1]);
+			szTitle = (char*)ICQTranslateUtf(LPGENUTF("Incoming URL:"));
+			szDataDescr = (char*)ansi_to_utf8(pszMsgField[0]);
+			szDataUrl = (char*)ansi_to_utf8(pszMsgField[1]);
 			szBlob = (char *)SAFE_MALLOC(strlennull(szTitle) + strlennull(szDataDescr) + strlennull(szDataUrl) + 8);
 			strcpy(szBlob, szTitle);
 			strcat(szBlob, " ");
@@ -2101,7 +2101,7 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 	case MTYPE_AUTODND:
 	case MTYPE_AUTOFFC:
 		{
-			char** szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(type));
+			unsigned char **szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(type));
 
 			if (szMsg)
 			{
@@ -2755,7 +2755,7 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	WORD wCount;
 	WORD wError;
 	WORD wTLVCount;
-	char* pszErrorMsg;
+	unsigned char* pszErrorMsg;
 	oscar_tlv_chain* pChain;
 
 
@@ -2802,19 +2802,19 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 	{
 
 	case 0:
-		pszErrorMsg = "** This message was blocked by the ICQ server ** The message was invalid.";
+		pszErrorMsg = LPGENUTF("** This message was blocked by the ICQ server ** The message was invalid.");
 		break;
 
 	case 1:
-		pszErrorMsg = "** This message was blocked by the ICQ server ** The message was too long.";
+		pszErrorMsg = LPGENUTF("** This message was blocked by the ICQ server ** The message was too long.");
 		break;
 
 	case 2:
-		pszErrorMsg = "** This message was blocked by the ICQ server ** The sender has flooded the server.";
+		pszErrorMsg = LPGENUTF("** This message was blocked by the ICQ server ** The sender has flooded the server.");
 		break;
 
 	case 4:
-		pszErrorMsg = "** This message was blocked by the ICQ server ** You are too evil.";
+		pszErrorMsg = LPGENUTF("** This message was blocked by the ICQ server ** You are too evil.");
 		break;
 
 	default:
@@ -2836,7 +2836,7 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
 		pre.timestamp = time(NULL);
-		pre.szMessage = pszErrorMsg;
+		pre.szMessage = (char*)pszErrorMsg;
 		pre.flags = PREF_UTF;
 
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
@@ -2921,12 +2921,12 @@ static void handleTypingNotification(unsigned char* buf, WORD wLen, WORD wFlags,
 
 	case MTN_WINDOW_CLOSED:
 		{
-			char szFormat[MAX_PATH];
-			char szMsg[MAX_PATH];
-			char *nick = NickFromHandleUtf(hContact);
+			unsigned char szFormat[MAX_PATH];
+			unsigned char szMsg[MAX_PATH];
+			unsigned char *nick = NickFromHandleUtf(hContact);
 
-			null_snprintf(szMsg, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" has closed the message window.", szFormat, MAX_PATH), nick);
-			ShowPopUpMsg(hContact, ICQTranslateUtfStatic("ICQ Note", szFormat, MAX_PATH), szMsg, LOG_NOTE);
+			null_snprintf(szMsg, MAX_PATH, ICQTranslateUtfStatic(LPGENUTF("Contact \"%s\" has closed the message window."), szFormat, MAX_PATH), nick);
+			ShowPopUpMsg(hContact, ICQTranslateUtfStatic(LPGENUTF("ICQ Note"), szFormat, MAX_PATH), szMsg, LOG_NOTE);
 			SAFE_FREE((void**)&nick);
 
 			NetLog_Server("%s has closed the message window.", strUID(dwUin, szUID));

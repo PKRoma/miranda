@@ -119,7 +119,7 @@ static void file_sendNextFile(directconnect* dc)
   dc->ft->szThisFile = null_strdup(dc->ft->files[dc->ft->iCurrentFile]);
   if (_stat(dc->ft->szThisFile, &statbuf))
   {
-    icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
     CloseDirectConnection(dc);
     dc->ft->hConnection = NULL;
     return;
@@ -137,7 +137,7 @@ static void file_sendNextFile(directconnect* dc)
     dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_RDONLY);
     if (dc->ft->fileId == -1)
     {
-      icq_LogMessage(LOG_ERROR, "Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it.");
+      icq_LogMessage(LOG_ERROR, LPGENUTF("Your file transfer has been aborted because one of the files that you selected to send is no longer readable from the disk. You may have deleted or moved it."));
       CloseDirectConnection(dc);
       dc->ft->hConnection = NULL;
       return;
@@ -275,7 +275,7 @@ void icq_sendFileResume(filetransfer* ft, int action, const char* szFilename)
   ft->fileId = _open(ft->szThisFile, openFlags, _S_IREAD | _S_IWRITE);
   if (ft->fileId == -1)
   {
-    icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
+    icq_LogMessage(LOG_ERROR, LPGENUTF("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
     NetLib_CloseConnection(&ft->hConnection, FALSE);
     return;
   }
@@ -444,7 +444,7 @@ void handleFileTransferPacket(directconnect* dc, PBYTE buf, WORD wLen)
           dc->ft->fileId = _open(dc->ft->szThisFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
           if (dc->ft->fileId == -1)
           {
-            icq_LogMessage(LOG_ERROR, "Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder.");
+            icq_LogMessage(LOG_ERROR, LPGENUTF("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
             CloseDirectConnection(dc);
             dc->ft->hConnection = NULL;
             break;

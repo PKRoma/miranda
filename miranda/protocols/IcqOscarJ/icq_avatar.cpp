@@ -244,7 +244,7 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
     tPathLen = strlennull(pszDest);
   }
   { // make sure the avatar cache directory exists
-    char* szDir = ansi_to_utf8(pszDest);
+    unsigned char *szDir = ansi_to_utf8(pszDest);
 
     MakeDirUtf(szDir);
     SAFE_FREE((void**)&szDir);
@@ -390,7 +390,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
         { // we found it, return error
           if (!bYet)
           {
-            icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server temporarily unavailable.");
+            icq_LogMessage(LOG_WARNING, LPGENUTF("Error uploading avatar to server, server temporarily unavailable."));
           }
           bYet = 1;
           // remove upload request from queue
@@ -1505,7 +1505,7 @@ void handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pS
       else if (res)
       {
         NetLog_Server("Error uploading avatar to server, #%d", res);
-        icq_LogMessage(LOG_WARNING, "Error uploading avatar to server, server refused to accept the image.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Error uploading avatar to server, server refused to accept the image."));
       }
       else
         NetLog_Server("Received invalid upload avatar ack.");

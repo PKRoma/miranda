@@ -225,21 +225,21 @@ int MirandaStatusToSupported(int nMirandaStatus)
 
 
 
-char* MirandaStatusToString(int mirandaStatus)
+char *MirandaStatusToString(int mirandaStatus)
 {
-  return (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
+  return (char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, 0);
 }
 
 
 
-char* MirandaStatusToStringUtf(int mirandaStatus)
+unsigned char *MirandaStatusToStringUtf(int mirandaStatus)
 { // return miranda status description in utf-8, use unicode service is possible
   return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, gbUnicodeCore ? GCMDF_UNICODE : 0));
 }
 
 
 
-char**MirandaStatusToAwayMsg(int nStatus)
+unsigned char **MirandaStatusToAwayMsg(int nStatus)
 {
   switch (nStatus)
   {
@@ -678,10 +678,10 @@ char *NickFromHandle(HANDLE hContact)
 
 
 
-char *NickFromHandleUtf(HANDLE hContact)
+unsigned char *NickFromHandleUtf(HANDLE hContact)
 {
   if (hContact == INVALID_HANDLE_VALUE)
-    return ICQTranslateUtf("<invalid>");
+    return ICQTranslateUtf(LPGENUTF("<invalid>"));
 
   return mtchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, gbUnicodeCore ? GCDNF_UNICODE : 0));
 }
@@ -718,6 +718,7 @@ size_t __fastcall strlennull(const char *string)
 }
 
 
+
 /* a strcmp() that likes NULL */
 int __fastcall strcmpnull(const char *str1, const char *str2)
 {
@@ -725,6 +726,16 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
     return strcmp(str1, str2);
 
   return 1;
+}
+
+
+
+char* __fastcall strstrnull(const char *str, const char *substr)
+{
+  if (str)
+    return strstr(str, substr);
+
+  return NULL;
 }
 
 
@@ -743,6 +754,19 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 
 
 
+int null_snprintf(unsigned char *buffer, size_t count, const unsigned char* fmt, ...)
+{
+  va_list va;
+  int len;
+
+  ZeroMemory(buffer, count);
+  va_start(va, fmt);
+  len = _vsnprintf((char*)buffer, count-1, (char*)fmt, va);
+  va_end(va);
+  return len;
+}
+
+
 char* __fastcall null_strdup(const char *string)
 {
   if (string)
@@ -753,7 +777,7 @@ char* __fastcall null_strdup(const char *string)
 
 
 
-size_t __fastcall null_strcut(char *string, size_t maxlen)
+size_t __fastcall null_strcut(unsigned char *string, size_t maxlen)
 { // limit the string to max length (null & utf-8 strings ready)
   size_t len = strlennull(string);
 
@@ -762,7 +786,7 @@ size_t __fastcall null_strcut(char *string, size_t maxlen)
 
   len = maxlen;
 
-  if (UTF8_IsValid((LPBYTE)string)) // handle utf-8 string
+  if (UTF8_IsValid(string)) // handle utf-8 string
   { // find the first byte of possible multi-byte character
     while ((string[len] & 0xc0) == 0x80) len--;
   }
@@ -915,23 +939,23 @@ char *EliminateHtml(const char *string, int len)
 
 
 
-char* ApplyEncoding(const char *string, const char* pszEncoding)
+unsigned char *ApplyEncoding(const char *string, const char *pszEncoding)
 { // decode encoding to Utf-8
   if (string && pszEncoding)
   { // we do only encodings known to icq5.1 // TODO: check if this is enough
     if (!strnicmp(pszEncoding, "utf-8", 5))
     { // it is utf-8 encoded
-      return null_strdup(string);
+      return (unsigned char*)null_strdup(string);
     }
     else if (!strnicmp(pszEncoding, "unicode-2-0", 11))
     { // it is UCS-2 encoded
       int wLen = wcslen((WCHAR*)string) + 1;
       WCHAR *szStr = (WCHAR*)_alloca(wLen*2);
-      char *tmp = (char*)string;
+      unsigned char *tmp = (unsigned char*)string;
 
-      unpackWideString((LPBYTE*)&tmp, szStr, (WORD)(wLen*2));
+      unpackWideString(&tmp, szStr, (WORD)(wLen*2));
 
-      return make_utf8_string((WCHAR*)szStr);
+      return make_utf8_string(szStr);
     }
     else if (!strnicmp(pszEncoding, "iso-8859-1", 10))
     { // we use "Latin I" instead - it does the job
@@ -1128,7 +1152,7 @@ BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf
 
     if (wCp != CP_ACP)
     {
-      char *szUtf = ansi_to_utf8_codepage(*buf, wCp);
+      unsigned char *szUtf = ansi_to_utf8_codepage(*buf, wCp);
 
       if (szUtf)
       {
@@ -1176,8 +1200,8 @@ BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, 
 BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   WORD wVal;
-  char sbuf[MAX_PATH];
-  char *text;
+  unsigned char sbuf[MAX_PATH];
+  unsigned char *text;
 
   if (*pwLength < 2)
     return FALSE;
@@ -1219,8 +1243,8 @@ BOOL writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf,
 BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
 {
   BYTE byVal;
-  char sbuf[MAX_PATH];
-  char *text;
+  unsigned char sbuf[MAX_PATH];
+  unsigned char *text;
 
   if (*pwLength < 1)
     return FALSE;
@@ -1513,16 +1537,16 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg)
 
 
 
-char* __fastcall ICQTranslate(const char* src)
+char* __fastcall ICQTranslate(const char *src)
 {
   return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)src);
 }
 
 
 
-char* __fastcall ICQTranslateUtf(const char* src)
+unsigned char* __fastcall ICQTranslateUtf(const unsigned char *src)
 { // this takes UTF-8 strings only!!!
-  char* szRes = NULL;
+  unsigned char *szRes = NULL;
 
   if (!strlennull(src))
   { // for the case of empty strings
@@ -1541,11 +1565,11 @@ char* __fastcall ICQTranslateUtf(const char* src)
 
 
 
-char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf, size_t bufsize)
+unsigned char* __fastcall ICQTranslateUtfStatic(const unsigned char *src, unsigned char *buf, size_t bufsize)
 { // this takes UTF-8 strings only!!!
   if (strlennull(src))
   { // we can use unicode translate (0.5+)
-    WCHAR* usrc = make_unicode_string(src);
+    WCHAR *usrc = make_unicode_string(src);
 
     make_utf8_string_static(TranslateW(usrc), buf, bufsize);
 
@@ -1641,8 +1665,8 @@ WORD GetMyStatusFlags()
 
 int IsValidRelativePath(const char *filename)
 {
-  if (strstr(filename, "..\\") || strstr(filename, "../") ||
-      strstr(filename, ":\\") || strstr(filename, ":/") ||
+  if (strstrnull(filename, "..\\") || strstrnull(filename, "../") ||
+      strstrnull(filename, ":\\") || strstrnull(filename, ":/") ||
       filename[0] == '\\' || filename[0] == '/')
     return 0; // Contains malicious chars, Failure
 
@@ -1651,22 +1675,22 @@ int IsValidRelativePath(const char *filename)
 
 
 
-char* ExtractFileName(const char *fullname)
+unsigned char *ExtractFileName(const unsigned char *fullname)
 {
-  const char* szFileName;
+  unsigned char *szFileName;
 
-  if (((szFileName = strrchr(fullname, '\\')) == NULL) && ((szFileName = strrchr(fullname, '/')) == NULL))
+  if (((szFileName = (unsigned char*)strrchr((char*)fullname, '\\')) == NULL) && ((szFileName = (unsigned char*)strrchr((char*)fullname, '/')) == NULL))
   { // already is only filename
-    return (char*)fullname;
+    return (unsigned char*)fullname;
   }
   szFileName++; // skip backslash
 
-  return (char*)szFileName;
+  return szFileName;
 }
 
 
 
-char* FileNameToUtf(const char *filename)
+unsigned char *FileNameToUtf(const char *filename)
 {
   if (gbUnicodeAPI)
   { // reasonable only on NT systems
@@ -1705,7 +1729,7 @@ char* FileNameToUtf(const char *filename)
 
 
 
-int FileStatUtf(const char *path, struct _stati64 *buffer)
+int FileStatUtf(const unsigned char *path, struct _stati64 *buffer)
 {
   int wRes = -1;
 
@@ -1729,7 +1753,7 @@ int FileStatUtf(const char *path, struct _stati64 *buffer)
 
 
 
-int MakeDirUtf(const char *dir)
+int MakeDirUtf(const unsigned char *dir)
 {
   int wRes = -1;
   char *szLast;
@@ -1744,8 +1768,8 @@ int MakeDirUtf(const char *dir)
       wRes = 0;
     else if (wRes && errno == 2 /* ENOENT */)
     { // failed, try one directory less first
-      szLast = ( char* )strrchr(dir, '\\');
-      if (!szLast) szLast = ( char* )strrchr(dir, '/');
+      szLast = (char*)strrchr((char*)dir, '\\');
+      if (!szLast) szLast = (char*)strrchr((char*)dir, '/');
       if (szLast)
       {
         char cOld = *szLast;
@@ -1771,8 +1795,8 @@ int MakeDirUtf(const char *dir)
         wRes = 0;
       else if (wRes && errno == 2 /* ENOENT */)
       { // failed, try one directory less first
-        szLast = ( char* )strrchr(dir, '\\');
-        if (!szLast) szLast = ( char* )strrchr(dir, '/');
+        szLast = (char*)strrchr((char*)dir, '\\');
+        if (!szLast) szLast = (char*)strrchr((char*)dir, '/');
         if (szLast)
         {
           char cOld = *szLast;
@@ -1790,7 +1814,7 @@ int MakeDirUtf(const char *dir)
 
 
 
-int OpenFileUtf(const char *filename, int oflag, int pmode)
+int OpenFileUtf(const unsigned char *filename, int oflag, int pmode)
 {
   int hFile = -1;
 
@@ -1864,7 +1888,7 @@ void SetWindowTextUcs(HWND hWnd, WCHAR *text)
 
 
 
-char* GetWindowTextUtf(HWND hWnd)
+unsigned char *GetWindowTextUtf(HWND hWnd)
 {
   TCHAR* szText;
   
@@ -1887,14 +1911,14 @@ char* GetWindowTextUtf(HWND hWnd)
 
 
 
-char* GetDlgItemTextUtf(HWND hwndDlg, int iItem)
+unsigned char *GetDlgItemTextUtf(HWND hwndDlg, int iItem)
 {
   return GetWindowTextUtf(GetDlgItem(hwndDlg, iItem));
 }
 
 
 
-void SetWindowTextUtf(HWND hWnd, const char* szText)
+void SetWindowTextUtf(HWND hWnd, const unsigned char *szText)
 {
   if (gbUnicodeAPI)
   {
@@ -1915,7 +1939,7 @@ void SetWindowTextUtf(HWND hWnd, const char* szText)
 
 
 
-void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText)
+void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const unsigned char *szText)
 {
   SetWindowTextUtf(GetDlgItem(hwndDlg, iItem), szText);
 }
@@ -1942,10 +1966,10 @@ LRESULT CallWindowProcUtf(WNDPROC OldProc, HWND hWnd, UINT msg, WPARAM wParam, L
 
 
 
-static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
+static int ControlAddStringUtf(HWND ctrl, DWORD msg, const unsigned char *szString)
 {
-  char str[MAX_PATH];
-  char *szItem = ICQTranslateUtfStatic(szString, str, MAX_PATH);
+  unsigned char str[MAX_PATH];
+  unsigned char *szItem = ICQTranslateUtfStatic(szString, str, MAX_PATH);
   int item = -1;
 
   if (gbUnicodeAPI)
@@ -1968,7 +1992,7 @@ static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char* szString)
 
 
 
-int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data)
+int ComboBoxAddStringUtf(HWND hCombo, const unsigned char *szString, DWORD data)
 {
   int item = ControlAddStringUtf(hCombo, CB_ADDSTRING, szString);
   SendMessage(hCombo, CB_SETITEMDATA, item, data);
@@ -1978,7 +2002,7 @@ int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data)
 
 
 
-int ListBoxAddStringUtf(HWND hList, const char* szString)
+int ListBoxAddStringUtf(HWND hList, const unsigned char *szString)
 {
   return ControlAddStringUtf(hList, LB_ADDSTRING, szString);
 }
@@ -2015,11 +2039,11 @@ HWND CreateDialogUtf(HINSTANCE hInstance, const char* lpTemplate, HWND hWndParen
 
 
 
-int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType)
+int MessageBoxUtf(HWND hWnd, const unsigned char *szText, const unsigned char *szCaption, UINT uType)
 {
   int res;
-  char str[1024];
-  char cap[MAX_PATH];
+  unsigned char str[1024];
+  unsigned char cap[MAX_PATH];
 
   if (gbUnicodeAPI)
   {

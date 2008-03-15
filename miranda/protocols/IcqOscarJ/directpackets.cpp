@@ -111,7 +111,7 @@ DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 
 
 
-void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, const char** szMsg)
+void icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE msgType, const unsigned char** szMsg)
 {
   icq_packet packet;
   WORD wMsgLen;

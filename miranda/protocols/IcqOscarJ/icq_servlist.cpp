@@ -52,7 +52,7 @@ static int nIDListSize = 0;
 typedef struct ssipendingitem_t
 {
   HANDLE hContact;
-  char* szGroupPath;
+  unsigned char* szGroupPath;
   GROUPADDCALLBACK ofCallback;
   servlistcookie* pCookie;
 } ssipendingitem;
@@ -195,7 +195,7 @@ void FlushJustAddedContacts()
 
 
 // Used for event-driven adding of contacts, before it is completed this is used
-static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistcookie* cookie, GROUPADDCALLBACK ofEvent)
+static BOOL AddPendingOperation(HANDLE hContact, const unsigned char* szGroup, servlistcookie* cookie, GROUPADDCALLBACK ofEvent)
 {
   BOOL bRes = TRUE;
   ssipendingitem* pItem = NULL;
@@ -596,7 +596,7 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   DWORD dwUin;
   uid_str szUid;
   icq_packet pBuffer;
-  char *szNick = NULL, *szNote = NULL;
+  unsigned char *szNick = NULL, *szNote = NULL;
   BYTE *pData = NULL;
   int nNickLen, nNoteLen, nDataLen;
   WORD wTLVlen;
@@ -650,7 +650,7 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   { // Inform the user
     /// TODO: do something with this for Manage Server-List dialog.
     if (wAction != ICQ_LISTS_REMOVEFROMLIST) // do not report this when removing from list
-      icq_LogMessage(LOG_WARNING, "The contact's information was too big and was truncated.");
+      icq_LogMessage(LOG_WARNING, LPGENUTF("The contact's information was too big and was truncated."));
   }
 
   // Build the packet
@@ -688,7 +688,7 @@ DWORD icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID,
 
 
 
-DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent)
+DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char unsigned *szName, void *pContent, int cbContent)
 {
   WORD wTLVlen;
   icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
@@ -711,7 +711,7 @@ DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *
   if (wTLVlen)
     packTLV(&pBuffer, SSI_TLV_SUBITEMS, (WORD)cbContent, (LPBYTE)pContent);  // Groups TLV
 
-  return icq_sendServerItem(dwCookie, wAction, wGroupId, 0, szName, pBuffer.pData, wTLVlen, SSI_ITEM_GROUP);
+  return icq_sendServerItem(dwCookie, wAction, wGroupId, 0, (char*)szName, pBuffer.pData, wTLVlen, SSI_ITEM_GROUP);
 }
 
 
@@ -948,7 +948,7 @@ void removeGroupPathLinks(WORD wGroupID)
 
 
 
-char* getServerGroupNameUtf(WORD wGroupID)
+unsigned char *getServerGroupNameUtf(WORD wGroupID)
 {
   char szModule[MAX_PATH+9];
   char szGroup[16];
@@ -969,7 +969,7 @@ char* getServerGroupNameUtf(WORD wGroupID)
 
 
 
-void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf)
+void setServerGroupNameUtf(WORD wGroupID, const unsigned char *szGroupNameUtf)
 {
   char szModule[MAX_PATH+9];
   char szGroup[16];
@@ -979,7 +979,7 @@ void setServerGroupNameUtf(WORD wGroupID, const char* szGroupNameUtf)
   _itoa(wGroupID, szGroup, 0x10);
 
   if (szGroupNameUtf)
-    UniWriteContactSettingUtf(NULL, szModule, szGroup, (char*)szGroupNameUtf);
+    UniWriteContactSettingUtf(NULL, szModule, szGroup, szGroupNameUtf);
   else
   {
     DBDeleteContactSetting(NULL, szModule, szGroup);
@@ -1030,10 +1030,10 @@ void setServerGroupIDUtf(const char* szPath, WORD wGroupID)
 
 
 // copied from groups.c - horrible, but only possible as this is not available as service
-int GroupNameExistsUtf(const char *name,int skipGroup)
+int GroupNameExistsUtf(const unsigned char *name,int skipGroup)
 {
   char idstr[33];
-  char* szGroup = NULL;
+  unsigned char* szGroup = NULL;
   int i;
 
   if (name == NULL) return 1; // no group always exists
@@ -1041,7 +1041,7 @@ int GroupNameExistsUtf(const char *name,int skipGroup)
   {
     if(i==skipGroup) continue;
     itoa(i,idstr,10);
-    szGroup = UniGetContactSettingUtf(NULL, "CListGroups", idstr, "");
+    szGroup = UniGetContactSettingUtf(NULL, "CListGroups", idstr, NULL);
     if (!strlennull(szGroup)) break;
     if (!strcmpnull(szGroup+1, name)) 
     { // caution, this can be false - with ansi clist
@@ -1057,7 +1057,7 @@ int GroupNameExistsUtf(const char *name,int skipGroup)
 
 
 // utility function which counts > on start of a server group name
-static int countGroupNameLevel(const char *szGroupName)
+static int countGroupNameLevel(const unsigned char *szGroupName)
 {
   int nNameLen = strlennull(szGroupName);
   int i = 0;
@@ -1076,11 +1076,13 @@ static int countGroupNameLevel(const char *szGroupName)
 
 int countGroupLevel(WORD wGroupId)
 {
-  char* szGroupName = getServerGroupNameUtf(wGroupId);
+  unsigned char* szGroupName = getServerGroupNameUtf(wGroupId);
   int cnt = -1;
 
   if (szGroupName)
     cnt = countGroupNameLevel(szGroupName);
+
+  SAFE_FREE((void**)&szGroupName);
 
   return cnt;
 }
@@ -1100,7 +1102,7 @@ static int countClistGroupLevel(const char *szClistName)
 
 
 
-int CreateCListGroup(const char* szGroupName)
+int CreateCListGroup(const unsigned char* szGroupName)
 {
   int hGroup;
   CLIST_INTERFACE *clint = NULL;
@@ -1112,7 +1114,7 @@ int CreateCListGroup(const char* szGroupName)
 
   if (gbUnicodeCore && clint && clint->version >= 1)
   { // we've got unicode interface, use it
-    wchar_t* usTmp = make_unicode_string(szGroupName);
+    WCHAR* usTmp = make_unicode_string(szGroupName);
 
     clint->pfnRenameGroup(hGroup, (TCHAR*)usTmp);
     SAFE_FREE((void**)&usTmp);
@@ -1132,14 +1134,14 @@ int CreateCListGroup(const char* szGroupName)
 
 
 // demangle group path
-char* makeGroupPathUtf(WORD wGroupId)
+unsigned char *makeGroupPathUtf(WORD wGroupId)
 {
-  char* szGroup = NULL;
+  unsigned char *szGroup = NULL;
 
   if (szGroup = getServerGroupNameUtf(wGroupId))
   { // this groupid is not valid
-    while (strstr(szGroup, "\\")!=NULL) *strstr(szGroup, "\\") = '_'; // remove invalid char
-    if (getServerGroupIDUtf(szGroup) == wGroupId)
+    while (strstrnull(szGroup, "\\")!=NULL) *strstrnull(szGroup, "\\") = '_'; // remove invalid char
+    if (getServerGroupIDUtf((char*)szGroup) == wGroupId)
     { // this grouppath is known and is for this group, set user group
       return szGroup;
     }
@@ -1150,7 +1152,7 @@ char* makeGroupPathUtf(WORD wGroupId)
         WORD wId = wGroupId-1;
         int level = countGroupLevel(wGroupId);
         int levnew = countGroupLevel(wId);
-        char* szTempGroup;
+        unsigned char *szTempGroup;
 
         if (level == -1)
         { // this is just an ordinary group
@@ -1160,7 +1162,7 @@ char* makeGroupPathUtf(WORD wGroupId)
           { // if the group does not exist, create it
             hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
         while ((levnew >= level) && (levnew != -1))
@@ -1174,19 +1176,19 @@ char* makeGroupPathUtf(WORD wGroupId)
           { // if the group does not exist, create it
             int hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
 
         szTempGroup = makeGroupPathUtf(wId);
 
-        szTempGroup = ( char* )SAFE_REALLOC(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
-        strcat(szTempGroup, "\\");
-        strcat(szTempGroup, szGroup+level);
+        szTempGroup = (unsigned char*)SAFE_REALLOC(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
+        strcat((char*)szTempGroup, "\\");
+        strcat((char*)szTempGroup, (char*)szGroup+level);
         SAFE_FREE((void**)&szGroup);
         szGroup = szTempGroup;
         
-        if (getServerGroupIDUtf(szGroup) == wGroupId)
+        if (getServerGroupIDUtf((char*)szGroup) == wGroupId)
         { // known path, give
           return szGroup;
         }
@@ -1196,7 +1198,7 @@ char* makeGroupPathUtf(WORD wGroupId)
           { // if the group does not exist, create it
             int hGroup = CreateCListGroup(szGroup);
           }
-          setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
+          setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
           return szGroup;
         }
       }
@@ -1208,7 +1210,7 @@ char* makeGroupPathUtf(WORD wGroupId)
         { // if the group does not exist, create it
           hGroup = CreateCListGroup(szGroup);
         }
-        setServerGroupIDUtf(szGroup, wGroupId); // set grouppath id
+        setServerGroupIDUtf((char*)szGroup, wGroupId); // set grouppath id
         return szGroup;
       }
     }
@@ -1222,7 +1224,7 @@ char* makeGroupPathUtf(WORD wGroupId)
 void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
 {
   servlistcookie* clue = (servlistcookie*)lParam;
-  char* szGroup = clue->szGroupName;
+  unsigned char* szGroup = clue->szGroupName;
   GROUPADDCALLBACK ofCallback = clue->ofCallback;
   servlistcookie* param = (servlistcookie*)clue->lParam;
   int level;
@@ -1251,9 +1253,9 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
 
   if (!CheckServerID((WORD)(wGroupID+1), 0))
   { // the next id is free, so create our group with that id
-    servlistcookie* ack;
+    servlistcookie *ack;
     DWORD dwCookie;
-    char* szSubGroup = (char*)SAFE_MALLOC(strlennull(szGroup)+level+1);
+    unsigned char *szSubGroup = (unsigned char*)SAFE_MALLOC(strlennull(szGroup)+level+1);
 
     if (szSubGroup)
     {
@@ -1263,7 +1265,7 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
       {
         szSubGroup[i] = '>';
       }
-      strcpy(szSubGroup+level, szGroup);
+      strcpy((char*)szSubGroup+level, (char*)szGroup);
       szSubGroup[strlennull(szGroup)+level] = '\0';
 
       if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
@@ -1297,20 +1299,20 @@ void madeMasterGroupId(WORD wGroupID, LPARAM lParam)
 
 // create group with this path, a bit complex task
 // this supposes that all server groups are known
-WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam)
+WORD makeGroupId(const unsigned char *szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam)
 {
   WORD wGroupID = 0;
-  char* szGroup = (char*)szGroupPath;
+  unsigned char* szGroup = (unsigned char*)szGroupPath;
 
-  if (!szGroup || szGroup[0]=='\0') szGroup = DEFAULT_SS_GROUP;
+  if (!szGroup || szGroup[0]=='\0') szGroup = (unsigned char*)DEFAULT_SS_GROUP;
 
-  if (wGroupID = getServerGroupIDUtf(szGroup))
+  if (wGroupID = getServerGroupIDUtf((char*)szGroup))
   {
     if (ofCallback) ofCallback(wGroupID, (LPARAM)lParam);
     return wGroupID; // if the path is known give the id
   }
 
-  if (!strstr(szGroup, "\\"))
+  if (!strstrnull(szGroup, "\\"))
   { // a root group can be simply created without problems
     servlistcookie* ack;
     DWORD dwCookie;
@@ -1332,16 +1334,16 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
   }
   else
   { // this is a sub-group
-    char* szSub = null_strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate
+    unsigned char* szSub = null_strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate
     servlistcookie* ack;
-    char *szLast;
+    unsigned char *szLast;
 
-    if (strstr(szSub, "\\") != NULL)
+    if (strstrnull(szSub, "\\") != NULL)
     { // determine parent group
-      szLast = strstr(szSub, "\\")+1;
+      szLast = strstrnull(szSub, "\\")+1;
 
-      while (strstr(szLast, "\\") != NULL)
-        szLast = strstr(szLast, "\\")+1; // look for last backslash
+      while (strstrnull(szLast, "\\") != NULL)
+        szLast = strstrnull(szLast, "\\")+1; // look for last backslash
       szLast[-1] = '\0'; 
     }
     // make parent group id
@@ -1361,14 +1363,14 @@ WORD makeGroupId(const char* szGroupPath, GROUPADDCALLBACK ofCallback, servlistc
     SAFE_FREE((void**)&szSub); 
   }
   
-  if (strstr(szGroup, "\\") != NULL)
+  if (strstrnull(szGroup, "\\") != NULL)
   { // we failed to get grouppath, trim it by one group
     WORD wRes;
-    char *szLast = null_strdup(szGroup);
-    char *szLess = szLast;
+    unsigned char *szLast = null_strdup(szGroup);
+    unsigned char *szLess = szLast;
 
-    while (strstr(szLast, "\\") != NULL)
-      szLast = strstr(szLast, "\\")+1; // look for last backslash
+    while (strstrnull(szLast, "\\") != NULL)
+      szLast = strstrnull(szLast, "\\")+1; // look for last backslash
     szLast[-1] = '\0'; 
     wRes = makeGroupId(szLess, ofCallback, lParam);
     SAFE_FREE((void**)&szLess);
@@ -1438,7 +1440,7 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
 
 // Called when contact should be added to server list, if group does not exist, create one
-DWORD addServContact(HANDLE hContact, const char *pszGroup)
+DWORD addServContact(HANDLE hContact, const unsigned char *pszGroup)
 {
   servlistcookie* ack;
 
@@ -1591,7 +1593,7 @@ void moveServContactReady(WORD wNewGroupID, LPARAM lParam)
 
 
 // Called when contact should be moved from one group to another, create new, remove empty
-DWORD moveServContactGroup(HANDLE hContact, const char *pszNewGroup)
+DWORD moveServContactGroup(HANDLE hContact, const unsigned char *pszNewGroup)
 {
   servlistcookie* ack;
 
@@ -1689,11 +1691,11 @@ static DWORD updateServContact(HANDLE hContact)
 
 
 
-void renameServGroup(WORD wGroupId, char* szGroupName)
+void renameServGroup(WORD wGroupId, unsigned char* szGroupName)
 {
   servlistcookie* ack;
   DWORD dwCookie;
-  char* szGroup, *szLast;
+  unsigned char *szGroup, *szLast;
   int level = countGroupLevel(wGroupId);
   int i;
   void* groupData;
@@ -1707,19 +1709,19 @@ void renameServGroup(WORD wGroupId, char* szGroupName)
   i = level;
   while (i)
   { // find correct part of grouppath
-    szLast = strstr(szLast, "\\")+1;
+    szLast = strstrnull(szLast, "\\")+1;
     i--;
   }
-  szGroup = (char*)SAFE_MALLOC(strlennull(szLast)+1+level);
+  szGroup = (unsigned char*)SAFE_MALLOC(strlennull(szLast)+1+level);
   if (!szGroup) return;
 
   for (i=0;i<level;i++)
   { // create level prefix
     szGroup[i] = '>';
   }
-  strcat(szGroup, szLast);
+  strcat((char*)szGroup, (char*)szLast);
   // truncate other possible sub-groups
-  szLast = strstr(szGroup, "\\");
+  szLast = strstrnull(szGroup, "\\");
   if (szLast)
     szLast[0] = '\0';
 
@@ -1825,21 +1827,21 @@ static int ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       ICQGetContactSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
     { // Test if group was not renamed...
       WORD wGroupId = ICQGetContactSettingWord((HANDLE)wParam, "SrvGroupId", 0);
-      char* szGroup = makeGroupPathUtf(wGroupId);
-      char* szNewGroup;
+      unsigned char *szGroup = makeGroupPathUtf(wGroupId);
+      unsigned char *szNewGroup;
       int bRenamed = 0;
       int bMoved = 1;
 
       // Read group from DB
-      szNewGroup = UniGetContactSettingUtf((HANDLE)wParam, "CList", "Group", NULL);
+      szNewGroup = ICQGetContactCListGroup((HANDLE)wParam);
 
       if (szNewGroup && wGroupId && !GroupNameExistsUtf(szGroup, -1))
       { // if we moved from non-existing group, it can be rename
-        if (!getServerGroupIDUtf(szNewGroup))
+        if (!getServerGroupIDUtf((char*)szNewGroup))
         { // the target group is not known - it is probably rename
-          if (getServerGroupIDUtf(szGroup))
+          if (getServerGroupIDUtf((char*)szGroup))
           { // source group not known -> already renamed
-            if (countClistGroupLevel(szNewGroup) == countGroupLevel(wGroupId))
+            if (countClistGroupLevel((char*)szNewGroup) == countGroupLevel(wGroupId))
             { // renamed groups can be only in the same level, if not it is move
               if (!IsGroupRenamed(wGroupId))
               { // is rename in progress ?

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -65,7 +65,7 @@ void InitPopupOpts(WPARAM wParam)
     odp.pfnDlgProc = DlgProcIcqPopupOpts;
     odp.flags = ODPF_BOLDGROUPS;
     odp.nIDBottomSimpleControl = 0;
-    AddOptionsPageUtf(&odp, wParam, LPGEN("Popups"), gpszICQProtoName);
+    AddOptionsPageUtf(&odp, wParam, LPGENUTF("Popups"), (unsigned char*)gpszICQProtoName);
   }
 }
 
@@ -114,11 +114,11 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
     {
     case IDC_PREVIEW:
       {
-        ShowPopUpMsg(NULL, "Popup Title", "Sample Note",    LOG_NOTE);
-        ShowPopUpMsg(NULL, "Popup Title", "Sample Warning", LOG_WARNING);
-        ShowPopUpMsg(NULL, "Popup Title", "Sample Error",   LOG_ERROR);
-        ShowPopUpMsg(NULL, "Popup Title", "Sample Fatal",   LOG_FATAL);
-        ShowPopUpMsg(NULL, "Popup Title", "Sample Spambot", POPTYPE_SPAM);
+        ShowPopUpMsg(NULL, LPGENUTF("Popup Title"), LPGENUTF("Sample Note"),    LOG_NOTE);
+        ShowPopUpMsg(NULL, LPGENUTF("Popup Title"), LPGENUTF("Sample Warning"), LOG_WARNING);
+        ShowPopUpMsg(NULL, LPGENUTF("Popup Title"), LPGENUTF("Sample Error"),   LOG_ERROR);
+        ShowPopUpMsg(NULL, LPGENUTF("Popup Title"), LPGENUTF("Sample Fatal"),   LOG_FATAL);
+        ShowPopUpMsg(NULL, LPGENUTF("Popup Title"), LPGENUTF("Sample Spambot"), POPTYPE_SPAM);
       }
       return FALSE;
 
@@ -168,7 +168,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 
 
-int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE bType)
+int ShowPopUpMsg(HANDLE hContact, const unsigned char *szTitle, const unsigned char *szMsg, BYTE bType)
 {
   if (bPopUpService && ICQGetContactSettingByte(NULL, "PopupsEnabled", DEFAULT_POPUPS_ENABLED))
   {
@@ -247,7 +247,7 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     if (gbUnicodeAPI && ServiceExists(MS_POPUP_ADDPOPUPW))
     { // call unicode popup module - only on unicode OS otherwise it will not work properly :(
       // due to Popup Plug bug in ADDPOPUPW implementation
-      char str[MAX_PATH];
+      unsigned char str[MAX_PATH];
 
       make_unicode_string_static(ICQTranslateUtfStatic(szTitle, str, MAX_PATH), ppdw.lpwzContactName, MAX_CONTACTNAME);
       make_unicode_string_static(ICQTranslateUtfStatic(szMsg, str, MAX_PATH), ppdw.lpwzText, MAX_SECONDLINE);
@@ -263,7 +263,7 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     }
     else
     {
-      char str[MAX_PATH];
+      unsigned char str[MAX_PATH];
 
       utf8_decode_static(ICQTranslateUtfStatic(szTitle, str, MAX_PATH), ppd.lpzContactName, MAX_CONTACTNAME);
       utf8_decode_static(ICQTranslateUtfStatic(szMsg, str, MAX_PATH), ppd.lpzText, MAX_SECONDLINE);

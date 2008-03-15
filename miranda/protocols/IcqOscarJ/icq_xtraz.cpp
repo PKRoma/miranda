@@ -47,8 +47,8 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
   int nNotifyLen, nQueryLen;
   HANDLE hContact;
 
-  szNotify = strstr(szMsg, "<NOTIFY>");
-  szQuery = strstr(szMsg, "<QUERY>");
+  szNotify = strstrnull(szMsg, "<NOTIFY>");
+  szQuery = strstrnull(szMsg, "<QUERY>");
 
   hContact = HContactFromUIN(dwUin, NULL);
   if (hContact) // user sent us xtraz, he supports it
@@ -58,16 +58,16 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
   { // valid request
     szNotify += 8;
     szQuery += 7;
-    szEnd = strstr(szMsg, "</NOTIFY>");
+    szEnd = strstrnull(szMsg, "</NOTIFY>");
     if (!szEnd) szEnd = szMsg + nMsgLen;
     nNotifyLen = (szEnd - szNotify);
-    szEnd = strstr(szMsg, "</QUERY>");
+    szEnd = strstrnull(szMsg, "</QUERY>");
     if (!szEnd) szEnd = szNotify;
     szNotify = DemangleXml(szNotify, nNotifyLen);
     nQueryLen = (szEnd - szQuery);
     szQuery = DemangleXml(szQuery, nQueryLen);
-    szWork = strstr(szQuery, "<PluginID>");
-    szEnd = strstr(szQuery, "</PluginID>");
+    szWork = strstrnull(szQuery, "<PluginID>");
+    szEnd = strstrnull(szQuery, "</PluginID>");
 #ifdef _DEBUG
     NetLog_Server("Query: %s", szQuery);
     NetLog_Server("Notify: %s", szNotify);
@@ -77,10 +77,10 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
       szWork += 10;
       *szEnd = '\0';
 
-      if (!stricmp(szWork, "srvMng") && strstr(szNotify, "AwayStat"))
+      if (!stricmp(szWork, "srvMng") && strstrnull(szNotify, "AwayStat"))
       {
-        char* szSender = strstr(szNotify, "<senderId>");
-        char* szEndSend = strstr(szNotify, "</senderId>");
+        char* szSender = strstrnull(szNotify, "<senderId>");
+        char* szEndSend = strstrnull(szNotify, "</senderId>");
 
         if (szSender && szEndSend)
         {
@@ -91,18 +91,19 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
           {
             char *szResponse;
             int nResponseLen;
-            char *szXName, *szXMsg, *tmp;
+            char *szXName, *szXMsg;
+            unsigned char *tmp;
             BYTE dwXId = ICQGetContactXStatus(NULL);
 
             if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
             { // apply privacy rules
               NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
-              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, "");
-              szXName = MangleXml(tmp, strlennull(tmp));
+              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSNAME, (unsigned char*)"");
+              szXName = MangleXml((char*)tmp, strlennull(tmp));
               SAFE_FREE((void**)&tmp);
-              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, "");
-              szXMsg = MangleXml(tmp, strlennull(tmp));
+              tmp = ICQGetContactSettingUtf(NULL, DBSETTING_XSTATUSMSG, (unsigned char*)"");
+              szXMsg = MangleXml((char*)tmp, strlennull(tmp));
               SAFE_FREE((void**)&tmp);
               
               nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
@@ -175,8 +176,8 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
   NetLog_Server("Received Xtraz Notify Response");
 #endif
 
-  szRes = strstr(szMsg, "<RES>");
-  szEnd = strstr(szMsg, "</RES>");
+  szRes = strstrnull(szMsg, "<RES>");
+  szEnd = strstrnull(szMsg, "</RES>");
 
   if (szRes && szEnd)
   { // valid response
@@ -194,8 +195,8 @@ void handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char*
     ICQBroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
 NextVal:
-    szNode = strstr(szRes, "<val srv_id='");
-    if (szNode) szEnd = strstr(szNode, ">"); else szEnd = NULL;
+    szNode = strstrnull(szRes, "<val srv_id='");
+    if (szNode) szEnd = strstrnull(szNode, ">"); else szEnd = NULL;
 
     if (szNode && szEnd)
     {
@@ -205,8 +206,8 @@ NextVal:
 
       if (!stricmp(szNode, "cAwaySrv"))
       {
-        szNode = strstr(szWork, "<uin>");
-        szEnd = strstr(szWork, "</uin>");
+        szNode = strstrnull(szWork, "<uin>");
+        szEnd = strstrnull(szWork, "</uin>");
 
         if (szNode && szEnd)
         {
@@ -218,8 +219,8 @@ NextVal:
             int bChanged = FALSE;
 
             *szEnd = ' ';
-            szNode = strstr(szWork, "<index>");
-            szEnd = strstr(szWork, "</index>");
+            szNode = strstrnull(szWork, "<index>");
+            szEnd = strstrnull(szWork, "</index>");
 
             if (szNode && szEnd)
             {
@@ -231,16 +232,16 @@ NextVal:
               }
               *szEnd = ' ';
             }
-            szNode = strstr(szWork, "<title>");
-            szEnd = strstr(szWork, "</title>");
+            szNode = strstrnull(szWork, "<title>");
+            szEnd = strstrnull(szWork, "</title>");
 
             if (szNode && szEnd)
             { // we got XStatus title, save it
-              char *szXName, *szOldXName;
+              unsigned char *szXName, *szOldXName;
 
               szNode += 7;
               *szEnd = '\0';
-              szXName = DemangleXml(szNode, strlennull(szNode));
+              szXName = (unsigned char*)DemangleXml(szNode, strlennull(szNode));
               // check if the name changed
               szOldXName = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
               if (strcmpnull(szOldXName, szXName))
@@ -250,16 +251,16 @@ NextVal:
               SAFE_FREE((void**)&szXName);
               *szEnd = ' ';
             }
-            szNode = strstr(szWork, "<desc>");
-            szEnd = strstr(szWork, "</desc>");
+            szNode = strstrnull(szWork, "<desc>");
+            szEnd = strstrnull(szWork, "</desc>");
 
             if (szNode && szEnd)
             { // we got XStatus mode msg, save it
-              char *szXMsg, *szOldXMsg;
+              unsigned char *szXMsg, *szOldXMsg;
 
               szNode += 6;
               *szEnd = '\0';
-              szXMsg = DemangleXml(szNode, strlennull(szNode));
+              szXMsg = (unsigned char*)DemangleXml(szNode, strlennull(szNode));
               // check if the decription changed
               szOldXMsg = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
               if (strcmpnull(szOldXMsg, szXMsg))
@@ -281,9 +282,9 @@ NextVal:
       }
       else
       {
-        char *szSrvEnd = strstr(szEnd, "</srv>");
+        char *szSrvEnd = strstrnull(szEnd, "</srv>");
 
-        if (szSrvEnd && strstr(szSrvEnd, "<val srv_id='"))
+        if (szSrvEnd && strstrnull(szSrvEnd, "<val srv_id='"))
         { // check all values !
           szRes = szSrvEnd + 6; // after first value
           goto NextVal;
@@ -307,8 +308,8 @@ static char* getXmlPidItem(const char* szData, int nLen)
 {
   const char *szPid, *szEnd;
 
-  szPid = strstr(szData, "<PID>");
-  szEnd = strstr(szData, "</PID>");
+  szPid = strstrnull(szData, "<PID>");
+  szEnd = strstrnull(szData, "</PID>");
 
   if (szPid && szEnd)
   {
@@ -357,8 +358,8 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
   { // it is a greeting card
     char *szWork, *szEnd, *szUrl, *szNum;
 
-    szWork = strstr(szMsg, "<InD>");
-    szEnd = strstr(szMsg, "</InD>");
+    szWork = strstrnull(szMsg, "<InD>");
+    szEnd = strstrnull(szMsg, "</InD>");
     if (szWork && szEnd)
     {
       int nDataLen = szEnd - szWork;
@@ -370,18 +371,18 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
       if (!strnicmp(szUrl, "view_", 5))
       {
         szNum = szUrl + 5;
-        szWork = strstr(szUrl, ".html");
+        szWork = strstrnull(szUrl, ".html");
         if (szWork)
         {
           strcpy(szWork, ".php");
           strcat(szWork, szWork+5);
         }
-        while (szWork = strstr(szUrl, "&amp;"))
+        while (szWork = strstrnull(szUrl, "&amp;"))
         { // unescape &amp; code
           strcpy(szWork+1, szWork+5);
         }
         szWork = (char*)SAFE_MALLOC(nDataLen + MAX_PATH);
-        ICQTranslateUtfStatic("Greeting card:", szWork, MAX_PATH);
+        ICQTranslateUtfStatic(LPGENUTF("Greeting card:"), (unsigned char*)szWork, MAX_PATH);
         strcat(szWork, "\r\nhttp://www.icq.com/friendship/pages/view_page_");
         strcat(szWork, szNum);
 

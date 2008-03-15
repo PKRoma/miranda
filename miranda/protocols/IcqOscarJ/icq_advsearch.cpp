@@ -38,12 +38,12 @@
 
 
 
-static void InitComboBox(HWND hwndCombo,struct fieldnames_t *names)
+static void InitComboBox(HWND hwndCombo, struct fieldnames_t *names)
 {
   int iItem;
   int i;
 
-  iItem = ComboBoxAddStringUtf(hwndCombo, "", 0);
+  iItem = ComboBoxAddStringUtf(hwndCombo, NULL, 0);
   SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
 
   for (i = 0; ; i++)
@@ -80,13 +80,13 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
         CallService(MS_UTILS_GETCOUNTRYLIST, (WPARAM)&countryCount, (LPARAM)&countries);
 
         hCombo = GetDlgItem(hwndDlg, IDC_COUNTRY);
-        iItem = ComboBoxAddStringUtf(hCombo, "", 0);
+        iItem = ComboBoxAddStringUtf(hCombo, NULL, 0);
         SendMessage(hCombo, CB_SETCURSEL, iItem, 0);
         for (i = 0; i < countryCount; i++)
         {
           if (countries[i].id == 0 || countries[i].id == 0xFFFF)
             continue;
-          iItem = ComboBoxAddStringUtf(hCombo, countries[i].szName, countries[i].id);
+          iItem = ComboBoxAddStringUtf(hCombo, (unsigned char*)countries[i].szName, countries[i].id);
         }
       }
 

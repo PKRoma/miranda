@@ -180,13 +180,13 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
     CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
     _strlwr(szVer); // make sure it is lowercase
-    gbUnicodeCore = (strstr(szVer, "unicode") != NULL);
+    gbUnicodeCore = (strstrnull(szVer, "unicode") != NULL);
 
-    if (strstr(szVer, "alpha") != NULL)
+    if (strstrnull(szVer, "alpha") != NULL)
     { // Are we running under Alpha Core
       MIRANDA_VERSION |= 0x80000000;
     }
-    else if (MIRANDA_VERSION >= 0x00050000 && strstr(szVer, "preview") == NULL)
+    else if (MIRANDA_VERSION >= 0x00050000 && strstrnull(szVer, "preview") == NULL)
     { // for Final Releases of Miranda 0.5+ clear build number
       MIRANDA_VERSION &= 0xFFFFFF00;
     }
@@ -330,17 +330,18 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
   // Initialize IconLib icons (only 0.7+)
   {
-    char proto[MAX_PATH], lib[MAX_PATH];
+    unsigned char proto[MAX_PATH];
+    char lib[MAX_PATH];
 
-    ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
+    ICQTranslateUtfStatic((unsigned char*)gpszICQProtoName, proto, MAX_PATH);
 
     GetModuleFileName(hInst, lib, MAX_PATH);
 
-    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), proto, "main", lib, -IDI_ICQ);
-    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), proto, "req_auth", lib, -IDI_AUTH_ASK);
-    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), proto, "grant_auth", lib, -IDI_AUTH_GRANT);
-    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), proto, "revoke_auth", lib, -IDI_AUTH_REVOKE);
-    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), proto, "add_to_server", lib, -IDI_SERVLIST_ADD);
+    hIconProtocol = IconLibDefine(LPGENUTF("Protocol Icon"), proto, "main", lib, -IDI_ICQ);
+    hIconMenuAuth = IconLibDefine(LPGENUTF("Request authorization"), proto, "req_auth", lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(LPGENUTF("Grant authorization"), proto, "grant_auth", lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(LPGENUTF("Revoke authorization"), proto, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(LPGENUTF("Add to server list"), proto, "add_to_server", lib, -IDI_SERVLIST_ADD);
   }
   InitXStatusIcons();
 

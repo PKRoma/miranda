@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/main.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -48,7 +48,7 @@ int InitChangeDetails(WPARAM wParam, LPARAM lParam)
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
   odp.pfnDlgProc = ChangeInfoDlgProc;
 
-  AddUserInfoPageUtf(&odp, wParam, LPGEN("%s Details"));
+  AddUserInfoPageUtf(&odp, wParam, LPGENUTF("%s Details"));
 
   return 0;
 }

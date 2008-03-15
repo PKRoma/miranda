@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2008 Joe Kucera, Bio
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -43,7 +43,7 @@ int iEditItem;
 int StringToListItemId(const char *szSetting,int def)
 {
   int i,listCount;
-  char szTmp[256];
+  unsigned char *szValue;
   ListTypeDataItem *list;
 
   for(i=0;i<settingCount;i++)
@@ -55,12 +55,14 @@ int StringToListItemId(const char *szSetting,int def)
   list=(ListTypeDataItem*)setting[i].pList;
   listCount=setting[i].listCount;
 
-  if(ICQGetContactStaticString(NULL, szSetting, szTmp, sizeof(szTmp)))
+  szValue = ICQGetContactSettingUtf(NULL, szSetting, NULL);
+  if (!szValue)
     return def;
 
   for(i=0;i<listCount;i++)
-    if(!strcmpnull(list[i].szValue, szTmp)) break;
+    if(!strcmpnull(list[i].szValue, szValue)) break;
 
+  SAFE_FREE((void**)&szValue);
   if(i==listCount) return def;
 
   return list[i].id;
@@ -77,7 +79,7 @@ int UploadSettings(HWND hwndParent)
 
   if (!icqOnline)
   {
-    MessageBoxUtf(hwndParent, LPGEN("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGEN("Change ICQ Details"), MB_OK);
+    MessageBoxUtf(hwndParent, LPGENUTF("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGENUTF("Change ICQ Details"), MB_OK);
     return 0;
   }
 
@@ -172,7 +174,7 @@ int UploadSettings(HWND hwndParent)
     char* tmp;
 
     tmp = GetUserPassword(TRUE);
-    if(tmp)
+    if (tmp)
     {
       if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
       {

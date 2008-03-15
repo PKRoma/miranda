@@ -55,8 +55,8 @@ int IcqStatusToMiranda(WORD wStatus);
 WORD MirandaStatusToIcq(int nStatus);
 int MirandaStatusToSupported(int nMirandaStatus);
 char *MirandaStatusToString(int);
-char *MirandaStatusToStringUtf(int);
-char**MirandaStatusToAwayMsg(int nStatus);
+unsigned char *MirandaStatusToStringUtf(int);
+unsigned char **MirandaStatusToAwayMsg(int nStatus);
 
 int AwayMsgTypeToStatus(int nMsgType);
 
@@ -73,22 +73,32 @@ void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
 HANDLE HContactFromUID(DWORD dwUIN, char *pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
-char *NickFromHandleUtf(HANDLE hContact);
+unsigned char *NickFromHandleUtf(HANDLE hContact);
 char *strUID(DWORD dwUIN, char *pszUID);
 void SetContactHidden(HANDLE hContact, BYTE bHidden);
 
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
+char* __fastcall strstrnull(const char *str, const char *substr);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
-size_t __fastcall null_strcut(char *string, size_t maxlen);
+size_t __fastcall null_strcut(unsigned char *string, size_t maxlen);
+
+inline size_t strlennull(const unsigned char *utf8) { return strlennull((char*)utf8); };
+inline int strcmpnull(const unsigned char *str1, const unsigned char *str2) { return strcmpnull((char*)str1, (char*)str2); };
+inline unsigned char* strstrnull(const unsigned char *utf8, const char *substr) { return (unsigned char*)strstrnull((char*)utf8, substr); };
+int null_snprintf(unsigned char *buffer, size_t count, const unsigned char* fmt, ...);
+inline unsigned char* null_strdup(const unsigned char *utf8) { return (unsigned char*)null_strdup((char*)utf8); };
+inline size_t null_strcut(char *string, size_t maxlen) { return null_strcut((unsigned char*)string, maxlen); };
+
 
 void parseServerAddress(char *szServer, WORD* wPort);
 
 char *DemangleXml(const char *string, int len);
 char *MangleXml(const char *string, int len);
 char *EliminateHtml(const char *string, int len);
-char* ApplyEncoding(const char *string, const char* pszEncoding);
+inline unsigned char* EliminateHtml(const unsigned char *utf8, int len) { return (unsigned char*)EliminateHtml((char*)utf8, len); };
+unsigned char *ApplyEncoding(const char *string, const char *pszEncoding);
 
 
 void ResetSettingsOnListReload(void);
@@ -129,9 +139,9 @@ int NetLog_Uni(BOOL bDC, const char *fmt,...);
 int ICQBroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 
 int __fastcall ICQTranslateDialog(HWND hwndDlg);
-char* __fastcall ICQTranslate(const char* src);
-char* __fastcall ICQTranslateUtf(const char* src);
-char* __fastcall ICQTranslateUtfStatic(const char* src, char* buf, size_t bufsize);
+char* __fastcall ICQTranslate(const char *src);
+unsigned char* __fastcall ICQTranslateUtf(const unsigned char *src);
+unsigned char* __fastcall ICQTranslateUtfStatic(const unsigned char *src, unsigned char *buf, size_t bufsize);
 
 HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID);
 void ICQCreateThread(pThreadFuncEx AFunc, void* arg);
@@ -142,27 +152,27 @@ WORD GetMyStatusFlags();
 /* Unicode FS utility functions */
 
 int IsValidRelativePath(const char *filename);
-char* ExtractFileName(const char *fullname);
-char* FileNameToUtf(const char *filename);
+unsigned char *ExtractFileName(const unsigned char *fullname);
+unsigned char *FileNameToUtf(const char *filename);
 
-int FileStatUtf(const char *path, struct _stati64 *buffer);
-int MakeDirUtf(const char *dir);
-int OpenFileUtf(const char *filename, int oflag, int pmode);
+int FileStatUtf(const unsigned char *path, struct _stati64 *buffer);
+int MakeDirUtf(const unsigned char *dir);
+int OpenFileUtf(const unsigned char *filename, int oflag, int pmode);
 
 /* Unicode UI utility functions */
 WCHAR* GetWindowTextUcs(HWND hWnd);
 void SetWindowTextUcs(HWND hWnd, WCHAR *text);
-char* GetWindowTextUtf(HWND hWnd);
-char* GetDlgItemTextUtf(HWND hwndDlg, int iItem);
-void SetWindowTextUtf(HWND hWnd, const char* szText);
-void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const char* szText);
+unsigned char *GetWindowTextUtf(HWND hWnd);
+unsigned char *GetDlgItemTextUtf(HWND hwndDlg, int iItem);
+void SetWindowTextUtf(HWND hWnd, const unsigned char *szText);
+void SetDlgItemTextUtf(HWND hwndDlg, int iItem, const unsigned char *szText);
 LONG SetWindowLongUtf(HWND hWnd, int nIndex, LONG dwNewLong);
 LRESULT CallWindowProcUtf(WNDPROC OldProc, HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int ComboBoxAddStringUtf(HWND hCombo, const char* szString, DWORD data);
-int ListBoxAddStringUtf(HWND hList, const char* szString);
+int ComboBoxAddStringUtf(HWND hCombo, const unsigned char *szString, DWORD data);
+int ListBoxAddStringUtf(HWND hList, const unsigned char *szString);
 
-int MessageBoxUtf(HWND hWnd, const char* szText, const char* szCaption, UINT uType);
+int MessageBoxUtf(HWND hWnd, const unsigned char *szText, const unsigned char *szCaption, UINT uType);
 HWND DialogBoxUtf(BOOL bModal, HINSTANCE hInstance, const char* szTemplate, HWND hWndParent, DLGPROC lpDialogFunc, LPARAM dwInitParam);
 HWND CreateDialogUtf(HINSTANCE hInstance, const char* lpTemplate, HWND hWndParent, DLGPROC lpDialogFunc);
 

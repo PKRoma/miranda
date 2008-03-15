@@ -58,7 +58,7 @@ DWORD icq_sendGetAimProfileServ(HANDLE hContact, char *szUid);
 DWORD icq_sendGetAwayMsgServ(HANDLE, DWORD, int, WORD);
 DWORD icq_sendGetAwayMsgServExt(HANDLE hContact, DWORD dwUin, int type, WORD wVersion);
 DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type);
-void icq_sendSetAimAwayMsgServ(char *szMsg);
+void icq_sendSetAimAwayMsgServ(const unsigned char *szMsg);
 
 DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID);
 
@@ -78,12 +78,12 @@ void icq_sendNewContact(DWORD dwUin, char* szUid);
 //void icq_sendRemoveContact(DWORD dwUin, char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
-void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, char **);
+void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, unsigned char **);
 DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 void icq_sendMessageCapsServ(DWORD dwUin);
 void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
 void icq_sendGrantAuthServ(DWORD dwUin, char* szUid, char *szMsg);
-void icq_sendAuthReqServ(DWORD dwUin, char* szUid, char *szMsg);
+void icq_sendAuthReqServ(DWORD dwUin, char* szUid, const unsigned char *szMsg);
 void icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,char *szReason);
 void icq_sendYouWereAddedServ(DWORD,DWORD);
 
@@ -111,11 +111,11 @@ DWORD SearchByEmail(char *pszEmail);
 
 DWORD icq_searchAimByEmail(char* pszEmail, DWORD dwSearchId);
 
-void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char* pszFiles, DWORD dwLocalInternalIP);
-void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
-void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
-void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer* ft);
-void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResponse);
-void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy);
+void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer *ft, const unsigned char *pszFiles, DWORD dwLocalInternalIP);
+void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
+void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
+void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
+void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer *ft, WORD wResponse);
+void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer *ft, DWORD dwIP, WORD wPort, int bProxy);
 
 #endif /* __STDPACKETS_H */

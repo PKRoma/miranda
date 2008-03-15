@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -123,10 +123,10 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
   }
   else
   { // Pack old style password hash
-    char hash[20];
+    BYTE hash[20];
 
-    icq_encryptPassword(szKey, (LPBYTE)hash);
-    packTLV(&packet, 0x0002, wKeyLen, (LPBYTE)hash);
+    icq_encryptPassword(szKey, hash);
+    packTLV(&packet, 0x0002, wKeyLen, hash);
   }
 
   // Pack client identification details.
@@ -159,7 +159,7 @@ static void handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info 
   if (wPacketLen < 2) 
   {
     NetLog_Server("Malformed %s", "ICQ_SIGNON_AUTH_KEY");
-    icq_LogMessage(LOG_FATAL, "Secure login failed.\nInvalid server response.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("Secure login failed.\nInvalid server response."));
     SetCurrentStatus(ID_STATUS_OFFLINE);
     return;
   }
@@ -170,24 +170,20 @@ static void handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info 
   if (!wKeyLen || wKeyLen > wPacketLen || wKeyLen > sizeof(szKey)) 
   {
     NetLog_Server("Invalid length in %s: %u", "ICQ_SIGNON_AUTH_KEY", wKeyLen);
-    icq_LogMessage(LOG_FATAL, "Secure login failed.\nInvalid key length.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("Secure login failed.\nInvalid key length."));
     SetCurrentStatus(ID_STATUS_OFFLINE);
     return;
   }
 
   unpackString(&buf, szKey, wKeyLen);
 
-  {
-    char *pwd = ( char* )info->szAuthKey;
-
-    mir_md5_init(&state);
-    mir_md5_append(&state, (const mir_md5_byte_t*)pwd, info->wAuthKeyLen);
-    mir_md5_finish(&state, digest);
-  }
+  mir_md5_init(&state);
+  mir_md5_append(&state, info->szAuthKey, info->wAuthKeyLen);
+  mir_md5_finish(&state, digest);
 
   mir_md5_init(&state);
   mir_md5_append(&state, (LPBYTE)szKey, wKeyLen);
-  mir_md5_append(&state, (LPBYTE)digest, 16);
+  mir_md5_append(&state, digest, 16);
   mir_md5_append(&state, (LPBYTE)CLIENT_MD5_STRING, sizeof(CLIENT_MD5_STRING)-1);
   mir_md5_finish(&state, digest);
 

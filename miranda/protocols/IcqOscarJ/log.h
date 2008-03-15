@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/log.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -44,8 +44,8 @@
 
 /*---------* Functions *---------------*/
 
-void icq_LogMessage(int level, const char *szMsg);
-void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg);  //szMsg is optional
-void icq_LogFatalParam(const char* szMsg, WORD wError);
+void icq_LogMessage(int level, const unsigned char *szMsg);
+void icq_LogUsingErrorCode(int level, DWORD dwError, const unsigned char *szMsg);  //szMsg is optional
+void icq_LogFatalParam(const unsigned char *szMsg, WORD wError);
 
 #endif /* __LOG_H */

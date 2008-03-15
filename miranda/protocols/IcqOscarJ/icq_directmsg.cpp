@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,8 +39,6 @@
 
 
 extern WORD wListenPort;
-
-void icq_sendAwayMsgReplyDirect(directconnect *dc, WORD wCookie, BYTE msgType, const char **szMsg);
 
 void handleDirectGreetingMessage(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wStatus, WORD wFlags, char* pszText);
 
@@ -142,10 +140,10 @@ void handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
       case MTYPE_AUTODND:
       case MTYPE_AUTOFFC:
         {
-          char** szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(bMsgType));
+          const unsigned char **szMsg = (const unsigned char**)MirandaStatusToAwayMsg(AwayMsgTypeToStatus(bMsgType));
 
           if (szMsg)
-            icq_sendAwayMsgReplyDirect(dc, wCookie, bMsgType, (LPCSTR*)szMsg);
+            icq_sendAwayMsgReplyDirect(dc, wCookie, bMsgType, szMsg);
         }
         break;
 

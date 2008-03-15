@@ -54,7 +54,7 @@ extern WORD wListenPort;
 
 extern BYTE* calcMD5Hash(char* szFile);
 extern filetransfer *CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nVersion);
-extern DWORD addServContact(HANDLE hContact, const char *pszGroup);
+extern DWORD addServContact(HANDLE hContact, const unsigned char *pszGroup);
 
 
 int IcqGetCaps(WPARAM wParam, LPARAM lParam)
@@ -419,7 +419,7 @@ int IcqSetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 void updateAimAwayMsg()
 {
-  char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
+  unsigned char **szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
 
   EnterCriticalSection(&modeMsgsMutex);
   if (szMsg)
@@ -481,7 +481,7 @@ int IcqSetStatus(WPARAM wParam, LPARAM lParam)
           {
             SetCurrentStatus(ID_STATUS_OFFLINE);
 
-            icq_LogMessage(LOG_FATAL, "You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again.");
+            icq_LogMessage(LOG_FATAL, LPGENUTF("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
             return 0;
           }
 
@@ -551,8 +551,8 @@ int IcqGetStatus(WPARAM wParam, LPARAM lParam)
 
 int IcqSetAwayMsg(WPARAM wParam, LPARAM lParam)
 {
-  char** ppszMsg = NULL;
-  char* szNewUtf = NULL;
+  unsigned char **ppszMsg = NULL;
+  unsigned char *szNewUtf = NULL;
 
 
   EnterCriticalSection(&modeMsgsMutex);
@@ -1460,7 +1460,7 @@ static char* convertMsgToUserSpecificAnsi(HANDLE hContact, const unsigned char* 
 
   if (wCP != CP_ACP)
   { // convert to proper codepage
-    if (!utf8_decode_codepage((char*)szMsg, &szAnsi, wCP))
+    if (!utf8_decode_codepage(szMsg, &szAnsi, wCP))
       return NULL;
   }
   return szAnsi;
@@ -1520,7 +1520,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
             }
             else if (!pszText)
             { // no ansi available, create basic
-              utf8_decode((char*)puszText, &pszText);
+              utf8_decode(puszText, &pszText);
               bNeedFreeA = 1;
             }
           }
@@ -1621,7 +1621,7 @@ int IcqSendMessage(WPARAM wParam, LPARAM lParam)
         {
           WCHAR* pwszText = NULL;
 
-          if (puszText) pwszText = make_unicode_string((char*)puszText);
+          if (puszText) pwszText = make_unicode_string(puszText);
           if ((pwszText ? wcslen(pwszText)*sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
           { // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
             // only limit to not get disconnected, all other will be handled by error 0x0A
@@ -1886,7 +1886,7 @@ int IcqSendContacts(WPARAM wParam, LPARAM lParam)
               if (ICQGetContactSettingUID(hContactsList[i], &contacts[i].uin, &szContactUid))
                 break; // Abort if invalid contact
               contacts[i].uid = contacts[i].uin?NULL:null_strdup(szContactUid);
-              contacts[i].szNick = NickFromHandleUtf(hContactsList[i]);
+              contacts[i].szNick = (char*)NickFromHandleUtf(hContactsList[i]);
               nDataLen += getUIDLen(contacts[i].uin, contacts[i].uid) + 4;
               nNamesLen += strlennull(contacts[i].szNick) + 8;
             }
@@ -2267,7 +2267,7 @@ int IcqSendAuthRequest(WPARAM wParam, LPARAM lParam)
       if (dwUin && ccs->lParam)
       {
         char *text = (char *)ccs->lParam;
-        char *utf;
+        unsigned char *utf;
 
         utf = ansi_to_utf8(text); // Miranda is ANSI only here
 
@@ -2345,7 +2345,7 @@ int IcqRevokeAuthorization(WPARAM wParam, LPARAM lParam)
     if (ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid))
       return 0; // Invalid contact
 
-    if (MessageBoxUtf(NULL, LPGEN("Are you sure you want to revoke user's authorization (this will remove you from his/her list on some clients) ?"), LPGEN("Confirmation"), MB_ICONQUESTION | MB_YESNO) != IDYES)
+    if (MessageBoxUtf(NULL, LPGENUTF("Are you sure you want to revoke user's authorization (this will remove you from his/her list on some clients) ?"), LPGENUTF("Confirmation"), MB_ICONQUESTION | MB_YESNO) != IDYES)
       return 0;
 
     icq_sendRevokeAuthServ(dwUin, szUid);
@@ -2399,7 +2399,7 @@ int IcqAddServerContact(WPARAM wParam, LPARAM lParam)
   // Does this contact have a UID?
   if (!ICQGetContactSettingUID((HANDLE)wParam, &dwUin, &szUid) && !ICQGetContactSettingWord((HANDLE)wParam, "ServerId", 0) && !ICQGetContactSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
   {
-    char *pszGroup;
+    unsigned char *pszGroup;
 
     // Read group from DB
     pszGroup = ICQGetContactCListGroup((HANDLE)wParam);

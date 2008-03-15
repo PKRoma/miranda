@@ -47,30 +47,30 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
-static const char* szLogLevelDescr[] = {"Display all problems", "Display problems causing possible loss of data", "Display explanations for disconnection", "Display problems requiring user intervention", "Do not display any problems (not recommended)"};
+static const unsigned char* szLogLevelDescr[] = {LPGENUTF("Display all problems"), LPGENUTF("Display problems causing possible loss of data"), LPGENUTF("Display explanations for disconnection"), LPGENUTF("Display problems requiring user intervention"), LPGENUTF("Do not display any problems (not recommended)")};
 
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 
-static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle)
+static void AddUniPageUtf(const char *szService, OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle)
 {
-  char str[MAX_PATH];
-  char *pszTitle;
+  unsigned char str[MAX_PATH];
+  unsigned char *pszTitle;
 
-  if (strstr(szTitle, "%s"))
+  if (strstrnull(szTitle, "%s"))
   {
-    char *lTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
+    unsigned char *lTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
     int size = strlennull(lTitle) + strlennull(gpszICQProtoName);
  
-    pszTitle = (char*)_alloca(size);
+    pszTitle = (unsigned char*)_alloca(size);
     null_snprintf(pszTitle, size, lTitle, gpszICQProtoName);
   }
   else
-    pszTitle = (char*)ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
+    pszTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
 
   if (gbUnicodeCore)
   {
-    wchar_t *utitle, *ugroup;
+    WCHAR *utitle, *ugroup;
 
     utitle = make_unicode_string(pszTitle);
     if (szGroup)
@@ -86,7 +86,7 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
   }
   else
   {
-    char *title, *group, *tmp;
+    char *title, *group;
     int size;
 
     size = strlennull(pszTitle) + 2;
@@ -94,7 +94,8 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
     utf8_decode_static(pszTitle, title, size);
     if (szGroup)
     {
-      tmp = ICQTranslateUtfStatic(szGroup, str, MAX_PATH);
+      unsigned char *tmp = ICQTranslateUtfStatic(szGroup, str, MAX_PATH);
+
       size = strlennull(tmp) + 2;
       group = (char*)_alloca(size);
       utf8_decode_static(tmp, group, size);
@@ -109,14 +110,14 @@ static void AddUniPageUtf(const char* szService, OPTIONSDIALOGPAGE *op, WPARAM w
 
 
 
-void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle)
+void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle)
 {
   AddUniPageUtf(MS_OPT_ADDPAGE, op, wParam, szGroup, szTitle);
 }
 
 
 
-void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szTitle)
+void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szTitle)
 {
   AddUniPageUtf(MS_USERINFO_ADDPAGE, op, wParam, NULL, szTitle);
 }
@@ -124,12 +125,12 @@ void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szTitl
 
 HWND hOptBasic = 0, hOptContacts = 0, hOptFeatures = 0, hOptPrivacy = 0;
 
-static void TabOptions_AddItemUtf(HWND hTabCtrl, const char* szTitle, HWND hPage)
+static void TabOptions_AddItemUtf(HWND hTabCtrl, const unsigned char *szTitle, HWND hPage)
 {
   TCITEM tci = {0};
   RECT rcClient;
-  char str[MAX_PATH];
-  char* szTitleUtf;
+  unsigned char str[MAX_PATH];
+  unsigned char* szTitleUtf;
   int iTotal;
 
   GetClientRect(GetParent(hTabCtrl), &rcClient);
@@ -187,7 +188,7 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
   ShowWindow(hwndEnum, SW_SHOW);
   TabCtrl_DeleteAllItems(hwndTab);
 
-  TabOptions_AddItemUtf(hwndTab, "Account", hOptBasic);
+  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Account"), hOptBasic);
 
   if (!hOptContacts)
   {
@@ -216,10 +217,10 @@ static void SetOptionsDlgToType(HWND hwnd, int iExpert)
     ShowWindow(hOptFeatures, SW_HIDE);
   ShowWindow(hOptBasic, SW_SHOW);
 
-  TabOptions_AddItemUtf(hwndTab, "Contacts", hOptContacts);
+  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Contacts"), hOptContacts);
   if (iExpert) 
-    TabOptions_AddItemUtf(hwndTab, "Features", hOptFeatures);
-  TabOptions_AddItemUtf(hwndTab, "Privacy", hOptPrivacy);
+    TabOptions_AddItemUtf(hwndTab, LPGENUTF("Features"), hOptFeatures);
+  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Privacy"), hOptPrivacy);
 
   TabCtrl_SetCurSel(hwndTab, 0);
 }
@@ -245,7 +246,7 @@ int IcqOptInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = DlgProcIcqMain;
   odp.flags = ODPF_BOLDGROUPS;
   odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, LPGEN("Network"), gpszICQProtoName);
+  AddOptionsPageUtf(&odp, wParam, LPGENUTF("Network"), (unsigned char*)gpszICQProtoName);
 
   InitPopupOpts(wParam);
 
@@ -409,7 +410,11 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 4));
       SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 4-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
-      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer, MAX_PATH));
+      {
+        unsigned char buf[MAX_PATH];
+      
+        SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], buf, MAX_PATH));
+      }
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
       LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
       
@@ -418,7 +423,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     
   case WM_HSCROLL:
     {
-      char str[MAX_PATH];
+      unsigned char str[MAX_PATH];
 
       SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str, MAX_PATH));
       OptDlgChanged(hwndDlg);
@@ -647,26 +652,26 @@ static HWND hCpCombo;
 
 struct CPTABLE {
   WORD cpId;
-  char *cpName;
+  unsigned char *cpName;
 };
 
 struct CPTABLE cpTable[] = {
-  {  874,  "Thai" },
-  {  932,  "Japanese" },
-  {  936,  "Simplified Chinese" },
-  {  949,  "Korean" },
-  {  950,  "Traditional Chinese" },
-  {  1250,  "Central European" },
-  {  1251,  "Cyrillic" },
-  {  1252,  "Latin I" },
-  {  1253,  "Greek" },
-  {  1254,  "Turkish" },
-  {  1255,  "Hebrew" },
-  {  1256,  "Arabic" },
-  {  1257,  "Baltic" },
-  {  1258,  "Vietnamese" },
-  {  1361,  "Korean (Johab)" },
-  {   -1, NULL}
+  {  874,  LPGENUTF("Thai") },
+  {  932,  LPGENUTF("Japanese") },
+  {  936,  LPGENUTF("Simplified Chinese") },
+  {  949,  LPGENUTF("Korean") },
+  {  950,  LPGENUTF("Traditional Chinese") },
+  {  1250, LPGENUTF("Central European") },
+  {  1251, LPGENUTF("Cyrillic") },
+  {  1252, LPGENUTF("Latin I") },
+  {  1253, LPGENUTF("Greek") },
+  {  1254, LPGENUTF("Turkish") },
+  {  1255, LPGENUTF("Hebrew") },
+  {  1256, LPGENUTF("Arabic") },
+  {  1257, LPGENUTF("Baltic") },
+  {  1258, LPGENUTF("Vietnamese") },
+  {  1361, LPGENUTF("Korean (Johab)") },
+  {   -1,  NULL}
 };
 
 static BOOL CALLBACK FillCpCombo(LPSTR str)
@@ -676,10 +681,9 @@ static BOOL CALLBACK FillCpCombo(LPSTR str)
 
   cp = atoi(str);
   for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
-  if (cpTable[i].cpName != NULL) 
-  {
+  if (cpTable[i].cpName) 
     ComboBoxAddStringUtf(hCpCombo, cpTable[i].cpName, cpTable[i].cpId);
-  }
+
   return TRUE;
 }
 
@@ -721,7 +725,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
       hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
       sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodePage", CP_ACP);
-      ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_UTFCODEPAGE), "System default codepage", 0);
+      ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_UTFCODEPAGE), LPGENUTF("System default codepage"), 0);
       EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
       if(sCodePage == 0)
         SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)0, 0);

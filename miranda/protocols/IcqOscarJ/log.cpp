@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,11 +37,11 @@
 #include "icqoscar.h"
 
 
-static const char *szLevelDescr[] = {"ICQ Note", "ICQ Warning", "ICQ Error", "ICQ Fatal"};
+static const unsigned char *szLevelDescr[] = {LPGENUTF("ICQ Note"), LPGENUTF("ICQ Warning"), LPGENUTF("ICQ Error"), LPGENUTF("ICQ Fatal")};
 
 typedef struct {
-    char *szMsg;
-    char *szTitle;
+    unsigned char *szMsg;
+    unsigned char *szTitle;
 } LogMessageInfo;
 
 static BOOL bErrorVisible = FALSE;
@@ -64,7 +64,7 @@ static DWORD __stdcall icq_LogMessageThread(void* arg)
 
 
 
-void icq_LogMessage(int level, const char *szMsg)
+void icq_LogMessage(int level, const unsigned char *szMsg)
 {
   int displayLevel;
 
@@ -92,68 +92,76 @@ void icq_LogMessage(int level, const char *szMsg)
 
 
 
-void icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg)
+void icq_LogUsingErrorCode(int level, DWORD dwError, const unsigned char *szMsg)
 {
-  char szBuf[1024];
-  char str[1024];
-  char str2[64];
-  char szErrorMsg[512];
-  char* pszErrorMsg;
-  char* pszErrorMsgUtf = NULL;
+  unsigned char szBuf[1024];
+  unsigned char str[1024];
+  unsigned char str2[64];
+  unsigned char szErrorMsg[512];
+  unsigned char *pszErrorMsg = NULL;
+  int bNeedFree = FALSE;
 
 
   switch(dwError)
   {
     case ERROR_TIMEOUT:
     case WSAETIMEDOUT:
-      pszErrorMsg = "The server did not respond to the connection attempt within a reasonable time, it may be temporarily down. Try again later.";
+      pszErrorMsg = LPGENUTF("The server did not respond to the connection attempt within a reasonable time, it may be temporarily down. Try again later.");
       break;
 
     case ERROR_GEN_FAILURE:
-      pszErrorMsg = "The connection with the server was abortively closed during the connection attempt. You may have lost your local network connection.";
+      pszErrorMsg = LPGENUTF("The connection with the server was abortively closed during the connection attempt. You may have lost your local network connection.");
       break;
 
     case WSAEHOSTUNREACH:
     case WSAENETUNREACH:
-      pszErrorMsg = "Miranda was unable to resolve the name of a server to its numeric address. This is most likely caused by a catastrophic loss of your network connection (for example, your modem has disconnected), but if you are behind a proxy, you may need to use the 'Resolve hostnames through proxy' option in M->Options->Network.";
+      pszErrorMsg = LPGENUTF("Miranda was unable to resolve the name of a server to its numeric address. This is most likely caused by a catastrophic loss of your network connection (for example, your modem has disconnected), but if you are behind a proxy, you may need to use the 'Resolve hostnames through proxy' option in M->Options->Network.");
       break;
 
     case WSAEHOSTDOWN:
     case WSAENETDOWN:
     case WSAECONNREFUSED:
-      pszErrorMsg = "Miranda was unable to make a connection with a server. It is likely that the server is down, in which case you should wait for a while and try again later.";
+      pszErrorMsg = LPGENUTF("Miranda was unable to make a connection with a server. It is likely that the server is down, in which case you should wait for a while and try again later.");
       break;
 
     case ERROR_ACCESS_DENIED:
-       pszErrorMsg = "Your proxy rejected the user name and password that you provided. Please check them in M->Options->Network.";
+      pszErrorMsg = LPGENUTF("Your proxy rejected the user name and password that you provided. Please check them in M->Options->Network.");
       break;
 
     case WSAHOST_NOT_FOUND:
     case WSANO_DATA:
-      pszErrorMsg = "The server to which you are trying to connect does not exist. Check your spelling in M->Options->Network->ICQ.";
+      pszErrorMsg = LPGENUTF("The server to which you are trying to connect does not exist. Check your spelling in M->Options->Network->ICQ.");
       break;
 
     default:
-      if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, szErrorMsg, sizeof(szErrorMsg), NULL))
-        pszErrorMsg = szErrorMsg;
-      else
-        pszErrorMsg = "";
-      break;
-  }
-  utf8_encode(pszErrorMsg, &pszErrorMsgUtf);
+    {
+      char err[512];
 
-  null_snprintf(szBuf, sizeof(szBuf), "%s%s%s (%s %d)", szMsg?ICQTranslateUtfStatic(szMsg, str, 1024):"", szMsg?"\r\n\r\n":"", ICQTranslateUtfStatic(pszErrorMsgUtf, szErrorMsg, 512), ICQTranslateUtfStatic("error", str2, 64), dwError);
-  SAFE_FREE((void**)&pszErrorMsgUtf);
+      if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwError, 0, err, sizeof(err), NULL))
+      {
+        utf8_encode(err, &pszErrorMsg);
+        bNeedFree = TRUE;
+      }
+      break;
+    }
+  }
+
+  null_snprintf(szBuf, sizeof(szBuf), (unsigned char*)"%s%s%s (%s %d)", 
+    szMsg ? ICQTranslateUtfStatic(szMsg, str, 1024) : (unsigned char*)"", szMsg ? "\r\n\r\n" : "", ICQTranslateUtfStatic(pszErrorMsg, szErrorMsg, 512), 
+    ICQTranslateUtfStatic(LPGENUTF("error"), str2, 64), dwError);
+
+  if (bNeedFree)
+    SAFE_FREE((void**)&pszErrorMsg);
   
   icq_LogMessage(level, szBuf);
 }
 
 
 
-void icq_LogFatalParam(const char* szMsg, WORD wError)
+void icq_LogFatalParam(const unsigned char *szMsg, WORD wError)
 {
-  char str[MAX_PATH];
-  char buf[MAX_PATH];
+  unsigned char str[MAX_PATH];
+  unsigned char buf[MAX_PATH];
 
   null_snprintf(buf, MAX_PATH, ICQTranslateUtfStatic(szMsg, str, MAX_PATH), wError);
   icq_LogMessage(LOG_FATAL, buf);

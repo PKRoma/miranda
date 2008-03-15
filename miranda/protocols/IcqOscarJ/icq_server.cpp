@@ -86,7 +86,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
 
     SetCurrentStatus(ID_STATUS_OFFLINE);
 
-    icq_LogUsingErrorCode(LOG_ERROR, dwError, "Unable to connect to ICQ login server");
+    icq_LogUsingErrorCode(LOG_ERROR, dwError, LPGENUTF("Unable to connect to ICQ login server"));
 
     return 0;
   }
@@ -100,7 +100,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
     info.hDirectBoundPort = NetLib_BindPort(icq_newConnectionReceived, NULL, &wListenPort, &dwInternalIP);
     if (!info.hDirectBoundPort)
     {
-      icq_LogUsingErrorCode(LOG_WARNING, GetLastError(), "Miranda was unable to allocate a port to listen for direct peer-to-peer connections between clients. You will be able to use most of the ICQ network without problems but you may be unable to send or receive files.\n\nIf you have a firewall this may be blocking Miranda, in which case you should configure your firewall to leave some ports open and tell Miranda which ports to use in M->Options->ICQ->Network.");
+      icq_LogUsingErrorCode(LOG_WARNING, GetLastError(), LPGENUTF("Miranda was unable to allocate a port to listen for direct peer-to-peer connections between clients. You will be able to use most of the ICQ network without problems but you may be unable to send or receive files.\n\nIf you have a firewall this may be blocking Miranda, in which case you should configure your firewall to leave some ports open and tell Miranda which ports to use in M->Options->ICQ->Network."));
       wListenPort = 0;
       if (!bConstInternalIP) ICQDeleteContactSetting(NULL, "RealIP");
     }
@@ -164,7 +164,7 @@ static DWORD __stdcall icq_serverThread(serverthread_start_info* infoParam)
   {
     if (!info.bLoggedIn)
     {
-      icq_LogMessage(LOG_FATAL, "Connection failed.\nLogin sequence failed for unknown reason.\nTry again later.");
+      icq_LogMessage(LOG_FATAL, LPGENUTF("Connection failed.\nLogin sequence failed for unknown reason.\nTry again later."));
     }
 
     SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -345,7 +345,7 @@ void sendServPacket(icq_packet* pPacket)
     // Send error
     if (nSendResult == SOCKET_ERROR)
     {
-      icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Your connection with the ICQ server was abortively closed");
+      icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), LPGENUTF("Your connection with the ICQ server was abortively closed"));
       icq_serverDisconnect(FALSE);
 
       if (gnCurrentStatus != ID_STATUS_OFFLINE)

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -48,11 +48,11 @@ void UninitOscarFileTransfer();
 #define OFT_BUFFER_SIZE 8192
 
 typedef struct {
-  char* szContainer;
-  char* szFile;
+  unsigned char *szContainer;
+  unsigned char *szFile;
 } oft_file_record;
 
-char* FindFilePathContainer(const char** files, int iFile, char* szContainer);
+char *FindFilePathContainer(const char **files, int iFile, char *szContainer);
 
 
 typedef struct {
@@ -67,7 +67,7 @@ typedef struct {
   int initialized;
   int sending;
   int containerCount;
-  char **file_containers;
+  unsigned char **file_containers;
   oft_file_record* files;
   char **files_ansi; // sending only 
   int iCurrentFile;
@@ -77,10 +77,10 @@ typedef struct {
   DWORD dwRemoteInternalIP;
   DWORD dwRemoteExternalIP;
   WORD wRemotePort;
-  char *szSavePath;
-  char *szDescription;
-  char *szThisFile; 
-  char *szThisPath;
+  unsigned char *szSavePath;
+  unsigned char *szDescription;
+  unsigned char *szThisFile; 
+  unsigned char *szThisPath;
   // Request sequence
   DWORD dwCookie;
   WORD wReqNum;
@@ -170,8 +170,8 @@ int IsValidOscarTransfer(void *ft);
 void OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int type);
 void CloseOscarConnection(oscar_connection *oc);
 
-void handleRecvServMsgOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
-void handleRecvServResponseOFT(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft);
+void handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
+void handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, void* ft);
 
 int oftInitTransfer(HANDLE hContact, DWORD dwUin, char *szUid, char** files, char* pszDesc);
 

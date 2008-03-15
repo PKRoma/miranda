@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/changeinfo/changeinfo.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -65,7 +65,7 @@ extern HFONT hListFont;
 extern int iEditItem;
 
 typedef struct {
-  char *szDescription;
+  unsigned char *szDescription;
   unsigned displayType;    //LI_ constant
   int dbType;              //DBVT_ constant
   char *szDbSetting;
@@ -77,7 +77,7 @@ typedef struct {
 
 typedef struct {
   int id;
-  char *szValue;
+  unsigned char *szValue;
 } ListTypeDataItem;
 
 // contants.c

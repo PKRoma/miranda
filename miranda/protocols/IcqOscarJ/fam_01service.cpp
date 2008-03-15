@@ -261,7 +261,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 
       if (!info->newServer || !info->cookieData)
       {
-        icq_LogMessage(LOG_FATAL, "A server migration has failed because the server returned invalid data. You must reconnect manually.");
+        icq_LogMessage(LOG_FATAL, LPGENUTF("A server migration has failed because the server returned invalid data. You must reconnect manually."));
         SAFE_FREE((void**)&info->newServer);
         SAFE_FREE((void**)&info->cookieData);
         info->cookieDataLen = 0;
@@ -1078,7 +1078,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
       sendServPacket(&packet);
     }
     else
-      icq_LogMessage(LOG_WARNING, "Failed to request offline messages. They may be received next time you log in.");
+      icq_LogMessage(LOG_WARNING, LPGENUTF("Failed to request offline messages. They may be received next time you log in."));
 
     // Update our information from the server
     sendOwnerInfoRequest();
@@ -1101,7 +1101,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 
   if (gbAimEnabled)
   {
-    char** szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
+    unsigned char **szMsg = MirandaStatusToAwayMsg(gnCurrentStatus);
 
     EnterCriticalSection(&modeMsgsMutex);
     if (szMsg)

@@ -94,11 +94,11 @@ static char* AimApplyEncoding(char* pszStr, const char* pszEncoding)
 { // decode encoding to ANSI only
   if (pszStr && pszEncoding)
   {
-    const char *szEnc = strstr(pszEncoding, "charset=");
+    const char *szEnc = strstrnull(pszEncoding, "charset=");
 
     if (szEnc)
     { // decode custom encoding to Utf-8
-      char* szStr = ApplyEncoding(pszStr, szEnc + 9);
+      unsigned char *szStr = ApplyEncoding(pszStr, szEnc + 9);
       // decode utf-8 to ansi
       char *szRes = NULL;
 
@@ -315,7 +315,7 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
             icq_DequeueUser(dwUIN);
             AddToSpammerList(dwUIN);
             if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-              ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+              ShowPopUpMsg(hContact, LPGENUTF("Spambot Detected"), LPGENUTF("Contact deleted & further events blocked."), POPTYPE_SPAM);
             CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
             NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));

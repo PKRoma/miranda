@@ -2,8 +2,8 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2001,2002,2003,2004 Richard Hughes, Martin Öberg
-// Copyright © 2004,2005,2006,2007 Joe Kucera, Bio
+// Copyright © 2001-2004 Richard Hughes, Martin Öberg
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -83,7 +83,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   int j,n;
   POINT pt;
   int itemHeight;
-  char str[MAX_PATH];
+  unsigned char str[MAX_PATH];
 
   EndListEdit(0);
   pt.x=pt.y=0;
@@ -102,8 +102,8 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   {
     n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
-    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
-       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
+    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((unsigned char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
+       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((unsigned char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
        || (setting[i].dbType!=DBVT_ASCIIZ && setting[i].value==((ListTypeDataItem*)setting[i].pList)[j].id))
       SendMessage(hwndListEdit,LB_SETCURSEL,n,0);
@@ -138,17 +138,17 @@ void EndListEdit(int save)
     newValue=SendMessage(hwndListEdit,LB_GETITEMDATA,i,0);
     if (setting[iEditItem].dbType==DBVT_ASCIIZ) 
     {
-      char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
-      if(newValue || setting[iEditItem].displayType&LIF_ZEROISVALID) 
+      unsigned char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
+      if (newValue || setting[iEditItem].displayType & LIF_ZEROISVALID) 
       { 
-        setting[iEditItem].changed=strcmpnull(szNewValue,(char*)setting[iEditItem].value);
-        SAFE_FREE((void**)(char**)&setting[iEditItem].value);
+        setting[iEditItem].changed = strcmpnull(szNewValue, (unsigned char*)setting[iEditItem].value);
+        SAFE_FREE((void**)&setting[iEditItem].value);
         setting[iEditItem].value=(LPARAM)null_strdup(szNewValue);
       }
       else 
       {
         setting[iEditItem].changed=(char*)setting[iEditItem].value!=NULL;
-        SAFE_FREE((void**)(char**)&setting[iEditItem].value);
+        SAFE_FREE((void**)&setting[iEditItem].value);
       }
     }
     else 

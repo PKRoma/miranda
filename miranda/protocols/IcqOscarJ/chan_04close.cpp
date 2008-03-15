@@ -63,9 +63,9 @@ void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
     if (!connectNewServer(info))
     { // Connecting failed
       if (info->isMigrating)
-        icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to migrated ICQ communication server");
+        icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), LPGENUTF("Unable to connect to migrated ICQ communication server"));
       else
-        icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), "Unable to connect to ICQ communication server");
+        icq_LogUsingErrorCode(LOG_ERROR, GetLastError(), LPGENUTF("Unable to connect to ICQ communication server"));
 
       SetCurrentStatus(ID_STATUS_OFFLINE);
 
@@ -136,7 +136,7 @@ void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info)
 
   if (!info->newServer || !info->cookieData)
   {
-    icq_LogMessage(LOG_FATAL, "You could not sign on because the server returned invalid data. Try again.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("You could not sign on because the server returned invalid data. Try again."));
 
     SAFE_FREE((void**)&info->newServer);
     SAFE_FREE((void**)&info->cookieData);
@@ -221,7 +221,7 @@ static void handleMigration(serverthread_info *info)
   NetLog_Server("Migrating to %s", info->newServer);
   if (!info->newServer || !info->cookieData)
   {
-    icq_LogMessage(LOG_FATAL, "You have been disconnected from the ICQ network because the current server shut down.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("You have been disconnected from the ICQ network because the current server shut down."));
 
     SAFE_FREE((void**)&info->newServer);
     SAFE_FREE((void**)&info->cookieData);
@@ -244,7 +244,7 @@ static void handleSignonError(WORD wError)
   case 0x07: // Invalid account
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
     ZeroMemory(gpszPassword, sizeof(gpszPassword));
-    icq_LogFatalParam("Connection failed.\nYour ICQ number or password was rejected (%d).", wError);
+    icq_LogFatalParam(LPGENUTF("Connection failed.\nYour ICQ number or password was rejected (%d)."), wError);
     break;
 
   case 0x02: // Service temporarily unavailable
@@ -254,33 +254,33 @@ static void handleSignonError(WORD wError)
   case 0x14: // Reservation map error
   case 0x15: // Reservation link error
   case 0x1A: // Reservation timeout
-    icq_LogFatalParam("Connection failed.\nThe server is temporarily unavailable (%d).", wError);
+    icq_LogFatalParam(LPGENUTF("Connection failed.\nThe server is temporarily unavailable (%d)."), wError);
     break;
 
   case 0x16: // The users num connected from this IP has reached the maximum
   case 0x17: // The users num connected from this IP has reached the maximum (reserved)
-    icq_LogFatalParam("Connection failed.\nServer has too many connections from your IP (%d).", wError);
+    icq_LogFatalParam(LPGENUTF("Connection failed.\nServer has too many connections from your IP (%d)."), wError);
     break;
 
   case 0x18: // Reservation rate limit exceeded
   case 0x1D: // Rate limit exceeded
-    icq_LogFatalParam("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d).", wError);
+    icq_LogFatalParam(LPGENUTF("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
     break;
 
   case 0x1B: // You are using an older version of ICQ. Upgrade required
-    icq_LogMessage(LOG_FATAL, "Connection failed.\nThe server did not accept this client version.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("Connection failed.\nThe server did not accept this client version."));
     break;
 
   case 0x1C: // You are using an older version of ICQ. Upgrade recommended
-    icq_LogMessage(LOG_WARNING, "The server sent warning, this version is getting old.\nTry to look for a new one.");
+    icq_LogMessage(LOG_WARNING, LPGENUTF("The server sent warning, this version is getting old.\nTry to look for a new one."));
     break;
 
   case 0x1E: // Can't register on the ICQ network
-    icq_LogMessage(LOG_FATAL, "Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("Connection failed.\nYou were rejected by the server for an unknown reason.\nThis can happen if the UIN is already connected."));
     break;
 
   case 0x0C: // Invalid database fields, MD5 login not supported
-    icq_LogMessage(LOG_FATAL, "Connection failed.\nSecure (MD5) login is not supported on this account.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("Connection failed.\nSecure (MD5) login is not supported on this account."));
     break;
 
   case 0:    // No error
@@ -309,7 +309,7 @@ static void handleSignonError(WORD wError)
   case 0x2A: // Blocked account | Bump user
 
   default:
-    icq_LogFatalParam("Connection failed.\nUnknown error during sign on: 0x%02x", wError);
+    icq_LogFatalParam(LPGENUTF("Connection failed.\nUnknown error during sign on: 0x%02x"), wError);
     break;
   }
 }
@@ -324,12 +324,12 @@ static void handleRuntimeError(WORD wError)
   case 0x01:
   {
     ICQBroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-    icq_LogMessage(LOG_FATAL, "You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number.");
+    icq_LogMessage(LOG_FATAL, LPGENUTF("You have been disconnected from the ICQ network because you logged on from another location using the same ICQ number."));
     break;
   }
 
   default:
-    icq_LogFatalParam("Unknown runtime error: 0x%02x", wError);
+    icq_LogFatalParam(LPGENUTF("Unknown runtime error: 0x%02x"), wError);
     break;
   }
 }

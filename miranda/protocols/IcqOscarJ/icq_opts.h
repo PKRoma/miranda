@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_opts.h,v $
+// File name      : $URL: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_opts.h,v $
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -38,5 +38,5 @@
 
 int IcqOptInit(WPARAM, LPARAM);
 
-void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szTitle);
-void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const char *szGroup, const char *szTitle);
+void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szTitle);
+void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle);

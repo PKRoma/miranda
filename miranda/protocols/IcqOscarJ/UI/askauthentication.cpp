@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -58,7 +58,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
   case WM_INITDIALOG:
     {
-      char str[MAX_PATH];
+      unsigned char str[MAX_PATH];
 
       hContact = (HANDLE)lParam;
 
@@ -68,7 +68,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
       ICQTranslateDialog(hwndDlg);
       SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
       SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic("Please authorize me to add you to my contact list.", str, MAX_PATH));
+      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic(LPGENUTF("Please authorize me to add you to my contact list."), str, MAX_PATH));
 
       return TRUE;
     }
@@ -81,7 +81,7 @@ static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
         {
           DWORD dwUin;
           uid_str szUid;
-          char* szReason;
+          unsigned char* szReason;
 
           hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
 

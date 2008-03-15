@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,24 +38,24 @@
 
 BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
 BOOL IsUnicodeAscii(const WCHAR *pBuffer, int nSize);
-int UTF8_IsValid(const unsigned char* pszInput);
+int UTF8_IsValid(const unsigned char *pszInput);
 
-char* detect_decode_utf8(const char *from);
+char *detect_decode_utf8(const unsigned char *from);
 
-WCHAR *make_unicode_string(const char *utf8);
-WCHAR *make_unicode_string_static(const char *utf8, WCHAR *unicode, size_t unicode_len);
+WCHAR *make_unicode_string(const unsigned char *utf8);
+WCHAR *make_unicode_string_static(const unsigned char *utf8, WCHAR *unicode, size_t unicode_len);
 
-char *make_utf8_string(const WCHAR *unicode);
-char *make_utf8_string_static(const WCHAR *unicode, char *utf8, size_t utf_size);
+unsigned char *make_utf8_string(const WCHAR *unicode);
+unsigned char *make_utf8_string_static(const WCHAR *unicode, unsigned char *utf8, size_t utf_size);
 
-char *ansi_to_utf8(const char *szAnsi);
-char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
-char *tchar_to_utf8(const TCHAR *szTxt);
-char *mtchar_to_utf8(const TCHAR *szTxt);
+unsigned char *ansi_to_utf8(const char *szAnsi);
+unsigned char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
+unsigned char *tchar_to_utf8(const TCHAR *szTxt);
+unsigned char *mtchar_to_utf8(const TCHAR *szTxt);
 
-int utf8_encode(const char *from, char **to);
-int utf8_decode(const char *from, char **to);
-int utf8_decode_codepage(const char *from, char **to, WORD wCp);
-int utf8_decode_static(const char *from, char *to, int to_size);
+int utf8_encode(const char *from, unsigned char **to);
+int utf8_decode(const unsigned char *from, char **to);
+int utf8_decode_codepage(const unsigned char *from, char **to, WORD wCp);
+int utf8_decode_static(const unsigned char *from, char *to, int to_size);
 
 void InitI18N(void);

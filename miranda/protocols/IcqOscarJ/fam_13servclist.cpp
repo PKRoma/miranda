@@ -40,7 +40,7 @@
 extern WORD wListenPort;
 
 extern void setUserInfo();
-extern int GroupNameExistsUtf(const char *name,int skipGroup);
+extern int GroupNameExistsUtf(const unsigned char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
@@ -205,29 +205,29 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
               if (bAuth && !pAuth)
               { // server authorized our contact
-                char str[MAX_PATH];
-                char msg[MAX_PATH];
-                char *nick = NickFromHandleUtf(hContact);
+                unsigned char str[MAX_PATH];
+                unsigned char msg[MAX_PATH];
+                unsigned char *nick = NickFromHandleUtf(hContact);
 
                 ICQWriteContactSettingByte(hContact, "Auth", 0);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" was authorized in the server list.", msg, MAX_PATH), nick);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGENUTF("Contact \"%s\" was authorized in the server list."), msg, MAX_PATH), nick);
                 icq_LogMessage(LOG_WARNING, str);
                 SAFE_FREE((void**)&nick);
               }
               else if (!bAuth && pAuth)
               { // server took away authorization of our contact
-                char str[MAX_PATH];
-                char msg[MAX_PATH];
-                char *nick = NickFromHandleUtf(hContact);
+                unsigned char str[MAX_PATH];
+                unsigned char msg[MAX_PATH];
+                unsigned char *nick = NickFromHandleUtf(hContact);
 
                 ICQWriteContactSettingByte(hContact, "Auth", 1);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" lost its authorization in the server list.", msg, MAX_PATH), nick);
+                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGENUTF("Contact \"%s\" lost its authorization in the server list."), msg, MAX_PATH), nick);
                 icq_LogMessage(LOG_WARNING, str);
                 SAFE_FREE((void**)&nick);
               }
 
               { // update server's data - otherwise consequent operations can fail with 0x0E
-                unsigned char* data = (unsigned char*)_alloca(wTlvLen);
+                BYTE* data = (BYTE*)_alloca(wTlvLen);
                 int datalen = getServerDataFromItemTLV(pChain, data);
 
                 if (datalen > 0)
@@ -264,11 +264,11 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
           ICQDeleteContactSetting(hContact, "Auth");
           icq_sendNewContact(0, szUID); // add to CS to see him
           {
-            char str[MAX_PATH];
-            char msg[MAX_PATH];
-            char *nick = NickFromHandleUtf(hContact);
+            unsigned char str[MAX_PATH];
+            unsigned char msg[MAX_PATH];
+            unsigned char *nick = NickFromHandleUtf(hContact);
 
-            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was removed from server list.", msg, MAX_PATH), nick);
+            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGENUTF("User \"%s\" was removed from server list."), msg, MAX_PATH), nick);
             icq_LogMessage(LOG_WARNING, str);
             SAFE_FREE((void**)&nick);
           }
@@ -341,7 +341,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
 
         if (sc->dwAction==SSA_CHECK_ROSTER)
         { // the serv-list is unavailable turn it off
-          icq_LogMessage(LOG_ERROR, "Server contact list is unavailable, Miranda will use local contact list.");
+          icq_LogMessage(LOG_ERROR, LPGENUTF("Server contact list is unavailable, Miranda will use local contact list."));
           gbSsiEnabled = 0;
           handleServUINSettings(wListenPort, info);
         }
@@ -436,7 +436,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Updating of server contact failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Updating of server contact failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Updating of server contact failed."));
       }
       break;
     }
@@ -445,7 +445,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Adding of privacy item to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Adding of privacy item to server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Adding of privacy item to server list failed."));
       }
       break;
     }
@@ -454,7 +454,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Removing of privacy item from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Removing of privacy item from server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Removing of privacy item from server list failed."));
       }
       FreeServerID(sc->wContactId, SSIT_ITEM); // release server id
       break;
@@ -481,7 +481,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         RemovePendingOperation(sc->hContact, 0);
 
         NetLog_Server("Adding of contact to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Adding of contact to server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Adding of contact to server list failed."));
       }
       else
       {
@@ -513,7 +513,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       {
         FreeServerID(sc->wGroupId, SSIT_GROUP);
         NetLog_Server("Adding of group to server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Adding of group to server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Adding of group to server list failed."));
       }
       else // group added, we need to update master group
       {
@@ -523,7 +523,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         DWORD dwCookie;
 
         setServerGroupNameUtf(sc->wGroupId, sc->szGroupName); // add group to namelist
-        setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId); // add group to known
+        setServerGroupIDUtf((char*)makeGroupPathUtf(sc->wGroupId), sc->wGroupId); // add group to known
 
         groupData = collectGroups(&groupSize);
         groupData = SAFE_REALLOC(groupData, groupSize+2);
@@ -591,7 +591,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       else
       {
         NetLog_Server("Removing of contact from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Removing of contact from server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Removing of contact from server list failed."));
         sendAddEnd(); // end server modifications here
       }
       break;
@@ -601,7 +601,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Updating of group on server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Updating of group on server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Updating of group on server list failed."));
       }
       SAFE_FREE((void**)&sc->szGroupName);
       break;
@@ -612,7 +612,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Removing of group from server list failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Removing of group from server list failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Removing of group from server list failed."));
       }
       else // group removed, we need to update master group
       {
@@ -672,7 +672,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
         }
         RemovePendingOperation(sc->hContact, 0);
         NetLog_Server("Moving of user to another group on server list failed, error %d", wError);
-        icq_LogMessage(LOG_ERROR, "Moving of user to another group on server list failed.");
+        icq_LogMessage(LOG_ERROR, LPGENUTF("Moving of user to another group on server list failed."));
         if (!sc->lParam) // is this first ack ?
         {
           sc->lParam = -1;
@@ -743,13 +743,13 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
       if (wError)
       {
         NetLog_Server("Renaming of server group failed, error %d", wError);
-        icq_LogMessage(LOG_WARNING, "Renaming of server group failed.");
+        icq_LogMessage(LOG_WARNING, LPGENUTF("Renaming of server group failed."));
       }
       else
       { 
         setServerGroupNameUtf(sc->wGroupId, sc->szGroupName);
         removeGroupPathLinks(sc->wGroupId);
-        setServerGroupIDUtf(makeGroupPathUtf(sc->wGroupId), sc->wGroupId);
+        setServerGroupIDUtf((char*)makeGroupPathUtf(sc->wGroupId), sc->wGroupId);
       }
       RemoveGroupRename(sc->wGroupId);
       SAFE_FREE((void**)&sc->szGroupName);
@@ -952,7 +952,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           if (bAdded)
           { // Not already on list: added
-            char* szGroup;
+            unsigned char *szGroup;
 
             NetLog_Server("SSI added new %s contact '%s'", "ICQ", szRecordName);
 
@@ -985,12 +985,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           if (!bAdded && (wOldGroupId != wGroupId) && ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
           { // contact has been moved on the server
-            char* szOldGroup = getServerGroupNameUtf(wOldGroupId);
-            char* szGroup = getServerGroupNameUtf(wGroupId);
+            unsigned char* szOldGroup = getServerGroupNameUtf(wOldGroupId);
+            unsigned char* szGroup = getServerGroupNameUtf(wGroupId);
 
             if (!szOldGroup)
             { // old group is not known, most probably not created subgroup
-              char* szTmp = UniGetContactSettingUtf(hContact, "CList", "Group", "");
+              unsigned char *szTmp = ICQGetContactCListGroup(hContact);
 
               if (strlennull(szTmp))
               { // got group from CList
@@ -1000,14 +1000,14 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
               else
                 SAFE_FREE((void**)&szTmp);
 
-              if (!szOldGroup) szOldGroup = null_strdup(DEFAULT_SS_GROUP);
+              if (!szOldGroup) szOldGroup = (unsigned char*)null_strdup(DEFAULT_SS_GROUP);
             }
 
-            if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp(szGroup, szOldGroup, strlennull(szGroup)))
+            if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp((char*)szGroup, (char*)szOldGroup, strlennull(szGroup)))
             { // contact moved to new group or sub-group or not to master group
               bRegroup = 1;
             }
-            if (bRegroup && !stricmp(DEFAULT_SS_GROUP, szGroup) && !GroupNameExistsUtf(szGroup, -1))
+            if (bRegroup && !stricmp(DEFAULT_SS_GROUP, (char*)szGroup) && !GroupNameExistsUtf(szGroup, -1))
             { // is it the default "General" group ? yes, does it exists in CL ?
               bRegroup = 0; // if no, do not move to it - cause it would hide the contact
             }
@@ -1017,7 +1017,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 
           if (bRegroup || bAdded)
           { // if we should load server details or contact was just added, update its group
-            char* szGroup;
+            unsigned char *szGroup;
 
             if (szGroup = makeGroupPathUtf(wGroupId))
             { // try to get Miranda Group path from groupid, if succeeded save to db
@@ -1033,12 +1033,12 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
             {
               if (pTLV->pData && (pTLV->wLen > 0))
               {
-                char* pszNick;
+                unsigned char *pszNick;
                 WORD wNickLength;
 
                 wNickLength = pTLV->wLen;
 
-                pszNick = (char*)SAFE_MALLOC(wNickLength + 1);
+                pszNick = (unsigned char*)SAFE_MALLOC(wNickLength + 1);
                 // Copy buffer to utf-8 buffer
                 memcpy(pszNick, pTLV->pData, wNickLength);
                 pszNick[wNickLength] = 0; // Terminate string
@@ -1050,13 +1050,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                 // Write nickname to database
                 if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                 { // if just added contact, save details always - does no harm
-                  char *szOldNick;
+                  unsigned char *szOldNick;
 
-                  if (szOldNick = UniGetContactSettingUtf(hContact,"CList","MyHandle",""))
+                  if (szOldNick = UniGetContactSettingUtf(hContact, "CList", "MyHandle", NULL))
                   {
                     if ((strcmpnull(szOldNick, pszNick)) && (strlennull(pszNick) > 0))
                     { // check if the truncated nick changed, i.e. do not overwrite locally stored longer nick
-                      if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp(szOldNick, pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
+                      if (strlennull(szOldNick) <= strlennull(pszNick) || strncmp((char*)szOldNick, (char*)pszNick, null_strcut(szOldNick, MAX_SSI_TLV_NAME_SIZE)))
                       {
                         // Yes, we really do need to delete it first. Otherwise the CLUI nick
                         // cache isn't updated (I'll look into it)
@@ -1087,13 +1087,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
             {
               if (pTLV->pData && (pTLV->wLen > 0))
               {
-                char* pszComment;
+                unsigned char *pszComment;
                 WORD wCommentLength;
 
 
                 wCommentLength = pTLV->wLen;
 
-                pszComment = (char*)SAFE_MALLOC(wCommentLength + 1);
+                pszComment = (unsigned char*)SAFE_MALLOC(wCommentLength + 1);
                 // Copy buffer to utf-8 buffer
                 memcpy(pszComment, pTLV->pData, wCommentLength);
                 pszComment[wCommentLength] = 0; // Terminate string
@@ -1103,13 +1103,13 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
                 // Write comment to database
                 if (ICQGetContactSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD) || bAdded)
                 { // if just added contact, save details always - does no harm
-                  char *szOldComment;
+                  unsigned char *szOldComment;
 
-                  if (szOldComment = UniGetContactSettingUtf(hContact,"UserInfo","MyNotes",""))
+                  if (szOldComment = UniGetContactSettingUtf(hContact, "UserInfo", "MyNotes", NULL))
                   {
                     if ((strcmpnull(szOldComment, pszComment)) && (strlennull(pszComment) > 0))
                     { // check if the truncated comment changed, i.e. do not overwrite locally stored longer comment
-                      if (strlennull(szOldComment) <= strlennull(pszComment) || strncmp(szOldComment, pszComment, null_strcut(szOldComment, MAX_SSI_TLV_COMMENT_SIZE)))
+                      if (strlennull(szOldComment) <= strlennull(pszComment) || strncmp((char*)szOldComment, (char*)pszComment, null_strcut(szOldComment, MAX_SSI_TLV_COMMENT_SIZE)))
                       {
                         UniWriteContactSettingUtf(hContact, "UserInfo", "MyNotes", pszComment);
                       }
@@ -1174,11 +1174,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         if (wItemId == 0)
         { /* no item ID: this is a group */
           /* pszRecordName is the name of the group */
-          char* pszName = NULL;
+          unsigned char* pszName = NULL;
 
           ReserveServerID(wGroupId, SSIT_GROUP);
 
-          setServerGroupNameUtf(wGroupId, szRecordName);
+          setServerGroupNameUtf(wGroupId, (unsigned char*)szRecordName);
 
           NetLog_Server("Group %s added to known groups.", szRecordName);
 
@@ -1422,7 +1422,7 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
         DWORD seq;
 
         ack->dwAction = SSA_GROUP_UPDATE;
-        ack->szGroupName = "";
+        ack->szGroupName = (unsigned char*)"";
         seq = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
         icq_sendGroupUtf(seq, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0);
       }
@@ -1482,7 +1482,7 @@ static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
   {
     memcpy(szReason, buf, wReasonLen);
     szReason[wReasonLen] = '\0';
-    szReason = detect_decode_utf8(szReason); // detect & decode UTF-8
+    szReason = detect_decode_utf8((unsigned char*)szReason); // detect & decode UTF-8
   }
   nReasonLen = strlennull(szReason);
   // Read nick name from DB

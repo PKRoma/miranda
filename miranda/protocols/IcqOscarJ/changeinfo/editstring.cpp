@@ -238,29 +238,29 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 
 void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 {
-  char *szValue;
-  char str[80];
+  unsigned char *szValue;
+  unsigned char str[80];
   int alloced=0;
 
   EndStringEdit(0);
   InflateRect(rc,-2,-2);
   rc->left-=2;
   if(setting[i].displayType&LIF_PASSWORD && !setting[i].changed)
-    szValue="                ";
+    szValue = (unsigned char*)"                ";
   else if ((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
   {
-    szValue=str;
-    wsprintf(str,"%d",setting[i].value);
+    szValue = str;
+    null_snprintf(str,sizeof(str),(unsigned char*)"%d",setting[i].value);
   }
-  else if(setting[i].value) 
+  else if (setting[i].value) 
   {
-    szValue=BinaryToEscapes((char*)setting[i].value);
-    alloced=1;
+    szValue = (unsigned char*)BinaryToEscapes((char*)setting[i].value);
+    alloced = 1;
   }
-  else szValue="";
+  else szValue = (unsigned char*)"";
   iEditItem=iItem;
 
-  if ((setting[i].displayType&LIM_TYPE)==LI_LONGSTRING) 
+  if ((setting[i].displayType & LIM_TYPE)==LI_LONGSTRING) 
   {
     rc->right-=rc->bottom-rc->top;
     hwndExpandButton=CreateWindow("BUTTON","",WS_VISIBLE|WS_CHILD|BS_PUSHBUTTON|BS_ICON,rc->right,rc->top,rc->bottom-rc->top,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
@@ -298,17 +298,16 @@ void EndStringEdit(int save)
   if (hwndEdit == NULL || iEditItem == -1) return;
   if (save) 
   {
-    char *text = NULL;
+    unsigned char *text = (unsigned char*)SAFE_MALLOC(GetWindowTextLength(hwndEdit)+1);
 
-    text=(char*)SAFE_MALLOC(GetWindowTextLength(hwndEdit)+1);
-    GetWindowText(hwndEdit,text,GetWindowTextLength(hwndEdit)+1);
-    EscapesToBinary(text);
+    GetWindowText(hwndEdit,(char*)text,GetWindowTextLength(hwndEdit)+1);
+    EscapesToBinary((char*)text);
     if((setting[iEditItem].displayType&LIM_TYPE)==LI_NUMBER)
     {
       LPARAM newValue;
       int *range=(int*)setting[iEditItem].pList;
-      newValue=atoi(text);
-      if(newValue) 
+      newValue = atoi((char*)text);
+      if (newValue) 
       {
         if(newValue<range[0]) newValue=range[0];
         if(newValue>range[1]) newValue=range[1];
@@ -323,14 +322,14 @@ void EndStringEdit(int save)
       {
         SAFE_FREE((void**)&text);
         text = GetWindowTextUtf(hwndEdit);
-        EscapesToBinary(text);
+        EscapesToBinary((char*)text);
       }
-      if ((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,"                ")) ||
-        (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(char*)setting[iEditItem].value) && (strlennull(text) + strlennull((char*)setting[iEditItem].value))))
+      if ((setting[iEditItem].displayType&LIF_PASSWORD && strcmpnull(text,(unsigned char*)"                ")) ||
+        (!(setting[iEditItem].displayType&LIF_PASSWORD) && strcmpnull(text,(unsigned char*)setting[iEditItem].value) && (strlennull(text) + strlennull((char*)setting[iEditItem].value))))
       {
-        SAFE_FREE((void**)(char**)&setting[iEditItem].value);
+        SAFE_FREE((void**)&setting[iEditItem].value);
         if (text[0])
-          setting[iEditItem].value=(LPARAM)text;
+          setting[iEditItem].value = (LPARAM)text;
         else
         {
           setting[iEditItem].value=0; 

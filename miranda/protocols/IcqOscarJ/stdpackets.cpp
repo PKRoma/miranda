@@ -724,7 +724,7 @@ DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type)
 
 
 
-void icq_sendSetAimAwayMsgServ(char *szMsg)
+void icq_sendSetAimAwayMsgServ(const unsigned char *szMsg)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -736,7 +736,7 @@ void icq_sendSetAimAwayMsgServ(char *szMsg)
   serverPacketInit(&packet, (WORD)(51 + wMsgLen));
   packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
   packTLV(&packet, 0x03, 0x21, (LPBYTE)"text/x-aolrtf; charset=\"utf-8\"");
-  packTLV(&packet, 0x04, wMsgLen, (LPBYTE)szMsg);
+  packTLV(&packet, 0x04, wMsgLen, szMsg);
 
   sendServPacket(&packet);
 }
@@ -974,7 +974,7 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 
 
 
-void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char** szMsg)
+void icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, unsigned char** szMsg)
 {
   icq_packet packet;
   WORD wMsgLen;
@@ -1495,8 +1495,8 @@ void icq_sendRevokeAuthServ(DWORD dwUin, char *szUid)
 void icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
 {
   icq_packet packet;
-  unsigned char nUinlen;
-  char* szUtfMsg = NULL;
+  BYTE nUinlen;
+  unsigned char *szUtfMsg = NULL;
   WORD nMsglen;
 
   nUinlen = getUIDLen(dwUin, szUid);
@@ -1508,8 +1508,8 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
   serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_GRANTAUTH);
   packUID(&packet, dwUin, szUid);
-  packWord(&packet, (WORD)nMsglen);
-  packBuffer(&packet, (LPBYTE)szUtfMsg, nMsglen);
+  packWord(&packet, nMsglen);
+  packBuffer(&packet, szUtfMsg, nMsglen);
   packWord(&packet, 0);
 
   SAFE_FREE((void**)&szUtfMsg);
@@ -1519,10 +1519,10 @@ void icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
 
 
 
-void icq_sendAuthReqServ(DWORD dwUin, char *szUid, char *szMsg)
+void icq_sendAuthReqServ(DWORD dwUin, char *szUid, const unsigned char *szMsg)
 {
   icq_packet packet;
-  unsigned char nUinlen;
+  BYTE nUinlen;
   WORD nMsglen;
 
   nUinlen = getUIDLen(dwUin, szUid);
@@ -1531,8 +1531,8 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szUid, char *szMsg)
   serverPacketInit(&packet, (WORD)(15 + nUinlen + nMsglen));
   packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_REQUESTAUTH);
   packUID(&packet, dwUin, szUid);
-  packWord(&packet, (WORD)nMsglen);
-  packBuffer(&packet, (LPBYTE)szMsg, nMsglen);
+  packWord(&packet, nMsglen);
+  packBuffer(&packet, szMsg, nMsglen);
   packWord(&packet, 0);
 
   sendServPacket(&packet);
@@ -1542,10 +1542,10 @@ void icq_sendAuthReqServ(DWORD dwUin, char *szUid, char *szMsg)
 
 void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason)
 {
-  icq_packet p;
+  icq_packet packet;
   WORD nReasonlen;
-  unsigned char nUinlen;
-  char* szUtfReason = NULL;
+  BYTE nUinlen;
+  unsigned char *szUtfReason = NULL;
 
   nUinlen = getUIDLen(dwUin, szUid);
 
@@ -1553,17 +1553,17 @@ void icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, char *szReason
   szUtfReason = ansi_to_utf8(szReason);
   nReasonlen = strlennull(szUtfReason);
 
-  serverPacketInit(&p, (WORD)(16 + nUinlen + nReasonlen));
-  packFNACHeader(&p, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE);
-  packUID(&p, dwUin, szUid);
-  packByte(&p, (BYTE)auth);
-  packWord(&p, nReasonlen);
-  packBuffer(&p, (LPBYTE)szUtfReason, nReasonlen);
-  packWord(&p, 0);
+  serverPacketInit(&packet, (WORD)(16 + nUinlen + nReasonlen));
+  packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_AUTHRESPONSE);
+  packUID(&packet, dwUin, szUid);
+  packByte(&packet, (BYTE)auth);
+  packWord(&packet, nReasonlen);
+  packBuffer(&packet, szUtfReason, nReasonlen);
+  packWord(&packet, 0);
 
   SAFE_FREE((void**)&szUtfReason);
 
-  sendServPacket(&p);
+  sendServPacket(&packet);
 }
 
 
@@ -1693,7 +1693,7 @@ void icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DW
 
 // OSCAR file-transfer packets starts here
 //
-void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char* pszFiles, DWORD dwLocalInternalIP)
+void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer *ft, const unsigned char *pszFiles, DWORD dwLocalInternalIP)
 {
   icq_packet packet;
   char *szCoolStr;
@@ -1758,7 +1758,7 @@ void oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer* ft, char*
 
 
 
-static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResult)
+static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer *ft, WORD wResult)
 {
   icq_packet packet;
 
@@ -1770,14 +1770,14 @@ static void oft_sendFileReply(DWORD dwUin, char *szUid, oscar_filetransfer* ft, 
 
 
 
-void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+void oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer *ft)
 {
   oft_sendFileReply(dwUin, szUid, ft, 0x02);
 }
 
 
 
-void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD wResponse)
+void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer *ft, WORD wResponse)
 {
   icq_packet packet;
 
@@ -1790,7 +1790,7 @@ void oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer* ft, WORD
 
 
 
-void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer *ft)
 {
   if (dwUin)
   { // ICQ clients uses special deny file transfer
@@ -1802,14 +1802,14 @@ void oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
 
 
 
-void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer* ft)
+void oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer *ft)
 {
   oft_sendFileReply(dwUin, szUid, ft, 0x01);
 }
 
 
 
-void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer* ft, DWORD dwIP, WORD wPort, int bProxy)
+void oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer *ft, DWORD dwIP, WORD wPort, int bProxy)
 {
   icq_packet packet;
 

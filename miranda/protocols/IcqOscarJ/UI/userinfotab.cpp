@@ -42,7 +42,7 @@ extern WORD wListenPort;
 extern char* calcMD5Hash(char* szFile);
 extern char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m);
 
-extern char* nameXStatus[29];
+extern unsigned char *nameXStatus[];
 
 static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, char *szSetting, int special);
@@ -69,7 +69,7 @@ int OnDetailsInit(WPARAM wParam, LPARAM lParam)
   odp.pfnDlgProc = IcqDlgProc;
   odp.position = -1900000000;
   odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_ICQ);
-  AddUserInfoPageUtf(&odp, wParam, gpszICQProtoName);
+  AddUserInfoPageUtf(&odp, wParam, (unsigned char*)gpszICQProtoName);
 
   InitChangeDetails(wParam, lParam);
 
@@ -128,12 +128,12 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
               }
               else
               {
-                char str[MAX_PATH];
+                unsigned char str[MAX_PATH];
 
                 SetValue(hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)wListenPort, SVS_ZEROISUNSPEC);
                 SetValue(hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
-                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString(str, gbUnicodeCore, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
-                SetDlgItemTextUtf(hwndDlg, IDC_SUPTIME, ICQTranslateUtfStatic("Member since:", str, MAX_PATH));
+                SetValue(hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString((char*)str, gbUnicodeCore, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
+                SetDlgItemTextUtf(hwndDlg, IDC_SUPTIME, ICQTranslateUtfStatic(LPGENUTF("Member since:"), str, MAX_PATH));
                 SetValue(hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
                 SetValue(hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)gnCurrentStatus, SVS_STATUSID);
               }
@@ -220,15 +220,15 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       {
         if (dbv.wVal != 0)
         {
-          char szExtra[80];
+          unsigned char szExtra[80];
 
           null_snprintf(str, 250, "%d", dbv.wVal);
           pstr = str;
 
           if (hContact && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 1))
           {
-            ICQTranslateUtfStatic(" (DC Established)", szExtra, 80);
-            strcat(str, szExtra);
+            ICQTranslateUtfStatic(LPGENUTF(" (DC Established)"), szExtra, 80);
+            strcat(str, (char*)szExtra);
             bUtf = 1;
           }
         }
@@ -237,14 +237,14 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       }
       else if (special == SVS_STATUSID)
       {
-        char* pXName;
-        char* pszStatus;
+        unsigned char *pXName;
+        unsigned char *pszStatus;
         BYTE bXStatus = ICQGetContactXStatus(hContact);
 
         pszStatus = MirandaStatusToStringUtf(dbv.wVal);
         if (bXStatus)
         {
-          pXName = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, "");
+          pXName = ICQGetContactSettingUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
           if (!strlennull(pXName))
           { // give default name
             pXName = ICQTranslateUtf(nameXStatus[bXStatus-1]);
@@ -253,7 +253,7 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
           SAFE_FREE((void**)&pXName);
         }
         else
-          null_snprintf(str, sizeof(str), pszStatus);
+          null_snprintf(str, sizeof(str), (char*)pszStatus);
 
         bUtf = 1;
         SAFE_FREE((void**)&pszStatus);
@@ -296,12 +296,12 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
       if (!unspecified && pstr != szSetting)
       {
-        pstr = UniGetContactSettingUtf(hContact, szModule, szSetting, NULL);
+        pstr = (char*)UniGetContactSettingUtf(hContact, szModule, szSetting, NULL);
         bUtf = 1;
         bAlloc = 1;
       }
       if (idCtrl == IDC_UIN)
-        SetDlgItemTextUtf(hwndDlg, IDC_UINSTATIC, ICQTranslateUtfStatic("ScreenName:", str, MAX_PATH));
+        SetDlgItemTextUtf(hwndDlg, IDC_UINSTATIC, ICQTranslateUtfStatic(LPGENUTF("ScreenName:"), (unsigned char*)str, MAX_PATH));
       break;
       
     default:
@@ -313,9 +313,9 @@ static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
   
   EnableDlgItem(hwndDlg, idCtrl, !unspecified);
   if (unspecified)
-    SetDlgItemTextUtf(hwndDlg, idCtrl, ICQTranslateUtfStatic("<not specified>", str, MAX_PATH));
+    SetDlgItemTextUtf(hwndDlg, idCtrl, ICQTranslateUtfStatic(LPGENUTF("<not specified>"), (unsigned char*)str, MAX_PATH));
   else if (bUtf)
-    SetDlgItemTextUtf(hwndDlg, idCtrl, pstr);
+    SetDlgItemTextUtf(hwndDlg, idCtrl, (unsigned char*)pstr);
   else
     SetDlgItemText(hwndDlg, idCtrl, pstr);
   
