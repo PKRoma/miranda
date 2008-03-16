@@ -1682,7 +1682,7 @@ LBL_InvalidCommand:
 			if ( !strcmp( data.type, "SB" )) { //switchboard server
 				UrlDecode( data.newServer );
 
-				if ( numWords < 4 )
+				if ( numWords < 7 )
 					goto LBL_InvalidCommand;
 
 				if ( strcmp( data.security, "CKI" )) {
