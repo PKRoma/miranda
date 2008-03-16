@@ -266,24 +266,29 @@ int MsnContactDeleted( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
-		MSN_AddUser( hContact, tEmail, 0, LIST_FL | LIST_REMOVE );
-		MSN_AddUser( hContact, tEmail, 0, LIST_AL | LIST_REMOVE );
-
-		if ( Lists_IsInList( LIST_RL, tEmail ))
-			MSN_AddUser( hContact, tEmail, 0, LIST_BL );
-		else 
-			MSN_AddUser( hContact, tEmail, 0, LIST_BL | LIST_REMOVE );
-	}
-
 	int type = DBGetContactSettingByte( hContact, msnProtocolName, "ChatRoom", 0 );
-	if ( type != 0 ) {
+	if ( type != 0 ) 
+	{
 		DBVARIANT dbv;
 		if ( !MSN_GetStringT( "ChatRoomID", hContact, &dbv )) {
 			MSN_KillChatSession( dbv.ptszVal );
 			MSN_FreeVariant( &dbv );
-	}	}
+		}	
+	}
+	else
+	{
+		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		if ( !MSN_GetStaticString( "e-mail", hContact, tEmail, sizeof( tEmail ))) {
+			MSN_DebugLog("Deleted Handler Email");
+			MSN_AddUser( hContact, tEmail, 0, LIST_FL | LIST_REMOVE );
+			MSN_AddUser( hContact, tEmail, 0, LIST_AL | LIST_REMOVE );
+
+			if ( Lists_IsInList( LIST_RL, tEmail ))
+				MSN_AddUser( hContact, tEmail, 0, LIST_BL );
+			else 
+				MSN_AddUser( hContact, tEmail, 0, LIST_BL | LIST_REMOVE );
+		}
+	}
 
 	return 0;
 }

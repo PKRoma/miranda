@@ -297,7 +297,6 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_
 		DBDeleteContactSetting( hContact, "CList", "Group" );
 		MSN_DeleteSetting( hContact, "GroupID" );
 	}	
-	MSN_SetString( hContact, "ID", szContId );
 
 	if ( *dbv.pszVal ) MSN_FreeVariant( &dbv );
 }

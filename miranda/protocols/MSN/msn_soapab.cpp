@@ -487,6 +487,8 @@ bool MSN_ABGetFull(void)
 					}
 					anot = ezxml_next(anot);
 				}
+				MSN_SetString( hContact, "ID", szContId );
+
 				if (szNick == NULL)
 					DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
