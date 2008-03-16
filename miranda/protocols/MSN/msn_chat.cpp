@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "msn_global.h"
-#include "../../include/m_history.h"
+#include <m_history.h>
 
 static LONG sttChatID = 0;
 extern HANDLE hInitChat;
