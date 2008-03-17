@@ -515,7 +515,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
 		HANDLE tContact = info->mJoinedContacts[0];
 
-		if ((int)tContact < 0)
+		if (IsChatHandle(tContact))
 		{
 			GC_INFO gci = {0};
 			gci.Flags = HCONTACT;

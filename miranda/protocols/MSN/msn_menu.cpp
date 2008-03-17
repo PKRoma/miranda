@@ -78,8 +78,10 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 	default:
 		HMENU tMenu = ::CreatePopupMenu();
 
-		for ( int i=0; i < tThreads; i++ ) {
-			if (( long )tActiveThreads[i]->mJoinedContacts[0] < 0 ) {
+		for ( int i=0; i < tThreads; i++ ) 
+		{
+			if (IsChatHandle(tActiveThreads[i]->mJoinedContacts[0])) 
+			{
 				char sessionName[ 255 ];
 				mir_snprintf( sessionName, sizeof( sessionName ), "%s %s%s",
 					msnProtocolName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
