@@ -481,6 +481,12 @@ ThreadData* MSN_StartSB(HANDLE hContact, bool& isOffline)
 	ThreadData* thread = MSN_GetThreadByContact(hContact);
 	if (thread == NULL)
 	{
+		if (IsChatHandle(hContact))
+		{
+			isOffline = true;
+			return NULL;
+		}
+
 		WORD wStatus = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 		if (wStatus != ID_STATUS_OFFLINE)
 		{

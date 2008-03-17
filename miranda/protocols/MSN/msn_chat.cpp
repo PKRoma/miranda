@@ -25,6 +25,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static LONG sttChatID = 0;
 extern HANDLE hInitChat;
 
+
+HANDLE MSN_GetChatInernalHandle(HANDLE hContact)
+{
+	HANDLE result = hContact;
+	int type = DBGetContactSettingByte(hContact, msnProtocolName, "ChatRoom", 0);
+	if (type != 0) 
+	{
+		DBVARIANT dbv;
+		if (DBGetContactSettingString(hContact, msnProtocolName, "ChatRoomID", &dbv) == 0)
+		{
+			result = (HANDLE)(-atol(dbv.pszVal));
+			MSN_FreeVariant(&dbv);
+		}	
+	}
+	return result;
+}
+
+
 int MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData *info = (ThreadData*)wParam;

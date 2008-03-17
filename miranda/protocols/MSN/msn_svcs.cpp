@@ -1036,7 +1036,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	if ( !msnLoggedIn ) return 0;
 
 	CCSDATA* ccs = ( CCSDATA* )lParam;
-	const HANDLE hContact = ccs->hContact;
+	HANDLE hContact = ccs->hContact;
 	char *errMsg = NULL;
 
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
@@ -1089,6 +1089,8 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 		break;
 
 	case NETID_UNKNOWN:
+		hContact = MSN_GetChatInernalHandle(hContact);
+
 	case NETID_MSN:
 	case NETID_LCS:
 		if ( strlen( msg ) > 1202 ) 
@@ -1171,9 +1173,12 @@ static int MsnSendNudge( WPARAM wParam, LPARAM lParam )
 		"ID: 1\r\n\r\n";
 
 	int netId = Lists_GetNetId(tEmail);
+
 	switch (netId)
 	{
 	case NETID_UNKNOWN:
+		hContact = MSN_GetChatInernalHandle(hContact);
+
 	case NETID_MSN:
 	case NETID_LCS:
 		{
