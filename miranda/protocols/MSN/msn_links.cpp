@@ -69,6 +69,8 @@ static int ServiceParseMsnimLink(WPARAM wParam,LPARAM lParam)
 
 	for (++arg; *arg == '/'; ++arg);
 
+	arg = NEWSTR_ALLOCA(arg);
+
 	/* add a contact to the list */
 	if(_strnicmp(arg, "add?", 4) == 0) 
 	{
