@@ -46,6 +46,8 @@ void	P2pSessions_Init( void );
 void	Threads_Uninit( void );
 int		MsnOptInit( WPARAM wParam, LPARAM lParam );
 void	UninitSsl( void );
+void    MsnLinks_Init( void );
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -230,6 +232,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	MsnInitMenus();
+	MsnLinks_Init();
 
 //	arHooks.insert( HookEvent( ME_USERINFO_INITIALISE, MsnOnDetailsInit ));
 	arHooks.insert( HookEvent( ME_MSG_WINDOWEVENT, MsnWindowEvent ));
