@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern LIST<void> arServices;
 
-HANDLE GetContact(char *arg, char **email)
+static HANDLE GetContact(char *arg, char **email)
 {
 	*email = NULL;
 	do {
@@ -71,7 +71,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 
 	/* add a contact to the list */
 	if(_strnicmp(arg, "add?", 4) == 0) 
-	{
+	{ 
 		arg += 4;
 
 		char *email;
@@ -97,7 +97,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 	}
 	/* send a message to a contact */
 	/* "voice" and "video" not yet implemented, perform same action as "chat" */
-	else if(_strnicmp(arg,"chat?", 5) == 0)
+	else if(_strnicmp(arg, "chat?", 5) == 0)
 	{
 		arg += 5;
 
@@ -110,7 +110,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			return 0;
 		}
 	}
-	else if(_strnicmp(arg,"voice?", 6) == 0)
+	else if(_strnicmp(arg, "voice?", 6) == 0)
 	{
 		arg += 6;
 
