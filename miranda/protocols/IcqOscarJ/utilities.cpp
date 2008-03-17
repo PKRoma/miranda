@@ -733,7 +733,7 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 char* __fastcall strstrnull(const char *str, const char *substr)
 {
   if (str)
-    return strstr(str, substr);
+    return (char*)strstr(str, substr);
 
   return NULL;
 }
