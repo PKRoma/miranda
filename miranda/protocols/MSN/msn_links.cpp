@@ -48,21 +48,19 @@ HANDLE GetContact(char *arg, char **email)
 	return MSN_HContactFromEmail(*email, *email, false, false);
 }
 
+/* 
+	add user:      msnim:add?contact=netpassport@emailaddress.com
+	send message:  msnim:chat?contact=netpassport@emailaddress.com
+	voice chat:    msnim:voice?contact=netpassport@emailaddress.com
+	video chat:    msnim:video?contact=netpassport@emailaddress.com
+*/
 
-static int ServiceParseMsnimLink(WPARAM wParam,LPARAM lParam)
+static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 {
-	UNREFERENCED_PARAMETER(wParam);
-
-	int result = 1;
+	if (lParam == 0) return 1; /* sanity check */
 
 	char *arg = (char*)lParam;
-	if (arg == NULL) return result; /* sanity check */
-	/* 
-		add user:      msnim:add?contact=netpassport@emailaddress.com
-		send message:  msnim:chat?contact=netpassport@emailaddress.com
-		voice chat:    msnim:voice?contact=netpassport@emailaddress.com
-		video chat:    msnim:video?contact=netpassport@emailaddress.com
-	*/
+
 	/* skip leading prefix */
 	arg = strchr(arg, ':');
 	if (arg == NULL) return 1; /* parse failed */
