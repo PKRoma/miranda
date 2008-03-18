@@ -561,6 +561,9 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 
 void MSN_ChatStart(ThreadData* info);
 void MSN_KillChatSession(TCHAR* id);
+HANDLE MSN_GetChatInernalHandle(HANDLE hContact);
+inline bool IsChatHandle(HANDLE hContact) { return (int)hContact < 0; }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Message queue
