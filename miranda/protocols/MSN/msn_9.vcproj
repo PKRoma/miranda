@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="msn"
 	ProjectGUID="{7B0F213E-C15E-4219-8AE5-49DD3D3D553D}"
 	RootNamespace="msn"
@@ -465,10 +465,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\des.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ezxml.c"
 				>
 				<FileConfiguration
@@ -503,10 +499,6 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\ezxml.h"
-				>
 			</File>
 			<File
 				RelativePath="msn.cpp"
@@ -693,10 +685,6 @@
 				>
 			</File>
 			<File
-				RelativePath="msn_global.h"
-				>
-			</File>
-			<File
 				RelativePath="msn_http.cpp"
 				>
 				<FileConfiguration
@@ -740,6 +728,10 @@
 			</File>
 			<File
 				RelativePath=".\msn_libstr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\msn_links.cpp"
 				>
 			</File>
 			<File
@@ -1320,10 +1312,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath="version.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -1389,6 +1377,50 @@
 				RelativePath=".\version.rc"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			>
+			<File
+				RelativePath=".\des.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ezxml.h"
+				>
+			</File>
+			<File
+				RelativePath="msn_global.h"
+				>
+			</File>
+			<File
+				RelativePath="version.h"
+				>
+			</File>
+			<Filter
+				Name="SDK"
+				>
+				<File
+					RelativePath=".\SDK\m_assocmgr.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SDK\m_folders.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SDK\m_metacontacts.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SDK\m_proto_listeningto.h"
+					>
+				</File>
+				<File
+					RelativePath=".\SDK\m_smileyadd.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
