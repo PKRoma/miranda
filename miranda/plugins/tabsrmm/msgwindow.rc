@@ -120,8 +120,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 2,1,0,1
+ PRODUCTVERSION 2,1,0,1
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -139,23 +139,23 @@ BEGIN
 #if defined(UNICODE)        
             VALUE "CompanyName", "Miranda IM project"
             VALUE "FileDescription", "tabSRMM - UNICODE"
-            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "FileVersion", "2, 1, 0, 1"
             VALUE "InternalName", "tabSRMsg (UNICODE)"
             VALUE "LegalCopyright", "Copyright (C) 2004-2008"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "tabsrmm.dll"
             VALUE "ProductName", "tabSRMM Message window plugin (UNICODE)"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "2, 1, 0, 1"
 #else
             VALUE "CompanyName", "Miranda IM project"
             VALUE "FileDescription", "tabSRMM - ANSI"
-            VALUE "FileVersion", "2, 1, 0, 0"
+            VALUE "FileVersion", "2, 1, 0, 1"
             VALUE "InternalName", "tabSRMsg"
             VALUE "LegalCopyright", "Copyright (C) 2004-2008"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "tabsrmm.dll"
             VALUE "ProductName", "tabSRMM Message window plugin"
-            VALUE "ProductVersion", "2, 1, 0, 0"
+            VALUE "ProductVersion", "2, 1, 0, 1"
 #endif            
         END
     END

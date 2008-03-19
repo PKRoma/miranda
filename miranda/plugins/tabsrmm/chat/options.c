@@ -1437,8 +1437,8 @@ static void FreeGlobalSettings(void)
 int OptionsInit(void)
 {
 	LOGFONT lf;
-
-	//g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
+	HFONT hFont;
+	int iText;
 
 	LoadLogFonts();
 	LoadMsgDlgFont(17, &lf, NULL, CHAT_FONTMODULE);
@@ -1470,21 +1470,16 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
 
 	if (g_Settings.LoggingEnabled) {
-		LOGFONT lf;
-		HFONT hFont;
-		int iText;
-
 		if (!PathIsDirectoryA(g_Settings.pszLogDir))
 			CreateDirectoryA(g_Settings.pszLogDir, NULL);
-
-		LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
-		hFont = CreateFontIndirect(&lf);
-		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)), hFont, TRUE);
-		DeleteObject(hFont);
-		g_Settings.LogTextIndent = iText;
-		g_Settings.LogTextIndent = g_Settings.LogTextIndent * 12 / 10;
 	}
 
+	LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
+	hFont = CreateFontIndirect(&lf);
+	iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)), hFont, TRUE);
+	DeleteObject(hFont);
+	g_Settings.LogTextIndent = iText;
+	g_Settings.LogTextIndent = g_Settings.LogTextIndent * 12 / 10;
 	return 0;
 }
 

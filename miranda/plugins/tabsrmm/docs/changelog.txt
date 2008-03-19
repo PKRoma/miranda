@@ -19,6 +19,10 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+Version 2.1.0.1  - 2008/03/19
+
+		* groupchats: Fixed issue with indentation of multiline messages.
+
 Version 2.1.0.0  - 2008/02/15
 
 		* groupchats: clickable nicknames can now be colorized. Patch by theMiron
