@@ -207,7 +207,7 @@ static int stub11( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 }
 
 static int stub12( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->vtbl->GetCaps( ppi, wParam );
+{	return ( int )ppi->vtbl->GetCaps( ppi, wParam, (HANDLE)lParam );
 }
 
 static int stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )

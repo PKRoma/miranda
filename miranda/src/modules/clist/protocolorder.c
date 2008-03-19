@@ -43,7 +43,7 @@ static int __inline isProtoSuitable( PROTO_INTERFACE* ppi )
 	if ( ppi == NULL )
 		return TRUE;
 
-	return ppi->vtbl->GetCaps( ppi, PFLAGNUM_2 ) & ~ppi->vtbl->GetCaps( ppi, PFLAGNUM_5 );
+	return ppi->vtbl->GetCaps( ppi, PFLAGNUM_2, 0 ) & ~ppi->vtbl->GetCaps( ppi, PFLAGNUM_5, 0 );
 }
 
 int CheckProtocolOrder()

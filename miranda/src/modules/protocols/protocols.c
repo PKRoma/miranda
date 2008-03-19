@@ -269,7 +269,7 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
 						return ( int )ppi->vtbl->FileResume( ppi, ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
 					}
-					case 12: return ( int )ppi->vtbl->GetCaps( ppi, wParam ); break;
+					case 12: return ( int )ppi->vtbl->GetCaps( ppi, wParam, (HANDLE)lParam ); break;
 					case 13: return ( int )ppi->vtbl->GetIcon( ppi, wParam ); break;
 					case 14: return ( int )ppi->vtbl->GetInfo( ppi, hContact, wParam ); break;
 					case 15: return ( int )ppi->vtbl->SearchBasic( ppi, ( char* )lParam ); break;

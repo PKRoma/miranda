@@ -622,7 +622,7 @@ int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const char*
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CJabberProto::GetCaps( int type )
+DWORD __cdecl CJabberProto::GetCaps( int type, HANDLE hContact )
 {
 	switch( type ) {
 	case PFLAGNUM_1:

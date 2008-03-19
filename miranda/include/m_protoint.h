@@ -52,7 +52,7 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	int    ( *FileDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	int    ( *FileResume )( struct tagPROTO_INTERFACE*, HANDLE hTransfer, int* action, const char** szFilename );
 
-	DWORD  ( *GetCaps )( struct tagPROTO_INTERFACE*, int type );
+	DWORD  ( *GetCaps )( struct tagPROTO_INTERFACE*, int type, HANDLE hContact );
 	HICON  ( *GetIcon )( struct tagPROTO_INTERFACE*, int iconIndex );
 	int    ( *GetInfo )( struct tagPROTO_INTERFACE*, HANDLE hContact, int infoType );
 
@@ -119,7 +119,7 @@ typedef struct tagPROTO_INTERFACE
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason ) = 0;
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename ) = 0;
 
-	virtual	DWORD  __cdecl GetCaps( int type ) = 0;
+	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL ) = 0;
 	virtual	HICON  __cdecl GetIcon( int iconIndex ) = 0;
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType ) = 0;
 

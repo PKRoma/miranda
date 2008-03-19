@@ -283,7 +283,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
 	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
 
-	virtual	DWORD  __cdecl GetCaps( int type );
+	virtual	DWORD  __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 

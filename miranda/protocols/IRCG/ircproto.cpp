@@ -617,7 +617,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CIrcProto::GetCaps( int type )
+DWORD __cdecl CIrcProto::GetCaps( int type, HANDLE hContact )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
