@@ -1723,6 +1723,18 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	}
 	return FALSE;
 }
+static int _GetNetVisibleProtoCount()
+{
+	int i,count,netProtoCount;
+	PROTOACCOUNT **accs;
+	ProtoEnumAccounts( &count, &accs );
+	for(i=0,netProtoCount=0;i<count;i++) 
+	{
+		if ( pcli->pfnGetProtocolVisibility(accs[i]->szModuleName)==0 ) continue;
+		netProtoCount++;
+	}
+	return netProtoCount;
+}
 TCHAR *sortby[]={_T("Name"), _T("Name (use locale settings)") , _T("Status"), _T("Last message time"), _T("Profile Name"), _T("Rate"), _T("-Nothing-")};
 int sortbyValue[]={ SORTBY_NAME, SORTBY_NAME_LOCALE, SORTBY_STATUS, SORTBY_LASTMSG, SORTBY_PROTO ,SORTBY_RATE , SORTBY_NOTHING };
 static BOOL 
@@ -1872,6 +1884,21 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_BLINKTIME),0);		// set buddy			
 		SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_SETRANGE,0,MAKELONG(0x3FFF,250));
 		SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","IconFlashTime",SETTING_ICONFLASHTIME_DEFAULT),0));
+		{
+			int i=_GetNetVisibleProtoCount();
+			if (i<2)
+			{
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PRIMARYSTATUS),TRUE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIMESPIN),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLETIME),FALSE);				
+				EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSPRIMARY),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_ALWAYSPRIMARY),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_CYCLE),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_MULTITRAY),FALSE);
+				CheckDlgButton(hwndDlg,IDC_DONTCYCLE,TRUE);
+			}
+		}
+
 		return TRUE;
 	case WM_COMMAND:
 		if (LOWORD(wParam)==IDC_SHOWXSTATUS||LOWORD(wParam)==IDC_SHOWNORMAL)
@@ -1936,12 +1963,17 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				DBWriteContactSettingByte(NULL,"CList","ConfirmDelete",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_CONFIRMDELETE));
 				DBWriteContactSettingByte(NULL,"CList","Tray1Click",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONECLK));
 				DBWriteContactSettingByte(NULL,"CList","AlwaysStatus",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ALWAYSSTATUS));
+				
 				DBWriteContactSettingByte(NULL,"CList","AlwaysMulti",(BYTE)!IsDlgButtonChecked(hwndDlg,IDC_ALWAYSMULTI));
 				DBWriteContactSettingByte(NULL,"CList","AlwaysPrimary",(BYTE)!IsDlgButtonChecked(hwndDlg,IDC_ALWAYSPRIMARY));
-				DBWriteContactSettingByte(NULL,"CList","TrayIcon",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE)?SETTING_TRAYICON_SINGLE:(IsDlgButtonChecked(hwndDlg,IDC_CYCLE)?SETTING_TRAYICON_CYCLE:SETTING_TRAYICON_MULTI)));
+								
 				DBWriteContactSettingWord(NULL,"CList","CycleTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_GETPOS,0,0));
 				DBWriteContactSettingWord(NULL,"CList","IconFlashTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_BLINKSPIN,UDM_GETPOS,0,0));
 				DBWriteContactSettingByte(NULL,"CList","DisableTrayFlash",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DISABLEBLINK));
+
+
+				if (_GetNetVisibleProtoCount()>1)
+					DBWriteContactSettingByte(NULL,"CList","TrayIcon",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_DONTCYCLE)?SETTING_TRAYICON_SINGLE:(IsDlgButtonChecked(hwndDlg,IDC_CYCLE)?SETTING_TRAYICON_CYCLE:SETTING_TRAYICON_MULTI)));
 
 				{
 					BYTE xOptions=0;
@@ -1950,6 +1982,7 @@ CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					xOptions|=(xOptions && IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENTOVERLAY))?4:0;
 					DBWriteContactSettingByte(NULL,"CLUI","XStatusTray",xOptions);				
 				}
+
 				{
 					int cursel = SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETCURSEL,0,0);
 					PROTOACCOUNT* pa = (PROTOACCOUNT*)SendDlgItemMessage(hwndDlg,IDC_PRIMARYSTATUS,CB_GETITEMDATA,cursel,0);

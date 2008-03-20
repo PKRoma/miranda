@@ -597,7 +597,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,107,214,187,10
     GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,8,142,84
     GROUPBOX        "System tray icon",IDC_STATIC,2,93,298,73
-    GROUPBOX        "System tray icon when using multiple protocols",
+    GROUPBOX        "System tray icon mode",
                     IDC_STATIC,2,167,298,61
     GROUPBOX        "Contact List Sorting",IDC_STATIC,146,8,154,84,WS_GROUP
     LTEXT           "1st:",IDC_STATIC,153,19,14,8
