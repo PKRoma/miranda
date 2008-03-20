@@ -86,8 +86,8 @@ static int fnFileResume( PROTO_INTERFACE* ppi, HANDLE hTransfer, int* action, co
 	return res;
 }
 
-static int fnGetCaps( PROTO_INTERFACE* ppi, int type )
-{	return MyCallProtoService( ppi->m_szModuleName, PS_GETCAPS, type, 0 );
+static int fnGetCaps( PROTO_INTERFACE* ppi, int type, HANDLE hContact )
+{	return MyCallProtoService( ppi->m_szModuleName, PS_GETCAPS, type, (LPARAM)hContact );
 }
 
 static HICON fnGetIcon( PROTO_INTERFACE* ppi, int iconIndex )
