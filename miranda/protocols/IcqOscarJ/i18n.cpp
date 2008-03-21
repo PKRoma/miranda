@@ -54,19 +54,11 @@ void InitI18N(void)
 // Returns true if the buffer only contains 7-bit characters.
 BOOL __stdcall IsUSASCII(const char *pBuffer, int nSize)
 {
-	BOOL bResult = TRUE;
-	int nIndex;
+	for (int nIndex = 0; nIndex < nSize; nIndex++)
+		if (BYTE(pBuffer[nIndex]) > 0x7F)
+			return FALSE;
 
-	for (nIndex = 0; nIndex < nSize; nIndex++)
-	{
-		if (pBuffer[nIndex] > 0x7F)
-		{
-			bResult = FALSE;
-			break;
-		}
-	}
-
-	return bResult;
+	return TRUE;
 }
 
 // Returns true if the unicode buffer only contains 7-bit characters.
