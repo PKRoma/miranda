@@ -36,8 +36,7 @@
 
 #include "icqoscar.h"
 
-
-void handleErrorChannel(unsigned char* buf, WORD datalen)
+void CIcqProto::handleErrorChannel(unsigned char* buf, WORD datalen)
 {
-  NetLog_Server("Ignoring server packet on ERROR channel");
+	NetLog_Server("Ignoring server packet on ERROR channel");
 }

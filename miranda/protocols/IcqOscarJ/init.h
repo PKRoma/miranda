@@ -34,10 +34,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
-void UpdateGlobalSettings(void);
-
-
 // Debug defines
 #undef DBG_CAPHTML
 #define DBG_CAPMTN

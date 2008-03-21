@@ -36,176 +36,162 @@
 
 #include "icqoscar.h"
 
-
-
 static void InitComboBox(HWND hwndCombo, struct fieldnames_t *names)
 {
-  int iItem;
-  int i;
+	int iItem;
+	int i;
 
-  iItem = ComboBoxAddStringUtf(hwndCombo, NULL, 0);
-  SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
+	iItem = ComboBoxAddStringUtf(hwndCombo, NULL, 0);
+	SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
 
-  for (i = 0; ; i++)
-  {
-    if (names[i].text == NULL)
-      break;
-    
-    iItem = ComboBoxAddStringUtf(hwndCombo, names[i].text, names[i].code);
-  }
+	for (i = 0; ; i++)
+	{
+		if (names[i].text == NULL)
+			break;
+
+		iItem = ComboBoxAddStringUtf(hwndCombo, names[i].text, names[i].code);
+	}
 }
-
-
 
 BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  switch(message)
-  {
-    case WM_INITDIALOG:
-      ICQTranslateDialog(hwndDlg);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), workField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
+	switch(message)
+	{
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), workField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
 
-      {
-        struct CountryListEntry *countries;
-        int countryCount;
-        int i;
-        int iItem;
-        HWND hCombo;
+		{
+			struct CountryListEntry *countries;
+			int countryCount;
+			int i;
+			int iItem;
+			HWND hCombo;
 
-        CallService(MS_UTILS_GETCOUNTRYLIST, (WPARAM)&countryCount, (LPARAM)&countries);
+			CallService(MS_UTILS_GETCOUNTRYLIST, (WPARAM)&countryCount, (LPARAM)&countries);
 
-        hCombo = GetDlgItem(hwndDlg, IDC_COUNTRY);
-        iItem = ComboBoxAddStringUtf(hCombo, NULL, 0);
-        SendMessage(hCombo, CB_SETCURSEL, iItem, 0);
-        for (i = 0; i < countryCount; i++)
-        {
-          if (countries[i].id == 0 || countries[i].id == 0xFFFF)
-            continue;
-          iItem = ComboBoxAddStringUtf(hCombo, (unsigned char*)countries[i].szName, countries[i].id);
-        }
-      }
+			hCombo = GetDlgItem(hwndDlg, IDC_COUNTRY);
+			iItem = ComboBoxAddStringUtf(hCombo, NULL, 0);
+			SendMessage(hCombo, CB_SETCURSEL, iItem, 0);
+			for (i = 0; i < countryCount; i++)
+			{
+				if (countries[i].id == 0 || countries[i].id == 0xFFFF)
+					continue;
+				iItem = ComboBoxAddStringUtf(hCombo, countries[i].szName, countries[i].id);
+			}
+		}
 
-      InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
-      InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
 
-      return TRUE;
-      
-    case WM_COMMAND:
-      {
-        switch(LOWORD(wParam))
-        {
-          
-        case IDOK:
-          SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(IDOK, BN_CLICKED), (LPARAM)GetDlgItem(GetParent(hwndDlg), IDOK));
-          break;
-          
-        case IDCANCEL:
-          //          CheckDlgButton(GetParent(hwndDlg),IDC_ADVANCED,BST_UNCHECKED);
-          //          SendMessage(GetParent(hwndDlg),WM_COMMAND,MAKEWPARAM(IDC_ADVANCED,BN_CLICKED),(LPARAM)GetDlgItem(GetParent(hwndDlg),IDC_ADVANCED));
-          break;
-          
-        default:
-          break;
-          
-        }
-        break;
-      }
+		return TRUE;
 
-    default:
-      break;
-  }
+	case WM_COMMAND:
+		{
+			switch(LOWORD(wParam))
+			{
 
-  return FALSE;
+			case IDOK:
+				SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKEWPARAM(IDOK, BN_CLICKED), (LPARAM)GetDlgItem(GetParent(hwndDlg), IDOK));
+				break;
+
+			case IDCANCEL:
+				//          CheckDlgButton(GetParent(hwndDlg),IDC_ADVANCED,BST_UNCHECKED);
+				//          SendMessage(GetParent(hwndDlg),WM_COMMAND,MAKEWPARAM(IDC_ADVANCED,BN_CLICKED),(LPARAM)GetDlgItem(GetParent(hwndDlg),IDC_ADVANCED));
+				break;
+
+			default:
+				break;
+
+			}
+			break;
+		}
+
+	default:
+		break;
+	}
+
+	return FALSE;
 }
-
-
 
 static DWORD getCurItemData(HWND hwndDlg, UINT iCtrl)
 {
-  return SendDlgItemMessage(hwndDlg, iCtrl, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, iCtrl, CB_GETCURSEL, 0, 0), 0);
+	return SendDlgItemMessage(hwndDlg, iCtrl, CB_GETITEMDATA, SendDlgItemMessage(hwndDlg, iCtrl, CB_GETCURSEL, 0, 0), 0);
 }
-
-
 
 static void searchPackTLVLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD wType)
 {
-  char str[512];
+	char str[512];
 
-  GetDlgItemText(hwndDlg, idControl, str, sizeof(str));
+	GetDlgItemTextA(hwndDlg, idControl, str, sizeof(str));
 
-  ppackTLVLNTS(buf, buflen, str, wType, 0);
+	ppackTLVLNTS(buf, buflen, str, wType, 0);
 }
-
-
 
 static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD w, WORD wType)
 {
-  char str[512];
+	char str[512];
 
-  GetDlgItemText(hwndDlg, idControl, str, sizeof(str));
+	GetDlgItemTextA(hwndDlg, idControl, str, sizeof(str));
 
-  ppackTLVWordLNTS(buf, buflen, w, str, wType, 0);
+	ppackTLVWordLNTS(buf, buflen, w, str, wType, 0);
 }
-
-
 
 static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 {
-  PBYTE buf = NULL;
-  int buflen = 0;
-  WORD w;
+	PBYTE buf = NULL;
+	int buflen = 0;
+	WORD w;
 
-  ppackLEWord(&buf, &buflen, META_SEARCH_GENERIC);       /* subtype: full search */
+	ppackLEWord(&buf, &buflen, META_SEARCH_GENERIC);       /* subtype: full search */
 
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_FIRSTNAME, TLV_FIRSTNAME);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME, TLV_LASTNAME);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_NICK, TLV_NICKNAME);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_EMAIL, TLV_EMAIL);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_CITY, TLV_CITY);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_STATE, TLV_STATE);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_COMPANY, TLV_COMPANY);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_DEPARTMENT, TLV_DEPARTMENT);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_POSITION, TLV_POSITION);
-  searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_FIRSTNAME, TLV_FIRSTNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_LASTNAME, TLV_LASTNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_NICK, TLV_NICKNAME);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_EMAIL, TLV_EMAIL);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_CITY, TLV_CITY);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_STATE, TLV_STATE);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_COMPANY, TLV_COMPANY);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_DEPARTMENT, TLV_DEPARTMENT);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_POSITION, TLV_POSITION);
+	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
 
-  ppackTLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
-  ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
-  ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
-  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
-  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
-  ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
+	ppackTLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
+	ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
+	ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
+	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
+	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
+	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
 
-  w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
-  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
+	w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
 
-  w = (WORD)getCurItemData(hwndDlg, IDC_INTERESTSCAT);
-  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY, w, TLV_INTERESTS);
+	w = (WORD)getCurItemData(hwndDlg, IDC_INTERESTSCAT);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_INTERESTSKEY, w, TLV_INTERESTS);
 
-  w = (WORD)getCurItemData(hwndDlg, IDC_ORGANISATION);
-  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
+	w = (WORD)getCurItemData(hwndDlg, IDC_ORGANISATION);
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
 
-  w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);;
-  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
+	w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);;
+	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
 
-  ppackTLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
+	ppackTLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
 
-  if (length)
-    *length = buflen;
+	if (length)
+		*length = buflen;
 
-  return buf;
+	return buf;
 }
-
-
 
 PBYTE createAdvancedSearchStructure(HWND hwndDlg, int *length)
 {
-  if (!hwndDlg)
-    return NULL;
+	if (!hwndDlg)
+		return NULL;
 
-  return createAdvancedSearchStructureTLV(hwndDlg, length);
+	return createAdvancedSearchStructureTLV(hwndDlg, length);
 }

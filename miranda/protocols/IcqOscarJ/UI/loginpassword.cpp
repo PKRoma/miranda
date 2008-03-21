@@ -36,71 +36,63 @@
 
 #include "icqoscar.h"
 
-
-BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-
-void RequestPassword()
-{
-  DialogBoxUtf(TRUE, hInst, MAKEINTRESOURCE(IDD_LOGINPW), NULL, LoginPasswdDlgProc, 0);
-}
-
-
 BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
-    case WM_INITDIALOG:
-      {
-        unsigned char pszUIN[MAX_PATH];
-        unsigned char str[MAX_PATH];
-        DWORD dwUin;
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-        ICQTranslateDialog(hwndDlg);
-        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
-        dwUin = ICQGetContactSettingUIN(NULL);
-        null_snprintf(pszUIN, 128, ICQTranslateUtfStatic(LPGENUTF("Enter a password for UIN %u:"), str, MAX_PATH), dwUin);
-        SetDlgItemTextUtf(hwndDlg, IDC_INSTRUCTION, pszUIN);
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
-        SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-        CheckDlgButton(hwndDlg, IDC_SAVEPASS, ICQGetContactSettingByte(NULL, "RememberPass", 0));
-      }
-      break;
+			DWORD dwUin = ppro->getUin(NULL);
 
-    case WM_CLOSE:
+			char pszUIN[MAX_PATH], str[MAX_PATH];
+			null_snprintf(pszUIN, 128, ICQTranslateUtfStatic(LPGEN("Enter a password for UIN %u:"), str, MAX_PATH), dwUin);
+			SetDlgItemTextUtf(hwndDlg, IDC_INSTRUCTION, pszUIN);
 
-      EndDialog(hwndDlg, 0);
-      break;
-    
-    case WM_COMMAND:
-      {
-        switch (LOWORD(wParam))
-        {
-          case IDOK:
-            {
-              gbRememberPwd = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SAVEPASS);
-              ICQWriteContactSettingByte(NULL, "RememberPass", gbRememberPwd);
+			SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);
 
-              GetDlgItemTextA(hwndDlg, IDC_LOGINPW, gpszPassword, sizeof(gpszPassword));
+			CheckDlgButton(hwndDlg, IDC_SAVEPASS, ppro->getByte(NULL, "RememberPass", 0));
+		}
+		break;
 
-              icq_login(gpszPassword);
+	case WM_CLOSE:
 
-              EndDialog(hwndDlg, IDOK);
-            }
-            break;
+		EndDialog(hwndDlg, 0);
+		break;
 
-          case IDCANCEL:
-            {
-              SetCurrentStatus(ID_STATUS_OFFLINE);
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+			case IDOK:
+				ppro->m_bRememberPwd = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SAVEPASS);
+				ppro->setByte(NULL, "RememberPass", ppro->m_bRememberPwd);
 
-              EndDialog(hwndDlg, IDCANCEL);
-            }
-            break;
-        }
-      }
-      break;
-  }
+				GetDlgItemTextA(hwndDlg, IDC_LOGINPW, ppro->m_szPassword, sizeof(ppro->m_szPassword));
 
-  return FALSE;
+				ppro->icq_login(ppro->m_szPassword);
+
+				EndDialog(hwndDlg, IDOK);
+				break;
+
+			case IDCANCEL:
+				ppro->SetCurrentStatus(ID_STATUS_OFFLINE);
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			}
+		}
+		break;
+	}
+
+	return FALSE;
+}
+
+void CIcqProto::RequestPassword()
+{
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_LOGINPW), NULL, LoginPasswdDlgProc, LPARAM(this));
 }

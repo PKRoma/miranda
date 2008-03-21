@@ -38,10 +38,4 @@
 #define __ICONLIB_H
 
 
-HANDLE IconLibDefine(const unsigned char *desc, const unsigned char *section, const char *ident, const char *def_file, int def_idx);
-HICON IconLibGetIcon(const char *ident);
-void IconLibReleaseIcon(const char *ident);
-HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook);
-
-
 #endif /* __ICONLIB_H */

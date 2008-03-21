@@ -91,15 +91,5 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 #define BUL_VISIBLE       1
 #define BUL_INVISIBLE     2
 #define BUL_TEMPVISIBLE   4
-void sendEntireListServ(WORD wFamily, WORD wSubtype, int listType);
-void updateServVisibilityCode(BYTE bCode);
-void updateServAvatarHash(BYTE *pHash, int size);
-void sendAddStart(int bImport);
-void sendAddEnd(void);
-void sendTypingNotification(HANDLE hContact, WORD wMTNCode);
-
-void makeContactTemporaryVisible(HANDLE hContact);
-void clearTemporaryVisibleList();
-
 
 #endif /* __FAMILIES_H */

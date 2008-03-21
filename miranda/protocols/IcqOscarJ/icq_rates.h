@@ -37,8 +37,6 @@
 #ifndef __ICQ_RATES_H
 #define __ICQ_RATES_H
 
-extern CRITICAL_SECTION ratesMutex;
-
 typedef struct rates_group_s
 {
   DWORD dwWindowSize;
@@ -57,21 +55,8 @@ typedef struct rates_group_s
 typedef struct rates_s
 {
   int nGroups;
-  rates_group groups[];
+  rates_group groups[1];
 } rates;
-
-extern rates* gRates;
-
-rates* ratesCreate(BYTE* pBuffer, WORD wLen);
-void ratesRelease(rates** pRates);
-
-WORD ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand);
-WORD ratesGroupFromPacket(rates* pRates, icq_packet* pPacket);
-
-int ratesNextRateLevel(rates* pRates, WORD wGroup);
-int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel);
-void ratesPacketSent(rates* pRates, icq_packet* pPacket);
-void ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel);
 
 #define RML_CLEAR   1
 #define RML_ALERT   2
@@ -107,10 +92,7 @@ typedef struct rate_record_s
   BYTE msgType;
 } rate_record;
 
-// Level 2 of rate management
-int handleRateItem(rate_record *item, BOOL bAllowDelay);
-
-void InitRates();
-void UninitRates();
+int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel);
+int ratesNextRateLevel(rates* pRates, WORD wGroup);
 
 #endif /* __ICQ_RATES_H */

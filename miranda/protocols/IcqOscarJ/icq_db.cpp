@@ -36,343 +36,246 @@
 
 #include "icqoscar.h"
 
-
-static BOOL bUtfReadyDB = FALSE;
-
-void InitDB()
+void CIcqProto::CreateResidentSetting(const char* szSetting)
 {
-  bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
-  if (!bUtfReadyDB)
-    NetLog_Server("Warning: DB module does not support Unicode.");
+	char pszSetting[2*MAX_PATH];
+
+	strcpy(pszSetting, m_szModuleName);
+	strcat(pszSetting, "/");
+	strcat(pszSetting, szSetting);
+	CallService(MS_DB_SETSETTINGRESIDENT, 1, (WPARAM)pszSetting);
 }
 
-
-
-void __stdcall ICQCreateResidentSetting(const char* szSetting)
+BYTE CIcqProto::getByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
-  char pszSetting[2*MAX_PATH];
-
-  strcpy(pszSetting, gpszICQProtoName);
-  strcat(pszSetting, "/");
-  strcat(pszSetting, szSetting);
-  CallService(MS_DB_SETSETTINGRESIDENT, 1, (WPARAM)pszSetting);
+  return DBGetContactSettingByte(hContact, m_szModuleName, szSetting, bDef);
 }
 
-
-
-BYTE __stdcall ICQGetContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
+WORD CIcqProto::getWord(HANDLE hContact, const char* szSetting, WORD wDef)
 {
-  return DBGetContactSettingByte(hContact, gpszICQProtoName, szSetting, bDef);
+  return DBGetContactSettingWord(hContact, m_szModuleName, szSetting, wDef);
 }
 
-
-
-WORD __stdcall ICQGetContactSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
+DWORD CIcqProto::getDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 {
-  return DBGetContactSettingWord(hContact, gpszICQProtoName, szSetting, wDef);
-}
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING cgs;
+	DWORD dwRes;
 
+	cgs.szModule = m_szModuleName;
+	cgs.szSetting = szSetting;
+	cgs.pValue = &dbv;
+	if (CallService(MS_DB_CONTACT_GETSETTING,(WPARAM)hContact,(LPARAM)&cgs))
+		return dwDef; // not found, give default
 
+	if (dbv.type != DBVT_DWORD)
+		dwRes = dwDef; // invalid type, give default
+	else // found and valid, give result
+		dwRes = dbv.dVal;
 
-DWORD __stdcall ICQGetContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
-{
-  DBVARIANT dbv;
-  DBCONTACTGETSETTING cgs;
-  DWORD dwRes;
-
-  cgs.szModule = gpszICQProtoName;
-  cgs.szSetting = szSetting;
-  cgs.pValue = &dbv;
-  if (CallService(MS_DB_CONTACT_GETSETTING,(WPARAM)hContact,(LPARAM)&cgs))
-    return dwDef; // not found, give default
-
-  if (dbv.type != DBVT_DWORD)
-    dwRes = dwDef; // invalid type, give default
-  else // found and valid, give result
-    dwRes = dbv.dVal;
-
-  ICQFreeVariant(&dbv);
+	ICQFreeVariant(&dbv);
 	return dwRes;
 }
 
-
-
-DWORD __stdcall ICQGetContactSettingUIN(HANDLE hContact)
+DWORD CIcqProto::getUin(HANDLE hContact)
 {
-  return ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
+	return getDword(hContact, UNIQUEIDSETTING, 0);
 }
 
-
-
-int __stdcall ICQGetContactSettingUID(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
+int CIcqProto::getUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 {
-  DBVARIANT dbv;
-  int iRes = 1;
+	DBVARIANT dbv;
+	int iRes = 1;
 
-  *pdwUin = 0;
-  if (ppszUid) *ppszUid[0] = '\0';
+	*pdwUin = 0;
+	if (ppszUid) *ppszUid[0] = '\0';
 
-  if (!ICQGetContactSetting(hContact, UNIQUEIDSETTING, &dbv))
-  {
-    if (dbv.type == DBVT_DWORD)
-    {
-      *pdwUin = dbv.dVal;
-      iRes = 0;
-    }
-    else if (dbv.type == DBVT_ASCIIZ)
-    {
-      if (ppszUid && gbAimEnabled) 
-      {
-        strcpy(*ppszUid, dbv.pszVal);
-        iRes = 0;
-      }
-      else
-        NetLog_Server("AOL screennames not accepted");
-    }
-    ICQFreeVariant(&dbv);
-  }
-  return iRes;
+	if (!getSetting(hContact, UNIQUEIDSETTING, &dbv))
+	{
+		if (dbv.type == DBVT_DWORD)
+		{
+			*pdwUin = dbv.dVal;
+			iRes = 0;
+		}
+		else if (dbv.type == DBVT_ASCIIZ)
+		{
+			if (ppszUid && m_bAimEnabled) 
+			{
+				strcpy(*ppszUid, dbv.pszVal);
+				iRes = 0;
+			}
+			else
+				NetLog_Server("AOL screennames not accepted");
+		}
+		ICQFreeVariant(&dbv);
+	}
+	return iRes;
 }
 
-
-
-int __stdcall ICQGetContactSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+int CIcqProto::getSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
-  if (bUtfReadyDB)
-    return DBGetContactSettingW(hContact, gpszICQProtoName, szSetting, dbv);
-  else
-    return DBGetContactSetting(hContact, gpszICQProtoName, szSetting, dbv);
+   return DBGetContactSettingW(hContact, m_szModuleName, szSetting, dbv);
 }
 
-
-
-int __stdcall ICQGetContactSettingString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+int CIcqProto::getString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
-  if (bUtfReadyDB)
-    return DBGetContactSettingString(hContact, gpszICQProtoName, szSetting, dbv);
-  else
-    return ICQGetContactSetting(hContact, szSetting, dbv);
+	return DBGetContactSettingString(hContact, m_szModuleName, szSetting, dbv);
 }
 
-
-
-unsigned char* __stdcall UniGetContactSettingUtf(HANDLE hContact, const char *szModule,const char *szSetting, unsigned char *szDef)
+char* CIcqProto::getStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef)
 {
-  DBVARIANT dbv = {DBVT_DELETED};
-  unsigned char *szRes;
+	DBVARIANT dbv = {DBVT_DELETED};
+	if (DBGetContactSettingUTF8String(hContact, szModule, szSetting, &dbv))
+		return null_strdup(szDef);
 
-  if (bUtfReadyDB)
-  {
-    if (DBGetContactSettingUTF8String(hContact, szModule, szSetting, &dbv))
-      return null_strdup(szDef);
-    
-    szRes = null_strdup((unsigned char*)dbv.pszVal);
-    ICQFreeVariant(&dbv);
-  }
-  else
-  { // old DB, we need to convert the string to UTF-8
-    if (DBGetContactSetting(hContact, szModule, szSetting, &dbv))
-      return null_strdup(szDef);
-
-    szRes = ansi_to_utf8(dbv.pszVal);
-
-    ICQFreeVariant(&dbv);
-  }
-  return szRes;
+	char *szRes = null_strdup(dbv.pszVal);
+	ICQFreeVariant(&dbv);
+	return szRes;
 }
 
-
-
-unsigned char* __stdcall ICQGetContactSettingUtf(HANDLE hContact, const char *szSetting, unsigned char *szDef)
+char* CIcqProto::getStringUtf(HANDLE hContact, const char *szSetting, char *szDef)
 {
-  return UniGetContactSettingUtf(hContact, gpszICQProtoName, szSetting, szDef);
+	return getStringUtf(hContact, m_szModuleName, szSetting, szDef);
 }
 
-
-
-WORD __stdcall ICQGetContactStatus(HANDLE hContact)
+WORD CIcqProto::getContactStatus(HANDLE hContact)
 {
-  return ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+  return getWord(hContact, "Status", ID_STATUS_OFFLINE);
 }
 
-
-
-// (c) by George Hazan
-int __stdcall ICQGetContactStaticString(HANDLE hContact, const char* valueName, char* dest, int dest_len)
+int CIcqProto::getStringStatic(HANDLE hContact, const char* valueName, char* dest, int dest_len)
 {
-  DBVARIANT dbv;
-  DBCONTACTGETSETTING sVal;
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING sVal;
 
-  dbv.pszVal = dest;
-  dbv.cchVal = dest_len;
-  dbv.type = DBVT_ASCIIZ;
+	dbv.pszVal = dest;
+	dbv.cchVal = dest_len;
+	dbv.type = DBVT_ASCIIZ;
 
-  sVal.pValue = &dbv;
-  sVal.szModule = gpszICQProtoName;
-  sVal.szSetting = valueName;
+	sVal.pValue = &dbv;
+	sVal.szModule = m_szModuleName;
+	sVal.szSetting = valueName;
 
-  if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
-  {
-    dbv.pszVal = dest;
-    dbv.cchVal = dest_len;
-    dbv.type = DBVT_UTF8;
+	if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
+	{
+		dbv.pszVal = dest;
+		dbv.cchVal = dest_len;
+		dbv.type = DBVT_UTF8;
 
-    if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
-      return 1; // this is here due to DB module bug...
-  }
+		if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&sVal) != 0)
+			return 1; // this is here due to DB module bug...
+	}
 
-  return (dbv.type != DBVT_ASCIIZ);
+	return (dbv.type != DBVT_ASCIIZ);
 }
 
-
-
-int __stdcall ICQDeleteContactSetting(HANDLE hContact, const char* szSetting)
+int CIcqProto::DeleteSetting(HANDLE hContact, const char* szSetting)
 {
-  return DBDeleteContactSetting(hContact, gpszICQProtoName, szSetting);
+  return DBDeleteContactSetting(hContact, m_szModuleName, szSetting);
 }
 
-
-
-int __stdcall ICQWriteContactSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue)
+int CIcqProto::setByte(HANDLE hContact, const char* szSetting, BYTE bValue)
 {
-  return DBWriteContactSettingByte(hContact, gpszICQProtoName, szSetting, bValue);
+	return DBWriteContactSettingByte(hContact, m_szModuleName, szSetting, bValue);
 }
 
-
-
-int __stdcall ICQWriteContactSettingWord(HANDLE hContact, const char* szSetting, WORD wValue)
+int CIcqProto::setWord(HANDLE hContact, const char* szSetting, WORD wValue)
 {
-  return DBWriteContactSettingWord(hContact, gpszICQProtoName, szSetting, wValue);
+	return DBWriteContactSettingWord(hContact, m_szModuleName, szSetting, wValue);
 }
 
-
-
-int __stdcall ICQWriteContactSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
+int CIcqProto::setDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
 {
-  return DBWriteContactSettingDword(hContact, gpszICQProtoName, szSetting, dwValue);
+	return DBWriteContactSettingDword(hContact, m_szModuleName, szSetting, dwValue);
 }
 
-
-
-int __stdcall ICQWriteContactSettingString(HANDLE hContact, const char* szSetting, const char* szValue)
+int CIcqProto::setString(HANDLE hContact, const char* szSetting, const char* szValue)
 {
-  return DBWriteContactSettingString(hContact, gpszICQProtoName, szSetting, szValue);
+	return DBWriteContactSettingString(hContact, m_szModuleName, szSetting, szValue);
 }
 
-
-
-int __stdcall UniWriteContactSettingUtf(HANDLE hContact, const char *szModule, const char* szSetting, const unsigned char* szValue)
+int CIcqProto::setStringUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue)
 {
-  if (bUtfReadyDB)
-    return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, (char*)szValue);
-  else
-  { // old DB, we need to convert the string to Ansi
-    int size = strlennull(szValue) + 2;
-    char* szAnsi = (char*)_alloca(size);
-
-    if (utf8_decode_static(szValue, szAnsi, size))
-      return DBWriteContactSettingString(hContact, szModule, szSetting, szAnsi);
-    // failed to convert - give error
-
-    return 1;
-  }
+	return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, (char*)szValue);
 }
 
-
-
-int __stdcall ICQWriteContactSettingUtf(HANDLE hContact, const char* szSetting, const unsigned char* szValue)
+int CIcqProto::setStringUtf(HANDLE hContact, const char* szSetting, const char* szValue)
 {
-  return UniWriteContactSettingUtf(hContact, gpszICQProtoName, szSetting, szValue);
+	return setStringUtf(hContact, m_szModuleName, szSetting, szValue);
 }
 
-
-
-int __stdcall ICQWriteContactSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal)
+int CIcqProto::setBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal)
 {
-  DBCONTACTWRITESETTING cws;
+	DBCONTACTWRITESETTING cws;
 
-  cws.szModule = gpszICQProtoName;
-  cws.szSetting = szSetting;
-  cws.value.type = DBVT_BLOB;
-  cws.value.pbVal = (LPBYTE)val;
-  cws.value.cpbVal = cbVal;
-  return CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
+	cws.szModule = m_szModuleName;
+	cws.szSetting = szSetting;
+	cws.value.type = DBVT_BLOB;
+	cws.value.pbVal = (LPBYTE)val;
+	cws.value.cpbVal = cbVal;
+	return CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
 }
 
-
-
-int __stdcall ICQFreeVariant(DBVARIANT* dbv)
+int __fastcall ICQFreeVariant(DBVARIANT* dbv)
 {
-  return DBFreeVariant(dbv);
+	return DBFreeVariant(dbv);
 }
 
-
-
-int __fastcall IsICQContact(HANDLE hContact)
+int CIcqProto::IsICQContact(HANDLE hContact)
 {
-  char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-  return !strcmpnull(szProto, gpszICQProtoName);
+	return !strcmpnull(szProto, m_szModuleName);
 }
 
-
-
-HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob)
+HANDLE CIcqProto::AddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob)
 {
-  DBEVENTINFO dbei = {0};
+	DBEVENTINFO dbei = {0};
 
-  dbei.cbSize = sizeof(dbei);
-  dbei.szModule = gpszICQProtoName;
-  dbei.timestamp = dwTime;
-  dbei.flags = flags;
-  dbei.eventType = wType;
-  dbei.cbBlob = cbBlob;
-  dbei.pBlob = pBlob;
+	dbei.cbSize = sizeof(dbei);
+	dbei.szModule = m_szModuleName;
+	dbei.timestamp = dwTime;
+	dbei.flags = flags;
+	dbei.eventType = wType;
+	dbei.cbBlob = cbBlob;
+	dbei.pBlob = pBlob;
 
-  return (HANDLE)CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
+	return (HANDLE)CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 }
 
-
-
-HANDLE __fastcall ICQFindFirstContact()
+HANDLE CIcqProto::FindFirstContact()
 {
-  HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, (LPARAM)gpszICQProtoName);
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, (LPARAM)m_szModuleName);
 
-  if (IsICQContact(hContact))
-  {
-    return hContact;
-  }
-  return ICQFindNextContact(hContact);
+	if (IsICQContact(hContact))
+	{
+		return hContact;
+	}
+	return FindNextContact(hContact);
 }
 
-
-
-HANDLE __fastcall ICQFindNextContact(HANDLE hContact)
+HANDLE CIcqProto::FindNextContact(HANDLE hContact)
 {
-  hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)gpszICQProtoName);
+	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)m_szModuleName);
 
-  while (hContact != NULL)
-  {
-    if (IsICQContact(hContact))
-    {
-      return hContact;
-    }
-    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)gpszICQProtoName);
-  }
-  return hContact;
+	while (hContact != NULL)
+	{
+		if (IsICQContact(hContact))
+		{
+			return hContact;
+		}
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,(LPARAM)m_szModuleName);
+	}
+	return hContact;
 }
 
-
-
-unsigned char* __stdcall ICQGetContactCListGroup(HANDLE hContact)
+char* CIcqProto::GetContactCListGroup(HANDLE hContact)
 {
-  return UniGetContactSettingUtf(hContact, "CList", "Group", NULL);
+	return getStringUtf(hContact, "CList", "Group", NULL);
 }
-
-
 
 int __stdcall ICQSetContactCListGroup(HANDLE hContact, const unsigned char *szGroup)
 {
-  /// TODO
-  return 0;
+	/// TODO
+	return 0;
 }

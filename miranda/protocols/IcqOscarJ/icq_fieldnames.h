@@ -36,7 +36,7 @@
 
 struct fieldnames_t {
   int code;
-  unsigned char *text;
+  char *text;
 };
 
 extern struct fieldnames_t interestsField[];
@@ -48,4 +48,4 @@ extern struct fieldnames_t workField[];
 extern struct fieldnames_t affiliationField[];
 extern struct fieldnames_t maritalField[];
 
-unsigned char *LookupFieldNameUtf(struct fieldnames_t *table, int code, unsigned char *str, size_t strsize);
+char *LookupFieldNameUtf(struct fieldnames_t *table, int code, char *str, size_t strsize);

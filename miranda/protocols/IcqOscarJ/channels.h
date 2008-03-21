@@ -37,16 +37,4 @@
 #ifndef __CHANNELS_H
 #define __CHANNELS_H
 
-int unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength);
-void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
-void handleErrorChannel(unsigned char *buf, WORD datalen);
-void handleDataChannel(unsigned char *buf, WORD wLen, serverthread_info *info);
-void handlePingChannel(unsigned char *buf, WORD wLen);
-void handleCloseChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
-
-void LogFamilyError(WORD wFamily, WORD wError);
-
-void StartKeepAlive(serverthread_info* info);
-void StopKeepAlive(serverthread_info* info);
-
 #endif /* __CHANNELS_H */

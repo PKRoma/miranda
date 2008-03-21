@@ -36,80 +36,77 @@
 
 #include "icqoscar.h"
 
-
-
 extern WORD wLocalSequence;
 
-
-void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
+void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
 {
-  icq_packet packet;
+	icq_packet packet;
 
-  // isLoginServer is "1" if we just received SRV_HELLO
-  if (info->isLoginServer)
-  {
+	// isLoginServer is "1" if we just received SRV_HELLO
+	if (info->isLoginServer)
+	{
 #ifdef _DEBUG
-    NetLog_Server("Received SRV_HELLO from login server");
+		NetLog_Server("Received SRV_HELLO from login server");
 #endif
-    if (gbSecureLogin)
-    {
-      char szUin[UINMAXLEN];
-      WORD wUinLen;
+		if (m_bSecureLogin)
+		{
+			char szUin[UINMAXLEN];
+			WORD wUinLen;
 
 #ifdef _DEBUG
-      NetLog_Server("Sending %s to login server", "CLI_HELLO");
+			NetLog_Server("Sending %s to login server", "CLI_HELLO");
 #endif
-      packet.wLen = 12;
-      write_flap(&packet, ICQ_LOGIN_CHAN);
-      packDWord(&packet, 0x00000001);
-      packTLVDWord(&packet, 0x8003, 0x00100000); // unknown
-      sendServPacket(&packet);  // greet login server
+			packet.wLen = 12;
+			write_flap(&packet, ICQ_LOGIN_CHAN);
+			packDWord(&packet, 0x00000001);
+			packTLVDWord(&packet, 0x8003, 0x00100000); // unknown
+			sendServPacket(&packet);  // greet login server
 
-      wUinLen = strlennull(strUID(dwLocalUIN, szUin));
+			wUinLen = strlennull(strUID(m_dwLocalUIN, szUin));
 #ifdef _DEBUG
-      NetLog_Server("Sending %s to login server", "ICQ_SIGNON_AUTH_REQUEST");
+			NetLog_Server("Sending %s to login server", "ICQ_SIGNON_AUTH_REQUEST");
 #endif
 
-      serverPacketInit(&packet, (WORD)(14 + wUinLen));
-      packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
-      packTLV(&packet, 0x0001, wUinLen, (LPBYTE)szUin);
-      sendServPacket(&packet);  // request login digest
-    }
-    else
-    {
-      sendClientAuth((char*)info->szAuthKey, info->wAuthKeyLen, FALSE);
+			serverPacketInit(&packet, (WORD)(14 + wUinLen));
+			packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
+			packTLV(&packet, 0x0001, wUinLen, (LPBYTE)szUin);
+			sendServPacket(&packet);  // request login digest
+		}
+		else
+		{
+			sendClientAuth((char*)info->szAuthKey, info->wAuthKeyLen, FALSE);
 #ifdef _DEBUG
-      NetLog_Server("Sent CLI_IDENT to %s server", "login");
+			NetLog_Server("Sent CLI_IDENT to %s server", "login");
 #endif
-    }
+		}
 
-    info->isLoginServer = 0;
-    if (info->cookieDataLen)
-    {
-      SAFE_FREE((void**)&info->cookieData);
-      info->cookieDataLen = 0;
-    }
-  }
-  else 
-  {
-    if (info->cookieDataLen)
-    {
-      wLocalSequence = (WORD)RandRange(0, 0xffff);
-      
-      serverCookieInit(&packet, info->cookieData, (WORD)info->cookieDataLen);
-      sendServPacket(&packet);
-      
+		info->isLoginServer = 0;
+		if (info->cookieDataLen)
+		{
+			SAFE_FREE((void**)&info->cookieData);
+			info->cookieDataLen = 0;
+		}
+	}
+	else 
+	{
+		if (info->cookieDataLen)
+		{
+			wLocalSequence = (WORD)RandRange(0, 0xffff);
+
+			serverCookieInit(&packet, info->cookieData, (WORD)info->cookieDataLen);
+			sendServPacket(&packet);
+
 #ifdef _DEBUG
-      NetLog_Server("Sent CLI_IDENT to %s server", "communication");
+			NetLog_Server("Sent CLI_IDENT to %s server", "communication");
 #endif
-      
-      SAFE_FREE((void**)&info->cookieData);
-      info->cookieDataLen = 0;
-    }
-    else
-    {
-      // We need a cookie to identify us to the communication server
-      NetLog_Server("Something went wrong...");
-    }
-  }
+
+			SAFE_FREE((void**)&info->cookieData);
+			info->cookieDataLen = 0;
+		}
+		else
+		{
+			// We need a cookie to identify us to the communication server
+			NetLog_Server("Something went wrong...");
+		}
+	}
 }

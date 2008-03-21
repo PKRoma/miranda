@@ -36,61 +36,60 @@
 
 #include "icqoscar.h"
 
-extern HANDLE hServerConn;
-
-void handlePingChannel(unsigned char* buf, WORD datalen)
+void CIcqProto::handlePingChannel(unsigned char* buf, WORD datalen)
 {
-  NetLog_Server("Warning: Ignoring server packet on PING channel");
+	NetLog_Server("Warning: Ignoring server packet on PING channel");
 }
 
 static DWORD __stdcall icq_keepAliveThread(void* arg)
 {
-  serverthread_info* info = (serverthread_info*)arg;
-  icq_packet packet;
-  DWORD dwInterval = ICQGetContactSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
+	serverthread_info* info = (serverthread_info*)arg;
+	CIcqProto* ppro = info->ppro;
+	icq_packet packet;
+	DWORD dwInterval = ppro->getDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
 
-  NetLog_Server("Keep alive thread starting.");
+	info->ppro->NetLog_Server("Keep alive thread starting.");
 
-  info->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	info->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-  for(;;)
-  {
-    DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, dwInterval, TRUE);
+	for(;;)
+	{
+		DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, dwInterval, TRUE);
 
-    if (dwWait == WAIT_OBJECT_0) break; // we should end
-    else if (dwWait == WAIT_TIMEOUT)
-    {
-      // Send a keep alive packet to server
-      packet.wLen = 0;
-      write_flap(&packet, ICQ_PING_CHAN);
-      if (hServerConn) // connection lost, end
-        sendServPacket(&packet);
-      else 
-        break;
-    }
-    else if (dwWait == WAIT_IO_COMPLETION)
-      // Possible shutdown in progress
-      if (Miranda_Terminated()) break;
-  }
+		if (dwWait == WAIT_OBJECT_0) break; // we should end
+		else if (dwWait == WAIT_TIMEOUT)
+		{
+			// Send a keep alive packet to server
+			packet.wLen = 0;
+			write_flap(&packet, ICQ_PING_CHAN);
+			if (ppro->hServerConn) // connection lost, end
+				ppro->sendServPacket(&packet);
+			else 
+				break;
+		}
+		else if (dwWait == WAIT_IO_COMPLETION)
+			// Possible shutdown in progress
+			if (Miranda_Terminated()) break;
+	}
 
-  NetLog_Server("Keep alive thread shutting down.");
+	info->ppro->NetLog_Server("Keep alive thread shutting down.");
 
-  CloseHandle(info->hKeepAliveEvent);
-  info->hKeepAliveEvent = NULL;
+	CloseHandle(info->hKeepAliveEvent);
+	info->hKeepAliveEvent = NULL;
 
-  return 0;
+	return 0;
 }
 
-void StartKeepAlive(serverthread_info* info)
+void CIcqProto::StartKeepAlive(serverthread_info* info)
 {
 	if (info->hKeepAliveEvent) // start only once
 		return;
 
-	if (ICQGetContactSettingByte(NULL, "KeepAlive", 0))
+	if (getByte(NULL, "KeepAlive", 0))
 		info->hKeepAliveThread = ICQCreateThreadEx((pThreadFuncEx)icq_keepAliveThread, info, NULL);
 }
 
-void StopKeepAlive(serverthread_info* info)
+void CIcqProto::StopKeepAlive(serverthread_info* info)
 {	// finish keep alive thread
 	if (info->hKeepAliveEvent) {
 		SetEvent(info->hKeepAliveEvent);

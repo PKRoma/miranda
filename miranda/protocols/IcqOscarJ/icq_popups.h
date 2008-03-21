@@ -44,7 +44,5 @@
 void InitPopUps();
 void InitPopupOpts(WPARAM wParam);
 
-int ShowPopUpMsg(HANDLE hContact, const unsigned char *szTitle, const unsigned char *szMsg, BYTE bType);
-
 
 #endif /* __ICQ_POPUPS_H */

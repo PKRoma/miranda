@@ -34,9 +34,4 @@
 //
 // -----------------------------------------------------------------------------
 
-
-
 int IcqOptInit(WPARAM, LPARAM);
-
-void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szTitle);
-void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle);

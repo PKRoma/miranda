@@ -70,18 +70,17 @@ extern DWORD dwLocalUIN;
 extern char gpszPassword[16];
 extern BYTE gbRememberPwd;
 
-extern BYTE gbUnicodeAPI;
 extern BYTE gbUnicodeCore;
 
 // from fam_04message.c
-typedef struct icq_mode_messages_s
+struct icq_mode_messages
 {
-  unsigned char *szAway;
-  unsigned char *szNa;
-  unsigned char *szDnd;
-  unsigned char *szOccupied;
-  unsigned char *szFfc;
-} icq_mode_messages;
+  char *szAway;
+  char *szNa;
+  char *szDnd;
+  char *szOccupied;
+  char *szFfc;
+};
 
 extern icq_mode_messages modeMsgs;
 extern CRITICAL_SECTION modeMsgsMutex;

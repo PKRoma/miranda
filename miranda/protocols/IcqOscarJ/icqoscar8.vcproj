@@ -349,6 +349,9 @@
 				RelativePath="icq_packet.h">
 			</File>
 			<File
+				RelativePath=".\icq_proto.h">
+			</File>
+			<File
 				RelativePath=".\icq_rates.h">
 			</File>
 			<File
@@ -1179,6 +1182,9 @@
 				RelativePath=".\icq_popups.cpp">
 			</File>
 			<File
+				RelativePath=".\icq_proto.cpp">
+			</File>
+			<File
 				RelativePath=".\icq_xstatus.cpp">
 			</File>
 			<File
@@ -1323,47 +1329,6 @@
 			Filter="">
 			<File
 				RelativePath="UI\askauthentication.cpp">
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="icq_firstrun.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool

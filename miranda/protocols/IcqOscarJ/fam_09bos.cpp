@@ -36,98 +36,78 @@
 
 #include "icqoscar.h"
 
-
-
-static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength);
-
-void handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void CIcqProto::handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
-  switch (pSnacHeader->wSubtype)
-  {
+	switch (pSnacHeader->wSubtype) {
 
-  case ICQ_PRIVACY_RIGHTS_REPLY: // Reply to CLI_REQBOS
-    handlePrivacyRightsReply(pBuffer, wBufferLength);
-    break;
+	case ICQ_PRIVACY_RIGHTS_REPLY: // Reply to CLI_REQBOS
+		handlePrivacyRightsReply(pBuffer, wBufferLength);
+		break;
 
-  case ICQ_ERROR:
-  {
-    WORD wError;
+	case ICQ_ERROR:
+		{
+			WORD wError;
 
-    if (wBufferLength >= 2)
-      unpackWord(&pBuffer, &wError);
-    else 
-      wError = 0;
+			if (wBufferLength >= 2)
+				unpackWord(&pBuffer, &wError);
+			else 
+				wError = 0;
 
-    LogFamilyError(ICQ_BOS_FAMILY, wError);
-    break;
-  }
+			LogFamilyError(ICQ_BOS_FAMILY, wError);
+			break;
+		}
 
-  default:
-    NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BOS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
-    break;
+	default:
+		NetLog_Server("Warning: Ignoring SNAC(x%02x,x%02x) - Unknown SNAC (Flags: %u, Ref: %u)", ICQ_BOS_FAMILY, pSnacHeader->wSubtype, pSnacHeader->wFlags, pSnacHeader->dwRef);
+		break;
 
-  }
+	}
 }
 
-
-
-static void handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
+void CIcqProto::handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLength)
 {
-  if (wBufferLength >= 12)
-  {
-    oscar_tlv_chain* pChain;
+	if (wBufferLength >= 12)
+	{
+		oscar_tlv_chain* pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+		if (pChain)
+		{
+			WORD wMaxVisibleContacts;
+			WORD wMaxInvisibleContacts;
+			WORD wMaxTemporaryVisibleContacts;
 
+			wMaxVisibleContacts = getWordFromChain(pChain, 0x0001, 1);
+			wMaxInvisibleContacts = getWordFromChain(pChain, 0x0002, 1);
+			wMaxTemporaryVisibleContacts = getWordFromChain(pChain, 0x0003, 1);
 
-    pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
+			disposeChain(&pChain);
 
-    if (pChain)
-    {
-      WORD wMaxVisibleContacts;
-      WORD wMaxInvisibleContacts;
-      WORD wMaxTemporaryVisibleContacts;
+			NetLog_Server("PRIVACY: Max visible %u, max invisible %u, max temporary visible %u items.", wMaxVisibleContacts, wMaxInvisibleContacts, wMaxTemporaryVisibleContacts);
 
-      wMaxVisibleContacts = getWordFromChain(pChain, 0x0001, 1);
-      wMaxInvisibleContacts = getWordFromChain(pChain, 0x0002, 1);
-      wMaxTemporaryVisibleContacts = getWordFromChain(pChain, 0x0003, 1);
+			// Success
+			return;
+		}
+	}
 
-      disposeChain(&pChain);
-
-      NetLog_Server("PRIVACY: Max visible %u, max invisible %u, max temporary visible %u items.", wMaxVisibleContacts, wMaxInvisibleContacts, wMaxTemporaryVisibleContacts);
-
-      // Success
-      return;
-    }
-  }
-
-  // Failure
-  NetLog_Server("Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
+	// Failure
+	NetLog_Server("Warning: Malformed SRV_PRIVACY_RIGHTS_REPLY");
 }
 
-
-
-void makeContactTemporaryVisible(HANDLE hContact)
+void CIcqProto::makeContactTemporaryVisible(HANDLE hContact)
 {
-  DWORD dwUin;
-  uid_str szUid;
+	DWORD dwUin;
+	uid_str szUid;
 
-  if (ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
-    return; // already there
+	if (getByte(hContact, "TemporaryVisible", 0))
+		return; // already there
 
-  if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-    return; // Invalid contact
+	if (getUid(hContact, &dwUin, &szUid))
+		return; // Invalid contact
 
-  icq_sendGenericContact(dwUin, szUid, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE);
+	icq_sendGenericContact(dwUin, szUid, ICQ_BOS_FAMILY, ICQ_CLI_ADDTEMPVISIBLE);
 
-  ICQWriteContactSettingByte(hContact, "TemporaryVisible", 1);
+	setByte(hContact, "TemporaryVisible", 1);
 
 #ifdef _DEBUG
-  NetLog_Server("Added contact %s to temporary visible list", strUID(dwUin, szUid));
+	NetLog_Server("Added contact %s to temporary visible list", strUID(dwUin, szUid));
 #endif
-}
-
-
-
-void clearTemporaryVisibleList()
-{ // remove all temporary visible contacts
-  sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, BUL_TEMPVISIBLE);
 }

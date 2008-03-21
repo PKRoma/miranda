@@ -40,18 +40,4 @@
 // Direct packet senders
 void packDirectMsgHeader(icq_packet *packet, WORD wDataLen, WORD wCommand, DWORD dwCookie, BYTE bMsgType, BYTE bMsgFlags, WORD wX1, WORD wX2);
 
-void icq_sendDirectMsgAck(directconnect* dc, WORD wCookie, BYTE bMsgType, BYTE bMsgFlags, char* szCap);
-
-void icq_sendAwayMsgReplyDirect(directconnect *dc, WORD wCookie, BYTE msgType, const unsigned char **szMsg);
-
-DWORD icq_sendGetAwayMsgDirect(HANDLE hContact, int type);
-int icq_sendFileSendDirectv7(filetransfer *ft, const char *pszFiles);
-int icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles);
-void icq_sendFileAcceptDirect(HANDLE hContact, filetransfer *ft);
-void icq_sendFileDenyDirect(HANDLE hContact, filetransfer* ft, char *szReason);
-DWORD icq_SendDirectMessage(HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap);
-
-void icq_sendXtrazRequestDirect(HANDLE hContact, DWORD dwCookie, char* szBody, int nBodyLen, WORD wType);
-void icq_sendXtrazResponseDirect(HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
-
 #endif /* __ICQ_DIRECTPACKETS_H */

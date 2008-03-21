@@ -39,835 +39,580 @@
 #include <win2k.h>
 #include <uxtheme.h>
 
+extern BOOL bPopUpService;
 
-static BOOL CALLBACK DlgProcIcqMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-
-static const unsigned char* szLogLevelDescr[] = {LPGENUTF("Display all problems"), LPGENUTF("Display problems causing possible loss of data"), LPGENUTF("Display explanations for disconnection"), LPGENUTF("Display problems requiring user intervention"), LPGENUTF("Do not display any problems (not recommended)")};
+static const char* szLogLevelDescr[] = {
+	LPGEN("Display all problems"),
+	LPGEN("Display problems causing possible loss of data"),
+	LPGEN("Display explanations for disconnection"),
+	LPGEN("Display problems requiring user intervention"),
+	LPGEN("Do not display any problems (not recommended)")
+};
 
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
-
-static void AddUniPageUtf(const char *szService, OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle)
+static void LoadDBCheckState(CIcqProto* ppro, HWND hwndDlg, int idCtrl, const char* szSetting, BYTE bDef)
 {
-  unsigned char str[MAX_PATH];
-  unsigned char *pszTitle;
-
-  if (strstrnull(szTitle, "%s"))
-  {
-    unsigned char *lTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
-    int size = strlennull(lTitle) + strlennull(gpszICQProtoName);
- 
-    pszTitle = (unsigned char*)_alloca(size);
-    null_snprintf(pszTitle, size, lTitle, gpszICQProtoName);
-  }
-  else
-    pszTitle = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
-
-  if (gbUnicodeCore)
-  {
-    WCHAR *utitle, *ugroup;
-
-    utitle = make_unicode_string(pszTitle);
-    if (szGroup)
-      ugroup = make_unicode_string(ICQTranslateUtfStatic(szGroup, str, MAX_PATH));
-    else
-      ugroup = NULL;
-    op->pszTitle = (char*)utitle; // this is union with ptszTitle
-    op->pszGroup = (char*)ugroup;
-    op->flags |= ODPF_UNICODE;
-    CallService(szService, wParam, (LPARAM)op);
-    SAFE_FREE((void**)&utitle);
-    SAFE_FREE((void**)&ugroup);
-  }
-  else
-  {
-    char *title, *group;
-    int size;
-
-    size = strlennull(pszTitle) + 2;
-    title = (char*)_alloca(size);
-    utf8_decode_static(pszTitle, title, size);
-    if (szGroup)
-    {
-      unsigned char *tmp = ICQTranslateUtfStatic(szGroup, str, MAX_PATH);
-
-      size = strlennull(tmp) + 2;
-      group = (char*)_alloca(size);
-      utf8_decode_static(tmp, group, size);
-    }
-    else
-      group = NULL;
-    op->pszTitle = title;
-    op->pszGroup = group;
-    CallService(szService, wParam, (LPARAM)op);
-  }
+	CheckDlgButton(hwndDlg, idCtrl, ppro->getByte(NULL, szSetting, bDef));
 }
 
-
-
-void AddOptionsPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szGroup, const unsigned char *szTitle)
+static void StoreDBCheckState(CIcqProto* ppro, HWND hwndDlg, int idCtrl, const char* szSetting)
 {
-  AddUniPageUtf(MS_OPT_ADDPAGE, op, wParam, szGroup, szTitle);
+	ppro->setByte(NULL, szSetting, (BYTE)IsDlgButtonChecked(hwndDlg, idCtrl));
 }
-
-
-
-void AddUserInfoPageUtf(OPTIONSDIALOGPAGE *op, WPARAM wParam, const unsigned char *szTitle)
-{
-  AddUniPageUtf(MS_USERINFO_ADDPAGE, op, wParam, NULL, szTitle);
-}
-
-
-HWND hOptBasic = 0, hOptContacts = 0, hOptFeatures = 0, hOptPrivacy = 0;
-
-static void TabOptions_AddItemUtf(HWND hTabCtrl, const unsigned char *szTitle, HWND hPage)
-{
-  TCITEM tci = {0};
-  RECT rcClient;
-  unsigned char str[MAX_PATH];
-  unsigned char* szTitleUtf;
-  int iTotal;
-
-  GetClientRect(GetParent(hTabCtrl), &rcClient);
-
-  szTitleUtf = ICQTranslateUtfStatic(szTitle, str, MAX_PATH);
-
-  iTotal = TabCtrl_GetItemCount(hTabCtrl);
-
-  tci.mask = TCIF_PARAM|TCIF_TEXT;
-  tci.lParam = (LPARAM)hPage;
-  if (gbUnicodeAPI)
-  {
-    tci.pszText = (char*)make_unicode_string(szTitleUtf);
-    SendMessageW(hTabCtrl, TCM_INSERTITEMW, iTotal, (WPARAM)&tci);
-  }
-  else
-  {
-    utf8_decode(szTitleUtf, &tci.pszText);
-    SendMessageA(hTabCtrl, TCM_INSERTITEMA, iTotal, (WPARAM)&tci);
-  }
-  SAFE_FREE((void**)&tci.pszText);
-
-  MoveWindow(hPage, 3, 24, rcClient.right - 6, rcClient.bottom - 28, 1);
-}
-
-static void SetOptionsDlgToType(HWND hwnd, int iExpert)
-{
-  HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB), hwndEnum;
-
-  if (!hOptBasic)
-  {
-    hOptBasic = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQ), hwnd, DlgProcIcqOpts);
-    if (pfnEnableThemeDialogTexture) 
-      pfnEnableThemeDialogTexture(hOptBasic, ETDT_ENABLETAB);
-  }
-
-  hwndEnum = GetWindow(hOptBasic, GW_CHILD);
-	
-  while (hwndEnum)
-  { // too bad
-    ShowWindow(hwndEnum, iExpert ? SW_SHOW : SW_HIDE);
-    hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-  }
-
-  if (!iExpert)
-  {
-    hwndEnum = GetDlgItem(hOptBasic, IDC_STICQGROUP);
-    ShowWindow(hwndEnum, SW_SHOW);
-    hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-    do {
-      ShowWindow(hwndEnum, SW_SHOW);
-      hwndEnum = GetWindow(hwndEnum, GW_HWNDNEXT);
-    } while(hwndEnum && hwndEnum != GetDlgItem(hOptBasic, IDC_NEWUINLINK));
-  }
-  ShowWindow(hwndEnum, SW_SHOW);
-  TabCtrl_DeleteAllItems(hwndTab);
-
-  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Account"), hOptBasic);
-
-  if (!hOptContacts)
-  {
-    hOptContacts = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQCONTACTS), hwnd, DlgProcIcqContactsOpts);
-    if (pfnEnableThemeDialogTexture) 
-      pfnEnableThemeDialogTexture(hOptContacts, ETDT_ENABLETAB);
-  }
-
-  if (!hOptFeatures)
-  {
-    hOptFeatures = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQFEATURES), hwnd, DlgProcIcqFeaturesOpts);
-    if (pfnEnableThemeDialogTexture) 
-      pfnEnableThemeDialogTexture(hOptFeatures, ETDT_ENABLETAB);
-  }
-
-  if (!hOptPrivacy)
-  {
-    hOptPrivacy = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ICQPRIVACY), hwnd, DlgProcIcqPrivacyOpts);
-    if (pfnEnableThemeDialogTexture) 
-      pfnEnableThemeDialogTexture(hOptPrivacy, ETDT_ENABLETAB);
-  }
-
-  ShowWindow(hOptContacts, SW_HIDE);
-  ShowWindow(hOptPrivacy, SW_HIDE);
-  if (hOptFeatures)
-    ShowWindow(hOptFeatures, SW_HIDE);
-  ShowWindow(hOptBasic, SW_SHOW);
-
-  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Contacts"), hOptContacts);
-  if (iExpert) 
-    TabOptions_AddItemUtf(hwndTab, LPGENUTF("Features"), hOptFeatures);
-  TabOptions_AddItemUtf(hwndTab, LPGENUTF("Privacy"), hOptPrivacy);
-
-  TabCtrl_SetCurSel(hwndTab, 0);
-}
-
-
-int IcqOptInit(WPARAM wParam, LPARAM lParam)
-{
-  OPTIONSDIALOGPAGE odp = {0};
-  HMODULE hUxTheme = 0;
-
-  if (IsWinVerXPPlus())
-  {
-    hUxTheme = GetModuleHandle("uxtheme.dll");
- 
-    if (hUxTheme) 
-      pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-  }
-
-  odp.cbSize = sizeof(odp);
-  odp.position = -800000000;
-  odp.hInstance = hInst;
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQMAIN);
-  odp.pfnDlgProc = DlgProcIcqMain;
-  odp.flags = ODPF_BOLDGROUPS;
-  odp.nIDBottomSimpleControl = 0;
-  AddOptionsPageUtf(&odp, wParam, LPGENUTF("Network"), (unsigned char*)gpszICQProtoName);
-
-  InitPopupOpts(wParam);
-
-  return 0;
-}
-
-
-
-static void LoadDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting, BYTE bDef)
-{
-  CheckDlgButton(hwndDlg, idCtrl, ICQGetContactSettingByte(NULL, szSetting, bDef));
-}
-
-
-
-static void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
-{
-  ICQWriteContactSettingByte(NULL, szSetting, (BYTE)IsDlgButtonChecked(hwndDlg, idCtrl));
-}
-
-
 
 static void OptDlgChanged(HWND hwndDlg)
 {
-  SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+	SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 }
 
-
-// tabbed options page wrapper
-
-static BOOL CALLBACK DlgProcIcqMain(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-  static int iInit = TRUE;
-   
-  switch(msg)
-  {
-    case WM_INITDIALOG:
-    {
-      int iExpert;
-
-      iInit = TRUE;
-      iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-      SetOptionsDlgToType(hwnd, iExpert);
-      iInit = FALSE;
-      return FALSE;
-    }
-
-    case WM_DESTROY:
-      hOptBasic = hOptContacts = hOptFeatures = hOptPrivacy = 0;
-      break;
-
-    case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-      if (!iInit) OptDlgChanged(hwnd);
-      break;
-
-    case WM_NOTIFY:
-      switch (((LPNMHDR)lParam)->idFrom) 
-      {
-        case 0:
-          switch (((LPNMHDR)lParam)->code)
-          {
-            case PSN_APPLY:
-            {
-              TCITEM tci;
-              int i,count;
- 
-              tci.mask = TCIF_PARAM;
-              count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
-              for (i=0; i<count; i++)
-              {
-                TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
-                SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
-              }
-              break;
-            }
-
-            case PSN_EXPERTCHANGED:
-            {
-              int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-
-              SetOptionsDlgToType(hwnd, iExpert);
-              break;
-					  }
-          }
-          break;
-
-        case IDC_OPTIONSTAB:
-        {
-          HWND hTabCtrl = GetDlgItem(hwnd, IDC_OPTIONSTAB);
-
-          switch (((LPNMHDR)lParam)->code)
-          {
-            case TCN_SELCHANGING:
-            {
-              TCITEM tci;
-
-              tci.mask = TCIF_PARAM;
-              TabCtrl_GetItem(hTabCtrl, TabCtrl_GetCurSel(hTabCtrl), &tci);
-              ShowWindow((HWND)tci.lParam, SW_HIDE);
-            }
-            break;
-
-            case TCN_SELCHANGE:
-            {
-              TCITEM tci;
-
-              tci.mask = TCIF_PARAM;
-              TabCtrl_GetItem(hTabCtrl, TabCtrl_GetCurSel(hTabCtrl), &tci);
-              ShowWindow((HWND)tci.lParam,SW_SHOW);                     
-            }
-            break;
-          }
-          break;
-        }
-      }
-      break;
-   }
-   return FALSE;
-}
-
-
+/////////////////////////////////////////////////////////////////////////////////////////
 // standalone option pages
 
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
-  case WM_INITDIALOG:
-    {
-      DWORD dwUin;
-      char pszPwd[16];
-      char szServer[MAX_PATH];
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-      ICQTranslateDialog(hwndDlg);
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
-      dwUin = ICQGetContactSettingUIN(NULL);
-      if (dwUin)
-        SetDlgItemInt(hwndDlg, IDC_ICQNUM, dwUin, FALSE);
-      else // keep it empty when no UIN entered
-        SetDlgItemText(hwndDlg, IDC_ICQNUM, "");
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			DWORD dwUin = ppro->getUin(NULL);
+			if (dwUin)
+				SetDlgItemInt(hwndDlg, IDC_ICQNUM, dwUin, FALSE);
+			else // keep it empty when no UIN entered
+				SetDlgItemTextA(hwndDlg, IDC_ICQNUM, "");
 
-      if (!ICQGetContactStaticString(NULL, "Password", pszPwd, sizeof(pszPwd)))
-      {
-        CallService(MS_DB_CRYPT_DECODESTRING, strlennull(pszPwd) + 1, (LPARAM)pszPwd);
+			char pszPwd[16];
+			if (!ppro->getStringStatic(NULL, "Password", pszPwd, sizeof(pszPwd)))
+			{
+				CallService(MS_DB_CRYPT_DECODESTRING, strlennull(pszPwd) + 1, (LPARAM)pszPwd);
 
-        //bit of a security hole here, since it's easy to extract a password from an edit box
-        SetDlgItemText(hwndDlg, IDC_PASSWORD, pszPwd);
-      }
-      
-      if (!ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))
-      {
-        SetDlgItemText(hwndDlg, IDC_ICQSERVER, szServer);
-      }
-      else
-      {
-        SetDlgItemText(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
-      }
-      
-      SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
-      LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
-      LoadDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
-      SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 4));
-      SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 4-ICQGetContactSettingByte(NULL, "ShowLogLevel", LOG_WARNING));
-      {
-        unsigned char buf[MAX_PATH];
-      
-        SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], buf, MAX_PATH));
-      }
-      ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
-      LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
-      
-      return TRUE;
-    }
-    
-  case WM_HSCROLL:
-    {
-      unsigned char str[MAX_PATH];
+				//bit of a security hole here, since it's easy to extract a password from an edit box
+				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, pszPwd);
+			}
 
-      SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str, MAX_PATH));
-      OptDlgChanged(hwndDlg);
-    }
-    break;
-    
-  case WM_COMMAND:
-    {
-      switch (LOWORD(wParam))
-      {
+			char szServer[MAX_PATH];
+			if (!ppro->getStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
+				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, szServer);
+			else
+				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
 
-      case IDC_LOOKUPLINK:
-        CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_FORGOT_PASSWORD);
-        return TRUE;
-        
-      case IDC_NEWUINLINK:
-        CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
-        return TRUE;
-        
-      case IDC_RESETSERVER:
-        SetDlgItemText(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
-        SetDlgItemInt(hwndDlg, IDC_ICQPORT, DEFAULT_SERVER_PORT, FALSE);
-        OptDlgChanged(hwndDlg);
-        return TRUE;
-      }
-      
-      if (icqOnline && LOWORD(wParam) != IDC_NOERRMULTI)
-      {
-        char szClass[80];
-        
-        
-        GetClassName((HWND)lParam, szClass, sizeof(szClass));
-        
-        if (stricmp(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
-          ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
-      }
-      
-      if ((LOWORD(wParam)==IDC_ICQNUM || LOWORD(wParam)==IDC_PASSWORD || LOWORD(wParam)==IDC_ICQSERVER || LOWORD(wParam)==IDC_ICQPORT) &&
-        (HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
-      {
-        return 0;
-      }
-      
-      OptDlgChanged(hwndDlg);
-      break;
-    }
-    
-  case WM_NOTIFY:
-    {
-      switch (((LPNMHDR)lParam)->code)
-      {
-        
-      case PSN_APPLY:
-        {
-          char str[128];
-          
-          ICQWriteContactSettingDword(NULL, UNIQUEIDSETTING, (DWORD)GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
-          GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(gpszPassword));
-          if (strlennull(str))
-          {
-            strcpy(gpszPassword, str);
-            gbRememberPwd = TRUE;
-          }
-          else
-          {
-            gbRememberPwd = ICQGetContactSettingByte(NULL, "RememberPass", 0);
-          }
-          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(gpszPassword), (LPARAM)str);
-          ICQWriteContactSettingString(NULL, "Password", str);
-          GetDlgItemText(hwndDlg,IDC_ICQSERVER, str, sizeof(str));
-          ICQWriteContactSettingString(NULL, "OscarServer", str);
-          ICQWriteContactSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
-          StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
-          StoreDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin");
-          StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
-          ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
+			SetDlgItemInt(hwndDlg, IDC_ICQPORT, ppro->getWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
+			LoadDBCheckState(ppro, hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
+			LoadDBCheckState(ppro, hwndDlg, IDC_SECURE, "SecureLogin", DEFAULT_SECURE_LOGIN);
+			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETRANGE, FALSE, MAKELONG(0, 4));
+			SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_SETPOS, TRUE, 4-ppro->getByte(NULL, "ShowLogLevel", LOG_WARNING));
+			{
+				char buf[MAX_PATH];
+				SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], buf, MAX_PATH));
+			}
+			ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
+			LoadDBCheckState(ppro, hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
+		}
+		return TRUE;
 
-          return TRUE;
-        }
-      }
-    }
-    break;
-  }
+	case WM_HSCROLL:
+		{
+			char str[MAX_PATH];
 
-  return FALSE;
+			SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str, MAX_PATH));
+			OptDlgChanged(hwndDlg);
+		}
+		break;
+
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+			case IDC_LOOKUPLINK:
+				CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_FORGOT_PASSWORD);
+				return TRUE;
+
+			case IDC_NEWUINLINK:
+				CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
+				return TRUE;
+
+			case IDC_RESETSERVER:
+				SetDlgItemTextA(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
+				SetDlgItemInt(hwndDlg, IDC_ICQPORT, DEFAULT_SERVER_PORT, FALSE);
+				OptDlgChanged(hwndDlg);
+				return TRUE;
+			}
+
+			if (ppro->icqOnline() && LOWORD(wParam) != IDC_NOERRMULTI)
+			{
+				char szClass[80];
+				GetClassNameA((HWND)lParam, szClass, sizeof(szClass));
+
+				if (stricmp(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
+					ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
+			}
+
+			if ((LOWORD(wParam)==IDC_ICQNUM || LOWORD(wParam)==IDC_PASSWORD || LOWORD(wParam)==IDC_ICQSERVER || LOWORD(wParam)==IDC_ICQPORT) &&
+				(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
+			{
+				return 0;
+			}
+
+			OptDlgChanged(hwndDlg);
+			break;
+		}
+
+	case WM_NOTIFY:
+		{
+			switch (((LPNMHDR)lParam)->code)
+			{
+
+			case PSN_APPLY:
+				{
+					char str[128];
+
+					ppro->setDword(NULL, UNIQUEIDSETTING, GetDlgItemInt(hwndDlg, IDC_ICQNUM, NULL, FALSE));
+					GetDlgItemTextA(hwndDlg, IDC_PASSWORD, str, sizeof(ppro->m_szPassword));
+					if (strlennull(str))
+					{
+						strcpy(ppro->m_szPassword, str);
+						ppro->m_bRememberPwd = TRUE;
+					}
+					else
+						ppro->m_bRememberPwd = ppro->getByte(NULL, "RememberPass", 0);
+
+					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM)str);
+					ppro->setString(NULL, "Password", str);
+					GetDlgItemTextA(hwndDlg,IDC_ICQSERVER, str, sizeof(str));
+					ppro->setString(NULL, "OscarServer", str);
+					ppro->setWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
+					StoreDBCheckState(ppro, hwndDlg, IDC_KEEPALIVE, "KeepAlive");
+					StoreDBCheckState(ppro, hwndDlg, IDC_SECURE, "SecureLogin");
+					StoreDBCheckState(ppro, hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
+					ppro->setByte(NULL, "ShowLogLevel", (BYTE)(4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
+
+					return TRUE;
+				}
+			}
+		}
+		break;
+	}
+
+	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 
+static const UINT icqPrivacyControls[] = {
+	IDC_DCALLOW_ANY, IDC_DCALLOW_CLIST, IDC_DCALLOW_AUTH, IDC_ADD_ANY, IDC_ADD_AUTH, 
+	IDC_WEBAWARE, IDC_PUBLISHPRIMARY, IDC_STATIC_DC1, IDC_STATIC_DC2, IDC_STATIC_CLIST
+};
 
-static const UINT icqPrivacyControls[]={IDC_DCALLOW_ANY, IDC_DCALLOW_CLIST, IDC_DCALLOW_AUTH, IDC_ADD_ANY, IDC_ADD_AUTH, IDC_WEBAWARE, IDC_PUBLISHPRIMARY, IDC_STATIC_DC1, IDC_STATIC_DC2, IDC_STATIC_CLIST};
 static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
-    
-  case WM_INITDIALOG:
-    {
-      int nDcType;
-      int nAddAuth;
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-      nDcType = ICQGetContactSettingByte(NULL, "DCType", 0);
-      nAddAuth = ICQGetContactSettingByte(NULL, "Auth", 1);
-      
-      ICQTranslateDialog(hwndDlg);
-      if (!icqOnline)
-      {
-        icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, sizeof(icqPrivacyControls)/sizeof(icqPrivacyControls[0]), FALSE);
-        ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_SHOW);
-      }
-      else 
-      {
-        ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_HIDE);
-      }
-      CheckDlgButton(hwndDlg, IDC_DCALLOW_ANY, (nDcType == 0));
-      CheckDlgButton(hwndDlg, IDC_DCALLOW_CLIST, (nDcType == 1));
-      CheckDlgButton(hwndDlg, IDC_DCALLOW_AUTH, (nDcType == 2));
-      CheckDlgButton(hwndDlg, IDC_ADD_ANY, (nAddAuth == 0));
-      CheckDlgButton(hwndDlg, IDC_ADD_AUTH, (nAddAuth == 1));
-      LoadDBCheckState(hwndDlg, IDC_WEBAWARE, "WebAware", 0);
-      LoadDBCheckState(hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail", 0);
-      LoadDBCheckState(hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList", 0);
-      LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
-      if (!ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
-        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
-      return TRUE;
-    }
-    
-  case WM_COMMAND:
-    switch (LOWORD(wParam))  
-    {
-    case IDC_DCALLOW_ANY:
-    case IDC_DCALLOW_CLIST:
-    case IDC_DCALLOW_AUTH:
-    case IDC_ADD_ANY:
-    case IDC_ADD_AUTH:
-    case IDC_WEBAWARE:
-    case IDC_PUBLISHPRIMARY:
-    case IDC_STATUSMSG_VISIBLE:
-      if ((HWND)lParam != GetFocus())  return 0;
-      break;
-    case IDC_STATUSMSG_CLIST:
-      if (IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST)) 
-      {
-        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, TRUE);
-        LoadDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
-      }
-      else 
-      {
-        EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
-        CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
-      }
-      break;
-    default:
-      return 0;
-    }
-    OptDlgChanged(hwndDlg);
-    break;
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			int nDcType = ppro->getByte(NULL, "DCType", 0);
+			int nAddAuth = ppro->getByte(NULL, "Auth", 1);
 
-  case WM_NOTIFY:
-    switch (((LPNMHDR)lParam)->code) 
-    {
-      case PSN_APPLY:
-        StoreDBCheckState(hwndDlg, IDC_WEBAWARE, "WebAware");
-        StoreDBCheckState(hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail");
-        StoreDBCheckState(hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList");
-        StoreDBCheckState(hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible");
-        if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_AUTH))
-          ICQWriteContactSettingByte(NULL, "DCType", 2);
-        else if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_CLIST))
-          ICQWriteContactSettingByte(NULL, "DCType", 1);
-        else 
-          ICQWriteContactSettingByte(NULL, "DCType", 0);
-        StoreDBCheckState(hwndDlg, IDC_ADD_AUTH, "Auth");
+			if (!ppro->icqOnline())
+			{
+				icq_EnableMultipleControls(hwndDlg, icqPrivacyControls, sizeof(icqPrivacyControls)/sizeof(icqPrivacyControls[0]), FALSE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_SHOW);
+			}
+			else 
+			{
+				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_HIDE);
+			}
+			CheckDlgButton(hwndDlg, IDC_DCALLOW_ANY, (nDcType == 0));
+			CheckDlgButton(hwndDlg, IDC_DCALLOW_CLIST, (nDcType == 1));
+			CheckDlgButton(hwndDlg, IDC_DCALLOW_AUTH, (nDcType == 2));
+			CheckDlgButton(hwndDlg, IDC_ADD_ANY, (nAddAuth == 0));
+			CheckDlgButton(hwndDlg, IDC_ADD_AUTH, (nAddAuth == 1));
+			LoadDBCheckState(ppro, hwndDlg, IDC_WEBAWARE, "WebAware", 0);
+			LoadDBCheckState(ppro, hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail", 0);
+			LoadDBCheckState(ppro, hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList", 0);
+			LoadDBCheckState(ppro, hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
+			if (!ppro->getByte(NULL, "StatusMsgReplyCList", 0))
+				EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
+		}
+		return TRUE;
 
-        if (icqOnline)
-        {
-          PBYTE buf=NULL;
-          int buflen=0;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_DCALLOW_ANY:
+		case IDC_DCALLOW_CLIST:
+		case IDC_DCALLOW_AUTH:
+		case IDC_ADD_ANY:
+		case IDC_ADD_AUTH:
+		case IDC_WEBAWARE:
+		case IDC_PUBLISHPRIMARY:
+		case IDC_STATUSMSG_VISIBLE:
+			if ((HWND)lParam != GetFocus())  return 0;
+			break;
+		case IDC_STATUSMSG_CLIST:
+			if (IsDlgButtonChecked(hwndDlg, IDC_STATUSMSG_CLIST)) 
+			{
+				EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, TRUE);
+				LoadDBCheckState(ppro, hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible", 0);
+			}
+			else 
+			{
+				EnableDlgItem(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
+				CheckDlgButton(hwndDlg, IDC_STATUSMSG_VISIBLE, FALSE);
+			}
+			break;
+		default:
+			return 0;
+		}
+		OptDlgChanged(hwndDlg);
+		break;
 
-          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
-          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
-          ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code) {
+		case PSN_APPLY:
+			StoreDBCheckState(ppro, hwndDlg, IDC_WEBAWARE, "WebAware");
+			StoreDBCheckState(ppro, hwndDlg, IDC_PUBLISHPRIMARY, "PublishPrimaryEmail");
+			StoreDBCheckState(ppro, hwndDlg, IDC_STATUSMSG_CLIST, "StatusMsgReplyCList");
+			StoreDBCheckState(ppro, hwndDlg, IDC_STATUSMSG_VISIBLE, "StatusMsgReplyVisible");
+			if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_AUTH))
+				ppro->setByte(NULL, "DCType", 2);
+			else if (IsDlgButtonChecked(hwndDlg, IDC_DCALLOW_CLIST))
+				ppro->setByte(NULL, "DCType", 1);
+			else 
+				ppro->setByte(NULL, "DCType", 0);
+			StoreDBCheckState(ppro, hwndDlg, IDC_ADD_AUTH, "Auth");
 
-          ppackTLVByte(&buf, &buflen, (BYTE)!ICQGetContactSettingByte(NULL, "Auth", 1), TLV_AUTH, 1);
+			if (ppro->icqOnline())
+			{
+				PBYTE buf=NULL;
+				int buflen=0;
 
-          ppackTLVByte(&buf, &buflen, (BYTE)ICQGetContactSettingByte(NULL, "WebAware", 0), TLV_WEBAWARE, 1);
+				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ppro->getByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
+				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
+				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
 
-          icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, buf, (WORD)buflen);
+				ppackTLVByte(&buf, &buflen, (BYTE)!ppro->getByte(NULL, "Auth", 1), TLV_AUTH, 1);
+				ppackTLVByte(&buf, &buflen, (BYTE)ppro->getByte(NULL, "WebAware", 0), TLV_WEBAWARE, 1);
 
-          SAFE_FREE((void**)&buf);
+				ppro->icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, (char*)buf, (WORD)buflen);
 
-          // Send a status packet to notify the server about the webaware setting
-          {
-            WORD wStatus;
+				SAFE_FREE((void**)&buf);
 
-            wStatus = MirandaStatusToIcq(gnCurrentStatus);
+				// Send a status packet to notify the server about the webaware setting
+				{
+					WORD wStatus = MirandaStatusToIcq(ppro->m_iStatus);
 
-            if (gnCurrentStatus == ID_STATUS_INVISIBLE) 
-            {
-              if (gbSsiEnabled)
-                updateServVisibilityCode(3);
-              icq_setstatus(wStatus, FALSE);
-              // Tell who is on our visible list
-              icq_sendEntireVisInvisList(0);
-            }
-            else
-            {
-              icq_setstatus(wStatus, FALSE);
-              if (gbSsiEnabled)
-                updateServVisibilityCode(4);
-              // Tell who is on our invisible list
-              icq_sendEntireVisInvisList(1);
-            }
-          }
-        }
-        return TRUE;
-      }
-      break;
-  }
-  
-  return FALSE;  
+					if (ppro->m_iStatus == ID_STATUS_INVISIBLE)
+					{
+						if (ppro->m_bSsiEnabled)
+							ppro->updateServVisibilityCode(3);
+						ppro->icq_setstatus(wStatus, FALSE);
+						// Tell who is on our visible list
+						ppro->icq_sendEntireVisInvisList(0);
+					}
+					else
+					{
+						ppro->icq_setstatus(wStatus, FALSE);
+						if (ppro->m_bSsiEnabled)
+							ppro->updateServVisibilityCode(4);
+						// Tell who is on our invisible list
+						ppro->icq_sendEntireVisInvisList(1);
+					}
+				}
+			}
+			return TRUE;
+		}
+		break;
+	}
+
+	return FALSE;  
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static HWND hCpCombo;
 
 struct CPTABLE {
-  WORD cpId;
-  unsigned char *cpName;
+	WORD cpId;
+	char *cpName;
 };
 
 struct CPTABLE cpTable[] = {
-  {  874,  LPGENUTF("Thai") },
-  {  932,  LPGENUTF("Japanese") },
-  {  936,  LPGENUTF("Simplified Chinese") },
-  {  949,  LPGENUTF("Korean") },
-  {  950,  LPGENUTF("Traditional Chinese") },
-  {  1250, LPGENUTF("Central European") },
-  {  1251, LPGENUTF("Cyrillic") },
-  {  1252, LPGENUTF("Latin I") },
-  {  1253, LPGENUTF("Greek") },
-  {  1254, LPGENUTF("Turkish") },
-  {  1255, LPGENUTF("Hebrew") },
-  {  1256, LPGENUTF("Arabic") },
-  {  1257, LPGENUTF("Baltic") },
-  {  1258, LPGENUTF("Vietnamese") },
-  {  1361, LPGENUTF("Korean (Johab)") },
-  {   -1,  NULL}
+	{  874,  LPGEN("Thai") },
+	{  932,  LPGEN("Japanese") },
+	{  936,  LPGEN("Simplified Chinese") },
+	{  949,  LPGEN("Korean") },
+	{  950,  LPGEN("Traditional Chinese") },
+	{  1250, LPGEN("Central European") },
+	{  1251, LPGEN("Cyrillic") },
+	{  1252, LPGEN("Latin I") },
+	{  1253, LPGEN("Greek") },
+	{  1254, LPGEN("Turkish") },
+	{  1255, LPGEN("Hebrew") },
+	{  1256, LPGEN("Arabic") },
+	{  1257, LPGEN("Baltic") },
+	{  1258, LPGEN("Vietnamese") },
+	{  1361, LPGEN("Korean (Johab)") },
+	{   -1,  NULL}
 };
 
 static BOOL CALLBACK FillCpCombo(LPSTR str)
 {
-  int i;
-  UINT cp;
+	int i;
+	UINT cp;
 
-  cp = atoi(str);
-  for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
-  if (cpTable[i].cpName) 
-    ComboBoxAddStringUtf(hCpCombo, cpTable[i].cpName, cpTable[i].cpId);
+	cp = atoi(str);
+	for (i=0; cpTable[i].cpName != NULL && cpTable[i].cpId!=cp; i++);
+	if (cpTable[i].cpName) 
+		ComboBoxAddStringUtf(hCpCombo, cpTable[i].cpName, cpTable[i].cpId);
 
-  return TRUE;
+	return TRUE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static const UINT icqUnicodeControls[] = {IDC_UTFALL,IDC_UTFSTATIC,IDC_UTFCODEPAGE};
 static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
 static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO,IDC_XSTATUSRESET};
 static const UINT icqAimControls[] = {IDC_AIMENABLE};
+
 static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
-  case WM_INITDIALOG:
-    {
-      BYTE bData;
-      int sCodePage;
-      int i;
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-      ICQTranslateDialog(hwndDlg);
-      bData = ICQGetContactSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
-      CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
-      CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
-      icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), bData?TRUE:FALSE);
-      LoadDBCheckState(hwndDlg, IDC_TEMPVISIBLE, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED);
-      LoadDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend", DEFAULT_SLOWSEND);
-      LoadDBCheckState(hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS);
-      bData = ICQGetContactSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
-      CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
-      CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
-      icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, sizeof(icqDCMsgControls)/sizeof(icqDCMsgControls[0]), bData?TRUE:FALSE);
-      bData = ICQGetContactSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
-      CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, bData);
-      icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), bData);
-      LoadDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto", DEFAULT_XSTATUS_AUTO);
-      LoadDBCheckState(hwndDlg, IDC_XSTATUSRESET, "XStatusReset", DEFAULT_XSTATUS_RESET);
-      LoadDBCheckState(hwndDlg, IDC_KILLSPAMBOTS, "KillSpambots", DEFAULT_KILLSPAM_ENABLED);
-      LoadDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled", DEFAULT_AIM_ENABLED);
-      icq_EnableMultipleControls(hwndDlg, icqAimControls, sizeof(icqAimControls)/sizeof(icqAimControls[0]), icqOnline?FALSE:TRUE);
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
-      hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
-      sCodePage = ICQGetContactSettingWord(NULL, "AnsiCodePage", CP_ACP);
-      ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_UTFCODEPAGE), LPGENUTF("System default codepage"), 0);
-      EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
-      if(sCodePage == 0)
-        SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)0, 0);
-      else 
-      {
-        for (i = 0; i < SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCOUNT, 0, 0); i++) 
-        {
-          if (SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
-          {
-            SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)i, 0);
-            break;
-          }
-        }
-      }
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			BYTE bData = ppro->getByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
+			CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
+			icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, SIZEOF(icqUnicodeControls), bData?TRUE:FALSE);
+			LoadDBCheckState(ppro, hwndDlg, IDC_TEMPVISIBLE, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED);
+			LoadDBCheckState(ppro, hwndDlg, IDC_SLOWSEND, "SlowSend", DEFAULT_SLOWSEND);
+			LoadDBCheckState(ppro, hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS);
+			bData = ppro->getByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
+			CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
+			icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, SIZEOF(icqDCMsgControls), bData?TRUE:FALSE);
+			bData = ppro->getByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, bData);
+			icq_EnableMultipleControls(hwndDlg, icqXStatusControls, SIZEOF(icqXStatusControls), bData);
+			LoadDBCheckState(ppro, hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto", DEFAULT_XSTATUS_AUTO);
+			LoadDBCheckState(ppro, hwndDlg, IDC_XSTATUSRESET, "XStatusReset", DEFAULT_XSTATUS_RESET);
+			LoadDBCheckState(ppro, hwndDlg, IDC_KILLSPAMBOTS, "KillSpambots", DEFAULT_KILLSPAM_ENABLED);
+			LoadDBCheckState(ppro, hwndDlg, IDC_AIMENABLE, "AimEnabled", DEFAULT_AIM_ENABLED);
+			icq_EnableMultipleControls(hwndDlg, icqAimControls, SIZEOF(icqAimControls), ppro->icqOnline()?FALSE:TRUE);
 
-      return TRUE;
-    }
+			hCpCombo = GetDlgItem(hwndDlg, IDC_UTFCODEPAGE);
+			int sCodePage = ppro->getWord(NULL, "AnsiCodePage", CP_ACP);
+			ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_UTFCODEPAGE), LPGEN("System default codepage"), 0);
+			EnumSystemCodePagesA(FillCpCombo, CP_INSTALLED);
+			if(sCodePage == 0)
+				SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)0, 0);
+			else 
+			{
+				for (int i = 0; i < SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCOUNT, 0, 0); i++) 
+				{
+					if (SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0) == sCodePage)
+					{
+						SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_SETCURSEL, (WPARAM)i, 0);
+						break;
+					}
+				}
+			}
+		}
+		return TRUE;
 
-  case WM_COMMAND:
-    switch (LOWORD(wParam))
-    {
-    case IDC_UTFENABLE:
-      icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), IsDlgButtonChecked(hwndDlg, IDC_UTFENABLE));
-      break;
-    case IDC_DCENABLE:
-      icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, sizeof(icqDCMsgControls)/sizeof(icqDCMsgControls[0]), IsDlgButtonChecked(hwndDlg, IDC_DCENABLE));
-      break;
-    case IDC_XSTATUSENABLE:
-      icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE));
-      break;
-    }
-    OptDlgChanged(hwndDlg);
-    break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_UTFENABLE:
+			icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, sizeof(icqUnicodeControls)/sizeof(icqUnicodeControls[0]), IsDlgButtonChecked(hwndDlg, IDC_UTFENABLE));
+			break;
+		case IDC_DCENABLE:
+			icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, sizeof(icqDCMsgControls)/sizeof(icqDCMsgControls[0]), IsDlgButtonChecked(hwndDlg, IDC_DCENABLE));
+			break;
+		case IDC_XSTATUSENABLE:
+			icq_EnableMultipleControls(hwndDlg, icqXStatusControls, sizeof(icqXStatusControls)/sizeof(icqXStatusControls[0]), IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE));
+			break;
+		}
+		OptDlgChanged(hwndDlg);
+		break;
 
-  case WM_NOTIFY:
-    switch (((LPNMHDR)lParam)->code)
-    {
-    case PSN_APPLY:
-      if (IsDlgButtonChecked(hwndDlg, IDC_UTFENABLE))
-        gbUtfEnabled = IsDlgButtonChecked(hwndDlg, IDC_UTFALL)?2:1;
-      else
-        gbUtfEnabled = 0;
-      {
-        int i = SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCURSEL, 0, 0);
-        gwAnsiCodepage = (WORD)SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0);
-        ICQWriteContactSettingWord(NULL, "AnsiCodePage", gwAnsiCodepage);
-      }
-      ICQWriteContactSettingByte(NULL, "UtfEnabled", gbUtfEnabled);
-      gbTempVisListEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TEMPVISIBLE);
-      ICQWriteContactSettingByte(NULL, "TempVisListEnabled", gbTempVisListEnabled);
-      StoreDBCheckState(hwndDlg, IDC_SLOWSEND, "SlowSend");
-      StoreDBCheckState(hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks");
-      if (IsDlgButtonChecked(hwndDlg, IDC_DCENABLE))
-        gbDCMsgEnabled = IsDlgButtonChecked(hwndDlg, IDC_DCPASSIVE)?1:2;
-      else
-        gbDCMsgEnabled = 0;
-      ICQWriteContactSettingByte(NULL, "DirectMessaging", gbDCMsgEnabled);
-      gbXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
-      ICQWriteContactSettingByte(NULL, "XStatusEnabled", gbXStatusEnabled);
-      StoreDBCheckState(hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto");
-      StoreDBCheckState(hwndDlg, IDC_XSTATUSRESET, "XStatusReset");
-      StoreDBCheckState(hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");
-      StoreDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled");
-      return TRUE;
-    }
-    break;
-  }
-  return FALSE;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code) {
+		case PSN_APPLY:
+			if (IsDlgButtonChecked(hwndDlg, IDC_UTFENABLE))
+				ppro->m_bUtfEnabled = IsDlgButtonChecked(hwndDlg, IDC_UTFALL)?2:1;
+			else
+				ppro->m_bUtfEnabled = 0;
+			{
+				int i = SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETCURSEL, 0, 0);
+				ppro->m_wAnsiCodepage = (WORD)SendDlgItemMessage(hwndDlg, IDC_UTFCODEPAGE, CB_GETITEMDATA, (WPARAM)i, 0);
+				ppro->setWord(NULL, "AnsiCodePage", ppro->m_wAnsiCodepage);
+			}
+			ppro->setByte(NULL, "UtfEnabled", ppro->m_bUtfEnabled);
+			ppro->m_bTempVisListEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_TEMPVISIBLE);
+			ppro->setByte(NULL, "TempVisListEnabled", ppro->m_bTempVisListEnabled);
+			StoreDBCheckState(ppro, hwndDlg, IDC_SLOWSEND, "SlowSend");
+			StoreDBCheckState(ppro, hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks");
+			if (IsDlgButtonChecked(hwndDlg, IDC_DCENABLE))
+				ppro->m_bDCMsgEnabled = IsDlgButtonChecked(hwndDlg, IDC_DCPASSIVE)?1:2;
+			else
+				ppro->m_bDCMsgEnabled = 0;
+			ppro->setByte(NULL, "DirectMessaging", ppro->m_bDCMsgEnabled);
+			ppro->m_bXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
+			ppro->setByte(NULL, "XStatusEnabled", ppro->m_bXStatusEnabled);
+			StoreDBCheckState(ppro, hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto");
+			StoreDBCheckState(ppro, hwndDlg, IDC_XSTATUSRESET, "XStatusReset");
+			StoreDBCheckState(ppro, hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");
+			StoreDBCheckState(ppro, hwndDlg, IDC_AIMENABLE, "AimEnabled");
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
 }
-
-
 
 static const UINT icqContactsControls[] = {IDC_ADDSERVER,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW};
 static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_BIGGERAVATARS,IDC_STRICTAVATARCHECK};
+
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
-  case WM_INITDIALOG:
-    ICQTranslateDialog(hwndDlg);
-    LoadDBCheckState(hwndDlg, IDC_ENABLE, "UseServerCList", DEFAULT_SS_ENABLED);
-    LoadDBCheckState(hwndDlg, IDC_ADDSERVER, "ServerAddRemove", DEFAULT_SS_ADDSERVER);
-    LoadDBCheckState(hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails", DEFAULT_SS_LOAD);
-    LoadDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails", DEFAULT_SS_STORE);
-    LoadDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
-    LoadDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
-    LoadDBCheckState(hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS);
-    LoadDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK);
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-    icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
-      ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
-    icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), 
-      ICQGetContactSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED)?TRUE:FALSE);
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
-    if (icqOnline)
-    {
-      ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
-      EnableDlgItem(hwndDlg, IDC_ENABLE, FALSE);
-      EnableDlgItem(hwndDlg, IDC_ENABLEAVATARS, FALSE);
-    }
-    else
-    {
-      EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
-    }
-    return TRUE;
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 
-  case WM_COMMAND:
-    switch (LOWORD(wParam))
-    {
-    case IDC_UPLOADNOW:
-      ShowUploadContactsDialog();
-      return TRUE;
-    case IDC_ENABLE:
-      icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
-      if (icqOnline) 
-        ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
-      else 
-        EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
-      break;
-    case IDC_ENABLEAVATARS:
-      icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
-      break;
-    }
-    OptDlgChanged(hwndDlg);
-    break;
+		LoadDBCheckState(ppro, hwndDlg, IDC_ENABLE, "UseServerCList", DEFAULT_SS_ENABLED);
+		LoadDBCheckState(ppro, hwndDlg, IDC_ADDSERVER, "ServerAddRemove", DEFAULT_SS_ADDSERVER);
+		LoadDBCheckState(ppro, hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails", DEFAULT_SS_LOAD);
+		LoadDBCheckState(ppro, hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails", DEFAULT_SS_STORE);
+		LoadDBCheckState(ppro, hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
+		LoadDBCheckState(ppro, hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
+		LoadDBCheckState(ppro, hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS);
+		LoadDBCheckState(ppro, hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK);
 
-  case WM_NOTIFY:
-    switch (((LPNMHDR)lParam)->code)
-    {
-    case PSN_APPLY:
-      StoreDBCheckState(hwndDlg, IDC_ENABLE, "UseServerCList");
-      StoreDBCheckState(hwndDlg, IDC_ADDSERVER, "ServerAddRemove");
-      StoreDBCheckState(hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails");
-      StoreDBCheckState(hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails");
-      StoreDBCheckState(hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled");
-      StoreDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad");
-      StoreDBCheckState(hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger");
-      StoreDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck");
+		icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
+			ppro->getByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
+		icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), 
+			ppro->getByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED)?TRUE:FALSE);
 
-      return TRUE;
-    }
-    break;
-  }
-  return FALSE;
+		if (ppro->icqOnline())
+		{
+			ShowWindow(GetDlgItem(hwndDlg, IDC_OFFLINETOENABLE), SW_SHOW);
+			EnableDlgItem(hwndDlg, IDC_ENABLE, FALSE);
+			EnableDlgItem(hwndDlg, IDC_ENABLEAVATARS, FALSE);
+		}
+		else
+			EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
+
+		return TRUE;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_UPLOADNOW:
+			ppro->ShowUploadContactsDialog();
+			return TRUE;
+		case IDC_ENABLE:
+			icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
+			if (ppro->icqOnline()) 
+				ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
+			else 
+				EnableDlgItem(hwndDlg, IDC_UPLOADNOW, FALSE);
+			break;
+		case IDC_ENABLEAVATARS:
+			icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
+			break;
+		}
+		OptDlgChanged(hwndDlg);
+		break;
+
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->code == PSN_APPLY )
+		{
+			StoreDBCheckState(ppro, hwndDlg, IDC_ENABLE, "UseServerCList");
+			StoreDBCheckState(ppro, hwndDlg, IDC_ADDSERVER, "ServerAddRemove");
+			StoreDBCheckState(ppro, hwndDlg, IDC_LOADFROMSERVER, "LoadServerDetails");
+			StoreDBCheckState(ppro, hwndDlg, IDC_SAVETOSERVER, "StoreServerDetails");
+			StoreDBCheckState(ppro, hwndDlg, IDC_ENABLEAVATARS, "AvatarsEnabled");
+			StoreDBCheckState(ppro, hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad");
+			StoreDBCheckState(ppro, hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger");
+			StoreDBCheckState(ppro, hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck");
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+int CIcqProto::OnOptionsInit(WPARAM wParam, LPARAM lParam)
+{
+	OPTIONSDIALOGPAGE odp = {0};
+	HMODULE hUxTheme = 0;
+
+	if (IsWinVerXPPlus())
+	{
+		hUxTheme = GetModuleHandleA("uxtheme.dll");
+		if (hUxTheme) 
+			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
+	}
+
+	odp.cbSize = sizeof(odp);
+	odp.position = -800000000;
+	odp.hInstance = hInst;
+	odp.ptszGroup = LPGENT("Network");
+	odp.dwInitParam = LPARAM(this);
+	odp.ptszTitle = m_tszUserName;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+
+	odp.ptszTab = LPGENT("Account");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICQ);
+	odp.pfnDlgProc = DlgProcIcqOpts;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.ptszTab = LPGENT("Contacts");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICQCONTACTS);
+	odp.pfnDlgProc = DlgProcIcqContactsOpts;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.ptszTab = LPGENT("Features");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICQFEATURES);
+	odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	odp.ptszTab = LPGENT("Privacy");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICQPRIVACY);
+	odp.pfnDlgProc = DlgProcIcqPrivacyOpts;
+	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+
+	if (bPopUpService)
+	{
+		odp.position = 100000000;
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_POPUPS);
+		odp.groupPosition = 900000000;
+		odp.pfnDlgProc = DlgProcIcqPopupOpts;
+		odp.ptszGroup = LPGENT("Popups");
+		odp.ptszTab = NULL;
+		CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+	}
+	return 0;
 }

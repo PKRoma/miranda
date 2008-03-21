@@ -34,175 +34,80 @@
 
 #include "icqoscar.h"
 
-char Password[10];
+HFONT  hListFont;
+char   Password[10];
 HANDLE hUpload[2];
-HWND hwndList;
-HFONT hListFont;
-int iEditItem;
+HWND   hwndList;
+int    iEditItem;
 
-int StringToListItemId(const char *szSetting,int def)
+int CIcqProto::StringToListItemId(const char *szSetting,int def)
 {
-  int i,listCount;
-  unsigned char *szValue;
-  ListTypeDataItem *list;
+	int i,listCount;
+	char *szValue;
+	ListTypeDataItem *list;
 
-  for(i=0;i<settingCount;i++)
-    if(!strcmpnull(szSetting,setting[i].szDbSetting))
-      break;
+	for(i=0;i<settingCount;i++)
+		if(!strcmpnull(szSetting,setting[i].szDbSetting))
+			break;
 
-  if(i==settingCount) return def;
+	if(i==settingCount) return def;
 
-  list=(ListTypeDataItem*)setting[i].pList;
-  listCount=setting[i].listCount;
+	list=(ListTypeDataItem*)setting[i].pList;
+	listCount=setting[i].listCount;
 
-  szValue = ICQGetContactSettingUtf(NULL, szSetting, NULL);
-  if (!szValue)
-    return def;
+	szValue = getStringUtf(NULL, szSetting, NULL);
+	if (!szValue)
+		return def;
 
-  for(i=0;i<listCount;i++)
-    if(!strcmpnull(list[i].szValue, szValue)) break;
+	for(i=0;i<listCount;i++)
+		if(!strcmpnull(list[i].szValue, szValue))
+			break;
 
-  SAFE_FREE((void**)&szValue);
-  if(i==listCount) return def;
+	SAFE_FREE((void**)&szValue);
+	if(i==listCount) return def;
 
-  return list[i].id;
+	return list[i].id;
 }
 
-
-
-int UploadSettings(HWND hwndParent)
+int CIcqProto::UploadSettings(HWND hwndParent)
 {
-  PBYTE buf = NULL;
-  int buflen = 0;
-/*  BYTE b;
-  WORD w;*/
+	if (!icqOnline())
+	{
+		MessageBoxUtf(hwndParent, LPGEN("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGEN("Change ICQ Details"), MB_OK);
+		return 0;
+	}
 
-  if (!icqOnline)
-  {
-    MessageBoxUtf(hwndParent, LPGENUTF("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGENUTF("Change ICQ Details"), MB_OK);
-    return 0;
-  }
+	hUpload[0] = (HANDLE)ChangeInfoEx(CIXT_FULL, 0);
 
-/*  // userinfo
-  ppackTLVWord(&buf, &buflen, (WORD)GetACP(), TLV_CODEPAGE, 0);
+	//password
+	char* tmp = GetUserPassword(TRUE);
+	if (tmp)
+	{
+		if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
+		{
+			int buflen = 0; // re-init buffer
+			PBYTE buf = NULL;
+			ppackLELNTS(&buf, &buflen, tmp);
 
-  b = !ICQGetContactSettingByte(NULL, "PublishPrimaryEmail", 0);
-  ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", b, TLV_EMAIL);
-  ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
-  ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+			hUpload[1] = (HANDLE)icq_changeUserDetailsServ(META_SET_PASSWORD_REQ, (char*)buf, (WORD)buflen);
 
-  ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "AllowSpam", 0), TLV_ALLOWSPAM, 1);
+			{
+				char szPwd[16] = {0};
 
-  ppackTLVLNTSfromDB(&buf, &buflen, "Phone", TLV_PHONE);
-  ppackTLVLNTSfromDB(&buf, &buflen, "Fax", TLV_FAX);
-  ppackTLVLNTSfromDB(&buf, &buflen, "Cellular", TLV_MOBILE);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPhone", TLV_WORKPHONE);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyFax", TLV_WORKFAX);
+				if (!getStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
+				{ // password is stored in DB, update
+					char ptmp[16];
 
-  ppackTLVLNTSfromDB(&buf, &buflen, "Nick", TLV_NICKNAME);
-  ppackTLVLNTSfromDB(&buf, &buflen, "FirstName", TLV_FIRSTNAME);
-  ppackTLVLNTSfromDB(&buf, &buflen, "LastName", TLV_LASTNAME);
-  ppackTLVLNTSfromDB(&buf, &buflen, "About", TLV_ABOUT);
+					strcpy(ptmp, tmp);
 
-  ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "Age", 0), TLV_AGE, 1);
-  b = ICQGetContactSettingByte(NULL, "Gender", 0);
-  ppackTLVByte(&buf, &buflen, (BYTE)(b ? (b == 'M' ? 2 : 1) : 0), TLV_GENDER, 1);
-  ppackLEWord(&buf, &buflen, TLV_BIRTH);
-  ppackLEWord(&buf, &buflen, 0x06);
-  ppackLEWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "BirthYear", 0));
-  ppackLEWord(&buf, &buflen, (WORD)ICQGetContactSettingByte(NULL, "BirthMonth", 0));
-  ppackLEWord(&buf, &buflen, (WORD)ICQGetContactSettingByte(NULL, "BirthDay", 0));
+					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
 
-  ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language1", 0), TLV_LANGUAGE, 1);
-  ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language2", 0), TLV_LANGUAGE, 1);
-  ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language3", 0), TLV_LANGUAGE, 1);
+					setString(NULL, "Password", ptmp);
+				}
+			}
+			SAFE_FREE((void**)&buf);
+		}
+	}
 
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyDepartment", TLV_DEPARTMENT);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPosition", TLV_POSITION);
-  ppackTLVLNTSfromDB(&buf, &buflen, "Company", TLV_COMPANY);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyStreet", TLV_WORKSTREET);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyState", TLV_WORKSTATE);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyCity", TLV_WORKCITY);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyHomepage", TLV_WORKURL);
-  ppackTLVLNTSfromDB(&buf, &buflen, "CompanyZIP", TLV_WORKZIPCODE);
-  ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "CompanyCountry", 0), TLV_WORKCOUNTRY, 1);
-  ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1);
-
-  ppackTLVLNTSfromDB(&buf, &buflen, "City", TLV_CITY);
-  ppackTLVLNTSfromDB(&buf, &buflen, "State", TLV_STATE);
-  ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "Country", 0), TLV_COUNTRY, 1);
-  ppackTLVLNTSfromDB(&buf, &buflen, "OriginCity", TLV_ORGCITY);
-  ppackTLVLNTSfromDB(&buf, &buflen, "OriginState", TLV_ORGSTATE);
-  ppackTLVWord(&buf, &buflen, ICQGetContactSettingWord(NULL, "OriginCountry", 0), TLV_ORGCOUNTRY, 1);
-  ppackTLVLNTSfromDB(&buf, &buflen, "Street", TLV_STREET);
-  ppackTLVLNTSfromDB(&buf, &buflen, "ZIP", TLV_ZIPCODE);
-
-  ppackTLVLNTSfromDB(&buf, &buflen, "Homepage", TLV_URL);
-
-  ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "Timezone", 0), TLV_TIMEZONE, 1);
-
-  ppackTLVByte(&buf, &buflen, ICQGetContactSettingByte(NULL, "MaritalStatus", 0), TLV_MARITAL, 1);
-
-  w = StringToListItemId("Interest0Cat", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest0Text", TLV_INTERESTS);
-  w = StringToListItemId("Interest1Cat", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest1Text", TLV_INTERESTS);
-  w = StringToListItemId("Interest2Cat", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest2Text", TLV_INTERESTS);
-  w = StringToListItemId("Interest3Cat", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest3Text", TLV_INTERESTS);
-
-  w = StringToListItemId("Past0", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past0Text", TLV_PASTINFO);
-  w = StringToListItemId("Past1", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past1Text", TLV_PASTINFO);
-  w = StringToListItemId("Past2", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past2Text", TLV_PASTINFO);
-
-  w = StringToListItemId("Affiliation0", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation0Text", TLV_AFFILATIONS);
-  w = StringToListItemId("Affiliation1", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation1Text", TLV_AFFILATIONS);
-  w = StringToListItemId("Affiliation2", 0);
-  ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation2Text", TLV_AFFILATIONS);
-
-  hUpload[0] = (HANDLE)icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, buf, (WORD)buflen);*/
-  hUpload[0] = (HANDLE)IcqChangeInfoEx(CIXT_FULL, 0);
-
-  //password
-  {
-    char* tmp;
-
-    tmp = GetUserPassword(TRUE);
-    if (tmp)
-    {
-      if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
-      {
-        buflen = 0; // re-init buffer
-
-        ppackLELNTS(&buf, &buflen, tmp);
-
-        hUpload[1] = (HANDLE)icq_changeUserDetailsServ(META_SET_PASSWORD_REQ, buf, (WORD)buflen);
-
-        {
-          char szPwd[16] = {0};
-
-          if (!ICQGetContactStaticString(NULL, "Password", szPwd, 16) && strlennull(szPwd))
-          { // password is stored in DB, update
-            char ptmp[16];
-
-            strcpy(ptmp, tmp);
-
-            CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
-
-            ICQWriteContactSettingString(NULL, "Password", ptmp);
-          }
-        }
-      }
-    }
-  }
-
-  SAFE_FREE((void**)&buf);
-
-  return 1;
+	return 1;
 }

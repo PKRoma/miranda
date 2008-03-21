@@ -96,35 +96,6 @@ typedef struct {
   DWORD dwReqId;  // Reverse Connect request cookie
 } directconnect;
 
-void OpenDirectConnection(HANDLE hContact, int type, void *pvExtra);
-int IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive);
-void CloseDirectConnection(directconnect *dc);
-void CloseContactDirectConns(HANDLE hContact);
-int SendDirectMessage(HANDLE hContact, icq_packet *pkt);
-int sendDirectPacket(directconnect *dc, icq_packet *pkt);
-void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra);
-void InitDirectConns(void);
-void UninitDirectConns(void);
-directconnect* FindFileTransferDC(filetransfer* ft);
-void handleDirectMessage(directconnect *dc, PBYTE buf, WORD wLen);
-void EncryptDirectPacket(directconnect *dc, icq_packet *p);
-void icq_AcceptFileTransfer(HANDLE hContact, filetransfer *ft);
-void icq_CancelFileTransfer(HANDLE hContact, filetransfer *ft);
-void icq_sendFileResume(filetransfer *ft, int action, const char *szFilename);
-void icq_InitFileSend(filetransfer *ft);
-void AddExpectedFileRecv(filetransfer *ft);
-filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize);
-void handleFileTransferPacket(directconnect *dc, PBYTE buf, WORD wLen);
-void handleFileTransferIdle(directconnect *dc);
-
-
-void handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText);
-
-// Handles all types of file transfer replies
-void handleFileAck(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, WORD wStatus, char* pszText);
-
-// Handle a received file transfer request (direct & server)
-void handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC);
-
+int  DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 
 #endif /* __ICQ_DIRECT_H */

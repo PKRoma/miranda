@@ -43,13 +43,13 @@ typedef unsigned long  DWORD;
 
 /*---------* Structures *--------------*/
 
-typedef struct icq_packet_s
+struct icq_packet
 {
   WORD wPlace;
   BYTE nChannel;
   WORD wLen;
   BYTE *pData;
-} icq_packet;
+};
 
 /*---------* Functions *---------------*/
 
@@ -87,7 +87,6 @@ void ppackByte(PBYTE *buf,int *buflen,BYTE b);
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
-void ppackLELNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting);
 
 void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
 void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
@@ -95,10 +94,6 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
 void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
 void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
 void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
-
-void ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
-void ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType);
-void ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType);
 
 void __fastcall unpackByte(unsigned char **, BYTE *);
 void __fastcall unpackWord(unsigned char **, WORD *);

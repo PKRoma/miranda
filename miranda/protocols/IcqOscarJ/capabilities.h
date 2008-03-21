@@ -33,19 +33,3 @@
 //
 // -----------------------------------------------------------------------------
 
-
-
-// Deletes all oscar capabilities for a given contact.
-void ClearAllContactCapabilities(HANDLE hContact);
-
-// Deletes one or many oscar capabilities for a given contact.
-void ClearContactCapabilities(HANDLE hContact, DWORD fdwCapabilities);
-
-// Sets one or many oscar capabilities for a given contact.
-void SetContactCapabilities(HANDLE hContact, DWORD fdwCapabilities);
-
-// Returns true if the given contact supports the requested capabilites.
-BOOL CheckContactCapabilities(HANDLE hContact, DWORD fdwCapabilities);
-
-// Scans a binary buffer for oscar capabilities and adds them to the db.
-void AddCapabilitiesFromBuffer(HANDLE hContact, BYTE* pbyBuffer, int nLength);

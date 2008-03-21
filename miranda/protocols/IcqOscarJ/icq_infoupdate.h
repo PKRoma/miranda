@@ -33,23 +33,3 @@
 //  Describe me here please...
 //
 // -----------------------------------------------------------------------------
-
-
-
-// Queues all outdated users
-void icq_InitInfoUpdate(void);
-
-// Queue one UIN to the list for updating
-BOOL icq_QueueUser(HANDLE hContact);
-
-// Remove one UIN from the list
-void icq_DequeueUser(DWORD dwUin);
-
-// Add all outdated contacts to the list
-void icq_RescanInfoUpdate();
-
-// Clean up on exit
-void icq_InfoUpdateCleanup(void);
-
-// Enable/disable user info lookups
-void icq_EnableUserLookup(BOOL bEnable);

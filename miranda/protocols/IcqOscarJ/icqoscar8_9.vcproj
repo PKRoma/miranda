@@ -224,7 +224,7 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -323,7 +323,7 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -500,6 +500,10 @@
 			</File>
 			<File
 				RelativePath="icq_packet.h"
+				>
+			</File>
+			<File
+				RelativePath=".\icq_proto.h"
 				>
 			</File>
 			<File
@@ -1372,6 +1376,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icq_proto.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\icq_xstatus.cpp"
 				>
 			</File>
@@ -1524,48 +1532,6 @@
 			>
 			<File
 				RelativePath="UI\askauthentication.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="icq_firstrun.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"

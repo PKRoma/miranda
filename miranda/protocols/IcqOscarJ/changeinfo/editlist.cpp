@@ -34,6 +34,11 @@
 
 #include "icqoscar.h"
 
+extern HFONT  hListFont;
+extern char   Password[10];
+extern HANDLE hUpload[2];
+extern HWND   hwndList;
+extern int    iEditItem;
 
 static HWND hwndListEdit=NULL;
 static BOOL (WINAPI *MyAnimateWindow)(HWND,DWORD,DWORD);
@@ -44,7 +49,7 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
   switch(msg) 
   {
     case WM_LBUTTONUP:
-      CallWindowProcUtf(OldListEditProc,hwnd,msg,wParam,lParam);
+      CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
       {  
         POINT pt;
 
@@ -73,7 +78,7 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
       EndListEdit(1);
       return 0;
   }
-  return CallWindowProcUtf(OldListEditProc,hwnd,msg,wParam,lParam);
+  return CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
 }
 
 
@@ -83,7 +88,7 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   int j,n;
   POINT pt;
   int itemHeight;
-  unsigned char str[MAX_PATH];
+  char str[MAX_PATH];
 
   EndListEdit(0);
   pt.x=pt.y=0;
@@ -95,15 +100,15 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   ListView_RedrawItems(hwndList,iEditItem,iEditItem);
   UpdateWindow(hwndList);
 
-  hwndListEdit=CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,"LISTBOX","",WS_POPUP|WS_BORDER|WS_VSCROLL,rc->left,rc->bottom,rc->right-rc->left,150,NULL,NULL,hInst,NULL);
+  hwndListEdit=CreateWindowExA(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,"LISTBOX","",WS_POPUP|WS_BORDER|WS_VSCROLL,rc->left,rc->bottom,rc->right-rc->left,150,NULL,NULL,hInst,NULL);
   SendMessage(hwndListEdit,WM_SETFONT,(WPARAM)hListFont,0);
   itemHeight=SendMessage(hwndListEdit,LB_GETITEMHEIGHT,0,0);
   for(j=0;j<setting[i].listCount;j++) 
   {
     n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
     SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
-    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((unsigned char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
-       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((unsigned char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
+    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
+       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
        || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
        || (setting[i].dbType!=DBVT_ASCIIZ && setting[i].value==((ListTypeDataItem*)setting[i].pList)[j].id))
       SendMessage(hwndListEdit,LB_SETCURSEL,n,0);
@@ -111,8 +116,8 @@ void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
   SendMessage(hwndListEdit,LB_SETTOPINDEX,SendMessage(hwndListEdit,LB_GETCURSEL,0,0)-3,0);
   if(itemHeight*setting[i].listCount<150)
     SetWindowPos(hwndListEdit,0,0,0,rc->right-rc->left,itemHeight*setting[i].listCount+GetSystemMetrics(SM_CYBORDER)*2,SWP_NOZORDER|SWP_NOMOVE);
-  OldListEditProc=(WNDPROC)SetWindowLongUtf(hwndListEdit,GWL_WNDPROC,(LONG)ListEditSubclassProc);
-  if (MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandle("user32"),"AnimateWindow")) 
+  OldListEditProc=(WNDPROC)SetWindowLong(hwndListEdit,GWL_WNDPROC,(LONG)ListEditSubclassProc);
+  if (MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"AnimateWindow")) 
   {
     BOOL enabled;
 
@@ -138,10 +143,10 @@ void EndListEdit(int save)
     newValue=SendMessage(hwndListEdit,LB_GETITEMDATA,i,0);
     if (setting[iEditItem].dbType==DBVT_ASCIIZ) 
     {
-      unsigned char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
+      char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
       if (newValue || setting[iEditItem].displayType & LIF_ZEROISVALID) 
       { 
-        setting[iEditItem].changed = strcmpnull(szNewValue, (unsigned char*)setting[iEditItem].value);
+        setting[iEditItem].changed = strcmpnull(szNewValue, (char*)setting[iEditItem].value);
         SAFE_FREE((void**)&setting[iEditItem].value);
         setting[iEditItem].value=(LPARAM)null_strdup(szNewValue);
       }

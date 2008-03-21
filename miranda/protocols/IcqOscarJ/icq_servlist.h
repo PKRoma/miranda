@@ -57,73 +57,28 @@
 #define SSA_IMPORT            7
 #define SSA_ACTION_GROUP      0x80  // grouped action
 
-typedef void (*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
+struct CIcqProto;
+typedef void (CIcqProto::*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
 
 // cookie struct for SSI actions
-typedef struct servlistcookie_t
+struct servlistcookie
 {
-  DWORD dwUin;
-  HANDLE hContact;
-  WORD wContactId;
-  WORD wGroupId;
-  unsigned char *szGroupName;
-  WORD wNewContactId;
-  WORD wNewGroupId;
-  int dwAction; 
-  GROUPADDCALLBACK ofCallback;
-  LPARAM lParam;
-  int dwGroupCount;
-  struct servlistcookie_t **pGroupItems;
-} servlistcookie;
-
-
-void InitServerLists(void);
-void UninitServerLists(void);
-
-void* collectGroups(int *count);
-void* collectBuddyGroup(WORD wGroupID, int *count);
-unsigned char *getServListGroupName(WORD wGroupID);
-void setServListGroupName(WORD wGroupID, const unsigned char *szGroupName);
-WORD getServListGroupLinkID(const unsigned char *szPath);
-void setServListGroupLinkID(const unsigned char *szPath, WORD wGroupID);
-int IsServerGroupsDefined();
-unsigned char *getServListGroupCListPath(WORD wGroupId);
-WORD makeGroupId(const unsigned char *szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
-void removeGroupPathLinks(WORD wGroupID);
-int getServListGroupLevel(WORD wGroupId);
-
-void FlushSrvGroupsCache();
-
-DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId);
-DWORD icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType);
-DWORD icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const unsigned char *szName, void *pContent, int cbContent);
-
-DWORD icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
-DWORD icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
-
-
-void resetServContactAuthState(HANDLE hContact, DWORD dwUin);
+	DWORD dwUin;
+	HANDLE hContact;
+	WORD wContactId;
+	WORD wGroupId;
+	char *szGroupName;
+	WORD wNewContactId;
+	WORD wNewGroupId;
+	int dwAction; 
+	GROUPADDCALLBACK ofCallback;
+	LPARAM lParam;
+	int dwGroupCount;
+	struct servlistcookie **pGroupItems;
+};
 
 // id type groups
 #define SSIT_ITEM 0
 #define SSIT_GROUP 1
-
-WORD GenerateServerId(int bGroupId);
-WORD GenerateServerIdPair(int bGroupId, int wCount);
-void ReserveServerID(WORD wID, int bGroupId);
-void FreeServerID(WORD wID, int bGroupId);
-BOOL CheckServerID(WORD wID, unsigned int wCount);
-void FlushServerIDs();
-void LoadServerIDs();
-
-void FlushPendingOperations();
-void RemovePendingOperation(HANDLE hContact, int nResult);
-void AddGroupRename(WORD wGroupID);
-void RemoveGroupRename(WORD wGroupID);
-void FlushGroupRenames();
-
-void AddJustAddedContact(HANDLE hContact);
-BOOL IsContactJustAdded(HANDLE hContact);
-void FlushJustAddedContacts();
 
 #endif /* __ICQ_SERVLIST_H */

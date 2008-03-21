@@ -33,22 +33,3 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
-
-
-int InitChangeDetails(WPARAM wParam, LPARAM lParam)
-{
-  OPTIONSDIALOGPAGE odp = {0};
-
-  if (lParam) return 0;
-
-  odp.cbSize = sizeof(odp);
-  odp.hIcon = NULL;
-  odp.hInstance = hInst;
-  odp.position = -1899999999;
-  odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO_CHANGEINFO);
-  odp.pfnDlgProc = ChangeInfoDlgProc;
-
-  AddUserInfoPageUtf(&odp, wParam, LPGENUTF("%s Details"));
-
-  return 0;
-}

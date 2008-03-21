@@ -44,122 +44,98 @@
 
 typedef struct icq_capability_s
 {
-  DWORD fdwMirandaID;              // A bitmask, we use it in order to save database space
-  BYTE  CapCLSID[BINARY_CAP_SIZE]; // A binary representation of a oscar capability
+	DWORD fdwMirandaID;              // A bitmask, we use it in order to save database space
+	BYTE  CapCLSID[BINARY_CAP_SIZE]; // A binary representation of a oscar capability
 } icq_capability;
 
 static icq_capability CapabilityRecord[] =
 {
-  {CAPF_SRV_RELAY, {CAP_SRV_RELAY }},
-  {CAPF_UTF,       {CAP_UTF       }},
-  {CAPF_RTF,       {CAP_RTF       }},
-  {CAPF_HTML,      {CAP_HTML      }},
-  {CAPF_CONTACTS,  {CAP_CONTACTS  }},
-  {CAPF_TYPING,    {CAP_TYPING    }},
-  {CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
-  {CAPF_XTRAZ,     {CAP_XTRAZ     }},
-  {CAPF_OSCAR_FILE,{CAP_OSCAR_FILE}}
+	{CAPF_SRV_RELAY, {CAP_SRV_RELAY }},
+	{CAPF_UTF,       {CAP_UTF       }},
+	{CAPF_RTF,       {CAP_RTF       }},
+	{CAPF_HTML,      {CAP_HTML      }},
+	{CAPF_CONTACTS,  {CAP_CONTACTS  }},
+	{CAPF_TYPING,    {CAP_TYPING    }},
+	{CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
+	{CAPF_XTRAZ,     {CAP_XTRAZ     }},
+	{CAPF_OSCAR_FILE,{CAP_OSCAR_FILE}}
 };
 
-
-
 // Deletes all oscar capabilities for a given contact
-void ClearAllContactCapabilities(HANDLE hContact)
+void CIcqProto::ClearAllContactCapabilities(HANDLE hContact)
 {
-  ICQWriteContactSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
+	setDword(hContact, DBSETTING_CAPABILITIES, 0);
 }
-
-
 
 // Deletes one or many oscar capabilities for a given contact
-void ClearContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
+void CIcqProto::ClearContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
 {
-  DWORD fdwContactCaps;
+	// Get current capability flags
+	DWORD fdwContactCaps =  getDword(hContact, DBSETTING_CAPABILITIES, 0);
 
+	// Clear unwanted capabilities
+	fdwContactCaps &= ~fdwCapabilities;
 
-  // Get current capability flags
-  fdwContactCaps =  ICQGetContactSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
-
-  // Clear unwanted capabilities
-  fdwContactCaps &= ~fdwCapabilities;
-
-  // And write it back to disk
-  ICQWriteContactSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	// And write it back to disk
+	setDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
 }
-
-
 
 // Sets one or many oscar capabilities for a given contact
-void SetContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
+void CIcqProto::SetContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
 {
-  DWORD fdwContactCaps;
+	// Get current capability flags
+	DWORD fdwContactCaps =  getDword(hContact, DBSETTING_CAPABILITIES, 0);
 
+	// Update them
+	fdwContactCaps |= fdwCapabilities;
 
-  // Get current capability flags
-  fdwContactCaps =  ICQGetContactSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
-
-  // Update them
-  fdwContactCaps |= fdwCapabilities;
-
-  // And write it back to disk
-  ICQWriteContactSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	// And write it back to disk
+	setDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
 }
-
-
 
 // Returns true if the given contact supports the requested capabilites
-BOOL CheckContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
+BOOL CIcqProto::CheckContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
 {
-  DWORD fdwContactCaps;
-  
-  
-  // Get current capability flags
-  fdwContactCaps =  ICQGetContactSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
-  
-  // Check if all requested capabilities are supported
-  if ((fdwContactCaps & fdwCapabilities) == fdwCapabilities)
-  {
-    return TRUE;
-  }
-  else
-  {
-    return FALSE;
-  }
+	// Get current capability flags
+	DWORD fdwContactCaps =  getDword(hContact, DBSETTING_CAPABILITIES, 0);
+
+	// Check if all requested capabilities are supported
+	if ((fdwContactCaps & fdwCapabilities) == fdwCapabilities)
+		return TRUE;
+
+	return FALSE;
 }
-
-
 
 // Scans a binary buffer for oscar capabilities and adds them to the contact.
 // You probably want to call ClearAllContactCapabilities() first.
-void AddCapabilitiesFromBuffer(HANDLE hContact, BYTE* pbyBuffer, int nLength)
+void CIcqProto::AddCapabilitiesFromBuffer(HANDLE hContact, BYTE* pbyBuffer, int nLength)
 {
-  DWORD fdwContactCaps;
-  int iCapability;
-  int nIndex;
-  int nRecordSize;
+	DWORD fdwContactCaps;
+	int iCapability;
+	int nIndex;
+	int nRecordSize;
 
+	// Calculate the number of records
+	nRecordSize = sizeof(CapabilityRecord)/sizeof(icq_capability);
 
-  // Calculate the number of records
-  nRecordSize = sizeof(CapabilityRecord)/sizeof(icq_capability);
+	// Get current capability flags
+	fdwContactCaps =  getDword(hContact, DBSETTING_CAPABILITIES, 0);
 
-  // Get current capability flags
-  fdwContactCaps =  ICQGetContactSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
+	// Loop over all capabilities in the buffer and
+	// compare them to our own record of capabilities
+	for (iCapability = 0; (iCapability + BINARY_CAP_SIZE) <= nLength; iCapability += BINARY_CAP_SIZE)
+	{
+		for (nIndex = 0; nIndex < nRecordSize; nIndex++)
+		{
+			if (!memcmp(pbyBuffer + iCapability, CapabilityRecord[nIndex].CapCLSID, BINARY_CAP_SIZE))
+			{
+				// Match
+				fdwContactCaps |= CapabilityRecord[nIndex].fdwMirandaID;
+				break;
+			}
+		}
+	}
 
-  // Loop over all capabilities in the buffer and
-  // compare them to our own record of capabilities
-  for (iCapability = 0; (iCapability + BINARY_CAP_SIZE) <= nLength; iCapability += BINARY_CAP_SIZE)
-  {
-    for (nIndex = 0; nIndex < nRecordSize; nIndex++)
-    {
-      if (!memcmp(pbyBuffer + iCapability, CapabilityRecord[nIndex].CapCLSID, BINARY_CAP_SIZE))
-      {
-        // Match
-        fdwContactCaps |= CapabilityRecord[nIndex].fdwMirandaID;
-        break;
-      }
-    }
-  }
-
-  // And write it back to disk
-  ICQWriteContactSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	// And write it back to disk
+	setDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
 }

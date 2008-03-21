@@ -58,14 +58,8 @@
 #define LIF_PASSWORD     0x20000000
 #define LIF_CHANGEONLY   0x10000000
 
-extern char Password[10];
-extern HANDLE hUpload[2];
-extern HWND hwndList;
-extern HFONT hListFont;
-extern int iEditItem;
-
 typedef struct {
-  unsigned char *szDescription;
+  char *szDescription;
   unsigned displayType;    //LI_ constant
   int dbType;              //DBVT_ constant
   char *szDbSetting;
@@ -77,40 +71,25 @@ typedef struct {
 
 typedef struct {
   int id;
-  unsigned char *szValue;
+  char *szValue;
 } ListTypeDataItem;
 
 // contants.c
 extern SettingItem setting[];
 extern const int settingCount;
 
-//main.c
-int InitChangeDetails(WPARAM wParam,LPARAM lParam);
-
 //dlgproc.c
 BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-//db.c
-void LoadSettingsFromDb(int keepChanged);
-void FreeStoredDbSettings(void);
-void ClearChangeFlags(void);
-int ChangesMade(void);
-int SaveSettingsToDb(HWND hwndDlg);
-
 //editstring.c
-void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey);
-void EndStringEdit(int save);
-int IsStringEditWindow(HWND hwnd);
-char *BinaryToEscapes(char *str);
+void  BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey);
+void  EndStringEdit(int save);
+int   IsStringEditWindow(HWND hwnd);
+char* BinaryToEscapes(char *str);
 
 //editlist.c
 void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey);
 void EndListEdit(int save);
 int IsListEditWindow(HWND hwnd);
-
-//upload.c
-int StringToListItemId(const char *szSetting,int def);
-int UploadSettings(HWND hwndParent);
-
 
 #endif /* __CHANGEINFO_H */

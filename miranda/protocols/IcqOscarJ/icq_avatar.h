@@ -45,26 +45,9 @@ extern BYTE hashEmptyAvatar[9];
 #define AVATAR_HASH_FLASH   0x08
 #define AVATAR_HASH_PHOTO   0x0C
 
-void handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContact, BYTE *pHash, int nHashLen, WORD wOldStatus);
-
-char* loadMyAvatarFileName();
-void storeMyAvatarFileName(char* szFile);
-
-void GetFullAvatarFileName(int dwUin, char* szUid, int dwFormat, char* pszDest, int cbLen);
-void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen);
+int  DetectAvatarFormat(char* szFile);
 void AddAvatarExt(int dwFormat, char* pszDest);
 
-int DetectAvatarFormat(char* szFile);
-
 int IsAvatarSaved(HANDLE hContact, BYTE *pHash, int nHashLen);
-
-int GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, BYTE *hash, unsigned int hashlen, char *file);
-int SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned int datalen);
-
-void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen);
-void StopAvatarThread();
-
-void InitAvatars();
-
 
 #endif /* __ICQ_AVATAR_H */

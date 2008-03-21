@@ -42,10 +42,4 @@
 #define LOG_ERROR      2   //problems that cause a disconnection from the network
 #define LOG_FATAL      3   //problems requiring user intervention: password wrong, rate exceeded, etc.
 
-/*---------* Functions *---------------*/
-
-void icq_LogMessage(int level, const unsigned char *szMsg);
-void icq_LogUsingErrorCode(int level, DWORD dwError, const unsigned char *szMsg);  //szMsg is optional
-void icq_LogFatalParam(const unsigned char *szMsg, WORD wError);
-
 #endif /* __LOG_H */

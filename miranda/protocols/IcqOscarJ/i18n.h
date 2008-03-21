@@ -36,26 +36,26 @@
 
 
 
-BOOL IsUSASCII(const unsigned char *pBuffer, int nSize);
-BOOL IsUnicodeAscii(const WCHAR *pBuffer, int nSize);
-int UTF8_IsValid(const unsigned char *pszInput);
+BOOL __stdcall IsUSASCII(const char *pBuffer, int nSize);
+BOOL __stdcall IsUnicodeAscii(const WCHAR *pBuffer, int nSize);
+int  __stdcall UTF8_IsValid(const char *pszInput);
 
-char *detect_decode_utf8(const unsigned char *from);
+char* __stdcall detect_decode_utf8(const char *from);
 
-WCHAR *make_unicode_string(const unsigned char *utf8);
-WCHAR *make_unicode_string_static(const unsigned char *utf8, WCHAR *unicode, size_t unicode_len);
+WCHAR* __stdcall make_unicode_string(const char *utf8);
+WCHAR* __stdcall make_unicode_string_static(const char *utf8, WCHAR *unicode, size_t unicode_len);
 
-unsigned char *make_utf8_string(const WCHAR *unicode);
-unsigned char *make_utf8_string_static(const WCHAR *unicode, unsigned char *utf8, size_t utf_size);
+char*  __stdcall make_utf8_string(const WCHAR *unicode);
+char*  __stdcall make_utf8_string_static(const WCHAR *unicode, char *utf8, size_t utf_size);
 
-unsigned char *ansi_to_utf8(const char *szAnsi);
-unsigned char *ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
-unsigned char *tchar_to_utf8(const TCHAR *szTxt);
-unsigned char *mtchar_to_utf8(const TCHAR *szTxt);
+char*  __stdcall ansi_to_utf8(const char *szAnsi);
+char*  __stdcall ansi_to_utf8_codepage(const char *szAnsi, WORD wCp);
+char*  __stdcall tchar_to_utf8(const TCHAR *szTxt);
+char*  __stdcall mtchar_to_utf8(const TCHAR *szTxt);
 
-int utf8_encode(const char *from, unsigned char **to);
-int utf8_decode(const unsigned char *from, char **to);
-int utf8_decode_codepage(const unsigned char *from, char **to, WORD wCp);
-int utf8_decode_static(const unsigned char *from, char *to, int to_size);
+int   __stdcall utf8_encode(const char *from, char **to);
+int   __stdcall utf8_decode(const char *from, char **to);
+int   __stdcall utf8_decode_codepage(const char *from, char **to, WORD wCp);
+int   __stdcall utf8_decode_static(const char *from, char *to, int to_size);
 
 void InitI18N(void);

@@ -34,7 +34,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#define MIRANDA_VER 0x0700
+#define MIRANDA_VER 0x0800
 
 #define _USE_32BIT_TIME_T
 
@@ -80,16 +80,11 @@
 #include <m_avatars.h>
 #include <win2k.h>
 
-// LPGENUTF is utf8 equivalent for LPGEN
-#define LPGENUTF(s)    (unsigned char*)s
-
-
 // Project resources
 #include "resource.h"
 
 // ICQ plugin includes
 #include "globals.h"
-#include "icq_db.h"
 #include "i18n.h"
 #include "cookies.h"
 #include "capabilities.h"
@@ -126,7 +121,12 @@
 
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
+#include "icq_proto.h"
 #include "iconlib.h"
+
+int __fastcall ICQFreeVariant(DBVARIANT* dbv);
 
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);
+
+BYTE* calcMD5Hash(char* szFile);

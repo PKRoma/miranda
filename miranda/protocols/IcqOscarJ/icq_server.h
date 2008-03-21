@@ -37,38 +37,40 @@
 #ifndef __ICQ_SERVER_H
 #define __ICQ_SERVER_H
 
-typedef struct serverthread_start_info_s {
-  NETLIBOPENCONNECTION nloc;
-  WORD wPassLen;
-  char szPass[20];
-} serverthread_start_info;
+struct serverthread_start_info
+{
+	NETLIBOPENCONNECTION nloc;
+	WORD wPassLen;
+	char szPass[20];
+	struct CIcqProto* ppro;
+};
 
-typedef struct serverthread_info_s {
-  int bLoggedIn;
-  int isLoginServer;
-  BYTE szAuthKey[20];
-  WORD wAuthKeyLen;
-  WORD wServerPort;
-  char *newServer;
-  BYTE* cookieData;
-  int cookieDataLen;
-  int newServerReady;
-  int isMigrating;
-  HANDLE hPacketRecver;
-  int bReinitRecver;
-  int bMyAvatarInited;
-  //
-  HANDLE hDirectBoundPort;
-  //
-  HANDLE hKeepAliveEvent;
-  HANDLE hKeepAliveThread;
-} serverthread_info;
+struct serverthread_info
+{
+	struct CIcqProto* ppro;
+	int bLoggedIn;
+	int isLoginServer;
+	BYTE szAuthKey[20];
+	WORD wAuthKeyLen;
+	WORD wServerPort;
+	char *newServer;
+	BYTE* cookieData;
+	int cookieDataLen;
+	int newServerReady;
+	int isMigrating;
+	HANDLE hPacketRecver;
+	int bReinitRecver;
+	int bMyAvatarInited;
+//
+	HANDLE hDirectBoundPort;
+//
+	HANDLE hKeepAliveEvent;
+	HANDLE hKeepAliveThread;
+};
 
 /*---------* Functions *---------------*/
 
 void icq_serverDisconnect(BOOL bBlock);
-void sendServPacket(icq_packet *);
-void sendServPacketAsync(icq_packet *);
 void icq_login(const char *szPassword);
 
 int IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel);

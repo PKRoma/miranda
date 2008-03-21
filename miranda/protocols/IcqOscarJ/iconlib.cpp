@@ -37,12 +37,10 @@
 #include "icqoscar.h"
 #include "m_icolib.h"
 
-
-
-HANDLE IconLibDefine(const unsigned char *desc, const unsigned char *section, const char *ident, const char *def_file, int def_idx)
+HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const char *ident, const char *def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
-  unsigned char szTemp[MAX_PATH];
+  char szTemp[MAX_PATH];
   char szName[MAX_PATH + 128];
   HANDLE hIcon;
 
@@ -51,7 +49,7 @@ HANDLE IconLibDefine(const unsigned char *desc, const unsigned char *section, co
   sid.pwszDescription = make_unicode_string(ICQTranslateUtfStatic(desc, szTemp, MAX_PATH));
   sid.flags = SIDF_UNICODE;
 
-  null_snprintf(szName, sizeof(szName), "%s_%s", gpszICQProtoName, ident);
+  null_snprintf(szName, sizeof(szName), "%s_%s", m_szModuleName, ident);
   sid.pszName = szName;
   sid.pszDefaultFile = (char*)def_file;
   sid.iDefaultIndex = def_idx;
@@ -65,30 +63,19 @@ HANDLE IconLibDefine(const unsigned char *desc, const unsigned char *section, co
   return hIcon;
 }
 
-
-
-HICON IconLibGetIcon(const char *ident)
+HICON CIcqProto::IconLibGetIcon(const char *ident)
 {
   char szTemp[MAX_PATH + 128];
 
-  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, ident);
 
   return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
 }
 
-
-
-void IconLibReleaseIcon(const char *ident)
+void CIcqProto::IconLibReleaseIcon(const char *ident)
 {
   char szTemp[MAX_PATH + 128];
 
-  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", gpszICQProtoName, ident);
+  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, ident);
   CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
-}
-
-
-
-HANDLE IconLibHookIconsChanged(MIRANDAHOOK hook)
-{
-  return HookEvent(ME_SKIN2_ICONSCHANGED, hook);
 }

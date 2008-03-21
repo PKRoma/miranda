@@ -36,91 +36,68 @@
 
 #include "icqoscar.h"
 
-
-static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-
-int icq_RequestAuthorization(WPARAM wParam, LPARAM lParam)
+struct AskAuthParam
 {
-  DialogBoxUtf(TRUE, hInst, MAKEINTRESOURCEA(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)wParam);
-
-  return 0;
-}
-
-
+	CIcqProto* ppro;
+	HANDLE hContact;
+};
 
 static BOOL CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  HANDLE hContact;
+	AskAuthParam* dat = (AskAuthParam*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-  switch (msg)
-  {
+	switch (msg) {
+	case WM_INITDIALOG:
+		dat = (AskAuthParam*)lParam;
+		if (!dat->hContact || !dat->ppro->icqOnline())
+			EndDialog(hwndDlg, 0);
 
-  case WM_INITDIALOG:
-    {
-      unsigned char str[MAX_PATH];
+		ICQTranslateDialog(hwndDlg);
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
+		SetDlgItemText(hwndDlg, IDC_EDITAUTH, TranslateT("Please authorize me to add you to my contact list."));
+		return TRUE;
 
-      hContact = (HANDLE)lParam;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDOK:
+			if (dat->ppro->icqOnline())
+			{
+				DWORD dwUin;
+				uid_str szUid;
+				if ( dat->ppro->getUid(dat->hContact, &dwUin, &szUid))
+					return TRUE; // Invalid contact
 
-      if (!hContact || !icqOnline)
-        EndDialog(hwndDlg, 0);
+				char* szReason = GetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH);
+				dat->ppro->icq_sendAuthReqServ(dwUin, szUid, szReason);
+				SAFE_FREE((void**)&szReason);
 
-      ICQTranslateDialog(hwndDlg);
-      SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-      SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-      SetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH, ICQTranslateUtfStatic(LPGENUTF("Please authorize me to add you to my contact list."), str, MAX_PATH));
+				// auth bug fix (thx Bio)
+				if (dat->ppro->m_bSsiEnabled && dwUin)
+					dat->ppro->resetServContactAuthState(dat->hContact, dwUin);
 
-      return TRUE;
-    }
+				EndDialog(hwndDlg, 0);
+			}
+			return TRUE;
 
-  case WM_COMMAND:
-    {
-      switch (LOWORD(wParam))
-      {
-      case IDOK:
-        {
-          DWORD dwUin;
-          uid_str szUid;
-          unsigned char* szReason;
+		case IDCANCEL:
+			EndDialog(hwndDlg, 0);
+			return TRUE;
+		}
 
-          hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
+		break;
 
-          if (!icqOnline)
-            return TRUE;
+	case WM_CLOSE:
+		EndDialog(hwndDlg,0);
+		return TRUE;
+	}
 
-          if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
-            return TRUE; // Invalid contact
+	return FALSE;
+}
 
-          szReason = GetDlgItemTextUtf(hwndDlg, IDC_EDITAUTH);
-          icq_sendAuthReqServ(dwUin, szUid, szReason);
-          SAFE_FREE((void**)&szReason);
-
-          if (gbSsiEnabled && dwUin)
-          { // auth bug fix (thx Bio)
-            resetServContactAuthState(hContact, dwUin);
-          }
-
-          EndDialog(hwndDlg, 0);
-
-          return TRUE;
-        }
-        break;
-
-      case IDCANCEL:
-        EndDialog(hwndDlg, 0);
-        return TRUE;
-
-      default:
-        break;
-
-      }
-    }
-    break;
-
-  case WM_CLOSE:
-    EndDialog(hwndDlg,0);
-    return TRUE;
-  }
-  
-  return FALSE;
+int CIcqProto::RequestAuthorization(WPARAM wParam, LPARAM lParam)
+{
+	AskAuthParam param = { this, (HANDLE)wParam };
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ASKAUTH), NULL, AskAuthProc, (LPARAM)&param);
+	return 0;
 }
