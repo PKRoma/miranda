@@ -948,13 +948,14 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 				case CLN_LISTREBUILT:
 					{
-						int bCheck;
+						int bCheck = false;
 
 						// Delete non-icq contacts
-						DeleteOtherContactsFromControl(hClist, ppro);
-
-						if (!bListInit) // do not enter twice
-							bCheck = UpdateCheckmarks(hClist, ppro, NULL);
+						if ( ppro ) {
+							DeleteOtherContactsFromControl(hClist, ppro);
+							if (!bListInit) // do not enter twice
+								bCheck = UpdateCheckmarks(hClist, ppro, NULL);
+						}
 
 						if (!hItemAll) // Add the "All contacts" item
 						{
