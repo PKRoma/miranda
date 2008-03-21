@@ -200,7 +200,6 @@
 #define IDC_PRIORITY_LABEL              1106
 #define IDC_NEWPASSWD                   1107
 #define IDC_COMBO_ACCTYPE               1108
-#define IDD_WIZARD                      1109
 #define IDD_MODERNOPT                   1110
 #define IDC_PASS_SERVER                 1112
 #define IDC_PROXY_ADDR                  1112
@@ -427,7 +426,7 @@
 #define IDC_ENABLE_USER_TUNE            3018
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        228
