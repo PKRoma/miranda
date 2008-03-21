@@ -1886,7 +1886,7 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 	{
 		// clear custom status on status change
 		if (getByte(NULL, "XStatusReset", DEFAULT_XSTATUS_RESET))
-		 	SetXStatusEx(0, 0);
+		 	setXStatusEx(0, 0);
 
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
