@@ -1286,7 +1286,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			if ( item != NULL ) {
 				TCHAR text[ 1024 ];
 				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), gch->pDest->ptszID, szBuffer );
-				ppro->SendPresenceTo( ppro->m_iStatus, text, NULL );
+				ppro->SendPresenceTo( ppro->m_iStatus == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : ppro->m_iStatus, text, NULL );
 		}	}
 		break;
 

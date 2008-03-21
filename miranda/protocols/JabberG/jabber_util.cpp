@@ -1034,7 +1034,7 @@ void CJabberProto::SendPresence( int status, bool bSendToAll )
 		for ( int i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
-				SendPresenceTo( status, item->jid, NULL );
+				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, NULL );
 }	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
