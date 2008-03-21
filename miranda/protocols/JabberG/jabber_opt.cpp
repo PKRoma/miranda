@@ -378,7 +378,7 @@ public:
 		m_cbLocale(this, IDC_MSGLANG),
 		m_btnRegister(this, IDC_BUTTON_REGISTER),
 		m_btnUnregister(this, IDC_UNREGISTER),
-		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/user/publicservers.shtml"),
+		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/im-services"),
 		m_lnkOpenSsl(this, IDC_DOWNLOAD_OPENSSL, "http://www.slproweb.com/products/Win32OpenSSL.html")
 
 	{
@@ -695,7 +695,7 @@ private:
 		request.cbSize = sizeof(request);
 		request.requestType = REQUEST_GET;
 		request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-		request.szUrl = "http://www.jabber.org/servers.xml";
+		request.szUrl = "http://www.jabber.org/basicservers.xml";
 
 		NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
 
@@ -2094,7 +2094,7 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	request.cbSize = sizeof(request);
 	request.requestType = REQUEST_GET;
 	request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-	request.szUrl = "http://www.jabber.org/servers.xml";
+	request.szUrl = "http://www.jabber.org/basicservers.xml";
 
 	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
 
