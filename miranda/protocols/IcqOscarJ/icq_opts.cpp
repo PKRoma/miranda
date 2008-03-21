@@ -227,9 +227,8 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_SHOW);
 			}
 			else 
-			{
 				ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_NOTONLINE), SW_HIDE);
-			}
+
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_ANY, (nDcType == 0));
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_CLIST, (nDcType == 1));
 			CheckDlgButton(hwndDlg, IDC_DCALLOW_AUTH, (nDcType == 2));

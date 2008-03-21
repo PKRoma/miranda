@@ -616,6 +616,10 @@ SOURCE=.\UI\askauthentication.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_firstrun.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_opts.cpp
 # End Source File
 # Begin Source File

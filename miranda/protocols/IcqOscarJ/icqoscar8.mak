@@ -113,6 +113,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_filerequests.sbr"
 	-@erase "$(INTDIR)\icq_filetransfer.obj"
 	-@erase "$(INTDIR)\icq_filetransfer.sbr"
+	-@erase "$(INTDIR)\icq_firstrun.obj"
+	-@erase "$(INTDIR)\icq_firstrun.sbr"
 	-@erase "$(INTDIR)\icq_http.obj"
 	-@erase "$(INTDIR)\icq_http.sbr"
 	-@erase "$(INTDIR)\icq_infoupdate.obj"
@@ -203,6 +205,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_filetransfer.sbr" \
 	"$(INTDIR)\icq_advsearch.sbr" \
 	"$(INTDIR)\icq_db.sbr" \
+	"$(INTDIR)\icq_proto.sbr" \
 	"$(INTDIR)\icqosc_svcs.sbr" \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
@@ -239,7 +242,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_proto.sbr"
+	"$(INTDIR)\icq_firstrun.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -271,6 +274,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_filetransfer.obj" \
 	"$(INTDIR)\icq_advsearch.obj" \
 	"$(INTDIR)\icq_db.obj" \
+	"$(INTDIR)\icq_proto.obj" \
 	"$(INTDIR)\icqosc_svcs.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
@@ -308,7 +312,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
 	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_proto.obj"
+	"$(INTDIR)\icq_firstrun.obj"
 
 "..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -397,6 +401,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_filerequests.sbr"
 	-@erase "$(INTDIR)\icq_filetransfer.obj"
 	-@erase "$(INTDIR)\icq_filetransfer.sbr"
+	-@erase "$(INTDIR)\icq_firstrun.obj"
+	-@erase "$(INTDIR)\icq_firstrun.sbr"
 	-@erase "$(INTDIR)\icq_http.obj"
 	-@erase "$(INTDIR)\icq_http.sbr"
 	-@erase "$(INTDIR)\icq_infoupdate.obj"
@@ -488,6 +494,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\icq_filetransfer.sbr" \
 	"$(INTDIR)\icq_advsearch.sbr" \
 	"$(INTDIR)\icq_db.sbr" \
+	"$(INTDIR)\icq_proto.sbr" \
 	"$(INTDIR)\icqosc_svcs.sbr" \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
@@ -524,7 +531,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_proto.sbr"
+	"$(INTDIR)\icq_firstrun.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -556,6 +563,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icq_filetransfer.obj" \
 	"$(INTDIR)\icq_advsearch.obj" \
 	"$(INTDIR)\icq_db.obj" \
+	"$(INTDIR)\icq_proto.obj" \
 	"$(INTDIR)\icqosc_svcs.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
@@ -593,7 +601,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
 	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_proto.obj"
+	"$(INTDIR)\icq_firstrun.obj"
 
 "..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -682,6 +690,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_filerequests.sbr"
 	-@erase "$(INTDIR)\icq_filetransfer.obj"
 	-@erase "$(INTDIR)\icq_filetransfer.sbr"
+	-@erase "$(INTDIR)\icq_firstrun.obj"
+	-@erase "$(INTDIR)\icq_firstrun.sbr"
 	-@erase "$(INTDIR)\icq_http.obj"
 	-@erase "$(INTDIR)\icq_http.sbr"
 	-@erase "$(INTDIR)\icq_infoupdate.obj"
@@ -809,7 +819,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr"
+	"$(INTDIR)\utilities.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -819,7 +830,6 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept
 LINK32_OBJS= \
-	"$(INTDIR)\resources.res" \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
 	"$(INTDIR)\chan_03error.obj" \
@@ -878,7 +888,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
-	"$(INTDIR)\utilities.obj"
+	"$(INTDIR)\utilities.obj" \
+	"$(INTDIR)\resources.res" \
+	"$(INTDIR)\icq_firstrun.obj"
 
 "..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -967,6 +979,8 @@ CLEAN :
 	-@erase "$(INTDIR)\icq_filerequests.sbr"
 	-@erase "$(INTDIR)\icq_filetransfer.obj"
 	-@erase "$(INTDIR)\icq_filetransfer.sbr"
+	-@erase "$(INTDIR)\icq_firstrun.obj"
+	-@erase "$(INTDIR)\icq_firstrun.sbr"
 	-@erase "$(INTDIR)\icq_http.obj"
 	-@erase "$(INTDIR)\icq_http.sbr"
 	-@erase "$(INTDIR)\icq_infoupdate.obj"
@@ -1093,7 +1107,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr"
+	"$(INTDIR)\utilities.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1103,7 +1118,6 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108
 LINK32_OBJS= \
-	"$(INTDIR)\resources.res" \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
 	"$(INTDIR)\chan_03error.obj" \
@@ -1162,7 +1176,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\oscar_filetransfer.obj" \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
-	"$(INTDIR)\utilities.obj"
+	"$(INTDIR)\utilities.obj" \
+	"$(INTDIR)\resources.res" \
+	"$(INTDIR)\icq_firstrun.obj"
 
 "..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1352,6 +1368,11 @@ SOURCE=.\UI\askauthentication.cpp
 
 "$(INTDIR)\askauthentication.obj"	"$(INTDIR)\askauthentication.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+SOURCE=.\icq_firstrun.cpp
+
+"$(INTDIR)\icq_firstrun.obj"	"$(INTDIR)\icq_firstrun.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\icqoscar8.pch"
 
 
 SOURCE=.\icq_opts.cpp

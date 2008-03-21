@@ -36,94 +36,67 @@
 
 #include "icqoscar.h"
 
-
-BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-
-void icq_FirstRunCheck()
-{
-  if (getByte(NULL, "FirstRun", 0))
-    return;
-
-  DialogBoxParam(TRUE, hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), NULL, icq_FirstRunDlgProc, 0);
-}
-
-
-
 BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  switch (msg)
-  {
+	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
 
-  case WM_INITDIALOG:
-    {
-      char* pszPwd;
-      DWORD dwUIN;
-      char pszUIN[20];
+	switch (msg) {
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
 
+		ppro = (CIcqProto*)lParam;
+		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		{
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-      ICQTranslateDialog(hwndDlg);
-      SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
+			char pszUIN[20];
+			DWORD dwUIN = ppro->getUin(NULL);
+			if (dwUIN)
+			{
+				null_snprintf(pszUIN, 20, "%u", dwUIN);
+				SetDlgItemTextA(hwndDlg, IDC_UIN, pszUIN);
+			}
 
-      dwUIN = getUin(NULL);
+			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
+			char* pszPwd = ppro->GetUserPassword(FALSE);
+			if (pszPwd)
+				SetDlgItemTextA(hwndDlg, IDC_PW, pszPwd);
+		}
+		return TRUE;
 
-      if (dwUIN)
-      {
-        null_snprintf(pszUIN, 20, "%u", dwUIN);
-        SetDlgItemText(hwndDlg, IDC_UIN, pszUIN);
-      }
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
 
-      SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
-      pszPwd = GetUserPassword(FALSE);
-      if (pszPwd)
-      {
-        SetDlgItemText(hwndDlg, IDC_PW, pszPwd);
-      }
-    }
-    break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_REGISTER:
+			CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
+			break;
 
-  case WM_CLOSE:
-    EndDialog(hwndDlg, 0);
-    break;
+		case IDOK:
+			{
+				char str[128];
+				GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
+				ppro->setDword(NULL, UNIQUEIDSETTING, atoi(str));
+				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
+				strcpy(ppro->m_szPassword, str);
+				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
+				ppro->setString(NULL, "Password", str);
+			}
+			// fall through
 
-  case WM_COMMAND:
-    {
-      switch (LOWORD(wParam))
-      {
+		case IDCANCEL:
+			EndDialog(hwndDlg, IDCANCEL);
+			break;
+		}
+		break;
+	}
 
-      case IDC_REGISTER:
-        {
-          CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
-          break;
-        }
+	return FALSE;
+}
 
-      case IDOK:
-        {
-          char str[128];
-          DWORD dwUIN;
-
-          GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
-          dwUIN = atoi(str);
-          setDword(NULL, UNIQUEIDSETTING, dwUIN);
-          GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(m_szPassword));
-          strcpy(m_szPassword, str);
-          CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(m_szPassword), (LPARAM) str);
-          setString(NULL, "Password", str);
-        }
-        // fall through
-
-      case IDCANCEL:
-        {
-          // Mark first run as completed
-          setByte(NULL, "FirstRun", 1);
-          EndDialog(hwndDlg, IDCANCEL);
-        }
-        break;
-
-      }
-    }
-    break;
-  }
-
-  return FALSE;
+int CIcqProto::OnCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+{
+	return (int)CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_ICQACCOUNT), (HWND)lParam, icq_FirstRunDlgProc, LPARAM(this));
 }

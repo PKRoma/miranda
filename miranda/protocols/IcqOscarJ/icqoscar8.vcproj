@@ -407,10 +407,25 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
+				RelativePath=".\icos\auth_ask.ico">
+			</File>
+			<File
+				RelativePath=".\icos\auth_grant.ico">
+			</File>
+			<File
+				RelativePath=".\icos\auth_revoke.ico">
+			</File>
+			<File
+				RelativePath=".\changeinfo\expandst.ico">
+			</File>
+			<File
 				RelativePath="icos\icq.ico">
 			</File>
 			<File
 				RelativePath="resources.rc">
+			</File>
+			<File
+				RelativePath=".\icos\srvlist_add.ico">
 			</File>
 		</Filter>
 		<Filter
@@ -1367,6 +1382,9 @@
 						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\icq_firstrun.cpp">
 			</File>
 			<File
 				RelativePath="icq_opts.cpp">

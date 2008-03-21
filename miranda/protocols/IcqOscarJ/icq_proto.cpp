@@ -127,6 +127,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// Setup services
 	CreateProtoService(PS_GETNAME, &CIcqProto::GetName);
 	CreateProtoService(PS_GETSTATUS, &CIcqProto::GetStatus);
+	CreateProtoService(PS_CREATEACCMGRUI, &CIcqProto::OnCreateAccMgrUI );
 	CreateProtoService(MS_ICQ_SEARCHBYDETAILS, &CIcqProto::SearchByDetails);
 	CreateProtoService(MS_ICQ_SENDSMS, &CIcqProto::SendSms);
 	CreateProtoService(PS_SET_NICKNAME, &CIcqProto::SetNickName);

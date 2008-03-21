@@ -119,7 +119,6 @@
 	
 
 .\icq_opts.cpp : \
-	"..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
 	"..\..\include\win2k.h"\
 	
 
