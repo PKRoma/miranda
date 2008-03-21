@@ -487,10 +487,24 @@ bool MSN_ABGetFull(void)
 					}
 					anot = ezxml_next(anot);
 				}
-				MSN_SetString( hContact, "ID", szContId );
-
 				if (szNick == NULL)
 					DBDeleteContactSetting(hContact, "CList", "MyHandle");
+
+				MSN_SetString( hContact, "ID", szContId );
+
+				switch (netId)
+				{
+				case NETID_YAHOO:
+					MSN_SetString( hContact, "Transport", "YAHOO" );
+					break;
+
+				case NETID_LCS:
+					MSN_SetString( hContact, "Transport", "LCS" );
+					break;
+
+				default:
+					MSN_DeleteSetting( hContact, "Transport" );
+				}
 
 				ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
 				MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
