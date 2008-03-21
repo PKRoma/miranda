@@ -38,7 +38,7 @@ class CAgentRegProgressDlg : public CJabberDlgBase
 
 public:  
 	CAgentRegProgressDlg( CJabberProto* _ppro, HWND _owner ) :
-		CJabberDlgBase( _ppro, IDD_OPT_REGISTER, _owner ),
+		CJabberDlgBase( _ppro, IDD_OPT_REGISTER, _owner, false ),
 		m_ok( this, IDOK )
 	{
 		m_ok.OnClick = Callback( this, &CAgentRegProgressDlg::OnOk );
@@ -89,7 +89,7 @@ class CAgentRegDlg : public CJabberDlgBase
 
 public:
 	CAgentRegDlg( CJabberProto* _ppro, TCHAR* _jid ) :
-		CJabberDlgBase( _ppro, IDD_FORM, NULL ),
+		CJabberDlgBase( _ppro, IDD_FORM, NULL, false ),
 		m_submit( this, IDC_SUBMIT ),
 		m_jid( _jid )
 	{

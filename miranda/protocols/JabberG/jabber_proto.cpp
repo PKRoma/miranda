@@ -129,7 +129,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// XMPP URI parser service for "File Association Manager" plugin
 	JCreateService( JS_PARSE_XMPP_URI, &CJabberProto::JabberServiceParseXmppURI );
 
-	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildPrivacyMenu );
+	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildStatusMenu );
 	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
 	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
 	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );

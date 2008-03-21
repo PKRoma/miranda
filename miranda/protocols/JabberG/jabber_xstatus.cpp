@@ -415,10 +415,10 @@ int __cdecl CJabberProto::OnMenuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM
 /////////////////////////////////////////////////////////////////////////////////////////
 // builds xstatus menu
 
-int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
+void CJabberProto::BuildXStatusItems( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bJabberOnline || !m_bPepSupported )
-		return 0;
+		return;
 
 	CLISTMENUITEM mi = { 0 };
 	int i;
@@ -458,7 +458,7 @@ int CJabberProto::CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
 	}
 
 	m_bXStatusMenuBuilt = 1;
-	return 0;
+	return;
 }
 
 void CJabberProto::InitXStatusIcons()
@@ -499,7 +499,6 @@ void CJabberProto::XStatusInit()
 
 	InitXStatusIcons();
 
-	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::CListMW_BuildStatusItems );
 	JHookEvent( ME_CLIST_EXTRA_LIST_REBUILD, &CJabberProto::CListMW_ExtraIconsRebuild );
 	JHookEvent( ME_CLIST_EXTRA_IMAGE_APPLY,  &CJabberProto::CListMW_ExtraIconsApply );
 }

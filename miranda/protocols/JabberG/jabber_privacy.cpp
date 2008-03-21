@@ -2252,10 +2252,10 @@ int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPAR
 /////////////////////////////////////////////////////////////////////////////////////////
 // init privacy menu
 
-int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
+void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 {
 	if ( !m_bJabberOnline )
-		return 0;
+		return;
 
 	CLISTMENUITEM mi = { 0 };
 	int i=0;
@@ -2264,7 +2264,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	HANDLE hPrivacyRoot;
 	HANDLE hRoot = ( HANDLE )szItem;
 
-	mir_snprintf( szItem, sizeof(szItem), LPGEN("Privacy Lists") );
+	mir_snprintf( szItem, SIZEOF(szItem), LPGEN("Privacy Lists") );
 
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;
@@ -2277,7 +2277,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/PrivacyLists", m_szModuleName );
+	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/PrivacyLists", m_szModuleName );
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
 
 	CLISTMENUITEM miTmp = {0};
@@ -2291,7 +2291,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	m_privacyListManager.Lock();
 
-	mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
+	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 	if ( i > m_privacyMenuServiceAllocated ) {
 		JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
 		m_privacyMenuServiceAllocated = i;
@@ -2306,7 +2306,7 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
-		mir_snprintf( srvFce, sizeof(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
+		mir_snprintf( srvFce, SIZEOF(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 
 		if ( i > m_privacyMenuServiceAllocated ) {
 			JCreateServiceParam( svcName, &CJabberProto::menuSetPrivacyList, i );
@@ -2323,5 +2323,4 @@ int CJabberProto::OnBuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	}
 
 	m_privacyListManager.Unlock();
-	return 0;
 }

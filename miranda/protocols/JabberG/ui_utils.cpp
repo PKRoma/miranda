@@ -37,6 +37,7 @@ CDlgBase::CDlgBase(int idDialog, HWND hwndParent) :
 	m_first = NULL;
 	m_isModal = false;
 	m_initialized = false;
+	m_autoClose = CLOSE_ON_OK|CLOSE_ON_CANCEL;
 }
 
 CDlgBase::~CDlgBase()
@@ -121,8 +122,12 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					return result;
 			}
 
-			if ( idCode == BN_CLICKED && ( idCtrl == IDOK || idCtrl == IDCANCEL ))
+			if (idCode == BN_CLICKED &&
+				((idCtrl == IDOK) && (m_autoClose & CLOSE_ON_OK) ||
+				(idCtrl == IDCANCEL) && (m_autoClose & CLOSE_ON_CANCEL)))
+			{
 				PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
+			}
 			return FALSE;
 		}
 

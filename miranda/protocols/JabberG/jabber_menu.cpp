@@ -207,6 +207,14 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM wParam, LPARAM lParam )
+{
+	BuildXStatusItems(wParam, lParam);
+	BuildPrivacyMenu(wParam, lParam);
+	BuildPriorityMenu(wParam, lParam);
+	return 0;
+}
+
 int __cdecl CJabberProto::OnMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
 {
 	BYTE bIsChatRoom = (BYTE)JGetByte( (HANDLE ) wParam, "ChatRoom", 0 );
@@ -949,4 +957,83 @@ int __cdecl CJabberProto::OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPA
 	UpdateMirVer(LI);
 	MenuUpdateSrmmIcon(LI);
 	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// priority menu
+int CJabberProto::OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta)
+{
+	int iDelta = (int)dwDelta;
+	short priority = 0;
+	priority = (short)JGetWord(NULL, "Priority", 0) + iDelta;
+	if (priority > 127) priority = 127;
+	else if (priority < -128) priority = -128;
+	JSetWord(NULL, "Priority", priority);
+	SendPresence(m_iStatus, true);
+	return 0;
+}
+
+void CJabberProto::BuildPriorityMenu(WPARAM, LPARAM)
+{
+	m_hMenuPriorityRoot = NULL;
+	if ( !m_bJabberOnline )
+		return;
+
+	CLISTMENUITEM mi = { 0 };
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
+	char szItem[MAX_PATH + 64];
+	char szName[128];
+	HANDLE hRoot = ( HANDLE )szItem;
+
+	mir_snprintf( szItem, SIZEOF(szItem), LPGEN("Resource priority") );
+
+	mi.cbSize = sizeof(mi);
+	mi.popupPosition= 500084000;
+	mi.pszContactOwner = m_szModuleName;
+	mi.pszService = srvFce;
+	mi.pszPopupName = (char *)hRoot;
+	mi.pszName = szName;
+	mi.position = 2000040000;
+	mi.flags = CMIF_ICONFROMICOLIB;
+
+	mir_snprintf(srvFce, sizeof(srvFce), "%s/menuSetPriority/0", m_szModuleName);
+	bool needServices = !ServiceExists(srvFce);
+	if (needServices) JCreateServiceParam(svcName, &CJabberProto::OnMenuSetPriority, (LPARAM)0);
+
+	int steps[] = { 10, 5, 1, 0, -1, -5, -10 };
+	for (int i = 0; i < SIZEOF(steps); ++i)
+	{
+		if (!steps[i])
+		{
+			mi.position += 100000;
+			continue;
+		}
+
+		mi.icolibItem = (steps[i] > 0) ? GetIconHandle(IDI_ARROW_UP) : GetIconHandle(IDI_ARROW_DOWN);
+
+		mir_snprintf(srvFce, sizeof(srvFce), "%s/menuSetPriority/%d", m_szModuleName, steps[i]);
+		mir_snprintf(szName, sizeof(szName), (steps[i] > 0) ? "Increase priority by %d" : "Decrease priority by %d", abs(steps[i]));
+
+		if (needServices) JCreateServiceParam(svcName, &CJabberProto::OnMenuSetPriority, (LPARAM)steps[i]);
+
+		mi.position++;
+		CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&m_hMenuPriorityRoot, ( LPARAM )&mi );
+	}
+
+	UpdatePriorityMenu((short)JGetWord(NULL, "Priority", 0));
+}
+
+void CJabberProto::UpdatePriorityMenu(short priority)
+{
+	if (m_hMenuPriorityRoot)
+	{
+		TCHAR szName[128];
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB|CMIM_ICON|CMIM_NAME;
+		mi.icolibItem = GetIconHandle(IDI_AGENTS);
+		mi.ptszName = szName;
+		mir_sntprintf(szName, SIZEOF(szName), TranslateT("Resource priority [%d]"), (int)priority);
+		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)m_hMenuPriorityRoot, (LPARAM)&mi);
+	}
 }

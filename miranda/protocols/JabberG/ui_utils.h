@@ -978,6 +978,9 @@ protected:
 	bool    m_isModal;
 	bool    m_initialized;
 
+	enum { CLOSE_ON_OK = 0x1, CLOSE_ON_CANCEL = 0x2 };
+	BYTE    m_autoClose;    // automatically close dialog on IDOK/CANCEL commands. default: CLOSE_ON_OK|CLOSE_ON_CANCEL
+
 	CCtrlBase* m_first;
 
 	// override this handlers to provide custom functionality

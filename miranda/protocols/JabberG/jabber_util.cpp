@@ -921,8 +921,11 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
 	EnterCriticalSection( &m_csModeMsgMutex );
 
+	short iPriority = (short)JGetWord( NULL, "Priority", 0 );
+	UpdatePriorityMenu(iPriority);
+
 	char szPriority[40];
-	itoa( (short)JGetWord( NULL, "Priority", 0 ), szPriority, 10 );
+	itoa( iPriority, szPriority, 10 );
 
 	XmlNode p( "presence" ); p.addChild( "priority", szPriority );
 	if ( to != NULL )

@@ -168,6 +168,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void __cdecl OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	void __cdecl OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	int  __cdecl OnUserInfoInit( WPARAM, LPARAM );
+	int  __cdecl OnBuildStatusMenu( WPARAM, LPARAM );
 
 	int  __cdecl JabberGcEventHook( WPARAM, LPARAM );
 	int  __cdecl JabberGcMenuHook( WPARAM, LPARAM );
@@ -175,8 +176,6 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	int  __cdecl CListMW_ExtraIconsRebuild( WPARAM, LPARAM );
 	int  __cdecl CListMW_ExtraIconsApply( WPARAM, LPARAM );
-	int  __cdecl CListMW_BuildStatusItems( WPARAM, LPARAM );
-	int  __cdecl OnBuildPrivacyMenu( WPARAM, LPARAM );
 
 	//====| Data |========================================================================
 
@@ -571,6 +570,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res);
+	int    __cdecl OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta);
 
 	void   MenuInit( void );
 	void   MenuUninit( void );
@@ -579,6 +579,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   MenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);
 	
 	void   AuthWorker( HANDLE hContact, char* authReqType );
+
+	void   BuildPriorityMenu(WPARAM, LPARAM);
+	void   UpdatePriorityMenu(short priority);
+
+	HANDLE m_hMenuPriorityRoot;
 
 	//---- jabber_misc.c -----------------------------------------------------------------
 
@@ -620,6 +625,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	int    __cdecl menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList );
 	int    __cdecl OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
+
+	void   BuildPrivacyMenu( WPARAM, LPARAM );
 
 	void   QueryPrivacyLists( void );
 		  
@@ -788,6 +795,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
 	int    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
 	int    __cdecl OnMenuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param );
+
+	void BuildXStatusItems( WPARAM, LPARAM );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 	void   JabberUpdateContactExtraIcon( HANDLE hContact );

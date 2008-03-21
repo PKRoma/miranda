@@ -235,62 +235,82 @@ struct { TCHAR *szCode; TCHAR *szDescription; } g_LanguageCodes[] = {
 	{	NULL,	NULL	}
 };
 
-static BOOL CALLBACK JabberRegisterDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+class CJabberDlgRegister: public CJabberDlgBase
 {
-	ThreadData *thread, *regInfo;
-
-	switch ( msg ) {
-	case WM_INITDIALOG:
+	typedef CJabberDlgBase CSuper;
+public:
+	CJabberDlgRegister(CJabberProto *proto, HWND hwndParent, ThreadData *regInfo):
+		CJabberDlgBase(proto, IDD_OPT_REGISTER, hwndParent, false),
+		m_bProcessStarted(false),
+		m_regInfo(regInfo),
+		m_btnOk(this, IDOK)
 	{
-		TranslateDialogDefault( hwndDlg );
-		regInfo = ( ThreadData* ) lParam;
-		TCHAR text[256];
-		mir_sntprintf( text, SIZEOF(text), STR_FORMAT, TranslateT( "Register" ), regInfo->username, regInfo->server, regInfo->port );
-		SetDlgItemText( hwndDlg, IDC_REG_STATUS, text );
-		SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG )regInfo );
-		return TRUE;
-	}
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDOK:
-			ShowWindow( GetDlgItem( hwndDlg, IDOK ), SW_HIDE );
-			ShowWindow( GetDlgItem( hwndDlg, IDCANCEL ), SW_HIDE );
-			ShowWindow( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), SW_SHOW );
-			ShowWindow( GetDlgItem( hwndDlg, IDCANCEL2 ), SW_SHOW );
-			regInfo = ( ThreadData* ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			thread = new ThreadData( regInfo->proto, JABBER_SESSION_REGISTER );
-			_tcsncpy( thread->username, regInfo->username, SIZEOF( thread->username ));
-			strncpy( thread->password, regInfo->password, SIZEOF( thread->password ));
-			strncpy( thread->server, regInfo->server, SIZEOF( thread->server ));
-			strncpy( thread->manualHost, regInfo->manualHost, SIZEOF( thread->manualHost ));
-			thread->port = regInfo->port;
-			thread->useSSL = regInfo->useSSL;
-			thread->reg_hwndDlg = hwndDlg;
-			mir_forkthread(( pThreadFunc )JabberServerThread, thread );
-			return TRUE;
-		case IDCANCEL:
-		case IDOK2:
-			EndDialog( hwndDlg, 0 );
-			return TRUE;
-		}
-		break;
-	case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
-		if (( TCHAR* )lParam == NULL )
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, TranslateT( "No message" ));
-		else
-			SetDlgItemText( hwndDlg, IDC_REG_STATUS, ( TCHAR* )lParam );
-		if ( wParam >= 0 )
-			SendMessage( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
-		if ( wParam >= 100 ) {
-			ShowWindow( GetDlgItem( hwndDlg, IDCANCEL2 ), SW_HIDE );
-			ShowWindow( GetDlgItem( hwndDlg, IDOK2 ), SW_SHOW );
-		}
-		else SetFocus( GetDlgItem( hwndDlg, IDC_PROGRESS_REG ));
-		return TRUE;
+		m_autoClose = CLOSE_ON_CANCEL;
+		m_btnOk.OnClick = Callback(this, &CJabberDlgRegister::btnOk_OnClick);
 	}
 
-	return FALSE;
-}
+protected:
+	void OnInitDialog()
+	{
+		TCHAR text[256];
+		mir_sntprintf( text, SIZEOF(text), STR_FORMAT, TranslateT( "Register" ), m_regInfo->username, m_regInfo->server, m_regInfo->port );
+		SetDlgItemText( m_hwnd, IDC_REG_STATUS, text );
+	}
+
+	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch ( msg ) {
+		case WM_JABBER_REGDLG_UPDATE:	// wParam=progress ( 0-100 ), lparam=status string
+			if (( TCHAR* )lParam == NULL )
+				SetDlgItemText( m_hwnd, IDC_REG_STATUS, TranslateT( "No message" ));
+			else
+				SetDlgItemText( m_hwnd, IDC_REG_STATUS, ( TCHAR* )lParam );
+
+			if ( wParam >= 0 )
+				SendMessage( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ), PBM_SETPOS, wParam, 0 );
+			if ( wParam >= 100 )
+				m_btnOk.SetText(TranslateT("Close"));
+			else
+				SetFocus( GetDlgItem( m_hwnd, IDC_PROGRESS_REG ));
+
+			return TRUE;
+		}
+
+		return CSuper::DlgProc(msg, wParam, lParam);
+	}
+
+private:
+	bool m_bProcessStarted;
+	ThreadData *m_regInfo;
+
+	CCtrlButton m_btnOk;
+
+	void btnOk_OnClick(CCtrlButton *)
+	{
+		if (m_bProcessStarted)
+		{
+			Close();
+			return;
+		}
+
+		ShowWindow(GetDlgItem(m_hwnd, IDC_PROGRESS_REG), SW_SHOW);
+
+		ThreadData *thread = new ThreadData( m_regInfo->proto, JABBER_SESSION_REGISTER );
+		_tcsncpy( thread->username, m_regInfo->username, SIZEOF( thread->username ));
+		strncpy( thread->password, m_regInfo->password, SIZEOF( thread->password ));
+		strncpy( thread->server, m_regInfo->server, SIZEOF( thread->server ));
+		strncpy( thread->manualHost, m_regInfo->manualHost, SIZEOF( thread->manualHost ));
+		thread->port = m_regInfo->port;
+		thread->useSSL = m_regInfo->useSSL;
+		thread->reg_hwndDlg= m_hwnd;
+		mir_forkthread(( pThreadFunc )JabberServerThread, thread );
+
+		m_btnOk.SetText(TranslateT("Cancel"));
+		m_bProcessStarted = true;
+
+		m_lresult = TRUE;
+	}
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptDlgProc - main options dialog procedure
@@ -560,7 +580,11 @@ private:
 		}
 
 		if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
-			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
+		{
+			CJabberDlgRegister dlg(m_proto, m_hwnd, &regInfo);
+			dlg.DoModal();
+//			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
+		}
 	}
 
 	void btnUnregister_OnClick(CCtrlButton *)
@@ -1677,7 +1701,7 @@ protected:
 
 		int i;
 		DBVARIANT dbv;
-		char server[256];
+		char server[256], manualServer[256]={0};
 
 		m_gotservers = false;
 
@@ -1720,8 +1744,13 @@ protected:
 		m_cbType.AddString(TranslateT("LiveJournal Talk"), ACC_LJTALK);
 
 		m_cbServer.GetTextA(server, SIZEOF(server));
+		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "ManualHost", &dbv))
+		{
+			lstrcpynA(manualServer, dbv.pszVal, SIZEOF(manualServer));
+			JFreeVariant(&dbv);
+		}
 
-		if (!lstrcmpA(server, "gmail.com"))
+		if (!lstrcmpA(manualServer, "talk.google.com"))
 			m_cbType.SetCurSel(ACC_GTALK);
 		else if (!lstrcmpA(server, "livejournal.com"))
 			m_cbType.SetCurSel(ACC_LJTALK);
@@ -1892,7 +1921,11 @@ private:
 		}
 
 		if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
-			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
+		{
+			CJabberDlgRegister dlg(m_proto, m_hwnd, &regInfo);
+			dlg.DoModal();
+//			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_OPT_REGISTER), m_hwnd, JabberRegisterDlgProc, (LPARAM)&regInfo);
+		}
 	}
 
 	void cbServer_OnDropdown(CCtrlCombo *sender)
@@ -1981,6 +2014,7 @@ void CJabberDlgAccMgrUI::setupConnection(int type)
 void CJabberDlgAccMgrUI::setupPublic()
 {
 	m_canregister = true;
+	m_gotservers = false;
 	m_chkManualHost.SetState(BST_UNCHECKED);
 	m_txtManualHost.SetTextA("");
 	m_txtPort.SetInt(5222);
@@ -1995,6 +2029,7 @@ void CJabberDlgAccMgrUI::setupPublic()
 void CJabberDlgAccMgrUI::setupSecure()
 {
 	m_canregister = true;
+	m_gotservers = false;
 	m_chkManualHost.SetState(BST_UNCHECKED);
 	m_txtManualHost.SetTextA("");
 	m_txtPort.SetInt(5222);
@@ -2009,6 +2044,7 @@ void CJabberDlgAccMgrUI::setupSecure()
 void CJabberDlgAccMgrUI::setupSecureSSL()
 {
 	m_canregister = true;
+	m_gotservers = false;
 	m_chkManualHost.SetState(BST_UNCHECKED);
 	m_txtManualHost.SetTextA("");
 	m_txtPort.SetInt(5223);
@@ -2023,22 +2059,29 @@ void CJabberDlgAccMgrUI::setupSecureSSL()
 void CJabberDlgAccMgrUI::setupGoogle()
 {
 	m_canregister = false;
+	m_gotservers = true;
+	m_cbServer.ResetContent();
+	m_cbServer.AddStringA("gmail.com");
+	m_cbServer.AddStringA("googlemail.com");
 	m_cbServer.SetTextA("gmail.com");
 	m_chkManualHost.SetState(BST_CHECKED);
 	m_txtManualHost.SetTextA("talk.google.com");
 	m_txtPort.SetInt(5222);
 
-	m_cbServer.Disable();
+	//m_cbServer.Disable();
 	m_chkManualHost.Disable();
 	m_txtManualHost.Disable();
-	m_txtPort.Disable();
+	//m_txtPort.Disable();
 	m_btnRegister.Disable();
 }
 
 void CJabberDlgAccMgrUI::setupLJ()
 {
 	m_canregister = false;
+	m_gotservers = true;
+	m_cbServer.ResetContent();
 	m_cbServer.SetTextA("livejournal.com");
+	m_cbServer.AddStringA("livejournal.com");
 	m_chkManualHost.SetState(BST_UNCHECKED);
 	m_txtManualHost.SetTextA("");
 	m_txtPort.SetInt(5222);
