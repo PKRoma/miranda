@@ -155,7 +155,7 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2">
+			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -221,7 +221,7 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="2"
+			CharacterSet="1"
 			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -439,7 +439,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -448,7 +447,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -458,7 +456,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -468,7 +465,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -480,7 +476,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -489,7 +484,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -499,7 +493,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -509,7 +502,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -521,7 +513,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -530,7 +521,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -540,7 +530,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -550,7 +539,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -562,7 +550,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -571,7 +558,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -581,7 +567,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -591,7 +576,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -603,7 +587,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -612,7 +595,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -622,7 +604,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -632,7 +613,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -648,7 +628,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -657,7 +636,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -667,7 +645,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -677,7 +654,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -689,7 +665,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -698,7 +673,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -708,7 +682,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -718,7 +691,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -730,7 +702,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -739,7 +710,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -749,7 +719,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -759,7 +728,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -771,7 +739,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -780,7 +747,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -790,7 +756,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -800,7 +765,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -812,7 +776,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -821,7 +784,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -831,7 +793,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -841,7 +802,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -856,7 +816,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -865,7 +824,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -875,7 +833,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -885,7 +842,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -897,7 +853,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -906,7 +861,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -916,7 +870,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -926,7 +879,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -938,7 +890,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -947,7 +898,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -957,7 +907,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -967,7 +916,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -983,7 +931,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -992,7 +939,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1002,7 +948,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1012,7 +957,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1024,7 +968,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1033,7 +976,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1043,7 +985,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1053,7 +994,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1065,7 +1005,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1074,7 +1013,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1084,7 +1022,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1094,7 +1031,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1106,7 +1042,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1115,7 +1050,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1125,7 +1059,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1135,7 +1068,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1157,7 +1089,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1166,7 +1097,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1176,7 +1106,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1186,7 +1115,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1210,7 +1138,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1219,7 +1146,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1229,7 +1155,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1239,7 +1164,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1251,7 +1175,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1260,7 +1183,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1270,7 +1192,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1280,7 +1201,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1292,7 +1212,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1301,7 +1220,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1311,7 +1229,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1321,7 +1238,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1350,7 +1266,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1359,7 +1274,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1369,7 +1283,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1379,7 +1292,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1394,7 +1306,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1403,7 +1314,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1413,7 +1323,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1423,7 +1332,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1435,7 +1343,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1444,7 +1351,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1454,7 +1360,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1464,7 +1369,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1476,7 +1380,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1485,7 +1388,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1495,7 +1397,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1505,7 +1406,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1517,7 +1417,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -1526,7 +1425,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1536,7 +1434,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
@@ -1546,7 +1443,6 @@
 						Name="VCCLCompilerTool"
 						Optimization="1"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"/>
 				</FileConfiguration>
 			</File>
@@ -1587,7 +1483,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1596,7 +1491,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1606,7 +1500,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1616,7 +1509,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1634,7 +1526,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1643,7 +1534,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1653,7 +1543,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1663,7 +1552,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1678,7 +1566,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1687,7 +1574,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1697,7 +1583,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1707,7 +1592,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1722,7 +1606,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1731,7 +1614,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1741,7 +1623,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1751,7 +1632,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1763,7 +1643,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1772,7 +1651,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1782,7 +1660,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1792,7 +1669,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1804,7 +1680,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1813,7 +1688,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1823,7 +1697,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1833,7 +1706,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1845,7 +1717,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1854,7 +1725,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1864,7 +1734,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1874,7 +1743,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1889,7 +1757,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1898,7 +1765,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1908,7 +1774,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1918,7 +1783,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1930,7 +1794,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -1939,7 +1802,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1949,7 +1811,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1959,7 +1820,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -1974,7 +1834,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					UsePrecompiledHeader="1"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -1984,7 +1843,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"
 					BrowseInformation="1"/>
@@ -1995,7 +1853,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					UsePrecompiledHeader="1"
 					BrowseInformation="1"/>
@@ -2006,7 +1863,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					UsePrecompiledHeader="1"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2019,7 +1875,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -2028,7 +1883,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2038,7 +1892,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2048,7 +1901,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -2060,7 +1912,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -2069,7 +1920,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2079,7 +1929,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2089,7 +1938,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
@@ -2101,7 +1949,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -2110,7 +1957,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2120,7 +1966,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="0"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BasicRuntimeChecks="3"
 					BrowseInformation="1"/>
 			</FileConfiguration>
@@ -2130,7 +1975,6 @@
 					Name="VCCLCompilerTool"
 					Optimization="1"
 					AdditionalIncludeDirectories=""
-					PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;icqoscar8_EXPORTS;$(NoInherit)"
 					BrowseInformation="1"/>
 			</FileConfiguration>
 		</File>
