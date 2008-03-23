@@ -247,6 +247,7 @@ static void sttSavePicture2disk(filetransfer* ft)
 		else
 		{
 			sttPictureTransferFailed(ft);
+			_close(fileId);
 			return;
 		}
 		_close(fileId);
