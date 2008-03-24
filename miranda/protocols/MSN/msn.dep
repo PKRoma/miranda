@@ -27,6 +27,7 @@
 	"..\..\include\m_protomod.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_system_cpp.h"\
 	"..\..\include\m_userinfo.h"\
@@ -44,19 +45,118 @@
 
 .\msn_auth.cpp : \
 	".\des.h"\
+	".\ezxml.h"\
 	
 
 .\msn_chat.cpp : \
 	"..\..\include\m_history.h"\
+	".\ezxml.h"\
 	
 
-.\msn_misc.cpp : \
-	".\version.h"\
+.\msn_commands.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_contact.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_errors.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_ftold.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_http.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_libstr.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_links.cpp : \
+	"..\..\include\m_addcontact.h"\
+	".\ezxml.h"\
+	".\sdk\m_assocmgr.h"\
+	
+
+.\msn_lists.cpp : \
+	".\ezxml.h"\
+	".\sdk\m_smileyadd.h"\
+	
+
+.\msn_mail.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_mime.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_msgqueue.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_msgsplit.cpp : \
+	".\ezxml.h"\
 	
 
 .\msn_natdetect.cpp : \
+	".\ezxml.h"\
 	".\sdk\icftypes.h"\
 	".\sdk\netfw.h"\
+	
+
+.\msn_p2p.cpp : \
+	".\ezxml.h"\
+	".\sdk\m_smileyadd.h"\
+	
+
+.\msn_p2ps.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_soapab.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_soapstore.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_srv.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_ssl.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_std.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_svcs.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_switchboard.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_threads.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_useropts.cpp : \
+	".\ezxml.h"\
+	
+
+.\msn_ws.cpp : \
+	".\ezxml.h"\
 	
 
 .\resource.rc : \
