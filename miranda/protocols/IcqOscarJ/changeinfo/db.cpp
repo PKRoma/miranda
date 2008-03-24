@@ -50,10 +50,6 @@ void CIcqProto::LoadSettingsFromDb(int keepChanged)
 
 		DBVARIANT dbv;
 		if (!getSetting(NULL,setting[i].szDbSetting,&dbv)) {
-#ifdef _DEBUG
-			if(dbv.type!=setting[i].dbType)
-				MessageBoxA(NULL,"That's not supposed to happen","Huh?",MB_OK);
-#endif
 			switch(dbv.type) {
 			case DBVT_ASCIIZ:
 				setting[i].value=(LPARAM)getStringUtf(NULL,setting[i].szDbSetting, NULL);

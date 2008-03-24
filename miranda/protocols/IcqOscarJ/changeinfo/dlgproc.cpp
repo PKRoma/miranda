@@ -172,7 +172,6 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
 		hwndList = GetDlgItem(hwndDlg,IDC_LIST);
-		ppro->LoadSettingsFromDb(0);
 		ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT);
 		iEditItem = -1;
 		{
@@ -206,14 +205,6 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				ListView_InsertItem(hwndList, &lvi);
 			}
 		}
-		{
-			char *pwd = ppro->GetUserPassword(TRUE);
-
-			if (pwd) 
-				strcpy(Password, pwd);
-			else
-				strcpy(Password, "");
-		}
 
 		SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
 		return TRUE;
@@ -222,6 +213,16 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		switch (((LPNMHDR)lParam)->idFrom) {
 		case 0:
 			switch (((LPNMHDR)lParam)->code) {
+			case PSN_PARAMCHANGED:
+				ppro = ( CIcqProto* )(( PSHNOTIFY* )lParam )->lParam;
+				SetWindowLong(hwndDlg, GWL_USERDATA, LPARAM(ppro));
+				ppro->LoadSettingsFromDb(0);
+				{
+					char *pwd = ppro->GetUserPassword(TRUE);
+					strcpy(Password, (pwd) ? pwd : "" );
+				}
+				break;
+
 			case PSN_INFOCHANGED:
 				ppro->LoadSettingsFromDb(1);
 				break;

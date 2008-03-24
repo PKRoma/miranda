@@ -1468,7 +1468,7 @@ void CIcqProto::handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	int nNickLen;
 	char* szBlob;
 	char* pCurBlob;
-	DBVARIANT dbv;
+	DBVARIANT dbv = { 0 };
 	int bAdded;
 
 	if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;

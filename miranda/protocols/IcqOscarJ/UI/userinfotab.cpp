@@ -305,12 +305,16 @@ int CIcqProto::OnUserInfoInit(WPARAM wParam, LPARAM lParam)
 	odp.dwInitParam = LPARAM(this);
 	odp.pfnDlgProc = IcqDlgProc;
 	odp.position = -1900000000;
-	odp.ptszTitle = LPGENT("Account");
+	odp.ptszTitle = m_tszUserName;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_ICQ);
 	CallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	if (!lParam)
 	{
+		TCHAR buf[200];
+		mir_sntprintf( buf, SIZEOF(buf), _T("%s Details"), m_tszUserName );
+		odp.ptszTitle = buf;
+
 		odp.position = -1899999999;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO_CHANGEINFO);
 		odp.pfnDlgProc = ChangeInfoDlgProc;
