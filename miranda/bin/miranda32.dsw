@@ -54,6 +54,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "JABBER_XSTATUS"=..\protocols\JabberG\jabber_xstatus\JABBER_XSTATUS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "Yahoo"=..\protocols\Yahoo\Yahoo.dsp - Package Owner=<4>
 
 Package=<5>
@@ -320,4 +332,5 @@ Package=<3>
 }}}
 
 ###############################################################################
+
 
