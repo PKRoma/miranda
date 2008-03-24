@@ -1738,7 +1738,7 @@ int CIcqProto::getCListGroupHandle(const char *szGroup)
 
   if (strrchr(szGroup, '\\'))
   { // create parent group
-    char *szSeparator = strrchr(szGroup, '\\');
+    char *szSeparator = (char*)strrchr(szGroup, '\\');
 
     *szSeparator = '\0';
     hParentGroup = getCListGroupHandle(szGroup);
@@ -2269,7 +2269,7 @@ int CIcqProto::servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD w
   }
   
   // obtain a correct groupid first
-  servlistCreateGroup(ack->szGroup, lParam, servlistAddContact_gotGroup);
+  servlistCreateGroup(ack->szGroup, lParam, &CIcqProto::servlistAddContact_gotGroup);
 
   return CALLBACK_RESULT_POSTPONE;
 }
@@ -2700,7 +2700,7 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
   // store new group name for future use
   ack->szGroupName = szNewGroupName;
   // call thru pending operations - makes sure the group is ready for rename
-  servlistPendingAddGroup(szGroup, wGroupId, (LPARAM)ack, servlistRenameGroup_Ready, TRUE);
+  servlistPendingAddGroup(szGroup, wGroupId, (LPARAM)ack, &CIcqProto::servlistRenameGroup_Ready, TRUE);
 }
 
 
