@@ -46,17 +46,22 @@ void CIcqProto::CreateResidentSetting(const char* szSetting)
 	CallService(MS_DB_SETSETTINGRESIDENT, 1, (WPARAM)pszSetting);
 }
 
-BYTE CIcqProto::getByte(HANDLE hContact, const char* szSetting, BYTE bDef)
+int CIcqProto::getSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+{
+  return DBGetContactSettingW(hContact, m_szModuleName, szSetting, dbv);
+}
+
+BYTE CIcqProto::getSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef)
 {
   return DBGetContactSettingByte(hContact, m_szModuleName, szSetting, bDef);
 }
 
-WORD CIcqProto::getWord(HANDLE hContact, const char* szSetting, WORD wDef)
+WORD CIcqProto::getSettingWord(HANDLE hContact, const char* szSetting, WORD wDef)
 {
   return DBGetContactSettingWord(hContact, m_szModuleName, szSetting, wDef);
 }
 
-DWORD CIcqProto::getDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
+DWORD CIcqProto::getSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
@@ -77,12 +82,12 @@ DWORD CIcqProto::getDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 	return dwRes;
 }
 
-DWORD CIcqProto::getUin(HANDLE hContact)
+DWORD CIcqProto::getContactUin(HANDLE hContact)
 {
-	return getDword(hContact, UNIQUEIDSETTING, 0);
+	return getSettingDword(hContact, UNIQUEIDSETTING, 0);
 }
 
-int CIcqProto::getUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
+int CIcqProto::getContactUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 {
 	DBVARIANT dbv;
 	int iRes = 1;
@@ -112,17 +117,12 @@ int CIcqProto::getUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid)
 	return iRes;
 }
 
-int CIcqProto::getSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
-{
-   return DBGetContactSettingW(hContact, m_szModuleName, szSetting, dbv);
-}
-
-int CIcqProto::getString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
+int CIcqProto::getSettingString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv)
 {
 	return DBGetContactSettingString(hContact, m_szModuleName, szSetting, dbv);
 }
 
-char* CIcqProto::getStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef)
+char* CIcqProto::getSettingStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef)
 {
 	DBVARIANT dbv = {DBVT_DELETED};
 	if (DBGetContactSettingUTF8String(hContact, szModule, szSetting, &dbv))
@@ -133,17 +133,17 @@ char* CIcqProto::getStringUtf(HANDLE hContact, const char *szModule, const char 
 	return szRes;
 }
 
-char* CIcqProto::getStringUtf(HANDLE hContact, const char *szSetting, char *szDef)
+char* CIcqProto::getSettingStringUtf(HANDLE hContact, const char *szSetting, char *szDef)
 {
-	return getStringUtf(hContact, m_szModuleName, szSetting, szDef);
+	return getSettingStringUtf(hContact, m_szModuleName, szSetting, szDef);
 }
 
 WORD CIcqProto::getContactStatus(HANDLE hContact)
 {
-  return getWord(hContact, "Status", ID_STATUS_OFFLINE);
+  return getSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 }
 
-int CIcqProto::getStringStatic(HANDLE hContact, const char* valueName, char* dest, int dest_len)
+int CIcqProto::getSettingStringStatic(HANDLE hContact, const char* valueName, char* dest, int dest_len)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING sVal;
@@ -166,45 +166,45 @@ int CIcqProto::getStringStatic(HANDLE hContact, const char* valueName, char* des
 			return 1; // this is here due to DB module bug...
 	}
 
-	return (dbv.type != DBVT_ASCIIZ);
+	return (dbv.type != DBVT_ASCIIZ); /// FIXME:
 }
 
-int CIcqProto::DeleteSetting(HANDLE hContact, const char* szSetting)
+int CIcqProto::deleteSetting(HANDLE hContact, const char* szSetting)
 {
   return DBDeleteContactSetting(hContact, m_szModuleName, szSetting);
 }
 
-int CIcqProto::setByte(HANDLE hContact, const char* szSetting, BYTE bValue)
+int CIcqProto::setSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue)
 {
 	return DBWriteContactSettingByte(hContact, m_szModuleName, szSetting, bValue);
 }
 
-int CIcqProto::setWord(HANDLE hContact, const char* szSetting, WORD wValue)
+int CIcqProto::setSettingWord(HANDLE hContact, const char* szSetting, WORD wValue)
 {
 	return DBWriteContactSettingWord(hContact, m_szModuleName, szSetting, wValue);
 }
 
-int CIcqProto::setDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
+int CIcqProto::setSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
 {
 	return DBWriteContactSettingDword(hContact, m_szModuleName, szSetting, dwValue);
 }
 
-int CIcqProto::setString(HANDLE hContact, const char* szSetting, const char* szValue)
+int CIcqProto::setSettingString(HANDLE hContact, const char* szSetting, const char* szValue)
 {
 	return DBWriteContactSettingString(hContact, m_szModuleName, szSetting, szValue);
 }
 
-int CIcqProto::setStringUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue)
+int CIcqProto::setSettingStringUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue)
 {
 	return DBWriteContactSettingUTF8String(hContact, szModule, szSetting, (char*)szValue);
 }
 
-int CIcqProto::setStringUtf(HANDLE hContact, const char* szSetting, const char* szValue)
+int CIcqProto::setSettingStringUtf(HANDLE hContact, const char* szSetting, const char* szValue)
 {
-	return setStringUtf(hContact, m_szModuleName, szSetting, szValue);
+	return setSettingStringUtf(hContact, m_szModuleName, szSetting, szValue);
 }
 
-int CIcqProto::setBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal)
+int CIcqProto::setSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal)
 {
 	DBCONTACTWRITESETTING cws;
 
@@ -215,6 +215,17 @@ int CIcqProto::setBlob(HANDLE hContact, const char *szSetting, const BYTE *val, 
 	cws.value.cpbVal = cbVal;
 	return CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&cws);
 }
+
+int CIcqProto::setContactHidden(HANDLE hContact, BYTE bHidden)
+{
+  int nResult = DBWriteContactSettingByte(hContact, "CList", "Hidden", bHidden);
+
+	if (!bHidden) // clear zero setting
+		DBDeleteContactSetting(hContact, "CList", "Hidden");
+
+  return nResult;
+}
+
 
 int __fastcall ICQFreeVariant(DBVARIANT* dbv)
 {
@@ -269,9 +280,9 @@ HANDLE CIcqProto::FindNextContact(HANDLE hContact)
 	return hContact;
 }
 
-char* CIcqProto::GetContactCListGroup(HANDLE hContact)
+char* CIcqProto::getContactCListGroup(HANDLE hContact)
 {
-	return getStringUtf(hContact, "CList", "Group", NULL);
+	return getSettingStringUtf(hContact, "CList", "Group", NULL);
 }
 
 int __stdcall ICQSetContactCListGroup(HANDLE hContact, const unsigned char *szGroup)

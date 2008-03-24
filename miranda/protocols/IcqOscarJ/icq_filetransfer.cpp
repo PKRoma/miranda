@@ -76,7 +76,7 @@ static void file_sendNick(CIcqProto* ppro, directconnect* dc)
 
 
 	dbv.type = DBVT_DELETED;
-	if (ppro->getString(NULL, "Nick", &dbv))
+	if (ppro->getSettingString(NULL, "Nick", &dbv))
 		szNick = "";
 	else
 		szNick = dbv.pszVal;

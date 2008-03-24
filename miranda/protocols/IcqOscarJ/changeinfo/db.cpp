@@ -52,7 +52,7 @@ void CIcqProto::LoadSettingsFromDb(int keepChanged)
 		if (!getSetting(NULL,setting[i].szDbSetting,&dbv)) {
 			switch(dbv.type) {
 			case DBVT_ASCIIZ:
-				setting[i].value=(LPARAM)getStringUtf(NULL,setting[i].szDbSetting, NULL);
+				setting[i].value=(LPARAM)getSettingStringUtf(NULL,setting[i].szDbSetting, NULL);
 				break;
 			case DBVT_UTF8:
 				setting[i].value=(LPARAM)null_strdup(dbv.pszVal);
@@ -161,7 +161,7 @@ int CIcqProto::SaveSettingsToDb(HWND hwndDlg)
 	for( i=0; i < settingCount; i++ ) {
 		if(!setting[i].changed) continue;
 		if(!(setting[i].displayType & LIF_ZEROISVALID) && setting[i].value==0) {
-			DeleteSetting(NULL,setting[i].szDbSetting);
+			deleteSetting(NULL,setting[i].szDbSetting);
 			continue;
 		}
 		switch(setting[i].dbType) {
@@ -183,16 +183,16 @@ int CIcqProto::SaveSettingsToDb(HWND hwndDlg)
 			}
 			else {
 				if(*(char*)setting[i].value)
-					setStringUtf(NULL,setting[i].szDbSetting,(char*)setting[i].value);
+					setSettingStringUtf(NULL,setting[i].szDbSetting,(char*)setting[i].value);
 				else
-					DeleteSetting(NULL,setting[i].szDbSetting);
+					deleteSetting(NULL,setting[i].szDbSetting);
 			}
 			break;
 		case DBVT_WORD:
-			setWord(NULL,setting[i].szDbSetting,(WORD)setting[i].value);
+			setSettingWord(NULL,setting[i].szDbSetting,(WORD)setting[i].value);
 			break;
 		case DBVT_BYTE:
-			setByte(NULL,setting[i].szDbSetting,(BYTE)setting[i].value);
+			setSettingByte(NULL,setting[i].szDbSetting,(BYTE)setting[i].value);
 			break;
 		}
 	}

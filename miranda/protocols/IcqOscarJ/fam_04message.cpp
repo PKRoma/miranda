@@ -206,7 +206,7 @@ void CIcqProto::handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DW
 
 char* CIcqProto::convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg)
 {
-	WORD wCP = getWord(hContact, "CodePage", m_wAnsiCodepage);
+	WORD wCP = getSettingWord(hContact, "CodePage", m_wAnsiCodepage);
 	char *usMsg = NULL;
 
 	if (wCP != CP_ACP)
@@ -334,7 +334,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 						{ // make the resulting message utf-8 encoded - need to append utf-8 encoded part
 							if (szMsg)
 							{ // not necessary to convert - appending first part, only set flags
-								char *szUtfMsg = ansi_to_utf8_codepage(szMsg, getWord(hContact, "CodePage", m_wAnsiCodepage));
+								char *szUtfMsg = ansi_to_utf8_codepage(szMsg, getSettingWord(hContact, "CodePage", m_wAnsiCodepage));
 
 								SAFE_FREE((void**)&szMsg);
 								szMsg = (char*)szUtfMsg;
@@ -343,7 +343,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 						}
 						if (!bMsgPartUnicode && pre.flags == PREF_UTF)
 						{ // convert message part to utf-8 and append
-							char *szUtfPart = ansi_to_utf8_codepage((char*)szMsgPart, getWord(hContact, "CodePage", m_wAnsiCodepage));
+							char *szUtfPart = ansi_to_utf8_codepage((char*)szMsgPart, getSettingWord(hContact, "CodePage", m_wAnsiCodepage));
 
 							SAFE_FREE((void**)&szMsgPart);
 							szMsgPart = szUtfPart;
@@ -413,7 +413,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 					NetLog_Server("Message (format 1) received");
 
 					// Save tick value
-					setDword(ccs.hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
+					setSettingDword(ccs.hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
 				}
 				else
 					NetLog_Server("Message (format %u) - Ignoring empty message", 1);
@@ -525,14 +525,14 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 			if (hContact != INVALID_HANDLE_VALUE)
 			{
 				if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
-					setDword(hContact, "RealIP", dwExternalIP);
+					setSettingDword(hContact, "RealIP", dwExternalIP);
 				if (dwIP = getDWordFromChain(chain, 0x04, 1))
-					setDword(hContact, "IP", dwIP);
+					setSettingDword(hContact, "IP", dwIP);
 				if (wPort = getWordFromChain(chain, 0x05, 1))
-					setWord(hContact, "UserPort", wPort);
+					setSettingWord(hContact, "UserPort", wPort);
 
 				// Save tick value
-				setDword(hContact, "TickTS", time(NULL) - (dwID1/1000));
+				setSettingDword(hContact, "TickTS", time(NULL) - (dwID1/1000));
 			}
 
 			// Parse the next message level
@@ -600,10 +600,10 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 							unpackLEDWord(&buf, &dwPort);
 						unpackLEWord(&buf, &wVersion);
 
-						setDword(hContact, "IP", dwIp);
-						setWord(hContact,  "UserPort", (WORD)dwPort);
-						setByte(hContact,  "DCType", bMode);
-						setWord(hContact,  "Version", wVersion);
+						setSettingDword(hContact, "IP", dwIp);
+						setSettingWord(hContact,  "UserPort", (WORD)dwPort);
+						setSettingByte(hContact,  "DCType", bMode);
+						setSettingWord(hContact,  "Version", wVersion);
 						if (wVersion>6)
 						{
 							reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
@@ -689,7 +689,7 @@ void CIcqProto::parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dw
 		wLen -= 2;
 
 		if (hContact != INVALID_HANDLE_VALUE)
-			setWord(hContact, "Version", wVersion);
+			setSettingWord(hContact, "Version", wVersion);
 
 		unpackDWord(&pDataBuf, &dwGuid1); // plugin type GUID
 		unpackDWord(&pDataBuf, &dwGuid2);
@@ -2410,7 +2410,7 @@ void CIcqProto::handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags
 				}
 				NetLog_Server("Reverse Connect request failed");
 				// Set DC status to failed
-				setByte(hContact, "DCStatus", 2);
+				setSettingByte(hContact, "DCStatus", 2);
 			}
 			break;
 
@@ -2448,7 +2448,7 @@ void CIcqProto::handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlag
 		DWORD dwUin;
 		uid_str szUid;
 
-		getUid(hContact, &dwUin, &szUid);
+		getContactUid(hContact, &dwUin, &szUid);
 
 		// Error code
 		unpackWord(&buf, &wError);
@@ -2487,7 +2487,7 @@ void CIcqProto::handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlag
 					break;
 				}
 				// TODO: this needs better solution
-				setWord(hContact, "Status", ID_STATUS_OFFLINE);
+				setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 			}
 			pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
 			break;
@@ -2855,7 +2855,7 @@ void CIcqProto::sendTypingNotification(HANDLE hContact, WORD wMTNCode)
 
 	DWORD dwUin;
 	uid_str szUID;
-	if (getUid(hContact, &dwUin, &szUID))
+	if (getContactUid(hContact, &dwUin, &szUID))
 		return; // Invalid contact
 
 	BYTE byUinlen = getUIDLen(dwUin, szUID);

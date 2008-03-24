@@ -113,8 +113,8 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 			servlistcookie* ack;
 			DWORD dwCookie;
 
-			dwLastUpdate = getDword(NULL, "SrvLastUpdate", 0);
-			wRecordCount = getWord(NULL, "SrvRecordCount", 0);
+			dwLastUpdate = getSettingDword(NULL, "SrvLastUpdate", 0);
+			wRecordCount = getSettingWord(NULL, "SrvRecordCount", 0);
 
 			// CLI_REQLISTS - we want to use SSI
 #ifdef _DEBUG
@@ -302,14 +302,14 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 
 				// Save external IP
 				dwValue = getDWordFromChain(chain, 10, 1); 
-				setDword(NULL, "IP", dwValue);
+				setSettingDword(NULL, "IP", dwValue);
 
 				// Save member since timestamp
 				dwValue = getDWordFromChain(chain, 5, 1); 
-				if (dwValue) setDword(NULL, "MemberTS", dwValue);
+				if (dwValue) setSettingDword(NULL, "MemberTS", dwValue);
 
 				dwValue = getDWordFromChain(chain, 3, 1);
-				setDword(NULL, "LogonTS", dwValue ? dwValue : time(NULL));
+				setSettingDword(NULL, "LogonTS", dwValue ? dwValue : time(NULL));
 
 				disposeChain(&chain);
 
@@ -450,7 +450,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 			{
 				if (!info->bMyAvatarInited) // signal the server after login
 				{ // this refreshes avatar state - it used to work automatically, but now it does not
-					if (getByte(NULL, "ForceOurAvatar", 0))
+					if (getSettingByte(NULL, "ForceOurAvatar", 0))
 					{ // keep our avatar
 						char* file = loadMyAvatarFileName();
 
@@ -476,7 +476,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 						char* file;
 						BYTE* hash;
 
-						setBlob(NULL, "AvatarHash", pBuffer, 0x14);
+						setSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
 
 						setUserInfo();
 						// here we need to find a file, check its hash, if invalid get avatar from server
@@ -504,7 +504,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 							} // check if we had set any avatar if yes set our, if not download from server
 							else if (memcmp(hash, pBuffer+4, 0x10))
 							{ // we have different avatar, sync that
-								if (getByte(NULL, "ForceOurAvatar", 1))
+								if (getSettingByte(NULL, "ForceOurAvatar", 1))
 								{ // we want our avatar, update hash
 									DWORD dwPaFormat = DetectAvatarFormat(file);
 									BYTE* pHash = (BYTE*)_alloca(0x14);
@@ -698,7 +698,7 @@ char* CIcqProto::buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 
 	while (hContact != NULL)
 	{
-		if (!getUid(hContact, &dwUIN, &szUID))
+		if (!getContactUid(hContact, &dwUIN, &szUID))
 		{
 			szLen[0] = strlennull(strUID(dwUIN, szUID));
 
@@ -706,18 +706,18 @@ char* CIcqProto::buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 			{
 
 			case BUL_VISIBLE:
-				add = ID_STATUS_ONLINE == getWord(hContact, "ApparentMode", 0);
+				add = ID_STATUS_ONLINE == getSettingWord(hContact, "ApparentMode", 0);
 				break;
 
 			case BUL_INVISIBLE:
-				add = ID_STATUS_OFFLINE == getWord(hContact, "ApparentMode", 0);
+				add = ID_STATUS_OFFLINE == getSettingWord(hContact, "ApparentMode", 0);
 				break;
 
 			case BUL_TEMPVISIBLE:
-				add = getByte(hContact, "TemporaryVisible", 0);
+				add = getSettingByte(hContact, "TemporaryVisible", 0);
 				// clear temporary flag
 				// Here we assume that all temporary contacts will be in one packet
-				setByte(hContact, "TemporaryVisible", 0);
+				setSettingByte(hContact, "TemporaryVisible", 0);
 				break;
 
 			default:
@@ -726,8 +726,8 @@ char* CIcqProto::buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 				// If we are in SS mode, we only add those contacts that are
 				// not in our SS list, or are awaiting authorization, to our
 				// client side list
-				if (m_bSsiEnabled && getWord(hContact, "ServerId", 0) &&
-					!getByte(hContact, "Auth", 0))
+				if (m_bSsiEnabled && getSettingWord(hContact, "ServerId", 0) &&
+					!getSettingByte(hContact, "Auth", 0))
 					add = 0;
 
 				// Never add hidden contacts to CS list
@@ -802,7 +802,7 @@ void CIcqProto::setUserInfo()
 { 
 	icq_packet packet;
 	WORD wAdditionalData = 0;
-	BYTE bXStatus = ICQGetContactXStatus(NULL);
+	BYTE bXStatus = getContactXStatus(NULL);
 
 	if (m_bAimEnabled)
 		wAdditionalData += 16;
@@ -944,7 +944,7 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 	{
 		WORD wStatus;
 		DWORD dwDirectCookie = rand() ^ (rand() << 16);
-		BYTE bXStatus = ICQGetContactXStatus(NULL);
+		BYTE bXStatus = getContactXStatus(NULL);
 		char szMoodId[32];
 		WORD cbMoodId = 0;
 		WORD cbMoodData = 0;
@@ -966,7 +966,7 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 		packWord(&packet, wStatus);                 // Status
 		packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
 		packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
-		packDWord(&packet, getDword(NULL, "RealIP", 0));
+		packDWord(&packet, getSettingDword(NULL, "RealIP", 0));
 		packDWord(&packet, nPort);
 		packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
 		packWord(&packet, ICQ_VERSION);
@@ -1081,9 +1081,9 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 	{
 		char **szMsg = MirandaStatusToAwayMsg(m_iStatus);
 
-		EnterCriticalSection(&modeMsgsMutex);
+		EnterCriticalSection(&m_modeMsgsMutex);
 		if (szMsg)
 			icq_sendSetAimAwayMsgServ(*szMsg);
-		LeaveCriticalSection(&modeMsgsMutex);
+		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }

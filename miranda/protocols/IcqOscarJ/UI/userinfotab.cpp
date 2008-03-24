@@ -126,12 +126,12 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 			{
 				char *pXName;
 				char *pszStatus;
-				BYTE bXStatus = ppro->ICQGetContactXStatus(hContact);
+				BYTE bXStatus = ppro->getContactXStatus(hContact);
 
 				pszStatus = MirandaStatusToStringUtf(dbv.wVal);
 				if (bXStatus)
 				{
-					pXName = ppro->getStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+					pXName = ppro->getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
 					if (!strlennull(pXName))
 					{ // give default name
 						pXName = ICQTranslateUtf(nameXStatus[bXStatus-1]);
@@ -183,7 +183,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 			unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
 			if (!unspecified && pstr != szSetting)
 			{
-				pstr = ppro->getStringUtf(hContact, szModule, szSetting, NULL);
+				pstr = ppro->getSettingStringUtf(hContact, szModule, szSetting, NULL);
 				bUtf = 1;
 				bAlloc = 1;
 			}
@@ -256,8 +256,8 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						SetValue(ppro, hwndDlg, IDC_PORT, hContact, szProto, "UserPort", SVS_ZEROISUNSPEC);
 						SetValue(ppro, hwndDlg, IDC_VERSION, hContact, szProto, "Version", SVS_ICQVERSION);
 						SetValue(ppro, hwndDlg, IDC_MIRVER, hContact, szProto, "MirVer", SVS_ZEROISUNSPEC);
-						if (ppro->getByte(hContact, "ClientID", 0))
-							ppro->setDword(hContact, "TickTS", 0);
+						if (ppro->getSettingByte(hContact, "ClientID", 0))
+							ppro->setSettingDword(hContact, "TickTS", 0);
 						SetValue(ppro, hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "TickTS", SVS_TIMESTAMP);
 						SetValue(ppro, hwndDlg, IDC_STATUS, hContact, szProto, "Status", SVS_STATUSID);
 					}

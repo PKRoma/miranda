@@ -49,7 +49,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-			DWORD dwUin = ppro->getUin(NULL);
+			DWORD dwUin = ppro->getContactUin(NULL);
 
 			char pszUIN[MAX_PATH], str[MAX_PATH];
 			null_snprintf(pszUIN, 128, ICQTranslateUtfStatic(LPGEN("Enter a password for UIN %u:"), str, MAX_PATH), dwUin);
@@ -57,7 +57,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			SendDlgItemMessage(hwndDlg, IDC_LOGINPW, EM_LIMITTEXT, 10, 0);
 
-			CheckDlgButton(hwndDlg, IDC_SAVEPASS, ppro->getByte(NULL, "RememberPass", 0));
+			CheckDlgButton(hwndDlg, IDC_SAVEPASS, ppro->getSettingByte(NULL, "RememberPass", 0));
 		}
 		break;
 
@@ -71,7 +71,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			switch (LOWORD(wParam)) {
 			case IDOK:
 				ppro->m_bRememberPwd = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SAVEPASS);
-				ppro->setByte(NULL, "RememberPass", ppro->m_bRememberPwd);
+				ppro->setSettingByte(NULL, "RememberPass", ppro->m_bRememberPwd);
 
 				GetDlgItemTextA(hwndDlg, IDC_LOGINPW, ppro->m_szPassword, sizeof(ppro->m_szPassword));
 

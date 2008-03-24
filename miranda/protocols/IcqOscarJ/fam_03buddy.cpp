@@ -421,40 +421,40 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 	{
 		if (!szClient) szClient = ICQTranslateUtfStatic(LPGEN("Unknown"), szStrBuf, MAX_PATH); // if no detection, set uknown
 
-		setDword(hContact, "LogonTS",      dwOnlineSince);
+		setSettingDword(hContact, "LogonTS",      dwOnlineSince);
 		if (dwMemberSince)
-			setDword(hContact, "MemberTS",     dwMemberSince);
+			setSettingDword(hContact, "MemberTS",     dwMemberSince);
 		if (dwUIN)
 		{ // on AIM these are not used
-			setDword(hContact, "DirectCookie", dwDirectConnCookie);
-			setByte(hContact,  "DCType",       (BYTE)nTCPFlag);
-			setWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
-			setWord(hContact,  "Version",      wVersion);
+			setSettingDword(hContact, "DirectCookie", dwDirectConnCookie);
+			setSettingByte(hContact,  "DCType",       (BYTE)nTCPFlag);
+			setSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
+			setSettingWord(hContact,  "Version",      wVersion);
 		}
 		if (szClient != (char*)-1)
 		{
-			setStringUtf(hContact,   "MirVer",       szClient);
-			setByte(hContact,  "ClientID",     bClientId);
-			setDword(hContact, "IP",           dwIP);
-			setDword(hContact, "RealIP",       dwRealIP);
+			setSettingStringUtf(hContact, "MirVer",   szClient);
+			setSettingByte(hContact,  "ClientID",     bClientId);
+			setSettingDword(hContact, "IP",           dwIP);
+			setSettingDword(hContact, "RealIP",       dwRealIP);
 		}
 		else
 		{ // if not first notification only write significant information
 			if (dwIP)
-				setDword(hContact, "IP",         dwIP);
+				setSettingDword(hContact, "IP",         dwIP);
 			if (dwRealIP)
-				setDword(hContact, "RealIP",     dwRealIP);
+				setSettingDword(hContact, "RealIP",     dwRealIP);
 
 		}
-		setWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
-		setDword(hContact, "IdleTS", tIdleTS);
+		setSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
+		setSettingDword(hContact, "IdleTS", tIdleTS);
 
 		// Update info?
 		if (dwUIN)
 		{
-			DWORD dwUpdateThreshold = getByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
+			DWORD dwUpdateThreshold = getSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
-			if ((time(NULL) - getDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
+			if ((time(NULL) - getSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
 				icq_QueueUser(hContact);
 		}
 	}
@@ -465,11 +465,11 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
 	if (szClient == cliSpamBot)
 	{
-		if (getByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+		if (getSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 		{ // kill spammer
 			icq_DequeueUser(dwUIN);
 			AddToSpammerList(dwUIN);
-			if (getByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+			if (getSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
 				ShowPopUpMsg(hContact, LPGEN("Spambot Detected"), LPGEN("Contact deleted & further events blocked."), POPTYPE_SPAM);
 			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
@@ -523,12 +523,12 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 		{
 			NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
 
-			setWord(hContact, "Status", ID_STATUS_OFFLINE);
-			setDword(hContact, "IdleTS", 0);
+			setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+			setSettingDword(hContact, "IdleTS", 0);
 			// close Direct Connections to that user
 			CloseContactDirectConns(hContact);
 			// Reset DC status
-			setByte(hContact, "DCStatus", 0);
+			setSettingByte(hContact, "DCStatus", 0);
 			// clear Xtraz status
 			handleXStatusCaps(hContact, NULL, 0, NULL, 0);
 		}

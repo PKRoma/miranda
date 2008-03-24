@@ -467,7 +467,7 @@ static void RatesTimer2(CIcqProto* ppro)
 		ppro->NetLog_Server("Rates: Resuming message response.");
 		if (item->bType == RIT_AWAYMSG_RESPONSE)
 		{
-			ppro->icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->wVersion, item->msgType, MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
+			ppro->icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->wVersion, item->msgType, ppro->MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
 		}
 		else if (item->bType == RIT_XSTATUS_RESPONSE)
 		{

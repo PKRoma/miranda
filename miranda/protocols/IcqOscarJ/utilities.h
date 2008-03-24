@@ -57,7 +57,6 @@ WORD MirandaStatusToIcq(int nStatus);
 int MirandaStatusToSupported(int nMirandaStatus);
 char *MirandaStatusToString(int);
 char *MirandaStatusToStringUtf(int);
-char **MirandaStatusToAwayMsg(int nStatus);
 
 int AwayMsgTypeToStatus(int nMsgType);
 
@@ -68,7 +67,6 @@ void   FreeGatewayIndex(HANDLE hConn);
 char *NickFromHandle(HANDLE hContact);
 char *NickFromHandleUtf(HANDLE hContact);
 char *strUID(DWORD dwUIN, char *pszUID);
-void SetContactHidden(HANDLE hContact, BYTE bHidden);
 
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);

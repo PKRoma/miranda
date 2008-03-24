@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -42,19 +42,20 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 {
 	icq_packet packet;
 
+#ifdef _DEBUG
+  NetLog_Server("Received SRV_HELLO from %s", info->isLoginServer ? "login server" : "communication server");
+#endif
+
 	// isLoginServer is "1" if we just received SRV_HELLO
 	if (info->isLoginServer)
 	{
-#ifdef _DEBUG
-		NetLog_Server("Received SRV_HELLO from login server");
-#endif
 		if (m_bSecureLogin)
 		{
 			char szUin[UINMAXLEN];
 			WORD wUinLen;
 
 #ifdef _DEBUG
-			NetLog_Server("Sending %s to login server", "CLI_HELLO");
+			NetLog_Server("Sending %s to %s", "CLI_HELLO", "login server");
 #endif
 			packet.wLen = 12;
 			write_flap(&packet, ICQ_LOGIN_CHAN);
@@ -64,7 +65,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 
 			wUinLen = strlennull(strUID(m_dwLocalUIN, szUin));
 #ifdef _DEBUG
-			NetLog_Server("Sending %s to login server", "ICQ_SIGNON_AUTH_REQUEST");
+			NetLog_Server("Sending %s to %s", "ICQ_SIGNON_AUTH_REQUEST", "login server");
 #endif
 
 			serverPacketInit(&packet, (WORD)(14 + wUinLen));
@@ -76,7 +77,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 		{
 			sendClientAuth((char*)info->szAuthKey, info->wAuthKeyLen, FALSE);
 #ifdef _DEBUG
-			NetLog_Server("Sent CLI_IDENT to %s server", "login");
+			NetLog_Server("Sent CLI_IDENT to %s", "login server");
 #endif
 		}
 
@@ -97,7 +98,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 			sendServPacket(&packet);
 
 #ifdef _DEBUG
-			NetLog_Server("Sent CLI_IDENT to %s server", "communication");
+			NetLog_Server("Sent CLI_IDENT to %s", "communication server");
 #endif
 
 			SAFE_FREE((void**)&info->cookieData);
@@ -106,7 +107,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 		else
 		{
 			// We need a cookie to identify us to the communication server
-			NetLog_Server("Something went wrong...");
+      NetLog_Server("Error: Connected to %s without a cookie!", "communication server");
 		}
 	}
 }

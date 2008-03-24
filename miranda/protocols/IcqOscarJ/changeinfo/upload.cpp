@@ -55,7 +55,7 @@ int CIcqProto::StringToListItemId(const char *szSetting,int def)
 	list=(ListTypeDataItem*)setting[i].pList;
 	listCount=setting[i].listCount;
 
-	szValue = getStringUtf(NULL, szSetting, NULL);
+	szValue = getSettingStringUtf(NULL, szSetting, NULL);
 	if (!szValue)
 		return def;
 
@@ -94,7 +94,7 @@ int CIcqProto::UploadSettings(HWND hwndParent)
 			{
 				char szPwd[16] = {0};
 
-				if (!getStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
+				if (!getSettingStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
 				{ // password is stored in DB, update
 					char ptmp[16];
 
@@ -102,7 +102,7 @@ int CIcqProto::UploadSettings(HWND hwndParent)
 
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
 
-					setString(NULL, "Password", ptmp);
+					setSettingString(NULL, "Password", ptmp);
 				}
 			}
 			SAFE_FREE((void**)&buf);

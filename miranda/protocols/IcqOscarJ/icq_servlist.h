@@ -58,20 +58,21 @@
 #define SSA_ACTION_GROUP      0x80  // grouped action
 
 struct CIcqProto;
-typedef void (CIcqProto::*GROUPADDCALLBACK)(WORD wGroupId, LPARAM lParam);
+// callback prototypes for pending operation mechanism:
+typedef int (CIcqProto::*PENDING_GROUP_CALLBACK)(const char* pszGroup, WORD wGroupId, LPARAM lParam, int nResult);
+typedef int (CIcqProto::*PENDING_CONTACT_CALLBACK)(HANDLE hContact, WORD wContactId, WORD wGroupId, LPARAM lParam, int nResult);
 
 // cookie struct for SSI actions
 struct servlistcookie
 {
-	DWORD dwUin;
 	HANDLE hContact;
+  char *szGroup;
 	WORD wContactId;
 	WORD wGroupId;
 	char *szGroupName;
 	WORD wNewContactId;
 	WORD wNewGroupId;
 	int dwAction; 
-	GROUPADDCALLBACK ofCallback;
 	LPARAM lParam;
 	int dwGroupCount;
 	struct servlistcookie **pGroupItems;
@@ -80,5 +81,48 @@ struct servlistcookie
 // id type groups
 #define SSIT_ITEM 0
 #define SSIT_GROUP 1
+
+// pending operations
+#define PENDING_RESULT_SUCCESS  0x00
+#define PENDING_RESULT_INLINE   0x01
+#define PENDING_RESULT_FAILED   0x0F
+#define PENDING_RESULT_PURGE    0x10
+
+// serv-list update board
+#define SSOG_SINGLE           0x00010000
+#define SSOG_DOUBLE           0x00020000
+
+#define SSOF_CONTACT          0x00800000
+#define SSOF_BEGIN_OPERATION  0x00100000
+#define SSOF_END_OPERATION    0x00200000
+#define SSOF_IMPORT_OPERATION 0x00400000
+
+#define SSOP_ITEM_ACTION      0x01000000 | SSOG_SINGLE
+// SSA_PRIVACY_ADD
+// SSA_CONTACT_ADD
+// SSA_CONTACT_UPDATE
+// SSA_VISIBILITY
+// SSA_PRIVACY_REMOVE
+// SSA_CONTACT_REMOVE
+// SSA_SETAVATAR
+// SSA_REMOVEAVATAR
+#define SSOP_GROUP_ACTION     0x02000000 | SSOG_SINGLE
+// SSA_GROUP_ADD
+// SSA_GROUP_RENAME
+// SSA_GROUP_UPDATE
+// SSA_GROUP_REMOVE
+#define SSO_CONTACT_SETGROUP  0x04000000 | SSOG_DOUBLE
+// SSA_CONTACT_SET_GROUP
+#define SSO_CONTACT_FIXAUTH   0x06000000 | SSOG_DOUBLE
+// SSA_CONTACT_FIX_AUTH
+
+#define SSO_BEGIN_OPERATION   0x80000000
+#define SSO_END_OPERATION     0x40000000
+
+#define SSOF_SEND_DIRECTLY    0x10000000
+
+#define SSOF_ACTIONMASK       0x0000FFFF
+#define SSOF_GROUPINGMASK     0x0F0FFFFF
+
 
 #endif /* __ICQ_SERVLIST_H */

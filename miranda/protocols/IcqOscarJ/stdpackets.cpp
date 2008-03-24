@@ -115,8 +115,8 @@ static void packServTLV2711Header(icq_packet *packet, WORD wCookie, WORD wVersio
 
 static void packServDCInfo(icq_packet *p, CIcqProto* ppro, BOOL bEmpty)
 {
-	packTLVDWord(p, 0x03, bEmpty ? 0 : ppro->getDword(NULL, "RealIP", 0)); // TLV: 0x03 DWORD IP
-	packTLVWord(p, 0x05, (WORD)(bEmpty ? 0 : ppro->wListenPort));                           // TLV: 0x05 Listen port
+	packTLVDWord(p, 0x03, bEmpty ? 0 : ppro->getSettingDword(NULL, "RealIP", 0)); // TLV: 0x03 DWORD IP
+	packTLVWord(p, 0x05, (WORD)(bEmpty ? 0 : ppro->wListenPort));                 // TLV: 0x05 Listen port
 }
 
 static void packServChannel2Header(icq_packet *p, CIcqProto* ppro, DWORD dwUin, WORD wLen, DWORD dwID1, DWORD dwID2, DWORD dwCookie, WORD wVersion, BYTE bMsgType, BYTE bMsgFlags, WORD wPriority, int isAck, int includeDcInfo, BYTE bRequestServerAck)
@@ -244,7 +244,7 @@ void CIcqProto::icq_setidle(int bAllow)
 void CIcqProto::icq_setstatus(WORD wStatus, int bSetMood)
 {
 	icq_packet packet;
-	BYTE bXStatus = ICQGetContactXStatus(NULL);
+	BYTE bXStatus = getContactXStatus(NULL);
 	char szMoodId[32];
 	WORD cbMoodId = 0;
 	WORD cbMoodData = 0;
@@ -879,7 +879,7 @@ void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMs
 	{
 		NotifyEventHooks(hsmsgrequest, (WPARAM)msgType, (LPARAM)dwUin);
 
-		EnterCriticalSection(&modeMsgsMutex);
+		EnterCriticalSection(&m_modeMsgsMutex);
 
 		if (szMsg && *szMsg)
 		{
@@ -912,7 +912,7 @@ void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMs
 			sendServPacket(&packet);
 		}
 
-		LeaveCriticalSection(&modeMsgsMutex);
+		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
 
@@ -1270,7 +1270,7 @@ void CIcqProto::icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID
 		if (add)
 		{
 			// check if we should make the changes, this is 2nd level check
-			if (getWord(hContact, szSetting, 0) != 0)
+			if (getSettingWord(hContact, szSetting, 0) != 0)
 				return;
 
 			// Add
@@ -1278,18 +1278,18 @@ void CIcqProto::icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID
 
 			icq_addServerPrivacyItem(hContact, dwUin, szUID, wContactId, wType);
 
-			setWord(hContact, szSetting, wContactId);
+			setSettingWord(hContact, szSetting, wContactId);
 		}
 		else
 		{
 			// Remove
-			wContactId = getWord(hContact, szSetting, 0);
+			wContactId = getSettingWord(hContact, szSetting, 0);
 
 			if (wContactId)
 			{
 				icq_removeServerPrivacyItem(hContact, dwUin, szUID, wContactId, wType);
 
-				DeleteSetting(hContact, szSetting);
+				deleteSetting(hContact, szSetting);
 			}
 		}
 	}

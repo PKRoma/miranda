@@ -79,17 +79,17 @@ void CIcqProto::icq_serverThread(serverthread_start_info* infoParam)
 	// Initialize direct connection ports
 	{
 		DWORD dwInternalIP;
-		BYTE bConstInternalIP = getByte(NULL, "ConstRealIP", 0);
+		BYTE bConstInternalIP = getSettingByte(NULL, "ConstRealIP", 0);
 
 		info.hDirectBoundPort = NetLib_BindPort(icq_newConnectionReceived, this, &wListenPort, &dwInternalIP);
 		if (!info.hDirectBoundPort)
 		{
 			icq_LogUsingErrorCode(LOG_WARNING, GetLastError(), LPGEN("Miranda was unable to allocate a port to listen for direct peer-to-peer connections between clients. You will be able to use most of the ICQ network without problems but you may be unable to send or receive files.\n\nIf you have a firewall this may be blocking Miranda, in which case you should configure your firewall to leave some ports open and tell Miranda which ports to use in M->Options->ICQ->Network."));
 			wListenPort = 0;
-			if (!bConstInternalIP) DeleteSetting(NULL, "RealIP");
+			if (!bConstInternalIP) deleteSetting(NULL, "RealIP");
 		}
 		else if (!bConstInternalIP)
-			setDword(NULL, "RealIP", dwInternalIP);
+			setSettingDword(NULL, "RealIP", dwInternalIP);
 	}
 
 	// This is the "infinite" loop that receives the packets from the ICQ server
@@ -164,11 +164,11 @@ void CIcqProto::icq_serverThread(serverthread_start_info* infoParam)
 		DWORD dwUIN;
 		uid_str szUID;
 
-		if (!getUid(hContact, &dwUIN, &szUID))
+		if (!getContactUid(hContact, &dwUIN, &szUID))
 		{
 			if (getContactStatus(hContact) != ID_STATUS_OFFLINE)
 			{
-				setWord(hContact, "Status", ID_STATUS_OFFLINE);
+				setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
 				handleXStatusCaps(hContact, NULL, 0, NULL, 0);
 			}
@@ -177,12 +177,11 @@ void CIcqProto::icq_serverThread(serverthread_start_info* infoParam)
 		hContact = FindNextContact(hContact);
 	}
 
-	 setDword(NULL, "LogonTS", 0); // clear logon time
+	 setSettingDword(NULL, "LogonTS", 0); // clear logon time
 
-	FlushServerIDs();         // clear server IDs list
-	FlushPendingOperations(); // clear pending operations list
-	FlushGroupRenames();      // clear group rename in progress list
+  servlistPendingFlushOperations(); // clear pending operations list
 	ratesRelease(&m_rates);
+	FlushServerIDs();         // clear server IDs list
 
 	NetLog_Server("%s thread ended.", "Server");
 }
@@ -376,8 +375,10 @@ int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
 /////////////////////////////////////////////////////////////////////////////////////////
 // ICQ Server thread
 
-static DWORD __stdcall icq_serverThreadStub(serverthread_start_info* infoParam)
+static unsigned __stdcall icq_serverThreadStub(void* param)
 {
+  serverthread_start_info* infoParam = (serverthread_start_info*)param;
+
 	infoParam->ppro->icq_serverThread( infoParam );
 	SAFE_FREE((void**)&infoParam);
 	return 0; 
@@ -391,18 +392,18 @@ void CIcqProto::icq_login(const char* szPassword)
 	DWORD dwUin;
 
 
-	dwUin = getUin(NULL);
+	dwUin = getContactUin(NULL);
 	stsi = (serverthread_start_info*)SAFE_MALLOC(sizeof(serverthread_start_info));
 	stsi->ppro = this;
 
 	// Server host name
-	if (getStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
+	if (getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
 		stsi->nloc.szHost = null_strdup(DEFAULT_SERVER_HOST);
 	else
 		stsi->nloc.szHost = null_strdup(szServer);
 
 	// Server port
-	stsi->nloc.wPort = (WORD)getWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+	stsi->nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 	if (stsi->nloc.wPort == 0)
 		stsi->nloc.wPort = RandRange(1024, 65535);
 
@@ -417,5 +418,5 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	m_dwLocalUIN = dwUin;
 
-	serverThreadHandle = ICQCreateThreadEx((pThreadFuncEx)icq_serverThreadStub, stsi, &serverThreadId);
+	serverThreadHandle = ICQCreateThreadEx(icq_serverThreadStub, stsi, &serverThreadId);
 }

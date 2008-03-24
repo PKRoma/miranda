@@ -39,9 +39,9 @@
 
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow);
 
-BYTE CIcqProto::ICQGetContactXStatus(HANDLE hContact)
+BYTE CIcqProto::getContactXStatus(HANDLE hContact)
 {
-	BYTE bXStatus = getByte(hContact, DBSETTING_XSTATUSID, 0);
+	BYTE bXStatus = getSettingByte(hContact, DBSETTING_XSTATUSID, 0);
 
 	if (!m_bXStatusEnabled || bXStatus < 1 || bXStatus > XSTATUS_COUNT) return 0;
 
@@ -52,7 +52,7 @@ DWORD CIcqProto::sendXStatusDetailsRequest(HANDLE hContact, int bForced)
 {
 	DWORD dwCookie = 0;
 
-	if (getByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
+	if (getSettingByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
 	{ // only request custom status detail when the contact has one
 		char *szNotify;
 		int nNotifyLen;
@@ -176,7 +176,7 @@ int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 		if (IsICQContact((HANDLE)wParam))
 		{
 			// only apply icons to our contacts, do not mess others
-			DWORD bXStatus = ICQGetContactXStatus((HANDLE)wParam);
+			DWORD bXStatus = getContactXStatus((HANDLE)wParam);
 
 			if (bXStatus) 
 				setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
@@ -313,16 +313,16 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 				BYTE bXStatusId = (BYTE)(i+1);
 				char str[MAX_PATH];
 
-				if (ICQGetContactXStatus(hContact) != bXStatusId)
+				if (getContactXStatus(hContact) != bXStatusId)
 				{ // only write default name when it is really needed, i.e. on Custom Status change
-					setByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
-					setStringUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
-					DeleteSetting(hContact, DBSETTING_XSTATUSMSG);
+					setSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
+					setSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
+					deleteSetting(hContact, DBSETTING_XSTATUSMSG);
 
 					bChanged = TRUE;
 				}
 
-				if (getByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
+				if (getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
 					requestXStatusDetails(hContact, TRUE);
 
 				hIcon = hXStatusIcons[i];
@@ -349,11 +349,11 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 				BYTE bXStatusId = (BYTE)(i+1);
 				char str[MAX_PATH];
 
-				if (ICQGetContactXStatus(hContact) != bXStatusId)
+				if (getContactXStatus(hContact) != bXStatusId)
 				{ // only write default name when it is really needed, i.e. on Custom Status change
-					setByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
-					setStringUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
-					DeleteSetting(hContact, DBSETTING_XSTATUSMSG);
+					setSettingByte(hContact, DBSETTING_XSTATUSID, bXStatusId);
+					setSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, ICQTranslateUtfStatic(nameXStatus[i], str, MAX_PATH));
+					deleteSetting(hContact, DBSETTING_XSTATUSMSG);
 
 					bChanged = TRUE;
 				}
@@ -366,11 +366,11 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 	}
 	if (hIcon == (HANDLE)-1)
 	{
-		if (getByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
+		if (getSettingByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
 			bChanged = TRUE;
-		DeleteSetting(hContact, DBSETTING_XSTATUSID);
-		DeleteSetting(hContact, DBSETTING_XSTATUSNAME);
-		DeleteSetting(hContact, DBSETTING_XSTATUSMSG);
+		deleteSetting(hContact, DBSETTING_XSTATUSID);
+		deleteSetting(hContact, DBSETTING_XSTATUSNAME);
+		deleteSetting(hContact, DBSETTING_XSTATUSMSG);
 	}
 
 	if (m_bXStatusEnabled != 10)
@@ -474,10 +474,10 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			ShowWindow(GetDlgItem(hwndDlg, IDC_XTITLE), SW_SHOW);
 			SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Close"), str, MAX_PATH));
 			UnhookEvent(dat->hEvent); dat->hEvent = NULL;
-			char *szText = dat->ppro->getStringUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
+			char *szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
 			SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
 			SAFE_FREE((void**)&szText);
-			szText = dat->ppro->getStringUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
+			szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
 			SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
 			SAFE_FREE((void**)&szText);
 		}
@@ -512,11 +512,11 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			else
 			{ // retrieve contact's xStatus
 				dat->hContact = init->hContact;
-				dat->bXStatus = dat->ppro->ICQGetContactXStatus(dat->hContact);
+				dat->bXStatus = dat->ppro->getContactXStatus(dat->hContact);
 				dat->okButtonFormat = NULL;
 				SendMessage(GetDlgItem(hwndDlg, IDC_XTITLE), EM_SETREADONLY, 1, 0);
 				SendMessage(GetDlgItem(hwndDlg, IDC_XMSG), EM_SETREADONLY, 1, 0);
-				if (!dat->ppro->getByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
+				if (!dat->ppro->getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
 				{
 					SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Cancel"), str, MAX_PATH));
 					dat->hEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_PROTOACK);
@@ -531,10 +531,10 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 					SetDlgItemTextUtf(hwndDlg,IDOK,ICQTranslateUtfStatic(LPGEN("Close"), str, MAX_PATH));
 					dat->hEvent = NULL;
-					szText = dat->ppro->getStringUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
+					szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUSNAME, "");
 					SetDlgItemTextUtf(hwndDlg, IDC_XTITLE, szText);
 					SAFE_FREE((void**)&szText);
-					szText = dat->ppro->getStringUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
+					szText = dat->ppro->getSettingStringUtf(dat->hContact, DBSETTING_XSTATUSMSG, "");
 					SetDlgItemTextUtf(hwndDlg, IDC_XMSG, szText);
 					SAFE_FREE((void**)&szText);
 				}
@@ -587,16 +587,16 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			char szSetting[64];
 			char *szValue;
 
-			dat->ppro->setByte(NULL, DBSETTING_XSTATUSID, dat->bXStatus);
+			dat->ppro->setSettingByte(NULL, DBSETTING_XSTATUSID, dat->bXStatus);
 			szValue = GetDlgItemTextUtf(hwndDlg,IDC_XMSG);
 			sprintf(szSetting, "XStatus%dMsg", dat->bXStatus);
-			dat->ppro->setStringUtf(NULL, szSetting, szValue);
-			dat->ppro->setStringUtf(NULL, DBSETTING_XSTATUSMSG, szValue);
+			dat->ppro->setSettingStringUtf(NULL, szSetting, szValue);
+			dat->ppro->setSettingStringUtf(NULL, DBSETTING_XSTATUSMSG, szValue);
 			SAFE_FREE((void**)&szValue);
 			szValue = GetDlgItemTextUtf(hwndDlg,IDC_XTITLE);
 			sprintf(szSetting, "XStatus%dName", dat->bXStatus);
-			dat->ppro->setStringUtf(NULL, szSetting, szValue);
-			dat->ppro->setStringUtf(NULL, DBSETTING_XSTATUSNAME, szValue);
+			dat->ppro->setSettingStringUtf(NULL, szSetting, szValue);
+			dat->ppro->setSettingStringUtf(NULL, DBSETTING_XSTATUSNAME, szValue);
 			SAFE_FREE((void**)&szValue);
 
 			dat->ppro->updateServerCustomStatus();
@@ -619,7 +619,7 @@ static BOOL CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 {
 	CLISTMENUITEM mi = {0};
-	BYTE bOldXStatus = getByte(NULL, DBSETTING_XSTATUSID, 0);
+	BYTE bOldXStatus = getSettingByte(NULL, DBSETTING_XSTATUSID, 0);
 
 	mi.cbSize = sizeof(mi);
 
@@ -639,12 +639,12 @@ void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 		char *szName, *szMsg;
 
 		sprintf(szSetting, "XStatus%dName", bXStatus);
-		szName = getStringUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str, MAX_PATH));
+		szName = getSettingStringUtf(NULL, szSetting, ICQTranslateUtfStatic(nameXStatus[bXStatus-1], str, MAX_PATH));
 		sprintf(szSetting, "XStatus%dMsg", bXStatus);
-		szMsg = getStringUtf(NULL, szSetting, "");
+		szMsg = getSettingStringUtf(NULL, szSetting, "");
 
 		sprintf(szSetting, "XStatus%dStat", bXStatus);
-		if (!bQuiet && !getByte(NULL, szSetting, 0))
+		if (!bQuiet && !getSettingByte(NULL, szSetting, 0))
 		{
 			InitXStatusData init;
 			init.ppro = this;
@@ -656,9 +656,9 @@ void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 		}
 		else
 		{
-			setByte(NULL, DBSETTING_XSTATUSID, bXStatus);
-			setStringUtf(NULL, DBSETTING_XSTATUSNAME, szName);
-			setStringUtf(NULL, DBSETTING_XSTATUSMSG, szMsg);
+			setSettingByte(NULL, DBSETTING_XSTATUSID, bXStatus);
+			setSettingStringUtf(NULL, DBSETTING_XSTATUSNAME, szName);
+			setSettingStringUtf(NULL, DBSETTING_XSTATUSMSG, szMsg);
 
 			updateServerCustomStatus();
 		}
@@ -667,9 +667,9 @@ void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 	}
 	else
 	{
-		setByte(NULL, DBSETTING_XSTATUSID, bXStatus);
-		DeleteSetting(NULL, DBSETTING_XSTATUSNAME);
-		DeleteSetting(NULL, DBSETTING_XSTATUSMSG);
+		setSettingByte(NULL, DBSETTING_XSTATUSID, bXStatus);
+		deleteSetting(NULL, DBSETTING_XSTATUSNAME);
+		deleteSetting(NULL, DBSETTING_XSTATUSMSG);
 
 		updateServerCustomStatus();
 	}
@@ -690,7 +690,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 	HANDLE hXStatusRoot;
 	int bXStatusMenuBuilt = 0;
 
-	BYTE bXStatus = ICQGetContactXStatus(NULL);
+	BYTE bXStatus = getContactXStatus(NULL);
 
 	if (!m_bXStatusEnabled) return;
 
@@ -786,7 +786,7 @@ int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 
 	if (pData->flags & (CSSF_MASK_NAME | CSSF_MASK_MESSAGE))
 	{
-		BYTE status = ICQGetContactXStatus(NULL);
+		BYTE status = getContactXStatus(NULL);
 
 		if (!status) return 1; // Failure
 
@@ -796,11 +796,11 @@ int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 			{
 				char *utf = make_utf8_string(pData->pwszName);
 
-				setStringUtf(NULL, DBSETTING_XSTATUSNAME, utf);
+				setSettingStringUtf(NULL, DBSETTING_XSTATUSNAME, utf);
 				SAFE_FREE((void**)&utf);
 			}
 			else
-				setString(NULL, DBSETTING_XSTATUSNAME, pData->pszName);
+				setSettingString(NULL, DBSETTING_XSTATUSNAME, pData->pszName);
 		}
 		if (pData->flags & CSSF_MASK_MESSAGE)
 		{ // set custom status message
@@ -808,11 +808,11 @@ int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)
 			{
 				char *utf = make_utf8_string(pData->pwszMessage);
 
-				setStringUtf(NULL, DBSETTING_XSTATUSMSG, utf);
+				setSettingStringUtf(NULL, DBSETTING_XSTATUSMSG, utf);
 				SAFE_FREE((void**)&utf);
 			}
 			else
-				setString(NULL, DBSETTING_XSTATUSMSG, pData->pszMessage);
+				setSettingString(NULL, DBSETTING_XSTATUSMSG, pData->pszMessage);
 		}
 	}
 
@@ -840,7 +840,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 
 	if (pData->flags & CSSF_MASK_STATUS)
 	{ // fill status member
-		*pData->status = ICQGetContactXStatus(hContact);
+		*pData->status = getContactXStatus(hContact);
 	}
 
 	if (pData->flags & CSSF_MASK_NAME)
@@ -864,7 +864,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 		{
 			if (pData->flags & CSSF_UNICODE)
 			{
-				char *str = getStringUtf(hContact, DBSETTING_XSTATUSNAME, "");
+				char *str = getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, "");
 				WCHAR *wstr = make_unicode_string(str);
 
 				wcscpy(pData->pwszName, wstr);
@@ -875,7 +875,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 			{
 				DBVARIANT dbv = {0};
 
-				if (!getString(hContact, DBSETTING_XSTATUSNAME, &dbv) && dbv.pszVal)
+				if (!getSettingString(hContact, DBSETTING_XSTATUSNAME, &dbv) && dbv.pszVal)
 					strcpy(pData->pszName, dbv.pszVal);
 				else 
 					strcpy(pData->pszName, "");
@@ -889,7 +889,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 	{ // fill status message member
 		if (pData->flags & CSSF_UNICODE)
 		{
-			char *str = getStringUtf(hContact, DBSETTING_XSTATUSMSG, "");
+			char *str = getSettingStringUtf(hContact, DBSETTING_XSTATUSMSG, "");
 			WCHAR *wstr = make_unicode_string(str);
 
 			wcscpy(pData->pwszMessage, wstr);
@@ -900,7 +900,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 		{
 			DBVARIANT dbv = {0};
 
-			if (!getString(hContact, DBSETTING_XSTATUSMSG, &dbv) && dbv.pszVal)
+			if (!getSettingString(hContact, DBSETTING_XSTATUSMSG, &dbv) && dbv.pszVal)
 				strcpy(pData->pszMessage, dbv.pszVal);
 			else
 				strcpy(pData->pszMessage, "");
@@ -925,7 +925,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 
 		if (pData->wParam)
 		{
-			if (!getString(hContact, DBSETTING_XSTATUSNAME, &dbv))
+			if (!getSettingString(hContact, DBSETTING_XSTATUSNAME, &dbv))
 			{
 				*pData->wParam = strlennull(dbv.pszVal);
 				ICQFreeVariant(&dbv);
@@ -935,7 +935,7 @@ int CIcqProto::GetXStatusEx(WPARAM wParam, LPARAM lParam)
 		}
 		if (pData->lParam)
 		{
-			if (!getString(hContact, DBSETTING_XSTATUSMSG, &dbv))
+			if (!getSettingString(hContact, DBSETTING_XSTATUSMSG, &dbv))
 			{
 				*pData->lParam = strlennull(dbv.pszVal);
 				ICQFreeVariant(&dbv);
@@ -953,7 +953,7 @@ int CIcqProto::GetXStatusIcon(WPARAM wParam, LPARAM lParam)
 	if (!m_bXStatusEnabled) return 0;
 
 	if (!wParam)
-		wParam = ICQGetContactXStatus(NULL);
+		wParam = getContactXStatus(NULL);
 
 	if (wParam >= 1 && wParam <= XSTATUS_COUNT)
 	{
@@ -971,8 +971,8 @@ int CIcqProto::RequestXStatusDetails(WPARAM wParam, LPARAM lParam)
 
 	if (!m_bXStatusEnabled) return 0;
 
-	if (hContact && !getByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO) &&
-		ICQGetContactXStatus(hContact))
+	if (hContact && !getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO) &&
+		getContactXStatus(hContact))
 	{ // user has xstatus, no auto-retrieve details, valid contact, request details
 		return requestXStatusDetails(hContact, TRUE);
 	}
@@ -985,7 +985,7 @@ int CIcqProto::RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam)
 
 	if (!m_bXStatusEnabled) return -1;
 
-	bXStatus = ICQGetContactXStatus((HANDLE)wParam);
+	bXStatus = getContactXStatus((HANDLE)wParam);
 
 	if (bXStatus)
 	{

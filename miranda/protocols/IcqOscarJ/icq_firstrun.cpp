@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,7 +50,7 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
 			char pszUIN[20];
-			DWORD dwUIN = ppro->getUin(NULL);
+			DWORD dwUIN = ppro->getContactUin(NULL);
 			if (dwUIN)
 			{
 				null_snprintf(pszUIN, 20, "%u", dwUIN);
@@ -78,11 +78,11 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			{
 				char str[128];
 				GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
-				ppro->setDword(NULL, UNIQUEIDSETTING, atoi(str));
+				ppro->setSettingDword(NULL, UNIQUEIDSETTING, atoi(str));
 				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
 				strcpy(ppro->m_szPassword, str);
 				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
-				ppro->setString(NULL, "Password", str);
+				ppro->setSettingString(NULL, "Password", str);
 			}
 			// fall through
 

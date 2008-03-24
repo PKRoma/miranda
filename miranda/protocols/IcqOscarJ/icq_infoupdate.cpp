@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -62,9 +62,9 @@ void CIcqProto::icq_InitInfoUpdate(void)
 			userList[i].hContact = NULL;
 		}
 
-		dwUpdateThreshold = getByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
+		dwUpdateThreshold = getSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
-		hInfoThread = ICQCreateThreadEx(icq_InfoUpdateThreadStub, NULL, NULL);
+		hInfoThread = ICQCreateThreadEx(icq_InfoUpdateThreadStub, this, NULL);
 	}
 
 	bPendingUsers = 0;
@@ -104,7 +104,7 @@ BOOL CIcqProto::icq_QueueUser(HANDLE hContact)
 		// Add to list
 		if (!bFound)
 		{
-			DWORD dwUin = getUin(hContact);
+			DWORD dwUin = getContactUin(hContact);
 
 			if (dwUin)
 			{
@@ -173,7 +173,7 @@ void CIcqProto::icq_RescanInfoUpdate()
 
 	while (hContact != NULL)
 	{
-		if ((dwCurrentTime - getDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
+		if ((dwCurrentTime - getSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
 		{
 			// Queue user
 			if (!icq_QueueUser(hContact))
@@ -200,6 +200,8 @@ void CIcqProto::icq_InfoUpdateThread()
 {
 	int i;
 	DWORD dwWait;
+
+	NetLog_Server("%s thread starting.", "Info-Update");
 
 	bRunning = TRUE;
 
@@ -242,7 +244,7 @@ void CIcqProto::icq_InfoUpdateThread()
 					if (userList[i].hContact)
 					{
 						// Check TS again, maybe it has been updated while we slept
-						if ((time(NULL) - getDword(userList[i].hContact, "InfoTS", 0)) > dwUpdateThreshold) 
+						if ((time(NULL) - getSettingDword(userList[i].hContact, "InfoTS", 0)) > dwUpdateThreshold) 
 						{
 							WORD wGroup;
 

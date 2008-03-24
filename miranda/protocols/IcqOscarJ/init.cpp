@@ -45,16 +45,15 @@ LIST_INTERFACE li;
 BYTE gbUnicodeCore;
 DWORD MIRANDA_VERSION;
 
-icq_mode_messages modeMsgs;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,8,0,0),
+	PLUGIN_MAKE_VERSION(0,5,0,0),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",
-	"(C) 2000-2008 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+	"(C) 2000-2008 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera",
 	"http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
@@ -63,11 +62,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.8.0.10 or greater
-	// We need the new CList Group events
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 10))
+	// Only load for 0.8.0.12 or greater
+	// We need the new protocol interface with fixed GetCaps
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 12))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.10 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.12 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -178,15 +177,15 @@ int CIcqProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
 	BYTE bXStatus;
 
-	CListShowMenuItem(hUserMenuAuth, getByte((HANDLE)wParam, "Auth", 0));
-	CListShowMenuItem(hUserMenuGrant, getByte((HANDLE)wParam, "Grant", 0));
-	CListShowMenuItem(hUserMenuRevoke, (BYTE)(getByte(NULL, "PrivacyItems", 0) && !getByte((HANDLE)wParam, "Grant", 0)));
-	if (m_bSsiEnabled && !getWord((HANDLE)wParam, "ServerId", 0) && !getWord((HANDLE)wParam, "SrvIgnoreId", 0))
+	CListShowMenuItem(hUserMenuAuth, getSettingByte((HANDLE)wParam, "Auth", 0));
+	CListShowMenuItem(hUserMenuGrant, getSettingByte((HANDLE)wParam, "Grant", 0));
+	CListShowMenuItem(hUserMenuRevoke, (BYTE)(getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0)));
+	if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, "ServerId", 0) && !getSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
 		CListShowMenuItem(hUserMenuAddServ, 1);
 	else
 		CListShowMenuItem(hUserMenuAddServ, 0);
 
-	bXStatus = ICQGetContactXStatus((HANDLE)wParam);
+	bXStatus = getContactXStatus((HANDLE)wParam);
 	CListShowMenuItem(hUserMenuXStatus, (BYTE)(m_bHideXStatusUI ? 0 : bXStatus));
 	if (bXStatus && !m_bHideXStatusUI)
 	{
@@ -197,7 +196,7 @@ int CIcqProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// OnPrebuildContactMenu event
+// OnReloadIcons event
 
 int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 {
@@ -206,7 +205,7 @@ int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// OnPrebuildContactMenu event
+// UpdateGlobalSettings event
 
 void CIcqProto::UpdateGlobalSettings()
 {
@@ -226,14 +225,14 @@ void CIcqProto::UpdateGlobalSettings()
 			m_bGatewayMode = 0;
 	}
 
-	m_bSecureLogin = getByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
-	m_bAimEnabled = getByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
-	m_bUtfEnabled = getByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
-	m_wAnsiCodepage = getWord(NULL, "AnsiCodePage", DEFAULT_ANSI_CODEPAGE);
-	m_bDCMsgEnabled = getByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
-	m_bTempVisListEnabled = getByte(NULL, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
-	m_bSsiEnabled = getByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED);
+	m_bSecureLogin = getSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
+	m_bAimEnabled = getSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
+	m_bUtfEnabled = getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
+	m_wAnsiCodepage = getSettingWord(NULL, "AnsiCodePage", DEFAULT_ANSI_CODEPAGE);
+	m_bDCMsgEnabled = getSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+	m_bTempVisListEnabled = getSettingByte(NULL, "TempVisListEnabled", DEFAULT_TEMPVIS_ENABLED);
+	m_bSsiEnabled = getSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED);
 	m_bSsiSimpleGroups = FALSE; /// TODO: enable, after server-list revolution is over
-	m_bAvatarsEnabled = getByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
-	m_bXStatusEnabled = getByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
+	m_bAvatarsEnabled = getSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
+	m_bXStatusEnabled = getSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
 }

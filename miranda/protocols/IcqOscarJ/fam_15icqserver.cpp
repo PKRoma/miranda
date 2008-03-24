@@ -518,7 +518,7 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 		return;
 	}
 	// obtain contact UIN
-	dwCookieUin = getUin(hContact);
+	dwCookieUin = getContactUin(hContact);
 
 	if (bResultCode != 0x0A)
 	{
@@ -552,14 +552,14 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 			{
 				if (hContact == NULL)
 				{ // auth flag is the same for normal contacts also
-					setByte(hContact, "Auth", (BYTE)!(*databuf));
+					setSettingByte(hContact, "Auth", (BYTE)!(*databuf));
 					databuf += 1;
 
 					// webaware is also the same, but gives different values
-					setByte(hContact, "WebAware", (*databuf));
+					setSettingByte(hContact, "WebAware", (*databuf));
 					databuf += 1;
 
-					setByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
+					setSettingByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
 					databuf += 1;
 				}
 				else 
@@ -605,10 +605,10 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 			if (bOK && (wPacketLen >= 1))
 			{
 				if (*databuf)
-					setByte(hContact, "Gender", (BYTE)(*databuf == 1 ? 'F' : 'M'));
+					setSettingByte(hContact, "Gender", (BYTE)(*databuf == 1 ? 'F' : 'M'));
 				else 
 					// Undefined gender
-					DeleteSetting(hContact, "Gender");
+					deleteSetting(hContact, "Gender");
 				databuf += 1;
 				wPacketLen -= 1;
 			}
@@ -717,7 +717,7 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 				// We only delete e-mails when the parsing was successful since nCount
 				// may be incorrect otherwise
 				null_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
-				DeleteSetting(hContact, pszDatabaseKey);
+				deleteSetting(hContact, pszDatabaseKey);
 			}
 		}
 		break;
@@ -751,10 +751,10 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 				{
 					// Delete older entries if the count has decreased since last update
 					null_snprintf(idstr, 33, "Interest%dCat", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 
 					null_snprintf(idstr, 33, "Interest%dText", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 				}
 			}
 		}
@@ -790,10 +790,10 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 				{
 					// Delete older entries if the count has decreased since last update
 					null_snprintf(idstr, 33, "Past%d", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 
 					null_snprintf(idstr, 33, "Past%dText", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 				}
 			}
 
@@ -819,10 +819,10 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 				{
 					// Delete older entries if the count has decreased since last update
 					null_snprintf(idstr, 33, "Affiliation%d", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 
 					null_snprintf(idstr, 33, "Affiliation%dText", i);
-					DeleteSetting(hContact, idstr);
+					deleteSetting(hContact, idstr);
 				}
 			}
 
@@ -877,7 +877,7 @@ void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacket
 
 		// Remove user from info update queue. Removing is fast so we always call this
 		// even if it is likely that the user is not queued at all.
-		setDword(hContact, "InfoTS", time(NULL));
+		setSettingDword(hContact, "InfoTS", time(NULL));
 		icq_DequeueUser(dwCookieUin);
 	}
 

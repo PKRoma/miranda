@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2008 Joe Kucera, George Hazan
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,10 +23,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_rates.cpp $
-// Revision       : $Revision: 7451 $
-// Last change on : $Date: 2008-03-14 10:54:39 +0300 (ÐŸÑ‚, 14 Ð¼Ð°Ñ€ 2008) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL$
+// Revision       : $Revision$
+// Last change on : $Date$
+// Last change by : $Author$
 //
 // DESCRIPTION:
 //
@@ -49,13 +49,54 @@ typedef int ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
-// cookie struct for pending records
-struct ssipendingitem
+
+#define MAX_SERVLIST_PACKET_ITEMS 200
+
+// server-list request handler item
+struct servlistgroupitem
+{ // generic parent
+  DWORD dwOperation;
+  servlistcookie* cookie;
+  icq_packet packet;
+  // perhaps add some dummy bytes
+};
+
+struct servlistgroupitemdouble
 {
-	HANDLE hContact;
-	char* szGroupPath;
-	GROUPADDCALLBACK ofCallback;
-	servlistcookie* pCookie;
+  DWORD dwOperation;
+  servlistcookie* cookie;
+  icq_packet packet1;
+  icq_packet packet2;
+  WORD wAction2;
+};
+
+struct ssiqueueditems
+{
+  time_t tAdded;
+  int dwTimeout;
+  int nItems;
+  servlistgroupitem* pItems[MAX_SERVLIST_PACKET_ITEMS];
+};
+
+
+// cookie structs for pending records
+struct servlistpendingoperation
+{
+  DWORD flags;
+  PENDING_GROUP_CALLBACK callback;
+  LPARAM param;
+};
+
+struct servlistpendingitem
+{
+  int nType;
+  HANDLE hContact;
+  char* szGroup;
+  WORD wContactID;
+  WORD wGroupID;
+
+  servlistpendingoperation* operations;
+  int operationsCount;
 };
 
 // for JabberEnterString
@@ -198,7 +239,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	
 	CRITICAL_SECTION localSeqMutex;
 	CRITICAL_SECTION connectionHandleMutex;
-	CRITICAL_SECTION modeMsgsMutex;
 
 	int   m_bIdleAllow;
 	DWORD m_dwLocalUIN;
@@ -379,8 +419,8 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	HANDLE HContactFromRecordName(char* szRecordName, int *bAdded);
 
-	void   sendAddStart(int bImport);
-	void   sendAddEnd(void);
+	void   icq_sendServerBeginOperation(int bImport);
+	void   icq_sendServerEndOperation();
 	void   sendRosterAck(void);
 
 	int    getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf);
@@ -449,31 +489,33 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_db.cpp |------------------------------------------------------------------
 	HANDLE AddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob);
 	void   CreateResidentSetting(const char* szSetting);
-	int    DeleteSetting(HANDLE hContact, const char* szSetting);
 	HANDLE FindFirstContact();
 	HANDLE FindNextContact(HANDLE hContact);
-	char*  GetContactCListGroup(HANDLE hContact);
 	int    IsICQContact(HANDLE hContact);
 
-	BYTE   getByte(HANDLE hContact, const char* szSetting, BYTE bDef);
-	WORD   getContactStatus(HANDLE hContact);
-	DWORD  getDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
 	int    getSetting(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
-	int    getString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
-	int    getStringStatic(HANDLE hContact, const char* valueName, char* dest, int dest_len);
-	char*  getStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef);
-	char*  getStringUtf(HANDLE hContact, const char *szSetting, char *szDef);
-	int    getUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
-	DWORD  getUin(HANDLE hContact);
-	WORD   getWord(HANDLE hContact, const char* szSetting, WORD wDef);
+	BYTE   getSettingByte(HANDLE hContact, const char* szSetting, BYTE bDef);
+	WORD   getSettingWord(HANDLE hContact, const char* szSetting, WORD wDef);
+	DWORD  getSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef);
+	int    getSettingString(HANDLE hContact, const char* szSetting, DBVARIANT *dbv);
+	int    getSettingStringStatic(HANDLE hContact, const char* valueName, char* dest, int dest_len);
+	char*  getSettingStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef);
+	char*  getSettingStringUtf(HANDLE hContact, const char *szSetting, char *szDef);
+	int    getContactUid(HANDLE hContact, DWORD *pdwUin, uid_str* ppszUid);
+	DWORD  getContactUin(HANDLE hContact);
+	WORD   getContactStatus(HANDLE hContact);
+	char*  getContactCListGroup(HANDLE hContact);
 
-	int    setBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal);
-	int    setByte(HANDLE hContact, const char* szSetting, BYTE bValue);	
-	int    setDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
-	int    setWord(HANDLE hContact, const char* szSetting, WORD wValue);
-	int    setString(HANDLE hContact, const char* szSetting, const char* szValue);
-	int    setStringUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue);
-	int    setStringUtf(HANDLE hContact, const char* szSetting, const char* szValue);
+	int    deleteSetting(HANDLE hContact, const char* szSetting);
+
+	int    setSettingByte(HANDLE hContact, const char* szSetting, BYTE bValue);	
+	int    setSettingWord(HANDLE hContact, const char* szSetting, WORD wValue);
+	int    setSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue);
+	int    setSettingString(HANDLE hContact, const char* szSetting, const char* szValue);
+	int    setSettingStringUtf(HANDLE hContact, const char *szModule, const char* szSetting, const char* szValue);
+	int    setSettingStringUtf(HANDLE hContact, const char* szSetting, const char* szValue);
+	int    setSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *val, const int cbVal);
+  int    setContactHidden(HANDLE hContact, BYTE bHidden);
 
 	//----| icq_direct.cpp |--------------------------------------------------------------
 	CRITICAL_SECTION directConnListMutex;
@@ -604,33 +646,58 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_servlist.cpp |------------------------------------------------------------
 	HANDLE hHookSettingChanged;
 	HANDLE hHookContactDeleted;
+  HANDLE hHookCListGroupChange;
+	CRITICAL_SECTION servlistMutex;
+
 	DWORD* pwIDList;
 	int    nIDListCount;
 	int    nIDListSize;
 
-	CRITICAL_SECTION servlistMutex;
-	ssipendingitem** pdwPendingList;
-	int    nPendingCount;
-	int    nPendingSize;
+  // server-list update board
+  CRITICAL_SECTION servlistQueueMutex;
+  int    servlistQueueCount;
+  int    servlistQueueSize;
+  ssiqueueditems **servlistQueueList;
+  int    servlistQueueState;
+  HANDLE servlistQueueThreadHandle;
+  int    servlistEditCount;
+
+  void   servlistBeginOperation(int operationCount, int bImport);
+  void   servlistEndOperation(int operationCount);
+
+  DWORD  servlistQueueThread(int* queueState);
+  void   servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwTimeout);
+  int    servlistHandlePrimitives(DWORD dwOperation);
+  void   servlistProcessLogin();
+
+  void   servlistPostPacket(icq_packet* packet, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout);
+  void   servlistPostPacketDouble(icq_packet* packet1, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout, icq_packet* packet2, WORD wAction2);
+
+  // server-list pending queue
+  int    servlistPendingCount;
+  int    servlistPendingSize;
+  servlistpendingitem** servlistPendingList;
+
+  int    servlistPendingFindItem(int nType, HANDLE hContact, const char *pszGroup);
+  void   servlistPendingAddItem(servlistpendingitem* pItem);
+  servlistpendingitem* servlistPendingRemoveItem(int nType, HANDLE hContact, const char *pszGroup);
+
+  void   servlistPendingAddContactOperation(HANDLE hContact, LPARAM param, PENDING_CONTACT_CALLBACK callback, DWORD flags);
+  void   servlistPendingAddGroupOperation(const char *pszGroup, LPARAM param, PENDING_GROUP_CALLBACK callback, DWORD flags);
+  int    servlistPendingAddContact(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM param, PENDING_CONTACT_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_CONTACT_CALLBACK operationCallback = NULL);
+  int    servlistPendingAddGroup(const char *pszGroup, WORD wGroupID, LPARAM param, PENDING_GROUP_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_GROUP_CALLBACK operationCallback = NULL);
+  void   servlistPendingRemoveContact(HANDLE hContact, WORD wContactID, WORD wGroupID, int nResult);
+  void   servlistPendingRemoveGroup(const char *pszGroup, WORD wGroupID, int nResult);
+  void   servlistPendingFlushOperations();
+
+  // server-list support functions
 	int    nJustAddedCount;
 	int    nJustAddedSize;
 	HANDLE* pdwJustAddedList;
-	WORD*  pwGroupRenameList;
-	int    nGroupRenameCount;
-	int    nGroupRenameSize;
-
-	void   AddGroupRename(WORD wGroupID);
-	void   FlushGroupRenames();
-	BOOL   IsGroupRenamed(WORD wGroupID);
-	void   RemoveGroupRename(WORD wGroupID);
 
 	void   AddJustAddedContact(HANDLE hContact);
 	BOOL   IsContactJustAdded(HANDLE hContact);
 	void   FlushJustAddedContacts();
-
-	BOOL   AddPendingOperation(HANDLE hContact, const char* szGroup, servlistcookie* cookie, GROUPADDCALLBACK ofEvent);
-	void   FlushPendingOperations();
-	void   RemovePendingOperation(HANDLE hContact, int nResult);
 
 	WORD   GenerateServerId(int bGroupId);
 	WORD   GenerateServerIdPair(int bGroupId, int wCount);
@@ -648,34 +715,49 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   setServListGroupLinkID(const char *szPath, WORD wGroupID);
 	int    IsServerGroupsDefined();
 	char*  getServListGroupCListPath(WORD wGroupId);
-	void   madeMasterGroupId(WORD wGroupID, LPARAM lParam);
-	WORD   makeGroupId(const char *szGroupPath, GROUPADDCALLBACK ofCallback, servlistcookie* lParam);
+  char*  getServListUniqueGroupName(const char *szGroupName, int bAlloced);
+
+  int    servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult);
+  int    servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPARAM param, int nResult);
+  void   servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback);
+  int    servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+  int    servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult);
+  void   servlistAddContact(HANDLE hContact, const char *pszGroup);
+  int    servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+  void   servlistRemoveContact(HANDLE hContact);
+  int    servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult);
+  int    servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+  void   servlistMoveContact(HANDLE hContact, const char *pszNewGroup);
+  int    servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+  void   servlistUpdateContact(HANDLE hContact);
+  int    servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+  void   servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup);
+  int    servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult);
+  void   servlistRemoveGroup(const char *szGroup, WORD wGroupId);
 	void   removeGroupPathLinks(WORD wGroupID);
 	int    getServListGroupLevel(WORD wGroupId);
 
-	void   addServContactReady(WORD wGroupID, LPARAM lParam);
-	DWORD  addServContact(HANDLE hContact, const char *pszGroup);
-	void   moveServContactReady(WORD wNewGroupID, LPARAM lParam);
-	DWORD  moveServContactGroup(HANDLE hContact, const char *pszNewGroup);
 	void   resetServContactAuthState(HANDLE hContact, DWORD dwUin);
-	DWORD  removeServContact(HANDLE hContact);
-	void   renameServGroup(WORD wGroupId, char* szGroupName);
-	DWORD  updateServContact(HANDLE hContact);
 
 	void   FlushSrvGroupsCache();
-	int    GroupNameExistsUtf(const char *name,int skipGroup);
+  int    getCListGroupHandle(const char *szGroup);
+  int    getCListGroupExists(const char *szGroup);
+  int    moveContactToCListGroup(HANDLE hContact, const char *szGroup); /// TODO: this should be DB function
 
-	DWORD  icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wItemId, const char *szName, BYTE *pTLVs, int nTlvLength, WORD wItemType);
-	DWORD  icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId);
-	DWORD  icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType);
-	DWORD  icq_sendGroupUtf(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent);
+	DWORD  icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wItemId, const char *szName, BYTE *pTLVs, int nTlvLength, WORD wItemType, DWORD dwOperation, DWORD dwTimeout, void **doubleObject);
+	DWORD  icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId, DWORD dwOperation, DWORD dwTimeout, void **doubleObject);
+	DWORD  icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType, DWORD dwOperation, DWORD dwTimeout);
+  DWORD  icq_sendServerGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent, DWORD dwOperationFlags);
 
-	DWORD  icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
-	DWORD  icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType);
-	DWORD  icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char* szUid, WORD wItemId, WORD wType);
+	DWORD  icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType);
+	DWORD  icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
+	DWORD  icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
+
+  time_t dwLastCListGroupsChange;
 
 	int __cdecl ServListDbSettingChanged(WPARAM wParam, LPARAM lParam);
 	int __cdecl ServListDbContactDeleted(WPARAM wParam, LPARAM lParam);
+  int __cdecl ServListCListGroupChange(WPARAM wParam, LPARAM lParam);
 
 	//----| icq_stdpackets.cpp |----------------------------------------------------------
 	void   icq_sendCloseConnection();
@@ -772,7 +854,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   bXStatusCListIconsValid[XSTATUS_COUNT];
 
 	void   InitXStatusItems(BOOL bAllowStatus);
-	BYTE   ICQGetContactXStatus(HANDLE hContact);
+	BYTE   getContactXStatus(HANDLE hContact);
 	DWORD  sendXStatusDetailsRequest(HANDLE hContact, int bForced);
 	DWORD  requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay);
 	HICON  getXStatusIcon(int bStatus, UINT flags);
@@ -894,7 +976,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
 	BOOL   writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf, WORD* pwLength);
 	BOOL   writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
-		  
+
+  char** MirandaStatusToAwayMsg(int nStatus);
+
 	void   updateAimAwayMsg();
 	BOOL   validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 };

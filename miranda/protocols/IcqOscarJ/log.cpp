@@ -68,17 +68,17 @@ void CIcqProto::icq_LogMessage(int level, const char *szMsg)
 
 	NetLog_Server("%s", szMsg);
 
-	displayLevel = getByte(NULL, "ShowLogLevel", LOG_WARNING);
+	displayLevel = getSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
 	if (level >= displayLevel)
 	{
 		LogMessageInfo *lmi;
 
-		if (getByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
+		if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
 		{
 			if (!ShowPopUpMsg(NULL, szLevelDescr[level], szMsg, (BYTE)level))
 				return; // Popup showed successfuly
 		}
-		if (!bErrorVisible || !getByte(NULL, "IgnoreMultiErrorBox", 0))
+		if (!bErrorVisible || !getSettingByte(NULL, "IgnoreMultiErrorBox", 0))
 		{ // error not shown or allowed multi - show messagebox
 			lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
 			lmi->szMsg = ICQTranslateUtf(szMsg);

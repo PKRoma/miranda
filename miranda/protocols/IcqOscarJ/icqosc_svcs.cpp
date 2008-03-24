@@ -44,11 +44,12 @@ int CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
 	if (!m_bSsiEnabled) return 0;
 
 	// Does this contact have a UID?
-	if (!getUid((HANDLE)wParam, &dwUin, &szUid) && !getWord((HANDLE)wParam, "ServerId", 0) && !getWord((HANDLE)wParam, "SrvIgnoreId", 0))
+	if (!getContactUid((HANDLE)wParam, &dwUin, &szUid) && !getSettingWord((HANDLE)wParam, "ServerId", 0) && !getSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
 	{
 		// Read group from DB
-		char *pszGroup = GetContactCListGroup((HANDLE)wParam);
-		addServContact((HANDLE)wParam, pszGroup);
+		char *pszGroup = getContactCListGroup((HANDLE)wParam);
+
+    servlistAddContact((HANDLE)wParam, pszGroup);
 		SAFE_FREE((void**)&pszGroup);
 	}
 	return 0;
@@ -67,12 +68,12 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 
 		if (wParam & CIXT_CONTACT)
 		{ // contact information
-			b = !getByte(NULL, "PublishPrimaryEmail", 0);
+			b = !getSettingByte(NULL, "PublishPrimaryEmail", 0);
 			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", b, TLV_EMAIL);
 			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
 			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
 
-			ppackTLVByte(&buf, &buflen, getByte(NULL, "AllowSpam", 0), TLV_ALLOWSPAM, 1);
+			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "AllowSpam", 0), TLV_ALLOWSPAM, 1);
 
 			ppackTLVLNTSfromDB(&buf, &buflen, "Phone", TLV_PHONE);
 			ppackTLVLNTSfromDB(&buf, &buflen, "Fax", TLV_FAX);
@@ -91,20 +92,20 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 
 		if (wParam & CIXT_MORE)
 		{
-			ppackTLVWord(&buf, &buflen, getWord(NULL, "Age", 0), TLV_AGE, 1);
-			b = getByte(NULL, "Gender", 0);
+			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "Age", 0), TLV_AGE, 1);
+			b = getSettingByte(NULL, "Gender", 0);
 			ppackTLVByte(&buf, &buflen, (BYTE)(b ? (b == 'M' ? 2 : 1) : 0), TLV_GENDER, 1);
 			ppackLEWord(&buf, &buflen, TLV_BIRTH);
 			ppackLEWord(&buf, &buflen, 0x06);
-			ppackLEWord(&buf, &buflen, getWord(NULL, "BirthYear", 0));
-			ppackLEWord(&buf, &buflen, (WORD)getByte(NULL, "BirthMonth", 0));
-			ppackLEWord(&buf, &buflen, (WORD)getByte(NULL, "BirthDay", 0));
+			ppackLEWord(&buf, &buflen, getSettingWord(NULL, "BirthYear", 0));
+			ppackLEWord(&buf, &buflen, (WORD)getSettingByte(NULL, "BirthMonth", 0));
+			ppackLEWord(&buf, &buflen, (WORD)getSettingByte(NULL, "BirthDay", 0));
 
 			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language1", 0), TLV_LANGUAGE, 1);
 			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language2", 0), TLV_LANGUAGE, 1);
 			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language3", 0), TLV_LANGUAGE, 1);
 
-			ppackTLVByte(&buf, &buflen, getByte(NULL, "MaritalStatus", 0), TLV_MARITAL, 1);
+			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "MaritalStatus", 0), TLV_MARITAL, 1);
 		}
 
 		if (wParam & CIXT_WORK)
@@ -117,24 +118,24 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyCity", TLV_WORKCITY);
 			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyHomepage", TLV_WORKURL);
 			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyZIP", TLV_WORKZIPCODE);
-			ppackTLVWord(&buf, &buflen, getWord(NULL, "CompanyCountry", 0), TLV_WORKCOUNTRY, 1);
-			ppackTLVWord(&buf, &buflen, getWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1);
+			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "CompanyCountry", 0), TLV_WORKCOUNTRY, 1);
+			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1);
 		}
 
 		if (wParam & CIXT_LOCATION)
 		{
 			ppackTLVLNTSfromDB(&buf, &buflen, "City", TLV_CITY);
 			ppackTLVLNTSfromDB(&buf, &buflen, "State", TLV_STATE);
-			ppackTLVWord(&buf, &buflen, getWord(NULL, "Country", 0), TLV_COUNTRY, 1);
+			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "Country", 0), TLV_COUNTRY, 1);
 			ppackTLVLNTSfromDB(&buf, &buflen, "OriginCity", TLV_ORGCITY);
 			ppackTLVLNTSfromDB(&buf, &buflen, "OriginState", TLV_ORGSTATE);
-			ppackTLVWord(&buf, &buflen, getWord(NULL, "OriginCountry", 0), TLV_ORGCOUNTRY, 1);
+			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "OriginCountry", 0), TLV_ORGCOUNTRY, 1);
 			ppackTLVLNTSfromDB(&buf, &buflen, "Street", TLV_STREET);
 			ppackTLVLNTSfromDB(&buf, &buflen, "ZIP", TLV_ZIPCODE);
 
 			ppackTLVLNTSfromDB(&buf, &buflen, "Homepage", TLV_URL);
 
-			ppackTLVByte(&buf, &buflen, getByte(NULL, "Timezone", 0), TLV_TIMEZONE, 1);
+			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "Timezone", 0), TLV_TIMEZONE, 1);
 		}
 
 		if (wParam & CIXT_BACKGROUND)
@@ -179,7 +180,7 @@ int CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 		if (size)
 		{
-			if (getByte(NULL, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS))
+			if (getSettingByte(NULL, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS))
 			{ // experimental server limits
 				size->x = 128;
 				size->y = 128;
@@ -239,14 +240,14 @@ int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 	if (getSetting(pai->hContact, "AvatarHash", &dbv) || dbv.type != DBVT_BLOB || (dbv.cpbVal != 0x14 && dbv.cpbVal != 0x09))
 		return GAIR_NOAVATAR; // we did not found avatar hash or hash invalid - no avatar available
 
-	if (getUid(pai->hContact, &dwUIN, &szUID))
+	if (getContactUid(pai->hContact, &dwUIN, &szUID))
 	{
 		ICQFreeVariant(&dbv);
 
 		return GAIR_NOAVATAR; // we do not support avatars for invalid contacts
 	}
 
-	dwPaFormat = getByte(pai->hContact, "AvatarType", PA_FORMAT_UNKNOWN);
+	dwPaFormat = getSettingByte(pai->hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 	if (dwPaFormat != PA_FORMAT_UNKNOWN)
 	{ // we know the format, test file
 		GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, pai->filename, MAX_PATH);
@@ -315,13 +316,13 @@ int CIcqProto::GrantAuthorization(WPARAM wParam, LPARAM lParam)
 		DWORD dwUin;
 		uid_str szUid;
 
-		if (getUid((HANDLE)wParam, &dwUin, &szUid))
+		if (getContactUid((HANDLE)wParam, &dwUin, &szUid))
 			return 0; // Invalid contact
 
 		// send without reason, do we need any ?
 		icq_sendGrantAuthServ(dwUin, szUid, NULL);
 		// auth granted, remove contact menu item
-		DeleteSetting((HANDLE)wParam, "Grant");
+		deleteSetting((HANDLE)wParam, "Grant");
 	}
 
 	return 0;
@@ -334,7 +335,7 @@ int CIcqProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 
 	if (bPrivacy) return 0;
 
-	setDword(NULL, "IdleTS", bIdle ? time(0) : 0);
+	setSettingDword(NULL, "IdleTS", bIdle ? time(0) : 0);
 
 	if (m_bTempVisListEnabled) // remove temporary visible users
 		sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, BUL_TEMPVISIBLE);
@@ -351,7 +352,7 @@ int CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
 		DWORD dwUin;
 		uid_str szUid;
 
-		if (getUid((HANDLE)wParam, &dwUin, &szUid))
+		if (getContactUid((HANDLE)wParam, &dwUin, &szUid))
 			return 0; // Invalid contact
 
 		if (MessageBoxUtf(NULL, LPGEN("Are you sure you want to revoke user's authorization (this will remove you from his/her list on some clients) ?"), LPGEN("Confirmation"), MB_ICONQUESTION | MB_YESNO) != IDYES)
@@ -397,10 +398,10 @@ int CIcqProto::SendYouWereAdded(WPARAM wParam, LPARAM lParam)
 		{
 			DWORD dwUin, dwMyUin;
 
-			if (getUid(ccs->hContact, &dwUin, NULL))
+			if (getContactUid(ccs->hContact, &dwUin, NULL))
 				return 1; // Invalid contact
 
-			dwMyUin = getUin(NULL);
+			dwMyUin = getContactUin(NULL);
 
 			if (dwUin)
 			{
@@ -453,14 +454,14 @@ int CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			memcpy(ihash+4, hash, 0x10);
 			updateServAvatarHash(ihash, 0x14);
 
-			if (setBlob(NULL, "AvatarHash", ihash, 0x14))
+			if (setSettingBlob(NULL, "AvatarHash", ihash, 0x14))
 			{
 				NetLog_Server("Failed to save avatar hash.");
 			}
 
 			char tmp[MAX_PATH];
 			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szMyFile, (LPARAM)tmp);
-			setString(NULL, "AvatarFile", tmp);
+			setSettingString(NULL, "AvatarFile", tmp);
 
 			iRet = 0;
 
@@ -469,8 +470,8 @@ int CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{ // delete user avatar
-		DeleteSetting(NULL, "AvatarFile");
-		setBlob(NULL, "AvatarHash", hashEmptyAvatar, 9);
+		deleteSetting(NULL, "AvatarFile");
+		setSettingBlob(NULL, "AvatarHash", hashEmptyAvatar, 9);
 		updateServAvatarHash(hashEmptyAvatar, 9); // set blank avatar
 		iRet = 0;
 	}
@@ -482,7 +483,7 @@ int CIcqProto::SetNickName(WPARAM wParam, LPARAM lParam)
 {
 	if (icqOnline())
 	{
-		setString(NULL, "Nick", (char*)lParam);
+		setSettingString(NULL, "Nick", (char*)lParam);
 
 		return ChangeInfoEx(CIXT_BASIC, 0);
 	}
@@ -514,7 +515,7 @@ HANDLE CIcqProto::AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 		if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
 			DBDeleteContactSetting(hContact, "CList", "NotOnList");
-			SetContactHidden(hContact, 0);
+			setContactHidden(hContact, 0);
 		}
 
 		return hContact; // Success
@@ -532,7 +533,7 @@ HANDLE CIcqProto::AddToListByUID(char *szUID, DWORD dwFlags)
 		if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
 			DBDeleteContactSetting(hContact, "CList", "NotOnList");
-			SetContactHidden(hContact, 0);
+			setContactHidden(hContact, 0);
 		}
 
 		return hContact; // Success
@@ -553,11 +554,11 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 		DWORD dwUin;
 		uid_str szUid;
 
-		SetContactHidden(hContact, 0);
+		setContactHidden(hContact, 0);
 		// if the contact was hidden, add to client-list if not in server-list authed
-		if (!getWord(hContact, "ServerId", 0) || getByte(hContact, "Auth", 0))
+		if (!getSettingWord(hContact, "ServerId", 0) || getSettingByte(hContact, "Auth", 0))
 		{
-			getUid(hContact, &dwUin, &szUid);
+			getContactUid(hContact, &dwUin, &szUid);
 			icq_sendNewContact(dwUin, szUid);
 		}
 	}

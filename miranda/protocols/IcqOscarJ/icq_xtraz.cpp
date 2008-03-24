@@ -89,16 +89,16 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 						int nResponseLen;
 						char *szXName, *szXMsg;
 						char *tmp;
-						BYTE dwXId = ICQGetContactXStatus(NULL);
+						BYTE dwXId = getContactXStatus(NULL);
 
 						if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
 						{ // apply privacy rules
 							NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
-							tmp = getStringUtf(NULL, DBSETTING_XSTATUSNAME, "");
+							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUSNAME, "");
 							szXName = MangleXml((char*)tmp, strlennull(tmp));
 							SAFE_FREE((void**)&tmp);
-							tmp = getStringUtf(NULL, DBSETTING_XSTATUSMSG, "");
+							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUSMSG, "");
 							szXMsg = MangleXml((char*)tmp, strlennull(tmp));
 							SAFE_FREE((void**)&tmp);
 
@@ -220,7 +220,7 @@ NextVal:
 						{
 							szNode += 7;
 							*szEnd = '\0';
-							if (atoi(szNode) != ICQGetContactXStatus(hContact))
+							if (atoi(szNode) != getContactXStatus(hContact))
 							{ // this is strange - but go on
 								NetLog_Server("Warning: XStatusIds do not match!");
 							}
@@ -237,11 +237,11 @@ NextVal:
 							*szEnd = '\0';
 							szXName = DemangleXml(szNode, strlennull(szNode));
 							// check if the name changed
-							szOldXName = getStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+							szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
 							if (strcmpnull(szOldXName, szXName))
 								bChanged = TRUE;
 							SAFE_FREE((void**)&szOldXName);
-							setStringUtf(hContact, DBSETTING_XSTATUSNAME, szXName);
+							setSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, szXName);
 							SAFE_FREE((void**)&szXName);
 							*szEnd = ' ';
 						}
@@ -256,11 +256,11 @@ NextVal:
 							*szEnd = '\0';
 							szXMsg = DemangleXml(szNode, strlennull(szNode));
 							// check if the decription changed
-							szOldXMsg = getStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+							szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
 							if (strcmpnull(szOldXMsg, szXMsg))
 								bChanged = TRUE;
 							SAFE_FREE((void**)&szOldXMsg);
-							setStringUtf(hContact, DBSETTING_XSTATUSMSG, szXMsg);
+							setSettingStringUtf(hContact, DBSETTING_XSTATUSMSG, szXMsg);
 							SAFE_FREE((void**)&szXMsg);
 						}
 						BroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
@@ -416,7 +416,7 @@ DWORD CIcqProto::SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* sz
 	DWORD dwCookie;
 	message_cookie_data* pCookieData;
 
-	if (getUid(hContact, &dwUin, NULL))
+	if (getContactUid(hContact, &dwUin, NULL))
 		return 0; // Invalid contact
 
 	if (!CheckContactCapabilities(hContact, CAPF_XTRAZ) && !bForced)

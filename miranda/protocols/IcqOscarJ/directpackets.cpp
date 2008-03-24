@@ -86,7 +86,7 @@ DWORD CIcqProto::icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 	DWORD dwCookie;
 	message_cookie_data *pCookieData;
 
-	if (getWord(hContact, "Version", 0) == 9)
+	if (getSettingWord(hContact, "Version", 0) == 9)
 		return 0; // v9 DC protocol does not support this message
 
 	pCookieData = CreateMessageCookie(MTYPE_AUTOAWAY, (BYTE)type);
@@ -107,7 +107,7 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 	{
 		NotifyEventHooks(hsmsgrequest, (WPARAM)msgType, (LPARAM)dc->dwRemoteUin);
 
-		EnterCriticalSection(&modeMsgsMutex);
+		EnterCriticalSection(&m_modeMsgsMutex);
 
 		if (szMsg && *szMsg)
 		{
@@ -126,7 +126,7 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 			sendDirectPacket(dc, &packet);
 		}
 
-		LeaveCriticalSection(&modeMsgsMutex);
+		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
 

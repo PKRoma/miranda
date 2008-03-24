@@ -366,7 +366,7 @@ void CIcqProto::ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSettin
 	char szTmp[1024];
 	char *str = "";
 
-	if (!getStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
+	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
 	ppackTLVLNTS(buf, buflen, str, wType, 1);
@@ -377,7 +377,7 @@ void CIcqProto::ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const ch
 	char szTmp[1024];
 	char *str = "";
 
-	if (!getStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
+	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
 	ppackTLVWordLNTS(buf, buflen, w, str, wType, 1);
@@ -388,7 +388,7 @@ void CIcqProto::ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSe
 	char szTmp[1024];
 	char *str = "";
 
-	if (!getStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
+	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
 	ppackTLVLNTSByte(buf, buflen, str, b, wType);

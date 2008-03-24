@@ -67,7 +67,7 @@ void CIcqProto::handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, sn
 
 			if (wError == 4)
 			{
-				if (FindCookie(pSnacHeader->dwRef, &hCookieContact, (void**)&pCookieData) && !getUin(hCookieContact) && pCookieData->bRequestType == REQUESTTYPE_PROFILE)
+				if (FindCookie(pSnacHeader->dwRef, &hCookieContact, (void**)&pCookieData) && !getContactUin(hCookieContact) && pCookieData->bRequestType == REQUESTTYPE_PROFILE)
 				{
 					BroadcastAck(hCookieContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
 
@@ -213,7 +213,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					disposeChain(&pChain);
 				}
 
-				setString(hContact, "About", szMsg);
+				setSettingString(hContact, "About", szMsg);
 				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
 
 				SAFE_FREE((void**)&szMsg);
@@ -307,7 +307,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					{ // kill spammer
 						icq_DequeueUser(dwUIN);
 						AddToSpammerList(dwUIN);
-						if (getByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+						if (getSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
 							ShowPopUpMsg(hContact, LPGEN("Spambot Detected"), LPGEN("Contact deleted & further events blocked."), POPTYPE_SPAM);
 						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 

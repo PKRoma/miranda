@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2008 Joe Kucera, George Hazan
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,10 +23,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_rates.cpp $
-// Revision       : $Revision: 7451 $
-// Last change on : $Date: 2008-03-14 10:54:39 +0300 (ÐŸÑ‚, 14 Ð¼Ð°Ñ€ 2008) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL$
+// Revision       : $Revision$
+// Last change on : $Date$
+// Last change by : $Author$
 //
 // DESCRIPTION:
 //
@@ -95,12 +95,14 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	// Initialize server lists
 	InitializeCriticalSection(&servlistMutex);
+  InitializeCriticalSection(&servlistQueueMutex);
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CIcqProto::ServListDbSettingChanged);
 	HookProtoEvent(ME_DB_CONTACT_DELETED, &CIcqProto::ServListDbContactDeleted);
+  HookProtoEvent(ME_CLIST_GROUPCHANGE, &CIcqProto::ServListCListGroupChange);
 
 	// Initialize status message struct
-	ZeroMemory(&modeMsgs, sizeof(icq_mode_messages));
-	InitializeCriticalSection(&modeMsgsMutex);
+	ZeroMemory(&m_modeMsgs, sizeof(icq_mode_messages));
+	InitializeCriticalSection(&m_modeMsgsMutex);
 	InitializeCriticalSection(&connectionHandleMutex);
 	InitializeCriticalSection(&localSeqMutex);
 
@@ -195,7 +197,9 @@ CIcqProto::~CIcqProto()
 	}
 
 	FlushServerIDs();
-	FlushPendingOperations();
+  /// TODO: make sure server-list handler thread is not running
+  /// TODO: save state of server-list update board to DB
+  servlistPendingFlushOperations();
 
 	NetLib_SafeCloseHandle(&m_hDirectNetlibUser);
 	NetLib_SafeCloseHandle(&m_hServerNetlibUser);
@@ -217,7 +221,9 @@ CIcqProto::~CIcqProto()
 	DeleteCriticalSection(&ratesListsMutex);
 
 	DeleteCriticalSection(&servlistMutex);
-	DeleteCriticalSection(&modeMsgsMutex);
+  DeleteCriticalSection(&servlistQueueMutex);
+
+	DeleteCriticalSection(&m_modeMsgsMutex);
 	DeleteCriticalSection(&localSeqMutex);
 	DeleteCriticalSection(&connectionHandleMutex);
 	DeleteCriticalSection(&oftMutex);
@@ -225,11 +231,11 @@ CIcqProto::~CIcqProto()
 	DeleteCriticalSection(&expectedFileRecvMutex);
 	DeleteCriticalSection(&cookieMutex);
 
-	SAFE_FREE((void**)&modeMsgs.szAway);
-	SAFE_FREE((void**)&modeMsgs.szNa);
-	SAFE_FREE((void**)&modeMsgs.szOccupied);
-	SAFE_FREE((void**)&modeMsgs.szDnd);
-	SAFE_FREE((void**)&modeMsgs.szFfc);
+	SAFE_FREE((void**)&m_modeMsgs.szAway);
+	SAFE_FREE((void**)&m_modeMsgs.szNa);
+	SAFE_FREE((void**)&m_modeMsgs.szOccupied);
+	SAFE_FREE((void**)&m_modeMsgs.szDnd);
+	SAFE_FREE((void**)&m_modeMsgs.szFfc);
 
 	mir_free( m_szProtoName );
 	mir_free( m_szModuleName );
@@ -438,7 +444,7 @@ HANDLE __cdecl CIcqProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 	else // auth req or added event
 	{
 		HANDLE hContact = ((HANDLE*)dbei.pBlob)[1]; // this sucks - awaiting new auth system
-		if (getUid(hContact, &uin, &uid))
+		if (getContactUid(hContact, &uin, &uid))
 			return 0;
 	}
 
@@ -465,7 +471,7 @@ int CIcqProto::Authorize( HANDLE hDbEvent )
 
 		DWORD uin;
 		uid_str uid;
-		if (getUid(hContact, &uin, &uid))
+		if (getContactUid(hContact, &uin, &uid))
 			return 1;
 
 		icq_sendAuthResponseServ(uin, uid, 1, "");
@@ -489,7 +495,7 @@ int CIcqProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 
 		DWORD uin;
 		uid_str uid;
-		if (getUid(hContact, &uin, &uid))
+		if (getContactUid(hContact, &uin, &uid))
 			return 1;
 
 		icq_sendAuthResponseServ(uin, uid, 0, szReason);
@@ -520,7 +526,7 @@ int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const char* szMessage )
 	{
 		DWORD dwUin;
 		uid_str szUid;
-		if (getUid(hContact, &dwUin, &szUid))
+		if (getContactUid(hContact, &dwUin, &szUid))
 			return 1; // Invalid contact
 
 		if (dwUin && szMessage)
@@ -551,7 +557,7 @@ int __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 	DWORD dwUin;
 	uid_str szUid;
 
-	if ( getUid(hContact, &dwUin, &szUid))
+	if ( getContactUid(hContact, &dwUin, &szUid))
 		return 0; // Invalid contact
 
 	if (icqOnline() && hContact && szPath && hTransfer)
@@ -592,7 +598,7 @@ int __cdecl CIcqProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 {
 	DWORD dwUin;
 	uid_str szUid;
-	if ( getUid(hContact, &dwUin, &szUid))
+	if ( getContactUid(hContact, &dwUin, &szUid))
 		return 1; // Invalid contact
 
 	if (hContact && hTransfer)
@@ -624,7 +630,7 @@ int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 	uid_str szUid;
 	basic_filetransfer *ft = (basic_filetransfer*)hTransfer;
 
-	if (getUid(hContact, &dwUin, &szUid))
+	if (getContactUid(hContact, &dwUin, &szUid))
 		return 1; // Invalid contact
 
 	if (icqOnline() && hTransfer && hContact)
@@ -693,7 +699,7 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 			PF1_ADDED | PF1_CONTACT;
 		if (!m_bAimEnabled)
 			nReturn |= PF1_NUMERICUSERID;
-		if (m_bSsiEnabled && getByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+		if (m_bSsiEnabled && getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
 			nReturn |= PF1_SERVERCLIST;
 		break;
 
@@ -734,7 +740,7 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 	case PFLAG_MAXCONTACTSPERPACKET:
 		if ( hContact )
 		{ // determine per contact
-			BYTE bClientId = getByte(hContact, "ClientID", CLID_GENERIC);
+			BYTE bClientId = getSettingByte(hContact, "ClientID", CLID_GENERIC);
 
 			if (bClientId == CLID_MIRANDA)
 			{
@@ -797,7 +803,7 @@ int __cdecl CIcqProto::GetInfo( HANDLE hContact, int infoType )
 		DWORD dwUin;
 		uid_str szUid;
 
-		if ( getUid(hContact, &dwUin, &szUid))
+		if ( getContactUid(hContact, &dwUin, &szUid))
 			return 1; // Invalid contact
 
 		DWORD dwCookie;
@@ -1058,7 +1064,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 		WORD wRecipientStatus;
 		DWORD dwCookie;
 
-		if (getUid(hContact, &dwUin, &szUid))
+		if (getContactUid(hContact, &dwUin, &szUid))
 		{ // Invalid contact
 			return ReportGenericSendError(hContact, ACKTYPE_CONTACTS, "The receiver has an invalid user ID.");
 		}
@@ -1095,7 +1101,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 						if (!IsICQContact(hContactsList[i]))
 							break; // Abort if a non icq contact is found
-						if (getUid(hContactsList[i], &contacts[i].uin, &szContactUid))
+						if (getContactUid(hContactsList[i], &contacts[i].uin, &szContactUid))
 							break; // Abort if invalid contact
 						contacts[i].uid = contacts[i].uin?NULL:null_strdup(szContactUid);
 						contacts[i].szNick = NickFromHandleUtf(hContactsList[i]);
@@ -1224,7 +1230,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 					{
 						if (!IsICQContact(hContactsList[i]))
 							break; // Abort if a non icq contact is found
-						if (getUid(hContactsList[i], &contacts[i].uin, &szContactUid))
+						if (getContactUid(hContactsList[i], &contacts[i].uin, &szContactUid))
 							break; // Abort if invalid contact
 						contacts[i].uid = contacts[i].uin?NULL:null_strdup(szContactUid);
 						contacts[i].szNick = NickFromHandle(hContactsList[i]);
@@ -1354,7 +1360,7 @@ int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		DWORD dwUin;
 		uid_str szUid;
 
-		if (getUid(hContact, &dwUin, &szUid))
+		if (getContactUid(hContact, &dwUin, &szUid))
 			return 0; // Invalid contact
 
 		if (getContactStatus(hContact) != ID_STATUS_OFFLINE)
@@ -1366,7 +1372,7 @@ int __cdecl CIcqProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			{
 				WORD wClientVersion;
 
-				wClientVersion = getWord(hContact, "Version", 7);
+				wClientVersion = getSettingWord(hContact, "Version", 7);
 				if (wClientVersion < 7)
 					NetLog_Server("IcqSendFile() can't send to version %u", wClientVersion);
 				else
@@ -1470,7 +1476,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		// Invalid contact
 		DWORD dwUin;
 		uid_str szUID;
-		if (getUid(hContact, &dwUin, &szUID))
+		if (getContactUid(hContact, &dwUin, &szUID))
 			return ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The receiver has an invalid user ID.");
 
 		if ((flags & PREF_UTF) == PREF_UTF)
@@ -1491,7 +1497,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
 
 			if (plain_ascii || !m_bUtfEnabled || !CheckContactCapabilities(hContact, CAPF_UTF) ||
-				!getByte(hContact, "UnicodeSend", 1))
+				!getSettingByte(hContact, "UnicodeSend", 1))
 			{ // unicode is not available for target contact, convert to good codepage
 				if (!plain_ascii)
 				{ // do not convert plain ascii messages
@@ -1540,7 +1546,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			message_cookie_data* pCookieData;
 
 			if (!puszText && m_bUtfEnabled == 2 && !IsUSASCII(pszText, strlennull(pszText))
-				&& CheckContactCapabilities(hContact, CAPF_UTF) && getByte(hContact, "UnicodeSend", 1))
+				&& CheckContactCapabilities(hContact, CAPF_UTF) && getSettingByte(hContact, "UnicodeSend", 1))
 			{ // text is not unicode and contains national chars and we should send all this as Unicode, so do it
 				puszText = ansi_to_utf8(pszText);
 				bNeedFreeU = 1;
@@ -1684,7 +1690,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				// WORKAROUND!!
 				// Nasty workaround for ICQ6 client's bug - it does not send acknowledgement when in temporary visible mode
 				// - This uses only server ack, but also for visible invisible contact!
-				if (wRecipientStatus == ID_STATUS_INVISIBLE && pCookieData->nAckType == ACKTYPE_CLIENT && getByte(hContact, "ClientID", CLID_GENERIC) == CLID_ICQ6)
+				if (wRecipientStatus == ID_STATUS_INVISIBLE && pCookieData->nAckType == ACKTYPE_CLIENT && getSettingByte(hContact, "ClientID", CLID_GENERIC) == CLID_ICQ6)
 					pCookieData->nAckType = ACKTYPE_SERVER;
 
 				dwCookie = icq_SendChannel2Message(dwUin, hContact, srv_msg, strlennull(srv_msg), wPriority, pCookieData, srv_cap);
@@ -1720,7 +1726,7 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 		WORD wRecipientStatus;
 		DWORD dwUin;
 
-		if (getUid(hContact, &dwUin, NULL))
+		if (getContactUid(hContact, &dwUin, NULL))
 		{ // Invalid contact
 			return ReportGenericSendError(hContact, ACKTYPE_URL, "The receiver has an invalid user ID.");
 		}
@@ -1812,7 +1818,7 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 	DWORD uin;
 	uid_str uid;
 
-	if (getUid(hContact, &uin, &uid))
+	if (getContactUid(hContact, &uin, &uid))
 		return 1; // Invalid contact
 
 	if (hContact)
@@ -1820,12 +1826,12 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 		// Only 3 modes are supported
 		if (mode == 0 || mode == ID_STATUS_ONLINE || mode == ID_STATUS_OFFLINE)
 		{
-			int oldMode = getWord(hContact, "ApparentMode", 0);
+			int oldMode = getSettingWord(hContact, "ApparentMode", 0);
 
 			// Don't send redundant updates
 			if (mode != oldMode)
 			{
-				setWord(hContact, "ApparentMode", (WORD)mode);
+				setSettingWord(hContact, "ApparentMode", (WORD)mode);
 
 				// Not being online is only an error when in SS mode. This is not handled
 				// yet so we just ignore this for now.
@@ -1833,17 +1839,17 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 				{
 					if (oldMode != 0)
 					{ // Remove from old list
-						if (oldMode == ID_STATUS_OFFLINE && getWord(hContact, "SrvIgnoreID", 0))
+						if (oldMode == ID_STATUS_OFFLINE && getSettingWord(hContact, "SrvIgnoreID", 0))
 						{ // Need to remove Ignore item as well
-							icq_removeServerPrivacyItem(hContact, uin, uid, getWord(hContact, "SrvIgnoreID", 0), SSI_ITEM_IGNORE);
+							icq_removeServerPrivacyItem(hContact, uin, uid, getSettingWord(hContact, "SrvIgnoreID", 0), SSI_ITEM_IGNORE);
 
-							setWord(hContact, "SrvIgnoreID", 0);
+							setSettingWord(hContact, "SrvIgnoreID", 0);
 						}
 						icq_sendChangeVisInvis(hContact, uin, uid, oldMode==ID_STATUS_OFFLINE, 0);
 					}
 					if (mode != 0)
 					{ // Add to new list
-						if (mode==ID_STATUS_OFFLINE && getWord(hContact, "SrvIgnoreID", 0))
+						if (mode==ID_STATUS_OFFLINE && getSettingWord(hContact, "SrvIgnoreID", 0))
 							return 0; // Success: offline by ignore item
 
 						icq_sendChangeVisInvis(hContact, uin, uid, mode==ID_STATUS_OFFLINE, 1);
@@ -1865,10 +1871,10 @@ void CIcqProto::updateAimAwayMsg()
 {
 	char **szMsg = MirandaStatusToAwayMsg(m_iStatus);
 
-	EnterCriticalSection(&modeMsgsMutex);
+	EnterCriticalSection(&m_modeMsgsMutex);
 	if (szMsg)
 		icq_sendSetAimAwayMsgServ(*szMsg);
-	LeaveCriticalSection(&modeMsgsMutex);
+	LeaveCriticalSection(&m_modeMsgsMutex);
 }
 
 int __cdecl CIcqProto::SetStatus( int iNewStatus )
@@ -1885,7 +1891,7 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 	if (nNewStatus != m_iStatus)
 	{
 		// clear custom status on status change
-		if (getByte(NULL, "XStatusReset", DEFAULT_XSTATUS_RESET))
+		if (getSettingByte(NULL, "XStatusReset", DEFAULT_XSTATUS_RESET))
 		 	setXStatusEx(0, 0);
 
 		// New status is OFFLINE
@@ -1916,7 +1922,7 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 					UpdateGlobalSettings();
 
 					// Read UIN from database
-					m_dwLocalUIN = getUin(NULL);
+					m_dwLocalUIN = getContactUin(NULL);
 					if (m_dwLocalUIN == 0)
 					{
 						SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -1984,7 +1990,7 @@ int __cdecl CIcqProto::RecvAuth(WPARAM wParam, LPARAM lParam)
 	CCSDATA* ccs = (CCSDATA*)lParam;
 	PROTORECVEVENT* pre = (PROTORECVEVENT*)ccs->lParam;
 
-	SetContactHidden(ccs->hContact, 0);
+	setContactHidden(ccs->hContact, 0);
 
 	ICQAddRecvEvent(NULL, EVENTTYPE_AUTHREQUEST, pre, pre->lParam, (PBYTE)pre->szMessage, 0);
 
@@ -2003,7 +2009,7 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 	uid_str szUID;
 	WORD wStatus;
 
-	if (getUid(hContact, &dwUin, &szUID))
+	if (getContactUid(hContact, &dwUin, &szUID))
 		return 0; // Invalid contact
 
 	wStatus = getContactStatus(hContact);
@@ -2048,10 +2054,10 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 			}
 			if (CheckContactCapabilities(hContact, CAPF_STATUSMSGEXT))
 				return icq_sendGetAwayMsgServExt(hContact, dwUin, wMessageType,
-				(WORD)(getWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
+				(WORD)(getSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
 			else
 				return icq_sendGetAwayMsgServ(hContact, dwUin, wMessageType,
-				(WORD)(getWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
+				(WORD)(getSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
 		}
 	}
 	else if (wStatus == ID_STATUS_AWAY)
@@ -2085,17 +2091,17 @@ int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
 	char **ppszMsg = NULL;
 	char *szNewUtf = NULL;
 
-	EnterCriticalSection(&modeMsgsMutex);
+	EnterCriticalSection(&m_modeMsgsMutex);
 
 	ppszMsg = MirandaStatusToAwayMsg(status);
 	if (!ppszMsg)
 	{
-		LeaveCriticalSection(&modeMsgsMutex);
+		LeaveCriticalSection(&m_modeMsgsMutex);
 		return 1; // Failure
 	}
 
 	// Prepare UTF-8 status message
-	szNewUtf = ansi_to_utf8( msg );
+	szNewUtf = ansi_to_utf8(msg);
 
 	if (strcmpnull(szNewUtf, *ppszMsg))
 	{
@@ -2106,12 +2112,12 @@ int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
 		*ppszMsg = szNewUtf;
 		szNewUtf = NULL;
 
-		if (m_bAimEnabled && (m_iStatus == status ))
+		if (m_bAimEnabled && (m_iStatus == status))
 			icq_sendSetAimAwayMsgServ(*ppszMsg);
 	}
 	SAFE_FREE((void**)&szNewUtf);
 
-	LeaveCriticalSection(&modeMsgsMutex);
+	LeaveCriticalSection(&m_modeMsgsMutex);
 
 	return 0; // Success
 }
