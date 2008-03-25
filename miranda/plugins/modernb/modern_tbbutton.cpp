@@ -473,7 +473,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 	return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }
 
-static TBStateConvert2Flat(int state)
+static int TBStateConvert2Flat(int state)
 {
 	switch (state) {
 case PBS_NORMAL:

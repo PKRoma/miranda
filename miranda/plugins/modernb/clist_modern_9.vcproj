@@ -434,10 +434,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\button.c"
-				>
-			</File>
-			<File
 				RelativePath=".\cache_funcs.c"
 				>
 			</File>
@@ -455,10 +451,6 @@
 			</File>
 			<File
 				RelativePath=".\clcopts.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcpaint.c"
 				>
 			</File>
 			<File
@@ -490,10 +482,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\clui.c"
-				>
-			</File>
-			<File
 				RelativePath=".\cluiframes.c"
 				>
 			</File>
@@ -522,10 +510,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\gdiplus.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\groupmenu.c"
 				>
 			</File>
@@ -546,27 +530,35 @@
 				>
 			</File>
 			<File
-				RelativePath=".\modern_animated_avatars.c"
+				RelativePath=".\modern_aniavatars.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_awaymsg.c"
+				RelativePath=".\modern_awaymsg.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_button.c"
+				RelativePath=".\modern_clc.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_clc.c"
+				RelativePath=".\modern_clcpaint.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_gettextasync.c"
+				RelativePath=".\modern_clui.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_global.c"
+				RelativePath=".\modern_gdiplus.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_gettextasync.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_global.cpp"
 				>
 			</File>
 			<File
@@ -574,15 +566,39 @@
 				>
 			</File>
 			<File
-				RelativePath=".\modern_skinselector.c"
+				RelativePath=".\modern_skinbutton.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_statusbar.c"
+				RelativePath=".\modern_skinengine.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\modern_toolbar.c"
+				RelativePath=".\modern_skinopt.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_skinselector.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_statusbar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_tbbutton.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_toolbar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_viewmodebar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_xptheme.cpp"
 				>
 			</File>
 			<File
@@ -603,22 +619,6 @@
 			</File>
 			<File
 				RelativePath=".\SkinEditor.c"
-				>
-			</File>
-			<File
-				RelativePath=".\SkinEngine.c"
-				>
-			</File>
-			<File
-				RelativePath=".\SkinOpt.c"
-				>
-			</File>
-			<File
-				RelativePath=".\viewmodes.c"
-				>
-			</File>
-			<File
-				RelativePath=".\xpTheme.c"
 				>
 			</File>
 		</Filter>
@@ -932,11 +932,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File

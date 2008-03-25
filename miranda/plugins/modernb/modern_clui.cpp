@@ -1241,7 +1241,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (msg==WM_SIZING)
 		{
-			static a=0;
+			static int a=0;
 			RECT* wp=(RECT*)lParam;
 			if (bNeedFixSizingRect && (rcCorrectSizeRect.bottom!=0||rcCorrectSizeRect.top!=0))
 			{
