@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "./m_api/m_toolbar.h"
 
 //external definition
-COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
+extern "C" COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"
@@ -47,9 +47,12 @@ enum {
 	MTBM_REPOSBUTTONS,
 	MTBM_LAYEREDPAINT,
 	MTBM_SETBUTTONSTATE,
+	MTBM_SETBUTTONSTATEBYID,
 	MTBM_GETBUTTONSTATE,
+	MTBM_GETBUTTONSTATEBYID,
 	MTBM_REMOVE_ALL_BUTTONS,
 	MTBM_UPDATEFRAMEVISIBILITY,
+	MTBM_REMOVEBUTTON,
 	MTBM_LAST
 };
 
@@ -125,7 +128,9 @@ typedef struct _tag_MTB_GLOBALDAT
 static int svcToolBarAddButton(WPARAM wParam, LPARAM lParam);
 static int svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam);
 static int svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam);
+static int svcToolBarGetButtonStateById(WPARAM wParam, LPARAM lParam);
 static int svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam);
+static int svcToolBarSetButtonStateById(WPARAM wParam, LPARAM lParam);
 
 static int ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam);
 static int ehhToolBarSystemShutdown(WPARAM wParam, LPARAM lParam);
@@ -202,12 +207,17 @@ static int    ehhToolbarModulesLoaded(WPARAM wParam, LPARAM lParam)
 	tbdat.hToolBarWindowList=(HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 	
 	CreateServiceFunction(MS_TB_ADDBUTTON,svcToolBarAddButton);
-	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);	
+	CreateServiceFunction(MS_TB_REMOVEBUTTON, svcToolBarRemoveButton);	
 	
-	{
-		HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
-		sttCreateToolBarFrame( hwndClist, ("ToolBar"), 24);
-	}
+	CreateServiceFunction(MS_TB_SETBUTTONSTATE, svcToolBarSetButtonState);	
+	CreateServiceFunction(MS_TB_SETBUTTONSTATEBYID, svcToolBarSetButtonStateById);	
+
+	CreateServiceFunction(MS_TB_GETBUTTONSTATE, svcToolBarGetButtonState);	
+	CreateServiceFunction(MS_TB_GETBUTTONSTATEBYID, svcToolBarGetButtonStateById);	
+
+	HWND hwndClist=(HWND) CallService(MS_CLUI_GETHWND,0,0);
+	sttCreateToolBarFrame( hwndClist, ("ToolBar"), 24);
+
 	NotifyEventHooks(g_CluiData.hEventToolBarModuleLoaded, 0, 0);
 
 	return 0;
@@ -285,7 +295,7 @@ static int	  ehhToolbarOptInit(WPARAM wParam, LPARAM lParam)
 	odp.ptszGroup=LPGENT("Customize");
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_TOOLBAR);
 	odp.ptszTitle=LPGENT("ToolBar");
-	odp.pfnDlgProc=ToolBar_OptDlgProc;
+	odp.pfnDlgProc=(DLGPROC)ToolBar_OptDlgProc;
 	odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp); 
 	return 0;
@@ -304,7 +314,7 @@ static int    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 	tblock;
 	{	
 
-		MTB_BUTTONINFO * mtbi=mir_alloc(sizeof(MTB_BUTTONINFO));
+		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mir_alloc(sizeof(MTB_BUTTONINFO));
 		memset(mtbi,0,sizeof(MTB_BUTTONINFO));
 		sttTBButton2MTBBUTTONINFO(bi,mtbi);
 	
@@ -323,6 +333,11 @@ static int    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 }
 static int    svcToolBarRemoveButton(WPARAM wParam, LPARAM lParam)
 {
+	HANDLE hButton=(HANDLE)wParam;
+	tbcheck 0;
+	tblock;
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_REMOVEBUTTON, wParam, lParam);
+	tbunlock;
 	return 0;
 }
 static int    svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam)
@@ -331,12 +346,23 @@ static int    svcToolBarGetButtonState(WPARAM wParam, LPARAM lParam)
 	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_GETBUTTONSTATE, wParam, (LPARAM) &res);
 	return res;
 }
+static int    svcToolBarGetButtonStateById(WPARAM wParam, LPARAM lParam)
+{
+	int res=-1;
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_GETBUTTONSTATEBYID, wParam, (LPARAM) &res);
+	return res;
+}
 static int    svcToolBarSetButtonState(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_SETBUTTONSTATE, wParam, lParam);
 	return 0;
 }
 
+static int    svcToolBarSetButtonStateById(WPARAM wParam, LPARAM lParam)
+{
+	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_SETBUTTONSTATEBYID, wParam, lParam);
+	return 0;
+}
 
 static void	  sttTBButton2MTBBUTTONINFO(TBButton * bi, MTB_BUTTONINFO * mtbi)
 {
@@ -562,7 +588,7 @@ static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName,
 
 static void   sttSetButtonPressed( char * hButton, BOOL bPressed )
 {
-	CallService(MS_TB_SETBUTTONSTATE, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
+	CallService(MS_TB_SETBUTTONSTATEBYID, (WPARAM) hButton, (LPARAM) (bPressed ? TBST_PUSHED : TBST_RELEASED) );
 }
 static void   sttAddStaticSeparator( BOOL bVisibleByDefault )
 {
@@ -715,7 +741,7 @@ static void sttDrawNonLayeredSkinedBar(HWND hwnd, HDC hdc)
 		rc.bottom++;
 		hdc2=CreateCompatibleDC(hdc);
 		hbmp=ske_CreateDIB32(rc.right,rc.bottom);
-		hbmpo=SelectObject(hdc2,hbmp);		
+		hbmpo=(HBITMAP)SelectObject(hdc2,hbmp);		
 		if (GetParent(hwnd)!=pcli->hwndContactList)
 		{
 			HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
@@ -729,10 +755,9 @@ static void sttDrawNonLayeredSkinedBar(HWND hwnd, HDC hdc)
 		SelectObject(hdc2,hbmpo);
 		DeleteObject(hbmp);
 		mod_DeleteDC(hdc2);
-		{
-			HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
-			SelectObject(hdc,hf);
-		}
+
+		SelectObject(hdc,(HFONT)GetStockObject(DEFAULT_GUI_FONT));
+
 		ValidateRect(hwnd,NULL);		        							
 }
 static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
@@ -875,7 +900,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			li.List_Insert(pMTBInfo->pButtonList, mtbi, pMTBInfo->pButtonList->realCount);  //just insert pointer. such object are managed in global tbbutton list
 			if (hwndButton) 
 			{	
-				char * buttonId=_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
+				char * buttonId=(char *)_alloca(sizeof("ToolBar.")+strlen(mtbi->szButtonID)+2);
 				strcpy(buttonId,"ToolBar.");
 				strcat(buttonId,mtbi->szButtonID);					
 				SendMessage(hwndButton, BUTTONSETID, 0 ,(LPARAM) buttonId );
@@ -993,15 +1018,18 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			}	
 			return 0;
 		}
+	case MTBM_SETBUTTONSTATEBYID:
 	case MTBM_SETBUTTONSTATE:
-		{
-			char * hButton=(char *) wParam;
+		{	
+			char * hButtonId=(msg==MTBM_SETBUTTONSTATEBYID) ? (char *) wParam : NULL;
+			HWND hButton=(msg==MTBM_SETBUTTONSTATE) ?(HWND)wParam : NULL;
 			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if (!strcmp(mtbi->szButtonID, hButton))
+				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
+					 (hButton == mtbi->hWindow ) )
 				{
 					mtbi->bPushButton=(BOOL)lParam;
 				    sttUpdateButtonState(mtbi);
@@ -1009,6 +1037,44 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 				    break;
 				}
 			}						
+		}
+	case MTBM_GETBUTTONSTATEBYID:
+	case MTBM_GETBUTTONSTATE:
+		{		
+			int * res= (int*)lParam;
+			if (res==NULL) break;
+			char * hButtonId=(msg==MTBM_GETBUTTONSTATEBYID) ? (char *) wParam : NULL;
+			HWND hButton=(msg==MTBM_GETBUTTONSTATE) ?(HWND)wParam  : NULL;
+			MTB_BUTTONINFO *mtbi=NULL;
+			int i;
+			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
+			{
+				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
+				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
+					(hButton == mtbi->hWindow ) )
+				{
+					*res=0;
+					*res |= mtbi->bPushButton ? TBST_PUSHED : TBST_RELEASED;
+					break;
+				}
+			}						
+		}
+
+	case MTBM_REMOVEBUTTON:
+		{
+			MTB_BUTTONINFO *mtbi=NULL;
+			for (int i=0; i<pMTBInfo->pButtonList->realCount; i++)
+			{
+				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
+				if (mtbi->hWindow==(HWND)wParam)
+				{
+					li.List_RemovePtr(pMTBInfo->pButtonList,mtbi);
+					delete_MTB_BUTTONINFO((void*)mtbi);
+					mtbi=NULL;
+					pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
+					break;
+				}
+			}
 		}
 	default :
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1208,7 +1274,7 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 				if(hDragItem==hti.hItem) break;
 				if (hti.flags&TVHT_ABOVE) hti.hItem=TVI_FIRST;
 				tvi.mask=TVIF_HANDLE|TVIF_PARAM;
-				tvi.hItem=hDragItem;
+				tvi.hItem=(HTREEITEM)hDragItem;
 				TreeView_GetItem(GetDlgItem(hwndDlg,IDC_BTNORDER),&tvi);
 				if(hti.flags&(TVHT_ONITEM|TVHT_ONITEMRIGHT)||(hti.hItem==TVI_FIRST)) 
 				{
@@ -1218,7 +1284,7 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 					tvis.item.stateMask=0xFFFFFFFF;
 					tvis.item.pszText=name;
 					tvis.item.cchTextMax=sizeof(name);
-					tvis.item.hItem=hDragItem;
+					tvis.item.hItem=(HTREEITEM)hDragItem;
 					//tvis.item.iImage=tvis.item.iSelectedImage=((MTB_BUTTONINFO *)tvi.lParam)->bVisible;				
 					TreeView_GetItem(GetDlgItem(hwndDlg,IDC_BTNORDER),&tvis.item);				
 					TreeView_DeleteItem(GetDlgItem(hwndDlg,IDC_BTNORDER),hDragItem);

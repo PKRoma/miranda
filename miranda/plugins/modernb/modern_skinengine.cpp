@@ -31,7 +31,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #define _EFFECTENUM_FULL_H
+extern "C" {
 #include "hdr/effectenum.h"
+};
 #undef _EFFECTENUM_FULL_H
 
 #include "hdr/SkinEngine.h"
@@ -45,7 +47,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 SKINOBJECTSLIST g_SkinObjectList={0};
 CURRWNDIMAGEDATA * g_pCachedWindow=NULL;
 
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
+extern "C" wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
 
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
@@ -125,7 +127,7 @@ HRESULT SkinEngineLoadModule()
 {
 	ModernSkinButtonLoadModule();
 	InitializeCriticalSection(&cs_SkinChanging);
-	MainModernMaskList=mir_alloc(sizeof(LISTMODERNMASK));
+	MainModernMaskList=(LISTMODERNMASK*)mir_alloc(sizeof(LISTMODERNMASK));
 	memset(MainModernMaskList,0,sizeof(LISTMODERNMASK));   
 	//init variables
 	g_SkinObjectList.dwObjLPAlocated=0;
@@ -304,7 +306,7 @@ HDC ske_RequestBufferDC(HDC hdcOwner, int dcID, int width, int height, BOOL fCle
 	buf.hdcOwnedBy=hdcOwner;
 	buf.nUsageID=dcID;
 	buf.hDC=NULL;
-	pBuf=li.List_Find(BufferList,(void*)&buf);
+	pBuf=(DCBUFFER*)li.List_Find(BufferList,(void*)&buf);
 	if (!pBuf)
 	{
 		//if not found - allocate it
@@ -314,7 +316,7 @@ HDC ske_RequestBufferDC(HDC hdcOwner, int dcID, int width, int height, BOOL fCle
 		pBuf->height=height;
 		pBuf->hBitmap=ske_CreateDIB32Point(width,height,&(pBuf->pImage));
 		pBuf->hDC=CreateCompatibleDC(hdcOwner);
-		pBuf->oldBitmap=SelectObject(pBuf->hDC,pBuf->hBitmap);
+		pBuf->oldBitmap=(HBITMAP)SelectObject(pBuf->hDC,pBuf->hBitmap);
 		pBuf->dwDestroyAfterTime=0;
 		li.List_InsertPtr(BufferList,pBuf);		
 	}
@@ -328,7 +330,7 @@ HDC ske_RequestBufferDC(HDC hdcOwner, int dcID, int width, int height, BOOL fCle
 			pBuf->width=width;
 			pBuf->height=height;
 			pBuf->hBitmap=ske_CreateDIB32Point(width,height,&(pBuf->pImage));
-			pBuf->oldBitmap=SelectObject(pBuf->hDC,pBuf->hBitmap);
+			pBuf->oldBitmap=(HBITMAP)SelectObject(pBuf->hDC,pBuf->hBitmap);
 		}  else	if (fClear)
 			memset(pBuf->pImage,0,width*height*sizeof(DWORD));
 	}
@@ -401,7 +403,7 @@ BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 	BITMAP bmp;
 	HBITMAP hbmp;
 	if (g_CluiData.fDisableSkinEngine && !force) return TRUE;
-	hbmp=GetCurrentObject(memdc,OBJ_BITMAP);  
+	hbmp=(HBITMAP)GetCurrentObject(memdc,OBJ_BITMAP);  
 	GetObject(hbmp, sizeof(bmp),&bmp);
 	if (bmp.bmPlanes!=1) return FALSE;
 	sx=(fr->left>0)?fr->left:0;
@@ -411,11 +413,11 @@ BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 	if (!bmp.bmBits)
 	{
 		f=1;
-		bits=malloc(bmp.bmWidthBytes*bmp.bmHeight);
+		bits=(BYTE*)malloc(bmp.bmWidthBytes*bmp.bmHeight);
 		GetBitmapBits(hbmp,bmp.bmWidthBytes*bmp.bmHeight,bits);
 	}
 	else
-		bits=bmp.bmBits;
+		bits=(BYTE*)bmp.bmBits;
 	for (y=sy;y<ey;y++)
 		for (x=sx;x<ex;x++)
 			(((BYTE*)bits)+(bmp.bmHeight-y-1)*bmp.bmWidthBytes+x*4)[3]=255;
@@ -458,7 +460,7 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 		{
 			mem2dc=CreateCompatibleDC(hDest);
 			mem2bmp=ske_CreateDIB32(wr.right-wr.left,wr.bottom-wr.top);
-			oldbmp=SelectObject(mem2dc,mem2bmp);
+			oldbmp=(HBITMAP)SelectObject(mem2dc,mem2bmp);
 
 		}
 
@@ -502,7 +504,7 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 		mem2dc=CreateCompatibleDC(hDest);
 		//SetStretchBltMode(mem2dc, HALFTONE);
 		mem2bmp=ske_CreateDIB32(wr.right-wr.left, rGlyph->bottom-rGlyph->top);
-		oldbmp=SelectObject(mem2dc,mem2bmp);
+		oldbmp=(HBITMAP)SelectObject(mem2dc,mem2bmp);
 		if (!oldbmp) 
 			return 0;
 
@@ -604,7 +606,7 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 		mem2dc=CreateCompatibleDC(hDest);
 
 		mem2bmp=ske_CreateDIB32(w,h);
-		oldbmp=SelectObject(mem2dc,mem2bmp);
+		oldbmp=(HBITMAP)SelectObject(mem2dc,mem2bmp);
 
 		if (!oldbmp)
 			return 0;
@@ -636,8 +638,8 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 							BitBlt(hDest,x,wr.top,w,h,mem2dc,0,0,SRCCOPY);
 							x+=w;
 						}
-						if (x<=wr.right);
-						BitBlt(hDest,x,wr.top,wr.right-x,h, mem2dc,0,0,SRCCOPY);  
+						if (x<=wr.right)
+							BitBlt(hDest,x,wr.top,wr.right-x,h, mem2dc,0,0,SRCCOPY);  
 					}
 					else 
 					{
@@ -693,7 +695,7 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 		mem2dc=CreateCompatibleDC(hDest);
 		mem2bmp=ske_CreateDIB32(w,wr.bottom-wr.top);
 		h=wr.bottom-wr.top;
-		oldbmp=SelectObject(mem2dc,mem2bmp);
+		oldbmp=(HBITMAP)SelectObject(mem2dc,mem2bmp);
 #ifdef _DEBUG
 		if (!oldbmp) 
 			(NULL,"Tile bitmap not selected","ERROR", MB_OK);
@@ -735,8 +737,8 @@ static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT *
 							BitBlt(hDest,x,wr.top,w,h,mem2dc,0,0,SRCCOPY);
 							x+=w;
 						}
-						if (x<=wr.right);
-						BitBlt(hDest,x,wr.top,wr.right-x,h, mem2dc,0,0,SRCCOPY);  
+						if (x<=wr.right)
+							BitBlt(hDest,x,wr.top,wr.right-x,h, mem2dc,0,0,SRCCOPY);  
 					}
 					else 
 					{
@@ -866,7 +868,7 @@ static int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 	{   
 		memdc=CreateCompatibleDC(preq->hDC);
 		membmp=ske_CreateDIB32(PRect.right-PRect.left,PRect.bottom-PRect.top);
-		oldbmp=SelectObject(memdc,membmp);
+		oldbmp=(HBITMAP)SelectObject(memdc,membmp);
 		if (oldbmp==NULL) 
 		{
 			if (mode==2)
@@ -884,7 +886,8 @@ static int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 		if (pobj->hGlyph && pobj->hGlyph!=(HBITMAP)-1)
 		{
 			glyphdc=CreateCompatibleDC(preq->hDC);
-			if (!oldglyph) oldglyph=SelectObject(glyphdc,pobj->hGlyph);
+			if (!oldglyph)
+				oldglyph=(HBITMAP)SelectObject(glyphdc,pobj->hGlyph);
 			else 
 				SelectObject(glyphdc,pobj->hGlyph);
 		}
@@ -1169,7 +1172,7 @@ static int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 			if (gt->hFont!=(HFONT)-1)
 			{
 				RECT rc={0};
-				hOldFont=SelectObject(preq->hDC,gt->hFont);
+				hOldFont=(HFONT)SelectObject(preq->hDC,gt->hFont);
 
 
 
@@ -1214,7 +1217,7 @@ int ske_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJEC
 	if (sk->dwObjLPAlocated+1>sk->dwObjLPReserved)
 	{ // Realocated list to add space for new object
 
-		sk->pObjects=mir_realloc(sk->pObjects,sizeof(SKINOBJECTDESCRIPTOR)*(sk->dwObjLPReserved+1)/*alloc step*/);
+		sk->pObjects=(SKINOBJECTDESCRIPTOR*)mir_realloc(sk->pObjects,sizeof(SKINOBJECTDESCRIPTOR)*(sk->dwObjLPReserved+1)/*alloc step*/);
 		sk->dwObjLPReserved++; 
 	}
 	{ //filling new objects field
@@ -1355,7 +1358,7 @@ void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult)
 		GetBitmapBits(hbmp,Len,pBitmapBits);
 	}
 	else 
-		pBitmapBits=bmp.bmBits;
+		pBitmapBits=(BYTE*)bmp.bmBits;
 	for (y=0; y<bh; ++y)
 	{
 		BYTE *pPixel= pBitmapBits + bw * 4 * y;
@@ -1554,7 +1557,7 @@ static HBITMAP ske_LoadGlyphImage_TGA(char * szFilename)
 	if (colormap)  //create dib section
 	{
 		BYTE * pt;
-		HBITMAP hbmp=ske_CreateDIB32Point(cx,cy,&pt);
+		HBITMAP hbmp=ske_CreateDIB32Point(cx,cy,(void**)&pt);
 		if (hbmp) memcpy(pt,colormap,cx*cy*4);
 		free(colormap);
 		return hbmp;
@@ -1683,8 +1686,8 @@ static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName)
 			dc32=CreateCompatibleDC(NULL);
 			dc24=CreateCompatibleDC(NULL);
 			hBitmap32=ske_CreateDIB32(bmpInfo.bmWidth,bmpInfo.bmHeight);
-			obmp24=SelectObject(dc24,hBitmap);
-			obmp32=SelectObject(dc32,hBitmap32);
+			obmp24=(HBITMAP)SelectObject(dc24,hBitmap);
+			obmp32=(HBITMAP)SelectObject(dc32,hBitmap32);
 			BitBlt(dc32,0,0,bmpInfo.bmWidth,bmpInfo.bmHeight,dc24,0,0,SRCCOPY);
 			SelectObject(dc24,obmp24);
 			SelectObject(dc32,obmp32);
@@ -1729,7 +1732,7 @@ HBITMAP ske_LoadGlyphImage(char * szFileName)
 	// add to loaded list
 	if (dwLoadedImagesCount+1>dwLoadedImagesAlocated)
 	{
-		pLoadedImages=mir_realloc(pLoadedImages,sizeof(GLYPHIMAGE)*(dwLoadedImagesCount+1));
+		pLoadedImages=(GLYPHIMAGE*)mir_realloc(pLoadedImages,sizeof(GLYPHIMAGE)*(dwLoadedImagesCount+1));
 		if (pLoadedImages) dwLoadedImagesAlocated++;
 		else 
 		{
@@ -1785,7 +1788,7 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 		{
 			for (i=0; i<gl_plSkinFonts->realCount; i++)
 			{
-				SKINFONT * sf=gl_plSkinFonts->items[i];
+				SKINFONT * sf=(SKINFONT *)gl_plSkinFonts->items[i];
 				if (sf)
 				{
 					if (sf->szFontID) mir_free_and_nill(sf->szFontID);
@@ -1821,7 +1824,7 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 					{
 						for (i=0; i<dt->plTextList->realCount; i++)
 						{
-							GLYPHTEXT * gt=dt->plTextList->items[i];
+							GLYPHTEXT * gt=(GLYPHTEXT *)dt->plTextList->items[i];
 							if (gt)
 							{
 								if (gt->stText)       mir_free_and_nill(gt->stText);
@@ -1860,7 +1863,7 @@ static void RegisterMaskByParce(const char * szSetting, char * szValue, SKINOBJE
 		char * Obj, *Mask;
 		int res;
 		Mask=szValue+i+1;
-		Obj=mir_alloc(i+1);
+		Obj=(char*)mir_alloc(i+1);
 		strncpy(Obj,szValue,i);
 		Obj[i]='\0';
 		res=AddStrModernMaskToList(ID,Mask,Obj,pSkin->pMaskList,pSkin);
@@ -1976,7 +1979,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 
 	if (g_CluiData.fDisableSkinEngine) return 0;
 
-	Skin->pMaskList=mir_alloc(sizeof(LISTMODERNMASK));
+	Skin->pMaskList=(LISTMODERNMASK*)mir_alloc(sizeof(LISTMODERNMASK));
 	memset(Skin->pMaskList,0,sizeof(LISTMODERNMASK));
 	Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
 	if (!Skin->szSkinPlace || (strchr(Skin->szSkinPlace, '%') && !DBGetContactSettingByte(NULL,SKIN,"Modified",0)) ) 
@@ -2390,7 +2393,7 @@ static int ske_DeleteAllSettingInSection(char * SectionName)
 BOOL ske_TextOutA(HDC hdc, int x, int y, char * lpString, int nCount)
 {
 #ifdef UNICODE
-	TCHAR *buf=mir_alloc((2+nCount)*sizeof(TCHAR));
+	TCHAR *buf=(TCHAR *)mir_alloc((2+nCount)*sizeof(TCHAR));
 	BOOL res;
 	MultiByteToWideChar(CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 ), 0, lpString, -1, buf, (2+nCount)*sizeof(TCHAR)); 
 	res=ske_TextOut(hdc,x,y,buf,nCount);
@@ -2543,7 +2546,7 @@ static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD hei
 	if (effect->EffectID==0xFF) return FALSE;
 	if (!width || ! height) return FALSE;
 	if (!destPt) return FALSE;
-	buf=(BYTE*)malloc(width*height*sizeof(BYTE));
+	buf=(sbyte*)malloc(width*height*sizeof(BYTE));
 	{
 		matrix=effect->EffectMatrix.matrix;
 		mcTopStart=2-effect->EffectMatrix.topEffect;
@@ -2722,7 +2725,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 			GetBitmapBits(destBitmap,bmpdata.bmHeight*bmpdata.bmWidthBytes,destBits);
 		}
 		else 
-			destBits=bmpdata.bmBits;
+			destBits=(BYTE*)bmpdata.bmBits;
 		is16bit=(bmpdata.bmBitsPixel)!=32;
 	}
 	// Create DC
@@ -2805,11 +2808,11 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 			//Create text bitmap
 			{
 				hbmp=ske_CreateDIB32Point(sz.cx,sz.cy,(void**)&bits);
-				holdbmp=SelectObject(memdc,hbmp);
+				holdbmp=(HBITMAP)SelectObject(memdc,hbmp);
 
 				bufDC=CreateCompatibleDC(hDC);
 				bufbmp=ske_CreateDIB32Point(sz.cx,sz.cy,(void**)&bufbits);
-				bufoldbmp=SelectObject(bufDC,bufbmp);
+				bufoldbmp=(HBITMAP)SelectObject(bufDC,bufbmp);
 				BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left+drx-2,workRect.top+dry-2,SRCCOPY);
 			}
 			//Calc text draw offsets
@@ -2975,10 +2978,10 @@ HICON ske_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 			// extracting of icon
 		{
 			BYTE * bits=NULL;	
-			bits=bm.bmBits;
+			bits=(BYTE*)bm.bmBits;
 			if (!bits)
 			{
-				bits=malloc(bm.bmWidthBytes*bm.bmHeight);
+				bits=(BYTE*)malloc(bm.bmWidthBytes*bm.bmHeight);
 				GetBitmapBits(imi.hbmImage,bm.bmWidthBytes*bm.bmHeight,bits);
 			} 
 			{
@@ -3072,9 +3075,9 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 	if (bmImg.bmBitsPixel!=32) 
 	{
 		// draw it on 32bit using native procedure
-		HBITMAP hResultBmp=ske_CreateDIB32Point(iWidth,iHeight,&pDib);
+		HBITMAP hResultBmp=ske_CreateDIB32Point(iWidth,iHeight,(void**)&pDib);
 		HDC hTempDC=CreateCompatibleDC(NULL);
-		HBITMAP hOldBmp=SelectObject(hTempDC,hResultBmp);
+		HBITMAP hOldBmp=(HBITMAP)SelectObject(hTempDC,hResultBmp);
 		ImageList_DrawEx(himl,index,hTempDC,0,0,iWidth,iHeight,CLR_NONE,CLR_NONE,ILD_IMAGE);
 		SelectObject(hTempDC,hOldBmp);
 		DeleteDC(hTempDC);
@@ -3091,7 +3094,7 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 		}
 		else    
 		{
-			pMsk=bmMsk.bmBits;
+			pMsk=(BYTE*)bmMsk.bmBits;
 		}
 
 		if (!fDibMskBits)
@@ -3158,7 +3161,7 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 	}
 	else    
 	{
-		pImg=bmImg.bmBits;
+		pImg=(BYTE*)bmImg.bmBits;
 	}
 
 	if (!fDibMskBits)  //there is not dib section for mask
@@ -3171,7 +3174,7 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 	}
 	else    
 	{
-		pMsk=bmMsk.bmBits;
+		pMsk=(BYTE*)bmMsk.bmBits;
 	}
 
 	// ok lets shift pointers according required image reference.
@@ -3239,7 +3242,7 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 	}
 
 	// We are ready to create output DIB image
-	hOutBmp=ske_CreateDIB32Point(iWidth, iHeight, &pDib);
+	hOutBmp=ske_CreateDIB32Point(iWidth, iHeight, (void**)&pDib);
 	if (hOutBmp)
 	{        
 		int x,y;
@@ -3324,7 +3327,7 @@ BOOL ske_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
 
 	// ok looks like al fine lets draw it
 	hDC=CreateCompatibleDC(hdcDst);
-	hOldBitmap=SelectObject(hDC,hBitmap);
+	hOldBitmap=(HBITMAP)SelectObject(hDC,hBitmap);
 
 	bf.SourceConstantAlpha=alpha;    
 	ske_AlphaBlend(hdcDst,x,y,dx?dx:iWidth,dy?dy:iHeight,hDC,0,0,iWidth,iHeight,bf);
@@ -3393,7 +3396,7 @@ BOOL ske_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 		if (tBmp) 
 		{
 			GetObject(tBmp,sizeof(BITMAP),&imbt);
-			otBmp=SelectObject(tempDC1,tBmp);
+			otBmp=(HBITMAP)SelectObject(tempDC1,tBmp);
 			DrawIconEx(tempDC1,0,0,hIcon,imbt.bmWidth,imbt.bmHeight,istepIfAniCur,hbrFlickerFreeDraw,DI_IMAGE);   
 			noMirrorMask=TRUE;
 
@@ -3422,7 +3425,7 @@ BOOL ske_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 		imimagbits=(BYTE*)malloc(cy*imbt.bmWidthBytes);
 		GetBitmapBits(ici.hbmColor,cy*imbt.bmWidthBytes,(void*)imimagbits);
 	}
-	else imimagbits=imbt.bmBits;
+	else imimagbits=(BYTE*)imbt.bmBits;
 
 
 	if (immaskbt.bmBits==NULL)
@@ -3430,12 +3433,13 @@ BOOL ske_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 		immaskbits=(BYTE*)malloc(cy*immaskbt.bmWidthBytes);
 		GetBitmapBits(ici.hbmMask,cy*immaskbt.bmWidthBytes,(void*)immaskbits);
 	}
-	else immaskbits=immaskbt.bmBits;
+	else 
+		immaskbits=(BYTE*)immaskbt.bmBits;
 	icy=imbt.bmHeight;
 	cx=imbt.bmWidth;
 	imDC=CreateCompatibleDC(hdcDst);
-	imBmp=ske_CreateDIB32Point(cx,icy,&imbits);
-	oldBmp=SelectObject(imDC,imBmp);
+	imBmp=ske_CreateDIB32Point(cx,icy,(void**)&imbits);
+	oldBmp=(HBITMAP)SelectObject(imDC,imBmp);
 	if (imbits!=NULL && imimagbits!=NULL && immaskbits!=NULL)
 	{
 		int x; int y;
@@ -3700,7 +3704,7 @@ static int ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting) 
 		y=rcPaint.top;
 		hdc=CreateCompatibleDC(g_pCachedWindow->hImageDC);
 		n=ske_CreateDIB32(w,h);
-		o=SelectObject(hdc,n);
+		o=(HBITMAP)SelectObject(hdc,n);
 		{
 			HRGN rgnUpdate=0;
 
@@ -3885,10 +3889,10 @@ int ske_ReCreateBackImage(BOOL Erase,RECT *w)
 			g_pCachedWindow->Height=wnd.bottom-wnd.top;
 			if (g_pCachedWindow->Width!=0 && g_pCachedWindow->Height!=0)
 			{
-				g_pCachedWindow->hImageDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte));
-				g_pCachedWindow->hBackDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hBackDIBByte));
-				g_pCachedWindow->hImageOld=SelectObject(g_pCachedWindow->hImageDC,g_pCachedWindow->hImageDIB);
-				g_pCachedWindow->hBackOld=SelectObject(g_pCachedWindow->hBackDC,g_pCachedWindow->hBackDIB);
+				g_pCachedWindow->hImageDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
+				g_pCachedWindow->hBackDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hBackDIBByte));
+				g_pCachedWindow->hImageOld=(HBITMAP)SelectObject(g_pCachedWindow->hImageDC,g_pCachedWindow->hImageDIB);
+				g_pCachedWindow->hBackOld=(HBITMAP)SelectObject(g_pCachedWindow->hBackDC,g_pCachedWindow->hBackDIB);
 			}
 		}
 		IsNewCache=1;
@@ -3900,8 +3904,8 @@ int ske_ReCreateBackImage(BOOL Erase,RECT *w)
 		g_pCachedWindow->Height=wnd.bottom-wnd.top;
 		if (g_pCachedWindow->Width!=0 && g_pCachedWindow->Height!=0)
 		{
-			hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte));
-			hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte)); 
+			hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
+			hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte)); 
 			SelectObject(g_pCachedWindow->hImageDC,hb1);
 			SelectObject(g_pCachedWindow->hBackDC,hb2);
 		}
@@ -3988,10 +3992,10 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 			g_pCachedWindow->hImageDC=CreateCompatibleDC(g_pCachedWindow->hScreenDC);
 			g_pCachedWindow->Width=wnd.right-wnd.left;
 			g_pCachedWindow->Height=wnd.bottom-wnd.top;
-			g_pCachedWindow->hImageDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte));
-			g_pCachedWindow->hBackDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hBackDIBByte));
-			g_pCachedWindow->hImageOld=SelectObject(g_pCachedWindow->hImageDC,g_pCachedWindow->hImageDIB);
-			g_pCachedWindow->hBackOld=SelectObject(g_pCachedWindow->hBackDC,g_pCachedWindow->hBackDIB);
+			g_pCachedWindow->hImageDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
+			g_pCachedWindow->hBackDIB=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hBackDIBByte));
+			g_pCachedWindow->hImageOld=(HBITMAP)SelectObject(g_pCachedWindow->hImageDC,g_pCachedWindow->hImageDIB);
+			g_pCachedWindow->hBackOld=(HBITMAP)SelectObject(g_pCachedWindow->hBackDC,g_pCachedWindow->hBackDIB);
 		}
 		IsNewCache=1;
 	}   
@@ -4000,8 +4004,8 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 		HBITMAP hb1,hb2;
 		g_pCachedWindow->Width=wnd.right-wnd.left;
 		g_pCachedWindow->Height=wnd.bottom-wnd.top;
-		hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte));
-		hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,&(g_pCachedWindow->hImageDIBByte)); 
+		hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
+		hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte)); 
 		SelectObject(g_pCachedWindow->hImageDC,hb1);
 		SelectObject(g_pCachedWindow->hBackDC,hb2);
 		DeleteObject(g_pCachedWindow->hImageDIB);
@@ -4099,7 +4103,7 @@ void ske_ApplyTransluency()
 	return;
 }
 
-int ske_JustUpdateWindowImage()
+extern "C" int ske_JustUpdateWindowImage()
 {
 	RECT r;
 	if (!g_CluiData.fLayered)
@@ -4187,7 +4191,7 @@ static TCHAR *ske_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
 { 
 	int l1=lfirst?lstrlen(lfirst):0;
 	int l2=(len?len:(lstrlen(lsecond)+1));
-	TCHAR *buf=mir_alloc((l1+l2+1)*sizeof(TCHAR));
+	TCHAR *buf=(TCHAR *)mir_alloc((l1+l2+1)*sizeof(TCHAR));
 	if (lfirst) memmove(buf,lfirst,l1*sizeof(TCHAR));
 	memmove(buf+l1,lsecond,l2*sizeof(TCHAR));
 	if (lfirst) mir_free(lfirst);
@@ -4241,7 +4245,7 @@ TCHAR *ske_ParseText(TCHAR *stzText)
 			{
 				if (curpos-stpos>0) 
 				{
-					TCHAR *var=mir_alloc((curpos-stpos+1)*sizeof(TCHAR));
+					TCHAR *var=(TCHAR *)mir_alloc((curpos-stpos+1)*sizeof(TCHAR));
 					memmove(var,stzText+stpos,(curpos-stpos)*sizeof(TCHAR));
 					var[curpos-stpos]=(TCHAR)'\0';
 					var=ske_ReplaceVar(var);
@@ -4589,7 +4593,7 @@ HICON ske_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 
 	tempDC=CreateCompatibleDC(NULL);
 	nImage=ske_CreateDIB32Point(16,16,(void**)&ptPixels);
-	oImage=SelectObject(tempDC,nImage);
+	oImage=(HBITMAP)SelectObject(tempDC,nImage);
 
 	GetIconInfo(hBottom,&iciBottom);
 	GetObject(iciBottom.hbmColor,sizeof(BITMAP),&bmp_bottom);
@@ -4711,8 +4715,8 @@ HICON ske_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 			HDC tempDC2=CreateCompatibleDC(NULL);
 			HDC tempDC3=CreateCompatibleDC(NULL);
 			HBITMAP hbm=CreateCompatibleBitmap(tempDC3,16,16);
-			HBITMAP obmp=SelectObject(tempDC2,nMask);
-			HBITMAP obmp2=SelectObject(tempDC3,hbm);
+			HBITMAP obmp=(HBITMAP)SelectObject(tempDC2,nMask);
+			HBITMAP obmp2=(HBITMAP)SelectObject(tempDC3,hbm);
 			DrawIconEx(tempDC2,0,0,hBottom,16,16,0,NULL,DI_MASK);
 			DrawIconEx(tempDC3,0,0,hTop,16,16,0,NULL,DI_MASK);
 			BitBlt(tempDC2,0,0,16,16,tempDC3,0,0,SRCAND);
@@ -4733,7 +4737,7 @@ HICON ske_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 }
 
 #define NEWJOINEDSTR( destination, first, separator, last)						\
-	destination=alloca(strlen(first)+strlen(separator)+strlen(last)+1);	\
+	destination=(char*)alloca(strlen(first)+strlen(separator)+strlen(last)+1);	\
 	if (destination) {													\
 	*destination='\0';												\
 	strcat(destination,first);										\
@@ -4746,7 +4750,7 @@ HICON ske_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 BOOL SkinDBGetContactSetting(HANDLE hContact, const char* szSection, const char*szKey, DBVARIANT * retdbv, BOOL * bSkined )
 {
 	if (!hContact) {  //only for not contact settings
-		char * szSkinKey=NEWJOINEDSTR(szSkinKey,szSection,"@",szKey);
+		char * szSkinKey=(char*)NEWJOINEDSTR(szSkinKey,szSection,"@",szKey);
 		if ( !DBGetContactSetting(hContact, SKINSETSECTION, szSkinKey, retdbv) )	{
 			if (bSkined) *bSkined=TRUE;
 			return FALSE;

@@ -30,6 +30,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /************************************************************************/
 
 /* Definitions */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #define TM_AUTOALPHA                1
 #define TM_DELAYEDSIZING            2
@@ -218,4 +222,7 @@ static PROTOTICKS CycleStartTick[64]={0};//max 64 protocols
 
 static int nAnimatedIconStep=100;
 
+#ifdef __cplusplus
+};
+#endif
 

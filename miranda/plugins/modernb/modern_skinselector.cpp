@@ -194,7 +194,7 @@ DWORD mod_CalcHash(const char * a)
 int AddModernMaskToList(MODERNMASK * mm,  LISTMODERNMASK * mmTemplateList)
 {
     if (!mmTemplateList || !mm) return -1;
-	mmTemplateList->pl_Masks=mir_realloc(mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mmTemplateList->dwMaskCnt+1));
+	mmTemplateList->pl_Masks=(MODERNMASK *)mir_realloc(mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mmTemplateList->dwMaskCnt+1));
     memmove(&(mmTemplateList->pl_Masks[mmTemplateList->dwMaskCnt]),mm,sizeof(MODERNMASK));
     mmTemplateList->dwMaskCnt++;
     return mmTemplateList->dwMaskCnt-1;
@@ -228,7 +228,7 @@ int DeleteMaskByItID(DWORD mID,LISTMODERNMASK * mmTemplateList)
       MODERNMASK * newAlocation;
       DWORD i;
       SkinSelector_DeleteMask(&(mmTemplateList->pl_Masks[mID]));
-	  newAlocation=mir_alloc(sizeof(MODERNMASK)*mmTemplateList->dwMaskCnt-1);
+	  newAlocation=(MODERNMASK *)mir_alloc(sizeof(MODERNMASK)*mmTemplateList->dwMaskCnt-1);
       memmove(newAlocation,mmTemplateList->pl_Masks,sizeof(MODERNMASK)*(mID+1));
       for (i=mID; i<mmTemplateList->dwMaskCnt-1; i++)
       {
@@ -346,7 +346,7 @@ int ParseToModernMask(MODERNMASK * mm, char * szText)
                 {//Adding New Parameter;
                   if (curParam>=mm->dwParamCnt)
                   {
-					mm->pl_Params=realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
+					mm->pl_Params=(MASKPARAM*)realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
 					mm->dwParamCnt++;
                   }
                   memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));
@@ -469,7 +469,7 @@ SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK *
 TCHAR * GetParamNT(char * string, TCHAR * buf, int buflen, BYTE paramN, char Delim, BOOL SkipSpaces)
 {
 #ifdef UNICODE
-	char *ansibuf=mir_alloc(buflen/sizeof(TCHAR));
+	char *ansibuf=(char*)mir_alloc(buflen/sizeof(TCHAR));
 	GetParamN(string, ansibuf, buflen/sizeof(TCHAR), paramN, Delim, SkipSpaces);
 	MultiByteToWideChar(CP_UTF8,0,ansibuf,-1,buf,buflen);
 	mir_free_and_nill(ansibuf);

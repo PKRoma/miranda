@@ -34,8 +34,8 @@ File contains implementation of animated avatars in contact list
 
 #include "hdr/commonheaders.h"
 
-extern void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
-extern BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
+extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
+extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
 
 /* Next is module */
 #define ANIAVAWINDOWCLASS _T("MirandaModernAniAvatar")
@@ -590,7 +590,7 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 
 					hNewDC=CreateCompatibleDC(NULL);
 					hNewBmp=ske_CreateDIB32(newWidth,newHeight);
-					hNewOldBmp=SelectObject(hNewDC,hNewBmp);
+					hNewOldBmp=(HBITMAP)SelectObject(hNewDC,hNewBmp);
 					// copy from old and from new strip
 					if (aai->nStripTop>0)
 						BitBlt(hNewDC,0,0,aai->nStripTop,newHeight,AniAva.hAniAvaDC,0,0, SRCCOPY);
@@ -670,7 +670,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 
 		//copy image to temp DC
 		hTempDC=CreateCompatibleDC(NULL);
-		hOldBitmap=SelectObject(hTempDC,hBitmap);
+		hOldBitmap=(HBITMAP)SelectObject(hTempDC,hBitmap);
 
 		//lets create hNewDC
 		/*
@@ -682,7 +682,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 
 		hNewDC=CreateCompatibleDC(NULL);
 		hNewBmp=ske_CreateDIB32(newWidth,newHeight);
-		hNewOldBmp=SelectObject(hNewDC,hNewBmp);
+		hNewOldBmp=(HBITMAP)SelectObject(hNewDC,hNewBmp);
 
 		_AniAva_PausePainting();
 		GdiFlush();
@@ -811,7 +811,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			int cornerRadius= AniAva.cornerRadius;
 			tempDC	= CreateCompatibleDC( NULL );
 			hBmp	= ske_CreateDIB32( szWnd.cx, szWnd.cy );
-			hOldBmp	= SelectObject(tempDC,hBmp);
+			hOldBmp	= (HBITMAP)SelectObject(tempDC,hBmp);
 			if ( AniAva.bFlags & AAO_ROUND_CORNERS )
 			{
 				if (!cornerRadius)  //auto radius
@@ -821,7 +821,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			{
 				// if has borders - create region (round corners) and fill it, remember internal as clipping
 				HBRUSH hBrush = CreateSolidBrush( AniAva.borderColor );
-				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );
+				HBRUSH hOldBrush = (HBRUSH)SelectObject( tempDC, hBrush );
 				HRGN rgnOutside = CreateRoundRectRgn( 0, 0, szWnd.cx+1, szWnd.cy+1, cornerRadius<<1, cornerRadius<<1);
 				hRgn=CreateRoundRectRgn( 1, 1, szWnd.cx, szWnd.cy, cornerRadius<<1, cornerRadius<<1);
 				CombineRgn( rgnOutside,rgnOutside,hRgn,RGN_DIFF);
@@ -842,7 +842,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 			{
 				// if back color - fill clipping area
 				HBRUSH hBrush = CreateSolidBrush( AniAva.bkgColor );
-				HBRUSH hOldBrush = SelectObject( tempDC, hBrush );
+				HBRUSH hOldBrush = (HBRUSH)SelectObject( tempDC, hBrush );
 				FillRgn( tempDC, hRgn, hBrush );
 				ske_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
 			}

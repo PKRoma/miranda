@@ -36,18 +36,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/clui.h"
 #include <locale.h>
 
-int	CheckFramesPos(RECT *wr);			//cluiframes.c
-int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
-int	CLUIFrames_GetTotalHeight();		//cluiframes.c
-int CLUIFrames_RepaintSubContainers();  //cluiframes.c
-int CLUIFramesGetMinHeight();			//cluiframes.c
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
-int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
+extern "C" int	CheckFramesPos(RECT *wr);			//cluiframes.c
+extern "C" int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
+extern "C" int	CLUIFrames_GetTotalHeight();		//cluiframes.c
+extern "C" int CLUIFrames_RepaintSubContainers();  //cluiframes.c
+extern "C" int CLUIFramesGetMinHeight();			//cluiframes.c
+extern "C" wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
+extern "C" int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
 
-int InitSkinHotKeys();
-
-extern BOOL amWakeThread();
-extern BOOL gtaWakeThread();
+extern "C" int InitSkinHotKeys();
+extern "C" BOOL amWakeThread();
+extern "C" BOOL gtaWakeThread();
+extern "C" void CreateViewModeFrame();
 
 
 HIMAGELIST hAvatarOverlays=NULL;
@@ -929,12 +929,12 @@ static int CLUI_OnSettingChanging(WPARAM wParam,LPARAM lParam)
 
 		if (dbcws->value.type==DBVT_ASCIIZ&&!mir_strcmp(dbcws->szModule,"UserInfo"))
 		{
-			if (!mir_strcmp(dbcws->szSetting,(HANDLE)"MyPhone0"))
+			if (!mir_strcmp(dbcws->szSetting,"MyPhone0"))
 			{		
 				ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
 				return(0);
 			};
-			if (!mir_strcmp(dbcws->szSetting,(HANDLE)"Mye-mail0"))
+			if (!mir_strcmp(dbcws->szSetting,"Mye-mail0"))
 			{	
 				ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);	
 				return(0);
@@ -974,7 +974,7 @@ static int CLUI_PreCreateCLC(HWND parent)
 
 	return((int)pcli->hwndContactTree);
 };
-void CreateViewModeFrame();
+
 static int CLUI_CreateCLC(HWND parent)
 {
 
@@ -1089,7 +1089,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 
 			GetObject(dat->hMenuBackground,sizeof(bmp),&bmp);
 			hdcBmp=CreateCompatibleDC(hdc);
-			oldbm=SelectObject(hdcBmp,dat->hMenuBackground);
+			oldbm=(HBITMAP)SelectObject(hdcBmp,dat->hMenuBackground);
 			y=clRect.top;
 			x=clRect.left;
 			maxx=dat->MenuBmpUse&CLBF_TILEH?maxx=r1.right:x+1;
@@ -1215,13 +1215,13 @@ int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
 	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam, wParam ? (DWORD) wParam : CCI_ALL );
 }
 
-int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
+extern "C" int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncSetPDNCE");
 	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam, wParam ?  (DWORD) wParam : CCI_ALL );
 }
 
-int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
+extern "C" int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd=(HWND) wParam;
 	struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
@@ -1485,7 +1485,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				char szFilePath[MAX_PATH], szProfile[MAX_PATH];
 				CallService(MS_DB_GETPROFILEPATH,MAX_PATH,(LPARAM)&szFilePath);
 				CallService(MS_DB_GETPROFILENAME,MAX_PATH,(LPARAM)&szProfile);
-				_snprintf(hView,MAX_PATH,"%s\\%s",szFilePath,szProfile);
+				_snprintf((char*)hView,MAX_PATH,"%s\\%s",szFilePath,szProfile);
 				UnmapViewOfFile(hView);
 				rc=1;
 			}
@@ -1573,7 +1573,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 				w2=w;
 				hdc=CreateCompatibleDC(paintDC);
 				hbmp=ske_CreateDIB32(w.right,w.bottom);
-				oldbmp=SelectObject(hdc,hbmp);
+				oldbmp=(HBITMAP)SelectObject(hdc,hbmp);
 				ske_ReCreateBackImage(FALSE,NULL);
 				BitBlt(paintDC,w2.left,w2.top,w2.right-w2.left,w2.bottom-w2.top,g_pCachedWindow->hBackDC,w2.left,w2.top,SRCCOPY);
 				SelectObject(hdc,oldbmp);
@@ -2835,7 +2835,7 @@ int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam)
 			{
 				mutex_bAnimationInProgress=1;
 				if (g_CluiData.fSmoothAnimation)
-					g_dwSmoothAnimationThreadID=(DWORD)mir_forkthread(CLUI_SmoothAnimationThreadProc,pcli->hwndContactList);	
+					g_dwSmoothAnimationThreadID=(DWORD)mir_forkthread((pThreadFunc)CLUI_SmoothAnimationThreadProc,pcli->hwndContactList);	
 
 			}
 		}

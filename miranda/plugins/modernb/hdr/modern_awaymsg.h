@@ -29,8 +29,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //////////////////////////////////////////////////////////////////////////
 // Module to Request Away Messages
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void InitAwayMsgModule();
 void UninitAwayMsgModule();
-//Request Away Message for hContact
 void amRequestAwayMsg(HANDLE hContact);
+
+#ifdef __cplusplus
+};
+#endif

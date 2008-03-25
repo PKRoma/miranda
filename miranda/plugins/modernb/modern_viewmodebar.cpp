@@ -1160,7 +1160,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				hdc = GetDC(hwnd);
 				hdc2=CreateCompatibleDC(hdc);
 				hbmp=ske_CreateDIB32(rc.right,rc.bottom);
-				hbmpo=SelectObject(hdc2,hbmp);		
+				hbmpo=(HBITMAP)SelectObject(hdc2,hbmp);		
 				if (GetParent(hwnd)!=pcli->hwndContactList)
 				{
 					HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
@@ -1189,10 +1189,9 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SelectObject(hdc2,hbmpo);
 				DeleteObject(hbmp);
 				mod_DeleteDC(hdc2);
-				{
-					HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
-					SelectObject(hdc,hf);
-				}
+
+				SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
+
 				ReleaseDC(hwnd,hdc);
 				ValidateRect(hwnd,NULL);		        							
 			}
@@ -1308,7 +1307,7 @@ HWND g_hwndViewModeFrame;
 
 
 
-void CreateViewModeFrame()
+extern "C" void CreateViewModeFrame()
 {
     CLISTFrame frame = {0};
     WNDCLASS wndclass = {0};
@@ -1531,7 +1530,7 @@ static int SkinSetViewMode(WPARAM wParam /*char * name*/, LPARAM lParam /*int in
 	}
 	else
 	{
-		if (wParam && !IsBadStringPtrA((const char*)wParam, -1));
+		if (wParam && !IsBadStringPtrA((const char*)wParam, -1))
 			ApplyViewMode((const char*)wParam);
 	}
 }

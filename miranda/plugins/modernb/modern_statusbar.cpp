@@ -13,6 +13,7 @@ HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
 int callProxied_FindFrameID(HWND FrameHwnd);
+extern "C" COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -46,7 +47,6 @@ char * ApendSubSetting(char * buf, int size, char *first, char *second)
     _snprintf(buf,size,"%sFont%s",first,second);
     return buf;
 }
-COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 int LoadStatusBarData()
 {
@@ -197,7 +197,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		}
 		{
 			int size=sizeof(ProtoItemData)*protoCount;
-			ProtosData=mir_alloc(size);
+			ProtosData=(ProtoItemData*)mir_alloc(size);
 			memset(ProtosData,0,size);
 		}
 		protcnt=(int)DBGetContactSettingDword(0,"Protocols","ProtoCount",-1);
@@ -291,7 +291,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						if (visProtoCount>1) sw=(rectwidth-(g_StatusBarData.extraspace*(visProtoCount-1)))/visProtoCount;
 						else sw=rectwidth;
 						if (ProtoWidth) mir_free_and_nill(ProtoWidth);
-						ProtoWidth=mir_alloc(sizeof(DWORD)*visProtoCount);
+						ProtoWidth=(int*)mir_alloc(sizeof(int)*visProtoCount);
 						for (i=0; i<visProtoCount; i++)
 						{
 							SIZE textSize;
@@ -611,7 +611,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             hdc = GetDC(hwnd);
             hdc2=CreateCompatibleDC(hdc);
             hbmp=ske_CreateDIB32(rc.right,rc.bottom);
-            hbmpo=SelectObject(hdc2,hbmp);  
+            hbmpo=(HBITMAP)SelectObject(hdc2,hbmp);  
             SetBkMode(hdc2,TRANSPARENT);
             ske_BltBackImage(hwnd,hdc2,&rc);
             ModernDrawStatusBarWorker(hwnd,hdc2);
@@ -620,10 +620,8 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             SelectObject(hdc2,hbmpo);
             DeleteObject(hbmp);
             mod_DeleteDC(hdc2);
-            {
-                HFONT hf=GetStockObject(DEFAULT_GUI_FONT);
-                SelectObject(hdc,hf);
-            }
+
+			SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
             ReleaseDC(hwnd,hdc);
             ValidateRect(hwnd,NULL);
         }
@@ -638,7 +636,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             hdc=BeginPaint(hwnd,&ps);
             hdc2=CreateCompatibleDC(hdc);
             hbmp=ske_CreateDIB32(rc.right,rc.bottom);
-            hbmpo=SelectObject(hdc2,hbmp);
+            hbmpo=(HBITMAP) SelectObject(hdc2,hbmp);
             FillRect(hdc2,&ps.rcPaint,br);
             ModernDrawStatusBarWorker(hwnd,hdc2);
             //BitBlt(hdc,ps.rcPaint.left,ps.rcPaint.top,ps.rcPaint.right-ps.rcPaint.left,ps.rcPaint.bottom-ps.rcPaint.top,
@@ -851,7 +849,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-int StatusBar_Create(HWND parent)
+extern "C" int StatusBar_Create(HWND parent)
 {
     WNDCLASS wndclass={0};
     TCHAR pluginname[]=TEXT("ModernStatusBar");

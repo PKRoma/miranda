@@ -120,7 +120,7 @@ typedef struct tagCLISTFrame {
 	HWND hWnd ;
 	HICON hIcon;
 	int align;	//al flags below
-	union _tagMinSize{
+	union {
 		int height;
 		int minSize;   //the actual meaning depends from type of frame
 	};

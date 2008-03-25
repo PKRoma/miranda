@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Module to Request Away Messages
 
 #include "hdr/commonheaders.h"
+#include "hdr/modern_awaymsg.h"
 #include "newpluginapi.h"
 
 #define AMASKPERIOD 3000
@@ -39,7 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct _tag_amChainItem {
 	HANDLE hContact;
-	struct AMCHAINITEM *Next;
+	_tag_amChainItem *Next;
 } AMCHAINITEM;
 
 static AMCHAINITEM *	amFirstChainItem = NULL;
@@ -75,12 +76,12 @@ static int amAddHandleToChain(HANDLE hContact)
 	}
 	if (!amFirstChainItem)  
 	{
-		amFirstChainItem=malloc(sizeof(AMCHAINITEM));
+		amFirstChainItem=(AMCHAINITEM*)malloc(sizeof(AMCHAINITEM));
 		workChain=amFirstChainItem;
 	}
 	else 
 	{
-		amLastChainItem->Next=malloc(sizeof(AMCHAINITEM));
+		amLastChainItem->Next=(AMCHAINITEM*)malloc(sizeof(AMCHAINITEM));
 		workChain=(AMCHAINITEM *)amLastChainItem->Next;
 	}
 	amLastChainItem=workChain;
@@ -97,7 +98,7 @@ static int amAddHandleToChain(HANDLE hContact)
 */
 static HANDLE amGetCurrentChain()
 {
-	struct AMCHAINITEM * workChain;
+	AMCHAINITEM * workChain;
 	HANDLE res=NULL;
 	amlock;
 	if (amFirstChainItem)
@@ -185,7 +186,7 @@ static int amThreadProc(HWND hwnd)
 	return 1;
 }
 
-BOOL amWakeThread()
+extern "C" BOOL amWakeThread()
 {
 	if (hamProcessEvent && g_dwAwayMsgThreadID)
 	{
@@ -216,7 +217,7 @@ void InitAwayMsgModule()
 {
 	InitializeCriticalSection(&amLockChain);
 	hamProcessEvent=CreateEvent(NULL,FALSE,FALSE,NULL);   
-	g_dwAwayMsgThreadID=(DWORD)mir_forkthread(amThreadProc,0);
+	g_dwAwayMsgThreadID=(DWORD)mir_forkthread((pThreadFunc)amThreadProc,0);
 }
 
 void UninitAwayMsgModule()

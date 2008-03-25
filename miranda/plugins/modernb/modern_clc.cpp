@@ -574,8 +574,8 @@ static LRESULT clcOnSize(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam
 		FillRect(hdcMem, &rc, hBrush);
 		DeleteObject(hBrush);
 
-		hoMaskBmp = SelectObject(hdcMem, hBmpMask);
-		FillRect(hdcMem, &rc, GetStockObject(BLACK_BRUSH));
+		hoMaskBmp = (HBITMAP)SelectObject(hdcMem, hBmpMask);
+		FillRect(hdcMem, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 		SelectObject(hdcMem, hoMaskBmp);
 		SelectObject(hdcMem, hoBmp);
 		DeleteDC(hdcMem);
@@ -1946,7 +1946,7 @@ HRESULT ClcLoadModule()
 }
 
 
-int ClcUnloadModule()
+extern "C" int ClcUnloadModule()
 {
 	if(hAvatarChanged!=0)
 		ModernUnhookEvent(hAvatarChanged);
@@ -2051,7 +2051,7 @@ int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
 }
 
 
-int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
+extern "C" int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
 {
 	if (!pData|| !pShortData) return -1;
 	pShortData->hWnd=pData->hWnd;
@@ -2087,7 +2087,7 @@ int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
 
 
 
-int ClcEnterDragToScroll(HWND hwnd, int Y)
+extern "C" int ClcEnterDragToScroll(HWND hwnd, int Y)
 {
 	struct ClcData * dat;
 	if (IsDragToScrollMode) return 0;

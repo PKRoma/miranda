@@ -115,7 +115,7 @@ extern "C" {
 extern char *g_szMetaModuleName;
 
 //macros to free data and set it pointer to NULL
-#define mir_free_and_nill(x) {mir_free(x); x=NULL;}
+#define mir_free_and_nill(x) {mir_free((void*)x); x=NULL;}
 // shared vars
 
 #define CLUI_FRAME_AUTOHIDENOTIFY  512

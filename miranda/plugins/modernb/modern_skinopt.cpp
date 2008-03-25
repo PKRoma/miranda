@@ -48,7 +48,7 @@ int FillAvailableSkinList(HWND hwndDlg);
 
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int SkinOptInit(WPARAM wParam,LPARAM lParam)
+extern "C" int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 	if (!g_CluiData.fDisableSkinEngine)
@@ -273,7 +273,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			mHeight=dis->rcItem.bottom-dis->rcItem.top;
 			memDC=CreateCompatibleDC(dis->hDC);
 			hbmp=ske_CreateDIB32(mWidth,mHeight);
-			holdbmp=SelectObject(memDC,hbmp);
+			holdbmp=(HBITMAP)SelectObject(memDC,hbmp);
 			workRect=dis->rcItem;
 			OffsetRect(&workRect,-workRect.left,-workRect.top);
 			FillRect(memDC,&workRect,hbr);     
@@ -308,7 +308,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				{
 					BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 					imgDC=CreateCompatibleDC(dis->hDC);
-					imgOldbmp=SelectObject(imgDC,hPreviewBitmap);                 
+					imgOldbmp=(HBITMAP)SelectObject(imgDC,hPreviewBitmap);                 
 					ske_AlphaBlend(memDC,imgPos.x,imgPos.y,dWidth,dHeight,imgDC,0,0,bmp.bmWidth,bmp.bmHeight,bf);
 					SelectObject(imgDC,imgOldbmp);
 					mod_DeleteDC(imgDC);
@@ -419,7 +419,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				else if (nmtv->hdr.code==TVN_DELETEITEMA || nmtv->hdr.code==TVN_DELETEITEMW)
 				{
 					if (nmtv->itemOld.lParam)
-					mir_free_and_nill((void*)(nmtv->itemOld.lParam));
+						mir_free_and_nill(nmtv->itemOld.lParam);
 					return 0;
 				}
 			break;
