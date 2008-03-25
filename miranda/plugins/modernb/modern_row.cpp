@@ -24,8 +24,6 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 
 */
 
-#define _CPPCODE
-
 #define _WIN32_WINNT 0x0501
 
 #include "m_stdhdr.h"
@@ -39,7 +37,6 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 #include <io.h>
 #include <string.h>
 #include <direct.h>
-#include <math.h>
 #include "resource.h"
 
 

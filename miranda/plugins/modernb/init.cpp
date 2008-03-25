@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#define PLUGININTERFACE extern "C" __declspec( dllexport )
 
 //include
 #include "hdr/modern_commonheaders.h"
@@ -28,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "version.h"
 
 //definitions
+#define PLUGININTERFACE extern "C" __declspec( dllexport )
+
 #define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
 #define CHECKRES(sub) if (sub!=S_OK) return S_FALSE;
 

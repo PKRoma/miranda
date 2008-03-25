@@ -61,8 +61,8 @@
 				EnableFunctionLevelLinking="false"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough="commonheaders.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				AssemblerOutput="2"
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -163,8 +163,8 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough="commonheaders.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -262,8 +262,8 @@
 				RuntimeLibrary="3"
 				BufferSecurityCheck="true"
 				DefaultCharIsUnsigned="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough="commonheaders.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -363,8 +363,8 @@
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="true"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough="commonheaders.h"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				AssemblerOutput="2"
 				BrowseInformation="0"
 				WarningLevel="3"
@@ -434,99 +434,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\cache_funcs.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcidents.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcitems.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcmsgs.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcopts.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clcutils.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clistevents.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clistmenus.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clistmod.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clistopts.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clistsettings.c"
-				>
-			</File>
-			<File
-				RelativePath=".\clisttray.c"
-				>
-			</File>
-			<File
-				RelativePath=".\cluiframes.c"
-				>
-			</File>
-			<File
-				RelativePath=".\cluiservices.c"
-				>
-			</File>
-			<File
-				RelativePath=".\commonheaders.c"
-				>
-			</File>
-			<File
-				RelativePath=".\contact.c"
-				>
-			</File>
-			<File
-				RelativePath=".\Docking.c"
-				>
-			</File>
-			<File
-				RelativePath=".\extraimage.c"
-				>
-			</File>
-			<File
-				RelativePath=".\framesmenu.c"
-				>
-			</File>
-			<File
-				RelativePath=".\groupmenu.c"
-				>
-			</File>
-			<File
-				RelativePath=".\image_array.c"
-				>
-			</File>
-			<File
-				RelativePath=".\init.c"
-				>
-			</File>
-			<File
-				RelativePath=".\keyboard.c"
-				>
-			</File>
-			<File
-				RelativePath=".\log.c"
+				RelativePath=".\init.cpp"
 				>
 			</File>
 			<File
@@ -538,7 +446,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\modern_cachefuncs.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\modern_clc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clcidents.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clcitems.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clcmsgs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clcopts.cpp"
 				>
 			</File>
 			<File
@@ -546,12 +474,132 @@
 				>
 			</File>
 			<File
+				RelativePath=".\modern_clcutils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clistevents.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clistmenus.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clistmod.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clistopts.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clistsettings.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_clisttray.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\modern_clui.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_cluiframes.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_cluiservices.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_commonheaders.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\modern_contact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_docking.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_extraimage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_framesmenu.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\modern_gdiplus.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\modern_gettextasync.cpp"
@@ -562,11 +610,47 @@
 				>
 			</File>
 			<File
+				RelativePath=".\modern_groupmenu.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_image_array.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_keyboard.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_log.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_newrowopts.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_popup.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\modern_row.cpp"
 				>
 			</File>
 			<File
+				RelativePath=".\modern_rowheight_funcs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_rowtemplateopt.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\modern_skinbutton.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\modern_skineditor.cpp"
 				>
 			</File>
 			<File
@@ -599,26 +683,6 @@
 			</File>
 			<File
 				RelativePath=".\modern_xptheme.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\newrowopts.c"
-				>
-			</File>
-			<File
-				RelativePath=".\popup.c"
-				>
-			</File>
-			<File
-				RelativePath=".\rowheight_funcs.c"
-				>
-			</File>
-			<File
-				RelativePath=".\rowtemplateopt.c"
-				>
-			</File>
-			<File
-				RelativePath=".\SkinEditor.c"
 				>
 			</File>
 		</Filter>
@@ -932,11 +996,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
