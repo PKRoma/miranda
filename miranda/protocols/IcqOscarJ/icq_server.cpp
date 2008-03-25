@@ -41,6 +41,7 @@ void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pE
 void CIcqProto::icq_serverThread(serverthread_start_info* infoParam)
 {
 	serverthread_info info = {0};
+	info.ppro = this;
 
 	info.isLoginServer = 1;
 	info.wAuthKeyLen = infoParam->wPassLen;
