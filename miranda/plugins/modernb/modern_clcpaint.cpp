@@ -2266,8 +2266,6 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
             // if (y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom)
             y += dat->row_heights[line_num];
             //increment by subcontacts
-            if (group->scanIndex>=group->cl.count) 
-                log0("WARNING: Group scan index is equal or more than group items count!!!\n");
             if (group->cl.items && group->scanIndex<group->cl.count && group->cl.items[group->scanIndex]->subcontacts!=NULL && group->cl.items[group->scanIndex]->type!=CLCIT_GROUP)
             {
                 if (group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta)
