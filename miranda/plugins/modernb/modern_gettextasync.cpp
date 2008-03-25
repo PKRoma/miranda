@@ -30,12 +30,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////////
 // Module to async parsing of texts
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "hdr/modern_gettextasync.h"
 #include "newpluginapi.h"
 
-extern "C" int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
-extern "C" int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
+int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
+int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 
 #define gtalock EnterCriticalSection(&gtaCS)
 #define gtaunlock LeaveCriticalSection( &gtaCS )
@@ -138,7 +138,7 @@ static int gtaThreadProc(void * lpParam)
 	return 1;
 }
 
-extern "C" BOOL gtaWakeThread()
+BOOL gtaWakeThread()
 {
 	if (hgtaWakeupEvent && g_dwGetTextAsyncThreadID)
 	{

@@ -24,11 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ///// structures and services to manage modern skin objects (mask mechanism)
 
 //#include "windows.h"
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "hdr/modern_skinselector.h"
-#include "hdr/SkinEngine.h"
+#include "hdr/modern_skinengine.h"
 #include "m_api/m_skin_eng.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonprototypes.h"
 LISTMODERNMASK * MainModernMaskList=NULL;
 
 

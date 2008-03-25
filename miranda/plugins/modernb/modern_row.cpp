@@ -43,91 +43,82 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 #include "resource.h"
 
 
-extern "C"
-{
-  #include "hdr/commonheaders.h"
-}
-
+#include "hdr/modern_commonheaders.h"
 #include "hdr/modern_row.h"
 
 //Futher declaration
-extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess );
-extern "C" void rowSizeWithReposition(ROWCELL* &root, int width);
 void rowCalculateMinSize(ROWCELL* cell);
 void rowEqualize(ROWCELL* cell);
 void rowResetEmptyRects(ROWCELL* cell);
-extern "C" void rowDeleteTree(ROWCELL* cell);
+void rowDeleteTree(ROWCELL* cell);
 ////////
 
 
 
 //extern ROWCELL * gl_RowRoot;	// Указатель на корневой тэг <contact> в шаблоне
 //ROWOBJECTS RowTA;				// Структура, через которую осуществляется доступ к элементам контакта.
-								// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
+// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
 
 
-								// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
+// Формируется при выполнении фу-и RowParce. Неявный параметр фуи rowParserGetParam
 
 char *tmplbuf;					// Буфер для хранения шаблона в текстовом виде
 
-#ifndef TEST_SOURCE
-	extern "C"
-#endif
 ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
 {
 	int fsize;
 	int seq=0;
-  ROWCELL * RowRoot=NULL;
+	ROWCELL * RowRoot=NULL;
 	FILE * hFile;
 	int i=0;
 	if (!DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)) return NULL;
-  tmplbuf=NULL;
-    if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)==1)
-	tmplbuf=DBGetStringA(NULL,"ModernData","RowTemplate");
-  if (tmplbuf)
-  {
-      rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
-      mir_free_and_nill(tmplbuf);
-      return RowRoot;
-  }
-  if (hFile = fopen("template.txt", "rb"))
-  {
-	  fsize = _filelength(_fileno(hFile));
-	  tmplbuf = (char*)malloc(fsize+1);
-	  ZeroMemory(tmplbuf, fsize+1);
+	tmplbuf=NULL;
+	if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)==1)
+		tmplbuf=DBGetStringA(NULL,"ModernData","RowTemplate");
+	if (tmplbuf)
+	{
+		rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
+		mir_free_and_nill(tmplbuf);
+		return RowRoot;
+	}
+	if (hFile = fopen("template.txt", "rb"))
+	{
+		fsize = _filelength(_fileno(hFile));
+		tmplbuf = (char*)malloc(fsize+1);
+		ZeroMemory(tmplbuf, fsize+1);
 
-	  for (i=0; i<fsize; i++) tmplbuf[i] = getc(hFile);
-		  tmplbuf[i] = 0;
-		  i = 0;
-		  rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
-      DBWriteContactSettingString(NULL,"ModernData","RowTemplate",tmplbuf);
-      free(tmplbuf);
-		  fclose(hFile);
-		  return RowRoot;
-  }
-  return NULL;
+		for (i=0; i<fsize; i++) tmplbuf[i] = getc(hFile);
+		tmplbuf[i] = 0;
+		i = 0;
+		rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
+		DBWriteContactSettingString(NULL,"ModernData","RowTemplate",tmplbuf);
+		free(tmplbuf);
+		fclose(hFile);
+		return RowRoot;
+	}
+	return NULL;
 
 }
 
-extern "C" void cppDeleteTree(ROWCELL	* RowRoot)
+void cppDeleteTree(ROWCELL	* RowRoot)
 {
 	ROWCELL *rc=RowRoot;
 	rowDeleteTree(rc);
 }
 
-extern "C" int cppCalculateRowHeight(ROWCELL	*RowRoot)
+int cppCalculateRowHeight(ROWCELL	*RowRoot)
 {
-  RowRoot->h=0;
-  RowRoot->w=0;
-  rowResetEmptyRects(RowRoot);
-  rowCalculateMinSize(RowRoot);
-  rowEqualize(RowRoot);
-  if (RowRoot) return RowRoot->r.bottom;
-  return 0;
+	RowRoot->h=0;
+	RowRoot->w=0;
+	rowResetEmptyRects(RowRoot);
+	rowCalculateMinSize(RowRoot);
+	rowEqualize(RowRoot);
+	if (RowRoot) return RowRoot->r.bottom;
+	return 0;
 }
-extern "C" void cppCalculateRowItemsPos(ROWCELL	*RowRoot, int width)
+void cppCalculateRowItemsPos(ROWCELL	*RowRoot, int width)
 {
-  rowSizeWithReposition(RowRoot, width);
+	rowSizeWithReposition(RowRoot, width);
 }
 
 // rowAddCell
@@ -137,7 +128,7 @@ extern "C" void cppCalculateRowItemsPos(ROWCELL	*RowRoot, int width)
 // cont - тип контейнера: строка, столбец или корневой узел
 //
 //
-extern "C" const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
+const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
 {
 	link = (ROWCELL*)malloc(sizeof(ROWCELL));
 	ZeroMemory(link, sizeof(ROWCELL));
@@ -150,7 +141,7 @@ extern "C" const ROWCELL * rowAddCell(ROWCELL* &link, int cont)
 // cell - адрес корневого узла дерева описания контакта
 //
 //
-extern "C" void rowDeleteTree(ROWCELL* cell)
+void rowDeleteTree(ROWCELL* cell)
 {
 	if (!cell) return;
 	if (cell->child)
@@ -233,10 +224,10 @@ char * rowParserGetNextWord(char *tbuf, int &hbuf)
 //
 void rowParserGetParam(ROWCELL* &cell, char *tbuf, int &hbuf)
 {
-  	char * word=rowParserGetNextWord(tbuf, hbuf);
-  	int param=0;
+	char * word=rowParserGetNextWord(tbuf, hbuf);
+	int param=0;
 
-	     if (!_strnicmp(word, "avatar",     strlen(word))) param = TC_AVATAR;
+	if (!_strnicmp(word, "avatar",     strlen(word))) param = TC_AVATAR;
 	else if (!_strnicmp(word, "text1",      strlen(word))) param = TC_TEXT1;
 	else if (!_strnicmp(word, "text2",      strlen(word))) param = TC_TEXT2;
 	else if (!_strnicmp(word, "text3",      strlen(word))) param = TC_TEXT3;
@@ -280,7 +271,7 @@ void rowParserGetParam(ROWCELL* &cell, char *tbuf, int &hbuf)
 	case TC_TEXT1:
 	case TC_TEXT2:
 	case TC_TEXT3:
-  case TC_SPACE:
+	case TC_SPACE:
 		cell->sizing = 1;
 	case TC_STATUS:
 	case TC_AVATAR:
@@ -334,7 +325,7 @@ void rowParserGetParam(ROWCELL* &cell, char *tbuf, int &hbuf)
 // hbuf - указатель буфера
 // sequence - нужно задавать 0, это очередность нахождения
 //
-extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess )
+BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL** RowTabAccess )
 {
 	char * word;
 	word = rowParserGetNextWord(tbuf, hbuf);
@@ -343,8 +334,8 @@ extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf,
 	if      (!_strnicmp(word, "<tr",   strlen(word)) ||!_strnicmp(word, "<tr>",   strlen(word))) cont = TC_ROW;
 	else if (!_strnicmp(word, "<tc",   strlen(word)) ||!_strnicmp(word, "<tc>",   strlen(word))) cont = TC_COL;
 	else if (!_strnicmp(word, "/>",     strlen(word))||
-			 !_strnicmp(word, "</tr>",  strlen(word))||
-			 !_strnicmp(word, "</tc>",  strlen(word))) return TRUE;
+		!_strnicmp(word, "</tr>",  strlen(word))||
+		!_strnicmp(word, "</tc>",  strlen(word))) return TRUE;
 	else return FALSE;
 
 	rowAddCell(cell, cont);
@@ -362,24 +353,24 @@ extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf,
 	}
 
 	if (!rowParse(cell->next, parent, tbuf, hbuf, sequence,RowTabAccess))
-			return FALSE;
+		return FALSE;
 
 	parent->sizing |= cell->sizing;
-  parent->hasfixed|=cell->hasfixed;
+	parent->hasfixed|=cell->hasfixed;
 	return TRUE;
 }
 
 void rowResetEmptyRects(ROWCELL* cell)
 {
-  if (!cell) return;
-  if (cell->type==0)
-  {
-    SetRect(&(cell->r),0,0,0,0);
-    cell->full_width=0;
-    cell->fixed_width=0;
-  }
-  rowResetEmptyRects(cell->child);
-  rowResetEmptyRects(cell->next);
+	if (!cell) return;
+	if (cell->type==0)
+	{
+		SetRect(&(cell->r),0,0,0,0);
+		cell->full_width=0;
+		cell->fixed_width=0;
+	}
+	rowResetEmptyRects(cell->child);
+	rowResetEmptyRects(cell->next);
 }
 
 // rowCalculateMinSize
@@ -393,7 +384,7 @@ void rowCalculateMinSize(ROWCELL* cell)
 	ROWCELL* curchild=NULL;
 	int w=0,h=0;
 	int wl=0, hl=0;
-  int fullWidth=0;
+	int fullWidth=0;
 	if (!cell) return;
 
 	cell->r.left	= 0;
@@ -418,16 +409,16 @@ void rowCalculateMinSize(ROWCELL* cell)
 			h = max(h, curchild->r.bottom);
 
 			if (curchild->layer)
-      {
+			{
 				//w = max(w, curchild->r.right);
 				wl += curchild->r.right;
 				fullWidth=max(fullWidth,max(curchild->full_width,curchild->w));
-      }
-      else
-      {
+			}
+			else
+			{
 				w += curchild->r.right;
 				fullWidth+=max(curchild->full_width,curchild->w);
-      }
+			}
 		}
 		while (curchild = curchild->next);
 	}
@@ -437,12 +428,12 @@ void rowCalculateMinSize(ROWCELL* cell)
 		while (curchild)
 		{
 			w = max(w, curchild->r.right);
-      fullWidth=max(fullWidth,max(curchild->full_width,curchild->w));
+			fullWidth=max(fullWidth,max(curchild->full_width,curchild->w));
 
 			if (curchild->layer)
 			{
 				hl = curchild->r.bottom;
-//				h = max(h, curchild->r.bottom);
+				//				h = max(h, curchild->r.bottom);
 			}
 			else
 				h += curchild->r.bottom;
@@ -452,8 +443,8 @@ void rowCalculateMinSize(ROWCELL* cell)
 	}
 
 	cell->r.right  = max(max(w, cell->r.right),wl);
-    cell->r.bottom = max(max(h, cell->r.bottom),hl);
-    cell->full_width = max(fullWidth,cell->full_width);
+	cell->r.bottom = max(max(h, cell->r.bottom),hl);
+	cell->full_width = max(fullWidth,cell->full_width);
 	cell->fixed_width = max(cell->fixed_width,cell->r.right);
 	return;
 }
@@ -508,23 +499,23 @@ void rowPlacing(pROWCELL cell)
 
 	switch(cell->type)
 	{
-		case TC_TEXT1:
-		case TC_TEXT2:
-		case TC_TEXT3:
-		case TC_SPACE:
-			cell->r.right += cell->r.left;
-			break;
-		default:
+	case TC_TEXT1:
+	case TC_TEXT2:
+	case TC_TEXT3:
+	case TC_SPACE:
+		cell->r.right += cell->r.left;
+		break;
+	default:
 		{
 			switch(cell->halign)
 			{
-				case TC_LEFT:
-					break;
-				case TC_HCENTER:
-					cell->r.left += (cell->r.right - cell->w)/2;
-					break;
-				case TC_RIGHT:
-					cell->r.left += cell->r.right - cell->w;
+			case TC_LEFT:
+				break;
+			case TC_HCENTER:
+				cell->r.left += (cell->r.right - cell->w)/2;
+				break;
+			case TC_RIGHT:
+				cell->r.left += cell->r.right - cell->w;
 			}
 			cell->r.right = cell->r.left + cell->w;
 		}
@@ -532,13 +523,13 @@ void rowPlacing(pROWCELL cell)
 
 	switch(cell->valign)
 	{
-		case TC_TOP:
-			break;
-		case TC_VCENTER:
-			cell->r.top += (cell->r.bottom - cell->h)/2;
-			break;
-		case TC_BOTTOM:
-			cell->r.top += cell->r.bottom - cell->h;
+	case TC_TOP:
+		break;
+	case TC_VCENTER:
+		cell->r.top += (cell->r.bottom - cell->h)/2;
+		break;
+	case TC_BOTTOM:
+		cell->r.top += cell->r.bottom - cell->h;
 	}
 	cell->r.bottom = cell->r.top + cell->h;
 }
@@ -560,28 +551,28 @@ void rowLayerProc(pROWCELL cell, pROWCELL parent)
 	{
 		switch(cell->halign)
 		{
-			case TC_LEFT:
-				cell->r.left = parent->r.left;
-				break;
-			case TC_HCENTER:
-				cell->r.left = parent->r.left + (parent->r.right - cell->r.right)/2;
-				break;
-			case TC_RIGHT:
-				cell->r.left = parent->r.left + parent->r.right - cell->r.right;
+		case TC_LEFT:
+			cell->r.left = parent->r.left;
+			break;
+		case TC_HCENTER:
+			cell->r.left = parent->r.left + (parent->r.right - cell->r.right)/2;
+			break;
+		case TC_RIGHT:
+			cell->r.left = parent->r.left + parent->r.right - cell->r.right;
 		}
 	}
 
 	switch(cell->valign)
 	{
-		case TC_TOP:
-			cell->r.top = parent->r.top;
-			break;
-		case TC_VCENTER:
-			cell->r.top = parent->r.top + (parent->r.bottom - cell->r.bottom)/2;
-			break;
-		case TC_BOTTOM:
-			cell->r.top = parent->r.top + parent->r.bottom - cell->r.bottom;
-			break;
+	case TC_TOP:
+		cell->r.top = parent->r.top;
+		break;
+	case TC_VCENTER:
+		cell->r.top = parent->r.top + (parent->r.bottom - cell->r.bottom)/2;
+		break;
+	case TC_BOTTOM:
+		cell->r.top = parent->r.top + parent->r.bottom - cell->r.bottom;
+		break;
 	}
 }
 
@@ -604,8 +595,8 @@ void rowPositioning(pROWCELL cell, int &dist)
 	int r = 0;
 	int size = 0;
 	int cw = 0;
-  int fixedsized=0;
-  int autosized=0;
+	int fixedsized=0;
+	int autosized=0;
 	int dummy = 0;
 
 	// Коррректировка назначаемой ширины dist
@@ -613,7 +604,7 @@ void rowPositioning(pROWCELL cell, int &dist)
 		dist = w = cell->r.right;
 
 	cell->r.right= dist;
-    dummy=dist;
+	dummy=dist;
 	if (!(curchild = cell->child))
 	{
 		rowPlacing(cell);
@@ -623,7 +614,7 @@ void rowPositioning(pROWCELL cell, int &dist)
 	// Позиционирование контейнеров в строке
 	if (cell->cont == TC_ROW)
 	{
-    fixedsized=cell->fixed_width;
+		fixedsized=cell->fixed_width;
 		while (curchild)
 		{
 			// Контейнеры layer не должны влиять на позиционирование контейнеров tc
@@ -647,18 +638,18 @@ void rowPositioning(pROWCELL cell, int &dist)
 		}
 
 		w -= size;
-    fixedsized-=size;
+		fixedsized-=size;
 
 		if (r == 0)
 		{
 			switch(cell->halign)
 			{
-				case TC_HCENTER:
-					x += (dist - cw)/2;// - 1;
-					break;
-				case TC_RIGHT:
-					x += dist - cw;
-					break;
+			case TC_HCENTER:
+				x += (dist - cw)/2;// - 1;
+				break;
+			case TC_RIGHT:
+				x += dist - cw;
+				break;
 			}
 		}
 
@@ -683,34 +674,34 @@ void rowPositioning(pROWCELL cell, int &dist)
 				w -= size;
 				if (curchild->sizing)
 				{
-          if ((0&!curchild->fitwidth) || r>1)  //пока отключено -проблемы с выравниванием
-          {
-            if (curchild->hasfixed)
-                fixedsized-=curchild->fixed_width;
-            switch (cell->halign)
+					if ((0&!curchild->fitwidth) || r>1)  //пока отключено -проблемы с выравниванием
+					{
+						if (curchild->hasfixed)
+							fixedsized-=curchild->fixed_width;
+						switch (cell->halign)
 						{
 						case TC_RIGHT:
-               size=(w-fixedsized)-(autosized-max(curchild->full_width,curchild->w));
-               break;
-            case TC_LEFT:
-               size=min(w-fixedsized,max(curchild->full_width,curchild->w));
-               break;
-            case TC_HCENTER:
-              if (autosized) {size=max(curchild->full_width,curchild->w)*w/autosized; break;}
+							size=(w-fixedsized)-(autosized-max(curchild->full_width,curchild->w));
+							break;
+						case TC_LEFT:
+							size=min(w-fixedsized,max(curchild->full_width,curchild->w));
+							break;
+						case TC_HCENTER:
+							if (autosized) {size=max(curchild->full_width,curchild->w)*w/autosized; break;}
 						default:
 							size = w / r;
-            }
-            autosized-=(max(curchild->full_width,curchild->w));
-            if (autosized<0) autosized=0;
-            if (size<0) size=0;
-          }
+						}
+						autosized-=(max(curchild->full_width,curchild->w));
+						if (autosized<0) autosized=0;
+						if (size<0) size=0;
+					}
 					else size = w;
-          /*  пока отключено ибо параметр влияет на выравнивание включается по левому краю
-           if (0 &&!curchild->fitwidth)
-            if(size>max(curchild->full_width,curchild->w))
-              size=max(curchild->full_width,curchild->w);
-           */
-          r--;
+					/*  пока отключено ибо параметр влияет на выравнивание включается по левому краю
+					if (0 &&!curchild->fitwidth)
+					if(size>max(curchild->full_width,curchild->w))
+					size=max(curchild->full_width,curchild->w);
+					*/
+					r--;
 				}
 				else
 					size = curchild->r.right;
@@ -746,12 +737,12 @@ void rowPositioning(pROWCELL cell, int &dist)
 		{
 			switch(cell->valign)
 			{
-				case TC_VCENTER:
-					y += (h - size) / 2;
-					break;
-				case TC_BOTTOM:
-					y += (h - size);
-					break;
+			case TC_VCENTER:
+				y += (h - size) / 2;
+				break;
+			case TC_BOTTOM:
+				y += (h - size);
+				break;
 			}
 		}
 
@@ -788,7 +779,7 @@ void rowPositioning(pROWCELL cell, int &dist)
 // Производит просчет и позиционирование элементов котакта
 // Перед вызовом необходимо заполнить структуру RowTA
 //
-extern "C" void rowSizeWithReposition(ROWCELL* &root, int width)
+void rowSizeWithReposition(ROWCELL* &root, int width)
 {
 	root->h = 0;
 	root->w = 0;

@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////////
 // Module to Request Away Messages
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "hdr/modern_awaymsg.h"
 #include "newpluginapi.h"
 
@@ -186,7 +186,7 @@ static int amThreadProc(HWND hwnd)
 	return 1;
 }
 
-extern "C" BOOL amWakeThread()
+BOOL amWakeThread()
 {
 	if (hamProcessEvent && g_dwAwayMsgThreadID)
 	{

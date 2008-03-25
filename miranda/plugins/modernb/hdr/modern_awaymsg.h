@@ -27,16 +27,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *   Copyright 2000-2008 Artem Shpynov
 */
 
+#pragma once
 //////////////////////////////////////////////////////////////////////////
 // Module to Request Away Messages
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void InitAwayMsgModule();
 void UninitAwayMsgModule();
 void amRequestAwayMsg(HANDLE hContact);
 
-#ifdef __cplusplus
-};
-#endif

@@ -1,7 +1,7 @@
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "hdr/modern_statusbar.h"
 #include "./m_api/m_skin_eng.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonprototypes.h"
 
 BOOL tooltipshoing;
 POINT lastpnt;
@@ -13,7 +13,7 @@ HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
 int callProxied_FindFrameID(HWND FrameHwnd);
-extern "C" COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -849,7 +849,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-extern "C" int StatusBar_Create(HWND parent)
+int StatusBar_Create(HWND parent)
 {
     WNDCLASS wndclass={0};
     TCHAR pluginname[]=TEXT("ModernStatusBar");

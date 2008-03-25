@@ -32,10 +32,10 @@ File contains implementation of animated avatars in contact list
 
 \**************************************************************************/
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 
-extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
-extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
+void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
+BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
 
 /* Next is module */
 #define ANIAVAWINDOWCLASS _T("MirandaModernAniAvatar")

@@ -1,7 +1,9 @@
+#pragma once
+
 #ifndef modern_statusbar_h__
 #define modern_statusbar_h__
 
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonprototypes.h"
 #include "m_api/m_xpTheme.h"
 
 int ModernDrawStatusBar(HWND hwnd, HDC hDC);

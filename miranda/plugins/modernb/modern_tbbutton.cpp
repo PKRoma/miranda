@@ -1,5 +1,5 @@
-#include "hdr/commonheaders.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonheaders.h"
+#include "hdr/modern_commonprototypes.h"
 #include "m_api/m_skinbutton.h"
 
 

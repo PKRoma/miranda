@@ -26,13 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /*       Module responsible for working with contact list control       */
 /************************************************************************/
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "m_clc.h"
 #include "m_skin.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonprototypes.h"
 
 #include "hdr/modern_clc.h"
-#include "hdr/clist.h"
+#include "hdr/modern_clist.h"
 
 
 
@@ -1946,7 +1946,7 @@ HRESULT ClcLoadModule()
 }
 
 
-extern "C" int ClcUnloadModule()
+int ClcUnloadModule()
 {
 	if(hAvatarChanged!=0)
 		ModernUnhookEvent(hAvatarChanged);
@@ -2051,7 +2051,7 @@ int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
 }
 
 
-extern "C" int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
+int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData)
 {
 	if (!pData|| !pShortData) return -1;
 	pShortData->hWnd=pData->hWnd;
@@ -2087,7 +2087,7 @@ extern "C" int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortDa
 
 
 
-extern "C" int ClcEnterDragToScroll(HWND hwnd, int Y)
+int ClcEnterDragToScroll(HWND hwnd, int Y)
 {
 	struct ClcData * dat;
 	if (IsDragToScrollMode) return 0;

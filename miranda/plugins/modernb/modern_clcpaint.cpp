@@ -22,16 +22,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 
-extern "C"
-{
-	#include "m_clc.h"
-	#include "hdr/modern_clc.h"
-	#include "hdr/skinengine.h"
-	#include "hdr/commonprototypes.h"
-	#include "hdr/modern_row.h"
-};
+/*extern "C"*/
+#include "m_clc.h"
+#include "hdr/modern_clc.h"
+#include "hdr/modern_skinengine.h"
+#include "hdr/modern_commonprototypes.h"
+#include "hdr/modern_row.h"
+
 
 #define HORIZONTAL_SPACE 2
 #define EXTRA_CHECKBOX_SPACE 2
@@ -166,7 +165,7 @@ static DWORD dwQuickHash[hi_LastItem]={0};
 /************************************************************************/
 /* CLCPaint_IsForegroundWindow                                          */
 /************************************************************************/
-extern "C" BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
+BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
 {
     HWND hWindow;
     hWindow=hWnd;
@@ -181,7 +180,7 @@ extern "C" BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-extern "C" HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
+HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
 {
     HFONT res;
     if (!dat)
@@ -616,7 +615,7 @@ static void CLCPaint_FillParam(MASKPARAM * lpParam, DWORD dwParamHash, char *szV
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-extern "C" void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
+void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
 {
     static MASKPARAM param={0}; //CLCPaint_AddParameter will clear it so it can be static to avoid initializations
     CLCPaint_FillParam(&param,dwParamHash,szValue,dwValueHash);
@@ -634,7 +633,7 @@ static __inline void CLCPaint_AddParamShort(MODERNMASK * mpModernMask, DWORD dwP
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-extern "C" void CLCPaint_FillQuickHash()
+void CLCPaint_FillQuickHash()
 {
     int i;
     for (i=0;i<hi_LastItem;i++)
@@ -2422,7 +2421,7 @@ static void setstrT(IN OUT TCHAR * lpText, IN TCHAR * Value)
     else lpText=NULL;
 }
 
-extern "C" BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot)
+BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot)
 {
     if ( (!dat->bCompactMode /* not mini*/) 
            ||((dat->bCompactMode&0x01) && selected /*mini on selected*/) 

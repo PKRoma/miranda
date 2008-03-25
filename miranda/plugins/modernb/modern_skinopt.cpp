@@ -20,12 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "m_clui.h"
-#include "hdr/clist.h"
+#include "hdr/modern_clist.h"
 #include "m_clc.h"
 #include "io.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonprototypes.h"
 
 
 
@@ -48,7 +48,7 @@ int FillAvailableSkinList(HWND hwndDlg);
 
 static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern "C" int SkinOptInit(WPARAM wParam,LPARAM lParam)
+int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp;
 	if (!g_CluiData.fDisableSkinEngine)

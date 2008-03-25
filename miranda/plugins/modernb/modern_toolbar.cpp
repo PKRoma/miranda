@@ -23,13 +23,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "hdr/commonheaders.h"
-#include "hdr/commonprototypes.h"
+#include "hdr/modern_commonheaders.h"
+#include "hdr/modern_commonprototypes.h"
 #include "./m_api/m_skinbutton.h"
 #include "./m_api/m_toolbar.h"
 
 //external definition
-extern "C" COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define MS_CLUI_SHOWMAINMENU    "CList/ShowMainMenu"
 #define MS_CLUI_SHOWSTATUSMENU  "CList/ShowStatusMenu"

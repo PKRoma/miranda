@@ -22,24 +22,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 //Include 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include <stdio.h>
 #include <m_png.h> 
-#include "./m_api/m_skin_eng.h"
-#include "./hdr/modern_skinselector.h"
-#include "hdr/cluiframes.h"
+#include "m_api/m_skin_eng.h"
+#include "hdr/modern_skinselector.h"
+#include "hdr/modern_cluiframes.h"
 
 
 #define _EFFECTENUM_FULL_H
-extern "C" {
-#include "hdr/effectenum.h"
-};
+#include "hdr/modern_effectenum.h"
 #undef _EFFECTENUM_FULL_H
 
-#include "hdr/SkinEngine.h"
-#include "hdr/commonprototypes.h"
-#include "shlwapi.h"
-#include "math.h"
+#include "hdr/modern_skinengine.h"
+#include "hdr/modern_commonprototypes.h"
+#include <shlwapi.h>
+#include <math.h>
 //Implementation
 
 /* Global variables */
@@ -47,7 +45,7 @@ extern "C" {
 SKINOBJECTSLIST g_SkinObjectList={0};
 CURRWNDIMAGEDATA * g_pCachedWindow=NULL;
 
-extern "C" wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
+wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
 
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
@@ -4103,7 +4101,7 @@ void ske_ApplyTransluency()
 	return;
 }
 
-extern "C" int ske_JustUpdateWindowImage()
+int ske_JustUpdateWindowImage()
 {
 	RECT r;
 	if (!g_CluiData.fLayered)

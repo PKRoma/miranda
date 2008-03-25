@@ -19,12 +19,12 @@
 #include "resource.h"
 #include <win2k.h>
 #include "m_avatars.h"
-extern "C"
-{
+/*extern "C"*/
+//{
 	#include "newpluginapi.h"	//this is common header for miranda plugin api
 	#include "m_system.h"
 	#include "m_utils.h"
-};
+//};
 
 
 #undef Translate
@@ -32,14 +32,11 @@ extern "C"
 
 #include "hdr/modern_global_structure.h"
 
-extern "C" BYTE saved_alpha;
-extern "C" DWORD g_gdiplusToken;
-extern "C" int mir_strlen(const char *a);
-extern "C" HBITMAP ske_CreateDIB32(int cx, int cy);
-
+BYTE saved_alpha;
 DWORD g_gdiplusToken;
-
-extern "C" void InitGdiPlus(void)
+int mir_strlen(const char *a);
+HBITMAP ske_CreateDIB32(int cx, int cy);
+void InitGdiPlus(void)
 {
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	g_CluiData.fGDIPlusFail = false;
@@ -52,7 +49,7 @@ extern "C" void InitGdiPlus(void)
 	}
 }
 
-extern "C" void ShutdownGdiPlus(void)
+void ShutdownGdiPlus(void)
 {
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	__try {
@@ -80,13 +77,13 @@ static ColorMatrix ClrMatrix =         {
 
 
 
-extern "C" int g_hottrack;
+int g_hottrack;
 
 DWORD argb_from_cola(COLORREF col, BYTE alpha)
 {
     return((BYTE) (alpha) << 24 | col);
 }
-extern "C" HBITMAP GDIPlus_LoadGlyphImage(char *szFileName)
+HBITMAP GDIPlus_LoadGlyphImage(char *szFileName)
 {
   WCHAR *string;
   string=(WCHAR*)malloc(sizeof(WCHAR)*(mir_strlen(szFileName)+2));
@@ -104,7 +101,7 @@ extern "C" HBITMAP GDIPlus_LoadGlyphImage(char *szFileName)
   }
   return hbmp;
 }
-extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount)
+void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int nCount)
 {
 //   Graphics s(hDestDC);
 //   HBITMAP hs;
@@ -143,7 +140,7 @@ extern "C" void TextOutWithGDIp(HDC hDestDC, int x, int y, LPCTSTR lpString, int
 //
 }
 
-extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag,BYTE alpha)
+void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, DWORD height, HBITMAP hbmp, int x1, int y1, DWORD width1, DWORD height1,DWORD flag,BYTE alpha)
 {
    BITMAP bmp;
    Bitmap *bm;
@@ -184,9 +181,7 @@ extern "C" void DrawAvatarImageWithGDIp(HDC hDestDC,int x, int y, DWORD width, D
     g.DrawImage(bm, rect, (float)x1, (float)y1, (float)width1, (float)height1 , UnitPixel, &attr, NULL, NULL);
     delete bm;
 }
-extern "C" bool GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,
-								  HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc,
-								  BLENDFUNCTION * bf)
+BOOL GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest,int nHeightDest,HDC hdcSrc,int nXOriginSrc,int nYOriginSrc,int nWidthSrc,int nHeightSrc, BLENDFUNCTION * bf)
 {
 	Graphics g(hdcDest);
 	BITMAP bmp;
@@ -238,7 +233,7 @@ COLORREF __inline _revcolref(COLORREF colref)
 // based on routine from http://www.codeproject.com/vcpp/gdiplus/imageexgdi.asp
 //
 
-extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
+BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 {
 	int nFrameCount=0;
 #ifndef _UNICODE
@@ -264,7 +259,7 @@ extern "C" BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 	return (BOOL) (nFrameCount > 1);
 }
 
-extern "C" void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP * pBitmap, int ** pframesDelay, int * pframesCount, SIZE * pSizeAvatar)
+void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP * pBitmap, int ** pframesDelay, int * pframesCount, SIZE * pSizeAvatar)
 {
 	int nFrameCount=0;
 #ifndef _UNICODE

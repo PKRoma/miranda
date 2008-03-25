@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "newpluginapi.h"
 #include "m_clui.h"
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 
 
 /*defaults*/

@@ -25,9 +25,9 @@ $Id: viewmodes.c 2998 2006-06-01 07:11:52Z nightwish2004 $
 
 */
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 #include "m_api/m_variables.h"
-#include "hdr/cluiframes.h"
+#include "hdr/modern_cluiframes.h"
 #include <uxtheme.h>
 #include "m_api/m_skinbutton.h"
 
@@ -1307,7 +1307,7 @@ HWND g_hwndViewModeFrame;
 
 
 
-extern "C" void CreateViewModeFrame()
+void CreateViewModeFrame()
 {
     CLISTFrame frame = {0};
     WNDCLASS wndclass = {0};

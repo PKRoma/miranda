@@ -318,150 +318,146 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\cache_funcs.c">
+				RelativePath=".\init.cpp">
 			</File>
 			<File
-				RelativePath=".\clcidents.c">
+				RelativePath=".\modern_aniavatars.cpp">
 			</File>
 			<File
-				RelativePath=".\clcitems.c">
+				RelativePath=".\modern_awaymsg.cpp">
 			</File>
 			<File
-				RelativePath=".\clcmsgs.c">
+				RelativePath=".\modern_cachefuncs.cpp">
 			</File>
 			<File
-				RelativePath=".\clcopts.c">
+				RelativePath=".\modern_clc.cpp">
 			</File>
 			<File
-				RelativePath=".\clcutils.c">
+				RelativePath=".\modern_clcidents.cpp">
 			</File>
 			<File
-				RelativePath=".\clistevents.c">
+				RelativePath=".\modern_clcitems.cpp">
 			</File>
 			<File
-				RelativePath=".\clistmenus.c">
+				RelativePath=".\modern_clcmsgs.cpp">
 			</File>
 			<File
-				RelativePath=".\clistmod.c">
+				RelativePath=".\modern_clcopts.cpp">
 			</File>
 			<File
-				RelativePath=".\clistopts.c">
+				RelativePath=".\modern_clcpaint.cpp">
 			</File>
 			<File
-				RelativePath=".\clistsettings.c">
+				RelativePath=".\modern_clcutils.cpp">
 			</File>
 			<File
-				RelativePath=".\clisttray.c">
+				RelativePath=".\modern_clistevents.cpp">
 			</File>
 			<File
-				RelativePath=".\cluiframes.c">
+				RelativePath=".\modern_clistmenus.cpp">
 			</File>
 			<File
-				RelativePath=".\cluiservices.c">
+				RelativePath=".\modern_clistmod.cpp">
 			</File>
 			<File
-				RelativePath=".\commonheaders.c">
+				RelativePath=".\modern_clistopts.cpp">
 			</File>
 			<File
-				RelativePath=".\contact.c">
+				RelativePath=".\modern_clistsettings.cpp">
 			</File>
 			<File
-				RelativePath=".\Docking.c">
+				RelativePath=".\modern_clisttray.cpp">
 			</File>
 			<File
-				RelativePath=".\extraimage.c">
+				RelativePath=".\modern_clui.cpp">
 			</File>
 			<File
-				RelativePath=".\framesmenu.c">
+				RelativePath=".\modern_cluiframes.cpp">
 			</File>
 			<File
-				RelativePath=".\groupmenu.c">
+				RelativePath=".\modern_cluiservices.cpp">
 			</File>
 			<File
-				RelativePath=".\image_array.c">
+				RelativePath=".\modern_commonheaders.cpp">
 			</File>
 			<File
-				RelativePath=".\init.c">
+				RelativePath=".\modern_contact.cpp">
 			</File>
 			<File
-				RelativePath=".\keyboard.c">
+				RelativePath=".\modern_docking.cpp">
 			</File>
 			<File
-				RelativePath=".\log.c">
+				RelativePath=".\modern_extraimage.cpp">
 			</File>
 			<File
-				RelativePath=".\newrowopts.c">
+				RelativePath=".\modern_framesmenu.cpp">
 			</File>
 			<File
-				RelativePath=".\popup.c">
+				RelativePath=".\modern_gdiplus.cpp">
 			</File>
 			<File
-				RelativePath=".\rowheight_funcs.c">
+				RelativePath=".\modern_gettextasync.cpp">
 			</File>
 			<File
-				RelativePath=".\rowtemplateopt.c">
+				RelativePath=".\modern_global.cpp">
 			</File>
 			<File
-				RelativePath=".\SkinEditor.c">
+				RelativePath=".\modern_groupmenu.cpp">
 			</File>
-			<Filter
-				Name="cpp"
-				Filter="">
-				<File
-					RelativePath=".\modern_aniavatars.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_awaymsg.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_clc.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_clcpaint.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_clui.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_gdiplus.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_gettextasync.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_global.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_row.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_skinbutton.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_skinengine.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_skinopt.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_skinselector.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_statusbar.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_tbbutton.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_toolbar.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_viewmodebar.cpp">
-				</File>
-				<File
-					RelativePath=".\modern_xptheme.cpp">
-				</File>
-			</Filter>
+			<File
+				RelativePath=".\modern_image_array.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_keyboard.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_log.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_newrowopts.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_popup.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_row.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_rowheight_funcs.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_rowtemplateopt.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_skinbutton.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_skineditor.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_skinengine.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_skinopt.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_skinselector.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_statusbar.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_tbbutton.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_toolbar.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_viewmodebar.cpp">
+			</File>
+			<File
+				RelativePath=".\modern_xptheme.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -479,43 +475,34 @@
 				Name="hdr"
 				Filter="">
 				<File
-					RelativePath=".\hdr\cache_funcs.h">
-				</File>
-				<File
-					RelativePath=".\hdr\clist.h">
-				</File>
-				<File
-					RelativePath=".\hdr\clui.h">
-				</File>
-				<File
-					RelativePath=".\hdr\cluiframes.h">
-				</File>
-				<File
-					RelativePath=".\hdr\commonheaders.h">
-				</File>
-				<File
-					RelativePath=".\hdr\commonprototypes.h">
-				</File>
-				<File
-					RelativePath=".\hdr\defsettings.h">
-				</File>
-				<File
-					RelativePath=".\hdr\effectenum.h">
-				</File>
-				<File
-					RelativePath=".\hdr\image_array.h">
-				</File>
-				<File
-					RelativePath=".\hdr\log.h">
-				</File>
-				<File
-					RelativePath=".\hdr\menuSubsystem.h">
-				</File>
-				<File
 					RelativePath=".\hdr\modern_awaymsg.h">
 				</File>
 				<File
+					RelativePath=".\hdr\modern_cache_funcs.h">
+				</File>
+				<File
 					RelativePath=".\hdr\modern_clc.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clist.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_clui.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_cluiframes.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_commonheaders.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_commonprototypes.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_defsettings.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_effectenum.h">
 				</File>
 				<File
 					RelativePath=".\hdr\modern_gettextasync.h">
@@ -524,7 +511,22 @@
 					RelativePath=".\hdr\modern_global_structure.h">
 				</File>
 				<File
+					RelativePath=".\hdr\modern_image_array.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_log.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_popup.h">
+				</File>
+				<File
 					RelativePath=".\hdr\modern_row.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_rowheight_funcs.h">
+				</File>
+				<File
+					RelativePath=".\hdr\modern_skinengine.h">
 				</File>
 				<File
 					RelativePath=".\hdr\modern_skinselector.h">
@@ -533,16 +535,7 @@
 					RelativePath=".\hdr\modern_statusbar.h">
 				</File>
 				<File
-					RelativePath=".\hdr\popup.h">
-				</File>
-				<File
-					RelativePath=".\hdr\rowheight_funcs.h">
-				</File>
-				<File
-					RelativePath=".\hdr\SkinEngine.h">
-				</File>
-				<File
-					RelativePath=".\hdr\statusmodes.h">
+					RelativePath=".\hdr\modern_statusmodes.h">
 				</File>
 			</Filter>
 			<Filter
@@ -573,10 +566,10 @@
 					RelativePath="..\..\include\m_clistint.h">
 				</File>
 				<File
-					RelativePath="..\..\include\m_clui.h">
+					RelativePath=".\m_api\m_clui.h">
 				</File>
 				<File
-					RelativePath=".\m_api\m_clui.h">
+					RelativePath="..\..\include\m_clui.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_cluiframes.h">

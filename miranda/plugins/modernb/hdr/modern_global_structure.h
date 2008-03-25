@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef modern_global_structure_h__
 #define modern_global_structure_h__
 
@@ -8,7 +10,7 @@ typedef struct tagCLUIDATA
 	************************************/
 
 	/*         NotifyArea menu          */
-	HANDLE		hMenuNotify;             
+	HMENU		hMenuNotify;             
 	WORD		wNextMenuID;	
 	int			iIconNotify;
 	BOOL		bEventAreaEnabled;

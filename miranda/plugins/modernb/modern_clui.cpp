@@ -23,31 +23,31 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "hdr/commonheaders.h"
+#include "hdr/modern_commonheaders.h"
 
 #include "m_clc.h"
 #include "m_clui.h"
 #include "m_skin.h"
 #include "wingdi.h"
 #include <Winuser.h>
-#include "hdr/skinengine.h"
+#include "hdr/modern_skinengine.h"
 #include "hdr/modern_statusbar.h"
 
-#include "hdr/clui.h"
+#include "hdr/modern_clui.h"
 #include <locale.h>
 
-extern "C" int	CheckFramesPos(RECT *wr);			//cluiframes.c
-extern "C" int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
-extern "C" int	CLUIFrames_GetTotalHeight();		//cluiframes.c
-extern "C" int CLUIFrames_RepaintSubContainers();  //cluiframes.c
-extern "C" int CLUIFramesGetMinHeight();			//cluiframes.c
-extern "C" wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
-extern "C" int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
+int	CheckFramesPos(RECT *wr);			//cluiframes.c
+int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
+int	CLUIFrames_GetTotalHeight();		//cluiframes.c
+int CLUIFrames_RepaintSubContainers();  //cluiframes.c
+int CLUIFramesGetMinHeight();			//cluiframes.c
+wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
+int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
 
-extern "C" int InitSkinHotKeys();
-extern "C" BOOL amWakeThread();
-extern "C" BOOL gtaWakeThread();
-extern "C" void CreateViewModeFrame();
+int InitSkinHotKeys();
+BOOL amWakeThread();
+BOOL gtaWakeThread();
+void CreateViewModeFrame();
 
 
 HIMAGELIST hAvatarOverlays=NULL;
@@ -1215,13 +1215,13 @@ int CLUI_SyncGetPDNCE(WPARAM wParam, LPARAM lParam)
 	return CListSettings_GetCopyFromCache((pdisplayNameCacheEntry)lParam, wParam ? (DWORD) wParam : CCI_ALL );
 }
 
-extern "C" int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
+int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam)
 {
 	//log0("CLUI_SyncSetPDNCE");
 	return CListSettings_SetToCache((pdisplayNameCacheEntry)lParam, wParam ?  (DWORD) wParam : CCI_ALL );
 }
 
-extern "C" int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
+int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd=(HWND) wParam;
 	struct ClcData * dat=(struct ClcData * )GetWindowLong(hwnd,0);
