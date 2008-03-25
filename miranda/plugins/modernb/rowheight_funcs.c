@@ -23,10 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Created by Pescuma, modified by Artem Shpynov
 
 */
-#include "commonheaders.h"
-#include "rowheight_funcs.h"
-#include "commonprototypes.h"
-
+#include "hdr/commonheaders.h"
+#include "hdr/rowheight_funcs.h"
+#include "hdr/commonprototypes.h"
+#include "hdr/modern_row.h"
 
 int g_mutex_nCalcRowHeightLock=0;
 int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, int item);
@@ -36,7 +36,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
 /*
 *
 */
-#include "modern_row.h"
+
 ROWCELL	* gl_RowTabAccess[TC_ELEMENTSCOUNT+1]={0};	// Массив, через который осуществляется доступ к элементам контакта.
 ROWCELL * gl_RowRoot;
 

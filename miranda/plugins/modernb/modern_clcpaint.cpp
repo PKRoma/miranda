@@ -21,12 +21,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "commonheaders.h"
-#include "m_clc.h"
-#include "modern_clc.h"
-#include "skinengine.h"
-#include "commonprototypes.h"
-#include "modern_row.h"
+
+#include "hdr/commonheaders.h"
+
+extern "C"
+{
+	#include "m_clc.h"
+	#include "hdr/modern_clc.h"
+	#include "hdr/skinengine.h"
+	#include "hdr/commonprototypes.h"
+	#include "hdr/modern_row.h"
+};
 
 #define HORIZONTAL_SPACE 2
 #define EXTRA_CHECKBOX_SPACE 2
@@ -161,7 +166,7 @@ static DWORD dwQuickHash[hi_LastItem]={0};
 /************************************************************************/
 /* CLCPaint_IsForegroundWindow                                          */
 /************************************************************************/
-BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
+extern "C" BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
 {
     HWND hWindow;
     hWindow=hWnd;
@@ -176,7 +181,7 @@ BOOL CLCPaint_IsForegroundWindow(HWND hWnd)
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
+extern "C" HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
 {
     HFONT res;
     if (!dat)
@@ -185,7 +190,7 @@ HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight)
     }
     if (!dat) return NULL;
 
-    res=SelectObject(hdc,dat->fontModernInfo[id].hFont);
+    res=(HFONT)SelectObject(hdc,dat->fontModernInfo[id].hFont);
     SetTextColor(hdc,dat->fontModernInfo[id].colour);
     if(fontHeight) *fontHeight=dat->fontModernInfo[id].fontHeight;
     ske_ResetTextEffect(hdc);
@@ -589,7 +594,7 @@ static void CLCPaint_DrawTextSmiley(HDC hdcMem, RECT * free_rc, SIZE * text_size
 /************************************************************************/
 static void CLCPaint_AddParameter(MODERNMASK * mpModernMask, MASKPARAM * lpParam)
 {
-    mpModernMask->pl_Params=realloc(mpModernMask->pl_Params,(mpModernMask->dwParamCnt+1)*sizeof(MASKPARAM));
+    mpModernMask->pl_Params=(MASKPARAM *)realloc(mpModernMask->pl_Params,(mpModernMask->dwParamCnt+1)*sizeof(MASKPARAM));
     memmove(&(mpModernMask->pl_Params[mpModernMask->dwParamCnt]),lpParam,sizeof(MASKPARAM));
     mpModernMask->dwParamCnt++;
     memset(lpParam,0,sizeof(MASKPARAM));
@@ -611,7 +616,7 @@ static void CLCPaint_FillParam(MASKPARAM * lpParam, DWORD dwParamHash, char *szV
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
+extern "C" void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash)
 {
     static MASKPARAM param={0}; //CLCPaint_AddParameter will clear it so it can be static to avoid initializations
     CLCPaint_FillParam(&param,dwParamHash,szValue,dwValueHash);
@@ -629,7 +634,7 @@ static __inline void CLCPaint_AddParamShort(MODERNMASK * mpModernMask, DWORD dwP
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
-void CLCPaint_FillQuickHash()
+extern "C" void CLCPaint_FillQuickHash()
 {
     int i;
     for (i=0;i<hi_LastItem;i++)
@@ -1503,7 +1508,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                         if (dat->avatars_draw_border)
                         {
                             HBRUSH hBrush=CreateSolidBrush(dat->avatars_border_color);
-                            HBRUSH hOldBrush = SelectObject(hdcMem, hBrush);
+                            HBRUSH hOldBrush = (HBRUSH)SelectObject(hdcMem, hBrush);
                             HRGN rgn2;
                             rgn=CreateRoundRectRgn(p_rect.left, p_rect.top, p_rect.right+1, p_rect.bottom+1, round_radius<<1, round_radius<<1);
                             rgn2=CreateRoundRectRgn(p_rect.left+1, p_rect.top+1, p_rect.right, p_rect.bottom, round_radius<<1, round_radius<<1);
@@ -1558,9 +1563,9 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                                         HDC hdcTmp = CreateCompatibleDC(hdcMem);
                                         RECT r={0,0,w,h};
                                         HDC hdcTmp2 = CreateCompatibleDC(hdcMem);
-                                        HBITMAP bmo=SelectObject(hdcTmp,Drawing->avatar_data->hbmPic);
+                                        HBITMAP bmo=(HBITMAP)SelectObject(hdcTmp,Drawing->avatar_data->hbmPic);
                                         HBITMAP b2=ske_CreateDIB32(w,h);
-                                        HBITMAP bmo2=SelectObject(hdcTmp2,b2);
+                                        HBITMAP bmo2=(HBITMAP)SelectObject(hdcTmp2,b2);
                                         SetStretchBltMode(hdcTmp,  HALFTONE);
                                         SetStretchBltMode(hdcTmp2,  HALFTONE);
                                         StretchBlt(hdcTmp2, 0, 0, w, h,
@@ -1579,7 +1584,7 @@ static void CLCPaint_ModernInternalPaintRowItems(HWND hwnd, HDC hdcMem, struct C
                                         BLENDFUNCTION bf={AC_SRC_OVER, 0,blendmode, AC_SRC_ALPHA };
                                         HDC hdcTempAv = CreateCompatibleDC(hdcMem);
                                         HBITMAP hbmTempAvOld;
-                                        hbmTempAvOld = SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
+                                        hbmTempAvOld = (HBITMAP)SelectObject(hdcTempAv,Drawing->avatar_data->hbmPic);
                                         ske_AlphaBlend(hdcMem, p_rect.left, p_rect.top, w, h, hdcTempAv, 0, 0,Drawing->avatar_data->bmWidth,Drawing->avatar_data->bmHeight, bf);
                                         SelectObject(hdcTempAv, hbmTempAvOld);
                                         mod_DeleteDC(hdcTempAv);
@@ -1843,7 +1848,7 @@ BOOL DrawNonEnginedBackground(HWND hwnd, HDC hdcMem, RECT * rcPaint, RECT clRect
 
             GetObject(dat->hBmpBackground,sizeof(bmp),&bmp);
             hdcBmp=CreateCompatibleDC(hdcMem);
-            oldbm=SelectObject(hdcBmp,dat->hBmpBackground);
+            oldbm=(HBITMAP)SelectObject(hdcBmp,dat->hBmpBackground);
             y=dat->backgroundBmpUse&CLBF_SCROLL?-dat->yScroll:0;
             maxx=dat->backgroundBmpUse&CLBF_TILEH?clRect.right:1;
             maxy=dat->backgroundBmpUse&CLBF_TILEV?maxy=rcPaint->bottom:y+1;
@@ -1960,7 +1965,7 @@ static void CLCPaint_InternalPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT
         hdcMem=hdc;
     else
         hdcMem=CreateCompatibleDC(hdc);
-    hdcMemOldFont=GetCurrentObject(hdcMem,OBJ_FONT);
+    hdcMemOldFont=(HFONT)GetCurrentObject(hdcMem,OBJ_FONT);
     if (NotInMain || dat->force_in_dialog || !g_CluiData.fLayered || grey)
     {
         hBmpOsb=ske_CreateDIB32(clRect.right,clRect.bottom);//,1,GetDeviceCaps(hdc,BITSPIXEL),NULL);
@@ -2419,7 +2424,7 @@ static void setstrT(IN OUT TCHAR * lpText, IN TCHAR * Value)
     else lpText=NULL;
 }
 
-BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot)
+extern "C" BOOL CLCPaint_CheckMiniMode(struct ClcData *dat, BOOL selected, BOOL hot)
 {
     if ( (!dat->bCompactMode /* not mini*/) 
            ||((dat->bCompactMode&0x01) && selected /*mini on selected*/) 
@@ -3209,7 +3214,7 @@ static void CLCPaint_DrawContactItems(HWND hwnd, HDC hdcMem, struct ClcData *dat
                     if ( dat->avatars_draw_border )
                     {
                         HBRUSH hBrush=CreateSolidBrush(dat->avatars_border_color);
-                        HBRUSH hOldBrush = SelectObject(hdcMem, hBrush);
+                        HBRUSH hOldBrush = (HBRUSH)SelectObject(hdcMem, hBrush);
                         HRGN rgnOutside=CreateRoundRectRgn(rc->left, rc->top, rc->right+1, rc->bottom+1, round_radius<<1, round_radius<<1);
                         HRGN rgnInside=CreateRoundRectRgn(rc->left+1, rc->top+1, rc->right, rc->bottom, round_radius<<1, round_radius<<1);
                         CombineRgn(rgnOutside,rgnOutside,rgnInside,RGN_DIFF);

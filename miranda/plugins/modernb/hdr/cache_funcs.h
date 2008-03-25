@@ -27,7 +27,7 @@ Created by Pescuma
 # define __CACHE_FUNCS_H__
 
 #include "modern_clc.h"
-#include "commonprototypes.h"
+#include "hdr/commonprototypes.h"
 
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew);
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact);

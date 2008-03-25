@@ -30,9 +30,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /************************************************************************/
  
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include "m_clui.h"
-#include "clist.h"
+#include "hdr/clist.h"
 #include "m_clc.h"
 
 #define EMPTY_PLACE 255

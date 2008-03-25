@@ -24,6 +24,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MIRANDA_VER 0x0700
 
 #define _WIN32_WINNT 0x0501
@@ -315,6 +319,11 @@ void li_SortList(SortedList *pList, FSortFunc pSortFunct);
 #define mir_a2t(s) mir_strdup(s)
 #define mir_t2u(s) mir_a2u(s)
 #define mir_u2t(s) mir_u2a(s)
+#endif
+
+
+#ifdef __cplusplus
+};
 #endif
 
 #endif // commonheaders_h__

@@ -25,7 +25,7 @@ $Id: viewmodes.c 2998 2006-06-01 07:11:52Z nightwish2004 $
 
 */
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include "m_api/m_variables.h"
 #include "hdr/cluiframes.h"
 #include <uxtheme.h>

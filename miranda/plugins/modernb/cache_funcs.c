@@ -31,8 +31,8 @@ Modified by FYR
 /*             Module for working with lines text and avatars           */
 /************************************************************************/
 
-#include "commonheaders.h"
-#include "cache_funcs.h"
+#include "hdr/commonheaders.h"
+#include "hdr/cache_funcs.h"
 #include "newpluginapi.h"
 #include "./hdr/modern_gettextasync.h"
 

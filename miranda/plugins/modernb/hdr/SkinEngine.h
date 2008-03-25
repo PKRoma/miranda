@@ -2,7 +2,7 @@
 #define ske_H_INC
 
 #include "hdr/modern_skinselector.h"
-#include "commonprototypes.h"
+#include "hdr/commonprototypes.h"
 
 /* Definitions */
 #define GetAValue(argb)((BYTE)((argb)>>24))

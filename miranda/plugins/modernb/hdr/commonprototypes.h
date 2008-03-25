@@ -1,7 +1,7 @@
 #ifndef _COMMONPROTOTYPES
 #define _COMMONPROTOTYPES
 
-#include "commonheaders.h"  //TO DO: Move contents of this file to commonheaders.h
+#include "hdr/commonheaders.h"  //TO DO: Move contents of this file to commonheaders.h
 #include "clist.h"
 #include "hdr/cluiframes.h"
 #include "modern_row.h"
@@ -88,6 +88,7 @@ BOOL rowParse(pROWCELL*cell, ROWCELL* parent, char *tbuf, int *hbuf, int *sequen
 void rowSizeWithReposition(pROWCELL* root, int width);
 
 #endif //__cplusplus
+
 
 /************************************************************************/
 /*                              TYPE DEFS                               */

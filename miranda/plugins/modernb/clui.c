@@ -23,17 +23,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 
 #include "m_clc.h"
 #include "m_clui.h"
 #include "m_skin.h"
 #include "wingdi.h"
 #include <Winuser.h>
-#include "skinengine.h"
-#include "modern_statusbar.h"
+#include "hdr/skinengine.h"
+#include "hdr/modern_statusbar.h"
 
-#include "clui.h"
+#include "hdr/clui.h"
 #include <locale.h>
 
 int	CheckFramesPos(RECT *wr);			//cluiframes.c

@@ -32,7 +32,7 @@ File contains implementation of animated avatars in contact list
 
 \**************************************************************************/
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 
 extern void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
 extern BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);

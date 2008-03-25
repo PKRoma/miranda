@@ -1,6 +1,5 @@
-#include "commonheaders.h"
-#include "commonprototypes.h"
-//#include "xpThemeSupport.h"
+#include "hdr/commonheaders.h"
+#include "hdr/commonprototypes.h"
 #include "m_api/m_xpTheme.h"
 
 

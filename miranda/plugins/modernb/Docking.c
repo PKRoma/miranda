@@ -20,10 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "commonheaders.h"
-#include "clist.h"
-#include "./m_api/m_skin_eng.h"
-#include "commonprototypes.h"
+#include "hdr/commonheaders.h"
+#include "hdr/clist.h"
+#include "m_api/m_skin_eng.h"
+#include "hdr/commonprototypes.h"
 
 #define WM_DOCKCALLBACK   (WM_USER+121)
 #define WM_CREATEDOCKED   (WM_USER+122)

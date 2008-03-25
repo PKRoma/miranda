@@ -45,10 +45,10 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 
 extern "C"
 {
-  #include "commonheaders.h"
+  #include "hdr/commonheaders.h"
 }
 
-#include "modern_row.h"
+#include "hdr/modern_row.h"
 
 //Futher declaration
 extern "C" BOOL rowParse(ROWCELL* &cell, ROWCELL* parent, char *tbuf, int &hbuf, int &sequence, ROWCELL* *RowTabAccess );

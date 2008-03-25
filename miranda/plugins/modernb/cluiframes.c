@@ -20,10 +20,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include "./m_api/m_skin_eng.h"
 #include "./hdr/cluiframes.h"
-#include "commonprototypes.h"
+#include "hdr/commonprototypes.h"
 
 // ALL THIS MODULE FUNCTION SHOULD BE EXECUTED FROM MAIN THREAD\\
 

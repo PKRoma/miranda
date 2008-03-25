@@ -1,5 +1,5 @@
-#include "commonheaders.h"
-#include "commonprototypes.h"
+#include "hdr/commonheaders.h"
+#include "hdr/commonprototypes.h"
 //#include "..\SkinEngine.h"
 
 

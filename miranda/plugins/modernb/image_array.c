@@ -23,9 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 Created by Pescuma
 
 */
-#include "commonheaders.h"
-#include "image_array.h"
-#include "commonprototypes.h"
+#include "hdr/commonheaders.h"
+#include "hdr/image_array.h"
+#include "hdr/commonprototypes.h"
 
 // To use this code in other places, replace the body of this func by the body of ske_CreateDIB32
 static HBITMAP ImageArray_CreateBitmapPoint(int cx, int cy, void ** pt)

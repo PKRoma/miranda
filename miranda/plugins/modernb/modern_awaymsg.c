@@ -30,7 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////////
 // Module to Request Away Messages
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include "newpluginapi.h"
 
 #define AMASKPERIOD 3000

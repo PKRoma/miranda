@@ -1,4 +1,4 @@
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 
 BYTE gl_TrimText=1;
 

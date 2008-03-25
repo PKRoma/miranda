@@ -1,7 +1,7 @@
-#include "commonheaders.h"
-#include "modern_statusbar.h"
+#include "hdr/commonheaders.h"
+#include "hdr/modern_statusbar.h"
 #include "./m_api/m_skin_eng.h"
-#include "commonprototypes.h"
+#include "hdr/commonprototypes.h"
 
 BOOL tooltipshoing;
 POINT lastpnt;

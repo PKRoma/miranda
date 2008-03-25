@@ -20,11 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include "m_clc.h"
-#include "modern_clc.h"
-#include "commonprototypes.h"
-#include "defsettings.h"
+#include "hdr/modern_clc.h"
+#include "hdr/commonprototypes.h"
+#include "hdr/defsettings.h"
+#include "hdr/effectenum.h"
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -1107,7 +1108,7 @@ static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
 	//SendDlgItemMessage(hwndDlg,IDC_ROWHEIGHTSPIN,UDM_SETBUDDY,(WPARAM)GetDlgItem(hwndDlg,IDC_ROWHEIGHT),0);
 	SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0),0);
 }
-#include "effectenum.h"
+
 static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HFONT hFontSample;
@@ -2685,7 +2686,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 
 #define CLBF_TILEVTOROWHEIGHT        0x0100
 

@@ -1,6 +1,5 @@
-#include "log.h"
-
-#include "commonheaders.h"
+#include "hdr/log.h"
+#include "hdr/commonheaders.h"
 
 #include <stdarg.h>
 #include <stdio.h>

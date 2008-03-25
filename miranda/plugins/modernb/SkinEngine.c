@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 //Include 
-#include "commonheaders.h"
+#include "hdr/commonheaders.h"
 #include <stdio.h>
 #include <m_png.h> 
 #include "./m_api/m_skin_eng.h"
@@ -31,11 +31,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #define _EFFECTENUM_FULL_H
-#include "effectenum.h"
+#include "hdr/effectenum.h"
 #undef _EFFECTENUM_FULL_H
 
-#include "SkinEngine.h"
-#include "commonprototypes.h"
+#include "hdr/SkinEngine.h"
+#include "hdr/commonprototypes.h"
 #include "shlwapi.h"
 #include "math.h"
 //Implementation
