@@ -41,15 +41,11 @@ ______________
 TO-DO List
 __________
 
-0.3.10
-  Server-list support now groups requests - much more faster & reliable
+  
+0.5
   Full support for sub-groups in Manage server-list dialog
   Simple sub-groups support (optional)
   New White-pages support (like ICQ 6)
-  
-
-0.5
-  Account management (together with Miranda core changes)
   Multi-user chat
   Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
@@ -58,16 +54,20 @@ __________
 Changes
 _______
 
-0.3.10 Development
+0.5 Development
 
 Bugfixes:
   Fixed receiving of multi-part messages (only first part was received)
+
+New Features
+  Account management (requires Miranda IM 0.8 and newer)
 
 Improvements:
   URL events are now received as normal messages
   Use new offline messages protocol (supports unicode)
   Ability to send/receive contacts to/from ICQ6 and AIM
   Ability to view/set ICQ6 compatible custom statuses (icons only)
+  Server-list support now groups requests - much more faster & reliable
 
 
 0.3.9.5

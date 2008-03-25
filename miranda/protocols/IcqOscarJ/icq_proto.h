@@ -424,7 +424,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   sendRosterAck(void);
 
 	int    getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf);
-	DWORD  updateServerGroupData(WORD wGroupId, void *groupData, int groupSize);
+	DWORD  updateServerGroupData(WORD wGroupId, void *groupData, int groupSize, DWORD dwOperationFlags);
 	void   updateServAvatarHash(BYTE *pHash, int size);
 	void   updateServVisibilityCode(BYTE bCode);
 	int    unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength);

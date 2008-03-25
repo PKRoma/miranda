@@ -301,15 +301,25 @@ void CIcqProto::servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwT
   EnterCriticalSection(&servlistQueueMutex);
   { // add the packet to queue
     DWORD dwMark = pGroupItem->dwOperation & SSOF_GROUPINGMASK;
-    int i;
     ssiqueueditems* pItem = NULL;
     
     // try to find compatible item
-    for (i = 0; i < servlistQueueCount; i++)
+    for (int i = 0; i < servlistQueueCount; i++)
     {
       if ((servlistQueueList[i]->pItems[0]->dwOperation & SSOF_GROUPINGMASK) == dwMark && servlistQueueList[i]->nItems < MAX_SERVLIST_PACKET_ITEMS)
-      { // found compatible item
+      { // found compatible item, check if it does not contain operation for the same server-list item
         pItem = servlistQueueList[i];
+
+        for (int j = 0; j < pItem->nItems; j++)
+          if (pItem->pItems[j]->cookie->wContactId == pGroupItem->cookie->wContactId &&
+              pItem->pItems[j]->cookie->wGroupId == pGroupItem->cookie->wGroupId)
+          {
+            pItem = NULL;
+            break;
+          }
+        // cannot send two operations for the same server-list record in one packet, look for another
+        if (!pItem) continue;
+
 #ifdef _DEBUG
         NetLog_Server("Server-List: Adding packet to item #%d with operation %x.", i, servlistQueueList[i]->pItems[0]->dwOperation);
 #endif
@@ -646,7 +656,7 @@ int CIcqProto::servlistPendingAddContact(HANDLE hContact, WORD wContactID, WORD 
   if (pItem)
   {
 #ifdef _DEBUG
-    NetLog_Server("Server-List: Pending contact already in list; adding as operation.");
+    NetLog_Server("Server-List: Pending contact %x already in list; adding as operation.", hContact);
 #endif
     servlistPendingAddContactOperation(hContact, param, callback, SPOF_AUTO_CREATE_ITEM);
 
@@ -697,7 +707,7 @@ int CIcqProto::servlistPendingAddGroup(const char *pszGroup, WORD wGroupID, LPAR
   if (pItem)
   {
 #ifdef _DEBUG
-    NetLog_Server("Server-List: Pending group already in list; adding as operation.");
+    NetLog_Server("Server-List: Pending group \"%s\" already in list; adding as operation.", pszGroup);
 #endif
     servlistPendingAddGroupOperation(pszGroup, param, callback, SPOF_AUTO_CREATE_ITEM);
 
@@ -737,7 +747,7 @@ int CIcqProto::servlistPendingAddGroup(const char *pszGroup, WORD wGroupID, LPAR
 void CIcqProto::servlistPendingRemoveContact(HANDLE hContact, WORD wContactID, WORD wGroupID, int nResult)
 {
 #ifdef _DEBUG
-  NetLog_Server("Server-List: Ending contact %x operation.", hContact);
+  NetLog_Server("Server-List: %s contact %x operation.", (nResult != PENDING_RESULT_PURGE) ? "Ending" : "Purging", hContact);
 #endif
 
   servlistpendingitem *pItem = servlistPendingRemoveItem(ITEM_PENDING_CONTACT, hContact, NULL);
@@ -778,7 +788,7 @@ void CIcqProto::servlistPendingRemoveContact(HANDLE hContact, WORD wContactID, W
 void CIcqProto::servlistPendingRemoveGroup(const char *pszGroup, WORD wGroupID, int nResult)
 {
 #ifdef _DEBUG
-  NetLog_Server("Server-List: Ending group \"%s\" operation.", pszGroup);
+  NetLog_Server("Server-List: %s group \"%s\" operation.", (nResult != PENDING_RESULT_PURGE) ? "Ending" : "Purging", pszGroup);
 #endif
 
   servlistpendingitem *pItem = servlistPendingRemoveItem(ITEM_PENDING_GROUP, NULL, pszGroup);
@@ -1920,6 +1930,7 @@ char *CIcqProto::getServListGroupCListPath(WORD wGroupId)
 				{ // recursively determine parent group clist path
 					char *szParentGroup = getServListGroupCListPath(wParentGroupId);
 
+          /// FIXME: properly handle ~N suffixes
 					szParentGroup = (char*)SAFE_REALLOC(szParentGroup, strlennull(szGroup) + strlennull(szParentGroup) + 2);
 					strcat(szParentGroup, "\\");
 					strcat(szParentGroup, (char*)szGroup + nGroupLevel);
@@ -1995,7 +2006,7 @@ char* CIcqProto::getServListUniqueGroupName(const char *szGroupName, int bAlloce
       SAFE_FREE((void**)&szNewGroupName);
 
       char szUnique[10];
-      _itoa(uniqueID, szUnique, 10);
+      _itoa(uniqueID++, szUnique, 10);
       null_strcut(szGroupNameBase, m_wServerListRecordNameMaxLength - strlennull(szUnique) - 1);
       szNewGroupName = (char*)SAFE_MALLOC(strlennull(szUnique) + strlennull(szGroupNameBase) + 2);
       if (szNewGroupName)
@@ -2808,7 +2819,12 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	// We can't upload changes to NULL contact
 	if ((HANDLE)wParam == NULL)
+  { // only note last change of CListGroups - contact/group operation detection
+    if (!strcmpnull(cws->szModule, "CListGroups"))
+      dwLastCListGroupsChange = time(NULL);
+
 		return 0;
+  }
 
 	// TODO: Queue changes that occur while offline
 	if ( !icqOnline() || !m_bSsiEnabled || bIsSyncingCL)
@@ -2846,16 +2862,12 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       char* szNewGroup = getContactCListGroup((HANDLE)wParam);
 
       // it is contact operation only ? no, if CListGroups was changed less than 10 secs ago
-      if (szNewGroup && dwLastCListGroupsChange < time(NULL) + 10)
+      if (szNewGroup && (dwLastCListGroupsChange + 10 < time(NULL)))
         servlistMoveContact((HANDLE)wParam, szNewGroup);
 
       SAFE_FREE((void**)&szNewGroup);
     }
 	}
-  else if (!strcmpnull(cws->szModule, "CListGroups"))
-  {
-    dwLastCListGroupsChange = time(NULL);
-  }
 	else if (!strcmpnull(cws->szModule, "UserInfo"))
 	{
 		if (!strcmpnull(cws->szSetting, "MyNotes") &&

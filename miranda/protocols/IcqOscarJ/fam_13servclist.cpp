@@ -418,7 +418,7 @@ int CIcqProto::unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* psz
 	return 1; // Success
 }
 
-DWORD CIcqProto::updateServerGroupData(WORD wGroupId, void *groupData, int groupSize)
+DWORD CIcqProto::updateServerGroupData(WORD wGroupId, void *groupData, int groupSize, DWORD dwOperationFlags)
 {
 	DWORD dwCookie;
 	servlistcookie* ack;
@@ -434,7 +434,7 @@ DWORD CIcqProto::updateServerGroupData(WORD wGroupId, void *groupData, int group
 	ack->wGroupId = wGroupId;
 	dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
-	return icq_sendServerGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, ack->wGroupId, ack->szGroupName, groupData, groupSize, 0);
+	return icq_sendServerGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, ack->wGroupId, ack->szGroupName, groupData, groupSize, dwOperationFlags);
 }
 
 void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
@@ -514,14 +514,14 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 
 				if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
 				{ // the group is not empty, just update it
-					updateServerGroupData(sc->wGroupId, groupData, groupSize);
+					updateServerGroupData(sc->wGroupId, groupData, groupSize, SSOF_END_OPERATION);
 					SAFE_FREE((void**)&groupData);
 				}
 				else
 				{ // this should never happen
 					NetLog_Server("Group update failed.");
+          servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
 				}
-        servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
 			}
 			break;
 		}
@@ -545,10 +545,11 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				setServListGroupName(sc->wGroupId, sc->szGroupName); // add group to namelist
 				{ // add group to known
 					char *szCListGroup = getServListGroupCListPath(sc->wGroupId);
+          
+          // create link to the original CList group
+					setServListGroupLinkID(sc->szGroup, sc->wGroupId);
 
-					setServListGroupLinkID(szCListGroup, sc->wGroupId);
-
-          servlistPendingRemoveGroup(szCListGroup, sc->wGroupId, PENDING_RESULT_SUCCESS);
+          servlistPendingRemoveGroup(sc->szGroup, sc->wGroupId, PENDING_RESULT_SUCCESS);
           SAFE_FREE((void**)&szCListGroup);
 				}
 
@@ -592,9 +593,7 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 
 				if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize))
 				{ // the group is still not empty, just update it
-					updateServerGroupData(sc->wGroupId, groupData, groupSize);
-
-          servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
+					updateServerGroupData(sc->wGroupId, groupData, groupSize, SSOF_END_OPERATION);
 				}
 				else // the group is empty, delete it
 				{
@@ -635,6 +634,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				icq_LogMessage(LOG_WARNING, LPGEN("Removing of group from server list failed."));
 
         servlistPendingRemoveGroup(sc->szGroup, 0, PENDING_RESULT_FAILED);
+
+        servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
         SAFE_FREE((void**)&sc->szGroup);
 			}
 			else // group removed, we need to update master group
@@ -702,6 +703,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 
         servlistPendingRemoveContact(sc->hContact, 0, (WORD)(sc->lParam ? sc->wGroupId : sc->wNewGroupId), PENDING_RESULT_FAILED);
 
+        servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
+
 				if (!sc->lParam) // is this first ack ?
 				{
 					sc->lParam = -1;
@@ -722,7 +725,7 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 
 				if (groupData = collectBuddyGroup(sc->wGroupId, &groupSize)) // update the group we moved from
 				{ // the group is still not empty, just update it
-					updateServerGroupData(sc->wGroupId, groupData, groupSize);
+					updateServerGroupData(sc->wGroupId, groupData, groupSize, 0);
 					SAFE_FREE((void**)&groupData); // free the memory
 				}
 				else
@@ -735,10 +738,10 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				}
 
 				groupData = collectBuddyGroup(sc->wNewGroupId, &groupSize); // update the group we moved to
-				updateServerGroupData(sc->wNewGroupId, groupData, groupSize);
+        updateServerGroupData(sc->wNewGroupId, groupData, groupSize, bEnd ? SSOF_END_OPERATION : 0);
+        // end server modifications here
 				SAFE_FREE((void**)&groupData);
 
-        if (bEnd) servlistPostPacket(NULL, 0, SSO_END_OPERATION, 100); // end server modifications here
 			}
 			else // contact was deleted from server-list
 			{
@@ -773,6 +776,7 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				{ // add group to known
 					char *szCListGroup = getServListGroupCListPath(sc->wGroupId);
 
+          /// FIXME: need to create link to the new group name before unique item name correction as well
 					setServListGroupLinkID(szCListGroup, sc->wGroupId);
 					SAFE_FREE((void**)&szCListGroup);
 				}
