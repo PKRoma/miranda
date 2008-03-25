@@ -49,12 +49,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TRACET(str)
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include "m_stdhdr.h"
-
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -66,10 +62,6 @@ extern "C" {
 #include <direct.h>
 #include "resource.h"
 #include <win2k.h>
-
-#ifdef __cplusplus
-};
-#endif
 
 #include "hdr/modern_global_structure.h"
 
