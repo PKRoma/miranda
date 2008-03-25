@@ -684,7 +684,7 @@ int CIcqProto::menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam)
 void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 {
 	CLISTMENUITEM mi;
-	int i = 0;
+	int i = 0, len = strlen(m_szModuleName);
 	char srvFce[MAX_PATH + 64];
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
@@ -712,7 +712,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 			bXStatusMenuBuilt = ServiceExists(srvFce);
 
 		if (!bXStatusMenuBuilt)
-			CreateProtoServiceParam(srvFce, &CIcqProto::menuXStatus, i);
+			CreateProtoServiceParam(srvFce+len, &CIcqProto::menuXStatus, i);
 
 		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0);
 		mi.icolibItem = i ? hXStatusIconsHandle[i-1] : NULL;
@@ -764,6 +764,32 @@ int CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 	CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_SETXSTATUS), NULL, SetXStatusDlgProc, (LPARAM)&init);
 
 	return 0;
+}
+
+int CIcqProto::SetXStatus(WPARAM wParam, LPARAM lParam)
+{ // obsolete (TODO: remove in next version)
+  if (!m_bXStatusEnabled) return 0;
+
+  if (wParam >= 0 && wParam <= XSTATUS_COUNT)
+  {
+    setXStatusEx((BYTE)wParam, 1);
+    return wParam;
+  }
+  return 0;
+}
+
+int CIcqProto::GetXStatus(WPARAM wParam, LPARAM lParam)
+{ // obsolete (TODO: remove in next version)
+  BYTE status = getContactXStatus(NULL);
+
+  if (!m_bXStatusEnabled) return 0;
+
+  if (!icqOnline()) return 0;
+
+  if (wParam) *((char**)wParam) = DBSETTING_XSTATUSNAME;
+  if (lParam) *((char**)lParam) = DBSETTING_XSTATUSMSG;
+
+  return status;
 }
 
 int CIcqProto::SetXStatusEx(WPARAM wParam, LPARAM lParam)

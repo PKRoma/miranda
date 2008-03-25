@@ -95,10 +95,10 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	// Initialize server lists
 	InitializeCriticalSection(&servlistMutex);
-  InitializeCriticalSection(&servlistQueueMutex);
+	InitializeCriticalSection(&servlistQueueMutex);
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CIcqProto::ServListDbSettingChanged);
 	HookProtoEvent(ME_DB_CONTACT_DELETED, &CIcqProto::ServListDbContactDeleted);
-  HookProtoEvent(ME_CLIST_GROUPCHANGE, &CIcqProto::ServListCListGroupChange);
+	HookProtoEvent(ME_CLIST_GROUPCHANGE, &CIcqProto::ServListCListGroupChange);
 
 	// Initialize status message struct
 	ZeroMemory(&m_modeMsgs, sizeof(icq_mode_messages));
@@ -145,6 +145,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(PS_GETMYAVATAR, &CIcqProto::GetMyAvatar);
 	CreateProtoService(PS_SETMYAVATAR, &CIcqProto::SetMyAvatar);
 	// Custom Status API
+	CreateProtoService(PS_ICQ_SETCUSTOMSTATUS, &CIcqProto::SetXStatus);
+	CreateProtoService(PS_ICQ_GETCUSTOMSTATUS, &CIcqProto::GetXStatus);
 	CreateProtoService(PS_ICQ_SETCUSTOMSTATUSEX, &CIcqProto::SetXStatusEx);
 	CreateProtoService(PS_ICQ_GETCUSTOMSTATUSEX, &CIcqProto::GetXStatusEx);
 	CreateProtoService(PS_ICQ_GETCUSTOMSTATUSICON, &CIcqProto::GetXStatusIcon);
@@ -176,6 +178,12 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// Reset a bunch of session specific settings
 	UpdateGlobalSettings();
 	ResetSettingsOnLoad();
+
+	// Init extra statuses
+	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
+		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::CListMW_BuildStatusItems);
+	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
+	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
 
 	// This must be here - the events are called too early, WTF?
 	InitXStatusIcons();
@@ -221,7 +229,7 @@ CIcqProto::~CIcqProto()
 	DeleteCriticalSection(&ratesListsMutex);
 
 	DeleteCriticalSection(&servlistMutex);
-  DeleteCriticalSection(&servlistQueueMutex);
+	DeleteCriticalSection(&servlistQueueMutex);
 
 	DeleteCriticalSection(&m_modeMsgsMutex);
 	DeleteCriticalSection(&localSeqMutex);
@@ -298,13 +306,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	// Init extra optional modules
 	InitPopUps();
-
-	// Init extra statuses
-	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
-		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::CListMW_BuildStatusItems);
-	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
-	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
-
 	InitXStatusItems(FALSE);
 
 	{

@@ -177,6 +177,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
 	int  __cdecl GetName(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
+	int  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GrantAuthorization(WPARAM wParam, LPARAM lParam);
@@ -192,6 +193,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int  __cdecl SetMyAvatar(WPARAM wParam, LPARAM lParam);
 	int  __cdecl SetNickName(WPARAM wParam, LPARAM lParam);
 	int  __cdecl SetPassword(WPARAM wParam, LPARAM lParam);
+	int  __cdecl SetXStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl SetXStatusEx(WPARAM wParam, LPARAM lParam);
 	int  __cdecl ShowXStatusDetails(WPARAM wParam, LPARAM lParam);
 
@@ -646,7 +648,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_servlist.cpp |------------------------------------------------------------
 	HANDLE hHookSettingChanged;
 	HANDLE hHookContactDeleted;
-  HANDLE hHookCListGroupChange;
+	HANDLE hHookCListGroupChange;
 	CRITICAL_SECTION servlistMutex;
 
 	DWORD* pwIDList;
@@ -715,49 +717,49 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   setServListGroupLinkID(const char *szPath, WORD wGroupID);
 	int    IsServerGroupsDefined();
 	char*  getServListGroupCListPath(WORD wGroupId);
-  char*  getServListUniqueGroupName(const char *szGroupName, int bAlloced);
+	char*  getServListUniqueGroupName(const char *szGroupName, int bAlloced);
 
-  int    servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult);
-  int    servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPARAM param, int nResult);
-  void   servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback);
-  int    servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
-  int    servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult);
-  void   servlistAddContact(HANDLE hContact, const char *pszGroup);
-  int    servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
-  void   servlistRemoveContact(HANDLE hContact);
-  int    servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult);
-  int    servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
-  void   servlistMoveContact(HANDLE hContact, const char *pszNewGroup);
-  int    servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
-  void   servlistUpdateContact(HANDLE hContact);
-  int    servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
-  void   servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup);
-  int    servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult);
-  void   servlistRemoveGroup(const char *szGroup, WORD wGroupId);
+	int    servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult);
+	int    servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPARAM param, int nResult);
+	void   servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback);
+	int    servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+	int    servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult);
+	void   servlistAddContact(HANDLE hContact, const char *pszGroup);
+	int    servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+	void   servlistRemoveContact(HANDLE hContact);
+	int    servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult);
+	int    servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+	void   servlistMoveContact(HANDLE hContact, const char *pszNewGroup);
+	int    servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+	void   servlistUpdateContact(HANDLE hContact);
+	int    servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+	void   servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup);
+	int    servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult);
+	void   servlistRemoveGroup(const char *szGroup, WORD wGroupId);
 	void   removeGroupPathLinks(WORD wGroupID);
 	int    getServListGroupLevel(WORD wGroupId);
 
 	void   resetServContactAuthState(HANDLE hContact, DWORD dwUin);
 
 	void   FlushSrvGroupsCache();
-  int    getCListGroupHandle(const char *szGroup);
-  int    getCListGroupExists(const char *szGroup);
-  int    moveContactToCListGroup(HANDLE hContact, const char *szGroup); /// TODO: this should be DB function
+	int    getCListGroupHandle(const char *szGroup);
+	int    getCListGroupExists(const char *szGroup);
+	int    moveContactToCListGroup(HANDLE hContact, const char *szGroup); /// TODO: this should be DB function
 
 	DWORD  icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wItemId, const char *szName, BYTE *pTLVs, int nTlvLength, WORD wItemType, DWORD dwOperation, DWORD dwTimeout, void **doubleObject);
 	DWORD  icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD wGroupId, WORD wContactId, DWORD dwOperation, DWORD dwTimeout, void **doubleObject);
 	DWORD  icq_sendSimpleItem(DWORD dwCookie, WORD wAction, DWORD dwUin, char* szUID, WORD wGroupId, WORD wItemId, WORD wItemType, DWORD dwOperation, DWORD dwTimeout);
-  DWORD  icq_sendServerGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent, DWORD dwOperationFlags);
+	DWORD  icq_sendServerGroup(DWORD dwCookie, WORD wAction, WORD wGroupId, const char *szName, void *pContent, int cbContent, DWORD dwOperationFlags);
 
 	DWORD  icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType);
 	DWORD  icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
 	DWORD  icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
 
-  time_t dwLastCListGroupsChange;
+	time_t dwLastCListGroupsChange;
 
 	int __cdecl ServListDbSettingChanged(WPARAM wParam, LPARAM lParam);
 	int __cdecl ServListDbContactDeleted(WPARAM wParam, LPARAM lParam);
-  int __cdecl ServListCListGroupChange(WPARAM wParam, LPARAM lParam);
+	int __cdecl ServListCListGroupChange(WPARAM wParam, LPARAM lParam);
 
 	//----| icq_stdpackets.cpp |----------------------------------------------------------
 	void   icq_sendCloseConnection();
