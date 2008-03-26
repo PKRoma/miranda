@@ -3054,8 +3054,8 @@ LABEL_SHOWWINDOW:
 					smaddInfo.targetWParam = TRUE;
 					smaddInfo.Protocolname = si->pszModule;
 					smaddInfo.Direction = 0;
-					smaddInfo.xPosition = rc.left + 3;
-					smaddInfo.yPosition = rc.top - 1;
+					smaddInfo.xPosition = rc.left;
+					smaddInfo.yPosition = rc.top + 24;
 					smaddInfo.hContact = si->hContact;
 					smaddInfo.hwndParent = dat->pContainer->hwnd;
 					if (myGlobals.g_SmileyAddAvail)
