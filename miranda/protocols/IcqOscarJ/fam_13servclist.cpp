@@ -127,7 +127,7 @@ void CIcqProto::handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, s
 					{
 						m_wServerListLimits[i] = swapWord(pLimits[i]);
 
-						if (i >= SIZEOF(m_wServerListLimits)) break;
+						if (i + 1 >= SIZEOF(m_wServerListLimits)) break;
 					}
 
 					NetLog_Server("SSI: Max %d contacts (%d per group), %d groups, %d permit, %d deny, %d ignore items.", m_wServerListLimits[SSI_ITEM_BUDDY], m_wServerListGroupMaxContacts, m_wServerListLimits[SSI_ITEM_GROUP], m_wServerListLimits[SSI_ITEM_PERMIT], m_wServerListLimits[SSI_ITEM_DENY], m_wServerListLimits[SSI_ITEM_IGNORE]);
