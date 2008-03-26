@@ -148,10 +148,10 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (lParam==(LPARAM)GetDlgItem(hwndDlg,IDC_RESETPROTOCOLDATA))	{
 				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
 				{
-					int i;
+					int i, order = 0;
 					for ( i=0; i < accounts.count; i++ ) {
 						PROTOACCOUNT* pa = accounts.items[i];
-						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : i;
+						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : order++;
 				}	}
 
 				CheckProtocolOrder();
@@ -179,13 +179,12 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						ProtocolData* ppd = ( ProtocolData* )tvi.lParam;
 						PROTOACCOUNT* pa = Proto_GetAccount( ppd->RealName );
 						if ( pa != NULL ) {
-							pa->iOrder = count;
+							pa->iOrder = ( isProtoSuitable( pa->ppro )) ? count++ : 1000000+count;
 							pa->bIsVisible = ppd->show;
 						}
 					}
 
 					tvi.hItem = TreeView_GetNextSibling( GetDlgItem( hwndDlg, IDC_PROTOCOLORDER ), tvi.hItem );
-					count++;
 				}
 				
 				WriteDbAccounts();

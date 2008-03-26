@@ -83,6 +83,11 @@ int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static PROTO_INTERFACE* defInitProto( const char* szModuleName, const TCHAR* szUserName )
+{
+	return AddDefaultAccount( szModuleName );
+}
+
 static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR* pd = ( PROTOCOLDESCRIPTOR* )lParam, *p;
@@ -114,6 +119,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 				}
 				pa->bOldProto = TRUE;
 				pa->ppro = ppi;
+				p->fnInit = defInitProto;
 				p->fnUninit = FreeDefaultAccount;
 			}
 		}
