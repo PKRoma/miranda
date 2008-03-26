@@ -1903,6 +1903,8 @@ buttons_done:
 					}
 
 					if (iNewTab != iCurrent) {
+						struct TabControlData *tabdat = (struct TabControlData *)GetWindowLong(hwndTab, GWL_USERDATA);
+
 						ZeroMemory((void *)&item, sizeof(item));
 						item.mask = TCIF_PARAM;
 						if (TabCtrl_GetItem(hwndTab, iNewTab, &item)) {
@@ -1911,6 +1913,11 @@ buttons_done:
 							pContainer->hwndActive = (HWND) item.lParam;
 							ShowWindow((HWND)item.lParam, SW_SHOW);
 							SetFocus(pContainer->hwndActive);
+						}
+						if(tabdat && tabdat->m_moderntabs) {
+							//MessageBoxW(0, _T("tabctrl"), _T("refresh"), MB_OK);
+							//SendMessage(hwndTab, WM_SIZE, 0, 0);
+							InvalidateRect(hwndTab, NULL, TRUE);
 						}
 					}
 					break;

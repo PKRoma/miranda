@@ -763,6 +763,13 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!mi)
 		return FALSE;
 
+	/*
+	 * check whether we have to log this event
+	 */
+
+	if(!(gce->pDest->iType & si->iDiskLogFlags))
+		return FALSE;
+
 	mir_snprintf(szName, MAX_PATH, "%s", mi->pszModDispName);
 	ValidateFilename(szName);
 	mir_snprintf(szFolder, MAX_PATH, "%s\\%s", g_Settings.pszLogDir, szName);
@@ -1260,6 +1267,9 @@ void Chat_SetFilters(SESSION_INFO *si)
 		if (dwMask & (1 << i))
 			si->iLogTrayFlags = (dwFlags_local & (1 << i) ? si->iLogTrayFlags | (1 << i) : si->iLogTrayFlags & ~(1 << i));
 	}
+
+	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF);
+	si->iDiskLogFlags = dwFlags_default;
 
 	if (si->iLogFilterFlags == 0)
 		si->bFilterEnabled = 0;

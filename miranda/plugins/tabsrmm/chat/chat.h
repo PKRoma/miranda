@@ -246,6 +246,7 @@ typedef struct SESSION_INFO_TYPE
 	int         iLogFilterFlags;
     int         iLogPopupFlags;
     int         iLogTrayFlags;
+	int			iDiskLogFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
 	int         iX;
@@ -272,10 +273,9 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
 	struct         ContainerWindowData *pContainer;
-   int            wasTrimmed;
+	int            wasTrimmed;
 	struct SESSION_INFO_TYPE *next;
-}
-	SESSION_INFO;
+} SESSION_INFO;
 
 typedef struct
 {

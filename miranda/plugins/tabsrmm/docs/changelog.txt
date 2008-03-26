@@ -19,9 +19,16 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
-Version 2.1.0.1  - 2008/03/19
+Version 2.1.0.1  - 2008/03/26
+
+		* fixed small visual glitch when using the modern (styled) tabs
 
 		* groupchats: Fixed issue with indentation of multiline messages.
+		
+		* groupchats: Implemented selective disc file logging. Under
+		  Options->Message Sessions->Group chats, you will find a new option
+		  tree where you can select events which should be logged to the
+		  log file.
 
 Version 2.1.0.0  - 2008/02/15
 

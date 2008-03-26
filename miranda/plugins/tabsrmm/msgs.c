@@ -39,6 +39,7 @@ static char *relnotes[] = {
 	"\\par\t\\b\\ul1 Release notes for version 2.1.0.1\\b0\\ul0\\par ",
 	"*\tReworked message log options. Please see http://miranda.or.at/Blog:tabsrmm_changes_2_1_0_0.\\par",
 	"*\tGroup chats: Fixed issue with indentation of multiline messages.\\par",
+	"*\tGroup chats: Added selective disk logging.\\par",
 	NULL
 };
 

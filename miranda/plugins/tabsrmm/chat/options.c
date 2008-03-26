@@ -221,6 +221,21 @@ static struct branch_t branch6[] = {
 	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
+static struct branch_t branch7[] = {
+	{LPGENT("Log topic changes"), "DiskLogFlags", GC_EVENT_TOPIC, 0, NULL}, 
+	{LPGENT("Log users joining"), "DiskLogFlags", GC_EVENT_JOIN, 0, NULL}, 
+	{LPGENT("Log users disconnecting"), "DiskLogFlags", GC_EVENT_QUIT, 0, NULL}, 
+	{LPGENT("Log messages"), "DiskLogFlags", GC_EVENT_MESSAGE, 0, NULL}, 
+	{LPGENT("Log actions"), "DiskLogFlags", GC_EVENT_ACTION, 0, NULL}, 
+	{LPGENT("Log highlights"), "DiskLogFlags", GC_EVENT_HIGHLIGHT, 0, NULL}, 
+	{LPGENT("Log users leaving"), "DiskLogFlags", GC_EVENT_PART, 0, NULL}, 
+	{LPGENT("Log users kicking other user"), "DiskLogFlags", GC_EVENT_KICK, 0, NULL}, 
+	{LPGENT("Log notices "), "DiskLogFlags", GC_EVENT_NOTICE, 0, NULL}, 
+	{LPGENT("Log name changes"), "DiskLogFlags", GC_EVENT_NICK, 0, NULL}, 
+	{LPGENT("Log information messages"), "DiskLogFlags", GC_EVENT_INFORMATION, 0, NULL}, 
+	{LPGENT("Log status changes"), "DiskLogFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+};
+
 void LoadMsgDlgFont(int i, LOGFONT *lf, COLORREF* colour, char *szMod)
 {
 	char str[32];
@@ -505,6 +520,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	static HTREEITEM hListHeading4 = 0;
 	static HTREEITEM hListHeading5 = 0;
 	static HTREEITEM hListHeading6 = 0;
+	static HTREEITEM hListHeading7 = 0;
+
 	switch (uMsg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
@@ -524,12 +541,15 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray and the message window tabs / title"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0) ? TRUE : FALSE);
 				if (myGlobals.g_PopupAvail)
 					hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0) ? TRUE : FALSE);
+				hListHeading7 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Log these events to the log file (when file logging is enabled)"), DBGetContactSettingByte(NULL, "Chat", "Branch7Exp", 0) ? TRUE : FALSE);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
+				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, branch7, SIZEOF(branch7), 0xFFFFF);
+
 				SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 				{
 					TCHAR* pszGroup = NULL;
@@ -713,6 +733,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
 								if (myGlobals.g_PopupAvail)
 									SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
+								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch7, SIZEOF(branch7));
 								LoadGlobalSettings();
 								MM_FontsChanged();
 								FreeMsgLogBitmaps();
@@ -741,6 +762,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 				DBWriteContactSettingByte(NULL, "Chat", "Branch6Exp", b);
 			}
+			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
+			DBWriteContactSettingByte(NULL, "Chat", "Branch7Exp", b);
 		}
 		break;
 
