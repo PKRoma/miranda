@@ -38,7 +38,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\protocols\IcqOscarJ
-call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
+call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -134,7 +134,6 @@ copy ..\release\Icons\xstatus_ICQ.dll    Icons
 copy ..\release\Plugins\aim.dll          Plugins
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
-copy ..\release\Plugins\ICQ.dll          Plugins
 copy ..\release\Plugins\import.dll       Plugins
 copy ..\release\Plugins\Yahoo.dll        Plugins
 
@@ -261,7 +260,7 @@ copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
 copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
-copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb                 %Temp%\pdbw\plugins
+copy ..\..\protocols\IcqOscarJ\Release_Unicode\ICQ.pdb         %Temp%\pdbw\plugins
 copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
