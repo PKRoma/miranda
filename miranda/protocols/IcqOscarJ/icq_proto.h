@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Rate Management stuff
+//  Protocol Interface declarations
 //
 // -----------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ struct servlistpendingitem
   int operationsCount;
 };
 
-// for JabberEnterString
+// for InfoUpdate
 struct userinfo
 {
 	DWORD dwUin;

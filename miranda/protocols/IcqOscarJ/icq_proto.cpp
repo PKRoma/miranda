@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Rate Management stuff
+//  Protocol Interface Implementation
 //
 // -----------------------------------------------------------------------------
 
@@ -45,12 +45,12 @@ extern PLUGININFOEX pluginInfo;
 
 #pragma warning(disable:4355)
 
-static int CompareConns( const directconnect* p1, const directconnect* p2 )
+static int CompareConns(const directconnect* p1, const directconnect* p2)
 {
-	if ( p1->dwConnectionCookie < p2->dwConnectionCookie )
+	if (p1 < p2)
 		return -1;
 
-	return ( p1->dwConnectionCookie == p2->dwConnectionCookie ) ? 0 : 1;
+	return (p1 == p2) ? 0 : 1;
 }
 
 static int CompareCookies( const icq_cookie_info* p1, const icq_cookie_info* p2 )
