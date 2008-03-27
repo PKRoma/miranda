@@ -36,6 +36,23 @@
 
 #include "icqoscar.h"
 
+
+static void accountLoadDetails(CIcqProto *ppro, HWND hwndDlg)
+{
+	char pszUIN[20];
+	DWORD dwUIN = ppro->getContactUin(NULL);
+	if (dwUIN)
+	{
+		null_snprintf(pszUIN, 20, "%u", dwUIN);
+		SetDlgItemTextA(hwndDlg, IDC_UIN, pszUIN);
+	}
+
+	char* pszPwd = ppro->GetUserPassword(FALSE);
+	if (pszPwd)
+		SetDlgItemTextA(hwndDlg, IDC_PW, pszPwd);
+}
+
+
 BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CIcqProto* ppro = (CIcqProto*)GetWindowLong( hwndDlg, GWL_USERDATA );
@@ -49,18 +66,9 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
 
-			char pszUIN[20];
-			DWORD dwUIN = ppro->getContactUin(NULL);
-			if (dwUIN)
-			{
-				null_snprintf(pszUIN, 20, "%u", dwUIN);
-				SetDlgItemTextA(hwndDlg, IDC_UIN, pszUIN);
-			}
-
 			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
-			char* pszPwd = ppro->GetUserPassword(FALSE);
-			if (pszPwd)
-				SetDlgItemTextA(hwndDlg, IDC_PW, pszPwd);
+
+      accountLoadDetails(ppro, hwndDlg);
 		}
 		return TRUE;
 
@@ -69,32 +77,47 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
+		switch (LOWORD(wParam))
+    {
 		case IDC_REGISTER:
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM)URL_REGISTER);
 			break;
 
-		case IDOK:
+    case IDC_UIN:
+    case IDC_PW:
+			if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus())
 			{
-				char str[128];
-				GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
-				ppro->setSettingDword(NULL, UNIQUEIDSETTING, atoi(str));
-				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
-				strcpy(ppro->m_szPassword, str);
-				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
-				ppro->setSettingString(NULL, "Password", str);
+        SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				break;
 			}
-			// fall through
+    }
+    break;
 
-		case IDCANCEL:
-			EndDialog(hwndDlg, IDCANCEL);
-			break;
-		}
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code)
+		{
+		case PSN_APPLY:
+			{
+        char str[128];
+        GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
+        ppro->setSettingDword(NULL, UNIQUEIDSETTING, atoi(str));
+        GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
+        strcpy(ppro->m_szPassword, str);
+        CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
+        ppro->setSettingString(NULL, "Password", str);
+      }
+      break;
+
+    case PSN_RESET:
+      accountLoadDetails(ppro, hwndDlg);
+      break;
+    }
 		break;
 	}
 
 	return FALSE;
 }
+
 
 int CIcqProto::OnCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 {
