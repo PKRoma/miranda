@@ -965,7 +965,7 @@ DWORD CIcqProto::SearchByUin(DWORD dwUin)
 	return dwCookie;
 }
 
-DWORD CIcqProto::SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
+DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, const char *pszLastName)
 { // use generic TLV search like icq5 does
 	WORD wInfoLen = 0;
 	WORD wNickLen,wFirstLen,wLastLen;

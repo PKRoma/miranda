@@ -938,10 +938,20 @@ HANDLE __cdecl CIcqProto::SearchByEmail( const char* email )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_SearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CIcqProto::SearchByName( const char* nick, const char* firstName, const char* lastName )
+HANDLE __cdecl CIcqProto::SearchByName(const char *nick, const char *firstName, const char *lastName)
 {
-	return 0;
+	if (icqOnline())
+	{
+		if (nick || firstName || lastName)
+		{
+			// Success
+			return (HANDLE)SearchByNames(nick, firstName, lastName);
+		}
+	}
+
+	return 0; // Failure
 }
+
 
 HWND __cdecl CIcqProto::CreateExtendedSearchUI( HWND parent )
 {

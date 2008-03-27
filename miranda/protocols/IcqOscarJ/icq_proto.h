@@ -143,7 +143,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	virtual	HANDLE __cdecl SearchBasic( const char* id );
 	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HANDLE __cdecl SearchByName(const char *nick, const char *firstName, const char *lastName);
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
@@ -821,7 +821,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, int nType);
 
 	DWORD  SearchByUin(DWORD dwUin);
-	DWORD  SearchByNames(char *pszNick, char *pszFirstName, char *pszLastName);
+	DWORD  SearchByNames(const char *pszNick, const char *pszFirstName, const char *pszLastName);
 	DWORD  SearchByMail(const char *pszEmail);
 		   
 	DWORD  icq_searchAimByEmail(const char* pszEmail, DWORD dwSearchId);

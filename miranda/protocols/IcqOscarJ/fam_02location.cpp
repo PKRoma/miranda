@@ -286,34 +286,37 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 
 				wLen -= (buf - tmp);
 
-				// Get extra chain
-				if (pChain = readIntoTLVChain(&buf, wLen, 2))
-				{
-					pTLV = getTLV(pChain, 0x05, 1);
-					if (pTLV && (pTLV->wLen > 0))
-					{
-						capBuf = pTLV->pData;
-						capLen = pTLV->wLen;
-					}
-				}
-				szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+        if (wLen)
+        {
+				  // Get extra chain
+				  if (pChain = readIntoTLVChain(&buf, wLen, 2))
+				  {
+					  pTLV = getTLV(pChain, 0x05, 1);
+					  if (pTLV && (pTLV->wLen > 0))
+					  {
+						  capBuf = pTLV->pData;
+						  capLen = pTLV->wLen;
+					  }
+				  }
+				  szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
 
-				// Free TLV chain
-				disposeChain(&pChain);
+				  // Free TLV chain
+				  disposeChain(&pChain);
 
-				if (szClient == cliSpamBot)
-				{
-					if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-					{ // kill spammer
-						icq_DequeueUser(dwUIN);
-						AddToSpammerList(dwUIN);
-						if (getSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-							ShowPopUpMsg(hContact, LPGEN("Spambot Detected"), LPGEN("Contact deleted & further events blocked."), POPTYPE_SPAM);
-						CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+				  if (szClient == cliSpamBot)
+				  {
+					  if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+					  { // kill spammer
+						  icq_DequeueUser(dwUIN);
+						  AddToSpammerList(dwUIN);
+						  if (getSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+							  ShowPopUpMsg(hContact, LPGEN("Spambot Detected"), LPGEN("Contact deleted & further events blocked."), POPTYPE_SPAM);
+						  CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
-						NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
-					}
-				}
+						  NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
+					  }
+				  }
+        }
 			}
 			break;
 		}
