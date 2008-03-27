@@ -331,6 +331,17 @@ ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact);
 // FUNCTION POINTERS
 extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
+#define DWM_BB_ENABLE					0x00000001
+#define DWM_BB_BLURREGION				0x00000002
+#define DWM_BB_TRANSITIONONMAXIMIZED	0x00000004
+struct DWM_BLURBEHIND
+{
+	DWORD dwFlags;
+	BOOL fEnable;
+	HRGN hRgnBlur;
+	BOOL fTransitionOnMaximized;
+};
+extern HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 
 extern tPaintCallbackProc CLCPaint_PaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData);
 extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);

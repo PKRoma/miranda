@@ -201,6 +201,7 @@ static UINT uMsgGetProfile=0;
 static UINT uMsgProcessProfile;
 
 static HMODULE hUserDll;
+static HMODULE hDwmapiDll;
 static HIMAGELIST himlMirandaIcon;
 
 static int nLastRequiredHeight=0,

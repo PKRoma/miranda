@@ -1,4 +1,3 @@
-
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
@@ -618,6 +617,7 @@
 #define IDC_METADBLCLK                  1612
 #define IDC_NOSCROLLBAR                 1613
 #define IDC_METAEXPAND                  1613
+#define IDC_AEROGLASS                   1613
 #define IDC_METASUBEXTRA                1614
 #define IDC_METASUBEXTRA_IGN            1615
 #define IDC_METASUB_HIDEOFFLINE         1616

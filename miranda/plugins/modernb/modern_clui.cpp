@@ -49,6 +49,7 @@ BOOL amWakeThread();
 BOOL gtaWakeThread();
 void CreateViewModeFrame();
 
+HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 
 HIMAGELIST hAvatarOverlays=NULL;
 
@@ -319,6 +320,17 @@ void CLUI_ChangeWindowMode()
 		SetWindowLong(pcli->hwndContactList,GWL_STYLE,curStyle);
 	}
 
+	BOOL tAeroGlass = DBGetContactSettingByte(NULL, "ModernData", "AeroGlass", SETTING_AEROGLASS_DEFAULT) && (g_CluiData.fLayered);
+	if (g_proc_DWMEnableBlurBehindWindow && (g_CluiData.fAeroGlass != tAeroGlass))
+	{
+		DWM_BLURBEHIND bb = {0};
+		bb.dwFlags = DWM_BB_ENABLE|DWM_BB_BLURREGION;
+		bb.fEnable = tAeroGlass;
+		bb.hRgnBlur = NULL;
+		g_proc_DWMEnableBlurBehindWindow(pcli->hwndContactList, &bb);
+		g_CluiData.fAeroGlass = tAeroGlass;
+	}
+
 	if(g_CluiData.fLayered || !DBGetContactSettingByte(NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT)) 
 		SetMenu(pcli->hwndContactList,NULL);
 	else
@@ -326,6 +338,8 @@ void CLUI_ChangeWindowMode()
 
 	if (g_CluiData.fLayered&&(DBGetContactSettingByte(NULL,"CList","OnDesktop", SETTING_ONDESKTOP_DEFAULT)))
 		ske_UpdateWindowImage();
+
+
 	//6- Pin to desktop mode
 	if (DBGetContactSettingByte(NULL,"CList","OnDesktop", SETTING_ONDESKTOP_DEFAULT))
 	{
@@ -882,6 +896,7 @@ int CLUI_ReloadCLUIOptions()
 	wBehindEdgeShowDelay=DBGetContactSettingWord(NULL,"ModernData","ShowDelay",SETTING_SHOWDELAY_DEFAULT);
 	wBehindEdgeHideDelay=DBGetContactSettingWord(NULL,"ModernData","HideDelay",SETTING_HIDEDELAY_DEFAULT);
 	wBehindEdgeBorderSize=DBGetContactSettingWord(NULL,"ModernData","HideBehindBorderSize",SETTING_HIDEBEHINDBORDERSIZE_DEFAULT);
+
 	g_CluiData.fAutoSize=DBGetContactSettingByte(NULL,"CLUI","AutoSize",SETTING_AUTOSIZE_DEFAULT);
 	g_CluiData.bInternalAwayMsgDiscovery = DBGetContactSettingByte(NULL,"ModernData","InternalAwayMsgDiscovery",SETTING_INTERNALAWAYMSGREQUEST_DEFAULT);
 	g_CluiData.bRemoveAwayMessageForOffline =   DBGetContactSettingByte(NULL,"ModernData","RemoveAwayMessageForOffline",SETTING_REMOVEAWAYMSGFOROFFLINE_DEFAULT);
@@ -2365,6 +2380,7 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
 			ske_UnloadSkin(&g_SkinObjectList);
 			FreeLibrary(hUserDll);
+			FreeLibrary(hDwmapiDll);
 			TRACE("CLUI.c: WM_DESTROY - hUserDll freed\n");
 			pcli->hwndContactList=NULL;
 			pcli->hwndStatus=NULL;
@@ -2531,6 +2547,12 @@ void CLUI_cliOnCreateClc(void)
 		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(hUserDll,"AnimateWindow");
 	}
 	uMsgProcessProfile=RegisterWindowMessage(TEXT("Miranda::ProcessProfile"));
+	hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
+	if (hDwmapiDll)
+	{
+		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(hDwmapiDll, "DwmEnableBlurBehindWindow");
+	}
+	g_CluiData.fAeroGlass = FALSE;
 
 	// Call InitGroup menus before
 	GroupMenus_Init();
@@ -2939,6 +2961,7 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	if ( sid.hDefaultIcon )	DestroyIcon(sid.hDefaultIcon);
 	return hIcolibItem; 
 }
+
 
 
 

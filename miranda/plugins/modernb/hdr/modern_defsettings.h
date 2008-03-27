@@ -102,6 +102,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_SHOWDELAY_DEFAULT               3 //! "ModernData","ShowDelay"
 #define SETTING_HIDEDELAY_DEFAULT               3 //! "ModernData","HideDelay"
 #define SETTING_HIDEBEHINDBORDERSIZE_DEFAULT    0 //! "ModernData","HideBehindBorderSize"
+#define SETTING_AEROGLASS_DEFAULT               0 //! "ModernData","AeroGlass"
 
 #define SETTING_ROUNDCORNERS_DEFAULT            0 //! "CLC","RoundCorners"
 #define SETTING_GAPFRAMES_DEFAULT               1 //! "CLUIFrames","GapBetweenFrames"
@@ -266,5 +267,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTINGS_BARMULTILINE_DEFAULT	1  //"ModernToolBar", "option_Bar0_Multiline"
 
 #define SETTING_ENABLESOUNDS_DEFAULT 1 // !"Skin", "UseSound", 
+
 
 
