@@ -684,7 +684,7 @@ int CIcqProto::menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam)
 void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 {
 	CLISTMENUITEM mi;
-	int i = 0, len = strlen(m_szModuleName);
+	int i = 0, len = strlennull(m_szModuleName);
 	char srvFce[MAX_PATH + 64];
 	char szItem[MAX_PATH + 64];
 	HANDLE hXStatusRoot;
