@@ -59,7 +59,7 @@ int LoadStatusBarData()
     g_StatusBarData.Align=DBGetContactSettingByte(NULL,"CLUI","Align",SETTING_ALIGN_DEFAULT);
     g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",SETTING_EQUALSECTIONS_DEFAULT);
     g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",SETTING_USECONNECTINGICON_DEFAULT);
-    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+    g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
     g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",SETTING_SHOWUNREADEMAILS_DEFAULT);
     if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
     g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
@@ -165,7 +165,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	{
 		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
 	}
-	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
 	hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
 	//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
 	//  SetTextColor(hDC,g_StatusBarData.fontColor);

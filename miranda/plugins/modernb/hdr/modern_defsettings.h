@@ -77,7 +77,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_AUTOSIZEUPWARD_DEFAULT          0 //! "CLUI","AutoSizeUpward"
 #define SETTING_SNAPTOEDGES_DEFAULT             0 //! "CLUI","SnapToEdges"
 
-#define SETTING_PROTOSPERLINE_DEFAULT           0 //! "Protocols","ProtosPerLine"
+#define SETTING_PROTOSPERLINE_DEFAULT           0 //! "CLUI","StatusBarProtosPerLine"
 #define SETTING_TEXTEFFECTID_DEFAULT         0xFF //! "StatusBar","TextEffectID"
 #define SETTING_TEXTEFFECTCOLOR1_DEFAULT        0 //! "StatusBar","TextEffectColor1"
 #define SETTING_TEXTEFFECTCOLOR2_DEFAULT        0 //! "StatusBar","TextEffectColor2"
