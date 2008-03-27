@@ -1832,14 +1832,16 @@ DWORD CIcqProto::ReportGenericSendError(HANDLE hContact, int nType, const char* 
 void CIcqProto::CreateProtoService(const char* szService, IcqServiceFunc serviceProc)
 {
 	char temp[MAX_PATH*2];
-	mir_snprintf( temp, sizeof(temp), "%s%s", m_szModuleName, szService );
+
+	null_snprintf(temp, sizeof(temp), "%s%s", m_szModuleName, szService);
 	CreateServiceFunctionObj( temp, ( MIRANDASERVICEOBJ )*( void** )&serviceProc, this );
 }
 
 void CIcqProto::CreateProtoServiceParam(const char* szService, IcqServiceFuncParam serviceProc, LPARAM lParam)
 {
 	char temp[MAX_PATH*2];
-	mir_snprintf( temp, sizeof(temp), "%s%s", m_szModuleName, szService );
+
+	null_snprintf(temp, sizeof(temp), "%s%s", m_szModuleName, szService);
 	CreateServiceFunctionObjParam( temp, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam );
 }
 

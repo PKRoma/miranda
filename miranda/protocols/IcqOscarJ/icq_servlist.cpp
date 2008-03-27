@@ -1154,7 +1154,7 @@ void CIcqProto::LoadServerIDs()
 	int nStart = nIDListCount;
 
 	char szModule[MAX_PATH+9];
-	mir_snprintf( szModule, sizeof(szModule), "%sSrvGroups", m_szModuleName );
+	null_snprintf(szModule, sizeof(szModule), "%sSrvGroups", m_szModuleName);
 
 	GroupReserveIdsEnumParam param = { this, szModule };
 	dbces.pfnEnumProc = &GroupReserveIdsEnumProc;
@@ -2968,6 +2968,10 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
 			char* szNewName = mtchar_to_utf8(grpchg->pszNewName);
 			char* szOldName = mtchar_to_utf8(grpchg->pszOldName);
 			WORD wGroupId = getServListGroupLinkID(szOldName);
+
+#ifdef _DEBUG
+      NetLog_Server("CList-Events: Group %x:\"%s\" changed to \"%s\".", wGroupId, szOldName, szNewName);
+#endif
 			if (wGroupId)
 			{ // group is known, rename on server
 			  servlistRenameGroup(szOldName, wGroupId, szNewName);
