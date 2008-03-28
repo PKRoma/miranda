@@ -187,7 +187,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	int  __cdecl RequestAuthorization(WPARAM wParam, LPARAM lParam);
 	int  __cdecl RequestXStatusDetails(WPARAM wParam, LPARAM lParam);
 	int  __cdecl RevokeAuthorization(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SearchByDetails(WPARAM wParam, LPARAM lParam);
 	int  __cdecl SendSms(WPARAM wParam, LPARAM lParam);	
 	int  __cdecl SendYouWereAdded(WPARAM wParam, LPARAM lParam);
 	int  __cdecl SetMyAvatar(WPARAM wParam, LPARAM lParam);

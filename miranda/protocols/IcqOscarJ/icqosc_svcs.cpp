@@ -364,22 +364,6 @@ int CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::SearchByDetails(WPARAM wParam, LPARAM lParam)
-{
-	if (lParam && icqOnline())
-	{
-		PROTOSEARCHBYNAME *psbn=(PROTOSEARCHBYNAME*)lParam;
-
-
-		if (psbn->pszNick || psbn->pszFirstName || psbn->pszLastName)
-		{
-			// Success
-			return SearchByNames(psbn->pszNick, psbn->pszFirstName, psbn->pszLastName);
-		}
-	}
-
-	return 0; // Failure
-}
 
 int CIcqProto::SendSms(WPARAM wParam, LPARAM lParam)
 {
