@@ -2950,6 +2950,11 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
   if (!icqOnline() || !m_bSsiEnabled || bIsSyncingCL)
     return 0;
 
+  // only change server-list if it is allowed
+  if (!getSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
+    return 0;
+
+
   if (hContact == NULL)
   { // change made to group
     if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
