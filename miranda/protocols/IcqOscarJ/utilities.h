@@ -47,6 +47,14 @@ typedef struct icq_ack_args_s
 	LPARAM pszMessage;
 } icq_ack_args;
 
+struct icq_contacts_cache
+{
+	HANDLE hContact;
+	DWORD dwUin;
+  const char *szUid;
+};
+
+
 /*---------* Functions *---------------*/
 
 void EnableDlgItem(HWND hwndDlg, UINT control, int state);
@@ -70,12 +78,11 @@ char *strUID(DWORD dwUIN, char *pszUID);
 
 size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
+int __fastcall stricmpnull(const char *str1, const char *str2);
 char* __fastcall strstrnull(const char *str, const char *substr);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
 size_t __fastcall null_strcut(char *string, size_t maxlen);
-
-int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 
 void parseServerAddress(char *szServer, WORD* wPort);
 

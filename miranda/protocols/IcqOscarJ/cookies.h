@@ -56,7 +56,7 @@ typedef struct icq_cookie_info_s
   DWORD dwCookie;
   HANDLE hContact;
   void *pvExtra;
-  DWORD dwTime;
+  time_t dwTime;
   BYTE bType;
 } icq_cookie_info;
 

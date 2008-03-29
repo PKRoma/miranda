@@ -69,10 +69,23 @@ static int CompareFT( const filetransfer* p1, const filetransfer* p2 )
 	return ( p1->dwCookie == p2->dwCookie ) ? 0 : 1;
 }
 
+static int CompareContactsCache(const icq_contacts_cache *p1, const icq_contacts_cache *p2)
+{
+  if (p1->dwUin < p2->dwUin)
+    return -1;
+
+  if (p1->dwUin > p2->dwUin)
+    return 1;
+
+  return stricmpnull(p1->szUid, p2->szUid);
+}
+
+
 CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
-	cookies( 10, CompareCookies ),
-	directConns( 10, CompareConns ),
-	expectedFileRecvs( 10, CompareFT ),
+	cookies(10, CompareCookies),
+	directConns(10, CompareConns),
+	expectedFileRecvs(10, CompareFT),
+  contactsCache(10, CompareContactsCache),
 	cheekySearchId( -1 ),
 	m_pendingAvatarsStart( 1 )
 {
@@ -83,9 +96,6 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	_strlwr( m_szProtoName );
 	m_szProtoName[0] = toupper( m_szProtoName[0] );
 	NetLog_Server( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
-
-	InitCache();    // contacts cache
-	icq_InitInfoUpdate();
 
 	InitializeCriticalSection(&oftMutex);
 
@@ -178,6 +188,12 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	UpdateGlobalSettings();
 	ResetSettingsOnLoad();
 
+  // Initialize Contacts Cache
+ 	InitContactsCache();
+
+  // Startup Auto Info-Update thread
+	icq_InitInfoUpdate();
+
 	// Init extra statuses
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::CListMW_BuildStatusItems);
@@ -192,8 +208,6 @@ CIcqProto::~CIcqProto()
 {
 	if (m_bXStatusEnabled)
 		m_bXStatusEnabled = 10; // block clist changing
-
-	UninitCache();
 
 	CloseContactDirectConns(NULL);
 	while ( true ) {
@@ -221,6 +235,8 @@ CIcqProto::~CIcqProto()
 		DestroyHookableEvent(hxstatusiconchanged);
 
 	cookies.destroy();
+
+	UninitContactsCache();
 
 	SAFE_FREE((void**)&pendingList1);
 	SAFE_FREE((void**)&pendingList2);

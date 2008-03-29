@@ -36,12 +36,11 @@
 
 #include "icqoscar.h"
 
-static WORD swapWord(WORD val)
-{
-	return (val & 0xFF)<<8 | (val>>8);
-}
 
-void CIcqProto::handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
+static int unpackServerListItem(BYTE **pbuf, WORD *pwLen, char *pszRecordName, WORD *pwGroupId, WORD *pwItemId, WORD *pwItemType, WORD *pwTlvLength);
+
+
+void CIcqProto::handleServClistFam(BYTE *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
 	switch (pSnacHeader->wSubtype) {
 
@@ -125,7 +124,7 @@ void CIcqProto::handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, s
 
 					for (i = 0; i < pTLV->wLen / 2; i++)
 					{
-						m_wServerListLimits[i] = swapWord(pLimits[i]);
+						m_wServerListLimits[i] = (pLimits[i] & 0xFF) << 8 | (pLimits[i] >> 8);
 
 						if (i + 1 >= SIZEOF(m_wServerListLimits)) break;
 					}
@@ -383,7 +382,8 @@ void CIcqProto::handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, s
 	}
 }
 
-int CIcqProto::unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength)
+
+static int unpackServerListItem(BYTE **pbuf, WORD *pwLen, char *pszRecordName, WORD *pwGroupId, WORD *pwItemId, WORD *pwItemType, WORD *pwTlvLength)
 {
 	WORD wRecordNameLen;
 
@@ -417,6 +417,7 @@ int CIcqProto::unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* psz
 
 	return 1; // Success
 }
+
 
 DWORD CIcqProto::updateServerGroupData(WORD wGroupId, void *groupData, int groupSize, DWORD dwOperationFlags)
 {
@@ -856,6 +857,7 @@ HANDLE CIcqProto::HContactFromRecordName(char* szRecordName, int *bAdded)
 	return hContact;
 }
 
+
 int CIcqProto::getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf)
 { // get server-list item's TLV data
 	oscar_tlv_chain* list = pChain;
@@ -881,7 +883,8 @@ int CIcqProto::getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *
 	return datalen;
 }
 
-void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, serverthread_info *info)
+
+void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthread_info *info)
 {
 	BYTE bySSIVersion;
 	WORD wRecordCount;
@@ -894,6 +897,8 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 	uid_str szRecordName;
 	oscar_tlv_chain* pChain = NULL;
 	oscar_tlv* pTLV = NULL;
+  char *szActiveSrvGroup = NULL;
+  WORD wActiveSrvGroupId = -1;
 
 
 	// If flag bit 1 is set, this is not the last
@@ -974,7 +979,6 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 				{
 					int bRegroup = 0;
 					int bNicked = 0;
-					WORD wOldGroupId;
 
 					if (bAdded)
 					{ // Not already on list: added
@@ -995,53 +999,52 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 						DBWriteContactSettingByte(hContact, "CList", "NotOnList", 0);
 					}
 
-					wOldGroupId = getSettingWord(hContact, "SrvGroupId", 0);
 					// Save group and item ID
 					setSettingWord(hContact, "ServerId", wItemId);
 					setSettingWord(hContact, "SrvGroupId", wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
-					if (!bAdded && (wOldGroupId != wGroupId) && getSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
-					{ // contact has been moved on the server
-						char* szOldGroup = getServListGroupName(wOldGroupId);
-						char* szGroup = getServListGroupName(wGroupId);
+					if (!bAdded && getSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
+					{ // check if the contact has been moved on the server
+            if (wActiveSrvGroupId != wGroupId || !szActiveSrvGroup)
+            {
+              SAFE_FREE((void**)&szActiveSrvGroup);
+						  szActiveSrvGroup = getServListGroupCListPath(wGroupId);
+              wActiveSrvGroupId = wGroupId;
+            }
+            char *szLocalGroup = getContactCListGroup(hContact);
 
-						if (!szOldGroup)
-						{ // old group is not known, most probably not created subgroup
-							char *szTmp = getContactCListGroup(hContact);
+            if (!strlennull(szLocalGroup))
+            { // no CListGroup
+							SAFE_FREE((void**)&szLocalGroup);
 
-							if (strlennull(szTmp))
-							{ // got group from CList
-								SAFE_FREE((void**)&szOldGroup);
-								szOldGroup = szTmp;
-							}
-							else
-								SAFE_FREE((void**)&szTmp);
-
-							if (!szOldGroup) szOldGroup = (char*)null_strdup(DEFAULT_SS_GROUP);
+							szLocalGroup = null_strdup(DEFAULT_SS_GROUP);
 						}
 
-						if (!szGroup || strlennull(szGroup)>=strlennull(szOldGroup) || strnicmp((char*)szGroup, (char*)szOldGroup, strlennull(szGroup)))
+						if (strcmpnull(szActiveSrvGroup, szLocalGroup) && 
+               (strlennull(szActiveSrvGroup) >= strlennull(szLocalGroup) || strnicmp(szActiveSrvGroup, szLocalGroup, strlennull(szLocalGroup))))
 						{ // contact moved to new group or sub-group or not to master group
 							bRegroup = 1;
 						}
-						if (bRegroup && !stricmp(DEFAULT_SS_GROUP, (char*)szGroup)) /// TODO: invent something more clever for "root" group
+						if (bRegroup && !stricmpnull(DEFAULT_SS_GROUP, szActiveSrvGroup)) /// TODO: invent something more clever for "root" group
 						{ // is it the default "General" group ?
 							bRegroup = 0; // if yes, do not move to it - cause it would hide the contact
 						}
-						SAFE_FREE((void**)&szGroup);
-						SAFE_FREE((void**)&szOldGroup);
+						SAFE_FREE((void**)&szLocalGroup);
 					}
 
 					if (bRegroup || bAdded)
 					{ // if we should load server details or contact was just added, update its group
-						char *szCListGroup = getServListGroupCListPath(wGroupId);
+            if (wActiveSrvGroupId != wGroupId || !szActiveSrvGroup)
+            {
+              SAFE_FREE((void**)&szActiveSrvGroup);
+						  szActiveSrvGroup = getServListGroupCListPath(wGroupId);
+              wActiveSrvGroupId = wGroupId;
+            }
 
-						if (szCListGroup)
+						if (szActiveSrvGroup)
 						{ // try to get Miranda Group path from groupid, if succeeded save to db
-              moveContactToCListGroup(hContact, szCListGroup);
-
-							SAFE_FREE((void**)&szCListGroup);
+              moveContactToCListGroup(hContact, szActiveSrvGroup);
 						}
 					}
 
@@ -1192,8 +1195,6 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 				if (wItemId == 0)
 				{ /* no item ID: this is a group */
 					/* pszRecordName is the name of the group */
-					char* pszName = NULL;
-
 					ReserveServerID(wGroupId, SSIT_GROUP);
 
 					setServListGroupName(wGroupId, (char*)szRecordName);
@@ -1201,9 +1202,9 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 					NetLog_Server("Group %s added to known groups.", szRecordName);
 
 					/* demangle full grouppath, set it to known */
-					pszName = getServListGroupCListPath(wGroupId); 
-          /// TODO: the group should be created once
-					SAFE_FREE((void**)&pszName);
+          SAFE_FREE((void**)&szActiveSrvGroup);
+          szActiveSrvGroup = getServListGroupCListPath(wGroupId);
+          wActiveSrvGroupId = wGroupId;
 
 					/* TLV contains a TLV(C8) with a list of WORDs of contained contact IDs */
 					/* our processing is good enough that we don't need this duplication */
@@ -1401,10 +1402,11 @@ void CIcqProto::handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, se
 			break;
 		}
 
-		if (pChain)
-			disposeChain(&pChain);
-
+    disposeChain(&pChain);
 	} // end for
+
+  // Release Memory
+  SAFE_FREE((void**)&szActiveSrvGroup);
 
 	NetLog_Server("Bytes left: %u", wLen);
 

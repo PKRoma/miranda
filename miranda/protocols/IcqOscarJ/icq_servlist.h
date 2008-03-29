@@ -125,4 +125,54 @@ struct servlistcookie
 #define SSOF_GROUPINGMASK     0x0F0FFFFF
 
 
+#define MAX_SERVLIST_PACKET_ITEMS 200
+
+// server-list request handler item
+struct servlistgroupitem
+{ // generic parent
+  DWORD dwOperation;
+  servlistcookie* cookie;
+  icq_packet packet;
+  // perhaps add some dummy bytes
+};
+
+struct servlistgroupitemdouble
+{
+  DWORD dwOperation;
+  servlistcookie* cookie;
+  icq_packet packet1;
+  icq_packet packet2;
+  WORD wAction2;
+};
+
+struct ssiqueueditems
+{
+  time_t tAdded;
+  int dwTimeout;
+  int nItems;
+  servlistgroupitem* pItems[MAX_SERVLIST_PACKET_ITEMS];
+};
+
+
+// cookie structs for pending records
+struct servlistpendingoperation
+{
+  DWORD flags;
+  PENDING_GROUP_CALLBACK callback;
+  LPARAM param;
+};
+
+struct servlistpendingitem
+{
+  int nType;
+  HANDLE hContact;
+  char* szGroup;
+  WORD wContactID;
+  WORD wGroupID;
+
+  servlistpendingoperation* operations;
+  int operationsCount;
+};
+
+
 #endif /* __ICQ_SERVLIST_H */

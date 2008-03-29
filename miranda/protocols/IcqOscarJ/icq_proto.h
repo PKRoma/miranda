@@ -50,55 +50,6 @@ typedef int ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 
-#define MAX_SERVLIST_PACKET_ITEMS 200
-
-// server-list request handler item
-struct servlistgroupitem
-{ // generic parent
-  DWORD dwOperation;
-  servlistcookie* cookie;
-  icq_packet packet;
-  // perhaps add some dummy bytes
-};
-
-struct servlistgroupitemdouble
-{
-  DWORD dwOperation;
-  servlistcookie* cookie;
-  icq_packet packet1;
-  icq_packet packet2;
-  WORD wAction2;
-};
-
-struct ssiqueueditems
-{
-  time_t tAdded;
-  int dwTimeout;
-  int nItems;
-  servlistgroupitem* pItems[MAX_SERVLIST_PACKET_ITEMS];
-};
-
-
-// cookie structs for pending records
-struct servlistpendingoperation
-{
-  DWORD flags;
-  PENDING_GROUP_CALLBACK callback;
-  LPARAM param;
-};
-
-struct servlistpendingitem
-{
-  int nType;
-  HANDLE hContact;
-  char* szGroup;
-  WORD wContactID;
-  WORD wGroupID;
-
-  servlistpendingoperation* operations;
-  int operationsCount;
-};
-
 // for InfoUpdate
 struct userinfo
 {
@@ -411,14 +362,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	WORD   m_wServerListGroupMaxContacts;
 	WORD   m_wServerListRecordNameMaxLength;
 
-	void   handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
+	void   handleServClistFam(BYTE *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
 	void   handleServerCListAck(servlistcookie* sc, WORD wError);
-	void   handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, serverthread_info *info);
-	void   handleRecvAuthRequest(unsigned char *buf, WORD wLen);
-	void   handleRecvAuthResponse(unsigned char *buf, WORD wLen);
-	void   handleRecvAdded(unsigned char *buf, WORD wLen);
+	void   handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthread_info *info);
+	void   handleRecvAuthRequest(BYTE *buf, WORD wLen);
+	void   handleRecvAuthResponse(BYTE *buf, WORD wLen);
+	void   handleRecvAdded(BYTE *buf, WORD wLen);
 
-	HANDLE HContactFromRecordName(char* szRecordName, int *bAdded);
+	HANDLE HContactFromRecordName(char *szRecordName, int *bAdded);
 
 	void   icq_sendServerBeginOperation(int bImport);
 	void   icq_sendServerEndOperation();
@@ -428,7 +379,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  updateServerGroupData(WORD wGroupId, void *groupData, int groupSize, DWORD dwOperationFlags);
 	void   updateServAvatarHash(BYTE *pHash, int size);
 	void   updateServVisibilityCode(BYTE bCode);
-	int    unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength);
 
 	//----| fam_15icqserver.cpp |---------------------------------------------------------
 	void   handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
@@ -774,7 +724,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type);
 	void   icq_sendSetAimAwayMsgServ(const char *szMsg);
 
-	DWORD  icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID);
+	DWORD  icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *szUID);
 
 	void   icq_sendFileSendServv7(filetransfer* ft, const char *szFiles);
 	void   icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType);
@@ -787,15 +737,15 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	DWORD  icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 	DWORD  icq_changeUserDetailsServ(WORD, const char *, WORD);
-	void   icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubType);
-	void   icq_sendNewContact(DWORD dwUin, char* szUid);
+	void   icq_sendGenericContact(DWORD dwUin, const char *szUid, WORD wFamily, WORD wSubType);
+	void   icq_sendNewContact(DWORD dwUin, const char *szUid);
 	void   icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 	void   icq_sendEntireVisInvisList(int);
 	void   icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, char **);
 	DWORD  icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 	void   icq_sendMessageCapsServ(DWORD dwUin);
 	void   icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
-	void   icq_sendGrantAuthServ(DWORD dwUin, char* szUid, char *szMsg);
+	void   icq_sendGrantAuthServ(DWORD dwUin, const char *szUid, const char *szMsg);
 	void   icq_sendAuthReqServ(DWORD dwUin, char* szUid, const char *szMsg);
 	void   icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,const char *szReason);
 	void   icq_sendYouWereAddedServ(DWORD,DWORD);
@@ -953,19 +903,21 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    NetLog_Direct(const char *fmt,...);
 	int    NetLog_Uni(BOOL bDC, const char *fmt,...);
 
-	void   AddToCache(HANDLE hContact, DWORD dwUin);
-	void   DeleteFromCache(HANDLE hContact);
-	void   InitCache(void);
-	void   UninitCache(void);
+  CRITICAL_SECTION contactsCacheMutex;
+  LIST<icq_contacts_cache> contactsCache;
+	void   AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szUid);
+	void   DeleteFromContactsCache(HANDLE hContact);
+	void   InitContactsCache();
+	void   UninitContactsCache();
 
 	void   AddToSpammerList(DWORD dwUIN);
 	BOOL   IsOnSpammerList(DWORD dwUIN);
 
 	HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
 
-	HANDLE HandleFromCacheByUin(DWORD dwUin);
-	HANDLE HContactFromUIN(DWORD uin, int *Added);
-	HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added);
+	HANDLE HandleFromCacheByUid(DWORD dwUin, const char *szUid);
+	HANDLE HContactFromUIN(DWORD dwUin, int *Added);
+	HANDLE HContactFromUID(DWORD dwUin, const char *szUid, int *Added);
 	HANDLE HContactFromAuthEvent(HANDLE hEvent);
 
 	void   ResetSettingsOnListReload();

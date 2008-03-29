@@ -147,7 +147,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				char szClass[80];
 				GetClassNameA((HWND)lParam, szClass, sizeof(szClass));
 
-				if (stricmp(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
+				if (stricmpnull(szClass, "EDIT") || HIWORD(wParam) == EN_CHANGE)
 					ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_SHOW);
 			}
 

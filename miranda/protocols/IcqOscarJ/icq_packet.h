@@ -72,9 +72,9 @@ void packTLVDWord(icq_packet *pPacket, WORD wType, DWORD dwData);
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 int __fastcall getUINLen(DWORD dwUin);
-int __fastcall getUIDLen(DWORD dwUin, char* szUid);
+int __fastcall getUIDLen(DWORD dwUin, const char *szUid);
 void __fastcall packUIN(icq_packet *pPacket, DWORD dwUin);
-void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, char* szUid);
+void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, const char *szUid);
 void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype);
 void packFNACHeaderFull(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
 

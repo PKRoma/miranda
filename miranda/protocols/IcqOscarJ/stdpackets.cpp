@@ -650,7 +650,7 @@ void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 	sendServPacket(&packet);
 }
 
-DWORD CIcqProto::icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID)
+DWORD CIcqProto::icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *szUID)
 {
 	icq_packet packet;
 	DWORD dwCookie;
@@ -1226,7 +1226,7 @@ DWORD CIcqProto::icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 	return dwCookie;
 }
 
-void CIcqProto::icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubType)
+void CIcqProto::icq_sendGenericContact(DWORD dwUin, const char *szUid, WORD wFamily, WORD wSubType)
 {
 	icq_packet packet;
 	int nUinLen;
@@ -1240,7 +1240,7 @@ void CIcqProto::icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, W
 	sendServPacket(&packet);
 }
 
-void CIcqProto::icq_sendNewContact(DWORD dwUin, char* szUid)
+void CIcqProto::icq_sendNewContact(DWORD dwUin, const char *szUid)
 {
 	icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST);
 }
@@ -1340,7 +1340,7 @@ void CIcqProto::icq_sendRevokeAuthServ(DWORD dwUin, char *szUid)
 	icq_sendGenericContact(dwUin, szUid, ICQ_LISTS_FAMILY, ICQ_LISTS_REVOKEAUTH);
 }
 
-void CIcqProto::icq_sendGrantAuthServ(DWORD dwUin, char *szUid, char *szMsg)
+void CIcqProto::icq_sendGrantAuthServ(DWORD dwUin, const char *szUid, const char *szMsg)
 {
 	icq_packet packet;
 	BYTE nUinlen;

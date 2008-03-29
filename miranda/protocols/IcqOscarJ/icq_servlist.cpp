@@ -851,119 +851,6 @@ void CIcqProto::servlistPendingFlushOperations()
   LeaveCriticalSection(&servlistMutex);
 }
 
-
-/// TODO: Rework
-// Used for event-driven adding of contacts, before it is completed this is used
-/*BOOL CIcqProto::AddPendingOperation(HANDLE hContact, const char* szGroup, servlistcookie* cookie, GROUPADDCALLBACK ofEvent)
-{
-	BOOL bRes = TRUE;
-	ssipendingitem* pItem = NULL;
-	int i;
-
-	EnterCriticalSection(&servlistMutex);
-	if (pdwPendingList)
-	{
-		for (i = 0; i<nPendingCount; i++)
-		{
-			if (pdwPendingList[i]->hContact == hContact)
-			{ // we need the last item for this contact
-				pItem = pdwPendingList[i];
-			}
-		}
-	}
-
-	if (pItem) // we found a pending operation, so link our data
-	{
-		pItem->ofCallback = ofEvent;
-		pItem->pCookie = cookie;
-		pItem->szGroupPath = null_strdup(szGroup); // we need to duplicate the string
-		bRes = FALSE;
-
-		NetLog_Server("Operation postponed.");
-	}
-
-	if (nPendingCount >= nPendingSize) // add new
-	{
-		nPendingSize += 10;
-		pdwPendingList = (ssipendingitem**)SAFE_REALLOC(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
-	}
-
-	pdwPendingList[nPendingCount] = (ssipendingitem*)SAFE_MALLOC(sizeof(ssipendingitem));
-	pdwPendingList[nPendingCount]->hContact = hContact;
-
-	nPendingCount++;
-	LeaveCriticalSection(&servlistMutex);
-
-	return bRes;
-}
-
-// Check if any pending operation is in progress
-// If yes, get its data and remove it from queue
-void CIcqProto::RemovePendingOperation(HANDLE hContact, int nResult)
-{
-	int i, j;
-	ssipendingitem* pItem = NULL;
-
-	EnterCriticalSection(&servlistMutex);
-	if (pdwPendingList)
-	{
-		for (i = 0; i<nPendingCount; i++)
-		{
-			if (pdwPendingList[i]->hContact == hContact)
-			{
-				pItem = pdwPendingList[i];
-				for (j = i+1; j<nPendingCount; j++)
-					pdwPendingList[j-1] = pdwPendingList[j];
-
-				nPendingCount--;
-				if (nResult) // we succeded, go on, resume operation
-				{
-					LeaveCriticalSection(&servlistMutex);
-
-					if (pItem->ofCallback)
-					{
-						NetLog_Server("Resuming postponed operation.");
-
-						makeGroupId(pItem->szGroupPath, pItem->ofCallback, pItem->pCookie);
-					}
-					else if ((int)pItem->pCookie == 1)
-					{
-						NetLog_Server("Resuming postponed update.");
-
-						updateServContact(hContact);
-					}
-
-					SAFE_FREE((void**)&pItem->szGroupPath); // free the string
-					SAFE_FREE((void**)&pItem);
-					return;
-				} // else remove all pending operations for this contact
-				NetLog_Server("Purging postponed operation.");
-				if ((pItem->pCookie) && ((int)pItem->pCookie != 1))
-					SAFE_FREE((void**)&pItem->pCookie->szGroupName); // do not leak nick name on error
-				SAFE_FREE((void**)&pItem->szGroupPath);
-				SAFE_FREE((void**)&pItem);
-			}
-		}
-	}
-	LeaveCriticalSection(&servlistMutex);
-	return;
-}
-
-// Remove All pending operations
-void CIcqProto::FlushPendingOperations()
-{
-	EnterCriticalSection(&servlistMutex);
-
-	for (int i = 0; i<nPendingCount; i++)
-		SAFE_FREE((void**)&pdwPendingList[i]);
-
-	SAFE_FREE((void**)&pdwPendingList);
-	nPendingCount = 0;
-	nPendingSize = 0;
-
-	LeaveCriticalSection(&servlistMutex);
-}*/
-
 // END OF SERVER-LIST PENDING OPERATIONS
 ////
 
@@ -1754,7 +1641,7 @@ int CIcqProto::getCListGroupHandle(const char *szGroup)
     hParentGroup = getCListGroupHandle(szGroup);
     *szSeparator = '\\';
     // take only sub-group name
-    pszGroup = szSeparator++;
+    pszGroup = ++szSeparator;
   }
 
   if (gbUnicodeCore)
@@ -1934,8 +1821,18 @@ char *CIcqProto::getServListGroupCListPath(WORD wGroupId)
 					szParentGroup = (char*)SAFE_REALLOC(szParentGroup, strlennull(szGroup) + strlennull(szParentGroup) + 2);
 					strcat(szParentGroup, "\\");
 					strcat(szParentGroup, (char*)szGroup + nGroupLevel);
+/*          if (strstrnull(szGroup, "~"))
+          { // check if the ~ was not added to obtain unique servlist item name
+            char *szUniqueMark = strrchr(szParentGroup, '~');
+
+            *szUniqueMark = '\0';
+            // not the same group without ~, return it
+            if (getServListGroupLinkID(szParentGroup) != wGroupId)
+              *szUniqueMark = '~';
+          } */ /// FIXME: this is necessary, but needs group loading changes
 					SAFE_FREE((void**)&szGroup);
 					szGroup = szParentGroup;
+
 
 					if (getServListGroupLinkID(szGroup) == wGroupId)
 					{ // known path, give
@@ -2883,7 +2780,7 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	DeleteFromCache((HANDLE)wParam);
+	DeleteFromContactsCache((HANDLE)wParam);
 
 	if ( !icqOnline() && m_bSsiEnabled)
 	{ // contact was deleted only locally - retrieve full list on next connect

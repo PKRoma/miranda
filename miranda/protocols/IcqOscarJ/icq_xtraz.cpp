@@ -73,7 +73,7 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 			szWork += 10;
 			*szEnd = '\0';
 
-			if (!stricmp(szWork, "srvMng") && strstrnull(szNotify, "AwayStat"))
+			if (!stricmpnull(szWork, "srvMng") && strstrnull(szNotify, "AwayStat"))
 			{
 				char* szSender = strstrnull(szNotify, "<senderId>");
 				char* szEndSend = strstrnull(szNotify, "</senderId>");
@@ -198,7 +198,7 @@ NextVal:
 			szNode += 13;
 			szWork = szEnd + 1;
 
-			if (!stricmp(szNode, "cAwaySrv"))
+			if (!stricmpnull(szNode, "cAwaySrv"))
 			{
 				szNode = strstrnull(szWork, "<uin>");
 				szEnd = strstrnull(szWork, "</uin>");

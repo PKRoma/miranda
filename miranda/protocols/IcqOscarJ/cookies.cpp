@@ -40,11 +40,18 @@
 
 void CIcqProto::RemoveExpiredCookies()
 {
-	DWORD tNow = time(NULL);
+	time_t tNow = time(NULL);
 
 	for (int i = cookies.getCount()-1; i >= 0; i--)
-		if ((cookies[i]->dwTime + COOKIE_TIMEOUT) < tNow)
-			cookies.remove( i );
+  {
+    icq_cookie_info *cookie = cookies[i];
+
+		if ((cookie->dwTime + COOKIE_TIMEOUT) < tNow)
+    {
+			cookies.remove(i);
+      SAFE_FREE((void**)&cookie);
+    }
+  }
 }
 
 // Generate and allocate cookie
@@ -56,13 +63,13 @@ DWORD CIcqProto::AllocateCookie(BYTE bType, WORD wIdent, HANDLE hContact, void *
 	dwThisSeq &= 0x7FFF;
 	dwThisSeq |= wIdent<<0x10;
 
-	icq_cookie_info* p = ( icq_cookie_info* )mir_alloc( sizeof( icq_cookie_info ));
+	icq_cookie_info* p = (icq_cookie_info*)SAFE_MALLOC(sizeof(icq_cookie_info));
 	p->bType = bType;
 	p->dwCookie = dwThisSeq;
 	p->hContact = hContact;
 	p->pvExtra = pvExtra;
 	p->dwTime = time(NULL);
-	cookies.insert( p );
+	cookies.insert(p);
 	
 	LeaveCriticalSection(&cookieMutex);
 
@@ -185,11 +192,15 @@ void CIcqProto::FreeCookie(DWORD dwCookie)
 {
 	EnterCriticalSection(&cookieMutex);
 
-	int i = cookies.getIndex(( icq_cookie_info* )&dwCookie );
+	int i = cookies.getIndex((icq_cookie_info*)&dwCookie);
 	if (i != INVALID_COOKIE_INDEX)
-		// Cookie found, remove from list
-		cookies.remove( i );
-	
+  {	// Cookie found, remove from list
+    icq_cookie_info *cookie = cookies[i];
+
+		cookies.remove(i);
+    SAFE_FREE((void**)&cookie);
+  }
+
 	RemoveExpiredCookies();
 
 	LeaveCriticalSection(&cookieMutex);
@@ -202,11 +213,16 @@ void CIcqProto::FreeCookieByData(BYTE bType, void *pvExtra)
 	EnterCriticalSection(&cookieMutex);
 
 	for (i = 0; i < cookies.getCount(); i++)
-		if (bType == cookies[i]->bType && pvExtra == cookies[i]->pvExtra)
+  {
+    icq_cookie_info *cookie = cookies[i];
+
+		if (bType == cookie->bType && pvExtra == cookie->pvExtra)
 		{ // Cookie found, remove from list
-			cookies.remove( i );
+			cookies.remove(i);
+      SAFE_FREE((void**)&cookie);
 			break;
 		}
+  }
 
 	RemoveExpiredCookies();
 
@@ -218,10 +234,13 @@ void CIcqProto::ReleaseCookie(DWORD dwCookie)
 	EnterCriticalSection(&cookieMutex);
 
 	int i = cookies.getIndex(( icq_cookie_info* )&dwCookie );
-	if ( i != INVALID_COOKIE_INDEX )
+	if (i != INVALID_COOKIE_INDEX)
 	{ // Cookie found, remove from list
-		SAFE_FREE((void**)&cookies[i]->pvExtra);
-		cookies.remove( i );
+    icq_cookie_info *cookie = cookies[i];
+
+		cookies.remove(i);
+		SAFE_FREE((void**)&cookie->pvExtra);
+    SAFE_FREE((void**)&cookie);
 	}
 	RemoveExpiredCookies();
 

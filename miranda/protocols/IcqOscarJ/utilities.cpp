@@ -50,18 +50,6 @@ static int gatewayCount = 0;
 static DWORD *spammerList = NULL;
 static int spammerListCount = 0;
 
-typedef struct icq_contacts_cache_s
-{
-	HANDLE hContact;
-	DWORD dwUin;
-} icq_contacts_cache;
-
-static icq_contacts_cache *contacts_cache = NULL;
-static int cacheCount = 0;
-static int cacheListSize = 0;
-static CRITICAL_SECTION cacheMutex;
-
-extern BOOL bIsSyncingCL;
 
 void EnableDlgItem(HWND hwndDlg, UINT control, int state)
 {
@@ -358,137 +346,128 @@ BOOL CIcqProto::IsOnSpammerList(DWORD dwUIN)
 
 // ICQ contacts cache
 
-void CIcqProto::AddToCache(HANDLE hContact, DWORD dwUin)
+void CIcqProto::AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szUid)
 {
-	if (!hContact || !dwUin)
+	if (!hContact || (!dwUin && !szUid))
 		return;
 
-	EnterCriticalSection(&cacheMutex);
-
-	if (cacheCount + 1 >= cacheListSize)
-	{
-		cacheListSize += 100;
-		contacts_cache = (icq_contacts_cache *)SAFE_REALLOC(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
-	}
-
 #ifdef _DEBUG
-	Netlib_Logf(m_hServerNetlibUser, "Adding contact to cache: %u, position: %u", dwUin, cacheCount);
+  NetLog_Server("Adding contact to cache: %u%s%s", dwUin, dwUin ? "" : " - ", dwUin ? "" : szUid);
 #endif
 
-	contacts_cache[cacheCount].hContact = hContact;
-	contacts_cache[cacheCount].dwUin = dwUin;
+  icq_contacts_cache *cache_item = (icq_contacts_cache*)SAFE_MALLOC(sizeof(icq_contacts_cache));
+  cache_item->hContact = hContact;
+  cache_item->dwUin = dwUin;
+  if (!dwUin)
+    cache_item->szUid = null_strdup(szUid);
 
-	cacheCount++;
-
-	LeaveCriticalSection(&cacheMutex);
+	EnterCriticalSection(&contactsCacheMutex);
+  contactsCache.insert(cache_item);
+	LeaveCriticalSection(&contactsCacheMutex);
 }
 
-void CIcqProto::InitCache(void)
-{
-	HANDLE hContact;
 
-	InitializeCriticalSection(&cacheMutex);
+void CIcqProto::InitContactsCache()
+{
+	InitializeCriticalSection(&contactsCacheMutex);
 	InitializeCriticalSection(&gatewayMutex);
-	cacheCount = 0;
-	cacheListSize = 0;
-	contacts_cache = NULL;
 
 	// build cache
-	EnterCriticalSection(&cacheMutex);
+	EnterCriticalSection(&contactsCacheMutex);
 
-	hContact = FindFirstContact();
+  HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{
 		DWORD dwUin;
+    uid_str szUid;
 
-		dwUin = getContactUin(hContact);
-		if (dwUin) AddToCache(hContact, dwUin);
+    if (!getContactUid(hContact, &dwUin, &szUid))
+      AddToContactsCache(hContact, dwUin, szUid);
 
 		hContact = FindNextContact(hContact);
 	}
 
-	LeaveCriticalSection(&cacheMutex);
+	LeaveCriticalSection(&contactsCacheMutex);
 }
 
-void CIcqProto::UninitCache(void)
-{
-	SAFE_FREE((void**)&contacts_cache);
 
-	DeleteCriticalSection(&cacheMutex);
+void CIcqProto::UninitContactsCache(void)
+{
+  EnterCriticalSection(&contactsCacheMutex);
+  // cleanup the cache
+	for (int i = 0; i < contactsCache.getCount(); i++)
+  {
+    icq_contacts_cache *cache_item = contactsCache[i];
+
+    SAFE_FREE((void**)&cache_item->szUid);
+    SAFE_FREE((void**)&cache_item);
+  }
+  contactsCache.destroy();
+  LeaveCriticalSection(&contactsCacheMutex);
+	DeleteCriticalSection(&contactsCacheMutex);
 	DeleteCriticalSection(&gatewayMutex);
 }
 
-void CIcqProto::DeleteFromCache(HANDLE hContact)
+
+void CIcqProto::DeleteFromContactsCache(HANDLE hContact)
 {
-	int i;
+  EnterCriticalSection(&contactsCacheMutex);
 
-	if (cacheCount == 0)
-		return;
+	for (int i = 0; i < contactsCache.getCount(); i++)
+	{
+    icq_contacts_cache *cache_item = contactsCache[i];
 
-	EnterCriticalSection(&cacheMutex);
-
-	for (i = cacheCount-1; i >= 0; i--)
-		if (contacts_cache[i].hContact == hContact)
+		if (cache_item->hContact == hContact)
 		{
-			cacheCount--;
-
 #ifdef _DEBUG
-			Netlib_Logf(m_hServerNetlibUser, "Removing contact from cache: %u, position: %u", contacts_cache[i].dwUin, i);
+			NetLog_Server("Removing contact from cache: %u%s%s, position: %u", cache_item->dwUin, cache_item->dwUin ? "" : " - ", cache_item->dwUin ? "" : cache_item->szUid, i);
 #endif
-			// move last contact to deleted position
-			if (i < cacheCount)
-				memcpy(&contacts_cache[i], &contacts_cache[cacheCount], sizeof(icq_contacts_cache));
-
-			// clear last contact position
-			ZeroMemory(&contacts_cache[cacheCount], sizeof(icq_contacts_cache));
-
+      contactsCache.remove(i);
+      // Release memory
+      SAFE_FREE((void**)&cache_item->szUid);
+      SAFE_FREE((void**)&cache_item);
 			break;
-		}
-
-		LeaveCriticalSection(&cacheMutex);
+    }
+  }
+  LeaveCriticalSection(&contactsCacheMutex);
 }
 
-HANDLE CIcqProto::HandleFromCacheByUin(DWORD dwUin)
+
+HANDLE CIcqProto::HandleFromCacheByUid(DWORD dwUin, const char *szUid)
 {
-	int i;
 	HANDLE hContact = NULL;
+  icq_contacts_cache cache_item = {NULL, dwUin, szUid};
 
-	if (cacheCount == 0)
-		return hContact;
+	EnterCriticalSection(&contactsCacheMutex);
+  // find in list
+  int i = contactsCache.getIndex(&cache_item);
+  if (i != -1)
+		hContact = contactsCache[i]->hContact;
+  LeaveCriticalSection(&contactsCacheMutex);
 
-	EnterCriticalSection(&cacheMutex);
-
-	for (i = cacheCount-1; i >= 0; i--)
-		if (contacts_cache[i].dwUin == dwUin)
-		{
-			hContact = contacts_cache[i].hContact;
-			break;
-		}
-
-		LeaveCriticalSection(&cacheMutex);
-
-		return hContact;
+	return hContact;
 }
 
-HANDLE CIcqProto::HContactFromUIN(DWORD uin, int *Added)
+
+HANDLE CIcqProto::HContactFromUIN(DWORD dwUin, int *Added)
 {
 	HANDLE hContact;
 
 	if (Added) *Added = 0;
 
-	hContact = HandleFromCacheByUin(uin);
+	hContact = HandleFromCacheByUid(dwUin, NULL);
 	if (hContact) return hContact;
 
 	hContact = FindFirstContact();
-	while (hContact != NULL)
+	while (hContact)
 	{
-		DWORD dwUin;
+		DWORD dwContactUin;
 
-		dwUin = getContactUin(hContact);
-		if (dwUin == uin)
+		dwContactUin = getContactUin(hContact);
+		if (dwContactUin == dwUin)
 		{
-			AddToCache(hContact, dwUin);
+			AddToContactsCache(hContact, dwUin, NULL);
 			return hContact;
 		}
 
@@ -501,7 +480,7 @@ HANDLE CIcqProto::HContactFromUIN(DWORD uin, int *Added)
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 		if (!hContact)
 		{
-			NetLog_Server("Failed to create ICQ contact %u", uin);
+			NetLog_Server("Failed to create ICQ contact %u", dwUin);
 			return INVALID_HANDLE_VALUE;
 		}
 
@@ -509,11 +488,11 @@ HANDLE CIcqProto::HContactFromUIN(DWORD uin, int *Added)
 		{
 			// For some reason we failed to register the protocol to this contact
 			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-			NetLog_Server("Failed to register ICQ contact %u", uin);
+			NetLog_Server("Failed to register ICQ contact %u", dwUin);
 			return INVALID_HANDLE_VALUE;
 		}
 
-		setSettingDword(hContact, UNIQUEIDSETTING, uin);
+		setSettingDword(hContact, UNIQUEIDSETTING, dwUin);
 
 		if (!bIsSyncingCL)
 		{
@@ -526,47 +505,52 @@ HANDLE CIcqProto::HContactFromUIN(DWORD uin, int *Added)
 
 			if (icqOnline())
 			{
-				icq_sendNewContact(uin, NULL);
+				icq_sendNewContact(dwUin, NULL);
 			}
 			if (getSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
-				icq_sendCheckSpamBot(hContact, uin, NULL);
+				icq_sendCheckSpamBot(hContact, dwUin, NULL);
 		}
-		AddToCache(hContact, uin);
+		AddToContactsCache(hContact, dwUin, NULL);
 		*Added = 1;
 
 		return hContact;
 	}
 
 	// not in list, check that uin do not belong to us
-	if (getContactUin(NULL) == uin)
+	if (getContactUin(NULL) == dwUin)
 		return NULL;
 
 	return INVALID_HANDLE_VALUE;
 }
 
-HANDLE CIcqProto::HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
+
+HANDLE CIcqProto::HContactFromUID(DWORD dwUin, const char *szUid, int *Added)
 {
 	HANDLE hContact;
-	DWORD dwUin;
-	uid_str szUid;
 
-	if (dwUIN)
-		return HContactFromUIN(dwUIN, Added);
+	if (dwUin)
+		return HContactFromUIN(dwUin, Added);
 
 	if (Added) *Added = 0;
 
 	if (!m_bAimEnabled) return INVALID_HANDLE_VALUE;
 
+  hContact = HandleFromCacheByUid(dwUin, szUid);
+	if (hContact) return hContact;
+
 	hContact = FindFirstContact();
-	while (hContact != NULL)
+	while (hContact)
 	{
-		if (!getContactUid(hContact, &dwUin, &szUid))
+    DWORD dwContactUin;
+    uid_str szContactUid;
+
+		if (!getContactUid(hContact, &dwContactUin, &szContactUid))
 		{
-			if (!dwUin && !stricmp(szUid, pszUID))
+			if (!dwContactUin && !stricmpnull(szContactUid, szUid))
 			{
-				if (strcmpnull(szUid, pszUID))
+				if (strcmpnull(szContactUid, szUid))
 				{ // fix case in SN
-					setSettingString(hContact, UNIQUEIDSETTING, pszUID);
+					setSettingString(hContact, UNIQUEIDSETTING, szUid);
 				}
 				return hContact;
 			}
@@ -580,7 +564,7 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
 
-		setSettingString(hContact, UNIQUEIDSETTING, pszUID);
+		setSettingString(hContact, UNIQUEIDSETTING, szUid);
 
 		if (!bIsSyncingCL)
 		{
@@ -591,11 +575,12 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
 
 			if (icqOnline())
 			{
-				icq_sendNewContact(0, pszUID);
+				icq_sendNewContact(0, szUid);
 			}
 			if (getSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
-				icq_sendCheckSpamBot(hContact, 0, pszUID);
+				icq_sendCheckSpamBot(hContact, 0, szUid);
 		}
+		AddToContactsCache(hContact, 0, szUid);
 		*Added = 1;
 
 		return hContact;
@@ -603,6 +588,7 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
 
 	return INVALID_HANDLE_VALUE;
 }
+
 
 HANDLE CIcqProto::HContactFromAuthEvent(HANDLE hEvent)
 {
@@ -665,6 +651,21 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 	if (str1 && str2)
 		return strcmp(str1, str2);
 
+  if (!str1 && !str2)
+    return 0;
+
+  return 1;
+}
+
+/* a stricmp() that likes NULL */
+int __fastcall stricmpnull(const char *str1, const char *str2)
+{
+	if (str1 && str2)
+		return stricmp(str1, str2);
+
+  if (!str1 && !str2)
+    return 0;
+
 	return 1;
 }
 
@@ -684,18 +685,6 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 	ZeroMemory(buffer, count);
 	va_start(va, fmt);
 	len = _vsnprintf(buffer, count-1, fmt, va);
-	va_end(va);
-	return len;
-}
-
-int null_snprintf(unsigned char *buffer, size_t count, const unsigned char* fmt, ...)
-{
-	va_list va;
-	int len;
-
-	ZeroMemory(buffer, count);
-	va_start(va, fmt);
-	len = _vsnprintf((char*)buffer, count-1, (char*)fmt, va);
 	va_end(va);
 	return len;
 }
