@@ -196,7 +196,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	// Init extra statuses
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
-		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::CListMW_BuildStatusItems);
+		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
 	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
 	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
 

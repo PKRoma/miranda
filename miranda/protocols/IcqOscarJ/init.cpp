@@ -196,6 +196,15 @@ int CIcqProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// OnPrebuildContactMenu event
+
+int CIcqProto::OnPreBuildStatusMenu(WPARAM wParam, LPARAM lParam)
+{
+	InitXStatusItems(TRUE);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // OnReloadIcons event
 
 int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)

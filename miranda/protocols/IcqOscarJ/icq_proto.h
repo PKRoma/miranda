@@ -168,8 +168,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int  __cdecl CListMW_ExtraIconsRebuild( WPARAM, LPARAM );
 	int  __cdecl CListMW_ExtraIconsApply( WPARAM, LPARAM );
-	int  __cdecl CListMW_BuildStatusItems( WPARAM, LPARAM );
-	int  __cdecl OnBuildPrivacyMenu( WPARAM, LPARAM );
+	int  __cdecl OnPreBuildStatusMenu( WPARAM, LPARAM );
 
 	//====| Data |========================================================================
 	HANDLE hUserMenuAddServ, hUserMenuAuth, hUserMenuGrant, hUserMenuRevoke, hUserMenuXStatus;
@@ -797,7 +796,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	HANDLE hHookExtraIconsRebuild;
 	HANDLE hHookStatusBuild;
 	HANDLE hHookExtraIconsApply;
-	HANDLE hXStatusIcons[XSTATUS_COUNT];
+  int    bXStatusExtraIconsReady;
+	HANDLE hXStatusExtraIcons[XSTATUS_COUNT];
 	HANDLE hXStatusIconsHandle[XSTATUS_COUNT];
 	HANDLE hXStatusItems[XSTATUS_COUNT + 1];
 

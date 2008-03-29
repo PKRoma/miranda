@@ -163,11 +163,15 @@ void CIcqProto::setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
 int CIcqProto::CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
 {
 	if (m_bXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+  {
 		for (int i = 0; i < XSTATUS_COUNT; i++) 
-			hXStatusIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)getXStatusIcon(i + 1, LR_SHARED), 0);
+			hXStatusExtraIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)getXStatusIcon(i + 1, LR_SHARED), 0);
 
+    bXStatusExtraIconsReady = TRUE;
+  }
 	return 0;
 }
+
 
 int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam) 
 {
@@ -178,8 +182,13 @@ int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 			// only apply icons to our contacts, do not mess others
 			DWORD bXStatus = getContactXStatus((HANDLE)wParam);
 
-			if (bXStatus) 
-				setContactExtraIcon((HANDLE)wParam, hXStatusIcons[bXStatus-1]);
+			if (bXStatus)
+      { // prepare extra slot icons if not already added
+        if (!bXStatusExtraIconsReady)
+          CListMW_ExtraIconsRebuild(wParam, lParam);
+
+				setContactExtraIcon((HANDLE)wParam, hXStatusExtraIcons[bXStatus-1]);
+      }
 			else 
 				setContactExtraIcon((HANDLE)wParam, (HANDLE)-1);
 		}
@@ -187,11 +196,6 @@ int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int CIcqProto::CListMW_BuildStatusItems(WPARAM wParam, LPARAM lParam)
-{
-	InitXStatusItems(TRUE);
-	return 0;
-}
 
 capstr capXStatus[XSTATUS_COUNT] = {
 	{0x01, 0xD8, 0xD7, 0xEE, 0xAC, 0x3B, 0x49, 0x2A, 0xA5, 0x8D, 0xD3, 0xD8, 0x77, 0xE6, 0x6B, 0x92},
@@ -325,7 +329,9 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 				if (getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
 					requestXStatusDetails(hContact, TRUE);
 
-				hIcon = hXStatusIcons[i];
+        if (!bXStatusExtraIconsReady)
+          CListMW_ExtraIconsRebuild(0, 0);
+				hIcon = hXStatusExtraIcons[i];
 
 				break;
 			}
@@ -358,7 +364,9 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 					bChanged = TRUE;
 				}
 				// cannot retrieve mood details here - need to be processed with new user details
-				hIcon = hXStatusIcons[i];
+        if (!bXStatusExtraIconsReady)
+          CListMW_ExtraIconsRebuild(0, 0);
+				hIcon = hXStatusExtraIcons[i];
 
 				break;
 			}
