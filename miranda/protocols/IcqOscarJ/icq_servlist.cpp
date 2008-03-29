@@ -1758,9 +1758,9 @@ int CIcqProto::getCListGroupHandle(const char *szGroup)
   }
 
   if (gbUnicodeCore)
-    tszGroup = (TCHAR*)make_unicode_string(szGroup);
+    tszGroup = (TCHAR*)make_unicode_string(pszGroup);
   else
-    utf8_decode(szGroup, (char**)&tszGroup);
+    utf8_decode(pszGroup, (char**)&tszGroup);
 
   hGroup = CallService(MS_CLIST_GROUPCREATE, hParentGroup, (LPARAM)tszGroup); // 0.7+
   SAFE_FREE((void**)&tszGroup);
