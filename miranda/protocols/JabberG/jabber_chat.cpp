@@ -371,7 +371,9 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	item->bChatActive = FALSE;
 
 	if ( m_bJabberOnline ) {
-		XmlNode p( "presence" ); p.addAttr( "to", item->jid ); p.addAttr( "type", "unavailable" );
+		TCHAR szPresenceTo[ 512 ];
+		mir_sntprintf( szPresenceTo, SIZEOF( szPresenceTo ), _T("%s/%s"), item->jid, item->nick );
+		XmlNode p( "presence" ); p.addAttr( "to", szPresenceTo ); p.addAttr( "type", "unavailable" );
 		if (szMessage) {
 			p.addChild("status", szMessage);
 			if (szMessage == dbvMessage.ptszVal)

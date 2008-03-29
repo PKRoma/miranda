@@ -1149,10 +1149,10 @@ void CJabberProto::OnProcessMessage( XmlNode *node, void *userdata )
 			GroupchatProcessMessage( node, userdata );
 		} else
 		{	// got message from onknown conference... let's leave it :)
-			TCHAR *conference = NEWTSTR_ALLOCA(from);
-			if (TCHAR *s = _tcschr(conference, _T('/'))) *s = 0;
-			XmlNode p( "presence" ); p.addAttr( "to", conference ); p.addAttr( "type", "unavailable" );
-			info->send( p );
+//			TCHAR *conference = NEWTSTR_ALLOCA(from);
+//			if (TCHAR *s = _tcschr(conference, _T('/'))) *s = 0;
+//			XmlNode p( "presence" ); p.addAttr( "to", conference ); p.addAttr( "type", "unavailable" );
+//			info->send( p );
 		}
 		return;
 	}
