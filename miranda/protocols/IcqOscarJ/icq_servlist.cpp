@@ -2207,7 +2207,7 @@ void CIcqProto::servlistAddContact(HANDLE hContact, const char *pszGroup)
     ack->hContact = hContact;
     ack->szGroup = null_strdup(pszGroup);
     // call thru pending operations - makes sure the contact is ready to be added
-    servlistPendingAddContact(hContact, 0, 0, 0, &CIcqProto::servlistAddContact_Ready, TRUE);
+    servlistPendingAddContact(hContact, 0, 0, (LPARAM)ack, &CIcqProto::servlistAddContact_Ready, TRUE);
     return;
   }
 }
@@ -2283,7 +2283,7 @@ void CIcqProto::servlistRemoveContact(HANDLE hContact)
 	{
     ack->hContact = hContact;
     // call thru pending operations - makes sure the contact is ready to be removed
-    servlistPendingAddContact(hContact, 0, 0, 0, &CIcqProto::servlistRemoveContact_Ready, TRUE);
+    servlistPendingAddContact(hContact, 0, 0, (LPARAM)ack, &CIcqProto::servlistRemoveContact_Ready, TRUE);
     return;
 	}
 }
