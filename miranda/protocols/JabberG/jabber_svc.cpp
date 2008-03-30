@@ -603,7 +603,7 @@ class CJabberDlgHttpAuth: public CJabberDlgFancy
 
 public:
 	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent, CJabberHttpAuthParams *pParams):
-		CSuper(proto, IDD_HTTP_AUTH, hwndParent, false),
+		CSuper(proto, IDD_HTTP_AUTH, hwndParent, true),
 		m_txtInfo(this, IDC_EDIT_HTTP_AUTH_INFO),
 		m_btnAuth(this, IDOK),
 		m_btnDeny(this, IDCANCEL),
@@ -621,6 +621,7 @@ public:
 		SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("openid"));
 
 		SetDlgItemText(m_hwnd, IDC_TXT_URL, m_pParams->m_szUrl);
+		SetDlgItemText(m_hwnd, IDC_TXT_FROM, m_pParams->m_szFrom);
 		SetDlgItemText(m_hwnd, IDC_TXT_ID, m_pParams->m_szId);
 		SetDlgItemText(m_hwnd, IDC_TXT_METHOD, m_pParams->m_szMethod);
 	}

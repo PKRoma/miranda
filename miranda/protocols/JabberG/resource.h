@@ -389,6 +389,8 @@
 #define IDC_BTN_FILTER_REFRESH          1297
 #define IDC_EDIT5                       1298
 #define IDC_TXT_STATUS                  1298
+#define IDC_TXT_URL2                    1298
+#define IDC_TXT_FROM                    1298
 #define IDC_TXT_AFFILIATION             1299
 #define IDC_ICO_STATUS                  1300
 #define IDC_TXT_RICHEDIT                1302

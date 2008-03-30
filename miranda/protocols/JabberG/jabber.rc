@@ -716,7 +716,7 @@ BEGIN
     RTEXT           "Slap:",IDC_STATIC,9,208,31,12,SS_CENTERIMAGE
 END
 
-IDD_HTTP_AUTH DIALOGEX 0, 0, 217, 158
+IDD_HTTP_AUTH DIALOGEX 0, 0, 217, 188
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Authorization Request"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -725,15 +725,17 @@ BEGIN
     LTEXT           "HTTP Authorization",IDC_TITLE,7,7,209,8,NOT WS_GROUP
     LTEXT           "Accept or reject incoming request",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
     CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,217,1
-    PUSHBUTTON      "Authorize",IDOK,104,137,50,14
-    PUSHBUTTON      "Deny",IDCANCEL,160,137,50,14
     LTEXT           "Someone (maybe you) has requested the following file:",IDC_STATIC,7,38,203,8
     EDITTEXT        IDC_TXT_URL,27,49,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "The transaction identifier is:",IDC_STATIC,7,64,203,8
-    EDITTEXT        IDC_TXT_ID,27,75,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Request method is:",IDC_STATIC,7,90,203,8
-    EDITTEXT        IDC_TXT_METHOD,27,101,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "If you wish to confirm this request, please click authorize. Otherwise, press deny to reject it.",IDC_STATIC,7,116,203,16
+    LTEXT           "Request was sent from JID:",IDC_STATIC,7,61,203,8
+    EDITTEXT        IDC_TXT_FROM,27,72,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "The transaction identifier is:",IDC_STATIC,7,84,203,8
+    EDITTEXT        IDC_TXT_ID,27,95,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "Request method is:",IDC_STATIC,7,107,203,8
+    EDITTEXT        IDC_TXT_METHOD,27,118,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "If you wish to confirm this request, please click authorize. Otherwise, press deny to reject it.",IDC_STATIC,7,130,203,16
+    PUSHBUTTON      "Authorize",IDOK,104,156,50,14
+    PUSHBUTTON      "Deny",IDCANCEL,160,156,50,14
 END
 
 
@@ -840,7 +842,7 @@ BEGIN
         VERTGUIDE, 127
         VERTGUIDE, 135
         VERTGUIDE, 418
-        BOTTOMMARGIN, 286
+        BOTTOMMARGIN, 269
         HORZGUIDE, 38
         HORZGUIDE, 52
         HORZGUIDE, 251
@@ -935,13 +937,9 @@ BEGIN
         VERTGUIDE, 7
         VERTGUIDE, 27
         VERTGUIDE, 210
-        BOTTOMMARGIN, 151
+        BOTTOMMARGIN, 170
         HORZGUIDE, 33
         HORZGUIDE, 38
-        HORZGUIDE, 61
-        HORZGUIDE, 87
-        HORZGUIDE, 113
-        HORZGUIDE, 132
         HORZGUIDE, 137
     END
 END
@@ -1048,4 +1046,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
