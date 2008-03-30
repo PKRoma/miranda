@@ -56,6 +56,14 @@ char* __stdcall rtrim( char *string )
    return string;
 }
 
+int lstrcmp_null(const TCHAR *s1, const TCHAR *s2)
+{
+	if (!s1 && !s2) return 0;
+	if (!s1) return -1;
+	if (!s2) return 1;
+	return lstrcmp(s1, s2);
+}
+
 #if defined( _UNICODE )
 TCHAR* __stdcall rtrim( TCHAR *string )
 {

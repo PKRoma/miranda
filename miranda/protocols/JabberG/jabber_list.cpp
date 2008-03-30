@@ -198,6 +198,39 @@ void CJabberProto::ListRemoveByIndex( int index )
 	LeaveCriticalSection( &m_csLists );
 }
 
+JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const TCHAR* jid )
+{
+	JABBER_RESOURCE_STATUS *result = NULL;
+
+	EnterCriticalSection( &m_csLists );
+	int i = ListExist( list, jid );
+	if ( !i ) {
+		LeaveCriticalSection( &m_csLists );
+		return 0;
+	}
+
+	JABBER_LIST_ITEM* LI = m_lstRoster[i-1];
+	int bIsNewResource = false, j;
+
+	const TCHAR* p = _tcschr( jid, '@' );
+	const TCHAR* q = _tcschr(( p == NULL ) ? jid : p, '/' );
+	if (q)
+	{
+		const TCHAR *resource = q+1;
+		if (*resource)
+			for ( j=0; j < LI->resourceCount; j++ )
+				if ( !_tcscmp( LI->resource[j].resourceName, resource ))
+				{
+					result = LI->resource + j;
+					break;
+				}
+	}
+
+	LeaveCriticalSection( &m_csLists );
+
+	return result;
+}
+
 int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority )
 {
 	EnterCriticalSection( &m_csLists );

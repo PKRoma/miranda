@@ -546,6 +546,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   ListRemoveByIndex( int index );
 	int    ListFindNext( JABBER_LIST list, int fromOffset );
 
+	JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const TCHAR* jid );
 	int    ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
 	void   ListRemoveResource( JABBER_LIST list, const TCHAR* jid );
 	TCHAR* ListGetBestResourceNamePtr( const TCHAR* jid );

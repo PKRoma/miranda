@@ -186,7 +186,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 {
 	if (!item || !user || (item->bChatActive != 2)) return;
 
-	TCHAR buf[256] = {0};
+	TCHAR buf[512] = {0};
 
 	switch (type)
 	{
@@ -196,12 +196,23 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 				mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s in now banned."), user->resourceName);
 			}
 			break;
-//		case INFO_STATUS:
-//			if (JGetByte("GcLogStatuses", FALSE))
-//			{
-//				mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s changed status to %s."), user->resourceName, TranslateT("Online"));
-//			}
-//			break;
+		case INFO_STATUS:
+			if (JGetByte("GcLogStatuses", FALSE))
+			{
+				if (user->statusMessage && user->statusMessage)
+				{
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s changed status to %s with message: %s"),
+						user->resourceName,
+						CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, user->status, GCMDF_TCHAR),
+						user->statusMessage);
+				} else
+				{
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s changed status to %s"),
+						user->resourceName,
+						CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, user->status, GCMDF_TCHAR));
+				}
+			}
+			break;
 		case INFO_CONFIG:
 			if (JGetByte("GcLogConfig", FALSE))
 			{
@@ -803,9 +814,6 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		if (((LPNMHDR)lParam)->idFrom == IDC_CLIST) {
 			switch (((LPNMHDR)lParam)->code) {
 			case CLN_NEWCONTACT:
-				if ( data )
-					FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
-				break;
 			case CLN_LISTREBUILT:
 				if ( data )
 					FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));

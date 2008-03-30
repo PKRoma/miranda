@@ -565,6 +565,7 @@ int    ReloadIconsEventHook(WPARAM wParam, LPARAM lParam);
 
 void  __stdcall replaceStr( char*& dest, const char* src );
 void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
+int lstrcmp_null(const TCHAR *s1, const TCHAR *s2);
 char* __stdcall rtrim( char *string );
 #if defined( _UNICODE )
 	TCHAR* __stdcall rtrim( TCHAR *string );

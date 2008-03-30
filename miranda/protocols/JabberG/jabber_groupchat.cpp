@@ -396,6 +396,7 @@ CJabberDlgGcJoin::CJabberDlgGcJoin(CJabberProto *proto, TCHAR *jid) :
 	CJabberDlgFancy(proto, IDD_GROUPCHAT_JOIN, NULL),
 	m_jid(jid)
 {
+	m_autoClose = 0;
 }
 
 void CJabberDlgGcJoin::OnInitDialog()
@@ -727,7 +728,7 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			// fall through
 		case IDCANCEL:
-			EndDialog( m_hwnd, 0 );
+			Close();
 			break;
 		}
 		break;
@@ -814,6 +815,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 	XmlNode *showNode, *statusNode, *errorNode, *itemNode, *n, *priorityNode;
 	TCHAR* from;
 	int status, newRes = 0;
+	bool bStatusChanged = false;
 	int i;
 	BOOL roomCreated;
 
@@ -859,6 +861,10 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 		char priority = 0;
 		if (( priorityNode = JabberXmlGetChild( node, "priority" )) != NULL && priorityNode->text != NULL )
 			priority = (char)_ttoi( priorityNode->text );
+
+		if (JABBER_RESOURCE_STATUS *oldRes = ListFindResource(LIST_CHATROOM, from))
+			if ((oldRes->status != status) || lstrcmp_null(oldRes->statusMessage, str))
+				bStatusChanged = true;
 
 		newRes = ( ListAddResource( LIST_CHATROOM, from, status, str, priority ) == 0 ) ? 0 : GC_EVENT_JOIN;
 
@@ -910,6 +916,11 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 			if ( sttGetStatusCode( xNode ) == 201 )
 				roomCreated = TRUE;
 		}
+
+		// show status change if needed
+		if (bStatusChanged)
+			if (JABBER_RESOURCE_STATUS *res = ListFindResource(LIST_CHATROOM, from))
+				GcLogShowInformation(item, res, INFO_STATUS);
 
 		// Update groupchat log window
 		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
