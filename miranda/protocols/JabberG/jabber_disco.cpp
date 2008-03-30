@@ -1254,28 +1254,32 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 
 	HMENU hMenu = CreatePopupMenu();
 	BOOL lastSeparator = TRUE;
+	bool bFilterItems = !GetAsyncKeyState(VK_CONTROL);
 	for (int i = 0; i < SIZEOF(items); ++i)
 	{
 		JABBER_LIST_ITEM *rosterItem = NULL;
 
-		if ((items[i].flags&SD_FLG_NONODE) && pNode->GetNode())
-			continue;
-		if ((items[i].flags&SD_FLG_NOTONROSTER) && (rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
-			continue;
-		if ((items[i].flags&SD_FLG_ONROSTER) && !(rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
-			continue;
-		if ((items[i].flags&SD_FLG_SUBSCRIBED) && (!rosterItem || (rosterItem->subscription == SUB_NONE)))
-			continue;
-		if ((items[i].flags&SD_FLG_NOTSUBSCRIBED) && (rosterItem && (rosterItem->subscription != SUB_NONE)))
-			continue;
-		if ((items[i].flags&SD_FLG_ONLINE) && rosterItem && (rosterItem->itemResource.status != ID_STATUS_OFFLINE))
-			continue;
-		if ((items[i].flags&SD_FLG_NOTONLINE) && rosterItem && (rosterItem->itemResource.status == ID_STATUS_OFFLINE))
-			continue;
-		if ((items[i].flags&SD_FLG_NORESOURCE) && _tcschr(pNode->GetJid(), _T('/')))
-			continue;
-		if ((items[i].flags&SD_FLG_HASUSER) && !_tcschr(pNode->GetJid(), _T('@')))
-			continue;
+		if (bFilterItems)
+		{
+			if ((items[i].flags&SD_FLG_NONODE) && pNode->GetNode())
+				continue;
+			if ((items[i].flags&SD_FLG_NOTONROSTER) && (rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
+				continue;
+			if ((items[i].flags&SD_FLG_ONROSTER) && !(rosterItem = ListGetItemPtr(LIST_ROSTER, pNode->GetJid())))
+				continue;
+			if ((items[i].flags&SD_FLG_SUBSCRIBED) && (!rosterItem || (rosterItem->subscription == SUB_NONE)))
+				continue;
+			if ((items[i].flags&SD_FLG_NOTSUBSCRIBED) && (rosterItem && (rosterItem->subscription != SUB_NONE)))
+				continue;
+			if ((items[i].flags&SD_FLG_ONLINE) && rosterItem && (rosterItem->itemResource.status != ID_STATUS_OFFLINE))
+				continue;
+			if ((items[i].flags&SD_FLG_NOTONLINE) && rosterItem && (rosterItem->itemResource.status == ID_STATUS_OFFLINE))
+				continue;
+			if ((items[i].flags&SD_FLG_NORESOURCE) && _tcschr(pNode->GetJid(), _T('/')))
+				continue;
+			if ((items[i].flags&SD_FLG_HASUSER) && !_tcschr(pNode->GetJid(), _T('@')))
+				continue;
+		}
 
 		if (!items[i].feature)
 		{
@@ -1296,21 +1300,29 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 			}
 			continue;
 		}
-		for (CJabberSDFeature *iFeature = pNode->GetFirstFeature(); iFeature; iFeature = iFeature->GetNext())
-			if (!lstrcmp(iFeature->GetVar(), items[i].feature))
-			{
-				if (items[i].title)
+
+		bool bFeatureOk = !bFilterItems;
+		if (bFilterItems)
+			for (CJabberSDFeature *iFeature = pNode->GetFirstFeature(); iFeature; iFeature = iFeature->GetNext())
+				if (!lstrcmp(iFeature->GetVar(), items[i].feature))
 				{
-					AppendMenu(hMenu, MF_STRING, items[i].action, TranslateTS(items[i].title));
-					lastSeparator = FALSE;
-				} else
-				if (!lastSeparator)
-				{
-					AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-					lastSeparator = TRUE;
+					bFeatureOk = true;
+					break;
 				}
-				break;
+
+		if (bFeatureOk)
+		{
+			if (items[i].title)
+			{
+				AppendMenu(hMenu, MF_STRING, items[i].action, TranslateTS(items[i].title));
+				lastSeparator = FALSE;
+			} else
+			if (!lastSeparator)
+			{
+				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+				lastSeparator = TRUE;
 			}
+		}
 	}
 
 	if (!GetMenuItemCount(hMenu))
