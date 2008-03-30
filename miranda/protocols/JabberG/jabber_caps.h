@@ -142,6 +142,8 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
 
+#define JABBER_FEAT_HTTP_AUTH                   "http://jabber.org/protocol/http-auth"
+
 
 class CJabberClientPartialCaps
 {

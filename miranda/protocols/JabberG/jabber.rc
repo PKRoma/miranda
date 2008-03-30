@@ -716,6 +716,16 @@ BEGIN
     RTEXT           "Slap:",IDC_STATIC,9,208,31,12,SS_CENTERIMAGE
 END
 
+IDD_HTPP_AUTH DIALOGEX 0, 0, 316, 162
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Authorize",IDC_HTTP_AUTH,73,141,50,14
+    PUSHBUTTON      "Deny",IDC_HTTP_DENY,188,141,50,14
+    EDITTEXT        IDC_EDIT_HTTP_AUTH_INFO,7,7,302,131,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -909,6 +919,14 @@ BEGIN
         HORZGUIDE, 220
         HORZGUIDE, 225
     END
+
+    IDD_HTPP_AUTH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 155
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1012,6 +1030,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
 

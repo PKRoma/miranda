@@ -1281,6 +1281,46 @@ void CJabberProto::OnProcessMessage( XmlNode *node, void *userdata )
 		CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 	}
 
+	if ( n = JabberXmlGetChildWithGivenAttrValue( node, "confirm", "xmlns", _T( JABBER_FEAT_HTTP_AUTH ))) {
+		CJabberHttpAuthParams *pParams = (CJabberHttpAuthParams *)mir_alloc( sizeof( CJabberHttpAuthParams ));
+		if ( !pParams )
+			return;
+		ZeroMemory( pParams, sizeof( CJabberHttpAuthParams ));
+		pParams->m_nType = CJabberHttpAuthParams::MSG;
+		pParams->m_szFrom = mir_tstrdup( from );
+		XmlNode *pThreadNode = JabberXmlGetChild( node, "thread" );
+		if ( pThreadNode && pThreadNode->text && pThreadNode->text[0] )
+			pParams->m_szThreadId = mir_tstrdup( pThreadNode->text );
+		TCHAR *szAttr = NULL;
+		if ( szAttr = JabberXmlGetAttrValue( n, "id" ))
+			pParams->m_szId = mir_tstrdup( szAttr );
+		if ( szAttr = JabberXmlGetAttrValue( n, "method" ))
+			pParams->m_szMethod = mir_tstrdup( szAttr );
+		if ( szAttr = JabberXmlGetAttrValue( n, "url" ))
+			pParams->m_szUrl = mir_tstrdup( szAttr );
+
+		if ( !pParams->m_szId || !pParams->m_szMethod || !pParams->m_szUrl ) {
+			pParams->Free();
+			mir_free( pParams );
+			return;
+		}
+
+		CLISTEVENT cle;
+		char szService[256];
+		mir_snprintf( szService, sizeof(szService),"%s%s", m_szModuleName, JS_HTTP_AUTH );
+		cle.cbSize = sizeof(CLISTEVENT);
+		cle.hContact = NULL;
+		cle.hIcon = (HICON) LoadIconEx("Request");
+		cle.flags = CLEF_PROTOCOLGLOBAL | CLEF_TCHAR;
+		cle.hDbEvent = (HANDLE)("test");
+		cle.lParam = (LPARAM) pParams;
+		cle.pszService = szService;
+		cle.ptszTooltip = TranslateT("Http authentication request received");
+		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+
+		return;
+	}
+
 	for ( int i = 1; ( xNode = JabberXmlGetNthChild( node, "x", i )) != NULL; i++ ) {
 		TCHAR* ptszXmlns = JabberXmlGetAttrValue( xNode, "xmlns" );
 		if ( ptszXmlns == NULL )

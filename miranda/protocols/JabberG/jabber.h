@@ -273,9 +273,40 @@ enum {
 #define JS_GETXSTATUS              "/GetXStatus"
 #define JS_SETXSTATUS              "/SetXStatus"
 
+#define JS_HTTP_AUTH               "/HttpAuthRequest"
+
 #define DBSETTING_XSTATUSID        "XStatusId"
 #define DBSETTING_XSTATUSNAME      "XStatusName"
 #define DBSETTING_XSTATUSMSG       "XStatusMsg"
+
+struct CJabberHttpAuthParams
+{
+	enum {IQ = 1, MSG = 2} m_nType;
+	TCHAR *m_szFrom;
+	TCHAR *m_szIqId;
+	TCHAR *m_szThreadId;
+	TCHAR *m_szId;
+	TCHAR *m_szMethod;
+	TCHAR *m_szUrl;
+	CJabberHttpAuthParams()
+	{
+		ZeroMemory(this, sizeof(CJabberHttpAuthParams));
+	}
+	~CJabberHttpAuthParams()
+	{
+		Free();
+	}
+	void Free()
+	{
+		mir_free(m_szFrom);
+		mir_free(m_szIqId);
+		mir_free(m_szThreadId);
+		mir_free(m_szId);
+		mir_free(m_szMethod);
+		mir_free(m_szUrl);
+		ZeroMemory(this, sizeof(CJabberHttpAuthParams));
+	}
+};
 
 /*******************************************************************
  * Global data structures and data type definitions

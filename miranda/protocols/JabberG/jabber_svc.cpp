@@ -544,3 +544,135 @@ int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
 	}
 	return 0;
 }
+
+BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuthorized )
+{
+	if ( !m_bJabberOnline || !pParams || !m_ThreadInfo )
+		return FALSE;
+
+	if ( pParams->m_nType == CJabberHttpAuthParams::IQ ) {
+		XmlNodeIq iq( bAuthorized ? "result" : "error", pParams->m_szIqId, pParams->m_szFrom );
+		if ( !bAuthorized ) {
+			XmlNode *pConfirm = iq.addChild( "confirm" );
+			pConfirm->addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
+			pConfirm->addAttr( "id", pParams->m_szId );
+			pConfirm->addAttr( "method", pParams->m_szMethod );
+			pConfirm->addAttr( "url", pParams->m_szUrl );
+
+			XmlNode *pError = iq.addChild( "error" );
+			pError->addAttr( "code", "401" );
+			pError->addAttr( "type", "auth" );
+			XmlNode *pNA = pError->addChild( "not-authorized" );
+			pNA->addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+		}
+		m_ThreadInfo->send( iq );
+	}
+	else if ( pParams->m_nType == CJabberHttpAuthParams::MSG ) {
+		XmlNode msg( "message" );
+		msg.addAttr( "to", pParams->m_szFrom );
+		if ( !bAuthorized )
+			msg.addAttr( "type", "error" );
+		if ( pParams->m_szThreadId )
+			msg.addChild( "thread", pParams->m_szThreadId );
+
+		XmlNode *pConfirm = msg.addChild( "confirm" );
+		pConfirm->addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
+		pConfirm->addAttr( "id", pParams->m_szId );
+		pConfirm->addAttr( "method", pParams->m_szMethod );
+		pConfirm->addAttr( "url", pParams->m_szUrl );
+
+		if ( !bAuthorized ) {
+			XmlNode *pError = msg.addChild( "error" );
+			pError->addAttr( "code", "401" );
+			pError->addAttr( "type", "auth" );
+			XmlNode *pNA = pError->addChild( "not-authorized" );
+			pNA->addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+		}
+		m_ThreadInfo->send( msg );
+	}
+	else
+		return FALSE;
+
+
+	return TRUE;
+}
+
+class CJabberDlgHttpAuth: public CJabberDlgBase
+{
+	typedef CJabberDlgBase CSuper;
+
+public:
+	CJabberHttpAuthParams *m_pParams;
+
+	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent):
+	CJabberDlgBase(proto, IDD_HTPP_AUTH, hwndParent, false),
+		m_txtInfo(this, IDC_EDIT_HTTP_AUTH_INFO),
+		m_btnAuth(this, IDC_HTTP_AUTH),
+		m_btnDeny(this, IDC_HTTP_DENY)
+	{
+		m_pParams = NULL;
+		m_btnAuth.OnClick = Callback( this, &CJabberDlgHttpAuth::btnAuth_OnClick );
+		m_btnDeny.OnClick = Callback( this, &CJabberDlgHttpAuth::btnDeny_OnClick );
+	}
+
+	void OnInitDialog()
+	{
+		CSuper::OnInitDialog();
+
+		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("Request"));
+		SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("Request"));
+
+		TCHAR szInfo[ 8192 ];
+		mir_sntprintf( szInfo, SIZEOF( szInfo ), _T(
+			"Someone (maybe you) has requested the following file:\r\n\r\n%s\r\n\r\nThe transaction identifier is: %s\r\n\r\nRequest method is: %s\r\n\r\nIf you wish to confirm the request, please press authorize. If not, press deny."),
+			m_pParams->m_szUrl, m_pParams->m_szId, m_pParams->m_szMethod );
+
+		SetDlgItemText( m_hwnd, IDC_EDIT_HTTP_AUTH_INFO, szInfo );
+	}
+
+	BOOL SendReply( BOOL bAuthorized )
+	{
+		BOOL bRetVal = m_proto->SendHttpAuthReply( m_pParams, bAuthorized );
+		m_pParams->Free();
+		mir_free( m_pParams );
+		m_pParams = NULL;
+		return bRetVal;
+	}
+
+	void btnAuth_OnClick(CCtrlButton *btn)
+	{
+		SendReply( TRUE );
+		Close();
+	}
+	void btnDeny_OnClick(CCtrlButton *btn)
+	{
+		SendReply( FALSE );
+		Close();
+	}
+
+private:
+	CCtrlEdit	m_txtInfo;
+	CCtrlButton	m_btnAuth;
+	CCtrlButton	m_btnDeny;
+};
+
+// XEP-0070 support (http auth)
+int __cdecl CJabberProto::OnHttpAuthRequest( WPARAM wParam, LPARAM lParam )
+{
+	CLISTEVENT *pCle = (CLISTEVENT *)lParam;
+	CJabberHttpAuthParams *pParams = (CJabberHttpAuthParams *)pCle->lParam;
+	if ( !pParams )
+		return 0;
+
+	CJabberDlgHttpAuth *pDlg = new CJabberDlgHttpAuth( this, (HWND)wParam );
+	if ( !pDlg ) {
+		pParams->Free();
+		mir_free( pParams );
+		return 0;
+	}
+
+	pDlg->m_pParams = pParams;
+	pDlg->Show();
+
+	return 0;
+}

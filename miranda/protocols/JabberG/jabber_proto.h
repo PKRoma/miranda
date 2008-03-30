@@ -700,6 +700,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam );
 	int    __cdecl JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam );
+	int    __cdecl OnHttpAuthRequest( WPARAM wParam, LPARAM lParam );
+
+	BOOL SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuthorized );
 
 	//---- jabber_thread.c ----------------------------------------------
 
