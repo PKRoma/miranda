@@ -802,6 +802,7 @@ public:
 		
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), "ShowOSVersion", TRUE);
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), "BsOnlyIBB", FALSE);
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept HTTP Authentication requests (XEP-0070)"), "AcceptHttpAuth", TRUE);
 	}
 
 	void OnInitDialog()

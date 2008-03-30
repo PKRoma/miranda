@@ -514,6 +514,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqHttpAuth( XmlNode* node, void* userdata, CJabberIqInfo* pInfo );
+	BOOL   AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams );
 		  
 	void   OnIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 	void   OnIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );

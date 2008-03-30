@@ -508,3 +508,55 @@ void CJabberProto::OnHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, C
 
 	m_ThreadInfo->send( iq );
 }
+
+BOOL CJabberProto::AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams )
+{
+	CLISTEVENT cle;
+	char szService[256];
+	mir_snprintf( szService, sizeof(szService),"%s%s", m_szModuleName, JS_HTTP_AUTH );
+	cle.cbSize = sizeof(CLISTEVENT);
+	cle.hContact = NULL;
+	cle.hIcon = (HICON) LoadIconEx("Request");
+	cle.flags = CLEF_PROTOCOLGLOBAL | CLEF_TCHAR;
+	cle.hDbEvent = (HANDLE)("test");
+	cle.lParam = (LPARAM) pParams;
+	cle.pszService = szService;
+	cle.ptszTooltip = TranslateT("Http authentication request received");
+	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+	
+	return TRUE;
+}
+
+void CJabberProto::OnIqHttpAuth( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
+{
+	if ( !JGetByte( "AcceptHttpAuth", TRUE ))
+		return;
+
+	if ( !node || !pInfo->GetChildNode() || !pInfo->GetFrom() || !pInfo->GetIdStr() )
+		return;
+
+	XmlNode *pConfirm = JabberXmlGetChild( node, "confirm" );
+	if ( !pConfirm )
+		return;
+
+	TCHAR *szId = JabberXmlGetAttrValue( pConfirm, "id" );
+	TCHAR *szMethod = JabberXmlGetAttrValue( pConfirm, "method" );
+	TCHAR *szUrl = JabberXmlGetAttrValue( pConfirm, "url" );
+
+	if ( !szId || !szMethod || !szUrl )
+		return;
+
+	CJabberHttpAuthParams *pParams = (CJabberHttpAuthParams *)mir_alloc( sizeof( CJabberHttpAuthParams ));
+	if ( !pParams )
+		return;
+	ZeroMemory( pParams, sizeof( CJabberHttpAuthParams ));
+	pParams->m_nType = CJabberHttpAuthParams::IQ;
+	pParams->m_szFrom = mir_tstrdup( pInfo->GetFrom() );
+	pParams->m_szId = mir_tstrdup( szId );
+	pParams->m_szMethod = mir_tstrdup( szMethod );
+	pParams->m_szUrl = mir_tstrdup( szUrl );
+
+	AddClistHttpAuthEvent( pParams );
+
+	return;
+}

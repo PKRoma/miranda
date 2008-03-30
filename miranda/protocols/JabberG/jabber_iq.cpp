@@ -171,6 +171,9 @@ BOOL CJabberIqManager::FillPermanentHandlers()
 	// ad-hoc commands (XEP-0050) for remote controlling (XEP-0146)
 	AddPermanentHandler( &CJabberProto::HandleAdhocCommandRequest, JABBER_IQ_TYPE_SET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_COMMANDS), FALSE, _T("command"));
 
+	// http auth (XEP-0070)
+	AddPermanentHandler( &CJabberProto::OnIqHttpAuth, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR | JABBER_IQ_PARSE_CHILD_TAG_NODE, _T(JABBER_FEAT_HTTP_AUTH), FALSE, _T("confirm"));
+	
 	return TRUE;
 }
 
