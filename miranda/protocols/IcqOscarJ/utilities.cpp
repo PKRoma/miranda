@@ -636,7 +636,7 @@ char *strUID(DWORD dwUIN, char *pszUID)
 	return pszUID;
 }
 
-/* a strlennull() that likes NULL */
+/* a strlen() that likes NULL */
 size_t __fastcall strlennull(const char *string)
 {
 	if (string)
@@ -644,6 +644,17 @@ size_t __fastcall strlennull(const char *string)
 
 	return 0;
 }
+
+
+/* a wcslen() that likes NULL */
+size_t __fastcall strlennull(const WCHAR *string)
+{
+  if (string)
+    return wcslen(string);
+
+  return 0;
+}
+
 
 /* a strcmp() that likes NULL */
 int __fastcall strcmpnull(const char *str1, const char *str2)
@@ -859,9 +870,9 @@ char *ApplyEncoding(const char *string, const char *pszEncoding)
 		}
 		if (!strnicmp(pszEncoding, "unicode-2-0", 11))
 		{ // it is UCS-2 encoded
-			int wLen = wcslen((WCHAR*)string) + 1;
+			int wLen = strlennull((WCHAR*)string) + 1;
 			WCHAR *szStr = (WCHAR*)_alloca(wLen*2);
-			BYTE *tmp = ( BYTE* )string;
+			BYTE *tmp = (BYTE*)string;
 
 			unpackWideString(&tmp, szStr, (WORD)(wLen*2));
 
@@ -1686,8 +1697,8 @@ void SetWindowTextUcs(HWND hWnd, WCHAR *text)
 	#if defined( _UNICODE )
 		SetWindowTextW(hWnd, text);
 	#else
-		char *tmp = (char*)SAFE_MALLOC(wcslen(text) + 1);
-		WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, wcslen(text)+1, NULL, NULL);
+		char *tmp = (char*)SAFE_MALLOC(strlennull(text) + 1);
+		WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, strlennull(text)+1, NULL, NULL);
 		SetWindowTextA(hWnd, tmp);
 		SAFE_FREE((void**)&tmp);
 	#endif

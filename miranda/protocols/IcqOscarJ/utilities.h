@@ -84,6 +84,8 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
 size_t __fastcall null_strcut(char *string, size_t maxlen);
 
+size_t __fastcall strlennull(const WCHAR *string);
+
 void parseServerAddress(char *szServer, WORD* wPort);
 
 char *DemangleXml(const char *string, int len);

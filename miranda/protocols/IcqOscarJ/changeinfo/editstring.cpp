@@ -53,7 +53,7 @@ static const char escapes[]={'a','\a',
 '\\','\\'};
 
 static void EscapesToMultiline(wchar_t *str,PDWORD selStart,PDWORD selEnd)
-{  //converts "\\n" and "\\t" to "\r\n" and "\t" because a multi-line edit box can show them properly
+{ //converts "\\n" and "\\t" to "\r\n" and "\t" because a multi-line edit box can show them properly
 	DWORD i;
 
 	for(i=0; *str; str++, i++) 
@@ -68,7 +68,7 @@ static void EscapesToMultiline(wchar_t *str,PDWORD selStart,PDWORD selEnd)
 		else if (str[1] == 't') 
 		{
 			*str = '\t';
-			memmove(str+1, str+2, sizeof(wchar_t)*(wcslen(str)-1));
+			memmove(str+1, str+2, sizeof(WCHAR)*(strlennull(str)-1));
 
 			if (*selStart>i) --*selStart;
 			if (*selEnd>i) --*selEnd;

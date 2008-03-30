@@ -1057,7 +1057,7 @@ int __cdecl CIcqProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 	if ((pre->flags & PREF_UTF) && !IsUSASCII(pre->szMessage, strlennull(pre->szMessage)))
 		flags |= DBEF_UTF;
 	// process unicode ucs-2 messages
-	if ((pre->flags & PREF_UNICODE) && !IsUnicodeAscii((WCHAR*)(pre->szMessage+cbBlob), wcslen((WCHAR*)(pre->szMessage+cbBlob))))
+	if ((pre->flags & PREF_UNICODE) && !IsUnicodeAscii((WCHAR*)(pre->szMessage+cbBlob), strlennull((WCHAR*)(pre->szMessage+cbBlob))))
 		cbBlob *= (sizeof(WCHAR)+1);
 
 	ICQAddRecvEvent(hContact, EVENTTYPE_MESSAGE, pre, cbBlob, (PBYTE)pre->szMessage, flags);
@@ -1638,7 +1638,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				WCHAR* pwszText = NULL;
 
 				if (puszText) pwszText = make_unicode_string(puszText);
-				if ((pwszText ? wcslen(pwszText)*sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
+				if ((pwszText ? strlennull(pwszText) * sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
 				{ // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
 					// only limit to not get disconnected, all other will be handled by error 0x0A
 					dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The message could not be delivered, it is too long.");

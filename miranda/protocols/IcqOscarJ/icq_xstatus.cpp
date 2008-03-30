@@ -423,13 +423,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) 
 		{ // ctrl-backspace
 			DWORD start, end;
-			wchar_t *text;
+			TCHAR *text;
 
 			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
 			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
 			SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
 			text = GetWindowTextUcs(hwnd);
-			MoveMemory(text + start, text + end, sizeof(wchar_t) * (wcslen(text) + 1 - end));
+			MoveMemory(text + start, text + end, sizeof(WCHAR) * (strlennull(text) + 1 - end));
 			SetWindowTextUcs(hwnd, text);
 			SAFE_FREE((void**)&text);
 			SendMessage(hwnd, EM_SETSEL, start, start);

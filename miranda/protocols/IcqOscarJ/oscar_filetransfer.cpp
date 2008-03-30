@@ -2282,7 +2282,6 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 	oscar_filetransfer *ft = oc->ft;
 	struct _stati64 statbuf;
 	char *pszThisFileName;
-	wchar_t *pwsThisFile;
 
 	// prepare init frame
 	if (ft->iCurrentFile >= (int)ft->wFilesCount)
@@ -2360,13 +2359,14 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 	else
 	{
 		ft->wEncoding = 2; // ucs-2
-		pwsThisFile = make_unicode_string(pszThisFileName);
+		WCHAR *pwsThisFile = make_unicode_string(pszThisFileName);
 		SAFE_FREE((void**)&pszThisFileName);
-		ft->cbRawFileName = wcslen(pwsThisFile) * sizeof(wchar_t) + 2;
+		ft->cbRawFileName = strlennull(pwsThisFile) * sizeof(WCHAR) + 2;
 		if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
 		ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
 		// convert to LE ordered string
-		unpackWideString((BYTE**)&pwsThisFile, (WCHAR*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(WCHAR)));
+    BYTE* pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address!
+		unpackWideString(&pwsThisFileBuf, (WCHAR*)ft->rawFileName, (WORD)(strlennull(pwsThisFile) * sizeof(WCHAR)));
 		SAFE_FREE((void**)&pwsThisFile);
 	}
 	ft->wFilesLeft = (WORD)(ft->wFilesCount - ft->iCurrentFile);
