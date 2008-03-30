@@ -706,6 +706,8 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				JabberGcRecentInfo info( m_proto, LOWORD( wParam ) - IDC_RECENT1);
 				info.fillForm(m_hwnd);
+				if (GetAsyncKeyState(VK_CONTROL))
+					break;
 			}
 			// fall through
 
