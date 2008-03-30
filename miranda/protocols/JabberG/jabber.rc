@@ -716,14 +716,24 @@ BEGIN
     RTEXT           "Slap:",IDC_STATIC,9,208,31,12,SS_CENTERIMAGE
 END
 
-IDD_HTPP_AUTH DIALOGEX 0, 0, 316, 162
+IDD_HTTP_AUTH DIALOGEX 0, 0, 217, 158
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
+CAPTION "Authorization Request"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Authorize",IDC_HTTP_AUTH,73,141,50,14
-    PUSHBUTTON      "Deny",IDC_HTTP_DENY,188,141,50,14
-    EDITTEXT        IDC_EDIT_HTTP_AUTH_INFO,7,7,302,131,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
+    CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,217,32
+    LTEXT           "OpenID Authorization",IDC_TITLE,7,7,209,8,NOT WS_GROUP
+    LTEXT           "HTTP OpenID authorization requested.",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
+    CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,217,1
+    PUSHBUTTON      "Authorize",IDC_HTTP_AUTH,104,137,50,14
+    PUSHBUTTON      "Deny",IDC_HTTP_DENY,160,137,50,14
+    LTEXT           "Someone (maybe you) has requested the following file:",IDC_STATIC,7,38,203,8
+    EDITTEXT        IDC_TXT_URL,27,49,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "The transaction identifier is:",IDC_STATIC,7,64,203,8
+    EDITTEXT        IDC_TXT_ID,27,75,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "Request method is:",IDC_STATIC,7,90,203,8
+    EDITTEXT        IDC_TXT_METHOD,27,101,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "If you wish to confirm this request, please click authorize. Otherwise, press deny to reject it.",IDC_STATIC,7,116,203,16
 END
 
 
@@ -920,12 +930,19 @@ BEGIN
         HORZGUIDE, 225
     END
 
-    IDD_HTPP_AUTH, DIALOG
+    IDD_HTTP_AUTH, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 155
+        VERTGUIDE, 7
+        VERTGUIDE, 27
+        VERTGUIDE, 210
+        BOTTOMMARGIN, 151
+        HORZGUIDE, 33
+        HORZGUIDE, 38
+        HORZGUIDE, 61
+        HORZGUIDE, 87
+        HORZGUIDE, 113
+        HORZGUIDE, 132
+        HORZGUIDE, 137
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -989,6 +1006,7 @@ IDI_PL_LIST_ANY         ICON                    "icos\\plist_any.ico"
 IDI_PL_LIST_DEFAULT     ICON                    "icos\\plist_default.ico"
 IDI_TRANSPORT           ICON                    "icos\\transport.ico"
 IDI_TRANSPORTL          ICON                    "icos\\transport_local.ico"
+IDI_HTTP_AUTH           ICON                    "icos\\openid.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -1030,4 +1048,5 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 

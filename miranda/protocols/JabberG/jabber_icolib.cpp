@@ -489,6 +489,7 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
 	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },
 	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE,            NULL },
+	{   LPGEN("OpenID Request"),        "openid",           IDI_HTTP_AUTH,          NULL },
 
 	{   LPGEN("Discovery succeeded"),   "disco_ok",         IDI_DISCO_OK,           LPGEN("Dialogs") },
 	{   LPGEN("Discovery failed"),      "disco_fail",       IDI_DISCO_FAIL,         LPGEN("Dialogs") },

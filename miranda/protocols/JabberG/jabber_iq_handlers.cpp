@@ -511,12 +511,11 @@ void CJabberProto::OnHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, C
 
 BOOL CJabberProto::AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams )
 {
-	CLISTEVENT cle;
+	CLISTEVENT cle = {0};
 	char szService[256];
 	mir_snprintf( szService, sizeof(szService),"%s%s", m_szModuleName, JS_HTTP_AUTH );
 	cle.cbSize = sizeof(CLISTEVENT);
-	cle.hContact = NULL;
-	cle.hIcon = (HICON) LoadIconEx("Request");
+	cle.hIcon = (HICON) LoadIconEx("openid");
 	cle.flags = CLEF_PROTOCOLGLOBAL | CLEF_TCHAR;
 	cle.hDbEvent = (HANDLE)("test");
 	cle.lParam = (LPARAM) pParams;

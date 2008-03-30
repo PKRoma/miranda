@@ -597,20 +597,18 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 	return TRUE;
 }
 
-class CJabberDlgHttpAuth: public CJabberDlgBase
+class CJabberDlgHttpAuth: public CJabberDlgFancy
 {
-	typedef CJabberDlgBase CSuper;
+	typedef CJabberDlgFancy CSuper;
 
 public:
-	CJabberHttpAuthParams *m_pParams;
-
-	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent):
-	CJabberDlgBase(proto, IDD_HTTP_AUTH, hwndParent, false),
+	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent, CJabberHttpAuthParams *pParams):
+		CSuper(proto, IDD_HTTP_AUTH, hwndParent, false),
 		m_txtInfo(this, IDC_EDIT_HTTP_AUTH_INFO),
 		m_btnAuth(this, IDC_HTTP_AUTH),
-		m_btnDeny(this, IDC_HTTP_DENY)
+		m_btnDeny(this, IDC_HTTP_DENY),
+		m_pParams(pParams)
 	{
-		m_pParams = NULL;
 		m_btnAuth.OnClick = Callback( this, &CJabberDlgHttpAuth::btnAuth_OnClick );
 		m_btnDeny.OnClick = Callback( this, &CJabberDlgHttpAuth::btnDeny_OnClick );
 	}
@@ -619,15 +617,12 @@ public:
 	{
 		CSuper::OnInitDialog();
 
-		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("Request"));
-		SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("Request"));
+		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("openid"));
+		SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, (LPARAM)m_proto->LoadIconEx("openid"));
 
-		TCHAR szInfo[ 8192 ];
-		mir_sntprintf( szInfo, SIZEOF( szInfo ), _T(
-			"Someone (maybe you) has requested the following file:\r\n\r\n%s\r\n\r\nThe transaction identifier is: %s\r\n\r\nRequest method is: %s\r\n\r\nIf you wish to confirm the request, please press authorize. If not, press deny."),
-			m_pParams->m_szUrl, m_pParams->m_szId, m_pParams->m_szMethod );
-
-		SetDlgItemText( m_hwnd, IDC_EDIT_HTTP_AUTH_INFO, szInfo );
+		SetDlgItemText(m_hwnd, IDC_TXT_URL, m_pParams->m_szUrl);
+		SetDlgItemText(m_hwnd, IDC_TXT_ID, m_pParams->m_szId);
+		SetDlgItemText(m_hwnd, IDC_TXT_METHOD, m_pParams->m_szMethod);
 	}
 
 	BOOL SendReply( BOOL bAuthorized )
@@ -650,10 +645,21 @@ public:
 		Close();
 	}
 
+	UI_MESSAGE_MAP(CJabberDlgHttpAuth, CSuper);
+		UI_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic);
+	UI_MESSAGE_MAP_END();
+
+	BOOL OnCtlColorStatic(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+	}
+
 private:
 	CCtrlEdit	m_txtInfo;
 	CCtrlButton	m_btnAuth;
 	CCtrlButton	m_btnDeny;
+
+	CJabberHttpAuthParams *m_pParams;
 };
 
 // XEP-0070 support (http auth)
@@ -664,14 +670,13 @@ int __cdecl CJabberProto::OnHttpAuthRequest( WPARAM wParam, LPARAM lParam )
 	if ( !pParams )
 		return 0;
 
-	CJabberDlgHttpAuth *pDlg = new CJabberDlgHttpAuth( this, (HWND)wParam );
+	CJabberDlgHttpAuth *pDlg = new CJabberDlgHttpAuth( this, (HWND)wParam, pParams );
 	if ( !pDlg ) {
 		pParams->Free();
 		mir_free( pParams );
 		return 0;
 	}
 
-	pDlg->m_pParams = pParams;
 	pDlg->Show();
 
 	return 0;
