@@ -722,11 +722,11 @@ CAPTION "Authorization Request"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,217,32
-    LTEXT           "OpenID Authorization",IDC_TITLE,7,7,209,8,NOT WS_GROUP
-    LTEXT           "HTTP OpenID authorization requested.",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
+    LTEXT           "HTTP Authorization",IDC_TITLE,7,7,209,8,NOT WS_GROUP
+    LTEXT           "Accept or reject incoming request",IDC_DESCRIPTION,17,17,200,8,NOT WS_GROUP
     CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,217,1
-    PUSHBUTTON      "Authorize",IDC_HTTP_AUTH,104,137,50,14
-    PUSHBUTTON      "Deny",IDC_HTTP_DENY,160,137,50,14
+    PUSHBUTTON      "Authorize",IDOK,104,137,50,14
+    PUSHBUTTON      "Deny",IDCANCEL,160,137,50,14
     LTEXT           "Someone (maybe you) has requested the following file:",IDC_STATIC,7,38,203,8
     EDITTEXT        IDC_TXT_URL,27,49,183,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "The transaction identifier is:",IDC_STATIC,7,64,203,8
@@ -1048,5 +1048,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
 

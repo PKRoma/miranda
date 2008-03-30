@@ -605,8 +605,8 @@ public:
 	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent, CJabberHttpAuthParams *pParams):
 		CSuper(proto, IDD_HTTP_AUTH, hwndParent, false),
 		m_txtInfo(this, IDC_EDIT_HTTP_AUTH_INFO),
-		m_btnAuth(this, IDC_HTTP_AUTH),
-		m_btnDeny(this, IDC_HTTP_DENY),
+		m_btnAuth(this, IDOK),
+		m_btnDeny(this, IDCANCEL),
 		m_pParams(pParams)
 	{
 		m_btnAuth.OnClick = Callback( this, &CJabberDlgHttpAuth::btnAuth_OnClick );
