@@ -97,7 +97,7 @@
 #define IDD_OPT_JABBER4                 226
 #define IDD_DIALOG2                     227
 #define IDD_ACCMGRUI                    227
-#define IDD_HTPP_AUTH                   228
+#define IDD_HTTP_AUTH                   228
 #define IDC_STATUSBAR                   999
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000

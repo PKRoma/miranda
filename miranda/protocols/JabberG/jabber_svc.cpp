@@ -605,7 +605,7 @@ public:
 	CJabberHttpAuthParams *m_pParams;
 
 	CJabberDlgHttpAuth(CJabberProto *proto, HWND hwndParent):
-	CJabberDlgBase(proto, IDD_HTPP_AUTH, hwndParent, false),
+	CJabberDlgBase(proto, IDD_HTTP_AUTH, hwndParent, false),
 		m_txtInfo(this, IDC_EDIT_HTTP_AUTH_INFO),
 		m_btnAuth(this, IDC_HTTP_AUTH),
 		m_btnDeny(this, IDC_HTTP_DENY)
