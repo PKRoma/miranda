@@ -155,7 +155,9 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
 		}
 		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		return TRUE;
-
+	case WM_SHOWWINDOW:
+		SetFocus(GetDlgItem(hWnd,IDNO));
+		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDYES:
@@ -187,8 +189,9 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 {
 	//see notes about deleting contacts on PF1_SERVERCLIST servers in m_protosvc.h
 	int action;
-
-	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
+	
+	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT) && 
+		!(GetKeyState(VK_SHIFT)&0x8000) )
 		// Ask user for confirmation, and if the contact should be archived (hidden, not deleted)
 		action = DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_DELETECONTACT), (HWND) lParam, AskForConfirmationDlgProc, wParam);
 	else
