@@ -1036,7 +1036,8 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 					pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
 				    break;
 				}
-			}						
+			}
+			break;
 		}
 	case MTBM_GETBUTTONSTATEBYID:
 	case MTBM_GETBUTTONSTATE:
@@ -1057,7 +1058,8 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 					*res |= mtbi->bPushButton ? TBST_PUSHED : TBST_RELEASED;
 					break;
 				}
-			}						
+			}	
+			break;
 		}
 
 	case MTBM_REMOVEBUTTON:
@@ -1066,15 +1068,23 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			for (int i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if (mtbi->hWindow==(HWND)wParam)
+				if (mtbi==(MTB_BUTTONINFO*)wParam)
 				{
-					li.List_RemovePtr(pMTBInfo->pButtonList,mtbi);
+					li.List_Remove(pMTBInfo->pButtonList,i);
+					for (int j=0; j<tbdat.listOfButtons->realCount; j++)
+						if (mtbi==(MTB_BUTTONINFO*)tbdat.listOfButtons->items[j])
+						{
+							li.List_Remove(tbdat.listOfButtons,j);
+							break;
+						}
+					li.List_RemovePtr(tbdat.listOfButtons,mtbi);
 					delete_MTB_BUTTONINFO((void*)mtbi);
 					mtbi=NULL;
 					pcli->pfnInvalidateRect(hwnd, NULL, FALSE);
-					break;
+					break;	
 				}
 			}
+			break;
 		}
 	default :
 		return DefWindowProc(hwnd, msg, wParam, lParam);
