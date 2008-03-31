@@ -33,52 +33,321 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_skinengine.h"
 #include "hdr/modern_statusbar.h"
 
-#include "hdr/modern_clui.h"
+#include "hdr/modern_static_clui.h"
 #include <locale.h>
-
-int	CheckFramesPos(RECT *wr);			//cluiframes.c
-int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
-int	CLUIFrames_GetTotalHeight();		//cluiframes.c
-int CLUIFrames_RepaintSubContainers();  //cluiframes.c
-int CLUIFramesGetMinHeight();			//cluiframes.c
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
-int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
-
-int InitSkinHotKeys();
-BOOL amWakeThread();
-BOOL gtaWakeThread();
-void CreateViewModeFrame();
 
 HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 
-HIMAGELIST hAvatarOverlays=NULL;
+// new sources
+#include <crtdbg.h>
+#include "hdr/modern_clui.h"
 
-OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+#define This gl_pCLUI
+#define STATIC_METHOD
+
+CLUI * gl_pCLUI = NULL;
+
+//////////////// CLUI CLASS IMPLEMENTATION /////////////////////////////////
+CLUI::CLUI()
 {
-	{ "AVATAR_OVERLAY_OFFLINE",		LPGEN("Offline"),		IDI_AVATAR_OVERLAY_OFFLINE,   -1},
-	{ "AVATAR_OVERLAY_ONLINE",		LPGEN("Online"),		IDI_AVATAR_OVERLAY_ONLINE,	  -1},
-	{ "AVATAR_OVERLAY_AWAY",		LPGEN("Away"),			IDI_AVATAR_OVERLAY_AWAY,	  -1},
-	{ "AVATAR_OVERLAY_DND",			LPGEN("DND"),			IDI_AVATAR_OVERLAY_DND,		  -1},
-	{ "AVATAR_OVERLAY_NA",			LPGEN("NA"),			IDI_AVATAR_OVERLAY_NA,	 	  -1},
-	{ "AVATAR_OVERLAY_OCCUPIED",	LPGEN("Occupied"),		IDI_AVATAR_OVERLAY_OCCUPIED,  -1},
-	{ "AVATAR_OVERLAY_CHAT",		LPGEN("Free for chat"), IDI_AVATAR_OVERLAY_CHAT,	  -1},
-	{ "AVATAR_OVERLAY_INVISIBLE",	LPGEN("Invisible"),		IDI_AVATAR_OVERLAY_INVISIBLE, -1},
-	{ "AVATAR_OVERLAY_PHONE",		LPGEN("On the phone"),	IDI_AVATAR_OVERLAY_PHONE,	  -1},
-	{ "AVATAR_OVERLAY_LUNCH",		LPGEN("Out to lunch"),	IDI_AVATAR_OVERLAY_LUNCH,	  -1}
-};
-OVERLAYICONINFO g_pStatusOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1] = 
+    LoadUserDll();
+    hFrameContactTree=NULL;
+    CreateServiceFunction(MS_CLIST_GETSTATUSMODE,CListTray_GetGlobalStatus);
+
+    // Call InitGroup menus before
+    GroupMenus_Init();
+
+    g_hMenuMain=GetMenu(pcli->hwndContactList);
+    MENUITEMINFO mii;
+    ZeroMemory(&mii,sizeof(mii));
+    mii.cbSize=MENUITEMINFO_V4_SIZE;
+    mii.fMask=MIIM_SUBMENU;
+    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+    SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+
+    CreateServiceFunction(MS_CLUI_SHOWMAINMENU,Service_ShowMainMenu);
+    CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,Service_ShowStatusMenu);
+
+    CLUIServices_LoadModule();
+    //TODO Add Row template loading here.
+
+    RowHeight_InitModernRow();
+    nLastRequiredHeight=0;
+
+    LoadCLUIFramesModule();
+    ExtraImage_LoadModule();	
+
+    g_CluiData.boldHideOffline=-1;
+    bOldHideOffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
+
+    CreateCLCWindow(CluiWnd());
+
+    CLUI_ChangeWindowMode();
+
+    RegisterAvatarMenu(); 
+
+    CLUI_ReloadCLUIOptions();	
+
+    CreateUIFrames();
+
+    ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
+    ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
+}
+
+CLUI::~CLUI()
 {
-	{ "STATUS_OVERLAY_OFFLINE", LPGEN("Offline"), IDI_STATUS_OVERLAY_OFFLINE, -1},
-	{ "STATUS_OVERLAY_ONLINE", LPGEN("Online"), IDI_STATUS_OVERLAY_ONLINE, -1},
-	{ "STATUS_OVERLAY_AWAY", LPGEN("Away"), IDI_STATUS_OVERLAY_AWAY, -1},
-	{ "STATUS_OVERLAY_DND", LPGEN("DND"), IDI_STATUS_OVERLAY_DND, -1},
-	{ "STATUS_OVERLAY_NA", LPGEN("NA"), IDI_STATUS_OVERLAY_NA, -1},
-	{ "STATUS_OVERLAY_OCCUPIED", LPGEN("Occupied"), IDI_STATUS_OVERLAY_OCCUPIED, -1},
-	{ "STATUS_OVERLAY_CHAT", LPGEN("Free for chat"), IDI_STATUS_OVERLAY_CHAT, -1},
-	{ "STATUS_OVERLAY_INVISIBLE", LPGEN("Invisible"), IDI_STATUS_OVERLAY_INVISIBLE, -1},
-	{ "STATUS_OVERLAY_PHONE", LPGEN("On the phone"), IDI_STATUS_OVERLAY_PHONE, -1},
-	{ "STATUS_OVERLAY_LUNCH", LPGEN("Out to lunch"), IDI_STATUS_OVERLAY_LUNCH, -1}
+    FreeLibrary(m_hUserDll);
+	FreeLibrary(hDwmapiDll);
+}
+
+HRESULT CLUI::LoadUserDll()
+{
+    m_hUserDll = LoadLibrary(TEXT("user32.dll"));
+    if (m_hUserDll)
+{
+        g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(m_hUserDll, "UpdateLayeredWindow");
+        g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(m_hUserDll, "SetLayeredWindowAttributes");
+        g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(m_hUserDll,"AnimateWindow");
+
+        g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
+        g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
+        g_CluiData.fLayered=(g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
+    }
+
+	hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
+	if (hDwmapiDll)
+	{
+		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(hDwmapiDll, "DwmEnableBlurBehindWindow");
+	}
+	g_CluiData.fAeroGlass = FALSE;
+
+    return S_OK;
+}
+HRESULT CLUI::RegisterAvatarMenu()
+{
+    CLISTMENUITEM mi;
+    
+    ZeroMemory(&mi,sizeof(mi));
+    mi.cbSize=sizeof(mi);
+    mi.flags=0;
+    mi.pszContactOwner=NULL;    //on every contact
+    CreateServiceFunction("CList/ShowContactAvatar",CLUI::Service_Menu_ShowContactAvatar);
+    mi.position=2000150000;
+    mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
+    mi.pszName=LPGEN("Show Contact &Avatar");
+    mi.pszService="CList/ShowContactAvatar";
+    hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+    DestroyIcon_protect(mi.hIcon);
+
+    CreateServiceFunction("CList/HideContactAvatar",CLUI::Service_Menu_HideContactAvatar);
+    mi.position=2000150001;
+    mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
+    mi.pszName=LPGEN("Hide Contact &Avatar");
+    mi.pszService="CList/HideContactAvatar";
+    hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+    DestroyIcon_protect(mi.hIcon);
+
+    ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI::OnEvent_ContactMenuPreBuild);
+    
+    return S_OK;
+}
+HWND CLUI::CreateCLCWindow(const HWND parent)
+{
+    g_dwMainThreadID=GetCurrentThreadId();
+    DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+    pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
+        WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
+        |(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
+        |(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
+        |(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
+        |CLS_MULTICOLUMN
+        ),
+        0,0,0,0,parent,NULL,g_hInst,NULL);
+
+    return pcli->hwndContactTree;
+}
+
+HRESULT CLUI::CreateUIFrames()
+{
+    EventArea_Create(pcli->hwndContactList);
+    CreateViewModeFrame();
+    pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
+
+    return S_OK;
+}
+
+inline const HWND& CLUI::CluiWnd()
+{
+    return pcli->hwndContactList;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// pcli interface
+// called from 
+void CLUI::cliOnCreateClc(void)
+{  
+    STATIC_METHOD;
+
+    _ASSERT( This == NULL );
+
+    This=new CLUI();
+
+    _ASSERT( This );
+}
+
+int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
+{
+    STATIC_METHOD;
+
+#ifdef _UNICODE
+    CallService("Update/RegisterFL", (WPARAM)3684, (LPARAM)&pluginInfo);
+#endif 
+
+    g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
+    setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
+
+    CLCPaint_FillQuickHash();
+
+    if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
+        CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
+
+    if (ServiceExists(MS_MC_GETPROTOCOLNAME))
+        g_szMetaModuleName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+
+    CLUIServices_ProtocolStatusChanged(0,0);
+    SleepEx(0,TRUE);
+    g_flag_bOnModulesLoadedCalled=TRUE;	
+    ///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
+    SendMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
+    InitSkinHotKeys();
+    return 0;
+}
+
+int CLUI::Service_ShowMainMenu(WPARAM wParam,LPARAM lParam)
+{
+    HMENU hMenu;
+    POINT pt;
+    hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+    GetCursorPos(&pt);
+    TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
+    return 0;
+}
+int CLUI::Service_ShowStatusMenu(WPARAM wParam,LPARAM lParam)
+{
+    HMENU hMenu;
+    POINT pt;
+    hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+    GetCursorPos(&pt);
+    TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
+    return 0;
+}
+
+int CLUI::OnEvent_ContactMenuPreBuild(WPARAM wParam, LPARAM lParam) 
+{
+    TCHAR cls[128];
+    HANDLE hItem;
+    HWND hwndClist = GetFocus();
+    CLISTMENUITEM mi;
+    if (MirandaExiting()) return 0;
+    ZeroMemory(&mi,sizeof(mi));
+    mi.cbSize = sizeof(mi);
+    mi.flags = CMIM_FLAGS;
+    GetClassName(hwndClist,cls,sizeof(cls));
+    hwndClist = (!lstrcmp(CLISTCONTROL_CLASS,cls))?hwndClist:pcli->hwndContactList;
+    hItem = (HANDLE)SendMessage(hwndClist,CLM_GETSELECTION,0,0);
+    if (!hItem) {
+        mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+    }
+    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hRenameMenuItem, (LPARAM)&mi);
+
+    if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT))
+    {
+        mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+        CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
+        CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
+    }
+    else
+    {
+        int has_avatar;
+
+        if (ServiceExists(MS_AV_GETAVATARBITMAP))
+        {
+            has_avatar = CallService(MS_AV_GETAVATARBITMAP, (WPARAM)hItem, 0);
+        }
+        else
+        {
+            DBVARIANT dbv={0};
+            if (DBGetContactSettingString(hItem, "ContactPhoto", "File", &dbv))
+            {
+                has_avatar = 0;
+            }
+            else
+            {
+                has_avatar = 1;
+                DBFreeVariant(&dbv);
+            }
+        }
+
+        if (DBGetContactSettingByte(hItem, "CList", "HideContactAvatar", 0))
+        {
+            mi.flags = CMIM_FLAGS | (has_avatar ? 0 : CMIF_GRAYED);
+            CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
+            mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+            CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
+        }
+        else
+        {
+            mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+            CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
+            mi.flags = CMIM_FLAGS | (has_avatar ? 0 : CMIF_GRAYED);
+            CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
+        }
+    }
+
+    return 0;
+}
+int CLUI::OnEvent_DBSettingChanging(WPARAM wParam,LPARAM lParam)
+{
+    DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
+    if (wParam==0) return 0;  
+    if (dbcws==NULL) return(0);
+    if (MirandaExiting()) return 0;
+    
+    if ( ( dbcws->value.type==DBVT_WORD && !mir_strcmp(dbcws->szSetting,"ApparentMode") ) ||
+         ( dbcws->value.type==DBVT_ASCIIZ && 
+           ( ( !mir_strcmp(dbcws->szSetting,"e-mail") ||
+               !mir_strcmp(dbcws->szSetting,"Mye-mail0") ||
+               !mir_strcmp(dbcws->szSetting,"Cellular") )  ||
+               ( !mir_strcmp(dbcws->szModule,"UserInfo") &&
+                 ( !mir_strcmp(dbcws->szSetting,"MyPhone0") || 
+                   !mir_strcmp(dbcws->szSetting,"Mye-mail0") ) ) ) ) )
+        ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
+    return(0);
 };
+int CLUI::Service_Menu_ShowContactAvatar(WPARAM wParam,LPARAM lParam)
+{
+    HANDLE hContact = (HANDLE) wParam;
+
+    DBWriteContactSettingByte(hContact, "CList", "HideContactAvatar", 0);
+
+    pcli->pfnClcBroadcast( INTM_AVATARCHANGED,wParam,0);
+    return 0;
+}
+
+int CLUI::Service_Menu_HideContactAvatar(WPARAM wParam,LPARAM lParam)
+{
+    HANDLE hContact = (HANDLE) wParam;
+
+    DBWriteContactSettingByte(hContact, "CList", "HideContactAvatar", 1);
+
+    pcli->pfnClcBroadcast( INTM_AVATARCHANGED,wParam,0);
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 HICON GetMainStatusOverlay(int STATUS)
 {
@@ -588,50 +857,6 @@ int CLUI_OnSkinLoad(WPARAM wParam, LPARAM lParam)
 
 
 
-static int CLUI_ModulesLoaded(WPARAM wParam,LPARAM lParam)
-{
-	MENUITEMINFO mii;
-	/*
-	*	Updater support
-	*/
-#ifdef _UNICODE
-	CallService("Update/RegisterFL", (WPARAM)3684, (LPARAM)&pluginInfo);
-#else
-	//CallService("Update/RegisterFL", (WPARAM)2996, (LPARAM)&pluginInfo);
-#endif 
-
-	/*
-	*  End of updater support
-	*/
-
-	/*
-	*  Metacontact groups support
-	*/
-
-	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
-	setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
-	CLCPaint_FillQuickHash();
-	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
-		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);
-	if (ServiceExists(MS_MC_GETPROTOCOLNAME))
-		g_szMetaModuleName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
-
-	ZeroMemory(&mii,sizeof(mii));
-	mii.cbSize=MENUITEMINFO_V4_SIZE;
-	mii.fMask=MIIM_SUBMENU;
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
-
-	CLUIServices_ProtocolStatusChanged(0,0);
-	SleepEx(0,TRUE);
-	g_flag_bOnModulesLoadedCalled=TRUE;	
-	///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
-	PostMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
-	InitSkinHotKeys();
-	return 0;
-}
 
 static LPPROTOTICKS CLUI_GetProtoTicksByProto(char * szProto)
 {
@@ -919,45 +1144,7 @@ int CLUI_ReloadCLUIOptions()
 	return 0;
 }
 
-static int CLUI_OnSettingChanging(WPARAM wParam,LPARAM lParam)
-{
-	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING *)lParam;
-	if (MirandaExiting()) return 0;
-	if (wParam!=0)   
-	{		
-		if (dbcws==NULL){return(0);};
-		if (dbcws->value.type==DBVT_WORD&&!mir_strcmp(dbcws->szSetting,"ApparentMode"))
-		{
-			ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-			return(0);
-		};
-		if (dbcws->value.type==DBVT_ASCIIZ&&(!mir_strcmp(dbcws->szSetting,"e-mail") || !mir_strcmp(dbcws->szSetting,"Mye-mail0")))
-		{
-			ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-			return(0);
-		};
-		if (dbcws->value.type==DBVT_ASCIIZ&&!mir_strcmp(dbcws->szSetting,"Cellular"))
-		{		
-			ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-			return(0);
-		};
 
-		if (dbcws->value.type==DBVT_ASCIIZ&&!mir_strcmp(dbcws->szModule,"UserInfo"))
-		{
-			if (!mir_strcmp(dbcws->szSetting,"MyPhone0"))
-			{		
-				ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);
-				return(0);
-			};
-			if (!mir_strcmp(dbcws->szSetting,"Mye-mail0"))
-			{	
-				ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,(HANDLE)wParam);	
-				return(0);
-			};
-		};
-	}
-	return(0);
-};
 
 
 // Disconnect all protocols.
@@ -973,30 +1160,12 @@ void CLUI_DisconnectAll()
 		CallProtoService( accs[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
-static int CLUI_PreCreateCLC(HWND parent)
-{
-	g_dwMainThreadID=GetCurrentThreadId();
-	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
-	pcli->hwndContactTree=CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
-		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
-		|(DBGetContactSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
-		|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
-		|(DBGetContactSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
-		|CLS_MULTICOLUMN
-		),
-		0,0,0,0,parent,NULL,g_hInst,NULL);
-
-
-	return((int)pcli->hwndContactTree);
-};
 
 static int CLUI_CreateCLC(HWND parent)
 {
 
 	SleepEx(0,TRUE);
 	{	
-		//  char * s;
-		// create contact list frame
 		CLISTFrame Frame;
 		memset(&Frame,0,sizeof(Frame));
 		Frame.cbSize=sizeof(CLISTFrame);
@@ -1009,7 +1178,6 @@ static int CLUI_CreateCLC(HWND parent)
 		hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 		CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)CLCPaint_PaintCallbackProc);
 		CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
-
 	}
 
 	ExtraImage_ReloadExtraIcons();
@@ -1023,7 +1191,7 @@ static int CLUI_CreateCLC(HWND parent)
 		mutex_bDisableAutoUpdate=0;
 
 	}  	
-	hSettingChangedHook=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI_OnSettingChanging);
+    hSettingChangedHook=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI::OnEvent_DBSettingChanging);
 	return(0);
 };
 
@@ -2379,14 +2547,12 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			ImageList_Destroy(himlMirandaIcon);
 			DBWriteContactSettingByte(NULL,"CList","State",(BYTE)state);
 			ske_UnloadSkin(&g_SkinObjectList);
-			FreeLibrary(hUserDll);
-			FreeLibrary(hDwmapiDll);
-			TRACE("CLUI.c: WM_DESTROY - hUserDll freed\n");
+
+            delete gl_pCLUI;
+
 			pcli->hwndContactList=NULL;
 			pcli->hwndStatus=NULL;
 			PostQuitMessage(0);
-			TRACE("CLUI.c: WM_DESTROY - PostQuitMessage posted\n");
-			TRACE("CLUI.c: WM_DESTROY - ALL DONE\n");
 			return 0;
 		}	}
 
@@ -2408,109 +2574,11 @@ int CLUI_IconsChanged(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int CLUI_MenuItem_PreBuild(WPARAM wParam, LPARAM lParam) 
-{
-	TCHAR cls[128];
-	HANDLE hItem;
-	HWND hwndClist = GetFocus();
-	CLISTMENUITEM mi;
-	if (MirandaExiting()) return 0;
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.flags = CMIM_FLAGS;
-	GetClassName(hwndClist,cls,sizeof(cls));
-	hwndClist = (!lstrcmp(CLISTCONTROL_CLASS,cls))?hwndClist:pcli->hwndContactList;
-	hItem = (HANDLE)SendMessage(hwndClist,CLM_GETSELECTION,0,0);
-	if (!hItem) {
-		mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-	}
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hRenameMenuItem, (LPARAM)&mi);
 
-	if (!hItem || !IsHContactContact(hItem) || !DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT))
-	{
-		mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
-	}
-	else
-	{
-		int has_avatar;
 
-		if (ServiceExists(MS_AV_GETAVATARBITMAP))
-		{
-			has_avatar = CallService(MS_AV_GETAVATARBITMAP, (WPARAM)hItem, 0);
-		}
-		else
-		{
-			DBVARIANT dbv={0};
-			if (DBGetContactSettingString(hItem, "ContactPhoto", "File", &dbv))
-			{
-				has_avatar = 0;
-			}
-			else
-			{
-				has_avatar = 1;
-				DBFreeVariant(&dbv);
-			}
-		}
 
-		if (DBGetContactSettingByte(hItem, "CList", "HideContactAvatar", 0))
-		{
-			mi.flags = CMIM_FLAGS | (has_avatar ? 0 : CMIF_GRAYED);
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
-			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
-		}
-		else
-		{
-			mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hShowAvatarMenuItem, (LPARAM)&mi);
-			mi.flags = CMIM_FLAGS | (has_avatar ? 0 : CMIF_GRAYED);
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideAvatarMenuItem, (LPARAM)&mi);
-		}
-	}
 
-	return 0;
-}
 
-static int CLUI_MenuItem_ShowContactAvatar(WPARAM wParam,LPARAM lParam)
-{
-	HANDLE hContact = (HANDLE) wParam;
-
-	DBWriteContactSettingByte(hContact, "CList", "HideContactAvatar", 0);
-
-	pcli->pfnClcBroadcast( INTM_AVATARCHANGED,wParam,0);
-	return 0;
-}
-
-static int CLUI_MenuItem_HideContactAvatar(WPARAM wParam,LPARAM lParam)
-{
-	HANDLE hContact = (HANDLE) wParam;
-
-	DBWriteContactSettingByte(hContact, "CList", "HideContactAvatar", 1);
-
-	pcli->pfnClcBroadcast( INTM_AVATARCHANGED,wParam,0);
-	return 0;
-}
-
-static int CLUI_ShowMainMenu (WPARAM w,LPARAM l)
-{
-	HMENU hMenu;
-	POINT pt;
-	hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-	GetCursorPos(&pt);
-	TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
-	return 0;
-}
-static int CLUI_ShowStatusMenu(WPARAM w,LPARAM l)
-{
-	HMENU hMenu;
-	POINT pt;
-	hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-	GetCursorPos(&pt);
-	TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,pcli->hwndContactList,NULL);				
-	return 0;
-}
 
 
 void CLUI_cli_LoadCluiGlobalOpts()
@@ -2532,88 +2600,6 @@ void CLUI_cli_LoadCluiGlobalOpts()
 	corecli.pfnLoadCluiGlobalOpts();
 }
 
-void CLUI_cliOnCreateClc(void)
-{
-	hFrameContactTree=0;
-	CreateServiceFunction(MS_CLIST_GETSTATUSMODE,CListTray_GetGlobalStatus);
-	hUserDll = LoadLibrary(TEXT("user32.dll"));
-	if (hUserDll)
-	{
-		g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
-		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
-		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
-		g_CluiData.fLayered=(g_CluiData.fLayered*DBGetContactSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!DBGetContactSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
-		g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
-		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(hUserDll,"AnimateWindow");
-	}
-	uMsgProcessProfile=RegisterWindowMessage(TEXT("Miranda::ProcessProfile"));
-	hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
-	if (hDwmapiDll)
-	{
-		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(hDwmapiDll, "DwmEnableBlurBehindWindow");
-	}
-	g_CluiData.fAeroGlass = FALSE;
-
-	// Call InitGroup menus before
-	GroupMenus_Init();
-
-	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI_ModulesLoaded);
-	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
-
-
-	CLUIServices_LoadModule();
-	//TODO Add Row template loading here.
-
-	RowHeight_InitModernRow();
-
-	//CreateServiceFunction("CLUI/GetConnectingIconForProtocol",CLUI_GetConnectingIconService);
-
-	g_CluiData.boldHideOffline=-1;
-	bOldHideOffline=bOldHideOffline=DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
-
-	CLUI_PreCreateCLC(pcli->hwndContactList);
-
-	LoadCLUIFramesModule();
-	//ExtFrames_Init();
-	ExtraImage_LoadModule();	
-
-	g_hMenuMain=GetMenu(pcli->hwndContactList);
-	CLUI_ChangeWindowMode();
-
-	{
-		CLISTMENUITEM mi;
-		ZeroMemory(&mi,sizeof(mi));
-		mi.cbSize=sizeof(mi);
-		mi.flags=0;
-		mi.pszContactOwner=NULL;    //on every contact
-		CreateServiceFunction("CList/ShowContactAvatar",CLUI_MenuItem_ShowContactAvatar);
-		mi.position=2000150000;
-		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
-		mi.pszName=LPGEN("Show Contact &Avatar");
-		mi.pszService="CList/ShowContactAvatar";
-		hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-		DestroyIcon_protect(mi.hIcon);
-
-		CreateServiceFunction("CList/HideContactAvatar",CLUI_MenuItem_HideContactAvatar);
-		mi.position=2000150001;
-		mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
-		mi.pszName=LPGEN("Hide Contact &Avatar");
-		mi.pszService="CList/HideContactAvatar";
-		hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-		DestroyIcon_protect(mi.hIcon);
-		ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI_MenuItem_PreBuild);
-	}
-
-	nLastRequiredHeight=0;
-	//CreateServiceFunction("TestService",TestService);
-	CreateServiceFunction(MS_CLUI_SHOWMAINMENU,CLUI_ShowMainMenu);
-	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,CLUI_ShowStatusMenu);
-
-	CLUI_ReloadCLUIOptions();	
-	EventArea_Create(pcli->hwndContactList);
-	CreateViewModeFrame();
-	pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
-}
 
 int CLUI_TestCursorOnBorders()
 {
@@ -2961,14 +2947,4 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	if ( sid.hDefaultIcon )	DestroyIcon(sid.hDefaultIcon);
 	return hIcolibItem; 
 }
-
-
-
-
-
-
-
-
-
-
 

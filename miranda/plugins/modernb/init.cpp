@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 #include "version.h"
 
+#include "hdr/modern_clui.h"
+
 //definitions
 #define PLUGININTERFACE extern "C" __declspec( dllexport )
 
@@ -185,7 +187,7 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnGetRowTotalHeight	= cliGetRowTotalHeight;
 	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
-	pcli->pfnOnCreateClc		= CLUI_cliOnCreateClc;
+    pcli->pfnOnCreateClc		= CLUI::cliOnCreateClc;
 	pcli->pfnPaintClc			= CLCPaint_cliPaintClc;
 	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
 	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
