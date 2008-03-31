@@ -423,7 +423,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) 
 		{ // ctrl-backspace
 			DWORD start, end;
-			TCHAR *text;
+			WCHAR *text;
 
 			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
 			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
