@@ -295,6 +295,9 @@ BOOL CJabberAdhocManager::FillDefaultNodes()
 	AddNode( NULL, _T(JABBER_FEAT_RC_SET_STATUS), _T("Set status"), &CJabberProto::AdhocSetStatusHandler );
 	AddNode( NULL, _T(JABBER_FEAT_RC_SET_OPTIONS), _T("Set options"), &CJabberProto::AdhocOptionsHandler );
 	AddNode( NULL, _T(JABBER_FEAT_RC_FORWARD), _T("Forward unread messages"), &CJabberProto::AdhocForwardHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_LEAVE_GROUPCHATS), _T("Leave groupchats"), &CJabberProto::AdhocLeaveGroupchatsHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_WS_LOCK), _T("Lock workstation"), &CJabberProto::AdhocLockWSHandler );
+	AddNode( NULL, _T(JABBER_FEAT_RC_QUIT_MIRANDA), _T("Quit Miranda IM"), &CJabberProto::AdhocQuitMirandaHandler );
 	return TRUE;
 }
 
@@ -795,8 +798,7 @@ int CJabberProto::AdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIq
 
 typedef BOOL (WINAPI *LWS )( VOID );
 
-/*
-int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	BOOL bOk = FALSE;
 	HMODULE hLibrary = LoadLibrary( _T("user32.dll") );
@@ -823,20 +825,18 @@ int JabberAdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pIn
 	XmlNode* noteNode = commandNode->addChild( "note", szMsg );
 	noteNode->addAttr( "type", bOk ? "info" : "error" );
 
-	jabberThreadInfo->send( iq );
+	m_ThreadInfo->send( iq );
 
 	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 }
 
 static void __cdecl JabberQuitMirandaIMThread( void* pParam )
 {
-	JabberLog( "JabberQuitMirandaIMThread start" );
 	SleepEx( 2000, TRUE );
 	JCallService( "CloseAction", 0, 0 );
-	JabberLog( "JabberQuitMirandaIMThread exit" );
 }
 
-int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -870,7 +870,7 @@ int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo
 		fieldNode->addAttr( "var", "allow-shutdown" );
 		fieldNode->addChild( "value", "0" );
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
 	}
 	else if ( pSession->GetStage() == 1 ) {
@@ -896,21 +896,21 @@ int JabberAdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	int i = 0;
 	if ( pSession->GetStage() == 0 ) {
 		// first form
 		TCHAR szMsg[ 1024 ];
 
-		JabberListLock();
+		ListLock();
 		int nChatsCount = 0;
-		for ( i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
-			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		for ( i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
 				nChatsCount++;
 		}
-		JabberListUnlock();
+		ListUnlock();
 
 		if ( !nChatsCount ) {
 			XmlNodeIq iq( "result", pInfo );
@@ -924,7 +924,7 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 			XmlNode* noteNode = commandNode->addChild( "note", szMsg );
 			noteNode->addAttr( "type", "info" );
 
-			jabberThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 
 			return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 		}
@@ -959,18 +959,18 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 		fieldNode->addAttr( "var", "groupchats" );
 		fieldNode->addChild( "required" );
 
-		JabberListLock();
-		for ( i = 0; ( i=JabberListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
-			JABBER_LIST_ITEM *item = JabberListGetItemPtrFromIndex( i );
+		ListLock();
+		for ( i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
+			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL ) {
 				XmlNode* optionNode = fieldNode->addChild( "option" );
 				optionNode->addAttr( "label", item->jid );
 				optionNode->addChild( "value", item->jid );
 			}
 		}
-		JabberListUnlock();
+		ListUnlock();
 
-		jabberThreadInfo->send( iq );
+		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
 	}
 	else if ( pSession->GetStage() == 1 ) {
@@ -989,9 +989,9 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 			for ( i = 0; i < fieldNode->numChild; i++ ) {
 				valueNode = fieldNode->child[i];
 				if ( valueNode && valueNode->name && valueNode->text && !strcmp( valueNode->name, "value" )) {
-					JABBER_LIST_ITEM* item = JabberListGetItemPtr( LIST_CHATROOM, valueNode->text );
+					JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, valueNode->text );
 					if ( item )
-						JabberGcQuit( item, 0, NULL );
+						GcQuit( item, 0, NULL );
 				}
 			}
 		}
@@ -1000,4 +1000,3 @@ int JabberAdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIq
 	}
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
-*/

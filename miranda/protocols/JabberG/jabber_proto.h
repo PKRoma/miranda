@@ -322,6 +322,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    AdhocForwardHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 	int    AdhocLockWSHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 	int    AdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocLeaveGroupchatsHandler( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 		  
 	void   OnIqResult_ListOfCommands( XmlNode *iqNode, void *userdata );
 	void   OnIqResult_CommandExecution( XmlNode *iqNode, void *userdata );
