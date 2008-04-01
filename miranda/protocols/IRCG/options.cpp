@@ -837,14 +837,14 @@ void CCtcpPrefsDlg::OnInitDialog()
 	else {
 		if ( m_proto->m_IPFromServer ) {
 			if ( m_proto->m_myHost[0] ) {
-				TString s = (TString)TranslateT("<Resolved IP: ") + (TCHAR*)_A2T(m_proto->m_myHost) + _T(">");
+				CMString s = (CMString)TranslateT("<Resolved IP: ") + (TCHAR*)_A2T(m_proto->m_myHost) + _T(">");
 				m_ip.SetText( s.c_str());
 			}
 			else m_ip.SetText( TranslateT( "<Automatic>" ));
 		}
 		else {
 			if ( m_proto->m_myLocalHost[0] ) {
-				TString s = ( TString )TranslateT( "<Local IP: " ) + (TCHAR*)_A2T(m_proto->m_myLocalHost) + _T(">");
+				CMString s = ( CMString )TranslateT( "<Local IP: " ) + (TCHAR*)_A2T(m_proto->m_myLocalHost) + _T(">");
 				m_ip.SetText( s.c_str());
 			}
 			else m_ip.SetText( TranslateT( "<Automatic>" ));
@@ -860,14 +860,14 @@ void CCtcpPrefsDlg::OnClicked( CCtrlData* )
 	else {
 		if ( m_fromServer.GetState()) {
 			if ( m_proto->m_myHost[0] ) {
-				TString s = (TString)TranslateT( "<Resolved IP: ") + (TCHAR*)_A2T(m_proto->m_myHost) + _T(">");
+				CMString s = (CMString)TranslateT( "<Resolved IP: ") + (TCHAR*)_A2T(m_proto->m_myHost) + _T(">");
 				m_ip.SetText( s.c_str());
 			}
 			else m_ip.SetText( TranslateT( "<Automatic>" ));
 		}
 		else {
 			if ( m_proto->m_myLocalHost[0] ) {
-				TString s = ( TString )TranslateT( "<Local IP: " ) + (TCHAR*)_A2T(m_proto->m_myLocalHost) + _T(">");
+				CMString s = ( CMString )TranslateT( "<Local IP: " ) + (TCHAR*)_A2T(m_proto->m_myLocalHost) + _T(">");
 				m_ip.SetText( s.c_str());
 			}
 			else m_ip.SetText( TranslateT( "<Automatic>" ));
@@ -1143,7 +1143,7 @@ void COtherPrefsDlg::OnApply()
 			if (( const int )pPerf == CB_ERR )
 				continue;
 
-			if ( !pPerf->mText.empty())
+			if ( !pPerf->mText.IsEmpty())
 				m_proto->setTString( pPerf->mSetting.c_str(), pPerf->mText.c_str());
 			else 
 				DBDeleteContactSetting( NULL, m_proto->m_szModuleName, pPerf->mSetting.c_str());
@@ -1154,7 +1154,7 @@ void COtherPrefsDlg::OnApply()
 void COtherPrefsDlg::addPerformComboValue( int idx, const char* szValueName )
 {
 	String sSetting = String("PERFORM:") + szValueName;
-	transform( sSetting.begin(), sSetting.end(), sSetting.begin(), toupper );
+	sSetting.MakeUpper();
 
 	PERFORM_INFO* pPref;
 	DBVARIANT dbv;
@@ -1198,7 +1198,7 @@ void CAddIgnoreDlg::OnOk( CCtrlButton* )
 {
 	TCHAR szMask[500];
 	TCHAR szNetwork[500];
-	TString flags;
+	CMString flags;
 	if ( IsDlgButtonChecked( m_hwnd, IDC_Q ) == BST_CHECKED ) flags += 'q';
 	if ( IsDlgButtonChecked( m_hwnd, IDC_N ) == BST_CHECKED ) flags += 'n';
 	if ( IsDlgButtonChecked( m_hwnd, IDC_I ) == BST_CHECKED ) flags += 'i';
@@ -1209,12 +1209,12 @@ void CAddIgnoreDlg::OnOk( CCtrlButton* )
 	GetWindowText( GetDlgItem( m_hwnd, IDC_MASK), szMask, SIZEOF(szMask));
 	GetWindowText( GetDlgItem( m_hwnd, IDC_NETWORK), szNetwork, SIZEOF(szNetwork));
 
-	TString Mask = GetWord(szMask, 0);
-	if ( Mask.length() != 0 ) {
+	CMString Mask = GetWord(szMask, 0);
+	if ( Mask.GetLength() != 0 ) {
 		if ( !_tcschr(Mask.c_str(), '!') && !_tcschr(Mask.c_str(), '@'))
 			Mask += _T("!*@*");
 
-		if ( !flags.empty() ) {
+		if ( !flags.IsEmpty() ) {
 			if ( *szOldMask )
 				m_proto->RemoveIgnore( szOldMask );
 			m_proto->AddIgnore(Mask.c_str(), flags.c_str(), szNetwork);
@@ -1316,8 +1316,8 @@ void CIrcProto::InitIgnore( void )
 			String mask = GetWord(p1, 0);
 			String flags = GetWord(p1, 1);
 			String network = GetWord(p1, 2);
-			if ( !mask.empty() )
-				m_ignoreItems.push_back( CIrcIgnoreItem( getCodepage(), mask.c_str(), flags.c_str(), network.c_str()));
+			if ( !mask.IsEmpty() )
+				m_ignoreItems.insert( new CIrcIgnoreItem( getCodepage(), mask.c_str(), flags.c_str(), network.c_str()));
 
 			p1 = p2;
 		}
@@ -1336,10 +1336,10 @@ void CIrcProto::InitIgnore( void )
 		if ( getTString( settingName, &dbv ))
 			break;
 		
-		TString mask = GetWord( dbv.ptszVal, 0 );
-		TString flags = GetWord( dbv.ptszVal, 1 );
-		TString network = GetWord( dbv.ptszVal, 2 );
-		m_ignoreItems.push_back( CIrcIgnoreItem( mask.c_str(), flags.c_str(), network.c_str()));
+		CMString mask = GetWord( dbv.ptszVal, 0 );
+		CMString flags = GetWord( dbv.ptszVal, 1 );
+		CMString network = GetWord( dbv.ptszVal, 2 );
+		m_ignoreItems.insert( new CIrcIgnoreItem( mask.c_str(), flags.c_str(), network.c_str()));
 		DBFreeVariant( &dbv );
 }	}
 
@@ -1347,18 +1347,18 @@ void CIrcProto::RewriteIgnoreSettings( void )
 {
 	char settingName[ 40 ];
 
-	size_t i=0;
+	int i=0;
 	while ( TRUE ) {
 		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i++ );
 		if ( DBDeleteContactSetting( NULL, m_szModuleName, settingName ))
 			break;
 	}
 
-	for ( i=0; i < m_ignoreItems.size(); i++ ) {
+	for ( i=0; i < m_ignoreItems.getCount(); i++ ) {
 		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i );
 
-		CIrcIgnoreItem& C = m_ignoreItems[i];
-		setTString( settingName, ( C.mask + _T(" ") + C.flags + _T(" ") + C.network ).c_str());
+		CIrcIgnoreItem* C = m_ignoreItems[i];
+		setTString( settingName, ( C->mask + _T(" ") + C->flags + _T(" ") + C->network ).c_str());
 }	}
 
 CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
@@ -1527,7 +1527,7 @@ void CIgnorePrefsDlg::OnApply()
 void CIgnorePrefsDlg::OnDestroy()
 {
 	m_proto->m_ignoreDlg = NULL;
-	m_proto->m_ignoreItems.clear();
+	m_proto->m_ignoreItems.destroy();
 
 	int i = m_list.GetItemCount();
 	for ( int j = 0; j < i; j++ ) {
@@ -1535,7 +1535,7 @@ void CIgnorePrefsDlg::OnDestroy()
 		m_list.GetItemText( j, 0, szMask, SIZEOF(szMask));
 		m_list.GetItemText( j, 1, szFlags, SIZEOF(szFlags));
 		m_list.GetItemText( j, 2, szNetwork, SIZEOF(szNetwork));
-		m_proto->m_ignoreItems.push_back( CIrcIgnoreItem( szMask, szFlags, szNetwork ));
+		m_proto->m_ignoreItems.insert( new CIrcIgnoreItem( szMask, szFlags, szNetwork ));
 	}
 
 	m_proto->RewriteIgnoreSettings();
@@ -1558,9 +1558,9 @@ void CIgnorePrefsDlg::RebuildList()
 {
 	m_list.DeleteAllItems();
 
-	for ( size_t i=0; i < m_proto->m_ignoreItems.size(); i++ ) {
-		CIrcIgnoreItem& C = m_proto->m_ignoreItems[i];
-		if ( C.mask.empty() || C.flags[0] != '+' )
+	for ( int i=0; i < m_proto->m_ignoreItems.getCount(); i++ ) {
+		CIrcIgnoreItem* C = m_proto->m_ignoreItems[i];
+		if ( C->mask.IsEmpty() || C->flags[0] != '+' )
 			continue;
 
 		LVITEM lvItem;
@@ -1568,17 +1568,17 @@ void CIgnorePrefsDlg::RebuildList()
 		lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
 		lvItem.iSubItem = 0;
 		lvItem.lParam = lvItem.iItem;
-		lvItem.pszText = (TCHAR*)C.mask.c_str();
+		lvItem.pszText = (TCHAR*)C->mask.c_str();
 		lvItem.iItem = m_list.InsertItem( &lvItem );
 
 		lvItem.mask = LVIF_TEXT;
 		lvItem.iSubItem = 1;
-		lvItem.pszText = (TCHAR*)C.flags.c_str();
+		lvItem.pszText = (TCHAR*)C->flags.c_str();
 		m_list.SetItem( &lvItem );
 
 		lvItem.mask = LVIF_TEXT;
 		lvItem.iSubItem =2;
-		lvItem.pszText = (TCHAR*)C.network.c_str();
+		lvItem.pszText = (TCHAR*)C->network.c_str();
 		m_list.SetItem( &lvItem );
 	}
 

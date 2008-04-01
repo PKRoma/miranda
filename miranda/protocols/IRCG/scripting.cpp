@@ -57,7 +57,7 @@ int __cdecl CIrcProto::Scripting_InsertGuiIn(WPARAM wParam,LPARAM lParam)
 
 	if ( m_bMbotInstalled && m_scriptingEnabled && gce ) {	
 		TCHAR* p1 = NULL;
-		TString S;
+		CMString S;
 		if ( gce->pDest && gce->pDest->ptszID ) {
 			p1 = gce->pDest->ptszID;
 			S = MakeWndID(gce->pDest->ptszID);
@@ -118,7 +118,7 @@ int __cdecl CIrcProto::Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
 		else gchook->pszUID = NULL;
 
 		if ( gch->pDest->ptszID ) {
-			TString S = MakeWndID( gch->pDest->ptszID );
+			CMString S = MakeWndID( gch->pDest->ptszID );
 			gchook->pDest->ptszID = _tcsdup( S.c_str());
 		}
 		else gchook->pDest->ptszID = NULL;
@@ -183,18 +183,18 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 {
 	if ( m_bMbotInstalled && m_scriptingEnabled && lparam ) {
 		String sString = ( char* ) lparam, sRequest;
-		TString sOutput, sChannel; 
+		CMString sOutput, sChannel; 
 
-		int i = sString.find("|",0);
-		if ( i != string::npos ) {
-			sRequest = sString.substr(0, i);
-			TCHAR* p = mir_a2t(( char* )sString.substr(i+1, sString.length()).c_str());
+		int i = sString.Find("|");
+		if ( i != -1 ) {
+			sRequest = sString.Mid(0, i);
+			TCHAR* p = mir_a2t(( char* )sString.Mid(i+1, sString.GetLength()).c_str());
 			sChannel = p;
 			mir_free( p );
 		}
 		else sRequest = sString;
 
-		transform (sRequest.begin(),sRequest.end(), sRequest.begin(), tolower);
+		sRequest.MakeLower();
 
 		if (sRequest == "ownnick" && IsConnected())
 			sOutput = m_info.sNick;
@@ -212,8 +212,8 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 			return ( int )mir_strdup( m_manualHost ? m_mySpecifiedHostIP : 
 										( m_IPFromServer ) ? m_myHost : m_myLocalHost);
 
-		else if (sRequest == "usercount" && !sChannel.empty()) {
-			TString S = MakeWndID(sChannel.c_str());
+		else if (sRequest == "usercount" && !sChannel.IsEmpty()) {
+			CMString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|COUNT;
 			gci.pszModule = m_szModuleName;
@@ -224,8 +224,8 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 				sOutput = szTemp;
 			}
 		}
-		else if (sRequest == "userlist" && !sChannel.empty()) {
-			TString S = MakeWndID(sChannel.c_str());
+		else if (sRequest == "userlist" && !sChannel.IsEmpty()) {
+			CMString S = MakeWndID(sChannel.c_str());
 			GC_INFO gci = {0};
 			gci.Flags = BYID|USERS;
 			gci.pszModule = m_szModuleName;
@@ -234,7 +234,7 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 				return (int)mir_strdup( gci.pszUsers );
 		}
 		else if (sRequest == "channellist") {
-			TString S = _T("");
+			CMString S = _T("");
 			int i = CallServiceSync( MS_GC_GETSESSIONCOUNT, 0, (LPARAM)m_szModuleName);
 			if ( i >= 0 ) {
 				int j = 0;
@@ -245,21 +245,21 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 					gci.iItem = j;
 					if ( !CallServiceSync( MS_GC_GETINFO, 0, ( LPARAM )&gci )) {
 						if ( lstrcmpi( gci.pszID, SERVERWINDOW)) {
-							TString S1 = gci.pszID;
-							int k = S1.find(_T(" "), 0);
-							if ( k != string::npos )
-								S1 = S1.substr(0, k);
+							CMString S1 = gci.pszID;
+							int k = S1.Find(_T(" "));
+							if ( k != -1 )
+								S1 = S1.Mid(0, k);
 							S += S1;
 							S += _T(" ");
 					}	}
 					j++;
 			}	}
 			
-			if ( !S.empty() )
+			if ( !S.IsEmpty() )
 				sOutput = ( TCHAR* )S.c_str();
 		}
 		// send it to mbot
-		if ( !sOutput.empty())
+		if ( !sOutput.IsEmpty())
 			return ( int )mir_t2a( sOutput.c_str() );
 	}
 	return 0;

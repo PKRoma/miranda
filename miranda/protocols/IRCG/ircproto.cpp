@@ -31,8 +31,18 @@ static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
 	return lstrcmpA( p1->m_name, p2->m_name );
 }
 
+static int CompareSessions( const CDccSession* p1, const CDccSession* p2 )
+{
+	return int( p1->di->hContact ) - int( p2->di->hContact );
+}
+
 CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
-	m_servers( 20, CompareServers )
+	m_servers( 20, CompareServers ),
+	m_dcc_chats( 10, CompareSessions ),
+	m_dcc_xfers( 10, CompareSessions ),
+	m_ignoreItems( 10, NULL ),
+	vUserhostReasons( 10, NULL ),
+	vWhoInProgress( 10, NULL )
 {
 	m_tszUserName = mir_tstrdup( tszUserName );
 	m_szModuleName = mir_strdup( szModuleName );
@@ -163,10 +173,6 @@ CIrcProto::~CIrcProto()
 
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
-	for ( int i=0; i < m_servers.getCount(); i++ )
-		delete m_servers[i];
-	m_servers.destroy();
-
 	mir_free( m_alias );
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -189,10 +195,10 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 {
 	if ( !_memicmp( szSetting, "PERFORM:", 8 )) {
 		String s = szSetting;
-		transform( s.begin(), s.end(), s.begin(), toupper );
+		s.MakeUpper();
 		if ( s != szSetting ) {
-			vector<String>* p = ( vector<String>* )lParam;
-			p->push_back( String( szSetting ));
+			OBJLIST<String>* p = ( OBJLIST<String>* )lParam;
+			p->insert( new String( szSetting ));
 	}	}
 	return 0;
 }
@@ -332,7 +338,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcw.iType = GCW_SERVER;
 		gcw.ptszID = SERVERWINDOW;
 		gcw.pszModule = m_szModuleName;
-		gcw.ptszName = NEWTSTR_ALLOCA( _A2T( m_network ));
+		gcw.ptszName = NEWTSTR_ALLOCA(( TCHAR* )_A2T( m_network ));
 		CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
 		gce.cbSize = sizeof(GCEVENT);
@@ -374,7 +380,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			p1 += 9;
 			p2 = strchr(p1, '\n');
 			String sNetwork( p1, int( p2-p1-1 ));
-			transform(sNetwork.begin(), sNetwork.end(), sNetwork.begin(), toupper);
+			sNetwork.MakeUpper();
 			p1 = p2;
 			p2 = strstr( ++p1, "\nNETWORK: " );
 			if ( !p2 )
@@ -390,22 +396,24 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 
 	if ( !getByte( "PerformConversionDone", 0 )) {
-		vector<String> performToConvert;
+		OBJLIST<String> performToConvert( 10, NULL );
 		DBCONTACTENUMSETTINGS dbces;
 		dbces.pfnEnumProc = sttCheckPerform;
 		dbces.lParam = ( LPARAM )&performToConvert;
 		dbces.szModule = m_szModuleName;
 		CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
 
-		for ( size_t i = 0; i < performToConvert.size(); i++ ) {
-			String s = performToConvert[i];
+		for ( int i = 0; i < performToConvert.getCount(); i++ ) {
+			String* s = performToConvert[i];
 			DBVARIANT dbv;
-			if ( !getTString( s.c_str(), &dbv )) {
-				DBDeleteContactSetting( NULL, m_szModuleName, s.c_str());
-				transform( s.begin(), s.end(), s.begin(), toupper );
-				setTString( s.c_str(), dbv.ptszVal );
+			if ( !getTString( s->c_str(), &dbv )) {
+				DBDeleteContactSetting( NULL, m_szModuleName, s->c_str());
+				s->MakeUpper();
+				setTString( s->c_str(), dbv.ptszVal );
 				DBFreeVariant( &dbv );
-		}	}
+			}
+			delete s;
+		}
 
 		setByte( "PerformConversionDone", 1 );
 	}
@@ -447,19 +455,26 @@ HANDLE __cdecl CIrcProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 
 	if ( hContact ) {
 		DBVARIANT dbv1;
+		CMString S = _T("S");
 
-		if ( getByte( hContact, "AdvancedMode", 0 ) == 0 )
-			DoUserhostWithReason( 1, ((TString)_T("S") + user.name).c_str(), true, user.name );
+		if ( getByte( hContact, "AdvancedMode", 0 ) == 0 ) {
+			S += user.name;
+			DoUserhostWithReason( 1, S, true, user.name );
+		}
 		else {
 			if ( !getTString(hContact, "UWildcard", &dbv1 )) {
-				DoUserhostWithReason(2, ((TString)_T("S") + dbv1.ptszVal).c_str(), true, dbv1.ptszVal);
+				S += dbv1.ptszVal;
+				DoUserhostWithReason(2, S, true, dbv1.ptszVal);
 				DBFreeVariant( &dbv1 );
-				}
-			else DoUserhostWithReason( 2, ((TString)_T("S") + user.name).c_str(), true, user.name );
 			}
-			if (getByte( "MirVerAutoRequest", 1))
-				PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
+			else {
+				S += user.name;
+				DoUserhostWithReason( 2, S, true, user.name );
+			}
 		}
+		if (getByte( "MirVerAutoRequest", 1))
+			PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
+	}
 
 	mir_free( user.name );
 	return hContact;
@@ -592,12 +607,12 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 				fclose(hFile); hFile = NULL;
 			}
 
-			TString sFileWithQuotes = di->sFile;
+			CMString sFileWithQuotes = di->sFile;
 
 			// if spaces in the filename surround witrh quotes
-			if (sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
-				sFileWithQuotes.insert( 0, _T("\""));
-				sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
+			if (sFileWithQuotes.Find( ' ', 0 ) != -1 ) {
+				sFileWithQuotes.Insert( 0, _T("\""));
+				sFileWithQuotes.Insert( sFileWithQuotes.GetLength(), _T("\""));
 			}
 
 			if (di->bReverse)
@@ -817,20 +832,20 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		if ( !getTString( hContact, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
-			dci->sFileAndPath = (TString)_A2T( ppszFiles[index], getCodepage());
+			dci->sFileAndPath = (CMString)_A2T( ppszFiles[index], getCodepage());
 
-			int i = dci->sFileAndPath.rfind( _T("\\"), dci->sFileAndPath.length());
-			if (i != string::npos) {
-				dci->sPath = dci->sFileAndPath.substr(0, i+1);
-				dci->sFile = dci->sFileAndPath.substr(i+1, dci->sFileAndPath.length());
+			int i = dci->sFileAndPath.ReverseFind( '\\' );
+			if (i != -1) {
+				dci->sPath = dci->sFileAndPath.Mid(0, i+1);
+				dci->sFile = dci->sFileAndPath.Mid(i+1, dci->sFileAndPath.GetLength());
 			}
 
-			TString sFileWithQuotes = dci->sFile;
+			CMString sFileWithQuotes = dci->sFile;
 
 			// if spaces in the filename surround witrh quotes
-			if ( sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
-				sFileWithQuotes.insert( 0, _T("\""));
-				sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
+			if ( sFileWithQuotes.Find( ' ', 0 ) != -1) {
+				sFileWithQuotes.Insert( 0, _T("\""));
+				sFileWithQuotes.Insert( sFileWithQuotes.GetLength(), _T("\""));
 			}
 
 			dci->hContact = hContact;
@@ -847,7 +862,7 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			AddDCCSession(dci, dcc);
 
 			// need to make sure that %'s are doubled to avoid having chat interpret as color codes
-			TString sFileCorrect = dci->sFile;
+			CMString sFileCorrect = dci->sFile;
 			ReplaceString(sFileCorrect, _T("%"), _T("%%"));
 
 			// is it an reverse filetransfer (receiver acts as server)
@@ -1093,7 +1108,8 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 				DBFreeVariant( &dbv);
 				return 0;
 			}
-			TString S = _T("WHOIS ") + (TString)dbv.ptszVal;
+			CMString S = _T("WHOIS ");
+			S += dbv.ptszVal;
 			if (IsConnected())
 				*this << CIrcMessage( this, S.c_str(), getCodepage(), false, false);
 			DBFreeVariant( &dbv);
@@ -1129,15 +1145,15 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 		break;
 
 	default:
-		TString newStatus = _A2T( msg, getCodepage());
+		CMString newStatus = _A2T( msg, getCodepage());
 		ReplaceString( newStatus, _T("\r\n"), _T(" "));
-		if ( m_statusMessage.empty() || msg == NULL || m_statusMessage != newStatus ) {
+		if ( m_statusMessage.IsEmpty() || msg == NULL || m_statusMessage != newStatus ) {
 			if ( msg == NULL || *( char* )msg == '\0')
 				m_statusMessage = _T(STR_AWAYMESSAGE);
 			else
 				m_statusMessage = newStatus;
 
-			PostIrcMessage( _T("/AWAY %s"), m_statusMessage.substr(0,450).c_str());
+			PostIrcMessage( _T("/AWAY %s"), m_statusMessage.Mid(0,450).c_str());
 	}	}
 
 	return 0;

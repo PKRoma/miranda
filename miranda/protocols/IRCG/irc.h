@@ -98,7 +98,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define FILERESUME_CANCEL	11
 
-using namespace std;
 using namespace irc;
 
 struct _A2T
@@ -123,8 +122,8 @@ struct _A2T
 	{	return buf;
 	}
 
-	__inline operator TString() const
-	{	return TString(buf);
+	__inline operator CMString() const
+	{	return CMString(buf);
 	}
 
 	TCHAR* buf;
@@ -140,7 +139,7 @@ struct _T2A
 		buf( mir_t2a_cp( s, cp ))
 		{}
 
-	_T2A( const TString& s ) :
+	_T2A( const CMString& s ) :
 		buf( mir_t2a(s.c_str()))
 		{}
 
@@ -220,7 +219,7 @@ struct PERFORM_INFO  // Contains 'm_perform buffer' for different networks
 	{}
 
 	String mSetting;
-	TString mText;
+	CMString mText;
 };
 
 struct CONTACT // Contains info about users
@@ -251,8 +250,16 @@ typedef int  ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM
 
 typedef bool (CIrcProto::*PfnIrcMessageHandler)(const CIrcMessage* pmsg);
 
-typedef std::map<HANDLE, CDccSession*> DccSessionMap;
-typedef std::pair<HANDLE, CDccSession*> DccSessionPair;
+struct CIrcHandler
+{
+	CIrcHandler( const TCHAR* _name, PfnIrcMessageHandler _handler ) :
+		m_name( _name ),
+		m_handler( _handler )
+	{}
+
+	const TCHAR* m_name;
+	PfnIrcMessageHandler m_handler;
+};
 
 struct CIrcProto : public PROTO_INTERFACE
 {
@@ -404,17 +411,17 @@ struct CIrcProto : public PROTO_INTERFACE
 	COLORREF colors[16];
 	HICON    hIcon[13];
 
-	LIST<SERVER_INFO> m_servers;
+	OBJLIST<SERVER_INFO> m_servers;
 
-	std::vector<TString> vUserhostReasons;
-	std::vector<TString> vWhoInProgress;
+	OBJLIST<CMString> vUserhostReasons;
+	OBJLIST<CMString> vWhoInProgress;
 
 	CRITICAL_SECTION cs;
 	CRITICAL_SECTION m_gchook;
 	CRITICAL_SECTION m_resolve;
 	HANDLE           m_evWndCreate;
 
-	TString m_statusMessage;
+	CMString m_statusMessage;
 	bool    m_bMbotInstalled;
 	int     m_iTempCheckTime;
 
@@ -444,7 +451,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	
 	int      m_noOfChannels, m_manualWhoisCount;
 	String   sChannelModes, sUserModes;
-	TString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
+	CMString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
 	CDlgBase::CreateParam OptCreateAccount, OptCreateConn, OptCreateIgnore, OptCreateOther;
 
@@ -455,7 +462,7 @@ struct CIrcProto : public PROTO_INTERFACE
 
 	bool   CList_AddEvent(struct CONTACT * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
 	HANDLE CList_FindContact (struct CONTACT * user);
-	BOOL   CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) ;
+	BOOL   CList_AddDCCChat(CMString name, CMString hostmask, unsigned long adr, int port) ;
 
 	//commandmonitor.cpp
 	UINT_PTR IdentTimer, InitTimer, KeepAliveTimer, OnlineNotifTimer, OnlineNotifTimer3;	
@@ -465,15 +472,15 @@ struct CIrcProto : public PROTO_INTERFACE
 	int  DoPerform(const char* event);
 
 	bool AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
-	int  IsIgnored(TString nick, TString address, TString host, char type) ;
-	int  IsIgnored(TString user, char type);
+	int  IsIgnored(CMString nick, CMString address, CMString host, char type) ;
+	int  IsIgnored(CMString user, char type);
 	bool RemoveIgnore(const TCHAR* mask) ;
 
 	//input.cpp
-	TString DoAlias( const TCHAR *text, TCHAR *window);
-	BOOL    DoHardcodedCommand( TString text, TCHAR* window, HANDLE hContact );
-	TString DoIdentifiers( TString text, const TCHAR* window );
-	TString FormatMsg(TString text);
+	CMString DoAlias( const TCHAR *text, TCHAR *window);
+	BOOL    DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContact );
+	CMString DoIdentifiers( CMString text, const TCHAR* window );
+	CMString FormatMsg(CMString text);
 	bool    PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
 	bool    PostIrcMessage( const TCHAR* fmt, ...);
 
@@ -483,17 +490,17 @@ struct CIrcProto : public PROTO_INTERFACE
 	//options.cpp
 	HWND m_hwndConnect;
 
-	std::vector<CIrcIgnoreItem> m_ignoreItems;
+	OBJLIST<CIrcIgnoreItem> m_ignoreItems;
 
-	int            m_channelNumber;
-	TString        m_whoReply;
-	TString        sNamesList;
-	TString        sTopic;
-	TString        sTopicName;
-	TString		   sTopicTime;
-	TString        m_namesToWho;
-	TString        m_channelsToWho;
-	TString        m_namesToUserhost;
+	int             m_channelNumber;
+	CMString        m_whoReply;
+	CMString        sNamesList;
+	CMString        sTopic;
+	CMString        sTopicName;
+	CMString	       sTopicTime;
+	CMString        m_namesToWho;
+	CMString        m_channelsToWho;
+	CMString        m_namesToUserhost;
 
 	void    InitPrefs(void);
 
@@ -533,28 +540,28 @@ struct CIrcProto : public PROTO_INTERFACE
 	int __cdecl GetStatus( WPARAM, LPARAM );
 
 	//tools.cpp
-	void     AddToJTemp(TString sCommand);
-	bool     AddWindowItemData(TString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
+	void     AddToJTemp(CMString sCommand);
+	bool     AddWindowItemData(CMString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
 	int      CallChatEvent(WPARAM wParam, LPARAM lParam);
 	void     CreateProtoService( const char* serviceName, IrcServiceFunc pFunc );
 	int      DoEvent(int iEvent, const TCHAR* pszWindow, const TCHAR* pszNick, const TCHAR* pszText, const TCHAR* pszStatus, const TCHAR* pszUserInfo, DWORD dwItemData, bool bAddToLog, bool bIsMe,time_t timestamp = 1);
 	void     FindLocalIP(HANDLE con);
-	bool     FreeWindowItemData(TString window, CHANNELINFO* wis);
+	bool     FreeWindowItemData(CMString window, CHANNELINFO* wis);
 	#if defined( _UNICODE )
-		bool    IsChannel(String sName);
+		bool    IsChannel(const char* sName);
 	#endif
-	bool     IsChannel(TString sName);
+	bool     IsChannel(const TCHAR* sName);
 	void     KillChatTimer(UINT_PTR &nIDEvent);
-	TString  MakeWndID(const TCHAR* sWindow);
-	TString  ModeToStatus(int sMode);
-	TString  PrefixToStatus(int cPrefix);
-	int      SetChannelSBText(TString sWindow, CHANNELINFO * wi);
+	CMString  MakeWndID(const TCHAR* sWindow);
+	CMString  ModeToStatus(int sMode);
+	CMString  PrefixToStatus(int cPrefix);
+	int      SetChannelSBText(CMString sWindow, CHANNELINFO * wi);
 	void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, TIMERPROC lpTimerFunc);
 
 	void     ClearUserhostReasons(int type);
-	void     DoUserhostWithReason(int type, TString reason, bool bSendCommand, TString userhostparams, ...);
-	TString  GetNextUserhostReason(int type);
-	TString  PeekAtReasons(int type);
+	void     DoUserhostWithReason(int type, CMString reason, bool bSendCommand, CMString userhostparams, ...);
+	CMString  GetNextUserhostReason(int type);
+	CMString  PeekAtReasons(int type);
 
 	int      getByte( const char* name, BYTE defaultValue );
 	int      getByte( HANDLE hContact, const char* name, BYTE defaultValue );
@@ -591,7 +598,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	CDccSession* FindDCCSendByPort(int iPort);
 	CDccSession* FindDCCRecvByPortAndName(int iPort, const TCHAR* szName);
 	CDccSession* FindPassiveDCCSend(int iToken);
-	CDccSession* FindPassiveDCCRecv(TString sName, TString sToken);
+	CDccSession* FindPassiveDCCRecv(CMString sName, CMString sToken);
 	
 	void DisconnectAllDCCSessions(bool Shutdown);
 	void CheckDCCTimeout(void);
@@ -625,8 +632,8 @@ protected :
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();
-	DccSessionMap m_dcc_chats;
-	DccSessionMap m_dcc_xfers;
+	OBJLIST<CDccSession> m_dcc_chats;
+	OBJLIST<CDccSession> m_dcc_xfers;
 
 private :
 	CRITICAL_SECTION    m_dcc;      // protect the dcc objects
@@ -691,24 +698,18 @@ private :
 	void OnIrcDefault(const CIrcMessage* pmsg);
 	void OnIrcDisconnected();
 
-	struct LessString
-	{
-		bool operator()(const TCHAR* s1, const TCHAR* s2) const
-			{ return _tcsicmp(s1, s2) < 0; }
-	};
-	typedef std::map<const TCHAR*, PfnIrcMessageHandler, LessString> HandlersMap;
-
-	static HandlersMap m_handlers;
+	static OBJLIST<CIrcHandler> m_handlers;
 
 	PfnIrcMessageHandler FindMethod(const TCHAR* lpszName);
 
 	void OnIrcMessage(const CIrcMessage* pmsg);
+	CMString sNick4Perform;
 };
 
 // map actual member functions to their associated IRC command.
 // put any number of this macro in the class's constructor.
 #define	IRC_MAP_ENTRY(name, member)	\
-	m_handlers[_T(name)] = (PfnIrcMessageHandler)&CIrcProto##::member;
+	m_handlers.insert( new CIrcHandler( _T(name), &CIrcProto##::member ));
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -742,10 +743,10 @@ extern BOOL bChatInstalled, m_bMbotInstalled;
 //tools.cpp
 int      WCCmp(const TCHAR* wild, const TCHAR* string);
 char*    IrcLoadFile(char * szPath);
-TString  GetWord(const TCHAR* text, int index);
-TString& ReplaceString (TString& text, const TCHAR* replaceme, const TCHAR* newword);
+CMString  GetWord(const TCHAR* text, int index);
+CMString& ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
 TCHAR*   GetWordAddress(const TCHAR* text, int index);
-void     RemoveLinebreaks( TString& Message );
+void     RemoveLinebreaks( CMString& Message );
 TCHAR*   my_strstri(const TCHAR *s1, const TCHAR *s2) ;
 TCHAR*   DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
 char*    rtrim( char *string );

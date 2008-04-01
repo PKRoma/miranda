@@ -118,7 +118,10 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				}
 
 				if ( !p->ppro->getTString( p->hContact, "Default", &dbv )) {
-					TString S = _T(STR_ERROR) + (TString)_T(" (") + dbv.ptszVal + (TString)_T(")");
+					CMString S = _T(STR_ERROR);
+					S += _T(" (");
+					S += dbv.ptszVal;
+					S += _T(")");
 					if (( lstrlen(temp) < 4 && lstrlen(temp)) || !WCCmp(CharLower(temp), CharLower(dbv.ptszVal))) {
 						MessageBox( NULL, TranslateTS( S.c_str()), TranslateT( "IRC error" ), MB_OK | MB_ICONERROR );
 						DBFreeVariant( &dbv );

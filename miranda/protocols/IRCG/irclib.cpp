@@ -30,23 +30,21 @@ using namespace irc;
 
 int CDccSession::nDcc = 0;
 
-////////////////////////////////////////////////////////////////////
-
-/*
-CIrcMessage::CIrcMessage( CIrcProto* _pro ) :
-	m_proto( _pro ),
-	m_codePage( _pro->getCodepage() ),
-	m_bIncoming(false),
-	m_bNotify(true)
+static int CompareHandlers( const CIrcHandler* p1, const CIrcHandler* p2 )
 {
+	return lstrcmp( p1->m_name, p2->m_name );
 }
-*/
+
+OBJLIST<CIrcHandler> CIrcProto::m_handlers( 30, CompareHandlers );
+
+////////////////////////////////////////////////////////////////////
 
 CIrcMessage::CIrcMessage( CIrcProto* _pro, const TCHAR* lpszCmdLine, int codepage, bool bIncoming, bool bNotify ) :
 	m_proto( _pro ),
 	m_bIncoming( bIncoming ),
 	m_bNotify( bNotify ),
-	m_codePage( codepage )
+	m_codePage( codepage ),
+	parameters( 10, NULL )
 {
 	ParseIrcCommand(lpszCmdLine);
 }
@@ -64,12 +62,17 @@ CIrcMessage::CIrcMessage(const CIrcMessage& m) :
 	prefix.sHost = m.prefix.sHost;
 }
 
+CIrcMessage::~CIrcMessage()
+{
+}
+
 void CIrcMessage::Reset()
 {
 	prefix.sNick = prefix.sUser = prefix.sHost = sCommand = _T("");
 	m_bIncoming = false;
 	m_bNotify = true;
-	parameters.clear();
+
+	parameters.destroy();
 }
 
 CIrcMessage& CIrcMessage::operator = (const CIrcMessage& m)
@@ -104,19 +107,19 @@ void CIrcMessage::ParseIrcCommand(const TCHAR* lpszCmdLine)
 		p2 = ++p1;
 		while( *p2 && !_tcschr( _T(" !"), *p2 ))
 			++p2;
-		prefix.sNick.assign(p1, p2 - p1);
+		prefix.sNick.SetString(p1, p2 - p1);
 		if( *p2 != '!' )
 			goto end_of_prefix;
 		p1 = ++p2;
 		while( *p2 && !_tcschr( _T(" @"), *p2 ))
 			++p2;
-		prefix.sUser.assign(p1, p2 - p1);
+		prefix.sUser.SetString(p1, p2 - p1);
 		if( *p2 != '@' )
 			goto end_of_prefix;
 		p1 = ++p2;
 		while( *p2 && *p2 != ' ' )
 			++p2;
-		prefix.sHost.assign(p1, p2 - p1);
+		prefix.sHost.SetString(p1, p2 - p1);
 end_of_prefix :
 		while( *p2 && *p2 == ' ' )
 			++p2;
@@ -128,8 +131,8 @@ end_of_prefix :
 	while( *p2 && *p2 != ' ' )
 		++p2;
 
-	sCommand.assign(p1, p2 - p1);
-	transform( sCommand.begin(), sCommand.end(), sCommand.begin(), toupper );
+	sCommand.SetString(p1, p2 - p1);
+	sCommand.MakeUpper();
 	while( *p2 && *p2 == ' ' )
 		++p2;
 	p1 = p2;
@@ -142,38 +145,38 @@ end_of_prefix :
 			// seek end-of-message
 			while( *p2 )
 				++p2;
-			parameters.push_back(TString(p1, p2 - p1));
+			parameters.insert( new CMString(p1, p2 - p1));
 			break;
 		}
 		else {
 			// seek end of parameter
 			while( *p2 && *p2 != ' ' )
 				++p2;
-			parameters.push_back(TString(p1, p2 - p1));
+			parameters.insert( new CMString(p1, p2 - p1));
 			// see next parameter
 			while( *p2 && *p2 == ' ' )
 				++p2;
 			p1 = p2;
 }	}	}
 
-TString CIrcMessage::AsString() const
+CMString CIrcMessage::AsString() const
 {
-	TString s;
+	CMString s;
 
-	if ( prefix.sNick.length() ) {
+	if ( prefix.sNick.GetLength() ) {
 		s += _T(":") + prefix.sNick;
-		if( prefix.sUser.length() && prefix.sHost.length() )
+		if( prefix.sUser.GetLength() && prefix.sHost.GetLength() )
 			s += _T("!") + prefix.sUser + _T("@") + prefix.sHost;
 		s += _T(" ");
 	}
 
 	s += sCommand;
 
-	for ( size_t i=0; i < parameters.size(); i++ ) {
+	for ( int i=0; i < parameters.getCount(); i++ ) {
 		s += _T(" ");
-		if( i == parameters.size() - 1 && (_tcschr(parameters[i].c_str(), ' ') || parameters[i][0] == ':' ) )// is last parameter ?
+		if( i == parameters.getCount() - 1 && (_tcschr(parameters[i]->c_str(), ' ') || (*parameters[i])[0] == ':' ) )// is last parameter ?
 			s += _T(":");
-		s += parameters[i];
+		s += *parameters[i];
 	}
 
 	s += _T("\r\n");
@@ -303,7 +306,7 @@ CIrcProto& CIrcProto::operator << (const CIrcMessage& msg)
 		NLSend(( const BYTE* )str, strlen( str ));
 		mir_free( str );
 		
-		if ( !msg.sCommand.empty() && msg.sCommand != _T("QUIT") && msg.m_bNotify )
+		if ( !msg.sCommand.IsEmpty() && msg.sCommand != _T("QUIT") && msg.m_bNotify )
 			Notify( &msg );
 	}
 	return *this;
@@ -345,18 +348,18 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 		// start receiving messages from host
 		mir_forkthread( ThreadProc, this );
 		Sleep( 100 );
-		if ( info.sPassword.length() )
+		if ( info.sPassword.GetLength() )
 			NLSend( "PASS %s\r\n", info.sPassword.c_str());
 		NLSend( _T("NICK %s\r\n"), info.sNick.c_str());
 
-		TString m_userID = GetWord(info.sUserID.c_str(), 0);
+		CMString m_userID = GetWord(info.sUserID.c_str(), 0);
 		TCHAR szHostName[MAX_PATH];
 		DWORD cbHostName = SIZEOF( szHostName );
 		GetComputerName(szHostName, &cbHostName);
-		TString HostName = GetWord(szHostName, 0);
-		if ( m_userID.empty() )
+		CMString HostName = GetWord(szHostName, 0);
+		if ( m_userID.IsEmpty() )
 			m_userID = _T("Miranda");
-		if ( HostName.empty())
+		if ( HostName.IsEmpty())
 			HostName= _T("host");
 		NLSend( _T("USER %s %s %s :%s\r\n"), m_userID.c_str(), HostName.c_str(), _T("server"), info.sFullName.c_str());
 	}
@@ -636,11 +639,11 @@ void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_chats.find(hContact);
-	if ( it != m_dcc_chats.end())
-		m_dcc_chats.erase(it);
+	CDccSession* p = m_dcc_chats.find(dcc);
+	if ( p )
+		m_dcc_chats.remove( p );
 
-	m_dcc_chats.insert(DccSessionPair(hContact, dcc));
+	m_dcc_chats.insert( dcc );
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -649,7 +652,7 @@ void CIrcProto::AddDCCSession(DCCINFO* pdci, CDccSession* dcc)
 {
 	EnterCriticalSection(&m_dcc);
 
-	m_dcc_xfers.insert(DccSessionPair(pdci, dcc));
+	m_dcc_xfers.insert( dcc );
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -658,9 +661,11 @@ void CIrcProto::RemoveDCCSession(HANDLE hContact)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_chats.find(hContact);
-	if ( it != m_dcc_chats.end())
-		m_dcc_chats.erase(it);
+	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
+		if ( m_dcc_chats[i]->di->hContact == hContact ) {
+			m_dcc_chats.remove( i );
+			break;
+		}
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -669,9 +674,11 @@ void CIrcProto::RemoveDCCSession(DCCINFO* pdci)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_xfers.find(pdci);
-	if(it != m_dcc_xfers.end())
-		m_dcc_xfers.erase(it);
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ )
+		if ( m_dcc_xfers[i]->di == pdci ) {
+			m_dcc_xfers.remove( i );
+			break;
+		}
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -680,11 +687,11 @@ CDccSession* CIrcProto::FindDCCSession(HANDLE hContact)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_chats.find(hContact);
-	if ( it != m_dcc_chats.end()) {
-		LeaveCriticalSection(&m_dcc);
-		return (CDccSession*)it->second;
-	}
+	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
+		if ( m_dcc_chats[i]->di->hContact == hContact ) {
+			LeaveCriticalSection(&m_dcc);
+			return m_dcc_chats[ i ];
+		}
 
 	LeaveCriticalSection(&m_dcc);
 	return 0;
@@ -694,11 +701,12 @@ CDccSession* CIrcProto::FindDCCSession(DCCINFO* pdci)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_xfers.find(pdci);
-	if ( it != m_dcc_xfers.end()) {
-		LeaveCriticalSection(&m_dcc);
-		return (CDccSession*)it->second;
-	}
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ )
+		if ( m_dcc_xfers[i]->di == pdci ) {
+			LeaveCriticalSection(&m_dcc);
+			return m_dcc_xfers[ i ];
+		}
+
 	LeaveCriticalSection(&m_dcc);
 	return 0;
 }
@@ -706,17 +714,15 @@ CDccSession* CIrcProto::FindDCCSession(DCCINFO* pdci)
 CDccSession* CIrcProto::FindDCCSendByPort(int iPort)
 {
 	EnterCriticalSection(&m_dcc);
-	CDccSession* dcc = NULL;
 
-	DccSessionMap::iterator it = m_dcc_xfers.begin();
-	while(it != m_dcc_xfers.end()) {
-		dcc = it->second;
-		if ( dcc->di->iType == DCC_SEND && dcc->di->bSender && iPort == dcc->di->iPort ) {
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
+		CDccSession* p = m_dcc_xfers[i];
+		if ( p->di->iType == DCC_SEND && p->di->bSender && iPort == p->di->iPort ) {
 			LeaveCriticalSection(&m_dcc);
-			return (CDccSession*)it->second;
+			return m_dcc_xfers[ i ];
 		}
-		it++;
 	}
+
 	LeaveCriticalSection(&m_dcc);
 	return 0;
 }
@@ -724,23 +730,20 @@ CDccSession* CIrcProto::FindDCCSendByPort(int iPort)
 CDccSession* CIrcProto::FindDCCRecvByPortAndName(int iPort, const TCHAR* szName)
 {
 	EnterCriticalSection(&m_dcc);
-	CDccSession* dcc = NULL;
 
-	DccSessionMap::iterator it = m_dcc_xfers.begin();
-	while ( it != m_dcc_xfers.end()) {
-		dcc = it->second;
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
+		CDccSession* p = m_dcc_xfers[i];
 		DBVARIANT dbv;
-
-		if ( !getTString(dcc->di->hContact, "Nick", &dbv)) {
-			if ( dcc->di->iType == DCC_SEND && !dcc->di->bSender && !lstrcmpi( szName, dbv.ptszVal) && iPort == dcc->di->iPort ) {
-				DBFreeVariant( &dbv );
-				LeaveCriticalSection( &m_dcc );
-				return (CDccSession*)it->second;
+		if ( !getTString(p->di->hContact, "Nick", &dbv)) {
+			if ( p->di->iType == DCC_SEND && !p->di->bSender && !lstrcmpi( szName, dbv.ptszVal) && iPort == p->di->iPort ) {
+				DBFreeVariant(&dbv);
+				LeaveCriticalSection(&m_dcc);
+				return m_dcc_xfers[ i ];
 			}
 			DBFreeVariant(&dbv);
 		}
-		it++;
 	}
+
 	LeaveCriticalSection(&m_dcc);
 	return 0;
 }
@@ -748,36 +751,28 @@ CDccSession* CIrcProto::FindDCCRecvByPortAndName(int iPort, const TCHAR* szName)
 CDccSession* CIrcProto::FindPassiveDCCSend(int iToken)
 {
 	EnterCriticalSection(&m_dcc);
-	CDccSession* dcc = NULL;
 
-	DccSessionMap::iterator it = m_dcc_xfers.begin();
-	while ( it != m_dcc_xfers.end()) {
-		dcc = it->second;
-
-		if ( iToken == dcc->iToken ) {
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
+		if ( m_dcc_xfers[ i ]->iToken == iToken ) {
 			LeaveCriticalSection(&m_dcc);
-			return (CDccSession*)it->second;		
+			return m_dcc_xfers[ i ];
 		}
-		it++;
 	}
+
 	LeaveCriticalSection(&m_dcc);
 	return 0;
 }
 
-CDccSession* CIrcProto::FindPassiveDCCRecv(TString sName, TString sToken)
+CDccSession* CIrcProto::FindPassiveDCCRecv(CMString sName, CMString sToken)
 {
 	EnterCriticalSection(&m_dcc);
-	CDccSession* dcc = NULL;
 
-	DccSessionMap::iterator it = m_dcc_xfers.begin();
-	while ( it != m_dcc_xfers.end()) {
-		dcc = it->second;
-
-		if ( sToken == dcc->di->sToken && sName == dcc->di->sContactName) {
+	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
+		CDccSession* p = m_dcc_xfers[i];
+		if ( sToken == p->di->sToken && sName == p->di->sContactName ) {
 			LeaveCriticalSection(&m_dcc);
-			return (CDccSession*)it->second;
+			return m_dcc_xfers[ i ];
 		}
-		it++;
 	}
 	LeaveCriticalSection(&m_dcc);
 	return 0;
@@ -787,15 +782,9 @@ void CIrcProto::DisconnectAllDCCSessions(bool Shutdown)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_chats.begin();
-	CDccSession* dcc;
-
-	while ( it != m_dcc_chats.end()) {
-		dcc = it->second;
-		it++;
+	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
 		if ( m_disconnectDCCChats || Shutdown )
-			dcc->Disconnect();
-	}
+			m_dcc_chats[i]->Disconnect();
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -804,26 +793,19 @@ void CIrcProto::CheckDCCTimeout(void)
 {
 	EnterCriticalSection(&m_dcc);
 
-	DccSessionMap::iterator it = m_dcc_chats.begin();
-	CDccSession* dcc;
-
-	while ( it != m_dcc_chats.end()) {
-		dcc = it->second;
-		it++;
-		if ( time(0) > dcc->tLastActivity + DCCCHATTIMEOUT )
-			dcc->Disconnect();
+	for ( int i=0; i < m_dcc_chats.getCount(); i++ ) {
+		CDccSession* p = m_dcc_chats[i];
+		if ( time(0) > p->tLastActivity + DCCCHATTIMEOUT )
+			p->Disconnect();
 	}
 
-	it = m_dcc_xfers.begin();
-	while ( it != m_dcc_xfers.end()) {
-		dcc = it->second;
-		it++;
-		if ( time(0) > dcc->tLastActivity + DCCSENDTIMEOUT )
-			dcc->Disconnect();
+	for ( int j=0; j < m_dcc_xfers.getCount(); j++ ) {
+		CDccSession* p = m_dcc_xfers[j];
+		if ( time(0) > p->tLastActivity + DCCSENDTIMEOUT )
+			p->Disconnect();
 	}
 
 	LeaveCriticalSection(&m_dcc);
-	return;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -890,8 +872,6 @@ void CIrcSessionInfo::Reset()
 
 ////////////////////////////////////////////////////////////////////
 
-CIrcProto::HandlersMap CIrcProto::m_handlers;
-
 void CIrcProto::OnIrcMessage(const CIrcMessage* pmsg)
 {
 	if ( pmsg != NULL ) {
@@ -910,10 +890,9 @@ void CIrcProto::OnIrcMessage(const CIrcMessage* pmsg)
 
 PfnIrcMessageHandler CIrcProto::FindMethod(const TCHAR* lpszName)
 {
-	HandlersMap::iterator it = m_handlers.find(lpszName);
-	if( it != m_handlers.end() )
-		return it->second; // found !
-	return NULL; // not found in any map
+	CIrcHandler temp( lpszName, NULL );
+	CIrcHandler* p = m_handlers.find( &temp );
+	return ( p == NULL ) ? NULL : p->m_handler;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1061,7 +1040,7 @@ int CDccSession::NLReceive(const unsigned char* buf, int cbBuf)
 int CDccSession::SendStuff(const TCHAR* fmt)
 {
 	String buf = _T2A( fmt, m_proto->getCodepage() );
-	return NLSend(( const unsigned char* )buf.c_str(), buf.size());
+	return NLSend(( const unsigned char* )buf.c_str(), buf.GetLength());
 }
 
 // called when the user wants to connect/create a new connection given the parameters in the constructor.
@@ -1178,10 +1157,10 @@ int CDccSession::SetupConnection()
 					if ( NewFileName) { // the user has chosen to rename the new incoming file.
 						di->sFileAndPath = NewFileName;
 
-						int i = di->sFileAndPath.rfind( _T("\\"), di->sFileAndPath.length());
-						if ( i != string::npos ) {
-							di->sPath = di->sFileAndPath.substr(0, i+1);
-							di->sFile = di->sFileAndPath.substr(i+1, di->sFileAndPath.length());
+						int i = di->sFileAndPath.ReverseFind( '\\' );
+						if ( i != -1 ) {
+							di->sPath = di->sFileAndPath.Mid(0, i+1);
+							di->sFile = di->sFileAndPath.Mid(i+1, di->sFileAndPath.GetLength());
 						}
 
 						#if defined( _UNICODE )
@@ -1233,12 +1212,12 @@ int CDccSession::SetupConnection()
 
 				di->iPort = nb.wPort; // store the port internally so it is possible to search for it (for resuming of filetransfers purposes)
 
-				TString sFileWithQuotes = di->sFile;
+				CMString sFileWithQuotes = di->sFile;
 
 				// if spaces in the filename surround with quotes
-				if ( sFileWithQuotes.find( ' ', 0 ) != string::npos ) {
-					sFileWithQuotes.insert( 0, _T("\""));
-					sFileWithQuotes.insert( sFileWithQuotes.length(), _T("\""));
+				if ( sFileWithQuotes.Find( ' ', 0 ) != -1 ) {
+					sFileWithQuotes.Insert( 0, _T("\""));
+					sFileWithQuotes.Insert( sFileWithQuotes.GetLength(), _T("\""));
 				}
 
 				// send out DCC RECV command for passive filetransfers

@@ -172,7 +172,7 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
 		if ( type != 0 ) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
-			TString S = _T("");
+			CMString S = _T("");
 			if (type == GCW_CHATROOM)
 				S = MakeWndID( dbv.ptszVal );
 			if (type == GCW_SERVER)
@@ -212,7 +212,7 @@ int __cdecl CIrcProto::OnMenuShowChannel(WPARAM wp, LPARAM lp)
 		if ( type != 0) {
 			GCEVENT gce = {0};
 			GCDEST gcd = {0};
-			TString S = _T("");
+			CMString S = _T("");
 			if ( type == GCW_CHATROOM)
 				S = MakeWndID( dbv.ptszVal );
 			if ( type == GCW_SERVER )
@@ -247,7 +247,7 @@ int __cdecl CIrcProto::OnMenuJoinLeave(WPARAM wp, LPARAM lp)
 					PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
 					GCEVENT gce = {0};
 					GCDEST gcd = {0};
-					TString S = MakeWndID(dbv.ptszVal);
+					CMString S = MakeWndID(dbv.ptszVal);
 					gce.cbSize = sizeof(GCEVENT);
 					gce.dwFlags = GC_TCHAR;
 					gcd.iType = GC_EVENT_CONTROL;
@@ -488,7 +488,7 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 	GCHOOK *gchook= (GCHOOK*) lParam;
 	GCHOOK *gchtemp = NULL;
 	GCHOOK *gch = NULL;
-	TString S = _T("");
+	CMString S = _T("");
 
 	EnterCriticalSection(&m_gchook);
 
@@ -713,13 +713,13 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 							p1, gch->ptszUID, TranslateT("Please enter the reason"), TranslateT("Kick"), TranslateT("Jerk") );
 						break;
 					case 7:
-						DoUserhostWithReason(1, _T("B") + (TString)p1, true, _T("%s"), gch->ptszUID );
+						DoUserhostWithReason(1, _T("B") + (CMString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 8:
-						DoUserhostWithReason(1, _T("K") + (TString)p1, true, _T("%s"), gch->ptszUID );
+						DoUserhostWithReason(1, _T("K") + (CMString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 9:
-						DoUserhostWithReason(1, _T("L") + (TString)p1, true, _T("%s"), gch->ptszUID );
+						DoUserhostWithReason(1, _T("L") + (CMString)p1, true, _T("%s"), gch->ptszUID );
 						break;
 					case 10:
 						PostIrcMessage( _T("/WHOIS %s %s"), gch->ptszUID, gch->ptszUID );

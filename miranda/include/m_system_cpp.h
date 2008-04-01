@@ -32,35 +32,55 @@ template<class T> struct LIST
 {
 	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
 
-	inline LIST( int aincr, FTSortFunc afunc = NULL )
+	__inline LIST( int aincr, FTSortFunc afunc = NULL )
 	{	memset( this, 0, sizeof( *this ));
 		increment = aincr;
 		sortFunc = afunc;
 	}
 
-	inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
-	inline int getCount( void )     const { return count; }
+	__inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
+	__inline int getCount( void )     const { return count; }
 
-	inline int getIndex( T* p ) const
+	__inline int getIndex( T* p ) const
 	{	int idx;
 		return ( !li.List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
 	}
 
-	inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
+	__inline void destroy( void )        { li.List_Destroy(( SortedList* )this ); }
 
-	inline T*  find( T* p )            { return ( T* )li.List_Find(( SortedList* )this, p ); }
-	inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
-	inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
-	inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
+	__inline T*  find( T* p )            { return ( T* )li.List_Find(( SortedList* )this, p ); }
+	__inline int indexOf( T* p )         { return li.List_IndexOf(( SortedList* )this, p ); }
+	__inline int insert( T* p, int idx ) { return li.List_Insert(( SortedList* )this, p, idx ); }
+	__inline int remove( int idx )       { return li.List_Remove(( SortedList* )this, idx ); }
 
-	inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
-	inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
+	__inline int insert( T* p )          { return li.List_InsertPtr(( SortedList* )this, p ); }
+	__inline int remove( T* p )          { return li.List_RemovePtr(( SortedList* )this, p ); }
 
-private:
+protected:
 	T**        items;
 	int        count, limit, increment;
 	FTSortFunc sortFunc;
 };
+
+template<class T> struct OBJLIST : public LIST<T>
+{
+	__inline OBJLIST( int aincr, FTSortFunc afunc = NULL ) :
+		LIST<T>( aincr, afunc )
+		{}
+
+	~OBJLIST()
+	{
+		destroy();
+	}
+
+	__inline void destroy( void )
+	{	
+		for ( int i=0; i < count; i++ )
+			delete items[i];
+		li.List_Destroy(( SortedList* )this );
+	}
+};
+
 #endif
 
 #endif // M_SYSTEM_CPP_H

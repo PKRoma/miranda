@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-BOOL CIrcProto::CList_AddDCCChat(TString name, TString hostmask, unsigned long adr, int port) 
+BOOL CIrcProto::CList_AddDCCChat(CMString name, CMString hostmask, unsigned long adr, int port) 
 {
 	HANDLE hContact;
 	HANDLE hc;
@@ -38,7 +38,7 @@ BOOL CIrcProto::CList_AddDCCChat(TString name, TString hostmask, unsigned long a
 		bFlag = true;
 	}
 
-	TString contactname = name + _T(DCCSTRING);
+	CMString contactname = name; contactname += _T(DCCSTRING);
 
 	CONTACT user = { (TCHAR*)contactname.c_str(), NULL, NULL, false, false, true};
 	hContact = CList_AddContact(&user, false, false);

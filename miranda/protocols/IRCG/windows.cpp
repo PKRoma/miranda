@@ -162,14 +162,14 @@ void CWhoisDlg::OnVersion( CCtrlButton* )
 
 void CWhoisDlg::ShowMessage( const CIrcMessage* pmsg )
 {
-	if ( m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
-		m_InfoNick.SendMsg( CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
-	int i = m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
+	if ( m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1]->c_str()) == CB_ERR)	
+		m_InfoNick.SendMsg( CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1]->c_str());	
+	int i = m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1]->c_str());
 	m_InfoNick.SendMsg( CB_SETCURSEL, i, 0);
-	m_Caption.SetText( pmsg->parameters[1].c_str());
-	m_InfoName.SetText( pmsg->parameters[5].c_str());	
-	m_InfoAddress.SetText( pmsg->parameters[3].c_str());
-	m_InfoId.SetText( pmsg->parameters[2].c_str());
+	m_Caption.SetText( pmsg->parameters[1]->c_str());
+	m_InfoName.SetText( pmsg->parameters[5]->c_str());	
+	m_InfoAddress.SetText( pmsg->parameters[3]->c_str());
+	m_InfoId.SetText( pmsg->parameters[2]->c_str());
 	m_InfoChannels.SetText( _T("") );
 	m_InfoServer.SetText( _T("") );
 	m_InfoAway2.SetText( _T("") );
@@ -187,9 +187,9 @@ void CWhoisDlg::ShowMessage( const CIrcMessage* pmsg )
 
 void CWhoisDlg::ShowMessageNoUser( const CIrcMessage* pmsg )
 {
-	m_InfoNick.SetText( pmsg->parameters[2].c_str());
+	m_InfoNick.SetText( pmsg->parameters[2]->c_str());
 	m_InfoNick.SendMsg( CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
-	m_Caption.SetText( pmsg->parameters[2].c_str());	
+	m_Caption.SetText( pmsg->parameters[2]->c_str());	
 	m_InfoName.SetText(  _T("") );
 	m_InfoAddress.SetText(  _T("") );
 	m_InfoId.SetText(  _T("") );
@@ -219,7 +219,7 @@ void CNickDlg::OnInitDialog()
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
 		for (int i = 0; i<10; i++)
-			if ( !GetWord( dbv.ptszVal, i).empty())
+			if ( !GetWord( dbv.ptszVal, i).IsEmpty())
 				SendDlgItemMessage( m_hwnd, IDC_ENICK, CB_ADDSTRING, 0, (LPARAM)GetWord(dbv.ptszVal, i).c_str());
 
 		DBFreeVariant(&dbv);
@@ -237,12 +237,12 @@ void CNickDlg::OnOk( CCtrlButton* )
 	m_Enick.GetText( szTemp, SIZEOF(szTemp));
 	m_proto->PostIrcMessage( _T("/NICK %s"), szTemp);
 
-	TString S = szTemp; 
+	CMString S = szTemp; 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv )) {
 		for ( int i = 0; i<10; i++ ) {
-			TString s = GetWord(dbv.ptszVal, i);
-			if ( !s.empty() && s != szTemp) {
+			CMString s = GetWord(dbv.ptszVal, i);
+			if ( !s.IsEmpty() && s != szTemp) {
 				S += _T(" ");
 				S += s;
 		}	}
@@ -390,8 +390,8 @@ void CJoinDlg::OnInitDialog()
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
 		for ( int i = 0; i < 20; i++ ) {
-			if ( !GetWord( dbv.ptszVal, i).empty()) {
-				TString S = GetWord(dbv.ptszVal, i);
+			if ( !GetWord( dbv.ptszVal, i).IsEmpty()) {
+				CMString S = GetWord(dbv.ptszVal, i);
 				ReplaceString( S, _T("%newl"), _T(" "));
 				SendDlgItemMessage( m_hwnd, IDC_ENICK, CB_ADDSTRING, 0, (LPARAM)S.c_str());
 		}	}
@@ -413,14 +413,14 @@ void CJoinDlg::OnOk( CCtrlButton* )
 	else
 		m_proto->PostIrcMessage( _T("/JOIN #%s"), szTemp );
 
-	TString S = szTemp;
+	CMString S = szTemp;
 	ReplaceString( S, _T(" "), _T("%newl"));
-	TString SL = S;
+	CMString SL = S;
 	
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
 		for (int i = 0; i < 20; i++ ) {
-			if ( !GetWord(dbv.ptszVal, i).empty() && GetWord(dbv.ptszVal, i) != SL) {
+			if ( !GetWord(dbv.ptszVal, i).IsEmpty() && GetWord(dbv.ptszVal, i) != SL) {
 				S += _T(" ");
 				S += GetWord(dbv.ptszVal, i);
 		}	}
@@ -636,7 +636,7 @@ void CQuestionDlg::OnOk( CCtrlButton* )
 		
 		TCHAR* n = ( TCHAR* )alloca( sizeof( TCHAR )*( j+2 ));
 		GetDlgItemText( m_hwnd, IDC_HIDDENEDIT, n, j+1 );
-		TString S( n );
+		CMString S( n );
 		ReplaceString( S, text, l );
 		m_proto->PostIrcMessageWnd( NULL, NULL, (TCHAR*)S.c_str());
 
@@ -786,17 +786,17 @@ void CManagerDlg::OnClose()
 
 	TCHAR window[256];
 	GetDlgItemText( m_hwnd, IDC_CAPTION, window, 255 );
-	TString S = _T("");
+	CMString S = _T("");
 	TCHAR temp[1000];
 	for ( int i = 0; i < 5; i++ ) {
 		if ( m_topic.SendMsg( CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
-			TString S1 = temp;
+			CMString S1 = temp;
 			ReplaceString( S1, _T(" "), _T("%¤"));
 			S += _T(" ");
 			S += S1;
 	}	}
 
-	if ( !S.empty() && m_proto->IsConnected() ) {
+	if ( !S.IsEmpty() && m_proto->IsConnected() ) {
 		mir_sntprintf( temp, SIZEOF(temp), _T("Topic%s%s"), window, m_proto->m_info.sNetwork.c_str());
 		#if defined( _UNICODE )
 			char* p = mir_t2a(temp);
@@ -856,7 +856,7 @@ void CManagerDlg::OnEdit( CCtrlButton* )
 		int i = m_list.GetCurSel();
 		if ( i != LB_ERR ) {
 			TCHAR* m = m_list.GetItemText( i );
-			TString user = GetWord(m, 0);
+			CMString user = GetWord(m, 0);
 			mir_free( m );
 			
 			TCHAR temp[100];
@@ -903,7 +903,7 @@ void CManagerDlg::OnRemove( CCtrlButton* )
 
 		TCHAR temp[100], mode[3];
 		TCHAR* m = m_list.GetItemText( i, temp, SIZEOF( temp ));
-		TString user = GetWord(m, 0);
+		CMString user = GetWord(m, 0);
 		
 		if ( m_radio1.GetState()) {
 			lstrcpy(mode, _T("-b"));
@@ -957,8 +957,8 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 	if ( wi ) {
 		TCHAR toadd[10]; *toadd = '\0';
 		TCHAR toremove[10]; *toremove = '\0';
-		TString appendixadd = _T("");
-		TString appendixremove = _T("");
+		CMString appendixadd = _T("");
+		CMString appendixremove = _T("");
 		if ( wi->pszMode && _tcschr( wi->pszMode, 't' )) {
 			if ( !m_check1.GetState())
 				lstrcat( toremove, _T("t"));
@@ -1008,8 +1008,8 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 		else if ( m_check9.GetState())
 			lstrcat( toadd, _T("c"));
 
-		TString Key = _T("");
-		TString Limit = _T("");
+		CMString Key = _T("");
+		CMString Limit = _T("");
 		if ( wi->pszMode && wi->pszPassword && _tcschr( wi->pszMode, 'k' )) {
 			if ( !m_check5.GetState()) {
 				lstrcat( toremove, _T("k"));
@@ -1068,9 +1068,9 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 				mir_sntprintf( temp, 499, _T("%s-%s"), temp, toremove );
 			if ( lstrlen( toadd ))
 				mir_sntprintf( temp, 499, _T("%s+%s"), temp, toadd );
-			if (!appendixremove.empty())
+			if (!appendixremove.IsEmpty())
 				lstrcat(temp, appendixremove.c_str());
-			if (!appendixadd.empty())
+			if (!appendixadd.IsEmpty())
 				lstrcat(temp, appendixadd.c_str());
 			m_proto->PostIrcMessage( temp);
 	}	}
@@ -1162,8 +1162,8 @@ void CManagerDlg::InitManager( int mode, const TCHAR* window )
 			DBVARIANT dbv;
 			if ( !m_proto->getTString( p, &dbv )) {
 				for ( int i = 0; i<5; i++ ) {
-					if ( !GetWord(dbv.ptszVal, i).empty()) {
-						TString S = GetWord(dbv.ptszVal, i);
+					if ( !GetWord(dbv.ptszVal, i).IsEmpty()) {
+						CMString S = GetWord(dbv.ptszVal, i);
 						ReplaceString( S, _T("%¤"), _T(" "));
 						m_topic.SendMsg( CB_ADDSTRING, 0, (LPARAM)S.c_str());
 				}	}

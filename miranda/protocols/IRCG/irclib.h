@@ -24,11 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma warning (disable: 4786)
 
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
-
 // OpenSSL stuff
 #include <openssl/ssl.h>
 
@@ -57,30 +52,27 @@ struct CIrcProto;
 namespace irc {
 ////////////////////////////////////////////////////////////////////
 
-typedef std::string String;
-#if defined( _UNICODE )
-	typedef std::wstring TString;
-#else
-	typedef std::string TString;
-#endif
+#include "mstring.h"
+typedef CMStringA String;
+typedef CMString  CMString;
 
 struct DCCINFO
 {
 	DWORD   dwAdr;
 	DWORD   dwSize;
 	DWORD   iType;
-	TString sToken;
+	CMString sToken;
 	int     iPort;
 	BOOL    bTurbo;
 	BOOL    bSSL;
 	BOOL    bSender;
 	BOOL    bReverse;
-	TString sPath;
-	TString sFile;
-	TString sFileAndPath;
-	TString sHostmask;
+	CMString sPath;
+	CMString sFile;
+	CMString sFileAndPath;
+	CMString sHostmask;
 	HANDLE  hContact;
-	TString sContactName;
+	CMString sContactName;
 };
 
 class CIrcMessage
@@ -88,13 +80,13 @@ class CIrcMessage
 public :
 	struct Prefix
 	{
-		TString sNick, sUser, sHost;
+		CMString sNick, sUser, sHost;
 	}
 		prefix;
 
 	CIrcProto* m_proto;
-	TString sCommand;
-	std::vector<TString> parameters;
+	CMString sCommand;
+	OBJLIST<CMString> parameters;
 	bool m_bIncoming;
 	bool m_bNotify;
 	int  m_codePage;
@@ -102,13 +94,14 @@ public :
 	//CIrcMessage( CIrcProto* ); // default constructor
 	CIrcMessage( CIrcProto*, const TCHAR* lpszCmdLine, int codepage, bool bIncoming=false, bool bNotify = true); // parser constructor
 	CIrcMessage( const CIrcMessage& m ); // copy constructor
+	~CIrcMessage();
 
 	void Reset();
 
 	CIrcMessage& operator = (const CIrcMessage& m);
 	CIrcMessage& operator = (const TCHAR* lpszCmdLine);
 
-	TString AsString() const;
+	CMString AsString() const;
 
 private :
 	void ParseIrcCommand(const TCHAR* lpszCmdLine);
@@ -119,13 +112,13 @@ private :
 struct CIrcSessionInfo
 {
 	String  sServer;
-	TString sServerName;
-	TString sNick;
-	TString sUserID;
-	TString sFullName;
+	CMString sServerName;
+	CMString sNick;
+	CMString sUserID;
+	CMString sFullName;
 	String  sPassword;
-	TString sIdentServerType;
-	TString sNetwork;
+	CMString sIdentServerType;
+	CMString sNetwork;
 	bool bIdentServer;
 	bool bNickFlag;
 	int m_iSSL;
@@ -169,7 +162,7 @@ struct CIrcIgnoreItem
 	CIrcIgnoreItem( int codepage, const char*, const char*, const char* );
 	~CIrcIgnoreItem();
 
-   TString mask, flags, network;
+   CMString mask, flags, network;
 };
 
 ////////////////////////////////////////////////////////////////////

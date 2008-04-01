@@ -617,6 +617,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MString.cpp"
+				>
+			</File>
+			<File
 				RelativePath="options.cpp"
 				>
 				<FileConfiguration
@@ -886,6 +890,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MString.h"
+				>
+			</File>
+			<File
 				RelativePath="resource.h"
 				>
 			</File>
@@ -943,11 +951,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\irc.ico"
+				RelativePath="Icons\Icons\irc.ico"
 				>
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico"
+				RelativePath="Icons\irc.ico"
 				>
 			</File>
 			<File

@@ -439,6 +439,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MString.cpp">
+			</File>
+			<File
 				RelativePath="options.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -644,6 +647,9 @@
 				RelativePath="irclib.h">
 			</File>
 			<File
+				RelativePath=".\MString.h">
+			</File>
+			<File
 				RelativePath="resource.h">
 			</File>
 			<File
@@ -687,10 +693,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">
