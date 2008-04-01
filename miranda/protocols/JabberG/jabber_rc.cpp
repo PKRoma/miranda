@@ -35,11 +35,12 @@ Last change by : $Author$
 
 CJabberAdhocSession::CJabberAdhocSession( CJabberProto* global )
 {
-	ZeroMemory( this, sizeof(CJabberAdhocSession) );
+	m_pNext = NULL;
+	m_pUserData = NULL;
+	m_bAutofreeUserData = FALSE;
+	m_dwStage = 0;
 	ppro = global;
-	TCHAR szId[ 128 ];
-	mir_sntprintf( szId, SIZEOF(szId), _T("%u%u"), ppro->SerialNext(), GetTickCount() );
-	m_szSessionId = mir_tstrdup( szId );
+	m_szSessionId.Format(_T("%u%u"), ppro->SerialNext(), GetTickCount());
 	m_dwStartTime = GetTickCount();
 }
 

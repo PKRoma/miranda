@@ -47,7 +47,7 @@ typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *used
 class CJabberAdhocSession
 {
 protected:
-	TCHAR* m_szSessionId;
+	CMString m_szSessionId;
 	CJabberAdhocSession* m_pNext;
 	DWORD m_dwStartTime;
 
@@ -60,8 +60,6 @@ public:
 	CJabberAdhocSession( CJabberProto* global );
 	~CJabberAdhocSession()
 	{
-		if ( m_szSessionId )
-			mir_free( m_szSessionId );
 		if ( m_bAutofreeUserData && m_pUserData )
 			mir_free( m_pUserData );
 		if ( m_pNext )
@@ -81,7 +79,7 @@ public:
 	{
 		return m_dwStartTime;
 	}
-	TCHAR* GetSessionId()
+	LPCTSTR GetSessionId()
 	{
 		return m_szSessionId;
 	}

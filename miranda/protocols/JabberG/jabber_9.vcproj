@@ -1526,6 +1526,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MString.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ui_utils.cpp"
 				>
 			</File>
@@ -1604,6 +1608,10 @@
 			</File>
 			<File
 				RelativePath="jabber_xml.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MString.h"
 				>
 			</File>
 			<File

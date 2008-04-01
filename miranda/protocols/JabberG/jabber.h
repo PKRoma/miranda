@@ -76,6 +76,8 @@ Last change by : $Author$
 #include "resource.h"
 #include "version.h"
 
+#include "MString.h"
+
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 #include "jabber_ibb.h"
