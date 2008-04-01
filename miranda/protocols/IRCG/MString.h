@@ -102,9 +102,6 @@ public:
 	}
 	CMSimpleStringT(const XCHAR* pchSrc, int nLength)
 	{
-		//		if (pchSrc == NULL && nLength != 0)
-		//			AtlThrow(E_INVALIDARG);
-
 		CMStringData* pData = Allocate( nLength, sizeof( XCHAR ) );
 		if( pData != NULL )
 		{
@@ -379,18 +376,9 @@ public:
 		}
 		else
 		{
-			// It is possible that pszSrc points to a location inside of our 
-			// buffer.  GetBuffer() might change m_pszData if (1) the buffer 
-			// is shared or (2) the buffer is too small to hold the new 
-			// string.  We detect this aliasing, and modify pszSrc to point
-			// into the newly allocated buffer instead.
-
-			//			if(pszSrc == NULL)
-			//				AtlThrow(E_INVALIDARG);			
 
 			UINT nOldLength = GetLength();
 			UINT_PTR nOffset = pszSrc - GetString();
-			// If 0 <= nOffset <= nOldLength, then pszSrc points into our buffer
 
 			PXSTR pszBuffer = GetBuffer( nLength );
 			if( nOffset <= nOldLength )
@@ -826,14 +814,6 @@ public:
 		return bSuccess;
 	}
 
-	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
-	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPSTR pszBuffer,
-	//		DWORD nSize, va_list* pArguments )
-	//	{
-	//		return ::FormatMessageA( dwFlags, pSource, dwMessageID, dwLanguageID,
-	//			pszBuffer, nSize, pArguments );
-	//	}
-
 	static int __stdcall SafeStringLen( LPCSTR psz )
 	{
 		// returns length in bytes
@@ -1091,63 +1071,19 @@ public:
 
 	static void __stdcall ConvertToOem( LPWSTR /*psz*/ )
 	{
-		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
 	static void __stdcall ConvertToAnsi( LPWSTR /*psz*/ )
 	{
-		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
 	static void __stdcall ConvertToOem( LPWSTR /*psz*/, size_t )
 	{
-		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
 	static void __stdcall ConvertToAnsi( LPWSTR /*psz*/, size_t ) 
 	{
-		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
-
-#ifdef _UNICODE
-public:
-	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
-	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPWSTR pszBuffer,
-	//		DWORD nSize, va_list* pArguments )
-	//	{
-	//		return ::FormatMessageW( dwFlags, pSource, dwMessageID, dwLanguageID,
-	//			pszBuffer, nSize, pArguments );
-	//	}
-
-#if defined(_AFX)
-	//	static DWORD __stdcall FormatMessage( DWORD dwFlags, LPCVOID pSource,
-	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPWSTR pszBuffer,
-	//		DWORD nSize, va_list* pArguments )
-	//	{
-	//		return _AFX_FUNCNAME(FormatMessage)(dwFlags, pSource, dwMessageID, dwLanguageID, pszBuffer, nSize, pArguments);
-	//	}
-#endif
-
-#else
-	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD /*dwFlags*/, LPCVOID /*pSource*/,
-	//		DWORD /*dwMessageID*/, DWORD /*dwLanguageID*/, LPWSTR /*pszBuffer*/,
-	//		DWORD /*nSize*/, va_list* /*pArguments*/ )
-	//	{
-	//		ATLENSURE(FALSE); // Unsupported Feature 
-	//		return 0;
-	//	}
-
-	//#if defined(_AFX)
-	//	static DWORD __stdcall FormatMessage( DWORD dwFlags, LPCVOID pSource,
-	//		DWORD dwMessageID, DWORD dwLanguageID, LPWSTR pszBuffer,
-	//		DWORD nSize, va_list* pArguments )
-	//	{
-	//		return _AFX_FUNCNAME(FormatMessage)(dwFlags, pSource, dwMessageID, dwLanguageID, pszBuffer, nSize, pArguments);
-	//	}
-	//#endif
-
-#endif
-
 };
 
 template< typename BaseType, class StringTraits >
@@ -2053,16 +1989,11 @@ public:
 	  }
 
 	  // Format data using format string 'pszFormat'
-//	  void __stdcall Format( PCXSTR pszFormat, ... );
-
-	  // Format data using format string loaded from resource 'nFormatID'
-//	  void __stdcall Format( UINT nFormatID, ... );
-
-	  // Append formatted data using format string loaded from resource 'nFormatID'
-//	  void __stdcall AppendFormat( UINT nFormatID, ... );
+	  void Format( PCXSTR pszFormat, ... );
 
 	  // Append formatted data using format string 'pszFormat'
-//	  void __stdcall AppendFormat( PCXSTR pszFormat, ... );
+	  void AppendFormat( PCXSTR pszFormat, ... );
+
 	  void AppendFormatV( PCXSTR pszFormat, va_list args )
 	  {
 		  int nCurrentLength = GetLength();
@@ -2080,34 +2011,6 @@ public:
 		  StringTraits::Format( pszBuffer, nLength+1, pszFormat, args );
 		  ReleaseBufferSetLength( nLength );
 	  }
-
-	  // Format a message using format string 'pszFormat'
-//	  void __stdcall _AFX_FUNCNAME(FormatMessage)( PCXSTR pszFormat, ... );
-
-	  // Format a message using format string loaded from resource 'nFormatID'
-//	  void __stdcall _AFX_FUNCNAME(FormatMessage)( UINT nFormatID, ... );
-
-#if defined(_AFX)
-//	  void __stdcall FormatMessage( PCXSTR pszFormat, ... );
-
-//	  void __stdcall FormatMessage( UINT nFormatID, ... );
-#endif
-
-	  // Format a message using format string 'pszFormat' and va_list
-// 	  void FormatMessageV( PCXSTR pszFormat, va_list* pArgList )
-// 	  {
-// 		  // format message into temporary buffer pszTemp
-// 		  CHeapPtr< XCHAR, CLocalAllocator > pszTemp;
-// 		  DWORD dwResult = StringTraits::_AFX_FUNCNAME(FormatMessage)( FORMAT_MESSAGE_FROM_STRING|
-// 			  FORMAT_MESSAGE_ALLOCATE_BUFFER, pszFormat, 0, 0, reinterpret_cast< PXSTR >( &pszTemp ),
-// 			  0, pArgList );
-// 		  if( dwResult == 0 )
-// 		  {
-// 			  ThrowMemoryException();
-// 		  }
-// 
-// 		  *this = pszTemp;
-// 	  }
 
 	  // OLE BSTR support
 
@@ -2154,40 +2057,6 @@ public:
 
 		  return LoadString( hInst, nID );
 	  }
-
-	  // Load the string from resource 'nID' in module 'hInstance'
-// 	  _Check_return_ BOOL LoadString( HINSTANCE hInstance, UINT nID )
-// 	  {
-// 		  const ATLSTRINGRESOURCEIMAGE* pImage = AtlGetStringResourceImage( hInstance, nID );
-// 		  if( pImage == NULL )
-// 		  {
-// 			  return FALSE );
-// 		  }
-// 
-// 		  int nLength = StringTraits::GetBaseTypeLength( pImage->achString, pImage->nLength );
-// 		  PXSTR pszBuffer = GetBuffer( nLength );
-// 		  StringTraits::ConvertToBaseType( pszBuffer, nLength, pImage->achString, pImage->nLength );
-// 		  ReleaseBufferSetLength( nLength );
-// 
-// 		  return TRUE );
-// 	  }
-
-	  // Load the string from resource 'nID' in module 'hInstance', using language 'wLanguageID'
-// 	  _Check_return_ BOOL LoadString( HINSTANCE hInstance, UINT nID, WORD wLanguageID )
-// 	  {
-// 		  const ATLSTRINGRESOURCEIMAGE* pImage = AtlGetStringResourceImage( hInstance, nID, wLanguageID );
-// 		  if( pImage == NULL )
-// 		  {
-// 			  return FALSE );
-// 		  }
-// 
-// 		  int nLength = StringTraits::GetBaseTypeLength( pImage->achString, pImage->nLength );
-// 		  PXSTR pszBuffer = GetBuffer( nLength );
-// 		  StringTraits::ConvertToBaseType( pszBuffer, nLength, pImage->achString, pImage->nLength );
-// 		  ReleaseBufferSetLength( nLength );
-// 
-// 		  return TRUE );
-// 	  }
 
 	  friend CMStringT __stdcall operator+( const CMStringT& str1, const CMStringT& str2 )
 	  {
@@ -2394,6 +2263,24 @@ public:
 		  return (str1.GetLength() != 1) || (str1[0] != ch2);
 	  }
 };
+
+template< typename BaseType, class StringTraits >
+inline void CMStringT<BaseType, StringTraits>::Format(PCXSTR pszFormat, ... )
+{
+	va_list argList;
+	va_start( argList, pszFormat );
+	FormatV( pszFormat, argList );
+	va_end( argList );
+}
+
+template< typename BaseType, class StringTraits >
+inline void CMStringT<BaseType, StringTraits>::AppendFormat(PCXSTR pszFormat, ... )
+{
+	va_list argList;
+	va_start( argList, pszFormat );
+	AppendFormatV( pszFormat, argList );
+	va_end( argList );
+}
 
 typedef CMStringT< wchar_t, ChTraitsCRT< wchar_t > > CMStringW;
 typedef CMStringT< char, ChTraitsCRT< char > > CMStringA;

@@ -46,7 +46,7 @@ CMStringData* CMBaseString::GetNilString()
 	return &m_nil;
 }
 
-void* CMStringData::data() throw()
+void* CMStringData::data()
 {
 	return (this + 1);
 }
@@ -97,4 +97,3 @@ CNilMStringData::CNilMStringData()
 	achNil[0] = 0;
 	achNil[1] = 0;
 }
-
