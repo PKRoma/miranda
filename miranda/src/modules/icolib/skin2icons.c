@@ -396,7 +396,7 @@ static int IcoLib_RemoveIcon( WPARAM wParam, LPARAM lParam )
 		int indx;
 		EnterCriticalSection( &csIconList );
 
-		if ( List_GetIndex(( SortedList* )&iconList, ( void* )lParam, &indx )) {
+		if ( List_GetIndex(( SortedList* )&iconList, ( void* )&lParam, &indx )) {
 			IcoLib_FreeIcon( iconList.items[ indx ] );
 			List_Remove(( SortedList* )&iconList, indx );
 		}
