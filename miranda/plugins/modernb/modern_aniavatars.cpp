@@ -902,6 +902,9 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				SetWindowLong(dat->hWindow,GWL_EXSTYLE,exStyle);
 				g_proc_UpdateLayeredWindow(dat->hWindow, hDC_animation, &ptWnd, &szWnd, copyFromDC, &pt_from, RGB(0,0,0), &bf, ULW_ALPHA );
 			}
+
+			g_CluiData.fAeroGlass = false;
+			CLUI_UpdateAeroGlass();
 		}
 		else
 		{

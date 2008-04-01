@@ -105,6 +105,7 @@ int		CListMod_HideWindow(HWND hwndContactList, int mode);
 
 /* CLUI */
 HANDLE  RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szDescription, TCHAR * tszDefaultFile, int iDefaultIndex, HINSTANCE hDefaultModule, int iDefaultResource );
+void	CLUI_UpdateAeroGlass();
 void	CLUI_ChangeWindowMode();
 BOOL	CLUI_CheckOwnedByClui(HWND hwnd);
 void	CLUI_DisconnectAll();
@@ -154,6 +155,7 @@ void	ske_ApplyTransluency(void);
 int		ske_BltBackImage (HWND destHWND, HDC destDC, RECT * BltClientRect);
 HBITMAP ske_CreateDIB32(int cx, int cy);
 HBITMAP ske_CreateDIB32Point(int cx, int cy, void ** bits);
+HRGN ske_CreateOpaqueRgn(BYTE Level, bool Opaque);
 HICON	ske_CreateJoinedIcon(HICON hBottom, HICON hTop,BYTE alpha);
 int		ske_DrawImageAt(HDC hdc, RECT *rc);
 BOOL	ske_DrawIconEx(HDC hdc,int xLeft,int yTop,HICON hIcon,int cxWidth,int cyWidth, UINT istepIfAniCur, HBRUSH hbrFlickerFreeDraw, UINT diFlags);
@@ -331,6 +333,9 @@ ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact);
 // FUNCTION POINTERS
 extern BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 extern BOOL (WINAPI *g_proc_SetLayeredWindowAttributesNew)(HWND,COLORREF,BYTE,DWORD);
+
+#define WM_DWMCOMPOSITIONCHANGED  0x031E
+
 #define DWM_BB_ENABLE					0x00000001
 #define DWM_BB_BLURREGION				0x00000002
 #define DWM_BB_TRANSITIONONMAXIMIZED	0x00000004

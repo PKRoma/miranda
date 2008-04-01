@@ -830,6 +830,69 @@ HBITMAP ske_CreateDIB32Point(int cx, int cy, void ** bits)
 	return DirectBitmap;
 }
 
+HRGN ske_CreateOpaqueRgn(BYTE Level, bool Opaque)
+{
+	if (!g_pCachedWindow)
+		return NULL;
+
+	RGBQUAD * buf = (RGBQUAD *) g_pCachedWindow->hImageDIBByte;
+
+	int x,y;
+	unsigned int cRect = 64;
+	PRGNDATA pRgnData = (PRGNDATA)malloc(sizeof(RGNDATAHEADER) + (cRect)*sizeof(RECT));
+	memset(pRgnData, 0, sizeof(RGNDATAHEADER));
+	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
+	pRgnData->rdh.iType = RDH_RECTANGLES;
+
+	for (y = 0; y < g_pCachedWindow->Height; ++y)
+	{
+		bool inside = false;
+		bool lastin = false;
+		unsigned int entry = 0;
+
+		for (x = 0; x < g_pCachedWindow->Width; ++x)
+		{
+			inside = Opaque ? (buf->rgbReserved > Level) : (buf->rgbReserved < Level);
+			++buf;
+
+			if (inside != lastin)
+			{
+				if (inside)
+				{
+					lastin = true;
+					entry = x;
+				} else {
+					if (pRgnData->rdh.nCount == cRect)
+					{
+						cRect = cRect + 64;
+						pRgnData = (PRGNDATA)realloc(pRgnData, sizeof(RGNDATAHEADER) + (cRect)*sizeof(RECT));
+					}
+					SetRect(((LPRECT)pRgnData->Buffer) + pRgnData->rdh.nCount, entry, g_pCachedWindow->Height - y, x, g_pCachedWindow->Height - y + 1);
+
+					pRgnData->rdh.nCount++;
+					lastin = false;
+				}
+			}
+		}
+
+		if (lastin)
+		{
+			if (pRgnData->rdh.nCount == cRect)
+			{
+				cRect = cRect + 64;
+				pRgnData = (PRGNDATA)realloc(pRgnData, sizeof(RGNDATAHEADER) + (cRect)*sizeof(RECT));
+			}
+			SetRect(((LPRECT)pRgnData->Buffer) + pRgnData->rdh.nCount, entry, g_pCachedWindow->Height - y, x, g_pCachedWindow->Height - y + 1);
+
+			pRgnData->rdh.nCount++;
+		}
+	}
+	HRGN hRgn = ExtCreateRegion(NULL, sizeof(RGNDATAHEADER) + pRgnData->rdh.nCount*sizeof(RECT), (LPRGNDATA)pRgnData);
+	free(pRgnData);
+
+	return hRgn;
+}
+
 static int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 {
 	HDC memdc=NULL, glyphdc=NULL;
@@ -3903,7 +3966,7 @@ int ske_ReCreateBackImage(BOOL Erase,RECT *w)
 		if (g_pCachedWindow->Width!=0 && g_pCachedWindow->Height!=0)
 		{
 			hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
-			hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte)); 
+			hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hBackDIBByte)); 
 			SelectObject(g_pCachedWindow->hImageDC,hb1);
 			SelectObject(g_pCachedWindow->hBackDC,hb2);
 		}
@@ -4003,7 +4066,7 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 		g_pCachedWindow->Width=wnd.right-wnd.left;
 		g_pCachedWindow->Height=wnd.bottom-wnd.top;
 		hb1=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte));
-		hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hImageDIBByte)); 
+		hb2=ske_CreateDIB32Point(g_pCachedWindow->Width,g_pCachedWindow->Height,(void**)&(g_pCachedWindow->hBackDIBByte)); 
 		SelectObject(g_pCachedWindow->hImageDC,hb1);
 		SelectObject(g_pCachedWindow->hBackDC,hb2);
 		DeleteObject(g_pCachedWindow->hImageDIB);
@@ -4097,6 +4160,7 @@ void ske_ApplyTransluency()
 		if (!layered) SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 		if (g_proc_SetLayeredWindowAttributesNew) g_proc_SetLayeredWindowAttributesNew(hwnd, RGB(0,0,0), (BYTE)g_CluiData.bCurrentAlpha, LWA_ALPHA);
 	}
+
 	AniAva_RedrawAllAvatars(FALSE);
 	return;
 }
@@ -4141,6 +4205,8 @@ int ske_JustUpdateWindowImageRect(RECT * rty)
 		callProxied_SetAlpha(g_CluiData.bCurrentAlpha);
 
 		res=g_proc_UpdateLayeredWindow(pcli->hwndContactList,g_pCachedWindow->hScreenDC,&dest,&sz,g_pCachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
+		g_CluiData.fAeroGlass = false;
+		CLUI_UpdateAeroGlass();
 	}
 	else InvalidateRect(pcli->hwndContactList,NULL,TRUE);
 	return 0;

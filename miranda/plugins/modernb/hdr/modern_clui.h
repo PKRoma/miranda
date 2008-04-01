@@ -36,7 +36,8 @@ public:
     ~CLUI();
 
     
-    const HWND& CluiWnd();
+	static HWND& ClcWnd();		//TODO: move to Clc.h
+    static HWND& CluiWnd();
 
     CLINTERFACE void cliOnCreateClc();
 
@@ -49,15 +50,21 @@ public:
     SERVICE( Service_Menu_ShowContactAvatar );
     SERVICE( Service_Menu_HideContactAvatar );
 
-    
+
+	static CLUI * m_pCLUI;  
+
+	static HRESULT FillAlphaChannel(HWND hwndClui, HDC hDC, RECT* prcParent, BYTE bAlpha);
+	static HRESULT CreateCLC(HWND hwndClui);
+	static HRESULT SnappingToEdge(HWND hCluiWnd, WINDOWPOS * lpWindowPos);
 
 private:
-    HRESULT LoadUserDll();
+    HRESULT LoadDllsRuntime();
     HRESULT RegisterAvatarMenu();  // TODO move to CLC class
-    HWND    CreateCLCWindow(const HWND parent);
+    HRESULT CreateCLCWindow(const HWND parent);
     HRESULT CreateUIFrames();
     
-
+protected:
+	HMODULE m_hDwmapiDll;
     HMODULE m_hUserDll;
 };
 

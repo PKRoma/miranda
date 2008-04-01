@@ -316,6 +316,15 @@ void li_SortList(SortedList *pList, FSortFunc pSortFunct);
 #endif
 
 
+template <class T> class INIT : public T
+{
+public:
+	INIT()
+	{
+		memset(this, 0, sizeof(T));
+		this->cbSize=sizeof(T);
+	}
+};
 
 #ifdef __cplusplus
 const ROWCELL * rowAddCell(ROWCELL* &, int );

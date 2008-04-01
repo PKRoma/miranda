@@ -45,6 +45,7 @@ typedef struct tagCLUIDATA
 	BOOL	fSortNoOfflineBottom;
 	BOOL  fAutoSize;
 	BOOL	fAeroGlass;
+	HRGN  hAeroGlassRgn;
 
 	BOOL	mutexPreventDockMoving;
 	BOOL    mutexOnEdgeSizing;
