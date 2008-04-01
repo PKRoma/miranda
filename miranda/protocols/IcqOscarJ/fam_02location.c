@@ -40,7 +40,7 @@
 static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -237,6 +237,7 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         oscar_tlv_chain* pChain;
         oscar_tlv* pTLV;
         BYTE *tmp;
+        WORD wClass;
         WORD wVersion = 0;
         DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
         DWORD dwOnlineSince;
@@ -257,6 +258,9 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         // Get general chain
         if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
           return;
+
+        // Get Class word
+        wClass = getWordFromChain(pChain, 0x01, 1);
 
         if (dwUIN)
         { // Get DC info TLV
@@ -289,32 +293,35 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 
         wLen -= (buf - tmp);
 
-        // Get extra chain
-        if (pChain = readIntoTLVChain(&buf, wLen, 2))
+        if (wLen)
         {
-          pTLV = getTLV(pChain, 0x05, 1);
-          if (pTLV && (pTLV->wLen > 0))
+          // Get extra chain
+          if (pChain = readIntoTLVChain(&buf, wLen, 2))
           {
-            capBuf = pTLV->pData;
-            capLen = pTLV->wLen;
+            pTLV = getTLV(pChain, 0x05, 1);
+            if (pTLV && (pTLV->wLen > 0))
+            {
+              capBuf = pTLV->pData;
+              capLen = pTLV->wLen;
+            }
           }
-        }
-        szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+          szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
 
-        // Free TLV chain
-        disposeChain(&pChain);
+          // Free TLV chain
+          disposeChain(&pChain);
 
-        if (szClient == cliSpamBot)
-        {
-          if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-          { // kill spammer
-            icq_DequeueUser(dwUIN);
-            AddToSpammerList(dwUIN);
-            if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-              ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
-            CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+          if (szClient == cliSpamBot)
+          {
+            if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+            { // kill spammer
+              icq_DequeueUser(dwUIN);
+              AddToSpammerList(dwUIN);
+              if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
+                ShowPopUpMsg(hContact, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+              CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
-            NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
+              NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
+            }
           }
         }
       }

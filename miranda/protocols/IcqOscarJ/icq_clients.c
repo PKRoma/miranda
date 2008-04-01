@@ -167,6 +167,7 @@ const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capYapp      = {'Y', 'a', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
+const capstr capDigsbyBeta= {0x09, 0x46, 0x01, 0x05, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x45, 0x53, 0x54, 0x00};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
@@ -206,7 +207,7 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
   LPSTR szClient = NULL;
   int bMirandaIM = FALSE;
@@ -665,6 +666,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         strncat(szClientBuf, (*capId) + 8, 5);
         szClient = szClientBuf;
       }
+      else if (MatchCap(caps, wLen, &capDigsbyBeta, 0x10))
+      { // http://www.digsby.com - probably by mistake (feature detection as well)
+        szClient = "Digsby";
+      }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -796,7 +801,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           {
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
               szClient = "Icq2Go! (Java)";
-            else if (bDirectFlag == 0x04)
+            else if (wUserClass & CLASS_WIRELESS)
               szClient = "Pocket Web 1&1";
             else
               szClient = "Icq2Go!";
@@ -845,6 +850,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "Agile Messenger"; // Smartphone 2002
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_OSCAR_FILE) && MatchCap(caps, wLen, &capAimFileShare, 0x10))
               szClient = "Slick"; // http://lonelycatgames.com/?app=slick
+            else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_OSCAR_FILE | CAPF_CONTACTS) && MatchCap(caps, wLen, &capAimFileShare, 0x10) && MatchCap(caps, wLen, &capAimIcon, 0x10))
+              szClient = "Digsby"; // http://www.digsby.com
           }
         }
       }
@@ -893,6 +900,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         else if (MatchCap(caps, wLen, &capNaim, 0x8))
         {
           szClient = "naim";
+        }
+        else if (MatchCap(caps, wLen, &capDigsbyBeta, 0x10))
+        { // http://www.digsby.com
+          szClient = "Digsby";
         }
         else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
           szClient = "Meebo";

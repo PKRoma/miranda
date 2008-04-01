@@ -2458,6 +2458,7 @@ static void oft_sendPeerInit(oscar_connection *oc)
   }
   else
   {
+    BYTE *pwsThisFileBuf;
     ft->wEncoding = 2; // ucs-2
     pwsThisFile = make_unicode_string(pszThisFileName);
     SAFE_FREE(&pszThisFileName);
@@ -2465,7 +2466,8 @@ static void oft_sendPeerInit(oscar_connection *oc)
     if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
     ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
     // convert to LE ordered string
-    unpackWideString((char**)&pwsThisFile, (wchar_t*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(wchar_t)));
+    pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address! 
+    unpackWideString(&pwsThisFileBuf, (wchar_t*)ft->rawFileName, (WORD)(wcslen(pwsThisFile) * sizeof(wchar_t)));
     SAFE_FREE(&pwsThisFile);
   }
   ft->wFilesLeft = (WORD)(ft->wFilesCount - ft->iCurrentFile);
