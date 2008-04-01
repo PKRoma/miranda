@@ -361,7 +361,7 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="icqoscar.h"
-				AssemblerListingLocation=""
+				AssemblerOutput="4"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"

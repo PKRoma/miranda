@@ -252,8 +252,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib"
 				OutputFile="$(OutDir)/clist_classic.dll"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"

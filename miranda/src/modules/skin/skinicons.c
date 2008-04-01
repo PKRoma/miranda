@@ -232,7 +232,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 			// format: core_status_%proto%statusindex
 			strcpy(iconName, statusIconsFmt);
 			strcat(iconName, accounts.items[0]->szModuleName);
-			itoa(statusIndx, iconName + strlen(iconName), 10);
+			_itoa(statusIndx, iconName + strlen(iconName), 10);
 
 			hIcon = IcoLib_GetIcon( iconName );
 			if ( hIcon )
@@ -242,7 +242,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 		// format: core_status_%s%d
 		strcpy(iconName, statusIconsFmt);
 		strcat(iconName, GLOBAL_PROTO_NAME);
-		itoa(statusIndx, iconName + strlen(iconName), 10);
+		_itoa(statusIndx, iconName + strlen(iconName), 10);
 		return IcoLib_GetIcon( iconName );
 	}
 
@@ -340,7 +340,7 @@ HICON LoadSkinIcon( int idx )
 		if ( idx == mainIcons[i].id ) {
 			char iconName[64];
 			strcpy(iconName, mainIconsFmt);
-			itoa(i, iconName + strlen(iconName), 10);
+			_itoa(i, iconName + strlen(iconName), 10);
 			return IcoLib_GetIcon( iconName );
 	}	}
 
@@ -368,10 +368,10 @@ static void convertOneProtocol( char* moduleName, char* iconName )
 	int i;
 
 	for ( i = 0; i < SIZEOF(statusIcons); i++ ) {
-		itoa( statusIcons[i].id, pm, 10 );
+		_itoa( statusIcons[i].id, pm, 10 );
 
 		if ( !DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ) ) {
-			itoa( i, pi, 10 );
+			_itoa( i, pi, 10 );
 
 			DBWriteContactSettingTString( NULL, "SkinIcons", iconName, dbv.ptszVal );
 			DBFreeVariant( &dbv );
@@ -400,12 +400,12 @@ int LoadSkinIcons(void)
 	//  Perform "1st-time running import"
 
 	for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
-		itoa( mainIcons[i].id, moduleName, 10 );
+		_itoa( mainIcons[i].id, moduleName, 10 );
 		if ( DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ))
 			break;
 
 		strcpy(iconName, mainIconsFmt);
-		itoa(i, iconName + strlen(iconName), 10);
+		_itoa(i, iconName + strlen(iconName), 10);
 
 		DBWriteContactSettingTString( NULL, "SkinIcons", iconName, dbv.ptszVal );
 		DBFreeVariant( &dbv );
@@ -417,7 +417,7 @@ int LoadSkinIcons(void)
 		// get the next protocol name
 		moduleName[0] = 'p';
 		moduleName[1] = 0;
-		itoa( j++, moduleName+1, 100 );
+		_itoa( j++, moduleName+1, 100 );
 		if ( DBGetContactSettingTString( NULL, "Icons", moduleName, &dbv ))
 			break;
 
@@ -452,7 +452,7 @@ int LoadSkinIcons(void)
 
 	iconNameSuffIndx = strlen(iconName);
 	for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
-		itoa(i, iconName + iconNameSuffIndx, 10);
+		_itoa(i, iconName + iconNameSuffIndx, 10);
 		sid.pszName = iconName;
 		sid.pszDescription = mainIcons[i].description;
 		sid.iDefaultIndex = mainIcons[i].resource_id;
@@ -468,7 +468,7 @@ int LoadSkinIcons(void)
 	strcpy(iconName, "core_status_" GLOBAL_PROTO_NAME);
 	iconNameSuffIndx = strlen(iconName);
 	for ( i = 0; i < SIZEOF(statusIcons); i++ ) {
-		itoa(i, iconName + iconNameSuffIndx, 10);
+		_itoa(i, iconName + iconNameSuffIndx, 10);
 		sid.pszName = iconName;
 		sid.pszDescription = statusIcons[i].description;
 		sid.iDefaultIndex = statusIcons[i].resource_id;

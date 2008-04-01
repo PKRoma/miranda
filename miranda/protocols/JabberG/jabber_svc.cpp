@@ -104,7 +104,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 	GetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
 	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
 
-	if ( ::access( AI->filename, 0 ) == 0 ) {
+	if ( ::_access( AI->filename, 0 ) == 0 ) {
 		char szSavedHash[ 256 ];
 		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash )) {
 			if ( !strcmp( szSavedHash, szHashValue )) {
@@ -261,19 +261,19 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 		SendPresence( m_iDesiredStatus, false );
 	}
 	else {
-		int fileIn = open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+		int fileIn = _open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
 		if ( fileIn == -1 )
 			return 1;
 
-		long  dwPngSize = filelength( fileIn );
+		long  dwPngSize = _filelength( fileIn );
 		char* pResult = new char[ dwPngSize ];
 		if ( pResult == NULL ) {
-			close( fileIn );
+			_close( fileIn );
 			return 2;
 		}
 
-		read( fileIn, pResult, dwPngSize );
-		close( fileIn );
+		_read( fileIn, pResult, dwPngSize );
+		_close( fileIn );
 
 		mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
 		mir_sha1_ctx sha1ctx;

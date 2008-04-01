@@ -161,9 +161,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/IGNORE:4089 /filealign:512 "
-				AdditionalDependencies="comctl32.lib msimg32.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib msimg32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

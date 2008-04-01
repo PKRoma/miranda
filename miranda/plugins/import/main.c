@@ -318,7 +318,7 @@ HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting,
 {
 	HANDLE hContact;
 	char szid[ 40 ];
-	char* pszUserID = ( id->type == DBVT_DWORD ) ? ltoa( id->dVal, szid, 10 ) : id->pszVal;
+	char* pszUserID = ( id->type == DBVT_DWORD ) ? _ltoa( id->dVal, szid, 10 ) : id->pszVal;
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
 	if ( CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)pszProtoName) != 0) {
@@ -382,7 +382,7 @@ int GroupNameExists(const char* name)
 	int i;
 
 	for (i = 0; ; i++) {
-		itoa(i, idstr, 10);
+		_itoa(i, idstr, 10);
 		if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv))
 			break;
 
@@ -410,7 +410,7 @@ int CreateGroup(HWND hdlgProgress, BYTE type, const char* name)
 		int groupId;
 		char groupIdStr[11];
 		for (groupId = 0; ; groupId++) {
-			itoa(groupId, groupIdStr,10);
+			_itoa(groupId, groupIdStr,10);
 			if (DBGetContactSettingString(NULL, "CListGroups", groupIdStr, &dbv))
 				break;
 			DBFreeVariant(&dbv);

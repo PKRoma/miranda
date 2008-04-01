@@ -246,7 +246,9 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"
@@ -545,6 +547,9 @@
 			</File>
 			<File
 				RelativePath=".\msn_libstr.cpp">
+			</File>
+			<File
+				RelativePath=".\msn_links.cpp">
 			</File>
 			<File
 				RelativePath="msn_lists.cpp">

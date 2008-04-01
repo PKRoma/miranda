@@ -246,7 +246,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib msimg32.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib msimg32.lib shlwapi.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

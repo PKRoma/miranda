@@ -214,7 +214,7 @@ void CJabberProto::OnIqRequestAvatar( XmlNode* node, void* userdata, CJabberIqIn
 	if ( in == NULL )
 		return;
 
-	long bytes = filelength( fileno( in ));
+	long bytes = _filelength( _fileno( in ));
 	char* buffer = ( char* )mir_alloc( bytes*4/3 + bytes + 1000 );
 	if ( buffer == NULL ) {
 		fclose( in );

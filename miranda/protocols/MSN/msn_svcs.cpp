@@ -678,7 +678,7 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		else
 		{
 			char *ext = strrchr(c_file.name, '.') + 1;
-			strlwr(ext);
+			_strlwr(ext);
 			
 			if (strcmp(ext, "png") == 0)
 			{

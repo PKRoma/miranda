@@ -158,7 +158,7 @@ void CJabberProto::OnIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
 			int Order=0;
 			for ( int i = 0; i < queryNode->numChild; i++ ) {
 				XmlNode* chNode=queryNode->child[i];
-				if (!strcmpi(chNode->name, "instructions") && chNode->text)
+				if (!_strcmpi(chNode->name, "instructions") && chNode->text)
 					SetDlgItemText(searchHandleDlg,IDC_INSTRUCTIONS,TranslateTS(chNode->text));
 				else if ( chNode->name ) {
 					Data *MyData=(Data*)malloc(sizeof(Data));

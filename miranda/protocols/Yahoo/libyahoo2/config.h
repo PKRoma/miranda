@@ -17,7 +17,7 @@
 
 #ifdef _MSC_VER
 
-#define strncasecmp strnicmp
+#define strncasecmp _strnicmp
 
 #define wsnprintf _wsnprintf
 #define snprintf _snprintf

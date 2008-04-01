@@ -1056,11 +1056,11 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
 
     GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgPressed = StatusItems[ID_EXTBKTBBUTTONSPRESSED - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgPressed = imgItem;
                 break;
             }
@@ -1070,11 +1070,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgNormal = StatusItems[ID_EXTBKTBBUTTONSNPRESSED - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgNormal = imgItem;
                 break;
             }
@@ -1084,11 +1084,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
     imgItem = g_ImageItems;
     GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "default"))
+    if(!_stricmp(szBuffer, "default"))
         tmpItem.imgHover = StatusItems[ID_EXTBKTBBUTTONMOUSEOVER - ID_STATUS_OFFLINE].imageItem;
     else {
         while(imgItem) {
-            if(!stricmp(imgItem->szName, szBuffer)) {
+            if(!_stricmp(imgItem->szName, szBuffer)) {
                 tmpItem.imgHover = imgItem;
                 break;
             }
@@ -1118,32 +1118,32 @@ static void BTN_ReadItem(char *itemName, char *file)
     tmpItem.uId = IDC_TBFIRSTUID - 1;
 
     GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
-    if(!stricmp(szBuffer, "service")) {
+    if(!_stricmp(szBuffer, "service")) {
         tmpItem.szService[0] = 0;
         GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None")) {
+        if(_stricmp(szBuffer, "None")) {
             mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
             tmpItem.dwFlags |= BUTTON_ISSERVICE;
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(!stricmp(szBuffer, "protoservice")) {
+    else if(!_stricmp(szBuffer, "protoservice")) {
         tmpItem.szService[0] = 0;
         GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None")) {
+        if(_stricmp(szBuffer, "None")) {
             mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
             tmpItem.dwFlags |= BUTTON_ISPROTOSERVICE;
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(!stricmp(szBuffer, "database")) {
+    else if(!_stricmp(szBuffer, "database")) {
         int n;
 
         GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None"))
+        if(_stricmp(szBuffer, "None"))
             mir_snprintf(tmpItem.szModule, 256, "%s", szBuffer);
         GetPrivateProfileStringA(itemName, "Setting", "None", szBuffer, 1000, file);
-        if(stricmp(szBuffer, "None"))
+        if(_stricmp(szBuffer, "None"))
             mir_snprintf(tmpItem.szSetting, 256, "%s", szBuffer);
         if(GetPrivateProfileIntA(itemName, "contact", 0, file) != 0)
            tmpItem.dwFlags |= BUTTON_DBACTIONONCONTACT;
@@ -1193,11 +1193,11 @@ static void BTN_ReadItem(char *itemName, char *file)
             tmpItem.uId = nextButtonID++;
         }
     }
-    else if(stricmp(szBuffer, "Custom")) {
+    else if(_stricmp(szBuffer, "Custom")) {
         int i = 0;
 
         while(top_buttons[i].id) {
-            if(!stricmp(top_buttons[i].szIcoLibIcon, szBuffer)) {
+            if(!_stricmp(top_buttons[i].szIcoLibIcon, szBuffer)) {
                 tmpItem.uId = top_buttons[i].id;
                 tmpItem.dwFlags |= BUTTON_ISINTERNAL;
                 break;
@@ -1206,7 +1206,7 @@ static void BTN_ReadItem(char *itemName, char *file)
         }
     }
     GetPrivateProfileStringA(itemName, "PassContact", "None", szBuffer, 1000, file);
-    if(stricmp(szBuffer, "None")) {
+    if(_stricmp(szBuffer, "None")) {
         if(szBuffer[0] == 'w' || szBuffer[0] == 'W')
             tmpItem.dwFlags |= BUTTON_PASSHCONTACTW;
         else if(szBuffer[0] == 'l' || szBuffer[0] == 'L')

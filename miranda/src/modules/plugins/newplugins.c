@@ -550,7 +550,7 @@ int UnloadPlugin( char* buf, int bufLen )
 	int i;
 	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
 		pluginEntry* p = pluginList.items[i];
-		if ( !stricmp( p->pluginname, buf )) {
+		if ( !_stricmp( p->pluginname, buf )) {
 			GetModuleFileNameA( p->bpi.hInst, buf, bufLen );
 			Plugin_Uninit( p );
 			return TRUE;

@@ -117,7 +117,7 @@ int url_to_host_port_path(const char *url, char *host, int *port, char *path)
 	 */
 
 	if(strstr(url, "http://") == url) {
-		urlcopy = strdup(url+7);
+		urlcopy = _strdup(url+7);
 	} else {
 		WARNING(("Weird url - unknown protocol: %s", url));
 		return 0;
@@ -302,7 +302,7 @@ static void yahoo_send_http_request(int id, char *host, int port, char *request,
 	struct callback_data *ccd=y_new0(struct callback_data, 1);
 	ccd->callback = callback;
 	ccd->id = id;
-	ccd->request = strdup(request);
+	ccd->request = _strdup(request);
 	ccd->user_data = data;
 	
 	YAHOO_CALLBACK(ext_yahoo_connect_async)(id, host, port, YAHOO_CONNECTION_FT, connect_complete, ccd);
@@ -424,7 +424,7 @@ static void yahoo_got_url_fd(int id, int fd, int error, void *data)
 						*tmp2 = '\0';
 				}
 
-				filename = strdup(tmp);
+				filename = _strdup(tmp);
 			}
 		}
 	}

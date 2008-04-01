@@ -185,7 +185,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib winmm.lib version.lib odbc32.lib odbccp32.lib"
+				AdditionalLibraryDirectories="../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
@@ -389,6 +391,9 @@
 			</File>
 			<File
 				RelativePath="..\include\m_system.h">
+			</File>
+			<File
+				RelativePath="..\include\m_system_cpp.h">
 			</File>
 			<File
 				RelativePath="..\include\m_url.h">

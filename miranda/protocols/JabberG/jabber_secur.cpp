@@ -104,7 +104,7 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 
 	char randomNumber[40], cnonce[40], tmpBuf[40];
 	srand( time(0));
-	itoa( rand(), randomNumber, 10 );
+	_itoa( rand(), randomNumber, 10 );
 
 	DWORD digest[4], hash1[4], hash2[4];
 	mir_md5_state_t ctx;

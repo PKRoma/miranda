@@ -532,19 +532,19 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	
 	/* Check Yahoo Games Message */
 	if (! DBGetContactSettingString(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
-		gm = strdup(dbv.pszVal);
+		gm = _strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 	
 	if (! DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv )) {
 		if (lstrlen(dbv.pszVal) >= 1)
-			sm = strdup(dbv.pszVal);
+			sm = _strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	} else {
 		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
+		if (sm) sm = _strdup(sm); /* we need this to go global FREE later */
 	}
 
 	l = 0;

@@ -193,7 +193,7 @@ bool p2p_IsDlFileOk(filetransfer* ft)
 		char *szSha = arrayToHex(sha, MIR_SHA1_HASH_SIZE);
 		char *szAvatarHash = MSN_GetAvatarHash(ft->p2p_object);
 
-		res = szAvatarHash != NULL && stricmp(szAvatarHash, szSha) == 0;
+		res = szAvatarHash != NULL && _stricmp(szAvatarHash, szSha) == 0;
 
 		mir_free(szSha);
 		mir_free(szAvatarHash);
@@ -991,7 +991,7 @@ static void sttInitFileTransfer(
 	{
 		case MSN_APPID_AVATAR:
 		case MSN_APPID_AVATAR2:
-			if ( !stricmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
+			if ( !_stricmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
 				DBVARIANT dbv;
 				bool pictmatch = !DBGetContactSettingString( NULL, msnProtocolName, "PictObject", &dbv );
 				if ( pictmatch ) 
@@ -1044,7 +1044,7 @@ static void sttInitFileTransfer(
 			break;
 
 		case MSN_APPID_FILE:
-			if ( !stricmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) 
+			if ( !_stricmp( szEufGuid, "{5D3E02AB-6190-11D3-BBBB-00C04F795683}" )) 
 			{
 				wchar_t* wszFileName = (( HFileContext* )szContext)->wszFileName;
 				{	for ( wchar_t* p = wszFileName; *p != 0; p++ )
@@ -1093,12 +1093,12 @@ static void sttInitFileTransfer(
 			break;
 
 		case MSN_APPID_WEBCAM:
-			if ( !stricmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
+			if ( !_stricmp( szEufGuid, "{4BD96FC0-AB17-4425-A14A-439185962DC8}" )) {
 				MSN_ShowPopup( ft->std.hContact,
 					TranslateT( "Contact tried to send its webcam data (currently not supported)" ), 
 					MSN_ALLOW_MSGBOX );
 			}
-			if ( !stricmp( szEufGuid, "{1C9AA97E-9C05-4583-A3BD-908A196F1E92}" )) {
+			if ( !_stricmp( szEufGuid, "{1C9AA97E-9C05-4583-A3BD-908A196F1E92}" )) {
 				MSN_ShowPopup( ft->std.hContact,
 					TranslateT( "Contact tried to view our webcam data (currently not supported)" ), 
 					MSN_ALLOW_MSGBOX );

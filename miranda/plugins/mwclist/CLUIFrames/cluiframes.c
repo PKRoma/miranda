@@ -559,7 +559,7 @@ int DBLoadFrameSettingsAtPos(int pos,int Frameid)
 	char buf[255];
 //	char *oldtb;
 
-	itoa(pos,sadd,10);
+	_itoa(pos,sadd,10);
 
 	//DBWriteContactSettingTString(0,CLUIFrameModule,strcat("Name",sadd),Frames[Frameid].tname);
 
@@ -592,7 +592,7 @@ int DBStoreFrameSettingsAtPos(int pos,int Frameid)
 	char sadd[16];
 	char buf[255];
 
-	itoa(pos,sadd,10);
+	_itoa(pos,sadd,10);
 
 	DBWriteContactSettingTString(0,CLUIFrameModule,AS(buf,"Name",sadd),Frames[Frameid].name);
 	//boolean

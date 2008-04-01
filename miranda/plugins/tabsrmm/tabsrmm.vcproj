@@ -106,6 +106,8 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="FALSE"
 				DelayLoadDLLs=""
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

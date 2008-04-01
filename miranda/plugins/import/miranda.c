@@ -1023,7 +1023,7 @@ HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact)
 
 	// Does the contact already exist?
 	if ( dbv.type == DBVT_DWORD ) {
-		pszUserName = ltoa( dbv.dVal, id, 10 );
+		pszUserName = _ltoa( dbv.dVal, id, 10 );
 		hContact = HContactFromNumericID( pszProtoName, pszUniqueSetting, dbv.dVal );
 	}
 	else {

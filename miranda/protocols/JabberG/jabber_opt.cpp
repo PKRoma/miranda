@@ -1405,7 +1405,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	if (!fp) return;
 	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 	char * buffer;
-	DWORD bufsize=filelength(fileno(fp));
+	DWORD bufsize=_filelength(_fileno(fp));
 	if (bufsize>0)
 		buffer=(char*)malloc(bufsize);
 	fread(buffer,1,bufsize,fp);

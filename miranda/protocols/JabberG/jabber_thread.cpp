@@ -187,7 +187,7 @@ static int xmpp_client_query( char* domain )
 void CJabberProto::xmlStreamInitialize(char *which)
 {
 	Log("Stream will be initialized %s",which);
-	xmlStreamToBeInitialized = strdup(which);
+	xmlStreamToBeInitialized = _strdup(which);
 }
 
 void CJabberProto::xmlStreamInitializeNow(ThreadData* info)

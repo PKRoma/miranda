@@ -163,7 +163,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="comctl32.lib version.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib comctl32.lib version.lib shlwapi.lib"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"

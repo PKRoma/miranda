@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on icqoscar8.dsp
 !IF "$(CFG)" == ""
 CFG=icqoscar8 - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to icqoscar8 - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "icqoscar8 - Win32 Release" && "$(CFG)" != "icqoscar8 - Win32 Debug" && "$(CFG)" != "icqoscar8 - Win32 Debug Unicode" && "$(CFG)" != "icqoscar8 - Win32 Release Unicode"
@@ -210,6 +210,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
 	"$(INTDIR)\askauthentication.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr" \
 	"$(INTDIR)\icq_opts.sbr" \
 	"$(INTDIR)\icq_popups.sbr" \
 	"$(INTDIR)\icq_uploadui.sbr" \
@@ -241,8 +242,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_firstrun.sbr"
+	"$(INTDIR)\utilities.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -279,6 +279,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\askauthentication.obj" \
+	"$(INTDIR)\icq_firstrun.obj" \
 	"$(INTDIR)\icq_opts.obj" \
 	"$(INTDIR)\icq_popups.obj" \
 	"$(INTDIR)\icq_uploadui.obj" \
@@ -311,8 +312,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_firstrun.obj"
+	"$(INTDIR)\resources.res"
 
 "..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -499,6 +499,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
 	"$(INTDIR)\askauthentication.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr" \
 	"$(INTDIR)\icq_opts.sbr" \
 	"$(INTDIR)\icq_popups.sbr" \
 	"$(INTDIR)\icq_uploadui.sbr" \
@@ -530,8 +531,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_firstrun.sbr"
+	"$(INTDIR)\utilities.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -568,6 +568,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\askauthentication.obj" \
+	"$(INTDIR)\icq_firstrun.obj" \
 	"$(INTDIR)\icq_opts.obj" \
 	"$(INTDIR)\icq_popups.obj" \
 	"$(INTDIR)\icq_uploadui.obj" \
@@ -600,8 +601,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_firstrun.obj"
+	"$(INTDIR)\resources.res"
 
 "..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -616,7 +616,7 @@ INTDIR=.\Debug_Unicode
 OutDir=.\Debug_Unicode
 # End Custom Macros
 
-ALL : "..\..\bin\debug\plugins\ICQ.dll" "$(OUTDIR)\icqoscar8.bsc"
+ALL : "..\..\bin\debug Unicode\plugins\ICQ.dll" "$(OUTDIR)\icqoscar8.bsc"
 
 
 CLEAN :
@@ -749,8 +749,8 @@ CLEAN :
 	-@erase "$(OUTDIR)\ICQ.map"
 	-@erase "$(OUTDIR)\ICQ.pdb"
 	-@erase "$(OUTDIR)\icqoscar8.bsc"
-	-@erase "..\..\bin\debug\plugins\ICQ.dll"
-	-@erase "..\..\bin\debug\plugins\ICQ.ilk"
+	-@erase "..\..\bin\debug Unicode\plugins\ICQ.dll"
+	-@erase "..\..\bin\debug Unicode\plugins\ICQ.ilk"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -788,6 +788,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
 	"$(INTDIR)\askauthentication.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr" \
 	"$(INTDIR)\icq_opts.sbr" \
 	"$(INTDIR)\icq_popups.sbr" \
 	"$(INTDIR)\icq_uploadui.sbr" \
@@ -819,8 +820,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_firstrun.sbr"
+	"$(INTDIR)\utilities.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -828,7 +828,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /incremental:yes /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /debugtype:both /machine:I386 /out:"../../bin/debug Unicode/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -857,6 +857,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\askauthentication.obj" \
+	"$(INTDIR)\icq_firstrun.obj" \
 	"$(INTDIR)\icq_opts.obj" \
 	"$(INTDIR)\icq_popups.obj" \
 	"$(INTDIR)\icq_uploadui.obj" \
@@ -889,10 +890,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_firstrun.obj"
+	"$(INTDIR)\resources.res"
 
-"..\..\bin\debug\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\debug Unicode\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
@@ -905,7 +905,7 @@ INTDIR=.\Release_Unicode
 OutDir=.\Release_Unicode
 # End Custom Macros
 
-ALL : "..\..\bin\release\plugins\ICQ.dll" "$(OUTDIR)\icqoscar8.bsc"
+ALL : "..\..\bin\release unicode\plugins\ICQ.dll" "$(OUTDIR)\icqoscar8.bsc"
 
 
 CLEAN :
@@ -1038,7 +1038,7 @@ CLEAN :
 	-@erase "$(OUTDIR)\ICQ.map"
 	-@erase "$(OUTDIR)\ICQ.pdb"
 	-@erase "$(OUTDIR)\icqoscar8.bsc"
-	-@erase "..\..\bin\release\plugins\ICQ.dll"
+	-@erase "..\..\bin\release unicode\plugins\ICQ.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -1076,6 +1076,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\init.sbr" \
 	"$(INTDIR)\log.sbr" \
 	"$(INTDIR)\askauthentication.sbr" \
+	"$(INTDIR)\icq_firstrun.sbr" \
 	"$(INTDIR)\icq_opts.sbr" \
 	"$(INTDIR)\icq_popups.sbr" \
 	"$(INTDIR)\icq_uploadui.sbr" \
@@ -1107,8 +1108,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\oscar_filetransfer.sbr" \
 	"$(INTDIR)\stdpackets.sbr" \
 	"$(INTDIR)\tlv.sbr" \
-	"$(INTDIR)\utilities.sbr" \
-	"$(INTDIR)\icq_firstrun.sbr"
+	"$(INTDIR)\utilities.sbr"
 
 "$(OUTDIR)\icqoscar8.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1116,7 +1116,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\ICQ.pdb" /map:"$(INTDIR)\ICQ.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/ICQ.dll" /implib:"$(OUTDIR)\ICQ.lib" /ALIGN:4096 /ignore:4108
 LINK32_OBJS= \
 	"$(INTDIR)\chan_01login.obj" \
 	"$(INTDIR)\chan_02data.obj" \
@@ -1145,6 +1145,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\log.obj" \
 	"$(INTDIR)\askauthentication.obj" \
+	"$(INTDIR)\icq_firstrun.obj" \
 	"$(INTDIR)\icq_opts.obj" \
 	"$(INTDIR)\icq_popups.obj" \
 	"$(INTDIR)\icq_uploadui.obj" \
@@ -1177,10 +1178,9 @@ LINK32_OBJS= \
 	"$(INTDIR)\stdpackets.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utilities.obj" \
-	"$(INTDIR)\resources.res" \
-	"$(INTDIR)\icq_firstrun.obj"
+	"$(INTDIR)\resources.res"
 
-"..\..\bin\release\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+"..\..\bin\release unicode\plugins\ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<

@@ -247,7 +247,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			struct LangPackEntry* E = &langPack.entry[langPack.entryCount-1];
 
 			if(E->local==NULL) {
-				E->local = strdup(line);
+				E->local = _strdup(line);
 				{
 					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
 					E->wlocal = (wchar_t *)malloc((iNeeded+1) * sizeof(wchar_t));

@@ -257,7 +257,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	char sizeBuf[64];
 	LVITEMA item;
 	int iItem=0;
-	struct stat statbuf;
+	struct _stat statbuf;
 	int bFileExists = FALSE;
 	char * p = strrchr(profile, '.');
 	strcpy(sizeBuf, "0 KB");
@@ -270,7 +270,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 	{
 		FILE * fp = fopen(fullpath, "r+");
 		item.iImage = fp != NULL ? 0 : 1;
-		if ( stat(fullpath, &statbuf) == 0) {
+		if ( _stat(fullpath, &statbuf) == 0) {
 			if ( statbuf.st_size > 1000000 ) {
 				mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%.3lf", (double)statbuf.st_size / 1048576.0 );
 				strcpy( sizeBuf+5, " MB" );

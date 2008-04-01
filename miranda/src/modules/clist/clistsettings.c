@@ -232,12 +232,12 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 		if (ci.type == CNFT_DWORD) {
 			if (cacheEntry == NULL) {
 				buffer = ( char* )mir_alloc(15);
-				ltoa(ci.dVal, buffer, 10 );
+				_ltoa(ci.dVal, buffer, 10 );
 				return (int) buffer;
 			}
 			else {
 				buffer = ( char* )mir_alloc(15);
-				ltoa(ci.dVal, buffer, 10 );
+				_ltoa(ci.dVal, buffer, 10 );
 				#if defined( _UNICODE )
 					cacheEntry->szName = buffer;
 					cacheEntry->name = a2u( buffer );

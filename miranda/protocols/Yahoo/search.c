@@ -102,7 +102,7 @@ void ext_yahoo_got_search_result(int id, int found, int start, int total, YList 
 				psr.firstName = yct->gender;
 			
 			if (yct->age > 0) {
-				itoa(yct->age, c,10);
+				_itoa(yct->age, c,10);
 				psr.lastName = (char *)c;
 			}
 			

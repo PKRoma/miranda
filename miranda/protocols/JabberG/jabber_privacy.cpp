@@ -1386,7 +1386,7 @@ bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 
 	bool result = true;
 
-	itoa((int)hGroup-1, idstr, 10);
+	_itoa((int)hGroup-1, idstr, 10);
 
 	if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		result = false;
@@ -1405,7 +1405,7 @@ HANDLE CJabberDlgPrivacyLists::CListFindGroupByName(TCHAR *name)
 
 	for (int i= 0; !hGroup; ++i)
 	{
-		itoa(i, idstr, 10);
+		_itoa(i, idstr, 10);
 
 		if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 			break;
@@ -1614,7 +1614,7 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	for (int iGroup = 1; ; ++iGroup)
 	{
 		char idstr[33];
-		itoa(iGroup-1, idstr, 10);
+		_itoa(iGroup-1, idstr, 10);
 		DBVARIANT dbv;
 		if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		{

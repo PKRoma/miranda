@@ -225,6 +225,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
+				AdditionalDependencies="vc7to6.lib "
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				OptimizeReferences="2"

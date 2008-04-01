@@ -171,7 +171,7 @@ int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char
 			ppd.lchIcon = LoadIconEx( "calendar" );
 		}
 		
-		ppd.PluginData =  (void *)strdup( szURL );
+		ppd.PluginData =  (void *)_strdup( szURL );
 	} else {
 		ppd.lchIcon = LoadIconEx( "yahoo" );
 	}

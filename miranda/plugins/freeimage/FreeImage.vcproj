@@ -43,6 +43,7 @@
 				OutputFile="$(OutDir)/advaimg.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"

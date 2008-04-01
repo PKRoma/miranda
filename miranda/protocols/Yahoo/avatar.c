@@ -126,7 +126,7 @@ void YAHOO_SendAvatar(const char *szFile)
 	}
 
 	sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
-	sf->filename = strdup(szFile);
+	sf->filename = _strdup(szFile);
 	sf->cancel = 0;
 	sf->fsize = statbuf.st_size;
 	
@@ -786,7 +786,7 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
 		if (YAHOO_GetDword("AvatarHash", 0)){
 			
 			if (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarFile", &dbv)){
-				if (access(dbv.pszVal, 0) == 0){
+				if (_access(dbv.pszVal, 0) == 0){
 					strncpy(buffer, dbv.pszVal, size-1);
 					buffer[size-1] = '\0';
 

@@ -82,7 +82,7 @@ static void JabberContactListCreateClistGroup( TCHAR* groupName )
 	DBVARIANT dbv;
 
 	for ( i=0;;i++ ) {
-		itoa( i, str, 10 );
+		_itoa( i, str, 10 );
 		if ( DBGetContactSettingTString( NULL, "CListGroups", str, &dbv ))
 			break;
 		TCHAR* name = dbv.ptszVal;
@@ -309,7 +309,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 			str[ sizeof(str)-1 ] = 0;
 			JFreeVariant( &dbv );
 		}
-		else ltoa(( long )hContact, str, 10 );
+		else _ltoa(( long )hContact, str, 10 );
 
 		char* hash = JabberSha1( str );
 		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );
