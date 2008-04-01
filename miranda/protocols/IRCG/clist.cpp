@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-BOOL CIrcProto::CList_AddDCCChat(CMString name, CMString hostmask, unsigned long adr, int port) 
+BOOL CIrcProto::CList_AddDCCChat(const CMString& name, const CMString& hostmask, unsigned long adr, int port) 
 {
 	HANDLE hContact;
 	HANDLE hc;

@@ -1,7 +1,7 @@
 #include "irc.h"
 #include "MString.h"
 
-CNilMStringData irc::CMBaseString::m_nil;
+CNilMStringData CMBaseString::m_nil;
 
 CMStringData* CMBaseString::Allocate( int nChars, int nCharSize )
 {
@@ -46,7 +46,7 @@ CMStringData* CMBaseString::GetNilString()
 	return &m_nil;
 }
 
-void* CMStringData::data() throw()
+void* CMStringData::data()
 {
 	return (this + 1);
 }

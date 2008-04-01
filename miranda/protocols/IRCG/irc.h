@@ -111,7 +111,7 @@ struct _A2T
 		{}
 
 	_A2T( const String& s ) :
-		buf( mir_a2t( s.c_str() ))
+		buf( mir_a2t( s ))
 		{}
 
 	~_A2T()
@@ -140,7 +140,7 @@ struct _T2A
 		{}
 
 	_T2A( const CMString& s ) :
-		buf( mir_t2a(s.c_str()))
+		buf( mir_t2a( s ))
 		{}
 
 	~_T2A()
@@ -462,7 +462,7 @@ struct CIrcProto : public PROTO_INTERFACE
 
 	bool   CList_AddEvent(struct CONTACT * user, HICON Icon, HANDLE event, const char * tooltip, int type ) ;
 	HANDLE CList_FindContact (struct CONTACT * user);
-	BOOL   CList_AddDCCChat(CMString name, CMString hostmask, unsigned long adr, int port) ;
+	BOOL   CList_AddDCCChat(const CMString& name, const CMString& hostmask, unsigned long adr, int port) ;
 
 	//commandmonitor.cpp
 	UINT_PTR IdentTimer, InitTimer, KeepAliveTimer, OnlineNotifTimer, OnlineNotifTimer3;	
@@ -472,7 +472,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	int  DoPerform(const char* event);
 
 	bool AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
-	int  IsIgnored(CMString nick, CMString address, CMString host, char type) ;
+	int  IsIgnored(const CMString& nick, const CMString& address, const CMString& host, char type) ;
 	int  IsIgnored(CMString user, char type);
 	bool RemoveIgnore(const TCHAR* mask) ;
 
@@ -480,7 +480,7 @@ struct CIrcProto : public PROTO_INTERFACE
 	CMString DoAlias( const TCHAR *text, TCHAR *window);
 	BOOL    DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContact );
 	CMString DoIdentifiers( CMString text, const TCHAR* window );
-	CMString FormatMsg(CMString text);
+	void    FormatMsg(CMString& text);
 	bool    PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
 	bool    PostIrcMessage( const TCHAR* fmt, ...);
 
@@ -741,20 +741,20 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 extern BOOL bChatInstalled, m_bMbotInstalled;
 
 //tools.cpp
-int      WCCmp(const TCHAR* wild, const TCHAR* string);
-char*    IrcLoadFile(char * szPath);
-CMString  GetWord(const TCHAR* text, int index);
-CMString& ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
-TCHAR*   GetWordAddress(const TCHAR* text, int index);
-void     RemoveLinebreaks( CMString& Message );
-TCHAR*   my_strstri(const TCHAR *s1, const TCHAR *s2) ;
-TCHAR*   DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
-char*    rtrim( char *string );
+int       __stdcall WCCmp(const TCHAR* wild, const TCHAR* string);
+char*     __stdcall IrcLoadFile(char * szPath);
+CMString  __stdcall GetWord(const TCHAR* text, int index);
+CMString& __stdcall ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
+TCHAR*    __stdcall GetWordAddress(const TCHAR* text, int index);
+void      __stdcall RemoveLinebreaks( CMString& Message );
+TCHAR*    __stdcall my_strstri(const TCHAR *s1, const TCHAR *s2) ;
+TCHAR*    __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
+char*     __stdcall rtrim( char *string );
 
 #if defined( _UNICODE )
-String& ReplaceString (String& text, const char* replaceme, const char* newword);
-String  GetWord(const char* text, int index);
-char*   GetWordAddress(const char* text, int index);
+String&   __stdcall ReplaceString (String& text, const char* replaceme, const char* newword);
+String    __stdcall GetWord(const char* text, int index);
+char*     __stdcall GetWordAddress(const char* text, int index);
 #endif
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)

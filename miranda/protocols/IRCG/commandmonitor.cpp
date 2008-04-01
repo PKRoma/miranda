@@ -2485,7 +2485,7 @@ int CIrcProto::DoPerform( const char* event )
 	return 0;
 }
 
-int CIrcProto::IsIgnored( CMString nick, CMString address, CMString host, char type) 
+int CIrcProto::IsIgnored( const CMString& nick, const CMString& address, const CMString& host, char type) 
 { 
 	return IsIgnored( nick + _T("!") + address + _T("@") + host, type );
 }

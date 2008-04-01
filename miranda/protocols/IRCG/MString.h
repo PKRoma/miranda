@@ -406,7 +406,7 @@ public:
 		}
 	}
 public:
-	friend CMSimpleStringT operator+(const CMSimpleStringT& str1, const CMSimpleStringT& str2)
+	friend CMSimpleStringT __stdcall operator+(const CMSimpleStringT& str1, const CMSimpleStringT& str2)
 	{
 		CMSimpleStringT s;
 
@@ -415,7 +415,7 @@ public:
 		return s;
 	}
 
-	friend CMSimpleStringT operator+(const CMSimpleStringT& str1, PCXSTR psz2)
+	friend CMSimpleStringT __stdcall operator+(const CMSimpleStringT& str1, PCXSTR psz2)
 	{
 		CMSimpleStringT s;
 
@@ -424,7 +424,7 @@ public:
 		return s;
 	}
 
-	friend CMSimpleStringT operator+(PCXSTR psz1, const CMSimpleStringT& str2)
+	friend CMSimpleStringT __stdcall operator+(PCXSTR psz1, const CMSimpleStringT& str2)
 	{
 		CMSimpleStringT s;
 
@@ -433,14 +433,14 @@ public:
 		return s;
 	}
 
-	static void __cdecl CopyChars(XCHAR* pchDest, const XCHAR* pchSrc, int nChars )
+	static void __stdcall CopyChars(XCHAR* pchDest, const XCHAR* pchSrc, int nChars )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
 		memcpy(pchDest, pchSrc, nChars * sizeof(XCHAR));
 #pragma warning (pop)
 	}
-	static void __cdecl CopyChars(XCHAR* pchDest, size_t nDestLen, const XCHAR* pchSrc, int nChars )
+	static void __stdcall CopyChars(XCHAR* pchDest, size_t nDestLen, const XCHAR* pchSrc, int nChars )
 	{
 		#if _MSC_VER >= 1400
 			memcpy_s(pchDest, nDestLen * sizeof(XCHAR), pchSrc, nChars * sizeof(XCHAR));
@@ -449,14 +449,14 @@ public:
 		#endif
 	}
 
-	static void __cdecl CopyCharsOverlapped(XCHAR* pchDest, const XCHAR* pchSrc, int nChars )
+	static void __stdcall CopyCharsOverlapped(XCHAR* pchDest, const XCHAR* pchSrc, int nChars )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
 		memmove(pchDest, pchSrc, nChars * sizeof(XCHAR));
 #pragma warning (pop)
 	}
-	static void __cdecl CopyCharsOverlapped(XCHAR* pchDest, size_t nDestLen, const XCHAR* pchSrc, int nChars)
+	static void __stdcall CopyCharsOverlapped(XCHAR* pchDest, size_t nDestLen, const XCHAR* pchSrc, int nChars)
 	{
 		#if _MSC_VER >= 1400
 			memmove_s(pchDest, nDestLen * sizeof(XCHAR), pchSrc, nChars * sizeof(XCHAR));
@@ -464,7 +464,7 @@ public:
 			memmove(pchDest, pchSrc, nDestLen * sizeof(XCHAR));
 		#endif
 	}
-	static int __cdecl StringLength(const char* psz)
+	static int __stdcall StringLength(const char* psz)
 	{
 		if (psz == NULL)
 		{
@@ -472,21 +472,21 @@ public:
 		}
 		return (int(strlen(psz)));
 	}
-	static int __cdecl StringLength(const wchar_t* psz)
+	static int __stdcall StringLength(const wchar_t* psz)
 	{
 		if (psz == NULL)
 			return 0;
 
 		return int(wcslen(psz));
 	}
-	static int __cdecl StringLengthN(const char* psz, size_t sizeInXChar )
+	static int __stdcall StringLengthN(const char* psz, size_t sizeInXChar )
 	{
 		if( psz == NULL )
 			return 0;
 
 		return int( strnlen( psz, sizeInXChar ));
 	}
-	static int __cdecl StringLengthN(const wchar_t* psz, size_t sizeInXChar )
+	static int __stdcall StringLengthN(const wchar_t* psz, size_t sizeInXChar )
 	{
 		if( psz == NULL )
 			return 0;
@@ -494,7 +494,7 @@ public:
 		return int( wcsnlen( psz, sizeInXChar ));
 	}
 protected:
-	static void __cdecl Concatenate(CMSimpleStringT& strResult, PCXSTR psz1, int nLength1, PCXSTR psz2, int nLength2)
+	static void __stdcall Concatenate(CMSimpleStringT& strResult, PCXSTR psz1, int nLength1, PCXSTR psz2, int nLength2)
 	{
 		int nNewLength = nLength1+nLength2;
 		PXSTR pszBuffer = strResult.GetBuffer(nNewLength);
@@ -578,7 +578,7 @@ private:
 		m_pszData[nLength] = 0;
 	}
 
-	static CMStringData* __cdecl CloneData(CMStringData* pData)
+	static CMStringData* __stdcall CloneData(CMStringData* pData)
 	{
 		CMStringData* pNewData = NULL;
 
@@ -601,79 +601,79 @@ template< typename _CharType = char >
 class ChTraitsCRT : public ChTraitsBase< _CharType >
 {
 public:
-	static char* __cdecl CharNext( const char* p )
+	static char* __stdcall CharNext( const char* p )
 	{
 		return reinterpret_cast< char* >( _mbsinc( reinterpret_cast< const unsigned char* >( p )));
 	}
 
-	static int __cdecl IsDigit( char ch )
+	static int __stdcall IsDigit( char ch )
 	{
 		return _ismbcdigit( ch );
 	}
 
-	static int __cdecl IsSpace( char ch )
+	static int __stdcall IsSpace( char ch )
 	{
 		return _ismbcspace( ch );
 	}
 
-	static int __cdecl StringCompare( LPCSTR pszA, LPCSTR pszB )
+	static int __stdcall StringCompare( LPCSTR pszA, LPCSTR pszB )
 	{
 		return _mbscmp( reinterpret_cast< const unsigned char* >( pszA ), reinterpret_cast< const unsigned char* >( pszB ));
 	}
 
-	static int __cdecl StringCompareIgnore( LPCSTR pszA, LPCSTR pszB )
+	static int __stdcall StringCompareIgnore( LPCSTR pszA, LPCSTR pszB )
 	{
 		return _mbsicmp( reinterpret_cast< const unsigned char* >( pszA ), reinterpret_cast< const unsigned char* >( pszB ));
 	}
 
-	static int __cdecl StringCollate( LPCSTR pszA, LPCSTR pszB )
+	static int __stdcall StringCollate( LPCSTR pszA, LPCSTR pszB )
 	{
 		return _mbscoll( reinterpret_cast< const unsigned char* >( pszA ), reinterpret_cast< const unsigned char* >( pszB ));
 	}
 
-	static int __cdecl StringCollateIgnore( LPCSTR pszA, LPCSTR pszB )
+	static int __stdcall StringCollateIgnore( LPCSTR pszA, LPCSTR pszB )
 	{
 		return _mbsicoll( reinterpret_cast< const unsigned char* >( pszA ), reinterpret_cast< const unsigned char* >( pszB ));
 	}
 
-	static LPCSTR __cdecl StringFindString( LPCSTR pszBlock, LPCSTR pszMatch )
+	static LPCSTR __stdcall StringFindString( LPCSTR pszBlock, LPCSTR pszMatch )
 	{
 		return reinterpret_cast< LPCSTR >( _mbsstr( reinterpret_cast< const unsigned char* >( pszBlock ),
 			reinterpret_cast< const unsigned char* >( pszMatch )));
 	}
 
-	static LPSTR __cdecl StringFindString( LPSTR pszBlock, LPCSTR pszMatch )
+	static LPSTR __stdcall StringFindString( LPSTR pszBlock, LPCSTR pszMatch )
 	{
 		return const_cast< LPSTR >( StringFindString( const_cast< LPCSTR >( pszBlock ), pszMatch ));
 	}
 
-	static LPCSTR __cdecl StringFindChar( LPCSTR pszBlock, char chMatch )
+	static LPCSTR __stdcall StringFindChar( LPCSTR pszBlock, char chMatch )
 	{
 		return reinterpret_cast< LPCSTR >( _mbschr( reinterpret_cast< const unsigned char* >( pszBlock ), (unsigned char)chMatch ));
 	}
 
-	static LPCSTR __cdecl StringFindCharRev( LPCSTR psz, char ch )
+	static LPCSTR __stdcall StringFindCharRev( LPCSTR psz, char ch )
 	{
 		return reinterpret_cast< LPCSTR >( _mbsrchr( reinterpret_cast< const unsigned char* >( psz ), (unsigned char)ch ));
 	}
 
-	static LPCSTR __cdecl StringScanSet( LPCSTR pszBlock, LPCSTR pszMatch )
+	static LPCSTR __stdcall StringScanSet( LPCSTR pszBlock, LPCSTR pszMatch )
 	{
 		return reinterpret_cast< LPCSTR >( _mbspbrk( reinterpret_cast< const unsigned char* >( pszBlock ),
 			reinterpret_cast< const unsigned char* >( pszMatch )));
 	}
 
-	static int __cdecl StringSpanIncluding( LPCSTR pszBlock, LPCSTR pszSet )
+	static int __stdcall StringSpanIncluding( LPCSTR pszBlock, LPCSTR pszSet )
 	{
 		return (int)_mbsspn( reinterpret_cast< const unsigned char* >( pszBlock ), reinterpret_cast< const unsigned char* >( pszSet ) );
 	}
 
-	static int __cdecl StringSpanExcluding( LPCSTR pszBlock, LPCSTR pszSet )
+	static int __stdcall StringSpanExcluding( LPCSTR pszBlock, LPCSTR pszSet )
 	{
 		return (int)_mbscspn( reinterpret_cast< const unsigned char* >( pszBlock ), reinterpret_cast< const unsigned char* >( pszSet ) );
 	}
 
-	static LPSTR __cdecl StringUppercase( LPSTR psz )
+	static LPSTR __stdcall StringUppercase( LPSTR psz )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
@@ -681,7 +681,7 @@ public:
 #pragma warning (pop)
 	}
 
-	static LPSTR __cdecl StringLowercase( LPSTR psz )
+	static LPSTR __stdcall StringLowercase( LPSTR psz )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
@@ -689,7 +689,7 @@ public:
 #pragma warning (pop)
 	}
 
-	static LPSTR __cdecl StringUppercase( LPSTR psz, size_t size )
+	static LPSTR __stdcall StringUppercase( LPSTR psz, size_t size )
 	{
 		#if _MSC_VER >= 1400
 			_mbsupr_s(reinterpret_cast< unsigned char* >( psz ), size);
@@ -699,7 +699,7 @@ public:
 		return psz;
 	}
 
-	static LPSTR __cdecl StringLowercase( LPSTR psz, size_t size )
+	static LPSTR __stdcall StringLowercase( LPSTR psz, size_t size )
 	{
 		#if _MSC_VER >= 1400
 			_mbslwr_s( reinterpret_cast< unsigned char* >( psz ), size );
@@ -709,17 +709,17 @@ public:
 		return psz;
 	}
 
-	static LPSTR __cdecl StringReverse( LPSTR psz )
+	static LPSTR __stdcall StringReverse( LPSTR psz )
 	{
 		return reinterpret_cast< LPSTR >( _mbsrev( reinterpret_cast< unsigned char* >( psz ) ) );
 	}
 
-	static int __cdecl GetFormattedLength( LPCSTR pszFormat, va_list args )
+	static int __stdcall GetFormattedLength( LPCSTR pszFormat, va_list args )
 	{
 		return _vscprintf( pszFormat, args );
 	}
 
-	static int __cdecl Format( LPSTR pszBuffer, LPCSTR pszFormat, va_list args )
+	static int __stdcall Format( LPSTR pszBuffer, LPCSTR pszFormat, va_list args )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
@@ -727,37 +727,37 @@ public:
 #pragma warning (pop)
 
 	}
-	static int __cdecl Format( LPSTR pszBuffer, size_t nlength, LPCSTR pszFormat, va_list args )
+	static int __stdcall Format( LPSTR pszBuffer, size_t nlength, LPCSTR pszFormat, va_list args )
 	{
 		return vsprintf_s( pszBuffer, nlength, pszFormat, args );
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCSTR pszSrc )
+	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc )
 	{
 		// Returns required buffer length in XCHARs
 		return int( strlen( pszSrc ) );
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCSTR pszSrc, int nLength )
+	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc, int nLength )
 	{
 		(void)pszSrc;
 		// Returns required buffer length in XCHARs
 		return nLength;
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCWSTR pszSource )
+	static int __stdcall GetBaseTypeLength( LPCWSTR pszSource )
 	{
 		// Returns required buffer length in XCHARs
 		return ::WideCharToMultiByte( _AtlGetConversionACP(), 0, pszSource, -1, NULL, 0, NULL, NULL )-1;
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCWSTR pszSource, int nLength )
+	static int __stdcall GetBaseTypeLength( LPCWSTR pszSource, int nLength )
 	{
 		// Returns required buffer length in XCHARs
 		return ::WideCharToMultiByte( _AtlGetConversionACP(), 0, pszSource, nLength, NULL, 0, NULL, NULL );
 	}
 
-	static void __cdecl ConvertToBaseType( LPSTR pszDest, int nDestLength, LPCSTR pszSrc, int nSrcLength = -1 )
+	static void __stdcall ConvertToBaseType( LPSTR pszDest, int nDestLength, LPCSTR pszSrc, int nSrcLength = -1 )
 	{
 		if (nSrcLength == -1) { nSrcLength=1 + GetBaseTypeLength(pszSrc); }
 		// nLen is in XCHARs
@@ -765,7 +765,7 @@ public:
 			pszSrc, nSrcLength*sizeof( char ) );
 	}
 
-	static void __cdecl ConvertToBaseType( LPSTR pszDest, int nDestLength, LPCWSTR pszSrc, int nSrcLength = -1)
+	static void __stdcall ConvertToBaseType( LPSTR pszDest, int nDestLength, LPCWSTR pszSrc, int nSrcLength = -1)
 	{
 		// nLen is in XCHARs
 		::WideCharToMultiByte( _AtlGetConversionACP(), 0, pszSrc, nSrcLength, pszDest, nDestLength, NULL, NULL );
@@ -800,13 +800,13 @@ public:
 		BOOL fSuccess=::OemToCharBuffA(pstrString, pstrString, dwSize);
 	}
 
-	static void __cdecl FloodCharacters( char ch, int nLength, char* pch )
+	static void __stdcall FloodCharacters( char ch, int nLength, char* pch )
 	{
 		// nLength is in XCHARs
 		memset( pch, ch, nLength );
 	}
 
-	static BSTR __cdecl AllocSysString( const char* pchData, int nDataLength )
+	static BSTR __stdcall AllocSysString( const char* pchData, int nDataLength )
 	{
 		int nLen = ::MultiByteToWideChar( _AtlGetConversionACP(), 0, pchData, nDataLength, NULL, NULL );
 		BSTR bstr = ::SysAllocStringLen( NULL, nLen );
@@ -816,7 +816,7 @@ public:
 		return bstr;
 	}
 
-	static BOOL __cdecl ReAllocSysString( const char* pchData, BSTR* pbstr, int nDataLength )
+	static BOOL __stdcall ReAllocSysString( const char* pchData, BSTR* pbstr, int nDataLength )
 	{
 		int nLen = ::MultiByteToWideChar( _AtlGetConversionACP(), 0, pchData, nDataLength, NULL, NULL );
 		BOOL bSuccess = ::SysReAllocStringLen( pbstr, NULL, nLen );
@@ -826,7 +826,7 @@ public:
 		return bSuccess;
 	}
 
-	//	static DWORD __cdecl _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
+	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
 	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPSTR pszBuffer,
 	//		DWORD nSize, va_list* pArguments )
 	//	{
@@ -834,31 +834,31 @@ public:
 	//			pszBuffer, nSize, pArguments );
 	//	}
 
-	static int __cdecl SafeStringLen( LPCSTR psz )
+	static int __stdcall SafeStringLen( LPCSTR psz )
 	{
 		// returns length in bytes
 		return (psz != NULL) ? int( strlen( psz ) ) : 0;
 	}
 
-	static int __cdecl SafeStringLen( LPCWSTR psz )
+	static int __stdcall SafeStringLen( LPCWSTR psz )
 	{
 		// returns length in wchar_ts
 		return (psz != NULL) ? int( wcslen( psz ) ) : 0;
 	}
 
-	static int __cdecl GetCharLen( const wchar_t* pch )
+	static int __stdcall GetCharLen( const wchar_t* pch )
 	{
 		// returns char length
 		return 1;
 	}
 
-	static int __cdecl GetCharLen( const char* pch )
+	static int __stdcall GetCharLen( const char* pch )
 	{
 		// returns char length
 		return int( _mbclen( reinterpret_cast< const unsigned char* >( pch ) ) );
 	}
 
-	static DWORD __cdecl GetEnvironmentVariable( LPCSTR pszVar, LPSTR pszBuffer, DWORD dwSize )
+	static DWORD __stdcall GetEnvironmentVariable( LPCSTR pszVar, LPSTR pszBuffer, DWORD dwSize )
 	{
 		return ::GetEnvironmentVariableA( pszVar, pszBuffer, dwSize );
 	}
@@ -868,83 +868,83 @@ public:
 template<>
 class ChTraitsCRT< wchar_t > : public ChTraitsBase< wchar_t >
 {
-	static DWORD __cdecl _GetEnvironmentVariableW( LPCWSTR pszName, LPWSTR pszBuffer, DWORD nSize )
+	static DWORD __stdcall _GetEnvironmentVariableW( LPCWSTR pszName, LPWSTR pszBuffer, DWORD nSize )
 	{
 		return ::GetEnvironmentVariableW( pszName, pszBuffer, nSize );
 	}
 
 public:
-	static LPWSTR __cdecl CharNext( LPCWSTR psz )
+	static LPWSTR __stdcall CharNext( LPCWSTR psz )
 	{
 		return const_cast< LPWSTR >( psz+1 );
 	}
 
-	static int __cdecl IsDigit( wchar_t ch )
+	static int __stdcall IsDigit( wchar_t ch )
 	{
 		return iswdigit( static_cast<unsigned short>(ch) );
 	}
 
-	static int __cdecl IsSpace( wchar_t ch )
+	static int __stdcall IsSpace( wchar_t ch )
 	{
 		return iswspace( static_cast<unsigned short>(ch) );
 	}
 
-	static int __cdecl StringCompare( LPCWSTR pszA, LPCWSTR pszB )
+	static int __stdcall StringCompare( LPCWSTR pszA, LPCWSTR pszB )
 	{
 		return wcscmp( pszA, pszB );
 	}
 
-	static int __cdecl StringCompareIgnore( LPCWSTR pszA, LPCWSTR pszB )
+	static int __stdcall StringCompareIgnore( LPCWSTR pszA, LPCWSTR pszB )
 	{
 		return _wcsicmp( pszA, pszB );
 	}
 
-	static int __cdecl StringCollate( LPCWSTR pszA, LPCWSTR pszB )
+	static int __stdcall StringCollate( LPCWSTR pszA, LPCWSTR pszB )
 	{
 		return wcscoll( pszA, pszB );
 	}
 
-	static int __cdecl StringCollateIgnore( LPCWSTR pszA, LPCWSTR pszB )
+	static int __stdcall StringCollateIgnore( LPCWSTR pszA, LPCWSTR pszB )
 	{
 		return _wcsicoll( pszA, pszB );
 	}
 
-	static LPCWSTR __cdecl StringFindString( LPCWSTR pszBlock, LPCWSTR pszMatch )
+	static LPCWSTR __stdcall StringFindString( LPCWSTR pszBlock, LPCWSTR pszMatch )
 	{
 		return wcsstr( pszBlock, pszMatch );
 	}
 
-	static LPWSTR __cdecl StringFindString( LPWSTR pszBlock, LPCWSTR pszMatch )
+	static LPWSTR __stdcall StringFindString( LPWSTR pszBlock, LPCWSTR pszMatch )
 	{
 		return const_cast< LPWSTR >( StringFindString( const_cast< LPCWSTR >( pszBlock ), pszMatch ));
 	}
 
-	static LPCWSTR __cdecl StringFindChar( LPCWSTR pszBlock, wchar_t chMatch )
+	static LPCWSTR __stdcall StringFindChar( LPCWSTR pszBlock, wchar_t chMatch )
 	{
 		return wcschr( pszBlock, chMatch );
 	}
 
-	static LPCWSTR __cdecl StringFindCharRev( LPCWSTR psz, wchar_t ch )
+	static LPCWSTR __stdcall StringFindCharRev( LPCWSTR psz, wchar_t ch )
 	{
 		return wcsrchr( psz, ch );
 	}
 
-	static LPCWSTR __cdecl StringScanSet( LPCWSTR pszBlock, LPCWSTR pszMatch )
+	static LPCWSTR __stdcall StringScanSet( LPCWSTR pszBlock, LPCWSTR pszMatch )
 	{
 		return wcspbrk( pszBlock, pszMatch );
 	}
 
-	static int __cdecl StringSpanIncluding( LPCWSTR pszBlock, LPCWSTR pszSet )
+	static int __stdcall StringSpanIncluding( LPCWSTR pszBlock, LPCWSTR pszSet )
 	{
 		return (int)wcsspn( pszBlock, pszSet );
 	}
 
-	static int __cdecl StringSpanExcluding( LPCWSTR pszBlock, LPCWSTR pszSet )
+	static int __stdcall StringSpanExcluding( LPCWSTR pszBlock, LPCWSTR pszSet )
 	{
 		return (int)wcscspn( pszBlock, pszSet );
 	}
 
-	static LPWSTR __cdecl StringUppercase( LPWSTR psz )
+	static LPWSTR __stdcall StringUppercase( LPWSTR psz )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
@@ -952,7 +952,7 @@ public:
 #pragma warning (pop)
 	}
 
-	static LPWSTR __cdecl StringLowercase( LPWSTR psz )
+	static LPWSTR __stdcall StringLowercase( LPWSTR psz )
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
@@ -960,36 +960,36 @@ public:
 #pragma warning (pop)
 	}
 
-	static LPWSTR __cdecl StringUppercase( LPWSTR psz, size_t size )
+	static LPWSTR __stdcall StringUppercase( LPWSTR psz, size_t size )
 	{
 		return _wcsupr( psz );
 	}
 
-	static LPWSTR __cdecl StringLowercase( LPWSTR psz, size_t size )
+	static LPWSTR __stdcall StringLowercase( LPWSTR psz, size_t size )
 	{
 		return _wcslwr( psz );
 	}
 
-	static LPWSTR __cdecl StringReverse( LPWSTR psz )
+	static LPWSTR __stdcall StringReverse( LPWSTR psz )
 	{
 		return _wcsrev( psz );
 	}
 
 	#if _MSC_VER >= 1300
-	static int __cdecl GetFormattedLength( LPCWSTR pszFormat, va_list args)
+	static int __stdcall GetFormattedLength( LPCWSTR pszFormat, va_list args)
 	{
 		return _vscwprintf( pszFormat, args );
 	}
 	#endif
 
-	static int __cdecl Format( LPWSTR pszBuffer, LPCWSTR pszFormat, va_list args)
+	static int __stdcall Format( LPWSTR pszBuffer, LPCWSTR pszFormat, va_list args)
 	{
 #pragma warning (push)
 #pragma warning(disable : 4996)
 		return vswprintf( pszBuffer, pszFormat, args );
 #pragma warning (pop)
 	}
-	static int __cdecl Format( LPWSTR pszBuffer, size_t nLength, LPCWSTR pszFormat, va_list args)
+	static int __stdcall Format( LPWSTR pszBuffer, size_t nLength, LPCWSTR pszFormat, va_list args)
 	{
 		#if _MSC_VER >= 1300
 			return vswprintf( pszBuffer, nLength, pszFormat, args );
@@ -998,38 +998,38 @@ public:
 		#endif
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCSTR pszSrc )
+	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc )
 	{
 		// Returns required buffer size in wchar_ts
 		return ::MultiByteToWideChar( CP_ACP, 0, pszSrc, -1, NULL, 0 )-1;
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCSTR pszSrc, int nLength )
+	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc, int nLength )
 	{
 		// Returns required buffer size in wchar_ts
 		return ::MultiByteToWideChar( CP_ACP, 0, pszSrc, nLength, NULL, 0 );
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCWSTR pszSrc )
+	static int __stdcall GetBaseTypeLength( LPCWSTR pszSrc )
 	{
 		// Returns required buffer size in wchar_ts
 		return (int)wcslen( pszSrc );
 	}
 
-	static int __cdecl GetBaseTypeLength( LPCWSTR pszSrc, int nLength )
+	static int __stdcall GetBaseTypeLength( LPCWSTR pszSrc, int nLength )
 	{
 		(void)pszSrc;
 		// Returns required buffer size in wchar_ts
 		return nLength;
 	}
 
-	static void __cdecl ConvertToBaseType( LPWSTR pszDest, int nDestLength, LPCSTR pszSrc, int nSrcLength = -1)
+	static void __stdcall ConvertToBaseType( LPWSTR pszDest, int nDestLength, LPCSTR pszSrc, int nSrcLength = -1)
 	{
 		// nLen is in wchar_ts
 		::MultiByteToWideChar( CP_ACP, 0, pszSrc, nSrcLength, pszDest, nDestLength );
 	}
 
-	static void __cdecl ConvertToBaseType( LPWSTR pszDest, int nDestLength, LPCWSTR pszSrc, int nSrcLength = -1 )
+	static void __stdcall ConvertToBaseType( LPWSTR pszDest, int nDestLength, LPCWSTR pszSrc, int nSrcLength = -1 )
 	{		
 		if (nSrcLength == -1) { nSrcLength=1 + GetBaseTypeLength(pszSrc); }
 		// nLen is in wchar_ts
@@ -1040,7 +1040,7 @@ public:
 		#endif
 	}
 
-	static void __cdecl FloodCharacters( wchar_t ch, int nLength, LPWSTR psz )
+	static void __stdcall FloodCharacters( wchar_t ch, int nLength, LPWSTR psz )
 	{
 		// nLength is in XCHARs
 		for( int i = 0; i < nLength; i++ )
@@ -1049,69 +1049,69 @@ public:
 		}
 	}
 
-	static BSTR __cdecl AllocSysString( const wchar_t* pchData, int nDataLength )
+	static BSTR __stdcall AllocSysString( const wchar_t* pchData, int nDataLength )
 	{
 		return ::SysAllocStringLen( pchData, nDataLength );
 	}
 
-	static BOOL __cdecl ReAllocSysString( const wchar_t* pchData, BSTR* pbstr, int nDataLength )
+	static BOOL __stdcall ReAllocSysString( const wchar_t* pchData, BSTR* pbstr, int nDataLength )
 	{
 		return ::SysReAllocStringLen( pbstr, pchData, nDataLength );
 	}
 
-	static int __cdecl SafeStringLen( LPCSTR psz )
+	static int __stdcall SafeStringLen( LPCSTR psz )
 	{
 		// returns length in bytes
 		return (psz != NULL) ? (int)strlen( psz ) : 0;
 	}
 
-	static int __cdecl SafeStringLen( LPCWSTR psz )
+	static int __stdcall SafeStringLen( LPCWSTR psz )
 	{
 		// returns length in wchar_ts
 		return (psz != NULL) ? (int)wcslen( psz ) : 0;
 	}
 
-	static int __cdecl GetCharLen( const wchar_t* pch )
+	static int __stdcall GetCharLen( const wchar_t* pch )
 	{
 		(void)pch;
 		// returns char length
 		return 1;
 	}
 
-	static int __cdecl GetCharLen( const char* pch )
+	static int __stdcall GetCharLen( const char* pch )
 	{
 		// returns char length
 		return (int)( _mbclen( reinterpret_cast< const unsigned char* >( pch ) ) );
 	}
 
-	static DWORD __cdecl GetEnvironmentVariable( LPCWSTR pszVar, LPWSTR pszBuffer, DWORD dwSize )
+	static DWORD __stdcall GetEnvironmentVariable( LPCWSTR pszVar, LPWSTR pszBuffer, DWORD dwSize )
 	{
 		return _GetEnvironmentVariableW( pszVar, pszBuffer, dwSize );
 	}
 
-	static void __cdecl ConvertToOem( LPWSTR /*psz*/ )
+	static void __stdcall ConvertToOem( LPWSTR /*psz*/ )
 	{
 		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
-	static void __cdecl ConvertToAnsi( LPWSTR /*psz*/ )
+	static void __stdcall ConvertToAnsi( LPWSTR /*psz*/ )
 	{
 		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
-	static void __cdecl ConvertToOem( LPWSTR /*psz*/, size_t )
+	static void __stdcall ConvertToOem( LPWSTR /*psz*/, size_t )
 	{
 		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
-	static void __cdecl ConvertToAnsi( LPWSTR /*psz*/, size_t ) 
+	static void __stdcall ConvertToAnsi( LPWSTR /*psz*/, size_t ) 
 	{
 		//		ATLENSURE(FALSE); // Unsupported Feature 
 	}
 
 #ifdef _UNICODE
 public:
-	//	static DWORD __cdecl _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
+	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD dwFlags, LPCVOID pSource,
 	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPWSTR pszBuffer,
 	//		DWORD nSize, va_list* pArguments )
 	//	{
@@ -1120,7 +1120,7 @@ public:
 	//	}
 
 #if defined(_AFX)
-	//	static DWORD __cdecl FormatMessage( DWORD dwFlags, LPCVOID pSource,
+	//	static DWORD __stdcall FormatMessage( DWORD dwFlags, LPCVOID pSource,
 	//		DWORD dwMessageID, DWORD dwLanguageID, _Out_cap_(nSize) LPWSTR pszBuffer,
 	//		DWORD nSize, va_list* pArguments )
 	//	{
@@ -1129,7 +1129,7 @@ public:
 #endif
 
 #else
-	//	static DWORD __cdecl _AFX_FUNCNAME(FormatMessage)( DWORD /*dwFlags*/, LPCVOID /*pSource*/,
+	//	static DWORD __stdcall _AFX_FUNCNAME(FormatMessage)( DWORD /*dwFlags*/, LPCVOID /*pSource*/,
 	//		DWORD /*dwMessageID*/, DWORD /*dwLanguageID*/, LPWSTR /*pszBuffer*/,
 	//		DWORD /*nSize*/, va_list* /*pArguments*/ )
 	//	{
@@ -1138,7 +1138,7 @@ public:
 	//	}
 
 	//#if defined(_AFX)
-	//	static DWORD __cdecl FormatMessage( DWORD dwFlags, LPCVOID pSource,
+	//	static DWORD __stdcall FormatMessage( DWORD dwFlags, LPCVOID pSource,
 	//		DWORD dwMessageID, DWORD dwLanguageID, LPWSTR pszBuffer,
 	//		DWORD nSize, va_list* pArguments )
 	//	{
@@ -1155,7 +1155,6 @@ class CMStringT : public CMSimpleStringT< BaseType >
 {
 public:
 	typedef CMSimpleStringT< BaseType> CThisSimpleString;
-	typedef StringTraits StrTraits;
 	typedef typename CThisSimpleString::XCHAR XCHAR;
 	typedef typename CThisSimpleString::PXSTR PXSTR;
 	typedef typename CThisSimpleString::PCXSTR PCXSTR;
@@ -1168,7 +1167,7 @@ public:
 	  {
 	  }
 
-	  static void __cdecl Construct( CMStringT* pString )
+	  static void __stdcall Construct( CMStringT* pString )
 	  {
 		  new( pString ) CMStringT;
 	  }
@@ -2054,16 +2053,16 @@ public:
 	  }
 
 	  // Format data using format string 'pszFormat'
-//	  void __cdecl Format( PCXSTR pszFormat, ... );
+//	  void __stdcall Format( PCXSTR pszFormat, ... );
 
 	  // Format data using format string loaded from resource 'nFormatID'
-//	  void __cdecl Format( UINT nFormatID, ... );
+//	  void __stdcall Format( UINT nFormatID, ... );
 
 	  // Append formatted data using format string loaded from resource 'nFormatID'
-//	  void __cdecl AppendFormat( UINT nFormatID, ... );
+//	  void __stdcall AppendFormat( UINT nFormatID, ... );
 
 	  // Append formatted data using format string 'pszFormat'
-//	  void __cdecl AppendFormat( PCXSTR pszFormat, ... );
+//	  void __stdcall AppendFormat( PCXSTR pszFormat, ... );
 	  void AppendFormatV( PCXSTR pszFormat, va_list args )
 	  {
 		  int nCurrentLength = GetLength();
@@ -2083,15 +2082,15 @@ public:
 	  }
 
 	  // Format a message using format string 'pszFormat'
-//	  void __cdecl _AFX_FUNCNAME(FormatMessage)( PCXSTR pszFormat, ... );
+//	  void __stdcall _AFX_FUNCNAME(FormatMessage)( PCXSTR pszFormat, ... );
 
 	  // Format a message using format string loaded from resource 'nFormatID'
-//	  void __cdecl _AFX_FUNCNAME(FormatMessage)( UINT nFormatID, ... );
+//	  void __stdcall _AFX_FUNCNAME(FormatMessage)( UINT nFormatID, ... );
 
 #if defined(_AFX)
-//	  void __cdecl FormatMessage( PCXSTR pszFormat, ... );
+//	  void __stdcall FormatMessage( PCXSTR pszFormat, ... );
 
-//	  void __cdecl FormatMessage( UINT nFormatID, ... );
+//	  void __stdcall FormatMessage( UINT nFormatID, ... );
 #endif
 
 	  // Format a message using format string 'pszFormat' and va_list
@@ -2190,7 +2189,7 @@ public:
 // 		  return TRUE );
 // 	  }
 
-	  friend CMStringT operator+( const CMStringT& str1, const CMStringT& str2 )
+	  friend CMStringT __stdcall operator+( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  CMStringT strResult;
 
@@ -2199,7 +2198,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( const CMStringT& str1, PCXSTR psz2 )
+	  friend CMStringT __stdcall operator+( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  CMStringT strResult;
 
@@ -2208,7 +2207,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( PCXSTR psz1, const CMStringT& str2 )
+	  friend CMStringT __stdcall operator+( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  CMStringT strResult;
 
@@ -2217,7 +2216,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( const CMStringT& str1, wchar_t ch2 )
+	  friend CMStringT __stdcall operator+( const CMStringT& str1, wchar_t ch2 )
 	  {
 		  CMStringT strResult;
 		  XCHAR chTemp = XCHAR( ch2 );
@@ -2227,7 +2226,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( const CMStringT& str1, char ch2 )
+	  friend CMStringT __stdcall operator+( const CMStringT& str1, char ch2 )
 	  {
 		  CMStringT strResult;
 		  XCHAR chTemp = XCHAR( ch2 );
@@ -2237,7 +2236,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( wchar_t ch1, const CMStringT& str2 )
+	  friend CMStringT __stdcall operator+( wchar_t ch1, const CMStringT& str2 )
 	  {
 		  CMStringT strResult;
 		  XCHAR chTemp = XCHAR( ch1 );
@@ -2247,7 +2246,7 @@ public:
 		  return strResult;
 	  }
 
-	  friend CMStringT operator+( char ch1, const CMStringT& str2 )
+	  friend CMStringT __stdcall operator+( char ch1, const CMStringT& str2 )
 	  {
 		  CMStringT strResult;
 		  XCHAR chTemp = XCHAR( ch1 );
@@ -2257,140 +2256,140 @@ public:
 		  return strResult;
 	  }
 
-	  friend bool operator==( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator==( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) == 0;
 	  }
 
-	  friend bool operator==( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator==( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) == 0;
 	  }
 
-	  friend bool operator==( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator==( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) == 0;
 	  }
 
-	  friend bool operator==( const CMStringT& str1, PCYSTR psz2 )
+	  friend bool __stdcall operator==( const CMStringT& str1, PCYSTR psz2 )
 	  {
 		  CMStringT str2( psz2 );
 
 		  return str1 == str2;
 	  }
 
-	  friend bool operator==( PCYSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator==( PCYSTR psz1, const CMStringT& str2 )
 	  {
 		  CMStringT str1( psz1 );
 
 		  return str1 == str2;
 	  }
 
-	  friend bool operator!=( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator!=( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) != 0;
 	  }
 
-	  friend bool operator!=( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator!=( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) != 0;
 	  }
 
-	  friend bool operator!=( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator!=( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) != 0;
 	  }
 
-	  friend bool operator!=( const CMStringT& str1, PCYSTR psz2 )
+	  friend bool __stdcall operator!=( const CMStringT& str1, PCYSTR psz2 )
 	  {
 		  CMStringT str2( psz2 );
 
 		  return str1 != str2;
 	  }
 
-	  friend bool operator!=( PCYSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator!=( PCYSTR psz1, const CMStringT& str2 )
 	  {
 		  CMStringT str1( psz1 );
 
 		  return str1 != str2;
 	  }
 
-	  friend bool operator<( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator<( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) < 0;
 	  }
 
-	  friend bool operator<( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator<( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) < 0;
 	  }
 
-	  friend bool operator<( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator<( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) > 0;
 	  }
 
-	  friend bool operator>( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator>( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) > 0;
 	  }
 
-	  friend bool operator>( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator>( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) > 0;
 	  }
 
-	  friend bool operator>( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator>( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) < 0;
 	  }
 
-	  friend bool operator<=( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator<=( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) <= 0;
 	  }
 
-	  friend bool operator<=( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator<=( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) <= 0;
 	  }
 
-	  friend bool operator<=( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator<=( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) >= 0;
 	  }
 
-	  friend bool operator>=( const CMStringT& str1, const CMStringT& str2 )
+	  friend bool __stdcall operator>=( const CMStringT& str1, const CMStringT& str2 )
 	  {
 		  return str1.Compare( str2 ) >= 0;
 	  }
 
-	  friend bool operator>=( const CMStringT& str1, PCXSTR psz2 )
+	  friend bool __stdcall operator>=( const CMStringT& str1, PCXSTR psz2 )
 	  {
 		  return str1.Compare( psz2 ) >= 0;
 	  }
 
-	  friend bool operator>=( PCXSTR psz1, const CMStringT& str2 )
+	  friend bool __stdcall operator>=( PCXSTR psz1, const CMStringT& str2 )
 	  {
 		  return str2.Compare( psz1 ) <= 0;
 	  }
 
-	  friend bool operator==( XCHAR ch1, const CMStringT& str2 )
+	  friend bool __stdcall operator==( XCHAR ch1, const CMStringT& str2 )
 	  {
 		  return (str2.GetLength() == 1) && (str2[0] == ch1);
 	  }
 
-	  friend bool operator==( const CMStringT& str1, XCHAR ch2 )
+	  friend bool __stdcall operator==( const CMStringT& str1, XCHAR ch2 )
 	  {
 		  return (str1.GetLength() == 1) && (str1[0] == ch2);
 	  }
 
-	  friend bool operator!=( XCHAR ch1, const CMStringT& str2 )
+	  friend bool __stdcall operator!=( XCHAR ch1, const CMStringT& str2 )
 	  {
 		  return (str2.GetLength() != 1) || (str2[0] != ch1);
 	  }
 
-	  friend bool operator!=( const CMStringT& str1, XCHAR ch2 )
+	  friend bool __stdcall operator!=( const CMStringT& str1, XCHAR ch2 )
 	  {
 		  return (str1.GetLength() != 1) || (str1[0] != ch2);
 	  }

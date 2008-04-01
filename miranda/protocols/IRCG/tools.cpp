@@ -122,7 +122,7 @@ void CIrcProto::IrcHookEvent( const char* szEvent, IrcEventFunc pFunc )
 	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&pFunc, this );
 }
 
-char* rtrim( char *string )
+char* __stdcall rtrim( char *string )
 {
    char* p = string + strlen( string ) - 1;
    while ( p >= string ) {
@@ -134,46 +134,39 @@ char* rtrim( char *string )
    return string;
 }
 
-CMString GetWord(const TCHAR* text, int index)
+CMString __stdcall GetWord(const TCHAR* text, int index)
 {
-	if (!text || !lstrlen( text ))
-		return (CMString)_T("");
+	if ( text && *text ) {
+		TCHAR* p1 = (TCHAR*)text;
+		TCHAR* p2 = NULL;
 
-	TCHAR* p1 = (TCHAR*)text;
-	TCHAR* p2 = NULL;
-	CMString S = _T("");
+		while (*p1 == ' ')
+			p1++;
 
-	while (*p1 == ' ')
-		p1++;
+		if (*p1 != '\0') {
+			for (int i =0; i < index; i++) {
+				p2 = _tcschr( p1, ' ' );
+				if ( !p2 )
+					p2 = _tcschr( p1, '\0' );
+				else
+					while ( *p2 == ' ' )
+						p2++;
 
-	if (*p1 != '\0') {
-		for (int i =0; i < index; i++) {
-			p2 = _tcschr( p1, ' ' );
-			if ( !p2 )
-				p2 = _tcschr( p1, '\0' );
-			else
-				while ( *p2 == ' ' )
-					p2++;
+				p1 = p2;
+			}
 
-			p1 = p2;
-		}
+			p2 = _tcschr(p1, ' ');
+			if( !p2 )
+				p2 = _tcschr(p1, '\0');
 
-		p2 = _tcschr(p1, ' ');
-		if(!p2)
-			p2 = _tcschr(p1, '\0');
-
-		if (p1 != p2) {
-			TCHAR* pszTemp = new TCHAR[p2-p1+1];
-			lstrcpyn(pszTemp, p1, p2-p1+1);
-
-			S = pszTemp;
-			delete [] pszTemp;
+			if (p1 != p2)
+				return CMString( p1, p2-p1+1 );
 	}	}
 
-	return S;
+	return CMString();
 }
 
-TCHAR* GetWordAddress(const TCHAR* text, int index)
+TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index)
 {
 	if( !text || !lstrlen(text))
 		return ( TCHAR* )text;
@@ -199,7 +192,7 @@ TCHAR* GetWordAddress(const TCHAR* text, int index)
 	return temp;
 }
 
-void RemoveLinebreaks( CMString& Message )
+void __stdcall RemoveLinebreaks( CMString& Message )
 {
 	while ( Message.Find( _T("\r\n\r\n"), 0) != -1 )
 		ReplaceString( Message, _T("\r\n\r\n"), _T("\r\n"));
@@ -212,7 +205,7 @@ void RemoveLinebreaks( CMString& Message )
 }
 
 #if defined( _UNICODE )
-String& ReplaceString ( String& text, const char* replaceme, const char* newword )
+String& __stdcall ReplaceString ( String& text, const char* replaceme, const char* newword )
 {
 	if ( !text.IsEmpty() && replaceme != NULL) {
 		int i = 0;
@@ -226,7 +219,7 @@ String& ReplaceString ( String& text, const char* replaceme, const char* newword
 }
 #endif
 
-CMString& ReplaceString ( CMString& text, const TCHAR* replaceme, const TCHAR* newword)
+CMString& __stdcall ReplaceString ( CMString& text, const TCHAR* replaceme, const TCHAR* newword)
 {
 	if ( !text.IsEmpty() && replaceme != NULL) {
 		int i = 0;
@@ -239,7 +232,7 @@ CMString& ReplaceString ( CMString& text, const TCHAR* replaceme, const TCHAR* n
 	return text;
 }
 
-char* IrcLoadFile( char* szPath)
+char* __stdcall IrcLoadFile( char* szPath)
 {
 	char * szContainer = NULL;
 	DWORD dwSiz = 0;
@@ -259,7 +252,7 @@ char* IrcLoadFile( char* szPath)
 	return 0;
 }
 
-int WCCmp( const TCHAR* wild, const TCHAR* string )
+int __stdcall WCCmp( const TCHAR* wild, const TCHAR* string )
 {
 	if ( wild == NULL || !lstrlen(wild) || string == NULL || !lstrlen(string))
 		return 1;
@@ -302,43 +295,36 @@ bool CIrcProto::IsChannel(const TCHAR* sName)
 }
 
 #if defined( _UNICODE )
-String GetWord(const char* text, int index)
+String __stdcall GetWord(const char* text, int index)
 {
-	if (!text || !lstrlenA( text ))
-		return (String)"";
+	if ( text && text[0] ) {
+		char* p1 = (char*)text;
+		char* p2 = NULL;
 
-	char* p1 = (char*)text;
-	char* p2 = NULL;
-	String S = "";
+		while (*p1 == ' ')
+			p1++;
 
-	while (*p1 == ' ')
-		p1++;
+		if (*p1 != '\0') {
+			for (int i =0; i < index; i++) {
+				p2 = strchr( p1, ' ' );
+				if ( !p2 )
+					p2 = strchr( p1, '\0' );
+				else
+					while ( *p2 == ' ' )
+						p2++;
 
-	if (*p1 != '\0') {
-		for (int i =0; i < index; i++) {
-			p2 = strchr( p1, ' ' );
-			if ( !p2 )
-				p2 = strchr( p1, '\0' );
-			else
-				while ( *p2 == ' ' )
-					p2++;
+				p1 = p2;
+			}
 
-			p1 = p2;
-		}
+			p2 = strchr(p1, ' ');
+			if(!p2)
+				p2 = strchr(p1, '\0');
 
-		p2 = strchr(p1, ' ');
-		if(!p2)
-			p2 = strchr(p1, '\0');
-
-		if (p1 != p2) {
-			char* pszTemp = new char[p2-p1+1];
-			lstrcpynA(pszTemp, p1, p2-p1+1);
-
-			S = pszTemp;
-			delete [] pszTemp;
+			if (p1 != p2)
+				return String( p1, p2-p1+1 );
 	}	}
 
-	return S;
+	return String();
 }
 
 bool CIrcProto::IsChannel(const char* sName) 
@@ -347,7 +333,7 @@ bool CIrcProto::IsChannel(const char* sName)
 }
 #endif
 
-TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2) 
+TCHAR* __stdcall my_strstri(const TCHAR* s1, const TCHAR* s2) 
 { 
 	int i,j,k; 
 	for(i=0;s1[i];i++) 
@@ -358,7 +344,7 @@ TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 	return NULL; 
 } 
 
-TCHAR* DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
+TCHAR* __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent)
 {
 	static TCHAR szTemp[4000]; szTemp[0] = '\0';
 	TCHAR* p = szTemp;

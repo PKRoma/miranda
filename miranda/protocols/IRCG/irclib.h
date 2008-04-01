@@ -48,13 +48,12 @@ char* ConvertIntegerToIP(unsigned long int_ip_addr);
 
 struct CIrcProto;
 
+#include "mstring.h"
+typedef CMStringA String;
+
 ////////////////////////////////////////////////////////////////////
 namespace irc {
 ////////////////////////////////////////////////////////////////////
-
-#include "mstring.h"
-typedef CMStringA String;
-typedef CMString  CMString;
 
 struct DCCINFO
 {

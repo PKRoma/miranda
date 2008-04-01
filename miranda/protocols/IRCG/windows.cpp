@@ -1162,8 +1162,8 @@ void CManagerDlg::InitManager( int mode, const TCHAR* window )
 			DBVARIANT dbv;
 			if ( !m_proto->getTString( p, &dbv )) {
 				for ( int i = 0; i<5; i++ ) {
-					if ( !GetWord(dbv.ptszVal, i).IsEmpty()) {
-						CMString S = GetWord(dbv.ptszVal, i);
+					CMString S = GetWord(dbv.ptszVal, i);
+					if ( !S.IsEmpty()) {
 						ReplaceString( S, _T("%¤"), _T(" "));
 						m_topic.SendMsg( CB_ADDSTRING, 0, (LPARAM)S.c_str());
 				}	}

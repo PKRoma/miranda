@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NICKSUBSTITUTE _T("!_nick_!")
 
-CMString CIrcProto::FormatMsg(CMString text)
+void CIrcProto::FormatMsg(CMString& text)
 {
 	TCHAR temp[30];
 	lstrcpyn(temp, GetWord(text.c_str(), 0).c_str(), 29);
@@ -66,7 +66,7 @@ CMString CIrcProto::FormatMsg(CMString text)
 	else S = GetWordAddress(text.c_str(), 0);
 
 	S.Delete(0,1);
-	return S;
+	text = S;
 }
 
 static void AddCR( CMString& text )
@@ -898,7 +898,7 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 			if ( flag && bDCC ) {
 				CDccSession* dcc = FindDCCSession( hContact );
 				if ( dcc ) {
-					DoThis = FormatMsg( DoThis );
+					FormatMsg( DoThis );
 					CMString mess = GetWordAddress(DoThis.c_str(), 2);
 					if ( mess[0] == ':' )
 						mess.Delete(0,1);
@@ -907,12 +907,12 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 				}
 			}
 			else if( IsConnected() ) {
-				DoThis = FormatMsg( DoThis );
+				FormatMsg( DoThis );
 				*this << CIrcMessage( this, DoThis.c_str(), codepage, false, false );
 			}
 		}
 		else {
-			DoThis = FormatMsg( DoThis );
+			FormatMsg( DoThis );
 			*this << CIrcMessage( this, DoThis.c_str(), codepage, false, true );
 	}	}
 

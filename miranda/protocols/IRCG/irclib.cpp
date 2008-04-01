@@ -316,63 +316,51 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 {
 	codepage = m_codepage;
 
-	try
-	{
-		NETLIBOPENCONNECTION ncon = { 0 };
-		ncon.cbSize = sizeof(ncon);
-		ncon.szHost = info.sServer.c_str();
-		ncon.wPort = info.iPort;
-		con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
-	
-		if (con == NULL)
+	NETLIBOPENCONNECTION ncon = { 0 };
+	ncon.cbSize = sizeof(ncon);
+	ncon.szHost = info.sServer.c_str();
+	ncon.wPort = info.iPort;
+	con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
+	if (con == NULL)
+		return false;
+
+	FindLocalIP(con); // get the local ip used for filetransfers etc
+
+	if ( info.m_iSSL > 0 ) {
+		sslSession.SSLConnect( con ); // Establish SSL connection
+		if ( sslSession.nSSLConnected != 1 && info.m_iSSL == 2 ) {
+			Netlib_CloseHandle( con );
+			con = NULL;
+			m_info.Reset();
 			return false;
+	}	}
 
-		FindLocalIP(con); // get the local ip used for filetransfers etc
-
-		if ( info.m_iSSL > 0 ) {
-			sslSession.SSLConnect( con ); // Establish SSL connection
-			if ( sslSession.nSSLConnected != 1 && info.m_iSSL == 2 ) {
-				Netlib_CloseHandle( con );
-				con = NULL;
-				m_info.Reset();
-				return false;
-		}	}
-
-		if ( Miranda_Terminated() ) {
-			Disconnect();
-			return false;
-		}
-
-		m_info = info;
-
-		// start receiving messages from host
-		mir_forkthread( ThreadProc, this );
-		Sleep( 100 );
-		if ( info.sPassword.GetLength() )
-			NLSend( "PASS %s\r\n", info.sPassword.c_str());
-		NLSend( _T("NICK %s\r\n"), info.sNick.c_str());
-
-		CMString m_userID = GetWord(info.sUserID.c_str(), 0);
-		TCHAR szHostName[MAX_PATH];
-		DWORD cbHostName = SIZEOF( szHostName );
-		GetComputerName(szHostName, &cbHostName);
-		CMString HostName = GetWord(szHostName, 0);
-		if ( m_userID.IsEmpty() )
-			m_userID = _T("Miranda");
-		if ( HostName.IsEmpty())
-			HostName= _T("host");
-		NLSend( _T("USER %s %s %s :%s\r\n"), m_userID.c_str(), HostName.c_str(), _T("server"), info.sFullName.c_str());
-	}
-	catch( const char* )
-	{
+	if ( Miranda_Terminated() ) {
 		Disconnect();
-	}
-	catch( ... )
-	{
-		Disconnect();
+		return false;
 	}
 
-	return con!=NULL;
+	m_info = info;
+
+	// start receiving messages from host
+	mir_forkthread( ThreadProc, this );
+	Sleep( 100 );
+	if ( info.sPassword.GetLength() )
+		NLSend( "PASS %s\r\n", info.sPassword.c_str());
+	NLSend( _T("NICK %s\r\n"), info.sNick.c_str());
+
+	CMString m_userID = GetWord(info.sUserID.c_str(), 0);
+	TCHAR szHostName[MAX_PATH];
+	DWORD cbHostName = SIZEOF( szHostName );
+	GetComputerName(szHostName, &cbHostName);
+	CMString HostName = GetWord(szHostName, 0);
+	if ( m_userID.IsEmpty() )
+		m_userID = _T("Miranda");
+	if ( HostName.IsEmpty())
+		HostName= _T("host");
+	NLSend( _T("USER %s %s %s :%s\r\n"), m_userID.c_str(), HostName.c_str(), _T("server"), info.sFullName.c_str());
+
+	return con != NULL;
 }
 
 void CIrcProto::Disconnect(void)
@@ -624,14 +612,7 @@ void CIrcProto::DoReceive()
 void __cdecl CIrcProto::ThreadProc(void *pparam)
 {
 	CIrcProto* pThis = (CIrcProto*)pparam;
-	try 
-	{ 
-		pThis->DoReceive(); 
-	}
-	catch( ... ) 
-	{
-	}
-
+	pThis->DoReceive(); 
 	pThis->m_info.Reset();
 }
 
@@ -1076,40 +1057,124 @@ void CDccSession::SetupPassive(DWORD adress, DWORD port)
 
 int CDccSession::SetupConnection()
 {
-	//sets up the connection
-	try
-	{
-		// if it is a dcc chat connection make sure it is "offline" to begoin with, since no connection exists still
-		if ( di->iType == DCC_CHAT )
-			m_proto->setWord(di->hContact, "Status", ID_STATUS_OFFLINE);
+	// if it is a dcc chat connection make sure it is "offline" to begoin with, since no connection exists still
+	if ( di->iType == DCC_CHAT )
+		m_proto->setWord(di->hContact, "Status", ID_STATUS_OFFLINE);
 
-		// Set up stuff needed for the filetransfer dialog (if it is a filetransfer)
-		if ( di->iType == DCC_SEND ) {
-			file[0] = ( char* )di->sFileAndPath.c_str();
-			file[1] = 0;
+	// Set up stuff needed for the filetransfer dialog (if it is a filetransfer)
+	if ( di->iType == DCC_SEND ) {
+		file[0] = ( char* )di->sFileAndPath.c_str();
+		file[1] = 0;
 
-			#if defined( _UNICODE )
-				pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), m_proto->getCodepage() ));
-				pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), m_proto->getCodepage() ));
-			#else
-				pfts.currentFile = ( char* )di->sFileAndPath.c_str();
-				pfts.workingDir =	( char* )di->sPath.c_str();
-			#endif
+		#if defined( _UNICODE )
+			pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), m_proto->getCodepage() ));
+			pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), m_proto->getCodepage() ));
+		#else
+			pfts.currentFile = ( char* )di->sFileAndPath.c_str();
+			pfts.workingDir =	( char* )di->sPath.c_str();
+		#endif
 
-			pfts.hContact = di->hContact;
-			pfts.sending = di->bSender ? true : false;
-			pfts.totalFiles =	1;
-			pfts.currentFileNumber = 0;
-			pfts.totalBytes =	di->dwSize;
-			pfts.currentFileSize = pfts.totalBytes;
-			pfts.files = file;
-			pfts.totalProgress = 0;
-			pfts.currentFileProgress =	0;
-			pfts.currentFileTime = (unsigned long)time(0);
+		pfts.hContact = di->hContact;
+		pfts.sending = di->bSender ? true : false;
+		pfts.totalFiles =	1;
+		pfts.currentFileNumber = 0;
+		pfts.totalBytes =	di->dwSize;
+		pfts.currentFileSize = pfts.totalBytes;
+		pfts.files = file;
+		pfts.totalProgress = 0;
+		pfts.currentFileProgress =	0;
+		pfts.currentFileTime = (unsigned long)time(0);
+	}
+
+	// create a listening socket for outgoing chat/send requests. The remote computer connects to this computer. Used for both chat and filetransfer.
+	if ( di->bSender && !di->bReverse ) {
+		NETLIBBIND nb = {0};
+		nb.cbSize = sizeof(NETLIBBIND);
+		nb.pfnNewConnectionV2 = DoIncomingDcc; // this is the (helper) function to be called once an incoming connection is made. The 'real' function that is called is IncomingConnection()
+		nb.pExtra = (void *)this; 
+		nb.wPort = 0;
+		hBindPort = (HANDLE)CallService( MS_NETLIB_BINDPORT, (WPARAM)m_proto->hNetlibDCC,(LPARAM) &nb);
+
+		if ( hBindPort == NULL ) {
+			delete this; // dcc objects destroy themselves when the connection has been closed or failed for some reasson.
+			return 0;
 		}
 
-		// create a listening socket for outgoing chat/send requests. The remote computer connects to this computer. Used for both chat and filetransfer.
-		if ( di->bSender && !di->bReverse ) {
+		di->iPort = nb.wPort; // store the port internally so it is possible to search for it (for resuming of filetransfers purposes)
+		return nb.wPort; // return the created port so it can be sent to the remote computer in a ctcp/dcc command
+	}
+
+	// If a remote computer initiates a chat session this is used to connect to the remote computer (user already accepted at this point). 
+	// also used for connecting to a remote computer for remote file transfers
+	if ( di->iType == DCC_CHAT && !di->bSender || di->iType == DCC_SEND && di->bSender && di->bReverse ) {
+		NETLIBOPENCONNECTION ncon = { 0 };
+		ncon.cbSize = sizeof(ncon);
+		ncon.szHost = ConvertIntegerToIP(di->dwAdr); 
+		ncon.wPort = (WORD) di->iPort;
+		con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM)m_proto->hNetlibDCC, (LPARAM) & ncon);
+	}
+
+
+	// If a remote computer initiates a filetransfer this is used to connect to that computer (the user has chosen to accept but it is possible the file exists/needs to be resumed etc still)
+	if ( di->iType == DCC_SEND && !di->bSender ) {
+
+		// this following code is for miranda to be able to show the resume/overwrite etc dialog if the file that we are receiving already exists. 
+		// It must be done before we create the connection or else the other party will begin sending packets while the user is still deciding if 
+		// s/he wants to resume/cancel or whatever. Just the way dcc is...
+
+		// if the file exists (dialog is shown) WaitForSingleObject() till the dialog is closed and PS_FILERESUME has been processed. 
+		// dwWhatNeedsDoing will be set using InterlockedExchange() (from other parts of the code depending on action) before SetEvent() is called.
+		// If the user has chosen rename then InterlockedExchange() will be used for setting NewFileName to a string containing the new name.
+		// Furthermore dwResumePos will be set using InterlockedExchange() to indicate what the file position to start from is.
+		if ( ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, (void *)di, (long)&pfts)) { 
+			WaitForSingleObject( hEvent, INFINITE );
+			switch( dwWhatNeedsDoing ) {
+			case FILERESUME_RENAME:
+				// If the user has chosen to rename the file we need to change variables accordingly. NewFileName has been set using
+				// InterlockedExchange()
+				if ( NewFileName) { // the user has chosen to rename the new incoming file.
+					di->sFileAndPath = NewFileName;
+
+					int i = di->sFileAndPath.ReverseFind( '\\' );
+					if ( i != -1 ) {
+						di->sPath = di->sFileAndPath.Mid(0, i+1);
+						di->sFile = di->sFileAndPath.Mid(i+1, di->sFileAndPath.GetLength());
+					}
+
+					#if defined( _UNICODE )
+						mir_free( szFullPath );
+						pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), m_proto->getCodepage() ));
+						mir_free( szWorkingDir );
+						pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), m_proto->getCodepage() ));
+					#else
+						pfts.currentFile = ( char* )di->sFileAndPath.c_str();
+						pfts.workingDir =	( char* )di->sPath.c_str();
+					#endif
+					pfts.totalBytes = di->dwSize;
+					pfts.currentFileSize = pfts.totalBytes;
+					file[0] = pfts.currentFile;
+					
+					delete []NewFileName;
+					NewFileName = NULL;
+				}
+				break;
+
+			case FILERESUME_OVERWRITE:	
+			case FILERESUME_RESUME	:	
+				// no action needed at this point, just break out of the switch statement
+				break;
+
+			case FILERESUME_CANCEL	:
+				return FALSE; 
+
+			case FILERESUME_SKIP	:
+			default:
+				delete this; // per usual dcc objects destroy themselves when they fail or when connection is closed
+				return FALSE; 
+		}	}			
+
+		// hack for passive filetransfers
+		if ( di->iType == DCC_SEND && !di->bSender && di->bReverse ) {
 			NETLIBBIND nb = {0};
 			nb.cbSize = sizeof(NETLIBBIND);
 			nb.pfnNewConnectionV2 = DoIncomingDcc; // this is the (helper) function to be called once an incoming connection is made. The 'real' function that is called is IncomingConnection()
@@ -1118,151 +1183,55 @@ int CDccSession::SetupConnection()
 			hBindPort = (HANDLE)CallService( MS_NETLIB_BINDPORT, (WPARAM)m_proto->hNetlibDCC,(LPARAM) &nb);
 
 			if ( hBindPort == NULL ) {
+				m_proto->DoEvent(GC_EVENT_INFORMATION, 0, m_proto->m_info.sNick.c_str(), LPGENT("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
 				delete this; // dcc objects destroy themselves when the connection has been closed or failed for some reasson.
 				return 0;
 			}
 
 			di->iPort = nb.wPort; // store the port internally so it is possible to search for it (for resuming of filetransfers purposes)
-			return nb.wPort; // return the created port so it can be sent to the remote computer in a ctcp/dcc command
-		}
 
-		// If a remote computer initiates a chat session this is used to connect to the remote computer (user already accepted at this point). 
-		// also used for connecting to a remote computer for remote file transfers
-		if ( di->iType == DCC_CHAT && !di->bSender || di->iType == DCC_SEND && di->bSender && di->bReverse ) {
-			NETLIBOPENCONNECTION ncon = { 0 };
-			ncon.cbSize = sizeof(ncon);
-			ncon.szHost = ConvertIntegerToIP(di->dwAdr); 
-			ncon.wPort = (WORD) di->iPort;
-			con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM)m_proto->hNetlibDCC, (LPARAM) & ncon);
-		}
+			CMString sFileWithQuotes = di->sFile;
 
-
-		// If a remote computer initiates a filetransfer this is used to connect to that computer (the user has chosen to accept but it is possible the file exists/needs to be resumed etc still)
-		if ( di->iType == DCC_SEND && !di->bSender ) {
-
-			// this following code is for miranda to be able to show the resume/overwrite etc dialog if the file that we are receiving already exists. 
-			// It must be done before we create the connection or else the other party will begin sending packets while the user is still deciding if 
-			// s/he wants to resume/cancel or whatever. Just the way dcc is...
-
-			// if the file exists (dialog is shown) WaitForSingleObject() till the dialog is closed and PS_FILERESUME has been processed. 
-			// dwWhatNeedsDoing will be set using InterlockedExchange() (from other parts of the code depending on action) before SetEvent() is called.
-			// If the user has chosen rename then InterlockedExchange() will be used for setting NewFileName to a string containing the new name.
-			// Furthermore dwResumePos will be set using InterlockedExchange() to indicate what the file position to start from is.
-			if ( ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, (void *)di, (long)&pfts)) { 
-				WaitForSingleObject( hEvent, INFINITE );
-				switch( dwWhatNeedsDoing ) {
-				case FILERESUME_RENAME:
-					// If the user has chosen to rename the file we need to change variables accordingly. NewFileName has been set using
-					// InterlockedExchange()
-					if ( NewFileName) { // the user has chosen to rename the new incoming file.
-						di->sFileAndPath = NewFileName;
-
-						int i = di->sFileAndPath.ReverseFind( '\\' );
-						if ( i != -1 ) {
-							di->sPath = di->sFileAndPath.Mid(0, i+1);
-							di->sFile = di->sFileAndPath.Mid(i+1, di->sFileAndPath.GetLength());
-						}
-
-						#if defined( _UNICODE )
-							mir_free( szFullPath );
-							pfts.currentFile = szFullPath = mir_strdup( _T2A( di->sFileAndPath.c_str(), m_proto->getCodepage() ));
-							mir_free( szWorkingDir );
-							pfts.workingDir =	szWorkingDir = mir_strdup( _T2A( di->sPath.c_str(), m_proto->getCodepage() ));
-						#else
-							pfts.currentFile = ( char* )di->sFileAndPath.c_str();
-							pfts.workingDir =	( char* )di->sPath.c_str();
-						#endif
-						pfts.totalBytes = di->dwSize;
-						pfts.currentFileSize = pfts.totalBytes;
-						file[0] = pfts.currentFile;
-						
-						delete []NewFileName;
-						NewFileName = NULL;
-					}
-					break;
-
-				case FILERESUME_OVERWRITE:	
-				case FILERESUME_RESUME	:	
-					// no action needed at this point, just break out of the switch statement
-					break;
-
-				case FILERESUME_CANCEL	:
-					return FALSE; 
-
-				case FILERESUME_SKIP	:
-				default:
-					delete this; // per usual dcc objects destroy themselves when they fail or when connection is closed
-					return FALSE; 
-			}	}			
-
-			// hack for passive filetransfers
-			if ( di->iType == DCC_SEND && !di->bSender && di->bReverse ) {
-				NETLIBBIND nb = {0};
-				nb.cbSize = sizeof(NETLIBBIND);
-				nb.pfnNewConnectionV2 = DoIncomingDcc; // this is the (helper) function to be called once an incoming connection is made. The 'real' function that is called is IncomingConnection()
-				nb.pExtra = (void *)this; 
-				nb.wPort = 0;
-				hBindPort = (HANDLE)CallService( MS_NETLIB_BINDPORT, (WPARAM)m_proto->hNetlibDCC,(LPARAM) &nb);
-
-				if ( hBindPort == NULL ) {
-					m_proto->DoEvent(GC_EVENT_INFORMATION, 0, m_proto->m_info.sNick.c_str(), LPGENT("DCC ERROR: Unable to bind local port for passive filetransfer"), NULL, NULL, NULL, true, false); 
-					delete this; // dcc objects destroy themselves when the connection has been closed or failed for some reasson.
-					return 0;
-				}
-
-				di->iPort = nb.wPort; // store the port internally so it is possible to search for it (for resuming of filetransfers purposes)
-
-				CMString sFileWithQuotes = di->sFile;
-
-				// if spaces in the filename surround with quotes
-				if ( sFileWithQuotes.Find( ' ', 0 ) != -1 ) {
-					sFileWithQuotes.Insert( 0, _T("\""));
-					sFileWithQuotes.Insert( sFileWithQuotes.GetLength(), _T("\""));
-				}
-
-				// send out DCC RECV command for passive filetransfers
-				unsigned long ulAdr = 0;
-				if ( m_proto->m_manualHost )
-					ulAdr = ConvertIPToInteger( m_proto->m_mySpecifiedHostIP );				
-				else
-					ulAdr = ConvertIPToInteger( m_proto->m_IPFromServer ? m_proto->m_myHost : m_proto->m_myLocalHost );
-
-				if ( di->iPort && ulAdr )
-					m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
-
-				return TRUE; 			
+			// if spaces in the filename surround with quotes
+			if ( sFileWithQuotes.Find( ' ', 0 ) != -1 ) {
+				sFileWithQuotes.Insert( 0, _T("\""));
+				sFileWithQuotes.Insert( sFileWithQuotes.GetLength(), _T("\""));
 			}
 
-			// connect to the remote computer from which you are receiving the file (now all actions to take (resume/overwrite etc) have been decided
-			NETLIBOPENCONNECTION ncon = { 0 };
-			ncon.cbSize = sizeof(ncon);
-			ncon.szHost = ConvertIntegerToIP(di->dwAdr);
-			ncon.wPort = (WORD) di->iPort;
+			// send out DCC RECV command for passive filetransfers
+			unsigned long ulAdr = 0;
+			if ( m_proto->m_manualHost )
+				ulAdr = ConvertIPToInteger( m_proto->m_mySpecifiedHostIP );				
+			else
+				ulAdr = ConvertIPToInteger( m_proto->m_IPFromServer ? m_proto->m_myHost : m_proto->m_myLocalHost );
 
-			con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM)m_proto->hNetlibDCC, (LPARAM) & ncon);
+			if ( di->iPort && ulAdr )
+				m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
+
+			return TRUE; 			
 		}
 
-		// if for some reason the plugin has failed to connect to the remote computer the object is destroyed.
-		if ( con == NULL ) {
-			delete this;
-			return FALSE; // failed to connect
-		}
+		// connect to the remote computer from which you are receiving the file (now all actions to take (resume/overwrite etc) have been decided
+		NETLIBOPENCONNECTION ncon = { 0 };
+		ncon.cbSize = sizeof(ncon);
+		ncon.szHost = ConvertIntegerToIP(di->dwAdr);
+		ncon.wPort = (WORD) di->iPort;
 
-		// if it is a chat connection set the user to online now since we now know there is a connection
-		if ( di->iType == DCC_CHAT )
-			m_proto->setWord(di->hContact, "Status", ID_STATUS_ONLINE);
+		con = (HANDLE) CallService( MS_NETLIB_OPENCONNECTION, (WPARAM)m_proto->hNetlibDCC, (LPARAM) & ncon);
+	}
 
-		// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
-		mir_forkthread(ThreadProc, this  );
+	// if for some reason the plugin has failed to connect to the remote computer the object is destroyed.
+	if ( con == NULL ) {
+		delete this;
+		return FALSE; // failed to connect
 	}
-	catch( const char* )
-	{
-		Disconnect();
-	}
-	catch( ... )
-	{
-		Disconnect();
-	}
+
+	// if it is a chat connection set the user to online now since we now know there is a connection
+	if ( di->iType == DCC_CHAT )
+		m_proto->setWord(di->hContact, "Status", ID_STATUS_ONLINE);
+
+	// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
+	mir_forkthread(ThreadProc, this  );
 	
 	return (int)con;
 }
@@ -1298,21 +1267,15 @@ void __cdecl CDccSession::ThreadProc(void *pparam)
 		pThis->hBindPort = NULL;
 	}
 
-	try 
-	{ 
-		if ( pThis->di->iType == DCC_CHAT )
-			pThis->DoChatReceive(); // dcc chat
+	if ( pThis->di->iType == DCC_CHAT )
+		pThis->DoChatReceive(); // dcc chat
 
-		else if( !pThis->di->bSender )
-			pThis->DoReceiveFile(); // receive a file
+	else if( !pThis->di->bSender )
+		pThis->DoReceiveFile(); // receive a file
 
-		else if ( pThis->di->bSender )
-			pThis->DoSendFile(); // send a file
-		
-	} 
-	catch( ... )
-	{
-}	}
+	else if ( pThis->di->bSender )
+		pThis->DoSendFile(); // send a file
+}
 
 // this is done when the user is initiating a filetransfer to a remote computer
 void CDccSession::DoSendFile() 
