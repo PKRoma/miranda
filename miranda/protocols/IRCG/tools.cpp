@@ -160,7 +160,7 @@ CMString __stdcall GetWord(const TCHAR* text, int index)
 				p2 = _tcschr(p1, '\0');
 
 			if (p1 != p2)
-				return CMString( p1, p2-p1+1 );
+				return CMString( p1, p2-p1 );
 	}	}
 
 	return CMString();

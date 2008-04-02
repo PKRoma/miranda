@@ -166,8 +166,7 @@ CMString CIrcProto::DoAlias( const TCHAR *text, TCHAR *window)
 CMString CIrcProto::DoIdentifiers( CMString text, const TCHAR* window )
 {
 	SYSTEMTIME time;
-	TCHAR str[800];
-	int  i = 0;
+	TCHAR str[100];
 
 	GetLocalTime( &time );
 	ReplaceString( text, _T("%mnick"), m_nick);
@@ -182,19 +181,18 @@ CMString CIrcProto::DoIdentifiers( CMString text, const TCHAR* window )
 	mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
 	ReplaceString(text, _T("%mirver"), str);
 
-	mir_sntprintf( str, SIZEOF(str), _T(__VERSION_STRING));
-	ReplaceString(text, _T("%version"), str);
+	ReplaceString(text, _T("%version"), _T(__VERSION_STRING));
 
-	str[0] = (char)3; str[1] = '\0';
+	str[0] = 3; str[1] = '\0';
 	ReplaceString(text, _T("%color"), str);
 
-	str[0] = (char)2;
+	str[0] = 2;
 	ReplaceString(text, _T("%bold"), str);
 
-	str[0] = (char)31;
+	str[0] = 31;
 	ReplaceString(text, _T("%underline"), str);
 
-	str[0] = (char)22;
+	str[0] = 22;
 	ReplaceString(text, _T("%italics"), str);
 	return text;
 }
@@ -514,8 +512,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		if ( one.IsEmpty())
 			return true;
 
-		CMString S = _T("/ME ");
-		S += DoIdentifiers(GetWordAddress(text.c_str(), 1), window);
+		CMString S = _T("/ME ") + DoIdentifiers(GetWordAddress(text.c_str(), 1), window);
 		ReplaceString( S, _T("%"), _T("%%"));
 		DoEvent( GC_EVENT_SENDMESSAGE, NULL, NULL, S.c_str(), NULL, NULL, NULL, FALSE, FALSE);
 		return true;
@@ -824,8 +821,8 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 	if ( !hContact && IsConnected() ) {
 		Message = DoAlias( Message.c_str(), windowname );
 
-		if ( _tcsstr( Message.c_str(), _T("%question"))) {
-			CallFunctionAsync( DoInputRequestAliasApcStub, new DoInputRequestParam( this, Message.c_str()));
+		if ( Message.Find( _T("%question")) != -1 ) {
+			CallFunctionAsync( DoInputRequestAliasApcStub, new DoInputRequestParam( this, Message ));
 			return 1;
 		}
 
@@ -870,16 +867,11 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 			  ( (GetWord( DoThis.c_str(), 0)[0] == '/') && (GetWord( DoThis.c_str(), 0)[1] == '/') ) ||		// or double backslash at the beginning
 			  hContact ) {
 			CMString S = _T("/PRIVMSG ");
-			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !m_info.sServerName.IsEmpty() ) {
-				S += m_info.sServerName;
-				S += _T(" ");
-				S += DoThis;
-			}
-			else {
-				S += windowname;
-				S += _T(" ");
-				S += DoThis;
-			}
+			if ( lstrcmpi(window, SERVERWINDOW) == 0 && !m_info.sServerName.IsEmpty() )
+				S += m_info.sServerName + _T(" ") + DoThis;
+			else
+				S += CMString(windowname) + _T(" ") + DoThis;
+
 			DoThis = S;
 			flag = true;
 		}

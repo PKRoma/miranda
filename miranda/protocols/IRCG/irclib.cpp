@@ -176,7 +176,7 @@ CMString CIrcMessage::AsString() const
 		s += _T(" ");
 		if( i == parameters.getCount() - 1 && (_tcschr(parameters[i].c_str(), ' ') || parameters[i][0] == ':' ) )// is last parameter ?
 			s += _T(":");
-		s += *parameters[i];
+		s += parameters[i];
 	}
 
 	s += _T("\r\n");

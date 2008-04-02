@@ -420,10 +420,10 @@ void CJoinDlg::OnOk( CCtrlButton* )
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentChannels", &dbv)) {
 		for (int i = 0; i < 20; i++ ) {
-			if ( !GetWord(dbv.ptszVal, i).IsEmpty() && GetWord(dbv.ptszVal, i) != SL) {
-				S += _T(" ");
-				S += GetWord(dbv.ptszVal, i);
-		}	}
+			CMString W = GetWord(dbv.ptszVal, i);
+			if ( !W.IsEmpty() && W != SL)
+				S += _T(" ") + GetWord(dbv.ptszVal, i);
+		}
 		DBFreeVariant(&dbv);
 	}
 	m_proto->setTString("RecentChannels", S.c_str());
