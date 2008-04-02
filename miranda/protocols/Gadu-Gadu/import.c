@@ -34,7 +34,7 @@ int GroupNameExists(const char *name)
 	int i;
 
 	for (i = 0; ; i++) {
-		itoa(i, idstr, 10);
+		_itoa(i, idstr, 10);
 		if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv)) break;
 		if (!strcmp(dbv.pszVal + 1, name)) {
 			DBFreeVariant(&dbv);
@@ -85,7 +85,7 @@ char *CreateGroup(char *groupName)
 
 		// Find an unused id
 		for (groupId = 0; ; groupId++) {
-				itoa(groupId, groupIdStr,10);
+				_itoa(groupId, groupIdStr,10);
 				if (DBGetContactSettingString(NULL, "CListGroups", groupIdStr, &dbv))
 						break;
 				DBFreeVariant(&dbv);
@@ -333,7 +333,7 @@ static int gg_import_server(WPARAM wParam, LPARAM lParam)
 	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		password = strdup(dbv.pszVal);
+		password = _strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else return 0;
@@ -383,7 +383,7 @@ static int gg_remove_server(WPARAM wParam, LPARAM lParam)
 	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		password = strdup(dbv.pszVal);
+		password = _strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else return 0;
@@ -434,7 +434,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
 	char str[MAX_PATH] = "\0";
 	OPENFILENAME ofn;
 	char filter[512], *pfilter;
-	struct stat st;
+	struct _stat st;
 	FILE *f;
 
 	ZeroMemory(&ofn, sizeof(ofn));
@@ -469,7 +469,7 @@ static int gg_import_text(WPARAM wParam, LPARAM lParam)
 	if(!GetOpenFileName(&ofn)) return 0;
 
 	f = fopen(str, "r");
-	stat(str, &st);
+	_stat(str, &st);
 
 	if(f && st.st_size)
 	{
@@ -593,7 +593,7 @@ static int gg_export_server(WPARAM wParam, LPARAM lParam)
 	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		password = strdup(dbv.pszVal);
+		password = _strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else return 0;

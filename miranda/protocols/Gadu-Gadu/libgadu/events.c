@@ -225,7 +225,7 @@ static void gg_image_queue_parse(struct gg_event *e, char *p, unsigned int len, 
 			return;
 		}
 
-		if (!(q->filename = strdup(p))) {
+		if (!(q->filename = _strdup(p))) {
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_image_queue_parse() not enough memory for filename\n");
 			return;
 		}
@@ -431,7 +431,7 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 	e->event.msg.msgclass = gg_fix32(r->msgclass);
 	e->event.msg.sender = gg_fix32(r->sender);
 	e->event.msg.time = gg_fix32(r->time);
-	e->event.msg.message = (unsigned char*) strdup((char*) r + sizeof(*r));
+	e->event.msg.message = (unsigned char*) _strdup((char*) r + sizeof(*r));
 
 	return 0;
 

@@ -621,7 +621,7 @@ int gg_sendfile(WPARAM wParam, LPARAM lParam)
 
 	// Store handle
 	dcc->contact = ccs->hContact;
-	dcc->folder = strdup(files[0]);
+	dcc->folder = _strdup(files[0]);
 	dcc->tick = 0;
 	// Make folder name
 	bslash = strrchr(dcc->folder, '\\');
@@ -640,7 +640,7 @@ int gg_fileallow(WPARAM wParam, LPARAM lParam)
 	char fileName[MAX_PATH];
 	strncpy(fileName, (char *) ccs->lParam, sizeof(fileName));
 	strncat(fileName, dcc->file_info.filename, sizeof(fileName) - strlen(fileName));
-	dcc->folder = strdup((char *) ccs->lParam);
+	dcc->folder = _strdup((char *) ccs->lParam);
 	dcc->tick = 0;
 
 	// Check if its proper dcc

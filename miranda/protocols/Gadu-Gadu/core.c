@@ -66,7 +66,7 @@ void gg_disconnect()
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
-							szMsg = dbMsg = strdup(dbv.pszVal);
+							szMsg = dbMsg = _strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
@@ -75,7 +75,7 @@ void gg_disconnect()
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
-							szMsg = dbMsg = strdup(dbv.pszVal);
+							szMsg = dbMsg = _strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
@@ -84,7 +84,7 @@ void gg_disconnect()
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
 					{
 						if(*(dbv.pszVal))
-							szMsg = dbMsg = strdup(dbv.pszVal);
+							szMsg = dbMsg = _strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;

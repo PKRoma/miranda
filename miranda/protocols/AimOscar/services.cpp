@@ -515,8 +515,8 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 			pszDesc = (char*)ccs->wParam;
 			char* pszFile = strrchr(files[0], '\\');
 			pszFile++;
-			struct stat statbuf;
-			stat(files[0],&statbuf);
+			struct _stat statbuf;
+			_stat(files[0],&statbuf);
 			unsigned long pszSize = statbuf.st_size;
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))

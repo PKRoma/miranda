@@ -936,12 +936,12 @@ void *gg_img_loadpicture(struct gg_event* e, char *szFileName)
 			return NULL;
 		}
 		fclose(fp);
-		dat->lpszFileName = strdup(szFileName);
+		dat->lpszFileName = _strdup(szFileName);
 	}
 	// Copy picture from packet
 	else if(e && e->event.image_reply.filename)
 	{
-		dat->lpszFileName = strdup(e->event.image_reply.filename);
+		dat->lpszFileName = _strdup(e->event.image_reply.filename);
 		dat->nSize = e->event.image_reply.size;
 		dat->lpData = malloc(dat->nSize);
 		memcpy(dat->lpData, e->event.image_reply.image, dat->nSize);

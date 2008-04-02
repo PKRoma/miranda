@@ -158,7 +158,7 @@ int gg_dcc_fill_file_info(struct gg_dcc *d, const char *filename)
  */
 int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *local_filename)
 {
-	struct stat st;
+	struct _stat st;
 	const char *name, *ext, *p;
 	unsigned char *q;
 	int i, j;
@@ -171,8 +171,8 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-	if (stat(local_filename, &st) == -1) {
-		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() stat() failed (%s)\n", strerror(errno));
+	if (_stat(local_filename, &st) == -1) {
+		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() _stat() failed (%s)\n", strerror(errno));
 		return -1;
 	}
 

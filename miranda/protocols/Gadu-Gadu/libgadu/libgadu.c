@@ -459,7 +459,7 @@ int gg_resolve_pthread(int *fd, void **resolver, const char *hostname)
 		return -1;
 	}
 
-	if (!(data->hostname = strdup(hostname))) {
+	if (!(data->hostname = _strdup(hostname))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_resolve_pthread() out of memory\n");
 		new_errno = errno;
 		goto cleanup;
@@ -936,12 +936,12 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		goto fail;
 	}
 
-	if (!(sess->password = strdup(p->password))) {
+	if (!(sess->password = _strdup(p->password))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_login() not enough memory for password\n");
 		goto fail;
 	}
 
-	if (p->status_descr && !(sess->initial_descr = strdup(p->status_descr))) {
+	if (p->status_descr && !(sess->initial_descr = _strdup(p->status_descr))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_login() not enough memory for status\n");
 		goto fail;
 	}
@@ -970,7 +970,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		sess->protocol_version |= GG_ERA_OMNIX_MASK;
 	if (p->has_audio)
 		sess->protocol_version |= GG_HAS_AUDIO_MASK;
-	sess->client_version = (p->client_version) ? strdup(p->client_version) : NULL;
+	sess->client_version = (p->client_version) ? _strdup(p->client_version) : NULL;
 	sess->last_sysmsg = p->last_sysmsg;
 	sess->image_size = p->image_size;
 	sess->pid = -1;

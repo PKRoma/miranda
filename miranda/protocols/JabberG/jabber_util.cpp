@@ -925,7 +925,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	UpdatePriorityMenu(iPriority);
 
 	char szPriority[40];
-	itoa( iPriority, szPriority, 10 );
+	_itoa( iPriority, szPriority, 10 );
 
 	XmlNode p( "presence" ); p.addChild( "priority", szPriority );
 	if ( to != NULL )

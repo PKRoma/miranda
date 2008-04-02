@@ -297,7 +297,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 {
 	struct gg_dcc7 *dcc = NULL;
 	const char *tmp;
-	struct stat st;
+	struct _stat st;
 #ifdef GG_CONFIG_MIRANDA
 	FILE *fd = NULL;
 #else
@@ -319,8 +319,8 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 		goto fail;
 	}
 
-	if (stat(filename, &st) == -1) {
-		gg_debug(GG_DEBUG_MISC, "// gg_dcc7_send_file() stat() failed (%s)\n", strerror(errno));
+	if (_stat(filename, &st) == -1) {
+		gg_debug(GG_DEBUG_MISC, "// gg_dcc7_send_file() _stat() failed (%s)\n", strerror(errno));
 		goto fail;
 	}
 

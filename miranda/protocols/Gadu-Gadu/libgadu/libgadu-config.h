@@ -16,7 +16,7 @@
 /* MSC have no va_copy */
 #ifdef _MSC_VER
 #define _USE_32BIT_TIME_T
-#define strcasecmp  stricmp
+#define strcasecmp  _stricmp
 #else
 
 /* MingW has them but not Visual C++ */

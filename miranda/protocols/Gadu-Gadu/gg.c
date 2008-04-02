@@ -310,12 +310,12 @@ void init_protonames()
 
 	// We copy to static variable
 	strncpy(ggProto, p, sizeof(ggProto));
-	strupr(ggProto);
+	_strupr(ggProto);
 	// Is it default GG.dll if yes do Gadu-Gadu as a title
 	if(!strcmp(ggProto, GGDEF_PROTO))
-		ggProtoName = strdup(GGDEF_PROTONAME);
+		ggProtoName = _strdup(GGDEF_PROTONAME);
 	else
-		ggProtoName = strdup(p);
+		ggProtoName = _strdup(p);
 }
 
 //////////////////////////////////////////////////////////
@@ -462,7 +462,7 @@ const char *ggdebug_eventtype(struct gg_event *e)
 
 void gg_debughandler(int level, const char *format, va_list ap)
 {
-	char szText[1024], *szFormat = strdup(format);
+	char szText[1024], *szFormat = _strdup(format);
 	// Kill end line
 	char *nl = strrchr(szFormat, '\n');
 	if(nl) *nl = 0;

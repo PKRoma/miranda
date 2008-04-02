@@ -85,7 +85,7 @@ static int gg_pubdir50_add_n(gg_pubdir50_t req, int num, const char *field, cons
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_pubdir50_add_n(%p, %d, \"%s\", \"%s\");\n", req, num, field, value);
 
-	if (!(dupvalue = strdup(value))) {
+	if (!(dupvalue = _strdup(value))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_add_n() out of memory\n");
 		return -1;
 	}
@@ -100,7 +100,7 @@ static int gg_pubdir50_add_n(gg_pubdir50_t req, int num, const char *field, cons
 		return 0;
 	}
 		
-	if (!(dupfield = strdup(field))) {
+	if (!(dupfield = _strdup(field))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_add_n() out of memory\n");
 		free(dupvalue);
 		return -1;

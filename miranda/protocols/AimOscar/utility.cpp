@@ -1202,12 +1202,12 @@ char* get_default_group()
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
 	{
-		default_group=strdup(dbv.pszVal);
+		default_group=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		default_group=strdup(AIM_DEFAULT_GROUP);
+		default_group=_strdup(AIM_DEFAULT_GROUP);
 	}
 	return default_group;
 }
@@ -1217,12 +1217,12 @@ char* get_outer_group()
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
 	{
-		outer_group=strdup(dbv.pszVal);
+		outer_group=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		outer_group=strdup(AIM_DEFAULT_GROUP);
+		outer_group=_strdup(AIM_DEFAULT_GROUP);
 	}
 	return outer_group;
 }*/

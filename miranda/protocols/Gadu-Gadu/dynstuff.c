@@ -310,7 +310,7 @@ string_t string_init(const char *value)
 	if (!value)
 		value = "";
 
-	tmp->str = strdup(value);
+	tmp->str = _strdup(value);
 	tmp->len = strlen(value);
 	tmp->size = strlen(value) + 1;
 
@@ -367,7 +367,7 @@ char *string_free(string_t s, int free_string)
 }
 
 /*
- * itoa()
+ * _itoa()
  *
  * prosta funkcja, która zwraca tekstow± reprezentacjê liczby. w obrêbie
  * danego wywo³ania jakiej¶ funkcji lub wyra¿enia mo¿e byæ wywo³ania 10
@@ -554,7 +554,7 @@ char *array_join(char **array, const char *sep)
 	int i;
 
 	if (!array)
-		return strdup("");
+		return _strdup("");
 
 	for (i = 0; array[i]; i++) {
 		if (i)

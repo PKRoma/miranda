@@ -413,7 +413,7 @@ int gg_gc_destroy();
 char * gg_gc_getchat(uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(char *id);
 int gg_gc_changenick(HANDLE hContact, char *pszNick);
-#define UIN2ID(uin,id) itoa(uin,id,10)
+#define UIN2ID(uin,id) _itoa(uin,id,10)
 
 // Debug functions
 #ifdef DEBUGMODE
