@@ -58,9 +58,7 @@ void CIrcProto::FormatMsg(CMString& text)
 			}	}
 
 			ReplaceString( sNewNick, NICKSUBSTITUTE, sNick4Perform.c_str());
-			S = GetWord(text.c_str(), 0);
-			S += _T(" ");
-			S += sNewNick;
+			S = GetWord(text.c_str(), 0) + _T(" ") + sNewNick;
 		}
 	}
 	else S = GetWordAddress(text.c_str(), 0);
@@ -106,8 +104,7 @@ CMString CIrcProto::DoAlias( const TCHAR *text, TCHAR *window)
 			const TCHAR* p3 = _tcsstr( alias.c_str(), (GetWord(line, 0)+ _T(" ")).c_str());
 			if ( p3 != alias.c_str()) {
 				CMString S = _T("\r\n");
-				S += GetWord(line, 0);
-				S += _T(" ");
+				S += GetWord(line, 0) + _T(" ");
 				p3 = _tcsstr( alias.c_str(), S.c_str());
 				if ( p3 )
 					p3 += 2;

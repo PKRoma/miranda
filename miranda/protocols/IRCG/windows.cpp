@@ -242,10 +242,9 @@ void CNickDlg::OnOk( CCtrlButton* )
 	if ( !m_proto->getTString( "RecentNicks", &dbv )) {
 		for ( int i = 0; i<10; i++ ) {
 			CMString s = GetWord(dbv.ptszVal, i);
-			if ( !s.IsEmpty() && s != szTemp) {
-				S += _T(" ");
-				S += s;
-		}	}
+			if ( !s.IsEmpty() && s != szTemp)
+				S += _T(" ") + s;
+		}
 		DBFreeVariant(&dbv);
 	}
 	m_proto->setTString( "RecentNicks", S.c_str());
@@ -422,7 +421,7 @@ void CJoinDlg::OnOk( CCtrlButton* )
 		for (int i = 0; i < 20; i++ ) {
 			CMString W = GetWord(dbv.ptszVal, i);
 			if ( !W.IsEmpty() && W != SL)
-				S += _T(" ") + GetWord(dbv.ptszVal, i);
+				S += _T(" ") + W;
 		}
 		DBFreeVariant(&dbv);
 	}
@@ -792,8 +791,7 @@ void CManagerDlg::OnClose()
 		if ( m_topic.SendMsg( CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
 			CMString S1 = temp;
 			ReplaceString( S1, _T(" "), _T("%¤"));
-			S += _T(" ");
-			S += S1;
+			S += _T(" ") + S1;
 	}	}
 
 	if ( !S.IsEmpty() && m_proto->IsConnected() ) {
@@ -1013,8 +1011,7 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 		if ( wi->pszMode && wi->pszPassword && _tcschr( wi->pszMode, 'k' )) {
 			if ( !m_check5.GetState()) {
 				lstrcat( toremove, _T("k"));
-				appendixremove += _T(" ");
-				appendixremove += wi->pszPassword;
+				appendixremove += _T(" ") + CMString(wi->pszPassword);
 			}
 			else if( GetWindowTextLength( m_key.GetHwnd())) {
 				TCHAR temp[400];
@@ -1023,10 +1020,8 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 				if ( Key != temp ) {
 					lstrcat( toremove, _T("k"));
 					lstrcat( toadd, _T("k"));
-					appendixadd += _T(" ");
-					appendixadd += temp;
-					appendixremove += _T(" ");
-					appendixremove += wi->pszPassword;
+					appendixadd += _T(" ") + CMString(temp);
+					appendixremove += _T(" ") + CMString(wi->pszPassword);
 			}	}
 		}
 		else if ( m_check5.GetState() && GetWindowTextLength( m_key.GetHwnd())) {
@@ -1046,8 +1041,7 @@ void CManagerDlg::OnApplyModes( CCtrlButton* )
 				GetDlgItemText( m_hwnd, IDC_LIMIT, temp, SIZEOF(temp));
 				if ( wi->pszLimit && lstrcmpi( wi->pszLimit, temp )) {
 					lstrcat( toadd, _T("l"));
-					appendixadd += _T(" ");
-					appendixadd += temp;
+					appendixadd += _T(" ") + CMString(temp);
 			}	}
 		}
 		else if ( m_check6.GetState() && GetWindowTextLength( m_limit.GetHwnd())) {

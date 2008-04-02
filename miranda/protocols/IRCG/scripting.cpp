@@ -249,8 +249,7 @@ int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
 							int k = S1.Find(_T(" "));
 							if ( k != -1 )
 								S1 = S1.Mid(0, k);
-							S += S1;
-							S += _T(" ");
+							S += S1 + _T(" ");
 					}	}
 					j++;
 			}	}

@@ -103,10 +103,8 @@ VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 			gci.iItem = i;
 			gci.pszModule = ppro->m_szModuleName;
 			if ( !CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci ) && gci.iType == GCW_CHATROOM )
-				if ( gci.iCount <= ppro->m_onlineNotificationLimit ) {
-					ppro->m_channelsToWho += gci.pszName;
-					ppro->m_channelsToWho += _T(" ");
-				}
+				if ( gci.iCount <= ppro->m_onlineNotificationLimit )
+					ppro->m_channelsToWho += CMString(gci.pszName) + _T(" ");
 	}	}
 
 	if ( ppro->m_channelsToWho.IsEmpty()) {
@@ -204,7 +202,7 @@ VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWOR
 		for ( int i = 0; i < 3; i++ ) {
 			params = _T("");
 			for ( int j = 0; j < 5; j++ ) 
-				params += GetWord( ppro->m_namesToUserhost.c_str(), i *5 + j) + _T(" ");
+				params += GetWord( ppro->m_namesToUserhost, i *5 + j) + _T(" ");
 
 			if ( params[0] != ' ' )
 				ppro->DoUserhostWithReason(1, CMString(_T("S")) + params, true, params);
@@ -563,7 +561,7 @@ bool CIrcProto::OnIrc_MODE( const CIrcMessage* pmsg )
 				
 				CMString sMessage = temp;
 				for ( int i=2; i < (int)pmsg->parameters.getCount(); i++ )
-					sMessage = sMessage  + _T(" ") + pmsg->parameters[i];
+					sMessage += _T(" ") + pmsg->parameters[i];
 
 				DoEvent( GC_EVENT_INFORMATION, pmsg->parameters[0].c_str(), pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false ); 
 			}
@@ -585,7 +583,7 @@ bool CIrcProto::OnIrc_MODE( const CIrcMessage* pmsg )
 
 			CMString sMessage = temp;
 			for ( int i=2; i < (int)pmsg->parameters.getCount(); i++ )
-				sMessage = sMessage  + _T(" ") + pmsg->parameters[i];
+				sMessage += _T(" ") + pmsg->parameters[i];
 
 			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, pmsg->prefix.sNick.c_str(), sMessage.c_str(), NULL, NULL, NULL, true, false); 
 		}
@@ -1448,8 +1446,7 @@ bool CIrcProto::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 							if ( !lstrcmpi( sChanName, S.c_str()))
 								break;
 
-							save += command;
-							save += _T(" ");
+							save += command + _T(" ");
 					}	}
 
 					if ( !command.IsEmpty() ) {
@@ -1890,10 +1887,9 @@ bool CIrcProto::OnIrc_JOINERROR( const CIrcMessage* pmsg )
 				command = GetWord( dbv.ptszVal, i );
 				i++;
 
-				if ( !command.IsEmpty() && pmsg->parameters[0] == command.Mid(1, command.GetLength())) {
-					save += command;
-					save += _T(" ");
-			}	}
+				if ( !command.IsEmpty() && pmsg->parameters[0] == command.Mid(1, command.GetLength()))
+					save += command + _T(" ");
+			}
 			
 			DBFreeVariant(&dbv);
 
@@ -2078,7 +2074,7 @@ bool CIrcProto::OnIrc_WHO_REPLY( const CIrcMessage* pmsg )
 {
 	CMString command = PeekAtReasons(2);
 	if ( pmsg->m_bIncoming && pmsg->parameters.getCount() > 6 && command[0] == 'S' ) {
-		m_whoReply += pmsg->parameters[5] + _T(" ") + pmsg->parameters[2] + _T(" ") + pmsg->parameters[3] + _T(" ") + pmsg->parameters[6] + _T(" ");
+		m_whoReply.AppendFormat( _T("%s %s %s %s "), pmsg->parameters[5].c_str(), pmsg->parameters[2].c_str(), pmsg->parameters[3].c_str(), pmsg->parameters[6].c_str());
 		if ( lstrcmpi( pmsg->parameters[5].c_str(), m_info.sNick.c_str()) == 0 ) {
 			TCHAR host[1024];
 			lstrcpyn( host, pmsg->parameters[3].c_str(), 1024 );
@@ -2220,13 +2216,14 @@ bool CIrcProto::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 
 				case 'K':	// Ban & Kick
 					channel = (command.c_str() + 1);
-					mess = _T("/MODE ") + channel + _T(" +b *!*@") + host + _T("%newl/KICK ") + channel + _T(" ") + nick;
+					mess.Format( _T("/MODE %s +b *!*@%s%%newl/KICK %s %s"), channel.c_str(), host.c_str(), channel.c_str(), nick.c_str());
 					break;
 
 				case 'L':	// Ban & Kick with reason
 					channel = (command.c_str() + 1);
-					mess = _T("/MODE ") + channel + _T(" +b *!*@") + host + _T("%newl/KICK ") + channel + _T(" ") + nick + _T(" %question=\"");
-					mess += (CMString)TranslateT("Please enter the reason") + _T("\",\"") + TranslateT("Ban'n Kick") + _T("\",\"") + TranslateT("Jerk") + _T("\"");
+					mess.Format( _T("/MODE %s +b *!*@%s%%newl/KICK %s %s %%question=\"%s\",\"%s\",\"%s\""),
+						channel.c_str(), host.c_str(), channel.c_str(), nick.c_str(),
+						TranslateT("Please enter the reason"), TranslateT("Ban'n Kick"), TranslateT("Jerk"));
 					break;
 				}
 				

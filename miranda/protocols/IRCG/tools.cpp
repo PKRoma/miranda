@@ -810,7 +810,7 @@ void CIrcProto::DoUserhostWithReason(int type, CMString reason, bool bSendComman
 		S = _T("WHO");
 		break;
 	default:
-		S= _T("USERHOST");
+		S = _T("USERHOST");
 		break;
 	}
 
