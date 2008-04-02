@@ -118,8 +118,7 @@ typedef struct {
 
 void SafeReleaseFileTransfer(void **ft);
 
-struct oscar_connection
-{
+struct oscar_connection {
 	HANDLE hContact;
 	HANDLE hConnection;
 	int status;
@@ -148,11 +147,13 @@ struct oscar_connection
 #define OCS_PROXY       8
 #define OCS_WAITING     10
 
-typedef struct {
-	WORD wPort;
-	HANDLE hBoundPort;
-	oscar_filetransfer* ft;
-} oscar_listener;
+struct oscar_listener {
+  CIcqProto *ppro;
+  WORD wPort;
+  HANDLE hBoundPort;
+  oscar_filetransfer *ft;
+};
+
 
 #endif /* __OSCAR_FILETRANSFER_H */
 

@@ -36,9 +36,8 @@
 
 #include "icqoscar.h"
 
-struct oscarthreadstartinfo
-{
-	CIcqProto* ppro;
+struct oscarthreadstartinfo {
+	CIcqProto *ppro;
 	int type;
 	int incoming;
 	HANDLE hContact;
@@ -366,18 +365,24 @@ DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 	return dwCheck;
 }
 
+
 oscar_listener* CIcqProto::CreateOscarListener(oscar_filetransfer *ft, NETLIBNEWCONNECTIONPROC_V2 handler)
 {
 	oscar_listener *listener = (oscar_listener*)SAFE_MALLOC(sizeof(oscar_listener));
 
-	listener->ft = ft;
-	if (listener->hBoundPort = NetLib_BindPort(handler, listener, &listener->wPort, NULL))
-		return listener; // Success
+  if (listener)
+  {
+    listener->ppro = this;
+	  listener->ft = ft;
+	  if (listener->hBoundPort = NetLib_BindPort(handler, listener, &listener->wPort, NULL))
+		  return listener; // Success
 
-	SAFE_FREE((void**)&listener);
+	  SAFE_FREE((void**)&listener);
+  }
 
 	return NULL; // Failure
 }
+
 
 void CIcqProto::ReleaseOscarListener(oscar_listener **pListener)
 {
@@ -797,19 +802,24 @@ void CIcqProto::handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, cha
 	}
 }
 
-// This function is called from the Netlib when someone is connecting to our oscar_listener
 
-static DWORD __stdcall oft_connectionThreadStub(oscarthreadstartinfo *otsi)
+// static entry for OFT connection thread
+static unsigned __stdcall oft_connectionThreadStub(void *lParam)
 {
-	otsi->ppro->oft_connectionThread( otsi );
+  oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)lParam;
+  
+  otsi->ppro->oft_connectionThread(otsi);
 	return 0;
 }
 
+
+// This function is called from the Netlib when someone is connecting to our oscar_listener
 static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
 	oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
-	oscar_listener* listener = (oscar_listener*)pExtra;
+	oscar_listener *listener = (oscar_listener*)pExtra;
 
+  otsi->ppro = listener->ppro;
 	otsi->type = listener->ft->sending ? OCT_NORMAL : OCT_REVERSE;
 	otsi->incoming = 1;
 	otsi->hConnection = hNewConnection;
@@ -817,8 +827,9 @@ static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, v
 	otsi->listener = listener;
 
 	// Start a new thread for the incomming connection
-	ICQCreateThread((pThreadFuncEx)oft_connectionThreadStub, otsi);
+	ICQCreateThread(oft_connectionThreadStub, otsi);
 }
+
 
 static char *oftGetFileContainer(oscar_filetransfer* oft, const char** files, int iFile)
 {
@@ -1223,7 +1234,7 @@ void CIcqProto::OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int
 	otsi->type = type;
 	otsi->ft = ft;
 
-	ICQCreateThread((pThreadFuncEx)oft_connectionThreadStub, otsi);
+	ICQCreateThread(oft_connectionThreadStub, otsi);
 }
 
 int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
@@ -2365,7 +2376,7 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 		if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
 		ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
 		// convert to LE ordered string
-    BYTE* pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address!
+    BYTE *pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address!
 		unpackWideString(&pwsThisFileBuf, (WCHAR*)ft->rawFileName, (WORD)(strlennull(pwsThisFile) * sizeof(WCHAR)));
 		SAFE_FREE((void**)&pwsThisFile);
 	}
