@@ -162,14 +162,14 @@ void CWhoisDlg::OnVersion( CCtrlButton* )
 
 void CWhoisDlg::ShowMessage( const CIrcMessage* pmsg )
 {
-	if ( m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1]->c_str()) == CB_ERR)	
-		m_InfoNick.SendMsg( CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1]->c_str());	
-	int i = m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1]->c_str());
+	if ( m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str()) == CB_ERR)	
+		m_InfoNick.SendMsg( CB_ADDSTRING, 0, (LPARAM) pmsg->parameters[1].c_str());	
+	int i = m_InfoNick.SendMsg( CB_FINDSTRINGEXACT, -1, (LPARAM) pmsg->parameters[1].c_str());
 	m_InfoNick.SendMsg( CB_SETCURSEL, i, 0);
-	m_Caption.SetText( pmsg->parameters[1]->c_str());
-	m_InfoName.SetText( pmsg->parameters[5]->c_str());	
-	m_InfoAddress.SetText( pmsg->parameters[3]->c_str());
-	m_InfoId.SetText( pmsg->parameters[2]->c_str());
+	m_Caption.SetText( pmsg->parameters[1].c_str());
+	m_InfoName.SetText( pmsg->parameters[5].c_str());	
+	m_InfoAddress.SetText( pmsg->parameters[3].c_str());
+	m_InfoId.SetText( pmsg->parameters[2].c_str());
 	m_InfoChannels.SetText( _T("") );
 	m_InfoServer.SetText( _T("") );
 	m_InfoAway2.SetText( _T("") );
@@ -187,9 +187,9 @@ void CWhoisDlg::ShowMessage( const CIrcMessage* pmsg )
 
 void CWhoisDlg::ShowMessageNoUser( const CIrcMessage* pmsg )
 {
-	m_InfoNick.SetText( pmsg->parameters[2]->c_str());
+	m_InfoNick.SetText( pmsg->parameters[2].c_str());
 	m_InfoNick.SendMsg( CB_SETEDITSEL, 0,MAKELPARAM(0,-1));
-	m_Caption.SetText( pmsg->parameters[2]->c_str());	
+	m_Caption.SetText( pmsg->parameters[2].c_str());	
 	m_InfoName.SetText(  _T("") );
 	m_InfoAddress.SetText(  _T("") );
 	m_InfoId.SetText(  _T("") );
@@ -447,8 +447,8 @@ void CQuickDlg::OnInitDialog()
 
 	if ( m_proto->m_servers.getCount() > 0 ) {
 		for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
-			SERVER_INFO* si = m_proto->m_servers[i];
-			m_serverCombo.AddStringA( si->m_name, ( LPARAM )si );
+			const SERVER_INFO& si = m_proto->m_servers[i];
+			m_serverCombo.AddStringA( si.m_name, ( LPARAM )&si );
 		}
 	}
 	else EnableWindow(GetDlgItem( m_hwnd, IDOK), false);

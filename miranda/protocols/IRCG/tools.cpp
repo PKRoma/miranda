@@ -679,7 +679,7 @@ CIrcProto* GetTimerOwner( UINT_PTR nIDEvent )
 	if ( idx == -1 )
 		result = NULL;
 	else
-		result = timers[ idx ]->ppro;
+		result = timers[ idx ].ppro;
 	LeaveCriticalSection( &timers_cs );
 	return result;
 }
@@ -702,10 +702,9 @@ void CIrcProto::KillChatTimer(UINT_PTR &nIDEvent)
 		EnterCriticalSection( &timers_cs );
 		TimerPair temp( this, nIDEvent );
 		int idx = timers.getIndex( &temp );
-		if ( idx != -1 ) {
-			delete timers[ idx ];
+		if ( idx != -1 )
 			timers.remove( idx );
-		}
+
 		LeaveCriticalSection( &timers_cs );
 
 		KillTimer(NULL, nIDEvent);
@@ -836,21 +835,19 @@ CMString CIrcProto::GetNextUserhostReason(int type)
 	CMString reason = _T("");
 	switch( type ) {
 	case 1:
-		if(!vUserhostReasons.getCount())
-			return (CMString)_T("");
+		if ( !vUserhostReasons.getCount())
+			return CMString();
 
 		// Get reason
-		reason = *vUserhostReasons[0];
-		delete vUserhostReasons[0];
+		reason = vUserhostReasons[0];
 		vUserhostReasons.remove( 0 );
 		break;
 	case 2:
-		if(!vWhoInProgress.getCount())
-			return (CMString)_T("");
+		if ( !vWhoInProgress.getCount())
+			return CMString();
 
 		// Get reason
-		reason = *vWhoInProgress[0];
-		delete vWhoInProgress[0];
+		reason = vWhoInProgress[0];
 		vWhoInProgress.remove( 0 );
 		break;
 	}
@@ -862,17 +859,17 @@ CMString CIrcProto::PeekAtReasons( int type )
 {
 	switch ( type ) {
 	case 1:
-		if(!vUserhostReasons.getCount())
-			return (CMString)_T("");
-		return *vUserhostReasons[0];
+		if (!vUserhostReasons.getCount())
+			return CMString();
+		return vUserhostReasons[0];
 
 	case 2:
-		if(!vWhoInProgress.getCount())
-			return (CMString)_T("");
-		return *vWhoInProgress[0];
+		if (!vWhoInProgress.getCount())
+			return CMString();
+		return vWhoInProgress[0];
 
 	}
-	return (CMString)_T("");
+	return CMString();
 }
 
 void CIrcProto::ClearUserhostReasons(int type)

@@ -79,6 +79,22 @@ template<class T> struct OBJLIST : public LIST<T>
 			delete items[i];
 		li.List_Destroy(( SortedList* )this );
 	}
+
+	__inline int remove( int idx ) {
+		delete items[idx];
+		return li.List_Remove(( SortedList* )this, idx );
+	}
+
+	__inline int remove( T* p )
+	{
+		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 ) {
+			delete p;
+			return 1;
+		}
+		return 0;
+	}
+
+	__inline T& operator[]( int idx ) const { return *items[idx]; }
 };
 
 #endif

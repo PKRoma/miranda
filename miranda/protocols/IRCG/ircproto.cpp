@@ -404,16 +404,14 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
 
 		for ( int i = 0; i < performToConvert.getCount(); i++ ) {
-			String* s = performToConvert[i];
+			String s = performToConvert[i];
 			DBVARIANT dbv;
-			if ( !getTString( s->c_str(), &dbv )) {
-				DBDeleteContactSetting( NULL, m_szModuleName, s->c_str());
-				s->MakeUpper();
-				setTString( s->c_str(), dbv.ptszVal );
+			if ( !getTString( s, &dbv )) {
+				DBDeleteContactSetting( NULL, m_szModuleName, s );
+				s.MakeUpper();
+				setTString( s, dbv.ptszVal );
 				DBFreeVariant( &dbv );
-			}
-			delete s;
-		}
+		}	}
 
 		setByte( "PerformConversionDone", 1 );
 	}
