@@ -594,7 +594,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 			GetDlgItemText( hwndDlg, IDOK, gszOkBuffonFormat, SIZEOF(gszOkBuffonFormat));
 
 			char szSetting[64];
-			sprintf(szSetting, "XStatus%dMsg", lParam);
+			sprintf(szSetting, "XStatus%dMsg", param->mood);
 			DBVARIANT dbv;
 			if ( !param->ppro->JGetStringT( NULL, szSetting, &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_MSG_MOOD, dbv.ptszVal );
