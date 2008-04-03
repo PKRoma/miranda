@@ -51,15 +51,18 @@ CIrcMessage::CIrcMessage( CIrcProto* _pro, const TCHAR* lpszCmdLine, int codepag
 
 CIrcMessage::CIrcMessage(const CIrcMessage& m) :
 	sCommand( m.sCommand ),
-	parameters( m.parameters ),
 	m_bIncoming( m.m_bIncoming ), 
 	m_bNotify( m.m_bNotify ),
 	m_codePage( m.m_codePage ),
-	m_proto( m.m_proto )
+	m_proto( m.m_proto ),
+	parameters( m.parameters.getCount(), NULL )
 {
 	prefix.sNick = m.prefix.sNick;
 	prefix.sUser = m.prefix.sUser;
 	prefix.sHost = m.prefix.sHost;
+
+	for ( int i=0; i < m.parameters.getCount(); i++ )
+		parameters.insert( new CMString( m.parameters[i] ));
 }
 
 CIrcMessage::~CIrcMessage()
