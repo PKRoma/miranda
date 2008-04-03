@@ -553,6 +553,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\include\m_system_cpp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\include\m_url.h"
 				>
 			</File>
@@ -2028,6 +2032,10 @@
 				Name="protocols"
 				>
 				<File
+					RelativePath="..\include\m_protoint.h"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\protocols\protoaccs.c"
 					>
 				</File>
@@ -2726,6 +2734,10 @@
 							PreprocessorDefinitions=""
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\modules\srfile\ftmanager.c"
+					>
 				</File>
 			</Filter>
 			<Filter
@@ -3677,6 +3689,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\icon_accmgr.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\icon_all.ico"
 				>
 			</File>
@@ -3749,11 +3765,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\icon_undo.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\icon_unicode.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\res\icon_url.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_window.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon_windows.ico"
 				>
 			</File>
 			<File

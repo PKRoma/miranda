@@ -59,6 +59,9 @@ struct FileDlgData {
 	int *fileVirusScanned;
 	HANDLE hPreshutdownEvent;
 	DWORD dwTicks;
+
+	char szSavePath[MAX_PATH];
+	char szMsg[450], szFilenames[1024];
 };
 
 //file.c
@@ -88,10 +91,26 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir);
 int BrowseForFolder(HWND hwnd,char *szPath);
 //fileexistsdlg.c
+struct TDlgProcFileExistsParam
+{
+	HWND hwndParent;
+	PROTOFILETRANSFERSTATUS *fts;
+};
 BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //filexferdlg.c
 BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //fileopts.c
 int FileOptInitialise(WPARAM wParam,LPARAM lParam);
+//ftmanager.c
+#define WM_FT_ADD			(WM_APP+1)
+#define WM_FT_RESIZE		(WM_APP+2)
+#define WM_FT_REMOVE		(WM_APP+3)
+#define WM_FT_SELECTPAGE	(WM_APP+4)
+
+HWND FtMgr_Show();
+void FtMgr_Destroy();
+HWND FtMgr_AddTransfer(struct FileDlgData *dat);
+
+
 
 

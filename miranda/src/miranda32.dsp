@@ -685,6 +685,10 @@ SOURCE=.\modules\srfile\filesenddlg.c
 
 SOURCE=.\modules\srfile\filexferdlg.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\modules\srfile\ftmanager.c
+# End Source File
 # End Group
 # Begin Group "srurl"
 

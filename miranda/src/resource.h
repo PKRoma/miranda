@@ -116,6 +116,8 @@
 #define IDD_ACCMGR                      283
 #define IDD_ACCFORM                     284
 #define IDD_WAITRESTART                 285
+#define IDD_FTMGR                       286
+#define IDD_FTPAGE                      287
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -335,8 +337,11 @@
 #define IDC_SCANCMDLINEBROWSE           1476
 #define IDC_ALLTRANSFERRED              1477
 #define IDC_OPENFOLDER                  1478
+#define IDC_ALLTRANSFERRED2             1478
 #define IDC_OPENFILE                    1479
 #define IDC_TOTALSIZE                   1480
+#define IDC_OPENFILE2                   1480
+#define IDC_CONTACT                     1480
 #define IDC_AUTOACCEPT                  1484
 #define IDC_SCANCMDLINE                 1485
 #define IDC_WARNBEFOREOPENING           1488
@@ -435,6 +440,12 @@
 #define IDC_TXT_ACCOUNT                 1720
 #define IDC_TXT_ADDITIONAL              1721
 #define IDC_TXT_INFO                    1722
+#define IDC_CONTACTNAME                 1724
+#define IDC_FRAME                       1725
+#define IDC_LIST1                       1726
+#define IDC_ALLFILES                    1726
+#define IDC_ALLPRECENTAGE               1727
+#define IDC_ALLPRECENTS                 1727
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -464,9 +475,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        286
+#define _APS_NEXT_RESOURCE_VALUE        288
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1723
+#define _APS_NEXT_CONTROL_VALUE         1728
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

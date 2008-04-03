@@ -41,14 +41,8 @@ struct virusscanthreadstartinfo {
 	HWND hwndReply;
 };
 
-static void SetOpenFileButtonStyle(HWND hwndButton,int downarrow,int enabled)
+static void SetOpenFileButtonStyle(HWND hwndButton,int enabled)
 {
-	if(downarrow) {
-		SendMessage(hwndButton,BUTTONSETARROW,1,0);
-	}
-	else {
-		SendMessage(hwndButton,BUTTONSETARROW,0,0);
-	}
 	EnableWindow(hwndButton,enabled);
 }
 
@@ -85,56 +79,78 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 
 static void SetFilenameControls(HWND hwndDlg,PROTOFILETRANSFERSTATUS *fts)
 {
-	char str[MAX_PATH];
-	HWND hwndFilename = GetDlgItem(hwndDlg,IDC_FILENAME);
+	TCHAR msg[MAX_PATH];
+	char *fn = NULL;
 
-	GetWindowTextA(hwndFilename, str, SIZEOF(str));
-	if (lstrcmpA(str, fts->currentFile) == 0) return;
-
-	{	TCHAR msg[MAX_PATH];
-		wsprintf(msg,TranslateT("Current file (%d of %d)"),fts->currentFileNumber+1,fts->totalFiles);
-		SetDlgItemText(hwndDlg,IDC_CURRENTFILEGROUP,msg);
+	if (fts->currentFile)
+	{
+		fn = strrchr(fts->currentFile, '\\');
+		if (!fn) fn = fts->currentFile;
+		else ++fn;
 	}
 
-	lstrcpynA(str,fts->currentFile,SIZEOF(str));
-	if(strchr(str,'\\')) {
-		RECT rcFilename;
-		HDC hdc;
-		SIZE textSize;
-		HFONT hFont;
-		int driveNameLen,driveAndEllipsisLen=0;
-		char *pszBackslash;
-
-		GetClientRect(hwndFilename,&rcFilename);
-		hdc = GetDC(hwndFilename);
-		hFont = SelectObject(hdc,(HFONT)SendMessage(hwndFilename,WM_GETFONT,0,0));
-		if(str[0] && str[1]==':' && str[2]=='\\') driveNameLen=3;
-		else if(str[0]=='\\' && str[1]=='\\') {
-			if((pszBackslash=strchr(str+2,'\\'))!=NULL && (pszBackslash=strchr(pszBackslash+1,'\\'))!=NULL)
-				driveNameLen=pszBackslash-str+1;
-			else driveNameLen=2;
-		}
-		else driveNameLen=0;
-		for(;;) {
-			GetTextExtentPoint32A(hdc,str,lstrlenA(str),&textSize);
-			if(textSize.cx<rcFilename.right) break;
-			pszBackslash=strchr(str+(driveAndEllipsisLen?driveAndEllipsisLen:driveNameLen),'\\');
-			if(pszBackslash==NULL) {
-				lstrcpyA(str,strrchr(fts->currentFile,'\\')+1);
-				break;
-			}
-			if(driveAndEllipsisLen)
-				MoveMemory(str+driveAndEllipsisLen,pszBackslash+1,lstrlenA(pszBackslash));
-			else {
-				MoveMemory(str+driveNameLen+4,pszBackslash,lstrlenA(pszBackslash)+1);
-				CopyMemory(str+driveNameLen,"...\\",4);
-				driveAndEllipsisLen=driveNameLen+4;
-			}
-		}
-		SelectObject(hdc,hFont);
-		ReleaseDC(hwndFilename,hdc);
+	if (fn && (fts->totalFiles > 1))
+	{
+		mir_sntprintf(msg, SIZEOF(msg), _T("%s: ") _T(TCHAR_STR_PARAM) _T(" (%d %s %d)"),
+			(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR), fn,
+			fts->currentFileNumber+1, TranslateT("of"), fts->totalFiles);
+	} else
+	if (fn)
+	{
+		mir_sntprintf(msg, SIZEOF(msg), _T("%s: ") _T(TCHAR_STR_PARAM),
+			(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR),
+			fn);
+	} else
+	{
+		lstrcpyn(msg, (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR), SIZEOF(msg));
 	}
-	SetWindowTextA(hwndFilename,str);
+
+	SetDlgItemText(hwndDlg, IDC_CONTACTNAME, msg);
+}
+
+static void SetFtStatus(HWND hwndDlg, TCHAR *text, BOOL bProgress)
+{
+	SetDlgItemText(hwndDlg,IDC_STATUS,TranslateTS(text));
+	ShowWindow(GetDlgItem(hwndDlg,IDC_STATUS), bProgress?SW_HIDE:SW_SHOW);
+	ShowWindow(GetDlgItem(hwndDlg,IDC_ALLFILESPROGRESS), bProgress?SW_SHOW:SW_HIDE);
+}
+
+static void HideProgressControls(HWND hwndDlg)
+{
+	RECT rc;
+	GetWindowRect(GetDlgItem(hwndDlg, IDC_ALLPRECENTS), &rc);
+	MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
+	SetWindowPos(hwndDlg, NULL, 0, 0, 100, rc.bottom+3, SWP_NOMOVE|SWP_NOZORDER);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLTRANSFERRED), SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLSPEED), SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLPRECENTS), SW_HIDE);
+	PostMessage(GetParent(hwndDlg), WM_FT_RESIZE, 0, (LPARAM)hwndDlg);
+}
+
+static int FileTransferDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+{
+	switch(urc->wId) {
+		case IDC_CONTACTNAME:
+		case IDC_STATUS:
+		case IDC_ALLFILESPROGRESS:
+			return RD_ANCHORX_WIDTH|RD_ANCHORY_TOP;
+		case IDC_FRAME:
+			return RD_ANCHORX_WIDTH|RD_ANCHORY_BOTTOM;
+		case IDC_ALLPRECENTAGE:
+		case IDCANCEL:
+		case IDC_OPENFILE:
+			return RD_ANCHORX_RIGHT|RD_ANCHORY_TOP;
+
+		case IDC_ALLTRANSFERRED:
+			urc->rcItem.right = urc->rcItem.left + (urc->rcItem.right - urc->rcItem.left) / 3;
+			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
+
+		case IDC_ALLSPEED:
+			urc->rcItem.right = urc->rcItem.right - urc->dlgOriginalSize.cx + urc->dlgNewSize.cx;
+			urc->rcItem.left = urc->rcItem.left + (urc->rcItem.right - urc->rcItem.left) / 3;
+			return RD_ANCHORX_CUSTOM|RD_ANCHORY_CUSTOM;
+	}
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
 BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -151,53 +167,52 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
 			dat->transferStatus.currentFileNumber = -1;
 			if(dat->send) {
-				char szMsg[450];
-				GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
-				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILE,(WPARAM)szMsg,(LPARAM)dat->files);
-				SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Request sent, waiting for acceptance..."));
-				SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),dat->files[1]!=NULL,1);
+				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILE,(WPARAM)dat->szMsg,(LPARAM)dat->files);
+				SetFtStatus(hwndDlg, _T("Request sent, waiting for acceptance..."), FALSE);
+				SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1);
 				dat->waitingForAcceptance=1;
+				// hide "open" button since it may cause potential access violations...
+				ShowWindow(GetDlgItem(hwndDlg, IDC_OPENFILE), SW_HIDE);
 			}
 			else {	//recv
-				char szSavePath[MAX_PATH];
-
-				GetDlgItemTextA(GetParent(hwndDlg),IDC_FILEDIR,szSavePath,SIZEOF(szSavePath));
-				CreateDirectoryTree(szSavePath);
-				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILEALLOW,(WPARAM)dat->fs,(LPARAM)szSavePath);
-				dat->transferStatus.workingDir=mir_strdup(szSavePath);
+				CreateDirectoryTree(dat->szSavePath);
+				dat->fs=(HANDLE)CallContactService(dat->hContact,PSS_FILEALLOW,(WPARAM)dat->fs,(LPARAM)dat->szSavePath);
+				dat->transferStatus.workingDir=mir_strdup(dat->szSavePath);
 				if(DBGetContactSettingByte(dat->hContact,"CList","NotOnList",0)) dat->resumeBehaviour=FILERESUME_ASK;
 				else dat->resumeBehaviour=DBGetContactSettingByte(NULL,"SRFile","IfExists",FILERESUME_ASK);
-				SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Waiting for connection..."));
+				SetFtStatus(hwndDlg, _T("Waiting for connection..."), FALSE);
 			}
 			{
 				/* check we actually got an fs handle back from the protocol */
 				if (!dat->fs) {
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Unable to initiate transfer."));
+					SetFtStatus(hwndDlg, _T("Unable to initiate transfer."), FALSE);
 					dat->waitingForAcceptance=0;
 				}
 			}
 			{	LOGFONT lf;
 				HFONT hFont;
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEGROUP,WM_GETFONT,0,0);
+				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
 				GetObject(hFont,sizeof(lf),&lf);
 				lf.lfWeight=FW_BOLD;
 				hFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEGROUP,WM_SETFONT,(WPARAM)hFont,0);
-				SendDlgItemMessage(hwndDlg,IDC_ALLFILESGROUP,WM_SETFONT,(WPARAM)hFont,0);
+				SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_SETFONT,(WPARAM)hFont,0);
 			}
-			{	RECT rcParentClient;
-				RECT rcThisDlg;
-				BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
 
-				GetClientRect(GetParent(hwndDlg),&rcParentClient);
-				GetClientRect(hwndDlg,&rcThisDlg);
-				SetWindowPos(hwndDlg,HWND_TOP,0,rcParentClient.bottom-rcThisDlg.bottom,0,0,SWP_NOSIZE);
-				MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("USER32"),"AnimateWindow");
-				if(MyAnimateWindow)
-					MyAnimateWindow(hwndDlg,200,AW_ACTIVATE|AW_SLIDE|AW_VER_NEGATIVE);
-				else ShowWindow(hwndDlg,SW_SHOW);
-			}
-			SendDlgItemMessage(hwndDlg,IDC_OPENFILE,BUTTONSETDEFAULT,1,0);
+			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_USERDETAILS ));
+			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BUTTONADDTOOLTIP, (WPARAM)"Contact menu", 0);
+			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BUTTONSETASFLATBTN, 0, 0);
+
+			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DOWNARROW ));
+			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONADDTOOLTIP, (WPARAM)"Open...", 0);
+			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASPUSHBTN, 0, 0);
+
+			SendDlgItemMessage( hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
+			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONADDTOOLTIP, (WPARAM)"Cancel", 0);
+			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONSETASFLATBTN, 0, 0);
+
+			SetDlgItemText(hwndDlg, IDC_CONTACTNAME, (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR));
+
 			if(!dat->waitingForAcceptance) SetTimer(hwndDlg,1,1000,NULL);
 			return TRUE;
 		case WM_TIMER:
@@ -220,31 +235,50 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					FileTimeToSystemTime(&ft,&st);
 					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,SIZEOF(szTime));
 				}
-				mir_sntprintf(szDisplay,SIZEOF(szDisplay),_T("%s/%s  (%s %s)"),szSpeed,TranslateT("sec"),szTime,TranslateT("remaining"));
-				SetDlgItemText(hwndDlg,IDC_CURRENTSPEED,szDisplay);
 				if(dat->bytesRecvedHistory[0]!=dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]) {
 					li.QuadPart=BIGI(10000000)*(dat->transferStatus.totalBytes-dat->transferStatus.totalProgress)*dat->bytesRecvedHistorySize/(dat->bytesRecvedHistory[0]-dat->bytesRecvedHistory[dat->bytesRecvedHistorySize-1]);
 					ft.dwHighDateTime=li.HighPart; ft.dwLowDateTime=li.LowPart;
 					FileTimeToSystemTime(&ft,&st);
 					GetTimeFormat(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,&st,NULL,szTime,SIZEOF(szTime));
 				}
+
 				mir_sntprintf(szDisplay,SIZEOF(szDisplay),_T("%s/%s  (%s %s)"),szSpeed,TranslateT("sec"),szTime,TranslateT("remaining"));
 				SetDlgItemText(hwndDlg,IDC_ALLSPEED,szDisplay);
 			}
 			break;
+
+		case WM_MEASUREITEM:
+			return CallService(MS_CLIST_MENUMEASUREITEM,wParam,lParam);
+
+		case WM_DRAWITEM:
+			return CallService(MS_CLIST_MENUDRAWITEM,wParam,lParam);
+
 		case WM_COMMAND:
+			if ( CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU), (LPARAM)dat->hContact ))
+				break;
+
 			switch(LOWORD(wParam)) {
-				case IDCANCEL:
 				case IDOK:
-					DestroyWindow(GetParent(hwndDlg));
+				case IDCANCEL:
+					PostMessage(GetParent(hwndDlg), WM_FT_REMOVE, 0, (LPARAM)hwndDlg);
+					DestroyWindow(hwndDlg);
 					break;
-				case IDC_OPENFOLDER:
-					ShellExecuteA(NULL,NULL,dat->transferStatus.workingDir,NULL,NULL,SW_SHOW);
-					break;
+
+				case IDC_CONTACT:
+					{	RECT rc;
+						HMENU hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDCONTACT,(WPARAM)dat->hContact,0);
+						GetWindowRect((HWND)lParam,&rc);
+						TrackPopupMenu(hMenu,0,rc.left,rc.bottom,0,hwndDlg,NULL);
+						DestroyMenu(hMenu);
+						break;
+					}
 
 				case IDC_OPENFILE:
 				{
 					char **files;
+					HMENU hMenu;
+					RECT rc;
+					int ret;
 
 					if (dat->send)
 						if (dat->files == NULL)
@@ -254,22 +288,14 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					else
 						files=dat->files;
 
-					if (files == NULL || *files == NULL)
-						break;
+					hMenu = CreatePopupMenu();
+					AppendMenu(hMenu, MF_STRING, 1, TranslateT("Open folder"));
+					AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
-
-					// Only one single file
-					if (files[1] == NULL) {
-						if (!CheckVirusScanned(hwndDlg, dat, 0))
-							break;
-						ShellExecuteA(NULL, NULL, files[0], NULL, NULL, SW_SHOW);
-					}
-					// Multiple files
-					else {
-						RECT rc;
-						int i,limit;
+					if (files && *files)
+					{
+						int i, limit;
 						char *pszFilename,*pszNewFileName;
-						HMENU hMenu = CreatePopupMenu();
 
 						if (dat->send)
 							limit = dat->transferStatus.totalFiles;
@@ -283,36 +309,43 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								pszFilename = files[i];
 							else
 								pszFilename++;
-                            {
-                                if (pszFilename) {
-                                    int pszlen;
-                                    char *p;
+							{
+								if (pszFilename) {
+									int pszlen;
+									char *p;
 
-                                    pszNewFileName = (char*)mir_alloc(strlen(pszFilename)*2);
-                                    p = pszNewFileName;
-                                    for (pszlen=0; pszlen<(int)strlen(pszFilename); pszlen++) {
-                                        *p++ = pszFilename[pszlen];
-                                        if (pszFilename[pszlen]=='&')
-                                            *p++ = '&';
-                                    }
-                                    *p = '\0';
-                                    AppendMenuA(hMenu, MF_STRING, i+1, pszNewFileName);
-                                    mir_free(pszNewFileName);
-                                }
-                            }
+									pszNewFileName = (char*)mir_alloc(strlen(pszFilename)*2);
+									p = pszNewFileName;
+									for (pszlen=0; pszlen<(int)strlen(pszFilename); pszlen++) {
+										*p++ = pszFilename[pszlen];
+										if (pszFilename[pszlen]=='&')
+											*p++ = '&';
+									}
+									*p = '\0';
+									AppendMenuA(hMenu, MF_STRING, i+10, pszNewFileName);
+									mir_free(pszNewFileName);
+								}
+							}
 						}
+					}
 
-						GetWindowRect((HWND)lParam, &rc);
-						i = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-						DestroyMenu(hMenu);
+					GetWindowRect((HWND)lParam, &rc);
+					CheckDlgButton(hwndDlg, IDC_OPENFILE, BST_CHECKED);
+					ret = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTALIGN, rc.right, rc.bottom, 0, hwndDlg, NULL);
+					CheckDlgButton(hwndDlg, IDC_OPENFILE, BST_UNCHECKED);
+					DestroyMenu(hMenu);
 
-						if (i && CheckVirusScanned(hwndDlg, dat, i))
-							ShellExecuteA(NULL, NULL, files[i-1], NULL, NULL, SW_SHOW);
+					if (ret == 1)
+					{
+						ShellExecuteA(NULL,NULL,dat->transferStatus.workingDir,NULL,NULL,SW_SHOW);
+					} else
+					if (ret && CheckVirusScanned(hwndDlg, dat, ret))
+					{
+						ShellExecuteA(NULL, NULL, files[ret-10], NULL, NULL, SW_SHOW);
 					}
 
 					break;
 				}
-
 			}
 			break;
 		case M_FILEEXISTSDLGREPLY:
@@ -325,7 +358,6 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case FILERESUME_CANCEL:
 					if (dat->fs) CallContactService(dat->hContact,PSS_FILECANCEL,(WPARAM)dat->fs,0);
 					dat->fs=NULL;
-					DestroyWindow(GetParent(hwndDlg));
 					mir_free(szOriginalFilename);
 					if(pfr->szFilename) mir_free((char*)pfr->szFilename);
 					mir_free(pfr);
@@ -367,17 +399,17 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				dat->waitingForAcceptance=0;
 			}
 			switch(ack->result) {
-				case ACKRESULT_SENTREQUEST: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Decision sent")); break;
-				case ACKRESULT_CONNECTING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connecting...")); break;
-				case ACKRESULT_CONNECTPROXY: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connecting to proxy...")); break;
-				case ACKRESULT_CONNECTED: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Connected")); break;
-				case ACKRESULT_LISTENING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Waiting for connection...")); break;
-				case ACKRESULT_INITIALISING: SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Initialising...")); break;
+				case ACKRESULT_SENTREQUEST: SetFtStatus(hwndDlg, _T("Decision sent"), FALSE); break;
+				case ACKRESULT_CONNECTING: SetFtStatus(hwndDlg, _T("Connecting..."), FALSE); break;
+				case ACKRESULT_CONNECTPROXY: SetFtStatus(hwndDlg, _T("Connecting to proxy..."), FALSE); break;
+				case ACKRESULT_CONNECTED: SetFtStatus(hwndDlg, _T("Connected"), FALSE); break;
+				case ACKRESULT_LISTENING: SetFtStatus(hwndDlg, _T("Waiting for connection..."), FALSE); break;
+				case ACKRESULT_INITIALISING: SetFtStatus(hwndDlg, _T("Initialising..."), FALSE); break;
 				case ACKRESULT_NEXTFILE:
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Moving to next file..."));
+					SetFtStatus(hwndDlg, _T("Moving to next file..."), FALSE);
 					SetDlgItemTextA(hwndDlg,IDC_FILENAME,"");
 					if(dat->transferStatus.currentFileNumber==1 && dat->transferStatus.totalFiles>1 && !dat->send)
-						SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1,1);
+						SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1);
 					if(dat->transferStatus.currentFileNumber!=-1 && dat->files && !dat->send && DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE)==VIRUSSCAN_DURINGDL) {
 						if(GetFileAttributesA(dat->files[dat->transferStatus.currentFileNumber])&FILE_ATTRIBUTE_DIRECTORY)
 							PostMessage(hwndDlg,M_VIRUSSCANDONE,dat->transferStatus.currentFileNumber,0);
@@ -395,13 +427,14 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				{
 					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
 
-          UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
+					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 					SetFilenameControls(hwndDlg,fts);
 					if(_access(fts->currentFile,0)!=0) break;
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("File already exists"));
+					SetFtStatus(hwndDlg, _T("File already exists"), FALSE);
 					if(dat->resumeBehaviour==FILERESUME_ASK) {
+						struct TDlgProcFileExistsParam param = { hwndDlg, fts };
 						ShowWindow(hwndDlg,SW_SHOWNORMAL);
-						CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILEEXISTS),hwndDlg,DlgProcFileExists,(LPARAM)fts);
+						CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILEEXISTS),hwndDlg,DlgProcFileExists,(LPARAM)&param);
 						EnableWindow(hwndDlg,FALSE);
 					}
 					else {
@@ -417,13 +450,13 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				case ACKRESULT_DATA:
 				{
 					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
-					TCHAR str[256],szSizeDone[32],szSizeTotal[32],*contactName;
+					TCHAR str[256],szSizeDone[32],szSizeTotal[32];//,*contactName;
 					int units;
 
 					if ( dat->fileVirusScanned==NULL )
 						dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
 
-          // This needs to be here - otherwise we get holes in the files array
+					// This needs to be here - otherwise we get holes in the files array
 					if ( !dat->send ) {
 						if ( dat->files == NULL )
 							dat->files = ( char** )mir_calloc(( fts->totalFiles+1 )*sizeof( char* ));
@@ -435,33 +468,28 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if (fts->totalProgress!=fts->totalBytes && GetTickCount() - dat->dwTicks < 650) break; // the last update was less than a second ago!
 					dat->dwTicks=GetTickCount();
 
-          // Update local transfer status with data from protocol
+					// Update local transfer status with data from protocol
 					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateTS(fts->sending?_T("Sending..."):_T("Receiving...")));
+					SetFtStatus(hwndDlg, fts->sending?_T("Sending..."):_T("Receiving..."), TRUE);
 					SetFilenameControls(hwndDlg,fts);
-					SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEPROGRESS, PBM_SETPOS, fts->currentFileSize?(WPARAM)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0, 0);
+					//SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEPROGRESS, PBM_SETPOS, fts->currentFileSize?(WPARAM)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0, 0);
 					SendDlgItemMessage(hwndDlg,IDC_ALLFILESPROGRESS, PBM_SETPOS, fts->totalBytes?(WPARAM)(BIGI(100)*fts->totalProgress/fts->totalBytes):0, 0);
 
-					GetSensiblyFormattedSize(fts->currentFileSize,szSizeTotal,SIZEOF(szSizeTotal),0,1,&units);
-					GetSensiblyFormattedSize(fts->currentFileProgress,szSizeDone,SIZEOF(szSizeTotal),units,0,NULL);
-					mir_sntprintf(str,SIZEOF(str),_T("%s / %s  (%d%%)"),szSizeDone,szSizeTotal,fts->currentFileSize?(int)(BIGI(100)*fts->currentFileProgress/fts->currentFileSize):0);
-					SetDlgItemText(hwndDlg,IDC_CURRENTTRANSFERRED,str);
-
 					GetSensiblyFormattedSize(fts->totalBytes,szSizeTotal,SIZEOF(szSizeTotal),0,1,&units);
-					GetSensiblyFormattedSize(fts->totalProgress,szSizeDone,SIZEOF(szSizeTotal),units,0,NULL);
-					mir_sntprintf(str,SIZEOF(str),_T("%s / %s  (%d%%)"),szSizeDone,szSizeTotal,fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0);
+					GetSensiblyFormattedSize(fts->totalProgress,szSizeDone,SIZEOF(szSizeDone),units,0,NULL);
+					mir_sntprintf(str,SIZEOF(str),_T("%s/%s"),szSizeDone,szSizeTotal);
 					SetDlgItemText(hwndDlg,IDC_ALLTRANSFERRED,str);
 
-					contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
-					mir_sntprintf(str,SIZEOF(str),_T("%d%%: %s: %s"),fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0,contactName,TranslateTS(dat->send?(fts->totalFiles==1?_T("Sending file"):_T("Sending files")):(fts->totalFiles==1?_T("Receiving file"):_T("Receiving files"))));
-					SetWindowText(GetParent(hwndDlg),str);
+					mir_sntprintf(str,SIZEOF(str),_T("%d%%"),fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0);
+					SetDlgItemText(hwndDlg,IDC_ALLPRECENTAGE,str);
 					break;
 				}
 				case ACKRESULT_SUCCESS:
 				{
+					HideProgressControls(hwndDlg);
 					dat->fs=NULL; /* protocol will free structure */
-					SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Transfer completed"));
+					SetFtStatus(hwndDlg, _T("Transfer completed"), FALSE);
 					if (ack->result==ACKRESULT_SUCCESS) SkinPlaySound("FileDone");
 					if(!dat->send) {	//receiving
 						int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
@@ -482,26 +510,23 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								vstsi->szFile=mir_strdup(dat->transferStatus.workingDir);
 								vstsi->returnCode=-1;
 							}
-							SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Scanning for viruses..."));
+							SetFtStatus(hwndDlg, _T("Scanning for viruses..."), FALSE);
 							if(vstsi) forkthread((void (*)(void*))RunVirusScannerThread,0,vstsi);
 						}
 						dat->transferStatus.currentFileNumber=dat->transferStatus.totalFiles;
 					}
 					else {	 //sending
 						DBEVENTINFO dbei={0};
-						char szMsg[450],szFilenames[1024];
-						GetDlgItemTextA(GetParent(hwndDlg),IDC_FILE,szFilenames,SIZEOF(szFilenames));
-						GetDlgItemTextA(GetParent(hwndDlg),IDC_MSG,szMsg,SIZEOF(szMsg));
 						dbei.cbSize=sizeof(dbei);
 						dbei.szModule=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
 						dbei.eventType=EVENTTYPE_FILE;
 						dbei.flags=DBEF_SENT;
 						dbei.timestamp=time(NULL);
-						dbei.cbBlob=sizeof(DWORD)+lstrlenA(szFilenames)+lstrlenA(szMsg)+2;
+						dbei.cbBlob=sizeof(DWORD)+lstrlenA(dat->szFilenames)+lstrlenA(dat->szMsg)+2;
 						dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 						*(PDWORD)dbei.pBlob=0;
-						lstrcpyA(dbei.pBlob+sizeof(DWORD),szFilenames);
-						lstrcpyA(dbei.pBlob+sizeof(DWORD)+lstrlenA(szFilenames)+1,szMsg);
+						lstrcpyA(dbei.pBlob+sizeof(DWORD),dat->szFilenames);
+						lstrcpyA(dbei.pBlob+sizeof(DWORD)+lstrlenA(dat->szFilenames)+1,dat->szMsg);
 						CallService(MS_DB_EVENT_ADD,(WPARAM)dat->hContact,(LPARAM)&dbei);
 						if (dbei.pBlob)
 							mir_free(dbei.pBlob);
@@ -510,14 +535,15 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				}
 					//fall through
 				case ACKRESULT_FAILED:
+					HideProgressControls(hwndDlg);
 					dat->fs=NULL; /* protocol will free structure */
 					KillTimer(hwndDlg,1);
-					if(!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),dat->transferStatus.totalFiles>1,1);
+					if(!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg,IDC_OPENFILE),1);
 					SetDlgItemText(hwndDlg,IDCANCEL,TranslateT("Close"));
 					if (dat->hNotifyEvent) UnhookEvent(dat->hNotifyEvent);
 					dat->hNotifyEvent=NULL;
 					if(ack->result==ACKRESULT_FAILED) {
-						SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("File transfer failed"));
+						SetFtStatus(hwndDlg, _T("File transfer failed"), FALSE);
 						SkinPlaySound("FileFailed");
 					} else
 						if(DBGetContactSettingByte(NULL,"SRFile","AutoClose",0))
@@ -525,12 +551,13 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					break;
 
 				case ACKRESULT_DENIED:
+					HideProgressControls(hwndDlg);
 					dat->fs=NULL; /* protocol will free structure */
 					SkinPlaySound("FileDenied");
 					KillTimer(hwndDlg, 1);
-					if (!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg, IDC_OPENFILE), dat->transferStatus.totalFiles > 1, 1);
+					if (!dat->send) SetOpenFileButtonStyle(GetDlgItem(hwndDlg, IDC_OPENFILE), 1);
 					SetDlgItemText(hwndDlg, IDCANCEL, TranslateT("Close"));
-					SetDlgItemText(hwndDlg, IDC_STATUS, TranslateT("File transfer denied"));
+					SetFtStatus(hwndDlg, _T("File transfer denied"), FALSE);
 					UnhookEvent(dat->hNotifyEvent);
 					dat->hNotifyEvent = NULL;
 					break;
@@ -547,7 +574,23 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				dat->fileVirusScanned[wParam]=1;
 				for(i=0;i<dat->transferStatus.totalFiles;i++) if(!dat->fileVirusScanned[i]) {done=0; break;}
 			}
-			if(done) SetDlgItemText(hwndDlg,IDC_STATUS,TranslateT("Transfer and virus scan complete"));
+			if(done) SetFtStatus(hwndDlg, _T("Transfer and virus scan complete"), FALSE);
+			break;
+		}
+		case WM_SIZE:
+		{
+			UTILRESIZEDIALOG urd={0};
+			urd.cbSize=sizeof(urd);
+			urd.hwndDlg=hwndDlg;
+			urd.hInstance=GetModuleHandle(NULL);
+			urd.lpTemplate=MAKEINTRESOURCEA(IDD_FILETRANSFERINFO);
+			urd.pfnResizer=FileTransferDlgResizer;
+			CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);
+
+			RedrawWindow(GetDlgItem(hwndDlg, IDC_ALLTRANSFERRED), NULL, NULL, RDW_INVALIDATE|RDW_NOERASE);
+			RedrawWindow(GetDlgItem(hwndDlg, IDC_ALLSPEED), NULL, NULL, RDW_INVALIDATE|RDW_NOERASE);
+			RedrawWindow(GetDlgItem(hwndDlg, IDC_CONTACTNAME), NULL, NULL, RDW_INVALIDATE|RDW_NOERASE);
+			RedrawWindow(GetDlgItem(hwndDlg, IDC_STATUS), NULL, NULL, RDW_INVALIDATE|RDW_NOERASE);
 			break;
 		}
 		case WM_DESTROY:
@@ -559,9 +602,12 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if(!dat->send) FreeFilesMatrix(&dat->files);
 			if(dat->fileVirusScanned) mir_free(dat->fileVirusScanned);
 			{	HFONT hFont;
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CURRENTFILEGROUP,WM_GETFONT,0,0);
+				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
 				DeleteObject(hFont);
 			}
+			if (dat->send)
+				FreeFilesMatrix(&dat->files);
+			mir_free(dat);
 			break;
 	}
 	return FALSE;

@@ -200,12 +200,12 @@ BEGIN
     PUSHBUTTON      "Yes",IDYES,58,38,65,14
     PUSHBUTTON      "No",IDNO,172,38,65,14
     CONTROL         "Hide from list only, in order to keep their history and ignore/visibility settings",
-                    IDC_HIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,65,279,
-                    9
+                    IDC_HIDE,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | 
+                    WS_TABSTOP,7,65,270,9
     LTEXT           "Use Options->Ignore (expert mode) to unhide contacts.",
-                    IDC_STATIC,19,80,264,8
+                    IDC_STATIC,20,78,257,8
     CONTROL         "Are you sure you want to delete %s?",IDC_TOPLINE,"Static",
-                    SS_SIMPLE | SS_NOPREFIX | WS_GROUP,7,7,279,8
+                    SS_SIMPLE | SS_NOPREFIX | WS_GROUP,7,7,270,8
     LTEXT           "This will erase all history and settings for this contact!",
                     IDC_STATIC,7,18,239,14
 END
@@ -755,42 +755,29 @@ BEGIN
     LTEXT           "",IDC_NAME,19,7,151,9,SS_NOPREFIX | SS_CENTERIMAGE
 END
 
-IDD_FILETRANSFERINFO DIALOGEX 0, 0, 256, 155
+IDD_FILETRANSFERINFO DIALOGEX 0, 0, 256, 44
 STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Cancel",IDCANCEL,162,136,89,14
-    LTEXT           "Status:",IDC_STATIC,9,0,31,9,SS_CENTERIMAGE
-    CONTROL         "",IDC_STATUS,"Static",SS_SIMPLE | SS_NOPREFIX | 
-                    WS_GROUP,41,0,210,9
-    GROUPBOX        "Current file",IDC_CURRENTFILEGROUP,5,13,246,62
-    CONTROL         "",IDC_FILENAME,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
-                    WS_GROUP,11,25,234,8
-    CONTROL         "Transferred:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX,11,36,58,8
-    CONTROL         "",IDC_CURRENTTRANSFERRED,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX | WS_GROUP,69,36,176,8
-    CONTROL         "Speed:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX,11,47,58,8
-    CONTROL         "",IDC_CURRENTSPEED,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX | WS_GROUP,69,47,176,8
-    CONTROL         "Progress1",IDC_CURRENTFILEPROGRESS,"msctls_progress32",
-                    WS_DISABLED | 0x1,11,59,234,8
-    GROUPBOX        "All files",IDC_ALLFILESGROUP,5,79,246,51
-    CONTROL         "Transferred:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX,11,91,58,8
-    CONTROL         "",IDC_ALLTRANSFERRED,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX | WS_GROUP,69,91,176,8
-    CONTROL         "Speed:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_NOPREFIX,11,102,58,8
-    CONTROL         "",IDC_ALLSPEED,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
-                    WS_GROUP,69,102,176,8
-    CONTROL         "Progress1",IDC_ALLFILESPROGRESS,"msctls_progress32",
-                    WS_DISABLED | 0x1,11,114,234,8
-    PUSHBUTTON      "Open folder",IDC_OPENFOLDER,5,136,64,14
-    CONTROL         "Open file",IDC_OPENFILE,"MButtonClass",WS_DISABLED | 
-                    WS_TABSTOP,75,136,66,14,0x18000000L
+    CONTROL         "",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
+                    SS_CENTERIMAGE | WS_GROUP,25,14,190,14
+    LTEXT           "",IDC_ALLTRANSFERRED,25,28,226,14,SS_NOPREFIX | 
+                    SS_CENTERIMAGE
+    CONTROL         "",IDC_ALLFILESPROGRESS,"msctls_progress32",NOT 
+                    WS_VISIBLE | WS_DISABLED | 0x1,25,15,190,12
+    CONTROL         "Open...",IDC_OPENFILE,"MButtonClass",WS_DISABLED | 
+                    WS_TABSTOP,219,0,16,14,0x18000000L
+    CONTROL         "Cancel",IDCANCEL,"MButtonClass",WS_TABSTOP,235,0,16,14,
+                    0x18000000L
+    CONTROL         "Contact menu",IDC_CONTACT,"MButtonClass",WS_TABSTOP,5,0,
+                    16,14,0x18000000L
+    CONTROL         "",IDC_CONTACTNAME,"Static",SS_LEFTNOWORDWRAP | 
+                    SS_CENTERIMAGE | SS_WORDELLIPSIS | WS_GROUP,25,0,190,14
+    CONTROL         "",IDC_FRAME,"Static",SS_ETCHEDHORZ,1,43,254,1
+    RTEXT           "",IDC_ALLSPEED,25,28,226,14,SS_NOPREFIX | 
+                    SS_CENTERIMAGE
+    LTEXT           "",IDC_ALLPRECENTS,218,14,33,14,SS_CENTERIMAGE
 END
 
 IDD_FILEEXISTS DIALOGEX 0, 0, 288, 181
@@ -1520,6 +1507,22 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,110,49,50,14
 END
 
+IDD_FTMGR DIALOGEX 0, 0, 276, 255
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "File Transfers"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TABS,"SysTabControl32",0x0,7,7,262,241
+END
+
+IDD_FTPAGE DIALOGEX 0, 0, 320, 183
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VSCROLL | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT | WS_EX_STATICEDGE
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1787,12 +1790,19 @@ BEGIN
 
     IDD_FILETRANSFERINFO, DIALOG
     BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 251
-        VERTGUIDE, 11
-        VERTGUIDE, 69
-        VERTGUIDE, 245
-        BOTTOMMARGIN, 150
+        VERTGUIDE, 5
+        VERTGUIDE, 25
+        VERTGUIDE, 36
+        VERTGUIDE, 120
+        VERTGUIDE, 180
+        VERTGUIDE, 215
+        VERTGUIDE, 218
+        VERTGUIDE, 235
+        VERTGUIDE, 251
+        BOTTOMMARGIN, 43
+        HORZGUIDE, 14
+        HORZGUIDE, 28
+        HORZGUIDE, 42
     END
 
     IDD_FILEEXISTS, DIALOG
@@ -1966,6 +1976,22 @@ BEGIN
         HORZGUIDE, 30
         HORZGUIDE, 44
         HORZGUIDE, 49
+    END
+
+    IDD_FTMGR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 269
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 248
+    END
+
+    IDD_FTPAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 303
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
     END
 END
 #endif    // APSTUDIO_INVOKED

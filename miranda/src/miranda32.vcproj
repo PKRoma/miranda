@@ -2451,6 +2451,9 @@
 							BrowseInformation="1"/>
 					</FileConfiguration>
 				</File>
+				<File
+					RelativePath=".\modules\srfile\ftmanager.c">
+				</File>
 			</Filter>
 			<Filter
 				Name="srurl"

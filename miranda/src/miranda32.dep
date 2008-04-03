@@ -24,6 +24,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -65,6 +66,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -106,6 +108,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -147,6 +150,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -193,6 +197,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -274,10 +279,18 @@
 	".\modules\netlib\netlib.h"\
 	
 
+.\modules\protocols\protoaccs.c : \
+	"..\include\m_protoint.h"\
+	
+
 .\modules\protocols\protochains.c : \
 	"..\include\m_protocols.h"\
 	"..\include\m_protomod.h"\
 	"..\include\statusmodes.h"\
+	
+
+.\modules\protocols\protocols.c : \
+	"..\include\m_protoint.h"\
 	
 
 .\modules\protocols\protoint.c : \
@@ -313,6 +326,10 @@
 	
 
 .\modules\srfile\filexferdlg.c : \
+	".\modules\srfile\file.h"\
+	
+
+.\modules\srfile\ftmanager.c : \
 	".\modules\srfile\file.h"\
 	
 
@@ -478,6 +495,7 @@
 	"..\include\m_options.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
 	"..\include\m_protosvc.h"\
 	"..\include\m_skin.h"\
@@ -495,10 +513,6 @@
 	".\modules\database\dblists.h"\
 	
 
-.\modules\icolib\IcoLib.c : \
-	".\modules\icolib\IcoLib.h"\
-	
-
 .\modules\icolib\skin2icons.c : \
 	".\modules\icolib\IcoLib.h"\
 	
@@ -506,6 +520,7 @@
 .\vc6.rc : \
 	"..\docs\contributors.txt"\
 	"..\include\statusmodes.h"\
+	".\manifest.rc"\
 	".\miranda32.exe.manifest"\
 	".\res\_blank.ico"\
 	".\res\arrow_sort_column_down.bmp"\

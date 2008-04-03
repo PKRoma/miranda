@@ -246,8 +246,25 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int FtMgrShowCommand(WPARAM wParam, LPARAM lParam)
+{
+	FtMgr_Show();
+	return 0;
+}
+
 int LoadSendRecvFileModule(void)
 {
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
+	mi.position = 1900000000;
+	mi.pszName = LPGEN("&File Transfers...");
+	mi.pszService = "FtMgr/Show"; //MS_PROTO_SHOWFTMGR;
+	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
+	CreateServiceFunction("FtMgr/Show", FtMgrShowCommand);
+
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRFileModulesLoaded);
 	HookEvent(ME_DB_EVENT_ADDED,FileEventAdded);
 	HookEvent(ME_OPT_INITIALISE,FileOptInitialise);
