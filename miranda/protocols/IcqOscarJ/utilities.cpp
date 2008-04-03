@@ -631,7 +631,7 @@ char *NickFromHandleUtf(HANDLE hContact)
 char *strUID(DWORD dwUIN, char *pszUID)
 {
 	if (dwUIN)
-		ltoa(dwUIN, pszUID, 10);
+		_ltoa(dwUIN, pszUID, 10);
 
 	return pszUID;
 }
@@ -672,7 +672,7 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 int __fastcall stricmpnull(const char *str1, const char *str2)
 {
 	if (str1 && str2)
-		return stricmp(str1, str2);
+		return _stricmp(str1, str2);
 
   if (!str1 && !str2)
     return 0;
@@ -703,7 +703,7 @@ int null_snprintf(char *buffer, size_t count, const char* fmt, ...)
 char* __fastcall null_strdup(const char *string)
 {
 	if (string)
-		return strdup(string);
+		return _strdup(string);
 
 	return NULL;
 }
@@ -747,25 +747,25 @@ char *DemangleXml(const char *string, int len)
 
 	for (i=0; i<len; i++)
 	{
-		if (!strnicmp(string+i, "&gt;", 4))
+		if (!_strnicmp(string+i, "&gt;", 4))
 		{
 			*szChar = '>';
 			szChar++;
 			i += 3;
 		}
-		else if (!strnicmp(string+i, "&lt;", 4))
+		else if (!_strnicmp(string+i, "&lt;", 4))
 		{
 			*szChar = '<';
 			szChar++;
 			i += 3;
 		}
-		else if (!strnicmp(string+i, "&amp;", 5))
+		else if (!_strnicmp(string+i, "&amp;", 5))
 		{
 			*szChar = '&';
 			szChar++;
 			i += 4;
 		}
-		else if (!strnicmp(string+i, "&quot;", 6))
+		else if (!_strnicmp(string+i, "&quot;", 6))
 		{
 			*szChar = '"';
 			szChar++;
@@ -833,7 +833,7 @@ char *EliminateHtml(const char *string, int len)
 	{
 		if (!tag && string[i] == '<')
 		{
-			if ((i + 4 <= len) && (!strnicmp(string + i, "<br>", 4) || !strnicmp(string + i, "<br/>", 5)))
+			if ((i + 4 <= len) && (!_strnicmp(string + i, "<br>", 4) || !_strnicmp(string + i, "<br/>", 5)))
 			{ // insert newline
 				tmp[j] = '\r';
 				j++;
@@ -864,11 +864,11 @@ char *ApplyEncoding(const char *string, const char *pszEncoding)
 { // decode encoding to Utf-8
 	if (string && pszEncoding)
 	{ // we do only encodings known to icq5.1 // TODO: check if this is enough
-		if (!strnicmp(pszEncoding, "utf-8", 5))
+		if (!_strnicmp(pszEncoding, "utf-8", 5))
 		{ // it is utf-8 encoded
 			return null_strdup(string);
 		}
-		if (!strnicmp(pszEncoding, "unicode-2-0", 11))
+		if (!_strnicmp(pszEncoding, "unicode-2-0", 11))
 		{ // it is UCS-2 encoded
 			int wLen = strlennull((WCHAR*)string) + 1;
 			WCHAR *szStr = (WCHAR*)_alloca(wLen*2);
@@ -878,7 +878,7 @@ char *ApplyEncoding(const char *string, const char *pszEncoding)
 
 			return make_utf8_string(szStr);
 		}
-		if (!strnicmp(pszEncoding, "iso-8859-1", 10))
+		if (!_strnicmp(pszEncoding, "iso-8859-1", 10))
 		{ // we use "Latin I" instead - it does the job
 			return ansi_to_utf8_codepage(string, 1252);
 		}

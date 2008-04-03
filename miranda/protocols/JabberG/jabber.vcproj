@@ -1160,6 +1160,9 @@
 				RelativePath=".\jabber_zstream.cpp">
 			</File>
 			<File
+				RelativePath=".\MString.cpp">
+			</File>
+			<File
 				RelativePath=".\ui_utils.cpp">
 			</File>
 		</Filter>
@@ -1213,6 +1216,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_zstream.h">
+			</File>
+			<File
+				RelativePath=".\MString.h">
 			</File>
 			<File
 				RelativePath=".\resource.h">

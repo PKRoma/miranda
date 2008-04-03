@@ -360,6 +360,10 @@ SOURCE=.\jabber_zstream.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MString.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ui_utils.cpp
 # End Source File
 # End Group
@@ -433,6 +437,10 @@ SOURCE=.\jabber_ssl.h
 # Begin Source File
 
 SOURCE=.\jabber_xml.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MString.h
 # End Source File
 # Begin Source File
 

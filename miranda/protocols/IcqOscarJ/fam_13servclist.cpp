@@ -1022,7 +1022,7 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 						}
 
 						if (strcmpnull(szActiveSrvGroup, szLocalGroup) && 
-               (strlennull(szActiveSrvGroup) >= strlennull(szLocalGroup) || strnicmp(szActiveSrvGroup, szLocalGroup, strlennull(szLocalGroup))))
+               (strlennull(szActiveSrvGroup) >= strlennull(szLocalGroup) || _strnicmp(szActiveSrvGroup, szLocalGroup, strlennull(szLocalGroup))))
 						{ // contact moved to new group or sub-group or not to master group
 							bRegroup = 1;
 						}

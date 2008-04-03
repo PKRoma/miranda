@@ -955,12 +955,7 @@ public:
 		return _wcsrev( psz );
 	}
 
-	#if _MSC_VER >= 1300
-	static int __stdcall GetFormattedLength( LPCWSTR pszFormat, va_list args)
-	{
-		return _vscwprintf( pszFormat, args );
-	}
-	#endif
+	static int __stdcall GetFormattedLength( LPCWSTR pszFormat, va_list args);
 
 	static int __stdcall Format( LPWSTR pszBuffer, LPCWSTR pszFormat, va_list args)
 	{
@@ -969,14 +964,8 @@ public:
 		return vswprintf( pszBuffer, pszFormat, args );
 #pragma warning (pop)
 	}
-	static int __stdcall Format( LPWSTR pszBuffer, size_t nLength, LPCWSTR pszFormat, va_list args)
-	{
-		#if _MSC_VER >= 1300
-			return vswprintf( pszBuffer, nLength, pszFormat, args );
-		#else
-			return _vsnwprintf( pszBuffer, nLength, pszFormat, args );
-		#endif
-	}
+
+	static int __stdcall Format( LPWSTR pszBuffer, size_t nLength, LPCWSTR pszFormat, va_list args);
 
 	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc )
 	{

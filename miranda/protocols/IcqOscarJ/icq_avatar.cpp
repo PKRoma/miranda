@@ -192,7 +192,7 @@ void CIcqProto::GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbL
 
 	if (dwUin != 0) 
 	{
-		ltoa(dwUin, pszDest + tPathLen, 10);
+		_ltoa(dwUin, pszDest + tPathLen, 10);
 	}
 	else if (szUid)
 	{
@@ -240,7 +240,7 @@ int DetectAvatarFormatBuffer(char* pBuffer)
 	if (!strncmp(pBuffer, "GIF8", 4))
 		return PA_FORMAT_GIF;
 
-	if (!strnicmp(pBuffer, "<?xml", 5))
+	if (!_strnicmp(pBuffer, "<?xml", 5))
 		return PA_FORMAT_XML;
 
 	if ((((DWORD*)pBuffer)[0] == 0xE0FFD8FFul) || (((DWORD*)pBuffer)[0] == 0xE1FFD8FFul))
@@ -462,7 +462,7 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContac
 				dwPaFormat = getSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
 				GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-				if (access(szAvatar, 0) == 0)
+				if (_access(szAvatar, 0) == 0)
 				{ // the file is there, link to contactphoto, save hash
 					NetLog_Server("Avatar is known, hash stored, linked to file.");
 
@@ -499,7 +499,7 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContac
 					else
 					{
 						GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH);
-						if (access(szAvatar, 0) != 0)
+						if (_access(szAvatar, 0) != 0)
 						{ // the file was lost, get it again
 							bJob = 2;
 						}

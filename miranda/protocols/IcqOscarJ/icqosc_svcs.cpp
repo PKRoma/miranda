@@ -256,7 +256,7 @@ int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 		if (!IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
 		{ // hashes are the same
-			if (access(pai->filename, 0) == 0)
+			if (_access(pai->filename, 0) == 0)
 			{
 				ICQFreeVariant(&dbv);
 
@@ -290,7 +290,7 @@ int CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	char* file = loadMyAvatarFileName();
 	if (file) strncpy((char*)wParam, file, (int)lParam);
 	SAFE_FREE((void**)&file);
-	if (!access((char*)wParam, 0)) return 0;
+	if (!_access((char*)wParam, 0)) return 0;
 	return -1;
 }
 

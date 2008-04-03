@@ -960,7 +960,7 @@ int CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char**
 			{ // got root dir from first container, check if others are only sub-dirs
 				for (i = 0; i < ft->containerCount; i++)
 				{
-					if (strnicmp((char*)ft->file_containers[i], (char*)szFirstDir, nFirstDirLen))
+					if (_strnicmp((char*)ft->file_containers[i], (char*)szFirstDir, nFirstDirLen))
 					{
 						szFirstDir = NULL;
 						break;
@@ -2108,7 +2108,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			{ // resume seems ok
 				ft->qwFileBytesDone = dwResumeOffset;
 				ft->qwBytesDone += dwResumeOffset;
-				lseek(ft->fileId, dwResumeOffset, SEEK_SET);
+				_lseek(ft->fileId, dwResumeOffset, SEEK_SET);
 
 				NetLog_Direct("OFT: Resume request, ready.");
 			}
@@ -2143,7 +2143,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 				ft->qwFileBytesDone = dwResumeOffset;
 				ft->dwRecvFileCheck = dwResumeCheck;
 			}
-			lseek(ft->fileId, dwResumeOffset, SEEK_SET);
+			_lseek(ft->fileId, dwResumeOffset, SEEK_SET);
 
 			if (ft->qwThisFileSize != ft->qwFileBytesDone)
 				NetLog_Direct("OFT: Resuming from offset %u.", dwResumeOffset);

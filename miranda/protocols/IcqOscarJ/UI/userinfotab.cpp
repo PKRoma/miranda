@@ -99,7 +99,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 		switch (dbv.type) {
 		case DBVT_BYTE:
 			unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
-			pstr = itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
+			pstr = _itoa(special == SVS_SIGNED ? dbv.cVal:dbv.bVal, str, 10);
 			break;
 
 		case DBVT_WORD:
@@ -150,7 +150,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 			else
 			{
 				unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
-				pstr = itoa(special == SVS_SIGNED ? dbv.sVal:dbv.wVal, str, 10);
+				pstr = _itoa(special == SVS_SIGNED ? dbv.sVal:dbv.wVal, str, 10);
 			}
 			break;
 
@@ -175,7 +175,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 				}
 			}
 			else
-				pstr = itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);
+				pstr = _itoa(special == SVS_SIGNED ? dbv.lVal:dbv.dVal, str, 10);
 			break;
 
 		case DBVT_ASCIIZ:

@@ -193,7 +193,7 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 {
-	if ( !_memicmp( szSetting, "PERFORM:", 8 )) {
+	if ( !_strnicmp( szSetting, "PERFORM:", 8 )) {
 		String s = szSetting;
 		s.MakeUpper();
 		if ( s != szSetting ) {
@@ -214,7 +214,7 @@ int sttServerEnum( const char* szSetting, LPARAM lParam )
 
 	char* p1 = strchr( dbv.pszVal, ':' )+1;
 	pData->m_iSSL = 0;
-	if ( !memicmp( p1, "SSL", 3 )) {
+	if ( !_strnicmp( p1, "SSL", 3 )) {
 		p1 +=3;
 		if ( *p1 == '1' )
 			pData->m_iSSL = 1;

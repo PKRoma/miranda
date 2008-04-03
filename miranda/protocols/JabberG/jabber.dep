@@ -42,42 +42,20 @@
 	".\jabber_search.h"\
 	".\jabber_ssl.h"\
 	".\jabber_xml.h"\
+	".\MString.h"\
+	".\sdk\m_assocmgr.h"\
 	".\sdk\m_folders.h"\
 	".\sdk\m_icolib.h"\
+	".\sdk\m_toolbar.h"\
 	".\sdk\m_wizard.h"\
 	".\ui_utils.h"\
 	".\version.h"\
 	
 
 .\jabber_adhoc.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -86,14 +64,12 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_agent.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -105,37 +81,13 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_bookmarks.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -144,14 +96,12 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_byte.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -163,37 +113,13 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_caps.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -202,44 +128,15 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
 	".\version.h"\
 	
 
 .\jabber_chat.cpp : \
 	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -248,42 +145,14 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_console.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -292,42 +161,14 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_disco.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -336,44 +177,16 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_events.cpp : \
 	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -382,15 +195,13 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
 	".\sdk\m_proto_listeningto.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_file.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -402,9 +213,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_form.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -416,9 +229,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_ft.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -430,9 +245,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_groupchat.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -444,37 +261,13 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_ibb.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -483,43 +276,15 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_icolib.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
 	"..\..\include\m_icolib.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -528,14 +293,12 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_iq.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -548,37 +311,13 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_iq_handlers.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -588,16 +327,13 @@
 	".\jabber_iq_handlers.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
 	".\version.h"\
 	
 
 .\jabber_iqid.cpp : \
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
@@ -610,9 +346,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_iqid_muc.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -624,37 +362,13 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_libstr.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -663,14 +377,12 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_list.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -682,9 +394,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_menu.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_hotkeys.h"\
@@ -700,9 +414,11 @@
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
 	".\sdk\m_toolbar.h"\
+	".\version.h"\
 	
 
 .\jabber_misc.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -715,9 +431,11 @@
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
 	".\sdk\m_folders.h"\
+	".\version.h"\
 	
 
 .\jabber_opt.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -733,37 +451,13 @@
 	".\jabber_ssl.h"\
 	".\sdk\m_modernopt.h"\
 	".\sdk\m_wizard.h"\
+	".\version.h"\
 	
 
 .\jabber_opttree.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -773,14 +467,12 @@
 	".\jabber_list.h"\
 	".\jabber_opttree.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_password.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -792,39 +484,15 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_privacy.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -833,46 +501,18 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_proto.cpp : \
 	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -881,19 +521,15 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
 	".\jabber_ssl.h"\
-	".\jabber_xml.h"\
-	".\sdk\m_assocmgr.h"\
 	".\sdk\m_modernopt.h"\
 	".\sdk\m_proto_listeningto.h"\
-	".\sdk\m_toolbar.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_proxy.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -905,38 +541,14 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_rc.cpp : \
-	"..\..\include\m_avatars.h"\
 	"..\..\include\m_awaymsg.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -945,42 +557,14 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_search.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -989,42 +573,14 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_secur.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -1033,15 +589,13 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
 	".\jabber_secur.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_ssl.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1054,37 +608,13 @@
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
 	".\jabber_ssl.h"\
+	".\version.h"\
 	
 
 .\jabber_std.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -1093,15 +623,13 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_svc.cpp : \
 	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_file.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
@@ -1115,9 +643,11 @@
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
 	".\sdk\m_proto_listeningto.h"\
+	".\version.h"\
 	
 
 .\jabber_thread.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1131,37 +661,13 @@
 	".\jabber_rc.h"\
 	".\jabber_secur.h"\
 	".\jabber_ssl.h"\
+	".\version.h"\
 	
 
 .\jabber_treelist.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -1170,14 +676,12 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_userinfo.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1189,10 +693,12 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_util.cpp : \
 	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
@@ -1206,9 +712,11 @@
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
 	".\jabber_ssl.h"\
+	".\version.h"\
 	
 
 .\jabber_vcard.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1220,9 +728,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_ws.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1234,9 +744,11 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_xml.cpp : \
+	"..\..\include\m_clui.h"\
 	"..\..\include\m_options.h"\
 	"..\..\include\m_protocols.h"\
 	".\jabber.h"\
@@ -1248,39 +760,15 @@
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
 	".\jabber_rc.h"\
+	".\version.h"\
 	
 
 .\jabber_xstatus.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_icolib.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -1289,16 +777,29 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
 	".\sdk\m_cluiframes.h"\
 	".\sdk\m_proto_listeningto.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\jabber_zstream.cpp : \
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_protocols.h"\
+	".\jabber.h"\
+	".\jabber_byte.h"\
+	".\jabber_caps.h"\
+	".\jabber_disco.h"\
+	".\jabber_ibb.h"\
+	".\jabber_iq.h"\
+	".\jabber_list.h"\
+	".\jabber_privacy.h"\
+	".\jabber_rc.h"\
+	".\version.h"\
+	
+
+.\MString.cpp : \
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -1339,38 +840,15 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\MString.h"\
 	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\ui_utils.cpp : \
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
 	"..\..\include\m_clui.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_idle.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_netlib.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
 	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protoint.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_system_cpp.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	"..\..\plugins\zlib\zconf.h"\
-	"..\..\plugins\zlib\zlib.h"\
 	".\jabber.h"\
 	".\jabber_byte.h"\
 	".\jabber_caps.h"\
@@ -1379,11 +857,8 @@
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
-	".\jabber_proto.h"\
 	".\jabber_rc.h"\
-	".\jabber_search.h"\
-	".\jabber_xml.h"\
-	".\ui_utils.h"\
+	".\version.h"\
 	
 
 .\msvc6.rc : \
@@ -1410,6 +885,7 @@
 	".\icos\message_allow.ico"\
 	".\icos\message_deny.ico"\
 	".\icos\open.ico"\
+	".\icos\openid.ico"\
 	".\icos\pages.ico"\
 	".\icos\plist_active.ico"\
 	".\icos\plist_any.ico"\

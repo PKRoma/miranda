@@ -92,7 +92,7 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 
 		case LI_NUMBER:
 			text = str;
-			itoa(setting[i].value, text, 10);
+			_itoa(setting[i].value, text, 10);
 			break;
 
 		case LI_LIST:

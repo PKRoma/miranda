@@ -356,7 +356,7 @@ void CIcqProto::handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCo
 			memcpy(szUrl, szWork+5, nDataLen);
 			szUrl[nDataLen - 5] = '\0';
 
-			if (!strnicmp(szUrl, "view_", 5))
+			if (!_strnicmp(szUrl, "view_", 5))
 			{
 				szNum = szUrl + 5;
 				szWork = strstrnull(szUrl, ".html");
