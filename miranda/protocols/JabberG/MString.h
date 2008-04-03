@@ -702,10 +702,7 @@ public:
 		return reinterpret_cast< LPSTR >( _mbsrev( reinterpret_cast< unsigned char* >( psz ) ) );
 	}
 
-	static int __stdcall GetFormattedLength( LPCSTR pszFormat, va_list args )
-	{
-		return _vscprintf( pszFormat, args );
-	}
+	static int __stdcall GetFormattedLength( LPCSTR pszFormat, va_list args );
 
 	static int __stdcall Format( LPSTR pszBuffer, LPCSTR pszFormat, va_list args )
 	{
@@ -715,10 +712,8 @@ public:
 #pragma warning (pop)
 
 	}
-	static int __stdcall Format( LPSTR pszBuffer, size_t nlength, LPCSTR pszFormat, va_list args )
-	{
-		return vsprintf_s( pszBuffer, nlength, pszFormat, args );
-	}
+
+	static int __stdcall Format( LPSTR pszBuffer, size_t nlength, LPCSTR pszFormat, va_list args );
 
 	static int __stdcall GetBaseTypeLength( LPCSTR pszSrc )
 	{
