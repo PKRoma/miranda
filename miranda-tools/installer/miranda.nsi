@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7.4"
-!define MIM_PREVIEW             "2" ; comment out for final build
+!define MIM_PREVIEW             "0" ; make 0 for final build
 
 !define MIM_BUILD_UNICODE
 
@@ -21,7 +21,7 @@
 !define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
 !define MIM_BUILD_SRC           "..\..\miranda"
 
-!ifdef MIM_PREVIEW
+!if MIM_PREVIEW>0
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
 OutFile                         "miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
 !else
