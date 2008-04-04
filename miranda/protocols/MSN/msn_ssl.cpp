@@ -236,7 +236,7 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 		char headers[2048];
 		mir_snprintf(headers, sizeof( headers ), 
-			"Accept: txt/xml\r\nContent-Type: text/xml; charset=utf-8\r\n%s", 
+			"Accept: text/*\r\nContent-Type: text/xml; charset=utf-8\r\n%s", 
 			hdrs ? hdrs : "");
 
 		bool restart = false;
@@ -423,7 +423,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	tConn.cbSize = sizeof( tConn );
 	tConn.szHost = url+8;
 	tConn.wPort = 443;
-	tConn.timeout = 5;
+	tConn.timeout = 8;
 	HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 	
 	if (nls.useProxy && cpType == PROXYTYPE_HTTP)
@@ -455,7 +455,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 				
 				unsigned nBytes = mir_snprintf( headers, hlen,
 					"POST /%s HTTP/1.1\r\n"
-					"Accept: text/xml\r\n"
+					"Accept: text/*\r\n"
 					"%s"
 					"User-Agent: %s\r\n"
 					"Content-Length: %u\r\n"
