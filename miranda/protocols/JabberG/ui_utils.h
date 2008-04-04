@@ -97,6 +97,7 @@ class CDbLink
 	char *m_szModule;
 	char *m_szSetting;
 	BYTE m_type;
+	bool m_bSigned;
 
 	DWORD m_iDefault;
 	TCHAR *m_szDefault;
@@ -104,13 +105,15 @@ class CDbLink
 	DBVARIANT dbv;
 
 public:
-	CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue);
+	CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue, bool bSigned = false);
 	CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *szValue);
 	~CDbLink();
 
 	__inline BYTE GetDataType() { return m_type; }
+	__inline BYTE GetDataSigned() { return m_bSigned; }
 
-	DWORD LoadInt();
+	DWORD LoadUnsigned();
+	int LoadSigned();
 	void SaveInt(DWORD value);
 
 	TCHAR *LoadText();
@@ -335,7 +338,7 @@ public:
 
 	__inline bool IsChanged() const { return m_changed; }
 
-	void CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue );
+	void CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue, bool bSigned = false );
 	void CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* szValue );
 
 	virtual void OnInit();
@@ -350,7 +353,9 @@ protected:
 	void NotifyChange();
 
 	__inline BYTE GetDataType() { return m_dbLink ? m_dbLink->GetDataType() : DBVT_DELETED; }
-	__inline DWORD LoadInt() { return m_dbLink ? m_dbLink->LoadInt() : 0; }
+	__inline bool GetDataSigned() { return m_dbLink ? m_dbLink->GetDataSigned() ? true : false : false; }
+	__inline DWORD LoadUnsigned() { return m_dbLink ? m_dbLink->LoadUnsigned() : 0; }
+	__inline int LoadSigned() { return m_dbLink ? m_dbLink->LoadSigned() : 0; }
 	__inline void SaveInt(DWORD value) { if (m_dbLink) m_dbLink->SaveInt(value); }
 	__inline TCHAR *LoadText() { return m_dbLink ? m_dbLink->LoadText() : _T(""); }
 	__inline void SaveText(TCHAR *value) { if (m_dbLink) m_dbLink->SaveText(value); }
@@ -377,7 +382,7 @@ public:
 	}
 	virtual void OnReset()
 	{
-		SetState(LoadInt());
+		SetState(LoadUnsigned());
 	}
 
 	int GetState();
@@ -423,7 +428,7 @@ public:
 		if (GetDataType() == DBVT_TCHAR)
 			SetText(LoadText());
 		else if (GetDataType() != DBVT_DELETED)
-			SetInt(LoadInt());
+			SetInt(GetDataSigned() ? LoadSigned() : LoadUnsigned());
 	}
 };
 
@@ -516,7 +521,7 @@ public:
 		if (GetDataType() == DBVT_TCHAR)
 			SetText(LoadText());
 		else if (GetDataType() != DBVT_DELETED)
-			SetInt(LoadInt());
+			SetInt(LoadUnsigned());
 	}
 
 	// Control interface
@@ -1034,9 +1039,9 @@ public:
 	{
 	}
 
-	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, BYTE type, DWORD iValue )
+	__inline void CreateLink( CCtrlData& ctrl, char *szSetting, BYTE type, DWORD iValue, bool bSigned = false )
 	{
-		ctrl.CreateDbLink(m_proto_interface->m_szModuleName, szSetting, type, iValue);
+		ctrl.CreateDbLink(m_proto_interface->m_szModuleName, szSetting, type, iValue, bSigned );
 	}
 	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue )
 	{

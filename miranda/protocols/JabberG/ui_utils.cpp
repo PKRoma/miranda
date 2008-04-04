@@ -511,9 +511,9 @@ void CCtrlData::NotifyChange()
 	OnChange(this);
 }
 
-void CCtrlData::CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue )
+void CCtrlData::CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue, bool bSigned )
 {
-	m_dbLink = new CDbLink( szModuleName, szSetting, type, iValue);
+	m_dbLink = new CDbLink( szModuleName, szSetting, type, iValue, bSigned );
 }
 
 void CCtrlData::CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* szValue )
@@ -1813,13 +1813,14 @@ void CCtrlBase::Unsubclass()
 /////////////////////////////////////////////////////////////////////////////////////////
 // CDbLink class
 
-CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue)
+CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue, bool bSigned)
 {
 	m_szModule = mir_strdup(szModule);
 	m_szSetting = mir_strdup(szSetting);
 	m_type = type;
 	m_iDefault = iValue;
 	m_szDefault = 0;
+	m_bSigned = bSigned;
 	dbv.type = DBVT_DELETED;
 }
 
@@ -1829,6 +1830,7 @@ CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *
 	m_szSetting = mir_strdup(szSetting);
 	m_type = type;
 	m_szDefault = mir_tstrdup(szValue);
+	m_bSigned = false;
 	dbv.type = DBVT_DELETED;
 }
 
@@ -1841,13 +1843,23 @@ CDbLink::~CDbLink()
 		DBFreeVariant(&dbv);
 }
 
-DWORD CDbLink::LoadInt()
+DWORD CDbLink::LoadUnsigned()
 {
 	switch (m_type) {
 		case DBVT_BYTE:  return DBGetContactSettingByte(NULL, m_szModule, m_szSetting, m_iDefault);
 		case DBVT_WORD:  return DBGetContactSettingWord(NULL, m_szModule, m_szSetting, m_iDefault);
 		case DBVT_DWORD: return DBGetContactSettingDword(NULL, m_szModule, m_szSetting, m_iDefault);
-		default:			  return m_iDefault;
+		default:         return m_iDefault;
+	}
+}
+
+int CDbLink::LoadSigned()
+{
+	switch (m_type) {
+		case DBVT_BYTE:  return (signed char)DBGetContactSettingByte(NULL, m_szModule, m_szSetting, m_iDefault);
+		case DBVT_WORD:  return (signed short)DBGetContactSettingWord(NULL, m_szModule, m_szSetting, m_iDefault);
+		case DBVT_DWORD: return (signed int)DBGetContactSettingDword(NULL, m_szModule, m_szSetting, m_iDefault);
+		default:         return m_iDefault;
 	}
 }
 

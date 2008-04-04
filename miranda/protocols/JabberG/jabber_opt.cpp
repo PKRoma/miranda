@@ -403,7 +403,7 @@ public:
 
 	{
 		CreateLink(m_txtUsername, "LoginName", _T(""));
-		CreateLink(m_txtPriority, "Priority", DBVT_WORD, 0);
+		CreateLink(m_txtPriority, "Priority", DBVT_WORD, 0, true);
 		CreateLink(m_chkSavePassword, "SavePassword", DBVT_BYTE, 1);
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
 		CreateLink(m_chkUseHostnameAsResource, "HostNameAsResource", DBVT_BYTE, 0);
