@@ -1503,7 +1503,10 @@ void p2p_processSIP( ThreadData* info, char* msgbody, void* hdr )
 			{
 				p2p_sendAck( ft->std.hContact, hdrdata );
 				if ( ft->std.currentFileProgress < ft->std.currentFileSize )
+				{
 					p2p_sendAbortSession(ft);
+					ft->bCanceled = true;
+				}
 				else
 					if ( !ft->std.sending ) ft->bCompleted = true;
 
