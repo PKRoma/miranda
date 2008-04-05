@@ -174,9 +174,9 @@ int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam
 	if ( pdbEvent->dbei->cbBlob > 0 ) {
 		if ( pdbEvent->dbei->pBlob[0] == JABBER_DB_EVENT_CHATSTATES_GONE ) {
 			if ( pdbEvent->datatype == DBVT_WCHAR )
-				nRetVal = (int)mir_tstrdup(TranslateTS(_T("closed chat session")));
+				nRetVal = (int)mir_tstrdup(TranslateTS(_T(" closed chat session")));
 			else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-				nRetVal = (int)mir_strdup(Translate("closed chat session"));
+				nRetVal = (int)mir_strdup(Translate(" closed chat session"));
 		}
 	}
 	
@@ -198,49 +198,49 @@ int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM wParam, LPARAM lParam )
 		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent subscription request")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" sent subscription request")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent subscription request"));
+					nRetVal = (int)mir_strdup(Translate(" sent subscription request"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("approved subscription request")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" approved subscription request")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("approved subscription request"));
+					nRetVal = (int)mir_strdup(Translate(" approved subscription request"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" declined subscription")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+					nRetVal = (int)mir_strdup(Translate(" declined subscription"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("declined subscription")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" declined subscription")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("declined subscription"));
+					nRetVal = (int)mir_strdup(Translate(" declined subscription"));
 				break;
 			}
 		case JABBER_DB_EVENT_PRESENCE_ERROR:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent error presence")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" sent error presence")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent error presence"));
+					nRetVal = (int)mir_strdup(Translate(" sent error presence"));
 				break;
 			}
 		default:
 			{
 				if ( pdbEvent->datatype == DBVT_WCHAR )
-					nRetVal = (int)mir_tstrdup(TranslateTS(_T("sent unknown presence type")));
+					nRetVal = (int)mir_tstrdup(TranslateTS(_T(" sent unknown presence type")));
 				else if ( pdbEvent->datatype == DBVT_ASCIIZ )
-					nRetVal = (int)mir_strdup(Translate("sent unknown presence type"));
+					nRetVal = (int)mir_strdup(Translate(" sent unknown presence type"));
 				break;
 			}
 		}
