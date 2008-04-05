@@ -37,7 +37,7 @@ int InitGroupServices(void);
 int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
-void LoadCLUIModule();
+int LoadCLUIModule(void);
 int InitClistHotKeys(void);
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
