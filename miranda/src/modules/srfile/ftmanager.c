@@ -142,6 +142,7 @@ static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		for (i = 0; i < dat->wnds->realCount; ++i)
 			if (dat->wnds->items[i]->hwnd == (HWND)lParam)
 			{
+				mir_free(dat->wnds->items[i]);
 				List_Remove((SortedList *)dat->wnds, i);
 				break;
 			}
