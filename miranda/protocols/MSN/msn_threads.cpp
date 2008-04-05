@@ -85,6 +85,8 @@ void __cdecl MSNServerThread( ThreadData* info )
 	{
 		if (*info->mServer == 0)
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
+		else if (info->mIsMainThread)
+			strcpy(info->mGatewayIP, info->mServer);
 
 		if (info->gatewayType)
 			strcpy(info->mGatewayIP, info->mServer);
