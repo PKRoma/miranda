@@ -87,10 +87,13 @@ void __cdecl MSNServerThread( ThreadData* info )
 
 	if (MyOptions.UseGateway) 
 	{
-		if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
-			strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
 		if (*info->mServer == 0)
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
+		else if (info->mIsMainThread)
+			strcpy(info->mGatewayIP, info->mServer);
+
+		if (*info->mGatewayIP == 0 && MSN_GetStaticString("LoginServer", NULL, info->mGatewayIP, sizeof(info->mGatewayIP)))
+			strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
 	}
 	else
 	{
