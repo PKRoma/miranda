@@ -5,8 +5,6 @@
 	Name="msn"
 	ProjectGUID="{7B0F213E-C15E-4219-8AE5-49DD3D3D553D}"
 	RootNamespace="msn"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -745,6 +743,10 @@
 			</File>
 			<File
 				RelativePath=".\msn_libstr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\msn_links.cpp"
 				>
 			</File>
 			<File
