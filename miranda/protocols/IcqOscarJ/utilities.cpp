@@ -42,6 +42,7 @@ struct gateway_index
 	DWORD  dwIndex;
 };
 
+static gatewayMutexRef = 0;
 static CRITICAL_SECTION gatewayMutex;
 
 static gateway_index *gateways = NULL;
@@ -370,7 +371,8 @@ void CIcqProto::AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szU
 void CIcqProto::InitContactsCache()
 {
 	InitializeCriticalSection(&contactsCacheMutex);
-	InitializeCriticalSection(&gatewayMutex);
+  if (!gatewayMutexRef++)
+	  InitializeCriticalSection(&gatewayMutex);
 
 	// build cache
 	EnterCriticalSection(&contactsCacheMutex);
@@ -406,7 +408,8 @@ void CIcqProto::UninitContactsCache(void)
   contactsCache.destroy();
   LeaveCriticalSection(&contactsCacheMutex);
 	DeleteCriticalSection(&contactsCacheMutex);
-	DeleteCriticalSection(&gatewayMutex);
+  if (!--gatewayMutexRef)
+	  DeleteCriticalSection(&gatewayMutex);
 }
 
 
