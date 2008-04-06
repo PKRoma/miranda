@@ -24,12 +24,16 @@ Contents
 ----------------------
 * New in 0.7.4
 Enhancements:
+ - Ability to show unicode tooltips
+ - Improved uPnP handling for various routers
+ - Status menu width fix
  - ICQ: Use new offline messaging protocol (supports unicode)
  - ICQ: Ability to send/receive contacts to/from ICQ6 and AIM
  - ICQ: Ability to view/set ICQ6 compatible custom statuses (icons only)
  - ICQ: Reinvented known spam bot blocking
+ - Jabber: Group chat jid list filters implemented
  - MSN: Added WLM 9 detection
- - MSN: Added ability to recieve GIF avatars
+ - MSN: Added ability to receive GIF avatars
  - MSN: Added custom smiley reception
  - MSN: Added avatar display for the contact that is yourself
  - MSN: Added error messages on failure to find / store avatar
@@ -41,12 +45,16 @@ Bugfixes:
  - ICQ: Fixed connection problems with many contacts in the server-list
  - ICQ: Do not lose server-list contacts due to too long nicknames/comments
  - ICQ: Fixed possible crash during file transfer
+ - Jabber: Crash on group chat join from service discovery
+ - Jabber: Memory leak fixes in dialogs
+ - Jabber: Client version was wrongly updated when sending message to an offline contact
  - MSN: Offline messaging for people with long nicknames
- - MSN: Disconnect when recieve Hotmail notification
+ - MSN: Disconnect when receive Hotmail notification
  - MSN: Inability to login with error 923 
  - MSN: Fixed disconnect / inability to login due to sending corrupted messages
- - MSN: Fixed for nudge sending / recieving
+ - MSN: Fixed for nudge sending / receiving
  - MSN: Fixed moving contact to root
+ 
 
 * New in 0.7.3
  - MSN: URL encoding of utf8 was broken
