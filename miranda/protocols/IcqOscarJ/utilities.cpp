@@ -42,7 +42,7 @@ struct gateway_index
 	DWORD  dwIndex;
 };
 
-static gatewayMutexRef = 0;
+static int gatewayMutexRef = 0;
 static CRITICAL_SECTION gatewayMutex;
 
 static gateway_index *gateways = NULL;
