@@ -19,9 +19,5 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #ifndef LINKS_H
 #define LINKS_H
-#include "defines.h"
-void aim_links_unregister();
-void aim_links_init();
-void aim_links_destroy();
 
 #endif

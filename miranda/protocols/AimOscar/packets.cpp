@@ -1,4 +1,6 @@
+#include "aim.h"
 #include "packets.h"
+
 CRITICAL_SECTION SendingMutex;
 int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset, char* out)
 {

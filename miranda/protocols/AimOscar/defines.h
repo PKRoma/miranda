@@ -55,7 +55,6 @@
 #include "tlv.h"
 //rest o includes
 #include "avatars.h"
-#include "aim.h"
 #include "away.h"
 #include "utility.h"
 #include "client.h"

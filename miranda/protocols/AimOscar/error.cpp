@@ -1,5 +1,6 @@
-#include "error.h"
-void login_error(unsigned short* error)
+#include "aim.h"
+
+void CAimProto::login_error(unsigned short* error)
 {
 	if(*error==0x0004)
 	{
@@ -21,11 +22,12 @@ void login_error(unsigned short* error)
 		LOG("Unknown error occured when attempting to connect.");
 		ShowPopup("Aim Protocol","Unknown error occured when attempting to connect.", 0);
 	}
-	Netlib_CloseHandle(conn.hServerConn);//we need this aim doesn't end our connection if fucked up.
-	conn.hServerConn=0;
+	Netlib_CloseHandle(hServerConn);//we need this aim doesn't end our connection if fucked up.
+	hServerConn=0;
 	delete error;
 }
-void get_error(unsigned short* error)
+
+void CAimProto::get_error(unsigned short* error)
 {
 	if(*error==0x01)
 	{

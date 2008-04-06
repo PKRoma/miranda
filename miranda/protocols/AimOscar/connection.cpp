@@ -1,92 +1,94 @@
+#include "aim.h"
 #include "connection.h"
-CRITICAL_SECTION statusMutex;
-CRITICAL_SECTION connectionMutex;
-int LOG(const char *fmt, ...)
+
+int CAimProto::LOG(const char *fmt, ...)
 {
 	va_list va;
 	char szText[1024];
-	if (!conn.hNetlib)
+	if (!hNetlib)
 		return 0;
 	va_start(va, fmt);
 	mir_vsnprintf(szText, sizeof(szText), fmt, va);
 	va_end(va);
-	return CallService(MS_NETLIB_LOG, (WPARAM) conn.hNetlib, (LPARAM) szText);
+	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }
-HANDLE aim_connect(char* server)
+
+HANDLE CAimProto::aim_connect(char* server)
 {
 	char* server_dup=strldup(server,lstrlen(server));
-    NETLIBOPENCONNECTION ncon = { 0 };
-	char* port = strchr(server_dup,':');
-	if (port) *port++ = 0; else port = "5190";
-    ncon.cbSize = sizeof(ncon);
-    ncon.szHost = server_dup;
-    conn.port = ncon.wPort = (WORD)atol(port);
+	NETLIBOPENCONNECTION ncon = { 0 };
+	char* szPort = strchr(server_dup,':');
+	if (szPort) *szPort++ = 0; else szPort = "5190";
+	ncon.cbSize = sizeof(ncon);
+	ncon.szHost = server_dup;
+	port = ncon.wPort = (WORD)atol(szPort);
 	ncon.timeout=5;
 	LOG("%s:%u", server_dup, ncon.wPort);
-    HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlib, (LPARAM) & ncon);
+	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
 	delete[] server_dup;
 	return con;
 }
-HANDLE aim_peer_connect(char* ip,unsigned short port)
+
+HANDLE CAimProto::aim_peer_connect(char* ip,unsigned short port)
 {
-    NETLIBOPENCONNECTION ncon = { 0 };
-    ncon.cbSize = sizeof(ncon);
+	NETLIBOPENCONNECTION ncon = { 0 };
+	ncon.cbSize = sizeof(ncon);
 	ncon.flags = NLOCF_V2;
-    ncon.szHost = ip;
-    ncon.wPort =port;
+	ncon.szHost = ip;
+	ncon.wPort =port;
 	ncon.timeout=1;
-    HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) conn.hNetlibPeer, (LPARAM) & ncon);
+	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibPeer, (LPARAM) & ncon);
 	return con;
 }
-void __cdecl aim_connection_authorization()
+
+void __cdecl aim_connection_authorization( CAimProto* ppro )
 {
-	EnterCriticalSection(&connectionMutex);
+	EnterCriticalSection(&ppro->connectionMutex);
 	NETLIBPACKETRECVER packetRecv;
 	DBVARIANT dbv;
 	int recvResult=0;
-	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_PW, &dbv))
+	if (!ppro->getString(AIM_KEY_PW, &dbv))
 	{
-        CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-        conn.password = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
-        DBFreeVariant(&dbv);
+		CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+		ppro->password = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		LeaveCriticalSection(&connectionMutex);
+		LeaveCriticalSection(&ppro->connectionMutex);
 		return;
 	}
-	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
+	if (!ppro->getString(AIM_KEY_SN, &dbv))
 	{
-        conn.username = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
-        DBFreeVariant(&dbv);
-    }
+		ppro->username = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		DBFreeVariant(&dbv);
+	}
 	else
 	{
-		LeaveCriticalSection(&connectionMutex);
+		LeaveCriticalSection(&ppro->connectionMutex);
 		return;
 	}
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
-	conn.hServerPacketRecver=NULL;
-	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 4);
+	ppro->hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hServerConn, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 5000;
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
+#if _MSC_VER
+#pragma warning( disable: 4127)
+#endif
 	while(1)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
-		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
+#if _MSC_VER
+#pragma warning( default: 4127)
+#endif
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) ppro->hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
-			LOG("Connection Closed: No Error? during Connection Authorization");
+			ppro->LOG("Connection Closed: No Error? during Connection Authorization");
 			break;
 		}
-        else if (recvResult < 0)
+		else if (recvResult < 0)
 		{
-			LOG("Connection Closed: Socket Error during Connection Authorization %d", WSAGetLastError());
+			ppro->LOG("Connection Closed: Socket Error during Connection Authorization %d", WSAGetLastError());
 			break;
 		}
 		else
@@ -102,73 +104,71 @@ void __cdecl aim_connection_authorization()
 				flap_length+=FLAP_SIZE+flap.len();
 				if(flap.cmp(0x01))
 				{
-					if(aim_send_connection_packet(conn.hServerConn,conn.seqno,flap.val())==0)//cookie challenge
-					{
-						aim_authkey_request(conn.hServerConn,conn.seqno);//md5 authkey request
-					}
+					if( ppro->aim_send_connection_packet(ppro->hServerConn,ppro->seqno,flap.val())==0)//cookie challenge
+						ppro->aim_authkey_request(ppro->hServerConn,ppro->seqno);//md5 authkey request
 				}
 				else if(flap.cmp(0x02))
 				{
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0017))
 					{
-						snac_md5_authkey(snac,conn.hServerConn,conn.seqno);
-						if(snac_authorization_reply(snac)==1)
+						ppro->snac_md5_authkey(snac,ppro->hServerConn,ppro->seqno);
+						if(ppro->snac_authorization_reply(snac)==1)
 						{
-							delete[] conn.username;
-							delete[] conn.password;
-							Netlib_CloseHandle(conn.hServerPacketRecver);
-							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
-							LeaveCriticalSection(&connectionMutex);
+							delete[] ppro->username;
+							delete[] ppro->password;
+							Netlib_CloseHandle(ppro->hServerPacketRecver);
+							ppro->LOG("Connection Authorization Thread Ending: Negotiation Beginning");
+							LeaveCriticalSection(&ppro->connectionMutex);
 							return;
 						}
 					}
 				}
 				if(flap.cmp(0x04))
 				{
-					delete[] conn.username;
-					delete[] conn.password;
-					broadcast_status(ID_STATUS_OFFLINE);
-					LOG("Connection Authorization Thread Ending: Flap 0x04");
-					LeaveCriticalSection(&connectionMutex);
+					delete[] ppro->username;
+					delete[] ppro->password;
+					ppro->broadcast_status(ID_STATUS_OFFLINE);
+					ppro->LOG("Connection Authorization Thread Ending: Flap 0x04");
+					LeaveCriticalSection(&ppro->connectionMutex);
 					return;
 				}
 			}
 		}
 	}
-	delete[] conn.username;
-	delete[] conn.password;
-	broadcast_status(ID_STATUS_OFFLINE);
-	LOG("Connection Authorization Thread Ending: End of Thread");
-	LeaveCriticalSection(&connectionMutex);
+	delete[] ppro->username;
+	delete[] ppro->password;
+	ppro->broadcast_status(ID_STATUS_OFFLINE);
+	ppro->LOG("Connection Authorization Thread Ending: End of Thread");
+	LeaveCriticalSection(&ppro->connectionMutex);
 }
-void __cdecl aim_protocol_negotiation()
+
+void __cdecl aim_protocol_negotiation( CAimProto* ppro )
 {
-	EnterCriticalSection(&connectionMutex);
+	EnterCriticalSection(&ppro->connectionMutex);
 	NETLIBPACKETRECVER packetRecv;
 	int recvResult=0;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
-	conn.hServerPacketRecver=NULL;
-	conn.hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hServerConn, 2048 * 8);
+	ppro->hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hServerConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;	
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
+#if _MSC_VER
+#pragma warning( disable: 4127)
+#endif
 	while(1)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
-		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) conn.hServerPacketRecver, (LPARAM) & packetRecv);
+#if _MSC_VER
+#pragma warning( default: 4127)
+#endif
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)ppro->hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
-			LOG("Connection Closed: No Error during Connection Negotiation?");
+			ppro->LOG("Connection Closed: No Error during Connection Negotiation?");
 			break;
 		}
 		if (recvResult == SOCKET_ERROR)
 		{
-			LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
+			ppro->LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
 			break;
 		}
 		if(recvResult>0)
@@ -182,94 +182,95 @@ void __cdecl aim_protocol_negotiation()
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
-  				if(flap.cmp(0x01))
+				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(conn.hServerConn,conn.seqno,COOKIE_LENGTH,COOKIE);//cookie challenge
-					delete[] COOKIE;
-					COOKIE=NULL;
-					COOKIE_LENGTH=0;
+					ppro->aim_send_cookie(ppro->hServerConn,ppro->seqno,ppro->COOKIE_LENGTH,ppro->COOKIE);//cookie challenge
+					delete[] ppro->COOKIE;
+					ppro->COOKIE=NULL;
+					ppro->COOKIE_LENGTH=0;
 				}
 				else if(flap.cmp(0x02))
 				{
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac,conn.hServerConn,conn.seqno);
-						snac_supported_family_versions(snac,conn.hServerConn,conn.seqno);
-						snac_rate_limitations(snac,conn.hServerConn,conn.seqno);
-						snac_service_redirect(snac);
-						snac_error(snac);
+						ppro->snac_supported_families(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_supported_family_versions(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_rate_limitations(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_service_redirect(snac);
+						ppro->snac_error(snac);
 					}
 					else if(snac.cmp(0x0002))
 					{
-						snac_received_info(snac);
-						snac_error(snac);
+						ppro->snac_received_info(snac);
+						ppro->snac_error(snac);
 					}
 					else if(snac.cmp(0x0003))
 					{
-						snac_user_online(snac);
-						snac_user_offline(snac);
-						snac_error(snac);
+						ppro->snac_user_online(snac);
+						ppro->snac_user_offline(snac);
+						ppro->snac_error(snac);
 					}
 					else if(snac.cmp(0x0004))
 					{
-						snac_icbm_limitations(snac,conn.hServerConn,conn.seqno);
-						snac_message_accepted(snac);
-						snac_received_message(snac,conn.hServerConn,conn.seqno);
-						snac_typing_notification(snac);
-						snac_error(snac);
-						snac_busted_payload(snac);
+						ppro->snac_icbm_limitations(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_message_accepted(snac);
+						ppro->snac_received_message(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_typing_notification(snac);
+						ppro->snac_error(snac);
+						ppro->snac_busted_payload(snac);
 					}
 					else if(snac.cmp(0x0013))
 					{
-						snac_contact_list(snac,conn.hServerConn,conn.seqno);
-						snac_list_modification_ack(snac);
-						snac_error(snac);
+						ppro->snac_contact_list(snac,ppro->hServerConn,ppro->seqno);
+						ppro->snac_list_modification_ack(snac);
+						ppro->snac_error(snac);
 					}
 				}
 				else if(flap.cmp(0x04))
 				{
-					offline_contacts();
-					broadcast_status(ID_STATUS_OFFLINE);
-					LOG("Connection Negotiation Thread Ending: Flap 0x04");
-					SetEvent(conn.hAvatarEvent);
-					LeaveCriticalSection(&connectionMutex);
+					ppro->offline_contacts();
+					ppro->broadcast_status(ID_STATUS_OFFLINE);
+					ppro->LOG("Connection Negotiation Thread Ending: Flap 0x04");
+					SetEvent(ppro->hAvatarEvent);
+					LeaveCriticalSection(&ppro->connectionMutex);
 					return;
 				}
 			}
 		}
 	}
-	offline_contacts();
-	broadcast_status(ID_STATUS_OFFLINE);
-	SetEvent(conn.hAvatarEvent);
-	LOG("Connection Negotiation Thread Ending: End of Thread");
-	LeaveCriticalSection(&connectionMutex);
+	ppro->offline_contacts();
+	ppro->broadcast_status(ID_STATUS_OFFLINE);
+	SetEvent(ppro->hAvatarEvent);
+	ppro->LOG("Connection Negotiation Thread Ending: End of Thread");
+	LeaveCriticalSection(&ppro->connectionMutex);
 }
-void __cdecl aim_mail_negotiation()
+
+void __cdecl aim_mail_negotiation( CAimProto* ppro )
 {
 	NETLIBPACKETRECVER packetRecv;
 	int recvResult=0;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
 	HANDLE hServerPacketRecver=NULL;
-	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hMailConn, 2048 * 8);
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hMailConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
-	while(conn.status!=ID_STATUS_OFFLINE)
+#if _MSC_VER
+#pragma warning( disable: 4127)
+#endif
+	while(ppro->m_iStatus!=ID_STATUS_OFFLINE)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
+#if _MSC_VER
+#pragma warning( default: 4127)
+#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
-                break;
+			break;
 		}
-        if (recvResult == SOCKET_ERROR)
+		if (recvResult == SOCKET_ERROR)
 		{
-                break;
+			break;
 		}
 		if(recvResult>0)
 		{
@@ -282,69 +283,70 @@ void __cdecl aim_mail_negotiation()
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
-  				if(flap.cmp(0x01))
+				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(conn.hMailConn,conn.mail_seqno,MAIL_COOKIE_LENGTH,MAIL_COOKIE);//cookie challenge
-					delete[] MAIL_COOKIE;
-					MAIL_COOKIE=NULL;
-					MAIL_COOKIE_LENGTH=0;
+					ppro->aim_send_cookie(ppro->hMailConn,ppro->mail_seqno,ppro->MAIL_COOKIE_LENGTH,ppro->MAIL_COOKIE);//cookie challenge
+					delete[] ppro->MAIL_COOKIE;
+					ppro->MAIL_COOKIE=NULL;
+					ppro->MAIL_COOKIE_LENGTH=0;
 				}
 				else if(flap.cmp(0x02))
 				{
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac,conn.hMailConn,conn.mail_seqno);
-						snac_supported_family_versions(snac,conn.hMailConn,conn.mail_seqno);
-						snac_mail_rate_limitations(snac,conn.hMailConn,conn.mail_seqno);
-						snac_error(snac);
+						ppro->snac_supported_families(snac,ppro->hMailConn,ppro->mail_seqno);
+						ppro->snac_supported_family_versions(snac,ppro->hMailConn,ppro->mail_seqno);
+						ppro->snac_mail_rate_limitations(snac,ppro->hMailConn,ppro->mail_seqno);
+						ppro->snac_error(snac);
 					}
 					else if(snac.cmp(0x0018))
 					{
-						snac_mail_response(snac);
+						ppro->snac_mail_response(snac);
 					}
 				}
 				else if(flap.cmp(0x04))
 				{
 					Netlib_CloseHandle(hServerPacketRecver);
-					Netlib_CloseHandle(conn.hMailConn);
-					conn.hMailConn=0;
-					LOG("Mail Server Connection has ended");
+					Netlib_CloseHandle(ppro->hMailConn);
+					ppro->hMailConn=0;
+					ppro->LOG("Mail Server Connection has ended");
 					return;
 				}
 			}
 		}
 	}
-	LOG("Mail Server Connection has ended");
+	ppro->LOG("Mail Server Connection has ended");
 	Netlib_CloseHandle(hServerPacketRecver);
-	Netlib_CloseHandle(conn.hMailConn);
-	conn.hMailConn=0;
+	Netlib_CloseHandle(ppro->hMailConn);
+	ppro->hMailConn=0;
 }
-void __cdecl aim_avatar_negotiation()
+
+void __cdecl aim_avatar_negotiation( CAimProto* ppro )
 {
 	NETLIBPACKETRECVER packetRecv;
 	int recvResult=0;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
 	HANDLE hServerPacketRecver=NULL;
-	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)conn.hAvatarConn, 2048 * 8);
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hAvatarConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 300000;//5 minutes connected
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
+#if _MSC_VER
+#pragma warning( disable: 4127)
+#endif
 	while(1)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
+#if _MSC_VER
+#pragma warning( default: 4127)
+#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
-                break;
+			break;
 		}
-        if (recvResult == SOCKET_ERROR)
+		if (recvResult == SOCKET_ERROR)
 		{
-                break;
+			break;
 		}
 		if(recvResult>0)
 		{
@@ -357,41 +359,41 @@ void __cdecl aim_avatar_negotiation()
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
-  				if(flap.cmp(0x01))
+				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(conn.hAvatarConn,conn.avatar_seqno,AVATAR_COOKIE_LENGTH,AVATAR_COOKIE);//cookie challenge
-					delete[] AVATAR_COOKIE;
-					AVATAR_COOKIE=NULL;
-					AVATAR_COOKIE_LENGTH=0;
+					ppro->aim_send_cookie(ppro->hAvatarConn,ppro->avatar_seqno,ppro->AVATAR_COOKIE_LENGTH,ppro->AVATAR_COOKIE);//cookie challenge
+					delete[] ppro->AVATAR_COOKIE;
+					ppro->AVATAR_COOKIE=NULL;
+					ppro->AVATAR_COOKIE_LENGTH=0;
 				}
 				else if(flap.cmp(0x02))
 				{
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac,conn.hAvatarConn,conn.avatar_seqno);
-						snac_supported_family_versions(snac,conn.hAvatarConn,conn.avatar_seqno);
-						snac_avatar_rate_limitations(snac,conn.hAvatarConn,conn.avatar_seqno);
-						snac_error(snac);
+						ppro->snac_supported_families(snac,ppro->hAvatarConn,ppro->avatar_seqno);
+						ppro->snac_supported_family_versions(snac,ppro->hAvatarConn,ppro->avatar_seqno);
+						ppro->snac_avatar_rate_limitations(snac,ppro->hAvatarConn,ppro->avatar_seqno);
+						ppro->snac_error(snac);
 					}
 					if(snac.cmp(0x0010))
 					{
-						snac_retrieve_avatar(snac);
+						ppro->snac_retrieve_avatar(snac);
 					}
 				}
 				else if(flap.cmp(0x04))
 				{
 					Netlib_CloseHandle(hServerPacketRecver);
-					conn.hAvatarConn=0;
-					LOG("Avatar Server Connection has ended");
-					conn.AvatarLimitThread=0;
+					ppro->hAvatarConn=0;
+					ppro->LOG("Avatar Server Connection has ended");
+					ppro->AvatarLimitThread=0;
 					return;
 				}
 			}
 		}
 	}
 	Netlib_CloseHandle(hServerPacketRecver);
-	LOG("Avatar Server Connection has ended");
-	conn.hAvatarConn=0;
-	conn.AvatarLimitThread=0;
+	ppro->LOG("Avatar Server Connection has ended");
+	ppro->hAvatarConn=0;
+	ppro->AvatarLimitThread=0;
 }

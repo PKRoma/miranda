@@ -4,8 +4,6 @@
 	Version="8,00"
 	Name="aim"
 	ProjectGUID="{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -483,6 +481,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\proto.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\proxy.cpp"
 				>
 			</File>
@@ -625,6 +627,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\proto.h"
+				>
+			</File>
+			<File
 				RelativePath=".\proxy.h"
 				>
 			</File>
@@ -669,10 +675,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\Makefile"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

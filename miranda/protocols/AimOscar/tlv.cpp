@@ -1,4 +1,6 @@
+#include "aim.h"
 #include "tlv.h"
+
 TLV::TLV(char* buf)
 {
 	type_=_htons((*(unsigned short*)&buf[0]));

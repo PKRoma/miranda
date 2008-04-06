@@ -1,33 +1,51 @@
+#include "aim.h"
 #include "popup.h"
+
+struct CAimPopupData
+{
+	CAimPopupData( CAimProto* _ppro, char* _url ) :
+		ppro( _ppro ),
+		url( _url )
+	{}
+
+	~CAimPopupData()
+	{	if ( url )
+			delete[] url;
+	}
+
+	CAimProto* ppro;
+	char* url;
+};
+
 LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
-	switch( message )
-	{
-		case WM_COMMAND:
-			if ( HIWORD( wParam ) == STN_CLICKED)
-			{
-				char *szURL = (char *)PUGetPluginData( hWnd );
-				if ( szURL != NULL )
-				{
-					execute_cmd("http",szURL);
-					delete[] szURL;
-				}
-				PUDeletePopUp( hWnd );
-				return 0;
-			}
-			break;
+	switch( message ) {
+	case WM_COMMAND:
+		if ( HIWORD( wParam ) == STN_CLICKED)
+		{
+			CAimPopupData* p = ( CAimPopupData* )PUGetPluginData( hWnd );
+			if ( p->url != NULL )
+				p->ppro->execute_cmd( "http", p->url );
 
-		case WM_CONTEXTMENU:
 			PUDeletePopUp( hWnd );
-			break;
+			return 0;
+		}
+		break;
 
-		case UM_FREEPLUGINDATA:
-			ReleaseIconEx("aim");
-			break;
+	case WM_CONTEXTMENU:
+		PUDeletePopUp( hWnd );
+		break;
+
+	case UM_FREEPLUGINDATA:
+		CAimPopupData* p = ( CAimPopupData* )PUGetPluginData( hWnd );
+		p->ppro->ReleaseIconEx("aim");
+		delete p;
+		break;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-void __stdcall ShowPopup( const char* title, const char* msg, int flags, char* url)
+
+void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* url)
 {
 	POPUPDATAEX ppd;
 
@@ -39,10 +57,9 @@ void __stdcall ShowPopup( const char* title, const char* msg, int flags, char* u
 			char* buf= new char[size];
 			strlcpy(buf,msg,size);
 			strlcpy(&buf[strlen(msg)]," Open mail account?",size);
-			if(MessageBox( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION )==IDYES)
-			{
+			if ( MessageBox( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION ) == IDYES )
 				execute_cmd("http",url);
-			}
+
 			delete[] buf;
 			return;
 		}
@@ -59,9 +76,10 @@ void __stdcall ShowPopup( const char* title, const char* msg, int flags, char* u
 	ppd.lchIcon = LoadIconEx( "aim" );
 	if (flags & MAIL_POPUP)
 	{
-		ppd.PluginData =  (void *)url;
+		ppd.PluginData = new CAimPopupData( this, url );
 		ppd.iSeconds = -1;
 	} 
+	else ppd.PluginData = new CAimPopupData( this, NULL );
 	CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);	
 	return;
 }

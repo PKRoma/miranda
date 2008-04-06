@@ -1,9 +1,7 @@
 #ifndef CONV_H
 #define CONV_H
-#include "defines.h"
 char* strip_html(char *src);
 wchar_t* strip_html(wchar_t *src);//wide char version
-char* strip_special_chars(char *src,HANDLE hContact);
 //wchar_t* plain_to_html(wchar_t *src); // wide char version (only)
 char* strip_carrots(char *src);
 wchar_t* strip_carrots(wchar_t *src);//wide char version

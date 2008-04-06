@@ -1,37 +1,55 @@
+#include "aim.h"
 #include "away.h"
-void awaymsg_request_handler(char* sn)
+
+struct awaymsg_request_thread_param
 {
-	char* blob=strldup(sn,lstrlen(sn));
-	ForkThread((pThreadFunc)awaymsg_request_thread,blob);
-}
-void awaymsg_request_thread(char* sn)
+	awaymsg_request_thread_param( CAimProto* _ppro, const char* _sn ) :
+		ppro( _ppro ),
+		sn( strldup( sn, lstrlen(sn)))
+	{}
+
+	~awaymsg_request_thread_param()
+	{	delete[] sn;
+	}
+
+	CAimProto* ppro;
+	char* sn;
+};
+
+static void awaymsg_request_thread( awaymsg_request_thread_param* param)
 {
-	if(WaitForSingleObject(conn.hAwayMsgEvent ,  INFINITE )==WAIT_OBJECT_0)
-	{
-		if (Miranda_Terminated())
-		{
-			delete[] sn;
+	if ( WaitForSingleObject( param->ppro->hAwayMsgEvent, INFINITE ) == WAIT_OBJECT_0 ) {
+		if ( Miranda_Terminated()) {
+			delete param;
 			return;
 		}
-		if(conn.hServerConn)
-			aim_query_away_message(conn.hServerConn,conn.seqno,sn);
+
+		if ( param->ppro->hServerConn )
+			param->ppro->aim_query_away_message( param->ppro->hServerConn, param->ppro->seqno, param->sn );
 	}
-	delete[] sn;
+	delete param;
 }
-void awaymsg_request_limit_thread()
+
+void CAimProto::awaymsg_request_handler(char* sn)
 {
-	LOG("Awaymsg Request Limit thread begin");
-	while(!Miranda_Terminated() && conn.hServerConn)
+	mir_forkthread(( pThreadFunc )awaymsg_request_thread, new awaymsg_request_thread_param( this, sn ));
+}
+
+void awaymsg_request_limit_thread( CAimProto* ppro )
+{
+	ppro->LOG("Awaymsg Request Limit thread begin");
+	while(!Miranda_Terminated() && ppro->hServerConn)
 	{
 		SleepEx(500, TRUE);
 		//LOG("Setting Awaymsg Request Event...");
-		SetEvent(conn.hAwayMsgEvent);
+		SetEvent( ppro->hAwayMsgEvent );
 	}
-	LOG("Awaymsg Request Limit Thread has ended");
+	ppro->LOG("Awaymsg Request Limit Thread has ended");
 }
-void awaymsg_retrieval_handler(char* sn,char* msg)
+
+void CAimProto::awaymsg_retrieval_handler(char* sn,char* msg)
 {
-	HANDLE hContact=find_contact(sn);
-	if(hContact)
-		write_away_message(hContact,sn,msg);
+	HANDLE hContact = find_contact( sn );
+	if ( hContact )
+		write_away_message( hContact, sn, msg );
 }

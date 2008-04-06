@@ -1,4 +1,6 @@
+#include "aim.h"
 #include "theme.h"
+
 HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
 HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
 HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
@@ -63,10 +65,10 @@ static iconList[] =
 
 static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]); 
 
-void InitIcons(void)
+void CAimProto::InitIcons(void)
 {
 	char szFile[MAX_PATH];
-	GetModuleFileNameA(conn.hInstance, szFile, MAX_PATH);
+	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
 
 	char szSettingName[100];
 
@@ -76,18 +78,17 @@ void InitIcons(void)
 	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
 
-	for ( int i = 0; i < icolstsz; i++ ) 
-	{
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, iconList[i].szName );
+	for ( int i = 0; i < icolstsz; i++ ) {
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
 
 		char szSectionName[100];
 		if (iconList[i].szSection)
 		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", AIM_PROTOCOL_NAME, iconList[i].szSection );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", m_szModuleName, iconList[i].szSection );
 			sid.pszSection = Translate(szSectionName);
 		}
 		else
-			sid.pszSection = Translate( AIM_PROTOCOL_NAME );
+			sid.pszSection = Translate( m_szModuleName );
 
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -95,14 +96,14 @@ void InitIcons(void)
 	}	
 }
 
-HICON  LoadIconEx(const char* name)
+HICON CAimProto::LoadIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
 	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
-HANDLE  GetIconHandle(const char* name)
+HANDLE CAimProto::GetIconHandle(const char* name)
 {
 	for (unsigned i=0; i < icolstsz; i++)
 		if (strcmp(iconList[i].szName, name) == 0)
@@ -110,10 +111,10 @@ HANDLE  GetIconHandle(const char* name)
 	return NULL;
 }
 
-void  ReleaseIconEx(const char* name)
+void CAimProto::ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", AIM_PROTOCOL_NAME, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
 	CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
 }
 

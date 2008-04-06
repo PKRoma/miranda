@@ -144,7 +144,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -235,6 +235,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -330,6 +331,7 @@
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="aim.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -428,10 +430,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\aim.rc"
-				>
-			</File>
-			<File
 				RelativePath=".\avatars.cpp"
 				>
 			</File>
@@ -477,6 +475,10 @@
 			</File>
 			<File
 				RelativePath=".\popup.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\proto.cpp"
 				>
 			</File>
 			<File
@@ -526,6 +528,10 @@
 			>
 			<File
 				RelativePath=".\icons\admin.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\aim.rc"
 				>
 			</File>
 			<File
@@ -586,10 +592,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\defines.h"
-				>
-			</File>
-			<File
 				RelativePath=".\direct_connect.h"
 				>
 			</File>
@@ -619,6 +621,10 @@
 			</File>
 			<File
 				RelativePath=".\popup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\proto.h"
 				>
 			</File>
 			<File
@@ -666,10 +672,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\Makefile"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

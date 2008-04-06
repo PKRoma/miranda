@@ -1,4 +1,6 @@
+#include "aim.h"
 #include "flap.h"
+
 FLAP::FLAP(char* buf,int num_bytes)
 {
 	if(FLAP_SIZE>num_bytes)

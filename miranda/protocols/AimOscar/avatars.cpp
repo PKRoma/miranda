@@ -1,10 +1,59 @@
+#include "aim.h"
 #include "avatars.h"
-CRITICAL_SECTION avatarMutex;
-static int avatar_module_size=0;
-static char* avatar_module_ptr=NULL;
-void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//checks to see if the avatar needs requested
+
+struct avatar_request_thread_param
 {
-	if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DA, 0))
+	avatar_request_thread_param( CAimProto* _ppro, char* _data ) :
+		ppro( _ppro ),
+		data( _data )
+	{}
+
+	~avatar_request_thread_param()
+	{	delete[] data;
+	}
+
+	CAimProto* ppro;
+	char* data;
+};
+
+void avatar_request_thread(avatar_request_thread_param* p)
+{
+	EnterCriticalSection( &p->ppro->avatarMutex );
+	if ( !p->ppro->hAvatarConn && p->ppro->hServerConn ) {
+		p->ppro->LOG("Starting Avatar Connection.");
+		ResetEvent( p->ppro->hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
+		p->ppro->hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
+		p->ppro->aim_new_service_request( p->ppro->hServerConn, p->ppro->seqno, 0x0010 ) ;//avatar service connection!
+	}
+	LeaveCriticalSection( &p->ppro->avatarMutex );//not further below because the thread will become trapped if the connection dies.
+
+	if ( WaitForSingleObject( p->ppro->hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
+		if (Miranda_Terminated()) {
+			LeaveCriticalSection( &p->ppro->avatarMutex );
+			delete p;
+			return;
+		}
+		
+		if ( p->ppro->hServerConn ) {
+			char* sn = strtok(p->data,";");
+			char* hash_string = strtok(NULL,";");
+			char* hash = new char[lstrlen(hash_string)/2];
+			string_to_bytes( hash_string, hash );
+			p->ppro->LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
+			p->ppro->aim_request_avatar( p->ppro->hAvatarConn, p->ppro->avatar_seqno, sn, hash, (unsigned short)lstrlen(hash_string)/2 );
+		}
+		else {
+			SetEvent( p->ppro->hAvatarEvent );
+			LeaveCriticalSection( &p->ppro->avatarMutex );
+			return;
+		}
+	}
+	delete p;
+}
+
+void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//checks to see if the avatar needs requested
+{
+	if(!getByte( AIM_KEY_DA, 0))
 	{
 		if(char* norm_sn=normalize_name(sn))
 		{
@@ -25,7 +74,7 @@ void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//ch
 					if(out!=NULL)//make sure file exist then check hash in db
 					{
 						fclose(out);
-						if(char* hash=getSetting(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH))
+						if(char* hash=getSetting(hContact,m_szModuleName,AIM_KEY_AH))
 						{
 							avatar_exist=lstrcmp(hash_string,hash);
 							if(!avatar_exist)//NULL means it exist
@@ -46,7 +95,7 @@ void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//ch
 					char* blob= new char[length];
 					mir_snprintf(blob,length,"%s;%s",sn,hash_string);
 					LOG("Starting avatar request thread for %s)",sn);
-					ForkThread((pThreadFunc)avatar_request_thread,blob);
+					mir_forkthread((pThreadFunc)avatar_request_thread, new avatar_request_thread_param( this, blob ));
 				}
 			}
 			delete[] hash;
@@ -55,55 +104,19 @@ void avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//ch
 		}
 	}
 }
-void avatar_request_thread(char* data)
+
+void avatar_request_limit_thread( CAimProto* ppro )
 {
-	EnterCriticalSection(&avatarMutex);
-	if(!conn.hAvatarConn&&conn.hServerConn)
-	{
-		LOG("Starting Avatar Connection.");
-		ResetEvent(conn.hAvatarEvent);//reset incase a disconnection occured and state is now set following the removal of queued threads
-		conn.hAvatarConn=(HANDLE)1;//set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request(conn.hServerConn,conn.seqno,0x0010);//avatar service connection!
-	}
-	LeaveCriticalSection(&avatarMutex);//not further below because the thread will become trapped if the connection dies.
-	if(WaitForSingleObject(conn.hAvatarEvent ,  INFINITE )==WAIT_OBJECT_0)
-	{
-		if (Miranda_Terminated())
-		{
-			LeaveCriticalSection(&avatarMutex);
-			delete[] data;
-			return;
-		}
-		if(conn.hServerConn)
-		{
-			char* sn=strtok(data,";");
-			char* hash_string=strtok(NULL,";");
-			char* hash= new char[lstrlen(hash_string)/2];
-			string_to_bytes(hash_string,hash);
-			LOG("Requesting an Avatar: %s(Hash: %s)",sn,hash_string);
-			aim_request_avatar(conn.hAvatarConn,conn.avatar_seqno,sn,hash,(unsigned short)lstrlen(hash_string)/2);
-		}
-		else
-		{
-			SetEvent(conn.hAvatarEvent);
-			LeaveCriticalSection(&avatarMutex);
-			return;
-		}
-	}
-	delete[] data;
-}
-void avatar_request_limit_thread()
-{
-	LOG("Avatar Request Limit thread begin");
-	while(conn.AvatarLimitThread)
-	{
+	ppro->LOG("Avatar Request Limit thread begin");
+	while( ppro->AvatarLimitThread ) {
 		Sleep(1000);
-		LOG("Setting Avatar Request Event...");
-		SetEvent(conn.hAvatarEvent);
+		ppro->LOG("Setting Avatar Request Event...");
+		SetEvent( ppro->hAvatarEvent );
 	}
-	LOG("Avatar Request Limit Thread has ended");
+	ppro->LOG("Avatar Request Limit Thread has ended");
 }
-void avatar_retrieval_handler(SNAC &snac)
+
+void CAimProto::avatar_retrieval_handler(SNAC &snac)
 {
 	int sn_length=(int)snac.ubyte(0);
 	char* sn=snac.part(1,sn_length);
@@ -116,9 +129,9 @@ void avatar_retrieval_handler(SNAC &snac)
 		{
 			char* hash=snac.part(5+sn_length,hash_size);
 			char* hash_string=bytes_to_string(hash,hash_size);
-			DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_AH,hash_string);
+			DBWriteContactSettingString(hContact,m_szModuleName,AIM_KEY_AH,hash_string);
 			char* file_data=snac.val(7+sn_length+hash_size);
-			char type[5];
+			char type[5]; 
 			detect_image_type(file_data,type);
 			char* filename=strlcat(norm_sn,type);
 			char* path;
@@ -143,7 +156,8 @@ void avatar_retrieval_handler(SNAC &snac)
 	}
 	delete[] sn;
 }
-void avatar_apply(HANDLE &hContact,char* sn,char* filename)
+
+void CAimProto::avatar_apply(HANDLE &hContact,char* sn,char* filename)
 {
 	if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//compare filenames if different and exist then ignore icon change
 	{
@@ -179,8 +193,9 @@ void avatar_apply(HANDLE &hContact,char* sn,char* filename)
 		AI.format=PA_FORMAT_BMP;
 	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
 	LOG("Successfully added avatar for %s(%s)",sn,AI.filename);
-	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
+	ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
 }
+
 void detect_image_type(char* stream,char* type_ret)
 {
 	if(stream[0]=='G'&&stream[1]=='I'&&stream[2]=='F')

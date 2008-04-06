@@ -1,6 +1,6 @@
 #ifndef FILE_H
 #define FILE_H
-#include "defines.h"
+
 class oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
  {
  public:
@@ -34,6 +34,7 @@ class oft2//oscar file transfer 2 class- See On_Sending_Files_via_OSCAR.pdf
 	unsigned short sub_encoding;//192
 	unsigned char filename[64];//256
  };
+
 class file_transfer
 {
 public:
@@ -45,8 +46,6 @@ public:
 	unsigned long ip;
 	unsigned short port;
 	char* message;
-}extern *fu;
+};
 
-void sending_file(HANDLE hContact, HANDLE hNewConnection);
-void receiving_file(HANDLE hContact, HANDLE hNewConnection);
 #endif

@@ -145,6 +145,10 @@ SOURCE=.\popup.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\proto.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\proxy.cpp
 # End Source File
 # Begin Source File
@@ -242,6 +246,10 @@ SOURCE=.\packets.h
 # Begin Source File
 
 SOURCE=.\popup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\proto.h
 # End Source File
 # Begin Source File
 

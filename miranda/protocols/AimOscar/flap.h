@@ -1,7 +1,5 @@
 #ifndef FLAP_H
 #define FLAP_H
-#include <stdio.h>
-#include <windows.h>
 #include "packets.h"
 #define FLAP_SIZE 6
 class FLAP

@@ -317,6 +317,9 @@
 				RelativePath=".\popup.cpp">
 			</File>
 			<File
+				RelativePath=".\proto.cpp">
+			</File>
+			<File
 				RelativePath=".\proxy.cpp">
 			</File>
 			<File
@@ -422,6 +425,9 @@
 			</File>
 			<File
 				RelativePath=".\popup.h">
+			</File>
+			<File
+				RelativePath=".\proto.h">
 			</File>
 			<File
 				RelativePath=".\proxy.h">
