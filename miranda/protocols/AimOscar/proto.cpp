@@ -659,8 +659,8 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 	if ( shutting_down )
 		return 0;
 
-	EnterCriticalSection(&statusMutex);
-	start_connection(m_iStatus);
+	EnterCriticalSection( &statusMutex );
+	start_connection( iNewStatus );
 	if ( state == 1 ) {
 		switch(m_iStatus) {
 		case ID_STATUS_OFFLINE:

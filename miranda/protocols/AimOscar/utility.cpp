@@ -41,7 +41,7 @@ void CAimProto::broadcast_status(int status)
 	ProtoBroadcastAck(m_szModuleName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
 
-void CAimProto::start_connection(int initial_status)
+void CAimProto::start_connection(int status)
 {
 	if(m_iStatus==ID_STATUS_OFFLINE)
 	{
@@ -77,7 +77,7 @@ void CAimProto::start_connection(int initial_status)
 		}
 		if ( hServerConn )
 		{
-			initial_status=initial_status;
+			initial_status = status;
 			aim_connection_authorization( this );
 		}
 		else broadcast_status(ID_STATUS_OFFLINE);
