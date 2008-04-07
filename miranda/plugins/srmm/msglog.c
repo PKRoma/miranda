@@ -222,7 +222,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
-	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES) {
+	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES || dbei.eventType == EVENTTYPE_JABBER_PRESENCE) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
 	bufferEnd = 0;
@@ -263,6 +263,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 				}
 				break;
 			case EVENTTYPE_JABBER_CHATSTATES:
+			case EVENTTYPE_JABBER_PRESENCE:
 			case EVENTTYPE_STATUSCHANGE:
 			case EVENTTYPE_FILE:
 				i = LOGICON_MSG_NOTICE;
@@ -290,7 +291,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, str);
 		showColon = 1;
 	}
-	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES) {
+	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES && dbei.eventType != EVENTTYPE_JABBER_PRESENCE) {
 		TCHAR* szName;
 		CONTACTINFO ci;
 		ZeroMemory(&ci, sizeof(ci));
@@ -332,6 +333,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			break;
 		}
 		case EVENTTYPE_JABBER_CHATSTATES:
+		case EVENTTYPE_JABBER_PRESENCE:
 		case EVENTTYPE_STATUSCHANGE:
 		{
 			TCHAR *msg, *szName;
