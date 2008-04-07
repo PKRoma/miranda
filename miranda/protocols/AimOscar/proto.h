@@ -265,6 +265,15 @@ struct CAimProto : public PROTO_INTERFACE
 	void   aim_links_unregwatcher();
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// packets.cpp
+
+	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);
+	int    aim_writetlv(unsigned short type,unsigned short size ,char* value,unsigned short &offset,char* out);
+	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
+	int    aim_writefamily(char *buf,unsigned short &offset,char* out);
+	int    aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out);
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// server.cpp
 
 	void   snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);

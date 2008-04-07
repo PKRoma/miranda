@@ -56,7 +56,7 @@ void accept_file_thread( file_thread_param* p )//buddy sending file
 			p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy ); //not really a direct connection
 			p->ppro->setWord( *hContact, AIM_KEY_PC, port ); //needed to verify the proxy connection as legit
 			p->ppro->setString( *hContact, AIM_KEY_IP, proxy_ip );
-			mir_forkthread((pThreadFunc)aim_proxy_helper,*hContact);
+			mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param(p->ppro, *hContact));
 		}
 		else {
 			if ( !p->ppro->getString( hContact, AIM_KEY_SN, &dbv )) {
@@ -77,7 +77,7 @@ void accept_file_thread( file_thread_param* p )//buddy sending file
 			p->ppro->setByte( *hContact, AIM_KEY_PS, 2 );
 			p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy); //not really a direct connection
 			p->ppro->setString( *hContact, AIM_KEY_IP, "ars.oscar.aol.com:5190" );
-			mir_forkthread(( pThreadFunc )aim_proxy_helper, *hContact );
+			mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param( p->ppro, *hContact ));
 		}
 	}
 	else {
@@ -89,7 +89,7 @@ void accept_file_thread( file_thread_param* p )//buddy sending file
 			p->ppro->aim_accept_file(p->ppro->hServerConn,p->ppro->seqno,sn,cookie);
 			p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 			p->ppro->setString( *hContact, AIM_KEY_IP, verified_ip );
-			mir_forkthread(( pThreadFunc )aim_dc_helper, *hContact );
+			mir_forkthread(( pThreadFunc )aim_dc_helper, new aim_dc_helper_param( p->ppro, *hContact ));
 		}
 		else {
 			hDirect = p->ppro->aim_peer_connect(local_ip,port);
@@ -98,7 +98,7 @@ void accept_file_thread( file_thread_param* p )//buddy sending file
 				p->ppro->aim_accept_file(p->ppro->hServerConn,p->ppro->seqno,sn,cookie);
 				p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 				p->ppro->setString( *hContact, AIM_KEY_IP, local_ip );
-				mir_forkthread(( pThreadFunc )aim_dc_helper, *hContact );
+				mir_forkthread(( pThreadFunc )aim_dc_helper, new aim_dc_helper_param( p->ppro, *hContact ));
 			}
 			else {
 				p->ppro->LOG("Failed to connect to buddy- asking buddy to connect to us.");
@@ -131,7 +131,7 @@ void redirected_file_thread( file_thread_param* p )//we are sending file
 			p->ppro->aim_accept_file(p->ppro->hServerConn,p->ppro->seqno,sn,icbm_cookie);
 			p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 			p->ppro->setString( *hContact, AIM_KEY_IP, verified_ip );
-			mir_forkthread(( pThreadFunc )aim_dc_helper, *hContact );
+			mir_forkthread(( pThreadFunc )aim_dc_helper, new aim_dc_helper_param( p->ppro, *hContact ));
 		}
 		else {
 			hDirect = p->ppro->aim_peer_connect( local_ip, *port );	
@@ -139,7 +139,7 @@ void redirected_file_thread( file_thread_param* p )//we are sending file
 				p->ppro->aim_accept_file( p->ppro->hServerConn, p->ppro->seqno,sn,icbm_cookie);
 				p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 				p->ppro->setString( *hContact, AIM_KEY_IP, local_ip );
-				mir_forkthread(( pThreadFunc )aim_dc_helper, *hContact );
+				mir_forkthread(( pThreadFunc )aim_dc_helper, new aim_dc_helper_param( p->ppro, *hContact ));
 			}
 			else { //stage 3 proxy
 				HANDLE hProxy = p->ppro->aim_peer_connect( "ars.oscar.aol.com", 5190 );
@@ -147,7 +147,7 @@ void redirected_file_thread( file_thread_param* p )//we are sending file
 					p->ppro->setByte( *hContact, AIM_KEY_PS, 3 );
 					p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy); //not really a direct connection
 					p->ppro->setString( *hContact, AIM_KEY_IP, verified_ip );
-					mir_forkthread(( pThreadFunc )aim_proxy_helper, *hContact );
+					mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param( p->ppro, *hContact ));
 				}
 			}
 		}
@@ -159,7 +159,7 @@ void redirected_file_thread( file_thread_param* p )//we are sending file
 			p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy );//not really a direct connection
 			p->ppro->setWord( *hContact, AIM_KEY_PC, *port ); //needed to verify the proxy connection as legit
 			p->ppro->setString( *hContact, AIM_KEY_IP, proxy_ip );
-			mir_forkthread(( pThreadFunc )aim_proxy_helper, *hContact );
+			mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param( p->ppro, *hContact ));
 		}
 	}
 	delete[] p->blob;
@@ -178,7 +178,7 @@ void proxy_file_thread( file_thread_param* p )//buddy sending file here
 		p->ppro->setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy ); //not really a direct connection
 		p->ppro->setWord( *hContact, AIM_KEY_PC, *port ); //needed to verify the proxy connection as legit
 		p->ppro->setString( *hContact, AIM_KEY_IP, proxy_ip );
-		mir_forkthread(( pThreadFunc )aim_proxy_helper, *hContact );
+		mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param( p->ppro, *hContact ));
 	}
 	delete[] p->blob;
 	delete p;

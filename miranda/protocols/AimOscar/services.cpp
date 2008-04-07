@@ -53,7 +53,7 @@ int CAimProto::SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(ccs->hContact, m_szModuleName, AIM_KEY_SN, &dbv))
 	{
-		if(0==getByte( AIM_KEY_DC, 1))
+		if ( 0 == getByte( AIM_KEY_DC, 1))
 			mir_forkthread(( pThreadFunc )msg_ack_success, new msg_ack_success_param( this, ccs->hContact ));
 
 		//if(DBGetContactSettingByte(ccs->hContact, m_szModuleName, AIM_KEY_US, 0))

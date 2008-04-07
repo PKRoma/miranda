@@ -39,7 +39,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 					delete[] COOKIE;
 					COOKIE_LENGTH=tlv.len();
 					COOKIE=tlv.dup();
-					mir_forkthread((pThreadFunc)aim_protocol_negotiation,NULL);
+					mir_forkthread(( pThreadFunc )aim_protocol_negotiation, this );
 					return 1;
 				}
 			}
@@ -987,7 +987,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Local IP: %s:%u",local_ip,port);
 			LOG("Verified IP: %s:%u",verified_ip,port);
 			LOG("Proxy IP: %s:%u",proxy_ip,port);
-			mir_forkthread((pThreadFunc)redirected_file_thread,blob);
+			mir_forkthread((pThreadFunc)redirected_file_thread,new file_thread_param(this, blob));
 		}
 		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
@@ -1004,7 +1004,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Local IP: %s:%u",local_ip,port);
 			LOG("Verified IP: %s:%u",verified_ip,port);
 			LOG("Proxy IP: %s:%u",proxy_ip,port);
-			mir_forkthread((pThreadFunc)proxy_file_thread,blob);
+			mir_forkthread((pThreadFunc)proxy_file_thread,new file_thread_param(this, blob));
 		}
 		else if(recv_file_type==1)//buddy cancelled or denied file transfer
 		{
@@ -1284,7 +1284,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				LOG("Successfully Connected to the Mail Server.");
 				MAIL_COOKIE=local_cookie;
 				MAIL_COOKIE_LENGTH=local_cookie_length;
-				mir_forkthread((pThreadFunc)aim_mail_negotiation,NULL);
+				mir_forkthread(( pThreadFunc )aim_mail_negotiation, this );
 			}
 			else
 				LOG("Failed to connected to the Mail Server.");
@@ -1295,9 +1295,9 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
-				AVATAR_COOKIE=local_cookie;
-				AVATAR_COOKIE_LENGTH=local_cookie_length;
-				mir_forkthread((pThreadFunc)aim_avatar_negotiation,NULL);
+				AVATAR_COOKIE = local_cookie;
+				AVATAR_COOKIE_LENGTH = local_cookie_length;
+				mir_forkthread(( pThreadFunc )aim_avatar_negotiation, this );
 			}
 			else
 			{

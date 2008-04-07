@@ -317,7 +317,7 @@ int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 		memcpy(data,(char*)&hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
 		setString( hContact, AIM_KEY_FN, szPath );
-		mir_forkthread((pThreadFunc)accept_file_thread,data);
+		mir_forkthread((pThreadFunc)accept_file_thread, new file_thread_param(this, data));
 		return (int)hContact;
 	}
 	return 0;
@@ -629,7 +629,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 				if ( hProxy ) {
 					setByte( hContact, AIM_KEY_PS, 1 );
 					setDword( hContact, AIM_KEY_DH, (DWORD)hProxy );//not really a direct connection
-					mir_forkthread(( pThreadFunc )aim_proxy_helper, hContact );
+					mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param(this, hContact));
 				}
 			}
 			else aim_send_file( hServerConn, seqno, dbv.pszVal, cookie, InternalIP, LocalPort, 0, 1, pszFile, pszSize, pszDesc );

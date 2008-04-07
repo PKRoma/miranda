@@ -51,9 +51,6 @@ void CAimProto::start_connection(int initial_status)
 			DBFreeVariant(&dbv);
 		else
 		{
-		/*	char* msg="Please, enter a username in the options dialog.";
-			char* tmsg=strldup(msg,lstrlen(msg));
-			mir_forkthread((pThreadFunc)message_box_thread,tmsg);*/
 			ShowPopup("Aim Protocol","Please, enter a username in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;

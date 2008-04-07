@@ -1,8 +1,7 @@
 #include "aim.h"
 #include "packets.h"
 
-CRITICAL_SECTION SendingMutex;
-int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset, char* out)
+int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset, char* out)
 {
 	struct snac_header snac;
 	unsigned short slen=0;
@@ -19,7 +18,8 @@ int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short
 	delete[] buf;
 	return 0;
 }
-int aim_writetlv(unsigned short type,unsigned short length,char* value,unsigned short &offset,char* out)
+
+int CAimProto::aim_writetlv(unsigned short type,unsigned short length,char* value,unsigned short &offset,char* out)
 {
 	TLV tlv(type,length,value);
 	char* buf=tlv.whole();
@@ -28,39 +28,42 @@ int aim_writetlv(unsigned short type,unsigned short length,char* value,unsigned 
 	delete[] buf;
 	return 0;
 }
-int aim_sendflap(HANDLE hServerConn, char type,unsigned short length,char *buf, unsigned short &seqno)
+
+int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,char *buf, unsigned short &seqno)
 {
 	EnterCriticalSection(&SendingMutex);
-    int slen = 0;
+	int slen = 0;
 	int rlen;
 	char* obuf=new char[FLAP_SIZE+length];
-    struct flap_header flap;
+	struct flap_header flap;
 	flap.ast = '*';
-    flap.type = type;
-    flap.seqno = _htons(seqno++ & 0xffff);
-    flap.len = _htons(length);
-    memcpy(obuf, &flap, sizeof(flap));
-    slen += sizeof(flap);
-    memcpy(&obuf[slen], buf, length);
-    slen += length;
+	flap.type = type;
+	flap.seqno = _htons(seqno++ & 0xffff);
+	flap.len = _htons(length);
+	memcpy(obuf, &flap, sizeof(flap));
+	slen += sizeof(flap);
+	memcpy(&obuf[slen], buf, length);
+	slen += length;
 	rlen= Netlib_Send(hServerConn, obuf, slen, 0);
 	delete[] obuf;
 	if (rlen == SOCKET_ERROR)
 	{
 		seqno--;
-        LeaveCriticalSection(&SendingMutex);
+		LeaveCriticalSection(&SendingMutex);
 		return -1;
-    }
+	}
 	LeaveCriticalSection(&SendingMutex);
-    return 0;
+	return 0;
 }
-int aim_writefamily(char *buf,unsigned short &offset,char* out)
+
+int CAimProto::aim_writefamily(char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,4);
 	offset+=4;
 	return 0;
 }
-int aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out)
+
+int CAimProto::aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,size);
 	offset=offset+size;
