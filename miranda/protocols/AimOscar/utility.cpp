@@ -4,8 +4,8 @@
 void CAimProto::assign_modmsg(char* msg)
 {
 	delete[] szModeMsg;
-	szModeMsg=new char[lstrlen(msg)+1];
-	memcpy(szModeMsg,msg,lstrlen(msg)+1);
+	szModeMsg=new char[lstrlenA(msg)+1];
+	memcpy(szModeMsg,msg,lstrlenA(msg)+1);
 }
 
 void CAimProto::broadcast_status(int status)
@@ -93,12 +93,12 @@ HANDLE CAimProto::find_contact(char * sn)
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
 				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
 				{
-					bool found = !lstrcmp(norm_sn, dbv.pszVal); 
+					bool found = !lstrcmpA(norm_sn, dbv.pszVal); 
 					DBFreeVariant(&dbv);
 					if (found) break; 
 				}
@@ -141,8 +141,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 	char* tgroup=trim_name(group);	
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
-	char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
-	mir_snprintf(groupNum,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+	char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
+	mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 	unsigned short old_group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, groupNum,0);		
 	delete[] groupNum;
 	if(old_group_id)
@@ -153,7 +153,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 		if(bUtfReadyDB==1)
 		{
 			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpi(tgroup,dbv.pszVal))
+				if(!lstrcmpiA(tgroup,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
@@ -163,7 +163,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 		else
 		{
 			if(!DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpi(tgroup,dbv.pszVal))
+				if(!lstrcmpiA(tgroup,dbv.pszVal))
 				{
 					DBFreeVariant(&dbv);
 					return;
@@ -171,8 +171,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 				DBFreeVariant(&dbv);
 		}
 	}
-	char* buddyNum= new char[lstrlen(AIM_KEY_BI)+10];
-	mir_snprintf(buddyNum,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	char* buddyNum= new char[lstrlenA(AIM_KEY_BI)+10];
+	mir_snprintf(buddyNum,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, buddyNum,0);
 	delete[] buddyNum;
 	char* lowercased_group=lowercase_name(tgroup);
@@ -193,8 +193,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 		DBVARIANT dbv;
 		if(!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN,&dbv))
 		{
-			char* groupNum= new char[lstrlen(AIM_KEY_GI)+10];
-			mir_snprintf(groupNum,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
+			mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			DBWriteContactSettingWord(hContact, m_szModuleName, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
@@ -236,11 +236,11 @@ void CAimProto::add_contacts_to_groups()
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		//MessageBox( NULL, protocol, m_szModuleName, MB_OK );
-		if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			//MessageBox( NULL, "Matching contact...making a groupid key...", m_szModuleName, MB_OK );
-			char* group= new char[lstrlen(AIM_KEY_GI)+10];
-			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
+			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, m_szModuleName, MB_OK );
 			unsigned short group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, group,0);	
 			delete[] group;
@@ -304,10 +304,10 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 			#if _MSC_VER
 			#pragma warning( default: 4127)
 			#endif
-			char* item= new char[lstrlen(AIM_KEY_BI)+10];
-			char* group= new char[lstrlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
+			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
+			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if(DBGetContactSettingWord(hContact, m_szModuleName, item,0))
 			{
 				DBDeleteContactSetting(hContact, m_szModuleName, item);
@@ -344,7 +344,7 @@ void CAimProto::offline_contacts()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			offline_contact(hContact,1);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -361,7 +361,7 @@ void CAimProto::remove_AT_icons()
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
 				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
@@ -389,7 +389,7 @@ void CAimProto::remove_ES_icons()
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
 				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
@@ -415,7 +415,7 @@ void CAimProto::add_AT_icons()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
@@ -479,7 +479,7 @@ void CAimProto::add_ES_icons()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
@@ -514,7 +514,7 @@ char *normalize_name(const char *s)
 {
     if (s == NULL)
         return NULL;
-	int length=lstrlen(s)+1;
+	int length=lstrlenA(s)+1;
 	char* buf=new char[length]; 
 	// static char buf[64];
     int i, j;
@@ -576,16 +576,16 @@ void CAimProto::execute_cmd(char* type,char* arg)
 				szCommandName[0]=' ';
 				ch=strtok(szCommandName,"\"");
 				szCommandName[0]='"';
-				szCommandName[lstrlen(szCommandName)+1]='\0';
-				szCommandName[lstrlen(szCommandName)]='"';
+				szCommandName[lstrlenA(szCommandName)+1]='\0';
+				szCommandName[lstrlenA(szCommandName)]='"';
 			}
 			else
 			{
 				strtok(szCommandName," ");
 
 			}
-			mir_snprintf(quote_arg,lstrlen(arg)+3,"%s%s%s","\"",arg,"\"");
-			ShellExecute(NULL,"open",szCommandName,quote_arg, NULL, SW_SHOW);
+			mir_snprintf(quote_arg,lstrlenA(arg)+3,"%s%s%s","\"",arg,"\"");
+			ShellExecuteA(NULL,"open",szCommandName,quote_arg, NULL, SW_SHOW);
 		}
 		RegCloseKey(hKey);
 	}
@@ -596,7 +596,7 @@ void create_group(char *group)
         return;
 	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	/*char* outer_group=get_outer_group();
-	if(!lstrcmp(outer_group,group))
+	if(!lstrcmpA(outer_group,group))
 	{
 		free(outer_group);
 		return;
@@ -619,7 +619,7 @@ void create_group(char *group)
 				break;//invalid
 		}
 		//only happens if dbv entry exist
-		if (dbv.pszVal[0] != '\0' && !lstrcmp(dbv.pszVal + 1, group))
+		if (dbv.pszVal[0] != '\0' && !lstrcmpA(dbv.pszVal + 1, group))
 		{
 				DBFreeVariant(&dbv);
 				return;  
@@ -628,7 +628,7 @@ void create_group(char *group)
 	}
 	name[0] = 1 | GROUPF_EXPANDED;
     strlcpy(name + 1, group, sizeof(name));
-    name[lstrlen(group) + 1] = '\0';
+    name[lstrlenA(group) + 1] = '\0';
    	if(bUtfReadyDB==1)
 		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
 	else
@@ -674,7 +674,7 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{		
 				int i=1;
 				#if _MSC_VER
@@ -685,8 +685,8 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 					#if _MSC_VER
 					#pragma warning( default: 4127)
 					#endif
-					char* item= new char[lstrlen(AIM_KEY_BI)+10];
-					mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
+					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, item,0))
 					{
 						if(item_id==id)
@@ -711,8 +711,8 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		}
 		if(!used_id)
 		{
-			char* item= new char[lstrlen(AIM_KEY_BI)+10];
-			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
+			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 			DBWriteContactSettingWord(hbuddy, m_szModuleName, item, id);
 			delete[] item;
 			return id;
@@ -729,7 +729,7 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 				int i=1;
 				#if _MSC_VER
@@ -740,10 +740,10 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 					#if _MSC_VER
 						#pragma warning( default: 4127)
 					#endif
-					char* item= new char[lstrlen(AIM_KEY_BI)+10];
-					char* group= new char[lstrlen(AIM_KEY_GI)+10];
-					mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
+					char* group= new char[lstrlenA(AIM_KEY_GI)+10];
+					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 					if(unsigned short user_group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName,group,0))
 					{
 						if(group_id==user_group_id)
@@ -779,10 +779,10 @@ static char* module_ptr=NULL;
 static int EnumSettings(const char *szSetting,LPARAM /*lParam*/)
 {
 	//char* szModule=(char*)lParam;
-	module_ptr=renew(module_ptr,module_size,lstrlen(szSetting)+2);
-	memcpy(&module_ptr[module_size],szSetting,lstrlen(szSetting));
-	memcpy(&module_ptr[module_size+lstrlen(szSetting)],";\0",2);
-	module_size+=lstrlen(szSetting)+1;
+	module_ptr=renew(module_ptr,module_size,lstrlenA(szSetting)+2);
+	memcpy(&module_ptr[module_size],szSetting,lstrlenA(szSetting));
+	memcpy(&module_ptr[module_size+lstrlenA(szSetting)],";\0",2);
+	module_size+=lstrlenA(szSetting)+1;
 	return 0;
 }
 void delete_module(char* module, HANDLE hContact)
@@ -813,14 +813,14 @@ FILE* CAimProto::open_contact_file(char* sn, char* file, char* mode, char* &path
 {
 	if(char* norm_sn=normalize_name(sn))
 	{
-		int sn_length=lstrlen(norm_sn);
-		int file_length=lstrlen(file);
-		int length=lstrlen(CWD)+2+lstrlen(m_szModuleName);
+		int sn_length=lstrlenA(norm_sn);
+		int file_length=lstrlenA(file);
+		int length=lstrlenA(CWD)+2+lstrlenA(m_szModuleName);
 		path= new char[length+sn_length+file_length+5];
 		mir_snprintf(path,length,"%s\\%s",CWD,m_szModuleName);
 		int dir=0;
-		if(GetFileAttributes(path)==INVALID_FILE_ATTRIBUTES)
-			dir=CreateDirectory(path,NULL);
+		if(GetFileAttributesA(path)==INVALID_FILE_ATTRIBUTES)
+			dir=CreateDirectoryA(path,NULL);
 		else
 			dir=1;
 		if(dir)
@@ -831,8 +831,8 @@ FILE* CAimProto::open_contact_file(char* sn, char* file, char* mode, char* &path
 				mir_snprintf(&path[length-1],2+sn_length,"\\%s",norm_sn);
 				length+=1+sn_length;
 			}
-			if(GetFileAttributes(path)==INVALID_FILE_ATTRIBUTES)
-				dir=CreateDirectory(path,NULL);
+			if(GetFileAttributesA(path)==INVALID_FILE_ATTRIBUTES)
+				dir=CreateDirectoryA(path,NULL);
 			else
 				dir=1;
 			if(dir)
@@ -861,9 +861,9 @@ void CAimProto::write_away_message(HANDLE hContact,char* sn,char* msg)
 		CCSDATA ccs;
 		PROTORECVEVENT pre;
 		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,lstrlen(sn),descr);
+		fwrite(sn,1,lstrlenA(sn),descr);
 		fwrite("'s Away Message:</h3>",1,21,descr);
-		fwrite(s_msg,1,lstrlen(s_msg),descr);
+		fwrite(s_msg,1,lstrlenA(s_msg),descr);
 		fclose(descr);
 		ccs.szProtoService = PSR_AWAYMSG;
 		ccs.hContact = hContact;
@@ -895,9 +895,9 @@ void CAimProto::write_profile(char* sn,char* msg)
 	{
 		char* s_msg=strip_special_chars(msg,NULL);
 		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,lstrlen(sn),descr);
+		fwrite(sn,1,lstrlenA(sn),descr);
 		fwrite("'s Profile:</h3>",1,16,descr);
-		fwrite(s_msg,1,lstrlen(s_msg),descr);
+		fwrite(s_msg,1,lstrlenA(s_msg),descr);
 		fclose(descr);
 		execute_cmd("http",path);
 		delete[] path;
@@ -960,15 +960,15 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 	{
 		char store[16];
 		_itoa(bytes[i],store,10);
-		memcpy(&ip[buf_loc],store,lstrlen(store));
-		ip[lstrlen(store)+buf_loc]='.';
-		buf_loc+=((unsigned short)lstrlen(store)+1);
+		memcpy(&ip[buf_loc],store,lstrlenA(store));
+		ip[lstrlenA(store)+buf_loc]='.';
+		buf_loc+=((unsigned short)lstrlenA(store)+1);
 	}
 	ip[buf_loc-1]='\0';
 }
 unsigned long char_ip_to_long_ip(char* ip)
 {
-	char* ip2=strldup(ip,lstrlen(ip));
+	char* ip2=strldup(ip,lstrlenA(ip));
 	char* c=strtok(ip2,".");
 	char chost[5];
 	for(int i=0;i<4;i++)
@@ -1131,7 +1131,7 @@ void string_to_bytes(char* string, char* bytes)
 {
 	char sbyte[3];
 	sbyte[2]='\0';
-	int length=lstrlen(string);
+	int length=lstrlenA(string);
 	for(int i=0;i<length;i=i+2)
 	{
 		sbyte[0]=string[i];
@@ -1143,7 +1143,7 @@ void string_to_bytes(char* string, char* bytes)
 unsigned short string_to_bytes_count(char* string)
 {
 	unsigned short i=1;
-	char* string2=strldup(string,lstrlen(string));
+	char* string2=strldup(string,lstrlenA(string));
 	strtok(string2,";");
 	while(strtok(NULL,";"))
 		i++;
@@ -1155,7 +1155,7 @@ char* getSetting(HANDLE &hContact, const char* module, const char* setting)
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(hContact, module, setting, &dbv))
 	{
-		char* store=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		char* store=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
 		return store;
 	}

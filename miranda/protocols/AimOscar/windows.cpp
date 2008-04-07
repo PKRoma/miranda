@@ -88,8 +88,8 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"36");
 			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)"Arial")!=CB_ERR)
 			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
+				CHARFORMAT2A cf;
+				cf.cbSize = sizeof(cf);
 				cf.yHeight=12*20;
 				cf.dwMask=CFM_SIZE|CFM_FACE;
 				strlcpy(cf.szFaceName,"Arial",7);
@@ -97,8 +97,8 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			}
 			else
 			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
+				CHARFORMAT2A cf;
+				cf.cbSize = sizeof(cf);
 				cf.yHeight=12*20;
 				cf.dwMask=CFM_SIZE;
 				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
@@ -184,7 +184,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBVARIANT dbv;
 				if ( !DBGetContactSettingString(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
 				{
-					SetDlgItemText(hwndDlg, IDC_PROFILE, dbv.pszVal);
+					SetDlgItemTextA(hwndDlg, IDC_PROFILE, dbv.pszVal);
 					DBFreeVariant(&dbv);
 				}
 			}
@@ -569,8 +569,8 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case IDC_TYPEFACE:
 			if(HIWORD(wParam)==CBN_SELENDOK)
 			{
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(CHARFORMAT2);
+				CHARFORMAT2A cf;
+				cf.cbSize = sizeof(cf);
 				cf.dwMask=CFM_FACE;
 				cf.dwEffects=0;
 				char face[128];
@@ -612,7 +612,7 @@ int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 		odp.cbSize = sizeof(odp);
 		odp.position = -1900000000;
 		odp.hInstance = hInstance;
-		odp.pszTemplate = MAKEINTRESOURCE(IDD_INFO);
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO);
 		odp.pszTitle = m_szModuleName;
 		odp.dwInitParam = LPARAM(this);
 		odp.pfnDlgProc = userinfo_dialog;
@@ -643,24 +643,24 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{
 			DBVARIANT dbv;
 			if ( !ppro->getString(AIM_KEY_SN, &dbv)) {
-				SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			if ( !ppro->getString(AIM_KEY_NK, &dbv)) {
-				SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			else if ( !ppro->getString(AIM_KEY_SN, &dbv)) {
-				SetDlgItemText(hwndDlg, IDC_NK, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_NK, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			if ( !ppro->getString(AIM_KEY_PW, &dbv)) {
-				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
+				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 			if ( !ppro->getString(AIM_KEY_HN, &dbv)) {
-				SetDlgItemText(hwndDlg, IDC_HN, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_HN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 
@@ -697,26 +697,26 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			{
 				char str[128];
 				//SN
-				GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-				if(lstrlen(str)>0)
+				GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+				if(lstrlenA(str)>0)
 					ppro->setString(AIM_KEY_SN, str);
 				else
 					DBDeleteContactSetting(NULL, ppro->m_szModuleName, AIM_KEY_SN);
 				//END SN
 
 				//NK
-				if(GetDlgItemText(hwndDlg, IDC_NK, str, sizeof(str)))
+				if(GetDlgItemTextA(hwndDlg, IDC_NK, str, sizeof(str)))
 					ppro->setString(AIM_KEY_NK, str);
 				else
 				{
-					GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
+					GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
 					ppro->setString(AIM_KEY_NK, str);
 				}
 				//END NK
 
 				//PW
-				GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-				if(lstrlen(str)>0)
+				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
+				if(lstrlenA(str)>0)
 				{
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 					ppro->setString(AIM_KEY_PW, str);
@@ -726,8 +726,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//END PW
 
 				//HN
-				GetDlgItemText(hwndDlg, IDC_HN, str, sizeof(str));
-				if(lstrlen(str)>0)
+				GetDlgItemTextA(hwndDlg, IDC_HN, str, sizeof(str));
+				if(lstrlenA(str)>0)
 					ppro->setString(AIM_KEY_HN, str);
 				else
 					ppro->setString(AIM_KEY_HN, AIM_DEFAULT_SERVER);
@@ -884,7 +884,7 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 1003000;
 	odp.hInstance = hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_AIM);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
 	odp.pszGroup = LPGEN("Network");
 	odp.pszTitle = m_szModuleName;
 	odp.pfnDlgProc = options_dialog;
@@ -917,7 +917,7 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 			if ( !getString(AIM_KEY_PW, &dbv))
 			{
-				CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}

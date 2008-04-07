@@ -652,7 +652,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 				HANDLE hContact=find_contact(name);
 				if(!hContact)
 				{
-					if(lstrcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+					if(lstrcmpA(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
 						hContact=add_contact(name);
 				}
 				if(hContact)
@@ -793,7 +793,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						wcs_htons(wbuf);
 						msg_buf=new char[msg_length/2+msg_length+3];
 						WideCharToMultiByte( CP_ACP, 0, wbuf, -1,msg_buf, msg_length/2+1, NULL, NULL );
-						char* p=msg_buf+lstrlen(msg_buf)+1;
+						char* p=msg_buf+lstrlenA(msg_buf)+1;
 						memcpy(p,wbuf,msg_length+2);
 					}
 					else
@@ -870,9 +870,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			if(auto_response)//this message must be an autoresponse
 			{
 				char* away=Translate("[Auto-Response]: ");
-				msg_buf=renew(msg_buf,lstrlen(msg_buf)+1,20);
-				memmove(msg_buf+17,msg_buf,lstrlen(msg_buf)+1);
-				memcpy(msg_buf,away,lstrlen(away));
+				msg_buf=renew(msg_buf,lstrlenA(msg_buf)+1,20);
+				memmove(msg_buf+17,msg_buf,lstrlenA(msg_buf)+1);
+				memcpy(msg_buf,away,lstrlenA(away));
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
 			if(unicode_message)
@@ -893,11 +893,11 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				unsigned long away_time=DBGetContactSettingDword(NULL,m_szModuleName,AIM_KEY_LA,0);
 				if(away_time>msg_time&&szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
-					char* temp=new char[lstrlen(szModeMsg)+20];
-					memcpy(temp,szModeMsg,lstrlen(szModeMsg)+1);
+					char* temp=new char[lstrlenA(szModeMsg)+20];
+					memcpy(temp,szModeMsg,lstrlenA(szModeMsg)+1);
 					char* s_msg=strip_special_chars(temp,hContact);
-					char* temp2=new char[lstrlen(s_msg)+20];
-					mir_snprintf(temp2,lstrlen(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
+					char* temp2=new char[lstrlenA(s_msg)+20];
+					mir_snprintf(temp2,lstrlenA(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
 					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
@@ -905,7 +905,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = lstrlen(temp2) + 1;
+					dbei.cbBlob = lstrlenA(temp2) + 1;
 					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
@@ -946,14 +946,14 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				msg_buf=new char[1];
 				*msg_buf='\0';
 			}
-			long size=sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+7;
+			long size=sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+7;
 			char* szBlob = new char[size];
 			*((PDWORD) szBlob) = (DWORD)szBlob;
 			strlcpy(szBlob + sizeof(DWORD), filename,size);
-	        strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + 1, msg_buf,size);
-			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) +2,local_ip,size);
-			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) + lstrlen(local_ip)+3,verified_ip,size);
-			strlcpy(szBlob + sizeof(DWORD) + lstrlen(filename) + lstrlen(msg_buf) + lstrlen(local_ip) +lstrlen(verified_ip)+4,proxy_ip,size);
+	        strlcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + 1, msg_buf,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) +2,local_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) + lstrlenA(local_ip)+3,verified_ip,size);
+			strlcpy(szBlob + sizeof(DWORD) + lstrlenA(filename) + lstrlenA(msg_buf) + lstrlenA(local_ip) +lstrlenA(verified_ip)+4,proxy_ip,size);
             pre.flags = 0;
             pre.timestamp =(DWORD)time(NULL);
 	        pre.szMessage = szBlob;
@@ -970,16 +970,16 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		else if(recv_file_type==0&&request_num==2)//we are sending file, but buddy wants us to connect to them cause they cannot connect to us.
 		{
 			LOG("We are sending a file. Buddy wants us to connect to them. Request 2");
-			long size=sizeof(hContact)+sizeof(icbm_cookie)+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9;
+			long size=sizeof(hContact)+sizeof(icbm_cookie)+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+sizeof(port)+sizeof(force_proxy)+9;
 			char* blob = new char[size];
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
 			memcpy(blob+sizeof(HANDLE),icbm_cookie,8);
 			strlcpy(blob+sizeof(HANDLE)+8,sn,size);
-			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+1,local_ip,size);
-			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+2,verified_ip,size);
-			strlcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+3,proxy_ip,size);
-			memcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
-			memcpy(blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlenA(sn)+1,local_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+2,verified_ip,size);
+			strlcpy(blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+3,proxy_ip,size);
+			memcpy(blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+4,(char*)&port,sizeof(unsigned short));
+			memcpy(blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+4+sizeof(unsigned short),(char*)&force_proxy,sizeof(bool));
 			if(force_proxy)
 				LOG("Forcing a Proxy File transfer.");
 			else
@@ -992,11 +992,11 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
 			LOG("Buddy Wants to Send us a file through a proxy. Request 3");
-			long size = sizeof(hContact)+lstrlen(proxy_ip)+sizeof(port)+2;
+			long size = sizeof(hContact)+lstrlenA(proxy_ip)+sizeof(port)+2;
    			char* blob = new char[size];
 			memcpy(blob,(char*)&hContact,sizeof(HANDLE));
 			strlcpy(blob+sizeof(HANDLE),proxy_ip,size);
-			memcpy(blob+sizeof(HANDLE)+lstrlen(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
+			memcpy(blob+sizeof(HANDLE)+lstrlenA(proxy_ip)+1,(char*)&port,sizeof(unsigned short));
 			if(force_proxy)
 				LOG("Forcing a Proxy File transfer.");
 			else
@@ -1157,14 +1157,14 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Error removing buddy from list. Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				if(lstrlen(ccode)==1)
+				if(lstrlenA(ccode)==1)
 				{
 					ccode[2]='\0';
 					ccode[1]=ccode[0];
 					ccode[0]='0';
 				}
-				msg[lstrlen(msg)-2]=ccode[0];
-				msg[lstrlen(msg)-1]=ccode[1];
+				msg[lstrlenA(msg)-2]=ccode[0];
+				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG("msg");
 				ShowPopup("Aim Protocol",msg, 0);
 			}
@@ -1206,14 +1206,14 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char* msg="Unknown error when adding buddy to list: Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				if(lstrlen(ccode)==1)
+				if(lstrlenA(ccode)==1)
 				{
 					ccode[2]='\0';
 					ccode[1]=ccode[0];
 					ccode[0]='0';
 				}
-				msg[lstrlen(msg)-2]=ccode[0];
-				msg[lstrlen(msg)-1]=ccode[1];
+				msg[lstrlenA(msg)-2]=ccode[0];
+				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG(msg);
 				ShowPopup("Aim Protocol",msg, 0);
 			}
@@ -1235,14 +1235,14 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				char msg[]="Unknown error when attempting to modify a group: Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
-				if(lstrlen(ccode)==1)
+				if(lstrlenA(ccode)==1)
 				{
 					ccode[2]='\0';
 					ccode[1]=ccode[0];
 					ccode[0]='0';
 				}
-				msg[lstrlen(msg)-2]=ccode[0];
-				msg[lstrlen(msg)-1]=ccode[1];
+				msg[lstrlenA(msg)-2]=ccode[0];
+				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG(msg);
 				ShowPopup("Aim Protocol",msg, 0);
 			}
@@ -1353,14 +1353,14 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
 		{
 			char cNum_msgs[10];
 			_itoa(num_msgs,cNum_msgs,10);
-			int size=lstrlen(sn)+lstrlen(address)+lstrlen(cNum_msgs)+4;
+			int size=lstrlenA(sn)+lstrlenA(address)+lstrlenA(cNum_msgs)+4;
 			char* email= new char[size];
 			strlcpy(email,sn,size);
-			strlcpy(&email[lstrlen(sn)],"@",size);
-			strlcpy(&email[lstrlen(sn)+1],address,size);
-			strlcpy(&email[lstrlen(sn)+lstrlen(address)+1],"(",size);
-			strlcpy(&email[lstrlen(sn)+lstrlen(address)+2],cNum_msgs,size);
-			strlcpy(&email[lstrlen(sn)+lstrlen(address)+lstrlen(cNum_msgs)+2],")",size);
+			strlcpy(&email[lstrlenA(sn)],"@",size);
+			strlcpy(&email[lstrlenA(sn)+1],address,size);
+			strlcpy(&email[lstrlenA(sn)+lstrlenA(address)+1],"(",size);
+			strlcpy(&email[lstrlenA(sn)+lstrlenA(address)+2],cNum_msgs,size);
+			strlcpy(&email[lstrlenA(sn)+lstrlenA(address)+lstrlenA(cNum_msgs)+2],")",size);
 			char minute[3];
 			char hour[3];
 			tm* local_time=localtime(&time);
@@ -1378,16 +1378,16 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
 				hour[0]='0';
 				hour[2]='\0';
 			}
-			int size2=28+lstrlen(minute)+3+lstrlen(hour);
+			int size2=28+lstrlenA(minute)+3+lstrlenA(hour);
 			char* msg=new char[size2];
 			if(!new_mail)
 				strlcpy(msg,"No new mail!!!!! Checked at ",size2);
 			else
 				strlcpy(msg,"You've got mail! Checked at ",size2);
 			strlcpy(&msg[28],hour,size2);
-			strlcpy(&msg[28+lstrlen(hour)],":",size2);
-			strlcpy(&msg[28+lstrlen(hour)+1],minute,size2);
-			strlcpy(&msg[28+lstrlen(hour)+lstrlen(minute)+1],".",size2);
+			strlcpy(&msg[28+lstrlenA(hour)],":",size2);
+			strlcpy(&msg[28+lstrlenA(hour)+1],minute,size2);
+			strlcpy(&msg[28+lstrlenA(hour)+lstrlenA(minute)+1],".",size2);
 			ShowPopup(email,msg,MAIL_POPUP,url);
 			delete[] email;
 			delete[] msg;

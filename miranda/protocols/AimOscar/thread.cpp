@@ -34,13 +34,13 @@ void accept_file_thread( file_thread_param* p )//buddy sending file
 	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;
 	HANDLE* hContact=(HANDLE*)p->blob;
 	szFile = p->blob + sizeof(HANDLE);
-	szDesc = szFile + lstrlen(szFile) + 1;
-	local_ip = szDesc + lstrlen(szDesc) + 1;
-	verified_ip = local_ip + lstrlen(local_ip) + 1;
-	proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
+	szDesc = szFile + lstrlenA(szFile) + 1;
+	local_ip = szDesc + lstrlenA(szDesc) + 1;
+	verified_ip = local_ip + lstrlenA(local_ip) + 1;
+	proxy_ip = verified_ip + lstrlenA(verified_ip) + 1;
 	DBVARIANT dbv;
 	if ( !p->ppro->getString(*hContact, AIM_KEY_SN, &dbv)) {
-		sn= strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		sn= strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	else return;
@@ -118,11 +118,11 @@ void redirected_file_thread( file_thread_param* p )//we are sending file
 	HANDLE* hContact=(HANDLE*)p->blob;
 	char* icbm_cookie=(char*)p->blob+sizeof(HANDLE);
 	char* sn=(char*)p->blob+sizeof(HANDLE)+8;
-	char* local_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlen(sn)+1;
-	char* verified_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+2;
-	char* proxy_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlen(sn)+lstrlen(local_ip)+lstrlen(verified_ip)+3;
-	unsigned short* port=(unsigned short*)&proxy_ip[lstrlen(proxy_ip)+1];
-	bool* force_proxy=(bool*)&proxy_ip[lstrlen(proxy_ip)+1+sizeof(unsigned short)];
+	char* local_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlenA(sn)+1;
+	char* verified_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+2;
+	char* proxy_ip=(char*)p->blob+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+3;
+	unsigned short* port=(unsigned short*)&proxy_ip[lstrlenA(proxy_ip)+1];
+	bool* force_proxy=(bool*)&proxy_ip[lstrlenA(proxy_ip)+1+sizeof(unsigned short)];
 	ProtoBroadcastAck(p->ppro->m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING,hContact, 0);
 	if(!*force_proxy)
 	{
@@ -171,7 +171,7 @@ void proxy_file_thread( file_thread_param* p )//buddy sending file here
 	//stage 3 proxy
 	HANDLE* hContact=(HANDLE*)p->blob;
 	char* proxy_ip=(char*)p->blob+sizeof(HANDLE);
-	unsigned short* port = (unsigned short*)&proxy_ip[lstrlen(proxy_ip)+1];
+	unsigned short* port = (unsigned short*)&proxy_ip[lstrlenA(proxy_ip)+1];
 	HANDLE hProxy = p->ppro->aim_peer_connect(proxy_ip,5190);
 	if ( hProxy ) {
 		p->ppro->setByte( *hContact, AIM_KEY_PS, 3 );

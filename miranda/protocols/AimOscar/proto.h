@@ -101,7 +101,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory
-	char* m_szModuleName;
 	char* GROUP_ID_KEY;
 	char* ID_GROUP_KEY;
 	char* FILE_TRANSFER_KEY;
@@ -152,8 +151,10 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE current_rendezvous_accept_user;//hack
 
 	//Handles for the context menu items
+	HANDLE hMenuRoot;
 	HANDLE hHTMLAwayContextMenuItem;
 	HANDLE hAddToServerListContextMenuItem;
+	HANDLE hReadProfileMenuItem;
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -302,6 +303,7 @@ struct CAimProto : public PROTO_INTERFACE
 	// themes.cpp
 
 	void   InitIcons(void);
+	void   InitMenus(void);
 	HICON  LoadIconEx(const char* name);
 	HANDLE GetIconHandle(const char* name);
 	void   ReleaseIconEx(const char* name);

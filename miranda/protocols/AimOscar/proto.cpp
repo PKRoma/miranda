@@ -1,5 +1,7 @@
 #include "aim.h"
 
+#include "m_genmenu.h"
+
 #pragma warning(disable:4355)
 
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
@@ -16,7 +18,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	hAwayMsgEvent = CreateEvent(NULL,false,false,NULL);
 
 	char* p = NEWSTR_ALLOCA( m_szModuleName );
-	CharUpper( p );
+	CharUpperA( p );
 	GROUP_ID_KEY = strlcat(p,AIM_MOD_GI);
 	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
@@ -28,69 +30,11 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	InitializeCriticalSection( &avatarMutex );
 
 	CreateProtoService(PS_GETNAME, &CAimProto::GetName );
+	CreateProtoService(PS_GETSTATUS, &CAimProto::GetStatus );
 	CreateProtoService(PS_GETAVATARINFO, &CAimProto::GetAvatarInfo );
 
 	InitIcons();
-
-	//Do not put any services below HTML get away message!!!
-	char service_name[200];
-
-	CLISTMENUITEM mi = {0};
-	mi.pszPopupName = m_szModuleName;
-	mi.cbSize = sizeof( mi );
-	mi.popupPosition = 500090000;
-	mi.position = 500090000;
-	mi.pszService = service_name;
-	mi.pszContactOwner = m_szModuleName;
-	mi.flags = CMIF_ICONFROMICOLIB;
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/ManageAccount");
-	CreateProtoService("/ManageAccount",&CAimProto::ManageAccount);
-	mi.icolibItem = GetIconHandle("aim");
-	mi.pszName = LPGEN( "Manage Account" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/CheckMail");
-	CreateProtoService("/CheckMail",&CAimProto::CheckMail);
-	mi.icolibItem = GetIconHandle("mail");
-	mi.pszName = LPGEN( "Check Mail" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
-	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
-	mi.icolibItem = GetIconHandle("idle");
-	mi.pszName = LPGEN( "Instant Idle" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
-	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
-	mi.pszPopupName=Translate("Read &HTML Away Message");
-	mi.popupPosition=-2000006000;
-	mi.position=-2000006000;
-	mi.icolibItem = GetIconHandle("away");
-	mi.pszName = LPGEN("Read &HTML Away Message");
-	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
-	hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
-	CreateProtoService("/GetProfile",&CAimProto::GetProfile);
-	mi.pszPopupName=Translate("Read Profile");
-	mi.popupPosition=-2000006500;
-	mi.position=-2000006500;
-	mi.icolibItem = GetIconHandle("profile");
-	mi.pszName = LPGEN("Read Profile");
-	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
-	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList);
-	mi.pszPopupName=Translate("Add To Server List");
-	mi.popupPosition=-2000006500;
-	mi.position=-2000006500;
-	mi.icolibItem = GetIconHandle("add");
-	mi.pszName = LPGEN("Add To Server List");
-	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
-	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	InitMenus();
 
 	HookProtoEvent(ME_SYSTEM_MODULESLOADED, &CAimProto::OnModulesLoaded);
 	HookProtoEvent(ME_SYSTEM_PRESHUTDOWN, &CAimProto::OnPreShutdown);
@@ -105,6 +49,12 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 CAimProto::~CAimProto()
 {
 	aim_links_destroy();
+
+	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hHTMLAwayContextMenuItem, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hAddToServerListContextMenuItem, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hReadProfileMenuItem, 0 );
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);
@@ -127,7 +77,9 @@ CAimProto::~CAimProto()
 	delete[] GROUP_ID_KEY;
 	delete[] ID_GROUP_KEY;
 	delete[] FILE_TRANSFER_KEY;
-	delete[] m_szModuleName;
+	
+	mir_free( m_szModuleName );
+	mir_free( m_tszUserName );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -137,11 +89,11 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char store[MAX_PATH];
 	CallService(MS_DB_GETPROFILEPATH, MAX_PATH-1,(LPARAM)&store);
-	if(store[lstrlen(store)-1]=='\\')
-		store[lstrlen(store)-1]='\0';
-	CWD=(char*)new char[lstrlen(store)+1];
-	memcpy(CWD,store,lstrlen(store));
-	memcpy(&CWD[lstrlen(store)],"\0",1);
+	if(store[lstrlenA(store)-1]=='\\')
+		store[lstrlenA(store)-1]='\0';
+	CWD=(char*)new char[lstrlenA(store)+1];
+	memcpy(CWD,store,lstrlenA(store));
+	memcpy(&CWD[lstrlenA(store)],"\0",1);
 
 	NETLIBUSER nlu = { 0 };
 	nlu.cbSize = sizeof(nlu);
@@ -308,11 +260,11 @@ int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 	if ( ft != -1 ) {
 		char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip;
 		szFile = (char*)szPath + sizeof(DWORD);
-		szDesc = szFile + lstrlen(szFile) + 1;
-		local_ip = szDesc + lstrlen(szDesc) + 1;
-		verified_ip = local_ip + lstrlen(local_ip) + 1;
-		proxy_ip = verified_ip + lstrlen(verified_ip) + 1;
-		int size = lstrlen(szFile)+lstrlen(szDesc)+lstrlen(local_ip)+lstrlen(verified_ip)+lstrlen(proxy_ip)+5+sizeof(HANDLE);
+		szDesc = szFile + lstrlenA(szFile) + 1;
+		local_ip = szDesc + lstrlenA(szDesc) + 1;
+		verified_ip = local_ip + lstrlenA(local_ip) + 1;
+		proxy_ip = verified_ip + lstrlenA(verified_ip) + 1;
+		int size = lstrlenA(szFile)+lstrlenA(szDesc)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+5+sizeof(HANDLE);
 		char *data=new char[size];
 		memcpy(data,(char*)&hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
@@ -429,7 +381,7 @@ struct basic_search_ack_param
 {
 	basic_search_ack_param( CAimProto* _ppro, const char* szId ) :
 		ppro( _ppro ),
-		snsearch( strldup( szId, lstrlen( szId )))
+		snsearch( strldup( szId, lstrlenA( szId )))
 	{}
 
 	~basic_search_ack_param()
@@ -444,7 +396,7 @@ static void __cdecl basic_search_ack_success(basic_search_ack_param* p)
 {
 	if ( char *sn = normalize_name( p->snsearch )) { // normalize it
 		PROTOSEARCHRESULT psr;
-		if (lstrlen(sn) > 32) {
+		if (lstrlenA(sn) > 32) {
 			ProtoBroadcastAck( p->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 			delete[] sn;
 			delete p;
@@ -527,7 +479,7 @@ int __cdecl CAimProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 	char* buf = 0;
 	if ( pre->flags & PREF_UNICODE ) {
 		LOG("Recieved a unicode message.");
-		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlen(pre->szMessage)+1];
+		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlenA(pre->szMessage)+1];
 		wchar_t* st_wbuf;
 		if ( getByte( AIM_KEY_FI, 0)) {
 			LOG("Converting from html to bbcodes then stripping leftover html.(U)");
@@ -542,10 +494,10 @@ int __cdecl CAimProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 
 		buf = (char *)malloc(wcslen(st_wbuf)*3+3);
 		WideCharToMultiByte( CP_ACP, 0,st_wbuf, -1,buf,wcslen(st_wbuf)+1, NULL, NULL);
-		memcpy(&buf[strlen(buf)+1],st_wbuf,lstrlen(buf)*2+2);
+		memcpy(&buf[strlen(buf)+1],st_wbuf,lstrlenA(buf)*2+2);
 		delete[] st_wbuf;
 		dbei.pBlob = (PBYTE)buf;
-		dbei.cbBlob = lstrlen(buf)+1;
+		dbei.cbBlob = lstrlenA(buf)+1;
 		dbei.cbBlob *= (sizeof(wchar_t)+1);
 	}
 	else
@@ -562,7 +514,7 @@ int __cdecl CAimProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 			buf = strip_html(pre->szMessage);
 		}
 		dbei.pBlob = (PBYTE)buf;
-		dbei.cbBlob = lstrlen(buf)+1;
+		dbei.cbBlob = lstrlenA(buf)+1;
 	}
 	CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 	if(buf) free(buf);
@@ -653,7 +605,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		if ( 0 == getByte( AIM_KEY_DC, 1))
 			mir_forkthread(( pThreadFunc )msg_ack_success, new msg_ack_success_param( this, hContact ));
 
-		char* msg = strldup( pszSrc, lstrlen( pszSrc ));
+		char* msg = strldup( pszSrc, lstrlenA( pszSrc ));
 		char* smsg = strip_carrots( msg );
 		delete[] msg;
 

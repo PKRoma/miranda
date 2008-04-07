@@ -50,7 +50,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
 				break;
 			if (!(char *) cds->lpData)
 				break;
-			s = szData = strldup((char *) cds->lpData,lstrlen((char*)cds->lpData));
+			s = szData = strldup((char *) cds->lpData,lstrlenA((char*)cds->lpData));
 			aim_links_normalize(szData);
 			s += 4;
 			if (!_strnicmp(s, "addbuddy?", 9)) { // group is current ignored
@@ -73,7 +73,7 @@ static LRESULT CALLBACK aim_links_watcherwndproc(HWND hwnd, UINT msg, WPARAM wPa
 					}
 					tok = strtok(NULL, "&");
 				}
-				if ( sn && lstrlen(sn) && !ppro->find_contact(sn))
+				if ( sn && lstrlenA(sn) && !ppro->find_contact(sn))
 				{
 					acs.handleType = HANDLE_SEARCHRESULT;
 					acs.szProto = ppro->m_szModuleName;
@@ -138,9 +138,9 @@ void CAimProto::aim_links_regwatcher()
 	memset(&wc, 0, sizeof(WNDCLASS));
 	wc.lpfnWndProc = aim_links_watcherwndproc;
 	wc.hInstance = hInstance;
-	wc.lpszClassName = AIMWATCHERCLASS;
+	wc.lpszClassName = _T(AIMWATCHERCLASS);
 	aWatcherClass = RegisterClass(&wc);
-	hWatcher = CreateWindowEx(0, AIMWATCHERCLASS, "", 0, 0, 0, 0, 0, NULL, NULL, hInstance, NULL);
+	hWatcher = CreateWindowEx(0, _T(AIMWATCHERCLASS), _T(""), 0, 0, 0, 0, 0, NULL, NULL, hInstance, NULL);
 	SetWindowLong( hWatcher, GWL_USERDATA, LPARAM(this));
 	return;
 }
@@ -153,7 +153,7 @@ void CAimProto::aim_links_unregwatcher()
 		hWatcher = NULL;
 	}
 	if (aWatcherClass) {
-		UnregisterClass(AIMWATCHERCLASS, hInstance);
+		UnregisterClass( _T(AIMWATCHERCLASS), hInstance);
 		aWatcherClass = 0;
 	}
 	return;
@@ -161,15 +161,15 @@ void CAimProto::aim_links_unregwatcher()
 
 static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
 {
-	char szBuf[64];
+	TCHAR szBuf[64];
 
-	if (GetClassName(hwnd, szBuf, sizeof(szBuf))) {
-		if (lstrcmp(szBuf, AIMWATCHERCLASS)) {
+	if (GetClassName(hwnd, szBuf, SIZEOF(szBuf))) {
+		if (lstrcmp(szBuf, _T(AIMWATCHERCLASS))) {
 			COPYDATASTRUCT cds;
 
 			//LOG(LOG_DEBUG, "Links: enumthreadwindowsproc - found AIMWATCHERCLASS");
 			cds.dwData = 1;
-			cds.cbData = lstrlen((char *) lParam) + 1;
+			cds.cbData = lstrlenA((char *) lParam) + 1;
 			cds.lpData = (char *) lParam;
 			SendMessageTimeout(hwnd, WM_COPYDATA, (WPARAM) hwnd, (LPARAM) & cds, SMTO_ABORTIFHUNG | SMTO_BLOCK, 150, NULL);
 		}
@@ -179,12 +179,12 @@ static BOOL CALLBACK aim_linsk_enumthreadwindowsproc(HWND hwnd, LPARAM lParam)
 
 static BOOL CALLBACK aim_links_enumwindowsproc(HWND hwnd, LPARAM lParam)
 {
-	char szBuf[32];
+	TCHAR szBuf[32];
 
 	//LOG(LOG_DEBUG, "Links: enumwindowsproc");
-	if (GetClassName(hwnd, szBuf, sizeof(szBuf)))
+	if (GetClassName(hwnd, szBuf, SIZEOF(szBuf)))
 	{
-		if (!lstrcmp(szBuf, MIRANDACLASS)) {
+		if (!lstrcmp(szBuf, _T(MIRANDACLASS))) {
 			//LOG(LOG_DEBUG, "Links: enumwindowsproc - found Miranda window");
 			EnumThreadWindows(GetWindowThreadProcessId(hwnd, NULL), aim_linsk_enumthreadwindowsproc, lParam);
 		}
@@ -197,30 +197,30 @@ static void aim_links_register()
 	HKEY hkey;
 	char szBuf[MAX_PATH], szExe[MAX_PATH * 2], szShort[MAX_PATH];
 
-	GetModuleFileName(hInstance, szBuf, sizeof(szBuf));
-	GetShortPathName(szBuf, szShort, sizeof(szShort));
+	GetModuleFileNameA(hInstance, szBuf, sizeof(szBuf));
+	GetShortPathNameA(szBuf, szShort, sizeof(szShort));
 	//LOG(LOG_DEBUG, "Links: register");
-	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
-		RegSetValue(hkey, NULL, REG_SZ, "URL:AIM Protocol", lstrlen("URL:AIM Protocol"));
-		RegSetValueEx(hkey, "URL Protocol", 0, REG_SZ, (PBYTE) "", 1);
+	if (RegCreateKeyA(HKEY_CLASSES_ROOT, "aim", &hkey) == ERROR_SUCCESS) {
+		RegSetValueA(hkey, NULL, REG_SZ, "URL:AIM Protocol", lstrlenA("URL:AIM Protocol"));
+		RegSetValueExA(hkey, "URL Protocol", 0, REG_SZ, (PBYTE) "", 1);
 		RegCloseKey(hkey);
 	}
 	else {
 		//LOG(LOG_ERROR, "Links: register - unable to create registry key (root)");
 		return;
 	}
-	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
+	if (RegCreateKeyA(HKEY_CLASSES_ROOT, "aim\\DefaultIcon", &hkey) == ERROR_SUCCESS) {
 		char szIcon[MAX_PATH];
 
 		mir_snprintf(szIcon, sizeof(szIcon), "%s,0", szShort);
-		RegSetValue(hkey, NULL, REG_SZ, szIcon, lstrlen(szIcon));
+		RegSetValueA(hkey, NULL, REG_SZ, szIcon, lstrlenA(szIcon));
 		RegCloseKey(hkey);
 	}
 	else {
 		//LOG(LOG_ERROR, "Links: register - unable to create registry key (DefaultIcon)");
 		return;
 	}
-	if (RegCreateKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
+	if (RegCreateKeyA(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command", &hkey) == ERROR_SUCCESS) {
 		// MSVC exports differently than gcc/mingw
 #ifdef _MSC_VER
 		mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,_aim_links_exec@16 %%1", szShort);
@@ -229,7 +229,7 @@ static void aim_links_register()
 		mir_snprintf(szExe, sizeof(szExe), "RUNDLL32.EXE %s,aim_links_exec@16 %%1", szShort);
 		//LOG(LOG_INFO, "Links: registering (%s)", szExe);
 #endif
-		RegSetValue(hkey, NULL, REG_SZ, szExe, lstrlen(szExe));
+		RegSetValueA(hkey, NULL, REG_SZ, szExe, lstrlenA(szExe));
 		RegCloseKey(hkey);
 	}
 	else {
@@ -241,11 +241,11 @@ static void aim_links_register()
 void CAimProto::aim_links_unregister()
 {
 	//LOG(LOG_DEBUG, "Links: unregister");
-	RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
-	RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell\\open");
-	RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\shell");
-	RegDeleteKey(HKEY_CLASSES_ROOT, "aim\\DefaultIcon");
-	RegDeleteKey(HKEY_CLASSES_ROOT, "aim");
+	RegDeleteKeyA(HKEY_CLASSES_ROOT, "aim\\shell\\open\\command");
+	RegDeleteKeyA(HKEY_CLASSES_ROOT, "aim\\shell\\open");
+	RegDeleteKeyA(HKEY_CLASSES_ROOT, "aim\\shell");
+	RegDeleteKeyA(HKEY_CLASSES_ROOT, "aim\\DefaultIcon");
+	RegDeleteKeyA(HKEY_CLASSES_ROOT, "aim");
 }
 
 void CAimProto::aim_links_init()

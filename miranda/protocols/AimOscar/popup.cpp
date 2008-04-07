@@ -57,7 +57,7 @@ void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* 
 			char* buf= new char[size];
 			strlcpy(buf,msg,size);
 			strlcpy(&buf[strlen(msg)]," Open mail account?",size);
-			if ( MessageBox( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION ) == IDYES )
+			if ( MessageBoxA( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION ) == IDYES )
 				execute_cmd("http",url);
 
 			delete[] buf;
@@ -65,13 +65,13 @@ void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* 
 		}
 		else
 		{
-			MessageBox( NULL, msg, Translate("Aim Protocol"), MB_OK | MB_ICONINFORMATION );
+			MessageBoxA( NULL, msg, Translate("Aim Protocol"), MB_OK | MB_ICONINFORMATION );
 			return;
 		}
 	}
 	ZeroMemory(&ppd, sizeof(ppd) );
-	lstrcpy( ppd.lpzContactName, title );
-	lstrcpy( ppd.lpzText, msg );
+	lstrcpyA( ppd.lpzContactName, title );
+	lstrcpyA( ppd.lpzText, msg );
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 	ppd.lchIcon = LoadIconEx( "aim" );
 	if (flags & MAIL_POPUP)

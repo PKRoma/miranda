@@ -10,19 +10,19 @@
 #define  _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
 
+#include <m_stdhdr.h>
+
 //System includes
 #include <windows.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>
-#include <malloc.h>
 #include <process.h>
 #include <prsht.h>
 #include <richedit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <vssym32.h>
 #include <winuser.h>
 
 //Miranda IM includes
@@ -51,6 +51,7 @@
 #include <m_userinfo.h>
 #include <m_addcontact.h>
 #include <m_icolib.h>
+#include <win2k.h>
 #pragma warning( default: 4100 )
 #pragma warning( default: 4244 )
 #pragma warning( default: 4201 )

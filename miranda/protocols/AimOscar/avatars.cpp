@@ -37,10 +37,10 @@ void avatar_request_thread(avatar_request_thread_param* p)
 		if ( p->ppro->hServerConn ) {
 			char* sn = strtok(p->data,";");
 			char* hash_string = strtok(NULL,";");
-			char* hash = new char[lstrlen(hash_string)/2];
+			char* hash = new char[lstrlenA(hash_string)/2];
 			string_to_bytes( hash_string, hash );
 			p->ppro->LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-			p->ppro->aim_request_avatar( p->ppro->hAvatarConn, p->ppro->avatar_seqno, sn, hash, (unsigned short)lstrlen(hash_string)/2 );
+			p->ppro->aim_request_avatar( p->ppro->hAvatarConn, p->ppro->avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
 		}
 		else {
 			SetEvent( p->ppro->hAvatarEvent );
@@ -61,13 +61,13 @@ void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &
 			int hash_size=(int)tlv.ubyte(offset+3);
 			char* hash=tlv.part(offset+4,hash_size);
 			char* hash_string=bytes_to_string(hash,hash_size);
-			if(lstrcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
+			if(lstrcmpA(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 			{
 				
 				if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//check for image type in db 
 				{
 					char filetype[5];
-					memcpy(&filetype,&photo_path[lstrlen(photo_path)]-4,5);
+					memcpy(&filetype,&photo_path[lstrlenA(photo_path)]-4,5);
 					char* filename=strlcat(norm_sn,filetype);
 					char* path;
 					FILE* out=open_contact_file(norm_sn,filename,"rb",path,0);
@@ -76,7 +76,7 @@ void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &
 						fclose(out);
 						if(char* hash=getSetting(hContact,m_szModuleName,AIM_KEY_AH))
 						{
-							avatar_exist=lstrcmp(hash_string,hash);
+							avatar_exist=lstrcmpA(hash_string,hash);
 							if(!avatar_exist)//NULL means it exist
 							{
 								LOG("Avatar exist for %s. So attempting to apply it",norm_sn);
@@ -91,7 +91,7 @@ void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &
 				}
 				if(avatar_exist)//NULL means it exist
 				{
-					int length=lstrlen(sn)+2+hash_size*2;
+					int length=lstrlenA(sn)+2+hash_size*2;
 					char* blob= new char[length];
 					mir_snprintf(blob,length,"%s;%s",sn,hash_string);
 					LOG("Starting avatar request thread for %s)",sn);
@@ -161,8 +161,8 @@ void CAimProto::avatar_apply(HANDLE &hContact,char* sn,char* filename)
 {
 	if(char* photo_path=getSetting(hContact,"ContactPhoto","File"))//compare filenames if different and exist then ignore icon change
 	{
-		filename[lstrlen(filename)-4]='\0';
-		/*if(lstrcmpi(filename,photo_path))
+		filename[lstrlenA(filename)-4]='\0';
+		/*if(lstrcmpiA(filename,photo_path))
 		{
 			char* path;
 			FILE* out=open_contact_file(sn,photo_path,"rb",path);
@@ -175,21 +175,21 @@ void CAimProto::avatar_apply(HANDLE &hContact,char* sn,char* filename)
 			}
 		}*/
 		delete[] photo_path;
-		filename[lstrlen(filename)]='.';
+		filename[lstrlenA(filename)]='.';
 	}
 	PROTO_AVATAR_INFORMATION AI;
 	AI.cbSize = sizeof AI;
 	AI.hContact = hContact;
-	strlcpy(AI.filename,filename,lstrlen(filename)+1);
+	strlcpy(AI.filename,filename,lstrlenA(filename)+1);
 	char filetype[4];
-	memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
-	if(!lstrcmpi(filetype,"jpg")||!lstrcmpi(filetype,"jpeg"))
+	memcpy(&filetype,&filename[lstrlenA(filename)]-3,4);
+	if(!lstrcmpiA(filetype,"jpg")||!lstrcmpiA(filetype,"jpeg"))
 		AI.format=PA_FORMAT_JPEG;
-	else if(!lstrcmpi(filetype,"gif"))
+	else if(!lstrcmpiA(filetype,"gif"))
 		AI.format=PA_FORMAT_GIF;
-	else if(!lstrcmpi(filetype,"png"))
+	else if(!lstrcmpiA(filetype,"png"))
 		AI.format=PA_FORMAT_PNG;
-	else if(!lstrcmpi(filetype,"bmp"))
+	else if(!lstrcmpiA(filetype,"bmp"))
 		AI.format=PA_FORMAT_BMP;
 	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
 	LOG("Successfully added avatar for %s(%s)",sn,AI.filename);

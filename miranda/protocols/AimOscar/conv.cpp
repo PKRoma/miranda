@@ -88,14 +88,14 @@ char* CAimProto::strip_special_chars(char *src, HANDLE hContact)
 	if (!getString(hContact, AIM_KEY_SN, &dbv))
 	{
 		char *ptr;
-		char* dest=strldup(src,lstrlen(src));
+		char* dest=strldup(src,lstrlenA(src));
 		while ((ptr = strstr(dest, "%n")) != NULL)
 		{
 			int addr=ptr-dest;
-			int	sn_length=lstrlen(dbv.pszVal);
-			dest=renew(dest,lstrlen(dest)+1,sn_length*2);
+			int	sn_length=lstrlenA(dbv.pszVal);
+			dest=renew(dest,lstrlenA(dest)+1,sn_length*2);
 			ptr=dest+addr;
-			memmove(ptr + sn_length, ptr + 2, lstrlen(ptr + 2) + sn_length);
+			memmove(ptr + sn_length, ptr + 2, lstrlenA(ptr + 2) + sn_length);
 			memcpy(ptr,dbv.pszVal,sn_length);
 		}
 		DBFreeVariant(&dbv);
@@ -142,21 +142,21 @@ wchar_t* strip_carrots(wchar_t *src)// EAT!!!!!!!!!!!!!
 
 char* strip_linebreaks(char *src)
 {
-	char* dest=strldup(src,lstrlen(src));
+	char* dest=strldup(src,lstrlenA(src));
 	char *ptr;
 	while ((ptr = strstr(dest, "\r")) != NULL)
 	{
-		memmove(ptr, ptr + 1, lstrlen(ptr + 1)+1);
+		memmove(ptr, ptr + 1, lstrlenA(ptr + 1)+1);
 	}
 	while ((ptr = strstr(dest, "\n")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,lstrlen(dest)+1,7);
+		dest=renew(dest,lstrlenA(dest)+1,7);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, lstrlen(ptr + 1) + 4);
+		memmove(ptr + 4, ptr + 1, lstrlenA(ptr + 1) + 4);
 		memcpy(ptr,"<br>",4);
 	}
-	dest[lstrlen(dest)]='\0';
+	dest[lstrlenA(dest)]='\0';
 	return dest;
 }
 
@@ -519,7 +519,7 @@ wchar_t* bbcodes_to_html(const wchar_t *src)
 
 void strip_tag(char* begin, char* end)
 {
-	memmove(begin,end+1,lstrlen(end+1)+1);
+	memmove(begin,end+1,lstrlenA(end+1)+1);
 }
 
 void strip_tag(wchar_t* begin, wchar_t* end)
@@ -581,7 +581,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	while(start<length)
 	{
 		SendDlgItemMessage(hwndDlg, DlgItem, EM_SETSEL, start, end);
-		CHARFORMAT2 cfOld;
+		CHARFORMAT2A cfOld;
 		cfOld.cbSize = sizeof(CHARFORMAT2);
 		cfOld.dwMask = CFM_BOLD|CFM_ITALIC|CFM_UNDERLINE|CFM_SIZE|CFM_COLOR|CFM_BACKCOLOR|CFM_FACE;
 		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
@@ -660,7 +660,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 				}
 			}
 		}
-		if(Size!=isSize||Color!=isColor||BackColor!=isBackColor||strcmp(Face,cfOld.szFaceName))
+		if ( Size != isSize || Color != isColor || BackColor != isBackColor || lstrcmpA( Face, cfOld.szFaceName ))
 		{
 			Size=isSize;
 			Color=isColor;

@@ -15,9 +15,9 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
-		wd=strldup(file,lstrlen(file));
+		wd=strldup(file,lstrlenA(file));
 		char* swd=strrchr(wd,'\\');
 		*swd='\0';
 		size=DBGetContactSettingDword(hContact, m_szModuleName, AIM_KEY_FS, 0);
@@ -51,7 +51,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	ft.list_size_offset=0x11;
 	char* pszFile = strrchr(file, '\\');
 	pszFile++;
-	memcpy(ft.filename,pszFile,lstrlen(pszFile));
+	memcpy(ft.filename,pszFile,lstrlenA(pszFile));
 	char* buf = (char*)&ft;
 	if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 	{
@@ -194,8 +194,8 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
-		pfts.workingDir=strldup(file,lstrlen(file));
+		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+		pfts.workingDir=strldup(file,lstrlenA(file));
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff
@@ -251,8 +251,8 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						char* buf = (char*)&ft;
 						Netlib_Send(hNewConnection,buf,sizeof(oft2),0);
-						file=renew(file,lstrlen(file)+1,lstrlen((char*)&ft.filename)+1);
-						lstrcat(file,(char*)&ft.filename);
+						file=renew(file,lstrlenA(file)+1,lstrlenA((char*)&ft.filename)+1);
+						lstrcatA(file,(char*)&ft.filename);
 						pfts.currentFile=file;
 						fd = fopen(file, "wb");
 						if(!fd)

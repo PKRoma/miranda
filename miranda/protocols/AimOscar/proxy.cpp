@@ -97,7 +97,7 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 						if ( !p->ppro->getString( p->hContact, AIM_KEY_SN, &dbv)) {
 							if ( stage == 1 && sender ) {
 								p->ppro->LOG("Stage 1 Proxy ft and we are the sender.");
-								char* sn=strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+								char* sn=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 								DBFreeVariant(&dbv);
 								char vip[20];
 								char *file, *descr;
@@ -105,10 +105,10 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 								long_ip_to_char_ip(*ip,vip);
 								p->ppro->setString( p->hContact, AIM_KEY_IP, vip );
 								if ( !p->ppro->getString( p->hContact, AIM_KEY_FN, &dbv )) {
-									file = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+									file = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 									DBFreeVariant(&dbv);
 									if ( !p->ppro->getString( p->hContact, AIM_KEY_FD, &dbv )) {
-										descr = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+										descr = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 										DBFreeVariant(&dbv);
 										size = p->ppro->getDword(p->hContact, AIM_KEY_FS, 0);
 										if ( !size )
@@ -169,7 +169,7 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 {
-	char sn_length=(char)lstrlen(sn);
+	char sn_length=(char)lstrlenA(sn);
 	unsigned short length = _htons(39+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[25+sn_length+sizeof(AIM_CAP_SEND_FILES)];
@@ -194,7 +194,7 @@ int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
 {
-	char sn_length=(char)lstrlen(sn);
+	char sn_length=(char)lstrlenA(sn);
 	unsigned short length = _htons(41+sn_length);
 	char* clength =(char*)&length;
 	char* msg_frag= new char[27+sn_length+sizeof(AIM_CAP_SEND_FILES)];

@@ -5,7 +5,7 @@ struct awaymsg_request_thread_param
 {
 	awaymsg_request_thread_param( CAimProto* _ppro, const char* _sn ) :
 		ppro( _ppro ),
-		sn( strldup( sn, lstrlen(sn)))
+		sn( strldup( sn, lstrlenA(sn)))
 	{}
 
 	~awaymsg_request_thread_param()

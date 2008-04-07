@@ -15,7 +15,7 @@ int CAimProto::LOG(const char *fmt, ...)
 
 HANDLE CAimProto::aim_connect(char* server)
 {
-	char* server_dup=strldup(server,lstrlen(server));
+	char* server_dup=strldup(server,lstrlenA(server));
 	NETLIBOPENCONNECTION ncon = { 0 };
 	char* szPort = strchr(server_dup,':');
 	if (szPort) *szPort++ = 0; else szPort = "5190";
@@ -49,8 +49,8 @@ void __cdecl aim_connection_authorization( CAimProto* ppro )
 	int recvResult=0;
 	if (!ppro->getString(AIM_KEY_PW, &dbv))
 	{
-		CallService(MS_DB_CRYPT_DECODESTRING, lstrlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		ppro->password = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+		ppro->password = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -60,7 +60,7 @@ void __cdecl aim_connection_authorization( CAimProto* ppro )
 	}
 	if (!ppro->getString(AIM_KEY_SN, &dbv))
 	{
-		ppro->username = strldup(dbv.pszVal,lstrlen(dbv.pszVal));
+		ppro->username = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
 	}
 	else

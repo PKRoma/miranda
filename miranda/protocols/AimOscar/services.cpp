@@ -3,7 +3,7 @@
 
 int CAimProto::GetName(WPARAM wParam, LPARAM lParam)
 {
-	lstrcpyn((char *) lParam, m_szModuleName, wParam);
+	lstrcpynA((char *) lParam, m_szModuleName, wParam);
 	return 0;
 }
 
@@ -58,7 +58,7 @@ int CAimProto::SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 
 		//if(DBGetContactSettingByte(ccs->hContact, m_szModuleName, AIM_KEY_US, 0))
 		//{
-		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
+		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1)));
 		//wchar_t* smsg=plain_to_html(msg);
 		wchar_t* smsg=strip_carrots(msg);
 		delete[] msg;
@@ -111,7 +111,7 @@ int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 	DBVARIANT dbv;
 	if ( !getString((HANDLE)wParam, AIM_KEY_SN, &dbv )) {
 		char URL[256];
-		mir_snprintf(URL,lstrlen(CWD)+lstrlen(m_szModuleName)+lstrlen(dbv.pszVal)+9+4,"%s\\%s\\%s\\away.html",CWD,m_szModuleName,dbv.pszVal);
+		mir_snprintf(URL,lstrlenA(CWD)+lstrlenA(m_szModuleName)+lstrlenA(dbv.pszVal)+9+4,"%s\\%s\\%s\\away.html",CWD,m_szModuleName,dbv.pszVal);
 		execute_cmd("http",URL);
 	}
 	return 0;
@@ -124,9 +124,9 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 		return 0;
 
 	char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
-	if (protocol != NULL && !lstrcmp(protocol, m_szModuleName))
+	if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 	{
-		if(!lstrcmp(cws->szSetting,AIM_KEY_NL)&&!lstrcmp(cws->szModule,MOD_KEY_CL))
+		if(!lstrcmpA(cws->szSetting,AIM_KEY_NL)&&!lstrcmpA(cws->szModule,MOD_KEY_CL))
 		{
 			if(cws->value.type == DBVT_DELETED)
 			{
@@ -160,10 +160,10 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			#if _MSC_VER
 				#pragma warning( default: 4127)
 			#endif
-			char* item= new char[lstrlen(AIM_KEY_BI)+10];
-			char* group= new char[lstrlen(AIM_KEY_GI)+10];
-			mir_snprintf(item,lstrlen(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,lstrlen(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
+			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
+			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if ( unsigned short item_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, m_szModuleName, item,0)) {
 				unsigned short group_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, m_szModuleName, group,0);
 				if(group_id)
@@ -234,15 +234,15 @@ int CAimProto::GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 				fclose(photo_file);
 				char filetype[5];
 				detect_image_type(buf,filetype);
-				if(!lstrcmpi(filetype,".jpg"))
+				if(!lstrcmpiA(filetype,".jpg"))
 					AI->format=PA_FORMAT_JPEG;
-				else if(!lstrcmpi(filetype,".gif"))
+				else if(!lstrcmpiA(filetype,".gif"))
 					AI->format=PA_FORMAT_GIF;
-				else if(!lstrcmpi(filetype,".png"))
+				else if(!lstrcmpiA(filetype,".png"))
 					AI->format=PA_FORMAT_PNG;
-				else if(!lstrcmpi(filetype,".bmp"))
+				else if(!lstrcmpiA(filetype,".bmp"))
 					AI->format=PA_FORMAT_BMP;
-				strlcpy(AI->filename,photo_path,lstrlen(photo_path));
+				strlcpy(AI->filename,photo_path,lstrlenA(photo_path));
 				delete[] photo_path;
 				delete[] sn;
 				return GAIR_SUCCESS;

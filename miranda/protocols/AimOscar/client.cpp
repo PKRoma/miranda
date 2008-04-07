@@ -12,9 +12,9 @@ int CAimProto::aim_send_connection_packet(HANDLE hServerConn,unsigned short &seq
 int CAimProto::aim_authkey_request(HANDLE hServerConn,unsigned short &seqno)
 {
 	unsigned short offset=0;
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+lstrlen(username)];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+lstrlenA(username)];
 	aim_writesnac(0x17,0x06,3,offset,buf);
-	aim_writetlv(0x01,(unsigned short)lstrlen(username),username,offset,buf);
+	aim_writetlv(0x01,(unsigned short)lstrlenA(username),username,offset,buf);
 	aim_writetlv(0x4B,0,0,offset,buf);
 	aim_writetlv(0x5A,0,0,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
@@ -32,31 +32,31 @@ int CAimProto::aim_authkey_request(HANDLE hServerConn,unsigned short &seqno)
 int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,char* key,char* language,char* country)
 {
 	unsigned short offset=0;
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+lstrlen(username)+lstrlen(AIM_CLIENT_ID_STRING)+15+lstrlen(language)+lstrlen(country)];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+lstrlenA(username)+lstrlenA(AIM_CLIENT_ID_STRING)+15+lstrlenA(language)+lstrlenA(country)];
 	mir_md5_byte_t pass_hash[16];
 	mir_md5_byte_t auth_hash[16];
 	mir_md5_state_t state;
 	mir_md5_init(&state);
-	mir_md5_append(&state,(const mir_md5_byte_t *)password, lstrlen(password));
+	mir_md5_append(&state,(const mir_md5_byte_t *)password, lstrlenA(password));
 	mir_md5_finish(&state,pass_hash);
 	mir_md5_init(&state);
-	mir_md5_append(&state,(mir_md5_byte_t*)key, lstrlen(key));
+	mir_md5_append(&state,(mir_md5_byte_t*)key, lstrlenA(key));
 	mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
-	mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, lstrlen(AIM_MD5_STRING));
+	mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, lstrlenA(AIM_MD5_STRING));
 	mir_md5_finish(&state,auth_hash);
 	aim_writesnac(0x17,0x02,4,offset,buf);
-	aim_writetlv(0x01,(unsigned short)lstrlen(username),username,offset,buf);
+	aim_writetlv(0x01,(unsigned short)lstrlenA(username),username,offset,buf);
 	aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
 	aim_writetlv(0x4C,0,0,offset,buf);//signifies new password hash instead of old method
-	aim_writetlv(0x03,(unsigned short)lstrlen(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
+	aim_writetlv(0x03,(unsigned short)lstrlenA(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
 	aim_writetlv(0x16,sizeof(AIM_CLIENT_ID_NUMBER)-1,AIM_CLIENT_ID_NUMBER,offset,buf);
 	aim_writetlv(0x17,sizeof(AIM_CLIENT_MAJOR_VERSION)-1,AIM_CLIENT_MAJOR_VERSION,offset,buf);
 	aim_writetlv(0x18,sizeof(AIM_CLIENT_MINOR_VERSION)-1,AIM_CLIENT_MINOR_VERSION,offset,buf);
 	aim_writetlv(0x19,sizeof(AIM_CLIENT_LESSER_VERSION)-1,AIM_CLIENT_LESSER_VERSION,offset,buf);
 	aim_writetlv(0x1A,sizeof(AIM_CLIENT_BUILD_NUMBER)-1,AIM_CLIENT_BUILD_NUMBER,offset,buf);
 	aim_writetlv(0x14,sizeof(AIM_CLIENT_DISTRIBUTION_NUMBER)-1,AIM_CLIENT_DISTRIBUTION_NUMBER,offset,buf);
-	aim_writetlv(0x0F,(unsigned short)lstrlen(language),language,offset,buf);
-	aim_writetlv(0x0E,(unsigned short)lstrlen(country),country,offset,buf);
+	aim_writetlv(0x0F,(unsigned short)lstrlenA(language),language,offset,buf);
+	aim_writetlv(0x0E,(unsigned short)lstrlenA(country),country,offset,buf);
 	aim_writetlv(0x4A,1,"\x01",offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	{
@@ -207,12 +207,12 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	if (!getString(AIM_KEY_PR, &dbv))
 	{
 		profile_buf=strip_linebreaks(dbv.pszVal);
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)+lstrlen(profile_buf)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlenA(AIM_MSG_TYPE)+lstrlenA(profile_buf)];
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlen(AIM_MSG_TYPE)];
+		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlenA(AIM_MSG_TYPE)];
 	}
 	char temp[AIM_CAPS_LENGTH*50];
 	memcpy(temp,AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
@@ -245,8 +245,8 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	aim_writetlv(0x05,(unsigned short)(AIM_CAPS_LENGTH*i),temp,offset,buf);
 	if (profile_buf)
 	{
-		aim_writetlv(0x01,(unsigned short)lstrlen(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
-		aim_writetlv(0x02,(unsigned short)lstrlen(profile_buf),profile_buf,offset,buf);
+		aim_writetlv(0x01,(unsigned short)lstrlenA(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
+		aim_writetlv(0x02,(unsigned short)lstrlenA(profile_buf),profile_buf,offset,buf);
 		delete[] profile_buf;
 	}
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
@@ -266,12 +266,12 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *ms
 	unsigned short offset=0;
 	int msg_size=0;
 	if(msg!=NULL)
-		msg_size=lstrlen(msg);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*2+lstrlen(AIM_MSG_TYPE)+msg_size];
+		msg_size=lstrlenA(msg);
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*2+lstrlenA(AIM_MSG_TYPE)+msg_size];
 	aim_writesnac(0x02,0x04,6,offset,buf);
-	aim_writetlv(0x01,(unsigned short)lstrlen(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
+	aim_writetlv(0x01,(unsigned short)lstrlenA(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
 	if(msg!=NULL)
-		aim_writetlv(0x02,(unsigned short)lstrlen(msg),msg,offset,buf);
+		aim_writetlv(0x02,(unsigned short)lstrlenA(msg),msg,offset,buf);
 	else
 		aim_writetlv(0x02,0,0,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
@@ -293,20 +293,20 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 	int msg_size=0;
 	if(msg!=NULL)
 	{
-		html_msg=strldup(msg,lstrlen(msg));
+		html_msg=strldup(msg,lstrlenA(msg));
 		setDword( AIM_KEY_LA, (DWORD)time(NULL));
 		char* smsg=strip_carrots(html_msg);
 		delete[] html_msg;
 		html_msg=strip_linebreaks(smsg);
 		delete[] smsg;
-		msg_size=lstrlen(html_msg);
+		msg_size=lstrlenA(html_msg);
 	}
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*2+lstrlen(AIM_MSG_TYPE)+msg_size];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*2+lstrlenA(AIM_MSG_TYPE)+msg_size];
 	aim_writesnac(0x02,0x04,6,offset,buf);
-	aim_writetlv(0x03,(unsigned short)lstrlen(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
+	aim_writetlv(0x03,(unsigned short)lstrlenA(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
 	if(msg!=NULL)
 	{
-		aim_writetlv(0x04,(unsigned short)lstrlen(html_msg),html_msg,offset,buf);
+		aim_writetlv(0x04,(unsigned short)lstrlenA(html_msg),html_msg,offset,buf);
 		delete[] html_msg;
 	}
 	else
@@ -421,22 +421,22 @@ int CAimProto::aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seq
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
 	char caps_frag[]={0x05,0x01,0x00,0x01,0x01};
-	char* msg_frag=new char[8+lstrlen(msg)];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	unsigned short msg_length=_htons((unsigned short)lstrlen(msg)+4);
+	char* msg_frag=new char[8+lstrlenA(msg)];
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
+	unsigned short msg_length=_htons((unsigned short)lstrlenA(msg)+4);
 	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0",8);//last two bytes are charset if 0xFFFF then triton doesn't accept message
-	char* tlv_frag= new char[sizeof(caps_frag)+lstrlen(msg)+8];
+	char* tlv_frag= new char[sizeof(caps_frag)+lstrlenA(msg)+8];
 	memcpy(&msg_frag[2],(char*)&msg_length,2);
-	memcpy(&msg_frag[8],msg,lstrlen(msg));
+	memcpy(&msg_frag[8],msg,lstrlenA(msg));
 	memcpy(tlv_frag,caps_frag,sizeof(caps_frag));
-	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,lstrlen(msg)+8);
-	char* buf= new char[SNAC_SIZE+11+sn_length+TLV_HEADER_SIZE*2+sizeof(caps_frag)+lstrlen(msg)+8];
+	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,lstrlenA(msg)+8);
+	char* buf= new char[SNAC_SIZE+11+sn_length+TLV_HEADER_SIZE*2+sizeof(caps_frag)+lstrlenA(msg)+8];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);
 	aim_writegeneric(2,"\0\x01",offset,buf);//channel
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
-	aim_writetlv(0x02,(unsigned short)(sizeof(caps_frag)+lstrlen(msg)+8),tlv_frag,offset,buf);
+	aim_writetlv(0x02,(unsigned short)(sizeof(caps_frag)+lstrlenA(msg)+8),tlv_frag,offset,buf);
 	if(auto_response)
 		aim_writetlv(0x04,0,0,offset,buf);
 	else
@@ -463,7 +463,7 @@ int CAimProto::aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
 	char caps_frag[]={0x05,0x01,0x00,0x03,0x01,0x01,0x01};
 	char* msg_frag=new char[8+wcslen(msg)*2];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	unsigned short msg_length=_htons((unsigned short)wcslen(msg)*2+4);
 	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0",8);//second before last two bytes are charset if 0xFFFF then triton doesn't accept message
 	memcpy(&msg_frag[2],(char*)&msg_length,2);
@@ -502,7 +502,7 @@ int CAimProto::aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno
 int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn)
 {
 	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+5+sn_length];
 	aim_writesnac(0x02,0x15,0x06,offset,buf);
 	aim_writegeneric(4,"\0\0\0\x02",offset,buf);
@@ -523,7 +523,7 @@ int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,c
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)
 {
 	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+5+sn_length];
 	aim_writesnac(0x02,0x15,0x06,offset,buf);
 	aim_writegeneric(4,"\0\0\0\x01",offset,buf);
@@ -544,8 +544,8 @@ int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* 
 int CAimProto::aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id)
 {
 	unsigned short offset=0;
-	unsigned short sn_length_flipped=_htons((unsigned short)lstrlen(sn));
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length_flipped=_htons((unsigned short)lstrlenA(sn));
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+sn_length+10];
 	item_id=_htons(item_id);
 	group_id=_htons(group_id);
@@ -570,8 +570,8 @@ int CAimProto::aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char*
 int CAimProto::aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id)
 {
 	unsigned short offset=0;
-	unsigned short sn_length_flipped=_htons((unsigned short)lstrlen(sn));
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length_flipped=_htons((unsigned short)lstrlenA(sn));
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+sn_length+10];
 	item_id=_htons(item_id);
 	group_id=_htons(group_id);
@@ -595,8 +595,8 @@ int CAimProto::aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn
 int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id)
 {
 	unsigned short offset=0;
-	unsigned short name_length_flipped=_htons((unsigned short)lstrlen(name));
-	unsigned short name_length=(unsigned short)lstrlen(name);
+	unsigned short name_length_flipped=_htons((unsigned short)lstrlenA(name));
+	unsigned short name_length=(unsigned short)lstrlenA(name);
 	char* buf=new char[SNAC_SIZE+name_length+10];
 	group_id=_htons(group_id);
 	aim_writesnac(0x13,0x08,0x06,offset,buf);
@@ -619,8 +619,8 @@ int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name
 int CAimProto::aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length)
 {
 	unsigned short offset=0;
-	unsigned short name_length_flipped=_htons((unsigned short)lstrlen(name));
-	unsigned short name_length=(unsigned short)lstrlen(name);
+	unsigned short name_length_flipped=_htons((unsigned short)lstrlenA(name));
+	unsigned short name_length=(unsigned short)lstrlenA(name);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+name_length+members_length+10];
 	group_id=_htons(group_id);
 	aim_writesnac(0x13,0x09,0x0e,offset,buf);//0x0e for mod group
@@ -655,15 +655,15 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 {	
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_SEND_FILES)+lstrlen(descr)+lstrlen(file_name)+sn_length];
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_SEND_FILES)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
 
-	char* msg_frag=new char[TLV_HEADER_SIZE*50+sizeof(AIM_CAP_SEND_FILES)+lstrlen(descr)+lstrlen(file_name)];
+	char* msg_frag=new char[TLV_HEADER_SIZE*50+sizeof(AIM_CAP_SEND_FILES)+lstrlenA(descr)+lstrlenA(file_name)];
 	unsigned short frag_offset=0;
 	{
 		aim_writegeneric(2,"\0\0",frag_offset,msg_frag);//request type
@@ -675,7 +675,7 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 		aim_writetlv(0x0e,2,"\x65\x6e",frag_offset,msg_frag);
 		aim_writetlv(0x0d,8,"us-ascii",frag_offset,msg_frag);
 		if(descr)
-			aim_writetlv(0x0c,(unsigned short)lstrlen(descr),descr,frag_offset,msg_frag);
+			aim_writetlv(0x0c,(unsigned short)lstrlenA(descr),descr,frag_offset,msg_frag);
 		else
 			aim_writetlv(0x0c,6,"<HTML>",frag_offset,msg_frag);
 		unsigned long lip=_htonl(ip);
@@ -710,13 +710,13 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 		if(request_num==0x0100)
 		{
 			aim_writegeneric(2,"\x27\x11",frag_offset,msg_frag);//type
-			unsigned short tlv_size=_htons(9+(unsigned short)lstrlen(file_name));
+			unsigned short tlv_size=_htons(9+(unsigned short)lstrlenA(file_name));
 			aim_writegeneric(2,(char*)&tlv_size,frag_offset,msg_frag);//size
 			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//whether one or files are being transfered
 			aim_writegeneric(2,"\0\1",frag_offset,msg_frag);//number of files being transfered
 			total_bytes=_htonl(total_bytes);
 			aim_writegeneric(4,(char*)&total_bytes,frag_offset,msg_frag);//number of bytes in file
-			aim_writegeneric((unsigned short)lstrlen(file_name),file_name,frag_offset,msg_frag);//filename
+			aim_writegeneric((unsigned short)lstrlenA(file_name),file_name,frag_offset,msg_frag);//filename
 			aim_writegeneric(1,"\0",frag_offset,msg_frag);//null termination
 			//end tlv
 			aim_writetlv(0x2712,8,"us-ascii",frag_offset,msg_frag);//character set
@@ -748,9 +748,9 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char temp[]="\0\x0a\0\x02\0\x01\0\x0f\0\0\0\x0e\0\x02\x65\x6e\0\x0d\0\x08us-ascii\0\x0c";
-	char* msg_frag=new char[75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+86+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlen(descr)+lstrlen(file_name)+sn_length];
+	char* msg_frag=new char[75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)];
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+86+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -762,7 +762,7 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	memcpy(&msg_frag[2],icbm_cookie,8);
 	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
 	memcpy(&msg_frag[9+sizeof(AIM_CAP_SEND_FILES)],temp,sizeof(temp));	
-	unsigned short descr_size =_htons((unsigned short)lstrlen(descr));
+	unsigned short descr_size =_htons((unsigned short)lstrlenA(descr));
 	memcpy(&msg_frag[8+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],(char*)&descr_size,2);
 	descr_size =_htons(descr_size);
 	memcpy(&msg_frag[10+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],descr,descr_size);
@@ -790,15 +790,15 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	memcpy(&msg_frag[44+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],bw_port,2);
 
 	memcpy(&msg_frag[46+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x10\0\0\x27\x11",6);
-	unsigned short packet_size=_htons(9+(unsigned short)lstrlen(file_name));
+	unsigned short packet_size=_htons(9+(unsigned short)lstrlenA(file_name));
 	memcpy(&msg_frag[52+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&packet_size,2);
 	memcpy(&msg_frag[54+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x01\0\x01",4);
 	total_bytes=_htonl(total_bytes);
 	memcpy(&msg_frag[58+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&total_bytes,4);
-	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],file_name,lstrlen(file_name));
-	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)],"\0",1);
-	memcpy(&msg_frag[63+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)],"\x27\x12\0\x08us-ascii",12);
-	aim_writetlv(0x05,(unsigned short)(75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlen(file_name)),msg_frag,offset,buf);
+	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],file_name,lstrlenA(file_name));
+	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\0",1);
+	memcpy(&msg_frag[63+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\x27\x12\0\x08us-ascii",12);
+	aim_writetlv(0x05,(unsigned short)(75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)),msg_frag,offset,buf);
 	//end huge ass tlv hell
 	}
 	char cip[20];
@@ -824,7 +824,7 @@ int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &se
 	unsigned short offset=0;
 	char temp[]="\0\x0a\0\x02\0\x02\0\x02\0\x04";
 	char* msg_frag=new char[51+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
@@ -874,7 +874,7 @@ int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,c
 {	
 	unsigned short offset=0;
 	char* msg_frag=new char[47+sizeof(AIM_CAP_SEND_FILES)+10];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+58+sizeof(AIM_CAP_SEND_FILES)+10+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
@@ -928,7 +928,7 @@ int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char msg_frag[10+sizeof(AIM_CAP_SEND_FILES)];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
@@ -961,7 +961,7 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char msg_frag[10+sizeof(AIM_CAP_SEND_FILES)];
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
 	char* buf=new char[SNAC_SIZE*2+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
@@ -991,8 +991,8 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 int CAimProto::aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type)
 {
 	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlen(sn);
-	char* buf= new char[SNAC_SIZE+lstrlen(sn)+13];
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
+	char* buf= new char[SNAC_SIZE+lstrlenA(sn)+13];
 	aim_writesnac(0x04,0x14,0x06,offset,buf);
 	aim_writegeneric(10,"\0\0\0\0\0\0\0\0\0\x01",offset,buf);
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
