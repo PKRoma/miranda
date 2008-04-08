@@ -80,6 +80,7 @@ CAimProto::~CAimProto()
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
+	mir_free( m_szProtoName );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
