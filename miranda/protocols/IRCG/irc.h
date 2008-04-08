@@ -632,8 +632,8 @@ protected :
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();
-	OBJLIST<CDccSession> m_dcc_chats;
-	OBJLIST<CDccSession> m_dcc_xfers;
+	LIST<CDccSession> m_dcc_chats;
+	LIST<CDccSession> m_dcc_xfers;
 
 private :
 	CRITICAL_SECTION    m_dcc;      // protect the dcc objects

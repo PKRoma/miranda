@@ -624,7 +624,7 @@ void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
 
 	CDccSession* p = m_dcc_chats.find(dcc);
 	if ( p )
-		delete p;
+		m_dcc_chats.remove( p );
 
 	m_dcc_chats.insert( dcc );
 
@@ -645,7 +645,7 @@ void CIrcProto::RemoveDCCSession(HANDLE hContact)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
-		if ( m_dcc_chats[i].di->hContact == hContact ) {
+		if ( m_dcc_chats[i]->di->hContact == hContact ) {
 			m_dcc_chats.remove( i );
 			break;
 		}
@@ -658,7 +658,7 @@ void CIrcProto::RemoveDCCSession(DCCINFO* pdci)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ )
-		if ( m_dcc_xfers[i].di == pdci ) {
+		if ( m_dcc_xfers[i]->di == pdci ) {
 			m_dcc_xfers.remove( i );
 			break;
 		}
@@ -671,9 +671,9 @@ CDccSession* CIrcProto::FindDCCSession(HANDLE hContact)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
-		if ( m_dcc_chats[i].di->hContact == hContact ) {
+		if ( m_dcc_chats[i]->di->hContact == hContact ) {
 			LeaveCriticalSection(&m_dcc);
-			return &m_dcc_chats[ i ];
+			return m_dcc_chats[ i ];
 		}
 
 	LeaveCriticalSection(&m_dcc);
@@ -685,9 +685,9 @@ CDccSession* CIrcProto::FindDCCSession(DCCINFO* pdci)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ )
-		if ( m_dcc_xfers[i].di == pdci ) {
+		if ( m_dcc_xfers[i]->di == pdci ) {
 			LeaveCriticalSection(&m_dcc);
-			return &m_dcc_xfers[ i ];
+			return m_dcc_xfers[ i ];
 		}
 
 	LeaveCriticalSection(&m_dcc);
@@ -699,10 +699,10 @@ CDccSession* CIrcProto::FindDCCSendByPort(int iPort)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
-		CDccSession& p = m_dcc_xfers[i];
-		if ( p.di->iType == DCC_SEND && p.di->bSender && iPort == p.di->iPort ) {
+		CDccSession* p = m_dcc_xfers[i];
+		if ( p->di->iType == DCC_SEND && p->di->bSender && iPort == p->di->iPort ) {
 			LeaveCriticalSection(&m_dcc);
-			return &p;
+			return p;
 		}
 	}
 
@@ -715,13 +715,13 @@ CDccSession* CIrcProto::FindDCCRecvByPortAndName(int iPort, const TCHAR* szName)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
-		CDccSession& p = m_dcc_xfers[i];
+		CDccSession* p = m_dcc_xfers[i];
 		DBVARIANT dbv;
-		if ( !getTString(p.di->hContact, "Nick", &dbv)) {
-			if ( p.di->iType == DCC_SEND && !p.di->bSender && !lstrcmpi( szName, dbv.ptszVal) && iPort == p.di->iPort ) {
+		if ( !getTString(p->di->hContact, "Nick", &dbv)) {
+			if ( p->di->iType == DCC_SEND && !p->di->bSender && !lstrcmpi( szName, dbv.ptszVal) && iPort == p->di->iPort ) {
 				DBFreeVariant(&dbv);
 				LeaveCriticalSection(&m_dcc);
-				return &p;
+				return p;
 			}
 			DBFreeVariant(&dbv);
 		}
@@ -736,9 +736,9 @@ CDccSession* CIrcProto::FindPassiveDCCSend(int iToken)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
-		if ( m_dcc_xfers[ i ].iToken == iToken ) {
+		if ( m_dcc_xfers[ i ]->iToken == iToken ) {
 			LeaveCriticalSection(&m_dcc);
-			return &m_dcc_xfers[ i ];
+			return m_dcc_xfers[ i ];
 		}
 	}
 
@@ -751,10 +751,10 @@ CDccSession* CIrcProto::FindPassiveDCCRecv(CMString sName, CMString sToken)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_xfers.getCount(); i++ ) {
-		CDccSession& p = m_dcc_xfers[i];
-		if ( sToken == p.di->sToken && sName == p.di->sContactName ) {
+		CDccSession* p = m_dcc_xfers[i];
+		if ( sToken == p->di->sToken && sName == p->di->sContactName ) {
 			LeaveCriticalSection(&m_dcc);
-			return &p;
+			return p;
 		}
 	}
 	LeaveCriticalSection(&m_dcc);
@@ -767,7 +767,7 @@ void CIrcProto::DisconnectAllDCCSessions(bool Shutdown)
 
 	for ( int i=0; i < m_dcc_chats.getCount(); i++ )
 		if ( m_disconnectDCCChats || Shutdown )
-			m_dcc_chats[i].Disconnect();
+			m_dcc_chats[i]->Disconnect();
 
 	LeaveCriticalSection(&m_dcc);
 }
@@ -777,15 +777,15 @@ void CIrcProto::CheckDCCTimeout(void)
 	EnterCriticalSection(&m_dcc);
 
 	for ( int i=0; i < m_dcc_chats.getCount(); i++ ) {
-		CDccSession& p = m_dcc_chats[i];
-		if ( time(0) > p.tLastActivity + DCCCHATTIMEOUT )
-			p.Disconnect();
+		CDccSession* p = m_dcc_chats[i];
+		if ( time(0) > p->tLastActivity + DCCCHATTIMEOUT )
+			p->Disconnect();
 	}
 
 	for ( int j=0; j < m_dcc_xfers.getCount(); j++ ) {
-		CDccSession& p = m_dcc_xfers[j];
-		if ( time(0) > p.tLastActivity + DCCSENDTIMEOUT )
-			p.Disconnect();
+		CDccSession* p = m_dcc_xfers[j];
+		if ( time(0) > p->tLastActivity + DCCSENDTIMEOUT )
+			p->Disconnect();
 	}
 
 	LeaveCriticalSection(&m_dcc);

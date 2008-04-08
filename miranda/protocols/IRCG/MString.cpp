@@ -149,7 +149,8 @@ int __stdcall ChTraitsCRT<wchar_t>::GetFormattedLength( LPCWSTR pszFormat, va_li
 		if ( _vscwprintf_ptr != NULL )
 			return _vscwprintf_ptr( pszFormat, args );
 
-		return vswprintf_ptr( NULL, 0, pszFormat, args );
+		WCHAR buf[ 4000 ];
+		return vswprintf_ptr( buf, SIZEOF(buf), pszFormat, args );
 	#else
 		return _vscwprintf( pszFormat, args );
 	#endif
@@ -180,7 +181,8 @@ int __stdcall ChTraitsCRT<char>::GetFormattedLength( LPCSTR pszFormat, va_list a
 		if ( _vscprintf_ptr != NULL )
 			return _vscprintf_ptr( pszFormat, args );
 
-		return vsprintf_ptr( NULL, 0, pszFormat, args );
+		char buf[4000];
+		return vsprintf_ptr( buf, sizeof(buf), pszFormat, args );
 	#else
 		return _vscprintf( pszFormat, args );
 	#endif
