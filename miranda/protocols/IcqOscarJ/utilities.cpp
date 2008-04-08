@@ -1848,10 +1848,12 @@ void CIcqProto::CreateProtoServiceParam(const char* szService, IcqServiceFuncPar
 	CreateServiceFunctionObjParam( temp, ( MIRANDASERVICEOBJPARAM )*( void** )&serviceProc, this, lParam );
 }
 
-void CIcqProto::HookProtoEvent(const char* szEvent, IcqEventFunc pFunc)
+
+HANDLE CIcqProto::HookProtoEvent(const char* szEvent, IcqEventFunc pFunc)
 {
-	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&pFunc, this );
+  return ::HookEventObj(szEvent, (MIRANDAHOOKOBJ)*(void**)&pFunc, this);
 }
+
 
 HANDLE CIcqProto::CreateProtoEvent(const char* szEvent)
 {

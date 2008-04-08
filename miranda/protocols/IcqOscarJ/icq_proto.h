@@ -512,7 +512,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleFileTransferIdle(directconnect *dc);
 
 	//----| icq_icolib.cpp |--------------------------------------------------------------
-	HANDLE IconLibDefine(const char *desc, const char *section, const char *ident, const char *def_file, int def_idx);
+	HANDLE IconLibDefine(const char *desc, const char *section, const char *ident, const TCHAR *def_file, int def_idx);
 	HICON  IconLibGetIcon(const char *ident);
 	void   IconLibReleaseIcon(const char *ident);
 
@@ -897,7 +897,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	HANDLE CreateProtoEvent(const char* szEvent);
 	void   CreateProtoService(const char* szService, IcqServiceFunc serviceProc);
 	void   CreateProtoServiceParam(const char* szService, IcqServiceFuncParam serviceProc, LPARAM lParam);
-	void   HookProtoEvent(const char* szEvent, IcqEventFunc pFunc);
+	HANDLE HookProtoEvent(const char* szEvent, IcqEventFunc pFunc);
 
 	int    NetLog_Server(const char *fmt,...);
 	int    NetLog_Direct(const char *fmt,...);

@@ -91,45 +91,46 @@ DWORD CIcqProto::requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 	return -1; // delayed
 }
 
-static HANDLE LoadXStatusIconLibrary(char* path, const char* sub)
+static HANDLE LoadXStatusIconLibrary(TCHAR *path, const TCHAR *sub)
 {
-	char* p = strrchr(path, '\\');
+	TCHAR* p = _tcsrchr(path, '\\');
 	HANDLE hLib;
 
-	strcpy(p, sub);
-	strcat(p, "\\xstatus_ICQ.dll");
-	if (hLib = LoadLibraryA(path)) return hLib;
-	strcpy(p, sub);
-	strcat(p, "\\xstatus_icons.dll");
-	if (hLib = LoadLibraryA(path)) return hLib;
-	strcpy(p, "\\");
+	_tcscpy(p, sub);
+	_tcscat(p, _T("\\xstatus_ICQ.dll"));
+	if (hLib = LoadLibrary(path)) return hLib;
+	_tcscpy(p, sub);
+  _tcscat(p, _T("\\xstatus_icons.dll"));
+	if (hLib = LoadLibrary(path)) return hLib;
+  _tcscpy(p, _T("\\"));
 	return hLib;
 }
 
-static char* InitXStatusIconLibrary(char* buf)
+static TCHAR *InitXStatusIconLibrary(TCHAR *buf, size_t buf_size)
 {
-	char path[2*MAX_PATH];
+	TCHAR path[2*MAX_PATH];
 	HMODULE hXStatusIconsDLL;
 
 	// get miranda's exe path
-	GetModuleFileNameA(NULL, path, MAX_PATH);
+	GetModuleFileName(NULL, path, MAX_PATH);
 
-	hXStatusIconsDLL = (HMODULE)LoadXStatusIconLibrary(path, "\\Icons");
+	hXStatusIconsDLL = (HMODULE)LoadXStatusIconLibrary(path, _T("\\Icons"));
 	if (!hXStatusIconsDLL) // TODO: add "Custom Folders" support
-		hXStatusIconsDLL = (HMODULE)LoadXStatusIconLibrary(path, "\\Plugins");
+		hXStatusIconsDLL = (HMODULE)LoadXStatusIconLibrary(path, _T("\\Plugins"));
 
 	if (hXStatusIconsDLL)
 	{
-		strcpy(buf, path);
+		_tcsncpy(buf, path, buf_size);
 
-		if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, path, sizeof(path)) == 0 || strcmpnull(path, "# Custom Status Icons #"))
+    char ident[MAX_PATH];
+		if (LoadStringA(hXStatusIconsDLL, IDS_IDENTIFY, ident, sizeof(ident)) == 0 || strcmpnull(ident, "# Custom Status Icons #"))
 		{ // library is invalid
-			*buf = '\0';
+			*buf = 0;
 		}
 		FreeLibrary(hXStatusIconsDLL);
 	}
 	else
-		*buf = '\0';
+		*buf = 0;
 
 	return buf;
 }
@@ -160,6 +161,7 @@ void CIcqProto::setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
 	NotifyEventHooks(hxstatusiconchanged, (WPARAM)hContact, (LPARAM)hIcon);
 }
 
+
 int CIcqProto::CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
 {
 	if (m_bXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
@@ -167,7 +169,13 @@ int CIcqProto::CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam)
 		for (int i = 0; i < XSTATUS_COUNT; i++) 
 			hXStatusExtraIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)getXStatusIcon(i + 1, LR_SHARED), 0);
 
-    bXStatusExtraIconsReady = TRUE;
+    if (!bXStatusExtraIconsReady)
+    { // try to hook the events again if they did not existed during init
+	    HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
+      HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
+    }
+
+    bXStatusExtraIconsReady = 2;
   }
 	return 0;
 }
@@ -184,7 +192,7 @@ int CIcqProto::CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam)
 
 			if (bXStatus)
       { // prepare extra slot icons if not already added
-        if (!bXStatusExtraIconsReady)
+        if (bXStatusExtraIconsReady < 2)
           CListMW_ExtraIconsRebuild(wParam, lParam);
 
 				setContactExtraIcon((HANDLE)wParam, hXStatusExtraIcons[bXStatus-1]);
@@ -329,7 +337,7 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 				if (getSettingByte(NULL, "XStatusAuto", DEFAULT_XSTATUS_AUTO))
 					requestXStatusDetails(hContact, TRUE);
 
-        if (!bXStatusExtraIconsReady)
+        if (bXStatusExtraIconsReady < 2)
           CListMW_ExtraIconsRebuild(0, 0);
 				hIcon = hXStatusExtraIcons[i];
 
@@ -364,7 +372,7 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 					bChanged = TRUE;
 				}
 				// cannot retrieve mood details here - need to be processed with new user details
-        if (!bXStatusExtraIconsReady)
+        if (bXStatusExtraIconsReady < 2)
           CListMW_ExtraIconsRebuild(0, 0);
 				hIcon = hXStatusExtraIcons[i];
 
@@ -737,20 +745,19 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 
 void CIcqProto::InitXStatusIcons()
 {
-	char szSection[MAX_PATH + 64];
-	char str[MAX_PATH], prt[MAX_PATH];
-	char lib[2*MAX_PATH] = {0};
-	char* icon_lib;
-	int i;
-
 	if (!m_bXStatusEnabled)
 		return;
 
-	icon_lib = InitXStatusIconLibrary(lib);
+  TCHAR lib[2*MAX_PATH] = {0};
+  TCHAR *icon_lib = InitXStatusIconLibrary(lib, SIZEOF(lib));
 
-	null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic(LPGEN("%s/Custom Status"), str, MAX_PATH), ICQTranslateUtfStatic(m_szModuleName, prt, MAX_PATH));
+	char szSection[MAX_PATH + 64];
+	char str1[64], str2[64];
+  char *szAccountName = mtchar_to_utf8(m_tszUserName);
+	null_snprintf(szSection, sizeof(szSection), "%s%s%s", ICQTranslateUtfStatic(LPGEN("Status Icons/"), str1, 64), szAccountName, ICQTranslateUtfStatic(LPGEN("/Custom Status"), str2, 64));
+  SAFE_FREE((void**)&szAccountName);
 
-	for (i = 0; i < XSTATUS_COUNT; i++) 
+	for (int i = 0; i < XSTATUS_COUNT; i++) 
 	{
 		char szTemp[64];
 
@@ -759,8 +766,8 @@ void CIcqProto::InitXStatusIcons()
 	}
 
 	// initialize arrays for CList custom status icons
-	memset(bXStatusCListIconsValid,0,sizeof(bXStatusCListIconsValid));
-	memset(hXStatusCListIcons,-1,sizeof(hXStatusCListIcons));
+	memset(bXStatusCListIconsValid, 0, sizeof(bXStatusCListIconsValid));
+	memset(hXStatusCListIcons, -1, sizeof(hXStatusCListIcons));
 }
 
 int CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)

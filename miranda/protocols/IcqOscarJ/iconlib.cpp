@@ -37,7 +37,7 @@
 #include "icqoscar.h"
 #include "m_icolib.h"
 
-HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const char *ident, const char *def_file, int def_idx)
+HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const char *ident, const TCHAR *def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
   char szTemp[MAX_PATH];
@@ -47,11 +47,11 @@ HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const cha
   sid.cbSize = SKINICONDESC_SIZE;
   sid.pwszSection = make_unicode_string(section);
   sid.pwszDescription = make_unicode_string(ICQTranslateUtfStatic(desc, szTemp, MAX_PATH));
-  sid.flags = SIDF_UNICODE;
+  sid.flags = SIDF_UNICODE | SIDF_PATH_TCHAR;
 
   null_snprintf(szName, sizeof(szName), "%s_%s", m_szModuleName, ident);
   sid.pszName = szName;
-  sid.pszDefaultFile = (char*)def_file;
+  sid.ptszDefaultFile = (TCHAR*)def_file;
   sid.iDefaultIndex = def_idx;
   sid.cx = sid.cy = 16;
 

@@ -174,15 +174,18 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	HookProtoEvent(ME_SYSTEM_PRESHUTDOWN, &CIcqProto::OnPreShutdown);
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
-	// Initialize IconLib icons (only 0.7+)
-	char lib[MAX_PATH];
-	GetModuleFileNameA(hInst, lib, MAX_PATH);
+  { // Initialize IconLib icons (only 0.7+)
+    TCHAR lib[MAX_PATH];
+    char *szSectionName = mtchar_to_utf8(m_tszUserName);
 
-	hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), m_szModuleName, "main", lib, -IDI_ICQ);
-	hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), m_szModuleName, "req_auth", lib, -IDI_AUTH_ASK);
-	hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), m_szModuleName, "grant_auth", lib, -IDI_AUTH_GRANT);
-	hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), m_szModuleName, "revoke_auth", lib, -IDI_AUTH_REVOKE);
-	hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), m_szModuleName, "add_to_server", lib, -IDI_SERVLIST_ADD);
+    GetModuleFileName(hInst, lib, MAX_PATH);
+    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), szSectionName, "main", lib, -IDI_ICQ);
+    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), szSectionName, "req_auth", lib, -IDI_AUTH_ASK);
+    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), szSectionName, "grant_auth", lib, -IDI_AUTH_GRANT);
+    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), szSectionName, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), szSectionName, "add_to_server", lib, -IDI_SERVLIST_ADD);
+    SAFE_FREE((void**)&szSectionName);
+  }
 
 	// Reset a bunch of session specific settings
 	UpdateGlobalSettings();
@@ -197,9 +200,12 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// Init extra statuses
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
-	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
-	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
 
+	if (HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild))
+  { // note if the Hook was successful (e.g. clist_nicer creates them too late)
+	  HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
+    bXStatusExtraIconsReady = 1;
+  }
 	// This must be here - the events are called too early, WTF?
 	InitXStatusIcons();
 }
