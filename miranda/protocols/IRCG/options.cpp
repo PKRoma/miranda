@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "irc.h"
-#include <algorithm>
 #include <win2k.h>
 
 #include "ui_utils.h"

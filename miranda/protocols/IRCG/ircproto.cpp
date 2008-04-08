@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "version.h"
 
-#include <algorithm>
-
 #include <m_genmenu.h>
 
 static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )

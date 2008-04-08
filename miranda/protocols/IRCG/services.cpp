@@ -21,8 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-#include <algorithm>
-
 BOOL bChatInstalled = FALSE, m_bMbotInstalled = FALSE;
 
 void CIrcProto::InitMenus()
@@ -37,14 +35,14 @@ void CIrcProto::InitMenus()
 
 	if ( bChatInstalled ) {
 		// Root popupmenuitem
-		mi.pszName = m_szModuleName;
+		mi.ptszName = m_tszUserName;
 		mi.position = -1999901010;
 		mi.pszPopupName = (char *)-1;
-		mi.flags |= CMIF_ROOTPOPUP;
+		mi.flags |= CMIF_ROOTPOPUP | CMIF_TCHAR;
 		mi.icolibItem = GetIconHandle(IDI_MAIN);
 		hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 		
-		mi.flags &= ~CMIF_ROOTPOPUP;
+		mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
 		mi.flags |= CMIF_CHILDPOPUP;
 
 		mi.pszName = LPGEN("&Quick connect");

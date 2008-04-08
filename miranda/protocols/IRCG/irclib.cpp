@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "irc.h"
 #include "tchar.h"
 #include <stdio.h>
-#include <algorithm>
 
 #define DCCCHATTIMEOUT 300
 #define DCCSENDTIMEOUT 120
@@ -625,7 +624,7 @@ void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
 
 	CDccSession* p = m_dcc_chats.find(dcc);
 	if ( p )
-		m_dcc_chats.remove( p );
+		delete p;
 
 	m_dcc_chats.insert( dcc );
 
