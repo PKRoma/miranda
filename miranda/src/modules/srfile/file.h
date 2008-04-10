@@ -62,6 +62,7 @@ struct FileDlgData {
 
 	char szSavePath[MAX_PATH];
 	char szMsg[450], szFilenames[1024];
+	HICON hIcon;
 };
 
 //file.c
@@ -106,10 +107,12 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 #define WM_FT_RESIZE		(WM_APP+2)
 #define WM_FT_REMOVE		(WM_APP+3)
 #define WM_FT_SELECTPAGE	(WM_APP+4)
+#define WM_FT_CLEANUP		(WM_APP+5)
 
 HWND FtMgr_Show();
 void FtMgr_Destroy();
 HWND FtMgr_AddTransfer(struct FileDlgData *dat);
+
 
 
 

@@ -242,6 +242,7 @@
 #define IDC_NODIALOG                    1211
 #define IDC_USESPECIFIC                 1212
 #define IDC_FILEDIR                     1213
+#define IDC_TRANSFERCOMPLETED           1214
 #define IDC_ALLFILESPROGRESS            1217
 #define IDC_CURRENTSPEED                1219
 #define IDC_WHITERECT                   1221
@@ -340,7 +341,6 @@
 #define IDC_ALLTRANSFERRED2             1478
 #define IDC_OPENFILE                    1479
 #define IDC_TOTALSIZE                   1480
-#define IDC_OPENFILE2                   1480
 #define IDC_CONTACT                     1480
 #define IDC_AUTOACCEPT                  1484
 #define IDC_SCANCMDLINE                 1485
@@ -435,6 +435,7 @@
 #define IDC_ACCINTERNALNAME             1716
 #define IDC_OPTIONS                     1717
 #define IDC_BUTTON1                     1718
+#define IDC_CLEAR                       1718
 #define IDC_PROGRESS1                   1719
 #define IDC_PROGRESSBAR                 1719
 #define IDC_TXT_ACCOUNT                 1720
@@ -446,6 +447,7 @@
 #define IDC_ALLFILES                    1726
 #define IDC_ALLPRECENTAGE               1727
 #define IDC_ALLPRECENTS                 1727
+#define IDC_CLOSE                       1728
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -477,7 +479,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        288
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1728
+#define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

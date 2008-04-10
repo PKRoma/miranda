@@ -150,6 +150,14 @@ static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		break;
 	}
 
+	case WM_FT_CLEANUP:
+	{
+		int i;
+		for (i = 0; i < dat->wnds->realCount; ++i)
+			SendMessage(dat->wnds->items[i]->hwnd, WM_FT_CLEANUP, wParam, lParam);
+		break;
+	}
+
 	case WM_SIZE:
 	{
 		LayoutTransfers(hwnd, dat);
@@ -259,24 +267,45 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		tci.lParam = (LPARAM)dat->hwndOutgoing;
 		TabCtrl_InsertItem(hwndTab, 1, &tci);
 
+		Utils_RestoreWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
 		// Fall through to setup initial placement
 	}
 
 	case WM_SIZE:
 	{
-		RECT rc;
+		RECT rc, rcButton;
+		HDWP hdwp;
 		HWND hwndTab = GetDlgItem(hwnd, IDC_TABS);
 
+		GetWindowRect(GetDlgItem(hwnd, IDCANCEL), &rcButton);
+		OffsetRect(&rcButton, -rcButton.left, -rcButton.top);
+
 		GetClientRect(hwnd, &rc);
-		InflateRect(&rc, -5, -5);
-		SetWindowPos(hwndTab, NULL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, SWP_NOZORDER);
+		InflateRect(&rc, -6, -6);
+
+		hdwp = BeginDeferWindowPos(3);
+
+		hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDC_CLEAR), NULL, rc.left, rc.bottom-rcButton.bottom, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
+		hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, IDCANCEL), NULL, rc.right-rcButton.right, rc.bottom-rcButton.bottom, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
+
+		rc.bottom -= rcButton.bottom + 5;
+
+		hdwp = DeferWindowPos(hdwp, hwndTab, NULL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, SWP_NOZORDER);
+
+		EndDeferWindowPos(hdwp);
 
 		GetWindowRect(hwndTab, &rc);
 		MapWindowPoints(NULL, hwnd, (LPPOINT)&rc, 2);
 		TabCtrl_AdjustRect(hwndTab, FALSE, &rc);
 		InflateRect(&rc, -5, -5);
-		SetWindowPos(dat->hwndIncoming, HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, 0);
-		SetWindowPos(dat->hwndOutgoing, HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, 0);
+
+		hdwp = BeginDeferWindowPos(2);
+
+		hdwp = DeferWindowPos(hdwp, dat->hwndIncoming, HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, 0);
+		hdwp = DeferWindowPos(hdwp, dat->hwndOutgoing, HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, 0);
+
+		EndDeferWindowPos(hdwp);
+
 		break;
 	}
 
@@ -306,6 +335,28 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 		break;
 	}
+
+	case WM_GETMINMAXINFO:
+	{
+		LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+		lpmmi->ptMinTrackSize.x = 300;
+		lpmmi->ptMinTrackSize.y = 400;
+		return 0;
+	}
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+			case IDCANCEL:
+				PostMessage(hwnd, WM_CLOSE , 0, 0);
+				break;
+
+			case IDC_CLEAR:
+				PostMessage(dat->hwndIncoming, WM_FT_CLEANUP, 0, 0);
+				PostMessage(dat->hwndOutgoing, WM_FT_CLEANUP, 0, 0);
+				break;
+		}
+		break;
 
 	case WM_NOTIFY:
 	{
@@ -347,7 +398,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 	case WM_CLOSE:
 		ShowWindow(hwnd, SW_HIDE);
-		break;
+		return TRUE; /* Disable default IDCANCEL notification */
 
 	case WM_DESTROY:
 		UnhookEvent(dat->hhkPreshutdown);
@@ -357,6 +408,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		DestroyWindow(dat->hwndOutgoing);
 		mir_free(dat);
 		SetWindowLong(hwnd, GWL_USERDATA, 0);
+		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
 		break;
 	}
 

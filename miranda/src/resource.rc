@@ -760,24 +760,29 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
-                    SS_CENTERIMAGE | WS_GROUP,25,14,190,14
-    LTEXT           "",IDC_ALLTRANSFERRED,25,28,226,14,SS_NOPREFIX | 
-                    SS_CENTERIMAGE
-    CONTROL         "",IDC_ALLFILESPROGRESS,"msctls_progress32",NOT 
-                    WS_VISIBLE | WS_DISABLED | 0x1,25,15,190,12
-    CONTROL         "Open...",IDC_OPENFILE,"MButtonClass",WS_DISABLED | 
-                    WS_TABSTOP,219,0,16,14,0x18000000L
-    CONTROL         "Cancel",IDCANCEL,"MButtonClass",WS_TABSTOP,235,0,16,14,
-                    0x18000000L
-    CONTROL         "Contact menu",IDC_CONTACT,"MButtonClass",WS_TABSTOP,5,0,
+    CONTROL         "Contact menu",IDC_CONTACT,"MButtonClass",WS_TABSTOP,5,1,
                     16,14,0x18000000L
     CONTROL         "",IDC_CONTACTNAME,"Static",SS_LEFTNOWORDWRAP | 
-                    SS_CENTERIMAGE | SS_WORDELLIPSIS | WS_GROUP,25,0,190,14
-    CONTROL         "",IDC_FRAME,"Static",SS_ETCHEDHORZ,1,43,254,1
-    RTEXT           "",IDC_ALLSPEED,25,28,226,14,SS_NOPREFIX | 
+                    SS_CENTERIMAGE | SS_WORDELLIPSIS | WS_GROUP,25,1,190,14
+    CONTROL         "Open...",IDC_OPENFILE,"MButtonClass",WS_DISABLED | 
+                    WS_TABSTOP,219,1,16,14,0x18000000L
+    CONTROL         "Cancel",IDCANCEL,"MButtonClass",WS_TABSTOP,235,1,16,14,
+                    0x18000000L
+    CONTROL         "",IDC_ALLFILESPROGRESS,"msctls_progress32",NOT 
+                    WS_VISIBLE | WS_DISABLED | 0x1,25,16,190,12
+    CONTROL         "",IDC_STATUS,"Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | 
+                    WS_GROUP,25,17,190,10
+    ICON            "",IDC_FILEICON,25,15,16,14,SS_CENTERIMAGE | 
+                    SS_REALSIZEIMAGE
+    CONTROL         "Transfer completed, open file(s).",
+                    IDC_TRANSFERCOMPLETED,"Hyperlink",NOT WS_VISIBLE | 
+                    WS_TABSTOP,42,17,173,10
+    LTEXT           "No data transferred",IDC_ALLTRANSFERRED,25,29,226,14,
+                    SS_NOPREFIX | SS_CENTERIMAGE
+    RTEXT           "",IDC_ALLSPEED,25,29,226,14,SS_NOPREFIX | 
                     SS_CENTERIMAGE
     LTEXT           "",IDC_ALLPRECENTS,218,14,33,14,SS_CENTERIMAGE
+    CONTROL         "",IDC_FRAME,"Static",SS_ETCHEDHORZ,1,43,254,1
 END
 
 IDD_FILEEXISTS DIALOGEX 0, 0, 288, 181
@@ -1513,7 +1518,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP |
 CAPTION "File Transfers"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_TABS,"SysTabControl32",0x0,7,7,262,241
+    CONTROL         "",IDC_TABS,"SysTabControl32",0x0,7,7,262,224
+    PUSHBUTTON      "Clear completed",IDC_CLEAR,7,234,100,14
+    PUSHBUTTON      "Close",IDCANCEL,219,234,50,14
 END
 
 IDD_FTPAGE DIALOGEX 0, 0, 320, 183
