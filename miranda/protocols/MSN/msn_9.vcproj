@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="msn"
 	ProjectGUID="{7B0F213E-C15E-4219-8AE5-49DD3D3D553D}"
 	RootNamespace="msn"
@@ -165,7 +165,7 @@
 				PrecompiledHeaderThrough="msn_global.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -183,7 +183,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -262,7 +262,7 @@
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -282,7 +282,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"

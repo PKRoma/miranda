@@ -58,7 +58,7 @@
 				PrecompiledHeaderThrough="irc.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
@@ -76,7 +76,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -253,7 +253,7 @@
 				PrecompiledHeaderThrough="irc.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
@@ -271,7 +271,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -955,11 +955,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Icons\irc.ico"
+				RelativePath="Icons\Icons\irc.ico"
 				>
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico"
+				RelativePath="Icons\irc.ico"
 				>
 			</File>
 			<File

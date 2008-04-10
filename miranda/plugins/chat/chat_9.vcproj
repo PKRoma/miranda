@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="chat"
 	ProjectGUID="{268BD296-8DD3-4715-A386-CF120398EC98}"
 	RootNamespace="chat"
@@ -57,7 +57,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="1"
 				DisableSpecificWarnings="4996"
 			/>
@@ -76,7 +76,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib Version.lib"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -153,7 +153,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="1"
 				DisableSpecificWarnings="4996"
 			/>
@@ -172,7 +172,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
 				AdditionalDependencies="odbc32.lib odbccp32.lib Version.lib shlwapi.lib "
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"

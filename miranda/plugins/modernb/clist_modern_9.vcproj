@@ -168,7 +168,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
@@ -189,7 +189,7 @@
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -267,7 +267,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
@@ -288,7 +288,7 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
@@ -996,11 +996,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\m_api\m_clui.h"
+				RelativePath="..\..\include\m_clui.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\m_clui.h"
+				RelativePath=".\m_api\m_clui.h"
 				>
 			</File>
 			<File

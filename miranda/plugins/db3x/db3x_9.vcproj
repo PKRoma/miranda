@@ -59,7 +59,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -77,7 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/dbx_3x.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -259,7 +259,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -277,7 +277,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/dbx_3x.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"

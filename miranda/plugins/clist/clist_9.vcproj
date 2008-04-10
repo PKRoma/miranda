@@ -59,7 +59,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
@@ -78,7 +78,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)/clist_classic.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -262,7 +262,7 @@
 				AssemblerListingLocation=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
@@ -281,7 +281,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib"
 				OutputFile="$(OutDir)/clist_classic.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
