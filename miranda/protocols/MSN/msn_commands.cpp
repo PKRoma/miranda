@@ -1596,7 +1596,7 @@ LBL_InvalidCommand:
 
 					DBVARIANT dbv;
 					if ( !DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv )) {
-						MSN_SetNicknameUtf( dbv.pszVal );
+						if (dbv.pszVal[0]) MSN_SetNicknameUtf( dbv.pszVal );
 						MSN_FreeVariant( &dbv );
 					}
 					MSN_SetServerStatus( msnDesiredStatus );
