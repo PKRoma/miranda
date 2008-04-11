@@ -1610,33 +1610,33 @@ int CIrcProto::OnInitOptionsPages(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.hInstance = hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_CONNECT);
-	odp.pszTitle = m_szModuleName;
-	odp.pszGroup = LPGEN("Network");
-	odp.pszTab = LPGEN("Account");
-	odp.flags = ODPF_BOLDGROUPS;
+	odp.ptszTitle = m_tszUserName;
+	odp.ptszGroup = LPGENT("Network");
+	odp.ptszTab = LPGENT("Account");
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.pfnDlgProc = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam = (LPARAM)&OptCreateAccount;
 	OptCreateAccount.create = CConnectPrefsDlg::Create;
 	OptCreateAccount.param = this;
 	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+	odp.flags |= ODPF_EXPERTONLY;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_CTCP);
-	odp.pszTab = LPGEN("DCC'n CTCP");
+	odp.ptszTab = LPGENT("DCC'n CTCP");
 	odp.dwInitParam = (LPARAM)&OptCreateConn;
 	OptCreateConn.create = CCtcpPrefsDlg::Create;
 	OptCreateConn.param = this;
 	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_OTHER);
-	odp.pszTab = LPGEN("Advanced");
+	odp.ptszTab = LPGENT("Advanced");
 	odp.dwInitParam = (LPARAM)&OptCreateOther;
 	OptCreateOther.create = COtherPrefsDlg::Create;
 	OptCreateOther.param = this;
 	CallService( MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PREFS_IGNORE);
-	odp.pszTab = LPGEN("Ignore");
+	odp.ptszTab = LPGENT("Ignore");
 	odp.dwInitParam = (LPARAM)&OptCreateIgnore;
 	OptCreateIgnore.create = CIgnorePrefsDlg::Create;
 	OptCreateIgnore.param = this;
