@@ -259,7 +259,7 @@ bool MSN_SharingFindMembership(void)
 }
 
 // AddMember, DeleteMember
-bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const char* szMethod)
+bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod)
 {
 	const char* szRole;
 	if (listId & LIST_AL) szRole = "Allow";
@@ -286,7 +286,6 @@ bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const char* 
 	const char* szTypeName = "";
 	const char* szAccIdName = "";
 
-	int netId = Lists_GetNetId(szEmail);
 	switch (netId)
 	{
 		case 1: 

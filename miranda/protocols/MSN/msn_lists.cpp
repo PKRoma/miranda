@@ -146,7 +146,7 @@ void MSN_CleanupLists(void)
 
 		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != NETID_LCS) 
 		{
-			MSN_SharingAddDelMember(p->email, p->list, "DeleteMember");
+			MSN_SharingAddDelMember(p->email, p->list, p->netId, "DeleteMember");
 			p->list &= ~(LIST_AL | LIST_BL);
 
 			if (p->list == 0) 

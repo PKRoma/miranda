@@ -147,5 +147,5 @@ void MsnLinks_Init(void)
 	arServices.insert(CreateServiceFunction(szService, ServiceParseMsnimLink));
 
 	mir_snprintf(szName, sizeof(szName), "%s Link Protocol", msnProtocolName); 
-	AssocMgr_AddNewUrlType("msnim:",MSN_Translate(szName), hInst, IDI_MSN, szService, 0);
+	AssocMgr_AddNewUrlType("msnim:", MSN_Translate(szName), hInst, IDI_MSN, szService, 0);
 }

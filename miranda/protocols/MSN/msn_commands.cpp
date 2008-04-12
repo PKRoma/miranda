@@ -640,13 +640,17 @@ static void sttProcessAdd( char* buf, size_t len )
 			char szEmail[128];
 			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 
-			HtmlDecode((char*)szNick);
+			UrlDecode((char*)szNick);
 
 			HANDLE hContact = MSN_HContactFromEmail(szEmail, szNick, true, false);
-			int mask = Lists_Add(listId, netId, szEmail);
+			if (listId == LIST_RL)
+				Lists_Add(LIST_PL, netId, szEmail);
 
+			MSN_AddUser(hContact, szEmail, netId, listId);
+			int mask = Lists_GetMask(szEmail);
+		
 			MSN_SetContactDb(hContact, szEmail);
-
+			
 			if ( listId == LIST_RL && ( mask & ( LIST_FL+LIST_AL+LIST_BL )) == 0 )
 				MSN_AddAuthRequest( hContact, szEmail, szNick );
 
