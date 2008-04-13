@@ -466,7 +466,9 @@ protected:
 
 		if (!DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "Resource", &dbv))
 		{
-			m_cbResource.AddString(dbv.ptszVal);
+			if (CB_ERR == m_cbResource.FindString(dbv.ptszVal, -1, true))
+				m_cbResource.AddString(dbv.ptszVal);
+
 			m_cbResource.SetText(dbv.ptszVal);
 			JFreeVariant(&dbv);
 		} else
@@ -1731,7 +1733,9 @@ protected:
 
 		if (!DBGetContactSettingTString(NULL, m_proto->m_szModuleName, "Resource", &dbv))
 		{
-			m_cbResource.AddString(dbv.ptszVal);
+			if(CB_ERR == m_cbResource.FindString(dbv.ptszVal, -1, true))
+				m_cbResource.AddString(dbv.ptszVal);
+
 			m_cbResource.SetText(dbv.ptszVal);
 			JFreeVariant(&dbv);
 		} else
