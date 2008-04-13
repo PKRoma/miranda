@@ -62,7 +62,7 @@ struct FileDlgData {
 
 	char szSavePath[MAX_PATH];
 	char szMsg[450], szFilenames[1024];
-	HICON hIcon;
+	HICON hIcon, hIconFolder;
 };
 
 //file.c

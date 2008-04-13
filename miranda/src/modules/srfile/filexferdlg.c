@@ -158,6 +158,7 @@ static int FileTransferDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *
 		case IDC_ALLPRECENTAGE:
 		case IDCANCEL:
 		case IDC_OPENFILE:
+		case IDC_OPENFOLDER:
 			return RD_ANCHORX_RIGHT|RD_ANCHORY_TOP;
 
 		case IDC_ALLTRANSFERRED:
@@ -192,6 +193,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				dat->waitingForAcceptance=1;
 				// hide "open" button since it may cause potential access violations...
 				ShowWindow(GetDlgItem(hwndDlg, IDC_OPENFILE), SW_HIDE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_OPENFOLDER), SW_HIDE);
 			}
 			else {	//recv
 				CreateDirectoryTree(dat->szSavePath);
@@ -217,6 +219,13 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_SETFONT,(WPARAM)hFont,0);
 			}
 
+			{	SHFILEINFOA shfi = {0};
+				SHGetFileInfoA("", FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
+				dat->hIconFolder = shfi.hIcon;
+			}
+
+			dat->hIcon = NULL;
+
 			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BM_SETIMAGE, IMAGE_ICON,
 				(LPARAM)LoadSkinnedProtoIcon((char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0), ID_STATUS_ONLINE));
 			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BUTTONADDTOOLTIP, (WPARAM)"Contact menu", 0);
@@ -227,13 +236,15 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASFLATBTN, 0, 0);
 			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASPUSHBTN, 0, 0);
 
+			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->hIconFolder);
+			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BUTTONADDTOOLTIP, (WPARAM)"Open folder", 0);
+			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BUTTONSETASFLATBTN, 0, 0);
+			
 			SendDlgItemMessage( hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
 			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONADDTOOLTIP, (WPARAM)"Cancel", 0);
 			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONSETASFLATBTN, 0, 0);
 
 			SetDlgItemText(hwndDlg, IDC_CONTACTNAME, (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR));
-
-			dat->hIcon = NULL;
 
 			if(!dat->waitingForAcceptance) SetTimer(hwndDlg,1,1000,NULL);
 			return TRUE;
@@ -312,6 +323,11 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						ShellExecuteA(NULL, NULL, dat->files[0], NULL, NULL, SW_SHOW);
 					}
 
+					break;
+
+				case IDC_OPENFOLDER:
+					if (dat && dat->transferStatus.workingDir)
+						ShellExecuteA(NULL,NULL,dat->transferStatus.workingDir,NULL,NULL,SW_SHOW);
 					break;
 
 				case IDC_OPENFILE:
@@ -656,10 +672,9 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
 				DeleteObject(hFont);
 			}
-			if (dat->send)
-				FreeFilesMatrix(&dat->files);
-			if (dat->hIcon)
-				DestroyIcon(dat->hIcon);
+			if (dat->send) FreeFilesMatrix(&dat->files);
+			if (dat->hIcon) DestroyIcon(dat->hIcon);
+			if (dat->hIconFolder) DestroyIcon(dat->hIconFolder);
 			mir_free(dat);
 			break;
 	}

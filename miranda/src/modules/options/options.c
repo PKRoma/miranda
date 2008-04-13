@@ -175,8 +175,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 
 	switch ( message ) {
 	case WM_INITDIALOG:
-	{	HRSRC hrsrc;
-		HGLOBAL hglb;
+	{	
 		PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 		OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)psh->pStartPage;
 		OPTIONSDIALOGPAGE *odp;
@@ -231,14 +230,14 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		}
 		else lastTab = LangPackPcharToTchar( ood->pszTab );
 
-		for ( i=0; i < dat->pageCount; i++ ) {
-			DWORD resSize;
-			hrsrc=FindResourceA(odp[i].hInstance,odp[i].pszTemplate,MAKEINTRESOURCEA(5));
-			hglb=LoadResource(odp[i].hInstance,hrsrc);
-			resSize=SizeofResource(odp[i].hInstance,hrsrc);
-			dat->opd[i].pTemplate=mir_alloc(resSize);
-			memcpy(dat->opd[i].pTemplate,LockResource(hglb),resSize);
-			dte=(struct DlgTemplateExBegin*)dat->opd[i].pTemplate;
+		for ( i=0; i < dat->pageCount; i++, odp++ ) {
+			struct OptionsPageData* opd = &dat->opd[i];
+			HRSRC hrsrc=FindResourceA(odp->hInstance,odp->pszTemplate,MAKEINTRESOURCEA(5));
+			HGLOBAL hglb=LoadResource(odp->hInstance,hrsrc);
+			DWORD resSize=SizeofResource(odp->hInstance,hrsrc);
+			opd->pTemplate=mir_alloc(resSize);
+			memcpy(opd->pTemplate,LockResource(hglb),resSize);
+			dte=(struct DlgTemplateExBegin*)opd->pTemplate;
 			if ( dte->signature == 0xFFFF ) {
 				//this feels like an access violation, and is according to boundschecker
 				//...but it works - for now
@@ -247,57 +246,57 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 				dte->style|=WS_CHILD;
 			}
 			else {
-				dat->opd[i].pTemplate->style&=~(WS_VISIBLE|WS_CHILD|WS_POPUP|WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_CENTER);
-				dat->opd[i].pTemplate->style|=WS_CHILD;
+				opd->pTemplate->style&=~(WS_VISIBLE|WS_CHILD|WS_POPUP|WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_CENTER);
+				opd->pTemplate->style|=WS_CHILD;
 			}
-			dat->opd[i].dlgProc=odp[i].pfnDlgProc;
-			dat->opd[i].hInst=odp[i].hInstance;
-			dat->opd[i].hwnd=NULL;
-			dat->opd[i].changed=0;
-			dat->opd[i].simpleHeight=dat->opd[i].expertHeight=0;
-			dat->opd[i].simpleBottomControlId=odp[i].nIDBottomSimpleControl;
-			dat->opd[i].simpleWidth=dat->opd[i].expertWidth=0;
-			dat->opd[i].simpleRightControlId=odp[i].nIDRightSimpleControl;
-			dat->opd[i].nExpertOnlyControls=odp[i].nExpertOnlyControls;
-			dat->opd[i].expertOnlyControls=odp[i].expertOnlyControls;
-			dat->opd[i].flags=odp[i].flags;
-			dat->opd[i].dwInitParam=odp[i].dwInitParam;
-			if ( odp[i].pszTitle == NULL )
-				dat->opd[i].pszTitle = NULL;
-			else if ( odp[i].flags & ODPF_UNICODE ) {
+			opd->dlgProc=odp->pfnDlgProc;
+			opd->hInst=odp->hInstance;
+			opd->hwnd=NULL;
+			opd->changed=0;
+			opd->simpleHeight=opd->expertHeight=0;
+			opd->simpleBottomControlId=odp->nIDBottomSimpleControl;
+			opd->simpleWidth=opd->expertWidth=0;
+			opd->simpleRightControlId=odp->nIDRightSimpleControl;
+			opd->nExpertOnlyControls=odp->nExpertOnlyControls;
+			opd->expertOnlyControls=odp->expertOnlyControls;
+			opd->flags=odp->flags;
+			opd->dwInitParam=odp->dwInitParam;
+			if ( odp->pszTitle == NULL )
+				opd->pszTitle = NULL;
+			else if ( odp->flags & ODPF_UNICODE ) {
 				#if defined ( _UNICODE )
-					dat->opd[i].pszTitle = ( TCHAR* )mir_wstrdup( odp[i].ptszTitle );
+					opd->pszTitle = ( TCHAR* )mir_wstrdup( odp->ptszTitle );
 				#else
-					dat->opd[i].pszTitle = u2a(( WCHAR* )odp[i].ptszTitle );
+					opd->pszTitle = u2a(( WCHAR* )odp->ptszTitle );
 				#endif
 			}
-			else dat->opd[i].pszTitle = ( TCHAR* )mir_strdup( odp[i].pszTitle );
+			else opd->pszTitle = ( TCHAR* )mir_strdup( odp->pszTitle );
 
-			if ( odp[i].pszGroup == NULL )
-				dat->opd[i].pszGroup = NULL;
-			else if ( odp[i].flags & ODPF_UNICODE ) {
+			if ( odp->pszGroup == NULL )
+				opd->pszGroup = NULL;
+			else if ( odp->flags & ODPF_UNICODE ) {
 				#if defined ( _UNICODE )
-					dat->opd[i].pszGroup = ( TCHAR* )mir_wstrdup( odp[i].ptszGroup );
+					opd->pszGroup = ( TCHAR* )mir_wstrdup( odp->ptszGroup );
 				#else
-					dat->opd[i].pszGroup = u2a(( WCHAR* )odp[i].ptszGroup );
+					opd->pszGroup = u2a(( WCHAR* )odp->ptszGroup );
 				#endif
 			}
-			else dat->opd[i].pszGroup = ( TCHAR* )mir_strdup( odp[i].pszGroup );
+			else opd->pszGroup = ( TCHAR* )mir_strdup( odp->pszGroup );
 
-			if ( odp[i].pszTab == NULL )
-				dat->opd[i].pszTab = NULL;
-			else if ( odp[i].flags & ODPF_UNICODE ) {
+			if ( odp->pszTab == NULL )
+				opd->pszTab = NULL;
+			else if ( odp->flags & ODPF_UNICODE ) {
 				#if defined ( _UNICODE )
-					dat->opd[i].pszTab = ( TCHAR* )mir_wstrdup( odp[i].ptszTab );
+					opd->pszTab = ( TCHAR* )mir_wstrdup( odp->ptszTab );
 				#else
-					dat->opd[i].pszTab = u2a(( WCHAR* )odp[i].ptszTab );
+					opd->pszTab = u2a(( WCHAR* )odp->ptszTab );
 				#endif
 			}
-			else dat->opd[i].pszTab = ( TCHAR* )mir_strdup( odp[i].pszTab );
+			else opd->pszTab = ( TCHAR* )mir_strdup( odp->pszTab );
 
-			if ( !lstrcmp( lastPage, odp[i].ptszTitle ) &&
-				  !lstrcmpnull( lastGroup, odp[i].ptszGroup ) &&
-				  (( ood->pszTab == NULL && dat->currentPage == -1 ) || !lstrcmpnull( lastTab, odp[i].ptszTab )))
+			if ( !lstrcmp( lastPage, odp->ptszTitle ) &&
+				  !lstrcmpnull( lastGroup, odp->ptszGroup ) &&
+				  (( ood->pszTab == NULL && dat->currentPage == -1 ) || !lstrcmpnull( lastTab, odp->ptszTab )))
 				dat->currentPage = i;
 		}
 		mir_free( lastGroup );
@@ -592,18 +591,15 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
 			case IDC_MODULES:
-			{
-
-				if ( HIWORD(wParam)==CBN_SELCHANGE )
-				{
+				if ( HIWORD(wParam)==CBN_SELCHANGE ) {
 					SaveOptionsTreeState(hdlg);
 					SendMessage(hdlg,DM_REBUILDPAGETREE,0,0);
 				}
 				break;
-			}
 
 			case IDC_EXPERT:
-			{	int expert=IsDlgButtonChecked(hdlg,IDC_EXPERT);
+			{
+				int expert=IsDlgButtonChecked(hdlg,IDC_EXPERT);
 				int i,j;
 				PSHNOTIFY pshn;
 				RECT rcPage;
