@@ -487,7 +487,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// PSS_ADDED
+// PSR_AUTH
 
 int __cdecl CJabberProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
 {

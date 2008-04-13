@@ -51,7 +51,7 @@ static int fnAuthDeny( PROTO_INTERFACE* ppi, HANDLE hContact, const char* szReas
 }
 
 static int fnAuthRecv( PROTO_INTERFACE* ppi, HANDLE hContact, PROTORECVEVENT* evt )
-{	CCSDATA ccs = { hContact, PSS_ADDED, 0, (LPARAM)evt };
+{	CCSDATA ccs = { hContact, PSR_AUTH, 0, (LPARAM)evt };
 	return Proto_CallContactService( 0, (LPARAM)&ccs );
 }
 

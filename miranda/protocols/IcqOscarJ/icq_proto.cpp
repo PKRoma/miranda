@@ -529,7 +529,7 @@ int CIcqProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// PSS_ADDED
+// PSR_AUTH
 
 int __cdecl CIcqProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 {

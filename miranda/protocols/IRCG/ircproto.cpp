@@ -504,7 +504,7 @@ int __cdecl CIrcProto::AuthDeny( HANDLE hContact, const char* szReason )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// PSS_ADDED
+// PSR_AUTH
 
 int __cdecl CIrcProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
 {
