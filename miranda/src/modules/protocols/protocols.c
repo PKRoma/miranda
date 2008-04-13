@@ -394,7 +394,7 @@ int LoadProtocolsModule(void)
 	InsertServiceListItem(  2, PS_ADDTOLISTBYEVENT );
 	InsertServiceListItem(  3, PS_AUTHALLOW );
 	InsertServiceListItem(  4, PS_AUTHDENY );
-	InsertServiceListItem(  5, PSS_ADDED );
+	InsertServiceListItem(  5, PSR_AUTH );
 	InsertServiceListItem(  6, PSS_AUTHREQUEST );
 	InsertServiceListItem(  7, PS_CHANGEINFO );
 	InsertServiceListItem(  8, PSS_FILEALLOW );

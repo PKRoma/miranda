@@ -531,9 +531,11 @@ int CIcqProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_ADDED
 
-int __cdecl CIcqProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
+int __cdecl CIcqProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 {
-	return 1;
+	setContactHidden( hContact, 0 );
+	ICQAddRecvEvent( NULL, EVENTTYPE_AUTHREQUEST, pre, pre->lParam, (PBYTE)pre->szMessage, 0 );
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
