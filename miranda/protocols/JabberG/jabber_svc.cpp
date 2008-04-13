@@ -474,7 +474,7 @@ int __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lPara
 			acs.szProto = m_szModuleName;
 			acs.psr = &jsr.hdr;
 			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
-			mir_free( jsr.hdr.email );
+			mir_free( jsr.hdr.nick );
 		}
 		return 0;
 	}

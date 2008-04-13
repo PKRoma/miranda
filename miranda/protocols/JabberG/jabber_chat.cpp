@@ -1220,12 +1220,14 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
 			if (TCHAR *tmp = _tcsrchr(jsr.jid, _T('/'))) *tmp = 0;
+			jsr.hdr.nick = mir_t2a( jsr.jid );
 
 			ADDCONTACTSTRUCT acs={0};
 			acs.handleType = HANDLE_SEARCHRESULT;
 			acs.szProto = ppro->m_szModuleName;
 			acs.psr = (PROTOSEARCHRESULT *)&jsr;
 			CallService(MS_ADDCONTACT_SHOW, (WPARAM)CallService(MS_CLUI_GETHWND, 0, 0), (LPARAM)&acs);
+			mir_free( jsr.hdr.nick );
 			break;
 		}
 	}
