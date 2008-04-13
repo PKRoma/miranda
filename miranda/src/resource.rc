@@ -766,7 +766,7 @@ BEGIN
                     SS_CENTERIMAGE | SS_WORDELLIPSIS | WS_GROUP,25,1,174,14
     CONTROL         "Open...",IDC_OPENFILE,"MButtonClass",WS_DISABLED | 
                     WS_TABSTOP,203,1,16,14,0x18000000L
-    CONTROL         "Open folder",IDC_OPENFOLDER,"MButtonClass",WS_DISABLED | 
+    CONTROL         "Open folder",IDC_OPENFOLDER,"MButtonClass",
                     WS_TABSTOP,219,1,16,14,0x18000000L
     CONTROL         "Cancel",IDCANCEL,"MButtonClass",WS_TABSTOP,235,1,16,14,
                     0x18000000L
@@ -2217,5 +2217,6 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 

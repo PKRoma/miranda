@@ -136,12 +136,17 @@ static void SetFtStatus(HWND hwndDlg, TCHAR *text, int mode)
 static void HideProgressControls(HWND hwndDlg)
 {
 	RECT rc;
+	char buf[64];
+
 	GetWindowRect(GetDlgItem(hwndDlg, IDC_ALLPRECENTS), &rc);
 	MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
 	SetWindowPos(hwndDlg, NULL, 0, 0, 100, rc.bottom+3, SWP_NOMOVE|SWP_NOZORDER);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLTRANSFERRED), SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLSPEED), SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg, IDC_ALLPRECENTS), SW_HIDE);
+
+	_strtime(buf);
+	SetDlgItemTextA(hwndDlg, IDC_ALLPRECENTS, buf);
+
 	PostMessage(GetParent(hwndDlg), WM_FT_RESIZE, 0, (LPARAM)hwndDlg);
 }
 
@@ -155,7 +160,7 @@ static int FileTransferDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_TOP;
 		case IDC_FRAME:
 			return RD_ANCHORX_WIDTH|RD_ANCHORY_BOTTOM;
-		case IDC_ALLPRECENTAGE:
+		case IDC_ALLPRECENTS:
 		case IDCANCEL:
 		case IDC_OPENFILE:
 		case IDC_OPENFOLDER:
@@ -539,7 +544,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					SetDlgItemText(hwndDlg,IDC_ALLTRANSFERRED,str);
 
 					mir_sntprintf(str,SIZEOF(str),_T("%d%%"),fts->totalBytes?(int)(BIGI(100)*fts->totalProgress/fts->totalBytes):0);
-					SetDlgItemText(hwndDlg,IDC_ALLPRECENTAGE,str);
+					SetDlgItemText(hwndDlg,IDC_ALLPRECENTS,str);
 					break;
 				}
 				case ACKRESULT_SUCCESS:
