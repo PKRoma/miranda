@@ -6,6 +6,7 @@
 // - Hervé Drolon (drolon@infonie.fr)
 // - Detlev Vendt (detlev.vendt@brillit.de)
 // - Petr Supina (psup@centrum.cz)
+// - Carsten Klein (c.klein@datagis.com)
 //
 // This file is part of FreeImage 3
 //
@@ -27,6 +28,9 @@
 #endif 
 
 #include <stdlib.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif // _WIN32 || _WIN64
 
 #include "FreeImage.h"
 #include "FreeImageIO.h"
@@ -78,7 +82,21 @@ FI_STRUCT (FREEIMAGEHEADER) {
 //  Memory allocation on a specified alignment boundary
 // ----------------------------------------------------------
 
+#if defined(_WIN32) || defined(_WIN64)
+
 void* FreeImage_Aligned_Malloc(size_t amount, size_t alignment) {
+	assert(alignment == FIBITMAP_ALIGNMENT);
+	return _aligned_malloc(amount, alignment);
+}
+
+void FreeImage_Aligned_Free(void* mem) {
+	_aligned_free(mem);
+}
+
+#else
+
+void* FreeImage_Aligned_Malloc(size_t amount, size_t alignment) {
+	assert(alignment == FIBITMAP_ALIGNMENT);
 	/*
 	In some rare situations, the malloc routines can return misaligned memory. 
 	The routine FreeImage_Aligned_Malloc allocates a bit more memory to do
@@ -105,6 +123,8 @@ void* FreeImage_Aligned_Malloc(size_t amount, size_t alignment) {
 void FreeImage_Aligned_Free(void* mem) {
 	free((void*)*((long*)mem - 1));
 }
+
+#endif // _WIN32 || _WIN64
 
 // ----------------------------------------------------------
 //  DIB information functions
@@ -595,6 +615,67 @@ FreeImage_SetTransparencyTable(FIBITMAP *dib, BYTE *table, int count) {
 	}
 }
 
+/** @brief Sets the index of the palette entry to be used as transparent color
+ for the image specified. Does nothing on high color images. 
+ 
+ This method sets the index of the palette entry to be used as single transparent
+ color for the image specified. This works on palletised images only and does
+ nothing for high color images.
+ 
+ Although it is possible for palletised images to have more than one transparent
+ color, this method sets the palette entry specified as the single transparent
+ color for the image. All other colors will be set to be non-transparent by this
+ method.
+ 
+ As with FreeImage_SetTransparencyTable(), this method also sets the image's
+ transparency property to TRUE (as it is set and obtained by
+ FreeImage_SetTransparent() and FreeImage_IsTransparent() respectively) for
+ palletised images.
+ 
+ @param dib Input image, whose transparent color is to be set.
+ @param index The index of the palette entry to be set as transparent color.
+ */
+void DLL_CALLCONV
+FreeImage_SetTransparentIndex(FIBITMAP *dib, int index) {
+	if (dib) {
+		int count = FreeImage_GetColorsUsed(dib);
+		if (count) {
+			BYTE *new_tt = (BYTE *)malloc((count - 1) * sizeof(BYTE));
+			memset(new_tt, 0xFF, count);
+			if ((index >= 0) && (index <= count)) {
+				new_tt[index] = 0x00;
+			}
+			FreeImage_SetTransparencyTable(dib, new_tt, count);
+			free(new_tt);
+		}
+	}
+}
+
+/** @brief Returns the palette entry used as transparent color for the image
+ specified. Works for palletised images only and returns -1 for high color
+ images or if the image has no color set to be transparent. 
+ 
+ Although it is possible for palletised images to have more than one transparent
+ color, this function always returns the index of the first palette entry, set
+ to be transparent. 
+ 
+ @param dib Input image, whose transparent color is to be returned.
+ @return Returns the index of the palette entry used as transparent color for
+ the image specified or -1 if there is no transparent color found (e.g. the image
+ is a high color image).
+ */
+int DLL_CALLCONV
+FreeImage_GetTransparentIndex(FIBITMAP *dib) {
+	int count = FreeImage_GetTransparencyCount(dib);
+	BYTE *tt = FreeImage_GetTransparencyTable(dib);
+	for (int i = 0; i < count; i++) {
+		if (tt[i] == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 // ----------------------------------------------------------
 
 FIICCPROFILE * DLL_CALLCONV
@@ -609,7 +690,7 @@ FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, long size) {
 	FreeImage_DestroyICCProfile(dib);
 	// create the new profile
 	FIICCPROFILE *profile = FreeImage_GetICCProfile(dib);
-	if(size) {
+	if(size && profile) {
 		profile->data = malloc(size);
 		if(profile->data) {
 			memcpy(profile->data, data, profile->size = size);
@@ -621,12 +702,14 @@ FreeImage_CreateICCProfile(FIBITMAP *dib, void *data, long size) {
 void DLL_CALLCONV
 FreeImage_DestroyICCProfile(FIBITMAP *dib) {
 	FIICCPROFILE *profile = FreeImage_GetICCProfile(dib);
-	if (profile->data) {
-		free (profile->data);
+	if(profile) {
+		if (profile->data) {
+			free (profile->data);
+		}
+		// clear the profile but preserve profile->flags
+		profile->data = NULL;
+		profile->size = 0;
 	}
-	// clear the profile but preserve profile->flags
-	profile->data = NULL;
-	profile->size = 0;
 }
 
 // ----------------------------------------------------------
@@ -762,7 +845,7 @@ FreeImage_FindNextMetadata(FIMETADATA *mdhandle, FITAG **tag) {
 	TAGMAP *tagmap = mdh->tagmap;
 
 	int current_pos = mdh->pos;
-	int mapsize     = tagmap->size();
+	int mapsize     = (int)tagmap->size();
 
 	if(current_pos < mapsize) {
 		// get the tag element at position pos
@@ -833,9 +916,11 @@ FreeImage_SetMetadata(FREE_IMAGE_MDMODEL model, FIBITMAP *dib, const char *key, 
 				case FIMD_IPTC:
 				{
 					int id = tag_lib.getTagID(TagLib::IPTC, key);
+					/*
 					if(id == -1) {
 						FreeImage_OutputMessageProc(FIF_UNKNOWN, "IPTC: Invalid key '%s'", key);
 					}
+					*/
 					FreeImage_SetTagID(tag, (WORD)id);
 				}
 				break;
@@ -920,7 +1005,7 @@ FreeImage_GetMetadataCount(FREE_IMAGE_MDMODEL model, FIBITMAP *dib) {
 	}
 
 	// get the tag count
-	return tagmap->size();
+	return (unsigned)tagmap->size();
 }
 
 // ----------------------------------------------------------

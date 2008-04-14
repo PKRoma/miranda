@@ -1,4 +1,4 @@
-# $Id: SConstruct,v 1.8 2006/10/28 19:36:43 drolon Exp $
+# $Id: SConstruct,v 1.14 2008/04/05 17:55:37 drolon Exp $
 
 # Tag Image File Format (TIFF) Software
 #
@@ -70,3 +70,4 @@ SRCS = [ \
 
 StaticLibrary('tiff', SRCS)
 SharedLibrary('tiff', SRCS)
+

@@ -43,14 +43,6 @@
 
 
 struct GIFinfo {
-	GIFinfo()
-	{
-		read = 0;
-		global_color_table_offset = 0;
-		global_color_table_size = 0;
-		background_color = 0;
-	}
-
 	BOOL read;
 	//only really used when reading
 	size_t global_color_table_offset;
@@ -60,6 +52,10 @@ struct GIFinfo {
 	std::vector<size_t> comment_extension_offsets;
 	std::vector<size_t> graphic_control_extension_offsets;
 	std::vector<size_t> image_descriptor_offsets;
+
+	GIFinfo() : read(0), global_color_table_offset(0), global_color_table_size(0), background_color(0)
+	{
+	}
 };
 
 struct PageInfo {
@@ -207,6 +203,9 @@ void StringTable::Initialize(int minCodeSize)
 	m_bpp = 8;
 	m_minCodeSize = minCodeSize;
 	m_clearCode = 1 << m_minCodeSize;
+	if(m_clearCode > MAX_LZW_CODE) {
+		m_clearCode = MAX_LZW_CODE;
+	}
 	m_endCode = m_clearCode + 1;
 
 	m_partial = 0;
@@ -357,7 +356,7 @@ bool StringTable::Compress(BYTE *buf, int *len)
 	}
 
 	m_bufferSize = 0;
-	*len = bufpos - buf;
+	*len = (int)(bufpos - buf);
 
 	return true;
 }
@@ -379,7 +378,7 @@ bool StringTable::Decompress(BYTE *buf, int *len)
 
 			if( code > m_nextCode || (m_nextCode == MAX_LZW_CODE && code != m_clearCode) || code == m_endCode ) {
 				m_done = true;
-				*len = bufpos - buf;
+				*len = (int)(bufpos - buf);
 				return true;
 			}
 			if( code == m_clearCode ) {
@@ -398,7 +397,7 @@ bool StringTable::Decompress(BYTE *buf, int *len)
 				m_partialSize += m_codeSize;
 				m_partial |= code;
 				m_bufferPos++;
-				*len = bufpos - buf;
+				*len = (int)(bufpos - buf);
 				return true;
 			}
 
@@ -421,7 +420,7 @@ bool StringTable::Decompress(BYTE *buf, int *len)
 	}
 
 	m_bufferSize = 0;
-	*len = bufpos - buf;
+	*len = (int)(bufpos - buf);
 
 	return true;
 }
@@ -529,7 +528,10 @@ Open(FreeImageIO *io, fi_handle handle, BOOL read) {
 	if( info == NULL ) {
 		return NULL;
 	}
-	//memset(info, 0, sizeof(GIFinfo));
+
+	// 25/02/2008 MDA:	Not safe to memset GIFinfo structure with VS 2008 (safe iterators),
+	//					perform initialization in constructor instead.
+	// memset(info, 0, sizeof(GIFinfo));
 
 	info->read = read;
 	if( read ) {
@@ -651,7 +653,7 @@ PageCount(FreeImageIO *io, fi_handle handle, void *data) {
 	}
 	GIFinfo *info = (GIFinfo *)data;
 
-	return info->image_descriptor_offsets.size();
+	return (int) info->image_descriptor_offsets.size();
 }
 
 static FIBITMAP * DLL_CALLCONV 
@@ -690,7 +692,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			//set the background color with 0 alpha
 			RGBQUAD background;
 			if( info->global_color_table_offset != 0 && info->background_color < info->global_color_table_size ) {
-				io->seek_proc(handle, info->global_color_table_offset + (info->background_color * 3), SEEK_SET);
+				io->seek_proc(handle, (long)(info->global_color_table_offset + (info->background_color * 3)), SEEK_SET);
 				io->read_proc(&background.rgbRed, 1, 1, handle);
 				io->read_proc(&background.rgbGreen, 1, 1, handle);
 				io->read_proc(&background.rgbBlue, 1, 1, handle);
@@ -722,12 +724,12 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			int start = page, end = page;
 			while( start >= 0 ) {
 				//Graphic Control Extension
-				io->seek_proc(handle, info->graphic_control_extension_offsets[start] + 1, SEEK_SET);
+				io->seek_proc(handle, (long)(info->graphic_control_extension_offsets[start] + 1), SEEK_SET);
 				io->read_proc(&packed, 1, 1, handle);
 				have_transparent = (packed & GIF_PACKED_GCE_HAVETRANS) ? true : false;
 				disposal_method = (packed & GIF_PACKED_GCE_DISPOSAL) >> 2;
 				//Image Descriptor
-				io->seek_proc(handle, info->image_descriptor_offsets[start], SEEK_SET);
+				io->seek_proc(handle, (long)(info->image_descriptor_offsets[start]), SEEK_SET);
 				io->read_proc(&left, 2, 1, handle);
 				io->read_proc(&top, 2, 1, handle);
 				io->read_proc(&width, 2, 1, handle);
@@ -817,7 +819,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		//get the actual frame image data for a single frame
 
 		//Image Descriptor
-		io->seek_proc(handle, info->image_descriptor_offsets[page], SEEK_SET);
+		io->seek_proc(handle, (long)info->image_descriptor_offsets[page], SEEK_SET);
 		io->read_proc(&left, 2, 1, handle);
 		io->read_proc(&top, 2, 1, handle);
 		io->read_proc(&width, 2, 1, handle);
@@ -869,7 +871,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			}
 		} else if( info->global_color_table_offset != 0 ) {
 			long pos = io->tell_proc(handle);
-			io->seek_proc(handle, info->global_color_table_offset, SEEK_SET);
+			io->seek_proc(handle, (long)info->global_color_table_offset, SEEK_SET);
 
 			int i = 0;
 			while( i < info->global_color_table_size ) {
@@ -897,7 +899,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		//Image Data Sub-blocks
 		int x = 0, xpos = 0, y = 0, shift = 8 - bpp, mask = (1 << bpp) - 1, interlacepass = 0;
 		BYTE *scanline = FreeImage_GetScanLine(dib, height - 1);
-		BYTE buf[1024];
+		BYTE buf[4096];
 		io->read_proc(&b, 1, 1, handle);
 		while( b ) {
 			io->read_proc(stringtable->FillInputBuffer(b), b, 1, handle);
@@ -952,7 +954,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			//Global Color Table
 			if( info->global_color_table_offset != 0 ) {
 				RGBQUAD globalpalette[256];
-				io->seek_proc(handle, info->global_color_table_offset, SEEK_SET);
+				io->seek_proc(handle, (long)info->global_color_table_offset, SEEK_SET);
 				int i = 0;
 				while( i < info->global_color_table_size ) {
 					io->read_proc(&globalpalette[i].rgbRed, 1, 1, handle);
@@ -971,7 +973,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			//Application Extension
 			LONG loop = 1; //If no AE with a loop count is found, the default must be 1
 			for( idx = 0; idx < info->application_extension_offsets.size(); idx++ ) {
-				io->seek_proc(handle, info->application_extension_offsets[idx], SEEK_SET);
+				io->seek_proc(handle, (long)info->application_extension_offsets[idx], SEEK_SET);
 				io->read_proc(&b, 1, 1, handle);
 				if( b == 11 ) { //All AEs start with an 11 byte sub-block to determine what type of AE it is
 					char buf[11];
@@ -995,7 +997,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 			//Comment Extension
 			for( idx = 0; idx < info->comment_extension_offsets.size(); idx++ ) {
-				io->seek_proc(handle, info->comment_extension_offsets[idx], SEEK_SET);
+				io->seek_proc(handle, (long)info->comment_extension_offsets[idx], SEEK_SET);
 				std::string comment;
 				char buf[255];
 				io->read_proc(&b, 1, 1, handle);
@@ -1006,13 +1008,14 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				}
 				comment.append(1, '\0');
 				sprintf(buf, "Comment%d", idx);
-				FreeImage_SetMetadataEx(FIMD_COMMENTS, dib, buf, 1, FIDT_ASCII, comment.size(), comment.size(), comment.c_str());
+				DWORD comment_size = (DWORD)comment.size();
+				FreeImage_SetMetadataEx(FIMD_COMMENTS, dib, buf, 1, FIDT_ASCII, comment_size, comment_size, comment.c_str());
 			}
 		}
 
 		//Graphic Control Extension
 		if( info->graphic_control_extension_offsets[page] != 0 ) {
-			io->seek_proc(handle, info->graphic_control_extension_offsets[page] + 1, SEEK_SET);
+			io->seek_proc(handle, (long)(info->graphic_control_extension_offsets[page] + 1), SEEK_SET);
 			io->read_proc(&packed, 1, 1, handle);
 			io->read_proc(&w, 2, 1, handle);
 #ifdef FREEIMAGE_BIGENDIAN
@@ -1310,7 +1313,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 					size = sizeof(buf);
 					bufptr = buf;
 				} else {
-					size = sizeof(buf) - (bufptr - buf);
+					size = (int)(sizeof(buf) - (bufptr - buf));
 				}
 			}
 			if( interlaced ) {
@@ -1322,7 +1325,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 				y++;
 			}
 		}
-		size = bufptr - buf;
+		size = (int)(bufptr - buf);
 		BYTE last[4];
 		w = (WORD)stringtable->CompressEnd(last);
 		if( size + w >= sizeof(buf) ) {

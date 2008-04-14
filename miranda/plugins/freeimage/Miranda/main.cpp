@@ -1227,6 +1227,8 @@ static HANDLE hGetIF, hLoad, hLoadFromMem, hSave, hUnload, hResize, hGetVersion;
 
 static int IMGSERVICE_Load()
 {
+	FI_Populate();
+
 	hDib2mempng = CreateServiceFunction( MS_DIB2PNG, serviceDib2Png );
 	hMempng2Dib = CreateServiceFunction( MS_PNG2DIB, servicePng2Dib );
 	hGetIF = CreateServiceFunction(MS_IMG_GETINTERFACE, serviceGetInterface);
