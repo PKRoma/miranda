@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                                   v0.7.4
+                                   v0.7.5
 
                           http://www.miranda-im.org
 
@@ -20,8 +20,14 @@ Contents
 
 
 
-1. New in this version
-----------------------
+1. Changes in this version
+--------------------------
+* New in 0.7.4
+Enhancements:
+
+Bugfixes:
+ - ICQ: Fix problem with transfers through LAN
+
 * New in 0.7.4
 Enhancements:
  - Ability to show unicode tooltips
