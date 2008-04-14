@@ -39,6 +39,8 @@ int CJabberProto::SendGetVcard( const TCHAR* jid )
 	if (!m_bJabberOnline) return 0;
 
 	int iqId = SerialNext();
+
+	// FIXME: maybe _tcscmp?
 	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
 
 	XmlNodeIq iq( "get", iqId, jid );

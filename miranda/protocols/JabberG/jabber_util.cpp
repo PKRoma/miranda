@@ -1513,7 +1513,12 @@ static LRESULT CALLBACK sttJabberChooseInstanceMenuHostWndProc(HWND hwnd, UINT m
 CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 {
 	if (g_Instances.getCount() == 0) return NULL;
-	if (g_Instances.getCount() == 1) return g_Instances[0];
+	if (g_Instances.getCount() == 1)
+	{
+		if (bAllowOffline || ((g_Instances[0]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[0]->m_iStatus != ID_STATUS_CONNECTING)))
+			return g_Instances[0];
+		return NULL;
+	}
 
 	static bool needWindowClass = true;
 	if (needWindowClass)
