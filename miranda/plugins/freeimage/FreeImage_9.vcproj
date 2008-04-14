@@ -51,7 +51,7 @@
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -153,7 +153,7 @@
 				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -250,7 +250,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -343,7 +343,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="Source,Source\ZLib,Source\DeprecationManager,..\..\include"
+				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="false"
 				BasicRuntimeChecks="3"
@@ -562,14 +562,6 @@
 				</File>
 				<File
 					RelativePath="Source\FreeImage\WuQuantizer.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="DeprecationMgr"
-				>
-				<File
-					RelativePath="Source\DeprecationManager\DeprecationMgr.cpp"
 					>
 				</File>
 			</Filter>

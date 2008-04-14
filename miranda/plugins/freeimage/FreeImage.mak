@@ -25,10 +25,6 @@ NULL=
 NULL=nul
 !ENDIF
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 OUTDIR=.\Release
@@ -66,7 +62,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionType.obj"
 	-@erase "$(INTDIR)\CopyPaste.obj"
-	-@erase "$(INTDIR)\DeprecationMgr.obj"
 	-@erase "$(INTDIR)\Display.obj"
 	-@erase "$(INTDIR)\Exif.obj"
 	-@erase "$(INTDIR)\FIRational.obj"
@@ -177,8 +172,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
@@ -212,7 +241,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
 	"$(INTDIR)\WuQuantizer.obj" \
-	"$(INTDIR)\DeprecationMgr.obj" \
 	"$(INTDIR)\CacheFile.obj" \
 	"$(INTDIR)\MultiPage.obj" \
 	"$(INTDIR)\ZLibInterface.obj" \
@@ -370,8 +398,6 @@ CLEAN :
 	-@erase "$(INTDIR)\ConversionType.sbr"
 	-@erase "$(INTDIR)\CopyPaste.obj"
 	-@erase "$(INTDIR)\CopyPaste.sbr"
-	-@erase "$(INTDIR)\DeprecationMgr.obj"
-	-@erase "$(INTDIR)\DeprecationMgr.sbr"
 	-@erase "$(INTDIR)\Display.obj"
 	-@erase "$(INTDIR)\Display.sbr"
 	-@erase "$(INTDIR)\Exif.obj"
@@ -585,8 +611,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP=cl.exe
+CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
@@ -616,7 +676,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\ToneMapping.sbr" \
 	"$(INTDIR)\NNQuantizer.sbr" \
 	"$(INTDIR)\WuQuantizer.sbr" \
-	"$(INTDIR)\DeprecationMgr.sbr" \
 	"$(INTDIR)\CacheFile.sbr" \
 	"$(INTDIR)\MultiPage.sbr" \
 	"$(INTDIR)\ZLibInterface.sbr" \
@@ -743,7 +802,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
 	"$(INTDIR)\WuQuantizer.obj" \
-	"$(INTDIR)\DeprecationMgr.obj" \
 	"$(INTDIR)\CacheFile.obj" \
 	"$(INTDIR)\MultiPage.obj" \
 	"$(INTDIR)\ZLibInterface.obj" \
@@ -845,36 +903,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -1332,24 +1360,6 @@ SOURCE=.\Source\FreeImage\WuQuantizer.cpp
 
 
 "$(INTDIR)\WuQuantizer.obj"	"$(INTDIR)\WuQuantizer.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\Source\DeprecationManager\DeprecationMgr.cpp
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-
-"$(INTDIR)\DeprecationMgr.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
-
-
-"$(INTDIR)\DeprecationMgr.obj"	"$(INTDIR)\DeprecationMgr.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
