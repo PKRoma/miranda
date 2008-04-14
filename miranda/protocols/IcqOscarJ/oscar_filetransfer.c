@@ -1387,14 +1387,15 @@ static DWORD __stdcall oft_connectionThread(oscarthreadstartinfo *otsi)
 
       if (oc.ft->dwRemoteExternalIP == oc.dwLocalExternalIP && oc.ft->dwRemoteInternalIP)
         addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
-      else
+      else if (oc.ft->dwRemoteExternalIP)
       {
         addr.S_un.S_addr = htonl(oc.ft->dwRemoteExternalIP);
         // for different internal, try it also (for LANs with multiple external IP, VPNs, etc.)
         if (oc.ft->dwRemoteInternalIP != oc.ft->dwRemoteExternalIP)
           addr2.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
       }
-
+	  else // try LAN
+        addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
       // Inform UI that we will attempt to connect
       ICQBroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, oc.ft, 0);
 
