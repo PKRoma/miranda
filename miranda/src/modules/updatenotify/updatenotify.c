@@ -174,7 +174,7 @@ static void UpdateNotifyPerform(void *manual) {
 	req.szUrl = szUrl;
 	req.flags = 0;
 	headers[0].szName = "User-Agent";
-	headers[0].szValue = "MirandaUpdate/0.3";
+	headers[0].szValue = "MirandaUpdate/0.2";
 	req.headersCount = 1;
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
