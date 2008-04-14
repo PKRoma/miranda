@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
 CFG=FreeImage - Win32 Release
-!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Release.
+!MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
 !ENDIF
 
 !IF "$(CFG)" != "FreeImage - Win32 Release" && "$(CFG)" != "FreeImage - Win32 Debug"
@@ -128,6 +128,7 @@ CLEAN :
 	-@erase "$(INTDIR)\jutils.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\MemoryIO.obj"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.obj"
 	-@erase "$(INTDIR)\MultiPage.obj"
 	-@erase "$(INTDIR)\NNQuantizer.obj"
 	-@erase "$(INTDIR)\PixelAccess.obj"
@@ -161,10 +162,12 @@ CLEAN :
 	-@erase "$(INTDIR)\TagLib.obj"
 	-@erase "$(INTDIR)\tmoColorConvert.obj"
 	-@erase "$(INTDIR)\tmoDrago03.obj"
+	-@erase "$(INTDIR)\tmoFattal02.obj"
 	-@erase "$(INTDIR)\tmoReinhard05.obj"
 	-@erase "$(INTDIR)\ToneMapping.obj"
 	-@erase "$(INTDIR)\transupp.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\WuQuantizer.obj"
 	-@erase "$(INTDIR)\ZLibInterface.obj"
 	-@erase "$(OUTDIR)\advaimg.exp"
@@ -174,7 +177,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "NDEBUG"
 BSC32=bscmake.exe
@@ -201,8 +204,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
+	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
 	"$(INTDIR)\tmoDrago03.obj" \
+	"$(INTDIR)\tmoFattal02.obj" \
 	"$(INTDIR)\tmoReinhard05.obj" \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
@@ -488,6 +493,8 @@ CLEAN :
 	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\MemoryIO.obj"
 	-@erase "$(INTDIR)\MemoryIO.sbr"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.obj"
+	-@erase "$(INTDIR)\MultigridPoissonSolver.sbr"
 	-@erase "$(INTDIR)\MultiPage.obj"
 	-@erase "$(INTDIR)\MultiPage.sbr"
 	-@erase "$(INTDIR)\NNQuantizer.obj"
@@ -554,6 +561,8 @@ CLEAN :
 	-@erase "$(INTDIR)\tmoColorConvert.sbr"
 	-@erase "$(INTDIR)\tmoDrago03.obj"
 	-@erase "$(INTDIR)\tmoDrago03.sbr"
+	-@erase "$(INTDIR)\tmoFattal02.obj"
+	-@erase "$(INTDIR)\tmoFattal02.sbr"
 	-@erase "$(INTDIR)\tmoReinhard05.obj"
 	-@erase "$(INTDIR)\tmoReinhard05.sbr"
 	-@erase "$(INTDIR)\ToneMapping.obj"
@@ -599,8 +608,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\ConversionRGBF.sbr" \
 	"$(INTDIR)\ConversionType.sbr" \
 	"$(INTDIR)\Halftoning.sbr" \
+	"$(INTDIR)\MultigridPoissonSolver.sbr" \
 	"$(INTDIR)\tmoColorConvert.sbr" \
 	"$(INTDIR)\tmoDrago03.sbr" \
+	"$(INTDIR)\tmoFattal02.sbr" \
 	"$(INTDIR)\tmoReinhard05.sbr" \
 	"$(INTDIR)\ToneMapping.sbr" \
 	"$(INTDIR)\NNQuantizer.sbr" \
@@ -705,7 +716,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
+LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -724,8 +735,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
+	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
 	"$(INTDIR)\tmoDrago03.obj" \
+	"$(INTDIR)\tmoFattal02.obj" \
 	"$(INTDIR)\tmoReinhard05.obj" \
 	"$(INTDIR)\ToneMapping.obj" \
 	"$(INTDIR)\NNQuantizer.obj" \
@@ -1180,6 +1193,24 @@ SOURCE=.\Source\FreeImage\Halftoning.cpp
 
 !ENDIF
 
+SOURCE=.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\MultigridPoissonSolver.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\MultigridPoissonSolver.obj"	"$(INTDIR)\MultigridPoissonSolver.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
 SOURCE=.\Source\FreeImage\tmoColorConvert.cpp
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
@@ -1211,6 +1242,24 @@ SOURCE=.\Source\FreeImage\tmoDrago03.cpp
 
 
 "$(INTDIR)\tmoDrago03.obj"	"$(INTDIR)\tmoDrago03.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\Source\FreeImage\tmoFattal02.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\tmoFattal02.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\tmoFattal02.obj"	"$(INTDIR)\tmoFattal02.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2971,24 +3020,24 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 "zlib - Win32 Release" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\freeimage"
 
 "zlib - Win32 ReleaseCLEAN" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
 "zlib - Win32 Debug" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\freeimage"
 
 "zlib - Win32 DebugCLEAN" :
-   cd "..\zlib"
+   cd "\Miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\freeimage"
 

@@ -43,8 +43,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "Source\DeprecationManager" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FD /c
+# SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -171,11 +171,19 @@ SOURCE=.\Source\FreeImage\Halftoning.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source\FreeImage\tmoColorConvert.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\Source\FreeImage\tmoDrago03.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\FreeImage\tmoFattal02.cpp
 # End Source File
 # Begin Source File
 

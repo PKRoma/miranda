@@ -534,11 +534,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Source\FreeImageToolkit\MultigridPoissonSolver.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Source\FreeImage\tmoColorConvert.cpp"
 					>
 				</File>
 				<File
 					RelativePath="Source\FreeImage\tmoDrago03.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Source\FreeImage\tmoFattal02.cpp"
 					>
 				</File>
 				<File
