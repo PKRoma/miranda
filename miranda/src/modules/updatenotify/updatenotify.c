@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project,
+Copyright 2000-2007 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -22,19 +22,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-#define UN_MOD              "UpdateNotify"
-#define UN_ENABLE           "UpdateNotifyEnable"
-#define UN_ENABLE_DEF       1
-#define UN_LASTCHECK        "UpdateNotifyLastCheck"
-#define UN_SERVERPERIOD     "UpdateNotifyPingDelayPeriod"
-#define UN_CURRENTVERSION   "UpdateNotifyCurrentVersion"
-#define UN_NOTIFYALPHA      "UpdateNotifyNotifyAlpha"
-#define UN_NOTIFYALPHA_DEF  0
-#define UN_CUSTOMURL        "UpdateNotifyCustomURL"
-#define UN_URL              "http://update.miranda-im.org/update.php"
-#define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
-#define UN_DEFAULTCHECKTIME 60*24*60 /* Default to check once every 24 hours */
-#define UN_FIRSTCHECK       15 /* First check 15 seconds after startup */
+#define UN_MOD               "UpdateNotify"
+#define UN_ENABLE            "UpdateNotifyEnable"
+#define UN_ENABLE_DEF        1
+#define UN_LASTCHECK         "UpdateNotifyLastCheck"
+#define UN_SERVERPERIOD      "UpdateNotifyPingDelayPeriod"
+#define UN_CURRENTVERSION    "UpdateNotifyCurrentVersion"
+#define UN_CURRENTVERSIONFND "UpdateNotifyCurrentVersionFound"
+#define UN_REPEATNOTIFYDLY   24*60*60 /* 24 hours before showing release notification again */
+#define UN_NOTIFYALPHA       "UpdateNotifyNotifyAlpha"
+#define UN_NOTIFYALPHA_DEF   0
+#define UN_CUSTOMURL         "UpdateNotifyCustomURL"
+#define UN_URL               "http://update.miranda-im.org/update.php"
+#define UN_MINCHECKTIME      60*60 /* Check no more than once an hour */
+#define UN_DEFAULTCHECKTIME  60*24*60 /* Default to check once every 24 hours */
+#define UN_FIRSTCHECK        15 /* First check 15 seconds after startup */
 
 typedef struct {
     char version[64];
@@ -72,10 +74,8 @@ static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-int LoadUpdateNotifyModule(void)
-{
+int LoadUpdateNotifyModule(void) {
 	bModuleInitialized = TRUE;
-
 	hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
 	HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
@@ -85,8 +85,7 @@ int LoadUpdateNotifyModule(void)
 
 void UnloadUpdateNotifyModule()
 {
-	if ( !bModuleInitialized ) return;
-
+	if (!bModuleInitialized) return;
 	UnhookEvent(hHookModules);
 	UnhookEvent(hHookPreShutdown);
 }
@@ -175,7 +174,7 @@ static void UpdateNotifyPerform(void *manual) {
 	req.szUrl = szUrl;
 	req.flags = 0;
 	headers[0].szName = "User-Agent";
-	headers[0].szValue = "MirandaUpdate/0.2";
+	headers[0].szValue = "MirandaUpdate/0.3";
 	req.headersCount = 1;
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
@@ -220,12 +219,23 @@ static void UpdateNotifyPerform(void *manual) {
 				int notify = 1;
 
 				if (!DBGetContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
-					if (!strcmp(dbv.pszVal, und.version)) // already notified of this version, don't show dialog
-						notify = 0;
-					DBFreeVariant(&dbv);
+					if (!strcmp(dbv.pszVal, und.version)) { // already notified of this version
+					
+						DWORD dwNotifyLast = DBGetContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, 0);
+
+						if (dwNotifyLast>timeNow) { // fix last check date if time has chagned
+							DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
+							notify = 0;
+						}
+						else if (timeNow-dwNotifyLast<UN_REPEATNOTIFYDLY) {
+							notify = 0;
+						}
+						DBFreeVariant(&dbv);
+					}
 				}
 				if (notify) {
 					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.version);
+					DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
 					DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
 					hwndUpdateDlg = 0;
 				}
