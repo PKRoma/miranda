@@ -33,11 +33,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
-#include <richole.h>
-#include <tom.h>
 #include <process.h>
 #include <ole2.h>
 #include <richole.h>
+#include <tom.h>
 #include <commdlg.h>
 #include <time.h>
 #include <stdio.h>
@@ -56,11 +55,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../../include/m_addcontact.h"
 #include "../../../include/m_clist.h"
 #include "../../../include/m_clui.h"
-#include "../../../include/m_popup.h"
+//#include "../../../include/m_popup.h"
 #include "chat_resource.h"
 #include "m_chat.h"
-#include "../m_ieview.h"
-#include "../m_smileyadd.h"
+#include "../API/m_ieview.h"
+#include "../API/m_smileyadd.h"
 
 #ifndef NDEBUG
 #include <crtdbg.h>
@@ -246,7 +245,7 @@ typedef struct SESSION_INFO_TYPE
 	int         iLogFilterFlags;
     int         iLogPopupFlags;
     int         iLogTrayFlags;
-	int			iDiskLogFlags;
+	int         iDiskLogFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
 	int         iX;
@@ -273,9 +272,9 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
 	struct         ContainerWindowData *pContainer;
-	int            wasTrimmed;
+   int            wasTrimmed;
 	struct SESSION_INFO_TYPE *next;
-} SESSION_INFO;
+}	SESSION_INFO;
 
 typedef struct
 {
@@ -336,9 +335,16 @@ struct GlobalLogSettings_t {
 	COLORREF    crPUTextColour;
 	COLORREF    crPUBkgColour;
 	BYTE        ClassicIndicators;
+	//MAD
+	BYTE		LogClassicIndicators;
+	BYTE		AlternativeSorting;
+	BYTE		AnnoyingHighlight;
+	BYTE		CreateWindowOnHighlight;
+	//MAD_
 	BYTE        LogSymbols;
 	BYTE        ClickableNicks;
 	BYTE        ColorizeNicks;
+	BYTE        ColorizeNicksInLog;
 	BYTE        ScaleIcons;
 	BYTE        UseDividers;
 	BYTE        DividersUsePopupConfig;

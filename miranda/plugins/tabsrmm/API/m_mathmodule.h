@@ -48,7 +48,7 @@ typedef struct
     HWND hwndRichEditControl;  // handle of richedit.
     CHARRANGE* sel;    // NULL: replace all.
     int disableredraw;
-}    TMathRicheditInfo;
+}TMathRicheditInfo;
 // WARNING:   !!!
 // Strange things happen if you use this function twice on the same CHARRANGE:
 // if Math-startDelimiter == Math-endDelimiter, there is the following problem:

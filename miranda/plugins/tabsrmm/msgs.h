@@ -145,24 +145,37 @@ typedef struct _settextex {
 #define MWF_LOG_SHOWTIME 1024
 #define MWF_LOG_SHOWSECONDS 2048
 #define MWF_LOG_SHOWDATES 4096
-#define MWF_LOG_LOCALTIME 8192
+
 #define MWF_LOG_INDENT 16384
 #define MWF_LOG_RTL 32768
-#define MWF_LOG_BBCODE 65536
-#define MWF_LOG_STATUSCHANGES 131072
+
+//MAD: ieview still mistakenly uses these...
+#define MWF_LOG_NEWLINE   8192
+#define MWF_LOG_UNDERLINE 65536
+#define MWF_LOG_SWAPNICK  131072
+//
+//#define MWF_LOG_BBCODE 65536 
+//#define MWF_LOG_STATUSCHANGES 131072 
+//#define MWF_LOG_LOCALTIME 8192
+#define MWF_LOG_BBCODE		 1 
+#define MWF_LOG_STATUSCHANGES 32
+#define MWF_LOG_LOCALTIME	 64
+//_MAD
+
+
 #define MWF_LOG_SHOWICONS 262144
 
-#define MWF_LOG_SYMBOLS			0x200000
-#define MWF_INITMODE			0x400000
-#define MWF_NEEDCHECKSIZE		0x800000
-#define MWF_DIVIDERSET			0x1000000
-#define MWF_LOG_TEXTFORMAT		0x2000000
-#define MWF_LOG_GRID			0x4000000
-#define MWF_LOG_INDIVIDUALBKG	0x8000000
-#define MWF_LOG_INOUTICONS		0x10000000
-#define MWF_SMBUTTONSELECTED	0x20000000
-#define MWF_DIVIDERWANTED		0x40000000
-#define MWF_LOG_GROUPMODE		0x80000000
+#define MWF_LOG_SYMBOLS 0x200000
+#define MWF_INITMODE  0x400000
+#define MWF_NEEDCHECKSIZE 0x800000
+#define MWF_DIVIDERSET 0x1000000
+#define MWF_LOG_TEXTFORMAT 0x2000000
+#define MWF_LOG_GRID 0x4000000
+#define MWF_LOG_INDIVIDUALBKG 0x8000000
+#define MWF_LOG_INOUTICONS 0x10000000
+#define MWF_SMBUTTONSELECTED 0x20000000
+#define MWF_DIVIDERWANTED 0x40000000
+#define MWF_LOG_GROUPMODE 0x80000000
 
 #define MWF_SHOW_URLEVENTS 1
 #define MWF_SHOW_FILEEVENTS 2
@@ -225,7 +238,7 @@ struct TitleBtn {
 #define BTN_CLOSE 2
 
 #define NR_LOGICONS 8
-#define NR_BUTTONBARICONS 29
+#define NR_BUTTONBARICONS 36//MaD: 29
 #define NR_SIDEBARICONS 10
 
 struct ContainerWindowData {
@@ -323,6 +336,12 @@ struct MessageWindowData {
 	BYTE    bWasDeleted;
 	HANDLE  hContact, hSubContact;
 	HWND    hwndIEView, hwndFlash, hwndIWebBrowserControl, hwndHPP;
+	HWND	hwndContactPic, hwndPanelPic; //Bolshevik: avatar control handlers
+	UINT    messageCount;  //MAD
+	UINT	bbLSideWidth;  //MAD
+	UINT	bbRSideWidth;    //MAD
+	struct StatusIconListNode *pSINod;
+	BOOL	bActualHistory;
 	HWND    hwnd;
 	HANDLE  hDbEventFirst, hDbEventLast, hDbEventLastFeed;
 	int     sendMode;
@@ -417,7 +436,7 @@ struct MessageWindowData {
 	int     nMax;            // max message size
 	int     textLen;         // current text len
 	LONG    ipFieldHeight;
-	WNDPROC oldIEViewProc;
+	WNDPROC oldIEViewProc, oldIEViewLastChildProc;
 	BOOL    clr_added;
 	BOOL    fIsReattach;
 	WPARAM  wParam;          // used for "delayed" actions like moved splitters in minimized windows
@@ -492,7 +511,7 @@ typedef struct _globals {
 	int         g_FlashAvatarAvail;
 	HIMAGELIST  g_hImageList;
 	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconUrlEvent, g_IconSend;
-	//HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
+	HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
 	HICON       g_closeGlyph, g_maxGlyph, g_minGlyph, g_pulldownGlyph;
 	int         g_nrProtos;
 	HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
@@ -500,6 +519,7 @@ typedef struct _globals {
 	//int         g_wantSnapping;
 	HICON       g_buttonBarIcons[NR_BUTTONBARICONS];
 	HICON       g_sideBarIcons[NR_SIDEBARICONS];
+	HANDLE		g_buttonBarIconHandles[23];
 	int         iSendJobCurrent;
 	// dynamic options, need reload when options change
 	int         m_SendOnShiftEnter;
@@ -536,6 +556,22 @@ typedef struct _globals {
 	BOOL        m_SuperQuiet;
 	HANDLE      m_TipOwner;
 	HANDLE      m_UserMenuItem;
+	//MAD
+	BOOL		g_NickListScrollBarFix;
+	BOOL		m_HideOnClose;
+	BOOL		g_bSoundOnTyping;
+	BOOL		m_AllowTab;
+	BOOL		m_AllowOfflineMultisend;
+	BOOL		g_bDisableAniAvatars;
+	HBITMAP     m_hbmMsgArea;
+	BYTE		g_iButtonsBarGap;
+	HANDLE		m_hDataPath;
+	HANDLE		m_hSkinsPath;
+	HANDLE		m_hAvatarsPath;
+	char       szDataPath[MAX_PATH+1];
+	char       szSkinsPath[MAX_PATH + 1];
+	char       szAvatarsPath[MAX_PATH + 1];
+	//MAD_
 	BYTE        m_WinVerMajor;
 	BYTE        m_WinVerMinor;
 	BYTE        m_bIsXP;
@@ -544,7 +580,6 @@ typedef struct _globals {
 	int         m_TabAppearance;
 	int         m_VSApiEnabled;
 	struct      myTabCtrl tabConfig;
-	TCHAR       szDataPath[MAX_PATH + 1];
 	int         m_panelHeight;
 	TCHAR       szDefaultTitleFormat[256];
 	DWORD       m_GlobalContainerFlags;
@@ -671,7 +706,7 @@ struct NewMessageWindowLParam {
 #define CNT_NOMENUBAR 0x2000000
 #define CNT_TABSBOTTOM 0x4000000
 #define CNT_STATICICON 0x8000000
-// #define CNT_TITLE_SHOWUIN 0x10000000  *free*
+#define CNT_BOTTOMTOOLBAR 0x10000000
 #define CNT_HIDETOOLBAR 0x20000000
 #define CNT_UINSTATUSBAR 0x40000000
 #define CNT_VERTICALMAX 0x80000000
@@ -687,7 +722,8 @@ struct NewMessageWindowLParam {
 #define MWF_LOG_ALL (MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWTIME | MWF_LOG_SHOWSECONDS | \
         MWF_LOG_SHOWDATES | MWF_LOG_INDENT | MWF_LOG_TEXTFORMAT | MWF_LOG_SYMBOLS | MWF_LOG_INOUTICONS | \
         MWF_LOG_SHOWICONS | MWF_LOG_GRID | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GROUPMODE | \
-		MWF_LOG_RTL | MWF_LOG_BBCODE | MWF_LOG_LOCALTIME)
+ 		MWF_LOG_RTL | MWF_LOG_BBCODE | MWF_LOG_LOCALTIME/*MAD:*/ | \
+		MWF_LOG_STATUSCHANGES|MWF_LOG_NEWLINE|MWF_LOG_UNDERLINE|MWF_LOG_SWAPNICK /*_MAD*/)
 
 #define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_INDIVIDUALBKG | MWF_LOG_GRID | MWF_LOG_GROUPMODE)
 
@@ -784,6 +820,8 @@ struct NewMessageWindowLParam {
 #define DM_PLAYINCOMINGSOUND   (WM_USER+92)
 #define DM_SENDMESSAGECOMMANDW (WM_USER+93)
 #define DM_REMOVEPOPUPS        (WM_USER+94)
+#define DM_BBNEEDUPDATE        (WM_USER+96)
+#define DM_CBDESTROY			(WM_USER+97)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
@@ -874,14 +912,20 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_TYPING             "SupportTyping"
 #define SRMSGSET_TYPINGNEW          "DefaultTyping"
 #define SRMSGDEFSET_TYPINGNEW       1
+
 #define SRMSGSET_TYPINGUNKNOWN      "UnknownTyping"
 #define SRMSGDEFSET_TYPINGUNKNOWN   0
+
 #define SRMSGSET_SHOWTYPING         "ShowTyping"
 #define SRMSGDEFSET_SHOWTYPING      1
-#define SRMSGSET_SHOWTYPINGWIN      "ShowTypingWin"
-#define SRMSGDEFSET_SHOWTYPINGWIN   1
-#define SRMSGSET_SHOWTYPINGNOWIN    "ShowTypingTray"
-#define SRMSGDEFSET_SHOWTYPINGNOWIN 0
+
+#define SRMSGSET_SHOWTYPINGWINFLASH "ShowTypingWinFlash"
+#define SRMSGDEFSET_SHOWTYPINGWINFLASH 1
+
+#define SRMSGSET_SHOWTYPINGNOWINOPEN "ShowTypingNoWinOpen"
+
+#define SRMSGSET_SHOWTYPINGWINOPEN   "ShowTypingWinOpen"
+
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
 
@@ -1064,6 +1108,9 @@ struct StatusIconListNode {
 	struct StatusIconListNode *next;
 	StatusIconData sid;
 };
+//MAD
+BOOL newapi;
+//
 
 struct TABSRMM_SessionInfo {
 	unsigned int cbSize;
@@ -1150,5 +1197,3 @@ int SI_DeinitStatusIcons();
 int  GetStatusIconsCount();
 void DrawStatusIcons(struct MessageWindowData *dat, HDC hdc, RECT r, int gap);
 void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
-
-

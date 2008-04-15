@@ -26,11 +26,15 @@ $Id$
 
 */
 
+/* UNDONE 
+ * all state image masks changed to use simple checkboxes instead of image lists
+ */
+
 #include "commonheaders.h"
 #pragma hdrstop
 #include "uxtheme.h"
 
-#include "m_MathModule.h"
+//#include "m_MathModule.h"
 
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
@@ -42,6 +46,8 @@ extern		int g_chat_integration_enabled;
 extern		BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern		BOOL CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 extern		BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
@@ -62,6 +68,21 @@ struct FontOptionsList {
 static fontOptionsList[] = {
 	{RGB(0, 0, 0), "Tahoma", 0, -10}
 };
+
+
+static HIMAGELIST g_himlStates = 0;
+HIMAGELIST CreateStateImageList()
+{
+	if (g_himlStates == 0) {
+		g_himlStates = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 4, 0);
+		ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
+		ImageList_AddIcon(g_himlStates, myGlobals.g_IconFolder);
+		ImageList_AddIcon(g_himlStates, myGlobals.g_IconUnchecked);
+		ImageList_AddIcon(g_himlStates, myGlobals.g_IconChecked);
+	}
+	return g_himlStates;
+}
+
 
 #if defined( _UNICODE )
 static BYTE MsgDlgGetFontDefaultCharset(const char* szFont)
@@ -205,6 +226,9 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
 	0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
 	0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
+	//Mad
+	0, _T("Close the message window on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"AutoClose", 1,
+	//mad_
 	0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
 	0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
@@ -214,7 +238,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-//static HIMAGELIST g_himlOptions;
+static HIMAGELIST g_himlOptions;
 
 static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -231,11 +255,11 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
-			/*
+			
 			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			if (g_himlOptions)
 				ImageList_Destroy(g_himlOptions);
-			*/
+			
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -261,8 +285,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (defaultItems[i].uType == LOI_TYPE_SETTING)
-					//tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 3 : 2);
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 2 : 1);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 3 : 2);
+					//tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)defaultItems[i].id) ? 2 : 1);
 				defaultItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_WINDOWOPTIONS), &tvi);
 				i++;
 			}
@@ -362,8 +386,14 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON)
+							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
+								
+								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+									item.state = INDEXTOSTATEIMAGEMASK(1);
+									SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+								}
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+							}
 						}
 					}
 					break;
@@ -371,7 +401,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
 							DWORD msgTimeout;
-							DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+							//DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 							BOOL translated;
 							TVITEM item = {0};
 							int i = 0;
@@ -392,7 +422,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", avMode);
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ownavatarmode", (BYTE) SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0));
 
-							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
+							//DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "tabautoclose", GetDlgItemInt(hwndDlg, IDC_AUTOCLOSETABTIME, &translated, FALSE));
@@ -412,8 +442,8 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 								SendDlgItemMessageA(hwndDlg, IDC_WINDOWOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 								if (defaultItems[i].uType == LOI_TYPE_SETTING)
-									//DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 3 ? 1 : 0));
-									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));
+									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 3 ? 1 : 0));
+									//DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)defaultItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));
 								i++;
 							}
 							ReloadGlobals();
@@ -432,9 +462,9 @@ static struct LISTOPTIONSGROUP lvGroups[] = {
 	0, _T("Message log appearance"),
 	0, _T("Support for external plugins"),
 	0, _T("Other options"),
-	0, _T("Events to show"),
-	0, _T("Timestamp settings (note: timstamps also depend on your templates)"),
-	0, _T("Message log icons"),
+	0, _T("Events to show"), 
+	0, _T("Timestamp settings (note: timstamps also depend on your templates)"), 
+	0, _T("Message log icons"), 
 	0, NULL
 };
 
@@ -457,12 +487,17 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
 	0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
 	//0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
+//MAD:
+	0, _T("Show events at the new line (IEView Compatibility Mode)"), 1, LOI_TYPE_FLAG, MWF_LOG_NEWLINE, 1,
+	0, _T("Underline timestamp/nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_UNDERLINE, 1,
+	0, _T("Show timestamp after nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_SWAPNICK, 1,
+//
 	0, _T("Log status changes"), 0, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
 	0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
 	0, _T("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
 	0, _T("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
 	0, NULL, 0, 0, 0, 0
-};
+	};
 
 static int have_ieview = 0, have_hpp = 0;
 
@@ -495,6 +530,11 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 			}
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			
+			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_LOGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
+			if (g_himlOptions)
+				ImageList_Destroy(g_himlOptions);
+			
 
 			/*
 			* fill the list box, create groups first, then add items
@@ -520,9 +560,9 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (lvItems[i].uType == LOI_TYPE_FLAG)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 2 : 1);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
 				else if (lvItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 2 : 1);  // NOTE: was 3 : 2 for state image mask
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);  // NOTE: was 2 : 1 without state image mask
 				lvItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_LOGOPTIONS), &tvi);
 				i++;
 			}
@@ -624,8 +664,15 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON)
+							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
+								
+								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+									item.state = INDEXTOSTATEIMAGEMASK(1);
+									SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+								}
+								
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+							}
 						}
 					}
 					break;
@@ -671,11 +718,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 								SendDlgItemMessageA(hwndDlg, IDC_LOGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 								if (lvItems[i].uType == LOI_TYPE_FLAG)
-									dwFlags |= (item.state >> 12) == 2 ? lvItems[i].lParam : 0;
+									dwFlags |= (item.state >> 12) == 3/*2*/ ? lvItems[i].lParam : 0;
 								else if (lvItems[i].uType == LOI_TYPE_SETTING)
-									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));  // NOTE: state image masks changed
+									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));  // NOTE: state image masks changed
 								i++;
 							}
+
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "mwflags", dwFlags);
 							if (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM))
 								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
@@ -770,45 +818,46 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			ResetCList(hwndDlg);
 			RebuildList(hwndDlg, hItemNew, hItemUnknown);
 			CheckDlgButton(hwndDlg, IDC_SHOWNOTIFY, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING));
-			CheckDlgButton(hwndDlg, IDC_TYPEWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN));
-			CheckDlgButton(hwndDlg, IDC_TYPETRAY, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, SRMSGDEFSET_SHOWTYPINGNOWIN));
+			CheckDlgButton(hwndDlg, IDC_TYPEFLASHWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH));
+			CheckDlgButton(hwndDlg, IDC_TYPENOWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1));
+			CheckDlgButton(hwndDlg, IDC_TYPEWIN, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1));
 			CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST));
-			CheckDlgButton(hwndDlg, IDC_NOTIFYBALLOON, !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST));
+			CheckDlgButton(hwndDlg, IDC_NOTIFYBALLOON, DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingBalloon", 0));
+			CheckDlgButton(hwndDlg, IDC_NOTIFYPOPUP, DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingPopup", 0));
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEFLASHWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TYPETRAY), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY));
-			EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY));
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TYPENOWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
+ 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
+ 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
+ 			EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYPOPUP), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
 			if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
 				CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, BST_CHECKED);
 				SetWindowTextA(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), Translate("Show balloon popup (unsupported system)"));
 			}
+			if(!(myGlobals.g_PopupWAvail||myGlobals.g_PopupAvail)){
+				EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYPOPUP), FALSE);
+				CheckDlgButton(hwndDlg, IDC_NOTIFYTRAY, BST_CHECKED);
+				}
 			break;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDC_TYPETRAY:
-					if (IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY)) {
-						if (!ServiceExists(MS_CLIST_SYSTRAY_NOTIFY))
-							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), FALSE);
-						else {
-							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), TRUE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), TRUE);
-						}
-					} else {
-						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), FALSE);
-					}
+				case IDC_TYPEWIN:
+				case IDC_TYPENOWIN:
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_SHOWNOTIFY:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPETRAY), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEFLASHWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPENOWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYTRAY), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYBALLOON), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY) && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_NOTIFYPOPUP), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY) && (myGlobals.g_PopupWAvail||myGlobals.g_PopupAvail));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TYPEWIN), IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
 					//fall-thru
-				case IDC_TYPEWIN:
+				case IDC_TYPEFLASHWIN:
 				case IDC_NOTIFYTRAY:
 				case IDC_NOTIFYBALLOON:
+				case IDC_NOTIFYPOPUP:
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 			}
@@ -830,9 +879,12 @@ static BOOL CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						case PSN_APPLY: {
 							SaveList(hwndDlg, hItemNew, hItemUnknown);
 							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTIFY));
-							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPEWIN));
-							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPETRAY));
+							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPEFLASHWIN));
+							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPENOWIN));
+							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TYPEWIN));
 							DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYTRAY));
+							DBWriteContactSettingByte(NULL, SRMSGMOD, "ShowTypingBalloon", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYBALLOON));
+							DBWriteContactSettingByte(NULL, SRMSGMOD, "ShowTypingPopup",(BYTE) IsDlgButtonChecked(hwndDlg, IDC_NOTIFYPOPUP));
 							ReloadGlobals();
 							WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
 						}
@@ -874,8 +926,17 @@ static struct LISTOPTIONSITEM tabItems[] = {
 	0, _T("Always use icon pack image on the smiley button"), 0, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
 	0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
 	0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
+	//MAD
+	0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
+	0, _T("Hide containers on close(Experimental!)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
+	0, _T("Allow tabulation (uncheck for TAB focus-switching)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
+	//
 	0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
 	//0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
+	
+	//MAD
+	0, _T("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
+	//
 	0, _T("Dim icons for idle contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
 	0, NULL, 0, 0, 0, 0
 };
@@ -891,7 +952,11 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
-
+			
+			g_himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
+			if (g_himlOptions)
+				ImageList_Destroy(g_himlOptions);
+			
 			/*
 			* fill the list box, create groups first, then add items
 			*/
@@ -916,7 +981,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (tabItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)tabItems[i].id) ? 2 : 1);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)tabItems[i].id) ? 3 : 2/*2 : 1*/);
 				tabItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_TABMSGOPTIONS), &tvi);
 				i++;
 			}
@@ -988,8 +1053,15 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							if (item.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
-							} else if (hti.flags & TVHT_ONITEMSTATEICON)
+							} else if (hti.flags & TVHT_ONITEMSTATEICON) {
+								
+								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) {
+									item.state = INDEXTOSTATEIMAGEMASK(1);
+									SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
+								}
+								
 								SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+							}
 						}
 					}
 					break;
@@ -1015,7 +1087,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 								SendDlgItemMessageA(hwndDlg, IDC_TABMSGOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 								if (tabItems[i].uType == LOI_TYPE_SETTING)
-									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)((item.state >> 12) == 2 ? 1 : 0));
+									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)tabItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));
 								i++;
 							}
 
@@ -1142,6 +1214,8 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	OPTIONSDIALOGPAGE odp = { 0 };
 
 	Chat_OptionsInitialize(wParam, lParam);
+	
+	TN_OptionsInitialize(wParam, lParam);
 
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
@@ -1314,6 +1388,14 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
+			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
+			tci.pszText = TranslateT("ToolBar settings");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 6, &tci);
+			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
+			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
+			if (MyEnableThemeDialogTexture)
+				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
 			TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 			iInit = FALSE;
 			return FALSE;
@@ -1336,8 +1418,17 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
 								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
 							}
-						}
-						break;
+						}break;
+						case PSN_RESET: {
+							TCITEM tci;
+							int i, count;
+							tci.mask = TCIF_PARAM;
+							count = TabCtrl_GetItemCount(GetDlgItem(hwnd, IDC_OPTIONSTAB));
+							for (i = 0;i < count;i++) {
+								TabCtrl_GetItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), i, &tci);
+								SendMessage((HWND)tci.lParam, WM_NOTIFY, 0, lParam);
+								}
+							}break;
 					}
 					break;
 				case IDC_OPTIONSTAB:
@@ -1459,6 +1550,9 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
 			TranslateDialogDefault(hwndDlg);
 
+			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
+			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
@@ -1506,7 +1600,10 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					OPENFILENAMEA ofn = {0};
 					char str[MAX_PATH] = "*.tsk", final_path[MAX_PATH], initDir[MAX_PATH];
 
-					mir_snprintf(initDir, MAX_PATH, "%s%s", myGlobals.szDataPath, "skins\\");
+					if(!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+						mir_snprintf(initDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
+					else mir_snprintf(initDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
+
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = hwndDlg;
 					ofn.hInstance = NULL;
@@ -1743,6 +1840,8 @@ static TCHAR *tszNoStatus = _T("No status message available");
 
 void ReloadGlobals()
 {
+	DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+
 	myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
 	myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
 	myGlobals.m_SendOnDblEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "SendOnDblEnter", 0);
@@ -1751,7 +1850,7 @@ void ReloadGlobals()
 	myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
 	myGlobals.m_CutContactNameOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0);
 	myGlobals.m_StatusOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0);
-	myGlobals.m_LogStatusChanges = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
+	myGlobals.m_LogStatusChanges = (int)dwFlags&MWF_LOG_STATUSCHANGES;//DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
 	myGlobals.m_UseDividers = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0);
 	myGlobals.m_DividersUsePopupConfig = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0);
 	myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
@@ -1760,6 +1859,16 @@ void ReloadGlobals()
 		myGlobals.m_MsgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 
 	myGlobals.m_EscapeCloses = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0);
+	//MaD
+	if (DBGetContactSettingByte(NULL, SRMSGMOD_T,"escmode_2",0)&&myGlobals.m_EscapeCloses) 
+	{
+		myGlobals.m_EscapeCloses=2;
+	}
+	myGlobals.m_HideOnClose =(int) DBGetContactSettingByte(NULL, SRMSGMOD_T, "hideonclose", 0);
+	myGlobals.m_AllowTab =(int) DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabmode", 0);
+	myGlobals.m_AllowOfflineMultisend =(int) DBGetContactSettingByte(NULL, SRMSGMOD_T, "AllowOfflineMultisend", 0);
+
+	//MaD_
 	myGlobals.m_WarnOnClose = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "warnonexit", 0);
 	myGlobals.m_AvatarMode = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 0);
 

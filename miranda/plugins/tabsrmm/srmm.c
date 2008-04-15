@@ -1,5 +1,5 @@
 /*
-astyle	--force-indent=tab=4 --brackets=linux --indent-switches
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
@@ -38,32 +38,37 @@ DWORD g_mirandaVersion = 0;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
+//MAD
+extern BOOL newapi=FALSE;
+struct LIST_INTERFACE li;
+//
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
+
 
 pfnSetMenuInfo fnSetMenuInfo = NULL;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-#ifdef _UNICODE
+// #ifdef _UNICODE
+// #ifdef __GNUWIN32__
+// 	"TabSRMM MADmod (MINGW32)",
+// #else
+// 	"TabSRMM MADmod",
+// #endif
+// #else
 #ifdef __GNUWIN32__
-	"tabSRMsgW (MINGW32 - unicode)",
+	"TabSRMM (MINGW32)",
 #else
-	"tabSRMsgW (unicode)",
+	"TabSRMM",
 #endif
-#else
-#ifdef __GNUWIN32__
-	"tabSRMsg (MINGW32)",
-#else
-	"tabSRMsg",
-#endif
-#endif
-	PLUGIN_MAKE_VERSION(2, 1, 0, 1),
+//#endif
+	PLUGIN_MAKE_VERSION(2, 2, 1, 0),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
-	"The Miranda developers team",
+	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
 	"© 2000-2008 Miranda Project",
-	"http://tabsrmm.sourceforge.net",
+	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
 #ifdef _UNICODE
@@ -82,8 +87,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
 		return NULL;
+	else if (mirandaVersion > PLUGIN_MAKE_VERSION(0, 8, 0, 8))
+		newapi=1;
 	return &pluginInfo;
 }
 
@@ -108,12 +115,14 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);
+	//MaD
+	mir_getLI(&li);
+	//
 
-	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
+	if (!ServiceExists(MS_DB_EVENT_GETTEXT)){
 		MessageBox(0, _T("tabSRMM"), _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), MB_OK);
 		return 1;
-	}
-
+		}
 	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	Chat_Load(pluginLink);
@@ -170,9 +179,9 @@ int _DebugTraceA(const char *fmt, ...)
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
-#ifdef _DEBUG
-	OutputDebugStringA(debug);
-#else
+ #ifdef _DEBUG
+ 	OutputDebugStringA(debug);
+ #else
 	{
 		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
 		FILE *f;
@@ -317,7 +326,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
 			DeleteObject(hFont);
-
 		}
 		break;
 	}
@@ -327,13 +335,14 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 #define _DBG_STR_LENGTH_MAX 2048
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
 {
-	va_list	va;
-	char		szDebug[_DBG_STR_LENGTH_MAX];
+	va_list va;
+	char            szDebug[_DBG_STR_LENGTH_MAX];
 
 	va_start(va, fmt);
-	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va);
-	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0';
+	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va); 
+	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0'; 
 
-	LogErrorMessage(hwndDlg, dat, -1, szDebug);
+
+	 LogErrorMessage(hwndDlg, dat, -1, szDebug);
 	return 0;
 }

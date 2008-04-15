@@ -1,6 +1,6 @@
 /*
 astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
+--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
@@ -25,17 +25,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 
 /*
- * message log templates supporting functions, including the template editor
- */
+* message log templates supporting functions, including the template editor
+*/
 
 #include "commonheaders.h"
 #pragma hdrstop
 #include "../../include/m_database.h"
 
 /*
- * hardcoded default set of templates for both LTR and RTL.
- * cannot be changed and may be used at any time to "revert" to a working layout
- */
+* hardcoded default set of templates for both LTR and RTL.
+* cannot be changed and may be used at any time to "revert" to a working layout
+*/
 
 char *TemplateNames[] = {
 	"Message In",
@@ -46,45 +46,45 @@ char *TemplateNames[] = {
 	"Group Out (Inner)",
 	"Status change",
 	"Error message"
-};
+	};
 
 /*
 TemplateSet LTR_Default = { TRUE,
-							_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
-							_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
-							_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
-							_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
-							_T("%S %T%|%M"),
-							_T("%S %T%|%M"),
-							_T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
-							_T("%I%S %D, %T, %e%l%M"),
-							"Default RTL"
-						  };
+_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%*%&D%*%\\!: %?n%?S %?T%?|%M"),
+_T("%S %T%|%M"),
+_T("%S %T%|%M"),
+_T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
+_T("%I%S %D, %T, %e%l%M"),
+"Default RTL"
+};
 */
 
 TemplateSet LTR_Default = { TRUE,
-	_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
-	_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
-	_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
-	_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
-	_T("%S %T%|%M"),
-	_T("%S %T%|%M"),
-	_T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
-	_T("%I%S %D, %T, %e%l%M"),
-	"Default RTL"
-};
+_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
+_T("%I %S %N  %fm%cd%*%?&D%\\&E%\\!, %\\T%*%\\!: %?n%?S %?T%?|%M"),
+_T("%S %T%|%M"),
+_T("%S %T%|%M"),
+_T("%I %S %fm%*%cd%&D, %&T%*, %N %M%! "),
+_T("%I%S %D, %T, %e%l%M"),
+"Default LTR"
+	};
 
 TemplateSet RTL_Default = { TRUE,
-							_T("%I %S %N  %D%n%S %T%|%M"),
-							_T("%I %S %N  %D%n%S %T%|%M"),
-							_T("%I %S %N  %D%n%S %T%|%M"),
-							_T("%I %S %N  %D%n%S %T%|%M"),
-							_T("%S %T%|%M"),
-							_T("%S %T%|%M"),
-							_T("%I%S %D, %T, %N %M%! "),
-							_T("%I%S %D, %T, %e%l%M"),
-							"Default RTL"
-						  };
+_T("%I %S %N  %D%n%S %T%|%M"),
+_T("%I %S %N  %D%n%S %T%|%M"),
+_T("%I %S %N  %D%n%S %T%|%M"),
+_T("%I %S %N  %D%n%S %T%|%M"),
+_T("%S %T%|%M"),
+_T("%S %T%|%M"),
+_T("%I%S %D, %T, %N %M%! "),
+_T("%I%S %D, %T, %e%l%M"),
+"Default RTL"
+	};
 
 TemplateSet LTR_Active, RTL_Active;
 
@@ -99,12 +99,12 @@ static int                      helpActive = 0;
 BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
- * loads template set overrides from hContact into the given set of already existing
- * templates
- */
+* loads template set overrides from hContact into the given set of already existing
+* templates
+*/
 
 static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
-{
+	{
 	DBVARIANT dbv = {0};
 	int i;
 
@@ -114,11 +114,11 @@ static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
 		if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR)
 			mir_sntprintf(tSet->szTemplates[i], TEMPLATE_LENGTH, _T("%s"), dbv.ptszVal);
 		DBFreeVariant(&dbv);
+		}
 	}
-}
 
 void LoadDefaultTemplates()
-{
+	{
 	int i;
 
 	LTR_Active = LTR_Default;
@@ -128,31 +128,31 @@ void LoadDefaultTemplates()
 		for (i = 0; i <= TMPL_ERRMSG; i++)
 			DBWriteContactSettingTString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Default.szTemplates[i]);
 		DBWriteContactSettingByte(NULL, RTLTEMPLATES_MODULE, "setup", 2);
-	}
+		}
 	if (DBGetContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 0) < 2) {
 		for (i = 0; i <= TMPL_ERRMSG; i++)
 			DBWriteContactSettingTString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Default.szTemplates[i]);
 		DBWriteContactSettingByte(NULL, TEMPLATES_MODULE, "setup", 2);
-	}
+		}
 	LoadTemplatesFrom(&LTR_Active, (HANDLE)0, 0);
 	LoadTemplatesFrom(&RTL_Active, (HANDLE)0, 1);
-}
+	}
 
 BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+	{
 	struct MessageWindowData *dat = 0;
 	TemplateEditorInfo *teInfo = 0;
 	TemplateSet *tSet;
 	int i;
 	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	/*
-	 * since this dialog needs a struct MessageWindowData * but has no container, we can store
-	 * the extended info struct in pContainer *)
-	 */
+	* since this dialog needs a struct MessageWindowData * but has no container, we can store
+	* the extended info struct in pContainer *)
+	*/
 	if (dat) {
 		teInfo = (TemplateEditorInfo *)dat->pContainer;
 		tSet = teInfo->rtl ? dat->rtl_templates : dat->ltr_templates;
-	}
+		}
 
 	switch (msg) {
 		case WM_INITDIALOG: {
@@ -176,9 +176,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->rtl_templates = &RTL_Active;
 			LoadOverrideTheme(hwndDlg, dat);
 			/*
-			 * set hContact to the first found contact so that we can use the Preview window properly
-			 * also, set other parameters needed by the streaming function to display events
-			 */
+			* set hContact to the first found contact so that we can use the Preview window properly
+			* also, set other parameters needed by the streaming function to display events
+			*/
 
 			SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
 			SendDlgItemMessage(hwndDlg, IDC_PREVIEW, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
@@ -187,13 +187,13 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 			dat->dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 			dat->szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
-/*
-#if defined(_UNICODE)
+			/*
+			#if defined(_UNICODE)
 			MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, 0);
-#else
+			#else
 			mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-#endif
-*/
+			#endif
+			*/
 			mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
 			GetContactUIN(hwndDlg, dat);
 
@@ -207,7 +207,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			for (i = 0; i <= TMPL_ERRMSG; i++) {
 				SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)TemplateNames[i]);
 				SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
-			}
+				}
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
 
@@ -218,121 +218,121 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_COLOR5, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "cc5", SRMSGDEFSET_BKGCOLOUR));
 			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 			return TRUE;
-		}
+			}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDCANCEL:
+		case IDCANCEL:
+			DestroyWindow(hwndDlg);
+			break;
+		case IDC_RESETALLTEMPLATES:
+			if (MessageBox(0, TranslateT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"),
+				TranslateT("Template editor"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
+					DBWriteContactSettingByte(NULL, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
+					LoadDefaultTemplates();
+					MessageBox(0, TranslateT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."),
+						TranslateT("Template editor"), MB_OK);
 					DestroyWindow(hwndDlg);
-					break;
-				case IDC_RESETALLTEMPLATES:
-					if (MessageBox(0, TranslateT("This will reset the template set to the default built-in templates. Are you sure you want to do this?"),
-								   TranslateT("Template editor"), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-						DBWriteContactSettingByte(NULL, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, "setup", 0);
-						LoadDefaultTemplates();
-						MessageBox(0, TranslateT("Template set was successfully reset, please close and reopen all message windows. This template editor window will now close."),
-								   TranslateT("Template editor"), MB_OK);
-						DestroyWindow(hwndDlg);
-					}
-					break;
-				case IDC_VARHELP:
-					if (!helpActive)
-						CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, 0);
-					break;
-				case IDC_TEMPLATELIST:
-					switch (HIWORD(wParam)) {
-						case LBN_DBLCLK: {
-							LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
-							if (iIndex != LB_ERR) {
-								SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
-								teInfo->inEdit = iIndex;
-								teInfo->changed = FALSE;
-								teInfo->selchanging = FALSE;
-								SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
-								SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, FALSE, 0);
-							}
-							break;
-						}
-						case LBN_SELCHANGE: {
-							LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
-							teInfo->selchanging = TRUE;
-							if (iIndex != LB_ERR) {
-								SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
-								teInfo->inEdit = iIndex;
-								teInfo->changed = FALSE;
-							}
-							SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-							break;
-						}
-					}
-					break;
-				case IDC_VARIABLESHELP:
-					CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/");
-					break;
-				case IDC_EDITTEMPLATE:
-					if (HIWORD(wParam) == EN_CHANGE) {
-						if (!teInfo->selchanging) {
-							teInfo->changed = TRUE;
-							teInfo->updateInfo[teInfo->inEdit] = TRUE;
-							EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), TRUE);
-						}
-						InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-					}
-					break;
-				case IDC_SAVETEMPLATE: {
-					TCHAR newTemplate[TEMPLATE_LENGTH + 2];
-
-					GetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), newTemplate, TEMPLATE_LENGTH);
-					CopyMemory(tSet->szTemplates[teInfo->inEdit], newTemplate, sizeof(TCHAR) * TEMPLATE_LENGTH);
-					teInfo->changed = FALSE;
-					teInfo->updateInfo[teInfo->inEdit] = FALSE;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-					DBWriteContactSettingTString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
-					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-					break;
 				}
-				case IDC_FORGET: {
-					teInfo->changed = FALSE;
-					teInfo->updateInfo[teInfo->inEdit] = FALSE;
-					teInfo->selchanging = TRUE;
-					SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
-					SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
-					teInfo->selchanging = FALSE;
-					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-					break;
+			break;
+		case IDC_VARHELP:
+			if (!helpActive)
+				CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, 0);
+			break;
+		case IDC_TEMPLATELIST:
+			switch (HIWORD(wParam)) {
+		case LBN_DBLCLK: {
+			LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
+			if (iIndex != LB_ERR) {
+				SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
+				teInfo->inEdit = iIndex;
+				teInfo->changed = FALSE;
+				teInfo->selchanging = FALSE;
+				SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
+				SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, FALSE, 0);
 				}
-				case IDC_REVERT: {
-					teInfo->changed = FALSE;
-					teInfo->updateInfo[teInfo->inEdit] = FALSE;
-					teInfo->selchanging = TRUE;
-					CopyMemory(tSet->szTemplates[teInfo->inEdit], LTR_Default.szTemplates[teInfo->inEdit], sizeof(TCHAR) * TEMPLATE_LENGTH);
-					SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
-					DBDeleteContactSetting(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit]);
-					SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
-					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-					teInfo->selchanging = FALSE;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
-					break;
-				}
-				case IDC_UPDATEPREVIEW:
-					SendMessage(hwndDlg, DM_UPDATETEMPLATEPREVIEW, 0, 0);
-					break;
+			break;
 			}
+		case LBN_SELCHANGE: {
+			LRESULT iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
+			teInfo->selchanging = TRUE;
+			if (iIndex != LB_ERR) {
+				SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[iIndex]);
+				teInfo->inEdit = iIndex;
+				teInfo->changed = FALSE;
+				}
+			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
+			break;
+			}
+				}
+			break;
+		case IDC_VARIABLESHELP:
+			CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/");
+			break;
+		case IDC_EDITTEMPLATE:
+			if (HIWORD(wParam) == EN_CHANGE) {
+				if (!teInfo->selchanging) {
+					teInfo->changed = TRUE;
+					teInfo->updateInfo[teInfo->inEdit] = TRUE;
+					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), TRUE);
+					}
+				InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
+				}
+			break;
+		case IDC_SAVETEMPLATE: {
+			TCHAR newTemplate[TEMPLATE_LENGTH + 2];
+
+			GetWindowText(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), newTemplate, TEMPLATE_LENGTH);
+			CopyMemory(tSet->szTemplates[teInfo->inEdit], newTemplate, sizeof(TCHAR) * TEMPLATE_LENGTH);
+			teInfo->changed = FALSE;
+			teInfo->updateInfo[teInfo->inEdit] = FALSE;
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
+			DBWriteContactSettingTString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
+			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
+			break;
+			}
+		case IDC_FORGET: {
+			teInfo->changed = FALSE;
+			teInfo->updateInfo[teInfo->inEdit] = FALSE;
+			teInfo->selchanging = TRUE;
+			SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
+			SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
+			teInfo->selchanging = FALSE;
+			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
+			break;
+			}
+		case IDC_REVERT: {
+			teInfo->changed = FALSE;
+			teInfo->updateInfo[teInfo->inEdit] = FALSE;
+			teInfo->selchanging = TRUE;
+			CopyMemory(tSet->szTemplates[teInfo->inEdit], LTR_Default.szTemplates[teInfo->inEdit], sizeof(TCHAR) * TEMPLATE_LENGTH);
+			SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
+			DBDeleteContactSetting(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit]);
+			SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
+			InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
+			teInfo->selchanging = FALSE;
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+			SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
+			break;
+			}
+		case IDC_UPDATEPREVIEW:
+			SendMessage(hwndDlg, DM_UPDATETEMPLATEPREVIEW, 0, 0);
+			break;
+				}
 			break;
 		case WM_DRAWITEM: {
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
@@ -347,21 +347,21 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					FillRect(dis->hDC, &dis->rcItem, bkg);
 					SelectObject(dis->hDC, oldBkg);
 					DeleteObject(bkg);
-				} else
-					FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+					} else
+						FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 
-				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-			} else {
-				if (teInfo->updateInfo[iItem] == TRUE)
-					SetTextColor(dis->hDC, RGB(255, 0, 0));
-				else
-					SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
+					SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+				} else {
+					if (teInfo->updateInfo[iItem] == TRUE)
+						SetTextColor(dis->hDC, RGB(255, 0, 0));
+					else
+						SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
+				}
+					{
+					TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
+					}
+					return TRUE;
 			}
-			{
-				TextOutA(dis->hDC, dis->rcItem.left, dis->rcItem.top, TemplateNames[iItem], lstrlenA(TemplateNames[iItem]));
-			}
-			return TRUE;
-		}
 		case DM_UPDATETEMPLATEPREVIEW: {
 			DBEVENTINFO dbei = {0};
 			int iIndex = SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_GETCURSEL, 0, 0);
@@ -370,7 +370,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if (teInfo->changed) {
 				CopyMemory(szTemp, tSet->szTemplates[teInfo->inEdit], TEMPLATE_LENGTH * sizeof(TCHAR));
 				GetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit], TEMPLATE_LENGTH);
-			}
+				}
 			dbei.szModule = dat->szProto;
 			dbei.timestamp = time(NULL);
 			dbei.eventType = (iIndex == 6) ? EVENTTYPE_STATUSCHANGE : EVENTTYPE_MESSAGE;
@@ -386,7 +386,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->iLastEventType = MAKELONG(dbei.flags, dbei.eventType);
 			SetWindowText(GetDlgItem(hwndDlg, IDC_PREVIEW), _T(""));
 			dat->dwFlags = MWF_LOG_ALL;
-			dat->dwFlags |= (teInfo->rtl ? MWF_LOG_RTL : 0);
+			dat->dwFlags = (teInfo->rtl ? dat->dwFlags|MWF_LOG_RTL :dat->dwFlags & ~MWF_LOG_RTL );
 			dat->dwFlags = (iIndex == 0 || iIndex == 1) ? dat->dwFlags & ~MWF_LOG_GROUPMODE : dat->dwFlags | MWF_LOG_GROUPMODE;
 			mir_sntprintf(dat->szMyNickname, safe_sizeof(dat->szMyNickname), _T("My Nickname"));
 			StreamInEvents(hwndDlg, 0, 1, 1, &dbei);
@@ -394,7 +394,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if (teInfo->changed)
 				CopyMemory(tSet->szTemplates[teInfo->inEdit], szTemp, TEMPLATE_LENGTH * sizeof(TCHAR));
 			break;
-		}
+			}
 		case WM_DESTROY:
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
 			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
@@ -411,9 +411,9 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);
 			break;
-	}
+		}
 	return FALSE;
-}
+	}
 
 static char *var_helptxt[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
@@ -459,10 +459,10 @@ static char *var_helptxt[] = {
 	\\b %fd%&N\\b0 -\tprints the nickname, using the font for timestamps (selected by %fd)\\par\
 	\\b %fd%c3%&N\\b0 -\tprints the nickname, using the font for timestamp, but with the text color set to color #4",
 	NULL
-};
+	};
 
 BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+	{
 	switch (msg) {
 		case WM_INITDIALOG: {
 			int i = 1;
@@ -472,8 +472,8 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			char szBasename[_MAX_FNAME], szExt[_MAX_EXT];
 
 			/*
-			 * send the help text
-			 */
+			* send the help text
+			*/
 
 			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETEVENTMASK, 0, ENM_LINK);
@@ -483,39 +483,39 @@ BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				while (var_helptxt[i] != NULL) {
 					mir_snprintf(szHeader, 2040, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 60*15, 60*15, 5*15, 60*15, Translate(var_helptxt[i++]));
 					SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szHeader);
-				}
-				SetWindowText(hwndDlg, TranslateT("Template editor help"));
-			} else {
-				HANDLE hFile;
-				DWORD size, actual_read;
-				BYTE *buffer = 0;
-				char final_path[MAX_PATH];
-
-				if (show_relnotes) {
-					char **txt = (char **)lParam;
-					char buf[2048];
-
-					i = 1;
-					while (txt[i] != NULL) {
-						mir_snprintf(buf, 2048, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 30*15, 30*15, 5*15, 30*15, txt[i++]);
-						SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buf);
 					}
-					SetWindowText(hwndDlg, _T("tabSRMM release notes"));
-					goto dl_done;
+				SetWindowText(hwndDlg, TranslateT("Template editor help"));
+				} else {
+					HANDLE hFile;
+					DWORD size, actual_read;
+					BYTE *buffer = 0;
+					char final_path[MAX_PATH];
+
+					if (show_relnotes) {
+						char **txt = (char **)lParam;
+						char buf[2048];
+
+						i = 1;
+						while (txt[i] != NULL) {
+							mir_snprintf(buf, 2048, "{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u %s\\par}", 30*15, 30*15, 5*15, 30*15, txt[i++]);
+							SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buf);
+							}
+						SetWindowText(hwndDlg, _T("tabSRMM release notes"));
+						goto dl_done;
+						}
+					MY_pathToAbsolute((char *)lParam, final_path);
+					_splitpath(final_path, NULL, NULL, szBasename, szExt);
+					if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
+						DestroyWindow(hwndDlg);
+						return FALSE;
+						}
+					size = GetFileSize(hFile, 0);
+					buffer = malloc(size + 10);
+					ReadFile(hFile, (void *)buffer, size, &actual_read, 0);
+					SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buffer);
+					CloseHandle(hFile);
+					free(buffer);
 				}
-				MY_pathToAbsolute((char *)lParam, final_path);
-				_splitpath(final_path, NULL, NULL, szBasename, szExt);
-				if ((hFile = CreateFileA(final_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
-					DestroyWindow(hwndDlg);
-					return FALSE;
-				}
-				size = GetFileSize(hFile, 0);
-				buffer = malloc(size + 10);
-				ReadFile(hFile, (void *)buffer, size, &actual_read, 0);
-				SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)buffer);
-				CloseHandle(hFile);
-				free(buffer);
-			}
 dl_done:
 			GetWindowRect(hwndDlg, &rc);
 			if (lParam == 0)
@@ -523,35 +523,35 @@ dl_done:
 			ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
 			helpActive = 1;
 			return TRUE;
-		}
+			}
 		case WM_NOTIFY:
 			switch (((NMHDR *) lParam)->idFrom) {
-				case IDC_HELPTEXT:
-					switch (((NMHDR *) lParam)->code) {
-						case EN_LINK:
-							switch (((ENLINK *) lParam)->msg) {
-								case WM_SETCURSOR:
-									SetCursor(myGlobals.hCurHyperlinkHand);
-									SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
-									return TRUE;
-								case WM_LBUTTONUP: {
-									TEXTRANGEA tr;
-									CHARRANGE sel;
-									SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);
-									if (sel.cpMin != sel.cpMax)
-										break;
-									tr.chrg = ((ENLINK *) lParam)->chrg;
-									tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
-									SendDlgItemMessageA(hwndDlg, IDC_HELPTEXT, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
-									SetFocus(GetDlgItem(hwndDlg, IDC_HELPTEXT));
-									free(tr.lpstrText);
-									break;
-								}
-							}
-							break;
-					}
+		case IDC_HELPTEXT:
+			switch (((NMHDR *) lParam)->code) {
+		case EN_LINK:
+			switch (((ENLINK *) lParam)->msg) {
+		case WM_SETCURSOR:
+			SetCursor(myGlobals.hCurHyperlinkHand);
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+			return TRUE;
+		case WM_LBUTTONUP: {
+			TEXTRANGEA tr;
+			CHARRANGE sel;
+			SendDlgItemMessage(hwndDlg, IDC_HELPTEXT, EM_EXGETSEL, 0, (LPARAM) & sel);
+			if (sel.cpMin != sel.cpMax)
+				break;
+			tr.chrg = ((ENLINK *) lParam)->chrg;
+			tr.lpstrText = malloc(tr.chrg.cpMax - tr.chrg.cpMin + 8);
+			SendDlgItemMessageA(hwndDlg, IDC_HELPTEXT, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+			CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+			SetFocus(GetDlgItem(hwndDlg, IDC_HELPTEXT));
+			free(tr.lpstrText);
+			break;
 			}
+				}
+			break;
+				}
+				}
 			break;
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
@@ -562,7 +562,8 @@ dl_done:
 			cntHelpActive = FALSE;
 			show_relnotes = FALSE;
 			break;
-	}
+		}
 	return FALSE;
-}
+	}
+
 

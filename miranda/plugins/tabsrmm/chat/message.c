@@ -151,27 +151,27 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (!memcmp(p1, "\\endash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
-#endif
-				} else if (!memcmp(p1, "\\emdash", 7)) {
-					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
-#endif
-				} else if (!memcmp(p1, "\\bullet", 7)) {
-					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
-#endif
+#if defined(_UNICODE) 
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93"); 
+#else 
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96"); 
+#endif 
+					} else if (!memcmp(p1, "\\emdash", 7)) { 
+						bTextHasStarted = bJustRemovedRTF = TRUE; 
+						iRemoveChars = 7; 
+#if defined(_UNICODE) 
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94"); 
+#else 
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97"); 
+#endif 
+					} else if (!memcmp(p1, "\\bullet", 7)) { 
+						bTextHasStarted = bJustRemovedRTF = TRUE; 
+						iRemoveChars = 7; 
+#if defined(_UNICODE) 
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2"); 
+#else 
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95"); 
+#endif 
 				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;
@@ -200,11 +200,6 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (p1[1] == 'f' && isdigit(p1[2])) {   // unicode char
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 2 + ReadInteger(p1 + 2, NULL);
-				} else if (!memcmp(p1, "\\tab", 4)) {  // tab
-					bTextHasStarted = TRUE;
-					bJustRemovedRTF = TRUE;
-					iRemoveChars = 4;
-					strcpy(InsertThis, " ");
 				} else if (p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}') {  // escaped characters
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
@@ -215,7 +210,42 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
 					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0");
-				} else if (p1[1] == '\'') {  // special character
+				}
+
+
+				else if (!memcmp(p1, "\\tab",4)) { // tab
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 4;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\x09");
+#else
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), " ");
+#endif
+					}
+				else if (!memcmp(p1, "\\ldblquote",10)) {
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 10;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9c");
+#else
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\"");
+#endif
+					}
+				else if (!memcmp(p1, "\\rdblquote",10)) {
+					bTextHasStarted = TRUE;
+					bJustRemovedRTF = TRUE;
+					iRemoveChars = 10;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9d");
+#else
+					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\"");
+#endif
+					}
+
+
+				 else if (p1[1] == '\'') {  // special character
 					char tmp[4], *p3 = tmp;
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;

@@ -19,7 +19,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1252)
+#pragma code_page(1251)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -143,17 +143,18 @@ BEGIN
     LTEXT           "Info panel mode",IDC_STATIC,12,135,104,8
     CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,174,126,12
     CONTROL         "Never close automatically",IDC_NOAUTOCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,186,131,12
+    CONTROL         "Load only actual history",IDC_LOADONLYACTUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,186,131,12
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 211
-STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP | 0x4000,3,28,87,163
     LTEXT           "Test",IDC_WHITERECT,66,0,288,25,0,WS_EX_TRANSPARENT
     CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,0,0,67,25
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,355,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,25,355,1
     LTEXT           "",IDC_CURRENTNAME,68,13,285,9,0,WS_EX_TRANSPARENT
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,77,156,10
@@ -172,7 +173,8 @@ BEGIN
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
     CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
-    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
+    CONTROL         "Place toolbar at bottom",IDC_BOTTOMTOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
+    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,78,121,10
     CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,90,115,9
@@ -270,18 +272,22 @@ IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Typing Notification Options",IDC_STATIC,7,7,269,238
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,42,248,131,WS_EX_CLIENTEDGE
-    LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",IDC_STATIC,19,18,245,19
+    GROUPBOX        "Typing Notification",IDC_STATIC,7,3,269,152
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,34,248,112,WS_EX_CLIENTEDGE
+    LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",IDC_STATIC,19,15,245,19
     CONTROL         "Show typing notifications when a user is typing a message",IDC_SHOWNOTIFY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,178,233,13
-    CONTROL         "Flash window once on typing events (only if flashing enabled)",IDC_TYPEWIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,193,230,10
-    CONTROL         "Show typing notification when no message dialog is open",IDC_TYPETRAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,206,230,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,162,233,13
+    CONTROL         "Flash window once on typing events (only if flashing enabled)",IDC_TYPEFLASHWIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,176,230,10
+    CONTROL         "Show typing notification when message dialog is open",IDC_TYPEWIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,188,230,10
     CONTROL         "Flash in the system tray and in the contact list",IDC_NOTIFYTRAY,
-                    "Button",BS_AUTORADIOBUTTON,44,219,206,10
-    CONTROL         "Show balloon popup",IDC_NOTIFYBALLOON,"Button",BS_AUTORADIOBUTTON,44,231,206,10
+                    "Button",BS_AUTOCHECKBOX,29,213,206,10
+    CONTROL         "Show balloon",IDC_NOTIFYBALLOON,"Button",BS_AUTOCHECKBOX | WS_GROUP,29,226,206,10
+    CONTROL         "Show popup",IDC_NOTIFYPOPUP,"Button",BS_AUTOCHECKBOX,29,238,206,10
+    CONTROL         "Show typing notification when no message dialog is open",IDC_TYPENOWIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,200,230,10
+    GROUPBOX        "Options",IDC_STATIC,7,154,269,97
 END
 
 IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
@@ -324,6 +330,22 @@ BEGIN
     PUSHBUTTON      "Create new",IDC_CREATENEW,134,119,66,14
 END
 
+IDD_OPT_TOOLBAR DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TOOLBARTREE,"SysTreeView32",TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_CHECKBOXES | TVS_FULLROWSELECT | WS_TABSTOP,16,23,116,178,WS_EX_CLIENTEDGE
+    CONTROL         "Show this button in regular window",IDC_IMCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,51,155,10
+    CONTROL         "Show this button in chat window",IDC_CHATCHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,64,155,10
+    EDITTEXT        IDC_EDIT1,227,118,40,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,116,10,14
+    LTEXT           "Buttons spacing:",IDC_STATIC,144,122,79,8
+    CONTROL         "Hide if there is not enough space",IDC_CANBEHIDDEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,77,155,10
+    PUSHBUTTON      "Reset",IDC_BBRESET,82,204,50,14
+    PUSHBUTTON      "Insert Separator",IDC_SEPARATOR,144,142,86,14
+END
+
 IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -351,6 +373,41 @@ BEGIN
     LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
     GROUPBOX        "Default window title format",IDC_STATIC,3,196,300,28
     EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,207,274,14,ES_AUTOHSCROLL
+END
+
+IDD_OPT_TYPINGNOTIFYPOPUP DIALOGEX 0, 0, 318, 174
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "PopUps",IDC_STATIC,6,6,164,127
+    CONTROL         "...is &typing",IDC_START,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,22,80,13
+    CONTROL         "...stopped t&yping",IDC_STOP,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,36,80,13
+    CTEXT           "Back",IDC_STATIC,114,13,24,8
+    CTEXT           "Text",IDC_STATIC,140,13,24,8
+    CONTROL         "",IDC_TYPEON_BG,"ColourPicker",WS_TABSTOP,114,22,24,12
+    CONTROL         "",IDC_TYPEON_TX,"ColourPicker",WS_TABSTOP,140,22,24,12
+    CONTROL         "",IDC_TYPEOFF_BG,"ColourPicker",WS_TABSTOP,114,36,24,12
+    CONTROL         "",IDC_TYPEOFF_TX,"ColourPicker",WS_TABSTOP,140,36,24,12
+    CONTROL         "U&se Popup colours",IDC_USEPOPUPCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,52,154,13
+    CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,66,133,13
+    CONTROL         "&Do not show if msg window focused",IDC_WO,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,82,156,13
+    CONTROL         "Only &one popup for each contact",IDC_ONEPOPUP,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,96,156,13
+    CONTROL         "Show &entry in the main menu",IDC_SHOWMENU,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,110,155,13
+    GROUPBOX        "PopUp timeout (is typing)",IDC_STATIC,175,6,140,58,WS_GROUP
+    CONTROL         "From PopUp plugin",IDC_TIMEOUT_POPUP,"Button",BS_AUTORADIOBUTTON,181,16,130,10
+    CONTROL         "From protocol",IDC_TIMEOUT_PROTO,"Button",BS_AUTORADIOBUTTON,181,27,130,10
+    CONTROL         "Permanent",IDC_TIMEOUT_PERMANENT,"Button",BS_AUTORADIOBUTTON,181,38,130,10
+    CONTROL         "Custom",IDC_TIMEOUT_CUSTOM,"Button",BS_AUTORADIOBUTTON,181,49,95,10
+    EDITTEXT        IDC_TIMEOUT_VALUE,286,48,21,12,ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "PopUp timeout (stopped typing)",IDC_STATIC,175,68,140,47,WS_GROUP
+    CONTROL         "From PopUp plugin",IDC_TIMEOUT_POPUP2,"Button",BS_AUTORADIOBUTTON,181,78,130,10
+    CONTROL         "Permanent",IDC_TIMEOUT_PERMANENT2,"Button",BS_AUTORADIOBUTTON,181,89,130,10
+    CONTROL         "Custom",IDC_TIMEOUT_CUSTOM2,"Button",BS_AUTORADIOBUTTON,181,100,95,10
+    EDITTEXT        IDC_TIMEOUT_VALUE2,286,99,21,12,ES_AUTOHSCROLL | ES_NUMBER
+    PUSHBUTTON      "Preview",IDC_PREVIEW,244,120,68,14
+    LTEXT           "",IDC_INFO,6,157,290,10
+    LTEXT           "",IDC_INFO2,6,143,290,10
 END
 
 IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
@@ -575,6 +632,17 @@ BEGIN
         BOTTOMMARGIN, 204
     END
 
+    IDD_OPT_TOOLBAR, DIALOG
+    BEGIN
+        VERTGUIDE, 144
+    END
+
+    IDD_OPT_TYPINGNOTIFYPOPUP, DIALOG
+    BEGIN
+        RIGHTMARGIN, 315
+        BOTTOMMARGIN, 167
+    END
+
     IDD_TEMPLATEEDIT, DIALOG
     BEGIN
         BOTTOMMARGIN, 228
@@ -629,6 +697,7 @@ BEGIN
     POPUP "Log"
     BEGIN
         MENUITEM "&Copy",                       IDM_COPY
+        MENUITEM "&Quote",                      IDM_QUOTE
         MENUITEM "Co&py All",                   IDM_COPYALL
         MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
@@ -939,6 +1008,19 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 //
 
 IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
+IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
+IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+IDI_ENABLED             ICON                    "res/res_TN/popup.ico"
+IDI_DISABLED            ICON                    "res/res_TN/popup_no.ico"
 #endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 

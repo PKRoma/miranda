@@ -74,11 +74,9 @@ void HandleMenuEntryFromhContact(int iSelection)
 			ActivateExistingTab(pContainer, hWnd);
 			pContainer->hwndSaved = 0;
 			SetForegroundWindow(pContainer->hwnd);
-		}
-		else
+		} else
 			CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
-	}
-	else if ((si = SM_FindSessionByHCONTACT((HANDLE)iSelection)) != NULL) {
+	} else if ((si = SM_FindSessionByHCONTACT((HANDLE)iSelection)) != NULL) {
 		if (si->hWnd) {															// session does exist, but no window is open for it
 			struct ContainerWindowData *pContainer = 0;
 
@@ -88,14 +86,11 @@ void HandleMenuEntryFromhContact(int iSelection)
 				if (GetForegroundWindow() != pContainer->hwnd)
 					SetForegroundWindow(pContainer->hwnd);
 				SetFocus(GetDlgItem(pContainer->hwndActive, IDC_CHAT_MESSAGE));
-			}
-			else
+			} else
 				goto nothing_open;
-		}
-		else
+		} else
 			goto nothing_open;
-	}
-	else {
+	} else {
 nothing_open:
 		CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)iSelection, 0);
 	}
@@ -112,12 +107,11 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 			DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
 		else if (dis->itemState & ODS_SELECTED)
 			DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-		if (dwIdle)
+		if (dwIdle) {
 			DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-		else
+		} else
 			DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-	}
-	else {
+	} else {
 		BOOL bfm = FALSE;
 		SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
 		if (bfm) {
@@ -127,34 +121,29 @@ static void DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
 				/* draw the frame */
 				FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-			}
-			else {
+			} else {
 				/* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
 				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
 			}   //if
 			/* draw the icon */
 			if (dwIdle) {
 				DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-			}
-			else
+			} else
 				DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-		}
-		else {
+		} else {
 			/* non-flat menus, flush the DC with a normal menu colour */
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
 			if (dis->itemState & ODS_HOTLIGHT) {
 				DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-			}
-			else if (dis->itemState & ODS_SELECTED) {
+			} else if (dis->itemState & ODS_SELECTED) {
 				DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
 			}
 			if (dwIdle) {
 				DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-			}
-			else
+			} else
 				DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-		}
-	}
+		}       //if
+	}           //if
 }
 
 BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -176,8 +165,8 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 			SendMessage(GetDlgItem(hwndDlg, IDC_SLIST), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_TRAYICON), BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) TranslateT("tabSRMM Quick Menu"), 0);
-			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) TranslateT("Session List"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_SLIST, BUTTONADDTOOLTIP, (WPARAM) Translate("tabSRMM Quick Menu"), 0);
+			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BUTTONADDTOOLTIP, (WPARAM) Translate("Session List"), 0);
 			SendDlgItemMessage(hwndDlg, IDC_SLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[16]);
 			SendDlgItemMessage(hwndDlg, IDC_TRAYICON, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.m_AnimTrayIcons[0]);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_TRAYCONTAINER), SW_HIDE);
@@ -260,8 +249,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 				DrawMenuItem(dis, hIcon, 0);
 				return TRUE;
-			}
-			else if (dis->CtlType == ODT_MENU) {
+			} else if (dis->CtlType == ODT_MENU) {
 				HWND hWnd = WindowList_Find(hMessageWindowList, (HANDLE)dis->itemID);
 				DWORD idle = 0;
 
@@ -281,11 +269,11 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					if (dis->itemData > 0)
 						hIcon = dis->itemData & 0x10000000 ? hIcons[ICON_HIGHLIGHT] : myGlobals.g_IconMsgEvent;
 					else if (dat != NULL) {
+						//hIcon = LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus);
 						hIcon = MY_GetContactIcon(dat);
 						fNeedFree = TRUE;
 						idle = dat->idle;
-					}
-					else
+					} else
 						hIcon = myGlobals.g_iconContainer;
 
 					DrawMenuItem(dis, hIcon, idle);
@@ -314,8 +302,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 						if (GetMenuItemCount(myGlobals.g_hMenuTrayUnread) > 0) {
 							iSelection = TrackPopupMenu(myGlobals.g_hMenuTrayUnread, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 							HandleMenuEntryFromhContact(iSelection);
-						}
-						else
+						} else
 							TrackPopupMenu(GetSubMenu(myGlobals.g_hMenuContext, 8), TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
 						if (wParam == 100)
 							PostMessage(hwndDlg, WM_NULL, 0, 0);
@@ -343,14 +330,12 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 									HandleMenuEntryFromhContact(uid);
 									break;
 								}
-							}
-							while (--i >= 0);
+							} while (--i >= 0);
 							if (uid == 0 && pLastActiveContainer != NULL) {                // no session found, restore last active container
 								if (IsIconic(pLastActiveContainer->hwnd) || pLastActiveContainer->bInTray != 0) {
 									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 									SetForegroundWindow(pLastActiveContainer->hwnd);
-								}
-								else
+								} else
 									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 							}
 						}
@@ -381,8 +366,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 							GetMenuItemInfo(submenu, (UINT_PTR)iSelection, FALSE, &mii);
 							if (mii.dwItemData != 0) {                      // this must be an itm of the fav or recent menu
 								HandleMenuEntryFromhContact(iSelection);
-							}
-							else {
+							} else {
 								switch (iSelection) {
 									case ID_TRAYCONTEXT_SHOWTHEFLOATER:
 										nen_options.floaterMode = !nen_options.floaterMode;
@@ -482,8 +466,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					CallService(cle->pszService, (WPARAM)NULL, (LPARAM)cle);
 					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)cle->hContact, (LPARAM)cle->hDbEvent);
 				}
-			}
-			else {             // still, we got that message posted.. the event may be waiting in tabSRMMs tray...
+			} else {             // still, we got that message posted.. the event may be waiting in tabSRMMs tray...
 				HandleMenuEntryFromhContact((int)wParam);
 			}
 			break;
@@ -564,8 +547,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				RegisterHotKey(hwndDlg, 0xc001, mod, 0x52);
 				RegisterHotKey(hwndDlg, 0xc002, mod, 0x55);         // ctrl-shift-u
 				g_hotkeysEnabled = TRUE;
-			}
-			else {
+			} else {
 				if (g_hotkeysEnabled) {
 					SendMessage(hwndDlg, DM_FORCEUNREGISTERHOTKEYS, 0, 0);
 				}

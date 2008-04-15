@@ -99,6 +99,9 @@ extern const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, 
 void        UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat);
 int         MessageWindowOpened(WPARAM wParam, LPARAM lParam);
 int         TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
+LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 /*
  * skinning engine
@@ -174,3 +177,13 @@ void        ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData
 
 typedef     BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 extern      pfnSetMenuInfo fnSetMenuInfo;
+
+// user prefs
+
+int			LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat);
+
+//TypingNotify
+int TN_ModuleInit();
+int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam);
+int TN_ModuleDeInit();
+int TN_TypingMessage(WPARAM wParam, LPARAM lParam,BYTE DlgOpened);

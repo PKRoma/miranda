@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Deutsch (Deutschland) resources
+// German (Germany) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 #ifdef _WIN32
@@ -52,24 +52,22 @@ IDI_STATUSCHANGE        ICON                    "..\\..\\res\\proxal\\Status cha
 IDI_FONTBOLD            ICON                    "..\\..\\res\\proxal\\bold.ico"
 IDI_FONTITALIC          ICON                    "..\\..\\res\\proxal\\italic.ico"
 IDI_FONTUNDERLINE       ICON                    "..\\..\\res\\proxal\\underline.ico"
+IDI_STRIKEOUT           ICON                    "..\\..\\res\\proxal\\strikethrough.ico"
 IDI_FONTFACE            ICON                    "..\\..\\res\\proxal\\font.ico"
 IDI_FONTCOLOR           ICON                    "..\\..\\res\\proxal\\font2.ico"
 IDI_SOUNDSON            ICON                    "..\\..\\res\\proxal\\sounds_on.ico"
 IDI_SOUNDSOFF           ICON                    "..\\..\\res\\proxal\\sounds_off.ico"
 IDI_EMPTY               ICON                    "..\\..\\res\\empty.ico"
 IDI_RESERVED10          ICON                    "..\\..\\res\\empty.ico"
-
 IDI_SESSIONLIST         ICON                    "..\\..\\res\\proxal\\slist.ico"
 IDI_CONFIGSIDEBAR       ICON                    "..\\..\\res\\proxal\\sbaroptions.ico"
 IDI_FAVLIST             ICON                    "..\\..\\res\\proxal\\favlist.ico"
 IDI_RECENTLIST          ICON                    "..\\..\\res\\proxal\\recentlist.ico"
 IDI_USERPREFS           ICON                    "..\\..\\res\\proxal\\userprefs.ico"
-
 IDI_TRAYANIM1           ICON                    "..\\..\\res\\MessAnim\\m1.ico"
 IDI_TRAYANIM2           ICON                    "..\\..\\res\\MessAnim\\m2.ico"
 IDI_TRAYANIM3           ICON                    "..\\..\\res\\MessAnim\\m3.ico"
 IDI_TRAYANIM4           ICON                    "..\\..\\res\\MessAnim\\m4.ico"
-
 IDI_TAG1                ICON                    "..\\..\\chat\\Icons\\tag1.ico"
 IDI_TAG2                ICON                    "..\\..\\chat\\Icons\\tag2.ico"
 IDI_TOPICBUT            ICON                    "..\\..\\chat\\Icons\\topicbut.ico"
@@ -99,14 +97,12 @@ IDI_STATUS0             ICON                    "..\\..\\chat\\Icons\\blank.ico"
 IDI_STATUS5             ICON                    "..\\..\\chat\\Icons\\6.ico"
 IDI_OVERLAY             ICON                    "..\\..\\chat\\Icons\\overlay.ico"
 IDI_FILTER2             ICON                    "..\\..\\chat\\Icons\\filter2.ico"
-IDI_SHOWNICKLIST	    ICON                    "..\\..\\chat\\icons\\nicklist_show.ico"
-IDI_HIDENICKLIST	    ICON                    "..\\..\\chat\\icons\\nicklist_hide.ico"
-
+IDI_SHOWNICKLIST        ICON                    "..\\..\\chat\\icons\\nicklist_show.ico"
+IDI_HIDENICKLIST        ICON                    "..\\..\\chat\\icons\\nicklist_hide.ico"
 IDI_PULLDOWNARROW       ICON                    "..\\..\\res/pulldown.ico"
 IDI_LEFTARROW           ICON                    "..\\..\\res/leftarrow.ico"
 IDI_PULLUPARROW         ICON                    "..\\..\\res/pullup.ico"
 IDI_RIGHTARROW          ICON                    "..\\..\\res/rightarrow.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -114,6 +110,7 @@ IDI_RIGHTARROW          ICON                    "..\\..\\res/rightarrow.ico"
 //
 
 IDB_UNKNOWNAVATAR       BITMAP                  "..\\..\\res\\unknown.bmp"
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -139,12 +136,12 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Deutsch (Deutschland) resources
+#endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Deutsch (Österreich) resources
+// German (Austria) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
 #ifdef _WIN32
@@ -159,10 +156,10 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 
 STRINGTABLE 
 BEGIN
-    IDS_IDENTIFY            "__tabSRMM_ICONPACK 3.0__"
+    IDS_IDENTIFY            "__tabSRMM_ICONPACK 3.5__"
 END
 
-#endif    // Deutsch (Österreich) resources
+#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

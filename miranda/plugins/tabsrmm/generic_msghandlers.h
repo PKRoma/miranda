@@ -42,3 +42,10 @@ LRESULT DM_RecalcPictureSize(HWND hwndDlg, struct MessageWindowData *dat);
 LRESULT DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
 LRESULT DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
 LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat);
+
+void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat);
+
+BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat);
+ void  InitButtonsBarModule();
+ void BB_CustomButtonClick(struct MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
+

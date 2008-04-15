@@ -438,6 +438,10 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\buttonsbar.c"
+				>
+			</File>
+			<File
 				RelativePath=".\container.c"
 				>
 			</File>
@@ -607,6 +611,10 @@
 			</File>
 			<File
 				RelativePath="TSButton.c"
+				>
+			</File>
+			<File
+				RelativePath=".\typingnotify.c"
 				>
 			</File>
 			<File
@@ -1019,6 +1027,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\buttonsbar.h"
+				>
+			</File>
+			<File
 				RelativePath="commonheaders.h"
 				>
 			</File>
@@ -1032,50 +1044,6 @@
 			</File>
 			<File
 				RelativePath="ImageDataObject.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_cln_skinedit.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_fingerprint.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_flash.h"
-				>
-			</File>
-			<File
-				RelativePath="m_ieview.h"
-				>
-			</File>
-			<File
-				RelativePath="m_MathModule.h"
-				>
-			</File>
-			<File
-				RelativePath="m_metacontacts.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_nudge.h"
-				>
-			</File>
-			<File
-				RelativePath="m_smileyadd.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_spellchecker.h"
-				>
-			</File>
-			<File
-				RelativePath="m_toptoolbar.h"
-				>
-			</File>
-			<File
-				RelativePath="m_updater.h"
 				>
 			</File>
 			<File
@@ -1102,6 +1070,74 @@
 				RelativePath="templates.h"
 				>
 			</File>
+			<File
+				RelativePath=".\typingnotify.h"
+				>
+			</File>
+			<Filter
+				Name="API"
+				>
+				<File
+					RelativePath=".\API\m_cln_skinedit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_fingerprint.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_flash.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_folders.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_ieview.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_mathmodule.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_metacontacts.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_msg_buttonsbar.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_nudge.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_popup.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_smileyadd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_Snapping_windows.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_spellchecker.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_toptoolbar.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_updater.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -1220,19 +1256,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -1256,11 +1292,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1276,19 +1312,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1300,11 +1336,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File
@@ -1424,6 +1460,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\res_TN\popup.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\res_TN\popup_no.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\pulldown.ico"
 				>
 			</File>
@@ -1464,11 +1508,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
@@ -1537,6 +1581,10 @@
 			>
 			<File
 				RelativePath=".\docs\changelog.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\docs\contributors.txt"
 				>
 			</File>
 			<File

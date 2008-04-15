@@ -32,12 +32,13 @@ $Id$
 #include <mbstring.h>
 #include <time.h>
 #include <locale.h>
-#include "m_MathModule.h"
+//#include "m_MathModule.h"
 
 extern      void ReleaseRichEditOle(IRichEditOle *ole);
 extern      MYGLOBALS myGlobals;
 extern      struct RTFColorTable *rtf_ctable;
 extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
+
 
 struct CPTABLE cpTable[] = {
 	{ 874,	_T("Thai")	 }, 
@@ -512,13 +513,14 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 
 	/*
 	 * paragraph header
-	*/
+	 */
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}");
 
-	/*
-	 * indent:
-	 * real indent is set in msgdialog.c (DM_OPTIONSAPPLIED)
-	 */
+	/* 
+	 * indent: 
+	 * real indent is set in msgdialog.c (DM_OPTIONSAPPLIED) 
+	 */ 
+
 	if (!(dat->dwFlags & MWF_LOG_INDENT))
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\li%u\\ri%u\\fi%u\\tx%u", 2*15, 2*15, 0, 70 * 15);
 }
@@ -540,7 +542,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 }
 
 static void AppendTimeStamp(TCHAR *szFinalTimestamp, int isSent, char **buffer, int *bufferEnd, int *bufferAlloced, int skipFont,
-								struct MessageWindowData *dat, int iFontIDOffset)
+							struct MessageWindowData *dat, int iFontIDOffset)
 {
 #ifdef _UNICODE
 	if (skipFont)
@@ -606,7 +608,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0);
+	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0); 
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted;
@@ -637,15 +639,16 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	if (dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
 		dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
 
-	msg = DbGetEventTextT(&dbei, dat->codePage);
-	if (!msg) {
-		free(dbei.pBlob);
-		free(buffer);
-		return NULL;
-	}
-	TrimMessage(msg);
-	formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
-	mir_free(msg);
+
+		msg = DbGetEventTextT(&dbei, dat->codePage);
+		if (!msg) {
+			free(dbei.pBlob);
+			free(buffer);
+			return NULL;
+		}
+		TrimMessage(msg);
+		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+		mir_free(msg);
 	/*
 	else
 	{
@@ -697,8 +700,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	isSent = (dbei.flags & DBEF_SENT);
 
 	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
-		CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
-		CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
+		 //MAD: ugly hack for hideOnClose...
+		if(IsWindowVisible(GetParent(dat->hwnd)))	
+			{
+			CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
+			}
 	}
 
 	g_groupBreak = TRUE;
@@ -748,7 +755,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	 */
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
-		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
+		  if (dat->dwFlags & MWF_LOG_LOCALTIME) {
 			if (!isSent && dat->timediff != 0)
 				final_time = dbei.timestamp - dat->timediff;
 		}
@@ -996,8 +1003,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 				case 't':
 				case 'T':
 					if (showTime) {
-						szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)((dwEffectiveFlags & MWF_LOG_SHOWSECONDS) ? cc : (TCHAR)'t'));
-						AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
+							szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)((dwEffectiveFlags & MWF_LOG_SHOWSECONDS) ? cc : (TCHAR)'t'));
+							AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
 					} else
 						skipToNext = TRUE;
 					break;

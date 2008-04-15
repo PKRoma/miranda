@@ -19,6 +19,18 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+Version 2.1.1.0  - 2008/04/10
+
+		* merged "MADMod" patch. This is a big contribution and adds several
+		  new features like a fully customizable button bar and more. Also adds
+		  old style typing notification popups (code taken from bio's old plugin),
+		  support for animated .gif avatars and more.
+		  
+		  See: http://forums.miranda-im.org/showthread.php?t=17918
+		  
+		* New per contact message log settings are now almost complete and
+		  working. Alt-B (RTL/LTR toggle has been restored).
+		  
 Version 2.1.0.1  - 2008/03/26
 
 		* fixed small visual glitch when using the modern (styled) tabs

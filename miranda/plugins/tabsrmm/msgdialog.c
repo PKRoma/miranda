@@ -35,7 +35,7 @@ $Id$
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
 
-#include "m_MathModule.h"
+//#include "m_MathModule.h"
 
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
@@ -51,6 +51,7 @@ extern struct GlobalLogSettings_t g_Settings;
 extern BOOL g_framelessSkinmode;
 extern HANDLE g_hEvent_MsgPopup;
 extern int    g_chat_integration_enabled;
+extern      int g_sessionshutdown;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -63,28 +64,29 @@ extern PGTBCR pfnGetThemeBackgroundContentRect;
 
 extern	char  *FilterEventMarkersA(char *szText);
 extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
+extern  TCHAR *DoubleAmpersands(TCHAR *pszText);
 
-TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
-						  _T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"),
-						  _T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
-						  _T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating... yummy"),
-						  _T("Having fun"), _T("Chit chatting"),	_T("Crashing"), _T("Going to toilet"), _T("<undef>"),
-						  _T("<undef>"), _T("<undef>")
-						};
+TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), 
+								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), 
+								_T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
+								_T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating... yummy"), 
+								_T("Having fun"), _T("Chit chatting"),	_T("Crashing"), _T("Going to toilet"), _T("<undef>"), 
+								_T("<undef>"), _T("<undef>")
+							};
 
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static WNDPROC OldMessageEditProc = 0, OldAvatarWndProc = 0, OldMessageLogProc = 0, OldIEViewProc = 0, OldHppProc = 0;
+static WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0, OldIEViewProc = 0, OldHppProc = 0;
 WNDPROC OldSplitterProc = 0;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
 static const UINT buttonLineControlsNew[] = { IDC_PIC, IDC_HISTORY, IDC_TIME, IDC_QUOTE, IDC_SAVE /*, IDC_SENDMENU */};
 static const UINT sendControls[] = { IDC_MESSAGE, IDC_LOG };
-static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE }; //, IDC_FONTFACE, IDC_FONTCOLOR};
+static const UINT formatControls[] = { IDC_SMILEYBTN, IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE,IDC_FONTSTRIKEOUT }; //, IDC_FONTFACE, IDC_FONTCOLOR};
 static const UINT controlsToHide[] = { IDOK, IDC_PIC, IDC_PROTOCOL, IDC_FONTFACE, IDC_FONTUNDERLINE, IDC_HISTORY, -1 };
-static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
+static const UINT controlsToHide1[] = { IDOK, IDC_FONTFACE,IDC_FONTSTRIKEOUT, IDC_FONTUNDERLINE, IDC_FONTITALIC, IDC_FONTBOLD, IDC_PROTOCOL, -1 };
 static const UINT controlsToHide2[] = { IDOK, IDC_PIC, IDC_PROTOCOL, -1};
 static const UINT addControls[] = { IDC_ADD, IDC_CANCELADD };
 
@@ -98,18 +100,8 @@ static struct _tooltips {
 	int id;
 	TCHAR *szTip;
 } tooltips[] = {
-	IDC_HISTORY, _T("View User's History"),
-	IDC_TIME, _T("Message Log Options"),
-	IDC_QUOTE, _T("Quote last message OR selected text"),
-	IDC_PIC, _T("Avatar Options"),
-	IDC_SMILEYBTN, _T("Insert Emoticon"),
 	IDC_ADD, _T("Add this contact permanently to your contact list"),
 	IDC_CANCELADD, _T("Do not add this contact permanently"),
-	IDOK, _T("Send message\nClick dropdown arrow for sending options"),
-	IDC_FONTBOLD, _T("Bold text"),
-	IDC_FONTITALIC, _T("Italic text"),
-	IDC_FONTUNDERLINE, _T("Underlined text"),
-	IDC_FONTFACE, _T("Select font color"),
 	IDC_TOGGLENOTES, _T("Toggle notes display"),
 	IDC_APPARENTMODE, _T("Set your visibility for this contact"),
 	-1, NULL
@@ -119,19 +111,8 @@ static struct _buttonicons {
 	int id;
 	HICON *pIcon;
 } buttonicons[] = {
-	IDC_HISTORY, &myGlobals.g_buttonBarIcons[1],
-	IDC_TIME, &myGlobals.g_buttonBarIcons[2],
-	IDC_QUOTE, &myGlobals.g_buttonBarIcons[8],
-	IDC_SAVE, &myGlobals.g_buttonBarIcons[6],
-	IDC_PIC, &myGlobals.g_buttonBarIcons[10],
-	IDOK, &myGlobals.g_buttonBarIcons[9],
 	IDC_ADD, &myGlobals.g_buttonBarIcons[0],
 	IDC_CANCELADD, &myGlobals.g_buttonBarIcons[6],
-	IDC_FONTBOLD, &myGlobals.g_buttonBarIcons[17],
-	IDC_FONTITALIC, &myGlobals.g_buttonBarIcons[18],
-	IDC_FONTUNDERLINE, &myGlobals.g_buttonBarIcons[19],
-	IDC_FONTFACE, &myGlobals.g_buttonBarIcons[21],
-	IDC_NAME, &myGlobals.g_buttonBarIcons[4],
 	IDC_LOGFROZEN, &myGlobals.g_buttonBarIcons[24],
 	IDC_TOGGLENOTES, &myGlobals.g_buttonBarIcons[28],
 	IDC_TOGGLESIDEBAR, &myGlobals.g_buttonBarIcons[25],
@@ -193,14 +174,18 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
 	SendMessage(hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 	if (sel.cpMin == sel.cpMax) {
 		EnableMenuItem(hSubMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+		//MAD
+		EnableMenuItem(hSubMenu, IDM_QUOTE, MF_BYCOMMAND | MF_GRAYED);
+		//MAD_
 		if (idFrom == IDC_MESSAGE)
 			EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
 	}
 #if defined(_UNICODE)
 	if (idFrom == IDC_LOG)  {
 		int i;
-		InsertMenuA(hSubMenu, 5, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-		InsertMenu(hSubMenu, 6, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
+		//MAD: quote mod
+		InsertMenuA(hSubMenu, 6/*5*/, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+		InsertMenu(hSubMenu, 7/*6*/, MF_BYPOSITION | MF_POPUP, (UINT_PTR) myGlobals.g_hMenuEncoding, TranslateT("Character Encoding"));
 		for (i = 0; i < GetMenuItemCount(myGlobals.g_hMenuEncoding); i++)
 			CheckMenuItem(myGlobals.g_hMenuEncoding, i, MF_BYPOSITION | MF_UNCHECKED);
 		if (dat->codePage == CP_ACP)
@@ -236,12 +221,10 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
 	if (((iSelection > 800 && iSelection < 1400) || iSelection == 20866)  && idFrom == IDC_LOG) {
 		dat->codePage = iSelection;
 		DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", dat->codePage);
-	}
-	else if (iSelection == 500 && idFrom == IDC_LOG) {
+	} else if (iSelection == 500 && idFrom == IDC_LOG) {
 		dat->codePage = CP_ACP;
 		DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "ANSIcodepage");
-	}
-	else {
+	} else {
 		switch (iSelection) {
 			case IDM_COPY:
 				SendMessage(hwndFrom, WM_COPY, 0, 0);
@@ -259,6 +242,11 @@ static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFro
 				SendMessage(hwndFrom, WM_COPY, 0, 0);
 				SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & sel);
 				break;
+				//MAD
+			case IDM_QUOTE:
+				SendMessage(hwndDlg,WM_COMMAND, IDC_QUOTE, 0);
+				break;
+				//MAD_
 			case IDM_SELECTALL:
 				SendMessage(hwndFrom, EM_EXSETSEL, 0, (LPARAM) & all);
 				break;
@@ -312,8 +300,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 		ieWindow.y = py;
 		ieWindow.cx = cx;
 		ieWindow.cy = cy;
-	}
-	else {
+	} else {
 		ieWindow.x = pt.x;
 		ieWindow.y = pt.y;
 		ieWindow.cx = rcRichEdit.right - rcRichEdit.left;
@@ -325,7 +312,7 @@ static void ResizeIeView(HWND hwndDlg, struct MessageWindowData *dat, DWORD px, 
 	}
 }
 
-static LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
 
@@ -337,6 +324,64 @@ static LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	}
 	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
 }
+//MAD: subclassing for keyfilter mod
+LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{	
+
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(GetParent(GetParent(hwnd))), GWL_USERDATA);
+	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+
+	switch(msg) {
+		case WM_KEYDOWN:
+			if(!isCtrl && !isAlt&&!isShift) {
+				if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
+					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
+					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
+					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+					wParam != VK_SPACE)	{
+						SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+						keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
+
+					return 0;
+				}
+				break;
+			}
+	}
+	return CallWindowProc(mwdat->oldIEViewLastChildProc, hwnd, msg, wParam, lParam);
+}
+LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{	
+
+	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+	switch(msg) {
+
+case WM_KEYDOWN:
+	if(!isCtrl && !isAlt&&!isShift) {
+		{
+			if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
+				wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
+				wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
+				wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+				wParam != VK_SPACE)
+			{
+				SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+				keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
+
+				return 0;
+			}
+		}
+		break;
+
+	}
+	}
+	return CallWindowProc(mwdat->oldIEViewProc, hwnd, msg, wParam, lParam);
+}
+//MAD_
 
 /*
  * update state of the container - this is called whenever a tab becomes active, no matter how and
@@ -455,6 +500,9 @@ static void MsgWindowUpdateState(HWND hwndDlg, struct MessageWindowData *dat, UI
 			PostMessage(hwndDlg, DM_UPDATEPICLAYOUT, 0, 0);
 		}
 	}
+	//mad
+	BB_SetButtonsPos(hwndDlg,dat);
+//
 }
 
 static void ConfigurePanel(HWND hwndDlg, struct MessageWindowData *dat)
@@ -471,7 +519,13 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 
 	if (dat->dwFlags & MWF_ERRORSTATE)
 		return;
-
+	 //MAD
+	if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)&&dat->hwndPanelPic)
+		{
+		DestroyWindow(dat->hwndPanelPic);
+		 dat->hwndPanelPic=NULL;
+		}
+	//
 	dat->iRealAvatarHeight = 0;
 	AdjustBottomAvatarDisplay(hwndDlg, dat);
 	GetObject(hbm, sizeof(bm), &bm);
@@ -479,6 +533,13 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 	ShowMultipleControls(hwndDlg, infoPanelControls, 8, dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? SW_SHOW : SW_HIDE);
 
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+		//MAD
+		if(dat->hwndContactPic)
+			{
+			DestroyWindow(dat->hwndContactPic);
+			dat->hwndContactPic=NULL;
+			}
+		//
 		GetAvatarVisibility(hwndDlg, dat);
 		ConfigurePanel(hwndDlg, dat);
 		UpdateApparentModeDisplay(hwndDlg, dat);
@@ -528,8 +589,7 @@ if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
 			lstrcat(szPath, _T("\\"));
 			lstrcat(szPath, fd.cFileName);
 			AddToFileList(pppFiles, totalCount, szPath);
-		}
-		while (FindNextFile(hFind, &fd));
+		} while (FindNextFile(hFind, &fd));
 		FindClose(hFind);
 	}
 }
@@ -551,21 +611,15 @@ void SetDialogToType(HWND hwndDlg)
 	showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 
 	if (dat->hContact) {
-		ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), showToolbar ? SW_SHOW : SW_HIDE);
-		ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), showToolbar ? SW_SHOW : SW_HIDE);
-		ShowMultipleControls(hwndDlg, formatControls, sizeof(formatControls) / sizeof(formatControls[0]), showToolbar ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), showToolbar ? SW_SHOW : SW_HIDE);
 
 		if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0)) {
 			dat->bNotOnList = TRUE;
 			ShowMultipleControls(hwndDlg, addControls, 2, SW_SHOW);
-		}
-		else {
+		} else {
 			ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
 			dat->bNotOnList = FALSE;
 		}
-	}
-	else {
+	} else {
 		ShowMultipleControls(hwndDlg, buttonLineControlsNew, sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]), SW_HIDE);
 		ShowMultipleControls(hwndDlg, infoLineControls, sizeof(infoLineControls) / sizeof(infoLineControls[0]), SW_HIDE);
 		ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
@@ -585,13 +639,12 @@ void SetDialogToType(HWND hwndDlg)
 		//if(DBGetContactSettingDword(NULL, "IEVIEW", "TemplatesFlags", 0) & 0x01)
 		//    EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), FALSE);
 
-	}
-	else
+	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
 	ShowMultipleControls(hwndDlg, errorControls, sizeof(errorControls) / sizeof(errorControls[0]), dat->dwFlags & MWF_ERRORSTATE ? SW_SHOW : SW_HIDE);
 
 	if (!dat->SendFormat)
-		ShowMultipleControls(hwndDlg, &formatControls[1], 4, SW_HIDE);
+		ShowMultipleControls(hwndDlg, &formatControls[1], 5, SW_HIDE);
 
 // smileybutton stuff...
 	ConfigureSmileyButton(hwndDlg, dat);
@@ -608,7 +661,7 @@ void SetDialogToType(HWND hwndDlg)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-	ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
+	//ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 
@@ -715,8 +768,7 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
 			right_off = item->MARGIN_RIGHT;
 			bottom_off = item->MARGIN_BOTTOM;
-		}
-		else {
+		} else {
 			right_off = left_off;
 			bottom_off = top_off;
 		}
@@ -729,14 +781,12 @@ UINT DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, 
 		if (mwdat->pContainer->bSkinned && !item->IGNORED) {
 			ReleaseDC(hwnd, hdc);
 			return result;
-		}
-		else if (pfnDrawThemeBackground) {
+		} else if (pfnDrawThemeBackground) {
 			if (isMultipleReason) {
 				HBRUSH br = CreateSolidBrush(RGB(255, 130, 130));
 				FillRect(hdc, &rcWindow, br);
 				DeleteObject(br);
-			}
-			else
+			} else
 				pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
 		}
 		ReleaseDC(hwnd, hdc);
@@ -749,6 +799,11 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 {
 	HWND hwndParent = GetParent(hwnd);
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(hwndParent, GWL_USERDATA);
+	//MAD
+	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
+	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+	//MAD_
 
 	switch (msg) {
 		case WM_KILLFOCUS: {
@@ -760,10 +815,32 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			}
 			break;
 		}
+	   //MAD
 		case WM_CHAR:
-			if (wParam == 0x03 && (GetKeyState(VK_CONTROL) & 0x8000))
+			if (wParam == 0x03 &&isCtrl)
 				return SendMessage(hwnd, WM_COPY, 0, 0);
+			if(wParam == 0x11 && isCtrl)
+				SendMessage(mwdat->hwnd,WM_COMMAND, IDC_QUOTE, 0);
 			break;
+
+		case WM_KEYDOWN:
+			if(!isCtrl && !isAlt&&!isShift) 
+			{
+				if (/*wParam != VK_ESCAPE&&*/wParam != VK_PRIOR&&wParam != VK_NEXT&&
+					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
+					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
+					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+					wParam != VK_SPACE)
+				{
+
+					SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+					keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
+
+					return 0;
+				}
+			}
+			break;
+			//MAD_
 		case WM_COPY: {
 			return(DM_WMCopyHandler(hwnd, OldMessageLogProc, wParam, lParam));
 		}
@@ -779,8 +856,7 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
 				SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
 				ClientToScreen(hwnd, &pt);
-			}
-			else {
+			} else {
 				pt.x = (short) LOWORD(lParam);
 				pt.y = (short) HIWORD(lParam);
 			}
@@ -788,11 +864,12 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			ShowPopupMenu(hwndParent, mwdat, IDC_LOG, hwnd, pt);
 			return TRUE;
 		}
-		case WM_NCDESTROY:
-			if(OldMessageLogProc)
-				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc);
-			break;
-	}
+		case WM_NCDESTROY: 
+         if(OldMessageLogProc) 
+                SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc); 
+			break; 
+
+		}
 	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
 }
 
@@ -814,7 +891,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-
+			//MAD: sound on typing..						 
+			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab)) 
+			  		SkinPlaySound("SoundOnTyping");
+			 //MAD
 			if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
 				TCHAR toInsert[100];
 				BYTE keyState[256];
@@ -889,6 +969,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
+			//MAD: sound on typing..
+  			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE) 
+  					SkinPlaySound("SoundOnTyping");
+ 			//
+
 			if (wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {
 				mwdat->fInsertMode = !mwdat->fInsertMode;
 				SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
@@ -901,8 +986,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 					if (myGlobals.m_SendOnShiftEnter) {
 						PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 						return 0;
-					}
-					else
+					} else
 						break;
 				}
 				if ((isCtrl && !isShift) ^(0 != myGlobals.m_SendOnEnter)) {
@@ -918,8 +1002,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 								lastEnterTime = time(NULL);
 								SetWindowLong(hwnd, GWL_USERDATA, lastEnterTime);
 								break;
-							}
-							else {
+							} else {
 								SendMessage(hwnd, WM_KEYDOWN, VK_BACK, 0);
 								SendMessage(hwnd, WM_KEYUP, VK_BACK, 0);
 								PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
@@ -929,11 +1012,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						PostMessage(hwndParent, WM_COMMAND, IDOK, 0);
 						return 0;
 					}
-				}
-				else
+				} else
 					break;
-			}
-			else
+			} else
 				SetWindowLong(hwnd, GWL_USERDATA, 0);
 
 			if (isCtrl && !isAlt && !isShift) {
@@ -954,8 +1035,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 								if (mwdat->iHistoryCurrent == 0)
 									break;
 								mwdat->iHistoryCurrent--;
-							}
-							else {
+							} else {
 								mwdat->iHistoryCurrent++;
 								if (mwdat->iHistoryCurrent > mwdat->iHistoryTop)
 									mwdat->iHistoryCurrent = mwdat->iHistoryTop;
@@ -966,20 +1046,17 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 									SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistorySize].szText);
 									SendMessage(hwnd, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
 								}
-							}
-							else {
+							} else {
 								if (mwdat->history[mwdat->iHistoryCurrent].szText != NULL) {
 									SetWindowText(hwnd, _T(""));
 									SendMessage(hwnd, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM) mwdat->history[mwdat->iHistoryCurrent].szText);
 									SendMessage(hwnd, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
-								}
-								else
+								} else
 									SetWindowText(hwnd, _T(""));
 							}
 							SendMessage(hwndParent, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
 							mwdat->dwFlags &= ~MWF_NEEDHISTORYSAVE;
-						}
-						else {
+						} else {
 							if (mwdat->pContainer->hwndStatus)
 								SetWindowTextA(mwdat->pContainer->hwndStatus, "The input history is empty.");
 						}
@@ -1009,8 +1086,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						else if (wParam == VK_END) {
 							DM_ScrollToBottom(hwndParent, mwdat, 0, 0);
 							return 0;
-						}
-						else if (wParam == VK_DOWN)
+						} else if (wParam == VK_DOWN)
 							wp = MAKEWPARAM(SB_LINEDOWN, 0);
 
 						if (mwdat->hwndIEView == 0 && mwdat->hwndHPP == 0)
@@ -1071,15 +1147,41 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						ShowHideInfoPanel(hwndParent, mwdat);
 						return 0;
 					case 'B':
-						// TODO: update Alt-B shortcut !!
-						//MsgWindowMenuHandler(hwndParent, mwdat, ID_LOGMENU_ACTIVATERTL, MENU_LOGMENU);
+						/*
+						 + switch RTL
+						 */
+						{
+							DWORD	dwGlobal = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
+							DWORD	dwOldFlags = mwdat->dwFlags;
+							DWORD	dwMask = DBGetContactSettingDword(mwdat->hContact, SRMSGMOD_T, "mwmask", 0);
+							DWORD	dwFlags = DBGetContactSettingDword(mwdat->hContact, SRMSGMOD_T, "mwflags", 0);
+
+							mwdat->dwFlags ^= MWF_LOG_RTL;
+							if((dwGlobal & MWF_LOG_RTL) != (mwdat->dwFlags & MWF_LOG_RTL)) {
+								dwMask |= MWF_LOG_RTL;
+								dwFlags |= (mwdat->dwFlags & MWF_LOG_RTL);
+							}
+							else {
+								dwMask &= ~MWF_LOG_RTL;
+								dwFlags &= ~MWF_LOG_RTL;
+							}
+							if(dwMask) {
+								DBWriteContactSettingDword(mwdat->hContact, SRMSGMOD_T, "mwmask", dwMask);
+								DBWriteContactSettingDword(mwdat->hContact, SRMSGMOD_T, "mwflags", dwFlags);
+							}
+							else {
+								DBDeleteContactSetting(mwdat->hContact, SRMSGMOD_T, "mwmask");
+								DBDeleteContactSetting(mwdat->hContact, SRMSGMOD_T, "mwflags");
+							}
+							SendMessage(hwndParent, DM_OPTIONSAPPLIED, 0, 0);
+							SendMessage(hwndParent, DM_DEFERREDREMAKELOG, (WPARAM)hwndParent, 0);
+						}
 						return 0;
 					case 'M':
 						mwdat->sendMode ^= SMODE_MULTIPLE;
 						if (mwdat->sendMode & SMODE_MULTIPLE) {
 							HWND hwndClist = DM_CreateClist(hwndParent, mwdat);
-						}
-						else {
+						} else {
 							if (IsWindow(GetDlgItem(hwndParent, IDC_CLIST)))
 								DestroyWindow(GetDlgItem(hwndParent, IDC_CLIST));
 						}
@@ -1145,8 +1247,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) & sel);
 				SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
 				ClientToScreen(hwnd, &pt);
-			}
-			else {
+			} else {
 				pt.x = (short) LOWORD(lParam);
 				pt.y = (short) HIWORD(lParam);
 			}
@@ -1154,18 +1255,25 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			ShowPopupMenu(hwndParent, mwdat, IDC_MESSAGE, hwnd, pt);
 			return TRUE;
 		}
-		case WM_NCDESTROY:
-			if(OldMessageEditProc)
-				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
-			break;
+		case WM_NCDESTROY: 
+                            if(OldMessageEditProc) 
+                                    SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc); 
+                            break; 
+
+
 	}
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
 
+
+
 static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
+
 		case WM_ERASEBKGND:
+			return TRUE;
+		case WM_UPDATEUISTATE:
 			return TRUE;
 	}
 	return CallWindowProc(OldAvatarWndProc, hwnd, msg, wParam, lParam);
@@ -1188,8 +1296,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 				Rectangle(dc, 0, 0, rc.right, 2);
 				//SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 				SelectObject(dc, hPenOld);
-			}
-			else if (myGlobals.m_visualMessageSizeIndicator)
+			} else if (myGlobals.m_visualMessageSizeIndicator)
 				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DHIGHLIGHT));
 
 			if (myGlobals.m_visualMessageSizeIndicator) {
@@ -1202,8 +1309,7 @@ static LRESULT CALLBACK MsgIndicatorSubclassProc(HWND hwnd, UINT msg, WPARAM wPa
 
 					rc.right = (LONG)fx;
 					FillRect(dc, &rc, br);
-				}
-				else {
+				} else {
 					float baselen = (dat->textLen <= dat->nMax) ? (float)dat->textLen : (float)dat->nMax;
 					float fMax = (float)dat->nMax;
 					float uPercent = baselen / ((fMax / (float)100.0) ? (fMax / (float)100.0) : (float)75.0);
@@ -1289,8 +1395,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (dat && dat->pContainer->bSkinned) {
 				GetClientRect(hwnd, &rc);
 				SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
-			}
-			else {
+			} else {
 				GetClientRect(hwnd, &rc);
 				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
 			}
@@ -1317,8 +1422,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					LineTo(dc, -1, 1);
 					SelectObject(dc, hPenOld);
 					ReleaseDC(hwnd, dc);
-				}
-				else {
+				} else {
 					MoveToEx(dc, 0, 0, &pt);
 					hPenOld = SelectObject(dc, myGlobals.g_SkinDarkShadowPen);
 					LineTo(dc, 0, rc.bottom - rc.top);
@@ -1332,6 +1436,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			break;
 		}
+
 		case WM_LBUTTONUP: {
 			HWND hwndCapture = GetCapture();
 
@@ -1340,9 +1445,8 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (dat && dat->bType == SESSIONTYPE_IM && hwnd == GetDlgItem(hwndParent, IDC_PANELSPLITTER)) {
 				dat->panelWidth = -1;
 				SendMessage(hwndParent, WM_SIZE, 0, 0);
-			}
-			else if ((dat && dat->bType == SESSIONTYPE_IM && hwnd == GetDlgItem(hwndParent, IDC_SPLITTER)) ||
-					 (dat && dat->bType == SESSIONTYPE_CHAT && hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY))) {
+			} else if ((dat && dat->bType == SESSIONTYPE_IM && hwnd == GetDlgItem(hwndParent, IDC_SPLITTER)) ||
+					   (dat && dat->bType == SESSIONTYPE_CHAT && hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY))) {
 				RECT rc;
 				POINT pt;
 				int selection;
@@ -1375,8 +1479,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							if (dat->bType == SESSIONTYPE_IM) {
 								dwOff_IM = 0;
 								dwOff_CHAT = -2;
-							}
-							else if (dat->bType == SESSIONTYPE_CHAT) {
+							} else if (dat->bType == SESSIONTYPE_CHAT) {
 								dwOff_CHAT = 0;
 								dwOff_IM = 2;
 							}
@@ -1410,6 +1513,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (dat->bType == SESSIONTYPE_CHAT) {
 							SESSION_INFO *si = (SESSION_INFO *)dat->si;
 							si->iSplitterY = dat->savedSplitY;
+							dat->splitterY =si->iSplitterY   +22;
 						}
 						SendMessage(hwndParent, WM_SIZE, 0, 0);
 						//SendMessage(hwndParent, DM_SPLITTERMOVEDGLOBAL, dat->savedSplitter, (LPARAM) hwnd);
@@ -1435,6 +1539,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 	static int uinWidth, msgTop = 0, msgBottom = 0, not_on_list = 0;
 
 	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
+
 	int panelHeight = dat->panelHeight + 1;
 	int panelWidth = (dat->panelWidth != -1 ? dat->panelWidth + 2 : 0);
 	int s_offset = 0;
@@ -1446,40 +1552,18 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 	if (dat->panelStatusCX == 0)
 		dat->panelStatusCX = 80;
 
-	if (!showToolbar) {
-		int i;
-		for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
-			if (buttonLineControlsNew[i] == urc->wId)
-				OffsetRect(&urc->rcItem, 0, -(dat->splitterY + 10));
-	}
+// 	if (!showToolbar||bBottomToolbar) {
+// 		int i;
+// 		for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
+// 			if (buttonLineControlsNew[i] == urc->wId)
+// 				OffsetRect(&urc->rcItem, 0, -(dat->splitterY + 10));
+// 	}
 
 	s_offset = 1;
 
 	switch (urc->wId) {
-		case IDC_NAME:
-			urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom++;
-			urc->rcItem.right++;
-			if (dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
-				OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
-			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-		case IDC_SMILEYBTN:
-		case IDC_FONTBOLD:
-		case IDC_FONTITALIC:
-		case IDC_FONTUNDERLINE:
-		case IDC_FONTFACE:
-		case IDC_FONTCOLOR:
-			urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom++;
-			urc->rcItem.right++;
-			if (!dat->doSmileys)
-				OffsetRect(&urc->rcItem, -22, 0);
-			if (dat->controlsHidden & TOOLBAR_PROTO_HIDDEN)
-				OffsetRect(&urc->rcItem, -(rcButton.right + 2), 0);
-			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 		case IDC_TOGGLENOTES:
+ 			urc->rcItem.bottom = panelHeight-4;
 			return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
 		case IDC_PANELSPLITTER:
 			urc->rcItem.bottom = panelHeight;
@@ -1495,31 +1579,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 		case IDC_STATICTEXT:
 		case IDC_STATICERRORICON:
 			return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
-		case IDC_PROTOCOL:
-		case IDC_PIC:
-		case IDC_HISTORY:
-		case IDC_TIME:
-		case IDC_QUOTE:
-		case IDC_SAVE:
-			//case IDC_INFOPANELMENU:
-			if (urc->wId != IDC_PROTOCOL) // && urc->wId != IDC_PROTOMENU && urc->wId != IDC_INFOPANELMENU)
-				OffsetRect(&urc->rcItem, 12, 0);
-			urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom++;
-			urc->rcItem.right++;
-			if (urc->wId == IDC_PROTOCOL) // || urc->wId == IDC_PROTOMENU || urc->wId == IDC_INFOPANELMENU)
-				return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
-			if (showToolbar && !(dat->controlsHidden & TOOLBAR_SEND_HIDDEN)) {
-				urc->rcItem.left -= 38;
-				urc->rcItem.right -= 38;
-			}
-			else if (showToolbar)
-				OffsetRect(&urc->rcItem, 14, 0);
-
-			if (dat->fMustOffset)
-				OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
 		case IDC_ADD:
 		case IDC_CANCELADD:
 			if (urc->wId == IDC_ADD && dat->bNotOnList) {
@@ -1531,6 +1590,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			}
 			if (dat->showPic)
 				OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
+			if (bBottomToolbar&&showToolbar){
+				urc->rcItem.bottom -= 22;
+				urc->rcItem.top -= 22;}
 			urc->rcItem.bottom++;
 			urc->rcItem.right++;
 			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
@@ -1540,7 +1602,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (dat->sendMode & SMODE_MULTIPLE)
 				urc->rcItem.right -= (dat->multiSplitterX + 3);
 			urc->rcItem.bottom -= dat->splitterY - dat->originalSplitterY;
-			if (!showToolbar)
+			if (!showToolbar||bBottomToolbar)
 				urc->rcItem.bottom += 23;
 			if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
 				urc->rcItem.top += 24;
@@ -1560,6 +1622,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 		case IDC_PANELPIC:
 			urc->rcItem.left = urc->rcItem.right - (panelWidth > 0 ? panelWidth - 2 : panelHeight + 2);
 			urc->rcItem.bottom = urc->rcItem.top + (panelHeight - 3);
+
+			//Bolshevik: resizes avatar control
+			if( dat->hwndPanelPic ) //if Panel control was created?
+ 				SetWindowPos(dat->hwndPanelPic, HWND_TOP, 1, 1,  //resizes it
+ 				urc->rcItem.right-urc->rcItem.left-2,
+ 				urc->rcItem.bottom-urc->rcItem.top-2, SWP_SHOWWINDOW);
+			//Bolshevik_
 			if (myGlobals.g_FlashAvatarAvail) {
 				RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
 				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -1608,17 +1677,26 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (dat->fMustOffset)
 				urc->rcItem.right -= (dat->pic.cx + 2);
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
-		case IDC_CONTACTPIC:
+		case IDC_CONTACTPIC:{
+			RECT rc;
+			GetClientRect(GetDlgItem(hwndDlg, IDC_MESSAGE), &rc);
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			//urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
 			urc->rcItem.left = urc->rcItem.right - (dat->pic.cx + 2);
 			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy) && dat->showPic) {
 				urc->rcItem.top = urc->rcItem.bottom - (dat->pic.cy);
 				dat->fMustOffset = TRUE;
-			}
-			else
+			} else
 				dat->fMustOffset = FALSE;
 
+			if(showToolbar&&bBottomToolbar&&(myGlobals.m_AlwaysFullToolbarWidth||dat->pic.cy-5<rc.bottom)) urc->rcItem.bottom-=24;
+
+			//Bolshevik: resizes avatar control _FIXED
+			if( dat->hwndContactPic ) //if Panel control was created?
+				SetWindowPos(dat->hwndContactPic, HWND_TOP, 1, ((urc->rcItem.bottom-urc->rcItem.top)-(dat->pic.cy))/2+1,  //resizes it
+				dat->pic.cx-2,
+				dat->pic.cy-2, SWP_SHOWWINDOW);
+			//Bolshevik_
 			if (myGlobals.g_FlashAvatarAvail) {
 				RECT rc = { urc->rcItem.left,  urc->rcItem.top, urc->rcItem.right, urc->rcItem.bottom };
 				FLASHAVATAR fa = {0};
@@ -1628,8 +1706,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				fa.cProto = dat->szProto;
 				CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
 			}
-
-			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+			}return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
 		case IDC_MESSAGE:
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			if (dat->showPic)
@@ -1639,18 +1716,20 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				if (urc->rcItem.bottom - urc->rcItem.top > 48) {
 					urc->rcItem.right -= 26;
 					not_on_list = 26;
-				}
-				else {
+				} else {
 					urc->rcItem.right -= 52;
 					not_on_list = 52;
 				}
-			}
-			else
+			} else
 				not_on_list = 0;
 			if (myGlobals.m_SideBarEnabled)
 				urc->rcItem.left += 9;
 			if (myGlobals.m_visualMessageSizeIndicator)
 				urc->rcItem.bottom -= 2;
+			//mad
+			if (bBottomToolbar&&showToolbar)
+				urc->rcItem.bottom -= 22;
+			//
 			msgTop = urc->rcItem.top;
 			msgBottom = urc->rcItem.bottom;
 			if (dat->pContainer->bSkinned) {
@@ -1663,15 +1742,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				}
 			}
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
-		case IDOK:
-			OffsetRect(&urc->rcItem, 12, 0);
-			urc->rcItem.top -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom -= (dat->splitterY - dat->originalSplitterY + s_offset);
-			urc->rcItem.bottom++;
-
-			if (dat->fMustOffset)
-				OffsetRect(&urc->rcItem, -(dat->pic.cx + 2), 0);
-			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
 		case IDC_MULTISPLITTER:
 			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
 				urc->rcItem.top += panelHeight;
@@ -1700,6 +1770,10 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.right -= dat->pic.cx + 2;
 			if (myGlobals.m_SideBarEnabled)
 				urc->rcItem.left += 9;
+ 			if (bBottomToolbar&&showToolbar){
+				urc->rcItem.bottom -= 23;
+				urc->rcItem.top -= 22;}
+
 			urc->rcItem.right -= not_on_list;
 			OffsetRect(&urc->rcItem, 0, -1);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), myGlobals.m_visualMessageSizeIndicator ? SW_SHOW : SW_HIDE);
@@ -1765,8 +1839,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	if (dat == 0) {
 		if (dat == NULL && (msg == WM_ACTIVATE || msg == WM_SETFOCUS))
 			return 0;
-	}
-	else {
+	} else {
 		m_pContainer = dat->pContainer;
 		hwndContainer = m_pContainer->hwnd;
 	}
@@ -1775,9 +1848,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			RECT rc;
 			POINT pt;
 			int i;
-			BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
-			BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
-			HWND hwndItem;
+			BOOL	isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+			BOOL	isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
+			HWND	hwndItem;
+			int		dwLocalSmAdd = 0;
 
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 
@@ -1792,6 +1866,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			if (rtf_ctable == NULL)
 				RTF_CTableInit();
+
+			dat->dwFlags |= MWF_INITMODE;
 
 			dat->wOldStatus = -1;
 			dat->iOldHash = -1;
@@ -1815,18 +1891,17 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->bIsMeta = IsMetaContact(hwndDlg, dat) ? TRUE : FALSE;
 			if (dat->hContact && dat->szProto != NULL) {
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-				/*
-				#if defined(_UNICODE)
-								MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
-				#else
-								mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
-				#endif
-				*/
+/*
+#if defined(_UNICODE)
+				MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
+#else
+				mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, 0));
+#endif
+*/
 				mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) dat->hContact, GCDNF_TCHAR));
 				mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
 				dat->avatarbg = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "avbg", GetSysColor(COLOR_3DFACE));
-			}
-			else
+			} else
 				dat->wStatus = ID_STATUS_OFFLINE;
 
 			GetContactUIN(hwndDlg, dat);
@@ -1883,8 +1958,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			GetMyNick(hwndDlg, dat);
 
 
+
 			dat->multiSplitterX = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "multisplit", 150);
-			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
+			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
 			dat->iLastEventType = 0xffffffff;
@@ -1896,19 +1972,21 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			 * consider per-contact message setting overrides
 			 */
 
-			if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
-				DWORD dwLocalFlags = 0;
-				int dwLocalSmAdd = 0;
+			LoadOverrideTheme(hwndDlg, dat);
+			if (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwmask", 0)) {
 
-				if (dat->hContact) {
-					dwLocalFlags = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", 0xffffffff);
-					if (dwLocalFlags != 0xffffffff)
-						dat->dwFlags = dwLocalFlags;
-					dwLocalSmAdd = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "doSmileys", 0xffffffff);
-					if (dwLocalSmAdd != 0xffffffff)
-						dat->doSmileys = dwLocalSmAdd;
-				}
+				if (dat->hContact)
+					LoadLocalFlags(hwndDlg, dat);
 			}
+			
+			/*
+			 * allow disabling emoticons per contact (note: currently unused feature)
+			 */
+
+			dwLocalSmAdd = DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "doSmileys", 0xffffffff);
+			if (dwLocalSmAdd != 0xffffffff)
+				dat->doSmileys = dwLocalSmAdd;
+
 			dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
 										  CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
 
@@ -1924,7 +2002,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->dwFlagsEx = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwFlagsEx | MWF_SHOW_INFOPANEL : dat->dwFlagsEx & ~MWF_SHOW_INFOPANEL;
 			dat->dwFlagsEx |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
 			SetMessageLog(hwndDlg, dat);
-			LoadOverrideTheme(hwndDlg, dat);
 			dat->panelWidth = -1;
 			if (dat->hContact) {
 				dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
@@ -1950,35 +2027,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minEditBoxSize.cx = rc.right - rc.left;
 			dat->minEditBoxSize.cy = rc.bottom - rc.top;
 
+			//mad
+			BB_InitDlgButtons(hwndDlg, dat);
+			//
+
 			SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_FONTBOLD, BUTTONSETASPUSHBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_FONTITALIC, BUTTONSETASPUSHBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_FONTUNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BUTTONSETASPUSHBTN, 0, 0);
 
 			if (m_pContainer->bSkinned && !StatusItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 					!StatusItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !StatusItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
 				isFlat = TRUE;
 				isThemed = FALSE;
-			}
-			for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++) {
-				hwndItem = GetDlgItem(hwndDlg, buttonLineControlsNew[i]);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
-			}
-			for (i = 0; i < sizeof(formatControls) / sizeof(formatControls[0]); i++) {
-				hwndItem = GetDlgItem(hwndDlg, formatControls[i]);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
-			}
-			for (i = 0; i < sizeof(infoLineControls) / sizeof(infoLineControls[0]); i++) {
-				hwndItem = GetDlgItem(hwndDlg, infoLineControls[i]);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			}
 
 			for (i = 0; i < sizeof(errorButtons) / sizeof(errorButtons[0]); i++) {
@@ -1988,14 +2048,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			}
 
-			hwndItem = GetDlgItem(hwndDlg, IDOK);
-			SendMessage(hwndItem, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
-			SendMessage(hwndItem, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
-			SendMessage(hwndItem, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
-
-			SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONSETARROW, IDC_SENDMENU, 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONSETARROW, IDC_PROTOMENU, 0);
-			SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONSETARROW, IDC_INFOPANELMENU, 0);
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_TOGGLENOTES), BUTTONSETASFLATBTN, 0, 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_TOGGLESIDEBAR), BUTTONSETASFLATBTN, 0, 0);
@@ -2012,7 +2064,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 
-			dat->dwFlags |= MWF_INITMODE;
+
+
+//			dat->dwFlags |= MWF_INITMODE;
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING, 0);
 
 			for (i = 0;;i++) {
@@ -2024,10 +2078,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, TranslateT("Message Log is frozen"));
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_SAVE), BUTTONADDTOOLTIP, (WPARAM)pszIDCSAVE_close, 0);
-			if (dat->bIsMeta)
-				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("View User's Details\nRight click for MetaContact control\nClick dropdown for window settings"), 0);
-			else
-				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("View User's Details\nClick dropdown for window settings"), 0);
+			//if (dat->bIsMeta)
+				SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("Click for contact menu\nClick dropdown for window settings"), 0);
+			//else
+				//SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) TranslateT("Click for contact menu\nClick dropdown for window settings"), 0);
 
 			SetWindowText(GetDlgItem(hwndDlg, IDC_RETRY), TranslateT("Retry"));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), TranslateT("Cancel"));
@@ -2037,6 +2091,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
 
+			//MAD
+			if(dat->bActualHistory=DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ActualHistory", 0))
+				{
+				dat->messageCount=(UINT)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);
+				DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);	
+				}
+	
 			/* OnO: higligh lines to their end */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 
@@ -2058,8 +2119,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
 
-			OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
+ 			OldAvatarWndProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
+ 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) AvatarSubclassProc);
 
 			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
@@ -2076,9 +2137,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				GetCachedStatusMsg(hwndDlg, dat);
 			}
 			dat->stats.started = time(NULL);
-			LoadContactAvatar(hwndDlg, dat);
+ 			LoadContactAvatar(hwndDlg, dat);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 			LoadOwnAvatar(hwndDlg, dat);
+
+
 			/*
 			 * restore saved msg if any...
 			 */
@@ -2115,7 +2178,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (len)
 					EnableSendButton(hwndDlg, TRUE);
 			}
-			dat->dwFlags &= ~MWF_INITMODE;
+			//dat->dwFlags &= ~MWF_INITMODE;
 			{
 				DBEVENTINFO dbei = { 0};
 				HANDLE hdbEvent;
@@ -2132,8 +2195,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							DM_UpdateLastMessage(hwndDlg, dat);
 							break;
 						}
-					}
-					while (hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0));
+					} while (hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0));
 				}
 
 			}
@@ -2144,9 +2206,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				ZeroMemory(&wndClass, sizeof(wndClass));
 				GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
-
-				OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
-				//OldMessageLogProc = wndClass.lpfnWndProc;
+				//TODO: check compatibility with anismiles!
+				//OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
+				OldMessageLogProc = wndClass.lpfnWndProc;
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
 			}
 
@@ -2175,8 +2237,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SetForegroundWindow(hwndDlg);
 				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				PostMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
-			}
-			else if (m_pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
+			} else if (m_pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
 				dat->dwFlags |= MWF_DEFERREDSCROLL;
 				ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
 				m_pContainer->hwndActive = hwndDlg;
@@ -2188,6 +2249,29 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendMessage(hwndContainer, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 			dat->dwLastActivity = GetTickCount() - 1000;
 			m_pContainer->dwLastActivity = dat->dwLastActivity;
+			//MAD
+			if(dat->hwndHPP) {
+				if(dat->oldIEViewProc == 0) {
+					WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)HPPKFSubclassProc);
+					if(OldHppProc == 0)
+						OldHppProc = wndProc;
+					dat->oldIEViewProc = wndProc;
+				}
+
+			}
+			else if(dat->hwndIEView) {
+				if(dat->oldIEViewProc == 0) {
+					WNDPROC wndProc;
+					wndProc= (WNDPROC)SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)IEViewKFSubclassProc);
+					// alex: fixed double subclassing issue with IEView (IE parent frame must also be subclassed with different
+					//       procedure to enable visual style IEView control border.
+					//if(OldIEViewProc == 0)
+					//	OldIEViewProc = wndProc;
+					dat->oldIEViewLastChildProc = wndProc;
+				}
+			}
+			dat->dwFlags &= ~MWF_INITMODE;
+			//MAD_
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 			/*
 			 * show a popup if wanted...
@@ -2203,6 +2287,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				m_pContainer->hwndActive = hwndDlg;
 				return FALSE;
 			}
+
 			return newData->iActivate ? TRUE : FALSE;
 		}
 		case DM_TYPING: {
@@ -2251,8 +2336,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (splitterEdges == 0) {
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-			}
-			else {
+			} else {
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_EXSTYLE) | WS_EX_STATICEDGE);
 			}
@@ -2260,13 +2344,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				GetSendFormat(hwndDlg, dat, 1);
 				SetDialogToType(hwndDlg);
 			}
-			dat->iButtonBarNeeds = dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 0 : 40) : 0;
-			dat->iButtonBarNeeds += (dat->showUIElements ? (dat->doSmileys ? 220 : 198) : 0);
-
-			dat->iButtonBarNeeds += (dat->showUIElements) ? 28 : 0;
-			dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 110 : 70) : 0);
-			if (!dat->SendFormat)
-				dat->iButtonBarReallyNeeds -= 96;
+			dat->iButtonBarNeeds = dat->showUIElements ? dat->bbLSideWidth+dat->bbRSideWidth : 0;
+// 
+//			dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 110 : 70) : 0);
+// 			if (!dat->SendFormat)
+// 				dat->iButtonBarReallyNeeds -= 96;
 			if (lParam == 1) {
 				DM_RecalcPictureSize(hwndDlg, dat);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2275,25 +2357,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return 0;
 		case DM_LOADBUTTONBARICONS: {
 			int i;
-
 			for (i = 0;;i++) {
 				if (buttonicons[i].id == -1)
 					break;
 				SendDlgItemMessage(hwndDlg, buttonicons[i].id, BM_SETIMAGE, IMAGE_ICON, (LPARAM)*buttonicons[i].pIcon);
 				SendDlgItemMessage(hwndDlg, buttonicons[i].id, BUTTONSETASFLATBTN + 12, 0, (LPARAM)m_pContainer);
 			}
+			BB_UpdateIcons(hwndDlg, dat);
+			SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 			return 0;
 		}
 		case DM_OPTIONSAPPLIED:
 			dat->szMicroLf[0] = 0;
-			if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
-				dat->dwFlags &= ~(MWF_LOG_ALL);
-				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0)
-					dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-				else
-					dat->dwFlags |= DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-				dat->panelWidth = -1;
-			}
+			if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
+				LoadLocalFlags(hwndDlg, dat);
 
 			if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
 				LoadThemeDefaults(hwndDlg, dat);
@@ -2320,7 +2397,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));    // XXX margins in the message area as well
 
-			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWIN, SRMSGDEFSET_SHOWTYPINGWIN);
+			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
 
 			GetSendFormat(hwndDlg, dat, 1);
 			SetDialogToType(hwndDlg);
@@ -2408,8 +2485,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) | WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR);
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) | (WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
-				}
-				else {
+				} else {
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_EXSTYLE) &~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
 					SetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_NOTES), GWL_EXSTYLE) & ~(WS_EX_RIGHT | WS_EX_RTLREADING | WS_EX_LEFTSCROLLBAR));
@@ -2456,7 +2532,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ZeroMemory((void *)&item, sizeof(item));
 			if (dat->hContact) {
 				int iHasName;
-				TCHAR fulluin[128];
+				TCHAR fulluin[256];
 				if (dat->szProto) {
 					TCHAR	*wUIN = NULL;
 
@@ -2467,13 +2543,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 					szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 					hActContact = /* dat->bIsMeta ? dat->hSubContact :*/ dat->hContact;
-					/*
-					#if defined(_UNICODE)
-										MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
-					#else
-										mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
-					#endif
-					*/
+/*
+#if defined(_UNICODE)
+					MY_GetContactDisplayNameW(dat->hContact, dat->szNickname, 84, dat->szProto, dat->codePage);
+#else
+					mir_snprintf(dat->szNickname, 80, "%s", (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, 0));
+#endif
+*/
 					mir_sntprintf(dat->szNickname, 80, _T("%s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hActContact, GCDNF_TCHAR));
 					iHasName = (int)dat->uin[0];        // dat->uin[0] == 0 if there is no valid UIN
 					dat->idle = DBGetContactSettingDword(dat->hContact, dat->szProto, "IdleTS", 0);
@@ -2497,31 +2573,35 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							CutContactName(dat->szNickname, newcontactname, safe_sizeof(newcontactname));
 						else
 							lstrcpyn(newcontactname, dat->szNickname, safe_sizeof(newcontactname));
+						//Mad: to fix tab width for nicknames with ampersands
+						DoubleAmpersands(newcontactname);
 
 						if (lstrlen(newcontactname) != 0 && dat->szStatus != NULL) {
 							if (myGlobals.m_StatusOnTabs)
 								mir_sntprintf(newtitle, 127, _T("%s (%s)"), newcontactname, dat->szStatus);
 							else
 								mir_sntprintf(newtitle, 127, _T("%s"), newcontactname);
-						}
-						else
+						} else
 							mir_sntprintf(newtitle, 127, _T("%s"), _T("Forward"));
 
 						item.mask |= TCIF_TEXT;
 					}
 					SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 					wUIN = a2tf((TCHAR *)dat->uin, 0, 0);
-					mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for contact menu\nClick dropdown for infopanel settings."), iHasName ? wUIN : TranslateT("No UIN"));
-					SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, iHasName ? (WPARAM)fulluin : (WPARAM)"", 0);
-					if (wUIN)
+					if (dat->bIsMeta)
+						mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nRight click for MetaContact control\nClick dropdown for infopanel settings"), iHasName ? wUIN : TranslateT("No UIN"));
+					else
+						mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown for infopanel settings"), iHasName ? wUIN : TranslateT("No UIN"));
+
+					SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, /*iHasName ?*/ (WPARAM)fulluin /*: (WPARAM)_T("")*/, 0);   
+					if(wUIN)
 						mir_free(wUIN);
 				}
-			}
-			else
+			} else
 				lstrcpyn(newtitle, pszNewTitleEnd, safe_sizeof(newtitle));
 
 			if (dat->xStatus != oldXStatus || dat->idle != dwOldIdle || iHash != dat->iOldHash || dat->wApparentMode != wOldApparentMode || dat->wStatus != dat->wOldStatus || lParam != 0 || (dat->bIsMeta && dat->szMetaProto != szOldMetaProto)) {
-				if (dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
+				if (dat->hContact != 0 &&(myGlobals.m_LogStatusChanges != 0)&& dat->dwFlags & MWF_LOG_STATUSCHANGES) {
 					if (dat->wStatus != dat->wOldStatus && dat->hContact != 0 && dat->wOldStatus != (WORD) - 1 && !(dat->dwFlags & MWF_INITMODE)) {          // log status changes to message log
 						DBEVENTINFO dbei;
 						TCHAR buffer[450];
@@ -2582,8 +2662,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "isRecent", 0)) {
 					dat->dwIsFavoritOrRecent |= 0x00010000;
 					AddContactToFavorites(dat->hContact, dat->szNickname, szActProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 0, myGlobals.g_hMenuRecent, dat->codePage);
-				}
-				else
+				} else
 					dat->dwIsFavoritOrRecent &= 0x0000ffff;
 
 				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -2645,8 +2724,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 						SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
 						ShowWindow(fa.hWindow, SW_SHOW);
-					}
-					else {
+					} else {
 						ShowWindow(fa.hWindow, SW_HIDE);
 					}
 				}
@@ -2678,13 +2756,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);
 			return 0;
 		}
+
 		case WM_SIZE: {
 			UTILRESIZEDIALOG urd;
 			BITMAP bminfo;
-			int buttonBarSpace;
 			RECT rc, rcPic;
-			int saved = 0, i;
-			int delta;
+			int saved = 0/*, i*/;
 			HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
 			RECT rcPanelBottom;
 
@@ -2721,8 +2798,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			// dynamic toolbar layout...
 
 			GetClientRect(hwndDlg, &rc);
-			buttonBarSpace = rc.right;
-
 			{
 				POINT pt;
 				GetClientRect(GetDlgItem(hwndDlg, IDC_SPLITTER), &rcPic);
@@ -2736,41 +2811,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->fMustOffset = FALSE;
 			}
 
-			if (dat->showPic) {
-				if (dat->fMustOffset)
-					buttonBarSpace = rc.right - (dat->pic.cx + 2);
-			}
 
 			dat->controlsHidden = FALSE;
 
-			delta = dat->iButtonBarReallyNeeds - buttonBarSpace;
 
-			if (dat->hContact != 0 && dat->showUIElements != 0) {
-				const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
-				if (!dat->SendFormat)
-					hideThisControls = controlsToHide2;
-				for (i = 0;;i++) {
-					if (hideThisControls[i] == -1)
-						break;
-					if (hideThisControls[i] == IDOK && myGlobals.m_AllowSendButtonHidden == 0)
-						continue;               // ignore sendbutton if we don't want to hide it
-					if (saved < delta) {
-						ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_HIDE);
-						if (hideThisControls[i] == IDC_PROTOCOL) {
-							dat->controlsHidden |= TOOLBAR_PROTO_HIDDEN;
-							saved += 8; //10;
-						}
-						if (hideThisControls[i] == IDOK)
-							dat->controlsHidden |= TOOLBAR_SEND_HIDDEN;
-						saved += (hideThisControls[i] == IDOK ? 50 : 23);
-					}
-					else {
-						if (!IsWindowVisible(GetDlgItem(hwndDlg, hideThisControls[i])))
-							ShowWindow(GetDlgItem(hwndDlg, hideThisControls[i]), SW_SHOW);
-					}
-				}
-			}
-			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
+// 			if (dat->hContact != 0 && dat->showUIElements != 0) {
+// 				const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
+// 				if (!dat->SendFormat)
+// 					hideThisControls = controlsToHide2;
+// 
+//  			}
+			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);   
+//mad
+			BB_SetButtonsPos(hwndDlg,dat);
+//			
 
 			if (GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
 				RECT rc, rcClient, rcLog;
@@ -2789,14 +2843,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			if (dat->hwndIEView || dat->hwndHPP)
 				ResizeIeView(hwndDlg, dat, 0, 0, 0, 0);
-			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
-				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
-			}
+ 			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+ 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELUIN), NULL, FALSE);
+ 				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELNICK), NULL, FALSE);
+ 			}
 			if (wParam == 0 && lParam == 0 && m_pContainer->bSkinned)
 				RedrawWindow(hwndDlg, NULL, NULL, RDW_UPDATENOW | RDW_NOCHILDREN | RDW_INVALIDATE);
 			break;
 		}
+
 		case DM_UPDATEPICLAYOUT:
 			LoadContactAvatar(hwndDlg, dat);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -2840,10 +2895,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->multiSplitterX > ((rc.right - rc.left) - 80))
 					dat->multiSplitterX = oldSplitterX;
 
-			}
-			else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
+			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
 				int oldSplitterY;
-
+				int bottomtoolbarH=0;
 				GetClientRect(hwndDlg, &rc);
 				pt.x = 0;
 				pt.y = wParam;
@@ -2855,16 +2909,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				 * attempt to fix splitter troubles..
 				 * hardcoded limits... better solution is possible, but this works for now
 				 */
-				if (dat->splitterY < (MINSPLITTERY + 5))           // min splitter size
-					dat->splitterY = (MINSPLITTERY + 5);
+				//mad
+				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) bottomtoolbarH=22;
+				//
+				if (dat->splitterY < (MINSPLITTERY + 5 + bottomtoolbarH))           // min splitter size
+					dat->splitterY = (MINSPLITTERY + 5 + bottomtoolbarH);
 				else if (dat->splitterY > ((rc.bottom - rc.top) - 50))
 					dat->splitterY = oldSplitterY;
 				else {
 					dat->dynaSplitter = (rc.bottom - pt.y) - 11;
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
-			}
-			else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
+			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
 				RECT rc;
 				POINT pt;
 				pt.x = 0;
@@ -2939,8 +2995,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->hwndIEView) {
 				iew.hwnd = dat->hwndIEView;
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&iew);
-			}
-			else if (dat->hwndHPP) {
+			} else if (dat->hwndHPP) {
 				iew.hwnd = dat->hwndHPP;
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&iew);
 			}
@@ -3012,8 +3067,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if (myGlobals.m_DividersUsePopupConfig && myGlobals.m_UseDividers) {
 							if (!MessageWindowOpened((WPARAM)dat->hContact, 0))
 								SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
-						}
-						else if (myGlobals.m_UseDividers) {
+						} else if (myGlobals.m_UseDividers) {
 							if ((GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer))
 								SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
 							else {
@@ -3045,11 +3099,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 								dat->stats.iReceived++;
 								dat->stats.iReceivedBytes += dat->stats.lastReceivedChars;
 							}
-						}
-						else
+						} else
 							SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-					}
-					else
+					} else
 						SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 
 					// handle tab flashing
@@ -3134,17 +3186,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!DBGetContactSettingTString(dat->hContact, dat->szProto, "MirVer", &dbv)) {
 						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELSTATUS + 1, (LPARAM)dbv.ptszVal);
 						DBFreeVariant(&dbv);
-					}
-					else
+					} else
 						SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PANELSTATUS + 1, (LPARAM)TranslateT("Unknown client"));
-				}
-				else if (wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
+				} else if (wParam == TIMERID_AWAYMSG && PtInRect(&rc, pt)) {
 					SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, 0, 0);
-				}
-				else if (wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
+				} else if (wParam == (TIMERID_AWAYMSG + 1) && PtInRect(&rcNick, pt) && dat->xStatus > 0) {
 					TCHAR szBuffer[1025];
 					DBVARIANT dbv;
-					mir_sntprintf(szBuffer, safe_sizeof(szBuffer), _T("No extended status message available"));
+					mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("No extended status message available"));
 					if (!DBGetContactSettingTString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusMsg", &dbv)) {
 						if (lstrlen(dbv.ptszVal) > 2)
 							mir_sntprintf(szBuffer, safe_sizeof(szBuffer), _T("%s"), dbv.ptszVal);
@@ -3166,21 +3215,18 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						HandleQueueError(hwndDlg, dat, iIndex);
 					break;
-				}
-				else if (wParam >= TIMERID_MULTISEND_BASE) {
+				} else if (wParam >= TIMERID_MULTISEND_BASE) {
 					int iJobIndex = (wParam - TIMERID_MULTISEND_BASE) / SENDJOBS_MAX_SENDS;
 					int iSendIndex = (wParam - TIMERID_MULTISEND_BASE) % SENDJOBS_MAX_SENDS;
 					KillTimer(hwndDlg, wParam);
 					_DebugPopup(dat->hContact, _T("MULTISEND timeout: %d, %d"), iJobIndex, iSendIndex);
 					break;
 				}
-			}
-			else if (wParam == TIMERID_FLASHWND) {
+			} else if (wParam == TIMERID_FLASHWND) {
 				if (dat->mayFlashTab)
 					FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, TRUE, dat->hTabIcon);
 				break;
-			}
-			else if (wParam == TIMERID_TYPE) {
+			} else if (wParam == TIMERID_TYPE) {
 				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF) {
 					NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 				}
@@ -3189,8 +3235,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						dat->nTypeSecs--;
 						if (GetForegroundWindow() == hwndContainer)
 							SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
-					}
-					else {
+					} else {
 						struct MessageWindowData *dat_active = NULL;
 						dat->showTyping = 0;
 
@@ -3205,8 +3250,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if (!(m_pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
 							ReflashContainer(m_pContainer);
 					}
-				}
-				else {
+				} else {
 					if (dat->nTypeSecs > 0) {
 						TCHAR szBuf[256];
 
@@ -3229,8 +3273,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							if (dat->mayFlashTab)
 								dat->iFlashIcon = myGlobals.g_IconTypingEvent;
 							HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconTypingEvent);
-						}
-						else {         // active tab may show icon if status bar is disabled
+						} else {         // active tab may show icon if status bar is disabled
 							if (!m_pContainer->hwndStatus) {
 								if (TabCtrl_GetItemCount(GetParent(hwndDlg)) > 1 || !(m_pContainer->dwFlags & CNT_HIDETABS)) {
 									HandleIconFeedback(hwndDlg, dat, myGlobals.g_IconTypingEvent);
@@ -3316,8 +3359,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 									MsgServiceName(sendJobs[dat->iCurrentQueueError].hContact[i], dat, sendJobs[dat->iCurrentQueueError].dwFlags), (dat->sendMode & SMODE_FORCEANSI) ? (sendJobs[dat->iCurrentQueueError].dwFlags & ~PREF_UNICODE) : sendJobs[dat->iCurrentQueueError].dwFlags, (LPARAM) sendJobs[dat->iCurrentQueueError].sendBuffer);
 							resent++;
 						}
-					}
-					else
+					} else
 						_DebugPopup(dat->hContact, _T("iCurrentQueueError out of bounds (%d)"), dat->iCurrentQueueError);
 					if (resent) {
 						int iNextFailed;
@@ -3346,8 +3388,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if (GetKeyboardLayout(0) != dat->hkl) {
 						ActivateKeyboardLayout(dat->hkl, 0);
 					}
-				}
-				else {
+				} else {
 					dat->hkl = (HKL) lParam;
 					ActivateKeyboardLayout(dat->hkl, 0);
 				}
@@ -3447,8 +3488,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->hwndIEView != 0)
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				//SetWindowPos(dat->hwndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			}
-			else {
+			} else {
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 				if (lParam == 0) {
 					PostMessage(hwndDlg, DM_FORCESCROLL, 0, 0);
@@ -3581,15 +3621,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 					}
 					break;
-				}
-				else if (PtInRect(&rcNick, pt)) {
+				} else if (PtInRect(&rcNick, pt)) {
 					if (!(dat->dwFlagsEx & MWF_SHOW_AWAYMSGTIMER)) {
 						SetTimer(hwndDlg, TIMERID_AWAYMSG + 1, 1000, 0);
 						dat->dwFlagsEx |= MWF_SHOW_AWAYMSGTIMER;
 					}
 					break;
-				}
-				else if (IsWindowVisible(dat->hwndTip)) {
+				} else if (IsWindowVisible(dat->hwndTip)) {
 					GetWindowRect(GetDlgItem(hwndDlg, IDC_PANELSTATUS), &rc);
 					if (!PtInRect(&rc, pt))
 						SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
@@ -3631,6 +3669,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			if (!dat)
 				break;
+			//mad
+				if(LOWORD(wParam)>=MIN_CBUTTONID&&LOWORD(wParam)<=MAX_CBUTTONID){
+					BB_CustomButtonClick(dat,LOWORD(wParam) ,GetDlgItem(hwndDlg,LOWORD(wParam)),0);
+				break;
+				}
+			//
 			switch (LOWORD(wParam)) {
 				case IDOK: {
 					int bufSize = 0, memRequired = 0, flags = 0;
@@ -3670,17 +3714,14 @@ LBL_UnicodeSend:
 									if (!IsUtfSendAvailable(dat->hContact)) {
 										flags |= PREF_UNICODE;
 										memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
-									}
-									else {
+									} else {
 										flags |= PREF_UTF;
 										utfResult = mir_utf8encodeW(decoded);
 										memRequired = strlen(utfResult) + 1;
 									}
-								}
-								else
+								} else
 									memRequired = bufSize;
-							}
-							else
+							} else
 								goto LBL_UnicodeSend;
 
 							/*
@@ -3707,8 +3748,7 @@ LBL_UnicodeSend:
 							if (utfResult) {
 								CopyMemory(dat->sendBuffer, utfResult, memRequired);
 								mir_free(utfResult);
-							}
-							else {
+							} else {
 								WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, bufSize, 0, 0);
 								if (flags & PREF_UNICODE)
 									CopyMemory(&dat->sendBuffer[bufSize], decoded, (lstrlenW(decoded) + 1) * sizeof(WCHAR));
@@ -3751,8 +3791,7 @@ LBL_UnicodeSend:
 #endif
 						if (dat->hwndIEView != 0 && m_pContainer->hwndStatus) {
 							SendMessage(m_pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM)Translate("Message saved for later delivery"));
-						}
-						else
+						} else
 							LogErrorMessage(hwndDlg, dat, -1, TranslateT("Message saved for later delivery"));
 
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
@@ -3838,8 +3877,7 @@ LBL_UnicodeSend:
 						if (dat->hwndIEView) {
 							event.hwnd = dat->hwndIEView;
 							selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM) & event);
-						}
-						else {
+						} else {
 							event.hwnd = dat->hwndHPP;
 							selected = (TCHAR *)CallService(MS_HPP_EG_EVENT, 0, (LPARAM) & event);
 						}
@@ -3854,8 +3892,7 @@ LBL_UnicodeSend:
 							if (szQuoted)
 								free(szQuoted);
 							break;
-						}
-						else {
+						} else {
 							hDBEvent = (HANDLE)CallService(MS_DB_EVENT_FINDLAST, (WPARAM)dat->hContact, 0);
 							goto quote_from_last;
 						}
@@ -3880,8 +3917,7 @@ quote_from_last:
 						if (dbei.flags & DBEF_UTF) {
 							szConverted = Utf8_Decode((char*)szText);
 							iAlloced = TRUE;
-						}
-						else {
+						} else {
 							if (iSize != dbei.cbBlob)
 								szConverted = (TCHAR *) & dbei.pBlob[iSize];
 							else {
@@ -3928,8 +3964,7 @@ quote_from_last:
 						if (iAlloced)
 							free(szConverted);
 #endif
-					}
-					else {
+					} else {
 #ifdef _UNICODE
 						wchar_t *converted = 0;
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SF_USECODEPAGE | SFF_SELECTION);
@@ -3954,43 +3989,49 @@ quote_from_last:
 				}
 				case IDC_FONTBOLD:
 				case IDC_FONTITALIC:
-				case IDC_FONTUNDERLINE: {
+				case IDC_FONTUNDERLINE:
+				case IDC_FONTSTRIKEOUT:	{
 					CHARFORMAT2 cf = {0}, cfOld = {0};
 					int cmd = LOWORD(wParam);
-					BOOL isBold, isItalic, isUnderline;
+					BOOL isBold, isItalic, isUnderline, isStrikeout;
 					cf.cbSize = sizeof(CHARFORMAT2);
 
 					if (dat->SendFormat == 0)           // dont use formatting if disabled
 						break;
 
 					cfOld.cbSize = sizeof(CHARFORMAT2);
-					cfOld.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE;
+					cfOld.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cfOld);
 					isBold = (cfOld.dwEffects & CFE_BOLD) && (cfOld.dwMask & CFM_BOLD);
 					isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
 					isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
-
+					isStrikeout = (cfOld.dwEffects & CFM_STRIKEOUT) && (cfOld.dwMask & CFM_STRIKEOUT);
+					
 					if (cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTBOLD)))
 						break;
 					if (cmd == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTITALIC)))
 						break;
 					if (cmd == IDC_FONTUNDERLINE && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTUNDERLINE)))
 						break;
+					if (cmd == IDC_FONTSTRIKEOUT && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTSTRIKEOUT)))
+						break;
 					if (cmd == IDC_FONTBOLD) {
 						cf.dwEffects = isBold ? 0 : CFE_BOLD;
 						cf.dwMask = CFM_BOLD;
 						CheckDlgButton(hwndDlg, IDC_FONTBOLD, !isBold);
-					}
-					else if (cmd == IDC_FONTITALIC) {
+					} else if (cmd == IDC_FONTITALIC) {
 						cf.dwEffects = isItalic ? 0 : CFE_ITALIC;
 						cf.dwMask = CFM_ITALIC;
 						CheckDlgButton(hwndDlg, IDC_FONTITALIC, !isItalic);
-					}
-					else if (cmd == IDC_FONTUNDERLINE) {
+					} else if (cmd == IDC_FONTUNDERLINE) {
 						cf.dwEffects = isUnderline ? 0 : CFE_UNDERLINE;
 						cf.dwMask = CFM_UNDERLINE;
 						CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, !isUnderline);
-					}
+						} else if (cmd == IDC_FONTSTRIKEOUT) {
+							cf.dwEffects = isStrikeout ? 0 : CFM_STRIKEOUT;
+							cf.dwMask = CFM_STRIKEOUT;
+							CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, !isStrikeout);
+						}
 					SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 					break;
 				}
@@ -4006,7 +4047,7 @@ quote_from_last:
 					GetWindowRect(GetDlgItem(hwndDlg, IDC_FONTFACE), &rc);
 					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 					if (iSelection == ID_FONT_CLEARALLFORMATTING) {
-						cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_UNDERLINE;
+						cf.dwMask = CFM_BOLD | CFM_COLOR | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 						cf.crTextColor = DBGetContactSettingDword(NULL, SRMSGMOD_T, "Font16Col", 0);
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 						break;
@@ -4040,20 +4081,10 @@ quote_from_last:
 					if (GetKeyState(VK_SHIFT) & 0x8000)   // copy UIN
 						SendMessage(hwndDlg, DM_UINTOCLIPBOARD, 0, 0);
 					else {
-						RECT rc;
-						int  iSel = 0;
+						//MAD
+						CallService(MS_USERINFO_SHOWDIALOG, (WPARAM) (dat->bIsMeta ? dat->hSubContact :  dat->hContact), 0);
+						//MAD_
 
-						HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
-						if (lParam == 0)
-							GetWindowRect(GetDlgItem(hwndDlg, IDC_NAME), &rc);
-						else
-							GetWindowRect((HWND)lParam, &rc);
-						iSel = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
-
-						if (iSel)
-							CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) dat->hContact);
-
-						DestroyMenu(hMenu);
 					}
 				}
 				break;
@@ -4103,16 +4134,6 @@ quote_from_last:
 					iSelection = TrackPopupMenu(submenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
 					isHandled = MsgWindowMenuHandler(hwndDlg, dat, iSelection, MENU_LOGMENU);
 
-					if (dat->dwFlags != dwOldFlags || dat->dwFlagsEx != dwOldEventIsShown) {
-						if (!DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0)) {
-							SaveMessageLogFlags(hwndDlg, dat);
-							WindowList_Broadcast(hMessageWindowList, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-						}
-						else {
-							DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
-							SendMessage(hwndDlg, DM_DEFERREDREMAKELOG, (WPARAM)hwndDlg, 0);
-						}
-					}
 					break;
 				}
 				case IDC_LOGFROZEN:
@@ -4131,7 +4152,7 @@ quote_from_last:
 					int iOldGlobalSendFormat = myGlobals.m_SendFormat;
 
 					if (dat->hContact) {
-						unsigned int iOldIEView = GetIEViewMode(hwndDlg, dat);
+						unsigned int iOldIEView = GetIEViewMode(hwndDlg, dat->hContact);
 						unsigned int iNewIEView = 0;
 						int iLocalFormat = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "sendformat", 0);
 						int iNewLocalFormat = iLocalFormat;
@@ -4245,7 +4266,7 @@ quote_from_last:
 								dat->SendFormat = 0;
 							WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
 						}
-						iNewIEView = GetIEViewMode(hwndDlg, dat);
+						iNewIEView = GetIEViewMode(hwndDlg, dat->hContact);
 						if (iNewIEView != iOldIEView)
 							SwitchMessageLog(hwndDlg, dat, iNewIEView);
 					}
@@ -4467,8 +4488,7 @@ quote_from_last:
 						if (dat->hwndIEView) {
 							event.hwnd = dat->hwndIEView;
 							CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-						}
-						else {
+						} else {
 							event.hwnd = dat->hwndHPP;
 							CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
 						}
@@ -4477,7 +4497,24 @@ quote_from_last:
 					dat->hDbEventFirst = NULL;
 					break;
 				case IDC_PROTOCOL:
-					CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)(dat->bIsMeta ? dat->hSubContact :  dat->hContact), 0);
+					//MAD
+					{
+					RECT rc;
+					int  iSel = 0;
+
+					HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) dat->hContact, 0);
+					if(lParam == 0)
+						GetWindowRect(GetDlgItem(hwndDlg, IDC_PROTOCOL/*IDC_NAME*/), &rc);
+					else
+						GetWindowRect((HWND)lParam, &rc);
+					iSel = TrackPopupMenu(hMenu, TPM_RETURNCMD, rc.left, rc.bottom, 0, hwndDlg, NULL);
+
+					if(iSel)
+						CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(iSel), MPCF_CONTACTMENU), (LPARAM) dat->hContact);
+
+					DestroyMenu(hMenu);
+					}
+					//MAD_     
 					break;
 // error control
 				case IDC_CANCELSEND:
@@ -4518,8 +4555,7 @@ quote_from_last:
 									if (!(dat->dwFlags & MWF_INITMODE))
 										NotifyTyping(dat, PROTOTYPE_SELFTYPING_ON);
 								}
-							}
-							else {
+							} else {
 								if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 									NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 								}
@@ -4675,6 +4711,15 @@ quote_from_last:
 								DM_ScrollToBottom(hwndDlg, dat, 1, 1);
 								break;
 							}
+							//MAD: tabulation mod
+							if(msg == WM_KEYDOWN&&wp == VK_TAB&&myGlobals.m_AllowTab) {
+								SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t"); 
+								((MSGFILTER *) lParam)->msg = WM_NULL;
+								((MSGFILTER *) lParam)->wParam = 0;
+								((MSGFILTER *) lParam)->lParam = 0;
+								return 0;
+							}
+							//MAD_
 							if (msg == WM_MOUSEWHEEL && (((NMHDR *)lParam)->idFrom == IDC_LOG || ((NMHDR *)lParam)->idFrom == IDC_MESSAGE)) {
 								RECT rc;
 								POINT pt;
@@ -4705,16 +4750,17 @@ quote_from_last:
 								int bBold = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD);
 								int bItalic = IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC);
 								int bUnder = IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE);
-
+								//MAD
+								int bStrikeout = IsDlgButtonChecked(hwndDlg, IDC_FONTSTRIKEOUT);
+								//
 								cf2.cbSize = sizeof(CHARFORMAT2);
-								cf2.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_UNDERLINETYPE;
+								cf2.dwMask = CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_UNDERLINETYPE | CFM_STRIKEOUT;
 								cf2.dwEffects = 0;
 								SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 								if (cf2.dwEffects & CFE_BOLD) {
 									if (bBold == BST_UNCHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTBOLD, BST_CHECKED);
-								}
-								else {
+								} else {
 									if (bBold == BST_CHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTBOLD, BST_UNCHECKED);
 								}
@@ -4722,8 +4768,7 @@ quote_from_last:
 								if (cf2.dwEffects & CFE_ITALIC) {
 									if (bItalic == BST_UNCHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTITALIC, BST_CHECKED);
-								}
-								else {
+								} else {
 									if (bItalic == BST_CHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTITALIC, BST_UNCHECKED);
 								}
@@ -4731,12 +4776,18 @@ quote_from_last:
 								if (cf2.dwEffects & CFE_UNDERLINE && (cf2.bUnderlineType & CFU_UNDERLINE || cf2.bUnderlineType & CFU_UNDERLINEWORD)) {
 									if (bUnder == BST_UNCHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, BST_CHECKED);
-								}
-								else {
+								} else {
 									if (bUnder == BST_CHECKED)
 										CheckDlgButton(hwndDlg, IDC_FONTUNDERLINE, BST_UNCHECKED);
 								}
-							}
+								if (cf2.dwEffects & CFE_STRIKEOUT) {
+									if (bStrikeout == BST_UNCHECKED)
+										CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, BST_CHECKED);
+									} else {
+										if (bStrikeout == BST_CHECKED)
+											CheckDlgButton(hwndDlg, IDC_FONTSTRIKEOUT, BST_UNCHECKED);
+									}
+								}
 							switch (msg) {
 								case WM_LBUTTONDOWN: {
 									HCURSOR hCur = GetCursor();
@@ -4773,8 +4824,7 @@ quote_from_last:
 													free(streamOut);
 												}
 												SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-											}
-											else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
+											} else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocopy", 0) && !(GetKeyState(VK_SHIFT) & 0x8000)) {
 												SendMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_COPY, 0, 0);
 												SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 												if (m_pContainer->hwndStatus)
@@ -4850,8 +4900,7 @@ quote_from_last:
 											DestroyMenu(hMenu);
 											SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 											return TRUE;
-										}
-										else {
+										} else {
 											CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
 											SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 										}
@@ -4866,7 +4915,15 @@ quote_from_last:
 			}
 			break;
 		case WM_CONTEXTMENU:
-			if ((HWND)wParam == GetDlgItem(hwndDlg, IDC_PROTOCOL) && dat->hContact != 0) {
+			{
+			//mad
+			DWORD idFrom=GetDlgCtrlID((HWND)wParam);
+			if(idFrom>=MIN_CBUTTONID&&idFrom<=MAX_CBUTTONID){
+				BB_CustomButtonClick(dat,idFrom,(HWND) wParam,1);
+				break;
+				}
+				//
+			if ((HWND)wParam == GetDlgItem(hwndDlg,IDC_NAME/* IDC_PROTOCOL*/) && dat->hContact != 0) {
 				POINT pt;
 				HMENU hMC;
 
@@ -4881,20 +4938,19 @@ quote_from_last:
 								DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", -1);
 							else
 								_DebugMessage(hwndDlg, dat, Translate("Unforce failed"));
-						}
-						else {
+						} else {
 							if (CallService(MS_MC_FORCESENDCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 100)) == 0)
 								DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "tabSRMM_forced", (DWORD)(iSelection - 100));
 							else
 								_DebugMessage(hwndDlg, dat, Translate("The selected protocol cannot be forced at this time"));
 						}
-					}
-					else if (iSelection >= 1000) {                      // the "default" menu...
+					} else if (iSelection >= 1000) {                      // the "default" menu...
 						CallService(MS_MC_SETDEFAULTCONTACTNUM, (WPARAM)dat->hContact, (LPARAM)(iSelection - 1000));
 					}
 					DestroyMenu(hMC);
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 					return TRUE;
+				}
 				}
 			}
 			break;
@@ -4914,10 +4970,12 @@ quote_from_last:
 			return 0;
 
 		case DM_SAVEPERCONTACT:
+			/*
 			if (dat->hContact) {
 				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) != 0)
 					DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", dat->dwFlags & MWF_LOG_ALL);
 			}
+			*/
 			DBWriteContactSettingDword(NULL, SRMSGMOD, "multisplit", dat->multiSplitterX);
 			break;
 		case DM_ACTIVATEME:
@@ -5036,8 +5094,7 @@ quote_from_last:
 						if (dat->xStatus > 0 && dat->xStatus <= 32) {
 							_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
 							szTitle[safe_sizeof(szTitle) - 1] = 0;
-						}
-						else
+						} else
 							return 0;
 						break;
 					}
@@ -5062,8 +5119,7 @@ quote_from_last:
 						if (!DBGetContactSettingString(dat->bIsMeta ? dat->hSubContact : dat->hContact, dat->bIsMeta ? dat->szMetaProto : dat->szProto, "XStatusName", &dbv)) {
 							mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, dbv.pszVal);
 							DBFreeVariant(&dbv);
-						}
-						else if (dat->xStatus > 0 && dat->xStatus <= 32)
+						} else if (dat->xStatus > 0 && dat->xStatus <= 32)
 							mir_snprintf(szTitle, sizeof(szTitle), Translate("Extended status for %s: %s"), dat->szNickname, xStatusDescr[dat->xStatus - 1]);
 						else
 							return 0;
@@ -5099,8 +5155,7 @@ quote_from_last:
 						SetFocus(GetDlgItem(hwndDlg, IDC_LOG));
 						return 1;
 					}
-				}
-				else {
+				} else {
 					if (GetNextDlgTabItem(hwndDlg, GetFocus(), TRUE) == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
 						SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 						return 1;
@@ -5110,8 +5165,7 @@ quote_from_last:
 						return 1;
 					}
 				}
-			}
-			else {
+			} else {
 				if ((HWND)wParam == GetDlgItem(hwndDlg, IDC_MESSAGE)) {
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					return 1;
@@ -5139,8 +5193,7 @@ quote_from_last:
 				event.count = 0;
 				event.codepage = 0;
 				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-			}
-			else {
+			} else {
 				static char *forbiddenCharacters = "%/\\'";
 				char   szInitialDir[MAX_PATH];
 				int    i;
@@ -5154,7 +5207,7 @@ quote_from_last:
 					while ((szFound = strchr(szFilename, (int)forbiddenCharacters[i])) != NULL)
 						* szFound = '_';
 				}
-				mir_snprintf(szInitialDir, MAX_PATH, "%s%s\\", myGlobals.szDataPath, "saved message logs");
+				mir_snprintf(szInitialDir, MAX_PATH, "%s%s\\", myGlobals.szDataPath, "Saved message logs");
 				if (!PathFileExistsA(szInitialDir))
 					CreateDirectoryA(szInitialDir, NULL);
 				ofn.lStructSize = sizeof(ofn);
@@ -5289,6 +5342,25 @@ quote_from_last:
 				InvalidateRect(m_pContainer->hwndStatus, NULL, TRUE);
 			}
 			return 0;
+//mad: bb-api
+		case DM_BBNEEDUPDATE:{
+ 			if(lParam)
+ 				CB_ChangeButton(hwndDlg,dat,(CustomButtonData*)lParam);
+ 			else
+				BB_InitDlgButtons(hwndDlg,dat);
+
+			BB_SetButtonsPos(hwndDlg,dat);
+			return 0;
+			}
+			
+		case DM_CBDESTROY:{
+			if(lParam)
+				CB_DestroyButton(hwndDlg,dat,(DWORD)wParam,(DWORD)lParam);
+			else
+				CB_DestroyAllButtons(hwndDlg,dat);
+			return 0;
+			}	
+	//		
 		case WM_DROPFILES: {
 			BOOL not_sending = GetKeyState(VK_CONTROL) & 0x8000;
 			if (!not_sending) {
@@ -5324,8 +5396,7 @@ quote_from_last:
 
 				if (!not_sending) {
 					CallService(MS_FILE_SENDSPECIFICFILES, (WPARAM)dat->hContact, (LPARAM)ppFiles);
-				}
-				else {
+				} else {
 #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
 
 					if (ServiceExists(MS_HTTPSERVER_ADDFILENAME)) {
@@ -5372,7 +5443,7 @@ quote_from_last:
 				SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				return TRUE;
 			}
-
+			 
 			if (dat->iOpenJobs > 0 && lParam != 2) {
 				if (dat->dwFlags & MWF_ERRORSTATE)
 					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 1);
@@ -5403,6 +5474,30 @@ quote_from_last:
 				return 1;
 			}
 
+			//MAD: close container by ESC mod
+			if(wParam == 0 && lParam == 0 && myGlobals.m_EscapeCloses==2) {
+				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+				return TRUE;
+			}
+			//MAD_
+			 //mad
+				if(TRUE){
+					
+				struct StatusIconListNode *current;
+
+				while (dat->pSINod) {
+					current = dat->pSINod;
+					dat->pSINod = dat->pSINod->next;
+		
+					mir_free(current->sid.szModule);
+					DestroyIcon(current->sid.hIcon);
+					if (current->sid.hIconDisabled) DestroyIcon(current->sid.hIconDisabled);
+					if (current->sid.szTooltip) mir_free(current->sid.szTooltip);
+					mir_free(current);
+				}
+			}
+			 //
+
 			m_pContainer->iChilds--;
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
 
@@ -5429,6 +5524,7 @@ quote_from_last:
 				SetFocus(m_pContainer->hwndActive);
 				SendMessage(hwndContainer, WM_SIZE, 0, 0);
 			}
+
 			DestroyWindow(hwndDlg);
 			if (iTabs == 1)
 				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
@@ -5493,6 +5589,16 @@ quote_from_last:
 				fa.cProto = dat->szProto;
 				CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 			}
+			//MAD
+			if(dat->hwndContactPic)
+				{
+					DestroyWindow(dat->hwndContactPic);
+				}
+			if(dat->hwndPanelPic)
+				{
+					DestroyWindow(dat->hwndPanelPic);
+				}
+			//
 			if (!dat->bWasDeleted) {
 				TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 				AddContactToFavorites(dat->hContact, dat->szNickname, dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->szStatus, dat->wStatus, LoadSkinnedProtoIcon(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->wMetaStatus : dat->wStatus), 1, myGlobals.g_hMenuRecent, dat->codePage);
@@ -5503,8 +5609,7 @@ quote_from_last:
 					if (msg) {
 						DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", msg);
 						free(msg);
-					}
-					else
+					} else
 						DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", "");
 					len = GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_NOTES));
 					if (len > 0) {
@@ -5647,10 +5752,14 @@ quote_from_last:
 				ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 				ieWindow.iType = IEW_DESTROY;
 				ieWindow.hwnd = dat->hwndIEView;
+				if (dat->oldIEViewLastChildProc) {
+					SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)dat->oldIEViewLastChildProc);
+					dat->oldIEViewLastChildProc = 0;
+				}
 				if (dat->oldIEViewProc) {
 					SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
 					dat->oldIEViewProc = 0;
-				}
+					}
 				CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 			}
 			if (dat->hwndHPP) {
@@ -5692,3 +5801,4 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 	}
 	return 1;
 }
+

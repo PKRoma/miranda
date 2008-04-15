@@ -221,6 +221,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			int i = 0;
 
 			SetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE, GetWindowLong(GetDlgItem(hWnd, IDC_EVENTOPTIONS), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SendDlgItemMessage(hWnd, IDC_EVENTOPTIONS, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 			TranslateDialogDefault(hWnd);
 
 			/*
@@ -246,10 +247,10 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 				tvi.item.lParam = i;
 				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
 				if (defaultItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 2 : 1);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(*((BOOL *)defaultItems[i].lParam) ? 3 : 2);//2 : 1);
 				else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
 					UINT uVal = *((UINT *)defaultItems[i].lParam);
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 2 : 1);
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(uVal & defaultItems[i].id ? 3 : 2);//2 : 1);
 				}
 				defaultItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hWnd, IDC_EVENTOPTIONS), &tvi);
 				i++;
@@ -411,8 +412,12 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 								item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_BOLD;
 								SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);
 							} 
-							else if (hti.flags&TVHT_ONITEMSTATEICON)
-								SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+							else if (hti.flags&TVHT_ONITEMSTATEICON){
+								if (((item.state & TVIS_STATEIMAGEMASK) >> 12) == 3) { 
+									item.state = INDEXTOSTATEIMAGEMASK(1);      
+									SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_SETITEMA, 0, (LPARAM)&item);}
+							SendMessage(GetParent(hWnd), PSM_CHANGED, 0, 0);
+								}
 						}
 					}
 					break;
@@ -431,11 +436,11 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 						SendDlgItemMessageA(hWnd, IDC_EVENTOPTIONS, TVM_GETITEMA, 0, (LPARAM)&item);
 						if (defaultItems[i].uType == LOI_TYPE_SETTING) {
 							BOOL *ptr = (BOOL *)defaultItems[i].lParam;
-							*ptr = (item.state >> 12) == 2 ? TRUE : FALSE;
+							*ptr = (item.state >> 12) == 3/*2*/ ? TRUE : FALSE;
 						} 
 						else if (defaultItems[i].uType == LOI_TYPE_FLAG) {
 							UINT *uVal = (UINT *)defaultItems[i].lParam;
-							*uVal = ((item.state >> 12) == 2) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
+							*uVal = ((item.state >> 12) == 3/*2*/) ? *uVal | defaultItems[i].id : *uVal & ~defaultItems[i].id;
 						}
 						i++;
 					}
@@ -837,7 +842,7 @@ static int PopupShow(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent,
 
 #if defined(_UNICODE)
 
-static char *GetPreviewW(UINT eventType, DBEVENTINFO *dbe, BOOL *isWstring)
+static char *GetPreviewW(UINT eventType, DBEVENTINFO* dbe, BOOL *isWstring)
 {
 	char* comment1 = NULL;
 	char* comment2 = NULL;
@@ -858,7 +863,7 @@ static char *GetPreviewW(UINT eventType, DBEVENTINFO *dbe, BOOL *isWstring)
 				*isWstring = 1;
 				return (char *)szPreviewHelp;
 			}
-/*
+			 /*
 			if (pBlob) {
 				int msglen = lstrlenA((char *) pBlob) + 1;
 				wchar_t *msg;
@@ -877,8 +882,7 @@ nounicode:
 					*isWstring = 0;
 					return (char *)pBlob;
 				}
-			}
-*/
+			}*/
 			commentFix = Translate(POPUP_COMMENT_MESSAGE);
 			break;
 		case EVENTTYPE_AUTHREQUEST:
@@ -1078,7 +1082,7 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
 		case WM_MOUSEWHEEL:
 			break;
 		case WM_SETCURSOR:
-			SetFocus(hWnd);
+			//SetFocus(hWnd);
 			break;
 		case WM_TIMER:
 			if (wParam != TIMER_TO_ACTION)

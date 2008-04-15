@@ -30,7 +30,7 @@ $Id$
 #include "../commonheaders.h"
 #include <shlobj.h>
 #include <shlwapi.h>
-#include "../m_MathModule.h"
+//#include "../m_MathModule.h"
 
 extern HBRUSH 			hListBkgBrush;
 extern HICON			hIcons[30];
@@ -41,7 +41,10 @@ extern HANDLE           hMessageWindowList;
 extern MYGLOBALS        myGlobals;
 extern HMODULE          g_hIconDLL;
 
+extern HIMAGELIST       CreateStateImageList();
+
 HANDLE			g_hOptions = NULL;
+
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -131,7 +134,12 @@ static struct branch_t branch1[] = {
 	{LPGENT("Open new chat rooms in the default container"), "DefaultContainer", 0, 0, NULL}, 
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0, 0, NULL}, 
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0, 1, NULL}, 
+//MAD: highlight mod
+	{LPGENT("Create container/tab on highlight, if it's not available"), "CreateWindowOnHighlight", 0,0, NULL},
+	{LPGENT("Activate chat window on highlight"), "AnnoyingHighlight", 0,0, NULL},
+//
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0, 1, NULL}, 
+	{LPGENT("Colorize nicknames in member list"), "ColorizeNicks", 0, 0, NULL}, 
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0, 0, NULL}, 
 	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL}, 
 	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL}, 
@@ -140,6 +148,10 @@ static struct branch_t branch1[] = {
 	{LPGENT("Sync splitter position with standard IM sessions"), "SyncSplitter", 0, 0, NULL}, 
 	{LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0, 1, NULL}, 
 	{LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0, 0, NULL},
+	//MAD: simple customization improvement
+	{LPGENT("Use IRC style status indicators in the member list (@, %, + etc.)"), "ClassicIndicators", 0, 1, NULL}, 
+	{LPGENT("Use alternative sorting method in member list"), "AlternativeSorting", 0, 0, NULL}, 
+
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0, 1, NULL}, 
@@ -151,10 +163,12 @@ static struct branch_t branch2[] = {
 	{LPGENT("Start private conversation on doubleclick in nick list (insert nick if unchecked)"), "DoubleClick4Privat", 0, 1, NULL}, 
 	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL}, 
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0, 0, NULL}, 
-	{LPGENT("Use IRC style status indicators in the nicklist (@, %, + etc.)"), "ClassicIndicators", 0, 1, NULL}, 
+//MAD: simple customization improvement
+	{LPGENT("Use IRC style status indicators in the log"), "LogClassicIndicators", 0,1, NULL},
+//
 	{LPGENT("Use text symbols instead of icons in the chat log (faster)"), "LogSymbols", 0, 0, NULL}, 
 	{LPGENT("Make nicknames clickable hyperlinks"), "ClickableNicks", 0, 0, NULL}, 
-	{LPGENT("Colorize nicknames (not when using clickable nicknames)"), "ColorizeNicks", 0, 0, NULL}, 
+	{LPGENT("Colorize nicknames in message log"), "ColorizeNicksInLog", 0, 0, NULL}, 
 	{LPGENT("Scale down icons to 10x10 pixels in the chat log"), "ScaleIcons", 0, 1, NULL}, 
 	{LPGENT("Draw dividers to mark inactivity"), "UseDividers", 0, 1, NULL}, 
 	{LPGENT("Use the containers popup configuration to place dividers"), "DividersUsePopupConfig", 0, 1, NULL}, 
@@ -221,20 +235,21 @@ static struct branch_t branch6[] = {
 	{LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
-static struct branch_t branch7[] = {
-	{LPGENT("Log topic changes"), "DiskLogFlags", GC_EVENT_TOPIC, 0, NULL}, 
-	{LPGENT("Log users joining"), "DiskLogFlags", GC_EVENT_JOIN, 0, NULL}, 
-	{LPGENT("Log users disconnecting"), "DiskLogFlags", GC_EVENT_QUIT, 0, NULL}, 
-	{LPGENT("Log messages"), "DiskLogFlags", GC_EVENT_MESSAGE, 0, NULL}, 
-	{LPGENT("Log actions"), "DiskLogFlags", GC_EVENT_ACTION, 0, NULL}, 
-	{LPGENT("Log highlights"), "DiskLogFlags", GC_EVENT_HIGHLIGHT, 0, NULL}, 
-	{LPGENT("Log users leaving"), "DiskLogFlags", GC_EVENT_PART, 0, NULL}, 
-	{LPGENT("Log users kicking other user"), "DiskLogFlags", GC_EVENT_KICK, 0, NULL}, 
-	{LPGENT("Log notices "), "DiskLogFlags", GC_EVENT_NOTICE, 0, NULL}, 
-	{LPGENT("Log name changes"), "DiskLogFlags", GC_EVENT_NICK, 0, NULL}, 
-	{LPGENT("Log information messages"), "DiskLogFlags", GC_EVENT_INFORMATION, 0, NULL}, 
-	{LPGENT("Log status changes"), "DiskLogFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
+static struct branch_t branch7[] = { 
+        {LPGENT("Log topic changes"), "DiskLogFlags", GC_EVENT_TOPIC, 0, NULL}, 
+        {LPGENT("Log users joining"), "DiskLogFlags", GC_EVENT_JOIN, 0, NULL}, 
+        {LPGENT("Log users disconnecting"), "DiskLogFlags", GC_EVENT_QUIT, 0, NULL}, 
+        {LPGENT("Log messages"), "DiskLogFlags", GC_EVENT_MESSAGE, 0, NULL}, 
+        {LPGENT("Log actions"), "DiskLogFlags", GC_EVENT_ACTION, 0, NULL}, 
+        {LPGENT("Log highlights"), "DiskLogFlags", GC_EVENT_HIGHLIGHT, 0, NULL}, 
+        {LPGENT("Log users leaving"), "DiskLogFlags", GC_EVENT_PART, 0, NULL}, 
+        {LPGENT("Log users kicking other user"), "DiskLogFlags", GC_EVENT_KICK, 0, NULL}, 
+        {LPGENT("Log notices "), "DiskLogFlags", GC_EVENT_NOTICE, 0, NULL}, 
+        {LPGENT("Log name changes"), "DiskLogFlags", GC_EVENT_NICK, 0, NULL}, 
+        {LPGENT("Log information messages"), "DiskLogFlags", GC_EVENT_INFORMATION, 0, NULL}, 
+        {LPGENT("Log status changes"), "DiskLogFlags", GC_EVENT_ADDSTATUS, 0, NULL}, 
+}; 
+
 
 void LoadMsgDlgFont(int i, LOGFONT *lf, COLORREF* colour, char *szMod)
 {
@@ -309,9 +324,9 @@ static void FillBranch(HWND hwndTree, HTREEITEM hParent, struct branch_t *branch
 		tvis.item.pszText = TranslateTS(branch[i].szDescr);
 		tvis.item.stateMask = TVIS_STATEIMAGEMASK;
 		if (branch[i].iMode)
-			iState = ((DBGetContactSettingDword(NULL, "Chat", branch[i].szDBName, defaultval) & branch[i].iMode) & branch[i].iMode) != 0 ? 2 : 1;
+			iState = ((DBGetContactSettingDword(NULL, "Chat", branch[i].szDBName, defaultval) & branch[i].iMode) & branch[i].iMode) != 0 ? 3 : 2; //2 : 1;
 		else
-			iState = DBGetContactSettingByte(NULL, "Chat", branch[i].szDBName, branch[i].bDefault) != 0 ? 2 : 1;
+			iState = DBGetContactSettingByte(NULL, "Chat", branch[i].szDBName, branch[i].bDefault) != 0 ? 3 : 2; //2 : 1;
 		tvis.item.state = INDEXTOSTATEIMAGEMASK(iState);
 		branch[i].hItem = TreeView_InsertItem(hwndTree, &tvis);
 	}
@@ -328,7 +343,7 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 	for (i = 0;i < nValues;i++) {
 		tvi.hItem = branch[i].hItem;
 		TreeView_GetItem(hwndTree, &tvi);
-		bChecked = ((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1) ? 0 : 1;
+		bChecked = ((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 2/*1*/) ? 0 : 1;
 		if (branch[i].iMode) {
 			if (bChecked)
 				iState |= branch[i].iMode;
@@ -352,13 +367,13 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 	while (tvi.hItem && bChecked) {
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem) {
 			TreeView_GetItem(hwndTree, &tvi);
-			if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 1))
+			if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 2/*1*/))
 				bChecked = FALSE;
 		}
 		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
 	}
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
-	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 2 : 1);
+	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 3 : 2);//2 : 1);
 	tvi.hItem = hHeading;
 	TreeView_SetItem(hwndTree, &tvi);
 }
@@ -374,7 +389,7 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	tvi.mask = TVIF_HANDLE | TVIF_STATE;
 	tvi.hItem = hHeading;
 	TreeView_GetItem(hwndTree, &tvi);
-	if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 1)) //|| ((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1))
+	if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 3/*1*/)||((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1))
 		bChecked = FALSE;
 
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
@@ -382,7 +397,7 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	TreeView_SetItem(hwndTree, &tvi);
 	tvi.hItem = TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
 	while (tvi.hItem) {
-		tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 2 : 1);
+		tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 2 : 1);//3:2);
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem)
 			TreeView_SetItem(hwndTree, &tvi);
 		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
@@ -414,13 +429,13 @@ static void LoadLogFonts(void)
 
 static struct _tagicons { char *szDesc; char *szName; int id; UINT size;} _icons[] = {
 	LPGEN("Window Icon"), "chat_window", IDI_CHANMGR, 16,
-	LPGEN("Background colour"), "chat_bkgcol", IDI_BKGCOLOR, 16,
-	LPGEN("Room settings"), "chat_settings", IDI_TOPICBUT, 16,
-	LPGEN("Event filter disabled"), "chat_filter", IDI_FILTER, 16,
-	LPGEN("Event filter enabled"), "chat_filter2", IDI_FILTER2, 16,
+// 	LPGEN("Background colour"), "chat_bkgcol", IDI_BKGCOLOR, 16,
+// 	LPGEN("Room settings"), "chat_settings", IDI_TOPICBUT, 16,
+// 	LPGEN("Event filter disabled"), "chat_filter", IDI_FILTER, 16,
+// 	LPGEN("Event filter enabled"), "chat_filter2", IDI_FILTER2, 16,
 	LPGEN("Icon overlay"), "chat_overlay", IDI_OVERLAY, 16,
-	LPGEN("Show nicklist"), "chat_shownicklist", IDI_SHOWNICKLIST, 16,
-	LPGEN("Hide nicklist"), "chat_hidenicklist", IDI_HIDENICKLIST, 16,
+// 	LPGEN("Show nicklist"), "chat_shownicklist", IDI_SHOWNICKLIST, 16,
+// 	LPGEN("Hide nicklist"), "chat_hidenicklist", IDI_HIDENICKLIST, 16,
 
 	LPGEN("Status 1 (10x10)"), "chat_status0", IDI_STATUS0, 16,
 	LPGEN("Status 2 (10x10)"), "chat_status1", IDI_STATUS1, 16,
@@ -512,6 +527,7 @@ static UINT _o1controls[] = {IDC_CHECKBOXES, IDC_GROUP, IDC_STATIC_ADD,
 							 IDC_STATIC_OTHER, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_FONTCHOOSE, IDC_CHAT_SPIN3, IDC_LIMIT, IDC_STATIC110, IDC_STATIC112, 0
 							};
 
+
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
@@ -527,21 +543,23 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			TranslateDialogDefault(hwndDlg);
 			if (g_chat_integration_enabled) {
 				char szTemp[MAX_PATH];
+				HIMAGELIST himlOptions;
 
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
-				/*
+				
 				himlOptions = (HIMAGELIST)SendDlgItemMessage(hwndDlg, IDC_CHECKBOXES, TVM_SETIMAGELIST, TVSIL_STATE, (LPARAM)CreateStateImageList());
 				if (himlOptions)
 					ImageList_Destroy(himlOptions);
-				*/
+				
 				hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0) ? TRUE : FALSE);
 				hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0) ? TRUE : FALSE);
 				hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), DBGetContactSettingByte(NULL, "Chat", "Branch3Exp", 0) ? TRUE : FALSE);
 				hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch4Exp", 0) ? TRUE : FALSE);
 				hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray and the message window tabs / title"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0) ? TRUE : FALSE);
+				hListHeading7 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Log these events to the log file (when file logging is enabled)"), DBGetContactSettingByte(NULL, "Chat", "Branch7Exp", 0) ? TRUE : FALSE);
+
 				if (myGlobals.g_PopupAvail)
 					hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0) ? TRUE : FALSE);
-				hListHeading7 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Log these events to the log file (when file logging is enabled)"), DBGetContactSettingByte(NULL, "Chat", "Branch7Exp", 0) ? TRUE : FALSE);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
@@ -701,6 +719,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									char *pszText1 = malloc(iLen + 2);
 									GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
 									DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText1);
+									free(pszText1);
 									CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
 								} else
 									DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
@@ -731,9 +750,10 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch4, sizeof(branch4) / sizeof(branch4[0]));
 								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
+								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch7, SIZEOF(branch7));
+								
 								if (myGlobals.g_PopupAvail)
 									SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
-								SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch7, SIZEOF(branch7));
 								LoadGlobalSettings();
 								MM_FontsChanged();
 								FreeMsgLogBitmaps();
@@ -762,8 +782,9 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
 				DBWriteContactSettingByte(NULL, "Chat", "Branch6Exp", b);
 			}
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0;
-			DBWriteContactSettingByte(NULL, "Chat", "Branch7Exp", b);
+			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7, TVIS_EXPANDED) & TVIS_EXPANDED ? 1 : 0; 
+            DBWriteContactSettingByte(NULL, "Chat", "Branch7Exp", b); 
+
 		}
 		break;
 
@@ -1385,9 +1406,16 @@ void LoadGlobalSettings(void)
 	g_Settings.crPUBkgColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorBG", GetSysColor(COLOR_WINDOW));
 	g_Settings.crPUTextColour = DBGetContactSettingDword(NULL, "Chat", "PopupColorText", 0);
 	g_Settings.ClassicIndicators = DBGetContactSettingByte(NULL, "Chat", "ClassicIndicators", 1);
+	//MAD
+	g_Settings.LogClassicIndicators = DBGetContactSettingByte(NULL, "Chat", "LogClassicIndicators", 1);
+	g_Settings.AlternativeSorting   = DBGetContactSettingByte(NULL, "Chat", "AlternativeSorting", 0);
+	g_Settings.AnnoyingHighlight	= DBGetContactSettingByte(NULL, "Chat", "AnnoyingHighlight", 0);
+	g_Settings.CreateWindowOnHighlight = DBGetContactSettingByte(NULL, "Chat", "CreateWindowOnHighlight", 0);
+	//MAD_	
 	g_Settings.LogSymbols = DBGetContactSettingByte(NULL, "Chat", "LogSymbols", 0);
 	g_Settings.ClickableNicks = DBGetContactSettingByte(NULL, "Chat", "ClickableNicks", 0);
 	g_Settings.ColorizeNicks = DBGetContactSettingByte(NULL, "Chat", "ColorizeNicks", 0);
+	g_Settings.ColorizeNicksInLog = DBGetContactSettingByte(NULL, "Chat", "ColorizeNicksInLog", 0);
 	g_Settings.ScaleIcons = DBGetContactSettingByte(NULL, "Chat", "ScaleIcons", 1);
 	g_Settings.UseDividers = DBGetContactSettingByte(NULL, "Chat", "UseDividers", 1);
 	g_Settings.DividersUsePopupConfig = DBGetContactSettingByte(NULL, "Chat", "DividersUsePopupConfig", 1);
@@ -1492,17 +1520,19 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
 	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
 
-	if (g_Settings.LoggingEnabled) {
+	if (g_Settings.LoggingEnabled){
+
 		if (!PathIsDirectoryA(g_Settings.pszLogDir))
 			CreateDirectoryA(g_Settings.pszLogDir, NULL);
-	}
+		}
 
-	LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
-	hFont = CreateFontIndirect(&lf);
-	iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)), hFont, TRUE);
-	DeleteObject(hFont);
-	g_Settings.LogTextIndent = iText;
-	g_Settings.LogTextIndent = g_Settings.LogTextIndent * 12 / 10;
+		LoadMsgDlgFont(0, &lf, NULL, CHAT_FONTMODULE);
+		hFont = CreateFontIndirect(&lf);
+		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)), hFont, TRUE);
+		DeleteObject(hFont);
+		g_Settings.LogTextIndent = iText;
+		g_Settings.LogTextIndent = g_Settings.LogTextIndent * 12 / 10;
+
 	return 0;
 }
 

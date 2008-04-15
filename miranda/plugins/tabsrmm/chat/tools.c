@@ -477,6 +477,15 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
 		if (params->bInactive)
 			DoTrayIcon(si, gce);
+		//MAD
+		if(g_Settings.CreateWindowOnHighlight)
+			{
+			if (!dat)
+			CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)si->hContact, 0);
+			else if(g_Settings.AnnoyingHighlight&&params->bInactive)
+			  SetForegroundWindow(dat->hwnd);
+			}
+		//
 		if (dat || !g_Settings.SkipWhenNoWindow)
 			DoPopup(si, gce, dat);
 		if (params->bInactive && g_TabSession.hWnd)
@@ -763,12 +772,13 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!mi)
 		return FALSE;
 
-	/*
-	 * check whether we have to log this event
-	 */
+	/* 
+     * check whether we have to log this event 
+    */ 
+    
+	    if(!(gce->pDest->iType & si->iDiskLogFlags)) 
+	            return FALSE; 
 
-	if(!(gce->pDest->iType & si->iDiskLogFlags))
-		return FALSE;
 
 	mir_snprintf(szName, MAX_PATH, "%s", mi->pszModDispName);
 	ValidateFilename(szName);
@@ -953,7 +963,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		if (pszWordText && pszWordText[0]) {
 			TCHAR szMenuText[4096];
-			mir_sntprintf(szMenuText, 4096, _T("Look up \'%s\':"), pszWordText);
+			mir_sntprintf(szMenuText, 4096, TranslateT("Look up \'%s\':"), pszWordText);
 			ModifyMenu(*hMenu, 4, MF_STRING | MF_BYPOSITION, 4, szMenuText);
 		} else ModifyMenu(*hMenu, 4, MF_STRING | MF_GRAYED | MF_BYPOSITION, 4, TranslateT("No word to look up"));
 		gcmi.Type = MENU_ON_LOG;
@@ -1033,7 +1043,7 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 }
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
-{
+{   
 #if defined(_UNICODE)
 	SESSION_INFO* si;
 #endif
@@ -1070,7 +1080,7 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
-#if defined(_UNICODE)
+#if defined( _UNICODE )
 	SESSION_INFO* si;
 #endif
 	GCHOOK gch = {0};
@@ -1268,8 +1278,9 @@ void Chat_SetFilters(SESSION_INFO *si)
 			si->iLogTrayFlags = (dwFlags_local & (1 << i) ? si->iLogTrayFlags | (1 << i) : si->iLogTrayFlags & ~(1 << i));
 	}
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF);
-	si->iDiskLogFlags = dwFlags_default;
+	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF); 
+    si->iDiskLogFlags = dwFlags_default; 
+
 
 	if (si->iLogFilterFlags == 0)
 		si->bFilterEnabled = 0;

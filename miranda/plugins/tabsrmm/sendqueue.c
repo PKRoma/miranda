@@ -928,6 +928,16 @@ verify:
 		CheckSendQueue(hwndDlg, dat);
 		if ((iNextFailed = FindNextFailedMsg(hwndDlg, dat)) >= 0 && !(dat->dwFlags & MWF_ERRORSTATE))
 			HandleQueueError(hwndDlg, dat, iNextFailed);
+		//MAD: close on send mode
+		else {
+			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose", 0))
+			{ 
+				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose_2", 0))
+					SendMessage(dat->hwnd, WM_CLOSE, 0, 1);
+				else SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
+			}
+		}
+		//MAD_
 	}
 	return 0;
 }

@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id:$
+$Id$
 
 skinable button class for tabSRMM
 
@@ -183,8 +183,8 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			GetCursorPos(&pt);
 			ScreenToClient(ctl->hwnd, &pt);
 
-			if (pt.x >= rcClient.right - 12)
-				clip = CreateRectRgn(rcClient.right - 12, 0, rcClient.right, rcClient.bottom);
+			if (pt.x >= rcClient.right - 10)
+				clip = CreateRectRgn(rcClient.right - 10, 0, rcClient.right, rcClient.bottom);
 		}
 		if (ctl->item) {
 			RECT rcParent;
@@ -751,7 +751,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 
 			if (bct->arrow && bct->stateId != PBS_DISABLED) {
 				GetClientRect(bct->hwnd, &rc);
-				if (LOWORD(lParam) < rc.right - 10)
+				if (LOWORD(lParam) < rc.right - 12)
 					bct->stateId = PBS_PRESSED;
 				else
 					bct->stateId = PBS_PUSHDOWNPRESSED;
@@ -776,7 +776,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			if (bct->arrow) {
 				GetClientRect(bct->hwnd, &rc);
-				if (LOWORD(lParam) > rc.right - 10) {
+				if (LOWORD(lParam) > rc.right - 12) {
 					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(bct->arrow, BN_CLICKED), (LPARAM)hwndDlg);
 					break;
 				}

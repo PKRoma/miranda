@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _USE_32BIT_TIME_T
 #define WINVER 0x0501
 
+#define MIRANDA_VER 0x0700
+
 #ifdef __GNUWIN32__
 
 #define OLERENDER_FORMAT 2
@@ -37,6 +39,14 @@ typedef unsigned short wchar_t;
 #endif
 #endif
 
+//mad: definition for vc6
+#ifndef UINT_MAX
+#define UINT_MAX      0xffffffff    /* maximum unsigned int value */
+#else
+#error "Can't define UINT_MAX"
+#endif
+//
+
 #define _WIN32_IE 0x0501
 
 #if defined( UNICODE ) && !defined( _UNICODE )
@@ -44,6 +54,7 @@ typedef unsigned short wchar_t;
 #endif
 
 #include <tchar.h>
+
 
 #define _WIN32_WINNT 0x0501
 #include <windows.h>
@@ -53,7 +64,9 @@ typedef unsigned short wchar_t;
 #include <stddef.h>
 #include <process.h>
 #include <shlwapi.h>
+#include <Richedit.h>
 #include "resource.h"
+
 
 #ifdef WM_THEMECHANGED
 #undef WM_THEMECHANGED
@@ -62,6 +75,11 @@ typedef unsigned short wchar_t;
 #ifdef CDRF_NOTIFYSUBITEMDRAW
 #undef CDRF_NOTIFYSUBITEMDRAW
 #endif
+
+//MAD
+#define MBF_OWNERSTATE        0x04
+//State of icon with such flag will not be saved, and you must set it manually  
+//
 
 #include "../../include/win2k.h"
 #include "../../include/newpluginapi.h"
@@ -83,10 +101,15 @@ typedef unsigned short wchar_t;
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
 #include "../../include/m_file.h"
-#include "m_cln_skinedit.h"
 
-#include "m_flash.h"
-#include "m_spellchecker.h"
+//MAD
+#include "buttonsbar.h"
+//
+//Bolshevik: avatar control
+#include "../avs/m_acc.h"
+//Bolshevik_
+
+extern struct LIST_INTERFACE li;
 
 #define safe_sizeof(a) (unsigned int)((sizeof((a)) / sizeof((a)[0])))
 
@@ -102,17 +125,24 @@ typedef unsigned short wchar_t;
 
 #endif
 
-#include "m_ieview.h"
-#include "m_popup.h"
-#include "m_metacontacts.h"
-#include "m_fingerprint.h"
-#include "m_nudge.h"
+#include "API/m_ieview.h"
+#include "API/m_popup.h"
+#include "API/m_metacontacts.h"
+#include "API/m_fingerprint.h"
+#include "API/m_nudge.h"
+#include "API/m_folders.h"
+#include "API/m_msg_buttonsbar.h"
+#include "API/m_cln_skinedit.h"
+#include "API/m_flash.h"
+#include "API/m_spellchecker.h"
+#include "API/m_MathModule.h"
 
 #ifndef __TSR_CXX
 #include "msgs.h"
 #include "msgdlgutils.h"
 #include "nen.h"
 #include "functions.h"
+#include "typingnotify.h"
 #include "generic_msghandlers.h"
 #include "chat/chat.h"
 

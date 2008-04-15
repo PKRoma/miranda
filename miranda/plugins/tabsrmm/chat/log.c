@@ -31,7 +31,7 @@ $Id$
 #include <mbstring.h>
 #include <shlwapi.h>
 
-#include "../m_MathModule.h"
+//#include "../m_MathModule.h"
 
 
 /*
@@ -371,7 +371,10 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 		} else lstrcpyn(szTemp, streamData->lin->ptszNick, 511);
 
 		if (g_Settings.ClickableNicks)
+			{  //MAD
+			//if(streamData->lin->iType != GC_EVENT_PART&&streamData->lin->iType != GC_EVENT_QUIT)
 			mir_sntprintf(szTemp2, SIZEOF(szTemp2), _T("~~++#%s#++~~"), szTemp);
+			}
 		else
 			_tcscpy(szTemp2, szTemp);
 
@@ -566,8 +569,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				STATUSINFO *ti;
 				char pszIndicator[2] = "\0\0";
 				int  crNickIndex = 0;
-
-				if (g_Settings.ClassicIndicators || g_Settings.ColorizeNicks) {
+													//mad
+				if (g_Settings.LogClassicIndicators/*g_Settings.ClassicIndicators */||g_Settings.ColorizeNicksInLog) {
 					USERINFO *ui = streamData->si->pUsers;
 					while (ui) {
 						if (!lstrcmp(ui->pszNick, lin->ptszNick)) {
@@ -606,8 +609,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				}
 
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(lin->bIsMe ? 2 : 1, lin->bIsMe ? 2 : 1));
-
-				if (g_Settings.ClassicIndicators)
+													//MAD
+				if (g_Settings.LogClassicIndicators /*g_Settings.ClassicIndicators*/)
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s", pszIndicator);
 
 				lstrcpyn(pszTemp, lin->bIsMe ? g_Settings.pszOutgoingNick : g_Settings.pszIncomingNick, 299);
@@ -621,7 +624,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 						pszTemp[299] = 0;
 					}
 					//Log_Append(&buffer, &bufferEnd, &bufferAlloced, "~~++#");
-					if (g_Settings.ColorizeNicks && pszIndicator[0])
+					if (g_Settings.ColorizeNicksInLog && pszIndicator[0])
 						Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\cf%u ", OPTIONS_FONTCOUNT + streamData->crCount + crNickIndex + 1);
 				}
 
@@ -743,18 +746,20 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		streamData.bRedraw = bRedraw;
 		SendMessage(hwndRich, EM_STREAMIN, wp, (LPARAM) & stream);
 
-		/*
-		 * for new added events, only replace in message or action events.
-		 * no need to replace smileys or math formulas elswhere
-		 */
+
+		//SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
+		/* 
+		* for new added events, only replace in message or action events. 
+		* no need to replace smileys or math formulas elsewhere 
+		*/ 
+
 		fDoReplace = (bRedraw || (lin->ptszText
 								  && (lin->iType == GC_EVENT_MESSAGE || lin->iType == GC_EVENT_ACTION)));
 
-		
+
 		/*
 		 * use mathmod to replace formulas
 		 */
-
 		if (g_Settings.MathMod && fDoReplace) {
 			TMathRicheditInfo mathReplaceInfo;
 			CHARRANGE mathNewSel;
@@ -776,11 +781,12 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MATH_RTF_REPLACE_FORMULAE, 0, (LPARAM)&mathReplaceInfo);
 			bFlag = TRUE;
 		}
+		
+		/* 
+		 * replace marked nicknames with hyperlinks to make the nicks 
+		 * clickable 
+		 */ 
 
-		/*
-		 * replace marked nicknames with hyperlinks to make the nicks
-		 * clickable
-		 */
 		if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
 			FINDTEXTEX fi, fi2;
@@ -807,8 +813,15 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 					fi2.chrgText.cpMin = fi.chrgText.cpMin;
 					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
-					cf2.dwMask = CFM_PROTECTED;
-					cf2.dwEffects = CFE_PROTECTED;
+					if (g_Settings.ColorizeNicksInLog)
+						{
+						cf2.dwMask = CFM_PROTECTED;
+						cf2.dwEffects = CFE_PROTECTED;
+						} else
+						{
+						cf2.dwMask = CFM_LINK;
+						cf2.dwEffects = CFE_LINK;
+						}
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;
@@ -816,30 +829,33 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			SendMessage(hwndRich, EM_SETSEL, -1, -1);
 		}
 
-		/*
-		 * run smileyadd
-		 */
-		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
-			SMADD_RICHEDIT3 sm = {0};
 
+		/* 
+		* run smileyadd 
+		*/ 
+		if (myGlobals.g_SmileyAddAvail && fDoReplace) { 
+			SMADD_RICHEDIT3 sm = {0}; 
+			
 			newsel.cpMax = -1;
-			newsel.cpMin = sel.cpMin;
-			if (newsel.cpMin < 0)
-				newsel.cpMin = 0;
-			ZeroMemory(&sm, sizeof(sm));
-			sm.cbSize = sizeof(sm);
-			sm.hwndRichEditControl = hwndRich;
-			sm.Protocolname = si->pszModule;
-			sm.rangeToReplace = bRedraw ? NULL : &newsel;
-			sm.disableRedraw = TRUE;
-			sm.hContact = si->hContact;
-			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
-		}
+			newsel.cpMin = sel.cpMin; 
+			if (newsel.cpMin < 0) 
+				newsel.cpMin = 0; 
+			ZeroMemory(&sm, sizeof(sm)); 
+			sm.cbSize = sizeof(sm); 
+			sm.hwndRichEditControl = hwndRich; 
+			sm.Protocolname = si->pszModule; 
+			sm.rangeToReplace = bRedraw ? NULL : &newsel; 
+			sm.disableRedraw = TRUE; 
+			sm.hContact = si->hContact; 
+			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm); 
+			} 
 
-		/*
-		 * trim the message log to the number of most recent events
-		 * this uses hidden marks in the rich text to find the events which should be deleted
-		 */
+		/* 
+		* trim the message log to the number of most recent events 
+		* this uses hidden marks in the rich text to find the events which should be deleted 
+		*/ 
+
+
 		if (si->wasTrimmed) {
 			TCHAR szPattern[50];
 			FINDTEXTEX fi;

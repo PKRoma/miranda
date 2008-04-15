@@ -1,8 +1,8 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by default.rc
+// Used by ICONSXP.rc
 //
-
+#define IDI_HISTORY                     1
 
 // standard toolbar icons
 
@@ -26,7 +26,7 @@
 #define IDI_FONTUNDERLINE   53          /* underline */
 #define IDI_FONTFACE        54          /* font face (currently not in use) */
 #define IDI_FONTCOLOR       55          /* font color (not in use yet) */
-
+#define IDI_STRIKEOUT       56          /* strikedout */
 
 //Message log events
 

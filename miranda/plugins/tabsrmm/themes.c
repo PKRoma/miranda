@@ -65,7 +65,7 @@ ImageItem *g_glyphItem = NULL;
 HBRUSH g_ContainerColorKeyBrush = 0, g_MenuBGBrush = 0;
 COLORREF g_ContainerColorKey = 0;
 SIZE g_titleBarButtonSize = {0};
-int g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0, g_sidebarTopOffset = 0, g_sidebarBottomOffset;
+int g_titleBarLeftOff = 0, g_titleButtonTopOff = 0, g_captionOffset = 0, g_captionPadding = 0, g_titleBarRightOff = 0, g_sidebarTopOffset = 0, g_sidebarBottomOffset;
 
 extern BOOL g_skinnedContainers;
 extern BOOL g_framelessSkinmode;
@@ -523,7 +523,10 @@ char *GetThemeFileName(int iMode)
 	OPENFILENAMEA ofn = {0};
 	char szInitialDir[MAX_PATH];
 
-	mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
+	if(!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+		mir_snprintf(szInitialDir, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
+	else mir_snprintf(szInitialDir, MAX_PATH,"%s",myGlobals.szSkinsPath);
+
 
 	szFilename[0] = 0;
 
@@ -1832,9 +1835,12 @@ static void LoadSkinItems(char *file, int onStartup)
 	g_titleBarButtonSize.cx = GetPrivateProfileIntA("WindowFrame", "TitleButtonWidth", 24, file);
 	g_titleBarButtonSize.cy = GetPrivateProfileIntA("WindowFrame", "TitleButtonHeight", 12, file);
 	g_titleButtonTopOff = GetPrivateProfileIntA("WindowFrame", "TitleButtonTopOffset", 0, file);
+
+	g_titleBarRightOff = GetPrivateProfileIntA("WindowFrame", "TitleBarRightOffset", 0, file);
+	g_titleBarLeftOff = GetPrivateProfileIntA("WindowFrame", "TitleBarLeftOffset", 0, file);
+
 	g_captionOffset = GetPrivateProfileIntA("WindowFrame", "CaptionOffset", 3, file);
 	g_captionPadding = GetPrivateProfileIntA("WindowFrame", "CaptionPadding", 0, file);
-
 	g_sidebarTopOffset = GetPrivateProfileIntA("ClientArea", "SidebarTop", -1, file);
 	g_sidebarBottomOffset = GetPrivateProfileIntA("ClientArea", "SidebarBottom", -1, file);
 

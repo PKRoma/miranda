@@ -1,4 +1,4 @@
-_/*
+/*
 astyle --force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
@@ -32,7 +32,7 @@ $Id$
 #include "commonheaders.h"
 #pragma hdrstop
 
-#include "m_MathModule.h"
+//#include "m_MathModule.h"
 
 extern      MYGLOBALS myGlobals;
 extern      NEN_OPTIONS nen_options;
@@ -83,6 +83,7 @@ static int g_status_events[] = {
 	EVENTTYPE_WAT_ANSWER,
 	EVENTTYPE_JABBER_CHATSTATES,
 	EVENTTYPE_JABBER_PRESENCE
+
 };
 
 static int g_status_events_size = 0;
@@ -203,70 +204,53 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
 {
-	TCHAR szFinalPath[MAX_PATH];
-	TCHAR szFinalFilename[MAX_PATH];
-	TCHAR szBaseName[MAX_PATH];
-	TCHAR szTimestamp[100];
-	OPENFILENAME ofn = {0};
+	char szFinalPath[MAX_PATH];
+	char szFinalFilename[MAX_PATH];
+	char szBaseName[MAX_PATH];
+	char szTimestamp[100];
+	OPENFILENAMEA ofn = {0};
 	time_t t = time(NULL);
 	struct tm *lt = localtime(&t);
-	static TCHAR *forbiddenCharacters = _T("%/\\'");
-	int i;
+	static char *forbiddenCharacters = "%/\\'";
+	unsigned int i;
 	DWORD setView = 1;
 
-	mir_sntprintf(szTimestamp, 100, _T("%04u %02u %02u_%02u%02u"), lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
+	mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
-#if defined(_UNICODE) 
-{
-	char     *szFinalProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
-	wchar_t  wszProto[100];
+	if (!myGlobals.szSkinsPath&&myGlobals.szDataPath)
+		mir_snprintf(szFinalPath, MAX_PATH,"%sSaved Contact Pictures\\%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+	else mir_snprintf(szFinalPath, MAX_PATH,"%s%s",myGlobals.szAvatarsPath,dat->bIsMeta ? dat->szMetaProto : dat->szProto);
 
-	MultiByteToWideChar(CP_ACP, 0, szFinalProto, 100, wszProto, 100);
-	wszProto[99] = 0;
-	mir_sntprintf(szFinalPath, MAX_PATH, _T("%sSaved Contact Pictures\\%s"), myGlobals.szDataPath, wszProto);
-}
-#else
-	mir_sntprintf(szFinalPath, MAX_PATH, _T("%sSaved Contact Pictures\\%s"), myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-#endif
-	if (CreateDirectory(szFinalPath, 0) == 0) {
+	if (CreateDirectoryA(szFinalPath, 0) == 0) {
 		if (GetLastError() != ERROR_ALREADY_EXISTS) {
 			MessageBox(0, TranslateT("Error creating destination directory"), TranslateT("Save contact picture"), MB_OK | MB_ICONSTOP);
 			return;
 		}
 	}
 	if (isOwnPic)
-		mir_sntprintf(szBaseName, MAX_PATH, _T("My Avatar_%s"), szTimestamp);
-	else {
-	#if defined(_UNICODE)
-		wchar_t wszUin[100];
-		MultiByteToWideChar(CP_ACP, 0, dat->uin, 100, wszUin, 100);
-		wszUin[99] = 0;
-		mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), wszUin, szTimestamp);
-	#else
-		mir_sntprintf(szBaseName, MAX_PATH, _T("%s_%s"), dat->uin, szTimestamp);
-	#endif
-	}
+		mir_snprintf(szBaseName, MAX_PATH,"My Avatar_%s", szTimestamp);
+	else
+		mir_snprintf(szBaseName, MAX_PATH, "%s_%s", dat->uin, szTimestamp);
 
-	mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.png"), szBaseName);
-	ofn.lpstrDefExt = _T("png");
+	mir_snprintf(szFinalFilename, MAX_PATH, "%s.png", szBaseName);
+	ofn.lpstrDefExt = "png";
 	if (CallService(MS_AV_CANSAVEBITMAP, 0, PA_FORMAT_PNG) == 0) {
-		ofn.lpstrDefExt = _T("bmp");
-		mir_sntprintf(szFinalFilename, MAX_PATH, _T("%s.bmp"), szBaseName);
+		ofn.lpstrDefExt = "bmp";
+		mir_snprintf(szFinalFilename, MAX_PATH,"%s.bmp", szBaseName);
 	}
 
-	for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
-		TCHAR *szFound = 0;
+	for (i = 0; i < strlen(forbiddenCharacters); i++) {
+		char *szFound = 0;
 
-		while ((szFound = _tcschr(szFinalFilename, forbiddenCharacters[i])) != NULL)
+		while ((szFound = strchr(szFinalFilename, forbiddenCharacters[i])) != NULL)
 			* szFound = '_';
 	}
-	ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
+	ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
 	if (IsWinVer2000Plus()) {
 		ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
 		ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
 		ofn.lStructSize = sizeof(ofn);
-	}
-	else {
+	} else {
 		ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 		ofn.Flags = OFN_HIDEREADONLY;
 	}
@@ -276,12 +260,12 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.lCustData = (LPARAM) & setView;
-	if (GetSaveFileName(&ofn)) {
-		if (PathFileExists(szFinalFilename)) {
+	if (GetSaveFileNameA(&ofn)) {
+		if (PathFileExistsA(szFinalFilename)) {
 			if (MessageBox(0, TranslateT("The file exists. Do you want to overwrite it?"), TranslateT("Save contact picture"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 				return;
 		}
-		CallService(MS_AV_SAVEBITMAPT, (WPARAM)hbm, (LPARAM)szFinalFilename);
+		CallService(MS_AV_SAVEBITMAP, (WPARAM)hbm, (LPARAM)szFinalFilename);
 	}
 }
 
@@ -348,6 +332,8 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 	RECT rc;
 	double aspect = 0, newWidth = 0, picAspect = 0;
 	double picProjectedWidth = 0;
+	BOOL bBottomToolBar=dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR;
+	BOOL bToolBar=dat->pContainer->dwFlags & CNT_HIDETOOLBAR?0:1;
 
 	if (myGlobals.g_FlashAvatarAvail) {
 		FLASHAVATAR fa = {0};
@@ -369,12 +355,16 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 		picAspect = 1.0;
 	else
 		picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-	picProjectedWidth = (double)((dat->dynaSplitter + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
-
-	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
-		dat->iRealAvatarHeight = dat->dynaSplitter + ((dat->showUIElements != 0) ? 31 : 6);
+	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? 24:0) + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+	
+	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
+	//	   we can change resize priority to buttons, if needed...
+	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
+		dat->iRealAvatarHeight = dat->dynaSplitter + (dat->showUIElements ? 31 : 6);
 	else
 		dat->iRealAvatarHeight = dat->dynaSplitter + 6;
+	//mad
+	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? 24:0);
 
 	if (myGlobals.m_LimitStaticAvatarHeight > 0)
 		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, myGlobals.m_LimitStaticAvatarHeight);
@@ -421,8 +411,7 @@ char *GetCurrentMetaContactProto(HWND hwndDlg, struct MessageWindowData *dat)
 		else
 			dat->wMetaStatus = ID_STATUS_OFFLINE;
 		return dat->szMetaProto;
-	}
-	else
+	} else
 		return dat->szProto;
 }
 
@@ -436,7 +425,7 @@ void WriteStatsOnClose(HWND hwndDlg, struct MessageWindowData *dat)
 
 	return;
 
-	if (dat->hContact != 0 && myGlobals.m_LogStatusChanges != 0 && DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0) {
+	if (dat->hContact != 0 &&(myGlobals.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES) {
 		mir_snprintf(buffer, sizeof(buffer), "Session close - active for: %d:%02d:%02d, Sent: %d (%d), Rcvd: %d (%d)", now / 3600, now / 60, now % 60, dat->stats.iSent, dat->stats.iSentBytes, dat->stats.iReceived, dat->stats.iReceivedBytes);
 		dbei.cbSize = sizeof(dbei);
 		dbei.pBlob = (PBYTE) buffer;
@@ -463,11 +452,32 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 		EnableMenuItem(submenu, ID_TABMENU_ATTACHTOCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0) ? MF_GRAYED : MF_ENABLED);
 		EnableMenuItem(submenu, ID_TABMENU_LEAVECHATROOM, iLeave);
 		EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
-	}
-	else if (menuID == MENU_LOGMENU) {
-		// TODO: removed
-	}
-	else if (menuID == MENU_PICMENU) {
+	} else if (menuID == MENU_LOGMENU) {
+		/*
+				int iLocalTime = 0;
+				int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
+				int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES;
+
+				CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_USECONTACTSLOCALTIME, MF_BYCOMMAND | iLocalTime ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_USESIMPLETEMPLATE, MF_BYCOMMAND | (!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) ? MF_CHECKED : MF_UNCHECKED));
+				CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
+
+				EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
+				EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
+		*/
+	} else if (menuID == MENU_PICMENU) {
 		MENUITEMINFO mii = {0};
 		TCHAR *szText = NULL;
 		char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
@@ -487,8 +497,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | (ServiceExists(MS_AV_GETAVATARBITMAP) ? MF_ENABLED : MF_GRAYED));
 			szText = TranslateT("Contact picture settings...");
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_ENABLED);
-		}
-		else {
+		} else {
 			EnableMenuItem(submenu, 0, MF_BYPOSITION | MF_GRAYED);
 			EnableMenuItem(submenu, ID_PICMENU_SETTINGS, MF_BYCOMMAND | ((ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0)) ? MF_ENABLED : MF_GRAYED));
 			szText = TranslateT("Set your avatar...");
@@ -496,8 +505,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 		mii.dwTypeData = szText;
 		mii.cch = lstrlen(szText) + 1;
 		SetMenuItemInfo(submenu, ID_PICMENU_SETTINGS, FALSE, &mii);
-	}
-	else if (menuID == MENU_PANELPICMENU) {
+	} else if (menuID == MENU_PANELPICMENU) {
 		HMENU visMenu = GetSubMenu(submenu, 0);
 		char  avOverride = (char)DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hideavatar", -1);
 
@@ -576,8 +584,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 					if (dat)
 						SaveAvatarToFile(dat, dat->hOwnPic, 1);
-				}
-				else {
+				} else {
 					if (dat && dat->ace)
 						SaveAvatarToFile(dat, dat->ace->hbmPic, 0);
 				}
@@ -611,22 +618,77 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 					if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 						if (ServiceExists(MS_AV_SETMYAVATAR) && CallService(MS_AV_CANSETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0))
 							CallService(MS_AV_SETMYAVATAR, (WPARAM)(dat->bIsMeta ? dat->szMetaProto : dat->szProto), 0);
-					}
-					else
+					} else
 						CallService(MS_AV_CONTACTOPTIONS, (WPARAM)dat->hContact, 0);
 				}
 			}
 			return 1;
 		}
-	}
-	else if (menuId == MENU_LOGMENU) {
+	} else if (menuId == MENU_LOGMENU) {
 		int iLocalTime = 0;
 		int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
-		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
+		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES;
 
 		DWORD dwOldFlags = dat->dwFlags;
 
 		switch (selection) {
+				/*
+
+							case ID_LOGMENU_SHOWTIMESTAMP:
+								dat->dwFlags ^= MWF_LOG_SHOWTIME;
+								return 1;
+							case ID_LOGMENU_INDENTMESSAGEBODY:
+								dat->dwFlags ^= MWF_LOG_INDENT;
+								return 1;
+							case ID_LOGMENU_ACTIVATERTL:
+								iRtl ^= 1;
+								dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
+								if (dat->hContact) {
+									if (iRtl != myGlobals.m_RTLDefault)
+										DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", (BYTE) iRtl);
+									else
+										DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "RTL");
+									SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+								}
+								return 1;
+							case ID_LOGMENU_USESIMPLETEMPLATE:
+								dat->dwFlags ^= MWF_LOG_NORMALTEMPLATES;
+								return 1;
+							case ID_LOGMENU_SHOWDATE:
+								dat->dwFlags ^= MWF_LOG_SHOWDATES;
+								return 1;
+							case ID_LOGMENU_SHOWSECONDS:
+								dat->dwFlags ^= MWF_LOG_SHOWSECONDS;
+								return 1;
+							case ID_MESSAGEICONS_SHOWICONS:
+								dat->dwFlags ^= MWF_LOG_SHOWICONS;
+								return 1;
+							case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
+								dat->dwFlags ^= MWF_LOG_SYMBOLS;
+								return 1;
+							case ID_MESSAGEICONS_USEINCOMING:
+								dat->dwFlags ^= MWF_LOG_INOUTICONS;
+								return 1;
+							case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
+								DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", (BYTE)(iLogStatus ? 0 : -1));
+								return 1;
+							case ID_MESSAGELOGFORMATTING_SHOWGRID:
+								dat->dwFlags ^= MWF_LOG_GRID;
+								if (dat->dwFlags & MWF_LOG_GRID)
+									SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1, 1));    // XXX margins in the log (looks slightly better)
+								else
+									SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));    // XXX margins in the log (looks slightly better)
+								return 1;
+							case ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS:
+								dat->dwFlags ^= MWF_LOG_INDIVIDUALBKG;
+								return 1;
+							case ID_MESSAGELOGFORMATTING_GROUPMESSAGES:
+								dat->dwFlags ^= MWF_LOG_GROUPMODE;
+								return 1;
+							case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
+								dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
+								return 1;
+				*/
 			case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS: {
 				char *szFilename = GetThemeFileName(1);
 				if (szFilename != NULL)
@@ -738,12 +800,10 @@ void HandleIconFeedback(HWND hwndDlg, struct MessageWindowData *dat, HICON iIcon
 	if (iIcon == (HICON) - 1) { // restore status image
 		if (dat->dwFlags & MWF_ERRORSTATE) {
 			dat->hTabIcon = myGlobals.g_iconErr;
-		}
-		else {
+		} else {
 			dat->hTabIcon = dat->hTabStatusIcon;
 		}
-	}
-	else
+	} else
 		dat->hTabIcon = iIcon;
 	item.iImage = 0;
 	item.mask = TCIF_IMAGE;
@@ -768,17 +828,24 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 		if (bOwnAvatarMode)
 			dat->showPic = FALSE;
 		else {
+			FLASHAVATAR fa = {0};
 			if (myGlobals.g_FlashAvatarAvail) {
-				FLASHAVATAR fa = {0};
 				fa.cProto = dat->szProto;
 				fa.id = 25367;
 				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				if (fa.hWindow != NULL&&dat->hwndContactPic) {
+					DestroyWindow(dat->hwndContactPic);
+					dat->hwndContactPic = NULL;
+				}
 				dat->showPic = ((dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL)) ? 1 : 0;
-			}
-			else
+			} else
 				dat->showPic = (dat->hOwnPic && dat->hOwnPic != myGlobals.g_hbmUnknown) ? 1 : 0;
+
+			if (!myGlobals.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
+				dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
+
 		}
 		switch (bAvatarMode) {
 			case 0:
@@ -799,6 +866,14 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					fa.hParentWindow = GetDlgItem(hwndDlg, IDC_PANELPIC);
 
 					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
+						DestroyWindow(dat->hwndPanelPic);
+						dat->hwndPanelPic = NULL;
+					}
+				}
+				if (!myGlobals.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
+					dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
+
 				}
 				if ((hbm && hbm != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showInfoPic = 1;
@@ -811,8 +886,29 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 			dat->showInfoPic = hideOverride == 0 ? 0 : dat->showInfoPic;
 		else
 			dat->showInfoPic = hideOverride == 1 ? 1 : dat->showInfoPic;
-	}
-	else {
+		//Bolshevik: reloads avatars
+		if (dat->showInfoPic)
+// 			if(dat->hwndPanelPic)
+		{
+			/** panel and contact is shown, reloads contact's avatar -> panel
+			*  user avatar -> bottom picture
+			*/
+			SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
+			if (dat->hwndContactPic)
+				SendMessage(dat->hwndContactPic, AVATAR_SETPROTOCOL, (WPARAM)0, (LPARAM)dat->szProto);
+		}
+// 			else
+// 			{
+// 				//show only contact picture at bottom
+// 				if(dat->hwndContactPic)
+// 					SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
+// 			}
+		else
+			//show only user picture(contact is unaccessible)
+			if (dat->hwndContactPic)
+				SendMessage(dat->hwndContactPic, AVATAR_SETPROTOCOL, (WPARAM)0, (LPARAM)dat->szProto);
+//Bolshevik_
+	} else {
 		dat->showInfoPic = 0;
 
 		switch (bAvatarMode) {
@@ -835,7 +931,15 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 					fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 
 					CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+
+					if (fa.hWindow != NULL&&dat->hwndContactPic) {
+						DestroyWindow(dat->hwndContactPic);
+						dat->hwndContactPic = NULL;
+					}
 				}
+				if (!myGlobals.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic)
+					dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
+
 				if ((hbm && hbm != myGlobals.g_hbmUnknown) || (fa.hWindow != NULL))
 					dat->showPic = 1;
 				else
@@ -847,6 +951,14 @@ int GetAvatarVisibility(HWND hwndDlg, struct MessageWindowData *dat)
 			dat->showPic = hideOverride == 0 ? 0 : dat->showPic;
 		else
 			dat->showPic = hideOverride == 1 ? 1 : dat->showPic;
+		//Bolshevik: reloads avatars
+		if (dat->showPic)
+			//shows contact or user picture, depending on panel visibility
+			if (dat->hwndPanelPic)
+				SendMessage(dat->hwndContactPic, AVATAR_SETPROTOCOL, (WPARAM)0, (LPARAM)dat->szProto);
+		if (dat->hwndContactPic)
+			SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
+
 	}
 	return dat->showPic;
 }
@@ -866,8 +978,7 @@ int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
 		if (hButtonIcon)
 			*hButtonIcon = smainfo.ButtonIcon;
 		return smainfo.NumberOfVisibleSmileys;
-	}
-	else
+	} else
 		return 0;
 }
 
@@ -913,8 +1024,7 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 				lineChar += decreasedBy;
 				inChar += decreasedBy;
 				outChar += decreasedBy;
-			}
-			else inChar++;
+			} else inChar++;
 			strout[outChar++] = '\r';
 			strout[outChar++] = '\n';
 			justDoneLineBreak = 1;
@@ -927,8 +1037,7 @@ TCHAR *QuoteText(TCHAR *text, int charsPerLine, int removeExistingQuotes)
 				strout[outChar++] = '\n';
 			justDoneLineBreak = 1;
 			lineChar = 0;
-		}
-		else justDoneLineBreak = 0;
+		} else justDoneLineBreak = 0;
 		inChar++;
 	}
 	strout[outChar++] = '\r';
@@ -963,8 +1072,7 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 				SetParent(fa.hWindow, GetDlgItem(hwndDlg, IDC_CONTACTPIC));
 				ShowWindow(fa.hWindow, SW_SHOW);
 			}
-		}
-		else {
+		} else {
 			CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 			if (fa.hWindow)
 				ShowWindow(fa.hWindow, SW_HIDE);
@@ -979,8 +1087,7 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 		DM_RecalcPictureSize(hwndDlg, dat);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
-	}
-	else {
+	} else {
 		dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
 		dat->pic.cy = dat->pic.cx = 60;
@@ -998,12 +1105,12 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 
 	if (showNewPic) {
 		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
-			InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, FALSE);
+			if (!dat->hwndPanelPic)
+				InvalidateRect(GetDlgItem(hwndDlg, IDC_PANELPIC), NULL, FALSE);
 			return;
 		}
 		AdjustBottomAvatarDisplay(hwndDlg, dat);
-	}
-	else {
+	} else {
 		dat->showPic = dat->showPic ? 0 : 1;
 		DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", (BYTE)dat->showPic);
 	}
@@ -1064,8 +1171,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD dwCookie, LPBYTE pbBuff, LONG
 		*pcb = cb;
 		dwRead = cb;
 		*(*ppText + cb) = '\0';
-	}
-	else {
+	} else {
 		char  *p = realloc(*ppText, dwRead + cb + 2);
 		CopyMemory(p + dwRead, pbBuff, cb);
 		*ppText = p;
@@ -1220,8 +1326,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 							if (bTextHasStarted || iCol)
 								_sntprintf(InsertThis, sizeof(InsertThis) / sizeof(TCHAR), (iInd > 0) ? (inColor ? _T("[/color][color=%s]") : _T("[color=%s]")) : (inColor ? _T("[/color]") : _T("")), rtf_ctable[iInd  - 1].szName);
 							inColor = iInd > 0 ? 1 : 0;
-						}
-						else if (p1 == _tcsstr(p1, _T("\\highlight"))) { //background color
+						} else if (p1 == _tcsstr(p1, _T("\\highlight"))) { //background color
 							TCHAR szTemp[20];
 							int iCol = _ttoi(p1 + 10);
 							//int iInd = RTFColorToIndex(pIndex, iCol, dat);
@@ -1231,20 +1336,17 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 							iRemoveChars = 10 + _tcslen(szTemp);
 							//if(bTextHasStarted || iInd >= 0)
 							//	_snprintf(InsertThis, sizeof(InsertThis), ( iInd >= 0 ) ? _T("%%f%02u") : _T("%%F"), iInd);
-						}
-						else if (p1 == _tcsstr(p1, _T("\\par"))) { // newline
+						} else if (p1 == _tcsstr(p1, _T("\\par"))) { // newline
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = 4;
 							//_sntprintf(InsertThis, sizeof(InsertThis), _T("\n"));
-						}
-						else if (p1 == _tcsstr(p1, _T("\\line"))) { // soft line break;
+						} else if (p1 == _tcsstr(p1, _T("\\line"))) { // soft line break;
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = 5;
 							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\n"));
-						}
-						else if (p1 == _tcsstr(p1, _T("\\emdash"))) { //bold
+						} else if (p1 == _tcsstr(p1, _T("\\emdash"))) {
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = 7;
@@ -1253,18 +1355,34 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 #else
 							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("-"));
 #endif
-						}
-						else if (p1 == _tcsstr(p1, _T("\\endash"))) { //bold
+						} else if (p1 == _tcsstr(p1, _T("\\bullet"))) {
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = 7;
 #if defined(_UNICODE)
-							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2013);
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2022);
 #else
-							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("-"));
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("*"));
 #endif
-						}
-						else if (p1 == _tcsstr(p1, _T("\\b"))) { //bold
+						} else if (p1 == _tcsstr(p1, _T("\\ldblquote"))) {
+							bTextHasStarted = TRUE;
+							bJustRemovedRTF = TRUE;
+							iRemoveChars = 10;
+#if defined(_UNICODE)
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x201C);
+#else
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\""));
+#endif
+						} else if (p1 == _tcsstr(p1, _T("\\rdblquote"))) {
+							bTextHasStarted = TRUE;
+							bJustRemovedRTF = TRUE;
+							iRemoveChars = 10;
+#if defined(_UNICODE)
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x201D);
+#else
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\""));
+#endif
+						} else if (p1 == _tcsstr(p1, _T("\\b"))) { //bold
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = (p1[2] != (TCHAR)'0') ? 2 : 3;
@@ -1273,8 +1391,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 									_sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[b]") : _T("[/b]"));
 							}
 
-						}
-						else if (p1 == _tcsstr(p1, _T("\\i"))) { // italics
+						} else if (p1 == _tcsstr(p1, _T("\\i"))) { // italics
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = (p1[2] != (TCHAR)'0') ? 2 : 3;
@@ -1283,8 +1400,16 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 									_sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[2] != (TCHAR)'0') ? _T("[i]") : _T("[/i]"));
 							}
 
-						}
-						else if (p1 == _tcsstr(p1, _T("\\ul"))) { // underlined
+						} else if (p1 == _tcsstr(p1, _T("\\strike"))) { // strike-out
+							bTextHasStarted = TRUE;
+							bJustRemovedRTF = TRUE;
+							iRemoveChars = (p1[7] != (TCHAR)'0') ? 7 : 8;
+							if (!lf.lfStrikeOut) {                      // same as for bold
+								if (dat->SendFormat)
+									_sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[7] != (TCHAR)'0') ? _T("[s]") : _T("[/s]"));
+							}
+
+						} else if (p1 == _tcsstr(p1, _T("\\ul"))) { // underlined
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							if (p1[3] == (TCHAR)'n')
@@ -1298,21 +1423,21 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 									_sntprintf(InsertThis, safe_sizeof(InsertThis), (p1[3] != (TCHAR)'0' && p1[3] != (TCHAR)'n') ? _T("[u]") : _T("[/u]"));
 							}
 
-						}
-						else if (p1 == _tcsstr(p1, _T("\\tab"))) { // tab
+						} else if (p1 == _tcsstr(p1, _T("\\tab"))) { // tab
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = TRUE;
 							iRemoveChars = 4;
+#if defined(_UNICODE)
+							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x09);
+#else
 							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T(" "));
-
-						}
-						else if (p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}') { // escaped characters
+#endif
+						} else if (p1[1] == (TCHAR)'\\' || p1[1] == (TCHAR)'{' || p1[1] == (TCHAR)'}') { // escaped characters
 							bTextHasStarted = TRUE;
 							//bJustRemovedRTF = TRUE;
 							iRemoveChars = 2;
 							_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), p1[1]);
-						}
-						else if (p1[1] == (TCHAR)'\'') { // special character
+						} else if (p1[1] == (TCHAR)'\'') { // special character
 							bTextHasStarted = TRUE;
 							bJustRemovedRTF = FALSE;
 							if (p1[2] != (TCHAR)' ' && p1[2] != (TCHAR)'\\') {
@@ -1324,8 +1449,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 									_tcsncpy(InsertThis, p1 + 2, 3);
 									iRemoveChars = 4;
 									InsertThis[2] = 0;
-								}
-								else {
+								} else {
 									_tcsncpy(InsertThis, p1 + 2, 2);
 									iRemoveChars = 3;
 									InsertThis[2] = 0;
@@ -1335,11 +1459,9 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 								iLame = _tcstol(p3, &stoppedHere, 16);
 								_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), (TCHAR)iLame);
 
-							}
-							else
+							} else
 								iRemoveChars = 2;
-						}
-						else { // remove unknown RTF command
+						} else { // remove unknown RTF command
 							int j = 1;
 							bJustRemovedRTF = TRUE;
 							while (!_tcschr(_T(" !$%()#*\"'"), p1[j]) && p1[j] != (TCHAR)'§' && p1[j] != (TCHAR)'\\' && p1[j] != (TCHAR)'\0')
@@ -1375,14 +1497,12 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 				MoveMemory(p1 + _tcslen(InsertThis) , p1 + iRemoveChars, (_tcslen(p1) - iRemoveChars + 1) * sizeof(TCHAR));
 				CopyMemory(p1, InsertThis, _tcslen(InsertThis) * sizeof(TCHAR));
 				p1 += _tcslen(InsertThis);
-			}
-			else
+			} else
 				p1++;
 		}
 
 
-	}
-	else {
+	} else {
 		return FALSE;
 	}
 	return TRUE;
@@ -1394,14 +1514,14 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 
 void DoTrimMessage(TCHAR *msg)
 {
-	int iLen = _tcslen(msg) - 1;
+	int iLen = _tcslen(msg);
 	int i = iLen;
 
-	while (i && (msg[i] == '\r' || msg[i] == '\n') || msg[i] == ' ') {
+	while (i && (msg[i-1] == '\r' || msg[i-1] == '\n') || msg[i-1] == ' ') {
 		i--;
 	}
 	if (i < iLen)
-		msg[i+1] = '\0';
+		msg[i] = '\0';
 }
 
 /*
@@ -1438,8 +1558,7 @@ void SaveInputHistory(HWND hwndDlg, struct MessageWindowData *dat, WPARAM wParam
 					iLength = HISTORY_INITIAL_ALLOCSIZE;
 				dat->history[dat->iHistoryTop].szText = (TCHAR *)malloc(iLength);
 				dat->history[dat->iHistoryTop].lLen = iLength;
-			}
-			else {
+			} else {
 				if (iLength > dat->history[dat->iHistoryTop].lLen) {
 					dat->history[dat->iHistoryTop].szText = (TCHAR *)realloc(dat->history[dat->iHistoryTop].szText, iLength);
 					dat->history[dat->iHistoryTop].lLen = iLength;
@@ -1475,8 +1594,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 	if (dat->bIsMeta) {
 		ci.hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)dat->hContact, 0);
 		ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ci.hContact, 0);
-	}
-	else {
+	} else {
 		ci.hContact = dat->hContact;
 		ci.szProto = dat->szProto;
 	}
@@ -1492,8 +1610,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 				mir_snprintf(dat->uin, sizeof(dat->uin), "%u", ci.dVal);
 				break;
 		}
-	}
-	else
+	} else
 		dat->uin[0] = 0;
 
 	// get own uin...
@@ -1509,20 +1626,38 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 				mir_snprintf(dat->myUin, sizeof(dat->myUin), "%u", ci.dVal);
 				break;
 		}
-	}
-	else
+	} else
 		dat->myUin[0] = 0;
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
 		SetDlgItemTextA(hwndDlg, IDC_PANELUIN, dat->uin);
 }
 
 static int g_IEViewAvail = -1;
-						   static int g_HPPAvail = -1;
+static int g_HPPAvail = -1;
 
 #define WANT_IEVIEW_LOG 1
 #define WANT_HPP_LOG 2
 
-unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
+//MAD
+HWND GetLastChild(HWND hwndParent)
+{
+	HWND hwnd = hwndParent;
+	char classbuf[25]={'\0'};
+	WCHAR classbufW[25]={__T('\0')};
+	while (TRUE) {
+		HWND hwndChild = GetWindow(hwnd, GW_CHILD);
+		if (hwndChild==NULL)
+			return hwnd;
+		hwnd = hwndChild;
+		if ((GetClassNameA(hwnd,classbuf,25)&&!strcmp(classbuf,"Internet Explorer_Server"))||(GetClassNameW(hwnd,classbufW,25)&&!wcscmp(classbufW,L"Internet Explorer_Server")))
+			return hwnd;
+	}
+	return NULL;
+}
+
+//MAD_
+
+unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 {
 	int iWantIEView = 0, iWantHPP = 0;
 
@@ -1535,11 +1670,11 @@ unsigned int GetIEViewMode(HWND hwndDlg, struct MessageWindowData *dat)
 	myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
 	myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
 
-	iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
-	iWantIEView = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ieview", 0) == (BYTE) - 1) ? 0 : iWantIEView;
+	iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
+	iWantIEView = (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == (BYTE) - 1) ? 0 : iWantIEView;
 
-	iWantHPP = (myGlobals.g_WantHPP) || (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == 1 && g_HPPAvail);
-	iWantHPP = (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "hpplog", 0) == (BYTE) - 1) ? 0 : iWantHPP;
+	iWantHPP = (myGlobals.g_WantHPP) || (DBGetContactSettingByte(hContact, SRMSGMOD_T, "hpplog", 0) == 1 && g_HPPAvail);
+	iWantHPP = (DBGetContactSettingByte(hContact, SRMSGMOD_T, "hpplog", 0) == (BYTE) - 1) ? 0 : iWantHPP;
 
 	return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
 }
@@ -1563,6 +1698,12 @@ static void CheckAndDestroyHPP(struct MessageWindowData *dat)
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_DESTROY;
 		ieWindow.hwnd = dat->hwndHPP;
+		//MAD: restore old wndProc
+		if(dat->oldIEViewProc){
+			SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+			dat->oldIEViewProc=0;
+			}
+		//MAD_
 		CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndHPP = 0;
 	}
@@ -1575,8 +1716,16 @@ static void CheckAndDestroyIEView(struct MessageWindowData *dat)
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_DESTROY;
 		ieWindow.hwnd = dat->hwndIEView;
-		if (dat->oldIEViewProc)
+		if (dat->oldIEViewProc){
 			SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)dat->oldIEViewProc);
+			dat->oldIEViewProc =0;
+			}
+		if (dat->oldIEViewLastChildProc) {
+			//mad: get LAST child, because ieserver has many of them..
+			SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)dat->oldIEViewLastChildProc);
+			dat->oldIEViewLastChildProc = 0;
+			}
+		//mad_
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->oldIEViewProc = 0;
 		dat->hwndIEView = 0;
@@ -1585,7 +1734,7 @@ static void CheckAndDestroyIEView(struct MessageWindowData *dat)
 
 void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	unsigned int iLogMode = GetIEViewMode(hwndDlg, dat);
+	unsigned int iLogMode = GetIEViewMode(hwndDlg, dat->hContact);
 
 	if (iLogMode == WANT_IEVIEW_LOG && dat->hwndIEView == 0) {
 		IEVIEWWINDOW ieWindow;
@@ -1604,8 +1753,7 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
 		dat->hwndIEView = ieWindow.hwnd;
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-	}
-	else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
+	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
 		IEVIEWWINDOW ieWindow;
 
 		CheckAndDestroyIEView(dat);
@@ -1622,8 +1770,7 @@ void SetMessageLog(HWND hwndDlg, struct MessageWindowData *dat)
 		dat->hwndHPP = ieWindow.hwnd;
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-	}
-	else {
+	} else {
 		if (iLogMode != WANT_IEVIEW_LOG)
 			CheckAndDestroyIEView(dat);
 		if (iLogMode != WANT_HPP_LOG)
@@ -1643,14 +1790,32 @@ void SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode)
 		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
 		SetMessageLog(hwndDlg, dat);
-	}
-	else                     // switch from IEView or hpp to rtf
+	} else                    // switch from IEView or hpp to rtf
 		SetMessageLog(hwndDlg, dat);
 
 	SetDialogToType(hwndDlg);
 	SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 	UpdateContainerMenu(hwndDlg, dat);
+
+	//MAD: simple subclassing after log changed
+	if (dat->hwndIEView) {
+		if (dat->oldIEViewLastChildProc == 0) {
+			WNDPROC wndProc = (WNDPROC)SetWindowLong(GetLastChild(dat->hwndIEView), GWL_WNDPROC, (LONG)IEViewKFSubclassProc);
+			dat->oldIEViewLastChildProc = wndProc;
+		}
+ 		if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "subclassIEView", 0)&&dat->oldIEViewProc == 0) {
+ 			WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndIEView, GWL_WNDPROC, (LONG)IEViewSubclassProc);
+ 			dat->oldIEViewProc = wndProc;
+ 		}
+	} else if (dat->hwndHPP) {
+		if (dat->oldIEViewProc == 0) {
+			WNDPROC wndProc = (WNDPROC)SetWindowLong(dat->hwndHPP, GWL_WNDPROC, (LONG)HPPKFSubclassProc);
+			dat->oldIEViewProc = wndProc;
+		}
+	}
+//MAD_
+
 }
 
 void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
@@ -1666,7 +1831,12 @@ void FindFirstEvent(HWND hwndDlg, struct MessageWindowData *dat)
 			HANDLE hPrevEvent;
 			DBEVENTINFO dbei = { 0};
 			dbei.cbSize = sizeof(dbei);
-			for (i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT); i > 0; i--) {
+			//MAD: ability to load only current session's history
+			if (dat->bActualHistory)
+				i=dat->messageCount;
+			else i = DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT);
+			//
+			for (; i > 0; i--) {
 				if (dat->hDbEventFirst == NULL)
 					hPrevEvent = (HANDLE) CallService(MS_DB_EVENT_FINDLAST, (WPARAM) dat->hContact, 0);
 				else
@@ -1768,11 +1938,9 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 			iPlay = FALSE;
 		else if (dwFlags & CNT_SYNCSOUNDS) {
 			iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-		}
-		else
+		} else
 			iPlay = TRUE;
-	}
-	else
+	} else
 		iPlay = dwFlags & CNT_NOSOUND ? FALSE : TRUE;
 
 	if (iPlay) {
@@ -1790,7 +1958,7 @@ void PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 
 void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
 {
-	UINT controls[4] = {IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE, IDC_FONTFACE};
+	UINT controls[5] = {IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE,IDC_FONTSTRIKEOUT, IDC_FONTFACE};
 	int i;
 
 	if (mode) {
@@ -1800,9 +1968,9 @@ void GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode)
 		else if (dat->SendFormat == 0)
 			dat->SendFormat = myGlobals.m_SendFormat ? 1 : 0;
 	}
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 5; i++) {
 		EnableWindow(GetDlgItem(hwndDlg, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (dat->SendFormat != 0 && !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)) ? SW_SHOW : SW_HIDE);
+		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (dat->SendFormat != 0 /*&& !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)*/ )? SW_SHOW : SW_HIDE);
 	}
 	return;
 }
@@ -1838,8 +2006,7 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
 			pf2.cbSize = sizeof(pf2);
 			pf2.wEffects = PFE_RTLPARA;
 			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
-		}
-		else {
+		} else {
 			ZeroMemory(&pf2, sizeof(pf2));
 			pf2.dwMask = PFM_RTLPARA;
 			pf2.cbSize = sizeof(pf2);
@@ -1878,26 +2045,43 @@ BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
 	return bContact == 0 ? bDefault : (bContact == (BYTE) - 1 ? 0 : 1);
 }
 
+int FoldersPathChanged(WPARAM wParam,LPARAM lParam)
+{
+	if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
+		char szTemp[MAX_PATH]={'\0'};
+		FoldersGetCustomPath(myGlobals.m_hDataPath, szTemp, MAX_PATH, PROFILE_PATH "\\tabSRMM\\");
+		mir_snprintf(myGlobals.szDataPath,MAX_PATH,"%s",szTemp);
+		FoldersGetCustomPath(myGlobals.m_hSkinsPath, szTemp, MAX_PATH, PROFILE_PATH "\\tabSRMM\\Skins\\");
+		mir_snprintf(myGlobals.szSkinsPath,MAX_PATH,"%s",szTemp);
+		FoldersGetCustomPath(myGlobals.m_hAvatarsPath,szTemp, MAX_PATH,PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
+		mir_snprintf(myGlobals.szAvatarsPath,MAX_PATH,"%s",szTemp);
+	} else {
+		char pszDBPath[MAX_PATH + 1];
+		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)pszDBPath);
+		pszDBPath[MAX_PATH] = 0;
+
+		mir_snprintf(myGlobals.szDataPath, MAX_PATH, "%s\\tabSRMM\\", pszDBPath);
+		myGlobals.szDataPath[MAX_PATH] = 0;
+
+		mir_snprintf(myGlobals.szSkinsPath, MAX_PATH, "%sskins\\", myGlobals.szDataPath);
+		mir_snprintf(myGlobals.szAvatarsPath, MAX_PATH, "%sSaved Contact Pictures\\", myGlobals.szDataPath);
+	}
+
+	CreateDirectoryA(myGlobals.szDataPath, NULL);
+	CreateDirectoryA(myGlobals.szSkinsPath, NULL);
+	CreateDirectoryA(myGlobals.szAvatarsPath, NULL);
+	return 0;
+}
+
 void GetDataDir()
 {
-	TCHAR pszDBPath[MAX_PATH + 1], pszDataPath[MAX_PATH + 1];
-
-#if defined(_UNICODE)
-	char szTemp[MAX_PATH + 1];
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szTemp);
-	MultiByteToWideChar(CP_ACP, 0, szTemp, MAX_PATH, pszDBPath, MAX_PATH);
-	pszDBPath[MAX_PATH] = 0;
-#else
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)pszDBPath);
-#endif
-	mir_sntprintf(pszDataPath, MAX_PATH, _T("%s\\tabSRMM\\"), pszDBPath);
-	CreateDirectory(pszDataPath, NULL);
-	_tcsncpy(myGlobals.szDataPath, pszDataPath, MAX_PATH);
-	myGlobals.szDataPath[MAX_PATH] = 0;
-	mir_sntprintf(pszDataPath, MAX_PATH, _T("%sskins\\"), myGlobals.szDataPath);
-	CreateDirectory(pszDataPath, NULL);
-	mir_sntprintf(pszDataPath, MAX_PATH, _T("%sSaved Contact Pictures\\"), myGlobals.szDataPath);
-	CreateDirectory(pszDataPath, NULL);
+	if (ServiceExists(MS_FOLDERS_REGISTER_PATH)) {
+		myGlobals.m_hDataPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM data", PROFILE_PATH "\\tabSRMM\\");
+		myGlobals.m_hSkinsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Skins", PROFILE_PATH "\\tabSRMM\\Skins\\");
+		myGlobals.m_hAvatarsPath=(HANDLE)FoldersRegisterCustomPath("TabSRMM", "TabSRMM Saved Avatars", PROFILE_PATH "\\tabSRMM\\Saved Contact Pictures\\");
+		HookEvent(ME_FOLDERS_PATH_CHANGED,FoldersPathChanged);
+	}
+	FoldersPathChanged(0,0);
 }
 
 void LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat)
@@ -1916,8 +2100,7 @@ void LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 			GetObject(dat->ace->hbmPic, sizeof(bm), &bm);
 			CalcDynamicAvatarSize(hwndDlg, dat, &bm);
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
-		}
-		else if (dat->ace == NULL) {
+		} else if (dat->ace == NULL) {
 			AdjustBottomAvatarDisplay(hwndDlg, dat);
 			GetObject(myGlobals.g_hbmUnknown, sizeof(bm), &bm);
 			CalcDynamicAvatarSize(hwndDlg, dat, &bm);
@@ -1936,8 +2119,7 @@ void LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 	if (ace) {
 		dat->hOwnPic = ace->hbmPic;
 		dat->ownAce = ace;
-	}
-	else {
+	} else {
 		dat->hOwnPic = myGlobals.g_hbmUnknown;
 		dat->ownAce = NULL;
 	}
@@ -1958,8 +2140,7 @@ void UpdateApparentModeDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 	if (dat->wApparentMode == ID_STATUS_OFFLINE) {
 		CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_CHECKED);
 		SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinnedIcon(SKINICON_STATUS_OFFLINE));
-	}
-	else if (dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
+	} else if (dat->wApparentMode == ID_STATUS_ONLINE || dat->wApparentMode == 0) {
 		CheckDlgButton(hwndDlg, IDC_APPARENTMODE, BST_UNCHECKED);
 		SendDlgItemMessage(hwndDlg, IDC_APPARENTMODE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->wApparentMode == ID_STATUS_ONLINE ? LoadSkinnedIcon(SKINICON_STATUS_INVISIBLE) : LoadSkinnedIcon(SKINICON_STATUS_ONLINE)));
 		if (!dat->pContainer->bSkinned)
@@ -2036,8 +2217,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 
 	if (!dat)
 		return 0;
-	if (dat->dwFlags & MWF_INITMODE)
-		return 0;
+
 
 	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(myGlobals.g_hMenuContext, 7)) {
 		RECT rc = { 0 };
@@ -2078,7 +2258,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		old = SelectObject(dis->hDC, col);
 		rc.left = 2;
 		rc.top = dis->rcItem.top - 5;
-		rc.right = 18;
+		rc.right = 15;
 		rc.bottom = dis->rcItem.bottom + 4;
 		Rectangle(dis->hDC, rc.left - 1, rc.top - 1, rc.right + 1, rc.bottom + 1);
 		FillRect(dis->hDC, &rc, col);
@@ -2086,6 +2266,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		DeleteObject(col);
 		return TRUE;
 	}
+
 	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELPIC) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL && (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown))) {
 		HBRUSH hOldBrush;
 		BITMAP bminfo;
@@ -2112,11 +2293,29 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
-			}
-			else {
+			} else {
 				fa.hContact = dat->hContact;
 				fa.hParentWindow = GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
+				if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+					if (fa.hWindow != NULL&&dat->hwndPanelPic) {
+						DestroyWindow(dat->hwndPanelPic);
+						dat->hwndPanelPic = NULL;
+					}
+					if (!myGlobals.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndPanelPic) {
+						dat->hwndPanelPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_PANELPIC), (HMENU)0, NULL, NULL);
+						SendMessage(dat->hwndPanelPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
+					}
+				} else {
+					if (fa.hWindow != NULL&&dat->hwndContactPic) {
+						DestroyWindow(dat->hwndContactPic);
+						dat->hwndContactPic = NULL;
+					}
+					if (!myGlobals.g_bDisableAniAvatars&&fa.hWindow == NULL&&!dat->hwndContactPic) {
+						dat->hwndContactPic =CreateWindowEx(WS_EX_TOPMOST, AVATAR_CONTROL_CLASS, _T(""), WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, GetDlgItem(hwndDlg, IDC_CONTACTPIC), (HMENU)0, NULL, NULL);
+						SendMessage(dat->hwndContactPic, AVATAR_SETCONTACT, (WPARAM)0, (LPARAM)dat->hContact);
+					}
+				}
 				EnableWindow(GetDlgItem(hwndDlg, (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) ? IDC_PANELPIC : IDC_CONTACTPIC), fa.hWindow != 0);
 				dat->hwndFlash = fa.hWindow;
 			}
@@ -2141,13 +2340,11 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				}
 				return TRUE;
 			}
-		}
-		else  {
+		} else  {
 			if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)) {
 				if (dat->ace)
 					aceFlags = dat->ace->dwFlags;
-			}
-			else if (dat->ownAce)
+			} else if (dat->ownAce)
 				aceFlags = dat->ownAce->dwFlags;
 
 			GetObject(dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown), sizeof(bminfo), &bminfo);
@@ -2157,6 +2354,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		GetClientRect(dis->hwndItem, &rcClient);
 		cx = rcClient.right;
 		cy = rcClient.bottom;
+
 		if (cx < 5 || cy < 5)
 			return TRUE;
 
@@ -2168,8 +2366,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					dAspect = 1.0;
 				dNewWidth = (double)bminfo.bmWidth * dAspect;
 				dNewHeight = cy - 2;
-			}
-			else {
+			} else {
 				if (bminfo.bmWidth > 0)
 					dAspect = (double)(cy - 2) / (double)bminfo.bmWidth;
 				else
@@ -2181,8 +2378,8 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				dat->panelWidth = (int)dNewWidth + 2;
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
-		}
-		else {
+		} else {
+
 			if (bminfo.bmHeight > 0)
 				dAspect = (double)dat->iRealAvatarHeight / (double)bminfo.bmHeight;
 			else
@@ -2207,13 +2404,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		bgBrush = CreateSolidBrush(dat->avatarbg);
 		hOldBrush = SelectObject(hdcDraw, bgBrush);
 		rcFrame = rcClient;
-		if (bPanelPic)
-			rcFrame.left = rcClient.right - dat->panelWidth;
+
+
+//   		if (bPanelPic)
+//   			rcFrame.left = rcClient.right - dat->panelWidth;
 		if (dat->pContainer->bSkinned)
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcFrame, hdcDraw);
 		else
 			FillRect(hdcDraw, &rcFrame, bgBrush);
-
 		if (borderType == 1)
 			borderType = aceFlags & AVS_PREMULTIPLIED ? 2 : 3;
 
@@ -2256,20 +2454,27 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					clipRgn = CreateRoundRectRgn(rcFrame.left, rcFrame.top, rcFrame.right + 1, rcFrame.bottom + 1, iRad, iRad);
 					SelectClipRgn(hdcDraw, clipRgn);
 				}
+				//mad
+//   				if(!dat->hwndPanelPic)
+//    				{
 				if (aceFlags & AVS_PREMULTIPLIED)
 					MY_AlphaBlend(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
 					StretchBlt(hdcDraw, rcFrame.left + (borderType ? 1 : 0), height_off + (borderType ? 1 : 0), (int)dNewWidth + width_off, (int)dNewHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-			}
-			else {
+// 				}
+
+			} else {
 				LONG xy_off = borderType ? 1 : 0;
 				LONG width_off = borderType ? 0 : 2;
 
 				SetStretchBltMode(hdcDraw, HALFTONE);
+// 				if(!dat->hwndContactPic)
+//  				{
 				if (aceFlags & AVS_PREMULTIPLIED)
 					MY_AlphaBlend(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, bminfo.bmWidth, bminfo.bmHeight, hdcMem);
 				else
 					StretchBlt(hdcDraw, xy_off, top + xy_off, (int)dNewWidth + width_off, iMaxHeight + width_off, hdcMem, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
+// 				}
 			}
 			if (clipRgn) {
 				HBRUSH hbr = CreateSolidBrush((COLORREF)DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
@@ -2277,6 +2482,9 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				DeleteObject(hbr);
 				DeleteObject(clipRgn);
 			}
+			//mad
+			SelectObject(hdcMem, hbmMem);
+			//
 			DeleteObject(hbmMem);
 			DeleteDC(hdcMem);
 		}
@@ -2290,6 +2498,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		DeleteDC(hdcDraw);
 		return TRUE;
 	}
+
 	else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELSTATUS) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		char	*szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 		SIZE	sProto = {0}, sStatus = {0};
@@ -2326,8 +2535,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		}
-		else
+		} else
 			FillRect(dis->hDC, &rc, myGlobals.ipConfig.bkgBrush);
 		SetBkMode(dis->hDC, TRANSPARENT);
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
@@ -2346,8 +2554,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (config) {
 				SelectObject(dis->hDC, myGlobals.ipConfig.hFonts[IPFONTID_PROTO]);
 				SetTextColor(dis->hDC, myGlobals.ipConfig.clrs[IPFONTID_PROTO]);
-			}
-			else
+			} else
 				SetTextColor(dis->hDC, GetSysColor(COLOR_HOTLIGHT));
 			DrawText(dis->hDC, szFinalProto, lstrlen(szFinalProto), &rc, DT_SINGLELINE | DT_VCENTER);
 		}
@@ -2357,13 +2564,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 
 		if (config && hOldFont)
 			SelectObject(dis->hDC, hOldFont);
-		
-		if(szFinalProto)
+
+		if (szFinalProto)
 			mir_free(szFinalProto);
 
 		return TRUE;
-	}
-	else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELNICK) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		RECT rc = dis->rcItem;
 		TCHAR *szStatusMsg = NULL;
 		TCHAR *szLabel = TranslateT("Name:");
@@ -2386,8 +2592,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (dat->pContainer->bSkinned) {
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
-		}
-		else {
+		} else {
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 		}
@@ -2402,8 +2607,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		}
-		else
+		} else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
@@ -2454,16 +2658,14 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 					//dis->rcItem.left += (rc.right - rc.left);
 					DrawText(dis->hDC, szStatusMsg, -1, &dis->rcItem, dtFlags);
 				}
-			}
-			else
+			} else
 				DrawText(dis->hDC, dat->szNickname, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_WORD_ELLIPSIS | DT_NOPREFIX);
 
 			if (hOldFont)
 				SelectObject(dis->hDC, hOldFont);
 		}
 		return TRUE;
-	}
-	else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
+	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PANELUIN) && dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		char szBuf[256];
 		BOOL config = myGlobals.ipConfig.isValid;
 		HFONT hOldFont = 0;
@@ -2475,8 +2677,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (dat->pContainer->bSkinned) {
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
-		}
-		else {
+		} else {
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 		}
@@ -2495,8 +2696,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 			if (!item->IGNORED)
 				DrawAlpha(dis->hDC, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 						  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-		}
-		else
+		} else
 			FillRect(dis->hDC, &dis->rcItem, myGlobals.ipConfig.bkgBrush);
 		if (myGlobals.ipConfig.borderStyle < IPFIELD_FLAT && (!dat->pContainer->bSkinned || item->IGNORED))
 			DrawEdge(dis->hDC, &dis->rcItem, myGlobals.ipConfig.edgeType, myGlobals.ipConfig.edgeFlags);
@@ -2514,8 +2714,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 				mir_snprintf(szBuf, sizeof(szBuf), "%s    Idle: %dh,%02dm", dat->uin, i_hrs, i_mins);
 				GetTextExtentPoint32A(dis->hDC, szBuf, lstrlenA(szBuf), &sUIN);
 				DrawTextA(dis->hDC, szBuf, lstrlenA(szBuf), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
-			}
-			else {
+			} else {
 				GetTextExtentPoint32A(dis->hDC, dat->uin, lstrlenA(dat->uin), &sUIN);
 				DrawTextA(dis->hDC, dat->uin, lstrlenA(dat->uin), &dis->rcItem, DT_SINGLELINE | DT_VCENTER);
 			}
@@ -2555,14 +2754,12 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		if (hOldFont)
 			SelectObject(dis->hDC, hOldFont);
 		return TRUE;
-	}
-	else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
+	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICTEXT) || dis->hwndItem == GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT)) {
 		TCHAR szWindowText[256];
 		if (dat->pContainer->bSkinned) {
 			SetTextColor(dis->hDC, myGlobals.skinDefaultFontColor);
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
-		}
-		else {
+		} else {
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
 		}
@@ -2571,8 +2768,7 @@ int MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, struct Mess
 		SetBkMode(dis->hDC, TRANSPARENT);
 		DrawText(dis->hDC, szWindowText, -1, &dis->rcItem, DT_SINGLELINE | DT_VCENTER | DT_NOCLIP | DT_END_ELLIPSIS);
 		return TRUE;
-	}
-	else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON)) {
+	} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_STATICERRORICON)) {
 		if (dat->pContainer->bSkinned)
 			SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		else
@@ -2655,6 +2851,7 @@ void LoadOverrideTheme(HWND hwndDlg, struct MessageWindowData *dat)
 
 void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat)
 {
+	/*
 	char szBuf[100];
 
 	if (!(dat->dwFlags & MWF_SHOW_PRIVATETHEME))
@@ -2663,17 +2860,18 @@ void SaveMessageLogFlags(HWND hwndDlg, struct MessageWindowData *dat)
 		if (PathFileExistsA(dat->pContainer->szThemeFile))
 			WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(dat->dwFlags & MWF_LOG_ALL, szBuf, 10), dat->pContainer->szThemeFile);
 	}
+	*/
 }
 
 void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	HICON hButtonIcon = 0;
 	int nrSmileys = 0;
-	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+// 	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	int iItemID = IDC_SMILEYBTN;
 
-	if (dat && dat->bType == SESSIONTYPE_CHAT)
-		iItemID = IDC_SMILEY;
+// 	if (dat && dat->bType == SESSIONTYPE_CHAT)
+// 		iItemID = IDC_SMILEY;
 
 	if (myGlobals.g_SmileyAddAvail) {
 		nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
@@ -2685,8 +2883,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) myGlobals.g_buttonBarIcons[11]);
 			if (hButtonIcon)
 				DestroyIcon(hButtonIcon);
-		}
-		else {
+		} else {
 			SendDlgItemMessage(hwndDlg, iItemID, BM_SETIMAGE, IMAGE_ICON, (LPARAM) hButtonIcon);
 			dat->hSmileyIcon = hButtonIcon;
 		}
@@ -2695,7 +2892,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 	if (nrSmileys == 0 || dat->hContact == 0)
 		dat->doSmileys = 0;
 
-	ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys/* && showToolbar*/) ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(hwndDlg, iItemID), dat->doSmileys ? TRUE : FALSE);
 }
 
@@ -2713,7 +2910,11 @@ HICON GetXStatusIcon(struct MessageWindowData *dat)
 
 LRESULT GetSendButtonState(HWND hwnd)
 {
-	return(SendMessage(GetDlgItem(hwnd, IDOK), BUTTONSETASFLATBTN + 15, 0, 0));
+HWND hwndIDok=GetDlgItem(hwnd, IDOK);
+if(hwndIDok)
+	return(SendMessage(hwndIDok, BUTTONSETASFLATBTN + 15, 0, 0));
+else
+	return 0;
 }
 
 void EnableSendButton(HWND hwnd, int iMode)
@@ -2831,8 +3032,7 @@ void GetMaxMessageLength(HWND hwndDlg, struct MessageWindowData *dat)
 			else
 				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
 			dat->nMax = nMax;
-		}
-		else {
+		} else {
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)20000);
 			dat->nMax = 20000;
 		}
@@ -2881,8 +3081,7 @@ void GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat)
 			bStatusMsgValid = STATUSMSG_XSTATUSNAME;
 			mir_sntprintf(dat->statusMsg, safe_sizeof(dat->statusMsg), _T("%s"), dbv.ptszVal);
 			mir_free(dbv.ptszVal);
-		}
-		else {
+		} else {
 			BYTE bXStatus = DBGetContactSettingByte(hContact, szProto, "XStatusId", 0);
 			if (bXStatus > 0 && bXStatus <= 31) {
 				mir_sntprintf(dat->statusMsg, safe_sizeof(dat->statusMsg), _T("%s"), xStatusDescr[bXStatus]);
@@ -2911,7 +3110,7 @@ void GetCachedStatusMsg(HWND hwndDlg, struct MessageWindowData *dat)
 
 static char g_szProfilePath[MAX_PATH] = "\0";
 
-										static int MY_pathIsAbsolute(const char *path)
+static int MY_pathIsAbsolute(const char *path)
 {
 	if (!path || !(strlen(path) > 2))
 		return 0;
@@ -2930,17 +3129,23 @@ int MY_pathToRelative(const char *pSrc, char *pOut)
 	if (!MY_pathIsAbsolute(pSrc)) {
 		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
 		return strlen(pOut);
-	}
-	else {
+	} else {
 		char szTmp[MAX_PATH];
-
+		char szSTmp[MAX_PATH];
 		mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
 		_strlwr(szTmp);
-		if (strstr(szTmp, g_szProfilePath)) {
-			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szProfilePath) + 1);
-			return strlen(pOut);
+		if (myGlobals.szSkinsPath) {
+			mir_snprintf(szSTmp, SIZEOF(szSTmp), "%s", myGlobals.szSkinsPath);
+			_strlwr(szSTmp);
 		}
-		else {
+		if (strstr(szTmp, ".tsk")&&szSTmp&&strstr(szTmp, szSTmp)) {
+			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(myGlobals.szSkinsPath));
+			return strlen(pOut);
+		} else if (strstr(szTmp, g_szProfilePath)) {
+			mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szProfilePath) - 1);
+			pOut[0]='.';
+			return strlen(pOut);
+		} else {
 			mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
 			return strlen(pOut);
 		}
@@ -2953,16 +3158,17 @@ int MY_pathToAbsolute(const char *pSrc, char *pOut)
 		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szProfilePath);
 		_strlwr(g_szProfilePath);
 	}
-
 	if (!pSrc || !strlen(pSrc) || strlen(pSrc) > MAX_PATH) return 0;
-	if (MY_pathIsAbsolute(pSrc) || !isalnum(pSrc[0])) {
+	if (MY_pathIsAbsolute(pSrc)&&pSrc[0]!='.')
 		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
-		return strlen(pOut);
-	}
-	else {
+
+	else if (myGlobals.szSkinsPath&&strstr(pSrc, ".tsk")&&pSrc[0]!='.')
+		mir_snprintf(pOut, MAX_PATH, "%s%s", myGlobals.szSkinsPath, pSrc);
+
+	else if (pSrc[0]=='.')
 		mir_snprintf(pOut, MAX_PATH, "%s\\%s", g_szProfilePath, pSrc);
-		return strlen(pOut);
-	}
+
+	return strlen(pOut);
 }
 
 void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
@@ -2986,8 +3192,7 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
 					mir_free(ci.pszVal);
 					ci.pszVal = NULL;
 				}
-			}
-			else {
+			} else {
 				_tcsncpy(dat->szMyNickname, ci.pszVal, 110);
 				dat->szMyNickname[109] = 0;
 				if (ci.pszVal) {
@@ -2995,13 +3200,11 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
 					ci.pszVal = NULL;
 				}
 			}
-		}
-		else if (ci.type == CNFT_DWORD)
+		} else if (ci.type == CNFT_DWORD)
 			_ltow(ci.dVal, dat->szMyNickname, 10);
 		else
 			_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                // that really should *never* happen
-	}
-	else
+	} else
 		_tcsncpy(dat->szMyNickname, _T("<undef>"), 110);                    // same here
 #else
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci)) {
@@ -3013,8 +3216,7 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
 					mir_free(ci.pszVal);
 					ci.pszVal = NULL;
 				}
-			}
-			else {
+			} else {
 				_tcsncpy(dat->szMyNickname, ci.pszVal, 130);
 				dat->szMyNickname[129] = 0;
 				if (ci.pszVal) {
@@ -3022,13 +3224,11 @@ void GetMyNick(HWND hwndDlg, struct MessageWindowData *dat)
 					ci.pszVal = NULL;
 				}
 			}
-		}
-		else if (ci.type == CNFT_DWORD)
+		} else if (ci.type == CNFT_DWORD)
 			_ltoa(ci.dVal, dat->szMyNickname, 10);
 		else
 			_tcsncpy(dat->szMyNickname, "<undef>", 110);
-	}
-	else
+	} else
 		_tcsncpy(dat->szMyNickname, "<undef>", 110);
 #endif
 	if (ci.pszVal)
@@ -3057,8 +3257,7 @@ int FindRTLLocale(struct MessageWindowData *dat)
 				result = 1;
 		}
 		dat->iHaveRTLLang = (result ? 1 : -1);
-	}
-	else
+	} else
 		result = dat->iHaveRTLLang == 1 ? 1 : 0;
 
 	return result;

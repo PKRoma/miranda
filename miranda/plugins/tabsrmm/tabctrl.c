@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 custom tab control for tabSRMM. Allows for configuartion of colors and backgrounds
 for different tab states (active,  unread etc..)
 
-$Id:$
+$Id$
 */
 
 #define CPLUSPLUS
@@ -383,7 +383,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 	TCITEM item = {0};
 	struct MessageWindowData *dat = 0;
 	int iSize = 16;
-	DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX;
+	DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER/* | DT_NOPREFIX*/;
 	BOOL leftMost = FALSE;
 
 	item.mask = TCIF_PARAM;

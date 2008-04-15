@@ -37,11 +37,11 @@ License: GPL
 
 #include <string>
 #include "msgdlgutils.h"
-#include "m_smileyadd.h"
+#include "API\m_smileyadd.h"
 
-#include "m_MathModule.h"
+//#include "m_MathModule.h"
 
-#define MWF_LOG_BBCODE 65536
+#define MWF_LOG_BBCODE 1
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
@@ -94,6 +94,21 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 		} else
 			break;
 	}
+	//mad
+
+	while (TRUE) {	   
+		if ((beginmark = text.find( L"\xAA")) != text.npos) {
+			endmark = beginmark+2;
+			if (endmark != text.npos && (endmark - beginmark) > 1) {
+				text.erase(beginmark, endmark - beginmark);
+				continue;
+				} else
+					break;
+			} else
+				break;
+		}
+	//
+
 	lstrcpyW(wszText, text.c_str());
 	return wszText;
 }
@@ -127,7 +142,6 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 			message.append(mathModDelimiter);
 	}
 	beginmark = 0;
-	
 	while (TRUE) {
 		for (i = 0; i < NR_CODES; i++) {
 			if ((tempmark = message.find(w_bbcodes_begin[i], 0)) != message.npos)
@@ -722,6 +736,46 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 		} else
 			break;
 	}
+	//mad
+	while (TRUE) {	   
+		if ((beginmark = text.find( "\xAA")) != text.npos) {
+			endmark = beginmark+2;
+			if (endmark != text.npos && (endmark - beginmark) > 1) {
+				text.erase(beginmark, endmark - beginmark);
+				continue;
+				} else
+					break;
+			} else
+				break;
+		}
+	//
 	lstrcpyA(szText, text.c_str());
 	return szText;
+}
+
+// typedef std::basic_string<TCHAR, std::char_traits<TCHAR>> tstring;  
+
+// nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
+
+extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
+{
+#if defined(UNICODE)
+	std::wstring text(pszText);
+#else
+	std::string text(pszText);
+#endif
+	//tstring text(pszText);
+	unsigned int textPos = 0;
+
+	while (TRUE) {
+		if ((textPos = text.find(_T("&"),textPos)) != text.npos) {
+			text.insert(textPos,__T("%"));
+			text.replace(textPos, 2, __T("&&"));
+			textPos+=2;
+			continue;
+		} else
+			break;
+	}
+	_tcscpy(pszText, text.c_str());
+	return pszText;
 }

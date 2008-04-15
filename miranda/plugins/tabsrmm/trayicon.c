@@ -30,7 +30,7 @@ Functions, concerning tabSRMMs system tray support. There is more in eventpopups
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "m_toptoolbar.h"
+//#include "m_toptoolbar.h"
 
 extern  MYGLOBALS myGlobals;
 extern  NEN_OPTIONS nen_options;

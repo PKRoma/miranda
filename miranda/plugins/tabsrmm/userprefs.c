@@ -195,7 +195,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if (hWnd) {
 						dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
 						if (dat)
-							iOldIEView = GetIEViewMode(hWnd, dat);
+							iOldIEView = GetIEViewMode(hWnd, dat->hContact);
 					}
 
 					if ((iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
@@ -222,7 +222,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								break;
 						}
 						if (hWnd && dat) {
-							iNewIEView = GetIEViewMode(hWnd, dat);
+							iNewIEView = GetIEViewMode(hWnd, dat->hContact);
 							if (iNewIEView != iOldIEView) {
 								if(pdwActionToTake)
 									*pdwActionToTake |= UPREF_ACTION_SWITCHLOGVIEWER;
@@ -338,28 +338,62 @@ static struct _checkboxes {
 	0, 0
 };
 
+/*
+ * loads message log and other "per contact" flags
+ * it uses the global flag value (0, mwflags) and then merges per contact settings
+ * based on the mask value.
+
+ * ALWAYS mask dat->dwFlags with MWF_LOG_ALL to only affect real flag bits and
+ * ignore temporary bits.
+ */
+
+int LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat)
+{
+	int		i = 0;
+	DWORD	dwMask = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwmask", 0);
+	DWORD	dwLocal = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", 0);
+	DWORD	dwGlobal = DBGetContactSettingDword(0, SRMSGMOD_T, "mwflags", 0);
+	DWORD	maskval;
+
+	if(dat) {
+		dat->dwFlags &= ~MWF_LOG_ALL;
+		if(dat->dwFlags & MWF_SHOW_PRIVATETHEME)
+			dat->dwFlags |= (dat->theme.dwFlags & MWF_LOG_ALL);
+		else
+			dat->dwFlags |= (dwGlobal & MWF_LOG_ALL);
+		while(checkboxes[i].uId) {
+			maskval = checkboxes[i].uFlag;
+			if(dwMask & maskval)
+				dat->dwFlags = (dwLocal & maskval) ? dat->dwFlags | maskval : dat->dwFlags & ~maskval;
+			i++;
+		}
+		return(dat->dwFlags & MWF_LOG_ALL);
+	}
+	return 0;
+}
+
 static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)GetWindowLong(hwndDlg, GWL_USERDATA);
 	switch(msg) {
 		case WM_INITDIALOG: {
-			DWORD	dwGlobalFlags, dwLocalFlags, maskval;
+			DWORD	dwLocalFlags, dwLocalMask, maskval;
 			int		i = 0;
 
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)hContact);
 
-			dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-			dwLocalFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dwGlobalFlags);
+			dwLocalFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", 0);
+			dwLocalMask = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwmask", 0);
 
 			while(checkboxes[i].uId) {
 				maskval = checkboxes[i].uFlag;
 
-				if((dwGlobalFlags & maskval) == (dwLocalFlags & maskval))
-					CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
-				else 
+				if(dwLocalMask & maskval)
 					CheckDlgButton(hwndDlg, checkboxes[i].uId, (dwLocalFlags & maskval) ? BST_CHECKED : BST_UNCHECKED);
+				else 
+					CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
 				i++;
 			}
 			return TRUE;
@@ -368,11 +402,10 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			switch(LOWORD(wParam)) {
 				case WM_USER + 100: {
 					int i = 0;
-					DWORD	dwGlobalFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT), dwLocalFlags = 0, maskval = 0;
 					LRESULT state;
 					HWND	hwnd = WindowList_Find(hMessageWindowList, hContact);
 					struct	MessageWindowData *dat = NULL;
-					DWORD	*dwActionToTake = (DWORD *)lParam, dwFinalFlags = 0;
+					DWORD	*dwActionToTake = (DWORD *)lParam, dwMask = 0, dwFlags = 0, maskval;
 
 					if(hwnd)
 						dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
@@ -381,26 +414,24 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						maskval = checkboxes[i].uFlag;
 
 						state = IsDlgButtonChecked(hwndDlg, checkboxes[i].uId);
-						if(state == BST_INDETERMINATE)
-							dwLocalFlags |= (dwGlobalFlags & maskval);
-						else
-							dwLocalFlags = (state == BST_CHECKED) ? (dwLocalFlags | maskval) : (dwLocalFlags & ~maskval);
+						if(state != BST_INDETERMINATE) {
+							dwMask |= maskval;
+							dwFlags = (state == BST_CHECKED) ? (dwFlags | maskval) : (dwFlags & ~maskval);
+						}
 						i++;
 					}
-					if(dwLocalFlags != dwGlobalFlags) {
-						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dwLocalFlags & MWF_LOG_ALL);
-						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 1);
-						dwFinalFlags = dwLocalFlags;
+					if(dwMask) {
+						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwmask", dwMask);
+						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "mwflags", dwFlags);
 					}
 					else {
-						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwoverride");
+						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwmask");
 						DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwflags");
-						dwFinalFlags = dwGlobalFlags;
 					}
 					if(hwnd && dat) {
-						if((dwFinalFlags & MWF_LOG_ALL) != (dat->dwFlags & MWF_LOG_ALL))
+						if(dwMask)
 							*dwActionToTake |= (DWORD)UPREF_ACTION_REMAKELOG;
-						if((dwFinalFlags & MWF_LOG_RTL) != (dat->dwFlags & MWF_LOG_RTL))
+						if((dat->dwFlags & MWF_LOG_RTL) != (dwFlags & MWF_LOG_RTL))
 							*dwActionToTake |= (DWORD)UPREF_ACTION_APPLYOPTIONS;
 					}
 					break;
@@ -494,30 +525,19 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 					if(hwnd) {
 						struct		MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
-						unsigned	int uLogViewer;
 
 						if(dat) {
-							DWORD	dwNewFlags = 0, dwOldFlags = (dat->dwFlags & MWF_LOG_ALL);
+							DWORD	dwOldFlags = (dat->dwFlags & MWF_LOG_ALL);
 
 							SetDialogToType(hwnd);
 							if(dwActionToTake & UPREF_ACTION_SWITCHLOGVIEWER) {
-								unsigned int mode = GetIEViewMode(hwndDlg, dat);
+								unsigned int mode = GetIEViewMode(hwndDlg, dat->hContact);
 								SwitchMessageLog(hwnd, dat, mode);
 							}
-
-							if(DBGetContactSettingByte(hContact, SRMSGMOD_T, "mwoverride", 0))
-								dwNewFlags = DBGetContactSettingDword(hContact, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL;
-							else {
-								if(dat->dwFlags & MWF_SHOW_PRIVATETHEME)
-									dwNewFlags = dat->theme.dwFlags & MWF_LOG_ALL;
-								else
-									dwNewFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT) & MWF_LOG_ALL;
-							}
-							if(dwNewFlags != dwOldFlags) {
+							LoadLocalFlags(hwnd, dat);
+							if((dat->dwFlags & MWF_LOG_ALL) != dwOldFlags) {
 								BOOL	fShouldHide = TRUE;
 
-								dat->dwFlags &= ~MWF_LOG_ALL;
-								dat->dwFlags |= dwNewFlags;
 								if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray)
 									fShouldHide = FALSE;
 								else
