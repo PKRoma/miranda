@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on tabsrmm.dsp
 !IF "$(CFG)" == ""
 CFG=tabSRMM - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to tabSRMM - Win32 Release Unicode.
+!MESSAGE No configuration specified. Defaulting to tabSRMM - Win32 Debug.
 !ENDIF
 
 !IF "$(CFG)" != "tabSRMM - Win32 Debug" && "$(CFG)" != "tabSRMM - Win32 Release Unicode" && "$(CFG)" != "tabSRMM - Win32 Release" && "$(CFG)" != "tabSRMM - Win32 Debug Unicode"
@@ -36,6 +36,7 @@ ALL : "..\..\Bin\Debug\Plugins\tabsrmm.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\container.obj"
@@ -67,6 +68,7 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
+	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
@@ -132,6 +134,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
+	"$(INTDIR)\buttonsbar.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -152,6 +155,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
+	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
 	"$(INTDIR)\tabsrmm_private.res"
 
@@ -169,6 +173,7 @@ ALL : "..\..\Bin\Release Unicode\Plugins\tabsrmm.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\container.obj"
@@ -199,6 +204,7 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
+	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
@@ -265,6 +271,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
+	"$(INTDIR)\buttonsbar.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -285,6 +292,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
+	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
 	".\tabsrmm_private.res"
 
@@ -302,6 +310,7 @@ ALL : "..\..\Bin\Release\Plugins\tabsrmm.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\buttonsbar.obj"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\colorchooser.obj"
 	-@erase "$(INTDIR)\container.obj"
@@ -333,6 +342,7 @@ CLEAN :
 	-@erase "$(INTDIR)\tools.obj"
 	-@erase "$(INTDIR)\trayicon.obj"
 	-@erase "$(INTDIR)\TSButton.obj"
+	-@erase "$(INTDIR)\typingnotify.obj"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\window.obj"
@@ -398,6 +408,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
+	"$(INTDIR)\buttonsbar.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -418,6 +429,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
+	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
 	"$(INTDIR)\tabsrmm_private.res"
 
@@ -438,6 +450,8 @@ ALL : "..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" "$(OUTDIR)\tabsrmm.bsc"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\buttonsbar.obj"
+	-@erase "$(INTDIR)\buttonsbar.sbr"
 	-@erase "$(INTDIR)\clist.obj"
 	-@erase "$(INTDIR)\clist.sbr"
 	-@erase "$(INTDIR)\colorchooser.obj"
@@ -498,6 +512,8 @@ CLEAN :
 	-@erase "$(INTDIR)\trayicon.sbr"
 	-@erase "$(INTDIR)\TSButton.obj"
 	-@erase "$(INTDIR)\TSButton.sbr"
+	-@erase "$(INTDIR)\typingnotify.obj"
+	-@erase "$(INTDIR)\typingnotify.sbr"
 	-@erase "$(INTDIR)\userprefs.obj"
 	-@erase "$(INTDIR)\userprefs.sbr"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -562,6 +578,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\tools.sbr" \
 	"$(INTDIR)\window.sbr" \
+	"$(INTDIR)\buttonsbar.sbr" \
 	"$(INTDIR)\container.sbr" \
 	"$(INTDIR)\containeroptions.sbr" \
 	"$(INTDIR)\eventpopups.sbr" \
@@ -582,6 +599,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\themes.sbr" \
 	"$(INTDIR)\trayicon.sbr" \
 	"$(INTDIR)\TSButton.sbr" \
+	"$(INTDIR)\typingnotify.sbr" \
 	"$(INTDIR)\userprefs.sbr"
 
 "$(OUTDIR)\tabsrmm.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
@@ -602,6 +620,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\tools.obj" \
 	"$(INTDIR)\window.obj" \
+	"$(INTDIR)\buttonsbar.obj" \
 	"$(INTDIR)\container.obj" \
 	"$(INTDIR)\containeroptions.obj" \
 	"$(INTDIR)\eventpopups.obj" \
@@ -622,6 +641,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\themes.obj" \
 	"$(INTDIR)\trayicon.obj" \
 	"$(INTDIR)\TSButton.obj" \
+	"$(INTDIR)\typingnotify.obj" \
 	"$(INTDIR)\userprefs.obj" \
 	"$(INTDIR)\tabsrmm_private.res"
 
@@ -1079,6 +1099,34 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF
+
+SOURCE=.\buttonsbar.c
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+
+"$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+
+"$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+
+"$(INTDIR)\buttonsbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+
+"$(INTDIR)\buttonsbar.obj"	"$(INTDIR)\buttonsbar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
 !ENDIF
@@ -1959,6 +2007,34 @@ CPP_SWITCHES=/nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF
+
+SOURCE=.\typingnotify.c
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
+
+"$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+
+"$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+
+"$(INTDIR)\typingnotify.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
+
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+
+"$(INTDIR)\typingnotify.obj"	"$(INTDIR)\typingnotify.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\srmm.pch"
 
 
 !ENDIF

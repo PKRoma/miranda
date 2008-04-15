@@ -286,6 +286,9 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
+				RelativePath=".\buttonsbar.c">
+			</File>
+			<File
 				RelativePath=".\container.c">
 			</File>
 			<File
@@ -533,6 +536,9 @@
 			</File>
 			<File
 				RelativePath="TSButton.c">
+			</File>
+			<File
+				RelativePath=".\typingnotify.c">
 			</File>
 			<File
 				RelativePath="userprefs.c">
@@ -988,10 +994,10 @@
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
