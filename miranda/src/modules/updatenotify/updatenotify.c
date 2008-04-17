@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2007 Miranda ICQ/IM project,
+Copyright 2000-2008 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -22,25 +22,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-#define UN_MOD              "UpdateNotify"
-#define UN_ENABLE           "UpdateNotifyEnable"
-#define UN_ENABLE_DEF       1
-#define UN_LASTCHECK        "UpdateNotifyLastCheck"
-#define UN_SERVERPERIOD     "UpdateNotifyPingDelayPeriod"
-#define UN_CURRENTVERSION   "UpdateNotifyCurrentVersion"
-#define UN_NOTIFYALPHA      "UpdateNotifyNotifyAlpha"
-#define UN_NOTIFYALPHA_DEF  0
-#define UN_CUSTOMURL        "UpdateNotifyCustomURL"
-#define UN_URL              "http://update.miranda-im.org/update.php"
-#define UN_MINCHECKTIME     60*60 /* Check no more than once an hour */
-#define UN_DEFAULTCHECKTIME 60*24*60 /* Default to check once every 24 hours */
-#define UN_FIRSTCHECK       15 /* First check 15 seconds after startup */
+#define UN_MOD               "UpdateNotify"
+#define UN_ENABLE            "UpdateNotifyEnable"
+#define UN_ENABLE_DEF        1
+#define UN_LASTCHECK         "UpdateNotifyLastCheck"
+#define UN_SERVERPERIOD      "UpdateNotifyPingDelayPeriod"
+#define UN_CURRENTVERSION    "UpdateNotifyCurrentVersion"
+#define UN_CURRENTVERSIONPUB "UpdateNotifyCurrentVersionPublic"
+#define UN_CURRENTVERSIONURL "UpdateNotifyCurrentVersionNotesURL"
+#define UN_CURRENTVERSIONDLD "UpdateNotifyCurrentVersionDownloadURL"
+#define UN_CURRENTVERSIONFND "UpdateNotifyCurrentVersionFound"
+#define UN_REPEATNOTIFYDLY   24*60*60 /* 24 hours before showing release notification again */
+#define UN_NOTIFYALPHA       "UpdateNotifyNotifyAlpha"
+#define UN_NOTIFYALPHA_DEF   0
+#define UN_CUSTOMURL         "UpdateNotifyCustomURL"
+#define UN_URL               "http://update.miranda-im.org/update.php"
+#define UN_MINCHECKTIME      60*60 /* Check no more than once an hour */
+#define UN_DEFAULTCHECKTIME  60*24*60 /* Default to check once every 24 hours */
+#define UN_FIRSTCHECK        15 /* First check 15 seconds after startup */
 
 typedef struct {
     char version[64];
-    char downloadUrl[256];
+    char versionReal[16];
+    char notesUrl[256];
+	char downloadUrl[256];
 } UpdateNotifyData;
 
+static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
 static DWORD dwUpdateThreadID = 0;
@@ -48,7 +56,7 @@ static HWND hwndUpdateDlg = 0;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-static void UpdateNotifyPerform(void *p);
+static void UpdateNotifyPerform(void *m);
 static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -72,6 +80,7 @@ static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
 }
 
 int LoadUpdateNotifyModule(void) {
+	bModuleInitialized = TRUE;
 	hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
 	HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
@@ -81,6 +90,7 @@ int LoadUpdateNotifyModule(void) {
 
 void UnloadUpdateNotifyModule()
 {
+	if (!bModuleInitialized) return;
 	UnhookEvent(hHookModules);
 	UnhookEvent(hHookPreShutdown);
 }
@@ -138,14 +148,14 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
 	}
 }
 
-static void UpdateNotifyPerform(void *manual) {
+static void UpdateNotifyPerform(void *m) {
 	NETLIBHTTPREQUEST req;
 	NETLIBHTTPREQUEST *resp;
 	NETLIBHTTPHEADER headers[1];
 	DWORD timeNow = time(NULL);
 	DWORD dwVersion;
 	char szVersion[32], szUrl[256], szVersionText[128];
-	int isUnicode, isAlpha, isAlphaBuild;
+	int isUnicode, isAlpha, isAlphaBuild, isManual = (int)m;
 	DBVARIANT dbv;
 
 	DBWriteContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, timeNow);
@@ -169,7 +179,7 @@ static void UpdateNotifyPerform(void *manual) {
 	req.szUrl = szUrl;
 	req.flags = 0;
 	headers[0].szName = "User-Agent";
-	headers[0].szValue = "MirandaUpdate/0.2";
+	headers[0].szValue = "MirandaUpdate/0.3";
 	req.headersCount = 1;
 	req.headers = headers;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)hNetlibUser, (LPARAM)&req);
@@ -181,6 +191,8 @@ static void UpdateNotifyPerform(void *manual) {
 
 			ZeroMemory(&und, sizeof(und));
 			und.version[0] = 0;
+			und.versionReal[0] = 0;
+			und.notesUrl[0] = 0;
 			und.downloadUrl[0] = 0;
 			for (i=0; i<resp->headersCount; i++ ) {
 				if (strcmp(resp->headers[i].szName, "X-Miranda-Update")==0) {
@@ -192,6 +204,14 @@ static void UpdateNotifyPerform(void *manual) {
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "New version found (%s)", resp->headers[i].szValue);
 					mir_snprintf(und.version, sizeof(und.version), "%s", resp->headers[i].szValue);
+				}
+				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version-Complete")==0&&resp->headers[i].szValue) {
+					Netlib_Logf(hNetlibUser, "Complete version number (%s)", resp->headers[i].szValue);
+					mir_snprintf(und.versionReal, sizeof(und.versionReal), "%s", resp->headers[i].szValue);
+				}
+				else if (strcmp(resp->headers[i].szName, "X-Miranda-Notes-URL")==0&&resp->headers[i].szValue) {
+					Netlib_Logf(hNetlibUser, "Notes url found (%s)", resp->headers[i].szValue);
+					mir_snprintf(und.notesUrl, sizeof(und.notesUrl), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Download-URL")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "Download url found (%s)", resp->headers[i].szValue);
@@ -210,16 +230,30 @@ static void UpdateNotifyPerform(void *manual) {
 					}
 				}
 			}
-			if (resUpdate&&und.version[0]&&und.downloadUrl[0]) {
+			if (resUpdate&&und.version[0]&&und.versionReal[0]&&und.notesUrl[0]&&und.downloadUrl[0]) {
 				int notify = 1;
 
 				if (!DBGetContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
-					if (!strcmp(dbv.pszVal, und.version)) // already notified of this version, don't show dialog
-						notify = 0;
-					DBFreeVariant(&dbv);
+					if (!strcmp(dbv.pszVal, und.versionReal)) { // already notified of this version
+					
+						DWORD dwNotifyLast = DBGetContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, 0);
+
+						if (dwNotifyLast>timeNow) { // fix last check date if time has changed
+							DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
+							notify = 0;
+						}
+						else if (timeNow-dwNotifyLast<UN_REPEATNOTIFYDLY) {
+							notify = 0;
+						}
+						DBFreeVariant(&dbv);
+					}
 				}
 				if (notify) {
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.version);
+					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.versionReal);
+					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONPUB, und.version);
+					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONURL, und.notesUrl);
+					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONDLD, und.downloadUrl);
+					DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
 					DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
 					hwndUpdateDlg = 0;
 				}
@@ -228,7 +262,6 @@ static void UpdateNotifyPerform(void *manual) {
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
 	else Netlib_Logf(hNetlibUser, "No response from HTTP request");
-
 	dwUpdateThreadID = 0;
 }
 
@@ -273,6 +306,13 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
+		case IDC_VERSION:
+			{
+				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				if (und&&und->notesUrl)
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)und->notesUrl);
+				break;
+			}
 		case IDC_DOWNLOAD:
 			{
 				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);

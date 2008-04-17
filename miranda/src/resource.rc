@@ -1344,7 +1344,7 @@ BEGIN
     LTEXT           "Latest Release:",IDC_NEWVERSIONLABEL,7,47,65,8
     LTEXT           "Your Version:",IDC_STATIC,7,32,65,8
     LTEXT           "",IDC_CURRENTVERSION,77,32,87,8
-    LTEXT           "",IDC_VERSION,77,47,87,8
+	CONTROL         "",IDC_VERSION,"Hyperlink",WS_TABSTOP,77,47,87,8
     PUSHBUTTON      "&Download Now",IDC_DOWNLOAD,7,61,66,15
     DEFPUSHBUTTON   "&Close",IDOK,202,84,50,15
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,80,245,1
