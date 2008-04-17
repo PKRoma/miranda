@@ -1396,17 +1396,18 @@ BEGIN
 END
 
 IDD_UPDATE_NOTIFY DIALOGEX 0, 0, 259, 103
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU | DS_FIXEDSYS
 CAPTION "Miranda IM v%s Now Available"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "A new version of Miranda IM is now available.  Click the download button to download this new update.",
-                    IDC_STATIC,7,7,245,21
+                    IDC_MESSAGE,7,7,245,21
     LTEXT           "Latest Release:",IDC_NEWVERSIONLABEL,7,47,65,8
     LTEXT           "Your Version:",IDC_STATIC,7,32,65,8
     LTEXT           "",IDC_CURRENTVERSION,77,32,87,8
 	CONTROL         "",IDC_VERSION,"Hyperlink",WS_TABSTOP,77,47,87,8
+    LTEXT           "",IDC_UPDATE,77,47,87,8
     PUSHBUTTON      "&Download Now",IDC_DOWNLOAD,7,61,66,15
     DEFPUSHBUTTON   "&Close",IDOK,202,84,50,15
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,80,245,1
