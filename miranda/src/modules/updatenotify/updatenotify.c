@@ -321,29 +321,30 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 		{
 			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
-			char szTmp[128], *p;
+			TCHAR szTmp[128];
+			char szVersion[128], szVersionTmp[128], *p;
 			
 			if (und->isManual)
 				hwndManualUpdateDlg = hwndDlg;
 			else hwndUpdateDlg = hwndDlg;
 			if (und->isNew) {
-				mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
+				mir_sntprintf(szTmp, SIZEOF(szTmp), TranslateT("Miranda IM %s Now Available"), und->version);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_UPDATE), SW_HIDE);
 			}
 			else {
-				mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM Update Not Available"));
-				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, LPGEN("You are running the latest version of Miranda IM.  No update is available at this time."));
+				mir_sntprintf(szTmp, SIZEOF(szTmp), TranslateT("Miranda IM Update Not Available"));
+				SetDlgItemText(hwndDlg, IDC_MESSAGE, TranslateT("You are running the latest version of Miranda IM.  No update is available at this time."));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DOWNLOAD), FALSE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_VERSION), SW_HIDE);
 			}
-			SetWindowTextA(hwndDlg, szTmp);
-			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szTmp), (LPARAM)szTmp);
-			p = strstr(szTmp, " Unicode");
+			SetWindowText(hwndDlg, szTmp);
+			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersion), (LPARAM)szVersion);
+			p = strstr(szVersion, " Unicode");
 			if (p)
 				*p = '\0';
-			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szTmp);
-			mir_snprintf(szTmp, sizeof(szTmp), "%s", und->isNew?und->version:szTmp);
-			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szTmp);
+			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szVersion);
+			mir_snprintf(szVersionTmp, SIZEOF(szVersionTmp), "%s", und->isNew?und->version:szVersion);
+			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szVersionTmp);
 			{
 				HFONT hFont;
 				LOGFONT lf;
