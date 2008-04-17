@@ -28,11 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_LASTCHECK         "UpdateNotifyLastCheck"
 #define UN_SERVERPERIOD      "UpdateNotifyPingDelayPeriod"
 #define UN_CURRENTVERSION    "UpdateNotifyCurrentVersion"
-#define UN_CURRENTVERSIONPUB "UpdateNotifyCurrentVersionPublic"
-#define UN_CURRENTVERSIONURL "UpdateNotifyCurrentVersionNotesURL"
-#define UN_CURRENTVERSIONDLD "UpdateNotifyCurrentVersionDownloadURL"
 #define UN_CURRENTVERSIONFND "UpdateNotifyCurrentVersionFound"
-#define UN_REPEATNOTIFYDLY   24*60*60 /* 24 hours before showing release notification again */
 #define UN_NOTIFYALPHA       "UpdateNotifyNotifyAlpha"
 #define UN_NOTIFYALPHA_DEF   0
 #define UN_CUSTOMURL         "UpdateNotifyCustomURL"
@@ -40,22 +36,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_MINCHECKTIME      60*60 /* Check no more than once an hour */
 #define UN_DEFAULTCHECKTIME  60*24*60 /* Default to check once every 24 hours */
 #define UN_FIRSTCHECK        15 /* First check 15 seconds after startup */
+#define UN_REPEATNOTIFYDLY   24*60*60 /* 24 hours before showing release notification again */
 
 typedef struct {
+	int isNew;
+	int isManual;
     char version[64];
     char versionReal[16];
     char notesUrl[256];
 	char downloadUrl[256];
+	DWORD reqTime;
 } UpdateNotifyData;
 
 static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
 static UINT updateTimerId;
 static DWORD dwUpdateThreadID = 0;
-static HWND hwndUpdateDlg = 0;
+static HWND hwndUpdateDlg = 0, hwndManualUpdateDlg = 0;
 
 static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam);
+static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam);
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+static int UpdateNotifyMakeRequest(UpdateNotifyData *und);
 static void UpdateNotifyPerform(void *m);
 static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -76,11 +78,27 @@ static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
 	if (IsWindow(hwndUpdateDlg)) {
 		SendMessage(hwndUpdateDlg, WM_COMMAND, MAKELONG(IDOK, 0), 0);
 	}
+	if (IsWindow(hwndManualUpdateDlg)) {
+		SendMessage(hwndManualUpdateDlg, WM_COMMAND, MAKELONG(IDOK, 0), 0);
+	}
 	return 0;
 }
 
 int LoadUpdateNotifyModule(void) {
+	CLISTMENUITEM mi = { 0 };
+	
 	bModuleInitialized = TRUE;
+	
+	CreateServiceFunction("UpdateNotify/UpdateCommand", UpdateNotifyMenuCommand);
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_EMPTYBLOB);
+	mi.pszPopupName = LPGEN("&Help");
+	mi.position = 2000030000;
+	mi.pszName = LPGEN("Check for Updates");
+	mi.pszService = "UpdateNotify/UpdateCommand";
+	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
+	
 	hHookModules = HookEvent(ME_SYSTEM_MODULESLOADED, UpdateNotifyModulesLoaded);
 	hHookPreShutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, UpdateNotifyPreShutdown);
 	HookEvent(ME_OPT_INITIALISE, UpdateNotifyOptInit);
@@ -109,6 +127,25 @@ static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam) {
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 	return 0;
+}
+
+static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam) {
+	UpdateNotifyData und;
+	
+	if (IsWindow(hwndManualUpdateDlg)) {
+		SetForegroundWindow(hwndManualUpdateDlg);
+		return 0;
+	}
+	ZeroMemory(&und, sizeof(und));
+	UpdateNotifyMakeRequest(&und);
+	if (und.isNew) {
+		DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.versionReal);
+		DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, und.reqTime);
+	}
+	und.isManual = 1;
+	DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
+	hwndManualUpdateDlg = 0;
+	return 0;	
 }
 
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
@@ -148,17 +185,24 @@ static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEve
 	}
 }
 
-static void UpdateNotifyPerform(void *m) {
+static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	NETLIBHTTPREQUEST req;
 	NETLIBHTTPREQUEST *resp;
 	NETLIBHTTPHEADER headers[1];
-	DWORD timeNow = time(NULL);
 	DWORD dwVersion;
 	char szVersion[32], szUrl[256], szVersionText[128];
-	int isUnicode, isAlpha, isAlphaBuild, isManual = (int)m;
+	int isUnicode, isAlpha, isAlphaBuild;
 	DBVARIANT dbv;
-
-	DBWriteContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, timeNow);
+	
+	if (!und) 
+		return 0;
+	und->version[0] = 0;
+	und->versionReal[0] = 0;
+	und->notesUrl[0] = 0;
+	und->downloadUrl[0] = 0;
+	und->reqTime = time(NULL);
+	
+	DBWriteContactSettingDword(NULL, UN_MOD, UN_LASTCHECK, und->reqTime);
 	CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersionText), (LPARAM)szVersionText);
 	isUnicode = strstr(szVersionText, "Unicode") != NULL ? 1 : 0;
 	isAlpha = DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF);
@@ -187,13 +231,7 @@ static void UpdateNotifyPerform(void *m) {
 		if (resp->resultCode==200) {
 			int i;
 			int resUpdate = 0;
-			UpdateNotifyData und;
-
-			ZeroMemory(&und, sizeof(und));
-			und.version[0] = 0;
-			und.versionReal[0] = 0;
-			und.notesUrl[0] = 0;
-			und.downloadUrl[0] = 0;
+			
 			for (i=0; i<resp->headersCount; i++ ) {
 				if (strcmp(resp->headers[i].szName, "X-Miranda-Update")==0) {
 					resUpdate = resp->headers[i].szValue&&strcmp(resp->headers[i].szValue,"true")==0?1:0;
@@ -203,19 +241,19 @@ static void UpdateNotifyPerform(void *m) {
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "New version found (%s)", resp->headers[i].szValue);
-					mir_snprintf(und.version, sizeof(und.version), "%s", resp->headers[i].szValue);
+					mir_snprintf(und->version, sizeof(und->version), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Version-Complete")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "Complete version number (%s)", resp->headers[i].szValue);
-					mir_snprintf(und.versionReal, sizeof(und.versionReal), "%s", resp->headers[i].szValue);
+					mir_snprintf(und->versionReal, sizeof(und->versionReal), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Notes-URL")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "Notes url found (%s)", resp->headers[i].szValue);
-					mir_snprintf(und.notesUrl, sizeof(und.notesUrl), "%s", resp->headers[i].szValue);
+					mir_snprintf(und->notesUrl, sizeof(und->notesUrl), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-Download-URL")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "Download url found (%s)", resp->headers[i].szValue);
-					mir_snprintf(und.downloadUrl, sizeof(und.downloadUrl), "%s", resp->headers[i].szValue);
+					mir_snprintf(und->downloadUrl, sizeof(und->downloadUrl), "%s", resp->headers[i].szValue);
 				}
 				else if (strcmp(resp->headers[i].szName, "X-Miranda-UN-New-URL")==0&&resp->headers[i].szValue) {
 					Netlib_Logf(hNetlibUser, "Update URL has changed (%s)", resp->headers[i].szValue);
@@ -225,43 +263,53 @@ static void UpdateNotifyPerform(void *m) {
 					DWORD dwPingPeriod = atoi(resp->headers[i].szValue);
 
 					if (dwPingPeriod>UN_MINCHECKTIME) {
-						Netlib_Logf(hNetlibUser, "Next update in %d seconds", dwPingPeriod);
+						Netlib_Logf(hNetlibUser, "Next update check in %d hours", dwPingPeriod/3600);
 						DBWriteContactSettingDword(NULL, UN_MOD, UN_SERVERPERIOD, dwPingPeriod);
 					}
 				}
 			}
-			if (resUpdate&&und.version[0]&&und.versionReal[0]&&und.notesUrl[0]&&und.downloadUrl[0]) {
-				int notify = 1;
-
-				if (!DBGetContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
-					if (!strcmp(dbv.pszVal, und.versionReal)) { // already notified of this version
-					
-						DWORD dwNotifyLast = DBGetContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, 0);
-
-						if (dwNotifyLast>timeNow) { // fix last check date if time has changed
-							DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
-							notify = 0;
-						}
-						else if (timeNow-dwNotifyLast<UN_REPEATNOTIFYDLY) {
-							notify = 0;
-						}
-						DBFreeVariant(&dbv);
-					}
-				}
-				if (notify) {
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.versionReal);
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONPUB, und.version);
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONURL, und.notesUrl);
-					DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSIONDLD, und.downloadUrl);
-					DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, timeNow);
-					DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
-					hwndUpdateDlg = 0;
-				}
+			if (resUpdate&&und->version&&und->versionReal&&und->notesUrl&&und->downloadUrl) {
+				und->isNew = 1;
 			}
 		}
+		else Netlib_Logf(hNetlibUser, "Invalid response code from HTTP request");
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
 	else Netlib_Logf(hNetlibUser, "No response from HTTP request");
+	return und->isNew;
+}
+
+static void UpdateNotifyPerform(void *m) {
+	UpdateNotifyData und;
+	DBVARIANT dbv;
+	
+	ZeroMemory(&und, sizeof(und));
+	UpdateNotifyMakeRequest(&und);
+	if (und.isNew) {
+		int notify = 1;
+		
+		if (!DBGetContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, &dbv)) {
+			if (!strcmp(dbv.pszVal, und.versionReal)) { // already notified of this version
+			
+				DWORD dwNotifyLast = DBGetContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, 0);
+
+				if (dwNotifyLast>und.reqTime) { // fix last check date if time has changed
+					DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, und.reqTime);
+					notify = 0;
+				}
+				else if (und.reqTime-dwNotifyLast<UN_REPEATNOTIFYDLY) {
+					notify = 0;
+				}
+				DBFreeVariant(&dbv);
+			}
+		}
+		if (notify) {
+			DBWriteContactSettingString(NULL, UN_MOD, UN_CURRENTVERSION, und.versionReal);
+			DBWriteContactSettingDword(NULL, UN_MOD, UN_CURRENTVERSIONFND, und.reqTime);
+			DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_UPDATE_NOTIFY), 0, UpdateNotifyProc,(LPARAM)&und);
+			hwndUpdateDlg = 0;
+		}
+	}
 	dwUpdateThreadID = 0;
 }
 
@@ -274,17 +322,28 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
 			char szTmp[128], *p;
-
-			hwndUpdateDlg = hwndDlg;
-			mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
+			
+			if (und->isManual)
+				hwndManualUpdateDlg = hwndDlg;
+			else hwndUpdateDlg = hwndDlg;
+			if (und->isNew) {
+				mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM %s Now Available"), und->version);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_UPDATE), SW_HIDE);
+			}
+			else {
+				mir_snprintf(szTmp, sizeof(szTmp), Translate("Miranda IM Update Not Available"));
+				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, LPGEN("You are running the latest version of Miranda IM.  No update is available at this time."));
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DOWNLOAD), FALSE);
+				ShowWindow(GetDlgItem(hwndDlg, IDC_VERSION), SW_HIDE);
+			}
 			SetWindowTextA(hwndDlg, szTmp);
 			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szTmp), (LPARAM)szTmp);
 			p = strstr(szTmp, " Unicode");
 			if (p)
 				*p = '\0';
 			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szTmp);
-			mir_snprintf(szTmp, sizeof(szTmp), "%s", und->version);
-			SetDlgItemTextA(hwndDlg, IDC_VERSION, szTmp);
+			mir_snprintf(szTmp, sizeof(szTmp), "%s", und->isNew?und->version:szTmp);
+			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szTmp);
 			{
 				HFONT hFont;
 				LOGFONT lf;
