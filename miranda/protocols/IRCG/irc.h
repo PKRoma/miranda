@@ -70,9 +70,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "win2k.h"
 
 #include "resource.h"
-#include "irclib.h"
-#include "commandmonitor.h"
-#include "irc_dlg.h"
 
 #define IRC_QUICKCONNECT      "/QuickConnectMenu"
 #define IRC_JOINCHANNEL       "/JoinChannelMenu"
@@ -98,7 +95,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define FILERESUME_CANCEL	11
 
-using namespace irc;
+struct CIrcProto;
+
+#include "mstring.h"
+typedef CMStringA String;
+
+class CCallocBase
+{
+public:
+	__inline void* operator new( size_t size )
+	{	return ::calloc( 1, size );
+	}
+	__inline void operator delete( void* p )
+	{	::free( p );
+	}
+};
 
 struct _A2T
 {
@@ -241,6 +252,11 @@ struct TDbSetting
 	int    defValue;
 };
 
+#include "irclib.h"
+using namespace irc;
+
+#include "irc_dlg.h"
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct CIrcProto;
@@ -261,17 +277,10 @@ struct CIrcHandler
 	PfnIrcMessageHandler m_handler;
 };
 
-struct CIrcProto : public PROTO_INTERFACE
+struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 {
 				CIrcProto( const char*, const TCHAR* );
 			   ~CIrcProto();
-
-				__inline void* operator new( size_t size )
-				{	return ::calloc( 1, size );
-				}
-				__inline void operator delete( void* p )
-				{	::free( p );
-				}
 
 				// Protocol interface
 

@@ -1172,7 +1172,6 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 							char* szFileName = mir_t2a( sFile.c_str() );
 
 							DCCINFO* di = new DCCINFO;
-							ZeroMemory(di, sizeof(DCCINFO));
 							di->hContact = hContact;
 							di->sFile = sFile;
 							di->dwSize = dwSize;

@@ -765,12 +765,11 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						break;
 					case 30:
 						{
-							PROTOSEARCHRESULT psr;
-							ZeroMemory(&psr, sizeof(psr));
+							PROTOSEARCHRESULT psr = { 0 };
 							psr.cbSize = sizeof(psr);
 							psr.nick = mir_t2a_cp( gch->ptszUID, getCodepage());
-							ADDCONTACTSTRUCT acs;
-							ZeroMemory(&acs, sizeof(acs));
+
+							ADDCONTACTSTRUCT acs = { 0 };
 							acs.handleType = HANDLE_SEARCHRESULT;
 							acs.szProto = m_szModuleName;
 							acs.psr = &psr;

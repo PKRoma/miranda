@@ -45,7 +45,6 @@ BOOL CIrcProto::CList_AddDCCChat(const CMString& name, const CMString& hostmask,
 	setByte(hContact, "DCC", 1);
 
 	DCCINFO* pdci = new DCCINFO;
-	ZeroMemory(pdci, sizeof(DCCINFO));
 	pdci->sHostmask = hostmask;
 	pdci->hContact = hContact;
 	pdci->dwAdr = (DWORD) adr;

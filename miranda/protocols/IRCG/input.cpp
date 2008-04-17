@@ -668,7 +668,6 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 				int iPort = 0;
 				if ( hContact ) {
 					DCCINFO* dci = new DCCINFO;
-					ZeroMemory(dci, sizeof(DCCINFO));
 					dci->hContact = hContact;
 					dci->sContactName = two;
 					dci->iType = DCC_CHAT;

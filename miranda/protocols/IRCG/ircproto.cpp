@@ -689,8 +689,7 @@ struct AckBasicSearchParam
 
 static void __cdecl AckBasicSearch( AckBasicSearchParam* param )
 {
-	PROTOSEARCHRESULT psr;
-	ZeroMemory(&psr, sizeof(psr));
+	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
 	psr.nick = param->buf;
 	ProtoBroadcastAck( param->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);

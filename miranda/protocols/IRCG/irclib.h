@@ -46,16 +46,11 @@ void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 unsigned long ConvertIPToInteger(char * IP);
 char* ConvertIntegerToIP(unsigned long int_ip_addr);
 
-struct CIrcProto;
-
-#include "mstring.h"
-typedef CMStringA String;
-
 ////////////////////////////////////////////////////////////////////
 namespace irc {
 ////////////////////////////////////////////////////////////////////
 
-struct DCCINFO
+struct DCCINFO : public CCallocBase
 {
 	DWORD   dwAdr;
 	DWORD   dwSize;

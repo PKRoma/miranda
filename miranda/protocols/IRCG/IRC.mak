@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on IRC.dsp
 !IF "$(CFG)" == ""
 CFG=IRC - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to IRC - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to IRC - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "IRC - Win32 Release" && "$(CFG)" != "IRC - Win32 Debug" && "$(CFG)" != "IRC - Win32 Debug Unicode" && "$(CFG)" != "IRC - Win32 Release Unicode"
