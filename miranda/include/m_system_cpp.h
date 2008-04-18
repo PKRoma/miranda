@@ -70,7 +70,8 @@ template<class T> struct OBJLIST : public LIST<T>
 
 	~OBJLIST()
 	{
-		destroy();
+		if (li.cbSize != 0) 
+			destroy();
 	}
 
 	__inline void destroy( void )
