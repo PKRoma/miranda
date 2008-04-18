@@ -392,6 +392,8 @@ static void RemoveChild(ParentWindowData *dat, HWND child)
 			if (tab >=0 ) {
 				ActivateChild(dat, GetChildFromTab(dat->hwndTabs, tab)->hwnd);
 			}
+			else
+				dat->hwndActive = NULL;
 		}
 		ReleaseIcon(tci.iImage);
 	}
