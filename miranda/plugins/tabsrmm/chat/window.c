@@ -2558,6 +2558,9 @@ LABEL_SHOWWINDOW:
 		}
 		break;
 
+		case DM_SPLITTERMOVEDGLOBAL_NOSYNC:
+			return 0;
+
 		case DM_SPLITTERMOVEDGLOBAL: {
 			short newMessagePos;
 			RECT rcWin, rcClient;

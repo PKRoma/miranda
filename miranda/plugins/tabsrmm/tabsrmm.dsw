@@ -15,7 +15,31 @@ Package=<4>
 
 ###############################################################################
 
+Project: "ICONS_NOVA"=.\ICONS\ICONS_NOVA\ICONS_NOVA.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "tabSRMM"=.\tabsrmm.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "tabmodplus"=.\tabmodplus\tabmodplus.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -1489,8 +1489,15 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (dat->bType == SESSIONTYPE_IM || bSync) {
 							dat->dwFlagsEx &= ~(MWF_SHOW_SPLITTEROVERRIDE);
 							DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0);
-							WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL,
-												 rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
+							if(bSync)
+								WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL,
+													 rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
+							else
+								/*
+								 * this message is ignored by group chat tabs
+								 */
+								WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL_NOSYNC,
+					 								 rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
 							if (bSync) {
 								g_Settings.iSplitterY = dat->splitterY - 23;
 								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
@@ -2856,6 +2863,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			LoadContactAvatar(hwndDlg, dat);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			return 0;
+		case DM_SPLITTERMOVEDGLOBAL_NOSYNC:
 		case DM_SPLITTERMOVEDGLOBAL:
 			if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)) {
 				short newMessagePos;

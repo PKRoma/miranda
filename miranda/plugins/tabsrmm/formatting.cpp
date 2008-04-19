@@ -102,11 +102,11 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 			if (endmark != text.npos && (endmark - beginmark) > 1) {
 				text.erase(beginmark, endmark - beginmark);
 				continue;
-				} else
-					break;
 			} else
 				break;
-		}
+		} else
+			break;
+	}
 	//
 
 	lstrcpyW(wszText, text.c_str());
@@ -743,17 +743,17 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 			if (endmark != text.npos && (endmark - beginmark) > 1) {
 				text.erase(beginmark, endmark - beginmark);
 				continue;
-				} else
-					break;
 			} else
 				break;
-		}
+		} else
+			break;
+	}
 	//
 	lstrcpyA(szText, text.c_str());
 	return szText;
 }
 
-// typedef std::basic_string<TCHAR, std::char_traits<TCHAR>> tstring;  
+typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;  
 
 // nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
 

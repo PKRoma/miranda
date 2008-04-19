@@ -821,7 +821,8 @@ struct NewMessageWindowLParam {
 #define DM_SENDMESSAGECOMMANDW (WM_USER+93)
 #define DM_REMOVEPOPUPS        (WM_USER+94)
 #define DM_BBNEEDUPDATE        (WM_USER+96)
-#define DM_CBDESTROY			(WM_USER+97)
+#define DM_CBDESTROY	       (WM_USER+97)
+#define DM_SPLITTERMOVEDGLOBAL_NOSYNC (WM_USER+98)
 
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
