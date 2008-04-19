@@ -321,7 +321,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		TCITEM tci = {0};
 		HWND hwndTab = GetDlgItem(hwnd, IDC_TABS);
 
-		if (TabCtrl_GetCurSel(hwndTab) == wParam) break;
+		if (TabCtrl_GetCurSel(hwndTab) == (int)wParam) break;
 
 		tci.mask = TCIF_PARAM;
 
