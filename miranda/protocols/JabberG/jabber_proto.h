@@ -588,6 +588,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   UpdatePriorityMenu(short priority);
 
 	HANDLE m_hMenuPriorityRoot;
+	short  m_priorityMenuVal;
+	bool   m_priorityMenuValSet;
 
 	//---- jabber_misc.c -----------------------------------------------------------------
 

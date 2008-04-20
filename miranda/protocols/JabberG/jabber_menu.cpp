@@ -976,8 +976,13 @@ int CJabberProto::OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta
 void CJabberProto::BuildPriorityMenu(WPARAM, LPARAM)
 {
 	m_hMenuPriorityRoot = NULL;
+	m_priorityMenuVal = 0;
+	m_priorityMenuValSet = false;
+
 	if ( !m_bJabberOnline )
 		return;
+
+	HANDLE hMenuPriorityRoot = NULL;
 
 	CLISTMENUITEM mi = { 0 };
 	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
@@ -1017,23 +1022,27 @@ void CJabberProto::BuildPriorityMenu(WPARAM, LPARAM)
 		if (needServices) JCreateServiceParam(svcName, &CJabberProto::OnMenuSetPriority, (LPARAM)steps[i]);
 
 		mi.position++;
-		CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&m_hMenuPriorityRoot, ( LPARAM )&mi );
+		CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hMenuPriorityRoot, ( LPARAM )&mi );
 	}
 
+	m_hMenuPriorityRoot = hMenuPriorityRoot;
 	UpdatePriorityMenu((short)JGetWord(NULL, "Priority", 0));
 }
 
 void CJabberProto::UpdatePriorityMenu(short priority)
 {
-	if (m_hMenuPriorityRoot)
-	{
-		TCHAR szName[128];
-		CLISTMENUITEM mi = { 0 };
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB|CMIM_ICON|CMIM_NAME;
-		mi.icolibItem = GetIconHandle(IDI_AGENTS);
-		mi.ptszName = szName;
-		mir_sntprintf(szName, SIZEOF(szName), TranslateT("Resource priority [%d]"), (int)priority);
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)m_hMenuPriorityRoot, (LPARAM)&mi);
-	}
+	if (!m_hMenuPriorityRoot || m_priorityMenuValSet && (priority == m_priorityMenuVal))
+		return;
+
+	TCHAR szName[128];
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB|CMIM_ICON|CMIM_NAME;
+	mi.icolibItem = GetIconHandle(IDI_AGENTS);
+	mi.ptszName = szName;
+	mir_sntprintf(szName, SIZEOF(szName), TranslateT("Resource priority [%d]"), (int)priority);
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)m_hMenuPriorityRoot, (LPARAM)&mi);
+
+	m_priorityMenuVal = priority;
+	m_priorityMenuValSet = true;
 }

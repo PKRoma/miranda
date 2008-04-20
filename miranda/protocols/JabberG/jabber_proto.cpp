@@ -77,7 +77,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_adhocManager( this ),
 	m_clientCapsManager( this ),
 	m_privacyListManager( this ),
-	m_privacyMenuServiceAllocated( -1 )
+	m_privacyMenuServiceAllocated( -1 ),
+	m_priorityMenuVal( 0 ),
+	m_priorityMenuValSet( false )
 {
 	InitializeCriticalSection( &m_csModeMsgMutex );
 
