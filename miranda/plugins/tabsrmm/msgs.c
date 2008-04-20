@@ -36,11 +36,9 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.1.1.0\\b0\\ul0\\par ",
- 	"*\tReworked message log options.\\par",
-	"*\tGroup chats: Added selective disk logging.\\par",
-	"*\tGroup chats: Clickable nicknames can now be colorized. Patch sent by theMiron.\\par",
-	"*\tGroup chats: Fixed issue with indentation of multiline messages.\\par",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.1\\b0\\ul0\\par ",
+	"*\tMerged Mad MOD - see http://forums.miranda-im.org/showthread.php?t=17918 \\par",
+	"*\tFixed issue with splitter position syncing.\\par",
 	NULL
 };
 
@@ -1008,16 +1006,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	
 #if defined(_UNICODE)
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.radicaled.ru/public/updater/tabsrmm.txt";
-	static char *szUpdateUrl = "http://miranda.radicaled.ru/public/tabsrmm/tabsrmm_u.zip";
-	//static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
-	//static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmmW.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
 #else
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://miranda.radicaled.ru/public/updater/tabsrmm.txt";
-	static char *szUpdateUrl = "http://miranda.radicaled.ru/public/tabsrmm/tabsrmm_a.zip";
-	//static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
-	//static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
+	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/2/tabsrmm.zip";
+	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
+	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
 #endif
 	static char *szPrefix = "tabsrmm ";
 
@@ -1189,29 +1187,29 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	// updater plugin support
 
-// 	upd.cbSize = sizeof(upd);
-// 	upd.szComponentName = pluginInfo.shortName;
-// 	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
-// 	upd.cpbVersion = strlen((char *)upd.pbVersion);
-//	upd.szVersionURL = szFLVersionUrl;
-//	upd.szUpdateURL = szFLUpdateurl;
-//#if defined(_UNICODE)
-//	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
-//#else
-//	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
-//#endif
-//	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
-// 
-// 	upd.szBetaUpdateURL = szUpdateUrl;
-// 	upd.szBetaVersionURL = szVersionUrl;
-//	upd.pbVersion = szCurrentVersion;
-//	upd.cpbVersion = lstrlenA(szCurrentVersion);
-// 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
-// 	upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
-// 	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
-// 
-// 	if (ServiceExists(MS_UPDATE_REGISTER))
-// 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+ 	upd.cbSize = sizeof(upd);
+ 	upd.szComponentName = pluginInfo.shortName;
+ 	upd.pbVersion = (BYTE *)/*CreateVersionStringPlugin*/CreateVersionString(pluginInfo.version, szCurrentVersion);
+ 	upd.cpbVersion = strlen((char *)upd.pbVersion);
+	upd.szVersionURL = szFLVersionUrl;
+	upd.szUpdateURL = szFLUpdateurl;
+#if defined(_UNICODE)
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
+#else
+	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
+#endif
+	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
+ 
+ 	upd.szBetaUpdateURL = szUpdateUrl;
+ 	upd.szBetaVersionURL = szVersionUrl;
+	upd.pbVersion = szCurrentVersion;
+	upd.cpbVersion = lstrlenA(szCurrentVersion);
+ 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
+ 	upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
+ 	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
+ 
+ 	if (ServiceExists(MS_UPDATE_REGISTER))
+ 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
 	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
 		ReloadContainerSkin(1, 1);

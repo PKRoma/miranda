@@ -87,10 +87,6 @@ LINK32=link.exe
 
 # Name "ICONSXP - Win32 Debug"
 # Name "ICONSXP - Win32 Release"
-# Begin Group "Quelldateien"
-
-# PROP Default_Filter "cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-# End Group
 # Begin Group "Headerdateien"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;inc;xsd"
@@ -104,124 +100,8 @@ SOURCE=.\resource.h
 # PROP Default_Filter "rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 # Begin Source File
 
-SOURCE="..\..\res\angeli-icons\AddXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\button.bold.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\button.fontface.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\button.italic.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\button.textcolor.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\button.underline.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\CloseXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\empty.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\error.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\HistoryXP.ico"
-# End Source File
-# Begin Source File
-
 SOURCE=.\ICONSXP.rc
 # End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\Incom.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\InfoXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\Logo.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\MultiXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\OptXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\Outg.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\Pencil.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\PicXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\Quote02.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\SaveXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\secureim_off.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\secureim_on.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\res\angeli-icons\Send.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\smbutton.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\statuschange.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\Typing32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\res\unknown.bmp
-# End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ReadMe.txt
-# End Source File
 # End Target
 # End Project

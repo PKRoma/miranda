@@ -223,7 +223,9 @@ DEP_CPP_CLIST=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CLIST=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -300,7 +302,9 @@ DEP_CPP_COLOR=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_COLOR=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -377,7 +381,9 @@ DEP_CPP_LOG_C=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_LOG_C=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -458,7 +464,9 @@ DEP_CPP_MAIN_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MAIN_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -535,7 +543,9 @@ DEP_CPP_MANAG=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MANAG=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -612,7 +622,9 @@ DEP_CPP_MESSA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MESSA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -689,7 +701,9 @@ DEP_CPP_OPTIO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_OPTIO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -766,7 +780,9 @@ DEP_CPP_SERVI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SERVI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -843,7 +859,9 @@ DEP_CPP_TOOLS=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TOOLS=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -920,7 +938,9 @@ DEP_CPP_WINDO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_WINDO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1062,7 +1082,9 @@ DEP_CPP_BUTTO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_BUTTO=\
+	".\om.h"\
 	
 # End Source File
 # Begin Source File
@@ -1121,7 +1143,9 @@ DEP_CPP_CONTA=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CONTA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1192,7 +1216,9 @@ DEP_CPP_CONTAI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CONTAI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1264,7 +1290,9 @@ DEP_CPP_EVENT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_EVENT=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1335,7 +1363,9 @@ DEP_CPP_FORMA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_FORMA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1414,7 +1444,9 @@ DEP_CPP_GENER=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_GENER=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1486,7 +1518,9 @@ DEP_CPP_HOTKE=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_HOTKE=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1558,7 +1592,9 @@ DEP_CPP_IMAGE=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_IMAGE=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1637,8 +1673,10 @@ DEP_CPP_MSGDI=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1715,7 +1753,9 @@ DEP_CPP_MSGDL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGDL=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1786,7 +1826,9 @@ DEP_CPP_MSGLO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGLO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1863,8 +1905,10 @@ DEP_CPP_MSGOP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1944,7 +1988,9 @@ DEP_CPP_MSGS_=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGS_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2021,7 +2067,9 @@ DEP_CPP_SELEC=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SELEC=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2093,7 +2141,9 @@ DEP_CPP_SENDQ=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SENDQ=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2164,7 +2214,9 @@ DEP_CPP_SRMM_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SRMM_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2241,8 +2293,10 @@ DEP_CPP_TABCT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2313,7 +2367,9 @@ DEP_CPP_TEMPL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TEMPL=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2384,7 +2440,9 @@ DEP_CPP_THEME=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_THEME=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2455,7 +2513,9 @@ DEP_CPP_TRAYI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TRAYI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2526,7 +2586,9 @@ DEP_CPP_TSBUT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TSBUT=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2597,7 +2659,9 @@ DEP_CPP_TYPIN=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TYPIN=\
+	".\om.h"\
 	
 # End Source File
 # Begin Source File
@@ -2655,8 +2719,10 @@ DEP_CPP_USERP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_USERP=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2770,235 +2836,7 @@ SOURCE=.\typingnotify.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=".\res\angeli-icons\Add.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\addcontact.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\AddXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\arrow-down.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\check.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Close.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\delete.ico
-# End Source File
-# Begin Source File
-
-SOURCE=res\Details32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=res\Details8.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\dragcopy.cur"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\res\dragcopy.cur
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\dropuser.cur"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\res\dropuser.cur
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\error.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\history.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\History.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=res\History32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=res\History8.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\HistoryXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\hyperlin.cur"
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\res\hyperlin.cur
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\res\icon1.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\in.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Incom.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Info.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\leftarrow.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Multi.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\multisend.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=res\Multisend32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=res\Multisend8.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\MultiXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Opt.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\options.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\OptXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\out.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Outg.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Pencil.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Photo32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\Photo8.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Pic.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\PicXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\pulldown.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\pulldown1.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\pullup.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\quote.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Quote02.ico"
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\rename.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\rightarrow.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Save.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\save.ico
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\SaveXP.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=".\res\angeli-icons\Send.ico"
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\smbutton.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\smiley_xp.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\tabsrmm_private.rc
-# End Source File
-# Begin Source File
-
-SOURCE=res\Typing32.ico
-# End Source File
-# Begin Source File
-
-SOURCE=res\Typing8.ico
-# End Source File
-# Begin Source File
-
-SOURCE="..\..\Miranda-IM\res\viewdetails.ico"
 # End Source File
 # End Group
 # Begin Group "Misc Files"

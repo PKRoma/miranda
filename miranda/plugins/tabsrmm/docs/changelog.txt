@@ -19,7 +19,8 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
-Version 2.1.1.0  - 2008/04/10
+Version 2.2.1.1  - 2008/04/10
+-----------------------------
 
 		* merged "MADMod" patch. This is a big contribution and adds several
 		  new features like a fully customizable button bar and more. Also adds
@@ -30,6 +31,14 @@ Version 2.1.1.0  - 2008/04/10
 		  
 		* New per contact message log settings are now almost complete and
 		  working. Alt-B (RTL/LTR toggle has been restored).
+
+		* bug fix for splitter position syncing
+		
+		* added nova icon pack (by Angeli-Ka).
+		  NOTE: icon pack format has changed slightly because of the Mad
+		        mod patch. You can still use an old icon pack, but you 
+		        may receive a warning when doing so.
+		
 		  
 Version 2.1.0.1  - 2008/03/26
 
