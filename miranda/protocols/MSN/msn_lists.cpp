@@ -86,6 +86,8 @@ int Lists_GetMask( const char* email )
 
 int Lists_GetNetId( const char* email )
 {
+	if (email[0] == 0) return NETID_UNKNOWN;
+
 	EnterCriticalSection( &csLists );
 
 	MsnContact* p = contList.find((MsnContact*)&email);
