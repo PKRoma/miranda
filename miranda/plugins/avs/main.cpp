@@ -2068,6 +2068,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	// Load global avatar
 	CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[j], "");
 
+	/*
 	// updater plugin support
 	if(ServiceExists(MS_UPDATE_REGISTER))
 	{
@@ -2109,7 +2110,7 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 	}
-
+	*/
 	hPresutdown = HookEvent(ME_SYSTEM_PRESHUTDOWN, ShutdownProc);
 	hOkToExit = HookEvent(ME_SYSTEM_OKTOEXIT, OkToExitProc);
 	hUserInfoInitHook = HookEvent(ME_USERINFO_INITIALISE, OnDetailsInit);
