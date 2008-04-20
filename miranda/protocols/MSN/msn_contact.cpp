@@ -116,6 +116,8 @@ static void AddDelUserContList(const char* email, const int list, const int netI
 	char buf[512];
 	size_t sz;
 
+	if (netId == NETID_EMAIL) return;
+
 	const char* dom = strchr(email, '@');
 	if (dom == NULL)
 	{
