@@ -461,6 +461,12 @@ bool MSN_ABGetFull(void)
 					}
 				}
 
+				if (szEmail[0] == 0) 
+				{
+					cont = ezxml_next(cont);
+					continue;
+				}
+
 				Lists_Add(LIST_FL, netId, szEmail);
 				const char *szTmp;
 
