@@ -25,6 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
+typedef HDESK (WINAPI* pfnOpenInputDesktop)( DWORD, BOOL, DWORD );
+extern pfnOpenInputDesktop openInputDesktop;
+
+typedef HDESK (WINAPI* pfnCloseDesktop)( HDESK );
+extern pfnCloseDesktop closeDesktop;
+
 /**** memory.c *************************************************************************/
 
 void*  mir_alloc( size_t );
@@ -43,6 +49,10 @@ WCHAR* mir_a2u_cp(const char* src, int codepage);
 WCHAR* mir_a2u(const char* src);
 char*  mir_u2a_cp(const wchar_t* src, int codepage);
 char*  mir_u2a( const wchar_t* src);
+
+/**** miranda.c ************************************************************************/
+
+extern HINSTANCE hUser32;
 
 /**** modules.c ************************************************************************/
 

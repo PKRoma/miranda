@@ -33,8 +33,13 @@ void UnloadNewPluginsModule(void);
 void UnloadDefaultModules(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
+HINSTANCE hUser32;
 
-DWORD (WINAPI *MyMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
+typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
+pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx = NULL;
+pfnOpenInputDesktop openInputDesktop = NULL;
+pfnCloseDesktop closeDesktop = NULL;
+
 static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles,
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags);
 
@@ -455,6 +460,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+	hUser32 = GetModuleHandleA("user32");
+	openInputDesktop = ( pfnOpenInputDesktop )GetProcAddress (hUser32, "OpenInputDesktop");
+	closeDesktop = ( pfnCloseDesktop )GetProcAddress (hUser32, "CloseDesktop");
+	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
+
 	ParseCommandLine();
 
 	if (InitialiseModularEngine())
@@ -471,7 +481,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// ensure that the kernel hooks the SystemShutdownProc() after all plugins
 	HookEvent(ME_SYSTEM_SHUTDOWN,SystemShutdownProc);
 
-	MyMsgWaitForMultipleObjectsEx=(DWORD (WINAPI *)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"MsgWaitForMultipleObjectsEx");
 	forkthread(compactHeapsThread,0,NULL);
 	CreateServiceFunction(MS_SYSTEM_SETIDLECALLBACK,SystemSetIdleCallback);
 	CreateServiceFunction(MS_SYSTEM_GETIDLE, SystemGetIdle);

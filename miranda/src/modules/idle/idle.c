@@ -241,14 +241,16 @@ void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
 		IdleObject_Tick( &gIdleObject );
 }
 
-// delphi code here http://www.swissdelphicenter.ch/torry/printcode.php?id=2048
-static BOOL IsWorkstationLocked(void)
+static BOOL IsWorkstationLocked (void)
 {
-	BOOL rc=0;
-	HDESK hDesk = OpenDesktop( _T("default"), 0, FALSE, DESKTOP_SWITCHDESKTOP);
-	if ( hDesk != 0 ) {
-		rc = SwitchDesktop(hDesk) == FALSE;
-		CloseDesktop(hDesk);
+	BOOL rc = FALSE;
+
+	if (openInputDesktop != NULL) {
+		HDESK hDesk = openInputDesktop(0, FALSE, DESKTOP_SWITCHDESKTOP);
+		if (hDesk == NULL)
+			rc = TRUE;
+		else if (closeDesktop != NULL)
+			CloseDesktop(hDesk);
 	}
 	return rc;
 }
