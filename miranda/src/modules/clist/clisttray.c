@@ -654,7 +654,7 @@ int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 	MSG *msg = (MSG *) wParam;
 	switch (msg->message) {
 	case WM_CREATE: {
-		WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
+		WM_TASKBARCREATED = RegisterWindowMessage( _T("TaskbarCreated"));
 		PostMessage(msg->hwnd, TIM_CREATE, 0, 0);
 		break;
 	}

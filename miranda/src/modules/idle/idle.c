@@ -250,7 +250,7 @@ static BOOL IsWorkstationLocked (void)
 		if (hDesk == NULL)
 			rc = TRUE;
 		else if (closeDesktop != NULL)
-			CloseDesktop(hDesk);
+			closeDesktop(hDesk);
 	}
 	return rc;
 }
