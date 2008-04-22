@@ -885,12 +885,12 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position = 1003000;
 	odp.hInstance = hInstance;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
-	odp.pszGroup = LPGEN("Network");
-	odp.pszTitle = m_szModuleName;
+	odp.ptszGroup = LPGENT("Network");
+	odp.ptszTitle = m_tszUserName;
 	odp.pfnDlgProc = options_dialog;
 	odp.dwInitParam = LPARAM(this);
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.nIDBottomSimpleControl=IDC_OPTIONS;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.nIDBottomSimpleControl = IDC_OPTIONS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	return 0;
 }

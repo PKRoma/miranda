@@ -663,7 +663,7 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 	EnterCriticalSection( &statusMutex );
 	start_connection( iNewStatus );
 	if ( state == 1 ) {
-		switch(m_iStatus) {
+		switch( iNewStatus ) {
 		case ID_STATUS_OFFLINE:
 			broadcast_status(ID_STATUS_OFFLINE);
 			break;
