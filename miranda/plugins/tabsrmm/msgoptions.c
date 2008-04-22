@@ -323,9 +323,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ownavatarmode", 0), 0);
 
 			msgTimeout = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-			if (msgTimeout < SRMSGDEFSET_MSGTIMEOUT)
-				msgTimeout = SRMSGDEFSET_MSGTIMEOUT;
-			SetDlgItemInt(hwndDlg, IDC_SECONDS, msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout / 1000 : SRMSGDEFSET_MSGTIMEOUT / 1000, FALSE);
+			if (msgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
+				msgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
+			SetDlgItemInt(hwndDlg, IDC_SECONDS, msgTimeout / 1000, FALSE);
 
 			SetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "avatarheight", 100), FALSE);
 			CheckDlgButton(hwndDlg, IDC_PRESERVEAVATARSIZE, DBGetContactSettingByte(NULL, SRMSGMOD_T, "dontscaleavatars", 0) ? BST_CHECKED : BST_UNCHECKED);
@@ -430,8 +430,9 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "sendformat", (BYTE)SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_GETCURSEL, 0, 0));
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "dontscaleavatars", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRESERVEAVATARSIZE) ? 1 : 0));
 
-							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
-							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
+							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE);
+							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT,
+								msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? msgTimeout * 1000 : SRMSGSET_MSGTIMEOUT_MIN);
 							/*
 							* scan the tree view and obtain the options...
 							*/

@@ -58,7 +58,7 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 
 		if (pszGroup[0]) {
 			for (i = 0;; i++) {
-				itoa(i, str, 10);
+				_itoa(i, str, 10);
 				if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv)) {
 					DBWriteContactSettingTString(hContact, "CList", "Group", pszGroup);
 					goto END_GROUPLOOP;
@@ -193,7 +193,7 @@ void CList_CreateGroup(TCHAR* group)
 		return;
 
 	for (i = 0;; i++) {
-		itoa(i, str, 10);
+		_itoa(i, str, 10);
 		if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 			break;
 

@@ -134,7 +134,7 @@ int BTN_GetStockItem(ButtonItem *item, const char *szName)
 	int i = 0;
 
 	while (sbarItems[i].uId) {
-		if (!stricmp(sbarItems[i].szName, szName)) {
+		if (!_stricmp(sbarItems[i].szName, szName)) {
 			item->uId = sbarItems[i].uId;
 			//item->dwFlags |= BUTTON_ISSIDEBAR;
 			//myGlobals.m_SideBarEnabled = TRUE;

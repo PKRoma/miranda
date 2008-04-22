@@ -1027,11 +1027,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 	tmpItem.dwFlags |= GetPrivateProfileIntA(itemName, "toggle", 0, file) ? BUTTON_ISTOGGLE : 0;
 
 	GetPrivateProfileStringA(itemName, "Pressed", "None", szBuffer, 1000, file);
-	if (!stricmp(szBuffer, "default"))
+	if (!_stricmp(szBuffer, "default"))
 		tmpItem.imgPressed = StatusItems[ID_EXTBKBUTTONSPRESSED].imageItem;
 	else {
 		while (imgItem) {
-			if (!stricmp(imgItem->szName, szBuffer)) {
+			if (!_stricmp(imgItem->szName, szBuffer)) {
 				tmpItem.imgPressed = imgItem;
 				break;
 			}
@@ -1041,11 +1041,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
 	imgItem = g_ImageItems;
 	GetPrivateProfileStringA(itemName, "Normal", "None", szBuffer, 1000, file);
-	if (!stricmp(szBuffer, "default"))
+	if (!_stricmp(szBuffer, "default"))
 		tmpItem.imgNormal = StatusItems[ID_EXTBKBUTTONSNPRESSED].imageItem;
 	else {
 		while (imgItem) {
-			if (!stricmp(imgItem->szName, szBuffer)) {
+			if (!_stricmp(imgItem->szName, szBuffer)) {
 				tmpItem.imgNormal = imgItem;
 				break;
 			}
@@ -1055,11 +1055,11 @@ static void BTN_ReadItem(char *itemName, char *file)
 
 	imgItem = g_ImageItems;
 	GetPrivateProfileStringA(itemName, "Hover", "None", szBuffer, 1000, file);
-	if (!stricmp(szBuffer, "default"))
+	if (!_stricmp(szBuffer, "default"))
 		tmpItem.imgHover = StatusItems[ID_EXTBKBUTTONSMOUSEOVER].imageItem;
 	else {
 		while (imgItem) {
-			if (!stricmp(imgItem->szName, szBuffer)) {
+			if (!_stricmp(imgItem->szName, szBuffer)) {
 				tmpItem.imgHover = imgItem;
 				break;
 			}
@@ -1077,30 +1077,30 @@ static void BTN_ReadItem(char *itemName, char *file)
 	}
 
 	GetPrivateProfileStringA(itemName, "Action", "Custom", szBuffer, 1000, file);
-	if (!stricmp(szBuffer, "service")) {
+	if (!_stricmp(szBuffer, "service")) {
 		tmpItem.szService[0] = 0;
 		GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-		if (stricmp(szBuffer, "None")) {
+		if (_stricmp(szBuffer, "None")) {
 			mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
 			tmpItem.dwFlags |= BUTTON_ISSERVICE;
 			tmpItem.uId = nextButtonID++;
 		}
-	} else if (!stricmp(szBuffer, "protoservice")) {
+	} else if (!_stricmp(szBuffer, "protoservice")) {
 		tmpItem.szService[0] = 0;
 		GetPrivateProfileStringA(itemName, "Service", "None", szBuffer, 1000, file);
-		if (stricmp(szBuffer, "None")) {
+		if (_stricmp(szBuffer, "None")) {
 			mir_snprintf(tmpItem.szService, 256, "%s", szBuffer);
 			tmpItem.dwFlags |= BUTTON_ISPROTOSERVICE;
 			tmpItem.uId = nextButtonID++;
 		}
-	} else if (!stricmp(szBuffer, "database")) {
+	} else if (!_stricmp(szBuffer, "database")) {
 		int n;
 
 		GetPrivateProfileStringA(itemName, "Module", "None", szBuffer, 1000, file);
-		if (stricmp(szBuffer, "None"))
+		if (_stricmp(szBuffer, "None"))
 			mir_snprintf(tmpItem.szModule, 256, "%s", szBuffer);
 		GetPrivateProfileStringA(itemName, "Setting", "None", szBuffer, 1000, file);
-		if (stricmp(szBuffer, "None"))
+		if (_stricmp(szBuffer, "None"))
 			mir_snprintf(tmpItem.szSetting, 256, "%s", szBuffer);
 		if (GetPrivateProfileIntA(itemName, "contact", 0, file) != 0)
 			tmpItem.dwFlags |= BUTTON_DBACTIONONCONTACT;
@@ -1145,12 +1145,12 @@ static void BTN_ReadItem(char *itemName, char *file)
 				tmpItem.dwFlags |= BUTTON_ISCONTACTDBACTION;
 			tmpItem.uId = nextButtonID++;
 		}
-	} else if (stricmp(szBuffer, "Custom")) {
+	} else if (_stricmp(szBuffer, "Custom")) {
 		if (BTN_GetStockItem(&tmpItem, szBuffer))
 			goto create_it;
 	}
 	GetPrivateProfileStringA(itemName, "PassContact", "None", szBuffer, 1000, file);
-	if (stricmp(szBuffer, "None")) {
+	if (_stricmp(szBuffer, "None")) {
 		if (szBuffer[0] == 'w' || szBuffer[0] == 'W')
 			tmpItem.dwFlags |= BUTTON_PASSHCONTACTW;
 		else if (szBuffer[0] == 'l' || szBuffer[0] == 'L')
@@ -1183,7 +1183,7 @@ create_it:
 		tmpItem.tszLabel[0] = 0;
 
 	GetPrivateProfileStringA(itemName, "NormalGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
-	if (stricmp(szBuffer, "default")) {
+	if (_stricmp(szBuffer, "default")) {
 		tmpItem.dwFlags &= ~BUTTON_NORMALGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.dwFlags |= BUTTON_NORMALGLYPHISICON;
@@ -1197,7 +1197,7 @@ create_it:
 	}
 
 	GetPrivateProfileStringA(itemName, "PressedGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
-	if (stricmp(szBuffer, "default")) {
+	if (_stricmp(szBuffer, "default")) {
 		tmpItem.dwFlags &= ~BUTTON_PRESSEDGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.pressedGlyphMetrics[0] = (LONG)phIcon;
@@ -1211,7 +1211,7 @@ create_it:
 	}
 
 	GetPrivateProfileStringA(itemName, "HoverGlyph", "0, 0, 0, 0", szBuffer, 1000, file);
-	if (stricmp(szBuffer, "default")) {
+	if (_stricmp(szBuffer, "default")) {
 		tmpItem.dwFlags &= ~BUTTON_HOVERGLYPHISICON;
 		if ((phIcon = BTN_GetIcon(szBuffer)) != 0) {
 			tmpItem.hoverGlyphMetrics[0] = (LONG)phIcon;

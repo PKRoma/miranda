@@ -2231,7 +2231,7 @@ HICON *BTN_GetIcon(char *szIconName)
 	while (ICONBLOCKS[n].szSection) {
 		i = 0;
 		while (ICONBLOCKS[n].idesc[i].szDesc) {
-			if (!stricmp(ICONBLOCKS[n].idesc[i].szName, szIconName)) {
+			if (!_stricmp(ICONBLOCKS[n].idesc[i].szName, szIconName)) {
 				//_DebugTraceA("found icon: %s", szIconName);
 				return(ICONBLOCKS[n].idesc[i].phIcon);
 			}
@@ -2240,7 +2240,7 @@ HICON *BTN_GetIcon(char *szIconName)
 		n++;
 	}
 	for (i = 0; i < g_nrSkinIcons; i++) {
-		if (!stricmp(g_skinIcons[i].szName, szIconName)) {
+		if (!_stricmp(g_skinIcons[i].szName, szIconName)) {
 			//_DebugTraceA("found custom icon: %s", szIconName);
 			return(g_skinIcons[i].phIcon);
 		}
