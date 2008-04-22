@@ -196,6 +196,11 @@ bool MSN_StoreGetProfile(void)
 		}
 		ezxml_free(xmlm);
 	}
+	else if (tResult != NULL && status == 500)
+	{
+		MSN_StoreCreateProfile();
+	}
+
 	mir_free(tResult);
 	mir_free(storeUrl);
 
