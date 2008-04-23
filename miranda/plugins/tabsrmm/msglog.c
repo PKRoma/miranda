@@ -155,7 +155,7 @@ void CacheLogFonts()
 	ZeroMemory((void *)logfonts, sizeof(LOGFONTA) * MSGDLGFONTCOUNT + 2);
 	for (i = 0; i < MSGDLGFONTCOUNT; i++) {
 		LoadLogfont(i, &logfonts[i], &fontcolors[i], FONTMODULE);
-		wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
+		wsprintfA(rtfFontsGlobal[i], "\\f%u\\cf%u\\b%d\\i%d\\ul%d\\fs%u", i, i, logfonts[i].lfWeight >= FW_BOLD ? 1 : 0, logfonts[i].lfItalic,logfonts[i].lfUnderline, 2 * abs(logfonts[i].lfHeight) * 74 / logPixelSY);
 	}
 	wsprintfA(rtfFontsGlobal[MSGDLGFONTCOUNT], "\\f%u\\cf%u\\b%d\\i%d\\fs%u", MSGDLGFONTCOUNT, MSGDLGFONTCOUNT, 0, 0, 0);
 
@@ -195,7 +195,11 @@ void CacheLogFonts()
 	myGlobals.crDefault = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", GetSysColor(COLOR_WINDOW));
 	myGlobals.crOutgoing = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", GetSysColor(COLOR_WINDOW));
-}
+	myGlobals.crStatus = DBGetContactSettingDword(NULL, FONTMODULE, "miscbg", SRMSGDEFSET_BKGCOLOUR);
+	myGlobals.crOldIncoming =DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", SRMSGDEFSET_BKGCOLOUR);
+	myGlobals.crOldOutgoing =DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGCOLOUR);
+
+	}
 
 /*
 #define RTFPICTHEADERMAXSIZE   78
@@ -495,6 +499,12 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 	colour = dat->theme.hgrid;
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+	colour = dat->theme.oldinbg;
+	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+	colour = dat->theme.oldoutbg;
+	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
+	colour = dat->theme.statbg;
+	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\red%u\\green%u\\blue%u;", GetRValue(colour), GetGValue(colour), GetBValue(colour));
 
 	// custom template colors...
 
@@ -733,11 +743,14 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrpar");
 
 	/* OnO: highlight start */
-	if (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG)
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + 1 + ((isSent) ? 1 : 0));
-	else if (dwEffectiveFlags & MWF_LOG_GRID)
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
-	else
+	if (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG){
+		if(fIsStatusChangeEvent)
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 7, MSGDLGFONTCOUNT + 7);
+		else 
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0));
+	}else if (dwEffectiveFlags & MWF_LOG_GRID)
+ 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
+ 	else
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
 
 	streamData->isEmpty = FALSE;
@@ -1137,7 +1150,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 				case '-': {     // grid line
 					TCHAR color = szTemplate[i + 2];
 					if (color >= '0' && color <= '4') {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\slmult0\\highlight%d\\cf%d\\-\\par\\sl0", MSGDLGFONTCOUNT + 5 + (color - '0'), MSGDLGFONTCOUNT + 5 + (color - '0'));
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\slmult0\\highlight%d\\cf%d\\-\\par\\sl0", MSGDLGFONTCOUNT + 8 + (color - '0'), MSGDLGFONTCOUNT + 7 + (color - '0'));
 						i++;
 					} else {
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par\\sl-1\\slmult0\\highlight%d\\cf%d\\-\\par\\sl0", MSGDLGFONTCOUNT + 4, MSGDLGFONTCOUNT + 4);
@@ -1151,10 +1164,10 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 					TCHAR color = szTemplate[i + 2];
 
 					if (color >= '0' && color <= '4') {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 5 + (color - '0'));
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 8 + (color - '0'));
 						i++;
 					} else
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + 1 + (isSent ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
 					break;
 				}
 				case '|':       // tab
@@ -1193,7 +1206,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 				case 'c': {     // font color (using one of the predefined 5 colors) or one of the standard font colors (m = message, d = date/time, n = nick)
 					TCHAR color = szTemplate[i + 2];
 					if (color >= '0' && color <= '4') {
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", MSGDLGFONTCOUNT + 5 + (color - '0'));
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", MSGDLGFONTCOUNT + 8 + (color - '0'));
 						i++;
 					} else if (color == (TCHAR)'d') {
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\cf%d ", isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset);
@@ -1473,7 +1486,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 
 	if (dat->isAutoRTL & 1) {
 		if (dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
-			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? dat->theme.outbg : dat->theme.inbg);
+ 			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? (fAppend?dat->theme.outbg:dat->theme.oldoutbg) : (fAppend?dat->theme.inbg:dat->theme.oldinbg));
 		else
 			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, dat->theme.bg);
 	}
@@ -1577,7 +1590,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 			}
 			bDirection = trbuffer[1];
 			SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-			crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? dat->theme.outbg : dat->theme.inbg) : dat->theme.bg) : cf2.crBackColor;
+			crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? (fAppend?dat->theme.outbg:dat->theme.oldoutbg) : (fAppend?dat->theme.inbg:dat->theme.oldinbg)) : dat->theme.bg) : cf2.crBackColor;
 			CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, dwScale, dwScale);
 			ImageDataInsertBitmap(ole, theIcon.hBmp);
 			DeleteCachedIcon(&theIcon);

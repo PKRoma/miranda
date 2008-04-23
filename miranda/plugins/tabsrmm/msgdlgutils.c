@@ -45,6 +45,9 @@ extern      HANDLE hMessageWindowList;
 extern      StatusItems_t StatusItems[];
 extern      TCHAR *xStatusDescr[];
 
+#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
+#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
+
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
 
@@ -355,16 +358,16 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 		picAspect = 1.0;
 	else
 		picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? 24:0) + ((dat->showUIElements != 0) ? 28 : 2))) * picAspect;
+	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? DPISCALEX(24):0) + ((dat->showUIElements != 0) ? DPISCALEX(28) : DPISCALEX(2)))) * picAspect;
 	
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
 	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
-		dat->iRealAvatarHeight = dat->dynaSplitter + (dat->showUIElements ? 31 : 6);
+		dat->iRealAvatarHeight = dat->dynaSplitter +5+ (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
-		dat->iRealAvatarHeight = dat->dynaSplitter + 6;
+		dat->iRealAvatarHeight = dat->dynaSplitter +DPISCALEY(4);
 	//mad
-	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? 24:0);
+	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? DPISCALEY(24):0);
 
 	if (myGlobals.m_LimitStaticAvatarHeight > 0)
 		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, myGlobals.m_LimitStaticAvatarHeight);
@@ -452,31 +455,6 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 		EnableMenuItem(submenu, ID_TABMENU_ATTACHTOCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0) ? MF_GRAYED : MF_ENABLED);
 		EnableMenuItem(submenu, ID_TABMENU_LEAVECHATROOM, iLeave);
 		EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
-	} else if (menuID == MENU_LOGMENU) {
-		/*
-				int iLocalTime = 0;
-				int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
-				int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && dat->dwFlags & MWF_LOG_STATUSCHANGES;
-
-				CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_USECONTACTSLOCALTIME, MF_BYCOMMAND | iLocalTime ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_USESIMPLETEMPLATE, MF_BYCOMMAND | (!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) ? MF_CHECKED : MF_UNCHECKED));
-				CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
-
-				EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-				EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-		*/
 	} else if (menuID == MENU_PICMENU) {
 		MENUITEMINFO mii = {0};
 		TCHAR *szText = NULL;
@@ -632,63 +610,21 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 		DWORD dwOldFlags = dat->dwFlags;
 
 		switch (selection) {
-				/*
+			case ID_MESSAGELOGSETTINGS_GLOBAL: {
+				OPENOPTIONSDIALOG	ood = {0};
+				
+				ood.cbSize = sizeof(OPENOPTIONSDIALOG);
+				ood.pszGroup = NULL;
+				ood.pszPage = "Message Sessions";
+				ood.pszTab = NULL;
+				DBWriteContactSettingByte(0, SRMSGMOD_T, "opage", 3);			// force 3th tab to appear
+				CallService (MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood);
+				return 1;
+			}
+			case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
+				CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, (LPARAM)0);
+				return 1;
 
-							case ID_LOGMENU_SHOWTIMESTAMP:
-								dat->dwFlags ^= MWF_LOG_SHOWTIME;
-								return 1;
-							case ID_LOGMENU_INDENTMESSAGEBODY:
-								dat->dwFlags ^= MWF_LOG_INDENT;
-								return 1;
-							case ID_LOGMENU_ACTIVATERTL:
-								iRtl ^= 1;
-								dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
-								if (dat->hContact) {
-									if (iRtl != myGlobals.m_RTLDefault)
-										DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", (BYTE) iRtl);
-									else
-										DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "RTL");
-									SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-								}
-								return 1;
-							case ID_LOGMENU_USESIMPLETEMPLATE:
-								dat->dwFlags ^= MWF_LOG_NORMALTEMPLATES;
-								return 1;
-							case ID_LOGMENU_SHOWDATE:
-								dat->dwFlags ^= MWF_LOG_SHOWDATES;
-								return 1;
-							case ID_LOGMENU_SHOWSECONDS:
-								dat->dwFlags ^= MWF_LOG_SHOWSECONDS;
-								return 1;
-							case ID_MESSAGEICONS_SHOWICONS:
-								dat->dwFlags ^= MWF_LOG_SHOWICONS;
-								return 1;
-							case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
-								dat->dwFlags ^= MWF_LOG_SYMBOLS;
-								return 1;
-							case ID_MESSAGEICONS_USEINCOMING:
-								dat->dwFlags ^= MWF_LOG_INOUTICONS;
-								return 1;
-							case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
-								DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", (BYTE)(iLogStatus ? 0 : -1));
-								return 1;
-							case ID_MESSAGELOGFORMATTING_SHOWGRID:
-								dat->dwFlags ^= MWF_LOG_GRID;
-								if (dat->dwFlags & MWF_LOG_GRID)
-									SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1, 1));    // XXX margins in the log (looks slightly better)
-								else
-									SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));    // XXX margins in the log (looks slightly better)
-								return 1;
-							case ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS:
-								dat->dwFlags ^= MWF_LOG_INDIVIDUALBKG;
-								return 1;
-							case ID_MESSAGELOGFORMATTING_GROUPMESSAGES:
-								dat->dwFlags ^= MWF_LOG_GROUPMODE;
-								return 1;
-							case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
-								dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
-								return 1;
-				*/
 			case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS: {
 				char *szFilename = GetThemeFileName(1);
 				if (szFilename != NULL)
@@ -1083,14 +1019,14 @@ void AdjustBottomAvatarDisplay(HWND hwndDlg, struct MessageWindowData *dat)
 		dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 		if (dat->dynaSplitter == 0 || dat->splitterY == 0)
 			LoadSplitter(hwndDlg, dat);
-		dat->dynaSplitter = dat->splitterY - 34;
+		dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 		DM_RecalcPictureSize(hwndDlg, dat);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 	} else {
 		dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-		dat->pic.cy = dat->pic.cx = 60;
+		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 	}
 }
@@ -1101,7 +1037,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 	RECT rc;
 
 	if (!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL))
-		dat->pic.cy = dat->pic.cx = 60;
+		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
 
 	if (showNewPic) {
 		if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
@@ -1116,7 +1052,7 @@ void ShowPicture(HWND hwndDlg, struct MessageWindowData *dat, BOOL showNewPic)
 	}
 
 	GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rc);
-	if (dat->minEditBoxSize.cy + 3 > dat->splitterY)
+	if (dat->minEditBoxSize.cy + DPISCALEY(3)> dat->splitterY)
 		SendMessage(hwndDlg, DM_SPLITTERMOVED, (WPARAM)rc.bottom - dat->minEditBoxSize.cy, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
 	if (!showNewPic)
 		SetDialogToType(hwndDlg);
@@ -1894,8 +1830,8 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 		}
 	}
 
-	if (dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
-		dat->splitterY = MINSPLITTERY;
+	if (dat->splitterY < DPISCALEY(MINSPLITTERY) || dat->splitterY < 0)
+		dat->splitterY = DPISCALEY(MINSPLITTERY);
 
 	if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 		DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
@@ -1910,7 +1846,7 @@ void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 	else
 		dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60));
 
-	if (dat->splitterY < MINSPLITTERY || dat->splitterY < 0)
+	if (dat->splitterY < DPISCALEY(MINSPLITTERY) || dat->splitterY < 0)
 		dat->splitterY = 150;
 }
 
@@ -2785,7 +2721,9 @@ void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat)
 	int i;
 	char szTemp[40];
 	COLORREF colour;
-
+	dat->theme.statbg = myGlobals.crStatus;				
+	dat->theme.oldinbg = myGlobals.crOldIncoming;	
+	dat->theme.oldoutbg = myGlobals.crOldOutgoing;
 	dat->theme.inbg = myGlobals.crIncoming;
 	dat->theme.outbg = myGlobals.crOutgoing;
 	dat->theme.bg = myGlobals.crDefault;

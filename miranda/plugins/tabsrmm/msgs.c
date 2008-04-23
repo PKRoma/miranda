@@ -36,9 +36,11 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.1\\b0\\ul0\\par ",
-	"*\tMerged Mad MOD - see http://forums.miranda-im.org/showthread.php?t=17918 \\par",
-	"*\tFixed issue with splitter position syncing.\\par",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.2\\b0\\ul0\\par ",
+	"*\tincreased limit of the time based load previous events feature. It's now 24 hours instead of the 12 it was before.\\par ",
+	"*\tAdded menu items to invoke message log settings dialog to the menu bar and the message window tool bar\\par ",
+	"*\tvarious fixes by ghazan (compile fixes for VC 2003, msg timeout fix and more.\\par ",
+	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
 
@@ -99,6 +101,8 @@ extern      ICONDESC *g_skinIcons;
 extern      int g_nrSkinIcons;
 extern      struct RTFColorTable *rtf_ctable;
 extern		TCHAR *DoubleAmpersands(TCHAR *pszText);
+extern      void RegisterFontServiceFonts();
+extern      int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE g_hEvent_MsgWin;
 HANDLE g_hEvent_MsgPopup;
@@ -1075,6 +1079,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		HookEvent(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
 	}
 	HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
+	HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
 	RestoreUnreadMessageAlerts();
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
 		myGlobals.g_buttonBarIcons[i] = 0;
@@ -1162,7 +1167,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		myGlobals.g_PopupWAvail = 1;
 #endif
 
-		
 	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", -1) == -1)
 		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "avatarmode", 2);
 
@@ -1213,7 +1217,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
 		ReloadContainerSkin(1, 1);
-
+	
+	RegisterFontServiceFonts();
 	CacheLogFonts();
 	Chat_ModulesLoaded(wParam, lParam);
 	TN_ModuleInit();
@@ -1423,6 +1428,7 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 int LoadSendRecvMessageModule(void)
 {
 	int nOffset = 0;
+	HDC hScrnDC;
 
 	INITCOMMONCONTROLSEX icex;
 
@@ -1527,7 +1533,12 @@ tzdone:
 		myGlobals.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
 	myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
 	myGlobals.local_gmt_diff = nOffset;
-
+	
+	hScrnDC = GetDC(0);
+	myGlobals.g_DPIscaleX = GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
+	myGlobals.g_DPIscaleY = GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
+	ReleaseDC(0, hScrnDC);
+		
 	hDLL = GetModuleHandleA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
@@ -1638,8 +1649,7 @@ static void InitREOleCallback(void)
 	reOleCallback.lpVtbl->GetClipboardData = (HRESULT(__stdcall *)(IRichEditOleCallback *, CHARRANGE *, DWORD, LPDATAOBJECT *)) CREOleCallback_GetClipboardData;
 	reOleCallback.lpVtbl->GetContextMenu = (HRESULT(__stdcall *)(IRichEditOleCallback *, WORD, LPOLEOBJECT, CHARRANGE *, HMENU *)) CREOleCallback_GetContextMenu;
 	reOleCallback.lpVtbl->GetDragDropEffect = (HRESULT(__stdcall *)(IRichEditOleCallback *, BOOL, DWORD, LPDWORD)) CREOleCallback_GetDragDropEffect;
-	reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))
-			CREOleCallback_GetInPlaceContext;
+	reOleCallback.lpVtbl->GetInPlaceContext = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPOLEINPLACEFRAME *, LPOLEINPLACEUIWINDOW *, LPOLEINPLACEFRAMEINFO))CREOleCallback_GetInPlaceContext;
 	reOleCallback.lpVtbl->GetNewStorage = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPSTORAGE *)) CREOleCallback_GetNewStorage;
 	reOleCallback.lpVtbl->QueryAcceptData = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPDATAOBJECT, CLIPFORMAT *, DWORD, BOOL, HGLOBAL)) CREOleCallback_QueryAcceptData;
 	reOleCallback.lpVtbl->QueryInsertObject = (HRESULT(__stdcall *)(IRichEditOleCallback *, LPCLSID, LPSTORAGE, LONG)) CREOleCallback_QueryInsertObject;
@@ -1941,9 +1951,7 @@ static void InitAPI()
 
 	//mad
 	CB_InitCustomButtons();
-
 	//
-
 
 	/*
 	 * the event API

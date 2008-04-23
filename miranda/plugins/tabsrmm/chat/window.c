@@ -57,6 +57,9 @@ extern int        g_sessionshutdown;
 extern char*      szWarnClose;
 extern WNDPROC OldSplitterProc;
 
+#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
+#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
+
 static WNDPROC OldMessageProc;
 static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
@@ -350,7 +353,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
 			urc->rcItem.left = 0;
 			urc->rcItem.right = bNick ? urc->dlgNewSize.cx - si->iSplitterX : urc->dlgNewSize.cx;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - 23) : (urc->dlgNewSize.cy - si->iSplitterY - 2);
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
@@ -368,7 +371,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - 23) : (urc->dlgNewSize.cy - si->iSplitterY - 2);
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
@@ -385,14 +388,14 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_SPLITTERX:
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - 23) : (urc->dlgNewSize.cy - si->iSplitterY - 2);
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			urc->rcItem.top = bTabs ? rcTabs.top : 1;
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
 
 		case IDC_SPLITTERY:
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = (bToolbar&&!bBottomToolbar) ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + 2) : (urc->dlgNewSize.cy - si->iSplitterY + 2);
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2));
 			if (myGlobals.m_SideBarEnabled)
 				urc->rcItem.left = 9;
 			else
@@ -411,7 +414,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 				urc->rcItem.left += 9;
 			//mad
 			if (bBottomToolbar&&bToolbar)
-				urc->rcItem.bottom -= 24;
+				urc->rcItem.bottom -= DPISCALEY(24);
 			//
 			if (dat->pContainer->bSkinned) {
 				StatusItems_t *item = &StatusItems[ID_EXTBKINPUTAREA];
@@ -2037,7 +2040,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case GC_SETWNDPROPS: {
 			HICON hIcon;
-
+			COLORREF colour = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 			InitButtons(hwndDlg, si);
 			ConfigureSmileyButton(hwndDlg, dat);
 			hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
@@ -2047,7 +2050,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				hIcon = si->wStatus == ID_STATUS_ONLINE ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETBKGNDCOLOR, 0, g_Settings.crLogBackground);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETBKGNDCOLOR, 0, colour);
 
 			{ //messagebox
 				COLORREF	    crFore;
@@ -2515,11 +2518,11 @@ LABEL_SHOWWINDOW:
 				ScreenToClient(hwndDlg, &pt);
 
 				oldSplitterY = si->iSplitterY;
-				si->iSplitterY = bFormat ? rc.bottom - pt.y + 1 : rc.bottom - pt.y + 20;
-				if (si->iSplitterY < 30)
-					si->iSplitterY = 30;
-				if (si->iSplitterY > rc.bottom - rc.top - 40)
-					si->iSplitterY = rc.bottom - rc.top - 40;
+				si->iSplitterY = bFormat ? rc.bottom - pt.y + DPISCALEY(1) : rc.bottom - pt.y + DPISCALEY(20);
+				if (si->iSplitterY < DPISCALEY(30))
+					si->iSplitterY = DPISCALEY(30);
+				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY(40))
+					si->iSplitterY = rc.bottom - rc.top - DPISCALEY(40);
 				g_Settings.iSplitterY = si->iSplitterY;
 				}
 			if (x == 2) {

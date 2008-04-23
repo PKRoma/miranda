@@ -791,7 +791,7 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap)
 				 hIcon = current->sid.hIcon;
 
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
-				DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, 16, 16, hIcon, 50);
+				DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, myGlobals.m_smcxicon, myGlobals.m_smcyicon, hIcon, 50);
 			else
 				DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, hIcon, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
 
@@ -804,7 +804,7 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap)
 	if (dat->bType == SESSIONTYPE_IM)
 		DrawIconEx(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, NULL, DI_NORMAL);
 	else
-		DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, 16, 16,
+		DrawDimmedIcon(hDC, x, (r.top + r.bottom - myGlobals.m_smcxicon) >> 1, myGlobals.m_smcxicon, myGlobals.m_smcyicon,
 		DBGetContactSettingByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ? myGlobals.g_buttonBarIcons[12] : myGlobals.g_buttonBarIcons[13], 50);
 	}
 

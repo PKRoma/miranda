@@ -5,6 +5,8 @@ extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList;
 extern StatusItems_t StatusItems[];
 
+#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
+#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
 
 HANDLE hButtonsBarAddButton;
 HANDLE hButtonsBarRemoveButton;
@@ -285,10 +287,10 @@ static int CB_AddButton(WPARAM wParam, LPARAM lParam)
 
 
 		if(!bbdi->iButtonWidth&&(bbdi->bbbFlags&BBBF_ISARROWBUTTON))
-			cbd->iButtonWidth=34;
+			cbd->iButtonWidth=DPISCALEX(34);
 		else if( !bbdi->iButtonWidth)
-			cbd->iButtonWidth=22;
-		else cbd->iButtonWidth= bbdi->iButtonWidth;
+			cbd->iButtonWidth=DPISCALEX(22);
+		else cbd->iButtonWidth= DPISCALEX(bbdi->iButtonWidth);
 
 		cbd->pszModuleName = mir_strdup(bbdi->pszModuleName);
 
@@ -564,7 +566,7 @@ void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY;
-	BYTE gap=myGlobals.g_iButtonsBarGap;
+	BYTE gap=DPISCALEX(myGlobals.g_iButtonsBarGap);
 	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
 	BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 	int cx=0, cy=0;
@@ -583,7 +585,7 @@ void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat)
 	ScreenToClient(hdlg,&ptSplitter);
 
 	GetClientRect(hdlg,&rect);
-	splitterY=ptSplitter.y-1;
+	splitterY=ptSplitter.y-DPISCALEY(1);
 
 	hwndBtn=NULL;
 	qsort(RButtonsList->items,RButtonsList->realCount,sizeof(CustomButtonData *),sstSortButtons); 
@@ -596,7 +598,7 @@ void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat)
 				if(!cbd->bHidden&&!cbd->bCanBeHidden)
 					dat->iButtonBarReallyNeeds+=cbd->iButtonWidth+gap;
 				if(!cbd->bDummy&&!GetDlgItem(hdlg,cbd->dwButtonCID))
-					hwndBtn=CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, rect.right-1-rwidth+gap,splitterY, cbd->iButtonWidth, 22, hdlg,(HMENU) cbd->dwButtonCID, g_hInst, NULL);
+					hwndBtn=CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, rect.right-rwidth+gap,splitterY, cbd->iButtonWidth,DPISCALEY(22), hdlg,(HMENU) cbd->dwButtonCID, g_hInst, NULL);
 				if(!cbd->bDummy&&hwndBtn){
 					SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
 					SendMessage(hwndBtn, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
@@ -627,7 +629,7 @@ void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat)
 		if (((dat->bType == SESSIONTYPE_IM&&cbd->bIMButton)
 			||(dat->bType == SESSIONTYPE_CHAT&&cbd->bChatButton))){
 				if(!cbd->bDummy&&!GetDlgItem(hdlg,cbd->dwButtonCID))
-					hwndBtn=CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 2+lwidth,splitterY, cbd->iButtonWidth, 22, hdlg,(HMENU) cbd->dwButtonCID, g_hInst, NULL);
+					hwndBtn=CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 2+lwidth,splitterY, cbd->iButtonWidth,DPISCALEY(22), hdlg,(HMENU) cbd->dwButtonCID, g_hInst, NULL);
 				if(!cbd->bHidden)
 					lwidth+=cbd->iButtonWidth+gap;
 				if(!cbd->bHidden&&!cbd->bCanBeHidden)
@@ -667,7 +669,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 	RECT rcSplitter;
 	POINT ptSplitter;
 	int splitterY;
-	BYTE gap=myGlobals.g_iButtonsBarGap;
+	BYTE gap=DPISCALEX(myGlobals.g_iButtonsBarGap);
 	int foravatar=0;
 	BOOL showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -687,11 +689,11 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 
 	GetClientRect(hwnd,&rect);
 
-	if(!bBottomToolbar) splitterY=ptSplitter.y-1;
+	if(!bBottomToolbar) splitterY=ptSplitter.y-DPISCALEY(1);
 	else splitterY=rect.bottom;
 
-	if((rect.bottom - (ptSplitter.y-1) - (bBottomToolbar?24:0)<= dat->pic.cy) && dat->showPic&&!myGlobals.m_AlwaysFullToolbarWidth)
-		foravatar=dat->pic.cx+gap;
+ 	if((rect.bottom - ptSplitter.y - (rcSplitter.bottom-rcSplitter.top) /*- DPISCALEY(2)*/- (bBottomToolbar?DPISCALEY(24):0)< dat->pic.cy-DPISCALEY(2)) && dat->showPic&&!myGlobals.m_AlwaysFullToolbarWidth)
+ 		foravatar=dat->pic.cx+gap;
 
 	if(bNeedResort)
 		qsort(LButtonsList->items,LButtonsList->realCount,sizeof(BBButton *),sstSortButtons);
@@ -729,7 +731,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 						cbd->bAutoHidden=0;
 						}
 					}
-					DeferWindowPos(hdwp,hwndBtn , NULL, lwidth,splitterY-22,
+					DeferWindowPos(hdwp,hwndBtn , NULL, lwidth,splitterY-DPISCALEY(22),
 						0, 0, SWP_NOZORDER | SWP_NOSIZE|SWP_NOCOPYBITS);
 					if(IsWindowVisible(hwndBtn)||(cbd->bDummy&&!(cbd->bAutoHidden||cbd->bHidden)))
 						lwidth+=cbd->iButtonWidth+gap;
@@ -777,7 +779,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 
 					if(IsWindowVisible(hwndBtn)||(cbd->bDummy&&!(cbd->bAutoHidden||cbd->bHidden)))
 						rwidth+=cbd->iButtonWidth+gap;
-					DeferWindowPos(hdwp,hwndBtn , NULL,rect.right-foravatar-rwidth+gap,splitterY-22,
+					DeferWindowPos(hdwp,hwndBtn , NULL,rect.right-foravatar-rwidth+gap,splitterY-DPISCALEY(22),
 						0, 0, SWP_NOZORDER | SWP_NOSIZE|SWP_NOCOPYBITS);
 			}
 		}

@@ -101,6 +101,7 @@ typedef unsigned short wchar_t;
 #include "../../include/m_history.h"
 #include "../../include/m_addcontact.h"
 #include "../../include/m_file.h"
+#include "../../include/m_fontservice.h"
 
 //MAD
 #include "buttonsbar.h"

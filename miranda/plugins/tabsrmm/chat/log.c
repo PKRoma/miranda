@@ -371,10 +371,7 @@ static void AddEventToBuffer(char **buffer, int *bufferEnd, int *bufferAlloced, 
 		} else lstrcpyn(szTemp, streamData->lin->ptszNick, 511);
 
 		if (g_Settings.ClickableNicks)
-			{  //MAD
-			//if(streamData->lin->iType != GC_EVENT_PART&&streamData->lin->iType != GC_EVENT_QUIT)
 			mir_sntprintf(szTemp2, SIZEOF(szTemp2), _T("~~++#%s#++~~"), szTemp);
-			}
 		else
 			_tcscpy(szTemp2, szTemp);
 
@@ -537,11 +534,11 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 				int iii;
 				if (lin->ptszNick && lin->iType == GC_EVENT_MESSAGE) {
 					iii = lin->bIsHighlighted ? 16 : (lin->bIsMe ? 2 : 1);
-					mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii + 1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+					mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\ul%d\\fs%u", iii + 1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0,aFonts[0].lf.lfItalic,aFonts[0].lf.lfUnderline, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
 				} else {
 					iii = lin->bIsHighlighted ? 16 : EventToIndex(lin);
-					mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii + 1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+					mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\ul%d\\fs%u", iii + 1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic,aFonts[0].lf.lfUnderline ,2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
 					Log_Append(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
 				}
 			} else
@@ -813,15 +810,17 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 					fi2.chrgText.cpMin = fi.chrgText.cpMin;
 					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
-					if (g_Settings.ColorizeNicksInLog)
-						{
+// 					if (g_Settings.ColorizeNicksInLog)
+// 						{
 						cf2.dwMask = CFM_PROTECTED;
 						cf2.dwEffects = CFE_PROTECTED;
-						} else
-						{
-						cf2.dwMask = CFM_LINK;
-						cf2.dwEffects = CFE_LINK;
-						}
+// 						}
+// 					else
+// 						{
+// 						cf2.dwMask = CFM_LINK;
+// 						cf2.dwEffects = CFE_LINK;
+// 						}
+// 						
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;
@@ -1051,7 +1050,7 @@ void LoadMsgLogBitmaps(void)
 	}
 
 	for (i = 0; i < OPTIONS_FONTCOUNT; i++)
-		mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic, 2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);
+		mir_snprintf(CHAT_rtfFontsGlobal[i], RTFCACHELINESIZE, "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\ul%d\\fs%u", i, i + 1, aFonts[i].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[i].lf.lfItalic,aFonts[i].lf.lfUnderline ,2 * abs(aFonts[i].lf.lfHeight) * 74 / logPixelSY);
 	CHAT_rtffonts = &(CHAT_rtfFontsGlobal[0][0]);
 }
 

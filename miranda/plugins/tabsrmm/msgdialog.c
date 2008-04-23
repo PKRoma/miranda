@@ -62,6 +62,9 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
+#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
+#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
+
 extern	char  *FilterEventMarkersA(char *szText);
 extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
 extern  TCHAR *DoubleAmpersands(TCHAR *pszText);
@@ -1499,7 +1502,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 								WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL_NOSYNC,
 					 								 rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
 							if (bSync) {
-								g_Settings.iSplitterY = dat->splitterY - 23;
+								g_Settings.iSplitterY = dat->splitterY - DPISCALEY(23);
 								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							}
 						}
@@ -1520,7 +1523,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (dat->bType == SESSIONTYPE_CHAT) {
 							SESSION_INFO *si = (SESSION_INFO *)dat->si;
 							si->iSplitterY = dat->savedSplitY;
-							dat->splitterY =si->iSplitterY   +22;
+							dat->splitterY =si->iSplitterY + DPISCALEY(22);
 						}
 						SendMessage(hwndParent, WM_SIZE, 0, 0);
 						//SendMessage(hwndParent, DM_SPLITTERMOVEDGLOBAL, dat->savedSplitter, (LPARAM) hwnd);
@@ -1682,7 +1685,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.left = 0;
 
 			if (dat->fMustOffset)
-				urc->rcItem.right -= (dat->pic.cx + 2);
+				urc->rcItem.right -= (dat->pic.cx + DPISCALEX(2));
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 		case IDC_CONTACTPIC:{
 			RECT rc;
@@ -1690,13 +1693,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			//urc->rcItem.top=urc->rcItem.bottom-(dat->pic.cy +2);
 			urc->rcItem.left = urc->rcItem.right - (dat->pic.cx + 2);
-			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy) && dat->showPic) {
-				urc->rcItem.top = urc->rcItem.bottom - (dat->pic.cy);
+			if ((urc->rcItem.bottom - urc->rcItem.top) < (dat->pic.cy +2) && dat->showPic) {
+				urc->rcItem.top = urc->rcItem.bottom - dat->pic.cy;
 				dat->fMustOffset = TRUE;
 			} else
 				dat->fMustOffset = FALSE;
 
-			if(showToolbar&&bBottomToolbar&&(myGlobals.m_AlwaysFullToolbarWidth||dat->pic.cy-5<rc.bottom)) urc->rcItem.bottom-=24;
+			if(showToolbar&&bBottomToolbar&&(myGlobals.m_AlwaysFullToolbarWidth||((dat->pic.cy-DPISCALEY(6))<rc.bottom))) urc->rcItem.bottom-=DPISCALEY(22);
 
 			//Bolshevik: resizes avatar control _FIXED
 			if( dat->hwndContactPic ) //if Panel control was created?
@@ -1732,10 +1735,10 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (myGlobals.m_SideBarEnabled)
 				urc->rcItem.left += 9;
 			if (myGlobals.m_visualMessageSizeIndicator)
-				urc->rcItem.bottom -= 2;
+				urc->rcItem.bottom -= DPISCALEY(2);
 			//mad
 			if (bBottomToolbar&&showToolbar)
-				urc->rcItem.bottom -= 22;
+				urc->rcItem.bottom -= DPISCALEY(22);
 			//
 			msgTop = urc->rcItem.top;
 			msgBottom = urc->rcItem.bottom;
@@ -1778,8 +1781,9 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			if (myGlobals.m_SideBarEnabled)
 				urc->rcItem.left += 9;
  			if (bBottomToolbar&&showToolbar){
-				urc->rcItem.bottom -= 23;
-				urc->rcItem.top -= 22;}
+				urc->rcItem.bottom -= DPISCALEY(23);
+				urc->rcItem.top -= DPISCALEY(22);
+				}
 
 			urc->rcItem.right -= not_on_list;
 			OffsetRect(&urc->rcItem, 0, -1);
@@ -2445,8 +2449,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				cf2.crTextColor = inputcharcolor;
 				cf2.bCharSet = lf.lfCharSet;
 				strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
-				cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
-				cf2.wWeight = (WORD)lf.lfWeight;
+				cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0)|(lf.lfUnderline ? CFE_UNDERLINE : 0)|(lf.lfStrikeOut ? CFE_STRIKEOUT : 0);
+				cf2.wWeight = (WORD)lf.lfWeight;														   
 				cf2.bPitchAndFamily = lf.lfPitchAndFamily;
 				cf2.yHeight = abs(lf.lfHeight) * 15;
 				SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
@@ -2768,7 +2772,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			UTILRESIZEDIALOG urd;
 			BITMAP bminfo;
 			RECT rc, rcPic;
-			int saved = 0/*, i*/;
+			int saved = 0;
 			HBITMAP hbm = dat->dwFlagsEx & MWF_SHOW_INFOPANEL ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : myGlobals.g_hbmUnknown);
 			RECT rcPanelBottom;
 
@@ -2788,12 +2792,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 
 			if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
-				if (dat->splitterY > HIWORD(lParam) - MINLOGHEIGHT) {
-					dat->splitterY = HIWORD(lParam) - MINLOGHEIGHT;
-					dat->dynaSplitter = dat->splitterY - 34;
+				if (dat->splitterY > HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT)) {
+					dat->splitterY = HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT);
+					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
-				if (dat->splitterY < MINSPLITTERY)
+				if (dat->splitterY < DPISCALEY(MINSPLITTERY))
 					LoadSplitter(hwndDlg, dat);
 			}
 
@@ -2912,20 +2916,20 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ScreenToClient(hwndDlg, &pt);
 
 				oldSplitterY = dat->splitterY;
-				dat->splitterY = rc.bottom - pt.y + 23;
+				dat->splitterY = rc.bottom - pt.y +DPISCALEY(23);
 				/*
 				 * attempt to fix splitter troubles..
 				 * hardcoded limits... better solution is possible, but this works for now
 				 */
 				//mad
-				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) bottomtoolbarH=22;
+				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) bottomtoolbarH = 22;
 				//
-				if (dat->splitterY < (MINSPLITTERY + 5 + bottomtoolbarH))           // min splitter size
-					dat->splitterY = (MINSPLITTERY + 5 + bottomtoolbarH);
+				if (dat->splitterY < (DPISCALEY(MINSPLITTERY + 5 + bottomtoolbarH)))           // min splitter size
+					dat->splitterY = (DPISCALEY(MINSPLITTERY + 5 + bottomtoolbarH));
 				else if (dat->splitterY > ((rc.bottom - rc.top) - 50))
 					dat->splitterY = oldSplitterY;
 				else {
-					dat->dynaSplitter = (rc.bottom - pt.y) - 11;
+					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(12);
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {

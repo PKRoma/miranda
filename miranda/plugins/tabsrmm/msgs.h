@@ -321,7 +321,7 @@ struct MessageSessionStats {
 };
 
 struct MessageWindowTheme {
-	COLORREF inbg, outbg, bg, inputbg;
+	COLORREF inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
 	COLORREF hgrid;
 	COLORREF custom_colors[5];
 	DWORD dwFlags;
@@ -557,6 +557,8 @@ typedef struct _globals {
 	HANDLE      m_TipOwner;
 	HANDLE      m_UserMenuItem;
 	//MAD
+	double		g_DPIscaleX;
+	double		g_DPIscaleY;
 	BOOL		g_NickListScrollBarFix;
 	BOOL		m_HideOnClose;
 	BOOL		g_bSoundOnTyping;
@@ -595,8 +597,8 @@ typedef struct _globals {
 	TCHAR       *m_szNoStatus;
 	HFONT       m_hFontWebdings;
 	struct      infopanelconfig ipConfig;
-	COLORREF    crDefault, crIncoming, crOutgoing;
-	BOOL        bUnicodeBuild;
+	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
+	BOOL        bUnicodeBuild;					   
 	BYTE        bClipBorder;
 	DWORD       bRoundedCorner;
 	BYTE        bAvatarBoderType;
@@ -1061,6 +1063,7 @@ static __inline int mir_snprintfW(wchar_t *buffer, size_t count, const wchar_t* 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
 #define FONTF_UNDERLINE 4
+#define FONTF_STRIKEOUT  8
 
 #define RTFCACHELINESIZE 128
 

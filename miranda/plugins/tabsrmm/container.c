@@ -432,19 +432,17 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				if(current->sid.flags&MBF_OWNERSTATE){
 					struct StatusIconListNode *currentSIN = dat->pSINod;
 					
-					while (currentSIN)
-						{ 
+					while (currentSIN) { 
 						if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
 							flags=currentSIN->sid.flags;
 							break;
-							}
-						currentSIN = currentSIN->next;
 						}
-					}  
-				else
-					{
-				sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-				flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+						currentSIN = currentSIN->next;
+					}
+				}  
+				else {
+					sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+					flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 				}
 				if (!(flags & MBF_HIDDEN))
 					list_icons++;
@@ -1604,6 +1602,22 @@ buttons_done:
 					}
 					return 0;
 				}
+				/*
+				 * commands from the message log popup will be routed to the
+				 * message log menu handler
+				 */
+				case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
+				case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
+				case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
+				case ID_MESSAGELOGSETTINGS_GLOBAL: {
+					struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(pContainer->hwndActive, GWL_USERDATA);
+
+					if(dat) {
+						MsgWindowMenuHandler(pContainer->hwndActive, dat, (int)LOWORD(wParam), MENU_LOGMENU);
+						return 0;
+					}
+					break;
+				}
 				case ID_HELP_ABOUTTABSRMM:
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, DlgProcAbout, 0);
 					break;
@@ -1932,6 +1946,9 @@ buttons_done:
 						ShowWindow(hwndDlg, SW_SHOW);
 						return 0;
 					}
+ 					//MAD: to fix rare (windows?) bug...
+ 					ShowWindow(hwndDlg, SW_RESTORE);
+ 					//
 					break;
 				case SC_MINIMIZE:
 					if (nen_options.bMinimizeToTray && (nen_options.bTraySupport || (nen_options.floaterMode && !nen_options.bFloaterOnlyMin)) && myGlobals.m_WinVerMajor >= 5) {

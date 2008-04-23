@@ -10,6 +10,7 @@
 #include <windows.h>
 #include "../../include/statusmodes.h"
 
+#include <version.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -19,7 +20,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1251)
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -255,15 +256,15 @@ BEGIN
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",BS_AUTORADIOBUTTON,10,187,138,10
     CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",BS_AUTORADIOBUTTON,10,200,138,10
     CONTROL         "Always trim message log to",IDC_ALWAYSTRIM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,212,146,10
-    EDITTEXT        IDC_LOADCOUNTN,170,185,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
+    EDITTEXT        IDC_LOADCOUNTN,164,185,39,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "Spin1",IDC_LOADCOUNTSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,203,184,10,14
-    EDITTEXT        IDC_LOADTIMEN,170,198,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
+    EDITTEXT        IDC_LOADTIMEN,164,198,39,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,196,10,14
-    EDITTEXT        IDC_TRIM,170,211,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
+    EDITTEXT        IDC_TRIM,164,211,39,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,209,10,14
-    LTEXT           "Events",IDC_STATIC,207,212,90,8
+    LTEXT           "Events",IDC_STATIC,215,212,82,8
     CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,95
-    LTEXT           "minutes old",IDC_STMINSOLD,207,200,90,8,WS_DISABLED
+    LTEXT           "minutes old",IDC_STMINSOLD,215,200,83,8,WS_DISABLED
     GROUPBOX        "Global message log display",IDC_STMSGLOGGROUP3,149,107,147,29
     COMBOBOX        IDC_MSGLOGDIDSPLAY,155,117,135,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
@@ -756,8 +757,14 @@ BEGIN
     END
     POPUP "Logmenu"
     BEGIN
-        MENUITEM "Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
-        MENUITEM "Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
+        POPUP "&Message Log Settings"
+        BEGIN
+            MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
+            MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
+        MENUITEM "&Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
     END
     POPUP "Sendmenu"
     BEGIN
@@ -924,8 +931,14 @@ BEGIN
     END
     POPUP "Message &Log"
     BEGIN
-        MENUITEM "Export Message Log Settings...", 40128
-        MENUITEM "Import Message Log Settings...", 40129
+        POPUP "&Message Log Settings"
+        BEGIN
+            MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
+            MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Export Message Log Settings...", 40128
+        MENUITEM "&Import Message Log Settings...", 40129
     END
     POPUP "&Container"
     BEGIN
@@ -952,6 +965,26 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
+IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
+IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+IDI_ENABLED             ICON                    "res/res_TN/popup.ico"
+IDI_DISABLED            ICON                    "res/res_TN/popup_no.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -979,49 +1012,18 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\0"
+    "#include ""../../include/statusmodes.h""\r\r\n"
+    "#include <version.h\0"
 END
 
 3 TEXTINCLUDE 
 BEGIN
-    "\r\0"
+    "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Austria) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEA)
-#ifdef _WIN32
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
-IDI_ENABLED             ICON                    "res/res_TN/popup.ico"
-IDI_DISABLED            ICON                    "res/res_TN/popup_no.ico"
-#endif    // German (Austria) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

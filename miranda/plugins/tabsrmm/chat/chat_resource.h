@@ -24,7 +24,6 @@
 //1018 reserved for sendmenu id
 #define IDC_BKGCOLOR                    1019
 #define IDC_CHECKBOXES                  1021
-#define IDC_NICKLISTBKG                 1021
 #define IDC_CHAT_CLOSE                  1025//1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
@@ -32,11 +31,6 @@
 #define IDC_CHAT_SPIN1                  1028
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
-#define IDC_CHAT_FONTLIST               1032
-#define IDC_CHAT_CHOOSEFONT             1034
-#define IDC_CHAT_FONTCOLOR              1035
-#define IDC_MESSAGEBKG                  1036
-#define IDC_LOGBKG                      1037
 #define IDC_HIGHLIGHTWORDS              1040
 #define IDC_INSTAMP                     1041
 #define IDC_OUTSTAMP                    1043
@@ -103,13 +97,6 @@
 #define IDC_T11                         1410
 
 #define IDC_CHAT_HISTORY                1111
-#define IDC_INFOPANELBG                 1124
-#define IDC_BKGOUTGOING                 1125
-#define IDC_BKGINCOMING                 1126
-#define IDC_GRIDLINES                   1127
-#define IDC_NICKCOLOR                   1128
-#define IDC_FONTCATEGORY                1274
-#define IDC_NICKCOLORS                  1275
 #define IDC_CHAT_TOGGLESIDEBAR          1277
 #define ID_MESS                         40001
 #define ID_NEW                          40002

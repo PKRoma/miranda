@@ -442,14 +442,14 @@ bg_done:
 				ix -= 4;
 
 			if (ctl->dimmed && myGlobals.m_IdleDetect)
-				DrawDimmedIcon(hdcMem, ix, iy, 16, 16, hIconNew, 180);
+				DrawDimmedIcon(hdcMem, ix, iy, myGlobals.m_smcxicon, myGlobals.m_smcyicon, hIconNew, 180);
 			else {
 				if (ctl->stateId != PBS_DISABLED || MyAlphaBlend == 0)
-					DrawIconEx(hdcMem, ix, iy, hIconNew, 16, 16, 0, 0, DI_NORMAL);
+					DrawIconEx(hdcMem, ix, iy, hIconNew, myGlobals.m_smcxicon, myGlobals.m_smcyicon, 0, 0, DI_NORMAL);
 				else {
 					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, ix, iy, SRCCOPY);
 					DrawIconEx(hdc_buttonglyph, 0, 0, hIconNew, 16, 16, 0, 0, DI_NORMAL);
-					MyAlphaBlend(hdcMem, ix, iy, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
+ 					MyAlphaBlend(hdcMem, ix, iy, myGlobals.m_smcxicon, myGlobals.m_smcyicon, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
 				}
 			}
 		} else if (GetWindowTextLength(ctl->hwnd)) {
