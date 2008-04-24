@@ -519,6 +519,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	HICON   LoadIconEx(int iIndex);
 	HANDLE  GetIconHandle(int iconId);
 	void    ReadSettings( TDbSetting* sets, int count );
+	void    RereadServers( void );
 	void    RewriteIgnoreSettings( void );
 	void    WriteSettings( TDbSetting* sets, int count );
 

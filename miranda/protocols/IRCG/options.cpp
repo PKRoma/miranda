@@ -116,6 +116,69 @@ void CIrcProto::WriteSettings( TDbSetting* sets, int count )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+static int sttServerEnum( const char* szSetting, LPARAM lParam )
+{
+	DBVARIANT dbv;
+	if ( DBGetContactSettingString( NULL, SERVERSMODULE, szSetting, &dbv ))
+		return 0;
+
+	SERVER_INFO* pData = new SERVER_INFO;
+	pData->m_name = mir_strdup( szSetting );
+
+	char* p1 = strchr( dbv.pszVal, ':' )+1;
+	pData->m_iSSL = 0;
+	if ( !_strnicmp( p1, "SSL", 3 )) {
+		p1 +=3;
+		if ( *p1 == '1' )
+			pData->m_iSSL = 1;
+		else if ( *p1 == '2' )
+			pData->m_iSSL = 2;
+		p1++;
+	}
+	char* p2 = strchr(p1, ':');
+	pData->m_address = ( char* )mir_alloc( p2-p1+1 );
+	lstrcpynA( pData->m_address, p1, p2-p1+1 );
+
+	p1 = p2+1;
+	while (*p2 !='G' && *p2 != '-')
+		p2++;
+
+	char* buf = ( char* )alloca( p2-p1+1 );
+	lstrcpynA( buf, p1, p2-p1+1 );
+	pData->m_portStart = atoi( buf );
+
+	if ( *p2 == 'G' )
+		pData->m_portEnd = pData->m_portStart;
+	else {
+		p1 = p2+1;
+		p2 = strchr(p1, 'G');
+		buf = ( char* )alloca( p2-p1+1 );
+		lstrcpynA( buf, p1, p2-p1+1 );
+		pData->m_portEnd = atoi( buf );
+	}
+   
+   p1 = strchr(p2, ':')+1;
+	p2 = strchr(p1, '\0');
+	pData->m_group = ( char* )mir_alloc( p2-p1+1 );
+	lstrcpynA( pData->m_group, p1, p2-p1+1 );
+
+	CIrcProto* ppro = ( CIrcProto* )lParam;
+	ppro->m_servers.insert( pData );
+	DBFreeVariant( &dbv );
+	return 0;
+}
+
+void CIrcProto::RereadServers()
+{
+	DBCONTACTENUMSETTINGS dbces;
+	dbces.pfnEnumProc = sttServerEnum;
+	dbces.lParam = ( LPARAM )this;
+	dbces.szModule = SERVERSMODULE;
+	CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 static void removeSpaces( TCHAR* p )
 {
 	while ( *p ) {
@@ -754,7 +817,11 @@ void CConnectPrefsDlg::OnApply()
 				else
 					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:%s:%d-%dGROUP:%s", pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
-	}	}	}
+		}	}
+
+		m_proto->m_servers.destroy();
+		m_proto->RereadServers();
+	}
 
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 
