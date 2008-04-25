@@ -484,6 +484,8 @@ LBL_FatalError:
 			else
 				m_bSendKeepAlive = FALSE;
 			mir_forkthread(( pThreadFunc )JabberKeepAliveThread, this );
+
+			JSetStringT(NULL, "jid", m_szJabberJID); // store jid in database
 		}
 
 		xmlStreamInitializeNow( info );

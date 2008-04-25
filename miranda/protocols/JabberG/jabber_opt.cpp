@@ -350,6 +350,19 @@ CCtrlEditJid::CCtrlEditJid( CDlgBase* dlg, int ctrlId ):
 {
 }
 
+static void sttStoreJidFromUI(CJabberProto *ppro, CCtrlEdit &txtUsername, CCtrlCombo &cbServer)
+{
+	TCHAR *user = txtUsername.GetText();
+	TCHAR *server = cbServer.GetText();
+	int len = lstrlen(user) + lstrlen(server) + 2;
+	TCHAR *jid = (TCHAR *)mir_alloc(len * sizeof(TCHAR));
+	mir_sntprintf(jid, len, _T("%s@%s"), user, server);
+	ppro->JSetStringT(NULL, "jid", jid);
+	mir_free(jid);
+	mir_free(server);
+	mir_free(user);
+}
+
 class CDlgOptAccount: public CJabberDlgBase
 {
 	typedef CJabberDlgBase CSuper;
@@ -529,6 +542,8 @@ protected:
 			if ( szLanguageCode )
 				m_proto->JSetStringT(NULL, "XmlLang", szLanguageCode);
 		}
+
+		sttStoreJidFromUI(m_proto, m_txtUsername, m_cbServer);
 
 		if (m_proto->m_bJabberConnected)
 		{
@@ -890,6 +905,7 @@ public:
 		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),   "AutoAcceptMUC",       FALSE);
 		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),   "AutoJoinBookmarks",   FALSE);
 		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"), "AutoJoinConferences", FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Hide conference windows at startup"),      "AutoJoinHidden",      TRUE);
 		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),  "IgnoreMUCInvites",    TRUE);
 		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),                    "GcLogBans",           TRUE);
 		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),           "GcLogConfig",         FALSE);
@@ -1875,6 +1891,8 @@ protected:
 			m_proto->JDeleteSetting(NULL, "ManualPort");
 			m_proto->JSetWord(NULL, "Port", m_txtPort.GetInt());
 		}
+
+		sttStoreJidFromUI(m_proto, m_txtUsername, m_cbServer);
 
 		if (m_proto->m_bJabberConnected)
 		{

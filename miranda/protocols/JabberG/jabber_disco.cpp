@@ -688,7 +688,7 @@ void CJabberDlgDiscovery::OnInitDialog()
 		lvc.mask = LVCF_SUBITEM|LVCF_WIDTH|LVCF_TEXT;
 		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx0", 200);
 		lvc.iSubItem = 0;
-		lvc.pszText = _T("Node hierarchy");
+		lvc.pszText = TranslateT("Node hierarchy");
 		ListView_InsertColumn(hwndList, 0, &lvc);
 		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx1", 200);
 		lvc.iSubItem = 1;
@@ -696,7 +696,7 @@ void CJabberDlgDiscovery::OnInitDialog()
 		ListView_InsertColumn(hwndList, 1, &lvc);
 		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx2", 200);
 		lvc.iSubItem = 2;
-		lvc.pszText = _T("Node");
+		lvc.pszText = TranslateT("Node");
 		ListView_InsertColumn(hwndList, 2, &lvc);
 
 		TreeList_Create(hwndList);

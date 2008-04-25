@@ -169,7 +169,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gcd.iType = GC_EVENT_CONTROL;
-	CallServiceSync( MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, (item->bAutoJoin && JGetByte("AutoJoinHidden", TRUE)) ? WINDOW_HIDDEN : SESSION_INITDONE, (LPARAM)&gce );
 	CallServiceSync( MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce );
 	return 0;
 }

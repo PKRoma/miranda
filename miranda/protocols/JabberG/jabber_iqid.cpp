@@ -132,10 +132,10 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 						p = _tcstok( room, _T( "@" ));
 						server = _tcstok( NULL, _T( "@" ));
 						if ( item->nick && item->nick[0] != 0 )
-							GroupchatJoinRoom( server, p, item->nick, item->password );
+							GroupchatJoinRoom( server, p, item->nick, item->password, true );
 						else {
 							TCHAR* nick = JabberNickFromJID( m_szJabberJID );
-							GroupchatJoinRoom( server, p, nick, item->password );
+							GroupchatJoinRoom( server, p, nick, item->password, true );
 							mir_free( nick );
 		}	}	}	}	}
 
@@ -325,7 +325,7 @@ void CJabberProto::OnIqResultSession( XmlNode *iqNode, void *userdata )
 		OnLoggedIn( info );
 }
 
-void CJabberProto::GroupchatJoinByHContact( HANDLE hContact )
+void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 {
 	DBVARIANT dbv;
 	if( JGetStringT( hContact, "ChatRoomID", &dbv ))
@@ -359,7 +359,7 @@ void CJabberProto::GroupchatJoinByHContact( HANDLE hContact )
 		JFreeVariant( &dbv );
 	}
 
-	GroupchatJoinRoom( server, room, nick, _T(""));
+	GroupchatJoinRoom( server, room, nick, _T(""), autojoin);
 	mir_free( roomjid );
 }
 
@@ -553,7 +553,7 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 
 	if ( JGetByte( "AutoJoinConferences", 0 )) {
 		for ( i=0; i < chatRooms.realCount; i++ )
-			GroupchatJoinByHContact(( HANDLE )chatRooms.items[i] );
+			GroupchatJoinByHContact(( HANDLE )chatRooms.items[i], true);
 	}
 	li.List_Destroy( &chatRooms );
 

@@ -136,6 +136,7 @@ struct JABBER_LIST_ITEM
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
+	// BOOL bAutoJoin; // chat sessio was started via auto-join
 
 	// LIST_FILE
 	// jid = string representation of port number

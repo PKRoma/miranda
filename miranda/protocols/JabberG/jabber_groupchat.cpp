@@ -205,7 +205,7 @@ int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
-void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password )
+void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin )
 {
 	bool found = false;
 	for (int i = 0 ; i < 5; ++i)
@@ -237,6 +237,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 	mir_sntprintf( text, SIZEOF(text), _T("%s@%s/%s"), room, server, nick );
 
 	JABBER_LIST_ITEM* item = ListAdd( LIST_CHATROOM, text );
+	item->bAutoJoin = autojoin;
 	replaceStr( item->nick, nick );
 
 	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;

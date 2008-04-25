@@ -443,7 +443,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	int    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
 
-	void   GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password );
+	void   GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin=false );
 	void   GroupchatProcessPresence( XmlNode *node, void *userdata );
 	void   GroupchatProcessMessage( XmlNode *node, void *userdata );
 	void   GroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* reason, TCHAR* password );
@@ -769,7 +769,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	char m_szPhotoFileName[MAX_PATH];
 	void OnUserInfoInit_VCard( WPARAM, LPARAM );
 
-	void   GroupchatJoinByHContact( HANDLE hContact );
+	void   GroupchatJoinByHContact( HANDLE hContact, bool autojoin=false );
 	int    SendGetVcard( const TCHAR* jid );
 	void   AppendVcardFromDB( XmlNode* n, char* tag, char* key );
 	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );

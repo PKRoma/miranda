@@ -1905,6 +1905,8 @@ BOOL CProtoIntDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 		case WM_INITDIALOG:
+		{	//	call inherited init code first
+			BOOL result = CSuper::DlgProc(msg, wParam, lParam);
 			if (m_show_label)
 			{
 				m_hwndStatus = CreateStatusWindow(WS_CHILD|WS_VISIBLE, NULL, m_hwnd, IDC_STATUSBAR);
@@ -1912,7 +1914,8 @@ BOOL CProtoIntDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				UpdateStatusBar();
 				UpdateProtoTitle();
 			}
-			break;
+			return result;
+		}
 
 		case WM_SETTEXT:
 #ifdef UNICODE
