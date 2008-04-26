@@ -904,22 +904,21 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {0};
-
+    
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS1);
-	odp.pszTitle = LPGEN("General");
 	odp.pszGroup = LPGEN("Events");
-	odp.pszTab = LPGEN("Chat");
+	odp.pszTitle = LPGEN("Group chats");
+	odp.pszTab = LPGEN("General");
 	odp.pfnDlgProc = DlgProcOptions1;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
 	odp.position = 910000001;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS2);
-	odp.pszTitle = LPGEN("Chat Log");
-	odp.pszGroup = LPGEN("Events");
+	odp.pszTab = LPGEN("Chat Log");
 	odp.pfnDlgProc = DlgProcOptions2;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 
