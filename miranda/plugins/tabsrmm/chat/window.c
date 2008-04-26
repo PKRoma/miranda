@@ -326,8 +326,6 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 	GetClientRect(hwndDlg, &rcTabs);
 	TabHeight = rcTabs.bottom - rcTabs.top;
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), myGlobals.g_SmileyAddAvail/* && bToolbar */? SW_SHOW : SW_HIDE);
-
 	if (si->iType != GCW_SERVER) {
 		ShowWindow(GetDlgItem(hwndDlg, IDC_LIST), si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTERX), si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
@@ -2519,12 +2517,12 @@ LABEL_SHOWWINDOW:
 
 				oldSplitterY = si->iSplitterY;
 				si->iSplitterY = bFormat ? rc.bottom - pt.y + DPISCALEY(1) : rc.bottom - pt.y + DPISCALEY(20);
-				if (si->iSplitterY < DPISCALEY(30))
-					si->iSplitterY = DPISCALEY(30);
+				if (si->iSplitterY < DPISCALEY(28))
+					si->iSplitterY = DPISCALEY(28);
 				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY(40))
 					si->iSplitterY = rc.bottom - rc.top - DPISCALEY(40);
 				g_Settings.iSplitterY = si->iSplitterY;
-				}
+			}
 			if (x == 2) {
 				PostMessage(hwndDlg, WM_SIZE, 0, 0);
 				x = 0;

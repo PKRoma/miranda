@@ -1513,6 +1513,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							if (bSync)
 								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + 23);
+							RedrawWindow(hwndParent, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 						}
 						break;
 					}
@@ -2103,8 +2104,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
 
 			//MAD
-			if(dat->bActualHistory=DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ActualHistory", 0))
-				{
+			if(dat->bActualHistory=DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ActualHistory", 0)){
 				dat->messageCount=(UINT)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);
 				DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);	
 				}

@@ -134,6 +134,9 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, DBGetContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", 0));
 			CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, DBGetContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
 
+			//MAD 
+			CheckDlgButton(hwndDlg, IDC_LOADONLYACTUAL, DBGetContactSettingByte(hContact, SRMSGMOD_T, "ActualHistory", 0)); 
+			// 
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
@@ -288,6 +291,16 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
 					else
 						DBWriteContactSettingDword(hContact, SRMSGMOD_T, "maxhist", 0);
+
+					//MAD
+					if (IsDlgButtonChecked(hwndDlg, IDC_LOADONLYACTUAL)){
+						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ActualHistory", 1);
+						if (hWnd && dat) dat->bActualHistory=TRUE;
+						}else{
+							DBWriteContactSettingByte(hContact, SRMSGMOD_T, "ActualHistory", 0);
+						if (hWnd && dat) dat->bActualHistory=FALSE;
+						}
+					//
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_IGNORETIMEOUTS)) {
 						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "no_ack", 1);

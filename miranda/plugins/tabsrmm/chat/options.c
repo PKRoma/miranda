@@ -324,9 +324,9 @@ static void FillBranch(HWND hwndTree, HTREEITEM hParent, struct branch_t *branch
 		tvis.item.pszText = TranslateTS(branch[i].szDescr);
 		tvis.item.stateMask = TVIS_STATEIMAGEMASK;
 		if (branch[i].iMode)
-			iState = ((DBGetContactSettingDword(NULL, "Chat", branch[i].szDBName, defaultval) & branch[i].iMode) & branch[i].iMode) != 0 ? 3 : 2; //2 : 1;
+			iState = ((DBGetContactSettingDword(NULL, "Chat", branch[i].szDBName, defaultval) & branch[i].iMode) & branch[i].iMode) != 0 ? 3 : 2;
 		else
-			iState = DBGetContactSettingByte(NULL, "Chat", branch[i].szDBName, branch[i].bDefault) != 0 ? 3 : 2; //2 : 1;
+			iState = DBGetContactSettingByte(NULL, "Chat", branch[i].szDBName, branch[i].bDefault) != 0 ? 3 : 2;
 		tvis.item.state = INDEXTOSTATEIMAGEMASK(iState);
 		branch[i].hItem = TreeView_InsertItem(hwndTree, &tvis);
 	}
@@ -343,7 +343,7 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 	for (i = 0;i < nValues;i++) {
 		tvi.hItem = branch[i].hItem;
 		TreeView_GetItem(hwndTree, &tvi);
-		bChecked = ((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 2/*1*/) ? 0 : 1;
+		bChecked = ((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 2) ? 0 : 1;
 		if (branch[i].iMode) {
 			if (bChecked)
 				iState |= branch[i].iMode;
@@ -367,13 +367,13 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 	while (tvi.hItem && bChecked) {
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem) {
 			TreeView_GetItem(hwndTree, &tvi);
-			if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 2/*1*/))
+			if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 2))
 				bChecked = FALSE;
 		}
 		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
 	}
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
-	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 3 : 2);//2 : 1);
+	tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 3 : 2);
 	tvi.hItem = hHeading;
 	TreeView_SetItem(hwndTree, &tvi);
 }
@@ -389,7 +389,7 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	tvi.mask = TVIF_HANDLE | TVIF_STATE;
 	tvi.hItem = hHeading;
 	TreeView_GetItem(hwndTree, &tvi);
-	if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 3/*1*/)||((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1))
+	if (((tvi.state&TVIS_STATEIMAGEMASK) >> 12 == 3)||((tvi.state & TVIS_STATEIMAGEMASK) >> 12 == 1))
 		bChecked = FALSE;
 
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
@@ -397,7 +397,7 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	TreeView_SetItem(hwndTree, &tvi);
 	tvi.hItem = TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
 	while (tvi.hItem) {
-		tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 2 : 1);//3:2);
+		tvi.state = INDEXTOSTATEIMAGEMASK(bChecked ? 3:2);
 		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem)
 			TreeView_SetItem(hwndTree, &tvi);
 		tvi.hItem = TreeView_GetNextSibling(hwndTree, tvi.hItem);
@@ -523,9 +523,7 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 
 #define OPT_FIXHEADINGS (WM_USER+1)
 
-static UINT _o1controls[] = {IDC_CHECKBOXES, IDC_GROUP, IDC_STATIC_ADD,
-							 IDC_STATIC_OTHER, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_FONTCHOOSE, IDC_CHAT_SPIN3, IDC_LIMIT, IDC_STATIC110, IDC_STATIC112, 0
-							};
+static UINT _o1controls[] = {IDC_CHECKBOXES, IDC_GROUP, IDC_STATIC_ADD, 0};
 
 
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -542,7 +540,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			if (g_chat_integration_enabled) {
-				char szTemp[MAX_PATH];
 				HIMAGELIST himlOptions;
 
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_CHECKBOXES), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
@@ -560,8 +557,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				if (myGlobals.g_PopupAvail)
 					hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0) ? TRUE : FALSE);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
-				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0);
+				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0x0000);
+				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x0000);
 				FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
@@ -576,14 +573,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					mir_free(pszGroup);
 					ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_MESSAGE), SW_HIDE);
 				}
-				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_SETRANGE, 0, MAKELONG(10000, 0));
-				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LoggingLimit", 100), 0));
-				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp);
-				SetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, szTemp);
-				CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled ? TRUE : FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled ? TRUE : FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled ? TRUE : FALSE);
 			} else {
 				int i = 0;
 
@@ -600,51 +589,15 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4);
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5);
 			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
+			CheckHeading(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);
 			break;
 		case WM_COMMAND:
 			if (LOWORD(wParam) == IDC_CHAT_ENABLE) {
 				DBWriteContactSettingByte(NULL, "PluginDisable", "chat.dll", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CHAT_ENABLE) ? 1 : 0));
 				MessageBox(0, TranslateT("You should now immediatly restart Miranda to make this change take effect."), TranslateT("tabSRMM Message"), MB_OK);
 			}
-			if ((LOWORD(wParam) == IDC_GROUP || LOWORD(wParam) == IDC_LIMIT || LOWORD(wParam) == IDC_LOGDIRECTORY)
+			if ((LOWORD(wParam) == IDC_GROUP)
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
-
-			switch (LOWORD(wParam)) {
-				case IDC_LOGGING:
-					if (g_chat_integration_enabled) {
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
-					}
-					break;
-				case  IDC_FONTCHOOSE: {
-					char szDirectory[MAX_PATH];
-					LPITEMIDLIST idList;
-					LPMALLOC psMalloc;
-					BROWSEINFOA bi = {0};
-
-					if (SUCCEEDED(CoGetMalloc(1, &psMalloc))) {
-						char szTemp[MAX_PATH];
-						bi.hwndOwner = hwndDlg;
-						bi.pszDisplayName = szDirectory;
-						bi.lpszTitle = Translate("Select Folder");
-						bi.ulFlags = BIF_NEWDIALOGSTYLE | BIF_EDITBOX | BIF_RETURNONLYFSDIRS;
-						bi.lpfn = BrowseCallbackProc;
-						bi.lParam = (LPARAM)szDirectory;
-
-						idList = SHBrowseForFolderA(&bi);
-						if (idList) {
-							SHGetPathFromIDListA(idList, szDirectory);
-							lstrcatA(szDirectory, "\\");
-							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp);
-							SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1 ? szTemp : "Logs\\");
-						}
-						psMalloc->lpVtbl->Free(psMalloc, idList);
-						psMalloc->lpVtbl->Release(psMalloc);
-					}
-					break;
-				}
-			}
 
 			if (lParam != (LPARAM)NULL)
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -686,6 +639,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5);
 								else if (tvi.hItem == hListHeading6)
 									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6);
+								else if (tvi.hItem == hListHeading7)
+									CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading7);							
 								else {
 
 									if (tvi.state & TVIS_BOLD && hti.flags & TVHT_ONITEMSTATEICON) {
@@ -713,25 +668,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								int iLen;
 								TCHAR *pszText = NULL;
 								BYTE b;
-
-								iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
-								if (iLen > 0) {
-									char *pszText1 = malloc(iLen + 2);
-									GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
-									DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText1);
-									free(pszText1);
-									CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
-								} else
-									DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
-
-								g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE;
-								DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
-								if (g_Settings.LoggingEnabled)
-									if (!PathIsDirectoryA(g_Settings.pszLogDir))
-										CreateDirectoryA(g_Settings.pszLogDir, NULL);
-
-								iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_GETPOS, 0, 0);
-								DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
 
 								iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
 								if (iLen > 0) {
@@ -1036,10 +972,9 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 }
 
 
-static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
-								  IDC_OUTSTAMP, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT,
-								  0
-								};
+static UINT _o2chatcontrols[] = { IDC_CHAT_SPIN2, IDC_LIMIT, IDC_CHAT_SPIN4, IDC_LOGTIMESTAMP, IDC_TIMESTAMP,
+								  IDC_OUTSTAMP, IDC_FONTCHOOSE, IDC_LOGGING, IDC_LOGDIRECTORY, IDC_INSTAMP, IDC_HIGHLIGHT, IDC_HIGHLIGHTWORDS, IDC_CHAT_SPIN2, IDC_CHAT_SPIN3, IDC_NICKROW2, IDC_LOGLIMIT,
+								  IDC_STATIC110, IDC_STATIC112, 0};
 
 BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1050,6 +985,8 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			g_Settings.crLogBackground = (BOOL)DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW));
 			if (g_chat_integration_enabled) {
+				char	szTemp[MAX_PATH];
+
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETRANGE, 0, MAKELONG(5000, 0));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100), 0));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN3, UDM_SETRANGE, 0, MAKELONG(255, 10));
@@ -1061,6 +998,15 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				SetDlgItemText(hwndDlg, IDC_INSTAMP, g_Settings.pszIncomingNick);
 				CheckDlgButton(hwndDlg, IDC_HIGHLIGHT, g_Settings.HighlightEnabled);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), g_Settings.HighlightEnabled ? TRUE : FALSE);
+				CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
+				CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp);
+				SetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, szTemp);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled ? TRUE : FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled ? TRUE : FALSE);
+				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_SETRANGE, 0, MAKELONG(10000, 0));
+				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LoggingLimit", 100), 0));
+				EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled ? TRUE : FALSE);
+
 			} else {
 				int i = 0;
 
@@ -1077,12 +1023,49 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					|| LOWORD(wParam) == IDC_LOGLIMIT
 					|| LOWORD(wParam) == IDC_NICKROW2
 					|| LOWORD(wParam) == IDC_HIGHLIGHTWORDS
+					|| LOWORD(wParam) == IDC_LOGDIRECTORY
+					|| LOWORD(wParam) == IDC_LIMIT
 					|| LOWORD(wParam) == IDC_LOGTIMESTAMP)
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
 
 			switch (LOWORD(wParam)) {
+				case  IDC_FONTCHOOSE: {
+					char szDirectory[MAX_PATH];
+					LPITEMIDLIST idList;
+					LPMALLOC psMalloc;
+					BROWSEINFOA bi = {0};
+
+					if (SUCCEEDED(CoGetMalloc(1, &psMalloc))) {
+						char szTemp[MAX_PATH];
+						bi.hwndOwner = hwndDlg;
+						bi.pszDisplayName = szDirectory;
+						bi.lpszTitle = Translate("Select Folder");
+						bi.ulFlags = BIF_NEWDIALOGSTYLE | BIF_EDITBOX | BIF_RETURNONLYFSDIRS;
+						bi.lpfn = BrowseCallbackProc;
+						bi.lParam = (LPARAM)szDirectory;
+
+						idList = SHBrowseForFolderA(&bi);
+						if (idList) {
+							SHGetPathFromIDListA(idList, szDirectory);
+							lstrcatA(szDirectory, "\\");
+							CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp);
+							SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1 ? szTemp : "Logs\\");
+						}
+						psMalloc->lpVtbl->Free(psMalloc, idList);
+						psMalloc->lpVtbl->Release(psMalloc);
+					}
+					break;
+				}
+
 				case IDC_HIGHLIGHT:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS), IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHT) == BST_CHECKED ? TRUE : FALSE);
+					break;
+				case IDC_LOGGING:
+					if (g_chat_integration_enabled) {
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+					}
 					break;
 			}
 
@@ -1097,6 +1080,27 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				char  *pszText = NULL;
 
 				if (g_chat_integration_enabled) {
+
+					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
+					if (iLen > 0) {
+						char *pszText1 = malloc(iLen + 2);
+						GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText1, iLen + 1);
+						DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText1);
+						free(pszText1);
+						CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
+					} else
+						DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
+
+					g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE;
+					DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
+					if (g_Settings.LoggingEnabled) {
+						if (!PathIsDirectoryA(g_Settings.pszLogDir))
+							CreateDirectoryA(g_Settings.pszLogDir, NULL);
+					}
+
+					iLen = SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_GETPOS, 0, 0);
+					DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
+
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS));
 					if (iLen > 0) {
 						TCHAR *ptszText = malloc((iLen + 2) * sizeof(TCHAR));

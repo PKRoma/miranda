@@ -363,7 +363,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
 	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
-		dat->iRealAvatarHeight = dat->dynaSplitter +5+ (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
+		dat->iRealAvatarHeight = dat->dynaSplitter + 4 + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
 		dat->iRealAvatarHeight = dat->dynaSplitter +DPISCALEY(4);
 	//mad
@@ -2805,11 +2805,8 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	HICON hButtonIcon = 0;
 	int nrSmileys = 0;
-// 	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+  	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 	int iItemID = IDC_SMILEYBTN;
-
-// 	if (dat && dat->bType == SESSIONTYPE_CHAT)
-// 		iItemID = IDC_SMILEY;
 
 	if (myGlobals.g_SmileyAddAvail) {
 		nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
@@ -2830,7 +2827,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 	if (nrSmileys == 0 || dat->hContact == 0)
 		dat->doSmileys = 0;
 
-	ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys/* && showToolbar*/) ? SW_SHOW : SW_HIDE);
+	ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(hwndDlg, iItemID), dat->doSmileys ? TRUE : FALSE);
 }
 

@@ -1231,7 +1231,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 
 	odp.pszGroup = LPGEN("Message Sessions");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSDIALOG);
-	odp.pszTitle = LPGEN("Customize");
+	odp.pszTitle = LPGEN("Group Chats");
 	odp.pfnDlgProc = GroupOptionsDlgProc;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
@@ -1359,7 +1359,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TABBEDMSG), hwnd, DlgProcTabbedOptions);
 			tci.pszText = TranslateT("Tabs and layout");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
@@ -1367,7 +1367,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_CONTAINERS), hwnd, DlgProcContainerSettings);
 			tci.pszText = TranslateT("Containers");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
@@ -1375,12 +1375,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_MSGLOG), hwnd, DlgProcLogOptions);
 			tci.pszText = TranslateT("Message log");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
+			/*
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS1), hwnd, DlgProcOptions1);
 			tci.pszText = TranslateT("Group chats");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
@@ -1389,11 +1390,13 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
+			*/
+
 			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
 			tci.pszText = TranslateT("ToolBar settings");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 6, &tci);
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
+			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
@@ -1460,7 +1463,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 
 /*
- * parent dialog for the customization option pages
+ * parent dialog for the group chat option pages
  */
 
 static BOOL CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1476,16 +1479,35 @@ static BOOL CALLBACK GroupOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			GetClientRect(hwnd, &rcClient);
 			iInit = TRUE;
 			tci.mask = TCIF_PARAM | TCIF_TEXT;
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS2), hwnd, DlgProcOptions2);
-			tci.pszText = TranslateT("Fonts and colors");
+
+			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS1), hwnd, DlgProcOptions1);
+			tci.pszText = TranslateT("Settings");
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
+			
+			if(g_chat_integration_enabled)
+				ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
+			else
+				ShowWindow((HWND)tci.lParam, SW_SHOW);
+
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
 
-			TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+			if(g_chat_integration_enabled) {
+				tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS2), hwnd, DlgProcOptions2);
+				tci.pszText = TranslateT("Log formatting");
+				TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
+				MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
+				ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
+				if (MyEnableThemeDialogTexture)
+					MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+
+				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
+			}
+			else
+				TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0);
+
 			iInit = FALSE;
 			return FALSE;
 		}

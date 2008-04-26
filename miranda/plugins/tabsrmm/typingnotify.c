@@ -525,23 +525,25 @@ static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	}
 
 int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam)
-	{	
+{	
 
 	OPTIONSDIALOGPAGE odp = { 0 };
 
-	odp.cbSize = sizeof(odp);
-	odp.position = 100000000;
-	odp.hInstance = g_hInst;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TYPINGNOTIFYPOPUP);
-	odp.pszTitle = LPGEN("Typing Notify");
-	odp.pszGroup = LPGEN("PopUps");
-	odp.groupPosition = 910000000;
-	odp.flags = ODPF_BOLDGROUPS;
-	odp.pfnDlgProc = DlgProcOpts;
-	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	if(myGlobals.g_PopupAvail) {
+		odp.cbSize = sizeof(odp);
+		odp.position = 100000000;
+		odp.hInstance = g_hInst;
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_TYPINGNOTIFYPOPUP);
+		odp.pszTitle = LPGEN("Typing Notify");
+		odp.pszGroup = LPGEN("PopUps");
+		odp.groupPosition = 910000000;
+		odp.flags = ODPF_BOLDGROUPS;
+		odp.pfnDlgProc = DlgProcOpts;
+		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+	}
 
 	return 0;
-	}
+}
 
 int TN_ModuleInit()
 	{

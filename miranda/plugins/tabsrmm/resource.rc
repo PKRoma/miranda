@@ -174,7 +174,7 @@ BEGIN
     CONTROL         "Tabs at the bottom",IDC_TABSATBOTTOM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
     CONTROL         "UIN in Status Bar",IDC_UINSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
-    CONTROL         "Place toolbar at bottom",IDC_BOTTOMTOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
+    CONTROL         "Place ToolBar at bottom",IDC_BOTTOMTOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
     CONTROL         "Use static container Icon",IDC_STATICICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,78,121,10
@@ -908,7 +908,11 @@ BEGIN
     BEGIN
         MENUITEM "Show Menu Bar",               40076
         MENUITEM "Show Status Bar",             40077
-        MENUITEM "Show Tool Bar",               40078
+        POPUP "Tool Bar"
+        BEGIN
+		MENUITEM "Show Tool Bar",               40078
+		MENUITEM "Place ToolBar at bottom",     40171
+		END
         POPUP "Title Bar"
         BEGIN
             MENUITEM "Show Title Bar",              40083

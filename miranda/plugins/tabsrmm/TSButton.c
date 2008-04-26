@@ -177,6 +177,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		if (ctl->pushBtn && ctl->pbState)
 			ctl->stateId = PBS_PRESSED;
 
+		/*
 		if (ctl->arrow && (ctl->stateId == PBS_HOT || ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_PUSHDOWNPRESSED)) {
 			POINT pt;
 
@@ -185,7 +186,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 
 			if (pt.x >= rcClient.right - 10)
 				clip = CreateRectRgn(rcClient.right - 10, 0, rcClient.right, rcClient.bottom);
-		}
+		}*/
 		if (ctl->item) {
 			RECT rcParent;
 			POINT pt;

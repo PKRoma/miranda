@@ -830,7 +830,7 @@ struct NewMessageWindowLParam {
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
 
-#define MINSPLITTERY         52
+#define MINSPLITTERY         46
 #define MINLOGHEIGHT         30
 
 // wParam values for DM_SELECTTAB

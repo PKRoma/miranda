@@ -36,10 +36,8 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.2\\b0\\ul0\\par ",
-	"*\tincreased limit of the time based load previous events feature. It's now 24 hours instead of the 12 it was before.\\par ",
-	"*\tAdded menu items to invoke message log settings dialog to the menu bar and the message window tool bar\\par ",
-	"*\tvarious fixes by ghazan (compile fixes for VC 2003, msg timeout fix and more.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.3\\b0\\ul0\\par ",
+	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -322,6 +320,8 @@ int MessageWindowOpened(WPARAM wParam, LPARAM lParam)
  * this is the global ack dispatcher. It handles both ACKTYPE_MESSAGE and ACKTYPE_AVATAR events
  * for ACKTYPE_MESSAGE it searches the corresponding send job in the queue and, if found, dispatches
  * it to the owners window
+ *
+ * ACKTYPE_AVATAR no longer handled here, because we have avs services now.
  */
 
 static int ProtoAck(WPARAM wParam, LPARAM lParam)
@@ -418,9 +418,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	struct ContainerWindowData *pContainer = 0;
 	TCHAR szName[CONTAINER_NAMELEN + 1];
 	DWORD dwStatusMask = 0;
-	//mad:mod for actual history
 	struct MessageWindowData *mwdat=NULL;
-	
 
 	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
@@ -428,12 +426,13 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
 	hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam);
+	//mad:mod for actual history
 	if (hwnd) {
 		mwdat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
-		if (mwdat->bActualHistory)
-			mwdat->messageCount=mwdat->messageCount++;
-		//mad_
-		}
+		if (mwdat && mwdat->bActualHistory)
+			mwdat->messageCount++;
+	//mad_
+	}
 	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ) {
 		/*
 		 * care about popups for non-message events for contacts w/o an openend window
@@ -517,8 +516,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		goto nowindowcreate;
 
 	//MAD
-	if (DBGetContactSettingByte((HANDLE) wParam, SRMSGMOD_T, "ActualHistory", 0))
-		{
+	if (DBGetContactSettingByte((HANDLE) wParam, SRMSGMOD_T, "ActualHistory", 0)){
 		mesCount=(UINT)DBGetContactSettingDword((HANDLE) wParam, SRMSGMOD_T, "messagecount", 0);
 		DBWriteContactSettingDword((HANDLE) wParam, SRMSGMOD_T, "messagecount", (DWORD)mesCount++);
 		}
@@ -1097,11 +1095,17 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	BuildContainerMenu();
 
-#if defined(_UNICODE)
-#define SHORT_MODULENAME "tabSRMsgW (unicode)"
+// #if defined(_UNICODE)
+// #define SHORT_MODULENAME "tabSRMsgW (unicode)"
+// #else
+// #define SHORT_MODULENAME "tabSRMsg"
+// #endif
+#ifdef __GNUWIN32__
+		#define SHORT_MODULENAME	"TabSRMM (MINGW32)"
 #else
-#define SHORT_MODULENAME "tabSRMsg"
+		#define	SHORT_MODULENAME	"TabSRMM"
 #endif
+
 	if (DBGetContactSettingString(NULL, "KnownModules", SHORT_MODULENAME, &dbv))
 		DBWriteContactSettingString(NULL, "KnownModules", SHORT_MODULENAME, "SRMsg,Tab_SRMsg,TAB_Containers,TAB_ContainersW");
 	else
@@ -1243,19 +1247,26 @@ static int OkToExit(WPARAM wParam, LPARAM lParam)
 
 static int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 {
+	HANDLE hContact;
 
 	if (g_chat_integration_enabled)
 		Chat_PreShutdown(0, 0);
 
 	TN_ModuleDeInit();
 
-	while(pFirstContainer)
-	{	//MaD: fix for correct closing hidden contacts
+	while(pFirstContainer){
+		//MaD: fix for correct closing hidden contacts
 		if (myGlobals.m_HideOnClose) myGlobals.m_HideOnClose=FALSE;
-		//MaD_
+		//
 		SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 	}
-
+	//MaD: to clean "actual history" messages count
+	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact) {
+		DBWriteContactSettingDword(hContact, SRMSGMOD_T, "messagecount", 0);
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		}
+	//
 	DestroyServiceFunction(hSVC[H_MS_MSG_SENDMESSAGE]);
 #if defined(_UNICODE)
 	DestroyServiceFunction(hSVC[H_MS_MSG_SENDMESSAGEW]);

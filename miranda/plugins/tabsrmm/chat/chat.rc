@@ -18,7 +18,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1251)
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,6 +82,83 @@ BEGIN
     CONTROL         "",IDC_T11,"Button",BS_AUTO3STATE | WS_TABSTOP,114,113,21,10
 END
 
+IDD_OPTIONS1 DIALOGEX 0, 0, 306, 236
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Options",IDC_STATIC,3,0,300,229
+    CONTROL         "Enable chat integration (changing this needs restart)",IDC_CHAT_ENABLE,
+                    "Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,13,11,280,11
+    CONTROL         "",IDC_CHECKBOXES,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,6,26,294,177
+    LTEXT           "Add new rooms to group:",IDC_STATIC_ADD,10,213,132,8
+    EDITTEXT        IDC_GROUP,152,210,50,14,ES_AUTOHSCROLL
+    LTEXT           "Chat integration is disabled. You can enable it here, and then you to NEED RESTART Miranda after making this change.\n\nYou MUST disable the standard chat plugin when you enable the group chat support here. Otherwise no group chat at all may work.",IDC_STATIC_MESSAGE,21,52,256,74
+END
+
+IDD_OPTIONS2 DIALOGEX 0, 0, 306, 239
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Log files",IDC_STATIC,1,2,299,79
+    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,14,277,10
+    LTEXT           "Log directory",IDC_STATIC110,17,27,211,8
+    EDITTEXT        IDC_LOGDIRECTORY,15,38,211,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "...",IDC_FONTCHOOSE,227,39,19,14
+    LTEXT           "Maximum size for log files (in kB)",IDC_STATIC112,17,62,143,11
+    EDITTEXT        IDC_LIMIT,184,59,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CHAT_SPIN4,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,215,57,11,14
+    GROUPBOX        "Group chat log formatting",IDC_STATIC,1,85,299,59
+    LTEXT           "Your name",IDC_STATIC,10,95,50,8
+    EDITTEXT        IDC_OUTSTAMP,10,105,35,14,ES_AUTOHSCROLL
+    LTEXT           "Other name",IDC_STATIC,60,95,57,8
+    EDITTEXT        IDC_INSTAMP,60,105,35,14,ES_AUTOHSCROLL
+    LTEXT           "Timestamp (window)",IDC_STATIC,118,95,78,8
+    EDITTEXT        IDC_TIMESTAMP,118,105,81,14,ES_AUTOHSCROLL
+    LTEXT           "Timestamp (logfile)",IDC_STATIC,205,95,81,8
+    EDITTEXT        IDC_LOGTIMESTAMP,205,105,81,14,ES_AUTOHSCROLL
+    LTEXT           "Maximum number of events in the message window",IDC_STATIC,10,126,221,11
+    EDITTEXT        IDC_LOGLIMIT,248,123,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_CHAT_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,281,122,11,14
+    GROUPBOX        "Highlighting",IDC_STATIC,1,147,299,58
+    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,161,118,10
+    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,17,173,240,8
+    EDITTEXT        IDC_HIGHLIGHTWORDS,15,183,276,14,ES_AUTOHSCROLL
+    LTEXT           "Groupchat userlist row height (pixels)",IDC_STATIC_ULIST,10,212,178,8
+    EDITTEXT        IDC_NICKROW2,212,209,29,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CHAT_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,240,215,11,14
+END
+
+IDD_OPTIONSPOPUP DIALOGEX 0, 0, 277, 177
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "Use same style as in the message log",IDC_CHAT_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,33,29,225,10
+    CONTROL         "Use default colours",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,33,62,217,10
+    CONTROL         "Use custom colours",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,33,95,105,10
+    CONTROL         "Custom1",IDC_TEXT,"ColourPicker",WS_TABSTOP,141,93,50,14,0x18000000L
+    CONTROL         "Custom2",IDC_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
+    EDITTEXT        IDC_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
+    GROUPBOX        "Popups for the Chat plugin",IDC_STATIC,0,0,277,174
+    LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
+    LTEXT           "Text",IDC_STATIC,141,83,49,8
+    LTEXT           "Background",IDC_STATIC,201,83,67,8
+    LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
+END
+
+IDD_COLORCHOOSER DIALOGEX 0, 0, 198, 150
+STYLE DS_SETFONT | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_BORDER
+EXSTYLE WS_EX_TOPMOST
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,172,136,26,14,NOT WS_TABSTOP
+    CTEXT           "",IDC_COLORTEXT,0,0,197,12,SS_CENTERIMAGE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -114,103 +191,7 @@ BEGIN
         HORZGUIDE, 13
         HORZGUIDE, 117
     END
-END
-#endif    // APSTUDIO_INVOKED
 
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral (Default) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
-#ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_OPTIONS1 DIALOGEX 0, 0, 306, 239
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "Options",IDC_STATIC,3,0,300,136
-    CONTROL         "Enable chat integration (changing this needs restart)",IDC_CHAT_ENABLE,
-                    "Button",BS_AUTOCHECKBOX | BS_FLAT | WS_TABSTOP,10,139,280,11
-    GROUPBOX        "Other",IDC_STATIC_OTHER,3,151,297,74
-    CONTROL         "Enable logging to disk",IDC_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,163,211,10
-    LTEXT           "Log directory",IDC_STATIC110,11,172,211,8
-    EDITTEXT        IDC_LOGDIRECTORY,10,181,211,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "...",IDC_FONTCHOOSE,222,181,19,14
-    LTEXT           "Trim to (kB)",IDC_STATIC112,249,172,38,8
-    EDITTEXT        IDC_LIMIT,248,181,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_CHAT_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,281,181,11,14
-    LTEXT           "Add new rooms to group:",IDC_STATIC_ADD,10,202,132,8
-    EDITTEXT        IDC_GROUP,152,199,50,14,ES_AUTOHSCROLL
-    CONTROL         "",IDC_CHECKBOXES,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP,6,9,294,125
-    LTEXT           "Chat integration is disabled. You can enable it here, and then you to NEED RESTART Miranda after making this change.\n\nYou MUST disable the standard chat plugin when you enable the group chat support here. Otherwise no group chat at all may work.",IDC_STATIC_MESSAGE,21,52,256,74
-END
-
-IDD_OPTIONS2 DIALOGEX 0, 0, 306, 239
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_OUTSTAMP,10,134,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_INSTAMP,60,134,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_TIMESTAMP,118,134,81,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LOGTIMESTAMP,205,134,81,14,ES_AUTOHSCROLL
-    CONTROL         "Enable highlighting",IDC_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,153,118,10
-    EDITTEXT        IDC_LOGLIMIT,248,151,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_CHAT_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,281,160,11,14
-    EDITTEXT        IDC_HIGHLIGHTWORDS,10,172,276,14,ES_AUTOHSCROLL
-    GROUPBOX        "Group chat log formatting",IDC_STATIC,1,115,294,113
-    LTEXT           "Timestamp",IDC_STATIC,118,124,78,8
-    LTEXT           "Other name",IDC_STATIC,60,124,57,8
-    LTEXT           "Your name",IDC_STATIC,10,124,50,8
-    LTEXT           "Limit log text to (events):",IDC_STATIC,144,154,101,8
-    LTEXT           "Log timestamp",IDC_STATIC,205,124,81,8
-    LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,10,164,240,8
-    LTEXT           "Groupchat userlist row height (pixels)",IDC_STATIC_ULIST,10,194,178,8
-    EDITTEXT        IDC_NICKROW2,212,191,29,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_CHAT_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,240,197,11,14
-END
-
-IDD_OPTIONSPOPUP DIALOGEX 0, 0, 277, 177
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Use same style as in the message log",IDC_CHAT_RADIO1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,33,29,225,10
-    CONTROL         "Use default colours",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,33,62,217,10
-    CONTROL         "Use custom colours",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,33,95,105,10
-    CONTROL         "Custom1",IDC_TEXT,"ColourPicker",WS_TABSTOP,141,93,50,14,0x18000000L
-    CONTROL         "Custom2",IDC_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
-    EDITTEXT        IDC_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
-    GROUPBOX        "Popups for the Chat plugin",IDC_STATIC,0,0,277,174
-    LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
-    LTEXT           "Text",IDC_STATIC,141,83,49,8
-    LTEXT           "Background",IDC_STATIC,201,83,67,8
-    LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
     IDD_OPTIONS1, DIALOG
     BEGIN
         RIGHTMARGIN, 300
@@ -257,7 +238,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Neutral (Default) resources
+#endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -269,21 +250,6 @@ END
 LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
 #pragma code_page(1252)
 #endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_COLORCHOOSER DIALOGEX 0, 0, 198, 150
-STYLE DS_SETFONT | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_BORDER
-EXSTYLE WS_EX_TOPMOST
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,172,136,26,14,NOT WS_TABSTOP
-    CTEXT           "",IDC_COLORTEXT,0,0,197,12,SS_CENTERIMAGE
-END
-
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

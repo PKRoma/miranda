@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by chat.rc
 //
 #define IDR_MENU                        151
@@ -14,23 +14,19 @@
 #define IDC_SMILEY                      1007
 #define IDC_SPLITTERY                   1008
 #define IDC_CHAT_MESSAGE                1009
-#define IDC_CHAT_BOLD                   1106//1010
-#define IDC_ITALICS                     1107//1011
-#define IDC_CHAT_UNDERLINE              1108// 1012
 #define IDC_FILTER                      1013
 #define IDC_CHANMGR                     1014
-#define IDC_SHOWNICKLIST                1015//1016
-#define IDC_COLOR                       1110//1017
-//1018 reserved for sendmenu id
+#define IDC_SHOWNICKLIST                1015
 #define IDC_BKGCOLOR                    1019
 #define IDC_CHECKBOXES                  1021
-#define IDC_CHAT_CLOSE                  1025//1023
+#define IDC_NICKROW2                    1023
 #define IDC_NICKROW                     1024
 #define IDC_LOGLIMIT                    1024
-#define IDC_NICKROW2                    1023//1025
+#define IDC_CHAT_CLOSE                  1025
 #define IDC_CHAT_SPIN1                  1028
 #define IDC_CHAT_SPIN2                  1029
 #define IDC_CHAT_SPIN3                  1030
+#define IDC_CHAT_SPIN4                  1031
 #define IDC_HIGHLIGHTWORDS              1040
 #define IDC_INSTAMP                     1041
 #define IDC_OUTSTAMP                    1043
@@ -71,7 +67,12 @@
 #define IDC_10                          1084
 #define IDC_STATIC112                   1085
 #define IDC_11                          1085
-
+#define IDC_CHAT_BOLD                   1106
+#define IDC_ITALICS                     1107
+#define IDC_CHAT_UNDERLINE              1108
+#define IDC_COLOR                       1110
+#define IDC_CHAT_HISTORY                1111
+#define IDC_CHAT_TOGGLESIDEBAR          1277
 #define IDC_P1                          1387
 #define IDC_P2                          1388
 #define IDC_P3                          1389
@@ -83,7 +84,6 @@
 #define IDC_P9                          1395
 #define IDC_P10                         1396
 #define IDC_P11                         1397
-
 #define IDC_T1                          1400
 #define IDC_T2                          1401
 #define IDC_T3                          1402
@@ -95,9 +95,6 @@
 #define IDC_T9                          1408
 #define IDC_T10                         1409
 #define IDC_T11                         1410
-
-#define IDC_CHAT_HISTORY                1111
-#define IDC_CHAT_TOGGLESIDEBAR          1277
 #define ID_MESS                         40001
 #define ID_NEW                          40002
 #define ID_CURR                         40003

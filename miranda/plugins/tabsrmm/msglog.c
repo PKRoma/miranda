@@ -195,7 +195,7 @@ void CacheLogFonts()
 	myGlobals.crDefault = DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crIncoming = DBGetContactSettingDword(NULL, FONTMODULE, "inbg", GetSysColor(COLOR_WINDOW));
 	myGlobals.crOutgoing = DBGetContactSettingDword(NULL, FONTMODULE, "outbg", GetSysColor(COLOR_WINDOW));
-	myGlobals.crStatus = DBGetContactSettingDword(NULL, FONTMODULE, "miscbg", SRMSGDEFSET_BKGCOLOUR);
+	myGlobals.crStatus = DBGetContactSettingDword(NULL, FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crOldIncoming =DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crOldOutgoing =DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGCOLOUR);
 
@@ -711,8 +711,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 
 	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
 		 //MAD: ugly hack for hideOnClose...
-		if(IsWindowVisible(GetParent(dat->hwnd)))	
-			{
+		if(IsWindowVisible(GetParent(dat->hwnd))){	
 			CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
 			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
 			}
@@ -747,7 +746,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		if(fIsStatusChangeEvent)
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 7, MSGDLGFONTCOUNT + 7);
 		else 
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0));
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0));
 	}else if (dwEffectiveFlags & MWF_LOG_GRID)
  		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
  	else
@@ -1167,7 +1166,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 8 + (color - '0'));
 						i++;
 					} else
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + ((streamData->isAppend)?1:5) + ((isSent) ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
 					break;
 				}
 				case '|':       // tab

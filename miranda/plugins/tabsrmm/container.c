@@ -1538,13 +1538,12 @@ buttons_done:
 					ApplyContainerSetting(pContainer, CNT_VERTICALMAX, pContainer->dwFlags & CNT_VERTICALMAX ? 0 : 1);
 					break;
 				case ID_VIEW_BOTTOMTOOLBAR:
-					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0);
-					WindowList_Broadcast(hMessageWindowList, DM_BBNEEDUPDATE, 0, 1);
+					ApplyContainerSetting(pContainer, CNT_BOTTOMTOOLBAR, pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 0 : 1);
+					WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
 					return 0;				
 				case ID_VIEW_SHOWTOOLBAR:
 					ApplyContainerSetting(pContainer, CNT_HIDETOOLBAR, pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1);
 					WindowList_Broadcast(hMessageWindowList, DM_CONFIGURETOOLBAR, 0, 1);
-					WindowList_Broadcast(hMessageWindowList, DM_BBNEEDUPDATE, 0, 1);
 					return 0;
 				case ID_VIEW_SHOWMENUBAR:
 					ApplyContainerSetting(pContainer, CNT_NOMENUBAR, pContainer->dwFlags & CNT_NOMENUBAR ? 0 : 1);
