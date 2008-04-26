@@ -343,7 +343,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if (p)
 				*p = '\0';
 			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szVersion);
-			mir_snprintf(szVersionTmp, SIZEOF(szVersionTmp), "%s", und->isNew?und->version:szVersion);
+			mir_snprintf(szVersionTmp, SIZEOF(szVersionTmp), "%s", und->version?und->version:szVersion);
 			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szVersionTmp);
 			{
 				HFONT hFont;
