@@ -144,7 +144,7 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 		int i;
 		for( i=0; i < accounts.count; i++ ) {
 			PROTOACCOUNT* pa = accounts.items[i];
-			if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND )
+			if ( (CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND) && !DBGetContactSettingByte(NULL, proto[i]->szName, "LockMainStatus", 0))
 				CallProtoService( pa->szModuleName, PS_SETAWAYMSG, statusMode, ( LPARAM )msg );
 		}
 	}
