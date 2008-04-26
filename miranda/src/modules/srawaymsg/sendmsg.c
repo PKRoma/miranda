@@ -147,7 +147,7 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 	if (szProto) CallProtoService(szProto,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
 	else {
 		for(i=0;i<protoCount;i++) {
-			if (CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)
+			if ((CallProtoService(proto[i]->szName,PS_GETCAPS,PFLAGNUM_1,0)&PF1_MODEMSGSEND)&&!DBGetContactSettingByte(NULL,proto[i]->szName,"LockMainStatus",0))
 				CallProtoService(proto[i]->szName,PS_SETAWAYMSG,statusMode,(LPARAM)msg);
 		}
 	}
