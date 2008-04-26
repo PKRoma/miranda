@@ -3,10 +3,8 @@
 !include "WinVer.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.4"
+!define MIM_VERSION             "0.7.5"
 !define MIM_PREVIEW             "0" ; make 0 for final build
-
-!define MIM_BUILD_UNICODE
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
