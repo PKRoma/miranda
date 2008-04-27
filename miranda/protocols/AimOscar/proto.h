@@ -61,6 +61,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
+	void                   SetStatusWorker( int iNewStatus );
 
 	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );

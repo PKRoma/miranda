@@ -650,16 +650,10 @@ int __cdecl CAimProto::SetApparentMode( HANDLE hContact, int mode )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// SetStatus - sets the protocol m_iStatus
+// SetStatusWorker - sets the protocol m_iStatus
 
-int __cdecl CAimProto::SetStatus( int iNewStatus )
+void CAimProto::SetStatusWorker( int iNewStatus )
 {
-	if ( iNewStatus == m_iStatus )
-		return 0;
-
-	if ( shutting_down )
-		return 0;
-
 	EnterCriticalSection( &statusMutex );
 	start_connection( iNewStatus );
 	if ( state == 1 ) {
@@ -696,6 +690,38 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 			break;
 	}	}
 	LeaveCriticalSection(&statusMutex);
+}
+
+typedef struct
+{
+	CAimProto* proto;
+	int status;
+} protostruct;
+
+void setstatusthread(void* arg)
+{
+	protostruct* p = (protostruct*)arg;
+	p->proto->SetStatusWorker(p->status);
+	mir_free(p);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// SetStatus - sets the protocol m_iStatus
+
+int __cdecl CAimProto::SetStatus( int iNewStatus )
+{
+	if ( iNewStatus == m_iStatus )
+		return 0;
+
+	if ( shutting_down )
+		return 0;
+
+	protostruct *p = (protostruct*)mir_alloc(sizeof(protostruct));
+	p->proto = this;
+	p->status = iNewStatus;
+
+	mir_forkthread(setstatusthread, p);
+
 	return 0;
 }
 
