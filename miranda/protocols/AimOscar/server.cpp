@@ -309,6 +309,12 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					int wireless = m_iStatus&0x0080;
 					int bot = m_iStatus&0x0400;
  					DBWriteContactSettingString(hContact, m_szModuleName, AIM_KEY_NK, buddy);
+
+					if (icq)
+						DBWriteContactSettingString(hContact, m_szModuleName, "Transport", "ICQ");
+					else
+						DBDeleteContactSetting(hContact, m_szModuleName, "Transport" );
+
 					if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 					{
 						adv2_icon=1;
