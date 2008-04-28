@@ -332,7 +332,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			else {
 				mir_snprintf(szTmp, SIZEOF(szTmp), Translate("No Update Available"));
-				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, Translate("You are running the latest version of Miranda IM.  No update is available at this time."));
+				SetDlgItemText(hwndDlg, IDC_MESSAGE, TranslateT("You are running the latest version of Miranda IM.  No update is available at this time."));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DOWNLOAD), FALSE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_VERSION), SW_HIDE);
 			}
