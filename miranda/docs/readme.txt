@@ -25,15 +25,16 @@ Contents
 * New in 0.7.5
 Enhancements:
  - Added a "Check for Updates" menu item
- - AIM: Added icolib support
+ - AIM: Added skinnable icons
 
 Bugfixes:
  - Group chat options didn't use tabbed interface under "Group chats"
- - ICQ: Fix problem with transfers through LAN
- - Yahoo: Global status change didn't ignore status lock
  - AIM: Fixed few crashes
  - AIM: Fixed few memory leaks
  - AIM: Fixes for profile window
+ - ICQ: Fix problem with transfers through LAN
+ - Jabber: Problem receiving '&' character
+ - Yahoo: Global status change ignored status lock
 
 * New in 0.7.4
 Enhancements:
