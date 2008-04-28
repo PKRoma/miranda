@@ -472,8 +472,7 @@ void CJabberProto::InitXStatusIcons()
 	TCHAR szSection[ 100 ];
 	TCHAR szDescription[ 100 ];
 
-	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/") _T(TCHAR_STR_PARAM) _T("/Moods"), m_szModuleName);
-//	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
+	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
