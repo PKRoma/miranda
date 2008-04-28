@@ -573,19 +573,23 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		break;
 
 	case WM_LBUTTONUP:
+    {
+        int showClick = 0;
 		if (bct->pushBtn) {
 			if (bct->pbState) bct->pbState = 0;
 			else bct->pbState = 1;
 		}
 		if (bct->stateId!=PBS_DISABLED) { // don't change states if disabled
+            if (bct->stateId==PBS_PRESSED)
+                showClick = 1;
 			if (msg==WM_LBUTTONUP) bct->stateId = PBS_HOT;
 			else bct->stateId = PBS_NORMAL;
 			InvalidateRect(bct->hwnd, NULL, TRUE);
 		}
-		// Tell your daddy you got clicked.
-		SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
+        if (showClick) // Tell your daddy you got clicked.
+            SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
 		break;
-
+    }
 	case WM_MOUSEMOVE:
 		if (bct->stateId == PBS_NORMAL) {
 			bct->stateId = PBS_HOT;
