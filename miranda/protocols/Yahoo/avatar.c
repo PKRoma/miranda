@@ -282,7 +282,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			DBVARIANT dbv;
 			
 			/* need to send avatar info */
-			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+			if (!YAHOO_GetByte( "ShowAvatars", 1 )) {
 				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
 				yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
 				return;
@@ -328,7 +328,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 	case 2: /*
 		     * We got Avatar Info for our buddy. 
 		     */
-			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+			if (!YAHOO_GetByte( "ShowAvatars", 1 )) {
 				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
 				return;
 			}
@@ -375,7 +375,7 @@ void ext_yahoo_got_picture(int id, const char *me, const char *who, const char *
 			DBVARIANT dbv;
 			
 			/* need to send avatar info */
-			if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+			if (!YAHOO_GetByte( "ShowAvatars", 1 )) {
 				LOG(("[ext_yahoo_got_picture] We are not using/showing avatars!"));
 				yahoo_send_picture_update(id, who, 0); // no avatar (disabled)
 				return;
@@ -527,7 +527,7 @@ void YAHOO_request_avatar(const char* who)
 	HANDLE 	hContact = 0;
 	//char    szFile[MAX_PATH];
 	
-	if (!YAHOO_GetByte( "ShowAvatars", 0 )) {
+	if (!YAHOO_GetByte( "ShowAvatars", 1 )) {
 		LOG(("Avatars disabled, but available for: %s", who));
 		return;
 	}
@@ -655,7 +655,7 @@ int YahooGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO]");
 	}
 
-	if (!YAHOO_GetByte( "ShowAvatars", 0 ) || !yahooLoggedIn) {
+	if (!YAHOO_GetByte( "ShowAvatars", 1 ) || !yahooLoggedIn) {
 		YAHOO_DebugLog("[YAHOO_GETAVATARINFO] %s", yahooLoggedIn ? "We are not using/showing avatars!" : "We are not logged in. Can't load avatars now!");
 		
 		return GAIR_NOAVATAR;
@@ -737,7 +737,7 @@ int YahooGetAvatarCaps(WPARAM wParam, LPARAM lParam)
 	case AF_ENABLED:
 					LOG(("[YahooGetAvatarCaps] AF_ENABLED"));
 	
-					res = (YAHOO_GetByte( "ShowAvatars", 0 )) ? 1 : 0;
+					res = (YAHOO_GetByte( "ShowAvatars", 1 )) ? 1 : 0;
 					break;
 					
 	case AF_DONTNEEDDELAYS:
@@ -776,7 +776,7 @@ int YahooGetMyAvatar(WPARAM wParam, LPARAM lParam)
 		return -1;
 	
 
-	if (!YAHOO_GetByte( "ShowAvatars", 0 ))
+	if (!YAHOO_GetByte( "ShowAvatars", 1 ))
 		return -2;
 	
 	{
