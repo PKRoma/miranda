@@ -88,13 +88,13 @@ IDD_OPTIONS_OWN DIALOGEX 0, 0, 302, 75
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "When setting avatars, always make it square",
+    CONTROL         "When setting avatars, always make them square",
                     IDC_SET_MAKE_SQUARE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,17,281,11
     CONTROL         "Try to draw own avatar background transparent (for images without transparency)",
                     IDC_MAKE_MY_AVATARS_TRANSP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,8,34,281,10
-    LTEXT           "This uses the same addicional options as in ""Contact Avatars"" tab",
+    LTEXT           "This uses the same additional options as in ""Contact Avatars"" tab",
                     IDC_STATIC,20,46,257,13
 END
 
