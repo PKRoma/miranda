@@ -305,6 +305,12 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					int wireless = status&0x0080;
 					int bot = status&0x0400;
  					DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_NK, buddy);
+					
+					if (icq)
+						DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, "Transport", "ICQ");
+					else
+						DBDeleteContactSetting(hContact, AIM_PROTOCOL_NAME, "Transport");
+
 					if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 					{
 						adv2_icon=1;
