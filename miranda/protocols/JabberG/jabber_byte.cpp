@@ -176,7 +176,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	Log( "Thread started: type=bytestream_send" );
 
-	bDirect = JGetByte( "BsDirect", TRUE );
+	bDirect = JGetByte( "BsDirect", FALSE );
 
 	if ( JGetByte( "BsProxyManual" , FALSE ) ) {
 		proxyJid = NULL;

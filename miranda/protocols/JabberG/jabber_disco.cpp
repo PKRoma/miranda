@@ -603,6 +603,7 @@ protected:
 
 private:
 	TCHAR *m_jid;
+	bool m_focusEditAfterBrowse;
 
 	CCtrlMButton m_btnViewAsTree;
 	CCtrlMButton m_btnViewAsList;
@@ -652,75 +653,77 @@ void CJabberDlgDiscovery::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 
-	TranslateDialogDefault( m_hwnd );
+//	TranslateDialogDefault( m_hwnd );
 	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "servicediscovery" ));
-	{
-		int i;
 
-		if ( m_jid ) {
-			SetDlgItemText( m_hwnd, IDC_COMBO_JID, m_jid );
-			SetDlgItemText( m_hwnd, IDC_COMBO_NODE, _T("") );
-		} else {
-			SetDlgItemTextA( m_hwnd, IDC_COMBO_JID, m_proto->m_ThreadInfo->server );
-			SetDlgItemText( m_hwnd, IDC_COMBO_NODE, _T("") );
-		}
+	int i;
 
-		m_btnViewAsList.MakePush();
-		m_btnViewAsTree.MakePush();
-		m_btnBookmarks.MakePush();
-
-		CheckDlgButton(m_hwnd,
-			DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "discoWnd_useTree", 1) ?
-				IDC_BTN_VIEWTREE : IDC_BTN_VIEWLIST,
-			TRUE);
-
-		EnableWindow(GetDlgItem(m_hwnd, IDC_BTN_FILTERRESET), FALSE);
-
-		SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_CONFERENCES));
-		SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_MYAGENTS));
-		SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_AGENTS));
-		SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_FAVORITES));
-		m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_JID, "doscoWnd_rcJid");
-		m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_NODE, "doscoWnd_rcNode");
-
-		HWND hwndList = GetDlgItem(m_hwnd, IDC_TREE_DISCO);
-		LVCOLUMN lvc = {0};
-		lvc.mask = LVCF_SUBITEM|LVCF_WIDTH|LVCF_TEXT;
-		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx0", 200);
-		lvc.iSubItem = 0;
-		lvc.pszText = TranslateT("Node hierarchy");
-		ListView_InsertColumn(hwndList, 0, &lvc);
-		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx1", 200);
-		lvc.iSubItem = 1;
-		lvc.pszText = _T("JID");
-		ListView_InsertColumn(hwndList, 1, &lvc);
-		lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx2", 200);
-		lvc.iSubItem = 2;
-		lvc.pszText = TranslateT("Node");
-		ListView_InsertColumn(hwndList, 2, &lvc);
-
-		TreeList_Create(hwndList);
-		TreeList_AddIcon(hwndList, m_proto->LoadIconEx("main"), 0);
-		for (i = 0; i < SIZEOF(sttNodeIcons); ++i)
-		{
-			HICON hIcon;
-			if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName)
-				hIcon = (HICON)CallProtoService(sttNodeIcons[i].iconName, PS_LOADICON, PLI_PROTOCOL|PLIF_SMALL, 0);
-			else if (sttNodeIcons[i].iconName)
-				hIcon = m_proto->LoadIconEx(sttNodeIcons[i].iconName);
-			else if (sttNodeIcons[i].iconIndex)
-				hIcon = LoadSkinnedIcon(sttNodeIcons[i].iconIndex);
-			else continue;
-			sttNodeIcons[i].listIndex = TreeList_AddIcon(hwndList, hIcon, 0);
-		}
-		TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_fail"), SD_OVERLAY_FAIL);
-		TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_progress"), SD_OVERLAY_PROGRESS);
-		TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_ok"), SD_OVERLAY_REGISTERED);
-
-		TreeList_SetMode(hwndList, DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "discoWnd_useTree", 1) ? TLM_TREE : TLM_REPORT);
-
-		PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
+	if ( m_jid ) {
+		SetDlgItemText( m_hwnd, IDC_COMBO_JID, m_jid );
+		SetDlgItemText( m_hwnd, IDC_COMBO_NODE, _T("") );
+		m_focusEditAfterBrowse = false;
+	} else {
+		SetDlgItemTextA( m_hwnd, IDC_COMBO_JID, m_proto->m_ThreadInfo->server );
+		SetDlgItemText( m_hwnd, IDC_COMBO_NODE, _T("") );
+		m_focusEditAfterBrowse = true;
 	}
+
+	m_btnViewAsList.MakePush();
+	m_btnViewAsTree.MakePush();
+	m_btnBookmarks.MakePush();
+
+	CheckDlgButton(m_hwnd,
+		DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "discoWnd_useTree", 1) ?
+			IDC_BTN_VIEWTREE : IDC_BTN_VIEWLIST,
+		TRUE);
+
+	EnableWindow(GetDlgItem(m_hwnd, IDC_BTN_FILTERRESET), FALSE);
+
+	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_CONFERENCES));
+	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_MYAGENTS));
+	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_AGENTS));
+	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_FAVORITES));
+	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_JID, "doscoWnd_rcJid");
+	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_NODE, "doscoWnd_rcNode");
+
+	HWND hwndList = GetDlgItem(m_hwnd, IDC_TREE_DISCO);
+	LVCOLUMN lvc = {0};
+	lvc.mask = LVCF_SUBITEM|LVCF_WIDTH|LVCF_TEXT;
+	lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx0", 200);
+	lvc.iSubItem = 0;
+	lvc.pszText = TranslateT("Node hierarchy");
+	ListView_InsertColumn(hwndList, 0, &lvc);
+	lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx1", 200);
+	lvc.iSubItem = 1;
+	lvc.pszText = _T("JID");
+	ListView_InsertColumn(hwndList, 1, &lvc);
+	lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx2", 200);
+	lvc.iSubItem = 2;
+	lvc.pszText = TranslateT("Node");
+	ListView_InsertColumn(hwndList, 2, &lvc);
+
+	TreeList_Create(hwndList);
+	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("main"), 0);
+	for (i = 0; i < SIZEOF(sttNodeIcons); ++i)
+	{
+		HICON hIcon;
+		if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName)
+			hIcon = (HICON)CallProtoService(sttNodeIcons[i].iconName, PS_LOADICON, PLI_PROTOCOL|PLIF_SMALL, 0);
+		else if (sttNodeIcons[i].iconName)
+			hIcon = m_proto->LoadIconEx(sttNodeIcons[i].iconName);
+		else if (sttNodeIcons[i].iconIndex)
+			hIcon = LoadSkinnedIcon(sttNodeIcons[i].iconIndex);
+		else continue;
+		sttNodeIcons[i].listIndex = TreeList_AddIcon(hwndList, hIcon, 0);
+	}
+	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_fail"), SD_OVERLAY_FAIL);
+	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_progress"), SD_OVERLAY_PROGRESS);
+	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_ok"), SD_OVERLAY_REGISTERED);
+
+	TreeList_SetMode(hwndList, DBGetContactSettingByte(NULL, m_proto->m_szModuleName, "discoWnd_useTree", 1) ? TLM_TREE : TLM_REPORT);
+
+	PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_BUTTON_BROWSE, 0 ), 0 );
+
 	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "discoWnd_");
 }
 
@@ -950,6 +953,9 @@ void CJabberDlgDiscovery::btnRefresh_OnClick(CCtrlButton *)
 
 void CJabberDlgDiscovery::btnBrowse_OnClick(CCtrlButton *)
 {
+	SetFocus(GetDlgItem(m_hwnd, m_focusEditAfterBrowse ? IDC_COMBO_JID : IDC_TREE_DISCO));
+	m_focusEditAfterBrowse = false;
+
 	m_proto->PerformBrowse(m_hwnd);
 }
 

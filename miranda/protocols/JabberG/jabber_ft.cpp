@@ -121,8 +121,8 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNode* x = feature->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "form" );
 	XmlNode* field = x->addChild( "field" ); field->addAttr( "var", "stream-method" ); field->addAttr( "type", "list-single" );
 
-	BOOL bDirect = JGetByte( "BsDirect", TRUE );
-	BOOL bProxy = JGetByte( "BsProxyManual", TRUE );
+	BOOL bDirect = JGetByte( "BsDirect", FALSE );
+	BOOL bProxy = JGetByte( "BsProxyManual", FALSE );
 	
 	// bytestreams support?
 	if ( bDirect || bProxy ) {

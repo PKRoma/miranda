@@ -332,7 +332,7 @@ void CJabberProto::FileServerThread( filetransfer* ft )
 
 				char *myAddr;
 				DBVARIANT dbv;
-				if ( JGetByte( "BsDirect", TRUE ) && JGetByte( "BsDirectManual", FALSE )) {
+				if ( JGetByte( "BsDirect", FALSE ) && JGetByte( "BsDirectManual", FALSE )) {
 					if ( !DBGetContactSettingString( NULL, m_szModuleName, "BsDirectAddr", &dbv )) {
 						myAddr = NEWSTR_ALLOCA( dbv.pszVal );
 						JFreeVariant( &dbv );
