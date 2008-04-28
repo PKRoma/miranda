@@ -1094,6 +1094,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\API\m_historyevents.h"
+					>
+				</File>
+				<File
 					RelativePath=".\API\m_ieview.h"
 					>
 				</File>

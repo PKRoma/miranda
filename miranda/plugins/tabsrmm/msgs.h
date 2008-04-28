@@ -588,7 +588,6 @@ typedef struct _globals {
 	DWORD       m_GlobalContainerTrans;
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	HANDLE      hLastOpenedContact;
-	int         m_Send7bitStrictAnsi;
 	int         m_IdleDetect;
 	int         m_DoStatusMsg;
 	int         m_smcxicon, m_smcyicon;

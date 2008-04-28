@@ -177,7 +177,7 @@ void CacheLogFonts()
 			if (myGlobals.ipConfig.hFonts[i])
 				DeleteObject(myGlobals.ipConfig.hFonts[i]);
 			LoadLogfont(i + 100, &lf, &clr, FONTMODULE);
-			lf.lfHeight = MulDiv(lf.lfHeight, logPixelSY, 72);
+			lf.lfHeight =-MulDiv(lf.lfHeight, logPixelSY, 72);
 			myGlobals.ipConfig.hFonts[i] = CreateFontIndirectA(&lf);
 			myGlobals.ipConfig.clrs[i] = clr;
 		}
@@ -585,6 +585,8 @@ static char *CreateRTFTail(struct MessageWindowData *dat)
 
 int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO * dbei)
 {
+	int heFlags;
+
 	switch (dbei->eventType) {
 		case EVENTTYPE_MESSAGE:
 			//case EVENTTYPE_STATUSCHANGE:
@@ -596,6 +598,11 @@ int DbEventIsShown(struct MessageWindowData *dat, DBEVENTINFO * dbei)
 	}
 	if (IsStatusEvent(dbei->eventType))
 		return 1;
+
+	heFlags = HistoryEvents_GetFlags(dbei->eventType);
+	if (heFlags != -1)
+		return (heFlags & HISTORYEVENTS_FLAG_SHOW_IM_SRMM) == HISTORYEVENTS_FLAG_SHOW_IM_SRMM;
+
 	return 0;
 }
 
@@ -621,7 +628,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0); 
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
-	TCHAR *msg, *formatted;
+	TCHAR *msg, *formatted = NULL;
+	int heFlags = -1;
+	char *rtfMessage = NULL;
 
 	bufferEnd = 0;
 	bufferAlloced = 1024;
@@ -646,10 +655,16 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		}
 	}
 
+	if (dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_FILE
+			&& dbei.eventType != EVENTTYPE_URL && !IsStatusEvent(dbei.eventType))
+		heFlags = HistoryEvents_GetFlags(dbei.eventType);
+
 	if (dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
 		dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
 
-
+	if (heFlags != -1) 
+		rtfMessage = HistoryEvents_GetRichText(hDbEvent, &dbei);
+	if (rtfMessage == NULL) {
 		msg = DbGetEventTextT(&dbei, dat->codePage);
 		if (!msg) {
 			free(dbei.pBlob);
@@ -659,6 +674,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 		TrimMessage(msg);
 		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
 		mir_free(msg);
+	}
 	/*
 	else
 	{
@@ -690,7 +706,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	*/
 
 	dat->stats.lastReceivedChars = 0;
-	fIsStatusChangeEvent = IsStatusEvent(dbei.eventType);
+	fIsStatusChangeEvent = (heFlags != -1 || IsStatusEvent(dbei.eventType));
 
 	if (dat->isAutoRTL & 2) {                                     // means: last \\par was deleted to avoid new line at end of log
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
@@ -1056,6 +1072,9 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\line");
 					break;
 				case 'N': {         // nickname
+					if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_EXPECT_CONTACT_NAME_BEFORE))
+						break;
+
 #if !defined(_UNICODE)
 					szName = isSent ? szMyName : szYourName;
 #endif
@@ -1108,11 +1127,16 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 								if (!skipFont)
 									AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYMSG + iFontIDOffset : MSGFONTID_YOURMSG + iFontIDOffset));
 							}
+
+							if (rtfMessage != NULL) {
+								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, rtfMessage);
+							} else {
 #if defined( _UNICODE )
-							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
+								AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
 #else   // unicode
-							AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
+								AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
 #endif      // unicode
+							}
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\b0\\ul0\\i0 ");
 							break;
 						}
@@ -1255,6 +1279,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 
 	if (streamData->dbei == 0)
 		free(dbei.pBlob);
+	HistoryEvents_ReleaseText(rtfMessage);
 
 	dat->iLastEventType = MAKELONG((dbei.flags & (DBEF_SENT | DBEF_READ | DBEF_RTL)), dbei.eventType);
 	dat->lastEventTime = dbei.timestamp;

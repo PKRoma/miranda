@@ -61,7 +61,6 @@ void        PlayIncomingSound(struct ContainerWindowData *pContainer, HWND hwnd)
 void        SwitchMessageLog(HWND hwndDlg, struct MessageWindowData *dat, int iMode);
 void        GetSendFormat(HWND hwndDlg, struct MessageWindowData *dat, int mode);
 void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
-BOOL        IsUnicodeAscii(const wchar_t* pBuffer, int nSize);
 void        GetDataDir();
 void        LoadOwnAvatar(HWND hwndDlg, struct MessageWindowData *dat);
 void        LoadContactAvatar(HWND hwndDlg, struct MessageWindowData *dat);

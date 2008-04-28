@@ -80,8 +80,6 @@ unsigned int g_ctable_size;
 
 static int g_status_events[] = {
 	EVENTTYPE_STATUSCHANGE,
-	EVENTTYPE_STATUSMESSAGE_CHANGE,
-	EVENTTYPE_AVATAR_CHANGE,
 	EVENTTYPE_CONTACTLEFTCHANNEL,
 	EVENTTYPE_WAT_ANSWER,
 	EVENTTYPE_JABBER_CHATSTATES,
@@ -910,6 +908,7 @@ int CheckValidSmileyPack(char *szProto, HANDLE hContact, HICON *hButtonIcon)
 	if (myGlobals.g_SmileyAddAvail) {
 		smainfo.cbSize = sizeof(smainfo);
 		smainfo.Protocolname = szProto;
+		smainfo.hContact = hContact;
 		CallService(MS_SMILEYADD_GETINFO2, 0, (LPARAM)&smainfo);
 		if (hButtonIcon)
 			*hButtonIcon = smainfo.ButtonIcon;
@@ -1958,6 +1957,7 @@ void GetLocaleID(struct MessageWindowData *dat, char *szKLName)
  * The resulting message could be sent and stored as ANSI then
  */
 
+/*
 BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 {
 	BOOL bResult = TRUE;
@@ -1971,7 +1971,7 @@ BOOL IsUnicodeAscii(const wchar_t* pBuffer, int nSize)
 	}
 	return bResult;
 }
-
+*/
 BYTE GetInfoPanelSetting(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	BYTE bDefault = dat->pContainer->dwFlags & CNT_INFOPANEL ? 1 : 0;
@@ -2809,6 +2809,7 @@ void ConfigureSmileyButton(HWND hwndDlg, struct MessageWindowData *dat)
 	int iItemID = IDC_SMILEYBTN;
 
 	if (myGlobals.g_SmileyAddAvail) {
+
 		nrSmileys = CheckValidSmileyPack(dat->bIsMeta ? dat->szMetaProto : dat->szProto, dat->bIsMeta ? dat->hSubContact : dat->hContact, &hButtonIcon);
 
 		dat->doSmileys = 1;

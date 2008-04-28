@@ -3674,9 +3674,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			break;
 		}
-		case WM_HELP:
-			PostMessage(hwndContainer, WM_COMMAND, ID_HELP_MESSAGEWINDOWHELP, 0);
-			break;
 		case WM_COMMAND:
 
 			if (!dat)
@@ -3720,21 +3717,15 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 								DoRtfToTags(decoded, dat);
 							DoTrimMessage(decoded);
 							bufSize = WideCharToMultiByte(dat->codePage, 0, decoded, -1, dat->sendBuffer, 0, 0, 0);
-							if (myGlobals.m_Send7bitStrictAnsi) {
-								if (!IsUnicodeAscii(decoded, lstrlenW(decoded))) {
-LBL_UnicodeSend:
-									if (!IsUtfSendAvailable(dat->hContact)) {
-										flags |= PREF_UNICODE;
-										memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
-									} else {
-										flags |= PREF_UTF;
-										utfResult = mir_utf8encodeW(decoded);
-										memRequired = strlen(utfResult) + 1;
-									}
-								} else
-									memRequired = bufSize;
-							} else
-								goto LBL_UnicodeSend;
+
+							if (!IsUtfSendAvailable(dat->hContact)) {
+								flags |= PREF_UNICODE;
+								memRequired = bufSize + ((lstrlenW(decoded) + 1) * sizeof(WCHAR));
+							} else {
+								flags |= PREF_UTF;
+								utfResult = mir_utf8encodeW(decoded);
+								memRequired = strlen(utfResult) + 1;
+							}
 
 							/*
 							 * try to detect RTL

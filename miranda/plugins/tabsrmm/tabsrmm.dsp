@@ -223,7 +223,9 @@ DEP_CPP_CLIST=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CLIST=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -300,7 +302,9 @@ DEP_CPP_COLOR=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_COLOR=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -377,7 +381,9 @@ DEP_CPP_LOG_C=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_LOG_C=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -458,7 +464,9 @@ DEP_CPP_MAIN_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MAIN_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -535,7 +543,9 @@ DEP_CPP_MANAG=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MANAG=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -612,7 +622,9 @@ DEP_CPP_MESSA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MESSA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -689,7 +701,9 @@ DEP_CPP_OPTIO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_OPTIO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -766,7 +780,9 @@ DEP_CPP_SERVI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SERVI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -843,7 +859,9 @@ DEP_CPP_TOOLS=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TOOLS=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -920,7 +938,9 @@ DEP_CPP_WINDO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_WINDO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -961,6 +981,10 @@ SOURCE=.\API\m_flash.h
 # Begin Source File
 
 SOURCE=.\API\m_folders.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\API\m_historyevents.h
 # End Source File
 # Begin Source File
 
@@ -1062,7 +1086,9 @@ DEP_CPP_BUTTO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_BUTTO=\
+	".\om.h"\
 	
 # End Source File
 # Begin Source File
@@ -1121,7 +1147,9 @@ DEP_CPP_CONTA=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CONTA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1192,7 +1220,9 @@ DEP_CPP_CONTAI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_CONTAI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1264,7 +1294,9 @@ DEP_CPP_EVENT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_EVENT=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1335,7 +1367,9 @@ DEP_CPP_FORMA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_FORMA=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1414,7 +1448,9 @@ DEP_CPP_GENER=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_GENER=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1486,7 +1522,9 @@ DEP_CPP_HOTKE=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_HOTKE=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1558,7 +1596,9 @@ DEP_CPP_IMAGE=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_IMAGE=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1637,8 +1677,10 @@ DEP_CPP_MSGDI=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1715,7 +1757,9 @@ DEP_CPP_MSGDL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGDL=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1786,7 +1830,9 @@ DEP_CPP_MSGLO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGLO=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1863,8 +1909,10 @@ DEP_CPP_MSGOP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1944,7 +1992,9 @@ DEP_CPP_MSGS_=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_MSGS_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2021,7 +2071,9 @@ DEP_CPP_SELEC=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SELEC=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2093,7 +2145,9 @@ DEP_CPP_SENDQ=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SENDQ=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2164,7 +2218,9 @@ DEP_CPP_SRMM_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_SRMM_=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2241,8 +2297,10 @@ DEP_CPP_TABCT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2313,7 +2371,9 @@ DEP_CPP_TEMPL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TEMPL=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2384,7 +2444,9 @@ DEP_CPP_THEME=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_THEME=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2455,7 +2517,9 @@ DEP_CPP_TRAYI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TRAYI=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2526,7 +2590,9 @@ DEP_CPP_TSBUT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TSBUT=\
+	".\om.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2597,7 +2663,9 @@ DEP_CPP_TYPIN=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
+	
+NODEP_CPP_TYPIN=\
+	".\om.h"\
 	
 # End Source File
 # Begin Source File
@@ -2655,8 +2723,10 @@ DEP_CPP_USERP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_USERP=\
+	".\om.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"

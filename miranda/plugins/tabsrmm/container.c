@@ -1623,12 +1623,6 @@ buttons_done:
 				case ID_HELP_VIEWRELEASENOTES:
 					ViewReleaseNotes();
 					break;
-				case ID_HELP_MESSAGEWINDOWHELP:
-					if (!cntHelpActive) {
-						cntHelpActive = TRUE;
-						CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), hwndDlg, DlgProcTemplateHelp, (LPARAM)"plugins\\tabsrmm\\help\\Message Window Help.rtf");
-					}
-					break;
 			}
 			if (pContainer->dwFlags != dwOldFlags)
 				SendMessage(hwndDlg, DM_CONFIGURECONTAINER, 0, 0);

@@ -428,10 +428,10 @@ typedef struct _recentEntry {
 
 void LoadFavoritesAndRecent()
 {
-	RCENTRY *recentEntries, rceTemp;
-	DWORD dwRecent;
-	int iIndex = 0, i, j;
-	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	RCENTRY	*recentEntries, rceTemp;
+	DWORD	dwRecent;
+	int		iIndex = 0, i, j;
+	HANDLE	hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	recentEntries = (RCENTRY *)malloc((nen_options.wMaxRecent + 1) * sizeof(RCENTRY));
 	if (recentEntries != NULL) {
 		while (hContact != 0) {

@@ -865,6 +865,7 @@ void RegisterFontServiceFonts() {
 
 	
 	fontOptionsList=IP_fontOptionsList;
+	fid.flags|=FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Info Panel"), SIZEOF(fid.group));
 	_tcsncpy(fid.backgroundGroup, _T("TabSRMM/Info Panel"), SIZEOF(fid.backgroundGroup));
 	_tcsncpy(fid.backgroundName, _T("Fields background"), SIZEOF(fid.backgroundName));
@@ -894,6 +895,7 @@ void RegisterFontServiceFonts() {
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 
 	fontOptionsList=CHAT_fontOptionsList;
+	fid.flags&=~FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Group Chats"), SIZEOF(fid.group));
 	_tcsncpy(fid.backgroundGroup, _T("TabSRMM"), SIZEOF(fid.backgroundGroup));
 	_tcsncpy(fid.backgroundName, _T("Log Background"), SIZEOF(fid.backgroundName));

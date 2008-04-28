@@ -38,6 +38,7 @@ static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
  	"\\par\t\\b\\ul1 Release notes for version 2.2.1.3\\b0\\ul0\\par ",
 	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works.\\par ",
+	"*\tReorganized group chat options completed.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -1225,7 +1226,9 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	RegisterFontServiceFonts();
 	CacheLogFonts();
 	Chat_ModulesLoaded(wParam, lParam);
-	TN_ModuleInit();
+	if(myGlobals.g_PopupWAvail||myGlobals.g_PopupAvail)
+		TN_ModuleInit();
+
 	if (DBGetContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", 0) < pluginInfo.version) {
 		ViewReleaseNotes();
 		DBWriteContactSettingDword(NULL, SRMSGMOD_T, "last_relnotes", pluginInfo.version);

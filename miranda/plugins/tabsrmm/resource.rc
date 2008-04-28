@@ -961,8 +961,6 @@ BEGIN
     END
     POPUP "Help"
     BEGIN
-        MENUITEM "Help Contents",               ID_HELP_HELPCONTENTS, GRAYED
-        MENUITEM "Message Window Help...",      ID_HELP_MESSAGEWINDOWHELP
         MENUITEM "View Release Notes...",       ID_HELP_VIEWRELEASENOTES
         MENUITEM SEPARATOR
         MENUITEM "About tabSRMM...",            ID_HELP_ABOUTTABSRMM
