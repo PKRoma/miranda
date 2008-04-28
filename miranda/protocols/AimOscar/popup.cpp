@@ -15,10 +15,15 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 				PUDeletePopUp( hWnd );
 				return 0;
 			}
-		break;			
+			break;
+
 		case WM_CONTEXTMENU:
-			PUDeletePopUp( hWnd ); 
-		break;
+			PUDeletePopUp( hWnd );
+			break;
+
+		case UM_FREEPLUGINDATA:
+			ReleaseIconEx("aim");
+			break;
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -51,16 +56,12 @@ void __stdcall ShowPopup( const char* title, const char* msg, int flags, char* u
 	lstrcpy( ppd.lpzContactName, title );
 	lstrcpy( ppd.lpzText, msg );
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
+	ppd.lchIcon = LoadIconEx( "aim" );
 	if (flags & MAIL_POPUP)
 	{
-		ppd.lchIcon = LoadIcon( conn.hInstance, MAKEINTRESOURCE( IDI_AIM ));
 		ppd.PluginData =  (void *)url;
 		ppd.iSeconds = -1;
 	} 
-	else
-	{
-		ppd.lchIcon = LoadIcon( conn.hInstance, MAKEINTRESOURCE( IDI_AIM ));
-	}
 	CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);	
 	return;
 }

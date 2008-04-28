@@ -7,22 +7,25 @@
 #pragma warning (disable : 4996)
 //System includes
 #include <windows.h>
+#include <prsht.h>
+#include <Tmschema.h>
+//#include <vssym32.h>
+#include <richedit.h>
+
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>
 #include <malloc.h>
 #include <process.h>
-#include <prsht.h>
-#include <richedit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <Tmschema.h>
-#include <winuser.h>
+
 //Miranda IM includes
 #pragma warning( disable: 4100 )
 #pragma warning( disable: 4244 )
 #pragma warning( disable: 4201 )
+
 #include <newpluginapi.h>
 #include <statusmodes.h>
 #include <m_button.h>
@@ -44,6 +47,7 @@
 #include <m_system.h>
 #include <m_userinfo.h>
 #include <m_addcontact.h>
+#include <m_icolib.h>
 #pragma warning( default: 4100 )
 #pragma warning( default: 4244 )
 #pragma warning( default: 4201 )
@@ -270,6 +274,7 @@ extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define AIM_STATUS_INVISIBLE			"\x01\0"
 
 #define HOOKEVENT_SIZE 10
+#define SERVICES_SIZE  30
 class oscar_data
 {
 public:
@@ -316,6 +321,10 @@ public:
 	HANDLE hookEvent[HOOKEVENT_SIZE];
 	unsigned int hookEvent_size;//current hookevent size
 	
+	//services size stuff
+	HANDLE services[SERVICES_SIZE];
+	unsigned int services_size;//current services size
+
 	//Some mail connection stuff
 	HANDLE hMailConn;
 	unsigned short mail_seqno;
@@ -339,4 +348,10 @@ public:
 	HANDLE confirmed_icon;
 	HANDLE unconfirmed_icon;
 } extern conn;
+
+void   InitIcons(void);
+HICON  LoadIconEx(const char* name);
+HANDLE GetIconHandle(const char* name);
+void   ReleaseIconEx(const char* name);
+
 #endif

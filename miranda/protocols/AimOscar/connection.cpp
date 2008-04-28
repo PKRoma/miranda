@@ -257,7 +257,7 @@ void __cdecl aim_mail_negotiation()
 	#if _MSC_VER
 	#pragma warning( disable: 4127)
 	#endif
-	while(1)
+	while(conn.status!=ID_STATUS_OFFLINE)
 	{
 		#if _MSC_VER
 		#pragma warning( default: 4127)
@@ -307,6 +307,8 @@ void __cdecl aim_mail_negotiation()
 				else if(flap.cmp(0x04))
 				{
 					Netlib_CloseHandle(hServerPacketRecver);
+					Netlib_CloseHandle(conn.hMailConn);
+					conn.hMailConn=0;
 					LOG("Mail Server Connection has ended");
 					return;
 				}
@@ -315,6 +317,8 @@ void __cdecl aim_mail_negotiation()
 	}
 	LOG("Mail Server Connection has ended");
 	Netlib_CloseHandle(hServerPacketRecver);
+	Netlib_CloseHandle(conn.hMailConn);
+	conn.hMailConn=0;
 }
 void __cdecl aim_avatar_negotiation()
 {

@@ -21,9 +21,9 @@ void awaymsg_request_thread(char* sn)
 void awaymsg_request_limit_thread()
 {
 	LOG("Awaymsg Request Limit thread begin");
-	while(conn.hServerConn)
+	while(!Miranda_Terminated() && conn.hServerConn)
 	{
-		Sleep(500);
+		SleepEx(500, TRUE);
 		//LOG("Setting Awaymsg Request Event...");
 		SetEvent(conn.hAwayMsgEvent);
 	}

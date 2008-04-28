@@ -1,32 +1,32 @@
 #include "services.h"
 static int GetCaps(WPARAM wParam, LPARAM /*lParam*/)
 {
-    int ret = 0;
-    switch (wParam)
-	{
-		case PFLAGNUM_1:
-            ret = PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
-            break;
-        case PFLAGNUM_2:
-            ret = PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
-            break;
-		case PFLAGNUM_3:
-            ret = PF2_SHORTAWAY;
-            break;
-		case PFLAGNUM_4:
-			ret = PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
-            break;
-		case PFLAGNUM_5:                
-            ret = PF2_ONTHEPHONE;
-            break;
-		case PFLAG_MAXLENOFMESSAGE:
-            ret = 1024;
-            break;
-		case PFLAG_UNIQUEIDSETTING:
-            ret = (int) AIM_KEY_SN;
-            break;
-    }
-    return ret;
+	switch (wParam) {
+	case PFLAGNUM_1:
+		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
+
+	case PFLAGNUM_2:
+		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
+
+	case PFLAGNUM_3:
+		return PF2_SHORTAWAY;
+
+	case PFLAGNUM_4:
+		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
+
+	case PFLAGNUM_5:
+		return PF2_ONTHEPHONE;
+
+	case PFLAG_MAXLENOFMESSAGE:
+		return 1024;
+
+	case PFLAG_UNIQUEIDTEXT:
+		return (int) "Screen Name";
+
+	case PFLAG_UNIQUEIDSETTING:
+		return (int) AIM_KEY_SN;
+	}
+	return 0;
 }
 static int GetName(WPARAM wParam, LPARAM lParam)
 {
@@ -54,7 +54,7 @@ void set_status_thread(int status)
 				{
 					broadcast_status(ID_STATUS_ONLINE);
 					aim_set_away(conn.hServerConn,conn.seqno,NULL);//unset away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis	
+					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis
 					break;
 				}
 			case ID_STATUS_INVISIBLE:
@@ -71,10 +71,10 @@ void set_status_thread(int status)
 			case ID_STATUS_ONTHEPHONE:
 				{
 					//start_connection(ID_STATUS_AWAY);// if not started
-					if(conn.status!=ID_STATUS_AWAY)
+					broadcast_status(ID_STATUS_AWAY);
+					if(conn.status != ID_STATUS_AWAY)
 					{
-						assign_modmsg((char*)&DEFAULT_AWAY_MSG);
-						broadcast_status(ID_STATUS_AWAY);
+						assign_modmsg(DEFAULT_AWAY_MSG);
 						aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
 						aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 					}
@@ -85,7 +85,7 @@ void set_status_thread(int status)
 	LeaveCriticalSection(&statusMutex);
 }
 static int SetStatus(WPARAM wParam, LPARAM /*lParam*/)
-{ 
+{
 	if (wParam==conn.status)
 		return 0;
 	//ForkThread((pThreadFunc)set_status_thread,(void*)wParam);
@@ -96,7 +96,7 @@ static int SetStatus(WPARAM wParam, LPARAM /*lParam*/)
 }
 
 int IdleChanged(WPARAM /*wParam*/, LPARAM lParam)
-{ 
+{
 	if (conn.state!=1)
 	{
 		conn.idle=0;
@@ -307,13 +307,10 @@ static int SetAwayMsg(WPARAM wParam, LPARAM lParam)
 			{
 				if(!lParam)
 					lParam=(int)&DEFAULT_AWAY_MSG;
+
 				assign_modmsg((char*)lParam);
-				if(conn.state==1)
-				{
-					broadcast_status(ID_STATUS_AWAY);
-					aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
-					aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
-				}
+				aim_set_away(conn.hServerConn,conn.seqno,conn.szModeMsg);//set actual away message
+//				aim_set_invis(conn.hServerConn,conn.seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 			}
 	}
 	LeaveCriticalSection(&modeMsgsMutex);
@@ -331,7 +328,7 @@ static int GetAwayMsg(WPARAM /*wParam*/, LPARAM lParam)
 	{
 		awaymsg_request_handler(sn);
 		delete[] sn;
-	}	
+	}
 	return 1;
 }
 static int GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
@@ -356,7 +353,7 @@ static int RecvAwayMsg(WPARAM /*wParam*/,LPARAM lParam)
 }
 static int LoadIcons(WPARAM wParam, LPARAM /*lParam*/)
 {
-	return (int) LoadImage(conn.hInstance, MAKEINTRESOURCE(IDI_AIM), IMAGE_ICON, GetSystemMetrics(wParam & PLIF_SMALL ? SM_CXSMICON : SM_CXICON),GetSystemMetrics(wParam & PLIF_SMALL ? SM_CYSMICON : SM_CYICON), 0);
+	return (LOWORD(wParam) == PLI_PROTOCOL) ? (int)CopyIcon(LoadIconEx("aim")) : 0;
 }
 static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
 {
@@ -494,7 +491,7 @@ int ContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			delete[] item;
 			delete[] group;
 			i++;
-		}	
+		}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
@@ -518,8 +515,8 @@ static int SendFile(WPARAM /*wParam*/,LPARAM lParam)
 			pszDesc = (char*)ccs->wParam;
 			char* pszFile = strrchr(files[0], '\\');
 			pszFile++;
-			struct stat statbuf;
-			stat(files[0],&statbuf);
+			struct _stat statbuf;
+			_stat(files[0],&statbuf);
 			unsigned long pszSize = statbuf.st_size;
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
@@ -675,7 +672,7 @@ static int InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
+{
 	if(conn.state==1)
 	{
 		conn.checking_mail=1;
@@ -684,15 +681,16 @@ static int CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 static int ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
+{
 	execute_cmd("http","https://my.screenname.aol.com");
 	return 0;
 }
-static int EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{ 
-	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog);
-	return 0;
-}
+
+//static int EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
+//{
+//	DialogBox(conn.hInstance, MAKEINTRESOURCE(IDD_AIM), NULL, userinfo_dialog);
+//	return 0;
+//}
 static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
@@ -723,14 +721,14 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 				else if(!lstrcmpi(filetype,".bmp"))
 					AI->format=PA_FORMAT_BMP;
 				strlcpy(AI->filename,photo_path,lstrlen(photo_path));
-			//mir_snprintf(avatar_path, length, "%s\\%s\\%s\\avatar.",CWD,AIM_PROTOCOL_NAME,sn);	
+			//mir_snprintf(avatar_path, length, "%s\\%s\\%s\\avatar.",CWD,AIM_PROTOCOL_NAME,sn);
 			//photo_path[lstrlen(photo_path)-4]='\0';
 			//if(!lstrcmpi(photo_path,avatar_path)&&!photopath[length+4])
 			//{
 				//photo_path[lstrlen(photo_path)+1]='.';
 				delete[] photo_path;
 				delete[] sn;
-				return GAIR_SUCCESS; 
+				return GAIR_SUCCESS;
 			}
 			//}
 			delete[] photo_path;
@@ -746,7 +744,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 	//AI.cbSize = sizeof AI;
 	//AI.hContact = hContact;
 	//DBVARIANT dbv;
-///	if(!DBGetContactSettingString( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db 
+///	if(!DBGetContactSettingString( AI->hContact, "ContactPhoto", "File",&dbv))//check for image type in db
 	//{
 //		memcpy(&filetype,&filename[lstrlen(filename)]-3,4);
 	//	DBFreeVariant(&dbv);
@@ -770,7 +768,7 @@ static int GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 */
 		return 1;
 }
-int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/) 
+int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if (ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
@@ -778,13 +776,13 @@ int ExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	}
 	return 0;
 }
-int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/) 
+int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON))
 	{
 		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_AT,0))
 		{
-			int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);		
+			int account_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_AC,0);
 			if(account_type==ACCOUNT_TYPE_ADMIN)
 			{
 				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -833,7 +831,7 @@ int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 		}
 		if(!DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_ES,0))
 		{
-			int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);		
+			int es_type=DBGetContactSettingByte((HANDLE)wParam, AIM_PROTOCOL_NAME, AIM_KEY_ET,0);
 			if(es_type==EXTENDED_STATUS_BOT)
 			{
 				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -859,144 +857,113 @@ int ExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 void CreateServices()
 {
 	char service_name[300];
-	CLISTMENUITEM mi;
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETSTATUS);
-	CreateServiceFunction(service_name,GetStatus);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetStatus);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_SETSTATUS);
-	CreateServiceFunction(service_name,SetStatus);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SetStatus);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETCAPS);
-	CreateServiceFunction(service_name,GetCaps);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetCaps);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETNAME);
-	CreateServiceFunction(service_name,GetName);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetName);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_LOADICON);
-	CreateServiceFunction(service_name,LoadIcons);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,LoadIcons);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE);
-	CreateServiceFunction(service_name,SendMsg);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_MESSAGE"W");
-	CreateServiceFunction(service_name,SendMsgW);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendMsgW);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_MESSAGE);
-    CreateServiceFunction(service_name, RecvMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, RecvMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_GETAWAYMSG);
-    CreateServiceFunction(service_name, GetAwayMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, GetAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_SETAWAYMSG);
-    CreateServiceFunction(service_name, SetAwayMsg);
+    conn.services[conn.services_size++]=CreateServiceFunction(service_name, SetAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_AWAYMSG);
-	CreateServiceFunction(service_name, RecvAwayMsg);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name, RecvAwayMsg);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_BASICSEARCH);
-	CreateServiceFunction(service_name,BasicSearch);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,BasicSearch);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_ADDTOLIST);
-	CreateServiceFunction(service_name,AddToList);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AddToList);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILE);
-	CreateServiceFunction(service_name,SendFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,SendFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSR_FILE);
-	CreateServiceFunction(service_name,RecvFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,RecvFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILEALLOW);
-	CreateServiceFunction(service_name,AllowFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AllowFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILEDENY);
-	CreateServiceFunction(service_name,DenyFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,DenyFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_FILECANCEL);
-	CreateServiceFunction(service_name,CancelFile);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CancelFile);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_USERISTYPING);
-	CreateServiceFunction(service_name,UserIsTyping);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,UserIsTyping);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PSS_AUTHREQUEST);
-	CreateServiceFunction(service_name,AuthRequest);
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AuthRequest);
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, PS_GETAVATARINFO);
-	CreateServiceFunction(service_name,GetAvatarInfo);
-	
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetAvatarInfo);
+
 	//Do not put any services below HTML get away message!!!
 
+	CLISTMENUITEM mi = {0};
+
+	mi.pszPopupName = AIM_PROTOCOL_NAME;
+    mi.cbSize = sizeof( mi );
+    mi.popupPosition = 500090000;
+	mi.position = 500090000;
+    mi.pszService = service_name;
+	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	mi.flags = CMIF_ICONFROMICOLIB;
+
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/ManageAccount");
-	CreateServiceFunction(service_name,ManageAccount);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,ManageAccount);
+    mi.icolibItem = GetIconHandle("aim");
     mi.pszName = LPGEN( "Manage Account" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
+/*
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/EditProfile");
-	CreateServiceFunction(service_name,EditProfile);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AIM ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,EditProfile);
+    mi.icolibItem = GetIconHandle("aim");
     mi.pszName = LPGEN( "Edit Profile" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
-
+*/
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/CheckMail");
-	CreateServiceFunction(service_name,CheckMail);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_MAIL ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,CheckMail);
+    mi.icolibItem = GetIconHandle("mail");
     mi.pszName = LPGEN( "Check Mail" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/InstantIdle");
-	CreateServiceFunction(service_name,InstantIdle);
-	memset( &mi, 0, sizeof( mi ));
-	mi.pszPopupName = AIM_PROTOCOL_NAME;
-    mi.cbSize = sizeof( mi );
-    mi.popupPosition = 500090000;
-	mi.position = 500090000;
-    mi.hIcon = LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_IDLE ));
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,InstantIdle);
+	mi.icolibItem = GetIconHandle("idle");
     mi.pszName = LPGEN( "Instant Idle" );
-    mi.pszService = service_name;
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetHTMLAwayMsg");
-	CreateServiceFunction(service_name,GetHTMLAwayMsg);
-	ZeroMemory(&mi,sizeof(mi));
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetHTMLAwayMsg);
 	mi.pszPopupName=Translate("Read &HTML Away Message");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006000;
 	mi.position=-2000006000;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_AWAY ));
+    mi.icolibItem = GetIconHandle("away");
 	mi.pszName = LPGEN("Read &HTML Away Message");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN;
+	mi.flags=CMIF_NOTOFFLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	conn.hHTMLAwayContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	
+
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/GetProfile");
-	CreateServiceFunction(service_name,GetProfile);
-	ZeroMemory(&mi,sizeof(mi));
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,GetProfile);
 	mi.pszPopupName=Translate("Read Profile");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_PROFILE ));
+    mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTOFFLINE;
+	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
 	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", AIM_PROTOCOL_NAME, "/AddToServerList");
-	CreateServiceFunction(service_name,AddToServerList);
-	ZeroMemory(&mi,sizeof(mi));
+	conn.services[conn.services_size++]=CreateServiceFunction(service_name,AddToServerList);
 	mi.pszPopupName=Translate("Add To Server List");
-	mi.cbSize=sizeof(mi);
 	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
-	mi.hIcon=LoadIcon(conn.hInstance,MAKEINTRESOURCE( IDI_ADD ));
+    mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
-	mi.pszContactOwner = AIM_PROTOCOL_NAME;
-	mi.pszService=service_name;
-	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN;
+	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	conn.hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	conn.hookEvent[conn.hookEvent_size++]=HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);

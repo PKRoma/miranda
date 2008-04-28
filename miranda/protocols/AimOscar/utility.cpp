@@ -7,13 +7,6 @@ void broadcast_status(int status)
 	conn.status=status;
 	if(conn.status==ID_STATUS_OFFLINE)
 	{
-		if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
-		{
-			conn.freeing_DirectBoundPort=1;
-			Netlib_CloseHandle(conn.hDirectBoundPort);
-			conn.hDirectBoundPort=0;
-			conn.freeing_DirectBoundPort=0;
-		}
 		if(conn.hServerPacketRecver)
 		{
 			Netlib_CloseHandle(conn.hServerPacketRecver);
@@ -23,6 +16,13 @@ void broadcast_status(int status)
 		{
 			Netlib_CloseHandle(conn.hServerConn);
 			conn.hServerConn=0;
+		}
+		if(conn.hDirectBoundPort&&!conn.freeing_DirectBoundPort)
+		{
+			conn.freeing_DirectBoundPort=1;
+			Netlib_CloseHandle(conn.hDirectBoundPort);
+			conn.hDirectBoundPort=0;
+			conn.freeing_DirectBoundPort=0;
 		}
 		conn.idle=0;
 		conn.instantidle=0;
@@ -89,10 +89,11 @@ HANDLE find_contact(char * sn)
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 			if (protocol != NULL && !lstrcmp(protocol, AIM_PROTOCOL_NAME))
 			{
-				if (char* db_sn=getSetting(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN))
+				DBVARIANT dbv;
+				if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 				{
-					bool found = !lstrcmp(norm_sn,db_sn); 
-					delete[] db_sn;
+					bool found = !lstrcmp(norm_sn, dbv.pszVal); 
+					DBFreeVariant(&dbv);
 					if (found) break; 
 				}
 			}
@@ -1163,27 +1164,20 @@ void load_extra_icons()
 	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON)&&!conn.extra_icons_loaded)
 	{
 		conn.extra_icons_loaded=1;
-		HICON hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_BOT));
-		conn.bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ICQ));
-		conn.icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_AOL));
-		conn.aol_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_HIPTOP));
-		conn.hiptop_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_ADMIN));
-		conn.admin_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_CONFIRMED));
-		conn.confirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
-		hXIcon = LoadIcon(conn.hInstance, MAKEINTRESOURCE(IDI_UNCONFIRMED));
-		conn.unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hXIcon, 0);
-		DestroyIcon(hXIcon);
+		conn.bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("bot"), 0);
+		ReleaseIconEx("bot");
+		conn.icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("icq"), 0);
+		ReleaseIconEx("icq");
+		conn.aol_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("aol"), 0);
+		ReleaseIconEx("aol");
+		conn.hiptop_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("hiptop"), 0);
+		ReleaseIconEx("hiptop");
+		conn.admin_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("admin"), 0);
+		ReleaseIconEx("admin");
+		conn.confirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("confirm"), 0);
+		ReleaseIconEx("confirm");
+		conn.unconfirmed_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("uconfirm"), 0);
+		ReleaseIconEx("uconfirm");
 	}
 }
 void set_extra_icon(char* data)
@@ -1208,12 +1202,12 @@ char* get_default_group()
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DG, &dbv))
 	{
-		default_group=strdup(dbv.pszVal);
+		default_group=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		default_group=strdup(AIM_DEFAULT_GROUP);
+		default_group=_strdup(AIM_DEFAULT_GROUP);
 	}
 	return default_group;
 }
@@ -1223,12 +1217,12 @@ char* get_outer_group()
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(NULL, AIM_PROTOCOL_NAME, AIM_KEY_OG, &dbv))
 	{
-		outer_group=strdup(dbv.pszVal);
+		outer_group=_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
 	{
-		outer_group=strdup(AIM_DEFAULT_GROUP);
+		outer_group=_strdup(AIM_DEFAULT_GROUP);
 	}
 	return outer_group;
 }*/
