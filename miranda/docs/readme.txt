@@ -29,12 +29,13 @@ Enhancements:
 
 Bugfixes:
  - Group chat options didn't use tabbed interface under "Group chats"
- - AIM: Fixed few crashes
- - AIM: Fixed few memory leaks
- - AIM: Fixes for profile window
+ - AIM: Fixed possible crashes
+ - AIM: Fixed possible memory leaks
+ - AIM: Profile editor shown incorrectly
  - ICQ: Fix problem with transfers through LAN
  - Jabber: Problem receiving '&' character
  - Yahoo: Global status change ignored status lock
+ - Yahoo: Avatars were not enabled by default
 
 * New in 0.7.4
 Enhancements:

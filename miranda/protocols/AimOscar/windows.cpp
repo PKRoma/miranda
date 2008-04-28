@@ -196,8 +196,8 @@ BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		{
 			int width=LOWORD(lParam);
 			int height=HIWORD(lParam);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,11,34,width-21,height-83,0);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-134,height-46,0,0,SWP_NOSIZE);
+			SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,11,65,width-21,height-103,0);
+			SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-134,height-36,0,0,SWP_NOSIZE);
 			break;
 		}
 		case WM_NOTIFY:
