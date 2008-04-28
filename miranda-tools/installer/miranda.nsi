@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7.5"
-!define MIM_PREVIEW             "1" ; make 0 for final build
+!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -19,7 +19,7 @@
 !define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
 !define MIM_BUILD_SRC           "..\..\miranda"
 
-!if MIM_PREVIEW>0
+!ifdef MIM_PREVIEW
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
 OutFile                         "miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
 !else
