@@ -495,8 +495,16 @@ int CJabberProto::AdhocSetStatusHandler( XmlNode* iqNode, void* usedata, CJabber
 		int nNoDlg = DBGetContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), 0 );
 		DBWriteContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), 1 );
 
-		DBWriteContactSettingString( NULL, "SRAway", StatusModeToDbSetting( status, "Msg" ), szStatusMessage );
-		//TODO:JabberSetAwayMsg( status, (LPARAM)szStatusMessage );
+		DBWriteContactSettingString( NULL, "SRAway", StatusModeToDbSetting( status, "Msg" ), szStatusMessage ? szStatusMessage : "" );
+		
+		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("status-global") );
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
+			if ( valueNode->text && _ttoi( valueNode->text ))
+				JCallService( MS_CLIST_SETSTATUSMODE, status, NULL );
+			else
+				CallProtoService( m_szModuleName, PS_SETSTATUS, status, NULL );
+		}
+		SetAwayMsg( status, szStatusMessage );
 
 		// return NoDlg setting
 		DBWriteContactSettingByte( NULL, "SRAway", StatusModeToDbSetting( status, "NoDlg" ), (BYTE)nNoDlg );
