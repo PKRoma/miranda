@@ -139,6 +139,27 @@ static char* findClose( char* p )
 	return NULL;
 }
 
+static char *findNextTag( char *p )
+{
+	while (p && *p)
+	{
+		if (p = strchr(p, '<'))
+		{
+			if (!strncmp(p, "<![CDATA[", 9))
+			{
+				// skip CDATA
+				if (p = strstr(p, "]]>"))
+					p += 3;
+			} else
+			{
+				return p;
+			}
+		}
+	}
+
+	return p;
+}
+
 int CJabberProto::OnXmlParse( XmlState *xmlState, char* buffer )
 {
 	char* r;
@@ -151,7 +172,7 @@ int CJabberProto::OnXmlParse( XmlState *xmlState, char* buffer )
 
 	while ( *p != 0 ) {
 		// found starting bracket
-		if ( *p == '<' ) {
+		if ( (*p == '<') && strncmp( p, "<![CDATA[", 9 ) ) {
 			if ( memcmp( p, "<!--", 4 ) == 0 ) {
 				char* q = strstr( p+4, "-->" );
 				if ( q == NULL )
@@ -209,7 +230,7 @@ int CJabberProto::OnXmlParse( XmlState *xmlState, char* buffer )
 				p = skipSpaces( p, &num );  // Skip whitespaces after end tags
 		}
 		else {	// found inner text
-			char* q = strchr( p+1, '<' );
+			char* q = findNextTag(p);
 			if ( q == NULL )
 				break;
 
