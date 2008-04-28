@@ -86,7 +86,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SetButtonCheck( hwndDlg, IDC_YAHOO_JAPAN, YAHOO_GetByte( "YahooJapan", 0 ) );
 		SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, YAHOO_GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, YAHOO_GetByte( "UseYAB", 1 )); 
-		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, YAHOO_GetByte( "ShowAvatars", 0 )); 
+		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, YAHOO_GetByte( "ShowAvatars", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, YAHOO_GetByte( "MailAutoLogin", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL, !YAHOO_GetByte( "DisableYahoomail", 0 ));
 		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, YAHOO_GetByte( "ShowErrors", 1 )); 
