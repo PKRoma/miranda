@@ -230,6 +230,21 @@ char* __stdcall JabberUrlDecode( char* str )
 		return NULL;
 
 	for ( p=q=str; *p!='\0'; p++,q++ ) {
+		if ( *p == '<' ) {
+			// skip CDATA
+			if ( !strncmp( p, "<![CDATA[", 9 ))
+			{
+				p += 9;
+				char *tail = strstr(p, "]]>");
+				int count = tail ? (tail-p) : strlen(p);
+				memmove(q, p, count);
+				q += count-1;
+				p = (tail ? (tail+3) : (p+count)) - 1;
+			} else
+			{
+				*q = *p;
+			}
+		} else
 		if ( *p == '&' ) {
 			if ( !strncmp( p, "&amp;", 5 )) {	*q = '&'; p += 4; }
 			else if ( !strncmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
@@ -237,8 +252,8 @@ char* __stdcall JabberUrlDecode( char* str )
 			else if ( !strncmp( p, "&lt;", 4 )) { *q = '<'; p += 3; }
 			else if ( !strncmp( p, "&quot;", 6 )) { *q = '"'; p += 5; }
 			else { *q = *p;	}
-		}
-		else {
+		} else
+        {
 			*q = *p;
 		}
 	}
