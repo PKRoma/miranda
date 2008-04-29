@@ -830,14 +830,20 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				SelectObject(tempDC, hOldBrush);
 				DeleteObject(hBrush);
 				DeleteObject(rgnOutside);
-			} else if ( cornerRadius > 0 )	{
+			} 
+			else if ( cornerRadius > 0 )
+			{
 				// else create clipping area (round corners)
 				hRgn=CreateRoundRectRgn(0, 0, szWnd.cx+1, szWnd.cy+1, cornerRadius<<1, cornerRadius<<1);
-			} else {
+			}
+			else
+			{
 				hRgn=CreateRectRgn(0, 0, szWnd.cx+1, szWnd.cy+1);
 			}
 			// select clip area
-			if ( hRgn )	ExtSelectClipRgn(tempDC, hRgn, RGN_AND);
+			if ( hRgn )
+				ExtSelectClipRgn(tempDC, hRgn, RGN_AND);
+
 			if ( AniAva.bFlags & AAO_OPAQUE)
 			{
 				// if back color - fill clipping area
@@ -863,9 +869,9 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				DeleteObject(hRgn);
 			}
 
-			if (	(AniAva.bFlags & AAO_HAS_OVERLAY)
-				&&(dat->overlayIconIdx!=-1)
-				&&(AniAva.overlayIconImageList) )
+			if ( ( AniAva.bFlags & AAO_HAS_OVERLAY )
+				  && ( dat->overlayIconIdx != -1 )
+				  && ( AniAva.overlayIconImageList ) )
 			{
 				// if overlay - draw overlay icon
 				// position - on avatar
@@ -900,6 +906,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 				exStyle=GetWindowLong(dat->hWindow,GWL_EXSTYLE);
 				exStyle|=WS_EX_LAYERED;
 				SetWindowLong(dat->hWindow,GWL_EXSTYLE,exStyle);
+				SetWindowPos( pcli->hwndContactTree, dat->hWindow, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSENDCHANGING );
 				g_proc_UpdateLayeredWindow(dat->hWindow, hDC_animation, &ptWnd, &szWnd, copyFromDC, &pt_from, RGB(0,0,0), &bf, ULW_ALPHA );
 			}
 
