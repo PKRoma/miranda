@@ -4,7 +4,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_VERSION             "0.7.5"
-!define MIM_PREVIEW             "1" ; comment out for final build
+;!define MIM_PREVIEW             "1" ; comment out for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
