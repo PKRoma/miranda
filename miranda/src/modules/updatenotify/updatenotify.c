@@ -95,7 +95,7 @@ int LoadUpdateNotifyModule(void) {
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_EMPTYBLOB);
 	mi.pszPopupName = LPGEN("&Help");
 	mi.position = 2000030000;
-	mi.pszName = LPGEN("Check for Updates");
+	mi.pszName = LPGEN("Check for Update");
 	mi.pszService = "UpdateNotify/UpdateCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	
