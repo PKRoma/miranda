@@ -29,8 +29,10 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_caps.h"
 
-#include "m_genmenu.h"
-#include "m_icolib.h"
+#include <m_genmenu.h>
+#include <m_icolib.h>
+#include <m_fontservice.h>
+
 #include "sdk/m_cluiframes.h"
 
 #include "sdk/m_proto_listeningto.h"
@@ -772,6 +774,7 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 	m_hiddenItemCount = 0;
 	m_bLocked = false;
 	m_nextTooltipId = 0;
+	m_hhkFontsChanged = 0;
 
 	if (ServiceExists(MS_CLIST_FRAMES_ADDFRAME))
 	{
@@ -790,6 +793,9 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 		frame.TBtname = proto->m_tszUserName;
 		m_frameId = CallService(MS_CLIST_FRAMES_ADDFRAME, (WPARAM)&frame, 0);
 		mir_free(frame.tname);
+
+		m_hhkFontsChanged = HookEventMessage(ME_FONT_RELOAD, m_hwnd, WM_APP);
+		ReloadFonts();
 
 		m_hwndToolTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
 			WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
@@ -810,10 +816,13 @@ CJabberInfoFrame::~CJabberInfoFrame()
 {
 	if (!m_hwnd) return;
 
+	if (m_hhkFontsChanged) UnhookEvent(m_hhkFontsChanged);
 	CallService(MS_CLIST_FRAMES_REMOVEFRAME, (WPARAM)m_frameId, 0);
 	SetWindowLong(m_hwnd, GWL_USERDATA, 0);
 	DestroyWindow(m_hwnd);
 	DestroyWindow(m_hwndToolTip);
+	DeleteObject(m_hfntText);
+	DeleteObject(m_hfntTitle);
 	m_hwnd = NULL;
 }
 
@@ -854,6 +863,12 @@ LRESULT CJabberInfoFrame::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
+		case WM_APP:
+		{
+			ReloadFonts();
+			return 0;
+		}
+
 		case WM_PAINT:
 		{
 			RECT rc; GetClientRect(m_hwnd, &rc);
@@ -926,6 +941,29 @@ void CJabberInfoFrame::LockUpdates()
 void CJabberInfoFrame::Update()
 {
 	m_bLocked = false;
+	UpdateSize();
+}
+
+void CJabberInfoFrame::ReloadFonts()
+{
+	LOGFONT lfFont;
+
+	FontID fontid = {0};
+	fontid.cbSize = sizeof(fontid);
+	lstrcpyA(fontid.group, "Jabber");
+	lstrcpyA(fontid.name, "Frame title");
+	m_clTitle = CallService(MS_FONT_GET, (WPARAM)&fontid, (LPARAM)&lfFont);
+	m_hfntTitle = CreateFontIndirect(&lfFont);
+	lstrcpyA(fontid.name, "Frame text");
+	m_clText = CallService(MS_FONT_GET, (WPARAM)&fontid, (LPARAM)&lfFont);
+	m_hfntText = CreateFontIndirect(&lfFont);
+
+	ColourID colourid = {0};
+	colourid.cbSize = sizeof(colourid);
+	lstrcpyA(colourid.group, "Jabber");
+	lstrcpyA(colourid.name, "Background");
+	m_clBack = CallService(MS_COLOUR_GET, (WPARAM)&colourid, 0);
+
 	UpdateSize();
 }
 
@@ -1012,11 +1050,12 @@ void CJabberInfoFrame::PaintSkinGlyph(HDC hdc, RECT *rc, char **glyphs, COLORREF
 void CJabberInfoFrame::PaintCompact(HDC hdc)
 {
 	RECT rc; GetClientRect(m_hwnd, &rc);
-	char *glyphs[] = { "Main,ID=FrameTitleBar", "Main,ID=ProtoInfo", "Main,ID=EventArea", "Main,ID=StatusBar", NULL};
-	PaintSkinGlyph(hdc, &rc, glyphs, GetSysColor(COLOR_WINDOW));
+	char *glyphs[] = { "Main,ID=ProtoInfo", "Main,ID=EventArea", "Main,ID=StatusBar", NULL };
+	PaintSkinGlyph(hdc, &rc, glyphs, m_clBack);
 
-	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	HFONT hfntSave = (HFONT)SelectObject(hdc, m_hfntTitle);
 	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, m_clTitle);
 
 	int cx_icon = GetSystemMetrics(SM_CXSMICON);
 	int cy_icon = GetSystemMetrics(SM_CYSMICON);
@@ -1065,15 +1104,17 @@ void CJabberInfoFrame::PaintCompact(HDC hdc)
 			}
 		}
 	}
+
+	SelectObject(hdc, hfntSave);
 }
 
 void CJabberInfoFrame::PaintNormal(HDC hdc)
 {
 	RECT rc; GetClientRect(m_hwnd, &rc);
-	char *glyphs[] = { "Main,ID=ProtoInfo", "Main,ID=EventArea", "Main,ID=StatusBar", NULL};
-	PaintSkinGlyph(hdc, &rc, glyphs, GetSysColor(COLOR_WINDOW));
+	char *glyphs[] = { "Main,ID=ProtoInfo", "Main,ID=EventArea", "Main,ID=StatusBar", NULL };
+	PaintSkinGlyph(hdc, &rc, glyphs, m_clBack);
 
-	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	HFONT hfntSave = (HFONT)SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 	SetBkMode(hdc, TRANSPARENT);
 
 	int cx_icon = GetSystemMetrics(SM_CXSMICON);
@@ -1092,7 +1133,8 @@ void CJabberInfoFrame::PaintNormal(HDC hdc)
 		}
 
 		int cx = SZ_FRAMEPADDING;
-		for (char *p = item.m_pszName; p = strchr(p+1, '/'); cx += cx_icon) ;
+		int depth = 0;
+		for (char *p = item.m_pszName; p = strchr(p+1, '/'); cx += cx_icon) ++depth;
 
 		SetRect(&item.m_rcItem, cx, cy, rc.right - SZ_FRAMEPADDING, cy + line_height);
 
@@ -1108,6 +1150,9 @@ void CJabberInfoFrame::PaintNormal(HDC hdc)
 			}
 		}
 
+		SelectObject(hdc, depth ? m_hfntText : m_hfntTitle);
+		SetTextColor(hdc, depth ? m_clText : m_clTitle);
+
 		RECT rcText; SetRect(&rcText, cx, cy, rc.right - SZ_FRAMEPADDING, cy + line_height);
 		DrawText(hdc, item.m_pszText, lstrlen(item.m_pszText), &rcText, DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS);
 
@@ -1115,6 +1160,8 @@ void CJabberInfoFrame::PaintNormal(HDC hdc)
 
 		cy += line_height + SZ_LINESPACING;
 	}
+
+	SelectObject(hdc, hfntSave);
 }
 
 void CJabberInfoFrame::CreateInfoItem(char *pszName, bool bCompact, LPARAM pUserData)

@@ -149,6 +149,7 @@ protected:
  *******************************************************************/
 
 #define GLOBAL_SETTING_PREFIX	"JABBER"
+#define GLOBAL_SETTING_MODULE	"JABBER"
 
 #define JABBER_DEFAULT_PORT 5222
 #define JABBER_IQID "mir_"
@@ -545,10 +546,15 @@ private:
 	int m_nextTooltipId;
 	HWND m_hwndToolTip;
 
+	HANDLE m_hhkFontsChanged;
+	HFONT m_hfntTitle, m_hfntText;
+	COLORREF m_clTitle, m_clText, m_clBack;
+
 	static void InitClass();
 	static LRESULT CALLBACK GlobalWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
+	void ReloadFonts();
 	void UpdateSize();
 
 	void RemoveTooltip(int id);

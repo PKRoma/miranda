@@ -32,6 +32,8 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "jabber_rc.h"
 
+#include <m_fontservice.h>
+
 #include "sdk/m_assocmgr.h"
 #include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
@@ -167,6 +169,41 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	if ( ServiceExists( MS_ASSOCMGR_ADDNEWURLTYPE )) {
 		CreateServiceFunction("JABBER/*" JS_PARSE_XMPP_URI, g_SvcParseXmppUri );
 		AssocMgr_AddNewUrlTypeT( "xmpp:", TranslateT("Jabber Link Protocol"), hInst, IDI_JABBER, "JABBER/*" JS_PARSE_XMPP_URI, 0 );
+	}
+
+	{
+		// init fontservice for info frame
+		FontID fontid = {0};
+		fontid.cbSize = sizeof(fontid);
+		lstrcpyA(fontid.group, "Jabber");
+		lstrcpyA(fontid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
+		fontid.flags = FIDF_DEFAULTVALID;
+
+		fontid.deffontsettings.charset = DEFAULT_CHARSET;
+		fontid.deffontsettings.colour = GetSysColor(COLOR_WINDOWTEXT);
+		fontid.deffontsettings.size = -11;
+		lstrcpyA(fontid.deffontsettings.szFace, "MS Shell Dlg");
+		fontid.deffontsettings.style = 0;
+
+		lstrcpyA(fontid.name, "Frame title");
+		lstrcpyA(fontid.prefix, "fntFrameTitle");
+		fontid.deffontsettings.style = DBFONTF_BOLD;
+		CallService(MS_FONT_REGISTER, (WPARAM)&fontid, 0);
+
+		lstrcpyA(fontid.name, "Frame text");
+		lstrcpyA(fontid.prefix, "fntFrameClock");
+		fontid.deffontsettings.style = 0;
+		CallService(MS_FONT_REGISTER, (WPARAM)&fontid, 0);
+
+		ColourID colourid = {0};
+		colourid.cbSize = sizeof(colourid);
+		lstrcpyA(colourid.group, "Jabber");
+		lstrcpyA(colourid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
+
+		lstrcpyA(colourid.name, "Background");
+		lstrcpyA(colourid.setting, "clFrameBack");
+		colourid.defcolour = GetSysColor(COLOR_WINDOW);
+		CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
 	}
 
 	return 0;
