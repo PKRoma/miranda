@@ -1222,7 +1222,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		case WM_KILLFOCUS:
 			break;
 		case WM_INPUTLANGCHANGEREQUEST: {
-			return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
+			//return DefWindowProc(hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
+			return CallWindowProc(OldMessageEditProc, hwnd, WM_INPUTLANGCHANGEREQUEST, wParam, lParam);
 		}
 		case WM_INPUTLANGCHANGE:
 			if (myGlobals.m_AutoLocaleSupport && GetFocus() == hwnd && mwdat->pContainer->hwndActive == hwndParent && GetForegroundWindow() == mwdat->pContainer->hwnd && GetActiveWindow() == mwdat->pContainer->hwnd) {
@@ -5291,8 +5292,8 @@ quote_from_last:
 				LoadOwnAvatar(hwndDlg, dat);
 			break;
 		}
-		case WM_INPUTLANGCHANGE:
-			return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
+		//case WM_INPUTLANGCHANGE:
+		//	return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
 
 		case DM_GETWINDOWSTATE: {
 			UINT state = 0;

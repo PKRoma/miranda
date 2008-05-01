@@ -48,6 +48,11 @@ Version 2.2.1.4  - 2008/04/XX
 	  by pescuma)
 	  
 	- removed useless help menu entries
+	
+	+ added spin controls to configure popup delay values
+	
+	+ allow to set -1 for each popup delay to use "infinite" delay (
+	  popup will stay on screen forever).
 	  
 	  	  
 Version 2.2.1.3  - 2008/04/XX

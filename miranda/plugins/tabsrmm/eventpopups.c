@@ -267,10 +267,16 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_URL, options->bDefaultColorUrl ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_FILE, options->bDefaultColorFile ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers ? BST_CHECKED : BST_UNCHECKED);
-			SetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1 ? options->iDelayMsg : 0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_URL, options->iDelayUrl != -1 ? options->iDelayUrl : 0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_FILE, options->iDelayFile != -1 ? options->iDelayFile : 0, TRUE);
-			SetDlgItemInt(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1 ? options->iDelayOthers : 0, TRUE);
+
+			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
+			SendDlgItemMessage(hWnd, IDC_DELAY_URL_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
+			SendDlgItemMessage(hWnd, IDC_DELAY_FILE_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
+			SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
+
+			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayMsg);
+			SendDlgItemMessage(hWnd, IDC_DELAY_URL_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayUrl);
+			SendDlgItemMessage(hWnd, IDC_DELAY_FILE_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayFile);
+			SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayOthers);
 
 			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
 			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
@@ -348,10 +354,19 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 						options->bDefaultColorUrl = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_URL);
 						options->bDefaultColorFile = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_FILE);
 						options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
+
+						/*
 						options->iDelayMsg = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_MESSAGE) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_MESSAGE, NULL, FALSE);
 						options->iDelayUrl = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_URL) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_URL, NULL, FALSE);
 						options->iDelayFile = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_FILE) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_FILE, NULL, FALSE);
 						options->iDelayOthers = IsDlgButtonChecked(hWnd, IDC_CHKINFINITE_OTHERS) ? (DWORD) - 1 : (DWORD)GetDlgItemInt(hWnd, IDC_DELAY_OTHERS, NULL, FALSE);
+						*/
+
+						options->iDelayMsg = SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_GETPOS, 0, 0);
+						options->iDelayUrl = SendDlgItemMessage(hWnd, IDC_DELAY_URL_SPIN, UDM_GETPOS, 0, 0);
+						options->iDelayFile = SendDlgItemMessage(hWnd, IDC_DELAY_FILE_SPIN, UDM_GETPOS, 0, 0);
+						options->iDelayOthers = SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_GETPOS, 0, 0);
+
 						options->iAnnounceMethod = SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETITEMDATA, (WPARAM)SendDlgItemMessage(hWnd, IDC_ANNOUNCEMETHOD, CB_GETCURSEL, 0, 0), 0);
 						options->bSimpleMode = (BYTE)SendDlgItemMessage(hWnd, IDC_SIMPLEMODE, CB_GETCURSEL, 0, 0);
 

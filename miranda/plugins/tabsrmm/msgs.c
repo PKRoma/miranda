@@ -32,13 +32,14 @@ $Id$
 #include "m_avatars.h"
 #include "chat/chat.h"
 #include "sendqueue.h"
-//#include "m_MathModule.h"
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.3\\b0\\ul0\\par ",
-	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.4\\b0\\ul0\\par ",
+	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works, small adjustments for minimum splitter position.\\par ",
 	"*\tReorganized group chat options completed.\\par ",
+	"*\tAdded support for the history events plugin by pescuma.\\par ",
+	"*\tRemoved obsolute features (7bit ANSI check for outgoing messages, useless menu entries in the help menu).\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };

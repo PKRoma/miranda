@@ -435,6 +435,11 @@
 #define IDC_MATHMODSUPPORT              1348
 #define IDC_MESSAGEPREVIEWLIMIT         1349
 #define IDC_MESSAGEPREVIEWLIMITSPIN     1350
+#define IDC_DELAY_MESSAGE_SPIN          1351
+#define IDC_DELAY_URL_SPIN              1352
+#define IDC_DELAY_FILE_SPIN             1353
+#define IDC_MESSAGEPREVIEWLIMITSPIN2    1354
+#define IDC_DELAY_OTHERS_SPIN           1354
 #define IDC_TEMPLATELIST                1361
 #define IDC_EDITTEMPLATE                1362
 #define IDC_REVERT                      1363
