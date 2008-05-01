@@ -1466,8 +1466,14 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	GetClientRect(hwnd, &clRect);
 	if (rcPaint == NULL)
 		rcPaint = &clRect;
-	if (IsRectEmpty(rcPaint))
+	if (IsRectEmpty(rcPaint)) {
+		SelectObject(hdcTempAV, hbmTempOldAV);
+		DeleteObject(hbmTempAV);
+		DeleteDC(hdcTempAV);
+
+		DeleteDC(hdcAV);
 		return;
+	}
 	y = -dat->yScroll;
 	hdcMem = CreateCompatibleDC(hdc);
 	hBmpOsb = CreateBitmap(clRect.right, clRect.bottom, 1, GetDeviceCaps(hdc, BITSPIXEL), NULL);
