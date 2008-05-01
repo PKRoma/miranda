@@ -31,7 +31,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_MY_REFRESH	(WM_USER+0x1000)
 #define WM_MY_RENAME	(WM_USER+0x1001)
 
-BOOL IsProtocolLoaded(char* pszProtocolName);
 int  Proto_EnumProtocols( WPARAM, LPARAM );
 
 #define errMsg \
@@ -600,7 +599,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				GetTextExtentPoint32(lps->hDC, text, length, &sz);
 				lps->rcItem.top += sz.cy + 2;
 
-				if (acc->ppro && CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)acc->szProtoName)) {
+				if (acc->ppro && Proto_IsProtocolLoaded(acc->szProtoName)) {
 					char *szIdName;
 					TCHAR *tszIdName;
 					CONTACTINFO ci = { 0 };
