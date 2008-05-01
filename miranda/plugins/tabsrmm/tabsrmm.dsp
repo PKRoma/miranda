@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** NICHT BEARBEITEN **
+# ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug
-!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
-!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
 !MESSAGE 
-!MESSAGE Für die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -182,6 +182,7 @@ DEP_CPP_CLIST=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -204,6 +205,7 @@ DEP_CPP_CLIST=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -223,29 +225,9 @@ DEP_CPP_CLIST=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_CLIST=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -261,6 +243,7 @@ DEP_CPP_COLOR=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -283,6 +266,7 @@ DEP_CPP_COLOR=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -302,29 +286,9 @@ DEP_CPP_COLOR=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_COLOR=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -340,6 +304,7 @@ DEP_CPP_LOG_C=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -362,6 +327,7 @@ DEP_CPP_LOG_C=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -381,29 +347,9 @@ DEP_CPP_LOG_C=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_LOG_C=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -423,6 +369,7 @@ DEP_CPP_MAIN_=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -445,6 +392,7 @@ DEP_CPP_MAIN_=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -464,29 +412,9 @@ DEP_CPP_MAIN_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_MAIN_=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -502,6 +430,7 @@ DEP_CPP_MANAG=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -524,6 +453,7 @@ DEP_CPP_MANAG=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -543,29 +473,9 @@ DEP_CPP_MANAG=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_MANAG=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -581,6 +491,7 @@ DEP_CPP_MESSA=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -603,6 +514,7 @@ DEP_CPP_MESSA=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -622,29 +534,9 @@ DEP_CPP_MESSA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_MESSA=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -660,6 +552,7 @@ DEP_CPP_OPTIO=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -682,6 +575,7 @@ DEP_CPP_OPTIO=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -701,29 +595,9 @@ DEP_CPP_OPTIO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_OPTIO=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -739,6 +613,7 @@ DEP_CPP_SERVI=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -761,6 +636,7 @@ DEP_CPP_SERVI=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -780,29 +656,9 @@ DEP_CPP_SERVI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_SERVI=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -818,6 +674,7 @@ DEP_CPP_TOOLS=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -840,6 +697,7 @@ DEP_CPP_TOOLS=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -859,29 +717,9 @@ DEP_CPP_TOOLS=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_TOOLS=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -897,6 +735,7 @@ DEP_CPP_WINDO=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -919,6 +758,7 @@ DEP_CPP_WINDO=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -938,29 +778,9 @@ DEP_CPP_WINDO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
+	{$(INCLUDE)}"tom.h"\
 	
-NODEP_CPP_WINDO=\
-	".\om.h"\
-	
-
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
 # ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# ADD CPP /Yu"../commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "API"
@@ -1045,6 +865,7 @@ DEP_CPP_BUTTO=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1067,6 +888,7 @@ DEP_CPP_BUTTO=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1086,9 +908,7 @@ DEP_CPP_BUTTO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_BUTTO=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 # End Source File
 # Begin Source File
@@ -1105,6 +925,7 @@ DEP_CPP_CONTA=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1127,6 +948,7 @@ DEP_CPP_CONTA=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1147,9 +969,7 @@ DEP_CPP_CONTA=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_CONTA=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1179,6 +999,7 @@ DEP_CPP_CONTAI=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1201,6 +1022,7 @@ DEP_CPP_CONTAI=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1220,9 +1042,7 @@ DEP_CPP_CONTAI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_CONTAI=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1252,6 +1072,7 @@ DEP_CPP_EVENT=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
@@ -1275,6 +1096,7 @@ DEP_CPP_EVENT=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1294,9 +1116,7 @@ DEP_CPP_EVENT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_EVENT=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1326,6 +1146,7 @@ DEP_CPP_FORMA=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1348,6 +1169,7 @@ DEP_CPP_FORMA=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1367,9 +1189,7 @@ DEP_CPP_FORMA=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_FORMA=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1407,6 +1227,7 @@ DEP_CPP_GENER=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1429,6 +1250,7 @@ DEP_CPP_GENER=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1448,9 +1270,7 @@ DEP_CPP_GENER=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_GENER=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1480,6 +1300,7 @@ DEP_CPP_HOTKE=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1502,6 +1323,7 @@ DEP_CPP_HOTKE=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1522,9 +1344,7 @@ DEP_CPP_HOTKE=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_HOTKE=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1554,6 +1374,7 @@ DEP_CPP_IMAGE=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1576,6 +1397,7 @@ DEP_CPP_IMAGE=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1596,9 +1418,7 @@ DEP_CPP_IMAGE=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_IMAGE=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1635,6 +1455,7 @@ DEP_CPP_MSGDI=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1657,6 +1478,7 @@ DEP_CPP_MSGDI=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1677,10 +1499,8 @@ DEP_CPP_MSGDI=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1716,6 +1536,7 @@ DEP_CPP_MSGDL=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1738,6 +1559,7 @@ DEP_CPP_MSGDL=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1757,9 +1579,7 @@ DEP_CPP_MSGDL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_MSGDL=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1789,6 +1609,7 @@ DEP_CPP_MSGLO=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1811,6 +1632,7 @@ DEP_CPP_MSGLO=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1830,9 +1652,7 @@ DEP_CPP_MSGLO=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_MSGLO=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1868,6 +1688,7 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1890,6 +1711,7 @@ DEP_CPP_MSGOP=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1909,10 +1731,8 @@ DEP_CPP_MSGOP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -1948,6 +1768,7 @@ DEP_CPP_MSGS_=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1970,6 +1791,7 @@ DEP_CPP_MSGS_=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1992,9 +1814,7 @@ DEP_CPP_MSGS_=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_MSGS_=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2030,6 +1850,7 @@ DEP_CPP_SELEC=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2052,6 +1873,7 @@ DEP_CPP_SELEC=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2071,9 +1893,7 @@ DEP_CPP_SELEC=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_SELEC=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2103,6 +1923,7 @@ DEP_CPP_SENDQ=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2125,6 +1946,7 @@ DEP_CPP_SENDQ=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2145,9 +1967,7 @@ DEP_CPP_SENDQ=\
 	".\sendqueue.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_SENDQ=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2177,6 +1997,7 @@ DEP_CPP_SRMM_=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2199,6 +2020,7 @@ DEP_CPP_SRMM_=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2218,9 +2040,7 @@ DEP_CPP_SRMM_=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_SRMM_=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2256,6 +2076,7 @@ DEP_CPP_TABCT=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2278,6 +2099,7 @@ DEP_CPP_TABCT=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2297,10 +2119,8 @@ DEP_CPP_TABCT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_TABCT=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2330,6 +2150,7 @@ DEP_CPP_TEMPL=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2352,6 +2173,7 @@ DEP_CPP_TEMPL=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2371,9 +2193,7 @@ DEP_CPP_TEMPL=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_TEMPL=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2403,6 +2223,7 @@ DEP_CPP_THEME=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2425,6 +2246,7 @@ DEP_CPP_THEME=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2444,9 +2266,7 @@ DEP_CPP_THEME=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_THEME=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2476,6 +2296,7 @@ DEP_CPP_TRAYI=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2498,6 +2319,7 @@ DEP_CPP_TRAYI=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2517,9 +2339,7 @@ DEP_CPP_TRAYI=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_TRAYI=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2549,6 +2369,7 @@ DEP_CPP_TSBUT=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2571,6 +2392,7 @@ DEP_CPP_TSBUT=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2590,9 +2412,7 @@ DEP_CPP_TSBUT=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_TSBUT=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -2622,6 +2442,7 @@ DEP_CPP_TYPIN=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2644,6 +2465,7 @@ DEP_CPP_TYPIN=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2663,9 +2485,7 @@ DEP_CPP_TYPIN=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_TYPIN=\
-	".\om.h"\
+	{$(INCLUDE)}"tom.h"\
 	
 # End Source File
 # Begin Source File
@@ -2682,6 +2502,7 @@ DEP_CPP_USERP=\
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -2704,6 +2525,7 @@ DEP_CPP_USERP=\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -2723,10 +2545,8 @@ DEP_CPP_USERP=\
 	".\nen.h"\
 	".\templates.h"\
 	".\typingnotify.h"\
-	
-NODEP_CPP_USERP=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
