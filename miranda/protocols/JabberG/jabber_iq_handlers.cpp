@@ -361,6 +361,7 @@ void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIq
 	}	}
 
 	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
+	RebuildInfoFrame();
 }
 
 void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )

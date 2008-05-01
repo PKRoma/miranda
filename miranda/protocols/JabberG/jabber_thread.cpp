@@ -540,6 +540,7 @@ LBL_FatalError:
 			info->zlibUninit();
 			EnableMenuItems( FALSE );
 			RebuildStatusMenu();
+			RebuildInfoFrame();
 			if ( m_hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );
 				// Since this is a different thread, simulate the click on the cancel button instead
@@ -1722,6 +1723,7 @@ void CJabberProto::OnProcessPresence( XmlNode *node, void *userdata )
 						// See AddToListByJID() and JabberDbSettingChanged().
 						DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 			}	}	}
+			RebuildInfoFrame();
 		}
 		else {
 			XmlNode* n = JabberXmlGetChild( node, "nick" );

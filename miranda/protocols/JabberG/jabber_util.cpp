@@ -1268,14 +1268,75 @@ void CJabberProto::ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param
 // Rebuild status menu
 static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
 {
+	CJabberProto *ppro = (CJabberProto *)param;
+
 	CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
 	if ( pcli && pcli->version > 4 )
 		pcli->pfnReloadProtoMenus();
 }
 
+static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
+{
+	CJabberProto *ppro = (CJabberProto *)param;
+
+	ppro->m_pInfoFrame->LockUpdates();
+	if (!ppro->m_bJabberOnline)
+	{
+		ppro->m_pInfoFrame->RemoveInfoItem("$/PEP");
+		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports");
+		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), _T("Offline"));
+	} else
+	{
+		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), ppro->m_szJabberJID);
+
+		if (!ppro->m_bPepSupported)
+		{
+			ppro->m_pInfoFrame->RemoveInfoItem("$/PEP");
+		} else
+		{
+			ppro->m_pInfoFrame->RemoveInfoItem("$/PEP/");
+			ppro->m_pInfoFrame->CreateInfoItem("$/PEP", false);
+			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP", ppro->GetIconHandle(IDI_PL_LIST_ANY), TranslateT("Advanced Status"));
+
+			ppro->m_pInfoFrame->CreateInfoItem("$/PEP/mood", true);
+			ppro->m_pInfoFrame->SetInfoItemCallback("$/PEP/mood", &CJabberProto::InfoFrame_OnUserMood);
+			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/mood", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), _T("User mood"));
+		}
+
+		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports/");
+		ppro->m_pInfoFrame->CreateInfoItem("$/Transports", false);
+		ppro->m_pInfoFrame->UpdateInfoItem("$/Transports", ppro->GetIconHandle(IDI_TRANSPORT), TranslateT("Transports"));
+
+		int i = 0;
+		JABBER_LIST_ITEM *item = NULL;
+		while (( i=ppro->ListFindNext( LIST_ROSTER, i )) >= 0 ) {
+			if (( item=ppro->ListGetItemPtrFromIndex( i )) != NULL ) {
+				if ( _tcschr( item->jid, '@' )==NULL && _tcschr( item->jid, '/' )==NULL && item->subscription!=SUB_NONE ) {
+					HANDLE hContact = ppro->HContactFromJID( item->jid );
+					if ( hContact == NULL ) continue;
+
+					char name[128];
+					char *jid_copy = mir_t2a(item->jid);
+					mir_snprintf(name, SIZEOF(name), "$/Transports/%s", jid_copy);
+					ppro->m_pInfoFrame->CreateInfoItem(name, true, (LPARAM)hContact);
+					ppro->m_pInfoFrame->UpdateInfoItem(name, ppro->GetIconHandle(IDI_TRANSPORTL), (TCHAR *)item->jid);
+					ppro->m_pInfoFrame->SetInfoItemCallback(name, &CJabberProto::InfoFrame_OnTransport);
+					mir_free(jid_copy);
+			}	}
+			i++;
+		}
+	}
+	ppro->m_pInfoFrame->Update();
+}
+
 void CJabberProto::RebuildStatusMenu()
 {
-	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, 0);
+	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, (ULONG_PTR)this);
+}
+
+void CJabberProto::RebuildInfoFrame()
+{
+	QueueUserAPC(sttRebuildInfoFrameApcProc, hMainThread, (ULONG_PTR)this);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1488,43 +1549,6 @@ BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, 
 
 ////////////////////////////////////////////////////////////////////////
 // Choose protocol instance
-static LRESULT CALLBACK sttJabberChooseInstanceMenuHostWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-		case WM_MEASUREITEM:
-		{
-			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
-			if (lpmis->CtlType != ODT_MENU) return FALSE;
-
-			lpmis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
-			lpmis->itemHeight = GetSystemMetrics(SM_CXSMICON) + 2;
-
-			return TRUE;
-		}
-
-		case WM_DRAWITEM:
-		{
-			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
-			if (lpdis->CtlType != ODT_MENU) return FALSE;
-
-			HICON hIcon = ((lpdis->itemID) > 0 && ((int)lpdis->itemID <= g_Instances.getCount())) ?
-				LoadSkinnedProtoIcon(g_Instances[lpdis->itemID-1]->m_szModuleName, g_Instances[lpdis->itemID-1]->m_iStatus) :
-				LoadSkinnedIcon(SKINICON_OTHER_DELETE);
-
-			DrawIconEx(lpdis->hDC,
-				lpdis->rcItem.left - GetSystemMetrics(SM_CXMENUCHECK),
-				(lpdis->rcItem.top + lpdis->rcItem.bottom - GetSystemMetrics(SM_CYSMICON))/2,
-				hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-				0, NULL, DI_NORMAL);
-
-			return TRUE;
-		}
-	}
-
-	return DefWindowProc(hwnd, message, wParam, lParam);
-}
-
 CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 {
 	if (g_Instances.getCount() == 0) return NULL;
@@ -1535,30 +1559,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 		return NULL;
 	}
 
-	static bool needWindowClass = true;
-	if (needWindowClass)
-	{
-		WNDCLASSEX wcl = {0};
-		wcl.cbSize = sizeof(wcl);
-		wcl.lpfnWndProc = sttJabberChooseInstanceMenuHostWndProc;
-		wcl.style = 0;
-		wcl.cbClsExtra = 0;
-		wcl.cbWndExtra = 0;
-		wcl.hInstance = hInst;
-		wcl.hIcon = NULL;
-		wcl.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wcl.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-		wcl.lpszMenuName = NULL;
-		wcl.lpszClassName = _T("JabberChooseInstance_MenuHostClass");
-		wcl.hIconSm = NULL;
-		RegisterClassEx(&wcl);
-
-		needWindowClass = false;
-	}
-
-	HWND hwndMenuHost = CreateWindow(_T("JabberChooseInstance_MenuHostClass"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hInst, NULL);
-	SetWindowPos(hwndMenuHost, 0, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_DEFERERASE|SWP_NOSENDCHANGING|SWP_HIDEWINDOW);
-	HMENU hMenu = CreatePopupMenu();
+	HMENU hMenu = JMenuCreate();
 
 	int nItems = 0;
 	int lastItemId = 0;
@@ -1566,40 +1567,27 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 	{
 		if (bAllowOffline || ((g_Instances[i]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[i]->m_iStatus != ID_STATUS_CONNECTING)))
 		{
-			MENUITEMINFO mii = {0};
-			mii.cbSize = sizeof(mii);
-			mii.fMask = MIIM_BITMAP|MIIM_FTYPE|MIIM_ID|MIIM_STATE|MIIM_STRING;
-			mii.fType = MFT_STRING;
-			lastItemId = mii.wID = i + 1;
-			mii.hbmpItem = HBMMENU_CALLBACK;
-			mii.dwTypeData = g_Instances[i]->m_tszUserName;
-			InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
+			++nItems;
+			lastItemId = i+1;
+			JMenuAddItem(hMenu, lastItemId,
+				g_Instances[i]->m_tszUserName,
+				LoadSkinnedProtoIcon(g_Instances[i]->m_szModuleName, g_Instances[i]->m_iStatus), false);
 		}
 	}
 
 	int res = lastItemId;
 	if (nItems > 1)
 	{
-		MENUITEMINFO mii = {0};
-		mii.cbSize = sizeof(mii);
+		JMenuAddSeparator(hMenu);
 
-		mii.fMask = MIIM_FTYPE;
-		mii.fType = MFT_SEPARATOR;
-		InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
+		JMenuAddItem(hMenu, 0,
+			TranslateT("Cancel"),
+			LoadSkinnedIconHandle(SKINICON_OTHER_DELETE), true);
 
-		mii.fMask = MIIM_BITMAP|MIIM_FTYPE|MIIM_ID|MIIM_STATE|MIIM_STRING;
-		mii.fType = MFT_STRING;
-		mii.wID = 0;
-		mii.hbmpItem = HBMMENU_CALLBACK;
-		mii.dwTypeData = TranslateT("Cancel");
-		InsertMenuItem(hMenu, ++nItems, TRUE, &mii);
-
-		POINT pt; GetCursorPos(&pt);
-		res = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndMenuHost, NULL);
+		res = JMenuShow(hMenu);
 	}
 
-	DestroyMenu(hMenu);
-	DestroyWindow(hwndMenuHost);
+	JMenuDestroy(hMenu, NULL, NULL);
 
 	return res ? g_Instances[res-1] : NULL;
 };

@@ -172,6 +172,8 @@ CJabberProto::~CJabberProto()
 	ConsoleUninit();
 	MenuUninit();
 
+	delete m_pInfoFrame;
+
 	DestroyHookableEvent( m_hEventNudge );
 	DestroyHookableEvent( m_hEventRawXMLIn );
 	DestroyHookableEvent( m_hEventRawXMLOut );
@@ -215,6 +217,8 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
 	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
+
+	m_pInfoFrame = new CJabberInfoFrame(this);
 
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		jabberChatDllPresent = true;
@@ -292,6 +296,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 
 		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
+
 	return 0;
 }
 
@@ -1216,6 +1221,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 			if ( m_bJabberConnected ) {
 				m_bJabberConnected = m_bJabberOnline = FALSE;
 				RebuildStatusMenu();
+				RebuildInfoFrame();
 			}
 		}
 
@@ -1233,6 +1239,8 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		m_iStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 		thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
+
+		RebuildInfoFrame();
 	}
 	else SetServerStatus( desiredStatus );
 
@@ -1465,6 +1473,35 @@ void CJabberProto::WindowNotify(UINT msg, bool async)
 		WindowList_BroadcastAsync(m_windowList, msg, 0, 0);
 	else
 		WindowList_Broadcast(m_windowList, msg, 0, 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// InfoFrame events
+
+void CJabberProto::InfoFrame_OnSetup(CJabberInfoFrame_Event *evt)
+{
+	OPENOPTIONSDIALOG ood = {0};
+	ood.cbSize = sizeof(ood);
+	ood.pszGroup = "Network";
+	ood.pszPage = mir_t2a(m_tszUserName);
+	ood.pszTab = "Account";
+	CallService(MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood);
+
+	mir_free((void *)ood.pszPage);
+}
+
+void CJabberProto::InfoFrame_OnTransport(CJabberInfoFrame_Event *evt)
+{
+	if (evt->m_event == CJabberInfoFrame_Event::CLICK)
+	{
+		HANDLE hContact = (HANDLE)evt->m_pUserData;
+		POINT pt;
+
+		HMENU hContactMenu = (HMENU)CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM)hContact, 0);
+		GetCursorPos(&pt);
+		int res = TrackPopupMenu(hContactMenu, TPM_RETURNCMD, pt.x, pt.y, 0, (HWND)CallService(MS_CLUI_GETHWND, 0, 0), NULL);
+		CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(res, MPCF_CONTACTMENU), (LPARAM)hContact);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

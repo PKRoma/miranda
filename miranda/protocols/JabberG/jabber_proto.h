@@ -254,6 +254,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE m_hThreadConsole;
 	UINT m_dwConsoleThreadId;
 
+	// proto frame
+	CJabberInfoFrame *m_pInfoFrame;
+
 	LIST<JABBER_LIST_ITEM> m_lstRoster;
 	CRITICAL_SECTION m_csLists;
 	BOOL m_bListInitialised;
@@ -650,6 +653,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	void WindowUnsubscribe(HWND hwnd);
 	void WindowNotify(UINT msg, bool async = false);
 
+	void InfoFrame_OnSetup(CJabberInfoFrame_Event *evt);
+	void InfoFrame_OnTransport(CJabberInfoFrame_Event *evt);
+
 	//---- jabber_rc.cpp -----------------------------------------------------------------
 
 	int    RcGetUnreadEventsCount( void );
@@ -756,6 +762,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );
 	TCHAR* GetXmlLang( void );
 	void   RebuildStatusMenu( void );
+	void   RebuildInfoFrame( void );
 
 	void   ComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
 	void   ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
@@ -819,6 +826,8 @@ struct CJabberProto : public PROTO_INTERFACE
 			
 	void   SetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
 	void   SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
+
+	void InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt);
 
 private:
 	XmlState xmlState;

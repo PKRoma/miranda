@@ -56,6 +56,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( XmlNode* iqNode, void* userdata )
 				m_bPepSupported = TRUE;
 
 				RebuildStatusMenu();
+				RebuildInfoFrame();
 				break;
 			}
 		}
@@ -569,6 +570,7 @@ void CJabberProto::OnIqResultGetRoster( XmlNode* iqNode, void* userdata, CJabber
 		mir_free( szGroupDelimeter );
 
 	OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_ROSTER);
+	RebuildInfoFrame();
 }
 
 void CJabberProto::OnIqResultGetRegister( XmlNode *iqNode, void *userdata )

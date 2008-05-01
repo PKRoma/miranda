@@ -507,6 +507,66 @@ typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( XmlNode* values, void *
 typedef struct TTreeList_ItemInfo *HTREELISTITEM;
 enum { TLM_TREE, TLM_REPORT };
 
+//---- proto frame ------------------------------------------------
+
+class CJabberInfoFrameItem;
+
+struct CJabberInfoFrame_Event
+{
+	enum { CLICK, DESTROY } m_event;
+	const char *m_pszName;
+	LPARAM m_pUserData;
+};
+
+class CJabberInfoFrame
+{
+public:
+	CJabberInfoFrame(CJabberProto *proto);
+	~CJabberInfoFrame();
+
+	void CreateInfoItem(char *pszName, bool bCompact=false, LPARAM pUserData=0);
+	void SetInfoItemCallback(char *pszName, void (CJabberProto::*onEvent)(CJabberInfoFrame_Event *));
+	void UpdateInfoItem(char *pszName, HANDLE hIcolibItem, TCHAR *pszText);
+	void ShowInfoItem(char *pszName, bool bShow);
+	void RemoveInfoItem(char *pszName);
+
+	void LockUpdates();
+	void Update();
+
+private:
+	CJabberProto *m_proto;
+	HWND m_hwnd;
+	int m_frameId;
+	bool m_compact;
+	OBJLIST<CJabberInfoFrameItem> m_pItems;
+	int m_hiddenItemCount;
+	int m_clickedItem;
+	bool m_bLocked;
+	int m_nextTooltipId;
+	HWND m_hwndToolTip;
+
+	static void InitClass();
+	static LRESULT CALLBACK GlobalWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	void UpdateSize();
+
+	void RemoveTooltip(int id);
+	void SetToolTip(int id, RECT *rc, TCHAR *pszText);
+
+	void PaintSkinGlyph(HDC hdc, RECT *rc, char **glyphs, COLORREF fallback);
+	void PaintCompact(HDC hdc);
+	void PaintNormal(HDC hdc);
+
+	enum
+	{
+		SZ_FRAMEPADDING = 2,	// padding inside frame
+		SZ_LINEPADDING = 0,		// line height will be incremented by this value
+		SZ_LINESPACING = 0,		// between lines
+		SZ_ICONSPACING = 2,		// between icon and text
+	};
+};
+
 #include "jabber_list.h"
 #include "jabber_proto.h"
 
@@ -607,6 +667,14 @@ char* __stdcall rtrim( char *string );
 //---- jabber_menu.c ------------------------------------------------
 
 int g_OnModernToolbarInit(WPARAM, LPARAM);
+
+HMENU  JMenuCreate();
+void   JMenuAddItem(HMENU hMenu, LPARAM lParam, TCHAR *szText, HANDLE hIcon, bool bIcolib, bool bCkecked=false);
+void   JMenuAddPopup(HMENU hMenu, HMENU hPopup, TCHAR *szText, HANDLE hIcon, bool bIcolib);
+void   JMenuAddSeparator(HMENU hMenu);
+int    JMenuShow(HMENU hMenu);
+int    JMenuShow(HMENU hMenu, int x, int y);
+void   JMenuDestroy(HMENU hMenu, CJabberProto *ppro, void (CJabberProto::*pfnDestructor)(LPARAM lParam));
 
 //---- jabber_misc.c ------------------------------------------------
 
