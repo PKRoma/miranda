@@ -1809,6 +1809,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							dat->hDbEventFirst = NULL;
 							break;
 						}
+						DestroyMenu(hSubMenu);
 						DestroyMenu(hMenu);
 						SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 						return TRUE;
