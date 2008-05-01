@@ -1253,8 +1253,25 @@ static LRESULT CALLBACK sttJabberMenuHostWndProc(HWND hwnd, UINT message, WPARAM
 
 			HICON hIcon = dat->bIcolib ? (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)dat->hIcon) : (HICON)dat->hIcon;
 
+			if (lpdis->itemState & ODS_CHECKED)
+			{
+				RECT rc;
+				rc.left = rc.right = 2 /*lpdis->rcItem.left - GetSystemMetrics(SM_CXMENUCHECK)*/ - 1;
+				rc.top = rc.bottom = (lpdis->rcItem.top + lpdis->rcItem.bottom - GetSystemMetrics(SM_CYSMICON))/2 - 1;
+				rc.right += 18; rc.bottom += 18;
+				FillRect(lpdis->hDC, &rc, GetSysColorBrush(COLOR_MENUHILIGHT));
+				rc.left++; rc.top++;
+				rc.right--; rc.bottom--;
+
+				COLORREF cl1 = GetSysColor(COLOR_MENUHILIGHT);
+				COLORREF cl2 = GetSysColor(COLOR_MENU);
+				HBRUSH hbr = CreateSolidBrush(RGB((GetRValue(cl1) + GetRValue(cl2)) / 2, (GetGValue(cl1) + GetGValue(cl2)) / 2, (GetBValue(cl1) + GetBValue(cl2)) / 2));
+				FillRect(lpdis->hDC, &rc, hbr);
+				DeleteObject(hbr);
+			}
+
 			DrawIconEx(lpdis->hDC,
-				lpdis->rcItem.left - GetSystemMetrics(SM_CXMENUCHECK),
+				2/*lpdis->rcItem.left - GetSystemMetrics(SM_CXMENUCHECK)*/,
 				(lpdis->rcItem.top + lpdis->rcItem.bottom - GetSystemMetrics(SM_CYSMICON))/2,
 				hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
 				0, NULL, DI_NORMAL);

@@ -237,7 +237,9 @@ BOOL CJabberProto::SendPepMood( int nMoodNumber, TCHAR* szMoodText )
 		return FALSE;
 
 	TCHAR *mood_name = mir_a2t(g_arrMoods[nMoodNumber].szName);
-	m_pInfoFrame->UpdateInfoItem("$/PEP/mood", m_xstatusIcons[nMoodNumber].hIcon, TranslateTS(mood_name));
+	m_pInfoFrame->UpdateInfoItem("$/PEP/mood",
+		nMoodNumber ? m_xstatusIcons[nMoodNumber].hIcon : LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT),
+		TranslateTS(mood_name));
 	mir_free(mood_name);
 
 	XmlNodeIq iq( "set", SerialNext() );
