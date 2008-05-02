@@ -5,8 +5,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabsrmm", "tabsrmm_8.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONSXP", "icons\ICONSXP\iconsxp_8.vcproj", "{987C5A57-A46B-4779-BB85-077E21F7BF7F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tabmodplus", "tabmodplus\tabmodplus.vcproj", "{DD76B998-ED0D-4BFD-9660-3ADC3A334872}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ICONS_NOVA", "icons\ICONS_NOVA\ICONS_NOVA.vcproj", "{F553F140-B7D3-4984-90B1-00D4831B8A6E}"
 EndProject
 Global
@@ -33,14 +31,6 @@ Global
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release Unicode|Win32.Build.0 = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.ActiveCfg = Release|Win32
 		{987C5A57-A46B-4779-BB85-077E21F7BF7F}.Release|Win32.Build.0 = Release|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Debug Unicode|Win32.ActiveCfg = Unicode Debug|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Debug Unicode|Win32.Build.0 = Unicode Debug|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Debug|Win32.ActiveCfg = Debug|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Debug|Win32.Build.0 = Debug|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Release Unicode|Win32.ActiveCfg = Unicode Release|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Release Unicode|Win32.Build.0 = Unicode Release|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Release|Win32.ActiveCfg = Release|Win32
-		{DD76B998-ED0D-4BFD-9660-3ADC3A334872}.Release|Win32.Build.0 = Release|Win32
 		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
 		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug Unicode|Win32.Build.0 = Debug|Win32
 		{F553F140-B7D3-4984-90B1-00D4831B8A6E}.Debug|Win32.ActiveCfg = Debug|Win32

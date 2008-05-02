@@ -50,7 +50,7 @@ MYGLOBALS myGlobals;
 NEN_OPTIONS nen_options;
 extern PLUGININFOEX pluginInfo;
 //mad
-extern BOOL newapi;
+extern	BOOL newapi, g_bClientInStatusBar;
 extern	HANDLE hHookToolBarLoadedEvt;
 //
 
@@ -103,6 +103,8 @@ extern      struct RTFColorTable *rtf_ctable;
 extern		TCHAR *DoubleAmpersands(TCHAR *pszText);
 extern      void RegisterFontServiceFonts();
 extern      int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam);
+extern		int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam);
+extern		int ModPlus_Init(WPARAM wparam, LPARAM lparam);
 
 HANDLE g_hEvent_MsgWin;
 HANDLE g_hEvent_MsgPopup;
@@ -914,8 +916,11 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
 		} else if (lstrlenA(cws->szSetting) > 6 && lstrlenA(cws->szSetting) < 9 && !strncmp(cws->szSetting, "Status", 6))
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 1);
-		else if (!strcmp(cws->szSetting, "MirVer"))
+		else if (!strcmp(cws->szSetting, "MirVer")) {
 			PostMessage(hwnd, DM_CLIENTCHANGED, 0, 0);
+			if(g_bClientInStatusBar)
+				ChangeClientIconInStatusBar(wParam,0);
+		}
 		else if (strstr("StatusMsg,StatusDescr,XStatusMsg,XStatusName,YMsg", cws->szSetting))
 			PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
 	}
@@ -1120,6 +1125,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	//mad
 	CB_InitDefaultButtons();
+	ModPlus_Init(wParam, lParam);
 	NotifyEventHooks(hHookToolBarLoadedEvt, (WPARAM)0, (LPARAM)0);
 	//
 
@@ -1136,7 +1142,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	} else
 		DBWriteContactSettingByte(NULL, SRMSGMOD_T, "ieview_installed", 0);
    //MAD
-	myGlobals.g_bDisableAniAvatars=DBGetContactSettingByte(NULL, SRMSGMOD_T, "DisableAniAvatars", 0);
+	myGlobals.g_bDisableAniAvatars=DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_DisableAniAvatars", 0);
 	myGlobals.g_iButtonsBarGap=DBGetContactSettingByte(NULL, SRMSGMOD_T, "ButtonsBarGap", 1);
 	//
 	myGlobals.m_hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
@@ -1246,6 +1252,7 @@ static int OkToExit(WPARAM wParam, LPARAM lParam)
 	UnhookEvent(hEventDispatch);
 	UnhookEvent(hEventDbSettingChange);
 	UnhookEvent(hEventContactDeleted);
+	ModPlus_PreShutdown(wParam, lParam);
 	return 0;
 }
 
@@ -1517,7 +1524,7 @@ tzdone:
 	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
 	SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
 	//MAD: sound on typing... 
-	if(myGlobals.g_bSoundOnTyping=DBGetContactSettingByte(NULL, SRMSGMOD_T, "soundontyping", 0))
+	if(myGlobals.g_bSoundOnTyping = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_soundontyping", 0))
 		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
 	//
 	myGlobals.hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
@@ -2115,7 +2122,8 @@ static int GetIconPackVersion(HMODULE hDLL)
 		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 3.5__"))
 			version = 4;
 	}
-	if(!DBGetContactSettingByte(NULL,SRMSGMOD_T,"IconpackWarning",1)) return version;
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 1)) 
+		return version;
 
 	if (version == 0)
 		MessageBox(0, _T("The icon pack is either missing or too old."), _T("tabSRMM warning"), MB_OK | MB_ICONWARNING);

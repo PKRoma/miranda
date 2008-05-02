@@ -183,7 +183,12 @@ extern      pfnSetMenuInfo fnSetMenuInfo;
 int			LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat);
 
 //TypingNotify
-int TN_ModuleInit();
-int TN_OptionsInitialize(WPARAM wParam, LPARAM lParam);
-int TN_ModuleDeInit();
-int TN_TypingMessage(WPARAM wParam, LPARAM lParam,BYTE DlgOpened);
+int			TN_ModuleInit();
+int			TN_OptionsInitialize(WPARAM wParam, LPARAM lParam);
+int			TN_ModuleDeInit();
+int			TN_TypingMessage(WPARAM wParam, LPARAM lParam,BYTE DlgOpened);
+
+// mod plus
+
+int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
+char		*getMirVer(HANDLE hContact);

@@ -715,13 +715,23 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			break;
 		case WM_SETCURSOR:
 			break;
-		case WM_TIMER:
+		case WM_TIMER: {
+			POINT	pt;
+			RECT	rc;
+
 			if (wParam != TIMER_TO_ACTION)
 				break;
-			if (pdata->iSeconds != -1)
+
+			GetCursorPos(&pt);
+			GetWindowRect(hWnd, &rc);
+			if(PtInRect(&rc, pt))
+				break;
+
+			if (pdata->iSeconds > 0)
 				KillTimer(hWnd, TIMER_TO_ACTION);
 			PopupAct(hWnd, pdata->pluginOptions->maskActTE, pdata);
 			break;
+		}
 		default:
 			break;
 	}
@@ -1099,13 +1109,23 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
 		case WM_SETCURSOR:
 			//SetFocus(hWnd);
 			break;
-		case WM_TIMER:
+		case WM_TIMER: {
+			POINT	pt;
+			RECT	rc;
+
 			if (wParam != TIMER_TO_ACTION)
 				break;
+
+			GetCursorPos(&pt);
+			GetWindowRect(hWnd, &rc);
+			if(PtInRect(&rc, pt))
+				break;
+
 			if (pdata->iSeconds > 0)
 				KillTimer(hWnd, TIMER_TO_ACTION);
 			PopupActW(hWnd, pdata->pluginOptions->maskActTE, pdata);
 			break;
+		}
 		default:
 			break;
 	}

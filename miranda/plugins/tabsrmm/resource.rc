@@ -28,6 +28,18 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
+IDD_OPTIONS_PLUS DIALOGEX 0, 0, 303, 226
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Advanced tweaks",IDC_STATIC,3,0,300,86
+    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,173
+    LTEXT           "Options marked with an asterisk (*) will only take effect after Miranda has been restarted.",IDC_STATIC,11,188,283,18
+    CONTROL         "More about advanced tweaks",IDC_PLUS_HELP,"Hyperlink",WS_TABSTOP | 0x1,11,210,146,9
+    PUSHBUTTON      "Revert to (safe) defaults",IDC_PLUS_REVERT,180,207,111,14
+END
+
 IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -986,11 +998,13 @@ IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+IDI_IMGOPEN             ICON                    "tabmodplus/icons/imgopen.ico"
 IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
 IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
 IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
 IDI_ENABLED             ICON                    "res/res_TN/popup.ico"
 IDI_DISABLED            ICON                    "res/res_TN/popup_no.ico"
+IDI_IMGCLOSE            ICON                    "tabmodplus/icons/imgclose.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

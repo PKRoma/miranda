@@ -697,11 +697,37 @@ void UpdateSaveAndSendButton(HWND hwndDlg, struct MessageWindowData *dat)
 		InvalidateRect(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), NULL, FALSE);
 }
 
+static BOOL CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)&hContact);
+
+	switch (message) {
+		case WM_COMMAND:
+			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PUDeletePopUp(hWnd);
+			break;
+		case WM_CONTEXTMENU:
+			PostMessage(myGlobals.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+			PUDeletePopUp(hWnd);
+			break;
+		case WM_MOUSEWHEEL:
+			break;
+		case WM_SETCURSOR:
+			break;
+		default:
+			break;
+	}
+	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
 void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 {
 #if defined _UNICODE
 	POPUPDATAW		ppd;
 	int				ibsize = 1023;
+
+	if(DBGetContactSettingByte(0, SRMSGMOD_T, "adv_noErrorPopups", 0))
+		return;
 
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
 		ZeroMemory((void *)&ppd, sizeof(ppd));
@@ -711,13 +737,18 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginData = hwndDlg;
-		ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
+		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
 		ppd.lchIcon = myGlobals.g_iconErr;
+		ppd.PluginData = (void *)dat->hContact;
+		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
 	}
 #else
-	POPUPDATA	ppd;
+	POPUPDATAEX	ppd;
 	int			ibsize = 1023;
+
+	if(DBGetContactSettingByte(0, SRMSGMOD_T, "adv_noErrorPopups", 0))
+		return;
 
 	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
 		ZeroMemory((void *)&ppd, sizeof(ppd));
@@ -727,8 +758,10 @@ void NotifyDeliveryFailure(HWND hwndDlg, struct MessageWindowData *dat)
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
 		ppd.PluginData = hwndDlg;
-		ppd.PluginWindowProc = (WNDPROC)PopupDlgProc;
+		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
 		ppd.lchIcon = myGlobals.g_iconErr;
+		ppd.PluginData = (void *)dat->hContact;
+		ppd.iSeconds = -1;
 		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
 	}
 #endif
@@ -932,7 +965,7 @@ verify:
 		else {
 			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose", 0))
 			{ 
-				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose_2", 0))
+				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_AutoClose_2", 0))
 					SendMessage(dat->hwnd, WM_CLOSE, 0, 1);
 				else SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
 			}

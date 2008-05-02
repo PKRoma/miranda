@@ -459,6 +459,15 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			CLISTEVENT *cle = (CLISTEVENT *)CallService(MS_CLIST_GETEVENT, wParam, 0);
 
 			/*
+			 * if lParam == NULL, don't consider clist events, just open the message tab
+			 */
+
+			if(lParam == 0) {
+				HandleMenuEntryFromhContact((int)wParam);
+				break;
+			}
+
+			/*
 			 * first try, if the clist returned an event...
 			 */
 			if (cle) {

@@ -896,7 +896,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 			//MAD: sound on typing..						 
 			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab)) 
-			  		SkinPlaySound("SoundOnTyping");
+		  		SkinPlaySound("SoundOnTyping");
 			 //MAD
 			if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
 				TCHAR toInsert[100];
@@ -974,7 +974,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 			//MAD: sound on typing..
   			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE) 
-  					SkinPlaySound("SoundOnTyping");
+  				SkinPlaySound("SoundOnTyping");
  			//
 
 			if (wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {

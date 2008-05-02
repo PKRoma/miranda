@@ -47,6 +47,7 @@ extern		BOOL CALLBACK DlgProcPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 extern		BOOL CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern		BOOL CALLBACK PlusOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 extern		BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -237,7 +238,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-static HIMAGELIST g_himlOptions;
+HIMAGELIST g_himlOptions;
 
 static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1381,22 +1382,19 @@ static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
-			/*
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS1), hwnd, DlgProcOptions1);
-			tci.pszText = TranslateT("Group chats");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
+			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
+			tci.pszText = TranslateT("Tool bar");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
 			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
-			*/
-
-			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPT_TOOLBAR), hwnd, DlgProcToolBar);
-			tci.pszText = TranslateT("ToolBar settings");
-			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
+			tci.lParam = (LPARAM)CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS_PLUS), hwnd, PlusOptionsProc);
+			tci.pszText = TranslateT("Advanced tweaks");
+			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 5, &tci);
 			MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 30, 1);
-			ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
+			ShowWindow((HWND)tci.lParam, oPage == 5 ? SW_SHOW : SW_HIDE);
 			if (MyEnableThemeDialogTexture)
 				MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
@@ -1572,9 +1570,6 @@ static BOOL CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			BYTE loadMode = DBGetContactSettingByte(NULL, SRMSGMOD_T, "skin_loadmode", 0);
 			TranslateDialogDefault(hwndDlg);
-
-			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-			//SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
 
 			CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);

@@ -1524,8 +1524,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 	switch (msg) {
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
 		//can't be scrolled with mouse-wheel. 
-		case WM_NCCALCSIZE:{
-		   if (myGlobals.g_DisableScrollbars&&myGlobals.g_NickListScrollBarFix) {
+		case WM_NCCALCSIZE: {
+		   if (myGlobals.g_DisableScrollbars && myGlobals.g_NickListScrollBarFix) {
 			RECT lpRect;
 			LONG itemHeight;
 
@@ -1568,7 +1568,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		//MAD
 		case WM_MOUSEWHEEL: {  
-			if (myGlobals.g_DisableScrollbars&&myGlobals.g_NickListScrollBarFix)
+			if (myGlobals.g_DisableScrollbars && myGlobals.g_NickListScrollBarFix)
 				{
 				UINT uScroll;
 				int dLines;
@@ -1961,7 +1961,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			//MAD
-			myGlobals.g_NickListScrollBarFix=DBGetContactSettingByte(NULL, SRMSGMOD_T, "ScrollBarFix", 0);
+			myGlobals.g_NickListScrollBarFix = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ScrollBarFix", 0);
 			
 			BB_InitDlgButtons(hwndDlg,dat);
 			//TODO: unify "change font color" button behavior in IM and Chat windows

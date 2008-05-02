@@ -1,77 +1,48 @@
-#include "tabmodplus.h"
+#include <commonheaders.h>
 
-HINSTANCE hinstance;
+extern	HINSTANCE g_hInst;
 
-WNDPROC mainProc;
+static	HANDLE	hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent, hEventDbOptionsInit, hEventDbPluginsLoaded,
+				hIcon1,hIcon0,hib1,hib0 ;	
 
-static HANDLE hEventCBButtonPressed,hEventCBInit, hEventDbWindowEvent,hEventDbSettingChanged, hEventDbOptionsInit, hEventDbPluginsLoaded,
-hEventDbPreShutdown,hIcon1,hIcon0,hib1,hib0 ;	
+int		g_bStartup=0; 
+BOOL	bWOpened=FALSE;
 
-int g_bShutDown=0;   	
-int g_bStartup=0; 
-BOOL bWOpened=FALSE;
-
-
-struct MM_INTERFACE mmi;																					   
-
-
-int OptionsInit(WPARAM,LPARAM);
-PLUGINLINK *pluginLink;
-
-PLUGININFOEX pluginInfo = {
-	sizeof(PLUGININFOEX),
-	MODULENAME,
-	PLUGIN_MAKE_VERSION(0,0,0,7),
-	"",
-	"MaD_CLuSTeR",
-	"daniok@yandex.ru",
-	"© 2008 Danil Mozhar",
-	"",
-	UNICODE_AWARE,
-	0,	
-#ifdef _UNICODE
-	// {A4975736-E73B-4823-B657-E68691180845}
-		{ 0xa4975736, 0xe73b, 0x4823, { 0xb6, 0x57, 0xe6, 0x86, 0x91, 0x18, 0x8, 0x45 } }
-#else
-	// {D9DDEC14-7B5A-46c4-A4D9-20237C9E7440} 
-		{ 0xd9ddec14, 0x7b5a, 0x46c4, { 0xa4, 0xd9, 0x20, 0x23, 0x7c, 0x9e, 0x74, 0x40 } }
-#endif
-	};
-
+BOOL	g_bIMGtagButton;
+BOOL	g_bClientInStatusBar;
 
 char* getMirVer(HANDLE hContact) 
-	{	  
+{	  
 	char * szProto=NULL;
 	char* msg=NULL;
 	DBVARIANT dbv = {0};
 
 	szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0); 
-	if(!szProto) return NULL; 
+	if(!szProto) 
+		return NULL; 
 
-	if(!DBGetContactSetting(hContact, szProto, "MirVer", &dbv)) 
-		{
+	if(!DBGetContactSetting(hContact, szProto, "MirVer", &dbv)) {
 		msg=mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
-		}
-	 return msg;	
 	}
+	 return msg;	
+}
 
-TCHAR* getMenuEntry(int i) 
-	{	  
+TCHAR* getMenuEntry(int i) 	{	  
 	TCHAR* msg=NULL;
 	char MEntry[256]={'\0'};
 	DBVARIANT dbv = {0};
+
 	mir_snprintf(MEntry,255,"MenuEntry_%u",i);
-	if(!DBGetContactSettingTString(NULL, "tabmodplus",MEntry, &dbv)) 
-		{
+	if(!DBGetContactSettingTString(NULL, "tabmodplus",MEntry, &dbv)) {
 		msg=mir_tstrdup(dbv.ptszVal);
 		DBFreeVariant(&dbv);
-		}
-	return msg; 
 	}
+	return msg; 
+}
 
 int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
-	{
+{
 	int i=0;
 	HICON hIcon=NULL;
 	char* msg = getMirVer((HANDLE)wparam);
@@ -93,43 +64,40 @@ int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
 		}
 	mir_free(msg);
 	return 0;
-	}
+}
 
 
-int PreShutdown(WPARAM wparam,LPARAM lparam)
-	{	 
-
-	g_bShutDown=1;
-	if(hEventCBButtonPressed) UnhookEvent(hEventCBButtonPressed);
-	if(hEventCBInit) UnhookEvent(hEventCBInit);
+int ModPlus_PreShutdown(WPARAM wparam, LPARAM lparam)
+{	 
+	if(hEventCBButtonPressed) 
+		UnhookEvent(hEventCBButtonPressed);
+	if(hEventCBInit) 
+		UnhookEvent(hEventCBInit);
 	UnhookEvent(hEventDbPluginsLoaded);
 	UnhookEvent(hEventDbOptionsInit);
-	UnhookEvent(hEventDbPreShutdown);
 
-	UnhookEvent(hEventDbSettingChanged);
 	UnhookEvent(hEventDbWindowEvent);
 
 	return 0;
-	}
+}
 
 
 static int GetContactHandle(WPARAM wparam,LPARAM lParam)
-	{
+{
 	MessageWindowEventData *MWeventdata = (MessageWindowEventData*)lParam;
 
-	if(g_bShutDown||!g_bClientInStatusBar)
+	if(!g_bClientInStatusBar)
 		return 0;
-	if(MWeventdata->uType == MSG_WINDOW_EVT_OPENING&&MWeventdata->hContact)
-		{
+	if(MWeventdata->uType == MSG_WINDOW_EVT_OPENING&&MWeventdata->hContact)	{
 		bWOpened=TRUE;
 		ChangeClientIconInStatusBar((WPARAM)MWeventdata->hContact,0);
-		}
-	return 0;
 	}
+	return 0;
+}
+
 static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
-	{
-	if  (ServiceExists(MS_BB_ADDBUTTON))
-		{
+{
+	if  (ServiceExists(MS_BB_ADDBUTTON)) {
 		BBButton bbd={0};
 		bbd.cbSize=sizeof(BBButton);
 		bbd.bbbFlags=BBBF_ISIMBUTTON|BBBF_ISLSIDEBUTTON|BBBF_ISPUSHBUTTON;
@@ -140,9 +108,9 @@ static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
 		bbd.ptszTooltip=_T("Insert [img] tag / surround selected text with [img][/img]");
 
 		return CallService(MS_BB_ADDBUTTON, 0, (LPARAM)&bbd);
-		}
-	return 1;
 	}
+	return 1;
+}
 
 static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 	{
@@ -168,21 +136,20 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 	cr.cpMin = cr.cpMax = 0;
 	SendDlgItemMessage(cbcd->hwndFrom,IDC_MESSAGE, EM_EXGETSEL, 0, (LPARAM)&cr); 
 	textlenght=cr.cpMax-cr.cpMin;
-	if(textlenght)
-		{
+	if(textlenght) {
 		pszText=mir_alloc((textlenght+1)*sizeof(TCHAR));
 		ZeroMemory(pszText,(textlenght+1)*sizeof(TCHAR));
 		SendDlgItemMessage(cbcd->hwndFrom, IDC_MESSAGE,EM_GETSELTEXT, 0, (LPARAM)pszText);
-		}
+	}
 
-	if(cbcd->flags&BBCF_RIGHTBUTTON)
+	if(cbcd->flags & BBCF_RIGHTBUTTON)
 		state=1;
 	else if(textlenght)
-		state=2;
-	else if(bbd.bbbFlags&BBSF_PUSHED)
-		state=3;
+		state = 2;
+	else if(bbd.bbbFlags & BBSF_PUSHED)
+		state = 3;
 	else 
-		state=4;
+		state = 4;
 	
 	switch(state)
 		{
@@ -267,20 +234,6 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 
 	}
 
-static int ContactSettingChanged(WPARAM wParam,LPARAM lParam)
-	{
-	DBCONTACTWRITESETTING *dbcws = (DBCONTACTWRITESETTING *) lParam;
-
-	if(g_bShutDown||!g_bClientInStatusBar||!wParam||!bWOpened)
-		return 0;	
-
-	if (dbcws&&!strcmp(dbcws->szSetting,"MirVer")) 
-		ChangeClientIconInStatusBar(wParam,0);
-
-	return 0;
-	}
-
-
 int AddIcon(HICON icon, char *name, char *description)
 	{
 	SKINICONDESC sid = {0};
@@ -295,25 +248,23 @@ int AddIcon(HICON icon, char *name, char *description)
 	}
 
 #define MBF_OWNERSTATE        0x04
-static int PluginInit(WPARAM wparam,LPARAM lparam)
-	{
+
+int ModPlus_Init(WPARAM wparam,LPARAM lparam)
+{
 	g_bStartup=1;
 
-	g_bIMGtagButton=DBGetContactSettingByte(NULL,"tabmodplus","IMGtagButton",1);	
-	g_bClientInStatusBar=DBGetContactSettingByte(NULL,"tabmodplus","ClientIconInStatusBar",1);
+	g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton", 0);	
+	g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
 
-	hEventDbOptionsInit=HookEvent(ME_OPT_INITIALISE,OptionsInit);
-	hEventDbSettingChanged= HookEvent(ME_DB_CONTACT_SETTINGCHANGED,ContactSettingChanged);
-	hEventDbWindowEvent=HookEvent(ME_MSG_WINDOWEVENT,GetContactHandle);
+	hEventDbWindowEvent = HookEvent(ME_MSG_WINDOWEVENT, GetContactHandle);
 
 
-	if(g_bIMGtagButton)
-		{
+	if(g_bIMGtagButton)	{
 		hEventCBButtonPressed=HookEvent(ME_MSG_BUTTONPRESSED,CustomButtonPressed); 
 		hEventCBInit=HookEvent(ME_MSG_TOOLBARLOADED,RegisterCustomButton);
-		}
-	if (g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON)) 
-		{ 
+	}
+
+	if (g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON)) { 
 		StatusIconData sid = {0}; 
 		sid.cbSize = sizeof(sid); 
 		sid.szModule = "tabmodplus"; 
@@ -322,50 +273,12 @@ static int PluginInit(WPARAM wparam,LPARAM lparam)
 		sid.szTooltip = 0; 
 		sid.hIcon = sid.hIconDisabled = 0; 
 		CallService(MS_MSG_ADDICON, 0, (LPARAM)&sid); 
-		}
-	if(TRUE){
-		hIcon1	   = LoadIcon(hinstance, MAKEINTRESOURCE(IDI_IMGCLOSE	));
-		hIcon0     = LoadIcon(hinstance, MAKEINTRESOURCE(IDI_IMGOPEN));
-		hib1		=(HANDLE)AddIcon(hIcon1, "tabmodplus1", "[/img]");
-		hib0		=(HANDLE)AddIcon(hIcon0, "tabmodplus0", "[img]");
-		}
+	}
 
+	hIcon1	   = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGCLOSE));
+	hIcon0     = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_IMGOPEN));
+	hib1		=(HANDLE)AddIcon(hIcon1, "tabmodplus1", "[/img]");
+	hib0		=(HANDLE)AddIcon(hIcon0, "tabmodplus0", "[img]");
 	g_bStartup=0;
 	return 0;
-	}
-
-// {B78AFD78-0AD5-452d-A4D1-C02D01BAC2F9}
-static const MUUID interfaces[] = {{ 0xb78afd78, 0xad5, 0x452d, { 0xa4, 0xd1, 0xc0, 0x2d, 0x1, 0xba, 0xc2, 0xf9 } }, MIID_LAST};
-const  __declspec(dllexport) MUUID* MirandaPluginInterfaces(void){
-	return interfaces;}
-
-__declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
-	{
-
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
-		return NULL;
-
-	return &pluginInfo;
-	}
-
-__declspec(dllexport)int Unload(void)
-	{
-	return 0;
-	}
-
-BOOL WINAPI DllMain(HINSTANCE hinst,DWORD fdwReason,LPVOID lpvReserved)
-	{
-	hinstance=hinst;
-	return 1;
-	}
-
-int __declspec(dllexport)Load(PLUGINLINK *link)
-	{	
-
-	pluginLink=link;
-	mir_getMMI(&mmi);
-
-	hEventDbPluginsLoaded=HookEvent(ME_SYSTEM_MODULESLOADED,PluginInit);
-	hEventDbPreShutdown=HookEvent(ME_SYSTEM_PRESHUTDOWN,PreShutdown);
-	return 0;
-	}
+}
