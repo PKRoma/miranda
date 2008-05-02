@@ -1,10 +1,13 @@
 !include "MUI.nsh"
 !include "Sections.nsh"
 !include "WinVer.nsh"
+!include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.5"
-;!define MIM_PREVIEW             "1" ; comment out for final build
+!define MIM_VERSION             "0.7.6"
+!define MIM_PREVIEW             "1" ; 0 for final build
+
+!define MIM_OPENSSL_URL         "http://www.slproweb.com/products/Win32OpenSSL.html"
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -19,7 +22,8 @@
 !define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
 !define MIM_BUILD_SRC           "..\..\miranda"
 
-!ifdef MIM_PREVIEW
+
+!if  ${MIM_PREVIEW} != 0
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
 OutFile                         "miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
 !else
@@ -34,8 +38,6 @@ SetOverWrite                    on
 BrandingText                    "www.miranda-im.org"
 
 VAR INST_UPGRADE
-
-!packhdr "temp_installer.dat" "upx -9 temp_installer.dat"
 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "Graphics\header.bmp"
@@ -73,9 +75,9 @@ VAR INST_UPGRADE
   SetOverWrite off
   !ifdef MIM_BUILD_UNICODE
   ${If} ${AtLeastWinXP}
-  File "${MIM_BUILD_ICONS_HI}\${IconFile}"
+    File "${MIM_BUILD_ICONS_HI}\${IconFile}"
   ${Else}
-  File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
+    File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
   ${EndIf}
   !else
   File "${MIM_BUILD_ICONS_LOW}\${IconFile}"
@@ -96,12 +98,12 @@ Section "Miranda IM"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
-
-  StrCmp $INST_UPGRADE "1" nosavemirandaboot
-  SetOverWrite off
-  File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
-  SetOverWrite on
-  nosavemirandaboot:
+  
+  ${If} $INST_UPGRADE = 0
+    SetOverWrite off
+    File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
+    SetOverWrite on
+  ${EndIf}
     
   SetOutPath "$INSTDIR\Plugins"
   File "${MIM_BUILD_DIR}\plugins\clist_classic.dll"
@@ -161,15 +163,15 @@ SubSection /e "Protocols"
     SetDetailsPrint listonly
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\irc.dll"
-    StrCmp $INST_UPGRADE "1" nosaveircservers
-    SetOverWrite off
-    File "${MIM_BUILD_SRC}\protocols\IRCG\Docs\irc_servers.ini"
-    SetOverWrite on
-    nosaveircservers:
+    ${If} $INST_UPGRADE = 0
+      SetOverWrite off
+      File "${MIM_BUILD_SRC}\protocols\IRCG\Docs\irc_servers.ini"
+      SetOverWrite on
+    ${EndIf}
     !insertmacro InstallMirandaIcon "proto_IRC.dll"
   SectionEnd
 
-  Section "Jabber"
+  Section "Jabber" JABBER
     SetDetailsPrint textonly
     DetailPrint "Installing Jabber Protocol..."
     SetDetailsPrint listonly
@@ -237,9 +239,9 @@ SubSection /e "Options" pOptions
 
   !ifdef MIM_BUILD_UNICODE
   Section /o "Store profile data in user home directory" pStoreData
-    StrCmp $INST_UPGRADE "1" nowriteappdata
-    WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
-    nowriteappdata:
+    ${If} $INST_UPGRADE = 0
+      WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
+    ${EndIf}
   SectionEnd
   !endif
 SubSectionEnd
@@ -271,7 +273,6 @@ SectionEnd
 
 Function .onInit
   SetShellVarContext "current"
-  StrCpy $0 "0"
   FindWindow $R0 "Miranda"
   IsWindow $R0 showwarn
   FindWindow $R0 "Miranda IM"
@@ -282,23 +283,33 @@ Function .onInit
   norun:
 FunctionEnd
 
+Function .onInstSuccess
+  ${If} ${SectionIsSelected} ${JABBER}  
+    SetOutPath "$INSTDIR"
+    System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
+    ${If} $0 == "error"
+      MessageBox MB_YESNO|MB_ICONQUESTION "OpenSSL is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
+      ExecShell "open" ${MIM_OPENSSL_URL}
+      endsslcheck:
+    ${EndIf}
+  ${EndIf}
+FunctionEnd
+
 Function VerifyInstallDir
-  IfFileExists "$INSTDIR\miranda32.exe" "" endupgrade
-  StrCpy $INST_UPGRADE "1"
-  Goto endupgradex
-  endupgrade:
-  StrCpy $INST_UPGRADE "0"
-  endupgradex:
+  ${If} ${FileExists} "$INSTDIR\miranda32.exe"
+    StrCpy $INST_UPGRADE 1
+  ${Else}
+    StrCpy $INST_UPGRADE 0
+  ${EndIf}
   !ifdef MIM_BUILD_UNICODE
-  StrCmp $INST_UPGRADE "1" "" noupgrade
-  !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
-  SectionSetText ${pStoreData} ""
-  !insertmacro SetSectionFlag ${pOptions} ${SF_EXPAND}
-  Goto noupgradeend
-  noupgrade:
-  SectionSetText ${pStoreData} "Store profile data in user home directory"
-  !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
-  noupgradeend:
+  ${If} $INST_UPGRADE = 1
+    !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
+    SectionSetText ${pStoreData} ""
+    !insertmacro SetSectionFlag ${pOptions} ${SF_EXPAND}
+  ${Else}
+    SectionSetText ${pStoreData} "Store profile data in user home directory"
+    !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
+  ${EndIf}
   !endif
 FunctionEnd
 
