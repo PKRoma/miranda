@@ -108,10 +108,10 @@ int miranda_to_yahoo(int myyahooStatus)
                         ret = YAHOO_STATUS_BUSY;
                         break;
 						
-/*    case ID_STATUS_DND:
-                        ret = YAHOO_STATUS_STEPPEDOUT;
+    case ID_STATUS_DND:
+                        ret = YAHOO_STATUS_BUSY;
                         break;
-						*/
+
     case ID_STATUS_ONTHEPHONE:
                         ret = YAHOO_STATUS_ONPHONE;
                         break;
