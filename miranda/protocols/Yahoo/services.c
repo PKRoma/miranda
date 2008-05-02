@@ -68,12 +68,12 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
 
         case PFLAGNUM_2:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND | PF2_HEAVYDND; 
+                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND /*| PF2_HEAVYDND*/; 
             break;
 
         case PFLAGNUM_3:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | /*PF2_INVISIBLE |*/ PF2_LIGHTDND | PF2_HEAVYDND; 
+                  PF2_OUTTOLUNCH | /*PF2_INVISIBLE |*/ PF2_LIGHTDND /*| PF2_HEAVYDND*/; 
             break;
             
         case PFLAGNUM_4:
