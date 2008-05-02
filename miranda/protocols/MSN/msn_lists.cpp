@@ -210,8 +210,6 @@ void MSN_CleanupLists(void)
 
 void MSN_CreateContList(void)
 {
-	EnterCriticalSection(&csLists);
-
 	bool *used = (bool*)mir_calloc(contList.getCount()*sizeof(bool));
 
 	char cxml[8192]; 
@@ -219,6 +217,8 @@ void MSN_CreateContList(void)
 
 	sz = mir_snprintf(cxml , sizeof(cxml), "<ml l=\"1\">");
 		
+	EnterCriticalSection(&csLists);
+
 	for ( int i=0; i < contList.getCount(); i++ )
 	{
 		if (used[i]) continue;
@@ -276,11 +276,15 @@ void MSN_CreateContList(void)
 		}
 		if (!newdom) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, lastds ? "</d>" : "</t>" );
 	}
-	if (sz) sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>" );
-	mir_free(used);
 	LeaveCriticalSection(&csLists);
 
-	msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+	if (sz) 
+	{
+		sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz,  "</ml>" );
+		msnNsThread->sendPacket("ADL", "%d\r\n%s", sz, cxml);
+	}
+
+	mir_free(used);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
