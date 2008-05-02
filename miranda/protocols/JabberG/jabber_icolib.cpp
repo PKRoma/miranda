@@ -119,27 +119,27 @@ static iconList[] =
 	{   LPGEN("Apply filter"),          "sd_filter_apply",  IDI_FILTER_APPLY,       LPGEN("Dialogs") },
 	{   LPGEN("Reset filter"),          "sd_filter_reset",  IDI_FILTER_RESET,       LPGEN("Dialogs") },
 
-	{   LPGEN("Navigate home"),         "sd_nav_home",      IDI_NAV_HOME,           LPGEN("Dialogs/Discovery") },
-	{   LPGEN("Refresh node"),          "sd_nav_refresh",   IDI_NAV_REFRESH,        LPGEN("Dialogs/Discovery") },
-	{   LPGEN("Browse node"),           "sd_browse",        IDI_BROWSE,             LPGEN("Dialogs/Discovery") },
-	{   LPGEN("RSS service"),           "node_rss",         IDI_NODE_RSS,           LPGEN("Dialogs/Discovery") },
-	{   LPGEN("Server"),                "node_server",      IDI_NODE_SERVER,        LPGEN("Dialogs/Discovery") },
-	{   LPGEN("Storage service"),       "node_store",       IDI_NODE_STORE,         LPGEN("Dialogs/Discovery") },
-	{   LPGEN("Weather service"),       "node_weather",     IDI_NODE_WEATHER,       LPGEN("Dialogs/Discovery") },
+	{   LPGEN("Navigate home"),         "sd_nav_home",      IDI_NAV_HOME,           LPGEN("Discovery Dialog") },
+	{   LPGEN("Refresh node"),          "sd_nav_refresh",   IDI_NAV_REFRESH,        LPGEN("Discovery Dialog") },
+	{   LPGEN("Browse node"),           "sd_browse",        IDI_BROWSE,             LPGEN("Discovery Dialog") },
+	{   LPGEN("RSS service"),           "node_rss",         IDI_NODE_RSS,           LPGEN("Discovery Dialog") },
+	{   LPGEN("Server"),                "node_server",      IDI_NODE_SERVER,        LPGEN("Discovery Dialog") },
+	{   LPGEN("Storage service"),       "node_store",       IDI_NODE_STORE,         LPGEN("Discovery Dialog") },
+	{   LPGEN("Weather service"),       "node_weather",     IDI_NODE_WEATHER,       LPGEN("Discovery Dialog") },
 
-	{   LPGEN("Generic privacy list"),  "pl_list_any",      IDI_PL_LIST_ANY,        LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Active privacy list"),   "pl_list_active",   IDI_PL_LIST_ACTIVE,     LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Default privacy list"),  "pl_list_default",  IDI_PL_LIST_DEFAULT,    LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Move up"),				"arrow_up",			IDI_ARROW_UP,			LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Move down"),				"arrow_down",		IDI_ARROW_DOWN,			LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Allow Messages"),        "pl_msg_allow",     IDI_PL_MSG_ALLOW,       LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Allow Presences (in)"),  "pl_prin_allow",    IDI_PL_PRIN_ALLOW,      LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Allow Presences (out)"), "pl_prout_allow",   IDI_PL_PROUT_ALLOW,     LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Allow Queries"),         "pl_iq_allow",      IDI_PL_QUERY_ALLOW,     LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Deny Messages"),         "pl_msg_deny",      IDI_PL_MSG_DENY,        LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Deny Presences (in)"),   "pl_prin_deny",     IDI_PL_PRIN_DENY,       LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Deny Presences (out)"),  "pl_prout_deny",    IDI_PL_PROUT_DENY,      LPGEN("Dialogs/Privacy") },
-	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
+	{   LPGEN("Generic privacy list"),  "pl_list_any",      IDI_PL_LIST_ANY,        LPGEN("Privacy Dialog") },
+	{   LPGEN("Active privacy list"),   "pl_list_active",   IDI_PL_LIST_ACTIVE,     LPGEN("Privacy Dialog") },
+	{   LPGEN("Default privacy list"),  "pl_list_default",  IDI_PL_LIST_DEFAULT,    LPGEN("Privacy Dialog") },
+	{   LPGEN("Move up"),				"arrow_up",			IDI_ARROW_UP,			LPGEN("Privacy Dialog") },
+	{   LPGEN("Move down"),				"arrow_down",		IDI_ARROW_DOWN,			LPGEN("Privacy Dialog") },
+	{   LPGEN("Allow Messages"),        "pl_msg_allow",     IDI_PL_MSG_ALLOW,       LPGEN("Privacy Dialog") },
+	{   LPGEN("Allow Presences (in)"),  "pl_prin_allow",    IDI_PL_PRIN_ALLOW,      LPGEN("Privacy Dialog") },
+	{   LPGEN("Allow Presences (out)"), "pl_prout_allow",   IDI_PL_PROUT_ALLOW,     LPGEN("Privacy Dialog") },
+	{   LPGEN("Allow Queries"),         "pl_iq_allow",      IDI_PL_QUERY_ALLOW,     LPGEN("Privacy Dialog") },
+	{   LPGEN("Deny Messages"),         "pl_msg_deny",      IDI_PL_MSG_DENY,        LPGEN("Privacy Dialog") },
+	{   LPGEN("Deny Presences (in)"),   "pl_prin_deny",     IDI_PL_PRIN_DENY,       LPGEN("Privacy Dialog") },
+	{   LPGEN("Deny Presences (out)"),  "pl_prout_deny",    IDI_PL_PROUT_DENY,      LPGEN("Privacy Dialog") },
+	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Privacy Dialog") },
 };
 
 void JabberIconsInit( void )
@@ -160,11 +160,12 @@ void JabberIconsInit( void )
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", jabberProtoName, iconList[i].szName );
 		if (iconList[i].szSection)
 		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, iconList[i].szSection );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), szRootSection, iconList[i].szSection );
 			sid.pszSection = szSectionName;
 		} else
 		{
-			sid.pszSection = szRootSection;
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), szRootSection );
+			sid.pszSection = szSectionName;
 		}
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate( iconList[i].szDescr );

@@ -835,7 +835,7 @@ void InitXStatusIcons()
 
   icon_lib = InitXStatusIconLibrary(lib);
 
-  null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/Custom Status", str, MAX_PATH), ICQTranslateUtfStatic(gpszICQProtoName, prt, MAX_PATH));
+  null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s/%s/Custom Status", str, MAX_PATH), LPGEN("Protocols"), ICQTranslateUtfStatic(gpszICQProtoName, prt, MAX_PATH));
 
   for (i = 0; i < XSTATUS_COUNT; i++) 
   {

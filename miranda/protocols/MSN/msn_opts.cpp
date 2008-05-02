@@ -51,14 +51,15 @@ static iconList[] =
 
 void MsnInitIcons( void )
 {
-	char szFile[MAX_PATH];
+	char szFile[MAX_PATH], szSection[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = MSN_Translate( msnProtocolName );
+    mir_snprintf( szSection, sizeof(szSection), "%s/%s", MSN_Translate("Protocols"), MSN_Translate(msnProtocolName));
+	sid.pszSection = szSection;
 
 	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];

@@ -206,12 +206,13 @@ static iconList[] =
 
 void AddIcons(void)
 {
-	char szFile[MAX_PATH];
+	char szFile[MAX_PATH], szSection[MAX_PATH];
 	GetModuleFileNameA(g_hInstance, szFile, MAX_PATH);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszSection = ALTIRCPROTONAME;
+    mir_snprintf(szSection, sizeof(szSection), "%s/%s", LPGEN("Protocols"), ALTIRCPROTONAME); 
+	sid.pszSection = szSection;
 	sid.pszDefaultFile = szFile;
 
 	// add them one by one

@@ -534,7 +534,7 @@ void InitXStatusIcons()
 		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
 
 	char szSection[ 100 ];
-	mir_snprintf( szSection, sizeof( szSection ), "%s/Custom Status", JTranslate( jabberProtoName ));
+	mir_snprintf( szSection, sizeof( szSection ), "%s/%s/Custom Status", JTranslate("Protocols"), JTranslate( jabberProtoName ));
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);

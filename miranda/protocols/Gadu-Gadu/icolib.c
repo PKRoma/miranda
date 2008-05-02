@@ -51,7 +51,7 @@ static int skinStatusToGGStatus[] = 		{0,				1,			2,			3};
 void gg_icolib_init()
 {
 	SKINICONDESC sid = {0};
-	char szFile[MAX_PATH];
+	char szFile[MAX_PATH], szSection[MAX_PATH];
 	int i;
 
 	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
@@ -59,7 +59,8 @@ void gg_icolib_init()
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate(GG_PROTONAME);
+    mir_snprintf(szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate(GG_PROTONAME));
+	sid.pszSection = szSection;
 
 	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++) {
 		char szSettingName[100];

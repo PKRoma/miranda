@@ -6,7 +6,7 @@ char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFOEX),
 	"AIM OSCAR Plugin",
-	PLUGIN_MAKE_VERSION(0,7,2,0),
+	PLUGIN_MAKE_VERSION(0,7,3,0),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Aaron Myles Landwehr",
 	"aaron@miranda-im.org",

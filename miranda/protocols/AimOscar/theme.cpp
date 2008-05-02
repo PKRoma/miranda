@@ -83,12 +83,14 @@ void InitIcons(void)
 		char szSectionName[100];
 		if (iconList[i].szSection)
 		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", AIM_PROTOCOL_NAME, iconList[i].szSection );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), AIM_PROTOCOL_NAME, iconList[i].szSection );
 			sid.pszSection = Translate(szSectionName);
 		}
 		else
-			sid.pszSection = Translate( AIM_PROTOCOL_NAME );
-
+        {
+            mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), AIM_PROTOCOL_NAME );
+			sid.pszSection = Translate(szSectionName);
+        }
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);

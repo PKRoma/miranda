@@ -69,7 +69,7 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,11),
+  PLUGIN_MAKE_VERSION(0,3,10,12),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
@@ -316,17 +316,22 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   // Initialize IconLib icons (only 0.7+)
   {
-    char proto[MAX_PATH], lib[MAX_PATH];
+      char proto[MAX_PATH], lib[MAX_PATH], section[MAX_PATH];
     
     ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
 
     GetModuleFileName(hInst, lib, MAX_PATH);
-
-    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), proto, "main", lib, -IDI_ICQ);
-    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), proto, "req_auth", lib, -IDI_AUTH_ASK);
-    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), proto, "grant_auth", lib, -IDI_AUTH_GRANT);
-    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), proto, "revoke_auth", lib, -IDI_AUTH_REVOKE);
-    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), proto, "add_to_server", lib, -IDI_SERVLIST_ADD);
+    
+    mir_snprintf(section, sizeof(section), "%s/%s", LPGEN("Protocols"), proto);
+    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), section, "main", lib, -IDI_ICQ);
+    mir_snprintf(section, sizeof(section), "%s/%s", LPGEN("Protocols"), proto);
+    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), section, "req_auth", lib, -IDI_AUTH_ASK);
+    mir_snprintf(section, sizeof(section), "%s/%s", LPGEN("Protocols"), proto);
+    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), section, "grant_auth", lib, -IDI_AUTH_GRANT);
+    mir_snprintf(section, sizeof(section), "%s/%s", LPGEN("Protocols"), proto);
+    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), section, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+    mir_snprintf(section, sizeof(section), "%s/%s", LPGEN("Protocols"), proto);
+    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), section, "add_to_server", lib, -IDI_SERVLIST_ADD);
   }
   InitXStatusIcons();
 
