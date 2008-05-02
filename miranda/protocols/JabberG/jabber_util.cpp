@@ -1559,7 +1559,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
 		return NULL;
 	}
 
-	HMENU hMenu = JMenuCreate();
+	HMENU hMenu = JMenuCreate(true);
 
 	int nItems = 0;
 	int lastItemId = 0;

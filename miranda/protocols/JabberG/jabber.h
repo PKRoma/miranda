@@ -674,7 +674,7 @@ char* __stdcall rtrim( char *string );
 
 int g_OnModernToolbarInit(WPARAM, LPARAM);
 
-HMENU  JMenuCreate();
+HMENU  JMenuCreate(bool bRoot);
 void   JMenuAddItem(HMENU hMenu, LPARAM lParam, TCHAR *szText, HANDLE hIcon, bool bIcolib, bool bCkecked=false);
 void   JMenuAddPopup(HMENU hMenu, HMENU hPopup, TCHAR *szText, HANDLE hIcon, bool bIcolib);
 void   JMenuAddSeparator(HMENU hMenu);

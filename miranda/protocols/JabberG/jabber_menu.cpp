@@ -1057,13 +1057,15 @@ struct TMenuItemData
 	LPARAM lParam;
 };
 
+static int g_nextMenuItemId = 0;
 static HWND g_hwndMenuHost = NULL;
 
 static HBITMAP sttCreateVistaMenuBitmap(HANDLE hIcon, bool bIcolib);
 static LRESULT CALLBACK sttJabberMenuHostWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-HMENU JMenuCreate()
+HMENU JMenuCreate(bool bRoot)
 {
+	if (bRoot) g_nextMenuItemId = 1;
 	return CreatePopupMenu();
 }
 
@@ -1082,7 +1084,7 @@ void JMenuAddItem(HMENU hMenu, LPARAM lParam, TCHAR *szText, HANDLE hIcon, bool 
 	mii.dwItemData = (ULONG_PTR)dat;
 	mii.fState = bChecked ? MFS_CHECKED : 0;
 	mii.fType = MFT_STRING;
-	mii.wID = idx;
+	mii.wID = g_nextMenuItemId++;
 	mii.hbmpItem = IsWinVerVistaPlus() ? sttCreateVistaMenuBitmap(hIcon, bIcolib) : HBMMENU_CALLBACK;
 	mii.dwTypeData = szText;
 
@@ -1114,7 +1116,7 @@ void JMenuAddPopup(HMENU hMenu, HMENU hPopup, TCHAR *szText, HANDLE hIcon, bool 
 	mii.dwItemData = (ULONG_PTR)dat;
 	mii.hSubMenu = hPopup;
 	mii.fType = MFT_STRING;
-	mii.wID = idx;
+	mii.wID = g_nextMenuItemId++;
 	mii.hbmpItem = IsWinVerVistaPlus() ? sttCreateVistaMenuBitmap(hIcon, bIcolib) : HBMMENU_CALLBACK;
 	mii.dwTypeData = szText;
 
@@ -1159,6 +1161,27 @@ int JMenuShow(HMENU hMenu)
 	return JMenuShow(hMenu, pt.x, pt.y);
 }
 
+static HMENU sttGetMenuItemInfoRecursive(HMENU hMenu, int id, MENUITEMINFO *mii)
+{
+	if (GetMenuItemInfo(hMenu, id, FALSE, mii))
+		return hMenu;
+
+	int count = GetMenuItemCount(hMenu);
+	for (int i = 0; i < count; ++i)
+	{
+		MENUITEMINFO mii2 = {0};
+		mii2.cbSize = sizeof(mii);
+		mii2.fMask = MIIM_SUBMENU;
+		GetMenuItemInfo(hMenu, i, TRUE, &mii2);
+
+		if (mii2.hSubMenu)
+			if (HMENU hMenuRes = sttGetMenuItemInfoRecursive(mii2.hSubMenu, id, mii))
+				return hMenuRes;
+	}
+
+	return NULL;
+}
+
 int JMenuShow(HMENU hMenu, int x, int y)
 {
 	if (!g_hwndMenuHost)
@@ -1188,7 +1211,8 @@ int JMenuShow(HMENU hMenu, int x, int y)
 	MENUITEMINFO mii = {0};
 	mii.cbSize = sizeof(mii);
 	mii.fMask = MIIM_DATA;
-	GetMenuItemInfo(hMenu, res, FALSE, &mii);
+	sttGetMenuItemInfoRecursive(hMenu, res, &mii);
+	//GetMenuItemInfo(hMenu, res, FALSE, &mii);
 
 	if (mii.dwItemData)
 	{
@@ -1221,7 +1245,7 @@ void JMenuDestroy(HMENU hMenu, CJabberProto *ppro, void (CJabberProto::*pfnDestr
 			DeleteObject(mii.hbmpItem);
 
 		if (mii.hSubMenu)
-			JMenuDestroy(hMenu, ppro, pfnDestructor);
+			JMenuDestroy(mii.hSubMenu, ppro, pfnDestructor);
 	}
 
 	DestroyMenu(hMenu);
