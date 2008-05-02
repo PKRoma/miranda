@@ -426,7 +426,7 @@ int __cdecl CJabberProto::OnMenuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM
 
 void CJabberProto::InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt)
 {
-	HMENU hMenu = JMenuCreate();
+	HMENU hMenu = JMenuCreate(true);
 	for( int i = 0; i <= NUM_XMODES; i++ ) {
 		TCHAR *mood_name = mir_a2t(g_arrMoods[i].szName);
 		JMenuAddItem(hMenu, i+1,
