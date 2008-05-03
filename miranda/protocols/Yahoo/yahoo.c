@@ -89,9 +89,14 @@ char * yahoo_status_code(enum yahoo_status s)
 
 int miranda_to_yahoo(int myyahooStatus)
 {
-    int ret = YAHOO_STATUS_OFFLINE;
+    int ret = YAHOO_STATUS_AVAILABLE;
 	
     switch (myyahooStatus) {
+	case ID_STATUS_OFFLINE:
+						ret = YAHOO_STATUS_OFFLINE;
+						break;
+						
+	case ID_STATUS_FREECHAT:
     case ID_STATUS_ONLINE: 
                         ret = YAHOO_STATUS_AVAILABLE;
                         break;
@@ -259,6 +264,8 @@ void yahoo_logout()
 	if (yahooLoggedIn)
 		yahoo_logoff(ylad->id);
 	
+	/* need to stop the server and close all the connections */
+	poll_loop = 0;
 }
 
 HANDLE getbuddyH(const char *yahoo_id)
