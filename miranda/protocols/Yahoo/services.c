@@ -67,12 +67,12 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
 
         case PFLAGNUM_2:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND | PF2_HEAVYDND; 
+                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND /*| PF2_HEAVYDND*/;
             break;
 
         case PFLAGNUM_3:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | /*PF2_INVISIBLE |*/ PF2_LIGHTDND | PF2_HEAVYDND; 
+                  PF2_OUTTOLUNCH | PF2_LIGHTDND ;
             break;
             
         case PFLAGNUM_4:
@@ -234,7 +234,25 @@ void yahoo_util_broadcaststatus(int s)
     if (oldStatus == s)
         return;
         
-    yahooStatus = s;
+    //yahooStatus = s;
+    switch (s) {
+       case ID_STATUS_OFFLINE:
+       case ID_STATUS_CONNECTING:
+       case ID_STATUS_ONLINE:
+       case ID_STATUS_AWAY:
+       case ID_STATUS_NA:
+       case ID_STATUS_OCCUPIED:
+       case ID_STATUS_ONTHEPHONE:
+       case ID_STATUS_OUTTOLUNCH:
+       case ID_STATUS_INVISIBLE:
+            yahooStatus = s;
+            break;
+      case ID_STATUS_DND:
+            yahooStatus = ID_STATUS_OCCUPIED;
+            break;
+      default:
+            yahooStatus = ID_STATUS_ONLINE;
+    }
 
 	YAHOO_DebugLog("[yahoo_util_broadcaststatus] Old Status: %s (%d), New Status: %s (%d)",
 			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0)), oldStatus,

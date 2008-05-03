@@ -95,14 +95,17 @@ int miranda_to_yahoo(int myyahooStatus)
     case ID_STATUS_ONLINE: 
                         ret = YAHOO_STATUS_AVAILABLE;
                         break;
+    case ID_STATUS_AWAY:
+                        ret = YAHOO_STATUS_STEPPEDOUT;
+                        break;
     case ID_STATUS_NA:
                         ret = YAHOO_STATUS_BRB;
                         break;
     case ID_STATUS_OCCUPIED:
                         ret = YAHOO_STATUS_BUSY;
                         break;
-    case ID_STATUS_AWAY:
-                        ret = YAHOO_STATUS_NOTATDESK;
+    case ID_STATUS_DND:
+                        ret = YAHOO_STATUS_BUSY;
                         break;
     case ID_STATUS_ONTHEPHONE:
                         ret = YAHOO_STATUS_ONPHONE;
@@ -112,9 +115,6 @@ int miranda_to_yahoo(int myyahooStatus)
                         break;
     case ID_STATUS_INVISIBLE:
                         ret = YAHOO_STATUS_INVISIBLE;
-                        break;
-    case ID_STATUS_DND:
-                        ret = YAHOO_STATUS_STEPPEDOUT;
                         break;
     }                                                
     
