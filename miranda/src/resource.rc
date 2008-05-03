@@ -1360,9 +1360,9 @@ BEGIN
     CONTROL         "Automatically check for new versions of Miranda IM.",
                     IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     11,22,237,10
-    CONTROL         "Also check for pre-release (alpha) versions.",
+    CONTROL         "Check for pre-release (alpha) versions.",
                     IDC_ENABLEALPHA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    21,35,227,10
+                    11,35,237,10
 END
 
 
