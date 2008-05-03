@@ -1423,8 +1423,8 @@ BEGIN
                     IDC_ENABLEUPDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     11,22,237,10
     CONTROL         "Also check for pre-release (alpha) versions.",
-                    IDC_ENABLEALPHA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,
-                    35,227,10
+                    IDC_ENABLEALPHA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,
+                    35,237,10
 END
 
 IDD_OPT_KEYBINDINGS DIALOGEX 0, 0, 316, 251

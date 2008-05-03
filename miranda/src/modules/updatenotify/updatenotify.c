@@ -402,13 +402,11 @@ static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		TranslateDialogDefault(hwndDlg);
 		CheckDlgButton(hwndDlg, IDC_ENABLEUPDATES, DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_ENABLEALPHA, DBGetContactSettingByte(NULL, UN_MOD, UN_NOTIFYALPHA, UN_NOTIFYALPHA_DEF) ? BST_CHECKED : BST_UNCHECKED);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEALPHA), IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)?TRUE:FALSE);
 		return TRUE;
 
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 	case IDC_ENABLEUPDATES:
-		EnableWindow(GetDlgItem(hwndDlg, IDC_ENABLEALPHA), IsDlgButtonChecked(hwndDlg, IDC_ENABLEUPDATES)?TRUE:FALSE);
 		//fall-through
 	case IDC_ENABLEALPHA:
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
