@@ -240,6 +240,7 @@ void yahoo_util_broadcaststatus(int s)
         
     //yahooStatus = s;
 	switch (s) {
+	case ID_STATUS_OFFLINE:
 	case ID_STATUS_CONNECTING:
 	case ID_STATUS_ONLINE: 
     case ID_STATUS_AWAY:
