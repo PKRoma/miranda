@@ -280,8 +280,6 @@ LBL_Restart:
 						MSN_ShowError( "MSN Passport verification failed with error %d: %s",
 							errCode.mErrorCode, errCode.getText());
 				}
-
-
 			}
 			else {
 				DWORD dwCode;
@@ -319,8 +317,9 @@ typedef void ( *PFN_SSL_void_pvoid ) ( PVOID );
 typedef int ( *PFN_SSL_int_pvoid_int ) ( PVOID, int );
 typedef int ( *PFN_SSL_int_pvoid ) ( PVOID );
 typedef int ( *PFN_SSL_int_pvoid_pvoid_int ) ( PVOID, PVOID, int );
+typedef int ( *PFN_SSL_int_pvoid_int_pvoid ) ( PVOID, int, PVOID );
 
-static	HMODULE hLibSSL, hLibEAY;
+static	HMODULE hLibSSL;
 static	PVOID sslCtx;
 
 static	PFN_SSL_int_void            pfn_SSL_library_init;
@@ -333,6 +332,7 @@ static	PFN_SSL_int_pvoid_int       pfn_SSL_set_fd;
 static	PFN_SSL_int_pvoid           pfn_SSL_connect;
 static	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_read;
 static	PFN_SSL_int_pvoid_pvoid_int pfn_SSL_write;
+static  PFN_SSL_int_pvoid_int_pvoid pfn_SSL_CTX_set_verify;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -341,13 +341,14 @@ int SSL_OpenSsl::init(void)
 	if ( sslCtx != NULL )
 		return 0;
 
-	if ( hLibSSL == NULL ) {
-		if (( hLibEAY = LoadLibraryA( "LIBEAY32.DLL" )) == NULL ) {
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
-			return 1;
-		}
-
-		if (( hLibSSL = LoadLibraryA( "SSLEAY32.DLL" )) == NULL ) {
+	if ( hLibSSL == NULL ) 
+	{
+		hLibSSL = LoadLibraryA( "cyassld.DLL" );
+		if ( hLibSSL == NULL )
+			hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
+		if ( hLibSSL == NULL )
+			hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
+		if ( hLibSSL == NULL ) {
 			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
@@ -373,6 +374,8 @@ int SSL_OpenSsl::init(void)
 			retVal = TRUE;
 		if (( pfn_SSL_write = ( PFN_SSL_int_pvoid_pvoid_int )GetProcAddress( hLibSSL, "SSL_write" )) == NULL )
 			retVal = TRUE;
+		if (( pfn_SSL_CTX_set_verify = ( PFN_SSL_int_pvoid_int_pvoid )GetProcAddress( hLibSSL, "SSL_CTX_set_verify" )) == NULL )
+			retVal = TRUE;
 
 		if ( retVal ) {
 			FreeLibrary( hLibSSL );
@@ -382,6 +385,7 @@ int SSL_OpenSsl::init(void)
 
 		pfn_SSL_library_init();
 		sslCtx = pfn_SSL_CTX_new( pfn_TLSv1_client_method());
+		pfn_SSL_CTX_set_verify(sslCtx, 0, NULL);
 		MSN_DebugLog( "OpenSSL context successully allocated" );
 	}
 	return 0;
@@ -585,9 +589,6 @@ lbl_retry:
 
 void UninitSsl( void )
 {
-	if ( hLibEAY )
-		FreeLibrary( hLibEAY );
-
 	if ( hLibSSL ) 
 	{
 		pfn_SSL_CTX_free( sslCtx );
