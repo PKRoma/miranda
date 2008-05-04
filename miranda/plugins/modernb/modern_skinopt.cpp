@@ -40,13 +40,13 @@ typedef struct _SkinListData
 } SkinListData;
 
 HBITMAP hPreviewBitmap=NULL;
-static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
+ int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data);
 
 int AddSkinToListFullName(HWND hwndDlg,char * fullName);
 int AddSkinToList(HWND hwndDlg,char * path, char* file);
 int FillAvailableSkinList(HWND hwndDlg);
 
-static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int SkinOptInit(WPARAM wParam,LPARAM lParam)
 {
@@ -77,7 +77,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -400,8 +400,8 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 									);
 							}
 							ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
-							ShowWindow(GetDlgItem(hwndDlg,IDC_STATIC_INFO),SW_SHOW);
-							SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
+							ShowWindow(GetDlgItem(hwndDlg,IDC__INFO),SW_SHOW);
+							SendDlgItemMessageA(hwndDlg,IDC__INFO,WM_SETTEXT,0,(LPARAM)text);
 					}					
 				}
 				else
@@ -410,7 +410,7 @@ static BOOL CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
 					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
-					SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)Translate("Please select skin to apply"));
+					SendDlgItemMessageA(hwndDlg,IDC__INFO,WM_SETTEXT,0,(LPARAM)Translate("Please select skin to apply"));
 					ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
 				}
 				ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);
@@ -575,7 +575,7 @@ int AddSkinToList(HWND hwndDlg,char * path, char* file)
 
 
 
-static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * data)
+ HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * data)
 {
 	HTREEITEM res=NULL, tmp=NULL;
 	if (Parent) 
@@ -614,7 +614,7 @@ static HTREEITEM FindChild(HWND hTree, HTREEITEM Parent, char * Caption, void * 
 }
 
 
-static int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data)
+ int AddItemToTree(HWND hTree, char * folder, char * itemName, void * data)
 {
 	HTREEITEM rootItem=NULL;
 	HTREEITEM cItem=NULL;

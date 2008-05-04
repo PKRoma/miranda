@@ -67,9 +67,6 @@ int ClcUnloadModule();
 int ClcGetShortData(struct ClcData* pData, struct SHORTDATA *pShortData);
 int ClcEnterDragToScroll(HWND hwnd, int Y);
 
-HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
-void CLCPaint_FillQuickHash();
-
 int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam);
 int CListMod_HideWindow(HWND hwndContactList, int mode);
 
@@ -148,8 +145,8 @@ int CLUI_SizingOnBorder(POINT pt, int size);
 int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 int CLUI_TestCursorOnBorders();
 
-static int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam);
-static int CLUI_SmoothAlphaThreadTransition(HWND hwnd);
+ int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam);
+ int CLUI_SmoothAlphaThreadTransition(HWND hwnd);
 
 /*      structs         */
 
@@ -171,53 +168,53 @@ typedef struct tagCHECKFILLING
 
 /* Module global variables */
 
-static BYTE bAlphaEnd;
-static BYTE bOldHideOffline;
+ BYTE bAlphaEnd;
+ BYTE bOldHideOffline;
 
-static WORD wBehindEdgeShowDelay,
+ WORD wBehindEdgeShowDelay,
             wBehindEdgeHideDelay,
             wBehindEdgeBorderSize;
 
-static BOOL mutex_bAnimationInProgress=FALSE,
+ BOOL mutex_bAnimationInProgress=FALSE,
             mutex_bShowHideCalledFromAnimation=FALSE,
             mutex_bIgnoreActivation=FALSE,
             mutex_bDisableAutoUpdate=TRUE,
             mutex_bDuringSizing=FALSE,
             mutex_bDelayedSizing=FALSE;  //TBC is it need?
             
-static BOOL flag_bFirstTimeCall=FALSE;
+ BOOL flag_bFirstTimeCall=FALSE;
 
-static BOOL bTransparentFocus=TRUE,
+ BOOL bTransparentFocus=TRUE,
             bNeedFixSizingRect=FALSE,
             bShowEventStarted=FALSE;
 
-static HANDLE hRenameMenuItem,
+ HANDLE hRenameMenuItem,
               hShowAvatarMenuItem,
               hHideAvatarMenuItem;
 
 
-static HANDLE hSettingChangedHook=NULL;
+ HANDLE hSettingChangedHook=NULL;
 
-static UINT uMsgGetProfile=0;
+ UINT uMsgGetProfile=0;
 
 
-static HIMAGELIST himlMirandaIcon;
+ HIMAGELIST himlMirandaIcon;
 
-static int nLastRequiredHeight=0,
+ int nLastRequiredHeight=0,
            nRequiredHeight=0,
            nMirMenuState=0,
            nStatusMenuState=0;
  
-static RECT rcNewWindowRect={0},
+ RECT rcNewWindowRect={0},
             rcOldWindowRect ={0},
             rcSizingRect={0},
             rcCorrectSizeRect={0};
 
-static HANDLE hFrameContactTree;
+ HANDLE hFrameContactTree;
 
-static PROTOTICKS CycleStartTick[64]={0};//max 64 protocols 
+ PROTOTICKS CycleStartTick[64]={0};//max 64 protocols 
 
-static int nAnimatedIconStep=100;
+ int nAnimatedIconStep=100;
 
 
 

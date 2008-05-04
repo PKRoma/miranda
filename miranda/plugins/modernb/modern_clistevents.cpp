@@ -25,8 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_clist.h"
 #include "./hdr/modern_cluiframes.h"
 #include "hdr/modern_commonprototypes.h"
-
-HFONT CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
+#include "hdr/modern_clcpaint.h"
 
 /**************************************************/
 /*   Notify Event Area Frame implementation       */
@@ -277,7 +276,7 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     HFONT hOldFont;
     GetClientRect(hWnd,&rc);   
     SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
-    hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
+    hOldFont=g_clcPainter.ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
 	SetBkMode(hDC,TRANSPARENT);
     //ske_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
     {

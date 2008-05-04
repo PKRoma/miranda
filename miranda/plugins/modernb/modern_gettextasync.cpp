@@ -46,13 +46,13 @@ typedef struct _GetTextAsyncItem {
 	struct _GetTextAsyncItem *Next;
 } GTACHAINITEM;
 
-static GTACHAINITEM * gtaFirstItem=NULL;
-static GTACHAINITEM * gtaLastItem=NULL;
-static CRITICAL_SECTION gtaCS;
-static HANDLE hgtaWakeupEvent=NULL;
+ GTACHAINITEM * gtaFirstItem=NULL;
+ GTACHAINITEM * gtaLastItem=NULL;
+ CRITICAL_SECTION gtaCS;
+ HANDLE hgtaWakeupEvent=NULL;
 
 
-static BOOL gtaGetItem(GTACHAINITEM * mpChain)
+ BOOL gtaGetItem(GTACHAINITEM * mpChain)
 {
 	gtalock;
 	if (!gtaFirstItem)
@@ -75,7 +75,7 @@ static BOOL gtaGetItem(GTACHAINITEM * mpChain)
 	return FALSE;
 }
 
-static int gtaThreadProc(void * lpParam)
+ int gtaThreadProc(void * lpParam)
 {
 	BOOL exit=FALSE;
 	HWND hwnd=pcli->hwndContactList;

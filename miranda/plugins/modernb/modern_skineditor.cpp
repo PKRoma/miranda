@@ -36,7 +36,7 @@ typedef struct _OPT_OBJECT_DATA
 	char * szTempValue;
 } OPT_OBJECT_DATA;
 
-static char *gl_Mask=NULL;
+ char *gl_Mask=NULL;
 HWND gl_Dlg=NULL;
 int  gl_controlID=0;
 int EnableGroup(HWND hwndDlg, HWND first, BOOL bEnable);
@@ -506,8 +506,8 @@ void StoreTreeToDB(HWND hTree, char * section)
   DBWriteContactSettingByte(NULL,section,"Modified",1);
   glSkinWasModified=2;
 }
-static BOOL fileChanged=FALSE;
-static char * object_clipboard=NULL;
+ BOOL fileChanged=FALSE;
+ char * object_clipboard=NULL;
 int GetFileSizes(HWND hwndDlg)
 {
 	char buf[MAX_PATH];

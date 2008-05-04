@@ -34,11 +34,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DOCKED_RIGHT   2
 
 BOOL LockSubframeMoving=0;
-static int TempDock=0;
-static int dock_drag_dx=0;
-static int dock_drag_dy=0;
+ int TempDock=0;
+ int dock_drag_dx=0;
+ int dock_drag_dy=0;
 
-static void Docking_GetMonitorRectFromPoint(POINT pt,RECT *rc)
+ void Docking_GetMonitorRectFromPoint(POINT pt,RECT *rc)
 {
 	HMODULE hUserInstance = GetModuleHandle(TEXT("user32"));
 
@@ -71,7 +71,7 @@ void Docking_GetMonitorRectFromWindow(HWND hWnd,RECT *rc)
 	Docking_GetMonitorRectFromPoint(ptWindow,rc);
 }
 
-static void Docking_AdjustPosition(HWND hwnd,RECT *rcDisplay,RECT *rc)
+ void Docking_AdjustPosition(HWND hwnd,RECT *rcDisplay,RECT *rc)
 {
 	APPBARDATA abd;
 
@@ -103,7 +103,7 @@ int Docking_IsDocked(WPARAM wParam,LPARAM lParam)
 int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 {
 	APPBARDATA abd;
-	static int draggingTitle;
+	static int draggingTitle = 0;
 	MSG *msg=(MSG*)wParam;
 
 	if(msg->message==WM_DESTROY) 

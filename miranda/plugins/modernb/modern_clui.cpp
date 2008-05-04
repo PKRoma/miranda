@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "hdr/modern_static_clui.h"
 #include <locale.h>
+#include "hdr/modern_clcpaint.h"
 
 HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 
@@ -237,7 +238,7 @@ HRESULT CLUI::CreateCLC(HWND hwndClui)
 	Frame.TBtname=TranslateT("My Contacts");
 	hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
 	
-	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)CLCPaint_PaintCallbackProc);
+	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)CLCPaint::PaintCallbackProc);
 	CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
 
 	ExtraImage_ReloadExtraIcons();
@@ -319,8 +320,6 @@ int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 
     g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
     setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
-
-    CLCPaint_FillQuickHash();
 
     if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
         CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);

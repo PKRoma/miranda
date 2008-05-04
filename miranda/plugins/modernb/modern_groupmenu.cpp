@@ -53,7 +53,7 @@ int Param1,Param2;
 wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
-static int RemoveGroupMenuItem(WPARAM wParam,LPARAM lParam)
+ int RemoveGroupMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
@@ -84,7 +84,7 @@ int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
+ int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	lpGroupMenuParam gmp=(lpGroupMenuParam)wParam;
@@ -231,7 +231,7 @@ SendMessage(
 	return 0;
 };
 
-static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
+ int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;
     if (MirandaExiting()) return 0;
@@ -259,7 +259,7 @@ static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 	return 0;
 };
 
-int static OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
+int  OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 {
 	HICON hicon;
 	CLISTMENUITEM clmi={0};
@@ -479,14 +479,14 @@ int Param1,Param2;
 wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
-static int RemoveSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
+ int RemoveSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
 
-static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
+ int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM mi;
   BOOL gray1=FALSE;
@@ -547,7 +547,7 @@ HMENU cliBuildGroupPopupMenu(struct ClcGroup *group)
 	//HWND wnd=GetForegroundWindow();
 	return (HMENU)CallService(MS_CLIST_MENUBUILDSUBGROUP,(WPARAM)group,0);
 }
-static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
+ int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	lpGroupMenuParam gmp=(lpGroupMenuParam)wParam;

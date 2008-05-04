@@ -66,7 +66,7 @@ struct FontOptionsList
 #define DEFAULT_SIZE		-8
 #define DEFAULT_SMALLSIZE	-6
 
-static struct FontOptionsList fontOptionsList[] = {
+ struct FontOptionsList fontOptionsList[] = {
 		{ FONTID_CONTACTS, CLCGROUP, LPGENT( "Standard contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
 		{ FONTID_AWAY, CLCGROUP, LPGENT( "Away contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
 		{ FONTID_DND, CLCGROUP, LPGENT( "DND contacts"), DEFAULT_COLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, DEFAULT_FONT_STYLE, DEFAULT_SIZE },
@@ -162,17 +162,17 @@ void RegisterCLUIFonts( void )
 
 
 
-static WORD fontSameAsDefault[]={0x00FF,0x8B00,0x8F00,0x8700,0x8B00,0x8104,0x8D00,0x8B02,0x8900,0x8D00,
+ WORD fontSameAsDefault[]={0x00FF,0x8B00,0x8F00,0x8700,0x8B00,0x8104,0x8D00,0x8B02,0x8900,0x8D00,
 0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8F00,0x8104,0x8D00,0x00FF,0x8F00,0x8F00};
-static TCHAR *fontSizes[]={_T("6"),_T("7"),_T("8"),_T("9"),_T("10"),_T("12"),_T("14"),_T("16"),_T("18"),_T("20"),_T("24"),_T("28")};
-static int fontListOrder[]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_OPENGROUPS,FONTID_OPENGROUPCOUNTS,FONTID_CLOSEDGROUPS,FONTID_CLOSEDGROUPCOUNTS,FONTID_DIVIDERS,FONTID_SECONDLINE,FONTID_THIRDLINE,
+ TCHAR *fontSizes[]={_T("6"),_T("7"),_T("8"),_T("9"),_T("10"),_T("12"),_T("14"),_T("16"),_T("18"),_T("20"),_T("24"),_T("28")};
+ int fontListOrder[]={FONTID_CONTACTS,FONTID_INVIS,FONTID_OFFLINE,FONTID_OFFINVIS,FONTID_NOTONLIST,FONTID_OPENGROUPS,FONTID_OPENGROUPCOUNTS,FONTID_CLOSEDGROUPS,FONTID_CLOSEDGROUPCOUNTS,FONTID_DIVIDERS,FONTID_SECONDLINE,FONTID_THIRDLINE,
 FONTID_AWAY,FONTID_DND,FONTID_NA,FONTID_OCCUPIED,FONTID_CHAT,FONTID_INVISIBLE,FONTID_PHONE,FONTID_LUNCH,FONTID_CONTACT_TIME,FONTID_STATUSBAR_PROTONAME,FONTID_EVENTAREA, FONTID_VIEMODES};
 
-static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 
@@ -187,7 +187,7 @@ DWORD GetDefaultExStyle(void)
 	return ret;
 }
 
-static void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
+ void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 {
 	SystemParametersInfoA(SPI_GETICONTITLELOGFONT,sizeof(LOGFONTA),lf,FALSE);
 	*colour=GetSysColor(COLOR_WINDOWTEXT);
@@ -224,7 +224,7 @@ case FONTID_THIRDLINE:
 	break;
 	}
 }
-static int SameAsAntiCycle=0;
+ int SameAsAntiCycle=0;
 void CheckSameAs(int fontId,LOGFONTA *dest_lf,COLORREF *dest_colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2)
 {
 	char idstr[32];
@@ -322,12 +322,12 @@ void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *
 
 
 
-static BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static struct TabItemOptionConf
+ struct TabItemOptionConf
 {
 	TCHAR *name;			// Tab name
 	int id;					// Dialog id
@@ -396,7 +396,7 @@ struct CheckBoxToStyleEx_t
 	int id;
 	DWORD flag;
 	int not;
-} static const checkBoxToStyleEx[]=
+}  const checkBoxToStyleEx[]=
 {
 	{IDC_DISABLEDRAGDROP,CLS_EX_DISABLEDRAGDROP,0},
 	{IDC_NOTEDITLABELS,CLS_EX_EDITLABELS,1},
@@ -416,7 +416,7 @@ struct CheckBoxValues_t {
 	DWORD style;
 	TCHAR *szDescr;
 };
-static const struct CheckBoxValues_t greyoutValues[]={
+ const struct CheckBoxValues_t greyoutValues[]={
 	{GREYF_UNFOCUS,_T("Not focused")},
 	{MODEF_OFFLINE,_T("Offline")},
 	{PF2_ONLINE,_T("Online")},
@@ -429,7 +429,7 @@ static const struct CheckBoxValues_t greyoutValues[]={
 	{PF2_OUTTOLUNCH,_T("Out to lunch")},
 	{PF2_ONTHEPHONE,_T("On the phone")}
 };
-static const struct CheckBoxValues_t offlineValues[]=
+ const struct CheckBoxValues_t offlineValues[]=
 {
 	{MODEF_OFFLINE,_T("Offline")},
 	{PF2_ONLINE,_T("Online")},
@@ -443,7 +443,7 @@ static const struct CheckBoxValues_t offlineValues[]=
 	{PF2_ONTHEPHONE,_T("On the phone")}
 };
 
-static void FillCheckBoxTree(HWND hwndTree,const struct CheckBoxValues_t *values,int nValues,DWORD style)
+ void FillCheckBoxTree(HWND hwndTree,const struct CheckBoxValues_t *values,int nValues,DWORD style)
 {
 	TVINSERTSTRUCT tvis;
 	int i;
@@ -461,7 +461,7 @@ static void FillCheckBoxTree(HWND hwndTree,const struct CheckBoxValues_t *values
 	}
 }
 
-static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
+ DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
 {
 	DWORD flags=0;
 	TVITEMA tvi;
@@ -476,7 +476,7 @@ static DWORD MakeCheckBoxTreeFlags(HWND hwndTree)
 	return flags;
 }
 
-static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	LPNMHDR t;
 	t=((LPNMHDR)lParam);
@@ -571,7 +571,7 @@ static BOOL CALLBACK DlgProcClcMetaOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 }
 
-static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -686,7 +686,7 @@ static BOOL CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -831,7 +831,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 }
 
 
-//static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+// BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 //{
 //	switch (msg)
 //	{
@@ -995,7 +995,7 @@ static BOOL CALLBACK DlgProcStatusBarBkgOpts(HWND hwndDlg, UINT msg, WPARAM wPar
 //	return FALSE;
 //}
 
-static const TCHAR *szFontIdDescr[FONTID_MODERN_MAX+1]=
+ const TCHAR *szFontIdDescr[FONTID_MODERN_MAX+1]=
 {
 	_T("Standard contacts"),
 		_T("Online contacts to whom you have a different visibility"),
@@ -1034,7 +1034,7 @@ struct _fontSettings {
 	BYTE Effect;
 	COLORREF EffectColor1;
 	COLORREF EffectColor2;
-} static fontSettings[FONTID_MODERN_MAX+1];
+}  fontSettings[FONTID_MODERN_MAX+1];
 #include <poppack.h>
 
 #define M_REBUILDFONTGROUP   (WM_USER+10)
@@ -1049,7 +1049,7 @@ struct _fontSettings {
 #define M_GUESSSAMEASBOXES   (WM_USER+19)
 #define M_SETSAMEASBOXES     (WM_USER+20)
 
-static int CALLBACK EnumFontsProc(ENUMLOGFONTEXA *lpelfe,NEWTEXTMETRICEX *lpntme,int FontType,LPARAM lParam)
+ int CALLBACK EnumFontsProc(ENUMLOGFONTEXA *lpelfe,NEWTEXTMETRICEX *lpntme,int FontType,LPARAM lParam)
 {
 	if(!IsWindow((HWND)lParam)) return FALSE;
 	if(SendMessageA((HWND)lParam,CB_FINDSTRINGEXACT,-1,(LPARAM)lpelfe->elfLogFont.lfFaceName)==CB_ERR)
@@ -1070,7 +1070,7 @@ void FillFontListThread(HWND hwndDlg)
 	return;
 }
 
-static int CALLBACK EnumFontScriptsProc(ENUMLOGFONTEX *lpelfe,NEWTEXTMETRICEX *lpntme,int FontType,LPARAM lParam)
+ int CALLBACK EnumFontScriptsProc(ENUMLOGFONTEX *lpelfe,NEWTEXTMETRICEX *lpntme,int FontType,LPARAM lParam)
 {
 	if(SendMessage((HWND)lParam,CB_FINDSTRINGEXACT,-1,(LPARAM)lpelfe->elfScript)==CB_ERR) {
 		int i=SendMessage((HWND)lParam,CB_ADDSTRING,0,(LPARAM)lpelfe->elfScript);
@@ -1079,12 +1079,12 @@ static int CALLBACK EnumFontScriptsProc(ENUMLOGFONTEX *lpelfe,NEWTEXTMETRICEX *l
 	return TRUE;
 }
 
-static int TextOptsDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+ int TextOptsDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
+ void SwitchTextDlgToMode(HWND hwndDlg,int expert)
 {
 	CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_GAMMACORRECT),expert?SW_SHOW:SW_HIDE);
 	CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_STSAMETEXT),expert?SW_SHOW:SW_HIDE);
@@ -1109,11 +1109,11 @@ static void SwitchTextDlgToMode(HWND hwndDlg,int expert)
 	SendMessage(hwndDlg,M_REFRESHSAMEASBOXES,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_FONTID,CB_GETCURSEL,0,0),0),0);
 }
 
-static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static HFONT hFontSample;
-	static BYTE EffectSample=0;
-	static COLORREF ColorSample=0,Color1Sample=0,Color2Sample=0;
+	 static HFONT hFontSample = NULL;
+	 BYTE EffectSample=0;
+	 COLORREF ColorSample=0, Color1Sample=0, Color2Sample=0;
 
 
 	switch (msg)
@@ -1724,7 +1724,7 @@ static BOOL CALLBACK DlgProcClcTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	}
 	return FALSE;
 }
-static int _GetNetVisibleProtoCount()
+ int _GetNetVisibleProtoCount()
 {
 	int i,count,netProtoCount;
 	PROTOACCOUNT **accs;
@@ -1738,7 +1738,7 @@ static int _GetNetVisibleProtoCount()
 }
 TCHAR *sortby[]={_T("Name"), _T("Name (use locale settings)") , _T("Status"), _T("Last message time"), _T("Profile Name"), _T("Rate"), _T("-Nothing-")};
 int sortbyValue[]={ SORTBY_NAME, SORTBY_NAME_LOCALE, SORTBY_STATUS, SORTBY_LASTMSG, SORTBY_PROTO ,SORTBY_RATE , SORTBY_NOTHING };
-static BOOL 
+ BOOL 
 CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -2014,9 +2014,9 @@ void ClcOptionsChanged(void)
 
 HWND g_hCLUIOptionsWnd=NULL;
 
-static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static LOGFONTA lf;
+	 LOGFONTA lf;
 	switch (msg)
 	{
 	case WM_INITDIALOG:
@@ -2213,7 +2213,7 @@ static BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 }
 
 
-static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -2241,7 +2241,7 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),0));
 		EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 		EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
-		EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC01),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+		EnableWindow(GetDlgItem(hwndDlg,IDC_01),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 		{
 			int i, item;
 			TCHAR *hidemode[]={TranslateT("Hide to tray"), TranslateT("Behind left edge"), TranslateT("Behind right edge")};
@@ -2265,17 +2265,17 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN3),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN4),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDEDELAY2),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC5),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC6),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC7),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC8),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_5),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_6),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_7),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_8),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_10),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_13),mode!=0);
 		}
 
 		if(!IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE)) {
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC21),FALSE);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_21),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_22),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),FALSE);
@@ -2285,7 +2285,7 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		if(LOWORD(wParam)==IDC_AUTOHIDE) {
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC01),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_01),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
 		}
 		else if(LOWORD(wParam)==IDC_DRAGTOSCROLL && IsDlgButtonChecked(hwndDlg,IDC_CLIENTDRAG)) {
 			CheckDlgButton(hwndDlg,IDC_CLIENTDRAG,FALSE);
@@ -2294,8 +2294,8 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CheckDlgButton(hwndDlg,IDC_DRAGTOSCROLL,FALSE);
 		}
 		else if(LOWORD(wParam)==IDC_AUTOSIZE) {
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC21),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_21),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_22),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
@@ -2309,12 +2309,12 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN3),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN4),mode!=0);     
 			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDEDELAY2),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC5),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC6),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC7),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC8),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_5),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_6),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_7),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_8),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_10),mode!=0);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_13),mode!=0);
 		}
 		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT) &&
 			(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
@@ -2368,7 +2368,7 @@ static BOOL CALLBACK DlgProcCluiOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL fEnabled=FALSE;
 	switch (msg)
@@ -2389,7 +2389,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLETEXT),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
@@ -2488,8 +2488,8 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		}
 		else CheckDlgButton(hwndDlg,IDC_TRANSPARENT,DBGetContactSettingByte(NULL,"CList","Transparent",SETTING_TRANSPARENT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 		if(!IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT)) {
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC11),FALSE);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC12),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_11),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_12),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSACTIVE),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSINACTIVE),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ACTIVEPERC),FALSE);
@@ -2504,8 +2504,8 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 	case WM_COMMAND:
 		if(LOWORD(wParam)==IDC_TRANSPARENT) {
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC11),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC12),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_11),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_12),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSACTIVE),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSINACTIVE),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ACTIVEPERC),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
@@ -2524,7 +2524,7 @@ static BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWMAINMENU),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
-			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
@@ -2725,7 +2725,7 @@ int bkgrCount = 0;
 #define M_BKGR_TILE			0x10
 
 #define ARRAY_SIZE(arr)	(sizeof(arr)/sizeof(arr[0]))
-static int bitmapRelatedControls[] = {
+ int bitmapRelatedControls[] = {
 	IDC_FILENAME,IDC_BROWSE,IDC_STRETCHH,IDC_STRETCHV,IDC_TILEH,IDC_TILEV,
 	IDC_SCROLL,IDC_PROPORTIONAL,IDC_TILEVROWH
 };
@@ -2744,7 +2744,7 @@ struct BkgrData
 	int indx;
 	int count;
 };
-static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+ BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct BkgrData *dat = (struct BkgrData *)GetWindowLong(hwndDlg, GWL_USERDATA);
 	switch (msg)
@@ -2867,7 +2867,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 //M_BKGR_BACKCOLOR,M_BKGR_SELECTCOLOR,M_BKGR_ALLOWBITMAPS,M_BKGR_STRETCH,M_BKGR_TILE}
 				if(visibility & M_BKGR_BACKCOLOR)
 				{
-					SetWindowPos(GetDlgItem(hwndDlg, IDC_BC_STATIC), 0,
+					SetWindowPos(GetDlgItem(hwndDlg, IDC_BC_), 0,
 						20, cy,
 						0, 0,
 						SWP_NOACTIVATE|SWP_NOZORDER|SWP_NOSIZE);
@@ -2879,7 +2879,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				if(visibility & M_BKGR_SELECTCOLOR)
 				{
-					SetWindowPos(GetDlgItem(hwndDlg, IDC_SC_STATIC), 0,
+					SetWindowPos(GetDlgItem(hwndDlg, IDC_SC_), 0,
 						20, cy,
 						0, 0,
 						SWP_NOACTIVATE|SWP_NOZORDER|SWP_NOSIZE);
@@ -3016,7 +3016,7 @@ static BOOL CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static int BkgrCfg_Register(WPARAM wParam,LPARAM lParam)
+ int BkgrCfg_Register(WPARAM wParam,LPARAM lParam)
 {
 	char *szSetting = (char *)wParam;
 	char *value, *tok;

@@ -40,7 +40,7 @@ struct
 	{ID_STATUS_ONTHEPHONE,150},
 	{ID_STATUS_OUTTOLUNCH,425}};
 
-static int GetContactStatus(HANDLE hContact)
+ int GetContactStatus(HANDLE hContact)
 {
 	return (GetContactCachedStatus(hContact));
 }
@@ -51,7 +51,7 @@ void cli_ChangeContactIcon(HANDLE hContact,int iIcon,int add)
 	corecli.pfnChangeContactIcon((HANDLE) hContact,(int) iIcon,(int) add);
 }
 
-static int GetStatusModeOrdering(int statusMode)
+ int GetStatusModeOrdering(int statusMode)
 {
 	int i;
 	for(i=0;i<sizeof(statusModeOrder)/sizeof(statusModeOrder[0]);i++)
@@ -137,7 +137,7 @@ int CompareContacts2(const struct ClcContact *contact1,const struct ClcContact *
 	} 
 	if (by==SORTBY_NAME_LOCALE) 
 	{ //name
-		static int LocaleId=-1;
+		 int LocaleId=-1;
 		if (LocaleId==-1) LocaleId=CallService(MS_LANGPACK_GETLOCALE,0,0);
 		return (CompareString(LocaleId,NORM_IGNORECASE,SAFETSTRING(namea),-1,SAFETSTRING(nameb),-1))-2;
 	} 

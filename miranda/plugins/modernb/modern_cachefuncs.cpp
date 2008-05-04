@@ -40,15 +40,15 @@ typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL s
 
 
 /***********************************/
-/**   Module static declarations  **/
+/**   Module  declarations  **/
 /***********************************/
 
-/* 	   Module Static Prototypes    */
+/* 	   Module  Prototypes    */
 
-static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
+ int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
 
-static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
-static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
+ BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
+ BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 SortedList *CopySmileyString(SortedList *plInput);
 
@@ -61,7 +61,7 @@ typedef struct tagSYNCCALLITEM
     PSYNCCALLBACKPROC pfnProc;    
 } SYNCCALLITEM;
 
-static void CALLBACK SyncCallerUserAPCProc(DWORD dwParam)
+ void CALLBACK cache_SyncCallerUserAPCProc(DWORD dwParam)
 {
     SYNCCALLITEM* item = (SYNCCALLITEM*) dwParam;
     item->nResult = item->pfnProc(item->wParam, item->lParam);
@@ -83,7 +83,7 @@ int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
         item.lParam = lParam;
         item.pfnProc = pfnProc;
         item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-        QueueUserAPC(SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
+        QueueUserAPC(cache_SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
         PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
         WaitForSingleObject(item.hDoneEvent, INFINITE);
         CloseHandle(item.hDoneEvent);
@@ -780,7 +780,7 @@ void RemoveTag(TCHAR *to, TCHAR *tag)
 *	Copy string with removing Escape chars from text
 *   And BBcodes
 */
-static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size)
+ int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size)
 {
     DWORD i;
     BOOL keep=0;
@@ -840,7 +840,7 @@ typedef struct _CONTACTDATASTORED
 } CONTACTDATASTORED;
 
 CONTACTDATASTORED * StoredContactsList=NULL;
-static int ContactsStoredCount=0;
+ int ContactsStoredCount=0;
 
 SortedList *CopySmileyString(SortedList *plInput)
 {
@@ -923,14 +923,14 @@ int RestoreAllContactData(struct ClcData *dat)
 
 // If ExecuteOnAllContactsFuncPtr returns FALSE, stop loop
 // Return TRUE if finished, FALSE if was stoped
-static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
+ BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param)
 {
     BOOL res;
     res=ExecuteOnAllContactsOfGroup(&dat->list, func, param);
     return res;
 }
 
-static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param)
+ BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param)
 {
     int scanIndex, i;
     if (group)

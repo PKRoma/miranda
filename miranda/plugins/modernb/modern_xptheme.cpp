@@ -3,7 +3,7 @@
 #include "m_api/m_xpTheme.h"
 
 
-//statical
+//al
 
 typedef struct _tagXPTObject
 {
@@ -12,20 +12,20 @@ typedef struct _tagXPTObject
   LPCWSTR lpcwClassObject;
 } XPTObject;
 
-static SortedList * xptObjectList=NULL;
-static CRITICAL_SECTION xptCS;
-static BOOL xptModuleLoaded=FALSE;
+ SortedList * xptObjectList=NULL;
+ CRITICAL_SECTION xptCS;
+ BOOL xptModuleLoaded=FALSE;
 
 
-static HMODULE _xpt_ThemeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *_xpt_OpenThemeData)(HWND, LPCWSTR) = NULL;
-static HRESULT  (WINAPI *_xpt_CloseThemeData)(HANDLE)= NULL;
-static BOOL     (WINAPI *_xpt_IsThemeBackgroundPartiallyTransparent)(HANDLE, int,int)= NULL;
-static BOOL		(WINAPI *_xpt_EnableThemeDialogTexture)(HANDLE, DWORD)=NULL;
-static HRESULT  (WINAPI *_xpt_GetThemePartSize)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, RECT *prc, int eSize, SIZE *psz )= NULL;
-static HRESULT  (WINAPI *_xpt_DrawThemeParentBackground)(HWND, HDC, const RECT *)= NULL;
-static HRESULT  (WINAPI *_xpt_DrawThemeBackground)(HANDLE, HDC, int, int,const RECT *, const RECT *)= NULL;								 
-static HRESULT  (WINAPI *_xpt_DrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,DWORD, DWORD, const RECT *)= NULL;
+ HMODULE _xpt_ThemeAPIHandle = NULL; // handle to uxtheme.dll
+ HANDLE   (WINAPI *_xpt_OpenThemeData)(HWND, LPCWSTR) = NULL;
+ HRESULT  (WINAPI *_xpt_CloseThemeData)(HANDLE)= NULL;
+ BOOL     (WINAPI *_xpt_IsThemeBackgroundPartiallyTransparent)(HANDLE, int,int)= NULL;
+ BOOL		(WINAPI *_xpt_EnableThemeDialogTexture)(HANDLE, DWORD)=NULL;
+ HRESULT  (WINAPI *_xpt_GetThemePartSize)(HTHEME hTheme, HDC hdc, int iPartId, int iStateId, RECT *prc, int eSize, SIZE *psz )= NULL;
+ HRESULT  (WINAPI *_xpt_DrawThemeParentBackground)(HWND, HDC, const RECT *)= NULL;
+ HRESULT  (WINAPI *_xpt_DrawThemeBackground)(HANDLE, HDC, int, int,const RECT *, const RECT *)= NULL;								 
+ HRESULT  (WINAPI *_xpt_DrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int,DWORD, DWORD, const RECT *)= NULL;
 
 
 #undef  MGPROC
@@ -35,11 +35,11 @@ static HRESULT  (WINAPI *_xpt_DrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int
 #define xptlock() EnterCriticalSection(&xptCS)
 #define xptunlock() LeaveCriticalSection(&xptCS)
 
-static void _sttXptObjectDestructor (void * pt)
+ void _sttXptObjectDestructor (void * pt)
 {
 	mir_free(pt);
 }
-static int _xpt_ThemeSupport()
+ int _xpt_ThemeSupport()
 {
 	if (IsWinVerXPPlus()) {
 		if (!_xpt_ThemeAPIHandle) {
@@ -70,12 +70,12 @@ static int _xpt_ThemeSupport()
 	return 0;
 }
 
-static void _sttXptCloseThemeData(XPTObject * xptObject)
+ void _sttXptCloseThemeData(XPTObject * xptObject)
 {
 	_xpt_CloseThemeData(xptObject->hThemeHandle);
 	xptObject->hThemeHandle=NULL;
 }
-static void _sttXptReloadThemeData(XPTObject * xptObject)
+ void _sttXptReloadThemeData(XPTObject * xptObject)
 {
 	_xpt_CloseThemeData(xptObject->hThemeHandle);
 	xptObject->hThemeHandle=_xpt_OpenThemeData(xptObject->hOwnerWindow, xptObject->lpcwClassObject);

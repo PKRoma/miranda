@@ -51,7 +51,7 @@ int SortList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
+ int MetaSupportCheck(WPARAM wParam,LPARAM lParam)
 {
 	return 1;
 }

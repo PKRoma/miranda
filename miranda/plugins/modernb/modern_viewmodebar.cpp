@@ -34,31 +34,31 @@ $Id: viewmodes.c 2998 2006-06-01 07:11:52Z nightwish2004 $
 #define TIMERID_VIEWMODEEXPIRE 100
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
-static HWND clvmHwnd = 0;
-static int clvm_curItem = 0;
+ HWND clvmHwnd = 0;
+ int clvm_curItem = 0;
 HMENU hViewModeMenu = 0;
 
-static HWND hwndSelector = 0;
-static HIMAGELIST himlViewModes = 0;
-static HANDLE hInfoItem = 0;
-static int nullImage;
-static DWORD stickyStatusMask = 0;
-static char g_szModename[2048];
+ HWND hwndSelector = 0;
+ HIMAGELIST himlViewModes = 0;
+ HANDLE hInfoItem = 0;
+ int nullImage;
+ DWORD stickyStatusMask = 0;
+ char g_szModename[2048];
 
-static int g_ViewModeOptDlg = FALSE;
+ int g_ViewModeOptDlg = FALSE;
 
-static UINT _page1Controls[] = {IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATIC5, IDC_STATIC4,
-    IDC_STATIC8, IDC_ADDVIEWMODE, IDC_DELETEVIEWMODE, IDC_NEWVIEMODE, IDC_GROUPS, IDC_PROTOCOLS,
-    IDC_VIEWMODES, IDC_STATUSMODES, IDC_STATIC12, IDC_STATIC13, IDC_STATIC14, IDC_PROTOGROUPOP, IDC_GROUPSTATUSOP, 
-    IDC_AUTOCLEAR, IDC_AUTOCLEARVAL, IDC_AUTOCLEARSPIN, IDC_STATIC15, IDC_STATIC16, 
+ UINT _page1Controls[] = {IDC_1, IDC_2, IDC_3, IDC_5, IDC_4,
+    IDC_8, IDC_ADDVIEWMODE, IDC_DELETEVIEWMODE, IDC_NEWVIEMODE, IDC_GROUPS, IDC_PROTOCOLS,
+    IDC_VIEWMODES, IDC_STATUSMODES, IDC_12, IDC_13, IDC_14, IDC_PROTOGROUPOP, IDC_GROUPSTATUSOP, 
+    IDC_AUTOCLEAR, IDC_AUTOCLEARVAL, IDC_AUTOCLEARSPIN, IDC_15, IDC_16, 
 	IDC_LASTMESSAGEOP, IDC_LASTMESSAGEUNIT, IDC_LASTMSG, IDC_LASTMSGVALUE, 0};
 
-static UINT _page2Controls[] = {IDC_CLIST, IDC_STATIC9, IDC_STATIC8, IDC_CLEARALL, IDC_CURVIEWMODE2, 0};
+ UINT _page2Controls[] = {IDC_CLIST, IDC_9, IDC_8, IDC_CLEARALL, IDC_CURVIEWMODE2, 0};
 
 void ApplyViewMode(const char *name);
-static UINT _buttons[] = {IDC_RESETMODES, IDC_SELECTMODE, IDC_CONFIGUREMODES, 0};
+ UINT _buttons[] = {IDC_RESETMODES, IDC_SELECTMODE, IDC_CONFIGUREMODES, 0};
 
-static int DrawViewModeBar(HWND hWnd, HDC hDC)
+ int DrawViewModeBar(HWND hWnd, HDC hDC)
 {
 	RECT rc;
 	GetClientRect(hWnd, &rc);
@@ -66,7 +66,7 @@ static int DrawViewModeBar(HWND hWnd, HDC hDC)
 	return 0;
 }
 
-static int ViewModePaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
+ int ViewModePaintCallbackProc(HWND hWnd, HDC hDC, RECT * rcPaint, HRGN rgn, DWORD dFlags, void * CallBackData)
 {
 	int i;
 	RECT MyRect={0};
@@ -130,7 +130,7 @@ int FillModes(char *szsetting)
     return 1;
 }
 
-static void ShowPage(HWND hwnd, int page)
+ void ShowPage(HWND hwnd, int page)
 {
     int i = 0;
     int pageChange = 0;
@@ -166,7 +166,7 @@ static void ShowPage(HWND hwnd, int page)
     }
 }
 
-static int UpdateClistItem(HANDLE hContact, DWORD mask)
+ int UpdateClistItem(HANDLE hContact, DWORD mask)
 {
     int i;
     
@@ -177,7 +177,7 @@ static int UpdateClistItem(HANDLE hContact, DWORD mask)
     return 0;
 }
 
-static DWORD GetMaskForItem(HANDLE hItem)
+ DWORD GetMaskForItem(HANDLE hItem)
 {
     int i;
     DWORD dwMask = 0;
@@ -188,7 +188,7 @@ static DWORD GetMaskForItem(HANDLE hItem)
     return dwMask;
 }
 
-static void UpdateStickies()
+ void UpdateStickies()
 {
     HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     HANDLE hItem;
@@ -222,7 +222,7 @@ static void UpdateStickies()
     }
 }
 
-static int FillDialog(HWND hwnd)
+ int FillDialog(HWND hwnd)
 {
 	LVCOLUMN lvc = {0};
 	HWND hwndList = GetDlgItem(hwnd, IDC_PROTOCOLS);
@@ -315,7 +315,7 @@ static int FillDialog(HWND hwnd)
 	return 0;
 }
 
-static void SetAllChildIcons(HWND hwndList,HANDLE hFirstItem,int iColumn,int iImage)
+ void SetAllChildIcons(HWND hwndList,HANDLE hFirstItem,int iColumn,int iImage)
 {
 	int typeOfFirst,iOldIcon;
 	HANDLE hItem,hChildItem;
@@ -341,7 +341,7 @@ static void SetAllChildIcons(HWND hwndList,HANDLE hFirstItem,int iColumn,int iIm
 	}
 }
 
-static void SetIconsForColumn(HWND hwndList,HANDLE hItem,HANDLE hItemAll,int iColumn,int iImage)
+ void SetIconsForColumn(HWND hwndList,HANDLE hItem,HANDLE hItemAll,int iColumn,int iImage)
 {
 	int itemType;
 
@@ -982,9 +982,9 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     return FALSE;
 }
 
-static int menuCounter = 0;
+ int menuCounter = 0;
 
-static int FillMenuCallback(char *szSetting)
+ int FillMenuCallback(char *szSetting)
 {
     if(szSetting[0] == (char)246)
         return 1;
@@ -1302,7 +1302,7 @@ clvm_config_command:
     return TRUE;
 }
 
-static HWND hCLVMFrame;
+ HWND hCLVMFrame;
 HWND g_hwndViewModeFrame;
 
 
@@ -1522,7 +1522,7 @@ void ApplyViewMode(const char *Name)
 //    SetButtonStates(pcli->hwndContactList);
 }
 
-static int SkinSetViewMode(WPARAM wParam /*char * name*/, LPARAM lParam /*int index*/)
+ int SkinSetViewMode(WPARAM wParam /*char * name*/, LPARAM lParam /*int index*/)
 {
 	if (wParam==0 && lParam==0)
 	{
@@ -1533,5 +1533,6 @@ static int SkinSetViewMode(WPARAM wParam /*char * name*/, LPARAM lParam /*int in
 		if (wParam && !IsBadStringPtrA((const char*)wParam, -1))
 			ApplyViewMode((const char*)wParam);
 	}
+	return 0;
 }
 

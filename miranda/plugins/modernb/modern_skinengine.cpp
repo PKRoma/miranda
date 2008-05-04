@@ -58,68 +58,68 @@ SortedList * gl_plSkinFonts =NULL;
 
 /* Private module variables */
 
-static HANDLE  hSkinLoadedEvent;
+ HANDLE  hSkinLoadedEvent;
 
-static GLYPHIMAGE * pLoadedImages=NULL;
-static DWORD        dwLoadedImagesCount=0;
-static DWORD        dwLoadedImagesAlocated=0;
+ GLYPHIMAGE * pLoadedImages=NULL;
+ DWORD        dwLoadedImagesCount=0;
+ DWORD        dwLoadedImagesAlocated=0;
 
-static BOOL flag_bUpdateQueued=FALSE;
-static BOOL	flag_bJustDrawNonFramedObjects=FALSE;
-static BOOL mutex_bLockUpdate=FALSE;
+ BOOL flag_bUpdateQueued=FALSE;
+ BOOL	flag_bJustDrawNonFramedObjects=FALSE;
+ BOOL mutex_bLockUpdate=FALSE;
 
-static SortedList       * pEffectStack=NULL;
-static SKINOBJECTSLIST  * pCurrentSkin=NULL;
-static char            ** pszSettingName=NULL;
-static int                nArrayLen=0;
-static char             * iniCurrentSection=NULL;
-static char             * szFileName=NULL;
+ SortedList       * pEffectStack=NULL;
+ SKINOBJECTSLIST  * pCurrentSkin=NULL;
+ char            ** pszSettingName=NULL;
+ static int         nArrayLen=0;
+ char             * iniCurrentSection=NULL;
+ char             * szFileName=NULL;
 
-static BYTE             pbGammaWeight[256]={0};
-static BYTE             pbGammaWeightAdv[256]={0};
-static BOOL             bGammaWeightFilled=FALSE;
+ BYTE             pbGammaWeight[256]={0};
+ BYTE             pbGammaWeightAdv[256]={0};
+ BOOL             bGammaWeightFilled=FALSE;
 
-static CRITICAL_SECTION cs_SkinChanging={0};
+ CRITICAL_SECTION cs_SkinChanging={0};
 
 
 /* Private module procedures */
-static BOOL ske_GetMaskBit(BYTE *line, int x);
-static int  ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
-static BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
+ BOOL ske_GetMaskBit(BYTE *line, int x);
+ int  ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam);
+ BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam);
 
-static int  ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor);
-static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
-static void ske_AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin);
-static int  ske_DeleteAllSettingInSection(char * SectionName);
-static int  ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
-static LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
-static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName);
-static int  ske_LoadSkinFromResource(BOOL bOnlyObjects);
-static void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
-static int  ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
-static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
-static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
+ int  ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor);
+ void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin);
+ void ske_AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin);
+ int  ske_DeleteAllSettingInSection(char * SectionName);
+ int  ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin);
+ LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType,SKINOBJECTSLIST* Skin);
+ HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName);
+ int  ske_LoadSkinFromResource(BOOL bOnlyObjects);
+ void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
+ int  ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
+ int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
+ int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
 
 
 //Decoders
-static HMODULE hImageDecoderModule;
+ HMODULE hImageDecoderModule;
 
 typedef  DWORD  (__stdcall *pfnImgNewDecoder)(void ** ppDecoder); 
-static pfnImgNewDecoder ImgNewDecoder;
+ pfnImgNewDecoder ImgNewDecoder;
 
 typedef DWORD (__stdcall *pfnImgDeleteDecoder)(void * pDecoder);
-static pfnImgDeleteDecoder ImgDeleteDecoder;
+ pfnImgDeleteDecoder ImgDeleteDecoder;
 
 typedef  DWORD  (__stdcall *pfnImgNewDIBFromFile)(LPVOID /*in*/pDecoder, LPCSTR /*in*/pFileName, LPVOID /*out*/*pImg);
-static pfnImgNewDIBFromFile ImgNewDIBFromFile;
+ pfnImgNewDIBFromFile ImgNewDIBFromFile;
 
 typedef DWORD (__stdcall *pfnImgDeleteDIBSection)(LPVOID /*in*/pImg);
-static pfnImgDeleteDIBSection ImgDeleteDIBSection;
+ pfnImgDeleteDIBSection ImgDeleteDIBSection;
 
 typedef DWORD (__stdcall *pfnImgGetHandle)(LPVOID /*in*/pImg, HBITMAP /*out*/*pBitmap, LPVOID /*out*/*ppDIBBits);
-static pfnImgGetHandle ImgGetHandle;    
+ pfnImgGetHandle ImgGetHandle;    
 
-static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
+ MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 
 HRESULT SkinEngineLoadModule()
 {
@@ -248,12 +248,12 @@ BOOL ske_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidthDest
 }
 
 
-static int ske_LockSkin()
+ int ske_LockSkin()
 {
 	EnterCriticalSection(&cs_SkinChanging);
 	return 0;
 }
-static int ske_UnlockSkin()
+ int ske_UnlockSkin()
 {
 	LeaveCriticalSection(&cs_SkinChanging);
 	return 0;
@@ -438,7 +438,7 @@ BOOL ske_SetRectOpaque(HDC memdc,RECT *fr)
 	return ske_SetRectOpaqueOpt(memdc, fr, FALSE);
 }
 
-static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT * rClip, BYTE mode, BYTE drawMode, int depth)
+ BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT * rClip, BYTE mode, BYTE drawMode, int depth)
 {
 	int destw=0, desth=0;
 	int xstart=0, xmax=0;
@@ -893,7 +893,7 @@ HRGN ske_CreateOpaqueRgn(BYTE Level, bool Opaque)
 	return hRgn;
 }
 
-static int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
+ int ske_DrawSkinObject(SKINDRAWREQUEST * preq, GLYPHOBJECT * pobj)
 {
 	HDC memdc=NULL, glyphdc=NULL;
 	int k=0;
@@ -1315,7 +1315,7 @@ int ske_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJEC
 	return 1;
 }
 
-static LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin)
+ LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType, SKINOBJECTSLIST* Skin)
 {
 	// DWORD i;
 	SKINOBJECTSLIST* sk;
@@ -1323,7 +1323,7 @@ static LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType, 
 	return skin_FindObjectByRequest((char *)szName,sk->pMaskList);
 }
 
-static LPSKINOBJECTDESCRIPTOR ske_FindObjectByMask(MODERNMASK * pModernMask, BYTE objType, SKINOBJECTSLIST* Skin)
+ LPSKINOBJECTDESCRIPTOR ske_FindObjectByMask(MODERNMASK * pModernMask, BYTE objType, SKINOBJECTSLIST* Skin)
 {
 	// DWORD i;
 	SKINOBJECTSLIST* sk;
@@ -1469,7 +1469,7 @@ int ske_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsol
 }
 
 
-static HBITMAP ske_skinLoadGlyphImage(char * szFileName)
+ HBITMAP ske_skinLoadGlyphImage(char * szFileName)
 {
 	if (!g_CluiData.fGDIPlusFail && !wildcmpi(szFileName,"*.tga"))
 		return GDIPlus_LoadGlyphImage(szFileName);
@@ -1482,7 +1482,7 @@ This function is required to load TGA to dib buffer myself
 Major part of routines is from http://tfcduke.developpez.com/tutoriel/format/tga/fichiers/tga.c
 */
 
-static BOOL ske_ReadTGAImageData(void * From, DWORD fromSize, BYTE * destBuf, DWORD bufSize, BOOL RLE)
+ BOOL ske_ReadTGAImageData(void * From, DWORD fromSize, BYTE * destBuf, DWORD bufSize, BOOL RLE)
 {
 	BYTE * pos=destBuf;
 	BYTE * from=fromSize?(BYTE*)From:NULL;
@@ -1552,7 +1552,7 @@ static BOOL ske_ReadTGAImageData(void * From, DWORD fromSize, BYTE * destBuf, DW
 	return TRUE;
 }
 
-static HBITMAP ske_LoadGlyphImage_TGA(char * szFilename)
+ HBITMAP ske_LoadGlyphImage_TGA(char * szFilename)
 {
 	BYTE *colormap = NULL;
 	int cx=0,cy=0;
@@ -1691,7 +1691,7 @@ HBITMAP ske_LoadGlyphImage_Png2Dib(char * szFilename)
 	}	
 }
 
-static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName)
+ HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName)
 {
 	// Loading image from file by imgdecoder...    
 	HBITMAP hBitmap=NULL;
@@ -1914,7 +1914,7 @@ int ske_UnloadSkin(SKINOBJECTSLIST * Skin)
 	return 0;
 }
 
-static void RegisterMaskByParce(const char * szSetting, char * szValue, SKINOBJECTSLIST * pSkin)
+ void RegisterMaskByParce(const char * szSetting, char * szValue, SKINOBJECTSLIST * pSkin)
 {
 	int i;
 	DWORD ID=atoi(szSetting+1);
@@ -1932,7 +1932,7 @@ static void RegisterMaskByParce(const char * szSetting, char * szValue, SKINOBJE
 	}
 }
 
-static int ske_ProcessLoadindString(const char * szSetting, char *szValue)
+ int ske_ProcessLoadindString(const char * szSetting, char *szValue)
 {	
 	if (!pCurrentSkin) return 0;
 	if (szSetting[0]=='$')
@@ -1948,7 +1948,7 @@ static int ske_ProcessLoadindString(const char * szSetting, char *szValue)
 	else return 0;
 	return 1;
 }
-static int ske_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
+ int ske_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
 {   
 	char *value;
 	value=DBGetStringA(NULL,SKIN,szSetting);
@@ -1958,12 +1958,12 @@ static int ske_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
 	return 0;
 }
 
-static int ske_SortTextGlyphObjectFunc(void * first, void * second)
+ int ske_SortTextGlyphObjectFunc(void * first, void * second)
 {
 	return strcmp(((GLYPHTEXT*)(((int*)first)[0]))->szGlyphTextID,((GLYPHTEXT*)(((int*)second)[0]))->szGlyphTextID);
 }
 
-static void ske_LinkSkinObjects(SKINOBJECTSLIST * pObjectList)
+ void ske_LinkSkinObjects(SKINOBJECTSLIST * pObjectList)
 {
 	DWORD i;
 	// LINK Mask with objects
@@ -2019,7 +2019,7 @@ static void ske_LinkSkinObjects(SKINOBJECTSLIST * pObjectList)
 	}
 }
 // Getting skin objects and masks from DB
-static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
+ int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 {
 	if (Skin==NULL) return 0;
 	ske_UnloadSkin(Skin);
@@ -2106,7 +2106,7 @@ int ske_GetSkinFolder(char * szFileName, char * t2)
 }
 //
 
-static void ske_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
+ void ske_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
 {
 	if (SecCheck)
 	{
@@ -2159,7 +2159,7 @@ static void ske_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL S
 	}
 }
 
-static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
+ BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 {
 	DWORD i=0;
 	DWORD len=strlen(Line);
@@ -2222,7 +2222,7 @@ static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 	return FALSE;
 }
 
-static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
+ int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 {
 	DWORD size=0;
 	char * mem;
@@ -2414,7 +2414,7 @@ int ske_OldLoadSkinFromIniFile(char * szFileName)
 }
 
 
-static int ske_enumdb_SkinSectionDeletionProc (const char *szSetting,LPARAM lParam)
+ int ske_enumdb_SkinSectionDeletionProc (const char *szSetting,LPARAM lParam)
 {
 
 	if (szSetting==NULL){return(0);};
@@ -2423,7 +2423,7 @@ static int ske_enumdb_SkinSectionDeletionProc (const char *szSetting,LPARAM lPar
 	pszSettingName[nArrayLen-1]=_strdup(szSetting);
 	return(0);
 };
-static int ske_DeleteAllSettingInSection(char * SectionName)
+ int ske_DeleteAllSettingInSection(char * SectionName)
 {
 	DBCONTACTENUMSETTINGS dbces;
 	nArrayLen=0;
@@ -2487,7 +2487,7 @@ BOOL ske_TextOut(HDC hdc, int x, int y, LPCTSTR lpString, int nCount)
 	return 1;
 }
 
-static int ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
+ int ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
 {
 	if (!wParam) return 0;
 	{
@@ -2496,7 +2496,7 @@ static int ske_Service_AlphaTextOut(WPARAM wParam,LPARAM lParam)
 	}
 }
 
-static __inline void ske_SetMatrix( sbyte * matrix,
+ __inline void ske_SetMatrix( sbyte * matrix,
 										  sbyte a, sbyte b, sbyte c, 
 										  sbyte d, sbyte e, sbyte f, 
 										  sbyte g, sbyte h, sbyte i)
@@ -2506,7 +2506,7 @@ static __inline void ske_SetMatrix( sbyte * matrix,
 	matrix[6]=g;	matrix[7]=h;	matrix[8]=i;
 }
 
-static void ske_SetTextEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
+ void ske_SetTextEffect(BYTE EffectID, DWORD FirstColor, DWORD SecondColor)
 {
 	if (EffectID>MAXPREDEFINEDEFFECTS) return; 
 	if (EffectID==-1) meCurrentEffect.EffectID=-1;
@@ -2566,7 +2566,7 @@ BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD Second
 	return FALSE;
 }
 
-static BOOL ske_GetTextEffect(HDC hdc, MODERNEFFECT * modernEffect)
+ BOOL ske_GetTextEffect(HDC hdc, MODERNEFFECT * modernEffect)
 {
 	int i=0;
 	if (!pEffectStack || !pEffectStack->realCount) return FALSE;
@@ -2584,7 +2584,7 @@ static BOOL ske_GetTextEffect(HDC hdc, MODERNEFFECT * modernEffect)
 		return FALSE;
 }
 
-static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERNEFFECT *effect)
+ BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD height, MODERNEFFECT *effect)
 {
 	sbyte *buf;
 	sbyte *outbuf;
@@ -2724,7 +2724,7 @@ static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD hei
 	return FALSE;
 }
 
-static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
+ int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
 {
 	HBITMAP destBitmap;
 	SIZE sz, fsize;
@@ -3400,7 +3400,7 @@ BOOL ske_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
 }
 
 
-static BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
+ BOOL ske_Service_DrawIconEx(WPARAM wParam,LPARAM lParam)
 {
 	DrawIconFixParam *p=(DrawIconFixParam*)wParam;
 	if (!p) return 0;
@@ -3621,7 +3621,7 @@ int ske_RedrawCompleteWindow()
 // lParam = pointer to sPaintRequest (or NULL to redraw all)
 // return 2 - already queued, data updated, 1-have been queued, 0 - failure
 
-static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
+ int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
 {
 	RECT wnd;
 	wndFrame *frm;
@@ -3672,7 +3672,7 @@ static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
 	}
 	return 1;   
 }
-static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
+ int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
 {
 
 	if (wParam)
@@ -3724,7 +3724,7 @@ static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
 }
 
 
-static int ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)                              // Calling frame paint proc
+ int ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)                              // Calling frame paint proc
 {
 	if (!g_pCachedWindow) { TRACE("ske_ValidateSingleFrameImage calling without cached\n"); return 0;}
 	if (Frame->hWnd==(HWND)-1 && !Frame->PaintCallbackProc)  { TRACE("ske_ValidateSingleFrameImage calling without FrameProc\n"); return 0;}
@@ -4231,7 +4231,7 @@ HBITMAP ske_GetCurrentWindowImage()
 *  Glyph text routine
 */
 
-static DWORD ske_HexToARGB(char * Hex)
+ DWORD ske_HexToARGB(char * Hex)
 {
 	char buf[10]={0};
 	char buf2[11]={0};
@@ -4251,7 +4251,7 @@ static DWORD ske_HexToARGB(char * Hex)
 	return AARRGGBB;
 }
 
-static TCHAR *ske_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
+ TCHAR *ske_ReAppend(TCHAR *lfirst, TCHAR * lsecond, int len)
 { 
 	int l1=lfirst?lstrlen(lfirst):0;
 	int l2=(len?len:(lstrlen(lsecond)+1));
@@ -4342,7 +4342,7 @@ TCHAR *ske_ParseText(TCHAR *stzText)
 *   szGlyphTextID and Define string is:
 *   t[szGlyphTextID]=s[HostObjectID],[Left],[Top],[Right],[Bottom],[LTRBHV],[FontID],[Color1],[reservedforColor2],[Text]
 */
-static void OLDske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
+ void OLDske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
 {
 
 	GLYPHOBJECT *globj=NULL;
@@ -4403,7 +4403,7 @@ static void OLDske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineS
 }
 
 
-static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
+ void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineString,SKINOBJECTSLIST *Skin)
 {
 	char buf[255]={0};
 	GetParamN(szDefineString,buf,sizeof(buf),0,',',TRUE);
@@ -4453,7 +4453,7 @@ static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineStri
 *   szGlyphTextID and Define string is:
 *   f[szFontID]=s[FontTypefaceName],[size],[BIU]
 */
-static void ske_AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin)
+ void ske_AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJECTSLIST *Skin)
 {
 	//SortedList * gl_plSkinFonts=NULL;
 	SKINFONT * sf =NULL;
@@ -4553,7 +4553,7 @@ return res;
 *   ske_CheckHasAlfaChannel - checks if image has at least one BYTE in alpha chennel
 *                  that is not a 0. (is image real 32 bit or just 24 bit)
 */
-static BOOL ske_CheckHasAlfaChannel(BYTE * from, int widthByte, int height)
+ BOOL ske_CheckHasAlfaChannel(BYTE * from, int widthByte, int height)
 {
 	int i=0,j=0;
 	DWORD * pt=(DWORD*)from;
@@ -4575,7 +4575,7 @@ static BOOL ske_CheckHasAlfaChannel(BYTE * from, int widthByte, int height)
 *   ske_CheckIconHasMask - checks if mask image has at least one that is not a 0.
 *                  Not sure is ir required or not
 */
-static BOOL ske_CheckIconHasMask(BYTE * from)
+ BOOL ske_CheckIconHasMask(BYTE * from)
 {
 	int i=0;
 	for (i=0; i<16*16/8; i++)
@@ -4588,7 +4588,7 @@ static BOOL ske_CheckIconHasMask(BYTE * from)
 /*
 *   ske_GetMaskBit - return value of apropriate mask bit in line at x position
 */
-static BOOL ske_GetMaskBit(BYTE *line, int x)
+ BOOL ske_GetMaskBit(BYTE *line, int x)
 {
 	return ((*(line+(x>>3)))&(0x01<<(7-(x&0x07))))!=0;
 }
@@ -4597,7 +4597,7 @@ static BOOL ske_GetMaskBit(BYTE *line, int x)
 *            X2 - overlaying points.
 */
 
-static DWORD ske_Blend(DWORD X1,DWORD X2, BYTE alpha)
+ DWORD ske_Blend(DWORD X1,DWORD X2, BYTE alpha)
 {
 	BYTE a1=(BYTE)(X1>>24);
 	BYTE a2=(BYTE)(((X2>>24)*alpha)>>8);

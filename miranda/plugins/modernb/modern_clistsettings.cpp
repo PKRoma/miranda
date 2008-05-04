@@ -28,11 +28,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_awaymsg.h"
 
 void InsertContactIntoTree(HANDLE hContact,int status);
-static displayNameCacheEntry *displayNameCache;
+ displayNameCacheEntry *displayNameCache;
 void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD flag );
 
 int PostAutoRebuidMessage(HWND hwnd);
-static int displayNameCacheSize;
+ int displayNameCacheSize;
 
 BOOL CLM_AUTOREBUILD_WAS_POSTED=FALSE;
 SortedList *clistCache = NULL;
@@ -43,7 +43,7 @@ TCHAR *UnknownConctactTranslatedName=NULL;
 
 void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int SettingType);
 
-static int handleCompare( void* c1, void* c2 )
+ int handleCompare( void* c1, void* c2 )
 {
 
 	int p1, p2;

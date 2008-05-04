@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "hdr/modern_clc.h"
 #include "hdr/modern_clist.h"
-
+#include "hdr/modern_clcpaint.h"
 
 
 /*
@@ -613,7 +613,7 @@ static LRESULT clcOnPaint(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPara
 		if (!g_CluiData.fLayered || GetParent(hwnd)!=pcli->hwndContactList)
 		{       
 			hdc=BeginPaint(hwnd,&ps);
-			CLCPaint_cliPaintClc(hwnd,dat,hdc,&ps.rcPaint);
+			g_clcPainter.cliPaintClc(hwnd,dat,hdc,&ps.rcPaint);
 			EndPaint(hwnd,&ps);
 		}
 		else CallService(MS_SKINENG_INVALIDATEFRAMEIMAGE,(WPARAM)hwnd,0);

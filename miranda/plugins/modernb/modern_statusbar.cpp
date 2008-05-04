@@ -2,6 +2,7 @@
 #include "hdr/modern_statusbar.h"
 #include "./m_api/m_skin_eng.h"
 #include "hdr/modern_commonprototypes.h"
+#include "hdr/modern_clcpaint.h"
 
 BOOL tooltipshoing;
 POINT lastpnt;
@@ -166,7 +167,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
 	}
 	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
-	hOldFont=CLCPaint_ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
+	hOldFont=g_clcPainter.ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
 	//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
 	//  SetTextColor(hDC,g_StatusBarData.fontColor);
 	{

@@ -27,11 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "version.h"
 
 #include "hdr/modern_clui.h"
+#include "hdr/modern_clcpaint.h"
 
 //definitions
-#define PLUGININTERFACE extern "C" __declspec( dllexport )
 
-#define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
 #define CHECKRES(sub) if (sub!=S_OK) return S_FALSE;
 
 HINSTANCE g_hInst = 0;
@@ -188,7 +187,7 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnInvalidateRect		= CLUI__cliInvalidateRect;
 	pcli->pfnGetCacheEntry		= cliGetCacheEntry;
     pcli->pfnOnCreateClc		= CLUI::cliOnCreateClc;
-	pcli->pfnPaintClc			= CLCPaint_cliPaintClc;
+	pcli->pfnPaintClc			= CLCPaint::cliPaintClc;
 	pcli->pfnRebuildEntireList	= cliRebuildEntireList;
 	pcli->pfnRecalcScrollBar	= cliRecalcScrollBar;
 	pcli->pfnRowHitTest			= cliRowHitTest;

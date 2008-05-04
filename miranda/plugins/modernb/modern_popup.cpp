@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.
 
 BOOL EnablePopups = FALSE;
 
-static LRESULT CALLBACK DumbPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+ LRESULT CALLBACK DumbPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 // Show an error popup
@@ -36,7 +36,7 @@ void ShowErrPopup(const char *title, const char *description)
 void ShowTracePopup(const char *text)
 {
 #ifdef _DEBUG
-	static int num = 0;
+	 int num = 0;
 	char tmp[1024];
 
 	mir_snprintf(tmp, sizeof(tmp), "CM TRACE %d: %s", num, text);
@@ -105,7 +105,7 @@ void ShowPopup(const char *title, const char *description, int type)
 
 
 // Handle to popup events
-static LRESULT CALLBACK DumbPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+ LRESULT CALLBACK DumbPopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message) {
 		case WM_COMMAND:

@@ -94,12 +94,6 @@ typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 /* CLCItems */
 BOOL	CLCItems_IsShowOfflineGroup(struct ClcGroup* group);
 
-/* CLCPaint */
-HFONT	CLCPaint_ChangeToFont(HDC hdc,struct ClcData *dat,int id,int *fontHeight);
-int		CLCPaint_GetBasicFontID(struct ClcContact * contact);
-int		CLCPaint_GetRealStatus(struct ClcContact * contact, int status);
-void	CLCPaint_GetTextSize(SIZE *text_size, HDC hdcMem, RECT free_row_rc, TCHAR *szText, SortedList *plText, UINT uTextFormat, int smiley_height);
-
 /* CListMod */
 int		CListMod_HideWindow(HWND hwndContactList, int mode);
 

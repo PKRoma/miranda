@@ -152,28 +152,28 @@ typedef struct _tagAniAva
 	SortedList * Objects;
 } ANIAVA;
 
-//module static declarations
-static void		__AniAva_DebugRenderStrip();
+//module  declarations
+ void		__AniAva_DebugRenderStrip();
 
-static void		_AniAva_DestroyAvatarWindow( HWND hwnd);
-static void		_AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi );
-static void		_AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat);
-static void		_AniAva_PausePainting();
-static void		_AniAva_ResumePainting();
-static void		_AniAva_LoadOptions();
-static void		_AniAva_ReduceAvatarImages(int startY, int dY, BOOL bDestroyWindow);
-static void		_AniAva_AnimationTreadProc(HANDLE hExitEvent);
-static void		_AniAva_RemoveAniAvaDC(ANIAVA * pAniAva);
-static void		_AniAva_RealRemoveAvatar(DWORD UniqueID);
-static int		_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height, ANIAVATARIMAGEINFO * pRetAII);
-static int		_AniAva_SortAvatarInfo(void * first, void * last);
-static BOOL		_AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO * avii);
-static HWND		_AniAva_CreateAvatarWindowSync(TCHAR *szFileName);
+ void		_AniAva_DestroyAvatarWindow( HWND hwnd);
+ void		_AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi );
+ void		_AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat);
+ void		_AniAva_PausePainting();
+ void		_AniAva_ResumePainting();
+ void		_AniAva_LoadOptions();
+ void		_AniAva_ReduceAvatarImages(int startY, int dY, BOOL bDestroyWindow);
+ void		_AniAva_AnimationTreadProc(HANDLE hExitEvent);
+ void		_AniAva_RemoveAniAvaDC(ANIAVA * pAniAva);
+ void		_AniAva_RealRemoveAvatar(DWORD UniqueID);
+ int		_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height, ANIAVATARIMAGEINFO * pRetAII);
+ int		_AniAva_SortAvatarInfo(void * first, void * last);
+ BOOL		_AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO * avii);
+ HWND		_AniAva_CreateAvatarWindowSync(TCHAR *szFileName);
 
-static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+ LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //module variables
-static ANIAVA AniAva={0};
+ ANIAVA AniAva={0};
 
 ///	IMPLEMENTATION
 
@@ -516,21 +516,21 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 	return 1;
 }
 
-//Static procedures
-static void CALLBACK _AniAva_SyncCallerUserAPCProc(DWORD dwParam)
+// procedures
+ void CALLBACK _AniAva_SyncCallerUserAPCProc(DWORD dwParam)
 {
 	ANIAVA_SYNCCALLITEM* item = (ANIAVA_SYNCCALLITEM*) dwParam;
 	item->nResult = item->pfnProc(item->wParam, item->lParam);
 	SetEvent(item->hDoneEvent);
 }
-static int	_AniAva_CreateAvatarWindowSync_Worker(WPARAM tszName, LPARAM lParam)
+ int	_AniAva_CreateAvatarWindowSync_Worker(WPARAM tszName, LPARAM lParam)
 {
 	HWND hwnd=CreateWindowEx( WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_NOPARENTNOTIFY,ANIAVAWINDOWCLASS,(TCHAR*)tszName,WS_POPUP,
 		0,0,1,1,pcli->hwndContactList, NULL, pcli->hInst, NULL );
 	return (int)hwnd;
 }
 
-static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
+ HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
 {
 	ANIAVA_SYNCCALLITEM item={0};
 	int res=0;
@@ -549,7 +549,7 @@ static HWND _AniAva_CreateAvatarWindowSync(TCHAR *szFileName)
 	return (HWND)item.nResult;
 }
 
-static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
+ void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 {
 	int j,k;
 	for (j=0; j<AniAva.AniAvatarList->realCount; j++)
@@ -620,7 +620,7 @@ static void _AniAva_RealRemoveAvatar(DWORD UniqueID)
 		}
 	}
 }
-static void _AniAva_RemoveAniAvaDC(ANIAVA * pAniAva)
+ void _AniAva_RemoveAniAvaDC(ANIAVA * pAniAva)
 {
 	if(pAniAva->hAniAvaDC)
 	{
@@ -634,11 +634,11 @@ static void _AniAva_RemoveAniAvaDC(ANIAVA * pAniAva)
 	}
 };
 
-static void _AniAva_DestroyAvatarWindow( HWND hwnd)
+ void _AniAva_DestroyAvatarWindow( HWND hwnd)
 {
 	SendMessage(hwnd,AAM_SELFDESTROY,0,0);
 }
-static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height, ANIAVATARIMAGEINFO * pRetAII)
+ int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height, ANIAVATARIMAGEINFO * pRetAII)
 {
 	ANIAVA_INFO aai={0};
 	ANIAVA_INFO * paai=NULL;
@@ -732,7 +732,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 	}
 	return 0;
 }
-static BOOL _AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO * avii)
+ BOOL _AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO * avii)
 {
 	int j;
 	BOOL res=FALSE;
@@ -752,7 +752,7 @@ static BOOL _AniAva_GetAvatarImageInfo(DWORD dwAvatarUniqId, ANIAVATARIMAGEINFO 
 	}
 	return res;
 }
-static void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
+ void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
 {
 	pavwi->delaysInterval=NULL;
 	pavwi->nFramesCount=0;
@@ -760,7 +760,7 @@ static void _AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi )
 	pavwi->bPlaying =FALSE;
 	pavwi->TimerId=0;
 }
-static void __AniAva_DebugRenderStrip()
+ void __AniAva_DebugRenderStrip()
 {	
 	return;
 	#ifdef _DEBUG
@@ -772,7 +772,7 @@ static void __AniAva_DebugRenderStrip()
 	#endif
 }
 
-static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
+ void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 {
 	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
 	else dat->bPended=FALSE;
@@ -931,7 +931,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
 		KillTimer(dat->hWindow,2);  //stop animation till set pos will be called
 	}
 }
-static void _AniAva_PausePainting()
+ void _AniAva_PausePainting()
 {
 	int i;
 	for (i=0; i<AniAva.Objects->realCount; i++)
@@ -940,7 +940,7 @@ static void _AniAva_PausePainting()
 		SendMessage(pai->hWindow,AAM_PAUSE,0,0);
 	}
 }
-static void _AniAva_ResumePainting()
+ void _AniAva_ResumePainting()
 {
 	int i;
 	for (i=0; i<AniAva.Objects->realCount; i++)
@@ -950,7 +950,7 @@ static void _AniAva_ResumePainting()
 	}
 }
 
-static void _AniAva_ReduceAvatarImages(int startY, int dY, BOOL bDestroyWindow)
+ void _AniAva_ReduceAvatarImages(int startY, int dY, BOOL bDestroyWindow)
 {
 	int i;
 	for (i=0; i<AniAva.Objects->realCount; i++)
@@ -968,7 +968,7 @@ static void _AniAva_ReduceAvatarImages(int startY, int dY, BOOL bDestroyWindow)
 }
 
 
-static void _AniAva_LoadOptions()
+ void _AniAva_LoadOptions()
 {
 	aacheck;
 	aalock;
@@ -1004,7 +1004,7 @@ static void _AniAva_LoadOptions()
 	}
 	aaunlock;
 }
-static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
+ void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 {
 	//wait forever till hExitEvent signalled
 	DWORD rc;
@@ -1035,7 +1035,7 @@ static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 	AniAva.AnimationThreadHandle=NULL;
 }
 
-static int	_AniAva_SortAvatarInfo(void * first, void * last)
+ int	_AniAva_SortAvatarInfo(void * first, void * last)
 {
 	int res=0;
 	ANIAVA_INFO * aai1=(ANIAVA_INFO *)first;
@@ -1062,7 +1062,7 @@ static int	_AniAva_SortAvatarInfo(void * first, void * last)
 	else
 		return res;
 }
-static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+ LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ANIAVA_WINDOWINFO * dat=NULL;
 	if (msg==WM_TIMER || msg==WM_DESTROY ||	(msg>AAM_FIRST && msg<AAM_LAST) )

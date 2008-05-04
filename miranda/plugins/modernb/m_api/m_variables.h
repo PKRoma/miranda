@@ -122,7 +122,7 @@ typedef struct {
 // copied from Miranda's core (miranda.c)
 #define MS_VARS_GET_MMI			"Vars/GetMMI"
 
-__inline static void variables_free(void *ptr) {
+__inline  void variables_free(void *ptr) {
 
 	if (ptr) {
 		struct MM_INTERFACE mm;
@@ -151,7 +151,7 @@ __inline static void variables_free(void *ptr) {
 
 /*** HELPERS ***/
 
-__inline static char *variables_parseA(char *src, char *extra, HANDLE hContact) {
+__inline  char *variables_parseA(char *src, char *extra, HANDLE hContact) {
 
 	FORMATINFO fi;
 
@@ -163,7 +163,7 @@ __inline static char *variables_parseA(char *src, char *extra, HANDLE hContact) 
 	return (char *)CallService(MS_VARS_FORMATSTRING, (WPARAM)&fi, 0);
 }
 
-__inline static char *variables_parseT(TCHAR *src, TCHAR *extra, HANDLE hContact) {
+__inline  char *variables_parseT(TCHAR *src, TCHAR *extra, HANDLE hContact) {
 
 	FORMATINFO fi;
 
@@ -186,7 +186,7 @@ __inline static char *variables_parseT(TCHAR *src, TCHAR *extra, HANDLE hContact
 Returns copy of src if Variables is not installed, or a copy of the parsed string if it is installed.
 If the returned value is not NULL, it must be free using your own free().
 */
-__inline static char *variables_parsedupA(char *src, char *extra, HANDLE hContact) {
+__inline  char *variables_parsedupA(char *src, char *extra, HANDLE hContact) {
 
 	FORMATINFO fi;
 	char *parsed, *res;
@@ -218,7 +218,7 @@ __inline static char *variables_parsedupA(char *src, char *extra, HANDLE hContac
 Returns copy of src if Variables is not installed, or a copy of the parsed string if it is installed.
 If the returned value is not NULL, it must be free using your own free().
 */
-__inline static TCHAR *variables_parsedupT(TCHAR *src, TCHAR *extra, HANDLE hContact) {
+__inline  TCHAR *variables_parsedupT(TCHAR *src, TCHAR *extra, HANDLE hContact) {
 
 	FORMATINFO fi;
 	TCHAR *parsed, *res;

@@ -187,7 +187,7 @@ int __inline CreateGlyphedObject(char * ObjID);
 //    prm.szObjectID=ObjID;   
 //    return CallService(MS_SKIN_REGISTERDEFOBJECT,(WPARAM)&prm,0);
 //}
-static BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
+ BOOL __inline ScreenToClientRect(HWND hWnd, LPRECT lpRect)
 {
 	BOOL ret;
 

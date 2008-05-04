@@ -25,10 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef modern_clui_h__
 #define modern_clui_h__
 
-#define SERVICE(serviceproc)        static int serviceproc(WPARAM wParam,LPARAM lParam)
-#define EVENTHOOK(eventhookproc)    static int eventhookproc(WPARAM wParam,LPARAM lParam)
-#define CLINTERFACE  static
-
 class CLUI
 {
 public:
@@ -49,7 +45,6 @@ public:
     SERVICE( Service_ShowStatusMenu );
     SERVICE( Service_Menu_ShowContactAvatar );
     SERVICE( Service_Menu_HideContactAvatar );
-
 
 	static CLUI * m_pCLUI;  
 

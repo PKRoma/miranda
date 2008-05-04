@@ -223,8 +223,8 @@ void cliRecalcScrollBar(HWND hwnd,struct ClcData *dat)
 }
 
 
-static WNDPROC OldRenameEditWndProc;
-static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+ WNDPROC OldRenameEditWndProc;
+ LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) 
 	{

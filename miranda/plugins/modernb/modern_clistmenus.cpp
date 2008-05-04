@@ -69,12 +69,12 @@ void UninitCustomMenus(void)
 #define CLUI_FAVSETRATE "CLUI/SetContactRate"  //LParam is rate, Wparam is contact handle
 #define CLUI_FAVTOGGLESHOWOFFLINE "CLUI/ToggleContactShowOffline" 
 
-static HANDLE hFavoriteContactMenu=NULL;
-static HANDLE *hFavoriteContactMenuItems = NULL;
-static HANDLE hShowIfOflineItem=NULL;
-static HANDLE hOnContactMenuBuild_FAV=NULL;
+ HANDLE hFavoriteContactMenu=NULL;
+ HANDLE *hFavoriteContactMenuItems = NULL;
+ HANDLE hShowIfOflineItem=NULL;
+ HANDLE hOnContactMenuBuild_FAV=NULL;
 
-static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
+ int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 {
     CLISTMENUITEM mi;
     BOOL NeedFree=FALSE;

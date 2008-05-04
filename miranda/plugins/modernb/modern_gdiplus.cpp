@@ -67,7 +67,7 @@ void ShutdownGdiPlus(void)
 
 using namespace Gdiplus;
 
-static ColorMatrix ClrMatrix =         {
+ ColorMatrix ClrMatrix =         {
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,

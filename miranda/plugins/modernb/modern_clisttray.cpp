@@ -30,8 +30,8 @@ int cliShowHide(WPARAM wParam,LPARAM lParam);
 int g_mutex_bOnTrayRightClick=0;
 
 BOOL g_bMultiConnectionMode=FALSE;
-static int RefreshTimerId=0;   /////by FYR
-static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime); ///// by FYR
+ int RefreshTimerId=0;   /////by FYR
+ VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime); ///// by FYR
 BOOL IS_WM_MOUSE_DOWN_IN_TRAY;
 
 BOOL g_trayTooltipActive = FALSE;
@@ -58,7 +58,7 @@ void mir_strset(TCHAR ** dest, TCHAR *source)
 	if (source) *dest=mir_tstrdup(source);
 }
 
-static DLLVERSIONINFO dviShell;
+ DLLVERSIONINFO dviShell;
 BOOL g_MultiConnectionMode=FALSE;
 char * g_szConnectingProto=NULL;
 int GetStatusVal(int status)
@@ -134,7 +134,7 @@ int GetAverageMode()
 ///// Need to refresh trays icon  after timely changing/////
 ////////////////////////////////////////////////////////////
 
-static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+ VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
 	int count,i;
 	PROTOACCOUNT **accs;
@@ -356,9 +356,9 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 	{ pcli->pfnUnlockTray(); return; }
 }
 
-static int autoHideTimerId;
+ int autoHideTimerId;
 
-static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+ VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
 {
 	HWND hwndClui, ActiveWindow;
 	KillTimer(hwnd,idEvent);
@@ -472,13 +472,13 @@ typedef struct{
 wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
-static int RemoveTrayMenuItem(WPARAM wParam,LPARAM lParam)
+ int RemoveTrayMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
+ int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
@@ -501,7 +501,7 @@ static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
+ int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi;

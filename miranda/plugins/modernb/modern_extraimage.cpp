@@ -11,8 +11,8 @@ int ExtraImageIconsIndex[ExtraImageIconsIndexCount];
 int EnabledColumnCount=0;
 BOOL g_mutex_bSetAllExtraIconsCycle=0;
 
-static HIMAGELIST hExtraImageList=NULL;
-static HIMAGELIST hWideExtraImageList=NULL;
+ HIMAGELIST hExtraImageList=NULL;
+ HIMAGELIST hWideExtraImageList=NULL;
 
 void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 
@@ -389,7 +389,7 @@ int SetToolTip(HWND hwnd, TCHAR * tip);
 
 HWND tipHWND=NULL;
 
-static int ehhShowExtraInfoTip(WPARAM wParam, LPARAM lParam)
+ int ehhShowExtraInfoTip(WPARAM wParam, LPARAM lParam)
 {
 	CLCEXTRAINFOTIP * eit=(CLCEXTRAINFOTIP *)lParam;
 	//tipHWND=(HWND)SetToolTip(eit->hwnd,_T("TEST"));
@@ -440,7 +440,7 @@ int WideAddIconToExtraImageList(WPARAM wParam,LPARAM lParam)
 	if (res>0xFFFE) return -1;
 	return res;
 };
-static int ehhExtraImage_UnloadModule(WPARAM wParam,LPARAM lParam)
+ int ehhExtraImage_UnloadModule(WPARAM wParam,LPARAM lParam)
 {
 	if (hExtraImageList) { ImageList_Destroy(hExtraImageList); };
 	if (hWideExtraImageList) { ImageList_Destroy(hWideExtraImageList); };

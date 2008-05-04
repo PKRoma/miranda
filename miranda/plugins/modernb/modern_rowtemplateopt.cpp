@@ -34,9 +34,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 void RefreshTree(HWND hwndDlg,HTREEITEM hti);
-static char* rowOptTmplStr;
-static ROWCELL* rowOptTmplRoot;
-static ROWCELL* rowOptTA[100];
+ char* rowOptTmplStr;
+ ROWCELL* rowOptTmplRoot;
+ ROWCELL* rowOptTA[100];
 				TCHAR *types[]={_T("none"),   _T("text1"),  _T("text2"),  _T("text3"),  _T("status"), 
 								_T("avatar"), _T("extra"),  _T("extra1"), _T("extra2"), _T("extra3"), 
 								_T("extra4"), _T("extra5"), _T("extra6"), _T("extra7"), _T("extra8"), 

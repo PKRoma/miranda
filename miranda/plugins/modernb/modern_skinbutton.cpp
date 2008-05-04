@@ -26,8 +26,8 @@ This file contains code related to new modern free positioned skinned buttons
 */
 #include "hdr/modern_commonheaders.h" 
 #include "hdr/modern_skinengine.h"
+#include "hdr/modern_clcpaint.h"
 
-void CLCPaint_AddParam(MODERNMASK * mpModernMask, DWORD dwParamHash, char *szValue, DWORD dwValueHash);
 
 #define MODERNSKINBUTTONCLASS "MirandaModernSkinButtonClass"
 BOOL ModernSkinButtonModuleIsLoaded=FALSE;
@@ -163,14 +163,14 @@ static int ModernSkinButtonPaintWorker(HWND hwnd, HDC whdc)
 			}  
 
 		}
-		CLCPaint_AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
-		CLCPaint_AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
-		CLCPaint_AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
-		CLCPaint_AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
-		CLCPaint_AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
+		g_clcPainter.AddParam(&Request,mod_CalcHash("Module"),"MButton",0);
+		g_clcPainter.AddParam(&Request,mod_CalcHash("ID"),bct->ID,0);
+		g_clcPainter.AddParam(&Request,mod_CalcHash("Down"),bct->down?"1":"0",0);
+		g_clcPainter.AddParam(&Request,mod_CalcHash("Focused"),bct->focus?"1":"0",0);
+		g_clcPainter.AddParam(&Request,mod_CalcHash("Hovered"),bct->hover?"1":"0",0);
 		if (Value)
 		{
-			CLCPaint_AddParam(&Request,mod_CalcHash("Value"),Value,0);
+			g_clcPainter.AddParam(&Request,mod_CalcHash("Value"),Value,0);
 			mir_free_and_nill(Value);
 		}    
 		SkinDrawGlyphMask(hdc,&rc,&rc,&Request);

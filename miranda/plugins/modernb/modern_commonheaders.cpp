@@ -253,15 +253,12 @@ typedef struct _HookRec
 #endif
 } HookRec;
 
-static HookRec * hooksrec=NULL;
-static DWORD hooksRecAlloced=0;
+ HookRec * hooksrec=NULL;
+ DWORD hooksRecAlloced=0;
 
 
-#ifdef _DEBUG
-	HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc, char * file, int line)
-#else
-	HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc)
-#endif                     
+
+HANDLE ModernHookEvent(char *EventID, MIRANDAHOOK HookProc)             
 {
 	HookRec * hr=NULL;
 	DWORD i;
@@ -283,16 +280,6 @@ static DWORD hooksRecAlloced=0;
 	}
 
 	hr->hHook=HookEvent(EventID,HookProc);
-#ifdef _DEBUG
-	//3. Hook and rec
-	hr->HookStr=NULL;
-	if (hr->hHook)
-	{
-		hr->HookStr=mir_strdup(EventID);
-		hr->_debug_file=mir_strdup(file);
-		hr->_debug_line=line;
-	}
-#endif
 	return hr->hHook;
 }
 
@@ -307,10 +294,6 @@ int ModernUnhookEvent(HANDLE hHook)
 		{
 			UnhookEvent(hHook);
 			hooksrec[i].hHook=NULL;
-#ifdef _DEBUG
-			if (hooksrec[i].HookStr) mir_free_and_nill(hooksrec[i].HookStr);
-			if (hooksrec[i]._debug_file) mir_free_and_nill(hooksrec[i]._debug_file);
-#endif
 			return 1;
 		}
 	}

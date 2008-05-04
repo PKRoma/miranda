@@ -49,6 +49,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TRACET(str)
 #endif
 
+#define SERVICE(serviceproc)         static int serviceproc(WPARAM wParam,LPARAM lParam)
+#define EVENTHOOK(eventhookproc)     static int eventhookproc(WPARAM wParam,LPARAM lParam)
+#define CLINTERFACE					 static 
+
+#define PLUGININTERFACE extern "C" __declspec( dllexport )
+#define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
 
 #include "m_stdhdr.h"
 #include <windows.h>
@@ -130,17 +136,9 @@ extern int __cdecl mir_strcmp (const char *a, const char *b);
 extern int __cdecl mir_strlen (const char *a);
 extern int __cdecl mir_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_tstrcmpi(const TCHAR *a, const TCHAR *b);
-//extern __inline void *mir_calloc( size_t num, size_t size );
-
 extern DWORD exceptFunction(LPEXCEPTION_POINTERS EP);
 
-#ifdef _DEBUG
-	#define ModernHookEvent(a,b)  MHookEvent(a,b,__FILE__,__LINE__);
-	extern HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc, char * file, int line);
-#else /* _DEBUG */
-	#define ModernHookEvent(a,b)  MHookEvent(a,b);
-	extern HANDLE MHookEvent(char *EventID, MIRANDAHOOK HookProc);
-#endif /* _DEBUG */
+extern HANDLE ModernHookEvent( char *EventID, MIRANDAHOOK HookProc );
 
 extern int ModernUnhookEvent(HANDLE hHook);
 extern int UnhookAll();

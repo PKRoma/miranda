@@ -1,6 +1,7 @@
 #include "hdr/modern_commonheaders.h"
 #include "hdr/modern_commonprototypes.h"
 #include "m_api/m_skinbutton.h"
+#include "hdr/modern_clcpaint.h"
 
 
 #define BUTTON_POLLID       100
@@ -658,7 +659,7 @@ static void PaintWorker(TBBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset)
 			BOOL bCentered=TRUE;
 			SetBkMode(hdcMem,TRANSPARENT);
 			if (lpSBData->nFontID>=0)
-				CLCPaint_ChangeToFont(hdcMem,NULL,lpSBData->nFontID,NULL);
+				g_clcPainter.ChangeToFont(hdcMem,NULL,lpSBData->nFontID,NULL);
 			{
 				RECT TextRequiredRect=rcText;
 				ske_DrawText(hdcMem, lpSBData->szText, -1, &TextRequiredRect, DT_CENTER | DT_VCENTER | DT_CALCRECT | DT_SINGLELINE);
