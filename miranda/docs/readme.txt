@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                                   v0.7.5
+                                   v0.7.6
 
                           http://www.miranda-im.org
 
