@@ -588,6 +588,9 @@ int __cdecl CIcqProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 	{ // approve old fashioned file transfer
 		basic_filetransfer* ft = (basic_filetransfer *)hTransfer;
 
+    if (!IsValidFileTransfer(ft))
+      return 0; // Invalid transfer
+
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{
 			filetransfer* ft = (filetransfer *)hTransfer;
@@ -629,6 +632,9 @@ int __cdecl CIcqProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 	{
 		basic_filetransfer *ft = (basic_filetransfer *)hTransfer;
 
+    if (!IsValidFileTransfer(ft))
+      return 1; // Invalid transfer
+
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{ // cancel old fashioned file transfer
 			filetransfer * ft = (filetransfer*)hTransfer;
@@ -659,6 +665,9 @@ int __cdecl CIcqProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 
 	if (icqOnline() && hTransfer && hContact)
 	{
+    if (!IsValidFileTransfer(hTransfer))
+      return 1; // Invalid transfer
+
 		if (dwUin && ft->ft_magic == FT_MAGIC_ICQ)
 		{ // deny old fashioned file transfer
 			filetransfer *ft = (filetransfer*)hTransfer;
@@ -689,6 +698,9 @@ int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const char** s
 	if (icqOnline() && hTransfer)
 	{
 		basic_filetransfer *ft = (basic_filetransfer *)hTransfer;
+
+    if (!IsValidFileTransfer(ft))
+      return 1; // Invalid transfer
 
 		if (ft->ft_magic == FT_MAGIC_ICQ)
 		{
