@@ -235,7 +235,7 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 				SendMessage(GetParent(hwnd), DM_SWITCHRTL, 0, 0);
 				return FALSE;
 			}
-			if ((wParam == VK_UP || wParam == VK_DOWN) && isCtrl && (g_dat->flags & SMF_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
+			if ((wParam == VK_UP || wParam == VK_DOWN) && isCtrl && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
 				if (windowData->cmdList) {
 					TCmdList *cmdListNew = NULL;
 					if (wParam == VK_UP) {

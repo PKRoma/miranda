@@ -31,6 +31,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _except __except
 #define _finally __finally
 
+#ifndef WM_UNICHAR
+#define WM_UNICHAR    0x0109
+#endif
+
 extern HBRUSH      hListBkgBrush;
 extern HBRUSH      hListSelectedBkgBrush;
 extern HANDLE      hSendEvent;
@@ -47,6 +51,8 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
+static TCHAR *buttonNames[] = {_T("Bold"), _T("Italic"), _T("Underline"), _T("Text color"), _T("Background color"), 
+							   _T("Font size"), _T("Smiley"), _T("History"), _T("Filter"), _T("Manager"), _T("Nick list")};
 static const UINT buttonControls[] = {  IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE,
 										IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_SMILEY,
 										IDC_CHAT_HISTORY, IDC_CHAT_FILTER, IDC_CHAT_CHANMGR, IDC_CHAT_SHOWNICKLIST};
@@ -185,6 +191,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	BOOL      bSend = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowSend", 0);
 	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 	int       buttonVisibility = bToolbar ? GetButtonVisibility(pInfo) : 0;
+	bToolbar  &= buttonVisibility != 0;
 
 	ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, buttonVisibility, SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
@@ -927,7 +934,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		break;
 	case WM_CHAR:
-	case WM_UNICHAR: 
+	case WM_UNICHAR:
 		/*
 		* simple incremental search for the user (nick) - list control
 		* typing esc or movement keys will clear the current search string

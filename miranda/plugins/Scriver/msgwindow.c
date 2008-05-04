@@ -774,8 +774,8 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				SendMessage(dat->hwndActive, WM_CONTEXTMENU, (WPARAM)hwndDlg, 0);
 		}
 		break;
-
 	case WM_ACTIVATE:
+
 		if (LOWORD(wParam) == WA_INACTIVE) {
 			ws = GetWindowLong(hwndDlg, GWL_EXSTYLE) & ~WS_EX_LAYERED;
 			ws |= dat->flags2 & SMF2_USETRANSPARENCY ? WS_EX_LAYERED : 0;
@@ -788,6 +788,10 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		if (LOWORD(wParam) != WA_ACTIVE)
 			break;
 	case WM_MOUSEACTIVATE:
+	/*
+		if (!dat->bTopmost) {
+			SetWindowPos(hwndDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		}*/
 		if (dat->hwndActive == NULL) { // do not set foreground window at all (always stay in the background !)
 //			SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
 		} else {
@@ -888,8 +892,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
                 CheckMenuItem(hMenu, IDM_TOPMOST, MF_BYCOMMAND | MF_UNCHECKED);
                 SetWindowPos(hwndDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 dat->bTopmost = FALSE;
-            }
-            else {
+            } else {
                 CheckMenuItem(hMenu, IDM_TOPMOST, MF_BYCOMMAND | MF_CHECKED);
                 SetWindowPos(hwndDlg, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 dat->bTopmost = TRUE;
@@ -984,15 +987,37 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
 				}
 			} else {
-				if (IsIconic(hwndDlg)) {
-					ShowWindow(hwndDlg, SW_SHOWNORMAL);
+				if (g_dat->flags & SMF_DONOTSTEALFOCUS) {
+					if (!isVisible) {
+						if (dat->foregroundWindow == NULL) {
+							dat->foregroundWindow = GetForegroundWindow();
+						}
+					}
+					if (IsIconic(hwndDlg)) {
+						ShowWindow(hwndDlg, SW_SHOWNOACTIVATE);
+					} else {
+						ShowWindow(hwndDlg, SW_SHOWNA);
+					}
+					if (dat->childrenCount == 1 ||
+						((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
+						SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM)lParam);
+					}
+					SetWindowPos(hwndDlg, HWND_TOP, 0,0,0,0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+					if (!isVisible) {
+						SendMessage(hwndDlg, DM_DEACTIVATE, 0, 0);
+					}
 				} else {
-					ShowWindow(hwndDlg, SW_SHOW);
-				}
-				SetForegroundWindow(hwndDlg);
-				if (dat->childrenCount == 1 ||
-					((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
-					SetFocus((HWND) lParam);
+					if (IsIconic(hwndDlg)) {
+						ShowWindow(hwndDlg, SW_SHOWNORMAL);
+					} else {
+						ShowWindow(hwndDlg, SW_SHOWNA);
+					}
+					if (dat->childrenCount == 1 ||
+						((g_dat->flags2 & SMF2_SWITCHTOACTIVE) && (IsIconic(hwndDlg) || GetForegroundWindow() != hwndDlg))) {
+						SendMessage(hwndDlg, CM_ACTIVATECHILD, 0, (LPARAM)lParam);
+					}
+					SetWindowPos(hwndDlg, HWND_TOP, 0,0,0,0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+					//SetForegroundWindow(hwndDlg);
 				}
 			}
 		} else { /* outgoing message */

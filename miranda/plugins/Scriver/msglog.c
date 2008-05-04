@@ -81,6 +81,7 @@ struct EventData {
 	DWORD	time;
 	DWORD	eventType;
 	HANDLE	hContact;
+	int		codePage;
 };
 
 TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
@@ -141,6 +142,8 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
 
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
+	int heFlags;
+
 	switch (dbei->eventType) {
 		case EVENTTYPE_MESSAGE:
 			return 1;
@@ -157,6 +160,11 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 //			if (dat->hwndLog != NULL)
 				return 1;
 	}
+	
+	heFlags = HistoryEvents_GetFlags(dbei->eventType);
+	if (heFlags != -1)
+		return (heFlags & HISTORYEVENTS_FLAG_SHOW_IM_SRMM) == HISTORYEVENTS_FLAG_SHOW_IM_SRMM;
+
 	return 0;
 }
 
@@ -188,6 +196,7 @@ struct EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact,
 	event->dwFlags = (dbei.flags & DBEF_READ ? IEEDF_READ : 0) | (dbei.flags & DBEF_SENT ? IEEDF_SENT : 0) | (dbei.flags & DBEF_RTL ? IEEDF_RTL : 0);
 	event->time = dbei.timestamp;
 	event->pszNick = NULL;
+	event->codePage = dat->windowData.codePage;
 #if defined( _UNICODE )
 	event->dwFlags |= IEEDF_UNICODE_TEXT | IEEDF_UNICODE_NICK | IEEDF_UNICODE_TEXT2;
 #endif
@@ -531,7 +540,7 @@ static int DetectURL(wchar_t *text, BOOL firstChar) {
 		if (found) {
 			for (; text[len]!='\n' && text[len]!='\r' && text[len]!='\t' && text[len]!=' ' && text[len]!='\0';  len++);
 			for (; len > 0; len --) {
-				if ((text[len-1] >= '0' && text[len-1]<='9') || (text[len-1] >= 'A' && text[len-1]<='Z') || (text[len-1] >= 'a' && text[len-1]<='z')) {
+				if ((text[len-1] >= '0' && text[len-1]<='9') || iswalpha(text[len-1])) {
 					break;
 				}
 			}
@@ -602,11 +611,15 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	int style, showColon = 0;
 	int isGroupBreak = TRUE;
 	int highlight = 0;
+	int heFlags = -1;
 	bufferEnd = 0;
 	bufferAlloced = 1024;
 	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 
+
+	if (event->eventType != EVENTTYPE_MESSAGE && event->eventType != EVENTTYPE_FILE && event->eventType != EVENTTYPE_URL)
+		heFlags = HistoryEvents_GetFlags((WORD) event->eventType);
 
  	if ((g_dat->flags & SMF_GROUPMESSAGES) && event->dwFlags == LOWORD(dat->lastEventType)
 	  && event->eventType == EVENTTYPE_MESSAGE && HIWORD(dat->lastEventType) == EVENTTYPE_MESSAGE
@@ -714,7 +727,7 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 		}
 		showColon = 1;
 	}
-	if ((!(g_dat->flags&SMF_HIDENAMES) && event->eventType == EVENTTYPE_MESSAGE && isGroupBreak) || event->eventType == EVENTTYPE_STATUSCHANGE || event->eventType == EVENTTYPE_JABBER_CHATSTATES || event->eventType == EVENTTYPE_JABBER_PRESENCE) {
+	if ((!(g_dat->flags&SMF_HIDENAMES) && event->eventType == EVENTTYPE_MESSAGE && isGroupBreak) || event->eventType == EVENTTYPE_STATUSCHANGE || event->eventType == EVENTTYPE_JABBER_CHATSTATES || event->eventType == EVENTTYPE_JABBER_PRESENCE || (heFlags != -1 && (heFlags & HISTORYEVENTS_FLAG_EXPECT_CONTACT_NAME_BEFORE))) {
 		if (event->eventType == EVENTTYPE_MESSAGE) {
 			if (showColon) {
 				AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(event->dwFlags & IEEDF_SENT ? MSGFONTID_MYNAME : MSGFONTID_YOURNAME));
@@ -814,6 +827,31 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 			}
 			break;
 		}
+		default:
+		{
+			char *rtfMessage;
+
+			if (heFlags == -1)
+				break;
+
+			if (heFlags & HISTORYEVENTS_FLAG_EXPECT_CONTACT_NAME_BEFORE)
+				AppendTToBuffer(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
+
+			style = MSGFONTID_NOTICE;
+			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", SetToStyle(style));
+
+			rtfMessage = HistoryEvents_GetRichText(streamData->hDbEvent, NULL);
+			if (rtfMessage != NULL) {
+				AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, rtfMessage);
+			} else if (event->dwFlags & IEEDF_UNICODE_TEXT) {
+				AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszTextW);
+			} else {
+				AppendAnsiToBuffer(&buffer, &bufferEnd, &bufferAlloced, event->pszText);
+			}
+			HistoryEvents_ReleaseText(rtfMessage);
+
+			break;
+		}
 	}
 	if (dat->isMixed) {
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
@@ -838,16 +876,12 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 			case STREAMSTAGE_EVENTS:
 				if (dat->eventsToInsert) {
 					do {
-#ifdef MIRANDA_0_5
 						struct EventData *event = getEventFromDB(dat->dlgDat, dat->hContact, dat->hDbEvent);
 						dat->buffer = NULL;
 						if (event != NULL) {
 							dat->buffer = CreateRTFFromDbEvent2(dat->dlgDat, event, dat);
 							freeEvent(event);
 						}
-#else
-						dat->buffer = CreateRTFFromDbEvent(dat->dlgDat, dat->hContact, dat->hDbEvent, !dat->isFirst, dat);
-#endif
 						if (dat->buffer)
 							dat->hDbEventLast = dat->hDbEvent;
 						dat->hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) dat->hDbEvent, 0);

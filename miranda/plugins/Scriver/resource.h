@@ -81,6 +81,7 @@
 #define IDC_LIMITTABSNUM				1011
 #define IDC_LIMITCHATSTABS				1012
 #define IDC_LIMITCHATSTABSNUM			1013
+#define IDC_DONOTSTEALFOCUS				1014
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1020
 #define IDC_SHOWSENDBTN                 1021
@@ -132,7 +133,6 @@
 #define IDC_SECONDS                     1605
 #define IDC_NOTIFYTRAY                  1606
 #define IDC_NOTIFYBALLOON               1607
-#define IDC_CTRLSUPPORT                 1608
 #define IDC_DELTEMP                     1609
 #define IDC_AVATAR                      1610
 #define IDC_AVATARSUPPORT               1611
