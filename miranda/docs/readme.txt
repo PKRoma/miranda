@@ -22,6 +22,17 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.6
+Enhancements:
+ - Enabled dim idle contacts by default in classic contact list
+ - Cleaned up the Icons options page
+ - Installer checks for OpenSSL
+ - Yahoo: Improved status change consistency
+
+Bugfixes:
+ - Yahoo: Fixed avatar uploading
+
+
 * New in 0.7.5
 Enhancements:
  - Added a "Check for Updates" menu item
@@ -36,6 +47,7 @@ Bugfixes:
  - Jabber: Problem receiving '&' character
  - Yahoo: Global status change ignored status lock
  - Yahoo: Avatars were not enabled by default
+
 
 * New in 0.7.4
 Enhancements:
@@ -74,6 +86,7 @@ Bugfixes:
 * New in 0.7.3
  - MSN: URL encoding of utf8 was broken
  - Jabber: Contact list vulnerability fixed
+
 
 * New in 0.7.2
 Enhancements:
@@ -150,6 +163,7 @@ Bugfixes:
  - MSN: Remove Yahoo alert 
  - Yahoo: Buffer overflow vulnerability
  
+
 * New in 0.7
 Enhancements:
  - Added Gadu-Gadu protocol support
@@ -261,6 +275,7 @@ Bugfixes:
  - Yahoo: Buffer overflow in incoming IM
  - Yahoo: Lots of bug fixes
  
+
 * New in 0.6.8
 Bugfixes:
  - AIM: Fixed issue with outgoing messages with double quotes
@@ -273,10 +288,12 @@ Bugfixes:
  - MSN: Improved group handling
  - MSN: Improved file transfers
  
+
 * New in 0.6.7
 Bugfixes
  - Jabber: Fixed crash on exit when using Jabber
  - MSN: Uploading avatars was broken
+
 
 * New in 0.6.6
 Bugfixes
@@ -285,9 +302,11 @@ Bugfixes
  - Fetching events from the database sometimes failed
  - Sounds in message windows didn't play properly
 
+
 * New in 0.6.5
 Bugfixes
  - Update notification module not loaded correctly
+
 
 * New in 0.6.4
 Enhancements
@@ -303,10 +322,12 @@ Bugfixes
  - Improved UPnP router support
  - UPnP cleanup will not run if there are no incoming connections
 
+
 * New in 0.6.3
 Bugfixes
  - Pin to Desktop was broken
  - AIM: Auto response messages weren't shown as auto responses
+
 
 * New in 0.6.2
 Enhancements
@@ -325,6 +346,7 @@ Bugfixes
  - ICQ: Fixed compatibility issues with ICQ 6
  - ICQ: Fixed Meebo client detection
 
+
 * New in 0.6.1
 Enhancements
  - Added option to enable/disable UPnP support
@@ -334,6 +356,7 @@ Bugfixes:
  - History button in chats didn't open history
  - Fixed network bind plugin compatibility issues with older plugins
  
+
 * New in 0.6
 Enhancements
  - Implemented UPnP support
@@ -356,6 +379,7 @@ Bugfixes:
  - Jabber: Fix for issues with backslashes in the transports names
  - Jabber: Fix for sending files to Pandion IM
  - MSN: Improved error 217 (contact already exists) processing.
+
 
 * New in 0.5.1
 Enhancements
@@ -390,6 +414,7 @@ Bugfixes:
  - ICQ: Fixed offline greeting cards were not processed properly
  - ICQ: Fixed small protocol glitch with reverse peer-to-peer connection
  - Yahoo: Fixed avatar upload bug
+
 
 * New in 0.5
 Enhancements:
@@ -461,13 +486,16 @@ Bugfixes:
  - Yahoo: Fixed a bug that could crash srmm
  - Yahoo: Properly close the connections
 
+
 * New in 0.4.0.3
 Bugfixes:
  - ICQ: Fixed problem with sending and receiving messages.
 
+
 * New in 0.4.0.2
 Bugfixes:
  - AIM protocol uses TOC2 (TOC1 blocked by AOL)
+
 
 * New in 0.4.0.1
 Bugfixes:
@@ -518,6 +546,7 @@ Enhancements:
  - ICQ: Made avatar handling more resilient to server errors
  - Jabber: Support for the chat plugin
  - Yahoo: Adding gaming status
+
 
 * New in 0.4
 Bugfixes:
@@ -585,7 +614,6 @@ Enhancements:
 
 
 * New in 0.3.3
-
 Bugfixes:
  - Fixed crash when closing history window with large history
  - IE was always used as the default browser if IE was open
@@ -653,7 +681,6 @@ Enhancements:
 
 
 * New in 0.3.2
-
 Bugfixes:
  - Buffer overrun in url dialogs
  - Options window was shown off screen if previously closed while minimized
@@ -716,7 +743,6 @@ Enhancements
 
 
 * New in 0.3.1
-
 Major changes:
  - IRC protocol plugin is now included in the installer
 
@@ -742,7 +768,6 @@ Enhancements:
 
 
 * New in 0.3
-
  Major changes:
  - ICQ module has been moved to a separate plugin. You can now
    run Miranda IM without ICQ
