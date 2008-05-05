@@ -26,7 +26,6 @@ Contents
 Enhancements:
  - Enabled dim idle contacts by default in classic contact list
  - Cleaned up the Icons options page
- - Installer checks for OpenSSL
  - Yahoo: Improved status change consistency
 
 Bugfixes:
