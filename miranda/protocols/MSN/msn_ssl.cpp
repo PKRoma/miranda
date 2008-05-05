@@ -384,7 +384,7 @@ typedef int ( *PFN_SSL_int_pvoid_int ) ( PVOID, int );
 typedef int ( *PFN_SSL_int_pvoid ) ( PVOID );
 typedef int ( *PFN_SSL_int_pvoid_pvoid_int ) ( PVOID, PVOID, int );
 
-static	HMODULE hLibSSL, hLibEAY;
+static	HMODULE hLibSSL;
 static	PVOID sslCtx;
 
 static	PFN_SSL_int_void            pfn_SSL_library_init;
@@ -405,13 +405,15 @@ int SSL_OpenSsl::init(void)
 	if ( sslCtx != NULL )
 		return 0;
 
-	if ( hLibSSL == NULL ) {
-		if (( hLibEAY = LoadLibraryA( "LIBEAY32.DLL" )) == NULL ) {
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "LIBEAY32.DLL" );
-			return 1;
-		}
-
-		if (( hLibSSL = LoadLibraryA( "SSLEAY32.DLL" )) == NULL ) {
+	if ( hLibSSL == NULL ) 
+	{
+		hLibSSL = LoadLibraryA( "cyassl.DLL" );
+		if ( hLibSSL == NULL )
+			hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
+		if ( hLibSSL == NULL )
+			hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
+		if ( hLibSSL == NULL ) 
+		{
 			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
@@ -775,9 +777,6 @@ int MSN_GetPassportAuth( char* authChallengeInfo )
 
 void UninitSsl( void )
 {
-	if ( hLibEAY )
-		FreeLibrary( hLibEAY );
-
 	if ( hLibSSL ) 
 	{
 		pfn_SSL_CTX_free( sslCtx );
