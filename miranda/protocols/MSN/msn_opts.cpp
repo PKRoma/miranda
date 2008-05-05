@@ -327,7 +327,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		CheckDlgButton( hwndDlg, IDC_SLOWSEND,    MSN_GetByte( "SlowSend",    0 ));
 
 		char fpath[MAX_PATH], *fpathp;
-		if ( SearchPathA(NULL, "cyassl.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
+		if ( SearchPathA(NULL, "CYASSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
 			 SearchPathA(NULL, "SSLEAY32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
 			 SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 )
 			CheckDlgButton( hwndDlg, IDC_USEOPENSSL, MSN_GetByte( "UseOpenSSL", 0 ));
