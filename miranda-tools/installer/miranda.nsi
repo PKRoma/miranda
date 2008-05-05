@@ -261,17 +261,17 @@ Function .onInit
   norun:
 FunctionEnd
 
-Function .onInstSuccess
-  ${If} ${SectionIsSelected} ${JABBER}  
-    SetOutPath "$INSTDIR"
-    System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
-    ${If} $0 == "error"
-      MessageBox MB_YESNO|MB_ICONQUESTION "OpenSSL is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
-      ExecShell "open" ${MIM_OPENSSL_URL}
-      endsslcheck:
-    ${EndIf}
-  ${EndIf}
-FunctionEnd
+;Function .onInstSuccess
+  ;${If} ${SectionIsSelected} ${JABBER}  
+  ;  SetOutPath "$INSTDIR"
+  ;  System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
+  ;  ${If} $0 == "error"
+  ;    MessageBox MB_YESNO|MB_ICONQUESTION "OpenSSL is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
+  ;    ExecShell "open" ${MIM_OPENSSL_URL}
+  ;    endsslcheck:
+  ;  ${EndIf}
+  ;${EndIf}
+;FunctionEnd
 
 Function VerifyInstallDir
   ${If} ${FileExists} "$INSTDIR\miranda32.exe"
