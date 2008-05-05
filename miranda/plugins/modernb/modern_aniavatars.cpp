@@ -34,6 +34,8 @@ File contains implementation of animated avatars in contact list
 
 #include "hdr/modern_commonheaders.h"
 
+#define IMMEDIATE_DRAW (!AniAva.bSeparateWindow)
+
 void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP  * pBmp, int ** pframesDelay, int * pframesCount, SIZE * sizeAvatar);
 BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName);
 
@@ -59,6 +61,7 @@ enum {
 	AAM_REMOVEAVATAR,				//sync		WPARAM: if y more then wParam, LPARAM: shift up to lParam( remove if values is same)
 	AAM_SETPARENT,					//async	    WPARAM: handle of new parent window
 	AAM_SELFDESTROY,				//sync
+	AAM_RENDER,						//sync
 	AAM_LAST,
 };
 
@@ -150,6 +153,7 @@ typedef struct _tagAniAva
 	HANDLE hExitEvent;
 	//Objects
 	SortedList * Objects;
+	BOOL bSeparateWindow;
 } ANIAVA;
 
 //module  declarations
@@ -157,7 +161,8 @@ typedef struct _tagAniAva
 
  void		_AniAva_DestroyAvatarWindow( HWND hwnd);
  void		_AniAva_Clear_ANIAVA_WINDOWINFO(ANIAVA_WINDOWINFO * pavwi );
- void		_AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat);
+ void		_AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent = NULL, RECT * rcInParent = NULL);
+ void		_AniAva_InvalidateParent(ANIAVA_WINDOWINFO * dat);
  void		_AniAva_PausePainting();
  void		_AniAva_ResumePainting();
  void		_AniAva_LoadOptions();
@@ -271,7 +276,13 @@ int AniAva_UpdateOptions()
 		AniAva_UnloadModule();
 		bReloadAvatars=TRUE;
 	}
+	BOOL oldSeparate = AniAva.bSeparateWindow;
 	_AniAva_LoadOptions();
+	if ( oldSeparate != AniAva.bSeparateWindow )
+	{
+		AniAva_InvalidateAvatarPositions(NULL);
+		AniAva_RemoveInvalidatedAvatars();
+	}
 	if ( bReloadAvatars ) PostMessage(pcli->hwndContactTree,INTM_AVATARCHANGED,0,0);
 	else AniAva_RedrawAllAvatars(TRUE);
 	return 0;
@@ -354,7 +365,27 @@ void AniAva_UpdateParent()
 	}
 	aaunlock;
 }
+ANIAVA_OBJECT * FindAvatarByContact( HANDLE hContact )
+{
+	for ( int i=0; i<AniAva.Objects->realCount; i++)
+	{
+		ANIAVA_OBJECT * pai=((ANIAVA_OBJECT *)AniAva.Objects->items[i]);
+		if (pai->hContact==hContact)
+			return pai;
+	}
+	return NULL;
+}
 
+int AniAva_RenderAvatar( HANDLE hContact, HDC hdcMem, RECT * rc )
+{
+	aacheck 0;
+	aalock;
+	ANIAVA_OBJECT * pai=FindAvatarByContact( hContact );
+	if ( pai )
+		SendMessage(pai->hWindow, AAM_RENDER, (WPARAM)hdcMem, (LPARAM) rc);
+	aaunlock;
+	return 0;
+}
 // update avatars pos
 int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 {
@@ -366,15 +397,11 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 		return 0;
 	}
 	{
-		int i;
-
-		for (i=0; i<AniAva.Objects->realCount; i++)
+		ANIAVA_OBJECT * pai=FindAvatarByContact( hContact );
+		if ( pai )
 		{
-			ANIAVA_OBJECT * pai=(ANIAVA_OBJECT *)AniAva.Objects->items[i];
-			if (pai->hContact==hContact)
-			{
-				ANIAVA_POSINFO * api=(ANIAVA_POSINFO *)malloc(sizeof(ANIAVA_POSINFO));
-				if (!pai->hWindow)
+			ANIAVA_POSINFO * api=(ANIAVA_POSINFO *)malloc(sizeof(ANIAVA_POSINFO));
+			if (!pai->hWindow)
 				{
 					HWND hwnd;
 					HWND parent;
@@ -406,15 +433,13 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 					if (_AniAva_GetAvatarImageInfo(pai->dwAvatarUniqId,&avii))
 						SendMessage(pai->hWindow, AAM_SETAVATAR, (WPARAM)&avii, (LPARAM) 0);
 				}
-				api->bAlpha=bAlpha;
-				api->idxOverlay=overlayIdx;
-				api->rcPos=*rc;
-				SendNotifyMessage(pai->hWindow, AAM_SETPOSITION, (WPARAM)0, (LPARAM) api);
-				// the AAM_SETPOSITION is responsible to destroy memory under api
-				pai->bInvalidPos=FALSE;
-				pai->bToBeDeleted=FALSE;
-				break;
-			}
+			api->bAlpha=bAlpha;
+			api->idxOverlay=overlayIdx;
+			api->rcPos=*rc;
+			SendNotifyMessage(pai->hWindow, AAM_SETPOSITION, (WPARAM)0, (LPARAM) api);
+			// the AAM_SETPOSITION is responsible to destroy memory under api
+			pai->bInvalidPos=FALSE;
+			pai->bToBeDeleted=FALSE;
 		}
 	}
 	aaunlock;
@@ -772,10 +797,13 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 	#endif
 }
 
- void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat)
+ void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NULL*/, RECT * rcInParent /* = NULL */ )
 {
 	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
 	else dat->bPended=FALSE;
+
+	if ( IMMEDIATE_DRAW && hdcParent == NULL ) return;
+
 #ifdef _DEBUG
 	__AniAva_DebugRenderStrip();
 #endif
@@ -900,7 +928,17 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 		ptWnd.y=(dat->rcPos.top>0 ? dat->rcPos.top :0)+clistRect.top;
 		if (szWnd.cy>0)
 		{
-			if (!g_proc_UpdateLayeredWindow(dat->hWindow, hDC_animation, &ptWnd, &szWnd, copyFromDC, &pt_from, RGB(0,0,0), &bf, ULW_ALPHA ))
+			if ( hdcParent && rcInParent && IMMEDIATE_DRAW )
+			{
+				if ( !(AniAva.bFlags & AAO_OPAQUE) )
+					BitBlt( hdcParent, rcInParent->left, rcInParent->top, szWnd.cx, szWnd.cy, copyFromDC, pt_from.x, pt_from.y, SRCCOPY);
+				else
+				{
+					BLENDFUNCTION abf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+					ske_AlphaBlend( hdcParent, rcInParent->left, rcInParent->top, szWnd.cx, szWnd.cy, copyFromDC, pt_from.x, pt_from.y, szWnd.cx, szWnd.cy, abf);
+				}
+			}
+			else if (!g_proc_UpdateLayeredWindow(dat->hWindow, hDC_animation, &ptWnd, &szWnd, copyFromDC, &pt_from, RGB(0,0,0), &bf, ULW_ALPHA ))
 			{
 				LONG exStyle;
 				exStyle=GetWindowLong(dat->hWindow,GWL_EXSTYLE);
@@ -998,9 +1036,11 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 			default:
 				AniAva.overlayIconImageList=NULL;
 			}
-		}
+		}	
 		if (AniAva.bFlags & AAO_OPAQUE)
 			AniAva.bkgColor=0;
+		AniAva.bSeparateWindow = DBGetContactSettingByte(NULL,"CList","AvatarsInSeparateWnd",SETTINGS_AVATARINSEPARATE_DEFAULT); 
+
 	}
 	aaunlock;
 }
@@ -1062,6 +1102,15 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 	else
 		return res;
 }
+
+void _AniAva_InvalidateParent(ANIAVA_WINDOWINFO * dat)
+{
+	if ( !IMMEDIATE_DRAW ) return;
+	HWND hwndParent = pcli->hwndContactTree;
+	RECT rcPos = dat->rcPos;
+	pcli->pfnInvalidateRect( hwndParent, &rcPos, FALSE );
+}
+
  LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ANIAVA_WINDOWINFO * dat=NULL;
@@ -1082,7 +1131,11 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 	case AAM_RESUME:
 		dat->bPaused--;
 		if (dat->bPaused) return 0;
-		if (dat->bPended) _AniAva_RenderAvatar(dat);
+		if (dat->bPended) 
+		{
+			if ( !IMMEDIATE_DRAW )
+				_AniAva_RenderAvatar(dat);
+		}
 		dat->bPended=FALSE;
 		return 0;
 
@@ -1125,7 +1178,8 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 				KillTimer(hwnd,2);
 				SetTimer(hwnd,2,dat->delaysInterval[0],NULL);
 			}
-			_AniAva_RenderAvatar(dat);
+			if ( !IMMEDIATE_DRAW )
+				_AniAva_RenderAvatar(dat);
 			return 0;
 		}
 	case AAM_SETPARENT:
@@ -1161,7 +1215,21 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 					SetWindowPos(pcli->hwndContactList,HWND_NOTOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);
 			}
 		}
-		_AniAva_RenderAvatar(dat);
+
+		if ( !IMMEDIATE_DRAW ) 
+			_AniAva_RenderAvatar( dat );
+		//else
+			//_AniAva_InvalidateParent( dat );
+
+		return 0;
+
+
+	case AAM_RENDER:
+		{
+			HDC hdc = ( HDC )wParam;
+			RECT* rect = ( RECT* )lParam;
+			_AniAva_RenderAvatar( dat, hdc, rect );
+		}
 		return 0;
 
 	case AAM_SELFDESTROY:
@@ -1195,7 +1263,12 @@ int AniAva_RedrawAllAvatars(BOOL updateZOrder)
 			dat->currentFrame++;
 			if (dat->currentFrame>=dat->nFramesCount)
 				dat->currentFrame=0;
-			_AniAva_RenderAvatar(dat);
+
+			if ( !IMMEDIATE_DRAW ) 
+				_AniAva_RenderAvatar( dat );
+			else
+				_AniAva_InvalidateParent( dat );
+
 			KillTimer(hwnd,2);
 			SetTimer(hwnd,2,dat->delaysInterval[dat->currentFrame]+1,NULL);
 			return 0;

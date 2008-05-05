@@ -53,8 +53,8 @@ CLUI* CLUI::m_pCLUI = NULL;
 CLUI::CLUI() :
 	m_hUserDll( NULL ),
 	m_hDwmapiDll( NULL )
-	
 {
+	g_CluiData.bSTATE = STATE_CLUI_LOADING;
     LoadDllsRuntime();
     hFrameContactTree=NULL;
     CreateServiceFunction(MS_CLIST_GETSTATUSMODE,CListTray_GetGlobalStatus);
@@ -111,7 +111,7 @@ HRESULT CLUI::LoadDllsRuntime()
 {
     m_hUserDll = LoadLibrary(TEXT("user32.dll"));
     if (m_hUserDll)
-{
+	{
         g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(m_hUserDll, "UpdateLayeredWindow");
         g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(m_hUserDll, "SetLayeredWindowAttributes");
         g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(m_hUserDll,"AnimateWindow");
@@ -333,6 +333,8 @@ int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     ///pcli->pfnInvalidateDisplayNameCacheEntry(INVALID_HANDLE_VALUE);   
     SendMessage(pcli->hwndContactList,M_CREATECLC,0,0); //$$$
     InitSkinHotKeys();
+	g_CluiData.bSTATE = STATE_NORMAL;
+	ske_RedrawCompleteWindow();
     return 0;
 }
 
@@ -2902,7 +2904,7 @@ BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 	if (CLUI_IsInMainWindow(hWnd) && g_CluiData.fLayered)// && IsWindowVisible(hWnd))
 	{
 		if (IsWindowVisible(hWnd))
-			return SkinInvalidateFrame(hWnd,lpRect,bErase);
+			return SkinInvalidateFrame(hWnd ,lpRect,bErase);
 		else
 		{
 			g_flag_bFullRepaint=1;

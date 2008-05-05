@@ -81,6 +81,7 @@ SortedList * gl_plSkinFonts =NULL;
 
  CRITICAL_SECTION cs_SkinChanging={0};
 
+ int g_debug_updateCounter=0;
 
 /* Private module procedures */
  BOOL ske_GetMaskBit(BYTE *line, int x);
@@ -3623,6 +3624,8 @@ int ske_RedrawCompleteWindow()
 
  int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           // Immideately recall paint routines for frame and refresh image
 {
+	if ( MirandaLoading() ) return 0;
+
 	RECT wnd;
 	wndFrame *frm;
 	BOOL NoCancelPost=0;
@@ -3674,7 +3677,8 @@ int ske_RedrawCompleteWindow()
 }
  int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       // Post request for updating
 {
-
+	if ( MirandaLoading() ) return 0; 
+	g_debug_updateCounter++;
 	if (wParam)
 	{
 		wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
@@ -3713,7 +3717,8 @@ int ske_RedrawCompleteWindow()
 			callProxied_QueueAllFramesUpdating(1);
 		}
 	}
-	else callProxied_QueueAllFramesUpdating(1);
+	else 
+		callProxied_QueueAllFramesUpdating(1);
 	if (!flag_bUpdateQueued||g_flag_bPostWasCanceled)
 		if (PostMessage(pcli->hwndContactList,UM_UPDATE,0,0))
 		{            
@@ -4033,8 +4038,12 @@ int ske_DrawNonFramedObjects(BOOL Erase,RECT *r)
 	flag_bJustDrawNonFramedObjects=1;
 	return 0;
 }
+int max_skipp=0;
 int ske_ValidateFrameImageProc(RECT * r)                                // Calling queued frame paint procs and refresh image
 {
+	max_skipp=max(max_skipp,g_debug_updateCounter);
+	g_debug_updateCounter=0;
+	
 	RECT wnd={0};
 	BOOL IsNewCache=0;
 	BOOL IsForceAllPainting=0;

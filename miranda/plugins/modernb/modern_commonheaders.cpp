@@ -311,11 +311,6 @@ int UnhookAll()
 		{
 			UnhookEvent(hooksrec[i].hHook);
 			hooksrec[i].hHook=NULL;
-#ifdef _DEBUG
-			log3("Unhook:%s (hooked at %s Ln %d)",hooksrec[i].HookStr,hooksrec[i]._debug_file,hooksrec[i]._debug_line);
-			mir_free_and_nill(hooksrec[i].HookStr);
-			mir_free_and_nill(hooksrec[i]._debug_file);
-#endif
 		}
 	}
 	mir_free_and_nill(hooksrec);

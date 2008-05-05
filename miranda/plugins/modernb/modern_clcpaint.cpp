@@ -3002,11 +3002,330 @@ void CLCPaint::_GetBlendMode( IN struct ClcData *dat, IN struct ClcContact * Dra
     }
 }
 
+void CLCPaint::_DrawContactAvatar( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *row_rc, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem )
+{
+	if ( Drawing->avatar_pos == AVATAR_POS_ANIMATED )
+	{
+		int overlayIdx = -1;
+		int blendmode = 255;
+		if ( dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + ( dat->avatars_draw_border ? 2 : 0 )
+			&& GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE < MAX_REGS( g_pAvatarOverlayIcons ) )
+		{
+			switch( dat->avatars_overlay_type )
+			{
+			case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
+				overlayIdx = g_pAvatarOverlayIcons[GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE].listID;
+				break;
+			case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
+				overlayIdx = ExtIconFromStatusMode( Drawing->hContact, Drawing->proto, 
+					Drawing->proto == NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus( Drawing->hContact ) );
+				break;
+			case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
+				overlayIdx = Drawing->iImage;
+				break;
+			}
+		}                                   
+		_GetBlendMode( dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode );
+		AniAva_SetAvatarPos( Drawing->hContact, prcItem, overlayIdx, blendmode );
+		AniAva_RenderAvatar( Drawing->hContact, hdcMem, prcItem );
+	}   
+	else if ( Drawing->avatar_pos>AVATAR_POS_DONT_HAVE )
+	{
+		int round_radius = 0;
+		HRGN rgn;
+		int blendmode = 255;              
+
+		_GetBlendMode( dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode );
+
+		//get round corner radius
+		if ( dat->avatars_round_corners )
+		{
+			if ( dat->avatars_use_custom_corner_size )
+				round_radius = dat->avatars_custom_corner_size;
+			else
+				round_radius = min( _rcWidth( prcItem ), _rcHeight( prcItem ) ) / 5;
+		}
+		// draw borders
+		if ( dat->avatars_draw_border )
+		{
+			HBRUSH hBrush = CreateSolidBrush( dat->avatars_border_color );
+			HBRUSH hOldBrush = ( HBRUSH )SelectObject( hdcMem, hBrush );
+			HRGN rgnOutside = CreateRoundRectRgn( prcItem->left, prcItem->top, prcItem->right+1, prcItem->bottom+1, round_radius<<1, round_radius<<1 );
+			HRGN rgnInside = CreateRoundRectRgn( prcItem->left+1, prcItem->top+1, prcItem->right, prcItem->bottom, round_radius<<1, round_radius<<1 );
+			CombineRgn( rgnOutside, rgnOutside, rgnInside, RGN_DIFF );
+			FillRgn( hdcMem, rgnOutside, hBrush );
+			ske_SetRgnOpaque( hdcMem, rgnOutside );
+			SelectObject( hdcMem, hOldBrush );
+			DeleteObject( hBrush );
+			DeleteObject( rgnInside );
+			DeleteObject( rgnOutside );
+		}
+
+		//set clip area to clip avatars within borders
+		if ( dat->avatars_round_corners || dat->avatars_draw_border )
+		{
+			int k = dat->avatars_draw_border?1:0;
+			rgn = CreateRoundRectRgn( prcItem->left+k, prcItem->top+k, prcItem->right+1-k, prcItem->bottom+1-k, round_radius * 2, round_radius * 2 );
+
+		}
+		else
+			rgn = CreateRectRgn( prcItem->left, prcItem->top, prcItem->right, prcItem->bottom );
+		ExtSelectClipRgn( hdcMem, rgn, RGN_AND );
+		// Draw avatar
+		ImageArray_DrawImage( &dat->avatar_cache, Drawing->avatar_pos, hdcMem, prcItem->left, prcItem->top, blendmode );
+
+		// Restore region
+		DeleteObject( rgn );
+		rgn = CreateRectRgn( row_rc->left, row_rc->top, row_rc->right, row_rc->bottom );
+		SelectClipRgn( hdcMem, rgn );
+		DeleteObject( rgn );
+		// Draw overlays
+		if ( dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + ( dat->avatars_draw_border ? 2 : 0 )
+			&& GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE < MAX_REGS( g_pAvatarOverlayIcons ) )
+		{
+			POINT ptOverlay = { prcItem->right-ICON_HEIGHT, prcItem->bottom-ICON_HEIGHT };
+			if ( dat->avatars_draw_border )
+			{
+				ptOverlay.x--;
+				ptOverlay.y--;
+			}
+			switch( dat->avatars_overlay_type )
+			{
+			case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
+				{
+					ske_ImageList_DrawEx( hAvatarOverlays, g_pAvatarOverlayIcons[GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE].listID, 
+						hdcMem, 
+						ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
+						CLR_NONE, CLR_NONE, 
+						( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
+					break;
+				}
+			case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
+				{
+					int item;
+
+					item = ExtIconFromStatusMode( Drawing->hContact, Drawing->proto, 
+						Drawing->proto == NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus( Drawing->hContact ) );
+					if ( item != -1 )
+						_DrawStatusIcon( Drawing, dat, item, hdcMem, 
+						ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
+						CLR_NONE, CLR_NONE, ( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
+					break;
+				}
+			case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
+				{
+					if ( Drawing->iImage != -1 )
+						_DrawStatusIcon( Drawing, dat, Drawing->iImage, hdcMem, 
+						ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
+						CLR_NONE, CLR_NONE, ( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
+					break;
+				}
+			}
+		}
+	}
+}
+
+void CLCPaint::_DrawContactIcon( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem )
+{
+	//Draw   Icon
+	int iImage = -1;
+	// Get image
+	if ( Drawing->type == CLCIT_GROUP )
+	{
+		if ( !dat->row_hide_group_icon ) iImage = Drawing->group->expanded ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
+		else iImage = -1;
+	}
+	else if ( Drawing->type == CLCIT_CONTACT )
+		iImage = Drawing->iImage;
+
+	// Has image to draw?
+	if ( iImage != -1 )
+	{
+		COLORREF colourFg;
+		int mode;
+		_GetBlendMode( dat, Drawing, selected, hottrack, GIM_STATUSICON_AFFECT, &colourFg, &mode );
+		_DrawStatusIcon( Drawing, dat, iImage, hdcMem, 
+			prcItem->left, prcItem->top, 
+			0, 0, CLR_NONE, colourFg, mode );
+	}
+}
+
+void CLCPaint::_DrawContactText( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem, UINT uTextFormat )
+{
+	ChangeToFont( hdcMem, dat, GetBasicFontID( Drawing ), NULL );
+	if ( selected )
+		SetTextColor( hdcMem, dat->selTextColour );
+	else if( hottrack )
+		_SetHotTrackColour( hdcMem, dat );
+
+	if ( Drawing->type == CLCIT_GROUP )
+	{
+		ske_DrawText( hdcMem, Drawing->szText, -1, prcItem, uTextFormat );
+		if ( selected && dat->szQuickSearch[0] != '\0' )
+		{
+			SetTextColor( hdcMem, dat->quickSearchColour );
+			ske_DrawText( hdcMem, Drawing->szText, lstrlen( dat->szQuickSearch ), prcItem, uTextFormat );
+		}
+	}
+	else if ( Drawing->type == CLCIT_CONTACT )
+	{
+		SIZE text_size;
+		text_size.cx = _rcWidth( prcItem );
+		text_size.cy = _rcHeight( prcItem );
+		uTextFormat|= DT_VCENTER;
+		//get font
+		_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, -1, Drawing->plText, uTextFormat, dat->text_resize_smileys );                                               
+		if ( selected && dat->szQuickSearch[0] != '\0' )
+		{
+			SetTextColor( hdcMem, dat->quickSearchColour );
+			_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+		}
+	}
+	else
+	{
+		ske_DrawText( hdcMem, Drawing->szText, -1, prcItem, uTextFormat );
+	}
+	text_rc.right = max( text_rc.right, prcItem->right );
+	text_rc.left = min( text_rc.left, prcItem->left );
+}
+void CLCPaint::_DrawContactSubText( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem, UINT uTextFormat, BYTE itemType )
+{       
+	if ( Drawing->type == CLCIT_GROUP )
+	{
+		char * szCounts = pcli->pfnGetGroupCountsText( dat, Drawing );
+
+		// Has to draw the count?
+		if( szCounts && szCounts[0] )
+		{
+			ChangeToFont( hdcMem, dat, Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS, NULL );
+			if ( selected )
+				SetTextColor( hdcMem, dat->selTextColour );
+			else if( hottrack )
+				_SetHotTrackColour( hdcMem, dat );
+			ske_DrawTextA( hdcMem, szCounts, -1, prcItem, uTextFormat );
+			ske_ResetTextEffect( hdcMem );
+		}                       
+	}
+	else if ( Drawing->type == CLCIT_CONTACT )
+	{
+		SIZE text_size = { _rcWidth( prcItem ), _rcHeight( prcItem ) };
+		PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
+		if ( pdnce )
+		{
+			ChangeToFont( hdcMem, dat, itemType == CIT_SUBTEXT1 ? FONTID_SECONDLINE : FONTID_THIRDLINE, NULL );
+			//draw second and third line
+			if ( selected )
+				SetTextColor( hdcMem, dat->selTextColour );
+			else if( hottrack )
+				_SetHotTrackColour( hdcMem, dat );
+			uTextFormat|= DT_VCENTER;
+			if ( itemType == CIT_SUBTEXT1 )
+				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szSecondLineText, -1, pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys );  
+			else
+				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szThirdLineText, -1, pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys );    
+		}
+	}
+	text_rc.right = max( text_rc.right, prcItem->right );
+	text_rc.left = min( text_rc.left, prcItem->left );
+}
+void CLCPaint::_DrawContactTime( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem )
+{
+	DBTIMETOSTRINGT dbtts;
+	time_t contact_time;
+	TCHAR szResult[80];
+	PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
+
+	if ( !pdnce ) return;
+
+	contact_time = g_CluiData.t_now - pdnce->timediff;
+	szResult[0] = '\0';
+
+	dbtts.szDest = szResult;
+	dbtts.cbDest = sizeof( szResult );
+	dbtts.szFormat = _T( "t" );
+	CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
+
+	if ( szResult[0] != '\0' )
+	{
+		// Select font
+		ChangeToFont( hdcMem, dat, FONTID_CONTACT_TIME, NULL );
+		ske_DrawText( hdcMem, szResult, lstrlen( szResult ), prcItem,  DT_NOPREFIX | DT_SINGLELINE );
+	}
+}
+
+void CLCPaint::_DrawContactSelection( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT *rcPaint, RECT * prcItem )
+{
+	// Selection background
+	if ( ( selected || hottrack ) && dat->HiLightMode == 0 )
+	{
+		if ( selected )
+			SkinDrawGlyph( hdcMem, prcItem, rcPaint, "Contact List/Selection" );
+		else if( hottrack )
+			SkinDrawGlyph( hdcMem, prcItem, rcPaint, "Contact List/HotTracking" );
+	}
+}
+
+void CLCPaint::_DrawContactExtraIcon( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * rc, int iImage )
+{
+	//Draw extra icon
+	COLORREF colourFg;
+	int mode;
+	if ( iImage != -1 )
+	{
+		_GetBlendMode( dat, Drawing, selected, hottrack, GIM_EXTRAICON_AFFECT, &colourFg, &mode );
+		if ( Drawing->iExtraImage[iImage] != 0xFF )
+			ske_ImageList_DrawEx( dat->himlExtraColumns, Drawing->iExtraImage[iImage], hdcMem, 
+			rc->left, rc->top, 0, 0, CLR_NONE, colourFg, mode );
+		else if ( Drawing->iWideExtraImage[iImage] != 0xFFFF )
+			ske_ImageList_DrawEx( dat->himlWideExtraColumns, Drawing->iWideExtraImage[iImage], hdcMem, 
+			rc->left, rc->top, 0, 0, CLR_NONE, colourFg, mode );
+	}
+}
+
+void CLCPaint::_DrawContactLine( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *free_row_rc, RECT *rcPaint, RECT& text_rc )
+{   //draw line
+	RECT rc1 = *free_row_rc;
+	RECT rc2 = *free_row_rc;
+	rc1.right = text_rc.left-3;
+	rc2.left = text_rc.right+3;
+	rc1.top += ( rc1.bottom - rc1.top ) >> 1;
+	rc1.bottom = rc1.top + 2;
+	rc2.top += ( rc2.bottom - rc2.top ) >> 1;
+	rc2.bottom = rc2.top + 2;
+	{   
+		RECT rcTemp = rc1;
+		IntersectRect( &rc1, &rcTemp, rcPaint );
+	}   
+
+	{	//Subtract icon rect from left and right.
+		RECT rcTemp;
+		IntersectRect( &rcTemp, &Drawing->pos_icon, &rc1 );
+		if ( !IsRectEmpty( &rcTemp ) ) rc1.right = rcTemp.left;
+		IntersectRect( &rcTemp, &Drawing->pos_icon, &rc2 );
+		if ( !IsRectEmpty( &rcTemp ) ) rc2.left = rcTemp.right;
+	}
+
+	if ( rc1.right-rc1.left>= 6 && !IsRectEmpty( &rc1 ) )
+	{
+		DrawEdge( hdcMem, &rc1, BDR_SUNKENOUTER, BF_RECT );
+		ske_SetRectOpaque( hdcMem, &rc1 );
+	}
+	{   
+		RECT rcTemp = rc2;
+		IntersectRect( &rc2, &rcTemp, rcPaint );
+	}   
+	if ( rc2.right-rc2.left>= 6 && !IsRectEmpty( &rc2 ) )
+	{
+		DrawEdge( hdcMem, &rc2, BDR_SUNKENOUTER, BF_RECT );
+		ske_SetRectOpaque( hdcMem, &rc2 );
+	}
+}
+
 void CLCPaint::_DrawContactItems( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *row_rc, RECT *free_row_rc, int left_pos, int right_pos, int selected, int hottrack, RECT *rcPaint )
 {
     int i;
     RECT text_rc = {0};
-    UINT uSaveTextFormat = DT_NOPREFIX |
+    UINT uTextFormat = DT_NOPREFIX |
         /*DT_VCENTER |*/ 
         DT_SINGLELINE | 
         ( dat->text_rtl ? DT_RTLREADING : 0 ) | 
@@ -3021,340 +3340,44 @@ void CLCPaint::_DrawContactItems( HWND hwnd, HDC hdcMem, struct ClcData *dat, st
 
     for ( i = 0; i<Drawing->ext_nItemsNum; i++ )
     {
-        RECT * rc = &( Drawing->ext_mpItemsDesc[i].itemRect );
-        UINT uTextFormat = uSaveTextFormat;
-        BOOL isVisible = __IsVisible( rcPaint, rc );
-        if ( isVisible || ( Drawing->ext_mpItemsDesc[i].itemType == CIT_AVATAR && Drawing->avatar_pos == AVATAR_POS_ANIMATED ) )
+        RECT * prcItem = &( Drawing->ext_mpItemsDesc[i].itemRect );
+        if ( __IsVisible( rcPaint, prcItem ) || ( Drawing->ext_mpItemsDesc[i].itemType == CIT_AVATAR && Drawing->avatar_pos == AVATAR_POS_ANIMATED ) )
+		{
             switch( Drawing->ext_mpItemsDesc[i].itemType )
-        {
-            case CIT_AVATAR:
-                if ( Drawing->avatar_pos == AVATAR_POS_ANIMATED )
-                {
-                    int overlayIdx = -1;
-                    int blendmode = 255;
-                    if ( dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + ( dat->avatars_draw_border ? 2 : 0 )
-                        && GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE < MAX_REGS( g_pAvatarOverlayIcons ) )
-                    {
-                        switch( dat->avatars_overlay_type )
-                        {
-                        case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
-                            overlayIdx = g_pAvatarOverlayIcons[GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE].listID;
-                            break;
-                        case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
-                            overlayIdx = ExtIconFromStatusMode( Drawing->hContact, Drawing->proto, 
-                                Drawing->proto == NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus( Drawing->hContact ) );
-                            break;
-                        case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
-                            overlayIdx = Drawing->iImage;
-                            break;
-                        }
-                    }                                   
-                    _GetBlendMode( dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode );
-                    AniAva_SetAvatarPos( Drawing->hContact, rc, overlayIdx, blendmode );
-                }   
-                else if ( Drawing->avatar_pos>AVATAR_POS_DONT_HAVE )
-                {
-                    int round_radius = 0;
-                    HRGN rgn;
-                    int blendmode = 255;              
-
-                    _GetBlendMode( dat, Drawing, selected, hottrack, GIM_AVATAR_AFFECT, NULL, &blendmode );
-
-                    //get round corner radius
-                    if ( dat->avatars_round_corners )
-                    {
-                        if ( dat->avatars_use_custom_corner_size )
-                            round_radius = dat->avatars_custom_corner_size;
-                        else
-                            round_radius = min( _rcWidth( rc ), _rcHeight( rc ) ) / 5;
-                    }
-                    // draw borders
-                    if ( dat->avatars_draw_border )
-                    {
-                        HBRUSH hBrush = CreateSolidBrush( dat->avatars_border_color );
-                        HBRUSH hOldBrush = ( HBRUSH )SelectObject( hdcMem, hBrush );
-                        HRGN rgnOutside = CreateRoundRectRgn( rc->left, rc->top, rc->right+1, rc->bottom+1, round_radius<<1, round_radius<<1 );
-                        HRGN rgnInside = CreateRoundRectRgn( rc->left+1, rc->top+1, rc->right, rc->bottom, round_radius<<1, round_radius<<1 );
-                        CombineRgn( rgnOutside, rgnOutside, rgnInside, RGN_DIFF );
-                        FillRgn( hdcMem, rgnOutside, hBrush );
-                        ske_SetRgnOpaque( hdcMem, rgnOutside );
-                        SelectObject( hdcMem, hOldBrush );
-                        DeleteObject( hBrush );
-                        DeleteObject( rgnInside );
-                        DeleteObject( rgnOutside );
-                    }
-
-                    //set clip area to clip avatars within borders
-                    if ( dat->avatars_round_corners || dat->avatars_draw_border )
-                    {
-                        int k = dat->avatars_draw_border?1:0;
-                        rgn = CreateRoundRectRgn( rc->left+k, rc->top+k, rc->right+1-k, rc->bottom+1-k, round_radius * 2, round_radius * 2 );
-
-                    }
-                    else
-                        rgn = CreateRectRgn( rc->left, rc->top, rc->right, rc->bottom );
-                    ExtSelectClipRgn( hdcMem, rgn, RGN_AND );
-                    // Draw avatar
-                    ImageArray_DrawImage( &dat->avatar_cache, Drawing->avatar_pos, hdcMem, rc->left, rc->top, blendmode );
-
-                    // Restore region
-                    DeleteObject( rgn );
-                    rgn = CreateRectRgn( row_rc->left, row_rc->top, row_rc->right, row_rc->bottom );
-                    SelectClipRgn( hdcMem, rgn );
-                    DeleteObject( rgn );
-                    // Draw overlays
-                    if ( dat->avatars_draw_overlay && dat->avatars_maxheight_size >= ICON_HEIGHT + ( dat->avatars_draw_border ? 2 : 0 )
-                        && GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE < MAX_REGS( g_pAvatarOverlayIcons ) )
-                    {
-                        POINT ptOverlay = { rc->right-ICON_HEIGHT, rc->bottom-ICON_HEIGHT };
-                        if ( dat->avatars_draw_border )
-                        {
-                            ptOverlay.x--;
-                            ptOverlay.y--;
-                        }
-                        switch( dat->avatars_overlay_type )
-                        {
-                        case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
-                            {
-                                ske_ImageList_DrawEx( hAvatarOverlays, g_pAvatarOverlayIcons[GetContactCachedStatus( Drawing->hContact ) - ID_STATUS_OFFLINE].listID, 
-                                    hdcMem, 
-                                    ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
-                                    CLR_NONE, CLR_NONE, 
-                                    ( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
-                                break;
-                            }
-                        case SETTING_AVATAR_OVERLAY_TYPE_PROTOCOL:
-                            {
-                                int item;
-
-                                item = ExtIconFromStatusMode( Drawing->hContact, Drawing->proto, 
-                                    Drawing->proto == NULL ? ID_STATUS_OFFLINE : GetContactCachedStatus( Drawing->hContact ) );
-                                if ( item != -1 )
-                                    _DrawStatusIcon( Drawing, dat, item, hdcMem, 
-                                    ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
-                                    CLR_NONE, CLR_NONE, ( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
-                                break;
-                            }
-                        case SETTING_AVATAR_OVERLAY_TYPE_CONTACT:
-                            {
-                                if ( Drawing->iImage != -1 )
-                                    _DrawStatusIcon( Drawing, dat, Drawing->iImage, hdcMem, 
-                                    ptOverlay.x, ptOverlay.y, ICON_HEIGHT, ICON_HEIGHT, 
-                                    CLR_NONE, CLR_NONE, ( blendmode == 255 )?ILD_NORMAL:( blendmode == 128 )?ILD_BLEND50:ILD_BLEND25 );
-                                break;
-                            }
-                        }
-                    }
-                }
-                break;
-            case CIT_ICON:
-                {
-                    //Draw   Icon
-                    int iImage = -1;
-                    // Get image
-                    if ( Drawing->type == CLCIT_GROUP )
-                    {
-                        if ( !dat->row_hide_group_icon ) iImage = Drawing->group->expanded ? IMAGE_GROUPOPEN : IMAGE_GROUPSHUT;
-                        else iImage = -1;
-                    }
-                    else if ( Drawing->type == CLCIT_CONTACT )
-                        iImage = Drawing->iImage;
-
-                    // Has image to draw?
-                    if ( iImage != -1 )
-                    {
-                        COLORREF colourFg;
-                        int mode;
-                        _GetBlendMode( dat, Drawing, selected, hottrack, GIM_STATUSICON_AFFECT, &colourFg, &mode );
-                        _DrawStatusIcon( Drawing, dat, iImage, hdcMem, 
-                            rc->left, rc->top, 
-                            0, 0, CLR_NONE, colourFg, mode );
-                    }
-                }
-                break;
-            case CIT_TEXT:
-                {
-                    ChangeToFont( hdcMem, dat, GetBasicFontID( Drawing ), NULL );
-                    if ( selected )
-                        SetTextColor( hdcMem, dat->selTextColour );
-                    else if( hottrack )
-                        _SetHotTrackColour( hdcMem, dat );
-
-                    if ( Drawing->type == CLCIT_GROUP )
-                    {
-                        ske_DrawText( hdcMem, Drawing->szText, -1, rc, uTextFormat );
-                        if ( selected && dat->szQuickSearch[0] != '\0' )
-                        {
-                            SetTextColor( hdcMem, dat->quickSearchColour );
-                            ske_DrawText( hdcMem, Drawing->szText, lstrlen( dat->szQuickSearch ), rc, uTextFormat );
-                        }
-                    }
-                    else if ( Drawing->type == CLCIT_CONTACT )
-                    {
-                        SIZE text_size;
-                        text_size.cx = _rcWidth( rc );
-                        text_size.cy = _rcHeight( rc );
-                        uTextFormat|= DT_VCENTER;
-                        //get font
-                        _DrawTextSmiley( hdcMem, rc, &text_size, Drawing->szText, -1, Drawing->plText, uTextFormat, dat->text_resize_smileys );                                               
-                        if ( selected && dat->szQuickSearch[0] != '\0' )
-                        {
-                            SetTextColor( hdcMem, dat->quickSearchColour );
-                            _DrawTextSmiley( hdcMem, rc, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
-                        }
-                    }
-                    else
-                    {
-                        ske_DrawText( hdcMem, Drawing->szText, -1, rc, uTextFormat );
-                    }
-                    text_rc.right = max( text_rc.right, rc->right );
-                    text_rc.left = min( text_rc.left, rc->left );
-                }
-                break;
-            case CIT_SUBTEXT1:
-            case CIT_SUBTEXT2:
-                {       
-                    if ( Drawing->type == CLCIT_GROUP )
-                    {
-                        char * szCounts = pcli->pfnGetGroupCountsText( dat, Drawing );
-
-                        // Has to draw the count?
-                        if( szCounts && szCounts[0] )
-                        {
-                            ChangeToFont( hdcMem, dat, Drawing->group->expanded?FONTID_OPENGROUPCOUNTS:FONTID_CLOSEDGROUPCOUNTS, NULL );
-                            if ( selected )
-                                SetTextColor( hdcMem, dat->selTextColour );
-                            else if( hottrack )
-                                _SetHotTrackColour( hdcMem, dat );
-                            ske_DrawTextA( hdcMem, szCounts, -1, rc, uTextFormat );
-							ske_ResetTextEffect( hdcMem );
-                        }                       
-                    }
-                    else if ( Drawing->type == CLCIT_CONTACT )
-                    {
-                        SIZE text_size = { _rcWidth( rc ), _rcHeight( rc ) };
-                        PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
-                        if ( pdnce )
-                        {
-                            ChangeToFont( hdcMem, dat, Drawing->ext_mpItemsDesc[i].itemType == CIT_SUBTEXT1 ? FONTID_SECONDLINE : FONTID_THIRDLINE, NULL );
-                            //draw second and third line
-                            if ( selected )
-                                SetTextColor( hdcMem, dat->selTextColour );
-                            else if( hottrack )
-                                _SetHotTrackColour( hdcMem, dat );
-                            uTextFormat|= DT_VCENTER;
-                            if ( Drawing->ext_mpItemsDesc[i].itemType == CIT_SUBTEXT1 )
-                                _DrawTextSmiley( hdcMem, rc,  &text_size, pdnce->szSecondLineText, -1, pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys );  
-                            else
-                                _DrawTextSmiley( hdcMem, rc,  &text_size, pdnce->szThirdLineText, -1, pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys );    
-                        }
-                    }
-                    text_rc.right = max( text_rc.right, rc->right );
-                    text_rc.left = min( text_rc.left, rc->left );
-                }
-                break;
-            case CIT_TIME:
-                {
-                    DBTIMETOSTRINGT dbtts;
-                    time_t contact_time;
-                    TCHAR szResult[80];
-                    PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
-
-                    if ( !pdnce ) break;
-
-                    contact_time = g_CluiData.t_now - pdnce->timediff;
-                    szResult[0] = '\0';
-
-                    dbtts.szDest = szResult;
-                    dbtts.cbDest = sizeof( szResult );
-                    dbtts.szFormat = _T( "t" );
-                    CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
-
-                    if ( szResult[0] != '\0' )
-                    {
-                        // Select font
-                        ChangeToFont( hdcMem, dat, FONTID_CONTACT_TIME, NULL );
-                        ske_DrawText( hdcMem, szResult, lstrlen( szResult ), rc,  DT_NOPREFIX | DT_SINGLELINE );
-                    }
-                }
-                break;
-            case CIT_CHECKBOX:
-                {
-                    //Draw
-                }
-                break;
-                //other here
-            case CIT_SELECTION:
-                // Selection background
-                if ( ( selected || hottrack ) && dat->HiLightMode == 0 )
-                {
-                    if ( selected )
-                        SkinDrawGlyph( hdcMem, rc, rcPaint, "Contact List/Selection" );
-                    else if( hottrack )
-                        SkinDrawGlyph( hdcMem, rc, rcPaint, "Contact List/HotTracking" );
-                }
-                break;
-            default:
-                if ( Drawing->ext_mpItemsDesc[i].itemType&CIT_EXTRA )
-                {
-                    //Draw extra icon
-                    int iImage = Drawing->ext_mpItemsDesc[i].itemType&0x3F;
-                    COLORREF colourFg;
-                    int mode;
-                    if ( iImage != -1 )
-                    {
-                        _GetBlendMode( dat, Drawing, selected, hottrack, GIM_EXTRAICON_AFFECT, &colourFg, &mode );
-						if ( Drawing->iExtraImage[iImage] != 0xFF )
-							ske_ImageList_DrawEx( dat->himlExtraColumns, Drawing->iExtraImage[iImage], hdcMem, 
-							rc->left, rc->top, 0, 0, CLR_NONE, colourFg, mode );
-						else if ( Drawing->iWideExtraImage[iImage] != 0xFFFF )
-							ske_ImageList_DrawEx( dat->himlWideExtraColumns, Drawing->iWideExtraImage[iImage], hdcMem, 
-							rc->left, rc->top, 0, 0, CLR_NONE, colourFg, mode );
-                    }
-                }
-                break;
-        }
+			{
+				case CIT_AVATAR:
+					_DrawContactAvatar( hdcMem, dat, Drawing, row_rc, selected, hottrack, text_rc, prcItem );
+					break;
+				case CIT_ICON:            
+					_DrawContactIcon( hdcMem, dat, Drawing, selected, hottrack, text_rc, prcItem );
+					break;
+				case CIT_TEXT:
+					_DrawContactText( hdcMem, dat, Drawing, selected, hottrack, text_rc, prcItem, uTextFormat );
+					break;
+				case CIT_SUBTEXT1:
+				case CIT_SUBTEXT2:
+					_DrawContactSubText( hdcMem, dat, Drawing, selected, hottrack, text_rc, prcItem, uTextFormat, Drawing->ext_mpItemsDesc[i].itemType );
+					break;
+				case CIT_TIME:
+					_DrawContactTime( hdcMem, dat, Drawing, selected, hottrack, text_rc, prcItem );
+					break;
+				case CIT_CHECKBOX:
+					//_DrawNothing no check boxes in skinned mode
+					break;
+					//other here
+				case CIT_SELECTION:
+					_DrawContactSelection( hdcMem, dat, Drawing, selected, hottrack, rcPaint, prcItem );
+					break;
+				default:
+					if ( Drawing->ext_mpItemsDesc[i].itemType&CIT_EXTRA )
+						_DrawContactExtraIcon( hdcMem, dat, Drawing, selected, hottrack, text_rc, prcItem, Drawing->ext_mpItemsDesc[i].itemType&0x3F );
+					break;
+			}
+		}
     }
     if ( ( Drawing->type == CLCIT_GROUP && dat->exStyle&CLS_EX_LINEWITHGROUPS )
         ||( Drawing->type == CLCIT_DIVIDER ) )
-    {   //draw line
-        RECT rc1 = *free_row_rc;
-        RECT rc2 = *free_row_rc;
-        rc1.right = text_rc.left-3;
-        rc2.left = text_rc.right+3;
-        rc1.top += ( rc1.bottom - rc1.top ) >> 1;
-        rc1.bottom = rc1.top + 2;
-        rc2.top += ( rc2.bottom - rc2.top ) >> 1;
-        rc2.bottom = rc2.top + 2;
-        {   
-            RECT rcTemp = rc1;
-            IntersectRect( &rc1, &rcTemp, rcPaint );
-        }   
-
-		{	//Subtract icon rect from left and right.
-			RECT rcTemp;
-			IntersectRect( &rcTemp, &Drawing->pos_icon, &rc1 );
-			if ( !IsRectEmpty( &rcTemp ) ) rc1.right = rcTemp.left;
-			IntersectRect( &rcTemp, &Drawing->pos_icon, &rc2 );
-			if ( !IsRectEmpty( &rcTemp ) ) rc2.left = rcTemp.right;
-		}
-
-        if ( rc1.right-rc1.left>= 6 && !IsRectEmpty( &rc1 ) )
-        {
-            DrawEdge( hdcMem, &rc1, BDR_SUNKENOUTER, BF_RECT );
-            ske_SetRectOpaque( hdcMem, &rc1 );
-        }
-        {   
-            RECT rcTemp = rc2;
-            IntersectRect( &rc2, &rcTemp, rcPaint );
-        }   
-        if ( rc2.right-rc2.left>= 6 && !IsRectEmpty( &rc2 ) )
-        {
-            DrawEdge( hdcMem, &rc2, BDR_SUNKENOUTER, BF_RECT );
-            ske_SetRectOpaque( hdcMem, &rc2 );
-        }
-    }
-
+		_DrawContactLine( hdcMem, dat, Drawing, free_row_rc, rcPaint, text_rc );
 }
 void CLCPaint::_PaintRowItems ( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected, int hottrack, RECT *rcPaint )
 {

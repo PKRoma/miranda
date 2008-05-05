@@ -360,12 +360,13 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
             TranslateDialogDefault(hwndDlg);
 			CheckDlgButton(hwndDlg, IDC_SHOW_AVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_SHOW_ANIAVATARS, DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail)) == 1 ? BST_CHECKED : BST_UNCHECKED );
+			CheckDlgButton(hwndDlg, IDC_AVATAR_FASTDRAW, DBGetContactSettingByte(NULL,"CList","AvatarsInSeparateWnd",SETTINGS_AVATARINSEPARATE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED); 
 			CheckDlgButton(hwndDlg, IDC_AVATAR_DRAW_BORDER, DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",SETTINGS_AVATARDRAWBORDER_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_ROUND_CORNERS, DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",SETTINGS_AVATARROUNDCORNERS_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK, DBGetContactSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",SETTINGS_AVATARUSECUTOMCORNERSIZE_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_IGNORE_SIZE, DBGetContactSettingByte(NULL,"CList","AvatarsIgnoreSizeForRow",SETTINGS_AVATARIGNORESIZEFORROW_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_AVATAR_OVERLAY_ICONS, DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",SETTINGS_AVATARDRAWOVERLAY_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
-
+			
 			switch(DBGetContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTINGS_AVATAROVERLAYTYPE_DEFAULT))
 			{
 			case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
@@ -420,6 +421,11 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS2),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_ANIAVATARS),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS3),FALSE);
+				EnableWindow( GetDlgItem( hwndDlg, IDC_AVATAR_FASTDRAW), FALSE );
+			}
+			if( !IsDlgButtonChecked( hwndDlg, IDC_SHOW_ANIAVATARS ) ) 
+			{
+				EnableWindow( GetDlgItem( hwndDlg, IDC_AVATAR_FASTDRAW), FALSE );
 			}
 			if(!IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER)) 
 			{
@@ -478,6 +484,8 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_WIDTH_SPIN),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),enabled);
+				
+				EnableWindow( GetDlgItem( hwndDlg, IDC_AVATAR_FASTDRAW), enabled && IsDlgButtonChecked( hwndDlg, IDC_SHOW_ANIAVATARS ) );
 				//				}
 				//				else
 				//				{
@@ -486,15 +494,19 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				//					EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_SIZE_PIXELS),FALSE);
 				//				}
 			}
+			else if (LOWORD(wParam)==IDC_SHOW_ANIAVATARS)
+			{
+				EnableWindow( GetDlgItem( hwndDlg, IDC_AVATAR_FASTDRAW), IsDlgButtonChecked( hwndDlg, IDC_SHOW_ANIAVATARS ) );
+			}
 
-			if (LOWORD(wParam)==IDC_AVATAR_DRAW_BORDER)
+			else if (LOWORD(wParam)==IDC_AVATAR_DRAW_BORDER)
 			{
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS) && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR_L),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_BORDER_COLOR),enabled);
 			}
 
-			if (LOWORD(wParam)==IDC_AVATAR_ROUND_CORNERS)
+			else if (LOWORD(wParam)==IDC_AVATAR_ROUND_CORNERS)
 			{
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS) && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_ROUND_CORNERS);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK),enabled);
@@ -502,14 +514,14 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN),enabled);
 			}
 
-			if (LOWORD(wParam)==IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK)
+			else if (LOWORD(wParam)==IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK)
 			{
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_AVATAR_ROUND_CORNERS);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE),enabled&&IsDlgButtonChecked(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN),enabled&&IsDlgButtonChecked(hwndDlg,IDC_AVATAR_CUSTOM_CORNER_SIZE_CHECK));
 			}
-			if(LOWORD(wParam)==IDC_AVATAR_OVERLAY_ICONS) 
+			else if(LOWORD(wParam)==IDC_AVATAR_OVERLAY_ICONS) 
 			{
 				BOOL enabled = IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS) && IsDlgButtonChecked(hwndDlg,IDC_AVATAR_OVERLAY_ICONS);
 
@@ -517,8 +529,8 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_PROTOCOL),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_AVATAR_OVERLAY_ICON_CONTACT),enabled);
 			}
-			if (LOWORD(wParam)==IDC_AVATAR_SIZE && HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap
-			if (LOWORD(wParam)==IDC_AVATAR_CUSTOM_CORNER_SIZE && HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap
+			else if (LOWORD(wParam)==IDC_AVATAR_SIZE && HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap
+			else if (LOWORD(wParam)==IDC_AVATAR_CUSTOM_CORNER_SIZE && HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0; // dont make apply enabled during buddy set crap
 
 			SendMessage((GetParent(hwndDlg)), PSM_CHANGED, 0, 0);
 			break;
@@ -535,6 +547,8 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 						{
 							DBWriteContactSettingByte(NULL,"CList","AvatarsShow", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_AVATARS));
 							DBWriteContactSettingByte(NULL,"CList","AvatarsAnimated", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOW_ANIAVATARS));
+							DBWriteContactSettingByte(NULL,"CList","AvatarsInSeparateWnd", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_FASTDRAW));
+
 							DBWriteContactSettingByte(NULL,"CList","AvatarsDrawBorders", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_DRAW_BORDER));
 							DBWriteContactSettingDword(NULL,"CList","AvatarsBorderColor", (DWORD)SendDlgItemMessage(hwndDlg, IDC_AVATAR_BORDER_COLOR, CPM_GETCOLOUR, 0, 0));
 							DBWriteContactSettingByte(NULL,"CList","AvatarsRoundCorners", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_AVATAR_ROUND_CORNERS));

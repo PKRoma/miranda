@@ -118,9 +118,19 @@ private:
 	 void _GetBlendMode( IN struct ClcData *dat, IN struct ClcContact * Drawing, IN BOOL selected, IN BOOL hottrack, IN BOOL bFlag, OUT COLORREF * OutColourFg, OUT int * OutMode );
 	 void _DrawContactItems( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *row_rc, RECT *free_row_rc, int left_pos, int right_pos, int selected, int hottrack, RECT *rcPaint );
 	 void _PaintRowItems ( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT row_rc, RECT free_row_rc, int left_pos, int right_pos, int selected, int hottrack, RECT *rcPaint );
+	 
+     void _DrawContactAvatar    ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *row_rc, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem );
+     void _DrawContactIcon      ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem );
+     void _DrawContactText      ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem, UINT uTextFormat );
+     void _DrawContactSubText   ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem, UINT uTextFormat, BYTE itemType );
+     void _DrawContactTime      ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem );     
+	 void _DrawContactExtraIcon ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * rc, int iImage );
+	 void _DrawContactSelection ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT *rcPaint, RECT * prcItem );
+	 void _DrawContactLine      ( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, RECT *free_row_rc, RECT *rcPaint, RECT& text_rc );
 
 	 int _rcWidth( RECT *rc ) { return rc->right-rc->left; }
 	 int _rcHeight( RECT *rc ) { return rc->bottom-rc->top; }
+	
 };
 
 

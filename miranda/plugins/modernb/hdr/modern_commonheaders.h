@@ -227,10 +227,16 @@ BOOL DestroyIcon_protect(HICON icon);
 #define TreeView_GetItemA(hwnd, pitem) \
 	(BOOL)SendMessageA((hwnd), TVM_GETITEMA, 0, (LPARAM)(TV_ITEM *)(pitem))
 
+enum
+{
+	STATE_DLL_LOADING = 0,
+	STATE_CLUI_LOADING,
+	STATE_NORMAL,
+	STATE_PREPEARETOEXIT,
+	STATE_EXITING
+};
 
-#define STATE_NORMAL 0
-#define STATE_PREPEARETOEXIT 1
-#define STATE_EXITING 2
+#define MirandaLoading() ((g_CluiData.bSTATE<STATE_NORMAL))
 #define MirandaExiting() ((g_CluiData.bSTATE>STATE_NORMAL))
 
 
@@ -263,6 +269,7 @@ int AniAva_RemoveInvalidatedAvatars();					   // all avatars without validated p
 int AniAva_RemoveAvatar(HANDLE hContact);				   // remove avatar
 int AniAva_RedrawAllAvatars(BOOL updateZOrder);			   // request to repaint all
 void AniAva_UpdateParent();
+int AniAva_RenderAvatar( HANDLE hContact, HDC hdcMem, RECT * rc );
 
 
 #define CCI_NAME			1

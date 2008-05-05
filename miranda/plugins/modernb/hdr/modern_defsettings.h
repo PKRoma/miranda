@@ -172,6 +172,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTINGS_AVATAROVERLAYTYPE_DEFAULT       SETTING_AVATAR_OVERLAY_TYPE_NORMAL
 #define SETTING_AVATARHEIGHT_DEFAULT            24 //"CList","AvatarsSize"
 #define SETTING_AVATARWIDTH_DEFAULT             24 //"CList","AvatarsWidth"
+#define SETTINGS_AVATARINSEPARATE_DEFAULT		0 //"CList","AvatarsInSeparateWnd",
 
 
 
