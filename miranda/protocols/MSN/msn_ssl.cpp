@@ -343,7 +343,7 @@ int SSL_OpenSsl::init(void)
 
 	if ( hLibSSL == NULL ) 
 	{
-		hLibSSL = LoadLibraryA( "cyassld.DLL" );
+		hLibSSL = LoadLibraryA( "cyassl.DLL" );
 		if ( hLibSSL == NULL )
 			hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 		if ( hLibSSL == NULL )
