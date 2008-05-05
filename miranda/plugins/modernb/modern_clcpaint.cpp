@@ -89,6 +89,20 @@ const char* CLCPaint::HASHTEXT[hi_LastItem] = {
 	"Inactive"
 	//ADD item here
 };
+const int CLCPaint::HORIZONTAL_SPACE     = 2;
+const int CLCPaint::EXTRA_CHECKBOX_SPACE = 2;
+const int CLCPaint::EXTRA_SPACE          = 2;
+const int CLCPaint::SELECTION_BORDER     = 6;
+const int CLCPaint::MIN_TEXT_WIDTH       = 20;
+const int CLCPaint::BUF2SIZE             = 7;
+
+const BYTE CLCPaint::GIM_SELECTED_AFFECT = 1;
+const BYTE CLCPaint::GIM_HOT_AFFECT  = 2; 
+const BYTE CLCPaint::GIM_TEMP_AFFECT = 4; 
+const BYTE CLCPaint::GIM_IDLE_AFFECT = 8;
+const BYTE CLCPaint::GIM_EXTRAICON_AFFECT = CLCPaint::GIM_SELECTED_AFFECT | CLCPaint::GIM_HOT_AFFECT | CLCPaint::GIM_IDLE_AFFECT | CLCPaint::GIM_TEMP_AFFECT;
+const BYTE CLCPaint::GIM_STATUSICON_AFFECT = CLCPaint::GIM_IDLE_AFFECT | CLCPaint::GIM_TEMP_AFFECT;
+const BYTE CLCPaint::GIM_AVATAR_AFFECT = CLCPaint::GIM_IDLE_AFFECT | CLCPaint::GIM_TEMP_AFFECT;
 
 CLCPaint::CLCPaint() 
 {

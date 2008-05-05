@@ -19,20 +19,20 @@ public:
 	 BOOL   CheckMiniMode( struct ClcData *dat, BOOL selected, BOOL hot );
 
 private:
-	const static int HORIZONTAL_SPACE     = 2;
-	const static int EXTRA_CHECKBOX_SPACE = 2;
-	const static int EXTRA_SPACE          = 2;
-	const static int SELECTION_BORDER     = 6;
-	const static int MIN_TEXT_WIDTH       = 20;
-	const static int BUF2SIZE             = 7;
+	static const int HORIZONTAL_SPACE;
+	static const int EXTRA_CHECKBOX_SPACE;
+	static const int EXTRA_SPACE;
+	static const int SELECTION_BORDER;
+	static const int MIN_TEXT_WIDTH;
+	static const int BUF2SIZE;
 
-	const static BYTE GIM_SELECTED_AFFECT = 1;
-	const static BYTE GIM_HOT_AFFECT  = 2; 
-	const static BYTE GIM_TEMP_AFFECT = 4; 
-	const static BYTE GIM_IDLE_AFFECT = 8;
-	const static BYTE GIM_EXTRAICON_AFFECT = GIM_SELECTED_AFFECT | GIM_HOT_AFFECT | GIM_IDLE_AFFECT | GIM_TEMP_AFFECT;
-	const static BYTE GIM_STATUSICON_AFFECT = GIM_IDLE_AFFECT | GIM_TEMP_AFFECT;
-	const static BYTE GIM_AVATAR_AFFECT = GIM_IDLE_AFFECT | GIM_TEMP_AFFECT;
+	static const BYTE GIM_SELECTED_AFFECT;
+	static const BYTE GIM_HOT_AFFECT;
+	static const BYTE GIM_TEMP_AFFECT;
+	static const BYTE GIM_IDLE_AFFECT;
+	static const BYTE GIM_EXTRAICON_AFFECT;
+	static const BYTE GIM_STATUSICON_AFFECT;
+	static const BYTE GIM_AVATAR_AFFECT;
 
 	enum tagenumHASHINDEX
 	{
