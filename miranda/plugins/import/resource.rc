@@ -208,7 +208,7 @@ BEGIN
                     WS_DISABLED | WS_TABSTOP,120,97,81,15
     CTEXT           "Messages",IDC_MSG,54,44,112,8,SS_NOTIFY
     CTEXT           "URLs",IDC_URL,54,56,112,8,SS_NOTIFY
-    CTEXT           "FileTrasfers",IDC_FT,54,68,112,8,SS_NOTIFY
+    CTEXT           "File Transfers",IDC_FT,54,68,112,8,SS_NOTIFY
     CTEXT           "Other",IDC_OTHER,54,80,112,8,SS_NOTIFY
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,93,222,1
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,31,223,1
@@ -357,12 +357,12 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", " "
             VALUE "FileDescription", "Miranda IM Import Plugin"
-            VALUE "FileVersion", "0.7.0.1"
+            VALUE "FileVersion", "0.8.0.0"
             VALUE "InternalName", "import"
             VALUE "LegalCopyright", "Copyright © 2000-2007,  Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan"
             VALUE "OriginalFilename", "import.dll"
             VALUE "ProductName", "Miranda IM"
-            VALUE "ProductVersion", "0.7.0.1"
+            VALUE "ProductVersion", "0.8.0.0"
         END
     END
     BLOCK "VarFileInfo"
