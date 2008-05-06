@@ -485,6 +485,9 @@
 					RelativePath=".\hdr\modern_clc.h">
 				</File>
 				<File
+					RelativePath=".\hdr\modern_clcpaint.h">
+				</File>
+				<File
 					RelativePath=".\hdr\modern_clist.h">
 				</File>
 				<File
@@ -570,10 +573,10 @@
 					RelativePath="..\..\include\m_clistint.h">
 				</File>
 				<File
-					RelativePath=".\m_api\m_clui.h">
+					RelativePath="..\..\include\m_clui.h">
 				</File>
 				<File
-					RelativePath="..\..\include\m_clui.h">
+					RelativePath=".\m_api\m_clui.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_cluiframes.h">
