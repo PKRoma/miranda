@@ -70,32 +70,27 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	return xmlp;
 }
 
-static void UpdateABHost(ezxml_t xmlp, char* orgurl)
+static void UpdateABHost(const char* service, const char* url)
 {
-	const char* newhost = ezxml_txt(ezxml_get(xmlp, "soap:Header", 0, "ServiceHeader", 0, 
-		"PreferredHostName", -1));
-	
-	if (newhost[0])
-	{
-		char schstr[128];
-		size_t sz = mir_snprintf(schstr, sizeof(schstr), "https://%s/", newhost);
+	char hostname[128];
+	mir_snprintf(hostname, sizeof(hostname), "ABHost-%s", service); 
 
-		if (strncmp(orgurl, schstr, sz) != 0)
-			MSN_SetString(NULL, "MsnABHost", newhost);
-	}
+	MSN_SetString(NULL, hostname, url);
 }
 
-static char* GetABHost(bool isSharing)
+static char* GetABHost(const char* service, bool isSharing)
 {
-	char host[128];
-	if (MSN_GetStaticString("MsnABHost", NULL, host, sizeof(host)))
-		strcpy(host, "byrdr.omega.contacts.msn.com");
+	char hostname[128];
+	mir_snprintf(hostname, sizeof(hostname), "ABHost-%s", service); 
 
-	char* fullhost = (char*)mir_alloc(256);;
-	mir_snprintf(fullhost, 256, "https://%s/abservice/%s.asmx", host, 
-		isSharing ? "SharingService" : "abservice");
+	char* host = (char*)mir_alloc(256);
+	if (MSN_GetStaticString(hostname, NULL, host, 256))
+	{
+		mir_snprintf(host, 256, "https://byrdr.omega.contacts.msn.com/abservice/%s.asmx", 
+			isSharing ? "SharingService" : "abservice");
+	}
 
-	return fullhost;
+	return host;
 }
 
 
@@ -122,18 +117,14 @@ bool MSN_ABAdd(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABAdd", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
-	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
-		ezxml_free(xmlm);
-	}
+	if (tResult != NULL) UpdateABHost("ABAdd", abUrl);
+
 	mir_free(tResult);
 	mir_free(abUrl);
 
@@ -176,8 +167,8 @@ bool MSN_SharingFindMembership(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(true);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("FindMembership", true);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -185,7 +176,7 @@ bool MSN_SharingFindMembership(void)
 	if (tResult != NULL)
 	{
 		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
+		UpdateABHost("FindMembership", abUrl);
 
 		if (status == 200)
 		{
@@ -344,8 +335,9 @@ bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int ne
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(true);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost(szMethod, true);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	if (tResult != NULL) UpdateABHost(szMethod, abUrl);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -384,8 +376,8 @@ bool MSN_ABGetFull(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABFindAll", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -396,7 +388,7 @@ bool MSN_ABGetFull(void)
 		ezxml_t abook = ezxml_get(xmlm, "soap:Body", 0, "ABFindAllResponse", 0, 
 			"ABFindAllResult", -1);
 		
-		UpdateABHost(xmlm, abUrl);
+		UpdateABHost("ABFindAll", abUrl);
 
 		ezxml_t abinf = ezxml_get(abook, "ab", 0, "abInfo", -1);
 		mir_snprintf(mycid,  sizeof(mycid), "%s", ezxml_txt(ezxml_child(abinf, "OwnerCID")));
@@ -649,8 +641,8 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost(szMethod, false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -658,7 +650,7 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
+		UpdateABHost(szMethod, abUrl);
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
@@ -700,8 +692,8 @@ void MSN_ABAddGroup(const char* szGrpName)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABGroupAdd", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
@@ -713,7 +705,7 @@ void MSN_ABAddGroup(const char* szGrpName)
 		const char* szGrpId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABGroupAddResponse", 0, 
 			"ABGroupAddResult", 0, "guid", -1));
 
-		UpdateABHost(xmlm, abUrl);
+		UpdateABHost("ABGroupAdd", abUrl);
 		MSN_AddGroup(szGrpName, szGrpId, false); 
 
 		ezxml_free(xmlm);
@@ -748,17 +740,15 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABGroupUpdate", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	free(szData);
 	mir_free(reqHdr);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
-		ezxml_free(xmlm);
+		UpdateABHost("ABGroupUpdate", abUrl);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
@@ -803,17 +793,15 @@ void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char*
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABContactUpdate", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
-		ezxml_free(xmlm);
+		UpdateABHost("ABContactUpdate", abUrl);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
@@ -858,17 +846,15 @@ void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szVal
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABContactUpdate", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
-		ezxml_free(xmlm);
+		UpdateABHost("ABContactUpdate", abUrl);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);
@@ -962,22 +948,21 @@ unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, co
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("ABContactAdd", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL)
 	{
+		UpdateABHost("ABContactAdd", abUrl);
 		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
 		if (status == 200)
 		{
 		
 			const char* szContId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABContactAddResponse", 0, 
 				"ABContactAddResult", 0, "guid", -1));
-
-			UpdateABHost(xmlm, abUrl);
 
 			if (search) 
 				MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
@@ -1073,17 +1058,15 @@ void MSN_ABUpdateDynamicItem(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* abUrl = GetABHost(false);
-	char* tResult = mAgent.getSslResult(abUrl, szData, reqHdr, status, htmlbody);
+	char* abUrl = GetABHost("UpdateDynamicItem", false);
+	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
-		UpdateABHost(xmlm, abUrl);
-		ezxml_free(xmlm);
+		UpdateABHost("UpdateDynamicItem", abUrl);
 	}
 	mir_free(tResult);
 	mir_free(abUrl);

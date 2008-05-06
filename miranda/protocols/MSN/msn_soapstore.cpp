@@ -69,17 +69,24 @@ static ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& 
 	return xmlp;
 }
 
- static char* GetStoreHost(void)
+static char* GetStoreHost(const char* service)
 {
-	char host[128];
-	if (MSN_GetStaticString("MsnStoreHost", NULL, host, sizeof(host)))
-		strcpy(host, "storage.msn.com");
-//		strcpy(host, "tkrdr.storage.msn.com");
+	char hostname[128];
+	mir_snprintf(hostname, sizeof(hostname), "StoreHost-%s", service); 
 
-	char* fullhost = (char*)mir_alloc(256);
-	mir_snprintf(fullhost, 256, "https://%s/storageservice/SchematizedStore.asmx", host);
+	char* host = (char*)mir_alloc(256);
+	if (MSN_GetStaticString(hostname, NULL, host, 256))
+		strcpy(host, "https://tkrdr.storage.msn.com/storageservice/SchematizedStore.asmx");
 
-	return fullhost;
+	return host;
+}
+
+static void UpdateStoreHost(const char* service, const char* url)
+{
+	char hostname[128];
+	mir_snprintf(hostname, sizeof(hostname), "StoreHost-%s", service); 
+
+	MSN_SetString(NULL, hostname, url);
 }
 
 bool MSN_StoreCreateProfile(void)
@@ -105,11 +112,13 @@ bool MSN_StoreCreateProfile(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("CreateProfile");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
+
+	if (tResult != NULL) UpdateStoreHost("CreateProfile", storeUrl);
 
 	mir_free(tResult);
 	mir_free(storeUrl);
@@ -169,11 +178,13 @@ bool MSN_StoreGetProfile(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("GetProfile");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
+
+	if (tResult != NULL) UpdateStoreHost("GetProfile", storeUrl);
 
 	if (tResult != NULL && status == 200)
 	{
@@ -234,11 +245,13 @@ bool MSN_StoreUpdateNick(const char* szNick)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("UpdateProfile");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
+
+	if (tResult != NULL) UpdateStoreHost("UpdateProfile", storeUrl);
 
 	if (tResult != NULL && status == 200)
 	{
@@ -279,15 +292,14 @@ bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("CreateRelationships");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-//	if (tResult != NULL && status == 200)
-//	{
-//	}
+	if (tResult != NULL) UpdateStoreHost("CreateRelationships", storeUrl);
+
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -325,15 +337,14 @@ bool MSN_StoreDeleteRelationships(const char *szResId)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("DeleteRelationships");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-//	if (tResult != NULL && status == 200)
-//	{
-//	}
+	if (tResult != NULL) UpdateStoreHost("DeleteRelationships", storeUrl);
+
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -387,15 +398,14 @@ bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const c
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("CreateDocument");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-//	if (tResult != NULL && status == 200)
-//	{
-//	}
+	if (tResult != NULL) UpdateStoreHost("CreateDocument", storeUrl);
+
 	mir_free(tResult);
 	mir_free(storeUrl);
 
@@ -448,15 +458,14 @@ bool MSN_StoreFindDocuments(void)
 	unsigned status;
 	char* htmlbody;
 
-	char* storeUrl = GetStoreHost();
-	char* tResult = mAgent.getSslResult(storeUrl, szData, reqHdr, status, htmlbody);
+	char* storeUrl = GetStoreHost("FindDocuments");
+	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
 
 	mir_free(reqHdr);
 	free(szData);
 
-//	if (tResult != NULL && status == 200)
-//	{
-//	}
+	if (tResult != NULL) UpdateStoreHost("FindDocuments", storeUrl);
+
 	mir_free(tResult);
 	mir_free(storeUrl);
 

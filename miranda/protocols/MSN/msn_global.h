@@ -817,6 +817,6 @@ public:
 	SSLAgent();
 	~SSLAgent();
 
-	char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs,
+	char* getSslResult( char** parUrl, const char* parAuthInfo, const char* hdrs,
 		unsigned& status, char*& htmlbody);
 };

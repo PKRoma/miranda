@@ -131,24 +131,24 @@ int MSN_GetPassportAuth( void )
 	int retVal = -1;
 	SSLAgent mAgent;
 
-	char szPassword[ 100 ];
-	MSN_GetStaticString( "Password", NULL, szPassword, sizeof( szPassword ));
-	MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( szPassword )+1, ( LPARAM )szPassword );
-	szPassword[ 16 ] = 0;
+	char szPassword[100];
+	MSN_GetStaticString("Password", NULL, szPassword, sizeof(szPassword));
+	MSN_CallService(MS_DB_CRYPT_DECODESTRING, strlen(szPassword)+1, (LPARAM)szPassword);
+	szPassword[16] = 0;
 	char* szEncPassword = HtmlEncode(szPassword);
 
 	const size_t len = sizeof(authPacket) + 2048;
-	char* szAuthInfo = ( char* )alloca( len );
+	char* szAuthInfo = (char*)alloca( len );
 	mir_snprintf( szAuthInfo, len, authPacket, MyOptions.szEmail, szEncPassword );
 
 	mir_free( szEncPassword );
 
-	char szPassportHost[ 256 ];
-	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szPassportHost, sizeof( szPassportHost )) 
+	char* szPassportHost = (char*)mir_alloc(256);;
+	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szPassportHost, 256) 
 		|| strstr( szPassportHost, "/RST.srf" ) == NULL )
 		strcpy( szPassportHost, defaultPassportUrl );
 
-	bool defaultUrlAllow = strcmp( szPassportHost, defaultPassportUrl ) != 0;
+	bool defaultUrlAllow = strcmp(szPassportHost, defaultPassportUrl) != 0;
 	char *tResult = NULL;
 
 	while (retVal == -1)
@@ -156,7 +156,7 @@ int MSN_GetPassportAuth( void )
 		unsigned status;
 		char* htmlbody;
 
-		tResult = mAgent.getSslResult( szPassportHost, szAuthInfo, NULL, status, htmlbody);
+		tResult = mAgent.getSslResult(&szPassportHost, szAuthInfo, NULL, status, htmlbody);
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
@@ -253,14 +253,14 @@ int MSN_GetPassportAuth( void )
 				break;
 			}
 			default:
-				if ( defaultUrlAllow ) {
-					strcpy( szPassportHost, defaultPassportUrl );
+				if (defaultUrlAllow) {
+					strcpy(szPassportHost, defaultPassportUrl);
 					defaultUrlAllow = false;
 				}
 				else 
 					retVal = 6;
 		}
-		mir_free( tResult );
+		mir_free(tResult);
 	}
 
 	if ( retVal != 0 ) 
@@ -272,6 +272,7 @@ int MSN_GetPassportAuth( void )
 	else
 		MSN_SetString(NULL, "MsnPassportHost", szPassportHost);
 
+	mir_free(szPassportHost);
 	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
 	return retVal;
 }

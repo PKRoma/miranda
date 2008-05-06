@@ -86,10 +86,12 @@ void getOIMs(ezxml_t xmli)
 
 		unsigned status;
 		char* htmlbody;
+		char* url = (char*)mir_strdup(oimRecvUrl);
 
-		char* tResult = mAgent.getSslResult(oimRecvUrl, szData, getReqHdr, status, htmlbody);
+		char* tResult = mAgent.getSslResult(&url, szData, getReqHdr, status, htmlbody);
 
 		free(szData);
+		mir_free(url);
 
 		if (tResult != NULL && status == 200)
 		{
@@ -150,8 +152,11 @@ void getOIMs(ezxml_t xmli)
 			
 		unsigned status;
 		char* htmlbody;
+		char* url = (char*)mir_strdup(oimRecvUrl);
 
-		char* tResult = mAgent.getSslResult(oimRecvUrl, szData, delReqHdr, status, htmlbody);
+		char* tResult = mAgent.getSslResult(&url, szData, delReqHdr, status, htmlbody);
+
+		mir_free(url);
 		mir_free(tResult);
 		free(szData);
 	}
@@ -173,9 +178,11 @@ void getMetaData(void)
 
 	unsigned status;
 	char* htmlbody;
+	char* url = (char*)mir_strdup(oimRecvUrl);
 
-	char* tResult = mAgent.getSslResult(oimRecvUrl, szData, getReqHdr, status, htmlbody);
+	char* tResult = mAgent.getSslResult(&url, szData, getReqHdr, status, htmlbody);
 
+	mir_free(url);
 	free(szData);
 	mir_free(getReqHdr);
 
@@ -499,11 +506,13 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 		
 		unsigned status;
 		char* htmlbody;
+		char* url = (char*)mir_strdup("https://ows.messenger.msn.com/OimWS/oim.asmx");
 
-		char* tResult = mAgent.getSslResult( "https://ows.messenger.msn.com/OimWS/oim.asmx", szData,
+		char* tResult = mAgent.getSslResult(&url, szData,
 			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
 			status, htmlbody);
 
+		mir_free(url);
 		free(szData);
 
 		if (tResult != NULL)

@@ -343,7 +343,7 @@ int SSL_OpenSsl::init(void)
 
 	if ( hLibSSL == NULL ) 
 	{
-		hLibSSL = LoadLibraryA( "cyassl.DLL" );
+		hLibSSL = LoadLibraryA( "CYASSL.DLL" );
 		if ( hLibSSL == NULL )
 			hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 		if ( hLibSSL == NULL )
@@ -399,13 +399,20 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	if ( _strnicmp( parUrl, "https://", 8 ) != 0 )
 		return NULL;
 
-	char* url = NEWSTR_ALLOCA( parUrl );
-	char* path = strchr( url+9, '/' );
-	if ( path == NULL ) {
+	char* url = NEWSTR_ALLOCA(parUrl);
+	char* path  = strchr(url+9, '/');
+	char* path1 = strchr(url+9, ':');
+	if (path == NULL) 
+	{
 		MSN_DebugLog( "Invalid URL passed: '%s'", parUrl );
 		return NULL;
 	}
-	*path++ = 0;
+	if (path < path1 || path1 == NULL)
+		*path = 0;
+	else
+		*path1 = 0;
+
+	++path;
 
 	NETLIBUSERSETTINGS nls = { 0 };
 	nls.cbSize = sizeof( nls );
@@ -553,7 +560,7 @@ SSLAgent::~SSLAgent()
 }
 
 
-char* SSLAgent::getSslResult(const char* parUrl, const char* parAuthInfo, const char* hdrs, 
+char* SSLAgent::getSslResult(char** parUrl, const char* parAuthInfo, const char* hdrs, 
 							 unsigned& status, char*& htmlbody)
 {
 	status = 0;
@@ -561,11 +568,9 @@ char* SSLAgent::getSslResult(const char* parUrl, const char* parAuthInfo, const 
 	if (pAgent != NULL)
 	{
 		MimeHeaders httpinfo;
-		char* url = mir_strdup(parUrl);
 
 lbl_retry:
-		tResult = pAgent->getSslResult(url, parAuthInfo, hdrs);
-		mir_free(url);
+		tResult = pAgent->getSslResult(*parUrl, parAuthInfo, hdrs);
 		if (tResult != NULL)
 		{
 			char* htmlhdr = httpParseHeader( tResult, status );
@@ -576,7 +581,8 @@ lbl_retry:
 				if (loc != NULL)
 				{
 					MSN_DebugLog( "Redirected to '%s'", loc );
-					url = mir_strdup(loc);
+					mir_free(*parUrl);
+					*parUrl = mir_strdup(loc);
 					mir_free(tResult);
 					goto lbl_retry;
 				}
