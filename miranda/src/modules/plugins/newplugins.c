@@ -970,32 +970,37 @@ int LoadNewPluginsModule(void)
 	for ( i=0; i < pluginList.realCount; i++ ) {
 		p = pluginList.items[i];
 		CharLowerA(p->pluginname);
-		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB)
-			&& !(p->pclass&PCLASS_CLIST) && isPluginOnWhiteList(p->pluginname) ) {
-			BASIC_PLUGIN_INFO bpi;
-			mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", p->pluginname);
-			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
-				int rm = bpi.pluginInfo->replacesDefaultModule;
-				p->bpi = bpi;
-				p->pclass |= PCLASS_OK | PCLASS_BASICAPI;
+		if ( !(p->pclass&PCLASS_LOADED) && !(p->pclass&PCLASS_DB) && !(p->pclass&PCLASS_CLIST) ) 
+		{
+			if (isPluginOnWhiteList(p->pluginname))
+			{
+				BASIC_PLUGIN_INFO bpi;
+				mir_snprintf(slice,&exe[SIZEOF(exe)] - slice, "\\Plugins\\%s", p->pluginname);
+				if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_NONE, NULL) ) {
+					int rm = bpi.pluginInfo->replacesDefaultModule;
+					p->bpi = bpi;
+					p->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 
-				List_InsertPtr( &pluginListAddr, p );
+					List_InsertPtr( &pluginListAddr, p );
 
-				if ( pluginDefModList[rm] == NULL ) {
-					if ( bpi.Load(&pluginCoreLink) == 0 ) p->pclass |= PCLASS_LOADED;
+					if ( pluginDefModList[rm] == NULL ) {
+						if ( bpi.Load(&pluginCoreLink) == 0 ) p->pclass |= PCLASS_LOADED;
+						else {
+							Plugin_Uninit( p );
+							i--;
+						}
+						if ( rm ) pluginDefModList[rm]=p;
+					} //if
 					else {
+						SetPluginOnWhiteList( p->pluginname, 0 );
 						Plugin_Uninit( p );
 						i--;
 					}
-					if ( rm ) pluginDefModList[rm]=p;
-				} //if
-				else {
-					SetPluginOnWhiteList( p->pluginname, 0 );
-					Plugin_Uninit( p );
-					i--;
 				}
+				else p->pclass |= PCLASS_FAILED;
 			}
-			else p->pclass |= PCLASS_FAILED;
+			else
+				Plugin_Uninit( p );
 		}
 		else if ( p->bpi.hInst != NULL )
 			List_InsertPtr( &pluginListAddr, p );
