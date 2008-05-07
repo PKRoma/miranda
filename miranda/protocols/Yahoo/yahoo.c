@@ -133,31 +133,6 @@ int miranda_to_yahoo(int myyahooStatus)
     return ret;
 }
 
-void yahoo_set_status(int myyahooStatus, char *msg, int away)
-{
-	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
-
-	/* Safety check, don't dereference Invalid pointers */
-	if (ylad->id > 0)  {
-			
-		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
-			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
-		else
-			yahoo_set_away(ylad->id, YAHOO_CUSTOM_STATUS, msg, away);
-	}
-}
-
-void yahoo_stealth(const char *buddy, int add)
-{
-	LOG(("yahoo_stealth buddy: %s, add: %d", buddy, add));
-
-	/* Safety check, don't dereference Invalid pointers */
-	if (ylad->id > 0) {
-		yahoo_set_stealth(ylad->id, buddy, add);
-	}
-}
-
-
 int yahoo_to_miranda_status(int yahooStatus, int away)
 {
     int ret = ID_STATUS_OFFLINE;
@@ -182,20 +157,10 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
                         ret = ID_STATUS_INVISIBLE;
                         break;
     case YAHOO_STATUS_NOTATHOME:
-                        ret = ID_STATUS_AWAY;
-                        break;
-    case YAHOO_STATUS_NOTATDESK:
-                        ret = ID_STATUS_AWAY;
-                        break;
-    case YAHOO_STATUS_NOTINOFFICE:
-                        ret = ID_STATUS_AWAY;
-                        break;
-    case YAHOO_STATUS_ONVACATION:
-                        ret = ID_STATUS_AWAY;
-                        break;
-    case YAHOO_STATUS_STEPPEDOUT:
-                        ret = ID_STATUS_DND;
-                        break;
+	case YAHOO_STATUS_NOTATDESK:
+	case YAHOO_STATUS_NOTINOFFICE:
+	case YAHOO_STATUS_ONVACATION:
+	case YAHOO_STATUS_STEPPEDOUT:
     case YAHOO_STATUS_IDLE:
                         ret = ID_STATUS_AWAY;
                         break;
@@ -206,6 +171,29 @@ int yahoo_to_miranda_status(int yahooStatus, int away)
     return ret;
 }
 
+void yahoo_set_status(int myyahooStatus, char *msg, int away)
+{
+	LOG(("yahoo_set_status myyahooStatus: %d, msg: %s, away: %d", myyahooStatus, msg, away));
+
+	/* Safety check, don't dereference Invalid pointers */
+	if (ylad->id > 0)  {
+			
+		if (YAHOO_CUSTOM_STATUS != myyahooStatus)
+			yahoo_set_away(ylad->id, miranda_to_yahoo(myyahooStatus), msg, away);
+		else
+			yahoo_set_away(ylad->id, YAHOO_CUSTOM_STATUS, msg, away);
+	}
+}
+
+void yahoo_stealth(const char *buddy, int add)
+{
+	LOG(("yahoo_stealth buddy: %s, add: %d", buddy, add));
+
+	/* Safety check, don't dereference Invalid pointers */
+	if (ylad->id > 0) {
+		yahoo_set_stealth(ylad->id, buddy, add);
+	}
+}
 
 void YAHOO_remove_buddy(const char *who)
 {
