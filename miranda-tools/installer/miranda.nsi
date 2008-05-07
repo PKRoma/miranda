@@ -38,7 +38,8 @@ SetOverWrite                    on
 BrandingText                    "www.miranda-im.org"
 
 VAR INST_UPGRADE
-
+VAR INST_SSLFOUND
+ 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "Graphics\header.bmp"
 !define MUI_HEADERIMAGE_UNBITMAP "Graphics\header.bmp"
@@ -261,17 +262,25 @@ Function .onInit
   norun:
 FunctionEnd
 
-;Function .onInstSuccess
-  ;${If} ${SectionIsSelected} ${JABBER}  
-  ;  SetOutPath "$INSTDIR"
-  ;  System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
-  ;  ${If} $0 == "error"
-  ;    MessageBox MB_YESNO|MB_ICONQUESTION "OpenSSL is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
-  ;    ExecShell "open" ${MIM_OPENSSL_URL}
-  ;    endsslcheck:
-  ;  ${EndIf}
-  ;${EndIf}
-;FunctionEnd
+Function .onInstSuccess
+  ${If} ${SectionIsSelected} ${JABBER}  
+    SetOutPath "$INSTDIR"
+    StrCpy $INST_SSLFOUND 0
+    System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
+    ${Unless} $0 == "error"
+      StrCpy $INST_SSLFOUND 1
+    ${EndUnless}
+    System::Call "LIBEAY32.dll::SSL_library_init() i .r0 ? u"
+    ${Unless} $0 == "error"
+      StrCpy $INST_SSLFOUND 1
+    ${EndUnless}
+    ${If} $INST_SSLFOUND = 0
+      MessageBox MB_YESNO|MB_ICONQUESTION "An OpenSSL compatible library is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
+      ExecShell "open" ${MIM_OPENSSL_URL}
+      endsslcheck:
+    ${EndIf}
+  ${EndIf}
+FunctionEnd
 
 Function VerifyInstallDir
   ${If} ${FileExists} "$INSTDIR\miranda32.exe"
