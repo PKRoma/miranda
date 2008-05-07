@@ -999,8 +999,10 @@ int LoadNewPluginsModule(void)
 				}
 				else p->pclass |= PCLASS_FAILED;
 			}
-			else
+			else {
 				Plugin_Uninit( p );
+				i--;
+			}
 		}
 		else if ( p->bpi.hInst != NULL )
 			List_InsertPtr( &pluginListAddr, p );
