@@ -1097,9 +1097,9 @@ HRESULT ToolbarLoadModule()
 
  LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	 HIMAGELIST himlButtonIcons=NULL;
-	 BOOL dragging=FALSE;
-	 HANDLE hDragItem=NULL;
+	static HIMAGELIST himlButtonIcons=NULL;
+	static BOOL dragging=FALSE;
+	static HANDLE hDragItem=NULL;
 	switch (msg)
 	{
 	case WM_DESTROY:
