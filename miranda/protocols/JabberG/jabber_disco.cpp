@@ -683,8 +683,8 @@ void CJabberDlgDiscovery::OnInitDialog()
 	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_MYAGENTS));
 	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_AGENTS));
 	SendDlgItemMessage(m_hwnd, IDC_COMBO_JID, CB_ADDSTRING, 0, (LPARAM)_T(SD_FAKEJID_FAVORITES));
-	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_JID, "doscoWnd_rcJid");
-	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_NODE, "doscoWnd_rcNode");
+	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_JID, "discoWnd_rcJid");
+	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_NODE, "discoWnd_rcNode");
 
 	HWND hwndList = GetDlgItem(m_hwnd, IDC_TREE_DISCO);
 	LVCOLUMN lvc = {0};
