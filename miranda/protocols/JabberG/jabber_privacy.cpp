@@ -890,10 +890,12 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 
 void CJabberDlgPrivacyLists::OnClose()
 {
-	if (CanExit())
+	if (CanExit()) {
 		DestroyWindow(m_hwnd);
-
-	CSuper::OnClose();
+		CSuper::OnClose();
+	}
+	else
+		m_lresult = TRUE;
 }
 
 void CJabberDlgPrivacyLists::OnDestroy()
