@@ -984,6 +984,13 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
 	}
 
+	// temporary disabled to eliminate questions
+//	if ( JGetByte( "EnableUserActivity", TRUE )) {
+//		if ( _tcslen( szExtCaps ))
+//			_tcscat( szExtCaps, _T(" "));
+//		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
+//	}
+
 	if ( _tcslen( szExtCaps ))
 		c->addAttr( "ext", szExtCaps );
 
@@ -1278,6 +1285,9 @@ static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
 static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
 {
 	CJabberProto *ppro = (CJabberProto *)param;
+
+	if (!ppro->m_pInfoFrame)
+		return;
 
 	ppro->m_pInfoFrame->LockUpdates();
 	if (!ppro->m_bJabberOnline)
