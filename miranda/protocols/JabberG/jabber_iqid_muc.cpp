@@ -39,6 +39,8 @@ void CJabberProto::SetMucConfig( XmlNode* node, void *from )
 		m_ThreadInfo->send( iq );
 }	}
 
+void LaunchForm(XmlNode *node);
+
 void CJabberProto::OnIqResultGetMuc( XmlNode *iqNode, void *userdata )
 {
 	XmlNode *queryNode, *xNode;
@@ -57,6 +59,7 @@ void CJabberProto::OnIqResultGetMuc( XmlNode *iqNode, void *userdata )
 				if (( xNode=JabberXmlGetChild( queryNode, "x" )) != NULL ) {
 					str = JabberXmlGetAttrValue( xNode, "xmlns" );
 					if ( !lstrcmp( str, _T(JABBER_FEAT_DATA_FORMS)))
+						//LaunchForm(xNode);
 						FormCreateDialog( xNode, _T("Jabber Conference Room Configuration"), &CJabberProto::SetMucConfig, mir_tstrdup( from ));
 }	}	}	}	}
 

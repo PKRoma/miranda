@@ -18,6 +18,7 @@
 #define IDI_DELETE                      123
 #define IDI_EDIT                        124
 #define IDD_VCARD                       125
+#define IDD_DATAFORM_TEST               125
 #define IDD_VCARD_HOME                  126
 #define IDD_VCARD_PERSONAL              127
 #define IDD_VCARD_WORK                  128
@@ -71,6 +72,7 @@
 #define IDD_CONSOLE                     205
 #define IDI_CONSOLE                     207
 #define IDD_INFOBOX                     208
+#define IDD_DATAFORM_PAGE               208
 #define IDI_PL_MSG_ALLOW                209
 #define IDI_PL_MSG_DENY                 210
 #define IDI_PL_PRIN_ALLOW               211
@@ -340,6 +342,7 @@
 #define IDC_BOOKMARKS                   1270
 #define IDC_BTN_MSG                     1270
 #define IDC_BTN_ROLE                    1270
+#define IDC_DATAFORM                    1270
 #define IDC_BTN_PRESENCE                1271
 #define IDC_BTN_AFFILIATION             1271
 #define IDC_SET_DEFAULT                 1272
