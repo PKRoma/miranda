@@ -29,9 +29,8 @@ struct _tag_iconList
 	char*  szName;
 	int    defIconID;
 	char*  szSection;
-	HANDLE hIconLibItem;
 }
-static iconList[] =
+static const iconList[] =
 {
 	{	"ICQ",                    "icq",         IDI_ICQ             },
 	{	"Add",                    "add",         IDI_ADD             },
@@ -63,7 +62,10 @@ static iconList[] =
 	{	"Not Normal Script",      "nnorm_scrpt", IDI_NNORMALSCRIPT,   "Profile Editor" },
 };
 
+
 static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]); 
+
+static HANDLE hIconLibItem[icolstsz];
 
 void CAimProto::InitIcons(void)
 {
@@ -92,7 +94,7 @@ void CAimProto::InitIcons(void)
 
 		sid.pszDescription = Translate( iconList[i].szDescr );
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		hIconLibItem[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}	
 }
 
@@ -107,7 +109,7 @@ HANDLE CAimProto::GetIconHandle(const char* name)
 {
 	for (unsigned i=0; i < icolstsz; i++)
 		if (strcmp(iconList[i].szName, name) == 0)
-			return iconList[i].hIconLibItem;
+			return hIconLibItem[i];
 	return NULL;
 }
 
