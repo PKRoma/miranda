@@ -79,25 +79,26 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			lf.lfPitchAndFamily = 0;
 			EnumFontFamiliesEx(hdc, &lf, (FONTENUMPROC) EnumFontsProc, (LPARAM) GetDlgItem(hwndDlg, IDC_TYPEFACE), 0);
 			ReleaseDC(hwndDlg, hdc);
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"8");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"10");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"12");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"14");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"18");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"24");
-			SendMessage( GetDlgItem(hwndDlg, IDC_FONTSIZE), CB_ADDSTRING, 0, (LPARAM)"36");
-			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)"Arial")!=CB_ERR)
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("8"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("10"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("12"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("14"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("18"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("24"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_ADDSTRING, 0, (LPARAM)TEXT("36"));
+			SendDlgItemMessage( hwndDlg, IDC_FONTSIZE, CB_SETCURSEL, 2, 0);
+			if(SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_SELECTSTRING, 1, (LPARAM)TEXT("Arial"))!=CB_ERR)
 			{
-				CHARFORMAT2A cf;
+				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(cf);
 				cf.yHeight=12*20;
 				cf.dwMask=CFM_SIZE|CFM_FACE;
-				strlcpy(cf.szFaceName,"Arial",7);
+				_tcscpy(cf.szFaceName, TEXT("Arial"));
 				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 			}
 			else
 			{
-				CHARFORMAT2A cf;
+				CHARFORMAT2 cf;
 				cf.cbSize = sizeof(cf);
 				cf.yHeight=12*20;
 				cf.dwMask=CFM_SIZE;
