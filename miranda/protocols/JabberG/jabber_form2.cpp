@@ -20,10 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/jabber_console.cpp $
-Revision       : $Revision: 7422 $
-Last change on : $Date: 2008-03-09 20:52:14 +0200 (Íä, 09 Áåð 2008) $
-Last change by : $Author: ghazan $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
@@ -330,6 +330,9 @@ CJabberDataFieldSet::CJabberDataFieldSet():
 
 CJabberDataField *CJabberDataFieldSet::GetField(TCHAR *var)
 {
+	for (int i = 0; i < m_fields.getCount(); ++i)
+		if (!lstrcmp(m_fields[i].GetVar(), var))
+			return &(m_fields[i]);
 	return NULL;
 }
 
