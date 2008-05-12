@@ -360,6 +360,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\tabmodplus\modplus.c">
+			</File>
+			<File
 				RelativePath="msgdialog.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -451,6 +454,9 @@
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\tabmodplus\msgoptions_plus.c">
 			</File>
 			<File
 				RelativePath="msgs.c">

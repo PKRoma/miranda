@@ -11,6 +11,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -33,6 +34,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -66,6 +68,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -88,6 +91,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -121,6 +125,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -143,6 +148,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -176,6 +182,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -198,6 +205,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -231,6 +239,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -253,6 +262,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -286,6 +296,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -308,6 +319,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -341,6 +353,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -363,6 +376,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -396,6 +410,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -418,6 +433,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -451,6 +467,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -473,6 +490,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -506,6 +524,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -528,6 +547,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -561,6 +581,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -583,6 +604,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -616,6 +638,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -638,6 +661,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -672,6 +696,7 @@
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -694,6 +719,7 @@
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -727,6 +753,7 @@ eventpopups.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
@@ -750,6 +777,7 @@ eventpopups.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -783,6 +811,7 @@ eventpopups.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -805,6 +834,7 @@ eventpopups.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -838,6 +868,7 @@ eventpopups.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -860,6 +891,7 @@ eventpopups.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -893,6 +925,7 @@ eventpopups.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -915,6 +948,7 @@ eventpopups.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -949,6 +983,7 @@ ImageDataObject.cpp : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -971,6 +1006,7 @@ ImageDataObject.cpp : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1005,6 +1041,7 @@ msgdialog.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1027,6 +1064,7 @@ msgdialog.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1048,7 +1086,6 @@ msgdialog.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgdlgutils.c : \
@@ -1062,6 +1099,7 @@ msgdlgutils.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1084,6 +1122,7 @@ msgdlgutils.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1117,6 +1156,7 @@ msglog.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1139,6 +1179,7 @@ msglog.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1172,6 +1213,7 @@ msgoptions.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1194,6 +1236,7 @@ msgoptions.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1214,7 +1257,6 @@ msgoptions.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgs.c : \
@@ -1228,6 +1270,7 @@ msgs.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1250,6 +1293,7 @@ msgs.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1286,6 +1330,7 @@ msgs.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1308,6 +1353,7 @@ msgs.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1341,6 +1387,7 @@ sendqueue.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1363,6 +1410,7 @@ sendqueue.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1397,6 +1445,7 @@ srmm.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1419,6 +1468,7 @@ srmm.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1452,6 +1502,7 @@ srmm.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1474,6 +1525,7 @@ srmm.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1494,7 +1546,6 @@ srmm.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 templates.c : \
@@ -1508,6 +1559,7 @@ templates.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1530,6 +1582,7 @@ templates.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1563,6 +1616,7 @@ templates.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1585,6 +1639,7 @@ templates.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1618,6 +1673,7 @@ trayicon.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1640,6 +1696,7 @@ trayicon.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1673,6 +1730,7 @@ TSButton.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1695,6 +1753,7 @@ TSButton.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1728,6 +1787,7 @@ TSButton.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1750,6 +1810,7 @@ TSButton.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1783,6 +1844,7 @@ userprefs.c : \
 	"..\..\include\m_contacts.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_langpack.h"\
@@ -1805,6 +1867,7 @@ userprefs.c : \
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
 	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
 	".\API\m_ieview.h"\
 	".\API\m_mathmodule.h"\
 	".\API\m_metacontacts.h"\
@@ -1825,7 +1888,6 @@ userprefs.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
 	
 
 .\tabsrmm_private.rc : \
@@ -1842,4 +1904,7 @@ userprefs.c : \
 	".\res\res_TN\popup_no.ico"\
 	".\res\unchecked.ico"\
 	".\resource.rc"\
+	".\tabmodplus\icons\imgclose.ico"\
+	".\tabmodplus\icons\imgopen.ico"\
+	".\version.h"\
 	
