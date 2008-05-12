@@ -145,8 +145,8 @@ int CLUI_SizingOnBorder(POINT pt, int size);
 int CLUI_SmoothAlphaTransition(HWND hwnd, BYTE GoalAlpha, BOOL wParam);
 int CLUI_TestCursorOnBorders();
 
- int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam);
- int CLUI_SmoothAlphaThreadTransition(HWND hwnd);
+static int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam);
+static int CLUI_SmoothAlphaThreadTransition(HWND hwnd);
 
 /*      structs         */
 
@@ -168,53 +168,53 @@ typedef struct tagCHECKFILLING
 
 /* Module global variables */
 
- BYTE bAlphaEnd;
- BYTE bOldHideOffline;
+static BYTE bAlphaEnd;
+static BYTE bOldHideOffline;
 
- WORD wBehindEdgeShowDelay,
+static WORD wBehindEdgeShowDelay,
             wBehindEdgeHideDelay,
             wBehindEdgeBorderSize;
 
- BOOL mutex_bAnimationInProgress=FALSE,
+static BOOL mutex_bAnimationInProgress=FALSE,
             mutex_bShowHideCalledFromAnimation=FALSE,
             mutex_bIgnoreActivation=FALSE,
             mutex_bDisableAutoUpdate=TRUE,
             mutex_bDuringSizing=FALSE,
             mutex_bDelayedSizing=FALSE;  //TBC is it need?
             
- BOOL flag_bFirstTimeCall=FALSE;
+static BOOL flag_bFirstTimeCall=FALSE;
 
- BOOL bTransparentFocus=TRUE,
+static BOOL bTransparentFocus=TRUE,
             bNeedFixSizingRect=FALSE,
             bShowEventStarted=FALSE;
 
- HANDLE hRenameMenuItem,
+static HANDLE hRenameMenuItem,
               hShowAvatarMenuItem,
               hHideAvatarMenuItem;
 
 
- HANDLE hSettingChangedHook=NULL;
+static HANDLE hSettingChangedHook=NULL;
 
- UINT uMsgGetProfile=0;
+static UINT uMsgGetProfile=0;
 
 
- HIMAGELIST himlMirandaIcon;
+static HIMAGELIST himlMirandaIcon;
 
- int nLastRequiredHeight=0,
+static int nLastRequiredHeight=0,
            nRequiredHeight=0,
            nMirMenuState=0,
            nStatusMenuState=0;
  
- RECT rcNewWindowRect={0},
+static RECT rcNewWindowRect={0},
             rcOldWindowRect ={0},
             rcSizingRect={0},
             rcCorrectSizeRect={0};
 
- HANDLE hFrameContactTree;
+static HANDLE hFrameContactTree;
 
- PROTOTICKS CycleStartTick[64]={0};//max 64 protocols 
+static PROTOTICKS CycleStartTick[64]={0};//max 64 protocols 
 
- int nAnimatedIconStep=100;
+static int nAnimatedIconStep=100;
 
 
 

@@ -22,7 +22,7 @@ void FreeAndNil( void **p )
 		*p = NULL;
 	}	}
 
- int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
+static int AddContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi={0};
@@ -55,7 +55,7 @@ void FreeAndNil( void **p )
 }
 
 
- int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
+static int RemoveContextFrameMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	lpFrameMenuExecParam fmep;
 	fmep=(lpFrameMenuExecParam)CallService(MO_MENUITEMGETOWNERDATA,wParam,lParam);
@@ -104,13 +104,13 @@ int FrameMenuCheckService(WPARAM wParam,LPARAM lParam) {
 	return(FALSE);
 };
 
- int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
+static int ContextFrameMenuNotify(WPARAM wParam,LPARAM lParam)
 {
 	NotifyEventHooks(g_CluiData.hEventPreBuildFrameMenu,wParam,lParam);
 	return(0);
 };
 
- int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
+static int BuildContextFrameMenu(WPARAM wParam,LPARAM lParam)
 {
 	HMENU hMenu;
 	ListParam param;

@@ -400,8 +400,8 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 									);
 							}
 							ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
-							ShowWindow(GetDlgItem(hwndDlg,IDC__INFO),SW_SHOW);
-							SendDlgItemMessageA(hwndDlg,IDC__INFO,WM_SETTEXT,0,(LPARAM)text);
+							ShowWindow(GetDlgItem(hwndDlg,IDC_STATIC_INFO),SW_SHOW);
+							SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)text);
 					}					
 				}
 				else
@@ -410,7 +410,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 					SendDlgItemMessage(hwndDlg,IDC_EDIT_SKIN_FILENAME,WM_SETTEXT,0,(LPARAM)TranslateT("Select skin from list"));
 					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_APPLY_SKIN),FALSE);
 					EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON_INFO),FALSE);
-					SendDlgItemMessageA(hwndDlg,IDC__INFO,WM_SETTEXT,0,(LPARAM)Translate("Please select skin to apply"));
+					SendDlgItemMessageA(hwndDlg,IDC_STATIC_INFO,WM_SETTEXT,0,(LPARAM)Translate("Please select skin to apply"));
 					ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),SW_HIDE);
 				}
 				ShowWindow(GetDlgItem(hwndDlg,IDC_PREVIEW),hPreviewBitmap?SW_SHOW:SW_HIDE);

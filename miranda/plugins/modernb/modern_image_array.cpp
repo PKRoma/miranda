@@ -28,14 +28,14 @@ Created by Pescuma
 #include "hdr/modern_commonprototypes.h"
 
 // To use this code in other places, replace the body of this func by the body of ske_CreateDIB32
- HBITMAP ImageArray_CreateBitmapPoint(int cx, int cy, void ** pt)
+static HBITMAP ImageArray_CreateBitmapPoint(int cx, int cy, void ** pt)
 {
 	return ske_CreateDIB32Point(cx, cy, pt);
 }
 
 
 // Initialize data
- BOOL ImageArray_Alloc(LP_IMAGE_ARRAY_DATA iad, int size)
+static BOOL ImageArray_Alloc(LP_IMAGE_ARRAY_DATA iad, int size)
 {
 	int size_grow = size;
 

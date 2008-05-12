@@ -27,17 +27,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 
 
- BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemContactTimeOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
- UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
+static BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemContactTimeOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static UINT expertOnlyControls[]={IDC_ALWAYSSTATUS};
 
- struct _RowItemOptionConf 
+static struct _RowItemOptionConf 
 { 
 	TCHAR *name;				// Tab name
 	int id;					// Dialog id
@@ -88,7 +88,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
- BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -351,7 +351,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
- BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemAvatarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -581,7 +581,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 }
 
 
- BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemIconOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -655,7 +655,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 }
 
 
- BOOL CALLBACK DlgProcItemContactTimeOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemContactTimeOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -699,7 +699,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 }
 
 
- BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -786,7 +786,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 }
 
 
- BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -840,9 +840,9 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TOP),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__PIXELS),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TEXT),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_PIXELS),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLES_L),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_STATUS_IF_NOAWAY),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_LISTENING_IF_NOAWAY),FALSE);
@@ -907,9 +907,9 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_LISTENING_TO),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TOP),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__PIXELS),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TEXT),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_PIXELS),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TEXT),enabled);
 
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLES_L), enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
@@ -983,7 +983,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
- BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -1037,9 +1037,9 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TOP),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__PIXELS),FALSE);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TEXT),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_PIXELS),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TEXT),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLES_L),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_XSTATUS_HAS_PRIORITY),FALSE);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USE_NAME_AND_MESSAGE),FALSE);
@@ -1100,9 +1100,9 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_CONTACT_TIME),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_TEXT),enabled);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT),enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TOP),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__PIXELS),enabled);
-				EnableWindow(GetDlgItem(hwndDlg,IDC__TEXT),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TOP),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_PIXELS),enabled);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC_TEXT),enabled);
 
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_VARIABLES_L), enabled && IsDlgButtonChecked(hwndDlg,IDC_TEXT));
@@ -1186,7 +1186,7 @@ typedef struct _OrderTreeData
     BOOL    fReserved;
 } *pOrderTreeData, TOrderTreeData;
 
- TOrderTreeData OrderTreeData[]=
+static TOrderTreeData OrderTreeData[]=
 {
 	{EXTRA_ICON_VISMODE, _T("Visibility/Chat activity"), EXTRA_ICON_VISMODE,  "EXTRA_ICON_VISMODE", TRUE,0},
 	{EXTRA_ICON_EMAIL, _T("E-mail"), EXTRA_ICON_EMAIL, "EXTRA_ICON_EMAIL", TRUE, 0},
@@ -1247,10 +1247,10 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
 
 #define PrVer 4
 
- char **settingname;
- static int nArrayLen=0;
+static char **settingname;
+static int nArrayLen;
 
- int OrderEnumProc (const char *szSetting,LPARAM lParam)
+static int OrderEnumProc (const char *szSetting,LPARAM lParam)
 {
 
 	if (szSetting==NULL) return 0;
@@ -1261,7 +1261,7 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
 	return 0;
 };
 
- int  DeleteAllSettingInOrder()
+static int  DeleteAllSettingInOrder()
 {
 	DBCONTACTENUMSETTINGS dbces;
 	nArrayLen=0;
@@ -1287,14 +1287,14 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
 	};
 	return(0);
 };
- int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	pOrderTreeData A=(pOrderTreeData)lParam1;
 	pOrderTreeData B=(pOrderTreeData)lParam2;
 	return (int)(A->Position)-(int)(B->Position);
 }
 
- int FillOrderTree(HWND hwndDlg, HWND Tree)
+static int FillOrderTree(HWND hwndDlg, HWND Tree)
 {
 	int i=0;
 	TVINSERTSTRUCT tvis={0};
@@ -1328,7 +1328,7 @@ int ReserveExtraSlot(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 };
- int SaveOrderTree(HWND hwndDlg, HWND Tree)
+static int SaveOrderTree(HWND hwndDlg, HWND Tree)
 {
 	HTREEITEM ht;
 	BYTE pos=0;
@@ -1371,8 +1371,8 @@ int LoadPositionsFromDB(BYTE * OrderPos)
 	}
 	return 0;
 }
- int dragging=0;
- HANDLE hDragItem=NULL;
+static int dragging=0;
+static HANDLE hDragItem=NULL;
 
 BOOL CALLBACK DlgProcExtraIconsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

@@ -15,6 +15,7 @@ typedef struct tagSTATUSBARDATA
   RECT rectBorders;
   BYTE extraspace;
   BYTE Align;
+  BYTE VAlign;
   BYTE showProtoName;
   BYTE showStatusName;
   HFONT BarFont;
@@ -33,6 +34,9 @@ typedef struct tagSTATUSBARDATA
   BOOL  bkUseWinColors;
 
   XPTHANDLE hTheme;
+
+  BOOL perProtoConfig;
+  BYTE SBarRightClk;
 
 } STATUSBARDATA;
 

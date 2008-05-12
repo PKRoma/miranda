@@ -58,16 +58,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_SHOWCAPTION_DEFAULT             1 //"CLUI","ShowCaption"
 #define SETTING_CLIENTDRAG_DEFAULT              1 //"CLUI","ClientAreaDrag"
 #define SETTING_SHOWSBAR_DEFAULT                1 //! "CLUI","ShowSBar"
+#define SETTING_SBARPERPROTO_DEFAULT            0 //! "CLUI","SBarPerProto"
 #define SETTING_USECONNECTINGICON_DEFAULT       1 //! "CLUI","UseConnectingIcon"
 #define SETTING_SHOWXSTATUS_DEFAULT             6 //! "CLUI","ShowXStatus"
 #define SETTING_SHOWUNREADEMAILS_DEFAULT        0 //! "CLUI","ShowUnreadEmails"
 #define SETTING_SBARSHOW_DEFAULT                7 //! "CLUI","SBarShow"
+#define SETTING_SBARACCOUNTISCUSTOM_DEFAULT     0 //! "CLUI","AccountIsCustom"
+#define SETTING_SBARHIDEACCOUNT_DEFAULT         0 //! "CLUI","HideAccount"
 #define SETTING_SBARRIGHTCLK_DEFAULT            0 //! "CLUI","SBarRightClk"
 #define SETTING_EQUALSECTIONS_DEFAULT           0 //! "CLUI","EqualSections"
 #define SETTING_LEFTOFFSET_DEFAULT              0 //! "CLUI","LeftOffset"
 #define SETTING_RIGHTOFFSET_DEFAULT             0 //! "CLUI","RightOffset
+#define SETTING_TOPOFFSET_DEFAULT               0 //! "CLUI","TopOffset"
+#define SETTING_BOTTOMOFFSET_DEFAULT            0 //! "CLUI","BottomOffset
 #define SETTING_SPACEBETWEEN_DEFAULT            0 //! "CLUI","SpaceBetween"
 #define SETTING_ALIGN_DEFAULT                   0 //! "CLUI","Align"
+#define SETTING_VALIGN_DEFAULT                  1 //! "CLUI","VAlign"
+#define SETTING_PADDINGLEFT_DEFAULT				0 //! "CLUI","PaddingLeft_*"
+#define SETTING_PADDINGRIGHT_DEFAULT			0 //! "CLUI","PaddingRight_*"
 #define SETTING_DRAGTOSCROLL_DEFAULT            0 //! "CLUI","DragToScroll"
 #define SETTING_AUTOSIZE_DEFAULT                0 //! "CLUI","AutoSize"
 #define SETTING_LOCKSIZE_DEFAULT                0 //! "CLUI","LockSize"
@@ -268,6 +276,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTINGS_BARMULTILINE_DEFAULT	1  //"ModernToolBar", "option_Bar0_Multiline"
 
 #define SETTING_ENABLESOUNDS_DEFAULT 1 // !"Skin", "UseSound", 
+
 
 
 

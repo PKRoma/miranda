@@ -31,7 +31,7 @@ pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
 pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
 
- HANDLE hookSystemShutdown_CListMod=NULL;
+static HANDLE hookSystemShutdown_CListMod=NULL;
 HANDLE  hookOptInitialise_CList=NULL,
         hookOptInitialise_Skin=NULL,
         hookContactAdded_CListSettings=NULL;
@@ -60,7 +60,7 @@ HIMAGELIST hCListImages=NULL;
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 
 
- HANDLE hSettingChanged;
+static HANDLE hSettingChanged;
 
 //returns normal icon or combined with status overlay. Needs to be destroyed.
 HICON cliGetIconFromStatusMode(HANDLE hContact, const char *szProto,int status)

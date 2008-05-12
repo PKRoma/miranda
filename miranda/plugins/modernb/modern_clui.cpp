@@ -2904,7 +2904,7 @@ BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 	if (CLUI_IsInMainWindow(hWnd) && g_CluiData.fLayered)// && IsWindowVisible(hWnd))
 	{
 		if (IsWindowVisible(hWnd))
-			return SkinInvalidateFrame(hWnd ,lpRect,bErase);
+			return SkinInvalidateFrame( hWnd, lpRect, bErase );
 		else
 		{
 			g_flag_bFullRepaint=1;

@@ -162,7 +162,7 @@ int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText
 	return i;
 }
 
- void _LoadDataToContact(struct ClcContact * cont, struct ClcGroup *group, struct ClcData *dat, HANDLE hContact)
+static void _LoadDataToContact(struct ClcContact * cont, struct ClcGroup *group, struct ClcData *dat, HANDLE hContact)
 {
 	pdisplayNameCacheEntry cacheEntry=NULL;
 	WORD apparentMode;
@@ -226,7 +226,7 @@ int cli_AddInfoItemToGroup(struct ClcGroup *group,int flags,const TCHAR *pszText
 	cont->bContactRate=DBGetContactSettingByte(hContact, "CList", "Rate",0);
 }
 
- struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup *group, pdisplayNameCacheEntry cacheEntry)
+static struct ClcContact * AddContactToGroup(struct ClcData *dat,struct ClcGroup *group, pdisplayNameCacheEntry cacheEntry)
 {
 	HANDLE hContact;
 	int i;
@@ -327,7 +327,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	HANDLE hContact;
 	struct ClcContact * cont;
 	struct ClcGroup *group;
-     int rebuildCounter=0;
+    static int rebuildCounter=0;
 
     BOOL PlaceOfflineToRoot=DBGetContactSettingByte(NULL,"CList","PlaceOfflineToRoot",SETTING_PLACEOFFLINETOROOT_DEFAULT);
 	KillTimer(hwnd,TIMERID_REBUILDAFTER);

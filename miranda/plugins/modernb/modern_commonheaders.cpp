@@ -253,8 +253,8 @@ typedef struct _HookRec
 #endif
 } HookRec;
 
- HookRec * hooksrec=NULL;
- DWORD hooksRecAlloced=0;
+static HookRec * hooksrec=NULL;
+static DWORD hooksRecAlloced=0;
 
 
 

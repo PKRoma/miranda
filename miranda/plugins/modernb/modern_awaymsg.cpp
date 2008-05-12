@@ -43,21 +43,21 @@ typedef struct _tag_amChainItem {
 	_tag_amChainItem *Next;
 } AMCHAINITEM;
 
- AMCHAINITEM *	amFirstChainItem = NULL;
- AMCHAINITEM *	amLastChainItem  = NULL;
- CRITICAL_SECTION	amLockChain;
- HANDLE			hamProcessEvent	 = NULL;
- DWORD			amRequestTick	 = 0;
+static AMCHAINITEM *	amFirstChainItem = NULL;
+static AMCHAINITEM *	amLastChainItem  = NULL;
+static CRITICAL_SECTION	amLockChain;
+static HANDLE			hamProcessEvent	 = NULL;
+static DWORD			amRequestTick	 = 0;
 
 
- int		amAddHandleToChain(HANDLE hContact);
- HANDLE	amGetCurrentChain();
- int		amThreadProc(HWND hwnd);
+static int		amAddHandleToChain(HANDLE hContact);
+static HANDLE	amGetCurrentChain();
+static int		amThreadProc(HWND hwnd);
 
 /*
 *  Add contact handle to requests queue
 */
- int amAddHandleToChain(HANDLE hContact)
+static int amAddHandleToChain(HANDLE hContact)
 {
 	AMCHAINITEM * workChain;
 	amlock;
@@ -96,7 +96,7 @@ typedef struct _tag_amChainItem {
 /*
 *	Gets handle from queue for request
 */
- HANDLE amGetCurrentChain()
+static HANDLE amGetCurrentChain()
 {
 	AMCHAINITEM * workChain;
 	HANDLE res=NULL;
@@ -115,7 +115,7 @@ typedef struct _tag_amChainItem {
 /*
 *	Tread sub to ask protocol to retrieve away message
 */
- int amThreadProc(HWND hwnd)
+static int amThreadProc(HWND hwnd)
 {
 	DWORD time;
 	HANDLE hContact;
