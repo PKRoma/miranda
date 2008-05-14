@@ -38,10 +38,10 @@ char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize)
     int i=0;
     for (i=0; i<(int)mm->dwParamCnt;i++)
     {
-        if (mm->pl_Params[i].bFlag)
+        if (mm->pl_Params[i].bMaskParamFlag)
         {
             if (i>0) _snprintf(buf,bufsize,"%s%%",buf);
-            if (mm->pl_Params[i].bFlag &2)
+            if (mm->pl_Params[i].bMaskParamFlag &MPF_DIFF)
                 _snprintf(buf,bufsize,"%s=%s",mm->pl_Params[i].szName,mm->pl_Params[i].szValue);
             else
                 _snprintf(buf,bufsize,"%s^%s",mm->pl_Params[i].szName,mm->pl_Params[i].szValue);
@@ -275,88 +275,168 @@ int SortMaskList(LISTMODERNMASK * mmList)
 
         return 1;
 }
+enum 
+{ 
+	EXCEPTION_EQUAL, 
+	EXCEPTION_NOT_EQUAL = 1, 
+	EXCEPTION_WILD = 2,
+};
+static BOOL _GetParamValue( char * szText, unsigned int& start, unsigned int length, char* &param, unsigned int& paramlen, char* &value, unsigned int& valuelen, int& except )
+{
+	char * curChar = szText + start;
+	char * lastChar = szText + length;	
+
+	enum { STATE_PARAM, STATE_VALUE };
+	int state = STATE_PARAM;
+	if ( start >= length ) return FALSE;
+
+	paramlen = 0;
+	valuelen = 0;
+	value = NULL;
+	param = NULL;
+
+	except = EXCEPTION_EQUAL;
+	param = curChar;
+	
+	
+	BOOL exitLoop=false;
+	while ( !exitLoop )
+	{
+		switch ( *curChar )
+		{
+
+		case '^':
+			if ( state == STATE_VALUE ) break;
+			except |= EXCEPTION_NOT_EQUAL;
+			exitLoop = TRUE;
+			//fall trough
+		case '=': 
+			if ( state == STATE_VALUE ) break;
+			//search value end
+			paramlen = curChar - param;
+			exitLoop = TRUE;
+			break;
+
+		case ',':
+		default: 
+			if ( *curChar!=',' && curChar < lastChar ) break;
+			if ( state == STATE_PARAM )
+			{
+				// no parameter name only value
+				value = param;
+				param = NULL;
+				paramlen = 0;
+				state = STATE_VALUE; 
+			}
+			exitLoop = TRUE;
+			break;
+		case '*': case '?':
+			if (state == STATE_PARAM ) break;
+			except|=EXCEPTION_WILD;
+			break;
+		}
+		if ( exitLoop)
+		{
+			if (state == STATE_PARAM )
+			{
+				paramlen = curChar - param;
+				state = STATE_VALUE;
+				curChar++; //skip Sign
+				value = curChar;
+				exitLoop = FALSE;
+			}
+			else if ( state == STATE_VALUE )
+			{
+				valuelen = curChar - value;
+			}
+		}
+		else
+		{
+			curChar++;
+		}
+	}
+
+
+	start = curChar - szText + 1;
+	// skip spaces
+	if ( value && valuelen )
+	{
+		while ( *value == ' ' || *value == '\t' ) 
+		{ 
+			value++; 
+			valuelen--; 
+		}
+		while ( *( value + valuelen - 1) == ' ' || *( value + valuelen -1 ) == '\t' ) 
+			valuelen--;
+	}
+
+	if ( param && paramlen )
+	{
+		while (*param == ' ' || *param == '\t' ) 
+		{
+			param++; 
+			paramlen--; 
+		}
+		while (*(param+paramlen-1) == ' ' || *(param+paramlen-1) == '\t' ) 
+			paramlen--;
+	}
+
+	return ( value || param );
+}
+
 int ParseToModernMask(MODERNMASK * mm, char * szText)
 {
-    //TODO
-    if (!mm || !szText) return -1;
-    else
-    {
-        UINT textLen=mir_strlen(szText);
-        BYTE curParam=0;
-        MASKPARAM param={0};
-        UINT currentPos=0;
-        UINT startPos=0;
-        while (currentPos<textLen)
-        {
-            //find next single ','
-            while (currentPos<textLen)
-            {
-                if (szText[currentPos]==',')
-                    if  (currentPos<textLen-1)
-                        if (szText[currentPos+1]==',') currentPos++;
-                        else break;
-                currentPos++;
-            }
-            //parse chars between startPos and currentPos
-            {
-                //Get param name
-                if (startPos!=0)
-                {
-                    //search '=' sign or '^'
-                    UINT keyPos=startPos;
-                    while (keyPos<currentPos-1 && !(szText[keyPos]=='=' ||szText[keyPos]=='^')) keyPos++;
-                    if (szText[keyPos]=='=') param.bFlag=1;
-                    else if (szText[keyPos]=='^') param.bFlag=3;
-                    //szText[keyPos]='/0';
-                    {
-                        DWORD k;
-                        k=keyPos-startPos;
-                        if (k>MAXVALUE-1) k=MAXVALUE-1;
-                        param.szName=strdupn(szText+startPos,k);
-                        param.dwId=mod_CalcHash(param.szName);
+	if (!mm || !szText) return -1;
 
-                        startPos=keyPos+1;
-                    }
-                }
-                else //ParamName='Module'
-                {
-                    param.bFlag=1;
-                    param.dwId=mod_CalcHash("Module");
-                    param.szName=strdupn("Module",6);
-                }
-                //szText[currentPos]='/0';
-                {
-                  int k;
-				  int m;
-                  k=currentPos-startPos;
-                  if (k>MAXVALUE-1) k=MAXVALUE-1;
-				  m=min((UINT)k,textLen-startPos+1);
-                  param.szValue=strdupn(szText+startPos,k);
-                }
-                param.dwValueHash=mod_CalcHash(param.szValue);
-                {   // if Value don't contain '*' or '?' count add flag
-                    UINT i=0;
-                    BOOL f=4;
-                    while (param.szValue[i]!='\0')
-                        if (param.szValue[i]=='*' || param.szValue[i]=='?') {f=0; break;} else i++;
-                    param.bFlag|=f;
-                }
-                startPos=currentPos+1;
-                currentPos++;
-                {//Adding New Parameter;
-                  if (curParam>=mm->dwParamCnt)
-                  {
-					mm->pl_Params=(MASKPARAM*)realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
-					mm->dwParamCnt++;
-                  }
-                  memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));
-                  curParam++;
-                  memset(&param,0,sizeof(MASKPARAM));
-            }
-        }
-    }
-    }
-    return 0;
+	unsigned int textLen=mir_strlen(szText);
+	BYTE curParam=0;
+	
+	MASKPARAM param={0};
+	
+	unsigned int startPos=0;
+	char * pszParam;
+	char * pszValue;
+	unsigned int paramlen;
+	unsigned int valuelen;
+	int except;
+	
+	while ( _GetParamValue( szText, startPos, textLen, pszParam, paramlen, pszValue, valuelen, except) )
+	{        
+		if ( except & EXCEPTION_NOT_EQUAL ) 
+			param.bMaskParamFlag = MPF_NOT_EQUAL;
+		else
+			param.bMaskParamFlag = MPF_EQUAL;
+
+		//Get param name
+		if ( pszParam && paramlen )
+		{
+			param.szName=strdupn( pszParam, paramlen);
+			param.dwId=mod_CalcHash( param.szName );
+		}
+		else //ParamName='Module'
+		{
+			param.szName=_strdup( "Module");
+			param.dwId=mod_CalcHash( param.szName );                    
+		}
+
+
+		param.szValue= strdupn( pszValue, valuelen );
+
+		if ( !(except & EXCEPTION_WILD) )
+		{
+			param.dwValueHash = mod_CalcHash( param.szValue );
+			param.bMaskParamFlag |= MPF_HASHED;
+		}
+		if (curParam>=mm->dwParamCnt)
+		{
+			mm->pl_Params=(MASKPARAM*)realloc(mm->pl_Params,(mm->dwParamCnt+1)*sizeof(MASKPARAM));
+			mm->dwParamCnt++;
+		}
+		memmove(&(mm->pl_Params[curParam]),&param,sizeof(MASKPARAM));
+		curParam++;
+		memset(&param,0,sizeof(MASKPARAM));
+	}
+	return 0;
 };
 
 BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
@@ -374,8 +454,8 @@ BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
       ph=p.dwId;
       vh=p.dwValueHash;
       pVal=0;
-      if (p.bFlag&4)  //compare by hash
-          while (pVal<mmValue->dwParamCnt && mmValue->pl_Params[pVal].bFlag !=0)
+      if ( p.bMaskParamFlag& MPF_HASHED )  //compare by hash
+          while (pVal<mmValue->dwParamCnt && mmValue->pl_Params[pVal].bMaskParamFlag !=0)
           {
              if (mmValue->pl_Params[pVal].dwId==ph)
              {
@@ -385,7 +465,7 @@ BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
             pVal++;
           }
       else
-          while (mmValue->pl_Params[pVal].bFlag!=0)
+          while (mmValue->pl_Params[pVal].bMaskParamFlag!=0)
           {
              if (mmValue->pl_Params[pVal].dwId==ph)
              {
@@ -394,7 +474,7 @@ BOOL CompareModernMask(MODERNMASK * mmValue,MODERNMASK * mmTemplate)
              }
              pVal++;
           }
-       if (!((finded && !(p.bFlag&2)) || (!finded && (p.bFlag&2))))
+       if (!((finded && !(p.bMaskParamFlag&MPF_DIFF)) || (!finded && (p.bMaskParamFlag&MPF_DIFF))))
            {res=FALSE; break;}
       pTemp++;
     }

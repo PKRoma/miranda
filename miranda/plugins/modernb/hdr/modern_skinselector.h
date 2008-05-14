@@ -30,10 +30,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAXVALUE 20
 
+#define MPF_EQUAL		1
+#define MPF_DIFF		2
+#define MPF_NOT_EQUAL	( MPF_DIFF|MPF_EQUAL )
+#define MPF_HASHED		4
+
 typedef struct tagMASKPARAM
 {
     DWORD	dwId;
-    BYTE	bFlag;
+    BYTE	bMaskParamFlag;
     char*	szName;
     DWORD	dwValueHash;
     char*	szValue;

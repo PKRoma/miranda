@@ -713,9 +713,21 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		// copy from old and from new strip
 		BitBlt(hNewDC,0,0,AniAva.width,AniAva.height,AniAva.hAniAvaDC,0,0, SRCCOPY);
 		BitBlt(hNewDC,AniAva.width,0,paai->FrameSize.cx*paai->nFrameCount,paai->FrameSize.cy,hTempDC,0,0, SRCCOPY);
-
+		
 		paai->nStripTop=AniAva.width;
+		
+		/*
+		if ( AniAva.bFlags&AAO_OPAQUE )
+		{
+			RECT rect;
+			rect.left  = paai->nStripTop;
+			rect.right = rect.left + paai->FrameSize.cx*paai->nFrameCount; 
+			rect.top   = 0;
+			rect.bottom = rect.top + paai->FrameSize.cy;
 
+			ske_SetRectOpaqueOpt( hNewDC, &rect, TRUE );
+		}*/
+		GdiFlush();
 		//remove temp DC
 		SelectObject(hTempDC,hOldBitmap);
 		DeleteObject(hNewBmp);
@@ -790,7 +802,7 @@ static void __AniAva_DebugRenderStrip()
 	#ifdef _DEBUG
 	{
 		HDC hDC_debug=GetDC(NULL);
-		BitBlt(hDC_debug,0,150,AniAva.width, AniAva.height,AniAva.hAniAvaDC,0,0,SRCCOPY);
+		BitBlt(hDC_debug,0,0,AniAva.width, AniAva.height,AniAva.hAniAvaDC,0,0,SRCCOPY);
 		DeleteDC(hDC_debug);
 	}
 	#endif
@@ -929,7 +941,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 		{
 			if ( hdcParent && rcInParent && IMMEDIATE_DRAW )
 			{
-				if ( !(AniAva.bFlags & AAO_OPAQUE) )
+				if ( AniAva.bFlags & AAO_OPAQUE )
 					BitBlt( hdcParent, rcInParent->left, rcInParent->top, szWnd.cx, szWnd.cy, copyFromDC, pt_from.x, pt_from.y, SRCCOPY);
 				else
 				{
@@ -1013,7 +1025,7 @@ static void _AniAva_LoadOptions()
 		AniAva.bFlags= (DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",SETTINGS_AVATARDRAWBORDER_DEFAULT)?	AAO_HAS_BORDER		:0) |
 			(DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",SETTINGS_AVATARROUNDCORNERS_DEFAULT)?	AAO_ROUND_CORNERS	:0) |	
 			(DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",SETTINGS_AVATARDRAWOVERLAY_DEFAULT)?	AAO_HAS_OVERLAY		:0) |
-			((0)?																AAO_OPAQUE			:0);
+			( (0) ? AAO_OPAQUE :0);
 
 		if (AniAva.bFlags & AAO_HAS_BORDER)
 			AniAva.borderColor=(COLORREF)DBGetContactSettingDword(NULL,"CList","AvatarsBorderColor",SETTINGS_AVATARBORDERCOLOR_DEFAULT);;

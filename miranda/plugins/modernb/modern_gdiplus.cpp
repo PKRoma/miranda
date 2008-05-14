@@ -316,7 +316,7 @@ void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP *
 	};
 	//attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault,ColorAdjustTypeBitmap);
 	graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-
+	graphics.SetPixelOffsetMode( PixelOffsetModeHighSpeed/* PixelOffsetModeHighQuality*/ );
 	int * delays=(int*)malloc(nFrameCount*sizeof(int));
 	memset(delays,0,nFrameCount*sizeof(int));
 

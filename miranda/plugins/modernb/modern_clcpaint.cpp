@@ -559,7 +559,7 @@ void  CLCPaint::_AddParameter( MODERNMASK * mpModernMask, MASKPARAM * lpParam )
 
 void  CLCPaint::_FillParam( MASKPARAM * lpParam, DWORD dwParamHash, const char* const szValue, DWORD dwValueHash )
 {
-    lpParam->bFlag = 4|1;
+    lpParam->bMaskParamFlag = MPF_EQUAL|MPF_HASHED;
     lpParam->dwId = dwParamHash;
     if ( !dwValueHash && szValue ) lpParam->dwValueHash = mod_CalcHash( szValue );
     else lpParam->dwValueHash = dwValueHash;
@@ -1906,7 +1906,7 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint
         DeleteObject( hBrush );
         ske_SetRectOpaque( hdcMem, rcPaint );
         if ( !( style&CLS_GREYALTERNATE ) )
-            SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL, ID = Background, Type = Control" );
+            SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background,Type=Control" );
     }
     else if ( g_CluiData.fDisableSkinEngine )
     {
@@ -1921,7 +1921,7 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint
     {
         if ( !g_CluiData.fLayered )
             ske_BltBackImage( hwnd, grey?hdcMem2:hdcMem, rcPaint );
-        SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL, ID = Background" );
+        SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background" );
     }
 
     // Draw lines
@@ -2039,7 +2039,7 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint
                             FillRect( hdcMem, &row_rc, hBrushAlternateGrey );
                         }
                         else
-                            SkinDrawGlyph( hdcMem, &row_rc, rcPaint, "CL, ID = GreyAlternate" );
+                            SkinDrawGlyph( hdcMem, &row_rc, rcPaint, "CL,ID=GreyAlternate" );
                     }
                     if ( !g_CluiData.fDisableSkinEngine )
                     {
@@ -2072,16 +2072,16 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint
                             if ( dat->HiLightMode == 1 ) // Full  or default
                             {
                                 if ( selected )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL, ID = Selection" );
+                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL , ID = Selection " );
                                 if( hottrack )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL, ID = HotTracking" );
+                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
                             }
                             else if ( dat->HiLightMode == 2 ) // Less
                             {
                                 if ( selected )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL, ID = Selection" );      //instead of free_row_rc
+                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=Selection" );      //instead of free_row_rc
                                 if( hottrack )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL, ID = HotTracking" );
+                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
                             }
                         }
 
