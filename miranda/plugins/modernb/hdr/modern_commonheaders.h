@@ -51,7 +51,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SERVICE(serviceproc)         static int serviceproc(WPARAM wParam,LPARAM lParam)
 #define EVENTHOOK(eventhookproc)     static int eventhookproc(WPARAM wParam,LPARAM lParam)
-#define CLINTERFACE					 static 
+#define CLINTERFACE                  static
 
 #define PLUGININTERFACE extern "C" __declspec( dllexport )
 #define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"

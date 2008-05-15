@@ -182,7 +182,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	{
 		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
 	}
-	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"Protocols","ProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
 	hOldFont=g_clcPainter.ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
 
 	//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
