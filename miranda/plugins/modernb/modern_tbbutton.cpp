@@ -309,10 +309,30 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 					InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 				}
 			}
+			SetCapture( lpSBData->hWnd );
 			break;
 		}
 	case WM_LBUTTONUP:
 		{
+			HWND hwnd=GetCapture();
+			if ( hwnd != lpSBData->hWnd ) 
+				break;
+			
+			SetCapture( NULL );
+
+			int xPos=( ( int )( short ) LOWORD( lParam ) );
+			int yPos=( ( int )( short ) HIWORD( lParam ) );
+			POINT ptMouse = { xPos, yPos };
+
+			RECT rcClient;
+			GetClientRect( hwnd, &rcClient );
+			
+			if ( !PtInRect( &rcClient, ptMouse ) )
+			{
+				PostMessage(hwndDlg, WM_MOUSELEAVE, 0, 0L);
+				break;
+			}
+
 			if (lpSBData->pushBtn) 
 			{
 				if (lpSBData->pbState)
@@ -335,14 +355,36 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			break;
 		}
 	case WM_MOUSEMOVE:
-		if (lpSBData->nStateId == PBS_NORMAL) 
+		if ( lpSBData->nStateId == PBS_NORMAL ) 
 		{
 			lpSBData->nStateId = PBS_HOT;
 			InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 		}
-		// Call timer, used to start cheesy TrackMouseEvent faker
-		CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
+		if ( GetCapture() == lpSBData->hWnd )
+		{
+			RECT rc;
+			POINT pt;
+			GetWindowRect(hwndDlg, &rc);
+			GetCursorPos(&pt);
+			BOOL inClient = PtInRect(&rc, pt);
+			if ( !inClient && lpSBData->nStateId == PBS_PRESSED )
+			{
+				lpSBData->nStateId = PBS_HOT; 
+				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+			}
+			else if ( inClient && lpSBData->nStateId == PBS_HOT )
+			{
+				lpSBData->nStateId = PBS_PRESSED;
+				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+			}
+		}
+		else
+		{
+			// Call timer, used to start cheesy TrackMouseEvent faker
+			CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
+		}
 		break;
+
 	case WM_NCHITTEST:
 		{
 			LRESULT lr = SendMessage(GetParent(hwndDlg), WM_NCHITTEST, wParam, lParam);
@@ -355,10 +397,17 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 		{
 			if (wParam == BUTTON_POLLID)
 			{
+				HWND hwnd=GetCapture();
+				if ( hwnd == lpSBData->hWnd ) 
+				{
+					KillTimer(hwndDlg, BUTTON_POLLID);
+					break;
+				}
 				RECT rc;
 				POINT pt;
 				GetWindowRect(hwndDlg, &rc);
 				GetCursorPos(&pt);
+
 				if (!PtInRect(&rc, pt)) 
 				{
 					// mouse must be gone, trigger mouse leave
