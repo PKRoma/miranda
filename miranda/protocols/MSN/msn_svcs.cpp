@@ -677,28 +677,33 @@ static int MsnGetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		}
 		else
 		{
-			char *ext = strrchr(c_file.name, '.') + 1;
-			_strlwr(ext);
-			
-			if (strcmp(ext, "png") == 0)
+			char *ext = strrchr(c_file.name, '.');
+			if (ext != NULL) 
 			{
-				AI->format = PA_FORMAT_PNG;
-				strcpy( AI->filename + len, "png" );
-			}
-			else if (strcmp(ext, "jpg") == 0)
-			{
-				AI->format = PA_FORMAT_JPEG;
-				strcpy( AI->filename + len, "jpg" );
-			}
-			else if (strcmp(ext, "gif") == 0)
-			{
-				AI->format = PA_FORMAT_GIF;
-				strcpy( AI->filename + len, "gif" );
-			}
-			else if (strcmp(ext, "bmp") == 0)
-			{
-				AI->format = PA_FORMAT_BMP;
-				strcpy( AI->filename + len, "bmp" );
+				_strlwr(++ext);
+				
+				if (strcmp(ext, "png") == 0)
+				{
+					AI->format = PA_FORMAT_PNG;
+					strcpy( AI->filename + len, "png" );
+				}
+				else if (strcmp(ext, "jpg") == 0)
+				{
+					AI->format = PA_FORMAT_JPEG;
+					strcpy( AI->filename + len, "jpg" );
+				}
+				else if (strcmp(ext, "gif") == 0)
+				{
+					AI->format = PA_FORMAT_GIF;
+					strcpy( AI->filename + len, "gif" );
+				}
+				else if (strcmp(ext, "bmp") == 0)
+				{
+					AI->format = PA_FORMAT_BMP;
+					strcpy( AI->filename + len, "bmp" );
+				}
+				else
+					strcpy( AI->filename + len, "unk" );
 			}
 			else
 				strcpy( AI->filename + len, "unk" );
