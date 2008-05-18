@@ -52,7 +52,7 @@ struct
 }
 static TransportProtoTable[] =
 {
-	{ _T("|icq*|jit*"),      "ICQ",           -1},
+	{ _T("|*icq*|jit*"),     "ICQ",           -1},
 	{ _T("msn*"),            "MSN",           -1},
 	{ _T("yahoo*"),          "YAHOO",         -1},
 	{ _T("mrim*"),           "MRA",           -1},
