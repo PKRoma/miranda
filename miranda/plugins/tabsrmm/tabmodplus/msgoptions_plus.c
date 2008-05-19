@@ -1,8 +1,9 @@
 #include <commonheaders.h>
 
-extern HINSTANCE hinstance;
-extern BOOL g_bIMGtagButton, g_bClientInStatusBar;
-extern HIMAGELIST g_himlOptions, CreateStateImageList();
+extern HINSTANCE	hinstance;
+extern BOOL			g_bIMGtagButton, g_bClientInStatusBar;
+extern HIMAGELIST	g_himlOptions, CreateStateImageList();
+extern MYGLOBALS	myGlobals;
 
 static BOOL bOptionsInit;
 
@@ -31,8 +32,6 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 	switch(msg)	{
 
 		case WM_INITDIALOG:	{
-			TVINSERTSTRUCT tvi = {0};
-			int i = 0;
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE, GetWindowLong(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
@@ -44,34 +43,7 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 			* fill the list box, create groups first, then add items
 			*/
 
-			while (lvGroups[i].szName != NULL) {
-				tvi.hParent = 0;
-				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
-				tvi.item.pszText = TranslateTS(lvGroups[i].szName);
-				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
-				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
-				lvGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
-			}
-
-			i = 0;
-
-			while (lvItems[i].szName != 0) {
-				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;
-				tvi.hInsertAfter = TVI_LAST;
-				tvi.item.pszText = TranslateTS(lvItems[i].szName);
-				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
-				tvi.item.lParam = i;
-				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
-				//if (lvItems[i].uType == LOI_TYPE_FLAG)
-				//	tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
-				if (lvItems[i].uType == LOI_TYPE_SETTING)
-					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);  // NOTE: was 2 : 1 without state image mask
-				lvItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
-				i++;
-			}
-			g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton",0 );
-			g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
+			SendMessage(hwndDlg, WM_USER + 100, 0, 0);
 
 			return TRUE;
 		}
@@ -112,8 +84,9 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 				default:
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
-							int i = 0;
-							TVITEM item = {0};
+							int		i = 0;
+							TVITEM	item = {0};
+							DWORD	msgTimeout;
 							/*
 							* scan the tree view and obtain the options...
 							*/
@@ -129,6 +102,17 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)((item.state >> 12) == 3/*2*/ ? 1 : 0));  // NOTE: state image masks changed
 								i++;
 							}
+
+							msgTimeout = SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_GETPOS, 0, 0);
+							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT,
+								msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? msgTimeout * 1000 : SRMSGSET_MSGTIMEOUT_MIN);
+
+							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
+
+							myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
+
+							if (myGlobals.m_MsgTimeout < SRMSGDEFSET_MSGTIMEOUT)
+								myGlobals.m_MsgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 							return TRUE;
 						}
 					}
@@ -140,7 +124,70 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 				CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/TabSRMM_AdvancedTweaks");
 				break;
 			}
+			else if(LOWORD(wParam) == IDC_PLUS_REVERT) {		// revert to defaults...
+				int i = 0;
+
+				while(lvItems[i].szName) {
+					if(lvItems[i].uType = LOI_TYPE_SETTING)
+						DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)lvItems[i].id);
+					i++;
+				}
+				TreeView_DeleteAllItems(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE));
+				SendMessage(hwndDlg, WM_USER + 100, 0, 0);		// fill dialog
+				break;
+			}
+			if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+				return TRUE;
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
+		}
+		/* 
+		 * fill dialog
+		 */
+		case WM_USER + 100: {
+			TVINSERTSTRUCT tvi = {0};
+			int		i = 0;
+			DWORD	msgTimeout;
+
+			while (lvGroups[i].szName != NULL) {
+				tvi.hParent = 0;
+				tvi.hInsertAfter = TVI_LAST;
+				tvi.item.mask = TVIF_TEXT | TVIF_STATE;
+				tvi.item.pszText = TranslateTS(lvGroups[i].szName);
+				tvi.item.stateMask = TVIS_STATEIMAGEMASK | TVIS_EXPANDED | TVIS_BOLD;
+				tvi.item.state = INDEXTOSTATEIMAGEMASK(0) | TVIS_EXPANDED | TVIS_BOLD;
+				lvGroups[i++].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
+			}
+
+			i = 0;
+
+			while (lvItems[i].szName != 0) {
+				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;
+				tvi.hInsertAfter = TVI_LAST;
+				tvi.item.pszText = TranslateTS(lvItems[i].szName);
+				tvi.item.mask = TVIF_TEXT | TVIF_STATE | TVIF_PARAM;
+				tvi.item.lParam = i;
+				tvi.item.stateMask = TVIS_STATEIMAGEMASK;
+				//if (lvItems[i].uType == LOI_TYPE_FLAG)
+				//	tvi.item.state = INDEXTOSTATEIMAGEMASK((dwFlags & (UINT)lvItems[i].lParam) ? 3 : 2);
+				if (lvItems[i].uType == LOI_TYPE_SETTING)
+					tvi.item.state = INDEXTOSTATEIMAGEMASK(DBGetContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, lvItems[i].id) ? 3 : 2);  // NOTE: was 2 : 1 without state image mask
+				lvItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
+				i++;
+			}
+			g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton",0 );
+			g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
+
+			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, 60));
+			msgTimeout = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
+			if (msgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
+				msgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
+			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, msgTimeout / 1000);
+
+			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 15));
+			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));
+
+			return 0;
 		}
 		case WM_CLOSE:
 			EndDialog(hwndDlg,0);

@@ -20,7 +20,21 @@ Version 2.0.x.x was released in October 2007 and is the current "stable" version
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
 
-Version 2.2.1.4  - 2008/04/XX
+Version 2.2.1.6  - 2008/05/XX
+-----------------------------
+
+  ! fixed "Revert to safe defaults" bug in advanced tweaks dialog.
+
+  ! fixed possible crash in message log streaming when history 
+    keeper is installed
+  
+  ! minor layout changes for 120 DPI setting.
+
+  ! custom smiley patch by borkra (show custom smileys on incoming
+    messages only)
+    
+      
+Version 2.2.1.5  - 2008/05/08
 -----------------------------
 
 	! bug fixes: smiley button visual glitch, group chat option tree
@@ -58,8 +72,25 @@ Version 2.2.1.4  - 2008/04/XX
 	  clicked to dismiss them.
 	  
 	+ integrated "mod plus" options into Message Sessions->Advanced tweaks.
+	
+	! merged MButton patch by rainwater into TSButton control to check that
+	  a button release event should be processed.
 	  
-	  	  
+	* don't close hovered popups (when mouse pointer is over a popup)
+	
+	* reworked typing notify options.
+	
+	- removed deprecated toolbar hiding options	
+
+	+ added various hyperlink controls to open online help pages to the
+	  option dialogs.
+	
+
+Version 2.2.1.4  - 2008/05/08
+-----------------------------
+
+	* for internal testing only (not officially released)
+
 Version 2.2.1.3  - 2008/04/XX
 -----------------------------
 

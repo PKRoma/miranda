@@ -57,9 +57,6 @@ extern int        g_sessionshutdown;
 extern char*      szWarnClose;
 extern WNDPROC OldSplitterProc;
 
-#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
-#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
-
 static WNDPROC OldMessageProc;
 static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
@@ -351,7 +348,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = bTabs ? (bTabBottom ? 0 : rcTabs.top - 1) : 0;
 			urc->rcItem.left = 0;
 			urc->rcItem.right = bNick ? urc->dlgNewSize.cx - si->iSplitterX : urc->dlgNewSize.cx;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (myGlobals.g_DPIscaleY > 1.0 ? DPISCALEY(24) : DPISCALEY(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			//if (!splitterEdges)
 			//	urc->rcItem.bottom += 2;
 			if (dat->pContainer->bSkinned) {
@@ -2516,11 +2513,11 @@ LABEL_SHOWWINDOW:
 				ScreenToClient(hwndDlg, &pt);
 
 				oldSplitterY = si->iSplitterY;
-				si->iSplitterY = bFormat ? rc.bottom - pt.y + DPISCALEY(1) : rc.bottom - pt.y + DPISCALEY(20);
-				if (si->iSplitterY < DPISCALEY(28))
-					si->iSplitterY = DPISCALEY(28);
-				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY(40))
-					si->iSplitterY = rc.bottom - rc.top - DPISCALEY(40);
+				si->iSplitterY = bFormat ? rc.bottom - pt.y + DPISCALEY_S(1) : rc.bottom - pt.y + DPISCALEY_S(20);
+				if (si->iSplitterY < DPISCALEY_S(23))
+					si->iSplitterY = DPISCALEY_S(23);
+				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY_S(40))
+					si->iSplitterY = rc.bottom - rc.top - DPISCALEY_S(40);
 				g_Settings.iSplitterY = si->iSplitterY;
 			}
 			if (x == 2) {

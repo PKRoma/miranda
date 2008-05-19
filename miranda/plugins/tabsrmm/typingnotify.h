@@ -39,7 +39,6 @@ static HANDLE hPopUpsList = NULL;
 
 static BYTE OnePopUp;
 static BYTE ShowMenu;
-static BYTE bNotShowWhenFocused;
 static BYTE PopupService=0;
 static BYTE StartDisabled;
 static BYTE StopDisabled;

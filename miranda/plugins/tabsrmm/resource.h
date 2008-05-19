@@ -350,7 +350,6 @@
 #define IDC_AVATARBORDER                1269
 #define IDC_TIMEZONE                    1269
 #define IDC_SENDFORMATTING              1270
-#define IDC_TOOLBARHIDEMODE             1271
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
 #define IDC_MAXAVATARHEIGHT             1275
@@ -512,12 +511,18 @@
 #define IDC_BUTTON1                     1415
 #define IDC_SEPARATOR                   1415
 #define IDC_PLUS_REVERT                 1415
+#define IDC_TIMEOUTSPIN                 1416
+#define IDC_MTN_POPUPMODE               1418
+#define IDC_MTN_HELP                    1419
+#define IDC_CUT_TITLEMAXSPIN            1420
+#define IDC_HELP_CONTAINERS             1421
+#define IDC_HELP_GENERAL                1422
 #define IDC_WHITERECT                   2000
 #define IDC_PLUS_CHECKTREE              2000
-#define IDC_PLUS_HELP					2004
 #define IDC_TABSRMM                     2001
 #define IDC_COPYRIGHT                   2002
 #define IDC_LOGO                        2003
+#define IDC_PLUS_HELP                   2004
 #define IDC_VERSION                     2004
 #define IDC_BUILDTIME                   2005
 #define IDD_OPT_TYPINGNOTIFYPOPUP       30159
@@ -751,7 +756,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        13
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1416
+#define _APS_NEXT_CONTROL_VALUE         1423
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

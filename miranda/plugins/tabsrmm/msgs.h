@@ -356,7 +356,6 @@ struct MessageWindowData {
 	int     nTypeMode;
 	DWORD   nLastTyping;
 	int     showTyping;
-	int     showTypingWin;
 	DWORD   lastMessage;
 	struct  ContainerWindowData *pContainer;		// parent container description structure
 	int     iTabID;
@@ -543,8 +542,8 @@ typedef struct _globals {
 	int         m_LimitStaticAvatarHeight;
 	int         m_SendFormat;
 	int         m_FormatWholeWordsOnly;
-	int         m_AllowSendButtonHidden;
-	int         m_ToolbarHideMode;
+	//int         m_AllowSendButtonHidden;
+	//int         m_ToolbarHideMode;
 	int         m_FixFutureTimestamps;
 	int         m_RTLDefault;
 	int         m_SplitterSaveOnClose;
@@ -613,6 +612,7 @@ typedef struct _globals {
 	BOOL        g_DisableScrollbars;
 	BOOL        m_visualMessageSizeIndicator;
 	BOOL        m_autoSplit;
+	BOOL		m_FlashOnMTN;
 	int         rtf_ctablesize;
 	DWORD       dwThreadID;
 	char        szMetaName[256];
@@ -829,7 +829,7 @@ struct NewMessageWindowLParam {
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
 
-#define MINSPLITTERY         46
+#define MINSPLITTERY         42
 #define MINLOGHEIGHT         30
 
 // wParam values for DM_SELECTTAB
@@ -894,8 +894,8 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SENDONENTER       "SendOnEnter"
 #define SRMSGDEFSET_SENDONENTER    0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
-#define SRMSGDEFSET_MSGTIMEOUT     30000
-#define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
+#define SRMSGDEFSET_MSGTIMEOUT     60000
+#define SRMSGSET_MSGTIMEOUT_MIN    60000 // minimum value (30 seconds)
 
 #define SRMSGSET_LOADHISTORY       "LoadHistory"
 #define SRMSGDEFSET_LOADHISTORY    LOADHISTORY_UNREAD
@@ -1186,6 +1186,12 @@ typedef struct {
 #define MS_HPP_EG_UTILS  "History++/ExtGrid/Utils"
 #define MS_HPP_EG_OPTIONSCHANGED "History++/ExtGrid/OptionsChanged"
 #define MS_HPP_EG_NOTIFICATION   "History++/ExtGrid/Notification"
+
+#define DPISCALEY(argY) ((int) ((double)(argY) * myGlobals.g_DPIscaleY))
+#define DPISCALEX(argX) ((int) ((double)(argX) * myGlobals.g_DPIscaleX))
+
+#define DPISCALEY_S(argY) ((int) ((double)(argY) * myGlobals.g_DPIscaleY))
+#define DPISCALEX_S(argX) ((int) ((double)(argX) * myGlobals.g_DPIscaleX))
 
 /*
  * encryption status bar indicator

@@ -35,11 +35,13 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.4\\b0\\ul0\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.5\\b0\\ul0\\par ",
 	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works, small adjustments for minimum splitter position.\\par ",
 	"*\tReorganized group chat options completed.\\par ",
 	"*\tAdded support for the history events plugin by pescuma.\\par ",
 	"*\tRemoved obsolute features (7bit ANSI check for outgoing messages, useless menu entries in the help menu).\\par ",
+	"*\tChanges to the popup system (infinite timeout now possible, no timeout for error popups).\\par ",
+	"*\tChanges to typing notify options.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -438,11 +440,13 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	//mad_
 	}
 	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ) {
+		BOOL	fIsNotifyEvent = (dbei.eventType == EVENTTYPE_URL || dbei.eventType == EVENTTYPE_FILE);
+
 		/*
 		 * care about popups for non-message events for contacts w/o an openend window
 		 * if a window is open, the msg window itself will care about showing the popup
 		 */
-		if (dbei.eventType != EVENTTYPE_MESSAGE && !IsStatusEvent(dbei.eventType) && hwnd == 0 && !(dbei.flags & DBEF_SENT)) {
+		if (dbei.eventType != EVENTTYPE_MESSAGE && fIsNotifyEvent && hwnd == 0 && !(dbei.flags & DBEF_SENT)) {
 			if (!(dbei.flags & DBEF_READ))
 				tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
 		}
@@ -802,46 +806,68 @@ static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
-	HWND hwnd;
-	int issplit = 1, foundWin = 0;
-	struct ContainerWindowData *pContainer = NULL;
+	HWND	hwnd = 0;
+	int		issplit = 1, foundWin = 0;
+	struct	ContainerWindowData *pContainer = NULL;
+	BOOL	fShowOnClist = TRUE;
 
-	if (!DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
-		return 0;
-	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
+	if ((hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
 		SendMessage(hwnd, DM_TYPING, 0, lParam);
-	}
 
-	if (hwnd&&IsWindowVisible(hwnd)) {
+	if (hwnd && IsWindowVisible(hwnd))
 		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
-	} 
 	else
 		foundWin = 0;
 
 
-	if(foundWin) SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+	if(hwnd) {
+		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
+		if(pContainer == NULL)
+			return 0;					// should never happen
+	}
 
-
-	if(!foundWin && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1))
-		return 0;
-	if(foundWin && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
-		return 0;
-
-	if(!foundWin||!(pContainer->dwFlags&CNT_NOSOUND)){
+	if(DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+		if(!hwnd && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGNOWINOPEN, 1))
+			fShowOnClist = FALSE;
+		if(hwnd && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
+			fShowOnClist = FALSE;
+	}
+	else 
+		fShowOnClist = FALSE;
+	
+	if(!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)){
 		if (lParam)
 			SkinPlaySound("TNStart");
 		else
 			SkinPlaySound("TNStop");
 	}
 
-	if(DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingPopup", 0))
-			TN_TypingMessage(wParam, lParam,(BYTE)(foundWin&&GetForegroundWindow()==pContainer->hwnd));
+	if(DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingPopup", 0)) {
+		BOOL	fShow = FALSE;
+		int		iMode = DBGetContactSettingByte(0, SRMSGMOD_T, "MTN_PopupMode", 0);
+
+		switch(iMode) {
+			case 0:
+				fShow = TRUE;
+				break;
+			case 1:
+				if(!foundWin || !(pContainer && pContainer->hwndActive == hwnd && GetForegroundWindow() == pContainer->hwnd))
+					fShow = TRUE;
+				break;
+			case 2:
+				if(foundWin == 0)
+					fShow = TRUE;
+				break;
+		}
+		if(fShow)
+			TN_TypingMessage(wParam, lParam);
+	}
 
 	if ((int) lParam) {
 		TCHAR szTip[256];
 
 		_sntprintf(szTip, SIZEOF(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
-		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingBalloon", 0)) {
+		if (fShowOnClist && ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && DBGetContactSettingByte(NULL, SRMSGMOD, "ShowTypingBalloon", 0)) {
 			MIRANDASYSTRAYNOTIFY tn;
 			tn.szProto = NULL;
 			tn.cbSize = sizeof(tn);
@@ -855,7 +881,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			tn.uTimeout = 1000 * 4;
 			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
 		}
-		if(DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGCLIST, SRMSGDEFSET_SHOWTYPINGCLIST)) {
+		if(fShowOnClist) {
 			CLISTEVENT cle;
 
 			ZeroMemory(&cle, sizeof(cle));
@@ -870,7 +896,6 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
 		}
 	}
-	
 	return 0;
 }
 
@@ -1560,7 +1585,6 @@ tzdone:
 	myGlobals.g_DPIscaleX = GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
 	myGlobals.g_DPIscaleY = GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
 	ReleaseDC(0, hScrnDC);
-		
 	hDLL = GetModuleHandleA("user32");
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");

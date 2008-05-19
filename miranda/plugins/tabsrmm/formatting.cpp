@@ -112,7 +112,7 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 	lstrcpyW(wszText, text.c_str());
 	return wszText;
 }
-extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added)
+extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
 {
 	bool clr_was_added = false, was_added;
 	static std::wstring message(msg);
@@ -274,7 +274,7 @@ ok:
 
 			smbp.cbSize = sizeof(smbp);
 			smbp.Protocolname = szProto;
-			smbp.flag = SAFL_TCHAR | SAFL_PATH;
+			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
 			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);
@@ -310,7 +310,7 @@ static char *formatting_strings_end[] = { "b0 ", "i0 ", "u0 ", "s0 ", "c0 "
 * this translates formatting tags into rtf sequences...
 */
 
-extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added)
+extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent)
 {
 	bool clr_was_added = false, was_added;
 	static std::string message(msg);
@@ -467,7 +467,7 @@ ok:
 
 			smbp.cbSize = sizeof(smbp);
 			smbp.Protocolname = szProto;
-			smbp.flag = SAFL_TCHAR | SAFL_PATH;
+			smbp.flag = SAFL_TCHAR | SAFL_PATH | (isSent ? SAFL_OUTGOING : 0);
 			smbp.str = (TCHAR *)smcode.c_str();
 			smbp.hContact = hContact;
 			smbpr = (SMADD_BATCHPARSERES *)MY_CallService(MS_SMILEYADD_BATCHPARSE, 0, (LPARAM) & smbp);

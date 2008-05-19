@@ -65,14 +65,12 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	}
 
 
-int TN_TypingMessage(WPARAM wParam, LPARAM lParam,BYTE DlgFocused)
+int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 	{
 	POPUPDATAT ppd = {0};
 	TCHAR *szContactName = NULL;
 	HWND hPopUpWnd = NULL;
 	int notyping;
-
-	if (!wParam||(bNotShowWhenFocused&&DlgFocused)) return 0;
 
 	// hidden & ignored contacts check
 	if (DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0) ||
@@ -234,8 +232,6 @@ static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					CheckDlgButton(hwndDlg, IDC_START, (StartDisabled)?BST_UNCHECKED:BST_CHECKED);
 					CheckDlgButton(hwndDlg, IDC_STOP, (StopDisabled)?BST_UNCHECKED:BST_CHECKED);
 
-					CheckDlgButton(hwndDlg, IDC_WO, (bNotShowWhenFocused)?BST_CHECKED:BST_UNCHECKED);
-
 					CheckDlgButton(hwndDlg, IDC_ONEPOPUP, (OnePopUp)?BST_CHECKED:BST_UNCHECKED);
 					CheckDlgButton(hwndDlg, IDC_SHOWMENU, (ShowMenu)?BST_CHECKED:BST_UNCHECKED);
 
@@ -308,7 +304,6 @@ static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 				case IDC_SHOWMENU:
 				case IDC_START:
 				case IDC_STOP:
-				case IDC_WO:
 				case IDC_WOCL:
 					if (wNotifyCode == BN_CLICKED)
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -502,7 +497,6 @@ static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					StopDisabled = IsDlgButtonChecked(hwndDlg,IDC_STOP)?0:4;
 					OnePopUp = IsDlgButtonChecked(hwndDlg,IDC_ONEPOPUP);
 					ShowMenu = IsDlgButtonChecked(hwndDlg,IDC_SHOWMENU);
-					bNotShowWhenFocused = IsDlgButtonChecked(hwndDlg,IDC_WO);
 
 					DBWriteContactSettingByte(NULL, Module, SET_ONEPOPUP, OnePopUp);
 					DBWriteContactSettingByte(NULL, Module, SET_SHOWDISABLEMENU,ShowMenu);
@@ -512,7 +506,6 @@ static BOOL CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT, (BYTE) Timeout);
 					DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT_MODE2, TimeoutMode2);
 					DBWriteContactSettingByte(NULL, Module, SET_TIMEOUT2,(BYTE)  Timeout2);
-					DBWriteContactSettingByte(NULL, Module, SET_WO, bNotShowWhenFocused);
 
 					return TRUE;
 						}
@@ -550,8 +543,6 @@ int TN_ModuleInit()
 	WORD i;
 
 	PopupService=(myGlobals.g_PopupWAvail||myGlobals.g_PopupAvail);
-
-	bNotShowWhenFocused = DBGetContactSettingByte(NULL,Module,SET_WO,DEF_WO);
 
 	hPopUpsList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 

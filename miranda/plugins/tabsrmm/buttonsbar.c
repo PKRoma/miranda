@@ -5,9 +5,6 @@ extern MYGLOBALS myGlobals;
 extern HANDLE hMessageWindowList;
 extern StatusItems_t StatusItems[];
 
-#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
-#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
-
 HANDLE hButtonsBarAddButton;
 HANDLE hButtonsBarRemoveButton;
 HANDLE hButtonsBarGetButtonState;
@@ -668,7 +665,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 	int lwidth=0,rwidth=0;
 	RECT rcSplitter;
 	POINT ptSplitter;
-	int splitterY;
+	int splitterY, iOff;
 	BYTE gap=DPISCALEX(myGlobals.g_iButtonsBarGap);
 	int foravatar=0;
 	BOOL showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
@@ -686,6 +683,10 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 	ptSplitter.x=0;
 	ptSplitter.y=rcSplitter.top;
 	ScreenToClient(hwnd,&ptSplitter);
+	if(myGlobals.g_DPIscaleY > 1.0)
+		iOff = dat->bType == SESSIONTYPE_IM ? DPISCALEY(22) : DPISCALEY(23);
+	else
+		iOff = DPISCALEY(22);
 
 	GetClientRect(hwnd,&rect);
 
@@ -731,7 +732,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 						cbd->bAutoHidden=0;
 						}
 					}
-					DeferWindowPos(hdwp,hwndBtn , NULL, lwidth,splitterY-DPISCALEY(22),
+					DeferWindowPos(hdwp,hwndBtn , NULL, lwidth,splitterY - iOff,
 						0, 0, SWP_NOZORDER | SWP_NOSIZE|SWP_NOCOPYBITS);
 					if(IsWindowVisible(hwndBtn)||(cbd->bDummy&&!(cbd->bAutoHidden||cbd->bHidden)))
 						lwidth+=cbd->iButtonWidth+gap;
@@ -779,7 +780,7 @@ BOOL BB_SetButtonsPos(HWND hwnd,struct MessageWindowData *dat)
 
 					if(IsWindowVisible(hwndBtn)||(cbd->bDummy&&!(cbd->bAutoHidden||cbd->bHidden)))
 						rwidth+=cbd->iButtonWidth+gap;
-					DeferWindowPos(hdwp,hwndBtn , NULL,rect.right-foravatar-rwidth+gap,splitterY-DPISCALEY(22),
+					DeferWindowPos(hdwp,hwndBtn , NULL,rect.right-foravatar-rwidth+gap,splitterY - iOff,
 						0, 0, SWP_NOZORDER | SWP_NOSIZE|SWP_NOCOPYBITS);
 			}
 		}

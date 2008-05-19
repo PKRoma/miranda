@@ -186,7 +186,7 @@ int			LoadLocalFlags(HWND hwnd, struct MessageWindowData *dat);
 int			TN_ModuleInit();
 int			TN_OptionsInitialize(WPARAM wParam, LPARAM lParam);
 int			TN_ModuleDeInit();
-int			TN_TypingMessage(WPARAM wParam, LPARAM lParam,BYTE DlgOpened);
+int			TN_TypingMessage(WPARAM wParam, LPARAM lParam);
 
 // mod plus
 

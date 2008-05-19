@@ -62,9 +62,6 @@ extern PITBPT pfnIsThemeBackgroundPartiallyTransparent;
 extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 
-#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
-#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
-
 extern	char  *FilterEventMarkersA(char *szText);
 extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
 extern  TCHAR *DoubleAmpersands(TCHAR *pszText);
@@ -1482,10 +1479,10 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (bSync) {
 							if (dat->bType == SESSIONTYPE_IM) {
 								dwOff_IM = 0;
-								dwOff_CHAT = -2;
+								dwOff_CHAT = -(2 + (myGlobals.g_DPIscaleY > 1.0 ? 1 : 0));
 							} else if (dat->bType == SESSIONTYPE_CHAT) {
 								dwOff_CHAT = 0;
-								dwOff_IM = 2;
+								dwOff_IM = 2 + (myGlobals.g_DPIscaleY > 1.0 ? 1 : 0);
 							}
 						}
 						GetWindowRect(hwndParent, &rcWin);
@@ -1503,7 +1500,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 								WindowList_Broadcast(hMessageWindowList, DM_SPLITTERMOVEDGLOBAL_NOSYNC,
 					 								 rcWin.bottom - HIWORD(messagePos) + dwOff_IM, rc.bottom);
 							if (bSync) {
-								g_Settings.iSplitterY = dat->splitterY - DPISCALEY(23);
+								g_Settings.iSplitterY = dat->splitterY - DPISCALEY_S(23);
 								DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							}
 						}
@@ -1513,7 +1510,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							SM_BroadcastMessage(NULL, WM_SIZE, 0, 0, 1);
 							DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 							if (bSync)
-								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + 23);
+								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD)g_Settings.iSplitterY + DPISCALEY_S(23));
 							RedrawWindow(hwndParent, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 						}
 						break;
@@ -1563,13 +1560,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 	iClistOffset = rc.bottom;
 	if (dat->panelStatusCX == 0)
 		dat->panelStatusCX = 80;
-
-// 	if (!showToolbar||bBottomToolbar) {
-// 		int i;
-// 		for (i = 0; i < sizeof(buttonLineControlsNew) / sizeof(buttonLineControlsNew[0]); i++)
-// 			if (buttonLineControlsNew[i] == urc->wId)
-// 				OffsetRect(&urc->rcItem, 0, -(dat->splitterY + 10));
-// 	}
 
 	s_offset = 1;
 
@@ -1931,7 +1921,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->rtl_templates = &RTL_Active;
 			// input history stuff (initialise it..)
 
-			dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 10);
+			dat->iHistorySize = DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 15);
 			if (dat->iHistorySize < 10)
 				dat->iHistorySize = 10;
 			dat->history = malloc(sizeof(struct InputHistory) * (dat->iHistorySize + 1));
@@ -1973,7 +1963,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 
 			dat->multiSplitterX = (int) DBGetContactSettingDword(NULL, SRMSGMOD, "multisplit", 150);
-			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
 			dat->iLastEventType = 0xffffffff;
@@ -2409,8 +2398,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));    // XXX margins in the message area as well
 
-			dat->showTypingWin = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);
-
 			GetSendFormat(hwndDlg, dat, 1);
 			SetDialogToType(hwndDlg);
 			SendMessage(hwndDlg, DM_CONFIGURETOOLBAR, 0, 0);
@@ -2798,7 +2785,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 					DM_RecalcPictureSize(hwndDlg, dat);
 				}
-				if (dat->splitterY < DPISCALEY(MINSPLITTERY))
+				if (dat->splitterY < DPISCALEY_S(MINSPLITTERY))
 					LoadSplitter(hwndDlg, dat);
 			}
 
@@ -2909,7 +2896,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->multiSplitterX = oldSplitterX;
 
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
-				int oldSplitterY;
+				int oldSplitterY, oldDynaSplitter;
 				int bottomtoolbarH=0;
 				GetClientRect(hwndDlg, &rc);
 				pt.x = 0;
@@ -2917,18 +2904,30 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ScreenToClient(hwndDlg, &pt);
 
 				oldSplitterY = dat->splitterY;
+				oldDynaSplitter = dat->dynaSplitter;
+
 				dat->splitterY = rc.bottom - pt.y +DPISCALEY(23);
 				/*
 				 * attempt to fix splitter troubles..
 				 * hardcoded limits... better solution is possible, but this works for now
 				 */
 				//mad
-				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) bottomtoolbarH = 22;
+				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) 
+					bottomtoolbarH = 22;
 				//
-				if (dat->splitterY < (DPISCALEY(MINSPLITTERY + 5 + bottomtoolbarH)))           // min splitter size
-					dat->splitterY = (DPISCALEY(MINSPLITTERY + 5 + bottomtoolbarH));
-				else if (dat->splitterY > ((rc.bottom - rc.top) - 50))
+				if (dat->splitterY < (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH)) {	// min splitter size
+					/*dat->splitterY = oldSplitterY;
+					dat->dynaSplitter = oldDynaSplitter;
+					DM_RecalcPictureSize(hwndDlg, dat); */
+					dat->splitterY = (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH);
+					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
+					DM_RecalcPictureSize(hwndDlg, dat);
+				}
+				else if (dat->splitterY > ((rc.bottom - rc.top) - 50)) {
 					dat->splitterY = oldSplitterY;
+					dat->dynaSplitter = oldDynaSplitter;
+					DM_RecalcPictureSize(hwndDlg, dat);
+				}
 				else {
 					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(12);
 					DM_RecalcPictureSize(hwndDlg, dat);
@@ -2980,7 +2979,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->szMicroLf[0] = 0;
 			dat->lastEventTime = 0;
 			dat->iLastEventType = -1;
-			StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
+			while (dat->hDbEventFirst && dat->hDbEventFirst != dat->hDbEventLastFeed) {
+				StreamInEvents(hwndDlg, dat->hDbEventFirst, 1, 1, NULL);
+				dat->hDbEventLastFeed = dat->hDbEventFirst;
+				dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) dat->hDbEventFirst, 0);					
+			}
 			return 0;
 		case DM_APPENDTOLOG:
 			dat->hDbEventLastFeed = (HANDLE)wParam;
@@ -3055,7 +3058,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			{
 				DBEVENTINFO dbei = {0};
 				DWORD dwTimestamp = 0;
-				BOOL  fIsStatusChangeEvent = FALSE;
+				BOOL  fIsStatusChangeEvent = FALSE, fIsNotifyEvent = FALSE;
 				dbei.cbSize = sizeof(dbei);
 				dbei.cbBlob = 0;
 				CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
@@ -3063,6 +3066,13 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					dat->hDbEventFirst = (HANDLE) lParam;
 
 				fIsStatusChangeEvent = IsStatusEvent(dbei.eventType);
+				fIsNotifyEvent = (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_FILE || dbei.eventType == EVENTTYPE_URL);
+
+				if (!fIsStatusChangeEvent) {
+					int heFlags = HistoryEvents_GetFlags(dbei.eventType);
+					if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_DEFAULT) && !(heFlags & HISTORYEVENTS_FLAG_FLASH_MSG_WINDOW))
+						fIsStatusChangeEvent = TRUE;
+				}
 
 				if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
 					break;
@@ -3072,9 +3082,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
 					}
 					/*
-					 * set the message log divider to mark new (maybe unseen) messages, if the container has
-					 * been minimized or in the background.
-					 */
+					* set the message log divider to mark new (maybe unseen) messages, if the container has
+					* been minimized or in the background.
+					*/
 					if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 
 						if (myGlobals.m_DividersUsePopupConfig && myGlobals.m_UseDividers) {
@@ -3138,14 +3148,14 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						dat->mayFlashTab = TRUE;
 					}
 					/*
-					 * try to flash the contact list...
-					 */
+					* try to flash the contact list...
+					*/
 
 					FlashOnClist(hwndDlg, dat, (HANDLE)lParam, &dbei);
 					/*
-					 * autoswitch tab if option is set AND container is minimized (otherwise, we never autoswitch)
-					 * never switch for status changes...
-					 */
+					* autoswitch tab if option is set AND container is minimized (otherwise, we never autoswitch)
+					* never switch for status changes...
+					*/
 					if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 						if (IsIconic(hwndContainer) && !IsZoomed(hwndContainer) && myGlobals.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
 							int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
@@ -3159,8 +3169,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					}
 					/*
-					 * flash window if it is not focused
-					 */
+					* flash window if it is not focused
+					*/
 					if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 						if (!(m_pContainer->dwFlags & CNT_NOFLASH))
 							FlashContainer(m_pContainer, 1, 0);
@@ -3169,8 +3179,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
 					}
 					/*
-					 * play a sound
-					 */
+					* play a sound
+					*/
 					if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
 						PostMessage(hwndDlg, DM_PLAYINCOMINGSOUND, 0, 0);
 				}
@@ -3260,7 +3270,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
 						else
 							SendMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)m_pContainer->hwndActive, (LPARAM)1);
-						if (!(m_pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
+						if (!(m_pContainer->dwFlags & CNT_NOFLASH) && myGlobals.m_FlashOnMTN)
 							ReflashContainer(m_pContainer);
 					}
 				} else {
@@ -3279,7 +3289,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						if (IsIconic(hwndContainer) || GetForegroundWindow() != hwndContainer || GetActiveWindow() != hwndContainer) {
 							SetWindowText(hwndContainer, szBuf);
 							m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
-							if (!(m_pContainer->dwFlags & CNT_NOFLASH) && dat->showTypingWin)
+							if (!(m_pContainer->dwFlags & CNT_NOFLASH) && myGlobals.m_FlashOnMTN)
 								ReflashContainer(m_pContainer);
 						}
 						if (m_pContainer->hwndActive != hwndDlg) {

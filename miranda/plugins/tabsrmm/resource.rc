@@ -8,9 +8,10 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
-
+#include "../../include/statusmodes.h"
 #include <version.h>
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -33,11 +34,19 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Advanced tweaks",IDC_STATIC,3,0,300,86
-    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,173
+    GROUPBOX        "Advanced tweaks",IDC_STATIC,3,0,300,224
+    LTEXT           "Message send timeout",IDC_STATIC,11,154,89,11
+    EDITTEXT        IDC_SECONDS,147,152,25,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_TIMEOUTSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,171,153,11,11
+    LTEXT           "seconds.",IDC_STATIC,187,154,36,8
+    LTEXT           "Input history size",IDC_STATIC,11,169,111,10
+    EDITTEXT        IDC_HISTORYSIZE,147,167,25,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,170,166,11,13
+    LTEXT           "entries",IDC_STATIC,187,169,28,10
     LTEXT           "Options marked with an asterisk (*) will only take effect after Miranda has been restarted.",IDC_STATIC,11,188,283,18
-    CONTROL         "More about advanced tweaks",IDC_PLUS_HELP,"Hyperlink",WS_TABSTOP | 0x1,11,210,146,9
+    CONTROL         "More about advanced tweaks",IDC_PLUS_HELP,"Hyperlink",WS_TABSTOP | 0x1,11,210,158,9
     PUSHBUTTON      "Revert to (safe) defaults",IDC_PLUS_REVERT,180,207,111,14
+    CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,137
 END
 
 IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
@@ -242,14 +251,12 @@ BEGIN
     CONTROL         "Also auto-close the last tab and its container",IDC_AUTOCLOSELAST,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,184,280,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,198,300,27
-    LTEXT           "Send text formatting:",IDC_STATIC,9,213,132,11
-    COMBOBOX        IDC_SENDFORMATTING,143,211,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "Message send timeout",IDC_STATIC,208,199,89,11
-    EDITTEXT        IDC_SECONDS,228,211,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,258,213,36,8
+    LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
+    COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,76
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,98,105,9
+    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,211,67,9
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -289,45 +296,43 @@ IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Typing Notification",IDC_STATIC,7,3,269,152
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,34,248,112,WS_EX_CLIENTEDGE
+    GROUPBOX        "Typing Notification",IDC_STATIC,7,5,269,121
     LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",IDC_STATIC,19,15,245,19
-    CONTROL         "Show typing notifications when a user is typing a message",IDC_SHOWNOTIFY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,162,233,13
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,34,248,88,WS_EX_CLIENTEDGE
+    GROUPBOX        "          Show typing notifications in the message window",IDC_STATIC,7,129,269,25
+    CONTROL         "",IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,128,12,12
     CONTROL         "Flash window once on typing events (only if flashing enabled)",IDC_TYPEFLASHWIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,176,230,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,140,230,10
+    GROUPBOX        "          Show typing notifications in the contact list and tray",IDC_STATIC,7,157,269,48
+    CONTROL         "",IDC_NOTIFYTRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,155,12,12
     CONTROL         "Show typing notification when message dialog is open",IDC_TYPEWIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,188,230,10
-    CONTROL         "Flash in the system tray and in the contact list",IDC_NOTIFYTRAY,
-                    "Button",BS_AUTOCHECKBOX,29,213,206,10
-    CONTROL         "Show balloon",IDC_NOTIFYBALLOON,"Button",BS_AUTOCHECKBOX | WS_GROUP,29,226,206,10
-    CONTROL         "Show popup",IDC_NOTIFYPOPUP,"Button",BS_AUTOCHECKBOX,29,238,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,168,230,10
     CONTROL         "Show typing notification when no message dialog is open",IDC_TYPENOWIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,200,230,10
-    GROUPBOX        "Options",IDC_STATIC,7,154,269,97
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,180,230,10
+    CONTROL         "Show balloon tooltip in the system tray",IDC_NOTIFYBALLOON,
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP,44,193,206,10
+    GROUPBOX        "          Show popups when a user is typing",IDC_STATIC111,7,208,269,30
+    CONTROL         "",IDC_NOTIFYPOPUP,"Button",BS_AUTOCHECKBOX,16,207,12,12
+    COMBOBOX        IDC_MTN_POPUPMODE,32,221,230,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "More about typing notifications",IDC_MTN_HELP,"Hyperlink",WS_TABSTOP | 0x1,9,242,262,9
 END
 
 IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tab options",IDC_STATIC,3,0,300,119
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,121,300,104
-    LTEXT           "Info Panel field borders:",IDC_STATIC,10,131,166,12
-    COMBOBOX        IDC_IPFIELDBORDERS,192,128,106,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,144,190,14
-    LTEXT           "When auto-hiding toolbar buttons:",IDC_STATIC,14,164,133,8
-    COMBOBOX        IDC_TOOLBARHIDEMODE,148,161,152,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,181,135,10
-    EDITTEXT        IDC_CUT_TITLEMAX,166,179,30,12,ES_AUTOHSCROLL
-    LTEXT           "characters",IDC_STATIC,208,181,88,9
-    LTEXT           "Input history size",IDC_STATIC,12,196,111,10
-    EDITTEXT        IDC_HISTORYSIZE,166,193,28,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_HISTORYSIZESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,175,12,13
-    LTEXT           "entries",IDC_STATIC,200,195,28,10
-    LTEXT           "Global hotkey modifiers",IDC_STATIC,12,212,113,11
-    COMBOBOX        IDC_MODIFIERS,166,210,84,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,101
+    GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
+    LTEXT           "Info Panel field borders:",IDC_STATIC,10,161,166,12
+    COMBOBOX        IDC_IPFIELDBORDERS,192,158,106,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Setup status modes for automatic tab creation...",IDC_SETUPAUTOCREATEMODES,56,174,190,14
+    CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,195,135,10
+    EDITTEXT        IDC_CUT_TITLEMAX,166,193,30,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_CUT_TITLEMAXSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,191,192,11,13
+    LTEXT           "characters",IDC_STATIC,208,195,88,9
+    LTEXT           "Global hotkey modifiers",IDC_STATIC,12,210,113,11
+    COMBOBOX        IDC_MODIFIERS,166,208,84,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,8,294,135
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
@@ -388,8 +393,9 @@ BEGIN
     EDITTEXT        IDC_FLASHINTERVAL,111,112,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,149,115,10,10
     LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
-    GROUPBOX        "Default window title format",IDC_STATIC,3,196,300,28
-    EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,207,274,14,ES_AUTOHSCROLL
+    GROUPBOX        "Default window title format",IDC_STATIC,3,139,300,28
+    EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,150,274,14,ES_AUTOHSCROLL
+    CONTROL         "Help on containers",IDC_HELP_CONTAINERS,"Hyperlink",WS_TABSTOP | 0x1,21,201,262,9
 END
 
 IDD_OPT_TYPINGNOTIFYPOPUP DIALOGEX 0, 0, 318, 174
@@ -408,7 +414,6 @@ BEGIN
     CONTROL         "",IDC_TYPEOFF_TX,"ColourPicker",WS_TABSTOP,140,36,24,12
     CONTROL         "U&se Popup colours",IDC_USEPOPUPCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,52,154,13
     CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,66,133,13
-    CONTROL         "&Do not show if msg window focused",IDC_WO,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,82,156,13
     CONTROL         "Only &one popup for each contact",IDC_ONEPOPUP,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,96,156,13
     CONTROL         "Show &entry in the main menu",IDC_SHOWMENU,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,110,155,13
     GROUPBOX        "PopUp timeout (is typing)",IDC_STATIC,175,6,140,58,WS_GROUP
@@ -1033,7 +1038,8 @@ END
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\r\n"
-    "#include <version.h\0"
+    "#include <version.h>\r\n"
+    "\r\0"
 END
 
 3 TEXTINCLUDE 

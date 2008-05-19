@@ -61,7 +61,7 @@ struct CPTABLE cpTable[] = {
 };
 
 static TCHAR    *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
-static void     ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend);
+static void     ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend, BOOL isSent);
 
 static TCHAR *weekDays[] = {_T("Sunday"), _T("Monday"), _T("Tuesday"), _T("Wednesday"), _T("Thursday"), _T("Friday"), _T("Saturday")};
 static TCHAR *months[] = {_T("January"), _T("February"), _T("March"), _T("April"), _T("May"), _T("June"), _T("July"), _T("August"), _T("September"), _T("October"), _T("November"), _T("December")};
@@ -75,7 +75,7 @@ int g_groupBreak = TRUE;
 static TCHAR *szMyName = NULL;
 static TCHAR *szYourName = NULL;
 
-extern TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added);
+extern TCHAR *FormatRaw(DWORD dwFlags, const TCHAR *msg, int flags, const char *szProto, HANDLE hContact, BOOL *clr_added, BOOL isSent);
 
 static int logPixelSY;
 static TCHAR szToday[22], szYesterday[22];
@@ -658,6 +658,8 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	if (dbei.eventType != EVENTTYPE_MESSAGE && dbei.eventType != EVENTTYPE_FILE
 			&& dbei.eventType != EVENTTYPE_URL && !IsStatusEvent(dbei.eventType))
 		heFlags = HistoryEvents_GetFlags(dbei.eventType);
+	if (heFlags & HISTORYEVENTS_FLAG_DEFAULT)
+		heFlags = -1;
 
 	if (dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
 		dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
@@ -672,7 +674,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 			return NULL;
 		}
 		TrimMessage(msg);
-		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 		mir_free(msg);
 	}
 	/*
@@ -687,7 +689,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 			wlen = safe_wcslen(msg, (dbei.cbBlob - msglen) / 2);
 			if (wlen <= (msglen - 1) && wlen > 0) {
 				TrimMessage(msg);
-				formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+				formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 			} else
 				goto nounicode;
 		} else {
@@ -695,12 +697,12 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 			msg = (TCHAR *) alloca(sizeof(TCHAR) * msglen);
 			MultiByteToWideChar(dat->codePage, 0, (char *) dbei.pBlob, -1, msg, msglen);
 			TrimMessage(msg);
-			formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+			formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 		}
 #else   // non-unicode
 		msg = (char *) dbei.pBlob;
 		TrimMessage(msg);
-		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added);
+		formatted = FormatRaw(dat->dwFlags, msg, dwFormattingParams, szProto, dat->hContact, &dat->clr_added, isSent);
 #endif
 	}
 	*/
@@ -1129,7 +1131,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 							}
 
 							if (rtfMessage != NULL) {
-								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, rtfMessage);
+								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfMessage);
 							} else {
 #if defined( _UNICODE )
 								AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
@@ -1363,6 +1365,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	SCROLLINFO si = {0}, *psi = &si;
 	POINT pt = {0};
 	BOOL  wasFirstAppend = (dat->isAutoRTL & 2) ? TRUE : FALSE;
+	BOOL  isSent;
+
 
 	/*
 	 * calc time limit for grouping
@@ -1532,7 +1536,17 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_REPLACESEL, FALSE, (LPARAM)_T(""));
 		dat->isAutoRTL |= 2;
 	}
-	ReplaceIcons(hwndDlg, dat, startAt, fAppend);
+
+	if (streamData.dbei != 0)
+		isSent = (streamData.dbei->flags & DBEF_SENT) != 0;
+	else {
+		DBEVENTINFO dbei = {0};
+		dbei.cbSize = sizeof(dbei);
+		CallService(MS_DB_EVENT_GET, (WPARAM) hDbEventFirst, (LPARAM)&dbei);
+		isSent = (dbei.flags & DBEF_SENT) != 0;
+	}
+
+	ReplaceIcons(hwndDlg, dat, startAt, fAppend, isSent);
 	dat->clr_added = FALSE;
 
 	SendMessage(hwndDlg, DM_FORCESCROLL, (WPARAM)&pt, (LPARAM)psi);
@@ -1542,7 +1556,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, 
 	if (streamData.buffer) free(streamData.buffer);
 }
 
-static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend)
+static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG startAt, int fAppend, BOOL isSent)
 {
 	FINDTEXTEXA fi;
 	CHARFORMAT2 cf2;
@@ -1639,6 +1653,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
 		smadd.hwndRichEditControl = GetDlgItem(hwndDlg, IDC_LOG);
 		smadd.Protocolname = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 		smadd.hContact = dat->bIsMeta ? dat->hSubContact : dat->hContact;
+		smadd.flags = isSent ? SAFLRE_OUTGOING : 0;
 
 		if (startAt > 0)
 			smadd.rangeToReplace = &sel;

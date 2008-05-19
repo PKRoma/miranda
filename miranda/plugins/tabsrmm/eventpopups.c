@@ -1107,7 +1107,6 @@ static BOOL CALLBACK PopupDlgProcW(HWND hWnd, UINT message, WPARAM wParam, LPARA
 		case WM_MOUSEWHEEL:
 			break;
 		case WM_SETCURSOR:
-			//SetFocus(hWnd);
 			break;
 		case WM_TIMER: {
 			POINT	pt;
@@ -1511,8 +1510,15 @@ int UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, T
 
 int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, char *szProto, struct MessageWindowData *dat)
 {
+	int heFlags;
+
 	if (nen_options.iDisable)                         // no popups at all. Period
 		return 0;
+
+	heFlags = HistoryEvents_GetFlags(eventType);
+	if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_DEFAULT)) // Filter history events popups
+		return 0;
+
 	/*
 	 * check the status mode against the status mask
 	 */

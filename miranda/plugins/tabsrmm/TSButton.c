@@ -765,24 +765,31 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 		}
 		case WM_LBUTTONUP: {
 			RECT rc;
-
+			int  showClick = 0;
+            
 			if (bct->pushBtn) {
 				if (bct->pbState) bct->pbState = 0;
 				else bct->pbState = 1;
 			}
 			if (bct->stateId != PBS_DISABLED) { // don't change states if disabled
-				if (msg == WM_LBUTTONUP) bct->stateId = PBS_HOT;
-				else bct->stateId = PBS_NORMAL;
+				if(bct->stateId == PBS_PRESSED || bct->stateId == PBS_PUSHDOWNPRESSED)
+					showClick = 1;
+				if (msg == WM_LBUTTONUP) 
+					bct->stateId = PBS_HOT;
+				else 
+					bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			if (bct->arrow) {
 				GetClientRect(bct->hwnd, &rc);
 				if (LOWORD(lParam) > rc.right - 12) {
-					SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(bct->arrow, BN_CLICKED), (LPARAM)hwndDlg);
+					if(showClick)
+					   SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(bct->arrow, BN_CLICKED), (LPARAM)hwndDlg);
 					break;
 				}
 			}
-			SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
+			if(showClick)
+		          SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
 			break;
 		}
 		case WM_MOUSEMOVE:

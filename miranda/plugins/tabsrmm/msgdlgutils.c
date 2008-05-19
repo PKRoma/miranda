@@ -45,9 +45,6 @@ extern      HANDLE hMessageWindowList;
 extern      StatusItems_t StatusItems[];
 extern      TCHAR *xStatusDescr[];
 
-#define DPISCALEX(argX) ((int) ((argX) * myGlobals.g_DPIscaleX))
-#define DPISCALEY(argY) ((int) ((argY) * myGlobals.g_DPIscaleY))
-
 void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cControls, int state);
 
 
@@ -1829,8 +1826,8 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 		}
 	}
 
-	if (dat->splitterY < DPISCALEY(MINSPLITTERY) || dat->splitterY < 0)
-		dat->splitterY = DPISCALEY(MINSPLITTERY);
+	if (dat->splitterY < DPISCALEY_S(MINSPLITTERY) || dat->splitterY < 0)
+		dat->splitterY = DPISCALEY_S(MINSPLITTERY);
 
 	if (dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)
 		DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", dat->splitterY);
@@ -1841,11 +1838,11 @@ void SaveSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 void LoadSplitter(HWND hwndDlg, struct MessageWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
-		dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60);
+		dat->splitterY = (int)DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60);
 	else
-		dat->splitterY = (int) DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60));
+		dat->splitterY = (int)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "splitsplity", DBGetContactSettingDword(NULL, SRMSGMOD_T, "splitsplity", (DWORD) 60));
 
-	if (dat->splitterY < DPISCALEY(MINSPLITTERY) || dat->splitterY < 0)
+	if (dat->splitterY < DPISCALEY_S(MINSPLITTERY) || dat->splitterY < 0)
 		dat->splitterY = 150;
 }
 
