@@ -35,13 +35,10 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.5\\b0\\ul0\\par ",
-	"*\tbug fixes: smiley button visual glitch, group chat option tree icon(s), possible crash with tool bar config, wrong background colors in the message log, \"load actual history\" now works, small adjustments for minimum splitter position.\\par ",
-	"*\tReorganized group chat options completed.\\par ",
-	"*\tAdded support for the history events plugin by pescuma.\\par ",
-	"*\tRemoved obsolute features (7bit ANSI check for outgoing messages, useless menu entries in the help menu).\\par ",
-	"*\tChanges to the popup system (infinite timeout now possible, no timeout for error popups).\\par ",
-	"*\tChanges to typing notify options.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.6\\b0\\ul0\\par ",
+	"*\tbug fixes: Revert option in advanced tweaks, history event suppport (possible crash).\\par ",
+	"*\tLayout tweaks for 120dpi setting.\\par ",
+	"*\tCustom emoticons patch by borkra (show custom emoticons on incoming messages only).\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };

@@ -329,6 +329,7 @@ LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {	
 
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(GetParent(GetParent(hwnd))), GWL_USERDATA);
+
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
@@ -343,8 +344,7 @@ LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					wParam != VK_SPACE)	{
 						SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
 						keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-
-					return 0;
+						return 0;
 				}
 				break;
 			}
@@ -2979,11 +2979,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->szMicroLf[0] = 0;
 			dat->lastEventTime = 0;
 			dat->iLastEventType = -1;
-			while (dat->hDbEventFirst && dat->hDbEventFirst != dat->hDbEventLastFeed) {
-				StreamInEvents(hwndDlg, dat->hDbEventFirst, 1, 1, NULL);
-				dat->hDbEventLastFeed = dat->hDbEventFirst;
-				dat->hDbEventFirst = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) dat->hDbEventFirst, 0);					
-			}
+			StreamInEvents(hwndDlg, dat->hDbEventFirst, -1, 0, NULL);
 			return 0;
 		case DM_APPENDTOLOG:
 			dat->hDbEventLastFeed = (HANDLE)wParam;
