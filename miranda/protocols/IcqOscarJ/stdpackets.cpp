@@ -226,7 +226,7 @@ void CIcqProto::icq_setidle(int bAllow)
 {
 	icq_packet packet;
 
-	if (bAllow!=m_bIdleAllow)
+	if (bAllow != m_bIdleAllow)
 	{
 		/* SNAC 1,11 */
 		serverPacketInit(&packet, 14);
@@ -236,8 +236,8 @@ void CIcqProto::icq_setidle(int bAllow)
 		else
 			packDWord(&packet, 0x00000000);
 
-		sendServPacket(&packet);
 		m_bIdleAllow = bAllow;
+		sendServPacket(&packet);
 	}
 }
 
