@@ -125,14 +125,13 @@ int CIcqProto::FindCookie(DWORD dwCookie, HANDLE *phContact, void **ppvExtra)
 	return nFound;
 }
 
-int CIcqProto::FindCookieByData(void *pvExtra,DWORD *pdwCookie, HANDLE *phContact)
+int CIcqProto::FindCookieByData(void *pvExtra, DWORD *pdwCookie, HANDLE *phContact)
 {
-	int i;
 	int nFound = 0;
 
 	EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookies.getCount(); i++)
+	for (int i = 0; i < cookies.getCount(); i++)
 	{
 		if (pvExtra == cookies[i]->pvExtra)
 		{
@@ -144,7 +143,6 @@ int CIcqProto::FindCookieByData(void *pvExtra,DWORD *pdwCookie, HANDLE *phContac
 			// Cookie found, exit loop
 			nFound = 1;
 			break;
-
 		}
 	}
 
@@ -153,15 +151,42 @@ int CIcqProto::FindCookieByData(void *pvExtra,DWORD *pdwCookie, HANDLE *phContac
 	return nFound;
 }
 
+int CIcqProto::FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void** ppvExtra)
+{
+  int nFound = 0;
+
+  EnterCriticalSection(&cookieMutex);
+
+  for (int i = 0; i < cookies.getCount(); i++)
+  {
+    if (bType == cookies[i]->bType)
+    {
+      if (pdwCookie)
+        *pdwCookie = cookies[i]->dwCookie;
+      if (phContact)
+        *phContact = cookies[i]->hContact;
+      if (ppvExtra)
+        *ppvExtra = cookies[i]->pvExtra;
+
+      // Cookie found, exit loop
+      nFound = 1;
+      break;
+    }
+  }
+
+  LeaveCriticalSection(&cookieMutex);
+
+  return nFound;
+}
+
 int CIcqProto::FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, HANDLE *phContact, message_cookie_data **ppvExtra)
 {
-	int i;
 	int nFound = 0;
 
 
 	EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookies.getCount(); i++)
+	for (int i = 0; i < cookies.getCount(); i++)
 	{
 		if (cookies[i]->bType == CKT_MESSAGE || cookies[i]->bType == CKT_FILE || cookies[i]->bType == CKT_REVERSEDIRECT)
 		{ // message cookie found
@@ -208,11 +233,9 @@ void CIcqProto::FreeCookie(DWORD dwCookie)
 
 void CIcqProto::FreeCookieByData(BYTE bType, void *pvExtra)
 {
-	int i;
-
 	EnterCriticalSection(&cookieMutex);
 
-	for (i = 0; i < cookies.getCount(); i++)
+	for (int i = 0; i < cookies.getCount(); i++)
   {
     icq_cookie_info *cookie = cookies[i];
 

@@ -262,6 +262,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int    FindCookie(DWORD wCookie, HANDLE *phContact, void **ppvExtra);
 	int    FindCookieByData(void *pvExtra, DWORD *pdwCookie, HANDLE *phContact);
+  int    FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void** ppvExtra);
 	int    FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, HANDLE *phContact, message_cookie_data **ppvExtra);
 
 	void   InitMessageCookie(message_cookie_data *pCookie);

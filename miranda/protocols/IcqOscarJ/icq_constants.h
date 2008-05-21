@@ -393,6 +393,7 @@
 #define CLASS_BOT                   0x0400
 
 // Reply types for SNAC 15/02 & 15/03
+#define CLI_DELETE_OFFLINE_MSGS_REQ 0x003E
 #define CLI_META_INFO_REQ           0x07D0
 #define SRV_META_INFO_REPLY         0x07DA
 
@@ -554,7 +555,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80050001
+#define ICQ_PLUG_VERSION            0x80050002
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15

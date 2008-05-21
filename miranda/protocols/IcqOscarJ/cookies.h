@@ -70,6 +70,7 @@ typedef struct familyrequest_rec_s
 typedef struct offline_message_cookie_s
 {
   int nMessages;
+  int nMissed;
 } offline_message_cookie;
 
 typedef struct message_cookie_data_s
