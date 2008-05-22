@@ -51,28 +51,20 @@ Returns 0 on success or nonzero otherwise
 #define MS_HOTKEY_REGISTER			"CoreHotkeys/Register"
 
 /* CoreHotkeys/Register service
+Registers new hotkey
+  wParam=(WPARAM)0
+  lParam=(LPARAM)(char *)pszName
+Returns 0 on success or nonzero otherwise
+*/
+#define MS_HOTKEY_UNREGISTER		"CoreHotkeys/Unregister"
+
+/* CoreHotkeys/Register service
 Checks if "manual" hotkey was activated and returns its id.
   wParam=(WPARAM)(MSG *)message
   lParam=(LPARAM)(char *)pszSection
 Returns lParam associated with activated hotkey
 */
 #define MS_HOTKEY_CHECK				"CoreHotkeys/Check"
-
-/* CoreHotkeys/VKey2Name service
-Converts VK key code to human-readable name
-  wParam=(WPARAM)vkKey
-  lParam=(LPARAM)0
-Returns const char * null-terminated key name
-*/
-#define MS_HOTKEY_VKEY2NAME			"CoreHotkeys/VKey2Name"
-
-/* CoreHotkeys/Hotkey2Name service
-Fills provided buffer with hotkey name
-  wParam=(WPARAM)MAKEDOWRD(MAKEWORD(vkKey, <set of HOTKEYF_* flags>), bufSize)
-  lParam=(LPARAM)(char *)buf
-Returns zero on success
-*/
-#define MS_HOTKEY_HOTKEY2NAME		"CoreHotkeys/Hotkey2Name"
 
 /* Subclass/unsubclass edit box to act as hotkey control
   wParam=(WPARAM)(HWND)hwndEdit
@@ -92,6 +84,7 @@ use it for own purposes.
 #define MS_HOTKEY_UNSUBCLASS		"CoreHotkeys/Unsubclass"
 
 #endif // M_HOTKEYS_H__
+
 
 
 
