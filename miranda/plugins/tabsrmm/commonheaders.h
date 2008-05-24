@@ -107,7 +107,7 @@ typedef unsigned short wchar_t;
 #include "buttonsbar.h"
 //
 //Bolshevik: avatar control
-#include "../avs/m_acc.h"
+#include "m_acc.h"
 //Bolshevik_
 
 extern struct LIST_INTERFACE li;
