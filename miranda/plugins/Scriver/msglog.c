@@ -617,9 +617,9 @@ static char *CreateRTFFromDbEvent2(struct MessageWindowData *dat, struct EventDa
 	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 
-
-	if (event->eventType != EVENTTYPE_MESSAGE && event->eventType != EVENTTYPE_FILE && event->eventType != EVENTTYPE_URL)
-		heFlags = HistoryEvents_GetFlags((WORD) event->eventType);
+	heFlags = HistoryEvents_GetFlags((WORD) event->eventType);
+	if (heFlags != -1 && (heFlags & HISTORYEVENTS_FLAG_DEFAULT))
+		heFlags = -1;
 
  	if ((g_dat->flags & SMF_GROUPMESSAGES) && event->dwFlags == LOWORD(dat->lastEventType)
 	  && event->eventType == EVENTTYPE_MESSAGE && HIWORD(dat->lastEventType) == EVENTTYPE_MESSAGE

@@ -1786,6 +1786,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (dat->hDbEventFirst == NULL)
 				dat->hDbEventFirst = (HANDLE) lParam;
 			if (DbEventIsShown(&dbei, dat)) {
+				int heFlags = HistoryEvents_GetFlags(dbei.eventType);
+				if (heFlags != -1 && (heFlags & HISTORYEVENTS_FLAG_DEFAULT))
+					heFlags = -1;
+
 				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
 					/* store the event when the container is hidden so that clist notifications can be removed */
 					if (!IsWindowVisible(GetParent(hwndDlg)) && dat->hDbUnreadEventFirst == NULL)
@@ -1806,7 +1810,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
 				else
 					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-				if (!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES && dbei.eventType != EVENTTYPE_JABBER_PRESENCE) {
+				if (!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES && dbei.eventType != EVENTTYPE_JABBER_PRESENCE && (heFlags == -1 || (heFlags & HISTORYEVENTS_FLAG_FLASH_MSG_WINDOW))) {
 					if (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent || dat->parent->hwndActive != hwndDlg) {
 						dat->showUnread = 1;
 						SendMessage(hwndDlg, DM_UPDATEICON, 0, 0);
