@@ -208,6 +208,7 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define CLIENT_AIM_TRITON				"AIM Triton"
 #define CLIENT_AIMTOC					"AIM TOC"
 #define CLIENT_GAIM						"Gaim"
+#define CLIENT_PURPLE					"Purple"
 #define CLIENT_ADIUM					"Adium X"
 #define CLIENT_GPRS						"GPRS"
 #define CLIENT_ICHAT					"iChat"

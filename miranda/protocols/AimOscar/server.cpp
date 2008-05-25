@@ -507,6 +507,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					strlcpy(client,CLIENT_AIMTOC,100);
 				else if(l343&&l345&&l346&&tlv.len()==6)
 					strlcpy(client,CLIENT_GAIM,100);
+				else if(l343&&l345&&l346&&l34e&&tlv.len()==8)
+					strlcpy(client,CLIENT_PURPLE,100);
 				else if(l343&&l345&&l34e&&tlv.len()==6)
 					strlcpy(client,CLIENT_ADIUM,100);
 				else if(l343&&l346&&l34e&&tlv.len()==6)
