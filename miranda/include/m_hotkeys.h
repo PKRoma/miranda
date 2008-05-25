@@ -50,15 +50,15 @@ Returns 0 on success or nonzero otherwise
 */
 #define MS_HOTKEY_REGISTER			"CoreHotkeys/Register"
 
-/* CoreHotkeys/Register service
-Registers new hotkey
+/* CoreHotkeys/Unregister service
+Unregister existing hotkey
   wParam=(WPARAM)0
   lParam=(LPARAM)(char *)pszName
 Returns 0 on success or nonzero otherwise
 */
 #define MS_HOTKEY_UNREGISTER		"CoreHotkeys/Unregister"
 
-/* CoreHotkeys/Register service
+/* CoreHotkeys/Check service
 Checks if "manual" hotkey was activated and returns its id.
   wParam=(WPARAM)(MSG *)message
   lParam=(LPARAM)(char *)pszSection
@@ -84,8 +84,3 @@ use it for own purposes.
 #define MS_HOTKEY_UNSUBCLASS		"CoreHotkeys/Unsubclass"
 
 #endif // M_HOTKEYS_H__
-
-
-
-
-
