@@ -355,7 +355,10 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 							delete[] data;
 					}
 					if(bot)
+					{
+						strlcpy(client,CLIENT_BOT,100);
 						bot_user=1;
+					}
 					if(wireless)
 					{
 						strlcpy(client,CLIENT_SMS,100);
