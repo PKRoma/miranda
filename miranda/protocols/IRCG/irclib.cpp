@@ -862,8 +862,15 @@ void CIrcProto::OnIrcMessage(const CIrcMessage* pmsg)
 		if ( pfn ) {
 			// call member function. if it returns 'false',
 			// call the default handling
-			if ( !(this->*pfn)( pmsg ))
-				OnIrcDefault( pmsg );
+			__try
+			{
+				if ( !(this->*pfn)( pmsg ))
+					OnIrcDefault( pmsg );
+			}
+			__except( EXCEPTION_EXECUTE_HANDLER ) // dedicated to Sava :)
+			{
+				DoNetlibLog( "IRC handler feels sick: %S", pmsg->sCommand.c_str() );
+			}
 		}
 		else // handler not found. call default handler
 			OnIrcDefault( pmsg );
