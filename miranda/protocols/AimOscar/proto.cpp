@@ -129,15 +129,12 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 	else DBFreeVariant(&dbv);
 
-	if(getByte( AIM_KEY_DM,255)==255)
+	if(getByte(AIM_KEY_DM,255)==255)
 	{
-		int i=getByte( OLD_KEY_DM,255);
+		int i=getByte(OLD_KEY_DM,255);
 		if(i!=255)
 		{
-			if(i==1)
-				setByte( AIM_KEY_DM,0);
-			else
-				setByte( AIM_KEY_DM,1);
+			setByte(AIM_KEY_DM, i!=1);
 			DBDeleteContactSetting(NULL, m_szModuleName, OLD_KEY_DM);
 	}	}
 
