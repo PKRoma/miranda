@@ -5,14 +5,8 @@ void __cdecl aim_keepalive_thread( CAimProto* ppro )
 {
 	if ( !ppro->hKeepAliveEvent ) {
 		ppro->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		#if _MSC_VER
-			#pragma warning( disable: 4127)
-		#endif
-		while( true )
+		for(;;)
 		{
-			#if _MSC_VER
-				#pragma warning( default: 4127)
-			#endif
 			DWORD dwWait = WaitForSingleObjectEx(ppro->hKeepAliveEvent, 1000*DEFAULT_KEEPALIVE_TIMER, TRUE);
 			if (dwWait == WAIT_OBJECT_0) break; // we should end
 			else if (dwWait == WAIT_TIMEOUT)

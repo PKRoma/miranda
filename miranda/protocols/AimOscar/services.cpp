@@ -152,14 +152,8 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 	DBVARIANT dbv;
 	if ( !getString((HANDLE)wParam, AIM_KEY_SN, &dbv )) {
 		int i=1;
-		#if _MSC_VER
-			#pragma warning( disable: 4127)
-		#endif
-		while(1)
+		for(;;)
 		{
-			#if _MSC_VER
-				#pragma warning( default: 4127)
-			#endif
 			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);

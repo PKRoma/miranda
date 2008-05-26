@@ -35,14 +35,8 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 			hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)Connection, 2048 * 4);
 			packetRecv.cbSize = sizeof(packetRecv);
 			packetRecv.dwTimeout = INFINITE;
-			#if _MSC_VER
-			#pragma warning( disable: 4127)
-			#endif
-			while(1)
+			for(;;)
 			{
-				#if _MSC_VER
-				#pragma warning( default: 4127)
-				#endif
 				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 				if ( recvResult == 0) {
 					ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)p->hContact,0);

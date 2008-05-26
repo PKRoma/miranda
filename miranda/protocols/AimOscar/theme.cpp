@@ -126,7 +126,7 @@ void CAimProto::ReleaseIconEx(const char* name)
 int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
 int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 
-int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam)
+int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));

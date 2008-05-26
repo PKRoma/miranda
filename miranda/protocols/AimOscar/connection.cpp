@@ -72,14 +72,8 @@ void __cdecl aim_connection_authorization( CAimProto* ppro )
 	ppro->hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hServerConn, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 5000;
-#if _MSC_VER
-#pragma warning( disable: 4127)
-#endif
-	while(1)
+	for(;;)
 	{
-#if _MSC_VER
-#pragma warning( default: 4127)
-#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) ppro->hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
@@ -152,14 +146,8 @@ void __cdecl aim_protocol_negotiation( CAimProto* ppro )
 	ppro->hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hServerConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;	
-#if _MSC_VER
-#pragma warning( disable: 4127)
-#endif
-	while(1)
+	for(;;)
 	{
-#if _MSC_VER
-#pragma warning( default: 4127)
-#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)ppro->hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
@@ -255,14 +243,8 @@ void __cdecl aim_mail_negotiation( CAimProto* ppro )
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hMailConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
-#if _MSC_VER
-#pragma warning( disable: 4127)
-#endif
 	while(ppro->m_iStatus!=ID_STATUS_OFFLINE)
 	{
-#if _MSC_VER
-#pragma warning( default: 4127)
-#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{
@@ -331,14 +313,8 @@ void __cdecl aim_avatar_negotiation( CAimProto* ppro )
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)ppro->hAvatarConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 300000;//5 minutes connected
-#if _MSC_VER
-#pragma warning( disable: 4127)
-#endif
-	while(1)
+	for(;;)
 	{
-#if _MSC_VER
-#pragma warning( default: 4127)
-#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 		{

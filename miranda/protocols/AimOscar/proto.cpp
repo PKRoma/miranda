@@ -2,15 +2,13 @@
 
 #include "m_genmenu.h"
 
-#pragma warning(disable:4355)
-
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
 	m_szProtoName = mir_strdup( aProtoName );
 	_strlwr( m_szProtoName );
-	m_szProtoName[0] = toupper( m_szProtoName[0] );
+	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
 	//create some events
@@ -117,7 +115,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	else
 		DBFreeVariant(&dbv);
 	
-	if(getWord( AIM_KEY_GP, -1)==-1)
+	if(getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
 		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
 	if(getString(AIM_KEY_PW, &dbv))
@@ -131,10 +129,10 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	}
 	else DBFreeVariant(&dbv);
 
-	if(getByte( AIM_KEY_DM,-1)==-1)
+	if(getByte( AIM_KEY_DM,255)==255)
 	{
-		int i=getByte( OLD_KEY_DM,-1);
-		if(i!=-1)
+		int i=getByte( OLD_KEY_DM,255);
+		if(i!=255)
 		{
 			if(i==1)
 				setByte( AIM_KEY_DM,0);
@@ -303,7 +301,7 @@ int __cdecl CAimProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CAimProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason )
+int __cdecl CAimProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* /*szReason*/ )
 {
 	DBVARIANT dbv;
 	if ( !getString( hContact, AIM_KEY_SN, &dbv )) {

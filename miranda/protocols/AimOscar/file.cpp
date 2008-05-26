@@ -68,14 +68,8 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hNewConnection, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 100*getWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
-	while(1)
+	for(;;)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 			{
@@ -206,14 +200,8 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hNewConnection, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 100*getWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
-	#if _MSC_VER
-	#pragma warning( disable: 4127)
-	#endif
-	while(1)
+	for(;;)
 	{
-		#if _MSC_VER
-		#pragma warning( default: 4127)
-		#endif
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 		if (recvResult == 0)
 			{

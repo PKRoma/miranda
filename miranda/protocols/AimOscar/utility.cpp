@@ -296,14 +296,8 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 	{
 		//We need some of this stuff if we are still online.
 		int i=1;
-		#if _MSC_VER
-		#pragma warning( disable: 4127)
-		#endif
-		while(1)
+		for(;;)
 		{
-			#if _MSC_VER
-			#pragma warning( default: 4127)
-			#endif
 			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
@@ -677,14 +671,8 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{		
 				int i=1;
-				#if _MSC_VER
-				#pragma warning( disable: 4127)
-				#endif
-				while(1)
+				for(;;)
 				{
-					#if _MSC_VER
-					#pragma warning( default: 4127)
-					#endif
 					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, item,0))
@@ -732,14 +720,8 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 				int i=1;
-				#if _MSC_VER
-					#pragma warning( disable: 4127)
-				#endif
-				while(1)
+				for(;;)
 				{
-					#if _MSC_VER
-						#pragma warning( default: 4127)
-					#endif
 					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 					char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
