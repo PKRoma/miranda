@@ -30,13 +30,13 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
 	long_ip_to_char_ip(dwRemoteIP,ip);
 	HANDLE hContact=(HANDLE)DBGetContactSettingDword(NULL,ppro->FILE_TRANSFER_KEY,ip,0);//do we know their ip? We should if they are receiving
 	DBDeleteContactSetting(NULL,ppro->FILE_TRANSFER_KEY,ip);
-	short file_transfer_type=-1;
+	int file_transfer_type=255;
 	if(!hContact)//maybe they are the current file send transfer user?
 		hContact = ppro->current_rendezvous_accept_user;
 	if(hContact)
 	{
 		ProtoBroadcastAck(ppro->m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED,hContact, 0);
-		file_transfer_type=(short)DBGetContactSettingByte(hContact,ppro->m_szModuleName,AIM_KEY_FT,-1);//okay now we see if they belong
+		file_transfer_type=DBGetContactSettingByte(hContact,ppro->m_szModuleName,AIM_KEY_FT,255);//okay now we see if they belong
 	}
 	if(file_transfer_type==1)//we are sending
 	{
