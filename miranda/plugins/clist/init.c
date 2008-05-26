@@ -28,8 +28,6 @@ PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 HIMAGELIST himlCListClc = NULL;
 
-extern int currentDesiredStatusMode;
-
 struct MM_INTERFACE mmi;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
 
