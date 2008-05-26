@@ -28,7 +28,9 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
+	".\hdr\modern_clui.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
 	".\hdr\modern_commonprototypes.h"\
@@ -47,8 +49,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	".\version.h"\
 	
 
@@ -99,8 +100,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_awaymsg.cpp : \
@@ -151,8 +151,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_cachefuncs.cpp : \
@@ -203,8 +202,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clc.cpp : \
@@ -235,6 +233,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -254,8 +253,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcidents.cpp : \
@@ -305,8 +303,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcitems.cpp : \
@@ -356,8 +353,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcmsgs.cpp : \
@@ -407,8 +403,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcopts.cpp : \
@@ -460,8 +455,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcpaint.cpp : \
@@ -492,6 +486,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -511,8 +506,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clcutils.cpp : \
@@ -562,8 +556,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clistevents.cpp : \
@@ -594,6 +587,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -613,8 +607,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clistmenus.cpp : \
@@ -664,8 +657,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clistmod.cpp : \
@@ -715,8 +707,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clistopts.cpp : \
@@ -766,8 +757,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clistsettings.cpp : \
@@ -818,8 +808,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clisttray.cpp : \
@@ -869,8 +858,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_clui.cpp : \
@@ -901,6 +889,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_clui.h"\
 	".\hdr\modern_cluiframes.h"\
@@ -914,6 +903,7 @@
 	".\hdr\modern_rowheight_funcs.h"\
 	".\hdr\modern_skinengine.h"\
 	".\hdr\modern_skinselector.h"\
+	".\hdr\modern_static_clui.h"\
 	".\hdr\modern_statusbar.h"\
 	".\m_api\m_cluiframes.h"\
 	".\m_api\m_metacontacts.h"\
@@ -921,8 +911,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_cluiframes.cpp : \
@@ -972,8 +961,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_cluiservices.cpp : \
@@ -1023,8 +1011,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_commonheaders.cpp : \
@@ -1074,8 +1061,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_contact.cpp : \
@@ -1125,8 +1111,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_docking.cpp : \
@@ -1176,8 +1161,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_extraimage.cpp : \
@@ -1227,8 +1211,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_framesmenu.cpp : \
@@ -1278,11 +1261,40 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_gdiplus.cpp : \
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplus.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbase.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbitmap.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbrush.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscachedbitmap.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscolor.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscolormatrix.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusenums.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusflat.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfont.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontcollection.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontfamily.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusgpstubs.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusgraphics.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusheaders.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimageattributes.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimagecodec.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimaging.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusinit.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluslinecaps.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmatrix.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmem.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetafile.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetaheader.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspath.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspen.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspixelformats.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusregion.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusstringformat.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplustypes.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_plugins.h"\
 	"..\..\include\m_stdhdr.h"\
@@ -1291,7 +1303,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\win2k.h"\
 	".\hdr\modern_global_structure.h"\
-	".\resource.h"\
 	
 
 .\modern_gettextasync.cpp : \
@@ -1342,8 +1353,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_global.cpp : \
@@ -1393,8 +1403,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_groupmenu.cpp : \
@@ -1444,8 +1453,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_image_array.cpp : \
@@ -1495,8 +1503,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_keyboard.cpp : \
@@ -1547,8 +1554,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_log.cpp : \
@@ -1598,8 +1604,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_newrowopts.cpp : \
@@ -1649,8 +1654,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_popup.cpp : \
@@ -1702,8 +1706,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_row.cpp : \
@@ -1753,8 +1756,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_rowheight_funcs.cpp : \
@@ -1785,6 +1787,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -1804,8 +1807,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_rowtemplateopt.cpp : \
@@ -1855,8 +1857,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_skinbutton.cpp : \
@@ -1887,6 +1888,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -1906,8 +1908,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_skineditor.cpp : \
@@ -1957,8 +1958,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_skinengine.cpp : \
@@ -2010,8 +2010,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_skinopt.cpp : \
@@ -2061,8 +2060,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_skinselector.cpp : \
@@ -2112,8 +2110,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_statusbar.cpp : \
@@ -2144,6 +2141,7 @@
 	"..\..\include\win2k.h"\
 	".\hdr\modern_cache_funcs.h"\
 	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
 	".\hdr\modern_clist.h"\
 	".\hdr\modern_cluiframes.h"\
 	".\hdr\modern_commonheaders.h"\
@@ -2163,11 +2161,10 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
-.\modern_tbbutton.cpp : \
+.\modern_statusbar_options.cpp : \
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2211,12 +2208,62 @@
 	".\m_api\m_cluiframes.h"\
 	".\m_api\m_metacontacts.h"\
 	".\m_api\m_skin_eng.h"\
+	".\m_api\m_smileyadd.h"\
+	".\m_api\m_toolbar.h"\
+	".\m_api\m_variables.h"\
+	".\m_api\m_xptheme.h"\
+	
+
+.\modern_tbbutton.cpp : \
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\hdr\modern_cache_funcs.h"\
+	".\hdr\modern_clc.h"\
+	".\hdr\modern_clcpaint.h"\
+	".\hdr\modern_clist.h"\
+	".\hdr\modern_cluiframes.h"\
+	".\hdr\modern_commonheaders.h"\
+	".\hdr\modern_commonprototypes.h"\
+	".\hdr\modern_defsettings.h"\
+	".\hdr\modern_global_structure.h"\
+	".\hdr\modern_image_array.h"\
+	".\hdr\modern_log.h"\
+	".\hdr\modern_row.h"\
+	".\hdr\modern_rowheight_funcs.h"\
+	".\hdr\modern_skinengine.h"\
+	".\hdr\modern_skinselector.h"\
+	".\hdr\modern_statusbar.h"\
+	".\m_api\m_cluiframes.h"\
+	".\m_api\m_metacontacts.h"\
+	".\m_api\m_skin_eng.h"\
 	".\m_api\m_skinbutton.h"\
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_toolbar.cpp : \
@@ -2267,11 +2314,11 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_viewmodebar.cpp : \
+	"..\..\..\..\program files\microsoft platform sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2319,8 +2366,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\modern_xptheme.cpp : \
@@ -2370,8 +2416,7 @@
 	".\m_api\m_smileyadd.h"\
 	".\m_api\m_toolbar.h"\
 	".\m_api\m_variables.h"\
-	".\m_api\m_xpTheme.h"\
-	".\resource.h"\
+	".\m_api\m_xptheme.h"\
 	
 
 .\resource.rc : \
@@ -2420,5 +2465,4 @@
 	".\res\set_view.ico"\
 	".\res\show_avatar.ico"\
 	".\res\skin.msf"\
-	".\resource.h"\
 	

@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on modernb.dsp
 !IF "$(CFG)" == ""
 CFG=modernb - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to modernb - Win32 Debug Unicode.
+!MESSAGE No configuration specified. Defaulting to modernb - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "modernb - Win32 Release" && "$(CFG)" != "modernb - Win32 Debug" && "$(CFG)" != "modernb - Win32 Release Unicode" && "$(CFG)" != "modernb - Win32 Debug Unicode"
@@ -79,6 +79,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinopt.obj"
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_statusbar_options.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -182,6 +183,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_skinopt.obj" \
 	"$(INTDIR)\modern_skinselector.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_statusbar_options.obj" \
 	"$(INTDIR)\modern_tbbutton.obj" \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
@@ -245,6 +247,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinopt.obj"
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_statusbar_options.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -348,6 +351,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_skinopt.obj" \
 	"$(INTDIR)\modern_skinselector.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_statusbar_options.obj" \
 	"$(INTDIR)\modern_tbbutton.obj" \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
@@ -411,6 +415,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinopt.obj"
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_statusbar_options.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -514,6 +519,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_skinopt.obj" \
 	"$(INTDIR)\modern_skinselector.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_statusbar_options.obj" \
 	"$(INTDIR)\modern_tbbutton.obj" \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
@@ -577,6 +583,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinopt.obj"
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
+	-@erase "$(INTDIR)\modern_statusbar_options.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -680,6 +687,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_skinopt.obj" \
 	"$(INTDIR)\modern_skinselector.obj" \
 	"$(INTDIR)\modern_statusbar.obj" \
+	"$(INTDIR)\modern_statusbar_options.obj" \
 	"$(INTDIR)\modern_tbbutton.obj" \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
@@ -1503,6 +1511,11 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 
 !ENDIF
+
+SOURCE=.\modern_statusbar_options.cpp
+
+"$(INTDIR)\modern_statusbar_options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
 
 SOURCE=.\modern_tbbutton.cpp
 
