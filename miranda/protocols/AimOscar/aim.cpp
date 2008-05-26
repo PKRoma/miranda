@@ -5,7 +5,7 @@ MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
 HINSTANCE hInstance;
 
-#define AIM_OSCAR_VERSION "\0\0\0\x07"
+#define AIM_OSCAR_VERSION "\0\x08\0\x0"
 char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.8.0.0";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 
