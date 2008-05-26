@@ -930,7 +930,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		else if(recv_file_type==0&&request_num==1)//buddy wants to send us a file
 		{
 			LOG("Buddy Wants to Send us a file. Request 1");
-			if(DBGetContactSettingByte(hContact,m_szModuleName,AIM_KEY_FT,-1)!=-1)
+			if(DBGetContactSettingByte(hContact,m_szModuleName,AIM_KEY_FT,255)!=255)
 			{
 				ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 				return;

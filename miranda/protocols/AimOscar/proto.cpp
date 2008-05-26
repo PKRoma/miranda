@@ -257,8 +257,8 @@ HANDLE __cdecl CAimProto::ChangeInfo( int iInfoType, void* pInfoData )
 
 int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
 {
-	int ft = getByte( hContact, AIM_KEY_FT, -1 );
-	if ( ft != -1 ) {
+	int ft = getByte( hContact, AIM_KEY_FT, 255 );
+	if ( ft != 255 ) {
 		char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip;
 		szFile = (char*)szPath + sizeof(DWORD);
 		szDesc = szFile + lstrlenA(szFile) + 1;
@@ -291,7 +291,7 @@ int __cdecl CAimProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 		DBFreeVariant( &dbv );
 	}
 
-	if ( getByte( hContact, AIM_KEY_FT, -1 ) != -1 ) {
+	if ( getByte( hContact, AIM_KEY_FT, 255 ) != 255 ) {
 		HANDLE Connection = (HANDLE)getDword( hContact, AIM_KEY_DH, 0 );
 		if ( Connection )
 			Netlib_CloseHandle( Connection );
@@ -547,7 +547,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		return 0;
 
 	if ( hContact && szDescription && ppszFiles ) {
-		if ( getByte( hContact, AIM_KEY_FT, -1 ) != -1 ) {
+		if ( getByte( hContact, AIM_KEY_FT, 255 ) != 255 ) {
 			ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 			return 0;
 		}
