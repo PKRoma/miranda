@@ -265,8 +265,11 @@ int MSN_GetPassportAuth( void )
 
 	if ( retVal != 0 ) 
 	{
-		MSN_ShowError( retVal == 3 ? "Your username or password is incorrect" : 
-			"Unable to contact MS Passport servers check proxy/firewall settings" );
+		if (!Miranda_Terminated())
+		{
+			MSN_ShowError( retVal == 3 ? "Your username or password is incorrect" : 
+				"Unable to contact MS Passport servers check proxy/firewall settings" );
+		}
 		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 	}
 	else
