@@ -670,7 +670,7 @@ void CAimProto::SetStatusWorker( int iNewStatus )
 			break;
 
 		case ID_STATUS_INVISIBLE:
-			broadcast_status(m_iStatus);
+			broadcast_status(ID_STATUS_INVISIBLE);
 			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
 			break;
 
