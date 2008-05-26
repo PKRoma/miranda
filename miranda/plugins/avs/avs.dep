@@ -1,6 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by avs.mak
 
 .\acc.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -19,6 +20,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -29,7 +31,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -39,9 +40,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\image_utils.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -60,6 +92,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -70,7 +103,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -80,9 +112,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\main.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -101,6 +164,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -111,7 +175,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -122,9 +185,40 @@
 	".\mir_thread.h"\
 	".\poll.h"\
 	".\version.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\mir_dblists.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -143,6 +237,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -153,7 +248,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -163,9 +257,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\mir_memory.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -184,6 +309,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -194,7 +320,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -204,9 +329,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\mir_thread.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -225,6 +381,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -235,7 +392,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -245,9 +401,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\options.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -266,6 +453,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -276,7 +464,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -286,9 +473,40 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\poll.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -307,6 +525,7 @@
 	"..\..\include\m_protocols.h"\
 	"..\..\include\m_protosvc.h"\
 	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
@@ -317,7 +536,6 @@
 	".\acc.h"\
 	".\commonheaders.h"\
 	".\image_utils.h"\
-	".\m_acc.h"\
 	".\m_avatarhistory.h"\
 	".\m_flash.h"\
 	".\m_folders.h"\
@@ -327,6 +545,36 @@
 	".\mir_memory.h"\
 	".\mir_thread.h"\
 	".\poll.h"\
+	{$(INCLUDE)}"gdiplus.h"\
+	{$(INCLUDE)}"GdiplusBase.h"\
+	{$(INCLUDE)}"GdiplusBitmap.h"\
+	{$(INCLUDE)}"GdiplusBrush.h"\
+	{$(INCLUDE)}"GdiplusCachedBitmap.h"\
+	{$(INCLUDE)}"GdiplusColor.h"\
+	{$(INCLUDE)}"GdiplusColorMatrix.h"\
+	{$(INCLUDE)}"GdiplusEnums.h"\
+	{$(INCLUDE)}"GdiplusFlat.h"\
+	{$(INCLUDE)}"GdiplusFont.h"\
+	{$(INCLUDE)}"GdiplusFontCollection.h"\
+	{$(INCLUDE)}"GdiplusFontFamily.h"\
+	{$(INCLUDE)}"GdiplusGpStubs.h"\
+	{$(INCLUDE)}"GdiplusGraphics.h"\
+	{$(INCLUDE)}"GdiplusHeaders.h"\
+	{$(INCLUDE)}"GdiplusImageAttributes.h"\
+	{$(INCLUDE)}"GdiplusImageCodec.h"\
+	{$(INCLUDE)}"GdiplusImaging.h"\
+	{$(INCLUDE)}"GdiplusInit.h"\
+	{$(INCLUDE)}"GdiplusLineCaps.h"\
+	{$(INCLUDE)}"GdiplusMatrix.h"\
+	{$(INCLUDE)}"GdiplusMem.h"\
+	{$(INCLUDE)}"GdiplusMetafile.h"\
+	{$(INCLUDE)}"GdiplusMetaHeader.h"\
+	{$(INCLUDE)}"GdiplusPath.h"\
+	{$(INCLUDE)}"GdiplusPen.h"\
+	{$(INCLUDE)}"GdiplusPixelFormats.h"\
+	{$(INCLUDE)}"GdiplusRegion.h"\
+	{$(INCLUDE)}"GdiplusStringFormat.h"\
+	{$(INCLUDE)}"GdiplusTypes.h"\
 	
 
 .\avs.rc : \

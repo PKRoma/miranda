@@ -1,6 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by tabsrmm.mak
 
 .\chat\clist.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -29,7 +30,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -58,6 +58,7 @@
 	
 
 .\chat\colorchooser.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -86,7 +87,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -115,6 +115,7 @@
 	
 
 .\chat\log.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -143,7 +144,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -172,6 +172,7 @@
 	
 
 .\chat\main.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -200,7 +201,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -229,6 +229,7 @@
 	
 
 .\chat\manager.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -257,7 +258,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -286,6 +286,7 @@
 	
 
 .\chat\message.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -314,7 +315,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -343,6 +343,7 @@
 	
 
 .\chat\options.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -371,7 +372,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -400,6 +400,7 @@
 	
 
 .\chat\services.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -428,7 +429,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -457,6 +457,7 @@
 	
 
 .\chat\tools.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -485,7 +486,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -514,6 +514,7 @@
 	
 
 .\chat\window.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -542,7 +543,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -571,6 +571,7 @@
 	
 
 .\buttonsbar.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -599,7 +600,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -628,6 +628,7 @@
 	
 
 .\container.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -656,7 +657,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -686,6 +686,7 @@
 	
 
 .\containeroptions.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -714,7 +715,6 @@
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -743,6 +743,7 @@
 	
 
 eventpopups.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -772,7 +773,6 @@ eventpopups.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -801,6 +801,7 @@ eventpopups.c : \
 	
 
 .\formatting.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -829,7 +830,6 @@ eventpopups.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -858,6 +858,7 @@ eventpopups.c : \
 	
 
 .\generic_msghandlers.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -886,7 +887,6 @@ eventpopups.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -915,6 +915,7 @@ eventpopups.c : \
 	
 
 .\hotkeyhandler.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -943,7 +944,6 @@ eventpopups.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -973,6 +973,7 @@ eventpopups.c : \
 	
 
 ImageDataObject.cpp : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1001,7 +1002,6 @@ ImageDataObject.cpp : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1031,6 +1031,7 @@ ImageDataObject.cpp : \
 	
 
 msgdialog.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1059,7 +1060,6 @@ msgdialog.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1086,9 +1086,11 @@ msgdialog.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgdlgutils.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1117,7 +1119,6 @@ msgdlgutils.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1146,6 +1147,7 @@ msgdlgutils.c : \
 	
 
 msglog.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1174,7 +1176,6 @@ msglog.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1203,6 +1204,7 @@ msglog.c : \
 	
 
 msgoptions.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1231,7 +1233,6 @@ msgoptions.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1257,9 +1258,11 @@ msgoptions.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 msgs.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1288,7 +1291,6 @@ msgs.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1320,6 +1322,7 @@ msgs.c : \
 	
 
 .\selectcontainer.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1348,7 +1351,6 @@ msgs.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1377,6 +1379,7 @@ msgs.c : \
 	
 
 sendqueue.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1405,7 +1408,6 @@ sendqueue.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1435,6 +1437,7 @@ sendqueue.c : \
 	
 
 srmm.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1463,7 +1466,6 @@ srmm.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1492,6 +1494,7 @@ srmm.c : \
 	
 
 .\tabctrl.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1520,7 +1523,6 @@ srmm.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1546,9 +1548,11 @@ srmm.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 templates.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1577,7 +1581,6 @@ templates.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1606,6 +1609,7 @@ templates.c : \
 	
 
 .\themes.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1634,7 +1638,6 @@ templates.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1663,6 +1666,7 @@ templates.c : \
 	
 
 trayicon.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1691,7 +1695,6 @@ trayicon.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1720,6 +1723,7 @@ trayicon.c : \
 	
 
 TSButton.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1748,7 +1752,6 @@ TSButton.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1777,6 +1780,7 @@ TSButton.c : \
 	
 
 .\typingnotify.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1805,7 +1809,6 @@ TSButton.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1834,6 +1837,7 @@ TSButton.c : \
 	
 
 userprefs.c : \
+	"..\..\include\m_acc.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1862,7 +1866,6 @@ userprefs.c : \
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	"..\avs\m_acc.h"\
 	".\API\m_cln_skinedit.h"\
 	".\API\m_fingerprint.h"\
 	".\API\m_flash.h"\
@@ -1888,6 +1891,7 @@ userprefs.c : \
 	".\templates.h"\
 	".\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 .\tabsrmm_private.rc : \
