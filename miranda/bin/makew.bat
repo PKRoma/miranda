@@ -28,7 +28,7 @@ rem Protocols
 rem ---------------------------------------------------------------------------
 
 pushd ..\..\miranda\protocols\AimOscar
-call :Nmake aimoscar.mak "aim - Win32 Release"
+call :Nmake aimoscar.mak "aim - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -131,7 +131,6 @@ copy ..\release\zlib.dll
 
 copy ..\release\Icons\xstatus_ICQ.dll    Icons
 
-copy ..\release\Plugins\aim.dll          Plugins
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 copy ..\release\Plugins\import.dll       Plugins
@@ -259,7 +258,7 @@ md %Temp%\pdbw\plugins
 copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
 rem  Protocols
-copy ..\..\protocols\AimOscar\Release\Aim.pdb                  %Temp%\pdbw\plugins
+copy ..\..\protocols\AimOscar\Release_Unicode\Aim.pdb          %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release_Unicode\ICQ.pdb         %Temp%\pdbw\plugins
 copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
