@@ -30,6 +30,7 @@ Last change by : $Author$
 
 PFN_SSL_int_void             pfn_SSL_library_init;      // int SSL_library_init()
 PFN_SSL_pvoid_void           pfn_SSLv23_client_method;  // SSL_METHOD *SSLv23_client_method()
+PFN_SSL_pvoid_void           pfn_TLSv1_client_method;
 PFN_SSL_pvoid_pvoid          pfn_SSL_CTX_new;           // SSL_CTX *SSL_CTX_new( SSL_METHOD *method )
 PFN_SSL_void_pvoid           pfn_SSL_CTX_free;          // void SSL_CTX_free( SSL_CTX *ctx );
 PFN_SSL_pvoid_pvoid          pfn_SSL_new;               // SSL *SSL_new( SSL_CTX *ctx )
@@ -38,6 +39,7 @@ PFN_SSL_int_pvoid_int        pfn_SSL_set_fd;            // int SSL_set_fd( SSL *
 PFN_SSL_int_pvoid            pfn_SSL_connect;           // int SSL_connect( SSL *ssl );
 PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_read;              // int SSL_read( SSL *ssl, void *buffer, int bufsize )
 PFN_SSL_int_pvoid_pvoid_int  pfn_SSL_write;             // int SSL_write( SSL *ssl, void *buffer, int bufsize )
+PFN_SSL_int_pvoid_int_pvoid  pfn_SSL_CTX_set_verify;
 
 static BOOL jabberSslInit()
 {
@@ -46,7 +48,9 @@ static BOOL jabberSslInit()
 
 	BOOL error = FALSE;
 
-	hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
+	hLibSSL = LoadLibraryA( "CYASSL.DLL" );
+	if ( !hLibSSL )
+		hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 	if ( !hLibSSL )
 		hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
 
@@ -54,6 +58,8 @@ static BOOL jabberSslInit()
 		if (( pfn_SSL_library_init=( PFN_SSL_int_void )GetProcAddress( hLibSSL, "SSL_library_init" )) == NULL )
 			error = TRUE;
 		if (( pfn_SSLv23_client_method=( PFN_SSL_pvoid_void )GetProcAddress( hLibSSL, "SSLv23_client_method" )) == NULL )
+			error = TRUE;
+		if (( pfn_TLSv1_client_method = ( PFN_SSL_pvoid_void )GetProcAddress( hLibSSL, "TLSv1_client_method" )) == NULL )
 			error = TRUE;
 		if (( pfn_SSL_CTX_new=( PFN_SSL_pvoid_pvoid )GetProcAddress( hLibSSL, "SSL_CTX_new" )) == NULL )
 			error = TRUE;
@@ -70,6 +76,8 @@ static BOOL jabberSslInit()
 		if (( pfn_SSL_read=( PFN_SSL_int_pvoid_pvoid_int )GetProcAddress( hLibSSL, "SSL_read" )) == NULL )
 			error = TRUE;
 		if (( pfn_SSL_write=( PFN_SSL_int_pvoid_pvoid_int )GetProcAddress( hLibSSL, "SSL_write" )) == NULL )
+			error = TRUE;
+		if (( pfn_SSL_CTX_set_verify = ( PFN_SSL_int_pvoid_int_pvoid )GetProcAddress( hLibSSL, "SSL_CTX_set_verify" )) == NULL )
 			error = TRUE;
 
 		if ( error == TRUE ) {
@@ -96,7 +104,10 @@ BOOL CJabberProto::SslInit()
 
 	Log( "SSL library load successful" );
 	if ( m_sslCtx == NULL )
-		m_sslCtx = pfn_SSL_CTX_new( pfn_SSLv23_client_method());
+	{
+		m_sslCtx = pfn_SSL_CTX_new( JGetByte( "UseSSL", 0 ) ? pfn_SSLv23_client_method() : pfn_TLSv1_client_method());
+		pfn_SSL_CTX_set_verify(m_sslCtx, 0, NULL);
+	}
 
 	return TRUE;
 }
