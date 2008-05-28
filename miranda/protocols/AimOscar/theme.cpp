@@ -132,7 +132,7 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	//see if we should add the html away message context menu items
-	if ( getWord((HANDLE)wParam, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_AWAY )
+	if ( getWord((HANDLE)wParam, AIM_KEY_ST, ID_STATUS_OFFLINE ) == ID_STATUS_AWAY )
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
 	else
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;

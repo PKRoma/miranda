@@ -362,21 +362,21 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					if(wireless)
 					{
 						strlcpy(client,CLIENT_SMS,100);
-						DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
+						setWord(hContact, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
 					}
 					else if(away==0)
 					{
-						DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_ONLINE);
+						setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
 					}
 					else 
 					{
 						away_user=1;
-						DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_AWAY);
+						setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
 						awaymsg_request_handler(buddy);
 					}
 					DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
-					DBWriteContactSettingDword(hContact, m_szModuleName, AIM_KEY_IT, 0);//erase idle time
-					DBWriteContactSettingDword(hContact, m_szModuleName, AIM_KEY_OT, 0);//erase online time
+					setDword(hContact, AIM_KEY_IT, 0);//erase idle time
+					setDword(hContact, AIM_KEY_OT, 0);//erase online time
 				}
 			}
 			else if(tlv.cmp(0x000d))
@@ -516,7 +516,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					strlcpy(client,CLIENT_ADIUM,100);
 				else if(l343&&l346&&l34e&&tlv.len()==6)
 					strlcpy(client,CLIENT_TERRAIM,100);
-				else if(tlv.len()==0&&DBGetContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
+				else if(tlv.len()==0 && getWord(hContact, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
 					strlcpy(client,CLIENT_AIMEXPRESS,100);	
 				else if(l34b&&l341&&l343&&O1ff&&l345&&l346&&l347)
 					strlcpy(client,CLIENT_AIM5,100);
@@ -544,13 +544,13 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				{
 					time_t current_time;
 					time(&current_time);
-					DBWriteContactSettingDword(hContact, m_szModuleName, AIM_KEY_IT, ((DWORD)current_time) - tlv.ushort() * 60);
+					setDword(hContact, AIM_KEY_IT, ((DWORD)current_time) - tlv.ushort() * 60);
 				}
 			}
 			else if(tlv.cmp(0x0003))//online time tlv
 			{
 				if(hContact)
-					DBWriteContactSettingDword(hContact, m_szModuleName, AIM_KEY_OT, tlv.ulong());
+					setDword(hContact, AIM_KEY_OT, tlv.ulong());
 			}
 			offset+=(tlv.len());
 		}
@@ -683,7 +683,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 					}
 					delete[] item;
 					delete[] group;
-					DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_OFFLINE);
+					setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 				}
 			}
 			else if(type==0x0001)//group record
@@ -790,7 +790,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				{
 					hContact=add_contact(sn);
 					DBWriteContactSettingByte(hContact,MOD_KEY_CL,AIM_KEY_NL,1);
-					DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_ONLINE);
+					setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
 				}
 				if(hContact)
 				{
@@ -924,7 +924,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					delete[] temp2;
 					delete[] s_msg;
 				}
-				DBWriteContactSettingDword(hContact, m_szModuleName, AIM_KEY_LM, (DWORD)time(NULL));
+				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
 			}
 		}
 		else if(recv_file_type==0&&request_num==1)//buddy wants to send us a file
@@ -945,13 +945,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				LOG("Not forcing Proxy File transfer.");
 				DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_FP, 0);
 			}
-			DBWriteContactSettingDword(hContact,m_szModuleName,AIM_KEY_FS,file_size);
+			setDword(hContact,AIM_KEY_FS,file_size);
 			write_cookie(hContact,icbm_cookie);
-			DBWriteContactSettingByte(hContact,m_szModuleName,AIM_KEY_FT,0);
-			if(port_tlv)
-				DBWriteContactSettingWord(hContact,m_szModuleName,AIM_KEY_PC,port);
-			else
-				DBWriteContactSettingWord(hContact,m_szModuleName,AIM_KEY_PC,0);
+			setByte(hContact,AIM_KEY_FT,0);
+			setWord(hContact, AIM_KEY_PC, port_tlv ? port : 0);
 			if(!descr_included)
 			{
 				msg_buf=new char[1];
@@ -1112,7 +1109,7 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 		}
 		if(hContact)
 		{
-			if(DBGetContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
+			if(getWord(hContact,AIM_KEY_ST,ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
 				if(!away_message_received&&!request_HTML_profile)
 				{
 					write_away_message(hContact,sn,Translate("No information has been provided by the server."));

@@ -11,7 +11,7 @@ void CAimProto::assign_modmsg(char* msg)
 void CAimProto::broadcast_status(int status)
 {
 	LOG("Broadcast Status: %d",status);
-	int old_status=status;
+	int old_status=m_iStatus;
 	m_iStatus=status;
 	if(m_iStatus==ID_STATUS_OFFLINE)
 	{
@@ -329,7 +329,7 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 		DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_IT);
 		DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_OT);
 	}
-	DBWriteContactSettingWord(hContact, m_szModuleName, AIM_KEY_ST, ID_STATUS_OFFLINE);
+	setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 }
 
 void CAimProto::offline_contacts()
@@ -1219,11 +1219,11 @@ void CAimProto::setTString( HANDLE hContact, const char* name, const TCHAR* valu
 {	DBWriteContactSettingTString(hContact, m_szModuleName, name, value );
 }
 
-void CAimProto::setWord( const char* name, int value )
+void CAimProto::setWord( const char* name, WORD value )
 {	DBWriteContactSettingWord(NULL, m_szModuleName, name, value );
 }
 
-void CAimProto::setWord( HANDLE hContact, const char* name, int value )
+void CAimProto::setWord( HANDLE hContact, const char* name, WORD value )
 {	DBWriteContactSettingWord(hContact, m_szModuleName, name, value );
 }
 

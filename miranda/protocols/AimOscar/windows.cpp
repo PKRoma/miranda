@@ -743,24 +743,15 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//END GP
 
 				//Delivery Confirmation
-				if (IsDlgButtonChecked(hwndDlg, IDC_DC))
-					ppro->setByte( AIM_KEY_DC, 1);
-				else
-					ppro->setByte( AIM_KEY_DC, 0);
+				ppro->setByte( AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
 				//End Delivery Confirmation
 
 				//Disable Avatar
-				if (IsDlgButtonChecked(hwndDlg, IDC_DA))
-					ppro->setByte( AIM_KEY_DA, 1);
-				else
-					ppro->setByte( AIM_KEY_DA, 0);
+				ppro->setByte( AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
 				//Disable Avatar
 
 				//Force Proxy Transfer
-				if (IsDlgButtonChecked(hwndDlg, IDC_FP))
-					ppro->setByte( AIM_KEY_FP, 1);
-				else
-					ppro->setByte( AIM_KEY_FP, 0);
+				ppro->setByte( AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
 				//End Force Proxy Transfer
 
 				//Disable Account Type Icons
@@ -815,24 +806,15 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//End
 
 				//Disable Mode Message Sending
-				if (IsDlgButtonChecked(hwndDlg, IDC_DM))
-					ppro->setByte( AIM_KEY_DM, 1);
-				else
-					ppro->setByte( AIM_KEY_DM, 0);
+				ppro->setByte( AIM_KEY_DM, IsDlgButtonChecked(hwndDlg, IDC_DM) != 0);
 				//End Disable Mode Message Sending
 
 				//Format Incoming Messages
-				if (IsDlgButtonChecked(hwndDlg, IDC_FI))
-					ppro->setByte( AIM_KEY_FI, 1);
-				else
-					ppro->setByte( AIM_KEY_FI, 0);
+				ppro->setByte( AIM_KEY_FI, IsDlgButtonChecked(hwndDlg, IDC_FI) != 0);
 				//End Format Incoming Messages
 
 				//Format Outgoing Messages
-				if (IsDlgButtonChecked(hwndDlg, IDC_FO))
-					ppro->setByte( AIM_KEY_FO, 1);
-				else
-					ppro->setByte( AIM_KEY_FO, 0);
+				ppro->setByte( AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
 				//End Format Outgoing Messages
 
 				if ( !IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT) && ppro->getByte( AIM_KEY_AL, 0))
@@ -848,16 +830,10 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				else ppro->aim_links_destroy();
 
 				//Instant Idle on Login
-				if (IsDlgButtonChecked(hwndDlg, IDC_II))
-					ppro->setByte( AIM_KEY_II, 1);
-				else
-					ppro->setByte( AIM_KEY_II, 0);
+				ppro->setByte( AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);
 				//End
 				//Check Mail on Login
-				if (IsDlgButtonChecked(hwndDlg, IDC_CM))
-					ppro->setByte( AIM_KEY_CM, 1);
-				else
-					ppro->setByte( AIM_KEY_CM, 0);
+				ppro->setByte( AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
 				//End
 
 				//Keep alive timer
