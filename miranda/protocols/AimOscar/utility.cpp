@@ -124,9 +124,9 @@ HANDLE CAimProto::add_contact(char* buddy)
 		{
 			if(char* norm_sn=normalize_name(buddy))
 			{
-				DBWriteContactSettingByte(hContact,m_szModuleName,AIM_KEY_NC,1);
-				DBWriteContactSettingString(hContact, m_szModuleName, AIM_KEY_SN,norm_sn);
-				DBWriteContactSettingString(hContact, m_szModuleName, AIM_KEY_NK,buddy);
+				setByte(hContact,AIM_KEY_NC,1);
+				setString(hContact, AIM_KEY_SN,norm_sn);
+				setString(hContact, AIM_KEY_NK,buddy);
 				LOG("Adding contact %s to client side list.",norm_sn);
 				delete[] norm_sn;
 				return hContact;
@@ -195,7 +195,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 		{
 			char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-			DBWriteContactSettingWord(hContact, m_szModuleName, groupNum, new_group_id);
+			setWord(hContact, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
 			if(old_group_id)
@@ -701,7 +701,7 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		{
 			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-			DBWriteContactSettingWord(hbuddy, m_szModuleName, item, id);
+			setWord(hbuddy, item, id);
 			delete[] item;
 			return id;
 		}

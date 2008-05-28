@@ -308,10 +308,10 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					int icq = m_iStatus&0x0040;
 					int wireless = m_iStatus&0x0080;
 					int bot = m_iStatus&0x0400;
- 					DBWriteContactSettingString(hContact, m_szModuleName, AIM_KEY_NK, buddy);
+ 					setString(hContact, AIM_KEY_NK, buddy);
 
 					if (icq)
-						DBWriteContactSettingString(hContact, m_szModuleName, "Transport", "ICQ");
+						setString(hContact, "Transport", "ICQ");
 					else
 						DBDeleteContactSetting(hContact, m_szModuleName, "Transport" );
 
@@ -321,27 +321,27 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 						if(admin_aol)
 						{
-							DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
+							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
 							memcpy(data,&admin_icon,sizeof(HANDLE));
 						}
 						else if(aol)
 						{
-							DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC, ACCOUNT_TYPE_AOL);	
+							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_AOL);	
 							memcpy(data,&aol_icon,sizeof(HANDLE));						
 						}
 						else if(icq)
 						{
-							DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);	
+							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);	
 							memcpy(data,&icq_icon,sizeof(HANDLE));
 						}
 						else if(unconfirmed)
 						{
-							DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
+							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
 							memcpy(data,&unconfirmed_icon,sizeof(HANDLE));
 						}
 						else
 						{
-							DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
+							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
 							memcpy(data,&confirmed_icon,sizeof(HANDLE));
 						}
 						if(!ATIconsDisabled)
@@ -558,7 +558,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		{
 			if(bot_user)
 			{
-				DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_ET, EXTENDED_STATUS_BOT);
+				setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
 				if(!ESIconsDisabled)
 				{
 					adv1_icon=1;
@@ -572,7 +572,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			}
 			else if(hiptop_user)
 			{
-				DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
+				setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
 				if(!ESIconsDisabled)
 				{
 					adv1_icon=1;
@@ -610,10 +610,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		}
 		if(caps_included)
 		{
-			if(client[0])
-				DBWriteContactSettingString(hContact,m_szModuleName,AIM_KEY_MV,client);
-			else
-				DBWriteContactSettingString(hContact,m_szModuleName,AIM_KEY_MV,"?");
+			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
 		}
 		delete[] buddy;
 	}
@@ -676,8 +673,8 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 						mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 						if(!DBGetContactSettingWord(hContact, m_szModuleName, item,0))
 						{
-							DBWriteContactSettingWord(hContact, m_szModuleName, item, item_id);	
-                			DBWriteContactSettingWord(hContact, m_szModuleName, group, group_id);
+							setWord(hContact, item, item_id);	
+                			setWord(hContact, group, group_id);
 							break;
 						}
 					}
@@ -938,12 +935,12 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			if(force_proxy)
 			{
 				LOG("Forcing a Proxy File transfer.");
-				DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_FP, 1);
+				setByte(hContact, AIM_KEY_FP, 1);
 			}
 			else
 			{
 				LOG("Not forcing Proxy File transfer.");
-				DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_FP, 0);
+				setByte(hContact, AIM_KEY_FP, 0);
 			}
 			setDword(hContact,AIM_KEY_FS,file_size);
 			write_cookie(hContact,icbm_cookie);

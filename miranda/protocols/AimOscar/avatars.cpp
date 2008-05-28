@@ -129,7 +129,7 @@ void CAimProto::avatar_retrieval_handler(SNAC &snac)
 		{
 			char* hash=snac.part(5+sn_length,hash_size);
 			char* hash_string=bytes_to_string(hash,hash_size);
-			DBWriteContactSettingString(hContact,m_szModuleName,AIM_KEY_AH,hash_string);
+			setString(hContact,AIM_KEY_AH,hash_string);
 			char* file_data=snac.val(7+sn_length+hash_size);
 			char type[5]; 
 			detect_image_type(file_data,type);

@@ -405,7 +405,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		case IDC_SETPROFILE:
 			{
 				char* buf=rtf_to_html(hwndDlg,IDC_PROFILE);
-				DBWriteContactSettingString(NULL, ppro->m_szModuleName, AIM_KEY_PR, buf);
+				ppro->setString(AIM_KEY_PR, buf);
 				if (ppro->state==1)
 					ppro->aim_set_profile(ppro->hServerConn,ppro->seqno,buf);//also see set caps for profile setting
 
