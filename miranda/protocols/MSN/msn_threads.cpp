@@ -193,8 +193,10 @@ void __cdecl MSNServerThread( ThreadData* info )
 			if ( MSN_HandleMSNFTP( info, info->mData ))
 				break;
 		}
-		else {
-			for( ;; ) {
+		else 
+		{
+			for( ;; ) 
+			{
 				char* peol = strchr(info->mData,'\r');
 				if ( peol == NULL )
 					break;
@@ -214,15 +216,16 @@ void __cdecl MSNServerThread( ThreadData* info )
 				memmove( info->mData, peol, info->mBytesInData );
 				MSN_DebugLog( "RECV:%s", msg );
 
+				if ( info->mType == SERVER_NOTIFICATION )
+					SetEvent( hKeepAliveThreadEvt );
+
 				if ( !isalnum( msg[0] ) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
 					MSN_DebugLog( "Invalid command name" );
 					continue;
 				}
 
-				if ( info->mType != SERVER_FILETRANS ) {
-					if ( info->mType == SERVER_NOTIFICATION )
-						SetEvent( hKeepAliveThreadEvt );
-
+				if ( info->mType != SERVER_FILETRANS ) 
+				{
 					int handlerResult;
 					if ( isdigit(msg[0]) && isdigit(msg[1]) && isdigit(msg[2]))   //all error messages
 						handlerResult = MSN_HandleErrors( info, msg );
