@@ -234,6 +234,9 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					CIcqProto* ppro = (CIcqProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
+          if (!ppro)
+            break;
+
 					char* szProto;
 					HANDLE hContact = (HANDLE)((LPPSHNOTIFY)lParam)->lParam;
 
@@ -242,7 +245,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					else
 						szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-					if (szProto == NULL)
+					if (!szProto)
 						break;
 
 					SetValue(ppro, hwndDlg, IDC_UIN, hContact, szProto, UNIQUEIDSETTING, SVS_NORMAL);
