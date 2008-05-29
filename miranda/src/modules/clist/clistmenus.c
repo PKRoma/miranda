@@ -636,25 +636,27 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				PMO_IntMenuItem pimi;
 				char *prot = smep->proto;
 				char szHumanName[64]={0};
+				PROTOACCOUNT * acc = ProtoGetAccount( smep->proto );
 				int i=(DBGetContactSettingByte(NULL,prot,"LockMainStatus",0)?0:1);
 				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",(BYTE)i);
+
 				CallProtoService(smep->proto,PS_GETNAME,(WPARAM)SIZEOF(szHumanName),(LPARAM)szHumanName);
 				pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
 				if ( i ) {
-					char buf[256];
+					TCHAR buf[256];
 					pimi->mi.flags|=CMIF_CHECKED;
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
 					if ( cli.bDisplayLocked ) {
-						_snprintf(buf,SIZEOF(buf),Translate("%s (locked)"),szHumanName);
-						pimi->mi.ptszName = LangPackPcharToTchar( buf );
+						_sntprintf(buf,SIZEOF(buf),TranslateT("%s (locked)"),acc->tszAccountName);
+						pimi->mi.ptszName = mir_tstrdup( buf );
 					}
-					else pimi->mi.ptszName = LangPackPcharToTchar( szHumanName );
+					else pimi->mi.ptszName =  mir_tstrdup( acc->tszAccountName );
 				}
 				else {
 					if ( pimi->mi.pszName )
 						mir_free( pimi->mi.pszName );
-					pimi->mi.ptszName = LangPackPcharToTchar( szHumanName );
+					pimi->mi.ptszName = mir_tstrdup( acc->tszAccountName );
 					pimi->mi.flags &= ~CMIF_CHECKED;
 				}
 				if ( cli.hwndStatus )
