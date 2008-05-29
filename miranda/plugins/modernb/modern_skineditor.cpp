@@ -135,8 +135,8 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		char *descKey;
 		descKey=mir_strdup(szSetting);
 		descKey[0]='%';
-		value=DBGetStringA(NULL,SKIN,szSetting);
-		desc=DBGetStringA(NULL,SKIN,descKey);
+		value=ModernDBGetStringA(NULL,SKIN,szSetting);
+		desc=ModernDBGetStringA(NULL,SKIN,descKey);
 		if (wildcmp(value,"?lyph*",0))
 		{
 			OPT_OBJECT_DATA * a=(OPT_OBJECT_DATA*)mir_alloc(sizeof(OPT_OBJECT_DATA));
@@ -809,14 +809,14 @@ BOOL CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					//ReloadSkin
 					ske_LoadSkinFromDB();	
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					sync2(CLUIFrames_OnClistResize_mod,0,0);
+					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
 					ske_RedrawCompleteWindow();        
-					sync2(CLUIFrames_OnClistResize_mod,0,0);
+					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						sync2(CLUIFrames_OnMoving,hwnd,&rc);
+						DoSync2Param(CLUIFrames_OnMoving,hwnd,&rc);
 					}
 					return TRUE;
 				}

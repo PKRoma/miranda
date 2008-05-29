@@ -3,6 +3,10 @@
 #ifndef _COMMONPROTOTYPES
 #define _COMMONPROTOTYPES
 
+#ifndef commonheaders_h__
+#error "hdr/modern_commonheaders.h have to be including first"
+#endif
+
 #include "modern_commonheaders.h"  //TO DO: Move contents of this file to commonheaders.h
 #include "modern_clist.h"
 #include "modern_cluiframes.h"
@@ -351,9 +355,8 @@ extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
 
 
-#define sync(a) SyncCall((void*) a, 0)
-#define sync1(a, b1) SyncCall((void*) a, 1, (LPARAM)b1 )
-#define sync2(a, b1, b2) doCLUIFramesProxyCall( a,  (WPARAM)b1, (LPARAM)b2 )
+#define DoSync1Param(a, b1) SyncCall((void*) a, 1, (LPARAM)b1 )
+#define DoSync2Param(a, b1, b2) doCLUIFramesProxyCall( a,  (WPARAM)b1, (LPARAM)b2 )
 #define sync3(a, b1, b2, b3) SyncCall((void*) a, 3, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3 )
 #define sync4(a, b1, b2, b3, b4) SyncCall((void*) a, 4, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3,(LPARAM)b4 )
 

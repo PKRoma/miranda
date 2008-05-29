@@ -208,7 +208,7 @@ BOOL GDIPlus_AlphaBlend(HDC hdcDest,int nXOriginDest,int nYOriginDest,int nWidth
 
  if (bf->BlendFlags&128 && nWidthDest<nWidthSrc && nHeightDest<nHeightSrc)
   {
-		g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
+	g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
     g.SetPixelOffsetMode(PixelOffsetModeHalf);
     attr.SetGamma((REAL)0.8,ColorAdjustTypeBitmap);
   }
@@ -306,28 +306,25 @@ void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP *
 	HBITMAP oldBmp=(HBITMAP)SelectObject(hdc,hBitmap);
 	Graphics graphics(hdc);
 	ImageAttributes attr;
-	ColorMatrix ClrMatrix =
-	{
-		1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, ((float)255)/255, 0.0f,
-			0.0f, 0.0f, 0.0f, 0.0f, 1.0f
-	};
-	//attr.SetColorMatrix(&ClrMatrix, ColorMatrixFlagsDefault,ColorAdjustTypeBitmap);
-	graphics.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-	graphics.SetPixelOffsetMode( PixelOffsetModeHighSpeed/* PixelOffsetModeHighQuality*/ );
+
+	graphics.SetInterpolationMode( InterpolationModeHighQualityBicubic );
+	graphics.SetPixelOffsetMode( PixelOffsetModeHalf );
 	int * delays=(int*)malloc(nFrameCount*sizeof(int));
 	memset(delays,0,nFrameCount*sizeof(int));
 
-	for (int i=1; i<nFrameCount+1; i++)
+	GUID   pageGuid = FrameDimensionTime;
+	/*
+	The GDIPlus strange behavior: without next 2 lines it will draw first frame anti aliased, but next - not
+	*/
+	if ( nFrameCount > 1 )
+		image.SelectActiveFrame(&pageGuid, 1 );
+
+	for (int i=0; i<nFrameCount; i++)
 	{
-		GUID   pageGuid = FrameDimensionTime;
-		RectF rect((float)(i-1)*clipWidth,(float)0,(float)clipWidth,(float)clipHeight);
-		graphics.DrawImage(&image, rect, (float)0, (float)0, (float)imWidth, (float)imHeight , UnitPixel, &attr, NULL, NULL);
-		image.SelectActiveFrame(&pageGuid, i);
-		long lPause = ((long*) pPropertyItem->value)[i-1] * 10;
-		delays[i-1]=(int)lPause;
+		image.SelectActiveFrame( &pageGuid, i );
+		graphics.DrawImage( &image, Rect(i*clipWidth, 0,clipWidth,clipHeight ), 0, 0, imWidth, imHeight , UnitPixel, &attr);
+		long lPause = ((long*) pPropertyItem->value)[i] * 10;
+		delays[i]=(int)lPause;
 	}
 	SelectObject(hdc,oldBmp);
 	DeleteDC(hdc);

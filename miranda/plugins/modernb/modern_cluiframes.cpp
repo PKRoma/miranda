@@ -733,10 +733,10 @@ static int DBLoadFrameSettingsAtPos(int pos,int Frameid)
 	Frames[Frameid].HeightWhenCollapsed		=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"HeightCollapsed",sadd),0);
 	Frames[Frameid].align					=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"Align",sadd),Frames[Frameid].align);
 
-	Frames[Frameid].FloatingPos.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatX",sadd),100,0,2048);
-	Frames[Frameid].FloatingPos.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatY",sadd),100,0,2048);
-	Frames[Frameid].FloatingSize.x		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatW",sadd),100,0,2048);
-	Frames[Frameid].FloatingSize.y		=DBGetContactSettingRangedWord(0,CLUIFrameModule,AS(buf,"FloatH",sadd),100,0,2048);
+	Frames[Frameid].FloatingPos.x		=ModernDBGetRangedWord(0,CLUIFrameModule,AS(buf,"FloatX",sadd),100,0,2048);
+	Frames[Frameid].FloatingPos.y		=ModernDBGetRangedWord(0,CLUIFrameModule,AS(buf,"FloatY",sadd),100,0,2048);
+	Frames[Frameid].FloatingSize.x		=ModernDBGetRangedWord(0,CLUIFrameModule,AS(buf,"FloatW",sadd),100,0,2048);
+	Frames[Frameid].FloatingSize.y		=ModernDBGetRangedWord(0,CLUIFrameModule,AS(buf,"FloatH",sadd),100,0,2048);
 
 	Frames[Frameid].floating			=DBGetContactSettingByte(0,CLUIFrameModule,AS(buf,"Floating",sadd),0);
 	Frames[Frameid].order				=DBGetContactSettingWord(0,CLUIFrameModule,AS(buf,"Order",sadd),0);
@@ -777,20 +777,24 @@ static int DBStoreFrameSettingsAtPos(int pos,int Frameid)
 
 static int LocateStorePosition(int Frameid,int maxstored)
 {
-	int i;
-	LPTSTR frmname;
-	char settingname[255];
-    if(Frames[Frameid].Name==NULL) return -1;
-
-	for(i=0;i<maxstored;i++) {
+	
+    if(Frames[Frameid].Name==NULL) 
+        return -1;
+    char settingname[255];
+	for( int i=0;i<maxstored;i++) 
+    {
+        
         mir_snprintf(settingname,sizeof(settingname),"Name%d",i);
-        frmname=DBGetStringT(0,CLUIFrameModule,settingname);
-		if(frmname==NULL) continue;
-		if(lstrcmpi(frmname,Frames[Frameid].Name)==0) {
-			mir_free(frmname);
+        DBVARIANT dbv={0};
+        if ( DBGetContactSettingTString( NULL, CLUIFrameModule, settingname, &dbv ) )
+            continue;
+       
+		if( lstrcmpi( dbv.ptszVal, Frames[Frameid].Name ) ==0 ) 
+        {
+			DBFreeVariant( &dbv );
 			return i;
 		}
-		mir_free(frmname);
+        DBFreeVariant( &dbv );
 	}
 	return -1;
 }
@@ -1409,7 +1413,7 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 
 	case FO_HEIGHT:
 		if(lParam<0) { return -1;}
-		TRACEVAR("FO_HEIGHT: %d\n",lParam);
+		
 		if (Frames[pos].collapsed)
 		{
 			int oldHeight=Frames[pos].height;
@@ -1994,7 +1998,7 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	/*   //removed buggy code
 	if (clfrm->name && 0 )
 	{
-		CustomName=DBGetStringA(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomName_",clfrm->name));
+		CustomName=ModernDBGetStringA(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomName_",clfrm->name));
 		Frames[nFramescount].TitleBar.BackColour=(COLORREF)DBGetContactSettingDword(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomBackColor_",clfrm->name),GetSysColor(COLOR_3DFACE));
 		Frames[nFramescount].TitleBar.TextColour=(COLORREF)DBGetContactSettingDword(NULL,"CUSTOM_CLUI_FRAMES",AS(buff,"CustomTextColor_",clfrm->name),GetSysColor(COLOR_WINDOWTEXT));
 		if (CustomName)
@@ -2325,7 +2329,7 @@ int CLUIFrames_GetTotalHeight()
 	for(i=0;i<nFramescount;i++)
 	{
 		if((Frames[i].visible)&&(!Frames[i].needhide)&&(!Frames[i].floating)&&(pcli->hwndContactTree)&& (Frames[i].hWnd!=pcli->hwndContactTree))
-			sumheight+=(Frames[i].height)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar))+3;
+			sumheight+=(Frames[i].height)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar));
 	};
 
 	GetBorderSize(pcli->hwndContactList,&border);
@@ -2340,7 +2344,7 @@ int CLUIFrames_GetTotalHeight()
 	sumheight+=g_CluiData.TopClientMargin;
 	sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",SETTING_MINHEIGTH_DEFAULT),
-		(sumheight+border.top+border.bottom+3)       );
+		(sumheight+border.top+border.bottom) );
 }
 
 int CLUIFramesGetMinHeight()
@@ -2364,7 +2368,7 @@ int CLUIFramesGetMinHeight()
 			RECT wsize; 
 
 			GetWindowRect(Frames[i].hWnd,&wsize);
-			sumheight+=(wsize.bottom-wsize.top)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar))+3;
+			sumheight+=(wsize.bottom-wsize.top)+(g_nTitleBarHeight*btoint(Frames[i].TitleBar.ShowTitleBar));
 		}
 	};
 
@@ -2380,7 +2384,7 @@ int CLUIFramesGetMinHeight()
 	sumheight+=g_CluiData.TopClientMargin;
 	sumheight+=g_CluiData.BottomClientMargin; 
 	return  max(DBGetContactSettingWord(NULL,"CLUI","MinHeight",SETTING_MINHEIGTH_DEFAULT),
-		(sumheight+border.top+border.bottom+allbord+tbh+3)       );
+		(sumheight+border.top+border.bottom+allbord+tbh)       );
 }
 
 
@@ -4537,25 +4541,25 @@ int callProxied_CLUIFramesModifyContextMenuForFrame(WPARAM wParam, LPARAM lParam
 int callProxied_CLUIFrameOnMainMenuBuild(WPARAM wParam, LPARAM lParam)
 {  return doCLUIFramesProxyCall( doProxyCall_CLUIFrameOnMainMenuBuild, wParam, lParam); }
 
-static int syncService_CLUIFrames_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFrames_Service_RegisterFramePaintCallbackProcedure, wParam, lParam); }
-static int syncService_CLUIFramesAddFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesAddFrame, wParam, lParam); }
-static int syncService_CLUIFramesRemoveFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesRemoveFrame, wParam, lParam); }
-static int syncService_CLUIFramesSetFrameOptions(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetFrameOptions, wParam, lParam); }
-static int syncService_CLUIFramesGetFrameOptions(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesGetFrameOptions, wParam, lParam); }
-static int syncService_CLUIFrames_UpdateFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFrames_UpdateFrame, wParam, lParam); }
-static int syncService_CLUIFramesShowHideFrameTitleBar(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesShowHideFrameTitleBar, wParam, lParam); }
-static int syncService_CLUIFramesShowAllTitleBars(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesShowAllTitleBars, wParam, lParam); }
-static int syncService_CLUIFramesHideAllTitleBars(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesHideAllTitleBars, wParam, lParam); }
-static int syncService_CLUIFramesShowHideFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesShowHideFrame, wParam, lParam); }
-static int syncService_CLUIFramesShowAll(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesShowAll, wParam, lParam); }
-static int syncService_CLUIFramesLockUnlockFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesLockUnlockFrame, wParam, lParam); }
-static int syncService_CLUIFramesCollapseUnCollapseFrame(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesCollapseUnCollapseFrame, wParam, lParam); }
-static int syncService_CLUIFramesSetUnSetBorder(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetUnSetBorder, wParam, lParam); }
-static int syncService_CLUIFramesSetAlign(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetAlign, wParam, lParam); }
-static int syncService_CLUIFramesMoveUpDown(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesMoveUpDown, wParam, lParam); }
-static int syncService_CLUIFramesMoveUp(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesMoveUp, wParam, lParam); }
-static int syncService_CLUIFramesMoveDown(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesMoveDown, wParam, lParam); }
-static int syncService_CLUIFramesSetAlignalTop(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetAlignalTop, wParam, lParam); }
-static int syncService_CLUIFramesSetAlignalClient(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetAlignalClient, wParam, lParam); }
-static int syncService_CLUIFramesSetAlignalBottom(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFramesSetAlignalBottom, wParam, lParam); }
-static int syncService_CLUIFrameSetFloat(WPARAM wParam, LPARAM lParam) { return sync2(CLUIFrameSetFloat, wParam, lParam); }
+static int syncService_CLUIFrames_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFrames_Service_RegisterFramePaintCallbackProcedure, wParam, lParam); }
+static int syncService_CLUIFramesAddFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesAddFrame, wParam, lParam); }
+static int syncService_CLUIFramesRemoveFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesRemoveFrame, wParam, lParam); }
+static int syncService_CLUIFramesSetFrameOptions(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetFrameOptions, wParam, lParam); }
+static int syncService_CLUIFramesGetFrameOptions(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesGetFrameOptions, wParam, lParam); }
+static int syncService_CLUIFrames_UpdateFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFrames_UpdateFrame, wParam, lParam); }
+static int syncService_CLUIFramesShowHideFrameTitleBar(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesShowHideFrameTitleBar, wParam, lParam); }
+static int syncService_CLUIFramesShowAllTitleBars(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesShowAllTitleBars, wParam, lParam); }
+static int syncService_CLUIFramesHideAllTitleBars(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesHideAllTitleBars, wParam, lParam); }
+static int syncService_CLUIFramesShowHideFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesShowHideFrame, wParam, lParam); }
+static int syncService_CLUIFramesShowAll(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesShowAll, wParam, lParam); }
+static int syncService_CLUIFramesLockUnlockFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesLockUnlockFrame, wParam, lParam); }
+static int syncService_CLUIFramesCollapseUnCollapseFrame(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesCollapseUnCollapseFrame, wParam, lParam); }
+static int syncService_CLUIFramesSetUnSetBorder(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetUnSetBorder, wParam, lParam); }
+static int syncService_CLUIFramesSetAlign(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetAlign, wParam, lParam); }
+static int syncService_CLUIFramesMoveUpDown(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesMoveUpDown, wParam, lParam); }
+static int syncService_CLUIFramesMoveUp(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesMoveUp, wParam, lParam); }
+static int syncService_CLUIFramesMoveDown(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesMoveDown, wParam, lParam); }
+static int syncService_CLUIFramesSetAlignalTop(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetAlignalTop, wParam, lParam); }
+static int syncService_CLUIFramesSetAlignalClient(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetAlignalClient, wParam, lParam); }
+static int syncService_CLUIFramesSetAlignalBottom(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFramesSetAlignalBottom, wParam, lParam); }
+static int syncService_CLUIFrameSetFloat(WPARAM wParam, LPARAM lParam) { return DoSync2Param(CLUIFrameSetFloat, wParam, lParam); }

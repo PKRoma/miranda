@@ -812,9 +812,9 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 {
 	if (dat->bPaused>0)	{	dat->bPended=TRUE;	return; 	}
 	else dat->bPended=FALSE;
-
+	
 	if ( IMMEDIATE_DRAW && hdcParent == NULL ) return;
-
+	GdiFlush();
 #ifdef _DEBUG
 	__AniAva_DebugRenderStrip();
 #endif
@@ -955,7 +955,8 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 				exStyle=GetWindowLong(dat->hWindow,GWL_EXSTYLE);
 				exStyle|=WS_EX_LAYERED;
 				SetWindowLong(dat->hWindow,GWL_EXSTYLE,exStyle);
-				SetWindowPos( pcli->hwndContactTree, dat->hWindow, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSENDCHANGING );
+				if ( !IMMEDIATE_DRAW )
+					SetWindowPos( pcli->hwndContactTree, dat->hWindow, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSENDCHANGING );
 				g_proc_UpdateLayeredWindow(dat->hWindow, hDC_animation, &ptWnd, &szWnd, copyFromDC, &pt_from, RGB(0,0,0), &bf, ULW_ALPHA );
 			}
 
@@ -979,6 +980,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 		ShowWindow(dat->hWindow, SW_HIDE);
 		KillTimer(dat->hWindow,2);  //stop animation till set pos will be called
 	}
+	GdiFlush();
 }
 static void _AniAva_PausePainting()
 {
@@ -1194,6 +1196,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			return 0;
 		}
 	case AAM_SETPARENT:
+		if ( IMMEDIATE_DRAW ) return 0;
 		dat->bOrderTop=((HWND)wParam!=GetDesktopWindow());
 		SetParent(hwnd,(HWND)wParam);
 		if (dat->bOrderTop)
@@ -1208,10 +1211,12 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			if (!(exStyle&WS_EX_TOPMOST))
 				SetWindowPos(pcli->hwndContactList,HWND_NOTOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE/*|SWP_ASYNCWINDOWPOS*/);
 		}
-
 		return 0;
+
 	case AAM_REDRAW:
-		if (wParam)
+		if ( IMMEDIATE_DRAW )
+			return 0;
+		if ( wParam )
 		{
 			if (dat->bOrderTop)
 			{
@@ -1227,11 +1232,7 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			}
 		}
 
-		if ( !IMMEDIATE_DRAW ) 
-			_AniAva_RenderAvatar( dat );
-		//else
-			//_AniAva_InvalidateParent( dat );
-
+		_AniAva_RenderAvatar( dat );
 		return 0;
 
 

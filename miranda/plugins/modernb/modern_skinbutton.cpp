@@ -141,7 +141,7 @@ static int ModernSkinButtonPaintWorker(HWND hwnd, HDC whdc)
 				{
 				case 's':
 					{
-						Value=DBGetStringA(NULL,section,key);
+						Value=ModernDBGetStringA(NULL,section,key);
 						if (!Value)
 							Value=mir_strdup(bct->ValueTypeDef+1);
 						break;
@@ -241,7 +241,7 @@ static int ModernSkinButtonToggleDBValue(char * ValueDBSection,char *ValueTypeDe
 		{
 		case 's':
 			{
-				Value=DBGetStringA(NULL,section,key);
+				Value=ModernDBGetStringA(NULL,section,key);
 				if (!Value ||(Value && mir_bool_strcmpi(Value,val2)))
 					Value=mir_strdup(val);
 				else 

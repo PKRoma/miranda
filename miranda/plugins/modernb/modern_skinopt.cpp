@@ -196,14 +196,14 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 					ske_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					sync2(CLUIFrames_OnClistResize_mod,0,0);
+					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
 					ske_RedrawCompleteWindow();        
-					sync2(CLUIFrames_OnClistResize_mod,0,0);
+					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						sync2(CLUIFrames_OnMoving,hwnd,&rc);
+						DoSync2Param(CLUIFrames_OnMoving,hwnd,&rc);
 					}
 					if (g_hCLUIOptionsWnd)
 					{
@@ -496,7 +496,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
 	int attrib;
-	char *SkinsFolder=DBGetStringA(NULL,"ModernData","SkinsFolder");
+	char *SkinsFolder=ModernDBGetStringA(NULL,"ModernData","SkinsFolder");
 	if (!SkinsFolder) SkinsFolder=mir_strdup("Skins");
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)SkinsFolder, (LPARAM)path);
 	mir_free_and_nill(SkinsFolder);
@@ -507,7 +507,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 	{
 		char * skinfile;
 		char skinfull[MAX_PATH];
-		skinfile=DBGetStringA(NULL,SKIN,"SkinFile");
+		skinfile=ModernDBGetStringA(NULL,SKIN,"SkinFile");
 		if (skinfile)
 		{
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinfile, (LPARAM)skinfull);

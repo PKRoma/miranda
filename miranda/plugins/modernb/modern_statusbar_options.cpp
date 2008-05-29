@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
+Copyright 2000-2008 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -224,7 +224,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				for ( i = 0; i < count; i++ )
 				{
 					_itoa(i,(char *)&buf,10);
-					szSTName = DBGetStringA(0,"Protocols",(char *)&buf);
+					szSTName = ModernDBGetStringA(0,"Protocols",(char *)&buf);		
 					if ( szSTName == NULL )
 						continue;
 
@@ -371,8 +371,8 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 			return TRUE;
 		}
 	case WM_COMMAND:
-		if(LOWORD(wParam)==IDC_BUTTON1)
-		{
+		if(LOWORD(wParam)==IDC_BUTTON1)  
+		{ 
 			if (HIWORD(wParam)==BN_CLICKED)
 			{
 				CHOOSEFONTA fnt;
@@ -384,7 +384,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				ChooseFontA(&fnt);
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 				return 0;
-			}
+			} 
 		}
 		else if (LOWORD(wParam)==IDC_COLOUR ||(LOWORD(wParam)==IDC_SBAR_HORIZ_ALIGN && HIWORD(wParam)==CBN_SELCHANGE)) SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 		else if (LOWORD(wParam)==IDC_SHOWSBAR) {
@@ -434,7 +434,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 
 			UpdateStatusBarOptionsDisplay(hwndDlg);
 
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);	  
 		}
 		else if (LOWORD(wParam)==IDC_STATUSBAR_PER_PROTO)
 		{
@@ -556,7 +556,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				HIWORD(wParam) != EN_CHANGE ||
 				(HWND)lParam != GetFocus()
 			))
-			return 0; // dont make apply enabled during buddy set crap
+			return 0; // dont make apply enabled during buddy set crap 
 		else if ( LOWORD(wParam) == IDC_STATUSBAR_PROTO_LIST )
 		{
 			UpdateStatusBarOptionsDisplay(hwndDlg);
@@ -634,7 +634,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				DBWriteContactSettingByte(NULL,"CLUI","ShowSBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR));
 
 				LoadStatusBarData();
-				CLUIServices_ProtocolStatusChanged(0,0);
+				CLUIServices_ProtocolStatusChanged(0,0);	
 				return TRUE;
 			}
 		}

@@ -1450,7 +1450,7 @@ void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult)
 int ske_GetFullFilename(char * buf, char *file, char * skinfolder,BOOL madeAbsolute)
 {
 	char b2[MAX_PATH]={0};
-	char *SkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
+	char *SkinPlace=ModernDBGetStringA(NULL,SKIN,"SkinFolder");
 	if (!SkinPlace) SkinPlace=mir_strdup("\\Skin\\default");
 	if (file[0]!='\\' && file[1]!=':') 
 		_snprintf(b2, MAX_PATH,"%s\\%s",((int)skinfolder==0)?SkinPlace:((int)skinfolder!=-1)?skinfolder:"",file);
@@ -1951,7 +1951,7 @@ static int ske_ProcessLoadindString(const char * szSetting, char *szValue)
 static int ske_enumdb_SkinObjectsProc (const char *szSetting,LPARAM lParam)
 {   
 	char *value;
-	value=DBGetStringA(NULL,SKIN,szSetting);
+	value=ModernDBGetStringA(NULL,SKIN,szSetting);
 	ske_ProcessLoadindString(szSetting,value);
 	mir_free_and_nill(value);
 
@@ -2042,7 +2042,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 
 	Skin->pMaskList=(LISTMODERNMASK*)mir_alloc(sizeof(LISTMODERNMASK));
 	memset(Skin->pMaskList,0,sizeof(LISTMODERNMASK));
-	Skin->szSkinPlace=DBGetStringA(NULL,SKIN,"SkinFolder");
+	Skin->szSkinPlace=ModernDBGetStringA(NULL,SKIN,"SkinFolder");
 	if (!Skin->szSkinPlace || (strchr(Skin->szSkinPlace, '%') && !DBGetContactSettingByte(NULL,SKIN,"Modified",0)) ) 
 	{
 		BOOL bOnlyObjects=FALSE;
@@ -2929,7 +2929,8 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 						gx=(pbGammaWeight[gx]*(255-g)+gx*(g))/255;
 						rx=(pbGammaWeight[rx]*(255-r)+rx*(r))/255;
 
-						mx=(BYTE)(max(max(bx,rx),gx));
+                        mx=(BYTE)(max(max(bx,rx),gx));
+                        //mx=(BYTE)(((DWORD)bx+(DWORD)rx +(DWORD)gx)/3);
 
 						if (1) 
 						{

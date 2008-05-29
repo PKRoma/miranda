@@ -11,6 +11,7 @@
 #define IDD_OPT_CLIST                   126
 #define IDD_OPT_SOUND                   134
 #define IDD_OPT_HOTKEYS                 134
+#define IDD_OPT_CLIST_LISTBKG			135
 #define IDI_URL                         138
 #define IDI_FINDUSER                    161
 #define IDI_OPTIONS                     163

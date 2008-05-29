@@ -29,7 +29,9 @@ typedef  struct _MODERNEFFECT
   _T("Shadow at right"),
   _T("Outline"),
   _T("Outline smooth"),
-  _T("Smooth bump")
+  _T("Smooth bump"),
+  _T("Contour thin"),
+  _T("Contour heavy"),
 };
 
 #ifdef _EFFECTENUM_FULL_H
@@ -65,7 +67,20 @@ MODERNEFFECTMATRIX ModernEffectsEnum[]={
 			-2,	-16, 16, 16,  2,
 			-2,	-16, 48, 16,  2,
 			-2,	-16,-16, 16,  2,
-			-2,	 -2, -2, -2, -2 },	2,2,2,2,1+0x80}
+			-2,	 -2, -2, -2, -2 },	2,2,2,2,1+0x80},
+    {  //Contour thin
+        {	0,	0,  0,	0,	 0,
+            0, 48, 64, 48,   0,
+            0, 64, 64, 64,   0,
+            0, 48, 64, 48,	 0,
+            0,	0,  0,	0,	 0   },	1,1,1,1,1},
+    {  //Contour heavy
+        {   8, 16, 16, 16,  8,
+           16, 64, 64, 64, 16,
+           16, 64, 64, 64, 16,
+           16, 64, 64, 64, 16,
+            8, 16, 16, 16,  8   },	2,2,2,2,1},
+
 };
 #endif
 #ifdef _EFFECTENUM_FULL_H

@@ -346,9 +346,16 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 	if (iStepX <= 0) iStepX = 8;
 	if (iStepY <= 0) iStepY = 16;
 
+	HWND hwndFocused = GetFocus();
+	
 	if (IsIconic(hWnd) || !IsWindowVisible(hWnd))
 		return GWVS_HIDDEN;
-	else {
+	else if ( DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT) )
+		return GWVS_VISIBLE;
+	else if ( hwndFocused == pcli->hwndContactList || GetParent(hwndFocused) == pcli->hwndContactList )
+		return GWVS_VISIBLE;
+	else
+	{
 		int hstep,vstep;
 		BITMAP bmp;
 		HBITMAP WindowImage;
@@ -440,12 +447,6 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 
 					if (hWndFound) //There's  window!
 						iNotCoveredDots++; //Let's count the not covered dots.
-					//{
-					//		  //bPartiallyCovered = TRUE;
-					//           //iCountedDots++;
-					//	    //break;
-					//}
-					//else
 					iCountedDots++; //Let's keep track of how many dots we checked.
 				}
 			}
@@ -494,9 +495,9 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 	//bShow is FALSE when we enter the switch if no hide behind edge.
 	switch (iVisibleState) {
 		case GWVS_PARTIALLY_COVERED:
-			//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
+			bShow = TRUE; break;
 		case GWVS_COVERED: //Fall through (and we're already falling)
-			if (DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT) || !DBGetContactSettingByte(NULL, "CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT)) break;
+			bShow = TRUE; break;
 		case GWVS_HIDDEN:
 			bShow = TRUE; break;
 		case GWVS_VISIBLE: //This is not needed, but goes for readability.
@@ -504,7 +505,8 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		case -1: //We can't get here, both pcli->hwndContactList and iStepX and iStepY are right.
 			return 0;
 	}
-	if(bShow == TRUE || lParam) {
+
+	if( (bShow == TRUE || lParam == 1) ) {
 		HMONITOR (WINAPI *MyMonitorFromWindow)(HWND,DWORD);
 		RECT rcScreen,rcWindow;
 		int offScreen=0;
@@ -512,12 +514,12 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,FALSE);
 		GetWindowRect(pcli->hwndContactList,&rcWindow);
 
-		sync1(CLUIFrames_ActivateSubContainers, TRUE);
+		DoSync1Param(CLUIFrames_ActivateSubContainers, TRUE);
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
 		if (!DBGetContactSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		{
-			sync2(CLUIFrames_OnShowHide, pcli->hwndContactList,1);	//TO BE PROXIED
+			DoSync2Param(CLUIFrames_OnShowHide, pcli->hwndContactList,1);	//TO BE PROXIED
 			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
 			g_bCalledFromShowHide=1;
 			if (!DBGetContactSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
@@ -527,7 +529,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		else
 		{
 			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			sync2(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
+			DoSync2Param(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
 			SetForegroundWindow(pcli->hwndContactList);
 		}
 		DBWriteContactSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);

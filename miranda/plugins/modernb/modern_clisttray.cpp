@@ -41,6 +41,8 @@ POINT tray_hover_pos = {0};
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
 
+#ifndef _INC_SHLWAPI
+
 typedef struct _DllVersionInfo {
 	DWORD cbSize;
 	DWORD dwMajorVersion;                   // Major version
@@ -48,9 +50,12 @@ typedef struct _DllVersionInfo {
 	DWORD dwBuildNumber;                    // Build number
 	DWORD dwPlatformID;                     // DLLVER_PLATFORM_*
 } DLLVERSIONINFO;
+
 #define DLLVER_PLATFORM_WINDOWS         0x00000001      // Windows 95
 #define DLLVER_PLATFORM_NT              0x00000002      // Windows NT
 typedef HRESULT (CALLBACK* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
+
+#endif
 
 void mir_strset(TCHAR ** dest, TCHAR *source)
 {

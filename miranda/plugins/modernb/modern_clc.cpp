@@ -1992,7 +1992,7 @@ int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
 				DBFreeVariant(&dbv);
 				if (!bUnicode)
 				{
-					char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
+					char * val=ModernDBGetStringA(ack->hContact,"CList","StatusMsg");
 					if (val) 
 					{
 						if (!mir_bool_strcmpi(val,(const char *)ack->lParam))
@@ -2019,7 +2019,7 @@ int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
 			}
 			if (ack->hContact) 
 			{
-				char * val=DBGetStringA(ack->hContact,"CList","StatusMsg");
+				char * val=ModernDBGetStringA(ack->hContact,"CList","StatusMsg");
 				if (val) 
 				{
 					if (!mir_bool_strcmpi(val,""))

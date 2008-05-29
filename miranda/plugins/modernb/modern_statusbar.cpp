@@ -213,6 +213,9 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			ProtosData=NULL;
 			allocedItemData=0;
 		}
+		if ( protoCount == 0 ) 
+			return 0;
+
 		ProtosData=(ProtoItemData*)mir_alloc(sizeof(ProtoItemData)*protoCount);
 		memset(ProtosData,0,sizeof(ProtoItemData)*protoCount);
 		for (j=0; j<protoCount; j++)
@@ -382,7 +385,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 						{
 							SIZE textSize;
 							DWORD w = 0;
-
+							// FIXME strange error occurs here due to Dimon log
 							w = ProtosData[i].PaddingLeft;
 							w += ProtosData[i].PaddingRight;
 

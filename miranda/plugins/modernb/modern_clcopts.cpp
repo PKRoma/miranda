@@ -381,7 +381,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 
 	if (g_CluiData.fDisableSkinEngine)
 	{
-		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLCBKG);
+		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST_LISTBKG);
 		odp.ptszGroup = TranslateT("Customize");
 		odp.ptszTitle = TranslateT("Contact list skin");
 		odp.ptszTab  = TranslateT("List Background");
@@ -2437,7 +2437,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				if (IsWindow(hProgMan)) 
 				{
 					SetParent(pcli->hwndContactList,hProgMan);
-					sync1(CLUIFrames_SetParentForContainers, hProgMan);
+					DoSync1Param(CLUIFrames_SetParentForContainers, hProgMan);
 					g_CluiData.fOnDesktop=1;
 				}
 			} 
@@ -2446,7 +2446,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				if (GetParent(pcli->hwndContactList))
 				{
 					SetParent(pcli->hwndContactList,NULL);
-					sync1(CLUIFrames_SetParentForContainers, NULL);
+					DoSync1Param(CLUIFrames_SetParentForContainers, NULL);
 				}
 				g_CluiData.fOnDesktop=0;
 			}
@@ -2468,7 +2468,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
 				DBWriteContactSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
-				sync2(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
+				DoSync2Param(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
 			}
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			//DBWriteContactSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));

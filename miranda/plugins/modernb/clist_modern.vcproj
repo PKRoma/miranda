@@ -439,6 +439,9 @@
 				RelativePath=".\modern_skinengine.cpp">
 			</File>
 			<File
+				RelativePath=".\modern_skinned_profile.cpp">
+			</File>
+			<File
 				RelativePath=".\modern_skinopt.cpp">
 			</File>
 			<File
@@ -536,6 +539,9 @@
 					RelativePath=".\hdr\modern_skinengine.h">
 				</File>
 				<File
+					RelativePath=".\hdr\modern_skinned_profile.h">
+				</File>
+				<File
 					RelativePath=".\hdr\modern_skinselector.h">
 				</File>
 				<File
@@ -576,10 +582,10 @@
 					RelativePath="..\..\include\m_clistint.h">
 				</File>
 				<File
-					RelativePath=".\m_api\m_clui.h">
+					RelativePath="..\..\include\m_clui.h">
 				</File>
 				<File
-					RelativePath="..\..\include\m_clui.h">
+					RelativePath=".\m_api\m_clui.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_cluiframes.h">
@@ -670,6 +676,9 @@
 				</File>
 				<File
 					RelativePath=".\m_api\m_skinbutton.h">
+				</File>
+				<File
+					RelativePath=".\m_api\m_skinned_profile.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_smileyadd.h">
