@@ -346,12 +346,18 @@ to a call of MS_DB_EVENT_GETTEXT (see below)
 Always returns 0.
 */
 
+#define DBEVENTTYPEDESCR_SIZE    sizeof(DBEVENTTYPEDESCR)
+#define DBEVENTTYPEDESCR_SIZE_V1 0x10
+
 typedef struct
 {
 	int   cbSize;      // structure size in bytes
 	char* module;      // event module name
 	int   eventType;   // event id, unique for this module
 	char* descr;       // event type description (i.e. "File Transfer")
+	char* textService; // service name for MS_DB_EVENT_GETTEXT (0.8+, default Module+'/GetEventText'+EvtID)
+	char* iconService; // service name for MS_DB_EVENT_GETICON (0.8+, default Module+'/GetEventIcon'+EvtID)
+	HANDLE eventIcon;  // icolib handle to eventicon (0.8+, default 'eventicon_'+Module+EvtID)
 }
 	DBEVENTTYPEDESCR;
 

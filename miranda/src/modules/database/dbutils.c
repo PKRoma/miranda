@@ -41,9 +41,30 @@ static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
 	int idx;
 	if ( !List_GetIndex(( SortedList* )&eventTypes, et, &idx )) {
 		DBEVENTTYPEDESCR* p = mir_alloc( sizeof( DBEVENTTYPEDESCR ));
-		*p = *et;
+		p->cbSize = DBEVENTTYPEDESCR_SIZE;
 		p->module = mir_strdup( et->module );
+		p->eventType = et->eventType; 
 		p->descr  = mir_strdup( et->descr  );
+		p->textService = NULL;
+		p->iconService = NULL;
+		p->eventIcon = NULL;
+		if ( p->cbSize == DBEVENTTYPEDESCR_SIZE ) {
+			if ( p->textService )
+				p->textService = mir_strdup( et->textService );
+			if ( p->iconService )
+				p->iconService = mir_strdup( et->iconService );
+			p->eventIcon = et->eventIcon;
+		}
+		if ( !p->textService ) {
+			char szServiceName[100];
+			mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventText%d", p->module, p->eventType );
+			p->textService = mir_strdup( szServiceName );
+		}
+		if ( !p->iconService ) {
+			char szServiceName[100];
+			mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventIcon%d", p->module, p->eventType );
+			p->iconService = mir_strdup( szServiceName );
+		}
 		List_Insert(( SortedList* )&eventTypes, p, idx );
 	}
 
@@ -69,11 +90,10 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
 
 	DBEVENTINFO* dbei = egt->dbei;
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )DbEventTypeGet( ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
 
-	char szServiceName[100];
-	mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventText%d", dbei->szModule, dbei->eventType );
-	if ( ServiceExists( szServiceName ))
-		return CallService( szServiceName, wParam, lParam );
+	if ( et && ServiceExists( et->textService ))
+		return CallService( et->textService, wParam, lParam );
 
 	if ( !dbei->pBlob ) return 0;
 
@@ -134,15 +154,20 @@ static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
 {
 	DBEVENTINFO* dbei = ( DBEVENTINFO* )lParam;
 	HICON icon;
-	char szName[100];
-	mir_snprintf( szName, sizeof( szName ), "%s/GetEventIcon%d", dbei->szModule, dbei->eventType );
-	if ( ServiceExists( szName )) {
-		icon = ( HICON )CallService( szName, wParam, lParam );
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )DbEventTypeGet( ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+
+	if ( et && ServiceExists( et->iconService )) {
+		icon = ( HICON )CallService( et->iconService, wParam, lParam );
 		if ( icon )
 			return ( int )icon;
 	}
-	mir_snprintf( szName, sizeof( szName ), "eventicon_%s%d", dbei->szModule, dbei->eventType );
-	icon = ( HICON )CallService( MS_SKIN2_GETICON, 0, ( LPARAM )szName );
+	if ( et && et->eventIcon )
+		icon = ( HICON )CallService( MS_SKIN2_GETICONBYHANDLE, 0, ( LPARAM )et->eventIcon );
+	if ( !icon ) {
+		char szName[100];
+		mir_snprintf( szName, sizeof( szName ), "eventicon_%s%d", dbei->szModule, dbei->eventType );
+		icon = ( HICON )CallService( MS_SKIN2_GETICON, 0, ( LPARAM )szName );
+	}
 
 	if ( !icon )
 	{
@@ -200,6 +225,8 @@ void UnloadEventsModule()
 		DBEVENTTYPEDESCR* p = eventTypes.items[i];
 		mir_free( p->module );
 		mir_free( p->descr );
+		mir_free( p->textService );
+		mir_free( p->iconService );
 		mir_free( p );
 	}
 
