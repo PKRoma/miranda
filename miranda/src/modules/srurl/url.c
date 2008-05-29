@@ -41,8 +41,8 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 {
 	CLISTEVENT cle;
 	DBEVENTINFO dbei;
-	char *contactName;
-	char szTooltip[256];
+	TCHAR *contactName;
+	TCHAR szTooltip[256];
 
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
@@ -57,9 +57,10 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	cle.hDbEvent=(HANDLE)lParam;
 	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
-	contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
-	mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("URL from %s"),contactName);
-	cle.pszTooltip=szTooltip;
+	cle.flags = CLEF_TCHAR;
+	contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+	mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("URL from %s"),contactName);
+	cle.ptszTooltip=szTooltip;
 	CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	return 0;
 }
