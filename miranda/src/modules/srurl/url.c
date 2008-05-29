@@ -41,8 +41,8 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 {
 	CLISTEVENT cle;
 	DBEVENTINFO dbei;
-	char *contactName;
-	char szTooltip[256];
+	TCHAR *contactName;
+	TCHAR szTooltip[256];
 
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
@@ -53,13 +53,14 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	SkinPlaySound("RecvUrl");
 	ZeroMemory(&cle,sizeof(cle));
 	cle.cbSize=sizeof(cle);
+	cle.flags = CLEF_TCHAR;
 	cle.hContact=(HANDLE)wParam;
 	cle.hDbEvent=(HANDLE)lParam;
 	cle.hIcon = LoadSkinIcon( SKINICON_EVENT_URL );
 	cle.pszService="SRUrl/ReadUrl";
-	contactName=(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,0);
-	mir_snprintf(szTooltip,SIZEOF(szTooltip),Translate("URL from %s"),contactName);
-	cle.pszTooltip=szTooltip;
+	contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,GCDNF_TCHAR);
+	mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("URL from %s"),contactName);
+	cle.ptszTooltip=szTooltip;
 	CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	return 0;
 }
@@ -74,7 +75,7 @@ static void RestoreUnreadUrlAlerts(void)
 {
 	CLISTEVENT cle={0};
 	DBEVENTINFO dbei={0};
-	char toolTip[256];
+	TCHAR toolTip[256];
 	HANDLE hDbEvent,hContact;
 
 	dbei.cbSize=sizeof(dbei);
@@ -91,8 +92,9 @@ static void RestoreUnreadUrlAlerts(void)
 			if(!(dbei.flags&(DBEF_SENT|DBEF_READ)) && dbei.eventType==EVENTTYPE_URL) {
 				cle.hContact=hContact;
 				cle.hDbEvent=hDbEvent;
-				mir_snprintf(toolTip,SIZEOF(toolTip),Translate("URL from %s"),(char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
-				cle.pszTooltip=toolTip;
+				cle.flags = CLEF_TCHAR;
+				mir_sntprintf(toolTip,SIZEOF(toolTip),TranslateT("URL from %s"),(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,GCDNF_TCHAR));
+				cle.ptszTooltip=toolTip;
 				CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 			}
 			hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDNEXT,(WPARAM)hDbEvent,0);
