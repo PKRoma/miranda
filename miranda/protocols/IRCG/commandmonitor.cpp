@@ -950,7 +950,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						
 						if ( bFlag ) {
 							TCHAR* p1 = _tcsdup( GetWordAddress(mess.c_str(), 2 ));
-							TCHAR* p2 = GetWordAddress( p1, index-5 );
+							TCHAR* p2 = ( TCHAR* )GetWordAddress( p1, index-5 );
 							
 							if ( type == _T("send")) {
 								if ( p2 > p1 ) {
@@ -1014,7 +1014,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						}
 						if ( bFlag ) {
 							TCHAR* p1 = _tcsdup(GetWordAddress(mess.c_str(), 2));
-							TCHAR* p2 = GetWordAddress(p1, index-4);
+							TCHAR* p2 = ( TCHAR* )GetWordAddress(p1, index-4);
 							
 							if ( p2 > p1 ) {
 								p2--;
@@ -1964,7 +1964,6 @@ bool CIrcProto::OnIrc_WHO_END( const CIrcMessage* pmsg )
 			// is it a channel?
 			if ( IsChannel( pmsg->parameters[1] )) {
 				CMString S = _T("");
-				CMString SS = m_whoReply;
 				CMString User = GetWord( m_whoReply.c_str(), 0 );
 				while ( !User.IsEmpty()) {
 					if ( GetWord( m_whoReply.c_str(), 3)[0] == 'G' ) {
@@ -1974,7 +1973,7 @@ bool CIrcProto::OnIrc_WHO_END( const CIrcMessage* pmsg )
 					}
 					else DoEvent( GC_EVENT_SETCONTACTSTATUS, pmsg->parameters[1].c_str(), User.c_str(), NULL, NULL, NULL, ID_STATUS_ONLINE, FALSE, FALSE);
 
-					SS = GetWordAddress( m_whoReply.c_str(), 4 );
+					CMString SS = GetWordAddress( m_whoReply.c_str(), 4 );
 					if ( SS.IsEmpty())
 						break;
 					m_whoReply = SS;
@@ -1987,7 +1986,7 @@ bool CIrcProto::OnIrc_WHO_END( const CIrcMessage* pmsg )
 
 			/// if it is not a channel
 			TCHAR* UserList = mir_tstrdup( m_whoReply.c_str() );
-			TCHAR* p1= UserList;
+			const TCHAR* p1= UserList;
 			m_whoReply = _T("");
 			CONTACT user = { (TCHAR*)pmsg->parameters[1].c_str(), NULL, NULL, false, true, false};
 			HANDLE hContact = CList_FindContact( &user );

@@ -751,20 +751,19 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 extern BOOL bChatInstalled, m_bMbotInstalled;
 
 //tools.cpp
-int       __stdcall WCCmp(const TCHAR* wild, const TCHAR* string);
-char*     __stdcall IrcLoadFile(char * szPath);
-CMString  __stdcall GetWord(const TCHAR* text, int index);
-CMString& __stdcall ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
-TCHAR*    __stdcall GetWordAddress(const TCHAR* text, int index);
-void      __stdcall RemoveLinebreaks( CMString& Message );
-TCHAR*    __stdcall my_strstri(const TCHAR *s1, const TCHAR *s2) ;
-TCHAR*    __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
-char*     __stdcall rtrim( char *string );
+int          __stdcall WCCmp(const TCHAR* wild, const TCHAR* string);
+char*        __stdcall IrcLoadFile(char * szPath);
+CMString     __stdcall GetWord(const TCHAR* text, int index);
+CMString&    __stdcall ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
+const TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index);
+void         __stdcall RemoveLinebreaks( CMString& Message );
+TCHAR*       __stdcall my_strstri(const TCHAR *s1, const TCHAR *s2) ;
+TCHAR*       __stdcall DoColorCodes (const TCHAR* text, bool bStrip, bool bReplacePercent);
+char*        __stdcall rtrim( char *string );
 
 #if defined( _UNICODE )
-String&   __stdcall ReplaceString (String& text, const char* replaceme, const char* newword);
-String    __stdcall GetWord(const char* text, int index);
-char*     __stdcall GetWordAddress(const char* text, int index);
+	String&  __stdcall ReplaceString (String& text, const char* replaceme, const char* newword);
+	String   __stdcall GetWord(const char* text, int index);
 #endif
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)

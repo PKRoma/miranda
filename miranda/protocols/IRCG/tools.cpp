@@ -166,12 +166,12 @@ CMString __stdcall GetWord(const TCHAR* text, int index)
 	return CMString();
 }
 
-TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index)
+const TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index)
 {
 	if( !text || !lstrlen(text))
-		return ( TCHAR* )text;
+		return text;
 
-	TCHAR* temp = ( TCHAR* )text;
+	const TCHAR* temp = text;
 
 	while (*temp == ' ')
 		temp++;
