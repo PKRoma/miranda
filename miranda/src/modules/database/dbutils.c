@@ -48,10 +48,10 @@ static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
 		p->textService = NULL;
 		p->iconService = NULL;
 		p->eventIcon = NULL;
-		if ( p->cbSize == DBEVENTTYPEDESCR_SIZE ) {
-			if ( p->textService )
+		if ( et->cbSize == DBEVENTTYPEDESCR_SIZE ) {
+			if ( et->textService )
 				p->textService = mir_strdup( et->textService );
-			if ( p->iconService )
+			if ( et->iconService )
 				p->iconService = mir_strdup( et->iconService );
 			p->eventIcon = et->eventIcon;
 		}
