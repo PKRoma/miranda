@@ -1,4 +1,3 @@
-#include "hdr/modern_log.h"
 #include "hdr/modern_commonheaders.h"
 
 #include <stdarg.h>

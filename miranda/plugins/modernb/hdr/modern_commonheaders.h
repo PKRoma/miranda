@@ -463,7 +463,7 @@ int ModernDBFreeVariant     ( DBVARIANT *dbv );
 #define DBWriteContactSettingDword(a,b,c,d)      ModernDBWriteDword( a,b,c,d )
 
 #define DBWriteContactSettingString(a,b,c,d)     ModernDBWriteString( a,b,c,d )
-#define DBWriteContactSettingWString(a,b,c,d)    ModernDBWriteWString() a,b,c,d )
+#define DBWriteContactSettingWString(a,b,c,d)    ModernDBWriteWString( a,b,c,d )
 #ifdef _UNICODE
     #define DBWriteContactSettingTString(a,b,c,d) ModernDBWriteWString( a,b,c,d )
     #define DBGetContactSettingTString(a,b,c,d)   DBGetContactSettingWString(a,b,c,d) 

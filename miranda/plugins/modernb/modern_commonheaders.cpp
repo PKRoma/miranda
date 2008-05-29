@@ -1,3 +1,4 @@
+#define _WIN32_WINNT 0x0501
 #include "m_stdhdr.h"
 #include <windows.h>
 #include <commctrl.h>
@@ -5,75 +6,70 @@
 #include <newpluginapi.h>
 #include <m_database.h>
 
-#ifdef _DB_HERPER_REPLACERS_DECLARED__
-#error "_DB_HERPER_REPLACERS_DECLARED__"
-#endif
-
-int ModernDBGetByte_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+__inline int ModernDBGetByte_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingByte_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-int ModernDBGetWord_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+__inline int ModernDBGetWord_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingWord_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-int ModernDBGetDword_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+__inline int ModernDBGetDword_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingDword_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-
-int ModernDBGetString_Helper(HANDLE hContact,const char *szModule, const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
+__inline int ModernDBGetString_Helper(HANDLE hContact,const char *szModule, const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
 {
     return DBGetContactSettingString_Helper( hContact, szModule, szSetting, dbv, szFile, nLine, nType );
 }
 
-int ModernDBGetSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+__inline int ModernDBGetSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
 {
     return DBGetContactSetting_Helper(hContact, szModule, szSetting, dbv, szFile, nLine);
 }
-int ModernDBWriteByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
+
+__inline int ModernDBWriteByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
 {
     return DBWriteContactSettingByte( hContact, szModule, szSetting, val);
 }
 
-int ModernDBWriteWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
+__inline int ModernDBWriteWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
 {
     return DBWriteContactSettingWord( hContact, szModule, szSetting, val);
 }
 
-int ModernDBWriteDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
+__inline int ModernDBWriteDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
 {
     return DBWriteContactSettingDword( hContact, szModule, szSetting, val);
 }
 
-int ModernDBWriteString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+__inline int ModernDBWriteString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
     return DBWriteContactSettingString( hContact, szModule, szSetting, val );
 }
-int ModernDBWriteWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
+
+__inline int ModernDBWriteWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
 {
     return DBWriteContactSettingWString( hContact, szModule, szSetting, val );
 }
 
-
-int ModernDBFreeVariant(DBVARIANT *dbv)
+__inline int ModernDBFreeVariant(DBVARIANT *dbv)
 {
     return DBFreeVariant( dbv );
 }
 
-int ModernDBDeleteSetting(HANDLE hContact,const char *szModule,const char *szSetting)
+__inline int ModernDBDeleteSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {
     return DBDeleteContactSetting( hContact, szModule, szSetting );
 }
 
-WORD ModernDBGetRangedWord(HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue) 
+__inline WORD ModernDBGetRangedWord(HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue) 
 {
     return DBGetContactSettingRangedWord( hContact, szModule, szSetting, errorValue, minValue, maxValue);
 }
-
 
 #undef DBGetContactSettingByte
 #undef DBGetContactSettingWord
