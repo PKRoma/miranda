@@ -2,33 +2,11 @@
  * test for gdi+
  */
 
-#define _WIN32_WINNT 0x0501
 
-#include "m_stdhdr.h"
+#include "hdr/modern_commonheaders.h"
 
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <time.h>
-#include <stddef.h>
-#include <process.h>
-#include <io.h>
-#include <string.h>
-#include <direct.h>
-#include <math.h>
-#include "resource.h"
-#include <win2k.h>
-#include "m_avatars.h"
-/*extern "C"*/
-//{
-	#include "newpluginapi.h"	//this is common header for miranda plugin api
-	#include "m_system.h"
-	#include "m_utils.h"
-//};
-
-
-#undef Translate
-#include "gdiplus.h"
+#undef Translate	//otherwise will conflict with gdi plus Translate
+#include <gdiplus.h>
 
 #include "hdr/modern_global_structure.h"
 

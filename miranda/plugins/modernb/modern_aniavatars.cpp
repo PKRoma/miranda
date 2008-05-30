@@ -194,8 +194,8 @@ int AniAva_InitModule()
 {
 	memset(&AniAva,0,sizeof(AniAva));
 	if (g_CluiData.fGDIPlusFail) return 0;
-	if (!( DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
-		&& DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT) ) ) return 0;
+	if (!( ModernGetSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
+		&& ModernGetSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT) ) ) return 0;
 	{
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(wc));
@@ -263,8 +263,8 @@ int AniAva_UpdateOptions()
 {
 	BOOL bReloadAvatars=FALSE;
 	BOOL bBeEnabled=(!g_CluiData.fGDIPlusFail
-		&& DBGetContactSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
-		&& DBGetContactSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT) );
+		&& ModernGetSettingByte(NULL,"CList","AvatarsAnimated",(ServiceExists(MS_AV_GETAVATARBITMAP)&&!g_CluiData.fGDIPlusFail))
+		&& ModernGetSettingByte(NULL,"CList","AvatarsShow",SETTINGS_SHOWAVATARS_DEFAULT) );
 	if (bBeEnabled && !AniAva.bModuleStarted)
 	{
 		AniAva_InitModule();
@@ -1024,19 +1024,19 @@ static void _AniAva_LoadOptions()
 	aacheck;
 	aalock;
 	{
-		AniAva.bFlags= (DBGetContactSettingByte(NULL,"CList","AvatarsDrawBorders",SETTINGS_AVATARDRAWBORDER_DEFAULT)?	AAO_HAS_BORDER		:0) |
-			(DBGetContactSettingByte(NULL,"CList","AvatarsRoundCorners",SETTINGS_AVATARROUNDCORNERS_DEFAULT)?	AAO_ROUND_CORNERS	:0) |	
-			(DBGetContactSettingByte(NULL,"CList","AvatarsDrawOverlay",SETTINGS_AVATARDRAWOVERLAY_DEFAULT)?	AAO_HAS_OVERLAY		:0) |
+		AniAva.bFlags= (ModernGetSettingByte(NULL,"CList","AvatarsDrawBorders",SETTINGS_AVATARDRAWBORDER_DEFAULT)?	AAO_HAS_BORDER		:0) |
+			(ModernGetSettingByte(NULL,"CList","AvatarsRoundCorners",SETTINGS_AVATARROUNDCORNERS_DEFAULT)?	AAO_ROUND_CORNERS	:0) |	
+			(ModernGetSettingByte(NULL,"CList","AvatarsDrawOverlay",SETTINGS_AVATARDRAWOVERLAY_DEFAULT)?	AAO_HAS_OVERLAY		:0) |
 			( (0) ? AAO_OPAQUE :0);
 
 		if (AniAva.bFlags & AAO_HAS_BORDER)
-			AniAva.borderColor=(COLORREF)DBGetContactSettingDword(NULL,"CList","AvatarsBorderColor",SETTINGS_AVATARBORDERCOLOR_DEFAULT);;
+			AniAva.borderColor=(COLORREF)ModernGetSettingDword(NULL,"CList","AvatarsBorderColor",SETTINGS_AVATARBORDERCOLOR_DEFAULT);;
 		if (AniAva.bFlags & AAO_ROUND_CORNERS)
-			AniAva.cornerRadius=DBGetContactSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",SETTINGS_AVATARUSECUTOMCORNERSIZE_DEFAULT)? DBGetContactSettingWord(NULL,"CList","AvatarsCustomCornerSize",SETTINGS_AVATARCORNERSIZE_DEFAULT) : 0;
+			AniAva.cornerRadius=ModernGetSettingByte(NULL,"CList","AvatarsUseCustomCornerSize",SETTINGS_AVATARUSECUTOMCORNERSIZE_DEFAULT)? ModernGetSettingWord(NULL,"CList","AvatarsCustomCornerSize",SETTINGS_AVATARCORNERSIZE_DEFAULT) : 0;
 		if (AniAva.bFlags & AAO_HAS_OVERLAY)
 		{
 			//check image list
-			BYTE type=DBGetContactSettingByte(NULL,"CList","AvatarsOverlayType",SETTINGS_AVATAROVERLAYTYPE_DEFAULT);
+			BYTE type=ModernGetSettingByte(NULL,"CList","AvatarsOverlayType",SETTINGS_AVATAROVERLAYTYPE_DEFAULT);
 			switch(type)
 			{
 			case SETTING_AVATAR_OVERLAY_TYPE_NORMAL:
@@ -1052,7 +1052,7 @@ static void _AniAva_LoadOptions()
 		}
 		if (AniAva.bFlags & AAO_OPAQUE)
 			AniAva.bkgColor=0;
-		AniAva.bSeparateWindow = DBGetContactSettingByte(NULL,"CList","AvatarsInSeparateWnd",SETTINGS_AVATARINSEPARATE_DEFAULT); 
+		AniAva.bSeparateWindow = ModernGetSettingByte(NULL,"CList","AvatarsInSeparateWnd",SETTINGS_AVATARINSEPARATE_DEFAULT); 
 
 	}
 	aaunlock;

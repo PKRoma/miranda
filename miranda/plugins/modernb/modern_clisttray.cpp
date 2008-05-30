@@ -178,8 +178,8 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 
 	if(netProtoCount>1) {
 		if(averageMode>=ID_STATUS_OFFLINE) {
-			if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
-				if(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
+			if(ModernGetSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) {
+				if(ModernGetSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT))
 					changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,averageMode),szChangedProto);
 				else if(pcli->trayIcon && pcli->trayIcon[0].szProto!=NULL) {
 					pcli->pfnTrayIconDestroy(hwnd);
@@ -190,12 +190,12 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			}
 			else
 			{
-				if(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE
-					&& DBGetContactSettingByte(NULL,"CList","AlwaysPrimary",SETTING_ALWAYSPRIMARY_DEFAULT))
+				if(ModernGetSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_SINGLE
+					&& ModernGetSettingByte(NULL,"CList","AlwaysPrimary",SETTING_ALWAYSPRIMARY_DEFAULT))
 				{
 					DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;
-					if(DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
+					if(ModernGetSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
 					else szProto=dbv.pszVal;
 					changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szProto,averageMode),NULL);
 					if (szProto) mir_free_and_nill(szProto);
@@ -205,13 +205,13 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			}
 		}
 		else {
-			switch(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)) {
+			switch(ModernGetSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)) {
 			case SETTING_TRAYICON_SINGLE:
 				{
 					DBVARIANT dbv={DBVT_DELETED};
 					char *szProto;
 					int status;
-					if(DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
+					if(ModernGetSettingString(NULL,"CList","PrimaryStatus",&dbv)) szProto=NULL;
 					else szProto=dbv.pszVal;
 					status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
 
@@ -229,14 +229,14 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
 						if (hIcon) {
 							changed=pcli->pfnTrayIconSetBaseInfo(hIcon,NULL);
-							DBFreeVariant(&dbv);
+							ModernDBFreeVariant(&dbv);
 							break;
 						}
 					}
 					else
 						changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szProto,szProto?CallProtoService(szProto,PS_GETSTATUS,0,0):CallService(MS_CLIST_GETSTATUSMODE,0,0)),NULL);
 
-					DBFreeVariant(&dbv);
+					ModernDBFreeVariant(&dbv);
 				}
 				break;
 
@@ -270,7 +270,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 					}
 					else
 					{
-						pcli->cycleTimerId=CLUI_SafeSetTimer(NULL,0,DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,pcli->pfnTrayCycleTimerProc);
+						pcli->cycleTimerId=CLUI_SafeSetTimer(NULL,0,ModernGetSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT)*1000,pcli->pfnTrayCycleTimerProc);
 						changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,status),NULL);
 					}
 
@@ -280,7 +280,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 			case SETTING_TRAYICON_MULTI:
 				if (!pcli->trayIcon)
 					pcli->pfnTrayIconRemove(NULL,NULL);
-				else if ( DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT )) {
+				else if ( ModernGetSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT )) {
 					if (pcli->pfnGetProtocolVisibility(szChangedProto))
 					{
 
@@ -346,7 +346,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 		}
 		if (workAround) 
 		{
-			if(DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv))
+			if(ModernGetSettingString(NULL,"CList","PrimaryStatus",&dbv))
 				szProto=NULL;
 			else 
 				szProto=dbv.pszVal;
@@ -379,12 +379,12 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT idEvent,D
 
 int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 {
-	if(DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
+	if(ModernGetSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
 		if(GetActiveWindow()!=pcli->hwndContactList
 			&&GetWindow(GetParent(GetActiveWindow()),GW_OWNER) != pcli->hwndContactList )
 		{
 			KillTimer(NULL,autoHideTimerId);
-			autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
+			autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*ModernGetSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
 	}	}
 
 	return 0;
@@ -412,16 +412,16 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			h1=(HWND)msg->lParam;
 			h2=h1?GetParent(h1):NULL;
 			h4=pcli->hwndContactList;
-			if(DBGetContactSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
+			if(ModernGetSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
 				if(LOWORD(msg->wParam)==WA_INACTIVE && h2!=h4)
-					autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*DBGetContactSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
+					autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*ModernGetSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
 				else KillTimer(NULL,autoHideTimerId);
 			}
 		}
 		return FALSE; //to avoid autohideTimer in core
 
 	case TIM_CALLBACK:
-		if ((GetAsyncKeyState(VK_CONTROL)&0x8000) && msg->lParam == WM_LBUTTONDOWN && !DBGetContactSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)) {
+		if ((GetAsyncKeyState(VK_CONTROL)&0x8000) && msg->lParam == WM_LBUTTONDOWN && !ModernGetSettingByte(NULL,"CList","Tray1Click",SETTING_TRAY1CLICK_DEFAULT)) {
 			POINT pt;
 			HMENU hMenu;
 			hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,(WPARAM)0,(LPARAM)0);

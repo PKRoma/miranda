@@ -141,21 +141,21 @@ static int ModernSkinButtonPaintWorker(HWND hwnd, HDC whdc)
 				{
 				case 's':
 					{
-						Value=ModernDBGetStringA(NULL,section,key);
+						Value= ModernGetStringA(NULL,section,key);
 						if (!Value)
 							Value=mir_strdup(bct->ValueTypeDef+1);
 						break;
 					}         
 				case 'd':
-					defval=DBGetContactSettingDword(NULL,section,key,defval);
+					defval=ModernGetSettingDword(NULL,section,key,defval);
 					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
 					break;
 				case 'w':
-					defval=DBGetContactSettingWord(NULL,section,key,defval);
+					defval=ModernGetSettingWord(NULL,section,key,defval);
 					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
 					break;
 				case 'b':
-					defval=DBGetContactSettingByte(NULL,section,key,defval);
+					defval=ModernGetSettingByte(NULL,section,key,defval);
 					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
 					break;
 				}
@@ -241,29 +241,29 @@ static int ModernSkinButtonToggleDBValue(char * ValueDBSection,char *ValueTypeDe
 		{
 		case 's':
 			{
-				Value=ModernDBGetStringA(NULL,section,key);
+				Value= ModernGetStringA(NULL,section,key);
 				if (!Value ||(Value && mir_bool_strcmpi(Value,val2)))
 					Value=mir_strdup(val);
 				else 
 					Value=mir_strdup(val2);
-				DBWriteContactSettingString(NULL,section,key,Value);
+				ModernWriteSettingString(NULL,section,key,Value);
 				mir_free_and_nill(Value);
 				break;
 			}         
 		case 'd':
-			curval=DBGetContactSettingDword(NULL,section,key,l2);
+			curval=ModernGetSettingDword(NULL,section,key,l2);
 			curval=(curval==l2)?l1:l2;
-			DBWriteContactSettingDword(NULL,section,key,(DWORD)curval);
+			ModernWriteSettingDword(NULL,section,key,(DWORD)curval);
 			break;
 		case 'w':
-			curval=DBGetContactSettingWord(NULL,section,key,l2);
+			curval=ModernGetSettingWord(NULL,section,key,l2);
 			curval=(curval==l2)?l1:l2;
-			DBWriteContactSettingWord(NULL,section,key,(WORD)curval);            
+			ModernWriteSettingWord(NULL,section,key,(WORD)curval);            
 			break;
 		case 'b':
-			curval=DBGetContactSettingByte(NULL,section,key,l2);
+			curval=ModernGetSettingByte(NULL,section,key,l2);
 			curval=(curval==l2)?l1:l2;
-			DBWriteContactSettingByte(NULL,section,key,(BYTE)curval);            
+			ModernWriteSettingByte(NULL,section,key,(BYTE)curval);            
 			break;
 		}       
 		mir_free_and_nill(section);

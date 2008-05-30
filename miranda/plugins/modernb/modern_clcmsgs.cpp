@@ -182,7 +182,7 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 				index+=contact->isSubcontact;				
 			}			
 			{	
-				BYTE k=DBGetContactSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);
+				BYTE k=ModernGetSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);
 				if (k)
 				{
 					int subcontactscount=0;

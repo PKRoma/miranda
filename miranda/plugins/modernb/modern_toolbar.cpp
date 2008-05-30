@@ -249,14 +249,14 @@ static int    ehhToolBarSettingsChanged( WPARAM wParam, LPARAM lParam )
 	if (!mir_strcmp(cws->szModule,"CList"))
 	{
 		if (!mir_strcmp(cws->szSetting,"HideOffline"))
-			sttSetButtonPressed("ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+			sttSetButtonPressed("ShowHideOffline", (BOOL) ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 		else if (!mir_strcmp(cws->szSetting,"UseGroups"))
-			sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
+			sttSetButtonPressed( "UseGroups", (BOOL) ModernGetSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
 	}
 	else if (!mir_strcmp(cws->szModule,"Skin"))
 	{
 		if (!mir_strcmp(cws->szSetting,"UseSound"))
-			sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+			sttSetButtonPressed( "EnableSounds", (BOOL) ModernGetSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
 	}
 	
 	return 0;
@@ -272,14 +272,14 @@ static int    ehhToolBarBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
 	{
 		DBVARIANT dbv;
 		tbdat.mtb_bkColour=sttGetColor("ToolBar","BkColour",CLCDEFAULT_BKCOLOUR);
-		if(DBGetContactSettingByte(NULL,"ToolBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-			if(!DBGetContactSettingString(NULL,"ToolBar","BkBitmap",&dbv)) {
+		if(ModernGetSettingByte(NULL,"ToolBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+			if(!ModernGetSettingString(NULL,"ToolBar","BkBitmap",&dbv)) {
 				tbdat.mtb_hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				DBFreeVariant(&dbv);
+				ModernDBFreeVariant(&dbv);
 			}
 		}
-		tbdat.mtb_useWinColors = DBGetContactSettingByte(NULL, "ToolBar", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
-		tbdat.mtb_backgroundBmpUse = DBGetContactSettingWord(NULL, "ToolBar", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+		tbdat.mtb_useWinColors = ModernGetSettingByte(NULL, "ToolBar", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
+		tbdat.mtb_backgroundBmpUse = ModernGetSettingWord(NULL, "ToolBar", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
 	}	
 	PostMessage(pcli->hwndContactList,WM_SIZE,0,0);
 	return 0;
@@ -608,13 +608,13 @@ static void   sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder
 
 	if (pbVisible) vis=*pbVisible;
 	_snprintf(key, sizeof(key), "visible_%s", ID);
-	vis=DBGetContactSettingByte(NULL,"ModernToolBar", key, vis);
+	vis=ModernGetSettingByte(NULL,"ModernToolBar", key, vis);
 
 	_snprintf(key, sizeof(key), "order_%s", ID);
-	ord=DBGetContactSettingDword(NULL,"ModernToolBar", key, 0);
+	ord=ModernGetSettingDword(NULL,"ModernToolBar", key, 0);
 
 	_snprintf(key, sizeof(key), "panel_%s", ID);
-	panel=DBGetContactSettingByte(NULL,"ModernToolBar", key, 0);
+	panel=ModernGetSettingByte(NULL,"ModernToolBar", key, 0);
 
 	if (pbVisible)	*pbVisible=vis;
 	if (pdwOrder)	*pdwOrder=ord;
@@ -626,8 +626,8 @@ static void   sttReloadButtons()
 	tbcheck ;
 	tblock;
 	{
-		int vis=DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT);
-		WindowList_Broadcast(tbdat.hToolBarWindowList,MTBM_UPDATEFRAMEVISIBILITY,(WPARAM)DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT),0);
+		int vis=ModernGetSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT);
+		WindowList_Broadcast(tbdat.hToolBarWindowList,MTBM_UPDATEFRAMEVISIBILITY,(WPARAM)ModernGetSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT),0);
 	}
 
 	WindowList_Broadcast(tbdat.hToolBarWindowList, MTBM_REMOVE_ALL_BUTTONS, 0,0);
@@ -650,9 +650,9 @@ static void   sttReloadButtons()
 			ToolBar_AddButtonToBars(mtbi);
 	}
 	tbunlock;
-	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
-	sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
-	sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	sttSetButtonPressed( "ShowHideOffline", (BOOL) ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	sttSetButtonPressed( "UseGroups", (BOOL) ModernGetSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
+	sttSetButtonPressed( "EnableSounds", (BOOL) ModernGetSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
 
 }
 static int	  sttDBEnumProc (const char *szSetting,LPARAM lParam)
@@ -660,7 +660,7 @@ static int	  sttDBEnumProc (const char *szSetting,LPARAM lParam)
 
 	if (szSetting==NULL) return 0;
 	if (!strncmp(szSetting,"order_",6))
-		DBDeleteContactSetting(NULL, "ModernToolBar", szSetting);
+		ModernDeleteSetting(NULL, "ModernToolBar", szSetting);
 	return 0;
 };
 static void   sttDeleteOrderSettings()
@@ -703,7 +703,7 @@ static void	ToolBar_DefaultButtonRegistration()
 	sttRegisterToolBarButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
 					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
 	
-	sttSetButtonPressed( "ShowHideOffline", (BOOL) DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
+	sttSetButtonPressed( "ShowHideOffline", (BOOL) ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) );
 
 	sttRegisterToolBarButton( "DatabaseEditor","DBEditor++", "DBEditorpp/MenuCommand",
 		"Database Editor", NULL,  130 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
@@ -717,12 +717,12 @@ static void	ToolBar_DefaultButtonRegistration()
 	sttRegisterToolBarButton( "UseGroups","Use/Disable groups", MS_CLIST_TOGGLEGROUPS,
 		"Use groups", "Disable Groups", 160 /*and 161 */ , IDI_RESETVIEW, IDI_RESETVIEW, FALSE  );
 
-	sttSetButtonPressed( "UseGroups", (BOOL) DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
+	sttSetButtonPressed( "UseGroups", (BOOL) ModernGetSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) );
 
 	sttRegisterToolBarButton( "EnableSounds","Enable/Disable sounds", MS_CLIST_TOGGLESOUNDS,
 		"Enable sounds", "Disable Sounds", 170 /*and 171 */ , IDI_RESETVIEW, IDI_RESETVIEW, FALSE  );
 	
-	sttSetButtonPressed( "EnableSounds", (BOOL) DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	sttSetButtonPressed( "EnableSounds", (BOOL) ModernGetSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
 	
 	sttAddDynamicSeparator(FALSE);
 
@@ -777,20 +777,20 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			pMTBInfo->cbSize = sizeof(MTBINFO);
 			SetWindowLong( hwnd, GWL_USERDATA, (LONG) pMTBInfo );
 
-			pMTBInfo->nButtonWidth = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
-			pMTBInfo->nButtonHeight= DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
-			pMTBInfo->nButtonSpace = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
-			pMTBInfo->fAutoSize    = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize",  SETTINGS_BARAUTOSIZE_DEFAULT);
-			pMTBInfo->fSingleLine  = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT)==0;
+			pMTBInfo->nButtonWidth = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
+			pMTBInfo->nButtonHeight= ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
+			pMTBInfo->nButtonSpace = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
+			pMTBInfo->fAutoSize    = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize",  SETTINGS_BARAUTOSIZE_DEFAULT);
+			pMTBInfo->fSingleLine  = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT)==0;
 
 			//register self frame
 			Frame.cbSize=sizeof(CLISTFrame);
 			Frame.hWnd=hwnd;
 			Frame.align=alTop;
 			Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
-			Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
+			Frame.Flags=(ModernGetSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER;
 	
-			Frame.height=DBGetContactSettingDword(NULL, "ModernToolBar", "option_Bar0_OldHeight", pMTBInfo->nButtonHeight);
+			Frame.height=ModernGetSettingDword(NULL, "ModernToolBar", "option_Bar0_OldHeight", pMTBInfo->nButtonHeight);
 			pMTBInfo->wLastHeight=Frame.height;
           
             pMTBInfo->nLineCount   = 1;
@@ -826,7 +826,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 				if (ID)
 				{
 					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
-					if (res>=0) DBWriteContactSettingByte(0,"CLUI","ShowButtonBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
+					if (res>=0) ModernWriteSettingByte(0,"CLUI","ShowButtonBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
 					if (wParam) SendMessage(hwnd, MTBM_REPOSBUTTONS, 0, 0);
 				}
 			}
@@ -841,11 +841,11 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			int frameID=callProxied_FindFrameID(hwnd);
 			int Height;
 		
-			pMTBInfo->nButtonWidth = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
-			pMTBInfo->nButtonHeight= DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
-			pMTBInfo->nButtonSpace = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
-			pMTBInfo->fAutoSize    = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize",  SETTINGS_BARAUTOSIZE_DEFAULT);
-			pMTBInfo->fSingleLine  = DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT)==0;
+			pMTBInfo->nButtonWidth = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);
+			pMTBInfo->nButtonHeight= ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT);
+			pMTBInfo->nButtonSpace = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT);
+			pMTBInfo->fAutoSize    = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize",  SETTINGS_BARAUTOSIZE_DEFAULT);
+			pMTBInfo->fSingleLine  = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT)==0;
 
 			Height=sttReposButtons( pMTBInfo );
 
@@ -933,7 +933,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	case WM_SIZE: 
 		if (pMTBInfo->wLastHeight!=HIWORD(lParam))
 		{
-			DBWriteContactSettingDword(NULL, "ModernToolBar", "option_Bar0_OldHeight", HIWORD(lParam));
+			ModernWriteSettingDword(NULL, "ModernToolBar", "option_Bar0_OldHeight", HIWORD(lParam));
 			pMTBInfo->wLastHeight=HIWORD(lParam);
 		}
 		if (supressRepos)
@@ -1141,18 +1141,18 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 			tbunlock;
 
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_SETRANGE,0,MAKELONG(50,10));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT),0));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_SETPOS,0,MAKELONG(ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT),0));
 
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_SETRANGE,0,MAKELONG(50,10));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT),0));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_SETPOS,0,MAKELONG(ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnHeight", SETTINGS_BARBTNHEIGHT_DEFAULT),0));
 
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_SETRANGE,0,MAKELONG(20,0));
-			SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT),0));
+			SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_SETPOS,0,MAKELONG(ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnSpace",  SETTINGS_BARBTNSPACE_DEFAULT),0));
 
-			CheckDlgButton(hwndDlg, IDC_CHECK_AUTOSIZE, DBGetContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize", SETTINGS_BARAUTOSIZE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-			CheckDlgButton(hwndDlg, IDC_CHECK_MULTILINE, DBGetContactSettingByte(NULL,"ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_CHECK_AUTOSIZE, ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize", SETTINGS_BARAUTOSIZE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_CHECK_MULTILINE, ModernGetSettingByte(NULL,"ModernToolBar", "option_Bar0_Multiline", SETTINGS_BARMULTILINE_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 
-			CheckDlgButton(hwndDlg, IDC_TBSHOW, DBGetContactSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_TBSHOW, ModernGetSettingByte(NULL,"CLUI","ShowButtonBar",SETTINGS_SHOWBUTTONBAR_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 			{
 				int i;
 				BOOL en=IsDlgButtonChecked(hwndDlg,IDC_TBSHOW);
@@ -1190,19 +1190,19 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 								{
 									char szTempSetting[200];
 									_snprintf(szTempSetting, sizeof(szTempSetting), "order_%s", mtbi->szButtonID);
-									DBWriteContactSettingDword(NULL, "ModernToolBar", szTempSetting, order);
+									ModernWriteSettingDword(NULL, "ModernToolBar", szTempSetting, order);
 									order+=10;
 									_snprintf(szTempSetting, sizeof(szTempSetting), "visible_%s", mtbi->szButtonID);
-									DBWriteContactSettingByte(NULL, "ModernToolBar", szTempSetting, TreeView_GetCheckState(hTree,hItem));
+									ModernWriteSettingByte(NULL, "ModernToolBar", szTempSetting, TreeView_GetCheckState(hTree,hItem));
 								}
 								hItem=TreeView_GetNextSibling(hTree,hItem);
 							} while (hItem!=NULL);
-							DBWriteContactSettingByte(NULL,"CLUI","ShowButtonBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TBSHOW));
-							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnWidth", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_GETPOS,0,0));
-							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnHeight",(BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_GETPOS,0,0));
-							DBWriteContactSettingByte(NULL,"ModernToolBar","option_Bar0_BtnSpace", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_GETPOS,0,0));
-							DBWriteContactSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_CHECK_AUTOSIZE));
-							DBWriteContactSettingByte(NULL,"ModernToolBar", "option_Bar0_Multiline", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_CHECK_MULTILINE));
+							ModernWriteSettingByte(NULL,"CLUI","ShowButtonBar",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TBSHOW));
+							ModernWriteSettingByte(NULL,"ModernToolBar","option_Bar0_BtnWidth", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_W,UDM_GETPOS,0,0));
+							ModernWriteSettingByte(NULL,"ModernToolBar","option_Bar0_BtnHeight",(BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_H,UDM_GETPOS,0,0));
+							ModernWriteSettingByte(NULL,"ModernToolBar","option_Bar0_BtnSpace", (BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_S,UDM_GETPOS,0,0));
+							ModernWriteSettingByte(NULL, "ModernToolBar", "option_Bar0_Autosize", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_CHECK_AUTOSIZE));
+							ModernWriteSettingByte(NULL,"ModernToolBar", "option_Bar0_Multiline", (BYTE)IsDlgButtonChecked(hwndDlg,IDC_CHECK_MULTILINE));
 							
 							sttReloadButtons();
 							return TRUE;

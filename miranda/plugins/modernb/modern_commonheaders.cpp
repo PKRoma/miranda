@@ -1,112 +1,80 @@
-#define _WIN32_WINNT 0x0501
-#include "m_stdhdr.h"
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <newpluginapi.h>
-#include <m_database.h>
+#define DB_USEHELPERFUNCTIONS
+#include "hdr/modern_commonheaders.h"
 
-__inline int ModernDBGetByte_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+int __cdecl ModernGetSettingByte_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingByte_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-__inline int ModernDBGetWord_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+int __cdecl ModernGetSettingWord_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingWord_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-__inline int ModernDBGetDword_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
+int __cdecl ModernGetSettingDword_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
     return DBGetContactSettingDword_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
 }
 
-__inline int ModernDBGetString_Helper(HANDLE hContact,const char *szModule, const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
+int __cdecl ModernGetSettingString_Helper(HANDLE hContact,const char *szModule, const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
 {
     return DBGetContactSettingString_Helper( hContact, szModule, szSetting, dbv, szFile, nLine, nType );
 }
 
-__inline int ModernDBGetSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+int __cdecl ModernGetSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
 {
     return DBGetContactSetting_Helper(hContact, szModule, szSetting, dbv, szFile, nLine);
 }
 
-__inline int ModernDBWriteByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
+int __cdecl ModernWriteSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)
 {
     return DBWriteContactSettingByte( hContact, szModule, szSetting, val);
 }
 
-__inline int ModernDBWriteWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
+int __cdecl ModernWriteSettingWord(HANDLE hContact,const char *szModule,const char *szSetting,WORD val)
 {
     return DBWriteContactSettingWord( hContact, szModule, szSetting, val);
 }
 
-__inline int ModernDBWriteDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
+int __cdecl ModernWriteSettingDword(HANDLE hContact,const char *szModule,const char *szSetting,DWORD val)
 {
     return DBWriteContactSettingDword( hContact, szModule, szSetting, val);
 }
 
-__inline int ModernDBWriteString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
+int __cdecl ModernWriteSettingString(HANDLE hContact,const char *szModule,const char *szSetting,const char *val)
 {
     return DBWriteContactSettingString( hContact, szModule, szSetting, val );
 }
-
-__inline int ModernDBWriteWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
+#ifdef _UNICODE
+int __cdecl ModernWriteSettingWString(HANDLE hContact,const char *szModule,const char *szSetting,const WCHAR *val)
 {
     return DBWriteContactSettingWString( hContact, szModule, szSetting, val );
 }
+#endif
 
-__inline int ModernDBFreeVariant(DBVARIANT *dbv)
+int __cdecl ModernDBFreeVariant(DBVARIANT *dbv)
 {
     return DBFreeVariant( dbv );
 }
 
-__inline int ModernDBDeleteSetting(HANDLE hContact,const char *szModule,const char *szSetting)
+int __cdecl ModernDeleteSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {
     return DBDeleteContactSetting( hContact, szModule, szSetting );
 }
 
-__inline WORD ModernDBGetRangedWord(HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue) 
-{
-    return DBGetContactSettingRangedWord( hContact, szModule, szSetting, errorValue, minValue, maxValue);
-}
-
-#undef DBGetContactSettingByte
-#undef DBGetContactSettingWord
-#undef DBGetContactSettingDword
-
-#undef DBGetContactSettingString
-#undef DBGetContactSettingWString
-#undef DBGetContactSettingUTF8String
-#undef DBGetContactSettingRangedWord 
-
-#undef DBGetContactSetting
-
-#undef DBWriteContactSettingByte
-#undef DBWriteContactSettingWord
-#undef DBWriteContactSettingDword
-
-#undef DBWriteContactSettingString
-#undef DBWriteContactSettingWString
-
-#undef DBWriteContactSettingTString
-#undef DBGetContactSettingTString
-
-#undef DBFreeVariant
-#undef DBDeleteContactSetting
-#undef DBGetStringA
-
-#include "hdr/modern_commonheaders.h"
-// have to be declared after including m_system.h in common headers
-char * ModernDBGetStringA( HANDLE hContact, const char *szModule, const char *szSetting )
+char*  __cdecl ModernGetStringA( HANDLE hContact, const char *szModule, const char *szSetting )
 {
     char *str=NULL;
     DBVARIANT dbv={0};
-    DBGetContactSettingString(hContact,szModule,szSetting,&dbv);
+    ModernGetSettingString(hContact,szModule,szSetting,&dbv);
     if(dbv.type==DBVT_ASCIIZ)
         str=mir_strdup(dbv.pszVal);
-    DBFreeVariant(&dbv);
+    ModernDBFreeVariant(&dbv);
     return str;
+}
+WORD   __cdecl ModernGetSettingRangedWord(HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue) 
+{
+	return DBGetContactSettingRangedWord( hContact, szModule, szSetting, errorValue, minValue, maxValue);
 }
 
 BYTE gl_TrimText=1;

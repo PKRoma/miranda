@@ -177,9 +177,9 @@ int ContactChangeGroup(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_CLUI_CONTACTDELETED,wParam,0);
 	if((HANDLE)lParam==NULL)
-		DBDeleteContactSetting((HANDLE)wParam,"CList","Group");
+		ModernDeleteSetting((HANDLE)wParam,"CList","Group");
 	else
-		DBWriteContactSettingTString((HANDLE)wParam,"CList","Group",pcli->pfnGetGroupName(lParam, NULL));
+		ModernWriteSettingTString((HANDLE)wParam,"CList","Group",pcli->pfnGetGroupName(lParam, NULL));
 	CallService(MS_CLUI_CONTACTADDED,wParam,ExtIconFromStatusMode((HANDLE)wParam,(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam,0),GetContactStatus((HANDLE)wParam)));
 	return 0;
 }
@@ -192,15 +192,15 @@ int ToggleHideOffline(WPARAM wParam,LPARAM lParam)
 int ToggleGroups(WPARAM wParam,LPARAM lParam)
 {
 
-	DBWriteContactSettingByte(NULL, "CList", "UseGroups",
-				(BYTE) !DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT));
+	ModernWriteSettingByte(NULL, "CList", "UseGroups",
+				(BYTE) !ModernGetSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT));
 	pcli->pfnLoadContactTree();
 	return 0;
 }
 
 int ToggleSounds(WPARAM wParam,LPARAM lParam)
 {
-	DBWriteContactSettingByte(NULL, "Skin", "UseSound",
-		(BYTE) !DBGetContactSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
+	ModernWriteSettingByte(NULL, "Skin", "UseSound",
+		(BYTE) !ModernGetSettingByte(NULL, "Skin", "UseSound", SETTING_ENABLESOUNDS_DEFAULT ) );
 	return 0;
 }

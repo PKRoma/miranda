@@ -24,8 +24,9 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 
 */
 
-#define _WIN32_WINNT 0x0501
+#include "hdr/modern_commonheaders.h"
 
+/*
 #include "m_stdhdr.h"
 
 #include <windows.h>
@@ -38,9 +39,8 @@ Created by Anton Senko aka ZORG , tweaked by Artem Shpynov aka FYR
 #include <string.h>
 #include <direct.h>
 #include "resource.h"
-
-
 #include "hdr/modern_commonheaders.h"
+*/
 #include "hdr/modern_row.h"
 
 //Futher declaration
@@ -68,10 +68,10 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
 	ROWCELL * RowRoot=NULL;
 	FILE * hFile;
 	int i=0;
-	if (!DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)) return NULL;
+	if (!ModernGetSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)) return NULL;
 	tmplbuf=NULL;
-	if (DBGetContactSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)==1)
-		tmplbuf=ModernDBGetStringA(NULL,"ModernData","RowTemplate");
+	if (ModernGetSettingByte(NULL,"ModernData","UseAdvancedRowLayout",SETTING_ROW_ADVANCEDLAYOUT_DEFAULT)==1)
+		tmplbuf= ModernGetStringA(NULL,"ModernData","RowTemplate");
 	if (tmplbuf)
 	{
 		rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
@@ -88,7 +88,7 @@ ROWCELL *cppInitModernRow(ROWCELL	** tabAccess)
 		tmplbuf[i] = 0;
 		i = 0;
 		rowParse(RowRoot, RowRoot, tmplbuf, i, seq,tabAccess);
-		DBWriteContactSettingString(NULL,"ModernData","RowTemplate",tmplbuf);
+		ModernWriteSettingString(NULL,"ModernData","RowTemplate",tmplbuf);
 		free(tmplbuf);
 		fclose(hFile);
 		return RowRoot;

@@ -60,29 +60,29 @@ char * ApendSubSetting(char * buf, int size, char *first, char *second)
 
 int LoadStatusBarData()
 {
-	g_StatusBarData.perProtoConfig=DBGetContactSettingByte(NULL,"CLUI","SBarPerProto",SETTING_SBARPERPROTO_DEFAULT);
+	g_StatusBarData.perProtoConfig=ModernGetSettingByte(NULL,"CLUI","SBarPerProto",SETTING_SBARPERPROTO_DEFAULT);
 
-	g_StatusBarData.showProtoName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&2;
-	g_StatusBarData.showStatusName=DBGetContactSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&4;
-	g_StatusBarData.xStatusMode=(BYTE)(DBGetContactSettingByte(NULL,"CLUI","ShowXStatus",SETTING_SHOWXSTATUS_DEFAULT));
-	g_StatusBarData.connectingIcon=DBGetContactSettingByte(NULL,"CLUI","UseConnectingIcon",SETTING_USECONNECTINGICON_DEFAULT);
-	g_StatusBarData.showProtoEmails=DBGetContactSettingByte(NULL,"CLUI","ShowUnreadEmails",SETTING_SHOWUNREADEMAILS_DEFAULT);
-	g_StatusBarData.SBarRightClk=DBGetContactSettingByte(NULL,"CLUI","SBarRightClk",SETTING_SBARRIGHTCLK_DEFAULT);
+	g_StatusBarData.showProtoName=ModernGetSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&2;
+	g_StatusBarData.showStatusName=ModernGetSettingByte(NULL,"CLUI","SBarShow",SETTING_SBARSHOW_DEFAULT)&4;
+	g_StatusBarData.xStatusMode=(BYTE)(ModernGetSettingByte(NULL,"CLUI","ShowXStatus",SETTING_SHOWXSTATUS_DEFAULT));
+	g_StatusBarData.connectingIcon=ModernGetSettingByte(NULL,"CLUI","UseConnectingIcon",SETTING_USECONNECTINGICON_DEFAULT);
+	g_StatusBarData.showProtoEmails=ModernGetSettingByte(NULL,"CLUI","ShowUnreadEmails",SETTING_SHOWUNREADEMAILS_DEFAULT);
+	g_StatusBarData.SBarRightClk=ModernGetSettingByte(NULL,"CLUI","SBarRightClk",SETTING_SBARRIGHTCLK_DEFAULT);
 
-	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
-	g_StatusBarData.Align=DBGetContactSettingByte(NULL,"CLUI","Align",SETTING_ALIGN_DEFAULT);
-	g_StatusBarData.VAlign=DBGetContactSettingByte(NULL,"CLUI","VAlign",SETTING_VALIGN_DEFAULT);
-    g_StatusBarData.sameWidth=DBGetContactSettingByte(NULL,"CLUI","EqualSections",SETTING_EQUALSECTIONS_DEFAULT);
-    g_StatusBarData.rectBorders.left=DBGetContactSettingDword(NULL,"CLUI","LeftOffset",SETTING_LEFTOFFSET_DEFAULT);
-    g_StatusBarData.rectBorders.right=DBGetContactSettingDword(NULL,"CLUI","RightOffset",SETTING_RIGHTOFFSET_DEFAULT);
-	g_StatusBarData.rectBorders.top=DBGetContactSettingDword(NULL,"CLUI","TopOffset",SETTING_LEFTOFFSET_DEFAULT);
-    g_StatusBarData.rectBorders.bottom=DBGetContactSettingDword(NULL,"CLUI","BottomOffset",SETTING_RIGHTOFFSET_DEFAULT);
-    g_StatusBarData.extraspace=(BYTE)DBGetContactSettingDword(NULL,"CLUI","SpaceBetween",SETTING_SPACEBETWEEN_DEFAULT);
+	g_StatusBarData.nProtosPerLine=ModernGetSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+	g_StatusBarData.Align=ModernGetSettingByte(NULL,"CLUI","Align",SETTING_ALIGN_DEFAULT);
+	g_StatusBarData.VAlign=ModernGetSettingByte(NULL,"CLUI","VAlign",SETTING_VALIGN_DEFAULT);
+    g_StatusBarData.sameWidth=ModernGetSettingByte(NULL,"CLUI","EqualSections",SETTING_EQUALSECTIONS_DEFAULT);
+    g_StatusBarData.rectBorders.left=ModernGetSettingDword(NULL,"CLUI","LeftOffset",SETTING_LEFTOFFSET_DEFAULT);
+    g_StatusBarData.rectBorders.right=ModernGetSettingDword(NULL,"CLUI","RightOffset",SETTING_RIGHTOFFSET_DEFAULT);
+	g_StatusBarData.rectBorders.top=ModernGetSettingDword(NULL,"CLUI","TopOffset",SETTING_LEFTOFFSET_DEFAULT);
+    g_StatusBarData.rectBorders.bottom=ModernGetSettingDword(NULL,"CLUI","BottomOffset",SETTING_RIGHTOFFSET_DEFAULT);
+    g_StatusBarData.extraspace=(BYTE)ModernGetSettingDword(NULL,"CLUI","SpaceBetween",SETTING_SPACEBETWEEN_DEFAULT);
 
 	if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
     g_StatusBarData.BarFont=NULL;//LoadFontFromDB("ModernData","StatusBar",&g_StatusBarData.fontColor);
     {
-        int vis=DBGetContactSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT);
+        int vis=ModernGetSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT);
         int frameopt;
         int frameID=callProxied_FindFrameID(hModernStatusBar);
         frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),0);
@@ -98,9 +98,9 @@ int LoadStatusBarData()
         };
         CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),frameopt);
     }
-    g_StatusBarData.TextEffectID=DBGetContactSettingByte(NULL,"StatusBar","TextEffectID",SETTING_TEXTEFFECTID_DEFAULT);
-    g_StatusBarData.TextEffectColor1=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor1",SETTING_TEXTEFFECTCOLOR1_DEFAULT);
-    g_StatusBarData.TextEffectColor2=DBGetContactSettingDword(NULL,"StatusBar","TextEffectColor2",SETTING_TEXTEFFECTCOLOR2_DEFAULT);
+    g_StatusBarData.TextEffectID=ModernGetSettingByte(NULL,"StatusBar","TextEffectID",SETTING_TEXTEFFECTID_DEFAULT);
+    g_StatusBarData.TextEffectColor1=ModernGetSettingDword(NULL,"StatusBar","TextEffectColor1",SETTING_TEXTEFFECTCOLOR1_DEFAULT);
+    g_StatusBarData.TextEffectColor2=ModernGetSettingDword(NULL,"StatusBar","TextEffectColor2",SETTING_TEXTEFFECTCOLOR2_DEFAULT);
 
     if(g_StatusBarData.hBmpBackground) {DeleteObject(g_StatusBarData.hBmpBackground); g_StatusBarData.hBmpBackground=NULL;}
 
@@ -108,14 +108,14 @@ int LoadStatusBarData()
     {
         DBVARIANT dbv;
         g_StatusBarData.bkColour=sttGetColor("StatusBar","BkColour",CLCDEFAULT_BKCOLOUR);
-        if(DBGetContactSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
-            if(!DBGetContactSettingString(NULL,"StatusBar","BkBitmap",&dbv)) {
+        if(ModernGetSettingByte(NULL,"StatusBar","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+            if(!ModernGetSettingString(NULL,"StatusBar","BkBitmap",&dbv)) {
                 g_StatusBarData.hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-                DBFreeVariant(&dbv);
+                ModernDBFreeVariant(&dbv);
             }
         }
-        g_StatusBarData.bkUseWinColors=DBGetContactSettingByte(NULL,"StatusBar", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
-        g_StatusBarData.backgroundBmpUse=DBGetContactSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
+        g_StatusBarData.bkUseWinColors=ModernGetSettingByte(NULL,"StatusBar", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
+        g_StatusBarData.backgroundBmpUse=ModernGetSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
     }
     SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
     return 1;
@@ -182,7 +182,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 	{
 		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=StatusBar"); //TBD
 	}
-	g_StatusBarData.nProtosPerLine=DBGetContactSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
+	g_StatusBarData.nProtosPerLine=ModernGetSettingByte(NULL,"CLUI","StatusBarProtosPerLine",SETTING_PROTOSPERLINE_DEFAULT);
 	hOldFont=g_clcPainter.ChangeToFont(hDC,NULL,FONTID_STATUSBAR_PROTONAME,NULL);
 
 	//  hOldFont=SelectObject(hDC,g_StatusBarData.BarFont);
@@ -232,36 +232,36 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				
 			mir_snprintf(buf, sizeof(buf), "SBarAccountIsCustom_%s", accs[i]->szModuleName);
 
-			if (g_StatusBarData.perProtoConfig && DBGetContactSettingByte(NULL, "CLUI", buf, SETTING_SBARACCOUNTISCUSTOM_DEFAULT))
+			if (g_StatusBarData.perProtoConfig && ModernGetSettingByte(NULL, "CLUI", buf, SETTING_SBARACCOUNTISCUSTOM_DEFAULT))
 			{
 				mir_snprintf(buf, sizeof(buf), "HideAccount_%s", accs[i]->szModuleName);
-				if (DBGetContactSettingByte(NULL, "CLUI", buf, SETTING_SBARHIDEACCOUNT_DEFAULT))
+				if (ModernGetSettingByte(NULL, "CLUI", buf, SETTING_SBARHIDEACCOUNT_DEFAULT))
 					continue;
 
 				mir_snprintf(buf, sizeof(buf), "SBarShow_%s", accs[i]->szModuleName);
 				{
-					BYTE showOps = DBGetContactSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
+					BYTE showOps = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
 					ProtosData[visProtoCount].showProtoName = showOps&2;
 					ProtosData[visProtoCount].showStatusName = showOps&4;
 				}
 
 				mir_snprintf(buf, sizeof(buf), "ShowXStatus_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].xStatusMode = DBGetContactSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
+				ProtosData[visProtoCount].xStatusMode = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
 
 				mir_snprintf(buf, sizeof(buf), "UseConnectingIcon_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].connectingIcon = DBGetContactSettingByte(NULL,"CLUI", buf, SETTING_USECONNECTINGICON_DEFAULT);
+				ProtosData[visProtoCount].connectingIcon = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_USECONNECTINGICON_DEFAULT);
 
 				mir_snprintf(buf, sizeof(buf), "ShowUnreadEmails_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].showProtoEmails = DBGetContactSettingByte(NULL,"CLUI", buf, SETTING_SHOWUNREADEMAILS_DEFAULT);
+				ProtosData[visProtoCount].showProtoEmails = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SHOWUNREADEMAILS_DEFAULT);
 
 				mir_snprintf(buf, sizeof(buf), "SBarRightClk_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].SBarRightClk = DBGetContactSettingByte(NULL,"CLUI", buf, SETTING_SBARRIGHTCLK_DEFAULT);
+				ProtosData[visProtoCount].SBarRightClk = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARRIGHTCLK_DEFAULT);
 
 				mir_snprintf(buf, sizeof(buf), "PaddingLeft_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].PaddingLeft = DBGetContactSettingDword(NULL,"CLUI", buf, SETTING_PADDINGLEFT_DEFAULT);
+				ProtosData[visProtoCount].PaddingLeft = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGLEFT_DEFAULT);
 
 				mir_snprintf(buf, sizeof(buf), "PaddingRight_%s", accs[i]->szModuleName);
-				ProtosData[visProtoCount].PaddingRight = DBGetContactSettingDword(NULL,"CLUI", buf, SETTING_PADDINGRIGHT_DEFAULT);
+				ProtosData[visProtoCount].PaddingRight = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGRIGHT_DEFAULT);
 			}
 			else
 			{
@@ -404,11 +404,11 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 									if (dbTitle && xstatus)
 									{
 										DBVARIANT dbv={0};
-										if (!DBGetContactSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
+										if (!ModernGetSettingTString(NULL,ProtosData[i].ProtoName,dbTitle,&dbv))
 										{
 											ProtosData[i].ProtoXStatus=mir_tstrdup(dbv.ptszVal);
 											//mir_free_and_nill(dbv.ptszVal);
-											DBFreeVariant(&dbv);
+											ModernDBFreeVariant(&dbv);
 										}
 									}
 								}
@@ -783,7 +783,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             if (ID)
             {
                 res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
-                if (res>=0) DBWriteContactSettingByte(0,"CLUI","ShowSBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
+                if (res>=0) ModernWriteSettingByte(0,"CLUI","ShowSBar",(BYTE)(wParam/*(res&F_VISIBLE)*/?1:0));
             }
         }
         break;
@@ -815,7 +815,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         if(PtInRect(&rc,pt))
                         {
                             NotifyEventHooks(g_CluiData.hEventStatusBarShowToolTip,(WPARAM)ProtosData[i].ProtoName,0);
-                            CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,DBGetContactSettingWord(NULL,"CLUIFrames","HideToolTipTime",SETTING_HIDETOOLTIPTIME_DEFAULT),0);
+                            CLUI_SafeSetTimer(hwnd,TM_STATUSBARHIDE,ModernGetSettingWord(NULL,"CLUIFrames","HideToolTipTime",SETTING_HIDETOOLTIPTIME_DEFAULT),0);
                             tooltipshoing=TRUE;
                             ClientToScreen(hwnd,&pt);
                             ptToolTipShow=pt;
@@ -863,7 +863,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         ReleaseCapture();
                     };
                 KillTimer(hwnd,TM_STATUSBAR);
-                CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,DBGetContactSettingWord(NULL,"CLC","InfoTipHoverTime",CLCDEFAULT_INFOTIPTIME),0);
+                CLUI_SafeSetTimer(hwnd,TM_STATUSBAR,ModernGetSettingWord(NULL,"CLC","InfoTipHoverTime",CLCDEFAULT_INFOTIPTIME),0);
 
                 return(CLUI_TestCursorOnBorders());
             }
@@ -989,7 +989,7 @@ int StatusBar_Create(HWND parent)
         Frame.hWnd=hModernStatusBar;
         Frame.align=alBottom;
         Frame.hIcon=LoadSkinnedIcon (SKINICON_OTHER_MIRANDA);
-        Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
+        Frame.Flags=(ModernGetSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
         Frame.height=h;
         Frame.tname=_T("Status Bar");
         Frame.TBtname=TranslateT("Status Bar");

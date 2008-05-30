@@ -135,8 +135,8 @@ int enumDB_SkinObjectsForEditorProc(const char *szSetting,LPARAM lParam)
 		char *descKey;
 		descKey=mir_strdup(szSetting);
 		descKey[0]='%';
-		value=ModernDBGetStringA(NULL,SKIN,szSetting);
-		desc=ModernDBGetStringA(NULL,SKIN,descKey);
+		value= ModernGetStringA(NULL,SKIN,szSetting);
+		desc= ModernGetStringA(NULL,SKIN,descKey);
 		if (wildcmp(value,"?lyph*",0))
 		{
 			OPT_OBJECT_DATA * a=(OPT_OBJECT_DATA*)mir_alloc(sizeof(OPT_OBJECT_DATA));
@@ -489,7 +489,7 @@ void StoreTreeNode(HWND hTree, HTREEITEM node, char * section)
 	{
 		OPT_OBJECT_DATA * dat =(OPT_OBJECT_DATA*)(tvi.lParam);
 		if (dat->szName && dat->szValue)
-			DBWriteContactSettingString(NULL,section,dat->szName,dat->szValue);
+			ModernWriteSettingString(NULL,section,dat->szName,dat->szValue);
 	}
 	tmp2=TreeView_GetChild(hTree,tmp);
 	if (tmp2) StoreTreeNode(hTree,tmp2,section);
@@ -503,7 +503,7 @@ void StoreTreeToDB(HWND hTree, char * section)
   HTREEITEM tmp=NULL;
   tmp=TreeView_GetRoot(hTree);
   StoreTreeNode(hTree,tmp,section);
-  DBWriteContactSettingByte(NULL,section,"Modified",1);
+  ModernWriteSettingByte(NULL,section,"Modified",1);
   glSkinWasModified=2;
 }
 static BOOL fileChanged=FALSE;

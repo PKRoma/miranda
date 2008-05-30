@@ -107,13 +107,13 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 	MSG *msg=(MSG*)wParam;
 
 	if(msg->message==WM_DESTROY) 
-		DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
+		ModernWriteSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
 
 	if(!g_CluiData.fDocked && msg->message!=WM_CREATE && msg->message!=WM_MOVING && msg->message!=WM_CREATEDOCKED && msg->message != WM_MOVE && msg->message != WM_SIZE) return 0;
 	switch(msg->message) {
 		case WM_CREATE:
 			//if(GetSystemMetrics(SM_CMONITORS)>1) return 0;
-			if(DBGetContactSettingByte(NULL,"CList","Docked",0)) 
+			if(ModernGetSettingByte(NULL,"CList","Docked",0)) 
 			{
 				PostMessage(msg->hwnd,WM_CREATEDOCKED,0,0);
 			}
@@ -122,7 +122,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 
 		case WM_CREATEDOCKED:
 			//we need to post a message just after creation to let main message function do some work
-			g_CluiData.fDocked=(BOOL)DBGetContactSettingByte(NULL,"CList","Docked",0);
+			g_CluiData.fDocked=(BOOL)ModernGetSettingByte(NULL,"CList","Docked",0);
 			if(IsWindowVisible(msg->hwnd) && !IsIconic(msg->hwnd)) {
 				RECT rc, rcMonitor;
 				ZeroMemory(&abd,sizeof(abd));
@@ -209,7 +209,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,(LPRECT)msg->lParam);
 					g_CluiData.mutexPreventDockMoving=1;
 					mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0);
-					DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
+					ModernWriteSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
 					ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
 					return TRUE;
 				}
@@ -323,8 +323,8 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					g_CluiData.fDocked=0;
 					GetCursorPos(&pt);
 					PostMessage(msg->hwnd,WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(pt.x,pt.y));
-					SetWindowPos(msg->hwnd,0,pt.x-rc.right/2,pt.y-GetSystemMetrics(SM_CYFRAME)-GetSystemMetrics(SM_CYSMCAPTION)/2,DBGetContactSettingDword(NULL,"CList","Width",0),DBGetContactSettingDword(NULL,"CList","Height",0),SWP_NOZORDER);
-					DBWriteContactSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
+					SetWindowPos(msg->hwnd,0,pt.x-rc.right/2,pt.y-GetSystemMetrics(SM_CYFRAME)-GetSystemMetrics(SM_CYSMCAPTION)/2,ModernGetSettingDword(NULL,"CList","Width",0),ModernGetSettingDword(NULL,"CList","Height",0),SWP_NOZORDER);
+					ModernWriteSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
 					// ModernSkinButton_ReposButtons(msg->hwnd,0);
 				}
 				return 1;

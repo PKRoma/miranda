@@ -135,7 +135,7 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 				nmi = (struct NotifyMenuItemExData *) malloc(sizeof(struct NotifyMenuItemExData));
 				if (nmi) {
 					TCHAR szBuffer[128];
-					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(DBGetContactSettingWord(p->cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(ModernGetSettingWord(p->cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
 #if defined(_UNICODE)
 					TCHAR szwProto[64];
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szwProto, 64);
@@ -241,8 +241,8 @@ void EventArea_ConfigureEventArea()
 	int iCount = pcli->events.count;
   
     g_CluiData.dwFlags&=~(CLUI_FRAME_AUTOHIDENOTIFY|CLUI_FRAME_SHOWALWAYS);
-    if (DBGetContactSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==1) g_CluiData.dwFlags|=CLUI_FRAME_AUTOHIDENOTIFY;
-    if (DBGetContactSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==2) g_CluiData.dwFlags|=CLUI_FRAME_SHOWALWAYS;
+    if (ModernGetSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==1) g_CluiData.dwFlags|=CLUI_FRAME_AUTOHIDENOTIFY;
+    if (ModernGetSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==2) g_CluiData.dwFlags|=CLUI_FRAME_SHOWALWAYS;
 
 	if (g_CluiData.dwFlags & CLUI_FRAME_SHOWALWAYS)
 		g_CluiData.bNotifyActive = 1;
@@ -378,7 +378,7 @@ int EventArea_Create(HWND hCluiWnd)
     Frame.hWnd=g_CluiData.hwndEventFrame;
     Frame.align=alBottom;
     Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-    Frame.Flags=(DBGetContactSettingByte(NULL,"CLUI","ShowEventArea",SETTING_SHOWEVENTAREAFRAME_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
+    Frame.Flags=(ModernGetSettingByte(NULL,"CLUI","ShowEventArea",SETTING_SHOWEVENTAREAFRAME_DEFAULT)?F_VISIBLE:0)|F_LOCKED|F_NOBORDER|F_NO_SUBCONTAINER|F_TCHAR;
     Frame.height=h;
     Frame.tname=_T("Event Area"); //do not translate
     Frame.TBtname=TranslateT("Event Area");

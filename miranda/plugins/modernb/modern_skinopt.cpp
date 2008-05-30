@@ -66,7 +66,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 		odp.pszTab=LPGEN("Load/Save");
 		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-		if (DBGetContactSettingByte(NULL, "ModernData", "EnableSkinEditor",SETTING_ENABLESKINEDITOR_DEFAULT))
+		if (ModernGetSettingByte(NULL, "ModernData", "EnableSkinEditor",SETTING_ENABLESKINEDITOR_DEFAULT))
 		{
 			odp.flags|=ODPF_EXPERTONLY;
 			odp.pfnDlgProc=DlgSkinEditorOpts;
@@ -95,10 +95,10 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 			{
 				/* Text Colors */
 				DWORD c1,c2,c3,c4;
-				c1=DBGetContactSettingDword(NULL,"Menu", "TextColour", CLCDEFAULT_TEXTCOLOUR);
-				c2=DBGetContactSettingDword(NULL,"Menu", "SelTextColour", CLCDEFAULT_MODERN_SELTEXTCOLOUR);
-				c3=DBGetContactSettingDword(NULL,"FrameTitleBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
-				c4=DBGetContactSettingDword(NULL,"StatusBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
+				c1=ModernGetSettingDword(NULL,"Menu", "TextColour", CLCDEFAULT_TEXTCOLOUR);
+				c2=ModernGetSettingDword(NULL,"Menu", "SelTextColour", CLCDEFAULT_MODERN_SELTEXTCOLOUR);
+				c3=ModernGetSettingDword(NULL,"FrameTitleBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
+				c4=ModernGetSettingDword(NULL,"StatusBar", "TextColour", CLCDEFAULT_TEXTCOLOUR);
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_MENUNORMAL,CPM_SETCOLOUR,0,c1);                  
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_MENUSELECTED,CPM_SETCOLOUR,0,c2);
 				SendDlgItemMessage(hwndDlg,IDC_COLOUR_FRAMES,CPM_SETCOLOUR,0,c3);
@@ -207,10 +207,10 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 					}
 					if (g_hCLUIOptionsWnd)
 					{
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","LeftClientMargin",SETTING_LEFTCLIENTMARIGN_DEFAULT));
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","RightClientMargin",SETTING_RIGHTCLIENTMARIGN_DEFAULT));
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","TopClientMargin",SETTING_TOPCLIENTMARIGN_DEFAULT));
-						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,DBGetContactSettingByte(NULL,"CLUI","BottomClientMargin",SETTING_BOTTOMCLIENTMARIGN_DEFAULT));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_LEFTMARGINSPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","LeftClientMargin",SETTING_LEFTCLIENTMARIGN_DEFAULT));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_RIGHTMARGINSPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","RightClientMargin",SETTING_RIGHTCLIENTMARIGN_DEFAULT));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_TOPMARGINSPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","TopClientMargin",SETTING_TOPCLIENTMARIGN_DEFAULT));
+						SendDlgItemMessage(g_hCLUIOptionsWnd,IDC_BOTTOMMARGINSPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","BottomClientMargin",SETTING_BOTTOMCLIENTMARIGN_DEFAULT));
 					}
 				}
 				break;
@@ -438,10 +438,10 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 						c2=SendDlgItemMessage(hwndDlg,IDC_COLOUR_MENUSELECTED,CPM_GETCOLOUR,0,0);
 						c3=SendDlgItemMessage(hwndDlg,IDC_COLOUR_FRAMES,CPM_GETCOLOUR,0,0);
 						c4=SendDlgItemMessage(hwndDlg,IDC_COLOUR_STATUSBAR,CPM_GETCOLOUR,0,0);
-						DBWriteContactSettingDword(NULL,"Menu", "TextColour", c1);
-						DBWriteContactSettingDword(NULL,"Menu", "SelTextColour", c2);
-						DBWriteContactSettingDword(NULL,"FrameTitleBar", "TextColour", c3);
-						DBWriteContactSettingDword(NULL,"StatusBar", "TextColour", c4);
+						ModernWriteSettingDword(NULL,"Menu", "TextColour", c1);
+						ModernWriteSettingDword(NULL,"Menu", "SelTextColour", c2);
+						ModernWriteSettingDword(NULL,"FrameTitleBar", "TextColour", c3);
+						ModernWriteSettingDword(NULL,"StatusBar", "TextColour", c4);
 						/* End of Text colors */
 					}
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
@@ -496,7 +496,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 	int res=-1;
 	char path[MAX_PATH];//,mask[MAX_PATH];
 	int attrib;
-	char *SkinsFolder=ModernDBGetStringA(NULL,"ModernData","SkinsFolder");
+	char *SkinsFolder= ModernGetStringA(NULL,"ModernData","SkinsFolder");
 	if (!SkinsFolder) SkinsFolder=mir_strdup("Skins");
 	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)SkinsFolder, (LPARAM)path);
 	mir_free_and_nill(SkinsFolder);
@@ -507,7 +507,7 @@ int FillAvailableSkinList(HWND hwndDlg)
 	{
 		char * skinfile;
 		char skinfull[MAX_PATH];
-		skinfile=ModernDBGetStringA(NULL,SKIN,"SkinFile");
+		skinfile= ModernGetStringA(NULL,SKIN,"SkinFile");
 		if (skinfile)
 		{
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)skinfile, (LPARAM)skinfull);

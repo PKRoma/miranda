@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #pragma once
-
 #define MIRANDA_VER 0x0700
 
 #define _WIN32_WINNT 0x0501
@@ -33,6 +32,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _WIN32_IE
 #define _WIN32_IE 0x0501
 #endif
+
+#ifndef DB_USEHELPERFUNCTIONS		// to supress static inline db helpers
+#define DB_NOHELPERFUNCTIONS
+#endif
+
+#define _CRT_SECURE_NO_WARNINGS		// to suppres secure warnings in VC2005
 
 #if defined (_DEBUG)
 #define TRACE(str)  { log0(str); }
@@ -79,7 +84,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_system.h>
 #include <m_utils.h>
 
-#define DB_NOHELPERFUNCTIONS
+
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
@@ -428,54 +433,42 @@ public:
 	};
 };
 
-int ModernDBGetByte_Helper   ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
-int ModernDBGetWord_Helper   ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
-int ModernDBGetDword_Helper  ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
-WORD ModernDBGetRangedWord   ( HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue);
-int ModernDBGetString_Helper ( HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv, const char *szFile, const int nLine, const int nType);
-int ModernDBGetSetting_Helper( HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv, const char *szFile, const int nLine);
-char * ModernDBGetStringA    ( HANDLE hContact, const char *szModule, const char *szSetting );
+
+char *  ModernGetStringA			( HANDLE hContact, const char *szModule, const char *szSetting );
+WORD	ModernGetSettingRangedWord  ( HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue);
 
 
-int ModernDBWriteByte       ( HANDLE hContact, const char *szModule, const char *szSetting, BYTE  val  );
-int ModernDBWriteWord       ( HANDLE hContact, const char *szModule, const char *szSetting, WORD  val  );
-int ModernDBWriteDword      ( HANDLE hContact, const char *szModule, const char *szSetting, DWORD val  );
+#define ModernGetSetting(a,b,c,d)             ModernGetSetting_Helper(a,b,c,d,__FILE__,__LINE__)
+#define ModernGetSettingByte(a,b,c,d)         ModernGetSettingByte_Helper(a,b,c,d,__FILE__,__LINE__)
+#define ModernGetSettingWord(a,b,c,d)         ModernGetSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
+#define ModernGetSettingDword(a,b,c,d)        ModernGetSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
+#define ModernGetSettingString(a,b,c,d)       ModernGetSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_ASCIIZ)
+#define ModernGetSettingWString(a,b,c,d)      ModernGetSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_WCHAR)
+#define ModernGetSettingUTF8String(a,b,c,d)   ModernGetSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_UTF8)
 
-int ModernDBWriteString     ( HANDLE hContact, const char *szModule, const char *szSetting, const char *val  );
-int ModernDBWriteWString    ( HANDLE hContact, const char *szModule, const char *szSetting, const WCHAR *val );
+int  __cdecl ModernGetSettingByte_Helper   ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
+int  __cdecl ModernGetSettingWord_Helper   ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
+int  __cdecl ModernGetSettingDword_Helper  ( HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine);
+int  __cdecl ModernGetSettingString_Helper ( HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv, const char *szFile, const int nLine, const int nType);
+int  __cdecl ModernGetSetting_Helper       ( HANDLE hContact, const char *szModule, const char *szSetting, DBVARIANT *dbv, const char *szFile, const int nLine);
 
-int ModernDBDeleteSetting   ( HANDLE hContact, const char *szModule, const char *szSetting);
+int __cdecl ModernWriteSettingByte       ( HANDLE hContact, const char *szModule, const char *szSetting, BYTE  val  );
+int __cdecl ModernWriteSettingWord       ( HANDLE hContact, const char *szModule, const char *szSetting, WORD  val  );
+int __cdecl ModernWriteSettingDword      ( HANDLE hContact, const char *szModule, const char *szSetting, DWORD val  );
+int __cdecl ModernWriteSettingString     ( HANDLE hContact, const char *szModule, const char *szSetting, const char *val  );
 
-int ModernDBFreeVariant     ( DBVARIANT *dbv );
+
+int __cdecl ModernDeleteSetting     ( HANDLE hContact, const char *szModule, const char *szSetting);
+int __cdecl ModernDBFreeVariant     ( DBVARIANT *dbv );
 
 
-#define DBGetContactSettingByte(a,b,c,d)         ModernDBGetByte_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingWord(a,b,c,d)         ModernDBGetWord_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingDword(a,b,c,d)        ModernDBGetDword_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingString(a,b,c,d)       ModernDBGetString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_ASCIIZ)
-#define DBGetContactSettingWString(a,b,c,d)      ModernDBGetString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_WCHAR)
-#define DBGetContactSettingUTF8String(a,b,c,d)   ModernDBGetString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_UTF8)
-
-#define DBGetContactSetting(a,b,c,d)             ModernDBGetSetting_Helper(a,b,c,d,__FILE__,__LINE__)
-
-#define DBWriteContactSettingByte(a,b,c,d)       ModernDBWriteByte( a,b,c,d )
-#define DBWriteContactSettingWord(a,b,c,d)       ModernDBWriteWord( a,b,c,d )
-#define DBWriteContactSettingDword(a,b,c,d)      ModernDBWriteDword( a,b,c,d )
-
-#define DBWriteContactSettingString(a,b,c,d)     ModernDBWriteString( a,b,c,d )
-#define DBWriteContactSettingWString(a,b,c,d)    ModernDBWriteWString( a,b,c,d )
 #ifdef _UNICODE
-    #define DBWriteContactSettingTString(a,b,c,d) ModernDBWriteWString( a,b,c,d )
-    #define DBGetContactSettingTString(a,b,c,d)   DBGetContactSettingWString(a,b,c,d) 
+	int __cdecl ModernWriteSettingWString    ( HANDLE hContact, const char *szModule, const char *szSetting, const WCHAR *val );
+	#define ModernWriteSettingTString(a,b,c,d) ModernWriteSettingWString( a,b,c,d )
+    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingWString(a,b,c,d) 
 #else
-    #define DBWriteContactSettingTString(a,b,c,d) ModernDBWriteString( a,b,c,d )
-    #define DBGetContactSettingTString(a,b,c,d)   DBGetContactSettingString(a,b,c,d) 
+    #define ModernWriteSettingTString(a,b,c,d) ModernWriteSettingString( a,b,c,d )
+    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingString(a,b,c,d) 
 #endif //_UNICODE
-
-#define DBFreeVariant(a)                         ModernDBFreeVariant(a)
-#define DBDeleteContactSetting(a,b,c)            ModernDBDeleteSetting(a,b,c) 
-
-
-#define _DB_HERPER_REPLACERS_DECLARED__
 
 #endif // commonheaders_h__

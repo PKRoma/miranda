@@ -199,8 +199,8 @@ static void UpdateStickies()
 	{
         hItem = (HANDLE)SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
         if(hItem)
-            SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, (BYTE)DBGetContactSettingDword(hContact, CLVM_MODULE, g_szModename, 0) ? 1 : 0);
-        localMask = HIWORD(DBGetContactSettingDword(hContact, CLVM_MODULE, g_szModename, 0));
+            SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, (BYTE)ModernGetSettingDword(hContact, CLVM_MODULE, g_szModename, 0) ? 1 : 0);
+        localMask = HIWORD(ModernGetSettingDword(hContact, CLVM_MODULE, g_szModename, 0));
         UpdateClistItem(hItem, (localMask == 0 || localMask == stickyStatusMask) ? stickyStatusMask : localMask);
         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
     }
@@ -272,12 +272,12 @@ static int FillDialog(HWND hwnd)
 		for(i = 0;;i++)
 		{
 			mir_snprintf(buf, 20, "%d", i);
-			if(DBGetContactSettingTString(NULL, "CListGroups", buf, &dbv))
+			if(ModernGetSettingTString(NULL, "CListGroups", buf, &dbv))
 				break;
 
 			item.pszText = &dbv.ptszVal[1];
 			newItem = SendMessage(hwndList, LVM_INSERTITEM, 0, (LPARAM)&item);
-			DBFreeVariant(&dbv);
+			ModernDBFreeVariant(&dbv);
 		}
 		ListView_SetColumnWidth(hwndList, 0, LVSCW_AUTOSIZE);
 		ListView_Arrange(hwndList, LVA_ALIGNLEFT | LVA_ALIGNTOP);
@@ -376,19 +376,19 @@ void SaveViewMode(const char *name, const TCHAR *szGroupFilter, const char *szPr
     char szSetting[512];
 
     mir_snprintf(szSetting, 512, "%c%s_PF", 246, name);
-    DBWriteContactSettingString(NULL, CLVM_MODULE, szSetting, szProtoFilter);
+    ModernWriteSettingString(NULL, CLVM_MODULE, szSetting, szProtoFilter);
     mir_snprintf(szSetting, 512, "%c%s_GF", 246, name);
-    DBWriteContactSettingTString(NULL, CLVM_MODULE, szSetting, szGroupFilter);
+    ModernWriteSettingTString(NULL, CLVM_MODULE, szSetting, szGroupFilter);
     mir_snprintf(szSetting, 512, "%c%s_SM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, statusMask);
+    ModernWriteSettingDword(NULL, CLVM_MODULE, szSetting, statusMask);
     mir_snprintf(szSetting, 512, "%c%s_SSM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, stickyStatusMask);
+    ModernWriteSettingDword(NULL, CLVM_MODULE, szSetting, stickyStatusMask);
     mir_snprintf(szSetting, 512, "%c%s_OPT", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, options);
+    ModernWriteSettingDword(NULL, CLVM_MODULE, szSetting, options);
     mir_snprintf(szSetting, 512, "%c%s_LM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, lmdat);
+    ModernWriteSettingDword(NULL, CLVM_MODULE, szSetting, lmdat);
 	
-	DBWriteContactSettingDword(NULL, CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
+	ModernWriteSettingDword(NULL, CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
 }
 
 /*
@@ -489,13 +489,13 @@ void SaveState()
                     if(SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItem, 0)) 
 					{
                         dwLocalMask = GetMaskForItem(hItem);
-                        DBWriteContactSettingDword(hContact, CLVM_MODULE, szModeName, MAKELONG(1, (unsigned short)dwLocalMask));
+                        ModernWriteSettingDword(hContact, CLVM_MODULE, szModeName, MAKELONG(1, (unsigned short)dwLocalMask));
                         stickies++;
                     }
                     else 
 					{
-                        if(DBGetContactSettingDword(hContact, CLVM_MODULE, szModeName, 0))
-                            DBWriteContactSettingDword(hContact, CLVM_MODULE, szModeName, 0);
+                        if(ModernGetSettingDword(hContact, CLVM_MODULE, szModeName, 0))
+                            ModernWriteSettingDword(hContact, CLVM_MODULE, szModeName, 0);
                     }
                 }
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -563,21 +563,21 @@ void UpdateFilters()
     mir_sntprintf(szTemp, 100, TranslateT("Configuring view mode: %s"), szTempBuf);
     SetDlgItemText(clvmHwnd, IDC_CURVIEWMODE2, szTemp);
     mir_snprintf(szSetting, 128, "%c%s_PF", 246, szBuf);
-    if(DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv_pf))
+    if(ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv_pf))
         goto cleanup;
     mir_snprintf(szSetting, 128, "%c%s_GF", 246, szBuf);
-    if(DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv_gf))
+    if(ModernGetSettingTString(NULL, CLVM_MODULE, szSetting, &dbv_gf))
         goto cleanup;
     mir_snprintf(szSetting, 128, "%c%s_OPT", 246, szBuf);
-    if((opt = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1)) != -1) 
+    if((opt = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, -1)) != -1) 
 	{
         SendDlgItemMessage(clvmHwnd, IDC_AUTOCLEARSPIN, UDM_SETPOS, 0, MAKELONG(LOWORD(opt), 0));
     }
     mir_snprintf(szSetting, 128, "%c%s_SM", 246, szBuf);
-    statusMask = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    statusMask = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, -1);
     mir_snprintf(szSetting, 128, "%c%s_SSM", 246, szBuf);
-    stickyStatusMask = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
-    dwFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, szBuf, 0);
+    stickyStatusMask = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    dwFlags = ModernGetSettingDword(NULL, CLVM_MODULE, szBuf, 0);
     {
         LVITEMA item = {0};
         char szTemp[256];
@@ -651,7 +651,7 @@ void UpdateFilters()
 		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEUNIT), useLastMsg);
 
 	    mir_snprintf(szSetting, 128, "%c%s_LM", 246, szBuf);
-		lmdat = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+		lmdat = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, 0);
 
 		SetDlgItemInt(clvmHwnd, IDC_LASTMSGVALUE, LOWORD(lmdat), FALSE);
 		bTmp = LOBYTE(HIWORD(lmdat));
@@ -662,8 +662,8 @@ void UpdateFilters()
 
 	ShowPage(clvmHwnd, 0);
 cleanup:
-    DBFreeVariant(&dbv_pf);
-    DBFreeVariant(&dbv_gf);    
+    ModernDBFreeVariant(&dbv_pf);
+    ModernDBFreeVariant(&dbv_gf);    
     mir_free(szBuf);
 	mir_free(szTempBuf);
 }
@@ -793,16 +793,16 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								szBuf=szTempBuf;
 #endif
                                 mir_snprintf(szSetting, 256, "%c%s_PF", 246, szBuf);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szSetting);
                                 mir_snprintf(szSetting, 256, "%c%s_GF", 246, szBuf);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szSetting);
                                 mir_snprintf(szSetting, 256, "%c%s_SM", 246, szBuf);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szSetting);
                                 mir_snprintf(szSetting, 256, "%c%s_VA", 246, szBuf);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szSetting);
                                 mir_snprintf(szSetting, 256, "%c%s_SSM", 246, szBuf);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
-                                DBDeleteContactSetting(NULL, CLVM_MODULE, szBuf);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szSetting);
+                                ModernDeleteSetting(NULL, CLVM_MODULE, szBuf);
                                 if(!strcmp(g_CluiData.current_viewmode, szBuf) && lstrlenA(szBuf) == lstrlenA(g_CluiData.current_viewmode)) 
 								{
                                     g_CluiData.bFilterEffective = 0;
@@ -812,8 +812,8 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
                                 while(hContact) 
 								{
-                                    if(DBGetContactSettingDword(hContact, CLVM_MODULE, szBuf, -1) != -1)
-                                        DBWriteContactSettingDword(hContact, CLVM_MODULE, szBuf, 0);
+                                    if(ModernGetSettingDword(hContact, CLVM_MODULE, szBuf, -1) != -1)
+                                        ModernWriteSettingDword(hContact, CLVM_MODULE, szBuf, 0);
                                     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
                                 }
                                 SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_DELETESTRING, SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETCURSEL, 0, 0), 0);
@@ -850,7 +850,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #else
 						szUTF8Buf=strdup(szBuf);
 #endif
-                        if(DBGetContactSettingDword(NULL, CLVM_MODULE, szUTF8Buf, -1) != -1)
+                        if(ModernGetSettingDword(NULL, CLVM_MODULE, szUTF8Buf, -1) != -1)
                             MessageBox(0, TranslateT("A view mode with this name does alredy exist"), TranslateT("Duplicate name"), MB_OK);
                         else 
 						{
@@ -1086,7 +1086,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 //SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CHAT), IMAGE_ICON, 16, 16, LR_SHARED));
             }
             {
-                int bSkinned = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
+                int bSkinned = ModernGetSettingByte(NULL, "CLCExt", "bskinned", 0);
                 int i = 0;
                 
                 while(_buttons[i] != 0) {
@@ -1276,7 +1276,7 @@ clvm_reset_command:
                     {   // remove last applied view mode
                         char szSetting[256];
                         mir_snprintf(szSetting, 256, "%c_LastMode", 246);
-                        DBDeleteContactSetting(NULL,CLVM_MODULE,szSetting);
+                        ModernDeleteSetting(NULL,CLVM_MODULE,szSetting);
                     }
                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
@@ -1356,7 +1356,7 @@ void ApplyViewMode(const char *Name)
     
     if (!name)  // Name is null - apply last stored view mode
     {
-        if (!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv))
+        if (!ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv))
         {
             name=(char*)_alloca(strlen(dbv.pszVal)+1);
             strcpy(name,dbv.pszVal);
@@ -1366,7 +1366,7 @@ void ApplyViewMode(const char *Name)
     }
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
-    if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) 
 		{
             strncpy(g_CluiData.protoFilter, dbv.pszVal, sizeof(g_CluiData.protoFilter));
@@ -1376,7 +1376,7 @@ void ApplyViewMode(const char *Name)
         mir_free(dbv.pszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_GF", 246, name);
-    if(!DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv))
+    if(!ModernGetSettingTString(NULL, CLVM_MODULE, szSetting, &dbv))
 	{
         if(lstrlen(dbv.ptszVal) >= 2) 
 		{
@@ -1387,12 +1387,12 @@ void ApplyViewMode(const char *Name)
         mir_free(dbv.ptszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_SM", 246, name);
-    g_CluiData.statusMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    g_CluiData.statusMaskFilter = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, -1);
     if(g_CluiData.statusMaskFilter >= 1)
         g_CluiData.bFilterEffective |= CLVM_FILTER_STATUS;  
 
     mir_snprintf(szSetting, 256, "%c%s_SSM", 246, name);
-    g_CluiData.stickyMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    g_CluiData.stickyMaskFilter = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, -1);
     if(g_CluiData.stickyMaskFilter != -1)
         g_CluiData.bFilterEffective |= CLVM_FILTER_STICKYSTATUS;
 
@@ -1443,7 +1443,7 @@ void ApplyViewMode(const char *Name)
         }
     }*/
 
-    g_CluiData.filterFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, name, 0);
+    g_CluiData.filterFlags = ModernGetSettingDword(NULL, CLVM_MODULE, name, 0);
 
     KillTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE);
     
@@ -1451,7 +1451,7 @@ void ApplyViewMode(const char *Name)
 	{
         DWORD timerexpire;
         mir_snprintf(szSetting, 256, "%c%s_OPT", 246, name);
-        timerexpire = LOWORD(DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0));
+        timerexpire = LOWORD(ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, 0));
         strncpy(g_CluiData.old_viewmode, g_CluiData.current_viewmode, 256);
         g_CluiData.old_viewmode[255] = 0;
         CLUI_SafeSetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
@@ -1459,7 +1459,7 @@ void ApplyViewMode(const char *Name)
     else //store last selected view mode only if it is not autoclear
     {
         mir_snprintf(szSetting, 256, "%c_LastMode", 246);
-        DBWriteContactSettingString(NULL, CLVM_MODULE, szSetting, name);
+        ModernWriteSettingString(NULL, CLVM_MODULE, szSetting, name);
     }
     strncpy(g_CluiData.current_viewmode, name, 256);
     g_CluiData.current_viewmode[255] = 0;  
@@ -1480,7 +1480,7 @@ void ApplyViewMode(const char *Name)
 
 		g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG;
         mir_snprintf(szSetting, 256, "%c%s_LM", 246, name);
-        g_CluiData.lastMsgFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+        g_CluiData.lastMsgFilter = ModernGetSettingDword(NULL, CLVM_MODULE, szSetting, 0);
 		if(LOBYTE(HIWORD(g_CluiData.lastMsgFilter)))
 			g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG_NEWERTHAN;
 		else
@@ -1504,7 +1504,7 @@ void ApplyViewMode(const char *Name)
         g_CluiData.bFilterEffective |= CLVM_STICKY_CONTACTS;
     
     if(g_CluiData.boldHideOffline == (BYTE)-1)
-        g_CluiData.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
+        g_CluiData.boldHideOffline = ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
     
     CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
 

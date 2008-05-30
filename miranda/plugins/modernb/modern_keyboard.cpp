@@ -33,7 +33,7 @@ int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 
 int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
-	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
+	int nStatus = ModernGetSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
 		PostMessage(pcli->hwndContactList, WM_COMMAND, nStatus, 0);
 
