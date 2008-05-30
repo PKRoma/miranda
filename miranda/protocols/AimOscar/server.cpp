@@ -351,7 +351,10 @@ void snac_user_online(SNAC &snac)//family 0x0003
 							delete[] data;
 					}
 					if(bot)
+					{
+						strlcpy(client,CLIENT_BOT,100);
 						bot_user=1;
+					}
 					if(wireless)
 					{
 						strlcpy(client,CLIENT_SMS,100);
@@ -503,6 +506,8 @@ void snac_user_online(SNAC &snac)//family 0x0003
 					strlcpy(client,CLIENT_AIMTOC,100);
 				else if(l343&&l345&&l346&&tlv.len()==6)
 					strlcpy(client,CLIENT_GAIM,100);
+				else if(l343&&l345&&l346&&l34e&&tlv.len()==8)
+					strlcpy(client,CLIENT_PURPLE,100);
 				else if(l343&&l345&&l34e&&tlv.len()==6)
 					strlcpy(client,CLIENT_ADIUM,100);
 				else if(l343&&l346&&l34e&&tlv.len()==6)
