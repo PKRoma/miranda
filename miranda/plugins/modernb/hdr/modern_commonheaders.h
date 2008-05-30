@@ -38,7 +38,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS		// to suppres secure warnings in VC2005
+#define _CRT_SECURE_NO_WARNINGS		// to suppress secure warnings in VC2005
+#endif
+
+#ifndef _CRT_SECURE_NO_DEPRECATE	// to suppress secure deprecate warnings in VC2005
+#define _CRT_SECURE_NO_DEPRECATE
 #endif
 
 #if defined (_DEBUG)
