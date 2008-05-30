@@ -37,7 +37,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DB_NOHELPERFUNCTIONS
 #endif
 
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS		// to suppres secure warnings in VC2005
+#endif
 
 #if defined (_DEBUG)
 #define TRACE(str)  { log0(str); }
