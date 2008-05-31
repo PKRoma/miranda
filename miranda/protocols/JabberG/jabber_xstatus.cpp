@@ -164,10 +164,16 @@ void CJabberProto::SetContactMood( HANDLE hContact, const char* moodType, const 
 {
 	int bXStatus = 0;
 	if ( moodType ) {
+		TCHAR *moodTitle = NULL;
+		char moodIcon[128] = {0};
+
 		for ( bXStatus=1; bXStatus <= NUM_XMODES; bXStatus++ ) {
 			if ( !strcmp( moodType, g_arrMoods[bXStatus].szTag )) {
 				JSetByte( hContact, DBSETTING_XSTATUSID, bXStatus );
 				JSetString( hContact, DBSETTING_XSTATUSNAME, g_arrMoods[bXStatus].szName );
+
+				mir_snprintf( moodIcon, SIZEOF(moodIcon), "%s_%s", m_szModuleName, Translate(g_arrMoods[bXStatus].szName) );
+				moodTitle = mir_a2t(g_arrMoods[bXStatus].szName);
 				break;
 		}	}
 
@@ -175,10 +181,17 @@ void CJabberProto::SetContactMood( HANDLE hContact, const char* moodType, const 
 			JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 			JSetString( hContact, DBSETTING_XSTATUSNAME, moodType );
 		}
+
+		if (!moodTitle)
+			moodTitle = mir_a2t(moodType);
+		WriteAdvStatus( hContact, ADVSTATUS_MOOD, moodType, moodIcon, moodTitle, moodText );
+		mir_free(moodTitle);
 	}
 	else {
 		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
+
+		ResetAdvStatus( hContact, ADVSTATUS_MOOD );
 	}
 
 	if ( moodText )
@@ -310,6 +323,7 @@ void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szL
 {
 	if ( !szArtist && !szTitle ) {
 		JDeleteSetting( hContact, "ListeningTo" );
+		ResetAdvStatus( hContact, ADVSTATUS_TUNE );
 		return;
 	}
 
@@ -330,7 +344,13 @@ void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szL
 		szListeningTo = (TCHAR *) mir_alloc( 2048 * sizeof( TCHAR ));
 		mir_sntprintf( szListeningTo, 2047, _T("%s - %s"), szTitle ? szTitle : _T(""), szArtist ? szArtist : _T("") );
 	}
+
 	JSetStringT( hContact, "ListeningTo", szListeningTo );
+
+	char tuneIcon[128];
+	mir_snprintf(tuneIcon, SIZEOF(tuneIcon), "%s_%s", m_szModuleName, "main");
+	WriteAdvStatus( hContact, ADVSTATUS_TUNE, "listening_to", tuneIcon, TranslateT("Listening To"), szListeningTo );
+
 	mir_free( szListeningTo );
 }
 
@@ -528,6 +548,9 @@ void CJabberProto::XStatusInit()
 
 	JHookEvent( ME_CLIST_EXTRA_LIST_REBUILD, &CJabberProto::CListMW_ExtraIconsRebuild );
 	JHookEvent( ME_CLIST_EXTRA_IMAGE_APPLY,  &CJabberProto::CListMW_ExtraIconsApply );
+
+	RegisterAdvStatusSlot( ADVSTATUS_MOOD );
+	RegisterAdvStatusSlot( ADVSTATUS_TUNE );
 }
 
 void CJabberProto::XStatusUninit()
@@ -716,6 +739,62 @@ int __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM lParam )
 
 	m_nJabberXStatus = wParam;
 	return wParam;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Advanced status slots
+// DB data format:
+//     Contact / AdvStatus / Proto/Status/id = mode_id
+//     Contact / AdvStatus / Proto/Status/icon = icon
+//     Contact / AdvStatus / Proto/Status/title = title
+//     Contact / AdvStatus / Proto/Status/text = title
+
+void CJabberProto::RegisterAdvStatusSlot(const char *pszSlot)
+{
+/*
+	char szSetting[256];
+	mir_snprintf(szSetting, SIZEOF(szSetting), "AdvStatus/%s/%s/id", m_szModuleName, pszSlot);
+	CallService(MS_DB_SETSETTINGRESIDENT, TRUE, (LPARAM)szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "AdvStatus/%s/%s/icon", m_szModuleName, pszSlot);
+	CallService(MS_DB_SETSETTINGRESIDENT, TRUE, (LPARAM)szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "AdvStatus/%s/%s/title", m_szModuleName, pszSlot);
+	CallService(MS_DB_SETSETTINGRESIDENT, TRUE, (LPARAM)szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "AdvStatus/%s/%s/text", m_szModuleName, pszSlot);
+	CallService(MS_DB_SETSETTINGRESIDENT, TRUE, (LPARAM)szSetting);
+*/
+}
+
+void CJabberProto::ResetAdvStatus(HANDLE hContact, const char *pszSlot)
+{
+	char szSetting[128];
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/id", m_szModuleName, pszSlot);
+	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/icon", m_szModuleName, pszSlot);
+	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/title", m_szModuleName, pszSlot);
+	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/text", m_szModuleName, pszSlot);
+	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+}
+
+void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const char *pszMode, const char *pszIcon, const TCHAR *pszTitle, const TCHAR *pszText)
+{
+	char szSetting[128];
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/id", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, pszMode);
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/icon", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, pszIcon);
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/title", m_szModuleName, pszSlot);
+	DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszTitle);
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/text", m_szModuleName, pszSlot);
+	if (pszText)
+		DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszText);
+	else
+		DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

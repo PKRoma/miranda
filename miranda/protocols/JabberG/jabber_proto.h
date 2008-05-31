@@ -816,7 +816,11 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 	void   JabberUpdateContactExtraIcon( HANDLE hContact );
-			
+
+	void   RegisterAdvStatusSlot(const char *pszSlot);
+	void   ResetAdvStatus(HANDLE hContact, const char *pszSlot);
+	void   WriteAdvStatus(HANDLE hContact, const char *pszSlot, const char *pszMode, const char *pszIcon, const TCHAR *pszTitle, const TCHAR *pszText);
+
 	BOOL   SendPepMood( int nMoodNumber, TCHAR* szMoodText );
 	BOOL   SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 			

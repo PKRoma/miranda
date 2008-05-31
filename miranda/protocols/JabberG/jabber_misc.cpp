@@ -531,5 +531,9 @@ void CJabberProto::SetContactOfflineStatus( HANDLE hContact )
 	JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 	JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
 	JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+
+	ResetAdvStatus( hContact, ADVSTATUS_MOOD );
+	ResetAdvStatus( hContact, ADVSTATUS_TUNE );
+
 	JabberUpdateContactExtraIcon(hContact);
 }

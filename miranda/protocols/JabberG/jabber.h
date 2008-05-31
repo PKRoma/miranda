@@ -282,6 +282,10 @@ enum {
 #define DBSETTING_XSTATUSNAME      "XStatusName"
 #define DBSETTING_XSTATUSMSG       "XStatusMsg"
 
+#define ADVSTATUS_MOOD             "mood"
+#define ADVSTATUS_ACTIVITY         "activity"
+#define ADVSTATUS_TUNE             "tune"
+
 struct CJabberHttpAuthParams
 {
 	enum {IQ = 1, MSG = 2} m_nType;

@@ -926,7 +926,8 @@ XmlNode *CJabberDlgDataPage::FetchData()
 	result->addAttr("type", "submit");
 
 	for (int i = 0; i < m_controls.getCount(); ++i)
-		result->addChild(m_controls[i].FetchData());
+		if (XmlNode *field = m_controls[i].FetchData())
+			result->addChild(field);
 
 	return result;
 }
