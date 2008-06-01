@@ -161,6 +161,7 @@ WORD		MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
+void		stripBBCode( char* src );
 char*		MSN_Base64Decode( const char* str );
 
 void     	UrlDecode( char* str );

@@ -255,3 +255,24 @@ void  UrlEncode( const char* src, char* dest, size_t cbDest )
 }
 
 
+void stripBBCode( char* src )
+{
+	bool tag = false; 
+	char* ps = src;
+	char* pd = src;
+
+	while (*ps != 0)
+	{
+		if (!tag && *ps == '[') 
+		{
+			char ch = ps[1];
+			if (ch  == '/') ch = ps[2];
+			tag = ch == 'b' || ch == 'u' || ch == 'i' || ch == 'c';
+		}
+		if (!tag) *(pd++) = *ps;
+		else tag = *ps != ']';
+		++ps;
+	}
+	*pd = 0;
+}
+

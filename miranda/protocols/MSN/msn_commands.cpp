@@ -367,6 +367,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 		email = data.fromEmail;
 		UrlDecode(nick);
 	}
+	stripBBCode(nick);
 
 
 	char* msg = ( char* )alloca( msgBytes+1 );
@@ -1182,6 +1183,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userNick );
+			stripBBCode( data.userNick );
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, false, false );
@@ -1289,6 +1291,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
+			stripBBCode( data.userNick );
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, true, true );
 			if ( tNumTokens == 3 )
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
@@ -1433,6 +1436,7 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
 			UrlDecode( data.callerNick ); mir_utf8decode( data.callerNick, NULL );
+			stripBBCode( data.callerNick );
 
 			if ( strcmp( data.security, "CKI" )) {
 				MSN_DebugLog( "Unknown security package in RNG command: %s", data.security );
