@@ -137,12 +137,18 @@ static void GetObjectDescription( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 		break;
 
 	default:
-		str[ 0 ] = 0;
-}	}
+		{
+			DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+			if ( et && ( et->flags & DETF_HISTORY )) {
+				GetMessageDescription( dbei, str, cbStr );
+			}
+			else
+				str[ 0 ] = 0;
+}	}	}
 
 static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 {
-	TCHAR* pszSrc;
+	TCHAR* pszSrc, *pszTmp = NULL;
 
 	switch( dbei->eventType ) {
 	case EVENTTYPE_MESSAGE:
@@ -161,12 +167,22 @@ static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 		break;
 
 	default:
-		str[ 0 ] = 0;
-		return;
-	}
+		{
+			DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+			if ( et && ( et->flags & DETF_HISTORY )) {
+				pszTmp = a2t( et->descr );
+				pszSrc = TranslateTS( pszTmp );
+				break;
+			}
+			else {
+				str[ 0 ] = 0;
+				return;
+	}	}	}
 
 	_tcsncpy( str, ( const TCHAR* )pszSrc, cbStr );
 	str[ cbStr-1 ] = 0;
+
+	mir_free( pszTmp );
 }
 
 typedef struct {

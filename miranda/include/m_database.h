@@ -358,9 +358,12 @@ typedef struct
 	char* textService; // service name for MS_DB_EVENT_GETTEXT (0.8+, default Module+'/GetEventText'+EvtID)
 	char* iconService; // service name for MS_DB_EVENT_GETICON (0.8+, default Module+'/GetEventIcon'+EvtID)
 	HANDLE eventIcon;  // icolib handle to eventicon (0.8+, default 'eventicon_'+Module+EvtID)
-	DWORD flags;       // flags, reserved for future use
+	DWORD flags;       // flags, combination of the DETF_*
 }
 	DBEVENTTYPEDESCR;
+
+#define DETF_HISTORY  1   // show event in history
+
 
 #define MS_DB_EVENT_REGISTERTYPE  "DB/EventType/Register"
 
