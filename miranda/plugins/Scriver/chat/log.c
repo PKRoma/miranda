@@ -629,7 +629,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 				}
 				else lstrcpyn( szTemp2, lin->ptszNick, 511 );
 
-				if ( lin->ptszUserInfo )
+				if ( lin->ptszUserInfo && lin->iType != GC_EVENT_TOPIC)
 					mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%s (%s)"), szTemp2, lin->ptszUserInfo );
 				else
 					mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%s"), szTemp2 );
@@ -638,7 +638,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 
 			if (streamData->si->windowData.hwndLog != NULL) {
 				LogEventIEView(streamData, pszNick);
-			} 
+			}
 			{
 				// create new line, and set font and color
 				if (!streamData->isFirst) {
