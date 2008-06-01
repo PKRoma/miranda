@@ -211,7 +211,7 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define CLIENT_AIM6_5					"AIM 6.5"
 #define CLIENT_AIM6_8					"AIM 6.8"
 #define CLIENT_AIMTOC					"AIM TOC"
-#define CLIENT_BOT						"Bot"
+#define CLIENT_BOT						"AIM Bot"
 #define CLIENT_GAIM						"Gaim"
 #define CLIENT_PURPLE					"Purple"
 #define CLIENT_ADIUM					"Adium X"
