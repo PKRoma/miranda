@@ -441,6 +441,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				caps_included=1;
 				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
 					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
+                    O10a=0, O10c=0,
 					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0;
 					//utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv.len();i=i+2)
@@ -472,6 +473,10 @@ void snac_user_online(SNAC &snac)//family 0x0003
 						O105=1;
 					if(cap==0x0107)
 						O107=1;
+                    if(cap==0x010a)
+                        O10a=1;
+                    if(cap==0x010c)
+                        O10c=1;
 					if(cap==0x01ff)
 						O1ff=1;
 					if(cap==0x1323)
@@ -513,13 +518,22 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				else if(l343&&l346&&l34e&&tlv.len()==6)
 					strlcpy(client,CLIENT_TERRAIM,100);
 				else if(tlv.len()==0&&DBGetContactSettingWord(hContact, AIM_PROTOCOL_NAME, AIM_KEY_ST,0)!=ID_STATUS_ONTHEPHONE)
-					strlcpy(client,CLIENT_AIMEXPRESS,100);	
+                    strlcpy(client,CLIENT_AIMEXPRESS5,100);
+                else if(l34b&&l343&&O1ff&&l345&&l346&&tlv.len()==10)
+                    strlcpy(client,CLIENT_AIMEXPRESS6,100);
 				else if(l34b&&l341&&l343&&O1ff&&l345&&l346&&l347)
 					strlcpy(client,CLIENT_AIM5,100);
 				else if(l34b&&l341&&l343&&l345&l346&&l347&&l348)
 					strlcpy(client,CLIENT_AIM4,100);
 				else if(O1ff&&l343&&O107&&l341&&O104&&O105&&O101&&l346)
-					strlcpy(client,CLIENT_AIM_TRITON,100);
+                {
+                   if (O10c)
+                       strlcpy(client,CLIENT_AIM6_8,100);
+                   else if (O10a)
+                       strlcpy(client,CLIENT_AIM6_5,100);
+                   else
+                       strlcpy(client,CLIENT_AIM_TRITON,100);
+                }
 				else if(l346&&tlv.len()==2)
 					strlcpy(client,CLIENT_MEEBO,100);
 				//if(utf8)
@@ -611,6 +625,8 @@ void snac_user_online(SNAC &snac)//family 0x0003
 			else
 				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"?");
 		}
+        else
+			setString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
 		delete[] buddy;
 	}
 }
