@@ -626,7 +626,7 @@ void snac_user_online(SNAC &snac)//family 0x0003
 				DBWriteContactSettingString(hContact,AIM_PROTOCOL_NAME,AIM_KEY_MV,"?");
 		}
         else
-			DBWriteContactSettingString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
+			DBWriteContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
 		delete[] buddy;
 	}
 }
