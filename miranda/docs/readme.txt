@@ -22,6 +22,13 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.7
+Bugfixes:
+ - Some tooltips didn't properly support UNICODE
+ - AIM: Improved client detection
+ - ICQ: ICQ server sometimes repeated offline messages
+
+
 * New in 0.7.6
 Enhancements:
  - Enabled dim idle contacts by default in classic contact list

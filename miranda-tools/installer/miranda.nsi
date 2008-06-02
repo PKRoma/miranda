@@ -4,7 +4,7 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.6"
+!define MIM_VERSION             "0.7.7"
 !define MIM_PREVIEW             "0" ; 0 for final build
 
 !define MIM_OPENSSL_URL         "http://www.slproweb.com/products/Win32OpenSSL.html"
