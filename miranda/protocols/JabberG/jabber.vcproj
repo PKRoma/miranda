@@ -112,8 +112,10 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib wsock32.lib version.lib comctl32.lib"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				MapFileName="$(OutDir)/$(ProjectName).map"
@@ -252,7 +254,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib version.lib comctl32.lib"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -295,6 +297,9 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{FFD8637D-909C-4586-9E42-120B66B564FE}"
+			Name="zlib"/>
 	</References>
 	<Files>
 		<Filter

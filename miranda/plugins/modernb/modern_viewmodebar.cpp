@@ -848,7 +848,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 #ifdef UNICODE
 						szUTF8Buf=mir_utf8encodeT(szBuf);
 #else
-						szUTF8Buf=strdup(szBuf);
+						szUTF8Buf=_strdup(szBuf);
 #endif
                         if(ModernGetSettingDword(NULL, CLVM_MODULE, szUTF8Buf, -1) != -1)
                             MessageBox(0, TranslateT("A view mode with this name does alredy exist"), TranslateT("Duplicate name"), MB_OK);

@@ -42,7 +42,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/filealign:512"
+				AdditionalDependencies="vc7to6.lib"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				ModuleDefinitionFile=".\zlib.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"

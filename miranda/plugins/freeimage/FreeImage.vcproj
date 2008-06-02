@@ -28,7 +28,8 @@
 				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="FALSE"
 				EnableFunctionLevelLinking="TRUE"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
@@ -39,11 +40,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="msimg32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib msimg32.lib libcpmt.lib"
 				OutputFile="$(OutDir)/advaimg.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
@@ -96,7 +98,7 @@
 				AdditionalIncludeDirectories="Source,Source\ZLib,..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FREEIMAGE_EXPORTS"
 				StringPooling="TRUE"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				PrecompiledHeaderFile=".\Release/FreeImage.pch"
 				WarningLevel="3"
@@ -107,10 +109,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="msimg32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib libcpmt.lib msimg32.lib libcpmt.lib "
 				OutputFile="$(OutDir)/advaimg.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
@@ -128,11 +132,7 @@
 				TypeLibraryName=".\Release/FreeImage.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy Release\FreeImage.dll Dist
-copy Release\FreeImage.lib Dist
-copy Source\FreeImage.h Dist
-"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -177,9 +177,11 @@ copy Source\FreeImage.h Dist
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="msimg32.lib"
+				AdditionalDependencies="vc7to6.lib msimg32.lib libcpmt.lib "
 				OutputFile="$(OutDir)/advaimg.dll"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"
@@ -242,9 +244,11 @@ copy Source\FreeImage.h Dist
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="msimg32.lib"
+				AdditionalDependencies="vc7to6.lib msimg32.lib libcpmt.lib "
 				OutputFile="$(OutDir)/advaimg.dll"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/advaimg.pdb"
 				GenerateMapFile="TRUE"

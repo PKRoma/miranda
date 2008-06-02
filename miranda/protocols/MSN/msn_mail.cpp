@@ -284,7 +284,7 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
 		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 #else
-		TCHAR* msgtxt = strcmpi( From, Fromaddr ) ?
+		TCHAR* msgtxt = _strcmpi( From, Fromaddr ) ?
 			TranslateT("Hotmail from %S (%s)") : TranslateT( "Hotmail from %S" );
 		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 #endif

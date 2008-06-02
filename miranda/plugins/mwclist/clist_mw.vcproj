@@ -44,10 +44,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib"
+				IgnoreImportLibrary="TRUE"
+				AdditionalDependencies="vc7to6.lib comctl32.lib"
 				OutputFile="$(OutDir)/clist_mw.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

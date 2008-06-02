@@ -96,9 +96,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="comctl32.lib version.lib shlwapi.lib"
+				IgnoreImportLibrary="TRUE"
+				AdditionalDependencies="vc7to6.lib comctl32.lib version.lib shlwapi.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"

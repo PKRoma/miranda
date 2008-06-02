@@ -20,7 +20,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="TRUE"
 			CharacterSet="2"
-			WholeProgramOptimization="TRUE">
+			WholeProgramOptimization="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
@@ -34,8 +34,6 @@
 				StringPooling="TRUE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="FALSE"
-				EnableEnhancedInstructionSet="0"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -49,12 +47,14 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				IgnoreAllDefaultLibraries="FALSE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -252,8 +252,7 @@
 				StringPooling="TRUE"
 				ExceptionHandling="TRUE"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="TRUE"
-				EnableEnhancedInstructionSet="0"
+				BufferSecurityCheck="FALSE"
 				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -269,7 +268,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="vc7to6.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"

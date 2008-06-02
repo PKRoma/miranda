@@ -38,9 +38,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib"
+				IgnoreImportLibrary="TRUE"
+				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -224,7 +227,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="vc7to6.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"

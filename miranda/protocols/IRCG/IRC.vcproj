@@ -103,11 +103,13 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
+				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				BaseAddress="0x54010000"
@@ -236,7 +238,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="vc7to6.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib wsock32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -698,10 +700,10 @@
 				RelativePath="Icons\hide.ico">
 			</File>
 			<File
-				RelativePath="Icons\irc.ico">
+				RelativePath="Icons\Icons\irc.ico">
 			</File>
 			<File
-				RelativePath="Icons\Icons\irc.ico">
+				RelativePath="Icons\irc.ico">
 			</File>
 			<File
 				RelativePath="IRC.rc">
