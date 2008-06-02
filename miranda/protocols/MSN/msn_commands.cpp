@@ -368,6 +368,7 @@ void MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* params )
 	int msgBytes = atol( data.strMsgBytes );
 
 	UrlDecode( data.fromEmail ); UrlDecode( data.fromNick );
+	stripBBCode( data.fromNick );
 
 	char* msg = ( char* )alloca( msgBytes+1 );
 
@@ -579,7 +580,7 @@ HANDLE sttProcessAdd( int trid, int listId, char* userEmail, char* userNick )
 		return NULL;
 	}
 
-	UrlDecode( userEmail ); UrlDecode( userNick );
+	UrlDecode( userEmail ); UrlDecode( userNick ); 	stripBBCode( userNick );
 	if ( !IsValidListCode( listId ))
 		return NULL;
 
@@ -1294,6 +1295,7 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.userEmail );
 			UrlDecode( data.userNick );
+			stripBBCode( data.userNick );
 
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
 			if ( tNumTokens == 5 )
@@ -1326,7 +1328,7 @@ LBL_InvalidCommand:
 			if ( tNumTokens < 2 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
+			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); stripBBCode( data.userNick );
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, data.userNick, 1, 1 );
 			if ( tNumTokens == 3 )
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
@@ -1434,7 +1436,7 @@ LBL_InvalidCommand:
 			if ( userNick == NULL )
 				userNick = userEmail;
 
-			UrlDecode( userEmail ); UrlDecode( userNick );
+			UrlDecode( userEmail ); UrlDecode( userNick ); stripBBCode( userNick );
 
 			if ( !IsValidListCode( listId ) || !strcmp( userEmail, "messenger@microsoft.com" ))
 				break;
@@ -1605,6 +1607,7 @@ LBL_InvalidCommand:
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
 			UrlDecode( data.callerNick ); mir_utf8decode( data.callerNick, NULL );
+			stripBBCode( data.callerNick );
 
 			if ( strcmp( data.security, "CKI" )) {
 				MSN_DebugLog( "Unknown security package in RNG command: %s", data.security );
@@ -1698,9 +1701,6 @@ LBL_InvalidCommand:
 
 				if ( sttDivideWords( params, 3, tWords ) != 3 )
 					goto LBL_InvalidCommand;
-
-				UrlDecode( data.userHandle ); UrlDecode( data.friendlyName );
-				mir_utf8decode( data.friendlyName, NULL );
 
 				if ( strcmp( data.status, "OK" )) {
 					MSN_DebugLog( "Unknown status to USR command (SB): '%s'", data.status );

@@ -180,6 +180,7 @@ WCHAR*      HtmlEncodeW( const WCHAR* str );
 	#define  HtmlEncodeT HtmlEncode
 #endif
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
+void		stripBBCode( char* src );
 char*		MSN_Base64Decode( const char* str );
 
 void     	UrlDecode( char*str );
