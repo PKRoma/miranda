@@ -27,7 +27,7 @@ Bugfixes:
  - Some tooltips didn't properly support UNICODE
  - AIM: Improved client detection
  - ICQ: ICQ server sometimes repeated offline messages
-
+ - MSN: Added stripping BBCode from nicknames
 
 * New in 0.7.6
 Enhancements:
