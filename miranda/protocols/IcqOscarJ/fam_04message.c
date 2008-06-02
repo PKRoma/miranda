@@ -2813,6 +2813,13 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   unpackWord(&buf, &wError);
   wLen -= 2;
 
+  { // offline retrieval process in progress, note that we received missed message notification
+    offline_message_cookie *cookie;
+
+    if (FindCookieByType(CKT_OFFLINEMESSAGE, NULL, NULL, (void**)&cookie))
+      cookie->nMissed++;
+  }
+  
   switch (wError)
   {
 
@@ -2868,7 +2875,28 @@ static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags
   if (FindCookie(dwRef, NULL, &cookie))
   {
     NetLog_Server("End of offline msgs, %u received", cookie->nMessages);
+    if (cookie->nMissed)
+    { // NASTY WORKAROUND!!
+      // The ICQ server has a bug that causes offline messages to be received again and again when some 
+      // missed message notification is present (most probably it is not processed correctly and causes
+      // the server to fail the purging process); try to purge them using the old offline messages
+      // protocol.  2008/05/21
+      icq_packet packet;
+      NetLog_Server("Warning: Received %u missed message notifications, trying to fix the server.", cookie->nMissed);
 
+      // This will delete the messages stored on server
+      serverPacketInit(&packet, 24);
+      packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
+      packWord(&packet, 1);             // TLV Type
+      packWord(&packet, 10);            // TLV Length
+      packLEWord(&packet, 8);           // Data length
+      packLEDWord(&packet, dwLocalUIN); // My UIN
+      packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
+      packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
+
+      // Send it
+      sendServPacket(&packet);
+    }
     ReleaseCookie(dwRef);
   }
   else

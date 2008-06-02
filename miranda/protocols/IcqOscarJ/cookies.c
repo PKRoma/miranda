@@ -265,6 +265,36 @@ int FindCookieByData(void *pvExtra,DWORD *pdwCookie, HANDLE *phContact)
 
 
 
+int FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void** ppvExtra)
+{
+  int nFound = 0, i;
+
+  EnterCriticalSection(&cookieMutex);
+
+  for (i = 0; i < cookieCount; i++)
+  {
+    if (bType == cookie[i].bType)
+    {
+      if (pdwCookie)
+        *pdwCookie = cookie[i].dwCookie;
+      if (phContact)
+        *phContact = cookie[i].hContact;
+      if (ppvExtra)
+        *ppvExtra = cookie[i].pvExtra;
+
+      // Cookie found, exit loop
+      nFound = 1;
+      break;
+    }
+  }
+
+  LeaveCriticalSection(&cookieMutex);
+
+  return nFound;
+}
+
+
+
 int FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, HANDLE *phContact, message_cookie_data **ppvExtra)
 {
   int i;
