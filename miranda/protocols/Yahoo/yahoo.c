@@ -430,6 +430,10 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 				//Yahoo 7.5
 				s = "Yahoo 7.x"; 
 				break;
+		case 888327:
+				s = "Yahoo 9.0 for Vista";
+				break;
+			
 		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
 		case 1572799: /* 8.0.x ??  */ 
 		case 2097087: /* 8.1.0.195 */ 
@@ -442,7 +446,9 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 	
 	if (s != NULL) 
 		DBWriteContactSettingString( hContact, yahooProtocolName, "MirVer", s);
-	
+	else
+		DBDeleteContactSetting( hContact, yahooProtocolName, "MirVer");
+
 	/* Add the client_Version # to the contact DB entry */
 	DBWriteContactSettingDword( hContact, yahooProtocolName, "ClientVersion", client_version);
 	
