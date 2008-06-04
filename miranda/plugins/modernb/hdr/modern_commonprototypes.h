@@ -206,6 +206,7 @@ int callProxied_SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
 
 
 /* others TODO: move above */
+int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam);
 void	DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColour, DWORD backgroundBmpUse );
 HRESULT		BackgroundsLoadModule();
 int		BackgroundsUnloadModule();

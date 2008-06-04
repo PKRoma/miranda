@@ -113,7 +113,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 	switch(msg->message) {
 		case WM_CREATE:
 			//if(GetSystemMetrics(SM_CMONITORS)>1) return 0;
-			if(ModernGetSettingByte(NULL,"CList","Docked",0)) 
+			if(ModernGetSettingByte(NULL,"CList","Docked",0) && ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT)) 
 			{
 				PostMessage(msg->hwnd,WM_CREATEDOCKED,0,0);
 			}
@@ -174,7 +174,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				POINT ptCursor;
 				if (g_CluiData.fDocked) return 0;
 				// stop early
-				if(!(GetAsyncKeyState(VK_CONTROL)&0x8000)) return 0;
+				BOOL bControlled = (BOOL)(GetAsyncKeyState(VK_CONTROL)&0x8000);
 
 				// GetMessagePos() is no good, position is always unsigned
 				GetCursorPos(&ptCursor);
@@ -185,7 +185,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 
 				if(((ptCursor.x<rcMonitor.left+EDGESENSITIVITY) 
 					|| (ptCursor.x>=rcMonitor.right-EDGESENSITIVITY))
-					)
+					&& ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT))
 				{
 					ZeroMemory(&abd,sizeof(abd));
 					abd.cbSize=sizeof(abd);
@@ -267,25 +267,28 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				return TRUE;
 			}
 		case WM_SHOWWINDOW:
-			if(msg->lParam) return 0;
-			if((msg->wParam && g_CluiData.fDocked<0) || (!msg->wParam && g_CluiData.fDocked>0)) g_CluiData.fDocked=-g_CluiData.fDocked;
-			ZeroMemory(&abd,sizeof(abd));
-			abd.cbSize=sizeof(abd);
-			abd.hWnd=msg->hwnd;
-			if(msg->wParam) {
-				RECT rc, rcMonitor;
-				Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
-				abd.lParam=0;
-				abd.uCallbackMessage=WM_DOCKCALLBACK;
-				SHAppBarMessage(ABM_NEW,&abd);
-				GetWindowRect(msg->hwnd,&rc);
-				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
-				MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,FALSE);
-				DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc);
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
-			}
-			else {
-				SHAppBarMessage(ABM_REMOVE,&abd);
+			{
+				if(msg->lParam) return 0;
+				BOOL toBeDocked = (BOOL) ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT);
+				if((msg->wParam && g_CluiData.fDocked<0) || (!msg->wParam && g_CluiData.fDocked>0)) g_CluiData.fDocked=-g_CluiData.fDocked;
+				ZeroMemory(&abd,sizeof(abd));
+				abd.cbSize=sizeof(abd);
+				abd.hWnd=msg->hwnd;
+				if(msg->wParam) {
+					RECT rc, rcMonitor;
+					Docking_GetMonitorRectFromWindow(msg->hwnd,&rcMonitor);
+					abd.lParam=0;
+					abd.uCallbackMessage=WM_DOCKCALLBACK;
+					SHAppBarMessage(ABM_NEW,&abd);
+					GetWindowRect(msg->hwnd,&rc);
+					Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
+					MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,FALSE);
+					DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc);
+					ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+				}
+				else {
+					SHAppBarMessage(ABM_REMOVE,&abd);
+				}
 			}
 			return 0;
 		case WM_NCHITTEST:

@@ -224,6 +224,7 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnProcessExternalMessages	= cli_ProcessExternalMessages;
 	pcli->pfnAddEvent		= cli_AddEvent;
 	pcli->pfnRemoveEvent	= cli_RemoveEvent;
+	pcli->pfnDocking_ProcessWindowMessage = Docking_ProcessWindowMessage;
 	return S_OK;
 }
 

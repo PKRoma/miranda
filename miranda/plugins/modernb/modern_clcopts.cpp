@@ -2035,6 +2035,7 @@ static BOOL CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM wP
 		SendDlgItemMessage(hwndDlg,IDC_MAXSIZESPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT));
 		CheckDlgButton(hwndDlg, IDC_AUTOSIZEUPWARD, ModernGetSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SNAPTOEDGES, ModernGetSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_DOCKTOSIDES, ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 
 		CheckDlgButton(hwndDlg, IDC_EVENTAREA_NONE, ModernGetSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==0 ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_EVENTAREA, ModernGetSettingByte(NULL,"CLUI","EventArea",SETTING_EVENTAREAMODE_DEFAULT)==1 ? BST_CHECKED : BST_UNCHECKED);
@@ -2153,6 +2154,8 @@ static BOOL CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			ModernWriteSettingByte(NULL,"CLUI","MaxSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MAXSIZEHEIGHT,NULL,FALSE));               
 			ModernWriteSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			ModernWriteSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));
+			
+			ModernWriteSettingByte(NULL,"CLUI","DockToSides",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DOCKTOSIDES));			
 
 			ModernWriteSettingByte(NULL,"CLUI","EventArea",
 				(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_EVENTAREA_ALWAYS)?2:(BYTE)IsDlgButtonChecked(hwndDlg,IDC_EVENTAREA)?1:0));
