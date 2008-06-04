@@ -194,7 +194,7 @@ HRESULT IniParser::WriteStrToDb( const char * szSection, const char * szName, co
 		//TODO check security here
 		if ( wildcmp( szSection,"Skin_Description_Section",1 ) ) return S_OK;
 	}
-//	if ( strlen(szValue)>0 && szValue[strlen(szValue)-1]=='\r' ) 
+//	if ( strlen(szValue)>0 && szValue[strlen(szValue)-1]=='\n' ) 
 //		szValue[strlen(szValue)-1]='\0';  //kill linefeed at the end  
 
 	switch(szValue[0]) 
@@ -328,7 +328,7 @@ HRESULT IniParser::_DoParseResource()
 		int i=0;
 		while ( pos < _pPosition + _dwSizeOfRes && *pos != '\n' && *pos!= '\0' && i < MAX_LINE_LEN - 1 )
 		{
-			if ( (*pos) != '\r' ) szLine[ i ] = *pos;
+			if ( (*pos) != '\n' ) szLine[ i ] = *pos;
 			pos++;
 			i++;
 		}
@@ -355,7 +355,7 @@ BOOL IniParser::_DoParseLine( char * Line )
 	if ( i >= len ) 
 		return TRUE; //empty line only spaces (or tabs)
 
-	if ( len>0 && Line[len-1] == '\r' ) 
+	if ( len>0 && Line[len-1] == '\n' ) 
 		Line[ len-1 ]='\0';
 	switch( Line[i] )
 	{
@@ -384,7 +384,7 @@ BOOL IniParser::_DoParseLine( char * Line )
 
 	default:
 		if ( !_szSection ) 
-			return FALSE;  //param found out of section
+			return TRUE;  //param found out of section
 
 		char *keyName=Line+i;
 		char *keyValue=Line+i;
@@ -396,7 +396,7 @@ BOOL IniParser::_DoParseLine( char * Line )
 			eqPlace++; //find '='
 
 		if (eqPlace==0 || eqPlace==len2) 
-			return FALSE; //= not found or no key name
+			return TRUE; //= not found or no key name //say false
 
 		keyName[eqPlace] = '\0';
 
@@ -420,7 +420,7 @@ BOOL IniParser::_DoParseLine( char * Line )
 		{
 			DWORD len3=strlen(keyValue);
 			int j=len3-1;
-			while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t' || keyValue[j]=='\r')) j--;
+			while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t' || keyValue[j]=='\n')) j--;
 			if (j>=0) keyValue[j+1]='\0';
 		}
 		_pLineCallBackProc( _szSection, keyName, keyValue, _lParam );
@@ -2615,7 +2615,7 @@ int ske_LoadSkinFromIniFile(char * szFileName, BOOL bOnlyObjects)
 	ModernWriteSettingString(NULL,SKIN,"SkinFolder",skinFolder);
 	ModernWriteSettingString(NULL,SKIN,"SkinFile",skinFile);
 
-	parser.Parse( IniParser::WriteStrToDb, 0 );
+	parser.Parse( IniParser::WriteStrToDb, 1 );
 
 	return 0;
 }
