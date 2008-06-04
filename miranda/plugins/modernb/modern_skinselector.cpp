@@ -85,9 +85,9 @@ BOOL wildcmpi(char * name, char * mask)
   }
 }
 
-BOOL __inline wildcmp(char * name, char * mask, BYTE option)
+BOOL __inline wildcmp(const char * name, const char * mask, BYTE option)
     {
-         char * last='\0';
+         const char * last='\0';
          for(;; mask++, name++)
          {
                  if(*mask != '?' && *mask != *name) break;

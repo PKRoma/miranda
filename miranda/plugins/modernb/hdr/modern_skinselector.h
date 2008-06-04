@@ -79,7 +79,7 @@ BOOL CompareStrWithModernMask(char * szValue,MODERNMASK * mmTemplate);
 MODERNMASK *  FindMaskByStr(char * szValue,LISTMODERNMASK * mmTemplateList);
 DWORD mod_CalcHash(const char * a);
 char * ModernMaskToString(MODERNMASK * mm, char * buf, UINT bufsize);
-BOOL __inline wildcmp(char * name, char * mask, BYTE option);
+BOOL __inline wildcmp(const char * name, const char * mask, BYTE option);
 int RegisterObjectByParce(char * ObjectName, char * Params);
 SKINOBJECTDESCRIPTOR *  skin_FindObjectByRequest(char * szValue,LISTMODERNMASK * mmTemplateList);
 SKINOBJECTDESCRIPTOR *  skin_FindObjectByMask (MODERNMASK * mm,LISTMODERNMASK * mmTemplateList);

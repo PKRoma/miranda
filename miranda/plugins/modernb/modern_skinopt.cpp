@@ -352,7 +352,7 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 							char imfn[MAX_PATH]={0};
 							char skinfolder[MAX_PATH]={0};
 							GetPrivateProfileStringA("Skin_Description_Section","Preview","",imfn,sizeof(imfn),sd->File);
-							ske_GetSkinFolder(sd->File,skinfolder);
+							IniParser::GetSkinFolder(sd->File, skinfolder);
 							_snprintf(prfn,sizeof(prfn),"%s\\%s",skinfolder,imfn);
 							CallService(MS_UTILS_PATHTOABSOLUTE,(WPARAM)prfn,(LPARAM) imfn);
 							hPreviewBitmap=ske_LoadGlyphImage(imfn);

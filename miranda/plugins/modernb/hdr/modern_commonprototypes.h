@@ -209,7 +209,7 @@ int callProxied_SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
 void	DrawBackGround(HWND hwnd,HDC mhdc, HBITMAP hBmpBackground, COLORREF bkColour, DWORD backgroundBmpUse );
 HRESULT		BackgroundsLoadModule();
 int		BackgroundsUnloadModule();
-BOOL    wildcmp(char * name, char * mask, BYTE option);										//mod_skin_selector.c
+BOOL    wildcmp(const char * name, const char * mask, BYTE option);										//mod_skin_selector.c
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
 int		cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);		//cache_funcs.c
 BOOL	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c

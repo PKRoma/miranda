@@ -121,6 +121,316 @@ static pfnImgGetHandle ImgGetHandle;
 
 static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 
+
+//////////////////////////////////////////////////////////////////////////
+// Ini file parser
+//////////////////////////////////////////////////////////////////////////
+IniParser::IniParser( TCHAR * tcsFileName ) 
+{
+	_DoInit();
+	if ( !tcsFileName ) return;
+
+	if ( tcsFileName[0] == _T('%') )
+	{
+		//TODO: Add parser of resource filename here
+		_LoadResourceIni( g_hInst, MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN), "MSF");
+		return;
+	}
+
+	_hFile = _tfopen( tcsFileName, _T("r") );
+
+	if ( _hFile != NULL )
+	{
+		_eType = IT_FILE;
+		_isValid = true;
+	}
+}
+
+IniParser::IniParser( HINSTANCE hInst, const char *  resourceName, const char * resourceType )
+{
+	_DoInit();
+	_LoadResourceIni( hInst, resourceName, resourceType );
+}
+
+IniParser::~IniParser()
+{
+	if ( _szSection ) mir_free( _szSection ); 
+	if ( _hFile ) fclose( _hFile ); 
+	if ( _hGlobalRes ) 
+	{
+		UnlockResource( _hGlobalRes ); 
+		FreeResource(_hGlobalRes);	
+	}
+
+	_szSection = NULL;
+	_hGlobalRes = NULL;
+	_hFile = NULL;
+	_isValid = false;
+	_eType = IT_UNKNOWN;
+}
+
+HRESULT IniParser::Parse( ParserCallback_t pLineCallBackProc, LPARAM lParam )
+{
+	if ( _isValid && pLineCallBackProc )
+	{	
+		_pLineCallBackProc = pLineCallBackProc;
+		_lParam = lParam;
+		switch ( _eType )
+		{
+		case IT_FILE:
+			return _DoParseFile();
+		case IT_RESOURCE:
+			return _DoParseResource();
+		}
+	}
+	return E_FAIL;
+}
+
+
+HRESULT IniParser::WriteStrToDb( const char * szSection, const char * szName, const char * szValue, LPARAM SecCheck )
+{
+	if (SecCheck)
+	{
+		//TODO check security here
+		if ( wildcmp( szSection,"Skin_Description_Section",1 ) ) return S_OK;
+	}
+//	if ( strlen(szValue)>0 && szValue[strlen(szValue)-1]=='\r' ) 
+//		szValue[strlen(szValue)-1]='\0';  //kill linefeed at the end  
+
+	switch(szValue[0]) 
+	{
+	case 'b':
+		{
+			BYTE P;
+			P=(BYTE)atoi(szValue+1);
+			ModernWriteSettingByte(NULL,szSection,szName,P);
+		}
+		break;
+	case 'w':
+		{
+			WORD P;
+			P=(WORD)atoi(szValue+1);
+			ModernWriteSettingWord(NULL,szSection,szName,P);
+		}
+		break;
+	case 'd':
+		{
+			DWORD P;
+			P=(DWORD)atoi(szValue+1);
+			ModernWriteSettingDword(NULL,szSection,szName,P);
+		}
+		break;
+	case 's':
+		ModernWriteSettingString(NULL,szSection,szName,szValue+1);
+		break;
+	case 'f':
+		if (szFileName)
+		{
+			char fn[MAX_PATH]={0};
+			char bb[MAX_PATH*2]={0};
+			int pp, i;
+			pp=-1;
+			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)fn);
+			{
+				for (i=strlen(fn); i>=0; i--)  if (fn[i]=='.') break;
+				if (i>0) fn[i]='\0';
+			}                      
+			_snprintf(bb,SIZEOF(bb),"%s\\%s",fn,szValue+1);
+			ModernWriteSettingString(NULL,szSection,szName,bb);
+		}
+		break;
+	}
+	return S_OK;
+}
+int IniParser::GetSkinFolder( IN const char * szFileName, OUT char * pszFolderName )
+{
+	char *pszPos;   
+	char *szBuff;
+
+	szBuff = mir_strdup( szFileName );
+	pszPos = szBuff + mir_strlen( szBuff );
+	while ( pszPos > szBuff && *pszPos!='.') { pszPos--; }
+	*pszPos='\0';
+	strcpy( pszFolderName, szBuff );
+
+	char custom_folder[MAX_PATH];
+	char cus[MAX_PATH];
+	char *b3;
+	strcpy( custom_folder, pszFolderName );
+	b3=custom_folder + mir_strlen( custom_folder );
+	while ( b3 > custom_folder && *b3!='\\' ) { b3--; }
+	*b3='\0';
+
+	GetPrivateProfileStringA("Skin_Description_Section","SkinFolder","",cus,sizeof(custom_folder),szFileName);
+	if (mir_strlen(cus)>0)
+		_snprintf(pszFolderName,MAX_PATH,"%s\\%s",custom_folder,cus);
+
+	mir_free_and_nill(szBuff);
+	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)pszFolderName, (LPARAM)pszFolderName);
+
+	return 0;
+}
+void IniParser::_DoInit()
+{
+	_isValid	 = false;
+	_eType		 = IT_UNKNOWN; 
+	_szSection	 = NULL;
+	_hFile		 = NULL;
+	_hGlobalRes  = NULL;
+	_dwSizeOfRes = 0;
+	_pPosition   = NULL;
+	_pLineCallBackProc = NULL;
+	_lParam		 = 0;
+
+}
+
+void IniParser::_LoadResourceIni( HINSTANCE hInst,  const char *  resourceName, const char * resourceType )
+{
+
+	if( _eType != IT_UNKNOWN ) return;
+
+	HRSRC hRSrc = FindResourceA( hInst, resourceName, resourceType );
+	if ( !hRSrc ) return;
+
+	_hGlobalRes=LoadResource( hInst, hRSrc );
+	if ( !_hGlobalRes ) return;
+
+	_dwSizeOfRes = SizeofResource( hInst, hRSrc );
+	_pPosition =(char*) LockResource( _hGlobalRes );
+
+	_isValid = true;
+	_eType	 = IT_RESOURCE;
+
+}
+
+
+
+HRESULT IniParser::_DoParseFile()
+{
+	char szLine[MAX_LINE_LEN];
+	_nLine = 0;
+	while ( fgets( szLine, SIZEOF(szLine), _hFile ) != NULL )
+	{	
+		if ( !_DoParseLine( szLine ) )	return E_FAIL;
+	};
+
+	return S_OK;
+}
+
+HRESULT IniParser::_DoParseResource()
+{
+	_nLine = 0;
+	char szLine[MAX_LINE_LEN];
+	char * pos = ( char* ) _pPosition;
+
+	while ( pos < _pPosition + _dwSizeOfRes )
+	{
+		int i=0;
+		while ( pos < _pPosition + _dwSizeOfRes && *pos != '\n' && *pos!= '\0' && i < MAX_LINE_LEN - 1 )
+		{
+			if ( (*pos) != '\r' ) szLine[ i ] = *pos;
+			pos++;
+			i++;
+		}
+		szLine[ i ]='\0';
+
+		if ( !_DoParseLine( szLine ) ) return E_FAIL;
+		pos++;
+	}
+	return S_OK;
+}
+
+BOOL IniParser::_DoParseLine( char * Line )
+{
+	_nLine++;
+	DWORD i = 0;
+	DWORD len = strlen( Line );
+
+	if ( len == 0 ) 
+		return TRUE;
+
+	while ( i < len && (Line[i]==' ' || Line[i]=='\t') ) 
+		i++; //skip spaces&tabs
+
+	if ( i >= len ) 
+		return TRUE; //empty line only spaces (or tabs)
+
+	if ( len>0 && Line[len-1] == '\r' ) 
+		Line[ len-1 ]='\0';
+	switch( Line[i] )
+	{
+	case ';':
+		return TRUE; // start of comment is found
+	case '[':
+		{
+			//New section start here
+			if ( _szSection ) mir_free( _szSection );
+			_szSection = NULL;
+
+			char *tbuf = Line + i + 1;	// skip [
+	
+			char *ebuf= tbuf;
+
+			while ( *ebuf != ']' && *ebuf !='\0' ) ebuf++;
+			if ( *ebuf == '\0' ) 
+				return FALSE; // no close bracket
+	
+			DWORD sectionLen = ebuf - tbuf;
+			_szSection = (char*) mir_alloc( sectionLen + 1 );
+			strncpy( _szSection, tbuf, sectionLen );
+			_szSection[sectionLen]='\0';
+		}
+		return TRUE;
+
+	default:
+		if ( !_szSection ) 
+			return FALSE;  //param found out of section
+
+		char *keyName=Line+i;
+		char *keyValue=Line+i;
+
+		DWORD eqPlace=0;
+		DWORD len2=strlen(keyName);
+
+		while ( eqPlace < len2 && keyName[ eqPlace ] != '=' ) 
+			eqPlace++; //find '='
+
+		if (eqPlace==0 || eqPlace==len2) 
+			return FALSE; //= not found or no key name
+
+		keyName[eqPlace] = '\0';
+
+		keyValue = keyName + eqPlace + 1;
+
+		//remove tail spaces in Name
+		{
+			DWORD len3=strlen(keyName);
+			int j=len3-1;
+			while (j>0 && (keyName[j]==' ' || keyName[j]=='\t')) j--;
+			if (j>=0) keyName[j+1]='\0';
+		}		
+		//remove start spaces in Value
+		{
+			DWORD len3=strlen(keyValue);
+			DWORD j=0;
+			while (j<len3 && (keyValue[j]==' ' || keyValue[j]=='\t')) j++;
+			if (j<len3) keyValue+=j;
+		}
+		//remove tail spaces in Value
+		{
+			DWORD len3=strlen(keyValue);
+			int j=len3-1;
+			while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t' || keyValue[j]=='\r')) j--;
+			if (j>=0) keyValue[j+1]='\0';
+		}
+		_pLineCallBackProc( _szSection, keyName, keyValue, _lParam );
+	}
+	return TRUE;
+}
+//////////////////////////////////////////////////////////////////////////
+// End of IniParser
+//////////////////////////////////////////////////////////////////////////
+
 HRESULT SkinEngineLoadModule()
 {
 	ModernSkinButtonLoadModule();
@@ -2076,89 +2386,11 @@ void ske_LoadSkinFromDB(void)
 }
 
 
-int ske_GetSkinFolder(char * szFileName, char * t2)
-{
-	char *buf;   
-	char *b2;
 
-	b2=mir_strdup(szFileName);
-	buf=b2+mir_strlen(b2);
-	while (buf>b2 && *buf!='.') {buf--;}
-	*buf='\0';
-	strcpy(t2,b2);
-
-	{
-		char custom_folder[MAX_PATH];
-		char cus[MAX_PATH];
-		char *b3;
-		strcpy(custom_folder,t2);
-		b3=custom_folder+mir_strlen(custom_folder);
-		while (b3>custom_folder && *b3!='\\') {b3--;}
-		*b3='\0';
-
-		GetPrivateProfileStringA("Skin_Description_Section","SkinFolder","",cus,sizeof(custom_folder),szFileName);
-		if (mir_strlen(cus)>0)
-			_snprintf(t2,MAX_PATH,"%s\\%s",custom_folder,cus);
-	}   	
-	mir_free_and_nill(b2);
-	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)t2, (LPARAM)t2);
-	return 0;
-}
 //
 
-static void ske_WriteParamToDatabase(char *cKey, char* cName, char* cVal, BOOL SecCheck)
-{
-	if (SecCheck)
-	{
-		//TODO check security here
-		if (wildcmp(cKey,"Skin_Description_Section",1)) return;
-	}
-	if (strlen(cVal)>0 && cVal[strlen(cVal)-1]==10) cVal[strlen(cVal)-1]='\0';  //kill linefeed at the end  
-	switch(cVal[0]) 
-	{
-	case 'b':
-		{
-			BYTE P;
-			P=(BYTE)atoi(cVal+1);
-			ModernWriteSettingByte(NULL,cKey,cName,P);
-		}
-		break;
-	case 'w':
-		{
-			WORD P;
-			P=(WORD)atoi(cVal+1);
-			ModernWriteSettingWord(NULL,cKey,cName,P);
-		}
-		break;
-	case 'd':
-		{
-			DWORD P;
-			P=(DWORD)atoi(cVal+1);
-			ModernWriteSettingDword(NULL,cKey,cName,P);
-		}
-		break;
-	case 's':
-		ModernWriteSettingString(NULL,cKey,cName,cVal+1);
-		break;
-	case 'f':
-		if (szFileName)
-		{
-			char fn[MAX_PATH]={0};
-			char bb[MAX_PATH*2]={0};
-			int pp, i;
-			pp=-1;
-			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)fn);
-			{
-				for (i=strlen(fn); i>=0; i--)  if (fn[i]=='.') break;
-				if (i>0) fn[i]='\0';
-			}                      
-			_snprintf(bb,SIZEOF(bb),"%s\\%s",fn,cVal+1);
-			ModernWriteSettingString(NULL,cKey,cName,bb);
-		}
-		break;
-	}
-}
 
+/*
 static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 {
 	DWORD i=0;
@@ -2221,195 +2453,170 @@ static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 	}
 	return FALSE;
 }
+*/
+//Load data from ini file
+
+
+
+//int ske_OldLoadSkinFromIniFile(char * szFileName)
+//{
+//	char bsn[MAXSN_BUFF_SIZE];
+//	char * Buff;
+//
+//	int i=0;
+//	int f=0;
+//	int ReadingSection=0;
+//	char AllowedSection[260];
+//	int AllowedAll=0;
+//	char t2[MAX_PATH];
+//	char t3[MAX_PATH];
+//
+//	DWORD retu=GetPrivateProfileSectionNamesA(bsn,MAXSN_BUFF_SIZE,szFileName);
+//	ske_DeleteAllSettingInSection("ModernSkin");
+//	ske_GetSkinFolder(szFileName,t2);
+//	ModernWriteSettingString(NULL,SKIN,"SkinFolder",t2);
+//	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)t3);
+//	ModernWriteSettingString(NULL,SKIN,"SkinFile",t3);
+//	Buff=bsn;
+//	AllowedSection[0]=0;
+//	do         
+//	{
+//		f=mir_strlen(Buff);
+//		if (f>0 && !mir_bool_strcmpi(Buff,"Skin_Description_Section"))
+//		{
+//			char b3[MAX_BUFF_SIZE];
+//			DWORD ret=0;
+//			ret=GetPrivateProfileSectionA(Buff,b3,MAX_BUFF_SIZE,szFileName);
+//			if (ret>MAX_BUFF_SIZE-3) continue;
+//			if (ret==0) continue;
+//			{
+//				DWORD p=0;
+//				char *s1;
+//				char *s2;
+//				char *s3;
+//				{
+//					DWORD t;
+//					BOOL LOCK=FALSE;
+//					for (t=0; t<ret-1;t++)
+//					{
+//						if (b3[t]=='\0') LOCK=FALSE;
+//						if (b3[t]=='=' && !LOCK) 
+//						{
+//							b3[t]='\0';
+//							LOCK=TRUE;
+//						}
+//					}
+//				}
+//				do
+//				{
+//					s1=b3+p;
+//
+//					s2=s1+mir_strlen(s1)+1;
+//					switch (s2[0])
+//					{
+//					case 'b':
+//						{
+//							BYTE P;
+//							//                            char ba[255];
+//							s3=s2+1;
+//							P=(BYTE)atoi(s3);
+//							ModernWriteSettingByte(NULL,Buff,s1,P);
+//						}
+//						break;
+//					case 'w':
+//						{
+//							WORD P;
+//							//                           char ba[255];
+//							s3=s2+1;
+//							P=(WORD)atoi(s3);
+//							ModernWriteSettingWord(NULL,Buff,s1,P);
+//						}break;
+//					case 'd':
+//						{
+//							DWORD P;
+//
+//							s3=s2+1;
+//							P=(DWORD)atoi(s3);
+//							ModernWriteSettingDword(NULL,Buff,s1,P);
+//						}break;
+//					case 's':
+//						{
+//							//                          char ba[255];
+//							char bb[255];
+//							s3=s2+1;
+//							strncpy(bb,s3,sizeof(bb));
+//							ModernWriteSettingString(NULL,Buff,s1,s3);
+//						}break;
+//					case 'f': //file
+//						{
+//							//                         char ba[255];
+//							char bb[255];
+//
+//							s3=s2+1;
+//							{
+//								char fn[MAX_PATH];
+//								int pp, i;
+//								pp=-1;
+//								CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)fn);
+//								{
+//									for (i=0; i<mir_strlen(fn); i++)  if (fn[i]=='.') pp=i;
+//									if (pp!=-1)
+//									{
+//										fn[pp]='\0';
+//									}
+//								}                      
+//								sprintf(bb,"%s\\%s",fn,s3);
+//								ModernWriteSettingString(NULL,Buff,s1,bb);
+//							}
+//						}break;
+//					}
+//					p=p+mir_strlen(s1)+mir_strlen(s2)+2;
+//				} while (p<ret);
+//
+//			}
+//		}
+//		Buff+=mir_strlen(Buff)+1;
+//	}while (((DWORD)Buff-(DWORD)bsn)<retu);
+//	return 0;
+//}
+//
+
+
 
 static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 {
-	DWORD size=0;
-	char * mem;
-	char * pos;
-	HGLOBAL hRes;
-	HRSRC hRSrc=FindResourceA(g_hInst,MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN),"MSF");
-	if (!hRSrc) return 0;
-	hRes=LoadResource(g_hInst,hRSrc);
-	if (!hRes) return 0;
-	size=SizeofResource(g_hInst,hRSrc);
-	mem=(char*) LockResource(hRes);
+
+	IniParser parser(g_hInst, MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN), "MSF");
+	if ( !parser.CheckOK() ) return 0;
+
 	ske_DeleteAllSettingInSection("ModernSkin");
 	ModernWriteSettingString(NULL,SKIN,"SkinFolder","%Default%");
 	ModernWriteSettingString(NULL,SKIN,"SkinFile","%Default%");
-	{
-		char line[513]={0};
-		pos=(char*) mem;
-		while (pos<mem+size)
-		{
-			int i=0;
-			while (pos<mem+size && *pos!='\n' && *pos!='\0' && i<512)
-			{
-				if ((*pos)!='\r') line[i++]=*pos;
-				pos++;
-				line[i]='\0';
-			}
-			//TRACE(line); TRACE("\n");
-			ske_ParseLineOfIniFile(line, bOnlyObjects);
-			pos++;
-		}
-	}
-	mir_free_and_nill(iniCurrentSection);
-	FreeResource(hRes);	
+	parser.Parse( IniParser::WriteStrToDb, 0 );	
 	return 0;
 }
 
 //Load data from ini file
 int ske_LoadSkinFromIniFile(char * szFileName, BOOL bOnlyObjects)
 {
-	FILE *stream=NULL;
-	char line[512]={0};
 	char skinFolder[MAX_PATH]={0};
 	char skinFile[MAX_PATH]={0};
 	if (strchr(szFileName,'%')) 
 		return ske_LoadSkinFromResource( bOnlyObjects );
 
+	TCHAR * tcsFileName = mir_a2t ( szFileName );
+	IniParser parser( tcsFileName );
+	if ( !parser.CheckOK() ) return 0;
+
 	ske_DeleteAllSettingInSection("ModernSkin");
-	ske_GetSkinFolder(szFileName,skinFolder);
-	ModernWriteSettingString(NULL,SKIN,"SkinFolder",skinFolder);
+	IniParser::GetSkinFolder(szFileName,skinFolder);
 	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)skinFile);
+
+	ModernWriteSettingString(NULL,SKIN,"SkinFolder",skinFolder);
 	ModernWriteSettingString(NULL,SKIN,"SkinFile",skinFile);
 
-	if( (stream = fopen( szFileName, "r" )) != NULL )
-	{
-		szFileName=szFileName;
-		while (fgets( line, SIZEOF(line),stream ) != NULL)
-		{
-			ske_ParseLineOfIniFile(line, bOnlyObjects);
-		}
-		fclose( stream );
-		szFileName=NULL;
-		mir_free_and_nill(iniCurrentSection);
-	}
-	return 0;
-}
+	parser.Parse( IniParser::WriteStrToDb, 0 );
 
-//Load data from ini file
-
-int ske_OldLoadSkinFromIniFile(char * szFileName)
-{
-	char bsn[MAXSN_BUFF_SIZE];
-	char * Buff;
-
-	int i=0;
-	int f=0;
-	int ReadingSection=0;
-	char AllowedSection[260];
-	int AllowedAll=0;
-	char t2[MAX_PATH];
-	char t3[MAX_PATH];
-
-	DWORD retu=GetPrivateProfileSectionNamesA(bsn,MAXSN_BUFF_SIZE,szFileName);
-	ske_DeleteAllSettingInSection("ModernSkin");
-	ske_GetSkinFolder(szFileName,t2);
-	ModernWriteSettingString(NULL,SKIN,"SkinFolder",t2);
-	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)t3);
-	ModernWriteSettingString(NULL,SKIN,"SkinFile",t3);
-	Buff=bsn;
-	AllowedSection[0]=0;
-	do         
-	{
-		f=mir_strlen(Buff);
-		if (f>0 && !mir_bool_strcmpi(Buff,"Skin_Description_Section"))
-		{
-			char b3[MAX_BUFF_SIZE];
-			DWORD ret=0;
-			ret=GetPrivateProfileSectionA(Buff,b3,MAX_BUFF_SIZE,szFileName);
-			if (ret>MAX_BUFF_SIZE-3) continue;
-			if (ret==0) continue;
-			{
-				DWORD p=0;
-				char *s1;
-				char *s2;
-				char *s3;
-				{
-					DWORD t;
-					BOOL LOCK=FALSE;
-					for (t=0; t<ret-1;t++)
-					{
-						if (b3[t]=='\0') LOCK=FALSE;
-						if (b3[t]=='=' && !LOCK) 
-						{
-							b3[t]='\0';
-							LOCK=TRUE;
-						}
-					}
-				}
-				do
-				{
-					s1=b3+p;
-
-					s2=s1+mir_strlen(s1)+1;
-					switch (s2[0])
-					{
-					case 'b':
-						{
-							BYTE P;
-							//                            char ba[255];
-							s3=s2+1;
-							P=(BYTE)atoi(s3);
-							ModernWriteSettingByte(NULL,Buff,s1,P);
-						}
-						break;
-					case 'w':
-						{
-							WORD P;
-							//                           char ba[255];
-							s3=s2+1;
-							P=(WORD)atoi(s3);
-							ModernWriteSettingWord(NULL,Buff,s1,P);
-						}break;
-					case 'd':
-						{
-							DWORD P;
-
-							s3=s2+1;
-							P=(DWORD)atoi(s3);
-							ModernWriteSettingDword(NULL,Buff,s1,P);
-						}break;
-					case 's':
-						{
-							//                          char ba[255];
-							char bb[255];
-							s3=s2+1;
-							strncpy(bb,s3,sizeof(bb));
-							ModernWriteSettingString(NULL,Buff,s1,s3);
-						}break;
-					case 'f': //file
-						{
-							//                         char ba[255];
-							char bb[255];
-
-							s3=s2+1;
-							{
-								char fn[MAX_PATH];
-								int pp, i;
-								pp=-1;
-								CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)fn);
-								{
-									for (i=0; i<mir_strlen(fn); i++)  if (fn[i]=='.') pp=i;
-									if (pp!=-1)
-									{
-										fn[pp]='\0';
-									}
-								}                      
-								sprintf(bb,"%s\\%s",fn,s3);
-								ModernWriteSettingString(NULL,Buff,s1,bb);
-							}
-						}break;
-					}
-					p=p+mir_strlen(s1)+mir_strlen(s2)+2;
-				} while (p<ret);
-
-			}
-		}
-		Buff+=mir_strlen(Buff)+1;
-	}while (((DWORD)Buff-(DWORD)bsn)<retu);
 	return 0;
 }
 

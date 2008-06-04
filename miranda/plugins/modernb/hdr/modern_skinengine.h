@@ -84,10 +84,59 @@ typedef struct
 #pragma pack(pop)
 
 
+class IniParser
+{
+public:
+
+	typedef HRESULT (*ParserCallback_t)( const char * szSection, const char * szKey, const char * szValue, LPARAM lParam );
+
+	IniParser( TCHAR * szFileName );
+	IniParser(  HINSTANCE hInst, const char *  resourceName, const char * resourceType   );
+	~IniParser();
+
+	bool CheckOK() { return _isValid; }
+	HRESULT Parse( ParserCallback_t pLineCallBackProc, LPARAM lParam );
+
+	static HRESULT WriteStrToDb( const char * szSection, const char * szKey, const char * szValue, LPARAM lParam );
+	static int GetSkinFolder( IN const char * szFileName, OUT char * pszFolderName );
+
+private:
+
+	// common
+	enum {	IT_UNKNOWN,	IT_FILE, IT_RESOURCE };
+	enum {	MAX_LINE_LEN = 512 };
+
+	int		 _eType;
+	bool	_isValid;
+	char *	_szSection;
+	ParserCallback_t _pLineCallBackProc;
+	LPARAM _lParam;
+	int		_nLine;
+
+	void _DoInit();
+	BOOL _DoParseLine( char * szLine );
+
+	// Processing File
+	HRESULT _DoParseFile();
+	FILE *	_hFile;
+
+	// Processing resource
+	void _LoadResourceIni( HINSTANCE hInst, const char *  resourceName, const char * resourceType  );
+	HRESULT _DoParseResource();
+
+	HGLOBAL _hGlobalRes;
+	DWORD   _dwSizeOfRes;
+	char *	_pPosition;
+
+
+};
+
 
 int ske_UnloadSkin(SKINOBJECTSLIST * Skin);
 int ske_AddDescriptorToSkinObjectList (LPSKINOBJECTDESCRIPTOR lpDescr, SKINOBJECTSLIST* Skin);
 int ske_Service_DrawGlyph(WPARAM wParam,LPARAM lParam);
+
+
 
 #endif
 
