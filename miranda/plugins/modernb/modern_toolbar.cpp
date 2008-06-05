@@ -476,11 +476,14 @@ static int   sttReposButtons(MTBINFO * mti)
 				nFlexSeparatorsCount--;
 			}
 		}
-		iFirstButtonId=iLastButtonId;
+		if ( iFirstButtonId == iLastButtonId ) 
+			break;
+		iFirstButtonId = iLastButtonId;
+		
 		y+=mti->nButtonHeight+mti->nButtonSpace;
 		nextX=0;
 		if (mti->fSingleLine) break;
-	} while (iFirstButtonId<mti->pButtonList->realCount && (mti->fAutoSize || (y+mti->nButtonHeight <= rcClient.bottom-rcClient.top)));
+	} while (iFirstButtonId<mti->pButtonList->realCount && y >= 0 &&(mti->fAutoSize || (y+mti->nButtonHeight <= rcClient.bottom-rcClient.top)));
 	for (i=iFirstButtonId; i< mti->pButtonList->realCount; i++)
 	{
 		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mti->pButtonList->items[i];

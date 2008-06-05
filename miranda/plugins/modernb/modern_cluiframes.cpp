@@ -2258,21 +2258,32 @@ static int CLUIFrameMoveResize(const wndFrame *Frame)
 
 		ClientToScreen(pcli->hwndContactList,&Off);
 		GetWindowRect(pcli->hwndContactList,&pr);
-		//g_CluiData.mutexPreventDockMoving=0;
 
-		SetWindowPos(Frame->OwnerWindow,NULL,Frame->wndSize.left+Off.x,Frame->wndSize.top+Off.y,
-			Frame->wndSize.right-Frame->wndSize.left,
-			Frame->wndSize.bottom-Frame->wndSize.top,SWP_NOZORDER|SWP_NOACTIVATE/*|SWP_NOREDRAW*/);   //--=-=
+		if ( Frame->visible && !Frame->collapsed && Frame->wndSize.bottom-Frame->wndSize.top == 0 )
+		{
+			ShowWindowAsync( Frame->OwnerWindow, SW_HIDE );
+			ShowWindowAsync( Frame->hWnd, SW_HIDE );
+		}
 
-		SetWindowPos(Frame->hWnd,NULL,0,0,
-			Frame->wndSize.right-Frame->wndSize.left,
-			Frame->wndSize.bottom-Frame->wndSize.top,SWP_NOZORDER|SWP_NOACTIVATE);
+		{
+			SetWindowPos(Frame->OwnerWindow,NULL,Frame->wndSize.left+Off.x,Frame->wndSize.top+Off.y,
+				Frame->wndSize.right-Frame->wndSize.left,
+				Frame->wndSize.bottom-Frame->wndSize.top,SWP_NOZORDER|SWP_NOACTIVATE );   //--=-=
+
+			SetWindowPos(Frame->hWnd,NULL,0,0,
+				Frame->wndSize.right-Frame->wndSize.left,
+				Frame->wndSize.bottom-Frame->wndSize.top,SWP_NOZORDER|SWP_NOACTIVATE);
+		}
 		// set titlebar position
 		if(Frame->TitleBar.ShowTitleBar) {
 			SetWindowPos(Frame->TitleBar.hwnd,NULL,Frame->wndSize.left,Frame->wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar,
 				Frame->wndSize.right-Frame->wndSize.left,
 				g_nTitleBarHeight,SWP_NOZORDER|SWP_NOACTIVATE	);
-			// g_CluiData.mutexPreventDockMoving=1;
+		}
+		if ( Frame->visible && !(!Frame->collapsed && Frame->wndSize.bottom-Frame->wndSize.top == 0) )
+		{
+			ShowWindow( Frame->OwnerWindow, SW_SHOW );
+			ShowWindow( Frame->hWnd, SW_SHOW );
 		}
 
 	}
@@ -2524,6 +2535,9 @@ static int CLUIFramesResizeFrames(const RECT newsize)
 		if(Frames[i].TitleBar.ShowTitleBar) 
 			SetRect(&Frames[i].TitleBar.wndSize,Frames[i].wndSize.left,Frames[i].wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar,Frames[i].wndSize.right,Frames[i].wndSize.top-g_nGapBetweenTitlebar);
 	if (sdarray!=NULL){free(sdarray);sdarray=NULL;};
+
+
+
 	return 0;
 }
 
