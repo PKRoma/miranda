@@ -90,6 +90,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 //filerecv.c
 BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir);
+void GetReceivedFilesDir(char *szDir,int cchDir);
 int BrowseForFolder(HWND hwnd,char *szPath);
 //fileexistsdlg.c
 struct TDlgProcFileExistsParam
@@ -112,6 +113,7 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 HWND FtMgr_Show();
 void FtMgr_Destroy();
 HWND FtMgr_AddTransfer(struct FileDlgData *dat);
+
 
 
 

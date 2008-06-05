@@ -1148,8 +1148,8 @@ BEGIN
                     BS_AUTORADIOBUTTON,82,209,125,10
     LTEXT           "You will always be asked about files from people not on your contact list",
                     IDC_STATIC,212,195,90,24
-    LTEXT           "Variables Allowed: %userid%, %nick%, %proto%",
-                    IDC_STATIC,93,27,167,11,WS_DISABLED
+    LTEXT           "Variables Allowed: %userid%, %nick%, %proto%, %miranda_path%, %userprofile%",
+                    IDC_STATIC,8,27,294,11,WS_DISABLED
 END
 
 IDD_OPT_IDLE DIALOGEX 0, 0, 312, 190
@@ -2218,6 +2218,7 @@ IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
 
 
 

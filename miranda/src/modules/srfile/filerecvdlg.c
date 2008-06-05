@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include <shlobj.h>
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #include "file.h"
 
 #define MAX_MRU_DIRS    5
@@ -99,10 +101,10 @@ int BrowseForFolder(HWND hwnd,char *szPath)
 	return result;
 }
 
-static void ReplaceStr(char str[], int len, char *from, char *to) {
+static void ReplaceStr(char str[], int len, char *from, char *to)
+{
 	char *tmp;
-
-	if (tmp=strstr(str, from)) {
+	if ( tmp = strstr( str, from )) {
 		int pos = tmp - str;
 		int tlen = lstrlenA(from);
 
@@ -117,44 +119,47 @@ static void ReplaceStr(char str[], int len, char *from, char *to) {
 	}
 }
 
+static void patchDir( char* str, size_t strSize )
+{
+	size_t len;
+	char szWinUsProfile[64];
+	char szMirPath[MAX_PATH];
+	szWinUsProfile[0] = szMirPath[0] = '\0';
+
+	//Path
+	GetModuleFileNameA(NULL, szMirPath, sizeof(szMirPath));
+	PathRemoveFileSpecA(szMirPath);
+	GetEnvironmentVariableA("USERPROFILE", szWinUsProfile, SIZEOF(szWinUsProfile));
+
+	ReplaceStr(str, strSize, "%userprofile%", szWinUsProfile);
+	ReplaceStr(str, strSize, "%miranda_path%", szMirPath);
+
+	len = lstrlenA( str );
+	if ( len+1 < strSize && str[len-1] != '\\' )
+		lstrcpyA( str+len, "\\" );
+}
+
 void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 {
 	DBVARIANT dbv;
-	char *szRecvFilesDir, szTemp[MAX_PATH];
-	int len;
+	char szTemp[MAX_PATH];
+	szTemp[0] = 0;
 
-	if(DBGetContactSettingString(NULL,"SRFile","RecvFilesDirAdv",&dbv)||lstrlenA(dbv.pszVal)==0) {
-		char szDbPath[MAX_PATH];
+	if ( !DBGetContactSettingString( NULL, "SRFile", "RecvFilesDirAdv", &dbv)) {
+		if ( lstrlenA( dbv.pszVal ) > 0 )
+			lstrcpynA( szTemp, dbv.pszVal, SIZEOF( szTemp ));
+		DBFreeVariant( &dbv );
+	}
 
-		CallService(MS_DB_GETPROFILEPATH,(WPARAM)MAX_PATH,(LPARAM)szDbPath);
-		lstrcatA(szDbPath,"\\");
-		lstrcatA(szDbPath,Translate("Received Files"));
-		lstrcatA(szDbPath,"\\%userid%");
-		szRecvFilesDir=mir_strdup(szDbPath);
-	}
-	else {
-		char szDrive[_MAX_DRIVE];
-		_splitpath(dbv.pszVal, szDrive, NULL, NULL, NULL);
-		if ( szDrive[0] == 0 && memcmp( dbv.pszVal, "\\\\", 2 ) != 0 ) {
-			char szDbPath[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH,(WPARAM)MAX_PATH,(LPARAM)szDbPath);
-			lstrcatA(szDbPath,"\\");
-			lstrcatA(szDbPath,dbv.pszVal);
-			szRecvFilesDir=mir_strdup(szDbPath);
-		}
-		else szRecvFilesDir=mir_strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	lstrcpynA(szTemp,szRecvFilesDir,SIZEOF(szTemp));
-	if (hContact) {
+	if ( !szTemp[0] )
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s\\%%userid%%", Translate("Received Files"));
+
+	if ( hContact ) {
 		CONTACTINFO ci;
 		char szNick[64];
 		char szUsername[64];
 		char szProto[64];
-
-		szNick[0] = '\0';
 		szUsername[0] = '\0';
-		szProto[0] = '\0';
 
 		ZeroMemory(&ci, sizeof(ci));
 		ci.cbSize = sizeof(ci);
@@ -177,17 +182,39 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 		if (lstrlenA(szUsername)==0)
 			mir_snprintf(szUsername, SIZEOF(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
 
+		RemoveInvalidFilenameChars(szProto);
 		RemoveInvalidFilenameChars(szNick);
 		RemoveInvalidFilenameChars(szUsername);
-		RemoveInvalidFilenameChars(szProto);
-		ReplaceStr(szTemp, SIZEOF(szTemp), "%nick%", szNick);
-		ReplaceStr(szTemp, SIZEOF(szTemp), "%userid%", szUsername);
-		ReplaceStr(szTemp, SIZEOF(szTemp), "%proto%", szProto);
+		ReplaceStr(szTemp, sizeof(szTemp), "%nick%", szNick);
+		ReplaceStr(szTemp, sizeof(szTemp), "%userid%", szUsername);
+		ReplaceStr(szTemp, sizeof(szTemp), "%proto%", szProto);
 	}
-	lstrcpynA(szDir,szTemp,cchDir);
-	mir_free(szRecvFilesDir);
-	len=lstrlenA(szDir);
-	if(len+1<cchDir && szDir[len-1]!='\\') lstrcpyA(szDir+len,"\\");
+
+	patchDir( szTemp, SIZEOF(szTemp));
+	lstrcpynA( szDir, szTemp, cchDir );
+}
+
+void GetReceivedFilesDir(char *szDir,int cchDir)
+{
+	DBVARIANT dbv;
+	char szTemp[MAX_PATH];
+	szTemp[0] = 0;
+
+	if ( !DBGetContactSettingString( NULL, "SRFile", "RecvFilesDirAdv", &dbv )) {
+		if ( lstrlenA( dbv.pszVal ) > 0 )
+			lstrcpynA( szTemp, dbv.pszVal, SIZEOF( szTemp ));
+		DBFreeVariant(&dbv);
+	}
+
+	if ( !szTemp[0] )
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s", Translate("Received Files"));
+
+	ReplaceStr( szTemp, SIZEOF(szTemp), "///", "//");
+	ReplaceStr( szTemp, SIZEOF(szTemp), "//", "/");
+	ReplaceStr( szTemp, SIZEOF(szTemp), "()", "");
+	
+	patchDir( szTemp, SIZEOF(szTemp));
+	lstrcpynA( szDir, szTemp, cchDir );
 }
 
 BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

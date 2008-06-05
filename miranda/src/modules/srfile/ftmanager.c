@@ -247,6 +247,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		TCITEM tci = {0};
 		HWND hwndTab = GetDlgItem(hwnd, IDC_TABS);
 
+		TranslateDialogDefault(hwndDlg);
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_alloc(sizeof(struct TFtMgrData));

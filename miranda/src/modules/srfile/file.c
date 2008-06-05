@@ -253,6 +253,22 @@ int FtMgrShowCommand(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int openContRecDir(WPARAM wparam,LPARAM lparam)
+{
+	char szContRecDir[MAX_PATH];
+	HANDLE hContact = (HANDLE)wparam;
+	GetContactReceivedFilesDir(hContact, szContRecDir, SIZEOF(szContRecDir));
+	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
+	return 0;
+}
+int openRecDir(WPARAM wparam,LPARAM lparam)
+{
+	char szContRecDir[MAX_PATH];
+	GetReceivedFilesDir(szContRecDir, SIZEOF(szContRecDir));
+	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
+	return 0;
+}
+
 int LoadSendRecvFileModule(void)
 {
 	CLISTMENUITEM mi = { 0 };
@@ -273,6 +289,10 @@ int LoadSendRecvFileModule(void)
 	CreateServiceFunction(MS_FILE_SENDSPECIFICFILES,SendSpecificFiles);
 	CreateServiceFunction(MS_FILE_GETRECEIVEDFILESFOLDER,GetReceivedFilesFolder);
 	CreateServiceFunction("SRFile/RecvFile",RecvFileCommand);
+
+	CreateServiceFunction("SRFile/OpenContRecDir",openContRecDir);
+	CreateServiceFunction("SRFile/OpenRecDir",openRecDir);
+
 	SkinAddNewSoundEx("RecvFile",Translate("File"),Translate("Incoming"));
 	SkinAddNewSoundEx("FileDone",Translate("File"),Translate("Complete"));
 	SkinAddNewSoundEx("FileFailed",Translate("File"),Translate("Error"));
