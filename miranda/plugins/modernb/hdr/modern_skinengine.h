@@ -123,6 +123,7 @@ private:
 	// Processing resource
 	void _LoadResourceIni( HINSTANCE hInst, const char *  resourceName, const char * resourceType  );
 	HRESULT _DoParseResource();
+	const char * _RemoveTailings( const char * szLine, size_t& len );
 
 	HGLOBAL _hGlobalRes;
 	DWORD   _dwSizeOfRes;

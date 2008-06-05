@@ -755,9 +755,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,11,102,237,12
     GROUPBOX        "Drag to ",IDC_STATIC,0,158,124,61
     CONTROL         "Easy Scroll",IDC_DRAGTOSCROLL,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,181,99,8
+                    WS_TABSTOP,12,181,108,8
     CONTROL         "Easy move",IDC_CLIENTDRAG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,170,104,8
+                    WS_TABSTOP,12,170,108,8
     COMBOBOX        IDC_HIDEMETHOD,93,48,148,73,CBS_DROPDOWNLIST | 
                     CBS_DISABLENOSCROLL | WS_TABSTOP
     EDITTEXT        IDC_SHOWDELAY,164,63,36,12,ES_RIGHT | ES_NUMBER
@@ -780,7 +780,7 @@ BEGIN
     LTEXT           "pixels",IDC_STATIC10,206,90,35,8
     RTEXT           "keep on screen",IDC_STATIC13,94,90,63,8
     CONTROL         "Snap to edges",IDC_SNAPTOEDGES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,195,74,8
+                    WS_TABSTOP,12,195,108,8
     GROUPBOX        "Event notify area",IDC_STATIC,128,158,130,61
     CONTROL         "Disabled",IDC_EVENTAREA_NONE,"Button",
                     BS_AUTORADIOBUTTON,138,174,109,8
@@ -789,7 +789,7 @@ BEGIN
     CONTROL         "Always Visible",IDC_EVENTAREA_ALWAYS,"Button",
                     BS_AUTORADIOBUTTON,138,198,110,8
     CONTROL         "Dock to sides",IDC_DOCKTOSIDES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,12,206,74,8
+                    WS_TABSTOP,12,206,108,8
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 303, 225

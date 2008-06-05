@@ -311,7 +311,15 @@ HRESULT IniParser::_DoParseFile()
 	_nLine = 0;
 	while ( fgets( szLine, SIZEOF(szLine), _hFile ) != NULL )
 	{	
-		if ( !_DoParseLine( szLine ) )	return E_FAIL;
+		size_t len = 0;
+		char * pLine = (char*)_RemoveTailings( szLine, len );
+		if ( len > 0 )
+		{
+			pLine[len]='\0';
+			if ( !_DoParseLine( pLine ) )	return E_FAIL;
+		}
+		else
+			_nLine++;
 	};
 
 	return S_OK;
@@ -328,36 +336,45 @@ HRESULT IniParser::_DoParseResource()
 		int i=0;
 		while ( pos < _pPosition + _dwSizeOfRes && *pos != '\n' && *pos!= '\0' && i < MAX_LINE_LEN - 1 )
 		{
-			if ( (*pos) != '\n' ) szLine[ i ] = *pos;
+			if ( (*pos) != '\r' ) 
+				szLine[ i++ ] = *pos;
 			pos++;
-			i++;
 		}
 		szLine[ i ]='\0';
-
-		if ( !_DoParseLine( szLine ) ) return E_FAIL;
 		pos++;
+		
+		size_t len = 0;
+		char * pLine = (char*) _RemoveTailings( szLine, len );
+		if ( len > 0 )
+		{
+			pLine[len]='\0';
+			if ( !_DoParseLine( pLine ) )	return E_FAIL;
+		}
+		else
+			_nLine++;
 	}
 	return S_OK;
 }
 
-BOOL IniParser::_DoParseLine( char * Line )
+const char * IniParser::_RemoveTailings( const char * szLine, size_t& len )
+{
+	const char * pStart = szLine;
+	while( *pStart == ' ' || *pStart=='\t' ) pStart++; //skip spaces at begin
+	const char * pEnd = pStart + strlen( pStart );
+	while( pEnd > pStart && ( *pEnd == ' ' || *pEnd == '\t' || *pEnd == '\n' || *pEnd == '\r' ) ) pEnd--;
+
+	len = pEnd - pStart;
+	return pStart;
+}
+
+BOOL IniParser::_DoParseLine( char * szLine )
 {
 	_nLine++;
-	DWORD i = 0;
-	DWORD len = strlen( Line );
+	DWORD len = strlen( szLine );
 
-	if ( len == 0 ) 
-		return TRUE;
+	if ( len == 0 )	return TRUE;
 
-	while ( i < len && (Line[i]==' ' || Line[i]=='\t') ) 
-		i++; //skip spaces&tabs
-
-	if ( i >= len ) 
-		return TRUE; //empty line only spaces (or tabs)
-
-	if ( len>0 && Line[len-1] == '\n' ) 
-		Line[ len-1 ]='\0';
-	switch( Line[i] )
+	switch( szLine[0] )
 	{
 	case ';':
 		return TRUE; // start of comment is found
@@ -367,7 +384,7 @@ BOOL IniParser::_DoParseLine( char * Line )
 			if ( _szSection ) mir_free( _szSection );
 			_szSection = NULL;
 
-			char *tbuf = Line + i + 1;	// skip [
+			char *tbuf = szLine + 1;	// skip [
 	
 			char *ebuf= tbuf;
 
@@ -386,8 +403,8 @@ BOOL IniParser::_DoParseLine( char * Line )
 		if ( !_szSection ) 
 			return TRUE;  //param found out of section
 
-		char *keyName=Line+i;
-		char *keyValue=Line+i;
+		char *keyName=szLine;
+		char *keyValue=szLine;
 
 		DWORD eqPlace=0;
 		DWORD len2=strlen(keyName);

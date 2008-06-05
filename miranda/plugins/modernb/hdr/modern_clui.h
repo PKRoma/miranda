@@ -61,6 +61,8 @@ private:
 protected:
 	HMODULE m_hDwmapiDll;
     HMODULE m_hUserDll;
+
+	enum { SNAPTOEDGESENSIVITY = 30 };
 };
 
 #endif // modern_clui_h__

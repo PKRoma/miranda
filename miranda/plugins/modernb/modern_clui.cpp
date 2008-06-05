@@ -271,19 +271,19 @@ HRESULT CLUI::SnappingToEdge(HWND hwndClui, WINDOWPOS * lpWindowPos)
 		dr = &(monInfo.rcWork);
 
 		// Left side
-		if ( lpWindowPos->x < dr->left + 10 && lpWindowPos->x > dr->left - 10 && g_CluiData.bBehindEdgeSettings!=1)
+		if ( lpWindowPos->x < dr->left + SNAPTOEDGESENSIVITY && lpWindowPos->x > dr->left - SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=1)
 			lpWindowPos->x = dr->left;
 
 		// Right side
-		if ( dr->right - lpWindowPos->x - lpWindowPos->cx <10 && dr->right - lpWindowPos->x - lpWindowPos->cx > -10 && g_CluiData.bBehindEdgeSettings!=2)
+		if ( dr->right - lpWindowPos->x - lpWindowPos->cx <SNAPTOEDGESENSIVITY && dr->right - lpWindowPos->x - lpWindowPos->cx > -SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=2)
 			lpWindowPos->x = dr->right - lpWindowPos->cx;
 
 		// Top side
-		if ( lpWindowPos->y < dr->top + 10 && lpWindowPos->y > dr->top - 10)
+		if ( lpWindowPos->y < dr->top + SNAPTOEDGESENSIVITY && lpWindowPos->y > dr->top - SNAPTOEDGESENSIVITY)
 			lpWindowPos->y = dr->top;
 
 		// Bottom side
-		if ( dr->bottom - lpWindowPos->y - lpWindowPos->cy <10 && dr->bottom - lpWindowPos->y - lpWindowPos->cy > -10)
+		if ( dr->bottom - lpWindowPos->y - lpWindowPos->cy <SNAPTOEDGESENSIVITY && dr->bottom - lpWindowPos->y - lpWindowPos->cy > -SNAPTOEDGESENSIVITY)
 			lpWindowPos->y = dr->bottom - lpWindowPos->cy;
 	}
 	return S_OK;
