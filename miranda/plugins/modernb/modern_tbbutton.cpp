@@ -380,9 +380,12 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 		}
 		else
 		{
-			// Call timer, used to start cheesy TrackMouseEvent faker
+			KillTimer(hwndDlg, BUTTON_POLLID);
 			CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
 		}
+		// Call timer, used to start cheesy TrackMouseEvent faker
+		
+
 		break;
 
 	case WM_NCHITTEST:
@@ -400,15 +403,15 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 				HWND hwnd=GetCapture();
 				if ( hwnd == lpSBData->hWnd ) 
 				{
-					KillTimer(hwndDlg, BUTTON_POLLID);
+					//KillTimer(hwndDlg, BUTTON_POLLID);
 					break;
 				}
 				RECT rc;
 				POINT pt;
 				GetWindowRect(hwndDlg, &rc);
 				GetCursorPos(&pt);
-
-				if (!PtInRect(&rc, pt)) 
+				BOOL bInside = ( PtInRect( &rc, pt ) && ( WindowFromPoint( pt ) == lpSBData->hWnd) );
+				if ( !bInside ) 
 				{
 					// mouse must be gone, trigger mouse leave
 					PostMessage(hwndDlg, WM_MOUSELEAVE, 0, 0L);
