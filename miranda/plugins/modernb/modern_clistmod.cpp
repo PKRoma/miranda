@@ -289,6 +289,7 @@ HRESULT  CluiLoadModule()
 
 	CreateServiceFunction(MS_CLIST_TOGGLEGROUPS,ToggleGroups);
 	CreateServiceFunction(MS_CLIST_TOGGLESOUNDS,ToggleSounds);
+	CreateServiceFunction(MS_CLIST_SETUSEGROUPS,SetUseGroups);
 
 
 	CreateServiceFunction(MS_CLIST_GETCONTACTICON,GetContactIcon);

@@ -27,6 +27,7 @@ typedef struct tagCLUIDATA
 	DWORD	lastMsgFilter;
 	char	current_viewmode[256], old_viewmode[256];
 	BYTE	boldHideOffline;
+	BYTE	bOldUseGroups;
 	DWORD	statusMaskFilter;
 	DWORD	stickyMaskFilter;
 	DWORD	filterFlags;

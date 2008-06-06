@@ -994,8 +994,10 @@
 #define IDC_LASTMESSAGEUNIT             19123
 #define IDC_STATIC1                     19124
 #define IDC_RESETMODES                  19125
+#define IDC_LASTMSG2                    19125
 #define IDC_SELECTMODE                  19126
 #define IDC_CONFIGUREMODES              19127
+#define IDC_USEGROUPS                   19128
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001

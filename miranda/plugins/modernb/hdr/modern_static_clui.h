@@ -170,6 +170,7 @@ typedef struct tagCHECKFILLING
 
 static BYTE bAlphaEnd;
 static BYTE bOldHideOffline;
+static BYTE bOldUseGroups;
 
 static WORD wBehindEdgeShowDelay,
             wBehindEdgeHideDelay,

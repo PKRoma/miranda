@@ -198,6 +198,19 @@ int ToggleGroups(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int SetUseGroups(WPARAM wParam, LPARAM lParam)
+{	
+	int newVal= !(GetWindowLong(pcli->hwndContactTree,GWL_STYLE)&CLS_USEGROUPS);
+	if ( wParam != -1 )
+	{
+		if ( !newVal == wParam ) return 0;
+		newVal = wParam;
+	}
+	ModernWriteSettingByte(NULL,"CList","UseGroups",(BYTE)newVal);
+	SendMessage(pcli->hwndContactTree,CLM_SETUSEGROUPS,newVal,0);
+	return 0;
+}
+
 int ToggleSounds(WPARAM wParam,LPARAM lParam)
 {
 	ModernWriteSettingByte(NULL, "Skin", "UseSound",

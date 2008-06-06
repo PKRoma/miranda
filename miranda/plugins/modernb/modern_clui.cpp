@@ -87,6 +87,9 @@ CLUI::CLUI() :
     g_CluiData.boldHideOffline=-1;
     bOldHideOffline=ModernGetSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
 
+	g_CluiData.bOldUseGroups=-1;
+	bOldUseGroups = ModernGetSettingByte( NULL,"CList","UseGroups", SETTING_USEGROUPS_DEFAULT );
+
 	CreateCLCWindow(CluiWnd());
 
     CLUI_ChangeWindowMode();

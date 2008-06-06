@@ -297,7 +297,9 @@ BEGIN
                     WS_EX_TRANSPARENT
     CONTROL         "",IDC_GROUPS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
                     LVS_SHOWSELALWAYS | LVS_AUTOARRANGE | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,116,122,73
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,116,122,57
+	CONTROL         "Show contacts in groups",IDC_USEGROUPS,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,12,178,122,11
     GROUPBOX        "Include status modes",IDC_STATIC4,171,105,130,89,0,
                     WS_EX_TRANSPARENT
     CONTROL         "",IDC_STATUSMODES,"SysListView32",LVS_REPORT | 

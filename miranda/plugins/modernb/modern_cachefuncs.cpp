@@ -653,6 +653,11 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
 */
 void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 {
+
+	if (GetCurrentThreadId()!=g_dwMainThreadID)
+		return;
+
+
     PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(contact->hContact);
     TCHAR *name = pcli->pfnGetContactDisplayName(contact->hContact,0);
     if (dat->first_line_append_nick) {

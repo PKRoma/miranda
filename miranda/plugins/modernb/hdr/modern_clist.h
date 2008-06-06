@@ -86,21 +86,33 @@ typedef struct tagEXTRASLOTINFO
     BYTE iSlot;               // the slot 10-16 are available, do not use
 } EXTRASLOTINFO;
 
-#define CLVM_FILTER_PROTOS 1
-#define CLVM_FILTER_GROUPS 2
-#define CLVM_FILTER_STATUS 4
-#define CLVM_FILTER_VARIABLES 8
-#define CLVM_STICKY_CONTACTS 16
-#define CLVM_FILTER_STICKYSTATUS 32
-#define CLVM_FILTER_LASTMSG 64
+#define CLVM_FILTER_PROTOS			1
+#define CLVM_FILTER_GROUPS			2
+#define CLVM_FILTER_STATUS			4
+#define CLVM_FILTER_VARIABLES		8
+#define CLVM_STICKY_CONTACTS		16
+#define CLVM_FILTER_STICKYSTATUS	32
+#define CLVM_FILTER_LASTMSG			64
 #define CLVM_FILTER_LASTMSG_OLDERTHAN 128
 #define CLVM_FILTER_LASTMSG_NEWERTHAN 256
 
-#define CLVM_PROTOGROUP_OP 1
-#define CLVM_GROUPSTATUS_OP 2
-#define CLVM_AUTOCLEAR 4
+#define CLVM_PROTOGROUP_OP		1
+#define CLVM_GROUPSTATUS_OP		2
+#define CLVM_AUTOCLEAR			4
 #define CLVM_INCLUDED_UNGROUPED 8
-#define CLVM_USELASTMSG 16
+#define CLVM_USELASTMSG			16
+
+#define CLVM_USEGROUPS			32
+#define CLVM_DONOTUSEGROUPS		64
+
+//changes the 'use groups' flag and call CLUI    v0.8.0.16+
+//wParam=newValue
+//lParam=0
+//returns 0 on success, nonzero on failure
+//newValue is 0 to not use gruops, 1 to use groups
+//or -1 to toggle the value
+#define MS_CLIST_SETUSEGROUPS  "CList/SetUseGroups"
+
 
 #if defined(_UNICODE)
 #define CLVM_MODULE "CLVM_W"

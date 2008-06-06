@@ -51,7 +51,7 @@ static UINT _page1Controls[] = {IDC_STATIC1, IDC_STATIC2, IDC_STATIC3, IDC_STATI
     IDC_STATIC8, IDC_ADDVIEWMODE, IDC_DELETEVIEWMODE, IDC_NEWVIEMODE, IDC_GROUPS, IDC_PROTOCOLS,
     IDC_VIEWMODES, IDC_STATUSMODES, IDC_STATIC12, IDC_STATIC13, IDC_STATIC14, IDC_PROTOGROUPOP, IDC_GROUPSTATUSOP, 
     IDC_AUTOCLEAR, IDC_AUTOCLEARVAL, IDC_AUTOCLEARSPIN, IDC_STATIC15, IDC_STATIC16, 
-	IDC_LASTMESSAGEOP, IDC_LASTMESSAGEUNIT, IDC_LASTMSG, IDC_LASTMSGVALUE, 0};
+	IDC_LASTMESSAGEOP, IDC_LASTMESSAGEUNIT, IDC_LASTMSG, IDC_LASTMSGVALUE, IDC_USEGROUPS, 0};
 
 static UINT _page2Controls[] = {IDC_CLIST, IDC_STATIC9, IDC_STATIC8, IDC_CLEARALL, IDC_CURVIEWMODE2, 0};
 
@@ -503,7 +503,10 @@ void SaveState()
             operators |= ((SendDlgItemMessage(clvmHwnd, IDC_PROTOGROUPOP, CB_GETCURSEL, 0, 0) == 1 ? CLVM_PROTOGROUP_OP : 0) |
                         (SendDlgItemMessage(clvmHwnd, IDC_GROUPSTATUSOP, CB_GETCURSEL, 0, 0) == 1 ? CLVM_GROUPSTATUS_OP : 0) |
                         (IsDlgButtonChecked(clvmHwnd, IDC_AUTOCLEAR) ? CLVM_AUTOCLEAR : 0) |
-						(IsDlgButtonChecked(clvmHwnd, IDC_LASTMSG) ? CLVM_USELASTMSG : 0));
+						(IsDlgButtonChecked(clvmHwnd, IDC_LASTMSG) ? CLVM_USELASTMSG : 0)|
+						(IsDlgButtonChecked(clvmHwnd, IDC_USEGROUPS)==BST_CHECKED ? CLVM_USEGROUPS : 0)|
+						(IsDlgButtonChecked(clvmHwnd, IDC_USEGROUPS)==BST_UNCHECKED ? CLVM_DONOTUSEGROUPS : 0)
+						);
 
             options = SendDlgItemMessage(clvmHwnd, IDC_AUTOCLEARSPIN, UDM_GETPOS, 0, 0);
 
@@ -642,10 +645,15 @@ void UpdateFilters()
 
 	{
 		int useLastMsg = dwFlags & CLVM_USELASTMSG;
+
+		int useGroupsState = (dwFlags & CLVM_USEGROUPS) ? BST_CHECKED : (dwFlags & CLVM_DONOTUSEGROUPS) ? BST_UNCHECKED : BST_INDETERMINATE ;
+
 		DWORD lmdat;
 		BYTE bTmp;
 
 		CheckDlgButton(clvmHwnd, IDC_LASTMSG, useLastMsg);
+		CheckDlgButton(clvmHwnd, IDC_USEGROUPS, useGroupsState);
+
 		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEOP), useLastMsg);
 		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMSGVALUE), useLastMsg);
 		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEUNIT), useLastMsg);
@@ -754,6 +762,9 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     if (HIWORD(wParam) == CBN_SELCHANGE)
                         EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
+				case IDC_USEGROUPS:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+					break;
                 case IDC_AUTOCLEAR:
                     EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
                     break;
@@ -807,7 +818,7 @@ BOOL CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 								{
                                     g_CluiData.bFilterEffective = 0;
                                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-                                    SetWindowText(hwndSelector, TranslateT("No view mode"));
+                                    SetWindowText(hwndSelector, TranslateT("All"));
                                 }
                                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
                                 while(hContact) 
@@ -1012,11 +1023,16 @@ void BuildViewModeMenu()
 
     menuCounter = 100;
     hViewModeMenu = CreatePopupMenu();
-    CLVM_EnumModes(FillMenuCallback);
+
+	AppendMenu(hViewModeMenu, MFT_STRING, 10002, TranslateT("All Contacts"));
+
+	AppendMenu(hViewModeMenu, MF_SEPARATOR, 0, NULL);
+    
+	CLVM_EnumModes(FillMenuCallback);
 
 	AppendMenu(hViewModeMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hViewModeMenu, MFT_STRING, 10001, TranslateT("Setup View Modes..."));
-	AppendMenu(hViewModeMenu, MFT_STRING, 10002, TranslateT("Clear current View Mode"));
+	
 
 }
 
@@ -1031,27 +1047,31 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         {
             HWND hwndButton;
 			RECT rcMargins={12,0,2,0};
+
+			hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+				hwnd, (HMENU) IDC_RESETMODES, g_hInst, NULL);
+			SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Show all contacts"), 0);
+			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Clear" );	
+			SendMessage(hwnd, WM_USER + 100, 0, 0);            
+			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
+
             hwndSelector = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
-            SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view mode"), 0);
+            SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view"), 0);
 			SendMessage(hwndSelector, BUTTONSETMARGINS,0 ,(LPARAM) &rcMargins);			
 			SendMessage(hwndSelector, BUTTONSETID,0 ,(LPARAM) "ViewMode.Select" );			
 			SendMessage(hwndSelector, WM_SETFONT,0 ,(LPARAM) FONTID_VIEMODES+1 );
 			SendMessage(hwndSelector, MBM_UPDATETRANSPARENTFLAG, 0, 2);
 			
 			//SendMessage(hwndSelector, BM_SETASMENUACTION, 1, 0);
-            hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+
+			
+			hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_CONFIGUREMODES, g_hInst, NULL);
-            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view modes"), 0);
+            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Setup" );	
 			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
-
-            hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
-                            hwnd, (HMENU) IDC_RESETMODES, g_hInst, NULL);
-            SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Clear view mode and return to default display"), 0);
-			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Clear" );	
-			SendMessage(hwnd, WM_USER + 100, 0, 0);            
-			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
+            
             return FALSE;
         }
         case WM_NCCALCSIZE:
@@ -1074,7 +1094,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             if(ServiceExists(MS_SKIN2_ADDICON)) 
 			{
 				SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), MBM_SETICOLIBHANDLE, 0,
-					(LPARAM) RegisterIcolibIconHandle("CLN_CLVM_reset", "Contact List",Translate("Reset view mode"), _T("clisticons.dll"),9, g_hInst, IDI_RESETVIEW ));
+					(LPARAM) RegisterIcolibIconHandle("CLN_CLVM_reset", "Contact List",Translate("All contacts"), _T("clisticons.dll"),9, g_hInst, IDI_RESETVIEW ));
 				
 				SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), MBM_SETICOLIBHANDLE, 0,
 					(LPARAM) RegisterIcolibIconHandle("CLN_CLVM_set", "Contact List",Translate("Setup view modes"), _T("clisticons.dll"), 10, g_hInst, IDI_SETVIEW ));			
@@ -1120,7 +1140,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 #endif
 			}
             else
-                SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
+                SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("All"));
             break;
 		case WM_ERASEBKGND:	
 			if (g_CluiData.fDisableSkinEngine)
@@ -1278,10 +1298,14 @@ clvm_reset_command:
                         mir_snprintf(szSetting, 256, "%c_LastMode", 246);
                         ModernDeleteSetting(NULL,CLVM_MODULE,szSetting);
                     }
-                    pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-                    SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
+					if ( g_CluiData.bOldUseGroups != (BYTE) -1 )
+						CallService( MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0 );
+
+					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                    SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("All"));
                     CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
                     g_CluiData.boldHideOffline = (BYTE)-1;
+					g_CluiData.bOldUseGroups = (BYTE) -1;
  //                   SetButtonStates(pcli->hwndContactList);
                     g_CluiData.current_viewmode[0] = 0;
                     g_CluiData.old_viewmode[0] = 0;
@@ -1350,6 +1374,8 @@ void ApplyViewMode(const char *Name)
     char * name=(char*)Name;
     DBVARIANT dbv = {0};
     
+	BOOL wasNotViewMode = ( Name!=NULL && g_CluiData.current_viewmode[0]=='\0' );
+
     g_CluiData.bFilterEffective = 0;
     
     mir_snprintf(szSetting, 256, "%c_LastMode", 246);
@@ -1364,6 +1390,7 @@ void ApplyViewMode(const char *Name)
         }        
         else return;
     }
+	
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
     if(!ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
@@ -1503,10 +1530,38 @@ void ApplyViewMode(const char *Name)
 	if(HIWORD(g_CluiData.filterFlags) > 0)
         g_CluiData.bFilterEffective |= CLVM_STICKY_CONTACTS;
     
-    if(g_CluiData.boldHideOffline == (BYTE)-1)
-        g_CluiData.boldHideOffline = ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
-    
-    CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
+	if ( g_CluiData.bFilterEffective & CLVM_FILTER_STATUS )
+	{
+		if(g_CluiData.boldHideOffline == (BYTE)-1)
+			g_CluiData.boldHideOffline = ModernGetSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
+	
+		CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
+	}
+	else if ( g_CluiData.boldHideOffline != (BYTE)-1 )
+	{
+		CallService(MS_CLIST_SETHIDEOFFLINE, g_CluiData.boldHideOffline, 0);
+		g_CluiData.boldHideOffline = -1;
+	}
+
+	int bUseGroups = -1;
+
+	if ( g_CluiData.filterFlags & CLVM_USEGROUPS )
+		bUseGroups = 1;
+	else if ( g_CluiData.filterFlags & CLVM_DONOTUSEGROUPS )
+		bUseGroups = 0;
+
+	if ( bUseGroups != -1 )
+	{
+		if(g_CluiData.bOldUseGroups == (BYTE)-1 )
+			g_CluiData.bOldUseGroups = ModernGetSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT );
+
+		CallService(MS_CLIST_SETUSEGROUPS, bUseGroups, 0);
+	}
+	else if ( g_CluiData.bOldUseGroups != (BYTE)-1 )
+	{
+		CallService(MS_CLIST_SETUSEGROUPS, g_CluiData.bOldUseGroups, 0);
+		g_CluiData.bOldUseGroups = -1;
+	}
 
 #ifdef _UNICODE
 	{
