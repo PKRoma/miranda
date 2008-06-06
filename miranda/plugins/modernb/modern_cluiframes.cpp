@@ -282,6 +282,7 @@ int CLUIFrames_SetParentForContainers(WPARAM wParam)
 				HWND Frmhwnd=Frames[i].hWnd;
 				BOOL visible=Frames[i].visible;
 				BOOL needhide=Frames[i].needhide;
+				needhide |= (!Frames[i].collapsed || Frames[i].height == 0 );
 				prevFrameCount=nFramescount;
 				ShowWindow(owner,(mode==SW_HIDE||!visible||needhide)?SW_HIDE:mode);
 				ShowWindow(Frmhwnd,(mode==SW_HIDE||!visible||needhide)?SW_HIDE:mode);
@@ -2259,7 +2260,7 @@ static int CLUIFrameMoveResize(const wndFrame *Frame)
 		ClientToScreen(pcli->hwndContactList,&Off);
 		GetWindowRect(pcli->hwndContactList,&pr);
 
-		if ( Frame->visible && !Frame->collapsed && Frame->wndSize.bottom-Frame->wndSize.top == 0 )
+		if ( Frame->visible && (!Frame->collapsed || Frame->wndSize.bottom-Frame->wndSize.top == 0) )
 		{
 			ShowWindowAsync( Frame->OwnerWindow, SW_HIDE );
 			ShowWindowAsync( Frame->hWnd, SW_HIDE );
@@ -2280,7 +2281,7 @@ static int CLUIFrameMoveResize(const wndFrame *Frame)
 				Frame->wndSize.right-Frame->wndSize.left,
 				g_nTitleBarHeight,SWP_NOZORDER|SWP_NOACTIVATE	);
 		}
-		if ( Frame->visible && !(!Frame->collapsed && Frame->wndSize.bottom-Frame->wndSize.top == 0) )
+		if ( Frame->visible && IsWindowVisible( pcli->hwndContactList ) && Frame->collapsed && Frame->wndSize.bottom-Frame->wndSize.top != 0 ) 
 		{
 			ShowWindow( Frame->OwnerWindow, SW_SHOW );
 			ShowWindow( Frame->hWnd, SW_SHOW );

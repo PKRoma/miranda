@@ -151,6 +151,9 @@ void Cache_DestroySmileyList( SortedList* p_list )
     if ( p_list == NULL )
         return;
 
+	if ( IsBadReadPtr( p_list, sizeof(SortedList) ) )
+		return;
+
     if ( p_list->realCount != 0 )
     {
         int i;
