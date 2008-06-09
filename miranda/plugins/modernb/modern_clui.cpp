@@ -1667,6 +1667,7 @@ typedef struct tagSYNCCALLITEM
 	PSYNCCALLBACKPROC pfnProc;    
 } SYNCCALLITEM;
 
+
 LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {    
 	/*
@@ -2108,36 +2109,32 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		else if ((int)wParam==TM_SMOTHALPHATRANSITION)
 			CLUI_SmoothAlphaTransition(hwnd, 0, 2);
 		else if ((int)wParam==TM_AUTOALPHA)
-		{	int inwnd;
+		{	
+			int inwnd;
 
-		if (GetForegroundWindow()==hwnd)
-		{
-			KillTimer(hwnd,TM_AUTOALPHA);
-			inwnd=1;
-		}
-		else {
-			POINT pt;
-			HWND hwndPt;
-			pt.x=(short)LOWORD(GetMessagePos());
-			pt.y=(short)HIWORD(GetMessagePos());
-			hwndPt=WindowFromPoint(pt);
-
-			inwnd=0;
-			inwnd=CLUI_CheckOwnedByClui(hwndPt);
-			/*
+			if (GetForegroundWindow()==hwnd)
 			{
-			thwnd=hwndPt;
-			do
+				KillTimer(hwnd,TM_AUTOALPHA);
+				inwnd=1;
+			}
+			else 
 			{
-			if (thwnd==hwnd) inwnd=TRUE;
-			if (!inwnd)
-			thwnd=GetParent(thwnd);
-			}while (thwnd && !inwnd); 
-			}*/
+				POINT pt;
+				HWND hwndPt;
+				pt.x=(short)LOWORD(GetMessagePos());
+				pt.y=(short)HIWORD(GetMessagePos());
+				hwndPt=WindowFromPoint(pt);
 
-		}
+				inwnd=FALSE;
+				inwnd = CLUI_CheckOwnedByClui(hwndPt);
+				if (! inwnd )
+					inwnd = ( GetCapture()==pcli->hwndContactList );
+
+			}
 		if (inwnd!=bTransparentFocus)
 		{ //change
+			HWND hwn=GetCapture();
+			hwn=hwn;
 			bTransparentFocus=inwnd;
 			if(bTransparentFocus) CLUI_SmoothAlphaTransition(hwnd, (BYTE)ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 			else  
