@@ -1321,7 +1321,8 @@ clvm_reset_command:
 
 					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                     SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("All contacts"));
-                    CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
+                    if (g_CluiData.boldHideOffline!=(BYTE)-1) CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
+					if (g_CluiData.bOldUseGroups!=(BYTE)-1) CallService(MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0);
                     g_CluiData.boldHideOffline = (BYTE)-1;
 					g_CluiData.bOldUseGroups = (BYTE) -1;
  //                   SetButtonStates(pcli->hwndContactList);

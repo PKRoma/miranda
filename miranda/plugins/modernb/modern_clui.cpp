@@ -248,7 +248,17 @@ HRESULT CLUI::CreateCLC(HWND hwndClui)
 	ExtraImage_ReloadExtraIcons();
 
 	nLastRequiredHeight=0;
-	CallService(MS_CLIST_SETHIDEOFFLINE,(WPARAM)bOldHideOffline,0);
+	if ( g_CluiData.current_viewmode[0] == '\0' )
+	{
+		if (bOldHideOffline != (BYTE)-1) 
+			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)bOldHideOffline, 0);
+		else
+			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)0, 0);
+		if (bOldUseGroups !=(BYTE)-1)  
+			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
+		else
+			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
+	}
 	nLastRequiredHeight=0;
 	mutex_bDisableAutoUpdate=0;
 

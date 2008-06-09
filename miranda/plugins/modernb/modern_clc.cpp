@@ -1961,6 +1961,12 @@ int ClcUnloadModule()
 		ModernUnhookEvent(hSmileyAddOptionsChangedHook);
 	if(hIconChangedHook!=0)
 		ModernUnhookEvent(hIconChangedHook);
+
+	if ( g_CluiData.bOldUseGroups != (BYTE)-1 )
+		ModernWriteSettingByte(NULL,"CList","UseGroups",(BYTE)g_CluiData.bOldUseGroups );
+	if ( g_CluiData.boldHideOffline != (BYTE)-1 )
+		ModernWriteSettingByte(NULL,"CList","HideOffline",(BYTE)g_CluiData.boldHideOffline );
+
 	return 0;
 }
 int ClcDoProtoAck(HANDLE wParam,ACKDATA * ack)
