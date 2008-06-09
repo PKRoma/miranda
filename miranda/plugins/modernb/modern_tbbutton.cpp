@@ -184,6 +184,11 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			lpSBData->nFontID = (int) lParam - 1;
 			break;
 		}
+    case BUTTONSETSENDONDOWN:
+        {
+            lpSBData->fSendOnDown = (BOOL) lParam;
+            break;
+        }
 	case BUTTONSETMARGINS:
 		{
 			if (lParam)	lpSBData->rcMargins=*(RECT*)lParam;
@@ -285,7 +290,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 			break;
 		}
-	case WM_MOUSELEAVE:			
+	/*case WM_MOUSELEAVE:			
 		{
 			// faked by the WM_TIMER
 			if (lpSBData->nStateId != PBS_DISABLED) 
@@ -296,6 +301,17 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 			break;
 		}
+        */
+    case WM_CAPTURECHANGED:
+        {                
+            if ( (HWND)lParam != lpSBData->hWnd && lpSBData->nStateId != PBS_DISABLED) 
+            {
+                // don't change states if disabled
+                lpSBData->nStateId = PBS_NORMAL;
+                InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+            }
+            break;
+        }
 	case WM_LBUTTONDOWN:
 		{
 			if (lpSBData->nStateId != PBS_DISABLED && lpSBData->nStateId != PBS_PRESSED) 
@@ -314,22 +330,17 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 		}
 	case WM_LBUTTONUP:
 		{
-			HWND hwnd=GetCapture();
-			if ( hwnd != lpSBData->hWnd ) 
-				break;
-			
-			SetCapture( NULL );
 
 			int xPos=( ( int )( short ) LOWORD( lParam ) );
 			int yPos=( ( int )( short ) HIWORD( lParam ) );
 			POINT ptMouse = { xPos, yPos };
 
 			RECT rcClient;
-			GetClientRect( hwnd, &rcClient );
+			GetClientRect( lpSBData->hWnd, &rcClient );
 			
 			if ( !PtInRect( &rcClient, ptMouse ) )
 			{
-				PostMessage(hwndDlg, WM_MOUSELEAVE, 0, 0L);
+				ReleaseCapture();
 				break;
 			}
 
@@ -355,33 +366,43 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			break;
 		}
 	case WM_MOUSEMOVE:
-		if ( lpSBData->nStateId == PBS_NORMAL ) 
-		{
-			lpSBData->nStateId = PBS_HOT;
-			InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
-		}
-		if ( GetCapture() == lpSBData->hWnd )
+    //	if ( GetCapture() == lpSBData->hWnd )
 		{
 			RECT rc;
 			POINT pt;
+            BOOL bPressed = wParam != 0;
 			GetWindowRect(hwndDlg, &rc);
 			GetCursorPos(&pt);
 			BOOL inClient = PtInRect(&rc, pt);
+            if ( inClient )
+            {
+                SetCapture( lpSBData->hWnd );
+                if ( lpSBData->nStateId == PBS_NORMAL ) 
+                {
+                    lpSBData->nStateId = PBS_HOT;
+                    InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+                }
+            }
+
 			if ( !inClient && lpSBData->nStateId == PBS_PRESSED )
 			{
 				lpSBData->nStateId = PBS_HOT; 
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 			}
-			else if ( inClient && lpSBData->nStateId == PBS_HOT )
+			else if ( inClient && lpSBData->nStateId == PBS_HOT && bPressed )
 			{
 				lpSBData->nStateId = PBS_PRESSED;
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 			}
+            else if ( !inClient && !bPressed)
+            {
+                ReleaseCapture();
+            }
 		}
-		else
+	//	else
 		{
-			KillTimer(hwndDlg, BUTTON_POLLID);
-			CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
+			//KillTimer(hwndDlg, BUTTON_POLLID);
+			//CLUI_SafeSetTimer(hwndDlg, BUTTON_POLLID, BUTTON_POLLDELAY, NULL);
 		}
 		// Call timer, used to start cheesy TrackMouseEvent faker
 		
@@ -396,7 +417,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 				return HTTRANSPARENT;
 			break;
 		}
-	case WM_TIMER: // use a timer to check if they have did a mouse out		
+	/*case WM_TIMER: // use a timer to check if they have did a mouse out		
 		{
 			if (wParam == BUTTON_POLLID)
 			{
@@ -420,6 +441,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 			break;
 		}
+        */
 	case WM_ERASEBKGND:
 		{
 			return 1;

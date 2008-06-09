@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "m_clui.h"
 #include "m_skin.h"
+#include "m_api/m_skinbutton.h"
 #include "wingdi.h"
 #include <Winuser.h>
 #include "hdr/modern_skinengine.h"
@@ -1500,7 +1501,7 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				//reposition buttons and new size applying
 				{
-					ModernSkinButton_ReposButtons(hwnd,FALSE,&work_rect);
+					ModernSkinButton_ReposButtons( hwnd, SBRF_DO_NOT_DRAW, &work_rect );
 					ske_PrepeareImageButDontUpdateIt(&work_rect);
 					g_CluiData.mutexPreventDockMoving=0;			
 					ske_UpdateWindowImageRect(&work_rect);        
@@ -1576,8 +1577,8 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				GetWindowRect(hwnd, &rc);
 				CheckFramesPos(&rc);
-				ModernSkinButton_ReposButtons(hwnd,FALSE,&rc);
-				ModernSkinButton_ReposButtons(hwnd,7,NULL);
+				ModernSkinButton_ReposButtons( hwnd, SBRF_DO_NOT_DRAW, &rc);
+				ModernSkinButton_ReposButtons( hwnd, SBRF_REDRAW, NULL);
 				if (g_CluiData.fLayered)
 					CallService(MS_SKINENG_UPTATEFRAMEIMAGE,(WPARAM)hwnd,0);
 

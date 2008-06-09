@@ -141,7 +141,7 @@ void	ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 /* ModernSkinButton */
 int		ModernSkinButton_AddButton(HWND parent,char * ID,char * CommandService,char * StateDefService,char * HandeService,             int Left, int Top, int Right, int Bottom, DWORD AlignedTo,TCHAR * Hint,char * DBkey,char * TypeDef,int MinWidth, int MinHeight);
 int		ModernSkinButtonLoadModule();
-int		ModernSkinButton_ReposButtons(HWND parent, BOOL draw, RECT * r);
+int		ModernSkinButton_ReposButtons(HWND parent, BYTE draw, RECT * r);
 int     ModernSkinButtonUnloadModule(WPARAM,LPARAM);
 
 /* RowHeight */

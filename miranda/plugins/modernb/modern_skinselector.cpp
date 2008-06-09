@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_skinselector.h"
 #include "hdr/modern_skinengine.h"
 #include "m_api/m_skin_eng.h"
+#include "m_api/m_skinbutton.h"
 #include "hdr/modern_commonprototypes.h"
 LISTMODERNMASK * MainModernMaskList=NULL;
 
@@ -630,15 +631,15 @@ int RegisterButtonByParce(char * ObjectName, char * Params)
           GetParamN(Params,Section, sizeof(Section),2,',',0);
           GetParamN(Params,Type, sizeof(Type),3,',',0);
         }
-		alingnto=   (TL[0]=='R')
-             +2*(TL[0]=='C')
-             +4*(TL[1]=='B')
-             +8*(TL[1]=='C')
-             +16*(TL[2]=='R')
-             +32*(TL[2]=='C')
-             +64*(TL[3]=='B')
-             +128*(TL[3]=='C')
-             +256*(TL[4]=='I');
+        alingnto=  ( (TL[0]=='R') ? SBF_ALIGN_TL_RIGHT   : 0 )
+                  +( (TL[0]=='C') ? SBF_ALIGN_TL_HCENTER : 0 )
+                  +( (TL[1]=='B') ? SBF_ALIGN_TL_BOTTOM  : 0 )
+                  +( (TL[1]=='C') ? SBF_ALIGN_TL_VCENTER : 0 )
+                  +( (TL[2]=='R') ? SBF_ALIGN_BR_RIGHT   : 0 )
+                  +( (TL[2]=='C') ? SBF_ALIGN_BR_HCENTER : 0 )
+                  +( (TL[3]=='B') ? SBF_ALIGN_BR_BOTTOM  : 0 )
+                  +( (TL[3]=='C') ? SBF_ALIGN_BR_VCENTER : 0 )
+                  +( (TL[4]=='I') ? SBF_CALL_ON_PRESS    : 0 );
         if (a) res=ModernSkinButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),Section,Type,MinWidth,MinHeight);
         else res=ModernSkinButton_AddButton(pcli->hwndContactList,ObjectName+1,pServiceName,pStatusServiceName,"\0",Left,Top,Right,Bottom,alingnto,TranslateTS(Hint),NULL,NULL,MinWidth,MinHeight);
     }

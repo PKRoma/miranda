@@ -27,6 +27,10 @@ This file contains code related to new modern free positioned skinned buttons
 #include "hdr/modern_commonheaders.h" 
 #include "hdr/modern_skinengine.h"
 #include "hdr/modern_clcpaint.h"
+#include "m_api/m_skinbutton.h"
+
+
+
 
 
 #define MODERNSKINBUTTONCLASS "MirandaModernSkinButtonClass"
@@ -44,7 +48,7 @@ typedef struct _ModernSkinButtonCtrl
 	BYTE    focus;   // has focus (1 or 0)
 	BYTE    hover;
 	BYTE    IsSwitcher;
-	BYTE	  Imm;
+	BOOL    fCallOnPress;
 	char    * ID;
 	char    * CommandService;
 	char    * StateService;
@@ -493,15 +497,12 @@ static LRESULT CALLBACK ModernSkinButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM 
 					ModernSkinButtonPaintWorker(bct->hwnd,0);
 					if (bct && bct->CommandService && IsBadStringPtrA(bct->CommandService,255))
 						bct->CommandService=NULL;
-					if (bct->Imm)
+					if (bct->fCallOnPress)
 					{
 						if (bct->CommandService)
 						{
 
-							if (_CallServiceStrParams(bct->CommandService, NULL))
-							{}
-							else 
-								if (bct->ValueDBSection && bct->ValueTypeDef)          
+							if (!_CallServiceStrParams(bct->CommandService, NULL)&&  (bct->ValueDBSection && bct->ValueTypeDef) )
 									ModernSkinButtonToggleDBValue(bct->ValueDBSection,bct->ValueTypeDef);      
 						}
 						bct->down=0;
@@ -585,6 +586,9 @@ typedef struct _MButton
 MButton * Buttons=NULL;
 DWORD ButtonsCount=0;
 
+_inline static int _center_h( RECT* rc ) { return ( rc->right + rc->left ) >> 1; }
+_inline static int _center_v( RECT* rc ) { return ( rc->bottom + rc->top ) >> 1; }
+
 int ModernSkinButton_AddButton(HWND parent,
 							   char * ID,
 							   char * CommandService,
@@ -594,7 +598,7 @@ int ModernSkinButton_AddButton(HWND parent,
 							   int Top, 
 							   int Right, 
 							   int Bottom, 
-							   DWORD AlignedTo,
+							   DWORD sbFlags,
 							   TCHAR * Hint,
 							   char * DBkey,
 							   char * TypeDef,
@@ -612,17 +616,28 @@ int ModernSkinButton_AddButton(HWND parent,
 		ModernSkinButtonCtrl* bct;
 		int l,r,b,t;
 		if (parent) GetClientRect(parent,&rc);
-		l=(AlignedTo&1)?rc.right+Left:((AlignedTo&2)?((rc.left+rc.right)>>1)+Left:rc.left+Left);
-		t=(AlignedTo&4)?rc.bottom+Top:((AlignedTo&8)?((rc.top+rc.bottom)>>1)+Top:rc.top+Top);
-		r=(AlignedTo&16)?rc.right+Right:((AlignedTo&32)?((rc.left+rc.right)>>1)+Right:rc.left+Right);
-		b=(AlignedTo&64)?rc.bottom+Bottom:((AlignedTo&128)?((rc.top+rc.bottom)>>1)+Bottom:rc.top+Bottom);
+		l=( sbFlags & SBF_ALIGN_TL_RIGHT )   ? ( rc.right + Left ) :  
+          ( sbFlags & SBF_ALIGN_TL_HCENTER ) ? ( _center_h( &rc ) + Left ) : 
+          ( rc.left + Left );
+		
+        t=( sbFlags & SBF_ALIGN_TL_BOTTOM )  ? ( rc.bottom + Top ) : 
+          ( sbFlags & SBF_ALIGN_TL_VCENTER ) ? ( _center_v( &rc ) + Top ) :
+          ( rc.top+Top );
+		
+        r=( sbFlags & SBF_ALIGN_BR_RIGHT )   ? ( rc.right + Right ) :
+          ( sbFlags & SBF_ALIGN_BR_HCENTER ) ? ( _center_h( &rc) + Right ) :
+          ( rc.left + Right );
+		
+        b=( sbFlags & SBF_ALIGN_BR_BOTTOM )  ? ( rc.bottom + Bottom ) : 
+          ( sbFlags & SBF_ALIGN_BR_VCENTER ) ? ( _center_v( &rc ) + Bottom ) : 
+          ( rc.top + Bottom );
 		bct=(ModernSkinButtonCtrl *)mir_alloc(sizeof(ModernSkinButtonCtrl));
 		memset(bct,0,sizeof(ModernSkinButtonCtrl));
 		bct->Left=l;
 		bct->Right=r;
 		bct->Top=t;
 		bct->Bottom=b;
-		bct->Imm=(AlignedTo&256)!=0;
+		bct->fCallOnPress=( sbFlags & SBF_CALL_ON_PRESS )!=0;
 		bct->HandleService=mir_strdup(HandeService);
 		bct->CommandService=mir_strdup(CommandService);
 		bct->StateService=mir_strdup(StateDefService);
@@ -636,7 +651,7 @@ int ModernSkinButton_AddButton(HWND parent,
 		Buttons[ButtonsCount].OrT=Top;
 		Buttons[ButtonsCount].OrR=Right;
 		Buttons[ButtonsCount].OrB=Bottom;
-		Buttons[ButtonsCount].ConstrainPositionFrom=(BYTE)AlignedTo;  
+		Buttons[ButtonsCount].ConstrainPositionFrom=(BYTE)sbFlags;  
 		Buttons[ButtonsCount].minH=MinHeight;
 		Buttons[ButtonsCount].minW=MinWidth;
 		ButtonsCount++;
@@ -720,7 +735,7 @@ int ModernSkinButtonDeleteAll()
 	return 0;
 }
 
-int ModernSkinButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
+int ModernSkinButton_ReposButtons(HWND parent, BYTE draw, RECT * r)
 {
 	DWORD i;
 	RECT rc;
@@ -735,7 +750,7 @@ int ModernSkinButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
 		GetWindowRect(parent,&rc);  
 	else
 		rc=*r;
-	if (g_CluiData.fLayered && draw&2)
+	if (g_CluiData.fLayered && ( draw & SBRF_DO_ALT_DRAW ) )
 	{
 		int sx,sy;
 		sx=rd.right-rd.left;
@@ -754,17 +769,30 @@ int ModernSkinButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
 	{
 		int l,r,b,t;
 		RECT oldRect={0};
-		int AlignedTo=Buttons[i].ConstrainPositionFrom;
+		int sbFlags=Buttons[i].ConstrainPositionFrom;
 		if (parent && Buttons[i].hwnd==NULL)
 		{
 			Buttons[i].hwnd=ModernSkinButtonCreateWindow(Buttons[i].bct,parent);
 			altDraw=FALSE;
 		}
-		l=(AlignedTo&1)?rc.right+Buttons[i].OrL:((AlignedTo&2)?((rc.left+rc.right)>>1)+Buttons[i].OrL:rc.left+Buttons[i].OrL);
-		t=(AlignedTo&4)?rc.bottom+Buttons[i].OrT:((AlignedTo&8)?((rc.top+rc.bottom)>>1)+Buttons[i].OrT:rc.top+Buttons[i].OrT);
-		r=(AlignedTo&16)?rc.right+Buttons[i].OrR:((AlignedTo&32)?((rc.left+rc.right)>>1)+Buttons[i].OrR:rc.left+Buttons[i].OrR);
-		b=(AlignedTo&64)?rc.bottom+Buttons[i].OrB:((AlignedTo&128)?((rc.top+rc.bottom)>>1)+Buttons[i].OrB:rc.top+Buttons[i].OrB);
-		SetWindowPos(Buttons[i].hwnd,HWND_TOP,l,t,r-l,b-t,0);
+
+        l = ( sbFlags & SBF_ALIGN_TL_RIGHT )   ? ( rc.right + Buttons[i].OrL ) :  
+            ( sbFlags & SBF_ALIGN_TL_HCENTER ) ? ( _center_h( &rc ) + Buttons[i].OrL ) : 
+            ( rc.left + Buttons[i].OrL );
+        
+        t = ( sbFlags & SBF_ALIGN_TL_BOTTOM )  ? ( rc.bottom + Buttons[i].OrT ) : 
+            ( sbFlags & SBF_ALIGN_TL_VCENTER ) ? ( _center_v( &rc ) + Buttons[i].OrT ) :
+            ( rc.top + Buttons[i].OrT );
+        
+        r = ( sbFlags & SBF_ALIGN_BR_RIGHT )   ? ( rc.right + Buttons[i].OrR ) :
+            ( sbFlags & SBF_ALIGN_BR_HCENTER ) ? ( _center_h( &rc) + Buttons[i].OrR ) :
+            ( rc.left + Buttons[i].OrR );
+        
+        b = ( sbFlags & SBF_ALIGN_BR_BOTTOM )  ? ( rc.bottom + Buttons[i].OrB ) : 
+            ( sbFlags & SBF_ALIGN_BR_VCENTER ) ? ( _center_v( &rc ) + Buttons[i].OrB ) : 
+            ( rc.top + Buttons[i].OrB );
+   
+        SetWindowPos(Buttons[i].hwnd,HWND_TOP,l,t,r-l,b-t,0);
 		if (  (rc.right-rc.left<Buttons[i].minW /*&& Buttons[i].minW!=0*/) 
 			||(rc.bottom-rc.top<Buttons[i].minH /*&& Buttons[i].minH!=0*/) )
 			CLUI_ShowWindowMod(Buttons[i].hwnd,SW_HIDE);
@@ -787,6 +815,6 @@ int ModernSkinButton_ReposButtons(HWND parent, BOOL draw, RECT * r)
 
 
 	}
-	if (draw &1) ModernSkinButtonRedrawAll(0);
+	if ( draw & SBRF_DO_REDRAW_ALL ) ModernSkinButtonRedrawAll(0);
 	return 0;
 }

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonheaders.h"
 #include "hdr/modern_clist.h"
 #include "m_api/m_skin_eng.h"
+#include "m_api/m_skinbutton.h"
 #include "hdr/modern_commonprototypes.h"
 
 #define WM_DOCKCALLBACK   (WM_USER+121)
@@ -138,11 +139,11 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				g_CluiData.mutexPreventDockMoving=0;
 				DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc);
 				g_CluiData.mutexPreventDockMoving=1;
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				ModernSkinButton_ReposButtons( msg->hwnd, SBRF_DO_NOT_DRAW, NULL );
 			}
 			break;
 		case WM_CAPTURECHANGED:
-			ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+			ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW,NULL);
 			return 0;
 		case WM_ACTIVATE:
 			ZeroMemory(&abd,sizeof(abd));
@@ -151,18 +152,18 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 			SHAppBarMessage(ABM_ACTIVATE,&abd);
 			return 0;
 		case WM_SIZE:
-			ModernSkinButton_ReposButtons(msg->hwnd,1,NULL);
+			ModernSkinButton_ReposButtons( msg->hwnd, SBRF_DO_REDRAW_ALL, NULL );
 			return 0;
 
 		case WM_WINDOWPOSCHANGED:
 			{
-				if (g_CluiData.fDocked) ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				if (g_CluiData.fDocked) ModernSkinButton_ReposButtons( msg->hwnd,SBRF_DO_NOT_DRAW, NULL );
 				return 0;
 				ZeroMemory(&abd,sizeof(abd));
 				abd.cbSize=sizeof(abd);
 				abd.hWnd=msg->hwnd;
 				SHAppBarMessage(ABM_WINDOWPOSCHANGED,&abd);
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				ModernSkinButton_ReposButtons( msg->hwnd, SBRF_DO_NOT_DRAW, NULL );
 				return 0;
 			}
 		case WM_MOVING:
@@ -210,7 +211,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					g_CluiData.mutexPreventDockMoving=1;
 					mouse_event(MOUSEEVENTF_LEFTUP,0,0,0,0);
 					ModernWriteSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
-					ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+					ModernSkinButton_ReposButtons( msg->hwnd, SBRF_DO_NOT_DRAW, NULL );
 					return TRUE;
 				}
 				return 0;
@@ -227,7 +228,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				g_CluiData.mutexPreventDockMoving=0;
 				SetWindowPos(msg->hwnd,0,rcWindow.left,rcWindow.top,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOREDRAW|SWP_NOSENDCHANGING);
 				DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rcWindow);
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+				ModernSkinButton_ReposButtons( msg->hwnd, SBRF_DO_NOT_DRAW, NULL );//-=-=-=
 				g_CluiData.mutexPreventDockMoving=1;		  
 				return 1;
 			}
@@ -242,11 +243,11 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 					MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,TRUE);
 					DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc); 
-					ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+					ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW, NULL);//-=-=-=
 
 					return 1;
 				}
-				ModernSkinButton_ReposButtons(msg->hwnd,2,NULL);
+				ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_ALT_DRAW, NULL);
 				return 0;
 			}
 		case WM_SIZING:
@@ -258,7 +259,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				*((LRESULT*)lParam)=TRUE;
 				*/
 				RECT rc;
-				if (g_CluiData.fDocked) ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				if (g_CluiData.fDocked) ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW,NULL);
 				return FALSE;
 				rc=*(RECT*)(msg->lParam);
 				g_CluiData.mutexPreventDockMoving=0;
@@ -284,7 +285,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 					MoveWindow(msg->hwnd,rc.left,rc.top,rc.right-rc.left,rc.bottom-rc.top,FALSE);
 					DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc);
-					ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);//-=-=-=
+					ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW,NULL);//-=-=-=
 				}
 				else {
 					SHAppBarMessage(ABM_REMOVE,&abd);
@@ -328,7 +329,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 					PostMessage(msg->hwnd,WM_NCLBUTTONDOWN,HTCAPTION,MAKELPARAM(pt.x,pt.y));
 					SetWindowPos(msg->hwnd,0,pt.x-rc.right/2,pt.y-GetSystemMetrics(SM_CYFRAME)-GetSystemMetrics(SM_CYSMCAPTION)/2,ModernGetSettingDword(NULL,"CList","Width",0),ModernGetSettingDword(NULL,"CList","Height",0),SWP_NOZORDER);
 					ModernWriteSettingByte(NULL,"CList","Docked",(BYTE)g_CluiData.fDocked);
-					// ModernSkinButton_ReposButtons(msg->hwnd,0);
+					// ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW, NULL);
 				}
 				return 1;
 			}
@@ -349,7 +350,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				GetWindowRect(msg->hwnd,&rc);
 				Docking_AdjustPosition(msg->hwnd,&rcMonitor,&rc);
 				DoSync2Param(CLUIFrames_OnMoving,msg->hwnd,&rc); //-=-=-=		
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW, NULL);
 
 				g_CluiData.mutexPreventDockMoving=1;
 			}
@@ -362,7 +363,7 @@ int Docking_ProcessWindowMessage(WPARAM wParam,LPARAM lParam)
 				abd.cbSize=sizeof(abd);
 				abd.hWnd=msg->hwnd;
 				SHAppBarMessage(ABM_REMOVE,&abd);
-				ModernSkinButton_ReposButtons(msg->hwnd,0,NULL);
+				ModernSkinButton_ReposButtons(msg->hwnd, SBRF_DO_NOT_DRAW, NULL);
 			}
 			return 0;
 	}

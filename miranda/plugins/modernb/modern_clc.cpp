@@ -1670,10 +1670,17 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 	image_is_special=(LOWORD(contacticon) != (LOWORD(lParam))); //check only base icons
 
 	nHiddenStatus=CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat);
-	shouldShow = ( ((GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN) && nHiddenStatus!=-1) || !nHiddenStatus)
-		&& ( (g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) 
-		|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != LOWORD(lParam) );  // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
-	if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
+    
+    bool isVisiblebyFilter  = ( ( ( GetWindowLong( hwnd, GWL_STYLE ) & CLS_SHOWHIDDEN ) && nHiddenStatus != -1 ) || !nHiddenStatus );
+    bool ifVisibleByClui    = !pcli->pfnIsHiddenMode( dat, status );      
+    bool isVisible          = g_CluiData.bFilterEffective&CLVM_FILTER_STATUS ? TRUE : ifVisibleByClui;
+    bool isIconChanged      = CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != LOWORD(lParam);
+	
+    shouldShow              = isVisiblebyFilter	&&  ( isVisible || isIconChanged ) ;  
+    
+    // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
+	
+    if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
 	{
 		if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) 
 		{

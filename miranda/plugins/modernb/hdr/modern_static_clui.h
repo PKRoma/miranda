@@ -91,7 +91,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact);
 void GroupMenus_Init();
 
 int ModernSkinButtonLoadModule();
-int ModernSkinButton_ReposButtons(HWND parent, BOOL draw,RECT *r);
+int ModernSkinButton_ReposButtons(HWND parent, BYTE draw,RECT *r);
 
 void ske_ApplyTransluency();
 HBITMAP ske_CreateDIB32(int cx, int cy);
