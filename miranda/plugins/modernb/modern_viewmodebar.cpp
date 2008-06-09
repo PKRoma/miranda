@@ -1281,7 +1281,8 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                     GetWindowRect((HWND)lParam, &rc);
                     pt.x = rc.left;
                     pt.y = rc.bottom;
-                    selection = TrackPopupMenu(hViewModeMenu,TPM_RETURNCMD|TPM_TOPALIGN|TPM_LEFTALIGN|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+                    selection = TrackPopupMenu(hViewModeMenu,TPM_RETURNCMD|TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
+					PostMessage(hwnd, WM_NULL, 0, 0);
                     if(selection) 
 					{
 						

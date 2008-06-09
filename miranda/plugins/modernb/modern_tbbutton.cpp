@@ -314,6 +314,19 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
         }
 	case WM_LBUTTONDOWN:
 		{
+			int xPos=( ( int )( short ) LOWORD( lParam ) );
+			int yPos=( ( int )( short ) HIWORD( lParam ) );
+			POINT ptMouse = { xPos, yPos };
+
+			RECT rcClient;
+			GetClientRect( lpSBData->hWnd, &rcClient );
+
+			if ( !PtInRect( &rcClient, ptMouse ) )
+			{
+				ReleaseCapture();
+				break;
+			}
+
 			if (lpSBData->nStateId != PBS_DISABLED && lpSBData->nStateId != PBS_PRESSED) 
 			{
 				lpSBData->nStateId = PBS_PRESSED;
