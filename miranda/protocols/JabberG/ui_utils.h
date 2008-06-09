@@ -857,6 +857,37 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlTreeView
+
+class CCtrlPages: public CCtrlBase
+{
+	typedef CCtrlBase CSuper;
+
+public:
+	CCtrlPages( CDlgBase* dlg, int ctrlId );
+
+	void AddPage( TCHAR *ptszName, HICON hIcon, CCallback<void> onCreate, void *param );
+	void AttachDialog( int iPage, CDlgBase *pDlg );
+
+	void ActivatePage( int iPage );
+
+protected:
+	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+	void OnDestroy();
+
+private:
+	HIMAGELIST m_hIml;
+	struct TPageInfo
+	{
+		CCallback<void> m_onCreate;
+		void *m_param;
+		CDlgBase *m_pDlg;
+	};
+
+	void ShowPage(CDlgBase *pDlg);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlCustom
 
 template<typename TDlg>
