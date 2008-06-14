@@ -38,6 +38,7 @@ CDlgBase::CDlgBase(int idDialog, HWND hwndParent) :
 	m_isModal = false;
 	m_initialized = false;
 	m_autoClose = CLOSE_ON_OK|CLOSE_ON_CANCEL;
+	m_forceResizable = false;
 }
 
 CDlgBase::~CDlgBase()
@@ -47,6 +48,11 @@ CDlgBase::~CDlgBase()
 
 	if (m_hwnd)
 		DestroyWindow(m_hwnd);
+}
+
+void CDlgBase::Create()
+{
+	ShowWindow(CreateDialogParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this), SW_HIDE);
 }
 
 void CDlgBase::Show()
@@ -157,7 +163,7 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_SIZE:
 		{
-			if (GetWindowLong(m_hwnd, GWL_STYLE) & WS_SIZEBOX)
+			if (m_forceResizable || (GetWindowLong(m_hwnd, GWL_STYLE) & WS_SIZEBOX))
 			{
 				UTILRESIZEDIALOG urd;
 				urd.cbSize = sizeof(urd);
@@ -234,6 +240,22 @@ int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc)
 	if (!wnd) return 0;
 
 	return wnd->Resizer(urc);
+}
+
+CDlgBase::pfnEnableThemeDialogTexture CDlgBase::MyEnableThemeDialogTexture = NULL;
+void CDlgBase::ThemeDialogBackground(BOOL tabbed)
+{
+	if (MyEnableThemeDialogTexture && IsWinVerXPPlus())
+	{
+		HMODULE hThemeAPI = GetModuleHandleA("uxtheme");
+		if (hThemeAPI)
+			MyEnableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
+	}
+
+	if (MyEnableThemeDialogTexture)
+	{
+		MyEnableThemeDialogTexture(m_hwnd,(tabbed?0x00000002:0x00000001)|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+	}
 }
 
 void CDlgBase::AddControl(CCtrlBase *ctrl)
@@ -1690,8 +1712,24 @@ void CCtrlTreeView::SortChildrenCB(TVSORTCB *cb, BOOL fRecurse)
 // CCtrlPages
 
 CCtrlPages::CCtrlPages( CDlgBase* dlg, int ctrlId ):
-	CCtrlBase(dlg, ctrlId), m_hIml(NULL)
+	CCtrlBase(dlg, ctrlId), m_hIml(NULL), m_pActivePage(NULL)
 {
+}
+
+void CCtrlPages::OnInit()
+{
+	CSuper::OnInit();
+	Subclass();
+}
+
+LRESULT CCtrlPages::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (msg == WM_SIZE)
+	{
+		ShowPage(m_pActivePage);
+	}
+
+	return CSuper::CustomWndProc(msg, wParam, lParam);
 }
 
 void CCtrlPages::AddPage( TCHAR *ptszName, HICON hIcon, CCallback<void> onCreate, void *param )
@@ -1702,7 +1740,8 @@ void CCtrlPages::AddPage( TCHAR *ptszName, HICON hIcon, CCallback<void> onCreate
 	info->m_pDlg = NULL;
 
 	TCITEM tci = {0};
-	tci.mask = TCIF_PARAM;
+	tci.mask = TCIF_PARAM|TCIF_TEXT;
+	tci.lParam = (LPARAM)info;
 	tci.pszText = ptszName;
 	if (hIcon)
 	{
@@ -1734,9 +1773,13 @@ void CCtrlPages::AttachDialog( int iPage, CDlgBase *pDlg )
 			info->m_pDlg->Close();
 
 		info->m_pDlg = pDlg;
+		//SetParent(info->m_pDlg->GetHwnd(), m_hwnd);
 
 		if (iPage == TabCtrl_GetCurSel(m_hwnd))
+		{
+			m_pActivePage = info->m_pDlg;
 			ShowPage(info->m_pDlg);
+		}
 	}
 }
 
@@ -1746,14 +1789,15 @@ void CCtrlPages::ShowPage(CDlgBase *pDlg)
 
 	RECT rc;
 	GetClientRect(m_hwnd, &rc);
-	MapWindowPoints(m_hwnd, ::GetParent(m_hwnd), (LPPOINT)&rc, 2);
 	TabCtrl_AdjustRect(m_hwnd, FALSE, &rc);
+	MapWindowPoints(m_hwnd, ::GetParent(m_hwnd), (LPPOINT)&rc, 2);
 	SetWindowPos(pDlg->GetHwnd(), HWND_TOP, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, SWP_SHOWWINDOW);
 }
 
 void CCtrlPages::ActivatePage( int iPage )
 {
 	TabCtrl_SetCurSel(m_hwnd, iPage);
+	//ShowPage(iPage);
 }
 
 BOOL CCtrlPages::OnNotify( int idCtrl, NMHDR *pnmh )
@@ -1770,6 +1814,7 @@ BOOL CCtrlPages::OnNotify( int idCtrl, NMHDR *pnmh )
 		{
 			if (info->m_pDlg)
 			{
+				m_pActivePage = NULL;
 				ShowWindow(info->m_pDlg->GetHwnd(), SW_HIDE);
 			}
 		}
@@ -1787,9 +1832,11 @@ BOOL CCtrlPages::OnNotify( int idCtrl, NMHDR *pnmh )
 		{
 			if (info->m_pDlg)
 			{
+				m_pActivePage = info->m_pDlg;
 				ShowPage(info->m_pDlg);
 			} else
 			{
+				m_pActivePage = NULL;
 				info->m_onCreate(info->m_param);
 			}
 		}

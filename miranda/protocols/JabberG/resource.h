@@ -431,7 +431,10 @@
 #define IDC_AUTOJOIN_BOOKMARKS          3010
 #define IDD_SERVICE_DISCOVERY           3010
 #define IDC_URL_RADIO                   3011
+#define IDD_GROUPCHAT_INFO_TABS         3011
 #define IDC_AGENT_RADIO                 3012
+#define IDD_JIDLIST1                    3012
+#define IDD_GROUPCHAT_ADMLIST           3012
 #define IDC_BOOKMARK_TYPE               3013
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDC_ZLIB                        3015
@@ -447,7 +450,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        230
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1306
+#define _APS_NEXT_CONTROL_VALUE         1307
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

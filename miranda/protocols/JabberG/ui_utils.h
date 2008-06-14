@@ -866,17 +866,23 @@ class CCtrlPages: public CCtrlBase
 public:
 	CCtrlPages( CDlgBase* dlg, int ctrlId );
 
-	void AddPage( TCHAR *ptszName, HICON hIcon, CCallback<void> onCreate, void *param );
+	void AddPage( TCHAR *ptszName, HICON hIcon, CCallback<void> onCreate = CCallback<void>(), void *param = NULL );
 	void AttachDialog( int iPage, CDlgBase *pDlg );
 
 	void ActivatePage( int iPage );
 
+
 protected:
 	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
+	void OnInit();
 	void OnDestroy();
+
+	virtual LRESULT CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
 	HIMAGELIST m_hIml;
+	CDlgBase *m_pActivePage;
+
 	struct TPageInfo
 	{
 		CCallback<void> m_onCreate;
@@ -978,6 +984,7 @@ public:
 	virtual ~CDlgBase();
 
 	// general utilities
+	void Create();
 	void Show();
 	int DoModal();
 
@@ -1006,6 +1013,7 @@ public:
 	}
 
 	LRESULT m_lresult;
+
 protected:
 	HWND    m_hwnd;
 	HWND    m_hwndParent;
@@ -1013,6 +1021,7 @@ protected:
 	MSG     m_msg;
 	bool    m_isModal;
 	bool    m_initialized;
+	bool    m_forceResizable;
 
 	enum { CLOSE_ON_OK = 0x1, CLOSE_ON_CANCEL = 0x2 };
 	BYTE    m_autoClose;    // automatically close dialog on IDOK/CANCEL commands. default: CLOSE_ON_OK|CLOSE_ON_CANCEL
@@ -1037,6 +1046,9 @@ protected:
 	// resister controls
 	void AddControl(CCtrlBase *ctrl);
 
+	// win32 stuff
+	void ThemeDialogBackground(BOOL tabbed);
+
 private:
 	LIST<CCtrlBase> m_controls;
 
@@ -1045,6 +1057,9 @@ private:
 
 	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
+
+	typedef HRESULT (STDAPICALLTYPE *pfnEnableThemeDialogTexture)(HWND,DWORD);
+	static pfnEnableThemeDialogTexture MyEnableThemeDialogTexture;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
