@@ -1219,7 +1219,7 @@ LBL_InvalidCommand:
 			if ( tArgs < 3 )
 				goto LBL_InvalidCommand;
 
-			UrlDecode( data.userEmail ); UrlDecode( data.userNick );
+			UrlDecode( data.userEmail ); UrlDecode( data.userNick ); stripBBCode( data.userNick );
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
 			HANDLE hContact = MSN_HContactFromEmail( data.userEmail, NULL, 0, 0 );
