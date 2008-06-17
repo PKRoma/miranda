@@ -46,7 +46,7 @@ typedef struct
 Registers new hotkey
   wParam=(WPARAM)0
   lParam=(LPARAM)(HOTKEYDESC *)hotkey
-Returns 0 on success or nonzero otherwise
+Returns 0 on failure or hotkey atom id on success
 */
 #define MS_HOTKEY_REGISTER			"CoreHotkeys/Register"
 
