@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by jabber.mak
 
 .\jabber.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
