@@ -676,7 +676,10 @@ static void sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 	// Process status message info
 	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
 	if (*szStatMsg)
+	{
+		stripBBCode((char*)szStatMsg);
 		DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", szStatMsg );
+	}
 	else
 		DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 
