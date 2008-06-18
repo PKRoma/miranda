@@ -304,7 +304,7 @@ void stripBBCode( char* src )
 		{
 			char ch = ps[1];
 			if (ch  == '/') ch = ps[2];
-			tag = ch == 'b' || ch == 'u' || ch == 'i' || ch == 'c';
+			tag = ch == 'b' || ch == 'u' || ch == 'i' || ch == 'c' || ch == 's';
 		}
 		if (!tag) *(pd++) = *ps;
 		else tag = *ps != ']';
