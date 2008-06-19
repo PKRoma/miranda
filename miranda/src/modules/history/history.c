@@ -269,7 +269,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
 		{
 			TCHAR* contactName, str[200];
-			contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,GCDNF_TCHAR);
+			contactName = cli.pfnGetContactDisplayName( hContact, 0 );
 			mir_sntprintf(str,SIZEOF(str),TranslateT("History for %s"),contactName);
 			SetWindowText(hwndDlg,str);
 		}
@@ -343,7 +343,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				sel=SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETCURSEL,0,0);
 				if(sel==LB_ERR) { EnableWindow(GetDlgItem(hwndDlg,IDC_DELETEHISTORY),FALSE); break; }
 				EnableWindow(GetDlgItem(hwndDlg,IDC_DELETEHISTORY),TRUE);
-				contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,GCDNF_TCHAR);
+				contactName = cli.pfnGetContactDisplayName( hContact, 0 );
 				hDbEvent=(HANDLE)SendDlgItemMessage(hwndDlg,IDC_LIST,LB_GETITEMDATA,sel,0);
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);

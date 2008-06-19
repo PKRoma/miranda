@@ -80,42 +80,40 @@ static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILETRANSFERSTATUS *fts)
 {
 	TCHAR msg[MAX_PATH];
-	char *fn = NULL;
+	TCHAR *fnbuf = NULL, *fn = NULL;
 	HICON hIcon = NULL;
-	SHFILEINFOA shfi = {0};
+	SHFILEINFO shfi = {0};
 
-	if (fts->currentFile)
-	{
-		fn = strrchr(fts->currentFile, '\\');
-		if (!fn) fn = fts->currentFile;
-		else ++fn;
+	if ( fts->currentFile ) {
+		fnbuf = mir_a2t( fts->currentFile );
+		if (( fn = _tcschr( fnbuf, '\\' )) == NULL )
+			fn = fnbuf;
+		else fn++;
 	}
 
-	if (fn && (fts->totalFiles > 1))
-	{
-		mir_sntprintf(msg, SIZEOF(msg), _T("%s: ") _T(TCHAR_STR_PARAM) _T(" (%d %s %d)"),
-			(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR), fn,
-			fts->currentFileNumber+1, TranslateT("of"), fts->totalFiles);
+	if (fn && (fts->totalFiles > 1)) {
+		mir_sntprintf(msg, SIZEOF(msg), _T("%s: %s (%d %s %d)"),
+			cli.pfnGetContactDisplayName( fts->hContact, 0 ),
+			fn, fts->currentFileNumber+1, TranslateT("of"), fts->totalFiles);
 		hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
 
 		if (dat->hIcon) DestroyIcon(dat->hIcon);
-		SHGetFileInfoA(fn, FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
+		SHGetFileInfo(fn, FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
 		hIcon = dat->hIcon = shfi.hIcon;
-	} else
-	if (fn)
-	{
-		mir_sntprintf(msg, SIZEOF(msg), _T("%s: ") _T(TCHAR_STR_PARAM),
-			(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR),
-			fn);
+	} 
+	else if (fn) {
+		mir_sntprintf(msg, SIZEOF(msg), _T("%s: %s"), cli.pfnGetContactDisplayName( fts->hContact, 0 ), fn);
 
 		if (dat->hIcon) DestroyIcon(dat->hIcon);
-		SHGetFileInfoA(fn, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
+		SHGetFileInfo(fn, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
 		hIcon = dat->hIcon = shfi.hIcon;
-	} else
-	{
-		lstrcpyn(msg, (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)fts->hContact,GCDNF_TCHAR), SIZEOF(msg));
+	} 
+	else {
+		lstrcpyn( msg, cli.pfnGetContactDisplayName( fts->hContact, 0 ), SIZEOF(msg));
 		hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
 	}
+
+	mir_free( fnbuf );
 	
 	SendDlgItemMessage(hwndDlg, IDC_FILEICON, STM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 	SetDlgItemText(hwndDlg, IDC_CONTACTNAME, msg);
@@ -249,7 +247,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONADDTOOLTIP, (WPARAM)"Cancel", 0);
 			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONSETASFLATBTN, 0, 0);
 
-			SetDlgItemText(hwndDlg, IDC_CONTACTNAME, (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR));
+			SetDlgItemText(hwndDlg, IDC_CONTACTNAME, cli.pfnGetContactDisplayName( dat->hContact, 0 ));
 
 			if(!dat->waitingForAcceptance) SetTimer(hwndDlg,1,1000,NULL);
 			return TRUE;

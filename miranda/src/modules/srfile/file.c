@@ -70,15 +70,13 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 		CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,(LPARAM)&cle);
 	}
 	else {
-		TCHAR *contactName;
 		TCHAR szTooltip[256];
 
 		SkinPlaySound("RecvFile");
 		cle.flags |= CLEF_TCHAR;
 		cle.hIcon = LoadSkinIcon( SKINICON_EVENT_FILE );
 		cle.pszService = "SRFile/RecvFile";
-		contactName = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,wParam,GCDNF_TCHAR);
-		mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("File from %s"),contactName);
+		mir_sntprintf(szTooltip,SIZEOF(szTooltip),TranslateT("File from %s"), cli.pfnGetContactDisplayName(( HANDLE )wParam, 0 ));
 		cle.ptszTooltip=szTooltip;
 		CallService(MS_CLIST_ADDEVENT,0,(LPARAM)&cle);
 	}

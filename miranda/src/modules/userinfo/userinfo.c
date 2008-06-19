@@ -242,7 +242,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if (dat->hContact == NULL)
 					name = TranslateT("Owner");
 				else
-					name = ( TCHAR* )CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, GCDNF_TCHAR);
+					name = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 
 				GetWindowText( hwndDlg, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );

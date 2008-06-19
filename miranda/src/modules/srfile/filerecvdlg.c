@@ -244,7 +244,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History");
 		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
 
-		contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+		contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath));
 		SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);

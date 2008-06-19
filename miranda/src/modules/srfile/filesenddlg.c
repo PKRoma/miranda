@@ -246,7 +246,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		}
 		{
 			char *szProto;
-			TCHAR* contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+			TCHAR* contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 			SetDlgItemText(hwndDlg,IDC_TO,contactName);
 
 			szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);

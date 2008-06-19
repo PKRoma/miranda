@@ -48,7 +48,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 			{
 				TCHAR* szName;
 				if ( acs->handleType == HANDLE_CONTACT )
-					szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)acs->handle, GCDNF_TCHAR );
+					szName = cli.pfnGetContactDisplayName( acs->handle, GCDNF_TCHAR );
 				else {
                     char *p;
                     int isSet = 0;
@@ -65,7 +65,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
                         hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
                         mir_free(dbei.pBlob);
                         if (hcontact!=INVALID_HANDLE_VALUE) {
-                            szName = (TCHAR*)CallService( MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hcontact, GCDNF_TCHAR );
+                            szName = cli.pfnGetContactDisplayName( hcontact, 0 );
                             isSet = 1;
                         }
                     }

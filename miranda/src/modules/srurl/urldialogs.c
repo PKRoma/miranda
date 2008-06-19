@@ -113,7 +113,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 			CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 
-			contactName=(TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+			contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 			mir_sntprintf(msg,SIZEOF(msg),TranslateT("URL from %s"),contactName);
 			SetWindowText(hwndDlg,msg);
 			SetDlgItemText(hwndDlg,IDC_FROM,contactName);
@@ -483,7 +483,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 		WindowList_Add(hUrlWindowList, hwndDlg, dat->hContact);
 		{
-			TCHAR *str = (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)dat->hContact,GCDNF_TCHAR);
+			TCHAR *str = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 			SetDlgItemText(hwndDlg,IDC_NAME,str);
 		}
 
