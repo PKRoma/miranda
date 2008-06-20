@@ -180,9 +180,17 @@ bool MSN_SharingFindMembership(void)
 
 		if (status == 200)
 		{
-			ezxml_t mems = ezxml_get(xmlm, "soap:Body", 0, "FindMembershipResponse", 0, 
-				"FindMembershipResult", 0, "Services", 0, "Service", 0, 
-				"Memberships", 0, "Membership", -1);
+			ezxml_t svcs = ezxml_get(xmlm, "soap:Body", 0, "FindMembershipResponse", 0, 
+				"FindMembershipResult", 0, "Services", 0, "Service", -1); 
+			
+			while (svcs != NULL)
+			{
+				const char* szType = ezxml_txt(ezxml_get(svcs, "Info", 0, "Handle", 0, "Type", -1));
+				if (stricmp(szType, "Messenger") == 0) break;
+				svcs = ezxml_next(svcs);
+			}
+
+			ezxml_t mems = ezxml_get(svcs, "Memberships", 0, "Membership", -1);
 			
 			while (mems != NULL)
 			{
