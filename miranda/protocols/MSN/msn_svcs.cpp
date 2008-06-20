@@ -945,8 +945,10 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 	char tEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( MSN_IsMeByContact( ccs->hContact, tEmail )) return 0;
 
+	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
+
 	int netId = Lists_GetNetId( tEmail );
-	if (netId != NETID_MSN && netId != NETID_LCS) return 0;
+	if ((dwFlags & 0xf0000000) == 0 && netId != NETID_MSN) return 0;
 
 	char** files = ( char** )ccs->lParam;
 
@@ -968,7 +970,6 @@ static int MsnSendFile( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 
-	DWORD dwFlags = MSN_GetDword( ccs->hContact, "FlagBits", 0 );
 	if ( dwFlags & 0xf0000000 )
 		p2p_invite( ccs->hContact, MSN_APPID_FILE, sft );
 	else
