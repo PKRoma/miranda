@@ -630,11 +630,11 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		}
 		return TRUE;
 	case WM_CLOSE:
-        if (g_dat->flags2 & SMF2_HIDECONTAINERS) {
-            ShowWindow(hwndDlg, SW_HIDE);
-        } else {
-            DestroyWindow(hwndDlg);
-        }
+		if (g_dat->flags2 & SMF2_HIDECONTAINERS && dat->childrenCount > 0) {
+			ShowWindow(hwndDlg, SW_HIDE);
+		} else {
+			DestroyWindow(hwndDlg);
+		}
 		return TRUE;
 	case WM_MEASUREITEM:
 		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
@@ -1036,7 +1036,7 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			if (dat->childrenCount != 0) {
 				SetFocus(dat->hwndActive);
 			} else {
-				DestroyWindow(hwndDlg);
+				PostMessage(hwndDlg, WM_CLOSE, 0, 0);
 			}
 		}
 		return TRUE;
