@@ -186,7 +186,7 @@ bool MSN_SharingFindMembership(void)
 			while (svcs != NULL)
 			{
 				const char* szType = ezxml_txt(ezxml_get(svcs, "Info", 0, "Handle", 0, "Type", -1));
-				if (stricmp(szType, "Messenger") == 0) break;
+				if (_stricmp(szType, "Messenger") == 0) break;
 				svcs = ezxml_next(svcs);
 			}
 
