@@ -321,22 +321,25 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 		{
 			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
-			char szTmp[128], szVersion[128], szVersionTmp[128], *p;
+			char szVersion[128], szVersionTmp[128], *p;
+			TCHAR szTmp[128];
 			
 			if (und->isManual)
 				hwndManualUpdateDlg = hwndDlg;
 			else hwndUpdateDlg = hwndDlg;
 			if (und->isNew) {
-				mir_snprintf(szTmp, SIZEOF(szTmp), Translate("Miranda IM %s Now Available"), und->version);
+				TCHAR* ptszVer = mir_a2t( und->version );
+				mir_sntprintf(szTmp, SIZEOF(szTmp), TranslateT("Miranda IM %s Now Available"), ptszVer);
+				mir_free(ptszVer);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_UPDATE), SW_HIDE);
 			}
 			else {
-				mir_snprintf(szTmp, SIZEOF(szTmp), Translate("No Update Available"));
+				mir_sntprintf(szTmp, SIZEOF(szTmp), TranslateT("No Update Available"));
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, TranslateT("You are running the latest version of Miranda IM.  No update is available at this time."));
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DOWNLOAD), FALSE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_VERSION), SW_HIDE);
 			}
-			SetWindowTextA(hwndDlg, szTmp);
+			SetWindowText(hwndDlg, szTmp);
 			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersion), (LPARAM)szVersion);
 			p = strstr(szVersion, " Unicode");
 			if (p)
