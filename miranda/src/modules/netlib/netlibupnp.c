@@ -636,7 +636,7 @@ static BOOL findUPnPGateway(void)
 
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, BOOL search)
 {
-	int res = 0;
+	int res = 0, i = 5;
 
 	if (findUPnPGateway())
 	{
@@ -657,7 +657,7 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 			txtParseParam(szData, NULL, "<errorCode>", "</errorCode>", szExtIP, sizeof(szExtIP));
 
 		}
-		while (search && res == 500 && atol(szExtIP) == 718);
+		while (search && res == 500 && atol(szExtIP) == 718 && --i);
 
 		if (res == 200)
 		{
