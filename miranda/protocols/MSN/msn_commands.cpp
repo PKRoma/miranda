@@ -1482,7 +1482,7 @@ LBL_InvalidCommand:
 			break;
 		}
 
-		case ' NBU':	// UBN : MSNP13+ File sharing, P2P Bootstrap.
+		case ' NBU':	// UBN : MSNP13+ File sharing, P2P Bootstrap, TURN setup.
 		{
 			union {
 				char* tWords[ 3 ];
@@ -1503,16 +1503,20 @@ LBL_InvalidCommand:
 			HReadBuffer buf(info, 0);
 			char* msgBody = (char*)buf.surelyRead(len);
 
-			switch (*data.typeId)
+			switch (atol(data.typeId))
 			{
-				case '1':
+				case 1:
 					// File sharing stuff
 					// sttProcessFileSharing(msgBody, len, hContact);
 					break;
 
-				case '3':
+				case 3:
 					// P2P Bootstrap
 					p2p_processSIP(info, msgBody, NULL);
+					break;
+
+				case 10:
+					// TURN setup
 					break;
 			}
 		}
