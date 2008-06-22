@@ -1963,7 +1963,7 @@ bool CIrcProto::OnIrc_WHO_END( const CIrcMessage* pmsg )
 		if ( pmsg->m_bIncoming && pmsg->parameters.getCount() > 1 ) {
 			// is it a channel?
 			if ( IsChannel( pmsg->parameters[1] )) {
-				CMString S = _T("");
+				CMString S;
 				CMString User = GetWord( m_whoReply.c_str(), 0 );
 				while ( !User.IsEmpty()) {
 					if ( GetWord( m_whoReply.c_str(), 3)[0] == 'G' ) {
@@ -2110,12 +2110,12 @@ bool CIrcProto::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 			TCHAR* p1 = NULL;
 			TCHAR* p2 = NULL;
 			int awaystatus = 0;
-			CMString sTemp = _T("");
-			CMString host = _T("");
-			CMString user = _T("");
-			CMString nick = _T("");
-			CMString mask = _T("");
-			CMString mess = _T("");
+			CMString sTemp;
+			CMString host;
+			CMString user;
+			CMString nick;
+			CMString mask;
+			CMString mess;
 			CMString channel;
 			int i;
 			int j;
@@ -2133,15 +2133,9 @@ bool CIrcProto::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 			}	}
 
 			// Cycle through results
-//			params = new char[pmsg->parameters[1].GetLength()+2];
-//			lstrcpynA(params, pmsg->parameters[1].c_str(), pmsg->parameters[1].GetLength()+1);
-//			for(p1 = GetWordAddress(params, 0); *p1; p1 = next)
 			j = 0;
 			sTemp = GetWord( pmsg->parameters[1].c_str(), j );
 			while ( !sTemp.IsEmpty() ) {
-//				p2 = next = GetWordAddress(p1, 1);
-//				while(*(p2 - 1) == ' ') p2--;
-//				*p2 = '\0';
 				p1 = mir_tstrdup( sTemp.c_str() );
 				p2 = p1;
 
