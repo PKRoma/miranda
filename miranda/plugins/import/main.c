@@ -49,6 +49,7 @@ static HANDLE hPreviousContact = INVALID_HANDLE_VALUE;
 static HANDLE hPreviousDbEvent = NULL;
 
 static HANDLE hHookModulesLoaded;
+static HANDLE hImportService = NULL;
 
 BOOL UnicodeDB = FALSE;
 
@@ -486,9 +487,6 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 			break;
 	}	}
 
-	if (hHookModulesLoaded)
-		UnhookEvent(hHookModulesLoaded);
-
 	UnicodeDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	return 0;
 }
@@ -498,7 +496,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	pluginLink = link;
 	mir_getMMI( &mmi );
 
-	CreateServiceFunction(IMPORT_SERVICE, ImportCommand);
+	hImportService = CreateServiceFunction(IMPORT_SERVICE, ImportCommand);
 	{
 		CLISTMENUITEM mi;
 		ZeroMemory(&mi, sizeof(mi));
@@ -509,7 +507,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		mi.pszService = IMPORT_SERVICE;
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 	}
-	HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	{
 		INITCOMMONCONTROLSEX icex;
 		icex.dwSize = sizeof(icex);
@@ -527,6 +525,8 @@ int __declspec(dllexport) Unload(void)
 {
 	if (hHookModulesLoaded)
 		UnhookEvent(hHookModulesLoaded);
+	if (hImportService)
+		DestroyServiceFunction(hImportService);
 
 	return 0;
 }
