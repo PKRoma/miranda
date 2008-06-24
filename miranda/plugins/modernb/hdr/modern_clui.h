@@ -47,16 +47,18 @@ public:
     SERVICE( Service_Menu_HideContactAvatar );
 
 	static CLUI * m_pCLUI;  
-
+    static BOOL m_fMainMenuInited;
 	static HRESULT FillAlphaChannel(HWND hwndClui, HDC hDC, RECT* prcParent, BYTE bAlpha);
 	static HRESULT CreateCLC(HWND hwndClui);
 	static HRESULT SnappingToEdge(HWND hCluiWnd, WINDOWPOS * lpWindowPos);
+    static BOOL IsMainMenuInited() { return CLUI::m_fMainMenuInited; }
 
 private:
     HRESULT LoadDllsRuntime();
     HRESULT RegisterAvatarMenu();  // TODO move to CLC class
     HRESULT CreateCLCWindow(const HWND parent);
     HRESULT CreateUIFrames();
+
     
 protected:
 	HMODULE m_hDwmapiDll;

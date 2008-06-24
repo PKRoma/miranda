@@ -50,7 +50,7 @@ HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pB
 #define STATIC_METHOD
 
 CLUI* CLUI::m_pCLUI = NULL;
-
+BOOL CLUI::m_fMainMenuInited = FALSE;
 CLUI::CLUI() :
 	m_hUserDll( NULL ),
 	m_hDwmapiDll( NULL )
@@ -1734,7 +1734,12 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		return ske_ValidateFrameImageProc(NULL);               
 	case WM_INITMENU:
 		{
-			if (ServiceExists(MS_CLIST_MENUBUILDMAIN)){CallService(MS_CLIST_MENUBUILDMAIN,0,0);};
+            if ( !CLUI::IsMainMenuInited() )
+            {
+			    if (ServiceExists(MS_CLIST_MENUBUILDMAIN))
+                    CallService(MS_CLIST_MENUBUILDMAIN,0,0);
+                CLUI::m_fMainMenuInited = TRUE;
+            }     
 			return(0);
 		};
 	case WM_NCACTIVATE:
