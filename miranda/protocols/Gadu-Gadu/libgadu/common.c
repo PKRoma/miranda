@@ -26,6 +26,9 @@
  * \brief Funkcje wykorzystywane przez różne moduły biblioteki
  */
 #include <sys/types.h>
+#ifdef _WIN32
+#include "win32.h"
+#else
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -33,22 +36,27 @@
 #ifdef sun
 #  include <sys/filio.h>
 #endif
+#endif /* _WIN32 */
 
 #include <errno.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <netdb.h>
+#endif
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "libgadu.h"
 
 /**
  * Plik, do którego będą przekazywane informacje odpluskwiania.
  *
- * Funkcja \c gg_debug i pochodne mogą być przechwytywane przez aplikację
+ * Funkcja \c gg_debug() i pochodne mogą być przechwytywane przez aplikację
  * korzystającą z biblioteki, by wyświetlić je na żądanie użytkownika lub
  * zapisać do późniejszej analizy. Jeśli nie określono pliku, wybrane
  * informacje będą wysyłane do standardowego wyjścia błędu (\c stderr).
@@ -62,8 +70,8 @@ FILE *gg_debug_file = NULL;
 /**
  * \internal Przekazuje informacje odpluskwiania do odpowiedniej funkcji.
  *
- * Jeśli aplikacja ustawiła odpowiednią funkcję obsługi w \c
- * gg_debug_handler_session lub \c gg_debug_handler, jest ona wywoływana.
+ * Jeśli aplikacja ustawiła odpowiednią funkcję obsługi w
+ * \c gg_debug_handler_session lub \c gg_debug_handler, jest ona wywoływana.
  * W przeciwnym wypadku wynik jest wysyłany do standardowego wyjścia błędu.
  *
  * \param sess Struktura sesji (może być \c NULL)
@@ -167,7 +175,7 @@ char *gg_vsaprintf(const char *format, va_list ap)
 				return NULL;
 			}
 			buf = tmp;
-			res = _vsnprintf(buf, size, format, ap);
+			res = vsnprintf(buf, size, format, ap);
 		} while (res == size - 1 || res == -1);
 	}
 #else
@@ -176,7 +184,7 @@ char *gg_vsaprintf(const char *format, va_list ap)
 
 		/* libce Solarisa przy buforze NULL zawsze zwracają -1, więc
 		 * musimy podać coś istniejącego jako cel printf()owania. */
-		size = _vsnprintf(tmp, sizeof(tmp), format, ap);
+		size = vsnprintf(tmp, sizeof(tmp), format, ap);
 		if (!(buf = malloc(size + 1)))
 			return NULL;
 	}
@@ -185,14 +193,14 @@ char *gg_vsaprintf(const char *format, va_list ap)
 	format = start;
 
 #ifdef GG_CONFIG_HAVE_VA_COPY
-	_vsnprintf(buf, size + 1, format, aq);
+	vsnprintf(buf, size + 1, format, aq);
 	va_end(aq);
 #else
 #  ifdef GG_CONFIG_HAVE___VA_COPY
-	_vsnprintf(buf, size + 1, format, aq);
+	vsnprintf(buf, size + 1, format, aq);
 	va_end(aq);
 #  else
-	_vsnprintf(buf, size + 1, format, ap);
+	vsnprintf(buf, size + 1, format, ap);
 #  endif
 #endif
 
@@ -281,7 +289,7 @@ char *gg_read_line(int sock, char *buf, int length)
 
 	for (; length > 1; buf++, length--) {
 		do {
-			if ((ret = read(sock, buf, 1)) == -1 && errno != EINTR) {
+			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR) {
 				gg_debug(GG_DEBUG_MISC, "// gg_read_line() error on read (errno=%d, %s)\n", errno, strerror(errno));
 				*buf = 0;
 				return NULL;

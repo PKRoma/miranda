@@ -25,15 +25,15 @@
  * \brief Obsługa katalogu publicznego od wersji Gadu-Gadu 5.x
  */
 
-#include "libgadu-config.h"
+#define _USE_32BIT_TIME_T
 
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#ifdef GG_CONFIG_MIRANDA
-#include <sys/socket.h>
+#ifdef _WIN32
+#include "win32.h"
 #undef small
 #endif
 
@@ -85,7 +85,7 @@ static int gg_pubdir50_add_n(gg_pubdir50_t req, int num, const char *field, cons
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_pubdir50_add_n(%p, %d, \"%s\", \"%s\");\n", req, num, field, value);
 
-	if (!(dupvalue = _strdup(value))) {
+	if (!(dupvalue = strdup(value))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_add_n() out of memory\n");
 		return -1;
 	}
@@ -100,7 +100,7 @@ static int gg_pubdir50_add_n(gg_pubdir50_t req, int num, const char *field, cons
 		return 0;
 	}
 		
-	if (!(dupfield = _strdup(field))) {
+	if (!(dupfield = strdup(field))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_pubdir50_add_n() out of memory\n");
 		free(dupvalue);
 		return -1;

@@ -2,7 +2,7 @@
 /* $Id$ */
 
 /*
- *  (C) Copyright 2001-2006 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2008 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Tomasz Chiliński <chilek@chilan.com>
  *                          Adam Wysocki <gophi@ekg.chmurka.net>
  *
@@ -27,10 +27,13 @@
  * \brief Obsługa połączeń bezpośrednich do wersji Gadu-Gadu 6.x
  */
 
-#include "libgadu-config.h"
+#define _USE_32BIT_TIME_T
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include "win32.h"
+#else
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -38,6 +41,7 @@
 #ifdef sun
 #  include <sys/filio.h>
 #endif
+#endif /* _WIN32 */
 
 #include <ctype.h>
 #include <errno.h>
@@ -46,11 +50,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "compat.h"
 #include "libgadu.h"
-#ifdef GG_CONFIG_MIRANDA
+
+#ifdef _WIN32
 #undef small
 #endif
 
@@ -90,7 +97,7 @@ static void gg_dcc_debug_data(const char *prefix, int fd, const void *buf, unsig
  * \param sess Struktura sesji
  * \param uin Numer odbiorcy
  *
- * \return Patrz \c gg_send_message_ctcp
+ * \return Patrz \c gg_send_message_ctcp()
  *
  * \ingroup dcc6
  */
@@ -131,7 +138,7 @@ static void gg_dcc_fill_filetime(uint32_t ut, uint32_t *ft)
 /**
  * Wypełnia pola struktury \c gg_dcc niezbędne do wysłania pliku.
  *
- * \note Większą funkcjonalność zapewnia funkcja \c gg_dcc_fill_file_info2.
+ * \note Większą funkcjonalność zapewnia funkcja \c gg_dcc_fill_file_info2().
  *
  * \param d Struktura połączenia
  * \param filename Nazwa pliku
@@ -158,7 +165,7 @@ int gg_dcc_fill_file_info(struct gg_dcc *d, const char *filename)
  */
 int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *local_filename)
 {
-	struct _stat st;
+	struct stat st;
 	const char *name, *ext, *p;
 	unsigned char *q;
 	int i, j;
@@ -171,8 +178,8 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-	if (_stat(local_filename, &st) == -1) {
-		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() _stat() failed (%s)\n", strerror(errno));
+	if (stat(local_filename, &st) == -1) {
+		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() stat() failed (%s)\n", strerror(errno));
 		return -1;
 	}
 
@@ -182,11 +189,7 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-#ifdef GG_CONFIG_MIRANDA
-	if ((d->file_fd = fopen(filename, "rb")) == NULL) {
-#else
 	if ((d->file_fd = open(local_filename, O_RDONLY)) == -1) {
-#endif
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() open() failed (%s)\n", strerror(errno));
 		return -1;
 	}
@@ -203,7 +206,7 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 	d->file_info.size = gg_fix32(st.st_size);
 	d->file_info.mode = gg_fix32(0x20);	/* FILE_ATTRIBUTE_ARCHIVE */
 
-#ifdef GG_CONFIG_MIRANDA
+#ifdef _WIN32
 	if (!(name = strrchr(filename, '\\')))
 #else
 	if (!(name = strrchr(filename, '/')))
@@ -291,11 +294,7 @@ static struct gg_dcc *gg_dcc_transfer(uint32_t ip, uint16_t port, uin_t my_uin, 
 	d->state = GG_STATE_CONNECTING;
 	d->type = type;
 	d->timeout = GG_DEFAULT_TIMEOUT;
-#ifdef GG_CONFIG_MIRANDA
-	d->file_fd = NULL;
-#else
 	d->file_fd = -1;
-#endif
 	d->active = 1;
 	d->fd = -1;
 	d->uin = my_uin;
@@ -388,7 +387,9 @@ void gg_dcc_set_type(struct gg_dcc *d, int type)
  * \internal Funkcja zwrotna połączenia bezpośredniego.
  *
  * Pole \c callback struktury \c gg_dcc zawiera wskaźnik do tej funkcji.
- * Wywołuje ona \c gg_watch_fd i zachowuje wynik w polu \c event.
+ * Wywołuje ona \c gg_watch_fd() i zachowuje wynik w polu \c event.
+ *
+ * \note Funkcjonalność funkcjo zwrotnej nie jest już wspierana.
  *
  * \param d Struktura połączenia
  *
@@ -513,13 +514,13 @@ int gg_dcc_voice_send(struct gg_dcc *d, char *buf, int length)
 	packet.type = 0x03; /* XXX */
 	packet.length = gg_fix32(length);
 
-	if (write(d->fd, &packet, sizeof(packet)) < (signed)sizeof(packet)) {
+	if (gg_sock_write(d->fd, &packet, sizeof(packet)) < (signed)sizeof(packet)) {
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_voice_send() write() failed\n");
 		return -1;
 	}
 	gg_dcc_debug_data("write", d->fd, &packet, sizeof(packet));
 
-	if (write(d->fd, buf, length) < length) {
+	if (gg_sock_write(d->fd, buf, length) < length) {
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_voice_send() write() failed\n");
 		return -1;
 	}
@@ -537,7 +538,7 @@ int gg_dcc_voice_send(struct gg_dcc *d, char *buf, int length)
  */
 #define gg_dcc_read(fd, buf, size) \
 { \
-	int tmp = read(fd, buf, size); \
+	int tmp = gg_sock_read(fd, buf, size); \
 	\
 	if (tmp < (int) size) { \
 		if (tmp == -1) { \
@@ -649,11 +650,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 		c->state = GG_STATE_READING_UIN_1;
 		c->type = GG_SESSION_DCC;
 		c->timeout = GG_DEFAULT_TIMEOUT;
-#ifdef GG_CONFIG_MIRANDA
-		c->file_fd = NULL;
-#else
 		c->file_fd = -1;
-#endif
 		c->remote_addr = sin.sin_addr.s_addr;
 		c->remote_port = ntohs(sin.sin_port);
 
@@ -840,7 +837,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 			case GG_STATE_READING_FILE_HEADER:
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() GG_STATE_READING_FILE_HEADER\n");
 
-				tmp = read(h->fd, h->chunk_buf + h->chunk_offset, h->chunk_size - h->chunk_offset);
+				tmp = gg_sock_read(h->fd, h->chunk_buf + h->chunk_offset, h->chunk_size - h->chunk_offset);
 
 				if (tmp == -1) {
 					gg_debug(GG_DEBUG_MISC, "// gg_watch_fd() read() failed (errno=%d, %s)\n", errno, strerror(errno));
@@ -940,7 +937,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 			case GG_STATE_READING_VOICE_DATA:
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() GG_STATE_READING_VOICE_DATA\n");
 
-				tmp = read(h->fd, h->voice_buf + h->chunk_offset, h->chunk_size - h->chunk_offset);
+				tmp = gg_sock_read(h->fd, h->voice_buf + h->chunk_offset, h->chunk_size - h->chunk_offset);
 				if (tmp < 1) {
 					if (tmp == -1) {
 						gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() read() failed (errno=%d, %s)\n", errno, strerror(errno));
@@ -976,7 +973,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() GG_STATE_CONNECTING\n");
 
 				res = 0;
-				if ((foo = getsockopt(h->fd, SOL_SOCKET, SO_ERROR, (char *)&res, &res_size)) || res) {
+				if ((foo = gg_getsockopt(h->fd, SOL_SOCKET, SO_ERROR, &res, &res_size)) || res) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() connection failed (fd=%d,errno=%d(%s),foo=%d,res=%d(%s))\n", h->fd, errno, strerror(errno), foo, res, strerror(res));
 					e->type = GG_EVENT_DCC_ERROR;
 					e->event.dcc_error = GG_ERROR_DCC_HANDSHAKE;
@@ -1048,11 +1045,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 						h->check = GG_CHECK_WRITE;
 						h->timeout = GG_DEFAULT_TIMEOUT;
 
-#ifdef GG_CONFIG_MIRANDA
-						if (h->file_fd == NULL)
-#else
 						if (h->file_fd == -1)
-#endif
 							e->type = GG_EVENT_DCC_NEED_FILE_INFO;
 						break;
 
@@ -1068,11 +1061,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 			case GG_STATE_SENDING_FILE_INFO:
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() GG_STATE_SENDING_FILE_INFO\n");
 
-#ifdef GG_CONFIG_MIRANDA
-				if (h->file_fd == NULL) {
-#else
 				if (h->file_fd == -1) {
-#endif
 					e->type = GG_EVENT_DCC_NEED_FILE_INFO;
 					return e;
 				}
@@ -1174,15 +1163,15 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-#ifdef GG_CONFIG_MIRANDA
-				fseek(h->file_fd, h->offset, SEEK_SET);
+				if (h->offset >= h->file_info.size) {
+					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() offset >= size, finished\n");
+					e->type = GG_EVENT_DCC_DONE;
+					return e;
+				}
 
-				size = fread(buf, 1, utmp, h->file_fd);
-#else
 				lseek(h->file_fd, h->offset, SEEK_SET);
 
 				size = read(h->file_fd, buf, utmp);
-#endif
 
 				/* błąd */
 				if (size == -1) {
@@ -1215,7 +1204,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					}
 				}
 
-				tmp = write(h->fd, buf, size);
+				tmp = gg_sock_write(h->fd, buf, size);
 
 				if (tmp == -1) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() write() failed (%s)\n", strerror(errno));
@@ -1259,7 +1248,13 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 				if ((utmp = h->chunk_size - h->chunk_offset) > sizeof(buf))
 					utmp = sizeof(buf);
 
-				size = read(h->fd, buf, utmp);
+				if (h->offset >= h->file_info.size) {
+					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() offset >= size, finished\n");
+					e->type = GG_EVENT_DCC_DONE;
+					return e;
+				}
+
+				size = gg_sock_read(h->fd, buf, utmp);
 
 				gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() ofs=%d, size=%d, read()=%d\n", h->offset, h->file_info.size, size);
 
@@ -1282,11 +1277,8 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-#ifdef GG_CONFIG_MIRANDA
-				tmp = fwrite(buf, 1, size, h->file_fd);
-#else
 				tmp = write(h->file_fd, buf, size);
-#endif				
+
 				if (tmp == -1 || tmp < size) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() write() failed (%d:fd=%d:res=%d:%s)\n", tmp, h->file_fd, size, strerror(errno));
 					e->type = GG_EVENT_DCC_ERROR;
@@ -1350,7 +1342,7 @@ void gg_dcc_free(struct gg_dcc *d)
 		return;
 
 	if (d->fd != -1)
-		close(d->fd);
+		gg_sock_close(d->fd);
 
 	if (d->chunk_buf) {
 		free(d->chunk_buf);

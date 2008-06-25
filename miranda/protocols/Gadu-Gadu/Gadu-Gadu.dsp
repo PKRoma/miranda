@@ -106,6 +106,10 @@ SOURCE=.\libgadu\compat.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\win32.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\dcc.c
 # SUBTRACT CPP /YX
 # End Source File
@@ -123,10 +127,6 @@ SOURCE=.\libgadu\events.c
 
 SOURCE=.\libgadu\http.c
 # SUBTRACT CPP /YX
-# End Source File
-# Begin Source File
-
-SOURCE=".\libgadu\libgadu-config.h"
 # End Source File
 # Begin Source File
 
@@ -220,69 +220,6 @@ SOURCE=.\userutils.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Group "win32"
-
-# PROP Default_Filter ""
-# Begin Group "arpa"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\libgadu\win32\arpa\inet.h
-# End Source File
-# End Group
-# Begin Group "netinet"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\libgadu\win32\netinet\in.h
-# End Source File
-# End Group
-# Begin Group "sys"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\libgadu\win32\sys\ioctl.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\sys\socket.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\sys\time.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\sys\wait.h
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=.\libgadu\win32\config.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\netdb.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\pwd.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\stdint.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\libgadu\win32\unistd.h
-# End Source File
-# End Group
-# Begin Source File
 
 SOURCE=.\dynstuff.h
 # End Source File

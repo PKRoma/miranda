@@ -22,13 +22,13 @@
 #define GG_H
 
 #if defined(__DEBUG__) || defined(_DEBUG)
-#define DEBUGMODE				// Debug Mode
+#define DEBUGMODE // Debug Mode
 #endif
 
 #define _USE_32BIT_TIME_T
 
 #if _WIN32_WINNT < 0x0500
-#define _WIN32_WINNT 0x0500
+#define _WIN32_WINNT 0x0501
 #endif
 
 #ifdef __cplusplus

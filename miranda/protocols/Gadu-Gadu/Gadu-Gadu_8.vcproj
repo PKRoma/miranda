@@ -717,7 +717,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libgadu\libgadu-config.h"
+					RelativePath="libgadu\win32.h"
 					>
 				</File>
 				<File
@@ -894,66 +894,6 @@
 				RelativePath="ssl.h"
 				>
 			</File>
-			<Filter
-				Name="win32"
-				>
-				<File
-					RelativePath="libgadu\win32\config.h"
-					>
-				</File>
-				<File
-					RelativePath="libgadu\win32\netdb.h"
-					>
-				</File>
-				<File
-					RelativePath="libgadu\win32\pwd.h"
-					>
-				</File>
-				<File
-					RelativePath="libgadu\win32\stdint.h"
-					>
-				</File>
-				<File
-					RelativePath="libgadu\win32\unistd.h"
-					>
-				</File>
-				<Filter
-					Name="arpa"
-					>
-					<File
-						RelativePath="libgadu\win32\arpa\inet.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="netinet"
-					>
-					<File
-						RelativePath="libgadu\win32\netinet\in.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="sys"
-					>
-					<File
-						RelativePath="libgadu\win32\sys\ioctl.h"
-						>
-					</File>
-					<File
-						RelativePath="libgadu\win32\sys\socket.h"
-						>
-					</File>
-					<File
-						RelativePath="libgadu\win32\sys\time.h"
-						>
-					</File>
-					<File
-						RelativePath="libgadu\win32\sys\wait.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
