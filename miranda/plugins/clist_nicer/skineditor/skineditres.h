@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Skin Editor.rc
+// Used by skinedit.rc
 //
 #define IDD_SKINITEMEDIT                101
 #define IDD_IMAGEITEMEDIT               102

@@ -8,12 +8,12 @@ CFG=Skin Editor - Win32 Debug
 !MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
 !MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
-!MESSAGE NMAKE /f "Skin Editor.mak".
+!MESSAGE NMAKE /f "skinedit.mak".
 !MESSAGE 
 !MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
 !MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
-!MESSAGE NMAKE /f "Skin Editor.mak" CFG="Skin Editor - Win32 Debug"
+!MESSAGE NMAKE /f "skinedit.mak" CFG="Skin Editor - Win32 Debug"
 !MESSAGE 
 !MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
@@ -96,7 +96,7 @@ SOURCE=.\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=".\Skin Editor.rc"
+SOURCE=".\skinedit.rc"
 # End Source File
 # End Group
 # Begin Group "Header-Dateien"

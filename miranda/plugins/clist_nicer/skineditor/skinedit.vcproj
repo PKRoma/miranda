@@ -314,7 +314,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Skin Editor.rc"
+				RelativePath=".\skinedit.rc"
 				>
 			</File>
 		</Filter>
