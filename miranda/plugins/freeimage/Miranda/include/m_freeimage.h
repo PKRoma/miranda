@@ -129,11 +129,13 @@ FI_STRUCT (FIMULTIBITMAP) { void *data; };
 #ifndef _MSC_VER
 // define portable types for 32-bit / 64-bit OS
 #include <inttypes.h>
+#ifndef __MINGW32__
 typedef int32_t BOOL;
 typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
 typedef int32_t LONG;
+#endif
 #else
 // MS is not C99 ISO compliant
 typedef long BOOL;
@@ -149,6 +151,7 @@ typedef long LONG;
 #pragma pack(1)
 #endif // WIN32
 
+#ifndef __MINGW32__
 typedef struct tagRGBQUAD {
 #ifdef FREEIMAGE_BIGENDIAN
   BYTE rgbRed;
@@ -198,6 +201,7 @@ typedef struct tagBITMAPINFO {
   BITMAPINFOHEADER bmiHeader; 
   RGBQUAD          bmiColors[1];
 } BITMAPINFO, *PBITMAPINFO;
+#endif
 
 #endif // _WINDOWS_
 
