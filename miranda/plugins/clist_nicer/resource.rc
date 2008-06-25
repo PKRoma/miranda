@@ -7,7 +7,6 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
 #include <winres.h>
 #include <statusmodes.h>
 
@@ -896,46 +895,46 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_NOTICK              ICON    DISCARDABLE     "res\\notick.ico"
-IDI_RENAME              ICON    DISCARDABLE     "res\\rename.ico"
-IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
-IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
-IDI_HIDEOFFLINE         ICON    DISCARDABLE     "res\\online.ico"
-IDI_HIDEGROUPS          ICON    DISCARDABLE     "res\\groups.ico"
-IDI_SOUNDSON            ICON    DISCARDABLE     "res\\sounds_on.ico"
-IDI_SOUNDSOFF           ICON    DISCARDABLE     "res\\sounds_off.ico"
-IDI_FINDANDADD          ICON    DISCARDABLE     "res\\find.ico"
-IDI_TBOPTIONS           ICON    DISCARDABLE     "res\\options.ico"
-IDI_MINIMIZE            ICON    DISCARDABLE     "res\\minimize.ico"
-IDI_TABSRMMMENU         ICON    DISCARDABLE     "res\\tabsrmm_menu.ico"
-IDI_TABSRMMSESSIONLIST  ICON    DISCARDABLE     "res\\slist.ico"
-IDI_CLVISIBLE           ICON    DISCARDABLE     "res\\visible.ico"
-IDI_CLINVISIBLE         ICON    DISCARDABLE     "res\\invisible.ico"
-IDI_PROTOCONNECTING     ICON    DISCARDABLE     "res\\connecting.ico"
-IDI_OVL_OFFLINE         ICON    DISCARDABLE     "res\\overlay\\offline.ico"
-IDI_OVL_ONLINE          ICON    DISCARDABLE     "res\\overlay\\online.ico"
-IDI_OVL_AWAY            ICON    DISCARDABLE     "res\\overlay\\away.ico"
-IDI_OVL_DND             ICON    DISCARDABLE     "res\\overlay\\dnd.ico"
-IDI_OVL_NA              ICON    DISCARDABLE     "res\\overlay\\na.ico"
-IDI_OVL_OCCUPIED        ICON    DISCARDABLE     "res\\overlay\\occupied.ico"
-IDI_OVL_FREEFORCHAT     ICON    DISCARDABLE     "res\\overlay\\chat.ico"
-IDI_OVL_INVISIBLE       ICON    DISCARDABLE     "res\\overlay\\invisible.ico"
-IDI_OVL_ONTHEPHONE      ICON    DISCARDABLE     "res\\overlay\\phone.ico"
-IDI_OVL_OUTTOLUNCH      ICON    DISCARDABLE     "res\\overlay\\lunch.ico"
-IDI_TICK                ICON    DISCARDABLE     "res\\notick1.ico"
-IDI_CLVM_SELECT         ICON    DISCARDABLE     "res\\arrow-down.ico"
-IDI_CLVM_OPTIONS        ICON    DISCARDABLE     "res\\options_clvm.ico"
-IDI_TBTOPMENU           ICON    DISCARDABLE     "res\\menu.ico"
-IDI_TBACCOUNTS          ICON    DISCARDABLE     "res\\accounts.ico"
+IDI_NOTICK              ICON    DISCARDABLE     "res/notick.ico"
+IDI_RENAME              ICON    DISCARDABLE     "res/rename.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res/blank.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res/delete.ico"
+IDI_HIDEOFFLINE         ICON    DISCARDABLE     "res/online.ico"
+IDI_HIDEGROUPS          ICON    DISCARDABLE     "res/groups.ico"
+IDI_SOUNDSON            ICON    DISCARDABLE     "res/sounds_on.ico"
+IDI_SOUNDSOFF           ICON    DISCARDABLE     "res/sounds_off.ico"
+IDI_FINDANDADD          ICON    DISCARDABLE     "res/find.ico"
+IDI_TBOPTIONS           ICON    DISCARDABLE     "res/options.ico"
+IDI_MINIMIZE            ICON    DISCARDABLE     "res/minimize.ico"
+IDI_TABSRMMMENU         ICON    DISCARDABLE     "res/tabsrmm_menu.ico"
+IDI_TABSRMMSESSIONLIST  ICON    DISCARDABLE     "res/slist.ico"
+IDI_CLVISIBLE           ICON    DISCARDABLE     "res/visible.ico"
+IDI_CLINVISIBLE         ICON    DISCARDABLE     "res/invisible.ico"
+IDI_PROTOCONNECTING     ICON    DISCARDABLE     "res/connecting.ico"
+IDI_OVL_OFFLINE         ICON    DISCARDABLE     "res/overlay/offline.ico"
+IDI_OVL_ONLINE          ICON    DISCARDABLE     "res/overlay/online.ico"
+IDI_OVL_AWAY            ICON    DISCARDABLE     "res/overlay/away.ico"
+IDI_OVL_DND             ICON    DISCARDABLE     "res/overlay/dnd.ico"
+IDI_OVL_NA              ICON    DISCARDABLE     "res/overlay/na.ico"
+IDI_OVL_OCCUPIED        ICON    DISCARDABLE     "res/overlay/occupied.ico"
+IDI_OVL_FREEFORCHAT     ICON    DISCARDABLE     "res/overlay/chat.ico"
+IDI_OVL_INVISIBLE       ICON    DISCARDABLE     "res/overlay/invisible.ico"
+IDI_OVL_ONTHEPHONE      ICON    DISCARDABLE     "res/overlay/phone.ico"
+IDI_OVL_OUTTOLUNCH      ICON    DISCARDABLE     "res/overlay/lunch.ico"
+IDI_TICK                ICON    DISCARDABLE     "res/notick1.ico"
+IDI_CLVM_SELECT         ICON    DISCARDABLE     "res/arrow-down.ico"
+IDI_CLVM_OPTIONS        ICON    DISCARDABLE     "res/options_clvm.ico"
+IDI_TBTOPMENU           ICON    DISCARDABLE     "res/menu.ico"
+IDI_TBACCOUNTS          ICON    DISCARDABLE     "res/accounts.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res\\hyperlin.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "res\\DRAGCOPY.CUR"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "res\\dropuser.cur"
+IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "res/hyperlin.cur"
+IDC_DROP                CURSOR  DISCARDABLE     "res/DRAGCOPY.CUR"
+IDC_DROPUSER            CURSOR  DISCARDABLE     "res/dropuser.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //

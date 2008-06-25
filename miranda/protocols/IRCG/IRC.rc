@@ -28,22 +28,22 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MAIN                ICON                    "Icons\\irc.ico"
-IDI_ADD                 ICON                    "Icons\\add.ico"
-IDI_BLOCK               ICON                    "Icons\\block.ico"
-IDI_DELETE              ICON                    "Icons\\delete.ico"
-IDI_GO                  ICON                    "Icons\\go.ico"
-IDI_WHOIS               ICON                    "Icons\\help.ico"
-IDI_LIST                ICON                    "Icons\\list.ico"
-IDI_MANAGER             ICON                    "Icons\\manager.ico"
-IDI_QUICK               ICON                    "Icons\\quick.ico"
-IDI_RENAME              ICON                    "Icons\\rename.ico"
-IDI_SHOW                ICON                    "Icons\\show.ico"
-IDI_LOGO                ICON                    "Icons\\world.ico"
-IDI_DCC                 ICON                    "Icons\\dcc.ico"
-IDI_SERVER              ICON                    "Icons\\server.ico"
-IDI_PART                ICON                    "Icons\\part.ico"
-IDI_JOIN                ICON                    "Icons\\join.ico"
+IDI_MAIN                ICON                    "Icons/irc.ico"
+IDI_ADD                 ICON                    "Icons/add.ico"
+IDI_BLOCK               ICON                    "Icons/block.ico"
+IDI_DELETE              ICON                    "Icons/delete.ico"
+IDI_GO                  ICON                    "Icons/go.ico"
+IDI_WHOIS               ICON                    "Icons/help.ico"
+IDI_LIST                ICON                    "Icons/list.ico"
+IDI_MANAGER             ICON                    "Icons/manager.ico"
+IDI_QUICK               ICON                    "Icons/quick.ico"
+IDI_RENAME              ICON                    "Icons/rename.ico"
+IDI_SHOW                ICON                    "Icons/show.ico"
+IDI_LOGO                ICON                    "Icons/world.ico"
+IDI_DCC                 ICON                    "Icons/dcc.ico"
+IDI_SERVER              ICON                    "Icons/server.ico"
+IDI_PART                ICON                    "Icons/part.ico"
+IDI_JOIN                ICON                    "Icons/join.ico"
 #endif    // Neutral (Default) resources
 /////////////////////////////////////////////////////////////////////////////
 
