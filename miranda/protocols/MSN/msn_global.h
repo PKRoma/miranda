@@ -483,12 +483,13 @@ struct ThreadData
 	LONG           sendMessage( int msgType, const char* email, int netId, const char* msg, int parFlags );
 	LONG           sendRawMessage( int msgType, const char* data, int datLen );
 	LONG           sendPacket( const char* cmd, const char* fmt, ... );
+
+	int			 contactJoined( HANDLE hContact );
+	int			 contactLeft( HANDLE hContact );
 };
 
 void		 MSN_CloseConnections( void );
 void		 MSN_CloseThreads( void );
-int			 MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact );
-int			 MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact );
 void		 MSN_InitThreads( void );
 int			 MSN_GetChatThreads( ThreadData** parResult );
 int          MSN_GetActiveThreads( ThreadData** );

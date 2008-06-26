@@ -20,31 +20,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
-int  MSN_ContactJoined( ThreadData* parInfo, HANDLE hContact )
+int  ThreadData::contactJoined( HANDLE hContact )
 {
-	for ( int i=0; i < parInfo->mJoinedCount; i++ )
-		if ( parInfo->mJoinedContacts[i] == hContact )
+	for ( int i=0; i < mJoinedCount; i++ )
+		if ( mJoinedContacts[i] == hContact )
 			return i+1;
 
-	int ret = ++parInfo->mJoinedCount;
-	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
-	parInfo->mJoinedContacts[ ret-1 ] = hContact;
+	int ret = ++mJoinedCount;
+	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
+	mJoinedContacts[ ret-1 ] = hContact;
 	return ret;
 }
 
-int  MSN_ContactLeft( ThreadData* parInfo, HANDLE hContact )
+int  ThreadData::contactLeft( HANDLE hContact )
 {
 	int i;
 
-	for ( i=0; i < parInfo->mJoinedCount; i++ )
-		if ( parInfo->mJoinedContacts[ i ] == hContact )
+	for ( i=0; i < mJoinedCount; i++ )
+		if ( mJoinedContacts[ i ] == hContact )
 			break;
 
-	if ( i == parInfo->mJoinedCount )
+	if ( i == mJoinedCount )
 		return i;
 
-	int ret = --parInfo->mJoinedCount;
-	memmove( parInfo->mJoinedContacts + i, parInfo->mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
-	parInfo->mJoinedContacts = ( HANDLE* )mir_realloc( parInfo->mJoinedContacts, sizeof( HANDLE )*ret );
+	int ret = --mJoinedCount;
+	memmove( mJoinedContacts + i, mJoinedContacts+i+1, sizeof( HANDLE )*( ret-i ));
+	mJoinedContacts = ( HANDLE* )mir_realloc( mJoinedContacts, sizeof( HANDLE )*ret );
 	return ret;
 }

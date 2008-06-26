@@ -434,6 +434,8 @@ void  MSN_StartStopTyping( ThreadData* info, bool start )
 			info->mTimerId = 0;
 	}
 }
+
+
 long MSN_SendSMS(char* tel, char* txt)
 {
 	static const char *pgd = 

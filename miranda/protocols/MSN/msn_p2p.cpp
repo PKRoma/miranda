@@ -866,7 +866,7 @@ void  p2p_sendFeedStart( filetransfer* ft )
 		ThreadData* newThread = new ThreadData;
 		newThread->mType = SERVER_FILETRANS;
 		strcpy( newThread->mCookie, ft->p2p_callID );
-		MSN_ContactJoined( newThread, ft->std.hContact );
+		newThread->contactJoined( ft->std.hContact );
 		newThread->startThread(( pThreadFunc )p2p_sendFeedThread );
 }	}
 
@@ -880,7 +880,7 @@ void p2p_sendRecvFileDirectly( ThreadData* info )
 
 	HReadBuffer buf( info, 0 );
 
-	MSN_ContactJoined( info, info->mInitialContact );
+	info->contactJoined( info->mInitialContact );
 	info->mInitialContact = NULL;
 
 	MSN_StartP2PTransferByContact( info->mJoinedContacts[0] );
@@ -903,7 +903,7 @@ void p2p_sendRecvFileDirectly( ThreadData* info )
 	}
 
 	HANDLE hContact = info->mJoinedContacts[0];
-	MSN_ContactLeft( info, hContact );
+	info->contactLeft( hContact );
 	p2p_redirectSessions( hContact );
 }
 
