@@ -33,8 +33,8 @@ static int CompareDC( const directconnection* p1, const directconnection* p2 )
 	return int( p1 - p2 );
 }
 
-static LIST<filetransfer> sessionList( 10, CompareFT );
-static LIST<directconnection> dcList( 10, CompareDC );
+static OBJLIST<filetransfer> sessionList( 10, CompareFT );
+static OBJLIST<directconnection> dcList( 10, CompareDC );
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,6 @@ void  p2p_unregisterSession( filetransfer* ft )
 	int idx = sessionList.getIndex( ft );
 	if ( idx > -1 ) {
 		sessionList.remove( idx );
-		delete ft; 
 	}
 	LeaveCriticalSection( &sessionLock );
 }
@@ -73,7 +72,7 @@ filetransfer*  p2p_getSessionByID( unsigned id )
 	EnterCriticalSection( &sessionLock );
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->p2p_sessionid == id ) {
 			ft = FT;
 			break;
@@ -95,7 +94,7 @@ filetransfer*  p2p_getSessionByUniqueID( unsigned id )
 	EnterCriticalSection( &sessionLock );
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->p2p_acksessid == id ) {
 			ft = FT;
 			break;
@@ -126,7 +125,7 @@ filetransfer*  p2p_getThreadSession( HANDLE hContact, TInfoType mType )
 
 	filetransfer* result = NULL;
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->std.hContact == hContact && FT->tType == mType ) {
 			result = FT;
 			break;
@@ -142,7 +141,7 @@ filetransfer*  p2p_getAvatarSession( HANDLE hContact )
 
 	filetransfer* result = NULL;
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->std.hContact == hContact && !FT->std.sending && 
 			FT->p2p_type == MSN_APPID_AVATAR ) {
 			result = FT;
@@ -159,7 +158,7 @@ bool  p2p_isAvatarOnly( HANDLE hContact )
 
 	bool result = true;
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		result &= FT->std.hContact != hContact || FT->p2p_type != MSN_APPID_FILE;
 	}
 
@@ -173,7 +172,7 @@ void  p2p_clearDormantSessions( void )
 
 	time_t ts = time( NULL );
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->p2p_waitack && ( ts - FT->ts ) > 60 ) 
 		{
 			LeaveCriticalSection( &sessionLock );
@@ -183,7 +182,7 @@ void  p2p_clearDormantSessions( void )
 	}	}
 
 	for ( int j=0; j < dcList.getCount(); j++ ) {
-		directconnection* DC = dcList[j];
+		directconnection* DC = &dcList[j];
 		if (( ts - DC->ts ) > 120 ) {
 			LeaveCriticalSection( &sessionLock );
 			p2p_unregisterDC( DC );
@@ -200,7 +199,7 @@ void  p2p_redirectSessions( HANDLE hContact )
 
 	ThreadData* T = MSN_GetP2PThreadByContact( hContact );
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->std.hContact == hContact && !FT->std.sending && 
 			FT->std.currentFileProgress < FT->std.currentFileSize &&
 			( T == NULL || ( FT->tType != T->mType && FT->tType != 0 ))) 
@@ -215,12 +214,9 @@ void  p2p_cancelAllSessions( void )
 	EnterCriticalSection( &sessionLock );
 
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		p2p_sendCancel( FT );
 	}
-
-	for ( int j=0; j < dcList.getCount(); j++ ) 
-		delete dcList[j];
 
 	dcList.destroy();
 
@@ -236,7 +232,7 @@ filetransfer*  p2p_getSessionByCallID( const char* CallID )
 
 	filetransfer* ft = NULL;
 	for ( int i=0; i < sessionList.getCount(); i++ ) {
-		filetransfer* FT = sessionList[i];
+		filetransfer* FT = &sessionList[i];
 		if ( FT->p2p_callID != NULL && !strcmp( FT->p2p_callID, CallID )) {
 			ft = FT;
 			break;
@@ -263,7 +259,6 @@ void  p2p_unregisterDC( directconnection* dc )
 	int idx = dcList.getIndex( dc );
 	if ( idx > -1 ) {
 		dcList.remove( idx );
-		delete dc; 
 	}
 	LeaveCriticalSection( &sessionLock );
 }
@@ -277,7 +272,7 @@ directconnection*  p2p_getDCByCallID( const char* CallID )
 
 	directconnection* dc = NULL;
 	for ( int i=0; i < dcList.getCount(); i++ ) {
-		directconnection* DC = dcList[i];
+		directconnection* DC = &dcList[i];
 		if ( DC->callId != NULL && !strcmp( DC->callId, CallID )) {
 			dc = DC;
 			break;
@@ -300,14 +295,7 @@ void P2pSessions_Uninit()
 {
 	EnterCriticalSection( &sessionLock );
 
-	for ( int i=0; i < sessionList.getCount(); i++ ) 
-		delete sessionList[i];
-
 	sessionList.destroy();
-
-	for ( int j=0; j < dcList.getCount(); j++ ) 
-		delete dcList[j];
-
 	dcList.destroy();
 
 	LeaveCriticalSection( &sessionLock );
