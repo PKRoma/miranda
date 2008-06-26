@@ -1660,6 +1660,8 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 					_lseeki64( ft->fileId, hdrdata->mOffset, SEEK_SET );
 				_write( ft->fileId, msgbody, (unsigned int)dsz );
 
+				ft->lstFilePtr = hdrdata->mOffset + dsz;
+
 				__int64 dp = hdrdata->mOffset + dsz - ft->std.currentFileProgress;
 				if ( dp > 0) {
 					ft->std.totalProgress += (unsigned long)dp;
