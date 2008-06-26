@@ -1072,7 +1072,7 @@ LBL_InvalidCommand:
 
 			// in here, the first contact is the chat ID, starting from the second will be actual contact
 			// if only 1 person left in conversation
-			int personleft = MSN_ContactLeft( info, hContact );
+			int personleft = info->contactLeft( hContact );
 
 			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 			if (temp_status == ID_STATUS_INVISIBLE && MSN_GetThreadByContact(hContact) == NULL)
@@ -1266,7 +1266,7 @@ LBL_InvalidCommand:
 			if ( tNumTokens == 5 )
 				MSN_SetDword( hContact, "FlagBits", strtoul( data.flags, NULL, 10 ));
 
-			MSN_ContactJoined( info, hContact );
+			info->contactJoined( hContact );
 
 			int temp_status = MSN_GetWord(hContact, "Status", ID_STATUS_OFFLINE);
 			if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, data.userEmail))
@@ -1303,14 +1303,14 @@ LBL_InvalidCommand:
 			mir_utf8decode( data.userNick, NULL );
 			MSN_DebugLog( "New contact in channel %s %s", data.userEmail, data.userNick );
 
-			if ( MSN_ContactJoined( info, hContact ) == 1 ) {
+			if ( info->contactJoined( hContact ) == 1 ) {
 				info->sendCaps();
-				MsgQueueEntry E;
 
 				bool typing = false;
 
 				for (int i=3; --i; )
 				{
+					MsgQueueEntry E;
 					while (MsgQueue_GetNext( hContact, E ))
 					{
 						if ( E.msgType == 'X' ) ;
