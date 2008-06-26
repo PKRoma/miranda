@@ -1662,7 +1662,7 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 
 				ft->lstFilePtr = hdrdata->mOffset + dsz;
 
-				__int64 dp = hdrdata->mOffset + dsz - ft->std.currentFileProgress;
+				__int64 dp = ft->lstFilePtr - ft->std.currentFileProgress;
 				if ( dp > 0) {
 					ft->std.totalProgress += (unsigned long)dp;
 					ft->std.currentFileProgress += (unsigned long)dp;
