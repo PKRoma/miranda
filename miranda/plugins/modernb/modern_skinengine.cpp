@@ -23,12 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //Include 
 #include "hdr/modern_commonheaders.h"
-#include <stdio.h>
 #include <m_png.h> 
 #include "m_api/m_skin_eng.h"
 #include "hdr/modern_skinselector.h"
 #include "hdr/modern_cluiframes.h"
-
 
 #define _EFFECTENUM_FULL_H
 #include "hdr/modern_effectenum.h"
@@ -37,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_skinengine.h"
 #include "hdr/modern_commonprototypes.h"
 #include <shlwapi.h>
-#include <math.h>
 //Implementation
 
 /* Global variables */
@@ -542,8 +539,8 @@ int SkinEngineUnloadModule()
 	}
 	DeleteCriticalSection(&cs_SkinChanging);
 	GdiFlush();
-	DestroyServiceFunction(MS_SKIN_REGISTEROBJECT);
-	DestroyServiceFunction(MS_SKIN_DRAWGLYPH);
+	DestroyServiceFunction((HANDLE)MS_SKIN_REGISTEROBJECT);
+	DestroyServiceFunction((HANDLE)MS_SKIN_DRAWGLYPH);
 	DestroyHookableEvent(g_CluiData.hEventSkinServicesCreated);
 	if (hImageDecoderModule) FreeLibrary(hImageDecoderModule);
 	AniAva_UnloadModule();
@@ -5042,7 +5039,8 @@ HICON ske_CreateJoinedIcon(HICON hBottom, HICON hTop, BYTE alpha)
 BOOL SkinDBGetContactSetting(HANDLE hContact, const char* szSection, const char*szKey, DBVARIANT * retdbv, BOOL * bSkined )
 {
 	if (!hContact) {  //only for not contact settings
-		char * szSkinKey=(char*)NEWJOINEDSTR(szSkinKey,szSection,"@",szKey);
+		char * szSkinKey;
+		NEWJOINEDSTR(szSkinKey,szSection,"@",szKey);
 		if ( !ModernGetSetting(hContact, SKINSETSECTION, szSkinKey, retdbv) )	{
 			if (bSkined) *bSkined=TRUE;
 			return FALSE;
