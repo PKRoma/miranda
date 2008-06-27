@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _IRCWIN_H_
 
 #define MIRANDA_VER  0x0800
-#define _WIN32_WINNT 0x0600
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 
 #include "m_stdhdr.h"
 
@@ -42,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <winsock.h>
 #include <commctrl.h>
 #include <time.h>
+#include <ctype.h>
 
 #include "newpluginapi.h"
 #include "m_system.h"
@@ -719,7 +721,7 @@ private :
 // map actual member functions to their associated IRC command.
 // put any number of this macro in the class's constructor.
 #define	IRC_MAP_ENTRY(name, member)	\
-	m_handlers.insert( new CIrcHandler( _T(name), &CIrcProto##::member ));
+	m_handlers.insert( new CIrcHandler( _T(name), &CIrcProto::OnIrc_##member ));
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Functions
