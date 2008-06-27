@@ -732,7 +732,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 
 		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0);
 		mi.icolibItem = i ? hXStatusIconsHandle[i-1] : NULL;
-		mi.pszName = i ? (char*)nameXStatus[i-1] : LPGEN("None");
+		mi.pszName = i ? (char*)nameXStatus[i-1] : (char *)LPGEN("None");
 		mi.pszService = srvFce;
 		mi.pszContactOwner = m_szModuleName;
 

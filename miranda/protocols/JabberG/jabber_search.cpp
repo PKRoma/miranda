@@ -250,7 +250,7 @@ void CJabberProto::SearchReturnResults( HANDLE  id, void * pvUsersInfo, U_TCHAR_
 	   for ( int j=0; j < nFieldCount; j++ ) {
 		   TCHAR* var = ListOfFields[j];
 		   TCHAR* value = pmUserData->operator [](var);
-		   Results.pszFields[j] = value ? value : _T(" ");
+		   Results.pszFields[j] = value ? value : (TCHAR *)_T(" ");
 		   if (!_tcsicmp(var,_T("jid")) && value )
 			   _tcsncpy(Results.jsr.jid, value, SIZEOF(Results.jsr.jid));	   
 	   }

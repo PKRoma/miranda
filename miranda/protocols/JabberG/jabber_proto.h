@@ -40,6 +40,8 @@ typedef int ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
+enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
+
 // for JabberEnterString
 enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT };
 
@@ -365,7 +367,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
 	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode = -1 );
-	void   GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, enum TJabberGcLogInfoType type );
+	void   GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, TJabberGcLogInfoType type );
 	void   GcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode* reason );
 		  
 	void   FilterList(HWND hwndList);

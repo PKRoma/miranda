@@ -40,7 +40,8 @@ Last change by : $Author$
 /*******************************************************************
  * Global header files
  *******************************************************************/
-#define _WIN32_WINNT 0x510
+#define _WIN32_WINNT 0x501
+#define _WIN32_IE 0x501
 #include <windows.h>
 #include <commctrl.h>
 #include <process.h>
@@ -48,6 +49,7 @@ Last change by : $Author$
 #include <stdarg.h>
 #include <time.h>
 #include <limits.h>
+#include <ctype.h>
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_system_cpp.h>
@@ -600,10 +602,6 @@ extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
  * Function declarations
  *******************************************************************/
 
-//---- jabber_chat.cpp ----------------------------------------------
-
-enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
-
 //---- jabber_file.cpp ----------------------------------------------
 
 void JabberFileServerThread( filetransfer* ft );
@@ -646,7 +644,7 @@ typedef struct TJabberFormLayoutInfo *HJFORMLAYOUT;
 
 void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL bCompact = FALSE );
 void JabberFormDestroyUI(HWND hwndStatic);
-void JabberFormSetInstruction( HWND hwndForm, TCHAR *text );
+void JabberFormSetInstruction( HWND hwndForm, const TCHAR *text );
 HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic); // use mir_free to destroy
 HJFORMCTRL JabberFormAppendControl(HWND hwndStatic, HJFORMLAYOUT layout_info, TJabberFormControlType type, TCHAR *labelStr, TCHAR *valueStr);
 void JabberFormAddListItem(HJFORMCTRL item, TCHAR *text, bool selected);

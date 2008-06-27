@@ -801,9 +801,9 @@ CIrcIgnoreItem::CIrcIgnoreItem( const TCHAR* _mask, const TCHAR* _flags, const T
 }
 
 CIrcIgnoreItem::CIrcIgnoreItem( int codepage, const char* _mask, const char* _flags, const char* _network ) :
-	mask( _A2T( _mask, codepage )),
-	flags( _A2T( _flags, codepage )),
-	network( _A2T( _network, codepage ))
+	mask( (TCHAR *)_A2T( _mask, codepage )),
+	flags( (TCHAR *)_A2T( _flags, codepage )),
+	network( (TCHAR *)_A2T( _network, codepage ))
 {
 }
 

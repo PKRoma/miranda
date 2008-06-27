@@ -651,7 +651,7 @@ protected:
 	void OnCommand_Close(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	void ShowAdvancedList(CPrivacyList *pList);
-	void DrawNextRulePart(HDC hdc, COLORREF color, TCHAR *text, RECT *rc);
+	void DrawNextRulePart(HDC hdc, COLORREF color, const TCHAR *text, RECT *rc);
 	void DrawRuleAction(HDC hdc, COLORREF clLine1, COLORREF clLine2, CPrivacyListRule *pRule, RECT *rc);
 	void DrawRulesList(LPDRAWITEMSTRUCT lpdis);
 	void DrawLists(LPDRAWITEMSTRUCT lpdis);
@@ -1100,7 +1100,7 @@ void CJabberDlgPrivacyLists::ShowAdvancedList(CPrivacyList *pList)
 	PostMessage( m_hwnd, WM_COMMAND, MAKEWPARAM( IDC_PL_RULES_LIST, LBN_SELCHANGE ), 0 );
 }
 
-void CJabberDlgPrivacyLists::DrawNextRulePart(HDC hdc, COLORREF color, TCHAR *text, RECT *rc)
+void CJabberDlgPrivacyLists::DrawNextRulePart(HDC hdc, COLORREF color, const TCHAR *text, RECT *rc)
 {
 	SetTextColor(hdc, color);
 	DrawText(hdc, text, lstrlen(text), rc, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS);

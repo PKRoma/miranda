@@ -342,7 +342,7 @@ int __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam )
 	TCHAR outBuf[2048];
 	outBuf[0]=_T('\0');
 
-	TCHAR * szSeparator= (IsWinVerMEPlus()) ? _T("\r\n") : _T(" | ");
+	const TCHAR * szSeparator= (IsWinVerMEPlus()) ? _T("\r\n") : _T(" | ");
 
 	static const TCHAR * JabberEnum2AffilationStr[]={ _T("None"), _T("Outcast"), _T("Member"), _T("Admin"), _T("Owner") };
 

@@ -432,7 +432,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 			sttBrowseMode = SD_BROWSE_CONFERENCES;
 			TCHAR *szServerJid = mir_a2t(m_ThreadInfo->server);
 			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
-			pInfo->m_pUserData = _T(JABBER_FEAT_MUC);
+			pInfo->m_pUserData = (void *)_T(JABBER_FEAT_MUC);
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq* iq = new XmlNodeIq( pInfo );
 			XmlNode* query = iq->addQuery( JABBER_FEAT_DISCO_ITEMS );
@@ -444,7 +444,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 			sttBrowseMode = SD_BROWSE_AGENTS;
 			TCHAR *szServerJid = mir_a2t(m_ThreadInfo->server);
 			CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootItems, JABBER_IQ_TYPE_GET, szServerJid );
-			pInfo->m_pUserData = _T("jabber:iq:gateway");
+			pInfo->m_pUserData = (void *)_T("jabber:iq:gateway");
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq* iq = new XmlNodeIq( pInfo );
 			XmlNode* query = iq->addQuery( JABBER_FEAT_DISCO_ITEMS );

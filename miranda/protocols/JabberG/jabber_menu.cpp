@@ -88,7 +88,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 			CLISTMENUITEM clmi = { 0 };
 			sttEnableMenuItem( m_hMenuConvert, TRUE );
 			clmi.cbSize = sizeof( clmi );
-			clmi.pszName = bIsChatRoom ? LPGEN("&Convert to Contact") : LPGEN("&Convert to Chat Room");
+			clmi.pszName = bIsChatRoom ? (char *)LPGEN("&Convert to Contact") : (char *)LPGEN("&Convert to Chat Room");
 			clmi.flags = CMIM_NAME | CMIM_FLAGS;
 			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuConvert, ( LPARAM )&clmi );
 	}	}
@@ -112,7 +112,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( bIsChatRoom == GCW_CHATROOM ) {
 		CLISTMENUITEM clmi = { 0 };
 		clmi.cbSize = sizeof( clmi );
-		clmi.pszName = ( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE ) ? LPGEN("&Leave") : LPGEN("&Join");
+		clmi.pszName = ( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE ) ? (char *)LPGEN("&Leave") : (char *)LPGEN("&Join");
 		clmi.flags = CMIM_NAME | CMIM_FLAGS;
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuJoinLeave, ( LPARAM )&clmi );
 		return 0;
@@ -1366,9 +1366,9 @@ static HBITMAP sttCreateVistaMenuBitmap(HANDLE hIcon, bool bIcolib)
 			pixel_bmp[3] = pixel[3];
 			if (pixel[3] != 255)
 			{
-				pixel_bmp[0] = ((long)(pixel[0]) * pixel[3]) / 255;
-				pixel_bmp[1] = ((long)(pixel[1]) * pixel[3]) / 255;
-				pixel_bmp[2] = ((long)(pixel[2]) * pixel[3]) / 255;
+				pixel_bmp[0] = (BYTE)((long)(pixel[0]) * pixel[3]) / 255;
+				pixel_bmp[1] = (BYTE)((long)(pixel[1]) * pixel[3]) / 255;
+				pixel_bmp[2] = (BYTE)((long)(pixel[2]) * pixel[3]) / 255;
 			} else
 			{
 				pixel_bmp[0] = pixel[0];

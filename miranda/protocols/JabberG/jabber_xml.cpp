@@ -428,7 +428,7 @@ static BOOL JabberXmlProcessElem( XmlState *xmlState, XmlElemType elemType, char
 	return TRUE;
 }
 
-TCHAR* JabberXmlGetAttrValue( XmlNode *node, char* key )
+TCHAR* JabberXmlGetAttrValue( XmlNode *node, const char* key )
 {
 	if ( node == NULL || node->numAttr <= 0 || key == NULL || strlen( key )<=0 )
 		return NULL;
@@ -470,7 +470,7 @@ XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth )
 	return NULL;
 }
 
-XmlNode *JabberXmlGetChildWithGivenAttrValue( XmlNode *node, char* tag, char* attrKey, TCHAR* attrValue )
+XmlNode *JabberXmlGetChildWithGivenAttrValue( XmlNode *node, const char* tag, const char* attrKey, TCHAR* attrValue )
 {
 	if ( node==NULL || node->numChild<=0 || tag==NULL || strlen( tag )<=0 || attrKey==NULL || strlen( attrKey )<=0 || attrValue==NULL || lstrlen( attrValue )<=0 )
 		return NULL;

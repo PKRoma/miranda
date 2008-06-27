@@ -135,11 +135,11 @@ struct XmlState
 void JabberXmlInitState( XmlState *xmlState );
 void JabberXmlDestroyState( XmlState *xmlState );
 BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, void ( *callback )(), void *userdata );
-TCHAR* JabberXmlGetAttrValue( XmlNode *node, char* key );
+TCHAR* JabberXmlGetAttrValue( XmlNode *node, const char* key );
 XmlNode *JabberXmlGetFirstChild( XmlNode *node );
 XmlNode *JabberXmlGetChild( XmlNode *node, char* tag );
 XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth );
-XmlNode *JabberXmlGetChildWithGivenAttrValue( XmlNode *node, char* tag, char* attrKey, TCHAR* attrValue );
+XmlNode *JabberXmlGetChildWithGivenAttrValue( XmlNode *node, const char* tag, const char* attrKey, TCHAR* attrValue );
 void JabberXmlDumpAll( XmlState *xmlState );
 void JabberXmlDumpNode( XmlNode *node );
 XmlNode *JabberXmlCopyNode( XmlNode *node );

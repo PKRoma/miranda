@@ -116,7 +116,7 @@ void JabberFormCenterContent(HWND hwndStatic)
 	}
 }
 
-void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
+void JabberFormSetInstruction( HWND hwndForm, const TCHAR *text )
 {
 	if (!text) text = _T("");
 
@@ -151,7 +151,7 @@ void JabberFormSetInstruction( HWND hwndForm, TCHAR *text )
 	SetRect(&rcText, 0, 0, rcText.right-rcText.left, 0);
 	HDC hdcEdit = GetDC(GetDlgItem(hwndForm, IDC_INSTRUCTION));
 	HFONT hfntSave = (HFONT)SelectObject(hdcEdit, (HFONT)SendDlgItemMessage(hwndForm, IDC_INSTRUCTION, WM_GETFONT, 0, 0));
-	DrawTextEx(hdcEdit, text, lstrlen(text), &rcText,
+	DrawTextEx(hdcEdit, (TCHAR *)text, lstrlen(text), &rcText,
 		DT_CALCRECT|DT_EDITCONTROL|DT_TOP|DT_WORDBREAK, NULL);
 	SelectObject(hdcEdit, hfntSave);
 	ReleaseDC(GetDlgItem(hwndForm, IDC_INSTRUCTION), hdcEdit);

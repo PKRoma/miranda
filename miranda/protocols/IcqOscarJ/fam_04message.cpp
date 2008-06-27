@@ -1615,7 +1615,7 @@ void CIcqProto::sendMessageTypesAck(HANDLE hContact, int bUnicode, message_ack_p
 			}
 			else if (pArgs->bType == MAT_DIRECT)
 			{ // Send acknowledgement
-				icq_sendDirectMsgAck(pArgs->pDC, pArgs->wCookie, (BYTE)pArgs->msgType, pArgs->bFlags, bUnicode ? CAP_UTF8MSGS : NULL);
+				icq_sendDirectMsgAck(pArgs->pDC, pArgs->wCookie, (BYTE)pArgs->msgType, pArgs->bFlags, bUnicode ? (char *)CAP_UTF8MSGS : NULL);
 			}
 		}
 	}
