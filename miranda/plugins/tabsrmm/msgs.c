@@ -43,6 +43,12 @@ static char *relnotes[] = {
 	NULL
 };
 
+/* Missing MinGW GUIDs */
+#ifdef __MINGW32__
+const CLSID IID_IRichEditOle = { 0x00020D00, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 } };
+#endif
+
 BOOL show_relnotes = FALSE;
 
 MYGLOBALS myGlobals;
@@ -1446,7 +1452,7 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int IconsChanged(WPARAM wParam, LPARAM lParam)
+int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
 	if (hMsgMenuItem && !ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
 		int j;
