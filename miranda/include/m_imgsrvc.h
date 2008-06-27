@@ -36,7 +36,7 @@ by the FreeImage project (http://freeimage.sourceforge.net)
 
 #define _FI_MIMPLUGIN 1
 
-#include "..\plugins\freeimage\Miranda\include\m_freeimage.h"
+#include "../plugins/freeimage/Miranda/include/m_freeimage.h"
 
 #define FI_IF_VERSION (PLUGIN_MAKE_VERSION(0, 0, 1, 0))           // interface version - must match
 
