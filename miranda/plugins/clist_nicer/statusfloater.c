@@ -1058,7 +1058,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
      * fill with a DESATURATED representation of the clist bg color and use this later as a color key 
      */
 
-    greyLevel = ((float)GetRValue(g_clcData->bkColour) * 0.299) + ((float)GetGValue(g_clcData->bkColour) *0.587) + ((float)GetBValue(g_clcData->bkColour) * 0.144);
+    greyLevel = (float)(GetRValue(g_clcData->bkColour) * 0.299 + GetGValue(g_clcData->bkColour) * 0.587 + GetBValue(g_clcData->bkColour) * 0.144);
     if (greyLevel > 255)
         greyLevel = 255;
 
