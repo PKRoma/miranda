@@ -181,7 +181,7 @@ all: $(BIN) \
 	$(BUILD)/plugins/MSN.dll \
 	$(BUILD)/plugins/Yahoo.dll \
 
-# FIXME: C++ FTSortFunc typedef inside template
+# FIXME: GdiPlus is not part of MinGW
 #	$(BUILD)/plugins/clist_modern.dll \
 
 clean:
