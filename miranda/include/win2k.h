@@ -117,6 +117,8 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
 	#define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
 	#define FreeCredentialsHandle FreeCredentialsHandle
+	#define FAPPCOMMAND_MASK				0xF000
+	#define GET_APPCOMMAND_LPARAM(lParam)	((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
 	#ifdef __cplusplus
 	extern "C" {
 	#endif
@@ -161,6 +163,8 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#endif
 	#define ODS_HOTLIGHT        0x0040
 	#define ODS_INACTIVE        0x0080
+	#define OLERENDER_FORMAT	2
+	#define SES_EXTENDBACKCOLOR	4
 	#define SPI_GETFLATMENU		0x1022
 	#define COLOR_HOTLIGHT		26
 	#define COLOR_MENUBAR		30
@@ -180,10 +184,22 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define TS_DISABLED         4
 	#define TS_CHECKED          5
 	#define TS_HOTCHECKED       6
+	#ifndef TTM_SETTITLE
+	#ifndef UNICODE
+	#define TTM_SETTITLE TTM_SETTITLEA
+	#else
+	#define TTM_SETTITLE TTM_SETTITLEW
+	#endif
+	#endif
 	#define CBS_UNCHECKEDNORMAL 1
 	#define CBS_UNCHECKEDHOT    2
 	#define CBS_CHECKEDNORMAL   5
 	#define CBS_CHECKEDHOT      6
+	#define	CFM_WEIGHT			0x00400000
+	#define	CFM_UNDERLINETYPE	0x00800000	
+	#define CFM_BACKCOLOR		0x04000000
+	#define CFU_UNDERLINE		1
+	#define CFU_UNDERLINEWORD	2
 	#define EP_EDITTEXT			1 // Edit
 	#define EP_CARET			2
 	#define ETS_NORMAL			1
@@ -201,10 +217,9 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define AW_ACTIVATE			0x00020000
 	#define AW_SLIDE			0x00040000
 	#define AW_BLEND			0x00080000
-	#define WM_MENURBUTTONUP	0x0122
+	#define WM_UNICHAR			0x0109
 	#define LVS_EX_DOUBLEBUFFER	0x00010000
 	#define RES_ICON			1
-	#define CFM_BACKCOLOR		0x04000000
 	#ifndef DFCS_HOT
 	#define DFCS_HOT			0x1000
 	#endif
@@ -213,19 +228,29 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define IP_MULTICAST_IF		32
 	#endif
 	#define IMF_AUTOKEYBOARD	0x0001
+	#define IMF_AUTOFONTSIZEADJUST 0x0010
 	#define GRADIENT_FILL_RECT_H 0x00
 	#define GRADIENT_FILL_RECT_V 0x01
 	#define LANG_INVARIANT		0x7f
 	#define LOCALE_INVARIANT	(MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
 	#define EN_ALIGN_RTL_EC		0x0701
+	#ifndef OBJID_MENU
 	#define OBJID_MENU			((LONG)0xFFFFFFFD)
+	#endif
+	#ifndef OBJID_VSCROLL
 	#define OBJID_VSCROLL		((LONG)0xFFFFFFFB)
+	#endif
 	#define TreeView_SetCheckState(hwndTV, hti, fCheck) \
 		TreeView_SetItemState(hwndTV, hti, INDEXTOSTATEIMAGEMASK((fCheck)?2:1), TVIS_STATEIMAGEMASK)
 	#define TreeView_GetCheckState(hwndTV, hti) \
 		((((UINT)(SNDMSG((hwndTV), TVM_GETITEMSTATE, (WPARAM)(hti), TVIS_STATEIMAGEMASK))) >> 12) -1)
 	#define ERROR_INTERNET_SEC_CERT_NO_REV 12056
 	#define ERROR_INTERNET_SEC_CERT_REV_FAILED 12057
+	#define APPCOMMAND_BROWSER_BACKWARD 1
+	#define APPCOMMAND_BROWSER_FORWARD 2
+	#define NIN_BALLOONHIDE		(WM_USER +3)
+	#define NIN_BALLOONTIMEOUT	(WM_USER + 4)
+	#define NIN_BALLOONUSERCLICK (WM_USER + 5)
 // SDK isn't present or some older VC compiler was used, include missing things.
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
