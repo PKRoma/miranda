@@ -150,11 +150,13 @@ FI_STRUCT (FIMULTIBITMAP) { void *data; };
 #ifndef _MSC_VER
 // define portable types for 32-bit / 64-bit OS
 #include <inttypes.h>
+#ifndef _WINDEF_H
 typedef int32_t BOOL;
 typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
 typedef int32_t LONG;
+#endif
 #else
 // MS is not C99 ISO compliant
 typedef long BOOL;
@@ -163,6 +165,8 @@ typedef unsigned short WORD;
 typedef unsigned long DWORD;
 typedef long LONG;
 #endif // _MSC_VER
+
+#ifndef _WINGDI_H
 
 #if (defined(_WIN32) || defined(__WIN32__))
 #pragma pack(push, 1)
@@ -221,6 +225,8 @@ typedef struct tagBITMAPINFO {
 } BITMAPINFO, *PBITMAPINFO;
 
 #endif // _WINDOWS_
+
+#endif // _WINGDI_H
 
 // Types used in the library (specific to FreeImage) ------------------------
 
