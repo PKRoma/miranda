@@ -901,7 +901,12 @@ int CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, char**
 
 		return 0; // Failure
 	}
-	if (ft->qwTotalSize >= 0x100000000 && ft->wFilesCount > 1)
+#ifdef __GNUC__
+#define OSCAR_MAX_SIZE 0x100000000ULL
+#else
+#define OSCAR_MAX_SIZE 0x100000000
+#endif
+	if (ft->qwTotalSize >= OSCAR_MAX_SIZE && ft->wFilesCount > 1)
 	{ // file larger than 4GB can be send only as single
 		icq_LogMessage(LOG_ERROR, LPGEN("The files are too big to be sent at once. Files bigger than 4GB can be sent only separately."));
 		// Notify UI
