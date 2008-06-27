@@ -202,4 +202,4 @@ ExternDrawer SED;
 
 void FreeAndNil( void** p );
 
-#endif _CLC_H_
+#endif /* _CLC_H_ */
