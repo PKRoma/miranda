@@ -1,16 +1,15 @@
 // Microsoft Visual C++ generated resource script.
 //
+#include <winres.h>
 #include "resource.h"
+#include "version.h"
+#include "../../include/statusmodes.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
-#include "../../include/statusmodes.h"
-#include <version.h>
-
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -994,7 +993,7 @@ END
 // Bitmap
 //
 
-IDB_LOGO                BITMAP                  "res\\LOGO.bmp"
+IDB_LOGO                BITMAP                  "res/LOGO.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
