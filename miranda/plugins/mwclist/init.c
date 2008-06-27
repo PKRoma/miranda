@@ -34,10 +34,10 @@ static HANDLE hCListShutdown = 0;
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
 
 void  CalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result);
-void  CheckPDNCE(pdisplayNameCacheEntry);
+void  CheckPDNCE(ClcCacheEntryBase*);
 void  CluiProtocolStatusChanged( int, const char* );
 int   CompareContacts( const struct ClcContact *contact1, const struct ClcContact *contact2 );
-void  FreeDisplayNameCacheItem( pdisplayNameCacheEntry p );
+void  FreeDisplayNameCacheItem(ClcCacheEntryBase*);
 void  GetDefaultFontSetting(int i,LOGFONT *lf,COLORREF *colour);
 void  RebuildEntireList(HWND hwnd,struct ClcData *dat);
 void  RecalcScrollBar(HWND hwnd,struct ClcData *dat);
