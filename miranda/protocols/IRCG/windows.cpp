@@ -790,7 +790,10 @@ void CManagerDlg::OnClose()
 	for ( int i = 0; i < 5; i++ ) {
 		if ( m_topic.SendMsg( CB_GETLBTEXT, i, (LPARAM)temp) != LB_ERR) {
 			CMString S1 = temp;
+/* FIXME: What the hell does it mean!? GCC won't compile this on UNICODE */
+#if !defined(__GNUC__) || !defined(UNICODE)
 			ReplaceString( S1, _T(" "), _T("%¤"));
+#endif
 			S += _T(" ") + S1;
 	}	}
 
@@ -1158,7 +1161,10 @@ void CManagerDlg::InitManager( int mode, const TCHAR* window )
 				for ( int i = 0; i<5; i++ ) {
 					CMString S = GetWord(dbv.ptszVal, i);
 					if ( !S.IsEmpty()) {
+/* FIXME: What the hell does it mean!? GCC won't compile this on UNICODE */
+#if !defined(__GNUC__) || !defined(UNICODE)
 						ReplaceString( S, _T("%¤"), _T(" "));
+#endif
 						m_topic.SendMsg( CB_ADDSTRING, 0, (LPARAM)S.c_str());
 				}	}
 				DBFreeVariant(&dbv);

@@ -2076,8 +2076,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				int font;
 				int height;
 
-				ih = GetTextPixelSize(_T("AQGglö"), g_Settings.UserListFont, FALSE);
-				ih2 = GetTextPixelSize(_T("AQGglö"), g_Settings.UserListHeadingsFont, FALSE);
+				ih = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListFont, FALSE);
+				ih2 = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListHeadingsFont, FALSE);
 				height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
 				font = ih > ih2 ? ih : ih2;
 
@@ -2286,8 +2286,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (mis->CtlType == ODT_MENU)
 				return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 			else {
-				int ih = GetTextPixelSize(_T("AQGglö"), g_Settings.UserListFont, FALSE);
-				int ih2 = GetTextPixelSize(_T("AQGglö"), g_Settings.UserListHeadingsFont, FALSE);
+				int ih = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListFont, FALSE);
+				int ih2 = GetTextPixelSize(_T("AQGglo"), g_Settings.UserListHeadingsFont, FALSE);
 				int font = ih > ih2 ? ih : ih2;
 				int height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
 
