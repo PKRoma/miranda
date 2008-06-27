@@ -53,7 +53,7 @@ struct avatarthreadstartinfo
 	DWORD runTime[4];
 	int runCount;
 //
-	rates* rates;
+	struct rates_s * rates;
 };
 
 struct avatarrequest
