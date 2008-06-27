@@ -204,17 +204,17 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MSN                 ICON                    "Icos\\msn.ico"
-IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
-IDI_SERVICES            ICON                    "Icos\\services.ico"
-IDI_INBOX               ICON                    "Icos\\inbox.ico"
-IDI_INVITE              ICON                    "Icos\\invite.ico"
-IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
-IDI_PROFILE             ICON                    "Icos\\profile.ico"
-IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
-IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
-IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
-IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
+IDI_MSN                 ICON                    "Icos/msn.ico"
+IDI_MSNBLOCK            ICON                    "Icos/msnblock.ico"
+IDI_SERVICES            ICON                    "Icos/services.ico"
+IDI_INBOX               ICON                    "Icos/inbox.ico"
+IDI_INVITE              ICON                    "Icos/invite.ico"
+IDI_NETMEETING          ICON                    "Icos/netmeeting.ico"
+IDI_PROFILE             ICON                    "Icos/profile.ico"
+IDI_LIST_FL             ICON                    "Icos/list_fl.ico"
+IDI_LIST_AL             ICON                    "Icos/list_al.ico"
+IDI_LIST_BL             ICON                    "Icos/list_bl.ico"
+IDI_LIST_RL             ICON                    "Icos/list_rl.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
