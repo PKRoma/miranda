@@ -26,37 +26,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #define _USE_32BIT_TIME_T
-#define WINVER 0x0501
+
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
 
 #define MIRANDA_VER 0x0700
-
-#ifdef __GNUWIN32__
-
-#define OLERENDER_FORMAT 2
-#define CFM_BACKCOLOR 0x04000000
-#ifndef __TSR_CXX
-typedef unsigned short wchar_t;
-#endif
-#endif
-
-//mad: definition for vc6
-#ifndef UINT_MAX
-#define UINT_MAX      0xffffffff    /* maximum unsigned int value */
-#else
-#error "Can't define UINT_MAX"
-#endif
-//
-
-#define _WIN32_IE 0x0501
 
 #if defined( UNICODE ) && !defined( _UNICODE )
 #define _UNICODE
 #endif
 
 #include <tchar.h>
-
-
-#define _WIN32_WINNT 0x0501
 #include <windows.h>
 #include <commctrl.h>
 #include <stdio.h>
@@ -64,44 +45,43 @@ typedef unsigned short wchar_t;
 #include <stddef.h>
 #include <process.h>
 #include <shlwapi.h>
-#include <Richedit.h>
+#include <richedit.h>
+#include <limits.h>
 #include "resource.h"
 
-
+/* FIXME: Nasty things happening here, why we undefine WM_THEMECHANGED? */
+#ifdef _MSC_VER
 #ifdef WM_THEMECHANGED
 #undef WM_THEMECHANGED
 #endif
-
 #ifdef CDRF_NOTIFYSUBITEMDRAW
 #undef CDRF_NOTIFYSUBITEMDRAW
 #endif
+#endif
 
-//MAD
+/* State of icon with such flag will not be saved, and you must set it manually */
 #define MBF_OWNERSTATE        0x04
-//State of icon with such flag will not be saved, and you must set it manually  
-//
 
-#include "../../include/win2k.h"
-#include "../../include/newpluginapi.h"
-#include "../../include/m_system.h"
-#include "../../include/m_database.h"
-#include "../../include/m_langpack.h"
-#include "../../include/m_button.h"
-#include "../../include/m_clist.h"
-#include "../../include/m_options.h"
-#include "../../include/m_protosvc.h"
-#include "../../include/m_utils.h"
-#include "../../include/m_skin.h"
-#include "../../include/m_contacts.h"
-#include "../../include/m_icolib.h"
-
-#include "../../include/m_clc.h"
-#include "../../include/m_clui.h"
-#include "../../include/m_userinfo.h"
-#include "../../include/m_history.h"
-#include "../../include/m_addcontact.h"
-#include "../../include/m_file.h"
-#include "../../include/m_fontservice.h"
+#include  <win2k.h>
+#include  <newpluginapi.h>
+#include  <m_system.h>
+#include  <m_database.h>
+#include  <m_langpack.h>
+#include  <m_button.h>
+#include  <m_clist.h>
+#include  <m_options.h>
+#include  <m_protosvc.h>
+#include  <m_utils.h>
+#include  <m_skin.h>
+#include  <m_contacts.h>
+#include  <m_icolib.h>
+#include  <m_clc.h>
+#include  <m_clui.h>
+#include  <m_userinfo.h>
+#include  <m_history.h>
+#include  <m_addcontact.h>
+#include  <m_file.h>
+#include  <m_fontservice.h>
 
 //MAD
 #include "buttonsbar.h"
