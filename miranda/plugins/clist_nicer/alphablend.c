@@ -49,7 +49,7 @@ DWORD __forceinline argb_from_cola(COLORREF col, UINT32 alpha)
 }
 
 
-static void __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
+void __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
 {
     if(BORDERSTYLE >= 0) {
         HPEN hPenOld = 0;
@@ -409,9 +409,9 @@ void __inline gradientHorizontal(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *
             fSolidMulti = 1 - fInvSolidMulti;
         }
 
-        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
-        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
-        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti) + ((float) ubRed2 * (float) fSolidMulti));
+        *ubGreenFinal = (UCHAR) (((float) ubGreen * (float) fInvSolidMulti) + ((float) ubGreen2 * (float) fSolidMulti));
+        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti) + ((float) ubBlue2 * (float) fSolidMulti));
 
         *ubAlpha = 0xFF;
     }
@@ -435,9 +435,9 @@ void __inline gradientVertical(UCHAR *ubRedFinal, UCHAR *ubGreenFinal, UCHAR *ub
             fSolidMulti = 1 - fInvSolidMulti;
         }                           
 
-        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti)) + (((float) ubRed2 * (float) fSolidMulti));
-        *ubGreenFinal = (UCHAR) (UCHAR) (((float) ubGreen * (float) fInvSolidMulti)) + (((float) ubGreen2 * (float) fSolidMulti));
-        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti)) + (UCHAR) (((float) ubBlue2 * (float) fSolidMulti));
+        *ubRedFinal = (UCHAR) (((float) ubRed * (float) fInvSolidMulti) + ((float) ubRed2 * (float) fSolidMulti));
+        *ubGreenFinal = (UCHAR) (((float) ubGreen * (float) fInvSolidMulti) + ((float) ubGreen2 * (float) fSolidMulti));
+        *ubBlueFinal = (UCHAR) (((float) ubBlue * (float) fInvSolidMulti) + ((float) ubBlue2 * (float) fSolidMulti));
 
         *ubAlpha = 0xFF;
     }

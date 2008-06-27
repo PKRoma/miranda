@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_clist.h"
 #include "hdr/modern_clcpaint.h"
 
-
 /*
 *	Private module variables
 */
@@ -46,10 +45,10 @@ static BOOL		fMouseUpped;
 static BYTE		IsDragToScrollMode=0;
 static int		StartDragPos=0;
 static int		StartScrollPos=0;
-static HANDLE   hSmileyAddOptionsChangedHook=NULL;
-static HANDLE	hIconChangedHook=NULL;
-static HANDLE	hAckHook=NULL;
-static HANDLE	hAvatarChanged=NULL;
+HANDLE			hSmileyAddOptionsChangedHook=NULL;
+HANDLE			hIconChangedHook=NULL;
+HANDLE			hAckHook=NULL;
+HANDLE			hAvatarChanged=NULL;
 static struct ClcContact * hitcontact=NULL;
 
 

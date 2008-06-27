@@ -186,7 +186,7 @@ DWORD GetDefaultExStyle(void)
 	return ret;
 }
 
-static void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
+void GetDefaultFontSetting(int i,LOGFONTA *lf,COLORREF *colour)
 {
 	SystemParametersInfoA(SPI_GETICONTITLELOGFONT,sizeof(LOGFONTA),lf,FALSE);
 	*colour=GetSysColor(COLOR_WINDOWTEXT);
@@ -397,9 +397,9 @@ struct CheckBoxToStyleEx_t
 {
 	int id;
 	DWORD flag;
-	int not;
-} static const checkBoxToStyleEx[]=
-{
+	int neg;
+};
+static const struct CheckBoxToStyleEx_t checkBoxToStyleEx[]={
 	{IDC_DISABLEDRAGDROP,CLS_EX_DISABLEDRAGDROP,0},
 	{IDC_NOTEDITLABELS,CLS_EX_EDITLABELS,1},
 	{IDC_SHOWSELALWAYS,CLS_EX_SHOWSELALWAYS,0},
@@ -592,7 +592,7 @@ static BOOL CALLBACK DlgProcClistListOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 		{	int i;
 		DWORD exStyle=ModernGetSettingDword(NULL,"CLC","ExStyle",GetDefaultExStyle());
 		for(i=0;i<sizeof(checkBoxToStyleEx)/sizeof(checkBoxToStyleEx[0]);i++)
-			CheckDlgButton(hwndDlg,checkBoxToStyleEx[i].id,(exStyle&checkBoxToStyleEx[i].flag)^(checkBoxToStyleEx[i].flag*checkBoxToStyleEx[i].not)?BST_CHECKED:BST_UNCHECKED);
+			CheckDlgButton(hwndDlg,checkBoxToStyleEx[i].id,(exStyle&checkBoxToStyleEx[i].flag)^(checkBoxToStyleEx[i].flag*checkBoxToStyleEx[i].neg)?BST_CHECKED:BST_UNCHECKED);
 		}
 		{	UDACCEL accel[2]={{0,10},{2,50}};
 		SendDlgItemMessage(hwndDlg,IDC_SMOOTHTIMESPIN,UDM_SETRANGE,0,MAKELONG(999,0));
@@ -651,7 +651,7 @@ static BOOL CALLBACK DlgProcClistListOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 			{	int i;
 			DWORD exStyle=0;
 			for(i=0;i<sizeof(checkBoxToStyleEx)/sizeof(checkBoxToStyleEx[0]);i++)
-				if((IsDlgButtonChecked(hwndDlg,checkBoxToStyleEx[i].id)==0)==checkBoxToStyleEx[i].not)
+				if((IsDlgButtonChecked(hwndDlg,checkBoxToStyleEx[i].id)==0)==checkBoxToStyleEx[i].neg)
 					exStyle|=checkBoxToStyleEx[i].flag;
 			ModernWriteSettingDword(NULL,"CLC","ExStyle",exStyle);
 			}
