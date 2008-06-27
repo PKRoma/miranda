@@ -61,9 +61,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../API/m_ieview.h"
 #include "../API/m_smileyadd.h"
 
+#ifdef _MSC_VER
 #ifndef NDEBUG
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
 #endif
 
 //defines
