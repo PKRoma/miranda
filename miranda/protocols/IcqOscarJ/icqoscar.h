@@ -36,6 +36,9 @@
 
 #define MIRANDA_VER 0x0800
 
+#define _WIN32_WINNT 0x0501
+#define _WIN32_IE 0x0501
+
 #define _USE_32BIT_TIME_T
 
 #include "m_stdhdr.h"
@@ -43,6 +46,14 @@
 // Windows includes
 #include <windows.h>
 #include <commctrl.h>
+
+#ifndef AW_VER_POSITIVE
+#define AW_VER_POSITIVE 0x00000004
+#endif
+
+#ifndef _ASSERTE
+#define _ASSERTE(x)
+#endif
 
 // Standard includes
 #include <stdio.h>
@@ -54,7 +65,9 @@
 #include <fcntl.h>
 #include <process.h>
 #ifndef _DEBUG
+#ifdef _MSC_VER
 	#include <crtdbg.h>
+#endif
 #endif
 
 // Miranda IM SDK includes

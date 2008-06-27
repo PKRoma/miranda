@@ -1,4 +1,4 @@
-#include "..\commonheaders.h"
+#include "../commonheaders.h"
 
 extern HINSTANCE g_hInst;
 HANDLE hStatusBarShowToolTipEvent,hStatusBarHideToolTipEvent;

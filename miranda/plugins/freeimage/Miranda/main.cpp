@@ -45,7 +45,7 @@ Last change by : $Author: rainwater $
 
 #include <m_imgsrvc.h>
 
-#include "..\Source\libpng\png.h"
+#include "../Source/libpng/png.h"
 
 PLUGINLINK *pluginLink = NULL;
 
