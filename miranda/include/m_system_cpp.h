@@ -64,6 +64,8 @@ protected:
 
 template<class T> struct OBJLIST : public LIST<T>
 {
+	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
+
 	__inline OBJLIST( int aincr, FTSortFunc afunc = NULL ) :
 		LIST<T>( aincr, afunc )
 		{}
@@ -76,13 +78,13 @@ template<class T> struct OBJLIST : public LIST<T>
 
 	__inline void destroy( void )
 	{	
-		for ( int i=0; i < count; i++ )
-			delete items[i];
+		for ( int i=0; i < this->count; i++ )
+			delete this->items[i];
 		li.List_Destroy(( SortedList* )this );
 	}
 
 	__inline int remove( int idx ) {
-		delete items[idx];
+		delete this->items[idx];
 		return li.List_Remove(( SortedList* )this, idx );
 	}
 
@@ -95,7 +97,7 @@ template<class T> struct OBJLIST : public LIST<T>
 		return 0;
 	}
 
-	__inline T& operator[]( int idx ) const { return *items[idx]; }
+	__inline T& operator[]( int idx ) const { return *this->items[idx]; }
 };
 
 #endif
