@@ -35,7 +35,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #undef _WIN32_WINNT
 #undef _WIN32_IE
 #define COMPILE_MULTIMON_STUBS
-//#define _WINVER 0x5000
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 #define WIN32_LEAN_AND_MEAN
@@ -108,14 +107,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 #ifndef CFM_WEIGHT
 #define	CFM_WEIGHT			0x00400000
-#endif
-
-#ifndef _MSC_VER
-typedef struct tagTVKEYDOWN {
-    NMHDR hdr;
-    WORD wVKey;
-    UINT flags;
-} NMTVKEYDOWN, FAR *LPNMTVKEYDOWN;
 #endif
 
 extern HWND SM_FindWindowByContact(HANDLE hContact);
