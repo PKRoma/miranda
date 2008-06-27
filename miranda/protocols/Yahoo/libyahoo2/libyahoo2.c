@@ -43,9 +43,7 @@
  *
  */
 
-#if HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "config.h"
 
 #ifndef _WIN32
 # include <unistd.h>
@@ -2570,7 +2568,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 		lookup = (val >> 0x0b);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet1))
+		if (lookup >= (unsigned int)strlen(alphabet1))
 			break;
 		sprintf(byte, "%c", alphabet1[lookup]);
 		strcat(resp_6, byte);
@@ -2578,20 +2576,20 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 		lookup = (val >> 0x06);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet2))
+		if (lookup >= (unsigned int)strlen(alphabet2))
 			break;
 		sprintf(byte, "%c", alphabet2[lookup]);
 		strcat(resp_6, byte);
 
 		lookup = (val >> 0x01);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet2))
+		if (lookup >= (unsigned int)strlen(alphabet2))
 			break;
 		sprintf(byte, "%c", alphabet2[lookup]);
 		strcat(resp_6, byte);
 
 		lookup = (val & 0x01);
-		if (lookup >= strlen(delimit_lookup))
+		if (lookup >= (unsigned int)strlen(delimit_lookup))
 			break;
 		sprintf(byte, "%c", delimit_lookup[lookup]);
 		strcat(resp_6, byte);
@@ -2659,7 +2657,7 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 		lookup = (val >> 0x0b);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet1))
+		if (lookup >= (unsigned int)strlen(alphabet1))
 			break;
 		sprintf(byte, "%c", alphabet1[lookup]);
 		strcat(resp_96, byte);
@@ -2667,20 +2665,20 @@ static void yahoo_process_auth_0x0b(struct yahoo_input_data *yid, const char *se
 
 		lookup = (val >> 0x06);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet2))
+		if (lookup >= (unsigned int)strlen(alphabet2))
 			break;
 		sprintf(byte, "%c", alphabet2[lookup]);
 		strcat(resp_96, byte);
 
 		lookup = (val >> 0x01);
 		lookup &= 0x1f;
-		if (lookup >= strlen(alphabet2))
+		if (lookup >= (unsigned int)strlen(alphabet2))
 			break;
 		sprintf(byte, "%c", alphabet2[lookup]);
 		strcat(resp_96, byte);
 
 		lookup = (val & 0x01);
-		if (lookup >= strlen(delimit_lookup))
+		if (lookup >= (unsigned int)strlen(delimit_lookup))
 			break;
 		sprintf(byte, "%c", delimit_lookup[lookup]);
 		strcat(resp_96, byte);
@@ -4068,7 +4066,7 @@ static char * yahoo_getwebcam_master(struct yahoo_input_data *yid)
 	DEBUG_MSG(("rxlen is %d", yid->rxlen));
 
 	len = yid->rxqueue[pos++];
-	if (yid->rxlen < len)
+	if ((unsigned int)yid->rxlen < len)
 		return NULL;
 
 	/* extract status (0 = ok, 6 = webcam not online) */
@@ -4154,7 +4152,7 @@ static int yahoo_get_webcam_data(struct yahoo_input_data *yid)
 
 	begin = pos;
 	pos += yid->wcd->to_read;
-	if (pos > yid->rxlen) pos = yid->rxlen;
+	if (pos > (unsigned int)yid->rxlen) pos = yid->rxlen;
 
 	/* if it is not an image then make sure we have the whole packet */
 	if (yid->wcd->packet_type != 0x02) {
@@ -4177,7 +4175,7 @@ static int yahoo_get_webcam_data(struct yahoo_input_data *yid)
 			if (yid->wcd->data_size &&
 				yid->wcm->direction == YAHOO_WEBCAM_UPLOAD) {
 				end = begin;
-				while (end <= yid->rxlen &&
+				while (end <= (unsigned int)yid->rxlen &&
 					yid->rxqueue[end++] != 13);
 				if (end > begin)
 				{
