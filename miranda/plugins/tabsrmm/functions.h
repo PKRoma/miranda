@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 */
 
+#ifndef _TABSRMM_FUNCTIONS_H
+#define _TABSRMM_FUNCTIONS_H
+
 /*
  * global prototypes
  */
@@ -192,3 +195,5 @@ int			TN_TypingMessage(WPARAM wParam, LPARAM lParam);
 
 int			ChangeClientIconInStatusBar(WPARAM wparam, LPARAM lparam);
 char		*getMirVer(HANDLE hContact);
+
+#endif /* _TABSRMM_FUNCTIONS_H */
