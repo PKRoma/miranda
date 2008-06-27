@@ -46,6 +46,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #	endif
 #else
 #	include <stdlib.h>
+/* GCC has not __try/except */
+#	define __try
+#	define __except(x) if (0) /* don't execute handler */
+#	define __finally
+/* neither _ASSERT */
+#	ifdef _DEBUG
+#		include <assert.h>
+#		define _ASSERT assert
+#	else
+#		define _ASSERT(x)
+#	endif
+/* neither some CRT debugging things */
+#	define _CRTDBG_REPORT_FLAG -1
+#	define _CRTDBG_LEAK_CHECK_DF 0x20
+#	define _CrtSetDbgFlag(x) 0
 #endif
 
 #if _MSC_VER >= 1400

@@ -117,23 +117,48 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define SECURITY_ENTRYPOINTA "InitSecurityInterfaceA"
 	#define SECURITY_ENTRYPOINT SECURITY_ENTRYPOINTA
 	#define FreeCredentialsHandle FreeCredentialsHandle
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+		WINGDIAPI BOOL WINAPI AlphaBlend(HDC,int,int,int,int,HDC,int,int,int,int,BLENDFUNCTION);
+	#ifdef __cplusplus
+	}
+	#endif
+	/* FIXME: MinGW doesn't provide _snscanf, we wrap unsafe sscanf here */
+	#define _snscanf(buf, size, fmt, ...) sscanf(buf, fmt, ## __VA_ARGS__)
 	#ifndef CDSIZEOF_STRUCT
-		#define CDSIZEOF_STRUCT(structname, member)  (((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
+		#define CDSIZEOF_STRUCT(structname, member) \
+			(((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
 	#endif
 	#ifndef OPENFILENAME_SIZE_VERSION_400
-		#define OPENFILENAME_SIZE_VERSION_400 CDSIZEOF_STRUCT(OPENFILENAME,lpTemplateName)
+		#define OPENFILENAME_SIZE_VERSION_400	CDSIZEOF_STRUCT(OPENFILENAME,lpTemplateName)
 	#endif
 	#ifndef NOTIFYICONDATAA_V1_SIZE
-		#define NOTIFYICONDATAA_V1_SIZE     CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
+		#define NOTIFYICONDATAA_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATAA, szTip[64])
 	#endif
 	#ifndef NOTIFYICONDATA_V1_SIZE
-		#define NOTIFYICONDATA_V1_SIZE      CDSIZEOF_STRUCT(NOTIFYICONDATA, szTip[64])
+		#define NOTIFYICONDATA_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATA, szTip[64])
 	#endif
+	#ifndef OPENFILENAMEW_SIZE_VERSION_400
+		#define OPENFILENAMEW_SIZE_VERSION_400	CDSIZEOF_STRUCT(OPENFILENAMEW,lpTemplateName)
+	#endif
+	#ifndef NOTIFYICONDATAW_V1_SIZE
+		#define NOTIFYICONDATAW_V1_SIZE			CDSIZEOF_STRUCT(NOTIFYICONDATAW, szTip[64])
+	#endif
+	#ifndef TV_KEYDOWN
 	typedef struct tagNMKEY {
 		NMHDR hdr;
 		UINT nVKey;
 		UINT uFlags;
 	} NMKEY, *LPNMKEY;
+	typedef struct tagTVKEYDOWN
+	{
+		NMHDR hdr;
+		WORD wVKey;
+		UINT flags;
+	} NMTVKEYDOWN, *LPNMTVKEYDOWN;
+	#define TV_KEYDOWN			NMTVKEYDOWN
+	#endif
 	#define ODS_HOTLIGHT        0x0040
 	#define ODS_INACTIVE        0x0080
 	#define SPI_GETFLATMENU		0x1022
@@ -168,6 +193,39 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define ETS_FOCUSED			5
 	#define ETS_READONLY		6
 	#define ETS_ASSIST			7
+	#define PBT_APMSUSPEND		0x0004
+	#define PBT_APMRESUMESUSPEND 0x0007
+	#define AW_HOR_POSITIVE		0x00000001
+	#define AW_VER_NEGATIVE		0x00000008
+	#define AW_HIDE				0x00010000
+	#define AW_ACTIVATE			0x00020000
+	#define AW_SLIDE			0x00040000
+	#define AW_BLEND			0x00080000
+	#define WM_MENURBUTTONUP	0x0122
+	#define LVS_EX_DOUBLEBUFFER	0x00010000
+	#define RES_ICON			1
+	#define CFM_BACKCOLOR		0x04000000
+	#ifndef DFCS_HOT
+	#define DFCS_HOT			0x1000
+	#endif
+	#define IP_TTL				7
+	#ifndef IP_MULTICAST_IF
+	#define IP_MULTICAST_IF		32
+	#endif
+	#define IMF_AUTOKEYBOARD	0x0001
+	#define GRADIENT_FILL_RECT_H 0x00
+	#define GRADIENT_FILL_RECT_V 0x01
+	#define LANG_INVARIANT		0x7f
+	#define LOCALE_INVARIANT	(MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
+	#define EN_ALIGN_RTL_EC		0x0701
+	#define OBJID_MENU			((LONG)0xFFFFFFFD)
+	#define OBJID_VSCROLL		((LONG)0xFFFFFFFB)
+	#define TreeView_SetCheckState(hwndTV, hti, fCheck) \
+		TreeView_SetItemState(hwndTV, hti, INDEXTOSTATEIMAGEMASK((fCheck)?2:1), TVIS_STATEIMAGEMASK)
+	#define TreeView_GetCheckState(hwndTV, hti) \
+		((((UINT)(SNDMSG((hwndTV), TVM_GETITEMSTATE, (WPARAM)(hti), TVIS_STATEIMAGEMASK))) >> 12) -1)
+	#define ERROR_INTERNET_SEC_CERT_NO_REV 12056
+	#define ERROR_INTERNET_SEC_CERT_REV_FAILED 12057
 // SDK isn't present or some older VC compiler was used, include missing things.
 #elif !defined(NOWIN2K) && (!defined WS_EX_LAYERED || !defined IDC_HAND)
 
