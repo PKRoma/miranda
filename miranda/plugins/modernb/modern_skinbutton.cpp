@@ -586,8 +586,8 @@ typedef struct _MButton
 MButton * Buttons=NULL;
 DWORD ButtonsCount=0;
 
-_inline static int _center_h( RECT* rc ) { return ( rc->right + rc->left ) >> 1; }
-_inline static int _center_v( RECT* rc ) { return ( rc->bottom + rc->top ) >> 1; }
+#define _center_h( rc ) (( (rc)->right + (rc)->left ) >> 1)
+#define _center_v( rc ) (( (rc)->bottom + (rc)->top ) >> 1)
 
 int ModernSkinButton_AddButton(HWND parent,
 							   char * ID,
