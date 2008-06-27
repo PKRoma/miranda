@@ -120,7 +120,7 @@ PLUGININFOEX pluginInfo = {
 };
 
 #if defined(_UNICODE)
-void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
+void _DebugTraceW(const wchar_t *fmt, ...)
 {
 #ifdef _DEBUG
     wchar_t debug[2048];
@@ -136,7 +136,7 @@ void __forceinline _DebugTraceW(const wchar_t *fmt, ...)
 }
 #endif
 
-void __forceinline _DebugTraceA(const char *fmt, ...)
+void _DebugTraceA(const char *fmt, ...)
 {
     char    debug[2048];
     int     ibsize = 2047;

@@ -46,7 +46,7 @@ static int GetContactStatus(HANDLE hContact)
     return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 }
 
-static int __forceinline GetStatusModeOrdering(int statusMode)
+int __forceinline GetStatusModeOrdering(int statusMode)
 {
     int i;
     for (i = 0; i < sizeof(statusModeOrder) / sizeof(statusModeOrder[0]); i++) {
@@ -172,7 +172,7 @@ void LoadContactTree(void)
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
 }
 
-DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
+DWORD INTSORT_GetLastMsgTime(HANDLE hContact)
 {
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei = {0};
@@ -190,7 +190,7 @@ DWORD __forceinline INTSORT_GetLastMsgTime(HANDLE hContact)
 	return 0;
 }
 
-static int __forceinline GetProtoIndex(char * szName)
+int __forceinline GetProtoIndex(char * szName)
 {
 	if ( !szName )
 		return -1;
@@ -200,7 +200,7 @@ static int __forceinline GetProtoIndex(char * szName)
 	}
 }
 
-static int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)
+int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2, UINT bywhat)
 {
 	TCHAR *namea, *nameb;
 	int statusa, statusb;

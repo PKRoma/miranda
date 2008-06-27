@@ -71,7 +71,7 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int __forceinline __strcmp(const char * src, const char * dst)
+int __forceinline __strcmp(const char * src, const char * dst)
 {
 	int ret = 0 ;
 

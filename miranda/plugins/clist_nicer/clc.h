@@ -581,11 +581,11 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto );
 
 // debugging support
 
-extern void __forceinline _DebugTraceW(const wchar_t *fmt, ...);
+void _DebugTraceW(const wchar_t *fmt, ...);
 #ifdef _CLN_GDIP
-extern "C" void __forceinline _DebugTraceA(const char *fmt, ...);
+extern "C" void _DebugTraceA(const char *fmt, ...);
 #else
-extern void __forceinline _DebugTraceA(const char *fmt, ...);
+void _DebugTraceA(const char *fmt, ...);
 #endif
 // Docking.c
 

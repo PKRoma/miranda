@@ -77,7 +77,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 	return TRUE;
 }
 
-_inline int MakeVer(int a, int b, int c, int d)
+inline int MakeVer(int a, int b, int c, int d)
 {
     return PLUGIN_MAKE_VERSION(a,b,c,d);
 }

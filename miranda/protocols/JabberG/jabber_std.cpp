@@ -181,7 +181,7 @@ char* __fastcall JTranslate( const char* str )
 }
 
 // save/load crypted strings
-static void __forceinline sttCryptString(char *str)
+void __forceinline sttCryptString(char *str)
 {
 	while (*str) if (*str != 0xc3) *str++ ^= 0xc3;
 }

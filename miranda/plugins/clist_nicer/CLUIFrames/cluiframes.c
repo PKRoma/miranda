@@ -175,18 +175,18 @@ static int id2pos(int id)
 	return(-1);
 }
 
-static int __forceinline btoint(BOOLEAN b)
+int __forceinline btoint(BOOLEAN b)
 {
 	return(b ? 1 : 0);
 }
 
-static void __forceinline lockfrm()
+void __forceinline lockfrm()
 {
 	if (FramesSysNotStarted == FALSE)
 		EnterCriticalSection(&csFrameHook);
 }
 
-static void __forceinline ulockfrm()
+void __forceinline ulockfrm()
 {
 	LeaveCriticalSection(&csFrameHook);
 }

@@ -78,13 +78,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stddef.h>
 #include <process.h>
 #include <io.h>
+#include <math.h>
 #include <string.h>
 #include <direct.h>
-#include "resource.h"
 #include <win2k.h>
 
-
-#include "hdr/modern_global_structure.h"
+#include "modern_global_structure.h"
 
 #include <newpluginapi.h>
 #include <m_system.h>
@@ -127,6 +126,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../m_api/m_xpTheme.h"
 #include "../m_api/m_toolbar.h"
+
+#include "../resource.h"
 
 // module name of MetaContacts plugin
 extern char *g_szMetaModuleName;
@@ -258,7 +259,7 @@ enum
 
 
 
-extern __inline char * strdupn(const char * src, int len);
+char * strdupn(const char * src, int len);
 
 #define SKINBUTTONCLASS _T("MirandaSkinButtonClass")
 

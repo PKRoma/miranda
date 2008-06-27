@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIRANDA_VER 0x0700
 
 #define _WIN32_WINNT 0x0501
-#define _WIN32_IE 0x0500
+#define _WIN32_IE 0x0501
 
 #include "m_stdhdr.h"
 
@@ -97,7 +97,7 @@ typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYT
 
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
 
-extern BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
+BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
 
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BOOL transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
 

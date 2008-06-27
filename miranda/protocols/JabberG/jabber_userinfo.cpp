@@ -104,7 +104,7 @@ enum
 	INFOLINE_LASTACTIVE,
 };
 
-static __forceinline DWORD sttInfoLineId(DWORD res, DWORD type, DWORD line=0)
+__forceinline DWORD sttInfoLineId(DWORD res, DWORD type, DWORD line=0)
 {
 	return
 		( type << 24 ) & 0x7f000000 |

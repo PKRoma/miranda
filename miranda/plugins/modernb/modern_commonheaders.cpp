@@ -135,7 +135,7 @@ int __cdecl mir_strcmp (const char *a, const char *b)
 	return (strcmp(a,b));
 };
 
-__inline int mir_strlen (const char *a)	
+int mir_strlen (const char *a)	
 {	
 	if (a==NULL) return 0;	
 	return (strlen(a));	
@@ -153,7 +153,7 @@ __inline void *mir_calloc( size_t num, size_t size )
     return p;
 };
 */
-extern __inline wchar_t * mir_strdupW(const wchar_t * src)
+wchar_t * mir_strdupW(const wchar_t * src)
 {
 	wchar_t * p;
 	if (src==NULL) return NULL;
@@ -164,7 +164,7 @@ extern __inline wchar_t * mir_strdupW(const wchar_t * src)
 }
 
 //copy len symbols from string - do not check is it null terminated or len is more then actual 
-__inline char * strdupn(const char * src, int len)
+char * strdupn(const char * src, int len)
 {
     char * p;
     if (src==NULL) return NULL;
@@ -230,7 +230,7 @@ BOOL DebugDeleteObject(HGDIOBJ a)
 	return res;
 }
 
-__inline BOOL mod_DeleteDC(HDC hdc)
+BOOL mod_DeleteDC(HDC hdc)
 {
 //  ske_ResetTextEffect(hdc);
   return DeleteDC(hdc);

@@ -32,8 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //HANDLE hPreBuildFrameMenuEvent;//external event from clistmenus
 
 
-int				CLUIFrames_GetTotalHeight();
-static int		QueueAllFramesUpdating(BYTE queue);
+int CLUIFrames_GetTotalHeight();
+int QueueAllFramesUpdating(BYTE queue);
 
 //we use dynamic frame list,
 //but who wants so huge number of frames ??
@@ -342,7 +342,7 @@ static wndFrame* FindFrameByWnd( HWND hwnd )
 }
 
 
-static int QueueAllFramesUpdating(BYTE queue)
+int QueueAllFramesUpdating(BYTE queue)
 {
 	int i;
 	for(i=0;i<nFramescount;i++)
@@ -3619,7 +3619,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 	}
 	return TRUE;
 }
-static int CLUIFrameResizeFloatingFrame(int framepos)
+int CLUIFrameResizeFloatingFrame(int framepos)
 {
 
 	int width,height;
@@ -3996,7 +3996,7 @@ static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 };
 
 
-static int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
+int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 {	
 	int hwndtmp,hwndtooltiptmp;
 
