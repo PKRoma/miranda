@@ -39,7 +39,7 @@
 
 static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
-extern const char* cliSpamBot;
+extern char* cliSpamBot;
 
 void CIcqProto::handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {

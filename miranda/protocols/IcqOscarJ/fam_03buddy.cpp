@@ -37,7 +37,7 @@
 #include "icqoscar.h"
 
 extern capstr capShortCaps;
-extern const char* cliSpamBot;
+extern char* cliSpamBot;
 
 void CIcqProto::handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
