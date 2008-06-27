@@ -748,7 +748,6 @@
 #define ID_MESSAGELOGSETTINGS_GLOBAL    40251
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
-#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
