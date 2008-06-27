@@ -169,6 +169,10 @@ static int TBStateConvert2Flat(int state)
 	return TS_NORMAL;
 }
 
+#ifndef DFCS_HOT
+#define DFCS_HOT 0x1000
+#endif
+
 static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 {
 	if (hdcPaint) {

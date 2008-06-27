@@ -2,7 +2,9 @@
 #include "hdr/modern_commonprototypes.h"
 #include "m_api/m_skinbutton.h"
 #include "hdr/modern_clcpaint.h"
-
+#ifdef __MINGW32__
+#include <ctype.h>
+#endif
 
 #define BUTTON_POLLID       100
 #define BUTTON_POLLDELAY    50
@@ -43,7 +45,6 @@ static void PaintWorker(TBBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset);
 static BOOL	bThemed=FALSE;
 
 static HANDLE hButtonWindowList=NULL;
-static HANDLE hIconChangedHook=NULL;
 static HANDLE hBkgChangedHook=NULL;
 
 

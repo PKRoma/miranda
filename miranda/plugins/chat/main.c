@@ -45,6 +45,13 @@ HIMAGELIST  hIconsList = NULL;
 TCHAR*      pszActiveWndID = 0;
 char*       pszActiveWndModule = 0;
 
+/* Missing MinGW GUIDs */
+#ifdef __MINGW32__
+#include <initguid.h>
+DEFINE_GUID(IID_IRichEditOle,0x20d00,0,0,0xc0,0,0,0,0,0,0,0x46);
+DEFINE_GUID(IID_IRichEditOleCallback,0x20d03,0,0,0xc0,0,0,0,0,0,0,0x46);
+#endif
+
 struct GlobalLogSettings_t g_Settings;
 
 static void InitREOleCallback(void);

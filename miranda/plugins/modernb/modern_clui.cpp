@@ -41,7 +41,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
 
 // new sources
+#ifdef _MSC_VER
 #include <crtdbg.h>
+#endif
 
 //////////////// CLUI CLASS IMPLEMENTATION /////////////////////////////////
 #include "hdr/modern_clui.h"

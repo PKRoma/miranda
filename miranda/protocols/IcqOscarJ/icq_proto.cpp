@@ -40,6 +40,8 @@
 #include "m_icolib.h"
 #include "m_updater.h"
 
+#include <ctype.h>
+
 extern HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
 extern PLUGININFOEX pluginInfo;
 

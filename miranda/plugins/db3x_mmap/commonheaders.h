@@ -37,7 +37,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <io.h>
 #include <string.h>
 #include <direct.h>
+#ifndef __GNUC__
 #include <crtdbg.h>
+#endif
 #include "resource.h"
 #include "version.h"
 #include <newpluginapi.h>

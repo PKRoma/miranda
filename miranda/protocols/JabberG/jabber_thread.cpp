@@ -38,6 +38,10 @@ Last change by : $Author$
 #include "jabber_privacy.h"
 #include "jabber_rc.h"
 
+#ifndef DNS_TYPE_SRV
+#define DNS_TYPE_SRV 0x0021
+#endif
+
 // <iq/> identification number for various actions
 // for JABBER_REGISTER thread
 int iqIdRegGetReg;

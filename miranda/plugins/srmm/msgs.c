@@ -24,6 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 #include "m_fontservice.h"
 
+/* Missing MinGW GUIDs */
+#ifdef __MINGW32__
+#include <initguid.h>
+DEFINE_GUID(IID_IRichEditOle,0x20d00,0,0,0xc0,0,0,0,0,0,0,0x46);
+DEFINE_GUID(IID_IRichEditOleCallback,0x20d03,0,0,0xc0,0,0,0,0,0,0,0x46);
+#endif
+
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;

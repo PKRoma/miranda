@@ -39,6 +39,10 @@ Last change by : $Author$
 
 #define WM_CREATECONSOLE  WM_USER+1000
 
+#ifndef SES_EXTENDBACKCOLOR
+#define	SES_EXTENDBACKCOLOR 4
+#endif
+
 /* increment buffer with 1K steps */
 #define STRINGBUF_INCREMENT		1024
 

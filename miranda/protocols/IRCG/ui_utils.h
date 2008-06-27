@@ -32,6 +32,100 @@ Last change by : $Author: m_mluhov $
 
 #include "m_clc.h"
 
+#ifndef LPLVCOLUMN
+typedef struct tagNMLVSCROLL
+{
+	NMHDR   hdr;
+	int     dx;
+	int     dy;
+} NMLVSCROLL;
+typedef struct tagLVG
+{
+	UINT    cbSize;
+	UINT    mask;
+	LPWSTR  pszHeader;
+	int     cchHeader;
+	LPWSTR  pszFooter;
+	int     cchFooter;
+	int     iGroupId;
+	UINT    stateMask;
+	UINT    state;
+	UINT    uAlign;
+} LVGROUP, *PLVGROUP;
+typedef struct tagLVGROUPMETRICS
+{
+	UINT cbSize;
+	UINT mask;
+	UINT Left;
+	UINT Top;
+	UINT Right;
+	UINT Bottom;
+	COLORREF crLeft;
+	COLORREF crTop;
+	COLORREF crRight;
+	COLORREF crBottom;
+	COLORREF crHeader;
+	COLORREF crFooter;
+} LVGROUPMETRICS, *PLVGROUPMETRICS;
+typedef struct tagLVTILEVIEWINFO
+{
+	UINT cbSize;
+	DWORD dwMask;
+	DWORD dwFlags;
+	SIZE sizeTile;
+	int cLines;
+	RECT rcLabelMargin;
+} LVTILEVIEWINFO, *PLVTILEVIEWINFO;
+typedef struct tagLVTILEINFO
+{
+	UINT cbSize;
+	int iItem;
+	UINT cColumns;
+	PUINT puColumns;
+} LVTILEINFO, *PLVTILEINFO;
+typedef struct 
+{
+	UINT cbSize;
+	DWORD dwFlags;
+	int iItem;
+	DWORD dwReserved;
+} LVINSERTMARK, * LPLVINSERTMARK;
+typedef int (CALLBACK *PFNLVGROUPCOMPARE)(int, int, void *);
+typedef struct tagLVINSERTGROUPSORTED
+{
+	PFNLVGROUPCOMPARE pfnGroupCompare;
+	void *pvData;
+	LVGROUP lvGroup;
+} LVINSERTGROUPSORTED, *PLVINSERTGROUPSORTED;
+typedef struct tagLVSETINFOTIP
+{
+	UINT cbSize;
+	DWORD dwFlags;
+	LPWSTR pszText;
+	int iItem;
+	int iSubItem;
+} LVSETINFOTIP, *PLVSETINFOTIP;
+#ifndef _UNICODE
+	#define LPLVCOLUMN LPLVCOLUMNA
+	#define LPLVITEM LPLVITEMA
+#else
+	#define LPLVCOLUMN LPLVCOLUMNW
+	#define LPLVITEM LPLVITEMW
+#endif
+#define LVN_BEGINSCROLL (LVN_FIRST-80)
+#define LVN_ENDSCROLL (LVN_FIRST-81)
+#define LVN_HOTTRACK (LVN_FIRST-21)
+#define LVN_MARQUEEBEGIN (LVN_FIRST-56)
+#define LVM_MAPINDEXTOID (LVM_FIRST + 180)
+#define ListView_MapIndexToID(hwnd, index) \
+	(UINT)SendMessage((hwnd), LVM_MAPINDEXTOID, (WPARAM)index, (LPARAM)0)
+#define TreeView_GetLineColor(hwnd) \
+	(COLORREF)SendMessage((hwnd), TVM_GETLINECOLOR, 0, 0)
+#define TreeView_SetLineColor(hwnd, clr) \
+	(COLORREF)SendMessage((hwnd), TVM_SETLINECOLOR, 0, (LPARAM)(clr))
+#endif
+
+
 #pragma warning(disable:4355)
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -88,9 +182,90 @@ __inline CCallback<TArgument> Callback(TClass *object, void (TClass::*func)(TArg
 	{ return CCallback<TArgument>(object, func); }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// CDbLink
+// CDlgBase - base dialog class
 
-class CDlgBase;
+class CDlgBase
+{
+	friend class CCtrlBase;
+	friend class CCtrlData;
+
+public:
+	CDlgBase(int idDialog, HWND hwndParent);
+	virtual ~CDlgBase();
+
+	// general utilities
+	void Show();
+	int DoModal();
+
+	__inline HWND GetHwnd() const { return m_hwnd; }
+	__inline bool IsInitialized() const { return m_initialized; }
+	__inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
+	__inline const MSG *ActiveMessage() const { return &m_msg; }
+
+	// global jabber events
+	virtual void OnJabberOffline() {}
+	virtual void OnJabberOnline() {}
+
+	// dynamic creation support (mainly to avoid leaks in options)
+	struct CreateParam
+	{
+		CDlgBase *(*create)(void *param);
+		void *param;
+	};
+	static BOOL CALLBACK DynamicDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		if (msg == WM_INITDIALOG)
+		{
+			CreateParam *param = (CreateParam *)lParam;
+			CDlgBase *wnd = param->create(param->param);
+			SetWindowLong(hwnd, DWL_DLGPROC, (LONG)GlobalDlgProc);
+			return GlobalDlgProc(hwnd, msg, wParam, (LPARAM)wnd);
+		}
+
+		return FALSE;
+	}
+
+	LRESULT m_lresult;
+protected:
+	HWND    m_hwnd;
+	HWND    m_hwndParent;
+	int     m_idDialog;
+	MSG     m_msg;
+	bool    m_isModal;
+	bool    m_initialized;
+
+	CCtrlBase* m_first;
+
+	// override this handlers to provide custom functionality
+	// general messages
+	virtual void OnInitDialog() { }
+	virtual void OnClose() { }
+	virtual void OnDestroy() { }
+
+	// miranda-related stuff
+	virtual int Resizer(UTILRESIZECONTROL *urc);
+	virtual void OnApply() {}
+	virtual void OnReset() {}
+	virtual void OnChange(CCtrlBase *ctrl) {}
+
+	// main dialog procedure
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
+
+	// resister controls
+	void AddControl(CCtrlBase *ctrl);
+
+private:
+	LIST<CCtrlBase> m_controls;
+
+	void NotifyControls(void (CCtrlBase::*fn)());
+	CCtrlBase *FindControl(int idCtrl);
+
+	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// CDbLink
 
 class CDbLink
 {
@@ -340,7 +515,7 @@ protected:
 	__inline BYTE GetDataType() { return m_dbLink ? m_dbLink->GetDataType() : DBVT_DELETED; }
 	__inline DWORD LoadInt() { return m_dbLink ? m_dbLink->LoadInt() : 0; }
 	__inline void SaveInt(DWORD value) { if (m_dbLink) m_dbLink->SaveInt(value); }
-	__inline TCHAR *LoadText() { return m_dbLink ? m_dbLink->LoadText() : _T(""); }
+	__inline const TCHAR *LoadText() { return m_dbLink ? m_dbLink->LoadText() : _T(""); }
 	__inline void SaveText(TCHAR *value) { if (m_dbLink) m_dbLink->SaveText(value); }
 };
 
@@ -893,89 +1068,6 @@ public:
 		}
 		return FALSE;
 	}
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// CDlgBase - base dialog class
-
-class CDlgBase
-{
-	friend class CCtrlBase;
-	friend class CCtrlData;
-
-public:
-	CDlgBase(int idDialog, HWND hwndParent);
-	virtual ~CDlgBase();
-
-	// general utilities
-	void Show();
-	int DoModal();
-
-	__inline HWND GetHwnd() const { return m_hwnd; }
-	__inline bool IsInitialized() const { return m_initialized; }
-	__inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
-	__inline const MSG *ActiveMessage() const { return &m_msg; }
-
-	// global jabber events
-	virtual void OnJabberOffline() {}
-	virtual void OnJabberOnline() {}
-
-	// dynamic creation support (mainly to avoid leaks in options)
-	struct CreateParam
-	{
-		CDlgBase *(*create)(void *param);
-		void *param;
-	};
-	static BOOL CALLBACK DynamicDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		if (msg == WM_INITDIALOG)
-		{
-			CreateParam *param = (CreateParam *)lParam;
-			CDlgBase *wnd = param->create(param->param);
-			SetWindowLong(hwnd, DWL_DLGPROC, (LONG)GlobalDlgProc);
-			return GlobalDlgProc(hwnd, msg, wParam, (LPARAM)wnd);
-		}
-
-		return FALSE;
-	}
-
-	LRESULT m_lresult;
-protected:
-	HWND    m_hwnd;
-	HWND    m_hwndParent;
-	int     m_idDialog;
-	MSG     m_msg;
-	bool    m_isModal;
-	bool    m_initialized;
-
-	CCtrlBase* m_first;
-
-	// override this handlers to provide custom functionality
-	// general messages
-	virtual void OnInitDialog() { }
-	virtual void OnClose() { }
-	virtual void OnDestroy() { }
-
-	// miranda-related stuff
-	virtual int Resizer(UTILRESIZECONTROL *urc);
-	virtual void OnApply() {}
-	virtual void OnReset() {}
-	virtual void OnChange(CCtrlBase *ctrl) {}
-
-	// main dialog procedure
-	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
-
-	// resister controls
-	void AddControl(CCtrlBase *ctrl);
-
-private:
-	LIST<CCtrlBase> m_controls;
-
-	void NotifyControls(void (CCtrlBase::*fn)());
-	CCtrlBase *FindControl(int idCtrl);
-
-	static BOOL CALLBACK GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static int GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
