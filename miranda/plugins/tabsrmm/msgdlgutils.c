@@ -1575,7 +1575,7 @@ HWND GetLastChild(HWND hwndParent)
 {
 	HWND hwnd = hwndParent;
 	char classbuf[25]={'\0'};
-	WCHAR classbufW[25]={__T('\0')};
+	WCHAR classbufW[25]={_T('\0')};
 	while (TRUE) {
 		HWND hwndChild = GetWindow(hwnd, GW_CHILD);
 		if (hwndChild==NULL)
