@@ -63,6 +63,7 @@ void KillModuleServices( HINSTANCE );
 
 void KillObjectEventHooks( void* pObject );
 void KillObjectServices( void* pObject );
+void KillObjectThreads( void* pObject );
 
 /**** utf.c ****************************************************************************/
 

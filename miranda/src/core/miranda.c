@@ -50,21 +50,34 @@ static char *pszWaitServices[MAXIMUM_WAIT_OBJECTS-1];
 static int waitObjectCount=0;
 HANDLE hStackMutex,hMirandaShutdown,hThreadQueueEmpty;
 
-struct THREAD_WAIT_ENTRY {
+typedef struct
+{
 	DWORD dwThreadId;	// valid if hThread isn't signalled
 	HANDLE hThread;
 	HINSTANCE hOwner;
+	void* pObject;
 	DWORD addr;
-};
+}
+ THREAD_WAIT_ENTRY;
 
-struct THREAD_WAIT_ENTRY *WaitingThreads=NULL;
-int WaitingThreadsCount=0;
+static int compareThreads( const THREAD_WAIT_ENTRY* p1, const THREAD_WAIT_ENTRY* p2 )
+{
+	return ( int )p1->dwThreadId - ( int )p2->dwThreadId;
+}
+
+struct
+{
+	THREAD_WAIT_ENTRY** items;
+	int count, limit, increment;
+	FSortFunc sortFunc;
+}
+static threads;
 
 struct FORK_ARG {
 	HANDLE hEvent;
 	pThreadFunc threadcode;
 	pThreadFuncEx threadcodeex;
-	void *arg;
+	void *arg, *owner;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -120,16 +133,21 @@ static int ForkThreadService(WPARAM wParam, LPARAM lParam)
 
 unsigned __stdcall forkthreadex_r(void * arg)
 {
-	struct FORK_ARG *fa=(struct FORK_ARG *)arg;
-	unsigned (__stdcall * threadcode) (void *)=fa->threadcodeex;
-	void *cookie=fa->arg;
+	struct FORK_ARG *fa = (struct FORK_ARG *)arg;
+	pThreadFuncEx threadcode = fa->threadcodeex;
+	pThreadFuncOwner threadcodeex = ( pThreadFuncOwner )fa->threadcodeex;
+	void *cookie = fa->arg;
+	void *owner = fa->owner;
 	unsigned long rc;
 
-	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)&threadcode);
+	CallService(MS_SYSTEM_THREAD_PUSH,(WPARAM)fa->owner,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
 	__try
 	{
-		rc=threadcode(cookie);
+		if ( owner )
+			rc = threadcodeex( owner, cookie );
+		else
+			rc = threadcode( cookie );
 	}
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
@@ -145,17 +163,18 @@ unsigned long forkthreadex(
 	void *sec,
 	unsigned stacksize,
 	unsigned (__stdcall *threadcode)(void*),
+	void* owner,
 	void *arg,
 	unsigned cf,
-	unsigned *thraddr
-)
+	unsigned *thraddr )
 {
 	unsigned long rc;
-	struct FORK_ARG fa;
-	fa.threadcodeex=threadcode;
-	fa.arg=arg;
-	fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
-	rc=_beginthreadex(sec,stacksize,forkthreadex_r,(void *)&fa,0,thraddr);
+	struct FORK_ARG fa = { 0 };
+	fa.threadcodeex = threadcode;
+	fa.arg = arg;
+	fa.owner = owner;
+	fa.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+	rc = _beginthreadex(sec,stacksize,forkthreadex_r,(void *)&fa,0,thraddr);
 	if (rc)
 		WaitForSingleObject(fa.hEvent,INFINITE);
 
@@ -169,7 +188,7 @@ static int ForkThreadServiceEx(WPARAM wParam, LPARAM lParam)
 	if ( params == NULL )
 		return 0;
 
-	return forkthreadex( NULL, params->iStackSize, params->pFunc, params->arg, 0, params->threadID );
+	return forkthreadex( NULL, params->iStackSize, params->pFunc, ( void* )wParam, params->arg, 0, params->threadID );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -204,19 +223,37 @@ VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 {
 	if ( MirandaWaitForMutex( hStackMutex )) {
 		int j;
-		for ( j=0; j < WaitingThreadsCount; j++ ) {
+		for ( j=0; j < threads.count; j++ ) {
+			THREAD_WAIT_ENTRY* p = threads.items[j];
 			char szModuleName[ MAX_PATH ];
-			GetModuleFileNameA( WaitingThreads[j].hOwner, szModuleName, sizeof(szModuleName));
+			GetModuleFileNameA( p->hOwner, szModuleName, sizeof(szModuleName));
 			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't release it. Entry point: %08x",
-				WaitingThreads[j].hThread, szModuleName, WaitingThreads[j].addr );
-			TerminateThread( WaitingThreads[j].hThread, 9999 );
+				p->hThread, szModuleName, p->addr );
+			TerminateThread( p->hThread, 9999 );
+			mir_free( p );
 		}
 
-		if ( WaitingThreadsCount ) {
-			mir_free(WaitingThreads);
-			WaitingThreads=NULL;
-			WaitingThreadsCount=0;
-		}
+		List_Destroy(( SortedList* )&threads );
+
+		ReleaseMutex( hStackMutex );
+		SetEvent( hThreadQueueEmpty );
+}	}
+
+void KillObjectThreads( void* owner )
+{
+	if ( owner == NULL )
+		return;
+
+	if ( MirandaWaitForMutex( hStackMutex )) {
+		int j;
+		for ( j = threads.count-1; j >= 0; j-- ) {
+			THREAD_WAIT_ENTRY* p = threads.items[j];
+			if ( p->pObject == owner ) {
+				TerminateThread( p->hThread, 9999 );
+				CloseHandle( p->hThread );
+				List_Remove(( SortedList* )&threads, j );
+				mir_free( p );
+		}	}
 
 		ReleaseMutex(hStackMutex);
 		SetEvent(hThreadQueueEmpty);
@@ -227,8 +264,8 @@ static void UnwindThreadWait(void)
 	// acquire the list and wake up any alertable threads
 	if ( MirandaWaitForMutex(hStackMutex) ) {
 		int j;
-		for (j=0;j<WaitingThreadsCount;j++)
-			QueueUserAPC(DummyAPCFunc,WaitingThreads[j].hThread, 0);
+		for (j=0;j<threads.count;j++)
+			QueueUserAPC(DummyAPCFunc,threads.items[j]->hThread, 0);
 		ReleaseMutex(hStackMutex);
 	}
 
@@ -238,7 +275,6 @@ static void UnwindThreadWait(void)
 	// wait til the thread list is empty
 	MirandaWaitForMutex(hThreadQueueEmpty);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -271,15 +307,17 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 	ResetEvent(hThreadQueueEmpty); // thread list is not empty
 	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0)
 	{
+		THREAD_WAIT_ENTRY* p = ( THREAD_WAIT_ENTRY* )mir_calloc( sizeof( THREAD_WAIT_ENTRY ));
+
 		HANDLE hThread=0;
 		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
-		WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*(WaitingThreadsCount+1));
-		WaitingThreads[WaitingThreadsCount].hThread=hThread;
-		WaitingThreads[WaitingThreadsCount].dwThreadId=GetCurrentThreadId();
-		WaitingThreads[WaitingThreadsCount].hOwner=GetInstByAddress(( void* )lParam );
-		WaitingThreads[WaitingThreadsCount].addr=lParam;
-		WaitingThreadsCount++;
- 		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), WaitingThreadsCount );
+		p->hThread = hThread;
+		p->dwThreadId = GetCurrentThreadId();
+		p->hOwner = GetInstByAddress(( void* )lParam );
+		p->addr = lParam;
+		List_InsertPtr(( SortedList* )&threads, p );
+
+ 		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), threads.count );
 		ReleaseMutex(hStackMutex);
 	} //if
 	return 0;
@@ -291,24 +329,22 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 	{
 		DWORD dwThreadId=GetCurrentThreadId();
 		int j;
-		//Netlib_Logf( NULL, "*** popping thread %x, %d threads left", dwThreadId, WaitingThreadsCount);
-		for (j=0;j<WaitingThreadsCount;j++) {
-			if (WaitingThreads[j].dwThreadId == dwThreadId) {
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-				CloseHandle(WaitingThreads[j].hThread);
-				WaitingThreadsCount--;
-				if (j<WaitingThreadsCount) memmove(&WaitingThreads[j],&WaitingThreads[j+1],(WaitingThreadsCount-j) * sizeof(struct THREAD_WAIT_ENTRY));
-				if (!WaitingThreadsCount)
-				{
-					mir_free(WaitingThreads);
-					WaitingThreads=NULL;
-					WaitingThreadsCount=0;
-					ReleaseMutex(hStackMutex);
+		//Netlib_Logf( NULL, "*** popping thread %x, %d threads left", dwThreadId, threads.count);
+		for ( j=0; j < threads.count; j++ ) {
+			THREAD_WAIT_ENTRY* p = threads.items[j];
+			if ( p->dwThreadId == dwThreadId ) {
+				SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
+				CloseHandle( p->hThread );
+				List_Remove(( SortedList* )&threads, j );
+				mir_free( p );
+
+				if ( !threads.count ) {
+					List_Destroy(( SortedList* )&threads );
+					ReleaseMutex( hStackMutex );
 					SetEvent(hThreadQueueEmpty); // thread list is empty now
 					return 0;
-				} else {
-					WaitingThreads=mir_realloc(WaitingThreads,sizeof(struct THREAD_WAIT_ENTRY)*WaitingThreadsCount);
-				} //if
+				} 
+				
 				ReleaseMutex(hStackMutex);
 				return 0;
 			} //if
@@ -706,6 +742,9 @@ int LoadSystemModule(void)
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);
 	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
 	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
+
+	threads.increment = 10;
+	threads.sortFunc = compareThreads;
 
 	hShutdownEvent=CreateHookableEvent(ME_SYSTEM_SHUTDOWN);
 	hPreShutdownEvent=CreateHookableEvent(ME_SYSTEM_PRESHUTDOWN);

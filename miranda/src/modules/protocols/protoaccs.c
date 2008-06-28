@@ -301,6 +301,7 @@ void DeactivateAccount( PROTOACCOUNT* pa )
 
 	KillObjectServices( pa->ppro );
 	KillObjectEventHooks( pa->ppro );
+	KillObjectThreads( pa->ppro );
 
 	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
 	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );

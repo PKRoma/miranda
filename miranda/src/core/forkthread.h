@@ -57,8 +57,8 @@ unsigned long forkthreadex(
 	void *sec,
 	unsigned stacksize,
 	unsigned (__stdcall *threadcode)(void*),
+	void *owner,
 	void *arg,
 	unsigned cf,
 	unsigned *thraddr
 );
-
