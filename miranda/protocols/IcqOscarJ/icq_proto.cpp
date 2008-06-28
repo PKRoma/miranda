@@ -172,7 +172,6 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	CreateProtoService(MS_XSTATUS_SHOWDETAILS, &CIcqProto::ShowXStatusDetails);
 
-	HookProtoEvent(ME_SYSTEM_PRESHUTDOWN, &CIcqProto::OnPreShutdown);
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
   { // Initialize IconLib icons (only 0.7+)

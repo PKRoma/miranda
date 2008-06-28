@@ -287,7 +287,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	return pa->bIsEnabled = FALSE;
 }
 
-void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
+void DeactivateAccount( PROTOACCOUNT* pa )
 {
 	if ( !pa->ppro )
 		return;
@@ -302,10 +302,8 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	KillObjectServices( pa->ppro );
 	KillObjectEventHooks( pa->ppro );
 
-	if ( bIsDynamic ) {
-		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
-		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
-	}
+	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
+	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
 
 	UninitAccount( pa );
 	pa->ppro = NULL;
@@ -321,7 +319,7 @@ void EraseAccount( PROTOACCOUNT* pa )
 
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 {
-	DeactivateAccount( pa, bIsDynamic );
+	DeactivateAccount( pa );
 
 	mir_free( pa->tszAccountName );
 	mir_free( pa->szProtoName );

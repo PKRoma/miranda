@@ -730,7 +730,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							if ( pa->bIsEnabled )
 								ActivateAccount( pa );
 							else 
-								DeactivateAccount( pa, TRUE );
+								DeactivateAccount( pa );
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
 							sttUpdateAccountInfo(hwndDlg, dat);
