@@ -172,7 +172,6 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	CreateProtoService(MS_XSTATUS_SHOWDETAILS, &CIcqProto::ShowXStatusDetails);
 
-	HookProtoEvent(ME_SYSTEM_MODULESLOADED, &CIcqProto::OnModulesLoaded);
 	HookProtoEvent(ME_SYSTEM_PRESHUTDOWN, &CIcqProto::OnPreShutdown);
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
@@ -297,7 +296,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	modules[2] = pszGroupsName;
 	modules[3] = pszSrvGroupsName;
 	CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
-
 
 	null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s server connection"), m_szModuleName);
 	nlu.cbSize = sizeof(nlu);

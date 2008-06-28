@@ -49,7 +49,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	InitializeCriticalSection(&m_gchook);
 	m_evWndCreate = ::CreateEvent( NULL, FALSE, FALSE, NULL );
 
-	IrcHookEvent( ME_SYSTEM_MODULESLOADED, &CIrcProto::OnModulesLoaded);
 	IrcHookEvent( ME_SYSTEM_PRESHUTDOWN,   &CIrcProto::OnPreShutdown);
 	IrcHookEvent( ME_DB_CONTACT_DELETED,   &CIrcProto::OnDeletedContact );
 

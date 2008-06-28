@@ -279,6 +279,8 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 		CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
 		CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
 		CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
+
+		ppi->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 		return TRUE;
 	}
 

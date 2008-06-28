@@ -169,10 +169,9 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					List_InsertPtr(( SortedList* )&accounts, pa );
 
-					if ( param->action == 1 ) {
-						if ( ActivateAccount( pa ))
-							pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
-				}	}
+					if ( param->action == 1 )
+						ActivateAccount( pa );
+				}
 
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
@@ -728,11 +727,10 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
 						if ( pa ) {
 							pa->bIsEnabled = !pa->bIsEnabled;
-							if ( pa->bIsEnabled ) {
-								if ( ActivateAccount( pa ))
-									pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
-							}
-							else DeactivateAccount( pa, TRUE );
+							if ( pa->bIsEnabled )
+								ActivateAccount( pa );
+							else 
+								DeactivateAccount( pa, TRUE );
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
 							sttUpdateAccountInfo(hwndDlg, dat);
