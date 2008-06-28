@@ -243,24 +243,24 @@ int CIrcProto::AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg)
 	return 1;
 }
 
-void __cdecl ResolveIPThread(LPVOID di)
+void __cdecl CIrcProto::ResolveIPThread(LPVOID di)
 {
 	IPRESOLVE* ipr = (IPRESOLVE *) di;
 
-	EnterCriticalSection( &ipr->ppro->m_resolve);
+	EnterCriticalSection( &m_resolve);
 
-	if ( ipr != NULL && (ipr->iType == IP_AUTO && lstrlenA(ipr->ppro->m_myHost) == 0 || ipr->iType == IP_MANUAL )) {
+	if ( ipr != NULL && (ipr->iType == IP_AUTO && lstrlenA(m_myHost) == 0 || ipr->iType == IP_MANUAL )) {
 		hostent* myhost = gethostbyname( ipr->sAddr.c_str() );
 		if ( myhost ) {
 			IN_ADDR in;
 			memcpy( &in, myhost->h_addr, 4 );
 			if ( ipr->iType == IP_AUTO )
-				mir_snprintf( ipr->ppro->m_myHost, sizeof( ipr->ppro->m_myHost ), "%s", inet_ntoa( in ));
+				mir_snprintf( m_myHost, sizeof( m_myHost ), "%s", inet_ntoa( in ));
 			else
-				mir_snprintf( ipr->ppro->m_mySpecifiedHostIP, sizeof( ipr->ppro->m_mySpecifiedHostIP ), "%s", inet_ntoa( in ));
+				mir_snprintf( m_mySpecifiedHostIP, sizeof( m_mySpecifiedHostIP ), "%s", inet_ntoa( in ));
 	}	}
 	
-	LeaveCriticalSection( &ipr->ppro->m_resolve );
+	LeaveCriticalSection( &m_resolve );
 	delete ipr;
 }
 
@@ -286,7 +286,7 @@ bool CIrcProto::OnIrc_WELCOME( const CIrcMessage* pmsg )
 				lstrcpyn( host, word.c_str(), SIZEOF(host));
 				TCHAR* p1 = _tcschr( host, '@' );
 				if ( p1 )
-					mir_forkthread( ResolveIPThread, new IPRESOLVE( this, _T2A(p1+1), IP_AUTO ));
+					ircFork( &CIrcProto::ResolveIPThread, new IPRESOLVE( _T2A(p1+1), IP_AUTO ));
 			}
 			
 			word = GetWord(pmsg->parameters[1].c_str(), ++i);
@@ -2075,7 +2075,7 @@ bool CIrcProto::OnIrc_WHO_REPLY( const CIrcMessage* pmsg )
 		if ( lstrcmpi( pmsg->parameters[5].c_str(), m_info.sNick.c_str()) == 0 ) {
 			TCHAR host[1024];
 			lstrcpyn( host, pmsg->parameters[3].c_str(), 1024 );
-			mir_forkthread( ResolveIPThread, new IPRESOLVE( this, _T2A(host), IP_AUTO ));
+			ircFork( &CIrcProto::ResolveIPThread, new IPRESOLVE( _T2A(host), IP_AUTO ));
 	}	}
 
 	if ( command[0] == 'U' )

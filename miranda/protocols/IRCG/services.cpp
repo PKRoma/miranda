@@ -1074,53 +1074,53 @@ int __cdecl CIrcProto::GetName(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static void __cdecl ConnectServerThread( CIrcProto* ppro )
+void __cdecl CIrcProto::ConnectServerThread( void* )
 {
-	EnterCriticalSection(&ppro->cs);
-	InterlockedIncrement((long *) &ppro->m_bConnectThreadRunning);
-	InterlockedIncrement((long *) &ppro->m_bConnectRequested);
-	while ( !Miranda_Terminated() && ppro->m_bConnectRequested > 0 ) {
-		while(ppro->m_bConnectRequested > 0)
-			InterlockedDecrement((long *) &ppro->m_bConnectRequested);
-		if (ppro->IsConnected()) {
+	EnterCriticalSection(&cs);
+	InterlockedIncrement((long *) &m_bConnectThreadRunning);
+	InterlockedIncrement((long *) &m_bConnectRequested);
+	while ( !Miranda_Terminated() && m_bConnectRequested > 0 ) {
+		while(m_bConnectRequested > 0)
+			InterlockedDecrement((long *) &m_bConnectRequested);
+		if (IsConnected()) {
 			Sleep(200);
-			ppro->Disconnect();
+			Disconnect();
 		}
 
-		ppro->m_info.bNickFlag = false;
-		int Temp = ppro->m_iDesiredStatus;
-		ppro->m_iDesiredStatus = ID_STATUS_CONNECTING;
-		ppro->nickflag = false;
-		ProtoBroadcastAck(ppro->m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
+		m_info.bNickFlag = false;
+		int Temp = m_iDesiredStatus;
+		m_iDesiredStatus = ID_STATUS_CONNECTING;
+		nickflag = false;
+		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
 		Sleep(100);
-		ppro->Connect(ppro->si);
-		if (ppro->IsConnected()) {
-			ppro->KillChatTimer( ppro->RetryTimer );
+		Connect(si);
+		if (IsConnected()) {
+			KillChatTimer( RetryTimer );
 
-			if ( lstrlenA( ppro->m_mySpecifiedHost ))
-				mir_forkthread( ResolveIPThread, new IPRESOLVE( ppro, ppro->m_mySpecifiedHost, IP_MANUAL ));
+			if ( lstrlenA( m_mySpecifiedHost ))
+				ircFork( &CIrcProto::ResolveIPThread, new IPRESOLVE( m_mySpecifiedHost, IP_MANUAL ));
 
-			ppro->DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, ppro->m_info.sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
+			DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, m_info.sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);
 		}
 		else {
-			Temp = ppro->m_iDesiredStatus;
-			ppro->m_iDesiredStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck(ppro->m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_OFFLINE);
+			Temp = m_iDesiredStatus;
+			m_iDesiredStatus = ID_STATUS_OFFLINE;
+			ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_OFFLINE);
 			Sleep(100);
 	}	}
 
-	InterlockedDecrement((long *) &ppro->m_bConnectThreadRunning);
-	LeaveCriticalSection(&ppro->cs);
+	InterlockedDecrement((long *) &m_bConnectThreadRunning);
+	LeaveCriticalSection(&cs);
 	return;
 }
 
-static void __cdecl DisconnectServerThread( CIrcProto* ppro )
+void __cdecl CIrcProto::DisconnectServerThread( void* )
 {
-	EnterCriticalSection(&ppro->cs);
-	ppro->KillChatTimer(ppro->RetryTimer);
-	if (ppro->IsConnected())
-		ppro->Disconnect();
-	LeaveCriticalSection(&ppro->cs);
+	EnterCriticalSection( &cs );
+	KillChatTimer( RetryTimer );
+	if ( IsConnected() )
+		Disconnect();
+	LeaveCriticalSection( &cs );
 	return;
 }
 
@@ -1159,7 +1159,7 @@ void CIrcProto::ConnectToServer(void)
 	sChannelModes = "btnimklps";
 
 	if (!m_bConnectThreadRunning)
-		mir_forkthread(( pThreadFunc )ConnectServerThread, this );
+		ircFork( &CIrcProto::ConnectServerThread, 0 );
 	else if (m_bConnectRequested < 1)
 		InterlockedIncrement((long *) &m_bConnectRequested);
 
@@ -1184,7 +1184,7 @@ void CIrcProto::DisconnectFromServer(void)
 	gce.pDest = &gcd;
 
 	CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
-	mir_forkthread(( pThreadFunc )DisconnectServerThread, this );
+	ircFork( &CIrcProto::DisconnectServerThread, 0 );
 }
 
 int __cdecl CIrcProto::GetStatus(WPARAM wParam,LPARAM lParam)
@@ -1221,7 +1221,7 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 		ppro->DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false);
 
 		if ( !ppro->m_bConnectThreadRunning )
-			mir_forkthread(( pThreadFunc )ConnectServerThread, ppro );
+			ppro->ircFork( &CIrcProto::ConnectServerThread, 0 );
 		else
 			ppro->m_bConnectRequested = true;
 

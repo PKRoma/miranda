@@ -35,11 +35,6 @@ struct UserDetailsDlgProcParam
 	HANDLE hContact;
 };
 
-static void __cdecl AckUserInfoSearch( UserDetailsDlgProcParam* p )
-{
-	ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-}
-
 #define STR_BASIC "Faster! Searches the network for an exact match of the nickname only. The hostmask is optional and provides further security if used. Wildcards (? and *) are allowed."
 #define STR_ADVANCED "Slower! Searches the network for nicknames matching a wildcard string. The hostmask is mandatory and a minimum of 4 characters is necessary in the \"Nick\" field. Wildcards (? and *) are allowed."
 #define STR_ERROR "Settings could not be saved!\n\nThe \"Nick\" field must contain at least four characters including wildcards,\n and it must also match the default nickname for this contact."
@@ -90,7 +85,7 @@ BOOL CALLBACK UserDetailsDlgProc(HWND m_hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				SetDlgItemText( m_hwnd, IDC_HOST, dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
-			mir_forkthread(( pThreadFunc )AckUserInfoSearch, p );
+			ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		}
 		break;
 

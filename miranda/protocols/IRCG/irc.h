@@ -184,10 +184,9 @@ typedef struct  {
 
 struct IPRESOLVE      // Contains info about the channels
 {
-	IPRESOLVE( CIrcProto* _pro, const char* _addr, int _type ) :
+	IPRESOLVE( const char* _addr, int _type ) :
 		sAddr( _addr ),
-		iType( _type ),
-		ppro( _pro )
+		iType( _type )
 	{}
 
 	~IPRESOLVE()
@@ -195,7 +194,6 @@ struct IPRESOLVE      // Contains info about the channels
 
 	String     sAddr;
 	int        iType;
-	CIrcProto* ppro;
 };
 
 struct CHANNELINFO   // Contains info about the channels
@@ -262,6 +260,7 @@ using namespace irc;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct CIrcProto;
+typedef void ( __cdecl CIrcProto::*IrcThreadFunc )( void* param );
 typedef int  ( __cdecl CIrcProto::*IrcEventFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFunc )( WPARAM, LPARAM );
 typedef int  ( __cdecl CIrcProto::*IrcServiceFuncParam )( WPARAM, LPARAM, LPARAM );
@@ -462,7 +461,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	
 	int      m_noOfChannels, m_manualWhoisCount;
 	String   sChannelModes, sUserModes;
-	CMString  sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
+	CMString sChannelPrefixes, sUserModePrefixes, WhoisAwayReply;
 
 	CDlgBase::CreateParam OptCreateAccount, OptCreateConn, OptCreateIgnore, OptCreateOther;
 
@@ -481,6 +480,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	int  AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg);
 	bool DoOnConnect(const CIrcMessage *pmsg);
 	int  DoPerform(const char* event);
+	void __cdecl ResolveIPThread( void* di );
 
 	bool AddIgnore(const TCHAR* mask, const TCHAR* mode, const TCHAR* network) ;
 	int  IsIgnored(const CMString& nick, const CMString& address, const CMString& host, char type) ;
@@ -489,14 +489,20 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 	//input.cpp
 	CMString DoAlias( const TCHAR *text, TCHAR *window);
-	BOOL    DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContact );
+	BOOL     DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContact );
 	CMString DoIdentifiers( CMString text, const TCHAR* window );
-	void    FormatMsg(CMString& text);
-	bool    PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
-	bool    PostIrcMessage( const TCHAR* fmt, ...);
+	void     FormatMsg(CMString& text);
+	bool     PostIrcMessageWnd(TCHAR* pszWindow, HANDLE hContact,const TCHAR* szBuf);
+	bool     PostIrcMessage( const TCHAR* fmt, ...);
 
 	// irclib.cpp
 	UINT_PTR	DCCTimer;	
+
+	// ircproto.cpp
+	void __cdecl AckBasicSearch( void* param );
+	void __cdecl AckMessageFail( void* info );
+	void __cdecl AckMessageFailDcc( void* info );
+	void __cdecl AckMessageSuccess( void* info );
 
 	//options.cpp
 	HWND m_hwndConnect;
@@ -544,12 +550,16 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void   DisconnectFromServer(void);
 	void   DoNetlibLog( const char* fmt, ... );
 	void   IrcHookEvent( const char*, IrcEventFunc );
+	int    ircFork( IrcThreadFunc, void* arg );
 	void   InitMenus( void );
 
 	UINT_PTR  RetryTimer;
 
 	int __cdecl GetName( WPARAM, LPARAM );
 	int __cdecl GetStatus( WPARAM, LPARAM );
+
+	void __cdecl ConnectServerThread( void* );
+	void __cdecl DisconnectServerThread( void* );
 
 	//tools.cpp
 	void     AddToJTemp(CMString sCommand);
@@ -560,20 +570,20 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void     FindLocalIP(HANDLE con);
 	bool     FreeWindowItemData(CMString window, CHANNELINFO* wis);
 	#if defined( _UNICODE )
-		bool    IsChannel(const char* sName);
+		bool  IsChannel(const char* sName);
 	#endif
 	bool     IsChannel(const TCHAR* sName);
 	void     KillChatTimer(UINT_PTR &nIDEvent);
-	CMString  MakeWndID(const TCHAR* sWindow);
-	CMString  ModeToStatus(int sMode);
-	CMString  PrefixToStatus(int cPrefix);
+	CMString MakeWndID(const TCHAR* sWindow);
+	CMString ModeToStatus(int sMode);
+	CMString PrefixToStatus(int cPrefix);
 	int      SetChannelSBText(CMString sWindow, CHANNELINFO * wi);
 	void     SetChatTimer(UINT_PTR &nIDEvent,UINT uElapse, TIMERPROC lpTimerFunc);
 
 	void     ClearUserhostReasons(int type);
 	void     DoUserhostWithReason(int type, CMString reason, bool bSendCommand, CMString userhostparams, ...);
-	CMString  GetNextUserhostReason(int type);
-	CMString  PeekAtReasons(int type);
+	CMString GetNextUserhostReason(int type);
+	CMString PeekAtReasons(int type);
 
 	int      getByte( const char* name, BYTE defaultValue );
 	int      getByte( HANDLE hContact, const char* name, BYTE defaultValue );
@@ -596,6 +606,9 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void     setTString( HANDLE hContact, const char* name, const TCHAR* value );
 	void     setWord( const char* name, int value );
 	void     setWord( HANDLE hContact, const char* name, int value );
+
+	// userinfo.cpp
+	void __cdecl AckUserInfoSearch( void* hContact );
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// former CIrcSession class
@@ -652,7 +665,7 @@ private :
 
 	void createMessageFromPchar( const char* p );
 	void Notify(const CIrcMessage* pmsg);
-	static void __cdecl ThreadProc(void *pparam);
+	void __cdecl ThreadProc( void *pparam );
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// former CIrcMonitor class
@@ -725,9 +738,6 @@ private :
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Functions
-
-//commandmonitor.cpp
-void  ResolveIPThread(LPVOID di);
 
 //main.cpp
 extern HINSTANCE hInst;

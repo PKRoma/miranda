@@ -117,6 +117,12 @@ void CIrcProto::AddToJTemp(CMString sCommand)
 	setTString("JTemp", sCommand.c_str());
 }
 
+int  CIrcProto::ircFork( IrcThreadFunc pFunc, void* arg )
+{
+	unsigned threadID;
+	return ::mir_forkthreadowner(( pThreadFuncOwner )( *( void** )&pFunc ), this, arg, &threadID );
+}
+
 void CIrcProto::IrcHookEvent( const char* szEvent, IrcEventFunc pFunc )
 {
 	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&pFunc, this );

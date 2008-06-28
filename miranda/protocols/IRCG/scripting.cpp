@@ -92,6 +92,7 @@ static void __stdcall OnHook(void * pi)
 	delete gch->pDest;
 	delete gch;
 }
+
 static void __cdecl GuiOutThread(LPVOID di)
 {	
 	GCHOOK* gch = ( GCHOOK* )di;

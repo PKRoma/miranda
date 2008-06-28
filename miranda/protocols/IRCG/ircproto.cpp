@@ -625,17 +625,16 @@ int __cdecl CIrcProto::GetInfo( HANDLE hContact, int infoType )
 
 struct AckBasicSearchParam
 {
-	CIrcProto* ppro;
 	char buf[ 50 ];
 };
 
-static void __cdecl AckBasicSearch( AckBasicSearchParam* param )
+void __cdecl CIrcProto::AckBasicSearch( void* param )
 {
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = param->buf;
-	ProtoBroadcastAck( param->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-	ProtoBroadcastAck( param->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	psr.nick = (( AckBasicSearchParam* )param )->buf;
+	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	delete param;
 }
 
@@ -644,9 +643,8 @@ HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
 	if ( szId ) {
 		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && lstrlenA(szId) > 0 && !IsChannel(szId)) {
 			AckBasicSearchParam* param = new AckBasicSearchParam;
-			param->ppro = this;
 			lstrcpynA( param->buf, szId, 50 );
-			mir_forkthread(( pThreadFunc )AckBasicSearch, param );
+			ircFork( &CIrcProto::AckBasicSearch, param );
 			return ( HANDLE )1;
 	}	}
 
@@ -869,30 +867,19 @@ int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, cha
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendMessage - sends a message
 
-struct AckMessageThreadParam
+void __cdecl CIrcProto::AckMessageFail( void* info )
 {
-	__inline AckMessageThreadParam( CIrcProto* p, void* i ) : ppro( p ), info( i ) {}
-
-	CIrcProto* ppro;
-	void* info;
-};
-
-static void __cdecl AckMessageFail( AckMessageThreadParam* param )
-{
-	ProtoBroadcastAck(param->ppro->m_szModuleName, param->info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The protocol is not online"));
-	delete param;
+	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The protocol is not online"));
 }
 
-static void __cdecl AckMessageFailDcc( AckMessageThreadParam* param )
+void __cdecl CIrcProto::AckMessageFailDcc( void* info )
 {
-	ProtoBroadcastAck(param->ppro->m_szModuleName, param->info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The dcc chat connection is not active"));
-	delete param;
+	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_FAILED, (HANDLE) 1, (LONG)Translate("The dcc chat connection is not active"));
 }
 
-static void __cdecl AckMessageSuccess( AckMessageThreadParam* param )
+void __cdecl CIrcProto::AckMessageSuccess( void* info )
 {
-	ProtoBroadcastAck(param->ppro->m_szModuleName, param->info, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-	delete param;
+	ProtoBroadcastAck( m_szModuleName, info, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 int __cdecl CIrcProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
@@ -924,13 +911,13 @@ int __cdecl CIrcProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 		PostIrcMessageWnd(NULL, hContact, result );
 		mir_free( result );
-		mir_forkthread(( pThreadFunc )AckMessageSuccess, new AckMessageThreadParam( this, hContact ));
+		ircFork( &CIrcProto::AckMessageSuccess, hContact );
 	}
 	else {
 		if ( bDcc )
-			mir_forkthread(( pThreadFunc )AckMessageFailDcc, new AckMessageThreadParam( this, hContact ));
+			ircFork( &CIrcProto::AckMessageFailDcc, hContact );
 		else
-			mir_forkthread(( pThreadFunc )AckMessageFail, new AckMessageThreadParam( this, hContact ));
+			ircFork( &CIrcProto::AckMessageFail, hContact );
 	}
 
 	return 1;

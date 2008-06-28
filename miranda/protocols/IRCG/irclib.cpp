@@ -345,7 +345,7 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 	m_info = info;
 
 	// start receiving messages from host
-	mir_forkthread( ThreadProc, this );
+	ircFork( &CIrcProto::ThreadProc, NULL );
 	Sleep( 100 );
 	if ( info.sPassword.GetLength() )
 		NLSend( "PASS %s\r\n", info.sPassword.c_str());
@@ -611,11 +611,10 @@ void CIrcProto::DoReceive()
 	Notify(NULL);
 }
 
-void __cdecl CIrcProto::ThreadProc(void *pparam)
+void __cdecl CIrcProto::ThreadProc( void* )
 {
-	CIrcProto* pThis = (CIrcProto*)pparam;
-	pThis->DoReceive(); 
-	pThis->m_info.Reset();
+	DoReceive(); 
+	m_info.Reset();
 }
 
 void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
@@ -1038,7 +1037,7 @@ int CDccSession::Connect()
 {
 	if ( !di->bSender || di->bReverse ) {
 		if ( !con )
-			mir_forkthread(ConnectProc, this  ); // spawn a new thread for time consuming activities, ie when connecting to a remote computer
+			mir_forkthread( ConnectProc, this ); // spawn a new thread for time consuming activities, ie when connecting to a remote computer
 		return true;
 	}
 
@@ -1240,7 +1239,7 @@ int CDccSession::SetupConnection()
 		m_proto->setWord(di->hContact, "Status", ID_STATUS_ONLINE);
 
 	// spawn a new thread to handle receiving/sending of data for the new chat/filetransfer connection to the remote computer
-	mir_forkthread(ThreadProc, this  );
+	mir_forkthread( ThreadProc, this  );
 	
 	return (int)con;
 }
