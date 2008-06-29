@@ -732,7 +732,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 								if ( ActivateAccount( pa ))
 									pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 							}
-							else DeactivateAccount( pa );
+							else DeactivateAccount( pa, TRUE );
 
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );

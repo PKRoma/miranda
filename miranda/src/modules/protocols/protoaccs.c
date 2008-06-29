@@ -174,6 +174,21 @@ static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+static int UninitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
+{
+	int i;
+
+	for ( i = 0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( !pa->ppro || !pa->bIsEnabled )
+			continue;
+
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
+	}
+	return 0;
+}
+
 int LoadAccountsModule( void )
 {
 	int i;
@@ -191,6 +206,7 @@ int LoadAccountsModule( void )
 	}	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
+	HookEvent( ME_SYSTEM_PRESHUTDOWN, UninitializeStaticAccounts );
 	return 0;
 }
 
@@ -300,7 +316,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	return pa->bIsEnabled = FALSE;
 }
 
-void DeactivateAccount( PROTOACCOUNT* pa )
+void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 {
 	if ( !pa->ppro )
 		return;
@@ -316,8 +332,10 @@ void DeactivateAccount( PROTOACCOUNT* pa )
 	KillObjectEventHooks( pa->ppro );
 	KillObjectThreads( pa->ppro );
 
-	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
-	pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
+	if ( bIsDynamic ) {
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONREADYTOEXIT, 0, 0 );
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONEXIT, 0, 0 );
+	}
 
 	UninitAccount( pa );
 	pa->ppro = NULL;
@@ -333,7 +351,7 @@ void EraseAccount( PROTOACCOUNT* pa )
 
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 {
-	DeactivateAccount( pa );
+	DeactivateAccount( pa, bIsDynamic );
 
 	mir_free( pa->tszAccountName );
 	mir_free( pa->szProtoName );
