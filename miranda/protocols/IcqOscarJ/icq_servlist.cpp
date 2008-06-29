@@ -74,23 +74,9 @@ void CIcqProto::servlistEndOperation(int operationCount)
   }
 }
 
-struct servlistqueuethreadparam {
-  struct CIcqProto *ppro;
-  int *queueState;
-};
-
-static unsigned __stdcall servlistQueueThreadStub(void* lParam)
+unsigned __cdecl CIcqProto::servlistQueueThread(void *arg)
 {
-  servlistqueuethreadparam *param = (servlistqueuethreadparam*)lParam;
-  CIcqProto *ppro = param->ppro;
-  int *queueState = param->queueState;
-
-  SAFE_FREE(&lParam);
-  return ppro->servlistQueueThread(queueState);
-}
-
-DWORD CIcqProto::servlistQueueThread(int *queueState)
-{
+  int *queueState = (int*)arg;
 #ifdef _DEBUG
   NetLog_Server("Server-List: Starting Update board.");
 #endif
@@ -353,15 +339,7 @@ void CIcqProto::servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwT
   // wake up board thread (keep sleeping or start new one)  
   if (!servlistQueueThreadHandle)
   { // create new board thread
-    servlistqueuethreadparam *init = (servlistqueuethreadparam*)SAFE_MALLOC(sizeof(servlistqueuethreadparam));
-
-    if (init)
-    {
-      init->queueState = &servlistQueueState;
-      init->ppro = this;
-
-      servlistQueueThreadHandle = ICQCreateThreadEx(servlistQueueThreadStub, init, NULL);
-    }
+    servlistQueueThreadHandle = CreateProtoThreadEx(servlistQueueThread, &servlistQueueState, NULL);
   }
   else // signal thread, that queue was changed during sleep
     servlistQueueState = TRUE;
@@ -472,17 +450,7 @@ void CIcqProto::servlistProcessLogin()
 
   // if the server-list queue contains items and thread is not running, start it
   if (servlistQueueCount && !servlistQueueThreadHandle)
-  {
-    servlistqueuethreadparam *init = (servlistqueuethreadparam*)SAFE_MALLOC(sizeof(servlistqueuethreadparam));
-
-    if (init)
-    {
-      init->queueState = &servlistQueueState;
-      init->ppro = this;
-
-      servlistQueueThreadHandle = ICQCreateThreadEx(servlistQueueThreadStub, init, NULL);
-    }
-  }
+    servlistQueueThreadHandle = CreateProtoThreadEx(servlistQueueThread, &servlistQueueState, NULL);
 }
 
 // HERE ENDS SERVER-LIST UPDATE BOARD IMPLEMENTATION //
@@ -2673,6 +2641,12 @@ void CIcqProto::servlistRemoveGroup(const char *szGroup, WORD wGroupId)
   // call thru pending operations - makes sure the group is ready for removal
   servlistPendingAddGroup(szGroup, wGroupId, (LPARAM)ack, &CIcqProto::servlistRemoveGroup_Ready, TRUE);
 }
+
+
+/*void CIcqProto::servlistMoveGroup(const char *szGroup, WORD wNewGroupId)
+{
+  // relocate the group
+}*/
 
 
 void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)

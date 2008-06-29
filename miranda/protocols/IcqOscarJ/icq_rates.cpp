@@ -267,14 +267,15 @@ int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
 struct rate_delay_args
 {
 	int nDelay;
-	CIcqProto* ppro;
 	void (*delaycode)(CIcqProto*);
 };
 
-static DWORD __stdcall rateDelayThread(rate_delay_args* pArgs)
+unsigned __cdecl CIcqProto::rateDelayThread(void* arg)
 {
+  rate_delay_args *pArgs = (rate_delay_args*)arg;
+
 	SleepEx(pArgs->nDelay, TRUE);
-	pArgs->delaycode( pArgs->ppro );
+	pArgs->delaycode(this);
 
 	SAFE_FREE((void**)&pArgs);
 	return 0;
@@ -288,11 +289,10 @@ void InitDelay(int nDelay, CIcqProto* ppro, void (*delaycode)(CIcqProto*))
 
 	rate_delay_args* pArgs = (rate_delay_args*)SAFE_MALLOC(sizeof(rate_delay_args)); // This will be freed in the new thread
 
-	pArgs->ppro = ppro;
 	pArgs->nDelay = nDelay;
 	pArgs->delaycode = delaycode;
 
-	ICQCreateThread((pThreadFuncEx)rateDelayThread, pArgs);
+  ppro->CreateProtoThread(&CIcqProto::rateDelayThread, pArgs);
 }
 
 static void RatesTimer1(CIcqProto* ppro)

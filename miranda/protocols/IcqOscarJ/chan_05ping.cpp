@@ -41,14 +41,13 @@ void CIcqProto::handlePingChannel(unsigned char* buf, WORD datalen)
 	NetLog_Server("Warning: Ignoring server packet on PING channel");
 }
 
-static unsigned __stdcall icq_keepAliveThread(void* arg)
+unsigned __cdecl CIcqProto::icq_keepAliveThread(void* arg)
 {
 	serverthread_info* info = (serverthread_info*)arg;
-	CIcqProto* ppro = info->ppro;
 	icq_packet packet;
-	DWORD dwInterval = ppro->getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
+	DWORD dwInterval = getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL);
 
-	ppro->NetLog_Server("Keep alive thread starting.");
+	NetLog_Server("Keep alive thread starting.");
 
 	info->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
@@ -62,8 +61,8 @@ static unsigned __stdcall icq_keepAliveThread(void* arg)
 			// Send a keep alive packet to server
 			packet.wLen = 0;
 			write_flap(&packet, ICQ_PING_CHAN);
-			if (ppro->hServerConn) // connection lost, end
-				ppro->sendServPacket(&packet);
+			if (hServerConn) // connection lost, end
+				sendServPacket(&packet);
 			else 
 				break;
 		}
@@ -72,7 +71,7 @@ static unsigned __stdcall icq_keepAliveThread(void* arg)
 			if (Miranda_Terminated()) break;
 	}
 
-	ppro->NetLog_Server("Keep alive thread shutting down.");
+	NetLog_Server("Keep alive thread shutting down.");
 
 	CloseHandle(info->hKeepAliveEvent);
 	info->hKeepAliveEvent = NULL;
@@ -86,7 +85,7 @@ void CIcqProto::StartKeepAlive(serverthread_info* info)
 		return;
 
 	if (getSettingByte(NULL, "KeepAlive", 0))
-		info->hKeepAliveThread = ICQCreateThreadEx(icq_keepAliveThread, info, NULL);
+		info->hKeepAliveThread = CreateProtoThreadEx(icq_keepAliveThread, info, NULL);
 }
 
 void CIcqProto::StopKeepAlive(serverthread_info* info)

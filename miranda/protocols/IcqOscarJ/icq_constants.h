@@ -541,7 +541,9 @@
 #define SSI_TLV_AVATARHASH          0x00D5
 #define SSI_TLV_NAME                0x0131  // Custom contact nickname
 #define SSI_TLV_EMAIL               0x0137  // Custom contact email
-#define SSI_TLV_PHONE               0x013A  // Custom contact SMS number
+#define SSI_TLV_PHONE               0x0138  // Custom contact phone number
+#define SSI_TLV_PHONE_CELLULAR      0x0139  // Custom contact cellphone number
+#define SSI_TLV_PHONE_SMS           0x013A  // Custom contact SMS number
 #define SSI_TLV_COMMENT             0x013C  // User comment
 
 #define MAX_SSI_TLV_NAME_SIZE       0x40
@@ -555,7 +557,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80050002
+#define ICQ_PLUG_VERSION            0x80050003
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
@@ -580,7 +582,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x1797
+#define CLIENT_VERSION_BUILD        0x17AB
 #define CLIENT_DISTRIBUTION         0x00007535
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"

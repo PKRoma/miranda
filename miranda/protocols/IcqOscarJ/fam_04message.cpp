@@ -2666,6 +2666,7 @@ void CIcqProto::handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 	}
 }
 
+
 void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
 	DWORD dwUin;
@@ -2674,7 +2675,7 @@ void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 	WORD wCount;
 	WORD wError;
 	WORD wTLVCount;
-	char* pszErrorMsg;
+//	char* pszErrorMsg;
 	oscar_tlv_chain* pChain;
 
 	if (wLen < 14)
@@ -2723,20 +2724,10 @@ void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 
 	switch (wError) {
 
-	case 0:
-		pszErrorMsg = LPGEN("** This message was blocked by the ICQ server ** The message was invalid.");
-		break;
-
-	case 1:
-		pszErrorMsg = LPGEN("** This message was blocked by the ICQ server ** The message was too long.");
-		break;
-
-	case 2:
-		pszErrorMsg = LPGEN("** This message was blocked by the ICQ server ** The sender has flooded the server.");
-		break;
-
-	case 4:
-		pszErrorMsg = LPGEN("** This message was blocked by the ICQ server ** You are too evil.");
+	case 0: // The message was invalid
+	case 1: // The message was too long
+	case 2: // The sender has flooded the server
+	case 4: // You are too evil
 		break;
 
 	default:
@@ -2745,26 +2736,14 @@ void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 		break;
 	}
 
-	pszErrorMsg = ICQTranslateUtf(pszErrorMsg);
-
-	// Create message to notify user
+	// Create event to notify user
 	{
-		CCSDATA ccs;
-		PROTORECVEVENT pre = {0};
 		int bAdded;
 
-		ccs.szProtoService = PSR_MESSAGE;
-		ccs.hContact = HContactFromUIN(dwUin, &bAdded);
-		ccs.wParam = 0;
-		ccs.lParam = (LPARAM)&pre;
-		pre.timestamp = time(NULL);
-		pre.szMessage = (char*)pszErrorMsg;
-		pre.flags = PREF_UTF;
-
-		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+    AddEvent(HContactFromUIN(dwUin, &bAdded), ICQEVENTTYPE_MISSEDMESSAGE, time(NULL), 0, sizeof(wError), (PBYTE)&wError);
 	}
-	SAFE_FREE((void**)&pszErrorMsg);
 }
+
 
 void CIcqProto::handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {

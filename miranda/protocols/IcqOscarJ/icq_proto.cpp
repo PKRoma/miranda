@@ -322,6 +322,17 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CIcqProto::OnPrebuildContactMenu);
 	HookProtoEvent(ME_IDLE_CHANGED, &CIcqProto::OnIdleChanged);
 
+  // Register custom database events
+	DBEVENTTYPEDESCR eventType = {0};
+	eventType.cbSize = DBEVENTTYPEDESCR_SIZE;
+	eventType.eventType = ICQEVENTTYPE_MISSEDMESSAGE;
+	eventType.module = m_szModuleName;
+	eventType.descr = "Missed message notifications";
+  eventType.textService = ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE;
+  eventType.flags = DETF_HISTORY | DETF_MSGWINDOW;
+  // for now keep default "message" icon
+	CallService(MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&eventType);
+
 	InitAvatars();
 
 	// Init extra optional modules
@@ -1941,18 +1952,19 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
-		{
-			// for quick logoff
+    { // for quick logoff
 			m_iDesiredStatus = nNewStatus;
 
-			// Send disconnect packet
-			icq_sendCloseConnection();
+      if (hServerConn)
+      { // Connected, Send disconnect packet
+			  icq_sendCloseConnection();
 
-			icq_serverDisconnect(FALSE);
+			  icq_serverDisconnect(FALSE);
 
-			SetCurrentStatus(ID_STATUS_OFFLINE);
+  			SetCurrentStatus(ID_STATUS_OFFLINE);
 
-			NetLog_Server("Logged off.");
+	  		NetLog_Server("Logged off.");
+      }
 		}
 		else
 		{

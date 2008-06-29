@@ -39,7 +39,6 @@
 
 typedef struct icq_ack_args_s
 {
-	struct CIcqProto* ppro;
 	HANDLE hContact;
 	int    nAckType;
 	int    nAckResult;
@@ -119,9 +118,6 @@ int __fastcall ICQTranslateDialog(HWND hwndDlg);
 char* __fastcall ICQTranslate(const char *src);
 char* __fastcall ICQTranslateUtf(const char *src);
 char* __fastcall ICQTranslateUtfStatic(const char *src, char *buf, size_t bufsize);
-
-HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID);
-void ICQCreateThread(pThreadFuncEx AFunc, void* arg);
 
 WORD GetMyStatusFlags();
 

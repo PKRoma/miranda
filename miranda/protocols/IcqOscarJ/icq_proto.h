@@ -48,7 +48,7 @@ struct CIcqProto;
 typedef int ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
 typedef int ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
-
+typedef unsigned ( __cdecl CIcqProto::*IcqThreadFunc )( void* );
 
 // for InfoUpdate
 struct userinfo
@@ -244,6 +244,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| chan_05ping.cpp |-------------------------------------------------------------
 	void   handlePingChannel(unsigned char *buf, WORD wLen);
 
+  unsigned __cdecl icq_keepAliveThread(void* arg);
+
 	void   StartKeepAlive(serverthread_info* info);
 	void   StopKeepAlive(serverthread_info* info);
 
@@ -409,7 +411,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int    sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi /*= currentAvatarThread*/);
 
-	void   icq_avatarThread(struct avatarthreadstartinfo *atsi);
+  unsigned __cdecl icq_avatarThread(void *arg);
 	int    handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi);
 
 	void   handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *atsi);
@@ -476,7 +478,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	LIST<filetransfer> expectedFileRecvs;
 
 	void   handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
-	void   icq_directThread(struct directthreadstartinfo* dtsi);
+	unsigned __cdecl icq_directThread(void* dtsi);
 	void   sendPeerInit_v78(directconnect* dc);
 	void   sendPeerInitAck(directconnect* dc);
 	void   sendPeerMsgInit(directconnect* dc, DWORD dwSeq);
@@ -528,8 +530,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  dwUpdateThreshold;
 	userinfo userList[LISTSIZE];
 
+  unsigned __cdecl icq_InfoUpdateThread(void *arg);
+
 	void   icq_InitInfoUpdate(void);           // Queues all outdated users
-	void   icq_InfoUpdateThread(void);
 	BOOL   icq_QueueUser(HANDLE hContact);     // Queue one UIN to the list for updating
 	void   icq_DequeueUser(DWORD dwUin);       // Remove one UIN from the list
 	void   icq_RescanInfoUpdate();             // Add all outdated contacts to the list
@@ -537,6 +540,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_EnableUserLookup(BOOL bEnable); // Enable/disable user info lookups
 
 	//----| icq_log.cpp |-----------------------------------------------------------------
+  unsigned __cdecl icq_LogMessageThread(void* arg);
+
 	void   icq_LogMessage(int level, const char *szMsg);
 	void   icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg);  //szMsg is optional
 	void   icq_LogFatalParam(const char *szMsg, WORD wError);
@@ -554,6 +559,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_rates.cpp |---------------------------------------------------------------
 	CRITICAL_SECTION ratesMutex;
 	rates* m_rates;
+
+  unsigned __cdecl rateDelayThread(void* arg);
 
 	rates* ratesCreate(BYTE* pBuffer, WORD wLen);
 	void   ratesRelease(rates** pRates);
@@ -585,9 +592,11 @@ struct CIcqProto : public PROTO_INTERFACE
 	{	return (m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING);
 	}
 
+  unsigned __cdecl icq_serverThread(void *arg);
+  unsigned __cdecl sendPacketAsyncThread(void *arg);
+
 	void   icq_serverDisconnect(BOOL bBlock);
-	void   icq_serverThread(serverthread_start_info* infoParam);
-	void   icq_login(const char* szPassword);
+  void   icq_login(const char* szPassword);
 
 	int    handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
 	void   sendServPacket(icq_packet* pPacket);
@@ -616,7 +625,7 @@ struct CIcqProto : public PROTO_INTERFACE
   void   servlistBeginOperation(int operationCount, int bImport);
   void   servlistEndOperation(int operationCount);
 
-  DWORD  servlistQueueThread(int* queueState);
+  unsigned __cdecl servlistQueueThread(void *arg);
   void   servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwTimeout);
   int    servlistHandlePrimitives(DWORD dwOperation);
   void   servlistProcessLogin();
@@ -873,7 +882,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort);
 
 	//----| stdpackets.cpp |--------------------------------------------------------------
-	void   oft_connectionThread(struct oscarthreadstartinfo *otsi);
+  unsigned __cdecl oft_connectionThread(void *arg);
+
 	int    oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len);
 	int    oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len);
 	int    oft_handleProxyData(oscar_connection *oc, unsigned char *buf, int len);
@@ -893,12 +903,16 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg);
 	void   SetCurrentStatus(int nStatus);
 
+  unsigned __cdecl icq_ProtocolAckThread(void *arg);
 	void   icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
 	HANDLE CreateProtoEvent(const char* szEvent);
 	void   CreateProtoService(const char* szService, IcqServiceFunc serviceProc);
 	void   CreateProtoServiceParam(const char* szService, IcqServiceFuncParam serviceProc, LPARAM lParam);
 	HANDLE HookProtoEvent(const char* szEvent, IcqEventFunc pFunc);
+
+  void   CreateProtoThread(IcqThreadFunc threadProc, void* arg);
+  HANDLE CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID);
 
 	int    NetLog_Server(const char *fmt,...);
 	int    NetLog_Direct(const char *fmt,...);

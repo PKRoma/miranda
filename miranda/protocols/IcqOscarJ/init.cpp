@@ -49,7 +49,7 @@ DWORD MIRANDA_VERSION;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,2),
+	PLUGIN_MAKE_VERSION(0,5,0,3),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",
@@ -62,11 +62,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.8.0.12 or greater
-	// We need the new protocol interface with fixed GetCaps
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 12))
+	// Only load for 0.8.0.19 or greater
+	// We need the account owned thread services
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 17))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.12 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.17 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -138,6 +138,10 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// Initialize charset conversion routines
 	InitI18N();
+
+  // Register static services
+  CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
+
 	return 0;
 }
 

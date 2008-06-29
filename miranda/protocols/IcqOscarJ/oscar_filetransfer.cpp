@@ -37,7 +37,6 @@
 #include "icqoscar.h"
 
 struct oscarthreadstartinfo {
-	CIcqProto *ppro;
 	int type;
 	int incoming;
 	HANDLE hContact;
@@ -803,23 +802,12 @@ void CIcqProto::handleRecvServResponseOFT(BYTE *buf, WORD wLen, DWORD dwUin, cha
 }
 
 
-// static entry for OFT connection thread
-static unsigned __stdcall oft_connectionThreadStub(void *lParam)
-{
-  oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)lParam;
-  
-  otsi->ppro->oft_connectionThread(otsi);
-	return 0;
-}
-
-
 // This function is called from the Netlib when someone is connecting to our oscar_listener
 static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
 	oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
 	oscar_listener *listener = (oscar_listener*)pExtra;
 
-  otsi->ppro = listener->ppro;
 	otsi->type = listener->ft->sending ? OCT_NORMAL : OCT_REVERSE;
 	otsi->incoming = 1;
 	otsi->hConnection = hNewConnection;
@@ -827,7 +815,7 @@ static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, v
 	otsi->listener = listener;
 
 	// Start a new thread for the incomming connection
-	ICQCreateThread(oft_connectionThreadStub, otsi);
+  listener->ppro->CreateProtoThread(&CIcqProto::oft_connectionThread, otsi);
 }
 
 
@@ -1234,12 +1222,11 @@ void CIcqProto::OpenOscarConnection(HANDLE hContact, oscar_filetransfer *ft, int
 {
 	oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
 
-	otsi->ppro = this;
 	otsi->hContact = hContact;
 	otsi->type = type;
 	otsi->ft = ft;
 
-	ICQCreateThread(oft_connectionThreadStub, otsi);
+  CreateProtoThread(oft_connectionThread, otsi);
 }
 
 int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
@@ -1268,8 +1255,9 @@ int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
 	return 1; // Success
 }
 
-void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
+unsigned __cdecl CIcqProto::oft_connectionThread(void *arg)
 {
+  oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)arg;
 	oscar_connection oc = {0};
 	oscar_listener *source;
 	NETLIBPACKETRECVER packetRecv={0};
@@ -1301,7 +1289,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 			ReleaseOscarListener(&source);
 
 			SAFE_FREE((void**)&otsi);
-			return;
+			return 0;
 		}
 	}
 	SAFE_FREE((void**)&otsi);
@@ -1348,13 +1336,13 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 					BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_LISTENING, oc.ft, 0);
 
 					oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, oc.dwLocalInternalIP, listener->wPort, FALSE);
-					return;
+					return 0;
 				}
 				if (!CreateOscarProxyConnection(&oc))
 				{ // normal connection failed, notify peer, wait for error or stage 3 proxy
 					oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
 					// stage 3 can follow
-					return;
+					return 0;
 				}
 			}
 			else if (addr.S_un.S_addr && oc.ft->wRemotePort)
@@ -1381,14 +1369,14 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 							BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_LISTENING, oc.ft, 0);
 
 							oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, oc.dwLocalInternalIP, listener->wPort, FALSE);
-							return;
+							return 0;
 						}
 					}
 					if (!CreateOscarProxyConnection(&oc))
 					{ // proxy connection failed, notify peer, wait for error or stage 4 proxy
 						oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
 						// stage 3 or stage 4 can follow
-						return;
+						return 0;
 					}
 				}
 				else
@@ -1408,7 +1396,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 				{ // proxy connection failed, notify peer, wait for error or stage 4 proxy
 					oft_sendFileRedirect(oc.dwUin, oc.szUid, oc.ft, 0, 0, FALSE);
 					// stage 4 can follow
-					return;
+					return 0;
 				}
 			}
 		}
@@ -1435,7 +1423,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 					oft_sendFileResponse(oc.dwUin, oc.szUid, oc.ft, 0x04);
 					// Release structure
 					SafeReleaseFileTransfer((void**)&oc.ft);
-					return;
+					return 0;
 				}
 				oc.status = OCS_PROXY;
 				oc.ft->connection = &oc;
@@ -1451,7 +1439,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 					BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc.ft, 0);
 					// Release structure
 					SafeReleaseFileTransfer((void**)&oc.ft);
-					return;
+					return 0;
 				}
 			}
 		}
@@ -1464,7 +1452,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 				oft_sendFileResponse(oc.dwUin, oc.szUid, oc.ft, 0x06);
 				// Release structure
 				SafeReleaseFileTransfer((void**)&oc.ft);
-				return;
+				return 0;
 			}
 		}
 		else if (oc.type == OCT_PROXY_INIT)
@@ -1474,7 +1462,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 				icq_LogMessage(LOG_ERROR, LPGEN("Failed to Initialize File Transfer. Unable to bind local port and File proxy unavailable."));
 				// Release transfer
 				SafeReleaseFileTransfer((void**)&oc.ft);
-				return;
+				return 0;
 			}
 			else
 				oc.type = OCT_PROXY_INIT;
@@ -1483,7 +1471,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 	if (!oc.hConnection)
 	{ // one more sanity check
 		NetLog_Direct("Error: No OFT connection.");
-		return;
+		return 0;
 	}
 	if (oc.status != OCS_PROXY)
 	{ // Connected, notify FT UI
@@ -1574,7 +1562,7 @@ void CIcqProto::oft_connectionThread(oscarthreadstartinfo *otsi)
 		}
 	}
 
-	return;
+	return 0;
 }
 
 void CIcqProto::sendOscarPacket(oscar_connection *oc, icq_packet *packet)

@@ -38,7 +38,6 @@
 
 struct directthreadstartinfo
 {
-	CIcqProto* ppro;
 	int type;           // Only valid for outgoing connections
 	int incoming;       // 1=incoming, 0=outgoing
 	HANDLE hConnection; // only valid for incoming connections, handle to the connection
@@ -130,10 +129,9 @@ int CIcqProto::sendDirectPacket(directconnect* dc, icq_packet* pkt)
 	return nResult;
 }
 
-directthreadstartinfo* CreateDTSI(CIcqProto* ppro, HANDLE hContact, HANDLE hConnection, int type)
+directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
 {
 	directthreadstartinfo* dtsi = (directthreadstartinfo*)SAFE_MALLOC(sizeof(directthreadstartinfo));
-	dtsi->ppro = ppro;
 	dtsi->hContact = hContact;
 	dtsi->hConnection = hConnection;
 	if (type == -1)
@@ -189,22 +187,13 @@ BOOL CIcqProto::IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 	return bIsOpen;
 }
 
-// Called from icq_newConnectionReceived when a new incomming dc is done
-// Called from OpenDirectConnection when a new outgoing dc is done
-// Called from SendDirectMessage when a new outgoing dc is done
-static DWORD __stdcall icq_directThreadStub(directthreadstartinfo *dtsi)
-{
-	dtsi->ppro->icq_directThread( dtsi );
-	return 0;
-}
-
 // This function is called from the Netlib when someone is connecting to
 // one of our incomming DC ports
 void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pExtra)
 {
 	// Start a new thread for the incomming connection
 	CIcqProto* ppro = (CIcqProto*)pExtra;
-	ICQCreateThread((pThreadFuncEx)icq_directThreadStub, CreateDTSI(ppro, NULL, hNewConnection, -1));
+	ppro->CreateProtoThread(&CIcqProto::icq_directThread, CreateDTSI(NULL, hNewConnection, -1));
 }
 
 // Opens direct connection of specified type to specified contact
@@ -213,10 +202,10 @@ void CIcqProto::OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 	directthreadstartinfo* dtsi;
 
 	// Create a new connection
-	dtsi = CreateDTSI(this, hContact, NULL, type);
+	dtsi = CreateDTSI(hContact, NULL, type);
 	dtsi->pvExtra = pvExtra;
 
-	ICQCreateThread((pThreadFuncEx)icq_directThreadStub, dtsi);
+	CreateProtoThread(&CIcqProto::icq_directThread, dtsi);
 }
 
 // Safely close NetLib connection - do not corrupt direct connection list
@@ -233,8 +222,12 @@ void CIcqProto::CloseDirectConnection(directconnect *dc)
 	LeaveCriticalSection(&directConnListMutex);
 }
 
-void CIcqProto::icq_directThread(directthreadstartinfo *dtsi)
+// Called from icq_newConnectionReceived when a new incomming dc is done
+// Called from OpenDirectConnection when a new outgoing dc is done
+// Called from SendDirectMessage when a new outgoing dc is done
+unsigned __cdecl CIcqProto::icq_directThread(void *arg)
 {
+  directthreadstartinfo *dtsi = (directthreadstartinfo*)arg;
 	directconnect dc = {0};
 	NETLIBPACKETRECVER packetRecv={0};
 	HANDLE hPacketRecver;

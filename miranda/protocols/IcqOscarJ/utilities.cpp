@@ -1000,14 +1000,16 @@ BOOL IsStringUIN(char* pszString)
 	return FALSE;
 }
 
-static DWORD __stdcall icq_ProtocolAckThread(icq_ack_args* pArguments)
+unsigned __cdecl CIcqProto::icq_ProtocolAckThread(void *arg)
 {
-	pArguments->ppro->BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
+  icq_ack_args* pArguments = (icq_ack_args*)arg;
+
+  BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
 	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
-		pArguments->ppro->NetLog_Server("Sent fake message ack");
+		NetLog_Server("Sent fake message ack");
 	else if (pArguments->nAckResult == ACKRESULT_FAILED)
-		pArguments->ppro->NetLog_Server("Message delivery failed");
+		NetLog_Server("Message delivery failed");
 
 	SAFE_FREE((void**)(char **)&pArguments->pszMessage);
 	SAFE_FREE((void**)&pArguments);
@@ -1019,17 +1021,15 @@ void CIcqProto::icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult
 {
 	icq_ack_args* pArgs;
 
-
 	pArgs = (icq_ack_args*)SAFE_MALLOC(sizeof(icq_ack_args)); // This will be freed in the new thread
 
-	pArgs->ppro = this;
 	pArgs->hContact = hContact;
 	pArgs->hSequence = (HANDLE)dwCookie;
 	pArgs->nAckResult = nAckResult;
 	pArgs->nAckType = nAckType;
 	pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
 
-	ICQCreateThread((pThreadFuncEx)icq_ProtocolAckThread, pArgs);
+  CreateProtoThread(icq_ProtocolAckThread, pArgs);
 }
 
 void CIcqProto::SetCurrentStatus(int nStatus)
@@ -1446,26 +1446,26 @@ char* __fastcall ICQTranslateUtfStatic(const char *src, char *buf, size_t bufsiz
 	return buf;
 }
 
-HANDLE ICQCreateThreadEx(pThreadFuncEx AFunc, void* arg, DWORD* pThreadID)
+HANDLE CIcqProto::CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID)
 {
 	FORK_THREADEX_PARAMS params;
 	DWORD dwThreadId;
 	HANDLE hThread;
 
-	params.pFunc      = AFunc;
+	params.pFunc      = (pThreadFuncEx)*(void**)&threadProc;
 	params.arg        = arg;
 	params.iStackSize = 0;
 	params.threadID   = (UINT*)&dwThreadId;
-	hThread = (HANDLE)CallService(MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params);
+	hThread = (HANDLE)CallService(MS_SYSTEM_FORK_THREAD_EX, (WPARAM)this, (LPARAM)&params);
 	if (pThreadID)
 		*pThreadID = dwThreadId;
 
 	return hThread;
 }
 
-void ICQCreateThread(pThreadFuncEx AFunc, void* arg)
+void CIcqProto::CreateProtoThread(IcqThreadFunc threadProc, void* arg)
 {
-	HANDLE hThread = ICQCreateThreadEx(AFunc, arg, NULL);
+	HANDLE hThread = CreateProtoThreadEx(threadProc, arg, NULL);
 
 	CloseHandle(hThread);
 }

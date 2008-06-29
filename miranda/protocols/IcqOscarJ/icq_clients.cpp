@@ -163,6 +163,7 @@ const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capYapp      = {'Y', 'a', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
+const capstr capPigeon    = {'P', 'I', 'G', 'E', 'O', 'N', '!', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capDigsbyBeta= {0x09, 0x46, 0x01, 0x05, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x45, 0x53, 0x54, 0x00};
 const capstr capJapp      = {0x6a, 0x61, 0x70, 0x70, 0xa9, 0x20, 0x62, 0x79, 0x20, 0x53, 0x65, 0x72, 0x67, 0x6f, 0x00, 0x00};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
@@ -318,11 +319,21 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 	}
 	else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666)
 	{ // http://darkjimm.ucoz.ru/
-		strcpy(szClientBuf, "D[i]Chat");
 		if (dwFT2 == 0x10000)
-			strcat(szClientBuf, " v.0.1a");
-		else if (dwFT2 == 0x22)
-			strcat(szClientBuf, " v.0.2b");
+    {
+      strcpy(szClientBuf, "D[i]Chat v.");
+      strcat(szClientBuf, "0.1a");
+    }
+    else 
+    {
+      makeClientVersion(szClientBuf, "D[i]Chat v.", (dwFT2 >> 8) & 0x0F, (dwFT2 >> 4) & 0x0F, 0, 0);
+      if ((dwFT2 & 0x0F) == 1)
+        strcat(szClientBuf, " alpha");
+      else if ((dwFT2 & 0x0F) == 2)
+        strcat(szClientBuf, " beta");
+      else if ((dwFT2 & 0x0F) == 3)
+        strcat(szClientBuf, " final");
+    }
 
 		szClient = szClientBuf;
 	}
@@ -669,6 +680,10 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
       else if (MatchCap(caps, wLen, &capJapp, 0x10))
       { // http://www.japp.org.ua
         szClient = "japp";
+      }
+      else if (MatchCap(caps, wLen, &capPigeon, 0x07))
+      { // http://pigeon.vpro.ru
+        szClient = "PIGEON!";
       }
 			else if (szClient == cliLibicq2k)
 			{ // try to determine which client is behind libicq2000

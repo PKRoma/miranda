@@ -38,24 +38,34 @@
 
 static const char *szLevelDescr[] = {LPGEN("ICQ Note"), LPGEN("ICQ Warning"), LPGEN("ICQ Error"), LPGEN("ICQ Fatal")};
 
-struct LogMessageInfo
-{
-	char *szMsg;
-	char *szTitle;
+struct LogMessageInfo {
+	const char *szMsg;
+	const char *szTitle;
+  BYTE bLevel;
 };
 
 static BOOL bErrorVisible = FALSE;
 
-static DWORD __stdcall icq_LogMessageThread(void* arg) 
+unsigned __cdecl CIcqProto::icq_LogMessageThread(void* arg) 
 {
 	LogMessageInfo *err = (LogMessageInfo*)arg;
 
 	if (!err) return 0;
+
+  if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
+  {
+    if (!ShowPopUpMsg(NULL, err->szTitle, err->szMsg, err->bLevel)) 
+    {
+      SAFE_FREE((void**)&err->szMsg);
+      SAFE_FREE((void**)&err);
+			return 0; // Popup showed successfuly
+    }
+	}
+
 	bErrorVisible = TRUE;
 	if (err->szMsg && err->szTitle)
 		MessageBoxUtf(NULL, err->szMsg, err->szTitle, MB_OK);
 	SAFE_FREE((void**)&err->szMsg);
-	SAFE_FREE((void**)&err->szTitle);
 	SAFE_FREE((void**)&err);
 	bErrorVisible = FALSE;
 
@@ -71,19 +81,14 @@ void CIcqProto::icq_LogMessage(int level, const char *szMsg)
 	displayLevel = getSettingByte(NULL, "ShowLogLevel", LOG_WARNING);
 	if (level >= displayLevel)
 	{
-		LogMessageInfo *lmi;
-
-		if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
-		{
-			if (!ShowPopUpMsg(NULL, szLevelDescr[level], szMsg, (BYTE)level))
-				return; // Popup showed successfuly
-		}
 		if (!bErrorVisible || !getSettingByte(NULL, "IgnoreMultiErrorBox", 0))
 		{ // error not shown or allowed multi - show messagebox
-			lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
-			lmi->szMsg = ICQTranslateUtf(szMsg);
-			lmi->szTitle = ICQTranslateUtf(szLevelDescr[level]);
-			ICQCreateThread((pThreadFuncEx)icq_LogMessageThread, lmi);
+			LogMessageInfo *lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
+
+      lmi->bLevel = (BYTE)level;
+			lmi->szMsg = null_strdup(szMsg);
+			lmi->szTitle = szLevelDescr[level];
+			CreateProtoThread(icq_LogMessageThread, lmi);
 		}
 	}
 }
