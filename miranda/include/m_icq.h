@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,38 +38,15 @@
 #define M_ICQ_H__ 1
 
 
-// Note: In v0.3 the part before "/Servicename" is dynamic. It will be the name of the protocol.
-// Example: If the plugin was loaded from ICQ.dll, the service name is "ICQ/Servicename", and if
-// the dll was Icq2.dll, the service name will be "Icq2/Servicename". This behaviour is temporary
-// until proper multiaccounts are implemented.
 
-
-//start a search of all ICQ users by e-mail
-//wParam=0
-//lParam=(LPARAM)(const char*)email
-//returns a handle to the search on success, NULL on failure
-//Results are returned using the same scheme documented in PSS_BASICSEARCH
-//**DEPRECATED** in favour of PS_SEARCHBYEMAIL
-typedef struct {   //extended search result structure, used for all searches
+//extended search result structure, used for all searches
+typedef struct {
   PROTOSEARCHRESULT hdr;
   DWORD uin;
   BYTE auth;
   char* uid;
 } ICQSEARCHRESULT;
-#define MS_ICQ_SEARCHBYEMAIL   "/SearchByEmail"
 
-//start a search of all ICQ users by details
-//wParam=0
-//lParam=(LPARAM)(ICQDETAILSSEARCH*)&ids
-//returns a handle to the search on success, NULL on failure
-//Results are returned using the same scheme documented in PSS_BASICSEARCH
-//**DEPRECATED** in favour of PS_SEARCHBYNAME
-typedef struct {
-  char *nick;
-  char *firstName;
-  char *lastName;
-} ICQDETAILSSEARCH;
-#define MS_ICQ_SEARCHBYDETAILS   "/SearchByDetails"
 
 // Request authorization
 // wParam=(WPARAM)hContact
@@ -139,6 +116,13 @@ typedef struct {
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
 #define ICQEVENTTYPE_WEBPAGER   2003    //database event type
+
+//missed message notification
+//db event added to contact's history
+//blob format is:
+//WORD      error code
+#define ICQEVENTTYPE_MISSEDMESSAGE 2004 //database event type
+
 
 //for server-side lists, used internally only
 //hProcess=dwSequence
