@@ -34,12 +34,7 @@ Last change by : $Author$
 
 #define JABBER_NETWORK_BUFFER_SIZE 2048
 
-void __cdecl JabberFileReceiveThread( filetransfer* ft )
-{
-	ft->ppro->FileReceiveThread( ft );
-}
-
-void CJabberProto::FileReceiveThread( filetransfer* ft )
+void __cdecl CJabberProto::FileReceiveThread( filetransfer* ft )
 {
 	char* buffer;
 	int datalen;
@@ -269,12 +264,7 @@ void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemoteIP, vo
 	mir_free( buffer );
 }
 
-void __cdecl JabberFileServerThread( filetransfer* ft )
-{
-	ft->ppro->FileServerThread( ft );
-}
-
-void CJabberProto::FileServerThread( filetransfer* ft )
+void __cdecl CJabberProto::FileServerThread( filetransfer* ft )
 {
 	Log( "Thread started: type=file_send" );
 

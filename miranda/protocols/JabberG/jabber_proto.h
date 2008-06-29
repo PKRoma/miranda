@@ -36,9 +36,10 @@ Last change by : $Author: m_mluhov $
 #include "jabber_iq.h"
 
 struct CJabberProto;
-typedef int ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void ( __cdecl CJabberProto::*JThreadFunc )( void* );
+typedef int  ( __cdecl CJabberProto::*JEventFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CJabberProto::*JServiceFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CJabberProto::*JServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 enum TJabberGcLogInfoType { INFO_BAN, INFO_STATUS, INFO_CONFIG, INFO_AFFILIATION, INFO_ROLE };
 
@@ -64,6 +65,14 @@ struct JABBER_IQ_FUNC
 	JABBER_IQ_PROCID procId;   // must be unique in the list, except for IQ_PROC_NONE which can have multiple entries
 	JABBER_IQ_PFUNC func;      // callback function
 	time_t requestTime;        // time the request was sent, used to remove relinquent entries
+};
+
+struct JABBER_GROUPCHAT_INVITE_INFO
+{
+	TCHAR* roomJid;
+	TCHAR* from;
+	TCHAR* reason;
+	TCHAR* password;
 };
 
 struct ROSTERREQUSERDATA
@@ -348,8 +357,9 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_byte.c -----------------------------------------------------------------
 
-	void   ByteSendThread( JABBER_BYTE_TRANSFER *jbt );
-	void   ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
+	void   __cdecl ByteSendThread( JABBER_BYTE_TRANSFER *jbt );
+	void   __cdecl ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
+
 	void   IqResultProxyDiscovery( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 	void   ByteInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 	void   ByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
@@ -382,6 +392,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_console.cpp ------------------------------------------------------------
 
 	int    __cdecl OnMenuHandleConsole( WPARAM wParam, LPARAM lParam );
+	void   __cdecl ConsoleThread( void* );
 
 	void   ConsoleInit( void );
 	void   ConsoleUninit( void );
@@ -434,6 +445,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	//---- jabber_ft.c -------------------------------------------------------------------
 
+	void   __cdecl FileReceiveThread( filetransfer* ft );
+	void   __cdecl FileServerThread( filetransfer* ft );
+
 	void   FtCancel( filetransfer* ft );
 	void   FtInitiate( TCHAR* jid, filetransfer* ft );
 	void   FtHandleSiRequest( XmlNode *iqNode );
@@ -441,12 +455,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   FtAcceptIbbRequest( filetransfer* ft );
 	void   FtHandleBytestreamRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   FtHandleIbbRequest( XmlNode *iqNode, BOOL bOpen );
-	void   FileReceiveThread( filetransfer* ft );
-	void   FileServerThread( filetransfer* ft );
 	
 	//---- jabber_groupchat.c ------------------------------------------------------------
 
 	int    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
+	void   __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
 
 	void   GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin=false );
 	void   GroupchatProcessPresence( XmlNode *node, void *userdata );
@@ -470,6 +483,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	JABBER_IQ_PFUNC JabberIqFetchFunc( int iqId );
 
+	void   __cdecl ExpirerThread( void* );
+
 	void   IqInit();
 	void   IqUninit();
 	void   IqAdd( unsigned int iqId, JABBER_IQ_PROCID procId, JABBER_IQ_PFUNC func );
@@ -477,14 +492,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   IqExpire();
 		  
 	void   OnIqResultBind( XmlNode *iqNode, void *userdata );
-	//void   OnIqResultBrowseRooms( XmlNode *iqNode, void *userdata );
-	//void   OnIqResultDiscoAgentInfo( XmlNode *iqNode, void *userdata );
-	//void   OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata );
-	//void   OnIqResultDiscoRoomItems( XmlNode *iqNode, void *userdata );
 	void   OnIqResultDiscoBookmarks( XmlNode *iqNode, void *userdata );
 	void   OnIqResultSetBookmarks( XmlNode *iqNode, void *userdata );
 	void   OnIqResultExtSearch( XmlNode *iqNode, void *userdata );
-	//void   OnIqResultGetAgents( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetAuth( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetAvatar( XmlNode *iqNode, void *userdata );
 	void   OnIqResultGetMuc( XmlNode *iqNode, void *userdata );
@@ -523,11 +533,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqHttpAuth( XmlNode* node, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams );
 		  
+	void   __cdecl IbbSendThread( JABBER_IBB_TRANSFER *jibb );
+	void   __cdecl IbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
+
 	void   OnIbbInitiateResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 	void   OnIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
 	void   OnFtHandleIbbIq( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   IbbSendThread( JABBER_IBB_TRANSFER *jibb );
-	void   IbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
 	BOOL   OnIbbRecvdData( TCHAR *data, TCHAR *sid, TCHAR *seq );
 		  
 	void   OnFtSiResult( XmlNode *iqNode, void *userdata, CJabberIqInfo* pInfo );
@@ -650,13 +661,17 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_proto.cpp --------------------------------------------------------------
 
-	HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
-	void WindowSubscribe(HWND hwnd);
-	void WindowUnsubscribe(HWND hwnd);
-	void WindowNotify(UINT msg, bool async = false);
+	void   __cdecl BasicSearchThread( struct JABBER_SEARCH_BASIC *jsb );
+	void   __cdecl GetAwayMsgThread( void* hContact );
+	void   __cdecl SendMessageAckThread( void* hContact );
 
-	void InfoFrame_OnSetup(CJabberInfoFrame_Event *evt);
-	void InfoFrame_OnTransport(CJabberInfoFrame_Event *evt);
+	HANDLE AddToListByJID( const TCHAR* newJid, DWORD flags );
+	void   WindowSubscribe(HWND hwnd);
+	void   WindowUnsubscribe(HWND hwnd);
+	void   WindowNotify(UINT msg, bool async = false);
+
+	void   InfoFrame_OnSetup(CJabberInfoFrame_Event *evt);
+	void   InfoFrame_OnTransport(CJabberInfoFrame_Event *evt);
 
 	//---- jabber_rc.cpp -----------------------------------------------------------------
 
@@ -676,6 +691,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JCreateService( const char* szService, JServiceFunc serviceProc );
 	void   JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam );
 	HANDLE JCreateHookableEvent( const char* szService );
+	HANDLE JForkThread( JThreadFunc, void*, UINT* threadID = NULL );
 
 	void   JDeleteSetting( HANDLE hContact, const char* valueName );
 	DWORD  JGetByte( const char* valueName, int parDefltValue );
@@ -719,7 +735,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_thread.c ----------------------------------------------
 
-	void   ServerThread( ThreadData* info );
+	void   __cdecl ServerThread( ThreadData* info );
+	void   __cdecl KeepAliveThread( void* );
 		  
 	void   OnProcessFailure( XmlNode *node, void *userdata );
 	void   OnProcessError( XmlNode *node, void *userdata );
@@ -772,17 +789,16 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_vcard.c -----------------------------------------------
 
-	int m_vCardUpdates;
-	HWND m_hwndPhoto;
-	bool m_bPhotoChanged;
-	char m_szPhotoFileName[MAX_PATH];
-	void OnUserInfoInit_VCard( WPARAM, LPARAM );
+	int    m_vCardUpdates;
+	HWND   m_hwndPhoto;
+	bool   m_bPhotoChanged;
+	char   m_szPhotoFileName[MAX_PATH];
+	void   OnUserInfoInit_VCard( WPARAM, LPARAM );
 
 	void   GroupchatJoinByHContact( HANDLE hContact, bool autojoin=false );
 	int    SendGetVcard( const TCHAR* jid );
 	void   AppendVcardFromDB( XmlNode* n, char* tag, char* key );
 	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );
-	//void   SaveVcardToDB( struct VcardTab *dat );
 	void   SaveVcardToDB( HWND hwndPage, int iPage );
 
 	//---- jabber_ws.c -------------------------------------------------

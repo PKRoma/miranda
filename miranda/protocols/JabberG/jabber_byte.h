@@ -33,9 +33,8 @@ typedef enum { JBT_INIT, JBT_AUTH, JBT_CONNECT, JBT_SOCKSERR, JBT_SENDING, JBT_R
 
 struct CJabberProto;
 
-typedef struct {
-	CJabberProto* ppro;
-
+typedef struct
+{
 	TCHAR* sid;
 	TCHAR* srcJID;
 	TCHAR* dstJID;
@@ -61,8 +60,5 @@ typedef struct {
 	HANDLE hSendEvent;
 
 } JABBER_BYTE_TRANSFER;
-
-void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt );
-void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
 
 #endif

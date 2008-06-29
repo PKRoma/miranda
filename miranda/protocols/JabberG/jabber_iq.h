@@ -309,17 +309,6 @@ protected:
 		}
 		return NULL;
 	}
-	static unsigned WINAPI _ExpirerThread(LPVOID pParam)
-	{
-		CJabberIqManager *pManager = ( CJabberIqManager * )pParam;
-		pManager->ExpirerThread();
-		if ( !pManager->m_bExpirerThreadShutdownRequest ) {
-			CloseHandle( pManager->m_hExpirerThread );
-			pManager->m_hExpirerThread = NULL;
-		}
-		return 0;
-	}
-	void ExpirerThread();
 	void ExpireInfo( CJabberIqInfo* pInfo, void *pUserData = NULL );
 	BOOL AppendIq(CJabberIqInfo* pInfo)
 	{
@@ -353,18 +342,7 @@ public:
 			delete m_pPermanentHandlers;
 		DeleteCriticalSection(&m_cs);
 	}
-	BOOL Start()
-	{
-		if ( m_hExpirerThread || m_bExpirerThreadShutdownRequest )
-			return FALSE;
-
-		unsigned dwThreadID;
-		m_hExpirerThread = (HANDLE)mir_forkthreadex( _ExpirerThread, this, 0, &dwThreadID );
-		if ( !m_hExpirerThread )
-			return FALSE;
-
-		return TRUE;
-	}
+	BOOL Start();
 	BOOL Shutdown()
 	{
 		if ( m_bExpirerThreadShutdownRequest || !m_hExpirerThread )
@@ -467,6 +445,7 @@ public:
 		}
 		return bRetVal;
 	}
+	void ExpirerThread( void );
 	BOOL ExpireByUserData(void *pUserData)
 	{
 		BOOL bRetVal = FALSE;

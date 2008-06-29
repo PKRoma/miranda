@@ -287,8 +287,7 @@ private:
 
 	void btnOk_OnClick(CCtrlButton *)
 	{
-		if (m_bProcessStarted)
-		{
+		if ( m_bProcessStarted ) {
 			Close();
 			return;
 		}
@@ -303,7 +302,7 @@ private:
 		thread->port = m_regInfo->port;
 		thread->useSSL = m_regInfo->useSSL;
 		thread->reg_hwndDlg= m_hwnd;
-		mir_forkthread(( pThreadFunc )JabberServerThread, thread );
+		m_proto->JForkThread(( JThreadFunc )&CJabberProto::ServerThread, thread );
 
 		m_btnOk.SetText(TranslateT("Cancel"));
 		m_bProcessStarted = true;
@@ -620,7 +619,8 @@ private:
 
 	void cbServer_OnDropdown(CCtrlCombo *sender)
 	{
-		if (!m_gotservers) mir_forkthread(QueryServerListThread, (void *)this);
+		if ( !m_gotservers )
+			mir_forkthread(QueryServerListThread, this);
 	}
 
 	void chkManualHost_OnChange(CCtrlData *sender)
@@ -1954,7 +1954,8 @@ private:
 
 	void cbServer_OnDropdown(CCtrlCombo *sender)
 	{
-		if (!m_gotservers) mir_forkthread(QueryServerListThread, (void *)this);
+		if ( !m_gotservers )
+			mir_forkthread(QueryServerListThread, this);
 	}
 
 	void cbType_OnChange(CCtrlData *sender)

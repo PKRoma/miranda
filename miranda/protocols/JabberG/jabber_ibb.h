@@ -45,10 +45,7 @@ typedef struct {
 	int ( CJabberProto::*pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
 	void ( CJabberProto::*pfnFinal )( BOOL success, void *userdata );
 	void *userdata;
-	CJabberProto* ppro;
-} JABBER_IBB_TRANSFER;
-
-void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb );
-void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
+}
+	JABBER_IBB_TRANSFER;
 
 #endif

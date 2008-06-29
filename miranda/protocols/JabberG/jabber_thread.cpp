@@ -130,26 +130,26 @@ void CJabberProto::OnPingReply( XmlNode* node, void* userdata, CJabberIqInfo* pI
 	}
 }
 
-static void __cdecl JabberKeepAliveThread( CJabberProto* ppro )
+void __cdecl CJabberProto::KeepAliveThread( void* )
 {
 	NETLIBSELECT nls = {0};
 	nls.cbSize = sizeof( NETLIBSELECT );
 	nls.dwTimeout = 60000;	// 60000 millisecond ( 1 minute )
-	nls.hExceptConns[0] = ppro->m_ThreadInfo->s;
+	nls.hExceptConns[0] = m_ThreadInfo->s;
 	for ( ;; ) {
 		if ( JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
 			break;
 
-		if ( ppro->m_ThreadInfo && ppro->JGetByte( "EnableServerXMPPPing", FALSE )) {
-			XmlNodeIq iq( ppro->m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, ppro, 0, 45000 ));
+		if ( m_ThreadInfo && JGetByte( "EnableServerXMPPPing", FALSE )) {
+			XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
 			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_PING );
-			ppro->m_ThreadInfo->send( iq );
+			m_ThreadInfo->send( iq );
 		}
 
-		if ( ppro->m_bSendKeepAlive )
-			ppro->m_ThreadInfo->send( " \t " );
+		if ( m_bSendKeepAlive )
+			m_ThreadInfo->send( " \t " );
 	}
-	ppro->Log( "Exiting KeepAliveThread" );
+	Log( "Exiting KeepAliveThread" );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -222,11 +222,6 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		stream.dirtyHack = true; // this is to keep the node open - do not send </stream:stream>
 		info->send( stream );
 }	}
-
-void __cdecl JabberServerThread( ThreadData* info )
-{
-	info->proto->ServerThread( info );
-}
 
 void CJabberProto::ServerThread( ThreadData* info )
 {
@@ -487,7 +482,7 @@ LBL_FatalError:
 				m_bSendKeepAlive = TRUE;
 			else
 				m_bSendKeepAlive = FALSE;
-			mir_forkthread(( pThreadFunc )JabberKeepAliveThread, this );
+			JForkThread( &CJabberProto::KeepAliveThread, NULL );
 
 			JSetStringT(NULL, "jid", m_szJabberJID); // store jid in database
 		}

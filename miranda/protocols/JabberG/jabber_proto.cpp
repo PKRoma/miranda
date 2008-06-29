@@ -531,7 +531,7 @@ int __cdecl CJabberProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const ch
 
 	switch ( ft->type ) {
 	case FT_OOB:
-		mir_forkthread(( pThreadFunc )::JabberFileReceiveThread, ft );
+		JForkThread(( JThreadFunc )&CJabberProto::FileReceiveThread, ft );
 		break;
 	case FT_BYTESTREAM:
 		FtAcceptSiRequest( ft );
@@ -754,11 +754,10 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 
 struct JABBER_SEARCH_BASIC
 {	int hSearch;
-	CJabberProto* ppro;
 	char jid[128];
 };
 
-static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
+void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 {
 	SleepEx( 100, TRUE );
 
@@ -774,8 +773,8 @@ static void __cdecl JabberBasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	mir_free( jid );
 
 	jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
-	jsb->ppro->JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
-	jsb->ppro->JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
+	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
+	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) jsb->hSearch, 0 );
 	mir_free( jsb );
 }
 
@@ -802,8 +801,7 @@ HANDLE __cdecl CJabberProto::SearchBasic( const char* szJid )
 
 	Log( "Adding '%s' without validation", jsb->jid );
 	jsb->hSearch = SerialNext();
-	jsb->ppro = this;
-	mir_forkthread(( pThreadFunc )JabberBasicSearchThread, jsb );
+	JForkThread(( JThreadFunc )&CJabberProto::BasicSearchThread, jsb );
 	return ( HANDLE )jsb->hSearch;
 }
 
@@ -1007,7 +1005,7 @@ int __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, 
 	if ( jcb & JABBER_CAPS_SI_FT )
 		FtInitiate( item->jid, ft );
 	else if ( jcb & JABBER_CAPS_OOB )
-		mir_forkthread(( pThreadFunc )::JabberFileServerThread, ft );
+		JForkThread(( JThreadFunc )&CJabberProto::FileServerThread, ft );
 
 	return ( int )( HANDLE ) ft;
 }
@@ -1015,19 +1013,12 @@ int __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSendMessage - sends a message
 
-struct JabberSendMessageAckThreadParam
-{
-	HANDLE hContact;
-	CJabberProto* ppro;
-};
-
-static void __cdecl JabberSendMessageAckThread( JabberSendMessageAckThreadParam* params )
+void __cdecl CJabberProto::SendMessageAckThread( void* hContact )
 {
 	SleepEx( 10, TRUE );
-	params->ppro->Log( "Broadcast ACK" );
-	params->ppro->JSendBroadcast( params->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-	params->ppro->Log( "Returning from thread" );
-	delete params;
+	Log( "Broadcast ACK" );
+	JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+	Log( "Returning from thread" );
 }
 
 static char PGP_PROLOG[] = "-----BEGIN PGP MESSAGE-----\r\n\r\n";
@@ -1117,10 +1108,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			}
 			m_ThreadInfo->send( m );
 
-			JabberSendMessageAckThreadParam* params = new JabberSendMessageAckThreadParam;
-			params->hContact = hContact;
-			params->ppro = this;
-			mir_forkthread(( pThreadFunc )JabberSendMessageAckThread, params );
+			JForkThread( &CJabberProto::SendMessageAckThread, hContact );
 
 			nSentMsgId = 1;
 		}
@@ -1236,7 +1224,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		int oldStatus = m_iStatus;
 		m_iStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
-		thread->hThread = ( HANDLE ) mir_forkthread(( pThreadFunc )JabberServerThread, thread );
+		thread->hThread = JForkThread(( JThreadFunc )&CJabberProto::ServerThread, thread );
 
 		RebuildInfoFrame();
 	}
@@ -1248,27 +1236,18 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetAwayMsg - returns a contact's away message
 
-struct JabberGetAwayMsgThreadParams
-{
-	CJabberProto* ppro;
-	HANDLE hContact;
-};
-
-static void __cdecl JabberGetAwayMsgThread( JabberGetAwayMsgThreadParams* params )
+void __cdecl CJabberProto::GetAwayMsgThread( void* hContact )
 {
 	DBVARIANT dbv;
 	JABBER_LIST_ITEM *item;
 	JABBER_RESOURCE_STATUS *r;
 	int i, len, msgCount;
-	HANDLE hContact = params->hContact;
-	CJabberProto* ppro = params->ppro;
-	delete params;
 
-	if ( !ppro->JGetStringT( hContact, "jid", &dbv )) {
-		if (( item = ppro->ListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {
+	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		if (( item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {
 			JFreeVariant( &dbv );
 			if ( item->resourceCount > 0 ) {
-				ppro->Log( "resourceCount > 0" );
+				Log( "resourceCount > 0" );
 				r = item->resource;
 				len = msgCount = 0;
 				for ( i=0; i<item->resourceCount; i++ ) {
@@ -1292,7 +1271,7 @@ static void __cdecl JabberGetAwayMsgThread( JabberGetAwayMsgThreadParams* params
 
 				char* msg = mir_t2a(str);
 				char* msg2 = JabberUnixToDos(msg);
-				ppro->JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg2 );
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg2 );
 				mir_free(msg);
 				mir_free(msg2);
 				return;
@@ -1300,7 +1279,7 @@ static void __cdecl JabberGetAwayMsgThread( JabberGetAwayMsgThreadParams* params
 
 			if ( item->itemResource.statusMessage != NULL ) {
 				char* msg = mir_t2a(item->itemResource.statusMessage);
-				ppro->JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
+				JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )msg );
 				mir_free(msg);
 				return;
 			}
@@ -1308,17 +1287,14 @@ static void __cdecl JabberGetAwayMsgThread( JabberGetAwayMsgThreadParams* params
 		else JFreeVariant( &dbv );
 	}
 
-	ppro->JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
+	JSendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE ) 1, ( LPARAM )"" );
 }
 
 int __cdecl CJabberProto::GetAwayMsg( HANDLE hContact )
 {
 	Log( "GetAwayMsg called, hContact=%08X", hContact );
 
-	JabberGetAwayMsgThreadParams* params = new JabberGetAwayMsgThreadParams;
-	params->hContact = hContact;
-	params->ppro = this;
-	mir_forkthread(( pThreadFunc )JabberGetAwayMsgThread, params );
+	JForkThread( &CJabberProto::GetAwayMsgThread, hContact );
 	return 1;
 }
 

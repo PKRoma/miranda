@@ -91,11 +91,6 @@ void CJabberProto::OnIbbCloseResult( XmlNode *iqNode, void *userdata, CJabberIqI
 		SetEvent( jibb->hEvent );
 }
 
-void __cdecl JabberIbbSendThread( JABBER_IBB_TRANSFER *jibb )
-{
-	jibb->ppro->IbbSendThread( jibb );
-}
-
 void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 {
 	Log( "Thread started: type=ibb_send" );
@@ -151,11 +146,7 @@ void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 	JabberIbbFreeJibb( jibb );
 }
 
-void __cdecl JabberIbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
-{
-	jibb->ppro->IbbReceiveThread( jibb );
-}
-void CJabberProto::IbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
+void __cdecl CJabberProto::IbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 {
 	Log( "Thread started: type=ibb_recv" );
 

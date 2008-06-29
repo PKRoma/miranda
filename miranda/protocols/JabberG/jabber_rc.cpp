@@ -894,11 +894,9 @@ int CJabberProto::AdhocQuitMirandaHandler( XmlNode *iqNode, void *usedata, CJabb
 
 		// I Agree checkbox
 		fieldNode = JabberXmlGetChildWithGivenAttrValue( xNode, "field", "var", _T("allow-shutdown") );
-		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" ))) {
-			if ( valueNode->text && _ttoi( valueNode->text ) ) {
+		if ( fieldNode && (valueNode = JabberXmlGetChild( fieldNode, "value" )))
+			if ( valueNode->text && _ttoi( valueNode->text ))
 				mir_forkthread( JabberQuitMirandaIMThread, NULL );
-			}
-		}
 
 		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;
 	}

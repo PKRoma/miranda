@@ -156,11 +156,6 @@ void JabberByteSendConnection( HANDLE hConn, DWORD dwRemoteIP, void* extra )
 		SetEvent( jbt->hEvent );
 }
 
-void __cdecl JabberByteSendThread( JABBER_BYTE_TRANSFER *jbt )
-{
-	jbt->ppro->ByteSendThread( jbt );
-}
-
 void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 {
 	BOOL bDirect;
@@ -619,12 +614,7 @@ int CJabberProto::ByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, c
 }
 
 
-void __cdecl JabberByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
-{
-	jbt->ppro->ByteReceiveThread( jbt );
-}
-
-void CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
+void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 {
 	XmlNode *iqNode, *queryNode = NULL, *n = NULL;
 	TCHAR *sid = NULL, *from = NULL, *to = NULL, *szId = NULL, *szHost, *szPort, *str;

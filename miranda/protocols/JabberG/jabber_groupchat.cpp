@@ -1123,73 +1123,48 @@ void CJabberProto::GroupchatProcessMessage( XmlNode *node, void *userdata )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Accepting groupchat invitations
 
-typedef struct {
-	CJabberProto* ppro;
-
-	TCHAR* roomJid;
-	TCHAR* from;
-	TCHAR* reason;
-	TCHAR* password;
-}
-	JABBER_GROUPCHAT_INVITE_INFO;
-
-void CJabberProto::AcceptGroupchatInvite( TCHAR* roomJid, TCHAR* reason, TCHAR* password )
+class CGroupchatInviteAcceptDlg : public CJabberDlgFancy
 {
-	TCHAR room[256], *server, *p;
-	_tcsncpy( room, roomJid, SIZEOF( room ));
-	p = _tcstok( room, _T( "@" ));
-	server = _tcstok( NULL, _T( "@" ));
-	GroupchatJoinRoom( server, p, reason, password );
-}
+	CCtrlButton m_accept;
+	JABBER_GROUPCHAT_INVITE_INFO* m_info;
 
-static BOOL CALLBACK JabberGroupchatInviteAcceptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	switch ( msg ) {
-	case WM_INITDIALOG:
-		{
-			JABBER_GROUPCHAT_INVITE_INFO *inviteInfo = ( JABBER_GROUPCHAT_INVITE_INFO * ) lParam;
-			TranslateDialogDefault( hwndDlg );
-			SetWindowLong( hwndDlg, GWL_USERDATA, ( LONG ) inviteInfo );
-			SetDlgItemText( hwndDlg, IDC_FROM, inviteInfo->from );
-			SetDlgItemText( hwndDlg, IDC_ROOM, inviteInfo->roomJid );
-
-			if ( inviteInfo->reason != NULL )
-				SetDlgItemText( hwndDlg, IDC_REASON, inviteInfo->reason );
-
-			TCHAR* myNick = JabberNickFromJID( inviteInfo->ppro->m_szJabberJID );
-			SetDlgItemText( hwndDlg, IDC_NICK, myNick );
-			mir_free( myNick );
-
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )inviteInfo->ppro->LoadIconEx( "group" ));
-		}
-		return TRUE;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_ACCEPT:
-			{
-				JABBER_GROUPCHAT_INVITE_INFO *inviteInfo = ( JABBER_GROUPCHAT_INVITE_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-				TCHAR text[128];
-				GetDlgItemText( hwndDlg, IDC_NICK, text, SIZEOF( text ));
-				inviteInfo->ppro->AcceptGroupchatInvite( inviteInfo->roomJid, text, inviteInfo->password );
-			}
-			// Fall through
-		case IDCANCEL:
-		case IDCLOSE:
-			EndDialog( hwndDlg, 0 );
-			return TRUE;
-		}
-		break;
-	case WM_CLOSE:
-		EndDialog( hwndDlg, 0 );
-		break;
+public:
+	CGroupchatInviteAcceptDlg( CJabberProto* ppro, JABBER_GROUPCHAT_INVITE_INFO* pInfo ) :
+		CJabberDlgFancy( ppro, IDD_GROUPCHAT_INVITE_ACCEPT, NULL ),
+		m_info( pInfo ),
+		m_accept( this, IDC_ACCEPT )
+	{
+		m_accept.OnClick = Callback( this, &CGroupchatInviteAcceptDlg::OnCommand_Accept );
 	}
 
-	return FALSE;
-}
+	void OnInitDialog()
+	{
+		SetDlgItemText( m_hwnd, IDC_FROM, m_info->from );
+		SetDlgItemText( m_hwnd, IDC_ROOM, m_info->roomJid );
 
-static void __cdecl JabberGroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo )
+		if ( m_info->reason != NULL )
+			SetDlgItemText( m_hwnd, IDC_REASON, m_info->reason );
+
+		TCHAR* myNick = JabberNickFromJID( m_proto->m_szJabberJID );
+		SetDlgItemText( m_hwnd, IDC_NICK, myNick );
+		mir_free( myNick );
+
+		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
+	}
+
+	void OnCommand_Accept( CCtrlButton* )
+	{
+		TCHAR text[128];
+		GetDlgItemText( m_hwnd, IDC_NICK, text, SIZEOF( text ));
+		m_proto->AcceptGroupchatInvite( m_info->roomJid, text, m_info->password );
+		EndDialog( m_hwnd, 0 );
+	}
+};
+
+void __cdecl CJabberProto::GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo )
 {
-	DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INVITE_ACCEPT ), NULL, JabberGroupchatInviteAcceptDlgProc, ( LPARAM )inviteInfo );
+	CGroupchatInviteAcceptDlg( this, inviteInfo ).DoModal();
+
 	mir_free( inviteInfo->roomJid );
 	mir_free( inviteInfo->from );
 	mir_free( inviteInfo->reason );
@@ -1211,11 +1186,19 @@ void CJabberProto::GroupchatProcessInvite( TCHAR* roomJid, TCHAR* from, TCHAR* r
 		inviteInfo->from     = mir_tstrdup( from );
 		inviteInfo->reason   = mir_tstrdup( reason );
 		inviteInfo->password = mir_tstrdup( password );
-		inviteInfo->ppro  = this;
-		mir_forkthread(( pThreadFunc )JabberGroupchatInviteAcceptThread, inviteInfo );
+		JForkThread(( JThreadFunc )&CJabberProto::GroupchatInviteAcceptThread, inviteInfo );
 	}
 	else {
 		TCHAR* myNick = JabberNickFromJID( m_szJabberJID );
 		AcceptGroupchatInvite( roomJid, myNick, password );
 		mir_free( myNick );
 }	}
+
+void CJabberProto::AcceptGroupchatInvite( TCHAR* roomJid, TCHAR* reason, TCHAR* password )
+{
+	TCHAR room[256], *server, *p;
+	_tcsncpy( room, roomJid, SIZEOF( room ));
+	p = _tcstok( room, _T( "@" ));
+	server = _tcstok( NULL, _T( "@" ));
+	GroupchatJoinRoom( server, p, reason, password );
+}

@@ -769,29 +769,27 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CSuper::DlgProc(msg, wParam, lParam);
 }
 
-static UINT WINAPI sttJabberConsoleThread( void* param )
+void __cdecl CJabberProto::ConsoleThread( void* )
 {
-	CJabberProto* ppro = (CJabberProto*)param;
 	MSG msg;
 	while ( GetMessage(&msg, NULL, 0, 0 )) {
 		if ( msg.message == WM_CREATECONSOLE ) {
-			ppro->m_pDlgConsole = new CJabberDlgConsole(ppro);
-			ppro->m_pDlgConsole->Show();
+			m_pDlgConsole = new CJabberDlgConsole( this );
+			m_pDlgConsole->Show();
 			continue;
 		}
 
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	ppro->m_dwConsoleThreadId = 0;
-	return 0;
+	m_dwConsoleThreadId = 0;
 }
 
 void CJabberProto::ConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
 	InitializeCriticalSection(&m_filterInfo.csPatternLock);
-	m_hThreadConsole = (HANDLE)mir_forkthreadex( ::sttJabberConsoleThread, this, 0, &m_dwConsoleThreadId);
+	m_hThreadConsole = JForkThread( &CJabberProto::ConsoleThread, 0, &m_dwConsoleThreadId );
 }
 
 void CJabberProto::ConsoleUninit()

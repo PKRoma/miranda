@@ -177,6 +177,24 @@ BOOL CJabberIqManager::FillPermanentHandlers()
 	return TRUE;
 }
 
+BOOL CJabberIqManager::Start()
+{
+	if ( m_hExpirerThread || m_bExpirerThreadShutdownRequest )
+		return FALSE;
+
+	m_hExpirerThread = ppro->JForkThread( &CJabberProto::ExpirerThread, this );
+	if ( !m_hExpirerThread )
+		return FALSE;
+
+	return TRUE;
+}
+
+void __cdecl CJabberProto::ExpirerThread( void* pParam )
+{
+	CJabberIqManager *pManager = ( CJabberIqManager * )pParam;
+	pManager->ExpirerThread();
+}
+
 void CJabberIqManager::ExpirerThread()
 {
 	while (!m_bExpirerThreadShutdownRequest)
@@ -191,11 +209,15 @@ void CJabberIqManager::ExpirerThread()
 
 			// -1 thread :)
 			ppro->m_adhocManager.ExpireSessions();
-
 			continue;
 		}
-		ExpireInfo(pInfo);
+		ExpireInfo( pInfo );
 		delete pInfo;
+	}
+
+	if ( !m_bExpirerThreadShutdownRequest ) {
+		CloseHandle( m_hExpirerThread );
+		m_hExpirerThread = NULL;
 	}
 }
 

@@ -342,19 +342,18 @@ enum JABBER_SESSION_TYPE
 
 struct ThreadData
 {
-	ThreadData( CJabberProto* pProto, JABBER_SESSION_TYPE parType );
+	ThreadData( CJabberProto* _ppro, JABBER_SESSION_TYPE parType );
 	~ThreadData();
 
 	HANDLE hThread;
 	JABBER_SESSION_TYPE type;
 	
-	struct CJabberProto* proto;
-
 	// network support
 	JABBER_SOCKET s;
 	BOOL  useSSL;
 	PVOID ssl;
 	CRITICAL_SECTION iomutex; // protects i/o operations
+	CJabberProto* proto;
 
 	// XEP-0138 (Compression support)
 	BOOL     useZlib;
@@ -602,11 +601,6 @@ extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
  * Function declarations
  *******************************************************************/
 
-//---- jabber_file.cpp ----------------------------------------------
-
-void JabberFileServerThread( filetransfer* ft );
-void JabberFileReceiveThread( filetransfer* ft );
-
 //---- jabber_treelist.c ------------------------------------------------
 
 void TreeList_Create(HWND hwnd);
@@ -737,10 +731,6 @@ char* __fastcall JTranslate( const char* str );
 #else
 	int __stdcall  JCallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 #endif
-
-//---- jabber_thread.cpp ----------------------------------------------------------------
-
-void __cdecl JabberServerThread( ThreadData* info );
 
 //---- jabber_util.cpp ------------------------------------------------------------------
 
