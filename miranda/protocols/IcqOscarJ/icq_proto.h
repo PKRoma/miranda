@@ -915,7 +915,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg);
 	void   SetCurrentStatus(int nStatus);
 
-	HANDLE ForkThread( IcqThreadFunc pFunc, void* arg, UINT* threadID = NULL );
+	void   ForkThread( IcqThreadFunc pFunc, void* arg );
+	HANDLE ForkThreadEx( IcqThreadFunc pFunc, void* arg, UINT* threadID = NULL );
 	
 	void   __cdecl ProtocolAckThread(icq_ack_args* pArguments);
 	void   SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
@@ -925,8 +926,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   CreateProtoServiceParam(const char* szService, IcqServiceFuncParam serviceProc, LPARAM lParam);
 	HANDLE HookProtoEvent(const char* szEvent, IcqEventFunc pFunc);
 
-  void   CreateProtoThread(IcqThreadFunc threadProc, void* arg);
-  HANDLE CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID);
+	void   CreateProtoThread(IcqThreadFunc threadProc, void* arg);
+	HANDLE CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID);
 
 	int    NetLog_Server(const char *fmt,...);
 	int    NetLog_Direct(const char *fmt,...);

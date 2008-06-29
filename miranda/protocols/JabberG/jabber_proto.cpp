@@ -1224,7 +1224,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		int oldStatus = m_iStatus;
 		m_iStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
-		thread->hThread = JForkThread(( JThreadFunc )&CJabberProto::ServerThread, thread );
+		thread->hThread = JForkThreadEx(( JThreadFunc )&CJabberProto::ServerThread, thread );
 
 		RebuildInfoFrame();
 	}

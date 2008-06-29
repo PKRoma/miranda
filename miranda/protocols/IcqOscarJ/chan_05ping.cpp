@@ -83,7 +83,7 @@ void CIcqProto::StartKeepAlive(serverthread_info* info)
 		return;
 
 	if (getSettingByte(NULL, "KeepAlive", 0))
-		info->hKeepAliveThread = ForkThread( &CIcqProto::KeepAliveThread, info );
+		info->hKeepAliveThread = ForkThreadEx( &CIcqProto::KeepAliveThread, info );
 }
 
 void CIcqProto::StopKeepAlive(serverthread_info* info)

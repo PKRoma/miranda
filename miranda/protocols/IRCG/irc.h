@@ -550,8 +550,10 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void   DisconnectFromServer(void);
 	void   DoNetlibLog( const char* fmt, ... );
 	void   IrcHookEvent( const char*, IrcEventFunc );
-	int    ircFork( IrcThreadFunc, void* arg );
 	void   InitMenus( void );
+
+	void   ircFork( IrcThreadFunc, void* arg );
+	HANDLE ircForkEx( IrcThreadFunc, void* arg );
 
 	UINT_PTR  RetryTimer;
 

@@ -405,5 +405,5 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	m_dwLocalUIN = dwUin;
 
-	serverThreadHandle = ForkThread(( IcqThreadFunc )&CIcqProto::ServerThread, stsi, &serverThreadId);
+	serverThreadHandle = ForkThreadEx(( IcqThreadFunc )&CIcqProto::ServerThread, stsi, &serverThreadId);
 }

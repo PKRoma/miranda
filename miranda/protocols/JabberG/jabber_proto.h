@@ -691,7 +691,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   JCreateService( const char* szService, JServiceFunc serviceProc );
 	void   JCreateServiceParam( const char* szService, JServiceFuncParam serviceProc, LPARAM lParam );
 	HANDLE JCreateHookableEvent( const char* szService );
-	HANDLE JForkThread( JThreadFunc, void*, UINT* threadID = NULL );
+	void   JForkThread( JThreadFunc, void* );
+	HANDLE JForkThreadEx( JThreadFunc, void*, UINT* threadID = NULL );
 
 	void   JDeleteSetting( HANDLE hContact, const char* valueName );
 	DWORD  JGetByte( const char* valueName, int parDefltValue );

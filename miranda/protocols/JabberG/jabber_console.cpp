@@ -789,7 +789,7 @@ void CJabberProto::ConsoleInit()
 {
 	LoadLibraryA("riched20.dll");
 	InitializeCriticalSection(&m_filterInfo.csPatternLock);
-	m_hThreadConsole = JForkThread( &CJabberProto::ConsoleThread, 0, &m_dwConsoleThreadId );
+	m_hThreadConsole = JForkThreadEx( &CJabberProto::ConsoleThread, 0, &m_dwConsoleThreadId );
 }
 
 void CJabberProto::ConsoleUninit()

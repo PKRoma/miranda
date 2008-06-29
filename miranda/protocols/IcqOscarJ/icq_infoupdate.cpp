@@ -58,7 +58,7 @@ void CIcqProto::icq_InitInfoUpdate(void)
 
 		dwUpdateThreshold = getSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
-		hInfoThread = ForkThread( &CIcqProto::InfoUpdateThread, NULL );
+		hInfoThread = ForkThreadEx( &CIcqProto::InfoUpdateThread, NULL );
 	}
 
 	bPendingUsers = 0;

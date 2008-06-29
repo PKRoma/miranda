@@ -1436,7 +1436,13 @@ char* __fastcall ICQTranslateUtfStatic(const char *src, char *buf, size_t bufsiz
 	return buf;
 }
 
-HANDLE CIcqProto::ForkThread( IcqThreadFunc pFunc, void* arg, UINT* threadID )
+void CIcqProto::ForkThread( IcqThreadFunc pFunc, void* arg )
+{
+	UINT threadID;
+	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, &threadID ));
+}
+
+HANDLE CIcqProto::ForkThreadEx( IcqThreadFunc pFunc, void* arg, UINT* threadID )
 {
 	return ( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, threadID );
 }

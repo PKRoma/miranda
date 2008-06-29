@@ -56,7 +56,13 @@ HANDLE CJabberProto::JCreateHookableEvent( const char* szService )
 	return CreateHookableEvent( str );
 }
 
-HANDLE CJabberProto::JForkThread( JThreadFunc pFunc, void *param, UINT* threadID )
+void CJabberProto::JForkThread( JThreadFunc pFunc, void *param )
+{
+	UINT threadID;
+	CloseHandle(( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, &threadID ));
+}
+
+HANDLE CJabberProto::JForkThreadEx( JThreadFunc pFunc, void *param, UINT* threadID )
 {
 	return ( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, threadID );
 }
