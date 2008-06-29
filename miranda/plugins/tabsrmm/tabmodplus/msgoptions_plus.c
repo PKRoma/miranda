@@ -103,16 +103,11 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 								i++;
 							}
 
-							msgTimeout = SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_GETPOS, 0, 0);
-							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT,
-								msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? msgTimeout * 1000 : SRMSGSET_MSGTIMEOUT_MIN);
+							msgTimeout = 1000 * GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, FALSE);
+							myGlobals.m_MsgTimeout = msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout : SRMSGSET_MSGTIMEOUT_MIN;
+							DBWriteContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, myGlobals.m_MsgTimeout);
 
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "historysize", (BYTE)SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_GETPOS, 0, 0));
-
-							myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-
-							if (myGlobals.m_MsgTimeout < SRMSGDEFSET_MSGTIMEOUT)
-								myGlobals.m_MsgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 							return TRUE;
 						}
 					}
@@ -147,7 +142,6 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 		case WM_USER + 100: {
 			TVINSERTSTRUCT tvi = {0};
 			int		i = 0;
-			DWORD	msgTimeout;
 
 			while (lvGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -178,11 +172,8 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 			g_bIMGtagButton = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IMGtagButton",0 );
 			g_bClientInStatusBar = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ClientIconInStatusBar", 0);
 
-			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, 60));
-			msgTimeout = DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-			if (msgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
-				msgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
-			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, msgTimeout / 1000);
+			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, SRMSGSET_MSGTIMEOUT_MIN / 1000));
+			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETPOS, 0, myGlobals.m_MsgTimeout / 1000);
 
 			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETRANGE, 0, MAKELONG(255, 15));
 			SendDlgItemMessage(hwndDlg, IDC_HISTORYSIZESPIN, UDM_SETPOS, 0, (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "historysize", 0));

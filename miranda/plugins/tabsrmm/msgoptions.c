@@ -1878,8 +1878,8 @@ void ReloadGlobals()
 	myGlobals.m_DividersUsePopupConfig = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0);
 	myGlobals.m_MsgTimeout = (int)DBGetContactSettingDword(NULL, SRMSGMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 
-	if (myGlobals.m_MsgTimeout < SRMSGDEFSET_MSGTIMEOUT)
-		myGlobals.m_MsgTimeout = SRMSGDEFSET_MSGTIMEOUT;
+	if (myGlobals.m_MsgTimeout < SRMSGSET_MSGTIMEOUT_MIN)
+		myGlobals.m_MsgTimeout = SRMSGSET_MSGTIMEOUT_MIN;
 
 	myGlobals.m_EscapeCloses = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "escmode", 0);
 	//MaD
