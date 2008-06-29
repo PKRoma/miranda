@@ -362,7 +362,10 @@ typedef struct
 }
 	DBEVENTTYPEDESCR;
 
-#define DETF_HISTORY  1   // show event in history
+// constants for default event behaviour
+#define DETF_HISTORY    1   // show event in history
+#define DETF_MSGWINDOW  2   // show event in message window
+#define DETF_NONOTIFY   4   // block event notify (e.g. Popups)
 
 
 #define MS_DB_EVENT_REGISTERTYPE  "DB/EventType/Register"
