@@ -71,9 +71,9 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	int statusMode = (int)wParam;
 
-	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0)) {
+	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(wParam,"Ignore"),0))
 		return (int)NULL;
-	}
+
 	if(DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusMode,"UsePrev"),0)) {
 		if(DBGetContactSettingString(NULL,"SRAway",StatusModeToDbSetting(statusMode,"Msg"),&dbv))
 			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
@@ -85,8 +85,24 @@ static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
 			dbv.pszVal=mir_strdup(GetDefaultMessage(statusMode));
 		for(i=0;dbv.pszVal[i];i++) {
 			if(dbv.pszVal[i]!='%') continue;
-			if(!_strnicmp(dbv.pszVal+i,"%time%",6))
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,SIZEOF(substituteStr));
+			if(!_strnicmp(dbv.pszVal+i,"%time%",6)) {
+				MIRANDA_IDLE_INFO mii;
+				mii.cbSize = sizeof( mii );
+				CallService( MS_IDLE_GETIDLEINFO, 0, (LPARAM)&mii );
+
+				if ( mii.idleType == 1 ) {
+					int mm;
+					SYSTEMTIME t;
+					GetLocalTime( &t );
+					mm = t.wMinute + t.wHour * 60 - mii.idleTime;
+					if ( mm < 0 )
+						mm += 60*24;
+					t.wMinute = mm % 60;
+					t.wHour = mm / 60;
+					GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&t,NULL,substituteStr,SIZEOF(substituteStr));
+				}
+				else GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,NULL,NULL,substituteStr,SIZEOF(substituteStr));
+			}
 			else if(!_strnicmp(dbv.pszVal+i,"%date%",6))
 				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,NULL,NULL,substituteStr,SIZEOF(substituteStr));
 			else continue;

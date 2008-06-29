@@ -151,8 +151,10 @@ typedef struct {
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
 	POINT mousepos;
 	unsigned int mouseidle;
-    int aastatus;
-} IdleObject;
+	int aastatus;
+	int idleType;
+}
+	IdleObject;
 
 static int aa_Status[] = {ID_STATUS_AWAY, ID_STATUS_NA, ID_STATUS_OCCUPIED, ID_STATUS_DND, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH};
 
@@ -168,7 +170,7 @@ static void IdleObject_ReadSettings(IdleObject * obj)
 {
 	obj->useridlecheck = DBGetContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, 0);
 	obj->minutes = DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLETIME1ST, 10);
-    obj->aastatus = !DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? 0 : DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0);
+	obj->aastatus = !DBGetContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, 0) ? 0 : DBGetContactSettingWord(NULL, IDLEMOD, IDL_AASTATUS, 0);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, 0) ) IdleObject_UseMethod1(obj);
 	else IdleObject_UseMethod0(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
@@ -187,7 +189,8 @@ static void IdleObject_Create(IdleObject * obj)
 
 static void IdleObject_Destroy(IdleObject * obj)
 {
-	if (IdleObject_IsIdle(obj)) NotifyEventHooks(hIdleEvent, 0, 0);
+	if (IdleObject_IsIdle(obj))
+		NotifyEventHooks(hIdleEvent, 0, 0);
 	IdleObject_ClearIdle(obj);
 	KillTimer(NULL, obj->hTimer);
 }
@@ -198,40 +201,59 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 	if ( IdleObject_GetMethod(obj) ) {
 		CallService(MS_SYSTEM_GETIDLE, 0, (DWORD)&dwTick);
 		return GetTickCount() - dwTick > (obj->minutes * 60 * 1000);
-	} else {
-		if ( MyGetLastInputInfo != NULL ) {
-			LASTINPUTINFO ii;
-			ZeroMemory(&ii,sizeof(ii));
-			ii.cbSize=sizeof(ii);
-			if ( MyGetLastInputInfo(&ii) ) return GetTickCount() - ii.dwTime > (obj->minutes * 60 * 1000);
-		} else {
-			POINT pt;
-			GetCursorPos(&pt);
-			if ( pt.x != obj->mousepos.x || pt.y != obj->mousepos.y ) {
-				obj->mousepos=pt;
-				obj->mouseidle=0;
-			} else obj->mouseidle += 2;
-			if ( obj->mouseidle ) return obj->mouseidle * 1000 >= (obj->minutes * 60 * 1000);
-		}
-		return FALSE;
 	}
+	
+	if ( MyGetLastInputInfo != NULL ) {
+		LASTINPUTINFO ii;
+		ZeroMemory(&ii,sizeof(ii));
+		ii.cbSize=sizeof(ii);
+		if ( MyGetLastInputInfo(&ii) ) 
+			return GetTickCount() - ii.dwTime > (obj->minutes * 60 * 1000);
+	}
+	else {
+		POINT pt;
+		GetCursorPos(&pt);
+		if ( pt.x != obj->mousepos.x || pt.y != obj->mousepos.y ) {
+			obj->mousepos=pt;
+			obj->mouseidle=0;
+		}
+		else obj->mouseidle += 2;
+
+		if ( obj->mouseidle )
+			return obj->mouseidle * 1000 >= (obj->minutes * 60 * 1000);
+	}
+	return FALSE;
 }
 
 static void IdleObject_Tick(IdleObject * obj)
 {
-	BOOL idle = ( obj->useridlecheck ? IdleObject_IsUserIdle(obj) : FALSE )
-		|| ( IdleObject_IdleCheckSaver(obj) ? IsScreenSaverRunning() : FALSE  )
-			|| ( IdleObject_IdleCheckWorkstation(obj) ? IsWorkstationLocked() : FALSE )
-				|| (IdleObject_IdleCheckTerminal(obj) ? IsTerminalDisconnected() : FALSE );
+	BOOL idle = FALSE;
+	int  idleType = 0, flags = 0;
 
-	unsigned int flags = IdleObject_IsPrivacy(obj) ? IDF_PRIVACY : 0;
+	if ( obj->useridlecheck && IdleObject_IsUserIdle(obj)) {
+		idleType = 1; idle = TRUE; 
+	}
+	else if ( IdleObject_IdleCheckSaver(obj) && IsScreenSaverRunning()) {
+		idleType = 2; idle = TRUE; 
+	}
+	else if ( IdleObject_IdleCheckWorkstation(obj) && IsWorkstationLocked()) {
+		idleType = 3; idle = TRUE; 
+	}
+	else if ( IdleObject_IdleCheckTerminal(obj) && IsTerminalDisconnected()) {
+		idleType = 4; idle = TRUE; 
+	}
+
+	if ( IdleObject_IsPrivacy(obj))
+		flags |= IDF_PRIVACY;
 
 	if ( !IdleObject_IsIdle(obj) && idle ) {
 		IdleObject_SetIdle(obj);
+		obj->idleType = idleType;
 		NotifyEventHooks(hIdleEvent, 0, IDF_ISIDLE | flags);
 	}
 	if ( IdleObject_IsIdle(obj) && !idle ) {
 		IdleObject_ClearIdle(obj);
+		obj->idleType = 0;
 		NotifyEventHooks(hIdleEvent, 0, flags);
 }	}
 
@@ -385,13 +407,17 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 
 static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 {
-	MIRANDA_IDLE_INFO *mii = (MIRANDA_IDLE_INFO*)lParam;
+	MIRANDA_IDLE_INFO *mii = ( MIRANDA_IDLE_INFO* )lParam;
+	if ( !mii || ( mii->cbSize != sizeof(MIRANDA_IDLE_INFO) && mii->cbSize != sizeof(MIRANDA_IDLE_INFO_1)))
+		return 1;
 
-	if (!mii || mii->cbSize!=sizeof(MIRANDA_IDLE_INFO)) return 1;
 	mii->idleTime = gIdleObject.minutes;
 	mii->privacy = gIdleObject.state&0x10;
 	mii->aaStatus = gIdleObject.aastatus;
 	mii->aaLock = gIdleObject.state&0x20;
+
+	if ( mii->cbSize == sizeof(MIRANDA_IDLE_INFO))
+		mii->idleType = gIdleObject.idleType;
 	return 0;
 }
 
