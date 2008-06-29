@@ -926,9 +926,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   CreateProtoServiceParam(const char* szService, IcqServiceFuncParam serviceProc, LPARAM lParam);
 	HANDLE HookProtoEvent(const char* szEvent, IcqEventFunc pFunc);
 
-	void   CreateProtoThread(IcqThreadFunc threadProc, void* arg);
-	HANDLE CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID);
-
 	int    NetLog_Server(const char *fmt,...);
 	int    NetLog_Direct(const char *fmt,...);
 	int    NetLog_Uni(BOOL bDC, const char *fmt,...);
