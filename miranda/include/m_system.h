@@ -420,7 +420,7 @@ __forceinline int mir_forkthread( pThreadFunc aFunc, void* arg )
 }
 
 /* 0.5.2+
-wParam=0
+wParam=void* - thread owner object
 lParam=FORK_THREADEX_PARAMS*
 
 registers a thread in the core and forks it
@@ -428,7 +428,8 @@ passes the extended parameters info and returns the thread id
 
 */
 
-typedef unsigned (__stdcall *pThreadFuncEx)(void*);
+typedef unsigned (__stdcall *pThreadFuncEx)(void* param);
+typedef unsigned (__cdecl *pThreadFuncOwner)(void *owner, void* param);
 
 typedef struct
 {
@@ -450,6 +451,28 @@ static __inline int mir_forkthreadex( pThreadFuncEx aFunc, void* arg, int stackS
 	params.threadID   = pThreadID;
 	return CallService( MS_SYSTEM_FORK_THREAD_EX, 0, (LPARAM)&params );
 }
+
+/* 0.8.0+
+wParam=(void*)owner
+lParam=FORK_THREADEX_PARAMS*
+
+registers a thread, owned by some object, in the core and forks it
+passes the owner info and extended parameters info and returns the thread id
+
+*/
+
+#define MS_SYSTEM_FORK_OWNED_THREAD    "Miranda/Thread/ForkOwned"
+
+static __inline int mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
+{
+	FORK_THREADEX_PARAMS params;
+	params.pFunc      = ( pThreadFuncEx )aFunc;
+	params.arg        = arg;
+	params.iStackSize = 0;
+	params.threadID   = pThreadID;
+	return CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
+}
+
 
 /*
 wParam=0
