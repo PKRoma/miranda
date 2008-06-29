@@ -39,7 +39,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	HookProtoEvent(ME_DB_CONTACT_DELETED, &CAimProto::OnContactDeleted);
 
 	if ( getByte( AIM_KEY_KA, 0 ))
-		mir_forkthread(( pThreadFunc )aim_keepalive_thread, this );
+		ForkThread( &CAimProto::aim_keepalive_thread, 0 );
 }
 
 CAimProto::~CAimProto()
@@ -263,7 +263,7 @@ int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 		memcpy(data,(char*)&hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
 		setString( hContact, AIM_KEY_FN, szPath );
-		mir_forkthread((pThreadFunc)accept_file_thread, new file_thread_param(this, data));
+		ForkThread( &CAimProto::accept_file_thread, data );
 		return (int)hContact;
 	}
 	return 0;
@@ -371,39 +371,24 @@ int __cdecl CAimProto::GetInfo( HANDLE hContact, int infoType )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchBasic - searches the contact by JID
 
-struct basic_search_ack_param
+void __cdecl CAimProto::basic_search_ack_success( void* p )
 {
-	basic_search_ack_param( CAimProto* _ppro, const char* szId ) :
-		ppro( _ppro ),
-		snsearch( strldup( szId, lstrlenA( szId )))
-	{}
-
-	~basic_search_ack_param()
-	{	delete[] snsearch;
-	}
-
-	CAimProto* ppro;
-	char* snsearch;
-};
-
-static void __cdecl basic_search_ack_success(basic_search_ack_param* p)
-{
-	if ( char *sn = normalize_name( p->snsearch )) { // normalize it
+	if ( char *sn = normalize_name(( char* )p )) { // normalize it
 		PROTOSEARCHRESULT psr;
 		if (lstrlenA(sn) > 32) {
-			ProtoBroadcastAck( p->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+			ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 			delete[] sn;
-			delete p;
+			delete[] p;
 			return;
 		}
 		ZeroMemory(&psr, sizeof(psr));
 		psr.cbSize = sizeof(psr);
 		psr.nick = sn;
-		ProtoBroadcastAck( p->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-		ProtoBroadcastAck( p->ppro->m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+		ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		delete[] sn;
 	}
-	delete p;
+	delete[] p;
 }
 
 HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
@@ -412,7 +397,7 @@ HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
 		return 0;
 
 	//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
-	mir_forkthread(( pThreadFunc )basic_search_ack_success, new basic_search_ack_param( this, szId ));
+	ForkThread( &CAimProto::basic_search_ack_success, ( char* )szId );
 	return ( HANDLE )1;
 }
 
@@ -575,7 +560,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 				if ( hProxy ) {
 					setByte( hContact, AIM_KEY_PS, 1 );
 					setDword( hContact, AIM_KEY_DH, (DWORD)hProxy );//not really a direct connection
-					mir_forkthread(( pThreadFunc )aim_proxy_helper, new aim_proxy_helper_param(this, hContact));
+					ForkThread( &CAimProto::aim_proxy_helper, hContact );
 				}
 			}
 			else aim_send_file( hServerConn, seqno, dbv.pszVal, cookie, InternalIP, LocalPort, 0, 1, pszFile, pszSize, pszDesc );
@@ -597,7 +582,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 	DBVARIANT dbv;
 	if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
 		if ( 0 == getByte( AIM_KEY_DC, 1))
-			mir_forkthread(( pThreadFunc )msg_ack_success, new msg_ack_success_param( this, hContact ));
+			ForkThread( &CAimProto::msg_ack_success, hContact );
 
 		char* msg = strldup( pszSrc, lstrlenA( pszSrc ));
 		char* smsg = strip_carrots( msg );
@@ -685,21 +670,13 @@ void CAimProto::SetStatusWorker( int iNewStatus )
 	LeaveCriticalSection(&statusMutex);
 }
 
-typedef struct
-{
-	CAimProto* proto;
-	int status;
-} protostruct;
-
-void setstatusthread(void* arg)
-{
-	protostruct* p = (protostruct*)arg;
-	p->proto->SetStatusWorker(p->status);
-	mir_free(p);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetStatus - sets the protocol m_iStatus
+
+void __cdecl CAimProto::setstatusthread(void* arg)
+{
+	SetStatusWorker(( int )arg );
+}
 
 int __cdecl CAimProto::SetStatus( int iNewStatus )
 {
@@ -708,13 +685,8 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 
 	if ( shutting_down )
 		return 0;
-
-	protostruct *p = (protostruct*)mir_alloc(sizeof(protostruct));
-	p->proto = this;
-	p->status = iNewStatus;
-
-	mir_forkthread(setstatusthread, p);
-
+	
+	ForkThread( &CAimProto::setstatusthread, ( void* )iNewStatus );
 	return 0;
 }
 

@@ -1,25 +1,25 @@
 #include "aim.h"
 
-void __cdecl aim_dc_helper( aim_dc_helper_param* p ) //only called when we are initiating a direct connection with someone else
+void __cdecl CAimProto::aim_dc_helper( void* hContact ) //only called when we are initiating a direct connection with someone else
 {
-	HANDLE Connection=(HANDLE)DBGetContactSettingDword(p->hContact,p->ppro->m_szModuleName,AIM_KEY_DH,0);
+	HANDLE Connection=(HANDLE)DBGetContactSettingDword(hContact,m_szModuleName,AIM_KEY_DH,0);
 	if(Connection)
 	{
 		DBVARIANT dbv;
-		if (!DBGetContactSettingString(p->hContact, p->ppro->m_szModuleName, AIM_KEY_IP, &dbv))
+		if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_IP, &dbv))
 		{
 			unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
-			DBWriteContactSettingDword(NULL,p->ppro->FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)p->hContact);
-			aim_direct_connection_initiated(Connection, ip, p->ppro);
+			DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
+			aim_direct_connection_initiated( Connection, ip, this );
 			DBFreeVariant(&dbv);
 		}
 	}
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_DH);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_IP);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_FT);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_FN);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_FD);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_FS);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_DH);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_IP);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FT);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FN);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FD);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FS);
 }
 
 void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CAimProto* ppro)//for receiving stuff via dc

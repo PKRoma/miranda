@@ -39,7 +39,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 					delete[] COOKIE;
 					COOKIE_LENGTH=tlv.len();
 					COOKIE=tlv.dup();
-					mir_forkthread(( pThreadFunc )aim_protocol_negotiation, this );
+					ForkThread( &CAimProto::aim_protocol_negotiation, 0 );
 					return 1;
 				}
 			}
@@ -94,7 +94,7 @@ void CAimProto::snac_avatar_rate_limitations(SNAC &snac,HANDLE hServerConn,unsig
 		aim_accept_rates(hServerConn,seqno);
 		aim_avatar_ready(hServerConn,seqno);
 		AvatarLimitThread=1;
-		mir_forkthread((pThreadFunc)avatar_request_limit_thread,this);
+		ForkThread( &CAimProto::avatar_request_limit_thread, 0 );
 	}
 }
 
@@ -726,7 +726,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			list_received=1;
 			aim_client_ready(hServerConn,seqno);
 			aim_activate_list(hServerConn,seqno);
-			mir_forkthread((pThreadFunc)awaymsg_request_limit_thread, this );
+			ForkThread( &CAimProto::awaymsg_request_limit_thread, 0 );
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018);//mail
 			LOG("Connection Negotiation Finished");
@@ -741,8 +741,8 @@ void CAimProto::snac_message_accepted(SNAC &snac)//family 0x004
 		unsigned char sn_length=snac.ubyte(10);
 		char* sn=snac.part(11,sn_length);
 		HANDLE hContact=find_contact(sn);
-		if(hContact)
-			mir_forkthread(( pThreadFunc )msg_ack_success, new msg_ack_success_param( this, hContact ));
+		if ( hContact )
+			ForkThread( &CAimProto::msg_ack_success, hContact );
 
 		delete[] sn;
 	}
@@ -1009,9 +1009,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Local IP: %s:%u",local_ip,port);
 			LOG("Verified IP: %s:%u",verified_ip,port);
 			LOG("Proxy IP: %s:%u",proxy_ip,port);
-			mir_forkthread((pThreadFunc)redirected_file_thread,new file_thread_param(this, blob));
+			ForkThread( &CAimProto::redirected_file_thread, blob );
 		}
-		else if(recv_file_type==0&&request_num==3)//buddy sending file, redirected connection failed, so they asking us to connect to proxy
+		else if ( recv_file_type == 0 && request_num == 3 ) //buddy sending file, redirected connection failed, so they asking us to connect to proxy
 		{
 			LOG("Buddy Wants to Send us a file through a proxy. Request 3");
 			long size = sizeof(hContact)+lstrlenA(proxy_ip)+sizeof(port)+2;
@@ -1026,7 +1026,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Local IP: %s:%u",local_ip,port);
 			LOG("Verified IP: %s:%u",verified_ip,port);
 			LOG("Proxy IP: %s:%u",proxy_ip,port);
-			mir_forkthread((pThreadFunc)proxy_file_thread,new file_thread_param(this, blob));
+			ForkThread( &CAimProto::proxy_file_thread, blob );
 		}
 		else if(recv_file_type==1)//buddy cancelled or denied file transfer
 		{
@@ -1306,7 +1306,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				LOG("Successfully Connected to the Mail Server.");
 				MAIL_COOKIE=local_cookie;
 				MAIL_COOKIE_LENGTH=local_cookie_length;
-				mir_forkthread(( pThreadFunc )aim_mail_negotiation, this );
+				ForkThread( &CAimProto::aim_mail_negotiation, 0 );
 			}
 			else
 				LOG("Failed to connected to the Mail Server.");
@@ -1319,7 +1319,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				LOG("Successfully Connected to the Avatar Server.");
 				AVATAR_COOKIE = local_cookie;
 				AVATAR_COOKIE_LENGTH = local_cookie_length;
-				mir_forkthread(( pThreadFunc )aim_avatar_negotiation, this );
+				ForkThread( &CAimProto::aim_avatar_negotiation, 0 );
 			}
 			else
 			{

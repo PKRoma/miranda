@@ -1,18 +1,18 @@
 #include "aim.h"
 #include "proxy.h"
 
-void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
+void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 {
-	HANDLE Connection=(HANDLE)p->ppro->getDword( p->hContact, AIM_KEY_DH, 0 );//really just the proxy handle not a dc handle
-	int stage = p->ppro->getByte( p->hContact, AIM_KEY_PS, 0 );
-	int sender = p->ppro->getByte( p->hContact, AIM_KEY_FT, 0 );
+	HANDLE Connection=(HANDLE)getDword( hContact, AIM_KEY_DH, 0 );//really just the proxy handle not a dc handle
+	int stage = getByte( hContact, AIM_KEY_PS, 0 );
+	int sender = getByte( hContact, AIM_KEY_FT, 0 );
 	if ( Connection ) {
 		char cookie[8];
-		p->ppro->read_cookie(p->hContact,cookie);
+		read_cookie(hContact,cookie);
 		DBVARIANT dbv;//CHECK FOR FREE VARIANT!
-		if ( !p->ppro->getString(AIM_KEY_SN, &dbv)) {
+		if ( !getString(AIM_KEY_SN, &dbv)) {
 			if ( stage == 1 && !sender || stage == 2 && sender || stage==3 && !sender ) {
-				unsigned short port_check = (unsigned short)p->ppro->getWord( p->hContact, AIM_KEY_PC, 0 );
+				unsigned short port_check = (unsigned short)getWord( hContact, AIM_KEY_PC, 0 );
 				if ( proxy_initialize_recv( Connection, dbv.pszVal, cookie, port_check )) {
 					DBFreeVariant(&dbv);
 					return;//error
@@ -39,11 +39,11 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 			{
 				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 				if ( recvResult == 0) {
-					ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)p->hContact,0);
+					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
 					break;
 				}
 				if ( recvResult == SOCKET_ERROR) {
-					ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)p->hContact,0);
+					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
 					break;
 				}
 				if ( recvResult > 0 ) {
@@ -58,28 +58,28 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 						*error=_htons(*error);
 						if(*error==0x000D)
 						{
-							p->ppro->LOG("Proxy FT Error: Bad Request");
-							p->ppro->ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
+							LOG("Proxy FT Error: Bad Request");
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
 						}
 						else if(*error==0x0010)
 						{
-							p->ppro->LOG("Proxy FT Error: Initial Request Timed Out.");
-							p->ppro->ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Initial Request Timed Out.", 0);
+							LOG("Proxy FT Error: Initial Request Timed Out.");
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Initial Request Timed Out.", 0);
 						}
 						else if(*error==0x001A)
 						{
-							p->ppro->LOG("Proxy FT Error: Accept Period Timed Out.");
-							p->ppro->ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Accept Period Timed Out.", 0);
+							LOG("Proxy FT Error: Accept Period Timed Out.");
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Accept Period Timed Out.", 0);
 						}
 						else if(*error==0x000e)
 						{
-							p->ppro->LOG("Proxy FT Error: Incorrect command syntax.");
-							p->ppro->ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Incorrect command syntax.", 0);
+							LOG("Proxy FT Error: Incorrect command syntax.");
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Incorrect command syntax.", 0);
 						}
 						else if(*error==0x0016)
 						{
-							p->ppro->LOG("Proxy FT Error: Unknown command issued.");
-							p->ppro->ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Unknown command issued.", 0);
+							LOG("Proxy FT Error: Unknown command issued.");
+							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Unknown command issued.", 0);
 						}
 					}
 					else if(*type==0x0003)
@@ -88,23 +88,23 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
 						*port=_htons(*port);
 						*ip=_htonl(*ip);
-						if ( !p->ppro->getString( p->hContact, AIM_KEY_SN, &dbv)) {
+						if ( !getString( hContact, AIM_KEY_SN, &dbv)) {
 							if ( stage == 1 && sender ) {
-								p->ppro->LOG("Stage 1 Proxy ft and we are the sender.");
+								LOG("Stage 1 Proxy ft and we are the sender.");
 								char* sn=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 								DBFreeVariant(&dbv);
 								char vip[20];
 								char *file, *descr;
 								unsigned long size;
 								long_ip_to_char_ip(*ip,vip);
-								p->ppro->setString( p->hContact, AIM_KEY_IP, vip );
-								if ( !p->ppro->getString( p->hContact, AIM_KEY_FN, &dbv )) {
+								setString( hContact, AIM_KEY_IP, vip );
+								if ( !getString( hContact, AIM_KEY_FN, &dbv )) {
 									file = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 									DBFreeVariant(&dbv);
-									if ( !p->ppro->getString( p->hContact, AIM_KEY_FD, &dbv )) {
+									if ( !getString( hContact, AIM_KEY_FD, &dbv )) {
 										descr = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 										DBFreeVariant(&dbv);
-										size = p->ppro->getDword(p->hContact, AIM_KEY_FS, 0);
+										size = getDword(hContact, AIM_KEY_FS, 0);
 										if ( !size )
 											return;
 									}
@@ -115,21 +115,21 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 									return;
 								char* pszfile = strrchr(file, '\\');
 								pszfile++;
-								p->ppro->aim_send_file(p->ppro->hServerConn,p->ppro->seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
+								aim_send_file(hServerConn,seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
 								delete[] file;
 								delete[] sn;
 								delete[] descr;
 							}
 							else if(stage==2&&!sender)
 							{
-								p->ppro->LOG("Stage 2 Proxy ft and we are not the sender.");
-								p->ppro->aim_file_proxy_request(p->ppro->hServerConn,p->ppro->seqno,dbv.pszVal,cookie,0x02,*ip,*port);
+								LOG("Stage 2 Proxy ft and we are not the sender.");
+								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x02,*ip,*port);
 								DBFreeVariant(&dbv);
 							}
 							else if(stage==3&&sender)
 							{
-								p->ppro->LOG("Stage 3 Proxy ft and we are the sender.");
-								p->ppro->aim_file_proxy_request(p->ppro->hServerConn,p->ppro->seqno,dbv.pszVal,cookie,0x03,*ip,*port);
+								LOG("Stage 3 Proxy ft and we are the sender.");
+								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x03,*ip,*port);
 								DBFreeVariant(&dbv);
 							}
 							else
@@ -139,26 +139,26 @@ void __cdecl aim_proxy_helper( aim_proxy_helper_param* p )
 						}
 					}
 					else if(*type==0x0005) {
-						if ( !p->ppro->getString(p->hContact, AIM_KEY_IP, &dbv )) {
+						if ( !getString(hContact, AIM_KEY_IP, &dbv )) {
 							unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
-							DBWriteContactSettingDword(NULL,p->ppro->FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)p->hContact);
+							DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
 							DBFreeVariant(&dbv);
 							if ( stage == 1 && !sender || stage == 2 && sender || stage == 3 && !sender ) {
-								if ( !p->ppro->getString(p->hContact, AIM_KEY_SN, &dbv)) {
-									p->ppro->aim_accept_file(p->ppro->hServerConn,p->ppro->seqno,dbv.pszVal,cookie);
+								if ( !getString(hContact, AIM_KEY_SN, &dbv)) {
+									aim_accept_file(hServerConn,seqno,dbv.pszVal,cookie);
 									DBFreeVariant(&dbv);
 								}
 							}
-							aim_direct_connection_initiated(Connection, ip, p->ppro);
+							aim_direct_connection_initiated(Connection, ip, this);
 						}
 					}
 				}
 			}
 		}
 	}
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_FT);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_DH);
-	DBDeleteContactSetting(p->hContact,p->ppro->m_szModuleName,AIM_KEY_IP);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FT);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_DH);
+	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_IP);
 }
 
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)

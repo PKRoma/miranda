@@ -16,27 +16,14 @@
 
 #endif
 
-struct msg_ack_success_param
-{
-	msg_ack_success_param( CAimProto* _ppro, HANDLE _h ) :
-		ppro( _ppro ),
-		hContact( _h )
-	{}
-
-	CAimProto* ppro;
-	HANDLE hContact;
-};
-
-void msg_ack_success( msg_ack_success_param* );
-
 char *normalize_name(const char *s);
 char* lowercase_name(char* s);
 char* trim_name(char* s);
 void create_group(char *group);
+void set_extra_icon(char* data);
 char* getSetting( HANDLE& hContact, const char* module, const char* setting );
 void delete_module(char* module, HANDLE hContact);
 unsigned int aim_oft_checksum_file(char *filename);
-void set_extra_icon(char* data);
 void long_ip_to_char_ip(unsigned long host, char* ip);
 unsigned long char_ip_to_long_ip(char* ip);
 int cap_cmp(char* cap,char* cap2);

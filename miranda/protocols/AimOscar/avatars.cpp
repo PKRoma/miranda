@@ -1,54 +1,40 @@
 #include "aim.h"
 #include "avatars.h"
 
-struct avatar_request_thread_param
+void __cdecl CAimProto::avatar_request_thread( void* param )
 {
-	avatar_request_thread_param( CAimProto* _ppro, char* _data ) :
-		ppro( _ppro ),
-		data( _data )
-	{}
+	char* data = NEWSTR_ALLOCA(( char* )param );
+	delete[] param;
 
-	~avatar_request_thread_param()
-	{	delete[] data;
+	EnterCriticalSection( &avatarMutex );
+	if ( !hAvatarConn && hServerConn ) {
+		LOG("Starting Avatar Connection.");
+		ResetEvent( hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
+		hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
+		aim_new_service_request( hServerConn, seqno, 0x0010 ) ;//avatar service connection!
 	}
+	LeaveCriticalSection( &avatarMutex );//not further below because the thread will become trapped if the connection dies.
 
-	CAimProto* ppro;
-	char* data;
-};
-
-void avatar_request_thread(avatar_request_thread_param* p)
-{
-	EnterCriticalSection( &p->ppro->avatarMutex );
-	if ( !p->ppro->hAvatarConn && p->ppro->hServerConn ) {
-		p->ppro->LOG("Starting Avatar Connection.");
-		ResetEvent( p->ppro->hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
-		p->ppro->hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
-		p->ppro->aim_new_service_request( p->ppro->hServerConn, p->ppro->seqno, 0x0010 ) ;//avatar service connection!
-	}
-	LeaveCriticalSection( &p->ppro->avatarMutex );//not further below because the thread will become trapped if the connection dies.
-
-	if ( WaitForSingleObject( p->ppro->hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
+	if ( WaitForSingleObject( hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
 		if (Miranda_Terminated()) {
-			LeaveCriticalSection( &p->ppro->avatarMutex );
-			delete p;
+			LeaveCriticalSection( &avatarMutex );
 			return;
 		}
 		
-		if ( p->ppro->hServerConn ) {
-			char* sn = strtok(p->data,";");
+		if ( hServerConn ) {
+			char* sn = strtok(data,";");
 			char* hash_string = strtok(NULL,";");
 			char* hash = new char[lstrlenA(hash_string)/2];
 			string_to_bytes( hash_string, hash );
-			p->ppro->LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-			p->ppro->aim_request_avatar( p->ppro->hAvatarConn, p->ppro->avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
+			LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
+			aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
 		}
 		else {
-			SetEvent( p->ppro->hAvatarEvent );
-			LeaveCriticalSection( &p->ppro->avatarMutex );
+			SetEvent( hAvatarEvent );
+			LeaveCriticalSection( &avatarMutex );
 			return;
 		}
 	}
-	delete p;
 }
 
 void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//checks to see if the avatar needs requested
@@ -95,7 +81,7 @@ void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &
 					char* blob= new char[length];
 					mir_snprintf(blob,length,"%s;%s",sn,hash_string);
 					LOG("Starting avatar request thread for %s)",sn);
-					mir_forkthread((pThreadFunc)avatar_request_thread, new avatar_request_thread_param( this, blob ));
+					ForkThread( &CAimProto::avatar_request_thread, blob );
 				}
 			}
 			delete[] hash;
@@ -105,15 +91,15 @@ void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &
 	}
 }
 
-void avatar_request_limit_thread( CAimProto* ppro )
+void __cdecl CAimProto::avatar_request_limit_thread( void* )
 {
-	ppro->LOG("Avatar Request Limit thread begin");
-	while( ppro->AvatarLimitThread ) {
+	LOG("Avatar Request Limit thread begin");
+	while( AvatarLimitThread ) {
 		Sleep(1000);
-		ppro->LOG("Setting Avatar Request Event...");
-		SetEvent( ppro->hAvatarEvent );
+		LOG("Setting Avatar Request Event...");
+		SetEvent( hAvatarEvent );
 	}
-	ppro->LOG("Avatar Request Limit Thread has ended");
+	LOG("Avatar Request Limit Thread has ended");
 }
 
 void CAimProto::avatar_retrieval_handler(SNAC &snac)

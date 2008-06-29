@@ -4,9 +4,10 @@
 #include "m_protoint.h"
 
 struct CAimProto;
-typedef int ( __cdecl CAimProto::*AimEventFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CAimProto::*AimServiceFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CAimProto::*AimServiceFuncParam )( WPARAM, LPARAM, LPARAM );
+typedef void ( __cdecl CAimProto::*AimThreadFunc )( void* );
+typedef int  ( __cdecl CAimProto::*AimEventFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CAimProto::*AimServiceFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CAimProto::*AimServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 struct CAimProto : public PROTO_INTERFACE
 {
@@ -183,12 +184,18 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
 
+	void   __cdecl avatar_request_thread( void* param );
+	void   __cdecl avatar_request_limit_thread( void* );
+
 	void   avatar_request_handler(TLV &tlv, HANDLE &hContact, char* sn,int &offset);
 	void   avatar_retrieval_handler(SNAC &snac);
 	void   avatar_apply(HANDLE &hContact,char* sn,char* filename);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// away.cpp
+
+	void   __cdecl awaymsg_request_thread( void* param );
+	void   __cdecl awaymsg_request_limit_thread( void* );
 
 	void   awaymsg_request_handler(char* sn);
 	void   awaymsg_retrieval_handler(char* sn,char* msg);
@@ -238,15 +245,25 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
 
+	void   __cdecl aim_connection_authorization( void* );
+	void   __cdecl aim_protocol_negotiation( void* );
+	void   __cdecl aim_mail_negotiation( void* );
+	void   __cdecl aim_avatar_negotiation( void* );
+
 	int    LOG(const char *fmt, ...);
 	HANDLE aim_connect(char* server);
 	HANDLE aim_peer_connect(char* ip,unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// direct_connect.cpp
+
+	void   __cdecl aim_dc_helper( void* );
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// error.cpp
 
-	void login_error(unsigned short* error);
-	void get_error(unsigned short* error);
+	void   login_error(unsigned short* error);
+	void   get_error(unsigned short* error);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// file.cpp
@@ -274,6 +291,17 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
 	int    aim_writefamily(char *buf,unsigned short &offset,char* out);
 	int    aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out);
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// proto.cpp
+
+	void   __cdecl basic_search_ack_success( void* p );
+	void   __cdecl setstatusthread( void* arg );
+
+	//////////////////////////////////////////////////////////////////////////////////////
+	// proxy.cpp
+
+	void   __cdecl aim_proxy_helper( void* );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// server.cpp
@@ -310,7 +338,17 @@ struct CAimProto : public PROTO_INTERFACE
 	void   ReleaseIconEx(const char* name);
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// thread.cpp
+
+	void   __cdecl aim_keepalive_thread( void* );
+	void   __cdecl accept_file_thread( void* );
+	void   __cdecl redirected_file_thread( void* );
+	void   __cdecl proxy_file_thread( void* );
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// utilities.cpp
+
+	void   __cdecl msg_ack_success( void* );
 
 	void   broadcast_status(int status);
 	void   start_connection(int initial_status);
@@ -349,6 +387,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   CreateProtoService(const char* szService, AimServiceFunc serviceProc);
 	void   CreateProtoServiceParam(const char* szService, AimServiceFuncParam serviceProc, LPARAM lParam);
 	void   HookProtoEvent(const char* szEvent, AimEventFunc pFunc);
+	void   ForkThread( AimThreadFunc, void* );
+	HANDLE ForkThreadEx( AimThreadFunc, void*, UINT* = NULL );
 
 	int    getByte( const char* name, BYTE defaultValue );
 	int    getByte( HANDLE hContact, const char* name, BYTE defaultValue );

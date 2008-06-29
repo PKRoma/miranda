@@ -54,12 +54,9 @@ int CAimProto::SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 	if (!DBGetContactSettingString(ccs->hContact, m_szModuleName, AIM_KEY_SN, &dbv))
 	{
 		if ( 0 == getByte( AIM_KEY_DC, 1))
-			mir_forkthread(( pThreadFunc )msg_ack_success, new msg_ack_success_param( this, ccs->hContact ));
+			ForkThread( &CAimProto::msg_ack_success, ccs->hContact );
 
-		//if(DBGetContactSettingByte(ccs->hContact, m_szModuleName, AIM_KEY_US, 0))
-		//{
 		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1)));
-		//wchar_t* smsg=plain_to_html(msg);
 		wchar_t* smsg=strip_carrots(msg);
 		delete[] msg;
 		if(getByte( AIM_KEY_FO, 0))

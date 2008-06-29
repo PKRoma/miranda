@@ -62,10 +62,8 @@
 #include "tlv.h"
 //rest o includes
 #include "avatars.h"
-#include "away.h"
 #include "utility.h"
 #include "client.h"
-#include "connection.h"
 #include "direct_connect.h"
 #include "conv.h"
 #include "error.h"
@@ -78,7 +76,6 @@
 #include "services.h"
 #include "server.h"
 #include "theme.h"
-#include "thread.h"
 #include "windows.h"
 #include "proto.h"
 

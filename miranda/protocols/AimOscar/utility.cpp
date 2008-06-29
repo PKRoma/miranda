@@ -546,9 +546,9 @@ char* trim_name(char* s)
 	return buf;
 }
 
-void msg_ack_success( msg_ack_success_param* p )
+void __cdecl CAimProto::msg_ack_success( void* hContact )
 {
-	ProtoBroadcastAck(p->ppro->m_szModuleName, p->hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	ProtoBroadcastAck( m_szModuleName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 void CAimProto::execute_cmd(char* type,char* arg) 
@@ -1240,4 +1240,15 @@ void CAimProto::CreateProtoService(const char* szService, AimServiceFunc service
 void CAimProto::HookProtoEvent(const char* szEvent, AimEventFunc pFunc)
 {
 	::HookEventObj( szEvent, ( MIRANDAHOOKOBJ )*( void** )&pFunc, this );
+}
+
+void CAimProto::ForkThread( AimThreadFunc pFunc, void* param )
+{
+	UINT threadID;
+	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, param, &threadID ));
+}
+
+HANDLE CAimProto::ForkThreadEx( AimThreadFunc pFunc, void* param, UINT* threadID )
+{
+	return ( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, param, threadID );
 }

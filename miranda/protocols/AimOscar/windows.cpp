@@ -839,8 +839,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//Keep alive timer
 				if (IsDlgButtonChecked(hwndDlg, IDC_KA))
 				{
-					ppro->setByte( AIM_KEY_KA, 1);
-					mir_forkthread(( pThreadFunc )aim_keepalive_thread, ppro );
+					ppro->setByte( AIM_KEY_KA, 1 );
+					ppro->ForkThread( &CAimProto::aim_keepalive_thread, 0 );
 				}
 				else
 				{
