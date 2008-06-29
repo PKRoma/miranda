@@ -36,7 +36,7 @@
 
 #include "icqoscar.h"
 
-
+// Retrieve users' info
 void CIcqProto::icq_InitInfoUpdate(void)
 {
 	int i;
@@ -58,7 +58,7 @@ void CIcqProto::icq_InitInfoUpdate(void)
 
 		dwUpdateThreshold = getSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
 
-		hInfoThread = CreateProtoThreadEx(icq_InfoUpdateThread, NULL, NULL);
+		hInfoThread = ForkThread( &CIcqProto::InfoUpdateThread, NULL );
 	}
 
 	bPendingUsers = 0;
@@ -190,8 +190,7 @@ void CIcqProto::icq_EnableUserLookup(BOOL bEnable)
 		SetEvent(hQueueEvent);
 }
 
-// Retrieve users' info
-unsigned __cdecl CIcqProto::icq_InfoUpdateThread(void *arg)
+void __cdecl CIcqProto::InfoUpdateThread( void* )
 {
 	int i;
 	DWORD dwWait;
@@ -263,7 +262,7 @@ unsigned __cdecl CIcqProto::icq_InfoUpdateThread(void *arg)
 								if (!bRunning)
 								{ // need to end as fast as possible
 									NetLog_Server("%s thread ended.", "Info-Update");
-									return 0;
+									return;
 								}
 								EnterCriticalSection(&listmutex);
 								EnterCriticalSection(&ratesMutex);
@@ -313,8 +312,6 @@ unsigned __cdecl CIcqProto::icq_InfoUpdateThread(void *arg)
 		}
 	}
 	NetLog_Server("%s thread ended.", "Info-Update");
-
-  return 0;
 }
 
 // Clean up before exit

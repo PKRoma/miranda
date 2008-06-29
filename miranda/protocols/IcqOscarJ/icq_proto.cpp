@@ -328,9 +328,9 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	eventType.eventType = ICQEVENTTYPE_MISSEDMESSAGE;
 	eventType.module = m_szModuleName;
 	eventType.descr = "Missed message notifications";
-  eventType.textService = ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE;
-  eventType.flags = DETF_HISTORY | DETF_MSGWINDOW;
-  // for now keep default "message" icon
+	eventType.textService = ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE;
+	eventType.flags = DETF_HISTORY | DETF_MSGWINDOW;
+	// for now keep default "message" icon
 	CallService(MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&eventType);
 
 	InitAvatars();
@@ -867,30 +867,29 @@ int __cdecl CIcqProto::GetInfo( HANDLE hContact, int infoType )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchBasic - searches the contact by JID
 
-static void CheekySearchThread(void* arg)
+void CIcqProto::CheekySearchThread( void* )
 {
-	CIcqProto* ppro = (CIcqProto*)arg;
 	ICQSEARCHRESULT isr = {0};
 
 	isr.hdr.cbSize = sizeof(isr);
-	if (ppro->cheekySearchUin)
+	if ( cheekySearchUin )
 	{
 		isr.hdr.nick = "";
 		isr.uid = NULL;
 	}
 	else
 	{
-		isr.hdr.nick = ppro->cheekySearchUid;
-		isr.uid = ppro->cheekySearchUid;
+		isr.hdr.nick = cheekySearchUid;
+		isr.uid = cheekySearchUid;
 	}
 	isr.hdr.firstName = "";
 	isr.hdr.lastName = "";
 	isr.hdr.email = "";
-	isr.uin = ppro->cheekySearchUin;
+	isr.uin = cheekySearchUin;
 
-	ppro->BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)ppro->cheekySearchId, (LPARAM)&isr);
-	ppro->BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)ppro->cheekySearchId, 0);
-	ppro->cheekySearchId = -1;
+	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)cheekySearchId, (LPARAM)&isr);
+	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
+	cheekySearchId = -1;
 }
 
 HANDLE __cdecl CIcqProto::SearchBasic( const char* pszSearch )
@@ -940,7 +939,7 @@ HANDLE __cdecl CIcqProto::SearchBasic( const char* pszSearch )
 			cheekySearchId = GenerateCookie(0);
 			cheekySearchUin = dwUin;
 			cheekySearchUid = null_strdup(pszUIN);
-			mir_forkthread(CheekySearchThread, this); // The caller needs to get this return value before the results
+			ForkThread(&CIcqProto::CheekySearchThread, 0); // The caller needs to get this return value before the results
 			nHandle = cheekySearchId;
 		}
 		else if (icqOnline())
@@ -1245,7 +1244,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 						// This will stop the message dialog from waiting for the real message delivery ack
 						if (pCookieData->nAckType == ACKTYPE_NONE)
 						{
-							icq_SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
+							SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
 							// We need to free this here since we will never see the real ack
 							// The actual cookie value will still have to be returned to the message dialog though
 							ReleaseCookie(dwCookie);
@@ -1378,7 +1377,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 						// This will stop the message dialog from waiting for the real message delivery ack
 						if (pCookieData->nAckType == ACKTYPE_NONE)
 						{
-							icq_SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
+							SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_CONTACTS, NULL);
 							// We need to free this here since we will never see the real ack
 							// The actual cookie value will still have to be returned to the message dialog though
 							ReleaseCookie(dwCookie);
@@ -1755,7 +1754,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			// This will stop the message dialog from waiting for the real message delivery ack
 			if (pCookieData->nAckType == ACKTYPE_NONE)
 			{
-				icq_SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
+				SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_MESSAGE, NULL);
 				// We need to free this here since we will never see the real ack
 				// The actual cookie value will still have to be returned to the message dialog though
 				ReleaseCookie(dwCookie);
@@ -1853,7 +1852,7 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 			// This will stop the message dialog from waiting for the real message delivery ack
 			if (pCookieData->nAckType == ACKTYPE_NONE)
 			{
-				icq_SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_URL, NULL);
+				SendProtoAck(hContact, dwCookie, ACKRESULT_SUCCESS, ACKTYPE_URL, NULL);
 				// We need to free this here since we will never see the real ack
 				// The actual cookie value will still have to be returned to the message dialog though
 				ReleaseCookie(dwCookie);

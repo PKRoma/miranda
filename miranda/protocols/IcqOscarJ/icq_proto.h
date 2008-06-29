@@ -45,10 +45,12 @@
 #define XSTATUS_COUNT 32
 
 struct CIcqProto;
-typedef int ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
-typedef int ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
-typedef unsigned ( __cdecl CIcqProto::*IcqThreadFunc )( void* );
+typedef void ( CIcqProto::*IcqRateFunc )( void );
+
+typedef void ( __cdecl CIcqProto::*IcqThreadFunc )( void* );
+typedef int  ( __cdecl CIcqProto::*IcqEventFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CIcqProto::*IcqServiceFunc )( WPARAM, LPARAM );
+typedef int  ( __cdecl CIcqProto::*IcqServiceFuncParam )( WPARAM, LPARAM, LPARAM );
 
 // for InfoUpdate
 struct userinfo
@@ -242,6 +244,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    connectNewServer(serverthread_info *info);
 
 	//----| chan_05ping.cpp |-------------------------------------------------------------
+	void   __cdecl KeepAliveThread(void* arg);
+
 	void   handlePingChannel(unsigned char *buf, WORD wLen);
 
   unsigned __cdecl icq_keepAliveThread(void* arg);
@@ -411,7 +415,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int    sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi /*= currentAvatarThread*/);
 
-  unsigned __cdecl icq_avatarThread(void *arg);
+	void   __cdecl AvatarThread(avatarthreadstartinfo *atsi);
 	int    handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi);
 
 	void   handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *atsi);
@@ -477,8 +481,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	CRITICAL_SECTION expectedFileRecvMutex;
 	LIST<filetransfer> expectedFileRecvs;
 
+	void   __cdecl icq_directThread(struct directthreadstartinfo* dtsi);
+
 	void   handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
-	unsigned __cdecl icq_directThread(void* dtsi);
 	void   sendPeerInit_v78(directconnect* dc);
 	void   sendPeerInitAck(directconnect* dc);
 	void   sendPeerMsgInit(directconnect* dc, DWORD dwSeq);
@@ -530,7 +535,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  dwUpdateThreshold;
 	userinfo userList[LISTSIZE];
 
-  unsigned __cdecl icq_InfoUpdateThread(void *arg);
+	void   __cdecl InfoUpdateThread(void*);
 
 	void   icq_InitInfoUpdate(void);           // Queues all outdated users
 	BOOL   icq_QueueUser(HANDLE hContact);     // Queue one UIN to the list for updating
@@ -540,7 +545,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_EnableUserLookup(BOOL bEnable); // Enable/disable user info lookups
 
 	//----| icq_log.cpp |-----------------------------------------------------------------
-  unsigned __cdecl icq_LogMessageThread(void* arg);
+	void   __cdecl icq_LogMessageThread(void* arg);
 
 	void   icq_LogMessage(int level, const char *szMsg);
 	void   icq_LogUsingErrorCode(int level, DWORD dwError, const char *szMsg);  //szMsg is optional
@@ -556,11 +561,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_popups.cpp |--------------------------------------------------------------
 	int    ShowPopUpMsg(HANDLE hContact, const char *szTitle, const char *szMsg, BYTE bType);
 
+	//----| icq_proto.cpp |--------------------------------------------------------------
+	void   __cdecl CheekySearchThread( void* );
+
 	//----| icq_rates.cpp |---------------------------------------------------------------
 	CRITICAL_SECTION ratesMutex;
 	rates* m_rates;
-
-  unsigned __cdecl rateDelayThread(void* arg);
 
 	rates* ratesCreate(BYTE* pBuffer, WORD wLen);
 	void   ratesRelease(rates** pRates);
@@ -580,23 +586,28 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    pendingListSize2;
 
 	int    handleRateItem(rate_record *item, BOOL bAllowDelay);
+	
+	void   __cdecl rateDelayThread(struct rate_delay_args* pArgs);
+	void   InitDelay(int nDelay, IcqRateFunc delaycode);
+	void   RatesTimer1( void );
+	void   RatesTimer2( void );
 
 	//----| icq_server.cpp |--------------------------------------------------------------
 	HANDLE hServerConn;
 	WORD   wListenPort;
 	WORD   wLocalSequence;
-	DWORD  serverThreadId;
+	UINT   serverThreadId;
 	HANDLE serverThreadHandle;
 
 	__inline bool icqOnline() const
 	{	return (m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING);
 	}
 
-  unsigned __cdecl icq_serverThread(void *arg);
-  unsigned __cdecl sendPacketAsyncThread(void *arg);
+	void   __cdecl SendPacketAsyncThread(icq_packet* pArgs);
+	void   __cdecl ServerThread(serverthread_start_info* infoParam);
 
 	void   icq_serverDisconnect(BOOL bBlock);
-  void   icq_login(const char* szPassword);
+	void   icq_login(const char* szPassword);
 
 	int    handleServerPackets(unsigned char* buf, int len, serverthread_info* info);
 	void   sendServPacket(icq_packet* pPacket);
@@ -613,44 +624,45 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    nIDListCount;
 	int    nIDListSize;
 
-  // server-list update board
-  CRITICAL_SECTION servlistQueueMutex;
-  int    servlistQueueCount;
-  int    servlistQueueSize;
-  ssiqueueditems **servlistQueueList;
-  int    servlistQueueState;
-  HANDLE servlistQueueThreadHandle;
-  int    servlistEditCount;
+	// server-list update board
+	CRITICAL_SECTION servlistQueueMutex;
+	int    servlistQueueCount;
+	int    servlistQueueSize;
+	ssiqueueditems **servlistQueueList;
+	int    servlistQueueState;
+	HANDLE servlistQueueThreadHandle;
+	int    servlistEditCount;
 
-  void   servlistBeginOperation(int operationCount, int bImport);
-  void   servlistEndOperation(int operationCount);
+	void   servlistBeginOperation(int operationCount, int bImport);
+	void   servlistEndOperation(int operationCount);
 
-  unsigned __cdecl servlistQueueThread(void *arg);
-  void   servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwTimeout);
-  int    servlistHandlePrimitives(DWORD dwOperation);
-  void   servlistProcessLogin();
+	void   __cdecl servlistQueueThread(void* queueState);
 
-  void   servlistPostPacket(icq_packet* packet, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout);
-  void   servlistPostPacketDouble(icq_packet* packet1, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout, icq_packet* packet2, WORD wAction2);
+	void   servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwTimeout);
+	int    servlistHandlePrimitives(DWORD dwOperation);
+	void   servlistProcessLogin();
 
-  // server-list pending queue
-  int    servlistPendingCount;
-  int    servlistPendingSize;
-  servlistpendingitem** servlistPendingList;
+	void   servlistPostPacket(icq_packet* packet, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout);
+	void   servlistPostPacketDouble(icq_packet* packet1, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout, icq_packet* packet2, WORD wAction2);
 
-  int    servlistPendingFindItem(int nType, HANDLE hContact, const char *pszGroup);
-  void   servlistPendingAddItem(servlistpendingitem* pItem);
-  servlistpendingitem* servlistPendingRemoveItem(int nType, HANDLE hContact, const char *pszGroup);
+	// server-list pending queue
+	int    servlistPendingCount;
+	int    servlistPendingSize;
+	servlistpendingitem** servlistPendingList;
 
-  void   servlistPendingAddContactOperation(HANDLE hContact, LPARAM param, PENDING_CONTACT_CALLBACK callback, DWORD flags);
-  void   servlistPendingAddGroupOperation(const char *pszGroup, LPARAM param, PENDING_GROUP_CALLBACK callback, DWORD flags);
-  int    servlistPendingAddContact(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM param, PENDING_CONTACT_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_CONTACT_CALLBACK operationCallback = NULL);
-  int    servlistPendingAddGroup(const char *pszGroup, WORD wGroupID, LPARAM param, PENDING_GROUP_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_GROUP_CALLBACK operationCallback = NULL);
-  void   servlistPendingRemoveContact(HANDLE hContact, WORD wContactID, WORD wGroupID, int nResult);
-  void   servlistPendingRemoveGroup(const char *pszGroup, WORD wGroupID, int nResult);
-  void   servlistPendingFlushOperations();
+	int    servlistPendingFindItem(int nType, HANDLE hContact, const char *pszGroup);
+	void   servlistPendingAddItem(servlistpendingitem* pItem);
+	servlistpendingitem* servlistPendingRemoveItem(int nType, HANDLE hContact, const char *pszGroup);
 
-  // server-list support functions
+	void   servlistPendingAddContactOperation(HANDLE hContact, LPARAM param, PENDING_CONTACT_CALLBACK callback, DWORD flags);
+	void   servlistPendingAddGroupOperation(const char *pszGroup, LPARAM param, PENDING_GROUP_CALLBACK callback, DWORD flags);
+	int    servlistPendingAddContact(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM param, PENDING_CONTACT_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_CONTACT_CALLBACK operationCallback = NULL);
+	int    servlistPendingAddGroup(const char *pszGroup, WORD wGroupID, LPARAM param, PENDING_GROUP_CALLBACK callback, int bDoInline, LPARAM operationParam = 0, PENDING_GROUP_CALLBACK operationCallback = NULL);
+	void   servlistPendingRemoveContact(HANDLE hContact, WORD wContactID, WORD wGroupID, int nResult);
+	void   servlistPendingRemoveGroup(const char *pszGroup, WORD wGroupID, int nResult);
+	void   servlistPendingFlushOperations();
+
+	// server-list support functions
 	int    nJustAddedCount;
 	int    nJustAddedSize;
 	HANDLE* pdwJustAddedList;
@@ -882,7 +894,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   proxy_sendJoinTunnel(oscar_connection *oc, WORD wPort);
 
 	//----| stdpackets.cpp |--------------------------------------------------------------
-  unsigned __cdecl oft_connectionThread(void *arg);
+	void   __cdecl oft_connectionThread(struct oscarthreadstartinfo *otsi);
 
 	int    oft_handlePackets(oscar_connection *oc, unsigned char *buf, int len);
 	int    oft_handleFileData(oscar_connection *oc, unsigned char *buf, int len);
@@ -903,8 +915,10 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg);
 	void   SetCurrentStatus(int nStatus);
 
-  unsigned __cdecl icq_ProtocolAckThread(void *arg);
-	void   icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
+	HANDLE ForkThread( IcqThreadFunc pFunc, void* arg, UINT* threadID = NULL );
+	
+	void   __cdecl ProtocolAckThread(icq_ack_args* pArguments);
+	void   SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
 	HANDLE CreateProtoEvent(const char* szEvent);
 	void   CreateProtoService(const char* szService, IcqServiceFunc serviceProc);
@@ -918,8 +932,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    NetLog_Direct(const char *fmt,...);
 	int    NetLog_Uni(BOOL bDC, const char *fmt,...);
 
-  CRITICAL_SECTION contactsCacheMutex;
-  LIST<icq_contacts_cache> contactsCache;
+	CRITICAL_SECTION contactsCacheMutex;
+	LIST<icq_contacts_cache> contactsCache;
+
 	void   AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szUid);
 	void   DeleteFromContactsCache(HANDLE hContact);
 	void   InitContactsCache();

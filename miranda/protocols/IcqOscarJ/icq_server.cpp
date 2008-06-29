@@ -41,9 +41,8 @@ void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pE
 /////////////////////////////////////////////////////////////////////////////////////////
 // ICQ Server thread
 
-unsigned __cdecl CIcqProto::icq_serverThread(void *arg)
+void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
 {
-  serverthread_start_info* infoParam = (serverthread_start_info*)arg;
 	serverthread_info info = {0};
 
 	info.isLoginServer = 1;
@@ -77,7 +76,7 @@ unsigned __cdecl CIcqProto::icq_serverThread(void *arg)
 		SetCurrentStatus(ID_STATUS_OFFLINE);
 
 		icq_LogUsingErrorCode(LOG_ERROR, dwError, LPGEN("Unable to connect to ICQ login server"));
-		return dwError;
+		return;
 	}
 
 	// Initialize direct connection ports
@@ -189,15 +188,13 @@ unsigned __cdecl CIcqProto::icq_serverThread(void *arg)
 		hContact = FindNextContact(hContact);
 	}
 
-  setSettingDword(NULL, "LogonTS", 0); // clear logon time
+	setSettingDword(NULL, "LogonTS", 0); // clear logon time
 
-  servlistPendingFlushOperations(); // clear pending operations list
+	servlistPendingFlushOperations(); // clear pending operations list
 	ratesRelease(&m_rates);
 	FlushServerIDs();         // clear server IDs list
 
 	NetLog_Server("%s thread ended.", "Server");
-
-  return 0;
 }
 
 void CIcqProto::icq_serverDisconnect(BOOL bBlock)
@@ -344,13 +341,10 @@ void CIcqProto::sendServPacket(icq_packet* pPacket)
 	SAFE_FREE((void**)&pPacket->pData);
 }
 
-unsigned __cdecl CIcqProto::sendPacketAsyncThread(void *arg)
+void __cdecl CIcqProto::SendPacketAsyncThread(icq_packet* pkt)
 {
-  icq_packet* packet = (icq_packet*)arg;
-	sendServPacket(packet);
-
-	SAFE_FREE((void**)&packet);
-	return 0;
+	sendServPacket( pkt );
+	SAFE_FREE((void**)&pkt);
 }
 
 void CIcqProto::sendServPacketAsync(icq_packet *packet)
@@ -360,7 +354,7 @@ void CIcqProto::sendServPacketAsync(icq_packet *packet)
 	pPacket = (icq_packet*)SAFE_MALLOC(sizeof(icq_packet)); // This will be freed in the new thread
 	memcpy(pPacket, packet, sizeof(icq_packet));
 
-	CreateProtoThread(sendPacketAsyncThread, pPacket);
+	ForkThread(( IcqThreadFunc )&CIcqProto::SendPacketAsyncThread, pPacket);
 }
 
 int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
@@ -380,18 +374,16 @@ int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
 	return result;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// ICQ Server thread
+
 void CIcqProto::icq_login(const char* szPassword)
 {
-	DBVARIANT dbvServer = {DBVT_DELETED};
-	char szServer[MAX_PATH];
-	serverthread_start_info* stsi;
-	DWORD dwUin;
-
-
-	dwUin = getContactUin(NULL);
-	stsi = (serverthread_start_info*)SAFE_MALLOC(sizeof(serverthread_start_info));
+	DWORD dwUin = getContactUin(NULL);
+	serverthread_start_info* stsi = (serverthread_start_info*)SAFE_MALLOC(sizeof(serverthread_start_info));
 
 	// Server host name
+	char szServer[MAX_PATH];
 	if (getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
 		stsi->nloc.szHost = null_strdup(DEFAULT_SERVER_HOST);
 	else
@@ -413,5 +405,5 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	m_dwLocalUIN = dwUin;
 
-	serverThreadHandle = CreateProtoThreadEx(icq_serverThread, stsi, &serverThreadId);
+	serverThreadHandle = ForkThread(( IcqThreadFunc )&CIcqProto::ServerThread, stsi, &serverThreadId);
 }

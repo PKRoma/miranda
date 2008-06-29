@@ -37,20 +37,20 @@
 #ifndef __UTILITIES_H
 #define __UTILITIES_H
 
-typedef struct icq_ack_args_s
+struct icq_ack_args
 {
 	HANDLE hContact;
 	int    nAckType;
 	int    nAckResult;
 	HANDLE hSequence;
 	LPARAM pszMessage;
-} icq_ack_args;
+};
 
 struct icq_contacts_cache
 {
 	HANDLE hContact;
 	DWORD dwUin;
-  const char *szUid;
+	const char *szUid;
 };
 
 

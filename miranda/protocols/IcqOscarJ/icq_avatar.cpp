@@ -351,7 +351,7 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) //
 	atsi->pCookie = cookie;
 	atsi->wCookieLen = cookieLen;
 	currentAvatarThread = atsi; // we store only current thread
-	CreateProtoThread(icq_avatarThread, atsi);
+	ForkThread(( IcqThreadFunc )&CIcqProto::AvatarThread, atsi);
 }
 
 void CIcqProto::StopAvatarThread()
@@ -831,9 +831,8 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, char* data, unsigned in
 	return -1; // we added to queue
 }
 
-unsigned __cdecl CIcqProto::icq_avatarThread(void *arg)
+void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 {
-  avatarthreadstartinfo *atsi = (avatarthreadstartinfo*)arg;
 	// This is the "infinite" loop that receives the packets from the ICQ avatar server
 	int recvResult;
 	NETLIBPACKETRECVER packetRecv = {0};
@@ -969,8 +968,6 @@ unsigned __cdecl CIcqProto::icq_avatarThread(void *arg)
 	SAFE_FREE((void**)&atsi);
 
 	NetLog_Server("%s thread ended.", "Avatar");
-
-  return 0;
 }
 
 int CIcqProto::handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi)

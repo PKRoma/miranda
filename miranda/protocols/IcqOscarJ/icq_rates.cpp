@@ -267,24 +267,20 @@ int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
 struct rate_delay_args
 {
 	int nDelay;
-	void (*delaycode)(CIcqProto*);
+	IcqRateFunc delaycode;
 };
 
-unsigned __cdecl CIcqProto::rateDelayThread(void* arg)
+void __cdecl CIcqProto::rateDelayThread(rate_delay_args* pArgs)
 {
-  rate_delay_args *pArgs = (rate_delay_args*)arg;
-
 	SleepEx(pArgs->nDelay, TRUE);
-	pArgs->delaycode(this);
-
+	(this->*pArgs->delaycode)();
 	SAFE_FREE((void**)&pArgs);
-	return 0;
 }
 
-void InitDelay(int nDelay, CIcqProto* ppro, void (*delaycode)(CIcqProto*))
+void CIcqProto::InitDelay(int nDelay, IcqRateFunc delaycode )
 {
 #ifdef _DEBUG
-	ppro->NetLog_Server("Delay %dms", nDelay);
+	NetLog_Server("Delay %dms", nDelay);
 #endif
 
 	rate_delay_args* pArgs = (rate_delay_args*)SAFE_MALLOC(sizeof(rate_delay_args)); // This will be freed in the new thread
@@ -292,78 +288,77 @@ void InitDelay(int nDelay, CIcqProto* ppro, void (*delaycode)(CIcqProto*))
 	pArgs->nDelay = nDelay;
 	pArgs->delaycode = delaycode;
 
-  ppro->CreateProtoThread(&CIcqProto::rateDelayThread, pArgs);
+	ForkThread(( IcqThreadFunc )&CIcqProto::rateDelayThread, pArgs );
 }
 
-static void RatesTimer1(CIcqProto* ppro)
+void CIcqProto::RatesTimer1()
 {
 	rate_record *item;
 	int bSetupTimer = 0;
 
-	EnterCriticalSection(&ppro->ratesListsMutex);
-	if (!ppro->pendingList1)
+	EnterCriticalSection(&ratesListsMutex);
+	if (!pendingList1)
 	{
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		LeaveCriticalSection(&ratesListsMutex);
 		return;
 	}
 
-	if (!ppro->icqOnline())
+	if (!icqOnline())
 	{
-		for (int i=0; i < ppro->pendingListSize1; i++)
-			SAFE_FREE((void**)&ppro->pendingList1[i]);
-		SAFE_FREE((void**)&ppro->pendingList1);
-		ppro->pendingListSize1 = 0;
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		for (int i=0; i < pendingListSize1; i++)
+			SAFE_FREE((void**)&pendingList1[i]);
+		SAFE_FREE((void**)&pendingList1);
+		pendingListSize1 = 0;
+		LeaveCriticalSection(&ratesListsMutex);
 		return;
 	}
 	// take from queue, execute
-	item = ppro->pendingList1[0];
+	item = pendingList1[0];
 
-	EnterCriticalSection(&ppro->ratesMutex);
-	if (ratesNextRateLevel(ppro->m_rates, item->wGroup) < ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_30))
+	EnterCriticalSection(&ratesMutex);
+	if (ratesNextRateLevel(m_rates, item->wGroup) < ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30))
 	{ // the rate is higher, keep sleeping
-		int nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_50));
+		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_50));
 
-		LeaveCriticalSection(&ppro->ratesMutex);
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		LeaveCriticalSection(&ratesMutex);
+		LeaveCriticalSection(&ratesListsMutex);
 		if (nDelay < 10) nDelay = 10;
-		InitDelay(nDelay, ppro, RatesTimer1);
-
+		InitDelay(nDelay, &CIcqProto::RatesTimer1);
 		return;
 	}
-	LeaveCriticalSection(&ppro->ratesMutex);
+	LeaveCriticalSection(&ratesMutex);
 
-	if (ppro->pendingListSize1 > 1)
+	if (pendingListSize1 > 1)
 	{ // we need to keep order
-		memmove(&ppro->pendingList1[0], &ppro->pendingList1[1], (ppro->pendingListSize1 - 1)*sizeof(rate_record*));
+		memmove(&pendingList1[0], &pendingList1[1], (pendingListSize1 - 1)*sizeof(rate_record*));
 	}
 	else
-		SAFE_FREE((void**)&ppro->pendingList1);
-	ppro->pendingListSize1--;
+		SAFE_FREE((void**)&pendingList1);
+	pendingListSize1--;
 
-	if (ppro->pendingListSize1)
+	if (pendingListSize1)
 		bSetupTimer = 1;
 
-	LeaveCriticalSection(&ppro->ratesListsMutex);
+	LeaveCriticalSection(&ratesListsMutex);
 
-	if (ppro->icqOnline())
+	if (icqOnline())
 	{
-		ppro->NetLog_Server("Rates: Resuming Xtraz request.");
+		NetLog_Server("Rates: Resuming Xtraz request.");
 		if (item->bType = RIT_XSTATUS_REQUEST)
-			ppro->sendXStatusDetailsRequest(item->hContact, FALSE);
+			sendXStatusDetailsRequest(item->hContact, FALSE);
 	}
 	else
-		ppro->NetLog_Server("Rates: Discarding request.");
+		NetLog_Server("Rates: Discarding request.");
 
 	if (bSetupTimer)
 	{
 		// in queue remained some items, setup timer
-		EnterCriticalSection(&ppro->ratesMutex);
-		int nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_50));
-		LeaveCriticalSection(&ppro->ratesMutex);
+		EnterCriticalSection(&ratesMutex);
+		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_50));
+		LeaveCriticalSection(&ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
-		InitDelay(nDelay, ppro, RatesTimer1);
+		InitDelay(nDelay, &CIcqProto::RatesTimer1);
 	}
 	SAFE_FREE((void**)&item);
 }
@@ -404,90 +399,90 @@ static void putItemToQueue1(CIcqProto* ppro, rate_record *item, int nLev)
 
 		if (nDelay < 10) nDelay = 10;
 		if (nDelay < item->nMinDelay) nDelay = item->nMinDelay;
-		InitDelay(nDelay, ppro, RatesTimer1);
+		ppro->InitDelay(nDelay, &CIcqProto::RatesTimer1);
 	}
 }
 
-static void RatesTimer2(CIcqProto* ppro)
+void CIcqProto::RatesTimer2()
 {
 	rate_record *item;
 	int bSetupTimer = 0;
 
-	EnterCriticalSection(&ppro->ratesListsMutex);
-	if (!ppro->pendingList2)
+	EnterCriticalSection(&ratesListsMutex);
+	if (!pendingList2)
 	{
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		LeaveCriticalSection(&ratesListsMutex);
 		return;
 	}
 
-	if (!ppro->icqOnline())
+	if (!icqOnline())
 	{
-		for (int i=0; i < ppro->pendingListSize2; i++)
+		for (int i=0; i < pendingListSize2; i++)
 		{
-			SAFE_FREE((void**)&ppro->pendingList2[i]->szData);
-			SAFE_FREE((void**)&ppro->pendingList2[i]);
+			SAFE_FREE((void**)&pendingList2[i]->szData);
+			SAFE_FREE((void**)&pendingList2[i]);
 		}
-		SAFE_FREE((void**)&ppro->pendingList2);
-		ppro->pendingListSize2 = 0;
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		SAFE_FREE((void**)&pendingList2);
+		pendingListSize2 = 0;
+		LeaveCriticalSection(&ratesListsMutex);
 		return;
 	}
 
 	// take from queue, execute
-	item = ppro->pendingList2[0];
+	item = pendingList2[0];
 
-	EnterCriticalSection(&ppro->ratesMutex);
-	if (ratesNextRateLevel(ppro->m_rates, item->wGroup) < ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_10))
+	EnterCriticalSection(&ratesMutex);
+	if (ratesNextRateLevel(m_rates, item->wGroup) < ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_10))
 	{ // the rate is higher, keep sleeping
-		int nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_30));
+		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30));
 
-		LeaveCriticalSection(&ppro->ratesMutex);
-		LeaveCriticalSection(&ppro->ratesListsMutex);
+		LeaveCriticalSection(&ratesMutex);
+		LeaveCriticalSection(&ratesListsMutex);
 		if (nDelay < 10) nDelay = 10;
-		InitDelay(nDelay, ppro, RatesTimer2);
+		InitDelay(nDelay, &CIcqProto::RatesTimer2);
 		return;
 	}
 
-	LeaveCriticalSection(&ppro->ratesMutex);
-	if (ppro->pendingListSize2 > 1)
+	LeaveCriticalSection(&ratesMutex);
+	if (pendingListSize2 > 1)
 	{ // we need to keep order
-		memmove(&ppro->pendingList2[0], &ppro->pendingList2[1], (ppro->pendingListSize2 - 1)*sizeof(rate_record*));
+		memmove(&pendingList2[0], &pendingList2[1], (pendingListSize2 - 1)*sizeof(rate_record*));
 	}
 	else
-		SAFE_FREE((void**)&ppro->pendingList2);
-	ppro->pendingListSize2--;
+		SAFE_FREE((void**)&pendingList2);
+	pendingListSize2--;
 
-	if (ppro->pendingListSize2)
+	if (pendingListSize2)
 		bSetupTimer = 1;
 
-	LeaveCriticalSection(&ppro->ratesListsMutex);
+	LeaveCriticalSection(&ratesListsMutex);
 
-	if (ppro->icqOnline())
+	if (icqOnline())
 	{
-		ppro->NetLog_Server("Rates: Resuming message response.");
+		NetLog_Server("Rates: Resuming message response.");
 		if (item->bType == RIT_AWAYMSG_RESPONSE)
 		{
-			ppro->icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->wVersion, item->msgType, ppro->MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
+			icq_sendAwayMsgReplyServ(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->wVersion, item->msgType, MirandaStatusToAwayMsg(AwayMsgTypeToStatus(item->msgType)));
 		}
 		else if (item->bType == RIT_XSTATUS_RESPONSE)
 		{
-			ppro->SendXtrazNotifyResponse(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->szData, strlennull(item->szData), item->bThruDC);
+			SendXtrazNotifyResponse(item->dwUin, item->dwMid1, item->dwMid2, item->wCookie, item->szData, strlennull(item->szData), item->bThruDC);
 		}
 	}
 	else
-		ppro->NetLog_Server("Rates: Discarding response.");
+		NetLog_Server("Rates: Discarding response.");
 	SAFE_FREE((void**)&item->szData);
 
 	if (bSetupTimer)
 	{ // in queue remained some items, setup timer
 		int nDelay;
 
-		EnterCriticalSection(&ppro->ratesMutex);
-		nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_30));
-		LeaveCriticalSection(&ppro->ratesMutex);
+		EnterCriticalSection(&ratesMutex);
+		nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30));
+		LeaveCriticalSection(&ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
-		InitDelay(nDelay, ppro, RatesTimer2);
+		InitDelay(nDelay, &CIcqProto::RatesTimer2);
 	}
 	SAFE_FREE((void**)&item);
 }
@@ -536,7 +531,7 @@ static void putItemToQueue2(CIcqProto* ppro, rate_record *item, int nLev)
 		LeaveCriticalSection(&ppro->ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
-		InitDelay(nDelay, ppro, RatesTimer2);
+		ppro->InitDelay(nDelay, &CIcqProto::RatesTimer2);
 	}
 }
 

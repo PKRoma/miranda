@@ -74,12 +74,14 @@ void CIcqProto::servlistEndOperation(int operationCount)
   }
 }
 
-unsigned __cdecl CIcqProto::servlistQueueThread(void *arg)
+void __cdecl CIcqProto::servlistQueueThread(void *param)
 {
-  int *queueState = (int*)arg;
+	int* queueState = ( int* )param;
+
 #ifdef _DEBUG
   NetLog_Server("Server-List: Starting Update board.");
 #endif
+
   SleepEx(50, FALSE);
   // handle server-list requests queue
   EnterCriticalSection(&servlistQueueMutex);
@@ -278,9 +280,7 @@ unsigned __cdecl CIcqProto::servlistQueueThread(void *arg)
 #ifdef _DEBUG
   NetLog_Server("Server-List: Update Board ending.");
 #endif
-  return 0;
 }
-
 
 void CIcqProto::servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwTimeout)
 {
@@ -338,8 +338,9 @@ void CIcqProto::servlistQueueAddGroupItem(servlistgroupitem* pGroupItem, int dwT
   }
   // wake up board thread (keep sleeping or start new one)  
   if (!servlistQueueThreadHandle)
-  { // create new board thread
-    servlistQueueThreadHandle = CreateProtoThreadEx(servlistQueueThread, &servlistQueueState, NULL);
+  {
+	  // create new board thread
+	  servlistQueueThreadHandle = ForkThread( &CIcqProto::servlistQueueThread, &servlistQueueState );
   }
   else // signal thread, that queue was changed during sleep
     servlistQueueState = TRUE;
@@ -450,7 +451,7 @@ void CIcqProto::servlistProcessLogin()
 
   // if the server-list queue contains items and thread is not running, start it
   if (servlistQueueCount && !servlistQueueThreadHandle)
-    servlistQueueThreadHandle = CreateProtoThreadEx(servlistQueueThread, &servlistQueueState, NULL);
+	  servlistQueueThreadHandle = ForkThread( &CIcqProto::servlistQueueThread, &servlistQueueState );
 }
 
 // HERE ENDS SERVER-LIST UPDATE BOARD IMPLEMENTATION //

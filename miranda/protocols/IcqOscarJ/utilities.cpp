@@ -985,14 +985,11 @@ BOOL IsStringUIN(char* pszString)
 	int i;
 	int nLen = strlennull(pszString);
 
-
 	if (nLen > 0 && pszString[0] != '0')
 	{
 		for (i=0; i<nLen; i++)
-		{
 			if ((pszString[i] < '0') || (pszString[i] > '9'))
 				return FALSE;
-		}
 
 		return TRUE;
 	}
@@ -1000,11 +997,9 @@ BOOL IsStringUIN(char* pszString)
 	return FALSE;
 }
 
-unsigned __cdecl CIcqProto::icq_ProtocolAckThread(void *arg)
+void __cdecl CIcqProto::ProtocolAckThread(icq_ack_args* pArguments)
 {
-  icq_ack_args* pArguments = (icq_ack_args*)arg;
-
-  BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
+	BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
 	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
 		NetLog_Server("Sent fake message ack");
@@ -1013,23 +1008,18 @@ unsigned __cdecl CIcqProto::icq_ProtocolAckThread(void *arg)
 
 	SAFE_FREE((void**)(char **)&pArguments->pszMessage);
 	SAFE_FREE((void**)&pArguments);
-
-	return 0;
 }
 
-void CIcqProto::icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage)
+void CIcqProto::SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage)
 {
-	icq_ack_args* pArgs;
-
-	pArgs = (icq_ack_args*)SAFE_MALLOC(sizeof(icq_ack_args)); // This will be freed in the new thread
-
+	icq_ack_args* pArgs = (icq_ack_args*)SAFE_MALLOC(sizeof(icq_ack_args)); // This will be freed in the new thread
 	pArgs->hContact = hContact;
 	pArgs->hSequence = (HANDLE)dwCookie;
 	pArgs->nAckResult = nAckResult;
 	pArgs->nAckType = nAckType;
 	pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
-
-  CreateProtoThread(icq_ProtocolAckThread, pArgs);
+	
+	ForkThread(( IcqThreadFunc )&CIcqProto::ProtocolAckThread, pArgs );
 }
 
 void CIcqProto::SetCurrentStatus(int nStatus)
@@ -1446,28 +1436,9 @@ char* __fastcall ICQTranslateUtfStatic(const char *src, char *buf, size_t bufsiz
 	return buf;
 }
 
-HANDLE CIcqProto::CreateProtoThreadEx(IcqThreadFunc threadProc, void* arg, DWORD* pThreadID)
+HANDLE CIcqProto::ForkThread( IcqThreadFunc pFunc, void* arg, UINT* threadID )
 {
-	FORK_THREADEX_PARAMS params;
-	DWORD dwThreadId;
-	HANDLE hThread;
-
-	params.pFunc      = (pThreadFuncEx)*(void**)&threadProc;
-	params.arg        = arg;
-	params.iStackSize = 0;
-	params.threadID   = (UINT*)&dwThreadId;
-	hThread = (HANDLE)CallService(MS_SYSTEM_FORK_THREAD_EX, (WPARAM)this, (LPARAM)&params);
-	if (pThreadID)
-		*pThreadID = dwThreadId;
-
-	return hThread;
-}
-
-void CIcqProto::CreateProtoThread(IcqThreadFunc threadProc, void* arg)
-{
-	HANDLE hThread = CreateProtoThreadEx(threadProc, arg, NULL);
-
-	CloseHandle(hThread);
+	return ( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, threadID );
 }
 
 char* CIcqProto::GetUserPassword(BOOL bAlways)
@@ -1826,7 +1797,7 @@ char* CIcqProto::ConvertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg
 DWORD CIcqProto::ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg)
 { 
 	DWORD dwCookie = GenerateCookie(0);
-	icq_SendProtoAck(hContact, dwCookie, ACKRESULT_FAILED, nType, ICQTranslate(szErrorMsg));
+	SendProtoAck(hContact, dwCookie, ACKRESULT_FAILED, nType, ICQTranslate(szErrorMsg));
 	return dwCookie;
 }
 

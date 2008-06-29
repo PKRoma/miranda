@@ -46,20 +46,20 @@ struct LogMessageInfo {
 
 static BOOL bErrorVisible = FALSE;
 
-unsigned __cdecl CIcqProto::icq_LogMessageThread(void* arg) 
+void __cdecl CIcqProto::icq_LogMessageThread(void* arg) 
 {
 	LogMessageInfo *err = (LogMessageInfo*)arg;
+	if (!err)
+		return;
 
-	if (!err) return 0;
-
-  if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
-  {
-    if (!ShowPopUpMsg(NULL, err->szTitle, err->szMsg, err->bLevel)) 
-    {
-      SAFE_FREE((void**)&err->szMsg);
-      SAFE_FREE((void**)&err);
-			return 0; // Popup showed successfuly
-    }
+	if (getSettingByte(NULL, "PopupsLogEnabled", DEFAULT_LOG_POPUPS_ENABLED))
+	{
+		if (!ShowPopUpMsg(NULL, err->szTitle, err->szMsg, err->bLevel)) 
+		{
+			SAFE_FREE((void**)&err->szMsg);
+			SAFE_FREE((void**)&err);
+			return; // Popup showed successfuly
+		}
 	}
 
 	bErrorVisible = TRUE;
@@ -68,8 +68,6 @@ unsigned __cdecl CIcqProto::icq_LogMessageThread(void* arg)
 	SAFE_FREE((void**)&err->szMsg);
 	SAFE_FREE((void**)&err);
 	bErrorVisible = FALSE;
-
-	return 0;
 }
 
 void CIcqProto::icq_LogMessage(int level, const char *szMsg)
@@ -82,13 +80,13 @@ void CIcqProto::icq_LogMessage(int level, const char *szMsg)
 	if (level >= displayLevel)
 	{
 		if (!bErrorVisible || !getSettingByte(NULL, "IgnoreMultiErrorBox", 0))
-		{ // error not shown or allowed multi - show messagebox
+		{ 
+			// error not shown or allowed multi - show messagebox
 			LogMessageInfo *lmi = (LogMessageInfo*)SAFE_MALLOC(sizeof(LogMessageInfo));
-
-      lmi->bLevel = (BYTE)level;
+			lmi->bLevel = (BYTE)level;
 			lmi->szMsg = null_strdup(szMsg);
 			lmi->szTitle = szLevelDescr[level];
-			CreateProtoThread(icq_LogMessageThread, lmi);
+			ForkThread( &CIcqProto::icq_LogMessageThread, lmi);
 		}
 	}
 }

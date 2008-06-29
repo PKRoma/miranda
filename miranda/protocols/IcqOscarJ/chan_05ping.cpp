@@ -41,7 +41,7 @@ void CIcqProto::handlePingChannel(unsigned char* buf, WORD datalen)
 	NetLog_Server("Warning: Ignoring server packet on PING channel");
 }
 
-unsigned __cdecl CIcqProto::icq_keepAliveThread(void* arg)
+void __cdecl CIcqProto::KeepAliveThread(void* arg)
 {
 	serverthread_info* info = (serverthread_info*)arg;
 	icq_packet packet;
@@ -75,8 +75,6 @@ unsigned __cdecl CIcqProto::icq_keepAliveThread(void* arg)
 
 	CloseHandle(info->hKeepAliveEvent);
 	info->hKeepAliveEvent = NULL;
-
-	return 0;
 }
 
 void CIcqProto::StartKeepAlive(serverthread_info* info)
@@ -85,7 +83,7 @@ void CIcqProto::StartKeepAlive(serverthread_info* info)
 		return;
 
 	if (getSettingByte(NULL, "KeepAlive", 0))
-		info->hKeepAliveThread = CreateProtoThreadEx(icq_keepAliveThread, info, NULL);
+		info->hKeepAliveThread = ForkThread( &CIcqProto::KeepAliveThread, info );
 }
 
 void CIcqProto::StopKeepAlive(serverthread_info* info)

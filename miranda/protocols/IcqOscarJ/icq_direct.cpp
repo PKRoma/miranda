@@ -114,10 +114,7 @@ filetransfer* CIcqProto::FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
 
 int CIcqProto::sendDirectPacket(directconnect* dc, icq_packet* pkt)
 {
-	int nResult;
-
-	nResult = Netlib_Send(dc->hConnection, (const char*)pkt->pData, pkt->wLen + 2, 0);
-
+	int nResult = Netlib_Send(dc->hConnection, (const char*)pkt->pData, pkt->wLen + 2, 0);
 	if (nResult == SOCKET_ERROR)
 	{
 		NetLog_Direct("Direct %p socket error: %d, closing", dc->hConnection, GetLastError());
@@ -193,19 +190,16 @@ void icq_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, void *pE
 {
 	// Start a new thread for the incomming connection
 	CIcqProto* ppro = (CIcqProto*)pExtra;
-	ppro->CreateProtoThread(&CIcqProto::icq_directThread, CreateDTSI(NULL, hNewConnection, -1));
+	ppro->ForkThread(( IcqThreadFunc )&CIcqProto::icq_directThread, CreateDTSI(NULL, hNewConnection, -1));
 }
 
 // Opens direct connection of specified type to specified contact
 void CIcqProto::OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 {
-	directthreadstartinfo* dtsi;
-
 	// Create a new connection
-	dtsi = CreateDTSI(hContact, NULL, type);
+	directthreadstartinfo* dtsi = CreateDTSI(hContact, NULL, type);
 	dtsi->pvExtra = pvExtra;
-
-	CreateProtoThread(&CIcqProto::icq_directThread, dtsi);
+	ForkThread(( IcqThreadFunc )&CIcqProto::icq_directThread, dtsi);
 }
 
 // Safely close NetLib connection - do not corrupt direct connection list
@@ -225,9 +219,9 @@ void CIcqProto::CloseDirectConnection(directconnect *dc)
 // Called from icq_newConnectionReceived when a new incomming dc is done
 // Called from OpenDirectConnection when a new outgoing dc is done
 // Called from SendDirectMessage when a new outgoing dc is done
-unsigned __cdecl CIcqProto::icq_directThread(void *arg)
+
+void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 {
-  directthreadstartinfo *dtsi = (directthreadstartinfo*)arg;
 	directconnect dc = {0};
 	NETLIBPACKETRECVER packetRecv={0};
 	HANDLE hPacketRecver;
