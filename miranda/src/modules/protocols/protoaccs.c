@@ -160,6 +160,20 @@ void WriteDbAccounts()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
+{
+	int i;
+
+	for ( i = 0; i < accounts.count; i++ ) {
+		PROTOACCOUNT* pa = accounts.items[i];
+		if ( !pa->ppro || !pa->bIsEnabled )
+			continue;
+
+		pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
+	}
+	return 0;
+}
+
 int LoadAccountsModule( void )
 {
 	int i;
@@ -176,6 +190,7 @@ int LoadAccountsModule( void )
 			UnloadAccount( pa, FALSE );
 	}	}
 
+	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
 	return 0;
 }
 
@@ -279,8 +294,6 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 		CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
 		CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
 		CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
-
-		ppi->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 		return TRUE;
 	}
 

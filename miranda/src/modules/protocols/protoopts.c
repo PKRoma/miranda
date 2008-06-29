@@ -170,7 +170,8 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					List_InsertPtr(( SortedList* )&accounts, pa );
 
 					if ( param->action == 1 )
-						ActivateAccount( pa );
+						if ( ActivateAccount( pa ))
+							pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
 				}
 
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
@@ -727,10 +728,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
 						if ( pa ) {
 							pa->bIsEnabled = !pa->bIsEnabled;
-							if ( pa->bIsEnabled )
-								ActivateAccount( pa );
-							else 
-								DeactivateAccount( pa );
+							if ( pa->bIsEnabled ) {
+								if ( ActivateAccount( pa ))
+									pa->ppro->vtbl->OnEvent( pa->ppro, EV_PROTO_ONLOAD, 0, 0 );
+							}
+							else DeactivateAccount( pa );
+
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
 							sttUpdateAccountInfo(hwndDlg, dat);
