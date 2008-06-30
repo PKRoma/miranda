@@ -551,39 +551,11 @@ void __cdecl CAimProto::msg_ack_success( void* hContact )
 	ProtoBroadcastAck( m_szModuleName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
-void CAimProto::execute_cmd(char* type,char* arg) 
+void CAimProto::execute_cmd(char* arg) 
 {
-	char szSubkey[80];
-	HKEY hKey;
-	wsprintfA(szSubkey,"%s\\shell\\open\\command",type);
-	if(RegOpenKeyExA(HKEY_CURRENT_USER,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS||RegOpenKeyExA(HKEY_CLASSES_ROOT,szSubkey,0,KEY_QUERY_VALUE,&hKey)==ERROR_SUCCESS)
-	{
-		char szCommandName[256];
-		DWORD dataLength=256;
-		ZeroMemory(szCommandName,sizeof(szCommandName));
-		if(RegQueryValueEx(hKey,NULL,NULL,NULL,(PBYTE)szCommandName,&dataLength)==ERROR_SUCCESS)
-		{
-			char quote_arg[256];
-			if(szCommandName[0]=='"')
-			{
-				char* ch;
-				szCommandName[0]=' ';
-				ch=strtok(szCommandName,"\"");
-				szCommandName[0]='"';
-				szCommandName[lstrlenA(szCommandName)+1]='\0';
-				szCommandName[lstrlenA(szCommandName)]='"';
-			}
-			else
-			{
-				strtok(szCommandName," ");
-
-			}
-			mir_snprintf(quote_arg,lstrlenA(arg)+3,"%s%s%s","\"",arg,"\"");
-			ShellExecuteA(NULL,"open",szCommandName,quote_arg, NULL, SW_SHOW);
-		}
-		RegCloseKey(hKey);
-	}
+	ShellExecuteA(NULL,"open", arg, NULL, NULL, SW_SHOW);
 }
+
 void create_group(char *group)
 {
 	if (!group)
@@ -881,7 +853,7 @@ void CAimProto::write_profile(char* sn,char* msg)
 		fwrite("'s Profile:</h3>",1,16,descr);
 		fwrite(s_msg,1,lstrlenA(s_msg),descr);
 		fclose(descr);
-		execute_cmd("http",path);
+		execute_cmd(path);
 		delete[] path;
 		delete[] s_msg;
 	}

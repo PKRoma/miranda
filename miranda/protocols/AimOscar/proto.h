@@ -362,7 +362,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   remove_AT_icons();
 	void   add_ES_icons();
 	void   remove_ES_icons();
-	void   execute_cmd(char* type,char* arg);
+	void   execute_cmd(char* arg);
 	char*  strip_special_chars(char *src,HANDLE hContact);
 	void   assign_modmsg(char* msg);
 

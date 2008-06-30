@@ -109,7 +109,7 @@ int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 	if ( !getString((HANDLE)wParam, AIM_KEY_SN, &dbv )) {
 		char URL[256];
 		mir_snprintf(URL,lstrlenA(CWD)+lstrlenA(m_szModuleName)+lstrlenA(dbv.pszVal)+9+4,"%s\\%s\\%s\\away.html",CWD,m_szModuleName,dbv.pszVal);
-		execute_cmd("http",URL);
+		execute_cmd(URL);
 	}
 	return 0;
 }
@@ -205,7 +205,7 @@ int CAimProto::CheckMail(WPARAM /*wParam*/, LPARAM /*lParam*/)
 
 int CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	execute_cmd("http","https://my.screenname.aol.com");
+	execute_cmd("https://my.screenname.aol.com");
 	return 0;
 }
 
