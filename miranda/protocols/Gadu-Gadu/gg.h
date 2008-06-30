@@ -48,6 +48,7 @@ extern "C" {
 #include <process.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/stat.h>
 
 // Miranda IM headers
 #include <newpluginapi.h>

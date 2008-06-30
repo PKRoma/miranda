@@ -43,6 +43,6 @@ char *ws_strerror(int code);
 #define pipe(filedes)	(-1)
 #define wait(x)			(-1)
 #define waitpid(x,y,z)	(-1)
-#define ioctl(fd,request,val,...) ioctlsocket(fd,request,(unsigned long *)val)
+#define ioctl(fd,request,val) ioctlsocket(fd,request,(unsigned long *)val)
 
 #endif /* __GG_WIN32_H */

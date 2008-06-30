@@ -106,10 +106,6 @@ SOURCE=.\libgadu\compat.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\libgadu\win32.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\libgadu\dcc.c
 # SUBTRACT CPP /YX
 # End Source File
@@ -151,6 +147,10 @@ SOURCE=.\libgadu\pubdir50.c
 
 SOURCE=.\libgadu\sha1.c
 # SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\win32.h
 # End Source File
 # End Group
 # Begin Source File
@@ -220,6 +220,9 @@ SOURCE=.\userutils.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
+
+# PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
 
 SOURCE=.\dynstuff.h
 # End Source File
