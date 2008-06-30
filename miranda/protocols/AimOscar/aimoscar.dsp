@@ -261,15 +261,7 @@ SOURCE=.\avatars.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\away.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\client.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\connection.h
 # End Source File
 # Begin Source File
 
@@ -338,10 +330,6 @@ SOURCE=.\strl.h
 # Begin Source File
 
 SOURCE=.\theme.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\thread.h
 # End Source File
 # Begin Source File
 

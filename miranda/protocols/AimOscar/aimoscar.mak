@@ -1,31 +1,31 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on aimoscar.dsp
 !IF "$(CFG)" == ""
-CFG=aim - Win32 Release Unicode
+CFG=aim - Win32 Debug Unicode
 !MESSAGE No configuration specified. Defaulting to aim - Win32 Debug Unicode.
-!ENDIF
+!ENDIF 
 
 !IF "$(CFG)" != "aim - Win32 Release" && "$(CFG)" != "aim - Win32 Debug" && "$(CFG)" != "aim - Win32 Release Unicode" && "$(CFG)" != "aim - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "aimoscar.mak" CFG="aim - Win32 Debug Unicode"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "aim - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "aim - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "aim - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "aim - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
+!ENDIF 
 
 CPP=cl.exe
 MTL=midl.exe
@@ -76,15 +76,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -190,11 +190,11 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\aim.sbr" \
 	"$(INTDIR)\avatars.sbr" \
@@ -227,7 +227,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -305,15 +305,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG"
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
 BSC32_SBRS= \
-
+	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -419,11 +419,11 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG"
+CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\aim.sbr" \
 	"$(INTDIR)\avatars.sbr" \
@@ -456,7 +456,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -489,46 +489,46 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $<
+   $(CPP_PROJ) $< 
 <<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("aimoscar.dep")
 !INCLUDE "aimoscar.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "aimoscar.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "aim - Win32 Release" || "$(CFG)" == "aim - Win32 Debug" || "$(CFG)" == "aim - Win32 Release Unicode" || "$(CFG)" == "aim - Win32 Debug Unicode"
@@ -558,7 +558,7 @@ SOURCE=.\aim.cpp
 "$(INTDIR)\aim.obj"	"$(INTDIR)\aim.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\avatars.cpp
 
@@ -586,7 +586,7 @@ SOURCE=.\avatars.cpp
 "$(INTDIR)\avatars.obj"	"$(INTDIR)\avatars.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\away.cpp
 
@@ -614,7 +614,7 @@ SOURCE=.\away.cpp
 "$(INTDIR)\away.obj"	"$(INTDIR)\away.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\client.cpp
 
@@ -642,7 +642,7 @@ SOURCE=.\client.cpp
 "$(INTDIR)\client.obj"	"$(INTDIR)\client.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\connection.cpp
 
@@ -670,7 +670,7 @@ SOURCE=.\connection.cpp
 "$(INTDIR)\connection.obj"	"$(INTDIR)\connection.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\conv.cpp
 
@@ -698,7 +698,7 @@ SOURCE=.\conv.cpp
 "$(INTDIR)\conv.obj"	"$(INTDIR)\conv.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\direct_connect.cpp
 
@@ -726,7 +726,7 @@ SOURCE=.\direct_connect.cpp
 "$(INTDIR)\direct_connect.obj"	"$(INTDIR)\direct_connect.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\error.cpp
 
@@ -754,7 +754,7 @@ SOURCE=.\error.cpp
 "$(INTDIR)\error.obj"	"$(INTDIR)\error.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\file.cpp
 
@@ -782,7 +782,7 @@ SOURCE=.\file.cpp
 "$(INTDIR)\file.obj"	"$(INTDIR)\file.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\flap.cpp
 
@@ -810,7 +810,7 @@ SOURCE=.\flap.cpp
 "$(INTDIR)\flap.obj"	"$(INTDIR)\flap.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\links.cpp
 
@@ -838,7 +838,7 @@ SOURCE=.\links.cpp
 "$(INTDIR)\links.obj"	"$(INTDIR)\links.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\packets.cpp
 
@@ -866,7 +866,7 @@ SOURCE=.\packets.cpp
 "$(INTDIR)\packets.obj"	"$(INTDIR)\packets.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\popup.cpp
 
@@ -894,7 +894,7 @@ SOURCE=.\popup.cpp
 "$(INTDIR)\popup.obj"	"$(INTDIR)\popup.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\proto.cpp
 
@@ -922,7 +922,7 @@ SOURCE=.\proto.cpp
 "$(INTDIR)\proto.obj"	"$(INTDIR)\proto.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\proxy.cpp
 
@@ -950,7 +950,7 @@ SOURCE=.\proxy.cpp
 "$(INTDIR)\proxy.obj"	"$(INTDIR)\proxy.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\server.cpp
 
@@ -978,7 +978,7 @@ SOURCE=.\server.cpp
 "$(INTDIR)\server.obj"	"$(INTDIR)\server.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\services.cpp
 
@@ -1006,7 +1006,7 @@ SOURCE=.\services.cpp
 "$(INTDIR)\services.obj"	"$(INTDIR)\services.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\snac.cpp
 
@@ -1034,7 +1034,7 @@ SOURCE=.\snac.cpp
 "$(INTDIR)\snac.obj"	"$(INTDIR)\snac.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\strl.cpp
 
@@ -1062,7 +1062,7 @@ SOURCE=.\strl.cpp
 "$(INTDIR)\strl.obj"	"$(INTDIR)\strl.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\theme.cpp
 
@@ -1090,7 +1090,7 @@ SOURCE=.\theme.cpp
 "$(INTDIR)\theme.obj"	"$(INTDIR)\theme.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\thread.cpp
 
@@ -1118,7 +1118,7 @@ SOURCE=.\thread.cpp
 "$(INTDIR)\thread.obj"	"$(INTDIR)\thread.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\tlv.cpp
 
@@ -1146,7 +1146,7 @@ SOURCE=.\tlv.cpp
 "$(INTDIR)\tlv.obj"	"$(INTDIR)\tlv.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\utility.cpp
 
@@ -1174,7 +1174,7 @@ SOURCE=.\utility.cpp
 "$(INTDIR)\utility.obj"	"$(INTDIR)\utility.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\windows.cpp
 
@@ -1202,7 +1202,7 @@ SOURCE=.\windows.cpp
 "$(INTDIR)\windows.obj"	"$(INTDIR)\windows.sbr" : $(SOURCE) "$(INTDIR)"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\aim.rc
 
@@ -1211,4 +1211,5 @@ SOURCE=.\aim.rc
 
 
 
-!ENDIF
+!ENDIF 
+
