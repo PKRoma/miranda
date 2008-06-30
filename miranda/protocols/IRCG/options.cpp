@@ -393,7 +393,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 
 		if ( m_action == 2 ) {
 			int i = m_owner->m_serverCombo.GetCurSel();
-			delete ( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( i );
+			m_proto->m_servers.remove(( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( i ));
 			m_owner->m_serverCombo.DeleteString( i );
 		}
 
