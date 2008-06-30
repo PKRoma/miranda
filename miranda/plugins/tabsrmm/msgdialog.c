@@ -1762,7 +1762,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				OffsetRect(&urc->rcItem, 0, panelHeight);
 			return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
 		case IDC_LOGFROZENTEXT:
-			urc->rcItem.right = urc->dlgNewSize.cx - 20;
+			urc->rcItem.right = urc->dlgNewSize.cx - 25;
 			if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL)
 				OffsetRect(&urc->rcItem, 0, panelHeight);
 			return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
