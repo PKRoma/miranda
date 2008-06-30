@@ -408,7 +408,7 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
 {
 	MIRANDA_IDLE_INFO *mii = ( MIRANDA_IDLE_INFO* )lParam;
-	if ( !mii || ( mii->cbSize != sizeof(MIRANDA_IDLE_INFO) && mii->cbSize != sizeof(MIRANDA_IDLE_INFO_1)))
+	if ( !mii || ( mii->cbSize != sizeof(MIRANDA_IDLE_INFO) && mii->cbSize != MIRANDA_IDLE_INFO_SIZE_1 ))
 		return 1;
 
 	mii->idleTime = gIdleObject.minutes;
