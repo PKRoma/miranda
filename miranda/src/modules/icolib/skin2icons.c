@@ -30,7 +30,7 @@ static HANDLE hIcons2ChangedEvent, hIconsChangedEvent;
 static HICON hIconBlank = NULL;
 
 HANDLE hIcoLib_AddNewIcon, hIcoLib_RemoveIcon, hIcoLib_GetIcon, hIcoLib_GetIcon2,
-       hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
+       hIcoLib_GetIconHandle, hIcoLib_IsManaged, hIcoLib_AddRef, hIcoLib_ReleaseIcon;
 
 static HIMAGELIST hCacheIconList;
 static int iconEventActive = 0;
@@ -514,6 +514,24 @@ HICON IcoLib_GetIcon( const char* pszIconName )
 	}
 	LeaveCriticalSection( &csIconList );
 	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// IcoLib_GetIconHandle
+// lParam: pszIconName
+
+HANDLE IcoLib_GetIconHandle( const char* pszIconName )
+{
+	IconItem* item;
+
+	if ( !pszIconName )
+		return NULL;
+
+	EnterCriticalSection( &csIconList );
+	item = IcoLib_FindIcon( pszIconName );
+	LeaveCriticalSection( &csIconList );
+
+	return (HANDLE)item;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1554,6 +1572,10 @@ static int sttIcoLib_GetIcon( WPARAM wParam, LPARAM lParam )
 {	return (int)IcoLib_GetIcon(( const char* )lParam );
 }
 
+static int sttIcoLib_GetIconHandle( WPARAM wParam, LPARAM lParam )
+{	return (int)IcoLib_GetIconHandle(( const char* )lParam );
+}
+
 static int sttIcoLib_GetIconByHandle( WPARAM wParam, LPARAM lParam )
 {	return (int)IcoLib_GetIconByHandle(( HANDLE )lParam );
 }
@@ -1574,6 +1596,7 @@ int LoadIcoLibModule(void)
 	hIcoLib_AddNewIcon  = CreateServiceFunction(MS_SKIN2_ADDICON,         sttIcoLib_AddNewIcon);
 	hIcoLib_RemoveIcon  = CreateServiceFunction(MS_SKIN2_REMOVEICON,      IcoLib_RemoveIcon);
 	hIcoLib_GetIcon     = CreateServiceFunction(MS_SKIN2_GETICON,         sttIcoLib_GetIcon);
+	hIcoLib_GetIconHandle = CreateServiceFunction(MS_SKIN2_GETICONHANDLE,   sttIcoLib_GetIconHandle);
 	hIcoLib_GetIcon2    = CreateServiceFunction(MS_SKIN2_GETICONBYHANDLE, sttIcoLib_GetIconByHandle);
 	hIcoLib_IsManaged   = CreateServiceFunction(MS_SKIN2_ISMANAGEDICON,   ( MIRANDASERVICE )IcoLib_IsManaged);
 	hIcoLib_AddRef      = CreateServiceFunction(MS_SKIN2_ADDREFICON,      IcoLib_AddRef);
@@ -1599,6 +1622,7 @@ void UnloadIcoLibModule(void)
 	DestroyServiceFunction(hIcoLib_AddNewIcon);
 	DestroyServiceFunction(hIcoLib_RemoveIcon);
 	DestroyServiceFunction(hIcoLib_GetIcon);
+	DestroyServiceFunction(hIcoLib_GetIconHandle);
 	DestroyServiceFunction(hIcoLib_GetIcon2);
 	DestroyServiceFunction(hIcoLib_IsManaged);
 	DestroyServiceFunction(hIcoLib_AddRef);
