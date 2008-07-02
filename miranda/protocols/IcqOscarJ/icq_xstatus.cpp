@@ -733,7 +733,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 		if (!bXStatusMenuBuilt)
 			CreateProtoServiceParam(srvFce+len, &CIcqProto::menuXStatus, i);
 
-		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0) | (m_bHideXStatusUI?CMIF_HIDDEN:0);
+		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0);
 		mi.icolibItem = i ? hXStatusIconsHandle[i-1] : NULL;
 		mi.pszName = i ? (char*)nameXStatus[i-1] : (char *)LPGEN("None");
 		mi.pszService = srvFce;
@@ -743,6 +743,8 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 			hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
 		else
 			hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+    // CMIF_HIDDEN does not work for adding services
+    CListShowMenuItem(hXStatusItems[i], !m_bHideXStatusUI);
 	}
 }
 
