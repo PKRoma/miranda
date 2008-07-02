@@ -639,14 +639,17 @@ void CIcqProto::setXStatusEx(BYTE bXStatus, BYTE bQuiet)
 
 	mi.cbSize = sizeof(mi);
 
-	if (bOldXStatus <= XSTATUS_COUNT)
+	if (!m_bHideXStatusUI)
 	{
-		mi.flags = CMIM_FLAGS;
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
-	}
+		if (bOldXStatus <= XSTATUS_COUNT)
+		{
+			mi.flags = CMIM_FLAGS;
+			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bOldXStatus], (LPARAM)&mi);
+		}
 
-	mi.flags = CMIM_FLAGS | CMIF_CHECKED;
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bXStatus], (LPARAM)&mi);
+		mi.flags = CMIM_FLAGS | CMIF_CHECKED;
+		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hXStatusItems[bXStatus], (LPARAM)&mi);
+	}
 
 	if (bXStatus)
 	{
@@ -730,7 +733,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 		if (!bXStatusMenuBuilt)
 			CreateProtoServiceParam(srvFce+len, &CIcqProto::menuXStatus, i);
 
-		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0);
+		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0) | (m_bHideXStatusUI?CMIF_HIDDEN:0);
 		mi.icolibItem = i ? hXStatusIconsHandle[i-1] : NULL;
 		mi.pszName = i ? (char*)nameXStatus[i-1] : (char *)LPGEN("None");
 		mi.pszService = srvFce;
