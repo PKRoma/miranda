@@ -17,17 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-// Global Email counters
-int  mUnreadMessages = 0, mUnreadJunkEmails = 0;
-extern char *pAuthToken, *tAuthToken, *oimSendToken;
-
+#include "msn_proto.h"
 
 static const char oimRecvUrl[] = "https://rsi.hotmail.com/rsi/rsi.asmx";
 static const char mailReqHdr[] = 
 	"SOAPAction: \"http://www.hotmail.msn.com/ws/2004/09/oim/rsi/%s\"\r\n";
 
-static ezxml_t oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr)
+ezxml_t CMsnProto::oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
 	ezxml_set_attr(xmlp, "xmlns:xsi",  "http://www.w3.org/2001/XMLSchema-instance");
@@ -56,12 +52,12 @@ static ezxml_t oimRecvHdr(const char* service, ezxml_t& tbdy, char*& httphdr)
 }
 
 
-void getOIMs(ezxml_t xmli)
+void CMsnProto::getOIMs(ezxml_t xmli)
 {
 	ezxml_t toki = ezxml_child(xmli, "M");
 	if (toki == NULL) return;
 
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* getReqHdr;
 	ezxml_t reqmsg;
@@ -165,9 +161,9 @@ void getOIMs(ezxml_t xmli)
 }
 
 
-void getMetaData(void)
+void CMsnProto::getMetaData(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* getReqHdr;
 	ezxml_t reqbdy;
@@ -197,7 +193,7 @@ void getMetaData(void)
 }
 
 
-void processMailData(char* mailData)
+void CMsnProto::processMailData(char* mailData)
 {
 	if (strcmp(mailData, "too-large") == 0)
 	{
@@ -224,7 +220,7 @@ void processMailData(char* mailData)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Processes e-mail notification
 
-void sttNotificationMessage( char* msgBody, bool isInitial )
+void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 {
 	TCHAR tBuffer[512];
 	TCHAR tBuffer2[512];
@@ -305,12 +301,12 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 	if (UnreadMessages == mUnreadMessages && UnreadJunkEmails == mUnreadJunkEmails  && !isInitial)
 		return;
 
-	MSN_SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
+	SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 
 	// Disable to notify receiving hotmail
-	if ( !MSN_GetByte( "DisableHotmail", 1 ) && ShowPopUp && 
+	if ( !getByte( "DisableHotmail", 1 ) && ShowPopUp && 
 		(mUnreadMessages != 0 || 
-		(mUnreadJunkEmails != 0 && !MSN_GetByte( "DisableHotmailJunk", 0 ))))
+		(mUnreadJunkEmails != 0 && !getByte( "DisableHotmailJunk", 0 ))))
 	{
 		SkinPlaySound( mailsoundname );
 		MSN_ShowPopup( tBuffer, tBuffer2, 
@@ -318,11 +314,11 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 			tFileInfo[ "Message-URL" ]);
 	}
 
-	if ( !MSN_GetByte( "RunMailerOnHotmail", 0 ) || !ShowPopUp || isInitial )
+	if ( !getByte( "RunMailerOnHotmail", 0 ) || !ShowPopUp || isInitial )
 		return;
 
 	char mailerpath[MAX_PATH];
-	if ( !MSN_GetStaticString( "MailerPath", NULL, mailerpath, sizeof( mailerpath ))) 
+	if ( !getStaticString( NULL, "MailerPath", mailerpath, sizeof( mailerpath ))) 
 	{
 		if ( mailerpath[0] ) 
 		{
@@ -354,11 +350,6 @@ void sttNotificationMessage( char* msgBody, bool isInitial )
 	}	
 }
 
-static char oimDigest[64] = "";
-static unsigned oimMsgNum = 0;
-static char oimUID[64] = "";
-
-
 static void TruncUtf8(char *str, size_t sz)
 {
 	size_t len = strlen(str);
@@ -380,7 +371,7 @@ static void TruncUtf8(char *str, size_t sz)
 	str[cntl] = 0;
 }
 
-int MSN_SendOIM(const char* szEmail, const char* msg)
+int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 {
 	char num[32];
 	mir_snprintf(num, sizeof(num), "%u", ++oimMsgNum);
@@ -404,7 +395,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 	{
 		DBVARIANT dbv;
 		char *mynick, *mynickenc;
-		if (!DBGetContactSettingStringUtf( NULL, msnProtocolName, "Nick", &dbv ))
+		if (!DBGetContactSettingStringUtf( NULL, m_szProtoName, "Nick", &dbv ))
 			mynick = dbv.pszVal;
 		else 
 		{
@@ -494,7 +485,7 @@ int MSN_SendOIM(const char* szEmail, const char* msg)
 		ezxml_set_txt(msgc, msgenc);
 	}
 
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	int success = -1;
 	bool retry = true;

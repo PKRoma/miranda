@@ -18,16 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
-
-extern char *authStorageToken;
-extern char mycid[], mypuid[];
-
-static char proresid[64];
+#include "msn_proto.h"
 
 static const char storeReqHdr[] = 
 	"SOAPAction: http://www.msn.com/webservices/storage/w10/%s\r\n";
 
-static ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
+ezxml_t CMsnProto::storeSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
 	ezxml_set_attr(xmlp, "xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
@@ -69,29 +65,29 @@ static ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& 
 	return xmlp;
 }
 
-static char* GetStoreHost(const char* service)
+char* CMsnProto::GetStoreHost(const char* service)
 {
 	char hostname[128];
 	mir_snprintf(hostname, sizeof(hostname), "StoreHost-%s", service); 
 
 	char* host = (char*)mir_alloc(256);
-	if (MSN_GetStaticString(hostname, NULL, host, 256))
+	if (getStaticString(NULL, hostname, host, 256))
 		strcpy(host, "https://tkrdr.storage.msn.com/storageservice/SchematizedStore.asmx");
 
 	return host;
 }
 
-static void UpdateStoreHost(const char* service, const char* url)
+void CMsnProto::UpdateStoreHost(const char* service, const char* url)
 {
 	char hostname[128];
 	mir_snprintf(hostname, sizeof(hostname), "StoreHost-%s", service); 
 
-	MSN_SetString(NULL, hostname, url);
+	setString(NULL, hostname, url);
 }
 
-bool MSN_StoreCreateProfile(void)
+bool CMsnProto::MSN_StoreCreateProfile(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -126,9 +122,9 @@ bool MSN_StoreCreateProfile(void)
 	return status == 200;
 }
 
-bool MSN_StoreGetProfile(void)
+bool CMsnProto::MSN_StoreGetProfile(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -199,10 +195,10 @@ bool MSN_StoreGetProfile(void)
 			MSN_StoreCreateProfile();
 		else
 		{
-			if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
+			if (!getByte( "NeverUpdateNickname", 0 ))
 			{
 				const char* szNick = ezxml_txt(ezxml_child(expr, "DisplayName"));
-				MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+				setStringUtf(NULL, "Nick", (char*)szNick);
 			}
 		}
 		ezxml_free(xmlm);
@@ -218,9 +214,9 @@ bool MSN_StoreGetProfile(void)
 	return status == 200;
 }
 
-bool MSN_StoreUpdateNick(const char* szNick)
+bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -264,9 +260,9 @@ bool MSN_StoreUpdateNick(const char* szNick)
 }
 
 
-bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
+bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -307,9 +303,9 @@ bool MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
 }
 
 
-bool MSN_StoreDeleteRelationships(const char *szResId)
+bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -352,9 +348,9 @@ bool MSN_StoreDeleteRelationships(const char *szResId)
 }
 
 
-bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData)
+bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -413,9 +409,9 @@ bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const c
 }
 
 
-bool MSN_StoreFindDocuments(void)
+bool CMsnProto::MSN_StoreFindDocuments(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;

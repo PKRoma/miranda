@@ -205,6 +205,7 @@ extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
 #define CLIENT_AIMEXPRESS6				"AIM Express 6"
 #define CLIENT_AIMEXPRESS7				"AIM Express 7"
 #define CLIENT_AIM_TRITON				"AIM Triton"
+#define CLIENT_AIM6_1					"AIM 6.1"
 #define CLIENT_AIM6_5					"AIM 6.5"
 #define CLIENT_AIM6_8					"AIM 6.8"
 #define CLIENT_AIMTOC					"AIM TOC"

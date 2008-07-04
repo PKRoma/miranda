@@ -425,6 +425,7 @@
 #define IDC_FLT_HOVERTIME               40067
 #define IDC_FLT_SHOWTOOLTIPS            40068
 #define IDC_FLT_HOVERTIMESPIN           40069
+#define IDC_STATIC                      -1
 
 
 // Next default values for new objects

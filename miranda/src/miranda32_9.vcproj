@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="miranda32"
 	ProjectGUID="{F9916510-9055-4C9F-997A-3755DEC1511B}"
 	RootNamespace="miranda32"
@@ -387,6 +387,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				OutputFile="c:\Program Files\Miranda IM\miranda32.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"

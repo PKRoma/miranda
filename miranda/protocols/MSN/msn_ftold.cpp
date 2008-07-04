@@ -19,10 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 
-int MSN_HandleErrors(ThreadData *info,char *cmdString);
 
-void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
+void CMsnProto::msnftp_sendAcceptReject( filetransfer *ft, bool acc )
 {
 	ThreadData* thread = MSN_GetThreadByContact( ft->std.hContact );
 	if ( thread == NULL ) return;
@@ -50,7 +50,7 @@ void msnftp_sendAcceptReject( filetransfer *ft, bool acc )
 	}
 }
 
-void msnftp_invite( filetransfer *ft )
+void CMsnProto::msnftp_invite( filetransfer *ft )
 {
 	bool isOffline;
 	ThreadData* thread = MSN_StartSB(ft->std.hContact, isOffline);
@@ -83,7 +83,7 @@ void msnftp_invite( filetransfer *ft )
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN File Transfer Protocol commands processing
 
-int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
+int CMsnProto::MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 {
 	char* params = "";
 	filetransfer* ft = info->mMsnFtp;
@@ -140,7 +140,7 @@ int MSN_HandleMSNFTP( ThreadData *info, char *cmdString )
 				ft->std.totalProgress += packetLen;
 				ft->std.currentFileProgress += packetLen;
 
-				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+				SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 			}
 
 			ft->complete();
@@ -188,7 +188,7 @@ LBL_InvalidCommand:
 			}
 			else if ( info->mCaller == 2 )  //send
 			{
-				static char sttCommand[] = "VER MSNFTP\r\n";
+				static const char sttCommand[] = "VER MSNFTP\r\n";
 				info->send( sttCommand, strlen( sttCommand ));
 			}
 			break;
@@ -218,7 +218,7 @@ LBL_Error:		ft->close();
 
 				if ( tIsTransitionFinished ) {
 LBL_Success:
-					static char sttCommand[] = "BYE 16777989\r\n";
+					static const char sttCommand[] = "BYE 16777989\r\n";
 					info->send( sttCommand, strlen( sttCommand ));
 					return 1;
 				}
@@ -231,7 +231,7 @@ LBL_Success:
 				ft->std.totalProgress += dataLen;
 				ft->std.currentFileProgress += dataLen;
 
-				MSN_SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
+				SendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, ( LPARAM )&ft->std );
 
 				if ( ft->std.currentFileProgress == ft->std.totalBytes ) {
 					ft->complete();
@@ -244,8 +244,10 @@ LBL_Success:
 /////////////////////////////////////////////////////////////////////////////////////////
 //	ft_startFileSend - sends a file using the old f/t protocol
 
-static void __cdecl sttSendFileThread( ThreadData* info )
+void __cdecl CMsnProto::msnftp_sendFileThread( void* arg )
 {
+	ThreadData* info = (ThreadData*)arg;
+
 	MSN_DebugLog( "Waiting for an incoming connection to '%s'...", info->mServer );
 
 	switch( WaitForSingleObject( info->hWaitEvent, 60000 )) {
@@ -307,7 +309,7 @@ static void __cdecl sttSendFileThread( ThreadData* info )
 	MSN_DebugLog( "Closing file transfer thread" );
 }
 
-void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
+void CMsnProto::msnftp_startFileSend( ThreadData* info, const char* Invcommand, const char* Invcookie )
 {
 	if ( _stricmp( Invcommand, "ACCEPT" ))
 		return;
@@ -319,6 +321,8 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 	if ( ft != NULL ) {
 		nlb.cbSize = sizeof( nlb );
 		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+		nlb.pExtra = this;
+
 		sb = ( HANDLE )MSN_CallService( MS_NETLIB_BINDPORT, ( WPARAM )hNetlibUser, ( LPARAM )&nlb);
 		if ( sb == NULL )
 			MSN_DebugLog( "Unable to bind the port for incoming transfers" );
@@ -346,9 +350,8 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		newThread->mMsnFtp = ft;
 		newThread->mIncomingBoundPort = sb;
 		newThread->mIncomingPort = nlb.wPort;
-		newThread->startThread(( pThreadFunc )sttSendFileThread );
+		newThread->startThread( &CMsnProto::msnftp_sendFileThread, this );
 	}
 	else
 		delete ft;
-	
 }

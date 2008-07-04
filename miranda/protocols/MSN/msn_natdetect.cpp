@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 #include "SDK/netfw.h"
 
 #ifndef CLSID_NetFwMgr
@@ -44,21 +45,7 @@ const char* conStr[] =
 };
 
 
-#pragma pack(1)
-typedef struct _tag_UDPProbePkt
-{
-	unsigned char  version;
-	unsigned char  serviceCode;
-	unsigned short clientPort;
-	unsigned	   clientIP;
-	unsigned short discardPort;
-	unsigned short testPort;
-	unsigned	   testIP;
-	unsigned       trId;
-} UDPProbePkt;
-#pragma pack()
-
-static void DecryptEchoPacket(UDPProbePkt& pkt)
+void CMsnProto::DecryptEchoPacket(UDPProbePkt& pkt)
 {
 	pkt.clientPort ^= 0x3141;
 	pkt.discardPort ^= 0x3141;
@@ -102,7 +89,7 @@ static void DiscardExtraPackets(SOCKET s)
 }
 
 
-static void MSNatDetect(void)
+void CMsnProto::MSNatDetect(void)
 {
 	unsigned i;
 
@@ -206,6 +193,7 @@ static void MSNatDetect(void)
 	NETLIBBIND nlb = {0};
 	nlb.cbSize = sizeof( nlb );
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
+	nlb.pExtra = this;
 
 	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
 	if ( sb != NULL )
@@ -376,16 +364,16 @@ error:
 }
 
 
-void MSNConnDetectThread( void* )
+void CMsnProto::MSNConnDetectThread( void* )
 {
 	char parBuf[512] = "";
 
 	memset(&MyConnection, 0, sizeof(MyConnection));
 
 	MyConnection.icf = IsIcfEnabled();
-	bool portsMapped = MSN_GetByte("NLSpecifyIncomingPorts", 0) != 0;
+	bool portsMapped = getByte("NLSpecifyIncomingPorts", 0) != 0;
 
-	unsigned gethst = MSN_GetByte("AutoGetHost", 1);
+	unsigned gethst = getByte("AutoGetHost", 1);
 	switch (gethst)
 	{
 		case 0:
@@ -394,7 +382,7 @@ void MSNConnDetectThread( void* )
 			// User specified host by himself so check if it matches MSN information
 			// if it does, move to connection type autodetection,
 			// if it does not, guess connection type from available info
-			MSN_GetStaticString("YourHost", NULL, parBuf, sizeof(parBuf));
+			getStaticString(NULL, "YourHost", parBuf, sizeof(parBuf));
 			if (msnExternalIP == NULL || strcmp(msnExternalIP, parBuf) != 0)
 			{
 				MyConnection.extIP = inet_addr( parBuf );
@@ -404,7 +392,7 @@ void MSNConnDetectThread( void* )
 					if ( myhost != NULL )
 						MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 					else
-						MSN_SetByte("AutoGetHost", 1);
+						setByte("AutoGetHost", 1);
 				}
 				if ( MyConnection.extIP != INADDR_NONE )
 				{
@@ -437,7 +425,7 @@ void MSNConnDetectThread( void* )
 			return;
 	}
 
-	if (MSN_GetByte( "NLSpecifyOutgoingPorts", 0))
+	if (getByte( "NLSpecifyOutgoingPorts", 0))
 	{
 		// User specified outgoing ports so the connection must be firewalled
 		// do not autodetect and guess connection type from available info

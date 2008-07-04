@@ -273,6 +273,10 @@ SOURCE=.\msn_p2ps.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\msn_proto.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\msn_soapab.cpp
 # End Source File
 # Begin Source File

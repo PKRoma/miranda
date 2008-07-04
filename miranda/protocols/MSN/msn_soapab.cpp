@@ -17,16 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-extern char *authContactToken;
+#include "msn_proto.h"
 
 static const char abReqHdr[] = 
 	"SOAPAction: http://www.msn.com/webservices/AddressBook/%s\r\n";
 
-char mycid[32] = "";
-char mypuid[32] = "";
 
-static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
+ezxml_t CMsnProto::abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr)
 {
 	ezxml_t xmlp = ezxml_new("soap:Envelope");
 	ezxml_set_attr(xmlp, "xmlns:soap", "http://schemas.xmlsoap.org/soap/envelope/");
@@ -70,21 +67,21 @@ static ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbd
 	return xmlp;
 }
 
-static void UpdateABHost(const char* service, const char* url)
+void CMsnProto::UpdateABHost(const char* service, const char* url)
 {
 	char hostname[128];
 	mir_snprintf(hostname, sizeof(hostname), "ABHost-%s", service); 
 
-	MSN_SetString(NULL, hostname, url);
+	setString(NULL, hostname, url);
 }
 
-static char* GetABHost(const char* service, bool isSharing)
+char* CMsnProto::GetABHost(const char* service, bool isSharing)
 {
 	char hostname[128];
 	mir_snprintf(hostname, sizeof(hostname), "ABHost-%s", service); 
 
 	char* host = (char*)mir_alloc(256);
-	if (MSN_GetStaticString(hostname, NULL, host, 256))
+	if (getStaticString(NULL, hostname, host, 256))
 	{
 		mir_snprintf(host, 256, "https://byrdr.omega.contacts.msn.com/abservice/%s.asmx", 
 			isSharing ? "SharingService" : "abservice");
@@ -94,9 +91,9 @@ static char* GetABHost(const char* service, bool isSharing)
 }
 
 
-bool MSN_ABAdd(void)
+bool CMsnProto::MSN_ABAdd(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy, node;
@@ -132,9 +129,9 @@ bool MSN_ABAdd(void)
 }
 
 
-bool MSN_SharingFindMembership(void)
+bool CMsnProto::MSN_SharingFindMembership(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -258,7 +255,7 @@ bool MSN_SharingFindMembership(void)
 }
 
 // AddMember, DeleteMember
-bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod)
+bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod)
 {
 	const char* szRole;
 	if (listId & LIST_AL) szRole = "Allow";
@@ -267,7 +264,7 @@ bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int ne
 	else if (listId & LIST_RL) szRole = "Reverse";
 	else return false;
 
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -356,16 +353,16 @@ bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int ne
 	return status == 200;
 }
 
-static void SetAbParam(HANDLE hContact, const char *name, const char *par)
+void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 {
-	if (*par) MSN_SetStringUtf(hContact, name, (char*)par);
-//	else MSN_DeleteSetting(hContact, "FirstName");
+	if (*par) setStringUtf(hContact, name, (char*)par);
+//	else deleteSetting(hContact, "FirstName");
 }
 
 
-bool MSN_ABGetFull(void)
+bool CMsnProto::MSN_ABGetFull(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -471,7 +468,7 @@ bool MSN_ABGetFull(void)
 //				const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
 //				if (*szNick == '\0') szNick = szEmail;
 				HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, true, false);
-//				MSN_SetStringUtf(hContact, "Nick", (char*)szNick);
+//				setStringUtf(hContact, "Nick", (char*)szNick);
 				
 				const char* szNick = NULL;
 				ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
@@ -492,30 +489,30 @@ bool MSN_ABGetFull(void)
 				if (szNick == NULL)
 					DBDeleteContactSetting(hContact, "CList", "MyHandle");
 
-				MSN_SetString( hContact, "ID", szContId );
+				setString( hContact, "ID", szContId );
 
 				switch (netId)
 				{
 				case NETID_YAHOO:
-					MSN_SetString( hContact, "Transport", "YAHOO" );
+					setString( hContact, "Transport", "YAHOO" );
 					break;
 
 				case NETID_LCS:
-					MSN_SetString( hContact, "Transport", "LCS" );
+					setString( hContact, "Transport", "LCS" );
 					break;
 
 				default:
-					MSN_DeleteSetting( hContact, "Transport" );
+					deleteSetting( hContact, "Transport" );
 				}
 
 				ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
 				MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
 
 				szTmp  = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
-				MSN_SetByte(hContact, "MobileAllowed", strcmp(szTmp, "true") != 0);
+				setByte(hContact, "MobileAllowed", strcmp(szTmp, "true") != 0);
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
-				MSN_SetByte(hContact, "MobileEnabled", strcmp(szTmp, "true") == 0);
+				setByte(hContact, "MobileEnabled", strcmp(szTmp, "true") == 0);
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "firstName"));
 				SetAbParam(hContact, "FirstName", szTmp);
@@ -527,15 +524,15 @@ bool MSN_ABGetFull(void)
 				char *szPtr;
 				if (strtol(szTmp, &szPtr, 10) > 1)
 				{
-					MSN_SetWord(hContact, "BirthYear", (WORD)strtol(szTmp, &szPtr, 10));
-					MSN_SetByte(hContact, "BirthMonth", (BYTE)strtol(szPtr+1, &szPtr, 10));
-					MSN_SetByte(hContact, "BirthDay", (BYTE)strtol(szPtr+1, &szPtr, 10));
+					setWord(hContact, "BirthYear", (WORD)strtol(szTmp, &szPtr, 10));
+					setByte(hContact, "BirthMonth", (BYTE)strtol(szPtr+1, &szPtr, 10));
+					setByte(hContact, "BirthDay", (BYTE)strtol(szPtr+1, &szPtr, 10));
 				}
 				else
 				{
-//					MSN_DeleteSetting(hContact, "BirthYear");
-//					MSN_DeleteSetting(hContact, "BirthMonth");
-//					MSN_DeleteSetting(hContact, "BirthDay");
+//					deleteSetting(hContact, "BirthYear");
+//					deleteSetting(hContact, "BirthMonth");
+//					deleteSetting(hContact, "BirthDay");
 				}
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "comment"));
@@ -586,17 +583,17 @@ bool MSN_ABGetFull(void)
 			else
 			{
 //              This depricated in WLM 8.1
-//				if (!MSN_GetByte( "NeverUpdateNickname", 0 ))
+//				if (!getByte( "NeverUpdateNickname", 0 ))
 //				{
 //					const char* szNick  = ezxml_txt(ezxml_child(contInf, "displayName"));
-//					MSN_SetStringUtf(NULL, "Nick", (char*)szNick);
+//					setStringUtf(NULL, "Nick", (char*)szNick);
 //				}
 				const char *szTmp;
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
-				MSN_SetByte( "MobileEnabled", strcmp(szTmp, "true") == 0);
+				setByte( "MobileEnabled", strcmp(szTmp, "true") == 0);
 				szTmp = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
-				MSN_SetByte( "MobileAllowed", strcmp(szTmp, "true") != 0);
+				setByte( "MobileAllowed", strcmp(szTmp, "true") != 0);
 
 				ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 				while (anot != NULL)
@@ -619,9 +616,9 @@ bool MSN_ABGetFull(void)
 
 
 //		"ABGroupContactAdd" : "ABGroupContactDelete", "ABGroupDelete", "ABContactDelete"
-bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
+bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy, node;
@@ -667,9 +664,9 @@ bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const ch
 	return status == 200;
 }
 
-void MSN_ABAddGroup(const char* szGrpName)
+void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -723,9 +720,9 @@ void MSN_ABAddGroup(const char* szGrpName)
 }
 
 
-void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
+void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -763,9 +760,9 @@ void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 }
 
 
-void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
+void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -816,9 +813,9 @@ void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char*
 }
 
 
-void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue)
+void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -869,7 +866,7 @@ void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szVal
 }
 
 
-void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
+void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 {
 	if (szCntId != NULL)
 		MSN_ABUpdateAttr(szCntId, "AB.NickName", szNick);
@@ -878,9 +875,9 @@ void MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search)
+unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -977,7 +974,7 @@ unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, co
 			else
 			{
 				HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, true, false );
-				MSN_SetString(hContact, "ID", szContId);
+				setString(hContact, "ID", szContId);
 			}
 			status = 0;
 		}
@@ -997,9 +994,9 @@ unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, co
 }
 
 
-void MSN_ABUpdateDynamicItem(void)
+void CMsnProto::MSN_ABUpdateDynamicItem(void)
 {
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char* reqHdr;
 	ezxml_t tbdy;

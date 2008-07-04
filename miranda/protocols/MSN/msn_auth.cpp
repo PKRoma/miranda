@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 #include "des.h"
 
 static const char defaultPassportUrl[] = "https://login.live.com/RST.srf";
@@ -116,23 +117,16 @@ static const char authPacket[] =
 "</Envelope>";
 
 
-char *pAuthToken = NULL, *tAuthToken = NULL; 
-char *oimSendToken = NULL;
-char *authStrToken = NULL, *authSecretToken = NULL; 
-char *authContactToken = NULL;
-char *authStorageToken = NULL;
-char *hotSecretToken = NULL, *hotAuthToken = NULL;
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Performs the MSN Passport login via TLS
 
-int MSN_GetPassportAuth( void )
+int CMsnProto::MSN_GetPassportAuth( void )
 {
 	int retVal = -1;
-	SSLAgent mAgent;
+	SSLAgent mAgent(this);
 
 	char szPassword[100];
-	MSN_GetStaticString("Password", NULL, szPassword, sizeof(szPassword));
+	getStaticString(NULL, "Password", szPassword, sizeof(szPassword));
 	MSN_CallService(MS_DB_CRYPT_DECODESTRING, strlen(szPassword)+1, (LPARAM)szPassword);
 	szPassword[16] = 0;
 	char* szEncPassword = HtmlEncode(szPassword);
@@ -144,7 +138,7 @@ int MSN_GetPassportAuth( void )
 	mir_free( szEncPassword );
 
 	char* szPassportHost = (char*)mir_alloc(256);;
-	if ( MSN_GetStaticString( "MsnPassportHost", NULL, szPassportHost, 256) 
+	if ( getStaticString( NULL, "MsnPassportHost", szPassportHost, 256) 
 		|| strstr( szPassportHost, "/RST.srf" ) == NULL )
 		strcpy( szPassportHost, defaultPassportUrl );
 
@@ -270,10 +264,10 @@ int MSN_GetPassportAuth( void )
 			MSN_ShowError( retVal == 3 ? "Your username or password is incorrect" : 
 				"Unable to contact MS Passport servers check proxy/firewall settings" );
 		}
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 	}
 	else
-		MSN_SetString(NULL, "MsnPassportHost", szPassportHost);
+		setString(NULL, "MsnPassportHost", szPassportHost);
 
 	mir_free(szPassportHost);
 	MSN_DebugLog( "MSN_CheckRedirector exited with errorCode = %d", retVal );
@@ -381,7 +375,7 @@ static unsigned char* PKCS5_Padding(char* in, size_t &len)
 }
 
 
-char* GenerateLoginBlob(char* challenge) 
+char* CMsnProto::GenerateLoginBlob(char* challenge) 
 {
 	const size_t keylen = strlen(authSecretToken);
 	size_t key1len = Netlib_GetBase64DecodedBufferSize(keylen);
@@ -442,12 +436,12 @@ char* GenerateLoginBlob(char* challenge)
 }
 
 
-char* HotmailLogin(const char* url)
+char* CMsnProto::HotmailLogin(const char* url)
 {
 	return NULL;
 }
 
-void FreeAuthTokens(void)
+void CMsnProto::FreeAuthTokens(void)
 {
 	mir_free(pAuthToken);
 	mir_free(tAuthToken);

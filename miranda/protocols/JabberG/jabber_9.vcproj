@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="jabber"
 	ProjectGUID="{33276462-8313-4192-8306-13717ECCA60A}"
 	RootNamespace="jabber"
@@ -386,7 +386,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib wsock32.lib version.lib comctl32.lib zlib.lib"
+				OutputFile="c:\Program Files\Miranda IM\plugins\jabber.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"

@@ -33,12 +33,17 @@ extern pfnCloseDesktop closeDesktop;
 
 /**** memory.c *************************************************************************/
 
-#ifdef _STATIC
-void*  mir_alloc( size_t );
+#define mir_alloc malloc
+//#define mir_calloc(x) calloc(x, 1)
+#define mir_realloc realloc
+#define mir_free free
+#define mir_strdup strdup
+
+//void*  mir_alloc( size_t );
 void*  mir_calloc( size_t );
-void*  mir_realloc( void* ptr, size_t );
-void   mir_free( void* ptr );
-char*  mir_strdup( const char* str );
+//void*  mir_realloc( void* ptr, size_t );
+//void   mir_free( void* ptr );
+//char*  mir_strdup( const char* str );
 WCHAR* mir_wstrdup( const WCHAR* str );
 
 int    mir_snprintf(char *buffer, size_t count, const char* fmt, ...);
@@ -50,7 +55,6 @@ WCHAR* mir_a2u_cp(const char* src, int codepage);
 WCHAR* mir_a2u(const char* src);
 char*  mir_u2a_cp(const wchar_t* src, int codepage);
 char*  mir_u2a( const wchar_t* src);
-#endif
 
 /**** miranda.c ************************************************************************/
 
@@ -162,7 +166,7 @@ void WriteDbAccounts( void );
 int CallProtoServiceInt( HANDLE hContact, const char* szModule, const char* szService, WPARAM, LPARAM );
 int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM, LPARAM );
 
-__inline static int CallProtoService( const char* szModule, const char* szService, WPARAM wParam, LPARAM lParam )
+__inline int CallProtoService( const char* szModule, const char* szService, WPARAM wParam, LPARAM lParam )
 {
 	return CallProtoServiceInt( NULL, szModule, szService, wParam, lParam );
 }

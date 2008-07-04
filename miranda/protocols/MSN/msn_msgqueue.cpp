@@ -19,28 +19,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 
 //a few little functions to manage queuing send message requests until the
 //connection is established
 
-static CRITICAL_SECTION csMsgQueue;
-static int msgQueueSeq;
-
-static OBJLIST<MsgQueueEntry> msgQueueList(1);
-
-void MsgQueue_Init(void)
+void CMsnProto::MsgQueue_Init(void)
 {
 	msgQueueSeq = 1;
 	InitializeCriticalSection(&csMsgQueue);
 }
 
-void MsgQueue_Uninit(void)
+void CMsnProto::MsgQueue_Uninit(void)
 {
 	MsgQueue_Clear();
 	DeleteCriticalSection(&csMsgQueue);
 }
 
-int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
+int  CMsnProto::MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags )
 {
 	EnterCriticalSection( &csMsgQueue );
 
@@ -67,7 +63,7 @@ int  MsgQueue_Add( HANDLE hContact, int msgType, const char* msg, int msgSize, f
 }
 
 // shall we create another session?
-HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
+HANDLE  CMsnProto::MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 {
 	EnterCriticalSection(&csMsgQueue);
 
@@ -87,7 +83,7 @@ HANDLE  MsgQueue_CheckContact(HANDLE hContact, time_t tsc)
 }
 
 //for threads to determine who they should connect to
-HANDLE  MsgQueue_GetNextRecipient(void)
+HANDLE  CMsnProto::MsgQueue_GetNextRecipient(void)
 {
 	EnterCriticalSection( &csMsgQueue );
 
@@ -112,7 +108,7 @@ HANDLE  MsgQueue_GetNextRecipient(void)
 }
 
 //deletes from list. Must mir_free() return value
-bool  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
+bool  CMsnProto::MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 {
 	int i;
 
@@ -131,7 +127,7 @@ bool  MsgQueue_GetNext( HANDLE hContact, MsgQueueEntry& retVal )
 	return res;
 }
 
-int  MsgQueue_NumMsg( HANDLE hContact )
+int  CMsnProto::MsgQueue_NumMsg( HANDLE hContact )
 {
 	int res = 0;
 	EnterCriticalSection( &csMsgQueue );
@@ -143,7 +139,7 @@ int  MsgQueue_NumMsg( HANDLE hContact )
 	return res;
 }
 
-void  MsgQueue_Clear( HANDLE hContact, bool msg )
+void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
 {
 	int i;
 
@@ -155,7 +151,7 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 		{
 			const MsgQueueEntry& E = msgQueueList[ i ];
 			if ( E.msgSize == 0 )
-				MSN_SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+				SendBroadcast( E.hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
 					( HANDLE )E.seq, ( LPARAM )MSN_Translate( "Message delivery failed" ));
 			mir_free( E.message );
 		}
@@ -179,7 +175,7 @@ void  MsgQueue_Clear( HANDLE hContact, bool msg )
 
 				if ( msgfnd ) {
 					LeaveCriticalSection(&csMsgQueue);
-					MSN_SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )seq, 
+					SendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE )seq, 
 						( LPARAM )MSN_Translate( "Message delivery failed" ));
 					i = 0;
 					EnterCriticalSection( &csMsgQueue );

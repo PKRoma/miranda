@@ -19,8 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-SSL_Base::~SSL_Base() {}
+#include "msn_proto.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // WinInet class
@@ -45,6 +44,7 @@ typedef HINTERNET ( WINAPI *ft_InternetOpen )( LPCSTR, DWORD, LPCSTR, LPCSTR, DW
 class SSL_WinInet : public SSL_Base
 {
 public:
+	SSL_WinInet(CMsnProto* prt) : SSL_Base(prt) {}
 	virtual ~SSL_WinInet();
 
 	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
@@ -102,18 +102,18 @@ void SSL_WinInet::applyProxy( HINTERNET parHandle )
 {
 	char tBuffer[ 100 ];
 
-	MSN_DebugLog( "Applying proxy parameters..." );
+	proto->MSN_DebugLog( "Applying proxy parameters..." );
 
-	if ( !MSN_GetStaticString( "NLProxyAuthUser", NULL, tBuffer, sizeof( tBuffer )))
+	if ( !proto->getStaticString( NULL, "NLProxyAuthUser", tBuffer, sizeof( tBuffer )))
 		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_USERNAME, tBuffer, strlen( tBuffer )+1);
 	else
-		MSN_DebugLog( "Warning: proxy user name is required but missing" );
+		proto->MSN_DebugLog( "Warning: proxy user name is required but missing" );
 
-	if ( !MSN_GetStaticString( "NLProxyAuthPassword", NULL, tBuffer, sizeof( tBuffer ))) {
+	if ( !proto->getStaticString( NULL, "NLProxyAuthPassword", tBuffer, sizeof( tBuffer ))) {
 		MSN_CallService( MS_DB_CRYPT_DECODESTRING, strlen( tBuffer ), ( LPARAM )tBuffer );
 		f_InternetSetOption( parHandle, INTERNET_OPTION_PROXY_PASSWORD, tBuffer, strlen( tBuffer )+1);
 	}
-	else MSN_DebugLog( "Warning: proxy user password is required but missing" );
+	else proto->MSN_DebugLog( "Warning: proxy user password is required but missing" );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -146,8 +146,8 @@ char* SSL_WinInet::readData( HINTERNET hRequest )
 		while (tBufSize != 0 && dwOffset < dwSize);
 		tSslAnswer[dwOffset] = 0;
 
-		MSN_DebugLog( "SSL response:" );
-		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )tSslAnswer );
+		proto->MSN_DebugLog( "SSL response:" );
+		MSN_CallService( MS_NETLIB_LOG, ( WPARAM )proto->hNetlibUser, ( LPARAM )tSslAnswer );
 	}
 
 	return tSslAnswer;
@@ -170,18 +170,18 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 	HINTERNET tNetHandle;
 
-	if ( MyOptions.UseProxy ) {
-		DWORD ptype = MSN_GetByte( "NLProxyType", 0 );
-		if ( !MSN_GetByte( "UseIeProxy", 0 ) && ( ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS )) {
+	if ( proto->MyOptions.UseProxy ) {
+		DWORD ptype = proto->getByte( "NLProxyType", 0 );
+		if ( !proto->getByte( "UseIeProxy", 0 ) && ( ptype == PROXYTYPE_HTTP || ptype == PROXYTYPE_HTTPS )) {
 			char szProxy[ 100 ];
-			if ( MSN_GetStaticString( "NLProxyServer", NULL, szProxy, sizeof( szProxy ))) {
-				MSN_DebugLog( "Proxy server name should be set if proxy is used" );
+			if ( proto->getStaticString( NULL, "NLProxyServer", szProxy, sizeof( szProxy ))) {
+				proto->MSN_DebugLog( "Proxy server name should be set if proxy is used" );
 				return NULL;
 			}
 
-			int tPortNumber = MSN_GetWord( NULL, "NLProxyPort", -1 );
+			int tPortNumber = proto->getWord( NULL, "NLProxyPort", -1 );
 			if ( tPortNumber == -1 ) {
-				MSN_DebugLog( "Proxy server port should be set if proxy is used" );
+				proto->MSN_DebugLog( "Proxy server port should be set if proxy is used" );
 				return NULL;
 			}
 
@@ -197,11 +197,11 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		tNetHandle = f_InternetOpen( MSN_USER_AGENT, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0 );
 
 	if ( tNetHandle == NULL ) {
-		MSN_DebugLog( "InternetOpen() failed" );
+		proto->MSN_DebugLog( "InternetOpen() failed" );
 		return NULL;
 	}
 
-	MSN_DebugLog( "SSL request (%s): '%s'", MyOptions.UseProxy ? "using proxy": "direct connection", parUrl );
+	proto->MSN_DebugLog( "SSL request (%s): '%s'", proto->MyOptions.UseProxy ? "using proxy": "direct connection", parUrl );
 
 	URL_COMPONENTSA urlComp = {0};
 	urlComp.dwStructSize = sizeof( urlComp );
@@ -231,7 +231,7 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 			f_InternetSetOption( tRequest, INTERNET_OPTION_SEND_TIMEOUT, &tm, sizeof(tm));
 			f_InternetSetOption( tRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, &tm, sizeof(tm));
 
-		if ( MyOptions.UseProxy && MSN_GetByte( "NLUseProxyAuth", 0  ))
+		if ( proto->MyOptions.UseProxy && proto->getByte( "NLUseProxyAuth", 0  ))
 			applyProxy( tRequest );
 
 		char headers[2048];
@@ -242,21 +242,21 @@ char* SSL_WinInet::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		bool restart = false;
 
 LBL_Restart:
-			MSN_DebugLog( "Sending request..." );
+			proto->MSN_DebugLog( "Sending request..." );
 #ifndef _DEBUG
 			if (strstr(parUrl, "login") == NULL)
 #endif
-				MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )parAuthInfo );
+				MSN_CallService( MS_NETLIB_LOG, ( WPARAM )proto->hNetlibUser, ( LPARAM )parAuthInfo );
 
 			DWORD tErrorCode = f_HttpSendRequest( tRequest, headers, strlen( headers ), 
 				(void*)parAuthInfo, strlen( parAuthInfo ));
 			if ( tErrorCode == 0 ) {
 				TWinErrorCode errCode;
-				MSN_DebugLog( "HttpSendRequest() failed with error %d: %s", errCode.mErrorCode, errCode.getText());
+				proto->MSN_DebugLog( "HttpSendRequest() failed with error %d: %s", errCode.mErrorCode, errCode.getText());
 
 				switch( errCode.mErrorCode ) {
 					case 2:
-						MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
+						proto->MSN_ShowError( "Internet Explorer is in the 'Offline' mode. Switch IE to the 'Online' mode and then try to relogin" );
 						break;
 
 					case ERROR_INTERNET_INVALID_CA:
@@ -277,7 +277,7 @@ LBL_Restart:
 						}
 
 					default:
-						MSN_ShowError( "MSN Passport verification failed with error %d: %s",
+						proto->MSN_ShowError( "MSN Passport verification failed with error %d: %s",
 							errCode.mErrorCode, errCode.getText());
 				}
 			}
@@ -294,7 +294,7 @@ LBL_Restart:
 
 		f_InternetCloseHandle( tUrlHandle );
 	}
-	else MSN_DebugLog( "InternetOpenUrl() failed" );
+	else proto->MSN_DebugLog( "InternetOpenUrl() failed" );
 
 	f_InternetCloseHandle( tNetHandle );
 	return tSslAnswer;
@@ -306,6 +306,8 @@ LBL_Restart:
 class SSL_OpenSsl : public SSL_Base
 {
 public:
+	SSL_OpenSsl(CMsnProto* prt) : SSL_Base(prt) {}
+
 	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs );
 	virtual  int init(void);
 };
@@ -349,7 +351,7 @@ int SSL_OpenSsl::init(void)
 		if ( hLibSSL == NULL )
 			hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
 		if ( hLibSSL == NULL ) {
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
+			proto->MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
 
@@ -379,14 +381,14 @@ int SSL_OpenSsl::init(void)
 
 		if ( retVal ) {
 			FreeLibrary( hLibSSL );
-			MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
+			proto->MSN_ShowError( "Valid %s must be installed to perform the SSL login", "SSLEAY32.DLL" );
 			return 1;
 		}
 
 		pfn_SSL_library_init();
 		sslCtx = pfn_SSL_CTX_new( pfn_TLSv1_client_method());
 		pfn_SSL_CTX_set_verify(sslCtx, 0, NULL);
-		MSN_DebugLog( "OpenSSL context successully allocated" );
+		proto->MSN_DebugLog( "OpenSSL context successully allocated" );
 	}
 	return 0;
 }
@@ -404,7 +406,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	char* path1 = strchr(url+9, ':');
 	if (path == NULL) 
 	{
-		MSN_DebugLog( "Invalid URL passed: '%s'", parUrl );
+		proto->MSN_DebugLog( "Invalid URL passed: '%s'", parUrl );
 		return NULL;
 	}
 	if (path < path1 || path1 == NULL)
@@ -416,7 +418,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 	NETLIBUSERSETTINGS nls = { 0 };
 	nls.cbSize = sizeof( nls );
-	MSN_CallService(MS_NETLIB_GETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+	MSN_CallService(MS_NETLIB_GETUSERSETTINGS,WPARAM(proto->hNetlibUser),LPARAM(&nls));
 	int cpType = nls.proxyType;
 
 	if (nls.useProxy && cpType == PROXYTYPE_HTTP)
@@ -427,7 +429,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
 		nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
 		nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
-		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(proto->hNetlibUser),LPARAM(&nls));
 	}
 
 	NETLIBOPENCONNECTION tConn = { 0 };
@@ -435,7 +437,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	tConn.szHost = url+8;
 	tConn.wPort = 443;
 	tConn.timeout = 8;
-	HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
+	HANDLE h = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )proto->hNetlibUser, ( LPARAM )&tConn );
 	
 	if (nls.useProxy && cpType == PROXYTYPE_HTTP)
 	{
@@ -445,7 +447,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
 		nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
 		nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
-		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(hNetlibUser),LPARAM(&nls));
+		MSN_CallService(MS_NETLIB_SETUSERSETTINGS,WPARAM(proto->hNetlibUser),LPARAM(&nls));
 	}
 		
 	if ( h == NULL )
@@ -458,7 +460,7 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		if ( s != INVALID_SOCKET ) {
 			pfn_SSL_set_fd( ssl, s );
 			if ( pfn_SSL_connect( ssl ) > 0 ) {
-				MSN_DebugLog( "SSL connection succeeded" );
+				proto->MSN_DebugLog( "SSL connection succeeded" );
 
 				const char* chdrs = hdrs ? hdrs : "";
 				size_t hlen = strlen(chdrs) + 1024;
@@ -476,11 +478,11 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 					"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
-					MSN_DebugLog( "Sending SSL query:\n%s", headers );
+					proto->MSN_DebugLog( "Sending SSL query:\n%s", headers );
 #ifndef _DEBUG
 				if (strstr(parUrl, "login") == NULL)
 #endif
-					MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
+					proto->MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
 
 				pfn_SSL_write( ssl, headers, strlen( headers ));
 				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
@@ -509,8 +511,8 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 
 				if ( nBytes > 0 ) 
 				{
-					MSN_DebugLog( "SSL read successfully read %d bytes:", nBytes );
-					MSN_CallService( MS_NETLIB_LOG, ( WPARAM )hNetlibUser, ( LPARAM )result );
+					proto->MSN_DebugLog( "SSL read successfully read %d bytes:", nBytes );
+					MSN_CallService( MS_NETLIB_LOG, ( WPARAM )proto->hNetlibUser, ( LPARAM )result );
 
 					if ( strncmp( result, "HTTP/1.1 100", 12 ) == 0 ) 
 					{
@@ -523,29 +525,29 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 				{
 					mir_free( result );
 					result = NULL;
-					MSN_DebugLog( "SSL read failed" );
+					proto->MSN_DebugLog( "SSL read failed" );
 				}
 			}
-			else MSN_DebugLog( "SSL connection failed" );
+			else proto->MSN_DebugLog( "SSL connection failed" );
 		}
-		else MSN_DebugLog( "pfn_SSL_connect failed" );
+		else proto->MSN_DebugLog( "pfn_SSL_connect failed" );
 
 		pfn_SSL_free( ssl );
 	}
-	else MSN_DebugLog( "pfn_SSL_new failed" );
+	else proto->MSN_DebugLog( "pfn_SSL_new failed" );
 
 	Netlib_CloseHandle( h );
 	return result;
 }
 
-SSLAgent::SSLAgent()
+SSLAgent::SSLAgent(CMsnProto* proto)
 {
-	unsigned useOpenSSL = MSN_GetByte( "UseOpenSSL", false );
+	unsigned useOpenSSL = proto->getByte( "UseOpenSSL", false );
 
 	if ( useOpenSSL )
-		pAgent = new SSL_OpenSsl();
+		pAgent = new SSL_OpenSsl(proto);
 	else
-		pAgent = new SSL_WinInet();
+		pAgent = new SSL_WinInet(proto);
 
 	if ( pAgent->init() ) {
 		delete pAgent;
@@ -580,7 +582,7 @@ lbl_retry:
 				const char* loc = httpinfo[ "Location" ];
 				if (loc != NULL)
 				{
-					MSN_DebugLog( "Redirected to '%s'", loc );
+					pAgent->proto->MSN_DebugLog( "Redirected to '%s'", loc );
 					mir_free(*parUrl);
 					*parUrl = mir_strdup(loc);
 					mir_free(tResult);
@@ -599,7 +601,7 @@ void UninitSsl( void )
 	{
 		pfn_SSL_CTX_free( sslCtx );
 
-		MSN_DebugLog( "Free SSL library" );
+//		proto->MSN_DebugLog( "Free SSL library" );
 		FreeLibrary( hLibSSL );
 	}
 }

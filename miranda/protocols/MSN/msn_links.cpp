@@ -17,14 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 
 #include <m_addcontact.h>
 
 #include "sdk/m_assocmgr.h"
 
-extern LIST<void> arServices;
-
-static HANDLE GetContact(char *arg, char **email)
+static HANDLE GetContact(char *arg, char **email, CMsnProto *proto)
 {
 	*email = NULL;
 	do {
@@ -45,7 +44,7 @@ static HANDLE GetContact(char *arg, char **email)
 		*email = NULL;
 		return NULL;
 	}
-	return MSN_HContactFromEmail(*email, *email, false, false);
+	return proto->MSN_HContactFromEmail(*email, *email, false, false);
 }
 
 /* 
@@ -69,13 +68,25 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 
 	arg = NEWSTR_ALLOCA(arg);
 
+	if (g_Instances.getCount() == 0) return 0;
+
+	CMsnProto *proto = &g_Instances[0];
+	for (int i = 0; i < g_Instances.getCount(); ++i)
+	{
+		if ( g_Instances[i].m_iStatus != ID_STATUS_OFFLINE && g_Instances[i].m_iStatus != ID_STATUS_CONNECTING)
+		{
+			proto = &g_Instances[i];
+			break;
+		}
+	}
+
 	/* add a contact to the list */
 	if(_strnicmp(arg, "add?", 4) == 0) 
 	{ 
 		arg += 4;
 
 		char *email;
-		HANDLE hContact = GetContact(arg, &email);
+		HANDLE hContact = GetContact(arg, &email, proto);
 		if (email == NULL) return 1;
 
 		/* does not yet check if email is current user */
@@ -85,7 +96,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			PROTOSEARCHRESULT psr = {0};
 
 			acs.handleType = HANDLE_SEARCHRESULT;
-			acs.szProto = msnProtocolName;
+			acs.szProto = proto->m_szProtoName;
 			acs.psr = &psr;
 
 			psr.cbSize = sizeof(psr);
@@ -102,7 +113,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 		arg += 5;
 
 		char *email;
-		HANDLE hContact = GetContact(arg, &email);
+		HANDLE hContact = GetContact(arg, &email, proto);
 
 		if (hContact != NULL)
 		{
@@ -115,7 +126,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 		arg += 6;
 
 		char *email;
-		HANDLE hContact = GetContact(arg, &email);
+		HANDLE hContact = GetContact(arg, &email, proto);
 
 		if (hContact != NULL)
 		{
@@ -128,7 +139,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 		arg += 6;
 
 		char *email;
-		HANDLE hContact = GetContact(arg, &email);
+		HANDLE hContact = GetContact(arg, &email, proto);
 
 		if (hContact != NULL)
 		{
@@ -141,11 +152,8 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 
 void MsnLinks_Init(void)
 {
-	char szService[MAXMODULELABELLENGTH], szName[128];
+	static const char szService[] = "MSN/ParseMsnimLink";
 
-	mir_snprintf(szService, sizeof(szService), "%s%s", msnProtocolName, "ParseMsnimLink");
-	arServices.insert(CreateServiceFunction(szService, ServiceParseMsnimLink));
-
-	mir_snprintf(szName, sizeof(szName), "%s Link Protocol", msnProtocolName); 
-	AssocMgr_AddNewUrlType("msnim:", MSN_Translate(szName), hInst, IDI_MSN, szService, 0);
+	CreateServiceFunction(szService, ServiceParseMsnimLink);
+	AssocMgr_AddNewUrlTypeT("msnim:", TranslateT("MSN Link Protocol"), hInst, IDI_MSN, szService, 0);
 }

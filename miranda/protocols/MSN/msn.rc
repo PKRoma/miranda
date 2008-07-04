@@ -38,7 +38,7 @@ BEGIN
     EDITTEXT        IDC_PASSWORD,72,34,100,12,ES_PASSWORD | ES_AUTOHSCROLL
     RTEXT           "Nickname:",IDC_STATIC,16,52,52,8
     EDITTEXT        IDC_HANDLE2,72,50,100,12,ES_AUTOHSCROLL
-    CONTROL         "Create a new MSN messenger account using the MSN website",IDC_NEWMSNACCOUNTLINK,
+    CONTROL         "Create a new Windows Live account",IDC_NEWMSNACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,21,68,208,8
     GROUPBOX        "Expert",IDC_STATIC,4,84,298,106,WS_GROUP
     CONTROL         "Send message font color/size info inside messages",IDC_SENDFONTINFO,
@@ -90,13 +90,13 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
     CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x1f3,9,12,287,180,WS_EX_CLIENTEDGE
-    ICON            "",IDC_ICON_FL,10,196,21,20,SS_REALSIZEIMAGE
+    ICON            "",IDC_ICON_FL,10,196,20,20,SS_REALSIZEIMAGE
     LTEXT           "Contact is included into your server list",IDC_STATIC,28,196,144,8
     ICON            "",IDC_ICON_AL,187,196,20,20,SS_REALSIZEIMAGE
+    LTEXT           "Allowed (active) contact",IDC_STATIC,204,196,82,8
+    ICON            "",IDC_ICON_RL,10,208,20,20,SS_REALSIZEIMAGE
     LTEXT           "Somebody included you in his/her server list",IDC_STATIC,28,208,144,8
     ICON            "",IDC_ICON_BL,187,208,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Allowed (active) contact",IDC_STATIC,204,196,82,8
-    ICON            "",IDC_ICON_RL,10,208,21,20,SS_REALSIZEIMAGE
     LTEXT           "Blocked contact",IDC_STATIC,204,208,82,8
 END
 
@@ -152,8 +152,8 @@ BEGIN
     CONTROL         "",IDC_CCARD_TAB1,"SysTabControl32",0x0,0,0,223,117
 END
 
-IDD_CARD_GEN DIALOGEX 0, 0, 278, 129
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU | WS_THICKFRAME
+IDD_CARD_GEN DIALOGEX 0, 0, 278, 130
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Mobile Device (used for SMS)",IDC_STATIC,7,8,126,8
@@ -161,10 +161,10 @@ BEGIN
     EDITTEXT        IDC_CARD_GEN_IM2,7,73,125,13,ES_AUTOHSCROLL
     LTEXT           "Spouse/Partner",IDC_STATIC,7,64,122,8
     EDITTEXT        IDC_EDIT5,143,18,121,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT6,153,74,118,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT7,152,46,119,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,145,74,118,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,144,46,119,12,ES_AUTOHSCROLL
     LTEXT           "Middle Name",IDC_STATIC,145,35,117,8
-    LTEXT           "First Name",IDC_STATIC,151,8,120,8
+    LTEXT           "First Name",IDC_STATIC,143,8,120,8
     LTEXT           "Last Name",IDC_STATIC,145,63,116,8
     COMBOBOX        IDC_COMBO1,7,100,67,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_COMBO2,77,100,28,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
@@ -197,6 +197,18 @@ BEGIN
     LTEXT           "Last Name",IDC_STATIC,7,36,34,8
 END
 
+IDD_ACCMGRUI DIALOGEX 0, 0, 190, 131
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    RTEXT           "Full e-mail:",IDC_STATIC,11,29,52,8
+    EDITTEXT        IDC_HANDLE,67,27,100,12,ES_AUTOHSCROLL
+    RTEXT           "Password:",IDC_STATIC,11,45,52,8
+    EDITTEXT        IDC_PASSWORD,67,43,100,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "Create a new Windows Live account",IDC_NEWMSNACCOUNTLINK,
+                    "Hyperlink",WS_TABSTOP,7,81,176,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -216,7 +228,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 271
         TOPMARGIN, 7
-        BOTTOMMARGIN, 122
+        BOTTOMMARGIN, 123
     END
 
     IDD_CARD_CONTACT, DIALOG
@@ -225,6 +237,14 @@ BEGIN
         RIGHTMARGIN, 337
         TOPMARGIN, 7
         BOTTOMMARGIN, 149
+    END
+
+    IDD_ACCMGRUI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 124
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -239,6 +259,7 @@ END
 // remains consistent on all systems.
 IDI_MSN                 ICON                    "Icos\\msn.ico"
 IDI_MSNBLOCK            ICON                    "Icos\\msnblock.ico"
+IDI_SERVICES            ICON                    "Icos\\services.ico"
 IDI_INBOX               ICON                    "Icos\\inbox.ico"
 IDI_INVITE              ICON                    "Icos\\invite.ico"
 IDI_NETMEETING          ICON                    "Icos\\netmeeting.ico"
@@ -247,7 +268,6 @@ IDI_LIST_FL             ICON                    "Icos\\list_fl.ico"
 IDI_LIST_AL             ICON                    "Icos\\list_al.ico"
 IDI_LIST_BL             ICON                    "Icos\\list_bl.ico"
 IDI_LIST_RL             ICON                    "Icos\\list_rl.ico"
-IDI_SERVICES            ICON                    "Icos\\services.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

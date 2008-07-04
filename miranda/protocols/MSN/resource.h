@@ -7,6 +7,7 @@
 #define IDD_OPT_MSN_CONN                106
 #define IDD_HOTMAIL_OPT_POPUP           107
 #define IDI_MSNBLOCK                    108
+#define IDI_SERVICES                    109
 #define IDI_INBOX                       112
 #define IDI_INVITE                      113
 #define IDI_NETMEETING                  114
@@ -18,8 +19,7 @@
 #define IDI_LIST_RL                     123
 #define IDD_CARD_GEN                    133
 #define IDD_CARD_CONTACT                134
-#define IDI_ICON1                       135
-#define IDI_SERVICES                    135
+#define IDD_ACCMGRUI                    135
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
@@ -79,7 +79,6 @@
 #define IDC_ENTER_MAILER_APP            1059
 #define IDC_MOBILE                      1060
 #define IDC_MSN_MOBILE                  1061
-#define IDC_WEBMESSENGER                1062
 #define IDC_LOGINSERVER                 1171
 #define IDC_YOURHOST                    1172
 #define IDC_MSNPORT                     1174
@@ -93,6 +92,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1046

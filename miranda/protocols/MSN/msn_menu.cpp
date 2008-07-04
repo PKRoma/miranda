@@ -19,31 +19,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-extern LIST<void> arServices;
-
-HANDLE msnBlockMenuItem = NULL;
-HANDLE msnMenuItems[ 1 ];
-HANDLE menuItemsAll[ 6 ] = { 0 };
+#include "msn_proto.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Block command callback function
 
-static int MsnBlockCommand( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 {
-	if ( msnLoggedIn ) {
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
-		MSN_GetStaticString( "e-mail", (HANDLE)wParam, tEmail, sizeof( tEmail ));
+	if ( msnLoggedIn ) 
+	{
+		const HANDLE hContact = (HANDLE)wParam;
 
-		MSN_SetWord(( HANDLE )wParam, "ApparentMode", Lists_IsInList( LIST_BL, tEmail ) ? 0 : ID_STATUS_OFFLINE );
+		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		getStaticString( hContact, "e-mail", tEmail, sizeof( tEmail ));
+
+		setWord( hContact, "ApparentMode", Lists_IsInList( LIST_BL, tEmail ) ? 0 : ID_STATUS_OFFLINE );
 	}
 	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGotoInbox - goes to the Inbox folder at the Hotmail.com
-void MsnInvokeMyURL( bool ismail, char* url );
-static int MsnGotoInbox( WPARAM, LPARAM )
+int CMsnProto::MsnGotoInbox( WPARAM, LPARAM )
 {
 	MsnInvokeMyURL( true, NULL );
 	return 0;
@@ -52,7 +49,7 @@ static int MsnGotoInbox( WPARAM, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnEditProfile - goes to the Profile section at the Hotmail.com
 
-static int MsnEditProfile( WPARAM, LPARAM )
+int CMsnProto::MsnEditProfile( WPARAM, LPARAM )
 {
 	MsnInvokeMyURL( false, NULL );
 	return 0;
@@ -61,7 +58,7 @@ static int MsnEditProfile( WPARAM, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnInviteCommand - invite command callback function
 
-static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 {
 	ThreadData* tActiveThreads[ 64 ];
 	int tThreads = MSN_GetActiveThreads( tActiveThreads ), tChosenThread;
@@ -84,7 +81,7 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 			{
 				char sessionName[ 255 ];
 				mir_snprintf( sessionName, sizeof( sessionName ), "%s %s%s",
-					msnProtocolName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
+					m_szProtoName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
 				::AppendMenuA( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
 			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactNameT( *tActiveThreads[i]->mJoinedContacts ));
@@ -125,10 +122,10 @@ static int MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnRebuildContactMenu - gray or ungray the block menus according to contact's status
 
-int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
+int CMsnProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 {
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, szEmail, sizeof( szEmail ))) {
+	if ( !getStaticString(( HANDLE )wParam, "e-mail", szEmail, sizeof( szEmail ))) {
 		CLISTMENUITEM clmi = { 0 };
 		clmi.cbSize = sizeof( clmi );
 		clmi.pszName = (char*)(Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block");
@@ -141,7 +138,7 @@ int MsnRebuildContactMenu( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendNetMeeting - Netmeeting callback function
 
-static int MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 {
 	if ( !msnLoggedIn ) return 0;
 
@@ -182,11 +179,15 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault( hwndDlg );
+
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			CMsnProto* proto = (CMsnProto*)lParam;
+
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "main" ));
 			SendMessage( GetDlgItem( hwndDlg, IDC_NICKNAME ), EM_LIMITTEXT, 129, 0 );
 
 			DBVARIANT dbv;
-			if ( !MSN_GetStringT( "Nick", NULL, &dbv )) {
+			if ( !proto->getTString( "Nick", &dbv )) {
 				SetDlgItemText( hwndDlg, IDC_NICKNAME, dbv.ptszVal );
 				MSN_FreeVariant( &dbv );
 			}
@@ -195,12 +196,14 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 		case WM_COMMAND:
 			switch(wParam)
 			{
-				case IDOK:
-					if ( msnLoggedIn ) {
+			case IDOK: {
+					CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+					if ( proto->msnLoggedIn ) {
 						TCHAR str[ 130 ];
 						GetDlgItemText( hwndDlg, IDC_NICKNAME, str, SIZEOF( str ));
-						MSN_SendNicknameT( str );
+						proto->MSN_SendNicknameT( str );
 					}
+				}
 
 				case IDCANCEL:
  					DestroyWindow( hwndDlg );
@@ -219,9 +222,10 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static int SetNicknameUI( WPARAM wParam, LPARAM lParam )
+int CMsnProto::SetNicknameUI( WPARAM wParam, LPARAM lParam )
 {
-	HWND hwndSetNickname = CreateDialog(hInst, MAKEINTRESOURCE( IDD_SETNICKNAME ), NULL, DlgProcSetNickname );
+	HWND hwndSetNickname = CreateDialogParam (hInst, MAKEINTRESOURCE( IDD_SETNICKNAME ), 
+		NULL, DlgProcSetNickname, (LPARAM)this );
 
 	SetForegroundWindow( hwndSetNickname );
 	SetFocus( hwndSetNickname );
@@ -234,12 +238,12 @@ static int SetNicknameUI( WPARAM wParam, LPARAM lParam )
 
 static const char sttUrlPrefix[] = "http://members.msn.com/";
 
-static int MsnViewProfile( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM lParam )
 {
 	char tUrl[ MSN_MAX_EMAIL_LEN + sizeof(sttUrlPrefix) ];
 	strcpy( tUrl, sttUrlPrefix );
 
-	if ( !MSN_GetStaticString( "e-mail", ( HANDLE )wParam, tUrl + sizeof(sttUrlPrefix) - 1, MSN_MAX_EMAIL_LEN ))
+	if ( !getStaticString(( HANDLE )wParam, "e-mail", tUrl + sizeof(sttUrlPrefix) - 1, MSN_MAX_EMAIL_LEN ))
 		MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tUrl );
 	return 0;
 }
@@ -247,7 +251,7 @@ static int MsnViewProfile( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnViewServiceStatus - display MSN services status
 
-static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 {
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://messenger.msn.com/Status.aspx" );
 	return 0;
@@ -256,45 +260,45 @@ static int MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 //////////////////////////////////////////////////////////////////////////////////////
 // Menus initialization
 
-void MsnInitMenus( void )
+void CMsnProto::MsnInitMenus( void )
 {
 	char servicefunction[ 100 ];
-	strcpy( servicefunction, msnProtocolName );
+	strcpy( servicefunction, m_szProtoName );
 	char* tDest = servicefunction + strlen( servicefunction );
 
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
 	mi.pszService = servicefunction;
-	mi.pszPopupName = msnProtocolName;
+	mi.ptszPopupName = m_tszUserName;
 
 	strcpy( tDest, MS_SET_NICKNAME_UI );
-	arServices.insert( CreateServiceFunction( servicefunction, SetNicknameUI ));
-	mi.flags = CMIF_ICONFROMICOLIB;
+	CreateProtoService( MS_SET_NICKNAME_UI, &CMsnProto::SetNicknameUI );
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
 	mi.popupPosition = 500085000;
 	mi.position = 2000060000;
 	mi.icolibItem = GetIconHandle( IDI_MSN );
-	mi.pszName = LPGEN("Set &Nickname");
+	mi.ptszName = LPGENT("Set &Nickname");
 	msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_GOTO_INBOX );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnGotoInbox ));
+	CreateProtoService( MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox );
 	mi.position = 2000060001;
 	mi.icolibItem = GetIconHandle( IDI_INBOX );
-	mi.pszName = LPGEN("Display Hotmail &Inbox");
+	mi.ptszName = LPGENT("Display Hotmail &Inbox");
 	menuItemsAll[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_EDIT_PROFILE );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnEditProfile ));
+	CreateProtoService( MS_EDIT_PROFILE, &CMsnProto::MsnEditProfile );
 	mi.position = 2000060002;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
-	mi.pszName = LPGEN("My MSN &Space");
+	mi.ptszName = LPGENT("My MSN &Space");
 	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_VIEW_STATUS );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnViewServiceStatus ));
+	CreateProtoService( MS_VIEW_STATUS, &CMsnProto::MsnViewServiceStatus );
 	mi.position = 2000060003;
 	mi.icolibItem = GetIconHandle( IDI_SERVICES );
-	mi.pszName = LPGEN("View MSN Services &Status");
+	mi.ptszName = LPGENT("View MSN Services &Status");
 	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 
@@ -302,39 +306,39 @@ void MsnInitMenus( void )
 	// Contact menu initialization
 
 	strcpy( tDest, MSN_BLOCK );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnBlockCommand ));
+	CreateProtoService( MSN_BLOCK, &CMsnProto::MsnBlockCommand );
 	mi.position = -500050000;
 	mi.icolibItem = GetIconHandle( IDI_MSNBLOCK );
-	mi.pszContactOwner = msnProtocolName;
-	mi.pszName = LPGEN("&Block");
+	mi.pszContactOwner = m_szProtoName;
+	mi.ptszName = LPGENT("&Block");
 	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_NETMEETING );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnSendNetMeeting ));
+	CreateProtoService( MSN_NETMEETING, &CMsnProto::MsnSendNetMeeting );
 	mi.position = -500050002;
 	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
-	mi.pszName = LPGEN("&Start Netmeeting");
+	mi.ptszName = LPGENT("&Start Netmeeting");
 	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_VIEW_PROFILE );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnViewProfile ));
+	CreateProtoService( MSN_VIEW_PROFILE, &CMsnProto::MsnViewProfile );
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
-	mi.pszName = LPGEN("&View Profile");
+	mi.ptszName = LPGENT("&View Profile");
 	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_INVITE );
-	arServices.insert( CreateServiceFunction( servicefunction, MsnInviteCommand ));
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+	CreateProtoService( MSN_INVITE, &CMsnProto::MsnInviteCommand );
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE | CMIF_TCHAR;
 	mi.position = -500050001;
 	mi.icolibItem = GetIconHandle( IDI_INVITE );
-	mi.pszName = LPGEN("&Invite to chat");
+	mi.ptszName = LPGENT("&Invite to chat");
 	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	MSN_EnableMenuItems( false );
 }
 
-void  MSN_EnableMenuItems( bool parEnable )
+void  CMsnProto::MSN_EnableMenuItems( bool parEnable )
 {
 	CLISTMENUITEM clmi = { 0 };
 	clmi.cbSize = sizeof( clmi );

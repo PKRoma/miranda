@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN contact option page dialog procedure.
 
-
+/*
 INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) 
@@ -34,10 +34,10 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 				
 				const HANDLE hContact = (HANDLE)lParam;
 
-				SetDlgItemInt(hwndDlg, IDC_MOBILE, DBGetContactSettingByte(hContact, msnProtocolName, "MobileAllowed", 0), 0);
-				SetDlgItemInt(hwndDlg, IDC_MSN_MOBILE, DBGetContactSettingByte(hContact, msnProtocolName, "MobileEnabled", 0), 0);
+				SetDlgItemInt(hwndDlg, IDC_MOBILE, DBGetContactSettingByte(hContact, m_szProtoName, "MobileAllowed", 0), 0);
+				SetDlgItemInt(hwndDlg, IDC_MSN_MOBILE, DBGetContactSettingByte(hContact, m_szProtoName, "MobileEnabled", 0), 0);
 
-				DWORD dwFlagBits = MSN_GetDword(hContact, "FlagBits", 0);
+				DWORD dwFlagBits = setDword(hContact, "FlagBits", 0);
 				SetDlgItemTextA(hwndDlg, IDC_WEBMESSENGER, (dwFlagBits & 0x200) ? "Y" : "N");
 			}
 
@@ -49,7 +49,7 @@ INT_PTR CALLBACK MsnDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam
 
 	return FALSE;
 }
-
+*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnOnDetailsInit - initializes user info dialog pages.
 
@@ -59,11 +59,11 @@ int MsnOnDetailsInit( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
-	if ( MSN_GetDword( hContact, "FlagBits", 0 )) {
+	if ( setDword( hContact, "FlagBits", 0 )) {
 		odp.pfnDlgProc = MsnDlgProc;
 		odp.position = -1900000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);
-		odp.pszTitle = MSN_Translate(msnProtocolName);
+		odp.pszTitle = MSN_Translate(m_szProtoName);
 		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 */	return 0;

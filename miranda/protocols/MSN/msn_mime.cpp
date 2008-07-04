@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "msn_global.h"
 
+#pragma hdrstop
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // constructors and destructor
 
@@ -154,7 +156,6 @@ char* MimeHeaders::readFromBuffer( char* parString )
 
 		char* delim = strchr( parString, ':' );
 		if ( delim == NULL ) {
-			MSN_DebugLog( "MSG: Invalid MIME header: '%s'", parString );
 			parString = peol;
 			continue;
 		}

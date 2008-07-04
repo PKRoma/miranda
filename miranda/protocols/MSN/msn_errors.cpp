@@ -22,10 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
 
-extern int tridUrlInbox;
-
-int MSN_HandleErrors( ThreadData* info, char* cmdString )
+int CMsnProto::MSN_HandleErrors( ThreadData* info, char* cmdString )
 {
 	int errorCode, packetID = -1;
 	sscanf( cmdString, "%d %d", &errorCode, &packetID );
@@ -35,13 +34,13 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	switch( errorCode ) {
 	case ERR_INTERNAL_SERVER:
 		MSN_ShowError( "MSN Services are temporarily unavailable, please try to connect later" );
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
 	case ERR_SERVER_BUSY:
 	case ERR_SERVER_UNAVAILABLE:
 		MSN_ShowError( "MSN Services are too busy, please try to connect later" );
-		MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
+		SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 		return 1;
 
 	case ERR_NOT_ALLOWED_WHEN_OFFLINE:
@@ -64,7 +63,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 			return 0;
 
 	case ERR_NOT_ONLINE:
-		MSN_SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+		SendBroadcast( info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
 			( HANDLE )999999, ( LPARAM )MSN_Translate("User not online"));
 		return 1;
 
@@ -75,7 +74,7 @@ int MSN_HandleErrors( ThreadData* info, char* cmdString )
 	case ERR_AUTHENTICATION_FAILED:
 		if ( info->mType != SERVER_SWITCHBOARD ) {
 			MSN_ShowError( "Your username or password is incorrect" );
-			MSN_SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		}
 		return 1;
 

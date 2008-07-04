@@ -62,7 +62,7 @@ static int CheckBlock( void* blk )
 }
 
 /******************************************************************************/
-
+/*
 void* mir_alloc( size_t size )
 {
 	if ( size == 0 )
@@ -82,7 +82,7 @@ void* mir_alloc( size_t size )
 		*( DWORD* )&p[ size + sizeof(DWORD)*2 ] = BLOCK_ALLOCED;
 		return p + sizeof( DWORD )*2;
 }	}
-
+*/
 /******************************************************************************/
 
 void* mir_calloc( size_t size )
@@ -94,7 +94,7 @@ void* mir_calloc( size_t size )
 }
 
 /******************************************************************************/
-
+/*
 void* mir_realloc( void* ptr, size_t size )
 {
 	char* p;
@@ -120,9 +120,9 @@ void* mir_realloc( void* ptr, size_t size )
 	*( DWORD* )&p[ size + sizeof(DWORD)*2 ] = BLOCK_ALLOCED;
 	return p + sizeof( DWORD )*2;
 }
-
+*/
 /******************************************************************************/
-
+/*
 void mir_free( void* ptr )
 {
 	char* p;
@@ -139,9 +139,9 @@ void mir_free( void* ptr )
 	*( DWORD* )&p[ size + sizeof(DWORD)*2 ] = BLOCK_FREED;
 	free( p );
 }
-
+*/
 /******************************************************************************/
-
+/*
 char* mir_strdup( const char* str )
 {
 	if ( str != NULL ) {
@@ -152,7 +152,7 @@ char* mir_strdup( const char* str )
 	}
 	return NULL;
 }
-
+*/
 /******************************************************************************/
 
 WCHAR* mir_wstrdup( const WCHAR* str )

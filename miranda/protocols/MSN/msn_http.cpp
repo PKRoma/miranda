@@ -19,6 +19,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
+#include "msn_proto.h"
+
+static ThreadData* FindThreadConn(HANDLE hConn)
+{
+	ThreadData* res = NULL;
+	for (int i = 0; i < g_Instances.getCount() && res == NULL; ++i)
+		res = g_Instances[i].MSN_GetThreadByConnection( hConn );
+
+	return res;
+}
 
 //=======================================================================================
 // Fake function - it does nothing but confirms successful session initialization
@@ -41,7 +51,7 @@ int msn_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION* nloc, NETLIBHTTPREQU
 
 int msn_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDASERVICE pfnNetlibSend)
 {
-	ThreadData* T = MSN_GetThreadByConnection( hConn );
+	ThreadData* T = FindThreadConn( hConn );
 	if ( T != NULL )
 		T->applyGatewayData( hConn, len == 0 );
 
@@ -58,7 +68,7 @@ PBYTE msn_httpGatewayUnwrapRecv( NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, in
 {
 	*outBufLen = len;
 
-	ThreadData* T = MSN_GetThreadByConnection( nlhr->nlc );
+	ThreadData* T = FindThreadConn( nlhr->nlc );
 	if ( T == NULL ) return buf;
 
 	bool tIsSessionClosed = true;

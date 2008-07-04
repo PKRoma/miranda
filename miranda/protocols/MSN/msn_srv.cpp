@@ -19,25 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "msn_global.h"
-
-struct ServerGroupItem
-{
-	char* id;
-	char* name; // in UTF8
-};
-
-static int CompareGrp( const ServerGroupItem* p1, const ServerGroupItem* p2 )
-{
-	return _stricmp(p1->id, p2->id);
-}
-
-static LIST<ServerGroupItem> grpList( 10, CompareGrp );
+#include "msn_proto.h"
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_AddGroup - adds new server group to the list
 
-void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
+void CMsnProto::MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 {
 	ServerGroupItem* p = grpList.find((ServerGroupItem*)&grpId);
 	if ( p != NULL ) return;
@@ -64,7 +52,7 @@ void MSN_AddGroup( const char* grpName, const char *grpId, bool init )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DeleteGroup - deletes a group from the list
 
-void MSN_DeleteGroup( const char* pId )
+void CMsnProto::MSN_DeleteGroup( const char* pId )
 {
 	int i = grpList.getIndex((ServerGroupItem*)&pId);
 	if (i > -1) 
@@ -80,7 +68,7 @@ void MSN_DeleteGroup( const char* pId )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_DeleteServerGroup - deletes group from the server
 
-void MSN_DeleteServerGroup( LPCSTR szId )
+void CMsnProto::MSN_DeleteServerGroup( LPCSTR szId )
 {
 	if ( !MyOptions.ManageServer ) return;
 
@@ -90,10 +78,10 @@ void MSN_DeleteServerGroup( LPCSTR szId )
 	while ( hContact != NULL )
 	{
 		char szGroupID[ 100 ];
-		if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) 
+		if ( !getStaticString( hContact, "GroupID", szGroupID, sizeof( szGroupID ))) 
 		{
 			if (strcmp(szGroupID, szId) == 0)
-				MSN_DeleteSetting( hContact, "GroupID" );
+				deleteSetting( hContact, "GroupID" );
 		}
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
@@ -104,7 +92,7 @@ void MSN_DeleteServerGroup( LPCSTR szId )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_FreeGroups - clears the server groups list
 
-void MSN_FreeGroups(void)
+void CMsnProto::MSN_FreeGroups(void)
 {
 	for ( int i=0; i < grpList.getCount(); i++ ) 
 	{
@@ -119,7 +107,7 @@ void MSN_FreeGroups(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetGroupById - tries to return a group name associated with given UUID
 
-LPCSTR MSN_GetGroupById( const char* pId )
+LPCSTR CMsnProto::MSN_GetGroupById( const char* pId )
 {
 	ServerGroupItem* p = grpList.find((ServerGroupItem*)&pId);
 	return p ? p->name : NULL;
@@ -128,7 +116,7 @@ LPCSTR MSN_GetGroupById( const char* pId )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetGroupByName - tries to return a group UUID associated with the given name 
 
-LPCSTR MSN_GetGroupByName( const char* pName )
+LPCSTR CMsnProto::MSN_GetGroupByName( const char* pName )
 {
 	for ( int i=0; i < grpList.getCount(); i++ ) 
 	{
@@ -143,7 +131,7 @@ LPCSTR MSN_GetGroupByName( const char* pName )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SetGroupName - sets a new name to a server group
 
-void MSN_SetGroupName( const char* pId, const char* pNewName )
+void CMsnProto::MSN_SetGroupName( const char* pId, const char* pNewName )
 {
 	ServerGroupItem* p = grpList.find((ServerGroupItem*)&pId);
 	if (p != NULL) replaceStr(p->name, pNewName );
@@ -152,16 +140,16 @@ void MSN_SetGroupName( const char* pId, const char* pNewName )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_MoveContactToGroup - sends a contact to the specified group 
 
-void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
+void CMsnProto::MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 {
 	if (!MyOptions.ManageServer) return;
 
 	LPCSTR szId = NULL;
 	char szContactID[100], szGroupID[100];
-	if ( MSN_GetStaticString("ID", hContact, szContactID, sizeof( szContactID)))
+	if ( getStaticString(hContact, "ID", szContactID, sizeof( szContactID)))
 		return;
 
-	if (MSN_GetStaticString("GroupID", hContact, szGroupID, sizeof( szGroupID)))
+	if (getStaticString(hContact, "GroupID", szGroupID, sizeof( szGroupID)))
 		szGroupID[0] = 0;
 
 	bool bInsert = false, bDelete = szGroupID[0] != 0;
@@ -184,13 +172,13 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 	if ( bDelete )
  	{
 		MSN_ABAddDelContactGroup(szContactID, szGroupID, "ABGroupContactDelete");
-		MSN_DeleteSetting( hContact, "GroupID" );
+		deleteSetting( hContact, "GroupID" );
 	}
 
 	if ( bInsert )
 	{
 		MSN_ABAddDelContactGroup(szContactID, szId, "ABGroupContactAdd");
-		MSN_SetString( hContact, "GroupID", szId );
+		setString( hContact, "GroupID", szId );
 	}
 
 	if ( bDelete ) MSN_RemoveEmptyGroups();
@@ -199,7 +187,7 @@ void MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_RemoveEmptyGroups - removes empty groups from the server list
 
-void MSN_RemoveEmptyGroups( void )
+void CMsnProto::MSN_RemoveEmptyGroups( void )
 {
 	if ( !MyOptions.ManageServer ) return;
 
@@ -211,7 +199,7 @@ void MSN_RemoveEmptyGroups( void )
 		if ( MSN_IsMyContact( hContact )) 
 		{
 			char szGroupID[ 100 ];
-			if ( !MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID ))) 
+			if ( !getStaticString( hContact, "GroupID", szGroupID, sizeof( szGroupID ))) 
 			{
 				const char *pId = szGroupID;
 				int i = grpList.getIndex((ServerGroupItem*)&pId);
@@ -231,7 +219,7 @@ void MSN_RemoveEmptyGroups( void )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_RenameServerGroup - renames group on the server
 
-void MSN_RenameServerGroup( LPCSTR szId, const char* newName )
+void CMsnProto::MSN_RenameServerGroup( LPCSTR szId, const char* newName )
 {
 	MSN_SetGroupName(szId, newName);
 	MSN_ABRenameGroup(newName, szId);
@@ -241,7 +229,7 @@ void MSN_RenameServerGroup( LPCSTR szId, const char* newName )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_UploadServerGroups - adds a group to the server list and contacts into the group
 
-void  MSN_UploadServerGroups( char* group )
+void  CMsnProto::MSN_UploadServerGroups( char* group )
 {
 	if ( !MyOptions.ManageServer ) return;
 
@@ -252,7 +240,7 @@ void  MSN_UploadServerGroups( char* group )
 			if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) {
 				char szGroupID[ 100 ];
 				if ( group == NULL || ( strcmp( group, dbv.pszVal ) == 0 &&
-					MSN_GetStaticString( "GroupID", hContact, szGroupID, sizeof( szGroupID )) != 0 )) 
+					getStaticString( hContact, "GroupID", szGroupID, sizeof( szGroupID )) != 0 )) 
 				{
 					MSN_MoveContactToGroup( hContact, dbv.pszVal );
 				}
@@ -267,7 +255,7 @@ void  MSN_UploadServerGroups( char* group )
 // if contact in multiple server groups it get removed from all of them other them it's
 // in or the last one
 
-void MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_t cgrp )
+void CMsnProto::MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_t cgrp )
 {
 	if ( !MyOptions.ManageServer ) return;
 
@@ -289,13 +277,13 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_
 	}
 
 	if ( szGrpIdF != NULL ) {
-		MSN_SetString( hContact, "GroupID", szGrpIdF );
+		setString( hContact, "GroupID", szGrpIdF );
 		DBWriteContactSettingStringUtf( hContact, "CList", "Group", 
 			MSN_GetGroupById( szGrpIdF ));
 	}
 	else {
 		DBDeleteContactSetting( hContact, "CList", "Group" );
-		MSN_DeleteSetting( hContact, "GroupID" );
+		deleteSetting( hContact, "GroupID" );
 	}	
 
 	if ( *dbv.pszVal ) MSN_FreeVariant( &dbv );
@@ -304,9 +292,9 @@ void MSN_SyncContactToServerGroup( HANDLE hContact, const char* szContId, ezxml_
 /////////////////////////////////////////////////////////////////////////////////////////
 // Msn_SendNickname - update our own nickname on the server
 
-void  MSN_SendNicknameUtf(char* nickname)
+void  CMsnProto::MSN_SendNicknameUtf(char* nickname)
 {
-	MSN_SetStringUtf(NULL, "Nick", nickname);
+	setStringUtf(NULL, "Nick", nickname);
 	
 	MSN_SetNicknameUtf(nickname);
 	MSN_StoreUpdateNick(nickname);
@@ -314,7 +302,7 @@ void  MSN_SendNicknameUtf(char* nickname)
 	mir_free(nickname);
 }
 
-void  MSN_SetNicknameUtf(char* nickname)
+void  CMsnProto::MSN_SetNicknameUtf(char* nickname)
 {
 	const size_t urlNickSz = strlen(nickname) * 3 + 1;
 	char* urlNick = (char*)alloca(urlNickSz);
