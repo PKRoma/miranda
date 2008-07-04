@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
-#define IDC_STATIC						-1
 #define IDC_AUTHICON                    1
 #define IDC_NOTOALL                     3
 #define IDC_APPLY                       3

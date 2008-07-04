@@ -235,8 +235,7 @@
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
-			CharacterSet="1"
-			WholeProgramOptimization="FALSE">
+			CharacterSet="1">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -260,7 +259,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
-				OutputFile="&quot;C:\Program Files\Miranda IM\miranda32.exe&quot; "
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -934,6 +932,9 @@
 				</File>
 				<File
 					RelativePath=".\modules\database\dbtime.c">
+				</File>
+				<File
+					RelativePath=".\modules\database\dbutils.c">
 				</File>
 				<File
 					RelativePath=".\modules\database\profilemanager.c">

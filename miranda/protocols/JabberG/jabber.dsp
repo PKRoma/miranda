@@ -551,9 +551,5 @@ SOURCE=.\docs\readme_jabber.txt
 
 SOURCE=.\docs\translation_jabber.txt
 # End Source File
-# Begin Source File
-
-SOURCE=.\Release_Unicode\zlib.lib
-# End Source File
 # End Target
 # End Project

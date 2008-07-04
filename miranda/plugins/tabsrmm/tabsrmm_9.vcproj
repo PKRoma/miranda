@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="tabsrmm"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
@@ -387,7 +387,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
-				OutputFile="c:\Program Files\Miranda IM\plugins\tabsrmm.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				DelayLoadDLLs=""
