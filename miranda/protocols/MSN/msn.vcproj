@@ -791,6 +791,9 @@
 				RelativePath=".\msn_p2ps.cpp">
 			</File>
 			<File
+				RelativePath=".\msn_proto.cpp">
+			</File>
+			<File
 				RelativePath=".\msn_soapab.cpp">
 			</File>
 			<File
