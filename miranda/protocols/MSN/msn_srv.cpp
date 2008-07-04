@@ -121,7 +121,7 @@ LPCSTR CMsnProto::MSN_GetGroupByName( const char* pName )
 	for ( int i=0; i < grpList.getCount(); i++ ) 
 	{
 		const ServerGroupItem* p = grpList[i];
-		if ( _stricmp( p->name, pName ) == 0 )
+		if ( strcmp( p->name, pName ) == 0 )
 			return p->id;
 	}
 
