@@ -121,7 +121,7 @@ LPCSTR CMsnProto::MSN_GetGroupByName( const char* pName )
 	for ( int i=0; i < grpList.getCount(); i++ ) 
 	{
 		const ServerGroupItem* p = grpList[i];
-		if ( strcmp( p->name, pName ) == 0 )
+		if ( _stricmp( p->name, pName ) == 0 )
 			return p->id;
 	}
 
@@ -165,8 +165,9 @@ void CMsnProto::MSN_MoveContactToGroup( HANDLE hContact, const char* grpName )
 			MSN_ABAddGroup(grpName);
 			szId = MSN_GetGroupByName(grpName);
 		}
-		if (strcmp(szGroupID, szId) == 0) bDelete = false;
-		else                              bInsert = true;
+		if (szId == NULL) return;
+		if (_stricmp(szGroupID, szId) == 0) bDelete = false;
+		else                                bInsert = true;
 	}
 
 	if ( bDelete )
