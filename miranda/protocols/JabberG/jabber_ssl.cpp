@@ -102,7 +102,6 @@ BOOL CJabberProto::SslInit()
 		JSetByte( "UseSSL", 0 );
 		return FALSE;
 	}
-		Netlib_Logf( NULL, "SSL library load successful" );
 
 	Log( "SSL library load successful" );
 	if ( m_sslCtx == NULL )
