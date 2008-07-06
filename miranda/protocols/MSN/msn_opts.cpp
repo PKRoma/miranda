@@ -342,9 +342,11 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			CheckDlgButton( hwndDlg, IDC_SLOWSEND,    proto->getByte( "SlowSend",    0 ));
 
 			char fpath[MAX_PATH], *fpathp;
-			if ( SearchPathA(NULL, "CYASSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
-				 SearchPathA(NULL, "SSLEAY32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
-				 SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 )
+			if ( 
+				SearchPathA(NULL, "WINSSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
+				SearchPathA(NULL, "CYASSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
+				SearchPathA(NULL, "SSLEAY32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
+				SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 )
 				CheckDlgButton( hwndDlg, IDC_USEOPENSSL, proto->getByte( "UseOpenSSL", 0 ));
 			else
 				EnableWindow( GetDlgItem( hwndDlg, IDC_USEOPENSSL ), FALSE);

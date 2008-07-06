@@ -48,7 +48,9 @@ static BOOL jabberSslInit()
 
 	BOOL error = FALSE;
 
-	hLibSSL = LoadLibraryA( "CYASSL.DLL" );
+	hLibSSL = LoadLibraryA( "WINSSL.DLL" );
+	if ( !hLibSSL )
+		hLibSSL = LoadLibraryA( "CYASSL.DLL" );
 	if ( !hLibSSL )
 		hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 	if ( !hLibSSL )

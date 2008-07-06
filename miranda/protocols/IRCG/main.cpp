@@ -102,7 +102,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	mir_getUTFI( &utfi );
 	mir_getLI( &li );
 
-	m_ssleay32 = LoadLibraryA( "cyassl.dll" );
+	m_ssleay32 = LoadLibraryA( "winssl.dll" );
+	if ( !m_ssleay32 )
+		m_ssleay32 = LoadLibraryA( "cyassl.dll" );
 	if ( !m_ssleay32 )
 		m_ssleay32 = LoadLibraryA("ssleay32.dll");
 
