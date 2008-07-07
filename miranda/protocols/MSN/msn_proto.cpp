@@ -223,7 +223,8 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlibUser), LPARAM(&nls));
 
 		HKEY hSettings;
-		if ( RegOpenKeyA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", &hSettings ))
+		if ( RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+			0, KEY_QUERY_VALUE, &hSettings ))
 			return 0;
 
 		char tValue[ 256 ];
