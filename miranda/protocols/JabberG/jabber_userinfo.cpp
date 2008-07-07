@@ -27,6 +27,7 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
+#include "m_icolib.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -90,6 +91,9 @@ enum
 	INFOLINE_BAD_ID	= 0x7fffffff,
 
 	INFOLINE_NAME	= 1,
+	INFOLINE_MOOD,
+	INFOLINE_ACTIVITY,
+	INFOLINE_TUNE,
 	INFOLINE_OFFLINE,
 	INFOLINE_MESSAGE,
 	INFOLINE_SOFTWARE,
@@ -302,6 +306,22 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 //	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
 }
 
+static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, DWORD dwInfoLine, HANDLE hContact, char *pszSlot )
+{
+	char *szAdvStatusIcon = ppro->ReadAdvStatusA(hContact, pszSlot, ADVSTATUS_VAL_ICON);
+	TCHAR *szAdvStatusTitle = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TITLE);
+	TCHAR *szAdvStatusText = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TEXT);
+
+	if (szAdvStatusIcon && szAdvStatusTitle && szAdvStatusText)
+		sttFillInfoLine( hwndTree, htiRoot,
+			(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szAdvStatusIcon),
+			TranslateTS(szAdvStatusTitle), szAdvStatusText, dwInfoLine);
+
+	mir_free(szAdvStatusIcon);
+	mir_free(szAdvStatusTitle);
+	mir_free(szAdvStatusText);
+}
+
 static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM *item )
 {
 	SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
@@ -311,6 +331,13 @@ static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM
 
 	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, ppro->LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
 	TCHAR buf[256];
+
+	if (HANDLE hContact = ppro->HContactFromJID(item->jid))
+	{
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_MOOD), hContact, ADVSTATUS_MOOD );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_ACTIVITY), hContact, ADVSTATUS_ACTIVITY );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_TUNE), hContact, ADVSTATUS_TUNE );
+	}
 
 	{	// subscription
 		switch ( item->subscription ) {

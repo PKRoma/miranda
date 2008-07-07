@@ -806,6 +806,7 @@ public:
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence errors"), "LogPresenceErrors", TRUE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"), "EnableUserMood", TRUE);
 		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"), "EnableUserTune", FALSE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user activity receiving"), "EnableUserActivity", TRUE);
 
 		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"), "Disable3920auth", FALSE);
 		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"), "EnableZlib", FALSE);

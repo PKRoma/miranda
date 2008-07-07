@@ -288,6 +288,11 @@ enum {
 #define ADVSTATUS_ACTIVITY         "activity"
 #define ADVSTATUS_TUNE             "tune"
 
+#define ADVSTATUS_VAL_ID           "id"
+#define ADVSTATUS_VAL_ICON         "icon"
+#define ADVSTATUS_VAL_TITLE        "title"
+#define ADVSTATUS_VAL_TEXT         "text"
+
 struct CJabberHttpAuthParams
 {
 	enum {IQ = 1, MSG = 2} m_nType;

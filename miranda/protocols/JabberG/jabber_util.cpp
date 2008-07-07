@@ -984,12 +984,11 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
 	}
 
-	// temporary disabled to eliminate questions
-//	if ( JGetByte( "EnableUserActivity", TRUE )) {
-//		if ( _tcslen( szExtCaps ))
-//			_tcscat( szExtCaps, _T(" "));
-//		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
-//	}
+	if ( JGetByte( "EnableUserActivity", TRUE )) {
+		if ( _tcslen( szExtCaps ))
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
+	}
 
 	if ( _tcslen( szExtCaps ))
 		c->addAttr( "ext", szExtCaps );
@@ -1311,6 +1310,10 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
 			ppro->m_pInfoFrame->CreateInfoItem("$/PEP/mood", true);
 			ppro->m_pInfoFrame->SetInfoItemCallback("$/PEP/mood", &CJabberProto::InfoFrame_OnUserMood);
 			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/mood", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), _T("User mood"));
+
+			ppro->m_pInfoFrame->CreateInfoItem("$/PEP/activity", true);
+			ppro->m_pInfoFrame->SetInfoItemCallback("$/PEP/activity", &CJabberProto::InfoFrame_OnUserActivity);
+			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), _T("User activity"));
 		}
 
 		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports/");
@@ -1397,6 +1400,7 @@ struct JabberEnterStringParams
 	size_t resultLen;
 	char *windowName;
 	int recentCount;
+	int timeout;
 
 	int idcControl;
 	int height;
@@ -1470,13 +1474,41 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			Utils_RestoreWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
 
 		SetTimer(hwndDlg, 1000, 50, NULL);
+
+		if (params->timeout > 0)
+		{
+			SetTimer(hwndDlg, 1001, 1000, NULL);
+			TCHAR buf[128];
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s (%d)"), TranslateT("OK"), params->timeout);
+			SetDlgItemText(hwndDlg, IDOK, buf);
+		}
+
 		return TRUE;
 	}
 	case WM_TIMER:
 	{
-		KillTimer(hwndDlg,1000);
-		EnableWindow(GetParent(hwndDlg), TRUE);
-		return TRUE;
+		switch (wParam)
+		{
+			case 1000:
+				KillTimer(hwndDlg,1000);
+				EnableWindow(GetParent(hwndDlg), TRUE);
+				return TRUE;
+
+			case 1001:
+			{
+				TCHAR buf[128];
+				mir_sntprintf(buf, SIZEOF(buf), _T("%s (%d)"), TranslateT("OK"), --params->timeout);
+				SetDlgItemText(hwndDlg, IDOK, buf);
+
+				if (params->timeout < 0)
+				{
+					KillTimer(hwndDlg, 1001);
+					UIEmulateBtnClick(hwndDlg, IDOK);
+				}
+
+				return TRUE;
+			}
+		}
 	}
 	case WM_SIZE:
 	{
@@ -1526,20 +1558,39 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 				params->ppro->ComboAddRecentString(hwndDlg, IDC_TXT_COMBO, params->windowName, params->result, params->recentCount);
 			if (params->windowName)
 				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
+
 			EndDialog( hwndDlg, 1 );
 			break;
 
 		case IDCANCEL:
 			if (params->windowName)
 				Utils_SaveWindowPosition(hwndDlg, NULL, params->ppro->m_szModuleName, params->windowName);
+
 			EndDialog( hwndDlg, 0 );
+			break;
+
+		case IDC_TXT_MULTILINE:
+		case IDC_TXT_RICHEDIT:
+			if ((HIWORD(wParam) != EN_SETFOCUS) && (HIWORD(wParam) != EN_KILLFOCUS))
+			{
+				SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
+				KillTimer(hwndDlg, 1001);
+			}
+			break;
+
+		case IDC_TXT_COMBO:
+			if ((HIWORD(wParam) != CBN_SETFOCUS) && (HIWORD(wParam) != CBN_KILLFOCUS))
+			{
+				SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
+				KillTimer(hwndDlg, 1001);
+			}
 			break;
 	}	}
 
 	return FALSE;
 }
 
-BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount)
+BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, int type, char *windowName, int recentCount, int timeout)
 {
 	bool free_caption = false;
 	if (!caption || (caption==result))
@@ -1549,7 +1600,8 @@ BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, 
 		result[ 0 ] = _T('\0');
 	}
 
-	JabberEnterStringParams params = { this, type, caption, result, resultLen, windowName, recentCount };
+	JabberEnterStringParams params = { this, type, caption, result, resultLen, windowName, recentCount, timeout };
+
 	BOOL bRetVal = DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INPUT ), GetForegroundWindow(), sttEnterStringDlgProc, LPARAM( &params ));
 
 	if (free_caption) mir_free( caption );

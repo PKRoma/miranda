@@ -786,7 +786,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   ComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
 	void   ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param, TCHAR *string, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
-	BOOL   EnterString(TCHAR *result, size_t resultLen, TCHAR *caption=NULL, int type=0, char *windowName=NULL, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
+	BOOL   EnterString(TCHAR *result, size_t resultLen, TCHAR *caption=NULL, int type=0, char *windowName=NULL, int recentCount=JABBER_DEFAULT_RECENT_COUNT, int timeout=0);
 
 	//---- jabber_vcard.c -----------------------------------------------
 
@@ -839,7 +839,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   RegisterAdvStatusSlot(const char *pszSlot);
 	void   ResetAdvStatus(HANDLE hContact, const char *pszSlot);
 	void   WriteAdvStatus(HANDLE hContact, const char *pszSlot, const char *pszMode, const char *pszIcon, const TCHAR *pszTitle, const TCHAR *pszText);
+	char*  ReadAdvStatusA(HANDLE hContact, const char *pszSlot, const char *pszValue);
+	TCHAR* ReadAdvStatusT(HANDLE hContact, const char *pszSlot, const char *pszValue);
 
+	BOOL   SendPepActivity( char* szFirstNode, char* szSecondNode, TCHAR* szText );
 	BOOL   SendPepMood( int nMoodNumber, TCHAR* szMoodText );
 	BOOL   SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 			
@@ -849,8 +852,12 @@ struct CJabberProto : public PROTO_INTERFACE
 			
 	void   SetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
 	void   SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
+	void   SetContactActivity( HANDLE hContact, char* szFirstNode, char* szSecondNode, TCHAR* szText );
 
 	void InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt);
+	void InfoFrame_OnUserActivity(CJabberInfoFrame_Event *evt);
+
+	int m_xsActivity;
 
 private:
 	XmlState xmlState;

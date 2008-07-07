@@ -38,13 +38,13 @@ Last change by : $Author$
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_skin_eng.h"
 
+#define _T_STUB_
 struct
 {
 	char	*szName;
 	char	*szTag;
 } static g_arrMoods[] = 
 {
-#define _T_STUB_
 	{ LPGEN("None"),			NULL					},
 	{ LPGEN("Afraid"),			_T_STUB_("afraid")		},
 	{ LPGEN("Amazed"),			_T_STUB_("amazed")		},
@@ -107,8 +107,96 @@ struct
 	{ LPGEN("Surprised"),		_T_STUB_("surprised")	},
 	{ LPGEN("Thirsty"),			_T_STUB_("thirsty")		},
 	{ LPGEN("Worried"),			_T_STUB_("worried")		},
-#undef _T_STUB_
 };
+
+#define ACTIVITY_ICON(section, item)	-(300 + (section) * 20)
+
+struct
+{
+	char *szFirst;
+	char *szSecond;
+	TCHAR *szTitle;
+	int iconid;
+} g_arrActivities[] = 
+{
+	{ "doing_chores", NULL,       _T("Doing chores"),       ACTIVITY_ICON( 0,  0) },
+	{ NULL, "buying_groceries",   _T("Buying groceries"),   ACTIVITY_ICON( 0,  1) },
+	{ NULL, "cleaning",           _T("Cleaning"),           ACTIVITY_ICON( 0,  2) },
+	{ NULL, "cooking",            _T("Cooking"),            ACTIVITY_ICON( 0,  3) },
+	{ NULL, "doing_maintenance",  _T("Doing maintenance"),  ACTIVITY_ICON( 0,  4) },
+	{ NULL, "doing_the_dishes",   _T("Doing the dishes"),   ACTIVITY_ICON( 0,  5) },
+	{ NULL, "doing_the_laundry",  _T("Doing the laundry"),  ACTIVITY_ICON( 0,  6) },
+	{ NULL, "gardening",          _T("Gardening"),          ACTIVITY_ICON( 0,  7) },
+	{ NULL, "running_an_errand",  _T("Running an errand"),  ACTIVITY_ICON( 0,  8) },
+	{ NULL, "walking_the_dog",    _T("Walking the dog"),    ACTIVITY_ICON( 0,  9) },
+	{ "drinking", NULL,           _T("Drinking"),           ACTIVITY_ICON( 1,  0) },
+	{ NULL, "having_a_beer",      _T("Having a beer"),      ACTIVITY_ICON( 1,  1) },
+	{ NULL, "having_coffee",      _T("Having coffee"),      ACTIVITY_ICON( 1,  2) },
+	{ NULL, "having_tea",         _T("Having tea"),         ACTIVITY_ICON( 1,  3) },
+	{ "eating", NULL,             _T("Eating"),             ACTIVITY_ICON( 2,  0) },
+	{ NULL, "having_a_snack",     _T("Having a snack"),     ACTIVITY_ICON( 2,  1) },
+	{ NULL, "having_breakfast",   _T("Having breakfast"),   ACTIVITY_ICON( 2,  2) },
+	{ NULL, "having_dinner",      _T("Having dinner"),      ACTIVITY_ICON( 2,  3) },
+	{ NULL, "having_lunch",       _T("Having lunch"),       ACTIVITY_ICON( 2,  4) },
+	{ "exercising", NULL,         _T("Exercising"),         ACTIVITY_ICON( 3,  0) },
+	{ NULL, "cycling",            _T("Cycling"),            ACTIVITY_ICON( 3,  1) },
+	{ NULL, "hiking",             _T("Hiking"),             ACTIVITY_ICON( 3,  2) },
+	{ NULL, "jogging",            _T("Jogging"),            ACTIVITY_ICON( 3,  3) },
+	{ NULL, "playing_sports",     _T("Playing sports"),     ACTIVITY_ICON( 3,  4) },
+	{ NULL, "running",            _T("Running"),            ACTIVITY_ICON( 3,  5) },
+	{ NULL, "skiing",             _T("Skiing"),             ACTIVITY_ICON( 3,  6) },
+	{ NULL, "swimming",           _T("Swimming"),           ACTIVITY_ICON( 3,  7) },
+	{ NULL, "working_out",        _T("Working out"),        ACTIVITY_ICON( 3,  8) },
+	{ "grooming", NULL,           _T("Grooming"),           ACTIVITY_ICON( 4,  0) },
+	{ NULL, "at_the_spa",         _T("At the spa"),         ACTIVITY_ICON( 4,  1) },
+	{ NULL, "brushing_teeth",     _T("Brushing teeth"),     ACTIVITY_ICON( 4,  2) },
+	{ NULL, "getting_a_haircut",  _T("Getting a haircut"),  ACTIVITY_ICON( 4,  3) },
+	{ NULL, "shaving",            _T("Shaving"),            ACTIVITY_ICON( 4,  4) },
+	{ NULL, "taking_a_bath",      _T("Taking a bath"),      ACTIVITY_ICON( 4,  5) },
+	{ NULL, "taking_a_shower",    _T("Taking a shower"),    ACTIVITY_ICON( 4,  6) },
+	{ "having_appointment", NULL, _T("Having appointment"), ACTIVITY_ICON( 5,  0) },
+	{ "inactive", NULL,           _T("Inactive"),           ACTIVITY_ICON( 6,  0) },
+	{ NULL, "day_off",            _T("Day off"),            ACTIVITY_ICON( 6,  1) },
+	{ NULL, "hanging_out",        _T("Hanging out"),        ACTIVITY_ICON( 6,  2) },
+	{ NULL, "on_vacation",        _T("On vacation"),        ACTIVITY_ICON( 6,  3) },
+	{ NULL, "scheduled_holiday",  _T("Scheduled holiday"),  ACTIVITY_ICON( 6,  4) },
+	{ NULL, "sleeping",           _T("Sleeping"),           ACTIVITY_ICON( 6,  5) },
+	{ "relaxing", NULL,           _T("Relaxing"),           ACTIVITY_ICON( 7,  0) },
+	{ NULL, "gaming",             _T("Gaming"),             ACTIVITY_ICON( 7,  1) },
+	{ NULL, "going_out",          _T("Going out"),          ACTIVITY_ICON( 7,  2) },
+	{ NULL, "partying",           _T("Partying"),           ACTIVITY_ICON( 7,  3) },
+	{ NULL, "reading",            _T("Reading"),            ACTIVITY_ICON( 7,  4) },
+	{ NULL, "rehearsing",         _T("Rehearsing"),         ACTIVITY_ICON( 7,  5) },
+	{ NULL, "shopping",           _T("Shopping"),           ACTIVITY_ICON( 7,  6) },
+	{ NULL, "socializing",        _T("Socializing"),        ACTIVITY_ICON( 7,  7) },
+	{ NULL, "sunbathing",         _T("Sunbathing"),         ACTIVITY_ICON( 7,  8) },
+	{ NULL, "watching_tv",        _T("Watching TV"),        ACTIVITY_ICON( 7,  9) },
+	{ NULL, "watching_a_movie",   _T("Watching a movie"),   ACTIVITY_ICON( 7, 10) },
+	{ "talking", NULL,            _T("Talking"),            ACTIVITY_ICON( 8,  0) },
+	{ NULL, "in_real_life",       _T("In real life"),       ACTIVITY_ICON( 8,  1) },
+	{ NULL, "on_the_phone",       _T("On the phone"),       ACTIVITY_ICON( 8,  2) },
+	{ NULL, "on_video_phone",     _T("On video phone"),     ACTIVITY_ICON( 8,  3) },
+	{ "traveling", NULL,          _T("Traveling"),          ACTIVITY_ICON( 9,  0) },
+	{ NULL, "commuting",          _T("Commuting"),          ACTIVITY_ICON( 9,  1) },
+	{ NULL, "cycling",            _T("Cycling"),            ACTIVITY_ICON( 9,  2) },
+	{ NULL, "driving",            _T("Driving"),            ACTIVITY_ICON( 9,  3) },
+	{ NULL, "in_a_car",           _T("In a car"),           ACTIVITY_ICON( 9,  4) },
+	{ NULL, "on_a_bus",           _T("On a bus"),           ACTIVITY_ICON( 9,  5) },
+	{ NULL, "on_a_plane",         _T("On a plane"),         ACTIVITY_ICON( 9,  6) },
+	{ NULL, "on_a_train",         _T("On a train"),         ACTIVITY_ICON( 9,  7) },
+	{ NULL, "on_a_trip",          _T("On a trip"),          ACTIVITY_ICON( 9,  8) },
+	{ NULL, "walking",            _T("Walking"),            ACTIVITY_ICON( 9,  9) },
+	{ "working", NULL,            _T("Working"),            ACTIVITY_ICON(10,  0) },
+	{ NULL, "coding",             _T("Coding"),             ACTIVITY_ICON(10,  1) },
+	{ NULL, "in_a_meeting",       _T("In a meeting"),       ACTIVITY_ICON(10,  2) },
+	{ NULL, "studying",           _T("Studying"),           ACTIVITY_ICON(10,  3) },
+	{ NULL, "writing",            _T("Writing"),            ACTIVITY_ICON(10,  4) },
+	{ NULL, NULL, NULL } // the end, don't delete this
+};
+#undef _T_STUB_
+
+static int CheckActivity(char *szFirstNode, char *szSecondNode);
+
 
 HICON CJabberProto::GetXStatusIcon(int bStatus, UINT flags)
 {
@@ -244,7 +332,7 @@ int __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberSendPepMood - sends mood
+// SendPepMood - sends mood
 
 BOOL CJabberProto::SendPepMood( int nMoodNumber, TCHAR* szMoodText )
 {
@@ -280,7 +368,60 @@ BOOL CJabberProto::SendPepMood( int nMoodNumber, TCHAR* szMoodText )
 		itemNode->addAttr( "id", "current" );
 	}
 	m_ThreadInfo->send( iq );
-	
+
+	return TRUE;
+}
+
+BOOL CJabberProto::SendPepActivity( char* szFirstNode, char* szSecondNode, TCHAR* szText )
+{
+	if ( !m_bJabberOnline || !m_bPepSupported || ( !szFirstNode && szSecondNode ))
+		return FALSE;
+
+	int iActivityNo = CheckActivity(szFirstNode, szSecondNode);
+	if (iActivityNo < 0)
+		return FALSE;
+
+	HANDLE hIcolibIcon = NULL;
+	if (szFirstNode)
+	{
+		char szSettingName[256];
+		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName, szFirstNode );
+		hIcolibIcon = (HANDLE)CallService(MS_SKIN2_GETICONHANDLE, NULL, (LPARAM)szSettingName);
+	} else
+	{
+		hIcolibIcon = LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT);
+	}
+
+	m_pInfoFrame->UpdateInfoItem("$/PEP/activity",
+		hIcolibIcon,
+		TranslateTS(g_arrActivities[iActivityNo].szTitle));
+
+	XmlNodeIq iq( "set", SerialNext() );
+	XmlNode* pubsubNode = iq.addChild( "pubsub" );
+	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
+
+	if ( szFirstNode ) {
+		XmlNode* publishNode = pubsubNode->addChild( "publish" );
+		publishNode->addAttr( "node", JABBER_FEAT_USER_ACTIVITY );
+		XmlNode* itemNode = publishNode->addChild( "item" );
+		itemNode->addAttr( "id", "current" );
+		XmlNode* activityNode = itemNode->addChild( "activity" );
+		activityNode->addAttr( "xmlns", JABBER_FEAT_USER_ACTIVITY );
+		XmlNode* firstNode = activityNode->addChild( szFirstNode );
+		if ( firstNode && szSecondNode )
+			firstNode->addChild( szSecondNode );
+		if ( szText )
+			activityNode->addChild( "text", szText );
+	}
+	else {
+		XmlNode* retractNode = pubsubNode->addChild( "retract" );
+		retractNode->addAttr( "node", JABBER_FEAT_USER_ACTIVITY );
+		retractNode->addAttr( "notify", 1 );
+		XmlNode* itemNode = retractNode->addChild( "item" );
+		itemNode->addAttr( "id", "current" );
+	}
+	m_ThreadInfo->send( iq );
+
 	return TRUE;
 }
 
@@ -352,6 +493,74 @@ void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szL
 	WriteAdvStatus( hContact, ADVSTATUS_TUNE, "listening_to", tuneIcon, TranslateT("Listening To"), szListeningTo );
 
 	mir_free( szListeningTo );
+}
+
+// -1 if not found, otherwise activity number
+static int CheckActivity(char *szFirstNode, char *szSecondNode)
+{
+	if (!szFirstNode) return 0;
+
+	int i = 0, nFirst = -1, nSecond = -1;
+	while ( g_arrActivities[i].szFirst || g_arrActivities[i].szSecond ) {
+		// check first node
+		if ( g_arrActivities[i].szFirst && !strcmp( szFirstNode, g_arrActivities[i].szFirst )) {
+			// first part found
+			nFirst = i;
+			if ( !szSecondNode ) {
+				nSecond = i;
+				break;
+			}
+			i++; // move to next
+			while ( g_arrActivities[i].szSecond ) {
+				if ( !strcmp( g_arrActivities[i].szSecond, szSecondNode )) {
+					nSecond = i;
+					break;
+				}
+				i++;
+			}
+			break;
+		}
+		i++;
+	}
+	if ( nSecond != -1 )
+		return nSecond;
+	
+	return nFirst;
+}
+
+char* FindFirstActivityNode(int nPosition)
+{
+	if ( nPosition < 0 || ( nPosition >= sizeof(g_arrActivities) / sizeof(g_arrActivities[0] )))
+		return NULL;
+	
+	// nPosition == 0 are also handled here
+	if (g_arrActivities[nPosition].szFirst)
+		return g_arrActivities[nPosition].szFirst;
+
+	while (--nPosition != -1)
+	{
+		if (g_arrActivities[nPosition].szFirst)
+			return g_arrActivities[nPosition].szFirst;
+	}
+	return NULL;
+}
+
+void CJabberProto::SetContactActivity( HANDLE hContact, char* szFirstNode, char* szSecondNode, TCHAR* szText )
+{
+	// node retract? delete settings
+	if ( !szFirstNode && !szSecondNode && !szText ) {
+		ResetAdvStatus( hContact, ADVSTATUS_ACTIVITY );
+		return;
+	}
+
+	int nActivityNumber = CheckActivity( szFirstNode, szSecondNode );
+	// currently we are support only standard activities
+	if ( nActivityNumber != -1 ) {
+		char *szActivity = g_arrActivities[nActivityNumber].szSecond ? g_arrActivities[nActivityNumber].szSecond : g_arrActivities[nActivityNumber].szFirst;
+		WriteAdvStatus( hContact, ADVSTATUS_ACTIVITY, szActivity, szActivity, g_arrActivities[nActivityNumber].szTitle, szText );
+	}
+	else
+		ResetAdvStatus( hContact, ADVSTATUS_ACTIVITY );
 }
 
 TCHAR* a2tf( const TCHAR* str, BOOL unicode )
@@ -460,6 +669,75 @@ void CJabberProto::InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt)
 	JMenuDestroy(hMenu, NULL, NULL);
 }
 
+void CJabberProto::InfoFrame_OnUserActivity(CJabberInfoFrame_Event *evt)
+{
+	HMENU hMenu = JMenuCreate(true);
+	HMENU hPopup = NULL;
+
+	JMenuAddItem( hMenu, 1, TranslateT("None"), LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), true, (m_xsActivity == 0) ? true : false);
+	JMenuAddSeparator( hMenu );
+
+	for( int i = 0; g_arrActivities[i].szFirst || g_arrActivities[i].szSecond; i++ )
+	{
+		if (g_arrActivities[i].szFirst)
+		{
+			char szSettingName[256];
+			mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName,
+				g_arrActivities[i].szFirst ? g_arrActivities[i].szFirst : g_arrActivities[i].szSecond );
+
+			hPopup = JMenuCreate(false);
+			JMenuAddPopup(hMenu, hPopup,
+				TranslateTS( g_arrActivities[i].szTitle),
+				(HICON)CallService(MS_SKIN2_GETICONHANDLE, NULL, (LPARAM)szSettingName), true);
+
+			JMenuAddItem(hPopup, i + 2,
+				TranslateTS( g_arrActivities[i].szTitle),
+				NULL, false, false);
+			JMenuAddSeparator(hPopup);
+		} else
+		{
+			JMenuAddItem(hPopup, i + 2,
+				TranslateTS( g_arrActivities[i].szTitle),
+				NULL, false, (m_xsActivity == i+1) ? true : false);
+		}
+	}
+	int res = JMenuShow(hMenu); 
+	if (res) {
+		if (res == 1) {
+			SendPepActivity( NULL, NULL, NULL );
+			m_xsActivity = 0;
+		}
+		else
+		{
+			char *szFirstNode = FindFirstActivityNode( res - 2 );
+			char *szSecondNode = g_arrActivities[res - 2].szSecond;
+
+			if ( szFirstNode ) {
+				char szSetting[64];
+				sprintf(szSetting, "ActMsg/%s/%s", szFirstNode, szSecondNode ? szSecondNode : "");
+
+				TCHAR szStatusText[1024] = {0};
+				
+				DBVARIANT dbv;
+				if ( !JGetStringT( NULL, szSetting, &dbv ))
+				{
+					lstrcpyn(szStatusText, dbv.ptszVal, SIZEOF(szStatusText));
+					JFreeVariant( &dbv );
+				}
+				
+				if (EnterString(szStatusText, SIZEOF(szStatusText), TranslateT("Activity message:"), JES_MULTINE, "statusMsgWnd", 0, 5))
+				{
+					SendPepActivity( szFirstNode, szSecondNode, szStatusText );
+					m_xsActivity = res-1;
+					JSetStringT( NULL, szSetting, szStatusText );
+				}
+
+			}
+		}
+	}
+	JMenuDestroy(hMenu, NULL, NULL);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // builds xstatus menu
 
@@ -517,26 +795,36 @@ void CJabberProto::InitXStatusIcons()
 	if ( p != NULL )
 		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
 
+	char szSettingName[100];
 	TCHAR szSection[ 100 ];
 	TCHAR szDescription[ 100 ];
-
-	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
+	sid.pszName = szSettingName;
 	sid.ptszSection = szSection;
 	sid.ptszDescription = szDescription;
 	sid.flags = SIDF_TCHAR;
 
+	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
 	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
-		char szSettingName[100];
 		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName, g_arrMoods[i].szName );
-		sid.pszName = szSettingName;
 		mir_sntprintf(szDescription, SIZEOF(szDescription), _T(TCHAR_STR_PARAM), g_arrMoods[i].szName);
 		sid.iDefaultIndex = -( i+200 );
 		m_xstatusIcons[ i ].hIcon = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
+	}
+
+	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Activities"), m_tszUserName);
+	for ( int i = 0; i < SIZEOF(g_arrActivities); i++ ) {
+		if (!g_arrActivities[i].szFirst) continue;
+
+		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName,
+			g_arrActivities[i].szFirst ? g_arrActivities[i].szFirst : g_arrActivities[i].szSecond );
+		lstrcpy(szDescription, g_arrActivities[i].szTitle);
+		sid.iDefaultIndex = g_arrActivities[i].iconid;
+		/*m_xstatusIcons[ i ].hIcon = */( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 	}
 }
 
@@ -551,6 +839,7 @@ void CJabberProto::XStatusInit()
 
 	RegisterAdvStatusSlot( ADVSTATUS_MOOD );
 	RegisterAdvStatusSlot( ADVSTATUS_TUNE );
+	RegisterAdvStatusSlot( ADVSTATUS_ACTIVITY );
 }
 
 void CJabberProto::XStatusUninit()
@@ -565,7 +854,7 @@ void CJabberProto::XStatusUninit()
 		UnhookEvent( m_hHookExtraIconsApply );
 }
 
-
+/*
 static WNDPROC OldMessageEditProc;
 
 static LRESULT CALLBACK MessageEditSubclassProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -715,7 +1004,7 @@ static BOOL CALLBACK SetMoodMsgDlgProc( HWND hwndDlg, UINT message, WPARAM wPara
 	}
 	return FALSE;
 }
-
+*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetXStatus - sets the extended status info (mood)
 
@@ -731,10 +1020,34 @@ int __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM lParam )
 		JDeleteSetting( NULL, DBSETTING_XSTATUSID );
 	}
 	else {
-		SetMoodMsgDlgProcParam* param = new SetMoodMsgDlgProcParam;
-		param->mood = wParam;
-		param->ppro = this;
-		CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_SETMOODMSG), NULL, SetMoodMsgDlgProc, ( LPARAM )param );
+		int nStatus = wParam;
+		if ( !nStatus || nStatus > NUM_XMODES )
+			nStatus = 1;
+
+		char szSetting[64];
+		sprintf(szSetting, "XStatus%dMsg", nStatus);
+
+		TCHAR szMoodText[1024] = {0};
+		
+		DBVARIANT dbv;
+		if ( !JGetStringT( NULL, szSetting, &dbv ))
+		{
+			lstrcpyn(szMoodText, dbv.ptszVal, SIZEOF(szMoodText));
+			JFreeVariant( &dbv );
+		}
+		
+		if (EnterString(szMoodText, SIZEOF(szMoodText), TranslateT("Mood message:"), JES_MULTINE, "statusMsgWnd", 0, 5))
+		{
+			SendPepMood( nStatus, szMoodText );
+
+			JSetByte( NULL, DBSETTING_XSTATUSID, nStatus );
+			JSetStringT( NULL, DBSETTING_XSTATUSMSG, szMoodText );
+			JSetString( NULL, DBSETTING_XSTATUSNAME, g_arrMoods[ nStatus ].szName );
+
+			JSetStringT(NULL, szSetting, szMoodText);
+		}
+
+		//CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_SETMOODMSG), NULL, SetMoodMsgDlgProc, ( LPARAM )param );
 	}
 
 	m_nJabberXStatus = wParam;
@@ -795,6 +1108,34 @@ void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const ch
 		DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszText);
 	else
 		DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+}
+
+char *CJabberProto::ReadAdvStatusA(HANDLE hContact, const char *pszSlot, const char *pszValue)
+{
+	char szSetting[128];
+	DBVARIANT dbv = {0};
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", m_szModuleName, pszSlot, pszValue);
+	if (DBGetContactSettingString(hContact, "AdvStatus", szSetting, &dbv))
+		return NULL;
+
+	char *res = mir_strdup(dbv.pszVal);
+	DBFreeVariant(&dbv);
+	return res;
+}
+
+TCHAR *CJabberProto::ReadAdvStatusT(HANDLE hContact, const char *pszSlot, const char *pszValue)
+{
+	char szSetting[128];
+	DBVARIANT dbv = {0};
+
+	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/%s", m_szModuleName, pszSlot, pszValue);
+	if (DBGetContactSettingTString(hContact, "AdvStatus", szSetting, &dbv))
+		return NULL;
+
+	TCHAR *res = mir_tstrdup(dbv.ptszVal);
+	DBFreeVariant(&dbv);
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

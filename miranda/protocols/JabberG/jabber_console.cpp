@@ -794,8 +794,14 @@ void CJabberProto::ConsoleInit()
 
 void CJabberProto::ConsoleUninit()
 {
-	if ( m_hThreadConsole )
+	if ( m_hThreadConsole ) {
 		PostThreadMessage(m_dwConsoleThreadId, WM_QUIT, 0, 0);
+		if ( WaitForSingleObject( m_hThreadConsole, 5000 ) == WAIT_TIMEOUT) {
+			TerminateThread( m_hThreadConsole, 0 );
+		}
+		CloseHandle( m_hThreadConsole );
+		m_hThreadConsole = NULL;
+	}
 
 	m_filterInfo.iq = m_filterInfo.msg = m_filterInfo.presence = FALSE;
 	m_filterInfo.type = TFilterInfo::T_OFF;
