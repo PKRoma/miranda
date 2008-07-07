@@ -26,67 +26,142 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-201                     ICON    DISCARDABLE     "icos/afraid.ico"
-202                     ICON    DISCARDABLE     "icos/amazed.ico"
-203                     ICON    DISCARDABLE     "icos/angry.ico"
-204                     ICON    DISCARDABLE     "icos/annoyed.ico"
-205                     ICON    DISCARDABLE     "icos/anxious.ico"
-206                     ICON    DISCARDABLE     "icos/aroused.ico"
-207                     ICON    DISCARDABLE     "icos/ashamed.ico"
-208                     ICON    DISCARDABLE     "icos/bored.ico"
-209                     ICON    DISCARDABLE     "icos/brave.ico"
-210                     ICON    DISCARDABLE     "icos/calm.ico"
-211                     ICON    DISCARDABLE     "icos/cold.ico"
-212                     ICON    DISCARDABLE     "icos/confused.ico"
-213                     ICON    DISCARDABLE     "icos/contented.ico"
-214                     ICON    DISCARDABLE     "icos/cranky.ico"
-215                     ICON    DISCARDABLE     "icos/curious.ico"
-216                     ICON    DISCARDABLE     "icos/depressed.ico"
-217                     ICON    DISCARDABLE     "icos/disappointed.ico"
-218                     ICON    DISCARDABLE     "icos/disgusted.ico"
-219                     ICON    DISCARDABLE     "icos/distracted.ico"
-220                     ICON    DISCARDABLE     "icos/embarrassed.ico"
-221                     ICON    DISCARDABLE     "icos/excited.ico"
-222                     ICON    DISCARDABLE     "icos/flirtatious.ico"
-223                     ICON    DISCARDABLE     "icos/frustrated.ico"
-224                     ICON    DISCARDABLE     "icos/grumpy.ico"
-225                     ICON    DISCARDABLE     "icos/guilty.ico"
-226                     ICON    DISCARDABLE     "icos/happy.ico"
-227                     ICON    DISCARDABLE     "icos/hot.ico"
-228                     ICON    DISCARDABLE     "icos/humbled.ico"
-229                     ICON    DISCARDABLE     "icos/humiliated.ico"
-230                     ICON    DISCARDABLE     "icos/hungry.ico"
-231                     ICON    DISCARDABLE     "icos/hurt.ico"
-232                     ICON    DISCARDABLE     "icos/impressed.ico"
-233                     ICON    DISCARDABLE     "icos/in_awe.ico"
-234                     ICON    DISCARDABLE     "icos/in_love.ico"
-235                     ICON    DISCARDABLE     "icos/indignant.ico"
-236                     ICON    DISCARDABLE     "icos/interested.ico"
-237                     ICON    DISCARDABLE     "icos/intoxicated.ico"
-238                     ICON    DISCARDABLE     "icos/invincible.ico"
-239                     ICON    DISCARDABLE     "icos/jealous.ico"
-240                     ICON    DISCARDABLE     "icos/lonely.ico"
-241                     ICON    DISCARDABLE     "icos/mean.ico"
-242                     ICON    DISCARDABLE     "icos/moody.ico"
-243                     ICON    DISCARDABLE     "icos/nervous.ico"
-244                     ICON    DISCARDABLE     "icos/neutral.ico"
-245                     ICON    DISCARDABLE     "icos/offended.ico"
-246                     ICON    DISCARDABLE     "icos/playful.ico"
-247                     ICON    DISCARDABLE     "icos/proud.ico"
-248                     ICON    DISCARDABLE     "icos/relieved.ico"
-249                     ICON    DISCARDABLE     "icos/remorseful.ico"
-250                     ICON    DISCARDABLE     "icos/restless.ico"
-251                     ICON    DISCARDABLE     "icos/sad.ico"
-252                     ICON    DISCARDABLE     "icos/sarcastic.ico"
-253                     ICON    DISCARDABLE     "icos/serious.ico"
-254                     ICON    DISCARDABLE     "icos/shocked.ico"
-255                     ICON    DISCARDABLE     "icos/shy.ico"
-256                     ICON    DISCARDABLE     "icos/sick.ico"
-257                     ICON    DISCARDABLE     "icos/sleepy.ico"
-258                     ICON    DISCARDABLE     "icos/stressed.ico"
-259                     ICON    DISCARDABLE     "icos/surprised.ico"
-260                     ICON    DISCARDABLE     "icos/thirsty.ico"
-261                     ICON    DISCARDABLE     "icos/worried.ico"
+201                     ICON    DISCARDABLE     "icos/moods/afraid.ico"
+202                     ICON    DISCARDABLE     "icos/moods/amazed.ico"
+203                     ICON    DISCARDABLE     "icos/moods/angry.ico"
+204                     ICON    DISCARDABLE     "icos/moods/annoyed.ico"
+205                     ICON    DISCARDABLE     "icos/moods/anxious.ico"
+206                     ICON    DISCARDABLE     "icos/moods/aroused.ico"
+207                     ICON    DISCARDABLE     "icos/moods/ashamed.ico"
+208                     ICON    DISCARDABLE     "icos/moods/bored.ico"
+209                     ICON    DISCARDABLE     "icos/moods/brave.ico"
+210                     ICON    DISCARDABLE     "icos/moods/calm.ico"
+211                     ICON    DISCARDABLE     "icos/moods/cold.ico"
+212                     ICON    DISCARDABLE     "icos/moods/confused.ico"
+213                     ICON    DISCARDABLE     "icos/moods/contented.ico"
+214                     ICON    DISCARDABLE     "icos/moods/cranky.ico"
+215                     ICON    DISCARDABLE     "icos/moods/curious.ico"
+216                     ICON    DISCARDABLE     "icos/moods/depressed.ico"
+217                     ICON    DISCARDABLE     "icos/moods/disappointed.ico"
+218                     ICON    DISCARDABLE     "icos/moods/disgusted.ico"
+219                     ICON    DISCARDABLE     "icos/moods/distracted.ico"
+220                     ICON    DISCARDABLE     "icos/moods/embarrassed.ico"
+221                     ICON    DISCARDABLE     "icos/moods/excited.ico"
+222                     ICON    DISCARDABLE     "icos/moods/flirtatious.ico"
+223                     ICON    DISCARDABLE     "icos/moods/frustrated.ico"
+224                     ICON    DISCARDABLE     "icos/moods/grumpy.ico"
+225                     ICON    DISCARDABLE     "icos/moods/guilty.ico"
+226                     ICON    DISCARDABLE     "icos/moods/happy.ico"
+227                     ICON    DISCARDABLE     "icos/moods/hot.ico"
+228                     ICON    DISCARDABLE     "icos/moods/humbled.ico"
+229                     ICON    DISCARDABLE     "icos/moods/humiliated.ico"
+230                     ICON    DISCARDABLE     "icos/moods/hungry.ico"
+231                     ICON    DISCARDABLE     "icos/moods/hurt.ico"
+232                     ICON    DISCARDABLE     "icos/moods/impressed.ico"
+233                     ICON    DISCARDABLE     "icos/moods/in_awe.ico"
+234                     ICON    DISCARDABLE     "icos/moods/in_love.ico"
+235                     ICON    DISCARDABLE     "icos/moods/indignant.ico"
+236                     ICON    DISCARDABLE     "icos/moods/interested.ico"
+237                     ICON    DISCARDABLE     "icos/moods/intoxicated.ico"
+238                     ICON    DISCARDABLE     "icos/moods/invincible.ico"
+239                     ICON    DISCARDABLE     "icos/moods/jealous.ico"
+240                     ICON    DISCARDABLE     "icos/moods/lonely.ico"
+241                     ICON    DISCARDABLE     "icos/moods/mean.ico"
+242                     ICON    DISCARDABLE     "icos/moods/moody.ico"
+243                     ICON    DISCARDABLE     "icos/moods/nervous.ico"
+244                     ICON    DISCARDABLE     "icos/moods/neutral.ico"
+245                     ICON    DISCARDABLE     "icos/moods/offended.ico"
+246                     ICON    DISCARDABLE     "icos/moods/playful.ico"
+247                     ICON    DISCARDABLE     "icos/moods/proud.ico"
+248                     ICON    DISCARDABLE     "icos/moods/relieved.ico"
+249                     ICON    DISCARDABLE     "icos/moods/remorseful.ico"
+250                     ICON    DISCARDABLE     "icos/moods/restless.ico"
+251                     ICON    DISCARDABLE     "icos/moods/sad.ico"
+252                     ICON    DISCARDABLE     "icos/moods/sarcastic.ico"
+253                     ICON    DISCARDABLE     "icos/moods/serious.ico"
+254                     ICON    DISCARDABLE     "icos/moods/shocked.ico"
+255                     ICON    DISCARDABLE     "icos/moods/shy.ico"
+256                     ICON    DISCARDABLE     "icos/moods/sick.ico"
+257                     ICON    DISCARDABLE     "icos/moods/sleepy.ico"
+258                     ICON    DISCARDABLE     "icos/moods/stressed.ico"
+259                     ICON    DISCARDABLE     "icos/moods/surprised.ico"
+260                     ICON    DISCARDABLE     "icos/moods/thirsty.ico"
+261                     ICON    DISCARDABLE     "icos/moods/worried.ico"
+
+
+300                     ICON    DISCARDABLE     "icos/activities/doing_chores.ico"
+//	buying_groceries
+//	cleaning
+//	cooking
+//	doing_maintenance
+//	doing_the_dishes
+//	doing_the_laundry
+//	gardening
+//	running_an_errand
+//	walking_the_dog
+320                     ICON    DISCARDABLE     "icos/activities/drinking.ico"
+//	having_a_beer
+//	having_coffee
+//	having_tea
+340                     ICON    DISCARDABLE     "icos/activities/eating.ico"
+//	having_a_snack
+//	having_breakfast
+//	having_dinner
+//	having_lunch
+360                     ICON    DISCARDABLE     "icos/activities/exercising.ico"
+//	cycling
+//	hiking
+//	jogging
+//	playing_sports
+//	running
+//	skiing
+//	swimming
+//	working_out
+380                     ICON    DISCARDABLE     "icos/activities/grooming.ico"
+//	at_the_spa
+//	brushing_teeth
+//	getting_a_haircut
+//	shaving
+//	taking_a_bath
+//	taking_a_shower
+400                     ICON    DISCARDABLE     "icos/activities/having_appointment.ico"
+420                     ICON    DISCARDABLE     "icos/activities/inactive.ico"
+//	day_off
+//	hanging_out
+//	on_vacation
+//	scheduled_holiday
+//	sleeping
+440                     ICON    DISCARDABLE     "icos/activities/relaxing.ico"
+//	gaming
+//	going_out
+//	partying
+//	reading
+//	rehearsing
+//	shopping
+//	socializing
+//	sunbathing
+//	watching_tv
+//	watching_a_movie
+460                     ICON    DISCARDABLE     "icos/activities/talking.ico"
+//	in_real_life
+//	on_the_phone
+//	on_video_phone
+480                     ICON    DISCARDABLE     "icos/activities/traveling.ico"
+//	commuting
+//	cycling
+//	driving
+//	in_a_car
+//	on_a_bus
+//	on_a_plane
+//	on_a_train
+//	on_a_trip
+//	walking
+500                     ICON    DISCARDABLE     "icos/activities/working.ico"
+//	coding
+//	in_a_meeting
+//	studying
+//	writing
+
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
