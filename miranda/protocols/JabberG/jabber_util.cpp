@@ -804,32 +804,6 @@ LBL_Exit:
 	return res;
 }
 
-char* __stdcall JabberGetVersionText()
-{
-	char filename[MAX_PATH], *fileVersion, *res;
-	DWORD unused;
-	DWORD verInfoSize;
-	UINT  blockSize;
-	PVOID pVerInfo;
-
-	GetModuleFileNameA( hInst, filename, sizeof( filename ));
-	verInfoSize = GetFileVersionInfoSizeA( filename, &unused );
-	if (( pVerInfo=mir_alloc( verInfoSize )) != NULL ) {
-		GetFileVersionInfoA( filename, 0, verInfoSize, pVerInfo );
-		VerQueryValueA( pVerInfo, "\\StringFileInfo\\040904b0\\FileVersion", ( LPVOID* )&fileVersion, &blockSize );
-		if ( strstr( fileVersion, "cvs" )) {
-			res = ( char* )mir_alloc( strlen( fileVersion ) + strlen( __DATE__ ) + 2 );
-			sprintf( res, "%s %s", fileVersion, __DATE__ );
-		}
-		else {
-			res = mir_strdup( fileVersion );
-		}
-		mir_free( pVerInfo );
-		return res;
-	}
-	return NULL;
-}
-
 time_t __stdcall JabberIsoToUnixTime( TCHAR* stamp )
 {
 	struct tm timestamp;
@@ -950,12 +924,10 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		p.addChild( extra );
 
 	// XEP-0115:Entity Capabilities
-	char* version = JabberGetVersionText();
-
 	XmlNode *c = p.addChild( "c" );
 	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
 	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
-	c->addAttr( "ver", version );
+	c->addAttr( "ver", __VERSION_STRING );
 
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
@@ -992,8 +964,6 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 
 	if ( _tcslen( szExtCaps ))
 		c->addAttr( "ext", szExtCaps );
-
-	mir_free( version );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];

@@ -68,7 +68,6 @@ void CJabberProto::OnIqRequestVersion( XmlNode* node, void* userdata, CJabberIqI
 	if ( !pInfo->GetFrom() )
 		return;
 
-	char* version = JabberGetVersionText();
 	TCHAR* os = NULL;
 
 	if ( JGetByte( "ShowOSVersion", TRUE )) {
@@ -100,24 +99,12 @@ void CJabberProto::OnIqRequestVersion( XmlNode* node, void* userdata, CJabberIqI
 		if ( os == NULL ) os = TranslateT( "Windows" );
 	}
 
-	char mversion[100];
-	JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( mversion ), ( LPARAM )mversion );
-
-	char mproduct[50];
-	JGetMirandaProductText( sizeof( mproduct ), ( LPARAM )mproduct );
-
-	TCHAR* fullVer = (TCHAR*)alloca(1000 * sizeof( TCHAR ));
-	mir_sntprintf( fullVer, 1000, _T(TCHAR_STR_PARAM) _T(" ") _T(TCHAR_STR_PARAM) _T(" (Jabber v.") _T(TCHAR_STR_PARAM) _T(" [%s])") _T(TCHAR_STR_PARAM),
-		mproduct, mversion, __VERSION_STRING, m_ThreadInfo->resource, bSecureIM ? " (SecureIM)":"" );
-
 	XmlNodeIq iq( "result", pInfo );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
-	query->addChild( "name", fullVer );
-	query->addChild( "version", version );
+	query->addChild( "name", _T("Miranda IM Jabber") );
+	query->addChild( "version", _T(__VERSION_STRING) );
 	if (os) query->addChild( "os", os );
 	m_ThreadInfo->send( iq );
-
-	if ( version ) mir_free( version );
 }
 
 // last activity (XEP-0012) support

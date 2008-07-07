@@ -481,11 +481,7 @@ CJabberClientCaps * CJabberClientCapsManager::FindClient( TCHAR *szNode )
 }
 
 void CJabberClientCapsManager::AddDefaultCaps() {
-	char* version = JabberGetVersionText();
-	TCHAR *tversion = mir_a2t( version );
-	mir_free( version );
-	SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), tversion, JABBER_CAPS_MIRANDA_ALL );
-	mir_free( tversion );
+	SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), _T(__VERSION_STRING), JABBER_CAPS_MIRANDA_ALL );
 
 	for ( int i = 0; g_JabberFeatCapPairsExt[i].szFeature; i++ )
 		SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), g_JabberFeatCapPairsExt[i].szFeature, g_JabberFeatCapPairsExt[i].jcbCap );

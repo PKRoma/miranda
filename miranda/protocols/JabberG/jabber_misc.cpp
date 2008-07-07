@@ -452,6 +452,17 @@ char* UnEscapeChatTags(char* str_in)
 //////////////////////////////////////////////////////////////////////////
 // update MirVer with data for active resource
 
+struct
+{
+	TCHAR *node;
+	TCHAR *name;
+}
+static sttCapsNodeToName_Map[] =
+{
+	{ _T("http://miranda-im.org"), _T("Miranda IM Jabber") },
+	{ _T("http://www.google.com"), _T("GTalk") },
+};
+
 void CJabberProto::UpdateMirVer(JABBER_LIST_ITEM *item)
 {
 	HANDLE hContact = HContactFromJID(item->jid);
@@ -480,38 +491,55 @@ void CJabberProto::FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, in
 	// jabber:iq:version info requested and exists?
 	if ( resource->dwVersionRequestTime && resource->software ) {
 		Log("JabberUpdateMirVer: for iq:version rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->software);
-		lstrcpyn(buf, resource->software, bufSize);
-		return;
+		if (_tcsstr(resource->software, resource->version))
+			lstrcpyn(buf, resource->software, bufSize);
+		else
+			mir_sntprintf(buf, bufSize, _T("%s %s"), resource->software, resource->version);
 	}
+	else
 
 	// no version info and no caps info? set MirVer = resource name
 	if ( !resource->szCapsNode || !resource->szCapsVer ) {
 		Log("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM, resource->resourceName, resource->resourceName);
 		if ( resource->resourceName )
 			lstrcpyn(buf, resource->resourceName, bufSize);
-		return;
 	}
-	Log("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM "#" TCHAR_STR_PARAM, resource->resourceName, resource->szCapsNode, resource->szCapsVer);
+	else
 
 	// XEP-0115 caps mode
-	if ( _tcsstr( resource->szCapsNode, _T("miranda-im.org"))) {
-		if ( resource->szCapsExt ) {
-			mir_sntprintf( buf, bufSize, _T("Miranda IM %s (Jabber %s [%s]) (%s)"), resource->szCapsVer, resource->szCapsVer, resource->resourceName, resource->szCapsExt );
+	{
+		Log("JabberUpdateMirVer: for rc " TCHAR_STR_PARAM ": " TCHAR_STR_PARAM "#" TCHAR_STR_PARAM, resource->resourceName, resource->szCapsNode, resource->szCapsVer);
 
-			if (TCHAR *pszSecureIm = _tcsstr( buf, _T(JABBER_EXT_SECUREIM)))
-				_tcsncpy(pszSecureIm, _T("SecureIM"), 8);
-		}
-		else
-			mir_sntprintf( buf, bufSize, _T("Miranda IM %s (Jabber %s [%s])"), resource->szCapsVer, resource->szCapsVer, resource->resourceName );
+		int i;
+
+		// search throught known software list
+		for (i = 0; i < SIZEOF(sttCapsNodeToName_Map); ++i)
+			if ( _tcsstr( resource->szCapsNode, sttCapsNodeToName_Map[i].node ) )
+			{
+				mir_sntprintf( buf, bufSize, _T("%s %s"), sttCapsNodeToName_Map[i].name, resource->szCapsVer );
+				break;
+			}
+
+		// unknown software
+		if (i == SIZEOF(sttCapsNodeToName_Map))
+			mir_sntprintf( buf, bufSize, _T("%s %s"), resource->szCapsNode, resource->szCapsVer );
 	}
-	else if ( !resource->szCapsExt )
-		mir_sntprintf( buf, bufSize, _T("%s#%s"), resource->szCapsNode, resource->szCapsVer );
-	else if ( _tcsstr( resource->szCapsExt, _T(JABBER_EXT_SECUREIM) ))
-		mir_sntprintf( buf, bufSize, _T("%s#%s#%s (SecureIM)"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
-	else if ( _tcsstr( resource->szCapsNode, _T("www.google.com") ))
-		mir_sntprintf( buf, bufSize, _T("%s#%s#%s gtalk"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
-	else
-		mir_sntprintf( buf, bufSize, _T("%s#%s#%s"), resource->szCapsNode, resource->szCapsVer, resource->szCapsExt );
+
+	// attach additional info for fingerprint plguin
+	if (resource->resourceName && !_tcsstr(buf, resource->resourceName))
+	{
+		if (_tcsstr(buf, _T("Miranda IM")) || JGetByte("ShowForeignResourceInMirVer", FALSE))
+		{
+			int offset = lstrlen(buf);
+			mir_sntprintf(buf + offset, bufSize - offset, _T(" [%s]"), resource->resourceName);
+		}
+	}
+
+	if (resource->szCapsExt && _tcsstr(resource->szCapsExt, _T(JABBER_EXT_SECUREIM)) && !_tcsstr(buf, _T("(SecureIM)")))
+	{
+		int offset = lstrlen(buf);
+		mir_sntprintf(buf + offset, bufSize - offset, _T(" (SecureIM)"));
+	}
 }
 
 
