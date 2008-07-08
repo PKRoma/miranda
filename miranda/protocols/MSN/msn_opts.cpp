@@ -746,25 +746,25 @@ int CMsnProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position    = -790000000;
 	odp.hInstance   = hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSN);
-	odp.pszTitle    = m_szProtoName;
-	odp.pszGroup    = LPGEN("Network");
-	odp.pszTab      = LPGEN("Account");
-	odp.flags       = ODPF_BOLDGROUPS;
+	odp.ptszTitle    = m_tszUserName;
+	odp.ptszGroup    = LPGENT("Network");
+	odp.ptszTab      = LPGENT("Account");
+	odp.flags       = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.pfnDlgProc  = DlgProcMsnOpts;
 	odp.dwInitParam = (LPARAM)this;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	odp.pszTab      = LPGEN("Connection");
+	odp.ptszTab      = LPGENT("Connection");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSN_CONN);
 	odp.pfnDlgProc  = DlgProcMsnConnOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	odp.pszTab      = LPGEN("Server list");
+	odp.ptszTab      = LPGENT("Server list");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_LISTSMGR);
 	odp.pfnDlgProc  = DlgProcMsnServLists;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
 
-	odp.pszTab      = LPGEN("Notifications");
+	odp.ptszTab      = LPGENT("Notifications");
 	odp.pszTemplate	= MAKEINTRESOURCEA( IDD_HOTMAIL_OPT_POPUP );
 	odp.pfnDlgProc	= DlgProcHotmailPopUpOpts;
 	MSN_CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
