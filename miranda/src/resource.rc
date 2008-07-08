@@ -14,12 +14,12 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian resources
+// English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -38,49 +38,12 @@ BEGIN
                     7,7,282,9
     EDITTEXT        IDC_ACCNAME,7,18,282,12,ES_AUTOHSCROLL
     LTEXT           "Choose the protocol type",IDC_STATIC,7,36,282,11
-    COMBOBOX        IDC_PROTOTYPECOMBO,7,48,141,12,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_PROTOTYPECOMBO,7,48,141,60,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Specify the internal account name (optional)",
                     IDC_STATIC,7,66,282,8
     EDITTEXT        IDC_ACCINTERNALNAME,7,76,282,12,ES_AUTOHSCROLL
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_ACCFORM, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 289
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 112
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_AUTHREQ DIALOGEX 0, 0, 242, 107
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | 
