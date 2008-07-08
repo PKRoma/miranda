@@ -1260,7 +1260,7 @@ void CJabberDlgPrivacyLists::DrawRulesList(LPDRAWITEMSTRUCT lpdis)
 	if (lpdis->itemState & ODS_FOCUS)
 	{
 		int sel = SendDlgItemMessage(m_hwnd, lpdis->CtlID, LB_GETCURSEL, 0, 0);
-		if ((sel == LB_ERR) || (sel == lpdis->itemID))
+		if ((sel == LB_ERR) || (sel == (int)lpdis->itemID))
 			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
 	}
 }
@@ -1350,7 +1350,7 @@ void CJabberDlgPrivacyLists::DrawLists(LPDRAWITEMSTRUCT lpdis)
 	if (lpdis->itemState & ODS_FOCUS)
 	{
 		int sel = SendDlgItemMessage(m_hwnd, lpdis->CtlID, LB_GETCURSEL, 0, 0);
-		if ((sel == LB_ERR) || (sel == lpdis->itemID))
+		if ((sel == LB_ERR) || (sel == (int)lpdis->itemID))
 			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
 	}
 }

@@ -656,7 +656,7 @@ int __cdecl CJabberProto::OnMenuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM
 void CJabberProto::InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt)
 {
 	HMENU hMenu = JMenuCreate(true);
-	for( int i = 0; i <= NUM_XMODES; i++ ) {
+	for( unsigned i = 0; i <= NUM_XMODES; i++ ) {
 		TCHAR *mood_name = mir_a2t(g_arrMoods[i].szName);
 		JMenuAddItem(hMenu, i+1,
 			i ? TranslateTS(mood_name) : TranslateT("None"),
@@ -789,6 +789,7 @@ void CJabberProto::BuildXStatusItems( WPARAM wParam, LPARAM lParam )
 
 void CJabberProto::InitXStatusIcons()
 {
+	int i;
 	char szFile[MAX_PATH];
 	GetModuleFileNameA( hInst, szFile, MAX_PATH );
 	char* p = strrchr( szFile, '\\' );
@@ -809,7 +810,7 @@ void CJabberProto::InitXStatusIcons()
 	sid.flags = SIDF_TCHAR;
 
 	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Moods"), m_tszUserName);
-	for ( int i = 1; i < SIZEOF(g_arrMoods); i++ ) {
+	for ( i = 1; i < SIZEOF(g_arrMoods); i++ ) {
 		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName, g_arrMoods[i].szName );
 		mir_sntprintf(szDescription, SIZEOF(szDescription), _T(TCHAR_STR_PARAM), g_arrMoods[i].szName);
 		sid.iDefaultIndex = -( i+200 );
@@ -817,7 +818,7 @@ void CJabberProto::InitXStatusIcons()
 	}
 
 	mir_sntprintf( szSection, SIZEOF( szSection ), _T("Status Icons/%s/Activities"), m_tszUserName);
-	for ( int i = 0; i < SIZEOF(g_arrActivities); i++ ) {
+	for ( i = 0; i < SIZEOF(g_arrActivities); i++ ) {
 		if (!g_arrActivities[i].szFirst) continue;
 
 		mir_snprintf( szSettingName, SIZEOF( szSettingName ), "%s_%s", m_szModuleName,
