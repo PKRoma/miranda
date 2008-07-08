@@ -387,7 +387,7 @@ int SSL_OpenSsl::init(void)
 			return 1;
 		}
 
-		pfn_SSL_library_init();
+		if (!pfn_SSL_library_init()) return 1;
 		sslCtx = pfn_SSL_CTX_new( pfn_TLSv1_client_method());
 		pfn_SSL_CTX_set_verify(sslCtx, 0, NULL);
 		proto->MSN_DebugLog( "OpenSSL context successully allocated" );
@@ -480,15 +480,16 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 					"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 					MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
-					proto->MSN_DebugLog( "Sending SSL query:\n%s", headers );
+				proto->MSN_DebugLog( "Sending SSL query:\n%s", headers );
+				pfn_SSL_write( ssl, headers, strlen( headers ));
 #ifndef _DEBUG
 				if (strstr(parUrl, "login") == NULL)
 #endif
 					proto->MSN_DebugLog( "Sending SSL query:\n%s", parAuthInfo );
-
-				pfn_SSL_write( ssl, headers, strlen( headers ));
 				pfn_SSL_write( ssl, (void*)parAuthInfo, strlen( parAuthInfo ));
 				
+				proto->MSN_DebugLog( "SSL All data sent" );
+
 				nBytes = 0;
 				size_t dwTotSize = 8192;
 				result = ( char* )mir_alloc( dwTotSize );
