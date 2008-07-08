@@ -118,15 +118,7 @@ void CJabberProto::OnPingReply( XmlNode* node, void* userdata, CJabberIqInfo* pI
 		return;
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_FAIL ) {
 		// disconnect because of timeout
-		CJabberProto *pProto = (CJabberProto *)pInfo->GetUserData();
-		if ( pProto ) {
-			if ( pProto->m_ThreadInfo ) {
-				pProto->m_ThreadInfo->send( "%s", "</stream:stream>" );
-				HANDLE hSocket = pProto->m_ThreadInfo->s;
-				Sleep( 1000 );
-				Netlib_CloseHandle( hSocket );
-			}
-		}
+		SetStatus(ID_STATUS_OFFLINE);
 	}
 }
 
