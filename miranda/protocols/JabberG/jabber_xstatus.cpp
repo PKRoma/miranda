@@ -394,7 +394,7 @@ BOOL CJabberProto::SendPepActivity( char* szFirstNode, char* szSecondNode, TCHAR
 
 	m_pInfoFrame->UpdateInfoItem("$/PEP/activity",
 		hIcolibIcon,
-		TranslateTS(g_arrActivities[iActivityNo].szTitle));
+		szFirstNode ? TranslateTS(g_arrActivities[iActivityNo].szTitle) : TranslateT("User activity"));
 
 	XmlNodeIq iq( "set", SerialNext() );
 	XmlNode* pubsubNode = iq.addChild( "pubsub" );
@@ -692,7 +692,7 @@ void CJabberProto::InfoFrame_OnUserActivity(CJabberInfoFrame_Event *evt)
 
 			JMenuAddItem(hPopup, i + 2,
 				TranslateTS( g_arrActivities[i].szTitle),
-				NULL, false, false);
+				NULL, false, (m_xsActivity == i+1) ? true : false);
 			JMenuAddSeparator(hPopup);
 		} else
 		{

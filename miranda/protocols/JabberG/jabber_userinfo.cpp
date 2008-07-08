@@ -306,16 +306,19 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 //	TreeView_Expand( hwndTree, htiResource, TVE_EXPAND );
 }
 
-static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, DWORD dwInfoLine, HANDLE hContact, char *pszSlot )
+static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM htiRoot, DWORD dwInfoLine, HANDLE hContact, TCHAR *szTitle, char *pszSlot )
 {
 	char *szAdvStatusIcon = ppro->ReadAdvStatusA(hContact, pszSlot, ADVSTATUS_VAL_ICON);
 	TCHAR *szAdvStatusTitle = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TITLE);
 	TCHAR *szAdvStatusText = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TEXT);
 
-	if (szAdvStatusIcon && szAdvStatusTitle && szAdvStatusText)
+	if (szAdvStatusIcon && szAdvStatusTitle && szAdvStatusText) {
+		TCHAR szText[2048];
+		mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
 		sttFillInfoLine( hwndTree, htiRoot,
 			(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szAdvStatusIcon),
-			TranslateTS(szAdvStatusTitle), szAdvStatusText, dwInfoLine);
+			szTitle, szText, dwInfoLine);
+	}
 
 	mir_free(szAdvStatusIcon);
 	mir_free(szAdvStatusTitle);
@@ -334,9 +337,9 @@ static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM
 
 	if (HANDLE hContact = ppro->HContactFromJID(item->jid))
 	{
-		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_MOOD), hContact, ADVSTATUS_MOOD );
-		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_ACTIVITY), hContact, ADVSTATUS_ACTIVITY );
-		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_TUNE), hContact, ADVSTATUS_TUNE );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_MOOD), hContact, TranslateT("Mood"), ADVSTATUS_MOOD );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_ACTIVITY), hContact, TranslateT("Activity"), ADVSTATUS_ACTIVITY );
+		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_TUNE), hContact, TranslateT("Tune"), ADVSTATUS_TUNE );
 	}
 
 	{	// subscription
