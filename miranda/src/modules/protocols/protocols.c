@@ -290,7 +290,7 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 					case 21: return ( int )ppi->vtbl->RecvFile( ppi, hContact, ( PROTORECVFILE* )lParam ); break;
 					case 22: return ( int )ppi->vtbl->RecvMsg( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
 					case 23: return ( int )ppi->vtbl->RecvUrl( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 24: return ( int )ppi->vtbl->SendContacts( ppi, hContact, HIWORD(wParam), LOWORD(wParam), ( HANDLE* )lParam ); break;
+					case 24: return ( int )ppi->vtbl->SendContacts( ppi, hContact, LOWORD(wParam), HIWORD(wParam), ( HANDLE* )lParam ); break;
 					case 25: return ( int )ppi->vtbl->SendFile( ppi, hContact, ( const char* )wParam, ( char** )lParam ); break;
 					case 26: return ( int )ppi->vtbl->SendMsg( ppi, hContact, wParam, ( const char* )lParam ); break;
 					case 27: return ( int )ppi->vtbl->SendUrl( ppi, hContact, wParam, ( const char* )lParam ); break;
