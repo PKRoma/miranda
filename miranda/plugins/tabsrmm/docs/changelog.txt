@@ -3,13 +3,13 @@
 
 Name: tabsrmm
 Homepage: http://miranda.or.at
-                               
-						
+
+
 				    Version History:
 				    ================
 + : new feature
 * : changed
-! : bugfix						
+! : bugfix
 - : feature removed or disabled because of pending bugs
 
 View CHANGELOG.OLD to see pre-1.0 relevant changes. Version 1.0.0.0 was declared
@@ -20,20 +20,37 @@ Version 2.0.x.x was released in October 2007 and is the current "stable" version
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
 
-Version 2.2.1.6  - 2008/05/XX
+Version 2.2.1.8  - 2008/07/04
 -----------------------------
 
-  ! fixed "Revert to safe defaults" bug in advanced tweaks dialog.
+	* for devs only: Patch by ono to make the code to compile with GCC
+	  w/o problems.
 
-  ! fixed possible crash in message log streaming when history 
-    keeper is installed
-  
-  ! minor layout changes for 120 DPI setting.
+	! hide on close feature: small fix for distorted layout when showing
+	  a container with a previouly not yet activated tab.
 
-  ! custom smiley patch by borkra (show custom smileys on incoming
-    messages only)
-    
-      
+Version 2.2.1.7  - 2008/06/21
+-----------------------------
+
+	- internal, not released to public
+
+Version 2.2.1.6  - 2008/05/30
+-----------------------------
+
+	! fixed "Revert to safe defaults" bug in advanced tweaks dialog.
+
+	! fixed possible crash in message log streaming when history
+	  keeper is installed
+
+	! minor layout changes for 120 DPI setting.
+
+	! custom smiley patch by borkra (show custom smileys on incoming
+	  messages only)
+
+	! fixed bug with bbcode colors (introduced by font service support)
+
+	! fixed minor drawing issue with log freeze indicator.
+
 Version 2.2.1.5  - 2008/05/08
 -----------------------------
 
@@ -41,50 +58,50 @@ Version 2.2.1.5  - 2008/05/08
 	  icon(s), possible crash with tool bar config, wrong background
 	  colors in the message log, "load actual history" now works.
 	  - some fixes for font service support.
-	  
+
 	* changed button highlight code for buttons with a "dropdown arrow".
 	  Entire button is now "hovered" - the old way did look very strange
 	  with some skins or visual styles.
-	  
-	* group chat related options were re-organized. Everything is now 
+
+	* group chat related options were re-organized. Everything is now
 	  in Message Sessions->Group chats. Options were slightly re-grouped
 	  for a more logical appearance.
-	  
+
 	* popup configuration option pages are now only created when a popup
 	  plugin is installed.
-	  
+
 	* small adjustments for minimum splitter position.
-	
+
 	- removed 7bit ansi check for outgoing messages. Now obsolete, because
 	  of UTF-8 database storage format.
-	  
+
 	+ added support for History Events plugin by pescuma (patch submitted
 	  by pescuma)
-	  
+
 	- removed useless help menu entries
-	
+
 	+ added spin controls to configure popup delay values
-	
+
 	+ allow to set -1 for each popup delay to use "infinite" delay (
 	  popup will stay on screen forever).
-	  
+
 	* error popups will not timeout any longer. Instead, they must be
 	  clicked to dismiss them.
-	  
+
 	+ integrated "mod plus" options into Message Sessions->Advanced tweaks.
-	
+
 	! merged MButton patch by rainwater into TSButton control to check that
 	  a button release event should be processed.
-	  
+
 	* don't close hovered popups (when mouse pointer is over a popup)
-	
+
 	* reworked typing notify options.
-	
-	- removed deprecated toolbar hiding options	
+
+	- removed deprecated toolbar hiding options
 
 	+ added various hyperlink controls to open online help pages to the
 	  option dialogs.
-	
+
 
 Version 2.2.1.4  - 2008/05/08
 -----------------------------
@@ -95,7 +112,7 @@ Version 2.2.1.3  - 2008/04/XX
 -----------------------------
 
 	* for internal testing only (not officially released)
-	
+
 Version 2.2.1.2  - 2008/04/23
 -----------------------------
 
@@ -103,22 +120,22 @@ Version 2.2.1.2  - 2008/04/23
 	  It's now 24 hours instead of the 12 it was before. So the maximum
 	  value you can enter on Message Log->Load previous events less than"
 	  are 1440 minutes.
-	  
+
 	* various fixes by ghazan (compile fixes for VC 2003, msg timeout
 	  fix and more)
 
 	* added font service support (patch by Mad Cluster). All fonts must
 	  now be set under Customize->Fonts->tabSRMM. The old font and color
 	  dialog is gone.
-	
+
 	* the menu items for invoking the message log settings dialog (both
 	  global and per contact) are now working. You can find them on the
 	  Menu bar (Message Log popup) or by clicking the message log options
 	  button on the tool bar.
-	
+
 	* Removed the Message Sessions->Customize node and replaced it with
 	  a new dialog holding all group chat related options.
-	  	  	  
+
 Version 2.2.1.1  - 2008/04/10
 -----------------------------
 
@@ -126,26 +143,26 @@ Version 2.2.1.1  - 2008/04/10
 	  new features like a fully customizable button bar and more. Also adds
 	  old style typing notification popups (code taken from bio's old plugin),
 	  support for animated .gif avatars and more.
-	  
+
 	  See: http://forums.miranda-im.org/showthread.php?t=17918
-	  
+
 	* New per contact message log settings are now almost complete and
 	  working. Alt-B (RTL/LTR toggle has been restored).
 
 	* bug fix for splitter position syncing
-	
+
 	* added nova icon pack (by Angeli-Ka).
 	  NOTE: icon pack format has changed slightly because of the Mad
-	        mod patch. You can still use an old icon pack, but you 
+	        mod patch. You can still use an old icon pack, but you
 	        may receive a warning when doing so.
-		
-		  
+
+
 Version 2.1.0.1  - 2008/03/26
 
 	* fixed small visual glitch when using the modern (styled) tabs
 
 	* groupchats: Fixed issue with indentation of multiline messages.
-	
+
 	* groupchats: Implemented selective disc file logging. Under
 	  Options->Message Sessions->Group chats, you will find a new option
 	  tree where you can select events which should be logged to the
@@ -155,26 +172,26 @@ Version 2.1.0.0  - 2008/02/15
 
 	* groupchats: clickable nicknames can now be colorized. Patch by theMiron
 	  (h++ author).
-	
+
 	* reworked message log settings
 	  see: http://miranda.or.at/Blog:Tabsrmm_changes_2_1_0_0 for details.
 
 	* compatibility with Miranda 0.7 no longer given. 2.0.0.5 was branched
 	  as stable tree for 0.7 users.
-	  
-	* group chats: proper handling of RTF \endash, \emdash and \bullet (patch 
+
+	* group chats: proper handling of RTF \endash, \emdash and \bullet (patch
 	  by theMiron).
-	  
+
 Version 2.0.0.5  - 2008/01/02
 
 	* increased timer for info panel tooltips to 1 sec (previously, it was set
 	  to 500msec which may be too short and trigger unwanted tooltips).
 
 	* some better automatic detection for the MathMod plugin.
-	
-	* changed tree controls on option pages to use simple checkboxes 
+
+	* changed tree controls on option pages to use simple checkboxes
 	  instead of image lists.
-	
+
 Version 2.0.0.4  - 2007/12/23
 
     + added incremental search feature to the group chat userlist. Simply
@@ -185,11 +202,11 @@ Version 2.0.0.4  - 2007/12/23
     ! fixed missing checkmarks in the message log submenu of the containers
       menu bar.
     ! fixed untranslateable strings in the container options dialog
-    - disabled skin editor for tabsrmm (still not complete, avoid confusing 
+    - disabled skin editor for tabsrmm (still not complete, avoid confusing
       people :) ).
     ! fixed minor issue with double icons in status bar (on rare occasions)
     ! fixed skin drawing on multimonitor systems (patch by Bryan)
-    
+
 Version 2.0.0.3  - 2007/11/29 (released with 0.8 alpha #5)
 
     * changed per contact filter system in group chats
@@ -198,7 +215,7 @@ Version 2.0.0.3  - 2007/11/29 (released with 0.8 alpha #5)
       bug
     ! fixed idle time for metacontacts (may not work with older versions of
       metacontacts plugin, so please update).
-    - removed active status message retrieval when hovering info panel. 
+    - removed active status message retrieval when hovering info panel.
       tabSRMM now ONLY reads the status message from the database where it
       should be stored by the protocol or a 3rd party status message retrieval
       plugin.
@@ -276,14 +293,14 @@ Version 1.1.0.7 - 2006/08/20
 Version 1.1.0.6 - 2006/08/05
 
     Mainly bugfixes from 1.0.0.0 release.
-    
+
 	! fixed updater support (301, invalid response).
 	! fixed bug when re-attaching a temporary contact to a new
 	  container while the option to delete temporary contacts on close
 	  is enabled.
 	! fixed minor issue with [color] bbcode
 	! using the own UIN as fallback for own nickname, to solve the "Unknown
-	  Contact" problem which can appear when the own nickname is not 
+	  Contact" problem which can appear when the own nickname is not
 	  properly set.
 	! fixed a few issues with global splitter positioning.
 	* selecting offline sub protocol throws a warning instead of an error.
@@ -292,5 +309,5 @@ Version 1.1.0.6 - 2006/08/05
 	  experimental feature, thus sending bug reports.
 	! fixed problem with freezing when opening a message window by clicking on a
 	  typing notify popup
-	! fixed vertiacl maximize (patch by SloMo)	  	
+	! fixed vertiacl maximize (patch by SloMo)
 

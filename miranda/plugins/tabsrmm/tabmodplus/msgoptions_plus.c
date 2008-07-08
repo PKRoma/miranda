@@ -22,13 +22,14 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Disable animated GIF avatars (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, _T("Enable fix for nicklist scroll bar"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
 	0, _T("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
+	0, _T("Close button only hides message containers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 0,
 	0, _T("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, _T("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, NULL, 0, 0, 0, 0
 };
 
 BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
-{	
+{
 	switch(msg)	{
 
 		case WM_INITDIALOG:	{
@@ -136,7 +137,7 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		}
-		/* 
+		/*
 		 * fill dialog
 		 */
 		case WM_USER + 100: {

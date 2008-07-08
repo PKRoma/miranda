@@ -63,7 +63,7 @@ PLUGININFOEX pluginInfo = {
 	"TabSRMM",
 #endif
 //#endif
-	PLUGIN_MAKE_VERSION(2, 2, 1, 6),
+	PLUGIN_MAKE_VERSION(2, 2, 1, 8),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
@@ -333,14 +333,15 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 #define _DBG_STR_LENGTH_MAX 2048
+
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
 {
 	va_list va;
 	char            szDebug[_DBG_STR_LENGTH_MAX];
 
 	va_start(va, fmt);
-	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va); 
-	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0'; 
+	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va);
+	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0';
 
 
 	 LogErrorMessage(hwndDlg, dat, -1, szDebug);

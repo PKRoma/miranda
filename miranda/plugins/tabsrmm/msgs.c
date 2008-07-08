@@ -173,7 +173,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(hwnd, DWL_MSGRESULT);
 		return 0;
-	} 
+	}
 	else if ((si = SM_FindSessionByHCONTACT(mwid->hContact)) != NULL && si->hWnd != 0) {
 		mwod->uFlags = MSG_WINDOW_UFLAG_MSG_BOTH;
 		mwod->hwndWindow = si->hWnd;
@@ -181,7 +181,7 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		SendMessage(si->hWnd, DM_GETWINDOWSTATE, 0, 0);
 		mwod->uState = GetWindowLong(si->hWnd, DWL_MSGRESULT);
 		return 0;
-	} 
+	}
 	else {
 		mwod->uState = 0;
 		mwod->hContact = 0;
@@ -835,9 +835,9 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 		if(hwnd && !DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINOPEN, 1))
 			fShowOnClist = FALSE;
 	}
-	else 
+	else
 		fShowOnClist = FALSE;
-	
+
 	if(!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)){
 		if (lParam)
 			SkinPlaySound("TNStart");
@@ -1040,7 +1040,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	BOOL bIEView;
 	static Update upd = {0};
 
-	
+
 #if defined(_UNICODE)
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/2/version.txt";
@@ -1088,12 +1088,12 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	for (i = 0; i < protoCount; i++) {
 		if (newapi)
 			{
-			if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) { 
+			if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
 				mi.pszContactOwner = accs[i]->szModuleName;
 				hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
 				hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 			}
-			} 
+			}
 		else
 			{
 			if (protocol[i]->type != PROTOTYPE_PROTOCOL)
@@ -1243,7 +1243,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
 #endif
 	upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
- 
+
  	upd.szBetaUpdateURL = szUpdateUrl;
  	upd.szBetaVersionURL = szVersionUrl;
 	upd.pbVersion = szCurrentVersion;
@@ -1251,13 +1251,13 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
  	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
  	upd.cpbBetaVersionPrefix = strlen((char *)upd.pbBetaVersionPrefix);
  	upd.szBetaChangelogURL   ="http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
- 
+
  	if (ServiceExists(MS_UPDATE_REGISTER))
  		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 
 	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "useskin", 0))
 		ReloadContainerSkin(1, 1);
-	
+
 	RegisterFontServiceFonts();
 	CacheLogFonts();
 	Chat_ModulesLoaded(wParam, lParam);
@@ -1444,7 +1444,7 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam)
 }
 
 static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
-{	
+{
 	LoadFromIconLib();
 	CacheMsgLogIcons();
 	if (g_chat_integration_enabled)
@@ -1551,7 +1551,7 @@ tzdone:
 	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
 	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
 	SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
-	//MAD: sound on typing... 
+	//MAD: sound on typing...
 	if(myGlobals.g_bSoundOnTyping = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_soundontyping", 0))
 		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
 	//
@@ -1583,7 +1583,7 @@ tzdone:
 		myGlobals.m_GlobalContainerFlags = CNT_FLAGS_DEFAULT;
 	myGlobals.m_GlobalContainerTrans = DBGetContactSettingDword(NULL, SRMSGMOD_T, "containertrans", CNT_TRANS_DEFAULT);
 	myGlobals.local_gmt_diff = nOffset;
-	
+
 	hScrnDC = GetDC(0);
 	myGlobals.g_DPIscaleX = GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
 	myGlobals.g_DPIscaleY = GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
@@ -1707,7 +1707,6 @@ static void InitREOleCallback(void)
 }
 
 
-
 /*
  * tabbed mode support functions...
  * (C) by Nightwish
@@ -1735,17 +1734,19 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 			SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 			SetForegroundWindow(pContainer->hwnd);
 		}
-		//MaD
-		if (!IsWindowVisible(pContainer->hwnd)){
+		//MaD - hide on close feature
+		if (!IsWindowVisible(pContainer->hwnd)) {
 			WINDOWPLACEMENT wp={0};
 			wp.length = sizeof(wp);
 			GetWindowPlacement(pContainer->hwnd, &wp);
 
+			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
 			if(wp.showCmd == SW_SHOWMAXIMIZED)
 				ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
 			else
 				ShowWindow(pContainer->hwnd, SW_SHOWNA);
-			}
+			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+		}
 		//MaD_
 		else if (GetForegroundWindow() != pContainer->hwnd)
 			SetForegroundWindow(pContainer->hwnd);
@@ -1896,11 +1897,13 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 		wp.length = sizeof(wp);
 		GetWindowPlacement(pContainer->hwnd, &wp);
 
+		BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
 		if(wp.showCmd == SW_SHOWMAXIMIZED)
 			ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
 		else
 			ShowWindow(pContainer->hwnd, SW_SHOWNA);
-		}
+		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+	}
 	//MaD_
 	return hwndNew;		// return handle of the new dialog
 }
@@ -1911,7 +1914,8 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
  * a new (cloned) one.
  */
 
-struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact) {
+struct ContainerWindowData *FindMatchingContainer(const TCHAR *szName, HANDLE hContact)
+{
 	struct ContainerWindowData *pDesired = 0;
 	int iMaxTabs = DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxtabs", 0);
 
@@ -2149,7 +2153,7 @@ static int GetIconPackVersion(HMODULE hDLL)
 		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 3.5__"))
 			version = 4;
 	}
-	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 1)) 
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 1))
 		return version;
 
 	if (version == 0)
@@ -2273,6 +2277,10 @@ static void UnloadIcons()
 			DestroyIcon(myGlobals.m_AnimTrayIcons[i]);
 	}
 }
+
+/*
+ * display release notes dialog
+ */
 
 void ViewReleaseNotes()
 {
