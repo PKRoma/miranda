@@ -1352,7 +1352,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 	case IDM_LINK0: case IDM_LINK1: case IDM_LINK2: case IDM_LINK3: case IDM_LINK4:
 	case IDM_LINK5: case IDM_LINK6: case IDM_LINK7: case IDM_LINK8: case IDM_LINK9:
 	{
-		int idx = IDM_LINK0;
+		unsigned idx = IDM_LINK0;
 		for (TCHAR *p = _tcsstr(item->itemResource.statusMessage, _T("http://")); p && *p; p = _tcsstr(p+1, _T("http://")))
 		{
 			if (idx == gch->dwData)
