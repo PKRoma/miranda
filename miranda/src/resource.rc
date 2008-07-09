@@ -198,7 +198,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,410,1
     ICON            IDI_DETAILSLOGO,IDC_LOGO,7,3,20,20
     LTEXT           "Miranda",IDC_NAME,35,4,360,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Select and/or create your Miranda IM user profile",
+    LTEXT           "Select or create your Miranda IM user profile",
                     IDC_DESCRIPTION,45,14,349,8,0,WS_EX_TRANSPARENT
     RTEXT           "Start in Service Mode with",IDC_SM_LABEL,10,196,131,10
     COMBOBOX        IDC_SM_COMBO,146,195,143,12,CBS_DROPDOWNLIST | CBS_SORT | 
