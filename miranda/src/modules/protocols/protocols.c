@@ -262,7 +262,7 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 			if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx ) != 0 ) {
 				switch( serviceItems.items[ idx ]->id ) {
 					case  1: return ( int )ppi->vtbl->AddToList( ppi, wParam, (PROTOSEARCHRESULT*)lParam ); break;
-					case  2: return ( int )ppi->vtbl->AddToListByEvent( ppi, HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam ); break;
+					case  2: return ( int )ppi->vtbl->AddToListByEvent( ppi, LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
 					case  3: return ( int )ppi->vtbl->Authorize( ppi, ( HANDLE )wParam ); break;
 					case  4: return ( int )ppi->vtbl->AuthDeny( ppi, ( HANDLE )wParam, ( const char* )lParam ); break;
 					case  5: return ( int )ppi->vtbl->AuthRecv( ppi, hContact, ( PROTORECVEVENT* )lParam ); break;
