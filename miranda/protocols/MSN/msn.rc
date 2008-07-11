@@ -7,8 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
-
+#include <windows.h>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -80,7 +79,8 @@ BEGIN
     EDITTEXT        IDC_YOURHOST,105,136,169,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Reset",IDC_RESETSERVER,244,16,34,12
     COMBOBOX        IDC_HOSTOPT,11,120,261,30,CBS_DROPDOWNLIST | WS_TABSTOP
-    LTEXT           "(SSL through Internet Explorer is used when unchecked)",IDC_STATIC,23,90,178,8
+    CONTROL         "(SSL through Internet Explorer is used when unchecked)",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP | SS_NOPREFIX | WS_GROUP,23,90,270,8
 END
 
 IDD_LISTSMGR DIALOGEX 0, 0, 304, 228
