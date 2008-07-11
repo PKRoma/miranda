@@ -126,11 +126,19 @@ void __cdecl CJabberProto::KeepAliveThread( void* )
 {
 	NETLIBSELECT nls = {0};
 	nls.cbSize = sizeof( NETLIBSELECT );
-	nls.dwTimeout = 60000;	// 60000 millisecond ( 1 minute )
+	nls.dwTimeout = 5000; // 5 second
 	nls.hExceptConns[0] = m_ThreadInfo->s;
+	
+	DWORD dwLastPingTime = GetTickCount();
+	
 	for ( ;; ) {
 		if ( JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
 			break;
+
+		DWORD dwTickCount = GetTickCount();
+		if (dwTickCount - dwLastPingTime < 60000) // 1 minute
+			continue;
+		dwLastPingTime = dwTickCount;
 
 		if ( m_ThreadInfo && JGetByte( "EnableServerXMPPPing", FALSE )) {
 			XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
