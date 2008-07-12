@@ -451,7 +451,7 @@ void FLT_ReadOptions()
 	g_floatoptions.pad_bottom = LOBYTE(HIWORD(dwPad));
 	g_floatoptions.pad_left = HIBYTE(HIWORD(dwPad));
 
-	g_floatoptions.width = DBGetContactSettingByte(NULL, "CList", "flt_width", 100);
+	g_floatoptions.width = DBGetContactSettingDword(NULL, "CList", "flt_width", 100);
 	g_floatoptions.act_trans = DBGetContactSettingByte(NULL, "CList", "flt_acttrans", 255);
 	g_floatoptions.trans = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
 	g_floatoptions.radius = DBGetContactSettingByte(NULL, "CList", "flt_radius", 3);

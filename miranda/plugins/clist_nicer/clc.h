@@ -706,8 +706,8 @@ typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
 
 typedef struct _floatopts {
 	DWORD dwFlags;
-	BYTE pad_left, pad_right, pad_top, pad_bottom;
-	BYTE width;
+	BYTE  pad_left, pad_right, pad_top, pad_bottom;
+	DWORD width;
 	COLORREF border_colour;
 	BYTE trans, act_trans;
 	BYTE radius;
