@@ -51,9 +51,9 @@ $Id$
 #include "sendqueue.h"
 #pragma hdrstop
 
-#define SB_CHAR_WIDTH        45
-#define DEFAULT_CONTAINER_POS 0x00400040
-#define DEFAULT_CONTAINER_SIZE 0x019001f4
+#define SB_CHAR_WIDTH			45
+#define DEFAULT_CONTAINER_POS 	0x00400040
+#define DEFAULT_CONTAINER_SIZE 	0x019001f4
 
 static HMONITOR(WINAPI * MyMonitorFromWindow)(HWND, DWORD) = 0;
 static BOOL(WINAPI * MyGetMonitorInfoA)(HMONITOR, LPMONITORINFO) = 0;
@@ -80,20 +80,24 @@ extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus);
 
-TCHAR *szWarnClose = _T("Do you really want to close this session?");
-BOOL cntHelpActive = FALSE;
-DWORD m_LangPackCP = CP_ACP;
+// test
 
-struct ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
-struct ContainerWindowData *pLastActiveContainer = NULL;
+TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
+BOOL 	cntHelpActive = FALSE;
+DWORD 	m_LangPackCP = CP_ACP;
 
-TCHAR *MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
+struct 	ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
+struct 	ContainerWindowData *pLastActiveContainer = NULL;
 
-static WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
+TCHAR 	*MY_DBGetContactSettingString(HANDLE hContact, char *szModule, char *szSetting);
 
-extern StatusItems_t StatusItems[];
-BOOL g_skinnedContainers = FALSE;
-BOOL g_framelessSkinmode = FALSE;
+static 	WNDPROC OldStatusBarproc = 0, OldContainerWndProc = 0;
+
+extern 	StatusItems_t StatusItems[];
+BOOL 	g_skinnedContainers = FALSE;				// message containers are skinned
+BOOL 	g_framelessSkinmode = FALSE;				// when this is true, tabSRMM will also draw the window borders and frame.
+													// this indicates "fully skinned" mode. Otherwise, window border and frame
+													// is using standard windows visuals.
 
 extern HBRUSH	g_ContainerColorKeyBrush;
 extern COLORREF g_ContainerColorKey;
@@ -109,6 +113,10 @@ static BOOL		menuBarNames_done = FALSE;
 
 #define RWPF_HIDE 8
 
+/*
+ * helper functions to restory container window position
+ * taken from the core, but modified
+ */
 static int MY_RestoreWindowPosition(WPARAM wParam, LPARAM lParam)
 {
 	SAVEWINDOWPOS *swp = (SAVEWINDOWPOS*)lParam;

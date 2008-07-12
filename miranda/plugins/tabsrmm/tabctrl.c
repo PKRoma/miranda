@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 custom tab control for tabSRMM. Allows for configuartion of colors and backgrounds
 for different tab states (active,  unread etc..)
 
+allows skinable tabs with visual styles properly applied to bottom row tabs (flipped
+style bitmaps).
+
 $Id$
 */
 
@@ -35,13 +38,13 @@ $Id$
 #include <uxtheme.h>
 
 extern MYGLOBALS	myGlobals;
-static WNDPROC	OldTabControlClassProc;
+static WNDPROC		OldTabControlClassProc;
 extern struct		ContainerWindowData *pFirstContainer;
 extern HINSTANCE	g_hInst;
 extern PSLWA		pSetLayeredWindowAttributes;
-extern StatusItems_t StatusItems[];
-extern BOOL		g_framelessSkinmode;
-extern BOOL		g_skinnedContainers;
+extern StatusItems_	t StatusItems[];
+extern BOOL			g_framelessSkinmode;
+extern BOOL			g_skinnedContainers;
 extern ButtonSet	g_ButtonSet;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -199,7 +202,8 @@ static struct colOptions {
 
 /*
  * draw an antialiased (smoothed) line from X0/Y0 to X1/Y1 using clrLine as basecolor
-*/
+ * used by the "styled" tabs which look similar to visual studio UI tabs.
+ */
 
 static void DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine)
 {
@@ -492,7 +496,6 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 /*
  * draws the item rect (the "tab") in *classic* style (no visual themes
  */
-
 
 static RECT rcTabPage = {0};
 

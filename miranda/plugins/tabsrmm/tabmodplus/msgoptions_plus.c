@@ -1,3 +1,36 @@
+/*
+astyle --force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
+
+Miranda IM: the free IM client for Microsoft* Windows*
+
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
+listed in contributors.txt.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id$
+
+*/
+
+/*
+ * implements the "advanced tweak" option page
+ * originally developed by Mad Cluster for the tabSRMM "MADMOD" patch in May 2008
+ */
+
 #include "commonheaders.h"
 
 extern HINSTANCE	hinstance;
@@ -22,7 +55,6 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Disable animated GIF avatars (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, _T("Enable fix for nicklist scroll bar"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
 	0, _T("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
-	0, _T("Close button only hides message containers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 0,
 	0, _T("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, _T("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, NULL, 0, 0, 0, 0

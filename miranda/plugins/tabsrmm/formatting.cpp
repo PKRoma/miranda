@@ -37,7 +37,7 @@ License: GPL
 
 #include <string>
 #include "msgdlgutils.h"
-#include "API/m_smileyadd.h"
+#include "API\m_smileyadd.h"
 
 //#include "m_MathModule.h"
 
@@ -96,7 +96,7 @@ extern "C" const WCHAR *FilterEventMarkers(WCHAR *wszText)
 	}
 	//mad
 
-	while (TRUE) {	   
+	while (TRUE) {
 		if ((beginmark = text.find( L"\xAA")) != text.npos) {
 			endmark = beginmark+2;
 			if (endmark != text.npos && (endmark - beginmark) > 1) {
@@ -174,7 +174,7 @@ search_again:
 						}
 						message.erase(beginmark, (closing - beginmark));
 						message.insert(beginmark, L"cxxx ");
-						_snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 10 + ii);
+						_snwprintf(szTemp, 4, L"%02d", MSGDLGFONTCOUNT + 13 + ii);
 						message[beginmark + 3] = szTemp[0];
 						message[beginmark + 4] = szTemp[1];
 						clr_found = true;
@@ -565,7 +565,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
-					} 
+					}
 					else
 						title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
 				}
@@ -737,7 +737,7 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 			break;
 	}
 	//mad
-	while (TRUE) {	   
+	while (TRUE) {
 		if ((beginmark = text.find( "\xAA")) != text.npos) {
 			endmark = beginmark+2;
 			if (endmark != text.npos && (endmark - beginmark) > 1) {
@@ -753,7 +753,7 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 	return szText;
 }
 
-typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;  
+typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;
 
 // nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
 
@@ -769,8 +769,8 @@ extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
 
 	while (TRUE) {
 		if ((textPos = text.find(_T("&"),textPos)) != text.npos) {
-			text.insert(textPos,_T("%"));
-			text.replace(textPos, 2, _T("&&"));
+			text.insert(textPos,__T("%"));
+			text.replace(textPos, 2, __T("&&"));
 			textPos+=2;
 			continue;
 		} else
@@ -779,3 +779,4 @@ extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
 	_tcscpy(pszText, text.c_str());
 	return pszText;
 }
+

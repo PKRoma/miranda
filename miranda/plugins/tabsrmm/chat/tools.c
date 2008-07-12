@@ -752,6 +752,10 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 	return FALSE;
 }
 
+/*
+ * log the event to the log file
+ * allows selective logging of wanted events
+ */
 BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 {
 	MODULEINFO * mi = NULL;
@@ -772,12 +776,12 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (!mi)
 		return FALSE;
 
-	/* 
-     * check whether we have to log this event 
-    */ 
-    
-	    if(!(gce->pDest->iType & si->iDiskLogFlags)) 
-	            return FALSE; 
+	/*
+     * check whether we have to log this event
+    */
+
+	if(!(gce->pDest->iType & si->iDiskLogFlags))
+		return FALSE;
 
 
 	mir_snprintf(szName, MAX_PATH, "%s", mi->pszModDispName);
@@ -1043,7 +1047,7 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 }
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
-{   
+{
 #if defined(_UNICODE)
 	SESSION_INFO* si;
 #endif
@@ -1278,8 +1282,8 @@ void Chat_SetFilters(SESSION_INFO *si)
 			si->iLogTrayFlags = (dwFlags_local & (1 << i) ? si->iLogTrayFlags | (1 << i) : si->iLogTrayFlags & ~(1 << i));
 	}
 
-	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF); 
-    si->iDiskLogFlags = dwFlags_default; 
+	dwFlags_default = DBGetContactSettingDword(NULL, "Chat", "DiskLogFlags", 0xFFFF);
+    si->iDiskLogFlags = dwFlags_default;
 
 
 	if (si->iLogFilterFlags == 0)

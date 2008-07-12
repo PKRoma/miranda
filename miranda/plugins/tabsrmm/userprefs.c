@@ -94,7 +94,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			have_ieview = ServiceExists(MS_IEVIEW_WINDOW);
 			have_hpp = ServiceExists("History++/ExtGrid/NewWindow");
-  
+
 			hContact = (HANDLE)lParam;
 
 			TranslateDialogDefault(hwndDlg);
@@ -134,9 +134,9 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			CheckDlgButton(hwndDlg, IDC_TEMPLOVERRIDE, DBGetContactSettingByte(hContact, TEMPLATES_MODULE, "enabled", 0));
 			CheckDlgButton(hwndDlg, IDC_RTLTEMPLOVERRIDE, DBGetContactSettingByte(hContact, RTLTEMPLATES_MODULE, "enabled", 0));
 
-			//MAD 
-			CheckDlgButton(hwndDlg, IDC_LOADONLYACTUAL, DBGetContactSettingByte(hContact, SRMSGMOD_T, "ActualHistory", 0)); 
-			// 
+			//MAD
+			CheckDlgButton(hwndDlg, IDC_LOADONLYACTUAL, DBGetContactSettingByte(hContact, SRMSGMOD_T, "ActualHistory", 0));
+			//
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
@@ -406,7 +406,7 @@ static BOOL CALLBACK DlgProcUserPrefs1(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				if(dwLocalMask & maskval)
 					CheckDlgButton(hwndDlg, checkboxes[i].uId, (dwLocalFlags & maskval) ? BST_CHECKED : BST_UNCHECKED);
-				else 
+				else
 					CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
 				i++;
 			}
@@ -531,7 +531,7 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					HWND	hwnd = WindowList_Find(hMessageWindowList, hContact);
 
 					tci.mask = TCIF_PARAM;
-					
+
 					count = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_OPTIONSTAB));
 					for (i = 0;i < count;i++) {
 						TabCtrl_GetItem(GetDlgItem(hwndDlg, IDC_OPTIONSTAB), i, &tci);

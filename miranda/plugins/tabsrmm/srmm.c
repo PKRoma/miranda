@@ -50,13 +50,6 @@ pfnSetMenuInfo fnSetMenuInfo = NULL;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-// #ifdef _UNICODE
-// #ifdef __GNUWIN32__
-// 	"TabSRMM MADmod (MINGW32)",
-// #else
-// 	"TabSRMM MADmod",
-// #endif
-// #else
 #ifdef __GNUWIN32__
 	"TabSRMM (MINGW32)",
 #else

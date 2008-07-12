@@ -25,8 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 $Id$
 
 /*
-* message log templates supporting functions, including the template editor
-*/
+ * message log templates supporting functions, including the template editor
+ * FIXME: this needs some serious work. It basically does what it should do, but the UI isn't that
+ * great...
+ */
 
 #include "commonheaders.h"
 #pragma hdrstop

@@ -29,6 +29,11 @@ Version 2.2.1.8  - 2008/07/04
 	! hide on close feature: small fix for distorted layout when showing
 	  a container with a previouly not yet activated tab.
 
+	! fixed minor resource leak when the display of client icons in the
+	  status bar is enabled.
+
+	! more minor fixes for the hidden container feature.
+
 Version 2.2.1.7  - 2008/06/21
 -----------------------------
 

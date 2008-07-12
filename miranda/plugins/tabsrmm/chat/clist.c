@@ -30,6 +30,10 @@ $Id$
 
 */
 
+/*
+ * handles interaction of the group chat implementation with the contact list plugin
+ */
+
 #include "../commonheaders.h"
 
 char *szChatIconString = "chaticon";
@@ -301,3 +305,4 @@ int WCCmp(TCHAR* wild, TCHAR* string)
 
 	return !*wild;
 }
+

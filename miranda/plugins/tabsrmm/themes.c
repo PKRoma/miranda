@@ -80,6 +80,9 @@ ButtonSet g_ButtonSet = {0};
 ICONDESC *g_skinIcons = NULL;
 int       g_nrSkinIcons = 0;
 
+/*
+ * definition of the availbale skin items
+ */
 StatusItems_t StatusItems[] = {
 	{"Container", "TSKIN_Container", ID_EXTBKCONTAINER,
 		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
@@ -176,6 +179,13 @@ StatusItems_t StatusItems[] = {
 	}
 };
 
+/*
+ * this loads a font definition from an INI file.
+ * i = font number
+ * szKey = ini section (e.g. [Font10])
+ * *lf = pointer to a LOGFONT structure which will receive the font definition
+ * *colour = pointer to a COLORREF which will receive the color of the font definition
+*/
 static void LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename)
 {
 	int style;
@@ -407,7 +417,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 			DBWriteContactSettingDword(NULL, FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
 			DBWriteContactSettingDword(NULL, FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
 			DBWriteContactSettingDword(NULL, FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
-			
+
 			DBWriteContactSettingDword(NULL, FONTMODULE, "oldinbg", GetPrivateProfileIntA("Message Log", "OldIncomingBG", def, szIniFilename));
 			DBWriteContactSettingDword(NULL, FONTMODULE, "oldoutbg", GetPrivateProfileIntA("Message Log", "OldOutgoingBG", def, szIniFilename));
 			DBWriteContactSettingDword(NULL, FONTMODULE, "statbg", GetPrivateProfileIntA("Message Log", "StatusBG", def, szIniFilename));
@@ -456,7 +466,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 		dat->theme.bg = GetPrivateProfileIntA("Message Log", "BackgroundColor", RGB(224, 224, 224), szIniFilename);
 		dat->theme.inbg = GetPrivateProfileIntA("Message Log", "IncomingBG", RGB(224, 224, 224), szIniFilename);
 		dat->theme.outbg = GetPrivateProfileIntA("Message Log", "OutgoingBG", RGB(224, 224, 224), szIniFilename);
-		
+
 		dat->theme.oldinbg = GetPrivateProfileIntA("Message Log", "OldIncomingBG", RGB(224, 224, 224), szIniFilename);
 		dat->theme.oldoutbg = GetPrivateProfileIntA("Message Log", "OldOutgoingBG", RGB(224, 224, 224), szIniFilename);
 		dat->theme.statbg = GetPrivateProfileIntA("Message Log", "StatusBG", RGB(224, 224, 224), szIniFilename);
@@ -1932,6 +1942,14 @@ void SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContain
 		ReleaseDC(hwnd, dc);
 }
 
+/*
+ * reload the skin
+ * 1) delete all image items and other skin objects
+ * 2) reload them
+ * all containers must be closed before doing this.
+ * doLoad = FALSE will only remove the skin (unload)
+ * onStartup = TRUE will perform additional initialisation for the skin items which are only needed once
+ */
 void ReloadContainerSkin(int doLoad, int onStartup)
 {
 	DBVARIANT dbv = {0};
@@ -1979,6 +1997,9 @@ void ReloadContainerSkin(int doLoad, int onStartup)
 
 static BLENDFUNCTION bf_t = {0};
 
+/*
+ * draw an icon "dimmed" (small amount of transparency applied)
+*/
 void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha)
 {
 	HDC dcMem = CreateCompatibleDC(hdc);
@@ -1998,3 +2019,4 @@ void DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon,
 	DeleteObject(hbm);
 	DeleteDC(dcMem);
 }
+

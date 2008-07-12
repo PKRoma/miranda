@@ -35,13 +35,16 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.6\\b0\\ul0\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.8\\b0\\ul0\\par ",
 	"*\tbug fixes: Revert option in advanced tweaks, history event suppport (possible crash).\\par ",
 	"*\tLayout tweaks for 120dpi setting.\\par ",
 	"*\tCustom emoticons patch by borkra (show custom emoticons on incoming messages only).\\par ",
+	"*\tVarious fixes for hidden containers.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
+
+/* definitions */
 
 /* Missing MinGW GUIDs */
 #ifdef __MINGW32__
@@ -124,11 +127,19 @@ int     Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, L
 void    Chat_AddIcons(void);
 int     Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
 
+/*
+ * fired event when user changes IEView plugin options. Apply them to all open tabs
+ */
+
 static int IEViewOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
 	WindowList_Broadcast(hMessageWindowList, DM_IEVIEWOPTIONSCHANGED, 0, 0);
 	return 0;
 }
+
+/*
+ * fired event when user changes smileyadd options. Notify all open tabs about the changes
+ */
 
 static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -143,12 +154,20 @@ static int SmileyAddOptionsChanged(WPARAM wParam, LPARAM lParam)
  */
 
 static int GetWindowClass(WPARAM wParam, LPARAM lParam)
+
 {
 	char *szBuf = (char*)wParam;
 	int size = (int)lParam;
 	mir_snprintf(szBuf, size, "tabSRMM");
 	return 0;
 }
+
+/*
+ * service function. retrieves the message window data for a given hcontact or window
+ * wParam == hContact of the window to find
+ * lParam == window handle (set it to 0 if you want search for hcontact, otherwise it
+ * is directly used as the handle for the target window
+ */
 
 static int GetWindowData(WPARAM wParam, LPARAM lParam)
 {
@@ -188,15 +207,11 @@ static int GetWindowData(WPARAM wParam, LPARAM lParam)
 		mwod->hwndWindow = 0;
 		mwod->uFlags = 0;
 	}
-
 	return 1;
 }
 
 /*
- * service function. retrieves the message window data for a given hcontact or window
- * wParam == hContact of the window to find
- * lParam == window handle (set it to 0 if you want search for hcontact, otherwise it
- * is directly used as the handle for the target window
+ * service function. Invoke the user preferences dialog for the contact given (by handle) in wParam
  */
 
 static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
@@ -209,6 +224,11 @@ static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
 	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS_FRAME), 0, DlgProcUserPrefsFrame, (LPARAM)wParam);
 	return 0;
 }
+
+/*
+ * when top tool bar had been fully loaded, add the 2 buttons to display session list
+ * and tray menu
+ */
 
 static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
 {
@@ -236,6 +256,11 @@ static int TTB_Loaded(WPARAM wParam, LPARAM lParam)
 	UnhookEvent(hEvent_ttbInit);
 	return 0;
 }
+
+/*
+ * service function - open the tray menu from the TTB button
+ */
+
 static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
 {
 	if (ServiceExists(MS_TTB_SETBUTTONSTATE))
@@ -244,6 +269,7 @@ static int Service_OpenTrayMenu(WPARAM wParam, LPARAM lParam)
 	SendMessage(myGlobals.g_hwndHotkeyHandler, DM_TRAYICONNOTIFY, 101, lParam == 0 ? WM_LBUTTONUP : WM_RBUTTONUP);
 	return 0;
 }
+
 /*
  * service function. retrieves the message window flags for a given hcontact or window
  * wParam == hContact of the window to find
@@ -392,16 +418,21 @@ static int DispatchNewEvent(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/*
+ * ReadMessageCommand is executed whenever the user wants to manually open a window.
+ * This can happen when double clicking a contact on the clist OR when opening a new
+ * message (clicking on a popup, clicking the flashing tray icon and so on).
+ */
+
 static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndExisting;
 	HANDLE hContact = ((CLISTEVENT *) lParam)->hContact;
 	struct ContainerWindowData *pContainer = 0;
 
-	//EnterCriticalSection(&cs_sessions);
 	hwndExisting = WindowList_Find(hMessageWindowList, hContact);
 
-	if (hwndExisting != NULL) {
+	if (hwndExisting != 0) {
 		SendMessage(hwndExisting, DM_QUERYCONTAINER, 0, (LPARAM) &pContainer);          // ask the message window about its parent...
 		if (pContainer != NULL)
 			ActivateExistingTab(pContainer, hwndExisting);
@@ -413,9 +444,16 @@ static int ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 			pContainer = CreateContainer(szName, FALSE, hContact);
 		CreateNewTabForContact(pContainer, hContact, 0, NULL, TRUE, TRUE, FALSE, 0);
 	}
-	//LeaveCriticalSection(&cs_sessions);
 	return 0;
 }
+
+/*
+ * Message event added is called when a new message is added to the database
+ * if no session is open for the contact, this function will determine if and how a new message
+ * session (tab) must be created.
+ *
+ * if a session is already created, it just does nothing and DispatchNewEvent() will take care.
+ */
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
@@ -462,11 +500,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		struct ContainerWindowData *pTargetContainer = 0;
 		WINDOWPLACEMENT wp={0};
 		wp.length = sizeof(wp);
-		GetWindowPlacement(hwnd, &wp);
 		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);
 
-		if(myGlobals.m_HideOnClose&&!IsWindowVisible(pTargetContainer->hwnd))
-		{
+		if(pTargetContainer && myGlobals.m_HideOnClose && !IsWindowVisible(pTargetContainer->hwnd))	{
+			GetWindowPlacement(pTargetContainer->hwnd, &wp);
 			GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
 			bAutoPopup = DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
@@ -476,14 +513,13 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 
 			bAllowAutoCreate = FALSE;
 
-
 			if (bAutoPopup || bAutoCreate) {
 				BOOL bActivate = TRUE, bPopup = TRUE;
 				if(bAutoPopup) {
 					if(wp.showCmd == SW_SHOWMAXIMIZED)
 						ShowWindow(pTargetContainer->hwnd, SW_SHOWMAXIMIZED);
 					else
-						ShowWindow(pTargetContainer->hwnd, SW_SHOWNA);
+						ShowWindow(pTargetContainer->hwnd, SW_SHOWNOACTIVATE);
 					return 0;
 				}
 				else {
@@ -492,25 +528,21 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 					pContainer = FindContainerByName(szName);
 					if (pContainer != NULL) {
 						if(bAutoContainer) {
-							ShowWindow(pTargetContainer->hwnd, SW_MINIMIZE);
-							ShowWindow(pTargetContainer->hwnd, SW_SHOWNA);
+							ShowWindow(pTargetContainer->hwnd, SW_SHOWMINNOACTIVE);
 							return 0;
 						}
 						else goto nowindowcreate;
 					}
 					else {
 						if(bAutoContainer) {
-							ShowWindow(pTargetContainer->hwnd, SW_MINIMIZE);
-							ShowWindow(pTargetContainer->hwnd, SW_SHOWNA);
+							ShowWindow(pTargetContainer->hwnd, SW_SHOWMINNOACTIVE);
 							return 0;
 						}
 					}
 				}
 			}
 		}
-
 		else
-			//MaD_
 			return 0;
 	}			/*  do not process it here, when a session window is open for this contact.
         						DispatchNewEvent() will handle this */
@@ -628,7 +660,14 @@ nowindowcreate:
 	return 0;
 }
 
+
+/*
+ * this is the Unicode version of the SendMessageCommand handler. It accepts wchar_t strings
+ * for filling the message input box with a passed message
+ */
+
 #if defined(_UNICODE)
+
 int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
@@ -639,8 +678,10 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 	struct ContainerWindowData *pContainer = 0;
 	int isSplit = 1;
 
+	/*
+	 * make sure that only the main UI thread will handle window creation
+     */
 	if (GetCurrentThreadId() != myGlobals.dwThreadID) {
-		//_DebugTraceA("sendmessagecommand_W called from different thread (%d), main thread = %d", GetCurrentThreadId(), myGlobals.dwThreadID);
 		if (lParam) {
 			unsigned iLen = lstrlenW((wchar_t *)lParam);
 			wchar_t *tszText = (wchar_t *)malloc((iLen + 1) * sizeof(wchar_t));
@@ -662,7 +703,6 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	//EnterCriticalSection(&cs_sessions);
 	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
 		if (lParam) {
 			HWND hEdit;
@@ -693,11 +733,17 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 			pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 		CreateNewTabForContact(pContainer, (HANDLE) wParam, 1, (const char *)lParam, TRUE, TRUE, FALSE, 0);
 	}
-	//LeaveCriticalSection(&cs_sessions);
 	return 0;
 }
 
 #endif
+
+/*
+ * the SendMessageCommand() invokes a message session window for the given contact.
+ * e.g. it is called when user double clicks a contact on the contact list
+ * it is implemented as a service, so external plugins can use it to open a message window.
+ * contacts handle must be passed in wParam.
+ */
 
 int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -710,7 +756,6 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	int isSplit = 1;
 
 	if (GetCurrentThreadId() != myGlobals.dwThreadID) {
-		//_DebugTraceA("sendmessagecommand called from different thread (%d), main thread = %d", GetCurrentThreadId(), myGlobals.dwThreadID);
 		if (lParam) {
 			unsigned iLen = lstrlenA((char *)lParam);
 			char *szText = (char *)malloc(iLen + 1);
@@ -732,7 +777,6 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	//EnterCriticalSection(&cs_sessions);
 	if (hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) {
 		if (lParam) {
 			HWND hEdit;
@@ -763,9 +807,12 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 			pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 		CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, (const char *) lParam, TRUE, TRUE, FALSE, 0);
 	}
-	//LeaveCriticalSection(&cs_sessions);
 	return 0;
 }
+
+/*
+ * forwarding a message - this service is obsolete but still left intact
+ */
 
 static int ForwardMessage(WPARAM wParam, LPARAM lParam)
 {
@@ -797,16 +844,26 @@ static int ForwardMessage(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/*
+ * open a window when user clicks on the flashing "typing message" tray icon.
+ * just calls SendMessageCommand() for the given contact.
+ */
 static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
-	{
+{
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
 	if (!cle)
 		return 0;
 	SendMessageCommand((WPARAM) cle->hContact, 0);
 	return 0;
-	}
+}
 
+/*
+ * displays typing notifications (MTN) in various ways.
+ * this event is fired when a protocol has to notify the user about a typing buddy.
+ * this fucntion distributes the typing event, based on the MTN configuration of the                                                                               .
+ * message window plugin.                                                                                                                                                                .
+ */
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
 	HWND	hwnd = 0;
@@ -902,6 +959,12 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/*
+ * watches various important database settings and reacts accordingly
+ * needed to catch status, nickname and other changes in order to update open message
+ * sessions.
+ */
+
 static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
@@ -955,6 +1018,10 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+/*
+ * event fired when a contact has been deleted. Make sure to close its message session
+ */
+
 static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
@@ -963,11 +1030,16 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
 
 		if (dat)
-			dat->bWasDeleted = 1;
+			dat->bWasDeleted = 1;				// indicated deleted contact, avoid recursion and possible crash
 		SendMessage(hwnd, WM_CLOSE, 0, 1);
 	}
 	return 0;
 }
+
+/*
+ * used on startup to restore flashing tray icon if one or more messages are
+ * still "unread"
+ */
 
 static void RestoreUnreadMessageAlerts(void)
 {
@@ -1025,6 +1097,9 @@ static void RestoreUnreadMessageAlerts(void)
 int    haveMathMod = 0;
 TCHAR  *mathModDelimiter = NULL;
 
+/*
+ * second part of the startup initialisation. All plugins are now fully loaded
+ */
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
@@ -1743,8 +1818,10 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
 			if(wp.showCmd == SW_SHOWMAXIMIZED)
 				ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
-			else
+			else {
 				ShowWindow(pContainer->hwnd, SW_SHOWNA);
+				SetForegroundWindow(pContainer->hwnd);
+			}
 			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 		}
 		//MaD_
@@ -1900,8 +1977,12 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 		BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
 		if(wp.showCmd == SW_SHOWMAXIMIZED)
 			ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
-		else
-			ShowWindow(pContainer->hwnd, SW_SHOWNA);
+		else {
+			if(bPopupContainer)
+				ShowWindow(pContainer->hwnd, SW_SHOWNORMAL);
+			else
+				ShowWindow(pContainer->hwnd, SW_SHOWMINNOACTIVE);
+		}
 		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 	}
 	//MaD_
@@ -2052,6 +2133,10 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 	return(NotifyEventHooks(g_hEvent_MsgWin, 0, (LPARAM)&mwe));
 }
 
+/*
+ * standard icon definitions
+ */
+
 static ICONDESC _toolbaricons[] = {
 	"tabSRMM_history", LPGEN("Show History"), &myGlobals.g_buttonBarIcons[1], -IDI_HISTORY, 1,
 	"tabSRMM_mlog", LPGEN("Message Log Options"), &myGlobals.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
@@ -2114,7 +2199,6 @@ static ICONDESC _deficons[] = {
 	"tabSRMM_sb_Userprefs", LPGEN("Contact Preferences"), &myGlobals.g_sideBarIcons[4], -IDI_USERPREFS, 1,
 	NULL, NULL, NULL, 0, 0
 };
-
 static ICONDESC _trayIcon[] = {
 	"tabSRMM_frame1", LPGEN("Frame 1"), &myGlobals.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
 	"tabSRMM_frame2", LPGEN("Frame 2"), &myGlobals.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
@@ -2291,6 +2375,11 @@ void ViewReleaseNotes()
 	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
 }
 
+/*
+ * for the custom buttons
+ * search a (named) icon from the default icon configuration and return a pointer
+ * to its stored handle
+ */
 HICON *BTN_GetIcon(char *szIconName)
 {
 	int n = 0, i;
@@ -2298,7 +2387,6 @@ HICON *BTN_GetIcon(char *szIconName)
 		i = 0;
 		while (ICONBLOCKS[n].idesc[i].szDesc) {
 			if (!_stricmp(ICONBLOCKS[n].idesc[i].szName, szIconName)) {
-				//_DebugTraceA("found icon: %s", szIconName);
 				return(ICONBLOCKS[n].idesc[i].phIcon);
 			}
 			i++;
@@ -2307,9 +2395,9 @@ HICON *BTN_GetIcon(char *szIconName)
 	}
 	for (i = 0; i < g_nrSkinIcons; i++) {
 		if (!_stricmp(g_skinIcons[i].szName, szIconName)) {
-			//_DebugTraceA("found custom icon: %s", szIconName);
 			return(g_skinIcons[i].phIcon);
 		}
 	}
 	return NULL;
 }
+
