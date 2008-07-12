@@ -64,7 +64,8 @@ void CJabberProto::JForkThread( JThreadFunc pFunc, void *param )
 
 HANDLE CJabberProto::JForkThreadEx( JThreadFunc pFunc, void *param, UINT* threadID )
 {
-	return ( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, threadID );
+	UINT lthreadID;
+	return ( HANDLE )::mir_forkthreadowner(( pThreadFuncOwner ) *( void** )&pFunc, this, param, threadID ? threadID : &lthreadID);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
