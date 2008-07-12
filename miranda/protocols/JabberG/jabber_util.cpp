@@ -1279,11 +1279,11 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
 
 			ppro->m_pInfoFrame->CreateInfoItem("$/PEP/mood", true);
 			ppro->m_pInfoFrame->SetInfoItemCallback("$/PEP/mood", &CJabberProto::InfoFrame_OnUserMood);
-			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/mood", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), _T("User mood"));
+			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/mood", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), TranslateT("User mood"));
 
 			ppro->m_pInfoFrame->CreateInfoItem("$/PEP/activity", true);
 			ppro->m_pInfoFrame->SetInfoItemCallback("$/PEP/activity", &CJabberProto::InfoFrame_OnUserActivity);
-			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), _T("User activity"));
+			ppro->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), TranslateT("User activity"));
 		}
 
 		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports/");
