@@ -42,7 +42,7 @@ static WNDPROC		OldTabControlClassProc;
 extern struct		ContainerWindowData *pFirstContainer;
 extern HINSTANCE	g_hInst;
 extern PSLWA		pSetLayeredWindowAttributes;
-extern StatusItems_	t StatusItems[];
+extern StatusItems_t StatusItems[];
 extern BOOL			g_framelessSkinmode;
 extern BOOL			g_skinnedContainers;
 extern ButtonSet	g_ButtonSet;

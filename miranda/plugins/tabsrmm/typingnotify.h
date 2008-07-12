@@ -73,5 +73,4 @@ static colors colorPicker[] =
         {IDC_TYPEON_TX,  "ON_TX",  RGB(0,0,0)},
         {IDC_TYPEOFF_BG, "OFF_BG", RGB(255,255,255)},
         {IDC_TYPEOFF_TX, "OFF_TX", RGB(0,0,0)}
-}
-
+};
