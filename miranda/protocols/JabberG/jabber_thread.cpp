@@ -1074,7 +1074,7 @@ void CJabberProto::OnProcessPubsubEvent( XmlNode *node )
 			if ( actNode->child[i]->name && strcmp( actNode->child[i]->name, "text" )) {
 				szFirstNode = actNode->child[i]->name;
 				XmlNode* secondNode = JabberXmlGetFirstChild( actNode->child[i] );
-				if ( szFirstNode && secondNode->name )
+				if ( szFirstNode && secondNode && secondNode->name )
 					szSecondNode = secondNode->name;
 				break;
 			}

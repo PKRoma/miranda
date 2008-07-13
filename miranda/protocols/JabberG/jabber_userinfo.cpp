@@ -312,12 +312,14 @@ static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM h
 	TCHAR *szAdvStatusTitle = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TITLE);
 	TCHAR *szAdvStatusText = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TEXT);
 
-	if (szAdvStatusIcon && szAdvStatusTitle && szAdvStatusText) {
+	if (szAdvStatusIcon && szAdvStatusTitle) {
 		TCHAR szText[2048];
-		mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
-		sttFillInfoLine( hwndTree, htiRoot,
-			(HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szAdvStatusIcon),
-			szTitle, szText, dwInfoLine);
+		if ( szAdvStatusText )
+			mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
+		else
+			mir_sntprintf(szText, 2047, _T("%s"), TranslateTS(szAdvStatusTitle));
+		sttFillInfoLine( hwndTree, htiRoot, (HICON)CallService(MS_SKIN2_GETICON, 0,
+			(LPARAM)szAdvStatusIcon), szTitle, szText, dwInfoLine);
 	}
 
 	mir_free(szAdvStatusIcon);
