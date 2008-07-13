@@ -580,6 +580,84 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode* iqNode, void* userdat
 			feature->addAttr( "var", g_JabberFeatCapPairs[i].szFeature );
 	}
 
+	XmlNode* form = iq.addChild( "x" );
+	form->addAttr( "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+	form->addAttr( "type", _T("result") );
+
+	XmlNode* field = form->addChild( "field" );
+	field->addAttr( "var", _T("FORM_TYPE") );
+	field->addAttr( "type", _T("hidden") );
+	field->addChild( "value", _T("urn:xmpp:dataforms:softwareinfo") );
+
+	field = form->addChild( "field" );
+	field->addAttr( "var", _T("os") );
+	field->addChild( "value", _T("Windows") );
+
+	TCHAR* os = NULL;
+
+	OSVERSIONINFO osvi = { 0 };
+	osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
+	if ( GetVersionEx( &osvi )) {
+		switch ( osvi.dwPlatformId ) {
+		case VER_PLATFORM_WIN32_NT:
+			if ( osvi.dwMajorVersion == 6 )
+				os = _T( "Vista" );
+			else if ( osvi.dwMajorVersion == 5 ) {
+				if ( osvi.dwMinorVersion == 2 ) os = _T( "Server 2003" );
+				else if ( osvi.dwMinorVersion == 1 ) os = _T( "XP" );
+				else if ( osvi.dwMinorVersion == 0 ) os = _T( "2000" );
+			}
+			else if ( osvi.dwMajorVersion <= 4 ) {
+				os = _T( "Windows NT" );
+			}
+			break;
+		case VER_PLATFORM_WIN32_WINDOWS:
+			if ( osvi.dwMajorVersion == 4 ) {
+				if ( osvi.dwMinorVersion == 0 ) os = _T( "95" );
+				if ( osvi.dwMinorVersion == 10 ) os = _T( "98" );
+				if ( osvi.dwMinorVersion == 90 ) os = _T( "ME" );
+			}
+			break;
+		}
+	}
+	if ( os == NULL ) os = _T( "Unknown" );
+
+	field = form->addChild( "field" );
+	field->addAttr( "var", _T("os_version") );
+	field->addChild( "value", os );
+
+	field = form->addChild( "field" );
+	field->addAttr( "var", _T("software") );
+	field->addChild( "value", _T("Miranda IM Jabber") );
+
+	field = form->addChild( "field" );
+	field->addAttr( "var", _T("software_version") );
+	field->addChild( "value", _T(__VERSION_STRING) );
+
+	DWORD dwCoreVersion = JCallService( MS_SYSTEM_GETVERSION, NULL, NULL );
+	TCHAR szCoreVersion[ 256 ];
+	mir_sntprintf( szCoreVersion, SIZEOF( szCoreVersion ), _T("%d.%d.%d.%d"),
+		( dwCoreVersion >> 24 ) & 0xFF, ( dwCoreVersion >> 16 ) & 0xFF,
+		( dwCoreVersion >> 8)  & 0xFF, dwCoreVersion & 0xFF );
+
+	field = form->addChild( "field" );
+	field->addAttr( "var", _T("x-miranda-core-version") );
+	field->addChild( "value", szCoreVersion );
+
+	char szMirandaVersion[100];
+	if (!JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( szMirandaVersion ), ( LPARAM )szMirandaVersion ))
+	{
+		strlwr( szMirandaVersion );
+
+		field = form->addChild( "field" );
+		field->addAttr( "var", _T("x-miranda-is-unicode") );
+		field->addChild( "value", strstr( szMirandaVersion, "unicode" ) ? _T("1") : _T("0") );
+
+		field = form->addChild( "field" );
+		field->addAttr( "var", _T("x-miranda-is-alpha") );
+		field->addChild( "value", strstr( szMirandaVersion, "alpha" ) ? _T("1") : _T("0") );
+	}
+
 	ppro->m_ThreadInfo->send( iq );
 	
 	return TRUE;
