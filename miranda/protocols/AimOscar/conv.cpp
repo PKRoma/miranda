@@ -208,7 +208,7 @@ char* html_to_bbcodes(char *src)
 		{	
 			ptr-=1;
 			memmove(ptr, ptr+1, strlen(ptr+1) + 1);
-			*(ptr)=L']';
+			*(ptr)=']';
 			ptrl-=1;
 			char* s1 = strstr(ptrl,"</A");
 			char* s2 = strstr(rptr,"<A HREF");
@@ -254,7 +254,7 @@ char* html_to_bbcodes(char *src)
 		{
 			ptr-=1;
 			memmove(ptr, ptr+1, strlen(ptr+1) + 1);
-			*(ptr)=L']';
+			*(ptr)=']';
 			ptrl-=1;
 			char* s1 = strstr(ptrl,"</a");
 			char* s2 = strstr(ptrl,"<a href");
