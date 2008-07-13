@@ -3,6 +3,7 @@
 PLUGINLINK *pluginLink;
 MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
+UTF8_INTERFACE utfi;
 HINSTANCE hInstance;
 
 #define AIM_OSCAR_VERSION "\0\x08\0\x0"
@@ -71,6 +72,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pluginLink = link;
 	mir_getMMI( &mmi );
 	mir_getMD5I( &md5i );
+	mir_getUTFI( &utfi );
 
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
