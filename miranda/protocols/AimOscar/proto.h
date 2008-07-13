@@ -79,7 +79,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl GetName(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
-	int  __cdecl SendMsgW(WPARAM /*wParam*/, LPARAM lParam);
 
 	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);

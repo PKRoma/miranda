@@ -47,45 +47,6 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	return 0;
 }
 
-int CAimProto::SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
-{
-	CCSDATA *ccs = (CCSDATA *)lParam;
-	DBVARIANT dbv;
-	if (!DBGetContactSettingString(ccs->hContact, m_szModuleName, AIM_KEY_SN, &dbv))
-	{
-		if ( 0 == getByte( AIM_KEY_DC, 1))
-			ForkThread( &CAimProto::msg_ack_success, ccs->hContact );
-
-		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlenA((char*)ccs->lParam)+1)));
-		wchar_t* smsg=strip_carrots(msg);
-		delete[] msg;
-		if(getByte( AIM_KEY_FO, 0))
-		{
-			wchar_t* html_msg=bbcodes_to_html(smsg);
-			delete[] smsg;
-			if(aim_send_unicode_message(hServerConn,seqno,dbv.pszVal,html_msg))
-			{
-				delete[] html_msg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
-			delete[] html_msg;
-		}
-		else
-		{
-			if(aim_send_unicode_message(hServerConn,seqno,dbv.pszVal,smsg))
-			{
-				delete[] smsg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
-			delete[] smsg;
-		}
-		DBFreeVariant(&dbv);
-	}
-	return 0;
-}
-
 int CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 {
 	if ( state != 1 )

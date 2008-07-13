@@ -335,7 +335,7 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 		return PF2_SHORTAWAY;
 
 	case PFLAGNUM_4:
-		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS;
+		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS | PF4_IMSENDUTF;
 
 	case PFLAGNUM_5:
 		return PF2_ONTHEPHONE;
@@ -532,36 +532,60 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 
 int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 {
+	char *msg = (char*)pszSrc;
+	if (msg == NULL) return 0;
+
 	DBVARIANT dbv;
-	if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
-		if ( 0 == getByte( AIM_KEY_DC, 1))
-			ForkThread( &CAimProto::msg_ack_success, hContact );
+	if ( getString( hContact, AIM_KEY_SN, &dbv ))  return 0;
 
-		char* msg = strldup( pszSrc, lstrlenA( pszSrc ));
-		char* smsg = strip_carrots( msg );
-		delete[] msg;
+	if ( 0 == getByte( AIM_KEY_DC, 1))
+		ForkThread( &CAimProto::msg_ack_success, hContact );
 
-		if ( getByte( AIM_KEY_FO, 0 )) {
-			char* html_msg = bbcodes_to_html(smsg);
-			delete[] smsg;
-			if ( aim_send_plaintext_message( hServerConn, seqno, dbv.pszVal,html_msg, 0 )) {
-				delete[] html_msg;
-				DBFreeVariant( &dbv );
-				return 1;
-			}
-			delete[] html_msg;
+	bool fl = false;
+	if ( flags & PREF_UNICODE ) 
+	{
+		char* p = strchr(msg, '\0');
+		if (p != msg) 
+		{
+			while (*(++p) == '\0');
+			msg = mir_utf8encodeW((wchar_t*)p);
+			fl = true;
 		}
-		else {
-			if ( aim_send_plaintext_message( hServerConn, seqno, dbv.pszVal, smsg, 0 )) {
-				delete[] smsg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
-			delete[] smsg;
-		}
-		DBFreeVariant(&dbv);
 	}
-	return 0;
+
+	char* smsg = strip_carrots( msg );
+	if (fl) mir_free(msg);
+
+	if ( getByte( AIM_KEY_FO, 0 )) 
+	{
+		msg = bbcodes_to_html(smsg);
+		delete[] smsg;
+	}
+	else 
+		msg = smsg;
+
+	// Figure out is this message is actually ANSI
+	fl = (flags & (PREF_UNICODE | PREF_UTF)) != 0;
+	for (unsigned i=0; fl; ++i)
+	{
+		char c = msg[i];
+		if (c == 0) break;
+		fl = !(c & 0x80);
+	}
+
+	int res;
+	if (fl)
+		res = aim_send_plaintext_message(hServerConn, seqno, dbv.pszVal, msg, 0);
+	else
+	{
+		wchar_t *wmsg = mir_utf8decodeW(msg);
+		res = aim_send_unicode_message(hServerConn, seqno, dbv.pszVal, wmsg);
+		mir_free(wmsg);
+	}
+
+	delete[] msg;
+	DBFreeVariant(&dbv);
+	return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -86,37 +86,25 @@ char* CAimProto::strip_special_chars(char *src, HANDLE hContact)
 
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
-	wchar_t* buf=new wchar_t[strlen(src)+1];
-	MultiByteToWideChar(CP_ACP, 0, src, -1,buf,(strlen(src)+1)*2);
-	wchar_t* stripped_buf=strip_carrots(buf);
-	delete[] buf;
-	char* dest=new char[wcslen(stripped_buf)+1];
-	WideCharToMultiByte( CP_ACP, 0, stripped_buf, -1,dest,wcslen(stripped_buf)+1, NULL, NULL );
-	delete[] stripped_buf;
-	return dest;
-}
-
-wchar_t* strip_carrots(wchar_t *src)// EAT!!!!!!!!!!!!!
-{
-	wchar_t *ptr;
-	wchar_t* dest=wcsldup(src,wcslen(src));
-	while ((ptr = wcsstr(dest, L"<")) != NULL)
+	char *ptr;
+	char* dest=strldup(src, strlen(src));
+	while ((ptr = strstr(dest, "<")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,wcslen(dest)+2,7);
+		dest=renew(dest,strlen(dest),7);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
-		memcpy(ptr,L"&lt;",8);
+		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+		memcpy(ptr,"&lt;",4);
 	}
-	while ((ptr = wcsstr(dest, L">")) != NULL)
+	while ((ptr = strstr(dest, ">")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,wcslen(dest)+2,7);
+		dest=renew(dest,strlen(dest)+2,7);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, wcslen(ptr + 1)*2 + 8);
-		memcpy(ptr,L"&gt;",8);
+		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+		memcpy(ptr,"&gt;",4);
 	}
-	dest[wcslen(dest)]='\0';
+	dest[strlen(dest)]='\0';
 	return dest;
 }
 
@@ -228,7 +216,7 @@ char* html_to_bbcodes(char *src)
 				rptr=dest;
 				ptr=rptr+addr;
 				memmove(ptr+6, ptr, strlen(ptr) + 1);
-				memcpy(ptr,"[/url]",6*2);
+				memcpy(ptr,"[/url]",6);
 			}
 			else
 			{
@@ -263,27 +251,27 @@ char* html_to_bbcodes(char *src)
 				ptr=s1;
 				ptr=strip_tag_within(begin,ptr);
 				memmove(ptr+2, ptr, strlen(ptr) + 1);
-				memcpy(ptr,"[/url]",6*1);
+				memcpy(ptr,"[/url]",6);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
 				ptr=strip_tag_within(begin,ptr);
 				int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=rptr+addr;
-				memmove(ptr+6, ptr, strlen(ptr)*2 + 2);
-				memcpy(ptr,"[/url]",6*2);
+				memmove(ptr+6, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/url]",6);
 			}
 			else
 			{
 				strip_tag_within(begin,&dest[strlen(dest)]);
 				//int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=dest;
-				memcpy(&ptr[strlen(ptr)],"[/url]",7*2);
+				memcpy(&ptr[strlen(ptr)],"[/url]",7);
 			}
 		}
 		else
@@ -293,15 +281,15 @@ char* html_to_bbcodes(char *src)
 	while (ptr = strstr(rptr, "<FONT COLOR=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
-		memcpy(ptrl,"[color=",7*2);
-		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		memcpy(ptrl,"[color=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
 		if ((ptr = strstr(ptrl, ">")))
 		{
-			memmove(ptrl+7,ptr,strlen(ptr)*2+2);
+			memmove(ptrl+7,ptr,strlen(ptr)+1);
 			*(ptrl+7)=']';
 			ptr=ptrl+7;
 			char* s1 = strstr(ptr,"</FONT");
@@ -309,19 +297,19 @@ char* html_to_bbcodes(char *src)
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
-				memmove(ptr+1, ptr, strlen(ptr)*2 + 2);
-				memcpy(ptr,"[/color]",8*2);
+				memmove(ptr+1, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/color]",8);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
-				memmove(ptr+8, ptr, strlen(ptr)*2 + 2);
-				memcpy(ptr,"[/color]",8*2);
+				memmove(ptr+8, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/color]",8);
 			}
 			else
 			{
 				ptr=dest;
-				memcpy(&ptr[strlen(ptr)],"[/color]",9*2);
+				memcpy(&ptr[strlen(ptr)],"[/color]",9);
 			}
 		}
 		else
@@ -331,15 +319,15 @@ char* html_to_bbcodes(char *src)
 	while (ptr = strstr(rptr, "<font color=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
-		memcpy(ptrl,"[color=",7*2);
-		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		memcpy(ptrl,"[color=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
 		if ((ptr = strstr(ptrl, ">")))
 		{
-			memmove(ptrl+7,ptr,strlen(ptr)*2+2);
+			memmove(ptrl+7,ptr,strlen(ptr)+1);
 			*(ptrl+7)=']';
 			ptr=ptrl+7;
 			char* s1 = strstr(ptr,"</font");
@@ -347,19 +335,19 @@ char* html_to_bbcodes(char *src)
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
-				memmove(ptr+1, ptr, strlen(ptr)*2 + 2);
-				memcpy(ptr,"[/color]",8*2);
+				memmove(ptr+1, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/color]",8);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
-				memmove(ptr+8, ptr, strlen(ptr)*2 + 2);
-				memcpy(ptr,"[/color]",8*2);
+				memmove(ptr+8, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/color]",8);
 			}
 			else
 			{
 				ptr=dest;
-				memcpy(&ptr[strlen(ptr)],"[/color]",9*2);
+				memcpy(&ptr[strlen(ptr)],"[/color]",9);
 			}
 		}
 		else
@@ -369,23 +357,23 @@ char* html_to_bbcodes(char *src)
 	while ((ptr = strstr(rptr, "<FONT COLOR=")) || (ptr = strstr(rptr, "<font color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 5;
-		memcpy(ptrl,"[color=",7*2);
-		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		memcpy(ptrl,"[color=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
 		if ((ptr = strstr(ptrl, ">")))
 		{
 			*(ptr)=']';
 			if ((ptrl = strstr(ptr, "</FONT")) || (ptrl = strstr(ptr, "</font")))
 			{
-				memmove(ptrl+1, ptrl, strlen(ptrl)*2 + 2);
-				memcpy(ptrl,"[/color]",8*2);
+				memmove(ptrl+1, ptrl, strlen(ptrl) + 1);
+				memcpy(ptrl,"[/color]",8);
 			}
 			else
 			{
-				memcpy(&dest[strlen(dest)],"[/color]",9*2);
+				memcpy(&dest[strlen(dest)],"[/color]",9);
 			}
 		}
 		else
@@ -396,87 +384,75 @@ char* html_to_bbcodes(char *src)
 
 char* bbcodes_to_html(const char *src)
 {
-	wchar_t* buf=new wchar_t[strlen(src)+1];
-	MultiByteToWideChar(CP_ACP, 0, src, -1,buf,(strlen(src)+1)*2);
-	wchar_t* stripped_buf=bbcodes_to_html(buf);
-	delete[] buf; 
-	char* dest=new char[wcslen(stripped_buf)+1];
-	WideCharToMultiByte( CP_ACP, 0, stripped_buf, -1,dest,wcslen(stripped_buf)+1, NULL, NULL );
-	delete[] stripped_buf;
-	return dest;
-}
-
-wchar_t* bbcodes_to_html(const wchar_t *src)
-{
-	wchar_t *ptr;
-	wchar_t *rptr;
-	wchar_t* dest=wcsldup(src,wcslen(src));
-	while ((ptr = wcsstr(dest, L"[b]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+1) = L'b';
-		*(ptr+2) = L'>';
+	char *ptr;
+	char *rptr;
+	char* dest=strldup(src,strlen(src));
+	while ((ptr = strstr(dest, "[b]")) != NULL) {
+		*ptr = '<';
+		*(ptr+1) = 'b';
+		*(ptr+2) = '>';
 	}
-	while ((ptr = wcsstr(dest, L"[/b]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+2) = L'b';
-		*(ptr+3) = L'>';
+	while ((ptr = strstr(dest, "[/b]")) != NULL) {
+		*ptr = '<';
+		*(ptr+2) = 'b';
+		*(ptr+3) = '>';
 	}
-	while ((ptr = wcsstr(dest, L"[i]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+1) = L'i';
-		*(ptr+2) = L'>';
+	while ((ptr = strstr(dest, "[i]")) != NULL) {
+		*ptr = '<';
+		*(ptr+1) = 'i';
+		*(ptr+2) = '>';
 	}
-	while ((ptr = wcsstr(dest, L"[/i]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+2) = L'i';
-		*(ptr+3) = L'>';
+	while ((ptr = strstr(dest, "[/i]")) != NULL) {
+		*ptr = '<';
+		*(ptr+2) = 'i';
+		*(ptr+3) = '>';
 	}
-	while ((ptr = wcsstr(dest, L"[u]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+1) = L'u';
-		*(ptr+2) = L'>';
+	while ((ptr = strstr(dest, "[u]")) != NULL) {
+		*ptr = '<';
+		*(ptr+1) = 'u';
+		*(ptr+2) = '>';
 	}
-	while ((ptr = wcsstr(dest, L"[/u]")) != NULL) {
-		*ptr = L'<';
-		*(ptr+2) = L'u';
-		*(ptr+3) = L'>';
+	while ((ptr = strstr(dest, "[/u]")) != NULL) {
+		*ptr = '<';
+		*(ptr+2) = 'u';
+		*(ptr+3) = '>';
 	}
 	rptr = dest;
-	while ((ptr = wcsstr(rptr, L"[color=")))
+	while ((ptr = strstr(rptr, "[color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest)+2,7);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
-		memmove(ptr+5, ptr, wcslen(ptr)*sizeof(wchar_t) + 2);
-		memcpy(ptr,L"<font ",6*sizeof(wchar_t));
-		if ((ptr = wcsstr(ptr,L"]")))
+		memmove(ptr+5, ptr, strlen(ptr) + 1);
+		memcpy(ptr,"<font ",6);
+		if ((ptr = strstr(ptr,"]")))
 		{
-			*(ptr)=L'>';
-			if ((ptr = wcsstr(ptr,L"[/color]")))
+			*(ptr)='>';
+			if ((ptr = strstr(ptr,"[/color]")))
 			{
-				memcpy(ptr,L"</font>",7*sizeof(wchar_t));
-				memmove(ptr+7,ptr+8,wcslen(ptr+8)*sizeof(wchar_t)+2);
+				memcpy(ptr,"</font>",7);
+				memmove(ptr+7,ptr+8,strlen(ptr+8)+1);
 			}
 		}
 		else
 			rptr++;
 	}
-	while ((ptr = wcsstr(rptr, L"[url=")))
+	while ((ptr = strstr(rptr, "[url=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest)+2,7);
+		dest=renew(dest,strlen(dest)+1,7);
 		rptr=dest;
 		ptr=rptr+addr;
-		memmove(ptr+3, ptr, wcslen(ptr)+2);
-		memcpy(ptr,L"<a href",7);
-		if ((ptr = wcsstr(ptr, L"]")))
+		memmove(ptr+3, ptr, strlen(ptr)+1);
+		memcpy(ptr,"<a href",7);
+		if ((ptr = strstr(ptr, "]")))
 		{
-			*(ptr)=L'>';
-			if ((ptr = wcsstr(ptr, L"[/url]")))
+			*(ptr)='>';
+			if ((ptr = strstr(ptr, "[/url]")))
 			{
-				memcpy(ptr,L"</a>",4*sizeof(wchar_t));
-				memmove(ptr+4,ptr+6,wcslen(ptr+6)*sizeof(wchar_t)+2);
+				memcpy(ptr,"</a>",4);
+				memmove(ptr+4,ptr+6,strlen(ptr+6)+1);
 			}
 		}
 		else
@@ -488,11 +464,6 @@ wchar_t* bbcodes_to_html(const wchar_t *src)
 void strip_tag(char* begin, char* end)
 {
 	memmove(begin,end+1,lstrlenA(end+1)+1);
-}
-
-void strip_tag(wchar_t* begin, wchar_t* end)
-{
-	memmove(begin,end+1,wcslen(end+1)+2);
 }
 
 //strip a tag within a string
