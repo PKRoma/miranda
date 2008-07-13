@@ -1219,8 +1219,3 @@ void CAimProto::ForkThread( AimThreadFunc pFunc, void* param )
 	UINT threadID;
 	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, param, &threadID ));
 }
-
-HANDLE CAimProto::ForkThreadEx( AimThreadFunc pFunc, void* param, UINT* threadID )
-{
-	return ( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, param, threadID );
-}

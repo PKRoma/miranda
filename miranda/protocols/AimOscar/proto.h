@@ -387,7 +387,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   CreateProtoServiceParam(const char* szService, AimServiceFuncParam serviceProc, LPARAM lParam);
 	void   HookProtoEvent(const char* szEvent, AimEventFunc pFunc);
 	void   ForkThread( AimThreadFunc, void* );
-	HANDLE ForkThreadEx( AimThreadFunc, void*, UINT* = NULL );
 
 	int    getByte( const char* name, BYTE defaultValue );
 	int    getByte( HANDLE hContact, const char* name, BYTE defaultValue );
