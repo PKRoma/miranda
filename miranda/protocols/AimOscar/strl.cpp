@@ -86,13 +86,15 @@ size_t wcslcpy(wchar_t *dst, const wchar_t *src, size_t siz)
 char* strldup(const char* src,size_t siz)
 {
 	char* dst=new char[siz+1];
-	memcpy(dst,src,siz+1);
+	memcpy(dst,src,siz);
+	dst[siz] = 0;
 	return dst;
 }
 wchar_t* wcsldup(const wchar_t* src,size_t siz)
 {
 	wchar_t* dst=new wchar_t[siz+1];
-	memcpy(dst,src,siz*2+2);
+	memcpy(dst,src,siz*2);
+	dst[siz] = 0;
 	return dst;
 }
 char* strlcat(const char* dst,const char *src)

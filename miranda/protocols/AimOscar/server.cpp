@@ -812,14 +812,15 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					if(encoding==0x0002)
 					{
 						unicode_message=1;
-						wchar_t* wbuf=new wchar_t[msg_length+1];
-						memcpy(wbuf,buf,msg_length);	
-						wbuf[msg_length/2]=0x00;
+
+						wchar_t* wbuf = wcsldup((wchar_t*)buf, msg_length/sizeof(wchar_t));
 						wcs_htons(wbuf);
-						msg_buf=new char[msg_length/2+msg_length+3];
-						WideCharToMultiByte( CP_ACP, 0, wbuf, -1,msg_buf, msg_length/2+1, NULL, NULL );
-						char* p=msg_buf+lstrlenA(msg_buf)+1;
-						memcpy(p,wbuf,msg_length+2);
+
+						char* tmp = mir_utf8encodeW(wbuf);
+						delete[] wbuf;
+
+						msg_buf = strldup(tmp, strlen(tmp));
+						mir_free(tmp);
 					}
 					else
 						msg_buf=buf;
@@ -901,9 +902,22 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
 			if(unicode_message)
-				pre.flags = PREF_UNICODE;
+				pre.flags = PREF_UTF;
 			else
 				pre.flags = 0;
+
+			if(getByte( AIM_KEY_FI, 0)) 		
+			{
+				LOG("Converting from html to bbcodes then stripping leftover html.");
+				char* bbuf = html_to_bbcodes(msg_buf);
+				delete[] msg_buf;
+				msg_buf = bbuf;
+			}
+			LOG("Stripping html.");
+			char* bbuf = strip_html(msg_buf);
+			delete[] msg_buf;
+			msg_buf = bbuf;
+
 			pre.timestamp = (DWORD)time(NULL);
 			pre.szMessage = msg_buf;
 			pre.lParam = 0;
@@ -914,8 +928,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 			if(m_iStatus==ID_STATUS_AWAY&&!auto_response&&!getByte( AIM_KEY_DM,0))
 			{
-				unsigned long msg_time=DBGetContactSettingDword(hContact,m_szModuleName,AIM_KEY_LM,0);
-				unsigned long away_time=DBGetContactSettingDword(NULL,m_szModuleName,AIM_KEY_LA,0);
+				unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
+				unsigned long away_time = getDword(AIM_KEY_LA, 0);
 				if(away_time>msg_time&&szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
 					char* temp=new char[lstrlenA(szModeMsg)+20];
@@ -944,7 +958,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		else if(recv_file_type==0&&request_num==1)//buddy wants to send us a file
 		{
 			LOG("Buddy Wants to Send us a file. Request 1");
-			if(DBGetContactSettingByte(hContact,m_szModuleName,AIM_KEY_FT,255)!=255)
+			if (getByte(hContact, AIM_KEY_FT, 255) != 255)
 			{
 				ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 				return;

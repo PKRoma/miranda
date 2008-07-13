@@ -449,55 +449,8 @@ int __cdecl CAimProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
 
 int __cdecl CAimProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* pre )
 {
-	DBEVENTINFO dbei = { 0 };
-	dbei.cbSize = sizeof( dbei );
-	dbei.szModule = m_szModuleName;
-	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & PREF_CREATEREAD ? DBEF_READ : 0;
-	dbei.eventType = EVENTTYPE_MESSAGE;
-	char* buf = 0;
-	if ( pre->flags & PREF_UNICODE ) {
-		LOG("Recieved a unicode message.");
-		wchar_t* wbuf=(wchar_t*)&pre->szMessage[lstrlenA(pre->szMessage)+1];
-		wchar_t* st_wbuf;
-		if ( getByte( AIM_KEY_FI, 0)) {
-			LOG("Converting from html to bbcodes then stripping leftover html.(U)");
-			wchar_t* bbuf = html_to_bbcodes(wbuf);
-			st_wbuf = strip_html(bbuf);
-			delete[] bbuf;
-		}
-		else {
-			LOG("Stripping html.(U)");
-			st_wbuf = strip_html(wbuf);
-		}
-
-		buf = (char *)malloc(wcslen(st_wbuf)*3+3);
-		WideCharToMultiByte( CP_ACP, 0,st_wbuf, -1,buf,wcslen(st_wbuf)+1, NULL, NULL);
-		memcpy(&buf[strlen(buf)+1],st_wbuf,lstrlenA(buf)*2+2);
-		delete[] st_wbuf;
-		dbei.pBlob = (PBYTE)buf;
-		dbei.cbBlob = lstrlenA(buf)+1;
-		dbei.cbBlob *= (sizeof(wchar_t)+1);
-	}
-	else
-	{
-		LOG("Received a non-unicode message.");
-		if(getByte( AIM_KEY_FI, 0)) 		{
-			LOG("Converting from html to bbcodes then stripping leftover html.");
-			char* bbuf = html_to_bbcodes(pre->szMessage);
-			buf = strip_html(bbuf);
-			delete[] bbuf;
-		}
-		else {
-			LOG("Stripping html.");
-			buf = strip_html(pre->szMessage);
-		}
-		dbei.pBlob = (PBYTE)buf;
-		dbei.cbBlob = lstrlenA(buf)+1;
-	}
-	CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
-	if(buf) free(buf);
-	return 0;
+	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, ( LPARAM )pre };
+	return CallService( MS_PROTO_RECVMSG, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

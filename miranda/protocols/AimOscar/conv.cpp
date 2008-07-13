@@ -7,76 +7,56 @@
 
 char* strip_html(char *src)
 {
-	wchar_t* buf=new wchar_t[strlen(src)+1];
-	MultiByteToWideChar(CP_ACP, 0, src, -1,buf,(strlen(src)+1)*2);
-	wchar_t* stripped_buf=strip_html(buf);
-	delete[] buf;
-	char* dest=new char[wcslen(stripped_buf)+1];
-	WideCharToMultiByte( CP_ACP, 0, stripped_buf, -1,dest,wcslen(stripped_buf)+1, NULL, NULL );
-	delete[] stripped_buf;
-	return dest;
-}
-
-wchar_t* strip_html(wchar_t *src)
-{
-	wchar_t *ptr;
-	wchar_t *ptrl;
-	wchar_t *rptr;
-	wchar_t* dest=wcsldup(src,wcslen(src));
-	while ((ptr = wcsstr(dest,L"<P>")) != NULL || (ptr = wcsstr(dest, L"<p>")) != NULL) {
-		memmove(ptr + 4, ptr + 3, wcslen(ptr + 3)*2 + 2);
-		*ptr = '\r';
-		*(ptr + 1) = '\n';
-		*(ptr + 2) = '\r';
-		*(ptr + 3) = '\n';
+	char *ptr;
+	char *ptrl;
+	char *rptr;
+	char* dest = strldup(src, strlen(src));
+	while ((ptr = strstr(dest,"<P>")) != NULL || (ptr = strstr(dest, "<p>")) != NULL) {
+		memmove(ptr + 4, ptr + 3, strlen(ptr + 3) + 1);
+		memcpy(ptr, "\r\n\r\n", 4);
 	}
-	while ((ptr = wcsstr(dest,L"</P>")) != NULL || (ptr = wcsstr(dest, L"</p>")) != NULL) {
-		*ptr = L'\r';
-		*(ptr + 1) = L'\n';
-		*(ptr + 2) = L'\r';
-		*(ptr + 3) = L'\n';
+	while ((ptr = strstr(dest,"</P>")) != NULL || (ptr = strstr(dest, "</p>")) != NULL) {
+		memcpy(ptr, "\r\n\r\n", 4);
 	}
-	while ((ptr = wcsstr(dest, L"<BR>")) != NULL || (ptr = wcsstr(dest, L"<br>")) != NULL) {
-		*ptr = L'\r';
-		*(ptr + 1) = L'\n';
-		memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
+	while ((ptr = strstr(dest, "<BR>")) != NULL || (ptr = strstr(dest, "<br>")) != NULL) {
+		memcpy(ptr, "\r\n", 2);
+		memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
 	}
-	while ((ptr = wcsstr(dest, L"<HR>")) != NULL || (ptr = wcsstr(dest, L"<hr>")) != NULL) {
-		*ptr = L'\r';
-		*(ptr + 1) = L'\n';
-		memmove(ptr + 2, ptr + 4, wcslen(ptr + 4)*2 + 2);
+	while ((ptr = strstr(dest, "<HR>")) != NULL || (ptr = strstr(dest, "<hr>")) != NULL) {
+		memcpy(ptr, "\r\n", 2);
+		memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
 	}
 	rptr = dest;
-	while ((ptr = wcsstr(rptr, L"<"))) {
+	while ((ptr = strstr(rptr, "<"))) {
 		ptrl = ptr + 1;
-		if ((ptrl = wcsstr(ptrl, L">"))) {
-			memmove(ptr, ptrl + 1, wcslen(ptrl + 1)*2 + 2);
+		if ((ptrl = strstr(ptrl, ">"))) {
+			memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
 		}
 		else
 			rptr++;
 	}
 	ptrl = NULL;
-	while ((ptr = wcsstr(dest, L"&quot;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = L'"';
-		memmove(ptr + 1, ptr + 6, wcslen(ptr + 6)*2 + 2);
+	while ((ptr = strstr(dest, "&quot;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+		*ptr = '"';
+		memmove(ptr + 1, ptr + 6, strlen(ptr + 6) + 1);
 		ptrl = ptr;
 	}
 	ptrl = NULL;
-	while ((ptr = wcsstr(dest, L"&lt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = L'<';
-		memmove(ptr + 1, ptr + 4, wcslen(ptr + 4)*2 + 2);
+	while ((ptr = strstr(dest, "&lt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+		*ptr = '<';
+		memmove(ptr + 1, ptr + 4, strlen(ptr + 4) + 1);
 		ptrl = ptr;
 	}
 	ptrl = NULL;
-	while ((ptr = wcsstr(dest, L"&gt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = L'>';
-		memmove(ptr + 1, ptr + 4, wcslen(ptr + 4)*2 + 2);
+	while ((ptr = strstr(dest, "&gt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+		*ptr = '>';
+		memmove(ptr + 1, ptr + 4, strlen(ptr + 4) + 1);
 		ptrl = ptr;
 	}
 	ptrl = NULL;
-	while ((ptr = wcsstr(dest, L"&amp;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = L'&';
-		memmove(ptr + 1, ptr + 5, wcslen(ptr + 5)*2 + 2);
+	while ((ptr = strstr(dest, "&amp;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
+		*ptr = '&';
+		memmove(ptr + 1, ptr + 5, strlen(ptr + 5) + 1);
 		ptrl = ptr;
 	}
 	return dest;
@@ -162,262 +142,250 @@ char* strip_linebreaks(char *src)
 
 char* html_to_bbcodes(char *src)
 {
-	wchar_t* buf=new wchar_t[strlen(src)+1];
-	MultiByteToWideChar(CP_ACP, 0, src, -1,buf,(strlen(src)+1)*2);
-	wchar_t* stripped_buf=html_to_bbcodes(buf);
-	delete[] buf;
-	char* dest=new char[wcslen(stripped_buf)+1];
-	WideCharToMultiByte( CP_ACP, 0, stripped_buf, -1,dest,wcslen(stripped_buf)+1, NULL, NULL );
-	delete[] stripped_buf;
-	return dest;
-}
-
-wchar_t* html_to_bbcodes(wchar_t *src)
-{
-	wchar_t *ptr;
-	wchar_t *ptrl;
-	wchar_t *rptr;
-	wchar_t* dest=wcsldup(src,wcslen(src));
-	while ((ptr = wcsstr(dest, L"<B>")) != NULL || (ptr = wcsstr(dest, L"<b>")) != NULL)
+	char *ptr;
+	char *ptrl;
+	char *rptr;
+	char* dest = strldup(src, strlen(src));
+	while ((ptr = strstr(dest, "<B>")) != NULL || (ptr = strstr(dest, "<b>")) != NULL)
 	{
-		*ptr = L'[';
-		*(ptr+1) = L'b';
-		*(ptr+2) = L']';
-		if((ptr = wcsstr(dest, L"</B>")) != NULL || (ptr = wcsstr(dest, L"</b>")) != NULL)
+		*ptr = '[';
+		*(ptr+1) = 'b';
+		*(ptr+2) = ']';
+		if((ptr = strstr(dest, "</B>")) != NULL || (ptr = strstr(dest, "</b>")) != NULL)
 		{
-			*ptr = L'[';
-			*(ptr+2) = L'b';
-			*(ptr+3) = L']';
+			*ptr = '[';
+			*(ptr+2) = 'b';
+			*(ptr+3) = ']';
 		}
 		else
 		{
-			dest=renew(dest,wcslen(dest)*2+2,5*2);
-			memcpy(&dest[wcslen(dest)],L"[/b]",5*2);
+			dest=renew(dest,strlen(dest)+1,5);
+			memcpy(&dest[strlen(dest)],"[/b]",5);
 		}
 	}
-	while ((ptr = wcsstr(dest, L"<I>")) != NULL || (ptr = wcsstr(dest, L"<i>")) != NULL)
+	while ((ptr = strstr(dest, "<I>")) != NULL || (ptr = strstr(dest, "<i>")) != NULL)
 	{
-		*ptr = L'[';
-		*(ptr+1) = L'i';
-		*(ptr+2) = L']';
-		if((ptr = wcsstr(dest, L"</I>")) != NULL || (ptr = wcsstr(dest, L"</i>")) != NULL)
+		*ptr =  '[';
+		*(ptr+1) = 'i';
+		*(ptr+2) = ']';
+		if((ptr = strstr(dest, "</I>")) != NULL || (ptr = strstr(dest, "</i>")) != NULL)
 		{
-			*ptr = L'[';
-			*(ptr+2) = L'i';
-			*(ptr+3) = L']';
+			*ptr = '[';
+			*(ptr+2) = 'i';
+			*(ptr+3) = ']';
 		}
 		else
 		{
-			dest=renew(dest,wcslen(dest)*2+2,5*2);
-			memcpy(&dest[wcslen(dest)],L"[/i]",5*2);
+			dest=renew(dest,strlen(dest)+1,5);
+			memcpy(&dest[strlen(dest)],"[/i]",5);
 		}
 	}
-	while ((ptr = wcsstr(dest, L"<U>")) != NULL || (ptr = wcsstr(dest, L"<u>")) != NULL)
+	while ((ptr = strstr(dest, "<U>")) != NULL || (ptr = strstr(dest, "<u>")) != NULL)
 	{
-		*ptr = L'[';
-		*(ptr+1) = L'u';
-		*(ptr+2) = L']';
-		if((ptr = wcsstr(dest, L"</U>")) != NULL || (ptr = wcsstr(dest, L"</u>")) != NULL)
+		*ptr = '[';
+		*(ptr+1) = 'u';
+		*(ptr+2) = ']';
+		if((ptr = strstr(dest, "</U>")) != NULL || (ptr = strstr(dest, "</u>")) != NULL)
 		{
-			*ptr = L'[';
-			*(ptr+2) = L'u';
-			*(ptr+3) = L']';
+			*ptr = '[';
+			*(ptr+2) = 'u';
+			*(ptr+3) = ']';
 		}
 		else
 		{
-			dest=renew(dest,wcslen(dest)*2+2,5*2);
-			memcpy(&dest[wcslen(dest)],L"[/u]",5*2);
+			dest=renew(dest,strlen(dest)+1,5);
+			memcpy(&dest[strlen(dest)],"[/u]",5);
 		}
 	}
 	rptr = dest;
-	while (ptr = wcsstr(rptr,L"<A HREF"))
+	while (ptr = strstr(rptr,"<A HREF"))
 	{
-		wchar_t* begin=ptr;
+		char* begin=ptr;
 		ptrl = ptr + 4;
-		memcpy(ptrl,L"[url=",5*2);
-		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
-		if ((ptr = wcsstr(ptrl,L">")))
+		memcpy(ptrl,"[url=",5);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+		if ((ptr = strstr(ptrl,">")))
 		{	
 			ptr-=1;
-			memmove(ptr, ptr+1, wcslen(ptr+1)*2 + 2);
+			memmove(ptr, ptr+1, strlen(ptr+1) + 1);
 			*(ptr)=L']';
 			ptrl-=1;
-			wchar_t* s1 = wcsstr(ptrl,L"</A");
-			wchar_t* s2 = wcsstr(rptr,L"<A HREF");
+			char* s1 = strstr(ptrl,"</A");
+			char* s2 = strstr(rptr,"<A HREF");
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
 				ptr=strip_tag_within(begin,ptr);
-				memmove(ptr+2, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/url]",6*2);
+				memmove(ptr+2, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/url]",6);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
 				ptr=strip_tag_within(begin,ptr);
 				int addr=ptr-rptr;
-				dest=renew(dest,wcslen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=rptr+addr;
-				memmove(ptr+6, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/url]",6*2);
+				memmove(ptr+6, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/url]",6*2);
 			}
 			else
 			{
-				strip_tag_within(begin,&dest[wcslen(dest)]);
+				strip_tag_within(begin,&dest[strlen(dest)]);
 				//int addr=ptr-rptr;
-				dest=renew(dest,wcslen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)+1,7);
 				rptr=dest;
 				ptr=dest;
-				memcpy(&ptr[wcslen(ptr)],L"[/url]",7*2);
+				memcpy(&ptr[strlen(ptr)],"[/url]",7);
 			}
 		}
 		else
 			rptr++;
 	}
 	rptr = dest;
-	while (ptr = wcsstr(rptr,L"<a href"))
+	while (ptr = strstr(rptr,"<a href"))
 	{
-		wchar_t* begin=ptr;
+		char* begin=ptr;
 		ptrl = ptr + 4;
-		memcpy(ptrl,L"[url=",5*2);
-		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
-		if ((ptr = wcsstr(ptrl,L">")))
+		memcpy(ptrl,"[url=",5);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+		if ((ptr = strstr(ptrl,">")))
 		{
 			ptr-=1;
-			memmove(ptr, ptr+1, wcslen(ptr+1)*2 + 2);
+			memmove(ptr, ptr+1, strlen(ptr+1) + 1);
 			*(ptr)=L']';
 			ptrl-=1;
-			wchar_t* s1 = wcsstr(ptrl,L"</a");
-			wchar_t* s2 = wcsstr(ptrl,L"<a href");
+			char* s1 = strstr(ptrl,"</a");
+			char* s2 = strstr(ptrl,"<a href");
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
 				ptr=strip_tag_within(begin,ptr);
-				memmove(ptr+2, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/url]",6*2);
+				memmove(ptr+2, ptr, strlen(ptr) + 1);
+				memcpy(ptr,"[/url]",6*1);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
 				ptr=strip_tag_within(begin,ptr);
 				int addr=ptr-rptr;
-				dest=renew(dest,wcslen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)*2+2,7*2);
 				rptr=dest;
 				ptr=rptr+addr;
-				memmove(ptr+6, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/url]",6*2);
+				memmove(ptr+6, ptr, strlen(ptr)*2 + 2);
+				memcpy(ptr,"[/url]",6*2);
 			}
 			else
 			{
-				strip_tag_within(begin,&dest[wcslen(dest)]);
+				strip_tag_within(begin,&dest[strlen(dest)]);
 				//int addr=ptr-rptr;
-				dest=renew(dest,wcslen(dest)*2+2,7*2);
+				dest=renew(dest,strlen(dest)*2+2,7*2);
 				rptr=dest;
 				ptr=dest;
-				memcpy(&ptr[wcslen(ptr)],L"[/url]",7*2);
+				memcpy(&ptr[strlen(ptr)],"[/url]",7*2);
 			}
 		}
 		else
 			rptr++;
 	}
 	rptr = dest;
-	while (ptr = wcsstr(rptr, L"<FONT COLOR=\""))
+	while (ptr = strstr(rptr, "<FONT COLOR=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)*2+2,7*2);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
-		memcpy(ptrl,L"[color=",7*2);
-		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
-		if ((ptr = wcsstr(ptrl, L">")))
+		memcpy(ptrl,"[color=",7*2);
+		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		if ((ptr = strstr(ptrl, ">")))
 		{
-			memmove(ptrl+7,ptr,wcslen(ptr)*2+2);
-			*(ptrl+7)=L']';
+			memmove(ptrl+7,ptr,strlen(ptr)*2+2);
+			*(ptrl+7)=']';
 			ptr=ptrl+7;
-			wchar_t* s1 = wcsstr(ptr,L"</FONT");
-			wchar_t* s2 = wcsstr(ptr,L"<FONT COLOR=\"");	
+			char* s1 = strstr(ptr,"</FONT");
+			char* s2 = strstr(ptr,"<FONT COLOR=\"");	
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
-				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/color]",8*2);
+				memmove(ptr+1, ptr, strlen(ptr)*2 + 2);
+				memcpy(ptr,"[/color]",8*2);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
-				memmove(ptr+8, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/color]",8*2);
+				memmove(ptr+8, ptr, strlen(ptr)*2 + 2);
+				memcpy(ptr,"[/color]",8*2);
 			}
 			else
 			{
 				ptr=dest;
-				memcpy(&ptr[wcslen(ptr)],L"[/color]",9*2);
+				memcpy(&ptr[strlen(ptr)],"[/color]",9*2);
 			}
 		}
 		else
 			rptr++;
 	}
 	rptr = dest;
-	while (ptr = wcsstr(rptr, L"<font color=\""))
+	while (ptr = strstr(rptr, "<font color=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)*2+2,7*2);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
-		memcpy(ptrl,L"[color=",7*2);
-		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
-		if ((ptr = wcsstr(ptrl, L">")))
+		memcpy(ptrl,"[color=",7*2);
+		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		if ((ptr = strstr(ptrl, ">")))
 		{
-			memmove(ptrl+7,ptr,wcslen(ptr)*2+2);
-			*(ptrl+7)=L']';
+			memmove(ptrl+7,ptr,strlen(ptr)*2+2);
+			*(ptrl+7)=']';
 			ptr=ptrl+7;
-			wchar_t* s1 = wcsstr(ptr,L"</font");
-			wchar_t* s2 = wcsstr(ptr,L"<font color=\"");	
+			char* s1 = strstr(ptr,"</font");
+			char* s2 = strstr(ptr,"<font color=\"");	
 			if (s1&&s1<s2||s1&&!s2)
 			{
 				ptr=s1;
-				memmove(ptr+1, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/color]",8*2);
+				memmove(ptr+1, ptr, strlen(ptr)*2 + 2);
+				memcpy(ptr,"[/color]",8*2);
 			}
 			else if(s2&&s2<s1||s2&&!s1)
 			{
 				ptr=s2;
-				memmove(ptr+8, ptr, wcslen(ptr)*2 + 2);
-				memcpy(ptr,L"[/color]",8*2);
+				memmove(ptr+8, ptr, strlen(ptr)*2 + 2);
+				memcpy(ptr,"[/color]",8*2);
 			}
 			else
 			{
 				ptr=dest;
-				memcpy(&ptr[wcslen(ptr)],L"[/color]",9*2);
+				memcpy(&ptr[strlen(ptr)],"[/color]",9*2);
 			}
 		}
 		else
 			rptr++;
 	}
 	rptr = dest;
-	while ((ptr = wcsstr(rptr, L"<FONT COLOR=")) || (ptr = wcsstr(rptr, L"<font color=")))
+	while ((ptr = strstr(rptr, "<FONT COLOR=")) || (ptr = strstr(rptr, "<font color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,wcslen(dest)*2+2,7*2);
+		dest=renew(dest,strlen(dest)*2+2,7*2);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 5;
-		memcpy(ptrl,L"[color=",7*2);
-		memmove(ptr, ptrl, wcslen(ptrl)*2 + 2);
-		if ((ptr = wcsstr(ptrl, L">")))
+		memcpy(ptrl,"[color=",7*2);
+		memmove(ptr, ptrl, strlen(ptrl)*2 + 2);
+		if ((ptr = strstr(ptrl, ">")))
 		{
-			*(ptr)=L']';
-			if ((ptrl = wcsstr(ptr, L"</FONT")) || (ptrl = wcsstr(ptr, L"</font")))
+			*(ptr)=']';
+			if ((ptrl = strstr(ptr, "</FONT")) || (ptrl = strstr(ptr, "</font")))
 			{
-				memmove(ptrl+1, ptrl, wcslen(ptrl)*2 + 2);
-				memcpy(ptrl,L"[/color]",8*2);
+				memmove(ptrl+1, ptrl, strlen(ptrl)*2 + 2);
+				memcpy(ptrl,"[/color]",8*2);
 			}
 			else
 			{
-				memcpy(&dest[wcslen(dest)],L"[/color]",9*2);
+				memcpy(&dest[strlen(dest)],"[/color]",9*2);
 			}
 		}
 		else
@@ -431,7 +399,7 @@ char* bbcodes_to_html(const char *src)
 	wchar_t* buf=new wchar_t[strlen(src)+1];
 	MultiByteToWideChar(CP_ACP, 0, src, -1,buf,(strlen(src)+1)*2);
 	wchar_t* stripped_buf=bbcodes_to_html(buf);
-	delete[] buf;
+	delete[] buf; 
 	char* dest=new char[wcslen(stripped_buf)+1];
 	WideCharToMultiByte( CP_ACP, 0, stripped_buf, -1,dest,wcslen(stripped_buf)+1, NULL, NULL );
 	delete[] stripped_buf;
@@ -535,23 +503,6 @@ char* strip_tag_within(char* begin, char* end)
 		if(sub_begin<end)//less than the original ending
 		{
 			char* sub_end=strstr(begin,">");
-			strip_tag(sub_begin,sub_end);
-			end=end-(sub_end-sub_begin)-1;
-		}
-		else
-			break;
-	}
-	return end;
-}
-
-//strip a tag within a string
-wchar_t* strip_tag_within(wchar_t* begin, wchar_t* end)
-{
-	while(wchar_t* sub_begin=wcsstr(begin,L"<"))
-	{	
-		if(sub_begin<end)//less than the original ending
-		{
-			wchar_t* sub_end=wcsstr(begin,L">");
 			strip_tag(sub_begin,sub_end);
 			end=end-(sub_end-sub_begin)-1;
 		}
