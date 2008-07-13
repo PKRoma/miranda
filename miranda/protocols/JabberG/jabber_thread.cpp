@@ -313,13 +313,13 @@ LBL_FatalError:
 			// because if WM_QUIT while dialog box is still visible, p is returned with some
 			// exit code which may not be NULL.
 			// Should be better with modeless.
-			onlinePassword[0] = ( char )-1;
+			onlinePassword[0] = ( char ) -1;
 			hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
 			QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( DWORD )jidStr );
 			WaitForSingleObject( hEventPasswdDlg, INFINITE );
 			CloseHandle( hEventPasswdDlg );
 
-			if ( onlinePassword[0] == ( TCHAR ) -1 ) {
+			if ( onlinePassword[0] == ( char ) -1 ) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				Log( "Thread ended, password request dialog was canceled" );
 				goto LBL_FatalError;
