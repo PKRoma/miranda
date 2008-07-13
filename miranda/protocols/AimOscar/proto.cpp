@@ -16,7 +16,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	hAwayMsgEvent = CreateEvent(NULL,false,false,NULL);
 
 	char* p = NEWSTR_ALLOCA( m_szModuleName );
-	CharUpperA( p );
+	_strupr( p );
 	GROUP_ID_KEY = strlcat(p,AIM_MOD_GI);
 	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
