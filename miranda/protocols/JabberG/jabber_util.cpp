@@ -1509,12 +1509,14 @@ static BOOL CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 		SendMessage(param->nmhdr.hwndFrom, EM_EXGETSEL, 0, (LPARAM) & sel);
 		if (sel.cpMin != sel.cpMax) break; // allow link selection
 
-		TEXTRANGEA tr;
+		TEXTRANGE tr;
 		tr.chrg = param->chrg;
-		tr.lpstrText = (char *)mir_alloc(sizeof(char)*(tr.chrg.cpMax - tr.chrg.cpMin + 2));
+		tr.lpstrText = (TCHAR *)mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 2));
         SendMessage(param->nmhdr.hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
 
-		CallService(MS_UTILS_OPENURL, 1, (LPARAM)tr.lpstrText);
+		char *tmp = mir_t2a(tr.lpstrText);
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM)tmp);
+        mir_free(tmp);
         mir_free(tr.lpstrText);
         return TRUE;
 	}
