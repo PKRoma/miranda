@@ -323,7 +323,7 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 		if ( DBGetContactSettingString( hContact, "_Filter", str, &dbv ))
 			break;
 
-		if (( ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, i+1, lParam )) != CALLSERVICE_NOTFOUND ) {
+		if (( ret = CallProtoServiceInt( hContact, dbv.pszVal, szProtoService, i+1, ( LPARAM)&ccs )) != CALLSERVICE_NOTFOUND ) {
 			//chain was started, exit
 			mir_free( dbv.pszVal );
 			return ret;
