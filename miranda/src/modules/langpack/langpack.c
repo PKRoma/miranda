@@ -77,18 +77,16 @@ static int IsEmpty(char *str)
 static void ConvertBackslashes(char *str)
 {
 	char *pstr;
-	for(pstr=str;*pstr;pstr=CharNextA(pstr)) {
-		if(*pstr=='\\') {
-			switch(pstr[1]) {
-case 'n': *pstr='\n'; break;
-case 't': *pstr='\t'; break;
-case 'r': *pstr='\r'; break;
-default: *pstr=pstr[1]; break;
+	for ( pstr = str; *pstr; pstr = CharNextExA(( WORD )langPack.defaultANSICp, pstr, 0 )) {
+		if( *pstr == '\\' ) {
+			switch( pstr[1] ) {
+			case 'n': *pstr = '\n'; break;
+			case 't': *pstr = '\t'; break;
+			case 'r': *pstr = '\r'; break;
+			default:  *pstr = pstr[1]; break;
 			}
 			MoveMemory(pstr+1,pstr+2,lstrlenA(pstr+2)+1);
-		}
-	}
-}
+}	}	}
 
 static DWORD LangPackHash(const char *szStr)
 {
