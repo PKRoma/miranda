@@ -315,6 +315,7 @@ typedef struct {
 #define NLOCF_STICKYHEADERS 0x0002 //this connection should send the sticky headers associated with NetLib user apart of any HTTP request
 #define NLOCF_V2 0x0004 //this connection understands the newer structure, newer cbSize isnt enough
 #define NLOCF_UDP 0x0008 // this connection is UDP
+#define NLOCF_SSL 0x0010 // this connection is SSL
 
 /* Added during 0.4.0+ development!! (2004/11/29) prior to this, connect() blocks til a connection is made or
 a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst
@@ -656,6 +657,12 @@ typedef struct {
 //Returns previous timeout value
 //Errors: -1
 #define MS_NETLIB_SETPOLLINGTIMEOUT "Netlib/SetPollingTimeout"
+
+//Makes connection SSL 
+//wParam=(WPARAM)(HANDLE)hConn
+//lParam=0
+//Returns 0 on failure 1 on success
+#define MS_NETLIB_STARTSSL "Netlib/StartSsl"
 
 //here's a handy piece of code to let you log using printf-style specifiers:
 //#include <stdarg.h> and <stdio.h> before including this header in order to
