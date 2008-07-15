@@ -615,6 +615,25 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 				return (int)(HANDLE)NULL;
 		}
 	}
+	if (NLOCF_SSL & nloc->flags)
+	{
+		nlc->hSsl = NetlibSslConnect(FALSE, 0, nlc->s, nloc->szHost);
+		if (nlc->hSsl == NULL)
+		{
+			FreePartiallyInitedConnection(nlc);
+			return 0;
+		}
+	}
+	nlc->szHost = mir_strdup(nloc->szHost);
+
 	Netlib_Logf(nlu,"(%d) Connected to %s:%d",nlc->s,nloc->szHost,nloc->wPort);
 	return (int)nlc;
+}
+
+int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
+{
+	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
+	nlc->hSsl = NetlibSslConnect(FALSE, 0, nlc->s, nlc->szHost);
+
+	return nlc->hSsl != NULL;
 }

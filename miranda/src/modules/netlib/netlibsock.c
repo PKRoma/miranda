@@ -49,7 +49,10 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	}
 	else {
 		NetlibDumpData( nlc, nlb->buf, nlb->len, 1, nlb->flags );
-		result = send( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+		if (nlc->hSsl)
+			result = NetlibSslWrite( nlc->hSsl, nlb->buf, nlb->len );
+		else
+			result = send( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
 	}
 	NetlibLeaveNestedCS( &nlc->ncsSend );
 
@@ -77,7 +80,12 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	if ( nlc->usingHttpGateway && !( nlb->flags & MSG_RAW ))
 		recvResult = NetlibHttpGatewayRecv( nlc, nlb->buf, nlb->len, nlb->flags );
 	else
-		recvResult = recv( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+	{
+		if (nlc->hSsl)
+			recvResult = NetlibSslRead( nlc->hSsl, nlb->buf, nlb->len, (nlb->flags & MSG_PEEK) != 0 );
+		else
+			recvResult = recv( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+	}
 	NetlibLeaveNestedCS( &nlc->ncsRecv );
 	if ( recvResult <= 0 )
 		return recvResult;

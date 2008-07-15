@@ -500,7 +500,9 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		NETLIBOPENCONNECTION nloc={0};
 		char szHost[128];
 		char *ppath,*phost,*pcolon;
+		BOOL secur;
 
+		secur = _strnicmp(nlhr->szUrl, "https", 5) == 0;
 		phost=strstr(nlhr->szUrl,"://");
 		if(phost==NULL) phost=nlhr->szUrl;
 		else phost+=3;
@@ -514,8 +516,8 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			*pcolon='\0';
 			nloc.wPort=(WORD)strtol(pcolon+1,NULL,10);
 		}
-		else nloc.wPort=80;
-		nloc.flags=NLOCF_HTTP;
+		else nloc.wPort = secur ? 443 : 80;
+		nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
 		hConnection=(HANDLE)NetlibOpenConnection((WPARAM)nlu,(LPARAM)&nloc);
 		if(hConnection==NULL) return (int)(HANDLE)NULL;
 	}

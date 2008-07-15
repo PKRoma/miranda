@@ -759,7 +759,7 @@ DWORD __cdecl CMsnProto::GetCaps( int type, HANDLE hContact )
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
-		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
+		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return ( int )MSN_Translate( "E-mail address" );
@@ -1224,7 +1224,14 @@ int __cdecl CMsnProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 		case EV_PROTO_ONLOAD:    return OnModulesLoaded( 0, 0 );
 		case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
-//		case EV_PROTO_ONRENAME:
+		case EV_PROTO_ONRENAME:
+		{	
+			CLISTMENUITEM clmi = { 0 };
+			clmi.cbSize = sizeof( CLISTMENUITEM );
+			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.ptszName = m_tszUserName;
+//			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuRoot, ( LPARAM )&clmi );
+		}	
 	}
 	return 1;
 }

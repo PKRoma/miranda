@@ -34,7 +34,6 @@ SHA1_INTERFACE sha1i;
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
 
-void	UninitSsl( void );
 void    MsnLinks_Init( void );
 
 
@@ -147,8 +146,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
-	UninitSsl();
-
 	return 0;
 }
 

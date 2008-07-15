@@ -256,6 +256,12 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 					SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
 					return 0;
 				}
+				if (nlc->hSsl)
+				{
+					NetlibSslShutdown(nlc->hSsl);
+					NetlibSslFree(nlc->hSsl);
+					nlc->hSsl = NULL;
+				}
 				closesocket(nlc->s);
 				nlc->s=INVALID_SOCKET;
 			}
@@ -272,9 +278,10 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 				return 0;
 			}
 			nlc->handleType=0;
-			if(nlc->nlhpi.szHttpPostUrl) mir_free(nlc->nlhpi.szHttpPostUrl);
-			if(nlc->nlhpi.szHttpGetUrl) mir_free(nlc->nlhpi.szHttpGetUrl);
-			if(nlc->dataBuffer) mir_free(nlc->dataBuffer);
+			mir_free(nlc->nlhpi.szHttpPostUrl);
+			mir_free(nlc->nlhpi.szHttpGetUrl);
+			mir_free(nlc->dataBuffer);
+			mir_free(nlc->szHost);
 			NetlibDestroySecurityProvider("NTLM", nlc->hNtlmSecurity);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
@@ -510,6 +517,7 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_CREATEPACKETRECVER,NetlibPacketRecverCreate);
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
+	CreateServiceFunction(MS_NETLIB_STARTSSL,NetlibStartSsl);
 
 	hRecvEvent = CreateHookableEvent( ME_NETLIB_FASTRECV );
 	hSendEvent = CreateHookableEvent( ME_NETLIB_FASTSEND );

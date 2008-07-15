@@ -90,14 +90,14 @@ void __cdecl forkthread_r(void * arg)
 	void * cookie=fa->arg;
 	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)callercode);
 	SetEvent(fa->hEvent);
-	__try
-	{
+//	__try
+//	{
 		callercode(cookie);
-	}
-	__except( EXCEPTION_EXECUTE_HANDLER )
-	{
-		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
-	}
+//	}
+//	__except( EXCEPTION_EXECUTE_HANDLER )
+//	{
+//		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+//	}
 
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 	CallService(MS_SYSTEM_THREAD_POP,0,0);
@@ -142,17 +142,17 @@ unsigned __stdcall forkthreadex_r(void * arg)
 
 	CallService(MS_SYSTEM_THREAD_PUSH,(WPARAM)fa->owner,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
-	__try
-	{
+//	__try
+//	{
 		if ( owner )
 			rc = threadcodeex( owner, cookie );
 		else
 			rc = threadcode( cookie );
-	}
-	__except( EXCEPTION_EXECUTE_HANDLER )
-	{
-		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
-	}
+//	}
+//	__except( EXCEPTION_EXECUTE_HANDLER )
+//	{
+//		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+//	}
 
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 	CallService(MS_SYSTEM_THREAD_POP,0,0);

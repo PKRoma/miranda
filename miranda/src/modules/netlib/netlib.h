@@ -63,8 +63,10 @@ struct NetlibConnection {
 	LONG dontCloseNow;
 	struct NetlibNestedCriticalSection ncsSend,ncsRecv;
 	HANDLE hNtlmSecurity;
+	HANDLE hSsl;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
 	int pollingTimeout;
+	char* szHost;
 };
 
 struct NetlibBoundPort {
@@ -167,3 +169,15 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 	NETLIBBUFFER nlb={buf,len,flags};
 	return NetlibRecv((WPARAM)nlc,(LPARAM)&nlb);
 }
+
+//netlibssl.c
+
+void NetlibSslFree(HANDLE ssl);
+
+HANDLE NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host);
+void NetlibSslShutdown(HANDLE ssl);
+
+int NetlibSslWrite(HANDLE ssl, const char *buf, int num);
+int NetlibSslRead(HANDLE ssl, char *buf, int num, int peek);
+
+int NetlibStartSsl(WPARAM wParam, LPARAM lParam);

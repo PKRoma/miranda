@@ -677,9 +677,7 @@ struct SSL_Base
 	CMsnProto *proto;
 
 	SSL_Base(CMsnProto *prt) { proto = prt; }
-	virtual	~SSL_Base() {};
 
-	virtual  int init(void) = 0;
 	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs ) = 0;
 };
 
