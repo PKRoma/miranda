@@ -45,7 +45,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr /Yu"commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Yu"commonheaders.h" /FD /c
+# SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -298,7 +299,7 @@ SOURCE=..\include\win2k.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\core\commonheaders.c
+SOURCE=.\core\commonheaders.cpp
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
 # Begin Source File
@@ -311,11 +312,11 @@ SOURCE=.\core\forkthread.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\core\memory.c
+SOURCE=.\core\memory.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\core\miranda.c
+SOURCE=.\core\miranda.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
@@ -339,7 +340,7 @@ SOURCE=.\core\miranda.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\core\modules.c
+SOURCE=.\core\modules.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
@@ -370,7 +371,7 @@ SOURCE=.\core\modules.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\addcontact\addcontact.c
+SOURCE=.\modules\addcontact\addcontact.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
@@ -394,7 +395,7 @@ SOURCE=.\modules\addcontact\addcontact.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\autoaway\autoaway.c
+SOURCE=.\modules\autoaway\autoaway.cpp
 # End Source File
 # End Group
 # Begin Group "button"
@@ -402,7 +403,7 @@ SOURCE=.\modules\autoaway\autoaway.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\button\button.c
+SOURCE=.\modules\button\button.cpp
 # End Source File
 # End Group
 # Begin Group "contacts"
@@ -410,7 +411,7 @@ SOURCE=.\modules\button\button.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\contacts\contacts.c
+SOURCE=.\modules\contacts\contacts.cpp
 # End Source File
 # End Group
 # Begin Group "database"
@@ -418,16 +419,16 @@ SOURCE=.\modules\contacts\contacts.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\database\database.c
+SOURCE=.\modules\database\database.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\dbini.c
+SOURCE=.\modules\database\dbini.cpp
 # ADD CPP /Yu"../../core/commonheaders.h"
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\dblists.c
+SOURCE=.\modules\database\dblists.cpp
 # End Source File
 # Begin Source File
 
@@ -435,15 +436,15 @@ SOURCE=.\modules\database\dblists.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\dbtime.c
+SOURCE=.\modules\database\dbtime.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\dbutils.c
+SOURCE=.\modules\database\dbutils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\profilemanager.c
+SOURCE=.\modules\database\profilemanager.cpp
 # End Source File
 # Begin Source File
 
@@ -455,7 +456,7 @@ SOURCE=.\modules\database\profilemanager.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\findadd\findadd.c
+SOURCE=.\modules\findadd\findadd.cpp
 # End Source File
 # Begin Source File
 
@@ -463,7 +464,7 @@ SOURCE=.\modules\findadd\findadd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\findadd\searchresults.c
+SOURCE=.\modules\findadd\searchresults.cpp
 # End Source File
 # End Group
 # Begin Group "help"
@@ -471,11 +472,11 @@ SOURCE=.\modules\findadd\searchresults.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\help\about.c
+SOURCE=.\modules\help\about.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\help\help.c
+SOURCE=.\modules\help\help.cpp
 # End Source File
 # End Group
 # Begin Group "history"
@@ -483,7 +484,7 @@ SOURCE=.\modules\help\help.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\history\history.c
+SOURCE=.\modules\history\history.cpp
 # End Source File
 # End Group
 # Begin Group "idle"
@@ -491,7 +492,7 @@ SOURCE=.\modules\history\history.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\idle\idle.c
+SOURCE=.\modules\idle\idle.cpp
 # End Source File
 # End Group
 # Begin Group "ignore"
@@ -499,7 +500,7 @@ SOURCE=.\modules\idle\idle.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\ignore\ignore.c
+SOURCE=.\modules\ignore\ignore.cpp
 # End Source File
 # End Group
 # Begin Group "langpack"
@@ -507,11 +508,11 @@ SOURCE=.\modules\ignore\ignore.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\langpack\langpack.c
+SOURCE=.\modules\langpack\langpack.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\langpack\lpservices.c
+SOURCE=.\modules\langpack\lpservices.cpp
 # End Source File
 # End Group
 # Begin Group "netlib"
@@ -519,7 +520,7 @@ SOURCE=.\modules\langpack\lpservices.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlib.c
+SOURCE=.\modules\netlib\netlib.cpp
 # End Source File
 # Begin Source File
 
@@ -527,47 +528,47 @@ SOURCE=.\modules\netlib\netlib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibbind.c
+SOURCE=.\modules\netlib\netlibbind.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibhttp.c
+SOURCE=.\modules\netlib\netlibhttp.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibhttpproxy.c
+SOURCE=.\modules\netlib\netlibhttpproxy.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netliblog.c
+SOURCE=.\modules\netlib\netliblog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibopenconn.c
+SOURCE=.\modules\netlib\netlibopenconn.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibopts.c
+SOURCE=.\modules\netlib\netlibopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibpktrecver.c
+SOURCE=.\modules\netlib\netlibpktrecver.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibsecurity.c
+SOURCE=.\modules\netlib\netlibsecurity.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibsock.c
+SOURCE=.\modules\netlib\netlibsock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibssl.c
+SOURCE=.\modules\netlib\netlibssl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\netlib\netlibupnp.c
+SOURCE=.\modules\netlib\netlibupnp.cpp
 # End Source File
 # End Group
 # Begin Group "options"
@@ -575,7 +576,7 @@ SOURCE=.\modules\netlib\netlibupnp.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\options\options.c
+SOURCE=.\modules\options\options.cpp
 # End Source File
 # End Group
 # Begin Group "plugins"
@@ -583,7 +584,7 @@ SOURCE=.\modules\options\options.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\plugins\newplugins.c
+SOURCE=.\modules\plugins\newplugins.cpp
 # End Source File
 # End Group
 # Begin Group "protocols"
@@ -591,23 +592,23 @@ SOURCE=.\modules\plugins\newplugins.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\protocols\protoaccs.c
+SOURCE=.\modules\protocols\protoaccs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\protocols\protochains.c
+SOURCE=.\modules\protocols\protochains.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\protocols\protocols.c
+SOURCE=.\modules\protocols\protocols.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\protocols\protoint.c
+SOURCE=.\modules\protocols\protoint.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\protocols\protoopts.c
+SOURCE=.\modules\protocols\protoopts.cpp
 # End Source File
 # End Group
 # Begin Group "skin"
@@ -615,15 +616,15 @@ SOURCE=.\modules\protocols\protoopts.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\skin\hotkeys.c
+SOURCE=.\modules\skin\hotkeys.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\skin\skinicons.c
+SOURCE=.\modules\skin\skinicons.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\skin\sounds.c
+SOURCE=.\modules\skin\sounds.cpp
 # End Source File
 # End Group
 # Begin Group "srauth"
@@ -631,11 +632,11 @@ SOURCE=.\modules\skin\sounds.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\srauth\auth.c
+SOURCE=.\modules\srauth\auth.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srauth\authdialogs.c
+SOURCE=.\modules\srauth\authdialogs.cpp
 # End Source File
 # End Group
 # Begin Group "srawaymsg"
@@ -643,11 +644,11 @@ SOURCE=.\modules\srauth\authdialogs.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\srawaymsg\awaymsg.c
+SOURCE=.\modules\srawaymsg\awaymsg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srawaymsg\sendmsg.c
+SOURCE=.\modules\srawaymsg\sendmsg.cpp
 # End Source File
 # End Group
 # Begin Group "sremail"
@@ -655,7 +656,7 @@ SOURCE=.\modules\srawaymsg\sendmsg.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\sremail\email.c
+SOURCE=.\modules\sremail\email.cpp
 # End Source File
 # End Group
 # Begin Group "srfile"
@@ -663,7 +664,7 @@ SOURCE=.\modules\sremail\email.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\srfile\file.c
+SOURCE=.\modules\srfile\file.cpp
 # End Source File
 # Begin Source File
 
@@ -671,27 +672,27 @@ SOURCE=.\modules\srfile\file.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\fileexistsdlg.c
+SOURCE=.\modules\srfile\fileexistsdlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\fileopts.c
+SOURCE=.\modules\srfile\fileopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\filerecvdlg.c
+SOURCE=.\modules\srfile\filerecvdlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\filesenddlg.c
+SOURCE=.\modules\srfile\filesenddlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\filexferdlg.c
+SOURCE=.\modules\srfile\filexferdlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srfile\ftmanager.c
+SOURCE=.\modules\srfile\ftmanager.cpp
 # End Source File
 # End Group
 # Begin Group "srurl"
@@ -699,7 +700,7 @@ SOURCE=.\modules\srfile\ftmanager.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\srurl\url.c
+SOURCE=.\modules\srurl\url.cpp
 # End Source File
 # Begin Source File
 
@@ -707,7 +708,7 @@ SOURCE=.\modules\srurl\url.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\srurl\urldialogs.c
+SOURCE=.\modules\srurl\urldialogs.cpp
 # End Source File
 # End Group
 # Begin Group "userinfo"
@@ -715,15 +716,15 @@ SOURCE=.\modules\srurl\urldialogs.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\userinfo\contactinfo.c
+SOURCE=.\modules\userinfo\contactinfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\userinfo\stdinfo.c
+SOURCE=.\modules\userinfo\stdinfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\userinfo\userinfo.c
+SOURCE=.\modules\userinfo\userinfo.cpp
 # End Source File
 # End Group
 # Begin Group "useronline"
@@ -731,7 +732,7 @@ SOURCE=.\modules\userinfo\userinfo.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\useronline\useronline.c
+SOURCE=.\modules\useronline\useronline.cpp
 # End Source File
 # End Group
 # Begin Group "utils"
@@ -739,47 +740,47 @@ SOURCE=.\modules\useronline\useronline.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\utils\bmpfilter.c
+SOURCE=.\modules\utils\bmpfilter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\colourpicker.c
+SOURCE=.\modules\utils\colourpicker.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\hyperlink.c
+SOURCE=.\modules\utils\hyperlink.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\md5.c
+SOURCE=.\modules\utils\md5.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\openurl.c
+SOURCE=.\modules\utils\openurl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\path.c
+SOURCE=.\modules\utils\path.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\resizer.c
+SOURCE=.\modules\utils\resizer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\sha1.c
+SOURCE=.\modules\utils\sha1.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\utf.c
+SOURCE=.\modules\utils\utf.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\utils.c
+SOURCE=.\modules\utils\utils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\utils\windowlist.c
+SOURCE=.\modules\utils\windowlist.cpp
 # End Source File
 # End Group
 # Begin Group "visibility"
@@ -787,7 +788,7 @@ SOURCE=.\modules\utils\windowlist.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\visibility\visibility.c
+SOURCE=.\modules\visibility\visibility.cpp
 # End Source File
 # End Group
 # Begin Group "clist"
@@ -795,7 +796,7 @@ SOURCE=.\modules\visibility\visibility.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\clist\clc.c
+SOURCE=.\modules\clist\clc.cpp
 # End Source File
 # Begin Source File
 
@@ -803,67 +804,67 @@ SOURCE=.\modules\clist\clc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clcfiledrop.c
+SOURCE=.\modules\clist\clcfiledrop.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clcidents.c
+SOURCE=.\modules\clist\clcidents.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clcitems.c
+SOURCE=.\modules\clist\clcitems.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clcmsgs.c
+SOURCE=.\modules\clist\clcmsgs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clcutils.c
+SOURCE=.\modules\clist\clcutils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clistcore.c
+SOURCE=.\modules\clist\clistcore.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clistevents.c
+SOURCE=.\modules\clist\clistevents.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clistmenus.c
+SOURCE=.\modules\clist\clistmenus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clistmod.c
+SOURCE=.\modules\clist\clistmod.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clistsettings.c
+SOURCE=.\modules\clist\clistsettings.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clisttray.c
+SOURCE=.\modules\clist\clisttray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\clui.c
+SOURCE=.\modules\clist\clui.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\cluiservices.c
+SOURCE=.\modules\clist\cluiservices.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\contact.c
+SOURCE=.\modules\clist\contact.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\Docking.c
+SOURCE=.\modules\clist\Docking.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\genmenu.c
+SOURCE=.\modules\clist\genmenu.cpp
 # End Source File
 # Begin Source File
 
@@ -871,23 +872,23 @@ SOURCE=.\modules\clist\genmenu.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\genmenuopt.c
+SOURCE=.\modules\clist\genmenuopt.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\groups.c
+SOURCE=.\modules\clist\groups.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\keyboard.c
+SOURCE=.\modules\clist\keyboard.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\movetogroup.c
+SOURCE=.\modules\clist\movetogroup.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\clist\protocolorder.c
+SOURCE=.\modules\clist\protocolorder.cpp
 # End Source File
 # End Group
 # Begin Group "fontservice"
@@ -895,11 +896,11 @@ SOURCE=.\modules\clist\protocolorder.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\fonts\FontOptions.c
+SOURCE=.\modules\fonts\FontOptions.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\fonts\FontService.c
+SOURCE=.\modules\fonts\FontService.cpp
 # End Source File
 # Begin Source File
 
@@ -907,7 +908,7 @@ SOURCE=.\modules\fonts\FontService.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\fonts\module_fonts.c
+SOURCE=.\modules\fonts\module_fonts.cpp
 # End Source File
 # Begin Source File
 
@@ -915,7 +916,7 @@ SOURCE=.\modules\fonts\module_fonts.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\fonts\services.c
+SOURCE=.\modules\fonts\services.cpp
 # End Source File
 # End Group
 # Begin Group "icolib"
@@ -923,7 +924,7 @@ SOURCE=.\modules\fonts\services.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\icolib\extracticon.c
+SOURCE=.\modules\icolib\extracticon.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
@@ -932,7 +933,7 @@ SOURCE=.\modules\icolib\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\icolib\skin2icons.c
+SOURCE=.\modules\icolib\skin2icons.cpp
 # End Source File
 # End Group
 # Begin Group "updatenotify"
@@ -940,7 +941,7 @@ SOURCE=.\modules\icolib\skin2icons.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\modules\updatenotify\updatenotify.c
+SOURCE=.\modules\updatenotify\updatenotify.cpp
 # End Source File
 # End Group
 # End Group

@@ -232,7 +232,7 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD 
 /* clui.c */
 LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
 void fnLoadCluiGlobalOpts( void );
-int  fnCluiProtocolStatusChanged(int,const char*);
+void fnCluiProtocolStatusChanged(int,const char*);
 void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon);
 
 /* contact.c */

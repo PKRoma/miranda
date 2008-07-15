@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NLH_BOUNDPORT    'BIND'
 #define NLH_PACKETRECVER 'PCKT'
 
+struct SslHandle;
+
 struct NetlibUser {
 	int handleType;
 	NETLIBUSER user;
@@ -63,7 +65,7 @@ struct NetlibConnection {
 	LONG dontCloseNow;
 	struct NetlibNestedCriticalSection ncsSend,ncsRecv;
 	HANDLE hNtlmSecurity;
-	HANDLE hSsl;
+	SslHandle* hSsl;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
 	int pollingTimeout;
 	char* szHost;
@@ -172,12 +174,12 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 
 //netlibssl.c
 
-void NetlibSslFree(HANDLE ssl);
+void NetlibSslFree(SslHandle *ssl);
 
-HANDLE NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host);
-void NetlibSslShutdown(HANDLE ssl);
+SslHandle* NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host);
+void NetlibSslShutdown(SslHandle *ssl);
 
-int NetlibSslWrite(HANDLE ssl, const char *buf, int num);
-int NetlibSslRead(HANDLE ssl, char *buf, int num, int peek);
+int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
+int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);
 
 int NetlibStartSsl(WPARAM wParam, LPARAM lParam);

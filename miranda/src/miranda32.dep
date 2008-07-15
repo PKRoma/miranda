@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by miranda32.mak
 
-.\core\commonheaders.c : \
+.\core\commonheaders.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -42,7 +42,7 @@
 	".\modules\database\dblists.h"\
 	
 
-.\core\memory.c : \
+.\core\memory.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -84,7 +84,7 @@
 	".\modules\database\dblists.h"\
 	
 
-.\core\miranda.c : \
+.\core\miranda.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -126,7 +126,7 @@
 	".\modules\database\dblists.h"\
 	
 
-.\core\modules.c : \
+.\core\modules.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -168,12 +168,219 @@
 	".\modules\database\dblists.h"\
 	
 
-.\modules\database\database.c : \
+.\modules\addcontact\addcontact.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\autoaway\autoaway.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\button\button.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\contacts\contacts.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\database\database.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\database\dbini.c : \
+.\modules\database\dbini.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -216,262 +423,2095 @@
 	".\modules\srfile\file.h"\
 	
 
-.\modules\database\dbutils.c : \
+.\modules\database\dblists.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\database\dbtime.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\database\dbutils.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	
 
-.\modules\database\profilemanager.c : \
+.\modules\database\profilemanager.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\database\profilemanager.h"\
 	
 
-.\modules\findadd\findadd.c : \
+.\modules\findadd\findadd.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
 	"..\include\m_icq.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\findadd\findadd.h"\
 	
 
-.\modules\findadd\searchresults.c : \
+.\modules\findadd\searchresults.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
 	"..\include\m_icq.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\findadd\findadd.h"\
 	
 
-.\modules\netlib\netlib.c : \
+.\modules\help\about.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\help\help.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\history\history.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\idle\idle.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\ignore\ignore.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\langpack\langpack.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\langpack\lpservices.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\netlib\netlib.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
-.\modules\netlib\netlibbind.c : \
+.\modules\netlib\netlibbind.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
-.\modules\netlib\netlibhttp.c : \
+.\modules\netlib\netlibhttp.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
-.\modules\netlib\netlibhttpproxy.c : \
+.\modules\netlib\netlibhttpproxy.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	
 
-.\modules\netlib\netliblog.c : \
+.\modules\netlib\netliblog.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\netlib\netlib.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\netlib\netlibopenconn.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\netlib\netlibopts.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\netlib\netlibpktrecver.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\netlib\netlibsecurity.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\netlib\netlibsock.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\netlib\netlibupnp.c : \
-	".\modules\netlib\netlib.h"\
-	
-
-.\modules\protocols\protoaccs.c : \
-	"..\include\m_protoint.h"\
-	
-
-.\modules\protocols\protochains.c : \
+.\modules\netlib\netlibopenconn.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
 	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
 	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
 	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
 	
 
-.\modules\protocols\protocols.c : \
+.\modules\netlib\netlibopts.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
 	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
 	
 
-.\modules\protocols\protoint.c : \
+.\modules\netlib\netlibpktrecver.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
 	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
 	
 
-.\modules\protocols\protoopts.c : \
+.\modules\netlib\netlibsecurity.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
 	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
 	
 
-.\modules\skin\hotkeys.c : \
+.\modules\netlib\netlibsock.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
+	
+
+.\modules\netlib\netlibssl.cpp : \
+	"..\..\..\program files\microsoft platform sdk\include\schannel.h"\
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\netlib\netlibupnp.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\netlib\netlib.h"\
+	
+
+.\modules\options\options.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\plugins\newplugins.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\protocols\protoaccs.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\protocols\protochains.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\protocols\protocols.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\protocols\protoint.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\protocols\protoopts.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\skin\hotkeys.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
 	"..\include\m_hotkeys.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
-.\modules\srfile\file.c : \
+.\modules\skin\skinicons.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\skin\sounds.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\srauth\auth.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\srauth\authdialogs.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\srawaymsg\awaymsg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\srawaymsg\sendmsg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\sremail\email.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\srfile\file.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\fileexistsdlg.c : \
+.\modules\srfile\fileexistsdlg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\fileopts.c : \
+.\modules\srfile\fileopts.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\filerecvdlg.c : \
+.\modules\srfile\filerecvdlg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\filesenddlg.c : \
+.\modules\srfile\filesenddlg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\filexferdlg.c : \
+.\modules\srfile\filexferdlg.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srfile\ftmanager.c : \
+.\modules\srfile\ftmanager.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\srfile\file.h"\
 	
 
-.\modules\srurl\url.c : \
+.\modules\srurl\url.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
 	"..\include\m_url.h"\
-	".\modules\srurl\url.h"\
-	
-
-.\modules\srurl\urldialogs.c : \
-	".\modules\srurl\url.h"\
-	
-
-.\modules\utils\bmpfilter.c : \
-	"..\include\m_png.h"\
-	
-
-.\modules\utils\path.c : \
-	".\modules\srfile\file.h"\
-	
-
-.\modules\clist\clc.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clcfiledrop.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clcidents.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clcitems.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clcmsgs.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clcutils.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clistcore.c : \
-	"..\include\m_clist.h"\
-	"..\include\m_genmenu.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
 	"..\include\statusmodes.h"\
-	".\modules\clist\clc.h"\
-	".\modules\clist\genmenu.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\srurl\url.h"\
 	
 
-.\modules\clist\clistevents.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clistmenus.c : \
+.\modules\srurl\urldialogs.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
 	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
 	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
 	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
 	"..\include\statusmodes.h"\
-	".\modules\clist\clc.h"\
-	".\modules\clist\genmenu.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\srurl\url.h"\
 	
 
-.\modules\clist\clistmod.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clistsettings.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clisttray.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\clui.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\cluiservices.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\contact.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\Docking.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\genmenu.c : \
-	"..\include\m_clist.h"\
-	"..\include\m_genmenu.h"\
-	"..\include\statusmodes.h"\
-	".\modules\clist\genmenu.h"\
-	
-
-.\modules\clist\genmenuopt.c : \
-	"..\include\m_clist.h"\
-	"..\include\m_genmenu.h"\
-	"..\include\statusmodes.h"\
-	".\modules\clist\genmenu.h"\
-	
-
-.\modules\clist\groups.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\keyboard.c : \
-	"..\include\m_hotkeys.h"\
-	".\modules\clist\clc.h"\
-	
-
-.\modules\clist\protocolorder.c : \
-	".\modules\clist\clc.h"\
-	
-
-.\modules\fonts\FontOptions.c : \
-	"..\include\m_fontservice.h"\
-	".\modules\fonts\FontService.h"\
-	
-
-.\modules\fonts\FontService.c : \
-	"..\include\m_fontservice.h"\
-	".\modules\fonts\FontService.h"\
-	".\modules\fonts\module_fonts.h"\
-	
-
-.\modules\fonts\module_fonts.c : \
-	"..\include\m_fontservice.h"\
-	".\modules\fonts\module_fonts.h"\
-	
-
-.\modules\fonts\services.c : \
-	"..\include\m_fontservice.h"\
-	".\modules\fonts\FontService.h"\
-	
-
-.\modules\icolib\extracticon.c : \
+.\modules\userinfo\contactinfo.cpp : \
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -513,8 +2553,1888 @@
 	".\modules\database\dblists.h"\
 	
 
-.\modules\icolib\skin2icons.c : \
+.\modules\userinfo\stdinfo.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\userinfo\userinfo.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\useronline\useronline.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\bmpfilter.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_png.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\colourpicker.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\hyperlink.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\md5.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\openurl.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\path.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\srfile\file.h"\
+	
+
+.\modules\utils\resizer.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\sha1.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\utf.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\utils.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\utils\windowlist.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\visibility\visibility.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clc.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clcfiledrop.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clcidents.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clcitems.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clcmsgs.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clcutils.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clistcore.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clistevents.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clistmenus.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clistmod.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clistsettings.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clisttray.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\clui.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\cluiservices.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\contact.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\Docking.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\genmenu.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\genmenuopt.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\genmenu.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\groups.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\keyboard.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_hotkeys.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\movetogroup.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\clist\protocolorder.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\clist\clc.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\fonts\FontOptions.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_fontservice.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\fonts\FontService.h"\
+	
+
+.\modules\fonts\FontService.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_fontservice.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\fonts\FontService.h"\
+	".\modules\fonts\module_fonts.h"\
+	
+
+.\modules\fonts\module_fonts.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_fontservice.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\fonts\module_fonts.h"\
+	
+
+.\modules\fonts\services.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_fontservice.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	".\modules\fonts\FontService.h"\
+	
+
+.\modules\icolib\extracticon.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
+	
+
+.\modules\icolib\skin2icons.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	".\modules\icolib\IcoLib.h"\
+	
+
+.\modules\updatenotify\updatenotify.cpp : \
+	"..\include\m_addcontact.h"\
+	"..\include\m_awaymsg.h"\
+	"..\include\m_button.h"\
+	"..\include\m_clc.h"\
+	"..\include\m_clist.h"\
+	"..\include\m_clistint.h"\
+	"..\include\m_clui.h"\
+	"..\include\m_contacts.h"\
+	"..\include\m_database.h"\
+	"..\include\m_email.h"\
+	"..\include\m_file.h"\
+	"..\include\m_findadd.h"\
+	"..\include\m_genmenu.h"\
+	"..\include\m_history.h"\
+	"..\include\m_icolib.h"\
+	"..\include\m_idle.h"\
+	"..\include\m_ignore.h"\
+	"..\include\m_langpack.h"\
+	"..\include\m_message.h"\
+	"..\include\m_netlib.h"\
+	"..\include\m_options.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protocols.h"\
+	"..\include\m_protoint.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_protosvc.h"\
+	"..\include\m_skin.h"\
+	"..\include\m_stdhdr.h"\
+	"..\include\m_system.h"\
+	"..\include\m_userinfo.h"\
+	"..\include\m_utils.h"\
+	"..\include\newpluginapi.h"\
+	"..\include\statusmodes.h"\
+	"..\include\win2k.h"\
+	".\core\commonheaders.h"\
+	".\core\forkthread.h"\
+	".\core\miranda.h"\
+	".\core\modules.h"\
+	".\modules\database\dblists.h"\
 	
 
 .\vc6.rc : \
