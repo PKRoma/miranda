@@ -48,6 +48,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <win2k.h>
 #include "modules.h"
 #include <m_system.h>
+#include <m_system_cpp.h>
 #include <newpluginapi.h>
 #include <m_database.h>
 #include <m_clc.h>

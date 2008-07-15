@@ -25,27 +25,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // list of hooks
 
-struct
+static int compareHooks( const THook* p1, const THook* p2 )
 {
-	THook** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
+	return strcmp( p1->name, p2->name );
 }
-static hooks;
 
-typedef struct
+static LIST<THook> hooks( 50, compareHooks );
+
+struct THookToMainThreadItem
 {
 	THook* hook;
 	HANDLE hDoneEvent;
 	WPARAM wParam;
 	LPARAM lParam;
 	int result;
-}
-	THookToMainThreadItem;
+};
 
 // list of services
 
-typedef struct
+struct TService
 {
 	DWORD nameHash;
 	HINSTANCE hOwner;
@@ -59,16 +57,17 @@ typedef struct
 	LPARAM lParam;
 	void* object;
 	char name[1];
-}
-	TService;
+};
 
-struct
+static int compareServices( const TService* p1, const TService* p2 )
 {
-	TService** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
+	if ( p1->nameHash == p2->nameHash )
+		return 0;
+
+	return ( p1->nameHash > p2->nameHash ) ? 1 : -1;
 }
-static services;
+
+static LIST<TService> services( 100, compareServices );
 
 typedef struct
 {
@@ -225,27 +224,8 @@ void UnloadDefaultModules(void)
 	UnloadLangPackModule();
 }
 
-static int compareServices( const TService* p1, const TService* p2 )
-{
-	if ( p1->nameHash == p2->nameHash )
-		return 0;
-
-	return ( p1->nameHash > p2->nameHash ) ? 1 : -1;
-}
-
-static int compareHooks( const THook* p1, const THook* p2 )
-{
-	return strcmp( p1->name, p2->name );
-}
-
 int InitialiseModularEngine(void)
 {
-	services.sortFunc = ( FSortFunc )compareServices;
-	services.increment = 100;
-
-	hooks.sortFunc = ( FSortFunc )compareHooks;
-	hooks.increment = 50;
-
 	InitializeCriticalSection(&csHooks);
 	InitializeCriticalSection(&csServices);
 
@@ -261,22 +241,22 @@ void DestroyModularEngine(void)
 	int i;
 	THook* p;
 	EnterCriticalSection( &csHooks );
-	for( i=0; i < hooks.count; i++ ) {
-		p = hooks.items[i];
+	for( i=0; i < hooks.getCount(); i++ ) {
+		p = hooks[i];
  		if ( p->subscriberCount )
 			mir_free( p->subscriber );
 		DeleteCriticalSection( &p->csHook );
 		mir_free( p );
 	}
-	List_Destroy(( SortedList* )&hooks );
+	hooks.destroy();
 	LeaveCriticalSection( &csHooks );
 	DeleteCriticalSection( &csHooks );
 
 	EnterCriticalSection( &csServices );
-	for ( i=0; i < services.count; i++ )
-		mir_free( services.items[i] );
+	for ( i=0; i < services.getCount(); i++ )
+		mir_free( services[i] );
 
-	List_Destroy(( SortedList* )&services );
+	services.destroy();
 	LeaveCriticalSection( &csServices );
  	DeleteCriticalSection( &csServices );
 	CloseHandle( hMainThread );
@@ -333,7 +313,7 @@ HANDLE CreateHookableEvent(const char *name)
 		return NULL;
 
 	EnterCriticalSection( &csHooks );
-	if ( List_GetIndex(( SortedList* )&hooks, ( void* )name, &idx )) {
+	if (( idx = hooks.getIndex(( THook* )name )) != -1 ) {
 		LeaveCriticalSection( &csHooks );
 		return NULL;
 	}
@@ -345,7 +325,7 @@ HANDLE CreateHookableEvent(const char *name)
 	ret->subscriber = NULL;
 	ret->pfnHook = NULL;
 	InitializeCriticalSection( &ret->csHook );
-	List_Insert(( SortedList* )&hooks, ret, idx );
+	hooks.insert( ret );
 
 	LeaveCriticalSection( &csHooks );
 	return ( HANDLE )ret;
@@ -360,17 +340,17 @@ int DestroyHookableEvent( HANDLE hEvent )
 	if ( pLastHook == ( THook* )hEvent )
 		pLastHook = NULL;
 
-	if (( idx = List_IndexOf(( SortedList* )&hooks, hEvent )) == -1 ) {
+	if (( idx = hooks.getIndex(( THook* )hEvent )) == -1 ) {
       LeaveCriticalSection(&csHooks);
 		return 1;
 	}
-	p = hooks.items[idx];
+	p = hooks[idx];
 	if ( p->subscriberCount ) {
 		mir_free( p->subscriber );
 		p->subscriber = NULL;
 		p->subscriberCount = 0;
 	}
-	List_Remove(( SortedList* )&hooks, idx );
+	hooks.remove( idx );
 	DeleteCriticalSection( &p->csHook );
 	mir_free( p );
 
@@ -383,7 +363,7 @@ int SetHookDefaultForHookableEvent(HANDLE hEvent, MIRANDAHOOK pfnHook)
 	THook* p = ( THook* )hEvent;
 
 	EnterCriticalSection(&csHooks);
-	if ( List_IndexOf(( SortedList* )&hooks, hEvent ) != -1 )
+	if ( hooks.getIndex( p ) != -1 )
 		p->pfnHook = pfnHook;
 	LeaveCriticalSection(&csHooks);
 	return 0;
@@ -425,7 +405,7 @@ static int checkHook( HANDLE hHook )
 {
 	EnterCriticalSection( &csHooks );
 	if ( pLastHook != hHook || !pLastHook ) {
-		if ( List_IndexOf(( SortedList* )&hooks, hHook ) == -1 ) {
+		if ( hooks.getIndex(( THook* )hHook ) == -1 ) {
 			LeaveCriticalSection( &csHooks );
 			return -1;
 		}
@@ -475,7 +455,7 @@ static HANDLE HookEventInt( int type, const char* name, MIRANDAHOOK hookProc, vo
 	HANDLE ret;
 
 	EnterCriticalSection( &csHooks );
-	if ( !List_GetIndex(( SortedList* )&hooks, ( void* )name, &idx )) {
+	if (( idx = hooks.getIndex(( THook* )name )) == -1 ) {
 		#ifdef _DEBUG
 			OutputDebugStringA("Attempt to hook: \t");
 			OutputDebugStringA(name);
@@ -485,7 +465,7 @@ static HANDLE HookEventInt( int type, const char* name, MIRANDAHOOK hookProc, vo
 		return NULL;
 	}
 
-	p = hooks.items[ idx ];
+	p = hooks[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
 	p->subscriber[ p->subscriberCount ].type = type;
 	p->subscriber[ p->subscriberCount ].pfnHook = hookProc;
@@ -526,7 +506,7 @@ HANDLE HookEventMessage( const char* name, HWND hwnd, UINT message )
 	HANDLE ret;
 
 	EnterCriticalSection( &csHooks );
-	if ( !List_GetIndex(( SortedList* )&hooks, ( void* )name, &idx )) {
+	if (( idx = hooks.getIndex(( THook* )name )) == -1 ) {
 		#ifdef _DEBUG
 			MessageBoxA(NULL,"Attempt to hook non-existant event",name,MB_OK);
 		#endif
@@ -534,7 +514,7 @@ HANDLE HookEventMessage( const char* name, HWND hwnd, UINT message )
 		return NULL;
 	}
 
-	p = hooks.items[ idx ];
+	p = hooks[ idx ];
 	p->subscriber = ( THookSubscriber* )mir_realloc( p->subscriber, sizeof( THookSubscriber )*( p->subscriberCount+1 ));
 	p->subscriber[ p->subscriberCount ].type = 5;
 	p->subscriber[ p->subscriberCount ].hwnd = hwnd;
@@ -554,9 +534,9 @@ int UnhookEvent( HANDLE hHook )
 	int subscriberId = (( int )hHook & 0xFFFF ) - 1;
 
 	EnterCriticalSection( &csHooks );
-	for ( i = 0; i < hooks.count; i++ ) {
-		if ( hooks.items[i]->id == hookId ) {
-			p = hooks.items[i];
+	for ( i = 0; i < hooks.getCount(); i++ ) {
+		if ( hooks[i]->id == hookId ) {
+			p = hooks[i];
 			break;
 	}	}
 
@@ -588,18 +568,18 @@ void KillModuleEventHooks( HINSTANCE hInst )
 	int i, j;
 
 	EnterCriticalSection(&csHooks);
-	for ( i = hooks.count-1; i >= 0; i-- ) {
-		if ( hooks.items[i]->subscriberCount == 0 )
+	for ( i = hooks.getCount()-1; i >= 0; i-- ) {
+		if ( hooks[i]->subscriberCount == 0 )
 			continue;
 
-		for ( j = hooks.items[i]->subscriberCount-1; j >= 0; j-- ) {
-			if ( hooks.items[i]->subscriber[j].hOwner == hInst ) {
+		for ( j = hooks[i]->subscriberCount-1; j >= 0; j-- ) {
+			if ( hooks[i]->subscriber[j].hOwner == hInst ) {
 				char szModuleName[ MAX_PATH ];
-				GetModuleFileNameA( hooks.items[i]->subscriber[j].hOwner, szModuleName, sizeof(szModuleName));
+				GetModuleFileNameA( hooks[i]->subscriber[j].hOwner, szModuleName, sizeof(szModuleName));
 				Netlib_Logf( NULL, "A hook %08x for event '%s' was abnormally deleted because module '%s' didn't released it",
-					hooks.items[i]->subscriber[j].pfnHook, hooks.items[i]->name, szModuleName );
-				UnhookEvent(( HANDLE )(( hooks.items[i]->id << 16 ) + j + 1 ));
-				if ( hooks.items[i]->subscriberCount == 0 )
+					hooks[i]->subscriber[j].pfnHook, hooks[i]->name, szModuleName );
+				UnhookEvent(( HANDLE )(( hooks[i]->id << 16 ) + j + 1 ));
+				if ( hooks[i]->subscriberCount == 0 )
 					break;
 	}	}	}
 
@@ -611,14 +591,14 @@ void KillObjectEventHooks( void* pObject )
 	int i, j;
 
 	EnterCriticalSection(&csHooks);
-	for ( i = hooks.count-1; i >= 0; i-- ) {
-		if ( hooks.items[i]->subscriberCount == 0 )
+	for ( i = hooks.getCount()-1; i >= 0; i-- ) {
+		if ( hooks[i]->subscriberCount == 0 )
 			continue;
 
-		for ( j = hooks.items[i]->subscriberCount-1; j >= 0; j-- ) {
-			if ( hooks.items[i]->subscriber[j].object == pObject ) {
-				UnhookEvent(( HANDLE )(( hooks.items[i]->id << 16 ) + j + 1 ));
-				if ( hooks.items[i]->subscriberCount == 0 )
+		for ( j = hooks[i]->subscriberCount-1; j >= 0; j-- ) {
+			if ( hooks[i]->subscriber[j].object == pObject ) {
+				UnhookEvent(( HANDLE )(( hooks[i]->id << 16 ) + j + 1 ));
+				if ( hooks[i]->subscriberCount == 0 )
 					break;
 	}	}	}
 
@@ -630,8 +610,8 @@ void KillObjectEventHooks( void* pObject )
 static __inline TService* FindServiceByHash(DWORD hash)
 {
 	int idx;
-	if ( List_GetIndex(( SortedList* )&services, &hash, &idx ))
-		return services.items[idx];
+	if (( idx = services.getIndex(( TService* )&hash )) != -1 )
+		return services[idx];
 	return NULL;
 }
 
@@ -642,9 +622,6 @@ static __inline TService* FindServiceByName( const char *name )
 
 static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE serviceProc, void* object, LPARAM lParam)
 {
-	DWORD hash;
-	int   idx;
-	TService* p;
 	#ifdef _DEBUG
 		if ( name == NULL ) {
 			MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
@@ -654,26 +631,29 @@ static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE servi
 	#else
 		if ( name == NULL ) return NULL;
 	#endif
-	hash = NameHashFunction( name );
+
+	TService tmp;
+	tmp.nameHash = NameHashFunction( name );
+
 	EnterCriticalSection( &csServices );
 
-	if ( List_GetIndex(( SortedList* )&services, &hash, &idx )) {
+	if ( services.getIndex( &tmp ) != -1 ) {
 		LeaveCriticalSection( &csServices );
 		return NULL;
 	}
 
-	p = ( TService* )mir_alloc( sizeof( *p ) + strlen( name ));
+	TService* p = ( TService* )mir_alloc( sizeof( *p ) + strlen( name ));
 	strcpy( p->name, name );
-	p->nameHash   = hash;
+	p->nameHash   = tmp.nameHash;
 	p->pfnService = serviceProc;
 	p->hOwner     = GetInstByAddress( serviceProc );
 	p->flags      = type;
 	p->lParam     = lParam;
 	p->object     = object;
-	List_Insert(( SortedList* )&services, p, idx );
+	services.insert( p );
 
 	LeaveCriticalSection( &csServices );
-	return ( HANDLE )hash;
+	return ( HANDLE )tmp.nameHash;
 }
 
 HANDLE CreateServiceFunction( const char *name, MIRANDASERVICE serviceProc )
@@ -701,9 +681,9 @@ int DestroyServiceFunction(HANDLE hService)
 	int idx;
 
 	EnterCriticalSection( &csServices );
-	if ( List_GetIndex(( SortedList* )&services, &hService, &idx )) {
-		mir_free( services.items[idx] );
-		List_Remove(( SortedList* )&services, idx );
+	if (( idx = services.getIndex(( TService* )&hService )) != -1 ) {
+		mir_free( services[idx] );
+		services.remove( idx );
 	}
 
 	LeaveCriticalSection(&csServices);
@@ -712,44 +692,37 @@ int DestroyServiceFunction(HANDLE hService)
 
 int ServiceExists(const char *name)
 {
-	int ret;
 	if ( name == NULL )
 		return FALSE;
 
 	EnterCriticalSection( &csServices );
-	ret = FindServiceByName( name ) != NULL;
+	int ret = FindServiceByName( name ) != NULL;
 	LeaveCriticalSection( &csServices );
 	return ret;
 }
 
 int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 {
-	TService *pService;
-	MIRANDASERVICE pfnService;
-	int flags;
-	LPARAM fnParam;
-	void* object;
-
-#ifdef _DEBUG
-	if (name==NULL) {
-		MessageBoxA(0,"Someone tried to CallService(NULL,..) see stack trace for details","",0);
-		DebugBreak();
-		return CALLSERVICE_NOTFOUND;
-	}
-#else
-	if (name==NULL) return CALLSERVICE_NOTFOUND;
-#endif
+	#ifdef _DEBUG
+		if (name==NULL) {
+			MessageBoxA(0,"Someone tried to CallService(NULL,..) see stack trace for details","",0);
+			DebugBreak();
+			return CALLSERVICE_NOTFOUND;
+		}
+	#else
+		if (name==NULL) return CALLSERVICE_NOTFOUND;
+	#endif
 
 	EnterCriticalSection(&csServices);
-	pService=FindServiceByName(name);
+	TService *pService = FindServiceByName(name);
 	if (pService==NULL) {
 		LeaveCriticalSection(&csServices);
-#ifdef _DEBUG
-		//MessageBoxA(NULL,"Attempt to call non-existant service",name,MB_OK);
-		OutputDebugStringA("Missing service called: \t");
-		OutputDebugStringA(name);
-		OutputDebugStringA("\n");
-#endif
+		#ifdef _DEBUG
+			//MessageBoxA(NULL,"Attempt to call non-existant service",name,MB_OK);
+			OutputDebugStringA("Missing service called: \t");
+			OutputDebugStringA(name);
+			OutputDebugStringA("\n");
+		#endif
 /*		{	MISSING_SERVICE_PARAMS params = { name, wParam, lParam };
 			int result = NotifyEventHooks(hMissingService,0,(LPARAM)&params);
 			if (result != 0)
@@ -757,10 +730,11 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		} */
 		return CALLSERVICE_NOTFOUND;
 	}
-	pfnService = pService->pfnService;
-	flags = pService->flags;
-	fnParam = pService->lParam;
-	object = pService->object;
+
+	MIRANDASERVICE pfnService = pService->pfnService;
+	int flags = pService->flags;
+	LPARAM fnParam = pService->lParam;
+	void* object = pService->object;
 	LeaveCriticalSection(&csServices);
 	switch( flags ) {
 		case 1:  return ((MIRANDASERVICEPARAM)pfnService)(wParam,lParam,fnParam);
@@ -778,7 +752,6 @@ static void CALLBACK CallServiceToMainAPCFunc(DWORD dwParam)
 
 int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 {
-
 	extern HWND hAPCWindow;
 
 	if (name==NULL) return CALLSERVICE_NOTFOUND;
@@ -814,13 +787,13 @@ void KillModuleServices( HINSTANCE hInst )
 	int i;
 
 	EnterCriticalSection(&csServices);
-	for ( i = services.count-1; i >= 0; i-- ) {
-		if ( services.items[i]->hOwner == hInst ) {
+	for ( i = services.getCount()-1; i >= 0; i-- ) {
+		if ( services[i]->hOwner == hInst ) {
 			char szModuleName[ MAX_PATH ];
-			GetModuleFileNameA( services.items[i]->hOwner, szModuleName, sizeof(szModuleName));
+			GetModuleFileNameA( services[i]->hOwner, szModuleName, sizeof(szModuleName));
 			Netlib_Logf( NULL, "A service function '%s' was abnormally deleted because module '%s' didn't released it",
-				services.items[i]->name, szModuleName );
-			DestroyServiceFunction(( HANDLE )services.items[i]->nameHash );
+				services[i]->name, szModuleName );
+			DestroyServiceFunction(( HANDLE )services[i]->nameHash );
 	}	}
 
 	LeaveCriticalSection(&csServices);
@@ -831,9 +804,9 @@ void KillObjectServices( void* pObject )
 	int i;
 
 	EnterCriticalSection(&csServices);
-	for ( i = services.count-1; i >= 0; i-- )
-		if ( services.items[i]->object == pObject )
-			DestroyServiceFunction(( HANDLE )services.items[i]->nameHash );
+	for ( i = services.getCount()-1; i >= 0; i-- )
+		if ( services[i]->object == pObject )
+			DestroyServiceFunction(( HANDLE )services[i]->nameHash );
 
 	LeaveCriticalSection(&csServices);
 }

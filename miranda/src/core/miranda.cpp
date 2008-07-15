@@ -65,13 +65,7 @@ static int compareThreads( const THREAD_WAIT_ENTRY* p1, const THREAD_WAIT_ENTRY*
 	return ( int )p1->dwThreadId - ( int )p2->dwThreadId;
 }
 
-struct
-{
-	THREAD_WAIT_ENTRY** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
-}
-static threads;
+static LIST<THREAD_WAIT_ENTRY> threads( 10, compareThreads );
 
 struct FORK_ARG {
 	HANDLE hEvent;
@@ -223,8 +217,8 @@ VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 {
 	if ( MirandaWaitForMutex( hStackMutex )) {
 		int j;
-		for ( j=0; j < threads.count; j++ ) {
-			THREAD_WAIT_ENTRY* p = threads.items[j];
+		for ( j=0; j < threads.getCount(); j++ ) {
+			THREAD_WAIT_ENTRY* p = threads[j];
 			char szModuleName[ MAX_PATH ];
 			GetModuleFileNameA( p->hOwner, szModuleName, sizeof(szModuleName));
 			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't release it. Entry point: %08x",
@@ -233,7 +227,7 @@ VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 			mir_free( p );
 		}
 
-		List_Destroy(( SortedList* )&threads );
+		threads.destroy();
 
 		ReleaseMutex( hStackMutex );
 		SetEvent( hThreadQueueEmpty );
@@ -246,12 +240,12 @@ void KillObjectThreads( void* owner )
 
 	if ( MirandaWaitForMutex( hStackMutex )) {
 		int j;
-		for ( j = threads.count-1; j >= 0; j-- ) {
-			THREAD_WAIT_ENTRY* p = threads.items[j];
+		for ( j = threads.getCount()-1; j >= 0; j-- ) {
+			THREAD_WAIT_ENTRY* p = threads[j];
 			if ( p->pObject == owner ) {
 				TerminateThread( p->hThread, 9999 );
 				CloseHandle( p->hThread );
-				List_Remove(( SortedList* )&threads, j );
+				threads.remove( j );
 				mir_free( p );
 		}	}
 
@@ -264,8 +258,8 @@ static void UnwindThreadWait(void)
 	// acquire the list and wake up any alertable threads
 	if ( MirandaWaitForMutex(hStackMutex) ) {
 		int j;
-		for (j=0;j<threads.count;j++)
-			QueueUserAPC(DummyAPCFunc,threads.items[j]->hThread, 0);
+		for ( j=0; j < threads.getCount(); j++ )
+			QueueUserAPC(DummyAPCFunc,threads[j]->hThread, 0);
 		ReleaseMutex(hStackMutex);
 	}
 
@@ -315,7 +309,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		p->dwThreadId = GetCurrentThreadId();
 		p->hOwner = GetInstByAddress(( void* )lParam );
 		p->addr = lParam;
-		List_InsertPtr(( SortedList* )&threads, p );
+		threads.insert( p );
 
  		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), threads.count );
 		ReleaseMutex(hStackMutex);
@@ -330,16 +324,16 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 		DWORD dwThreadId=GetCurrentThreadId();
 		int j;
 		//Netlib_Logf( NULL, "*** popping thread %x, %d threads left", dwThreadId, threads.count);
-		for ( j=0; j < threads.count; j++ ) {
-			THREAD_WAIT_ENTRY* p = threads.items[j];
+		for ( j=0; j < threads.getCount(); j++ ) {
+			THREAD_WAIT_ENTRY* p = threads[j];
 			if ( p->dwThreadId == dwThreadId ) {
 				SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
 				CloseHandle( p->hThread );
-				List_Remove(( SortedList* )&threads, j );
+				threads.remove( j );
 				mir_free( p );
 
-				if ( !threads.count ) {
-					List_Destroy(( SortedList* )&threads );
+				if ( !threads.getCount()) {
+					threads.destroy();
 					ReleaseMutex( hStackMutex );
 					SetEvent(hThreadQueueEmpty); // thread list is empty now
 					return 0;
@@ -742,9 +736,6 @@ int LoadSystemModule(void)
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);
 	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
 	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
-
-	threads.increment = 10;
-	threads.sortFunc = ( FSortFunc )compareThreads;
 
 	hShutdownEvent=CreateHookableEvent(ME_SYSTEM_SHUTDOWN);
 	hPreShutdownEvent=CreateHookableEvent(ME_SYSTEM_PRESHUTDOWN);

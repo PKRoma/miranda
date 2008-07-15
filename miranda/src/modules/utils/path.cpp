@@ -28,8 +28,10 @@ static char szMirandaPathLower[MAX_PATH];
 
 static int pathIsAbsolute(char *path)
 {
-	if (!path||!strlen(path)>2) return 0;
-	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	if ( lstrlenA(path) <= 2 )
+		return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\'))
+		return 1;
 	return 0;
 }
 
@@ -110,8 +112,10 @@ static TCHAR szMirandaPathWLower[MAX_PATH];
 
 static int pathIsAbsoluteW(TCHAR *path)
 {
-	if (!path||!lstrlen(path)>2) return 0;
-	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	if ( lstrlen(path) <= 2 )
+		return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\'))
+		return 1;
 	return 0;
 }
 
