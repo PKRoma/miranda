@@ -317,14 +317,14 @@ int gg_resolve(int *fd, int *pid, const char *hostname)
 
 	if ((res = fork()) == -1) {
 		errno2 = errno;
-		close(pipes[0]);
-		close(pipes[1]);
+		_close(pipes[0]);
+		_close(pipes[1]);
 		errno = errno2;
 		return -1;
 	}
 
 	if (!res) {
-		close(pipes[0]);
+		_close(pipes[0]);
 
 		if ((a.s_addr = inet_addr(hostname)) == INADDR_NONE) {
 			struct in_addr *hn;
@@ -342,7 +342,7 @@ int gg_resolve(int *fd, int *pid, const char *hostname)
 		exit(0);
 	}
 
-	close(pipes[1]);
+	_close(pipes[1]);
 
 	*fd = pipes[0];
 	*pid = res;
@@ -384,7 +384,7 @@ void gg_resolve_pthread_cleanup(void *arg, int kill)
 	data->hostname = NULL;
 
 	if (data->wfd != -1) {
-		close(data->wfd);
+		_close(data->wfd);
 		data->wfd = -1;
 	}
 
@@ -489,8 +489,8 @@ cleanup:
 		free(data);
 	}
 
-	close(pipes[0]);
-	close(pipes[1]);
+	_close(pipes[0]);
+	_close(pipes[1]);
 
 	errno = new_errno;
 

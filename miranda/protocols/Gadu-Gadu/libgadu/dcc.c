@@ -189,7 +189,7 @@ int gg_dcc_fill_file_info2(struct gg_dcc *d, const char *filename, const char *l
 		return -1;
 	}
 
-	if ((d->file_fd = open(local_filename, O_RDONLY)) == -1) {
+	if ((d->file_fd = _open(local_filename, O_RDONLY)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_dcc_fill_file_info2() open() failed (%s)\n", strerror(errno));
 		return -1;
 	}
@@ -449,7 +449,7 @@ struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port)
 		else {
 			if (++port == 65535) {
 				gg_debug(GG_DEBUG_MISC, "// gg_create_dcc_socket() no free port found\n");
-				close(sock);
+				_close(sock);
 				return NULL;
 			}
 		}
@@ -458,7 +458,7 @@ struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port)
 	if (listen(sock, 10)) {
 		gg_debug(GG_DEBUG_MISC, "// gg_create_dcc_socket() unable to listen (%s)\n", strerror(errno));
 		errno2 = errno;
-		close(sock);
+		_close(sock);
 		errno = errno2;
 		return NULL;
 	}
@@ -467,7 +467,7 @@ struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port)
 
 	if (!(c = malloc(sizeof(*c)))) {
 		gg_debug(GG_DEBUG_MISC, "// gg_create_dcc_socket() not enough memory for struct\n");
-		close(sock);
+		_close(sock);
 		return NULL;
 	}
 	memset(c, 0, sizeof(*c));
@@ -566,7 +566,7 @@ int gg_dcc_voice_send(struct gg_dcc *d, char *buf, int length)
 { \
 	int tmp; \
 	gg_dcc_debug_data("write", fd, buf, size); \
-	tmp = write(fd, buf, size); \
+	tmp = _write(fd, buf, size); \
 	if (tmp < (int) size) { \
 		if (tmp == -1) { \
 			gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() write() failed (errno=%d, %s)\n", errno, strerror(errno)); \
@@ -631,7 +631,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 		if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
 #endif
 			gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() can't set nonblocking (errno=%d, %s)\n", errno, strerror(errno));
-			close(fd);
+			_close(fd);
 			e->type = GG_EVENT_DCC_ERROR;
 			e->event.dcc_error = GG_ERROR_DCC_HANDSHAKE;
 			return e;
@@ -641,7 +641,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 			gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() not enough memory for client data\n");
 
 			free(e);
-			close(fd);
+			_close(fd);
 			return NULL;
 		}
 
@@ -1169,9 +1169,9 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-				lseek(h->file_fd, h->offset, SEEK_SET);
+				_lseek(h->file_fd, h->offset, SEEK_SET);
 
-				size = read(h->file_fd, buf, utmp);
+				size = _read(h->file_fd, buf, utmp);
 
 				/* błąd */
 				if (size == -1) {
@@ -1277,7 +1277,7 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 					return e;
 				}
 
-				tmp = write(h->file_fd, buf, size);
+				tmp = _write(h->file_fd, buf, size);
 
 				if (tmp == -1 || tmp < size) {
 					gg_debug(GG_DEBUG_MISC, "// gg_dcc_watch_fd() write() failed (%d:fd=%d:res=%d:%s)\n", tmp, h->file_fd, size, strerror(errno));

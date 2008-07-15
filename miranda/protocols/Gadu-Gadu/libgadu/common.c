@@ -343,7 +343,7 @@ int gg_connect(void *addr, int port, int async)
 	if (bind(sock, (struct sockaddr *) &myaddr, sizeof(myaddr)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_connect() bind() failed (errno=%d, %s)\n", errno, strerror(errno));
 		errno2 = errno;
-		close(sock);
+		_close(sock);
 		errno = errno2;
 		return -1;
 	}
@@ -360,7 +360,7 @@ int gg_connect(void *addr, int port, int async)
 #endif
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() ioctl() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			close(sock);
+			_close(sock);
 			errno = errno2;
 			return -1;
 		}
@@ -374,7 +374,7 @@ int gg_connect(void *addr, int port, int async)
 		if (errno && (!async || errno != EINPROGRESS)) {
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() connect() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			close(sock);
+			_close(sock);
 			errno = errno2;
 			return -1;
 		}
@@ -620,7 +620,7 @@ struct gg_win32_thread *gg_win32_threads = 0;
  */
 int gg_win32_thread_socket(int thread_id, int socket)
 {
-	char close = (thread_id == -1) || socket == -1;
+	char _close = (thread_id == -1) || socket == -1;
 	gg_win32_thread *wsk = gg_win32_threads;
 	gg_win32_thread **p_wsk = &gg_win32_threads;
 
@@ -629,7 +629,7 @@ int gg_win32_thread_socket(int thread_id, int socket)
 
 	while (wsk) {
 		if ((thread_id == -1 && wsk->socket == socket) || wsk->id == thread_id) {
-			if (close) {
+			if (_close) {
 				/* socket zostaje usuniety */
 				closesocket(wsk->socket);
 				*p_wsk = wsk->next;
@@ -648,9 +648,9 @@ int gg_win32_thread_socket(int thread_id, int socket)
 		wsk = wsk->next;
 	}
 
-	if (close && socket != -1)
+	if (_close && socket != -1)
 		closesocket(socket);
-	if (close || !socket)
+	if (_close || !socket)
 		return 0;
 
 	/* Dodaje nowy element */

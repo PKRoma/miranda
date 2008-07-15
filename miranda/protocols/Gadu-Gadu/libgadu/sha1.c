@@ -252,19 +252,19 @@ int gg_file_hash_sha1(int fd, uint8_t *result)
 	off_t pos, len;
 	int res;
 
-	if ((pos = lseek(fd, 0, SEEK_CUR)) == (off_t) -1)
+	if ((pos = _lseek(fd, 0, SEEK_CUR)) == (off_t) -1)
 		return -1;
 
-	if ((len = lseek(fd, 0, SEEK_END)) == (off_t) -1)
+	if ((len = _lseek(fd, 0, SEEK_END)) == (off_t) -1)
 		return -1;
 
-	if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
+	if (_lseek(fd, 0, SEEK_SET) == (off_t) -1)
 		return -1;
 
 	SHA1_Init(&ctx);
 
 	if (len <= 10485760) {
-		while ((res = read(fd, buf, sizeof(buf))) > 0)
+		while ((res = _read(fd, buf, sizeof(buf))) > 0)
 			SHA1_Update(&ctx, buf, res);
 	} else {
 		int i;
@@ -272,11 +272,11 @@ int gg_file_hash_sha1(int fd, uint8_t *result)
 		for (i = 0; i < 9; i++) {
 			int j;
 
-			if (lseek(fd, (len - 1048576) / 9 * i, SEEK_SET) == (off_t) - 1)
+			if (_lseek(fd, (len - 1048576) / 9 * i, SEEK_SET) == (off_t) - 1)
 				return -1;
 
 			for (j = 0; j < 1048576 / sizeof(buf); j++) {
-				if ((res = read(fd, buf, sizeof(buf))) != sizeof(buf)) {
+				if ((res = _read(fd, buf, sizeof(buf))) != sizeof(buf)) {
 					res = -1;
 					break;
 				}
@@ -294,7 +294,7 @@ int gg_file_hash_sha1(int fd, uint8_t *result)
 
 	SHA1_Final(result, &ctx);
 
-	if (lseek(fd, pos, SEEK_SET) == (off_t) -1)
+	if (_lseek(fd, pos, SEEK_SET) == (off_t) -1)
 		return -1;
 
 	return 0;

@@ -227,7 +227,7 @@ static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 
 		if (port++ == 65535) {
 			gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_listen() no free port found\n");
-			close(fd);
+			_close(fd);
 			errno = ENOENT;
 			return -1;
 		}
@@ -236,7 +236,7 @@ static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 	if (listen(fd, 1)) {
 		int errsv = errno;
 		gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_listen() unable to listen (%s)\n", strerror(errno));
-		close(fd);
+		_close(fd);
 		errno = errsv;
 		return -1;
 	}
@@ -354,7 +354,7 @@ static int gg_dcc7_request_id(struct gg_session *sess, uint32_t type)
  * \param size Rozmiar pliku
  * \param filename1250 Nazwa pliku w kodowaniu CP-1250
  * \param hash Skrót SHA-1 pliku
- * \param seek Flaga mówiąca, czy można używać lseek()
+ * \param seek Flaga mówiąca, czy można używać _lseek()
  *
  * \return Struktura \c gg_dcc7 lub \c NULL w przypadku błędu
  *
@@ -451,7 +451,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 		goto fail;
 	}
 
-	if ((fd = open(filename, O_RDONLY)) == -1) {
+	if ((fd = _open(filename, O_RDONLY)) == -1) {
 		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_dcc7_send_file() open() failed (%s)\n", strerror(errno));
 		goto fail;
 	}
@@ -474,7 +474,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 fail:
 	if (fd != -1) {
 		int errsv = errno;
-		close(fd);
+		_close(fd);
 		errno = errsv;
 	}
 
@@ -516,7 +516,7 @@ struct gg_dcc7 *gg_dcc7_send_file_fd(struct gg_session *sess, uin_t rcpt, int fd
  * \param offset Początkowy offset przy wznawianiu przesyłania pliku
  *
  * \note Biblioteka nie zmienia położenia w odbieranych plikach. Jeśli offset
- * początkowy jest różny od zera, należy ustawić go funkcją \c lseek() lub
+ * początkowy jest różny od zera, należy ustawić go funkcją \c _lseek() lub
  * podobną.
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
@@ -969,7 +969,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
 #endif
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() can't set nonblocking (%s)\n", strerror(errno));
-				close(fd);
+				_close(fd);
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_HANDSHAKE;
 				return e;
@@ -1098,8 +1098,8 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 				return e;
 			}
 
-			if (dcc->seek && lseek(dcc->file_fd, dcc->offset, SEEK_SET) == (off_t) -1) {
-				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() lseek() failed (%s)\n", strerror(errno));
+			if (dcc->seek && _lseek(dcc->file_fd, dcc->offset, SEEK_SET) == (off_t) -1) {
+				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() _lseek() failed (%s)\n", strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_FILE;
 				return e;
@@ -1108,7 +1108,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if ((chunk = dcc->size - dcc->offset) > sizeof(buf))
 				chunk = sizeof(buf);
 
-			if ((res = read(dcc->file_fd, buf, chunk)) < 1) {
+			if ((res = _read(dcc->file_fd, buf, chunk)) < 1) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() read() failed (res=%d, %s)\n", res, strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = (res == -1) ? GG_ERROR_DCC7_FILE : GG_ERROR_DCC7_EOF;
@@ -1159,7 +1159,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 
 			// XXX zapisywać do skutku?
 
-			if ((wres = write(dcc->file_fd, buf, res)) < res) {
+			if ((wres = _write(dcc->file_fd, buf, res)) < res) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() write() failed (fd=%d, res=%d, %s)\n", dcc->file_fd, wres, strerror(errno));
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_FILE;
@@ -1212,7 +1212,7 @@ void gg_dcc7_free(struct gg_dcc7 *dcc)
 		gg_sock_close(dcc->fd);
 
 	if (dcc->file_fd != -1)
-		close(dcc->file_fd);
+		_close(dcc->file_fd);
 
 	if (dcc->sess)
 		gg_dcc7_session_remove(dcc->sess, dcc);

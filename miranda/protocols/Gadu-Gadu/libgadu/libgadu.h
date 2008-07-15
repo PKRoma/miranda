@@ -164,7 +164,7 @@ typedef   signed int    int32_t;
 #else
 #  define gg_sock__write	write
 #  define gg_sock__read		read
-#  define gg_sock__close	close
+#  define gg_sock__close	_close
 #  define gg_getsockopt		getsockopt
 #endif
 

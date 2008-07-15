@@ -647,7 +647,7 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode* iqNode, void* userdat
 	char szMirandaVersion[100];
 	if (!JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( szMirandaVersion ), ( LPARAM )szMirandaVersion ))
 	{
-		strlwr( szMirandaVersion );
+		_strlwr( szMirandaVersion );
 
 		field = form->addChild( "field" );
 		field->addAttr( "var", _T("x-miranda-is-unicode") );

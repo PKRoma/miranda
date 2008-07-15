@@ -1741,6 +1741,9 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\netlib\netlibssl.c">
+				</File>
+				<File
 					RelativePath=".\modules\netlib\netlibupnp.c">
 				</File>
 			</Filter>
