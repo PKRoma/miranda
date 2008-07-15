@@ -150,7 +150,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	IconsInit();
 	MenuInit();
 	WsInit();
-	XStatusInit();
+	//XStatusInit();
 	IqInit();
 	SerialInit();
 	ConsoleInit();
@@ -215,6 +215,7 @@ static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
 	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
+	XStatusInit();
 
 	m_pInfoFrame = new CJabberInfoFrame(this);
 
