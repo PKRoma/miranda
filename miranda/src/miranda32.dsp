@@ -563,6 +563,10 @@ SOURCE=.\modules\netlib\netlibsock.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\netlib\netlibssl.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\netlib\netlibupnp.c
 # End Source File
 # End Group
