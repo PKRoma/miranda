@@ -173,6 +173,8 @@ const capstr capQipSymbian= {0x51, 0xAD, 0xD1, 0x90, 0x72, 0x04, 0x47, 0x3D, 0xA
 const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xAD, 0xC1, 0x1C, 0x6D, 0x75, 0x70, 0x5E, 0xC5};
 const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
+const capstr capQutIm     = {'q', 'u', 't', 'i', 'm', 0x30, 0x2e, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+const capstr capJabberJIT = {'J', 'I', 'T', ' ', 0x76, 0x2E, 0x31, 0x2E, 0x78, 0x2E, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
@@ -424,7 +426,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 					szClient = "Kopete";
 				else
 				{
-					null_snprintf(szClientBuf, 64, "SIM %u.%u", (unsigned)hiVer, loVer);
+					makeClientVersion(szClientBuf, "SIM ", (unsigned)hiVer, loVer, 0, 0);
 					szClient = szClientBuf;
 				}
 			}
@@ -685,6 +687,43 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
       { // http://pigeon.vpro.ru
         szClient = "PIGEON!";
       }
+      else if (capId = MatchCap(caps, wLen, &capQutIm, 0x05))
+      { // http://www.qutim.org
+        if ((*capId)[0x6] == 0x2E)
+        { // old qutim id
+          unsigned ver1 = (*capId)[0x5] - 0x30;
+          unsigned ver2 = (*capId)[0x7] - 0x30;
+
+          makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, 0, 0);
+        }
+        else 
+        { // new qutim id
+          unsigned ver1 = (*capId)[0x6];
+          unsigned ver2 = (*capId)[0x7];
+          unsigned ver3 = (*capId)[0x8];
+          unsigned ver4 = ((*capId)[0x9] << 8) || (*capId)[0xA];
+
+          makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, ver3, ver4);
+
+          switch ((*capId)[0x5])
+          {
+            case 'l':
+              strcat(szClientBuf, "/Linux");
+              break;
+            case 'w':
+              strcat(szClientBuf, "/Win32");
+              break;
+            case 'm':
+              strcat(szClientBuf, "/MacOS X)");
+              break;
+          }
+        }
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capJabberJIT, 0x04))
+      {
+        szClient = "Jabber ICQ Transport";
+      }
 			else if (szClient == cliLibicq2k)
 			{ // try to determine which client is behind libicq2000
 				if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -868,6 +907,8 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 							szClient = "Slick"; // http://lonelycatgames.com/?app=slick
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_OSCAR_FILE | CAPF_CONTACTS) && MatchShortCap(caps, wLen, &capAimFileShare) && MatchShortCap(caps, wLen, &capAimIcon))
               szClient = "Digsby"; // http://www.digsby.com
+            else if (MatchShortCap(caps, wLen, &capAimIcon) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_CONTACTS | CAPF_HTML))
+              szClient = "mundu IM"; // http://messenger.mundu.com
 					}
 				}
 			}
