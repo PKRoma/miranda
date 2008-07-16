@@ -86,8 +86,8 @@ static int UserOnlineModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	// reset the counter
 	int j;
-	for ( j=0; j < accounts.count; j++ )
-		db_dword_set( NULL, "UserOnline", accounts.items[j]->szModuleName, GetTickCount());
+	for ( j=0; j < accounts.getCount(); j++ )
+		db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
 
 	return 0;
 }

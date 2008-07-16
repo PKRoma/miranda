@@ -51,15 +51,22 @@ struct _THotkeyItem
 	BOOL         UnregisterHotkey;	// valid only during WM_APP message in options UI, used to remove unregistered hotkeys from options
 };
 
-struct
+static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2)
 {
-	THotkeyItem** items;
-	int realCount, limit, increment;
-	FSortFunc sortFunc;
+	int res;
+	if ( res = lstrcmp( p1->ptszSection_tr, p2->ptszSection_tr ))
+		return res;
+	if ( res = lstrcmp( p1->ptszDescription_tr, p2->ptszDescription_tr ))
+		return res;
+	if (!p1->rootHotkey && p2->rootHotkey)
+		return -1;
+	if (p1->rootHotkey && !p2->rootHotkey)
+		return 1;
+	return 0;
 }
-static hotkeys;
 
-static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2);
+static LIST<THotkeyItem> hotkeys( 10, sttCompareHotkeys );
+
 static void sttFreeHotkey(THotkeyItem *item);
 
 static BOOL bModuleInitialized = FALSE;
@@ -101,8 +108,8 @@ static LRESULT CALLBACK sttHotkeyHostWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
 	if (msg == WM_HOTKEY ) {
 		int i;
-		for (i = 0; i < hotkeys.realCount; i++) {
-			THotkeyItem *item = hotkeys.items[i];
+		for (i = 0; i < hotkeys.getCount(); i++) {
+			THotkeyItem *item = hotkeys[i];
 			if (item->type != HKT_GLOBAL) continue;
 			if (!item->Enabled) continue;
 			if (item->pszService && (wParam == item->idHotkey)) {
@@ -128,8 +135,8 @@ static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 			if (GetAsyncKeyState(VK_SHIFT)) mod |= MOD_SHIFT;
 			if (GetAsyncKeyState(VK_LWIN) || GetAsyncKeyState(VK_RWIN)) mod |= MOD_WIN;
 
-			for ( i = 0; i < hotkeys.realCount; i++ ) {
-				THotkeyItem *item = hotkeys.items[i];
+			for ( i = 0; i < hotkeys.getCount(); i++ ) {
+				THotkeyItem *item = hotkeys[i];
 				BYTE hkMod, hkVk;
 				if (item->type != HKT_LOCAL) continue;
 				sttWordToModAndVk(item->Hotkey, &hkMod, &hkVk);
@@ -170,7 +177,7 @@ static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 	item->rootHotkey = NULL;
 	item->nSubHotkeys = 0;
 
-	if (item->rootHotkey = ( THotkeyItem * )List_Find((SortedList*)&hotkeys, item)) {
+	if ( item->rootHotkey = hotkeys.find( item )) {
 		if (item->rootHotkey->allowSubHotkeys) {
 			mir_snprintf(nameBuf, SIZEOF(nameBuf), "%s$%d", item->rootHotkey->pszName, item->rootHotkey->nSubHotkeys);
 			item->pszName = nameBuf;
@@ -208,7 +215,7 @@ static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 			RegisterHotKey(g_hwndHotkeyHost, item->idHotkey, mod, vk);
 	}	}
 
-	List_InsertPtr((SortedList*)&hotkeys, item);
+	hotkeys.insert( item );
 
 	if ( !item->rootHotkey ) {
 		/* try to load alternatives from db */
@@ -238,17 +245,17 @@ static int svcHotkeyUnregister(WPARAM wParam, LPARAM lParam)
 	mir_snprintf(pszNamePrefix, SIZEOF(pszNamePrefix), "%s$", pszName);
 	cbNamePrefix = strlen(pszNamePrefix);
 
-	for (i = 0; i < hotkeys.realCount; ++i)
-		hotkeys.items[i]->UnregisterHotkey =
-			!lstrcmpA(hotkeys.items[i]->pszName, pszName) ||
-			!strncmp(hotkeys.items[i]->pszName, pszNamePrefix, cbNamePrefix);
+	for (i = 0; i < hotkeys.getCount(); ++i)
+		hotkeys[i]->UnregisterHotkey =
+			!lstrcmpA(hotkeys[i]->pszName, pszName) ||
+			!strncmp(hotkeys[i]->pszName, pszNamePrefix, cbNamePrefix);
 
 	if (g_hwndOptions)
 		SendMessage(g_hwndOptions, WM_APP, 0, 0);
 
-	for (i = 0; i < hotkeys.realCount; ++i)
-		if (hotkeys.items[i]->UnregisterHotkey) {
-			sttFreeHotkey(hotkeys.items[i]);
+	for (i = 0; i < hotkeys.getCount(); ++i)
+		if (hotkeys[i]->UnregisterHotkey) {
+			sttFreeHotkey(hotkeys[i]);
 			List_Remove((SortedList *)&hotkeys, i);
 			--i;
 		}
@@ -271,8 +278,8 @@ static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam)
 			if (GetAsyncKeyState(VK_SHIFT)) mod |= MOD_SHIFT;
 			if (GetAsyncKeyState(VK_LWIN) || GetAsyncKeyState(VK_RWIN)) mod |= MOD_WIN;
 
-			for ( i = 0; i < hotkeys.realCount; i++ ) {
-				THotkeyItem *item = hotkeys.items[i];
+			for ( i = 0; i < hotkeys.getCount(); i++ ) {
+				THotkeyItem *item = hotkeys[i];
 				BYTE hkMod, hkVk;
 				if ((item->type != HKT_MANUAL) || lstrcmp(pszSection, item->ptszSection)) continue;
 				sttWordToModAndVk(item->Hotkey, &hkMod, &hkVk);
@@ -284,20 +291,6 @@ static int svcHotkeyCheck(WPARAM wParam, LPARAM lParam)
 	}	}	}	}
 
 	mir_free(pszSection);
-	return 0;
-}
-
-static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2)
-{
-	int res;
-	if ( res = lstrcmp( p1->ptszSection_tr, p2->ptszSection_tr ))
-		return res;
-	if ( res = lstrcmp( p1->ptszDescription_tr, p2->ptszDescription_tr ))
-		return res;
-	if (!p1->rootHotkey && p2->rootHotkey)
-		return -1;
-	if (p1->rootHotkey && !p2->rootHotkey)
-		return 1;
 	return 0;
 }
 
@@ -316,8 +309,8 @@ static void sttFreeHotkey(THotkeyItem *item)
 static void sttRegisterHotkeys()
 {
 	int i;
-	for ( i = 0; i < hotkeys.realCount; i++ ) {
-		THotkeyItem *item = hotkeys.items[i];
+	for ( i = 0; i < hotkeys.getCount(); i++ ) {
+		THotkeyItem *item = hotkeys[i];
 		UnregisterHotKey(g_hwndHotkeyHost, item->idHotkey);
 		if (item->type != HKT_GLOBAL) continue;
 		if (item->Enabled) {
@@ -330,8 +323,8 @@ static void sttRegisterHotkeys()
 static void sttUnregisterHotkeys()
 {
 	int i;
-	for (i = 0; i < hotkeys.realCount; i++) {
-		THotkeyItem *item = hotkeys.items[i];
+	for (i = 0; i < hotkeys.getCount(); i++) {
+		THotkeyItem *item = hotkeys[i];
 		if ( item->type == HKT_GLOBAL && item->Enabled )
 			UnregisterHotKey(g_hwndHotkeyHost, item->idHotkey);
 	}
@@ -606,7 +599,7 @@ static void sttOptionsAddHotkey(HWND hwndList, int idx, THotkeyItem *item)
 	newItem->OptChanged = newItem->OptDeleted = FALSE;
 	newItem->OptNew = TRUE;
 
-	List_InsertPtr((SortedList*)&hotkeys, newItem);
+	hotkeys.insert( newItem );
 
 	SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
 
@@ -646,8 +639,8 @@ static void sttOptionsSaveItem(THotkeyItem *item)
 		DBWriteContactSettingByte(NULL, DBMODULENAME "Types", item->pszName, (BYTE)item->type);
 
 	item->nSubHotkeys = 0;
-	for (i = 0; i < hotkeys.realCount; i++) {
-		THotkeyItem *subItem = hotkeys.items[i];
+	for (i = 0; i < hotkeys.getCount(); i++) {
+		THotkeyItem *subItem = hotkeys[i];
 		if (subItem->rootHotkey == item) {
 			subItem->Hotkey = subItem->OptHotkey;
 			subItem->type = subItem->OptType;
@@ -669,14 +662,14 @@ static void sttBuildHotkeyList(HWND hwndList, TCHAR *section)
 	int i, iGroupId=0, nItems=0;
 	ListView_DeleteAllItems(hwndList);
 
-	for (i = 0; i < hotkeys.realCount; i++) {
+	for (i = 0; i < hotkeys.getCount(); i++) {
 		LVITEM lvi = {0};
-		THotkeyItem *item = hotkeys.items[i];
+		THotkeyItem *item = hotkeys[i];
 
 		if (item->OptDeleted) continue;
 		if (section && lstrcmp(section, item->ptszSection)) continue;
 
-		if ( !section && (!i || lstrcmp(item->ptszSection, ((THotkeyItem *)hotkeys.items[i-1])->ptszSection ))) {
+		if ( !section && (!i || lstrcmp(item->ptszSection, ((THotkeyItem *)hotkeys[i-1])->ptszSection ))) {
 			lvi.mask = LVIF_TEXT|LVIF_PARAM;
 			lvi.iItem = nItems++;
 			lvi.iSubItem = 0;
@@ -785,8 +778,8 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
 		ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS), COL_ADDREMOVE, &lvc);
 
-		for (i = 0; i < hotkeys.realCount; i++) {
-			THotkeyItem *item = hotkeys.items[i];
+		for (i = 0; i < hotkeys.getCount(); i++) {
+			THotkeyItem *item = hotkeys[i];
 
 			item->OptChanged = FALSE;
 			item->OptDeleted = item->OptNew = FALSE;
@@ -1088,17 +1081,16 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 				sttUnregisterHotkeys();
 
-				for (i = 0; i < hotkeys.realCount; i++)
+				for (i = 0; i < hotkeys.getCount(); i++)
 				{
-					THotkeyItem *item = hotkeys.items[i];
+					THotkeyItem *item = hotkeys[i];
 					if (item->OptNew && item->OptDeleted ||
 						item->rootHotkey && !item->OptHotkey ||
 						(lpnmhdr->code == PSN_APPLY) && item->OptDeleted ||
 						(lpnmhdr->code == PSN_RESET) && item->OptNew)
 					{
 						sttFreeHotkey(item);
-						List_Remove((SortedList*)&hotkeys, i);
-						--i;
+						hotkeys.remove( i-- );
 					}
 				}
 
@@ -1107,8 +1099,8 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					LVITEM lvi = {0};
 					int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_LV_HOTKEYS));
 
-					for (i = 0; i < hotkeys.realCount; i++)
-						sttOptionsSaveItem(hotkeys.items[i]);
+					for (i = 0; i < hotkeys.getCount(); i++)
+						sttOptionsSaveItem(hotkeys[i]);
 
 					lvi.mask = LVIF_IMAGE;
 					lvi.iSubItem = COL_RESET;
@@ -1246,9 +1238,9 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						else if (param->uNewState>>12 == 2) {
 							int i, nItems = ListView_GetItemCount(lpnmhdr->hwndFrom);
 							initialized = FALSE;
-							for (i = 0; i < hotkeys.realCount; ++i) {
+							for (i = 0; i < hotkeys.getCount(); ++i) {
 								LVITEM lvi = {0};
-								THotkeyItem *item = hotkeys.items[i];
+								THotkeyItem *item = hotkeys[i];
 
 								if (item->OptDeleted) continue;
 								if (lstrcmp(buf, item->ptszSection_tr)) continue;
@@ -1379,9 +1371,6 @@ int LoadSkinHotkeys(void)
 	wcl.hIconSm = NULL;
 	RegisterClassEx(&wcl);
 
-	hotkeys.increment = 5;
-	hotkeys.sortFunc = ( FSortFunc )sttCompareHotkeys;
-
 	g_pid = GetCurrentProcessId();
 
 	g_hwndHotkeyHost = CreateWindow(_T("MirandaHotkeyHostWnd"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, GetModuleHandle(NULL), NULL);
@@ -1425,7 +1414,7 @@ void UnloadSkinHotkeys(void)
 	UnhookWindowsHookEx(hhkKeyboard);
 	sttUnregisterHotkeys();
 	DestroyWindow(g_hwndHotkeyHost);
-	for ( i = 0; i < hotkeys.realCount; i++ )
-		sttFreeHotkey(hotkeys.items[i]);
-	List_Destroy((SortedList*)&hotkeys);
+	for ( i = 0; i < hotkeys.getCount(); i++ )
+		sttFreeHotkey(hotkeys[i]);
+	hotkeys.destroy();
 }

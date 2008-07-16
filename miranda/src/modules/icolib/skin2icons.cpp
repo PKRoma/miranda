@@ -49,21 +49,17 @@ CRITICAL_SECTION csIconList;
 #define SECTIONPARAM_FLAGS(lparam) HIBYTE( HIWORD(lparam) )
 #define SECTIONPARAM_HAVEPAGE	0x0001
 
-struct
-{
-	SectionItem** items;
-	int  count,   limit, increment;
-	FSortFunc     sortFunc;
+static int sttCompareSections( const SectionItem* p1, const SectionItem* p2 )
+{	return _tcscmp( p1->name, p2->name );
 }
-static sectionList;
 
-struct
-{
-	IconItem**  items;
-	int  count, limit, increment;
-	FSortFunc   sortFunc;
+static LIST<SectionItem> sectionList( 20, sttCompareSections );
+
+static int sttCompareIcons( const IconItem* p1, const IconItem* p2 )
+{	return strcmp( p1->name, p2->name );
 }
-static iconList;
+
+static LIST<IconItem> iconList( 20, sttCompareIcons );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Utility functions
@@ -173,20 +169,19 @@ static HICON ExtractIconFromPath( const TCHAR *path, int cxIcon, int cyIcon )
 
 static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 {
-	SectionItem key = { sectionName, 0 };
-	int indx;
-
 	if ( !sectionName )
 		return NULL;
 
-	if ( List_GetIndex(( SortedList* )&sectionList, &key, &indx ))
-		return sectionList.items[ indx ];
+	int indx;
+	SectionItem key = { sectionName, 0 };
+	if (( indx = sectionList.getIndex( &key )) != -1 )
+		return sectionList[ indx ];
 
 	if ( create_new ) {
 		SectionItem* newItem = ( SectionItem* )mir_calloc( sizeof( SectionItem ));
 		newItem->name = mir_tstrdup( sectionName );
 		newItem->flags = 0;
-		List_Insert(( SortedList* )&sectionList, newItem, indx );
+		sectionList.insert( newItem );
 		bNeedRebuild = TRUE;
 		return newItem;
 	}
@@ -196,11 +191,10 @@ static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 
 static IconItem* IcoLib_FindIcon(const char* pszIconName)
 {
-	IconItem key = { (char*)pszIconName };
-
 	int indx;
-	if ( List_GetIndex(( SortedList* )&iconList, &key, &indx ))
-		return iconList.items[ indx ];
+	IconItem key = { (char*)pszIconName };
+	if (( indx = iconList.getIndex( &key )) != -1 )
+		return iconList[ indx ];
 
 	return NULL;
 }
@@ -210,9 +204,9 @@ static IconItem* IcoLib_FindHIcon(HICON hIcon)
 	IconItem* item = NULL;
 	int indx;
 
-	for ( indx = 0; indx < iconList.count; indx++ ) {
-		if (iconList.items[ indx ]->icon == hIcon) {
-			item = iconList.items[ indx ];
+	for ( indx = 0; indx < iconList.getCount(); indx++ ) {
+		if (iconList[ indx ]->icon == hIcon) {
+			item = iconList[ indx ];
 			break;
 	}	}
 
@@ -236,8 +230,8 @@ static void IcoLib_FreeIcon(IconItem* icon)
 		int indx;
 
 		if ( ImageList_Remove( hCacheIconList, icon->icon_cache_index ) ) {
-			for ( indx = 0; indx < iconList.count; indx++ ) {
-				IconItem* item = iconList.items[ indx ];
+			for ( indx = 0; indx < iconList.getCount(); indx++ ) {
+				IconItem* item = iconList[ indx ];
 
 				if ( !item ) continue;
 
@@ -253,8 +247,8 @@ static void IcoLib_FreeIcon(IconItem* icon)
 		int indx;
 
 		if ( ImageList_Remove( hCacheIconList, icon->default_icon_index ) ) {
-			for ( indx = 0; indx < iconList.count; indx++ ) {
-				IconItem* item = iconList.items[ indx ];
+			for ( indx = 0; indx < iconList.getCount(); indx++ ) {
+				IconItem* item = iconList[ indx ];
 
 				if ( !item ) continue;
 
@@ -293,7 +287,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 	if ( !item ) {
 		item = ( IconItem* )mir_alloc( sizeof( IconItem ));
 		item->name = sid->pszName;
-		List_InsertPtr(( SortedList* )&iconList, item );
+		iconList.insert( item );
 	}
 	else IcoLib_FreeIcon( item );
 
@@ -396,11 +390,10 @@ static int IcoLib_RemoveIcon( WPARAM wParam, LPARAM lParam )
 		int indx;
 		EnterCriticalSection( &csIconList );
 
-		if ( List_GetIndex(( SortedList* )&iconList, ( void* )&lParam, &indx )) {
-			IcoLib_FreeIcon( iconList.items[ indx ] );
-			List_Remove(( SortedList* )&iconList, indx );
+		if (( indx = iconList.getIndex(( IconItem* )&lParam )) != -1 ) {
+			IcoLib_FreeIcon( iconList[ indx ] );
+			iconList.remove( indx );
 		}
-		else indx = -1;
 
 		LeaveCriticalSection( &csIconList );
 		return ( indx == -1 ) ? 1 : 0;
@@ -541,16 +534,22 @@ HANDLE IcoLib_GetIconHandle( const char* pszIconName )
 
 HICON IcoLib_GetIconByHandle( HANDLE hItem )
 {
-	HICON result;
+	HICON result = hIconBlank;
 	IconItem* pi = ( IconItem* )hItem;
 
 	EnterCriticalSection( &csIconList );
 
-	if ( List_IndexOf(( SortedList* )&iconList, pi ) != -1 ) {
-		result = IconItem_GetIcon( pi );
-		pi->ref_count++;
+	// we can get any junk here... but getIndex() is MUCH faster than indexOf().
+	__try
+	{
+		if ( iconList.getIndex( pi ) != -1 ) {
+			result = IconItem_GetIcon( pi );
+			pi->ref_count++;
+		}
 	}
-	else result = hIconBlank;
+	__except
+	{
+	}
 
 	LeaveCriticalSection( &csIconList );
 	return result;
@@ -644,8 +643,8 @@ static void LoadSectionIcons(TCHAR *filename, SectionItem* sectionActive)
 
 	EnterCriticalSection( &csIconList );
 
-	for ( indx = 0; indx < iconList.count; indx++ ) {
-		IconItem *item = iconList.items[ indx ];
+	for ( indx = 0; indx < iconList.getCount(); indx++ ) {
+		IconItem *item = iconList[ indx ];
 
 		if ( item->default_file && item->section == sectionActive ) {
 			_itot( item->default_indx, path + suffIndx, 10 );
@@ -673,7 +672,7 @@ void LoadSubIcons(HWND htv, TCHAR *filename, HTREEITEM hItem)
 
 	TreeView_GetItem( htv, &tvi );
 	treeItem = (TreeItem *)tvi.lParam;
-	sectionActive = sectionList.items[ SECTIONPARAM_INDEX(treeItem->value) ];
+	sectionActive = sectionList[ SECTIONPARAM_INDEX(treeItem->value) ];
 
 	tvi.hItem = TreeView_GetChild( htv, tvi.hItem );
 	while ( tvi.hItem ) {
@@ -687,7 +686,7 @@ void LoadSubIcons(HWND htv, TCHAR *filename, HTREEITEM hItem)
 
 static void UndoChanges( int iconIndx, int cmd )
 {
-	IconItem *item = iconList.items[ iconIndx ];
+	IconItem *item = iconList[ iconIndx ];
 
 	SAFE_FREE(( void** )&item->temp_file );
 	SafeDestroyIcon( &item->temp_icon );
@@ -710,8 +709,8 @@ void UndoSubItemChanges( HWND htv, HTREEITEM hItem, int cmd )
 	if ( SECTIONPARAM_FLAGS( treeItem->value ) & SECTIONPARAM_HAVEPAGE ) {
 		EnterCriticalSection( &csIconList );
 
-		for ( indx = 0; indx < iconList.count; indx++ )
-			if ( iconList.items[ indx ]->section == sectionList.items[ SECTIONPARAM_INDEX(treeItem->value) ])
+		for ( indx = 0; indx < iconList.getCount(); indx++ )
+			if ( iconList[ indx ]->section == sectionList[ SECTIONPARAM_INDEX(treeItem->value) ])
 				UndoChanges( indx, cmd );
 
 		LeaveCriticalSection( &csIconList );
@@ -807,8 +806,8 @@ void DoIconsChanged(HWND hwndDlg)
 	int indx;
 
 	EnterCriticalSection(&csIconList); // Invalidate icons cache
-	for (indx = 0; indx < iconList.count; indx++) {
-		iconList.items[indx]->icon_cache_valid = FALSE;
+	for (indx = 0; indx < iconList.getCount(); indx++) {
+		iconList[indx]->icon_cache_valid = FALSE;
 	}
 	LeaveCriticalSection(&csIconList);
 
@@ -820,8 +819,8 @@ void DoIconsChanged(HWND hwndDlg)
 	iconEventActive = 0;
 
 	EnterCriticalSection(&csIconList); // Destroy unused icons
-	for (indx = 0; indx < iconList.count; indx++) {
-		IconItem *item = iconList.items[indx];
+	for (indx = 0; indx < iconList.getCount(); indx++) {
+		IconItem *item = iconList[indx];
 		if (!item->ref_count && item->icon != item->default_icon)
 			SafeDestroyIcon(&item->icon);
 	}
@@ -1109,11 +1108,11 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 // IcoLib options window procedure
 
 static int CALLBACK DoSortIconsFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
-{	return lstrcmpi(TranslateTS(iconList.items[lParam1]->description), TranslateTS(iconList.items[lParam2]->description));
+{	return lstrcmpi(TranslateTS(iconList[lParam1]->description), TranslateTS(iconList[lParam2]->description));
 }
 
 static int CALLBACK DoSortIconsFuncByOrder(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
-{	return iconList.items[lParam1]->orderID - iconList.items[lParam2]->orderID;
+{	return iconList[lParam1]->orderID - iconList[lParam2]->orderID;
 }
 
 static void SaveCollapseState( HWND hwndTree )
@@ -1171,10 +1170,10 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		EnterCriticalSection(&csIconList);
 		{
 			int indx;
-			for (indx = 0; indx < iconList.count; indx++) {
-				iconList.items[indx]->temp_file = NULL;
-				iconList.items[indx]->temp_icon = NULL;
-				iconList.items[indx]->temp_reset = FALSE;
+			for (indx = 0; indx < iconList.getCount(); indx++) {
+				iconList[indx]->temp_file = NULL;
+				iconList[indx]->temp_icon = NULL;
+				iconList[indx]->temp_reset = FALSE;
 			}
 			bNeedRebuild = FALSE;
 		}
@@ -1200,12 +1199,12 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TreeView_SelectItem(hwndTree, NULL);
 			TreeView_DeleteAllItems(hwndTree);
 
-			for (indx = 0; indx < sectionList.count; indx++) {
+			for (indx = 0; indx < sectionList.getCount(); indx++) {
 				TCHAR* sectionName;
 				int sectionLevel = 0;
 
 				hSection = NULL;
-				lstrcpy(itemName, sectionList.items[indx]->name);
+				lstrcpy(itemName, sectionList[indx]->name);
 				sectionName = itemName;
 
 				while (sectionName) {
@@ -1284,8 +1283,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			EnterCriticalSection(&csIconList);
 
-			for (indx = 0; indx < iconList.count; indx++) {
-				IconItem *item = iconList.items[indx];
+			for (indx = 0; indx < iconList.getCount(); indx++) {
+				IconItem *item = iconList[indx];
 
 				if (item->section == sectionActive) {
 					lvi.pszText = TranslateTS(item->description);
@@ -1324,14 +1323,14 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				lvi.iItem = indx;
 				ListView_GetItem(hPreview, &lvi);
 				EnterCriticalSection(&csIconList);
-				hIcon = iconList.items[lvi.lParam]->temp_icon;
+				hIcon = iconList[lvi.lParam]->temp_icon;
 				if (!hIcon)
-					hIcon = IconItem_GetIcon_Preview( iconList.items[lvi.lParam] );
+					hIcon = IconItem_GetIcon_Preview( iconList[lvi.lParam] );
 				LeaveCriticalSection(&csIconList);
 
 				if (hIcon)
 					ImageList_ReplaceIcon(hIml, lvi.iImage, hIcon);
-				if (hIcon != iconList.items[lvi.lParam]->temp_icon) DestroyIcon(hIcon);
+				if (hIcon != iconList[lvi.lParam]->temp_icon) DestroyIcon(hIcon);
 			}
 			ListView_RedrawItems(hPreview, 0, count);
 		}
@@ -1349,7 +1348,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ListView_GetItem( hPreview, &lvi );
 
 			EnterCriticalSection( &csIconList );
-			item = iconList.items[ lvi.lParam ];
+			item = iconList[ lvi.lParam ];
 
 			SAFE_FREE(( void** )&item->temp_file );
 			SafeDestroyIcon( &item->temp_icon );
@@ -1439,8 +1438,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					EnterCriticalSection(&csIconList);
 
-					for (indx = 0; indx < iconList.count; indx++) {
-						IconItem *item = iconList.items[indx];
+					for (indx = 0; indx < iconList.getCount(); indx++) {
+						IconItem *item = iconList[indx];
 						if (item->temp_reset) {
 							DBDeleteContactSetting(NULL, "SkinIcons", item->name);
 							if (item->icon != item->default_icon)
@@ -1485,7 +1484,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if ( treeItem )
 						SendMessage(hwndDlg, DM_REBUILDICONSPREVIEW, 0, ( LPARAM )(
 							(SECTIONPARAM_FLAGS(treeItem->value)&SECTIONPARAM_HAVEPAGE)?
-							sectionList.items[ SECTIONPARAM_INDEX(treeItem->value) ] : NULL ) );
+							sectionList[ SECTIONPARAM_INDEX(treeItem->value) ] : NULL ) );
 					break;
 				}
 			case TVN_DELETEITEMA: // no idea why both TVN_SELCHANGEDA/W should be there but let's keep this both too...
@@ -1507,8 +1506,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			DestroyWindow(dat->hwndIndex);
 
 			EnterCriticalSection(&csIconList);
-			for (indx = 0; indx < iconList.count; indx++) {
-				IconItem *item = iconList.items[indx];
+			for (indx = 0; indx < iconList.getCount(); indx++) {
+				IconItem *item = iconList[indx];
 
 				SAFE_FREE(( void** )&item->temp_file);
 				SafeDestroyIcon(&item->temp_icon);
@@ -1556,14 +1555,6 @@ static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Module initialization and finalization procedure
 
-static int sttCompareSections( const SectionItem* p1, const SectionItem* p2 )
-{	return _tcscmp( p1->name, p2->name );
-}
-
-static int sttCompareIcons( const IconItem* p1, const IconItem* p2 )
-{	return strcmp( p1->name, p2->name );
-}
-
 static int sttIcoLib_AddNewIcon( WPARAM wParam, LPARAM lParam )
 {	return (int)IcoLib_AddNewIcon(( SKINICONDESC* )lParam );
 }
@@ -1583,10 +1574,6 @@ static int sttIcoLib_GetIconByHandle( WPARAM wParam, LPARAM lParam )
 int LoadIcoLibModule(void)
 {
 	bModuleInitialized = TRUE;
-
-	sectionList.increment = iconList.increment = 20;
-	sectionList.sortFunc  = ( FSortFunc )sttCompareSections;
-	iconList.sortFunc     = ( FSortFunc )sttCompareIcons;
 
 	hIconBlank = LoadIconEx(NULL, MAKEINTRESOURCE(IDI_BLANK),0);
 
@@ -1629,17 +1616,17 @@ void UnloadIcoLibModule(void)
 	DestroyServiceFunction(hIcoLib_ReleaseIcon);
 	DeleteCriticalSection(&csIconList);
 
-	for (indx = 0; indx < iconList.count; indx++) {
-		IcoLib_FreeIcon( iconList.items[indx] );
-		SAFE_FREE(( void** )&iconList.items[indx] );
+	for (indx = 0; indx < iconList.getCount(); indx++) {
+		IcoLib_FreeIcon( iconList[indx] );
+		mir_free( iconList[indx] );
 	}
-	List_Destroy(( SortedList* )&iconList );
+	iconList.destroy();
 
-	for (indx = 0; indx < sectionList.count; indx++) {
-		SAFE_FREE(( void** )&sectionList.items[indx]->name );
-		SAFE_FREE(( void** )&sectionList.items[indx] );
+	for (indx = 0; indx < sectionList.getCount(); indx++) {
+		SAFE_FREE(( void** )&sectionList[indx]->name );
+		mir_free( sectionList[indx] );
 	}
-	List_Destroy(( SortedList* )&sectionList );
+	sectionList.destroy();
 
 	ImageList_Destroy(hCacheIconList);
 	SafeDestroyIcon(&hIconBlank);

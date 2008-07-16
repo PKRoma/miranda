@@ -360,8 +360,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if ( !DBGetContactSettingTString( NULL, "FindAdd", "LastSearched", &dbv ))
 					szProto = dbv.ptszVal;
 				
-				for( i=0, netProtoCount=0; i < accounts.count; i++ ) {
-					DWORD caps = (DWORD)CallProtoService( accounts.items[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
+				for( i=0, netProtoCount=0; i < accounts.getCount(); i++ ) {
+					DWORD caps = (DWORD)CallProtoService( accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 					if (caps & PF1_BASICSEARCH || caps & PF1_EXTSEARCH || caps & PF1_SEARCHBYEMAIL || caps & PF1_SEARCHBYNAME)
 						netProtoCount++;
 				}
@@ -380,8 +380,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
 					cbei.iItem++;
 				}
-				for( i=0; i < accounts.count; i++ ) {
-					PROTOACCOUNT* pa = accounts.items[i];
+				for( i=0; i < accounts.getCount(); i++ ) {
+					PROTOACCOUNT* pa = accounts[i];
 					DWORD caps=(DWORD)CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 					if ( !(caps&PF1_BASICSEARCH) && !(caps&PF1_EXTSEARCH) && !(caps&PF1_SEARCHBYEMAIL) && !(caps&PF1_SEARCHBYNAME))
 						continue;
@@ -463,8 +463,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			if ( szProto == (char *)CB_ERR )
 				break;
 			if ( szProto == NULL ) {
-				for ( i=0; i < accounts.count; i++ ) {
-					PROTOACCOUNT* pa = accounts.items[i];
+				for ( i=0; i < accounts.getCount(); i++ ) {
+					PROTOACCOUNT* pa = accounts[i];
 					protoCaps=(DWORD)CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_1,0);
 					if(protoCaps&PF1_SEARCHBYEMAIL) dat->showEmail=1;
 					if(protoCaps&PF1_SEARCHBYNAME) dat->showName=1;
@@ -949,8 +949,8 @@ static int FindAddCommand(WPARAM wParam,LPARAM lParam)
 		// One alternative would be to only create the service if we have network
 		// protocols loaded but that would delay the creation until MODULE_LOADED and
 		// that is not good either...
-		for ( i=0, netProtoCount=0; i < accounts.count; i++ ) {
-			PROTOACCOUNT* pa = accounts.items[i];
+		for ( i=0, netProtoCount=0; i < accounts.getCount(); i++ ) {
+			PROTOACCOUNT* pa = accounts[i];
 			int protoCaps=CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 			if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME
 				|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
@@ -985,8 +985,8 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 	int netProtoCount, i;
 
 	// Make sure we have some networks to search on.
-	for ( i=0, netProtoCount=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0, netProtoCount=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		int protoCaps = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 );
 		if ( protoCaps & ( PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_SEARCHBYNAME | PF1_EXTSEARCHUI ))
 			netProtoCount++;

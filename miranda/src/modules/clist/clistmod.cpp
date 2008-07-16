@@ -216,8 +216,8 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	protoIconIndexCount = 0;
 	protoIconIndex = NULL;
-	for (i = 0; i < accounts.count; i++) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for (i = 0; i < accounts.getCount(); i++) {
+		PROTOACCOUNT* pa = accounts[i];
 		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
 		protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
 		for (j = 0; j < SIZEOF(statusModeList); j++) {

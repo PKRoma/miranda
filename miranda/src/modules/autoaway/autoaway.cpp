@@ -45,8 +45,8 @@ static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
 	if ( mii.aaStatus == 0 )
 		return 0;
 
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		int statusbits = CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 );
 		int currentstatus = CallProtoService( pa->szModuleName, PS_GETSTATUS, 0, 0 );
 		int status = mii.aaStatus;

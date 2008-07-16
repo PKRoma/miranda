@@ -29,7 +29,12 @@ void UninitAccount( PROTOACCOUNT* pa );
 
 static BOOL bModuleInitialized = FALSE;
 
-TAccounts accounts;
+static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
+{
+	return strcmp( p1->szModuleName, p2->szModuleName );
+}
+
+LIST<PROTOACCOUNT> accounts( 10, CompareAccounts );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +87,7 @@ void LoadDbAccounts()
 				if ( !pa->tszAccountName )
 					pa->tszAccountName = mir_a2t( pa->szModuleName );
 
-				List_InsertPtr(( SortedList* )&accounts, pa );
+				accounts.insert( pa );
 			}
 			else DBFreeVariant( &dbv );
 }	}	}
@@ -133,8 +138,8 @@ void WriteDbAccounts()
 	}
 
 	// write new data
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 
 		char buf[ 20 ];
 		_itoa( i, buf, 10 );
@@ -154,7 +159,7 @@ void WriteDbAccounts()
 	}
 
 	DBDeleteContactSetting( 0, "Protocols", "ProtoCount" );
-	DBWriteContactSettingDword( 0, "Protocols", "ProtoCount", accounts.count );
+	DBWriteContactSettingDword( 0, "Protocols", "ProtoCount", accounts.getCount() );
 	DBWriteContactSettingDword( 0, "Protocols", "PrVer", 4 );
 }
 
@@ -164,8 +169,8 @@ static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 {
 	int i;
 
-	for ( i = 0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( !pa->ppro || !pa->bIsEnabled )
 			continue;
 
@@ -178,8 +183,8 @@ static int UninitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 {
 	int i;
 
-	for ( i = 0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( !pa->ppro || !pa->bIsEnabled )
 			continue;
 
@@ -195,13 +200,13 @@ int LoadAccountsModule( void )
 
 	bModuleInitialized = TRUE;
 
-	for ( i = 0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( pa->ppro || !pa->bIsEnabled )
 			continue;
 
 		if ( !ActivateAccount( pa )) { // remove damaged account from list
-			List_Remove(( SortedList* )&accounts, i-- );
+			accounts.remove( i-- );
 			UnloadAccount( pa, FALSE );
 	}	}
 
@@ -370,10 +375,10 @@ void UnloadAccountsModule()
 
 	if ( !bModuleInitialized ) return;
 
-	for( i=accounts.count-1; i >= 0; i--, accounts.count-- ) {
-		PROTOACCOUNT* pa = accounts.items[ i ];
+	for( i=accounts.getCount()-1; i >= 0; i-- ) {
+		PROTOACCOUNT* pa = accounts[ i ];
 		UnloadAccount( pa, FALSE );
 	}
 
-	List_Destroy(( SortedList* )&accounts );
+	accounts.destroy();
 }

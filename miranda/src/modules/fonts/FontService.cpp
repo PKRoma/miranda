@@ -30,9 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int code_page = CP_ACP;
 HANDLE hFontReloadEvent, hColourReloadEvent;
 
-FontIdList font_id_list;
-ColourIdList colour_id_list;
-
 int OptInit( WPARAM, LPARAM );
 
 int RegisterFont(WPARAM wParam, LPARAM lParam);
@@ -47,29 +44,6 @@ int RegisterColourW(WPARAM wParam, LPARAM lParam);
 int GetColour(WPARAM wParam, LPARAM lParam);
 int GetColourW(WPARAM wParam, LPARAM lParam);
 
-static int sttCompareFont( const TFontID* p1, const TFontID* p2 )
-{
-	int result = _tcscmp( p1->group, p2->group );
-	if ( result != 0 )
-		return result;
-	result = p1->order - p2->order;
-	if ( result != 0 )
-		return result;
-	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
-}
-
-static int sttCompareColour( const TColourID* p1, const TColourID* p2 )
-{
-	int result = _tcscmp( p1->group, p2->group );
-	if ( result != 0 )
-		return result;
-	result = p1->order - p2->order;
-	if ( result != 0 )
-		return result;
-
-	return _tcscmp( TranslateTS(p1->name), TranslateTS(p2->name) );
-}
-
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	if ( !GetModuleHandleA( "CLIST_MODERN" ))
@@ -83,20 +57,14 @@ static int OnPreShutdown(WPARAM wParam, LPARAM lParam)
 	DestroyHookableEvent(hFontReloadEvent);
 	DestroyHookableEvent(hColourReloadEvent);
 
-	DestroyList(( SortedList* )&font_id_list );
-	DestroyList(( SortedList* )&colour_id_list );
+	font_id_list.destroy();
+	colour_id_list.destroy();
 	return 0;
 }
 
 int LoadFontserviceModule( void )
 {
 	code_page = LangPackGetDefaultCodePage();
-
-	font_id_list.increment = 20;
-	font_id_list.sortFunc = ( FSortFunc )sttCompareFont;
-
-	colour_id_list.increment = 10;
-	colour_id_list.sortFunc = ( FSortFunc )sttCompareColour;
 
 	HookEvent(ME_OPT_INITIALISE, OptInit);
 

@@ -124,8 +124,8 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	int i;
-	for (i = 0; i < accounts.count; i++) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for (i = 0; i < accounts.getCount(); i++) {
+		PROTOACCOUNT* pa = accounts[i];
 		cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * (cli.hClcProtoCount + 1));
 		cli.clcProto[cli.hClcProtoCount].szProto = pa->szModuleName;
 		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;

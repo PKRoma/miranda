@@ -34,3 +34,6 @@ int   List_IndexOf( SortedList*, void* );
 
 int   List_InsertPtr( SortedList* list, void* p );
 int   List_RemovePtr( SortedList* list, void* p );
+
+void  List_Copy( SortedList*, SortedList*, size_t );
+void  List_ObjCopy( SortedList*, SortedList*, size_t );

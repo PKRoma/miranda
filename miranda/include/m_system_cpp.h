@@ -33,13 +33,19 @@ template<class T> struct LIST
 	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
 
 	__inline LIST( int aincr, FTSortFunc afunc = NULL )
-	{	memset( this, 0, sizeof( *this ));
-		increment = aincr;
-		sortFunc = afunc;
-	}
+		{	memset( this, 0, sizeof( *this ));
+			increment = aincr;
+			sortFunc = afunc;
+		}
+
+	__inline LIST( const LIST& x )
+		{	items = NULL;
+			List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+		}
 
 	__inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
 	__inline int getCount( void )     const { return count; }
+	__inline T** getArray( void )     const { return items; }
 
 	#if defined( _STATIC )
 		__inline int getIndex( T* p ) const
@@ -87,27 +93,48 @@ template<class T> struct OBJLIST : public LIST<T>
 		LIST<T>( aincr, afunc )
 		{}
 
+	__inline OBJLIST( const OBJLIST& x )
+		{	items = NULL;
+			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+		}
+
 	~OBJLIST()
 	{
-		if (li.cbSize != 0) 
-			destroy();
+		#if !defined( _STATIC )
+			if (li.cbSize != 0) 
+		#endif
+				destroy();
 	}
 
 	__inline void destroy( void )
 	{	
 		for ( int i=0; i < this->count; i++ )
 			delete this->items[i];
-		li.List_Destroy(( SortedList* )this );
+
+		#if defined( _STATIC )
+			List_Destroy(( SortedList* )this );
+		#else
+			li.List_Destroy(( SortedList* )this );
+		#endif
 	}
 
 	__inline int remove( int idx ) {
 		delete this->items[idx];
-		return li.List_Remove(( SortedList* )this, idx );
+		#if defined( _STATIC )
+			return List_Remove(( SortedList* )this, idx );
+		#else
+			return li.List_Remove(( SortedList* )this, idx );
+		#endif
 	}
 
 	__inline int remove( T* p )
 	{
-		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 ) {
+		#if defined( _STATIC )
+		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 )
+		#else
+		if ( li.List_RemovePtr(( SortedList* )this, p ) != -1 )
+		#endif
+		{
 			delete p;
 			return 1;
 		}

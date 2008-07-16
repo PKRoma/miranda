@@ -53,13 +53,13 @@ int CheckProtocolOrder()
 	if ( ver != 4 )
 		protochanged = TRUE;
 
-	if ( accounts.count == 0 )
+	if ( accounts.getCount() == 0 )
 		protochanged = TRUE;
-	else if ( accounts.count != (int)DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
+	else if ( accounts.getCount() != (int)DBGetContactSettingDword( 0, "Protocols", "ProtoCount", -1 ))
 		protochanged = TRUE;
 
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( !isProtoSuitable( pa->ppro )) {
 			if ( pa->bIsVisible ) {
 				pa->bIsVisible = FALSE;
@@ -90,15 +90,15 @@ int FillTree(HWND hwnd)
 
 	//	ProtocolOrder_CheckOrder();
 	TreeView_DeleteAllItems(hwnd);
-	if ( accounts.count == 0 )
+	if ( accounts.getCount() == 0 )
 		return FALSE;
 
-	for ( i = 0; i < accounts.count; i++ ) {
+	for ( i = 0; i < accounts.getCount(); i++ ) {
 		int idx = cli.pfnGetAccountIndexByPos( i );
 		if ( idx == -1 )
 			continue;
 
-		pa = accounts.items[idx];
+		pa = accounts[idx];
 		if ( !pa->bIsEnabled || !isProtoSuitable( pa->ppro ))
 			continue;
 
@@ -149,8 +149,8 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DBWriteContactSettingDword( 0, "Protocols", "PrVer", -1 );
 				{
 					int i, order = 0;
-					for ( i=0; i < accounts.count; i++ ) {
-						PROTOACCOUNT* pa = accounts.items[i];
+					for ( i=0; i < accounts.getCount(); i++ ) {
+						PROTOACCOUNT* pa = accounts[i];
 						pa->iOrder = ( pa->iOrder > 999999 ) ? 1000000+i : order++;
 				}	}
 

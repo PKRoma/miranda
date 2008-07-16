@@ -241,9 +241,9 @@ int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,cons
 	if ( szProto == NULL ) {
 		int failures = 0;
 		dat->searchCount = 0;
-		dat->search = (struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * accounts.count);
-		for( i=0; i < accounts.count;i++) {
-			PROTOACCOUNT* pa = accounts.items[i];
+		dat->search = (struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * accounts.getCount());
+		for( i=0; i < accounts.getCount();i++) {
+			PROTOACCOUNT* pa = accounts[i];
 			DWORD caps=(DWORD)CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_1,0);
 			if(!(caps&requiredCapability)) continue;
 			dat->search[dat->searchCount].hProcess = (HANDLE)CallProtoService(pa->szModuleName,szSearchService,0,(LPARAM)pvSearchParams);

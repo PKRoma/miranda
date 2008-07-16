@@ -61,6 +61,9 @@ void* List_Find( SortedList* p_list, void* p_value )
 
 int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 {
+	if ( p_value == NULL )
+		return -1;
+
 	if ( p_list->sortFunc != NULL )
 	{
 		int low  = 0;
@@ -88,6 +91,9 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 
 int List_IndexOf( SortedList* p_list, void* p_value )
 {
+	if ( p_value == NULL )
+		return -1;
+
 	int i;
 	for ( i=0; i < p_list->realCount; i++ )
 		if ( p_list->items[i] == p_value )
@@ -118,6 +124,9 @@ int List_Insert( SortedList* p_list, void* p_value, int p_index)
 
 int List_InsertPtr( SortedList* list, void* p )
 {
+	if ( p == NULL )
+		return -1;
+
 	int idx = list->realCount;
 	List_GetIndex( list, p, &idx );
 	return List_Insert( list, p, idx );
@@ -146,3 +155,29 @@ int List_RemovePtr( SortedList* list, void* p )
 
 	return idx;
 }
+
+void List_Copy( SortedList* s, SortedList* d, size_t itemSize )
+{
+	int i;
+
+	d->increment = s->increment;
+	d->sortFunc  = s->sortFunc;
+
+	for ( i = 0; i < s->realCount; i++ ) {
+		void* item = mir_alloc( itemSize );
+		memcpy( item, s->items[i], itemSize );
+		List_Insert( d, item, i );
+}	}
+
+void List_ObjCopy( SortedList* s, SortedList* d, size_t itemSize )
+{
+	int i;
+
+	d->increment = s->increment;
+	d->sortFunc  = s->sortFunc;
+
+	for ( i = 0; i < s->realCount; i++ ) {
+		void* item = new char[ itemSize ];
+		memcpy( item, s->items[i], itemSize );
+		List_Insert( d, item, i );
+}	}

@@ -125,7 +125,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 						strncpy( szPlugin, pa->szProtoName, SIZEOF( szPlugin ));
 						strcat( szPlugin, ".dll" );
 						UnloadAccount( pa, TRUE );
-						List_RemovePtr(( SortedList* )&accounts, pa );
+						accounts.remove( pa );
 						if ( UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
 							char szNewName[ MAX_PATH ];
 							strcpy( szNewName, szPlugin );
@@ -139,7 +139,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
 					pa->bIsEnabled = pa->bIsVisible = TRUE;
-					pa->iOrder = accounts.count;
+					pa->iOrder = accounts.getCount();
 					pa->type = PROTOTYPE_PROTOCOL;
 					break;
 				}
@@ -167,7 +167,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					pa->szModuleName = mir_strdup( buf );
 
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
-					List_InsertPtr(( SortedList* )&accounts, pa );
+					accounts.insert( pa );
 
 					if ( param->action == 1 )
 						if ( ActivateAccount( pa ))
@@ -645,12 +645,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 
 			dat->iSelected = -1;
 			SendMessage( hList, LB_RESETCONTENT, 0, 0 );
-			for (i = 0; i < accounts.count; ++i)
+			for (i = 0; i < accounts.getCount(); ++i)
 			{
-				int iItem = SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)accounts.items[i]->tszAccountName);
-				SendMessage(hList, LB_SETITEMDATA, iItem, (LPARAM)accounts.items[i]);
+				int iItem = SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)accounts[i]->tszAccountName);
+				SendMessage(hList, LB_SETITEMDATA, iItem, (LPARAM)accounts[i]);
 
-				if (accounts.items[i] == acc)
+				if (accounts[i] == acc)
 					ListBox_SetCurSel(hList, iItem);
 			}
 
@@ -792,7 +792,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						ListBox_SetItemData( hList, idx, 0 );
-						List_RemovePtr(( SortedList* )&accounts, pa );
+						accounts.remove( pa );
 						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
 						EraseAccount( pa );
 						UnloadAccount( pa, TRUE );
@@ -853,12 +853,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 		{	int i;
 			PSHNOTIFY pshn = {0};
 			pshn.hdr.code = PSN_APPLY;
-			for (i = 0; i < accounts.count; ++i)
-				if (accounts.items[i]->hwndAccMgrUI && accounts.items[i]->bAccMgrUIChanged)
+			for (i = 0; i < accounts.getCount(); ++i)
+				if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
 				{
-					pshn.hdr.hwndFrom = accounts.items[i]->hwndAccMgrUI;
-					SendMessage(accounts.items[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-					accounts.items[i]->bAccMgrUIChanged = FALSE;
+					pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+					SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+					accounts[i]->bAccMgrUIChanged = FALSE;
 				}
 			DestroyWindow(hwndDlg);
 			break;
@@ -868,12 +868,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 		{	int i;
 			PSHNOTIFY pshn = {0};
 			pshn.hdr.code = PSN_RESET;
-			for (i = 0; i < accounts.count; ++i)
-				if (accounts.items[i]->hwndAccMgrUI && accounts.items[i]->bAccMgrUIChanged)
+			for (i = 0; i < accounts.getCount(); ++i)
+				if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
 				{
-					pshn.hdr.hwndFrom = accounts.items[i]->hwndAccMgrUI;
-					SendMessage(accounts.items[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-					accounts.items[i]->bAccMgrUIChanged = FALSE;
+					pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+					SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+					accounts[i]->bAccMgrUIChanged = FALSE;
 				}
 			DestroyWindow(hwndDlg);
 			break;
@@ -893,13 +893,13 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 	case WM_DESTROY:
 	{
 		int i;
-		for (i = 0; i < accounts.count; ++i)
+		for (i = 0; i < accounts.getCount(); ++i)
 		{
-			accounts.items[i]->bAccMgrUIChanged = FALSE;
-			if (accounts.items[i]->hwndAccMgrUI)
+			accounts[i]->bAccMgrUIChanged = FALSE;
+			if (accounts[i]->hwndAccMgrUI)
 			{
-				DestroyWindow(accounts.items[i]->hwndAccMgrUI);
-				accounts.items[i]->hwndAccMgrUI = NULL;
+				DestroyWindow(accounts[i]->hwndAccMgrUI);
+				accounts[i]->hwndAccMgrUI = NULL;
 			}
 		}
 

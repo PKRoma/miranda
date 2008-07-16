@@ -37,21 +37,19 @@ typedef struct
 }
 	TServiceListItem;
 
-struct
-{
-	PROTOCOLDESCRIPTOR** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
+static int CompareServiceItems( const TServiceListItem* p1, const TServiceListItem* p2 )
+{	return strcmp( p1->name, p2->name );
 }
-static protos;
 
-struct
-{
-	TServiceListItem** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
+static LIST<TServiceListItem> serviceItems( 10, CompareServiceItems );
+
+//------------------------------------------------------------------------------------
+
+static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR* p2 )
+{	return strcmp( p1->szName, p2->szName );
 }
-static serviceItems;
+
+static LIST<PROTOCOLDESCRIPTOR> protos( 10, CompareProtos );
 
 static int Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 {
@@ -64,8 +62,8 @@ PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 		int idx;
 		PROTOCOLDESCRIPTOR tmp;
 		tmp.szName = ( char* )szProtoName;
-		if ( List_GetIndex(( SortedList* )&protos, &tmp, &idx ))
-			return protos.items[idx];
+		if (( idx = protos.getIndex( &tmp )) != -1 )
+			return protos[idx];
 	}
 
 	return NULL;
@@ -78,8 +76,8 @@ int srvProto_IsLoaded(WPARAM wParam,LPARAM lParam)
 
 int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 {
-	*( int* )wParam = protos.count;
-	*( PROTOCOLDESCRIPTOR*** )lParam = protos.items;
+	*( int* )wParam = protos.getCount();
+	*( PROTOCOLDESCRIPTOR*** )lParam = protos.getArray();
 	return 0;
 }
 
@@ -115,7 +113,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 					pa->szProtoName = mir_strdup( pd->szName );
 					pa->tszAccountName = mir_a2t( pd->szName );
 					pa->bIsVisible = pa->bIsEnabled = TRUE;
-					List_InsertPtr(( SortedList* )&accounts, pa );
+					accounts.insert( pa );
 				}
 				pa->bOldProto = TRUE;
 				pa->ppro = ppi;
@@ -126,7 +124,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 	}
 	else *p = *pd;
 	p->szName = mir_strdup( pd->szName );
-	List_InsertPtr(( SortedList* )&protos, p );
+	protos.insert( p );
 	return 0;
 }
 
@@ -227,10 +225,10 @@ PROTOACCOUNT* Proto_GetAccount( const char* accName )
 	int idx;
 	PROTOACCOUNT temp;
 	temp.szModuleName = ( char* )accName;
-	if ( List_GetIndex(( SortedList* )&accounts, &temp, &idx ) == 0 )
+	if (( idx = accounts.getIndex( &temp )) == -1 )
 		return NULL;
 
-	return accounts.items[idx];
+	return accounts[idx];
 }
 
 static int srvProto_GetAccount(WPARAM wParam, LPARAM lParam)
@@ -240,8 +238,8 @@ static int srvProto_GetAccount(WPARAM wParam, LPARAM lParam)
 
 static int Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 {
-	*( int* )wParam = accounts.count;
-	*( PROTOACCOUNT*** )lParam = accounts.items;
+	*( int* )wParam = accounts.getCount();
+	*( PROTOACCOUNT*** )lParam = accounts.getArray();
 	return 0;
 }
 
@@ -259,8 +257,8 @@ int CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szSe
 		else {
 			TServiceListItem item;
 			item.name = szService;
-			if ( List_GetIndex(( SortedList* )&serviceItems, &item, &idx ) != 0 ) {
-				switch( serviceItems.items[ idx ]->id ) {
+			if (( idx = serviceItems.getIndex( &item )) != -1 ) {
+				switch( serviceItems[ idx ]->id ) {
 					case  1: return ( int )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); break;
 					case  2: return ( int )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
 					case  3: return ( int )ppi->Authorize( ( HANDLE )wParam ); break;
@@ -351,27 +349,12 @@ int CallContactService( HANDLE hContact, const char *szProtoService, WPARAM wPar
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR* p2 )
-{
-	return strcmp( p1->szName, p2->szName );
-}
-
-static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
-{
-	return strcmp( p1->szModuleName, p2->szModuleName );
-}
-
-static int CompareServiceItems( const TServiceListItem* p1, const TServiceListItem* p2 )
-{
-	return strcmp( p1->name, p2->name );
-}
-
 static void InsertServiceListItem( int id, const char* szName )
 {
 	TServiceListItem* p = ( TServiceListItem* )mir_alloc( sizeof( TServiceListItem ));
 	p->id = id;
 	p->name = szName;
-	List_InsertPtr(( SortedList* )&serviceItems, p );
+	serviceItems.insert( p );
 }
 
 int LoadProtocolsModule(void)
@@ -380,15 +363,6 @@ int LoadProtocolsModule(void)
 
 	if ( LoadProtoChains() )
 		return 1;
-
-	protos.increment = 10;
-	protos.sortFunc = ( FSortFunc )CompareProtos;
-
-	accounts.increment = 10;
-	accounts.sortFunc = ( FSortFunc )CompareAccounts;
-
-	serviceItems.increment = 10;
-	serviceItems.sortFunc = ( FSortFunc )CompareServiceItems;
 
 	InsertServiceListItem(  1, PS_ADDTOLIST );
 	InsertServiceListItem(  2, PS_ADDTOLISTBYEVENT );
@@ -461,17 +435,17 @@ void UnloadProtocolsModule()
 		hAccListChanged = NULL;
 	}
 
-	if ( protos.count ) {
-		for( i=0; i < protos.count; i++ ) {
-			mir_free( protos.items[i]->szName);
-			mir_free( protos.items[i] );
+	if ( protos.getCount() ) {
+		for( i=0; i < protos.getCount(); i++ ) {
+			mir_free( protos[i]->szName);
+			mir_free( protos[i] );
 		}
-		List_Destroy(( SortedList* )&protos );
+		protos.destroy();
 	}
 
-	for ( i=0; i < serviceItems.count; i++ )
-		mir_free( serviceItems.items[i] );
-	List_Destroy(( SortedList* )&serviceItems );
+	for ( i=0; i < serviceItems.getCount(); i++ )
+		mir_free( serviceItems[i] );
+	serviceItems.destroy();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -481,7 +455,7 @@ void UninitAccount( PROTOACCOUNT* pa )
 	int idx;	
 	PROTOCOLDESCRIPTOR temp;
 	temp.szName = pa->szProtoName;
-	if ( List_GetIndex(( SortedList* )&protos, &temp, &idx ))
-		if ( protos.items[idx]->fnUninit != NULL )
-			protos.items[idx]->fnUninit( pa->ppro );
+	if (( idx = protos.getIndex( &temp )) != -1 )
+		if ( protos[idx]->fnUninit != NULL )
+			protos[idx]->fnUninit( pa->ppro );
 }

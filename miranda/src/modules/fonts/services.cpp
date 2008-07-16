@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "FontService.h"
 
 #if defined( _UNICODE )
-void ConvertFontSettings( FontSettings* fs, TFontSettings* fsw) {
+void ConvertFontSettings( FontSettings* fs, TFontSettings* fsw)
+{
 	fsw->colour = fs->colour;
 	fsw->size = fs->size;
 	fsw->style = fs->style;
@@ -52,7 +53,8 @@ void ConvertFontID( FontID *fid, TFontID* fidw )
 	}
 }
 
-void ConvertColourID(ColourID *cid, TColourID* cidw) {
+void ConvertColourID(ColourID *cid, TColourID* cidw)
+{
 	cidw->cbSize = sizeof(TColourID);
 
 	strcpy(cidw->dbSettingsGroup, cid->dbSettingsGroup);
@@ -65,7 +67,8 @@ void ConvertColourID(ColourID *cid, TColourID* cidw) {
 	MultiByteToWideChar( code_page, 0, cid->name, -1, cidw->name, 64);
 }
 
-void ConvertLOGFONT(LOGFONTW *lfw, LOGFONTA *lfa) {
+void ConvertLOGFONT(LOGFONTW *lfw, LOGFONTA *lfa)
+{
 	lfa->lfHeight = lfw->lfHeight;
 	lfa->lfWidth = lfw->lfWidth;
 	lfa->lfEscapement = lfw->lfEscapement;
@@ -91,11 +94,11 @@ static void GetDefaultFontSetting(LOGFONT* lf, COLORREF* colour)
 		*colour = GetSysColor(COLOR_WINDOWTEXT);
 
 	lf->lfHeight = 10;
-	{
-		HDC hdc = GetDC(0);
-		lf->lfHeight = -MulDiv(lf->lfHeight,GetDeviceCaps(hdc, LOGPIXELSY), 72);
-		ReleaseDC(0, hdc);
-}	}
+	
+	HDC hdc = GetDC(0);
+	lf->lfHeight = -MulDiv(lf->lfHeight,GetDeviceCaps(hdc, LOGPIXELSY), 72);
+	ReleaseDC(0, hdc);
+}
 
 int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORREF * colour, DWORD flags)
 {
@@ -216,23 +219,21 @@ void UpdateFontSettings(TFontID* font_id, TFontSettings* fontsettings)
 
 static int sttRegisterFontWorker( TFontID* font_id )
 {
-	int i;
-	char idstr[256];
-
-	for ( i = 0; i < font_id_list.count; i++ ) {
-		TFontID* F = font_id_list.items[i];
-		if ( !lstrcmp( F->group, font_id->group ) && !lstrcmp( F->name, font_id->name ) && !( F->flags & FIDF_ALLOWREREGISTER ))
+	for ( int i = 0; i < font_id_list.getCount(); i++ ) {
+		TFontID& F = font_id_list[i];
+		if ( !lstrcmp( F.group, font_id->group ) && !lstrcmp( F.name, font_id->name ) && !( F.flags & FIDF_ALLOWREREGISTER ))
 			return 1;
 	}
 
+	char idstr[256];
 	sprintf(idstr, "%sFlags", font_id->prefix);
 	DBWriteContactSettingDword(0, font_id->dbSettingsGroup, idstr, font_id->flags);
 	{	
-		TFontID* newItem = ( TFontID* )mir_alloc( sizeof( TFontID ));
+		TFontID* newItem = new TFontID;
 		memset( newItem, 0, sizeof( TFontID ));
 		memcpy( newItem, font_id, font_id->cbSize);
 		UpdateFontSettings( font_id, &newItem->value );
-		List_InsertPtr(( SortedList* )&font_id_list, newItem );
+		font_id_list.insert( newItem );
 	}
 	return 0;
 }
@@ -261,14 +262,13 @@ int RegisterFont(WPARAM wParam, LPARAM lParam)
 static int sttGetFontWorker( TFontID* font_id, LOGFONT* lf )
 {
 	COLORREF colour;
-	int i;
 
-	for ( i = 0; i < font_id_list.count; i++ ) {
-		TFontID* F = font_id_list.items[i];
-		if ( !_tcsncmp( F->name, font_id->name, SIZEOF(F->name)) && !_tcsncmp( F->group, font_id->group, SIZEOF(F->group))) {
-			if ( GetFontSettingFromDB( F->dbSettingsGroup, F->prefix, lf, &colour, F->flags) && ( F->flags & FIDF_DEFAULTVALID )) {
-				CreateFromFontSettings( &F->deffontsettings, lf, F->flags);
-				colour = F->deffontsettings.colour;
+	for ( int i = 0; i < font_id_list.getCount(); i++ ) {
+		TFontID& F = font_id_list[i];
+		if ( !_tcsncmp( F.name, font_id->name, SIZEOF(F.name)) && !_tcsncmp( F.group, font_id->group, SIZEOF(F.group))) {
+			if ( GetFontSettingFromDB( F.dbSettingsGroup, F.prefix, lf, &colour, F.flags) && ( F.flags & FIDF_DEFAULTVALID )) {
+				CreateFromFontSettings( &F.deffontsettings, lf, F.flags);
+				colour = F.deffontsettings.colour;
 			}
 
 			return (int)colour;
@@ -310,20 +310,16 @@ void UpdateColourSettings( TColourID* colour_id, COLORREF *colour)
 
 static int sttRegisterColourWorker( TColourID* colour_id )
 {
-	int i;
-
-	for ( i = 0; i < colour_id_list.count; i++ ) {
-		TColourID* C = colour_id_list.items[i];
-		if ( !_tcscmp( C->group, colour_id->group ) && !_tcscmp( C->name, colour_id->name ))
+	for ( int i = 0; i < colour_id_list.getCount(); i++ ) {
+		TColourID& C = colour_id_list[i];
+		if ( !_tcscmp( C.group, colour_id->group ) && !_tcscmp( C.name, colour_id->name ))
 			return 1;
 	}
 
-	{
-		TColourID* newItem = ( TColourID* )mir_alloc( sizeof( TColourID ));
-		memcpy( newItem, colour_id, sizeof( TColourID ));
-		UpdateColourSettings( colour_id, &newItem->value );
-		List_InsertPtr(( SortedList* )&colour_id_list, newItem );
-	}
+	TColourID* newItem = new TColourID;
+	memcpy( newItem, colour_id, sizeof( TColourID ));
+	UpdateColourSettings( colour_id, &newItem->value );
+	colour_id_list.insert( newItem );
 	return 0;
 }
 
@@ -352,10 +348,10 @@ static int sttGetColourWorker( TColourID* colour_id )
 {
 	int i;
 
-	for ( i = 0; i < colour_id_list.count; i++ ) {
-		TColourID* C = colour_id_list.items[i];
-		if ( !_tcscmp( C->group, colour_id->group ) && !_tcscmp( C->name, colour_id->name ))
-			return (int)DBGetContactSettingDword(NULL, C->dbSettingsGroup, C->setting, C->defcolour);
+	for ( i = 0; i < colour_id_list.getCount(); i++ ) {
+		TColourID& C = colour_id_list[i];
+		if ( !_tcscmp( C.group, colour_id->group ) && !_tcscmp( C.name, colour_id->name ))
+			return (int)DBGetContactSettingDword(NULL, C.dbSettingsGroup, C.setting, C.defcolour);
 	}
 
 	return -1;

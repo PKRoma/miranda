@@ -403,6 +403,9 @@ int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 
 static int checkHook( HANDLE hHook )
 {
+	if ( hHook == NULL )
+		return -1;
+
 	EnterCriticalSection( &csHooks );
 	if ( pLastHook != hHook || !pLastHook ) {
 		if ( hooks.getIndex(( THook* )hHook ) == -1 ) {

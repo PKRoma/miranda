@@ -124,8 +124,8 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.pszName = LPGEN("Web Page Address (&URL)");
 	mi.pszService = MS_URL_SENDURL;
 
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_URLSEND ) {
 			mi.pszContactOwner = pa->szModuleName;
 			CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );

@@ -36,7 +36,9 @@ typedef struct TFontSettings_tag
 	TFontSettings;
 
 // a font identifier structure - used for registering a font, and getting one out again
-typedef struct TFontID_tag {
+
+struct TFontID
+{
 	int   cbSize;
 	TCHAR group[64];               // group the font belongs to - this is the 'Font Group' list in the options page
 	TCHAR name[64];                // this is the name of the font setting - e.g. 'contacts' in the 'contact list' group
@@ -49,10 +51,10 @@ typedef struct TFontID_tag {
 	TCHAR 	 backgroundGroup[64];
 	TCHAR 	 backgroundName[64];
 	TFontSettings value;
-}
-	TFontID;
+};
 
-typedef struct TColourID_tag {
+struct TColourID
+{
 	int      cbSize;
 	TCHAR    group[64];
 	TCHAR    name[64];
@@ -63,27 +65,10 @@ typedef struct TColourID_tag {
 	int      order;
 
 	COLORREF value;
-}
-	TColourID;
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // global data & functions
-
-typedef struct
-{
-	TFontID**   items;
-	int count,  limit, increment;
-	FSortFunc	sortFunc;
-}
-	FontIdList;
-
-typedef struct
-{
-	TColourID** items;
-	int count,  limit, increment;
-	FSortFunc	sortFunc;
-}
-	ColourIdList;
 
 typedef struct
 {
@@ -92,11 +77,10 @@ typedef struct
 }
 	TreeItem;
 
-extern FontIdList   font_id_list;
-extern ColourIdList colour_id_list;
+extern OBJLIST<TFontID>   font_id_list;
+extern OBJLIST<TColourID> colour_id_list;
 
 extern int code_page;
 extern HANDLE hFontReloadEvent, hColourReloadEvent;
 
 int  CreateFromFontSettings(TFontSettings *fs, LOGFONT *lf, DWORD flags);
-void DestroyList( SortedList* list );

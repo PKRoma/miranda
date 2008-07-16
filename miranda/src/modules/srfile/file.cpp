@@ -231,8 +231,8 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.pszName = LPGEN("&File");
 	mi.pszService = MS_FILE_SENDFILE;
 
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
 			mi.flags = CMIF_ICONFROMICOLIB;
 			if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))

@@ -160,8 +160,8 @@ int GetAverageMode()
 	int averageMode=0;
 	int flags, flags2;
 
-	for ( i=0,netProtoCount = 0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0,netProtoCount = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
 
@@ -599,13 +599,20 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 						prot = timi->mi.ptszName;
 					#endif
 				}
-				if (!prot) return TRUE;
-				curProtoStatus=CallProtoService(prot,PS_GETSTATUS,0,0);
+				if ( Proto_GetAccount( prot ) == NULL )
+					return TRUE;
+
+				if (( curProtoStatus = CallProtoService(prot,PS_GETSTATUS,0,0)) == CALLSERVICE_NOTFOUND )
+					curProtoStatus = 0;
+
 				if ( curProtoStatus >= ID_STATUS_OFFLINE && curProtoStatus < ID_STATUS_IDLE )
 					timi->mi.hIcon = LoadSkinProtoIcon(prot,curProtoStatus);
 				else {
 					timi->mi.hIcon=(HICON)CallProtoService(prot,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					IconNeedDestroy=TRUE;
+					if ( timi->mi.hIcon == (HICON)CALLSERVICE_NOTFOUND )
+						timi->mi.hIcon = NULL;
+					else
+						IconNeedDestroy = TRUE;
 				}
 				if (timi->mi.hIcon)
 				{
@@ -669,13 +676,13 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 			else {
 				int MenusProtoCount = 0;
 
-				for( i=0; i < accounts.count; i++ )
-					MenusProtoCount += ( cli.pfnGetProtocolVisibility( accounts.items[i]->szModuleName )) ? 1 : 0;
+				for( i=0; i < accounts.getCount(); i++ )
+					MenusProtoCount += ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName )) ? 1 : 0;
 
 				cli.currentDesiredStatusMode = smep->status;
 
-				for ( i=0; i < accounts.count; i++ ) {
-					PROTOACCOUNT* pa = accounts.items[i];
+				for ( i=0; i < accounts.getCount(); i++ ) {
+					PROTOACCOUNT* pa = accounts[i];
 					if ( !( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 )))
 						CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
 				}
@@ -893,8 +900,8 @@ int fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos)
 int fnGetAccountIndexByPos(int Pos)
 {
 	int i;
-	for ( i=0; i < accounts.count; i++ )
-		if ( accounts.items[i]->iOrder == Pos )
+	for ( i=0; i < accounts.getCount(); i++ )
+		if ( accounts[i]->iOrder == Pos )
 			return i;
 
 	return -1;
@@ -937,12 +944,12 @@ void RebuildMenuOrder( void )
 	hStatusMainMenuHandlesCnt = SIZEOF(statusModeList);
 	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( int ));
 
-	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*accounts.count);
-	hStatusMenuHandlesCnt = accounts.count;
-	memset( hStatusMenuHandles, 0, sizeof(tStatusMenuHandles)*accounts.count );
+	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*accounts.getCount());
+	hStatusMenuHandlesCnt = accounts.getCount();
+	memset( hStatusMenuHandles, 0, sizeof(tStatusMenuHandles)*accounts.getCount() );
 
-	for ( i=0; i < accounts.count; i++ ) {
-		pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		pa = accounts[i];
 		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0 ) == 0 )
 			continue;
 
@@ -952,12 +959,12 @@ void RebuildMenuOrder( void )
 
 	FreeMenuProtos();
 
-	for ( s=0; s < accounts.count; s++ ) {
+	for ( s=0; s < accounts.getCount(); s++ ) {
 		i = cli.pfnGetAccountIndexByPos( s );
 		if ( i == -1 )
 			continue;
 	
-		pa = accounts.items[i];
+		pa = accounts[i];
 		pos = 0;
 		if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			continue;
@@ -1089,8 +1096,8 @@ void RebuildMenuOrder( void )
 
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
-		for ( i=0; i < accounts.count; i++ ) {
-			pa = accounts.items[i];
+		for ( i=0; i < accounts.getCount(); i++ ) {
+			pa = accounts[i];
 			if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
@@ -1160,8 +1167,8 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	if ( hStatusMainMenuHandles == NULL ) return 0;
 
 	networkProtoCount = 0;
-	for ( i=0; i < accounts.count; i++ ) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[i];
 		int flags = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 );
 		int flags2 = CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_5, 0 );
 		if ((flags & ~flags2) == 0)
@@ -1211,8 +1218,8 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	if ( networkProtoCount <= 1 )
 		return 0;
 
-	for ( i=0; i < accounts.count; i++ )
-		if ( !lstrcmpA( accounts.items[i]->szModuleName, ack->szModule ))
+	for ( i=0; i < accounts.getCount(); i++ )
+		if ( !lstrcmpA( accounts[i]->szModuleName, ack->szModule ))
 			break;
 
 	//hProcess is previous mode, lParam is new mode

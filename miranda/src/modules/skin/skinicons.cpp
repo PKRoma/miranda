@@ -226,12 +226,12 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 	if ( !szProto ) {
 		// Only return a protocol specific icon if there is only one protocol
 		// Otherwise return the global icon. This affects the global status menu mainly.
-		if ( accounts.count == 1 ) {
+		if ( accounts.getCount() == 1 ) {
 			HICON hIcon;
 
 			// format: core_status_%proto%statusindex
 			strcpy(iconName, statusIconsFmt);
-			strcat(iconName, accounts.items[0]->szModuleName);
+			strcat(iconName, accounts[0]->szModuleName);
 			_itoa(statusIndx, iconName + strlen(iconName), 10);
 
 			hIcon = IcoLib_GetIcon( iconName );

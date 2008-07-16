@@ -83,13 +83,13 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 		szSeparator = _T("\n");
 
 	if (szProto == NULL) {
-		if (accounts.count == 0) {
+		if (accounts.getCount() == 0) {
 			ulock;
 			return NULL;
 		}
-		if (accounts.count == 1) {
+		if (accounts.getCount() == 1) {
 			ulock;
-			return cli.pfnTrayIconMakeTooltip(szPrefix, accounts.items[0]->szModuleName);
+			return cli.pfnTrayIconMakeTooltip(szPrefix, accounts[0]->szModuleName);
 		}
 
 		if (szPrefix && szPrefix[0]) {
@@ -100,12 +100,12 @@ TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 		else cli.szTip[0] = '\0';
 		cli.szTip[ MAX_TIP_SIZE-1 ] = '\0';
 
-		for ( t = 0; t < accounts.count; t++ ) {
+		for ( t = 0; t < accounts.getCount(); t++ ) {
 			int i = cli.pfnGetAccountIndexByPos( t );
 			if ( i == -1 )
 				continue;
 
-			pa = accounts.items[i];
+			pa = accounts[i];
 			if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
@@ -241,22 +241,22 @@ int fnTrayIconInit(HWND hwnd)
 
 	if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
 		int netProtoCount, i;
-		for (i = 0, netProtoCount = 0; i < accounts.count; i++)
-			if ( cli.pfnGetProtocolVisibility( accounts.items[i]->szModuleName ))
+		for (i = 0, netProtoCount = 0; i < accounts.getCount(); i++)
+			if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
 				netProtoCount++;
 		cli.trayIconCount = netProtoCount;
 	}
 	else cli.trayIconCount = 1;
 
-	cli.trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * (accounts.count > cli.trayIconCount ? accounts.count : cli.trayIconCount));
-	memset(cli.trayIcon, 0, sizeof(struct trayIconInfo_t) * (accounts.count > cli.trayIconCount ? accounts.count : cli.trayIconCount));
+	cli.trayIcon = (struct trayIconInfo_t *) mir_alloc(sizeof(struct trayIconInfo_t) * (accounts.getCount() > cli.trayIconCount ? accounts.getCount() : cli.trayIconCount));
+	memset(cli.trayIcon, 0, sizeof(struct trayIconInfo_t) * (accounts.getCount() > cli.trayIconCount ? accounts.getCount() : cli.trayIconCount));
 	if ( DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI
 	     && (averageMode <= 0 || DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT ))) {
 		int i;
-		for (i = accounts.count - 1; i >= 0; i--) {
+		for (i = accounts.getCount() - 1; i >= 0; i--) {
 			int j = cli.pfnGetAccountIndexByPos( i );
 			if ( j > -1 ) {
-				PROTOACCOUNT* pa = accounts.items[j];
+				PROTOACCOUNT* pa = accounts[j];
 				if ( cli.pfnGetProtocolVisibility( pa->szModuleName ))
 					cli.pfnTrayIconAdd(hwnd, pa->szModuleName, NULL, CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0));
 		}	}
@@ -317,8 +317,8 @@ static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD 
 		KillTimer(NULL,RefreshTimerId); 
 		RefreshTimerId=0;
 	}
-	for (i=0; i < accounts.count; i++) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for (i=0; i < accounts.getCount(); i++) {
+		PROTOACCOUNT* pa = accounts[i];
 		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) != 0 )
 			cli.pfnTrayIconUpdateBase( pa->szModuleName );
 	}
@@ -433,14 +433,14 @@ VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD 
 	lock;
 
 	for (cycleStep++;; cycleStep++) {
-		if (cycleStep >= accounts.count)
+		if (cycleStep >= accounts.getCount())
 			cycleStep = 0;
-		if ( cli.pfnGetProtocolVisibility( accounts.items[cycleStep]->szModuleName ))
+		if ( cli.pfnGetProtocolVisibility( accounts[cycleStep]->szModuleName ))
 			break;
 	}
 	DestroyIcon(cli.trayIcon[0].hBaseIcon);
-	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts.items[cycleStep]->szModuleName, 
-		CallProtoService( accounts.items[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
+	cli.trayIcon[0].hBaseIcon = cli.pfnGetIconFromStatusMode(NULL, accounts[cycleStep]->szModuleName, 
+		CallProtoService( accounts[cycleStep]->szModuleName, PS_GETSTATUS, 0, 0 ));
 	if (cli.trayIcon[0].isBase)
 		cli.pfnTrayIconUpdate(cli.trayIcon[0].hBaseIcon, NULL, NULL, 1);
 	ulock;
@@ -458,8 +458,8 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 		cli.cycleTimerId = 0;
 	}
 
-	for (i = 0, netProtoCount = 0; i < accounts.count; i++) {
-		PROTOACCOUNT* pa = accounts.items[i];
+	for (i = 0, netProtoCount = 0; i < accounts.getCount(); i++) {
+		PROTOACCOUNT* pa = accounts[i];
 		netProtoCount++;
 		if (!lstrcmpA(szChangedProto, pa->szModuleName ))
 			cycleStep = i;

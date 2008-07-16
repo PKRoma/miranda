@@ -158,8 +158,8 @@ void ChangeAllProtoMessages(char *szProto, int statusMode,char *msg)
 {
 	if ( szProto == NULL ) {
 		int i;
-		for( i=0; i < accounts.count; i++ ) {
-			PROTOACCOUNT* pa = accounts.items[i];
+		for( i=0; i < accounts.getCount(); i++ ) {
+			PROTOACCOUNT* pa = accounts[i];
 			if ( (CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND) && !DBGetContactSettingByte(NULL, pa->szProtoName, "LockMainStatus", 0))
 				CallProtoService( pa->szModuleName, PS_SETAWAYMSG, statusMode, ( LPARAM )msg );
 		}
@@ -411,8 +411,8 @@ static int AwayMsgSendModulesLoaded(WPARAM wParam,LPARAM lParam)
 	int i;
 
 	protoModeMsgFlags = 0;
-	for( i=0; i < accounts.count; i++ )
-		protoModeMsgFlags |= CallProtoService( accounts.items[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0 );
+	for( i=0; i < accounts.getCount(); i++ )
+		protoModeMsgFlags |= CallProtoService( accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0 );
 
 	if ( protoModeMsgFlags ) {
 		HookEvent( ME_CLIST_STATUSMODECHANGE, StatusModeChange );

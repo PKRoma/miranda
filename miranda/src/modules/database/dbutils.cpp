@@ -24,22 +24,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "profilemanager.h"
 
-struct
+static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
 {
-	DBEVENTTYPEDESCR** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
+	int result = strcmp( p1->module, p2->module );
+	if ( result )
+		return result;
+
+	return p1->eventType - p2->eventType;
 }
-static eventTypes;
+
+static LIST<DBEVENTTYPEDESCR> eventTypes( 10, CompareEventTypes );
 
 static BOOL bModuleInitialized = FALSE;
 
 static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )lParam;
-
-	int idx;
-	if ( !List_GetIndex(( SortedList* )&eventTypes, et, &idx )) {
+	if ( eventTypes.getIndex( et ) == -1 ) {
 		DBEVENTTYPEDESCR* p = ( DBEVENTTYPEDESCR* )mir_alloc( sizeof( DBEVENTTYPEDESCR ));
 		p->cbSize = DBEVENTTYPEDESCR_SIZE;
 		p->module = mir_strdup( et->module );
@@ -67,7 +68,7 @@ static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
 			mir_snprintf( szServiceName, sizeof(szServiceName), "%s/GetEventIcon%d", p->module, p->eventType );
 			p->iconService = mir_strdup( szServiceName );
 		}
-		List_Insert(( SortedList* )&eventTypes, p, idx );
+		eventTypes.insert( p );
 	}
 
 	return 0;
@@ -83,7 +84,7 @@ static int DbEventTypeGet(WPARAM wParam, LPARAM lParam)
 	if ( !List_GetIndex(( SortedList* )&eventTypes, &tmp, &idx ))
 		return 0;
 
-	return ( int )eventTypes.items[idx];
+	return ( int )eventTypes[idx];
 }
 
 static int DbEventGetText(WPARAM wParam, LPARAM lParam)
@@ -194,21 +195,10 @@ static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
     return ( int )CopyIcon( icon );
 }
 
-static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
-{
-	int result = strcmp( p1->module, p2->module );
-	if ( result )
-		return result;
-
-	return p1->eventType - p2->eventType;
-}
 
 int InitUtils()
 {
 	bModuleInitialized = TRUE;
-	
-	eventTypes.increment = 10;
-	eventTypes.sortFunc = ( FSortFunc )CompareEventTypes;
 
 	CreateServiceFunction(MS_DB_EVENT_REGISTERTYPE, DbEventTypeRegister);
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
@@ -223,8 +213,8 @@ void UnloadEventsModule()
 
 	if ( !bModuleInitialized ) return;
 
-	for ( i=0; i < eventTypes.count; i++ ) {
-		DBEVENTTYPEDESCR* p = eventTypes.items[i];
+	for ( i=0; i < eventTypes.getCount(); i++ ) {
+		DBEVENTTYPEDESCR* p = eventTypes[i];
 		mir_free( p->module );
 		mir_free( p->descr );
 		mir_free( p->textService );
@@ -232,5 +222,5 @@ void UnloadEventsModule()
 		mir_free( p );
 	}
 
-	List_Destroy(( SortedList* )&eventTypes );
+	eventTypes.destroy();
 }

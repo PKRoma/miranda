@@ -134,15 +134,7 @@ extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
 #define OFFSET_ENABLED  600
 #define OFFSET_NAME     800
 
-typedef struct
-{
-	PROTOACCOUNT** items;
-	int count, limit, increment;
-	FSortFunc sortFunc;
-}
-	TAccounts;
-
-extern TAccounts accounts;
+extern LIST<PROTOACCOUNT> accounts;
 
 PROTOACCOUNT* Proto_GetAccount( const char* accName );
 PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName );

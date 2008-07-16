@@ -82,8 +82,8 @@ static void RestoreMode(HWND hwnd)
 static void DisconnectAll()
 {
 	int nProto;
-	for (nProto = 0; nProto < accounts.count; nProto++)
-		CallProtoService( accounts.items[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
+	for (nProto = 0; nProto < accounts.getCount(); nProto++)
+		CallProtoService( accounts[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
 static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)
