@@ -356,7 +356,6 @@ struct ThreadData
 	// network support
 	JABBER_SOCKET s;
 	BOOL  useSSL;
-	PVOID ssl;
 	CRITICAL_SECTION iomutex; // protects i/o operations
 	CJabberProto* proto;
 

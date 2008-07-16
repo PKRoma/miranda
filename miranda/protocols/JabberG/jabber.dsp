@@ -304,11 +304,6 @@ SOURCE=.\jabber_secur.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\jabber_ssl.cpp
-# ADD CPP /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=.\jabber_std.cpp
 # End Source File
 # Begin Source File
@@ -429,10 +424,6 @@ SOURCE=.\jabber_search.h
 # Begin Source File
 
 SOURCE=.\jabber_secur.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\jabber_ssl.h
 # End Source File
 # Begin Source File
 

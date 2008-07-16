@@ -28,7 +28,6 @@ Last change by : $Author$
 #include "jabber.h"
 #include <richedit.h>
 
-#include "jabber_ssl.h"
 #include "jabber_list.h"
 #include "jabber_caps.h"
 

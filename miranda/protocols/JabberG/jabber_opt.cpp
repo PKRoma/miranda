@@ -28,7 +28,6 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_list.h"
-#include "jabber_ssl.h"
 #include <uxtheme.h>
 #include "jabber_caps.h"
 #include "jabber_opttree.h"
@@ -499,16 +498,9 @@ protected:
 
 		EnableWindow(GetDlgItem(m_hwnd, IDC_COMBO_RESOURCE ), m_chkUseHostnameAsResource.GetState() != BST_CHECKED);
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberConnected);
-		if (!m_proto->SslInit())
-		{
-			m_chkUseSsl.Disable();
-			m_chkUseTls.Disable();
-			EnableWindow(GetDlgItem(m_hwnd, IDC_DOWNLOAD_OPENSSL), TRUE);
-		} else
-		{
-			m_chkUseTls.Enable(!m_proto->JGetByte("UseSSL", FALSE));
-			EnableWindow(GetDlgItem(m_hwnd, IDC_DOWNLOAD_OPENSSL), FALSE);
-		}
+
+		m_chkUseTls.Enable(!m_proto->JGetByte("UseSSL", FALSE));
+		EnableWindow(GetDlgItem(m_hwnd, IDC_DOWNLOAD_OPENSSL), FALSE);
 
 		if (m_proto->JGetByte( "ManualConnect", FALSE ))
 		{

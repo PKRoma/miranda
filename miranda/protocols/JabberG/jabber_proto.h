@@ -737,7 +737,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_thread.c ----------------------------------------------
 
 	void   __cdecl ServerThread( ThreadData* info );
-	void   __cdecl KeepAliveThread( void* );
 		  
 	void   OnProcessFailure( XmlNode *node, void *userdata );
 	void   OnProcessError( XmlNode *node, void *userdata );
@@ -810,8 +809,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   WsUninit(void);
 	int    WsSend( JABBER_SOCKET s, char* data, int datalen, int flags );
 	int    WsRecv( JABBER_SOCKET s, char* data, long datalen, int flags );
-
-	BOOL   SslInit();
 
 	//---- jabber_xml.c ------------------------------------------------------------------
 

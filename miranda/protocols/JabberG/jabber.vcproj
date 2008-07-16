@@ -889,39 +889,6 @@
 				RelativePath=".\jabber_secur.cpp">
 			</File>
 			<File
-				RelativePath="jabber_ssl.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\jabber_std.cpp">
 			</File>
 			<File
@@ -1212,9 +1179,6 @@
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">
-			</File>
-			<File
-				RelativePath="jabber_ssl.h">
 			</File>
 			<File
 				RelativePath="jabber_xml.h">

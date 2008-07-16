@@ -42,7 +42,6 @@ Last change by : $Author: m_mluhov $
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 #include "jabber_disco.h"
-#include "jabber_ssl.h"
 
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_modernopt.h"
@@ -198,9 +197,6 @@ CJabberProto::~CJabberProto()
 	mir_free( m_szProtoName );
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
-
-	if ( m_sslCtx && pfn_SSL_CTX_free )
-		pfn_SSL_CTX_free( m_sslCtx );
 
 	for ( int i=0; i < m_lstTransports.getCount(); i++ )
 		free( m_lstTransports[i] );

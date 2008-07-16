@@ -30,7 +30,6 @@ Last change by : $Author$
 
 #include <windns.h>   // requires Windows Platform SDK
 
-#include "jabber_ssl.h"
 #include "jabber_list.h"
 #include "jabber_iq.h"
 #include "jabber_secur.h"
@@ -122,36 +121,6 @@ void CJabberProto::OnPingReply( XmlNode* node, void* userdata, CJabberIqInfo* pI
 	}
 }
 
-void __cdecl CJabberProto::KeepAliveThread( void* )
-{
-	NETLIBSELECT nls = {0};
-	nls.cbSize = sizeof( NETLIBSELECT );
-	nls.dwTimeout = 5000; // 5 second
-	nls.hExceptConns[0] = m_ThreadInfo->s;
-	
-	DWORD dwLastPingTime = GetTickCount();
-	
-	for ( ;; ) {
-		if ( JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) != 0 )
-			break;
-
-		DWORD dwTickCount = GetTickCount();
-		if (dwTickCount - dwLastPingTime < 60000) // 1 minute
-			continue;
-		dwLastPingTime = dwTickCount;
-
-		if ( m_ThreadInfo && JGetByte( "EnableServerXMPPPing", FALSE )) {
-			XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
-			XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_PING );
-			m_ThreadInfo->send( iq );
-		}
-
-		if ( m_bSendKeepAlive )
-			m_ThreadInfo->send( " \t " );
-	}
-	Log( "Exiting KeepAliveThread" );
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 typedef DNS_STATUS (WINAPI *DNSQUERYA)(IN PCSTR pszName, IN WORD wType, IN DWORD Options, IN PIP4_ARRAY aipServers OPTIONAL, IN OUT PDNS_RECORD *ppQueryResults OPTIONAL, IN OUT PVOID *pReserved OPTIONAL);
@@ -229,7 +198,6 @@ void CJabberProto::ServerThread( ThreadData* info )
 	char* buffer;
 	int datalen;
 	int oldStatus;
-	PVOID ssl;
 
 	Log( "Thread started: type=%d", info->type );
 
@@ -431,27 +399,8 @@ LBL_FatalError:
 
 	if ( info->useSSL ) {
 		Log( "Intializing SSL connection" );
-		if ( SslInit() && socket != INVALID_SOCKET ) {
-			Log( "SSL using socket = %d", socket );
-			if (( ssl=pfn_SSL_new( m_sslCtx )) != NULL ) {
-				Log( "SSL create context ok" );
-				if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
-					Log( "SSL set fd ok" );
-					if ( pfn_SSL_connect( ssl ) > 0 ) {
-						Log( "SSL negotiation ok" );
-						info->ssl = ssl;	// This make all communication on this handle use SSL
-						Log( "SSL enabled for handle = %d", info->s );
-					}
-					else {
-						Log( "SSL negotiation failed" );
-						pfn_SSL_free( ssl );
-				}	}
-				else {
-					Log( "SSL set fd failed" );
-					pfn_SSL_free( ssl );
-		}	}	}
-
-		if ( !info->ssl ) {
+		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, 0)) {
+			Log( "SSL intialization failed" );
 			if ( info->type == JABBER_SESSION_NORMAL ) {
 				oldStatus = m_iStatus;
 				m_iStatus = ID_STATUS_OFFLINE;
@@ -464,8 +413,6 @@ LBL_FatalError:
 				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
 			}
 			mir_free( buffer );
-			if ( !hLibSSL )
-				MessageBox( NULL, TranslateT( "The connection requires an OpenSSL library, which is not installed." ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 			Log( "Thread ended, SSL connection failed" );
 			goto LBL_FatalError;
 	}	}
@@ -482,8 +429,6 @@ LBL_FatalError:
 				m_bSendKeepAlive = TRUE;
 			else
 				m_bSendKeepAlive = FALSE;
-			JForkThread( &CJabberProto::KeepAliveThread, NULL );
-
 			JSetStringT(NULL, "jid", m_szJabberJID); // store jid in database
 		}
 
@@ -493,6 +438,24 @@ LBL_FatalError:
 		datalen = 0;
 
 		for ( ;; ) {
+			NETLIBSELECT nls = {0};
+			nls.cbSize = sizeof( NETLIBSELECT );
+			nls.dwTimeout = 60000; // 60 seconds
+			nls.hReadConns[0] = info->s;
+			int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
+			if ( nSelRes == -1 ) // error
+				break;
+			else if ( nSelRes == 0 ) {
+				if ( JGetByte( "EnableServerXMPPPing", FALSE )) {
+					XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
+					XmlNode* query = iq.addChild( "query" ); query->addAttr( "xmlns", JABBER_FEAT_PING );
+					info->send( iq );
+				}
+				else if ( m_bSendKeepAlive )
+					info->send( " \t " );
+				continue;
+			}
+
 			int recvResult = info->recv( buffer+datalen, jabberNetworkBufferSize-datalen), bytesParsed;
 			Log( "recvResult = %d", recvResult );
 			if ( recvResult <= 0 )
@@ -500,15 +463,6 @@ LBL_FatalError:
 			datalen += recvResult;
 
 			buffer[datalen] = '\0';
-			if ( info->ssl && DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE ) {
-				// Emulate netlib log feature for SSL connection
-				char* szLogBuffer = ( char* )mir_alloc( recvResult+128 );
-				if ( szLogBuffer != NULL ) {
-					strcpy( szLogBuffer, "( SSL ) Data received\n" );
-					memcpy( szLogBuffer+strlen( szLogBuffer ), buffer+datalen-recvResult, recvResult+1 /* also copy \0 */ );
-					Netlib_Logf( m_hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-					mir_free( szLogBuffer );
-			}	}
 
 			bytesParsed = OnXmlParse( &xmlState, buffer );
 			Log( "bytesParsed = %d", bytesParsed );
@@ -910,32 +864,11 @@ void CJabberProto::OnProcessProceed( XmlNode *node, void *userdata )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		Log("Starting TLS...");
-		if ( !SslInit() ) {
+		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, 0))
 			Log( "SSL initialization failed" );
-			return;
-		}
-
-		int socket = JCallService( MS_NETLIB_GETSOCKET, ( WPARAM ) info->s, 0 );
-		PVOID ssl;
-		if (( ssl=pfn_SSL_new( m_sslCtx )) != NULL ) {
-			Log( "SSL create context ok" );
-			if ( pfn_SSL_set_fd( ssl, socket ) > 0 ) {
-				Log( "SSL set fd ok" );
-				if ( pfn_SSL_connect( ssl ) > 0 ) {
-					Log( "SSL negotiation ok" );
-					info->ssl = ssl;
-					info->useSSL = true;
-					Log( "SSL enabled for handle = %d", info->s );
-					xmlStreamInitialize( "after successful StartTLS" );
-				}
-				else {
-					Log( "SSL negotiation failed" );
-					pfn_SSL_free( ssl );
-			}	}
-			else {
-				Log( "SSL set fd failed" );
-				pfn_SSL_free( ssl );
-}	}	}	}
+		else
+			xmlStreamInitialize( "after successful StartTLS" );
+}	}
 
 void CJabberProto::OnProcessCompressed( XmlNode *node, void *userdata )
 {
@@ -1957,7 +1890,6 @@ ThreadData::ThreadData( CJabberProto* aproto, JABBER_SESSION_TYPE parType )
 
 ThreadData::~ThreadData()
 {
-	if (ssl) pfn_SSL_free( ssl );
 	delete auth;
 	mir_free( zRecvData );
 	DeleteCriticalSection( &iomutex );
@@ -1975,14 +1907,7 @@ int ThreadData::recvws( char* buf, size_t len, int flags )
 	if ( this == NULL )
 		return 0;
 
-	int result;
-
-	if ( ssl != NULL )
-		result = pfn_SSL_read( ssl, buf, len );
-	else
-		result = proto->WsRecv( s, buf, len, flags );
-
-	return result;
+	return proto->WsRecv( s, buf, len, flags );
 }
 
 int ThreadData::recv( char* buf, size_t len )
@@ -1995,16 +1920,7 @@ int ThreadData::recv( char* buf, size_t len )
 
 int ThreadData::sendws( char* buffer, size_t bufsize, int flags )
 {
-	if ( !ssl )
-		return proto->WsSend( s, buffer, bufsize, flags );
-
-	if ( flags != MSG_NODUMP && DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE ) {
-		char* szLogBuffer = ( char* )alloca( bufsize+32 );
-		strcpy( szLogBuffer, "( SSL ) Data sent\n" );
-		memcpy( szLogBuffer+strlen( szLogBuffer ), buffer, bufsize+1  ); // also copy \0
-		Netlib_Logf( proto->m_hNetlibUser, "%s", szLogBuffer );	// %s to protect against when fmt tokens are in szLogBuffer causing crash
-	}
-	return pfn_SSL_write( ssl, buffer, bufsize );
+	return proto->WsSend( s, buffer, bufsize, flags );
 }
 
 int ThreadData::send( char* buffer, int bufsize )

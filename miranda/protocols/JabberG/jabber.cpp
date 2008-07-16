@@ -27,7 +27,6 @@ Last change by : $Author$
 */
 
 #include "jabber.h"
-#include "jabber_ssl.h"
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 #include "jabber_rc.h"
