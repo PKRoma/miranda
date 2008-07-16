@@ -157,6 +157,7 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				CompileAs="2"
 				DisableSpecificWarnings="4996"
 			/>
@@ -178,6 +179,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				GenerateMapFile="true"
 				LinkTimeCodeGeneration="1"
