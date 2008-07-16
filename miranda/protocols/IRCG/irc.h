@@ -655,7 +655,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 
 protected :
 	int codepage;
-	CSSLSession sslSession;
 	HANDLE con;
 	HANDLE hBindPort;
 	void DoReceive();
@@ -743,7 +742,6 @@ private :
 
 //main.cpp
 extern HINSTANCE hInst;
-extern HMODULE m_ssleay32;
 
 extern char mirandapath[MAX_PATH];
 extern int mirVersion;
