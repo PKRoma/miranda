@@ -130,7 +130,13 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	InitializeCriticalSection(&cs);
 	InitializeCriticalSection(&m_gchook);
 
-	m_ssleay32 = LoadLibraryA("ssleay32.dll");
+	m_ssleay32 = LoadLibraryA("winssl.dll");
+	if (m_ssleay32 == NULL) 
+		m_ssleay32 = LoadLibraryA("cyassl.dll");
+	if (m_ssleay32 == NULL) 
+		m_ssleay32 = LoadLibraryA("ssleay32.dll");
+	if (m_ssleay32 == NULL) 
+		m_ssleay32 = LoadLibraryA("libssl32.DLL" );
 
 	// register protocol
 	{	PROTOCOLDESCRIPTOR pd;

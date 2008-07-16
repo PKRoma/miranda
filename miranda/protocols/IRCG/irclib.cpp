@@ -208,8 +208,6 @@ int CSSLSession::SSLInit()
 	pSSL_read					= (tSSL_read)					GetProcAddress(m_ssleay32, "SSL_read");
 	pSSL_write					= (tSSL_write)					GetProcAddress(m_ssleay32, "SSL_write");
 	pSSLv23_method				= (tSSLv23_method)				GetProcAddress(m_ssleay32, "SSLv23_method");
-	pSSL_get_error				= (tSSL_get_error)				GetProcAddress(m_ssleay32, "SSL_get_error");
-	pSSL_load_error_strings		= (tSSL_load_error_strings)		GetProcAddress(m_ssleay32, "SSL_load_error_strings");
 	pSSL_shutdown				= (tSSL_shutdown)				GetProcAddress(m_ssleay32, "SSL_shutdown");
 	pSSL_CTX_free				= (tSSL_CTX_free)				GetProcAddress(m_ssleay32, "SSL_CTX_free");
 	pSSL_free					= (tSSL_free)					GetProcAddress(m_ssleay32, "SSL_free");
@@ -222,8 +220,6 @@ int CSSLSession::SSLInit()
 		!pSSL_read					||
 		!pSSL_write					||
 		!pSSLv23_method				||
-		!pSSL_get_error				||
-		!pSSL_load_error_strings	||
 		!pSSL_shutdown				||
 		!pSSL_CTX_free				||
 		!pSSL_free					//||
@@ -242,7 +238,6 @@ int CSSLSession::SSLInit()
 		return false;
 	}
 	
-	pSSL_load_error_strings();
 	return true;
 }
 

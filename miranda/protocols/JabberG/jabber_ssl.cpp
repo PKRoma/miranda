@@ -48,7 +48,11 @@ BOOL JabberSslInit()
 
 	BOOL error = FALSE;
 
-	hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
+	hLibSSL = LoadLibraryA("WINSSL.DLL");
+	if ( !hLibSSL )
+		hLibSSL = LoadLibraryA("CYASSL.dll");
+	if ( !hLibSSL )
+		hLibSSL = LoadLibraryA( "SSLEAY32.DLL" );
 	if ( !hLibSSL )
 		hLibSSL = LoadLibraryA( "LIBSSL32.DLL" );
 
