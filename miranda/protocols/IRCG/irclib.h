@@ -24,23 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma warning (disable: 4786)
 
-// OpenSSL stuff
-#include <openssl/ssl.h>
-
-typedef int			(*tSSL_library_init)		(void);
-typedef SSL_CTX*	(*tSSL_CTX_new)				(SSL_METHOD *meth);
-typedef SSL*		(*tSSL_new)					(SSL_CTX *ctx);
-typedef int			(*tSSL_set_fd)				(SSL *ssl, int fd);
-typedef int			(*tSSL_connect)				(SSL *ssl);
-typedef int			(*tSSL_read)				(SSL *ssl, void *buf, int num);
-typedef int			(*tSSL_write)				(SSL *ssl, const void *buf, int num);
-typedef SSL_METHOD*	(*tSSLv23_method)			(void);
-typedef int			(*tSSL_get_error)			(SSL *s, int retcode);
-typedef void		(*tSSL_load_error_strings)	(void);
-typedef int			(*tSSL_shutdown)			(SSL *ssl);
-typedef void		(*tSSL_CTX_free)			(SSL_CTX *ctx);
-typedef void		(*tSSL_free)				(SSL *ssl);
-
 void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void* extra);
 unsigned long ConvertIPToInteger(char * IP);
@@ -124,29 +107,6 @@ struct CIrcSessionInfo
 
 	void Reset();
 };
-
-////////////////////////////////////////////////////////////////////
-
-//#ifdef IRC_SSL
-// Handles to the SSL libraries
-static SSL_CTX* m_ssl_ctx;	// SSL context, valid for all threads	
-
-class CSSLSession { 	// OpenSSL
-
-public:
-	SSL* m_ssl;
-	int nSSLConnected;
-	CSSLSession(void) : nSSLConnected(0) {
-		m_ssl_ctx = 0;
-	}
-	~CSSLSession();
-	int SSLInit();
-	int SSLConnect(HANDLE con);
-	int SSLDisconnect(void);
-
-};
-
-//#endif
 
 ////////////////////////////////////////////////////////////////////
 

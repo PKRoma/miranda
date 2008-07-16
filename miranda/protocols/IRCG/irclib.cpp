@@ -187,115 +187,6 @@ CMString CIrcMessage::AsString() const
 
 ////////////////////////////////////////////////////////////////////
 
-tSSL_library_init       pSSL_library_init;
-tSSL_CTX_new            pSSL_CTX_new;
-tSSL_new                pSSL_new;
-tSSL_set_fd             pSSL_set_fd;
-tSSL_connect            pSSL_connect;
-tSSL_read               pSSL_read;
-tSSL_write              pSSL_write;
-tSSLv23_method          pSSLv23_method;
-tSSL_get_error          pSSL_get_error;
-tSSL_load_error_strings pSSL_load_error_strings;
-tSSL_shutdown           pSSL_shutdown;
-tSSL_CTX_free           pSSL_CTX_free;
-tSSL_free               pSSL_free;
-
-int CSSLSession::SSLInit() 
-{
-	if(m_ssl_ctx) return true;
-	if(!m_ssleay32) return false;
-
-	pSSL_library_init			= (tSSL_library_init)			GetProcAddress(m_ssleay32, "SSL_library_init");
-	pSSL_CTX_new				= (tSSL_CTX_new)				GetProcAddress(m_ssleay32, "SSL_CTX_new");
-	pSSL_new					= (tSSL_new)					GetProcAddress(m_ssleay32, "SSL_new");
-	pSSL_set_fd					= (tSSL_set_fd)					GetProcAddress(m_ssleay32, "SSL_set_fd");
-	pSSL_connect				= (tSSL_connect)				GetProcAddress(m_ssleay32, "SSL_connect");
-	pSSL_read					= (tSSL_read)					GetProcAddress(m_ssleay32, "SSL_read");
-	pSSL_write					= (tSSL_write)					GetProcAddress(m_ssleay32, "SSL_write");
-	pSSLv23_method				= (tSSLv23_method)				GetProcAddress(m_ssleay32, "SSLv23_method");
-	pSSL_get_error				= (tSSL_get_error)				GetProcAddress(m_ssleay32, "SSL_get_error");
-	pSSL_load_error_strings		= (tSSL_load_error_strings)		GetProcAddress(m_ssleay32, "SSL_load_error_strings");
-	pSSL_shutdown				= (tSSL_shutdown)				GetProcAddress(m_ssleay32, "SSL_shutdown");
-	pSSL_CTX_free				= (tSSL_CTX_free)				GetProcAddress(m_ssleay32, "SSL_CTX_free");
-	pSSL_free					= (tSSL_free)					GetProcAddress(m_ssleay32, "SSL_free");
-
-	if(	!pSSL_library_init			||
-		!pSSL_CTX_new				||
-		!pSSL_new					||
-		!pSSL_set_fd				||
-		!pSSL_connect				||
-		!pSSL_read					||
-		!pSSL_write					||
-		!pSSLv23_method				||
-		!pSSL_get_error				||
-		!pSSL_load_error_strings	||
-		!pSSL_shutdown				||
-		!pSSL_CTX_free				||
-		!pSSL_free					//||
-		)  
-	{
-		return false;
-	}
-
-	if(!pSSL_library_init()) 
-	{
-		return false;
-	}
-	m_ssl_ctx=pSSL_CTX_new(pSSLv23_method());
-	
-	if (!m_ssl_ctx) {
-		return false;
-	}
-	
-	pSSL_load_error_strings();
-	return true;
-}
-
-CSSLSession::~CSSLSession()
-{
-	if ( m_ssl_ctx )
-		pSSL_CTX_free( m_ssl_ctx );
-	m_ssl_ctx = 0;
-}
-
-int CSSLSession::SSLConnect(HANDLE con)
-{
-	if ( !SSLInit() ) 
-		return false;
-	
-	SOCKET s = ( SOCKET )CallService( MS_NETLIB_GETSOCKET, (WPARAM) con, (LPARAM) 0 );
-	if ( s == INVALID_SOCKET ) 
-		return false;
-	
-	m_ssl = pSSL_new( m_ssl_ctx );
-	if ( !m_ssl ) 
-		return false;
-	
-	if ( m_ssl )
-		pSSL_set_fd(m_ssl, s);
-	
-	nSSLConnected = pSSL_connect(m_ssl);
-	return ( nSSLConnected == 1 );
-}
-
-int CSSLSession::SSLDisconnect(void)
-{
-	if ( nSSLConnected != 1 )
-		return true;
-	
-	int nSSLret = pSSL_shutdown( m_ssl );
-	if ( nSSLret == 0 )
-		nSSLret = pSSL_shutdown( m_ssl );
-	
-	pSSL_free( m_ssl );
-	m_ssl = 0;
-	nSSLConnected = 0;	
-	return nSSLret;
-}
-
-////////////////////////////////////////////////////////////////////
-
 int CIrcProto::getCodepage() const
 {
 	return ( con != NULL ) ? codepage : CP_ACP;
@@ -329,8 +220,7 @@ bool CIrcProto::Connect(const CIrcSessionInfo& info)
 	FindLocalIP(con); // get the local ip used for filetransfers etc
 
 	if ( info.m_iSSL > 0 ) {
-		sslSession.SSLConnect( con ); // Establish SSL connection
-		if ( sslSession.nSSLConnected != 1 && info.m_iSSL == 2 ) {
+		if ( !CallService( MS_NETLIB_STARTSSL, ( WPARAM ) con, 0 ) && info.m_iSSL == 2 ) {
 			Netlib_CloseHandle( con );
 			con = NULL;
 			m_info.Reset();
@@ -377,16 +267,6 @@ void CIrcProto::Disconnect(void)
 	else
 		NLSend( "QUIT \r\n" );
 
-	int i = 0;
-	while ( sslSession.nSSLConnected && sslSession.m_ssl || !sslSession.nSSLConnected && con ) {
-		Sleep(50);
-		if (i == 20)
-			break;
-		i++;
-	}
-
-	sslSession.SSLDisconnect(); // Close SSL connection
-
 	if ( con )
 		Netlib_CloseHandle(con);
 
@@ -410,12 +290,7 @@ int CIrcProto::NLSend( const unsigned char* buf, int cbBuf)
 		lstrcpynA(pszTemp, (const char *)buf, lstrlenA ((const char *)buf) + 1);
 
 		if ( Scripting_TriggerMSPRawOut(&pszTemp) && pszTemp ) {
-			if ( sslSession.nSSLConnected == 1 ) {
-				iVal = pSSL_write(sslSession.m_ssl, pszTemp, lstrlenA(pszTemp));
-				if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
-					DoNetlibLog("( SSL ) Data sent\n%s",pszTemp);
-			}
-			else if (con)
+			if (con)
 				iVal = Netlib_Send(con, (const char*)pszTemp, lstrlenA(pszTemp), MSG_DUMPASTEXT);
 		}
 		if ( pszTemp )
@@ -424,11 +299,6 @@ int CIrcProto::NLSend( const unsigned char* buf, int cbBuf)
 		return iVal;
 	}
 	
-	if ( sslSession.nSSLConnected == 1 ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
-			DoNetlibLog("( SSL ) Data sent\n%s",buf);
-		return pSSL_write(sslSession.m_ssl, buf, cbBuf);	
-	}
 	if (con)
 		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
@@ -466,12 +336,6 @@ int CIrcProto::NLSend( const char* fmt, ...)
 
 int CIrcProto::NLSendNoScript( const unsigned char* buf, int cbBuf)
 {
-	if ( sslSession.nSSLConnected == 1 ) {
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpSent", TRUE ) == TRUE)
-			DoNetlibLog("( SSL ) Data sent\n%s",buf);
-		return pSSL_write(sslSession.m_ssl, buf, cbBuf);
-	}
-
 	if ( con )
 		return Netlib_Send(con, (const char*)buf, cbBuf, MSG_DUMPASTEXT);
 
@@ -480,16 +344,7 @@ int CIrcProto::NLSendNoScript( const unsigned char* buf, int cbBuf)
 
 int CIrcProto::NLReceive(unsigned char* buf, int cbBuf)
 {
-	if ( sslSession.nSSLConnected == 1 ) {
-		int Retval = pSSL_read( sslSession.m_ssl, buf, cbBuf );
-		if ( DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE) {
-			buf[Retval] = '\0';
-			DoNetlibLog("( SSL ) Data received\n%s",buf);
-		}
-		return Retval;
-	}
-	else
-		return Netlib_Recv( con, (char*)buf, cbBuf, MSG_DUMPASTEXT );
+	return Netlib_Recv( con, (char*)buf, cbBuf, MSG_DUMPASTEXT );
 }
 
 void CIrcProto::KillIdent()

@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLUGINLINK*    pluginLink;
 HINSTANCE      hInst = NULL;
-HMODULE        m_ssleay32 = NULL;
 
 char           mirandapath[MAX_PATH];
 int            mirVersion;
@@ -102,12 +101,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	mir_getUTFI( &utfi );
 	mir_getLI( &li );
 
-	m_ssleay32 = LoadLibraryA( "winssl.dll" );
-	if ( !m_ssleay32 )
-		m_ssleay32 = LoadLibraryA( "cyassl.dll" );
-	if ( !m_ssleay32 )
-		m_ssleay32 = LoadLibraryA("ssleay32.dll");
-
 	GetModuleFileNameA(hInst, mirandapath, MAX_PATH);
 	char* p = strrchr( mirandapath, '\\' );
 	if ( p ) {
@@ -138,9 +131,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	if ( m_ssleay32 )
-		FreeLibrary( m_ssleay32 );
-
 	UninitTimers();
 	return 0;
 }

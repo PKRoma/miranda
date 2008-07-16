@@ -505,15 +505,12 @@ void CQuickDlg::OnOk( CCtrlButton* )
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
 		lstrcpyA( m_proto->m_network, pData->m_group ); 
-		if( m_ssleay32 ) {
-			pData->m_iSSL = 0;
-			if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_ON ))
-				pData->m_iSSL = 2;
-			if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_AUTO ))
-				pData->m_iSSL = 1;
-			m_proto->m_iSSL = pData->m_iSSL;
-		}
-		else m_proto->m_iSSL = 0;
+		pData->m_iSSL = 0;
+		if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_ON ))
+			pData->m_iSSL = 2;
+		if ( IsDlgButtonChecked( m_hwnd, IDC_SSL_AUTO ))
+			pData->m_iSSL = 1;
+		m_proto->m_iSSL = pData->m_iSSL;
 	}
 	
 	TCHAR windowname[20];
@@ -547,22 +544,22 @@ void CQuickDlg::OnServerCombo( CCtrlData* )
 	SetDlgItemTextA( m_hwnd, IDC_PASS,   "" );
 	SetDlgItemInt( m_hwnd, IDC_PORT,   pData->m_portStart, FALSE );
 	SetDlgItemInt( m_hwnd, IDC_PORT2,  pData->m_portEnd, FALSE );
-	if ( m_ssleay32 ) {
-		if ( pData->m_iSSL == 0 ) {
-			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
-		}
-		if ( pData->m_iSSL == 1 ) {
-			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_CHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
-		}
-		if ( pData->m_iSSL == 2 ) {
-			CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_CHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
-			CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
-	}	}
+
+	if ( pData->m_iSSL == 0 ) {
+		CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_CHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
+	}
+	if ( pData->m_iSSL == 1 ) {
+		CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_CHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_UNCHECKED );
+	}
+	if ( pData->m_iSSL == 2 ) {
+		CheckDlgButton( m_hwnd, IDC_SSL_ON,   BST_CHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_OFF,  BST_UNCHECKED );
+		CheckDlgButton( m_hwnd, IDC_SSL_AUTO, BST_UNCHECKED );
+	}
 
 	if ( !strcmp( pData->m_name, Translate("---- Not listed server ----" ))) {
 		SendDlgItemMessage( m_hwnd, IDC_SERVER, EM_SETREADONLY, false, 0);

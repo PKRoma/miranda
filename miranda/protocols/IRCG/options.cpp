@@ -351,23 +351,20 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 			if ( p )
 				m_server.SetTextA( p+1 );
 
-			if ( m_ssleay32 ) {
-				if ( pData->m_iSSL == 0 )
-					CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
-				if ( pData->m_iSSL == 1 )
-					CheckDlgButton( m_hwnd, IDC_AUTO, BST_CHECKED );
-				if ( pData->m_iSSL == 2 )
-					CheckDlgButton( m_hwnd, IDC_ON, BST_CHECKED );
-			}
+			if ( pData->m_iSSL == 0 )
+				CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED );
+			if ( pData->m_iSSL == 1 )
+				CheckDlgButton( m_hwnd, IDC_AUTO, BST_CHECKED );
+			if ( pData->m_iSSL == 2 )
+				CheckDlgButton( m_hwnd, IDC_ON, BST_CHECKED );
 		}
 		else {
-			if ( m_ssleay32 )
-				CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED);
+			CheckDlgButton( m_hwnd, IDC_OFF, BST_CHECKED);
 			m_port.SetInt( 6667 );
 			m_port2.SetInt( 6667 );
 		}
 
-		int bEnableSsl = ( m_ssleay32 != NULL );
+		int bEnableSsl = TRUE;
 		EnableWindow(GetDlgItem( m_hwnd, IDC_ON), bEnableSsl );
 		EnableWindow(GetDlgItem( m_hwnd, IDC_OFF), bEnableSsl );
 		EnableWindow(GetDlgItem( m_hwnd, IDC_AUTO), bEnableSsl );
@@ -531,15 +528,13 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_server.SetTextA( m_proto->m_serverName );
 	m_port.SetTextA( m_proto->m_portStart );
 	m_port2.SetTextA( m_proto->m_portEnd );
-	if ( m_ssleay32 ) {
-		if ( m_proto->m_iSSL == 0 )
-			m_ssl.SetText( TranslateT( "Off" ));
-		if ( m_proto->m_iSSL == 1 )
-			m_ssl.SetText( TranslateT( "Auto" ));
-		if ( m_proto->m_iSSL == 2 )
-			m_ssl.SetText( TranslateT( "On" ));
-	}
-	else m_ssl.SetText( TranslateT( "N/A" ));
+
+	if ( m_proto->m_iSSL == 0 )
+		m_ssl.SetText( TranslateT( "Off" ));
+	if ( m_proto->m_iSSL == 1 )
+		m_ssl.SetText( TranslateT( "Auto" ));
+	if ( m_proto->m_iSSL == 2 )
+		m_ssl.SetText( TranslateT( "On" ));
 
 	if ( m_proto->m_serverComboSelection != -1 ) {
 		SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( m_proto->m_serverComboSelection );
@@ -609,15 +604,14 @@ void CConnectPrefsDlg::OnServerCombo( CCtrlData* )
 		m_port.SetInt( pData->m_portStart );
 		m_port2.SetInt( pData->m_portEnd );
 		m_pass.SetTextA( "" );
-		if ( m_ssleay32 ) {
-			if ( pData->m_iSSL == 0 )
-				m_ssl.SetText( TranslateT( "Off" ));
-			if ( pData->m_iSSL == 1 )
-				m_ssl.SetText( TranslateT( "Auto" ));
-			if ( pData->m_iSSL == 2 )
-				m_ssl.SetText( TranslateT( "On" ));
-		}
-		else m_ssl.SetText( TranslateT( "N/A" ));
+
+		if ( pData->m_iSSL == 0 )
+			m_ssl.SetText( TranslateT( "Off" ));
+		if ( pData->m_iSSL == 1 )
+			m_ssl.SetText( TranslateT( "Auto" ));
+		if ( pData->m_iSSL == 2 )
+			m_ssl.SetText( TranslateT( "On" ));
+
 		SendMessage(GetParent( m_hwnd), PSM_CHANGED,0,0);
 }	}
 
