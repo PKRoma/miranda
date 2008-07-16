@@ -4,10 +4,8 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.7"
-!define MIM_PREVIEW             "0" ; 0 for final build
-
-!define MIM_OPENSSL_URL         "http://www.slproweb.com/products/Win32OpenSSL.html"
+!define MIM_VERSION             "0.7.8"
+!define MIM_PREVIEW             "1" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -25,10 +23,10 @@
 
 !if  ${MIM_PREVIEW} != 0
 Name                            "${MIM_NAME} ${MIM_VERSION} Preview Release ${MIM_PREVIEW}"
-OutFile                         "miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
+OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-pr${MIM_PREVIEW}-${MIM_BUILD_TYPE}.exe"
 !else
 Name                            "${MIM_NAME} ${MIM_VERSION}"
-OutFile                         "miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
+OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
@@ -38,7 +36,6 @@ SetOverWrite                    on
 BrandingText                    "www.miranda-im.org"
 
 VAR INST_UPGRADE
-VAR INST_SSLFOUND
 var INST_SUCCESS
 
 !define MUI_HEADERIMAGE
@@ -101,6 +98,7 @@ Section "Miranda IM"
   File "${MIM_BUILD_DIR}\miranda32.exe"
   File "${MIM_BUILD_DIR}\dbtool.exe"
   File "${MIM_BUILD_DIR}\zlib.dll"
+  File "${MIM_BUILD_DIRANSI}\winssl.dll"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
   File "${MIM_BUILD_SRC}\docs\readme.txt"
   File "${MIM_BUILD_SRC}\docs\license.txt"
@@ -240,6 +238,8 @@ Section Uninstall
   RMDir /r "$INSTDIR\Plugins"
   Delete "$INSTDIR\dbtool.exe"
   Delete "$INSTDIR\miranda32.exe"
+  Delete "$INSTDIR\zlib.dll"
+  Delete "$INSTDIR\winssl.dll"
   Delete "$INSTDIR\mirandaboot.ini"
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\contributors.txt"
@@ -266,28 +266,6 @@ FunctionEnd
 
 Function .onInstSuccess
   StrCpy $INST_SUCCESS 1
-FunctionEnd
-
-Function .onGUIEnd
-  ${If} $INST_SUCCESS = 1
-    ${If} ${SectionIsSelected} ${JABBER}  
-      SetOutPath "$INSTDIR"
-      StrCpy $INST_SSLFOUND 0
-      System::Call "SSLEAY32.dll::SSL_library_init() i .r0 ? u"
-      ${Unless} $0 == "error"
-        StrCpy $INST_SSLFOUND 1
-      ${EndUnless}
-      System::Call "LIBEAY32.dll::SSL_library_init() i .r0 ? u"
-      ${Unless} $0 == "error"
-        StrCpy $INST_SSLFOUND 1
-      ${EndUnless}
-      ${If} $INST_SSLFOUND = 0
-        MessageBox MB_YESNO|MB_ICONQUESTION "An OpenSSL compatible library is required for Jabber if you wish to utilize secure connections.  Do you want to download OpenSSL now?" IDNO endsslcheck
-        ExecShell "open" ${MIM_OPENSSL_URL}
-        endsslcheck:
-      ${EndIf}
-    ${EndIf}
-  ${EndIf}
 FunctionEnd
 
 Function VerifyInstallDir
