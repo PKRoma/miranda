@@ -1230,7 +1230,7 @@ int __cdecl CMsnProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 			clmi.cbSize = sizeof( CLISTMENUITEM );
 			clmi.flags = CMIM_NAME | CMIF_TCHAR;
 			clmi.ptszName = m_tszUserName;
-//			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuRoot, ( LPARAM )&clmi );
+			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
 		}	
 	}
 	return 1;

@@ -130,7 +130,7 @@ int CMsnProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 		clmi.cbSize = sizeof( clmi );
 		clmi.pszName = (char*)(Lists_IsInList( LIST_BL, szEmail ) ? "&Unblock" : "&Block");
 		clmi.flags = CMIM_NAME;
-		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
+		MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )blockMenuItem, ( LPARAM )&clmi );
 	}
 	return 0;
 }
@@ -269,16 +269,23 @@ void CMsnProto::MsnInitMenus( void )
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
 	mi.pszService = servicefunction;
-	mi.ptszPopupName = m_tszUserName;
+
+	mi.popupPosition = 500085000;
+	mi.pszPopupName = (char *)-1;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
+	mi.icolibItem = GetIconHandle( IDI_MSN );
+	mi.ptszName = m_tszUserName;
+	mainMenuRoot = (HANDLE)MSN_CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_CHILDPOPUP;
+	mi.pszPopupName = (char *)mainMenuRoot;
 
 	strcpy( tDest, MS_SET_NICKNAME_UI );
 	CreateProtoService( MS_SET_NICKNAME_UI, &CMsnProto::SetNicknameUI );
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
-	mi.popupPosition = 500085000;
 	mi.position = 2000060000;
 	mi.icolibItem = GetIconHandle( IDI_MSN );
 	mi.ptszName = LPGENT("Set &Nickname");
-	msnMenuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	menuItems[ 0 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MS_GOTO_INBOX );
 	CreateProtoService( MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox );
@@ -305,13 +312,16 @@ void CMsnProto::MsnInitMenus( void )
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization
 
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+	mi.pszPopupName = NULL;
+	mi.pszContactOwner = m_szProtoName;
+
 	strcpy( tDest, MSN_BLOCK );
 	CreateProtoService( MSN_BLOCK, &CMsnProto::MsnBlockCommand );
 	mi.position = -500050000;
 	mi.icolibItem = GetIconHandle( IDI_MSNBLOCK );
-	mi.pszContactOwner = m_szProtoName;
 	mi.ptszName = LPGENT("&Block");
-	msnBlockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	blockMenuItem = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	strcpy( tDest, MSN_NETMEETING );
 	CreateProtoService( MSN_NETMEETING, &CMsnProto::MsnSendNetMeeting );
@@ -346,9 +356,9 @@ void  CMsnProto::MSN_EnableMenuItems( bool parEnable )
 	if ( !parEnable )
 		clmi.flags |= CMIF_GRAYED;
 
-	for ( unsigned i=0; i < SIZEOF(msnMenuItems); i++ )
-		if ( msnMenuItems[i] != NULL )
-			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnMenuItems[i], ( LPARAM )&clmi );
+	for ( unsigned i=0; i < SIZEOF(menuItems); i++ )
+		if ( menuItems[i] != NULL )
+			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )menuItems[i], ( LPARAM )&clmi );
 
-	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )msnBlockMenuItem, ( LPARAM )&clmi );
+	MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )blockMenuItem, ( LPARAM )&clmi );
 }

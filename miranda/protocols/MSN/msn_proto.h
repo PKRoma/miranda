@@ -244,8 +244,9 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
     // MSN menus
 
-	HANDLE msnBlockMenuItem;
-	HANDLE msnMenuItems[ 1 ];
+	HANDLE mainMenuRoot;
+	HANDLE blockMenuItem;
+	HANDLE menuItems[ 1 ];
 	HANDLE menuItemsAll[ 6 ];
 
 	void MsnInitMenus( void );
