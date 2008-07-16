@@ -267,6 +267,8 @@ void CIrcProto::Disconnect(void)
 	else
 		NLSend( "QUIT \r\n" );
 
+	for ( int i = 0; i < 20 && con; ++i ) Sleep(50);
+
 	if ( con )
 		Netlib_CloseHandle(con);
 
