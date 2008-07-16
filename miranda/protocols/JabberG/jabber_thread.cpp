@@ -1849,6 +1849,7 @@ ThreadData::ThreadData( JABBER_SESSION_TYPE parType )
 
 ThreadData::~ThreadData()
 {
+    if (ssl) pfn_SSL_free( ssl );
 	delete auth;
 	mir_free( zRecvData );
 	DeleteCriticalSection( &iomutex );
