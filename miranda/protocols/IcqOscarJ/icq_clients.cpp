@@ -714,7 +714,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
               strcat(szClientBuf, "/Win32");
               break;
             case 'm':
-              strcat(szClientBuf, "/MacOS X)");
+              strcat(szClientBuf, "/MacOS X");
               break;
           }
         }
