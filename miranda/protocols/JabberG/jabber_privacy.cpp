@@ -814,7 +814,7 @@ static void sttDrawRulesList(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 
 	if (lpdis->itemState & ODS_FOCUS)
 	{
-		int sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
+		unsigned sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
 		if ((sel == LB_ERR) || (sel == lpdis->itemID))
 			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
 	}
@@ -905,7 +905,7 @@ static void sttDrawLists(HWND hwndDlg, LPDRAWITEMSTRUCT lpdis)
 
 	if (lpdis->itemState & ODS_FOCUS)
 	{
-		int sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
+		unsigned sel = SendDlgItemMessage(hwndDlg, lpdis->CtlID, LB_GETCURSEL, 0, 0);
 		if ((sel == LB_ERR) || (sel == lpdis->itemID))
 			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
 	}

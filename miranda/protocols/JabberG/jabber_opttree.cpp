@@ -315,7 +315,7 @@ BOOL  OptTree_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 		case WM_NOTIFY:
 		{
 			LPNMHDR lpnmhdr = (LPNMHDR)lparam;
-			if (lpnmhdr->idFrom != idcTree) break;
+			if (lpnmhdr->idFrom != (unsigned)idcTree) break;
 			switch (lpnmhdr->code)
 			{
 				case TVN_KEYDOWN:
