@@ -64,7 +64,7 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		ppro = (CIcqProto*)lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
 
 			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
 

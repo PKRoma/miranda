@@ -47,7 +47,7 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		ppro = (CIcqProto*)lParam;
 		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
 		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICQ)));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
 
 			DWORD dwUin = ppro->getContactUin(NULL);
 

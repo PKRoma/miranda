@@ -156,7 +156,6 @@ int CIcqProto::ShowPopUpMsg(HANDLE hContact, const char *szTitle, const char *sz
 		POPUPDATAEX ppd = {0};
 		POPUPDATAW ppdw = {0};
 		LPCTSTR rsIcon;
-		HINSTANCE hIcons = NULL;
 		char szPrefix[32], szSetting[32];
 
 		strcpy(szPrefix, "Popups");
@@ -201,11 +200,9 @@ int CIcqProto::ShowPopUpMsg(HANDLE hContact, const char *szTitle, const char *sz
 			return -1;
 		}
 		if (!getSettingByte(NULL, "PopupsSysIcons", DEFAULT_POPUPS_SYS_ICONS))
-		{
-			hIcons = hInst;
-			rsIcon = MAKEINTRESOURCE(IDI_ICQ);
-		}
-		ppd.lchIcon = (HICON)LoadImage(hIcons, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+			ppd.lchIcon = GetIcon( PLI_PROTOCOL | PLIF_SMALL | PLIF_ICOLIB );
+		else
+			ppd.lchIcon = (HICON)LoadImage( NULL, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
 		if (getSettingByte(NULL, "PopupsWinColors", DEFAULT_POPUPS_WIN_COLORS))
 		{
 			ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
