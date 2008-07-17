@@ -82,6 +82,8 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, DWORD proto)
     SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
 	SchannelCred.grbitEnabledProtocols = proto;
 
+	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
+
 	if (!verify) 
 		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
 
