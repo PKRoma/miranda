@@ -167,7 +167,9 @@ const capstr capPalmJicq  = {'J', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 const capstr capInluxMsgr = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capYapp      = {'Y', 'a', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
+const capstr capPigeon    = {'P', 'I', 'G', 'E', 'O', 'N', '!', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capDigsbyBeta= {0x09, 0x46, 0x01, 0x05, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x45, 0x53, 0x54, 0x00};
+const capstr capJapp      = {0x6a, 0x61, 0x70, 0x70, 0xa9, 0x20, 0x62, 0x79, 0x20, 0x53, 0x65, 0x72, 0x67, 0x6f, 0x00, 0x00};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
@@ -175,6 +177,7 @@ const capstr capQipSymbian= {0x51, 0xAD, 0xD1, 0x90, 0x72, 0x04, 0x47, 0x3D, 0xA
 const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xAD, 0xC1, 0x1C, 0x6D, 0x75, 0x70, 0x5E, 0xC5};
 const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
+const capstr capQutIm     = {'q', 'u', 't', 'i', 'm', 0x30, 0x2e, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
@@ -322,11 +325,21 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
   }
   else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666)
   { // http://darkjimm.ucoz.ru/
-    strcpy(szClientBuf, "D[i]Chat");
     if (dwFT2 == 0x10000)
-      strcat(szClientBuf, " v.0.1a");
-    else if (dwFT2 == 0x22)
-      strcat(szClientBuf, " v.0.2b");
+    {
+      strcpy(szClientBuf, "D[i]Chat v.");
+      strcat(szClientBuf, "0.1a");
+    }
+    else 
+    {
+      makeClientVersion(szClientBuf, "D[i]Chat v.", (dwFT2 >> 8) & 0x0F, (dwFT2 >> 4) & 0x0F, 0, 0);
+      if ((dwFT2 & 0x0F) == 1)
+        strcat(szClientBuf, " alpha");
+      else if ((dwFT2 & 0x0F) == 2)
+        strcat(szClientBuf, " beta");
+      else if ((dwFT2 & 0x0F) == 3)
+        strcat(szClientBuf, " final");
+    }
 
     szClient = szClientBuf;
   }
@@ -417,7 +430,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
           szClient = "Kopete";
         else
         {
-          null_snprintf(szClientBuf, 64, "SIM %u.%u", (unsigned)hiVer, loVer);
+          makeClientVersion(szClientBuf, "SIM ", (unsigned)hiVer, loVer, 0, 0);
           szClient = szClientBuf;
         }
       }
@@ -670,6 +683,47 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
       { // http://www.digsby.com - probably by mistake (feature detection as well)
         szClient = "Digsby";
       }
+      else if (MatchCap(caps, wLen, &capJapp, 0x10))
+      { // http://www.japp.org.ua
+        szClient = "japp";
+      }
+      else if (MatchCap(caps, wLen, &capPigeon, 0x07))
+      { // http://pigeon.vpro.ru
+        szClient = "PIGEON!";
+      }
+      else if (capId = MatchCap(caps, wLen, &capQutIm, 0x05))
+      { // http://www.qutim.org
+        if ((*capId)[0x6] == 0x2E)
+        { // old qutim id
+          unsigned ver1 = (*capId)[0x5] - 0x30;
+          unsigned ver2 = (*capId)[0x7] - 0x30;
+
+          makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, 0, 0);
+        }
+        else 
+        { // new qutim id
+          unsigned ver1 = (*capId)[0x6];
+          unsigned ver2 = (*capId)[0x7];
+          unsigned ver3 = (*capId)[0x8];
+          unsigned ver4 = ((*capId)[0x9] << 8) || (*capId)[0xA];
+
+          makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, ver3, ver4);
+
+          switch ((*capId)[0x5])
+          {
+            case 'l':
+              strcat(szClientBuf, "/Linux");
+              break;
+            case 'w':
+              strcat(szClientBuf, "/Win32");
+              break;
+            case 'm':
+              strcat(szClientBuf, "/MacOS X");
+              break;
+          }
+        }
+        szClient = szClientBuf;
+      }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -852,6 +906,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVers
               szClient = "Slick"; // http://lonelycatgames.com/?app=slick
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_OSCAR_FILE | CAPF_CONTACTS) && MatchCap(caps, wLen, &capAimFileShare, 0x10) && MatchCap(caps, wLen, &capAimIcon, 0x10))
               szClient = "Digsby"; // http://www.digsby.com
+            else if (MatchCap(caps, wLen, &capAimIcon, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_CONTACTS | CAPF_HTML))
+              szClient = "mundu IM"; // http://messenger.mundu.com
           }
         }
       }

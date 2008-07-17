@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -175,7 +175,6 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
     POPUPDATAEX ppd = {0};
     POPUPDATAW ppdw = {0};
     LPCTSTR rsIcon;
-    HINSTANCE hIcons = NULL;
     char szPrefix[32], szSetting[32];
 
     strcpy(szPrefix, "Popups");
@@ -221,11 +220,9 @@ int ShowPopUpMsg(HANDLE hContact, const char* szTitle, const char* szMsg, BYTE b
         return -1;
     }
     if (!ICQGetContactSettingByte(NULL, "PopupsSysIcons", DEFAULT_POPUPS_SYS_ICONS))
-    {
-      hIcons = hInst;
-      rsIcon = MAKEINTRESOURCE(IDI_ICQ);
-    }
-    ppd.lchIcon = (HICON)LoadImage(hIcons, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+      ppd.lchIcon = (HICON)IcqLoadIcon(PLI_PROTOCOL | PLIF_SMALL | PLIF_ICOLIB, 0);
+    else
+      ppd.lchIcon = (HICON)LoadImage(NULL, rsIcon, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
     if (ICQGetContactSettingByte(NULL, "PopupsWinColors", DEFAULT_POPUPS_WIN_COLORS))
     {
       ppd.colorText = GetSysColor(COLOR_WINDOWTEXT);
