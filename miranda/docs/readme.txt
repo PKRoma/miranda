@@ -1,8 +1,6 @@
                    Miranda Instant Messenger Release Notes
                    ---------------------------------------
 
-                                   v0.7.6
-
                           http://www.miranda-im.org
 
 
@@ -22,6 +20,19 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.8
+Enhancements:
+ - SSL library included to provide ssl support
+ - AIM: UTF-8 messaging support
+ - Jabber: Enable StartTLS by default
+ 
+Bugfixes:
+ - Safer port opening for incoming connections
+ - Language pack translations did not always translate correctly
+ - AIM: Improved HTML processing
+ - MSN: Improved BBCode processing
+
+
 * New in 0.7.7
 Bugfixes:
  - Some tooltips didn't properly support UNICODE
@@ -889,9 +900,8 @@ Run the installer and follow the instructions.
 3. General Notes
 ----------------
 
-Unlock the power of your new Miranda IM with plugins! There are now more
-than 200 plugins available as free downloads:
-http://www.miranda-im.org/download/index.php
+Unlock the power of your new Miranda IM with plugins! There are hundreds
+of plugins available for free at addons.miranda-im.org.
 
 
 
@@ -930,12 +940,7 @@ a) Windows 95
  - Window transparency is only supported on Windows 2000 and
    Windows XP.
 
-b) IRC plugin and MSVCP60.DLL
- - The IRC plugin requires MSVCP60.DLL. If you dont have this
-   file on your system, download it from:
-   http://www.dll-files.com/dllindex/dll-files.shtml?msvcp60
-
-c) Plugins
+b) Plugins
  - Third party plugins may have different requirements than
    Miranda IM itself. The Miranda IM developers cannot guarantee
    that all plugins will work on your system.
@@ -945,33 +950,7 @@ c) Plugins
 6. Contact
 ----------
 
-a) Webpage 
-
 The official webpage for the Miranda IM project is www.miranda-im.org.
-
-b) Authors
-
-Martin Öberg		 - Project Manager / Developer
-			   strickz at miranda-im.org
-Robert Rainwater	 - Developer
-			   rainwater at miranda-im.org
-Sam			 - Developer
-			   egodust at miranda-im.org
-Lyon Lymliz		 - Webmaster
-			   lynlimz at miranda-im.org
-Santithorn Bunchua	 - Jabber developer
-George Hazan		 - MSN developer
-Jörgen Persson		 - IRC developer
-
-
-Miranda IM is made possible with the help of many more people.
-A longer list of contributors can be found in the About box and
-on the webpage.
-
-Note: The developers do not provide user support by e-mail. See
-section 7 for more information.
-
-The source code is available at http://www.miranda-im.org/release/download.php
 
 
 
