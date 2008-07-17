@@ -1616,9 +1616,11 @@ void UnloadIcoLibModule(void)
 	DestroyServiceFunction(hIcoLib_ReleaseIcon);
 	DeleteCriticalSection(&csIconList);
 
-	for (indx = 0; indx < iconList.getCount(); indx++) {
-		IcoLib_FreeIcon( iconList[indx] );
-		mir_free( iconList[indx] );
+	for (indx = iconList.getCount()-1; indx >= 0; indx-- ) {
+		IconItem* I = iconList[indx];
+		iconList.remove( indx );
+		IcoLib_FreeIcon( I );
+		mir_free( I );
 	}
 	iconList.destroy();
 
