@@ -385,7 +385,6 @@ class CDlgOptAccount: public CJabberDlgBase
 	CCtrlButton		m_btnRegister;
 	CCtrlButton		m_btnUnregister;
 	CCtrlHyperlink	m_lnkServers;
-	CCtrlHyperlink	m_lnkOpenSsl;
 
 public:
 	CDlgOptAccount(CJabberProto *proto):
@@ -409,8 +408,7 @@ public:
 		m_cbLocale(this, IDC_MSGLANG),
 		m_btnRegister(this, IDC_BUTTON_REGISTER),
 		m_btnUnregister(this, IDC_UNREGISTER),
-		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/im-services"),
-		m_lnkOpenSsl(this, IDC_DOWNLOAD_OPENSSL, "http://www.slproweb.com/products/Win32OpenSSL.html")
+		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/im-services")
 
 	{
 		CreateLink(m_txtUsername, "LoginName", _T(""));
@@ -500,7 +498,6 @@ protected:
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberConnected);
 
 		m_chkUseTls.Enable(!m_proto->JGetByte("UseSSL", FALSE));
-		EnableWindow(GetDlgItem(m_hwnd, IDC_DOWNLOAD_OPENSSL), FALSE);
 
 		if (m_proto->JGetByte( "ManualConnect", FALSE ))
 		{

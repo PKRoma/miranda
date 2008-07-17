@@ -13,12 +13,6 @@ Installation:
   used by Miranda core (use DatabaseViewer or DatabaseEditor to see what
   database categories are already in use).
 
-  SSL support requires SSLEAY32.DLL and LIBEAY32.DLL from OpenSSL 0.9.6
-  or later. These two files should be copied into the Miranda IM directory
-  (directory containing miranda32.exe) or Windows system directory.
-  If you cannot find these OpenSSL DLL files, you can download a copy
-  from http://jabber.au.edu/miranda.
-
   The option for sending messages with full acknowledgement is disabled
   by default. This feature works only when the jabber client at the other
   end can respond with message acknowledgement. If your messages seem to
