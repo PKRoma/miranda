@@ -773,3 +773,23 @@ void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, void* func)
 {
 	ctx->bVerify = mode != 0;
 }
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	char fpath[MAX_PATH], *fpathp;
+
+	switch(fdwReason)
+	{
+		case DLL_PROCESS_ATTACH:
+			if (SearchPathA(NULL, "schannel.dll", NULL, sizeof(fpath), fpath, &fpathp) == 0)
+				return FALSE;
+
+			DisableThreadLibraryCalls(hinstDLL);
+			break;
+
+		case DLL_PROCESS_DETACH:
+			break;
+	}
+
+	return TRUE;
+}
