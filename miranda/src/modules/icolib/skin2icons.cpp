@@ -547,7 +547,7 @@ HICON IcoLib_GetIconByHandle( HANDLE hItem )
 			pi->ref_count++;
 		}
 	}
-	__except
+	__except( EXCEPTION_EXECUTE_HANDLER )
 	{
 	}
 
