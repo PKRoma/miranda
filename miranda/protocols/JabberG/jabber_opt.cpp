@@ -415,12 +415,10 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( !JabberSslInit() ) {
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_SSL ), FALSE );
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), FALSE );
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), TRUE );
                 CheckDlgButton( hwndDlg, IDC_USE_TLS, JGetByte( "UseTLS", FALSE ));
 			}
 			else {
 				EnableWindow(GetDlgItem( hwndDlg, IDC_USE_TLS ), !JGetByte( "UseSSL", FALSE ));
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), FALSE );
                 CheckDlgButton( hwndDlg, IDC_USE_TLS, JGetByte( "UseTLS", TRUE ));
 			}
 
@@ -552,9 +550,6 @@ static BOOL CALLBACK JabberOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 		case IDC_LINK_PUBLIC_SERVER:
 			ShellExecuteA( hwndDlg, "open", "http://www.jabber.org/user/publicservers.shtml", "", "", SW_SHOW );
-			return TRUE;
-		case IDC_DOWNLOAD_OPENSSL:
-			ShellExecuteA( hwndDlg, "open", "http://www.slproweb.com/products/Win32OpenSSL.html", "", "", SW_SHOW );
 			return TRUE;
 		case IDC_BUTTON_REGISTER:
 		{
@@ -1742,13 +1737,6 @@ static BOOL CALLBACK JabberWizardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 			SetDlgItemInt( hwndDlg, IDC_PORT, port, FALSE );
 			if ( port <= 0 ) enableRegister = FALSE;
 
-			if ( !JabberSslInit() ) {
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), TRUE );
-			}
-			else {
-				EnableWindow(GetDlgItem( hwndDlg, IDC_DOWNLOAD_OPENSSL ), FALSE );
-			}
-
 			EnableWindow( GetDlgItem( hwndDlg, IDC_BUTTON_REGISTER ), enableRegister );
 
 			WNDPROC oldProc = ( WNDPROC ) GetWindowLong( GetDlgItem( hwndDlg, IDC_EDIT_USERNAME ), GWL_WNDPROC );
@@ -1803,9 +1791,6 @@ static BOOL CALLBACK JabberWizardDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 		case IDC_LINK_PUBLIC_SERVER:
 			ShellExecuteA( hwndDlg, "open", "http://www.jabber.org/user/publicservers.shtml", "", "", SW_SHOW );
-			return TRUE;
-		case IDC_DOWNLOAD_OPENSSL:
-			ShellExecuteA( hwndDlg, "open", "http://www.slproweb.com/products/Win32OpenSSL.html", "", "", SW_SHOW );
 			return TRUE;
 		case IDC_BUTTON_REGISTER:
 		{

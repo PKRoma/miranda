@@ -101,7 +101,6 @@
 #define IDC_LINK_PUBLIC_SERVER          1009
 #define IDC_NAME                        1009
 #define IDC_LINK_PUBLIC_SERVER2         1010
-#define IDC_DOWNLOAD_OPENSSL            1010
 #define IDC_PROGRESS_REG                1011
 #define IDOK2                           1012
 #define IDC_AGENT_TRANSPORT             1015
