@@ -120,7 +120,7 @@ SSL *SSL_new(SSL_CTX *ctx)
     SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
 	SchannelCred.grbitEnabledProtocols = ctx->dwProtocol;
 
-//	SchannelCred.dwFlags |= SCH_CRED_NO_SERVERNAME_CHECK;
+	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
 
 	if (!ctx->bVerify) 
 		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
