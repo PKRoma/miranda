@@ -113,9 +113,12 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 	Netlib_Send( h, headers, strlen( headers ), 0);
 
 #ifndef _DEBUG
-//	if (strstr(parUrl, "login") == NULL)
+	int flags = strstr(parUrl, "login") ? 0 : MSG_NODUMP;
+#else
+	int flags = 0;
 #endif
-	Netlib_Send( h, parAuthInfo, strlen( parAuthInfo ), 0);
+
+	Netlib_Send( h, parAuthInfo, strlen( parAuthInfo ), flags);
 	proto->MSN_DebugLog( "SSL All data sent" );
 
 	nBytes = 0;
