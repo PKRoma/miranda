@@ -983,7 +983,6 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	int seq, msgType = ( MyOptions.SlowSend ) ? 'A' : 'N';
 	int rtlFlag = ( ccs->wParam & PREF_RTL ) ? MSG_RTL : 0;
 	
-	
 	bool isOffline;
 	ThreadData* thread = MSN_StartSB(ccs->hContact, isOffline);
 	if ( thread == NULL )
