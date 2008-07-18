@@ -215,51 +215,46 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 			break;
 		}
 		case GC_USER_MESSAGE:
-			if ( gch && gch->pszText && strlen( gch->pszText ) > 0 ) {
-				rtrim( gch->ptszText ); // remove the ending linebreak
+			if ( gch && gch->pszText && strlen( gch->pszText ) > 0 ) 
+			{
+				HANDLE hContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
 
-				TCHAR* pszMsg = UnEscapeChatTags( NEWTSTR_ALLOCA( gch->ptszText ));
+				bool isOffline;
+				ThreadData* thread = MSN_StartSB(hContact, isOffline);
 
-				CCSDATA ccs = {0};
-				ccs.hContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
-				ccs.wParam = PREF_TCHAR;
+				if (thread)
+				{
+					rtrim( gch->ptszText ); // remove the ending linebreak
+					TCHAR* pszMsg = UnEscapeChatTags( NEWTSTR_ALLOCA( gch->ptszText ));
+					char* msg = mir_utf8encodeT(pszMsg);
 
-				#if defined( _UNICODE )
-					int cbLen = WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, NULL, 0, 0, 0 );
-					int cbLenW = lstrlen( pszMsg );
-					char* msgBuf = ( char* )alloca( --cbLen+1 + (cbLenW+1)*sizeof( TCHAR ));
-					WideCharToMultiByte( CP_ACP, 0, pszMsg, -1, msgBuf, cbLen+1, 0, 0 );
-					msgBuf[ cbLen ] = 0;
-					memcpy( msgBuf+cbLen+1, pszMsg, (cbLenW+1)*sizeof( TCHAR ));
-					ccs.lParam = (LPARAM)msgBuf;
-				#else
-					ccs.lParam = (LPARAM)pszMsg;
-				#endif
+					thread->sendMessage( 'N', NULL, NETID_MSN, msg, 0 );
 
-				CallProtoService(m_szProtoName, PSS_MESSAGE, 0, (LPARAM)&ccs);
+					mir_free(msg);
 
-				DBVARIANT dbv;
-				int bError = DBGetContactSettingTString( NULL, m_szProtoName, "Nick", &dbv );
-				if ( bError )
-					dbv.ptszVal = _T("");
+					DBVARIANT dbv;
+					int bError = DBGetContactSettingTString( NULL, m_szProtoName, "Nick", &dbv );
+					if ( bError )
+						dbv.ptszVal = _T("");
 
-				GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_MESSAGE };
-				gcd.ptszID = gch->pDest->ptszID;
+					GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_MESSAGE };
+					gcd.ptszID = gch->pDest->ptszID;
 
-				GCEVENT gce = {0};
-				gce.cbSize = sizeof(GCEVENT);
-				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
-				gce.pDest = &gcd;
-				gce.ptszNick = dbv.ptszVal;
-				gce.ptszUID = mir_a2t(MyOptions.szEmail);
-				gce.time = time(NULL);
-				gce.ptszText = gch->ptszText;
-				gce.bIsMe = TRUE;
-				CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
+					GCEVENT gce = {0};
+					gce.cbSize = sizeof(GCEVENT);
+					gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
+					gce.pDest = &gcd;
+					gce.ptszNick = dbv.ptszVal;
+					gce.ptszUID = mir_a2t(MyOptions.szEmail);
+					gce.time = time(NULL);
+					gce.ptszText = gch->ptszText;
+					gce.bIsMe = TRUE;
+					CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 
-				mir_free((void*)gce.ptszUID);
-				if ( !bError )
-					MSN_FreeVariant( &dbv );
+					mir_free((void*)gce.ptszUID);
+					if ( !bError )
+						MSN_FreeVariant( &dbv );
+				}
 			}
 			break;
 		case GC_USER_CHANMGR: {

@@ -277,8 +277,10 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		HookProtoEvent( ME_GC_EVENT, &CMsnProto::MSN_GCEventHook );
 		HookProtoEvent( ME_GC_BUILDMENU, &CMsnProto::MSN_GCMenuHook );
 
-		hInitChat = CreateProtoEvent( "\\ChatInit" );
-		HookProtoEvent( "\\ChatInit", &CMsnProto::MSN_ChatInit );
+		char szEvent[ 200 ];
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
+		hInitChat = CreateHookableEvent( szEvent );
+		HookProtoEvent( szEvent, &CMsnProto::MSN_ChatInit );
 	}
 
 	MsnInitMenus();
@@ -1004,9 +1006,6 @@ int __cdecl CMsnProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		ForkThread( &CMsnProto::MsnFakeAck, new TFakeAckParams( hContact, seq, errMsg, this ));
 		break;
 
-	case NETID_UNKNOWN:
-		hContact = MSN_GetChatInernalHandle(hContact);
-
 	case NETID_MSN:
 	case NETID_LCS:
 		if ( strlen( msg ) > 1202 ) 
@@ -1041,8 +1040,7 @@ int __cdecl CMsnProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			}
 			else
 			{
-				const int tNnetId = netId == NETID_UNKNOWN ? NETID_MSN : netId;
-				seq = thread->sendMessage( msgType, tEmail, tNnetId, msg, rtlFlag );
+				seq = thread->sendMessage( msgType, tEmail, netId, msg, rtlFlag );
 				if ( !MyOptions.SlowSend )
 					ForkThread( &CMsnProto::MsnFakeAck, new TFakeAckParams( hContact, seq, NULL, this ));
 			}
