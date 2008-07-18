@@ -110,12 +110,12 @@ char* SSL_OpenSsl::getSslResult( const char* parUrl, const char* parAuthInfo, co
 		"Cache-Control: no-cache\r\n\r\n", path, chdrs,
 		MSN_USER_AGENT, strlen( parAuthInfo ), url+8 );
 
-	Netlib_Send( h, headers, strlen( headers ), 0);
+	int flags = 0;
+
+	Netlib_Send( h, headers, strlen( headers ), flags);
 
 #ifndef _DEBUG
-	int flags = strstr(parUrl, "login") ? 0 : MSG_NODUMP;
-#else
-	int flags = 0;
+	if (strstr(parUrl, "login")) flags |= MSG_NODUMP;
 #endif
 
 	Netlib_Send( h, parAuthInfo, strlen( parAuthInfo ), flags);
