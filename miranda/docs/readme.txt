@@ -23,13 +23,13 @@ Contents
 * New in 0.7.8
 Enhancements:
  - SSL library included to provide ssl support
- - AIM: UTF-8 messaging support
+ - ICQ: Improved client detection
  - Jabber: Enable StartTLS by default
  
 Bugfixes:
  - Safer port opening for incoming connections
  - Language pack translations did not always translate correctly
- - AIM: Improved HTML processing
+ - ICQ: Skinned protocol icon was sometimes incorrect
  - MSN: Improved BBCode processing
 
 
@@ -971,6 +971,8 @@ will increase.
 
 8. License and Copyright
 ------------------------
+
+Source code is available at: http://www.miranda-im.org/download/
 
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
