@@ -341,17 +341,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  proto->getByte( "UseIeProxy",  0 ));
 			CheckDlgButton( hwndDlg, IDC_SLOWSEND,    proto->getByte( "SlowSend",    0 ));
 
-			char fpath[MAX_PATH], *fpathp;
-			if ( 
-				SearchPathA(NULL, "WINSSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
-				SearchPathA(NULL, "CYASSL.DLL",   NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
-				SearchPathA(NULL, "SSLEAY32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 ||
-				SearchPathA(NULL, "LIBSSL32.DLL", NULL, sizeof(fpath), fpath, &fpathp) != 0 )
-				CheckDlgButton( hwndDlg, IDC_USEOPENSSL, proto->getByte( "UseOpenSSL", 0 ));
-			else
-				EnableWindow( GetDlgItem( hwndDlg, IDC_USEOPENSSL ), FALSE);
-
-			
 			SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Automatically obtain host/port" ));
 			SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Manually specify host/port" ));
 			SendDlgItemMessage( hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Disable" ));
@@ -415,7 +404,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			switch( LOWORD( wParam )) 
 			{
 				case IDC_USEIEPROXY:		case IDC_SLOWSEND:
-				case IDC_USEOPENSSL:
 					SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 					break;
 
@@ -462,13 +450,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				proto->setString( NULL, "LoginServer", str );
 			else
 				proto->deleteSetting( NULL, "LoginServer" );
-
-			tValue = IsDlgButtonChecked( hwndDlg, IDC_USEOPENSSL ) == BST_CHECKED;
-			if ( proto->getByte( "UseOpenSSL", 0 ) != (BYTE)tValue ) {
-				proto->setByte( "UseOpenSSL", tValue );
-				if ( proto->msnLoggedIn )
-					reconnectRequired = true;
-			}
 
 			proto->setByte( "UseIeProxy", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USEIEPROXY ));
 			proto->setByte( "SlowSend",   ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SLOWSEND   ));
