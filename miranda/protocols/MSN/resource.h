@@ -43,7 +43,6 @@
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035
 #define IDC_MOBILESEND                  1035
-#define IDC_USEOPENSSL                  1036
 #define IDC_NOTIFY_CUSTOMSMILEY         1036
 #define IDC_HOSTOPT                     1038
 #define IDC_CCARD_TAB1                  1039
