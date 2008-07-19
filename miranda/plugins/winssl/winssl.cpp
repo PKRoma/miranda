@@ -84,6 +84,8 @@ int SSL_library_init(void)
 extern "C" __declspec(dllexport)
 int SSL_set_fd(SSL *ssl, int fd)
 {
+	if (ssl == NULL) return 0;
+
 	ssl->s = (SOCKET)fd;
 	return 1;
 }
@@ -91,6 +93,8 @@ int SSL_set_fd(SSL *ssl, int fd)
 extern "C" __declspec(dllexport)
 SSL_CTX *SSL_CTX_new(SSL_METHOD *method)
 {
+	if (g_hSecurity == NULL) return NULL;
+
 	SSL_CTX* ctx = (SSL_CTX*)calloc(1, sizeof(SSL_CTX));
 
 	ctx->dwProtocol = (DWORD)method;
@@ -111,6 +115,8 @@ SSL *SSL_new(SSL_CTX *ctx)
 	SCHANNEL_CRED   SchannelCred;
     TimeStamp       tsExpiry;
     SECURITY_STATUS scRet;
+
+	if (ctx == NULL) return NULL;
 
 	SSL *ssl = (SSL*)calloc(1, sizeof(SSL));
 	ssl->ctx = ctx;
@@ -150,6 +156,8 @@ SSL *SSL_new(SSL_CTX *ctx)
 extern "C" __declspec(dllexport)
 void SSL_free(SSL *ssl)
 {
+	if (ssl == NULL) return;
+
 	g_pSSPI->FreeCredentialsHandle(&ssl->hCreds);
     g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 
@@ -306,14 +314,12 @@ static SECURITY_STATUS ClientHandshakeLoop(SSL *ssl, BOOL fDoInitialRead)
                 MoveMemory(ssl->pbIoBuffer,
                            ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
                            InBuffers[1].cbBuffer);
+                ssl->cbIoBuffer = InBuffers[1].cbBuffer;
             }
             else
-            {
                 ssl->cbIoBuffer   = 0;
-            }
             break;
         }
-
 
         // Check for fatal error.
         if(FAILED(scRet)) break;
@@ -371,7 +377,9 @@ int SSL_connect(SSL *ssl)
     SECURITY_STATUS scRet;
     DWORD           cbData;
 
-    dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
+	if (ssl == NULL) return 0;
+
+	dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
                   ISC_REQ_REPLAY_DETECT     |
                   ISC_REQ_CONFIDENTIALITY   |
                   ISC_RET_EXTENDED_ERROR    |
@@ -445,7 +453,9 @@ int SSL_shutdown(SSL *ssl)
     TimeStamp       tsExpiry;
     DWORD           Status;
 
-    dwType = SCHANNEL_SHUTDOWN;
+	if (ssl == NULL) return SOCKET_ERROR;
+
+	dwType = SCHANNEL_SHUTDOWN;
 
     OutBuffers[0].pvBuffer   = &dwType;
     OutBuffers[0].BufferType = SECBUFFER_TOKEN;
@@ -517,6 +527,8 @@ int SSL_read(SSL *ssl, char *buf, int num)
     SecBuffer       Buffers[4];
     SecBuffer *     pDataBuffer;
     SecBuffer *     pExtraBuffer;
+
+	if (ssl == NULL) return SOCKET_ERROR;
 
 	if (num == 0) return 0;
 
@@ -681,6 +693,8 @@ int SSL_write(SSL *ssl, const char *buf, int num)
 
 	DWORD			sendOff = 0;
 
+	if (ssl == NULL) return SOCKET_ERROR;
+
 	scRet = g_pSSPI->QueryContextAttributesA(&ssl->hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
     if (scRet != SEC_E_OK) return scRet;
 
@@ -771,7 +785,7 @@ SSL_METHOD *TLSv1_client_method(void)
 extern "C" __declspec(dllexport)
 void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, void* func)
 {
-	ctx->bVerify = mode != 0;
+	if (ctx != NULL) ctx->bVerify = mode != 0;
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
