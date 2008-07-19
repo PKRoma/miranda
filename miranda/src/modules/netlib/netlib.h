@@ -181,5 +181,6 @@ void NetlibSslShutdown(SslHandle *ssl);
 
 int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
 int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);
+BOOL NetlibSslPending(SslHandle *ssl);
 
 int NetlibStartSsl(WPARAM wParam, LPARAM lParam);
