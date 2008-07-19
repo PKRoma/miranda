@@ -27,6 +27,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	InitializeCriticalSection( &SendingMutex );
 	InitializeCriticalSection( &avatarMutex );
 
+	CreateProtoService(PS_CREATEACCMGRUI, &CAimProto::SvcCreateAccMgrUI );
 	CreateProtoService(PS_GETNAME, &CAimProto::GetName );
 	CreateProtoService(PS_GETSTATUS, &CAimProto::GetStatus );
 	CreateProtoService(PS_GETAVATARINFO, &CAimProto::GetAvatarInfo );

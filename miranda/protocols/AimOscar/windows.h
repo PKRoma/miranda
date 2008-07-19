@@ -8,6 +8,5 @@
 #define CFE_AUTOBACKCOLOR CFM_BACKCOLOR
 #endif
 
-BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif

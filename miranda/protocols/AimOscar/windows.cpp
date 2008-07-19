@@ -727,7 +727,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 				//PW
 				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
-				if(lstrlenA(str)>0)
+				if(strlen(str)>0)
 				{
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 					ppro->setString(AIM_KEY_PW, str);
@@ -738,7 +738,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 				//HN
 				GetDlgItemTextA(hwndDlg, IDC_HN, str, sizeof(str));
-				if(strlen(str)>0)
+				if(strlen(str)>0 && strcmp(str, AIM_DEFAULT_SERVER))
 					ppro->setString(AIM_KEY_HN, str);
 				else
 					ppro->deleteSetting(NULL, AIM_KEY_HN);
@@ -893,59 +893,60 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Brief account info dialog
 
-/*
-
-BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	// The code to implement and run the the first run dialog was contributed by RiPOFF
-	switch (msg) {
+	switch (msg) 
+	{
 	case WM_INITDIALOG:
 		{
-			DBVARIANT dbv;
 			TranslateDialogDefault(hwndDlg);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) LoadIconEx("aim"));
-			if ( !getString(AIM_KEY_SN, &dbv))
+
+			CAimProto* ppro = (CAimProto*)lParam;
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+
+			DBVARIANT dbv;
+			if ( !ppro->getString(AIM_KEY_SN, &dbv))
 			{
-				SetDlgItemText(hwndDlg, IDC_SN, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_SN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 
-			if ( !getString(AIM_KEY_PW, &dbv))
+			if ( !ppro->getString(AIM_KEY_PW, &dbv))
 			{
-				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-				SetDlgItemText(hwndDlg, IDC_PW, dbv.pszVal);
+				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
 				DBFreeVariant(&dbv);
+			}
+			return TRUE;
+		}
+
+	case WM_COMMAND:
+		if ( LOWORD( wParam ) == IDC_NEWAIMACCOUNTLINK ) {
+			CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://www.aim.com/redirects/inclient/register.adp" );
+			return TRUE;
+		}
+
+		if ( HIWORD( wParam ) == EN_CHANGE && ( HWND )lParam == GetFocus()) 
+		{
+			switch( LOWORD( wParam )) {
+			case IDC_SN:			case IDC_PW:
+				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
 		}
 		break;
 
-	case WM_CLOSE:
-		EndDialog(hwndDlg, 0);
-		break;
+	case WM_NOTIFY:
+		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) 
+		{
+			CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-	case WM_DESTROY:
-		ReleaseIconEx("aim");
-		break;
-
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDOK:
-			{
-				char str[128];
-				GetDlgItemText(hwndDlg, IDC_SN, str, sizeof(str));
-				setString(AIM_KEY_SN, str);
-				GetDlgItemText(hwndDlg, IDC_PW, str, sizeof(str));
-				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
-				setString(AIM_KEY_PW, str);
-
-			}
-			// fall through
-
-		case IDCANCEL:
-			// Mark first run as completed
-			setByte( AIM_KEY_FR, 1);
-			EndDialog(hwndDlg, IDCANCEL);
-			break;
+			char str[128];
+			GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+			ppro->setString(AIM_KEY_SN, str);
+			GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
+			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+			ppro->setString(AIM_KEY_PW, str);
+			return TRUE;
 		}
 		break;
 	}
@@ -953,7 +954,12 @@ BOOL CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-*/
+int CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+{
+	return (int)CreateDialogParam (hInstance, MAKEINTRESOURCE( IDD_AIMACCOUNT ), 
+		 (HWND)lParam, first_run_dialog, (LPARAM)this );
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Instant idle dialog
