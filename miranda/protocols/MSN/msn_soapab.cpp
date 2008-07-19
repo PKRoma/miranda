@@ -35,7 +35,7 @@ ezxml_t CMsnProto::abSoapHdr(const char* service, const char* scenario, ezxml_t&
 	ezxml_t apphdr = ezxml_add_child(hdr, "ABApplicationHeader", 0);
 	ezxml_set_attr(apphdr, "xmlns", "http://www.msn.com/webservices/AddressBook");
 	ezxml_t node = ezxml_add_child(apphdr, "ApplicationId", 0);
-	ezxml_set_txt(node, "996CDE1E-AA53-4477-B943-2BE802EA6166");
+	ezxml_set_txt(node, "CFE80F9D-180F-4399-82AB-413F33A1FA11");
 	node = ezxml_add_child(apphdr, "IsMigration", 0);
 	ezxml_set_txt(node, ((abchMigrated == NULL || *abchMigrated == '1') ? "false" : "true"));
 	node = ezxml_add_child(apphdr, "PartnerScenario", 0);
