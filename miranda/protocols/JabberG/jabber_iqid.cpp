@@ -175,11 +175,11 @@ void CJabberProto::OnLoggedIn( ThreadData* info )
 	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultServerDiscoInfo );
-	XmlNodeIq diq( "get", iqId, m_ThreadInfo->server );
+	XmlNodeIq diq( "get", iqId, info->server );
 	diq.addQuery( JABBER_FEAT_DISCO_INFO );
-	m_ThreadInfo->send( diq );
+	info->send( diq );
 
-	QueryPrivacyLists();
+	QueryPrivacyLists( info );
 
 	char szServerName[ sizeof(info->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))

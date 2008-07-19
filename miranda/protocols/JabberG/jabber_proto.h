@@ -207,6 +207,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	time_t m_tmJabberIdleStartTime;
 	UINT   m_nJabberCodePage;
 
+	CMString m_szCurrentEntityCapsHash;
+
 	CRITICAL_SECTION m_csModeMsgMutex;
 	JABBER_MODEMSGS m_modeMsgs;
 	BOOL m_bModeMsgStatusChangePending;
@@ -650,8 +652,8 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   BuildPrivacyMenu( WPARAM, LPARAM );
 
-	void   QueryPrivacyLists( void );
-		  
+	void   QueryPrivacyLists( ThreadData *pThreadInfo = NULL );
+
 	void   OnIqRequestPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
 	void   OnIqResultPrivacyList( XmlNode* iqNode, void* userdata );
 	void   OnIqResultPrivacyLists( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );

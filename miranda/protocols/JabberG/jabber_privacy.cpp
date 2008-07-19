@@ -2218,11 +2218,14 @@ int __cdecl CJabberProto::OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam
 	return 0;
 }
 
-void CJabberProto::QueryPrivacyLists()
+void CJabberProto::QueryPrivacyLists( ThreadData *pThreadInfo )
 {
 	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyLists ) );
 	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVACY_LISTS );
-	m_ThreadInfo->send( iq );
+	if ( pThreadInfo )
+		pThreadInfo->send( iq );
+	else if ( m_ThreadInfo )
+		m_ThreadInfo->send( iq );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
