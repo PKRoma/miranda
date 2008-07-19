@@ -105,6 +105,8 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, DWORD proto)
 
 void NetlibSslFree(SslHandle *ssl)
 {
+	if (ssl == NULL) return;
+
 	g_pSSPI->FreeCredentialsHandle(&ssl->hCreds);
     g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 
@@ -112,6 +114,12 @@ void NetlibSslFree(SslHandle *ssl)
 	mir_free(ssl->pbIoBuffer);
 	mir_free(ssl);
 }
+
+BOOL NetlibSslPending(SslHandle *ssl)
+{
+	return ssl != NULL && (ssl->cbRecDataBuf != 0 || ssl->cbIoBuffer != 0);
+}
+
 
 static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)    
 {
@@ -128,10 +136,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
     BOOL            fDoRead;
 
 
-    dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
+    dwSSPIFlags = 
+                  ISC_REQ_SEQUENCE_DETECT   |
                   ISC_REQ_REPLAY_DETECT     |
                   ISC_REQ_CONFIDENTIALITY   |
-                  ISC_RET_EXTENDED_ERROR    |
+                  ISC_REQ_EXTENDED_ERROR    |
                   ISC_REQ_ALLOCATE_MEMORY   |
                   ISC_REQ_STREAM;
 
@@ -228,7 +237,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		// send the contents of the output buffer to the server.
         if(scRet == SEC_E_OK                ||
            scRet == SEC_I_CONTINUE_NEEDED   ||
-           FAILED(scRet) && (dwSSPIOutFlags & ISC_RET_EXTENDED_ERROR))
+           FAILED(scRet) && (dwSSPIOutFlags & ISC_REQ_EXTENDED_ERROR))
         {
             if(OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL)
             {
@@ -261,11 +270,10 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
                 MoveMemory(ssl->pbIoBuffer,
                            ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
                            InBuffers[1].cbBuffer);
+                ssl->cbIoBuffer = InBuffers[1].cbBuffer;
             }
             else
-            {
-                ssl->cbIoBuffer   = 0;
-            }
+                ssl->cbIoBuffer = 0;
             break;
         }
 
@@ -416,7 +424,9 @@ void NetlibSslShutdown(SslHandle *ssl)
     TimeStamp       tsExpiry;
     DWORD           scRet;
 
-    dwType = SCHANNEL_SHUTDOWN;
+	if (ssl == NULL) return;
+
+	dwType = SCHANNEL_SHUTDOWN;
 
     OutBuffers[0].pvBuffer   = &dwType;
     OutBuffers[0].BufferType = SECBUFFER_TOKEN;
@@ -484,8 +494,9 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
     SecBuffer *     pDataBuffer;
     SecBuffer *     pExtraBuffer;
 
-	if (num == 0) 
-		return 0;
+	if (ssl == NULL) return SOCKET_ERROR;
+
+	if (num == 0) return 0;
 
 	if (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= (DWORD)num))
 	{
@@ -673,6 +684,8 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 	DWORD			cbMessage;
 
 	DWORD			sendOff = 0;
+
+	if (ssl == NULL) return SOCKET_ERROR;
 
 	scRet = g_pSSPI->QueryContextAttributesA(&ssl->hContext, SECPKG_ATTR_STREAM_SIZES, &Sizes);
     if (scRet != SEC_E_OK) return scRet;

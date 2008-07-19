@@ -73,7 +73,7 @@ int NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam)
 		nlpr->packetRecver.bytesAvailable-=nlprParam->bytesUsed;
 	}
 	if(nlprParam->dwTimeout!=INFINITE) {
-		if(!WaitUntilReadable(nlpr->nlc->s,nlprParam->dwTimeout)) {
+		if(!NetlibSslPending(nlpr->nlc->hSsl) && !WaitUntilReadable(nlpr->nlc->s,nlprParam->dwTimeout)) {
 			*nlprParam=nlpr->packetRecver;
 			return SOCKET_ERROR;
 		}
