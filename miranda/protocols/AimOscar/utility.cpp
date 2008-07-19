@@ -63,18 +63,18 @@ void CAimProto::start_connection(int status)
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
-		if (!getString(AIM_KEY_HN, &dbv))
-		{
-			broadcast_status(ID_STATUS_CONNECTING);
-			hServerConn=NULL;
-			hServerPacketRecver=NULL;
-			hServerConn=aim_connect(dbv.pszVal);
-			DBFreeVariant(&dbv);
-		}
-		else
-		{
-			ShowPopup("Aim Protocol","Error retrieving hostname from the database.", 0);
-		}
+
+		int dbkey = getString(AIM_KEY_HN, &dbv);
+		if (dbkey) dbv.pszVal = AIM_DEFAULT_SERVER;
+
+		broadcast_status(ID_STATUS_CONNECTING);
+		hServerConn = NULL;
+		hServerPacketRecver = NULL;
+		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+		hServerConn = aim_connect(dbv.pszVal, port);
+
+		if (!dbkey) DBFreeVariant(&dbv);
+
 		if ( hServerConn )
 		{
 			initial_status = status;
@@ -221,7 +221,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 			aim_mod_group(hServerConn,seqno,tgroup,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's m_iStatus during this session			
 			DBFreeVariant(&dbv);
 			delete[] user_id_array;
-			DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_NC);
+			deleteSetting(hContact, AIM_KEY_NC);
 		}
 	}
 }
@@ -265,7 +265,7 @@ void CAimProto::add_contacts_to_groups()
 							DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
-						DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_NC);
+						deleteSetting(hContact, AIM_KEY_NC);
 					}
 				}
 				else
@@ -281,7 +281,7 @@ void CAimProto::add_contacts_to_groups()
 							DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
 							DBFreeVariant(&dbv);
 						}
-						DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_NC);
+						deleteSetting(hContact, AIM_KEY_NC);
 					}
 				}
 			}
@@ -302,10 +302,10 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-			if(DBGetContactSettingWord(hContact, m_szModuleName, item,0))
+			if(getWord(hContact, item, 0))
 			{
-				DBDeleteContactSetting(hContact, m_szModuleName, item);
-				DBDeleteContactSetting(hContact, m_szModuleName, group);
+				deleteSetting(hContact, item);
+				deleteSetting(hContact, group);
 				delete[] item;
 				delete[] group;
 			}
@@ -317,17 +317,17 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 			}
 			i++;
 		}
-		DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_FT);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FN);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FD);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FS);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_DH);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_IP);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_AC);
-		DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_ET);
+		deleteSetting(hContact, AIM_KEY_FT);
+		deleteSetting(hContact, AIM_KEY_FN);
+		deleteSetting(hContact, AIM_KEY_FD);
+		deleteSetting(hContact, AIM_KEY_FS);
+		deleteSetting(hContact, AIM_KEY_DH);
+		deleteSetting(hContact, AIM_KEY_IP);
+		deleteSetting(hContact, AIM_KEY_AC);
+		deleteSetting(hContact, AIM_KEY_ET);
+		deleteSetting(hContact, AIM_KEY_IT);
+		deleteSetting(hContact, AIM_KEY_OT);
 		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
-		DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_IT);
-		DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_OT);
 	}
 	setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 }
@@ -1118,6 +1118,10 @@ char* getSetting(HANDLE &hContact, const char* module, const char* setting)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
+
+void CAimProto::deleteSetting( HANDLE hContact, const char* setting )
+{   DBDeleteContactSetting( hContact, m_szModuleName, setting );
+}
 
 int CAimProto::getByte( const char* name, BYTE defaultValue )
 {	return DBGetContactSettingByte( NULL, m_szModuleName, name, defaultValue );

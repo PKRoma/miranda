@@ -12,30 +12,27 @@ int CAimProto::LOG(const char *fmt, ...)
 	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }
 
-HANDLE CAimProto::aim_connect(char* server)
+HANDLE CAimProto::aim_connect(char* server, unsigned short port)
 {
-	char* server_dup=strldup(server,lstrlenA(server));
 	NETLIBOPENCONNECTION ncon = { 0 };
-	char* szPort = strchr(server_dup,':');
-	if (szPort) *szPort++ = 0; else szPort = "5190";
 	ncon.cbSize = sizeof(ncon);
-	ncon.szHost = server_dup;
-	port = ncon.wPort = (WORD)atol(szPort);
-	ncon.timeout=5;
-	LOG("%s:%u", server_dup, ncon.wPort);
+	ncon.szHost = server;
+	ncon.wPort = port;
+	ncon.timeout = 5;
+	ncon.flags = NLOCF_SSL | NLOCF_V2;
+	LOG("%s:%u", server, port);
 	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
-	delete[] server_dup;
 	return con;
 }
 
-HANDLE CAimProto::aim_peer_connect(char* ip,unsigned short port)
-{
+HANDLE CAimProto::aim_peer_connect(char* ip, unsigned short port)
+{ 
 	NETLIBOPENCONNECTION ncon = { 0 };
 	ncon.cbSize = sizeof(ncon);
 	ncon.flags = NLOCF_V2;
 	ncon.szHost = ip;
-	ncon.wPort =port;
-	ncon.timeout=1;
+	ncon.wPort = port;
+	ncon.timeout = 1;
 	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibPeer, (LPARAM) & ncon);
 	return con;
 }

@@ -42,7 +42,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 	int force_proxy = getByte( AIM_KEY_FP, 0);
 	unsigned short port = (unsigned short)getWord(*hContact, AIM_KEY_PC, 0 );
 	if ( peer_force_proxy ) { //peer is forcing proxy
-		HANDLE hProxy = aim_peer_connect( proxy_ip, 5190 );
+		HANDLE hProxy = aim_peer_connect( proxy_ip, AIM_DEFAULT_PORT );
 		if ( hProxy ) {
 			LOG("Connected to proxy ip that buddy specified.");
 			setByte( *hContact, AIM_KEY_PS, 1 );
@@ -64,7 +64,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 		}
 	}
 	else if ( force_proxy ) { //we are forcing a proxy
-		HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com",5190);
+		HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com", AIM_DEFAULT_PORT);
 		if ( hProxy ) {
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
 			setByte( *hContact, AIM_KEY_PS, 2 );
@@ -134,7 +134,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 				ForkThread( &CAimProto::aim_dc_helper, *hContact );
 			}
 			else { //stage 3 proxy
-				HANDLE hProxy = aim_peer_connect( "ars.oscar.aol.com", 5190 );
+				HANDLE hProxy = aim_peer_connect( "ars.oscar.aol.com", AIM_DEFAULT_PORT );
 				if ( hProxy ) {
 					setByte( *hContact, AIM_KEY_PS, 3 );
 					setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy); //not really a direct connection
@@ -145,7 +145,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 		}
 	}
 	else { //stage 2 proxy
-		HANDLE hProxy = aim_peer_connect(proxy_ip,5190);
+		HANDLE hProxy = aim_peer_connect(proxy_ip, AIM_DEFAULT_PORT);
 		if ( hProxy ) {
 			setByte( *hContact, AIM_KEY_PS, 2 );
 			setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy );//not really a direct connection
@@ -163,7 +163,7 @@ void __cdecl CAimProto::proxy_file_thread( void* param ) //buddy sending file he
 	HANDLE* hContact=(HANDLE*)param;
 	char* proxy_ip=(char*)param+sizeof(HANDLE);
 	unsigned short* port = (unsigned short*)&proxy_ip[lstrlenA(proxy_ip)+1];
-	HANDLE hProxy = aim_peer_connect(proxy_ip,5190);
+	HANDLE hProxy = aim_peer_connect(proxy_ip, AIM_DEFAULT_PORT);
 	if ( hProxy ) {
 		setByte( *hContact, AIM_KEY_PS, 3 );
 		setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy ); //not really a direct connection

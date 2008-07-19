@@ -250,8 +250,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   __cdecl aim_avatar_negotiation( void* );
 
 	int    LOG(const char *fmt, ...);
-	HANDLE aim_connect(char* server);
-	HANDLE aim_peer_connect(char* ip,unsigned short port);
+	HANDLE aim_connect(char* server, unsigned short port);
+	HANDLE aim_peer_connect(char* ip, unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// direct_connect.cpp
@@ -387,6 +387,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   CreateProtoServiceParam(const char* szService, AimServiceFuncParam serviceProc, LPARAM lParam);
 	void   HookProtoEvent(const char* szEvent, AimEventFunc pFunc);
 	void   ForkThread( AimThreadFunc, void* );
+
+	void   deleteSetting( HANDLE hContact, const char* setting );
 
 	int    getByte( const char* name, BYTE defaultValue );
 	int    getByte( HANDLE hContact, const char* name, BYTE defaultValue );

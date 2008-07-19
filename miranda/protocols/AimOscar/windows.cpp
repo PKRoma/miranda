@@ -664,6 +664,10 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemTextA(hwndDlg, IDC_HN, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
+			else
+				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
+
+			SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
 
 			WORD timeout = (WORD)ppro->getWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
@@ -686,6 +690,12 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 	case WM_COMMAND:
 		{
+			if (LOWORD(wParam) == IDC_SVRRESET) 
+			{
+				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
+				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
+			}
+
 			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN
 				|| LOWORD(wParam) == IDC_GP) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 				return 0;
@@ -702,7 +712,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				if(lstrlenA(str)>0)
 					ppro->setString(AIM_KEY_SN, str);
 				else
-					DBDeleteContactSetting(NULL, ppro->m_szModuleName, AIM_KEY_SN);
+					ppro->deleteSetting(NULL, AIM_KEY_SN);
 				//END SN
 
 				//NK
@@ -723,21 +733,29 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					ppro->setString(AIM_KEY_PW, str);
 				}
 				else
-					DBDeleteContactSetting(NULL, ppro->m_szModuleName, AIM_KEY_PW);
+					ppro->deleteSetting(NULL, AIM_KEY_PW);
 				//END PW
 
 				//HN
 				GetDlgItemTextA(hwndDlg, IDC_HN, str, sizeof(str));
-				if(lstrlenA(str)>0)
+				if(strlen(str)>0)
 					ppro->setString(AIM_KEY_HN, str);
 				else
-					ppro->setString(AIM_KEY_HN, AIM_DEFAULT_SERVER);
+					ppro->deleteSetting(NULL, AIM_KEY_HN);
 				//END HN
+
+				//PN
+				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
+				if(port>0 && port != AIM_DEFAULT_PORT)
+					ppro->setWord(AIM_KEY_PN, (WORD)port);
+				else
+					ppro->deleteSetting(NULL, AIM_KEY_PN);
+				//END PN
 
 				//GP
 				unsigned long timeout=GetDlgItemInt(hwndDlg, IDC_GP,0,0);
 				if(timeout>0xffff||timeout<15)
-					ppro->setWord( AIM_KEY_GP,DEFAULT_GRACE_PERIOD);
+					ppro->deleteSetting(NULL, AIM_KEY_GP);
 				else
 					ppro->setWord( AIM_KEY_GP,(WORD)timeout);
 				//END GP

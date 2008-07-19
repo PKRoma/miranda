@@ -2,11 +2,11 @@
 
 void __cdecl CAimProto::aim_dc_helper( void* hContact ) //only called when we are initiating a direct connection with someone else
 {
-	HANDLE Connection=(HANDLE)DBGetContactSettingDword(hContact,m_szModuleName,AIM_KEY_DH,0);
+	HANDLE Connection=(HANDLE)getDword(hContact, AIM_KEY_DH, 0);
 	if(Connection)
 	{
 		DBVARIANT dbv;
-		if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_IP, &dbv))
+		if (!getString(hContact, AIM_KEY_IP, &dbv))
 		{
 			unsigned long ip=char_ip_to_long_ip(dbv.pszVal);
 			DBWriteContactSettingDword(NULL,FILE_TRANSFER_KEY,dbv.pszVal,(DWORD)hContact);
@@ -14,12 +14,12 @@ void __cdecl CAimProto::aim_dc_helper( void* hContact ) //only called when we ar
 			DBFreeVariant(&dbv);
 		}
 	}
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_DH);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_IP);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FT);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FN);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FD);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FS);
+	deleteSetting(hContact, AIM_KEY_DH);
+	deleteSetting(hContact, AIM_KEY_IP);
+	deleteSetting(hContact, AIM_KEY_FT);
+	deleteSetting(hContact, AIM_KEY_FN);
+	deleteSetting(hContact, AIM_KEY_FD);
+	deleteSetting(hContact, AIM_KEY_FS);
 }
 
 void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CAimProto* ppro)//for receiving stuff via dc
@@ -46,11 +46,11 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
 	{
 		ppro->receiving_file(hContact,hNewConnection);
 	}
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_FT);
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_FN);
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_FD);
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_FS);
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_IP);
-	DBDeleteContactSetting(hContact,ppro->m_szModuleName,AIM_KEY_DH);
+	ppro->deleteSetting(hContact, AIM_KEY_FT);
+	ppro->deleteSetting(hContact, AIM_KEY_FN);
+	ppro->deleteSetting(hContact, AIM_KEY_FD);
+	ppro->deleteSetting(hContact, AIM_KEY_FS);
+	ppro->deleteSetting(hContact, AIM_KEY_IP);
+	ppro->deleteSetting(hContact, AIM_KEY_DH);
 	Netlib_CloseHandle(hNewConnection);
 }

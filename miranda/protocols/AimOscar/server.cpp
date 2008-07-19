@@ -32,7 +32,15 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			else if(tlv.cmp(0x0006))
 			{
 				Netlib_CloseHandle(hServerConn);
-				hServerConn=aim_connect(server);
+
+				unsigned short port = 5190;
+				char* delim = strchr(server, ':');
+				if (delim)
+				{
+					port = (unsigned short)atol(delim+1);
+					*delim = 0;
+				}
+				hServerConn = aim_connect(server, port);
 				delete[] server;
 				if(hServerConn)
 				{
@@ -313,7 +321,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					if (icq)
 						setString(hContact, "Transport", "ICQ");
 					else
-						DBDeleteContactSetting(hContact, m_szModuleName, "Transport" );
+						deleteSetting(hContact, "Transport" );
 
 					if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 					{
@@ -1046,7 +1054,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		{
 			LOG("File transfer cancelled or denied.");
 			ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DENIED,hContact,0);
-			DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_FT);
+			deleteSetting(hContact, AIM_KEY_FT);
 		}
 		else if(recv_file_type==2)//buddy accepts our file transfer request
 		{
@@ -1081,7 +1089,7 @@ void CAimProto::snac_busted_payload(SNAC &snac)//family 0x0004
 					if(hContact)
 					{
 						ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
-						DBDeleteContactSetting(hContact, m_szModuleName, AIM_KEY_FT);
+						deleteSetting(hContact, AIM_KEY_FT);
 					}
 				}
 			}

@@ -107,21 +107,16 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 
-	DBVARIANT dbv;
-	if (getString(AIM_KEY_HN, &dbv))
-		setString(AIM_KEY_HN, AIM_DEFAULT_SERVER);
-	else
-		DBFreeVariant(&dbv);
-	
 	if(getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
 		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
+	DBVARIANT dbv;
 	if(getString(AIM_KEY_PW, &dbv))
 	{
 		if (!getString(OLD_KEY_PW, &dbv))
 		{
 			setString(AIM_KEY_PW, dbv.pszVal);
-			DBDeleteContactSetting(NULL, m_szModuleName, OLD_KEY_PW);
+			deleteSetting(NULL, OLD_KEY_PW);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -133,7 +128,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		if(i!=255)
 		{
 			setByte(AIM_KEY_DM, i!=1);
-			DBDeleteContactSetting(NULL, m_szModuleName, OLD_KEY_DM);
+			deleteSetting(NULL, OLD_KEY_DM);
 	}	}
 
 	HookProtoEvent(ME_OPT_INITIALISE, &CAimProto::OnOptionsInit);
@@ -289,7 +284,7 @@ int __cdecl CAimProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 		if ( Connection )
 			Netlib_CloseHandle( Connection );
 	}
-	DBDeleteContactSetting( hContact, m_szModuleName, AIM_KEY_FT );
+	deleteSetting( hContact, AIM_KEY_FT );
 	return 0;
 }
 
@@ -307,7 +302,7 @@ int __cdecl CAimProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 		aim_deny_file( hServerConn, seqno, dbv.pszVal, cookie );
 		DBFreeVariant( &dbv );
 	}
-	DBDeleteContactSetting( hContact, m_szModuleName, AIM_KEY_FT );
+	deleteSetting( hContact, AIM_KEY_FT );
 	return 0;
 }
 
@@ -509,7 +504,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			int force_proxy = getByte( AIM_KEY_FP, 0 );
 			if ( force_proxy ) {
 				LOG("We are forcing a proxy file transfer.");
-				HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com",5190);
+				HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com", AIM_DEFAULT_PORT);
 				if ( hProxy ) {
 					setByte( hContact, AIM_KEY_PS, 1 );
 					setDword( hContact, AIM_KEY_DH, (DWORD)hProxy );//not really a direct connection
@@ -521,7 +516,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			DBFreeVariant( &dbv );
 			return (int)hContact;
 		}
-		DBDeleteContactSetting( hContact, m_szModuleName, AIM_KEY_FT );
+		deleteSetting( hContact, AIM_KEY_FT );
 	}
 
 	return 0;

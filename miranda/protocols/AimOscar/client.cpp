@@ -163,7 +163,7 @@ int CAimProto::aim_set_icbm(HANDLE hServerConn,unsigned short &seqno)
 	char buf[SNAC_SIZE+16];
 	aim_writesnac(0x04,0x02,6,offset,buf);
 	aim_writegeneric(2,"\0\0",offset,buf);//channel
-	aim_writegeneric(4,"\0\0\0\x0b",offset,buf);//flags
+	aim_writegeneric(4,"\0\0\x01\x1b",offset,buf);//flags
 	aim_writegeneric(2,"\x0f\xa0",offset,buf);//max snac size
 	aim_writegeneric(2,"\x03\xe7",offset,buf);//max sender warning level
 	aim_writegeneric(2,"\x03\xe7",offset,buf);//max receiver warning level

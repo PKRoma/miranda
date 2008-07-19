@@ -98,7 +98,8 @@
 #define AIM_KEY_SN						"SN"
 #define AIM_KEY_NK						"Nick"
 #define AIM_KEY_PW						"Password"
-#define AIM_KEY_HN						"hostname"
+#define AIM_KEY_HN						"loginhost"
+#define AIM_KEY_PN						"loginport"
 #define AIM_KEY_DC						"DelConf"//delivery confirmation
 #define AIM_KEY_FP						"ForceProxyTransfer"
 #define AIM_KEY_GP						"FileTransferGracePeriod"//in seconds default 60
@@ -175,11 +176,13 @@
 #define OLD_KEY_PW						"password"
 #define OLD_KEY_DM						"AutoResponse"
 
+#define AIM_DEFAULT_SERVER				"slogin.oscar.aol.com"
+#define AIM_DEFAULT_PORT				5190
+
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
 #define DEFAULT_GRACE_PERIOD			60
 #define AIM_DEFAULT_GROUP				"miranda merged"
-#define AIM_DEFAULT_SERVER				"login.oscar.aol.com:5190"
 #define SYSTEM_BUDDY					"aolsystemmsg"
 #define DEFAULT_AWAY_MSG				"I am away from my computer right now."
 //Md5 Roasting stuff

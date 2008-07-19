@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by aim.rc
 //
-#define IDC_STATIC						-1
 #define IDD_INFO                        6
 #define IDD_AIMACCOUNT                  7
 #define IDD_AIM                         8
@@ -55,10 +54,13 @@
 #define IDC_BACKGROUNDCOLOR             138
 #define IDC_TYPEFACE                    139
 #define IDC_FONTSIZE                    141
+#define IDC_BUTTON1                     142
+#define IDC_SVRRESET                    142
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
 #define IDC_HN                          1060
+#define IDC_PN                          1061
 #define IDC_GP                          1070
 #define IDC_DG                          1080
 #define IDC_KA                          1090
@@ -88,7 +90,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        36
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         142
+#define _APS_NEXT_CONTROL_VALUE         143
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

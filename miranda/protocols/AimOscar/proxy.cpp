@@ -156,9 +156,9 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 			}
 		}
 	}
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_FT);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_DH);
-	DBDeleteContactSetting(hContact,m_szModuleName,AIM_KEY_IP);
+	deleteSetting(hContact, AIM_KEY_FT);
+	deleteSetting(hContact, AIM_KEY_DH);
+	deleteSetting(hContact, AIM_KEY_IP);
 }
 
 int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
