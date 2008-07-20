@@ -764,7 +764,7 @@ DWORD __cdecl CMsnProto::GetCaps( int type, HANDLE hContact )
 		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
-		return ( int )MSN_Translate( "E-mail address" );
+		return ( int )MSN_Translate( "Live ID" );
 
 	case PFLAG_UNIQUEIDSETTING:
 		return ( int )"e-mail";
