@@ -30,24 +30,41 @@ typedef struct
 
 typedef struct
 {
+	TCHAR*       file;
+	int          ref_count;
+}
+	IconSourceFile;
+
+typedef struct
+{
+	IconSourceFile* file;
+	int          indx;
+	int          cx, cy;
+
+	int          ref_count;
+
+	HICON        icon;
+	int          icon_ref_count;
+
+	BYTE*        icon_data;
+	int          icon_size;
+}
+	IconSourceItem;
+
+typedef struct
+{
 	char*        name;
 	SectionItem* section;
 	int          orderID;
 	TCHAR*       description;
 	TCHAR*       default_file;
 	int          default_indx;
-	HICON        icon;
 	int          cx, cy;
 
-	int          icon_cache_index;
-	int          icon_cache_valid;
-			 
-	int          default_icon_index;
-	HICON        default_icon;
-			 
-	int          ref_count;
-	int          temp;
-			 
+	IconSourceItem* source;
+
+	IconSourceItem* default_icon;
+
 	TCHAR*       temp_file;
 	HICON        temp_icon;
 	BOOL         temp_reset;
