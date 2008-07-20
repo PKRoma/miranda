@@ -578,4 +578,27 @@ typedef struct
 
 #define ME_SYSTEM_MISSINGSERVICE "System/MissingService"
 
+/* Unhandled exceptions filter
+Is being called inside any thread launched via mir_forkthread, including the main thread.
+If a plugin's author executes a large piece of code inside __try/__except, he should
+obtain this filter and call it inside the __except section
+
+0.8.0+ addition (2008/07/20)
+*/
+
+typedef DWORD ( __cdecl *pfnExceptionFilter )( DWORD code, EXCEPTION_POINTERS* info );
+
+#define MS_SYSTEM_GETEXCEPTFILTER "System/GetExceptFilter"
+
+__inline static pfnExceptionFilter Miranda_GetExceptFilter( void )
+{	return ( pfnExceptionFilter )CallService( MS_SYSTEM_GETEXCEPTFILTER, 0, 0 );
+}
+
+#define MS_SYSTEM_SETEXCEPTFILTER "System/SetExceptFilter"
+
+__inline static pfnExceptionFilter Miranda_SetExceptFilter( pfnExceptionFilter foo )
+{	return ( pfnExceptionFilter )CallService( MS_SYSTEM_SETEXCEPTFILTER, 0, (LPARAM)foo );
+}
+
+
 #endif // M_SYSTEM_H

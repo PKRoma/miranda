@@ -50,6 +50,32 @@ static char *pszWaitServices[MAXIMUM_WAIT_OBJECTS-1];
 static int waitObjectCount=0;
 HANDLE hStackMutex,hMirandaShutdown,hThreadQueueEmpty;
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// exception handling
+
+static DWORD __cdecl sttDefaultFilter( DWORD, EXCEPTION_POINTERS* )
+{
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+pfnExceptionFilter pMirandaExceptFilter = sttDefaultFilter;
+
+static int GetExceptionFilter( WPARAM wParam, LPARAM lParam )
+{
+	return ( int )pMirandaExceptFilter;
+}
+
+static int SetExceptionFilter( WPARAM wParam, LPARAM lParam )
+{
+	pfnExceptionFilter oldOne = pMirandaExceptFilter;
+	if ( lParam != 0 )
+		pMirandaExceptFilter = ( pfnExceptionFilter )lParam;
+	return ( int )oldOne;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// thread support functions
+
 typedef struct
 {
 	DWORD dwThreadId;	// valid if hThread isn't signalled
@@ -84,14 +110,14 @@ void __cdecl forkthread_r(void * arg)
 	void * cookie=fa->arg;
 	CallService(MS_SYSTEM_THREAD_PUSH,0,(LPARAM)callercode);
 	SetEvent(fa->hEvent);
-//	__try
-//	{
+	__try
+	{
 		callercode(cookie);
-//	}
-//	__except( EXCEPTION_EXECUTE_HANDLER )
-//	{
-//		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
-//	}
+	}
+	__except( pMirandaExceptFilter( GetExceptionCode(), GetExceptionInformation()))
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
 
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 	CallService(MS_SYSTEM_THREAD_POP,0,0);
@@ -136,17 +162,17 @@ unsigned __stdcall forkthreadex_r(void * arg)
 
 	CallService(MS_SYSTEM_THREAD_PUSH,(WPARAM)fa->owner,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
-//	__try
-//	{
+	__try
+	{
 		if ( owner )
 			rc = threadcodeex( owner, cookie );
 		else
 			rc = threadcode( cookie );
-//	}
-//	__except( EXCEPTION_EXECUTE_HANDLER )
-//	{
-//		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
-//	}
+	}
+	__except( pMirandaExceptFilter( GetExceptionCode(), GetExceptionInformation()))
+	{
+		Netlib_Logf( NULL, "Unhandled exception in thread %x", GetCurrentThreadId());
+	}
 
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 	CallService(MS_SYSTEM_THREAD_POP,0,0);
@@ -755,5 +781,7 @@ int LoadSystemModule(void)
 	CreateServiceFunction(MS_SYSTEM_GET_LI,GetListInterface);
 	CreateServiceFunction(MS_SYSTEM_GET_MMI,GetMemoryManagerInterface);
 	CreateServiceFunction(MS_SYSTEM_GET_UTFI,GetUtfInterface);
+	CreateServiceFunction(MS_SYSTEM_GETEXCEPTFILTER,GetExceptionFilter);
+	CreateServiceFunction(MS_SYSTEM_SETEXCEPTFILTER,SetExceptionFilter);
 	return 0;
 }
