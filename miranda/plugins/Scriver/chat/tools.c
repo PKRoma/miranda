@@ -671,7 +671,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	return FALSE;
 }
 
-UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO* si, TCHAR* pszUID, TCHAR* pszWordText)
+UINT CreateGCMenu(HWND hwnd, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO* si, TCHAR* pszUID, TCHAR* pszWordText)
 {
 	GCMENUITEMS gcmi = {0};
 	int i;
@@ -684,16 +684,13 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 	gcmi.pszUID = pszUID;
 
 	if (iIndex == 1) {
-		int iLen = GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_LOG), CP_ACP, FALSE);
+		int iLen = GetRichTextLength(hwnd, CP_ACP, FALSE);
 
 		EnableMenuItem(*hMenu, IDM_CLEAR, MF_ENABLED);
 		EnableMenuItem(*hMenu, ID_COPYALL, MF_ENABLED);
-		ModifyMenu(*hMenu, 4, MF_GRAYED|MF_BYPOSITION, 4, NULL);
 		if (!iLen) {
 			EnableMenuItem(*hMenu, ID_COPYALL, MF_BYCOMMAND | MF_GRAYED);
 			EnableMenuItem(*hMenu, IDM_CLEAR, MF_BYCOMMAND | MF_GRAYED);
-			if (pszWordText && pszWordText[0])
-				ModifyMenu(*hMenu, 4, MF_ENABLED|MF_BYPOSITION, 4, NULL);
 		}
 
 		if ( pszWordText && pszWordText[0] ) {
@@ -751,7 +748,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		mir_free( ptszDescr );
 	}
-	return TrackPopupMenu(*hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+	return TrackPopupMenu(*hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
 }
 
 void DestroyGCMenu(HMENU *hMenu, int iIndex)
