@@ -33,11 +33,11 @@ DWORD g_LastConnectionTick; // protected by csNetlibUser
 
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
 {
-	if(settings->szIncomingPorts) mir_free(settings->szIncomingPorts);
-	if(settings->szOutgoingPorts) mir_free(settings->szOutgoingPorts);
-	if(settings->szProxyAuthPassword) mir_free(settings->szProxyAuthPassword);
-	if(settings->szProxyAuthUser) mir_free(settings->szProxyAuthUser);
-	if(settings->szProxyServer) mir_free(settings->szProxyServer);
+	mir_free(settings->szIncomingPorts);
+	mir_free(settings->szOutgoingPorts);
+	mir_free(settings->szProxyAuthPassword);
+	mir_free(settings->szProxyAuthUser);
+	mir_free(settings->szProxyServer);
 }
 
 void NetlibInitializeNestedCS(struct NetlibNestedCriticalSection *nlncs)
@@ -224,11 +224,11 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 				}
 			LeaveCriticalSection(&csNetlibUser);
 			NetlibFreeUserSettingsStruct(&nlu->settings);
-			if(nlu->user.szSettingsModule) mir_free(nlu->user.szSettingsModule);
-			if(nlu->user.szDescriptiveName) mir_free(nlu->user.szDescriptiveName);
-			if(nlu->user.szHttpGatewayHello) mir_free(nlu->user.szHttpGatewayHello);
-			if(nlu->user.szHttpGatewayUserAgent) mir_free(nlu->user.szHttpGatewayUserAgent);
-			if(nlu->szStickyHeaders) mir_free(nlu->szStickyHeaders);
+			mir_free(nlu->user.szSettingsModule);
+			mir_free(nlu->user.szDescriptiveName);
+			mir_free(nlu->user.szHttpGatewayHello);
+			mir_free(nlu->user.szHttpGatewayUserAgent);
+			mir_free(nlu->szStickyHeaders);
 			break;
 		}
 		case NLH_CONNECTION:
@@ -281,7 +281,6 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			mir_free(nlc->nlhpi.szHttpPostUrl);
 			mir_free(nlc->nlhpi.szHttpGetUrl);
 			mir_free(nlc->dataBuffer);
-			mir_free(nlc->szHost);
 			NetlibDestroySecurityProvider("NTLM", nlc->hNtlmSecurity);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
@@ -471,8 +470,7 @@ void UnloadNetlibModule(void)
 
 		for ( i = netlibUserCount; i > 0; i-- )
 			NetlibCloseHandle(( WPARAM )netlibUser[i-1], 0 );
-		if( netlibUser )
-			mir_free( netlibUser );
+		mir_free( netlibUser );
 
 		CloseHandle(hConnectionHeaderMutex);
 		DeleteCriticalSection(&csNetlibUser);
