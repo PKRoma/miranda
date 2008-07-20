@@ -281,6 +281,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 			mir_free(nlc->nlhpi.szHttpPostUrl);
 			mir_free(nlc->nlhpi.szHttpGetUrl);
 			mir_free(nlc->dataBuffer);
+			mir_free(nlc->szHost);
 			NetlibDestroySecurityProvider("NTLM", nlc->hNtlmSecurity);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
@@ -470,6 +471,7 @@ void UnloadNetlibModule(void)
 
 		for ( i = netlibUserCount; i > 0; i-- )
 			NetlibCloseHandle(( WPARAM )netlibUser[i-1], 0 );
+
 		mir_free( netlibUser );
 
 		CloseHandle(hConnectionHeaderMutex);
