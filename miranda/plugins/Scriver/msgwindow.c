@@ -1112,22 +1112,21 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		{
 			HWND hwnd = (HWND) lParam;
 			StatusBarData *sbd = (StatusBarData *) wParam;
-			int iItem = sbd->iItem;
 			if (sbd != NULL) {
 				if ((sbd->iFlags & SBDF_TEXT) && dat->hwndActive == hwnd) {
-					SendMessage(dat->hwndStatus, SB_SETTEXT, iItem, (LPARAM) sbd->pszText);
+					SendMessage(dat->hwndStatus, SB_SETTEXT, sbd->iItem, (LPARAM) sbd->pszText);
 				}
 				if ((sbd->iFlags & SBDF_ICON) && dat->hwndActive == hwnd) {
-					SendMessage(dat->hwndStatus, SB_SETICON, iItem, (LPARAM) sbd->hIcon);
+					SendMessage(dat->hwndStatus, SB_SETICON, sbd->iItem, (LPARAM) sbd->hIcon);
 				}
+				RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 			}
-			RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 			break;
 		}
 	case DM_STATUSICONCHANGE:
 		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW) | 2, (LPARAM)0);
 		SetupStatusBar(dat);
-		RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+		RedrawWindow(dat->hwndStatus, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 		break;
 	case CM_UPDATETABCONTROL:
 		{
