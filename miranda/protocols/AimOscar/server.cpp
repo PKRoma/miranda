@@ -712,14 +712,10 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			{
 				if(group_id)
 				{
-					BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 					char group_id_string[32];
 					_itoa(group_id,group_id_string,10);
 					char* trimmed_name=trim_name(name);
-					if(bUtfReadyDB==1)
- 						DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
-					else
-						DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
+					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
 					char* lowercased_name=lowercase_name(trimmed_name);
 					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
 				}

@@ -177,6 +177,7 @@
 #define OLD_KEY_DM						"AutoResponse"
 
 #define AIM_DEFAULT_SERVER				"slogin.oscar.aol.com"
+#define AIM_DEFAULT_SERVER_NS			"login.oscar.aol.com"
 #define AIM_DEFAULT_PORT				5190
 
 //Some Defaults for various things

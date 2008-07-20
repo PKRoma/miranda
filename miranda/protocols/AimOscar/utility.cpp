@@ -139,41 +139,27 @@ HANDLE CAimProto::add_contact(char* buddy)
 void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 {
 	char* tgroup=trim_name(group);	
-	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	bool group_exist=1;
 	char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
 	mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-	unsigned short old_group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, groupNum,0);		
+	unsigned short old_group_id = getWord(hContact, groupNum, 0);		
 	delete[] groupNum;
 	if(old_group_id)
 	{
 		char group_id_string[32];
 		_itoa(old_group_id,group_id_string,10);
 		DBVARIANT dbv;
-		if(bUtfReadyDB==1)
-		{
-			if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpiA(tgroup,dbv.pszVal))
-				{
-					DBFreeVariant(&dbv);
-					return;
-				}
+		if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
+			if(!lstrcmpiA(tgroup,dbv.pszVal))
+			{
 				DBFreeVariant(&dbv);
-		}
-		else
-		{
-			if(!DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-				if(!lstrcmpiA(tgroup,dbv.pszVal))
-				{
-					DBFreeVariant(&dbv);
-					return;
-				}
-				DBFreeVariant(&dbv);
-		}
+				return;
+			}
+			DBFreeVariant(&dbv);
 	}
 	char* buddyNum= new char[lstrlenA(AIM_KEY_BI)+10];
 	mir_snprintf(buddyNum,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-	unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, buddyNum,0);
+	unsigned short item_id = getWord(hContact, buddyNum, 0);
 	delete[] buddyNum;
 	char* lowercased_group=lowercase_name(tgroup);
 	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,lowercased_group,0);
@@ -209,10 +195,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 			{
 				char group_id_string[32];
 				_itoa(new_group_id,group_id_string,10);
-				if(bUtfReadyDB==1)
-					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, tgroup);
-				else
-					DBWriteContactSettingString(NULL, ID_GROUP_KEY,group_id_string, tgroup);
+				DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, tgroup);
 				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
 				LOG("Adding group %s:%u to the serverside list",group,new_group_id);
 				aim_add_group(hServerConn,seqno,group,new_group_id);//add the group server-side even if it exist
@@ -228,7 +211,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 
 void CAimProto::add_contacts_to_groups()
 {
-	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	//MessageBox( NULL, "Entered the function...protocol name next", m_szModuleName, MB_OK );
 	//MessageBox( NULL, m_szModuleName, m_szModuleName, MB_OK );
@@ -252,37 +234,18 @@ void CAimProto::add_contacts_to_groups()
 				//MessageBox( NULL, "Made string out of it...", m_szModuleName, MB_OK );
 				//MessageBox( NULL, group_id_string, m_szModuleName, MB_OK );
 				DBVARIANT dbv;
-				if(bUtfReadyDB==1)
+				//MessageBox( NULL, "Utf path... should start writing", m_szModuleName, MB_OK );
+				if(DBGetContactSettingByte(hContact, m_szModuleName,AIM_KEY_NC,0))
 				{
-					//MessageBox( NULL, "Utf path... should start writing", m_szModuleName, MB_OK );
-					if(DBGetContactSettingByte(hContact, m_szModuleName,AIM_KEY_NC,0))
+					if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 					{
-						if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-						{
-							//MessageBox( NULL, "Got group name... should add", m_szModuleName, MB_OK );
-							//MessageBox( NULL, dbv.pszVal, m_szModuleName, MB_OK );
-							create_group(dbv.pszVal);
-							DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						deleteSetting(hContact, AIM_KEY_NC);
+						//MessageBox( NULL, "Got group name... should add", m_szModuleName, MB_OK );
+						//MessageBox( NULL, dbv.pszVal, m_szModuleName, MB_OK );
+						create_group(dbv.pszVal);
+						DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
+						DBFreeVariant(&dbv);
 					}
-				}
-				else
-				{	
-					//MessageBox( NULL, "ansi path... should start writing", m_szModuleName, MB_OK );
-					if(DBGetContactSettingByte(hContact, m_szModuleName,AIM_KEY_NC,0))
-					{
-						if(!DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-						{
-							//MessageBox( NULL, "Got group name... should add", m_szModuleName, MB_OK );
-							//MessageBox( NULL, dbv.pszVal, m_szModuleName, MB_OK );
-							create_group(dbv.pszVal);
-							DBWriteContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-							DBFreeVariant(&dbv);
-						}
-						deleteSetting(hContact, AIM_KEY_NC);
-					}
+					deleteSetting(hContact, AIM_KEY_NC);
 				}
 			}
 		}
@@ -558,9 +521,8 @@ void CAimProto::execute_cmd(char* arg)
 
 void create_group(char *group)
 {
-	if (!group)
-        return;
-	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
+	if (!group) return;
+
 	/*char* outer_group=get_outer_group();
 	if(!lstrcmpA(outer_group,group))
 	{
@@ -574,16 +536,8 @@ void create_group(char *group)
     for (i = 0;; i++)
 	{
         _itoa(i, str, 10);
-		if(bUtfReadyDB==1)
-		{
-			if(DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
-				break;//invalid
-		}
-		else
-		{
-			if (DBGetContactSettingString(NULL, "CListGroups", str, &dbv))
-				break;//invalid
-		}
+		if(DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
+			break;//invalid
 		//only happens if dbv entry exist
 		if (dbv.pszVal[0] != '\0' && !lstrcmpA(dbv.pszVal + 1, group))
 		{
@@ -595,36 +549,21 @@ void create_group(char *group)
 	name[0] = 1 | GROUPF_EXPANDED;
     strlcpy(name + 1, group, sizeof(name));
     name[lstrlenA(group) + 1] = '\0';
-   	if(bUtfReadyDB==1)
-		DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
-	else
-		DBWriteContactSettingString(NULL, "CListGroups", str, name);
+	DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
     CallServiceSync(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
 unsigned short CAimProto::search_for_free_group_id(char *name)//searches for a free group id and creates the group
 {
-	BOOL bUtfReadyDB = ServiceExists(MS_DB_CONTACT_GETSETTING_STR);
 	for(unsigned short i=1;i<0xFFFF;i++)
 	{
 		char group_id_string[32];
 		_itoa(i,group_id_string,10);
 		DBVARIANT dbv;
-		if(bUtfReadyDB==1)
-		{
-			if(DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))
-			{//invalid
-				create_group(name);	
-				return i;
-			}
-		}
-		else
-		{
-			if(DBGetContactSettingString(NULL,ID_GROUP_KEY,group_id_string,&dbv))
-			{//invalid
-				create_group(name);	
-				return i;
-			}
+		if(DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))
+		{//invalid
+			create_group(name);	
+			return i;
 		}
 		DBFreeVariant(&dbv);//valid so free
 	}
