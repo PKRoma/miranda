@@ -28,11 +28,11 @@ static LONG sttChatID = 0;
 HANDLE CMsnProto::MSN_GetChatInernalHandle(HANDLE hContact)
 {
 	HANDLE result = hContact;
-	int type = DBGetContactSettingByte(hContact, m_szProtoName, "ChatRoom", 0);
+	int type = getByte(hContact, "ChatRoom", 0);
 	if (type != 0) 
 	{
 		DBVARIANT dbv;
-		if (DBGetContactSettingString(hContact, m_szProtoName, "ChatRoomID", &dbv) == 0)
+		if (getString(hContact, "ChatRoomID", &dbv) == 0)
 		{
 			result = (HANDLE)(-atol(dbv.pszVal));
 			MSN_FreeVariant(&dbv);
@@ -157,7 +157,7 @@ void CMsnProto::InviteUser(ThreadData* info) {
 	// generate a list of contact
 	while ( hContact != NULL ) {
 		if ( MSN_IsMyContact( hContact )) {
-			if (DBGetContactSettingByte(hContact, m_szProtoName, "ChatRoom", 0) == 0) {
+			if (getByte(hContact, "ChatRoom", 0) == 0) {
 				if (getWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) {
 					bool alreadyInSession = false;
 					for ( int j=0; j < info->mJoinedCount; j++ ) {
@@ -233,7 +233,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 					mir_free(msg);
 
 					DBVARIANT dbv;
-					int bError = DBGetContactSettingTString( NULL, m_szProtoName, "Nick", &dbv );
+					int bError = getTString( "Nick", &dbv );
 					if ( bError )
 						dbv.ptszVal = _T("");
 

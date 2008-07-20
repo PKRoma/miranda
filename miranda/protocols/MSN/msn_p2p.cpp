@@ -971,7 +971,7 @@ void CMsnProto::p2p_InitFileTransfer(
 		case MSN_APPID_AVATAR2:
 			if ( !_stricmp( szEufGuid, "{A4268EEC-FEC5-49E5-95C3-F126696BDBF6}" )) {
 				DBVARIANT dbv;
-				bool pictmatch = !DBGetContactSettingString( NULL, m_szProtoName, "PictObject", &dbv );
+				bool pictmatch = !getString( "PictObject", &dbv );
 				if ( pictmatch ) 
 				{
 					UrlDecode(dbv.pszVal);

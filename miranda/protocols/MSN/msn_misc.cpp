@@ -195,7 +195,7 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 	if ( hContact != NULL ) 
 	{
 		DBVARIANT dbv;
-		if (DBGetContactSettingString(hContact, m_szProtoName, "PictContext", &dbv) == 0)
+		if (getString(hContact, "PictContext", &dbv) == 0)
 		{
 			char* szAvatarHash = MSN_GetAvatarHash(dbv.pszVal);
 			if (szAvatarHash != NULL)
