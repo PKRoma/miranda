@@ -93,10 +93,18 @@ template<class T> struct OBJLIST : public LIST<T>
 		LIST<T>( aincr, afunc )
 		{}
 
+	#if defined( _STATIC )
 	__inline OBJLIST( const OBJLIST& x )
 		{	items = NULL;
 			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
 		}
+
+	__inline OBJLIST& operator=( const OBJLIST& x )
+		{	destroy();
+			List_ObjCopy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+			return *this;
+		}
+	#endif
 
 	~OBJLIST()
 	{
