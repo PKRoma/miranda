@@ -609,7 +609,7 @@ public:
 	{
 		CreateLabel();
 		m_hwnd = CreateWindow(_T("edit"), m_field->GetValue(),
-			WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY|ES_AUTOHSCROLL,
+			WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_READONLY,
 			0, 0, 0, 0,
 			m_parent->GetHwnd(), (HMENU)-1, hInst, NULL);
 	}

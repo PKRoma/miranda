@@ -32,9 +32,9 @@ Last change by : $Author$
 #include "jabber_rc.h"
 
 #include <m_fontservice.h>
+#include <m_icolib.h>
 
 #include "sdk/m_assocmgr.h"
-#include "sdk/m_icolib.h"
 #include "sdk/m_folders.h"
 #include "sdk/m_wizard.h"
 #include "sdk/m_toolbar.h"

@@ -210,9 +210,9 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 
 int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM wParam, LPARAM lParam )
 {
-	BuildXStatusItems(wParam, lParam);
 	BuildPrivacyMenu(wParam, lParam);
 	BuildPriorityMenu(wParam, lParam);
+	m_pepServices.RebuildMenu();
 	return 0;
 }
 

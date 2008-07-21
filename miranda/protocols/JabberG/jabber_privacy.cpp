@@ -31,8 +31,9 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_privacy.h"
 
-#include "m_genmenu.h"
-#include "m_clistint.h"
+#include <m_icolib.h>
+#include <m_genmenu.h>
+#include <m_clistint.h>
 
 #define JABBER_PL_BUSY_MSG	 "Sending request, please wait..."
 

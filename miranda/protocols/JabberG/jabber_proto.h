@@ -34,6 +34,8 @@ Last change by : $Author: m_mluhov $
 #include "jabber_privacy.h"
 #include "jabber_search.h"
 #include "jabber_iq.h"
+#include "jabber_icolib.h"
+#include "jabber_xstatus.h"
 
 struct CJabberProto;
 typedef void ( __cdecl CJabberProto::*JThreadFunc )( void* );
@@ -49,15 +51,6 @@ enum { JES_MULTINE, JES_COMBO, JES_RICHEDIT };
 typedef UNIQUE_MAP<TCHAR,TCharKeyCmp> U_TCHAR_MAP;
 
 #define JABBER_DEFAULT_RECENT_COUNT 10
-
-#define NUM_XMODES 61
-
-struct CJabberMoodIcon
-{
-	HANDLE	hItem;
-	HANDLE	hIcon;
-	HANDLE   hCListXStatusIcon;
-};
 
 struct JABBER_IQ_FUNC
 {
@@ -185,7 +178,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	int  __cdecl JabberGcMenuHook( WPARAM, LPARAM );
 	int  __cdecl JabberGcInit( WPARAM, LPARAM );
 
-	int  __cdecl CListMW_ExtraIconsRebuild( WPARAM, LPARAM );
 	int  __cdecl CListMW_ExtraIconsApply( WPARAM, LPARAM );
 
 	//====| Data |========================================================================
@@ -213,12 +205,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	JABBER_MODEMSGS m_modeMsgs;
 	BOOL m_bModeMsgStatusChangePending;
 
-	CJabberMoodIcon m_xstatusIcons[ NUM_XMODES + 1 ]; // moods + none
 	HANDLE m_hHookExtraIconsRebuild;
-	HANDLE m_hHookStatusBuild;
 	HANDLE m_hHookExtraIconsApply;
-	int    m_nJabberXStatus;
-	BOOL   m_bXStatusMenuBuilt;
 
 	BOOL   m_bChangeStatusMessageOnly;
 	BOOL   m_bSendKeepAlive;
@@ -828,12 +816,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnGetXStatusIcon( WPARAM wParam, LPARAM lParams );
 	int    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
 	int    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
-	int    __cdecl OnMenuSetXStatus( WPARAM wParam, LPARAM lParam, LPARAM param );
-
-	void BuildXStatusItems( WPARAM, LPARAM );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
-	void   JabberUpdateContactExtraIcon( HANDLE hContact );
 
 	void   RegisterAdvStatusSlot(const char *pszSlot);
 	void   ResetAdvStatus(HANDLE hContact, const char *pszSlot);
@@ -841,22 +825,19 @@ struct CJabberProto : public PROTO_INTERFACE
 	char*  ReadAdvStatusA(HANDLE hContact, const char *pszSlot, const char *pszValue);
 	TCHAR* ReadAdvStatusT(HANDLE hContact, const char *pszSlot, const char *pszValue);
 
-	BOOL   SendPepActivity( char* szFirstNode, char* szSecondNode, TCHAR* szText );
-	BOOL   SendPepMood( int nMoodNumber, TCHAR* szMoodText );
 	BOOL   SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
 			
 	void   XStatusInit( void );
 	void   XStatusUninit( void );
-	void   InitXStatusIcons( void );
 			
-	void   SetContactMood( HANDLE hContact, const char* moodName, const TCHAR* moodText );
 	void   SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
-	void   SetContactActivity( HANDLE hContact, char* szFirstNode, char* szSecondNode, TCHAR* szText );
 
 	void InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt);
 	void InfoFrame_OnUserActivity(CJabberInfoFrame_Event *evt);
 
 	int m_xsActivity;
+
+	CPepServiceList m_pepServices;
 
 private:
 	XmlState xmlState;

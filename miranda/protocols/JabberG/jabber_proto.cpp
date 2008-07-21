@@ -149,11 +149,13 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	IconsInit();
 	MenuInit();
 	WsInit();
-	//XStatusInit();
 	IqInit();
 	SerialInit();
 	ConsoleInit();
 	InitCustomFolders();
+
+	m_pepServices.insert(new CPepMood(this));
+	m_pepServices.insert(new CPepActivity(this));
 
 	char text[ MAX_PATH ];
 	mir_snprintf( text, sizeof( text ), "%s/Status", m_szModuleName );
@@ -212,6 +214,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 {
 	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 	XStatusInit();
+	m_pepServices.InitGui();
 
 	m_pInfoFrame = new CJabberInfoFrame(this);
 

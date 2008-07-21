@@ -899,41 +899,18 @@ void CJabberProto::OnProcessPubsubEvent( XmlNode *node )
 	if ( !from )
 		return;
 
-	HANDLE hContact = HContactFromJID( from );
-	if ( !hContact )
-		return;
-
 	XmlNode* eventNode = JabberXmlGetChildWithGivenAttrValue( node, "event", "xmlns", _T(JABBER_FEAT_PUBSUB_EVENT));
 	if ( !eventNode )
 		return;
 
-	XmlNode* itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_MOOD));
-	if ( itemsNode && JGetByte( "EnableUserMood", TRUE )) {
-		// node retract?
-		if ( JabberXmlGetChild( itemsNode, "retract" )) {
-			SetContactMood( hContact, NULL, NULL );
-			return;
-		}
+	m_pepServices.ProcessEvent(from, eventNode);
 
-		XmlNode* itemNode = JabberXmlGetChild( itemsNode, "item" );
-		if ( !itemNode )
-			return;
+	HANDLE hContact = HContactFromJID( from );
+	if ( !hContact )
+		return;
 
-		XmlNode* moodNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "mood", "xmlns", _T(JABBER_FEAT_USER_MOOD));
-		if ( !moodNode )
-			return;
-
-		char*  moodType = NULL;
-		TCHAR* moodText = NULL;
-		for ( int i=0; i<moodNode->numChild; i++ ) {
-			if ( !strcmp( moodNode->child[i]->name, "text" ))
-				moodText = moodNode->child[i]->text;
-			else
-				moodType = moodNode->child[i]->name;
-		}
-		SetContactMood( hContact, moodType, moodText );
-	}
-	else if ( JGetByte( "EnableUserTune", FALSE ) && (itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
+	XmlNode* itemsNode;
+	if ( JGetByte( "EnableUserTune", FALSE ) && (itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
 		// node retract?
 		if ( JabberXmlGetChild( itemsNode, "retract" )) {
 			SetContactTune( hContact, NULL, NULL, NULL, NULL, NULL, NULL );
@@ -980,42 +957,6 @@ void CJabberProto::OnProcessPubsubEvent( XmlNode *node )
 		}
 
 		SetContactTune( hContact, szArtist, szLength ? szLengthInTime : NULL, szSource, szTitle, szTrack, szUri );
-	}
-	else if ( JGetByte( "EnableUserActivity", TRUE ) && (itemsNode = JabberXmlGetChildWithGivenAttrValue( eventNode, "items", "node", _T(JABBER_FEAT_USER_ACTIVITY)))) {
-		// node retract?
-		if ( JabberXmlGetChild( itemsNode, "retract" )) {
-			SetContactActivity( hContact, NULL, NULL, NULL );
-			return;
-		}
-
-		XmlNode* itemNode = JabberXmlGetChild( itemsNode, "item" );
-		if ( !itemNode )
-			return;
-
-		XmlNode* actNode = JabberXmlGetChildWithGivenAttrValue( itemNode, "activity", "xmlns", _T(JABBER_FEAT_USER_ACTIVITY));
-		if ( !actNode )
-			return;
-
-		char *szFirstNode = NULL;
-		char *szSecondNode = NULL;
-		TCHAR *szText = NULL;
-
-		XmlNode* textNode = JabberXmlGetChild( actNode, "text" );
-		if ( textNode && textNode->text )
-			szText = textNode->text;
-
-		for ( int i = 0; i < actNode->numChild; i++ ) {
-			// not "text" node?
-			if ( actNode->child[i]->name && strcmp( actNode->child[i]->name, "text" )) {
-				szFirstNode = actNode->child[i]->name;
-				XmlNode* secondNode = JabberXmlGetFirstChild( actNode->child[i] );
-				if ( szFirstNode && secondNode && secondNode->name )
-					szSecondNode = secondNode->name;
-				break;
-			}
-		}
-
-		SetContactActivity( hContact, szFirstNode, szSecondNode, szText );
 	}
 }
 
@@ -1525,7 +1466,7 @@ void CJabberProto::UpdateJidDbSettings( TCHAR *jid )
 		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
-		JabberUpdateContactExtraIcon(hContact);
+		//JabberUpdateContactExtraIcon(hContact);
 	}
 
 	MenuUpdateSrmmIcon( item );

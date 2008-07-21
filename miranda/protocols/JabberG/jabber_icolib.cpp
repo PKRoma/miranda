@@ -30,7 +30,9 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_list.h"
 
-#include "m_icolib.h"
+#include <m_icolib.h>
+
+#include "sdk/m_cluiframes.h"
 
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
@@ -76,6 +78,143 @@ static TransportProtoTable[] =
 
 static int skinIconStatusToResourceId[] = {IDI_OFFLINE,IDI_ONLINE,IDI_AWAY,IDI_DND,IDI_NA,IDI_NA,/*IDI_OCCUPIED,*/IDI_FREE4CHAT,IDI_INVISIBLE,IDI_ONTHEPHONE,IDI_OUTTOLUNCH};
 static int skinStatusToJabberStatus[] = {0,1,2,3,4,4,6,7,2,2};
+
+///////////////////////////////////////////////////////////////////////////////
+// CIconPool class
+int CIconPool::CPoolItem::cmp(const CPoolItem *p1, const CPoolItem *p2)
+{
+	return lstrcmpA(p1->m_name, p2->m_name);
+}
+
+CIconPool::CPoolItem::CPoolItem():
+	m_name(NULL), m_szIcolibName(NULL), m_hIcolibItem(NULL), m_hClistItem(NULL)
+{
+}
+
+CIconPool::CPoolItem::~CPoolItem()
+{
+	if (m_hIcolibItem && m_szIcolibName)
+	{
+		CallService(MS_SKIN2_REMOVEICON, 0, (LPARAM)m_szIcolibName);
+		mir_free(m_szIcolibName);
+	}
+
+	if (m_name) mir_free(m_name);
+}
+
+CIconPool::CIconPool(CJabberProto *proto):
+	m_proto(proto),
+	m_items(10, CIconPool::CPoolItem::cmp),
+	m_hOnExtraIconsRebuild(NULL)
+{
+}
+
+CIconPool::~CIconPool()
+{
+	if (m_hOnExtraIconsRebuild)
+	{
+		UnhookEvent(m_hOnExtraIconsRebuild);
+		m_hOnExtraIconsRebuild = NULL;
+	}
+}
+
+void CIconPool::RegisterIcon(const char *name, const char *filename, int iconid, TCHAR *szSection, TCHAR *szDescription)
+{
+	char szSettingName[128];
+	mir_snprintf(szSettingName, SIZEOF(szSettingName), "%s_%s", m_proto->m_szModuleName, name);
+
+	CPoolItem *item = new CPoolItem;
+	item->m_name = mir_strdup(name);
+	item->m_szIcolibName = mir_strdup(szSettingName);
+	item->m_hClistItem = NULL;
+
+	SKINICONDESC sid = {0};
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.pszDefaultFile = (char *)filename;	// kill const flag for compiler to shut up
+	sid.cx = sid.cy = 16;
+	sid.pszName = szSettingName;
+	sid.ptszSection = szSection;
+	sid.ptszDescription = szDescription;
+	sid.flags = SIDF_TCHAR;
+	sid.iDefaultIndex = iconid;
+	item->m_hIcolibItem = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+	m_items.insert(item);
+}
+
+HANDLE CIconPool::GetIcolibHandle(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return item->m_hIcolibItem;
+
+	return NULL;
+}
+
+char *CIconPool::GetIcolibName(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return item->m_szIcolibName;
+
+	return NULL;
+}
+
+HICON CIconPool::GetIcon(const char *name)
+{
+	if (CPoolItem *item = FindItemByName(name))
+		return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
+
+	return NULL;
+}
+
+HANDLE CIconPool::GetClistHandle(const char *name)
+{
+	if (!name)
+		return (HANDLE)-1;
+
+	if (!ExtraIconsSupported())
+		return (HANDLE)-1;
+
+	if (!m_hOnExtraIconsRebuild)
+	{
+		int (__cdecl CIconPool::*hookProc)(WPARAM, LPARAM);
+		hookProc = &CIconPool::OnExtraIconsRebuild;
+		m_hOnExtraIconsRebuild = HookEventObj(ME_CLIST_EXTRA_LIST_REBUILD, (MIRANDAHOOKOBJ)*(void **)&hookProc, this);
+	}
+
+	if (CPoolItem *item = FindItemByName(name))
+	{
+		if (item->m_hClistItem)
+			return item->m_hClistItem;
+
+		HICON hIcon = (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
+		item->m_hClistItem = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hIcon, 0);
+		return item->m_hClistItem;
+	}
+
+	return (HANDLE)-1;
+}
+
+CIconPool::CPoolItem *CIconPool::FindItemByName(const char *name)
+{
+	CPoolItem item;
+	item.m_name = mir_strdup(name);
+	return m_items.find(&item);
+}
+
+int CIconPool::OnExtraIconsRebuild(WPARAM, LPARAM)
+{
+	for (int i = 0; i < m_items.getCount(); ++i)
+		m_items[i].m_hClistItem = NULL;
+
+	return 0;
+}
+
+bool CIconPool::ExtraIconsSupported()
+{
+	static int res = -1;
+	if (res < 0) res = ServiceExists(MS_CLIST_EXTRA_ADD_ICON) ? 1 : 0;
+	return res ? true : false;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Icons init

@@ -102,6 +102,7 @@
 #define IDD_HTTP_AUTH                   228
 #define IDI_ICON3                       229
 #define IDI_HTTP_AUTH                   229
+#define IDD_PEP_SIMPLE                  230
 #define IDC_STATUSBAR                   999
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
@@ -378,6 +379,8 @@
 #define IDC_HTTP_AUTH_INFO              1294
 #define IDC_EDIT_HTTP_AUTH_INFO         1294
 #define IDC_TXT_URL                     1294
+#define IDC_TXT_INPUT                   1294
+#define IDC_TXT_DESCRIPTION             1294
 #define IDC_BTN_FILTER                  1295
 #define IDC_BTN_NOFILTER                1295
 #define IDC_TXT_ID                      1295
@@ -388,6 +391,7 @@
 #define IDC_CB_TYPE                     1296
 #define IDC_EDIT4                       1296
 #define IDC_TXT_METHOD                  1296
+#define IDC_CB_MODES                    1296
 #define IDC_BTN_FILTER2                 1297
 #define IDC_BTN_FILTER_REFRESH          1297
 #define IDC_EDIT5                       1298
@@ -448,7 +452,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        230
+#define _APS_NEXT_RESOURCE_VALUE        231
 #define _APS_NEXT_COMMAND_VALUE         40017
 #define _APS_NEXT_CONTROL_VALUE         1307
 #define _APS_NEXT_SYMED_VALUE           101
