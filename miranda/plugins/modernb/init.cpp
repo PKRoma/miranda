@@ -100,6 +100,9 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	_CrtSetBreakAlloc(11166);
 #endif
 */
+	g_dwMainThreadID=GetCurrentThreadId();
+    DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+
 	CallService( MS_SYSTEM_GET_MMI,	 0, (LPARAM)&mmi  );
 	CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)&utfi );
 	CallService( MS_SYSTEM_GET_LI,   0, (LPARAM)&li   );
@@ -116,7 +119,7 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	CHECKRES ( ToolbarLoadModule()			);
 
 	TRACE( "CListInitialise Modern Contact List ... Done\r\n" );
-
+	
 	return S_OK;
 }
 

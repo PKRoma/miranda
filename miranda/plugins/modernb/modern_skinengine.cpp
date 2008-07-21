@@ -35,6 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_skinengine.h"
 #include "hdr/modern_commonprototypes.h"
 #include <shlwapi.h>
+#include "hdr/modern_sync.h"
 //Implementation
 
 /* Global variables */
@@ -3934,11 +3935,11 @@ static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
 		}      
 		else
 		{
-			callProxied_QueueAllFramesUpdating(1);
+			Sync( QueueAllFramesUpdating, (BYTE)1 );
 		}
 	}
 	else 
-		callProxied_QueueAllFramesUpdating(1);
+		Sync( QueueAllFramesUpdating , (BYTE)1 );
 	if (!flag_bUpdateQueued||g_flag_bPostWasCanceled)
 		if (PostMessage(pcli->hwndContactList,UM_UPDATE,0,0))
 		{            
@@ -4250,7 +4251,7 @@ int ske_DrawNonFramedObjects(BOOL Erase,RECT *r)
 				SetRect(&rc,Frames[i].wndSize.left,Frames[i].wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar,Frames[i].wndSize.right,Frames[i].wndSize.top-g_nGapBetweenTitlebar);
 				//GetWindowRect(Frames[i].TitleBar.hwnd,&rc);
 				//OffsetRect(&rc,-wnd.left,-wnd.top);
-				callProxied_DrawTitleBar(g_pCachedWindow->hBackDC,&rc,Frames[i].id);
+				Sync( DrawTitleBar, g_pCachedWindow->hBackDC, &rc, Frames[i].id );
 			}
 	}
 	g_mutex_bLockUpdating=1;
@@ -4313,7 +4314,7 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 	if (IsForceAllPainting) 
 	{ 
 		BitBlt(g_pCachedWindow->hImageDC,0,0,g_pCachedWindow->Width,g_pCachedWindow->Height,g_pCachedWindow->hBackDC,0,0,SRCCOPY);
-		callProxied_QueueAllFramesUpdating(1);
+		Sync( QueueAllFramesUpdating, (BYTE)1 );
 	}
 	//-- Validating frames
 	{ 
@@ -4329,7 +4330,7 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 	if (!mutex_bLockUpdate)  ske_UpdateWindowImageRect(&wnd);
 	//-- Clear queue
 	{
-		callProxied_QueueAllFramesUpdating(0);
+		Sync( QueueAllFramesUpdating, (BYTE)0 );
 		flag_bUpdateQueued=0;
 		g_flag_bPostWasCanceled=0;
 	}
@@ -4427,7 +4428,7 @@ int ske_JustUpdateWindowImageRect(RECT * rty)
 	{
 		if (!(GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE)&WS_EX_LAYERED))
 			SetWindowLong(pcli->hwndContactList,GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) |WS_EX_LAYERED);
-		callProxied_SetAlpha(g_CluiData.bCurrentAlpha);
+		Sync( SetAlpha, g_CluiData.bCurrentAlpha );
 
 		res=g_proc_UpdateLayeredWindow(pcli->hwndContactList,g_pCachedWindow->hScreenDC,&dest,&sz,g_pCachedWindow->hImageDC,&src,RGB(1,1,1),&bf,ULW_ALPHA);
 		g_CluiData.fAeroGlass = false;

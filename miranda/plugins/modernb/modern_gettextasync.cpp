@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonheaders.h"
 #include "hdr/modern_gettextasync.h"
 #include "newpluginapi.h"
+#include "hdr/modern_sync.h"
 
 int CLUI_SyncSetPDNCE(WPARAM wParam, LPARAM lParam);
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
@@ -84,7 +85,7 @@ static int gtaThreadProc(void * lpParam)
 //	MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
 	while (!MirandaExiting())
 	{
-		cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
+		Sync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
 		do
 		{
 			if (!MirandaExiting()) 
@@ -102,21 +103,21 @@ static int gtaThreadProc(void * lpParam)
 				if (mpChain.dat==NULL || (!IsBadReadPtr(mpChain.dat,sizeof(mpChain.dat)) && mpChain.dat->hWnd==data.hWnd))	dat=&data;
 				else
 				{        
-					cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)mpChain.dat->hWnd,(LPARAM)&dat2);       
+					Sync(CLUI_SyncGetShortData,(WPARAM)mpChain.dat->hWnd,(LPARAM)&dat2);       
 					dat=&dat2;
 				}
 				if (!MirandaExiting())
 				{
 					displayNameCacheEntry cacheEntry={0};
 					cacheEntry.m_cache_hContact=mpChain.hContact;
-					if (!cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&cacheEntry))
+					if (!Sync(CLUI_SyncGetPDNCE, (WPARAM) 0,(LPARAM)&cacheEntry))
 					{
 						if (!MirandaExiting()) 
 							Cache_GetSecondLineText(dat, &cacheEntry);
 						if (!MirandaExiting()) 
 							Cache_GetThirdLineText(dat, &cacheEntry);
 						if (!MirandaExiting()) 
-							cache_CallProcSync(CLUI_SyncSetPDNCE, CCI_LINES,(LPARAM)&cacheEntry);  
+							Sync(CLUI_SyncSetPDNCE, (WPARAM) CCI_LINES,(LPARAM)&cacheEntry);  
 						CListSettings_FreeCacheItemData(&cacheEntry);
 					}
 				}

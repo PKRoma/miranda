@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 #include "hdr/modern_defsettings.h"
 #include "hdr/modern_effectenum.h"
+#include "hdr/modern_sync.h"
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2
@@ -2440,7 +2441,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				if (IsWindow(hProgMan)) 
 				{
 					SetParent(pcli->hwndContactList,hProgMan);
-					DoSync1Param(CLUIFrames_SetParentForContainers, hProgMan);
+					Sync( CLUIFrames_SetParentForContainers, (HWND)hProgMan );
 					g_CluiData.fOnDesktop=1;
 				}
 			} 
@@ -2449,7 +2450,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				if (GetParent(pcli->hwndContactList))
 				{
 					SetParent(pcli->hwndContactList,NULL);
-					DoSync1Param(CLUIFrames_SetParentForContainers, NULL);
+					Sync( CLUIFrames_SetParentForContainers, (HWND)NULL );
 				}
 				g_CluiData.fOnDesktop=0;
 			}
@@ -2471,7 +2472,7 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 				ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
 				ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
-				DoSync2Param(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
+				Sync(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
 			}
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			//DBWriteContactSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));

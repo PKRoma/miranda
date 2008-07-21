@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct _StatusBarProtocolOptions
 {
+	char *szName;
 	BOOL AccountIsCustomized;
 	BOOL HideAccount;
 	BYTE SBarShow;
@@ -42,25 +43,7 @@ typedef struct _StatusBarProtocolOptions
 
 static StatusBarProtocolOptions _GlobalOptions = {0};
 
-char * GetUniqueProtoName(char * proto)
-{
-    int i, count;
-    PROTOCOLDESCRIPTOR **protos;
-    char name[64];
-    CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & count, (LPARAM) & protos);
-    for (i=0; i<count; i++)
-    {
-		if (protos[i]->type == PROTOTYPE_PROTOCOL)
-		{
-	        name[0] = '\0';
-	        CallProtoService(protos[i]->szName, PS_GETNAME, sizeof(name), (LPARAM) name);
-	        if (!_strcmpi(proto,name))
-	            return protos[i]->szName;
-		}
-    }
-    return NULL;
-}
- BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static void UpdateXStatusIconOptions(HWND hwndDlg, BOOL perProto, StatusBarProtocolOptions* dat, int curSelProto)
 {
@@ -208,13 +191,14 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 
 
 			{ // populate per-proto list box.
-				char szName[64];
-				char *szSTName;
+				char *szName;
 				char buf[256];
 				int i,count;
 
 				SendMessage(hwndComboBox, CB_RESETCONTENT, 0, 0);
-				count=ModernGetSettingDword(0,"Protocols","ProtoCount",-1);
+
+				PROTOACCOUNT **accs;
+				ProtoEnumAccounts( &count, &accs );
 
 				dat = (StatusBarProtocolOptions*)mir_alloc(sizeof(StatusBarProtocolOptions)*count);
 				SetWindowLong(GetDlgItem(hwndDlg,IDC_STATUSBAR_PROTO_LIST),GWL_USERDATA,(long)dat);
@@ -223,24 +207,13 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 
 				for ( i = 0; i < count; i++ )
 				{
-					_itoa(i,(char *)&buf,10);
-					szSTName =  ModernGetStringA(0,"Protocols",(char *)&buf);		
-					if ( szSTName == NULL )
-						continue;
-
-					CallProtoService( szSTName, PS_GETNAME, sizeof( szName ), ( LPARAM )szName );
-
-					mir_free(szSTName);
+					szName = accs[i]->szProtoName;
+					dat[i].szName = szName;
 
 #ifdef UNICODE
-					{
-						TCHAR *buf2=NULL;
-						buf2 = mir_a2u( szName );
-						SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)TranslateTS( buf2 ));
-						mir_free( buf2 );
-					}
+					SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)accs[i]->tszAccountName);
 #else
-					SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)Translate(szName));
+					SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)accs[i]->tszAccountName);
 #endif
 
 					mir_snprintf(buf, sizeof(buf), "SBarAccountIsCustom_%s", szName);
@@ -578,17 +551,9 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				{
 					char settingBuf[256];
 					char *defProto;
-					wchar_t tmp[256];
 					HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_STATUSBAR_PROTO_LIST );
 					StatusBarProtocolOptions sbpo = dat[i - 1];
-
-					SendMessage(hwndComboBox, CB_GETLBTEXT, i, (LPARAM)&tmp);
-					defProto = mir_u2a(tmp);
-					{
-						char *t = GetUniqueProtoName(defProto);
-						mir_free(defProto);
-						defProto = t;
-					}
+					defProto = sbpo.szName;
 
 					mir_snprintf(settingBuf, sizeof(settingBuf), "SBarAccountIsCustom_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.AccountIsCustomized);

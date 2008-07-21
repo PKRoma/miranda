@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 #include "./m_api/m_skinbutton.h"
 #include "./m_api/m_toolbar.h"
+#include "hdr/modern_sync.h"
 
 //external definition
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
@@ -825,7 +826,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			{
 				int res;
 				int ID;
-				ID=callProxied_FindFrameID(hwnd);
+				ID= Sync( FindFrameID, hwnd );
 				if (ID)
 				{
 					res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
@@ -841,7 +842,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			DWORD frameopt; 
 			BOOL curvis=IsWindowVisible(hwnd);
 			BOOL bResize=FALSE;
-			int frameID=callProxied_FindFrameID(hwnd);
+			int frameID=Sync( FindFrameID, hwnd );
 			int Height;
 		
 			pMTBInfo->nButtonWidth = ModernGetSettingByte(NULL, "ModernToolBar", "option_Bar0_BtnWidth",  SETTINGS_BARBTNWIDTH_DEFAULT);

@@ -35,6 +35,7 @@ Modified by FYR
 #include "hdr/modern_cache_funcs.h"
 #include "newpluginapi.h"
 #include "./hdr/modern_gettextasync.h"
+#include "hdr/modern_sync.h"
 
 typedef BOOL (* ExecuteOnAllContactsFuncPtr) (struct ClcContact *contact, BOOL subcontact, void *param);
 
@@ -51,7 +52,9 @@ static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPt
 static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
 SortedList *CopySmileyString(SortedList *plInput);
-
+void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
+void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD flag );
+/*
 typedef struct tagSYNCCALLITEM
 {
     WPARAM  wParam;
@@ -67,10 +70,6 @@ static void CALLBACK cache_SyncCallerUserAPCProc(DWORD dwParam)
     item->nResult = item->pfnProc(item->wParam, item->lParam);
     SetEvent(item->hDoneEvent);
 }
-
-
-void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
-void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD flag );
 
 int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
 {  
@@ -91,7 +90,7 @@ int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
     }
     else 
         return pfnProc(wParam, lParam);
-}
+}*/
 
 /*
 *	Get time zone for contact
@@ -686,7 +685,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
     }
     {
         struct SHORTDATA data={0};
-        cache_CallProcSync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
+        Sync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
         Cache_ReplaceSmileys(&data, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
             &contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
     }

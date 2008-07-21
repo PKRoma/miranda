@@ -190,19 +190,19 @@ int     ske_ValidateFrameImageProc(RECT * r);
 
 /* CLUIFrames.c PROXIED */
 
-int CLUIFrames_ActivateSubContainers(WPARAM wParam);
+int CLUIFrames_ActivateSubContainers(BOOL wParam);
 int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam);
 int CLUIFrames_OnMoving(WPARAM wParam,LPARAM lParam);
 int CLUIFrames_OnShowHide(WPARAM wParam,LPARAM lParam);
 int CLUIFrames_SetLayeredMode(WPARAM wParam,LPARAM lParam);
-int CLUIFrames_SetParentForContainers(WPARAM wParam);
+int CLUIFrames_SetParentForContainers( HWND parent );
 int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
 
-int callProxied_DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
-int callProxied_FindFrameID(HWND FrameHwnd);
-int callProxied_QueueAllFramesUpdating(BYTE queue);
-int callProxied_SetAlpha(BYTE Alpha);
-int callProxied_SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);
+//int callProxied_DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
+int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
+
+int FindFrameID(HWND FrameHwnd);
+int SetAlpha(BYTE Alpha);
 
 
 /* others TODO: move above */
@@ -212,7 +212,6 @@ HRESULT		BackgroundsLoadModule();
 int		BackgroundsUnloadModule();
 BOOL    wildcmp(const char * name, const char * mask, BYTE option);										//mod_skin_selector.c
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
-int		cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);		//cache_funcs.c
 BOOL	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c
 BOOL	CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//RowTemplate.c
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
@@ -250,7 +249,6 @@ int		RecursiveDeleteMenu(HMENU hMenu);													//clistmenus.c
 int		ModernSkinButtonRedrawAll(HDC hdc);																//modern_button.c
 int		RegisterButtonByParce(char * ObjectName, char * Params);							//mod_skin_selector.c
 int		RestoreAllContactData(struct ClcData *dat);											//cache_funcs.c
-int		callProxied_SetAlpha(BYTE bAlpha);																//cluiframes.c
 
 int		SkinSelector_DeleteMask(MODERNMASK * mm);											//mod_skin_selector.c
 int		StoreAllContactData(struct ClcData *dat);											//cache_func.c
@@ -355,16 +353,6 @@ extern BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE,SIZE_T,SIZE_T);
 
 
 BYTE SkinDBGetContactSettingByte(HANDLE hContact, const char* szSection, const char*szKey, BYTE bDefault);
-
-
-#define DoSync1Param(a, b1) SyncCall((void*) a, 1, (LPARAM)b1 )
-#define DoSync2Param(a, b1, b2) doCLUIFramesProxyCall( a,  (WPARAM)b1, (LPARAM)b2 )
-#define sync3(a, b1, b2, b3) SyncCall((void*) a, 3, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3 )
-#define sync4(a, b1, b2, b3, b4) SyncCall((void*) a, 4, (LPARAM)b1, (LPARAM)b2, (LPARAM)b3,(LPARAM)b4 )
-
-int doCLUIFramesProxyCall(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam);
-int SyncCall(void * vproc, int count, ... );
-
 
 extern OVERLAYICONINFO g_pAvatarOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];
 extern OVERLAYICONINFO g_pStatusOverlayIcons[ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE + 1];

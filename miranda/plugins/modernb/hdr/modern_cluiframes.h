@@ -45,15 +45,17 @@ typedef struct
 
 
 //============
-#define CLUIFRAMESSETALIGN				"CLUIFramesSetAlign"
+#define CLUIFRAMESSETALIGN			"CLUIFramesSetAlign"
 
-#define CLUIFRAMESSETALIGNALTOP				"CLUIFramesSetAlignalTop"
-#define CLUIFRAMESSETALIGNALCLIENT				"CLUIFramesSetAlignalClient"
-#define CLUIFRAMESSETALIGNALBOTTOM				"CLUIFramesSetAlignalBottom"
+#define CLUIFRAMESSETALIGNALTOP		"CLUIFramesSetAlignalTop"
+#define CLUIFRAMESSETALIGNALCLIENT	"CLUIFramesSetAlignalClient"
+#define CLUIFRAMESSETALIGNALBOTTOM	"CLUIFramesSetAlignalBottom"
+#define CLUIFRAMESSETFLOATING		"Set_Floating"
 
-#define CLUIFRAMESMOVEUPDOWN			"CLUIFramesMoveUpDown"
+#define CLUIFRAMESMOVEUPDOWN		"CLUIFramesMoveUpDown"
 #define CLUIFRAMESMOVEUP			"CLUIFramesMoveUp"
 #define CLUIFRAMESMOVEDOWN			"CLUIFramesMoveDown"
+
 typedef struct tagMenuHandles
 {
 	HANDLE MainMenuItem;

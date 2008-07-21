@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clc.h"
 #include "io.h"
 #include "hdr/modern_commonprototypes.h"
-
+#include "hdr/modern_sync.h"
 
 
 /*******************************/
@@ -196,14 +196,14 @@ int SkinOptInit(WPARAM wParam,LPARAM lParam)
 					ske_LoadSkinFromDB();	
 					glOtherSkinWasLoaded=TRUE;
 					pcli->pfnClcBroadcast( INTM_RELOADOPTIONS,0,0);
-					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
+					Sync(CLUIFrames_OnClistResize_mod,0,0);
 					ske_RedrawCompleteWindow();        
-					DoSync2Param(CLUIFrames_OnClistResize_mod,0,0);
+					Sync(CLUIFrames_OnClistResize_mod,0,0);
 					{
 						HWND hwnd=pcli->hwndContactList;
 						RECT rc={0};
 						GetWindowRect(hwnd, &rc);
-						DoSync2Param(CLUIFrames_OnMoving,hwnd,&rc);
+						Sync(CLUIFrames_OnMoving,hwnd,&rc);
 					}
 					if (g_hCLUIOptionsWnd)
 					{

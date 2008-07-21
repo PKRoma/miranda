@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include "hdr/modern_clist.h"
 #include "hdr/modern_commonprototypes.h"
+#include "hdr/modern_sync.h"
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
@@ -515,12 +516,12 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		SystemParametersInfo(SPI_GETWORKAREA,0,&rcScreen,FALSE);
 		GetWindowRect(pcli->hwndContactList,&rcWindow);
 
-		DoSync1Param(CLUIFrames_ActivateSubContainers, TRUE);
+		Sync( CLUIFrames_ActivateSubContainers, TRUE );
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
 		if (!ModernGetSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		{
-			DoSync2Param(CLUIFrames_OnShowHide, pcli->hwndContactList,1);	//TO BE PROXIED
+			Sync(CLUIFrames_OnShowHide, pcli->hwndContactList,1);	//TO BE PROXIED
 			SetWindowPos(pcli->hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
 			g_bCalledFromShowHide=1;
 			if (!ModernGetSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
@@ -530,7 +531,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		else
 		{
 			SetWindowPos(pcli->hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-			DoSync2Param(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
+			Sync(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
 			SetForegroundWindow(pcli->hwndContactList);
 		}
 		ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);

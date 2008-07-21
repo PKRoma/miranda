@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonheaders.h"
 #include "hdr/modern_awaymsg.h"
 #include "newpluginapi.h"
+#include "hdr/modern_sync.h"
 
 #define AMASKPERIOD 3000
 #define amlock EnterCriticalSection(&amLockChain)
@@ -139,7 +140,7 @@ static int amThreadProc(HWND hwnd)
 			}
 			CListSettings_FreeCacheItemData(&dnce);
 			dnce.m_cache_hContact=(HANDLE)hContact;
-			cache_CallProcSync(CLUI_SyncGetPDNCE,0,(LPARAM)&dnce);            
+			Sync(CLUI_SyncGetPDNCE, (WPARAM) 0,(LPARAM)&dnce);            
 			if (dnce.ApparentMode!=ID_STATUS_OFFLINE) //don't ask if contact is always invisible (should be done with protocol)
 				ACK=(HANDLE)CallContactService(hContact,PSS_GETAWAYMSG,0,0);		
 			if (!ACK)

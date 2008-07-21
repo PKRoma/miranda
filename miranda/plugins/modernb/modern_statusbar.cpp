@@ -3,6 +3,7 @@
 #include "./m_api/m_skin_eng.h"
 #include "hdr/modern_commonprototypes.h"
 #include "hdr/modern_clcpaint.h"
+#include "hdr/modern_sync.h"
 
 BOOL tooltipshoing;
 POINT lastpnt;
@@ -13,7 +14,7 @@ POINT lastpnt;
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
 
-int callProxied_FindFrameID(HWND FrameHwnd);
+//int FindFrameID(HWND FrameHwnd);
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
 
 #define DBFONTF_BOLD       1
@@ -84,7 +85,7 @@ int LoadStatusBarData()
     {
         int vis=ModernGetSettingByte(NULL,"CLUI","ShowSBar",SETTING_SHOWSBAR_DEFAULT);
         int frameopt;
-        int frameID=callProxied_FindFrameID(hModernStatusBar);
+        int frameID=Sync( FindFrameID, hModernStatusBar );
         frameopt=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,frameID),0);
         frameopt=frameopt & (~F_VISIBLE);
         if(vis)
@@ -456,7 +457,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								(ProtosData[i].showProtoEmails && ProtosData[i].ProtoEMailCount ) || 
 								(ProtosData[i].showStatusName) ||
 								((ProtosData[i].xStatusMode&8) && ProtosData[i].ProtoXStatus) )
-								w -= (3 + spaceWidth);
+								w -= spaceWidth;
 
 							ProtosData[i].fullWidth=w;
 							if (g_StatusBarData.sameWidth)
@@ -779,7 +780,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                 NotifyEventHooks(g_CluiData.hEventStatusBarHideToolTip,0,0);
                 tooltipshoing=FALSE;
             };
-            ID=callProxied_FindFrameID(hwnd);
+            ID=Sync( FindFrameID, hwnd );
             if (ID)
             {
                 res=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS,ID),0);
