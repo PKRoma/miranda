@@ -962,8 +962,8 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 			itemNode = JabberXmlGetChild( xNode, "item" );
 			XmlNode* reasonNode = JabberXmlGetChild( itemNode, "reason" );
 			str = JabberXmlGetAttrValue( itemNode, "jid" );
-			int m_iStatus = sttGetStatusCode( xNode );
-			if (m_iStatus == 301)
+			int iStatus = sttGetStatusCode( xNode );
+			if (iStatus == 301)
 			{
 				JABBER_RESOURCE_STATUS *r = NULL;
 				for (int i = 0; i < item->resourceCount; ++i)
@@ -974,18 +974,18 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 					}
 			}
 			if ( !lstrcmp( nick, item->nick )) {
-				switch( m_iStatus ) {
+				switch( iStatus ) {
 				case 301:
 				case 307:
-					GcQuit( item, m_iStatus, reasonNode );
-					break;
+					GcQuit( item, iStatus, reasonNode );
+					return;
 
 				case 303:
 					RenameParticipantNick( item, nick, itemNode );
 					return;
 			}	}
 			else {
-				switch( m_iStatus ) {
+				switch( iStatus ) {
 				case 303:
 					RenameParticipantNick( item, nick, itemNode );
 					return;
@@ -994,7 +994,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode *node, void *userdata )
 				case 307:
 				case 322:
 					ListRemoveResource( LIST_CHATROOM, from );
-					GcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, m_iStatus );
+					GcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
 					return;
 		}	}	}
 

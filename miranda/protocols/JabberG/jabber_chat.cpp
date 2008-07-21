@@ -363,7 +363,7 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
 
-	if ( code != 307 ) {
+	if ( code != 307 && code != 301 ) {
 		CallServiceSync( MS_GC_EVENT, SESSION_TERMINATE, ( LPARAM )&gce );
 		CallServiceSync( MS_GC_EVENT, WINDOW_CLEARLOG, ( LPARAM )&gce );
 		if (!DBGetContactSettingTString( NULL, m_szModuleName, "GcMsgQuit", &dbvMessage))
