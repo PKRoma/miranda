@@ -181,6 +181,10 @@ void NetlibSslShutdown(SslHandle *ssl);
 
 int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
 int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);
+
+#define NL_SELECT_READ  0x0001
+#define NL_SELECT_WRITE 0x0002
+#define NL_SELECT_ALL   (NL_SELECT_READ+NL_SELECT_WRITE)
 BOOL NetlibSslPending(SslHandle *ssl);
 
 int NetlibStartSsl(WPARAM wParam, LPARAM lParam);

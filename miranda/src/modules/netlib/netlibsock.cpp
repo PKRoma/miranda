@@ -99,7 +99,7 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	return recvResult;
 }
 
-static int ConnectionListToSocketList(HANDLE *hConns,fd_set *fd)
+static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int mode, int& pending)
 {
 	struct NetlibConnection *nlcCheck;
 	int i;
@@ -107,11 +107,14 @@ static int ConnectionListToSocketList(HANDLE *hConns,fd_set *fd)
 	FD_ZERO(fd);
 	for(i=0;hConns[i] && hConns[i]!=INVALID_HANDLE_VALUE && i<FD_SETSIZE;i++) {
 		nlcCheck=(struct NetlibConnection*)hConns[i];
-		if(nlcCheck->handleType!=NLH_CONNECTION && nlcCheck->handleType!=NLH_BOUNDPORT) {
+		if (nlcCheck->handleType!=NLH_CONNECTION && nlcCheck->handleType!=NLH_BOUNDPORT) {
 			SetLastError(ERROR_INVALID_DATA);
 			return 0;
 		}
 		FD_SET(nlcCheck->s,fd);
+		if ( nlcCheck->hSsl )
+			if ( NetlibSslPending( nlcCheck->hSsl ))
+				pending++;
 	}
 	return 1;
 }
@@ -119,58 +122,68 @@ static int ConnectionListToSocketList(HANDLE *hConns,fd_set *fd)
 int NetlibSelect(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBSELECT *nls=(NETLIBSELECT*)lParam;
-	fd_set readfd,writefd,exceptfd;
-	TIMEVAL tv;
-
-	if(nls==NULL || nls->cbSize!=sizeof(NETLIBSELECT)) {
+	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECT)) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
+
+	TIMEVAL tv;
 	tv.tv_sec=nls->dwTimeout/1000;
 	tv.tv_usec=(nls->dwTimeout%1000)*1000;
+
+	int pending = 0;
+	fd_set readfd, writefd, exceptfd;
 	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-	if(!ConnectionListToSocketList(nls->hReadConns,&readfd)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd)) {
+	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,NL_SELECT_READ,pending)
+	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,NL_SELECT_WRITE,pending)
+	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,0,pending)) {
 		ReleaseMutex(hConnectionHeaderMutex);
 		return SOCKET_ERROR;
 	}
 	ReleaseMutex(hConnectionHeaderMutex);
+	if (pending)
+		return 1;
+
 	return select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
 }
 
 int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBSELECTEX *nls=(NETLIBSELECTEX*)lParam;
-	fd_set readfd,writefd,exceptfd;
-	TIMEVAL tv;
-	int rc=SOCKET_ERROR;
-	int j;
-	struct NetlibConnection *conn=NULL;
-
-	if(nls==NULL || nls->cbSize!=sizeof(NETLIBSELECTEX)) {
+	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECTEX)) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
+
+	TIMEVAL tv;
 	tv.tv_sec=nls->dwTimeout/1000;
 	tv.tv_usec=(nls->dwTimeout%1000)*1000;
 	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-	if(!ConnectionListToSocketList(nls->hReadConns,&readfd)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd)) {
+
+	int pending = 0;
+	fd_set readfd,writefd,exceptfd;
+	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,NL_SELECT_READ,pending)
+	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,NL_SELECT_WRITE,pending)
+	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,0,pending)) {
 		ReleaseMutex(hConnectionHeaderMutex);
 		return SOCKET_ERROR;
 	}
 	ReleaseMutex(hConnectionHeaderMutex);
-	rc=select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
+
+	int rc = (pending) ? pending : select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
+
 	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
 	/* go thru each passed HCONN array and grab its socket handle, then give it to FD_ISSET()
 	to see if an event happened for that socket, if it has it will be returned as TRUE (otherwise not)
 	This happens for read/write/except */
+	struct NetlibConnection *conn=NULL;
+	int j;
 	for (j=0; j<FD_SETSIZE; j++) {
 		conn=(struct NetlibConnection*)nls->hReadConns[j];
 		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
 
+		if (conn->hSsl != NULL && NetlibSslPending(conn->hSsl))
+			nls->hReadStatus[j] = TRUE;
 		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL && conn->dataBuffer == NULL)
 			nls->hReadStatus[j] = (conn->pHttpProxyPacketQueue != NULL);
 		else
