@@ -207,7 +207,7 @@ int CSSLSession::SSLInit()
 	pSSL_connect				= (tSSL_connect)				GetProcAddress(m_ssleay32, "SSL_connect");
 	pSSL_read					= (tSSL_read)					GetProcAddress(m_ssleay32, "SSL_read");
 	pSSL_write					= (tSSL_write)					GetProcAddress(m_ssleay32, "SSL_write");
-	pSSLv23_method				= (tSSLv23_method)				GetProcAddress(m_ssleay32, "SSLv23_method");
+	pSSLv23_method				= (tSSLv23_method)				GetProcAddress(m_ssleay32, "SSLv3_client_method");
 	pSSL_shutdown				= (tSSL_shutdown)				GetProcAddress(m_ssleay32, "SSL_shutdown");
 	pSSL_CTX_free				= (tSSL_CTX_free)				GetProcAddress(m_ssleay32, "SSL_CTX_free");
 	pSSL_free					= (tSSL_free)					GetProcAddress(m_ssleay32, "SSL_free");
