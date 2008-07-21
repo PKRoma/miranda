@@ -112,9 +112,8 @@ static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int mode, int&
 			return 0;
 		}
 		FD_SET(nlcCheck->s,fd);
-		if ( nlcCheck->hSsl )
-			if ( NetlibSslPending( nlcCheck->hSsl ))
-				pending++;
+		if ( NetlibSslPending( nlcCheck->hSsl ))
+			pending++;
 	}
 	return 1;
 }
@@ -182,7 +181,7 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 		conn=(struct NetlibConnection*)nls->hReadConns[j];
 		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
 
-		if (conn->hSsl != NULL && NetlibSslPending(conn->hSsl))
+		if (NetlibSslPending(conn->hSsl))
 			nls->hReadStatus[j] = TRUE;
 		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL && conn->dataBuffer == NULL)
 			nls->hReadStatus[j] = (conn->pHttpProxyPacketQueue != NULL);
