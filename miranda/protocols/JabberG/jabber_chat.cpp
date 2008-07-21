@@ -1052,6 +1052,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	static DWORD dwLastBanKickTime = 0;
 
 	TCHAR szBuffer[ 1024 ];
+	TCHAR szTitle[256];
 
 	if ((gch->dwData >= CLISTMENUIDMIN) && (gch->dwData <= CLISTMENUIDMAX))
 	{
@@ -1122,9 +1123,10 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		if ((GetTickCount() - dwLastBanKickTime) > BAN_KICK_INTERVAL)
 		{
 			dwLastBanKickTime = GetTickCount();
-			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Reason to kick" ), him->resourceName );
+			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s: "), me->resourceName );
+			mir_sntprintf( szTitle, SIZEOF(szTitle), _T("%s %s"), TranslateT( "Reason to kick" ), him->resourceName );
 			TCHAR *resourceName_copy = mir_tstrdup(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
-			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), NULL, JES_MULTINE, "gcReason_" ))
+			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 			{
 				XmlNodeIq iq( "set", NOID, item->jid );
 				XmlNode* query = iq.addQuery( xmlnsAdmin );
@@ -1172,9 +1174,10 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		if ((GetTickCount() - dwLastBanKickTime) > BAN_KICK_INTERVAL)
 		{
 			dwLastBanKickTime = GetTickCount();
-			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s %s"), TranslateT( "Reason to ban" ), him->resourceName );
+			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s: "), me->resourceName );
+			mir_sntprintf( szTitle, SIZEOF(szTitle), _T("%s %s"), TranslateT( "Reason to ban" ), him->resourceName );
 			TCHAR *resourceName_copy = mir_tstrdup(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
-			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), NULL, JES_MULTINE, "gcReason_" ))
+			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 			{
 				XmlNodeIq iq( "set", NOID, item->jid );
 				XmlNode* query = iq.addQuery( xmlnsAdmin );
