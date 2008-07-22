@@ -170,7 +170,7 @@ int     ske_JustUpdateWindowImageRect(RECT * rty);
 HBITMAP ske_LoadGlyphImage(char * szFileName);
 HRESULT SkinEngineLoadModule();
 void	ske_LoadSkinFromDB(void);
-int		ske_LoadSkinFromIniFile(char*, BOOL);
+int		ske_LoadSkinFromIniFile(TCHAR*, BOOL);
 TCHAR*	ske_ParseText(TCHAR *stzText);
 int		ske_PrepeareImageButDontUpdateIt(RECT * r);
 int     ske_ReCreateBackImage(BOOL Erase,RECT *w);

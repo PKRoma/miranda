@@ -240,31 +240,31 @@ HRESULT IniParser::WriteStrToDb( const char * szSection, const char * szName, co
 	}
 	return S_OK;
 }
-int IniParser::GetSkinFolder( IN const char * szFileName, OUT char * pszFolderName )
+int IniParser::GetSkinFolder( IN const TCHAR * szFileName, OUT TCHAR * pszFolderName )
 {
-	char *pszPos;   
-	char *szBuff;
+	TCHAR *pszPos;   
+	TCHAR *szBuff;
 
-	szBuff = mir_strdup( szFileName );
-	pszPos = szBuff + mir_strlen( szBuff );
-	while ( pszPos > szBuff && *pszPos!='.') { pszPos--; }
-	*pszPos='\0';
-	strcpy( pszFolderName, szBuff );
+	szBuff = mir_tstrdup( szFileName );
+	pszPos = szBuff + _tcslen( szBuff );
+	while ( pszPos > szBuff && *pszPos!= _T('.') ) { pszPos--; }
+	*pszPos=_T('\0');
+	_tcscpy( pszFolderName, szBuff );
 
-	char custom_folder[MAX_PATH];
-	char cus[MAX_PATH];
-	char *b3;
-	strcpy( custom_folder, pszFolderName );
-	b3=custom_folder + mir_strlen( custom_folder );
-	while ( b3 > custom_folder && *b3!='\\' ) { b3--; }
-	*b3='\0';
+	TCHAR custom_folder[MAX_PATH];
+	TCHAR cus[MAX_PATH];
+	TCHAR *b3;
+	_tcscpy( custom_folder, pszFolderName );
+	b3=custom_folder + _tcslen( custom_folder );
+	while ( b3 > custom_folder && *b3!= _T('\\') ) { b3--; }
+	*b3=_T('\0');
 
-	GetPrivateProfileStringA("Skin_Description_Section","SkinFolder","",cus,sizeof(custom_folder),szFileName);
-	if (mir_strlen(cus)>0)
-		_snprintf(pszFolderName,MAX_PATH,"%s\\%s",custom_folder,cus);
+	GetPrivateProfileString(_T("Skin_Description_Section"),_T("SkinFolder"),_T(""),cus,SIZEOF(custom_folder),szFileName);
+	if ( cus && _tcslen(cus)>0)
+		_sntprintf(pszFolderName,MAX_PATH,_T("%s\\%s"),custom_folder,cus);
 
 	mir_free_and_nill(szBuff);
-	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)pszFolderName, (LPARAM)pszFolderName);
+	CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)pszFolderName, (LPARAM)pszFolderName);
 
 	return 0;
 }
@@ -2612,23 +2612,22 @@ static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 }
 
 //Load data from ini file
-int ske_LoadSkinFromIniFile(char * szFileName, BOOL bOnlyObjects)
+int ske_LoadSkinFromIniFile(TCHAR * szFileName, BOOL bOnlyObjects)
 {
-	char skinFolder[MAX_PATH]={0};
-	char skinFile[MAX_PATH]={0};
-	if (strchr(szFileName,'%')) 
+	TCHAR skinFolder[MAX_PATH]={0};
+	TCHAR skinFile[MAX_PATH]={0};
+	if (_tcschr(szFileName,_T('%'))) 
 		return ske_LoadSkinFromResource( bOnlyObjects );
 
-	TCHAR * tcsFileName = mir_a2t ( szFileName );
-	IniParser parser( tcsFileName );
+	IniParser parser( szFileName );
 	if ( !parser.CheckOK() ) return 0;
 
 	ske_DeleteAllSettingInSection("ModernSkin");
 	IniParser::GetSkinFolder(szFileName,skinFolder);
-	CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szFileName, (LPARAM)skinFile);
+	CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)szFileName, (LPARAM)skinFile);
 
-	ModernWriteSettingString(NULL,SKIN,"SkinFolder",skinFolder);
-	ModernWriteSettingString(NULL,SKIN,"SkinFile",skinFile);
+	ModernWriteSettingTString(NULL,SKIN,"SkinFolder", skinFolder);
+	ModernWriteSettingTString(NULL,SKIN,"SkinFile", skinFile);
 
 	parser.Parse( IniParser::WriteStrToDb, 1 );
 

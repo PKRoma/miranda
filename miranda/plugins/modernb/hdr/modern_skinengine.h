@@ -98,7 +98,7 @@ public:
 	HRESULT Parse( ParserCallback_t pLineCallBackProc, LPARAM lParam );
 
 	static HRESULT WriteStrToDb( const char * szSection, const char * szKey, const char * szValue, LPARAM lParam );
-	static int GetSkinFolder( IN const char * szFileName, OUT char * pszFolderName );
+	static int GetSkinFolder( IN const TCHAR * szFileName, OUT TCHAR * pszFolderName );
 
 private:
 

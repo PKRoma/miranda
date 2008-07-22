@@ -72,6 +72,18 @@ char*  __cdecl ModernGetStringA( HANDLE hContact, const char *szModule, const ch
     ModernDBFreeVariant(&dbv);
     return str;
 }
+
+wchar_t*  __cdecl ModernGetStringW( HANDLE hContact, const char *szModule, const char *szSetting )
+{
+	wchar_t *str=NULL;
+	DBVARIANT dbv={0};
+	DBGetContactSettingWString(hContact,szModule,szSetting,&dbv);
+	if(dbv.type==DBVT_WCHAR)
+		str=mir_wstrdup(dbv.pwszVal);
+	DBFreeVariant(&dbv);
+	return str;
+}
+
 WORD   __cdecl ModernGetSettingRangedWord(HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue) 
 {
 	return DBGetContactSettingRangedWord( hContact, szModule, szSetting, errorValue, minValue, maxValue);

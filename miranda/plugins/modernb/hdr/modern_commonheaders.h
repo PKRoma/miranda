@@ -440,8 +440,15 @@ public:
 	};
 };
 
+#ifdef _UNICODE
+#define ModernGetStringT ModernGetStringW
+#else
+#define ModernGetStringT ModernGetStringA
+#endif
 
-char *  ModernGetStringA			( HANDLE hContact, const char *szModule, const char *szSetting );
+char *	   ModernGetStringA			( HANDLE hContact, const char *szModule, const char *szSetting );
+wchar_t *  ModernGetStringW			( HANDLE hContact, const char *szModule, const char *szSetting );
+
 WORD	ModernGetSettingRangedWord  ( HANDLE hContact, const char *szModule, const char *szSetting, WORD errorValue, WORD minValue, WORD maxValue);
 
 
