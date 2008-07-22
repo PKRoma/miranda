@@ -74,7 +74,7 @@
 		<Configuration
 			Name="Release Unicode|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
-			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Plugins/Obj"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -102,7 +102,7 @@
 				OutputFile="$(OutDir)\..\Icons\toolbar_icons.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="FALSE"
 				ResourceOnlyDLL="TRUE"
 				TargetMachine="1"/>
 			<Tool
