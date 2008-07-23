@@ -53,10 +53,8 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			}
 			else if(tlv.cmp(0x0008))
 			{
-				unsigned short* error=new unsigned short; 
-				*error=tlv.ushort();
-				login_error(error);
-				break;
+				login_error(tlv.ushort());
+				return 2;
 			}
 			address+=tlv.len()+4;
 		}
@@ -661,10 +659,7 @@ void CAimProto::snac_error(SNAC &snac)//family 0x0003 or 0x0004
 {
 	if(snac.subcmp(0x0001))
 	{
-		unsigned short error=snac.ushort();
-		unsigned short* perror=new unsigned short;
-		*perror=error;
-		get_error(perror);
+		get_error(snac.ushort());
 	}
 }
 void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0013

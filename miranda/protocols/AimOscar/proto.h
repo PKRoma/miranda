@@ -261,8 +261,8 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// error.cpp
 
-	void   login_error(unsigned short* error);
-	void   get_error(unsigned short* error);
+	void   login_error(unsigned short error);
+	void   get_error(unsigned short error);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// file.cpp

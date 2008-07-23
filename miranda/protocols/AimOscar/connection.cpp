@@ -83,6 +83,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 		}
 		else
 		{
+			int authres=0;
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
@@ -103,7 +104,8 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 					if(snac.cmp(0x0017))
 					{
 						snac_md5_authkey(snac,hServerConn,seqno);
-						if(snac_authorization_reply(snac)==1)
+						authres=snac_authorization_reply(snac);
+						if(authres==1)
 						{
 							delete[] username;
 							delete[] password;
@@ -112,6 +114,8 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 							LeaveCriticalSection(&connectionMutex);
 							return;
 						}
+						else if (authres==2)
+							break;
 					}
 				}
 				if(flap.cmp(0x04))
@@ -124,6 +128,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 					return;
 				}
 			}
+			if (authres) break;
 		}
 	}
 	delete[] username;
