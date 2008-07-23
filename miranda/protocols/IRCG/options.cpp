@@ -640,7 +640,7 @@ void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 	TCHAR temp[200];
 	mir_sntprintf( temp, SIZEOF(temp), TranslateT("Do you want to delete\r\n%s"), (TCHAR*)_A2T(pData->m_name));
 	if ( MessageBox( m_hwnd, temp, TranslateT("Delete server"), MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
-		delete pData;	
+		m_proto->m_servers.remove( pData );
 
 		m_serverCombo.DeleteString( i );
 		if ( i >= m_serverCombo.GetCount())
@@ -797,6 +797,7 @@ void CConnectPrefsDlg::OnApply()
 
 	if ( m_serverlistModified ) {
 		m_serverlistModified = false;
+		CallService( MS_DB_MODULE_DELETE, 0, (LPARAM)SERVERSMODULE );
 
 		int j = m_serverCombo.GetCount();
 		if (j != CB_ERR && j != 0) {
@@ -811,11 +812,7 @@ void CConnectPrefsDlg::OnApply()
 				else
 					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:%s:%d-%dGROUP:%s", pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
-		}	}
-
-		m_proto->m_servers.destroy();
-		m_proto->RereadServers();
-	}
+	}	}	}
 
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 

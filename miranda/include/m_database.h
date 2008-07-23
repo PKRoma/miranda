@@ -716,6 +716,15 @@ If you want to keep it for longer you must allocation your own storage.
 typedef int (*DBMODULEENUMPROC)(const char *szModuleName,DWORD ofsModuleName,LPARAM lParam);
 #define MS_DB_MODULES_ENUM    "DB/Modules/Enum"
 
+/* DB/Module/Delete  0.8.0+
+
+Removes all settings for the specified module.
+wParam=0 (unused)
+lParam=(LPARAM)(char*)szModuleName - the module name to be deleted
+*/
+
+#define MS_DB_MODULE_DELETE "DB/Module/Delete"
+
 /******************************************************************/
 /************************** EVENTS ********************************/
 /******************************************************************/

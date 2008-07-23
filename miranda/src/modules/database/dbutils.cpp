@@ -195,6 +195,34 @@ static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
     return ( int )CopyIcon( icon );
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static int sttEnumVars( const char* szVarName, LPARAM lParam )
+{
+	LIST<char>* vars = ( LIST<char>* )lParam;
+	vars->insert( mir_strdup( szVarName ));
+	return 0;
+}
+
+static int DbDeleteModule( WPARAM wParam, LPARAM lParam )
+{
+	LIST<char> vars( 20, NULL );
+
+	DBCONTACTENUMSETTINGS dbces = { 0 };
+	dbces.pfnEnumProc = sttEnumVars;
+	dbces.lParam = ( LPARAM )&vars;
+	dbces.szModule = ( char* )lParam;
+	CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
+
+	for ( int i=vars.getCount()-1; i >= 0; i-- ) {
+		DBDeleteContactSetting( NULL, ( char* )lParam, vars[i] );
+		mir_free( vars[i] );
+	}
+	vars.destroy();
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 int InitUtils()
 {
@@ -204,6 +232,8 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
 	CreateServiceFunction(MS_DB_EVENT_GETICON, DbEventGetIcon);
+
+	CreateServiceFunction(MS_DB_MODULE_DELETE, DbDeleteModule);
 	return 0;
 }
 
