@@ -3245,7 +3245,7 @@ HICON ske_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 {
 	IMAGEINFO imi={0};
 	BITMAP bm={0};
-	if (IsWinVerXPPlus()  && i!=-1)
+	if ( IsWinVerXPPlus()  && i!=-1 )
 	{
 		ImageList_GetImageInfo(himl,i,&imi);
 		GetObject(imi.hbmImage,sizeof(bm),&bm);
@@ -3306,7 +3306,7 @@ HICON ske_ImageList_GetIcon(HIMAGELIST himl, int i, UINT fStyle)
 			}
 		}
 	}
-	return ImageList_GetIcon(himl,i,ILD_TRANSPARENT);
+	return ImageList_GetIcon(himl,i,ILD_NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -3542,8 +3542,13 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 			{
 				DWORD dwVal=*((DWORD*)pRowImg);
 				BOOL fMasked = fHasMask?ske_GetMaskBit(pWorkMsk,x):FALSE;
-
-				if (fMasked) 
+				/*if ( fMasked && fHasAlpha )
+				{
+					BYTE bAlpha = (BYTE)(dwVal>>24);
+					if ( bAlpha != 0 && bAlpha !=0xFF )
+						fMasked = false;
+				}*/
+				if ( fMasked ) 
 					dwVal=0;                   // if mask bit is set - point have to be empty
 				else if (!fHasAlpha)
 					dwVal|=0xFF000000; // if there not alpha channel let set it opaque
@@ -3585,6 +3590,7 @@ BOOL ske_ImageList_DrawEx( HIMAGELIST himl,int i,HDC hdcDst,int x,int y,int dx,i
 	BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 
 	if (i<0) return FALSE;
+
 	if (g_CluiData.fDisableSkinEngine)
 		return ImageList_DrawEx( himl, i, hdcDst, x, y, dx, dy, rgbBk, rgbFg, fStyle);
 
@@ -3755,7 +3761,7 @@ BOOL ske_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 			{
 				DWORD * src, *dest;               
 				BYTE mask=0;
-				BYTE a; 
+				BYTE a = 0; 
 				src=(DWORD*)(t1+(x<<2));
 				dest=(DWORD*)(t2+(x<<2));              
 				if (hasalpha && !hasmask)  
@@ -3767,8 +3773,13 @@ BOOL ske_DrawIconEx(HDC hdcDst,int xLeft,int yTop,HICON hIcon,int cxWidth,int cy
 					{
 						if (!hasalpha) 
 						{ *dest=0; continue; }
-						else 
-							a=((BYTE*)src)[3]>0?((BYTE*)src)[3]:0;//255;
+						else
+						{ 
+							if (((BYTE*)src)[3]>0 )
+								a = ((BYTE*)src)[3];
+							else
+							    a = 0;
+						}
 					}
 					else if (hasalpha || hasmask)
 						a=(((BYTE*)src)[3]>0?((BYTE*)src)[3]:255);
