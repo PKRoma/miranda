@@ -224,7 +224,7 @@ int CLUIFrames_ApplyNewSizes(int mode); //cluiframes.c
 int	CLUIFrames_GetTotalHeight();		//cluiframes.c
 int CLUIFrames_RepaintSubContainers();  //cluiframes.c
 int CLUIFramesGetMinHeight();			//cluiframes.c
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
+
 int		SizeFramesByWindowRect(RECT *r, HDWP * PosBatch, int mode);	//cluiframes.c
 
 int InitSkinHotKeys();

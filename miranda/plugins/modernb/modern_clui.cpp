@@ -2269,12 +2269,13 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			GetWindowRect(pcli->hwndContactTree,&rcTree);
 			//
 			{
-				wndFrame* frm=FindFrameByItsHWND(pcli->hwndContactTree);
+				FRAMEWND* frm=FindFrameByItsHWND(pcli->hwndContactTree);
 				if (frm) 
 					rcTree2=frm->wndSize;
 				else
 					SetRect(&rcTree2,0,0,0,0);
 			}
+					
 			winstyle=GetWindowLong(pcli->hwndContactTree,GWL_STYLE);
 
 			SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);

@@ -40,7 +40,7 @@ template< class RET, class Ap, class Bp, class Cp, class A, class B, class C > i
 {
 	struct PARAMS{ RET(*_proc)(Ap, Bp, Cp); A _a; B _b; C _c; RET ret;  } ;
 	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( (Ap)params->_a, (Bp)params->_b, (Cp)params->_c);
+	params->ret = params->_proc( params->_a, params->_b, params->_c);
 	return 0;
 };
 
@@ -57,7 +57,7 @@ template< class RET, class Ap, class Bp, class A, class B> int DoSyncCall2( WPAR
 {
 	struct PARAMS{ RET(*_proc)(Ap, Bp); A _a; B _b; RET ret;  } ;
 	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( (Ap)params->_a, (Bp)params->_b );
+	params->ret = params->_proc( params->_a, params->_b );
 	return 0;
 };
 
@@ -75,7 +75,7 @@ template< class RET, class Ap, class A> int DoSyncCall1( WPARAM wParam, LPARAM l
 {
 	struct PARAMS{ RET(*_proc)(Ap); A _a; RET ret;  } ;
 	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( (Ap)params->_a );
+	params->ret = params->_proc( params->_a );
 	return 0;
 };
 

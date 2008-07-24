@@ -43,8 +43,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 SKINOBJECTSLIST g_SkinObjectList={0};
 CURRWNDIMAGEDATA * g_pCachedWindow=NULL;
 
-wndFrame * FindFrameByItsHWND(HWND FrameHwnd);	//cluiframes.c
-
 BOOL (WINAPI *g_proc_UpdateLayeredWindow)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD);
 
 BOOL    g_flag_bPostWasCanceled =FALSE;
@@ -94,7 +92,7 @@ static LPSKINOBJECTDESCRIPTOR ske_FindObject(const char * szName, BYTE objType,S
 static HBITMAP ske_LoadGlyphImageByDecoders(char * szFileName);
 static int  ske_LoadSkinFromResource(BOOL bOnlyObjects);
 static void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
-static int  ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting);
+static int  ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting);
 static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
 
@@ -3848,7 +3846,7 @@ static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
 	if ( MirandaLoading() ) return 0;
 
 	RECT wnd;
-	wndFrame *frm;
+	FRAMEWND *frm;
 	BOOL NoCancelPost=0;
 	BOOL IsAnyQueued=0;
 	if (!g_CluiData.mutexOnEdgeSizing)
@@ -3884,8 +3882,8 @@ static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam)           
 			{
 				int i;
 				frm->bQueued=0;
-				for(i=0;i<nFramescount;i++)
-					if(IsAnyQueued|=Frames[i].bQueued) break;
+				for(i=0;i<g_nFramesCount;i++)
+					if(IsAnyQueued|=g_pfwFrames[i].bQueued) break;
 			}
 		}
 	}       
@@ -3901,7 +3899,7 @@ static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
 	if ( MirandaLoading() ) return 0; 
 	if (wParam)
 	{
-		wndFrame *frm=FindFrameByItsHWND((HWND)wParam);
+		FRAMEWND *frm=FindFrameByItsHWND((HWND)wParam);
 		sPaintRequest * pr=(sPaintRequest*)lParam;
 		if (!g_CluiData.fLayered || (frm && frm->floating)) return InvalidateRect((HWND)wParam,pr?(RECT*)&(pr->rcUpdate):NULL,FALSE);
 		if (frm) 
@@ -3949,7 +3947,7 @@ static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)       
 }
 
 
-static int ske_ValidateSingleFrameImage(wndFrame * Frame, BOOL SkipBkgBlitting)                              // Calling frame paint proc
+static int ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting)                              // Calling frame paint proc
 {
 	if (!g_pCachedWindow) { TRACE("ske_ValidateSingleFrameImage calling without cached\n"); return 0;}
 	if (Frame->hWnd==(HWND)-1 && !Frame->PaintCallbackProc)  { TRACE("ske_ValidateSingleFrameImage calling without FrameProc\n"); return 0;}
@@ -4243,14 +4241,14 @@ int ske_DrawNonFramedObjects(BOOL Erase,RECT *r)
 	//--Draw frames captions
 	{
 		int i;
-		for(i=0;i<nFramescount;i++)
-			if (Frames[i].TitleBar.ShowTitleBar && Frames[i].visible && !Frames[i].floating)
+		for(i=0;i<g_nFramesCount;i++)
+			if (g_pfwFrames[i].TitleBar.ShowTitleBar && g_pfwFrames[i].visible && !g_pfwFrames[i].floating)
 			{
 				RECT rc;
-				SetRect(&rc,Frames[i].wndSize.left,Frames[i].wndSize.top-g_nTitleBarHeight-g_nGapBetweenTitlebar,Frames[i].wndSize.right,Frames[i].wndSize.top-g_nGapBetweenTitlebar);
+				SetRect(&rc,g_pfwFrames[i].wndSize.left,g_pfwFrames[i].wndSize.top-g_nTitleBarHeight-g_CluiData.nGapBetweenTitlebar,g_pfwFrames[i].wndSize.right,g_pfwFrames[i].wndSize.top-g_CluiData.nGapBetweenTitlebar);
 				//GetWindowRect(Frames[i].TitleBar.hwnd,&rc);
 				//OffsetRect(&rc,-wnd.left,-wnd.top);
-				Sync( DrawTitleBar, g_pCachedWindow->hBackDC, &rc, Frames[i].id );
+				Sync( DrawTitleBar, g_pCachedWindow->hBackDC, &rc, g_pfwFrames[i].id );
 			}
 	}
 	g_mutex_bLockUpdating=1;
@@ -4318,10 +4316,10 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 	//-- Validating frames
 	{ 
 		int i;
-		for(i=0;i<nFramescount;i++)
-			if (Frames[i].PaintCallbackProc && Frames[i].visible && !Frames[i].floating )
-				if (Frames[i].bQueued || IsForceAllPainting)
-					ske_ValidateSingleFrameImage(&Frames[i],IsForceAllPainting);
+		for(i=0;i<g_nFramesCount;i++)
+			if (g_pfwFrames[i].PaintCallbackProc && g_pfwFrames[i].visible && !g_pfwFrames[i].floating )
+				if (g_pfwFrames[i].bQueued || IsForceAllPainting)
+					ske_ValidateSingleFrameImage(&g_pfwFrames[i],IsForceAllPainting);
 	}
 	g_mutex_bLockUpdating=1;
 	ModernSkinButtonRedrawAll(0);

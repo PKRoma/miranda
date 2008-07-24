@@ -27,15 +27,14 @@ extern struct MM_INTERFACE   mmi;
 //Global variables
 extern int ON_SETALLEXTRAICON_CYCLE;
 extern BOOL CLM_AUTOREBUILD_WAS_POSTED;
-extern wndFrame *Frames;
-extern int nFramescount;
+extern FRAMEWND *g_pfwFrames;
+extern int g_nFramesCount;
 extern RECT g_rcEdgeSizingRect;
-extern wndFrame *wndFrameEventArea;
+extern FRAMEWND *wndFrameEventArea;
 extern ROWCELL * gl_RowTabAccess[];
 extern ROWCELL * gl_RowRoot;
 extern HIMAGELIST hAvatarOverlays;
 extern int  g_nTitleBarHeight;
-extern int  g_nGapBetweenTitlebar;
 extern BOOL g_bTransparentFlag;
 extern HIMAGELIST g_himlCListClc;
 extern HIMAGELIST hCListImages;
@@ -52,7 +51,6 @@ extern CURRWNDIMAGEDATA * g_pCachedWindow;
 extern BOOL g_mutex_bLockUpdating;
 extern LISTMODERNMASK *MainModernMaskList;
 extern HIMAGELIST hCListImages;
-extern wndFrame *wndFrameViewMode;
 extern STATUSBARDATA g_StatusBarData;
 extern SKINOBJECTSLIST g_SkinObjectList;
 extern CURRWNDIMAGEDATA * g_pCachedWindow;
@@ -72,7 +70,6 @@ extern HWND g_hCLUIOptionsWnd;
 extern BOOL g_bTransparentFlag;
 extern HINSTANCE g_hInst;
 extern HIMAGELIST hCListImages;
-extern HFONT TitleBarFont;
 extern BOOL g_mutex_bChangingMode;
 extern HANDLE g_hMainThread;
 extern DWORD g_dwMainThreadID;
@@ -192,11 +189,13 @@ int     ske_ValidateFrameImageProc(RECT * r);
 
 int CLUIFrames_ActivateSubContainers(BOOL wParam);
 int CLUIFrames_OnClistResize_mod(WPARAM wParam,LPARAM lParam);
-int CLUIFrames_OnMoving(WPARAM wParam,LPARAM lParam);
-int CLUIFrames_OnShowHide(WPARAM wParam,LPARAM lParam);
-int CLUIFrames_SetLayeredMode(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_OnMoving( HWND, RECT * );
+int CLUIFrames_OnShowHide( HWND hwnd, int mode );
+int CLUIFrames_SetLayeredMode( BOOL fLayeredMode, HWND hwnd );
 int CLUIFrames_SetParentForContainers( HWND parent );
 int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
+
+FRAMEWND * FindFrameByItsHWND(HWND FrameHwnd);						//cluiframes.c
 
 //int callProxied_DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);
 int DrawTitleBar(HDC hdcMem2,RECT * rect,int Frameid);

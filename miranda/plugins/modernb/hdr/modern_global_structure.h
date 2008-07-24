@@ -44,9 +44,9 @@ typedef struct tagCLUIDATA
 	BOOL	fDocked;
 	BOOL	fGDIPlusFail;
 	BOOL	fSortNoOfflineBottom;
-	BOOL  fAutoSize;
+	BOOL	fAutoSize;
 	BOOL	fAeroGlass;
-	HRGN  hAeroGlassRgn;
+	HRGN	hAeroGlassRgn;
 
 	BOOL	mutexPreventDockMoving;
 	BOOL    mutexOnEdgeSizing;
@@ -85,6 +85,7 @@ typedef struct tagCLUIDATA
 	HANDLE hEventToolBarModuleLoaded;
 	HANDLE hEventSkinServicesCreated;
 
+	int	   nGapBetweenTitlebar;
 } CLUIDATA;
 
 EXTERN_C CLUIDATA g_CluiData;

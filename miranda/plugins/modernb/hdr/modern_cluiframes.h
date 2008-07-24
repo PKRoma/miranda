@@ -28,6 +28,7 @@ int LoadCLUIFramesModule(void);
 int UnLoadCLUIFramesModule(void);
 int CLUIFramesGetMinHeight();
 int CLUIFramesOnClistResize(WPARAM wParam,LPARAM lParam);
+int CLUIFrames_GetTotalHeight();
 
 typedef struct tagProtocolData {
 	char *RealName;
@@ -95,7 +96,7 @@ typedef struct _DockOpt
 	HWND	hwndRight;
 }
 DockOpt;
-typedef struct _wndFrame{
+typedef struct _tagFrameWnd{
 	int id;
 	HWND hWnd ;
 	RECT wndSize;
@@ -127,7 +128,7 @@ typedef struct _wndFrame{
     BOOLEAN bQueued;
     HRGN UpdateRgn;
 
-} wndFrame;
+} FRAMEWND;
 
 #define OFFSET_PROTOPOS 200
 #define OFFSET_VISIBLE 400

@@ -1059,8 +1059,6 @@ void BuildViewModeMenu()
 //#define MODERNSKINBUTTONCLASS "MirandaModernSkinButtonClass"
 LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    BOOL hasTitleBar = wndFrameViewMode ? wndFrameViewMode->TitleBar.ShowTitleBar : 0;
-
     switch(msg) 
 	{
         case WM_CREATE:
