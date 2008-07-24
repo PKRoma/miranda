@@ -301,13 +301,13 @@ void CAimProto::offline_contacts()
 	while (hContact)
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+		if (protocol != NULL && !strcmp(protocol, m_szModuleName))
 			offline_contact(hContact,1);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
-	delete_module(GROUP_ID_KEY,0);
-	delete_module(ID_GROUP_KEY,0);
-	delete_module(FILE_TRANSFER_KEY,0);
+	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)GROUP_ID_KEY);
+	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)ID_GROUP_KEY);
+	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)FILE_TRANSFER_KEY);
 }
 
 void CAimProto::remove_AT_icons()
@@ -666,41 +666,6 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
-static int module_size=0;
-static char* module_ptr=NULL;
-static int EnumSettings(const char *szSetting,LPARAM /*lParam*/)
-{
-	//char* szModule=(char*)lParam;
-	module_ptr=renew(module_ptr,module_size,lstrlenA(szSetting)+2);
-	memcpy(&module_ptr[module_size],szSetting,lstrlenA(szSetting));
-	memcpy(&module_ptr[module_size+lstrlenA(szSetting)],";\0",2);
-	module_size+=lstrlenA(szSetting)+1;
-	return 0;
-}
-void delete_module(char* module, HANDLE hContact)
-{
-	if (!module)
-		return;	
-	DBCONTACTENUMSETTINGS dbces;
-	// enum all setting the contact has for the module
-	dbces.pfnEnumProc = &EnumSettings;
-	dbces.szModule = module;
-	dbces.lParam = (LPARAM)module;
-	CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)hContact,(LPARAM)&dbces);
-	if(module_ptr)
-	{
-		char* setting=strtok(module_ptr,";");
-		while(setting)
-		{
-			DBDeleteContactSetting(hContact, module, setting);
-			setting=strtok(NULL,";");
-		}
-	}
-	delete[] module_ptr;
-	module_ptr=NULL;
-	module_size=0;
-}
 
 FILE* CAimProto::open_contact_file(char* sn, char* file, char* mode, char* &path, bool contact_dir)
 {
