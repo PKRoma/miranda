@@ -96,7 +96,7 @@ HANDLE CAimProto::find_contact(char * sn)
 			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
-				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
+				if (!getString(hContact, AIM_KEY_SN, &dbv))
 				{
 					bool found = !lstrcmpA(norm_sn, dbv.pszVal); 
 					DBFreeVariant(&dbv);
@@ -177,7 +177,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
 	if(new_group_id&&new_group_id!=old_group_id)
 	{
 		DBVARIANT dbv;
-		if(!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN,&dbv))
+		if(!getString(hContact, AIM_KEY_SN,&dbv))
 		{
 			char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
@@ -224,7 +224,7 @@ void CAimProto::add_contacts_to_groups()
 			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, m_szModuleName, MB_OK );
-			unsigned short group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, group,0);	
+			unsigned short group_id=(unsigned short)getWord(hContact, group,0);	
 			delete[] group;
 			if(group_id)
 			{
@@ -235,7 +235,7 @@ void CAimProto::add_contacts_to_groups()
 				//MessageBox( NULL, group_id_string, m_szModuleName, MB_OK );
 				DBVARIANT dbv;
 				//MessageBox( NULL, "Utf path... should start writing", m_szModuleName, MB_OK );
-				if(DBGetContactSettingByte(hContact, m_szModuleName,AIM_KEY_NC,0))
+				if(getByte(hContact, AIM_KEY_NC,0))
 				{
 					if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
 					{
@@ -321,7 +321,7 @@ void CAimProto::remove_AT_icons()
 			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
-				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
+				if (!getString(hContact, AIM_KEY_SN, &dbv))
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					HANDLE handle=(HANDLE)-1;
@@ -349,7 +349,7 @@ void CAimProto::remove_ES_icons()
 			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 			{
 				DBVARIANT dbv;
-				if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
+				if (!getString(hContact, AIM_KEY_SN, &dbv))
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
 					HANDLE handle=(HANDLE)-1;
@@ -375,9 +375,9 @@ void CAimProto::add_AT_icons()
 		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			DBVARIANT dbv;
-			if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
+			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				int account_type=DBGetContactSettingByte(hContact, m_szModuleName, AIM_KEY_AC,0);		
+				int account_type=getByte(hContact, AIM_KEY_AC,0);		
 				if(account_type==ACCOUNT_TYPE_ADMIN)
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -439,9 +439,9 @@ void CAimProto::add_ES_icons()
 		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			DBVARIANT dbv;
-			if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_SN, &dbv))
+			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				int es_type=DBGetContactSettingByte(hContact, m_szModuleName, AIM_KEY_ET,0);		
+				int es_type=getByte(hContact, AIM_KEY_ET,0);		
 				if(es_type==EXTENDED_STATUS_BOT)
 				{
 					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
@@ -586,7 +586,7 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 				{
 					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
 					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					if(unsigned short item_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName, item,0))
+					if(unsigned short item_id=(unsigned short)getWord(hContact, item,0))
 					{
 						if(item_id==id)
 						{
@@ -637,11 +637,11 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 					char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-					if(unsigned short user_group_id=(unsigned short)DBGetContactSettingWord(hContact, m_szModuleName,group,0))
+					if(unsigned short user_group_id=(unsigned short)getWord(hContact, group,0))
 					{
 						if(group_id==user_group_id)
 						{
-							if(unsigned short buddy_id=_htons((unsigned short)DBGetContactSettingWord(hContact,m_szModuleName,item,0)))
+							if(unsigned short buddy_id=_htons((unsigned short)getWord(hContact, item, 0)))
 							{
 								list=renew(list,size,2);
 								memcpy(&list[size],&buddy_id,2);

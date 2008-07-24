@@ -13,14 +13,14 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	char* wd;
 	int file_start_point=0;
 	unsigned long size;
-	if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_FN, &dbv))
+	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		DBFreeVariant(&dbv);
 		wd=strldup(file,lstrlenA(file));
 		char* swd=strrchr(wd,'\\');
 		*swd='\0';
-		size=DBGetContactSettingDword(hContact, m_szModuleName, AIM_KEY_FS, 0);
+		size=getDword(hContact, AIM_KEY_FS, 0);
 		if(!size)
 			return;
 	}
@@ -186,7 +186,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	pfts.totalFiles=1;
 	pfts.totalProgress=0;
 	unsigned long size;
-	if (!DBGetContactSettingString(hContact, m_szModuleName, AIM_KEY_FN, &dbv))
+	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
 		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
 		pfts.workingDir=strldup(file,lstrlenA(file));

@@ -691,7 +691,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 					{
 						mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 						mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-						if(!DBGetContactSettingWord(hContact, m_szModuleName, item,0))
+						if(!getWord(hContact, item, 0))
 						{
 							setWord(hContact, item, item_id);	
                 			setWord(hContact, group, group_id);

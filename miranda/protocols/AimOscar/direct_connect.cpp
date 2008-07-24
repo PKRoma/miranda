@@ -36,7 +36,7 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
 	if(hContact)
 	{
 		ProtoBroadcastAck(ppro->m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED,hContact, 0);
-		file_transfer_type=DBGetContactSettingByte(hContact,ppro->m_szModuleName,AIM_KEY_FT,255);//okay now we see if they belong
+		file_transfer_type=ppro->getByte(hContact,AIM_KEY_FT,255);//okay now we see if they belong
 	}
 	if(file_transfer_type==1)//we are sending
 	{

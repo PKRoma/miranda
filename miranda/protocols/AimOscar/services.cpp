@@ -116,8 +116,8 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
 			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-			if ( unsigned short item_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, m_szModuleName, item,0)) {
-				unsigned short group_id=(unsigned short)DBGetContactSettingWord((HANDLE)wParam, m_szModuleName, group,0);
+			if ( unsigned short item_id=(unsigned short)getWord((HANDLE)wParam, item, 0)) {
+				unsigned short group_id=(unsigned short)getWord((HANDLE)wParam, group, 0);
 				if(group_id)
 					aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,group_id);
 			}
