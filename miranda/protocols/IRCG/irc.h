@@ -504,20 +504,22 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void __cdecl AckMessageFailDcc( void* info );
 	void __cdecl AckMessageSuccess( void* info );
 
+	int  SetStatusInternal( int iNewStatus, bool bIsInternal );
+
 	//options.cpp
 	HWND m_hwndConnect;
 
 	OBJLIST<CIrcIgnoreItem> m_ignoreItems;
 
-	int             m_channelNumber;
-	CMString        m_whoReply;
-	CMString        sNamesList;
-	CMString        sTopic;
-	CMString        sTopicName;
-	CMString	       sTopicTime;
-	CMString        m_namesToWho;
-	CMString        m_channelsToWho;
-	CMString        m_namesToUserhost;
+	int      m_channelNumber;
+	CMString m_whoReply;
+	CMString sNamesList;
+	CMString sTopic;
+	CMString sTopicName;
+	CMString	sTopicTime;
+	CMString m_namesToWho;
+	CMString m_channelsToWho;
+	CMString m_namesToUserhost;
 
 	void    InitPrefs(void);
 

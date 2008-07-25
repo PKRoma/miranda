@@ -944,6 +944,11 @@ int __cdecl CIrcProto::SetApparentMode( HANDLE hContact, int mode )
 
 int __cdecl CIrcProto::SetStatus( int iNewStatus )
 {
+	return SetStatusInternal( iNewStatus, false );
+}
+
+int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
+{
 	if ( !bChatInstalled ) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
@@ -992,7 +997,8 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 		DoPerform( "Event: Out for lunch" );
 	if ( iNewStatus == ID_STATUS_ONLINE && m_perform && IsConnected() && (m_iStatus ==ID_STATUS_ONTHEPHONE ||m_iStatus  ==ID_STATUS_OUTTOLUNCH) && m_iDesiredStatus  !=ID_STATUS_AWAY)
 		DoPerform( "Event: Available" );
-	if ( iNewStatus != 1 )
+
+	if ( !bIsInternal )
 		m_iStatus = iNewStatus;
 
 	if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_AWAY || iNewStatus == ID_STATUS_FREECHAT) && !IsConnected() ) //go from offline to online
@@ -1015,7 +1021,7 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 	else if ( iNewStatus == ID_STATUS_ONLINE && IsConnected()) //already online
 		return 0;
 	else
-		SetStatus(ID_STATUS_AWAY);
+		SetStatusInternal(ID_STATUS_AWAY, true);
 	return 0;
 }
 

@@ -324,7 +324,7 @@ bool CIrcProto::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		int Temp = m_iDesiredStatus;
-		m_iDesiredStatus =  ID_STATUS_AWAY;
+		m_iDesiredStatus = ID_STATUS_AWAY;
 		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_AWAY);
 
 		if ( m_perform ) {
