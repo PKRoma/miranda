@@ -3542,12 +3542,12 @@ HBITMAP ske_ExtractDIBFromImagelistIcon( HIMAGELIST himl,int index, int * outWid
 			{
 				DWORD dwVal=*((DWORD*)pRowImg);
 				BOOL fMasked = fHasMask?ske_GetMaskBit(pWorkMsk,x):FALSE;
-				/*if ( fMasked && fHasAlpha )
+				if ( fMasked && fHasAlpha )
 				{
 					BYTE bAlpha = (BYTE)(dwVal>>24);
 					if ( bAlpha != 0 && bAlpha !=0xFF )
 						fMasked = false;
-				}*/
+				}
 				if ( fMasked ) 
 					dwVal=0;                   // if mask bit is set - point have to be empty
 				else if (!fHasAlpha)
