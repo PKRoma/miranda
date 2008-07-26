@@ -31,11 +31,13 @@ UTF8_INTERFACE utfi;
 MD5_INTERFACE  md5i;
 SHA1_INTERFACE sha1i;
 
+HANDLE hMooduleLoaded;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialization routines
 
-void    MsnLinks_Init( void );
-
+void MsnLinks_Init(void);
+void MsnLinks_Destroy(void);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
@@ -97,7 +99,6 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-
 static CMsnProto* msnProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
 	CMsnProto *ppro = new CMsnProto( pszProtoName, tszUserName );
@@ -125,7 +126,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 	mir_getMD5I( &md5i );
     mir_getSHA1I( &sha1i );
 
-	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hMooduleLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
 	srand(( unsigned int )time( NULL ));
 
@@ -146,6 +147,8 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
+	MsnLinks_Destroy();
+	UnhookEvent(hMooduleLoaded);
 	return 0;
 }
 
