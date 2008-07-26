@@ -926,7 +926,28 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
       }   }
       break;
 
+      case WM_GETDLGCODE :
+       {
+	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+	BOOL isCtrl = (GetKeyState(VK_CONTROL) & 0x8000) && !isAlt;
+
+        LPMSG lpmsg;
+          if ( ( lpmsg = (LPMSG)lParam ) != NULL ) {
+             if ( lpmsg->message == WM_KEYDOWN
+             && (lpmsg->wParam == VK_RETURN || (lpmsg->wParam == VK_TAB && (isAlt || isCtrl))))
+           return DLGC_WANTALLKEYS;
+           }
+         break;
+       }
 	case WM_KEYDOWN:
+		if (wParam == VK_RETURN) {
+				int index = SendMessage(hwnd, LB_GETCURSEL, 0, 0);
+				if (index!=LB_ERR) {
+					USERINFO *ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, index);
+					DoEventHookAsync(GetParent(hwnd), si->ptszID, si->pszModule, GC_USER_PRIVMESS, ui->pszUID, NULL, (LPARAM)NULL);
+				}
+				break;
+		}
 		if (wParam == VK_ESCAPE || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_NEXT ||
 				wParam == VK_PRIOR || wParam == VK_TAB || wParam == VK_HOME || wParam == VK_END) {
 			si->szSearch[0] = 0;
@@ -1503,13 +1524,25 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
       }   }
 
    case GC_UPDATENICKLIST:
-      {
-         int i = SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_GETTOPINDEX, 0, 0);
-         SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_SETCOUNT, si->nUsersInNicklist, 0);
-         SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_SETTOPINDEX, i, 0);
-         SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
-      }
-      break;
+		{
+			int index=0;
+			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_RESETCONTENT, 0, 0);
+			for (index=0; index<si->nUsersInNicklist; index++) {
+				USERINFO * ui = SM_GetUserFromIndex(si->ptszID, si->pszModule, index);
+				if (ui) {
+					char szIndicator = SM_GetStatusIndicator(si, ui);
+					if (szIndicator>'\0') {
+						static TCHAR* ptszBuf[128];
+						mir_sntprintf( (TCHAR*)ptszBuf, SIZEOF(ptszBuf), _T("%c%s"), szIndicator, ui->pszNick);
+						SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_ADDSTRING, 0, (LPARAM)ptszBuf);
+					} else {
+						SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_ADDSTRING, 0, (LPARAM)ui->pszNick);
+					}
+				}
+			}
+			SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
+		}
+		break;
 
    case GC_EVENT_CONTROL + WM_USER+500:
       {

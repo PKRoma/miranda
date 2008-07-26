@@ -206,7 +206,7 @@ Return: TRUE or FALSE
 
 
 
-static int HistoryEvents_Register(char *module, char *name, char *description, int eventType, HICON defaultIcon, 
+static __inline int HistoryEvents_Register(char *module, char *name, char *description, int eventType, HICON defaultIcon, 
 								  int supports, int flags, fGetHistoryEventText pfGetHistoryEventText)
 {
 	HISTORY_EVENT_HANDLER heh = {0};
@@ -249,7 +249,7 @@ static int HistoryEvents_RegisterWithTemplates(char *module, char *name, char *d
 	return CallService(MS_HISTORYEVENTS_REGISTER, (WPARAM) &heh, 0);
 }
 
-static int HistoryEvents_RegisterMessageStyle(char *module, char *name, char *description, int eventType, HICON defaultIcon, 
+static __inline int HistoryEvents_RegisterMessageStyle(char *module, char *name, char *description, int eventType, HICON defaultIcon, 
 										int flags, char **templates, int numTemplates)
 {
 	HISTORY_EVENT_HANDLER heh = {0};
@@ -269,7 +269,7 @@ static int HistoryEvents_RegisterMessageStyle(char *module, char *name, char *de
 	return CallService(MS_HISTORYEVENTS_REGISTER, (WPARAM) &heh, 0);
 }
 
-static BOOL HistoryEvents_CanHandle(WORD eventType)
+static __inline BOOL HistoryEvents_CanHandle(WORD eventType)
 {
 	if (!ServiceExists(MS_HISTORYEVENTS_CAN_HANDLE))
 		return FALSE;
@@ -277,7 +277,7 @@ static BOOL HistoryEvents_CanHandle(WORD eventType)
 	return (BOOL) CallService(MS_HISTORYEVENTS_CAN_HANDLE, (WPARAM) eventType, 0);
 }
 
-static HICON HistoryEvents_GetIcon(WORD eventType)
+static __inline HICON HistoryEvents_GetIcon(WORD eventType)
 {
 	if (!ServiceExists(MS_HISTORYEVENTS_GET_ICON))
 		return NULL;
@@ -285,7 +285,7 @@ static HICON HistoryEvents_GetIcon(WORD eventType)
 	return (HICON) CallService(MS_HISTORYEVENTS_GET_ICON, (WPARAM) eventType, 0);
 }
 
-static int HistoryEvents_GetFlags(WORD eventType)
+static __inline int HistoryEvents_GetFlags(WORD eventType)
 {
 	if (!ServiceExists(MS_HISTORYEVENTS_GET_FLAGS))
 		return -1;

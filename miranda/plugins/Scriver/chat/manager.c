@@ -235,6 +235,37 @@ BOOL SM_SetStatusEx( const TCHAR* pszID, const char* pszModule, const TCHAR* psz
 	return TRUE;
 }
 
+char SM_GetStatusIndicator(SESSION_INFO* si, USERINFO * ui)
+{
+	STATUSINFO * ti;
+	if (!ui || !si)
+		return '\0';
+
+	ti = TM_FindStatus(si->pStatuses, TM_WordToString(si->pStatuses, ui->Status));
+	if (ti)
+	{
+		if ((int)ti->hIcon < STATUSICONCOUNT)
+		{
+			int id = si->iStatusCount - (int)ti->hIcon - 1;
+			if (id == 0)
+				return '\0';
+			if (id == 1)
+				return '+';
+			if (id == 2)
+				return '%';
+			if (id == 3)
+				return '@';
+			if (id == 4)
+				return '!';
+			if (id == 5)
+				return '*';
+		}
+		else
+			return '\0';
+	}
+	return '\0';
+}
+
 HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO * ui)
 {
 	STATUSINFO * ti;
@@ -329,24 +360,11 @@ BOOL SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL 
 	return TRUE;
 }
 
-USERINFO * SM_AddUser( const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
+USERINFO * SM_AddUser( SESSION_INFO * si, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus)
 {
-	SESSION_INFO *pTemp = m_WndList, *pLast = NULL;
-
-	if (!pszID || !pszModule)
-		return NULL;
-
-	while ( pTemp != NULL ) {
-		if ( !lstrcmpi( pTemp->ptszID, pszID ) && !lstrcmpiA( pTemp->pszModule, pszModule )) {
-			USERINFO * p = UM_AddUser( pTemp->pStatuses, &pTemp->pUsers, pszUID, pszNick, wStatus);
-			pTemp->nUsersInNicklist++;
-			return p;
-		}
-		pLast = pTemp;
-		pTemp = pTemp->next;
-	}
-
-	return 0;
+	USERINFO * p = UM_AddUser( si->pStatuses, &si->pUsers, pszUID, pszNick, wStatus);
+	si->nUsersInNicklist++;
+	return p;
 }
 
 BOOL SM_MoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID)

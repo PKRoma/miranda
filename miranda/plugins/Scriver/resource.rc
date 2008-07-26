@@ -59,14 +59,11 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,113,140,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,138,10
-
     LTEXT           "Show warning when message has not been received after",
                     IDC_STATIC,8,136,211,8
     EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,136,44,8
-
     GROUPBOX        "Look And Feel",IDC_STATIC,0,150,304,68
-
     CONTROL         "Use the contact's status icon as the window icon",
                     IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,
                     292,10
@@ -113,13 +110,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,111,230,10
     CONTROL         "Start message text on a new line",IDC_MESSAGEONNEWLINE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,230,10
-
-
     CONTROL         "Draw lines between messages",IDC_DRAWLINES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,133,128,10
     CONTROL         "",IDC_LINECOLOUR,"ColourPicker",WS_TABSTOP,135,132,16,11
-
-
     CONTROL         "Indent text",IDC_INDENTTEXT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,144,110,10
     EDITTEXT        IDC_INDENTSIZE,118,144,33,12,ES_RIGHT | ES_NUMBER |
@@ -128,10 +121,8 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY |
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK |
                     WS_DISABLED,145,144,10,12
-
     CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,156,130,10
-
     GROUPBOX        "Load History Events",IDC_STATIC,0,178,304,51
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
                     BS_AUTORADIOBUTTON | WS_TABSTOP,7,190,138,10
@@ -174,28 +165,22 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,192,10
 	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
-
     CONTROL         "Limit number of tabs per container to",IDC_LIMITTABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
     EDITTEXT        IDC_LIMITTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
-
 	CONTROL         "Use separate containers for chats",IDC_SEPARATECHATSCONTAINERS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,192,10
-
     CONTROL         "Limit number of chats tabs per container to",IDC_LIMITCHATSTABS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
     EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
-
 	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,111,200,10
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,122,260,10
-
     CONTROL         "Hide containers on close",
                     IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,133,260,10
-
 	GROUPBOX        "Look And Feel",IDC_STATIC,0,149,304,73
 	CONTROL         "Show title bar",IDC_SHOWTITLEBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,161,140,10
@@ -203,7 +188,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,172,138,10
 	CONTROL         "Show tool bar ",IDC_SHOWBUTTONLINE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,183,140,10
-
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,201,140,10
     LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,197,40,8
@@ -253,13 +237,13 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "An error has occured. The protocol reported the following error:",
                     IDC_STATIC,5,4,177,20
-    DEFPUSHBUTTON   "Try again",IDOK,22,91,63,14
-    PUSHBUTTON      "Cancel",IDCANCEL,104,91,61,14
     EDITTEXT        IDC_ERRORTEXT,5,24,177,21,ES_MULTILINE | ES_READONLY
-    CONTROL         "",IDC_MSGTEXT,RICHEDIT_CLASS,WS_CLIPSIBLINGS | WS_VSCROLL |
-                    WS_TABSTOP | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,5,60,177,26,WS_EX_STATICEDGE
     LTEXT           "while sending the following message:",IDC_STATIC,6,48,
                     175,8
+    CONTROL         "",IDC_MSGTEXT,RICHEDIT_CLASS,WS_CLIPSIBLINGS | WS_VSCROLL |
+                    WS_TABSTOP | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,5,60,177,26,WS_EX_STATICEDGE
+    DEFPUSHBUTTON   "Try again",IDOK,22,91,63,14
+    PUSHBUTTON      "Cancel",IDCANCEL,104,91,61,14
 END
 
 IDD_MSGWIN DIALOGEX 0, 0, 300, 200
@@ -339,7 +323,7 @@ BEGIN
     CONTROL         "",IDC_CHAT_LOG,RICHEDIT_CLASS,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,8,23,164,73,WS_EX_STATICEDGE
     CONTROL         "",IDC_CHAT_SPLITTERX,"Static",SS_ENHMETAFILE,172,23,10,73
     CONTROL         "",IDC_CHAT_SPLITTERY,"Static",SS_ENHMETAFILE,0,102,251,6
-    LISTBOX         IDC_CHAT_LIST,182,23,69,73,LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | LBS_NODATA | NOT WS_BORDER | WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
+    LISTBOX         IDC_CHAT_LIST,182,23,69,73,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
 END
 
 IDD_FILTER DIALOGEX 0, 0, 83, 125
@@ -347,8 +331,8 @@ STYLE DS_FIXEDSYS | DS_SETFONT | WS_POPUP | WS_BORDER
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CTEXT           "Show these events only:",IDC_CHAT_TEXTO,0,0,83,13,SS_CENTERIMAGE
     LTEXT           "",IDC_STATIC,0,13,83,112
+    CTEXT           "Show these events only:",IDC_CHAT_TEXTO,0,0,83,13,SS_CENTERIMAGE
     CONTROL         "Actions",IDC_CHAT_1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,13,73,10
     CONTROL         "Messages",IDC_CHAT_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,23,73,10
     CONTROL         "Nick changes",IDC_CHAT_3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,33,73,10
@@ -395,12 +379,10 @@ BEGIN
     LTEXT           "Limit log text to (events):",IDC_STATIC,8,129,150,8
     EDITTEXT        IDC_CHAT_LOGLIMIT,158,126,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_CHAT_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,191,126,11,12
-
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,8,144,288,1
     CONTROL         "Enable highlighting",IDC_CHAT_HIGHLIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,151,118,10
     LTEXT           "Words to highlight (wildcards allowed)",IDC_STATIC,8,164,240,8
     EDITTEXT        IDC_CHAT_HIGHLIGHTWORDS,8,172,276,14,ES_AUTOHSCROLL
-
     CONTROL         "Enable logging to disk",IDC_CHAT_LOGGING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,191,211,10
     LTEXT           "Log directory",IDC_STATIC,8,202,211,8
     EDITTEXT        IDC_CHAT_LOGDIRECTORY,8,210,211,12,ES_AUTOHSCROLL | ES_READONLY
@@ -415,18 +397,18 @@ STYLE DS_FIXEDSYS | DS_SETFONT | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    GROUPBOX        "Popups for the Chat plugin",IDC_STATIC,0,0,277,174
     CONTROL         "Use same style as in the message log",IDC_CHAT_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,33,29,225,10
     CONTROL         "Use default colours",IDC_CHAT_RADIO2,"Button",BS_AUTORADIOBUTTON,33,62,217,10
     CONTROL         "Use custom colours",IDC_CHAT_RADIO3,"Button",BS_AUTORADIOBUTTON,33,95,105,10
-    CONTROL         "Custom1",IDC_CHAT_TEXT,"ColourPicker",WS_TABSTOP,141,93,50,14,0x18000000L
-    CONTROL         "Custom2",IDC_CHAT_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
-    EDITTEXT        IDC_CHAT_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
-    GROUPBOX        "Popups for the Chat plugin",IDC_STATIC,0,0,277,174
-    LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
     LTEXT           "Text",IDC_STATIC,141,83,49,8
+    CONTROL         "Custom1",IDC_CHAT_TEXT,"ColourPicker",WS_TABSTOP,141,93,50,14,0x18000000L
     LTEXT           "Background",IDC_STATIC,201,83,67,8
+    CONTROL         "Custom2",IDC_CHAT_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
+    LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
+    EDITTEXT        IDC_CHAT_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
+    CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
 END
 
 IDD_COLORCHOOSER DIALOGEX 0, 0, 198, 150

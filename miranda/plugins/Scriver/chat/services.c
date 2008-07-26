@@ -453,7 +453,7 @@ static void AddUser(GCEVENT * gce)
 	SESSION_INFO* si = SM_FindSession( gce->pDest->ptszID, gce->pDest->pszModule);
 	if ( si ) {
 		WORD status = TM_StringToWord( si->pStatuses, gce->ptszStatus );
-		USERINFO * ui = SM_AddUser( gce->pDest->ptszID, gce->pDest->pszModule, gce->ptszUID, gce->ptszNick, status);
+		USERINFO * ui = SM_AddUser( si, gce->ptszUID, gce->ptszNick, status);
 		if (ui) {
 			ui->pszNick = mir_tstrdup( gce->ptszNick );
 
