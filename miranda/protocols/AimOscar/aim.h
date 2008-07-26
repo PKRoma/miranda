@@ -180,6 +180,7 @@
 
 #define AIM_DEFAULT_SERVER				"slogin.oscar.aol.com"
 #define AIM_DEFAULT_SERVER_NS			"login.oscar.aol.com"
+#define AIM_PROXY_SERVER	            "ars.oscar.aol.com"
 #define AIM_DEFAULT_PORT				5190
 
 //Some Defaults for various things

@@ -502,7 +502,8 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 			int force_proxy = getByte( AIM_KEY_FP, 0 );
 			if ( force_proxy ) {
 				LOG("We are forcing a proxy file transfer.");
-				HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com", AIM_DEFAULT_PORT);
+				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+				HANDLE hProxy = aim_peer_connect(AIM_PROXY_SERVER, port);
 				if ( hProxy ) {
 					setByte( hContact, AIM_KEY_PS, 1 );
 					setDword( hContact, AIM_KEY_DH, (DWORD)hProxy );//not really a direct connection

@@ -64,12 +64,15 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 		}
 	}
 	else if ( force_proxy ) { //we are forcing a proxy
-		HANDLE hProxy = aim_peer_connect("ars.oscar.aol.com", AIM_DEFAULT_PORT);
+		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+		HANDLE hProxy = aim_peer_connect(AIM_PROXY_SERVER, port);
 		if ( hProxy ) {
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
 			setByte( *hContact, AIM_KEY_PS, 2 );
 			setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy); //not really a direct connection
-			setString( *hContact, AIM_KEY_IP, "ars.oscar.aol.com:5190" );
+			char constr[80];
+			mir_snprintf(constr, sizeof(constr), "%s:%d", AIM_PROXY_SERVER, port);
+			setString( *hContact, AIM_KEY_IP, constr );
 			ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 		}
 	}
@@ -134,7 +137,8 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 				ForkThread( &CAimProto::aim_dc_helper, *hContact );
 			}
 			else { //stage 3 proxy
-				HANDLE hProxy = aim_peer_connect( "ars.oscar.aol.com", AIM_DEFAULT_PORT );
+				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+				HANDLE hProxy = aim_peer_connect( AIM_PROXY_SERVER, port );
 				if ( hProxy ) {
 					setByte( *hContact, AIM_KEY_PS, 3 );
 					setDword( *hContact, AIM_KEY_DH, ( DWORD )hProxy); //not really a direct connection

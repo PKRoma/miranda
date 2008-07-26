@@ -508,16 +508,9 @@ int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,c
 	aim_writegeneric(4,"\0\0\0\x02",offset,buf);
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)
@@ -529,16 +522,9 @@ int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* 
 	aim_writegeneric(4,"\0\0\0\x01",offset,buf);
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id)
@@ -555,16 +541,9 @@ int CAimProto::aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char*
 	aim_writegeneric(2,(char*)&group_id,offset,buf);
 	aim_writegeneric(2,(char*)&item_id,offset,buf);
 	aim_writegeneric(4,"\0\0\0\0",offset,buf);//item type then the last two bytes are for additional data length
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id)
@@ -581,16 +560,9 @@ int CAimProto::aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn
 	aim_writegeneric(2,(char*)&group_id,offset,buf);
 	aim_writegeneric(2,(char*)&item_id,offset,buf);
 	aim_writegeneric(4,"\0\0\0\0",offset,buf);//item type then the last two bytes are for additional data length
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id)
 {
@@ -604,16 +576,9 @@ int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name
 	aim_writegeneric(name_length,name,offset,buf);
 	aim_writegeneric(2,(char*)&group_id,offset,buf);
 	aim_writegeneric(6,"\0\0\0\x01\0\0",offset,buf);//item id[2] item type[2] addition data[2]
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length)
@@ -631,24 +596,14 @@ int CAimProto::aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name
 	unsigned short tlv_length=_htons(TLV_HEADER_SIZE+members_length);
 	aim_writegeneric(2,(char*)&tlv_length,offset,buf);
 	aim_writetlv(0xc8,members_length,members,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_keepalive(HANDLE hServerConn,unsigned short &seqno)
 {
-	if(aim_sendflap(hServerConn,0x05,0,0,seqno)==0)
-		return 0;
-	else
-		return -1;
+	return aim_sendflap(hServerConn,0x05,0,0,seqno)==0 ? 0 : -1;
 }
 
 int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr)//used when requesting a regular file transfer
@@ -729,18 +684,10 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	long_ip_to_char_ip(ip,cip);
 	LOG("Attempting to Send a file to a buddy.");
 	LOG("IP for Buddy to connect to: %s:%u",cip,port);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] msg_frag;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr,unsigned long proxy_ip, unsigned short port)//used when requesting a file transfer through a proxy-or rather forcing proxy use
@@ -805,18 +752,10 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	long_ip_to_char_ip(proxy_ip,cip);
 	LOG("Attempting to Send a file to a buddy over proxy.");
 	LOG("IP for Buddy to connect to: %s:%u",cip,port);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] msg_frag;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)//used when a direct connection failed so we request a redirected connection
@@ -856,18 +795,10 @@ int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &se
 	memcpy(&msg_frag[49+sizeof(AIM_CAP_SEND_FILES)],bw_port,2);
 	aim_writetlv(0x05,(51+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
 	}
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] msg_frag;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port)//used when a direct & redirected connection failed so we request a proxy connection
@@ -909,18 +840,10 @@ int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,c
 	memcpy(&msg_frag[43+sizeof(AIM_CAP_SEND_FILES)],"\0\x10\0\0",4);
 	aim_writetlv(0x05,(47+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
 	}
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] msg_frag;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
@@ -944,16 +867,9 @@ int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn
 	//end tlv
 	}
 	LOG("Accepting a file transfer.");
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
@@ -976,16 +892,9 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	aim_writetlv(0x05,(9+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
 	//end tlv
 	}
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
 int CAimProto::aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type)
@@ -1018,10 +927,7 @@ int CAimProto::aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned lo
 	seconds=_htonl(seconds);
 	aim_writesnac(0x01,0x11,0x06,offset,buf);
 	aim_writegeneric(4,(char*)&seconds,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-		return 1;
-	else
-		return 0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
 int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
@@ -1029,10 +935,7 @@ int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 	unsigned short offset=0;
 	char buf[SNAC_SIZE];
 	aim_writesnac(0x18,0x06,0x06,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-		return 1;
-	else
-		return 0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
 int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash, unsigned short hash_size)
@@ -1047,14 +950,7 @@ int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char*
 	char* size=(char*)&hash_size;
 	aim_writegeneric(1,&size[0],offset,buf);
 	aim_writegeneric(hash_size,hash,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] buf;
-		return 0;
-	}
+	int res = aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
+	delete[] buf;
+	return res;
 }
