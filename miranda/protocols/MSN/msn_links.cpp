@@ -81,6 +81,8 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			break;
 		}
 	}
+	if (proto == NULL) return 1;
+
 
 	/* add a contact to the list */
 	if(_strnicmp(arg, "add?", 4) == 0) 
