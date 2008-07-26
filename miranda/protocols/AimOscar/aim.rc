@@ -74,8 +74,7 @@ BEGIN
     CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,147,143,13
     CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,159,133,13
     CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,171,143,13
-    CONTROL         "Handle aim: links on websites",IDC_WEBSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,195,143,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
     GROUPBOX        "Advanced Options",IDC_EXPERT,167,7,156,79,WS_GROUP
     CONTROL         "Send Keep Alive Packets",IDC_KA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,18,93,13
     LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,33,87,12

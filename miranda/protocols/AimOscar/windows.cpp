@@ -680,7 +680,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte( AIM_KEY_DM, 0));//Disable Sending Mode Message
 			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte( AIM_KEY_FI, 0));//Format imcoming messages
 			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte( AIM_KEY_FO, 0));//Format outgoing messages
-			CheckDlgButton(hwndDlg, IDC_WEBSUPPORT, ppro->getByte( AIM_KEY_AL, 0));
 			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte( AIM_KEY_II, 0));//Instant Idle
 			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte( AIM_KEY_CM, 0));//Check Mail
 			CheckDlgButton(hwndDlg, IDC_KA, ppro->getByte( AIM_KEY_KA, 0));//Keep Alive
@@ -834,18 +833,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//Format Outgoing Messages
 				ppro->setByte( AIM_KEY_FO, IsDlgButtonChecked(hwndDlg, IDC_FO) != 0);
 				//End Format Outgoing Messages
-
-				if ( !IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT) && ppro->getByte( AIM_KEY_AL, 0))
-				{
-					ppro->setByte( AIM_KEY_AL, 0);
-					ppro->aim_links_unregister();
-				}
-				if (IsDlgButtonChecked(hwndDlg, IDC_WEBSUPPORT))
-				{
-					ppro->setByte( AIM_KEY_AL, 1);
-					ppro->aim_links_init();
-				}
-				else ppro->aim_links_destroy();
 
 				//Instant Idle on Login
 				ppro->setByte( AIM_KEY_II, IsDlgButtonChecked(hwndDlg, IDC_II) != 0);

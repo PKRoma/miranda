@@ -51,7 +51,10 @@
 #include <m_userinfo.h>
 #include <m_addcontact.h>
 #include <m_icolib.h>
+#include <m_utils.h>
+#include <m_system_cpp.h>
 #include <win2k.h>
+
 #pragma warning( default: 4100 )
 #pragma warning( default: 4244 )
 #pragma warning( default: 4201 )
@@ -146,7 +149,6 @@
 #define AIM_KEY_LA						"LastAwayChange"
 #define AIM_MOD_IG						"ID2Group"
 #define AIM_MOD_GI						"Group2ID"
-#define AIM_KEY_AL						"AIMLinks"// aim: links support
 //Contact Keys
 #define AIM_KEY_BI						"BuddyId"
 #define AIM_KEY_GI						"GroupId"
@@ -200,7 +202,7 @@
 #define AIM_COUNTRY						"us"
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
-extern char* AIM_CLIENT_ID_STRING;		//Client id EXTERN
+extern char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 //Supported Clients
 #define CLIENT_UNKNOWN					"?"
 #define CLIENT_AIM5						"AIM 5.x"

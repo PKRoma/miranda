@@ -67,7 +67,6 @@
 #define IDC_DA                          1161
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
-#define IDC_WEBSUPPORT                  1190
 #define IDC_CM                          1191
 #define IDC_SETPROFILE                  1200
 #define IDC_II                          1210

@@ -271,18 +271,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   receiving_file(HANDLE hContact, HANDLE hNewConnection);
 
 	//////////////////////////////////////////////////////////////////////////////////////
-	// links.cpp
-
-	ATOM   aWatcherClass;
-	HWND   hWatcher;
-
-	void   aim_links_unregister();
-	void   aim_links_init();
-	void   aim_links_destroy();
-	void   aim_links_regwatcher();
-	void   aim_links_unregwatcher();
-
-	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp
 
 	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);

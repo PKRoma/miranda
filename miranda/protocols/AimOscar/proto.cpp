@@ -45,8 +45,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 
 CAimProto::~CAimProto()
 {
-	aim_links_destroy();
-
 	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hHTMLAwayContextMenuItem, 0 );
@@ -139,7 +137,6 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CAimProto::OnExtraIconsApply);
 
 	offline_contacts();
-	aim_links_init();
 	return 0;
 }
 

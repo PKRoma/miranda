@@ -4,11 +4,25 @@ PLUGINLINK *pluginLink;
 MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
 UTF8_INTERFACE utfi;
+LIST_INTERFACE li;
+
 HINSTANCE hInstance;
 
+static HANDLE hMooduleLoaded;
+
+
 #define AIM_OSCAR_VERSION "\0\x08\0\x0"
-char* AIM_CLIENT_ID_STRING="Miranda Oscar Plugin, version 0.8.0.0";
+char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.0.0";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
+
+/////////////////////////////////////////////////////////////////////////////
+// Protocol instances
+static int sttCompareProtocols(const CAimProto *p1, const CAimProto *p2)
+{
+	return _tcscmp(p1->m_tszUserName, p2->m_tszUserName);
+}
+
+OBJLIST<CAimProto> g_Instances(1, sttCompareProtocols);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Dll entry point
@@ -53,17 +67,29 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 	return interfaces;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+//	OnModulesLoaded - finalizes plugin's configuration on load
+
+static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+{
+	aim_links_init();
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Load
 
 static PROTO_INTERFACE* protoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	return new CAimProto( pszProtoName, tszUserName );
+	CAimProto *ppro = new CAimProto( pszProtoName, tszUserName );
+	g_Instances.insert(ppro);
+	return ppro;
 }
 
 static int protoUninit( PROTO_INTERFACE* ppro )
 {
-	delete ( CAimProto* )ppro;
+	g_Instances.remove((CAimProto*)ppro);
 	return 0;
 }
 
@@ -73,6 +99,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getMD5I( &md5i );
 	mir_getUTFI( &utfi );
+	mir_getLI( &li );
+
+	hMooduleLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
@@ -89,5 +118,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
+	aim_links_destroy();
+	UnhookEvent(hMooduleLoaded);
 	return 0;
 }
