@@ -218,7 +218,7 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 int __cdecl CJabberProto::OnDbSettingChanged( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE ) wParam;
-	if ( hContact == NULL || !m_bJabberConnected )
+	if ( hContact == NULL || !m_bJabberOnline )
 		return 0;
 
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;

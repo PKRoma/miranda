@@ -383,7 +383,7 @@ void CJabberProto::ResolveTransportNicks( TCHAR* jid )
 
 void CJabberProto::SetServerStatus( int iNewStatus )
 {
-	if ( !m_bJabberConnected )
+	if ( !m_bJabberOnline )
 		return;
 
 	// change status

@@ -495,7 +495,7 @@ protected:
 		if ( szSelectedLang ) mir_free( szSelectedLang );
 
 		EnableWindow(GetDlgItem(m_hwnd, IDC_COMBO_RESOURCE ), m_chkUseHostnameAsResource.GetState() != BST_CHECKED);
-		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberConnected);
+		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberOnline);
 
 		m_chkUseTls.Enable(!m_proto->JGetByte("UseSSL", FALSE));
 
@@ -533,7 +533,7 @@ protected:
 
 		sttStoreJidFromUI(m_proto, m_txtUsername, m_cbServer);
 
-		if (m_proto->m_bJabberConnected)
+		if (m_proto->m_bJabberOnline)
 		{
 			if (m_txtUsername.IsChanged() || m_txtPassword.IsChanged() || m_cbResource.IsChanged() ||
 				m_cbServer.IsChanged() || m_chkUseHostnameAsResource.IsChanged() || m_txtPort.IsChanged() ||
@@ -1507,8 +1507,8 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	case JM_STATUSCHANGED:
 		{
 			int count = ListView_GetItemCount(GetDlgItem(hwndDlg,IDC_ROSTER));
-			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), ppro->m_bJabberConnected );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && ppro->m_bJabberConnected );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_DOWNLOAD ), ppro->m_bJabberOnline );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPLOAD ), count && ppro->m_bJabberOnline );
 			EnableWindow( GetDlgItem( hwndDlg, IDC_EXPORT ), count > 0);
 			break;
 		}
@@ -1884,7 +1884,7 @@ protected:
 
 		sttStoreJidFromUI(m_proto, m_txtUsername, m_cbServer);
 
-		if (m_proto->m_bJabberConnected)
+		if (m_proto->m_bJabberOnline)
 		{
 			if (m_cbType.IsChanged() || m_txtPassword.IsChanged() || m_cbResource.IsChanged() ||
 				m_cbServer.IsChanged() || m_txtPort.IsChanged() || m_txtManualHost.IsChanged())

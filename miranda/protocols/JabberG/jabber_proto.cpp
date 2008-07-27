@@ -610,7 +610,7 @@ int __cdecl CJabberProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const cha
 int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
 {
 	filetransfer* ft = ( filetransfer* )hTransfer;
-	if ( !m_bJabberConnected || ft == NULL )
+	if ( !m_bJabberOnline || ft == NULL )
 		return 1;
 
 	if ( *action == FILERESUME_RENAME ) {
@@ -1196,10 +1196,9 @@ int __cdecl CJabberProto::SetApparentMode( HANDLE hContact, int mode )
 int __cdecl CJabberProto::SetStatus( int iNewStatus )
 {
 	Log( "PS_SETSTATUS( %d )", iNewStatus );
-	int desiredStatus = iNewStatus;
-	m_iDesiredStatus = desiredStatus;
+	m_iDesiredStatus = iNewStatus;
 
- 	if ( desiredStatus == ID_STATUS_OFFLINE ) {
+ 	if ( iNewStatus == ID_STATUS_OFFLINE ) {
 		if ( m_ThreadInfo ) {
 			m_ThreadInfo->send( "</stream:stream>" );
 			m_ThreadInfo->close();
@@ -1216,11 +1215,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
 	else if ( !m_bJabberConnected && !( m_iStatus >= ID_STATUS_CONNECTING && m_iStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
-		if ( m_bJabberConnected )
-			return 0;
-
 		ThreadData* thread = new ThreadData( this, JABBER_SESSION_NORMAL );
-		m_iDesiredStatus = desiredStatus;
 		int oldStatus = m_iStatus;
 		m_iStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
@@ -1228,7 +1223,8 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 
 		RebuildInfoFrame();
 	}
-	else SetServerStatus( desiredStatus );
+	else if ( m_bJabberOnline )
+		SetServerStatus( iNewStatus );
 
 	return 0;
 }

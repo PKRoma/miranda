@@ -1557,14 +1557,6 @@
 				>
 			</File>
 			<File
-				RelativePath="jabber_ssl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\jabber_ui_utils.h"
-				>
-			</File>
-			<File
 				RelativePath="jabber_xml.h"
 				>
 			</File>

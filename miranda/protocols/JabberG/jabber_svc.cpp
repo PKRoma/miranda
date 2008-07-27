@@ -256,7 +256,7 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 
-	if ( m_bJabberConnected ) {	
+	if ( m_bJabberOnline ) {	
 		SetServerVcard( TRUE, szFileName );
 		SendPresence( m_iDesiredStatus, false );
 	}
