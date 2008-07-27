@@ -608,6 +608,7 @@ typedef struct {
 //lParam=(LPARAM)0
 //Returns 0 
 #define MS_NETLIB_SHUTDOWN	   "Netlib/Shutdown"
+__inline static void Netlib_Shutdown(HANDLE h) {return CallService(MS_NETLIB_SHUTDOWN,(WPARAM)h,0);}
 
 //Create a packet receiver
 //wParam=(WPARAM)(HANDLE)hConnection
