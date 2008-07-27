@@ -131,7 +131,7 @@ class CJabberDlgPepSimple: public CJabberDlgPepBase
 {
 	typedef CJabberDlgPepBase CSuper;
 public:
-	CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService);
+	CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService, TCHAR *title);
 	~CJabberDlgPepSimple();
 
 	bool OkClicked() { return m_bOkClicked; }
@@ -171,6 +171,7 @@ private:
 
 	OBJLIST<CStatusMode> m_modes;
 	TCHAR *m_text;
+	TCHAR *m_title;
 	int m_time;
 	int m_prevSelected;
 	int m_selected;
@@ -184,7 +185,7 @@ private:
 	void cbModes_OnChange(CCtrlData *);
 };
 
-CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService):
+CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService, TCHAR *title):
 	CJabberDlgPepBase(proto, pepService, IDD_PEP_SIMPLE),
 	m_cbModes(this, IDC_CB_MODES),
 	m_txtDescription(this, IDC_TXT_DESCRIPTION),
@@ -192,7 +193,8 @@ CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepSe
 	m_text(NULL),
 	m_selected(0),
 	m_prevSelected(-1),
-	m_bOkClicked(false)
+	m_bOkClicked(false),
+	m_title(title)
 {
 	m_btnOk.OnClick = Callback(this, &CJabberDlgPepSimple::btnOk_OnClick);
 	m_cbModes.OnChange = Callback(this, &CJabberDlgPepSimple::cbModes_OnChange);
@@ -231,6 +233,10 @@ TCHAR *CJabberDlgPepSimple::GetStatusText()
 void CJabberDlgPepSimple::OnInitDialog()
 {
 	CSuper::OnInitDialog();
+
+	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("main"));
+	SetWindowText(m_hwnd, m_title);
+
 	m_txtDescription.Enable(false);
 	for (int i = 0; i < m_modes.getCount(); ++i)
 	{
@@ -740,7 +746,7 @@ void CPepMood::SetMood(HANDLE hContact, char *szMood, TCHAR *szText)
 
 void CPepMood::ShowSetDialog()
 {
-	CJabberDlgPepSimple dlg(m_proto, this);
+	CJabberDlgPepSimple dlg(m_proto, this, TranslateT("Set Mood"));
 	for (int i = 1; i < SIZEOF(g_arrMoods); ++i)
 		dlg.AddStatusMode(i, g_arrMoods[i].szTag, m_icons.GetIcon(g_arrMoods[i].szTag), TranslateTS(g_arrMoods[i].szName));
 	dlg.SetActiveStatus(m_mode, m_text);
@@ -1094,7 +1100,7 @@ void CPepActivity::SetActivity(HANDLE hContact, char *szFirst, char *szSecond, T
 
 void CPepActivity::ShowSetDialog()
 {
-	CJabberDlgPepSimple dlg(m_proto, this);
+	CJabberDlgPepSimple dlg(m_proto, this, TranslateT("Set Activity"));
 	for (int i = 0; i < SIZEOF(g_arrActivities); ++i)
 		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)
 			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(ActivityGetFirst(i)), TranslateTS(g_arrActivities[i].szTitle), g_arrActivities[i].szSecond ? true : false);
