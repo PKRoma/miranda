@@ -206,7 +206,10 @@ int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 
-	NetlibSslShutdown(nlc->hSsl);
-	if (nlc->s) shutdown(nlc->s, 2);
+	if (nlc->s != INVALID_SOCKET)
+	{
+		NetlibSslShutdown(nlc->hSsl);
+		shutdown(nlc->s, 2);
+	}
 	return 0;
 }
