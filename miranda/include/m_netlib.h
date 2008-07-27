@@ -603,6 +603,12 @@ typedef struct {
 // added in v0.3.3
 #define MS_NETLIB_SELECTEX	   "Netlib/SelectEx"
 
+//Shutdown connection
+//wParam=(WPARAM)(HANDLE)hConnection
+//lParam=(LPARAM)0
+//Returns 0 
+#define MS_NETLIB_SHUTDOWN	   "Netlib/Shutdown"
+
 //Create a packet receiver
 //wParam=(WPARAM)(HANDLE)hConnection
 //lParam=(LPARAM)(int)maxPacketSize

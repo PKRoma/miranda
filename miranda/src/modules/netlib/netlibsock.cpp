@@ -201,3 +201,12 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 	ReleaseMutex(hConnectionHeaderMutex);
 	return rc;
 }
+
+int NetlibShutdown(WPARAM wParam,LPARAM lParam)
+{
+	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
+
+	NetlibSslShutdown(nlc->hSsl);
+	if (nlc->s) shutdown(nlc->s, 2);
+	return 0;
+}

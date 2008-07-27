@@ -514,6 +514,7 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_RECV,NetlibRecv);
 	CreateServiceFunction(MS_NETLIB_SELECT,NetlibSelect);
 	CreateServiceFunction(MS_NETLIB_SELECTEX,NetlibSelectEx);
+	CreateServiceFunction(MS_NETLIB_SHUTDOWN,NetlibShutdown);
 	CreateServiceFunction(MS_NETLIB_CREATEPACKETRECVER,NetlibPacketRecverCreate);
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);

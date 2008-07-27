@@ -132,6 +132,7 @@ void NetlibLogShutdown(void);
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost);
 int WaitUntilReadable(SOCKET s,DWORD dwTimeout);
 int NetlibOpenConnection(WPARAM wParam,LPARAM lParam);
+int NetlibStartSsl(WPARAM wParam, LPARAM lParam);
 
 //netlibopts.c
 int NetlibOptInitialise(WPARAM wParam,LPARAM lParam);
@@ -142,10 +143,15 @@ int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam);
 int NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam);
 
 //netlibsock.c
+#define NL_SELECT_READ  0x0001
+#define NL_SELECT_WRITE 0x0002
+#define NL_SELECT_ALL   (NL_SELECT_READ+NL_SELECT_WRITE)
+
 int NetlibSend(WPARAM wParam,LPARAM lParam);
 int NetlibRecv(WPARAM wParam,LPARAM lParam);
 int NetlibSelect(WPARAM wParam,LPARAM lParam);
 int NetlibSelectEx(WPARAM wParam,LPARAM lParam);
+int NetlibShutdown(WPARAM wParam,LPARAM lParam);
 
 //netlibupnp.c
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
@@ -173,18 +179,9 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 }
 
 //netlibssl.c
-
 void NetlibSslFree(SslHandle *ssl);
-
 SslHandle* NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host);
 void NetlibSslShutdown(SslHandle *ssl);
-
 int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
 int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);
-
-#define NL_SELECT_READ  0x0001
-#define NL_SELECT_WRITE 0x0002
-#define NL_SELECT_ALL   (NL_SELECT_READ+NL_SELECT_WRITE)
 BOOL NetlibSslPending(SslHandle *ssl);
-
-int NetlibStartSsl(WPARAM wParam, LPARAM lParam);
