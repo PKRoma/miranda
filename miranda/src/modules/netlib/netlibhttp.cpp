@@ -56,7 +56,8 @@ static int RecvWithTimeoutTime(struct NetlibConnection *nlc,DWORD dwTimeoutTime,
 
 	dwTimeNow=GetTickCount();
 	if(dwTimeNow>=dwTimeoutTime
-	   || !WaitUntilReadable(nlc->s,dwTimeoutTime-dwTimeNow)) {
+	   || (!NetlibSslPending(nlc->hSsl) && !WaitUntilReadable(nlc->s,dwTimeoutTime-dwTimeNow))) 
+	{
 		if(dwTimeNow>=dwTimeoutTime) SetLastError(ERROR_TIMEOUT);
 		return SOCKET_ERROR;
 	}

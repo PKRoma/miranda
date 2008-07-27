@@ -149,12 +149,16 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	scRet = SEC_I_CONTINUE_NEEDED;
 
 	// Loop until the handshake is finished or an error occurs.
-	while(scRet == SEC_I_CONTINUE_NEEDED || scRet == SEC_E_INCOMPLETE_MESSAGE || scRet == SEC_I_INCOMPLETE_CREDENTIALS) {
+	while(scRet == SEC_I_CONTINUE_NEEDED || scRet == SEC_E_INCOMPLETE_MESSAGE || scRet == SEC_I_INCOMPLETE_CREDENTIALS) 
+	{
 		// Read server data
-		if (0 == ssl->cbIoBuffer || scRet == SEC_E_INCOMPLETE_MESSAGE) {
-			if (fDoRead) {
+		if (0 == ssl->cbIoBuffer || scRet == SEC_E_INCOMPLETE_MESSAGE) 
+		{
+			if (fDoRead) 
+			{
 				// If buffer not large enough reallocate buffer
-				if (ssl->sbIoBuffer <= ssl->cbIoBuffer) {
+				if (ssl->sbIoBuffer <= ssl->cbIoBuffer) 
+				{
 					ssl->sbIoBuffer += 2048;
 					ssl->pbIoBuffer = (PUCHAR)mir_realloc(ssl->pbIoBuffer, ssl->sbIoBuffer);
 				}
@@ -163,11 +167,13 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 					(char*)ssl->pbIoBuffer + ssl->cbIoBuffer, 
 					ssl->sbIoBuffer - ssl->cbIoBuffer, 
 					0);
-				if (cbData == SOCKET_ERROR) {
+				if (cbData == SOCKET_ERROR) 
+				{
 					scRet = SEC_E_INTERNAL_ERROR;
 					break;
 				}
-				if (cbData == 0) {
+				if (cbData == 0) 
+				{
 					scRet = SEC_E_INTERNAL_ERROR;
 					break;
 				}
@@ -225,12 +231,14 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 			scRet == SEC_I_CONTINUE_NEEDED   ||
 			FAILED(scRet) && (dwSSPIOutFlags & ISC_REQ_EXTENDED_ERROR))
 		{
-			if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) {
+			if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
+			{
 				cbData = send(ssl->s,
 					(char*)OutBuffers[0].pvBuffer,
 					OutBuffers[0].cbBuffer,
 					0);
-				if (cbData == SOCKET_ERROR || cbData == 0) {
+				if (cbData == SOCKET_ERROR || cbData == 0) 
+				{
 					g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 					g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 					return SEC_E_INTERNAL_ERROR;
@@ -246,9 +254,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		if (scRet == SEC_E_INCOMPLETE_MESSAGE) continue;
 
 		// handshake completed successfully.
-		if (scRet == SEC_E_OK) {
+		if (scRet == SEC_E_OK) 
+		{
 			// Store remaining data for further use
-			if (InBuffers[1].BufferType == SECBUFFER_EXTRA) {
+			if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
+			{
 				MoveMemory(ssl->pbIoBuffer,
 					ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 					InBuffers[1].cbBuffer);
@@ -275,7 +285,8 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 
 
 		// Copy any leftover data from the buffer, and go around again.
-		if ( InBuffers[1].BufferType == SECBUFFER_EXTRA ) {
+		if ( InBuffers[1].BufferType == SECBUFFER_EXTRA ) 
+		{
 			MoveMemory(ssl->pbIoBuffer,
 				ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 				InBuffers[1].cbBuffer);
@@ -289,7 +300,8 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	if (FAILED(scRet))
 		g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 
-	if (ssl->cbIoBuffer == 0) {
+	if (ssl->cbIoBuffer == 0) 
+	{
 		mir_free(ssl->pbIoBuffer);
 		ssl->pbIoBuffer = NULL;
 		ssl->sbIoBuffer = 0;
@@ -343,9 +355,11 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		return 0;
 
 	// Send response to server if there is one.
-	if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) {
+	if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
+	{
 		cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
-		if (cbData == SOCKET_ERROR || cbData == 0) {
+		if (cbData == SOCKET_ERROR || cbData == 0) 
+		{
 			g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 			g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 			return 0;
@@ -372,7 +386,8 @@ SslHandle *NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host
 	if (res) res = AcquireCredentials(ssl, verify, proto);
 	if (res) res = ClientConnect(ssl, host);
 
-	if (!res) {
+	if (!res) 
+	{
 		NetlibSslFree(ssl); 
 		ssl = NULL;
 	}
@@ -442,7 +457,8 @@ void NetlibSslShutdown(SslHandle *ssl)
 	if (FAILED(scRet)) return;
 
 	// Send the close notify message to the server.
-	if (OutBuffers[0].pvBuffer != NULL && OutBuffers[0].cbBuffer != 0) {
+	if (OutBuffers[0].pvBuffer != NULL && OutBuffers[0].cbBuffer != 0) 
+	{
 		send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 	}
@@ -470,7 +486,8 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		DWORD rbytes = ssl->cbRecDataBuf - bytes;
 
 		CopyMemory(buf, ssl->pbRecDataBuf, bytes);
-		if (!peek) {
+		if (!peek) 
+		{
 			MoveMemory(ssl->pbRecDataBuf, ((char*)ssl->pbRecDataBuf)+bytes, rbytes);
 			ssl->cbRecDataBuf = rbytes;
 		}
@@ -480,20 +497,25 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 	scRet = SEC_E_OK;
 
-	for (;;) {
-		if (0 == ssl->cbIoBuffer || scRet == SEC_E_INCOMPLETE_MESSAGE) {
-			if (ssl->sbIoBuffer <= ssl->cbIoBuffer) {
+	for (;;) 
+	{
+		if (0 == ssl->cbIoBuffer || scRet == SEC_E_INCOMPLETE_MESSAGE) 
+		{
+			if (ssl->sbIoBuffer <= ssl->cbIoBuffer) 
+			{
 				ssl->sbIoBuffer += 2048;
 				ssl->pbIoBuffer = (PUCHAR)mir_realloc(ssl->pbIoBuffer, ssl->sbIoBuffer);
 			}
 
-			if (peek) {
+			if (peek) 
+			{
 				TIMEVAL tv = {0};
 				fd_set fd;
 				FD_ZERO(&fd);
 				FD_SET(ssl->s, &fd);
 
-				if ( select(1, &fd, NULL, NULL, &tv) != 1 ) {
+				if ( select(1, &fd, NULL, NULL, &tv) != 1 ) 
+				{
 					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
 					CopyMemory(buf, ssl->pbRecDataBuf, bytes);
 					return bytes;
@@ -504,9 +526,18 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			if (cbData == SOCKET_ERROR)
 				return SOCKET_ERROR;
 
-			if (cbData == 0) {
+			if (cbData == 0) 
+			{
+				if (peek && ssl->cbRecDataBuf)
+				{
+					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
+					CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+					return bytes;
+				}
+
 				// Server disconnected.
-				if (ssl->cbIoBuffer) {
+				if (ssl->cbIoBuffer) 
+				{
 					scRet = SEC_E_INTERNAL_ERROR;
 					return SOCKET_ERROR;
 				}
@@ -541,7 +572,8 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			continue;
 
 		// Server signaled end of session
-		if (scRet == SEC_I_CONTEXT_EXPIRED) {
+		if (scRet == SEC_I_CONTEXT_EXPIRED) 
+		{
 			NetlibSslShutdown(ssl);
 			return 0;
 		}
@@ -552,7 +584,8 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		// Locate data and (optional) extra buffers.
 		pDataBuffer  = NULL;
 		pExtraBuffer = NULL;
-		for(i = 1; i < 4; i++) {
+		for(i = 1; i < 4; i++) 
+		{
 			if (pDataBuffer == NULL && Buffers[i].BufferType == SECBUFFER_DATA)
 				pDataBuffer = &Buffers[i];
 
@@ -561,22 +594,26 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		}
 
 		// Return decrypted data.
-		if (pDataBuffer) {
+		if (pDataBuffer) 
+		{
 			DWORD rbytes;
 			DWORD bytes = min((DWORD)num, pDataBuffer->cbBuffer);
 
 			CopyMemory(buf, pDataBuffer->pvBuffer, bytes);
 			resNum = bytes;
 
-			if (peek) {
+			if (peek) 
+			{
 				rbytes = bytes;
 				bytes  = 0;
 			}
 			else rbytes = pDataBuffer->cbBuffer - bytes;
 
-			if (rbytes > 0) {
+			if (rbytes > 0) 
+			{
 				DWORD nbytes = ssl->cbRecDataBuf + rbytes;
-				if (ssl->sbRecDataBuf < nbytes) {
+				if (ssl->sbRecDataBuf < nbytes) 
+				{
 					ssl->sbRecDataBuf += rbytes - ssl->cbRecDataBuf;
 					ssl->pbRecDataBuf = (PUCHAR)mir_realloc(ssl->pbRecDataBuf, ssl->sbRecDataBuf);
 				}
