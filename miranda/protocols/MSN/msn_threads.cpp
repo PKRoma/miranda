@@ -303,11 +303,7 @@ void  CMsnProto::MSN_CloseConnections()
 			break;
 
 		case SERVER_P2P_DIRECT :
-			{
-				SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
-				if ( s != INVALID_SOCKET )
-					shutdown( s, 2 );
-			}
+			MSN_CallService( MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0 );
 			break;
 	}	}
 
@@ -338,13 +334,7 @@ void  CMsnProto::MSN_CloseThreads()
 		const ThreadData* T = &sttThreads[ i ];
 		
 		if ( T->s != NULL )
-		{
-			SOCKET s = MSN_CallService( MS_NETLIB_GETSOCKET, LPARAM( T->s ), 0 );
-			if ( s != INVALID_SOCKET ) {
-
-				shutdown( s, 2 );
-			}
-		}
+			MSN_CallService( MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0 );
 	}
 
 	LeaveCriticalSection( &sttLock );
