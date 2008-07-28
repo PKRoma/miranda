@@ -253,7 +253,7 @@ CCtrlCombo::CCtrlCombo( CDlgBase* dlg, int ctrlId ) :
 {
 }
 
-int CCtrlCombo::AddString(TCHAR *text, LPARAM data)
+int CCtrlCombo::AddString(const TCHAR *text, LPARAM data)
 {
 	int iItem = SendMessage(m_hwnd, CB_ADDSTRING, 0, (LPARAM)text);
 	if ( data )
@@ -261,7 +261,7 @@ int CCtrlCombo::AddString(TCHAR *text, LPARAM data)
 	return iItem;
 }
 
-int CCtrlCombo::AddStringA(char *text, LPARAM data)
+int CCtrlCombo::AddStringA(const char *text, LPARAM data)
 {
 	int iItem = SendMessageA(m_hwnd, CB_ADDSTRING, 0, (LPARAM)text);
 	if ( data )
@@ -273,7 +273,7 @@ void CCtrlCombo::DeleteString(int index)
 {	SendMessage(m_hwnd, CB_DELETESTRING, index, 0);
 }
 
-int CCtrlCombo::FindString(TCHAR *str, int index, bool exact )
+int CCtrlCombo::FindString(const TCHAR *str, int index, bool exact )
 {	return SendMessage(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str);
 }
 
