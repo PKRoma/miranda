@@ -208,7 +208,8 @@ static int ForkThreadServiceEx(WPARAM wParam, LPARAM lParam)
 	if ( params == NULL )
 		return 0;
 
-	return forkthreadex( NULL, params->iStackSize, params->pFunc, ( void* )wParam, params->arg, 0, params->threadID );
+	UINT threadID;
+	return forkthreadex( NULL, params->iStackSize, params->pFunc, ( void* )wParam, params->arg, 0, params->threadID ? params->threadID : &threadID );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
