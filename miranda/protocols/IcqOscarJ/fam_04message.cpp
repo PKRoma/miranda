@@ -2763,7 +2763,7 @@ void CIcqProto::handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wF
       icq_packet packet;
       // This will delete the messages stored on server
       serverPacketInit(&packet, 24);
-      packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
+      packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
       packWord(&packet, 1);             // TLV Type
       packWord(&packet, 10);            // TLV Length
       packLEWord(&packet, 8);           // Data length

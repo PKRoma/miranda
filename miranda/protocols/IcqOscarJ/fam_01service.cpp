@@ -726,7 +726,7 @@ char* CIcqProto::buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 				// If we are in SS mode, we only add those contacts that are
 				// not in our SS list, or are awaiting authorization, to our
 				// client side list
-				if (m_bSsiEnabled && getSettingWord(hContact, "ServerId", 0) &&
+				if (m_bSsiEnabled && getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0) &&
 					!getSettingByte(hContact, "Auth", 0))
 					add = 0;
 

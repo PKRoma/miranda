@@ -1894,17 +1894,17 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 				{
 					if (oldMode != 0)
 					{ // Remove from old list
-						if (oldMode == ID_STATUS_OFFLINE && getSettingWord(hContact, "SrvIgnoreID", 0))
+						if (oldMode == ID_STATUS_OFFLINE && getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0))
 						{ // Need to remove Ignore item as well
-							icq_removeServerPrivacyItem(hContact, uin, uid, getSettingWord(hContact, "SrvIgnoreID", 0), SSI_ITEM_IGNORE);
+							icq_removeServerPrivacyItem(hContact, uin, uid, getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0), SSI_ITEM_IGNORE);
 
-							setSettingWord(hContact, "SrvIgnoreID", 0);
+							setSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0);
 						}
 						icq_sendChangeVisInvis(hContact, uin, uid, oldMode==ID_STATUS_OFFLINE, 0);
 					}
 					if (mode != 0)
 					{ // Add to new list
-						if (mode==ID_STATUS_OFFLINE && getSettingWord(hContact, "SrvIgnoreID", 0))
+						if (mode==ID_STATUS_OFFLINE && getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0))
 							return 0; // Success: offline by ignore item
 
 						icq_sendChangeVisInvis(hContact, uin, uid, mode==ID_STATUS_OFFLINE, 1);

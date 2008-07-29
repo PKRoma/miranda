@@ -999,12 +999,14 @@ void CIcqProto::LoadServerIDs()
 	int nGroups = 0, nContacts = 0, nPermits = 0, nDenys = 0, nIgnores = 0;
 
 	EnterCriticalSection(&servlistMutex);
-	if (wSrvID = getSettingWord(NULL, "SrvAvatarID", 0))
+	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0))
 		ReserveServerID(wSrvID, SSIT_ITEM);
-	if (wSrvID = getSettingWord(NULL, "SrvPhotoID", 0))
+	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, 0))
 		ReserveServerID(wSrvID, SSIT_ITEM);
-	if (wSrvID = getSettingWord(NULL, "SrvVisibilityID", 0))
+	if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0))
 		ReserveServerID(wSrvID, SSIT_ITEM);
+  if (wSrvID = getSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0))
+    ReserveServerID(wSrvID, SSIT_ITEM);
 
 	DBCONTACTENUMSETTINGS dbces;
 	int nStart = nIDListCount;
@@ -1024,22 +1026,22 @@ void CIcqProto::LoadServerIDs()
 
 	while (hContact)
 	{ // search all our contacts, reserve their server IDs
-		if (wSrvID = getSettingWord(hContact, "ServerId", 0))
+		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0))
 		{
 			ReserveServerID(wSrvID, SSIT_ITEM);
 			nContacts++;
 		}
-		if (wSrvID = getSettingWord(hContact, "SrvDenyId", 0))
+		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_DENY, 0))
 		{
 			ReserveServerID(wSrvID, SSIT_ITEM);
 			nDenys++;
 		}
-		if (wSrvID = getSettingWord(hContact, "SrvPermitId", 0))
+		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, 0))
 		{
 			ReserveServerID(wSrvID, SSIT_ITEM);
 			nPermits++;
 		}
-		if (wSrvID = getSettingWord(hContact, "SrvIgnoreId", 0))
+		if (wSrvID = getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0))
 		{
 			ReserveServerID(wSrvID, SSIT_ITEM);
 			nIgnores++;
@@ -1169,8 +1171,8 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 	uid_str szUid;
 	icq_packet pBuffer;
 	char *szNick = NULL, *szNote = NULL;
-	BYTE *pData = NULL;
-	int nNickLen, nNoteLen, nDataLen;
+	BYTE *pData = NULL, *pMetaToken = NULL, *pMetaTime = NULL;
+	int nNickLen, nNoteLen, nDataLen = 0, nMetaTokenLen = 0, nMetaTimeLen = 0;
 	WORD wTLVlen;
 	BYTE bAuth;
 	int bDataTooLong = FALSE;
@@ -1188,18 +1190,30 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 
 	DBVARIANT dbv;
 
-	if (!getSetting(hContact, "ServerData", &dbv))
+  if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &dbv))
+  {
+    nMetaTokenLen = dbv.cpbVal + 4;
+    pMetaToken = (BYTE*)_alloca(dbv.cpbVal);
+    memcpy(pMetaToken, dbv.pbVal, dbv.cpbVal);
+
+    ICQFreeVariant(&dbv);
+  }
+  if (!getSetting(hContact, DBSETTING_METAINFO_TIME, &dbv))
+  {
+    nMetaTimeLen = dbv.cpbVal + 4;
+    pMetaTime = (BYTE*)_alloca(dbv.cpbVal);
+    memcpy(pMetaTime, dbv.pbVal, dbv.cpbVal);
+
+    ICQFreeVariant(&dbv);
+  }
+
+	if (!getSetting(hContact, DBSETTING_SERVLIST_DATA, &dbv))
 	{ // read additional server item data
 		nDataLen = dbv.cpbVal;
 		pData = (BYTE*)_alloca(nDataLen);
 		memcpy(pData, dbv.pbVal, nDataLen);
 
 		ICQFreeVariant(&dbv);
-	}
-	else
-	{
-		pData = NULL;
-		nDataLen = 0;
 	}
 
 	nNickLen = strlennull(szNick);
@@ -1224,7 +1238,7 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 	}
 
 	// Build the packet
-	wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen;
+	wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen + nMetaTokenLen + nMetaTimeLen;
 
 	// Initialize our handy data buffer
 	pBuffer.wPlace = 0;
@@ -1236,6 +1250,12 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 
 	if (nNoteLen)
 		packTLV(&pBuffer, SSI_TLV_COMMENT, (WORD)nNoteLen, (LPBYTE)szNote);  // Comment TLV
+
+  if (nMetaTokenLen)
+    packTLV(&pBuffer, SSI_TLV_METAINFO_TOKEN, (WORD)nMetaTokenLen, pMetaToken);
+
+  if (nMetaTimeLen)
+    packTLV(&pBuffer, SSI_TLV_METAINFO_TIME, (WORD)nMetaTimeLen, pMetaTime);
 
 	if (pData)
 		packBuffer(&pBuffer, pData, (WORD)nDataLen);
@@ -1320,41 +1340,6 @@ DWORD CIcqProto::icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *sz
 *
 */
 
-static int GroupNamesEnumProc(const char *szSetting,LPARAM lParam)
-{
-	// if we got pointer, store setting name, return zero
-	if (lParam)
-	{
-		char** block = (char**)SAFE_MALLOC(2*sizeof(char*));
-		block[1] = null_strdup(szSetting);
-		block[0] = ((char**)lParam)[0];
-		((char**)lParam)[0] = (char*)block;
-	}
-	return 0;
-}
-
-
-void DeleteModuleEntries(const char* szModule)
-{
-	DBCONTACTENUMSETTINGS dbces;
-	char** list = NULL;
-
-	dbces.pfnEnumProc = &GroupNamesEnumProc;
-	dbces.szModule = szModule;
-	dbces.lParam = (LPARAM)&list;
-	CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)NULL, (LPARAM)&dbces);
-	while (list)
-	{
-		void* bet;
-
-		DBDeleteContactSetting(NULL, szModule, list[1]);
-		SAFE_FREE((void**)&list[1]);
-		bet = list;
-		list = (char**)list[0];
-		SAFE_FREE((void**)&bet);
-	}
-}
-
 
 /// TODO: do not check by plugin version, check by ServListStructures version!
 int CIcqProto::IsServerGroupsDefined()
@@ -1367,7 +1352,7 @@ int CIcqProto::IsServerGroupsDefined()
 
 		strcpy(szModule, m_szModuleName);
 		strcat(szModule, "Groups"); // flush obsolete linking data
-		DeleteModuleEntries(szModule);
+		CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szModule);
 
 		iRes = 0; // no groups defined, or older version
 	}
@@ -1384,7 +1369,7 @@ void CIcqProto::FlushSrvGroupsCache()
 
 	strcpy(szModule, m_szModuleName);
 	strcat(szModule, "SrvGroups");
-	DeleteModuleEntries(szModule);
+	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szModule);
 }
 
 
@@ -1400,9 +1385,9 @@ void* CIcqProto::collectBuddyGroup(WORD wGroupID, int *count)
 
 	while (hContact)
 	{ // search all contacts
-		if (wGroupID == getSettingWord(hContact, "SrvGroupId", 0))
+		if (wGroupID == getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0))
 		{ // add only buddys from specified group
-			wItemID = getSettingWord(hContact, "ServerId", 0);
+			wItemID = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0);
 
 			if (wItemID)
 			{ // valid ID, add
@@ -1435,7 +1420,7 @@ void* CIcqProto::collectGroups(int *count)
 
 	while (hContact)
 	{ // search all contacts
-		if (wGroupID = getSettingWord(hContact, "SrvGroupId", 0))
+		if (wGroupID = getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0))
 		{ // add only valid IDs
 			for (i = 0; i<cnt; i++)
 			{ // check for already added ids
@@ -2097,7 +2082,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
     return CALLBACK_RESULT_CONTINUE;
 	}
 
-	wItemID = getSettingWord(ack->hContact, "ServerId", 0);
+	wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
 
 	if (wItemID) /// TODO: redundant ???
 	{ // Only add the contact if it doesnt already have an ID
@@ -2134,11 +2119,11 @@ int CIcqProto::servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD w
     return CALLBACK_RESULT_CONTINUE;
   }
 
-  wItemID = getSettingWord(ack->hContact, "ServerId", 0);
+  wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
 
   if (wItemID)
   { // Only add the contact if it doesn't already have an ID
-    servlistPendingRemoveContact(ack->hContact, wItemID, getSettingWord(hContact, "SrvGroupId", 0), PENDING_RESULT_SUCCESS);
+    servlistPendingRemoveContact(ack->hContact, wItemID, getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0), PENDING_RESULT_SUCCESS);
     NetLog_Server("Failed to add contact to server side list (%s)", "already there");
     SAFE_FREE((void**)&ack->szGroup);
     SAFE_FREE((void**)&ack);
@@ -2196,7 +2181,7 @@ int CIcqProto::servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD
   }
 
   // Get the contact's group ID
-  if (!(wGroupID = getSettingWord(hContact, "SrvGroupId", 0)))
+  if (!(wGroupID = getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0)))
   { // Could not find a usable group ID
     servlistPendingRemoveContact(hContact, contactID, groupID, PENDING_RESULT_FAILED);
 
@@ -2206,7 +2191,7 @@ int CIcqProto::servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD
   }
 
   // Get the contact's item ID
-  if (!(wItemID = getSettingWord(hContact, "ServerId", 0)))
+  if (!(wItemID = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0)))
   { // Could not find usable item ID
     servlistPendingRemoveContact(hContact, contactID, wGroupID, PENDING_RESULT_FAILED);
 
@@ -2280,8 +2265,8 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
     return CALLBACK_RESULT_CONTINUE;
 	}
 
-	wItemID = getSettingWord(ack->hContact, "ServerId", 0);
-	wGroupID = getSettingWord(ack->hContact, "SrvGroupId", 0);
+	wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+	wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
 
 	if (!wItemID) 
 	{ // We have no ID, so try to simply add the contact to serv-list 
@@ -2331,8 +2316,8 @@ int CIcqProto::servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD g
     return CALLBACK_RESULT_CONTINUE;
   }
 
-  wItemID = getSettingWord(ack->hContact, "ServerId", 0);
-  wGroupID = getSettingWord(ack->hContact, "SrvGroupId", 0);
+  wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+  wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
 
   if (!wGroupID && wItemID)
   { // Only move the contact if it had an GroupID
@@ -2373,7 +2358,7 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 		return;
 	}
 
-	if (!getSettingWord(hContact, "ServerId", 0))
+	if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0))
 	{ // the contact is not stored on the server, check if we should try to add
 		if (!getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) ||
 			DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
@@ -2410,7 +2395,7 @@ int CIcqProto::servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD
   }
 
   // Get the contact's group ID
-  if (!(wGroupID = getSettingWord(hContact, "SrvGroupId", 0)))
+  if (!(wGroupID = getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0)))
   {
     servlistPendingRemoveContact(hContact, contactID, groupID, PENDING_RESULT_FAILED);
     // Could not find a usable group ID
@@ -2420,7 +2405,7 @@ int CIcqProto::servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD
   }
 
   // Get the contact's item ID
-  if (!(wItemID = getSettingWord(hContact, "ServerId", 0)))
+  if (!(wItemID = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0)))
   {
     servlistPendingRemoveContact(hContact, contactID, wGroupID, PENDING_RESULT_FAILED);
     // Could not find usable item ID
@@ -2652,8 +2637,8 @@ void CIcqProto::servlistRemoveGroup(const char *szGroup, WORD wGroupId)
 
 void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)
 {
-	WORD wContactId = getSettingWord(hContact, "ServerId", 0);
-	WORD wGroupId = getSettingWord(hContact, "SrvGroupId", 0);
+	WORD wContactId = getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0);
+	WORD wGroupId = getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0);
 
 	if (wContactId && wGroupId)
 	{
@@ -2672,7 +2657,9 @@ void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)
         void* doubleObject = NULL;
 
         icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupId, wContactId, SSO_CONTACT_FIXAUTH | SSOF_BEGIN_OPERATION | SSOF_END_OPERATION, 200, &doubleObject);
-        deleteSetting(hContact, "ServerData");
+        deleteSetting(hContact, DBSETTING_METAINFO_TOKEN);
+        deleteSetting(hContact, DBSETTING_METAINFO_TIME);
+        deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
         icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupId, wContactId, SSO_CONTACT_FIXAUTH | SSOF_BEGIN_OPERATION | SSOF_END_OPERATION, 200, &doubleObject);
       }
 		}
@@ -2777,11 +2764,11 @@ int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 		if (getContactUid((HANDLE)wParam, &dwUIN, &szUID))
 			return 0;
 
-		wContactID = getSettingWord((HANDLE)wParam, "ServerId", 0);
-		wGroupID = getSettingWord((HANDLE)wParam, "SrvGroupId", 0);
-		wVisibleID = getSettingWord((HANDLE)wParam, "SrvPermitId", 0);
-		wInvisibleID = getSettingWord((HANDLE)wParam, "SrvDenyId", 0);
-		wIgnoreID = getSettingWord((HANDLE)wParam, "SrvIgnoreId", 0);
+		wContactID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0);
+		wGroupID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_GROUP, 0);
+		wVisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_PERMIT, 0);
+		wInvisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_DENY, 0);
+		wIgnoreID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0);
 
 		// Close all opened peer connections
 		CloseContactDirectConns((HANDLE)wParam);

@@ -94,8 +94,25 @@
 #define DEFAULT_SPAM_TIMEOUT        0
 #define DEFAULT_POPUPS_WIN_COLORS   0
 
-// Database setting names
+/* Database setting names */
 #define DBSETTING_CAPABILITIES      "caps"
+// Contact's server-list items
+#define DBSETTING_SERVLIST_ID       "ServerId"
+#define DBSETTING_SERVLIST_GROUP    "SrvGroupId"
+#define DBSETTING_SERVLIST_PERMIT   "SrvPermitId"
+#define DBSETTING_SERVLIST_DENY     "SrvDenyId"
+#define DBSETTING_SERVLIST_IGNORE   "SrvIgnoreId"
+// Owner's server-list items
+#define DBSETTING_SERVLIST_PRIVACY  "SrvVisibilityID"
+#define DBSETTING_SERVLIST_PHOTO    "SrvPhotoID"
+#define DBSETTING_SERVLIST_AVATAR   "SrvAvatarID"
+#define DBSETTING_SERVLIST_METAINFO "SrvMetaInfoID"
+// Contact's data from server-list
+#define DBSETTING_SERVLIST_DATA     "ServerData"
+// User Details
+#define DBSETTING_METAINFO_TOKEN    "MetaInfoToken"
+#define DBSETTING_METAINFO_TIME     "MetaInfoTime"
+// Custom Status
 #define DBSETTING_XSTATUSID         "XStatusId"
 #define DBSETTING_XSTATUSNAME       "XStatusName"
 #define DBSETTING_XSTATUSMSG        "XStatusMsg"
@@ -139,6 +156,7 @@
 
 // Ascii Capability IDs
 #define CAP_RTFMSGS                 "{97B12751-243C-4334-AD22-D6ABF73F1492}"
+#define CAP_HTMLMSGS                "{0138CA7B-769A-4915-88F2-13FC00979EA8}"
 #define CAP_UTF8MSGS                "{0946134E-4C7F-11D1-8222-444553540000}"
 
 // Binary Capability IDs
@@ -366,7 +384,7 @@
 
 /* Subtypes for ICQ Extensions Family 0x0015 */
 #define ICQ_META_ERROR              0x0001
-#define ICQ_META_CLI_REQ            0x0002
+#define ICQ_META_CLI_REQUEST        0x0002
 #define ICQ_META_SRV_REPLY          0x0003
 
 /* Subtypes for Authorization Family 0x0017 */
@@ -422,6 +440,11 @@
 #define META_SEARCH_GENERIC         0x055F // Search user by details (TLV)
 #define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
+#define META_DIRECTORY_QUERY        0x0FA0
+#define META_DIRECTORY_RESPONSE     0x0FB4
+#define META_DIRECTORY_UPDATE       0x0FD2
+#define META_DIRECTORY_RESPONSE2    0x0FDC
+
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_REQ       0x0C3A // Set full user info request
@@ -531,6 +554,7 @@
 #define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: "1", "8", etc. according ot the icon type)
+#define SSI_ITEM_METAINFO           0x0020  // Owner Details' token & last update time
 
 #define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorized in list
 #define SSI_TLV_UNKNOWN             0x006D  // WTF ?
@@ -545,6 +569,8 @@
 #define SSI_TLV_PHONE_CELLULAR      0x0139  // Custom contact cellphone number
 #define SSI_TLV_PHONE_SMS           0x013A  // Custom contact SMS number
 #define SSI_TLV_COMMENT             0x013C  // User comment
+#define SSI_TLV_METAINFO_TOKEN      0x015C  // Privacy token for Contact's details
+#define SSI_TLV_METAINFO_TIME       0x015D  // Contact's details last update time
 
 #define MAX_SSI_TLV_NAME_SIZE       0x40
 #define MAX_SSI_TLV_COMMENT_SIZE    0x50
@@ -557,7 +583,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80050003
+#define ICQ_PLUG_VERSION            0x80050004
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15

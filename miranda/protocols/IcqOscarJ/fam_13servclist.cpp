@@ -247,14 +247,44 @@ void CIcqProto::handleServClistFam(BYTE *pBuffer, WORD wBufferLength, snac_heade
 								SAFE_FREE((void**)&nick);
 							}
 
+              { // update metainfo data
+                DBVARIANT dbv = {0};
+                oscar_tlv *pToken = getTLV(pChain, SSI_TLV_METAINFO_TOKEN, 1);
+                oscar_tlv *pTime = getTLV(pChain, SSI_TLV_METAINFO_TIME, 1);
+                DWORD dwUin = 0;
+                uid_str szUid = "";
+
+                getContactUid(hContact, &dwUin, &szUid);
+                  
+                if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &dbv))
+                {
+                  if (!pToken || dbv.cpbVal != pToken->wLen || memcmp(dbv.pbVal, pToken->pData, dbv.cpbVal))
+                  {
+                    if (!pToken)
+                      NetLog_Server("Contact %s, meta info token removed", strUID(dwUin, szUid));
+                    else
+                      NetLog_Server("Contact %s, meta info token changed", strUID(dwUin, szUid));
+                  }
+
+                  ICQFreeVariant(&dbv);
+                }
+                else if (pToken)
+                  NetLog_Server("Contact %s, meta info token added", strUID(dwUin, szUid));
+
+                if (pToken)
+                  setSettingBlob(hContact, DBSETTING_METAINFO_TOKEN, pToken->pData, pToken->wLen);
+                if (pTime)
+                  setSettingBlob(hContact, DBSETTING_METAINFO_TIME, pTime->pData, pTime->wLen);
+              }
+
 							{ // update server's data - otherwise consequent operations can fail with 0x0E
 								BYTE* data = (BYTE*)_alloca(wTlvLen);
 								int datalen = getServerDataFromItemTLV(pChain, data);
 
 								if (datalen > 0)
-									setSettingBlob(hContact, "ServerData", data, datalen);
+									setSettingBlob(hContact, DBSETTING_SERVLIST_DATA, data, datalen);
 								else
-									deleteSetting(hContact, "ServerData");
+									deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
 							}
 
 							disposeChain(&pChain);
@@ -280,9 +310,10 @@ void CIcqProto::handleServClistFam(BYTE *pBuffer, WORD wBufferLength, snac_heade
 
 				if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
 				{ // a contact was removed from our list
-					deleteSetting(hContact, "ServerId");
-					deleteSetting(hContact, "SrvGroupId");
+					deleteSetting(hContact, DBSETTING_SERVLIST_ID);
+					deleteSetting(hContact, DBSETTING_SERVLIST_GROUP);
 					deleteSetting(hContact, "Auth");
+          FreeServerID(wItemId, SSIT_ITEM);
 					icq_sendNewContact(0, szUID); // add to CS to see him
 					{
 						char str[MAX_PATH];
@@ -508,8 +539,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				void* groupData;
 				int groupSize;
 
-				setSettingWord(sc->hContact, "ServerId", sc->wContactId);
-				setSettingWord(sc->hContact, "SrvGroupId", sc->wGroupId);
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_ID, sc->wContactId);
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_GROUP, sc->wGroupId);
 
         servlistPendingRemoveContact(sc->hContact, sc->wContactId, sc->wGroupId, PENDING_RESULT_SUCCESS);
 
@@ -585,8 +616,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				void* groupData;
 				int groupSize;
 
-				setSettingWord(sc->hContact, "ServerId", 0); // clear the values
-				setSettingWord(sc->hContact, "SrvGroupId", 0);
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_ID, 0); // clear the values
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_GROUP, 0);
 
 				FreeServerID(sc->wContactId, SSIT_ITEM); 
 
@@ -719,8 +750,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				int groupSize;
 				int bEnd = 1; // shall we end the sever modifications
 
-				setSettingWord(sc->hContact, "ServerId", sc->wNewContactId);
-				setSettingWord(sc->hContact, "SrvGroupId", sc->wNewGroupId);
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_ID, sc->wNewContactId);
+				setSettingWord(sc->hContact, DBSETTING_SERVLIST_GROUP, sc->wNewGroupId);
 
         servlistPendingRemoveContact(sc->hContact, sc->wNewContactId, sc->wNewGroupId, PENDING_RESULT_SUCCESS);
 
@@ -746,8 +777,8 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 			}
 			else // contact was deleted from server-list
 			{
-				deleteSetting(sc->hContact, "ServerId");
-				deleteSetting(sc->hContact, "SrvGroupId");
+				deleteSetting(sc->hContact, DBSETTING_SERVLIST_ID);
+				deleteSetting(sc->hContact, DBSETTING_SERVLIST_GROUP);
         FreeServerID(sc->wContactId, SSIT_ITEM); // release old contact id
 				sc->lParam = 1;
 				sc = NULL; // wait for second ack
@@ -795,12 +826,12 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 				if (sc->wGroupId) // is avatar added or updated?
 				{
 					FreeServerID(sc->wContactId, SSIT_ITEM);
-					deleteSetting(NULL, "SrvAvatarID"); // to fix old versions
+					deleteSetting(NULL, DBSETTING_SERVLIST_AVATAR); // to fix old versions
 				}
 			}
 			else
 			{
-				setSettingWord(NULL, "SrvAvatarID", sc->wContactId);
+				setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, sc->wContactId);
 			}
 			break;
 		}
@@ -811,7 +842,7 @@ void CIcqProto::handleServerCListAck(servlistcookie* sc, WORD wError)
 			else
 			{
 				FreeServerID(sc->wContactId, SSIT_ITEM);
-				deleteSetting(NULL, "SrvAvatarID");
+				deleteSetting(NULL, DBSETTING_SERVLIST_AVATAR);
 			}
 			break;
 		}
@@ -872,7 +903,9 @@ int CIcqProto::getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *
 	{ // collect non-standard TLVs and save them to DB
 		if (list->tlv.wType != SSI_TLV_AWAITING_AUTH &&
 			list->tlv.wType != SSI_TLV_NAME &&
-			list->tlv.wType != SSI_TLV_COMMENT)
+			list->tlv.wType != SSI_TLV_COMMENT &&
+      list->tlv.wType != SSI_TLV_METAINFO_TOKEN &&
+      list->tlv.wType != SSI_TLV_METAINFO_TIME)
 		{ // only TLVs which we do not handle on our own
 			packTLV(&pBuf, list->tlv.wType, list->tlv.wLen, list->tlv.pData);
 
@@ -1000,8 +1033,8 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 					}
 
 					// Save group and item ID
-					setSettingWord(hContact, "ServerId", wItemId);
-					setSettingWord(hContact, "SrvGroupId", wGroupId);
+					setSettingWord(hContact, DBSETTING_SERVLIST_ID, wItemId);
+					setSettingWord(hContact, DBSETTING_SERVLIST_GROUP, wGroupId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
 					if (!bAdded && getSettingByte(NULL, "LoadServerDetails", DEFAULT_SS_LOAD))
@@ -1161,14 +1194,27 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 							setSettingByte(hContact, "Auth", 0);
 						}
 
+            if (pTLV = getTLV(pChain, SSI_TLV_METAINFO_TOKEN, 1))
+            {
+              setSettingBlob(hContact, DBSETTING_METAINFO_TOKEN, pTLV->pData, pTLV->wLen);
+              if (pTLV = getTLV(pChain, SSI_TLV_METAINFO_TIME, 1))
+                setSettingBlob(hContact, DBSETTING_METAINFO_TIME, pTLV->pData, pTLV->wLen);
+              NetLog_Server("SSI contact has meta info token");
+            }
+            else
+            {
+              deleteSetting(hContact, DBSETTING_METAINFO_TOKEN);
+              deleteSetting(hContact, DBSETTING_METAINFO_TIME);
+            }
+
 						{ // store server-list item's TLV data
 							BYTE* data = (BYTE*)SAFE_MALLOC(wTlvLength);
 							int datalen = getServerDataFromItemTLV(pChain, data);
 
 							if (datalen > 0)
-								setSettingBlob(hContact, "ServerData", data, datalen);
+								setSettingBlob(hContact, DBSETTING_SERVLIST_DATA, data, datalen);
 							else
-								deleteSetting(hContact, "ServerData");
+								deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
 
 							SAFE_FREE((void**)&data);
 						}
@@ -1244,7 +1290,7 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 						NetLog_Server("SSI %s contact already exists '%s'", "Permit", szRecordName);
 
 					// Save permit ID
-					setSettingWord(hContact, "SrvPermitId", wItemId);
+					setSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, wItemId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 					// Set apparent mode
 					setSettingWord(hContact, "ApparentMode", ID_STATUS_ONLINE);
@@ -1282,7 +1328,7 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 						NetLog_Server("SSI %s contact already exists '%s'", "Deny", szRecordName);
 
 					// Save Deny ID
-					setSettingWord(hContact, "SrvDenyId", wItemId);
+					setSettingWord(hContact, DBSETTING_SERVLIST_DENY, wItemId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
 					// Set apparent mode
@@ -1305,7 +1351,7 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 				// Look for visibility TLV
 				if (bVisibility = getByteFromChain(pChain, SSI_TLV_VISIBILITY, 1))
 				{ // found it, store the id, we do not need current visibility - we do not rely on it
-					setSettingWord(NULL, "SrvVisibilityID", wItemId);
+					setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, wItemId);
 					NetLog_Server("Visibility is %u", bVisibility);
 				}
 			}
@@ -1336,7 +1382,7 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 						NetLog_Server("SSI %s contact already exists '%s'", "Ignore", szRecordName);
 
 					// Save Ignore ID
-					setSettingWord(hContact, "SrvIgnoreId", wItemId);
+					setSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, wItemId);
 					ReserveServerID(wItemId, SSIT_ITEM);
 
 					// Set apparent mode & ignore
@@ -1378,17 +1424,35 @@ void CIcqProto::handleServerCList(BYTE *buf, WORD wLen, WORD wFlags, serverthrea
 				/* cause we get the hash again after login */
 				if (!strcmpnull(szRecordName, "12"))
 				{ // need to handle Photo Item separately
-					setSettingWord(NULL, "SrvPhotoID", wItemId);
+					setSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, wItemId);
 					NetLog_Server("SSI %s item recognized", "Photo");
 				}
 				else
 				{
-					setSettingWord(NULL, "SrvAvatarID", wItemId);
+					setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, wItemId);
 					NetLog_Server("SSI %s item recognized", "Avatar");
 				}
 				ReserveServerID(wItemId, SSIT_ITEM);
 			}
 			break;
+
+    case SSI_ITEM_METAINFO:
+      if (wGroupId == 0)
+      {
+        /* our meta info token & last update time */
+        /* pszRecordName is "ICQ-MDIR" */
+        /* data is TLV(15C) and TLV(15D) */
+        oscar_tlv* pToken = getTLV(pChain, SSI_TLV_METAINFO_TOKEN, 1);
+        oscar_tlv* pTime = getTLV(pChain, SSI_TLV_METAINFO_TIME, 1);
+        if (pToken)
+          setSettingBlob(NULL, DBSETTING_METAINFO_TOKEN, pToken->pData, pToken->wLen);
+        if (pTime)
+          setSettingBlob(NULL, DBSETTING_METAINFO_TIME, pTime->pData, pTime->wLen);
+
+        setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, wItemId);
+        NetLog_Server("SSI %s item recognized", "Meta info");
+      }
+      break;
 
 		case SSI_ITEM_CLIENTDATA:
 			if (wGroupId == 0)
@@ -1717,17 +1781,21 @@ void CIcqProto::updateServVisibilityCode(BYTE bCode)
 		setSettingByte(NULL, "SrvVisibility", bCode);
 
 		// Do we have a known server visibility ID? We should, unless we just subscribed to the serv-list for the first time
-		if ((wVisibilityID = getSettingWord(NULL, "SrvVisibilityID", 0)) == 0)
+		if ((wVisibilityID = getSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0)) == 0)
 		{
 			// No, create a new random ID
 			wVisibilityID = GenerateServerId(SSIT_ITEM);
-			setSettingWord(NULL, "SrvVisibilityID", wVisibilityID);
+			setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, wVisibilityID);
 			wCommand = ICQ_LISTS_ADDTOLIST;
+#ifdef _DEBUG
 			NetLog_Server("Made new srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
+#endif
 		}
 		else
 		{
+#ifdef _DEBUG
 			NetLog_Server("Reused srvVisibilityID, id is %u, code is %u", wVisibilityID, bCode);
+#endif
 			wCommand = ICQ_LISTS_UPDATEGROUP;
 		}
 
@@ -1792,7 +1860,7 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 		DWORD dwCookie;
 
 		// Do we have a known server avatar ID?
-		if (wAvatarID = getSettingWord(NULL, "SrvAvatarID", 0))
+		if (wAvatarID = getSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0))
 		{
 			ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
 			if (!ack) 
@@ -1817,16 +1885,20 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 		WORD hashsize = size - 2;
 
 		// Do we have a known server avatar ID? We should, unless we just subscribed to the serv-list for the first time
-		if (bResetHash || (wAvatarID = getSettingWord(NULL, "SrvAvatarID", 0)) == 0)
+		if (bResetHash || (wAvatarID = getSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0)) == 0)
 		{
 			// No, create a new random ID
 			wAvatarID = GenerateServerId(SSIT_ITEM);
 			wCommand = ICQ_LISTS_ADDTOLIST;
+#ifdef _DEBUG
 			NetLog_Server("Made new srvAvatarID, id is %u", wAvatarID);
+#endif
 		}
 		else
 		{
+#ifdef _DEBUG
 			NetLog_Server("Reused srvAvatarID, id is %u", wAvatarID);
+#endif
 			wCommand = ICQ_LISTS_UPDATEGROUP;
 		}
 

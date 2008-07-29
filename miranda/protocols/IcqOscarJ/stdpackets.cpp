@@ -62,7 +62,7 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 static void packServIcqExtensionHeader(icq_packet *p, CIcqProto* ppro, WORD wLen, WORD wType, WORD wSeq)
 {
 	serverPacketInit(p, (WORD)(24 + wLen));
-	packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, wSeq | ICQ_META_CLI_REQ<<0x10);
+	packFNACHeaderFull(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST, 0, wSeq | ICQ_META_CLI_REQUEST<<0x10);
 	packWord(p, 0x01);                // TLV type 1
 	packWord(p, (WORD)(10 + wLen));   // TLV len
 	packLEWord(p, (WORD)(8 + wLen));  // Data chunk size (TLV.Length-2)
@@ -510,7 +510,7 @@ DWORD CIcqProto::icq_sendGetInfoServ(HANDLE hContact, DWORD dwUin, int bMinimal,
 	DWORD dwCookie;
 	fam15_cookie_data *pCookieData = NULL;
 
-	if (IsServerOverRate(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, bManual ? RML_IDLE_10 : RML_IDLE_50))
+	if (IsServerOverRate(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST, bManual ? RML_IDLE_10 : RML_IDLE_50))
 		return 0;
 
 	pCookieData = (fam15_cookie_data*)SAFE_MALLOC(sizeof(fam15_cookie_data));
@@ -1259,12 +1259,12 @@ void CIcqProto::icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID
 		if (list == 0)
 		{
 			wType = SSI_ITEM_PERMIT;
-			szSetting = "SrvPermitId";
+			szSetting = DBSETTING_SERVLIST_PERMIT;
 		}
 		else
 		{
 			wType = SSI_ITEM_DENY;
-			szSetting = "SrvDenyId";
+			szSetting = DBSETTING_SERVLIST_DENY;
 		}
 
 		if (add)

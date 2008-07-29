@@ -841,7 +841,7 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 
 	InitializeCriticalSection(&atsi->localSeqMutex);
 
-	atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 16384);
+	atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 32768);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = dwKeepAliveInterval < KEEPALIVE_INTERVAL ? dwKeepAliveInterval: KEEPALIVE_INTERVAL; // timeout - for stopThread to work
 	while(!atsi->stopThread)

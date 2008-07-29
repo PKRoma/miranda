@@ -49,7 +49,7 @@ DWORD MIRANDA_VERSION;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,3),
+	PLUGIN_MAKE_VERSION(0,5,0,4),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",
@@ -63,10 +63,10 @@ PLUGININFOEX pluginInfo = {
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	// Only load for 0.8.0.19 or greater
-	// We need the account owned thread services
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 17))
+	// We need the new MS_DB_MODULE_DELETE database utility service
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 19))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.17 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.19 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -184,7 +184,7 @@ int CIcqProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 	CListShowMenuItem(hUserMenuAuth, getSettingByte((HANDLE)wParam, "Auth", 0));
 	CListShowMenuItem(hUserMenuGrant, getSettingByte((HANDLE)wParam, "Grant", 0));
 	CListShowMenuItem(hUserMenuRevoke, (BYTE)(getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0)));
-	if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, "ServerId", 0) && !getSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
+	if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
 		CListShowMenuItem(hUserMenuAddServ, 1);
 	else
 		CListShowMenuItem(hUserMenuAddServ, 0);

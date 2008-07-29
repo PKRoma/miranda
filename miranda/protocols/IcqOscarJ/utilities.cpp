@@ -792,7 +792,7 @@ char *MangleXml(const char *string, int len)
 
 	for (i = 0; i<len; i++)
 	{
-		if (string[i]=='<' || string[i]=='>') l += 4; else if (string[i]=='&') l += 5; else l++;
+		if (string[i]=='<' || string[i]=='>') l += 4; else if (string[i]=='&') l += 5; else if (string[i]=='"') l += 6; else l++;
 	}
 	szChar = szWork = (char*)SAFE_MALLOC(l + 1);
 	for (i = 0; i<len; i++)
@@ -814,6 +814,13 @@ char *MangleXml(const char *string, int len)
 			*szChar = ';';
 			szChar++;
 		}
+    else if (string[i]=='"')
+    {
+      *(DWORD*)szChar = 'ouq&';
+      szChar += 4;
+      *(WORD*)szChar = ';t';
+      szChar += 2;
+    }
 		else
 		{
 			*szChar = string[i];
@@ -899,9 +906,10 @@ void CIcqProto::ResetSettingsOnListReload()
 	HANDLE hContact;
 
 	// Reset a bunch of session specific settings
-	setSettingWord(NULL, "SrvVisibilityID", 0);
-	setSettingWord(NULL, "SrvAvatarID", 0);
-	setSettingWord(NULL, "SrvPhotoID", 0);
+	setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0);
+  setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0);
+	setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0);
+	setSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, 0);
 	setSettingWord(NULL, "SrvRecordCount", 0);
 
 	hContact = FindFirstContact();
@@ -909,12 +917,13 @@ void CIcqProto::ResetSettingsOnListReload()
 	while (hContact)
 	{
 		// All these values will be restored during the serv-list receive
-		setSettingWord(hContact, "ServerId", 0);
-		setSettingWord(hContact, "SrvGroupId", 0);
-		setSettingWord(hContact, "SrvPermitId", 0);
-		setSettingWord(hContact, "SrvDenyId", 0);
+		setSettingWord(hContact, DBSETTING_SERVLIST_ID, 0);
+		setSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0);
+		setSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, 0);
+		setSettingWord(hContact, DBSETTING_SERVLIST_DENY, 0);
+    deleteSetting(hContact, DBSETTING_SERVLIST_IGNORE);
 		setSettingByte(hContact, "Auth", 0);
-    deleteSetting(hContact, "ServerData");
+    deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
 
 		hContact = FindNextContact(hContact);
 	}
@@ -1438,8 +1447,7 @@ char* __fastcall ICQTranslateUtfStatic(const char *src, char *buf, size_t bufsiz
 
 void CIcqProto::ForkThread( IcqThreadFunc pFunc, void* arg )
 {
-	UINT threadID;
-	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, &threadID ));
+	CloseHandle(( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, NULL ));
 }
 
 HANDLE CIcqProto::ForkThreadEx( IcqThreadFunc pFunc, void* arg, UINT* threadID )

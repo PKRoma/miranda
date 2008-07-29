@@ -100,7 +100,7 @@ static int UpdateCheckmarks(HWND hwndList, CIcqProto* ppro, HANDLE phItemAll)
 		HANDLE hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
 		if (hItem)
 		{
-			if (ppro->getSettingWord(hContact, "ServerId", 0))
+			if (ppro->getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0))
 				SendMessage(hwndList, CLM_SETCHECKMARK, (WPARAM)hItem, 1);
 			else
 				bAll = 0;
@@ -371,8 +371,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				if (ack->result == ACKRESULT_SUCCESS)
 				{
 					ppro->setSettingByte(hCurrentContact, "Auth", 0);
-					ppro->setSettingWord(hCurrentContact, "ServerId", wNewContactId);
-					ppro->setSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_ID, wNewContactId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_GROUP, wNewGroupId);
 					break;
 				}
 				else
@@ -395,8 +395,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 			case ACTION_ADDBUDDYAUTH:
 				if (ack->result == ACKRESULT_SUCCESS)
 				{
-					ppro->setSettingWord(hCurrentContact, "ServerId", wNewContactId);
-					ppro->setSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_ID, wNewContactId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_GROUP, wNewGroupId);
 				}
 				else
 				{
@@ -410,8 +410,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				if (ack->result == ACKRESULT_SUCCESS)
 				{ // clear obsolete settings
 					ppro->FreeServerID(wNewContactId, SSIT_ITEM);
-					ppro->deleteSetting(hCurrentContact, "ServerId");
-					ppro->deleteSetting(hCurrentContact, "SrvGroupId");
+					ppro->deleteSetting(hCurrentContact, DBSETTING_SERVLIST_ID);
+					ppro->deleteSetting(hCurrentContact, DBSETTING_SERVLIST_GROUP);
 					ppro->deleteSetting(hCurrentContact, "Auth");
 				}
 				break;
@@ -483,23 +483,23 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 			case ACTION_MOVECONTACT:
 				if (ack->result == ACKRESULT_SUCCESS)
 				{
-					ppro->FreeServerID(ppro->getSettingWord(hCurrentContact, "ServerId", 0), SSIT_ITEM);
-					ppro->setSettingWord(hCurrentContact, "ServerId", wNewContactId);
-					ppro->setSettingWord(hCurrentContact, "SrvGroupId", wNewGroupId);
+					ppro->FreeServerID(ppro->getSettingWord(hCurrentContact, DBSETTING_SERVLIST_ID, 0), SSIT_ITEM);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_ID, wNewContactId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_GROUP, wNewGroupId);
 					dwUploadDelay *= 2; // we double the delay here (2 packets)
 				}
 				break;
 
 			case ACTION_ADDVISIBLE:
 				if (ack->result == ACKRESULT_SUCCESS)
-					ppro->setSettingWord(hCurrentContact, "SrvPermitId", wNewContactId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_PERMIT, wNewContactId);
 				else
 					ppro->FreeServerID(wNewContactId, SSIT_ITEM);
 				break;
 
 			case ACTION_ADDINVISIBLE:
 				if (ack->result == ACKRESULT_SUCCESS)
-					ppro->setSettingWord(hCurrentContact, "SrvDenyId", wNewContactId);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_DENY, wNewContactId);
 				else
 					ppro->FreeServerID(wNewContactId, SSIT_ITEM);
 				break;
@@ -508,7 +508,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				if (ack->result == ACKRESULT_SUCCESS)
 				{
 					ppro->FreeServerID(wNewContactId, SSIT_ITEM);
-					ppro->setSettingWord(hCurrentContact, "SrvPermitId", 0);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_PERMIT, 0);
 				}
 				break;
 
@@ -516,7 +516,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				if (ack->result == ACKRESULT_SUCCESS)
 				{
 					ppro->FreeServerID(wNewContactId, SSIT_ITEM);
-					ppro->setSettingWord(hCurrentContact, "SrvDenyId", 0);
+					ppro->setSettingWord(hCurrentContact, DBSETTING_SERVLIST_DENY, 0);
 				}
 				break;
 			}
@@ -597,7 +597,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 					if (hItem)
 					{
 						isChecked = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0) != 0;
-						isOnServer = ppro->getSettingWord(hContact, "ServerId", 0) != 0;
+						isOnServer = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0) != 0;
 
 						bUidOk = !ppro->getContactUid(hContact, &dwUin, &szUid);
 
@@ -668,8 +668,8 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 								else
 									AppendToUploadLog(hwndDlg, ICQTranslateUtfStatic(LPGEN("Deleting %s..."), str, MAX_PATH), strUID(dwUin, szUid));
 
-								wNewGroupId = ppro->getSettingWord(hContact, "SrvGroupId", 0);
-								wNewContactId = ppro->getSettingWord(hContact, "ServerId", 0);
+								wNewGroupId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0);
+								wNewContactId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0);
 								currentAction = ACTION_REMOVEBUDDY;
 								currentSequence = sendUploadBuddy(ppro, hContact, ICQ_LISTS_REMOVEFROMLIST, dwUin, szUid,
 									wNewContactId, wNewGroupId, SSI_ITEM_BUDDY);
@@ -680,7 +680,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 						}
 						else if (bUidOk && isChecked)
 						{ // the contact is and should be on server, check if it is in correct group, move otherwise
-							WORD wCurrentGroupId = ppro->getSettingWord(hContact, "SrvGroupId", 0);
+							WORD wCurrentGroupId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0);
 
 							pszGroup = ppro->getContactCListGroup(hContact);
 							if (!strlennull(pszGroup))
@@ -704,7 +704,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 							}
 							if (wNewGroupId && (wNewGroupId != wCurrentGroupId))
 							{ // we have a group the contact should be in, move it
-								WORD wCurrentContactId = ppro->getSettingWord(hContact, "ServerId", 0);
+								WORD wCurrentContactId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0);
 								BYTE bAuth = ppro->getSettingByte(hContact, "Auth", 0);
 
 								pszNick = ppro->getSettingStringUtf(hContact, "CList", "MyHandle", NULL);
@@ -751,9 +751,9 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				while (hContact)
 				{
 					WORD wApparentMode = ppro->getSettingWord(hContact, "ApparentMode", 0);
-					WORD wDenyId = ppro->getSettingWord(hContact, "SrvDenyId", 0);
-					WORD wPermitId = ppro->getSettingWord(hContact, "SrvPermitId", 0);
-					WORD wIgnoreId = ppro->getSettingWord(hContact, "SrvIgnoreId", 0);
+					WORD wDenyId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_DENY, 0);
+					WORD wPermitId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, 0);
+					WORD wIgnoreId = ppro->getSettingWord(hContact, DBSETTING_SERVLIST_IGNORE, 0);
 
 					hCurrentContact = hContact;
 					ppro->getContactUid(hContact, &dwUin, &szUid);

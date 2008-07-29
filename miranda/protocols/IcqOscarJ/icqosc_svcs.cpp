@@ -44,7 +44,7 @@ int CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
 	if (!m_bSsiEnabled) return 0;
 
 	// Does this contact have a UID?
-	if (!getContactUid((HANDLE)wParam, &dwUin, &szUid) && !getSettingWord((HANDLE)wParam, "ServerId", 0) && !getSettingWord((HANDLE)wParam, "SrvIgnoreId", 0))
+	if (!getContactUid((HANDLE)wParam, &dwUin, &szUid) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
 	{
 		// Read group from DB
 		char *pszGroup = getContactCListGroup((HANDLE)wParam);
@@ -540,7 +540,7 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 
 		setContactHidden(hContact, 0);
 		// if the contact was hidden, add to client-list if not in server-list authed
-		if (!getSettingWord(hContact, "ServerId", 0) || getSettingByte(hContact, "Auth", 0))
+		if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0) || getSettingByte(hContact, "Auth", 0))
 		{
 			getContactUid(hContact, &dwUin, &szUid);
 			icq_sendNewContact(dwUin, szUid);
