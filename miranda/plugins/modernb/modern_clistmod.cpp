@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_clist.h"
 #include "hdr/modern_commonprototypes.h"
 #include "hdr/modern_sync.h"
-
+#include "hdr/modern_clui.h"
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
 pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
@@ -309,9 +309,11 @@ HRESULT  CluiLoadModule()
 			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
 		#endif
 	}
+	CLUI::InitClui();
+	
 	return S_OK;
 }
-HRESULT  CluiLoadModule();
+
 /*
 Begin of Hrk's code for bug
 */

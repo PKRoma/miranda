@@ -27,14 +27,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 class CLUI
 {
-public:
-    CLUI();
-    ~CLUI();
+private:
+    CLUI();			// is protected use InitClui to initialize instead
+  
 
-    
+public:    
+
+	static HRESULT InitClui();
+	~CLUI();
+
 	static HWND& ClcWnd();		//TODO: move to Clc.h
     static HWND& CluiWnd();
-
+	
     CLINTERFACE void cliOnCreateClc();
 
     EVENTHOOK( OnEvent_ModulesLoaded );
@@ -48,14 +52,17 @@ public:
 
 	static CLUI * m_pCLUI;  
     static BOOL m_fMainMenuInited;
+	
 	static HRESULT FillAlphaChannel(HWND hwndClui, HDC hDC, RECT* prcParent, BYTE bAlpha);
 	static HRESULT CreateCLC(HWND hwndClui);
 	static HRESULT SnappingToEdge(HWND hCluiWnd, WINDOWPOS * lpWindowPos);
     static BOOL IsMainMenuInited() { return CLUI::m_fMainMenuInited; }
+	
 
 private:
     HRESULT LoadDllsRuntime();
     HRESULT RegisterAvatarMenu();  // TODO move to CLC class
+	HRESULT CreateCluiFrames();
     HRESULT CreateCLCWindow(const HWND parent);
     HRESULT CreateUIFrames();
 

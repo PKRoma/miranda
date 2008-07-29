@@ -811,14 +811,15 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
             //add self to window list
 			WindowList_Add(tbdat.hToolBarWindowList, hwnd, NULL);
 			pMTBInfo->mtbXPTheme=xpt_AddThemeHandle(hwnd,L"TOOLBAR");
-			SetTimer(hwnd,123,1000,NULL);
+			ToolBar_DefaultButtonRegistration();
+			//SetTimer(hwnd,123,1000,NULL);
 			return 0;
 		}
 	case WM_TIMER:
 		{
 			
-			KillTimer(hwnd,123);
-			ToolBar_DefaultButtonRegistration();
+			//KillTimer(hwnd,123);
+			//ToolBar_DefaultButtonRegistration();
 			return 0;
 		}
 	case WM_SHOWWINDOW:

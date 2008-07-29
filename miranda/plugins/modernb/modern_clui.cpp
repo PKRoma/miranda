@@ -54,6 +54,36 @@ HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pB
 
 CLUI* CLUI::m_pCLUI = NULL;
 BOOL CLUI::m_fMainMenuInited = FALSE;
+
+HRESULT CLUI::InitClui()
+{
+	STATIC_METHOD;
+
+	_ASSERT( This == NULL );
+
+	This=new CLUI();
+
+	_ASSERT( This ); 
+
+	return S_OK;
+}
+
+HRESULT CLUI::CreateCluiFrames()
+{
+	CreateCLCWindow(CluiWnd());
+	
+	CLUI_ChangeWindowMode();
+	
+	RegisterAvatarMenu(); 
+	
+	CLUI_ReloadCLUIOptions();	
+
+	CreateUIFrames();
+
+	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
+	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
+	return S_OK;
+}
 CLUI::CLUI() :
 	m_hUserDll( NULL ),
 	m_hDwmapiDll( NULL )
@@ -61,7 +91,9 @@ CLUI::CLUI() :
 	g_CluiData.bSTATE = STATE_CLUI_LOADING;
     LoadDllsRuntime();
     hFrameContactTree=NULL;
-    CreateServiceFunction(MS_CLIST_GETSTATUSMODE,CListTray_GetGlobalStatus);
+
+    
+	CLUIServices_LoadModule();
 
     // Call InitGroup menus before
     GroupMenus_Init();
@@ -79,7 +111,7 @@ CLUI::CLUI() :
     CreateServiceFunction(MS_CLUI_SHOWMAINMENU,Service_ShowMainMenu);
     CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,Service_ShowStatusMenu);
 
-    CLUIServices_LoadModule();
+    
     //TODO Add Row template loading here.
 
     RowHeight_InitModernRow();
@@ -93,19 +125,6 @@ CLUI::CLUI() :
 
 	g_CluiData.bOldUseGroups=-1;
 	bOldUseGroups = ModernGetSettingByte( NULL,"CList","UseGroups", SETTING_USEGROUPS_DEFAULT );
-
-	CreateCLCWindow(CluiWnd());
-
-    CLUI_ChangeWindowMode();
-
-    RegisterAvatarMenu(); 
-
-    CLUI_ReloadCLUIOptions();	
-
-    CreateUIFrames();
-
-    ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
-    ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
 }
 
 CLUI::~CLUI()
@@ -233,6 +252,7 @@ HRESULT CLUI::FillAlphaChannel(HWND hwndClui, HDC hDC, RECT * prcParent, BYTE bA
 
 HRESULT CLUI::CreateCLC(HWND hwndClui)
 {
+
 	INIT<CLISTFrame> Frame;
 
 	Frame.hWnd=ClcWnd();
@@ -316,14 +336,16 @@ inline HWND& CLUI::ClcWnd()
 
 void CLUI::cliOnCreateClc(void)
 {  
-    STATIC_METHOD;
+	STATIC_METHOD;
 
-    _ASSERT( This == NULL );
+	_ASSERT( This );
 
-    This=new CLUI();
+	This->CreateCluiFrames();
 
-    _ASSERT( This );
+	_ASSERT( This ); 
 }
+
+
 
 int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {

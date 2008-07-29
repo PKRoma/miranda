@@ -22,69 +22,82 @@ LRESULT SyncOnWndProcCall( WPARAM wParam );
 
 int DoCall( PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam );
 
-// 3 params:
-template< class RET, class Ap, class Bp, class Cp, class A, class B, class C > int DoSyncCall3( WPARAM wParam, LPARAM lParam );
-template< class RET, class Ap, class Bp, class Cp, class A, class B, class C  > RET Sync( RET(*proc)(Ap, Bp, Cp), A a, B b, C c );
-// 2 params
-template< class RET, class Ap, class Bp, class A, class B> int DoSyncCall2( WPARAM wParam, LPARAM lParam );
-template< class RET, class Ap, class Bp, class A, class B> RET Sync( RET(*proc)(Ap, Bp), A a, B b );
-// 1 param
-template< class RET, class Ap, class A> int DoSyncCall1( WPARAM wParam, LPARAM lParam );
-template< class RET, class Ap, class A> RET Sync( RET(*proc)(Ap), A a );
-
-
 // Have to be here due to MS Visual C++ does not support 'export' keyword
 
-// 3 params:
-template< class RET, class Ap, class Bp, class Cp, class A, class B, class C > int DoSyncCall3( WPARAM wParam, LPARAM lParam )
-{
-	struct PARAMS{ RET(*_proc)(Ap, Bp, Cp); A _a; B _b; C _c; RET ret;  } ;
-	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( params->_a, params->_b, params->_c);
-	return 0;
+// 3 params
+
+template<class RET, class A, class B, class C> class PARAMS3
+{ 
+	typedef RET(*proc_t)(A, B, C);
+	proc_t _proc;  A _a; B _b; C _c; RET _ret; 
+
+public:
+	PARAMS3( proc_t __proc, A __a, B __b, C __c ): _proc( __proc), _a (__a), _b(__b), _c(__c){};
+	static int DoSyncCall( WPARAM wParam, LPARAM lParam )
+	{
+		PARAMS3 * params = (PARAMS3 *) lParam;	
+		params->_ret = params->_proc( params->_a, params->_b, params->_c );
+		return 0;
+	};
+	RET GetResult() { return _ret; }
 };
 
-template< class RET, class Ap, class Bp, class Cp, class A, class B, class C > RET Sync( RET(*proc)(Ap, Bp, Cp), A a, B b, C c )
+template< class RET, class Ap, class Bp, class Cp, class A, class B, class C> RET Sync( RET(*proc)(Ap, Bp, Cp), A a, B b, C c )
 {
-	struct PARAMS{ RET(*_proc)(Ap, Bp, Cp); A _a; B _b; C _c; RET ret; };
-	struct PARAMS params = { proc, a, b, c };
-	DoCall( (PSYNCCALLBACKPROC) DoSyncCall3<RET, Ap, Bp, Cp, A, B, C>, 0, (LPARAM) &params );
-	return params.ret;
+	PARAMS3<RET, Ap, Bp, Cp> params( proc, a, b, c );
+	DoCall( (PSYNCCALLBACKPROC) PARAMS3<RET, Ap, Bp, Cp>::DoSyncCall, 0, (LPARAM) &params );
+	return params.GetResult();
 };
+
 
 // 2 params
-template< class RET, class Ap, class Bp, class A, class B> int DoSyncCall2( WPARAM wParam, LPARAM lParam )
-{
-	struct PARAMS{ RET(*_proc)(Ap, Bp); A _a; B _b; RET ret;  } ;
-	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( params->_a, params->_b );
-	return 0;
+
+template<class RET, class A, class B> class PARAMS2
+{ 
+	typedef RET(*proc_t)(A, B);
+	proc_t _proc;  A _a; B _b; RET _ret; 
+
+public:
+	PARAMS2( proc_t __proc, A __a, B __b ): _proc( __proc), _a (__a), _b(__b){};
+	static int DoSyncCall( WPARAM wParam, LPARAM lParam )
+	{
+		PARAMS2 * params = (PARAMS2 *) lParam;	
+		params->_ret = params->_proc( params->_a, params->_b );
+		return 0;
+	};
+	RET GetResult() { return _ret; }
 };
 
 template< class RET, class Ap, class Bp, class A, class B> RET Sync( RET(*proc)(Ap, Bp), A a, B b )
 {
-	struct PARAMS{ RET(*_proc)(Ap, Bp); A _a; B _b; RET ret; };
-	struct PARAMS params = { proc, a, b };
-	DoCall( (PSYNCCALLBACKPROC) DoSyncCall2<RET, Ap, Bp, A, B>, 0, (LPARAM) &params );
-	return params.ret;
+	PARAMS2<RET, Ap, Bp> params( proc, a, b );
+	DoCall( (PSYNCCALLBACKPROC) PARAMS2<RET, Ap, Bp>::DoSyncCall, 0, (LPARAM) &params );
+	return params.GetResult();
 };
 
 
 // 1 param
-template< class RET, class Ap, class A> int DoSyncCall1( WPARAM wParam, LPARAM lParam )
-{
-	struct PARAMS{ RET(*_proc)(Ap); A _a; RET ret;  } ;
-	struct PARAMS * params = (struct PARAMS *) lParam;	
-	params->ret = params->_proc( params->_a );
-	return 0;
+template<class RET, class A> class PARAMS1
+{ 
+	typedef RET(*proc_t)(A);
+	proc_t _proc;  A _a; RET _ret; 
+
+public:
+	PARAMS1( proc_t __proc, A __a): _proc( __proc), _a (__a){};
+	static int DoSyncCall( WPARAM wParam, LPARAM lParam )
+	{
+		PARAMS1 * params = (PARAMS1 *) lParam;	
+		params->_ret = params->_proc( params->_a );
+		return 0;
+	};
+	RET GetResult() { return _ret; }
 };
 
 template< class RET, class Ap, class A> RET Sync( RET(*proc)(Ap), A a )
 {
-	struct PARAMS{ RET(*_proc)(Ap); A _a; RET ret; };
-	struct PARAMS params = { proc, a };
-	DoCall( (PSYNCCALLBACKPROC) DoSyncCall1<RET, Ap, A>, 0, (LPARAM) &params );
-	return params.ret;
+	PARAMS1<RET, Ap> params( proc, a );
+	DoCall( (PSYNCCALLBACKPROC) PARAMS1<RET, Ap>::DoSyncCall, 0, (LPARAM) &params );
+	return params.GetResult();
 };
 
 #endif // modern_sync_h__

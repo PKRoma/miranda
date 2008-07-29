@@ -259,7 +259,7 @@ void ExtraImage_SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	maxpr=0;
 	//calc only needed protocols
 	for(i=0;i<count;i++) {
-		if ( CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
+		if ( accs[i]->bOldProto && CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
 		ImgIndex[maxpr]=accs[i]->szModuleName;
 		maxpr++;
 	}

@@ -49,6 +49,7 @@ HANDLE			hSmileyAddOptionsChangedHook=NULL;
 HANDLE			hIconChangedHook=NULL;
 HANDLE			hAckHook=NULL;
 HANDLE			hAvatarChanged=NULL;
+static BOOL		g_bSortTimerIsSet = FALSE;
 static struct ClcContact * hitcontact=NULL;
 
 
@@ -366,10 +367,14 @@ static int clcProceedDragToScroll(HWND hwnd, int Y)
 	return 1;
 }
 
+
 static void clcSetSortTimer (HWND hwnd)
 {
-	KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
-	CLUI_SafeSetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,100 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
+	if ( !g_bSortTimerIsSet )
+	{
+		CLUI_SafeSetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,10 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
+		g_bSortTimerIsSet = TRUE;
+	}
 }
 
 static int clcSearchNextContact(HWND hwnd, struct ClcData *dat, int index, const TCHAR *text, int prefixOk, BOOL fSearchUp)
@@ -888,6 +893,8 @@ static LRESULT clcOnTimer(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPara
 		}
 	case TIMERID_DELAYEDRESORTCLC:
 		{
+			TRACE("Do sort on Timer\n");
+			g_bSortTimerIsSet = FALSE;
 			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
 			pcli->pfnInvalidateRect(hwnd,NULL,FALSE);
 			pcli->pfnSortCLC(hwnd,dat,1);
@@ -1679,7 +1686,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
     
     // XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 	
-    if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
+    if ( !pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) 
 	{
 		if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) 
 		{
@@ -1760,13 +1767,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 			CLUI__cliInvalidateRect(hwnd,NULL,FALSE);
 		//try only needed rectangle
 	}
-	else 
-	{
-#ifdef _DEBUG
-		TRACE("Drawing should be skipped\n");
-		//      DebugBreak();
-#endif
-	}
+
 	return 0;
 }
 
@@ -2129,6 +2130,18 @@ LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	switch (msg) 
 	{
+		CASE_MSG_RET( INTM_GROUPCHANGED,		clcOnIntmGroupChanged			);
+		CASE_MSG_RET( INTM_ICONCHANGED,			clcOnIntmIconChanged			);
+		CASE_MSG_RET( INTM_AVATARCHANGED,		clcOnIntmAvatarChanged			);
+		CASE_MSG_RET( INTM_TIMEZONECHANGED,		clcOnIntmTimeZoneChanged		);
+		CASE_MSG_RET( INTM_NAMECHANGED,			clcOnIntmNameChanged			);
+		CASE_MSG_RET( INTM_APPARENTMODECHANGED,	clcOnIntmApparentModeChanged	);
+		CASE_MSG_RET( INTM_STATUSMSGCHANGED,	clcOnIntmStatusMsgChanged		);
+		CASE_MSG_RET( INTM_NOTONLISTCHANGED,	clcOnIntmNotOnListChanged		);
+		CASE_MSG_RET( INTM_SCROLLBARCHANGED,	clcOnIntmScrollBarChanged		);
+		CASE_MSG_RET( INTM_STATUSCHANGED,		clcOnIntmStatusChanged			);
+		CASE_MSG_RET( INTM_RELOADOPTIONS,		clcOnIntmReloadOptions			);
+
 		CASE_MSG_RET( WM_CREATE,		clcOnCreate				);
 		CASE_MSG_RET( WM_NCHITTEST,		clcOnHitTest			);
 		CASE_MSG_RET( WM_COMMAND,		clcOnCommand			);
@@ -2146,19 +2159,6 @@ LRESULT CALLBACK cli_ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wPara
 		CASE_MSG_RET( WM_LBUTTONUP,		clcOnLButtonUp			);
 		CASE_MSG_RET( WM_LBUTTONDBLCLK,	clcOnLButtonDblClick	);
 		CASE_MSG_RET( WM_DESTROY,		clcOnDestroy			);
-
-
-		CASE_MSG_RET( INTM_GROUPCHANGED,		clcOnIntmGroupChanged			);
-		CASE_MSG_RET( INTM_ICONCHANGED,			clcOnIntmIconChanged			);
-		CASE_MSG_RET( INTM_AVATARCHANGED,		clcOnIntmAvatarChanged			);
-		CASE_MSG_RET( INTM_TIMEZONECHANGED,		clcOnIntmTimeZoneChanged		);
-		CASE_MSG_RET( INTM_NAMECHANGED,			clcOnIntmNameChanged			);
-		CASE_MSG_RET( INTM_APPARENTMODECHANGED,	clcOnIntmApparentModeChanged	);
-		CASE_MSG_RET( INTM_STATUSMSGCHANGED,	clcOnIntmStatusMsgChanged		);
-		CASE_MSG_RET( INTM_NOTONLISTCHANGED,	clcOnIntmNotOnListChanged		);
-		CASE_MSG_RET( INTM_SCROLLBARCHANGED,	clcOnIntmScrollBarChanged		);
-		CASE_MSG_RET( INTM_STATUSCHANGED,		clcOnIntmStatusChanged			);
-		CASE_MSG_RET( INTM_RELOADOPTIONS,		clcOnIntmReloadOptions			);
 
 	default:
 		return corecli.pfnContactListControlWndProc(hwnd, msg, wParam, lParam);
