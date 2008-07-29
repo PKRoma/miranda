@@ -910,8 +910,13 @@ static LRESULT clcOnTimer(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPara
 
 static LRESULT clcOnActivate(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	TRACE ("clcOnActivate\n");
 	if (dat->bCompactMode)
-			cliRecalcScrollBar(hwnd,dat);
+	{
+		cliRecalcScrollBar(hwnd,dat);
+		if ( dat->hwndRenameEdit == NULL )
+			PostMessage( hwnd, WM_SIZE, 0, 0);
+	}
 	return corecli.pfnContactListControlWndProc(hwnd, msg, wParam, lParam);
 }
 static LRESULT clcOnSetCursor(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
