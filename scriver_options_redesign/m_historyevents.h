@@ -226,7 +226,7 @@ static __inline int HistoryEvents_Register(char *module, char *name, char *descr
 	return CallService(MS_HISTORYEVENTS_REGISTER, (WPARAM) &heh, 0);
 }
 
-static int HistoryEvents_RegisterWithTemplates(char *module, char *name, char *description, int eventType, HICON defaultIcon, 
+static __inline int HistoryEvents_RegisterWithTemplates(char *module, char *name, char *description, int eventType, HICON defaultIcon,
 								  int supports, int flags, fGetHistoryEventText pfGetHistoryEventText,
 								  char **templates, int numTemplates)
 {
@@ -293,12 +293,12 @@ static __inline int HistoryEvents_GetFlags(WORD eventType)
 	return (int) CallService(MS_HISTORYEVENTS_GET_FLAGS, (WPARAM) eventType, 0);
 }
 
-static void HistoryEvents_ReleaseIcon(HICON icon)
+static __inline void HistoryEvents_ReleaseIcon(HICON icon)
 {
 	CallService(MS_HISTORYEVENTS_RELEASE_ICON, (WPARAM) icon, 0);
 }
 
-static char * HistoryEvents_GetTextA(HANDLE hDbEvent, DBEVENTINFO *dbe)
+static __inline char * HistoryEvents_GetTextA(HANDLE hDbEvent, DBEVENTINFO *dbe)
 {
 	HISTORY_EVENT_PARAM hep = {0};
 
@@ -312,7 +312,7 @@ static char * HistoryEvents_GetTextA(HANDLE hDbEvent, DBEVENTINFO *dbe)
 	return (char *) CallService(MS_HISTORYEVENTS_GET_TEXT, (WPARAM) &hep, 0);
 }
 
-static wchar_t * HistoryEvents_GetTextW(HANDLE hDbEvent, DBEVENTINFO *dbe)
+static __inline wchar_t * HistoryEvents_GetTextW(HANDLE hDbEvent, DBEVENTINFO *dbe)
 {
 	HISTORY_EVENT_PARAM hep = {0};
 
@@ -326,7 +326,7 @@ static wchar_t * HistoryEvents_GetTextW(HANDLE hDbEvent, DBEVENTINFO *dbe)
 	return (wchar_t *) CallService(MS_HISTORYEVENTS_GET_TEXT, (WPARAM) &hep, 0);
 }
 
-static char * HistoryEvents_GetRichText(HANDLE hDbEvent, DBEVENTINFO *dbe)
+static __inline char * HistoryEvents_GetRichText(HANDLE hDbEvent, DBEVENTINFO *dbe)
 {
 	HISTORY_EVENT_PARAM hep = {0};
 
@@ -349,7 +349,7 @@ static char * HistoryEvents_GetRichText(HANDLE hDbEvent, DBEVENTINFO *dbe)
 //	CallService(MS_HISTORYEVENTS_RELEASE_TEXT, (WPARAM) str, 0);
 //}
 
-static HANDLE HistoryEvents_AddToHistoryEx(HANDLE hContact, WORD eventType, int templateNum, 
+static __inline HANDLE HistoryEvents_AddToHistoryEx(HANDLE hContact, WORD eventType, int templateNum,
 										 TCHAR **variables, int numVariables, 
 										 PBYTE additionalData, int additionalDataSize,
 										 int flags)
@@ -372,7 +372,7 @@ static HANDLE HistoryEvents_AddToHistoryEx(HANDLE hContact, WORD eventType, int 
 	return (HANDLE) CallService(MS_HISTORYEVENTS_ADD_TO_HISTORY, (WPARAM) &hea, 0);
 }
 
-static HANDLE HistoryEvents_AddToHistoryVars(HANDLE hContact, WORD eventType, int templateNum, 
+static __inline HANDLE HistoryEvents_AddToHistoryVars(HANDLE hContact, WORD eventType, int templateNum,
 											 TCHAR **variables, int numVariables, 
 											 int flags)
 {
@@ -392,7 +392,7 @@ static HANDLE HistoryEvents_AddToHistoryVars(HANDLE hContact, WORD eventType, in
 	return (HANDLE) CallService(MS_HISTORYEVENTS_ADD_TO_HISTORY, (WPARAM) &hea, 0);
 }
 
-static HANDLE HistoryEvents_AddToHistorySimple(HANDLE hContact, WORD eventType, int templateNum, int flags)
+static __inline HANDLE HistoryEvents_AddToHistorySimple(HANDLE hContact, WORD eventType, int templateNum, int flags)
 {
 	HISTORY_EVENT_ADD hea = {0};
 
@@ -408,7 +408,7 @@ static HANDLE HistoryEvents_AddToHistorySimple(HANDLE hContact, WORD eventType, 
 	return (HANDLE) CallService(MS_HISTORYEVENTS_ADD_TO_HISTORY, (WPARAM) &hea, 0);
 }
 
-static BOOL HistoryEvents_IsEnabledTemplate(WORD eventType, int templateNum)
+static __inline BOOL HistoryEvents_IsEnabledTemplate(WORD eventType, int templateNum)
 {
 	return (BOOL) CallService(MS_HISTORYEVENTS_IS_ENABLED_TEMPLATE, eventType, templateNum);
 }

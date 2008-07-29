@@ -55,10 +55,7 @@ BEGIN
     CONTROL         "Delete temporary contacts when closing message window",
                     IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,102,
                     292,10
-    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,113,140,10
-    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,138,10
+
     LTEXT           "Show warning when message has not been received after",
                     IDC_STATIC,8,136,211,8
     EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
@@ -80,6 +77,36 @@ BEGIN
     LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
     CONTROL         "Keep original avatar size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,205,106,10
+END
+
+IDD_OPT_MSGTABS DIALOGEX 2, 0, 304, 230
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,115
+    CONTROL         "Enable tabs",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,8,12,260,10
+    CONTROL         "Always show tab bar",IDC_ALWAYSSHOWTABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,23,252,10
+    CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,34,252,10
+    CONTROL         "Limit names on tabs to",IDC_LIMITNAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
+    EDITTEXT        IDC_LIMITNAMESLEN,212,44,20,12,ES_RIGHT | ES_NUMBER
+    LTEXT           "characters",IDC_CHARS,236,45,65,8,WS_DISABLED
+	CONTROL         "Show close button on each tab ",IDC_TABCLOSEBUTTON,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,192,10
+	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
+    CONTROL         "Limit number of tabs per container to",IDC_LIMITTABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
+    EDITTEXT        IDC_LIMITTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
+	CONTROL         "Use separate containers for group chats",IDC_SEPARATECHATSCONTAINERS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,192,10
+    CONTROL         "Limit number of group chats tabs per container to",IDC_LIMITCHATSTABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
+    EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
 END
 
 IDD_OPT_MSGLOG DIALOGEX 2, 0, 304, 232
@@ -150,29 +177,13 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Tabs",IDC_STATIC,0,0,304,149
-    CONTROL         "Use tabbed mode",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,12,260,10
-    CONTROL         "Hide tab bar if there is only one tab",IDC_HIDEONETAB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,23,252,10
-    CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,34,252,10
-    CONTROL         "Limit names on tabs to",IDC_LIMITNAMES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
-    EDITTEXT        IDC_LIMITNAMESLEN,212,44,20,12,ES_RIGHT | ES_NUMBER
-    LTEXT           "characters",IDC_CHARS,236,45,65,8,WS_DISABLED
-	CONTROL         "Show close button on each tab ",IDC_TABCLOSEBUTTON,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,192,10
-	CONTROL         "Automatically switch to active tab",IDC_SWITCHTOACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
-    CONTROL         "Limit number of tabs per container to",IDC_LIMITTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
-    EDITTEXT        IDC_LIMITTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
-	CONTROL         "Use separate containers for chats",IDC_SEPARATECHATSCONTAINERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,192,10
-    CONTROL         "Limit number of chats tabs per container to",IDC_LIMITCHATSTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
-    EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
+    GROUPBOX        "General",IDC_STATIC,0,0,304,149
+
+    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,12,140,10
+    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,138,10
+
 	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,111,200,10
     CONTROL         "Save size and location for each contact",
@@ -677,7 +688,7 @@ BEGIN
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
             VALUE "FileVersion", "2.8.0.10\0"
             VALUE "InternalName", "scriver\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2008 Miranda IM Project\0"
+            VALUE "LegalCopyright", "Copyright ï¿½ 2000-2008 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"

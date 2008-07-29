@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -82,8 +82,6 @@ struct branch_t
 };
 
 static struct branch_t branch1[] = {
-	{LPGENT("Send message by pressing the Enter key"), "SendOnEnter", 0, 1, NULL},
-	{LPGENT("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0, NULL},
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0,0, NULL},
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0,1, NULL},

@@ -4,8 +4,9 @@
 #define IDD_CONFIRM_SENDALL             103
 #define IDD_OPT_MSGDLG                  111
 #define IDD_OPT_MSGLOG                  112
-#define IDD_OPT_CONTAINER				113
+#define IDD_OPT_CONTAINER		113
 #define IDD_OPT_MSGTYPE                 114
+#define IDD_OPT_MSGTABS                 115
 #define IDI_ADDCONTACT                  120
 #define IDI_USERDETAILS                 121
 #define IDI_HISTORY                     122
@@ -147,7 +148,7 @@
 #define IDC_ATRANSPARENCYPERC           1620
 #define IDC_ITRANSPARENCYVALUE			1621
 #define IDC_ITRANSPARENCYPERC           1622
-#define IDC_HIDEONETAB					1623
+#define IDC_ALWAYSSHOWTABS              1623
 #define IDC_SENDALL						1624
 #define IDC_AVATARTEXT1                 1625
 #define IDC_AVATARTEXT2					1626
