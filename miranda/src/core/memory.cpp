@@ -220,6 +220,9 @@ int mir_vsntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, va_list va)
 
 wchar_t* mir_a2u_cp( const char* src, int codepage )
 {
+	if ( src == NULL )
+		return NULL;
+
 	int cbLen = MultiByteToWideChar( codepage, 0, src, -1, NULL, 0 );
 	wchar_t* result = ( wchar_t* )mir_alloc( sizeof( wchar_t )*(cbLen+1));
 	if ( result == NULL )
@@ -241,6 +244,9 @@ wchar_t* mir_a2u( const char* src )
 
 char* mir_u2a_cp( const wchar_t* src, int codepage )
 {
+	if ( src == NULL )
+		return NULL;
+
 	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
 	char* result = ( char* )mir_alloc( cbLen+1 );
 	if ( result == NULL )
