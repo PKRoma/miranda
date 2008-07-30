@@ -6,6 +6,24 @@
 
 typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 
+#if defined _MSC_VER && _MSC_VER >= 1300 // VC7 and above
+
+#define DEFINESYNCSERVICE( proc ) 
+#define SYNCSERVICE( proc ) SyncService<##proc>
+
+#else // VC7 and above
+ 
+// STUPID VC6 vs templates
+
+#define DEFINESYNCSERVICE( proc )									\
+	static int SyncService_##proc( WPARAM wParam, LPARAM lParam )	\
+	{ return SyncCallProxy( proc, wParam,  lParam ); }
+
+#define SYNCSERVICE( proc ) SyncService_##proc
+
+#endif // VC7 and above
+
+// use next template in future
 template < int (*PROC)(WPARAM, LPARAM) > int SyncService( WPARAM wParam, LPARAM lParam )
 {
 	return SyncCallProxy( PROC, wParam, lParam );

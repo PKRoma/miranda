@@ -717,20 +717,20 @@ BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force)
 
 BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 {
-	int x,y;
-	int sx,sy,ex,ey;
 	int f=0;
 	BYTE * bits;
 	BITMAP bmp;
 	HBITMAP hbmp;
-	if (g_CluiData.fDisableSkinEngine && !force) return TRUE;
-	hbmp=(HBITMAP)GetCurrentObject(memdc,OBJ_BITMAP);  
-	GetObject(hbmp, sizeof(bmp),&bmp);
-	if (bmp.bmPlanes!=1) return FALSE;
-	sx=(fr->left>0)?fr->left:0;
-	sy=(fr->top>0)?fr->top:0;
-	ex=(fr->right<bmp.bmWidth)?fr->right:bmp.bmWidth;
-	ey=(fr->bottom<bmp.bmHeight)?fr->bottom:bmp.bmHeight;
+
+	if ( g_CluiData.fDisableSkinEngine && !force ) 
+		return TRUE;
+
+	hbmp=(HBITMAP)GetCurrentObject( memdc,OBJ_BITMAP );  
+	GetObject( hbmp, sizeof(bmp), &bmp );
+
+	if ( bmp.bmPlanes != 1 )
+		return FALSE;
+	
 	if (!bmp.bmBits)
 	{
 		f=1;
@@ -739,9 +739,26 @@ BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 	}
 	else
 		bits=(BYTE*)bmp.bmBits;
-	for (y=sy;y<ey;y++)
-		for (x=sx;x<ex;x++)
-			(((BYTE*)bits)+(bmp.bmHeight-y-1)*bmp.bmWidthBytes+x*4)[3]=255;
+
+	int sx =( fr->left > 0 ) ? fr->left : 0;
+	int sy =( fr->top > 0 ) ? fr->top : 0;
+	int ex =( fr->right < bmp.bmWidth ) ? fr->right : bmp.bmWidth;
+	int ey =( fr->bottom<bmp.bmHeight) ? fr->bottom : bmp.bmHeight;
+
+	int width=ex-sx;
+	
+	BYTE* pLine = ((BYTE*)bits) + (bmp.bmHeight-sy-1)*bmp.bmWidthBytes + (sx << 2) + 3;
+	BYTE* pColumn = pLine;
+	for ( int y = ey - sy; y != 0; y-- )
+	{	
+		pColumn = pLine;
+		for ( int x = width; x != 0; x-- )
+		{	
+			*pColumn = 255; 
+			pColumn += 4;
+		}
+		pLine -= bmp.bmWidthBytes;
+	}
 	if (f)
 	{
 		SetBitmapBits(hbmp,bmp.bmWidthBytes*bmp.bmHeight,bits);    
@@ -2887,21 +2904,27 @@ static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD hei
 				int matrixHor,matrixVer;
 				val=0;			
 				for (matrixVer=mcTopStart; matrixVer<mcBottomEnd; matrixVer++)
+				{
+					int buflineStep = width*(matrixVer-2);
+					int as=y+matrixVer-2;
+					sbyte * buflineTopS=NULL;
+					if (as>=0 && (DWORD)as<height) buflineTopS=buflineMid+buflineStep;
+
 					for (matrixHor=mcLeftStart; matrixHor<mcRightEnd;matrixHor++)
 					{						
-						int a=y+matrixVer-2;
-						buflineTop=NULL;
-						if (a>=0 && (DWORD)a<height) buflineTop=buflineMid+width*(matrixVer-2);
+						int a=as;
+						buflineTop = buflineTopS;
 						a=x+matrixHor-2;
 						if (buflineTop && a>=0 && (DWORD)a<width) buflineTop+=matrixHor-2;
 						else buflineTop=NULL;
 						if (buflineTop) 
 							val+=((*buflineTop)*matrix[matrixVer*5+matrixHor]); 					
 					}
-					val=(val+1)>>5;
-					*bufline=(sbyte)((val>127)?127:(val<-125)?-125:val);
-					bufline++;
-					buflineMid++;
+				}
+				val=(val+1)>>5;
+				*bufline=(sbyte)((val>127)?127:(val<-125)?-125:val);
+				bufline++;
+				buflineMid++;
 			}
 		}
 		free(buf);

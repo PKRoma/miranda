@@ -368,14 +368,6 @@ static int clcProceedDragToScroll(HWND hwnd, int Y)
 }
 
 
-static void clcSetSortTimer (HWND hwnd)
-{
-	if ( !g_bSortTimerIsSet )
-	{
-		CLUI_SafeSetTimer(hwnd,TIMERID_DELAYEDRESORTCLC,10 /*DBGetContactSettingByte(NULL,"CLUI","DELAYEDTIMER",10)*/,NULL);
-		g_bSortTimerIsSet = TRUE;
-	}
-}
 
 static int clcSearchNextContact(HWND hwnd, struct ClcData *dat, int index, const TCHAR *text, int prefixOk, BOOL fSearchUp)
 {
@@ -841,6 +833,23 @@ static LRESULT clcOnKeyDown(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPa
 
 }
 
+void clcSetDelayTimer( UINT_PTR uIDEvent, HWND hwnd, int nDelay)
+{
+	KillTimer( hwnd, uIDEvent );
+	int delay = nDelay;
+	if ( delay == -1)
+	{
+		switch ( uIDEvent ) 
+		{
+		case TIMERID_DELAYEDRESORTCLC:	delay = 10;		break;
+		case TIMERID_RECALCSCROLLBAR:	delay = 10;		break;
+		case TIMERID_REBUILDAFTER:		delay = 50;		break;
+		default:						delay = 100;	break;
+		}
+	}
+	CLUI_SafeSetTimer( hwnd, uIDEvent, delay, NULL );	
+}
+
 static LRESULT clcOnTimer(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(wParam)
@@ -894,10 +903,14 @@ static LRESULT clcOnTimer(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPara
 	case TIMERID_DELAYEDRESORTCLC:
 		{
 			TRACE("Do sort on Timer\n");
-			g_bSortTimerIsSet = FALSE;
-			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);
+			KillTimer(hwnd,TIMERID_DELAYEDRESORTCLC);			
+			pcli->pfnSortCLC(hwnd,dat,1);	
 			pcli->pfnInvalidateRect(hwnd,NULL,FALSE);
-			pcli->pfnSortCLC(hwnd,dat,1);
+			return 0;
+		}
+	case TIMERID_RECALCSCROLLBAR:
+		{
+			KillTimer(hwnd,TIMERID_RECALCSCROLLBAR);
 			pcli->pfnRecalcScrollBar(hwnd,dat);
 			return 0;
 		}
@@ -917,6 +930,7 @@ static LRESULT clcOnActivate(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wP
 		if ( dat->hwndRenameEdit == NULL )
 			PostMessage( hwnd, WM_SIZE, 0, 0);
 	}
+	dat->dragStage|= DRAGSTAGEF_SKIPRENAME;
 	return corecli.pfnContactListControlWndProc(hwnd, msg, wParam, lParam);
 }
 static LRESULT clcOnSetCursor(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -978,13 +992,22 @@ static LRESULT clcOnLButtonDown(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM
 		if(GetFocus()!=hwnd) SetFocus(hwnd);
 		if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE)) 
 		{
-			if(hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) 
+			if( hit==dat->selection && hitFlags&CLCHT_ONITEMLABEL && dat->exStyle&CLS_EX_EDITLABELS) 
 			{
-				SetCapture(hwnd);
-				dat->iDragItem=dat->selection;
-				dat->dragStage=DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME;
-				dat->dragAutoScrolling=0;
-				return TRUE;
+				if ( !(dat->dragStage&DRAGSTAGEF_SKIPRENAME) )
+				{
+					SetCapture(hwnd);
+					dat->iDragItem=dat->selection;
+					dat->dragStage=DRAGSTAGE_NOTMOVED|DRAGSTAGEF_MAYBERENAME;
+					dat->dragAutoScrolling=0;
+					return TRUE;
+				}
+				else
+				{
+					dat->dragStage&= ~DRAGSTAGEF_SKIPRENAME;
+					return TRUE;
+				}
+
 			}
 		}
 		if(hit!=-1 && !(hitFlags&CLCHT_NOWHERE) && contact->type==CLCIT_CONTACT && contact->SubAllocated && !contact->isSubcontact)
@@ -1108,6 +1131,19 @@ static LRESULT clcOnMouseMove(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM w
 	}
 	if (clcProceedDragToScroll(hwnd, (short)HIWORD(lParam)))
 		return 0;		
+
+	if ( dat->dragStage&DRAGSTAGEF_MAYBERENAME )
+	{
+		POINT pt;
+		pt.x= (short)LOWORD(lParam);
+		pt.y= (short)HIWORD(lParam);
+		if (  abs(pt.x-dat->ptDragStart.x)>GetSystemMetrics(SM_CXDOUBLECLK) 
+			||abs(pt.y-dat->ptDragStart.y)>GetSystemMetrics(SM_CYDOUBLECLK) )
+		{
+			KillTimer( hwnd, TIMERID_RENAME );
+			dat->dragStage&=(~DRAGSTAGEF_MAYBERENAME);
+		}
+	}
 
 	if (dat->iDragItem==-1)
 	{
@@ -1762,7 +1798,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 	if (dat->NeedResort)
 	{
 		TRACE("Sort required\n");
-		clcSetSortTimer(hwnd);
+		clcSetDelayTimer( TIMERID_DELAYEDRESORTCLC, hwnd );
 	}
 	else if (needRepaint) 
 	{

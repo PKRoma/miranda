@@ -4114,6 +4114,28 @@ int CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 	return 0;		
 }
 
+DEFINESYNCSERVICE( CLUIFrames_Service_RegisterFramePaintCallbackProcedure )
+DEFINESYNCSERVICE( CLUIFramesAddFrame )
+DEFINESYNCSERVICE( CLUIFramesRemoveFrame )
+DEFINESYNCSERVICE( CLUIFramesSetFrameOptions )
+DEFINESYNCSERVICE( CLUIFramesGetFrameOptions )
+DEFINESYNCSERVICE( CLUIFrames_UpdateFrame )
+DEFINESYNCSERVICE( CLUIFramesShowHideFrameTitleBar )
+DEFINESYNCSERVICE( CLUIFramesShowAllTitleBars )
+DEFINESYNCSERVICE( CLUIFramesHideAllTitleBars )
+DEFINESYNCSERVICE( CLUIFramesShowHideFrame )
+DEFINESYNCSERVICE( CLUIFramesShowAll )
+DEFINESYNCSERVICE( CLUIFramesLockUnlockFrame )
+DEFINESYNCSERVICE( CLUIFramesCollapseUnCollapseFrame )
+DEFINESYNCSERVICE( CLUIFramesSetUnSetBorder )
+DEFINESYNCSERVICE( CLUIFramesSetAlign )
+DEFINESYNCSERVICE( CLUIFramesMoveUpDown )
+DEFINESYNCSERVICE( CLUIFramesMoveUp )
+DEFINESYNCSERVICE( CLUIFramesMoveDown )
+DEFINESYNCSERVICE( CLUIFramesSetAlignalTop )
+DEFINESYNCSERVICE( CLUIFramesSetAlignalClient )
+DEFINESYNCSERVICE( CLUIFramesSetAlignalBottom )
+DEFINESYNCSERVICE( CLUIFrameSetFloat )
 
 int LoadCLUIFramesModule(void)
 {
@@ -4173,34 +4195,34 @@ int LoadCLUIFramesModule(void)
 	ModernHookEvent(ME_CLIST_PREBUILDMAINMENU,CLUIFrameOnMainMenuBuild); 
 	ModernHookEvent(ME_SYSTEM_PRESHUTDOWN,  CLUIFrameOnModulesUnload); 
 
-	CreateServiceFunction( MS_SKINENG_REGISTERPAINTSUB,	SyncService<CLUIFrames_Service_RegisterFramePaintCallbackProcedure> );
-	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,	SyncService<CLUIFramesAddFrame> );
-	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,	SyncService<CLUIFramesRemoveFrame> );
+	CreateServiceFunction( MS_SKINENG_REGISTERPAINTSUB,	SYNCSERVICE( CLUIFrames_Service_RegisterFramePaintCallbackProcedure ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,	SYNCSERVICE( CLUIFramesAddFrame ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,	SYNCSERVICE( CLUIFramesRemoveFrame ) );
 
-	CreateServiceFunction( MS_CLIST_FRAMES_SETFRAMEOPTIONS,	SyncService<CLUIFramesSetFrameOptions> );
-	CreateServiceFunction( MS_CLIST_FRAMES_GETFRAMEOPTIONS,	SyncService<CLUIFramesGetFrameOptions> );
-	CreateServiceFunction( MS_CLIST_FRAMES_UPDATEFRAME,		SyncService<CLUIFrames_UpdateFrame> );
+	CreateServiceFunction( MS_CLIST_FRAMES_SETFRAMEOPTIONS,	SYNCSERVICE( CLUIFramesSetFrameOptions ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_GETFRAMEOPTIONS,	SYNCSERVICE( CLUIFramesGetFrameOptions ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_UPDATEFRAME,		SYNCSERVICE( CLUIFrames_UpdateFrame ) );
 
-	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAMETITLEBAR,	SyncService<CLUIFramesShowHideFrameTitleBar> );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMESTB,	SyncService<CLUIFramesShowAllTitleBars> );
-	CreateServiceFunction( MS_CLIST_FRAMES_HIDEALLFRAMESTB,	SyncService<CLUIFramesHideAllTitleBars> );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAME,			SyncService<CLUIFramesShowHideFrame> );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMES,	SyncService<CLUIFramesShowAll> );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAMETITLEBAR,	SYNCSERVICE( CLUIFramesShowHideFrameTitleBar ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMESTB,	SYNCSERVICE( CLUIFramesShowAllTitleBars ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_HIDEALLFRAMESTB,	SYNCSERVICE( CLUIFramesHideAllTitleBars ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAME,			SYNCSERVICE( CLUIFramesShowHideFrame ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMES,	SYNCSERVICE( CLUIFramesShowAll ) );
 
-	CreateServiceFunction( MS_CLIST_FRAMES_ULFRAME,			SyncService<CLUIFramesLockUnlockFrame> );
-	CreateServiceFunction( MS_CLIST_FRAMES_UCOLLFRAME,		SyncService<CLUIFramesCollapseUnCollapseFrame> );
-	CreateServiceFunction( MS_CLIST_FRAMES_SETUNBORDER,		SyncService<CLUIFramesSetUnSetBorder> );
+	CreateServiceFunction( MS_CLIST_FRAMES_ULFRAME,			SYNCSERVICE( CLUIFramesLockUnlockFrame ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_UCOLLFRAME,		SYNCSERVICE( CLUIFramesCollapseUnCollapseFrame ) );
+	CreateServiceFunction( MS_CLIST_FRAMES_SETUNBORDER,		SYNCSERVICE( CLUIFramesSetUnSetBorder ) );
 
-	CreateServiceFunction( CLUIFRAMESSETALIGN,			SyncService<CLUIFramesSetAlign> );
-	CreateServiceFunction( CLUIFRAMESMOVEUPDOWN,		SyncService<CLUIFramesMoveUpDown> );
-	CreateServiceFunction( CLUIFRAMESMOVEUP,			SyncService<CLUIFramesMoveUp> );
-	CreateServiceFunction( CLUIFRAMESMOVEDOWN,			SyncService<CLUIFramesMoveDown> );
+	CreateServiceFunction( CLUIFRAMESSETALIGN,			SYNCSERVICE( CLUIFramesSetAlign ) );
+	CreateServiceFunction( CLUIFRAMESMOVEUPDOWN,		SYNCSERVICE( CLUIFramesMoveUpDown ) );
+	CreateServiceFunction( CLUIFRAMESMOVEUP,			SYNCSERVICE( CLUIFramesMoveUp ) );
+	CreateServiceFunction( CLUIFRAMESMOVEDOWN,			SYNCSERVICE( CLUIFramesMoveDown ) );
 
-	CreateServiceFunction( CLUIFRAMESSETALIGNALTOP,		SyncService<CLUIFramesSetAlignalTop> );
-	CreateServiceFunction( CLUIFRAMESSETALIGNALCLIENT,	SyncService<CLUIFramesSetAlignalClient> );
-	CreateServiceFunction( CLUIFRAMESSETALIGNALBOTTOM,	SyncService<CLUIFramesSetAlignalBottom> );
+	CreateServiceFunction( CLUIFRAMESSETALIGNALTOP,		SYNCSERVICE( CLUIFramesSetAlignalTop ) );
+	CreateServiceFunction( CLUIFRAMESSETALIGNALCLIENT,	SYNCSERVICE( CLUIFramesSetAlignalClient ) );
+	CreateServiceFunction( CLUIFRAMESSETALIGNALBOTTOM,	SYNCSERVICE( CLUIFramesSetAlignalBottom ) );
 
-	CreateServiceFunction( CLUIFRAMESSETFLOATING,		SyncService<CLUIFrameSetFloat> );
+	CreateServiceFunction( CLUIFRAMESSETFLOATING,		SYNCSERVICE( CLUIFrameSetFloat ) );
 
 	hWndExplorerToolBar	=FindWindowEx(0,0,TEXT("Shell_TrayWnd"),NULL);
 	OnFrameTitleBarBackgroundChange(0,0);
