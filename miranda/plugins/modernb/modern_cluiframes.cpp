@@ -26,7 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 #include "hdr/modern_sync.h"
 
+
 // ALL THIS MODULE FUNCTION SHOULD BE EXECUTED FROM MAIN THREAD 
+
+#include "hdr/modern_static_cluiframes_service.h" // contain services initialization and proxiation
+
 
 static const int UNCOLLAPSED_FRAME_SIZE		= 0;
 static const int DEFAULT_TITLEBAR_HEIGHT	= 18;
@@ -47,12 +51,12 @@ enum {
 
 enum { eUnknownId = -1 };
 
-static int	CLUIFrameSetFloat( WPARAM wParam,LPARAM lParam );
+static int	_us_DoSetFrameFloat( WPARAM wParam,LPARAM lParam );
 static int	CLUIFrameResizeFloatingFrame( int framepos );
 static HWND CreateSubContainerWindow( HWND parent,int x,int y,int width,int height );
 static BOOL CLUIFramesFitInSize();
 static int  RemoveItemFromList(int pos, FRAMEWND **lpFrames, int *FrameItemCount );
-static int  CLUIFrames_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam);
+static int  _us_DoSetFramePaintProc(WPARAM wParam, LPARAM lParam);
 
 
 
@@ -1160,7 +1164,7 @@ static int CLUIFramesModifyMainMenuItems(WPARAM wParam,LPARAM lParam)
 }
 
 
-static int CLUIFramesGetFrameOptions(WPARAM wParam,LPARAM lParam)
+static int _us_DoGetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 	int retval;
@@ -1263,7 +1267,7 @@ static int UpdateTBToolTip(int framepos)
 
 };
 //hiword(wParam)=frameid,loword(wParam)=flag
-static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
+static int _us_DoSetFrameOptions(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 	int retval; // value to be returned
@@ -1417,7 +1421,7 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 			g_pfwFrames[pos].floating=!(lParam);
 
 
-			CLUIFrameSetFloat(id,1);//lparam=1 use stored width and height
+			CLUIFrames_SetFrameFloat(id,1);//lparam=1 use stored width and height
 			return(wParam);
 		}
 
@@ -1444,7 +1448,7 @@ static int CLUIFramesSetFrameOptions(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=lparam=0
-static int CLUIFramesShowAll(WPARAM wParam,LPARAM lParam)
+static int _us_DoShowAllFrames(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -1457,7 +1461,7 @@ static int CLUIFramesShowAll(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=lparam=0
-static int CLUIFramesShowAllTitleBars(WPARAM wParam,LPARAM lParam)
+static int _us_DoShowTitles(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -1470,7 +1474,7 @@ static int CLUIFramesShowAllTitleBars(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=lparam=0
-static int CLUIFramesHideAllTitleBars(WPARAM wParam,LPARAM lParam)
+static int _us_DoHideTitles(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -1483,7 +1487,7 @@ static int CLUIFramesHideAllTitleBars(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=frameid
-static int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoShowHideFrame(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 
@@ -1513,7 +1517,7 @@ static int CLUIFramesShowHideFrame(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=frameid
-static int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
+static int _us_DoShowHideFrameTitle(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 
@@ -1535,7 +1539,7 @@ static int CLUIFramesShowHideFrameTitleBar(WPARAM wParam,LPARAM lParam)
 
 //wparam=frameid
 //lparam=-1 up ,1 down
-static int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
+static int _us_DoMoveFrame(WPARAM wParam,LPARAM lParam)
 {
 	int pos,i,curpos,curalign,v,tmpval;
 
@@ -1597,46 +1601,46 @@ static int CLUIFramesMoveUpDown(WPARAM wParam,LPARAM lParam)
 
 
 
-static int CLUIFramesMoveUp(WPARAM wParam,LPARAM lParam)
+static int _us_DoMoveFrameUp(WPARAM wParam,LPARAM lParam)
 {
-	return CLUIFramesMoveUpDown(wParam,(LPARAM)+1);
+	return CLUIFrames_MoveFrame(wParam,(LPARAM)+1);
 }
-static int CLUIFramesMoveDown(WPARAM wParam,LPARAM lParam)
+static int _us_DoMoveFrameDown(WPARAM wParam,LPARAM lParam)
 {
-	return CLUIFramesMoveUpDown(wParam,(LPARAM)-1);
+	return CLUIFrames_MoveFrame(wParam,(LPARAM)-1);
 }
 //wparam=frameid
 //lparam=alignment
-static int CLUIFramesSetAlign(WPARAM wParam,LPARAM lParam)
+static int _us_DoSetFrameAlign(WPARAM wParam,LPARAM lParam)
 {
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-	CLUIFramesSetFrameOptions(MAKEWPARAM(FO_ALIGN,wParam),lParam);
+	CLUIFrames_SetFrameOptions(MAKEWPARAM(FO_ALIGN,wParam),lParam);
 	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,0);		
 	return(0);
 }
-static int CLUIFramesSetAlignalTop(WPARAM wParam,LPARAM lParam)
+static int _us_DoAlignFrameTop(WPARAM wParam,LPARAM lParam)
 {
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-	return CLUIFramesSetAlign(wParam,alTop);
+	return CLUIFrames_SetFrameAlign(wParam,alTop);
 }
-static int CLUIFramesSetAlignalBottom(WPARAM wParam,LPARAM lParam)
+static int _us_DoAlignFrameBottom(WPARAM wParam,LPARAM lParam)
 {
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-	return CLUIFramesSetAlign(wParam,alBottom);
+	return CLUIFrames_SetFrameAlign(wParam,alBottom);
 }
-static int CLUIFramesSetAlignalClient(WPARAM wParam,LPARAM lParam)
+static int _us_DoAlignFrameClient(WPARAM wParam,LPARAM lParam)
 {
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-	return CLUIFramesSetAlign(wParam,alClient);
+	return CLUIFrames_SetFrameAlign(wParam,alClient);
 }
 
 
 //wparam=frameid
-static int CLUIFramesLockUnlockFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoLockFrame(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 
@@ -1653,7 +1657,7 @@ static int CLUIFramesLockUnlockFrame(WPARAM wParam,LPARAM lParam)
 }
 
 //wparam=frameid
-static int CLUIFramesSetUnSetBorder(WPARAM wParam,LPARAM lParam)
+static int _us_DoSetFrameBorder(WPARAM wParam,LPARAM lParam)
 {
 	RECT rc;
 	int FrameId,oldflags;
@@ -1686,7 +1690,7 @@ static int CLUIFramesSetUnSetBorder(WPARAM wParam,LPARAM lParam)
 	return(0);
 };
 //wparam=frameid
-static int CLUIFramesCollapseUnCollapseFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoCollapseFrame(WPARAM wParam,LPARAM lParam)
 {
 	int FrameId;
 
@@ -1936,7 +1940,7 @@ static int CLUILoadTitleBarFont()
 
 
 //wparam=(CLISTFrame*)clfrm
-static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoAddFrame(WPARAM wParam,LPARAM lParam)
 {
 	int style,retval;
 	//char * CustomName=NULL;
@@ -2112,10 +2116,10 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 
 		g_pfwFrames[g_nFramesCount-1].floating=FALSE;
 		//SetWindowPos(Frames[nFramescount-1].hw
-		CLUIFrameSetFloat(retval,1);//lparam=1 use stored width and height
+		CLUIFrames_SetFrameFloat(retval,1);//lparam=1 use stored width and height
 	}
 	else
-		CLUIFrameSetFloat(retval,2);
+		CLUIFrames_SetFrameFloat(retval,2);
 
 	/** Remove	*/
 	//_ExtFramesSrv_AddFrame( wParam,  lParam);
@@ -2123,7 +2127,7 @@ static int CLUIFramesAddFrame(WPARAM wParam,LPARAM lParam)
 	return retval;
 }
 
-static int CLUIFramesRemoveFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoRemoveFrame(WPARAM wParam,LPARAM lParam)
 {
 	int pos;
 	if (_fCluiFramesModuleNotStarted) return -1;
@@ -2543,7 +2547,7 @@ int CLUIFrames_ApplyNewSizes(int mode)
 	return 0;
 }
 
-static int CLUIFrames_UpdateFrame(WPARAM wParam,LPARAM lParam)
+static int _us_DoUpdateFrame(WPARAM wParam,LPARAM lParam)
 {
 	if (_fCluiFramesModuleNotStarted) return -1;
 	if(wParam==-1) { CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0); return 0;}
@@ -3163,7 +3167,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 				g_pfwFrames[framepos].TitleBar.ShowTitleBar=!g_pfwFrames[framepos].TitleBar.ShowTitleBar;
 				break;
 			case frame_menu_floating:
-				CLUIFrameSetFloat(Frameid,0);
+				CLUIFrames_SetFrameFloat(Frameid,0);
 				break;
 			}
 			CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
@@ -3344,7 +3348,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 						ClientToScreen(g_pfwFrames[pos].TitleBar.hwnd,&ofspt);
 						ofspt.x=curpt.x-ofspt.x;ofspt.y=curpt.y-ofspt.y;
 
-						CLUIFrameSetFloat(id,0);
+						CLUIFrames_SetFrameFloat(id,0);
 						newpt.x=0;newpt.y=0;
 						ClientToScreen(g_pfwFrames[pos].TitleBar.hwnd,&newpt);
 						SetCursorPos(newpt.x+ofspt.x,newpt.y+ofspt.y);
@@ -3389,7 +3393,7 @@ static LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam
 
 						g_pfwFrames[pos].FloatingPos.x=newpos.x;
 						g_pfwFrames[pos].FloatingPos.y=newpos.y;
-						CLUIFrameSetFloat(id,0);				
+						CLUIFrames_SetFrameFloat(id,0);				
 						//SetWindowPos(Frames[pos].ContainerWnd,0,newpos.x,newpos.y,0,0,SWP_NOSIZE);
 
 
@@ -3857,7 +3861,7 @@ static LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wP
 
 					g_pfwFrames[framepos].FloatingPos.x=newpos.x;
 					g_pfwFrames[framepos].FloatingPos.y=newpos.y;
-					CLUIFrameSetFloat(Frameid,0);				
+					CLUIFrames_SetFrameFloat(Frameid,0);				
 					//SetWindowPos(Frames[pos].ContainerWnd,0,newpos.x,newpos.y,0,0,SWP_NOSIZE);
 
 
@@ -3940,7 +3944,7 @@ static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 };
 
 
-static int CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
+static int _us_DoSetFrameFloat(WPARAM wParam,LPARAM lParam)
 {	
 	int hwndtmp,hwndtooltiptmp;
 
@@ -4114,29 +4118,6 @@ int CLUIFrameOnModulesUnload(WPARAM wParam,LPARAM lParam)
 	return 0;		
 }
 
-DEFINESYNCSERVICE( CLUIFrames_Service_RegisterFramePaintCallbackProcedure )
-DEFINESYNCSERVICE( CLUIFramesAddFrame )
-DEFINESYNCSERVICE( CLUIFramesRemoveFrame )
-DEFINESYNCSERVICE( CLUIFramesSetFrameOptions )
-DEFINESYNCSERVICE( CLUIFramesGetFrameOptions )
-DEFINESYNCSERVICE( CLUIFrames_UpdateFrame )
-DEFINESYNCSERVICE( CLUIFramesShowHideFrameTitleBar )
-DEFINESYNCSERVICE( CLUIFramesShowAllTitleBars )
-DEFINESYNCSERVICE( CLUIFramesHideAllTitleBars )
-DEFINESYNCSERVICE( CLUIFramesShowHideFrame )
-DEFINESYNCSERVICE( CLUIFramesShowAll )
-DEFINESYNCSERVICE( CLUIFramesLockUnlockFrame )
-DEFINESYNCSERVICE( CLUIFramesCollapseUnCollapseFrame )
-DEFINESYNCSERVICE( CLUIFramesSetUnSetBorder )
-DEFINESYNCSERVICE( CLUIFramesSetAlign )
-DEFINESYNCSERVICE( CLUIFramesMoveUpDown )
-DEFINESYNCSERVICE( CLUIFramesMoveUp )
-DEFINESYNCSERVICE( CLUIFramesMoveDown )
-DEFINESYNCSERVICE( CLUIFramesSetAlignalTop )
-DEFINESYNCSERVICE( CLUIFramesSetAlignalClient )
-DEFINESYNCSERVICE( CLUIFramesSetAlignalBottom )
-DEFINESYNCSERVICE( CLUIFrameSetFloat )
-
 int LoadCLUIFramesModule(void)
 {
 	WNDCLASS wndclass;
@@ -4195,34 +4176,8 @@ int LoadCLUIFramesModule(void)
 	ModernHookEvent(ME_CLIST_PREBUILDMAINMENU,CLUIFrameOnMainMenuBuild); 
 	ModernHookEvent(ME_SYSTEM_PRESHUTDOWN,  CLUIFrameOnModulesUnload); 
 
-	CreateServiceFunction( MS_SKINENG_REGISTERPAINTSUB,	SYNCSERVICE( CLUIFrames_Service_RegisterFramePaintCallbackProcedure ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_ADDFRAME,	SYNCSERVICE( CLUIFramesAddFrame ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_REMOVEFRAME,	SYNCSERVICE( CLUIFramesRemoveFrame ) );
+    CreateCluiFramesServices();
 
-	CreateServiceFunction( MS_CLIST_FRAMES_SETFRAMEOPTIONS,	SYNCSERVICE( CLUIFramesSetFrameOptions ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_GETFRAMEOPTIONS,	SYNCSERVICE( CLUIFramesGetFrameOptions ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_UPDATEFRAME,		SYNCSERVICE( CLUIFrames_UpdateFrame ) );
-
-	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAMETITLEBAR,	SYNCSERVICE( CLUIFramesShowHideFrameTitleBar ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMESTB,	SYNCSERVICE( CLUIFramesShowAllTitleBars ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_HIDEALLFRAMESTB,	SYNCSERVICE( CLUIFramesHideAllTitleBars ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHFRAME,			SYNCSERVICE( CLUIFramesShowHideFrame ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_SHOWALLFRAMES,	SYNCSERVICE( CLUIFramesShowAll ) );
-
-	CreateServiceFunction( MS_CLIST_FRAMES_ULFRAME,			SYNCSERVICE( CLUIFramesLockUnlockFrame ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_UCOLLFRAME,		SYNCSERVICE( CLUIFramesCollapseUnCollapseFrame ) );
-	CreateServiceFunction( MS_CLIST_FRAMES_SETUNBORDER,		SYNCSERVICE( CLUIFramesSetUnSetBorder ) );
-
-	CreateServiceFunction( CLUIFRAMESSETALIGN,			SYNCSERVICE( CLUIFramesSetAlign ) );
-	CreateServiceFunction( CLUIFRAMESMOVEUPDOWN,		SYNCSERVICE( CLUIFramesMoveUpDown ) );
-	CreateServiceFunction( CLUIFRAMESMOVEUP,			SYNCSERVICE( CLUIFramesMoveUp ) );
-	CreateServiceFunction( CLUIFRAMESMOVEDOWN,			SYNCSERVICE( CLUIFramesMoveDown ) );
-
-	CreateServiceFunction( CLUIFRAMESSETALIGNALTOP,		SYNCSERVICE( CLUIFramesSetAlignalTop ) );
-	CreateServiceFunction( CLUIFRAMESSETALIGNALCLIENT,	SYNCSERVICE( CLUIFramesSetAlignalClient ) );
-	CreateServiceFunction( CLUIFRAMESSETALIGNALBOTTOM,	SYNCSERVICE( CLUIFramesSetAlignalBottom ) );
-
-	CreateServiceFunction( CLUIFRAMESSETFLOATING,		SYNCSERVICE( CLUIFrameSetFloat ) );
 
 	hWndExplorerToolBar	=FindWindowEx(0,0,TEXT("Shell_TrayWnd"),NULL);
 	OnFrameTitleBarBackgroundChange(0,0);
@@ -4288,7 +4243,7 @@ int UnLoadCLUIFramesModule(void)
 	return 0;
 }
 
-static int CLUIFrames_Service_RegisterFramePaintCallbackProcedure(WPARAM wParam, LPARAM lParam)
+static int _us_DoSetFramePaintProc(WPARAM wParam, LPARAM lParam)
 {
 	if (!wParam) return 0;
 	{

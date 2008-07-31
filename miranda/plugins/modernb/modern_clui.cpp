@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_sync.h"
 
 HRESULT (WINAPI *g_proc_DWMEnableBlurBehindWindow)(HWND hWnd, DWM_BLURBEHIND *pBlurBehind);
+BOOL CALLBACK ProcessCLUIFrameInternalMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT& result );
 
 // new sources
 #ifdef _MSC_VER
@@ -1681,7 +1682,15 @@ int CLUI_OnSizingMoving(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{    
+{   
+    {
+        // proxy CLUI Messages
+        LRESULT result = 0;
+        if ( ProcessCLUIFrameInternalMsg( hwnd, msg, wParam, lParam, result ) ) 
+            return result;
+    }
+    
+
 	/*
 	This registers a window message with RegisterWindowMessage() and then waits for such a message,
 	if it gets it, it tries to open a file mapping object and then maps it to this process space,
@@ -1712,12 +1721,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		}
 		return rc;
 	}
-
-
-
-
-
-	switch (msg) 
+    
+    switch (msg) 
 	{
 	case WM_SIZE:
 	case WM_SIZING:
