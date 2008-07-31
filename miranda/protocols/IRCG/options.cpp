@@ -735,6 +735,7 @@ void CConnectPrefsDlg::OnApply()
 
 	m_nick.GetText( m_proto->m_nick, SIZEOF(m_proto->m_nick));
 	removeSpaces(m_proto->m_nick);
+	mir_sntprintf(m_proto->m_pNick,30, _T("%s"), m_proto->m_nick);
 	m_nick2.GetText( m_proto->m_alternativeNick, SIZEOF(m_proto->m_alternativeNick));
 	removeSpaces(m_proto->m_alternativeNick);
 	m_userID.GetText( m_proto->m_userID, SIZEOF(m_proto->m_userID));
@@ -1727,7 +1728,7 @@ void CIrcProto::InitPrefs(void)
 		if ( m_nick[0] != 0 )
 			setTString("PNick", m_nick);
 	}
-	else memcpy( m_nick, m_pNick, sizeof( m_nick ));
+//	else memcpy( m_nick, m_pNick, sizeof( m_nick ));
 
 	m_mySpecifiedHostIP[0] = 0;
 
@@ -1810,6 +1811,7 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 		m_port2.GetTextA( m_proto->m_portEnd, SIZEOF(m_proto->m_portEnd));
 		m_pass.GetTextA( m_proto->m_password, SIZEOF(m_proto->m_password));
 		CallService( MS_DB_CRYPT_ENCODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
+		mir_sntprintf(m_proto->m_pNick, 30, _T("%s"), m_proto->m_nick);
 		m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 		CallService( MS_DB_CRYPT_DECODESTRING, SIZEOF(m_proto->m_password), (LPARAM)m_proto->m_password);
 
