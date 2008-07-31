@@ -181,25 +181,31 @@ void CJabberProto::OnLoggedIn( ThreadData* info )
 
 	QueryPrivacyLists( info );
 
-	char szServerName[ sizeof(info->server) ];
-	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
-		SendGetVcard( m_szJabberJID );
-	else if ( strcmp( info->server, szServerName ))
-		SendGetVcard( m_szJabberJID );
-	JSetString( NULL, "LastLoggedServer", info->server );
-
-	//Check if avatar changed
-	DBVARIANT dbvSaved = {0};
-	DBVARIANT dbvHash = {0};
-	int resultSaved = JGetStringT( NULL, "AvatarSaved", &dbvSaved );
-	int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
-	if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
-		char tFileName[ MAX_PATH ];
-		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		SetServerVcard( TRUE, tFileName );
+	BOOL bSendVcardRequest = TRUE;
+	DBVARIANT dbvLastLoggedJID = {0};
+	if ( !JGetStringT( NULL, "LastLoggedJID", &dbvLastLoggedJID )) {
+		if ( !_tcsicmp( m_szJabberJID, dbvLastLoggedJID.ptszVal ))
+			bSendVcardRequest = FALSE;
+		JFreeVariant( &dbvLastLoggedJID );
 	}
-	DBFreeVariant(&dbvSaved);
-	DBFreeVariant(&dbvHash);
+	JSetStringT( NULL, "LastLoggedJID", m_szJabberJID );
+
+	if ( bSendVcardRequest )
+		SendGetVcard( m_szJabberJID );
+	else {
+		//Check if avatar changed
+		DBVARIANT dbvSaved = {0};
+		DBVARIANT dbvHash = {0};
+		int resultSaved = JGetStringT( NULL, "AvatarSaved", &dbvSaved );
+		int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
+		if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
+			char tFileName[ MAX_PATH ];
+			GetAvatarFileName( NULL, tFileName, MAX_PATH );
+			SetServerVcard( TRUE, tFileName );
+		}
+		DBFreeVariant(&dbvSaved);
+		DBFreeVariant(&dbvHash);
+	}
 }
 
 void CJabberProto::OnIqResultGetAuth( XmlNode *iqNode, void *userdata )
@@ -1350,20 +1356,12 @@ void CJabberProto::OnIqResultSetPassword( XmlNode *iqNode, void *userdata )
 	else if ( !lstrcmp( type, _T("error")))
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
-/*
-void CJabberProto::OnIqResultDiscoAgentItems( XmlNode *iqNode, void *userdata )
-{
-	if ( !JGetByte( "EnableAvatars", TRUE ))
-		return;
-}
-*/
+
 void CJabberProto::OnIqResultGetAvatar( XmlNode *iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	TCHAR* type;
 
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
 	Log( "<iq/> iqIdResultGetAvatar" );
 	if (( type=JabberXmlGetAttrValue( iqNode, "type" )) == NULL )   return;
 	if ( _tcscmp( type, _T("result")))                              return;

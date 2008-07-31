@@ -108,7 +108,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 		char szSavedHash[ 256 ];
 		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash )) {
 			if ( !strcmp( szSavedHash, szHashValue )) {
-				Log( "Avatar is Ok: %s == %s", szSavedHash, szHashValue );
+				Log( "Avatar is ok, hash: %s", szSavedHash );
 				return GAIR_SUCCESS;
 	}	}	}
 
@@ -134,7 +134,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 				if ( isXVcard )
 					iq.addChild( "vCard" )->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
 				else
-					iq.addQuery( isXVcard ? "" : JABBER_FEAT_AVATAR );
+					iq.addQuery( JABBER_FEAT_AVATAR );
 				m_ThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );

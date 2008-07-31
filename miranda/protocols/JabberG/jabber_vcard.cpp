@@ -1210,7 +1210,7 @@ void CJabberProto::OnUserInfoInit_VCard( WPARAM wParam, LPARAM lParam )
 
 	odp.pfnDlgProc = NoteDlgProc;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_VCARD_NOTE);
-	odp.ptszTab = LPGENT("Note");
+	odp.ptszTab = LPGENT("About");
 	JCallService( MS_USERINFO_ADDPAGE, wParam, ( LPARAM )&odp );
 
 	SendGetVcard( m_szJabberJID );
