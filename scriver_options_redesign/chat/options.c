@@ -346,7 +346,7 @@ void RegisterFonts( void )
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
 	for (i = 0; i < SIZEOF(fontOptionsList); i++, index++) {
 		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
-		_tcsncpy(fontid.group, _T("Scriver/Group Chats"), SIZEOF(fontid.group));
+                mir_sntprintf(fontid.group, SIZEOF(fontid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
 		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
 		sprintf(idstr, "Font%d", index);
 		strncpy(fontid.prefix, idstr, sizeof(fontid.prefix));
@@ -357,7 +357,7 @@ void RegisterFonts( void )
 		fontid.deffontsettings.size = fontOptionsList[i].defSize;
 		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
 		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
-		_tcsncpy(fontid.backgroundGroup, _T("Scriver/Group Chats"), SIZEOF(fontid.backgroundGroup));
+                mir_sntprintf(fontid.backgroundGroup, SIZEOF(fontid.backgroundGroup), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
 		switch (i) {
 		case 17:
 			_tcsncpy(fontid.backgroundName, _T("Message background"), SIZEOF(fontid.backgroundName));
@@ -379,7 +379,7 @@ void RegisterFonts( void )
 
 	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
 	_tcsncpy(colourid.name, LPGENT("Background"), SIZEOF(colourid.name));
-	_tcsncpy(colourid.group, LPGENT("Scriver/Group Chats"), SIZEOF(colourid.group));
+        mir_sntprintf(colourid.group, SIZEOF(colourid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
@@ -410,13 +410,15 @@ void AddIcons(void)
 {
 	SKINICONDESC sid = {0};
 	TCHAR szFile[MAX_PATH];
+        TCHAR tTemp[500];
 
 	sid.cbSize = sizeof(SKINICONDESC);
 	// 16x16 icons
 	sid.cx = sid.cy = 16;
 	sid.flags = SIDF_ALL_TCHAR;
 
-	sid.ptszSection = LPGENT("Scriver/Chat windows");
+        mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
+	sid.ptszSection = tTemp;
 	GetModuleFileName(g_hInst, szFile, MAX_PATH);
 	sid.ptszDefaultFile = szFile;
 
@@ -523,7 +525,8 @@ void AddIcons(void)
 	sid.iDefaultIndex = -IDI_STATUS5;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-	sid.ptszSection = LPGENT("Scriver/Chat log");
+        mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats Log"));
+	sid.ptszSection = tTemp;
 	sid.ptszDescription = LPGENT("Message in (10x10)");
 	sid.pszName = "chat_log_message_in";
 	sid.iDefaultIndex = -IDI_INCOMING;

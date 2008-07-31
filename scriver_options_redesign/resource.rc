@@ -42,8 +42,6 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,23,141,10
     CONTROL         "and do not steal focus",IDC_DONOTSTEALFOCUS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,34,141,10
-    CONTROL         "Close on send",IDC_AUTOCLOSE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,140,10
     CONTROL         "Minimize on send",IDC_AUTOMIN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,69,152,10
     CONTROL         "Save splitter position for each contact",

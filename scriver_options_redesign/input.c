@@ -323,7 +323,7 @@ void RegisterKeyBindings() {
 	HOTKEYDESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.cbSize = sizeof(desc);
-	desc.pszSection = "Scriver";
+	desc.pszSection = "Messaging";
 	desc.pszName = "Scriver/Nav/Previous Tab";
 	desc.pszDescription = "Navigate: Previous Tab";
 	desc.lParam = KB_PREV_TAB;
