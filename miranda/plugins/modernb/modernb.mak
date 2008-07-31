@@ -27,6 +27,10 @@ NULL=
 NULL=nul
 !ENDIF
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "modernb - Win32 Release"
 
 OUTDIR=.\Release
@@ -80,6 +84,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modern_statusbar_options.obj"
+	-@erase "$(INTDIR)\modern_sync.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -96,42 +101,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
@@ -188,7 +159,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_sync.obj"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -248,6 +220,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modern_statusbar_options.obj"
+	-@erase "$(INTDIR)\modern_sync.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -264,42 +237,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
@@ -356,7 +295,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_sync.obj"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -416,6 +356,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modern_statusbar_options.obj"
+	-@erase "$(INTDIR)\modern_sync.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -432,42 +373,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
@@ -524,7 +431,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_sync.obj"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -584,6 +492,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_skinselector.obj"
 	-@erase "$(INTDIR)\modern_statusbar.obj"
 	-@erase "$(INTDIR)\modern_statusbar_options.obj"
+	-@erase "$(INTDIR)\modern_sync.obj"
 	-@erase "$(INTDIR)\modern_tbbutton.obj"
 	-@erase "$(INTDIR)\modern_toolbar.obj"
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
@@ -600,42 +509,8 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
@@ -692,7 +567,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\modern_sync.obj"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -700,6 +576,36 @@ LINK32_OBJS= \
 <<
 
 !ENDIF
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -1515,6 +1421,11 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 SOURCE=.\modern_statusbar_options.cpp
 
 "$(INTDIR)\modern_statusbar_options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
+
+
+SOURCE=.\modern_sync.cpp
+
+"$(INTDIR)\modern_sync.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\modernb.pch"
 
 
 SOURCE=.\modern_tbbutton.cpp

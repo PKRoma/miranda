@@ -346,6 +346,10 @@ SOURCE=.\modern_statusbar_options.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\modern_sync.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\modern_tbbutton.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
