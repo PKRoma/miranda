@@ -9,6 +9,7 @@
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
@@ -35,6 +36,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -42,10 +44,10 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_assocmgr.h"\
 	".\sdk\m_folders.h"\
-	".\sdk\m_icolib.h"\
 	".\sdk\m_toolbar.h"\
 	".\sdk\m_wizard.h"\
 	".\ui_utils.h"\
@@ -86,6 +88,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -93,6 +96,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -132,6 +136,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -139,6 +144,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -178,6 +184,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -185,6 +192,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -224,6 +232,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -231,6 +240,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -270,6 +280,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -277,6 +288,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -317,6 +329,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -324,6 +337,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -363,6 +377,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -370,6 +385,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -409,6 +425,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -416,6 +433,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -457,6 +475,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -464,6 +483,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_proto_listeningto.h"\
 	".\ui_utils.h"\
@@ -504,6 +524,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -511,6 +532,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -550,6 +572,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -557,6 +580,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -596,6 +620,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -603,6 +628,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -642,6 +668,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -649,6 +676,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -688,6 +716,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -695,6 +724,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -735,6 +765,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -742,7 +773,9 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
+	".\sdk\m_cluiframes.h"\
 	".\ui_utils.h"\
 	".\version.h"\
 	
@@ -781,6 +814,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_iq_handlers.h"\
 	".\jabber_list.h"\
@@ -789,6 +823,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -828,6 +863,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_iq_handlers.h"\
 	".\jabber_list.h"\
@@ -836,6 +872,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -877,6 +914,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -884,6 +922,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -923,6 +962,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -930,6 +970,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -969,6 +1010,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -976,6 +1018,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1015,6 +1058,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1022,6 +1066,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1065,6 +1110,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1072,6 +1118,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_toolbar.h"\
 	".\ui_utils.h"\
@@ -1112,6 +1159,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1119,6 +1167,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_folders.h"\
 	".\ui_utils.h"\
@@ -1159,6 +1208,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_opttree.h"\
@@ -1167,6 +1217,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_modernopt.h"\
 	".\sdk\m_wizard.h"\
@@ -1209,6 +1260,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_opttree.h"\
@@ -1217,6 +1269,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1256,6 +1309,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1263,6 +1317,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1278,6 +1333,7 @@
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
@@ -1304,6 +1360,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1311,6 +1368,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1354,6 +1412,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1361,6 +1420,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_modernopt.h"\
 	".\sdk\m_proto_listeningto.h"\
@@ -1402,6 +1462,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1409,6 +1470,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1449,6 +1511,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1456,6 +1519,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1495,6 +1559,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1502,6 +1567,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1541,6 +1607,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1549,6 +1616,7 @@
 	".\jabber_search.h"\
 	".\jabber_secur.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1588,6 +1656,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1595,6 +1664,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1636,6 +1706,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1643,6 +1714,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_proto_listeningto.h"\
 	".\ui_utils.h"\
@@ -1683,6 +1755,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1691,6 +1764,7 @@
 	".\jabber_search.h"\
 	".\jabber_secur.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1731,6 +1805,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1738,6 +1813,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1778,6 +1854,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1785,6 +1862,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1826,6 +1904,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1833,6 +1912,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1872,6 +1952,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1879,6 +1960,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1918,6 +2000,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1925,6 +2008,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -1964,6 +2048,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -1971,6 +2056,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -2013,6 +2099,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -2020,6 +2107,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\sdk\m_cluiframes.h"\
 	".\sdk\m_proto_listeningto.h"\
@@ -2062,6 +2150,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -2069,6 +2158,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -2108,6 +2198,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -2115,6 +2206,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
@@ -2154,6 +2246,7 @@
 	".\jabber_caps.h"\
 	".\jabber_disco.h"\
 	".\jabber_ibb.h"\
+	".\jabber_icolib.h"\
 	".\jabber_iq.h"\
 	".\jabber_list.h"\
 	".\jabber_privacy.h"\
@@ -2161,6 +2254,7 @@
 	".\jabber_rc.h"\
 	".\jabber_search.h"\
 	".\jabber_xml.h"\
+	".\jabber_xstatus.h"\
 	".\MString.h"\
 	".\ui_utils.h"\
 	".\version.h"\
