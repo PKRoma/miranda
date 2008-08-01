@@ -944,6 +944,22 @@ SOURCE=.\modules\icolib\skin2icons.cpp
 SOURCE=.\modules\updatenotify\updatenotify.cpp
 # End Source File
 # End Group
+# Begin Group "xml"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\modules\xml\xmlApi.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\xml\xmlParser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\xml\xmlParser.h
+# End Source File
+# End Group
 # End Group
 # Begin Group "Resources"
 

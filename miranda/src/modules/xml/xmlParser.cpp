@@ -76,19 +76,9 @@
  *
  ****************************************************************************
  */
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif
+
+#include "commonheaders.h"
 #include "xmlParser.h"
-#ifdef _XMLWINDOWS
-//#ifdef _DEBUG
-//#define _CRTDBG_MAP_ALLOC
-//#include <crtdbg.h>
-//#endif
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h> // to have IsTextUnicode, MultiByteToWideChar, WideCharToMultiByte to handle unicode files
-                     // to have "MessageBoxA" to display error messages for openFilHelper
-#endif
 
 #include <memory.h>
 #include <assert.h>
@@ -1735,6 +1725,7 @@ XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults)
             // Find which line and column it starts on.
             CountLinesAndColumns(xml.lpXML, xml.nIndex, pResults);
         }
+		  else pResults->nColumn = xml.nIndex+1;
     }
     return xnode;
 }
@@ -2217,7 +2208,7 @@ XMLNode XMLNode::addChild(XMLNode childNode, int pos)
     if (!dc->lpszName)
     {
         // this is a root node: todo: correct fix
-        int i,j=pos;
+        int j=pos;
         while (dc->nChild)
         {
             addChild(dc->pChild[0],j);

@@ -3084,6 +3084,19 @@
 					</FileConfiguration>
 				</File>
 			</Filter>
+			<Filter
+				Name="xml"
+				Filter="">
+				<File
+					RelativePath=".\modules\xml\xmlApi.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\xml\xmlParser.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\xml\xmlParser.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"

@@ -29,6 +29,7 @@ void FreeWindowList(void);
 int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
+void InitXmlApi(void);
 int InitPathUtils(void);
 void md5_init(mir_md5_state_t *pms);
 void md5_append(mir_md5_state_t *pms, const mir_md5_byte_t *data, int nbytes);
@@ -442,7 +443,7 @@ static int RestartMiranda(WPARAM wParam, LPARAM lParam)
 	mir_sntprintf( cmdLine, SIZEOF( cmdLine ), _T("/restart:%d"), GetCurrentProcessId());
 	CreateProcess( mirandaPath, cmdLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi );
 	return 0;
-}	
+}
 
 int LoadUtilsModule(void)
 {
@@ -462,6 +463,7 @@ int LoadUtilsModule(void)
 	InitColourPicker();
 	InitBitmapFilter();
 	InitPathUtils();
+	InitXmlApi();
 	return 0;
 }
 
