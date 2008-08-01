@@ -793,6 +793,9 @@ HANDLE IcoLib_GetIconHandle( const char* pszIconName )
 
 HICON IcoLib_GetIconByHandle( HANDLE hItem )
 {
+	if ( hItem == NULL )
+		return NULL;
+
 	HICON result = hIconBlank;
 	IconItem* pi = ( IconItem* )hItem;
 
