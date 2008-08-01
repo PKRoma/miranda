@@ -366,7 +366,6 @@ void  CMsnProto::p2p_sendAck( HANDLE hContact, P2P_Header* hdrdata )
 	tHdr.mSessionID = hdrdata->mSessionID;
 	tHdr.mID = p2p_getMsgId(hContact, 1);
 	tHdr.mAckDataSize = hdrdata->mTotalSize;
-	tHdr.mTotalSize = hdrdata->mTotalSize;
 	tHdr.mFlags = 2;
 	tHdr.mAckSessionID = hdrdata->mID;
 	tHdr.mAckUniqueID = hdrdata->mAckSessionID;
@@ -1606,7 +1605,7 @@ void  CMsnProto::p2p_processMsg( ThreadData* info,  char* msgbody )
 	}
 
 	//---- receiving data -----------
-	if ( hdrdata->mFlags == 0x01000030 || hdrdata->mFlags == 0x20 ) 
+	if ( hdrdata->mFlags == 0x01000030 || hdrdata->mFlags == 0x20 || hdrdata->mFlags == 0x30 ) 
 	{
 		if ( hdrdata->mOffset + hdrdata->mPacketLen > hdrdata->mTotalSize )
 			hdrdata->mPacketLen = DWORD( hdrdata->mTotalSize - hdrdata->mOffset );
