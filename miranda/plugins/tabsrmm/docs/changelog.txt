@@ -20,8 +20,19 @@ Version 2.0.x.x was released in October 2007 and is the current "stable" version
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
 
-Version 2.2.1.8  - 2008/07/04
+Version 2.2.1.9  - 2008/07/15
 -----------------------------
+
+	! fix for layout distortions when switching message log viewer in an active
+	  tab.
+
+	* various source code cleanups and added comments (for devs only)
+
+	+ added more help hyperlinks to various option dialog boxes. These link to the
+	  wiki pages on the official documentation site.
+
+Version 2.2.1.8  - not public, released with Miranda 0.8 nightly #18)
+---------------------------------------------------------------------
 
 	* for devs only: Patch by ono to make the code to compile with GCC
 	  w/o problems.
@@ -30,7 +41,7 @@ Version 2.2.1.8  - 2008/07/04
 	  a container with a previouly not yet activated tab.
 
 	! fixed minor resource leak when the display of client icons in the
-	  status bar is enabled.
+	  status bar is enabled (advanced tweak).
 
 	! more minor fixes for the hidden container feature.
 
@@ -39,7 +50,7 @@ Version 2.2.1.7  - 2008/06/21
 
 	- internal, not released to public
 
-Version 2.2.1.6  - 2008/05/30
+Version 2.2.1.6  - not public
 -----------------------------
 
 	! fixed "Revert to safe defaults" bug in advanced tweaks dialog.

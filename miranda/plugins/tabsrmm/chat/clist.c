@@ -305,4 +305,3 @@ int WCCmp(TCHAR* wild, TCHAR* string)
 
 	return !*wild;
 }
-

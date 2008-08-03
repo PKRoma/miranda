@@ -2108,12 +2108,9 @@ panel_found:
 										int i_secs = diff % 60;
 
 										mir_sntprintf(szTtitle, safe_sizeof(szTtitle), _T("%s (%s) - Idle: %d:%02d:%02d"), contactName, cdat->szStatus[0] ? cdat->szStatus : _T("(undef)"), i_hrs, i_mins, i_secs);
-										//newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
 									}
-									else {
+									else
 										mir_sntprintf(szTtitle, safe_sizeof(szTtitle), _T("%s (%s)"), contactName, cdat->szStatus[0] ? cdat->szStatus : _T("(undef)"));
-										//newTitle = EncodeWithNickname(szTtitle, contactName, myGlobals.m_LangPackCP);
-									}
 									lstrcpyn(nmtt->szText, szTtitle, 80);
 									nmtt->szText[79] = 0;
 									nmtt->lpszText = nmtt->szText;
@@ -2556,12 +2553,10 @@ panel_found:
 				}
 			}
 			ws = wsold = GetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE);
-			if (pContainer->dwFlags & CNT_TABSBOTTOM) {
+			if (pContainer->dwFlags & CNT_TABSBOTTOM)
 				ws |= (TCS_BOTTOM);
-			}
-			else {
+			else
 				ws &= ~(TCS_BOTTOM);
-			}
 			if ((ws & (TCS_BOTTOM | TCS_MULTILINE)) != (wsold & (TCS_BOTTOM | TCS_MULTILINE))) {
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_STYLE, ws);
 				RedrawWindow(GetDlgItem(hwndDlg, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE);

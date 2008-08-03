@@ -1815,14 +1815,18 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 			wp.length = sizeof(wp);
 			GetWindowPlacement(pContainer->hwnd, &wp);
 
-			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);			// make sure all tabs will re-check layout on activation
+			/*
+			 * all tabs must re-check the layout on activation because adding a tab while
+			 * the container was hidden can make this necessary
+             */
+			BroadCastContainer(pContainer, DM_CHECKSIZE, 0, 0);
 			if(wp.showCmd == SW_SHOWMAXIMIZED)
 				ShowWindow(pContainer->hwnd, SW_SHOWMAXIMIZED);
 			else {
 				ShowWindow(pContainer->hwnd, SW_SHOWNA);
 				SetForegroundWindow(pContainer->hwnd);
 			}
-			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+			SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);			// make sure the active tab resizes its layout properly
 		}
 		//MaD_
 		else if (GetForegroundWindow() != pContainer->hwnd)
