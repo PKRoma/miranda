@@ -129,7 +129,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 exit:
 	delete[] username;
 	delete[] password;
-	broadcast_status(ID_STATUS_OFFLINE);
+	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
 	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	LOG("Connection Authorization Thread Ending: End of Thread");
@@ -224,13 +224,13 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 	}
 
 exit:
-	offline_contacts();
-	broadcast_status(ID_STATUS_OFFLINE);
+	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
 	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	SetEvent(hAvatarEvent);
 	LOG("Connection Negotiation Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
+	offline_contacts();
 }
 
 void __cdecl CAimProto::aim_mail_negotiation( void* )

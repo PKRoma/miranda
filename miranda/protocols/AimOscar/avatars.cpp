@@ -89,7 +89,7 @@ void __cdecl CAimProto::avatar_request_limit_thread( void* )
 {
 	LOG("Avatar Request Limit thread begin");
 	while( AvatarLimitThread ) {
-		Sleep(1000);
+		SleepEx(1000, TRUE);
 		LOG("Setting Avatar Request Event...");
 		SetEvent( hAvatarEvent );
 	}

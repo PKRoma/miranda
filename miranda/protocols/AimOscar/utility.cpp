@@ -251,27 +251,17 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 	if(remove_settings)
 	{
 		//We need some of this stuff if we are still online.
-		int i=1;
-		for(;;)
+		for(int i=1;;++i)
 		{
-			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
-			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-			if(getWord(hContact, item, 0))
+			char str[20];
+			mir_snprintf(str,sizeof(str),AIM_KEY_BI"%d",i);
+			if(deleteSetting(hContact, str) == 0)
 			{
-				deleteSetting(hContact, item);
-				deleteSetting(hContact, group);
-				delete[] item;
-				delete[] group;
+				mir_snprintf(str,sizeof(str),AIM_KEY_GI"%d",i);
+				deleteSetting(hContact, str);
 			}
 			else
-			{
-				delete[] item;
-				delete[] group;
 				break;
-			}
-			i++;
 		}
 		deleteSetting(hContact, AIM_KEY_FT);
 		deleteSetting(hContact, AIM_KEY_FN);
@@ -295,7 +285,7 @@ void CAimProto::offline_contacts()
 	{
 		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (protocol != NULL && !strcmp(protocol, m_szModuleName))
-			offline_contact(hContact,1);
+			offline_contact(hContact,true);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)GROUP_ID_KEY);
@@ -1016,8 +1006,8 @@ char* getSetting(HANDLE &hContact, const char* module, const char* setting)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
 
-void CAimProto::deleteSetting( HANDLE hContact, const char* setting )
-{   DBDeleteContactSetting( hContact, m_szModuleName, setting );
+int CAimProto::deleteSetting( HANDLE hContact, const char* setting )
+{   return DBDeleteContactSetting( hContact, m_szModuleName, setting );
 }
 
 int CAimProto::getByte( const char* name, BYTE defaultValue )

@@ -374,7 +374,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   HookProtoEvent(const char* szEvent, AimEventFunc pFunc);
 	void   ForkThread( AimThreadFunc, void* );
 
-	void   deleteSetting( HANDLE hContact, const char* setting );
+	int    deleteSetting( HANDLE hContact, const char* setting );
 
 	int    getByte( const char* name, BYTE defaultValue );
 	int    getByte( HANDLE hContact, const char* name, BYTE defaultValue );

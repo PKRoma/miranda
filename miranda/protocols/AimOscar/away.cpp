@@ -3,7 +3,8 @@
 void __cdecl CAimProto::awaymsg_request_thread( void* param )
 {
 	if ( WaitForSingleObject( hAwayMsgEvent, INFINITE ) == WAIT_OBJECT_0 ) {
-		if ( Miranda_Terminated()) {
+		if ( m_iStatus==ID_STATUS_OFFLINE || Miranda_Terminated()) {
+			SetEvent( hAwayMsgEvent );
 			mir_free( param );
 			return;
 		}
@@ -22,7 +23,7 @@ void CAimProto::awaymsg_request_handler(char* sn)
 void __cdecl CAimProto::awaymsg_request_limit_thread( void* )
 {
 	LOG("Awaymsg Request Limit thread begin");
-	while(!Miranda_Terminated() && hServerConn)
+	while (!Miranda_Terminated() && m_iStatus!=ID_STATUS_OFFLINE)
 	{
 		SleepEx(500, TRUE);
 		//LOG("Setting Awaymsg Request Event...");
