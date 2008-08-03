@@ -33,7 +33,6 @@ void UnloadNewPluginsModule(void);
 void UnloadDefaultModules(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
-HINSTANCE hUser32;
 
 typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
 pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx = NULL;
@@ -512,6 +511,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	DWORD myPid=0;
 	int messageloop=1;
+	HMODULE hUser32;
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
