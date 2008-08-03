@@ -76,9 +76,7 @@ HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
 HANDLE hMainThread = NULL;
 DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
-
-// SSL-related global variable
-HMODULE hLibSSL = NULL;
+HANDLE hModulesLoaded, hModulesLoadedTB;
 
 const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
 const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
@@ -263,8 +261,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	srand(( unsigned ) time( NULL ));
 
 	g_IconsInit();
-	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
-	HookEvent(ME_TB_MODULELOADED, g_OnModernToolbarInit);
+	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+	hModulesLoadedTB = HookEvent(ME_TB_MODULELOADED, g_OnModernToolbarInit);
 	JabberUserInfoInit();
 
 	return 0;
@@ -275,13 +273,11 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 extern "C" int __declspec( dllexport ) Unload( void )
 {
+	UnhookEvent(hModulesLoaded);
+	UnhookEvent(hModulesLoadedTB);
+
 	if ( hMainThread )
 		CloseHandle( hMainThread );
-
-	if ( hLibSSL ) {
-		FreeLibrary( hLibSSL );
-		hLibSSL = NULL;
-	}
 
 	g_Instances.destroy();
 	return 0;

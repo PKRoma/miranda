@@ -589,7 +589,6 @@ private:
  * Global variables
  *******************************************************************/
 extern HINSTANCE hInst;
-extern HMODULE hLibSSL;
 extern HANDLE hMainThread;
 extern DWORD  jabberMainThreadId;
 extern BOOL   jabberChatDllPresent;
