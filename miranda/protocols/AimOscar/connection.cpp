@@ -83,7 +83,6 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 		}
 		else
 		{
-			int authres=0;
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
 			{
@@ -104,7 +103,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 					if(snac.cmp(0x0017))
 					{
 						snac_md5_authkey(snac,hServerConn,seqno);
-						authres=snac_authorization_reply(snac);
+						int authres=snac_authorization_reply(snac);
 						if(authres==1)
 						{
 							delete[] username;
@@ -115,25 +114,24 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 							return;
 						}
 						else if (authres==2)
-							break;
+							goto exit;
 					}
 				}
 				if(flap.cmp(0x04))
 				{
-					delete[] username;
-					delete[] password;
-					broadcast_status(ID_STATUS_OFFLINE);
 					LOG("Connection Authorization Thread Ending: Flap 0x04");
-					LeaveCriticalSection(&connectionMutex);
-					return;
+					goto exit;
 				}
 			}
-			if (authres) break;
 		}
 	}
+
+exit:
 	delete[] username;
 	delete[] password;
 	broadcast_status(ID_STATUS_OFFLINE);
+	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
+	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	LOG("Connection Authorization Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
 }
@@ -155,12 +153,12 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 			LOG("Connection Closed: No Error during Connection Negotiation?");
 			break;
 		}
-		if (recvResult == SOCKET_ERROR)
+		else if (recvResult == SOCKET_ERROR)
 		{
 			LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
 			break;
 		}
-		if(recvResult>0)
+		else if(recvResult>0)
 		{
 			unsigned short flap_length=0;
 			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
@@ -218,18 +216,18 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 				}
 				else if(flap.cmp(0x04))
 				{
-					offline_contacts();
-					broadcast_status(ID_STATUS_OFFLINE);
 					LOG("Connection Negotiation Thread Ending: Flap 0x04");
-					SetEvent(hAvatarEvent);
-					LeaveCriticalSection(&connectionMutex);
-					return;
+					goto exit;
 				}
 			}
 		}
 	}
+
+exit:
 	offline_contacts();
 	broadcast_status(ID_STATUS_OFFLINE);
+	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
+	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	SetEvent(hAvatarEvent);
 	LOG("Connection Negotiation Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
@@ -240,7 +238,7 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 	NETLIBPACKETRECVER packetRecv;
 	int recvResult=0;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
-	HANDLE hServerPacketRecver=NULL;
+	HANDLE hServerPacketRecver;
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hMailConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = INFINITE;
@@ -288,19 +286,17 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 				}
 				else if(flap.cmp(0x04))
 				{
-					Netlib_CloseHandle(hServerPacketRecver);
-					Netlib_CloseHandle(hMailConn);
-					hMailConn=0;
-					LOG("Mail Server Connection has ended");
-					return;
+					goto exit;
 				}
 			}
 		}
 	}
+
+exit:
 	LOG("Mail Server Connection has ended");
 	Netlib_CloseHandle(hServerPacketRecver);
 	Netlib_CloseHandle(hMailConn);
-	hMailConn=0;
+	hMailConn=NULL;
 }
 
 void __cdecl CAimProto::aim_avatar_negotiation( void* )
@@ -353,18 +349,14 @@ void __cdecl CAimProto::aim_avatar_negotiation( void* )
 						snac_retrieve_avatar(snac);
 				}
 				else if(flap.cmp(0x04))
-				{
-					Netlib_CloseHandle(hServerPacketRecver);
-					hAvatarConn=0;
-					LOG("Avatar Server Connection has ended");
-					AvatarLimitThread=0;
-					return;
-				}
+					goto exit;
 			}
 		}
 	}
+
+exit:
 	Netlib_CloseHandle(hServerPacketRecver);
 	LOG("Avatar Server Connection has ended");
-	hAvatarConn=0;
-	AvatarLimitThread=0;
+	hAvatarConn=NULL;
+	AvatarLimitThread=false;
 }

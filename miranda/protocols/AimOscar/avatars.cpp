@@ -16,24 +16,18 @@ void __cdecl CAimProto::avatar_request_thread( void* param )
 	LeaveCriticalSection( &avatarMutex );//not further below because the thread will become trapped if the connection dies.
 
 	if ( WaitForSingleObject( hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
-		if (Miranda_Terminated()) {
-			LeaveCriticalSection( &avatarMutex );
-			return;
-		}
-		
-		if ( hServerConn ) {
-			char* sn = strtok(data,";");
-			char* hash_string = strtok(NULL,";");
-			char* hash = new char[lstrlenA(hash_string)/2];
-			string_to_bytes( hash_string, hash );
-			LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-			aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
-		}
-		else {
+		if (Miranda_Terminated() || m_iStatus==ID_STATUS_OFFLINE) {
 			SetEvent( hAvatarEvent );
 			LeaveCriticalSection( &avatarMutex );
 			return;
 		}
+		
+		char* sn = strtok(data,";");
+		char* hash_string = strtok(NULL,";");
+		char* hash = new char[lstrlenA(hash_string)/2];
+		string_to_bytes( hash_string, hash );
+		LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
+		aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
 	}
 }
 

@@ -131,8 +131,6 @@ struct CAimProto : public PROTO_INTERFACE
 	//Some bools to keep track of different things
 	bool request_HTML_profile;
 	bool extra_icons_loaded;
-	bool freeing_DirectBoundPort;
-	bool shutting_down;
 	bool idle;
 	bool instantidle;
 	bool checking_mail;

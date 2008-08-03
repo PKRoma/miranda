@@ -142,28 +142,8 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 int CAimProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 {
-	shutting_down = 1;
-	if ( hDirectBoundPort ) {
-		freeing_DirectBoundPort = 1;
-		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(hDirectBoundPort), 0);
-		if (s != INVALID_SOCKET)
-			shutdown(s, 2);
-	}
-	if ( hServerPacketRecver ) {
-		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(hServerPacketRecver), 0);
-		if (s != INVALID_SOCKET)
-			shutdown(s, 2);
-	}
-	if ( hServerConn ) {
-		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(hServerConn), 0);
-		if (s != INVALID_SOCKET)
-			shutdown(s, 2);
-	}
-	if ( hMailConn ) {
-		SOCKET s = CallService(MS_NETLIB_GETSOCKET, LPARAM(hMailConn), 0);
-		if (s != INVALID_SOCKET)
-			shutdown(s, 2);
-	}
+	if ( hDirectBoundPort ) Netlib_Shutdown(hDirectBoundPort);
+	if ( hMailConn ) Netlib_Shutdown(hMailConn);
 	return 0;
 }
 
@@ -654,9 +634,6 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 	if ( iNewStatus == m_iStatus )
 		return 0;
 
-	if ( shutting_down )
-		return 0;
-	
 	ForkThread( &CAimProto::setstatusthread, ( void* )iNewStatus );
 	return 0;
 }

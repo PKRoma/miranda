@@ -15,22 +15,15 @@ void CAimProto::broadcast_status(int status)
 	m_iStatus=status;
 	if(m_iStatus==ID_STATUS_OFFLINE)
 	{
-		if(hServerPacketRecver)
+		if (hServerConn)
 		{
-			Netlib_CloseHandle(hServerPacketRecver);
-			hServerPacketRecver=0;
+			aim_sendflap(hServerConn,0x04,0,NULL,seqno);
+			Netlib_Shutdown(hServerConn);
 		}
-		if(hServerConn)
+		if (hDirectBoundPort)
 		{
-			Netlib_CloseHandle(hServerConn);
-			hServerConn=0;
-		}
-		if(hDirectBoundPort&&!freeing_DirectBoundPort)
-		{
-			freeing_DirectBoundPort=1;
 			Netlib_CloseHandle(hDirectBoundPort);
-			hDirectBoundPort=0;
-			freeing_DirectBoundPort=0;
+			hDirectBoundPort=NULL;
 		}
 		idle=0;
 		instantidle=0;
