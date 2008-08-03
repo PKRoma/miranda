@@ -309,7 +309,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 static int NetlibGetSocket(WPARAM wParam,LPARAM lParam)
 {
 	SOCKET s;
-	if((void*)wParam==NULL) {
+	if(wParam==0) {
 		s=INVALID_SOCKET;
 		SetLastError(ERROR_INVALID_PARAMETER);
 	}
@@ -330,6 +330,35 @@ static int NetlibGetSocket(WPARAM wParam,LPARAM lParam)
 		ReleaseMutex(hConnectionHeaderMutex);
 	}
 	return s;
+}
+
+int NetlibShutdown(WPARAM wParam,LPARAM lParam)
+{
+	if (wParam) 
+	{
+		WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
+		switch(GetNetlibHandleType(wParam)) {
+			case NLH_CONNECTION:
+				{
+					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
+					if (nlc->s != INVALID_SOCKET)
+					{
+						NetlibSslShutdown(nlc->hSsl);
+						shutdown(nlc->s, 2);
+					}
+				}
+				break;
+			case NLH_BOUNDPORT:
+				{
+					struct NetlibBoundPort* nlb = (struct NetlibBoundPort*)wParam;
+					if (nlb->s != INVALID_SOCKET)
+						shutdown(nlb->s, 2);
+				}
+				break;
+		}
+		ReleaseMutex(hConnectionHeaderMutex);
+	}
+	return 0;
 }
 
 static char szHexDigits[]="0123456789ABCDEF";
