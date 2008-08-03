@@ -740,7 +740,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					{
 						cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_EFFECTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK;
 						// use custom font dialog to disable colour selection
-						cf.hInstance = GetModuleHandle(NULL);
+						cf.hInstance = hMirandaInst;
 						cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
 						cf.lpfnHook = CFHookProc;
 					}
@@ -992,7 +992,7 @@ int OptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize						= sizeof(odp);
 	odp.cbSize						= OPTIONPAGE_OLD_SIZE2;
 	odp.position					= -790000000;
-	odp.hInstance					= GetModuleHandle(NULL);;
+	odp.hInstance					= hMirandaInst;;
 	odp.pszTemplate					= MAKEINTRESOURCEA(IDD_OPT_FONTS);
 	odp.pszTitle					= LPGEN("Fonts");
 	odp.pszGroup					= LPGEN("Customize");

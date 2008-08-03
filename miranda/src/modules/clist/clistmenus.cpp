@@ -1396,8 +1396,8 @@ void InitCustomMenus(void)
 
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
 
-	hMainMenu=GetSubMenu(LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CLISTMENU)),0);
-	hStatusMenu=GetSubMenu(LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CLISTMENU)),1);
+	hMainMenu=GetSubMenu(LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CLISTMENU)),0);
+	hStatusMenu=GetSubMenu(LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CLISTMENU)),1);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hMainMenu,0);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hStatusMenu,0);
 

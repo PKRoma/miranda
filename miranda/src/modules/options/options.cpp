@@ -807,7 +807,7 @@ void OpenAccountOptions( PROTOACCOUNT* pa )
 		psh.pStartPage = (LPCTSTR)&ood;
 		psh.pszCaption = tszTitle;
 		psh.ppsp = (PROPSHEETPAGE*)opi.odp;
-		hwndOptions = CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
+		hwndOptions = CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 		mir_free(( void* )ood.pszPage );
 		FreeOptionsData( &opi );
 }	}
@@ -833,7 +833,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
 			psh.pszCaption = TranslateT("Miranda IM Options");
 			psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
-			hwndOptions = CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
+			hwndOptions = CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_OPTIONS),NULL,OptionsDlgProc,(LPARAM)&psh);
 			FreeOptionsData( &opi );
 }	}	}
 

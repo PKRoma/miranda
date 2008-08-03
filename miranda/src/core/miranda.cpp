@@ -43,11 +43,12 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags);
 
 static HANDLE hOkToExitEvent,hModulesLoadedEvent;
-HANDLE hShutdownEvent,hPreShutdownEvent;
+static HANDLE hShutdownEvent,hPreShutdownEvent;
 static HANDLE hWaitObjects[MAXIMUM_WAIT_OBJECTS-1];
 static char *pszWaitServices[MAXIMUM_WAIT_OBJECTS-1];
 static int waitObjectCount=0;
 HANDLE hStackMutex,hMirandaShutdown,hThreadQueueEmpty;
+HINSTANCE hMirandaInst;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // exception handling
@@ -503,7 +504,7 @@ static void ParseCommandLine()
 	if ( p ) {
 		HANDLE hProcess = OpenProcess( SYNCHRONIZE, FALSE, atol( p+9 ));
 		if ( hProcess ) {
-			DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_WAITRESTART), NULL, WaitForProcessDlgProc, (LPARAM)hProcess);
+			DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_WAITRESTART), NULL, WaitForProcessDlgProc, (LPARAM)hProcess);
 			CloseHandle( hProcess );
 }	}	}
 
@@ -512,6 +513,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DWORD myPid=0;
 	int messageloop=1;
 	HMODULE hUser32;
+
+	hMirandaInst = hInstance;
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);

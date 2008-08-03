@@ -121,7 +121,7 @@ static int GetMessageCommand(WPARAM wParam,LPARAM lParam)
 		SetForegroundWindow(hwnd);
 		SetFocus(hwnd);
 	}
-	else CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_READAWAYMSG),NULL,ReadAwayMsgDlgProc,wParam);
+	else CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_READAWAYMSG),NULL,ReadAwayMsgDlgProc,wParam);
 	return 0;
 }
 

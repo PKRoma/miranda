@@ -279,7 +279,7 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 		struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)mir_alloc(sizeof(struct SetAwasMsgNewData));
 		newdat->szProto = (char*)lParam;
 		newdat->statusMode = (int)wParam;
-		CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_SETAWAYMSG),NULL,SetAwayMsgDlgProc,(LPARAM)newdat);
+		CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_SETAWAYMSG),NULL,SetAwayMsgDlgProc,(LPARAM)newdat);
 	}
 	return 0;
 }
@@ -396,7 +396,7 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.position = 870000000;
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
 	odp.pszTitle = LPGEN("Messages");
 	odp.pszGroup = LPGEN("Status");

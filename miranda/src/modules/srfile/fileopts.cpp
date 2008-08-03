@@ -214,7 +214,7 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam)
 	OPTIONSDIALOGPAGE odp={0};
 	odp.cbSize = sizeof(odp);
 	odp.position = 900000000;
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_FILETRANSFER);
 	odp.pszTitle = LPGEN("File Transfers");
 	odp.pszGroup = LPGEN("Events");

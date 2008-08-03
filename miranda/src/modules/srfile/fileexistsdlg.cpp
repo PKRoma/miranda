@@ -187,7 +187,7 @@ void __cdecl LoadIconsAndTypesThread(void* param)
 			char *pszComma=strrchr(szIconFile,',');
 			if(pszComma==NULL) iconIndex=0;
 			else {iconIndex=atoi(pszComma+1); *pszComma='\0';}
-			hIcon=ExtractIconA(GetModuleHandle(NULL),szIconFile,iconIndex);
+			hIcon=ExtractIconA(hMirandaInst,szIconFile,iconIndex);
 			if(hIcon) fileInfo.hIcon=hIcon;
 		}
 		SendDlgItemMessage(info->hwndDlg,IDC_NEWICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);

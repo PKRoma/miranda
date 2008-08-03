@@ -249,9 +249,9 @@ int AddContactDialog(WPARAM wParam,LPARAM lParam)
 		}
 
 		if ( wParam )
-			DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_ADDCONTACT),(HWND)wParam,AddContactDlgProc,(LPARAM)acs);
+			DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_ADDCONTACT),(HWND)wParam,AddContactDlgProc,(LPARAM)acs);
 		else
-			CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_ADDCONTACT),(HWND)wParam,AddContactDlgProc,(LPARAM)acs);
+			CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_ADDCONTACT),(HWND)wParam,AddContactDlgProc,(LPARAM)acs);
 		return 0;
 	}
 	return 1;

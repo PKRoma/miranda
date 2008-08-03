@@ -170,7 +170,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				RECT rc;
 				char url[256];
 
-				hMenu=LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CONTEXT));
+				hMenu=LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CONTEXT));
 				hSubMenu=GetSubMenu(hMenu,6);
 				CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hSubMenu,0);
 				GetWindowRect((HWND)lParam, &rc);

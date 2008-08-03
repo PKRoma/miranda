@@ -280,7 +280,7 @@ static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.position = 850000000;
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_VISIBILITY);
 	odp.pszTitle = LPGEN("Visibility");
 	odp.pszGroup = LPGEN("Status");

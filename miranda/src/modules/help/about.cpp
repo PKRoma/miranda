@@ -71,7 +71,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hwndDlg,IDC_BUILDTIME,str);
 		}
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_HIDE);
-		{	char* pszMsg = ( char* )LockResource(LoadResource(GetModuleHandle(NULL),FindResource(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CREDITS),_T("TEXT"))));
+		{	char* pszMsg = ( char* )LockResource(LoadResource(hMirandaInst,FindResource(hMirandaInst,MAKEINTRESOURCE(IDR_CREDITS),_T("TEXT"))));
 			#if defined( _UNICODE )
 				TCHAR* ptszMsg = ( TCHAR* )alloca(2000*sizeof(TCHAR));
             MultiByteToWideChar(1252,0,pszMsg,-1,ptszMsg,2000);

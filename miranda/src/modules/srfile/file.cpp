@@ -28,7 +28,7 @@ static int SendFileCommand(WPARAM wParam,LPARAM lParam)
 	struct FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
 	fsd.ppFiles=NULL;
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
 	return 0;
 }
 
@@ -37,7 +37,7 @@ static int SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 	struct FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
 	fsd.ppFiles=(const char**)lParam;
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
 	return 0;
 }
 
@@ -49,7 +49,7 @@ static int GetReceivedFilesFolder(WPARAM wParam,LPARAM lParam)
 
 static int RecvFileCommand(WPARAM wParam,LPARAM lParam)
 {
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,lParam);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,lParam);
 	return 0;
 }
 
@@ -67,7 +67,7 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 	cle.hContact=(HANDLE)wParam;
 	cle.hDbEvent=(HANDLE)lParam;
 	if(DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) && !DBGetContactSettingByte((HANDLE)wParam,"CList","NotOnList",0)) {
-		CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,(LPARAM)&cle);
+		CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILERECV),NULL,DlgProcRecvFile,(LPARAM)&cle);
 	}
 	else {
 		TCHAR szTooltip[256];

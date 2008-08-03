@@ -333,7 +333,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case IDCANCEL:
 			{	
 				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
-				DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_DENYREASON),hwndDlg,DenyReasonProc,(LPARAM)hDbEvent);
+				DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_DENYREASON),hwndDlg,DenyReasonProc,(LPARAM)hDbEvent);
 			}
 			DestroyWindow(hwndDlg);
 			return TRUE;

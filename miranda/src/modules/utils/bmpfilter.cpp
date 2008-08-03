@@ -51,7 +51,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 		
 		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
 			//LoadImage can do this much faster
-			return (int)LoadImageA( GetModuleHandle(NULL), szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+			return (int)LoadImageA( hMirandaInst, szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
 		}
 
 		if ( !lstrcmpiA( pszExt, ".png" )) {

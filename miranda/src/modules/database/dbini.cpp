@@ -64,7 +64,7 @@ void GetProfileDirectory(char *szPath,int cbPath)
 	char szMirandaDir[MAX_PATH],szProfileDir[MAX_PATH],szExpandedProfileDir[MAX_PATH];
 	DWORD dwAttributes;
 
-	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
+	GetModuleFileNameA(hMirandaInst,szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
 	if(str2!=NULL) *str2=0;
 	GetPrivateProfileStringA("Database","ProfileDir",".",szProfileDir,sizeof(szProfileDir),mirandabootini);
@@ -312,7 +312,7 @@ static void DoAutoExec(void)
 	GetPrivateProfileStringA("AutoExec","Unsafe","ICQ MSN",szUnsafeSections,sizeof(szUnsafeSections),mirandabootini);
 	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),mirandabootini);
 	GetPrivateProfileStringA("AutoExec","OverrideSecurityFilename","",szOverrideSecurityFilename,sizeof(szOverrideSecurityFilename),mirandabootini);
-	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
+	GetModuleFileNameA(hMirandaInst,szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
 	if(str2!=NULL) *str2=0;
 	_chdir(szMirandaDir);
@@ -329,7 +329,7 @@ static void DoAutoExec(void)
 		lstrcpyA(szIniPath,szExpandedFindPath);
 		lstrcatA(szIniPath,fd.cFileName);
 		if(!lstrcmpiA(szUse,"prompt") && lstrcmpiA(fd.cFileName,szOverrideSecurityFilename)) {
-			int result=DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_INSTALLINI),NULL,InstallIniDlgProc,(LPARAM)szIniPath);
+			int result=DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_INSTALLINI),NULL,InstallIniDlgProc,(LPARAM)szIniPath);
 			if(result==IDC_NOTOALL) break;
 			if(result==IDCANCEL) continue;
 		}
@@ -373,7 +373,7 @@ static void DoAutoExec(void)
 				warnInfo.szValue=szValue;
 				warnInfo.warnNoMore=0;
 				warnInfo.cancel=0;
-				if(!warnThisSection || IDNO!=DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_WARNINICHANGE),NULL,WarnIniChangeDlgProc,(LPARAM)&warnInfo)) {
+				if(!warnThisSection || IDNO!=DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_WARNINICHANGE),NULL,WarnIniChangeDlgProc,(LPARAM)&warnInfo)) {
 					if(warnInfo.cancel) break;
 					if(warnInfo.warnNoMore) warnThisSection=0;
 					switch(szValue[0]) {
@@ -459,7 +459,7 @@ static void DoAutoExec(void)
 				MoveFileA(szIniPath,szNewPath);
 			}
 			else if(!lstrcmpiA(szOnCompletion,"ask"))
-				DialogBoxParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_INIIMPORTDONE),NULL,IniImportDoneDlgProc,(LPARAM)szIniPath);
+				DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_INIIMPORTDONE),NULL,IniImportDoneDlgProc,(LPARAM)szIniPath);
 		}
 	} while(FindNextFileA(hFind,&fd));
 	FindClose(hFind);
@@ -480,7 +480,7 @@ int InitIni(void)
 	bModuleInitialized = TRUE;
 
 	DoAutoExec();
-	GetModuleFileNameA(GetModuleHandle(NULL),szMirandaDir,sizeof(szMirandaDir));
+	GetModuleFileNameA(hMirandaInst,szMirandaDir,sizeof(szMirandaDir));
 	str2=strrchr(szMirandaDir,'\\');
 	if(str2!=NULL) *str2=0;
 	hIniChangeNotification=FindFirstChangeNotificationA(szMirandaDir,0,FILE_NOTIFY_CHANGE_FILE_NAME);

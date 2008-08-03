@@ -311,7 +311,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 			rc.bottom = rc.top + max(GetSystemMetrics(SM_CXSMICON), parentDat->titleHeight) + 4 - 1;
 			++rc.top; --rc.right;
 
-			dat->hwndEdit = CreateWindow(_T("EDIT"), acc->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, GetModuleHandle(NULL), NULL);
+			dat->hwndEdit = CreateWindow(_T("EDIT"), acc->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, hMirandaInst, NULL);
 			SetWindowLong(dat->hwndEdit, GWL_USERDATA, SetWindowLong(dat->hwndEdit, GWL_WNDPROC, (LONG)sttEditSubclassProc));
 			SendMessage(dat->hwndEdit, WM_SETFONT, (WPARAM)parentDat->hfntTitle, 0);
 			SendMessage(dat->hwndEdit, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO, 0);
@@ -766,7 +766,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 		case IDC_ADD:
 			{
 				AccFormDlgParam param = { 1, NULL };
-				if ( IDOK == DialogBoxParam( GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
+				if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
 					SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 			}	}
 			break;
@@ -777,7 +777,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
 					AccFormDlgParam param = { 2, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
-					if ( IDOK == DialogBoxParam( GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
+					if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 			}	}	}
 			break;
@@ -825,7 +825,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
 					AccFormDlgParam param = { 4, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
-					if ( IDOK == DialogBoxParam( GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
+					if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 						if ( IDYES == MessageBox( hwndDlg, TranslateT( upgradeMsg ), TranslateT( "Restart required" ), MB_YESNO )) {
 							EndDialog( hwndDlg, 1 );
@@ -925,7 +925,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 static int OptProtosShow(WPARAM wParam,LPARAM lParam)
 {
 	if ( !hAccMgr )
-		hAccMgr = CreateDialogParam( GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ACCMGR), NULL, AccMgrDlgProc, 0 );
+		hAccMgr = CreateDialogParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCMGR), NULL, AccMgrDlgProc, 0 );
 
 	ShowWindow( hAccMgr, SW_RESTORE );
 	SetForegroundWindow( hAccMgr );

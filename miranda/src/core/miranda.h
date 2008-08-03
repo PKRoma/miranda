@@ -54,6 +54,7 @@ char*  mir_u2a( const wchar_t* src);
 
 /**** miranda.c ************************************************************************/
 
+extern HINSTANCE hMirandaInst;
 extern pfnExceptionFilter pMirandaExceptFilter;
 
 /**** modules.c ************************************************************************/

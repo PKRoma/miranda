@@ -494,7 +494,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					if(dat->resumeBehaviour==FILERESUME_ASK) {
 						struct TDlgProcFileExistsParam param = { hwndDlg, fts };
 						ShowWindow(hwndDlg,SW_SHOWNORMAL);
-						CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_FILEEXISTS),hwndDlg,DlgProcFileExists,(LPARAM)&param);
+						CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILEEXISTS),hwndDlg,DlgProcFileExists,(LPARAM)&param);
 						EnableWindow(hwndDlg,FALSE);
 					}
 					else {
@@ -652,7 +652,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			UTILRESIZEDIALOG urd={0};
 			urd.cbSize=sizeof(urd);
 			urd.hwndDlg=hwndDlg;
-			urd.hInstance=GetModuleHandle(NULL);
+			urd.hInstance=hMirandaInst;
 			urd.lpTemplate=MAKEINTRESOURCEA(IDD_FILETRANSFERINFO);
 			urd.pfnResizer=FileTransferDlgResizer;
 			CallService(MS_UTILS_RESIZEDIALOG,0,(LPARAM)&urd);

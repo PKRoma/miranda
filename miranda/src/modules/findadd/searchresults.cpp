@@ -386,7 +386,7 @@ void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y)
 		lsr=(struct ListSearchResult*)lvi.lParam;
 	}
 
-	hMenu=LoadMenu(GetModuleHandle(NULL),MAKEINTRESOURCE(IDR_CONTEXT));
+	hMenu=LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CONTEXT));
 	hPopupMenu=GetSubMenu(hMenu,4);
 	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hPopupMenu,0);
 	commandId=TrackPopupMenu(hPopupMenu,TPM_RIGHTBUTTON|TPM_RETURNCMD,x,y,0,hwndDlg,NULL);

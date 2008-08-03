@@ -995,7 +995,7 @@ static int OpenPopupMenu(HWND hwndDlg)
 	int cmd;
 
 	GetCursorPos(&pt);
-	hMenu = LoadMenu( GetModuleHandle(NULL), MAKEINTRESOURCE( IDR_ICOLIB_CONTEXT ));
+	hMenu = LoadMenu( hMirandaInst, MAKEINTRESOURCE( IDR_ICOLIB_CONTEXT ));
 	hPopup = GetSubMenu( hMenu, 0 );
 	CallService( MS_LANGPACK_TRANSLATEMENU, ( WPARAM )hPopup, 0 );
 	cmd = TrackPopupMenu( hPopup, TPM_RIGHTBUTTON|TPM_RETURNCMD, pt.x,  pt.y, 0, hwndDlg, NULL );
@@ -1209,7 +1209,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			for (i = 0; i < count; lvi.iItem++, i++) {
 				mir_sntprintf(caption, SIZEOF(caption), _T("%d"), i+1);
 				lvi.pszText = caption;
-				//hIcon = ExtractIcon(GetModuleHandle(NULL), filename, i);
+				//hIcon = ExtractIcon(hMirandaInst, filename, i);
 				_ExtractIconEx( filename, i, 16,16, &hIcon, LR_DEFAULTCOLOR );
 				lvi.iImage = ImageList_AddIcon(hIml, hIcon);
 				DestroyIcon(hIcon);
@@ -1349,7 +1349,7 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (IsIconic(hwndDlg)) break;
 			urd.cbSize = sizeof(urd);
-			urd.hInstance = GetModuleHandle(NULL);
+			urd.hInstance = hMirandaInst;
 			urd.hwndDlg = hwndDlg;
 			urd.lParam = 0; // user-defined
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_ICOLIB_IMPORT);
@@ -1618,7 +1618,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case WM_COMMAND:
 		if ( LOWORD(wParam) == IDC_IMPORT ) {
-			dat->hwndIndex = CreateDialogParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ICOLIB_IMPORT), GetParent(hwndDlg), DlgProcIconImport, (LPARAM)hwndDlg);
+			dat->hwndIndex = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_ICOLIB_IMPORT), GetParent(hwndDlg), DlgProcIconImport, (LPARAM)hwndDlg);
 			EnableWindow((HWND)lParam, FALSE);
 		}
 		else if ( LOWORD(wParam) == IDC_GETMORE ) {
@@ -1778,7 +1778,7 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	OPTIONSDIALOGPAGE odp = {0};
 
 	odp.cbSize = sizeof(odp);
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.position = -180000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);

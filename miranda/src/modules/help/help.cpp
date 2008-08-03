@@ -33,7 +33,7 @@ static int AboutCommand(WPARAM wParam,LPARAM lParam)
 		SetFocus(hAboutDlg);
 		return 0;
 	}
-	hAboutDlg=CreateDialog(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_ABOUT),(HWND)wParam,DlgProcAbout);
+	hAboutDlg=CreateDialog(hMirandaInst,MAKEINTRESOURCE(IDD_ABOUT),(HWND)wParam,DlgProcAbout);
 	return 0;
 }
 

@@ -120,7 +120,7 @@ HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
 {
 	HICON hResIcon = bShared ? LoadSmallIcon(hInstance,lpIconName) : LoadSmallIconShared(hInstance,lpIconName);
 	if ( !hResIcon ) { //Icon not found in hInstance lets try to load it from core
-		HINSTANCE hCoreInstance=GetModuleHandle(NULL);
+		HINSTANCE hCoreInstance=hMirandaInst;
 		if ( hCoreInstance != hInstance )
 			hResIcon = bShared ? LoadSmallIcon(hCoreInstance,lpIconName) : LoadSmallIconShared(hCoreInstance,lpIconName);
 	}
@@ -129,7 +129,7 @@ HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared)
 
 int ImageList_AddIcon_NotShared(HIMAGELIST hIml, LPCTSTR szResource)
 {
-	HICON hTempIcon=LoadIconEx( GetModuleHandle(NULL), szResource, 0);
+	HICON hTempIcon=LoadIconEx( hMirandaInst, szResource, 0);
 	int res = ImageList_AddIcon(hIml, hTempIcon);
 	Safe_DestroyIcon(hTempIcon);
 	return res;
@@ -267,7 +267,7 @@ HICON LoadSkinProtoIcon( const char* szProto, int status )
 			sid.cy = GetSystemMetrics(SM_CYSMICON);
 			sid.flags = SIDF_ALL_TCHAR;
 
-			GetModuleFileName( GetModuleHandle(NULL), szPath, MAX_PATH );
+			GetModuleFileName( hMirandaInst, szPath, MAX_PATH );
 			str = _tcsrchr( szPath, '\\' );
 			if ( str != NULL )
 				*str = 0;

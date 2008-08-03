@@ -514,7 +514,7 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 				} else {
 					TTooltips *ptt = ( TTooltips* )mir_alloc( sizeof(TTooltips) );
 					ptt->ThreadId = tt.ThreadId;
-					ptt->hwnd = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), TTS_ALWAYSTIP, 0, 0, 0, 0, NULL, NULL, GetModuleHandle(NULL), NULL);
+					ptt->hwnd = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, _T(""), TTS_ALWAYSTIP, 0, 0, 0, 0, NULL, NULL, hMirandaInst, NULL);
 					List_Insert( &lToolTips, ptt, idx );
 					bct->hwndToolTips = ptt->hwnd;
 				}

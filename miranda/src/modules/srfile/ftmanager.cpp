@@ -256,8 +256,8 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
 		dat->hhkShutdown = HookEventMessage(ME_SYSTEM_SHUTDOWN, hwnd, WM_DESTROY);
 
-		dat->hwndIncoming = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
-		dat->hwndOutgoing = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
+		dat->hwndIncoming = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
+		dat->hwndOutgoing = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTPAGE), hwnd, FtMgrPageDlgProc);
 		ShowWindow(dat->hwndIncoming, SW_SHOW);
 
 		tci.mask = TCIF_PARAM|TCIF_TEXT;
@@ -419,7 +419,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 HWND FtMgr_Show()
 {
 	if (!hwndFtMgr)
-		hwndFtMgr = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FTMGR), NULL, FtMgrDlgProc);
+		hwndFtMgr = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTMGR), NULL, FtMgrDlgProc);
 
 	ShowWindow(hwndFtMgr, SW_SHOW);
 	SetForegroundWindow(hwndFtMgr);
@@ -442,7 +442,7 @@ HWND FtMgr_AddTransfer(struct FileDlgData *fdd)
 {
 	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLong(FtMgr_Show(), GWL_USERDATA);
 	HWND hwndBox = fdd->send ? dat->hwndOutgoing : dat->hwndIncoming;
-	HWND hwndFt = CreateDialogParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
+	HWND hwndFt = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
 	ShowWindow(hwndFt, SW_SHOW);
 	SendMessage(hwndBox, WM_FT_ADD, 0, (LPARAM)hwndFt);
 	FtMgr_ShowPage(fdd->send ? 1 : 0);

@@ -310,8 +310,8 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			dat->notSearchedYet=1;
 			dat->iLastColumnSortIndex=1;
 			dat->bSortAscending=1;
-			dat->hBmpSortUp=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
-			dat->hBmpSortDown=(HBITMAP)LoadImage(GetModuleHandle(NULL),MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
+			dat->hBmpSortUp=(HBITMAP)LoadImage(hMirandaInst,MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
+			dat->hBmpSortDown=(HBITMAP)LoadImage(hMirandaInst,MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			SendDlgItemMessage(hwndDlg,IDC_MOREOPTIONS,BUTTONSETARROW,1,0);
 
 			{	LVCOLUMN lvc;
@@ -413,7 +413,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{	UTILRESIZEDIALOG urd={0};
 			urd.cbSize=sizeof(urd);
 			urd.hwndDlg=hwndDlg;
-			urd.hInstance=GetModuleHandle(NULL);
+			urd.hInstance=hMirandaInst;
 			urd.lpTemplate=MAKEINTRESOURCEA(IDD_FINDADD);
 			urd.lParam=(LPARAM)dat;
 			urd.pfnResizer=FindAddDlgResizer;
@@ -959,7 +959,7 @@ static int FindAddCommand(WPARAM wParam,LPARAM lParam)
 			icce.dwSize=sizeof(icce);
 			icce.dwICC=ICC_USEREX_CLASSES;
 			InitCommonControlsEx(&icce);
-			hwndFindAdd=CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_FINDADD), NULL, DlgProcFindAdd);
+			hwndFindAdd=CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FINDADD), NULL, DlgProcFindAdd);
 	}	}
 	return 0;
 }

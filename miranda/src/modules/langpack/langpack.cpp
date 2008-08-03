@@ -330,7 +330,7 @@ int LoadLangPackModule(void)
 
 	ZeroMemory(&langPack,sizeof(langPack));
 	LoadLangPackServices();
-	GetModuleFileName(GetModuleHandle(NULL),szSearch,SIZEOF(szSearch));
+	GetModuleFileName(hMirandaInst,szSearch,SIZEOF(szSearch));
 	str2=_tcsrchr(szSearch,'\\');
 	if(str2!=NULL) *str2=0;
 	else str2=szSearch;

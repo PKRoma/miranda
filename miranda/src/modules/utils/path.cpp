@@ -196,7 +196,7 @@ static int createDirTreeW(WPARAM wParam, LPARAM lParam)
 int InitPathUtilsW(void)
 {
 	TCHAR *p = 0;
-	GetModuleFileName(GetModuleHandle(NULL), szMirandaPathW, SIZEOF(szMirandaPathW));
+	GetModuleFileName(hMirandaInst, szMirandaPathW, SIZEOF(szMirandaPathW));
 	p = _tcsrchr(szMirandaPathW,'\\');
 	if ( p )
 		p[1] = 0;
@@ -212,7 +212,7 @@ int InitPathUtilsW(void)
 int InitPathUtils(void)
 {
 	char *p = 0;
-	GetModuleFileNameA(GetModuleHandle(NULL), szMirandaPath, SIZEOF(szMirandaPath));
+	GetModuleFileNameA(hMirandaInst, szMirandaPath, SIZEOF(szMirandaPath));
 	p = strrchr(szMirandaPath,'\\');
 	if ( p )
 		p[1] = 0;

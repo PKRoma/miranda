@@ -147,7 +147,7 @@ static void OpenURLThread(void *arg)
 	int success=0;
     
    if (!hUrlInfo->szUrl) return;
-	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,_T(""),0,0,0,0,0,NULL,NULL,GetModuleHandle(NULL),NULL);
+	hwndDdeMsg=CreateWindow(WNDCLASS_DDEMSGWINDOW,_T(""),0,0,0,0,0,NULL,NULL,hMirandaInst,NULL);
 	SetWindowLong(hwndDdeMsg,0,(LONG)&msgWndData);
 
 	if(!_strnicmp(hUrlInfo->szUrl,"ftp:",4) || !_strnicmp(hUrlInfo->szUrl,"ftp.",4)) pszProtocol="ftp";
@@ -215,7 +215,7 @@ int InitOpenUrl(void)
 	wcl.lpfnWndProc=DdeMessageWindow;
 	wcl.cbClsExtra=0;
 	wcl.cbWndExtra=sizeof(void*);
-	wcl.hInstance=GetModuleHandle(NULL);
+	wcl.hInstance=hMirandaInst;
 	wcl.hCursor=NULL;
 	wcl.lpszClassName=WNDCLASS_DDEMSGWINDOW;
 	wcl.hbrBackground=NULL;

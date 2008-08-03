@@ -513,7 +513,7 @@ int DetailsInit(WPARAM wParam,LPARAM lParam)
 
 	odp.cbSize = sizeof(odp);
 	odp.hIcon = NULL;
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.flags = 0;
 
 	odp.pfnDlgProc = SummaryDlgProc;

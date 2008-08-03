@@ -127,8 +127,11 @@ HINSTANCE GetInstByAddress( void* codePtr )
 		idx--;
 
 	result = (( pluginEntry* )( pluginListAddr.items[idx] ))->bpi.hInst;
-	if ( idx == 0 && codePtr < ( void* )result )
-		return NULL;
+
+	if (result < hMirandaInst && codePtr > hMirandaInst)
+		result = hMirandaInst;
+	else if ( idx == 0 && codePtr < ( void* )result )
+		result = NULL;
 
 	return result;
 }
@@ -902,7 +905,7 @@ static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.pfnDlgProc = DlgPluginOpt;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_PLUGINS);
 	odp.position = 1300000000;

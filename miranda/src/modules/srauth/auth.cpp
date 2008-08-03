@@ -31,13 +31,13 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 int ShowReqWindow(WPARAM wParam,LPARAM lParam)
 {
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_AUTHREQ),NULL,DlgProcAuthReq,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_AUTHREQ),NULL,DlgProcAuthReq,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;
 }
 
 int ShowAddedWindow(WPARAM wParam,LPARAM lParam)
 {
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_ADDED),NULL,DlgProcAdded,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_ADDED),NULL,DlgProcAdded,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;
 }
 

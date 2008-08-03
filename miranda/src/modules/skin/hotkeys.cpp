@@ -1328,7 +1328,7 @@ static int sttOptionsInit(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {0};
 	odp.cbSize = sizeof(odp);
-	odp.hInstance = GetModuleHandle(NULL);
+	odp.hInstance = hMirandaInst;
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.position = -180000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_HOTKEYS);
@@ -1362,7 +1362,7 @@ int LoadSkinHotkeys(void)
 	wcl.style = 0;
 	wcl.cbClsExtra = 0;
 	wcl.cbWndExtra = 0;
-	wcl.hInstance = GetModuleHandle(NULL);
+	wcl.hInstance = hMirandaInst;
 	wcl.hIcon = NULL;
 	wcl.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcl.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
@@ -1373,7 +1373,7 @@ int LoadSkinHotkeys(void)
 
 	g_pid = GetCurrentProcessId();
 
-	g_hwndHotkeyHost = CreateWindow(_T("MirandaHotkeyHostWnd"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, GetModuleHandle(NULL), NULL);
+	g_hwndHotkeyHost = CreateWindow(_T("MirandaHotkeyHostWnd"), NULL, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_DESKTOP, NULL, hMirandaInst, NULL);
 	SetWindowPos(g_hwndHotkeyHost, 0, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_DEFERERASE|SWP_NOSENDCHANGING|SWP_HIDEWINDOW);
 
 	hhkKeyboard = SetWindowsHookEx(WH_KEYBOARD, sttKeyboardProc, NULL, GetCurrentThreadId());

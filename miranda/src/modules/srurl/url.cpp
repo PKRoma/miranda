@@ -33,7 +33,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 static int ReadUrlCommand(WPARAM wParam,LPARAM lParam)
 {
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_URLRECV),NULL,DlgProcUrlRecv,lParam);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLRECV),NULL,DlgProcUrlRecv,lParam);
 	return 0;
 }
 
@@ -65,7 +65,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 
 static int SendUrlCommand(WPARAM wParam,LPARAM lParam)
 {
-	CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_URLSEND),NULL,DlgProcUrlSend,wParam);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLSEND),NULL,DlgProcUrlSend,wParam);
 	return 0;
 }
 

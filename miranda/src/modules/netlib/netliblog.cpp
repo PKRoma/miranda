@@ -320,7 +320,7 @@ static BOOL CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 void NetlibLogShowOptions(void)
 {
 	if(logOptions.hwndOpts==NULL)
-		logOptions.hwndOpts=CreateDialog(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_NETLIBLOGOPTS),NULL,LogOptionsDlgProc);
+		logOptions.hwndOpts=CreateDialog(hMirandaInst,MAKEINTRESOURCE(IDD_NETLIBLOGOPTS),NULL,LogOptionsDlgProc);
 	SetForegroundWindow(logOptions.hwndOpts);
 }
 
