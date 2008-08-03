@@ -719,7 +719,7 @@ void CPepMood::SetMood(HANDLE hContact, char *szMood, TCHAR *szText)
 		UpdateMenuItem(hIcon, title);
 	} else
 	{
-		SetExtraIcon(hContact, g_arrMoods[mood].szTag);
+		SetExtraIcon(hContact, mood < 0 ? NULL : g_arrMoods[mood].szTag);
 	}
 
 	if (szMood)
@@ -1088,7 +1088,7 @@ void CPepActivity::SetActivity(HANDLE hContact, char *szFirst, char *szSecond, T
 		UpdateMenuItem(hIcon, title);
 	} else
 	{
-		SetExtraIcon(hContact, ActivityGetFirst(activity));
+		SetExtraIcon(hContact, activity < 0 ? NULL : ActivityGetFirst(activity));
 	}
 
 
