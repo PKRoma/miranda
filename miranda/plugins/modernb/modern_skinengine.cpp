@@ -748,11 +748,10 @@ BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 	int width=ex-sx;
 	
 	BYTE* pLine = ((BYTE*)bits) + (bmp.bmHeight-sy-1)*bmp.bmWidthBytes + (sx << 2) + 3;
-	BYTE* pColumn = pLine;
-	for ( int y = ey - sy; y != 0; y-- )
+	for ( int y = 0; y < (ey - sy); y++ )
 	{	
-		pColumn = pLine;
-		for ( int x = width; x != 0; x-- )
+		BYTE * pColumn = pLine;
+		for ( int x = 0; x < width; x++ )
 		{	
 			*pColumn = 255; 
 			pColumn += 4;
