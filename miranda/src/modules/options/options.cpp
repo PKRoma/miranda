@@ -965,19 +965,18 @@ static void FillFilterCombo(HWND hDlg, struct OptionsPageData * opd, int PageCou
 	int index;
 	HINSTANCE* KnownInstances = ( HINSTANCE* )alloca(sizeof(HINSTANCE)*PageCount);
 	int countKnownInst = 0;
-	HINSTANCE mirInstance = GetModuleHandle( NULL );	
 	TCHAR* tszModuleName = ( TCHAR* )alloca(MAX_PATH*sizeof(TCHAR));
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_RESETCONTENT, 0,0);
 	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<all modules>"));
 	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
 	index=SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateT("<core settings>"));
-	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)mirInstance);
+	SendDlgItemMessage(hDlg, IDC_MODULES,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)hMirandaInst);
 	for (i=0; i<PageCount; i++)
 	{		
 		TCHAR * dllName;
 		int j;
 		HINSTANCE inst=opd[i].hInst;
-		if (inst==mirInstance) continue;
+		if (inst==hMirandaInst) continue;
 		for (j=0; j<countKnownInst; j++)
 			if (KnownInstances[j]==inst) break;
 		if (j!=countKnownInst) continue;

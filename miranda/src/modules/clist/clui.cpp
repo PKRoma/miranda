@@ -193,7 +193,7 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT) && 
 		!(GetKeyState(VK_SHIFT)&0x8000) )
 		// Ask user for confirmation, and if the contact should be archived (hidden, not deleted)
-		action = DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_DELETECONTACT), (HWND) lParam, AskForConfirmationDlgProc, wParam);
+		action = DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_DELETECONTACT), (HWND) lParam, AskForConfirmationDlgProc, wParam);
 	else
 		action = IDYES;
 

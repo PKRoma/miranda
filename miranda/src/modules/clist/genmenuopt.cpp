@@ -822,7 +822,7 @@ int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize=sizeof(odp);
-	odp.hInstance = GetModuleHandle( NULL );
+	odp.hInstance = hMirandaInst;
 	odp.pszGroup = LPGEN("Customize");
 
 	odp.position = -1000000000;
