@@ -535,6 +535,8 @@ struct MsnContact
 	char *email;
 	int list;
 	int netId;
+
+	~MsnContact() { mir_free(email); }
 };
 
 #define NETID_UNKNOWN	0x0000

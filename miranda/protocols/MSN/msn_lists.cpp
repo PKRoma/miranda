@@ -36,11 +36,6 @@ void CMsnProto::Lists_Uninit(void)
 void  CMsnProto::Lists_Wipe( void )
 {
 	EnterCriticalSection( &csLists );
-	for ( int i=0; i<contList.getCount(); ++i ) 
-	{
-		mir_free( contList[i]->email );
-		mir_free( contList[i] );
-	}
 	contList.destroy();
 	LeaveCriticalSection( &csLists );
 }
@@ -89,7 +84,7 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email)
 	MsnContact* p = contList.find((MsnContact*)&email);
 	if ( p == NULL )
 	{
-		p = (MsnContact*)mir_alloc(sizeof( MsnContact));
+		p = new MsnContact;
 		p->list = list;
 		p->netId = netId;
 		p->email = mir_strdup(email);
@@ -109,14 +104,9 @@ void  CMsnProto::Lists_Remove( int list, const char* email )
 	int i = contList.getIndex((MsnContact*)&email);
 	if ( i != -1 ) 
 	{
-		MsnContact* p = contList[i];
-		p->list &= ~list;
-		if (p->list == 0) 
-		{
-			mir_free(p->email);
-			mir_free(p);
-			contList.remove(i);
-		}	
+		MsnContact& p = contList[i];
+		p.list &= ~list;
+		if (p.list == 0) contList.remove(i);
 	}
 	LeaveCriticalSection( &csLists );
 }
@@ -126,39 +116,37 @@ void CMsnProto::MSN_CleanupLists(void)
 {
 	CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)TranslateT("Non IM Contacts"));
 
-	EnterCriticalSection(&csLists);
+//	EnterCriticalSection(&csLists);
 	for (int i=contList.getCount(); i--; )
 	{
-		MsnContact* p = contList[i];
+		MsnContact& p = contList[i];
 
-		if ((p->list & (LIST_FL | LIST_RL)) == 0 && (p->list & (LIST_AL | LIST_BL)) != 0 && p->netId != NETID_LCS) 
+		if ((p.list & (LIST_FL | LIST_RL)) == 0 && (p.list & (LIST_AL | LIST_BL)) != 0 && p.netId != NETID_LCS) 
 		{
-			MSN_SharingAddDelMember(p->email, p->list, p->netId, "DeleteMember");
-			p->list &= ~(LIST_AL | LIST_BL);
+			MSN_SharingAddDelMember(p.email, p.list, p.netId, "DeleteMember");
+			p.list &= ~(LIST_AL | LIST_BL);
 
-			if (p->list == 0) 
+			if (p.list == 0) 
 			{
-				mir_free(p->email);
-				mir_free(p);
 				contList.remove(i);
 				continue;
 			}
 		}
 
-		HANDLE hContact = MSN_HContactFromEmail(p->email, p->email, true, false);
-		MSN_SetContactDb(hContact, p->email);
-		if (p->list & LIST_PL)
+		HANDLE hContact = MSN_HContactFromEmail(p.email, p.email, true, false);
+		MSN_SetContactDb(hContact, p.email);
+		if (p.list & LIST_PL)
 		{
-			if (p->list & (LIST_AL | LIST_BL))
-				MSN_AddUser( hContact, p->email, p->netId, LIST_PL + LIST_REMOVE );
+			if (p.list & (LIST_AL | LIST_BL))
+				MSN_AddUser( hContact, p.email, p.netId, LIST_PL + LIST_REMOVE );
 			else
-				MSN_AddAuthRequest( hContact, p->email, p->email );
+				MSN_AddAuthRequest( hContact, p.email, p.email );
 		}
 
-		if (p->list == LIST_RL)
-			MSN_AddAuthRequest( hContact, p->email, p->email );
+		if (p.list == LIST_RL)
+			MSN_AddAuthRequest( hContact, p.email, p.email );
 	}
-	LeaveCriticalSection(&csLists);
+//	LeaveCriticalSection(&csLists);
 
 	for (HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		 hContact != NULL; 
@@ -208,22 +196,22 @@ void CMsnProto::MSN_CreateContList(void)
 	{
 		if (used[i]) continue;
 
-		const char* lastds = strchr(contList[i]->email, '@');
+		const char* lastds = strchr(contList[i].email, '@');
 		bool newdom = true;
 
 		for ( int j=0; j < contList.getCount(); j++ )
 		{
 			if (used[j]) continue;
 			
-			const MsnContact* C = contList[j];
+			const MsnContact& C = contList[j];
 			
-			if (C->list == LIST_RL || C->netId == NETID_EMAIL)
+			if (C.list == LIST_RL || C.netId == NETID_EMAIL)
 			{
 				used[j] = true;
 				continue;
 			}
 
-			const char* dom = strchr(C->email, '@');
+			const char* dom = strchr(C.email, '@');
 			if (dom == NULL && lastds == NULL)
 			{
 				if (sz == 0) sz = mir_snprintf(cxml+sz, sizeof(cxml), "<ml l=\"1\">");
@@ -233,7 +221,7 @@ void CMsnProto::MSN_CreateContList(void)
 					newdom = false;
 				}
 
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C->email, C->list & ~LIST_RL);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C.email, C.list & ~LIST_RL);
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
@@ -246,7 +234,7 @@ void CMsnProto::MSN_CreateContList(void)
 				}
 
 				*(char*)dom = 0;
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C->email, C->list & ~LIST_RL, C->netId);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C.email, C.list & ~LIST_RL, C.netId);
 				*(char*)dom = '@';
 				used[j] = true;
 			}

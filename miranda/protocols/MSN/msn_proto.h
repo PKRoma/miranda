@@ -139,7 +139,7 @@ struct CMsnProto : public PROTO_INTERFACE
     char *hotSecretToken, *hotAuthToken;
 
     CRITICAL_SECTION csLists;
-    LIST<MsnContact> contList;
+    OBJLIST<MsnContact> contList;
 
     LIST<ServerGroupItem> grpList;
 
