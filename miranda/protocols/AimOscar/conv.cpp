@@ -91,20 +91,19 @@ char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 	while ((ptr = strstr(dest, "<")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,strlen(dest),7);
+		dest=renew(dest,strlen(dest)+1,3);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 1);
 		memcpy(ptr,"&lt;",4);
 	}
 	while ((ptr = strstr(dest, ">")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,strlen(dest)+2,7);
+		dest=renew(dest,strlen(dest)+1,3);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
+		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 1);
 		memcpy(ptr,"&gt;",4);
 	}
-	dest[strlen(dest)]='\0';
 	return dest;
 }
 
