@@ -342,8 +342,8 @@ void  CMsnProto::MSN_CloseThreads()
 
 void CMsnProto::Threads_Uninit( void )
 {
-	DeleteCriticalSection( &sttLock );
 	sttThreads.destroy();
+	DeleteCriticalSection( &sttLock );
 }
 
 ThreadData*  CMsnProto::MSN_GetThreadByContact( HANDLE hContact, TInfoType type )
