@@ -168,7 +168,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 
 				FD_ZERO(&fd);
 				FD_SET(ssl->s, &fd);
-				if (select(1, &fd, NULL, NULL, &tv) != 1) return SOCKET_ERROR;
+				if (select(1, &fd, NULL, NULL, &tv) != 1)
+				{
+					scRet = SEC_E_INTERNAL_ERROR;
+					break;
+				}
 
 				cbData = recv(ssl->s, 
 					(char*)ssl->pbIoBuffer + ssl->cbIoBuffer, 
