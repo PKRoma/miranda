@@ -1313,7 +1313,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		if(family==0x0018)
 		{
-			hMailConn=aim_peer_connect(server,port);
+			hMailConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
 			if(hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");
@@ -1326,7 +1326,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0010)
 		{
-			hAvatarConn=aim_peer_connect(server,port);
+			hAvatarConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
