@@ -620,6 +620,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nloc->szHost);
 		if (nlc->hSsl == NULL)
 		{
+			Netlib_Logf(nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
 			FreePartiallyInitedConnection(nlc);
 			return 0;
 		}
@@ -634,6 +635,9 @@ int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 	nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nlc->szHost);
+
+	if (nlc->hSsl == NULL)
+		Netlib_Logf(nlc->nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
 
 	return nlc->hSsl != NULL;
 }
