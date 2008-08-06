@@ -71,7 +71,7 @@ static int SSL_library_init(void)
 	return 1;
 }
 
-static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, DWORD proto)
+static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify)
 {
 	SCHANNEL_CRED   SchannelCred;
 	TimeStamp       tsExpiry;
@@ -80,7 +80,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, DWORD proto)
 	ZeroMemory(&SchannelCred, sizeof(SchannelCred));
 
 	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
-	SchannelCred.grbitEnabledProtocols = proto;
+	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS;
 
 	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
 
@@ -156,12 +156,19 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		{
 			if (fDoRead) 
 			{
+				TIMEVAL tv = {10, 0};
+				fd_set fd;
+
 				// If buffer not large enough reallocate buffer
 				if (ssl->sbIoBuffer <= ssl->cbIoBuffer) 
 				{
 					ssl->sbIoBuffer += 2048;
 					ssl->pbIoBuffer = (PUCHAR)mir_realloc(ssl->pbIoBuffer, ssl->sbIoBuffer);
 				}
+
+				FD_ZERO(&fd);
+				FD_SET(ssl->s, &fd);
+				if (select(1, &fd, NULL, NULL, &tv) != 1) return SOCKET_ERROR;
 
 				cbData = recv(ssl->s, 
 					(char*)ssl->pbIoBuffer + ssl->cbIoBuffer, 
@@ -374,7 +381,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 }
 
 
-SslHandle *NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host)
+SslHandle *NetlibSslConnect(BOOL verify, SOCKET s, const char* host)
 {
 	BOOL res;
 
@@ -383,7 +390,7 @@ SslHandle *NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host
 
 	res = SSL_library_init();
 
-	if (res) res = AcquireCredentials(ssl, verify, proto);
+	if (res) res = AcquireCredentials(ssl, verify);
 	if (res) res = ClientConnect(ssl, host);
 
 	if (!res) 
@@ -514,7 +521,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 				FD_ZERO(&fd);
 				FD_SET(ssl->s, &fd);
 
-				if ( select(1, &fd, NULL, NULL, &tv) != 1 ) 
+				if (select(1, &fd, NULL, NULL, &tv) != 1) 
 				{
 					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
 					CopyMemory(buf, ssl->pbRecDataBuf, bytes);

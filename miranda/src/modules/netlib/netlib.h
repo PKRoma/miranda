@@ -180,7 +180,7 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 
 //netlibssl.c
 void NetlibSslFree(SslHandle *ssl);
-SslHandle* NetlibSslConnect(BOOL verify, DWORD proto, SOCKET s, const char* host);
+SslHandle* NetlibSslConnect(BOOL verify, SOCKET s, const char* host);
 void NetlibSslShutdown(SslHandle *ssl);
 int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
 int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);

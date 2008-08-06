@@ -617,7 +617,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	}
 	if (NLOCF_SSL & nloc->flags)
 	{
-		nlc->hSsl = NetlibSslConnect(FALSE, 0, nlc->s, nloc->szHost);
+		nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nloc->szHost);
 		if (nlc->hSsl == NULL)
 		{
 			FreePartiallyInitedConnection(nlc);
@@ -633,7 +633,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
-	nlc->hSsl = NetlibSslConnect(FALSE, 0, nlc->s, nlc->szHost);
+	nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nlc->szHost);
 
 	return nlc->hSsl != NULL;
 }
