@@ -682,7 +682,7 @@ void MsnInvokeMyURL( bool ismail, char* url )
 	int tm = time(NULL) - sl;
 
 	char hippy[ 2048 ];
-	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", MSPAuth, tm, dbv.pszVal );
+	long challen = mir_snprintf( hippy, sizeof( hippy ), "%s%lu%s", tAuthToken, tm, dbv.pszVal );
 	MSN_FreeVariant( &dbv );
 
 	//Digest it
@@ -699,7 +699,7 @@ void MsnInvokeMyURL( bool ismail, char* url )
 		mir_snprintf(hippy, sizeof(hippy),
 			"%s&auth=%s&creds=%s&sl=%d&username=%s&mode=ttl"
 			"&sid=%s&id=%s&rru=%s%s&js=yes",
-			passport, MSPAuth, hexdgst, tm, email, sid, 
+			passport, tAuthToken, hexdgst, tm, email, sid, 
 			ismail ? urlId : profileURLId, rruenc, ismail ? "&svc=mail" : "" );
 	}
 	else
