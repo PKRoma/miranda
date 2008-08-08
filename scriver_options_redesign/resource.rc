@@ -31,7 +31,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Behaviour",IDC_STATIC,0,0,304,150
+    GROUPBOX        "Behaviour",IDC_STATIC,0,0,304,183
     CONTROL         "Automatically pop up the window when",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,
                     155,10
@@ -54,27 +54,25 @@ BEGIN
                     IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,102,
                     292,10
 
+    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,113,140,10
+    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,138,10
+
     LTEXT           "Show warning when message has not been received after",
                     IDC_STATIC,8,136,211,8
     EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
     LTEXT           "seconds.",IDC_STATIC,253,136,44,8
-    GROUPBOX        "Layout",IDC_STATIC,0,150,304,68
-    CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,
-                    292,10
-    CONTROL         "Show progress indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,138,10
-    CONTROL         "Enable avatar support",
-                    IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,184,292,10
-    CONTROL         "Limit height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,195,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,194,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,195,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,194,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
-    CONTROL         "Use original size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,205,106,10
+
+	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,148,200,10
+    CONTROL         "Save size and location for each contact",
+                    IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,159,260,10
+    CONTROL         "Hide containers on close",
+                    IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,170,260,10
+
 END
 
 IDD_OPT_MSGTABS DIALOGEX 2, 0, 304, 230
@@ -106,6 +104,48 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
     EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
 END
+
+IDD_OPT_LAYOUT DIALOGEX 2, 0, 304, 230
+STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Layout",IDC_STATIC,0,0,304,222
+	CONTROL         "Show titlebar",IDC_SHOWTITLEBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,12,140,10
+    CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,23,138,10
+	CONTROL         "Show toolbar ",IDC_SHOWTOOLBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,34,140,10
+    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,52,140,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,48,40,8
+    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,48,70,11
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,48,22,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,59,40,8
+    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,59,70,11
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,59,22,8
+    CONTROL         "Use the contact's status icon as the window icon",
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,
+                    292,10
+    CONTROL         "Show progress indicator",IDC_SHOWPROGRESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,138,10
+    CONTROL         "Enable avatar support",
+                    IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    8,184,292,10
+    CONTROL         "Limit height to min.",IDC_LIMITAVATARH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,195,106,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,194,28,12,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,195,35,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,194,28,12,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
+    CONTROL         "Use original size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,20,205,106,10
+
+END
+
 
 IDD_OPT_MSGLOG DIALOGEX 2, 0, 304, 232
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
@@ -170,44 +210,6 @@ BEGIN
     LTEXT           "minutes old",IDC_STMINSOLD,185,214,90,8,WS_DISABLED
 END
 
-IDD_OPT_CONTAINER DIALOGEX 2, 0, 304, 230
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "General",IDC_STATIC,0,0,304,149
-
-    CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,12,140,10
-    CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,23,138,10
-
-	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,111,200,10
-    CONTROL         "Save size and location for each contact",
-                    IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,122,260,10
-    CONTROL         "Hide containers on close",
-                    IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,133,260,10
-	GROUPBOX        "Layout",IDC_STATIC,0,149,304,73
-	CONTROL         "Show titlebar",IDC_SHOWTITLEBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,161,140,10
-    CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,172,138,10
-	CONTROL         "Show toolbar ",IDC_SHOWBUTTONLINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,183,140,10
-    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,201,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,197,40,8
-    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,197,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,197,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,208,40,8
-    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,208,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,208,22,8
-END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 252
 STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE

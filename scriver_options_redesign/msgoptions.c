@@ -34,9 +34,9 @@ extern HANDLE hEventSkin2IconsChanged;
 extern int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 
 static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -47,12 +47,12 @@ typedef struct TabDefStruct {
 } TabDef;
 
 static TabDef tabPages[] = {
-						 {DlgProcContainerOptions, IDD_OPT_CONTAINER, _T("General")},
+						 {DlgProcOptions, IDD_OPT_MSGDLG, _T("General")},
 						 {DlgProcTabsOptions, IDD_OPT_MSGTABS, _T("Tabs")},
-						 {DlgProcOptions, IDD_OPT_MSGDLG, _T("Messaging")},
+						 {DlgProcLayoutOptions, IDD_OPT_LAYOUT, _T("Layout")},
 						 {DlgProcLogOptions, IDD_OPT_MSGLOG, _T("Event Log")},
-						 {DlgProcOptions1, IDD_OPTIONS1, _T("Group Chats")},
-						 {DlgProcOptions2, IDD_OPTIONS2, _T("Group Chats Log")}
+						 {DlgProcOptions1, IDD_OPTIONS1, _T("Group Chat")},
+						 {DlgProcOptions2, IDD_OPTIONS2, _T("Group Chat Log")}
 						 };
 
 
@@ -468,128 +468,6 @@ static void MarkChanges(int i, HWND hWnd) {
 	changed |= i;
 }
 
-static BOOL CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg) {
-		case WM_INITDIALOG:
-		{
-			int bChecked;
-			char str[10];
-			TranslateDialogDefault(hwndDlg);
-			CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT));
-			CheckDlgButton(hwndDlg, IDC_SAVESPLITTERPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT));
-			CheckDlgButton(hwndDlg, IDC_CASCADE, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE));
-			CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
-			CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER));
-			CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
-			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSBAR, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, SRMSGDEFSET_SHOWSTATUSBAR));
-			CheckDlgButton(hwndDlg, IDC_SHOWTITLEBAR, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTITLEBAR, SRMSGDEFSET_SHOWTITLEBAR));
-			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE));
-
-                        CheckDlgButton(hwndDlg, IDC_HIDECONTAINERS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDECONTAINERS, SRMSGDEFSET_HIDECONTAINERS));
-
-			CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, SRMSGDEFSET_USETRANSPARENCY));
-			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
-			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SRMSGDEFSET_ACTIVEALPHA));
-			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
-			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SRMSGDEFSET_INACTIVEALPHA));
-			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
-			SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
-			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
-			SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-
-			if (pSetLayeredWindowAttributes == NULL) {
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), FALSE);
-			} else  {
-				bChecked = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), bChecked);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), bChecked);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), bChecked);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), bChecked);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), bChecked);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
-			}
-			return TRUE;
-		}
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDC_AUTOMIN:
-					break;
-				case IDC_SENDONENTER:
-					CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, BST_UNCHECKED);
-					break;
-				case IDC_SENDONDBLENTER:
-					CheckDlgButton(hwndDlg, IDC_SENDONENTER, BST_UNCHECKED);
-					break;
-				case IDC_CASCADE:
-					CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, BST_UNCHECKED);
-					break;
-				case IDC_SAVEPERCONTACT:
-					CheckDlgButton(hwndDlg, IDC_CASCADE, BST_UNCHECKED);
-					//EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
-					break;
-				case IDC_TRANSPARENCY:
-					if (pSetLayeredWindowAttributes != NULL) {
-						int bChecked = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
-					}
-					break;
-			}
-			MarkChanges(1, hwndDlg);
-			break;
-		case WM_HSCROLL:
-			{	char str[10];
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
-				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
-				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-				MarkChanges(1, hwndDlg);
-			}
-			break;
-		case WM_NOTIFY:
-			switch (((LPNMHDR) lParam)->idFrom) {
-				case 0:
-					switch (((LPNMHDR) lParam)->code) {
-						case PSN_APPLY:
-						{
-							int limitLength;
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONDBLENTER));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CASCADE));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSBAR));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTITLEBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTITLEBAR));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWBUTTONLINE));
-
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDECONTAINERS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HIDECONTAINERS));
-
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY));
-							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0));
-							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0));
-							ApplyChanges(1);
-							return TRUE;
-						}
-					}
-					break;
-			}
-			break;
-		case WM_DESTROY:
-			break;
-	}
-	return FALSE;
-}
-
 static BOOL CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -719,24 +597,47 @@ static BOOL CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG:
 		{
-			DWORD msgTimeout, avatarHeight;
+			char str[10];
+			int bChecked;
+                        DWORD avatarHeight;
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) & ~WS_BORDER) | TVS_NOHSCROLL | TVS_CHECKBOXES);
-			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
-                             DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
-			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
-			CheckDlgButton(hwndDlg, IDC_STAYMINIMIZED, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, SRMSGDEFSET_STAYMINIMIZED));
-			CheckDlgButton(hwndDlg, IDC_DONOTSTEALFOCUS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS));
-			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
-			CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT));
-			CheckDlgButton(hwndDlg, IDC_SAVESPLITTERPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT));
-			CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
-			CheckDlgButton(hwndDlg, IDC_SAVEDRAFTS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, SRMSGDEFSET_SAVEDRAFTS));
+			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSBAR, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, SRMSGDEFSET_SHOWSTATUSBAR));
+			CheckDlgButton(hwndDlg, IDC_SHOWTITLEBAR, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTITLEBAR, SRMSGDEFSET_SHOWTITLEBAR));
+			CheckDlgButton(hwndDlg, IDC_SHOWTOOLBAR, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, SRMSGDEFSET_SHOWBUTTONLINE));
+			CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, SRMSGDEFSET_USETRANSPARENCY));
+			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
+			SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SRMSGDEFSET_ACTIVEALPHA));
+			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETRANGE, FALSE, MAKELONG(0,255));
+			SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_SETPOS, TRUE, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SRMSGDEFSET_INACTIVEALPHA));
+			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
+			SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
+			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
+			SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
+
+			if (pSetLayeredWindowAttributes == NULL) {
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), FALSE);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), FALSE);
+			} else  {
+				bChecked = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), bChecked);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), bChecked);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), bChecked);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), bChecked);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), bChecked);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
+			}
+
+                        CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
 			CheckDlgButton(hwndDlg, IDC_SHOWPROGRESS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, SRMSGDEFSET_SHOWPROGRESS));
 
 			CheckDlgButton(hwndDlg, IDC_AVATARSUPPORT, g_dat->flags&SMF_AVATAR);
@@ -761,98 +662,174 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), bChecked);
 				EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
 			}
+                        return TRUE;
+		}
+		case WM_COMMAND:
+                    switch (LOWORD(wParam)) {
+                        case IDC_TRANSPARENCY:
+                            if (pSetLayeredWindowAttributes != NULL) {
+                                int bChecked = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), bChecked);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), bChecked);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), bChecked);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), bChecked);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), bChecked);
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
+                            }
+                            break;
+                        case IDC_AVATARSUPPORT:
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
+                            EnableWindow(GetDlgItem(hwndDlg, IDC_ORIGINALAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
+                            if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT)) {
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), FALSE);
+                            } else {
+                                    int bChecked = IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
+                            }
+                            break;
+                        case IDC_LIMITAVATARH:
+                            {
+                                    int bChecked = IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH);
+                                    CheckDlgButton(hwndDlg, IDC_ORIGINALAVATARH, FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), bChecked);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
+                            }
+                            break;
+                        case IDC_ORIGINALAVATARH:
+                            {
+                                    CheckDlgButton(hwndDlg, IDC_LIMITAVATARH, FALSE);
+                            }
+                            break;
+                        case IDC_AVATARHEIGHT:
+                        case IDC_AVATARHEIGHTMIN:
+                            if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+                                    return 0;
+                            break;
+			}
+			MarkChanges(16, hwndDlg);
+			break;
+		case WM_HSCROLL:
+			{   char str[10];
+                            sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
+                            SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
+                            sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
+                            SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
+                            MarkChanges(16, hwndDlg);
+			}
+			break;
+		case WM_NOTIFY:
+			switch (((LPNMHDR) lParam)->idFrom) {
+                            case 0:
+                                switch (((LPNMHDR) lParam)->code) {
+                                    case PSN_APPLY:
+                                    {
+					DWORD avatarHeight;
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSBAR));
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTITLEBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTITLEBAR));
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTOOLBAR));
+
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETRANSPARENCY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY));
+                                        DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_ACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0));
+                                        DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_INACTIVEALPHA, SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0));
+
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWPROGRESS));
+
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH));
+                                        DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_ORIGINALAVATARH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ORIGINALAVATARH));
+                                        avatarHeight = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHT, NULL, TRUE);
+                                        DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, avatarHeight<0?SRMSGDEFSET_AVHEIGHT:avatarHeight);
+                                        avatarHeight = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHTMIN, NULL, TRUE);
+                                        DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHTMIN, avatarHeight<0?SRMSGDEFSET_AVHEIGHTMIN:avatarHeight);
+
+                                        ApplyChanges(16);
+                                        return TRUE;
+                                    }
+                                }
+                            break;
+			}
+			break;
+		case WM_DESTROY:
+			break;
+	}
+	return FALSE;
+}
+
+static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (msg) {
+		case WM_INITDIALOG:
+		{
+			DWORD msgTimeout;
+			TranslateDialogDefault(hwndDlg);
+			SetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, (GetWindowLong(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) & ~WS_BORDER) | TVS_NOHSCROLL | TVS_CHECKBOXES);
+			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, sizeof(statusValues) / sizeof(statusValues[0]),
+                             DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
+			CheckDlgButton(hwndDlg, IDC_AUTOPOPUP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP));
+			CheckDlgButton(hwndDlg, IDC_STAYMINIMIZED, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, SRMSGDEFSET_STAYMINIMIZED));
+			CheckDlgButton(hwndDlg, IDC_DONOTSTEALFOCUS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS));
+			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
+			CheckDlgButton(hwndDlg, IDC_SAVEDRAFTS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, SRMSGDEFSET_SAVEDRAFTS));
 
 			CheckDlgButton(hwndDlg, IDC_DELTEMP, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP));
 			msgTimeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 			SetDlgItemInt(hwndDlg, IDC_SECONDS, msgTimeout >= SRMSGSET_MSGTIMEOUT_MIN ? msgTimeout / 1000 : SRMSGDEFSET_MSGTIMEOUT / 1000, FALSE);
 
+                        CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT));
+			CheckDlgButton(hwndDlg, IDC_SAVESPLITTERPERCONTACT, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, SRMSGDEFSET_SAVESPLITTERPERCONTACT));
+			CheckDlgButton(hwndDlg, IDC_CASCADE, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE));
+			CheckDlgButton(hwndDlg, IDC_SENDONENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER));
+			CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER));
+			CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
+
+                        CheckDlgButton(hwndDlg, IDC_HIDECONTAINERS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDECONTAINERS, SRMSGDEFSET_HIDECONTAINERS));
+
 			EnableWindow(GetDlgItem(hwndDlg, IDC_STAYMINIMIZED), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_POPLIST), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-			return TRUE;
+
+                        return TRUE;
 		}
 		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDC_AUTOPOPUP:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_STAYMINIMIZED), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-					EnableWindow(GetDlgItem(hwndDlg, IDC_POPLIST), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
-					EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
-					break;
-				case IDC_STAYMINIMIZED:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
-					break;
-				case IDC_AUTOMIN:
-					break;
-				case IDC_CASCADE:
-					CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, BST_UNCHECKED);
-					break;
-				case IDC_SAVEPERCONTACT:
-					CheckDlgButton(hwndDlg, IDC_CASCADE, BST_UNCHECKED);
-					//EnableWindow(GetDlgItem(hwndDlg, IDC_CASCADE), !IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
-					break;
-				case IDC_SECONDS:
-					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
-						return 0;
-					break;
-				case IDC_AVATARSUPPORT:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
-					EnableWindow(GetDlgItem(hwndDlg, IDC_ORIGINALAVATARH), IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
-					if (!IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT)) {
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), FALSE);
-					} else {
-						int bChecked = IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
-					}
-					break;
-				case IDC_LIMITAVATARH:
-					{
-						int bChecked = IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH);
-						CheckDlgButton(hwndDlg, IDC_ORIGINALAVATARH, FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), bChecked);
-					}
-					break;
-				case IDC_ORIGINALAVATARH:
-					{
-						CheckDlgButton(hwndDlg, IDC_LIMITAVATARH, FALSE);
-					}
-					break;
-				case IDC_AVATARHEIGHT:
-				case IDC_AVATARHEIGHTMIN:
-					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
-						return 0;
-					break;
-				case IDC_TRANSPARENCY:
-					if (pSetLayeredWindowAttributes != NULL) {
-						int bChecked = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYVALUE), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ATRANSPARENCYPERC), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYVALUE), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_ITRANSPARENCYPERC), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT1), bChecked);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
-					}
-					break;
-			}
-			MarkChanges(2, hwndDlg);
-			break;
-		case WM_HSCROLL:
-			{	char str[10];
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ATRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
-				SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
-				sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/256));
-				SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
-				MarkChanges(2, hwndDlg);
-			}
-			break;
+                    switch (LOWORD(wParam)) {
+                        case IDC_AUTOPOPUP:
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_STAYMINIMIZED), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_POPLIST), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
+                                break;
+                        case IDC_STAYMINIMIZED:
+                                EnableWindow(GetDlgItem(hwndDlg, IDC_DONOTSTEALFOCUS), IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP) & !IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
+                                break;
+                        case IDC_AUTOMIN:
+                                break;
+                        case IDC_SECONDS:
+                                if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+                                        return 0;
+                                break;
+                        case IDC_SENDONENTER:
+                                CheckDlgButton(hwndDlg, IDC_SENDONDBLENTER, BST_UNCHECKED);
+                                break;
+                        case IDC_SENDONDBLENTER:
+                                CheckDlgButton(hwndDlg, IDC_SENDONENTER, BST_UNCHECKED);
+                                break;
+                        case IDC_CASCADE:
+                                CheckDlgButton(hwndDlg, IDC_SAVEPERCONTACT, BST_UNCHECKED);
+                                break;
+                        case IDC_SAVEPERCONTACT:
+                                CheckDlgButton(hwndDlg, IDC_CASCADE, BST_UNCHECKED);
+                                break;
+                    }
+                    MarkChanges(2, hwndDlg);
+                    break;
 		case WM_NOTIFY:
 			switch (((LPNMHDR) lParam)->idFrom) {
 				 case IDC_POPLIST:
@@ -881,31 +858,28 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY:
 						{
-							DWORD msgTimeout, avatarHeight;
+							DWORD msgTimeout;
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_POPLIST)));
-							//DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWINFOLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINFOLINE));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOPOPUP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOPOPUP));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_STAYMINIMIZED, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STAYMINIMIZED));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DONOTSTEALFOCUS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AUTOMIN));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVESPLITTERPERCONTACT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVESPLITTERPERCONTACT));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_STATUSWIN));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEDRAFTS));
 
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWPROGRESS));
-
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITAVHEIGHT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LIMITAVATARH));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_ORIGINALAVATARH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ORIGINALAVATARH));
-							avatarHeight = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHT, NULL, TRUE);
-							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHT, avatarHeight<0?SRMSGDEFSET_AVHEIGHT:avatarHeight);
-							avatarHeight = GetDlgItemInt(hwndDlg, IDC_AVATARHEIGHTMIN, NULL, TRUE);
-							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_AVHEIGHTMIN, avatarHeight<0?SRMSGDEFSET_AVHEIGHTMIN:avatarHeight);
 
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELTEMP));
 							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
-							ApplyChanges(2);
+
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONENTER));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SENDONDBLENTER));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SAVEPERCONTACT));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CASCADE));
+
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_HIDECONTAINERS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_HIDECONTAINERS));
+
+                                                        ApplyChanges(2);
 
 							return TRUE;
 						}

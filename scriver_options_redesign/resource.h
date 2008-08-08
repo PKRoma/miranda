@@ -4,9 +4,9 @@
 #define IDD_CONFIRM_SENDALL             103
 #define IDD_OPT_MSGDLG                  111
 #define IDD_OPT_MSGLOG                  112
-#define IDD_OPT_CONTAINER		113
 #define IDD_OPT_MSGTYPE                 114
 #define IDD_OPT_MSGTABS                 115
+#define IDD_OPT_LAYOUT                  116
 #define IDI_ADDCONTACT                  120
 #define IDI_USERDETAILS                 121
 #define IDI_HISTORY                     122
@@ -102,7 +102,7 @@
 #define IDC_LOADCOUNTSPIN               1040
 #define IDC_SHOWINFOLINE                1041
 #define IDC_SHOWSTATUSBAR               1041
-#define IDC_SHOWBUTTONLINE              1042
+#define IDC_SHOWTOOLBAR                 1042
 #define IDC_LOADUNREAD                  1043
 #define IDC_SENDONENTER                 1043
 #define IDC_LOADCOUNT                   1044
