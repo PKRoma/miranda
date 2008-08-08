@@ -158,7 +158,7 @@ static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct Netlib
 			case 93: SetLastError(ERROR_INVALID_ACCESS); break;
 			default: SetLastError(ERROR_INVALID_DATA); break;
 		}
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
+		Netlib_Logf(nlu,"%s %d: Proxy connection failed (%u)",__FILE__,__LINE__, GetLastError());
 		return 0;
 	}
 	//connected
@@ -260,21 +260,22 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 	}
 
 	if ( buf[0]!=5 || buf[1] ) {
+		const char* err = "Unknown response"; 
 		if ( buf[0] != 5 )
 			SetLastError(ERROR_BAD_FORMAT);
 		else 
 			switch(buf[1]) {
-				case 1: SetLastError(ERROR_GEN_FAILURE); break;
-				case 2: SetLastError(ERROR_ACCESS_DENIED); break;
-				case 3: SetLastError(WSAENETUNREACH); break;
-				case 4: SetLastError(WSAEHOSTUNREACH); break;
-				case 5: SetLastError(WSAECONNREFUSED); break;
-				case 6: SetLastError(WSAETIMEDOUT); break;
-				case 7: SetLastError(ERROR_CALL_NOT_IMPLEMENTED); break;
-				case 8: SetLastError(ERROR_INVALID_ADDRESS); break;
+				case 1: SetLastError(ERROR_GEN_FAILURE); err = "General failure"; break;
+				case 2: SetLastError(ERROR_ACCESS_DENIED); err = "Connection not allowed by ruleset";  break;
+				case 3: SetLastError(WSAENETUNREACH); err = "Network unreachable"; break;
+				case 4: SetLastError(WSAEHOSTUNREACH); err = "Host unreachable"; break;
+				case 5: SetLastError(WSAECONNREFUSED); err = "Connection refused by destination host"; break;
+				case 6: SetLastError(WSAETIMEDOUT); err = "TTL expired"; break;
+				case 7: SetLastError(ERROR_CALL_NOT_IMPLEMENTED); err = "Command not supported / protocol error"; break;
+				case 8: SetLastError(ERROR_INVALID_ADDRESS); err = "Address type not supported"; break;
 				default: SetLastError(ERROR_INVALID_DATA); break;
 			}
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
+		Netlib_Logf(nlu,"%s %d: Proxy conection failed. %s.",__FILE__,__LINE__, err);
 		return 0;
 	}
 	{
