@@ -387,7 +387,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr;
-	char buffer[4096];
+	char buffer[8192];
 	int bytesPeeked;
 	DWORD dwRequestTimeoutTime;
 	char *peol,*pbuffer;
@@ -624,9 +624,16 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 	int dataLen = -1, i, chunkhdr;
 	int chunked = FALSE;
 
+next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
 	if (nlhrReply == NULL) 
 		return NULL;
+
+	if (nlhrReply->resultCode == 100)
+	{
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
+		goto next;
+	} 
 
 	for(i=0; i<nlhrReply->headersCount; i++) 
 	{
