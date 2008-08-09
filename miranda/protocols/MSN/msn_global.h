@@ -671,31 +671,6 @@ typedef struct _tag_MyConnectionType
 	void CalculateWeight(void);
 } MyConnectionType;
 
-/////////////////////////////////////////////////////////////////////////////////////////
-// Basic SSL operation class
-
-struct SSL_Base
-{
-	CMsnProto *proto;
-
-	SSL_Base(CMsnProto *prt) { proto = prt; }
-
-	virtual  char* getSslResult( const char* parUrl, const char* parAuthInfo, const char* hdrs ) = 0;
-};
-
-class SSLAgent
-{
-private:
-	SSL_Base* pAgent;
-
-public:
-	SSLAgent(CMsnProto* proto);
-	~SSLAgent();
-
-	char* getSslResult( char** parUrl, const char* parAuthInfo, const char* hdrs,
-		unsigned& status, char*& htmlbody);
-};
-
 struct chunkedmsg
 {
 	char* id;

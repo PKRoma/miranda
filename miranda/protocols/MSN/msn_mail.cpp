@@ -57,8 +57,6 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 	ezxml_t toki = ezxml_child(xmli, "M");
 	if (toki == NULL) return;
 
-	SSLAgent mAgent(this);
-
 	char* getReqHdr;
 	ezxml_t reqmsg;
 	ezxml_t xmlreq = oimRecvHdr("GetMessage", reqmsg, getReqHdr);
@@ -81,17 +79,16 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 		char* szData = ezxml_toxml(xmlreq, true);
 
 		unsigned status;
-		char* htmlbody;
 		char* url = (char*)mir_strdup(oimRecvUrl);
 
-		char* tResult = mAgent.getSslResult(&url, szData, getReqHdr, status, htmlbody);
+		char* tResult = getSslResult(&url, szData, getReqHdr, status);
 
 		free(szData);
 		mir_free(url);
 
 		if (tResult != NULL && status == 200)
 		{
-			ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 			ezxml_t tokm = ezxml_get(xmlm, "soap:Body", 0, "GetMessageResponse", 0, "GetMessageResult", -1);
 			
 			MimeHeaders mailInfo;
@@ -147,10 +144,9 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 		char* szData = ezxml_toxml(xmldel, true);
 			
 		unsigned status;
-		char* htmlbody;
 		char* url = (char*)mir_strdup(oimRecvUrl);
 
-		char* tResult = mAgent.getSslResult(&url, szData, delReqHdr, status, htmlbody);
+		char* tResult = getSslResult(&url, szData, delReqHdr, status);
 
 		mir_free(url);
 		mir_free(tResult);
@@ -163,8 +159,6 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 
 void CMsnProto::getMetaData(void)
 {
-	SSLAgent mAgent(this);
-
 	char* getReqHdr;
 	ezxml_t reqbdy;
 	ezxml_t xmlreq = oimRecvHdr("GetMetadata", reqbdy, getReqHdr);
@@ -173,10 +167,9 @@ void CMsnProto::getMetaData(void)
 	ezxml_free(xmlreq);
 
 	unsigned status;
-	char* htmlbody;
 	char* url = (char*)mir_strdup(oimRecvUrl);
 
-	char* tResult = mAgent.getSslResult(&url, szData, getReqHdr, status, htmlbody);
+	char* tResult = getSslResult(&url, szData, getReqHdr, status);
 
 	mir_free(url);
 	free(szData);
@@ -184,7 +177,7 @@ void CMsnProto::getMetaData(void)
 
 	if (tResult != NULL && status == 200)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		ezxml_t xmli = ezxml_get(xmlm, "soap:Body", 0, "GetMetadataResponse", 0, "MD", -1);
 		getOIMs(xmli);
 		ezxml_free(xmlm);
@@ -485,8 +478,6 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		ezxml_set_txt(msgc, msgenc);
 	}
 
-	SSLAgent mAgent(this);
-
 	int success = -1;
 	bool retry = true;
 	for (unsigned i=0; i<3 && retry; ++i)
@@ -496,12 +487,11 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		char* szData = ezxml_toxml(xmlp, true);
 		
 		unsigned status;
-		char* htmlbody;
 		char* url = (char*)mir_strdup("https://ows.messenger.msn.com/OimWS/oim.asmx");
 
-		char* tResult = mAgent.getSslResult(&url, szData,
+		char* tResult = getSslResult(&url, szData,
 			"SOAPAction: \"http://messenger.live.com/ws/2006/09/oim/Store2\"\r\n",
-			status, htmlbody);
+			status);
 
 		mir_free(url);
 		free(szData);
@@ -510,7 +500,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 		{
 			if (status == 500)
 			{
-				ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+				ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 				ezxml_t flt = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", -1);
 				const char* szFltCode = ezxml_txt(ezxml_child(flt, "faultcode"));
 				

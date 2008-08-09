@@ -123,7 +123,6 @@ static const char authPacket[] =
 int CMsnProto::MSN_GetPassportAuth( void )
 {
 	int retVal = -1;
-	SSLAgent mAgent(this);
 
 	char szPassword[100];
 	getStaticString(NULL, "Password", szPassword, sizeof(szPassword));
@@ -148,9 +147,8 @@ int CMsnProto::MSN_GetPassportAuth( void )
 	while (retVal == -1)
 	{
 		unsigned status;
-		char* htmlbody;
 
-		tResult = mAgent.getSslResult(&szPassportHost, szAuthInfo, NULL, status, htmlbody);
+		tResult = getSslResult(&szPassportHost, szAuthInfo, NULL, status);
 		if ( tResult == NULL ) {
 			if ( defaultUrlAllow ) {
 				strcpy( szPassportHost, defaultPassportUrl );
@@ -166,7 +164,7 @@ int CMsnProto::MSN_GetPassportAuth( void )
 		{
 			case 200: 
 			{
-				ezxml_t xml = ezxml_parse_str((char*)htmlbody, strlen(htmlbody));
+				ezxml_t xml = ezxml_parse_str(tResult, strlen(tResult));
 
 				ezxml_t tokr = ezxml_get(xml, "S:Body", 0, 
 					"wst:RequestSecurityTokenResponseCollection", 0,

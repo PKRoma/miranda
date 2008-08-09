@@ -187,7 +187,8 @@ struct CMsnProto : public PROTO_INTERFACE
     int			mUnreadJunkEmails;
 
     HANDLE		hNetlibUser;
-    HANDLE		hInitChat;
+	HANDLE		hNetlibUserHttps;
+	HANDLE		hInitChat;
     HANDLE		hMSNNudge;
 
     HANDLE		hMSNAvatarsFolder;
@@ -196,6 +197,8 @@ struct CMsnProto : public PROTO_INTERFACE
 	void        InitCustomFolders(void);
 
     void        MSN_DebugLog( const char* fmt, ... );
+
+	char*		getSslResult(char** parUrl, const char* parAuthInfo, const char* hdrs, unsigned& status);
 
     void        MSN_GoOffline( void );
     void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );

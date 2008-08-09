@@ -87,8 +87,6 @@ void CMsnProto::UpdateStoreHost(const char* service, const char* url)
 
 bool CMsnProto::MSN_StoreCreateProfile(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("CreateProfile", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -106,10 +104,9 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("CreateProfile");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -124,8 +121,6 @@ bool CMsnProto::MSN_StoreCreateProfile(void)
 
 bool CMsnProto::MSN_StoreGetProfile(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("GetProfile", "Initial", tbdy, reqHdr);
@@ -172,10 +167,9 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("GetProfile");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -184,7 +178,7 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 
 	if (tResult != NULL && status == 200)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		ezxml_t resxml = ezxml_get(xmlm, "soap:Body", 0, "GetProfileResponse", 0, 
 			"GetProfileResult", -1);
 		
@@ -216,8 +210,6 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 
 bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("UpdateProfile", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -239,10 +231,9 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("UpdateProfile");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -262,8 +253,6 @@ bool CMsnProto::MSN_StoreUpdateNick(const char* szNick)
 
 bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *szTgtId)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("CreateRelationships", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -286,10 +275,9 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("CreateRelationships");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -305,8 +293,6 @@ bool CMsnProto::MSN_StoreCreateRelationships(const char *szSrcId, const char *sz
 
 bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("DeleteRelationships", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -331,10 +317,9 @@ bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("DeleteRelationships");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -350,8 +335,6 @@ bool CMsnProto::MSN_StoreDeleteRelationships(const char *szResId)
 
 bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("CreateDocument", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -392,10 +375,9 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("CreateDocument");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -411,8 +393,6 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 
 bool CMsnProto::MSN_StoreFindDocuments(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = storeSoapHdr("FindDocuments", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -452,10 +432,9 @@ bool CMsnProto::MSN_StoreFindDocuments(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* storeUrl = GetStoreHost("FindDocuments");
-	char* tResult = mAgent.getSslResult(&storeUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&storeUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);

@@ -921,7 +921,7 @@ int CMsnProto::MSN_HandleCommands( ThreadData* info, char* cmdString )
 		}	}
 		else params = cmdString+4;
 	}
-	MSN_DebugLog("%S", cmdString);
+	MSN_DebugLog("%s", cmdString);
 
 	switch(( *( PDWORD )cmdString & 0x00FFFFFF ) | 0x20000000 )
 	{

@@ -173,6 +173,7 @@ CMsnProto::~CMsnProto()
 	CachedMsg_Uninit();
 
 	Netlib_CloseHandle( hNetlibUser );
+	Netlib_CloseHandle( hNetlibUserHttps );
 
 	mir_free( mailsoundname );
 	mir_free( alertsoundname );
@@ -197,9 +198,17 @@ CMsnProto::~CMsnProto()
 
 int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char szBuffer[ MAX_PATH ];
+	char szBuffer[ MAX_PATH ], szDbsettings[64];;
 
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szProtoName );
+	NETLIBUSER nlu1 = {0};
+	nlu1.cbSize = sizeof( nlu1 );
+	nlu1.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu1.szSettingsModule = szDbsettings;
+	nlu1.szDescriptiveName = szBuffer;
+
+	mir_snprintf( szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szProtoName );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), m_szProtoName );
+	hNetlibUserHttps = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu1 );
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
@@ -215,12 +224,13 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
 	}
 
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szProtoName );
 	hNetlibUser = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
 	if ( getByte( "UseIeProxy", 0 )) {
 		NETLIBUSERSETTINGS nls = { 0 };
 		nls.cbSize = sizeof( nls );
-		MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlibUser), LPARAM(&nls));
+		MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
 
 		HKEY hSettings;
 		if ( RegOpenKeyExA( HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
@@ -258,7 +268,7 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			nls.szOutgoingPorts = NEWSTR_ALLOCA(nls.szOutgoingPorts);
 			nls.szProxyAuthPassword = NEWSTR_ALLOCA(nls.szProxyAuthPassword);
 			nls.szProxyAuthUser = NEWSTR_ALLOCA(nls.szProxyAuthUser);
-			MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlibUser), LPARAM(&nls));
+			MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
 		}	
 	}
 

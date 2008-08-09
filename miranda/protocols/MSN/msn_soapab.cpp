@@ -93,8 +93,6 @@ char* CMsnProto::GetABHost(const char* service, bool isSharing)
 
 bool CMsnProto::MSN_ABAdd(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy, node;
 	ezxml_t xmlp = abSoapHdr("ABAdd", "Timer", tbdy, reqHdr);
@@ -112,10 +110,9 @@ bool CMsnProto::MSN_ABAdd(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABAdd", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -131,8 +128,6 @@ bool CMsnProto::MSN_ABAdd(void)
 
 bool CMsnProto::MSN_SharingFindMembership(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("FindMembership", "Initial", tbdy, reqHdr);
@@ -162,17 +157,16 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("FindMembership", true);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		UpdateABHost("FindMembership", abUrl);
 
 		if (status == 200)
@@ -264,8 +258,6 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 	else if (listId & LIST_RL) szRole = "Reverse";
 	else return false;
 
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr(szMethod, "BlockUnblock", tbdy, reqHdr);
@@ -338,10 +330,9 @@ bool CMsnProto::MSN_SharingAddDelMember(const char* szEmail, const int listId, c
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost(szMethod, true);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 	if (tResult != NULL) UpdateABHost(szMethod, abUrl);
 
 	mir_free(reqHdr);
@@ -362,8 +353,6 @@ void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 
 bool CMsnProto::MSN_ABGetFull(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABFindAll", "Initial", tbdy, reqHdr);
@@ -379,17 +368,16 @@ bool CMsnProto::MSN_ABGetFull(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABFindAll", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL && status == 200)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		ezxml_t abook = ezxml_get(xmlm, "soap:Body", 0, "ABFindAllResponse", 0, 
 			"ABFindAllResult", -1);
 		
@@ -618,8 +606,6 @@ bool CMsnProto::MSN_ABGetFull(void)
 //		"ABGroupContactAdd" : "ABGroupContactDelete", "ABGroupDelete", "ABContactDelete"
 bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy, node;
 	ezxml_t xmlp = abSoapHdr(szMethod, "Timer", tbdy, reqHdr);
@@ -644,17 +630,16 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost(szMethod, false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
 
 	if (tResult != NULL && status == 200)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		UpdateABHost(szMethod, abUrl);
 		ezxml_free(xmlm);
 	}
@@ -666,8 +651,6 @@ bool CMsnProto::MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpI
 
 void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABGroupAdd", "GroupSave", tbdy, reqHdr);
@@ -695,17 +678,16 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABGroupAdd", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	free(szData);
 	mir_free(reqHdr);
 
 	if (tResult != NULL && status == 200)
 	{
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		
 		const char* szGrpId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABGroupAddResponse", 0, 
 			"ABGroupAddResult", 0, "guid", -1));
@@ -722,8 +704,6 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 
 void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABGroupUpdate", "Timer", tbdy, reqHdr);
@@ -743,10 +723,9 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABGroupUpdate", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	free(szData);
 	mir_free(reqHdr);
@@ -762,8 +741,6 @@ void CMsnProto::MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId)
 
 void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABContactUpdate", "Timer", tbdy, reqHdr);
@@ -796,10 +773,9 @@ void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 	mir_free(szPrpChg);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABContactUpdate", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -815,8 +791,6 @@ void CMsnProto::MSN_ABUpdateProperty(const char* szCntId, const char* propName, 
 
 void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABContactUpdate", "Timer", tbdy, reqHdr);
@@ -849,10 +823,9 @@ void CMsnProto::MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const 
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABContactUpdate", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -877,8 +850,6 @@ void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 
 unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("ABContactAdd", "ContactSave", tbdy, reqHdr);
@@ -951,10 +922,9 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("ABContactAdd", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
@@ -962,7 +932,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 	if (tResult != NULL)
 	{
 		UpdateABHost("ABContactAdd", abUrl);
-		ezxml_t xmlm = ezxml_parse_str(htmlbody, strlen(htmlbody));
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		if (status == 200)
 		{
 		
@@ -996,8 +966,6 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 
 void CMsnProto::MSN_ABUpdateDynamicItem(void)
 {
-	SSLAgent mAgent(this);
-
 	char* reqHdr;
 	ezxml_t tbdy;
 	ezxml_t xmlp = abSoapHdr("UpdateDynamicItem", "RoamingIdentityChanged", tbdy, reqHdr);
@@ -1061,10 +1029,9 @@ void CMsnProto::MSN_ABUpdateDynamicItem(void)
 	ezxml_free(xmlp);
 
 	unsigned status;
-	char* htmlbody;
 
 	char* abUrl = GetABHost("UpdateDynamicItem", false);
-	char* tResult = mAgent.getSslResult(&abUrl, szData, reqHdr, status, htmlbody);
+	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
 	free(szData);
