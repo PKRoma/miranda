@@ -213,7 +213,7 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 
 				info->mBytesInData -= peol - info->mData;
 				memmove( info->mData, peol, info->mBytesInData );
-				MSN_DebugLog( "RECV:%s", msg );
+				MSN_DebugLog( "RECV: %s", msg );
 
 				if ( info->mType == SERVER_NOTIFICATION )
 					SetEvent( hKeepAliveThreadEvt );
