@@ -525,7 +525,10 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 				FD_ZERO(&fd);
 				FD_SET(ssl->s, &fd);
 
-				if (select(1, &fd, NULL, NULL, &tv) != 1) 
+				cbData = select(1, &fd, NULL, NULL, &tv);
+				if (cbData == SOCKET_ERROR) return SOCKET_ERROR;
+				
+				if (cbData == 0 && ssl->cbRecDataBuf)
 				{
 					DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
 					CopyMemory(buf, ssl->pbRecDataBuf, bytes);
@@ -534,9 +537,8 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			}
 
 			cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
-			if (cbData == SOCKET_ERROR)
-				return SOCKET_ERROR;
-
+			if (cbData == SOCKET_ERROR) return SOCKET_ERROR;
+			
 			if (cbData == 0) 
 			{
 				if (peek && ssl->cbRecDataBuf)
@@ -607,29 +609,32 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		// Return decrypted data.
 		if (pDataBuffer) 
 		{
-			DWORD rbytes;
-			DWORD bytes = min((DWORD)num, pDataBuffer->cbBuffer);
+			DWORD bytes, rbytes;
 
-			CopyMemory(buf, pDataBuffer->pvBuffer, bytes);
-			resNum = bytes;
-
-			if (peek) 
-			{
-				rbytes = bytes;
-				bytes  = 0;
-			}
-			else rbytes = pDataBuffer->cbBuffer - bytes;
+			bytes = peek ? 0 : min((DWORD)num, pDataBuffer->cbBuffer);
+			rbytes = pDataBuffer->cbBuffer - bytes;
 
 			if (rbytes > 0) 
 			{
 				DWORD nbytes = ssl->cbRecDataBuf + rbytes;
 				if (ssl->sbRecDataBuf < nbytes) 
 				{
-					ssl->sbRecDataBuf += rbytes - ssl->cbRecDataBuf;
-					ssl->pbRecDataBuf = (PUCHAR)mir_realloc(ssl->pbRecDataBuf, ssl->sbRecDataBuf);
+					ssl->sbRecDataBuf = nbytes;
+					ssl->pbRecDataBuf = (PUCHAR)mir_realloc(ssl->pbRecDataBuf, nbytes);
 				}
 				CopyMemory(ssl->pbRecDataBuf + ssl->cbRecDataBuf, (char*)pDataBuffer->pvBuffer+bytes, rbytes);
 				ssl->cbRecDataBuf = nbytes;
+			}
+
+			if (peek)
+			{
+				resNum = bytes = min((DWORD)num, ssl->cbRecDataBuf);
+				CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+			}
+			else
+			{
+				resNum = bytes;
+				CopyMemory(buf, pDataBuffer->pvBuffer, bytes);
 			}
 		}
 
