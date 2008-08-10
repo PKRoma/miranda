@@ -1192,7 +1192,7 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 
   if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &dbv))
   {
-    nMetaTokenLen = dbv.cpbVal + 4;
+    nMetaTokenLen = dbv.cpbVal;
     pMetaToken = (BYTE*)_alloca(dbv.cpbVal);
     memcpy(pMetaToken, dbv.pbVal, dbv.cpbVal);
 
@@ -1200,7 +1200,7 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
   }
   if (!getSetting(hContact, DBSETTING_METAINFO_TIME, &dbv))
   {
-    nMetaTimeLen = dbv.cpbVal + 4;
+    nMetaTimeLen = dbv.cpbVal;
     pMetaTime = (BYTE*)_alloca(dbv.cpbVal);
     memcpy(pMetaTime, dbv.pbVal, dbv.cpbVal);
 
@@ -1238,7 +1238,7 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 	}
 
 	// Build the packet
-	wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen + nMetaTokenLen + nMetaTimeLen;
+  wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen + (nMetaTokenLen?4+nMetaTokenLen:0) + (nMetaTimeLen?4+nMetaTimeLen:0);
 
 	// Initialize our handy data buffer
 	pBuffer.wPlace = 0;
