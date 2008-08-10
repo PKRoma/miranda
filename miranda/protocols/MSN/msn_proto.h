@@ -50,8 +50,8 @@ struct CMsnProto : public PROTO_INTERFACE
     virtual	HANDLE __cdecl AddToList( int flags, PROTOSEARCHRESULT* psr );
     virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
 
-    virtual	int    __cdecl Authorize( HANDLE hContact );
-    virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason );
+    virtual	int    __cdecl Authorize( HANDLE hDbEvent );
+    virtual	int    __cdecl AuthDeny( HANDLE hDbEvent, const char* szReason );
     virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* );
     virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage );
 

@@ -405,7 +405,7 @@ HANDLE __cdecl CMsnProto::ChangeInfo( int iInfoType, void* pInfoData )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAuthAllow - called after successful authorization
 
-int CMsnProto::Authorize( HANDLE hContact )
+int CMsnProto::Authorize( HANDLE hDbEvent )
 {
 	if ( !msnLoggedIn )
 		return 1;
@@ -413,11 +413,11 @@ int CMsnProto::Authorize( HANDLE hContact )
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
-	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hContact, 0 )) == -1 )
+	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 )) == -1 )
 		return 1;
 
 	dbei.pBlob = ( PBYTE )alloca( dbei.cbBlob );
-	if ( MSN_CallService( MS_DB_EVENT_GET, (WPARAM)hContact, ( LPARAM )&dbei ))
+	if ( MSN_CallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, ( LPARAM )&dbei ))
 		return 1;
 
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
@@ -431,7 +431,7 @@ int CMsnProto::Authorize( HANDLE hContact )
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-//	HANDLE hContact = MSN_HContactFromEmail(email, email, true, 0);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, 0);
 	int netId = Lists_GetNetId(email);
 
 	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
@@ -447,7 +447,7 @@ int CMsnProto::Authorize( HANDLE hContact )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAuthDeny - called after unsuccessful authorization
 
-int CMsnProto::AuthDeny( HANDLE hContact, const char* szReason )
+int CMsnProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 {
 	if ( !msnLoggedIn )
 		return 1;
@@ -455,11 +455,11 @@ int CMsnProto::AuthDeny( HANDLE hContact, const char* szReason )
 	DBEVENTINFO dbei = { 0 };
 	dbei.cbSize = sizeof( dbei );
 
-	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hContact, 0 )) == -1 )
+	if ((int)( dbei.cbBlob = MSN_CallService( MS_DB_EVENT_GETBLOBSIZE, (WPARAM)hDbEvent, 0 )) == -1 )
 		return 1;
 
 	dbei.pBlob = ( PBYTE )alloca( dbei.cbBlob );
-	if ( MSN_CallService( MS_DB_EVENT_GET, (WPARAM)hContact, ( LPARAM )&dbei ))
+	if ( MSN_CallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, ( LPARAM )&dbei ))
 		return 1;
 
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
@@ -473,7 +473,7 @@ int CMsnProto::AuthDeny( HANDLE hContact, const char* szReason )
 	char* lastName = firstName + strlen( firstName ) + 1;
 	char* email = lastName + strlen( lastName ) + 1;
 
-//	HANDLE hContact = MSN_HContactFromEmail(email, email, true, false);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
 	int netId = Lists_GetNetId(email);
 
 	MSN_AddUser( hContact, email, netId, LIST_PL + LIST_REMOVE );
@@ -486,6 +486,7 @@ int CMsnProto::AuthDeny( HANDLE hContact, const char* szReason )
 	MSN_SetContactDb(hContact, email);
 	return 0;
 }
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnBasicSearch - search contacts by e-mail
 
