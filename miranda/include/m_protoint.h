@@ -107,8 +107,8 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HANDLE __cdecl AddToList( int flags, PROTOSEARCHRESULT* psr ) = 0;
 	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent ) = 0;
 
-	virtual	int    __cdecl Authorize( HANDLE hContact ) = 0;
-	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason ) = 0;
+	virtual	int    __cdecl Authorize( HANDLE hDbEvent ) = 0;
+	virtual	int    __cdecl AuthDeny( HANDLE hDbEvent, const char* szReason ) = 0;
 	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* ) = 0;
 	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage ) = 0;
 
