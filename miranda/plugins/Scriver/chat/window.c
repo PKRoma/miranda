@@ -811,6 +811,14 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 			_snprintf(serviceName,SIZEOF(serviceName), "%s"MS_GC_PROTO_GETTOOLTIPTEXT, parentdat->pszModule);
 			if (ServiceExists(serviceName))
 				ti.lpszText=(TCHAR*)CallService(serviceName, (WPARAM)parentdat->ptszID, (LPARAM)ui1->pszUID);
+			else {
+				TCHAR ptszBuf[ 1024 ];
+				mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%s: %s\r\n%s: %s\r\n%s: %s"),
+					TranslateT( "Nick name" ), ui1->pszNick,
+					TranslateT( "Unique id" ), ui1->pszUID,
+					TranslateT( "Status" ), TM_WordToString( parentdat->pStatuses, ui1->Status ));
+				ti.lpszText = mir_tstrdup( ptszBuf );
+			}
 		}
 
 		SendMessage( hwndToolTip, bNewTip ? TTM_ADDTOOL : TTM_UPDATETIPTEXT, 0, (LPARAM) &ti);
