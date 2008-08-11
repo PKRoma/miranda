@@ -50,7 +50,7 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 	nlhr.pData = (char*)parAuthInfo;
 
 #ifndef _DEBUG
-	nlhr.flags |= NLHRF_NODUMP;
+	if (strstr(parUrl, "login")) nlhr.flags |= NLHRF_NODUMP;
 #endif
 
 	nlhr.headersCount = 5;
