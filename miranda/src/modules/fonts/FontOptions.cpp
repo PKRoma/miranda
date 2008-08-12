@@ -749,11 +749,14 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if (ChooseFont(&cf)) {
 						for (i = 0; i < selCount; ++i) {
 							FSUIListItemData *itemData = (FSUIListItemData *)SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[i], 0);
-							if (itemData->font_id < 0) continue;
-							F.value.size = (char)lf.lfHeight;
-							F.value.style = (lf.lfWeight >= FW_BOLD ? DBFONTF_BOLD : 0) | (lf.lfItalic ? DBFONTF_ITALIC : 0) | (lf.lfUnderline ? DBFONTF_UNDERLINE : 0) | (lf.lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
-							F.value.charset = lf.lfCharSet;
-							_tcscpy(F.value.szFace, lf.lfFaceName);
+							if (itemData->font_id < 0)
+								continue;
+
+							TFontID& F1 = font_id_list_w2[itemData->font_id];
+							F1.value.size = (char)lf.lfHeight;
+							F1.value.style = (lf.lfWeight >= FW_BOLD ? DBFONTF_BOLD : 0) | (lf.lfItalic ? DBFONTF_ITALIC : 0) | (lf.lfUnderline ? DBFONTF_UNDERLINE : 0) | (lf.lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
+							F1.value.charset = lf.lfCharSet;
+							_tcscpy(F1.value.szFace, lf.lfFaceName);
 							
 							MEASUREITEMSTRUCT mis = { 0 };
 							mis.CtlID = IDC_FONTLIST;
