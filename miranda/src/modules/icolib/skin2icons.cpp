@@ -1438,6 +1438,8 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		//
 		//  Setup preview listview
 		//
+		ListView_SetUnicodeFormat(hPreview, TRUE);
+		ListView_SetExtendedListViewStyleEx(hPreview, LVS_EX_INFOTIP, LVS_EX_INFOTIP);
 		ListView_SetImageList(hPreview, ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,0,30), LVSIL_NORMAL);
 		ListView_SetIconSpacing(hPreview, 56, 67);
 
@@ -1715,6 +1717,23 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 
 		case IDC_PREVIEW:
+			if(((LPNMHDR)lParam)->code == LVN_GETINFOTIP)
+			{
+				IconItem *item;
+				NMLVGETINFOTIP *pInfoTip = (NMLVGETINFOTIP *)lParam;
+				LVITEM lvi;
+				lvi.mask = LVIF_PARAM;
+				lvi.iItem = pInfoTip->iItem;
+				ListView_GetItem(pInfoTip->hdr.hwndFrom, &lvi);
+
+				if( lvi.lParam < iconList.getCount() ) {
+					item = iconList[lvi.lParam];
+					if( item->temp_file )
+						_tcsncpy( pInfoTip->pszText, item->temp_file, pInfoTip->cchTextMax );
+					else if( item->default_file )
+						mir_sntprintf( pInfoTip->pszText, pInfoTip->cchTextMax, _T("%s,%d"), item->default_file, item->default_indx );
+				}
+			}
 			if ( bNeedRebuild )	{
 				EnterCriticalSection(&csIconList);
 				bNeedRebuild = FALSE;
