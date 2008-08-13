@@ -731,10 +731,10 @@ void CLUI_ChangeWindowMode()
 		TCHAR titleText[255]={0};
 		DBVARIANT dbv={0};
 		if(ModernGetSettingTString(NULL,"CList","TitleText",&dbv))
-			lstrcpyn(titleText,TEXT(MIRANDANAME),sizeof(titleText));
+			lstrcpyn(titleText,TEXT(MIRANDANAME),SIZEOF(titleText));
 		else 
 		{
-			lstrcpyn(titleText,dbv.ptszVal,sizeof(titleText));
+			lstrcpyn(titleText,dbv.ptszVal,SIZEOF(titleText));
 			ModernDBFreeVariant(&dbv);
 		}
 		SetWindowText(pcli->hwndContactList,titleText);

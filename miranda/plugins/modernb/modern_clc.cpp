@@ -1848,9 +1848,9 @@ static LRESULT clcOnIntmNameChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 
 	pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 	if(!FindItem(hwnd,dat,(HANDLE)wParam,&contact,NULL,NULL,FALSE)) 
-		return corecli.pfnContactListControlWndProc(hwnd,msg,wParam,lParam);
+		return ret;
 
-	lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0),sizeof(contact->szText));
+	lstrcpyn(contact->szText, pcli->pfnGetContactDisplayName((HANDLE)wParam,0),SIZEOF(contact->szText));
 	if (contact)//!IsBadWritePtr(contact, sizeof(struct ClcContact)))
 	{
 		Cache_GetText(dat,contact,1);
