@@ -34,7 +34,7 @@ static void xmlCreateNode( XMLNode* result, LPCTSTR name, LPCTSTR text )
 
 static void xmlDestroyNode( XMLNode* n )
 {
-	n->emptyNode();
+	*n = XMLNode();
 }
 
 static int xmlParseString( XMLNode* result, LPCTSTR str, int* datalen, LPCTSTR tag )
@@ -60,7 +60,7 @@ static void xmlAddChild( XMLNode* result, XMLNode* n, LPCTSTR name, LPCTSTR text
 		result->updateText( text );
 }
 
-static void xmlCopyNode( XMLNode* result, XMLNode* n )
+static void xmlCopyNode( XMLNode* result, const XMLNode* n )
 {
 	*result = *n;
 }
@@ -80,12 +80,12 @@ static LPCTSTR xmlGetAttrName( XMLNode* n, int i )
 	return n->getAttributeName( i );
 }
 
-static void xmlGetChild( XMLNode* result, XMLNode* n, int i )
+static void xmlGetChild( XMLNode* result, const XMLNode* n, int i )
 {
 	*result = n->getChildNode( i );
 }
 
-static void xmlGetChildByAttrValue( XMLNode* result, XMLNode* n, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue )
+static void xmlGetChildByAttrValue( XMLNode* result, const XMLNode* n, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue )
 {
 	*result = n->getChildNodeWithAttribute( name, attrName, attrValue );
 }
@@ -95,12 +95,12 @@ static int xmlGetChildCount( XMLNode* n )
 	return n->nChildNode();
 }
 
-static void xmlGetFirstChild( XMLNode* result, XMLNode* n )
+static void xmlGetFirstChild( XMLNode* result, const XMLNode* n )
 {
 	*result = n->getChildNode( 0 );
 }
 
-static void xmlGetNthChild( XMLNode* result, XMLNode* n, LPCTSTR name, int i )
+static void xmlGetNthChild( XMLNode* result, const XMLNode* n, LPCTSTR name, int i )
 {
 	*result = n->getChildNode( name, i );
 }

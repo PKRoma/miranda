@@ -44,12 +44,12 @@ typedef struct
 	LPCTSTR  ( *toString )( MXmlNode* result, int* datalen );
 
 	void     ( *addChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR text );
-	void     ( *copyNode )( MXmlNode* result, MXmlNode* parent);
-	void     ( *getChild )( MXmlNode* result, MXmlNode* parent, int number );
+	void     ( *copyNode )( MXmlNode* result, const MXmlNode* parent);
+	void     ( *getChild )( MXmlNode* result, const MXmlNode* parent, int number );
 	int      ( *getChildCount )( MXmlNode* );
-	void     ( *getChildByAttrValue )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
-	void     ( *getFirstChild )( MXmlNode* result, MXmlNode* parent );
-	void     ( *getNthChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, int n );
+	void     ( *getChildByAttrValue )( MXmlNode* result, const MXmlNode* parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
+	void     ( *getFirstChild )( MXmlNode* result, const MXmlNode* parent );
+	void     ( *getNthChild )( MXmlNode* result, const MXmlNode* parent, LPCTSTR name, int n );
 	LPCTSTR  ( *getName )( MXmlNode* );
 	LPCTSTR  ( *getText )( MXmlNode* );
 

@@ -40,7 +40,13 @@ struct XmlNode : public MXmlNode
 	}
 
 	__forceinline XmlNode( MXmlNode n )
-	{	unused = n.unused;
+	{	unused = NULL;
+		xi.copyNode( this, &n );
+	}
+
+	__forceinline XmlNode( const XmlNode& n )
+	{	unused = NULL;
+		xi.copyNode( this, &n );
 	}
 
 	XmlNode( LPCTSTR name );
