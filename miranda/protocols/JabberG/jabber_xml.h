@@ -78,9 +78,10 @@ struct XmlNode : public MXmlNode
 	XmlNode getChild( int n = 0 );
 	XmlNode getChild( LPCSTR key );
 	XmlNode getChild( LPCTSTR key );
-	XmlNode getNthChild( LPCTSTR key, int n = 0 );
+	int     getChildCount();
 	XmlNode getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue );
 	XmlNode getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue );
+	XmlNode getNthChild( LPCTSTR key, int n = 0 );
 
 	XmlNode addQuery( LPCTSTR szNameSpace );
 

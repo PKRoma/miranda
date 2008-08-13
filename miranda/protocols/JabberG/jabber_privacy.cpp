@@ -2103,7 +2103,7 @@ void CJabberDlgPrivacyLists::btnApply_OnClick(CCtrlButton *)
 						itemTag.addAttr( "action", "allow" );
 					else
 						itemTag.addAttr( "action", "deny" );
-					// !!!!!!!!!!!!!!itemTag.addAttr( _T("order"), pRule->GetOrder() );
+					itemTag.addAttr( _T("order"), pRule->GetOrder() );
 					DWORD dwPackets = pRule->GetPackets();
 					if ( dwPackets != JABBER_PL_RULE_TYPE_ALL ) {
 						if ( dwPackets & JABBER_PL_RULE_TYPE_IQ )

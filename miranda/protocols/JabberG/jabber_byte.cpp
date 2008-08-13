@@ -35,28 +35,24 @@ Last change by : $Author$
 
 ///////////////// Bytestream sending /////////////////////////
 
-void JabberByteFreeJbt( JABBER_BYTE_TRANSFER *jbt )
+JABBER_BYTE_TRANSFER::~JABBER_BYTE_TRANSFER()
 {
-	if ( jbt )  {
-		filetransfer* pft = (filetransfer *)jbt->userdata;
-		if ( pft )
-			pft->jbt = NULL;
+	filetransfer* pft = (filetransfer *)userdata;
+	if ( pft )
+		pft->jbt = NULL;
 
-		mir_free( jbt->srcJID );
-		mir_free( jbt->dstJID );
-		mir_free( jbt->streamhostJID );
-		mir_free( jbt->iqId );
-		mir_free( jbt->sid );
-		// !!!!!!!!!!!!!if ( jbt->iqNode ) delete jbt->iqNode;
+	mir_free( srcJID );
+	mir_free( dstJID );
+	mir_free( streamhostJID );
+	mir_free( iqId );
+	mir_free( sid );
 
-		// XEP-0065 proxy support
-		mir_free( jbt->szProxyHost );
-		mir_free( jbt->szProxyPort );
-		mir_free( jbt->szProxyJid );
-		mir_free( jbt->szStreamhostUsed );
-
-		mir_free( jbt );
-}	}
+	// XEP-0065 proxy support
+	mir_free( szProxyHost );
+	mir_free( szProxyPort );
+	mir_free( szProxyJid );
+	mir_free( szStreamhostUsed );
+}
 
 void CJabberProto::IqResultProxyDiscovery( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
@@ -222,7 +218,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		jbt->hConn = ( HANDLE ) JCallService( MS_NETLIB_BINDPORT, ( WPARAM ) m_hNetlibUser, ( LPARAM )&nlb );
 		if ( jbt->hConn == NULL ) {
 			Log( "Cannot allocate port for bytestream_send thread, thread ended." );
-			JabberByteFreeJbt( jbt );
+			delete jbt;
 			mir_free( localAddr );
 			return;
 		}
@@ -274,7 +270,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		jbt->userdata = NULL;
 		// stupid fix: wait for listening thread exit
 		Sleep( 100 );
-		JabberByteFreeJbt( jbt );
+		delete jbt;
 		return;
 	}
 
@@ -308,7 +304,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	// stupid fix: wait for listening connection thread exit
 	Sleep( 100 );
-	JabberByteFreeJbt( jbt );
+	delete jbt;
 	Log( "Thread ended: type=bytestream_send" );
 }
 
@@ -709,7 +705,7 @@ void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 		m_ThreadInfo->send( iq );
 	}
 
-	JabberByteFreeJbt( jbt );
+	delete jbt;
 	Log( "Thread ended: type=bytestream_recv" );
 }
 

@@ -274,7 +274,7 @@ void CJabberProto::OnRosterPushRequest( XmlNode node, void* userdata, CJabberIqI
 	const TCHAR *jid, *str, *name;
 	TCHAR* nick;
 
-	// !!!!!!!!!!!!Log( "<iq/> Got roster push, query has %d children", queryNode.numChild );
+	Log( "<iq/> Got roster push, query has %d children", queryNode.getChildCount() );
 	for ( int i=0; ; i++ ) {
 		XmlNode itemNode = queryNode.getChild(i);
 		if ( !itemNode )

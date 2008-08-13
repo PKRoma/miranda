@@ -419,8 +419,7 @@ static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat)
 	}
 	else
 	{
-		////// !!!!!!!!!!!! if (dat->xNode) delete (dat->xNode);
-		///// dat->xNode=NULL;
+		dat->xNode = XmlNode();
 		EnumChildWindows(GetDlgItem(hwndDlg,IDC_FRAME),DeleteChildWindowsProc,0);			
 	}
 	SendMessage(GetDlgItem(hwndDlg,IDC_FRAME), WM_SETFONT, (WPARAM) SendMessage( hwndDlg, WM_GETFONT, 0, 0 ),0 );

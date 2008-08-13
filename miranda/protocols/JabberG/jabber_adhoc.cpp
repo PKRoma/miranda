@@ -159,10 +159,7 @@ int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDa
 					SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
 	}	}	}	}
 
-	///!!!!!!!!!!!!!!!!!!!!!
-	// if ( dat->CommandsNode )
-	//		delete dat->CommandsNode;
-	dat->CommandsNode = NULL;
+	dat->CommandsNode = XmlNode();
 	return TRUE;
 }
 
@@ -172,7 +169,7 @@ int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode  iqNode, 
 	int nodeIdx = 0;
 	const TCHAR * type = iqNode.getAttrValue( _T("type"));
 	if ( !type || !_tcscmp( type, _T( "error" ) ) ) {
-		// error ocured here
+		// error occurred here
 		TCHAR buff[255];
 		const TCHAR* code		= NULL;
 		const TCHAR* description = NULL;
@@ -201,9 +198,6 @@ int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode  iqNode, 
 				validResponse = TRUE;
 		}
 		if ( queryNode && queryNode.getChild(0) && validResponse ) {
-			//!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// if ( dat->CommandsNode )
-			//   delete dat->CommandsNode;
 			dat->CommandsNode = queryNode;
 
 			nodeIdx = 1;
@@ -239,10 +233,9 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, XmlNode workNode, Jabb
 	dat->curPos = 0;
 	SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, 0, FALSE );
 
-	// !!!!!!!!!!!! if ( dat->AdHocNode ) delete dat->AdHocNode;
 	dat->AdHocNode = workNode;
-	
-	if ( dat->AdHocNode == NULL ) return TRUE;
+	if ( dat->AdHocNode == NULL )
+		return TRUE;
 
 	const TCHAR *type;
 	if (( type = workNode.getAttrValue( _T("type"))) == NULL ) return TRUE;
@@ -485,9 +478,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat, NULL);
 			case IDCLOSE:
 			case IDCANCEL:
-				//// !!!!!!!!!!! if ( dat->AdHocNode )
-				//   delete dat->AdHocNode;
-				dat->AdHocNode=NULL;
+				dat->AdHocNode = XmlNode();
 				DestroyWindow( hwndDlg );
 				return TRUE;
 			}
@@ -555,12 +546,10 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 
 			dat->proto->m_hwndCommandWindow = NULL;
-			/// !!!!!!!!!!!!!!!!!!! if (dat->AdHocNode) delete dat->AdHocNode;
-			dat->AdHocNode=NULL;
+			dat->AdHocNode = XmlNode();
 			if (dat->ResponderJID) mir_free(dat->ResponderJID);
 			dat->ResponderJID = NULL;
-			/// !!!!!!!!!!!!!!!!!!! if (dat->CommandsNode) delete dat->CommandsNode;
-			dat->CommandsNode=NULL;
+			dat->CommandsNode = XmlNode();
 			mir_free(dat);
 			dat=NULL;
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);

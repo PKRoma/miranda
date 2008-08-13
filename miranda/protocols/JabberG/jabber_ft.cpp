@@ -151,7 +151,7 @@ void CJabberProto::OnFtSiResult( XmlNode iqNode, void *userdata, CJabberIqInfo* 
 						if (( valueNode = fieldNode.getChild( "value" ))!=NULL && valueNode.getText()!=NULL ) {
 							if (( bDirect || bProxy ) && !_tcscmp( valueNode.getText(), _T(JABBER_FEAT_BYTESTREAMS))) {
 								// Start Bytestream session
-								JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * ) mir_alloc( sizeof( JABBER_BYTE_TRANSFER ));
+								JABBER_BYTE_TRANSFER *jbt = new JABBER_BYTE_TRANSFER;
 								ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
 								jbt->srcJID = mir_tstrdup( pInfo->m_szTo );
 								jbt->dstJID = mir_tstrdup( pInfo->m_szFrom );
@@ -464,7 +464,7 @@ void CJabberProto::FtHandleBytestreamRequest( XmlNode iqNode, void* userdata, CJ
 
 	if (( sid = queryNode.getAttrValue( _T("sid"))) != NULL && ( item = ListGetItemPtr( LIST_FTRECV, sid )) != NULL ) {
 		// Start Bytestream session
-		JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * ) mir_alloc( sizeof( JABBER_BYTE_TRANSFER ));
+		JABBER_BYTE_TRANSFER *jbt = new JABBER_BYTE_TRANSFER;
 		ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
 		jbt->iqNode = iqNode;
 		jbt->pfnRecv = &CJabberProto::FtReceive;

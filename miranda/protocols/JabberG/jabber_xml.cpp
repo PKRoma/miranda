@@ -121,6 +121,11 @@ XmlNode XmlNode::getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue
 	return result;
 }
 
+int XmlNode::getChildCount() 
+{
+	return xi.getChildCount( this );
+}
+
 LPCTSTR XmlNode::getName()
 {
 	return xi.getName( this );
