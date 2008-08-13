@@ -776,7 +776,7 @@ void RemoveTag(TCHAR *to, TCHAR *tag)
 {
     TCHAR * st=to;
     int len=_tcslen(tag);
-    int lastsize=_tcslen(to);
+    int lastsize=_tcslen(to)+1;
     while (st=_tcsstr(st,tag)) 
     {
         lastsize-=len;
