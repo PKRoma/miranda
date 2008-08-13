@@ -71,6 +71,16 @@ HRESULT CLUI::InitClui()
 
 HRESULT CLUI::CreateCluiFrames()
 {
+	g_hMenuMain=GetMenu(pcli->hwndContactList);
+	MENUITEMINFO mii;
+	ZeroMemory(&mii,sizeof(mii));
+	mii.cbSize=MENUITEMINFO_V4_SIZE;
+	mii.fMask=MIIM_SUBMENU;
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+
 	CreateCLCWindow(CluiWnd());
 	
 	CLUI_ChangeWindowMode();
@@ -98,16 +108,6 @@ CLUI::CLUI() :
 
     // Call InitGroup menus before
     GroupMenus_Init();
-
-    g_hMenuMain=GetMenu(pcli->hwndContactList);
-    MENUITEMINFO mii;
-    ZeroMemory(&mii,sizeof(mii));
-    mii.cbSize=MENUITEMINFO_V4_SIZE;
-    mii.fMask=MIIM_SUBMENU;
-    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-    SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-    mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-    SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
 
     CreateServiceFunction(MS_CLUI_SHOWMAINMENU,Service_ShowMainMenu);
     CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,Service_ShowStatusMenu);
@@ -373,6 +373,7 @@ int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
     InitSkinHotKeys();
 	g_CluiData.bSTATE = STATE_NORMAL;
 	ske_RedrawCompleteWindow();
+
     return 0;
 }
 

@@ -659,7 +659,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
 
     PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(contact->hContact);
     TCHAR *name = pcli->pfnGetContactDisplayName(contact->hContact,0);
-    if (dat->first_line_append_nick) {
+    if (dat->first_line_append_nick && (!dat->force_in_dialog)) {
         DBVARIANT dbv = {0};
         if (!ModernGetSettingTString(pdnce->m_cache_hContact, pdnce->m_cache_cszProto, "Nick", &dbv)) 
         {
@@ -683,6 +683,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
     } else {
         lstrcpyn(contact->szText, name, SIZEOF(contact->szText));
     }
+    if (!dat->force_in_dialog)
     {
         struct SHORTDATA data={0};
         Sync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       

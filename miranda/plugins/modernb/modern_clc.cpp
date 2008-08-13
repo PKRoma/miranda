@@ -543,7 +543,7 @@ static LRESULT clcOnSize(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam
 	KillTimer(hwnd,TIMERID_INFOTIP);
 	KillTimer(hwnd,TIMERID_RENAME);
 	cliRecalcScrollBar(hwnd,dat);
-	if (g_CluiData.fDisableSkinEngine)
+	if ( g_CluiData.fDisableSkinEngine || dat->force_in_dialog )
 	{
 		HBITMAP hBmp, hBmpMask, hoBmp, hoMaskBmp;
 		HDC hdc,hdcMem;
@@ -566,7 +566,7 @@ static LRESULT clcOnSize(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam
 		hBmpMask = CreateBitmap(rc.right, rc.bottom, 1, 1, NULL);
 		hdcMem = CreateCompatibleDC(hdc);
 		hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
-		hBrush = CreateSolidBrush(dat->useWindowsColours ? GetSysColor(COLOR_HIGHLIGHT) : dat->selBkColour);
+		hBrush = CreateSolidBrush( ( dat->useWindowsColours || dat->force_in_dialog ) ? GetSysColor(COLOR_HIGHLIGHT) : dat->selBkColour);
 		FillRect(hdcMem, &rc, hBrush);
 		DeleteObject(hBrush);
 
