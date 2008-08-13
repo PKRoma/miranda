@@ -164,7 +164,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				TargetMachine="1"/>
@@ -275,13 +275,7 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"/>
+						RuntimeLibrary="3"/>
 				</FileConfiguration>
 			</File>
 			<File

@@ -50,7 +50,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -125,7 +124,6 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -195,7 +193,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
-				OutputFile="p:/test/plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -269,7 +266,6 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="vc7to6.lib eh7.lib MSImg32.Lib comctl32.lib shlwapi.lib  gdiplus.lib Delayimp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				IgnoreDefaultLibraryNames=""
@@ -587,10 +583,10 @@
 					RelativePath="..\..\include\m_clistint.h">
 				</File>
 				<File
-					RelativePath="..\..\include\m_clui.h">
+					RelativePath=".\m_api\m_clui.h">
 				</File>
 				<File
-					RelativePath=".\m_api\m_clui.h">
+					RelativePath="..\..\include\m_clui.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_cluiframes.h">
