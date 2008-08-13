@@ -512,6 +512,17 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 				}
 				{ // parse File Transfer Info block
 					oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
+
+					// sanity check
+					if (!tlv || tlv->wLen < 8)
+					{
+						NetLog_Server("Error: Malformed file request");
+						// release structures
+						SafeReleaseFileTransfer((void**)&ft);
+						SAFE_FREE((void**)&pszDescription);
+						return;
+					}
+
 					BYTE* tBuf = tlv->pData;
 					WORD tLen = tlv->wLen;
 					WORD wFlag;
@@ -521,10 +532,18 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					unpackDWord(&tBuf, (DWORD*)&ft->qwTotalSize);
 					tLen -= 8;
 					// Filename / Directory Name
-					wFilenameLength = tLen - 1;
-					pszFileName = (char*)_alloca(tLen);
-					unpackString(&tBuf, (char*)pszFileName, wFilenameLength);
-					pszFileName[wFilenameLength] = '\0';
+					if (tLen)
+					{ // some filename specified, unpack
+						wFilenameLength = tLen - 1;
+						pszFileName = (char*)_alloca(tLen);
+						unpackString(&tBuf, (char*)pszFileName, wFilenameLength);
+						pszFileName[wFilenameLength] = '\0';
+					}
+					else if (ft->wFilesCount == 1) // give some generic file name
+						pszFileName = "unnamed_file";
+					else // or empty directory name
+						pszFileName = "";
+
 					{ // apply Filename / Directory Name encoding
 						oscar_tlv* charset = getTLV(chain, 0x2712, 1);
 
