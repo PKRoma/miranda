@@ -29,82 +29,74 @@ Last change by : $Author$
 #ifndef _JABBER_XML_H_
 #define _JABBER_XML_H_
 
-#define NOID (-1)
+#define NOID -1
 
-typedef enum { ELEM_OPEN, ELEM_CLOSE, ELEM_OPENCLOSE, ELEM_TEXT } XmlElemType;
-typedef enum { NODE_OPEN, NODE_CLOSE } XmlNodeType;
+#include <m_xml.h>
 
-struct XmlAttr
+struct XmlNode : public MXmlNode
 {
-	XmlAttr();
-	XmlAttr( const char* pszName, const TCHAR* ptszValue );
-	#if defined( _UNICODE )
-		XmlAttr( const char* pszName, const char* ptszValue );
-	#endif
-	~XmlAttr();
+	__forceinline XmlNode()
+	{	unused = NULL;
+	}
 
-	char* name;
-	union {
-		TCHAR* value;
-		char*  sendValue;
-	};
-};
+	__forceinline XmlNode( MXmlNode n )
+	{	unused = n.unused;
+	}
 
-struct XmlNode
-{
-	XmlNode( const char* name );
-	XmlNode( const char* pszName, const TCHAR* ptszText );
+	XmlNode( LPCTSTR name );
+	XmlNode( LPCTSTR pszName, LPCTSTR ptszText );
 	#if defined( _UNICODE )
 		XmlNode( const char* pszName, const char* ptszText );
 	#endif
 	~XmlNode();
 
-	XmlAttr* addAttr( XmlAttr* );
-	XmlAttr* addAttr( const char* pszName, const TCHAR* ptszValue );
+	__forceinline operator bool() const
+	{	return unused != NULL;
+	}
+
+	void addAttr( LPCTSTR pszName, LPCTSTR ptszValue );
+	void addAttr( LPCSTR pszName, LPCTSTR ptszValue );
 	#if defined( _UNICODE )
-		XmlAttr* addAttr( const char* pszName, const char* pszValue );
+		void addAttr( LPCSTR pszName, LPCSTR pszValue );
 	#endif
-	XmlAttr* addAttr( const char* pszName, int value );
-	XmlAttr* addAttrID( int id );
+	void addAttr( LPCTSTR pszName, int value );
+	void addAttrID( int id );
 
-	XmlNode* addChild( XmlNode* );
-	XmlNode* addChild( const char* pszName );
-	XmlNode* addChild( const char* pszName, const TCHAR* ptszValue );
+	int     getAttrCount();
+	LPCTSTR getAttr( int n );
+	LPCTSTR getAttrName( int n );
+	LPCTSTR getAttrValue( LPCTSTR attrName );
+
+	XmlNode addChild( XmlNode );
+	XmlNode addChild( LPCTSTR pszName );
+	XmlNode addChild( LPCTSTR pszName, LPCTSTR ptszValue );
+	XmlNode addChild( LPCTSTR pszName, int iValue );
+	XmlNode addChild( LPCSTR pszName, LPCTSTR ptszValue );
 	#if defined( _UNICODE )
-		XmlNode* addChild( const char* pszName, const char* pszValue );
+		XmlNode addChild( LPCSTR pszName, LPCSTR pszValue = NULL );
 	#endif
+	XmlNode getChild( int n = 0 );
+	XmlNode getChild( LPCSTR key );
+	XmlNode getChild( LPCTSTR key );
+	XmlNode getNthChild( LPCTSTR key, int n = 0 );
+	XmlNode getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue );
+	XmlNode getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue );
 
-	XmlNode* addQuery( const char* szNameSpace );
+	XmlNode addQuery( LPCTSTR szNameSpace );
 
-	int   getTextLen() const;
-	char* getText() const;
+	LPCTSTR getName();
+	LPCTSTR getText();
 
-	int depth;									// depth of the current node ( 1=root )
-	char* name;									// tag name of the current node
-	union {
-		TCHAR* text;
-		char*  sendText;
-	};
-	int numAttr;								// number of attributes
-	int maxNumAttr;							// internal use ( num of slots currently allocated to attr )
-	XmlAttr **attr;							// attribute list
-	int numChild;								// number of direct child nodes
-	int maxNumChild;							// internal use ( num of slots currently allocated to child )
-	XmlNode **child;							// child node list
-	XmlNodeType state;						// internal use by parser
-	char* props;
-	BOOL dirtyHack;						// to allow generator to issue the unclosed tag
+	LPCTSTR getAsString();
 };
 
 class CJabberIqInfo;
 
 struct XmlNodeIq : public XmlNode
 {
-	typedef XmlNode CSuper;
-
-	XmlNodeIq( const char* type, int id = NOID, const TCHAR* to = NULL );
+	XmlNodeIq( const char* type, int id = -1, const TCHAR* to = NULL );
 	XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to );
-	XmlNodeIq( const char* type, XmlNode *node, const TCHAR* to );
+	XmlNodeIq( const char* type, XmlNode node, const TCHAR* to );
 	#if defined( _UNICODE )
 		XmlNodeIq( const char* type, int id, const char* to );
 	#endif
@@ -114,49 +106,11 @@ struct XmlNodeIq : public XmlNode
 	XmlNodeIq( const char* type, CJabberIqInfo* pInfo );
 };
 
-typedef void ( *JABBER_XML_CALLBACK )( XmlNode*, void* );
-
-struct XmlState
-{
-	XmlState() : root(NULL) {}
-
-	XmlNode root;			// root is the document ( depth = 0 );
-	// callback for depth=n element on opening/closing
-	JABBER_XML_CALLBACK callback1_open;
-	JABBER_XML_CALLBACK callback1_close;
-	JABBER_XML_CALLBACK callback2_open;
-	JABBER_XML_CALLBACK callback2_close;
-	void *userdata1_open;
-	void *userdata1_close;
-	void *userdata2_open;
-	void *userdata2_close;
-};
-
-void JabberXmlInitState( XmlState *xmlState );
-void JabberXmlDestroyState( XmlState *xmlState );
-BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, void ( *callback )(), void *userdata );
-TCHAR* JabberXmlGetAttrValue( XmlNode *node, const char* key );
-XmlNode *JabberXmlGetFirstChild( XmlNode *node );
-XmlNode *JabberXmlGetChild( XmlNode *node, char* tag );
-XmlNode *JabberXmlGetNthChild( XmlNode *node, char* tag, int nth );
-XmlNode *JabberXmlGetChildWithGivenAttrValue( XmlNode *node, const char* tag, const char* attrKey, TCHAR* attrValue );
-void JabberXmlDumpAll( XmlState *xmlState );
-void JabberXmlDumpNode( XmlNode *node );
-XmlNode *JabberXmlCopyNode( XmlNode *node );
-BOOL JabberXmlSetCallback( XmlState *xmlState, int depth, XmlElemType type, JABBER_XML_CALLBACK callback, void *userdata );
-
-XmlNode *JabberXmlCreateNode( char* name );
-void JabberXmlAddAttr( XmlNode *n, char* name, char* value );
-XmlNode *JabberXmlAddChild( XmlNode *n, char* name );
+typedef void ( *JABBER_XML_CALLBACK )( XmlNode, void* );
 
 inline XmlNode& operator+( XmlNode& n1, XmlNode& n2 )
-{	n1.addChild( &n2 );
+{	n1.addChild( n2 );
 	return n1;
-}
-
-inline XmlNode& operator+( XmlNode& n, XmlAttr& a )
-{	n.addAttr( &a );
-	return n;
 }
 
 #endif

@@ -173,7 +173,7 @@ TCHAR* __stdcall JabberNickFromJID( const TCHAR* jid )
 	return nick;
 }
 
-JABBER_RESOURCE_STATUS* CJabberProto::ResourceInfoFromJID( TCHAR* jid )
+JABBER_RESOURCE_STATUS* CJabberProto::ResourceInfoFromJID( const TCHAR* jid )
 {
 	if ( !jid )
 		return NULL;
@@ -183,7 +183,7 @@ JABBER_RESOURCE_STATUS* CJabberProto::ResourceInfoFromJID( TCHAR* jid )
 		item = ListGetItemPtr( LIST_ROSTER, jid );
 	if ( item == NULL ) return NULL;
 
-	TCHAR* p = _tcschr( jid, '/' );
+	const TCHAR* p = _tcschr( jid, '/' );
 	if ( p == NULL )
 		return &item->itemResource;
 	if ( *++p == '\0' ) return NULL;
@@ -209,6 +209,27 @@ TCHAR* JabberPrepareJid( TCHAR *jid )
 	CharLower( szNewJid );
 	if ( pDelimiter ) *pDelimiter = _T('/');
 	return szNewJid;
+}
+
+char* skipSpaces( char* p, int* num )
+{
+	int i;
+
+	for ( i=0; *p != 0 && isspace( BYTE( *p )); i++ )
+      p++;
+
+	if ( num != NULL )
+		*num += i;
+	return p;
+}
+
+void strdel( char* parBuffer, int len )
+{
+	char* p;
+	for ( p = parBuffer+len; *p != 0; p++ )
+		p[ -len ] = *p;
+
+	p[ -len ] = '\0';
 }
 
 char* __stdcall JabberUrlDecode( char* str )
@@ -555,9 +576,10 @@ TCHAR* __stdcall JabberErrorStr( int errorCode )
 	return JabberErrorCodeToStrMapping[i].str;
 }
 
-TCHAR* __stdcall JabberErrorMsg( XmlNode *errorNode )
+TCHAR* __stdcall JabberErrorMsg( XmlNode errorNode )
 {
-	TCHAR* errorStr, *str;
+	TCHAR *errorStr;
+	const TCHAR *str;
 	int errorCode;
 
 	errorStr = ( TCHAR* )mir_alloc( 256 * sizeof( TCHAR ));
@@ -567,9 +589,9 @@ TCHAR* __stdcall JabberErrorMsg( XmlNode *errorNode )
 	}
 
 	errorCode = -1;
-	if (( str=JabberXmlGetAttrValue( errorNode, "code" )) != NULL )
+	if (( str = errorNode.getAttrValue( _T("code"))) != NULL )
 		errorCode = _ttoi( str );
-	if (( str=errorNode->text ) != NULL )
+	if (( str=errorNode.getText() ) != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
@@ -591,7 +613,7 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-			XmlNode p( "presence" ); p.addAttr( "to", item->jid ); p.addAttr( "type", "invisible" );
+			XmlNode p( _T("presence" )); p.addAttr( "to", item->jid ); p.addAttr( "type", "invisible" );
 			m_ThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
@@ -803,17 +825,16 @@ LBL_Exit:
 	return res;
 }
 
-time_t __stdcall JabberIsoToUnixTime( TCHAR* stamp )
+time_t __stdcall JabberIsoToUnixTime( const TCHAR* stamp )
 {
 	struct tm timestamp;
 	TCHAR date[9];
-	TCHAR* p;
 	int i, y;
 	time_t t;
 
 	if ( stamp == NULL ) return ( time_t ) 0;
 
-	p = stamp;
+	const TCHAR *p = stamp;
 
 	// Get the date part
 	for ( i=0; *p!='\0' && i<8 && isdigit( *p ); p++,i++ )
@@ -870,7 +891,7 @@ static extraCtry[] =
 	{ 44,	_T("England") }
 };
 
-int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
+int __stdcall JabberCountryNameToId( const TCHAR* ptszCountryName )
 {
 	int ctryCount, i;
 
@@ -902,7 +923,7 @@ int __stdcall JabberCountryNameToId( TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode extra )
 {
 	if ( !m_bJabberOnline ) return;
 
@@ -915,7 +936,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	char szPriority[40];
 	_itoa( iPriority, szPriority, 10 );
 
-	XmlNode p( "presence" ); p.addChild( "priority", szPriority );
+	XmlNode p( _T("presence")); p.addChild( "priority", szPriority );
 	if ( to != NULL )
 		p.addAttr( "to", to );
 
@@ -923,10 +944,10 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 		p.addChild( extra );
 
 	// XEP-0115:Entity Capabilities
-	XmlNode *c = p.addChild( "c" );
-	c->addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
-	c->addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
-	c->addAttr( "ver", __VERSION_STRING );
+	XmlNode c = p.addChild( "c" );
+	c.addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
+	c.addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
+	c.addAttr( "ver", __VERSION_STRING );
 
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
@@ -962,20 +983,20 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode* extra )
 	}
 
 	if ( _tcslen( szExtCaps ))
-		c->addAttr( "ext", szExtCaps );
+		c.addAttr( "ext", szExtCaps );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
-			XmlNode* x;
+			XmlNode x;
 
 			// deprecated XEP-0008
-//			x = p.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:avatar" );
-//			x->addChild( "hash", hashValue );
+//			x = p.addChild( "x" ); x.addAttr( "xmlns", "jabber:x:avatar" );
+//			x.addChild( "hash", hashValue );
 
 			// XEP-0153: vCard-Based Avatars
-			x = p.addChild( "x" ); x->addAttr( "xmlns", "vcard-temp:x:update" );
-			x->addChild( "photo", hashValue );
+			x = p.addChild( "x" ); x.addAttr( "xmlns", "vcard-temp:x:update" );
+			x.addChild( "photo", hashValue );
 	}	}
 
 	switch ( status ) {
@@ -1062,11 +1083,11 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetPacketID - converts the xml id attribute into an integer
 
-int __stdcall JabberGetPacketID( XmlNode* n )
+int __stdcall JabberGetPacketID( XmlNode n )
 {
 	int result = -1;
 
-	TCHAR* str = JabberXmlGetAttrValue( n, "id" );
+	const TCHAR* str = n.getAttrValue( _T("id"));
 	if ( str )
 		if ( !_tcsncmp( str, _T(JABBER_IQID), SIZEOF( JABBER_IQID )-1 ))
 			result = _ttoi( str + SIZEOF( JABBER_IQID )-1 );
@@ -1323,7 +1344,7 @@ void CJabberProto::RebuildInfoFrame()
 
 ////////////////////////////////////////////////////////////////////////
 // case-insensitive _tcsstr
-TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr)
+const TCHAR *JabberStrIStr( const TCHAR *str, const TCHAR *substr)
 {
 	TCHAR *str_up = NEWTSTR_ALLOCA(str);
 	TCHAR *substr_up = NEWTSTR_ALLOCA(substr);
@@ -1331,7 +1352,7 @@ TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr)
 	CharUpperBuff(str_up, lstrlen(str_up));
 	CharUpperBuff(substr_up, lstrlen(substr_up));
 
-	TCHAR *p = _tcsstr(str_up, substr_up);
+	TCHAR* p = _tcsstr(str_up, substr_up);
 	return p ? (str + (p - str_up)) : NULL;
 }
 

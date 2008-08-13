@@ -504,13 +504,13 @@ struct JABBER_MUC_JIDLIST_INFO
 
 	JABBER_MUC_JIDLIST_TYPE type;
 	TCHAR* roomJid;	// filled-in by the WM_JABBER_REFRESH code
-	XmlNode *iqNode;
+	XmlNode iqNode;
 	CJabberProto* ppro;
 
 	TCHAR* type2str( void ) const;
 };
 
-typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( XmlNode* values, void *userdata );
+typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( XmlNode values, void *userdata );
 
 //---- jabber_treelist.c ------------------------------------------------
 
@@ -593,12 +593,12 @@ extern HANDLE hMainThread;
 extern DWORD  jabberMainThreadId;
 extern BOOL   jabberChatDllPresent;
 
-extern const char xmlnsOwner[], xmlnsAdmin[];
-
 // Theme API
 extern BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
 extern BOOL (WINAPI *JabberIsThemeActive)();
 extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
+
+extern TCHAR xmlnsOwner[];
 
 /*******************************************************************
  * Function declarations
@@ -639,17 +639,17 @@ enum TJabberFormControlType
 typedef struct TJabberFormControlInfo *HJFORMCTRL;
 typedef struct TJabberFormLayoutInfo *HJFORMLAYOUT;
 
-void JabberFormCreateUI( HWND hwndStatic, XmlNode *xNode, int *formHeight, BOOL bCompact = FALSE );
+void JabberFormCreateUI( HWND hwndStatic, XmlNode xNode, int *formHeight, BOOL bCompact = FALSE );
 void JabberFormDestroyUI(HWND hwndStatic);
 void JabberFormSetInstruction( HWND hwndForm, const TCHAR *text );
 HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic); // use mir_free to destroy
-HJFORMCTRL JabberFormAppendControl(HWND hwndStatic, HJFORMLAYOUT layout_info, TJabberFormControlType type, TCHAR *labelStr, TCHAR *valueStr);
-void JabberFormAddListItem(HJFORMCTRL item, TCHAR *text, bool selected);
+HJFORMCTRL JabberFormAppendControl(HWND hwndStatic, HJFORMLAYOUT layout_info, TJabberFormControlType type, const TCHAR *labelStr, const TCHAR *valueStr);
+void JabberFormAddListItem(HJFORMCTRL item, const TCHAR *text, bool selected);
 void JabberFormLayoutControls(HWND hwndStatic, HJFORMLAYOUT layout_info, int *formHeight);
 
-void JabberFormCreateDialog( XmlNode *xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+void JabberFormCreateDialog( XmlNode xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 
-XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode *xNode );
+XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode xNode );
 
 //---- jabber_icolib.c ----------------------------------------------
 
@@ -719,8 +719,8 @@ struct JabberAdHocData
 	int curPos;
 	int frameHeight;
 	RECT frameRect;
-	XmlNode* AdHocNode;
-	XmlNode* CommandsNode;
+	XmlNode AdHocNode;
+	XmlNode CommandsNode;
 	TCHAR* ResponderJID;
 };
 
@@ -765,19 +765,19 @@ void          __stdcall JabberHttpUrlDecode( char* str );
 char*         __stdcall JabberHttpUrlEncode( const char* str );
 int           __stdcall JabberCombineStatus( int status1, int status2 );
 TCHAR*        __stdcall JabberErrorStr( int errorCode );
-TCHAR*        __stdcall JabberErrorMsg( XmlNode *errorNode );
+TCHAR*        __stdcall JabberErrorMsg( XmlNode errorNode );
 char*         __stdcall JabberTextEncode( const char* str );
 char*         __stdcall JabberTextEncodeW( const wchar_t *str );
 char*         __stdcall JabberTextDecode( const char* str );
 void          __stdcall JabberUtfToTchar( const char* str, size_t cbLen, LPTSTR& dest );
 char*         __stdcall JabberBase64Encode( const char* buffer, int bufferLen );
 char*         __stdcall JabberBase64Decode( const TCHAR* buffer, int *resultLen );
-time_t        __stdcall JabberIsoToUnixTime( TCHAR* stamp );
-int           __stdcall JabberCountryNameToId( TCHAR* ctry );
+time_t        __stdcall JabberIsoToUnixTime( const TCHAR* stamp );
+int           __stdcall JabberCountryNameToId( const TCHAR* ctry );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
 int           __stdcall JabberGetPictureType( const char* buf );
-int           __stdcall JabberGetPacketID( XmlNode* n );
+int           __stdcall JabberGetPacketID( XmlNode n );
 
 #if defined( _UNICODE )
 	#define JabberUnixToDosT JabberUnixToDosW
@@ -785,7 +785,7 @@ int           __stdcall JabberGetPacketID( XmlNode* n );
 	#define JabberUnixToDosT JabberUnixToDos
 #endif
 
-TCHAR *JabberStrIStr(TCHAR *str, TCHAR *substr);
+const TCHAR *JabberStrIStr( const TCHAR *str, const TCHAR *substr);
 void JabberCopyText(HWND hwnd, TCHAR *text);
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
 CJabberProto *JabberChooseInstance(bool bAllowOffline=false, bool atCursor=true);
@@ -793,6 +793,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline=false, bool atCursor=true)
 //---- jabber_xml.cpp -------------------------------------------------------------------
 
 char* skipSpaces( char* p, int* num = NULL );
+void  strdel( char* parBuffer, int len );
 
 //---- jabber_userinfo.cpp --------------------------------------------------------------
 

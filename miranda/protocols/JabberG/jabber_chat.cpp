@@ -31,6 +31,9 @@ Last change by : $Author$
 
 #include <m_addcontact.h>
 
+TCHAR xmlnsAdmin[] = _T("http://jabber.org/protocol/muc#admin");
+TCHAR xmlnsOwner[] = _T("http://jabber.org/protocol/muc#owner");
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global definitions
 
@@ -267,12 +270,12 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 	}
 }
 
-void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick, TCHAR* jid, int action, XmlNode* reason, int nStatusCode )
+void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, XmlNode reason, int nStatusCode )
 {
 	int statusToSet = 0;
-	TCHAR* szReason = NULL;
-	if ( reason != NULL && reason->text != NULL )
-		szReason = reason->text;
+	const TCHAR* szReason = NULL;
+	if ( reason != NULL && reason.getText() != NULL )
+		szReason = reason.getText();
 
 	if ( !szReason ) {
 		if ( nStatusCode == 322 )
@@ -345,14 +348,14 @@ void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, TCHAR* nick,
 	mir_free( myNick );
 }
 
-void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
+void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode reason )
 {
 	DBVARIANT dbvMessage = {0};
 	TCHAR *szMessage = NULL;
 
-	TCHAR* szReason = NULL;
-	if ( reason != NULL && reason->text != NULL )
-		szReason = reason->text;
+	const TCHAR* szReason = NULL;
+	if ( reason != NULL && reason.getText() != NULL )
+		szReason = reason.getText();
 
 	GCDEST gcd = { m_szModuleName, NULL, GC_EVENT_CONTROL };
 	gcd.ptszID = item->jid;
@@ -384,9 +387,9 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode* reason )
 	if ( m_bJabberOnline ) {
 		TCHAR szPresenceTo[ 512 ];
 		mir_sntprintf( szPresenceTo, SIZEOF( szPresenceTo ), _T("%s/%s"), item->jid, item->nick );
-		XmlNode p( "presence" ); p.addAttr( "to", szPresenceTo ); p.addAttr( "type", "unavailable" );
+		XmlNode p( _T("presence")); p.addAttr( "to", szPresenceTo ); p.addAttr( "type", "unavailable" );
 		if (szMessage) {
-			p.addChild("status", szMessage);
+			p.addAttr("status", szMessage);
 			if (szMessage == dbvMessage.ptszVal)
 				DBFreeVariant(&dbvMessage);
 		}
@@ -678,11 +681,11 @@ static void InviteUser(CJabberProto* ppro, TCHAR *room, TCHAR *pUser, TCHAR *tex
 {
 	int iqId = ppro->SerialNext();
 
-	XmlNode m( "message" ); m.addAttr( "to", room ); m.addAttrID( iqId );
-	XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", _T("http://jabber.org/protocol/muc#user"));
-	XmlNode* i = x->addChild( "invite" ); i->addAttr( "to", pUser ); 
+	XmlNode m( _T("message")); m.addAttr( "to", room ); m.addAttrID( iqId );
+	XmlNode x = m.addChild( "x" ); x.addAttr( "xmlns", _T("http://jabber.org/protocol/muc#user"));
+	XmlNode i = x.addChild( "invite" ); i.addAttr( "to", pUser ); 
 	if ( text[0] != 0 )
-		i->addChild( "reason", text );
+		i.addChild( "reason", text );
 	ppro->m_ThreadInfo->send( m );
 }
 
@@ -840,22 +843,22 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 /////////////////////////////////////////////////////////////////////////////////////////
 // Context menu processing
 
-void CJabberProto::AdminSet( const TCHAR* to, const char* ns, const char* szItem, const TCHAR* itemVal, const char* var, const TCHAR* varVal )
+void CJabberProto::AdminSet( const TCHAR* to, const TCHAR* ns, const char* szItem, const TCHAR* itemVal, const char* var, const TCHAR* varVal )
 {
 	XmlNodeIq iq( "set", NOID, to );
-	XmlNode* query = iq.addQuery( ns );
-	XmlNode* item = query->addChild( "item" ); item->addAttr( szItem, itemVal ); item->addAttr( var, varVal );
+	XmlNode query = iq.addQuery( ns );
+	XmlNode item = query.addChild( "item" ); item.addAttr( szItem, itemVal ); item.addAttr( var, varVal );
 	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::AdminGet( const TCHAR* to, const char* ns, const char* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
+void CJabberProto::AdminGet( const TCHAR* to, const TCHAR* ns, const char* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
 {
 	int id = SerialNext();
 	IqAdd( id, IQ_PROC_NONE, foo );
 
 	XmlNodeIq iq( "get", id, to );
-	XmlNode* query = iq.addQuery( ns );
-	XmlNode* item = query->addChild( "item" ); item->addAttr( var, varVal );
+	XmlNode query = iq.addQuery( ns );
+	XmlNode item = query.addChild( "item" ); item.addAttr( var, varVal );
 	m_ThreadInfo->send( iq );
 }
 
@@ -1081,10 +1084,11 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 				lstrcpyn(buf, szMessage, SIZEOF(buf));
 			}
 
-			XmlNode m( "message" ); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
-			XmlNode* b = m.addChild( "body", buf );
-			if ( b->sendText != NULL )
-				UnEscapeChatTags( b->sendText );
+			XmlNode m( _T("message")); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
+			XmlNode b = m.addChild( "body", buf );
+			////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			//  if ( b->sendText != NULL )
+			//    UnEscapeChatTags( b->sendText );
 			ppro->m_ThreadInfo->send( m );
 
 			if (szMessage == dbv.ptszVal)
@@ -1129,9 +1133,9 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 			{
 				XmlNodeIq iq( "set", NOID, item->jid );
-				XmlNode* query = iq.addQuery( xmlnsAdmin );
-				XmlNode* item = query->addChild( "item" ); item->addAttr( "nick", resourceName_copy ); item->addAttr( "role", "none" );
-				item->addChild( "reason", szBuffer );
+				XmlNode query = iq.addQuery( xmlnsAdmin );
+				XmlNode item = query.addChild( "item" ); item.addAttr( "nick", resourceName_copy ); item.addAttr( "role", "none" );
+				item.addChild( "reason", szBuffer );
 				ppro->m_ThreadInfo->send( iq );
 			}
 			mir_free(resourceName_copy);
@@ -1180,9 +1184,9 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 			{
 				XmlNodeIq iq( "set", NOID, item->jid );
-				XmlNode* query = iq.addQuery( xmlnsAdmin );
-				XmlNode* item = query->addChild( "item" ); item->addAttr( "nick", resourceName_copy ); item->addAttr( "affiliation", "outcast" );
-				item->addChild( "reason", szBuffer );
+				XmlNode query = iq.addQuery( xmlnsAdmin );
+				XmlNode item = query.addChild( "item" ); item.addAttr( "nick", resourceName_copy ); item.addAttr( "affiliation", "outcast" );
+				item.addChild( "reason", szBuffer );
 				ppro->m_ThreadInfo->send( iq );
 			}
 			mir_free(resourceName_copy);
@@ -1286,7 +1290,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 		else
 			szTmpBuff[ 0 ] = _T('\0');
 		if ( ppro->EnterString( szTmpBuff, SIZEOF(szTmpBuff), szCaption, JES_RICHEDIT, "gcTopic_" )) {
-			XmlNode msg( "message" ); msg.addAttr( "to", gch->pDest->ptszID ); msg.addAttr( "type", "groupchat" );
+			XmlNode msg( _T("message")); msg.addAttr( "to", gch->pDest->ptszID ); msg.addAttr( "type", "groupchat" );
 			msg.addChild( "subject", szTmpBuff );
 			ppro->m_ThreadInfo->send( msg );
 		}
@@ -1319,7 +1323,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 		ppro->IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
 
 		XmlNodeIq iq( "get", iqId, gch->pDest->ptszID );
-		XmlNode* query = iq.addQuery( xmlnsOwner );
+		XmlNode query = iq.addQuery( xmlnsOwner );
 		ppro->m_ThreadInfo->send( iq );
 		break;
 	}
@@ -1343,8 +1347,8 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			break;
 
 		{	XmlNodeIq iq( "set", NOID, gch->pDest->ptszID );
-			XmlNode* query = iq.addQuery( xmlnsOwner );
-			query->addChild( "destroy" )->addChild( "reason", szBuffer );
+			XmlNode query = iq.addQuery( xmlnsOwner );
+			query.addChild( "destroy" ).addChild( "reason", szBuffer );
 			ppro->m_ThreadInfo->send( iq );
 		}
 
@@ -1426,10 +1430,10 @@ int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 			rtrim( gch->ptszText );
 
 			if ( m_bJabberOnline ) {
-				XmlNode m( "message" ); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
-				XmlNode* b = m.addChild( "body", gch->ptszText );
-				if ( b->sendText != NULL )
-					UnEscapeChatTags( b->sendText );
+				XmlNode m( _T("message")); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
+				XmlNode b = m.addChild( "body", gch->ptszText );
+				///!!!!!!!!!!!!!!! if ( b->sendText != NULL )
+				// UnEscapeChatTags( b->sendText );
 				m_ThreadInfo->send( m );
 		}	}
 		break;
@@ -1451,7 +1455,7 @@ int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
 
 		XmlNodeIq iq( "get", iqId, item->jid );
-		XmlNode* query = iq.addQuery( xmlnsOwner );
+		XmlNode query = iq.addQuery( xmlnsOwner );
 		m_ThreadInfo->send( iq );
 		break;
 	}

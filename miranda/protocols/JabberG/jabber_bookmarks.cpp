@@ -279,9 +279,9 @@ void CJabberDlgBookmarks::UpdateData()
 	m_proto->IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
 
 	XmlNodeIq iq( "get", iqId);
-	XmlNode* query = iq.addQuery( JABBER_FEAT_PRIVATE_STORAGE );
-	XmlNode* storage = query->addChild( "storage" );
-	storage->addAttr( "xmlns", "storage:bookmarks" );
+	XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
+	XmlNode storage = query.addChild( "storage" );
+	storage.addAttr( "xmlns", "storage:bookmarks" );
 
 	m_proto->m_ThreadInfo->send( iq );
 }

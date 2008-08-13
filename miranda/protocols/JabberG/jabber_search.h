@@ -43,7 +43,7 @@ typedef struct _tagJabberSearchData
 	union
 	{
 		JabberSearchFieldsInfo *  pJSInf;
-		XmlNode * xNode;
+		MXmlNode  xNode;
 	};
 	int nJSInfCount;
 	int lastRequestIq;
@@ -80,7 +80,7 @@ static HWND searchHandleDlg=NULL;
 //local functions declarations
 static int JabberSearchFrameProc(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam);
 static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat );
-static void JabberIqResultGetSearchFields( XmlNode *iqNode, void *userdata );
+static void JabberIqResultGetSearchFields( XmlNode iqNode, void *userdata );
 static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat);
 static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat);
 static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

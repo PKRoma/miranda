@@ -63,7 +63,7 @@ static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-void CJabberProto::OnIqRequestVersion( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqRequestVersion( XmlNode node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetFrom() )
 		return;
@@ -100,24 +100,24 @@ void CJabberProto::OnIqRequestVersion( XmlNode* node, void* userdata, CJabberIqI
 	}
 
 	XmlNodeIq iq( "result", pInfo );
-	XmlNode* query = iq.addQuery( JABBER_FEAT_VERSION );
-	query->addChild( "name", _T("Miranda IM Jabber") );
-	query->addChild( "version", _T(__VERSION_STRING) );
-	if (os) query->addChild( "os", os );
+	XmlNode query = iq.addQuery( _T(JABBER_FEAT_VERSION));
+	query.addChild( "name", _T("Miranda IM Jabber") );
+	query.addChild( "version", _T(__VERSION_STRING) );
+	if (os) query.addChild( "os", os );
 	m_ThreadInfo->send( iq );
 }
 
 // last activity (XEP-0012) support
-void CJabberProto::OnIqRequestLastActivity( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestLastActivity( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
-	XmlNode* query = iq.addQuery( JABBER_FEAT_LAST_ACTIVITY );
-	query->addAttr("seconds", m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 );
+	XmlNode query = iq.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
+	query.addAttr( _T("seconds"), m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 );
 	m_ThreadInfo->send( iq );
 }
 
 // XEP-0199: XMPP Ping support
-void CJabberProto::OnIqRequestPing( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestPing( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
 	m_ThreadInfo->send( iq );
@@ -149,7 +149,7 @@ int GetGMTOffset(void)
 }
 
 // entity time (XEP-0202) support
-void CJabberProto::OnIqRequestTime( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestTime( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
 	struct tm *gmt;
 	time_t ltime;
@@ -169,14 +169,14 @@ void CJabberProto::OnIqRequestTime( XmlNode* node, void* userdata, CJabberIqInfo
 	sprintf(szTZ, "%s%.2i:%.2i", nGmtOffset > 0 ? "+" : "-", gmt->tm_hour, gmt->tm_min );
 
 	XmlNodeIq iq( "result", pInfo );
-	XmlNode* timeNode = iq.addChild( "time" );
-	timeNode->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
-	timeNode->addChild( "utc", stime);
-	timeNode->addChild( "tzo", szTZ );
+	XmlNode timeNode = iq.addChild( "time" );
+	timeNode.addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
+	timeNode.addChild( "utc", stime);
+	timeNode.addChild( "tzo", szTZ );
 	m_ThreadInfo->send(iq);
 }
 
-void CJabberProto::OnIqRequestAvatar( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestAvatar( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
@@ -213,31 +213,31 @@ void CJabberProto::OnIqRequestAvatar( XmlNode* node, void* userdata, CJabberIqIn
 
 	char* str = JabberBase64Encode( buffer, bytes );
 	XmlNodeIq iq( "result", pInfo );
-	XmlNode* query = iq.addQuery( JABBER_FEAT_AVATAR );
-	XmlNode* data = query->addChild( "data", str ); data->addAttr( "mimetype", szMimeType );
+	XmlNode query = iq.addQuery( _T(JABBER_FEAT_AVATAR));
+	XmlNode data = query.addChild( "data", str ); data.addAttr( "mimetype", szMimeType );
 	m_ThreadInfo->send( iq );
 	mir_free( str );
 	mir_free( buffer );
 }
 
-void CJabberProto::OnSiRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnSiRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
-	TCHAR* szProfile = JabberXmlGetAttrValue( pInfo->GetChildNode(), "profile" );
+	const TCHAR* szProfile = pInfo->GetChildNode().getAttrValue( _T("profile"));
 
 	if ( szProfile && !_tcscmp( szProfile, _T(JABBER_FEAT_SI_FT)))
 		FtHandleSiRequest( node );
 	else {
 		XmlNodeIq iq( "error", pInfo );
-		XmlNode* error = iq.addChild( "error" ); error->addAttr( "code", "400" ); error->addAttr( "type", "cancel" );
-		XmlNode* brq = error->addChild( "bad-request" ); brq->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		XmlNode* bp = error->addChild( "bad-profile" ); 
+		XmlNode error = iq.addChild( "error" ); error.addAttr( "code", "400" ); error.addAttr( "type", "cancel" );
+		XmlNode brq = error.addChild( "bad-request" ); brq.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		XmlNode bp = error.addChild( "bad-profile" ); 
 		m_ThreadInfo->send( iq );
 	}
 }
 
-void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnRosterPushRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
-	XmlNode *queryNode = pInfo->GetChildNode();
+	XmlNode queryNode = pInfo->GetChildNode();
 
 	// RFC 3921 #7.2 Business Rules
 	if ( pInfo->GetFrom() ) {
@@ -269,25 +269,27 @@ void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIq
 		}
 	}
 
-	XmlNode *itemNode;
 	JABBER_LIST_ITEM *item;
-	TCHAR* name;
 	HANDLE hContact = NULL;
-	TCHAR *jid, *nick, *str;
+	const TCHAR *jid, *str, *name;
+	TCHAR* nick;
 
-	Log( "<iq/> Got roster push, query has %d children", queryNode->numChild );
-	for ( int i=0; i<queryNode->numChild; i++ ) {
-		itemNode = queryNode->child[i];
-		if ( strcmp( itemNode->name, "item" ) != 0 )
+	// !!!!!!!!!!!!Log( "<iq/> Got roster push, query has %d children", queryNode.numChild );
+	for ( int i=0; ; i++ ) {
+		XmlNode itemNode = queryNode.getChild(i);
+		if ( !itemNode )
+			break;
+
+		if ( _tcscmp( itemNode.getName(), _T("item")) != 0 )
 			continue;
-		if (( jid = JabberXmlGetAttrValue( itemNode, "jid" )) == NULL )
+		if (( jid = itemNode.getAttrValue( _T("jid"))) == NULL )
 			continue;
-		if (( str = JabberXmlGetAttrValue( itemNode, "subscription" )) == NULL )
+		if (( str = itemNode.getAttrValue( _T("subscription"))) == NULL )
 			continue;
 
 		// we will not add new account when subscription=remove
 		if ( !_tcscmp( str, _T("to")) || !_tcscmp( str, _T("both")) || !_tcscmp( str, _T("from")) || !_tcscmp( str, _T("none"))) {
-			if (( name=JabberXmlGetAttrValue( itemNode, "name" )) != NULL )
+			if (( name = itemNode.getAttrValue( _T("name"))) != NULL )
 				nick = mir_tstrdup( name );
 			else
 				nick = JabberNickFromJID( jid );
@@ -296,8 +298,8 @@ void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIq
 				if (( item=ListAdd( LIST_ROSTER, jid )) != NULL ) {
 					replaceStr( item->nick, nick );
 
-					XmlNode* groupNode = JabberXmlGetChild( itemNode, "group" );
-					replaceStr( item->group, ( groupNode ) ? groupNode->text : NULL );
+					XmlNode groupNode = itemNode.getChild( "group" );
+					replaceStr( item->group, ( groupNode ) ? groupNode.getText() : NULL );
 
 					if (( hContact=HContactFromJID( jid, 0 )) == NULL ) {
 						// Received roster has a new JID.
@@ -351,18 +353,19 @@ void CJabberProto::OnRosterPushRequest( XmlNode* node, void* userdata, CJabberIq
 	RebuildInfoFrame();
 }
 
-void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestOOB( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !pInfo->GetFrom() || !pInfo->GetHContact() )
 		return;
-	XmlNode *n = JabberXmlGetChild( pInfo->GetChildNode(), "url" );
-	if ( !n || !n->text)
+
+	XmlNode n = pInfo->GetChildNode().getChild( "url" );
+	if ( !n || !n.getText())
 		return;
 
 	if ( JGetByte( "BsOnlyIBB", FALSE )) {
 		// reject
 		XmlNodeIq iq( "error", pInfo );
-		XmlNode* e = iq.addChild( "error", "File transfer refused" ); e->addAttr( "code", 406 );
+		XmlNode e = iq.addChild( _T("error"), _T("File transfer refused")); e.addAttr( _T("code"), 406 );
 		m_ThreadInfo->send( iq );
 		return;
 	}
@@ -370,7 +373,7 @@ void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo 
 	TCHAR text[ 1024 ];
 	TCHAR *str, *p, *q;
 	
-	str = n->text;	// URL of the file to get
+	str = ( TCHAR* )n.getText();	// URL of the file to get
 	filetransfer* ft = new filetransfer( this );
 	ft->std.totalFiles = 1;
 	ft->jid = mir_tstrdup( pInfo->GetFrom() );
@@ -403,8 +406,8 @@ void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo 
 		char* szBlob, *desc;
 
 		Log( "Host=%s Port=%d Path=%s", ft->httpHostName, ft->httpPort, ft->httpPath );
-		if (( n=JabberXmlGetChild( pInfo->GetChildNode(), "desc" ))!=NULL && n->text!=NULL )
-			desc = mir_t2a( n->text );
+		if (( n = pInfo->GetChildNode().getChild( "desc" ))!=NULL && n.getText()!=NULL )
+			desc = mir_t2a( n.getText() );
 		else
 			desc = mir_strdup( "" );
 
@@ -438,18 +441,18 @@ void CJabberProto::OnIqRequestOOB( XmlNode* node, void* userdata, CJabberIqInfo 
 	else {
 		// reject
 		XmlNodeIq iq( "error", pInfo );
-		XmlNode* e = iq.addChild( "error", "File transfer refused" ); e->addAttr( "code", 406 );
+		XmlNode e = iq.addChild( _T("error"), _T("File transfer refused")); e.addAttr( _T("code"), 406 );
 		m_ThreadInfo->send( iq );
 		delete ft;
 	}
 }
 
-void CJabberProto::OnHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnHandleDiscoInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
 
-	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	const TCHAR* szNode = pInfo->GetChildNode().getAttrValue( _T("node"));
 	// caps hack
 	if ( m_clientCapsManager.HandleInfoRequest( iqNode, userdata, pInfo, szNode ))
 		return;
@@ -461,37 +464,37 @@ void CJabberProto::OnHandleDiscoInfoRequest( XmlNode* iqNode, void* userdata, CJ
 	// another request, send empty result
 	XmlNodeIq iq( "error", pInfo );
 
-	XmlNode *errorNode = iq.addChild( "error" );
-	errorNode->addAttr( "code", "404" );
-	errorNode->addAttr( "type", "cancel" );
-	XmlNode *notfoundNode = errorNode->addChild( "item-not-found" );
-	notfoundNode->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+	XmlNode errorNode = iq.addChild( "error" );
+	errorNode.addAttr( "code", "404" );
+	errorNode.addAttr( "type", "cancel" );
+	XmlNode notfoundNode = errorNode.addChild( "item-not-found" );
+	notfoundNode.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 
 	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::OnHandleDiscoItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnHandleDiscoItemsRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
 
 	// ad-hoc commands check:
-	TCHAR* szNode = JabberXmlGetAttrValue( pInfo->GetChildNode(), "node" );
+	const TCHAR* szNode = pInfo->GetChildNode().getAttrValue( _T("node"));
 	if ( szNode && m_adhocManager.HandleItemsRequest( iqNode, userdata, pInfo, szNode ))
 		return;
 
 	// another request, send empty result
 	XmlNodeIq iq( "result", pInfo );
-	XmlNode* resultQuery = iq.addChild( "query" );
-	resultQuery->addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS));
+	XmlNode resultQuery = iq.addChild( "query" );
+	resultQuery.addAttr( "xmlns", _T(JABBER_FEAT_DISCO_ITEMS));
 	if ( szNode )
-		resultQuery->addAttr( "node", szNode );
+		resultQuery.addAttr( "node", szNode );
 
 	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE )) {
-		XmlNode* item = resultQuery->addChild( "item" );
-		item->addAttr( "jid", m_ThreadInfo->fullJID );
-		item->addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
-		item->addAttr( "name", "Ad-hoc commands" );
+		XmlNode item = resultQuery.addChild( "item" );
+		item.addAttr( "jid", m_ThreadInfo->fullJID );
+		item.addAttr( "node", _T(JABBER_FEAT_COMMANDS) );
+		item.addAttr( "name", "Ad-hoc commands" );
 	}
 
 	m_ThreadInfo->send( iq );
@@ -514,7 +517,7 @@ BOOL CJabberProto::AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams )
 	return TRUE;
 }
 
-void CJabberProto::OnIqHttpAuth( XmlNode* node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqHttpAuth( XmlNode node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !JGetByte( "AcceptHttpAuth", TRUE ))
 		return;
@@ -522,13 +525,13 @@ void CJabberProto::OnIqHttpAuth( XmlNode* node, void* userdata, CJabberIqInfo* p
 	if ( !node || !pInfo->GetChildNode() || !pInfo->GetFrom() || !pInfo->GetIdStr() )
 		return;
 
-	XmlNode *pConfirm = JabberXmlGetChild( node, "confirm" );
+	XmlNode pConfirm = node.getChild( "confirm" );
 	if ( !pConfirm )
 		return;
 
-	TCHAR *szId = JabberXmlGetAttrValue( pConfirm, "id" );
-	TCHAR *szMethod = JabberXmlGetAttrValue( pConfirm, "method" );
-	TCHAR *szUrl = JabberXmlGetAttrValue( pConfirm, "url" );
+	const TCHAR *szId = pConfirm.getAttrValue( _T("id"));
+	const TCHAR *szMethod = pConfirm.getAttrValue( _T("method"));
+	const TCHAR *szUrl = pConfirm.getAttrValue( _T("url"));
 
 	if ( !szId || !szMethod || !szUrl )
 		return;

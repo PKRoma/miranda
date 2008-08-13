@@ -33,13 +33,13 @@ Last change by : $Author$
 
 class CJabberAdhocSession;
 
-void JabberHandleAdhocCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo );
+void JabberHandleAdhocCommandRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
 #define JABBER_ADHOC_HANDLER_STATUS_CANCEL               3
 #define JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION       4
-typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 // 5 minutes to fill out form :)
 #define JABBER_ADHOC_SESSION_EXPIRE_TIME                 300000
@@ -156,7 +156,7 @@ public:
 	{
 		return m_szName;
 	}
-	BOOL CallHandler( XmlNode* iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+	BOOL CallHandler( XmlNode iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 	{
 		if ( m_pHandler == NULL )
 			return FALSE;
@@ -172,7 +172,7 @@ protected:
 	CJabberAdhocSession* m_pSessions;
 	CRITICAL_SECTION m_cs;
 
-	CJabberAdhocSession* FindSession( TCHAR* szSession )
+	CJabberAdhocSession* FindSession( const TCHAR* szSession )
 	{
 		CJabberAdhocSession* pSession = m_pSessions;
 		while ( pSession ) {
@@ -195,7 +195,7 @@ protected:
 		return pSession;
 	}
 
-	CJabberAdhocNode* FindNode( TCHAR* szNode )
+	CJabberAdhocNode* FindNode( const TCHAR* szNode )
 	{
 		CJabberAdhocNode* pNode = m_pNodes;
 		while ( pNode ) {
@@ -304,9 +304,9 @@ public:
 	{
 		return m_pNodes;
 	}
-	BOOL HandleItemsRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
-	BOOL HandleInfoRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
-	BOOL HandleCommandRequest( XmlNode* iqNode, void* userdata, CJabberIqInfo* pInfo, TCHAR* szNode );
+	BOOL HandleItemsRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleCommandRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
 
 	BOOL ExpireSessions()
 	{

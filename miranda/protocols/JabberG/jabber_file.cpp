@@ -338,9 +338,9 @@ void __cdecl CJabberProto::FileServerThread( filetransfer* ft )
 				TCHAR* fulljid = ( TCHAR* )alloca( sizeof( TCHAR )*len );
 				wsprintf( fulljid, _T("%s/%s"), ft->jid, ptszResource );
 				XmlNodeIq iq( "set", id, fulljid );
-				XmlNode* query = iq.addQuery( JABBER_FEAT_OOB );
-				query->addChild( "url", szAddr );
-				query->addChild( "desc", ft->szDescription );
+				XmlNode query = iq.addQuery( _T(JABBER_FEAT_OOB));
+				query.addChild( "url", szAddr );
+				query.addChild( "desc", ft->szDescription );
 				m_ThreadInfo->send( iq );
 
 				Log( "Waiting for the file to be sent..." );

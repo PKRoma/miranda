@@ -108,7 +108,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 		char szSavedHash[ 256 ];
 		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash )) {
 			if ( !strcmp( szSavedHash, szHashValue )) {
-				Log( "Avatar is ok, hash: %s", szSavedHash );
+				Log( "Avatar is Ok: %s == %s", szSavedHash, szHashValue );
 				return GAIR_SUCCESS;
 	}	}	}
 
@@ -132,9 +132,9 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 
 				XmlNodeIq iq( "get", iqId, szJid );
 				if ( isXVcard )
-					iq.addChild( "vCard" )->addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+					iq.addChild( "vCard" ).addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
 				else
-					iq.addQuery( JABBER_FEAT_AVATAR );
+					iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
 				m_ThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -533,11 +533,11 @@ int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		XmlNode m( "message" );
+		XmlNode m( _T("message"));
 		m.addAttr( "type", "headline" );
 		m.addAttr( "to", dbv.ptszVal );
-		XmlNode *pAttention = m.addChild( "attention" );
-		pAttention->addAttr( "xmlns", JABBER_FEAT_ATTENTION );
+		XmlNode pAttention = m.addChild( "attention" );
+		pAttention.addAttr( "xmlns", JABBER_FEAT_ATTENTION );
 		m_ThreadInfo->send( m );
 
 		JFreeVariant( &dbv );
@@ -553,40 +553,40 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 	if ( pParams->m_nType == CJabberHttpAuthParams::IQ ) {
 		XmlNodeIq iq( bAuthorized ? "result" : "error", pParams->m_szIqId, pParams->m_szFrom );
 		if ( !bAuthorized ) {
-			XmlNode *pConfirm = iq.addChild( "confirm" );
-			pConfirm->addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
-			pConfirm->addAttr( "id", pParams->m_szId );
-			pConfirm->addAttr( "method", pParams->m_szMethod );
-			pConfirm->addAttr( "url", pParams->m_szUrl );
+			XmlNode pConfirm = iq.addChild( "confirm" );
+			pConfirm.addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
+			pConfirm.addAttr( "id", pParams->m_szId );
+			pConfirm.addAttr( "method", pParams->m_szMethod );
+			pConfirm.addAttr( "url", pParams->m_szUrl );
 
-			XmlNode *pError = iq.addChild( "error" );
-			pError->addAttr( "code", "401" );
-			pError->addAttr( "type", "auth" );
-			XmlNode *pNA = pError->addChild( "not-authorized" );
-			pNA->addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+			XmlNode pError = iq.addChild( "error" );
+			pError.addAttr( "code", "401" );
+			pError.addAttr( "type", "auth" );
+			XmlNode pNA = pError.addChild( "not-authorized" );
+			pNA.addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
 		}
 		m_ThreadInfo->send( iq );
 	}
 	else if ( pParams->m_nType == CJabberHttpAuthParams::MSG ) {
-		XmlNode msg( "message" );
+		XmlNode msg( _T("message"));
 		msg.addAttr( "to", pParams->m_szFrom );
 		if ( !bAuthorized )
 			msg.addAttr( "type", "error" );
 		if ( pParams->m_szThreadId )
 			msg.addChild( "thread", pParams->m_szThreadId );
 
-		XmlNode *pConfirm = msg.addChild( "confirm" );
-		pConfirm->addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
-		pConfirm->addAttr( "id", pParams->m_szId );
-		pConfirm->addAttr( "method", pParams->m_szMethod );
-		pConfirm->addAttr( "url", pParams->m_szUrl );
+		XmlNode pConfirm = msg.addChild( "confirm" );
+		pConfirm.addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
+		pConfirm.addAttr( "id", pParams->m_szId );
+		pConfirm.addAttr( "method", pParams->m_szMethod );
+		pConfirm.addAttr( "url", pParams->m_szUrl );
 
 		if ( !bAuthorized ) {
-			XmlNode *pError = msg.addChild( "error" );
-			pError->addAttr( "code", "401" );
-			pError->addAttr( "type", "auth" );
-			XmlNode *pNA = pError->addChild( "not-authorized" );
-			pNA->addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+			XmlNode pError = msg.addChild( "error" );
+			pError.addAttr( "code", "401" );
+			pError.addAttr( "type", "auth" );
+			XmlNode pNA = pError.addChild( "not-authorized" );
+			pNA.addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
 		}
 		m_ThreadInfo->send( msg );
 	}

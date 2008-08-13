@@ -38,12 +38,12 @@ Last change by : $Author$
 void CJabberProto::AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName )
 {
 	XmlNodeIq iq( "set", SerialNext() );
-	XmlNode* query = iq.addQuery( JABBER_FEAT_IQ_ROSTER );
-	XmlNode* item = query->addChild( "item" ); item->addAttr( "jid", jid );
+	XmlNode query = iq.addQuery( _T(JABBER_FEAT_IQ_ROSTER));
+	XmlNode item = query.addChild( "item" ); item.addAttr( "jid", jid );
 	if ( nick )
-		item->addAttr( "name", nick );
+		item.addAttr( "name", nick );
 	if ( grpName )
-		item->addChild( "group", grpName );
+		item.addChild( "group", grpName );
 	m_ThreadInfo->send( iq );
 }
 
@@ -124,7 +124,7 @@ void JabberContactListCreateGroup( TCHAR* groupName )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBAddAuthRequest()
 
-void CJabberProto::DBAddAuthRequest( TCHAR* jid, TCHAR* nick )
+void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 {
 	HANDLE hContact = DBCreateContact( jid, NULL, FALSE, TRUE );
 	JDeleteSetting( hContact, "Hidden" );
@@ -161,7 +161,7 @@ void CJabberProto::DBAddAuthRequest( TCHAR* jid, TCHAR* nick )
 ///////////////////////////////////////////////////////////////////////////////
 // JabberDBCreateContact()
 
-HANDLE CJabberProto::DBCreateContact( TCHAR* jid, TCHAR* nick, BOOL temporary, BOOL stripResource )
+HANDLE CJabberProto::DBCreateContact( const TCHAR* jid, const TCHAR* nick, BOOL temporary, BOOL stripResource )
 {
 	TCHAR* s, *p, *q;
 	int len;
@@ -335,7 +335,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 ///////////////////////////////////////////////////////////////////////////////
 // JabberResolveTransportNicks - massive vcard update
 
-void CJabberProto::ResolveTransportNicks( TCHAR* jid )
+void CJabberProto::ResolveTransportNicks( const TCHAR* jid )
 {
 	// Set all contacts to offline
 	HANDLE hContact = m_ThreadInfo->resolveContact;

@@ -40,7 +40,7 @@ typedef struct
 	void     ( *createNode )( MXmlNode* result, LPCTSTR name, LPCTSTR text );
 	void     ( *destroyNode )( MXmlNode* node );
 
-	void     ( *parseString )( MXmlNode* result, LPCTSTR string, int* datalen, LPCTSTR tag );
+	int      ( *parseString )( MXmlNode* result, LPCTSTR string, int* datalen, LPCTSTR tag );
 	LPCTSTR  ( *toString )( MXmlNode* result, int* datalen );
 
 	void     ( *addChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR text );

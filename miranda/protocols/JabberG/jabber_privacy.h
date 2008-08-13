@@ -59,7 +59,7 @@ class CPrivacyListRule
 protected:
 	friend class CPrivacyList;
 public:
-	CPrivacyListRule( CJabberProto* ppro, PrivacyListRuleType type = Else, TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
+	CPrivacyListRule( CJabberProto* ppro, PrivacyListRuleType type = Else, const TCHAR *szValue = _T(""), BOOL bAction = TRUE, DWORD dwOrder = 90, DWORD dwPackets = 0)
 	{
 		m_proto = ppro;
 		m_szValue = mir_tstrdup(szValue);
@@ -199,7 +199,7 @@ public:
 		m_pNext = pNext;
 		return pRetVal;
 	}
-	BOOL AddRule(PrivacyListRuleType type, TCHAR *szValue, BOOL bAction, DWORD dwOrder, DWORD dwPackets)
+	BOOL AddRule(PrivacyListRuleType type, const TCHAR *szValue, BOOL bAction, DWORD dwOrder, DWORD dwPackets)
 	{
 		CPrivacyListRule *pRule = new CPrivacyListRule( m_proto, type, szValue, bAction, dwOrder, dwPackets );
 		if ( !pRule )
@@ -360,11 +360,11 @@ public:
 		LeaveCriticalSection(&m_cs);
 		return TRUE;
 	}
-	void SetActiveListName(TCHAR *szListName)
+	void SetActiveListName(const TCHAR *szListName)
 	{
 		replaceStr(m_szActiveListName, szListName);
 	}
-	void SetDefaultListName(TCHAR *szListName)
+	void SetDefaultListName(const TCHAR *szListName)
 	{
 		replaceStr(m_szDefaultListName, szListName);
 	}
@@ -383,7 +383,7 @@ public:
 		m_pLists = NULL;
 		return TRUE;
 	}
-	CPrivacyList* FindList( TCHAR *szListName )
+	CPrivacyList* FindList( const TCHAR *szListName )
 	{
 		CPrivacyList *pList = m_pLists;
 		while ( pList ) {

@@ -709,11 +709,11 @@ public:
 	}
 
 	// Control interface
-	int    AddString(TCHAR *text, LPARAM data = 0 );
-	int    AddStringA(char *text, LPARAM data = 0 );
+	int    AddString(const TCHAR *text, LPARAM data = 0 );
+	int    AddStringA(const char *text, LPARAM data = 0 );
 	void   DeleteString(int index);
-	int    FindString(TCHAR *str, int index = -1, bool exact = false);
-	int    FindStringA(char *str, int index = -1, bool exact = false);
+	int    FindString(const TCHAR *str, int index = -1, bool exact = false);
+	int    FindStringA(const char *str, int index = -1, bool exact = false);
 	int    GetCount();
 	int    GetCurSel();
 	bool   GetDroppedState();

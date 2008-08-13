@@ -39,7 +39,7 @@ public:
 	virtual ~CPepService();
 
 	TCHAR *GetNode() { return m_node; }
-	virtual void ProcessItems(const TCHAR *from, XmlNode *items) = 0;
+	virtual void ProcessItems(const TCHAR *from, XmlNode items) = 0;
 
 	void Publish();
 	void Retract();
@@ -54,7 +54,7 @@ protected:
 	char *m_name;
 	TCHAR *m_node;
 
-	virtual void CreateData(XmlNode *itemNode) = 0;
+	virtual void CreateData(XmlNode itemNode) = 0;
 };
 
 class CPepServiceList: public OBJLIST<CPepService>
@@ -62,13 +62,14 @@ class CPepServiceList: public OBJLIST<CPepService>
 public:
 	CPepServiceList(): OBJLIST<CPepService>(1) {}
 
-	void ProcessEvent(const TCHAR *from, XmlNode *eventNode)
+	void ProcessEvent(const TCHAR *from, XmlNode eventNode)
 	{
 		for (int i = 0; i < getCount(); ++i)
 		{
 			CPepService &pepSvc = (*this)[i];
-			XmlNode *itemsNode = JabberXmlGetChildWithGivenAttrValue(eventNode, "items", "node", pepSvc.GetNode());
-			if (itemsNode) pepSvc.ProcessItems(from, itemsNode);
+			XmlNode itemsNode = eventNode.getChildByTag( _T("items"), _T("node"), pepSvc.GetNode());
+			if ( itemsNode )
+				pepSvc.ProcessItems(from, itemsNode);
 		}
 	}
 
@@ -143,7 +144,7 @@ public:
 	CPepMood(CJabberProto *proto);
 	~CPepMood();
 	void InitGui();
-	void ProcessItems(const TCHAR *from, XmlNode *items);
+	void ProcessItems(const TCHAR *from, XmlNode items);
 	void ResetExtraIcon(HANDLE hContact);
 
 public: // FIXME: ugly hack
@@ -152,11 +153,11 @@ public: // FIXME: ugly hack
 	int m_mode;
 
 protected:
-	void CreateData(XmlNode *itemNode);
+	void CreateData(XmlNode itemNode);
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szMood);
 
-	void SetMood(HANDLE hContact, char *szMood, TCHAR *szText);
+	void SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText);
 };
 
 class CPepActivity: public CPepGuiService
@@ -166,7 +167,7 @@ public:
 	CPepActivity(CJabberProto *proto);
 	~CPepActivity();
 	void InitGui();
-	void ProcessItems(const TCHAR *from, XmlNode *items);
+	void ProcessItems(const TCHAR *from, XmlNode items);
 	void ResetExtraIcon(HANDLE hContact);
 
 protected:
@@ -174,11 +175,11 @@ protected:
 	TCHAR *m_text;
 	int m_mode;
 
-	void CreateData(XmlNode *itemNode);
+	void CreateData(XmlNode itemNode);
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szActivity);
 
-	void SetActivity(HANDLE hContact, char *szFirst, char *szSecond, TCHAR *szText);
+	void SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecond, LPCTSTR szText);
 };
 
 #endif // _JABBER_XSTATUS_H_

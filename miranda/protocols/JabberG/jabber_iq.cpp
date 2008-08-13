@@ -237,7 +237,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void *pUserData )
 	(ppro->*(pInfo->m_pHandler))( NULL, NULL, pInfo );
 }
 
-CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)
+CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)
 {
 	CJabberIqInfo* pInfo = new CJabberIqInfo();
 	if (!pInfo)
@@ -260,12 +260,12 @@ CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqT
 	return pInfo;
 }
 
-BOOL CJabberIqManager::HandleIq(int nIqId, XmlNode *pNode, void *pUserData)
+BOOL CJabberIqManager::HandleIq(int nIqId, XmlNode pNode, void *pUserData)
 {
 	if (nIqId == -1 || pNode == NULL)
 		return FALSE;
 
-	TCHAR *szType = JabberXmlGetAttrValue(pNode, "type");
+	const TCHAR *szType = pNode.getAttrValue( _T("type"));
 	if ( !szType )
 		return FALSE;
 
@@ -285,36 +285,35 @@ BOOL CJabberIqManager::HandleIq(int nIqId, XmlNode *pNode, void *pUserData)
 		pInfo->m_nIqType = nIqType;
 		if (nIqType == JABBER_IQ_TYPE_RESULT) {
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NODE)
-				pInfo->m_pChildNode = JabberXmlGetFirstChild( pNode );
+				pInfo->m_pChildNode = pNode.getChild( 0 );
 			
 			if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_NAME))
-				pInfo->m_szChildTagName = mir_a2t( pInfo->m_pChildNode->name );
+				pInfo->m_szChildTagName = ( TCHAR* )pInfo->m_pChildNode.getName();
 			if (pInfo->m_pChildNode && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_CHILD_TAG_XMLNS))
-				pInfo->m_szChildTagXmlns = JabberXmlGetAttrValue( pInfo->m_pChildNode, "xmlns" );
+				pInfo->m_szChildTagXmlns = ( TCHAR* )pNode.getAttrValue( _T("xmlns"));
 		}
 
 		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
-			pInfo->m_szTo = JabberXmlGetAttrValue( pNode, "to" );
+			pInfo->m_szTo = ( TCHAR* )pNode.getAttrValue( _T("to"));
 
 		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
-			pInfo->m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
+			pInfo->m_szFrom = ( TCHAR* )pNode.getAttrValue( _T("from"));
 		if (pInfo->m_szFrom && (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT))
 			pInfo->m_hContact = ppro->HContactFromJID( pInfo->m_szFrom, 3 );
 
 		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_ID_STR)
-			pInfo->m_szId = JabberXmlGetAttrValue( pNode, "id" );
+			pInfo->m_szId = ( TCHAR* )pNode.getAttrValue( _T("id"));
 
 		(ppro->*(pInfo->m_pHandler))(pNode, pUserData, pInfo);
-		mir_free( pInfo->m_szChildTagName );
 		delete pInfo;
 		return TRUE;
 	}
 	return FALSE;
 }
 
-BOOL CJabberIqManager::HandleIqPermanent(XmlNode *pNode, void *pUserData)
+BOOL CJabberIqManager::HandleIqPermanent(XmlNode pNode, void *pUserData)
 {
-	TCHAR *szType = JabberXmlGetAttrValue(pNode, "type");
+	const TCHAR *szType = pNode.getAttrValue( _T("type"));
 	if ( !szType )
 		return FALSE;
 	
@@ -328,12 +327,12 @@ BOOL CJabberIqManager::HandleIqPermanent(XmlNode *pNode, void *pUserData)
 	else
 		return FALSE;
 
-	XmlNode *pFirstChild = JabberXmlGetFirstChild( pNode );
-	if ( !pFirstChild || !pFirstChild->name )
+	XmlNode pFirstChild = pNode.getChild( 0 );
+	if ( !pFirstChild || !pFirstChild.getName() )
 		return FALSE;
 	
-	TCHAR *szTagName = mir_a2t( pFirstChild->name );
-	TCHAR *szXmlns = JabberXmlGetAttrValue( pFirstChild, "xmlns" );
+	const TCHAR *szTagName = pFirstChild.getName();
+	const TCHAR *szXmlns = pFirstChild.getAttrValue( _T("xmlns"));
 
 	BOOL bHandled = FALSE;
 	Lock();
@@ -348,15 +347,15 @@ BOOL CJabberIqManager::HandleIqPermanent(XmlNode *pNode, void *pUserData)
 			bAllow = FALSE;
 		if ( bAllow ) {
 			iqInfo.m_pChildNode = pFirstChild;
-			iqInfo.m_szChildTagName = szTagName;
-			iqInfo.m_szChildTagXmlns = szXmlns;
-			iqInfo.m_szId = JabberXmlGetAttrValue( pNode, "id" );
+			iqInfo.m_szChildTagName = ( TCHAR* )szTagName;
+			iqInfo.m_szChildTagXmlns = ( TCHAR* )szXmlns;
+			iqInfo.m_szId = ( TCHAR* )pNode.getAttrValue( _T("id"));
 
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
-				iqInfo.m_szTo = JabberXmlGetAttrValue( pNode, "to" );
+				iqInfo.m_szTo = ( TCHAR* )pNode.getAttrValue( _T("to"));
 
 			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
-				iqInfo.m_szFrom = JabberXmlGetAttrValue( pNode, "from" );
+				iqInfo.m_szFrom = ( TCHAR* )pNode.getAttrValue( _T("from"));
 
 			if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
 				iqInfo.m_hContact = ppro->HContactFromJID( iqInfo.m_szFrom, 3 );
@@ -369,6 +368,5 @@ BOOL CJabberIqManager::HandleIqPermanent(XmlNode *pNode, void *pUserData)
 	}
 	Unlock();
 
-	mir_free( szTagName );
 	return bHandled;
 }

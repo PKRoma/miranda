@@ -54,10 +54,10 @@ struct StringBuf
 	int streamOffset;
 };
 
-static void sttAppendBufRaw(StringBuf *buf, char *str);
-static void sttAppendBufA(StringBuf *buf, char *str);
+static void sttAppendBufRaw(StringBuf *buf, const char *str);
+static void sttAppendBufA(StringBuf *buf, const char *str);
 #ifdef UNICODE
-	static void sttAppendBufW(StringBuf *buf, WCHAR *str);
+	static void sttAppendBufW(StringBuf *buf, const WCHAR *str);
 	#define sttAppendBufT(a,b)		(sttAppendBufW((a),(b)))
 #else
 	#define sttAppendBufT(a,b)		(sttAppendBufA((a),(b)))
@@ -90,12 +90,12 @@ static void sttEmptyBuf(StringBuf *buf);
 #define RTF_ENDPLAINXML		"\\par"
 #define RTF_SEPARATOR		"\\sl-1\\slmult0\\highlight5\\cf5\\-\\par\\sl0"
 
-static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int indent);
+static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int indent);
 
-void CJabberProto::OnConsoleProcessXml(XmlNode *node, DWORD flags)
+void CJabberProto::OnConsoleProcessXml(XmlNode node, DWORD flags)
 {
 	if ( node && m_pDlgConsole ) {
-		if ( node->name ) {
+		if ( node.getName() ) {
 			if ( FilterXml( node, flags )) {
 				StringBuf buf = {0};
 				sttAppendBufRaw(&buf, RTF_HEADER);
@@ -107,22 +107,26 @@ void CJabberProto::OnConsoleProcessXml(XmlNode *node, DWORD flags)
 			}
 		}
 		else {
-			for ( int i = 0; i < node->numChild; ++i )
-				OnConsoleProcessXml( node->child[i], flags );
+			for ( int i = 0; ; ++i ) {
+				XmlNode n = node.getChild(i);
+				if ( !n )
+					break;
+				OnConsoleProcessXml( n, flags );
+			}
 		}
 	}
 }
 
-bool CJabberProto::RecursiveCheckFilter(XmlNode *node, DWORD flags)
+bool CJabberProto::RecursiveCheckFilter(XmlNode node, DWORD flags)
 {
 	int i;
 
-	for (i = 0; i < node->numAttr; ++i)
+	for (i = 0; ; ++i)
 	{
-		TCHAR *attrValue = node->attr[i]->value;
+		const TCHAR *attrValue = node.getAttr(i);
 		if (flags & JCPF_UTF8)
 		{
-			wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
+			wchar_t *tmp = mir_utf8decodeW(( char* )attrValue ); /// !!!!!!!!!!!!!!!!!!!!!!!!
 			#ifdef UNICODE
 			attrValue = tmp;
 			#else
@@ -131,27 +135,31 @@ bool CJabberProto::RecursiveCheckFilter(XmlNode *node, DWORD flags)
 			#endif
 		}
 
-		if (JabberStrIStr(attrValue, m_filterInfo.pattern))
+		if ( JabberStrIStr(attrValue, m_filterInfo.pattern ))
 		{
-			if (flags & JCPF_UTF8)  mir_free(attrValue);
+			if (flags & JCPF_UTF8)  mir_free(( void* )attrValue);  /// !!!!!!!!!!!!!!!!!!!!!!!!
 			return true;
 		}
 
-		if (flags & JCPF_UTF8) mir_free(attrValue);
+		if (flags & JCPF_UTF8) mir_free((void*)attrValue);  /// !!!!!!!!!!!!!!!!!!!!!!!!
 	}
 
-	for (i = 0; i < node->numChild; ++i)
-		if (RecursiveCheckFilter(node->child[i], flags))
+	for (i = 0; ; ++i) {
+		XmlNode n = node.getChild(i);
+		if ( !n )
+			break;
+		if (RecursiveCheckFilter(n, flags))
 			return true;
+	}
 
 	return false;
 }
 
-bool CJabberProto::FilterXml(XmlNode *node, DWORD flags)
+bool CJabberProto::FilterXml(XmlNode node, DWORD flags)
 {
-	if (!m_filterInfo.msg && !lstrcmpA(node->name, "message")) return false;
-	if (!m_filterInfo.presence && !lstrcmpA(node->name, "presence")) return false;
-	if (!m_filterInfo.iq && !lstrcmpA(node->name, "iq")) return false;
+	if (!m_filterInfo.msg && !lstrcmp(node.getName(), _T("message"))) return false;
+	if (!m_filterInfo.presence && !lstrcmp(node.getName(), _T("presence"))) return false;
+	if (!m_filterInfo.iq && !lstrcmp(node.getName(), _T("iq"))) return false;
 	if (m_filterInfo.type == TFilterInfo::T_OFF) return true;
 
 	bool result = false;
@@ -161,7 +169,7 @@ bool CJabberProto::FilterXml(XmlNode *node, DWORD flags)
 	{
 		case TFilterInfo::T_JID:
 		{
-			TCHAR *attrValue = JabberXmlGetAttrValue(node, (flags&JCPF_OUT)?"to":"from");
+			const TCHAR *attrValue = node.getAttrValue((flags&JCPF_OUT)?_T("to"):_T("from"));
 			if (!attrValue) break;
 
 			if (flags & JCPF_UTF8)
@@ -175,15 +183,15 @@ bool CJabberProto::FilterXml(XmlNode *node, DWORD flags)
 				#endif
 			}
 			result = JabberStrIStr(attrValue, m_filterInfo.pattern) ? true : false;
-			if (flags & JCPF_UTF8) mir_free(attrValue);
 			break;
 		}
 		case TFilterInfo::T_XMLNS:
 		{
-			if (node->numChild != 1) break;
+			if ( node.getChild(1)) break;
 
-			TCHAR *attrValue = JabberXmlGetAttrValue(node->child[0], "xmlns");
-			if (!attrValue) break;
+			const TCHAR *attrValue = node.getChild(0).getAttrValue( _T("xmlns"));
+			if ( !attrValue )
+				break;
 
 			if (flags & JCPF_UTF8)
 			{
@@ -196,8 +204,6 @@ bool CJabberProto::FilterXml(XmlNode *node, DWORD flags)
 				#endif
 			}
 			result = JabberStrIStr(attrValue, m_filterInfo.pattern) ? true : false;
-			if (flags & JCPF_UTF8) mir_free(attrValue);
-
 			break;
 		}
 
@@ -212,7 +218,7 @@ bool CJabberProto::FilterXml(XmlNode *node, DWORD flags)
 	return result;
 }
 
-static void sttAppendBufRaw(StringBuf *buf, char *str)
+static void sttAppendBufRaw(StringBuf *buf, const char *str)
 {
 	if (!str) return;
 
@@ -226,13 +232,13 @@ static void sttAppendBufRaw(StringBuf *buf, char *str)
 	buf->offset += length;
 }
 
-static void sttAppendBufA(StringBuf *buf, char *str)
+static void sttAppendBufA(StringBuf *buf, const char *str)
 {
 	char tmp[32];
 
 	if (!str) return;
 
-	for (char *p = str; *p; ++p)
+	for (const char *p = str; *p; ++p)
 	{
 		if ((*p == '\\') || (*p == '{') || (*p == '}'))
 		{
@@ -249,14 +255,14 @@ static void sttAppendBufA(StringBuf *buf, char *str)
 }
 
 #ifdef UNICODE
-static void sttAppendBufW(StringBuf *buf, WCHAR *str)
+static void sttAppendBufW(StringBuf *buf, const WCHAR *str)
 {
 	char tmp[32];
 
 	if (!str) return;
 
 	sttAppendBufRaw(buf, "{\\uc1 ");
-	for (WCHAR *p = str; *p; ++p)
+	for (const WCHAR *p = str; *p; ++p)
 	{
 		if ((*p == '\\') || (*p == '{') || (*p == '}'))
 		{
@@ -286,7 +292,7 @@ static void sttEmptyBuf(StringBuf *buf)
 	buf->offset = 0;
 }
 
-static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int indent)
+static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int indent)
 {
 	int i;
 	char *indentLevel = (char *)mir_alloc(128);
@@ -300,22 +306,23 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 	if (flags&JCPF_OUT)	sttAppendBufRaw(buf, "\\highlight4 ");
 	sttAppendBufRaw(buf, "<");
 	sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
-	sttAppendBufA(buf, node->name);
+	sttAppendBufW(buf, (TCHAR*)node.getName());
 	sttAppendBufRaw(buf, RTF_ENDTAGNAME);
 
-	for (i = 0; i < node->numAttr; ++i)
+	for (i = 0; ; ++i)
 	{
+		TCHAR* attr = ( TCHAR* )node.getAttr( i );
 		sttAppendBufRaw(buf, " ");
 		sttAppendBufRaw(buf, RTF_BEGINATTRNAME);
-		sttAppendBufA(buf, node->attr[i]->name);
+		sttAppendBufW(buf, attr);
 		sttAppendBufRaw(buf, RTF_ENDATTRNAME);
 		sttAppendBufRaw(buf, "=\"");
 		sttAppendBufRaw(buf, RTF_BEGINATTRVAL);
-		if (node->attr[i]->value)
+		if (attr)
 		{
 			if (flags & JCPF_UTF8)
 			{
-				wchar_t *tmp = mir_utf8decodeW(node->attr[i]->sendValue);
+				wchar_t *tmp = mir_utf8decodeW(( char* )attr );
 #if defined( _UNICODE )
 				sttAppendBufW(buf, tmp);
 #else
@@ -326,23 +333,23 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 				mir_free(tmp);
 			} else
 			{
-				sttAppendBufT(buf, node->attr[i]->value);
+				sttAppendBufT(buf, attr );
 			}
 		}
 		sttAppendBufRaw(buf, "\"");
 		sttAppendBufRaw(buf, RTF_ENDATTRVAL);
 	}
 
-	if (node->numChild || node->text)
+	if (node.getChild() || node.getText())
 	{
 		sttAppendBufRaw(buf, ">");
-		if (node->numChild)
+		if (node.getChild())
 			sttAppendBufRaw(buf, RTF_ENDTAG);
 	}
 
-	if (node->text)
+	if (node.getText())
 	{
-		if (node->numChild)
+		if (node.getChild())
 		{
 			sttAppendBufRaw(buf, RTF_BEGINTEXT);
 			char *indentTextLevel = (char *)mir_alloc(128);
@@ -353,7 +360,7 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 
 		if (flags & JCPF_UTF8)
 		{
-			wchar_t *tmp = mir_utf8decodeW(node->sendText);
+			wchar_t *tmp = mir_utf8decodeW((char*)node.getText());
 #if defined( _UNICODE )
 			sttAppendBufW(buf, tmp);
 #else
@@ -364,22 +371,27 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode *node, DWORD flags, int inde
 			mir_free(tmp);
 		} else
 		{
-			sttAppendBufT(buf, node->text);
+			sttAppendBufT(buf, node.getText());
 		}
-		if (node->numChild)
+		if (node.getChild())
 			sttAppendBufRaw(buf, RTF_ENDTEXT);
 	}
 
-	for (i = 0; i < node->numChild; ++i)
-		sttRtfAppendXml(buf, node->child[i], flags & ~(JCPF_IN|JCPF_OUT), indent+1);
+	for (i = 0; ; ++i) {
+		XmlNode n = node.getChild(i);
+		if ( !n )
+			break;
 
-	if (node->numChild || node->text)
+		sttRtfAppendXml(buf, n, flags & ~(JCPF_IN|JCPF_OUT), indent+1);
+	}
+
+	if (node.getChild() || node.getText())
 	{
 		sttAppendBufRaw(buf, RTF_BEGINTAG);
 		sttAppendBufRaw(buf, indentLevel);
 		sttAppendBufRaw(buf, "</");
 		sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
-		sttAppendBufA(buf, node->name);
+		sttAppendBufT(buf, node.getName());
 		sttAppendBufRaw(buf, RTF_ENDTAGNAME);
 		sttAppendBufRaw(buf, ">");
 	} else
@@ -406,7 +418,7 @@ DWORD CALLBACK sttStreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, L
 	return 0;
 }
 
-static void JabberConsoleXmlCallback(XmlNode *node, CJabberProto *ppro)
+static void JabberConsoleXmlCallback(XmlNode node, CJabberProto *ppro)
 {
 	ppro->OnConsoleProcessXml(node, JCPF_OUT);
 }
@@ -666,12 +678,14 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					SendMessage(m_hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
 					sttEmptyBuf(&buf);
 
+					/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					XmlState xmlstate;
 					JabberXmlInitState(&xmlstate);
 					JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, ( JABBER_XML_CALLBACK )JabberConsoleXmlCallback, m_proto);
 					m_proto->OnXmlParse(&xmlstate,tmp);
 					xmlstate=xmlstate;
 					JabberXmlDestroyState(&xmlstate);
+					*/
 
 					mir_free(tmp);
 					mir_free(textToSend);

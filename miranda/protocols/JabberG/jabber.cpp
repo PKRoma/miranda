@@ -65,6 +65,7 @@ LIST_INTERFACE  li;
 UTF8_INTERFACE  utfi;
 MD5_INTERFACE   md5i;
 SHA1_INTERFACE  sha1i;
+XML_API         xi;
 
 /////////////////////////////////////////////////////////////////////////////
 // Theme API
@@ -77,9 +78,6 @@ HANDLE hMainThread = NULL;
 DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
 HANDLE hModulesLoaded, hModulesLoadedTB;
-
-const char xmlnsAdmin[] = "http://jabber.org/protocol/muc#admin";
-const char xmlnsOwner[] = "http://jabber.org/protocol/muc#owner";
 
 void JabberUserInfoInit(void);
 
@@ -233,6 +231,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
 	mir_getSHA1I( &sha1i );
+	mir_getXI( &xi );
 
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 	jabberMainThreadId = GetCurrentThreadId();

@@ -28,7 +28,9 @@ Last change by : $Author$
 
 #include "jabber.h"
 #include "jabber_list.h"
+
 #include <uxtheme.h>
+
 #include "jabber_caps.h"
 #include "jabber_opttree.h"
 #include "sdk/m_wizard.h"
@@ -559,7 +561,7 @@ protected:
 		switch (msg)
 		{
 		case WM_JABBER_REFRESH:
-			RefreshServers((XmlNode *)lParam);
+			RefreshServers( *(XmlNode*)lParam);
 			break;
 		}
 		return CSuper::DlgProc(msg, wParam, lParam);
@@ -601,7 +603,7 @@ private:
 		if (res == IDYES)
 		{
 			XmlNodeIq iq("set", NOID, m_proto->m_szJabberJID);
-			iq.addQuery(JABBER_FEAT_REGISTER )->addChild("remove");
+			iq.addQuery( _T(JABBER_FEAT_REGISTER)).addChild("remove");
 			m_proto->m_ThreadInfo->send(iq);
 		}
 	}
@@ -681,7 +683,7 @@ private:
 			EnableWindow( GetDlgItem( m_hwnd, IDC_BUTTON_REGISTER ), FALSE );
 	}
 
-	void RefreshServers(XmlNode *node)
+	void RefreshServers(XmlNode node)
 	{
 		m_gotservers = node ? true : false;
 
@@ -690,13 +692,17 @@ private:
 		if (bDropdown) m_cbServer.ShowDropdown(false);
 
 		m_cbServer.ResetContent();
-		if ( node )
-		{
-			for (int i = 0; i < node->numChild; ++i)
-				if (!lstrcmpA(node->child[i]->name, "item"))
-					if (TCHAR *jid = JabberXmlGetAttrValue(node->child[i], "jid"))
-						if (m_cbServer.FindString(jid, -1, true) == CB_ERR)
-							m_cbServer.AddString(jid);
+		if ( node ) {
+			for (int i = 0; ; ++i) {
+				XmlNode n = node.getChild(i);
+				if ( !n )
+					break;
+
+				if ( !lstrcmp( n.getName(), _T("item")))
+					if ( const TCHAR *jid = n.getAttrValue( _T("jid")))
+						if ( m_cbServer.FindString(jid, -1, true) == CB_ERR)
+							 m_cbServer.AddString(jid);
+			}
 		}
 
 		m_cbServer.SetText(server);
@@ -705,12 +711,12 @@ private:
 		mir_free(server);
 	}
 
-	static void QueryServerListXmlCallback(XmlNode *node, void *userdata)
+	static void QueryServerListXmlCallback(XmlNode node, void *userdata)
 	{
 		HWND hwnd = (HWND)userdata;
 
-		TCHAR *xmlns = JabberXmlGetAttrValue(node, "xmlns");
-		if (xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmpA(node->name, "query") && IsWindow(hwnd))
+		const TCHAR *xmlns = node.getAttrValue( _T("xmlns"));
+		if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd))
 			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)node);
 		else
 			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
@@ -739,11 +745,13 @@ private:
 		{
 			if ((result->resultCode == 200) && result->dataLength && result->pData)
 			{
+				/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				XmlState xmlstate;
 				JabberXmlInitState(&xmlstate);
 				JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, QueryServerListXmlCallback, (void *)hwnd);
 				wnd->GetProto()->OnXmlParse(&xmlstate, result->pData);
 				JabberXmlDestroyState(&xmlstate);
+				*/
 			} else
 			{
 				SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
@@ -910,6 +918,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // roster editor
 //
+
 #include <io.h>
 #define JM_STATUSCHANGED WM_USER+0x0001
 #ifdef UNICODE
@@ -935,15 +944,15 @@ typedef struct _tag_RosterhEditDat{
 
 static WNDPROC _RosterOldListProc=NULL;
 
-static int	_RosterInsertListItem(HWND hList, TCHAR * jid, TCHAR * nick, TCHAR * group, TCHAR * subscr, BOOL bChecked)
+static int	_RosterInsertListItem(HWND hList, const TCHAR * jid, const TCHAR * nick, const TCHAR * group, const TCHAR * subscr, BOOL bChecked)
 {
 	LVITEM item={0};
 	int index;
 	item.mask=LVIF_TEXT|LVIF_STATE;
 
-	item.iItem=ListView_GetItemCount(hList);
-	item.iSubItem=0;
-	item.pszText=jid;
+	item.iItem = ListView_GetItemCount(hList);
+	item.iSubItem = 0;
+	item.pszText = ( TCHAR* )jid;
 
 	index=ListView_InsertItem(hList, &item);
 
@@ -952,10 +961,10 @@ static int	_RosterInsertListItem(HWND hList, TCHAR * jid, TCHAR * nick, TCHAR * 
 
 	ListView_SetCheckState(hList, index, bChecked);
 
-	ListView_SetItemText(hList, index, 0, jid);
-	ListView_SetItemText(hList, index, 1, nick);
-	ListView_SetItemText(hList, index, 2, group);
-	ListView_SetItemText(hList, index, 3, subscr);
+	ListView_SetItemText(hList, index, 0, ( TCHAR* )jid);
+	ListView_SetItemText(hList, index, 1, ( TCHAR* )nick);
+	ListView_SetItemText(hList, index, 2, ( TCHAR* )group);
+	ListView_SetItemText(hList, index, 3, ( TCHAR* )subscr);
 
 	return index;
 }
@@ -994,25 +1003,30 @@ static void _RosterListClear(HWND hwndDlg)
 }
 
 
-void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
+void CJabberProto::_RosterHandleGetRequest( XmlNode node, void* userdata )
 {
 	HWND hList=GetDlgItem(rrud.hwndDlg, IDC_ROSTER);
 	if (rrud.bRRAction==RRA_FILLLIST)
 	{
 		_RosterListClear(rrud.hwndDlg);
-		XmlNode * query=JabberXmlGetChild(node, "query");
+		XmlNode  query = node.getChild( "query");
 		if (!query) return;
 		int i = 1;
 		while (TRUE) {
-			XmlNode *item = JabberXmlGetNthChild(query, "item", i++);
-			if (!item) break;
-			TCHAR *jid=JabberXmlGetAttrValue(item,"jid");
-			if (!jid) continue;
-			TCHAR *name=JabberXmlGetAttrValue(item,"name");
-			TCHAR *subscription=JabberXmlGetAttrValue(item,"subscription");
-			TCHAR *group=NULL;
-			XmlNode * groupNode=JabberXmlGetChild(item, "group");
-			if ( groupNode ) group = groupNode->text;
+			XmlNode item = query.getNthChild( _T("item"), i++);
+			if (!item)
+				break;
+
+			const TCHAR *jid = item.getAttrValue( _T("jid"));
+			if (!jid)
+				continue;
+
+			const TCHAR *name = item.getAttrValue( _T("name"));
+			const TCHAR *subscription = item.getAttrValue( _T("subscription"));
+			const TCHAR *group = NULL;
+			XmlNode groupNode = item.getChild( "group" );
+			if ( groupNode )
+				group = groupNode.getText();
 			_RosterInsertListItem( hList, jid, name, group, subscription, TRUE );
 		}
 		// now it is require to process whole contact list to add not in roster contacts
@@ -1068,17 +1082,18 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 	else if ( rrud.bRRAction == RRA_SYNCROSTER )
 	{
 		SetDlgItemText(rrud.hwndDlg, IDC_UPLOAD, TranslateT("Uploading..."));
-		XmlNode * queryRoster=JabberXmlGetChild(node, "query");
-		if (!queryRoster) return;
+		XmlNode  queryRoster = node.getChild( "query");
+		if (!queryRoster)
+			return;
 
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
 
-		XmlNode iq( "iq" );
+		XmlNode iq( _T("iq"));
 		iq.addAttr( "type", "set" );
 		iq.addAttrID( iqId );
-		XmlNode* query = iq.addChild( "query" );
-		query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
+		XmlNode query = iq.addChild( "query" );
+		query.addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 		int itemCount=0;
 		int ListItemCount=ListView_GetItemCount(hList);
 		for (int index=0; index<ListItemCount; index++)
@@ -1091,35 +1106,35 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 			ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
 			ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
 			ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));
-			XmlNode *itemRoster=JabberXmlGetChildWithGivenAttrValue(queryRoster, "item", "jid", jid);
+			XmlNode itemRoster = queryRoster.getChildByTag( "item", "jid", jid);
 			BOOL bRemove = !ListView_GetCheckState(hList,index);
 			if (itemRoster && bRemove)
 			{
 				//delete item
-				XmlNode* item = query->addChild( "item" );
-				item->addAttr( "jid", jid );
-				item->addAttr( "subscription","remove");
+				XmlNode item = query.addChild( "item" );
+				item.addAttr( "jid", jid );
+				item.addAttr( "subscription","remove");
 				itemCount++;
 			}
 			else if ( !bRemove )
 			{
 				BOOL bPushed=FALSE;
 				{
-					TCHAR *rosterName=JabberXmlGetAttrValue(itemRoster,"name");
+					const TCHAR *rosterName = itemRoster.getAttrValue( _T("name"));
 					if ( (rosterName!=NULL || name[0]!=_T('\0')) && lstrcmpi(rosterName,name) )
 						bPushed=TRUE;
 					if ( !bPushed)
 					{
-						rosterName=JabberXmlGetAttrValue(itemRoster,"subscription");
+						rosterName = itemRoster.getAttrValue( _T("subscription"));
 						if ((rosterName!=NULL || subscr[0]!=_T('\0')) && lstrcmpi(rosterName,subscr) )
 							bPushed=TRUE;
 					}
 					if ( !bPushed)
 					{
-						XmlNode * groupNode=JabberXmlGetChild(itemRoster,"group");
-						TCHAR * rosterGroup=NULL;
-						if (groupNode!=NULL)
-							rosterGroup=groupNode->text;
+						XmlNode groupNode = itemRoster.getChild( "group" );
+						const TCHAR* rosterGroup=NULL;
+						if (groupNode != NULL)
+							rosterGroup = groupNode.getText();
 						if ((rosterGroup!=NULL || group[0]!=_T('\0')) && lstrcmpi(rosterGroup,group) )
 							bPushed=TRUE;
 					}
@@ -1127,13 +1142,13 @@ void CJabberProto::_RosterHandleGetRequest( XmlNode* node, void* userdata )
 				}
 				if (bPushed)
 				{
-					XmlNode* item = query->addChild( "item" );
+					XmlNode item = query.addChild( "item" );
 					if ( group && _tcslen( group ))
-						item->addChild( "group", group );
+						item.addChild( "group", group );
 					if ( name && _tcslen( name ))
-						item->addAttr( "name", name );
-					item->addAttr( "jid", jid );
-					item->addAttr( "subscription", subscr[0] ? subscr : _T("none"));
+						item.addAttr( "name", name );
+					item.addAttr( "jid", jid );
+					item.addAttr( "subscription", subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
 			}
@@ -1164,11 +1179,11 @@ void CJabberProto::_RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
 
-	XmlNode iq( "iq" );
+	XmlNode iq( _T("iq"));
 	iq.addAttr( "type", "get" );
 	iq.addAttrID( iqId );
-	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
+	XmlNode query = iq.addChild( "query" );
+	query.addAttr( "xmlns", JABBER_FEAT_IQ_ROSTER );
 	m_ThreadInfo->send( iq );
 }
 
@@ -1334,61 +1349,60 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 	fclose(fp);
 }
 
-static void _RosterParseXmlWorkbook( XmlNode *node, void *userdata )
+static void _RosterParseXmlWorkbook( XmlNode node, void *userdata )
 {
 	HWND hList=(HWND)userdata;
-	if ( !lstrcmpiA(node->name,"Workbook"))
+	if ( !lstrcmpi(node.getName(),_T("Workbook")))
 	{
-		XmlNode * Worksheet=JabberXmlGetChild(node,"Worksheet");
+		XmlNode  Worksheet = node.getChild( "Worksheet");
 		if (Worksheet)
 		{
-			XmlNode * Table=JabberXmlGetChild(Worksheet,"Table");
+			XmlNode  Table = Worksheet.getChild( "Table");
 			if (Table)
 			{
 				int index=1;
-				XmlNode *Row;
+				XmlNode Row;
 				while (TRUE)
 				{
-					Row=JabberXmlGetNthChild(Table,"Row",index++);
-					if (!Row) break;
-					BOOL bAdd=FALSE;
-					TCHAR * jid=NULL;
-					TCHAR * name=NULL;
-					TCHAR * group=NULL;
-					TCHAR * subscr=NULL;
-					XmlNode * Cell;
-					XmlNode * Data;
-					Cell=JabberXmlGetNthChild(Row,"Cell",1);
-					if (Cell) Data=JabberXmlGetChild(Cell,"Data");
-					else Data=NULL;
-					if (Data)
-					{
-						if (!lstrcmpi(Data->text,_T("+"))) bAdd=TRUE;
-						else if (lstrcmpi(Data->text,_T("-"))) continue;
+					Row = Table.getNthChild( _T("Row"), index++ );
+					if (!Row)
+						break;
 
-						Cell=JabberXmlGetNthChild(Row,"Cell",2);
-						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+					BOOL bAdd=FALSE;
+					const TCHAR* jid=NULL;
+					const TCHAR* name=NULL;
+					const TCHAR* group=NULL;
+					const TCHAR* subscr=NULL;
+					XmlNode Cell = Row.getNthChild( _T("Cell"), 1 );
+					XmlNode Data = (Cell) ? Cell.getChild( "Data") : NULL;
+					if ( Data )
+					{
+						if (!lstrcmpi(Data.getText(),_T("+"))) bAdd=TRUE;
+						else if (lstrcmpi(Data.getText(),_T("-"))) continue;
+
+						Cell = Row.getNthChild( _T("Cell"),2);
+						if (Cell) Data=Cell.getChild( "Data");
 						else Data=NULL;
 						if (Data)
 						{
-							jid=Data->text;
+							jid=Data.getText();
 							if (!jid || lstrlen(jid)==0) continue;
 						}
 
-						Cell=JabberXmlGetNthChild(Row,"Cell",3);
-						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						Cell=Row.getNthChild(_T("Cell"),3);
+						if (Cell) Data=Cell.getChild( "Data");
 						else Data=NULL;
-						if (Data) name=Data->text;
+						if (Data) name=Data.getText();
 
-						Cell=JabberXmlGetNthChild(Row,"Cell",4);
-						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						Cell=Row.getNthChild(_T("Cell"),4);
+						if (Cell) Data=Cell.getChild( "Data");
 						else Data=NULL;
-						if (Data) group=Data->text;
+						if (Data) group=Data.getText();
 
-						Cell=JabberXmlGetNthChild(Row,"Cell",5);
-						if (Cell) Data=JabberXmlGetChild(Cell,"Data");
+						Cell=Row.getNthChild(_T("Cell"),5);
+						if (Cell) Data=Cell.getChild( "Data");
 						else Data=NULL;
-						if (Data) subscr=Data->text;
+						if (Data) subscr=Data.getText();
 					}
 					_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
 }	}	}	}	}
@@ -1419,12 +1433,15 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
 	_RosterListClear(hwndDlg);
+
+	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	XmlState xmlstate;
 	JabberXmlInitState(&xmlstate);
 	JabberXmlSetCallback( &xmlstate, 2, ELEM_CLOSE, _RosterParseXmlWorkbook, (void*)hList );
 	OnXmlParse(&xmlstate,buffer);
 	xmlstate=xmlstate;
 	JabberXmlDestroyState(&xmlstate);
+	*/
 	free(buffer);
 	SendMessage(hwndDlg,JM_STATUSCHANGED, 0 , 0);
 }
@@ -1909,7 +1926,7 @@ protected:
 		switch (msg)
 		{
 		case WM_JABBER_REFRESH:
-			RefreshServers((XmlNode *)lParam);
+			RefreshServers( *( XmlNode* )lParam); ///!!!!!!!!!!!!!!
 			break;
 		}
 		return CSuper::DlgProc(msg, wParam, lParam);
@@ -1982,8 +1999,8 @@ private:
 	void setupSecureSSL();
 	void setupGoogle();
 	void setupLJ();
-	void RefreshServers(XmlNode *node);
-	static void QueryServerListXmlCallback(XmlNode *node, void *userdata);
+	void RefreshServers(XmlNode node);
+	static void QueryServerListXmlCallback(XmlNode node, void *userdata);
 	static void QueryServerListThread(void *arg);
 };
 
@@ -2108,7 +2125,7 @@ void CJabberDlgAccMgrUI::setupLJ()
 	m_btnRegister.Disable();
 }
 
-void CJabberDlgAccMgrUI::RefreshServers(XmlNode *node)
+void CJabberDlgAccMgrUI::RefreshServers(XmlNode node)
 {
 	m_gotservers = node ? true : false;
 
@@ -2119,11 +2136,16 @@ void CJabberDlgAccMgrUI::RefreshServers(XmlNode *node)
 	m_cbServer.ResetContent();
 	if ( node )
 	{
-		for (int i = 0; i < node->numChild; ++i)
-			if (!lstrcmpA(node->child[i]->name, "item"))
-				if (TCHAR *jid = JabberXmlGetAttrValue(node->child[i], "jid"))
+		for (int i = 0; ; ++i) {
+			XmlNode n = node.getChild(i);
+			if ( !n )
+				break;
+
+			if ( !lstrcmp( n.getName(), _T("item")))
+				if ( const TCHAR *jid = n.getAttrValue( _T("jid")))
 					if (m_cbServer.FindString(jid, -1, true) == CB_ERR)
 						m_cbServer.AddString(jid);
+		}
 	}
 
 	m_cbServer.SetText(server);
@@ -2132,12 +2154,12 @@ void CJabberDlgAccMgrUI::RefreshServers(XmlNode *node)
 	mir_free(server);
 }
 
-void CJabberDlgAccMgrUI::QueryServerListXmlCallback(XmlNode *node, void *userdata)
+void CJabberDlgAccMgrUI::QueryServerListXmlCallback(XmlNode node, void *userdata)
 {
 	HWND hwnd = (HWND)userdata;
 
-	TCHAR *xmlns = JabberXmlGetAttrValue(node, "xmlns");
-	if (xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmpA(node->name, "query") && IsWindow(hwnd))
+	const TCHAR *xmlns = node.getAttrValue( _T("xmlns" ));
+	if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd))
 		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)node);
 	else
 		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
@@ -2166,11 +2188,13 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	{
 		if ((result->resultCode == 200) && result->dataLength && result->pData)
 		{
+			/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			XmlState xmlstate;
 			JabberXmlInitState(&xmlstate);
 			JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, QueryServerListXmlCallback, (void *)hwnd);
 			wnd->GetProto()->OnXmlParse(&xmlstate, result->pData);
 			JabberXmlDestroyState(&xmlstate);
+			*/
 		} else
 		{
 			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);

@@ -407,13 +407,13 @@ CPepService::~CPepService()
 void CPepService::Publish()
 {
 	XmlNodeIq iq("set", m_proto->SerialNext());
-	XmlNode *pubsubNode = iq.addChild("pubsub");
-	pubsubNode->addAttr("xmlns", JABBER_FEAT_PUBSUB);
+	XmlNode pubsubNode = iq.addChild( "pubsub" );
+	pubsubNode.addAttr( "xmlns", JABBER_FEAT_PUBSUB );
 
-	XmlNode* publishNode = pubsubNode->addChild("publish");
-	publishNode->addAttr("node", m_node);
-	XmlNode* itemNode = publishNode->addChild("item");
-	itemNode->addAttr("id", "current");
+	XmlNode publishNode = pubsubNode.addChild( _T("publish"));
+	publishNode.addAttr( _T("node"), m_node );
+	XmlNode itemNode = publishNode.addChild("item");
+	itemNode.addAttr("id", "current");
 
 	CreateData(itemNode);
 
@@ -423,14 +423,14 @@ void CPepService::Publish()
 void CPepService::Retract()
 {
 	XmlNodeIq iq("set", m_proto->SerialNext());
-	XmlNode *pubsubNode = iq.addChild("pubsub");
-	pubsubNode->addAttr("xmlns", JABBER_FEAT_PUBSUB);
+	XmlNode pubsubNode = iq.addChild("pubsub");
+	pubsubNode.addAttr("xmlns", JABBER_FEAT_PUBSUB);
 
-	XmlNode* retractNode = pubsubNode->addChild("retract");
-	retractNode->addAttr("node", m_node);
-	retractNode->addAttr("notify", 1);
-	XmlNode* itemNode = retractNode->addChild("item");
-	itemNode->addAttr("id", "current");
+	XmlNode retractNode = pubsubNode.addChild("retract");
+	retractNode.addAttr( _T("node"), m_node);
+	retractNode.addAttr( _T("notify"), 1);
+	XmlNode itemNode = retractNode.addChild("item");
+	itemNode.addAttr("id", "current");
 
 	m_proto->m_ThreadInfo->send(iq);
 }
@@ -524,75 +524,75 @@ int CPepGuiService::OnMenuItemClick(WPARAM, LPARAM)
 
 ///////////////////////////////////////////////////////////////////////////////
 // CPepMood
-#define _T_STUB_
+
 struct
 {
 	TCHAR	*szName;
-	char	*szTag;
+	char* szTag;
 } static g_arrMoods[] = 
 {
 	{ LPGENT("None"),			NULL					},
-	{ LPGENT("Afraid"),			_T_STUB_("afraid")		},
-	{ LPGENT("Amazed"),			_T_STUB_("amazed")		},
-	{ LPGENT("Angry"),			_T_STUB_("angry")		},
-	{ LPGENT("Annoyed"),		_T_STUB_("annoyed")		},
-	{ LPGENT("Anxious"),		_T_STUB_("anxious")		},
-	{ LPGENT("Aroused"),		_T_STUB_("aroused")		},
-	{ LPGENT("Ashamed"),		_T_STUB_("ashamed")		},
-	{ LPGENT("Bored"),			_T_STUB_("bored")		},
-	{ LPGENT("Brave"),			_T_STUB_("brave")		},
-	{ LPGENT("Calm"),			_T_STUB_("calm")		},
-	{ LPGENT("Cold"),			_T_STUB_("cold")		},
-	{ LPGENT("Confused"),		_T_STUB_("confused")	},
-	{ LPGENT("Contented"),		_T_STUB_("contented")	},
-	{ LPGENT("Cranky"),			_T_STUB_("cranky")		},
-	{ LPGENT("Curious"),		_T_STUB_("curious")		},
-	{ LPGENT("Depressed"),		_T_STUB_("depressed")	},
-	{ LPGENT("Disappointed"),	_T_STUB_("disappointed")},
-	{ LPGENT("Disgusted"),		_T_STUB_("disgusted")	},
-	{ LPGENT("Distracted"),		_T_STUB_("distracted")	},
-	{ LPGENT("Embarrassed"),	_T_STUB_("embarrassed")	},
-	{ LPGENT("Excited"),		_T_STUB_("excited")		},
-	{ LPGENT("Flirtatious"),	_T_STUB_("flirtatious")	},
-	{ LPGENT("Frustrated"),		_T_STUB_("frustrated")	},
-	{ LPGENT("Grumpy"),			_T_STUB_("grumpy")		},
-	{ LPGENT("Guilty"),			_T_STUB_("guilty")		},
-	{ LPGENT("Happy"),			_T_STUB_("happy")		},
-	{ LPGENT("Hot"),			_T_STUB_("hot")			},
-	{ LPGENT("Humbled"),		_T_STUB_("humbled")		},
-	{ LPGENT("Humiliated"),		_T_STUB_("humiliated")	},
-	{ LPGENT("Hungry"),			_T_STUB_("hungry")		},
-	{ LPGENT("Hurt"),			_T_STUB_("hurt")		},
-	{ LPGENT("Impressed"),		_T_STUB_("impressed")	},
-	{ LPGENT("In awe"),			_T_STUB_("in_awe")		},
-	{ LPGENT("In love"),		_T_STUB_("in_love")		},
-	{ LPGENT("Indignant"),		_T_STUB_("indignant")	},
-	{ LPGENT("Interested"),		_T_STUB_("interested")	},
-	{ LPGENT("Intoxicated"),	_T_STUB_("intoxicated")	},
-	{ LPGENT("Invincible"),		_T_STUB_("invincible")	},
-	{ LPGENT("Jealous"),		_T_STUB_("jealous")		},
-	{ LPGENT("Lonely"),			_T_STUB_("lonely")		},
-	{ LPGENT("Mean"),			_T_STUB_("mean")		},
-	{ LPGENT("Moody"),			_T_STUB_("moody")		},
-	{ LPGENT("Nervous"),		_T_STUB_("nervous")		},
-	{ LPGENT("Neutral"),		_T_STUB_("neutral")		},
-	{ LPGENT("Offended"),		_T_STUB_("offended")	},
-	{ LPGENT("Playful"),		_T_STUB_("playful")		},
-	{ LPGENT("Proud"),			_T_STUB_("proud")		},
-	{ LPGENT("Relieved"),		_T_STUB_("relieved")	},
-	{ LPGENT("Remorseful"),		_T_STUB_("remorseful")	},
-	{ LPGENT("Restless"),		_T_STUB_("restless")	},
-	{ LPGENT("Sad"),			_T_STUB_("sad")			},
-	{ LPGENT("Sarcastic"),		_T_STUB_("sarcastic")	},
-	{ LPGENT("Serious"),		_T_STUB_("serious")		},
-	{ LPGENT("Shocked"),		_T_STUB_("shocked")		},
-	{ LPGENT("Shy"),			_T_STUB_("shy")			},
-	{ LPGENT("Sick"),			_T_STUB_("sick")		},
-	{ LPGENT("Sleepy"),			_T_STUB_("sleepy")		},
-	{ LPGENT("Stressed"),		_T_STUB_("stressed")	},
-	{ LPGENT("Surprised"),		_T_STUB_("surprised")	},
-	{ LPGENT("Thirsty"),		_T_STUB_("thirsty")		},
-	{ LPGENT("Worried"),		_T_STUB_("worried")		},
+	{ LPGENT("Afraid"),			"afraid"		},
+	{ LPGENT("Amazed"),			"amazed"		},
+	{ LPGENT("Angry"),			"angry"		},
+	{ LPGENT("Annoyed"),		"annoyed"		},
+	{ LPGENT("Anxious"),		"anxious"		},
+	{ LPGENT("Aroused"),		"aroused"		},
+	{ LPGENT("Ashamed"),		"ashamed"		},
+	{ LPGENT("Bored"),			"bored"		},
+	{ LPGENT("Brave"),			"brave"		},
+	{ LPGENT("Calm"),			"calm"		},
+	{ LPGENT("Cold"),			"cold"		},
+	{ LPGENT("Confused"),		"confused"	},
+	{ LPGENT("Contented"),		"contented"	},
+	{ LPGENT("Cranky"),			"cranky"		},
+	{ LPGENT("Curious"),		"curious"		},
+	{ LPGENT("Depressed"),		"depressed"	},
+	{ LPGENT("Disappointed"),	"disappointed"},
+	{ LPGENT("Disgusted"),		"disgusted"	},
+	{ LPGENT("Distracted"),		"distracted"	},
+	{ LPGENT("Embarrassed"),	"embarrassed"	},
+	{ LPGENT("Excited"),		"excited"		},
+	{ LPGENT("Flirtatious"),	"flirtatious"	},
+	{ LPGENT("Frustrated"),		"frustrated"	},
+	{ LPGENT("Grumpy"),			"grumpy"		},
+	{ LPGENT("Guilty"),			"guilty"		},
+	{ LPGENT("Happy"),			"happy"		},
+	{ LPGENT("Hot"),			"hot"			},
+	{ LPGENT("Humbled"),		"humbled"		},
+	{ LPGENT("Humiliated"),		"humiliated"	},
+	{ LPGENT("Hungry"),			"hungry"		},
+	{ LPGENT("Hurt"),			"hurt"		},
+	{ LPGENT("Impressed"),		"impressed"	},
+	{ LPGENT("In awe"),			"in_awe"		},
+	{ LPGENT("In love"),		"in_love"		},
+	{ LPGENT("Indignant"),		"indignant"	},
+	{ LPGENT("Interested"),		"interested"	},
+	{ LPGENT("Intoxicated"),	"intoxicated"	},
+	{ LPGENT("Invincible"),		"invincible"	},
+	{ LPGENT("Jealous"),		"jealous"		},
+	{ LPGENT("Lonely"),			"lonely"		},
+	{ LPGENT("Mean"),			"mean"		},
+	{ LPGENT("Moody"),			"moody"		},
+	{ LPGENT("Nervous"),		"nervous"		},
+	{ LPGENT("Neutral"),		"neutral"		},
+	{ LPGENT("Offended"),		"offended"	},
+	{ LPGENT("Playful"),		"playful"		},
+	{ LPGENT("Proud"),			"proud"		},
+	{ LPGENT("Relieved"),		"relieved"	},
+	{ LPGENT("Remorseful"),		"remorseful"	},
+	{ LPGENT("Restless"),		"restless"	},
+	{ LPGENT("Sad"),			"sad"			},
+	{ LPGENT("Sarcastic"),		"sarcastic"	},
+	{ LPGENT("Serious"),		"serious"		},
+	{ LPGENT("Shocked"),		"shocked"		},
+	{ LPGENT("Shy"),			"shy"			},
+	{ LPGENT("Sick"),			"sick"		},
+	{ LPGENT("Sleepy"),			"sleepy"		},
+	{ LPGENT("Stressed"),		"stressed"	},
+	{ LPGENT("Surprised"),		"surprised"	},
+	{ LPGENT("Thirsty"),		"thirsty"		},
+	{ LPGENT("Worried"),		"worried"		},
 };
 
 CPepMood::CPepMood(CJabberProto *proto):
@@ -621,10 +621,10 @@ void CPepMood::InitGui()
 
 	mir_sntprintf(szSection, SIZEOF(szSection), _T("Status Icons/%s/Moods"), m_proto->m_tszUserName);
 	for (int i = 1; i < SIZEOF(g_arrMoods); i++)
-		m_icons.RegisterIcon(g_arrMoods[i].szTag, szFile, -(200+i), szSection, TranslateTS(g_arrMoods[i].szName));
+		m_icons.RegisterIcon(  g_arrMoods[i].szTag, szFile, -(200+i), szSection, TranslateTS(g_arrMoods[i].szName));
 }
 
-void CPepMood::ProcessItems(const TCHAR *from, XmlNode *itemsNode)
+void CPepMood::ProcessItems(const TCHAR *from, XmlNode itemsNode)
 {
 	HANDLE hContact = NULL;
 	if (lstrcmp(from, m_proto->m_szJabberJID))
@@ -633,37 +633,40 @@ void CPepMood::ProcessItems(const TCHAR *from, XmlNode *itemsNode)
 		if (!hContact) return;
 	}
 
-	if (JabberXmlGetChild(itemsNode, "retract"))
+	if ( itemsNode.getChild( _T("retract")))
 	{
 		SetMood(hContact, NULL, NULL);
 		return;
 	}
 
-	XmlNode* itemNode = JabberXmlGetChild(itemsNode, "item");
+	XmlNode itemNode = itemsNode.getChild( _T("item"));
 	if (!itemNode) return;
 
-	XmlNode* moodNode = JabberXmlGetChildWithGivenAttrValue(itemNode, "mood", "xmlns", _T(JABBER_FEAT_USER_MOOD));
+	XmlNode moodNode = itemNode.getChildByTag( _T("mood"), _T("xmlns"), _T(JABBER_FEAT_USER_MOOD));
 	if (!moodNode) return;
 
-	char *moodType = NULL;
-	TCHAR *moodText = NULL;
-	for ( int i=0; i<moodNode->numChild; i++ )
+	LPCTSTR moodType = NULL, moodText = NULL;
+	for ( int i=0; ; i++ )
 	{
-		if (!strcmp(moodNode->child[i]->name, "text"))
-			moodText = moodNode->child[i]->text;
+		XmlNode n = moodNode.getChild( i );
+		if ( !n )
+			break;
+
+		if ( !_tcscmp( n.getName(), _T("text")))
+			moodText = n.getText();
 		else
-			moodType = moodNode->child[i]->name;
+			moodType = n.getText();
 	}
 
 	SetMood(hContact, moodType, moodText);
 }
 
-void CPepMood::CreateData(XmlNode *itemNode)
+void CPepMood::CreateData(XmlNode itemNode)
 {
-	XmlNode* moodNode = itemNode->addChild("mood");
-	moodNode->addAttr( "xmlns", JABBER_FEAT_USER_MOOD);
-	moodNode->addChild(g_arrMoods[m_mode].szTag);
-	if (m_text) moodNode->addChild("text", m_text);
+	XmlNode moodNode = itemNode.addChild("mood");
+	moodNode.addAttr( "xmlns", JABBER_FEAT_USER_MOOD);
+	moodNode.addChild(g_arrMoods[m_mode].szTag);
+	if (m_text) moodNode.addChild( _T("text"), m_text);
 }
 
 void CPepMood::ResetExtraIcon(HANDLE hContact)
@@ -682,17 +685,21 @@ void CPepMood::SetExtraIcon(HANDLE hContact, char *szMood)
 	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
 
-void CPepMood::SetMood(HANDLE hContact, char *szMood, TCHAR *szText)
+void CPepMood::SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText)
 {
 	int mood = -1;
 	if (szMood)
 	{
+		char* p = mir_t2a( szMood );
+
 		for (int i = 1; i < SIZEOF(g_arrMoods); ++i)
-			if (!lstrcmpA(g_arrMoods[i].szTag, szMood))
+			if (!lstrcmpA(g_arrMoods[i].szTag, p ))
 			{
 				mood = i;
 				break;
 			}
+
+		mir_free( p );
 
 		if (mood < 0)
 			return;
@@ -856,7 +863,6 @@ struct
 	{ NULL, "writing",            _T("writing"),            ACTIVITY_ICON(10,  4) },
 	{ NULL, NULL, NULL } // the end, don't delete this
 };
-#undef _T_STUB_
 
 inline char *ActivityGetId(int id)
 {
@@ -864,23 +870,25 @@ inline char *ActivityGetId(int id)
 }
 
 // -1 if not found, otherwise activity number
-static int ActivityCheck(char *szFirstNode, char *szSecondNode)
+static int ActivityCheck( LPCTSTR szFirstNode, LPCTSTR szSecondNode )
 {
 	if (!szFirstNode) return 0;
+
+	char *s1 = mir_t2a( szFirstNode ), *s2 = mir_t2a( szSecondNode );
 
 	int i = 0, nFirst = -1, nSecond = -1;
 	while ( g_arrActivities[i].szFirst || g_arrActivities[i].szSecond ) {
 		// check first node
-		if ( g_arrActivities[i].szFirst && !strcmp( szFirstNode, g_arrActivities[i].szFirst )) {
+		if ( g_arrActivities[i].szFirst && !strcmp( s1, g_arrActivities[i].szFirst )) {
 			// first part found
 			nFirst = i;
-			if ( !szSecondNode ) {
+			if ( !s2 ) {
 				nSecond = i;
 				break;
 			}
 			i++; // move to next
 			while ( g_arrActivities[i].szSecond ) {
-				if ( !strcmp( g_arrActivities[i].szSecond, szSecondNode )) {
+				if ( !strcmp( g_arrActivities[i].szSecond, s2 )) {
 					nSecond = i;
 					break;
 				}
@@ -890,6 +898,10 @@ static int ActivityCheck(char *szFirstNode, char *szSecondNode)
 		}
 		i++;
 	}
+
+	mir_free( s1 );
+	mir_free( s2 );
+
 	if ( nSecond != -1 )
 		return nSecond;
 	
@@ -981,7 +993,7 @@ void CPepActivity::InitGui()
 			m_icons.RegisterIcon(g_arrActivities[i].szFirst, szFile, g_arrActivities[i].iconid, szSection, TranslateTS(g_arrActivities[i].szTitle));
 }
 
-void CPepActivity::ProcessItems(const TCHAR *from, XmlNode *itemsNode)
+void CPepActivity::ProcessItems(const TCHAR *from, XmlNode itemsNode)
 {
 	HANDLE hContact = NULL;
 	if (lstrcmp(from, m_proto->m_szJabberJID))
@@ -990,34 +1002,36 @@ void CPepActivity::ProcessItems(const TCHAR *from, XmlNode *itemsNode)
 		if (!hContact) return;
 	}
 
-	if (JabberXmlGetChild(itemsNode, "retract"))
+	if ( itemsNode.getChild( "retract"))
 	{
 		SetActivity(hContact, NULL, NULL, NULL);
 		return;
 	}
 
-	XmlNode* itemNode = JabberXmlGetChild(itemsNode, "item");
+	XmlNode itemNode = itemsNode.getChild( "item");
 	if (!itemNode) return;
 
-	XmlNode* actNode = JabberXmlGetChildWithGivenAttrValue(itemNode, "activity", "xmlns", _T(JABBER_FEAT_USER_ACTIVITY));
+	XmlNode actNode = itemNode.getChildByTag( "activity", "xmlns", _T(JABBER_FEAT_USER_ACTIVITY));
 	if (!actNode) return;
 
-	char *szFirstNode = NULL;
-	char *szSecondNode = NULL;
-	TCHAR *szText = NULL;
+	LPCTSTR szFirstNode = NULL, szSecondNode = NULL, szText = NULL;
 
-	XmlNode* textNode = JabberXmlGetChild(actNode, "text");
-	if (textNode && textNode->text)
-		szText = textNode->text;
+	XmlNode textNode = actNode.getChild( "text");
+	if (textNode && textNode.getText())
+		szText = textNode.getText();
 
-	for ( int i = 0; i < actNode->numChild; i++ )
+	for ( int i = 0; ; i++ )
 	{
-		if (actNode->child[i]->name && lstrcmpA(actNode->child[i]->name, "text"))
+		XmlNode n = actNode.getChild( i );
+		if ( !n )
+			break;
+
+		if ( lstrcmp( n.getName(), _T("text")))
 		{
-			szFirstNode = actNode->child[i]->name;
-			XmlNode* secondNode = JabberXmlGetFirstChild(actNode->child[i]);
-			if (szFirstNode && secondNode && secondNode->name)
-				szSecondNode = secondNode->name;
+			szFirstNode = n.getName();
+			XmlNode secondNode = n.getChild( 0 );
+			if (szFirstNode && secondNode && secondNode.getName())
+				szSecondNode = secondNode.getName();
 			break;
 		}
 	}
@@ -1025,16 +1039,16 @@ void CPepActivity::ProcessItems(const TCHAR *from, XmlNode *itemsNode)
 	SetActivity(hContact, szFirstNode, szSecondNode, szText);
 }
 
-void CPepActivity::CreateData(XmlNode *itemNode)
+void CPepActivity::CreateData(XmlNode itemNode)
 {
 	char *szFirstNode = ActivityGetFirst(m_mode);
 	char *szSecondNode = ActivityGetSecond(m_mode);
 
-	XmlNode* activityNode = itemNode->addChild("activity");
-	activityNode->addAttr("xmlns", JABBER_FEAT_USER_ACTIVITY);
-	XmlNode* firstNode = activityNode->addChild(szFirstNode);
-	if (firstNode && szSecondNode) firstNode->addChild(szSecondNode);
-	if (m_text) activityNode->addChild("text", m_text);
+	XmlNode activityNode = itemNode.addChild("activity");
+	activityNode.addAttr("xmlns", JABBER_FEAT_USER_ACTIVITY);
+	XmlNode firstNode = activityNode.addChild(szFirstNode);
+	if (firstNode && szSecondNode) firstNode.addChild(szSecondNode);
+	if (m_text) activityNode.addChild("text", m_text);
 }
 
 void CPepActivity::ResetExtraIcon(HANDLE hContact)
@@ -1053,7 +1067,7 @@ void CPepActivity::SetExtraIcon(HANDLE hContact, char *szActivity)
 	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
 
-void CPepActivity::SetActivity(HANDLE hContact, char *szFirst, char *szSecond, TCHAR *szText)
+void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecond, LPCTSTR szText)
 {
 	int activity = -1;
 	if (szFirst || szSecond)
@@ -1092,8 +1106,11 @@ void CPepActivity::SetActivity(HANDLE hContact, char *szFirst, char *szSecond, T
 	}
 
 
-	if (activity >= 0)
-		m_proto->WriteAdvStatus(hContact, ADVSTATUS_ACTIVITY, ActivityGetId(activity), m_icons.GetIcolibName(ActivityGetFirst(activity)), activityTitle, szText);
+	if (activity >= 0) {
+		TCHAR* p = mir_a2t( ActivityGetId(activity));
+		m_proto->WriteAdvStatus(hContact, ADVSTATUS_ACTIVITY, p, m_icons.GetIcolibName(ActivityGetFirst(activity)), activityTitle, szText);
+		mir_free( p );
+	}
 	else
 		m_proto->ResetAdvStatus(hContact, ADVSTATUS_ACTIVITY);
 }
@@ -1193,36 +1210,36 @@ BOOL CJabberProto::SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSourc
 		return FALSE;
 
 	XmlNodeIq iq( "set", SerialNext() );
-	XmlNode* pubsubNode = iq.addChild( "pubsub" );
-	pubsubNode->addAttr( "xmlns", JABBER_FEAT_PUBSUB );
+	XmlNode pubsubNode = iq.addChild( "pubsub" );
+	pubsubNode.addAttr( "xmlns", JABBER_FEAT_PUBSUB );
 
 	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
-		XmlNode* retractNode = pubsubNode->addChild( "retract" );
-		retractNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-		retractNode->addAttr( "notify", 1 );
-		XmlNode* itemNode = retractNode->addChild( "item" );
-		itemNode->addAttr( "id", "current" );
+		XmlNode retractNode = pubsubNode.addChild( "retract" );
+		retractNode.addAttr( "node", JABBER_FEAT_USER_TUNE );
+		retractNode.addAttr( "notify", "1" );
+		XmlNode itemNode = retractNode.addChild( "item" );
+		itemNode.addAttr( "id", "current" );
 	}
 	else {
-		XmlNode* publishNode = pubsubNode->addChild( "publish" );
-		publishNode->addAttr( "node", JABBER_FEAT_USER_TUNE );
-		XmlNode* itemNode = publishNode->addChild( "item" );
-		itemNode->addAttr( "id", "current" );
-		XmlNode* tuneNode = itemNode->addChild( "tune" );
-		tuneNode->addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
-		if ( szArtist ) tuneNode->addChild( "artist", szArtist );
-		if ( szLength ) tuneNode->addChild( "length", szLength );
-		if ( szSource ) tuneNode->addChild( "source", szSource );
-		if ( szTitle ) tuneNode->addChild( "title", szTitle );
-		if ( szTrack ) tuneNode->addChild( "track", szTrack );
-		if ( szUri ) tuneNode->addChild( "uri", szUri );
+		XmlNode publishNode = pubsubNode.addChild( "publish" );
+		publishNode.addAttr( "node", JABBER_FEAT_USER_TUNE );
+		XmlNode itemNode = publishNode.addChild( "item" );
+		itemNode.addAttr( "id", "current" );
+		XmlNode tuneNode = itemNode.addChild( "tune" );
+		tuneNode.addAttr( "xmlns", JABBER_FEAT_USER_TUNE );
+		if ( szArtist ) tuneNode.addChild( "artist", szArtist );
+		if ( szLength ) tuneNode.addChild( "length", szLength );
+		if ( szSource ) tuneNode.addChild( "source", szSource );
+		if ( szTitle ) tuneNode.addChild( "title", szTitle );
+		if ( szTrack ) tuneNode.addChild( "track", szTrack );
+		if ( szUri ) tuneNode.addChild( "uri", szUri );
 	}
 	m_ThreadInfo->send( iq );
 
 	return TRUE;
 }
 
-void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri )
+void CJabberProto::SetContactTune( HANDLE hContact, LPCTSTR szArtist, LPCTSTR szLength, LPCTSTR szSource, LPCTSTR szTitle, LPCTSTR szTrack, LPCTSTR szUri )
 {
 	if ( !szArtist && !szTitle ) {
 		JDeleteSetting( hContact, "ListeningTo" );
@@ -1236,11 +1253,11 @@ void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szL
 		ZeroMemory( &li, sizeof( li ));
 		li.cbSize = sizeof( li );
 		li.dwFlags = LTI_TCHAR;
-		li.ptszArtist = szArtist;
-		li.ptszLength = szLength;
-		li.ptszAlbum = szSource;
-		li.ptszTitle = szTitle;
-		li.ptszTrack = szTrack;
+		li.ptszArtist = ( TCHAR* )szArtist;
+		li.ptszLength = ( TCHAR* )szLength;
+		li.ptszAlbum = ( TCHAR* )szSource;
+		li.ptszTitle = ( TCHAR* )szTitle;
+		li.ptszTrack = ( TCHAR* )szTrack;
 		szListeningTo = (TCHAR *)CallService( MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM)_T("%title% - %artist%"), (LPARAM)&li );
 	}
 	else {
@@ -1252,7 +1269,7 @@ void CJabberProto::SetContactTune( HANDLE hContact,  TCHAR* szArtist, TCHAR* szL
 
 	char tuneIcon[128];
 	mir_snprintf(tuneIcon, SIZEOF(tuneIcon), "%s_%s", m_szModuleName, "main");
-	WriteAdvStatus( hContact, ADVSTATUS_TUNE, "listening_to", tuneIcon, TranslateT("Listening To"), szListeningTo );
+	WriteAdvStatus( hContact, ADVSTATUS_TUNE, _T("listening_to"), tuneIcon, TranslateT("Listening To"), szListeningTo );
 
 	mir_free( szListeningTo );
 }
@@ -1429,12 +1446,12 @@ void CJabberProto::ResetAdvStatus(HANDLE hContact, const char *pszSlot)
 	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
 }
 
-void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const char *pszMode, const char *pszIcon, const TCHAR *pszTitle, const TCHAR *pszText)
+void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const TCHAR *pszMode, const char *pszIcon, const TCHAR *pszTitle, const TCHAR *pszText)
 {
 	char szSetting[128];
 
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/id", m_szModuleName, pszSlot);
-	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, pszMode);
+	DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszMode);
 
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/icon", m_szModuleName, pszSlot);
 	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, pszIcon);

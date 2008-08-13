@@ -37,7 +37,7 @@ static void xmlDestroyNode( XMLNode* n )
 	n->emptyNode();
 }
 
-static void xmlParseString( XMLNode* result, LPCTSTR str, int* datalen, LPCTSTR tag )
+static int xmlParseString( XMLNode* result, LPCTSTR str, int* datalen, LPCTSTR tag )
 {
 	XMLResults res;
 	*result = XMLNode::parseString( str, tag, &res );
@@ -49,7 +49,9 @@ static void xmlParseString( XMLNode* result, LPCTSTR str, int* datalen, LPCTSTR 
 		#endif
 
 		*datalen = res.nColumn-1;
-}	}
+	}
+	return tag != NULL || res.error == eXMLErrorNone;
+}
 
 static void xmlAddChild( XMLNode* result, XMLNode* n, LPCTSTR name, LPCTSTR text )
 {

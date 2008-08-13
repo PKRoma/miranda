@@ -43,7 +43,7 @@ typedef struct
 	JABBER_BYTE_STATE state;
 	HANDLE hConn;
 	HANDLE hEvent;
-	XmlNode *iqNode;
+	XmlNode iqNode;
 	BOOL ( CJabberProto::*pfnSend )( HANDLE hConn, void *userdata );
 	int ( CJabberProto::*pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
 	void ( CJabberProto::*pfnFinal )( BOOL success, void *userdata );

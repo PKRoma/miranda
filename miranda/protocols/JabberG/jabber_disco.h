@@ -49,7 +49,7 @@ protected:
 	TCHAR *m_szName;
 	CJabberSDIdentity *m_pNext;
 public:
-	CJabberSDIdentity(TCHAR *szCategory, TCHAR *szType, TCHAR *szName)
+	CJabberSDIdentity(const TCHAR *szCategory, const TCHAR *szType, const TCHAR *szName)
 	{
 		m_szCategory = mir_tstrdup(szCategory);
 		m_szType = mir_tstrdup(szType);
@@ -95,7 +95,7 @@ protected:
 	TCHAR *m_szVar;
 	CJabberSDFeature *m_pNext;
 public:
-	CJabberSDFeature(TCHAR *szVar)
+	CJabberSDFeature(const TCHAR *szVar)
 	{
 		m_szVar = szVar ? mir_tstrdup(szVar) : NULL;
 		m_pNext = NULL;
@@ -141,11 +141,11 @@ protected:
 	TCHAR *m_szInfoError;
 	TCHAR *m_szItemsError;
 public:
-	CJabberSDNode(TCHAR *szJid = NULL, TCHAR *szNode = NULL, TCHAR *szName = NULL)
+	CJabberSDNode( const TCHAR *szJid = NULL, const TCHAR *szNode = NULL, const TCHAR *szName = NULL)
 	{
-		m_szJid = szJid ? mir_tstrdup(szJid) : NULL;
-		m_szNode = szNode ? mir_tstrdup(szNode) : NULL;
-		m_szName = szName ? mir_tstrdup(szName) : NULL;
+		m_szJid = mir_tstrdup(szJid);
+		m_szNode = mir_tstrdup(szNode);
+		m_szName = mir_tstrdup(szName);
 		m_pIdentities = NULL;
 		m_pFeatures = NULL;
 		m_pNext = NULL;
@@ -300,7 +300,7 @@ public:
 		}
 		return NULL;
 	}
-	BOOL AddFeature(TCHAR *szFeature)
+	BOOL AddFeature(const TCHAR *szFeature)
 	{
 		if ( !szFeature )
 			return FALSE;
@@ -314,7 +314,7 @@ public:
 
 		return TRUE;
 	}
-	BOOL AddIdentity(TCHAR *szCategory, TCHAR *szType, TCHAR *szName)
+	BOOL AddIdentity(const TCHAR *szCategory, const TCHAR *szType, const TCHAR *szName)
 	{
 		if ( !szCategory || !szType )
 			return FALSE;
@@ -328,7 +328,7 @@ public:
 
 		return TRUE;
 	}
-	BOOL AddChildNode(TCHAR *szJid, TCHAR *szNode, TCHAR *szName)
+	BOOL AddChildNode(const TCHAR *szJid, const TCHAR *szNode, const TCHAR *szName)
 	{
 		if ( !szJid )
 			return FALSE;
@@ -469,7 +469,7 @@ public:
 	{
 		return m_pPrimaryNodes;
 	}
-	CJabberSDNode* AddPrimaryNode(TCHAR *szJid, TCHAR *szNode, TCHAR *szName)
+	CJabberSDNode* AddPrimaryNode(const TCHAR *szJid, const TCHAR *szNode, const TCHAR *szName)
 	{
 		if ( !szJid )
 			return FALSE;

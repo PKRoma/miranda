@@ -424,7 +424,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 
 	Log( "Send 'authorization allowed' to " TCHAR_STR_PARAM, jid );
 
-	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "subscribed" );
+	XmlNode presence( _T("presence")); presence.addAttr( "to", jid ); presence.addAttr( "type", "subscribed" );
 	m_ThreadInfo->send( presence );
 
 	TCHAR* newJid = mir_a2t( jid );
@@ -484,7 +484,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 
 	Log( "Send 'authorization denied' to " TCHAR_STR_PARAM, jid );
 
-	XmlNode presence( "presence" ); presence.addAttr( "to", jid ); presence.addAttr( "type", "unsubscribed" );
+	XmlNode presence( _T("presence")); presence.addAttr( "to", jid ); presence.addAttr( "type", "unsubscribed" );
 	m_ThreadInfo->send( presence );
 
 	mir_free( dbei.pBlob );
@@ -585,17 +585,17 @@ int __cdecl CJabberProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const cha
 
 	switch ( ft->type ) {
 	case FT_OOB:
-		{	XmlNode* e = iq.addChild( "error", _T("File transfer refused"));
-			e->addAttr( "code", 406 );
+		{	XmlNode e = iq.addChild( "error", _T("File transfer refused"));
+			e.addAttr( "code", "406" );
 			m_ThreadInfo->send( iq );
 		}
 		break;
 	case FT_BYTESTREAM:
 	case FT_IBB:
-		{	XmlNode* e = iq.addChild( "error", _T("File transfer refused"));
-			e->addAttr( "code", 403 ); e->addAttr( "type", "cancel" );
-			XmlNode* f = e->addChild( "forbidden" ); f->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-			XmlNode* t = f->addChild( "text", "File transfer refused" ); t->addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		{	XmlNode e = iq.addChild( "error", _T("File transfer refused"));
+			e.addAttr( "code", "403" ); e.addAttr( "type", "cancel" );
+			XmlNode f = e.addChild( "forbidden" ); f.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+			XmlNode t = f.addChild( "text", "File transfer refused" ); t.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 			m_ThreadInfo->send( iq );
 		}
 		break;
@@ -678,13 +678,13 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 			GetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
 
 			XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultEntityTime, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_HCONTACT ));
-			XmlNode* pReq = iq.addChild( "time" );
-			pReq->addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
+			XmlNode pReq = iq.addChild( "time" );
+			pReq.addAttr( "xmlns", JABBER_FEAT_ENTITY_TIME );
 			m_ThreadInfo->send( iq );
 
 			// XEP-0012, last logoff time
 			XmlNodeIq iq2( m_iqManager.AddHandler( &CJabberProto::OnIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
-			iq2.addQuery( JABBER_FEAT_LAST_ACTIVITY );
+			iq2.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
 			m_ThreadInfo->send( iq2 );
 
 			JABBER_LIST_ITEM *item = NULL;
@@ -726,18 +726,18 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
 						XmlNodeIq iq3( m_iqManager.AddHandler( &CJabberProto::OnIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
-						iq3.addQuery( JABBER_FEAT_LAST_ACTIVITY );
+						iq3.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
 						m_ThreadInfo->send( iq3 );
 
 						if ( !item->resource[i].dwVersionRequestTime ) {
 							XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-							XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+							XmlNode query = iq4.addQuery( _T(JABBER_FEAT_VERSION));
 							m_ThreadInfo->send( iq4 );
 					}	}
 				}
 				else if ( !item->itemResource.dwVersionRequestTime ) {
 					XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-					XmlNode* query = iq4.addQuery( JABBER_FEAT_VERSION );
+					XmlNode query = iq4.addQuery( _T(JABBER_FEAT_VERSION));
 					m_ThreadInfo->send( iq4 );
 		}	}	}
 
@@ -821,8 +821,8 @@ HANDLE __cdecl CJabberProto::SearchByEmail( const char* email )
 	IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
 
 	XmlNodeIq iq( "set", iqId, szServerName );
-	XmlNode* query = iq.addQuery( "jabber:iq:search" );
-	query->addChild( "email", email );
+	XmlNode query = iq.addQuery( _T("jabber:iq:search"));
+	query.addChild( "email", email );
 	m_ThreadInfo->send( iq );
 	return ( HANDLE )iqId;
 }
@@ -843,8 +843,8 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 
 	int iqId = SerialNext();
 	XmlNodeIq iq( "set", iqId, szServerName );
-	XmlNode* query = iq.addChild( "query" ), *field, *x;
-	query->addAttr( "xmlns", "jabber:iq:search" );
+	XmlNode query = iq.addChild( "query" ), field, x;
+	query.addAttr( "xmlns", "jabber:iq:search" );
 
 	if ( bIsExtFormat ) {
 		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultExtSearch );
@@ -854,32 +854,32 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 			iq.addAttr( "xml:lang", szXmlLang );
 			mir_free( szXmlLang );
 		}
-		x = query->addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x->addAttr( "type", "submit" );
+		x = query.addChild( _T("x")); x.addAttr( "xmlns", JABBER_FEAT_DATA_FORMS ); x.addAttr( "type", "submit" );
 	}
 	else IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
 
 	if ( nick[0] != '\0' ) {
 		if ( bIsExtFormat ) {
-			field = x->addChild( "field" ); field->addAttr( "var", "user" );
-			field->addChild( "value", nick );
+			field = x.addChild( "field" ); field.addAttr( "var", "user" );
+			field.addChild( "value", nick );
 		}
-		else query->addChild( "nick", nick );
+		else query.addChild( "nick", nick );
 	}
 
 	if ( firstName[0] != '\0' ) {
 		if ( bIsExtFormat ) {
-			field = x->addChild( "field" ); field->addAttr( "var", "fn" );
-			field->addChild( "value", firstName );
+			field = x.addChild( "field" ); field.addAttr( "var", "fn" );
+			field.addChild( "value", firstName );
 		}
-		else query->addChild( "first", firstName );
+		else query.addChild( "first", firstName );
 	}
 
 	if ( lastName[0] != '\0' ) {
 		if ( bIsExtFormat ) {
-			field = x->addChild( "field" ); field->addAttr( "var", "given" );
-			field->addChild( "value", lastName );
+			field = x.addChild( "field" ); field.addAttr( "var", "given" );
+			field.addChild( "value", lastName );
 		}
-		else query->addChild( "last", lastName );
+		else query.addChild( "last", lastName );
 	}
 
 	m_ThreadInfo->send( iq );
@@ -1065,15 +1065,13 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 		else
 			strcpy( msgType, "chat" );
 
-		XmlNode m( "message" ); m.addAttr( "type", msgType );
+		XmlNode m( _T("message" )); m.addAttr( "type", msgType );
 		if ( !isEncrypted ) {
-			XmlNode* body = m.addChild( "body" );
-			body->sendText = msg;
+			XmlNode body = m.addChild( "body", msg );
 		}
 		else {
 			m.addChild( "body", "[This message is encrypted.]" );
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", "jabber:x:encrypted" );
-			x->sendText = msg;
+			XmlNode x = m.addChild( "x", msg ); x.addAttr( "xmlns", "jabber:x:encrypted" );
 		}
 
 		TCHAR szClientJid[ 256 ];
@@ -1089,7 +1087,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			jcb = JABBER_RESOURCE_CAPS_NONE;
 
 		if ( jcb & JABBER_CAPS_CHATSTATES )
-			m.addChild( "active" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
+			m.addChild( "active" ).addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 
 		if (
 			// if message delivery check disabled by entity caps manager
@@ -1118,13 +1116,13 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 
 			// message receipts XEP priority
 			if ( jcb & JABBER_CAPS_MESSAGE_RECEIPTS ) {
-				XmlNode* receiptRequest = m.addChild( "request" );
-				receiptRequest->addAttr( "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
+				XmlNode receiptRequest = m.addChild( "request" );
+				receiptRequest.addAttr( "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
 			}
 			else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
-				XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
-				x->addChild( "delivered" );
-				x->addChild( "offline" );
+				XmlNode x = m.addChild( "x" ); x.addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
+				x.addChild( "delivered" );
+				x.addChild( "offline" );
 			}
 			else
 				id = 1;
@@ -1167,7 +1165,7 @@ int __cdecl CJabberProto::SetApparentMode( HANDLE hContact, int mode )
 		switch ( mode ) {
 		case ID_STATUS_ONLINE:
 			if ( m_iStatus == ID_STATUS_INVISIBLE || oldMode == ID_STATUS_OFFLINE ) {
-				XmlNode p( "presence" ); p.addAttr( "to", jid );
+				XmlNode p( _T("presence")); p.addAttr( "to", jid );
 				m_ThreadInfo->send( p );
 			}
 			break;
@@ -1389,33 +1387,33 @@ int __cdecl CJabberProto::UserIsTyping( HANDLE hContact, int type )
 		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
 			jcb = JABBER_RESOURCE_CAPS_NONE;
 
-		XmlNode m( "message" ); m.addAttr( "to", szClientJid );
+		XmlNode m( _T("message")); m.addAttr( "to", szClientJid );
 
 		if ( jcb & JABBER_CAPS_CHATSTATES ) {
 			m.addAttr( "type", "chat" );
 			m.addAttrID( SerialNext());
 			switch ( type ){
 			case PROTOTYPE_SELFTYPING_OFF:
-				m.addChild( "paused" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
+				m.addChild( "paused" ).addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				m_ThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
-				m.addChild( "composing" )->addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
+				m.addChild( "composing" ).addAttr( "xmlns", _T(JABBER_FEAT_CHATSTATES));
 				m_ThreadInfo->send( m );
 				break;
 			}
 		}
 		else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
-			XmlNode* x = m.addChild( "x" ); x->addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
+			XmlNode x = m.addChild( "x" ); x.addAttr( "xmlns", JABBER_FEAT_MESSAGE_EVENTS );
 			if ( item->messageEventIdStr != NULL )
-				x->addChild( "id", item->messageEventIdStr );
+				x.addChild( "id", item->messageEventIdStr );
 
 			switch ( type ){
 			case PROTOTYPE_SELFTYPING_OFF:
 				m_ThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
-				x->addChild( "composing" );
+				x.addChild( "composing" );
 				m_ThreadInfo->send( m );
 				break;
 	}	}	}

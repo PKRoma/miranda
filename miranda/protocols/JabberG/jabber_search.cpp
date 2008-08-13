@@ -133,58 +133,62 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat )
 ////////////////////////////////////////////////////////////////////////////////
 // Available search field request result handler  (XEP-0055. Examples 2, 7)
 
-void CJabberProto::OnIqResultGetSearchFields( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultGetSearchFields( XmlNode iqNode, void *userdata )
 {
 	if  ( !searchHandleDlg )
 		return;
 
-	TCHAR* type = JabberXmlGetAttrValue( iqNode, "type" );
+	LPCTSTR type = iqNode.getAttrValue( _T("type"));
 	if ( !type )
 		return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		XmlNode* queryNode=JabberXmlGetNthChild(iqNode,"query",1);
-		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
+		XmlNode queryNode = iqNode.getNthChild( _T("query"), 1 );
+		XmlNode xNode = queryNode.getChildByTag( "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
 		int formHeight=0;
 		ShowWindow(searchHandleDlg,SW_HIDE);
 		if ( xNode ) {
 			//1. Form
 			PostMessage( searchHandleDlg, WM_USER+11, ( WPARAM ) xNode, ( LPARAM )0 );
-			XmlNode*xcNode =JabberXmlGetNthChild(xNode,"instructions",1);
+			XmlNode xcNode = xNode.getNthChild( _T("instructions"), 1 );
 			if ( xcNode )
-				SetDlgItemText( searchHandleDlg, IDC_INSTRUCTIONS, xcNode->text);
+				SetDlgItemText( searchHandleDlg, IDC_INSTRUCTIONS, xcNode.getText());
 		}
 		else {
 			int Order=0;
-			for ( int i = 0; i < queryNode->numChild; i++ ) {
-				XmlNode* chNode=queryNode->child[i];
-				if (!_strcmpi(chNode->name, "instructions") && chNode->text)
-					SetDlgItemText(searchHandleDlg,IDC_INSTRUCTIONS,TranslateTS(chNode->text));
-				else if ( chNode->name ) {
+			for ( int i = 0; ; i++ ) {
+				XmlNode chNode = queryNode.getChild( i );
+				if ( !chNode )
+					break;
+
+				if ( !_tcsicmp( chNode.getName(), _T("instructions")) && chNode.getText())
+					SetDlgItemText(searchHandleDlg,IDC_INSTRUCTIONS,TranslateTS(chNode.getText()));
+				else if ( chNode.getName() ) {
 					Data *MyData=(Data*)malloc(sizeof(Data));
 					memset(MyData,0,sizeof(Data));
 
-					MyData->Label = mir_a2t(chNode->name);
-					MyData->Var = mir_a2t(chNode->name);
-					MyData->defValue = mir_tstrdup(chNode->text);
+					MyData->Label = mir_tstrdup( chNode.getName());
+					MyData->Var = mir_tstrdup( chNode.getName());
+					MyData->defValue = mir_tstrdup(chNode.getText());
 					MyData->Order = Order;
 					if (MyData->defValue) MyData->bReadOnly = TRUE;
 					PostMessage(searchHandleDlg,WM_USER+10,(WPARAM)FALSE,(LPARAM)MyData);
 					Order++;
 		}	}	}
-		TCHAR * szFrom=JabberXmlGetAttrValue( iqNode, "from" );
-		if (szFrom) SearchAddToRecent(szFrom,searchHandleDlg);
+		const TCHAR* szFrom = iqNode.getAttrValue( _T("from"));
+		if (szFrom)
+			SearchAddToRecent(szFrom,searchHandleDlg);
 		PostMessage(searchHandleDlg,WM_USER+10,(WPARAM)0,(LPARAM)0);
 		ShowWindow(searchHandleDlg,SW_SHOW);
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		TCHAR * code=NULL;
-		TCHAR * description=NULL;
+		const TCHAR* code=NULL;
+		const TCHAR* description=NULL;
 		TCHAR buff[255];
-		XmlNode* errorNode=JabberXmlGetChild(iqNode,"error");
+		XmlNode errorNode = iqNode.getChild( "error");
 		if ( errorNode ) {
-			code=JabberXmlGetAttrValue(errorNode,"code");
-			description=errorNode->text;
+			code = errorNode.getAttrValue( _T("code"));
+			description=errorNode.getText();
 		}
 		_sntprintf(buff,SIZEOF(buff),TranslateT("Error %s %s\r\nPlease select other server"),code ? code : _T(""),description?description:_T(""));
 		SetDlgItemText(searchHandleDlg,IDC_INSTRUCTIONS,buff);
@@ -290,43 +294,43 @@ TCHAR* CopyKey( TCHAR* key )
 ////////////////////////////////////////////////////////////////////////////////
 // Search field request result handler  (XEP-0055. Examples 3, 8)
 
-void CJabberProto::OnIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
+void CJabberProto::OnIqResultAdvancedSearch( XmlNode iqNode, void *userdata )
 {
-	TCHAR* type;
+	const TCHAR* type;
 	int    id;
 
 	U_TCHAR_MAP mColumnsNames(10);
 	LIST<void>  SearchResults(2);
 
-	if ((( id = JabberGetPacketID( iqNode )) == -1 ) || (( type = JabberXmlGetAttrValue( iqNode, "type" )) == NULL )) {
+	if ((( id = JabberGetPacketID( iqNode )) == -1 ) || (( type = iqNode.getAttrValue( _T("type"))) == NULL )) {
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 		return;
 	}
 
 	if ( !lstrcmp( type, _T("result"))) {
-		XmlNode* queryNode=JabberXmlGetNthChild(iqNode,"query",1);
-		XmlNode* xNode = JabberXmlGetChildWithGivenAttrValue( queryNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
+		XmlNode queryNode = iqNode.getNthChild( _T("query"), 1 );
+		XmlNode xNode = queryNode.getChildByTag( "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
 		if (xNode) {
 			//1. Form search results info
-			XmlNode* reportNode=JabberXmlGetNthChild(xNode,"reported",1);
+			XmlNode reportNode = xNode.getNthChild( _T("reported"), 1 );
 			if (reportNode) {
 				int i = 1;
-				while ( XmlNode* fieldNode = JabberXmlGetNthChild( reportNode, "field", i++ )) {
-					TCHAR* var = JabberXmlGetAttrValue( fieldNode, "var" );
+				while ( XmlNode fieldNode = reportNode.getNthChild( _T("field"), i++ )) {
+					TCHAR* var = ( TCHAR* )fieldNode.getAttrValue( _T( "var" ));
 					if ( var ) {
-						TCHAR * Label=JabberXmlGetAttrValue(fieldNode,"label");
+						TCHAR* Label = ( TCHAR* )fieldNode.getAttrValue( _T( "label" ));
 						mColumnsNames.insert(var, (Label!=NULL) ? Label : var);
 			}	}	}
 
 			int i=1;
-			XmlNode* itemNode;
-			while ( itemNode = JabberXmlGetNthChild( xNode, "item", i++ )) {
+			XmlNode itemNode;
+			while ( itemNode = xNode.getNthChild( _T("item"), i++ )) {
 				U_TCHAR_MAP *pUserColumn = new U_TCHAR_MAP(10);
 				int j = 1;
-				while ( XmlNode* fieldNode = JabberXmlGetNthChild( itemNode, "field", j++ )) {
-					if (TCHAR * var=JabberXmlGetAttrValue(fieldNode,"var" )) {
-						if (TCHAR * Text=(JabberXmlGetChild(fieldNode,"value")->text)) {
-							if (!mColumnsNames[var])
+				while ( XmlNode fieldNode = itemNode.getNthChild( _T("field"), j++ )) {
+					if ( TCHAR* var = (TCHAR*)fieldNode.getAttrValue( _T("var"))) {
+						if ( TCHAR* Text = (TCHAR*)fieldNode.getChild( _T("value")).getText()) {
+							if ( !mColumnsNames[var] )
 								mColumnsNames.insert(var,var);
 							pUserColumn->insert(var,Text);
 				}	}	}
@@ -337,37 +341,39 @@ void CJabberProto::OnIqResultAdvancedSearch( XmlNode *iqNode, void *userdata )
 		else {
 			//2. Field list search results info
 			int i=1;
-			while ( XmlNode* itemNode = JabberXmlGetNthChild( queryNode, "item", i++ )) {
+			while ( XmlNode itemNode = queryNode.getNthChild( _T("item"), i++ )) {
 				U_TCHAR_MAP *pUserColumn=new U_TCHAR_MAP(10);
 				
-				TCHAR* jid = JabberXmlGetAttrValue( itemNode, "jid" );
+				TCHAR* jid = (TCHAR*)itemNode.getAttrValue( _T("jid"));
 				TCHAR* keyReturned;
 				mColumnsNames.insertCopyKey( _T("jid"),_T("jid"),&keyReturned, CopyKey, DestroyKey );
 				mColumnsNames.insert( _T("jid"), keyReturned );
 				pUserColumn->insertCopyKey( _T("jid"), jid, NULL, CopyKey, DestroyKey );
 
-				for ( int j=0; j < itemNode->numChild; j++ ) {
-					XmlNode* child = itemNode->child[j];
-					if ( child->name ) {
-						TCHAR* szColumnName = mir_a2t(child->name);
-						if ( child->text && child->text[0] != _T('\0')) {
-							mColumnsNames.insertCopyKey(szColumnName,_T(""),&keyReturned, CopyKey, DestroyKey);
-							mColumnsNames.insert(szColumnName,keyReturned);
-							pUserColumn->insertCopyKey(szColumnName,child->text,NULL, CopyKey, DestroyKey);
-							mir_free(szColumnName);
+				for ( int j=0; ; j++ ) {
+					XmlNode child = itemNode.getChild(j);
+					if ( !child )
+						break;
+
+					const TCHAR* szColumnName = child.getName();
+					if ( szColumnName ) {
+						if ( child.getText() && child.getText()[0] != _T('\0')) {
+							mColumnsNames.insertCopyKey(( TCHAR* )szColumnName,_T(""),&keyReturned, CopyKey, DestroyKey);
+							mColumnsNames.insert(( TCHAR* )szColumnName,keyReturned);
+							pUserColumn->insertCopyKey(( TCHAR* )szColumnName, ( TCHAR* )child.getText(),NULL, CopyKey, DestroyKey);
 				}	}	}
 
 				SearchResults.insert((void*)pUserColumn);
 		}	}
 	}
 	else if (!lstrcmp( type, _T("error"))) {
-		TCHAR * code=NULL;
-		TCHAR * description=NULL;
+		const TCHAR* code=NULL;
+		const TCHAR* description=NULL;
 		TCHAR buff[255];
-		XmlNode* errorNode = JabberXmlGetChild( iqNode, "error" );
+		XmlNode errorNode = iqNode.getChild( "error" );
 		if (errorNode) {
-			code = JabberXmlGetAttrValue(errorNode,"code");
-			description = errorNode->text;
+			code = errorNode.getAttrValue( _T("code"));
+			description = errorNode.getText();
 		}
 
 		_sntprintf(buff,SIZEOF(buff),TranslateT("Error %s %s\r\nTry to specify more detailed"),code ? code : _T(""),description?description:_T(""));
@@ -410,12 +416,11 @@ static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat)
 		}
 		free(dat->pJSInf);
 		dat->pJSInf=NULL;
-	
 	}
 	else
 	{
-		if (dat->xNode) delete (dat->xNode);
-		dat->xNode=NULL;
+		////// !!!!!!!!!!!! if (dat->xNode) delete (dat->xNode);
+		///// dat->xNode=NULL;
 		EnumChildWindows(GetDlgItem(hwndDlg,IDC_FRAME),DeleteChildWindowsProc,0);			
 	}
 	SendMessage(GetDlgItem(hwndDlg,IDC_FRAME), WM_SETFONT, (WPARAM) SendMessage( hwndDlg, WM_GETFONT, 0, 0 ),0 );
@@ -466,21 +471,21 @@ int CJabberProto::SearchRenewFields(HWND hwndDlg, JabberSearchData * dat)
 
 	int iqId = SerialNext();
 	XmlNodeIq iq( "get", iqId, szServerName );
-	XmlNode* query = iq.addChild( "query" );
-	query->addAttr( "xmlns", "jabber:iq:search" );
+	XmlNode query = iq.addChild( "query" );
+	query.addAttr( "xmlns", "jabber:iq:search" );
 	IqAdd( iqId, IQ_PROC_GETSEARCHFIELDS, &CJabberProto::OnIqResultGetSearchFields );
 	m_ThreadInfo->send( iq );
 	return iqId;
 }
 
-static void JabberSearchAddUrlToRecentCombo(HWND hwndDlg, TCHAR * szAddr)
+static void JabberSearchAddUrlToRecentCombo(HWND hwndDlg, const TCHAR* szAddr)
 {
 	int lResult = SendMessage( GetDlgItem(hwndDlg,IDC_SERVER), (UINT) CB_FINDSTRING, 0, (LPARAM)szAddr );
 	if ( lResult == -1 )
 		SendDlgItemMessage( hwndDlg, IDC_SERVER, CB_ADDSTRING, 0, ( LPARAM )szAddr );
 }
 
-void CJabberProto::SearchDeleteFromRecent( TCHAR* szAddr, BOOL deleteLastFromDB )
+void CJabberProto::SearchDeleteFromRecent( const TCHAR* szAddr, BOOL deleteLastFromDB )
 {
 	DBVARIANT dbv;
 	char key[30];
@@ -509,11 +514,11 @@ void CJabberProto::SearchDeleteFromRecent( TCHAR* szAddr, BOOL deleteLastFromDB 
 			else JFreeVariant( &dbv );
 }	}	}
 
-void CJabberProto::SearchAddToRecent( TCHAR* szAddr, HWND hwndDialog )
+void CJabberProto::SearchAddToRecent( const TCHAR* szAddr, HWND hwndDialog )
 {
 	DBVARIANT dbv;
 	char key[30];
-	SearchDeleteFromRecent(szAddr);
+	SearchDeleteFromRecent( szAddr );
 	for ( int j=9; j > 0; j-- ) {
 		sprintf( key, "RecentlySearched_%d", j-1 );
 		if ( !JGetStringT( NULL, key, &dbv )) {
@@ -613,9 +618,9 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 
 	case WM_USER+11:
 		{
-		    dat->fSearchRequestIsXForm=TRUE;
-			dat->xNode=JabberXmlCopyNode( (XmlNode *) wParam );
-			JabberFormCreateUI(GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
+			dat->fSearchRequestIsXForm=TRUE;
+			dat->xNode = *( MXmlNode* )wParam;
+			// !!!!!!!!!!!!JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_FRAME), SW_SHOW);
 			dat->nJSInfCount=1;
 			return TRUE;
@@ -735,19 +740,19 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 	// formating query
 	int iqId = SerialNext();
 	XmlNodeIq iq( "set", iqId, szServerName );
-	XmlNode* query = iq.addChild( "query" ), *field;
+	XmlNode query = iq.addChild( "query" );
 	TCHAR *szXmlLang = GetXmlLang();
 	if ( szXmlLang ) {
 		iq.addAttr( "xml:lang", szXmlLang ); // i'm sure :)
 		mir_free( szXmlLang );
 	}
-	query->addAttr( "xmlns", "jabber:iq:search" );
+	query.addAttr( "xmlns", "jabber:iq:search" );
 
 	// next can be 2 cases:
 	// Forms: XEP-0055 Example 7
 	if ( dat->fSearchRequestIsXForm ) {
 		fRequestNotEmpty=TRUE;
-		query->addChild(JabberFormGetData(GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode));
+		query.addChild( *JabberFormGetData(GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode));
     }
 	else { //and Simple fields: XEP-0055 Example 3
 		for ( int i=0; i<dat->nJSInfCount; i++ ) {
@@ -755,7 +760,7 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 			GetWindowText(dat->pJSInf[i].hwndValueItem, szFieldValue, SIZEOF(szFieldValue));
 			if ( szFieldValue[0] != _T('\0')) {
 				char* szTemp = mir_t2a(dat->pJSInf[i].szFieldName);
-				field = query->addChild( szTemp, szFieldValue );
+				query.addChild( szTemp, szFieldValue );
 				mir_free(szTemp);
 				fRequestNotEmpty=TRUE;
 	}	}	}

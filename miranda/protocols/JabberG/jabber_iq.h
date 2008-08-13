@@ -52,7 +52,7 @@ typedef enum {
 } JABBER_IQ_PROCID;
 
 struct CJabberProto;
-typedef void ( CJabberProto::*JABBER_IQ_PFUNC )( XmlNode *iqNode, void *usedata );
+typedef void ( CJabberProto::*JABBER_IQ_PFUNC )( XmlNode iqNode, void *usedata );
 
 typedef struct {
 	TCHAR* xmlns;
@@ -68,7 +68,7 @@ void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 
 class CJabberIqRequestManager;
 
-typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( XmlNode *iqNode, void *usedata, CJabberIqInfo* pInfo );
+typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo );
 
 #define JABBER_IQ_TYPE_FAIL						0
 #define JABBER_IQ_TYPE_RESULT					1
@@ -108,7 +108,7 @@ public:// parsed data
 	TCHAR *m_szFrom;
 	TCHAR *m_szChildTagXmlns;
 	TCHAR *m_szChildTagName;
-	XmlNode *m_pChildNode;
+	XmlNode m_pChildNode;
 	HANDLE m_hContact; 
 	TCHAR *m_szTo;
 	TCHAR *m_szId;
@@ -122,7 +122,7 @@ public:
 		if (m_szReceiver)
 			mir_free(m_szReceiver);
 	}
-	void SetReceiver(TCHAR *szReceiver)
+	void SetReceiver(const TCHAR *szReceiver)
 	{
 		replaceStr(m_szReceiver, szReceiver);
 	}
@@ -170,7 +170,7 @@ public:
 	{
 		return m_hContact;
 	}
-	XmlNode* GetChildNode()
+	XmlNode GetChildNode()
 	{
 		return m_pChildNode;
 	}
@@ -386,8 +386,8 @@ public:
 		return dwCount;
 	}
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
-	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT);
-	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, TCHAR* szXmlns, BOOL bAllowPartialNs, TCHAR* szTag)
+	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT);
+	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, const TCHAR* szXmlns, BOOL bAllowPartialNs, const TCHAR* szTag)
 	{
 		CJabberIqPermanentInfo* pInfo = new CJabberIqPermanentInfo();
 		if (!pInfo)
@@ -414,8 +414,8 @@ public:
 
 		return pInfo;
 	}
-	BOOL HandleIq(int nIqId, XmlNode *pNode, void *pUserData);
-	BOOL HandleIqPermanent(XmlNode *pNode, void *pUserData);
+	BOOL HandleIq(int nIqId, XmlNode pNode, void *pUserData);
+	BOOL HandleIqPermanent(XmlNode pNode, void *pUserData);
 	BOOL ExpireIq(int nIqId, void *pUserData = NULL)
 	{
 		Lock();
