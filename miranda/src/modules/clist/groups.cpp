@@ -162,11 +162,15 @@ static int DeleteGroup(WPARAM wParam, LPARAM lParam)
 	_itoa(wParam - 1, str, 10);
 	if (DBGetContactSettingTString(NULL, "CListGroups", str, &dbv))
 		return 1;
-	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
-		if (MessageBox(cli.hwndContactList, TranslateT("Are you sure you want to delete this group?  This operation can not be undone."), TranslateT("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
-			return 1;
 	lstrcpyn(name, dbv.ptszVal + 1, SIZEOF(name));
 	DBFreeVariant(&dbv);
+	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT))
+	{
+		TCHAR szQuestion[256+100];
+		mir_sntprintf( szQuestion, sizeof(szQuestion), TranslateT("Are you sure you want to delete group '%s'?  This operation can not be undone."), name );
+		if (MessageBox(cli.hwndContactList, szQuestion, TranslateT("Delete Group"), MB_YESNO|MB_ICONQUESTION)==IDNO)
+			return 1;
+	}
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 	//must remove setting from all child contacts too
 	//children are demoted to the next group up, not deleted.
