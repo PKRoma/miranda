@@ -190,6 +190,22 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		info->send( buf, bufLen );
 }	}
 
+static int utfLen( TCHAR* p, size_t len )
+{
+	int result = 0;
+	for ( size_t i=0; i < len && *p; i++ ) {
+		WORD w = *p++;
+		if ( w < 0x80 )
+			result++;
+		else if ( w < 0x800 )
+			result += 2;
+		else
+			result += 3;
+	}
+
+	return result;
+}
+
 int sttReadXml( char* buf, int bufLen, XmlNode& n, LPCTSTR tag )
 {
 	TCHAR* str;
@@ -201,9 +217,10 @@ int sttReadXml( char* buf, int bufLen, XmlNode& n, LPCTSTR tag )
 	#endif
 
 	int bytesProcessed = 0;
-	if ( !xi.parseString( &n, str, &bytesProcessed, tag ))
-		return 0;
-
+	bytesProcessed = ( xi.parseString( &n, str, &bytesProcessed, tag )) ? utfLen( str, bytesProcessed ) : 0;
+	#if defined( _UNICODE )
+		mir_free(str);
+	#endif
 	return bytesProcessed;
 }
 
