@@ -60,6 +60,11 @@ static void xmlAddChild( XMLNode* result, XMLNode* n, LPCTSTR name, LPCTSTR text
 		result->updateText( text );
 }
 
+static void xmlAddChild2( XMLNode* child, XMLNode* parent )
+{
+	parent->addChild( *child );
+}
+
 static void xmlCopyNode( XMLNode* result, const XMLNode* n )
 {
 	*result = *n;
@@ -161,6 +166,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 	xi->freeMem             = xmlFree;
 									
 	xi->addChild				= xmlAddChild;
+	xi->addChild2				= xmlAddChild2;
 	xi->copyNode				= xmlCopyNode;
 	xi->getChild				= xmlGetChild;
 	xi->getChildByAttrValue = xmlGetChildByAttrValue;

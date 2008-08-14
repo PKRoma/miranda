@@ -44,6 +44,7 @@ typedef struct
 	LPTSTR   ( *toString )( MXmlNode* result, int* datalen );
 
 	void     ( *addChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR text );
+	void     ( *addChild2 )( MXmlNode* child, MXmlNode* parent );
 	void     ( *copyNode )( MXmlNode* result, const MXmlNode* parent);
 	void     ( *getChild )( MXmlNode* result, const MXmlNode* parent, int number );
 	int      ( *getChildCount )( MXmlNode* );
