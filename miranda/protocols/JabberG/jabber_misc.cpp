@@ -437,9 +437,9 @@ TCHAR* EscapeChatTags(TCHAR* pszText)
 	return pszNewText;
 }
 
-char* UnEscapeChatTags(char* str_in)
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
 {
-	char* s = str_in, *d = str_in;
+	TCHAR* s = str_in, *d = str_in;
 	while ( *s ) {
 		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
 			s++;

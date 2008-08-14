@@ -687,7 +687,7 @@ void   JabberChatDllError( void );
 int    JabberCompareJids( const TCHAR* jid1, const TCHAR* jid2 );
 void   JabberContactListCreateGroup( TCHAR* groupName );
 TCHAR* EscapeChatTags(TCHAR* pszText);
-char*  UnEscapeChatTags(char* str_in);
+TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
 //---- jabber_adhoc.cpp	---------------------------------------------
 

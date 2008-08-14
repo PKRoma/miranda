@@ -1075,20 +1075,15 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 
 			TCHAR buf[256];
 			// do not use snprintf to avoid possible problems with % symbol
-			if (TCHAR *p = _tcsstr(szMessage, _T("%s")))
-			{
+			if (TCHAR *p = _tcsstr(szMessage, _T("%s"))) {
 				*p = 0;
 				mir_sntprintf(buf, SIZEOF(buf), _T("%s%s%s"), szMessage, him->resourceName, p+2);
-			} else
-			{
-				lstrcpyn(buf, szMessage, SIZEOF(buf));
-			}
+			} 
+			else lstrcpyn(buf, szMessage, SIZEOF(buf));
+			UnEscapeChatTags( buf );
 
 			XmlNode m( _T("message")); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
 			XmlNode b = m.addChild( "body", buf );
-			////!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//  if ( b->sendText != NULL )
-			//    UnEscapeChatTags( b->sendText );
 			ppro->m_ThreadInfo->send( m );
 
 			if (szMessage == dbv.ptszVal)
@@ -1430,10 +1425,10 @@ int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 			rtrim( gch->ptszText );
 
 			if ( m_bJabberOnline ) {
+				TCHAR* buf = NEWTSTR_ALLOCA(gch->ptszText);
+				UnEscapeChatTags( buf );
 				XmlNode m( _T("message")); m.addAttr( "to", item->jid ); m.addAttr( "type", "groupchat" );
-				XmlNode b = m.addChild( "body", gch->ptszText );
-				///!!!!!!!!!!!!!!! if ( b->sendText != NULL )
-				// UnEscapeChatTags( b->sendText );
+				XmlNode b = m.addChild( "body", buf );
 				m_ThreadInfo->send( m );
 		}	}
 		break;

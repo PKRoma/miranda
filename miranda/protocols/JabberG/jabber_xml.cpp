@@ -269,8 +269,10 @@ XmlNode::XmlNode( const char* pszName, const char* ptszText )
 
 XmlNode::~XmlNode()
 {
-	if ( unused )
+	if ( unused ) {
 		xi.destroyNode( this );
+		unused = NULL;
+	}
 }
 
 void XmlNode::addAttr( const char* pszName, LPCTSTR ptszValue )
