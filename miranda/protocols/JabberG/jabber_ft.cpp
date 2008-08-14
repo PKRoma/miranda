@@ -126,9 +126,9 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	
 	// bytestreams support?
 	if ( bDirect || bProxy ) {
-		option = field.addChild( "option" ); option.addAttr( "value", JABBER_FEAT_BYTESTREAMS );
+		option = field.addChild( "option" ); option.addChild( "value", JABBER_FEAT_BYTESTREAMS );
 	}
-	option = field.addChild( "option" ); option.addAttr( "value", JABBER_FEAT_IBB );
+	option = field.addChild( "option" ); option.addChild( "value", JABBER_FEAT_IBB );
 	m_ThreadInfo->send( iq );
 }
 
