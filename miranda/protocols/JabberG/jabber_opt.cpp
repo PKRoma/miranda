@@ -985,7 +985,7 @@ static void _RosterListClear(HWND hwndDlg)
 }
 
 
-void CJabberProto::_RosterHandleGetRequest( XmlNode node, void* userdata )
+void CJabberProto::_RosterHandleGetRequest( XmlNode& node, void* userdata )
 {
 	HWND hList=GetDlgItem(rrud.hwndDlg, IDC_ROSTER);
 	if (rrud.bRRAction==RRA_FILLLIST)

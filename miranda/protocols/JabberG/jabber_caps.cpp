@@ -82,7 +82,7 @@ JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	NULL,                             0                                }
 };
 
-void CJabberProto::OnIqResultCapsDiscoInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultCapsDiscoInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
 

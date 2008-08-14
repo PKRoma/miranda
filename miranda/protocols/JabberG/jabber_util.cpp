@@ -617,7 +617,7 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 			m_ThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
-			SendPresenceTo( m_iStatus, item->jid, NULL );
+			SendPresenceTo( m_iStatus, item->jid, XmlNode() );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -826,7 +826,7 @@ int __stdcall JabberCountryNameToId( const TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode extra )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 {
 	if ( !m_bJabberOnline ) return;
 
@@ -943,7 +943,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode extra )
 
 void CJabberProto::SendPresence( int status, bool bSendToAll )
 {
-	SendPresenceTo( status, NULL, NULL );
+	SendPresenceTo( status, NULL, XmlNode() );
 	SendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	// Also update status in all chatrooms
@@ -951,7 +951,7 @@ void CJabberProto::SendPresence( int status, bool bSendToAll )
 		for ( int i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
-				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, NULL );
+				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, XmlNode() );
 }	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )

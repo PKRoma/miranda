@@ -54,7 +54,7 @@ JABBER_BYTE_TRANSFER::~JABBER_BYTE_TRANSFER()
 	mir_free( szStreamhostUsed );
 }
 
-void CJabberProto::IqResultProxyDiscovery( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::IqResultProxyDiscovery( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
@@ -308,7 +308,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	Log( "Thread ended: type=bytestream_send" );
 }
 
-void CJabberProto::ByteInitiateResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::ByteInitiateResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
@@ -420,7 +420,7 @@ int CJabberProto::ByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* 
 
 ///////////////// Bytestream receiving /////////////////////////
 
-void CJabberProto::IqResultStreamActivate( XmlNode iqNode, void* userdata )
+void CJabberProto::IqResultStreamActivate( XmlNode& iqNode, void* userdata )
 {
 	int id = JabberGetPacketID( iqNode );
 

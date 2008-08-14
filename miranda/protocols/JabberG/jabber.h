@@ -510,7 +510,7 @@ struct JABBER_MUC_JIDLIST_INFO
 	TCHAR* type2str( void ) const;
 };
 
-typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( XmlNode values, void *userdata );
+typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( XmlNode& values, void *userdata );
 
 //---- jabber_treelist.c ------------------------------------------------
 

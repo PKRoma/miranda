@@ -55,7 +55,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 //implementations
 
 // convert iqID to dialog hwnd
-HWND CJabberProto::GetWindowFromIq( XmlNode iqNode )
+HWND CJabberProto::GetWindowFromIq( XmlNode& iqNode )
 {
 	const TCHAR* id = iqNode.getAttrValue( _T( "id" ));
 	if (_tcslen(id)>4)
@@ -109,12 +109,12 @@ static void JabberAdHoc_RefreshFrameScroll(HWND hwndDlg, JabberAdHocData * dat)
 // Iq handlers
 // Forwards to dialog window procedure
 
-void CJabberProto::OnIqResult_ListOfCommands( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResult_ListOfCommands( XmlNode& iqNode, void *userdata )
 {
 	SendMessage( GetWindowFromIq( iqNode ), JAHM_COMMANDLISTRESULT, 0, (LPARAM)iqNode );
 }
 
-void CJabberProto::OnIqResult_CommandExecution( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResult_CommandExecution( XmlNode& iqNode, void *userdata )
 {
 	XmlNode z = iqNode;
 	SendMessage( GetWindowFromIq( iqNode ), JAHM_PROCESSRESULT, (WPARAM)z, 0 );
@@ -164,7 +164,7 @@ int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDa
 }
 
 //Messages handlers
-int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode  iqNode, JabberAdHocData* dat )
+int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode& iqNode, JabberAdHocData* dat )
 {
 	int nodeIdx = 0;
 	const TCHAR * type = iqNode.getAttrValue( _T("type"));
@@ -226,7 +226,7 @@ int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode  iqNode, 
 	return (TRUE);
 }
 
-int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, XmlNode workNode, JabberAdHocData* dat)
+int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, XmlNode& workNode, JabberAdHocData* dat)
 {
 	EnumChildWindows( GetDlgItem( hwndDlg, IDC_FRAME ), sttDeleteChildWindowsProc, 0 );
 	dat->CurrentHeight = 0;

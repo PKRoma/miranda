@@ -169,7 +169,7 @@ static struct
 
 static void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
 
-void CJabberProto::OnIqResultServiceDiscoveryInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), TRUE );
@@ -216,7 +216,7 @@ void CJabberProto::OnIqResultServiceDiscoveryInfo( XmlNode iqNode, void* userdat
 	}
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryItems( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryItems( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), FALSE );
@@ -260,7 +260,7 @@ void CJabberProto::OnIqResultServiceDiscoveryItems( XmlNode iqNode, void* userda
 	}
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryRootInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData) return;
 	m_SDManager.Lock();
@@ -280,7 +280,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootInfo( XmlNode iqNode, void* use
 	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_REFRESH);
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryRootItems( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootItems( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData) return;
 	m_SDManager.Lock();

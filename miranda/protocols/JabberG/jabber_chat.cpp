@@ -270,7 +270,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 	}
 }
 
-void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, XmlNode reason, int nStatusCode )
+void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, XmlNode& reason, int nStatusCode )
 {
 	int statusToSet = 0;
 	const TCHAR* szReason = NULL;
@@ -348,7 +348,7 @@ void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR*
 	mir_free( myNick );
 }
 
-void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode reason )
+void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, XmlNode& reason )
 {
 	DBVARIANT dbvMessage = {0};
 	TCHAR *szMessage = NULL;
@@ -1300,7 +1300,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			if ( item != NULL ) {
 				TCHAR text[ 1024 ];
 				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), gch->pDest->ptszID, szBuffer );
-				ppro->SendPresenceTo( ppro->m_iStatus == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : ppro->m_iStatus, text, NULL );
+				ppro->SendPresenceTo( ppro->m_iStatus == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : ppro->m_iStatus, text, XmlNode() );
 		}	}
 		break;
 
@@ -1348,7 +1348,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 		}
 
 	case IDM_LEAVE:
-		ppro->GcQuit( item, 0, 0 );
+		ppro->GcQuit( item, 0, XmlNode() );
 		break;
 
 	case IDM_LINK0: case IDM_LINK1: case IDM_LINK2: case IDM_LINK3: case IDM_LINK4:

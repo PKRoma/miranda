@@ -106,7 +106,7 @@ static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Jabber keep-alive thread
 
-void CJabberProto::OnPingReply( XmlNode node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnPingReply( XmlNode& node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo )
 		return;
@@ -628,7 +628,7 @@ void CJabberProto::PerformIqAuth( ThreadData* info )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CJabberProto::OnProcessStreamOpening( XmlNode node, ThreadData *info )
+void CJabberProto::OnProcessStreamOpening( XmlNode& node, ThreadData *info )
 {
 	if ( lstrcmp( node.getName(), _T("stream:stream")))
 		return;
@@ -654,7 +654,7 @@ void CJabberProto::OnProcessStreamOpening( XmlNode node, ThreadData *info )
 			OnProcessFeatures( features, info );
 }
 
-void CJabberProto::OnProcessStreamClosing( XmlNode node, ThreadData *info )
+void CJabberProto::OnProcessStreamClosing( XmlNode& node, ThreadData *info )
 {
 	Netlib_CloseHandle( info->s );
 	if ( !lstrcmp( node.getName(), _T("stream:error")) && node.getText() )
@@ -663,7 +663,7 @@ void CJabberProto::OnProcessStreamClosing( XmlNode node, ThreadData *info )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CJabberProto::OnProcessFeatures( XmlNode node, void *userdata )
+void CJabberProto::OnProcessFeatures( XmlNode& node, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	bool isPlainAvailable = false;
@@ -789,7 +789,7 @@ void CJabberProto::OnProcessFeatures( XmlNode node, void *userdata )
 	PerformIqAuth( info );
 }
 
-void CJabberProto::OnProcessFailure( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessFailure( XmlNode& node, ThreadData* info )
 {
 	const TCHAR* type;
 //failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"
@@ -804,7 +804,7 @@ void CJabberProto::OnProcessFailure( XmlNode node, ThreadData* info )
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnProcessError( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessError( XmlNode& node, ThreadData* info )
 {
 	TCHAR *buff;
 	int i;
@@ -830,7 +830,7 @@ void CJabberProto::OnProcessError( XmlNode node, ThreadData* info )
 	info->send( "</stream:stream>" );
 }
 
-void CJabberProto::OnProcessSuccess( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessSuccess( XmlNode& node, ThreadData* info )
 {
 	const TCHAR* type;
 //	int iqId;
@@ -852,7 +852,7 @@ void CJabberProto::OnProcessSuccess( XmlNode node, ThreadData* info )
 	else Log( "Success: unknown action "TCHAR_STR_PARAM".",type);
 }
 
-void CJabberProto::OnProcessChallenge( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessChallenge( XmlNode& node, ThreadData* info )
 {
 	if ( info->auth == NULL ) {
 		Log( "No previous auth have been made, exiting..." );
@@ -871,7 +871,7 @@ void CJabberProto::OnProcessChallenge( XmlNode node, ThreadData* info )
 	mir_free( response );
 }
 
-void CJabberProto::OnProcessProtocol( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessProtocol( XmlNode& node, ThreadData* info )
 {
 	OnConsoleProcessXml(node, JCPF_IN);
 
@@ -908,7 +908,7 @@ void CJabberProto::OnProcessProtocol( XmlNode node, ThreadData* info )
 			Log( "Invalid top-level tag ( only <iq/> allowed )" );
 }	}
 
-void CJabberProto::OnProcessProceed( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessProceed( XmlNode& node, ThreadData* info )
 {
 	const TCHAR* type;
 	if (( type = node.getAttrValue( _T("xmlns"))) != NULL && !lstrcmp( type, _T("error")))
@@ -924,7 +924,7 @@ void CJabberProto::OnProcessProceed( XmlNode node, ThreadData* info )
 			xmlStreamInitialize( "after successful StartTLS" );
 }	}
 
-void CJabberProto::OnProcessCompressed( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessCompressed( XmlNode& node, ThreadData* info )
 {
 	const TCHAR* type;
 
@@ -943,7 +943,7 @@ void CJabberProto::OnProcessCompressed( XmlNode node, ThreadData* info )
 	xmlStreamInitialize( "after successful Zlib init" );
 }
 
-void CJabberProto::OnProcessPubsubEvent( XmlNode node )
+void CJabberProto::OnProcessPubsubEvent( XmlNode& node )
 {
 	const TCHAR* from = node.getAttrValue( _T("from"));
 	if ( !from )
@@ -1059,7 +1059,7 @@ HANDLE CJabberProto::CreateTemporaryContact( const TCHAR *szJid, JABBER_LIST_ITE
 	return hContact;
 }
 
-void CJabberProto::OnProcessMessage( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessMessage( XmlNode& node, ThreadData* info )
 {
 	XmlNode subjectNode, xNode, inviteNode, idNode, n;
 	LPCTSTR from, type, idStr, fromResource;
@@ -1443,7 +1443,7 @@ void CJabberProto::OnProcessMessage( XmlNode node, ThreadData* info )
 }	}
 
 // XEP-0115: Entity Capabilities
-void CJabberProto::OnProcessPresenceCapabilites( XmlNode node )
+void CJabberProto::OnProcessPresenceCapabilites( XmlNode& node )
 {
 	const TCHAR* from;
 	if (( from = node.getAttrValue( _T("from"))) == NULL )
@@ -1523,7 +1523,7 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 	MenuUpdateSrmmIcon( item );
 }
 
-void CJabberProto::OnProcessPresence( XmlNode node, ThreadData* info )
+void CJabberProto::OnProcessPresence( XmlNode& node, ThreadData* info )
 {
 	HANDLE hContact;
 	XmlNode showNode, statusNode, priorityNode;
@@ -1729,7 +1729,7 @@ void CJabberProto::OnProcessPresence( XmlNode node, ThreadData* info )
 	}	
 }
 
-void CJabberProto::OnIqResultVersion( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqResultVersion( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
 	if ( r == NULL ) return;
@@ -1759,7 +1759,7 @@ void CJabberProto::OnIqResultVersion( XmlNode node, void* userdata, CJabberIqInf
 	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
-void CJabberProto::OnProcessIq( XmlNode node, void *userdata )
+void CJabberProto::OnProcessIq( XmlNode& node, void *userdata )
 {
 	ThreadData* info;
 	XmlNode queryNode;
@@ -1823,7 +1823,7 @@ void CJabberProto::OnProcessIq( XmlNode node, void *userdata )
 	}
 }
 
-void CJabberProto::OnProcessRegIq( XmlNode node, void *userdata )
+void CJabberProto::OnProcessRegIq( XmlNode& node, void *userdata )
 {
 	ThreadData* info;
 	XmlNode errorNode;

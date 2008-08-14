@@ -37,7 +37,7 @@ Last change by : $Author$
 
 #define JABBER_PL_BUSY_MSG	 "Sending request, please wait..."
 
-void CJabberProto::OnIqRequestPrivacyLists( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqRequestPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
 		if ( !m_pDlgPrivacyLists )
@@ -51,7 +51,7 @@ void CJabberProto::OnIqRequestPrivacyLists( XmlNode iqNode, void* userdata, CJab
 		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::OnIqResultPrivacyListModify( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListModify( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -74,7 +74,7 @@ void CJabberProto::OnIqResultPrivacyListModify( XmlNode iqNode, void* userdata, 
 	}
 }
 
-void CJabberProto::OnIqResultPrivacyList( XmlNode iqNode, void* userdata )
+void CJabberProto::OnIqResultPrivacyList( XmlNode& iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
@@ -174,7 +174,7 @@ CPrivacyListRule* GetSelectedRule(HWND hDlg)
 	return (CPrivacyListRule* )nItemData;
 }
 
-void CJabberProto::OnIqResultPrivacyListActive( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListActive( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -215,7 +215,7 @@ void CJabberProto::OnIqResultPrivacyListActive( XmlNode iqNode, void* userdata, 
 	RebuildStatusMenu();
 }
 
-void CJabberProto::OnIqResultPrivacyListDefault( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListDefault( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -254,7 +254,7 @@ void CJabberProto::OnIqResultPrivacyListDefault( XmlNode iqNode, void* userdata,
 	}
 }
 
-void CJabberProto::OnIqResultPrivacyLists( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;

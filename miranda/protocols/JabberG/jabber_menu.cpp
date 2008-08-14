@@ -348,7 +348,7 @@ int __cdecl CJabberProto::OnMenuJoinLeave( WPARAM wParam, LPARAM lParam )
 	else {
 		JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
 		if ( item != NULL )
-			GcQuit( item, 0, NULL );
+			GcQuit( item, 0, XmlNode() );
 	}
 
 LBL_Return:

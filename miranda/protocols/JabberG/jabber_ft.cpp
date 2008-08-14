@@ -132,7 +132,7 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::OnFtSiResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtSiResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	XmlNode siNode, featureNode, xNode, fieldNode, valueNode;
 	filetransfer *ft = (filetransfer *)pInfo->GetUserData();
@@ -316,7 +316,7 @@ void CJabberProto::FtSendFinal( BOOL success, void *userdata )
 static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen );
 static void JabberFtReceiveFinal( BOOL success, void *userdata );
 
-void CJabberProto::FtHandleSiRequest( XmlNode iqNode )
+void CJabberProto::FtHandleSiRequest( XmlNode& iqNode )
 {
 	const TCHAR* from, *sid, *str, *szId, *filename;
 	XmlNode siNode, fileNode, optionNode, featureNode, xNode, fieldNode, n;
@@ -455,7 +455,7 @@ void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::FtHandleBytestreamRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::FtHandleBytestreamRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	XmlNode queryNode = pInfo->GetChildNode();
 
@@ -480,7 +480,7 @@ void CJabberProto::FtHandleBytestreamRequest( XmlNode iqNode, void* userdata, CJ
 	return;
 }
 
-BOOL CJabberProto::FtHandleIbbRequest( XmlNode iqNode, BOOL bOpen )
+BOOL CJabberProto::FtHandleIbbRequest( XmlNode& iqNode, BOOL bOpen )
 {
 	if ( !iqNode ) return FALSE;
 

@@ -91,7 +91,7 @@ static void sttEmptyBuf(StringBuf *buf);
 
 static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int indent);
 
-void CJabberProto::OnConsoleProcessXml(XmlNode node, DWORD flags)
+void CJabberProto::OnConsoleProcessXml(XmlNode& node, DWORD flags)
 {
 	if ( node && m_pDlgConsole ) {
 		if ( node.getName() ) {
@@ -112,7 +112,7 @@ void CJabberProto::OnConsoleProcessXml(XmlNode node, DWORD flags)
 	}
 }
 
-bool CJabberProto::RecursiveCheckFilter(XmlNode node, DWORD flags)
+bool CJabberProto::RecursiveCheckFilter(XmlNode& node, DWORD flags)
 {
 	int i;
 
@@ -130,7 +130,7 @@ bool CJabberProto::RecursiveCheckFilter(XmlNode node, DWORD flags)
 	return false;
 }
 
-bool CJabberProto::FilterXml(XmlNode node, DWORD flags)
+bool CJabberProto::FilterXml(XmlNode& node, DWORD flags)
 {
 	if (!m_filterInfo.msg && !lstrcmp(node.getName(), _T("message"))) return false;
 	if (!m_filterInfo.presence && !lstrcmp(node.getName(), _T("presence"))) return false;

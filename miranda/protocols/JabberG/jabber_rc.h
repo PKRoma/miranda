@@ -39,7 +39,7 @@ void JabberHandleAdhocCommandRequest( XmlNode iqNode, void* userdata, CJabberIqI
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
 #define JABBER_ADHOC_HANDLER_STATUS_CANCEL               3
 #define JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION       4
-typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 // 5 minutes to fill out form :)
 #define JABBER_ADHOC_SESSION_EXPIRE_TIME                 300000
@@ -304,9 +304,9 @@ public:
 	{
 		return m_pNodes;
 	}
-	BOOL HandleItemsRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
-	BOOL HandleInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
-	BOOL HandleCommandRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleItemsRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleInfoRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleCommandRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
 
 	BOOL ExpireSessions()
 	{

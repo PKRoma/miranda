@@ -316,25 +316,25 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	int    __cdecl ContactMenuRunCommands(WPARAM wParam, LPARAM lParam);
 
-	HWND   GetWindowFromIq( XmlNode iqNode );
-	void   HandleAdhocCommandRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
+	HWND   GetWindowFromIq( XmlNode& iqNode );
+	void   HandleAdhocCommandRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   IsRcRequestAllowedByACL( CJabberIqInfo* pInfo );
 		  
-	int    AdhocSetStatusHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int    AdhocOptionsHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int    AdhocForwardHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int    AdhocLockWSHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int    AdhocQuitMirandaHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
-	int    AdhocLeaveGroupchatsHandler( XmlNode iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocSetStatusHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocOptionsHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocForwardHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocLockWSHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocQuitMirandaHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+	int    AdhocLeaveGroupchatsHandler( XmlNode& iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 		  
-	void   OnIqResult_ListOfCommands( XmlNode iqNode, void *userdata );
-	void   OnIqResult_CommandExecution( XmlNode iqNode, void *userdata );
+	void   OnIqResult_ListOfCommands( XmlNode& iqNode, void *userdata );
+	void   OnIqResult_CommandExecution( XmlNode& iqNode, void *userdata );
 	int    AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg );
 	int    AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, struct JabberAdHocData* dat );
 	int    AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, char * action);
 	int    AdHoc_AddCommandRadio(HWND hFrame, TCHAR * labelStr, int id, int ypos, int value);
-	int    AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode  iqNode, JabberAdHocData* dat );
-	int    AdHoc_OnJAHMProcessResult( HWND hwndDlg, XmlNode workNode, JabberAdHocData* dat );
+	int    AdHoc_OnJAHMCommandListResult( HWND hwndDlg, XmlNode&  iqNode, JabberAdHocData* dat );
+	int    AdHoc_OnJAHMProcessResult( HWND hwndDlg, XmlNode& workNode, JabberAdHocData* dat );
 
 	void   ContactMenuAdhocCommands( struct CJabberAdhocStartupParams* param );
 	
@@ -349,11 +349,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   __cdecl ByteSendThread( JABBER_BYTE_TRANSFER *jbt );
 	void   __cdecl ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt );
 
-	void   IqResultProxyDiscovery( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   ByteInitiateResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   IqResultProxyDiscovery( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   ByteInitiateResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
 	void   ByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt );
 	int    ByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
-	void   IqResultStreamActivate( XmlNode iqNode, void* userdata );
+	void   IqResultStreamActivate( XmlNode& iqNode, void* userdata );
 	int    ByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 	int    ByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* buffer, int datalen );
 
@@ -365,9 +365,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_chat.cpp ---------------------------------------------------------------
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
-	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, XmlNode reason, int nStatusCode = -1 );
+	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, XmlNode& reason, int nStatusCode = -1 );
 	void   GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, TJabberGcLogInfoType type );
-	void   GcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode reason );
+	void   GcQuit( JABBER_LIST_ITEM* jid, int code, XmlNode& reason );
 		  
 	void   FilterList(HWND hwndList);
 	void   ResetListOptions(HWND hwndList);
@@ -386,8 +386,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   ConsoleInit( void );
 	void   ConsoleUninit( void );
 	
-	bool   FilterXml(XmlNode node, DWORD flags);
-	bool   RecursiveCheckFilter(XmlNode node, DWORD flags);
+	bool   FilterXml(XmlNode& node, DWORD flags);
+	bool   RecursiveCheckFilter(XmlNode& node, DWORD flags);
 
 	//---- jabber_disco.cpp --------------------------------------------------------------
 
@@ -397,11 +397,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam );
 
-	void   OnIqResultServiceDiscoveryInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultServiceDiscoveryItems( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultServiceDiscoveryRootInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultServiceDiscoveryRoot( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultServiceDiscoveryRootItems( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultServiceDiscoveryInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultServiceDiscoveryItems( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultServiceDiscoveryRootInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultServiceDiscoveryRoot( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultServiceDiscoveryRootItems( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   SendInfoRequest(CJabberSDNode* pNode, XmlNode& parent);
 	BOOL   SendBothRequests(CJabberSDNode* pNode, XmlNode& parent);
 	void   PerformBrowse(HWND hwndDlg);
@@ -412,7 +412,7 @@ struct CJabberProto : public PROTO_INTERFACE
 		  
 	int    SetupServiceDiscoveryDlg( TCHAR* jid );
 		  
-	void   OnIqResultCapsDiscoInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultCapsDiscoInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
 		  
 	void   RegisterAgent( HWND hwndDlg, TCHAR* jid );
 
@@ -425,7 +425,7 @@ struct CJabberProto : public PROTO_INTERFACE
 		  
 	void   GroupchatJoinRoomByJid(HWND hwndParent, TCHAR *jid);
 		  
-	void   RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, XmlNode itemNode );
+	void   RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, XmlNode& itemNode );
 	void   AcceptGroupchatInvite( const TCHAR* roomJid, const TCHAR* reason, const TCHAR* password );
 
 	//---- jabber_form.c -----------------------------------------------------------------
@@ -439,11 +439,11 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   FtCancel( filetransfer* ft );
 	void   FtInitiate( TCHAR* jid, filetransfer* ft );
-	void   FtHandleSiRequest( XmlNode iqNode );
+	void   FtHandleSiRequest( XmlNode& iqNode );
 	void   FtAcceptSiRequest( filetransfer* ft );
 	void   FtAcceptIbbRequest( filetransfer* ft );
-	void   FtHandleBytestreamRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	BOOL   FtHandleIbbRequest( XmlNode iqNode, BOOL bOpen );
+	void   FtHandleBytestreamRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	BOOL   FtHandleIbbRequest( XmlNode& iqNode, BOOL bOpen );
 	
 	//---- jabber_groupchat.c ------------------------------------------------------------
 
@@ -451,11 +451,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
 
 	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin=false );
-	void   GroupchatProcessPresence( XmlNode node, void *userdata );
-	void   GroupchatProcessMessage( XmlNode node, void *userdata );
+	void   GroupchatProcessPresence( XmlNode& node, void *userdata );
+	void   GroupchatProcessMessage( XmlNode& node, void *userdata );
 	void   GroupchatProcessInvite( LPCTSTR roomJid, LPCTSTR from, LPCTSTR reason, LPCTSTR password );
 	void   GroupchatJoinDlg( TCHAR* roomJid );
-	void   OnIqResultDiscovery(XmlNode iqNode, void *userdata, CJabberIqInfo *pInfo);
+	void   OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberIqInfo *pInfo);
 
 	//---- jabber_icolib.cpp -------------------------------------------------------------
 
@@ -480,57 +480,57 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   IqRemove( int index );
 	void   IqExpire();
 		  
-	void   OnIqResultBind( XmlNode iqNode, void *userdata );
-	void   OnIqResultDiscoBookmarks( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetBookmarks( XmlNode iqNode, void *userdata );
-	void   OnIqResultExtSearch( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetAuth( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetAvatar( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetMuc( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetRegister( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetRoster( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultGetVcard( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetAdminList( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetBanList( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetMemberList( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetModeratorList( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetOwnerList( XmlNode iqNode, void *userdata );
-	void   OnIqResultMucGetVoiceList( XmlNode iqNode, void *userdata );
-	void   OnIqResultNestedRosterGroups( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultSession( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetAuth( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetPassword( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetRegister( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetSearch( XmlNode iqNode, void *userdata );
-	void   OnIqResultSetVcard( XmlNode iqNode, void *userdata );
-	void   OnIqResultEntityTime( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultLastActivity( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultVersion( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqResultBind( XmlNode& iqNode, void *userdata );
+	void   OnIqResultDiscoBookmarks( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetBookmarks( XmlNode& iqNode, void *userdata );
+	void   OnIqResultExtSearch( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetAuth( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetAvatar( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetMuc( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetRegister( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetRoster( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultGetVcard( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetAdminList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetBanList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetMemberList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetModeratorList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetOwnerList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultMucGetVoiceList( XmlNode& iqNode, void *userdata );
+	void   OnIqResultNestedRosterGroups( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultSession( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetAuth( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetPassword( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetRegister( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetSearch( XmlNode& iqNode, void *userdata );
+	void   OnIqResultSetVcard( XmlNode& iqNode, void *userdata );
+	void   OnIqResultEntityTime( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultLastActivity( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultVersion( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnProcessLoginRq( ThreadData* info, DWORD rq );
 	void   OnLoggedIn( ThreadData* info );
 
 	//---- jabber_iq_handlers.cpp --------------------------------------------------------
 
-	void   OnIqRequestVersion( XmlNode node, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqRequestLastActivity( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnIqRequestPing( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnIqRequestTime( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnIqRequestAvatar( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnSiRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnRosterPushRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnIqRequestOOB( XmlNode node, void* userdata, CJabberIqInfo *pInfo );
-	void   OnIqHttpAuth( XmlNode node, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqRequestVersion( XmlNode& node, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqRequestLastActivity( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqRequestPing( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqRequestTime( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqRequestAvatar( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnSiRequest( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnRosterPushRequest( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqRequestOOB( XmlNode& node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqHttpAuth( XmlNode& node, void* userdata, CJabberIqInfo* pInfo );
 	BOOL   AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams );
 		  
 	void   __cdecl IbbSendThread( JABBER_IBB_TRANSFER *jibb );
 	void   __cdecl IbbReceiveThread( JABBER_IBB_TRANSFER *jibb );
 
-	void   OnIbbInitiateResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   OnIbbCloseResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
-	void   OnFtHandleIbbIq( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnIbbInitiateResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnIbbCloseResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnFtHandleIbbIq( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
 	BOOL   OnIbbRecvdData( const TCHAR *data, const TCHAR *sid, const TCHAR *seq );
 		  
-	void   OnFtSiResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo );
+	void   OnFtSiResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo );
 	BOOL   FtIbbSend( int blocksize, void *userdata );
 	BOOL   FtSend( HANDLE hConn, void *userdata );
 	void   FtSendFinal( BOOL success, void *userdata );
@@ -560,11 +560,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	TCHAR* ListGetBestResourceNamePtr( const TCHAR* jid );
 	TCHAR* ListGetBestClientResourceNamePtr( const TCHAR* jid );
 
-	void   SetMucConfig( XmlNode node, void *from );
-	void   OnIqResultMucGetJidList( XmlNode iqNode, JABBER_MUC_JIDLIST_TYPE listType );
+	void   SetMucConfig( XmlNode& node, void *from );
+	void   OnIqResultMucGetJidList( XmlNode& iqNode, JABBER_MUC_JIDLIST_TYPE listType );
 		  
-	void   OnIqResultServerDiscoInfo( XmlNode iqNode, void* userdata );
-	void   OnIqResultGetVcardPhoto( const TCHAR* jid, XmlNode n, HANDLE hContact, BOOL& hasPhoto );
+	void   OnIqResultServerDiscoInfo( XmlNode& iqNode, void* userdata );
+	void   OnIqResultGetVcardPhoto( const TCHAR* jid, XmlNode& n, HANDLE hContact, BOOL& hasPhoto );
 	void   SetBookmarkRequest (XmlNodeIq& iqId);
 
 	//---- jabber_menu.cpp ---------------------------------------------------------------
@@ -625,7 +625,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   _RosterExportToFile(HWND hwndDlg);
 	void   _RosterImportFromFile(HWND hwndDlg);
 	void   _RosterSendRequest(HWND hwndDlg, BYTE rrAction);
-	void   _RosterHandleGetRequest( XmlNode node, void* userdata );
+	void   _RosterHandleGetRequest( XmlNode& node, void* userdata );
 
 	//---- jabber_password.cpp --------------------------------------------------------------
 	
@@ -641,12 +641,12 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   QueryPrivacyLists( ThreadData *pThreadInfo = NULL );
 
-	void   OnIqRequestPrivacyLists( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultPrivacyList( XmlNode iqNode, void* userdata );
-	void   OnIqResultPrivacyLists( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultPrivacyListActive( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultPrivacyListDefault( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnIqResultPrivacyListModify( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqRequestPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultPrivacyList( XmlNode& iqNode, void* userdata );
+	void   OnIqResultPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultPrivacyListActive( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultPrivacyListDefault( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnIqResultPrivacyListModify( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 	//---- jabber_proto.cpp --------------------------------------------------------------
 
@@ -669,8 +669,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_search.cpp -------------------------------------------------------------
 
 	void   SearchReturnResults( HANDLE id, void* pvUsersInfo, U_TCHAR_MAP* pmAllFields );
-	void   OnIqResultAdvancedSearch( XmlNode iqNode, void *userdata );
-	void   OnIqResultGetSearchFields( XmlNode iqNode, void *userdata );
+	void   OnIqResultAdvancedSearch( XmlNode& iqNode, void *userdata );
+	void   OnIqResultGetSearchFields( XmlNode& iqNode, void *userdata );
 	int    SearchRenewFields( HWND hwndDlg, JabberSearchData * dat);
 	void   SearchDeleteFromRecent( const TCHAR* szAddr, BOOL deleteLastFromDB = TRUE );
 	void   SearchAddToRecent( const TCHAR* szAddr, HWND hwndDialog = NULL );
@@ -727,34 +727,34 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   __cdecl ServerThread( ThreadData* info );
 		  
-	void   OnProcessFailure( XmlNode node, ThreadData *info );
-	void   OnProcessError( XmlNode node, ThreadData *info );
-	void   OnProcessSuccess( XmlNode node, ThreadData *info );
-	void   OnProcessChallenge( XmlNode node, ThreadData *info );
-	void   OnProcessProceed( XmlNode node, ThreadData *info );	
-	void   OnProcessCompressed( XmlNode node, ThreadData *info );
-	void   OnProcessMessage( XmlNode node, ThreadData *info );
-	void   OnProcessPresence( XmlNode node, ThreadData *info );
-	void   OnProcessPresenceCapabilites( XmlNode node );
-	void   OnProcessPubsubEvent( XmlNode node );
+	void   OnProcessFailure( XmlNode& node, ThreadData *info );
+	void   OnProcessError( XmlNode& node, ThreadData *info );
+	void   OnProcessSuccess( XmlNode& node, ThreadData *info );
+	void   OnProcessChallenge( XmlNode& node, ThreadData *info );
+	void   OnProcessProceed( XmlNode& node, ThreadData *info );	
+	void   OnProcessCompressed( XmlNode& node, ThreadData *info );
+	void   OnProcessMessage( XmlNode& node, ThreadData *info );
+	void   OnProcessPresence( XmlNode& node, ThreadData *info );
+	void   OnProcessPresenceCapabilites( XmlNode& node );
+	void   OnProcessPubsubEvent( XmlNode& node );
 
-	void   OnProcessStreamOpening( XmlNode node, ThreadData *info );
-	void   OnProcessStreamClosing( XmlNode node, ThreadData *info );
-	void   OnProcessProtocol( XmlNode node, ThreadData *info );
+	void   OnProcessStreamOpening( XmlNode& node, ThreadData *info );
+	void   OnProcessStreamClosing( XmlNode& node, ThreadData *info );
+	void   OnProcessProtocol( XmlNode& node, ThreadData *info );
 
 	void   UpdateJidDbSettings( const TCHAR *jid );
 	HANDLE CreateTemporaryContact( const TCHAR *szJid, JABBER_LIST_ITEM* chatItem );
 
 	void   PerformRegistration( ThreadData* info );
 	void   PerformIqAuth( ThreadData* info );
-	void   OnProcessFeatures( XmlNode node, void *userdata );
+	void   OnProcessFeatures( XmlNode& node, void *userdata );
 
 	void   xmlStreamInitialize( char *which );
 	void   xmlStreamInitializeNow(ThreadData* info);
 
-	void   OnProcessIq( XmlNode node, void *userdata );
-	void   OnProcessRegIq( XmlNode node, void *userdata );
-	void   OnPingReply( XmlNode node, void* userdata, CJabberIqInfo* pInfo );
+	void   OnProcessIq( XmlNode& node, void *userdata );
+	void   OnProcessRegIq( XmlNode& node, void *userdata );
+	void   OnPingReply( XmlNode& node, void* userdata, CJabberIqInfo* pInfo );
 
 	//---- jabber_util.c -----------------------------------------------------------------
 
@@ -768,7 +768,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE ChatRoomHContactFromJID( const TCHAR* jid );
 	void   Log( const char* fmt, ... );
 	void   SendVisibleInvisiblePresence( BOOL invisible );
-	void   SendPresenceTo( int status, TCHAR* to, XmlNode extra );
+	void   SendPresenceTo( int status, TCHAR* to, XmlNode& extra );
 	void   SendPresence( int m_iStatus, bool bSendToAll );
 	void   StringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );
@@ -806,12 +806,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_xml.c ------------------------------------------------------------------
 
 	int    OnXmlParse( char* buffer );
-	void   OnConsoleProcessXml(XmlNode node, DWORD flags);
+	void   OnConsoleProcessXml(XmlNode& node, DWORD flags);
 
 	//---- jabber_xmlns.c ----------------------------------------------------------------
 
-	void   OnHandleDiscoInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	void   OnHandleDiscoItemsRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnHandleDiscoInfoRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
+	void   OnHandleDiscoItemsRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo );
 
 	//---- jabber_xstatus.c --------------------------------------------------------------
 

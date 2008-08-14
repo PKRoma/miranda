@@ -234,7 +234,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void *pUserData )
 	ppro->Log( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
 
 	pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
-	(ppro->*(pInfo->m_pHandler))( NULL, NULL, pInfo );
+	(ppro->*(pInfo->m_pHandler))( XmlNode(), NULL, pInfo );
 }
 
 CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)

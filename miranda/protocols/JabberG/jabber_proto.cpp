@@ -1176,13 +1176,13 @@ int __cdecl CJabberProto::SetApparentMode( HANDLE hContact, int mode )
 			break;
 		case ID_STATUS_OFFLINE:
 			if ( m_iStatus != ID_STATUS_INVISIBLE || oldMode == ID_STATUS_ONLINE )
-				SendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
+				SendPresenceTo( ID_STATUS_INVISIBLE, jid, XmlNode() );
 			break;
 		case 0:
 			if ( oldMode == ID_STATUS_ONLINE && m_iStatus == ID_STATUS_INVISIBLE )
-				SendPresenceTo( ID_STATUS_INVISIBLE, jid, NULL );
+				SendPresenceTo( ID_STATUS_INVISIBLE, jid, XmlNode() );
 			else if ( oldMode == ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_INVISIBLE )
-				SendPresenceTo( m_iStatus, jid, NULL );
+				SendPresenceTo( m_iStatus, jid, XmlNode() );
 			break;
 		}
 		JFreeVariant( &dbv );

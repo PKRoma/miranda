@@ -47,7 +47,7 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-void CJabberProto::OnFtHandleIbbIq( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtHandleIbbIq( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	if ( !_tcscmp( pInfo->GetChildNodeName(), _T("open")))
 		FtHandleIbbRequest( iqNode, TRUE );
@@ -73,7 +73,7 @@ void CJabberProto::OnFtHandleIbbIq( XmlNode iqNode, void *userdata, CJabberIqInf
 	}
 }
 
-void CJabberProto::OnIbbInitiateResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbInitiateResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -82,7 +82,7 @@ void CJabberProto::OnIbbInitiateResult( XmlNode iqNode, void *userdata, CJabberI
 		SetEvent( jibb->hEvent );
 }
 
-void CJabberProto::OnIbbCloseResult( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbCloseResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )

@@ -274,7 +274,7 @@ static int sttRoomListAppend(HWND hwndList, RoomInfo::Overlay overlay, const TCH
 	return id;
 }
 
-void CJabberProto::OnIqResultDiscovery(XmlNode iqNode, void *userdata, CJabberIqInfo *pInfo)
+void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberIqInfo *pInfo)
 {
 	if (!iqNode || !userdata || !pInfo)
 		return;
@@ -770,7 +770,7 @@ static int sttGetStatusCode( XmlNode node )
 	return _ttol( statusCode );
 }
 
-void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, XmlNode itemNode )
+void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, XmlNode& itemNode )
 {
 	const TCHAR* newNick = itemNode.getAttrValue( _T("nick"));
 	const TCHAR* jid = itemNode.getAttrValue( _T("jid"));
@@ -812,7 +812,7 @@ void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* o
 			break;
 }	}	}
 
-void CJabberProto::GroupchatProcessPresence( XmlNode node, void *userdata )
+void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 {
 	ThreadData* info;
 	XmlNode showNode, statusNode, errorNode, itemNode, n, priorityNode;
@@ -897,7 +897,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode node, void *userdata )
 					}
 
 					if ( (role != ROLE_NONE) && (JabberGcGetStatus(r) != JabberGcGetStatus(affiliation, role)) ) {
-						GcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
+						GcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, XmlNode() );
 						if (!newRes) newRes = GC_EVENT_ADDSTATUS;
 					}
 
@@ -926,7 +926,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode node, void *userdata )
 				GcLogShowInformation(item, res, INFO_STATUS);
 
 		// Update groupchat log window
-		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
+		GcLogUpdateMemberStatus( item, nick, str, newRes, XmlNode() );
 
 		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
@@ -1017,7 +1017,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode node, void *userdata )
 		mir_free( str );
 }	}
 
-void CJabberProto::GroupchatProcessMessage( XmlNode node, void *userdata )
+void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
 {
 	ThreadData* info;
 	XmlNode n, xNode;

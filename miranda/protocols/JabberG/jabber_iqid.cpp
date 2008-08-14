@@ -35,7 +35,7 @@ Last change by : $Author$
 #include "m_genmenu.h"
 #include "m_clistint.h"
 
-void CJabberProto::OnIqResultServerDiscoInfo( XmlNode iqNode, void* userdata )
+void CJabberProto::OnIqResultServerDiscoInfo( XmlNode& iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
@@ -79,7 +79,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( XmlNode iqNode, void* userdata )
 	}	
 }
 
-void CJabberProto::OnIqResultNestedRosterGroups( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultNestedRosterGroups( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	const TCHAR *szGroupDelimeter = NULL;
 	BOOL bPrivateStorageSupport = FALSE;
@@ -202,7 +202,7 @@ void CJabberProto::OnLoggedIn( ThreadData* info )
 	DBFreeVariant(&dbvHash);
 }
 
-void CJabberProto::OnIqResultGetAuth( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultGetAuth( XmlNode& iqNode, void *userdata )
 {
 	// RECVED: result of the request for authentication method
 	// ACTION: send account authentication information to log in
@@ -255,7 +255,7 @@ void CJabberProto::OnIqResultGetAuth( XmlNode iqNode, void *userdata )
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultSetAuth( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetAuth( XmlNode& iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
@@ -285,7 +285,7 @@ void CJabberProto::OnIqResultSetAuth( XmlNode iqNode, void *userdata )
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultBind( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultBind( XmlNode& iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode n = iqNode.getChild( "bind" );
@@ -315,7 +315,7 @@ void CJabberProto::OnIqResultBind( XmlNode iqNode, void *userdata )
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultSession( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSession( XmlNode& iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* )userdata;
 
@@ -367,7 +367,7 @@ void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
 
-void CJabberProto::OnIqResultGetRoster( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultGetRoster( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	Log( "<iq/> iqIdGetRoster" );
 	TCHAR *szGroupDelimeter = (TCHAR *)pInfo->GetUserData();
@@ -576,7 +576,7 @@ void CJabberProto::OnIqResultGetRoster( XmlNode iqNode, void* userdata, CJabberI
 	RebuildInfoFrame();
 }
 
-void CJabberProto::OnIqResultGetRegister( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultGetRegister( XmlNode& iqNode, void *userdata )
 {
 	// RECVED: result of the request for ( agent ) registration mechanism
 	// ACTION: activate ( agent ) registration input dialog
@@ -602,7 +602,7 @@ void CJabberProto::OnIqResultGetRegister( XmlNode iqNode, void *userdata )
 			mir_free( str );
 }	}	}
 
-void CJabberProto::OnIqResultSetRegister( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetRegister( XmlNode& iqNode, void *userdata )
 {
 	// RECVED: result of registration process
 	// ACTION: notify of successful agent registration
@@ -631,7 +631,7 @@ void CJabberProto::OnIqResultSetRegister( XmlNode iqNode, void *userdata )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberIqResultGetVcard - processes the server-side v-card
 
-void CJabberProto::OnIqResultGetVcardPhoto( const TCHAR* jid, XmlNode n, HANDLE hContact, BOOL& hasPhoto )
+void CJabberProto::OnIqResultGetVcardPhoto( const TCHAR* jid, XmlNode& n, HANDLE hContact, BOOL& hasPhoto )
 {
 	Log( "JabberIqResultGetVcardPhoto: %d", hasPhoto );
 	if ( hasPhoto )
@@ -739,7 +739,7 @@ static char* sttGetText( XmlNode node, char* tag )
 	return mir_t2a( n.getText() );
 }
 
-void CJabberProto::OnIqResultGetVcard( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultGetVcard( XmlNode& iqNode, void *userdata )
 {
 	XmlNode vCardNode, m, n, o;
 	const TCHAR* type, *jid;
@@ -1212,7 +1212,7 @@ void CJabberProto::OnIqResultGetVcard( XmlNode iqNode, void *userdata )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
 }	}
 
-void CJabberProto::OnIqResultSetVcard( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetVcard( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqIdSetVcard" );
 	const TCHAR* type = iqNode.getAttrValue( _T("type"));
@@ -1222,7 +1222,7 @@ void CJabberProto::OnIqResultSetVcard( XmlNode iqNode, void *userdata )
 	WindowNotify(WM_JABBER_REFRESH_VCARD);
 }
 
-void CJabberProto::OnIqResultSetSearch( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetSearch( XmlNode& iqNode, void *userdata )
 {
 	XmlNode queryNode, n;
 	const TCHAR* type, *jid;
@@ -1275,7 +1275,7 @@ void CJabberProto::OnIqResultSetSearch( XmlNode iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::OnIqResultExtSearch( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultExtSearch( XmlNode& iqNode, void *userdata )
 {
 	XmlNode queryNode;
 	const TCHAR* type;
@@ -1349,7 +1349,7 @@ void CJabberProto::OnIqResultExtSearch( XmlNode iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::OnIqResultSetPassword( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetPassword( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqIdSetPassword" );
 
@@ -1365,13 +1365,13 @@ void CJabberProto::OnIqResultSetPassword( XmlNode iqNode, void *userdata )
 		MessageBox( NULL, TranslateT( "Password cannot be changed." ), TranslateT( "Change Password" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 }
 /*
-void CJabberProto::OnIqResultDiscoAgentItems( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultDiscoAgentItems( XmlNode& iqNode, void *userdata )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
 }
 */
-void CJabberProto::OnIqResultGetAvatar( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultGetAvatar( XmlNode& iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
@@ -1472,7 +1472,7 @@ LBL_ErrFormat:
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks
 
-void CJabberProto::OnIqResultDiscoBookmarks( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultDiscoBookmarks( XmlNode& iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	XmlNode queryNode, itemNode, storageNode, nickNode, passNode;
@@ -1571,7 +1571,7 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 	}
 }
 
-void CJabberProto::OnIqResultSetBookmarks( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultSetBookmarks( XmlNode& iqNode, void *userdata )
 {
 	// RECVED: server's response
 	// ACTION: refresh bookmarks list dialog
@@ -1594,7 +1594,7 @@ void CJabberProto::OnIqResultSetBookmarks( XmlNode iqNode, void *userdata )
 }	}
 
 // last activity (XEP-0012) support
-void CJabberProto::OnIqResultLastActivity( XmlNode iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultLastActivity( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
@@ -1621,7 +1621,7 @@ void CJabberProto::OnIqResultLastActivity( XmlNode iqNode, void *userdata, CJabb
 }
 
 // entity time (XEP-0202) support
-void CJabberProto::OnIqResultEntityTime( XmlNode pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultEntityTime( XmlNode& pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_hContact )
 		return;

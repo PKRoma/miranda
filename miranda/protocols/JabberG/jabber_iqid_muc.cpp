@@ -30,7 +30,7 @@ Last change by : $Author$
 #include "jabber_iq.h"
 #include "jabber_caps.h"
 
-void CJabberProto::SetMucConfig( XmlNode node, void *from )
+void CJabberProto::SetMucConfig( XmlNode& node, void *from )
 {
 	if ( m_ThreadInfo && from ) {
 		XmlNodeIq iq( "set", NOID, ( TCHAR* )from );
@@ -41,7 +41,7 @@ void CJabberProto::SetMucConfig( XmlNode node, void *from )
 
 void LaunchForm(XmlNode node);
 
-void CJabberProto::OnIqResultGetMuc( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultGetMuc( XmlNode& iqNode, void *userdata )
 {
 	XmlNode queryNode, xNode;
 	const TCHAR *type, *from, *str;
@@ -479,7 +479,7 @@ static void CALLBACK JabberMucJidListCreateDialogApcProc( JABBER_MUC_JIDLIST_INF
 	else *pHwndJidList = CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_JIDLIST ), GetForegroundWindow(), JabberMucJidListDlgProc, ( LPARAM )jidListInfo );
 }
 
-void CJabberProto::OnIqResultMucGetJidList( XmlNode iqNode, JABBER_MUC_JIDLIST_TYPE listType )
+void CJabberProto::OnIqResultMucGetJidList( XmlNode& iqNode, JABBER_MUC_JIDLIST_TYPE listType )
 {
 	const TCHAR* type;
 	JABBER_MUC_JIDLIST_INFO *jidListInfo;
@@ -500,37 +500,37 @@ void CJabberProto::OnIqResultMucGetJidList( XmlNode iqNode, JABBER_MUC_JIDLIST_T
 			else mir_free( jidListInfo );
 }	}	}
 
-void CJabberProto::OnIqResultMucGetVoiceList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetVoiceList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetVoiceList" );
 	OnIqResultMucGetJidList( iqNode, MUC_VOICELIST );
 }
 
-void CJabberProto::OnIqResultMucGetMemberList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetMemberList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetMemberList" );
 	OnIqResultMucGetJidList( iqNode, MUC_MEMBERLIST );
 }
 
-void CJabberProto::OnIqResultMucGetModeratorList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetModeratorList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetModeratorList" );
 	OnIqResultMucGetJidList( iqNode, MUC_MODERATORLIST );
 }
 
-void CJabberProto::OnIqResultMucGetBanList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetBanList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetBanList" );
 	OnIqResultMucGetJidList( iqNode, MUC_BANLIST );
 }
 
-void CJabberProto::OnIqResultMucGetAdminList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetAdminList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetAdminList" );
 	OnIqResultMucGetJidList( iqNode, MUC_ADMINLIST );
 }
 
-void CJabberProto::OnIqResultMucGetOwnerList( XmlNode iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetOwnerList( XmlNode& iqNode, void *userdata )
 {
 	Log( "<iq/> iqResultMucGetOwnerList" );
 	OnIqResultMucGetJidList( iqNode, MUC_OWNERLIST );

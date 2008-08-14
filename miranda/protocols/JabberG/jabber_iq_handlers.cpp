@@ -63,7 +63,7 @@ static int JGetMirandaProductText(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-void CJabberProto::OnIqRequestVersion( XmlNode node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqRequestVersion( XmlNode& node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetFrom() )
 		return;
@@ -108,7 +108,7 @@ void CJabberProto::OnIqRequestVersion( XmlNode node, void* userdata, CJabberIqIn
 }
 
 // last activity (XEP-0012) support
-void CJabberProto::OnIqRequestLastActivity( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestLastActivity( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
 	XmlNode query = iq.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
@@ -117,7 +117,7 @@ void CJabberProto::OnIqRequestLastActivity( XmlNode node, void* userdata, CJabbe
 }
 
 // XEP-0199: XMPP Ping support
-void CJabberProto::OnIqRequestPing( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestPing( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNodeIq iq( "result", pInfo );
 	m_ThreadInfo->send( iq );
@@ -149,7 +149,7 @@ int GetGMTOffset(void)
 }
 
 // entity time (XEP-0202) support
-void CJabberProto::OnIqRequestTime( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestTime( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	struct tm *gmt;
 	time_t ltime;
@@ -176,7 +176,7 @@ void CJabberProto::OnIqRequestTime( XmlNode node, void* userdata, CJabberIqInfo 
 	m_ThreadInfo->send(iq);
 }
 
-void CJabberProto::OnIqRequestAvatar( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestAvatar( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !JGetByte( "EnableAvatars", TRUE ))
 		return;
@@ -220,7 +220,7 @@ void CJabberProto::OnIqRequestAvatar( XmlNode node, void* userdata, CJabberIqInf
 	mir_free( buffer );
 }
 
-void CJabberProto::OnSiRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnSiRequest( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	const TCHAR* szProfile = pInfo->GetChildNode().getAttrValue( _T("profile"));
 
@@ -235,7 +235,7 @@ void CJabberProto::OnSiRequest( XmlNode node, void* userdata, CJabberIqInfo *pIn
 	}
 }
 
-void CJabberProto::OnRosterPushRequest( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnRosterPushRequest( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	XmlNode queryNode = pInfo->GetChildNode();
 
@@ -353,7 +353,7 @@ void CJabberProto::OnRosterPushRequest( XmlNode node, void* userdata, CJabberIqI
 	RebuildInfoFrame();
 }
 
-void CJabberProto::OnIqRequestOOB( XmlNode node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqRequestOOB( XmlNode& node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !pInfo->GetFrom() || !pInfo->GetHContact() )
 		return;
@@ -447,7 +447,7 @@ void CJabberProto::OnIqRequestOOB( XmlNode node, void* userdata, CJabberIqInfo *
 	}
 }
 
-void CJabberProto::OnHandleDiscoInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnHandleDiscoInfoRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
@@ -473,7 +473,7 @@ void CJabberProto::OnHandleDiscoInfoRequest( XmlNode iqNode, void* userdata, CJa
 	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::OnHandleDiscoItemsRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnHandleDiscoItemsRequest( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
@@ -517,7 +517,7 @@ BOOL CJabberProto::AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams )
 	return TRUE;
 }
 
-void CJabberProto::OnIqHttpAuth( XmlNode node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqHttpAuth( XmlNode& node, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !JGetByte( "AcceptHttpAuth", TRUE ))
 		return;
