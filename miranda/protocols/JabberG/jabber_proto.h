@@ -402,8 +402,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultServiceDiscoveryRootInfo( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
 	void   OnIqResultServiceDiscoveryRoot( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
 	void   OnIqResultServiceDiscoveryRootItems( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo );
-	BOOL   SendInfoRequest(CJabberSDNode* pNode, XmlNode parent);
-	BOOL   SendBothRequests(CJabberSDNode* pNode, XmlNode parent);
+	BOOL   SendInfoRequest(CJabberSDNode* pNode, XmlNode& parent);
+	BOOL   SendBothRequests(CJabberSDNode* pNode, XmlNode& parent);
 	void   PerformBrowse(HWND hwndDlg);
 	BOOL   IsNodeRegistered(CJabberSDNode *pNode);
 	void   ApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);

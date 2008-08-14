@@ -272,7 +272,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootInfo( XmlNode iqNode, void* use
 			for ( i = 1; ( feature = query.getNthChild( _T("feature"), i )) != NULL; i++ ) {
 				if ( !lstrcmp( feature.getAttrValue( _T("var")), (TCHAR *)pInfo->m_pUserData)) {
 					CJabberSDNode *pNode = m_SDManager.AddPrimaryNode( pInfo->GetReceiver(), iqNode.getAttrValue( _T("node")), NULL);
-					SendBothRequests( pNode, NULL );
+					SendBothRequests( pNode, XmlNode() );
 					break;
 	}	}	}	}
 	m_SDManager.Unlock();
@@ -306,7 +306,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootItems( XmlNode iqNode, void* us
 		m_ThreadInfo->send( packet );
 }
 
-BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode parent)
+BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode& parent)
 {
 	if ( !pNode || !m_bJabberOnline )
 		return FALSE;
@@ -337,7 +337,7 @@ BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, XmlNode parent)
 	return TRUE;
 }
 
-BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, XmlNode parent)
+BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, XmlNode& parent)
 {
 	if ( !pNode || !m_bJabberOnline )
 		return FALSE;
@@ -419,7 +419,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 							m_lstTransports.insert( _tcsdup( item->jid ));
 
 						CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(item->jid, NULL, NULL);
-						SendBothRequests( pNode, NULL );
+						SendBothRequests( pNode, XmlNode() );
 				}	}
 				i++;
 		}	}
@@ -462,7 +462,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 					mir_snprintf(setting, sizeof(setting), "discoWnd_favNode_%d", i);
 					JGetStringT(NULL, setting, &dbvNode);
 					CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(dbvJid.ptszVal, dbvNode.ptszVal, dbv.ptszVal);
-					SendBothRequests( pNode, NULL );
+					SendBothRequests( pNode, XmlNode() );
 					JFreeVariant(&dbv);
 					JFreeVariant(&dbvJid);
 					JFreeVariant(&dbvNode);
@@ -470,7 +470,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 		else {
 			sttBrowseMode = SD_BROWSE_NORMAL;
 			CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(szJid, _tcslen( szNode ) ? szNode : NULL, NULL);
-			SendBothRequests( pNode, NULL );
+			SendBothRequests( pNode, XmlNode() );
 		}
 		m_SDManager.Unlock();
 
@@ -931,19 +931,18 @@ void CJabberDlgDiscovery::btnRefresh_OnClick(CCtrlButton *)
 	if (!hItem) return;
 
 	m_proto->m_SDManager.Lock();
-	XmlNode* packet = new XmlNode( NULL );
+	XmlNode packet;
 	CJabberSDNode* pNode = (CJabberSDNode* )TreeList_GetData(hItem);
 	if ( pNode ) {
 		TreeList_ResetItem(GetDlgItem(m_hwnd, IDC_TREE_DISCO), hItem);
 		pNode->ResetInfo();
-		m_proto->SendBothRequests( pNode, *packet );
+		m_proto->SendBothRequests( pNode, packet );
 		TreeList_MakeFakeParent(hItem, FALSE);
 	}
 	m_proto->m_SDManager.Unlock();
 
-	if ( packet->getChild(0))
-		m_proto->m_ThreadInfo->send( *packet );
-	delete packet;
+	if ( packet.getChild(0))
+		m_proto->m_ThreadInfo->send( packet );
 }
 
 void CJabberDlgDiscovery::btnBrowse_OnClick(CCtrlButton *)
@@ -1117,19 +1116,18 @@ BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				HTREELISTITEM hItem = (HTREELISTITEM)pNmTreeView->itemNew.hItem;
 
 				m_proto->m_SDManager.Lock();
-				XmlNode* packet = new XmlNode( NULL );
+				XmlNode packet;
 				CJabberSDNode* pNode;
 				pNode = (CJabberSDNode* )TreeList_GetData(hItem);
 				if ( pNode ) 
 				{
-					m_proto->SendBothRequests( pNode, *packet );
+					m_proto->SendBothRequests( pNode, packet );
 					TreeList_MakeFakeParent(hItem, FALSE);
 				}
 				m_proto->m_SDManager.Unlock();
 
-				if ( packet->getChild())
-					m_proto->m_ThreadInfo->send( *packet );
-				delete packet;
+				if ( packet.getChild())
+					m_proto->m_ThreadInfo->send( packet );
 			}
 			else if ( pHeader->code == NM_CUSTOMDRAW ) {
 				LPNMLVCUSTOMDRAW lpnmlvcd = (LPNMLVCUSTOMDRAW)lParam;
@@ -1183,12 +1181,6 @@ BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	return CSuper::DlgProc(msg, wParam, lParam);
 }
-
-struct JabberServiceDiscoveryDlgProcParam {
-	CJabberProto* ppro;
-	TCHAR* m_jid;
-};
-
 
 // extern references to used functions:
 void SearchAddToRecent( TCHAR* szAddr, HWND hwndDialog = NULL );
@@ -1340,26 +1332,25 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 		case SD_ACT_REFRESH:
 		{
 			m_SDManager.Lock();
-			XmlNode* packet = new XmlNode( NULL );
+			XmlNode packet;
 			if ( pNode ) 
 			{
 				TreeList_ResetItem(GetDlgItem(m_pDlgServiceDiscovery->GetHwnd(), IDC_TREE_DISCO), hItem);
 				pNode->ResetInfo();
-				SendBothRequests( pNode, *packet );
+				SendBothRequests( pNode, packet );
 				TreeList_MakeFakeParent(hItem, FALSE);
 			}
 			m_SDManager.Unlock();
 
-			if ( packet->getChild() )
-				m_ThreadInfo->send( *packet );
-			delete packet;
+			if ( packet.getChild() )
+				m_ThreadInfo->send( packet );
 			break;
 		}
 
 		case SD_ACT_REFRESHCHILDREN:
 		{
 			m_SDManager.Lock();
-			XmlNode* packet = new XmlNode( NULL );
+			XmlNode packet;
 			for (int iChild = TreeList_GetChildrenCount(hItem); iChild--; ) {
 				HTREELISTITEM hNode = TreeList_GetChild(hItem, iChild);
 				CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hNode);
@@ -1367,20 +1358,18 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 				{
 					TreeList_ResetItem(GetDlgItem(m_pDlgServiceDiscovery->GetHwnd(), IDC_TREE_DISCO), hNode);
 					pNode->ResetInfo();
-					SendBothRequests( pNode, *packet );
+					SendBothRequests( pNode, packet );
 					TreeList_MakeFakeParent(hNode, FALSE);
 				}
 
-				if ( packet->getChild(50)) {
-					m_ThreadInfo->send( *packet );
-					delete packet;
-					packet = new XmlNode( NULL );
+				if ( packet.getChild(50)) {
+					m_ThreadInfo->send( packet );
+					packet = XmlNode();
 			}	}
 			m_SDManager.Unlock();
 
-			if ( packet->getChild() )
-				m_ThreadInfo->send( *packet );
-			delete packet;
+			if ( packet.getChild() )
+				m_ThreadInfo->send( packet );
 			break;
 		}
 
