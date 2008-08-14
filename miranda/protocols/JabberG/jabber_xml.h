@@ -49,6 +49,12 @@ struct XmlNode : public MXmlNode
 		xi.copyNode( this, &n );
 	}
 
+	__forceinline XmlNode& operator =( const XmlNode& n )
+	{	
+		xi.copyNode( this, &n );
+		return *this;
+	}
+
 	XmlNode( LPCTSTR name );
 	XmlNode( LPCTSTR pszName, LPCTSTR ptszText );
 	#if defined( _UNICODE )
