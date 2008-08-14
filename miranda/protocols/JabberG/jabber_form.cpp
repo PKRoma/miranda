@@ -461,7 +461,7 @@ HJFORMLAYOUT JabberFormCreateLayout(HWND hwndStatic)
 	return layout_info;
 }
 
-void JabberFormCreateUI( HWND hwndStatic, XmlNode xNode, int *formHeight, BOOL bCompact )
+void JabberFormCreateUI( HWND hwndStatic, XmlNode& xNode, int *formHeight, BOOL bCompact )
 {
 	JabberFormDestroyUI(hwndStatic);
 
@@ -600,10 +600,10 @@ void JabberFormDestroyUI(HWND hwndStatic)
 	}
 }
 
-XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode xNode )
+XmlNode JabberFormGetData( HWND hwndStatic, XmlNode& xNode )
 {
 	HWND hFrame, hCtrl;
-	XmlNode n, v, o, *x;
+	XmlNode n, v, o;
 	int id, j, k, len;
 	const TCHAR *varName, *type, *fieldStr, *labelText, *str2;
 	TCHAR *p, *q, *str;
@@ -613,7 +613,7 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode xNode )
 
 	hFrame = hwndStatic;
 	id = 0;
-	x = new XmlNode( _T("x")); x->addAttr( "xmlns", _T(JABBER_FEAT_DATA_FORMS)); x->addAttr( "type", "submit" );
+	XmlNode x( _T("x")); x.addAttr( "xmlns", _T(JABBER_FEAT_DATA_FORMS)); x.addAttr( "type", "submit" );
 	for ( int i=0; ; i++ ) {
 		n = xNode.getChild(i);
 		if ( !n )
@@ -627,7 +627,7 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode xNode )
 			continue;
 
 		hCtrl = GetDlgItem( hFrame, id );
-		XmlNode field = x->addChild( "field" ); field.addAttr( "var", varName );
+		XmlNode field = x.addChild( "field" ); field.addAttr( "var", varName );
 
 		if ( !_tcscmp( type, _T("text-multi")) || !_tcscmp( type, _T("jid-multi"))) {
 			len = GetWindowTextLength( GetDlgItem( hFrame, id ));
@@ -853,9 +853,8 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case IDC_SUBMIT:
 			jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
 			if ( jfi != NULL ) {
-				XmlNode *n = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), jfi->xNode );
-				( jfi->ppro->*(jfi->pfnSubmit))( *n, jfi->userdata );
-				mir_free( n );
+				XmlNode n = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), jfi->xNode );
+				( jfi->ppro->*(jfi->pfnSubmit))( n, jfi->userdata );
 			}
 			// fall through
 		case IDCANCEL:

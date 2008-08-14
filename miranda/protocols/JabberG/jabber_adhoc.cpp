@@ -321,7 +321,7 @@ int CJabberProto::AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, c
 {
 	XmlNode  commandNode = dat->AdHocNode.getChild( "command" );
 	XmlNode  xNode		   = commandNode.getChild( "x" );
-	XmlNode  dataNode    = *JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), xNode);
+	XmlNode  dataNode    = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), xNode);
 
 	int iqId = (int)hwndDlg;
 	XmlNodeIq iq( "set", iqId, dat->AdHocNode.getAttrValue( _T("from")));

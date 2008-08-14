@@ -576,7 +576,7 @@ TCHAR* __stdcall JabberErrorStr( int errorCode )
 	return JabberErrorCodeToStrMapping[i].str;
 }
 
-TCHAR* __stdcall JabberErrorMsg( XmlNode errorNode )
+TCHAR* __stdcall JabberErrorMsg( XmlNode& errorNode )
 {
 	TCHAR *errorStr;
 	const TCHAR *str;
@@ -986,7 +986,7 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetPacketID - converts the xml id attribute into an integer
 
-int __stdcall JabberGetPacketID( XmlNode n )
+int __stdcall JabberGetPacketID( XmlNode& n )
 {
 	int result = -1;
 

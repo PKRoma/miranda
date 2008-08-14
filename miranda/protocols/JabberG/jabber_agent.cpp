@@ -250,7 +250,7 @@ public:
 
 		if (( xNode = queryNode.getChild( "x" )) != NULL ) {
 			// use new jabber:x:data form
-			query.addChild( *JabberFormGetData( hFrame, xNode ));
+			query.addChild( JabberFormGetData( hFrame, xNode ));
 		}
 		else {
 			// use old registration information form
