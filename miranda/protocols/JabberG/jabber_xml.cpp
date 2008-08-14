@@ -31,6 +31,24 @@ Last change by : $Author$
 #define TAG_MAX_LEN 128
 #define ATTR_MAX_LEN 8192
 
+XmlNode::XmlNode( MXmlNode n )
+{
+	unused = NULL;
+	xi.copyNode( this, &n );
+}
+
+XmlNode::XmlNode( const XmlNode& n )
+{
+	unused = NULL;
+	xi.copyNode( this, &n );
+}
+
+XmlNode& XmlNode::operator =( const XmlNode& n )
+{	
+	xi.copyNode( this, &n );
+	return *this;
+}
+
 void XmlNode::addAttr( LPCTSTR name, LPCTSTR value )
 {
 	xi.addAttr( this, name, value );

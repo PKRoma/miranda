@@ -39,28 +39,16 @@ struct XmlNode : public MXmlNode
 	{	unused = NULL;
 	}
 
-	__forceinline XmlNode( MXmlNode n )
-	{	unused = NULL;
-		xi.copyNode( this, &n );
-	}
-
-	__forceinline XmlNode( const XmlNode& n )
-	{	unused = NULL;
-		xi.copyNode( this, &n );
-	}
-
-	__forceinline XmlNode& operator =( const XmlNode& n )
-	{	
-		xi.copyNode( this, &n );
-		return *this;
-	}
-
+	XmlNode( MXmlNode n );
+	XmlNode( const XmlNode& n );
 	XmlNode( LPCTSTR name );
 	XmlNode( LPCTSTR pszName, LPCTSTR ptszText );
 	#if defined( _UNICODE )
 		XmlNode( const char* pszName, const char* ptszText );
 	#endif
 	~XmlNode();
+
+	XmlNode& operator =( const XmlNode& n );
 
 	__forceinline operator bool() const
 	{	return unused != NULL;
