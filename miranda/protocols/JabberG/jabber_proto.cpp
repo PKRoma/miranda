@@ -1034,7 +1034,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 		return 0;
 	}
 
-	char *msg;
+	TCHAR *msg;
 	int  isEncrypted;
 
 	if ( !strncmp( pszSrc, PGP_PROLOG, strlen( PGP_PROLOG ))) {
@@ -1049,12 +1049,17 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 	}
 	else isEncrypted = 0;
 
-	if ( flags & PREF_UTF )
-		msg = JabberUrlEncode( pszSrc );
+	if ( flags & PREF_UTF ) {
+		#if defined( _UNICODE )
+			mir_utf8decode( NEWSTR_ALLOCA( pszSrc ), &msg );
+		#else
+			msg = mir_strdup( mir_utf8decode( NEWSTR_ALLOCA( pszSrc )));
+		#endif
+	}
 	else if ( flags & PREF_UNICODE )
-		msg = JabberTextEncodeW(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
+		msg = mir_u2t(( wchar_t* )&pszSrc[ strlen( pszSrc )+1 ] );
 	else
-		msg = JabberTextEncode( pszSrc );
+		msg = mir_a2t( pszSrc );
 
 	int nSentMsgId = 0;
 
