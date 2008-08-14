@@ -50,7 +50,6 @@ int iqIdRegSetReg;
 #define JCPF_IN      0x01UL
 #define JCPF_OUT     0x02UL
 #define JCPF_ERROR   0x04UL
-#define JCPF_UTF8    0x08UL
 
 //extern int bSecureIM;
 static VOID CALLBACK JabberDummyApcFunc( DWORD param )
@@ -1938,7 +1937,7 @@ int ThreadData::send( XmlNode& node )
 	if ( this == NULL )
 		return 0;
 
-	proto->OnConsoleProcessXml(node, JCPF_OUT|JCPF_UTF8);
+	proto->OnConsoleProcessXml(node, JCPF_OUT);
 
 	TCHAR* str = node.getAsString();
 	char* utfStr = mir_utf8encodeT( str );
