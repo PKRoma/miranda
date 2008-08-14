@@ -655,7 +655,7 @@ void CPepMood::ProcessItems(const TCHAR *from, XmlNode itemsNode)
 		if ( !_tcscmp( n.getName(), _T("text")))
 			moodText = n.getText();
 		else
-			moodType = n.getText();
+			moodType = n.getName();
 	}
 
 	SetMood(hContact, moodType, moodText);
