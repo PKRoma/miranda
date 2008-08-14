@@ -584,29 +584,25 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					int length = GetWindowTextLength(GetDlgItem(m_hwnd, IDC_CONSOLEIN)) + 1;
 					TCHAR *textToSend = (TCHAR *)mir_alloc(length * sizeof(TCHAR));
 					GetWindowText(GetDlgItem(m_hwnd, IDC_CONSOLEIN), textToSend, length);
-					char *tmp = mir_utf8encodeT(textToSend);
-					m_proto->m_ThreadInfo->send(tmp, lstrlenA(tmp));
 
-					StringBuf buf = {0};
-					sttAppendBufRaw(&buf, RTF_HEADER);
-					sttAppendBufRaw(&buf, RTF_BEGINPLAINXML);
-					sttAppendBufT(&buf, textToSend);
-					sttAppendBufRaw(&buf, RTF_ENDPLAINXML);
-					sttAppendBufRaw(&buf, RTF_SEPARATOR);
-					sttAppendBufRaw(&buf, RTF_FOOTER);
-					SendMessage(m_hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
-					sttEmptyBuf(&buf);
+					int bytesProcessed = 0;
+					XmlNode xmlTmp;
+					if (xi.parseString(&xmlTmp, textToSend, &bytesProcessed, NULL)) {
+						m_proto->m_ThreadInfo->send( xmlTmp );
+					}
+					else
+					{
+						StringBuf buf = {0};
+						sttAppendBufRaw(&buf, RTF_HEADER);
+						sttAppendBufRaw(&buf, RTF_BEGINPLAINXML);
+						sttAppendBufT(&buf, TranslateT("Outgoing XML parsing error"));
+						sttAppendBufRaw(&buf, RTF_ENDPLAINXML);
+						sttAppendBufRaw(&buf, RTF_SEPARATOR);
+						sttAppendBufRaw(&buf, RTF_FOOTER);
+						SendMessage(m_hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&buf);
+						sttEmptyBuf(&buf);
+					}
 
-					/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					XmlState xmlstate;
-					JabberXmlInitState(&xmlstate);
-					JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, ( JABBER_XML_CALLBACK )JabberConsoleXmlCallback, m_proto);
-					m_proto->OnXmlParse(&xmlstate,tmp);
-					xmlstate=xmlstate;
-					JabberXmlDestroyState(&xmlstate);
-					*/
-
-					mir_free(tmp);
 					mir_free(textToSend);
 
 					SendDlgItemMessage(m_hwnd, IDC_CONSOLEIN, WM_SETTEXT, 0, (LPARAM)_T(""));
