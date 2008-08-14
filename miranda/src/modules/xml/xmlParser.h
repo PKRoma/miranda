@@ -38,11 +38,76 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @version     V2.38
+ * @version     V2.39
  * @author      Frank Vanden Berghen
  *
- * \section tutorial Turorial
- * <a href="../../xmlParser.html">Tutorial</a>
+ * \section tutorial First Tutorial
+ * You can follow a simple <a href="../../xmlParser.html">Tutorial</a> to know the basics...
+ *
+ * \section usage General usage: How to include the XMLParser library inside your project.
+ *
+ * The library is composed of two files: <a href="../../xmlParser.cpp">xmlParser.cpp</a> and
+ * <a href="../../xmlParser.h">xmlParser.h</a>. These are the ONLY 2 files that you need when
+ * using the library inside your own projects.
+ *
+ * All the functions of the library are documented inside the comments of the file
+ * <a href="../../xmlParser.h">xmlParser.h</a>. These comments can be transformed in
+ * full-fledged HTML documentation using the DOXYGEN software: simply type: "doxygen doxy.cfg"
+ *
+ * By default, the XMLParser library uses (char*) for string representation.To use the (wchar_t*)
+ * version of the library, you need to define the "_UNICODE" preprocessor definition variable
+ * (this is usually done inside your project definition file) (This is done automatically for you
+ * when using Visual Studio).
+ *
+ * \section example Advanced Tutorial and Many Examples of usage.
+ *
+ * Some very small introductory examples are described inside the Tutorial file
+ * <a href="../../xmlParser.html">xmlParser.html</a>
+ *
+ * Some additional small examples are also inside the file <a href="../../xmlTest.cpp">xmlTest.cpp</a>
+ * (for the "char*" version of the library) and inside the file
+ * <a href="../../xmlTestUnicode.cpp">xmlTestUnicode.cpp</a> (for the "wchar_t*"
+ * version of the library). If you have a question, please review these additionnal examples
+ * before sending an e-mail to the author.
+ *
+ * To build the examples:
+ * - linux/unix: type "make"
+ * - solaris: type "make -f makefile.solaris"
+ * - windows: Visual Studio: double-click on xmlParser.dsw
+ *   (under Visual Studio .NET, the .dsp and .dsw files will be automatically converted to .vcproj and .sln files)
+ *
+ * In order to build the examples you need some additional files:
+ * - linux/unix: makefile
+ * - solaris: makefile.solaris
+ * - windows: Visual Studio: *.dsp, xmlParser.dsw and also xmlParser.lib and xmlParser.dll
+ *
+ * \section debugging Debugging with the XMLParser library
+ *
+ * \subsection debugwin Debugging under WINDOWS
+ *
+ * 	Inside Visual C++, the "debug versions" of the memory allocation functions are
+ * 	very slow: Do not forget to compile in "release mode" to get maximum speed.
+ * 	When I have to debug a software that is using the XMLParser Library, it was usually
+ * 	a nightmare because the library was sooOOOoooo slow in debug mode (because of the
+ *  slow memory allocations in Debug mode). To solve this
+ * 	problem, during all the debugging session, I use a very fast DLL version of the
+ * 	XMLParser Library (the DLL is compiled in release mode). Using the DLL version of
+ * 	the XMLParser Library allows me to have lightening XML parsing speed even in debug!
+ * 	Other than that, the DLL version is useless: In the release version of my tool,
+ * 	I always use the normal, ".cpp"-based, XMLParser Library (I simply include the
+ * <a href="../../xmlParser.cpp">xmlParser.cpp</a> and
+ * <a href="../../xmlParser.h">xmlParser.h</a> files into the project).
+ *
+ * 	The file <a href="../../XMLNodeAutoexp.txt">XMLNodeAutoexp.txt</a> contains some
+ * "tweaks" that improve substancially the display of the content of the XMLNode objects
+ * inside the Visual Studio Debugger. Believe me, once you have seen inside the debugger
+ * the "smooth" display of the XMLNode objects, you cannot live without it anymore!
+ *
+ * \subsection debuglinux Debugging under LINUX/UNIX
+ *
+ * 	The speed of the debug version of the XMLParser library is tolerable so no extra
+ * work.has been done.
+ *
  ****************************************************************************/
 
 #ifndef __INCLUDE_XML_NODE__
@@ -60,7 +125,7 @@
 #endif
 
 #if defined(WIN32) || defined(UNDER_CE) || defined(_WIN32) || defined(WIN64) || defined(__BORLANDC__)
-// comment the next line if you are under windows and the compiler is not Microsoft Visual Studio (6.0 or .NET)
+// comment the next line if you are under windows and the compiler is not Microsoft Visual Studio (6.0 or .NET) or Borland
 #define _XMLWINDOWS
 #endif
 
@@ -175,10 +240,12 @@ typedef int XMLElementPosition;
 
 struct XMLNodeContents;
 
+/** @defgroup XMLParserGeneral The XML parser */
+
 /// Main Class representing a XML node
 /**
- * All operations are formed using this class.
- * \note Constructors are protected, so use instead one of these four methods to get your first instance of XMLNode:
+ * All operations are performed using this class.
+ * \note The constructors of the XMLNode class are protected, so use instead one of these four methods to get your first instance of XMLNode:
  * <ul>
  *    <li> XMLNode::parseString </li>
  *    <li> XMLNode::parseFile </li>
@@ -200,7 +267,8 @@ typedef struct XMLDLLENTRY XMLNode
     static XMLCSTR getVersion();///< Return the XMLParser library version number
 
     /** @defgroup conversions Parsing XML files/strings to an XMLNode structure and Rendering XMLNode's to files/string.
-    * @{ */
+     * @ingroup XMLParserGeneral
+     * @{ */
 
     /// Parse an XML string and return the root of a XMLNode tree representing the string.
     static XMLNode parseString   (XMLCSTR  lpXMLString, XMLCSTR tag=NULL, XMLResults *pResults=NULL);
@@ -239,6 +307,7 @@ typedef struct XMLDLLENTRY XMLNode
      * If the XML document is corrupted, the "openFileHelper" method will:
      *         - display an error message on the console (or inside a messageBox for windows).
      *         - stop execution (exit).
+     *
      * I strongly suggest that you write your own "openFileHelper" method tailored to your needs. If you still want to parse
      * the file, you can use the APPROXIMATE_PARSING option as explained inside the note at the beginning of the "xmlParser.cpp" file.
      *
@@ -250,7 +319,9 @@ typedef struct XMLDLLENTRY XMLNode
 
     /// Create an XML string starting from the current XMLNode.
     XMLSTR createXMLString(int nFormat=1, int *pnSize=NULL) const;
-    /**< If nFormat==0, no formatting is required otherwise this returns an user friendly XML string from a given element
+    /**< The returned string should be free'd using the "freeXMLString" function.
+     *
+     *   If nFormat==0, no formatting is required otherwise this returns an user friendly XML string from a given element
      *   with appropriate white spaces and carriage returns. if pnSize is given it returns the size in character of the string. */
 
     /// Save the content of an xmlNode inside a file
@@ -262,9 +333,10 @@ typedef struct XMLDLLENTRY XMLNode
      * If the global parameter "characterEncoding==encoding_ShiftJIS", then the "encoding" parameter is ignored and always set to "SHIFT-JIS".
      * If "_XMLWIDECHAR=1", then the "encoding" parameter is ignored and always set to "utf-16".
      * If no "encoding" parameter is given the "ISO-8859-1" encoding is used. */
-    /* @} */
+    /** @} */
 
     /** @defgroup navigate Navigate the XMLNode structure
+     * @ingroup XMLParserGeneral
      * @{ */
     XMLCSTR getName() const;                                       ///< name of the node
     XMLCSTR getText(int i=0) const;                                ///< return ith text field
@@ -277,6 +349,11 @@ typedef struct XMLDLLENTRY XMLNode
                                       XMLCSTR attributeName,
                                       XMLCSTR attributeValue=NULL,
                                       int *i=NULL)  const;         ///< return child node with specific name/attribute (return an empty node if failing)
+    XMLNode getChildNodeByPath(XMLSTR  path, char createNodeIfMissing=0, XMLCHAR sep='/');
+                                                                   ///< return the first child node with specific path. WARNING: the value of the parameter "path" is destroyed!
+    XMLNode getChildNodeByPath(XMLCSTR path, char createNodeIfMissing=0, XMLCHAR sep='/');
+                                                                   ///< return the first child node with specific path
+
     int nChildNode(XMLCSTR name) const;                            ///< return the number of child node with specific name
     int nChildNode() const;                                        ///< nbr of child node
     XMLAttribute getAttribute(int i=0) const;                      ///< return ith attribute
@@ -310,6 +387,7 @@ typedef struct XMLDLLENTRY XMLNode
 	 HANDLE detach();
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
+     * @ingroup XMLParserGeneral
      *  The functions in this group allows you to create from scratch (or update) a XMLNode structure. Start by creating your top
      *  node with the "createXMLTopNode" function and then add new nodes with the "addChild" function. The parameter 'pos' gives
      *  the position where the childNode, the text or the XMLClearTag will be inserted. The default value (pos=-1) inserts at the
@@ -432,16 +510,20 @@ typedef struct XMLDLLENTRY XMLNode
     /// Enumeration for XML character encoding.
     typedef enum XMLCharEncoding
     {
-        encoding_UTF8=1,
-        encoding_ascii=2,
-        encoding_ShiftJIS=3
+        char_encoding_error=0,
+        char_encoding_UTF8=1,
+        char_encoding_legacy=2,
+        char_encoding_ShiftJIS=3,
+        char_encoding_GB2312=4,
+        char_encoding_Big5=5,
+        char_encoding_GBK=6     // this is actually the same as Big5
     } XMLCharEncoding;
 
     /** \addtogroup conversions
      * @{ */
 
     /// Sets the global options for the conversions
-    static char setGlobalOptions(XMLCharEncoding characterEncoding=XMLNode::encoding_UTF8, char guessWideCharChars=1,
+    static char setGlobalOptions(XMLCharEncoding characterEncoding=XMLNode::char_encoding_UTF8, char guessWideCharChars=1,
                                  char dropWhiteSpace=1, char removeCommentsInMiddleOfText=1);
     /**< The "setGlobalOptions" function allows you to change four global parameters that affect string & file
      * parsing. First of all, you most-probably will never have to change these 3 global parameters.
@@ -505,11 +587,10 @@ typedef struct XMLDLLENTRY XMLNode
      * forbids to use this attribute to do the guess but you can still use it if you set
      * "useXMLEncodingAttribute" to 1 (this is the default behavior and the behavior of most parsers).
      * If an inconsistency in the encoding is detected, then the return value is "0". */
-    /* @} */
+    /** @} */
 
   private:
-
-// these are functions and structures used internally by the XMLNode class (don't bother about them):
+      // these are functions and structures used internally by the XMLNode class (don't bother about them):
 
       typedef struct XMLNodeDataTag // to allow shallow copy and "intelligent/smart" pointers (automatic delete):
       {
@@ -560,31 +641,39 @@ typedef struct XMLNodeContents
 
 } XMLNodeContents;
 
-/** Duplicate (copy in a new allocated buffer) the source string. This is
- * a very handy function when used with all the "XMLNode::*_WOSD" functions (\link xmlModify \endlink).
+/** @defgroup StringAlloc String Allocation/Free functions
+ * @ingroup xmlModify
+ * @{ */
+/// Duplicate (copy in a new allocated buffer) the source string.
+XMLDLLENTRY XMLSTR stringDup(XMLCSTR source, int cbData=-1);
+/**< This is
+ * a very handy function when used with all the "XMLNode::*_WOSD" functions (\link xmlWOSD \endlink).
  * @param cbData If !=0 then cbData is the number of chars to duplicate. New strings allocated with
  * this function should be free'd using the "freeXMLString" function. */
-XMLDLLENTRY XMLSTR stringDup(XMLCSTR source, int cbData=-1);
 
-/// to free the string allocated usign the "stringDup" function.
+/// to free the string allocated inside the "stringDup" function or the "createXMLString" function.
 XMLDLLENTRY void freeXMLString(XMLSTR t); // {free(t);}
+/** @} */
 
 /** @defgroup atoX ato? like functions
+ * @ingroup XMLParserGeneral
  * The "xmlto?" functions are equivalents to the atoi, atol, atof functions.
  * The only difference is: If the variable "xmlString" is NULL, than the return value
- * is "defautValue". These 4 functions are only here as "convenience" functions for the
+ * is "defautValue". These 6 functions are only here as "convenience" functions for the
  * user (they are not used inside the XMLparser). If you don't need them, you can
  * delete them without any trouble.
  *
  * @{ */
-XMLDLLENTRY char    xmltoc(XMLCSTR xmlString,char   defautValue=0);
+XMLDLLENTRY char    xmltob(XMLCSTR xmlString,char   defautValue=0);
 XMLDLLENTRY int     xmltoi(XMLCSTR xmlString,int    defautValue=0);
 XMLDLLENTRY long    xmltol(XMLCSTR xmlString,long   defautValue=0);
 XMLDLLENTRY double  xmltof(XMLCSTR xmlString,double defautValue=.0);
 XMLDLLENTRY XMLCSTR xmltoa(XMLCSTR xmlString,XMLCSTR defautValue=_CXML(""));
+XMLDLLENTRY XMLCHAR xmltoc(XMLCSTR xmlString,XMLCHAR defautValue=_CXML('\0'));
 /** @} */
 
 /** @defgroup ToXMLStringTool Helper class to create XML files using "printf", "fprintf", "cout",... functions.
+ * @ingroup XMLParserGeneral
  * @{ */
 /// Helper class to create XML files using "printf", "fprintf", "cout",... functions.
 /** The ToXMLStringTool class helps you creating XML files using "printf", "fprintf", "cout",... functions.
@@ -618,6 +707,7 @@ private:
 /** @} */
 
 /** @defgroup XMLParserBase64Tool Helper class to include binary data inside XML strings using "Base64 encoding".
+ * @ingroup XMLParserGeneral
  * @{ */
 /// Helper class to include binary data inside XML strings using "Base64 encoding".
 /** The "XMLParserBase64Tool" class allows you to include any binary data (images, sounds,...)
