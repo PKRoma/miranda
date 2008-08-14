@@ -67,7 +67,7 @@ struct XmlNode : public MXmlNode
 	LPCTSTR getAttrName( int n );
 	LPCTSTR getAttrValue( LPCTSTR attrName );
 
-	XmlNode addChild( XmlNode );
+	void    addChild( XmlNode& );
 	XmlNode addChild( LPCTSTR pszName );
 	XmlNode addChild( LPCTSTR pszName, LPCTSTR ptszValue );
 	XmlNode addChild( LPCTSTR pszName, int iValue );

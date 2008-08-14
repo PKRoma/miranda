@@ -303,11 +303,9 @@ void XmlNode::addAttrID( int id )
 	addAttr( _T("id"), text );
 }
 
-XmlNode XmlNode::addChild( XmlNode pNode )
+void XmlNode::addChild( XmlNode& pNode )
 {
-	XmlNode n;
-	xi.addChild( &n, this, NULL, NULL );
-	return n;
+	xi.addChild2( &pNode, this );
 }
 
 XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
