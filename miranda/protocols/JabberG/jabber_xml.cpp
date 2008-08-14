@@ -158,7 +158,7 @@ LPCTSTR XmlNode::getText()
 	return xi.getText( this );
 }
 
-LPCTSTR XmlNode::getAsString()
+LPTSTR XmlNode::getAsString()
 {
 	int datalen;
 	return xi.toString( this, &datalen );

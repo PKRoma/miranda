@@ -120,7 +120,7 @@ static LPCTSTR xmlGetAttrValue( XMLNode* n, LPCTSTR attrName )
 	return n->getAttribute( attrName );
 }
 
-static LPCTSTR xmlToString( XMLNode* n, int* datalen )
+static LPTSTR xmlToString( XMLNode* n, int* datalen )
 {
 	return n->createXMLString( 0, datalen );
 }
@@ -135,6 +135,11 @@ static void xmlAddAttrInt( XMLNode* n, LPCTSTR attrName, int attrValue )
 	TCHAR buf[40];
 	_itot( attrValue, buf, 10 );
 	n->addAttribute( attrName, buf );
+}
+
+static void xmlFree( void* p )
+{
+	free( p );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -153,6 +158,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 
 	xi->parseString         = xmlParseString;
 	xi->toString            = xmlToString;
+	xi->freeMem             = xmlFree;
 									
 	xi->addChild				= xmlAddChild;
 	xi->copyNode				= xmlCopyNode;

@@ -714,7 +714,10 @@ XmlNode* JabberFormGetData( HWND hwndStatic, XmlNode xNode )
 	return x;
 }
 
-typedef struct {
+struct JABBER_FORM_INFO
+{
+	~JABBER_FORM_INFO();
+
 	CJabberProto* ppro;
 	XmlNode xNode;
 	TCHAR defTitle[128];	// Default title if no <title/> in xNode
@@ -724,7 +727,7 @@ typedef struct {
 	int curPos;			// Current scroll position
 	JABBER_FORM_SUBMIT_FUNC pfnSubmit;
 	void *userdata;
-} JABBER_FORM_INFO;
+};
 
 static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -789,17 +792,17 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 				EnableWindow( GetDlgItem( hwndDlg, IDC_SUBMIT ), TRUE );
 		}
 		return TRUE;
+
 	case WM_CTLCOLORSTATIC:
 		if ((GetWindowLong((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
 			(GetWindowLong((HWND)lParam, GWL_ID) == IDC_TITLE))
 		{
-			//MessageBeep(MB_ICONSTOP);
 			return (BOOL)GetStockObject(WHITE_BRUSH);
-		} else
-		{
-			return NULL;
 		}
+		
+		return NULL;
+		
 	case WM_MOUSEWHEEL:
 		{
 			int zDelta = GET_WHEEL_DELTA_WPARAM( wParam );
@@ -811,42 +814,40 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 		}
 		break;
-	case WM_VSCROLL:
-		{
-			int pos;
 
-			jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-			if ( jfi != NULL ) {
-				pos = jfi->curPos;
-				switch ( LOWORD( wParam )) {
-				case SB_LINEDOWN:
-					pos += 15;
-					break;
-				case SB_LINEUP:
-					pos -= 15;
-					break;
-				case SB_PAGEDOWN:
-					pos += ( jfi->frameHeight - 10 );
-					break;
-				case SB_PAGEUP:
-					pos -= ( jfi->frameHeight - 10 );
-					break;
-				case SB_THUMBTRACK:
-					pos = HIWORD( wParam );
-					break;
-				}
-				if ( pos > ( jfi->formHeight - jfi->frameHeight ))
-					pos = jfi->formHeight - jfi->frameHeight;
-				if ( pos < 0 )
-					pos = 0;
-				if ( jfi->curPos != pos ) {
-					ScrollWindow( GetDlgItem( hwndDlg, IDC_FRAME ), 0, jfi->curPos - pos, NULL, &( jfi->frameRect ));
-					SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, pos, TRUE );
-					jfi->curPos = pos;
-				}
+	case WM_VSCROLL:
+		jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
+		if ( jfi != NULL ) {
+			int pos = jfi->curPos;
+			switch ( LOWORD( wParam )) {
+			case SB_LINEDOWN:
+				pos += 15;
+				break;
+			case SB_LINEUP:
+				pos -= 15;
+				break;
+			case SB_PAGEDOWN:
+				pos += ( jfi->frameHeight - 10 );
+				break;
+			case SB_PAGEUP:
+				pos -= ( jfi->frameHeight - 10 );
+				break;
+			case SB_THUMBTRACK:
+				pos = HIWORD( wParam );
+				break;
+			}
+			if ( pos > ( jfi->formHeight - jfi->frameHeight ))
+				pos = jfi->formHeight - jfi->frameHeight;
+			if ( pos < 0 )
+				pos = 0;
+			if ( jfi->curPos != pos ) {
+				ScrollWindow( GetDlgItem( hwndDlg, IDC_FRAME ), 0, jfi->curPos - pos, NULL, &( jfi->frameRect ));
+				SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, pos, TRUE );
+				jfi->curPos = pos;
 			}
 		}
 		break;
+
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
 		case IDC_SUBMIT:
@@ -863,21 +864,15 @@ static BOOL CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, L
 			return TRUE;
 		}
 		break;
+
 	case WM_CLOSE:
 		DestroyWindow( hwndDlg );
 		break;
+
 	case WM_DESTROY:
 		JabberFormDestroyUI( GetDlgItem( hwndDlg, IDC_FRAME ));
 		jfi = ( JABBER_FORM_INFO * ) GetWindowLong( hwndDlg, GWL_USERDATA );
-		if ( jfi != NULL ) {
-			/******** !!!!!!!!!!!!!!!!!!!!!!
-			if ( jfi->xNode != NULL )
-				delete jfi->xNode;
-			*/
-			if ( jfi->userdata )
-				mir_free( jfi->userdata );
-			mir_free( jfi );
-		}
+		delete jfi;
 		break;
 	}
 
@@ -889,11 +884,9 @@ static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD param )
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberFormDlgProc, ( LPARAM )param );
 }
 
-void CJabberProto::FormCreateDialog( XmlNode xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
+void CJabberProto::FormCreateDialog( XmlNode& xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata )
 {
-	JABBER_FORM_INFO *jfi;
-
-	jfi = ( JABBER_FORM_INFO * ) mir_alloc( sizeof( JABBER_FORM_INFO ));
+	JABBER_FORM_INFO *jfi = new JABBER_FORM_INFO;
 	memset( jfi, 0, sizeof( JABBER_FORM_INFO ));
 	jfi->ppro = this;
 	jfi->xNode = xNode;
@@ -906,4 +899,11 @@ void CJabberProto::FormCreateDialog( XmlNode xNode, TCHAR* defTitle, JABBER_FORM
 		QueueUserAPC( JabberFormCreateDialogApcProc, hMainThread, ( DWORD )jfi );
 	else
 		JabberFormCreateDialogApcProc(( DWORD )jfi );
+}
+
+//=======================================================================================
+
+JABBER_FORM_INFO::~JABBER_FORM_INFO()
+{
+	mir_free( userdata );
 }

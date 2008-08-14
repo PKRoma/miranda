@@ -180,7 +180,8 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		if ( !JGetByte( "Disable3920auth", 0 ))
 			stream.addAttr( "version", "1.0" );
 
-		char* buf = mir_utf8encodeT( stream.getAsString() );
+		LPTSTR xmlQuery = stream.getAsString();
+		char* buf = mir_utf8encodeT( xmlQuery );
 		int bufLen = strlen( buf );
 		if ( bufLen > 2 ) {
 			strdel( buf + bufLen - 2, 1 );
@@ -188,6 +189,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		}
 
 		info->send( buf, bufLen );
+		xi.freeMem( xmlQuery );
 }	}
 
 static int utfLen( TCHAR* p, size_t len )
@@ -1938,10 +1940,11 @@ int ThreadData::send( XmlNode& node )
 
 	proto->OnConsoleProcessXml(node, JCPF_OUT|JCPF_UTF8);
 
-	const TCHAR* str = node.getAsString();
+	TCHAR* str = node.getAsString();
 	char* utfStr = mir_utf8encodeT( str );
 	int result = send( utfStr, strlen( utfStr ));
 	mir_free( utfStr );
+	xi.freeMem( str );
 	return result;
 }
 

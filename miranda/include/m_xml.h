@@ -41,7 +41,7 @@ typedef struct
 	void     ( *destroyNode )( MXmlNode* node );
 
 	int      ( *parseString )( MXmlNode* result, LPCTSTR string, int* datalen, LPCTSTR tag );
-	LPCTSTR  ( *toString )( MXmlNode* result, int* datalen );
+	LPTSTR   ( *toString )( MXmlNode* result, int* datalen );
 
 	void     ( *addChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR text );
 	void     ( *copyNode )( MXmlNode* result, const MXmlNode* parent);
@@ -59,6 +59,8 @@ typedef struct
 	int      ( *getAttrCount )( MXmlNode* );
 	void     ( *addAttr )( MXmlNode*, LPCTSTR attrName, LPCTSTR attrValue );
 	void     ( *addAttrInt )( MXmlNode*, LPCTSTR attrName, int attrValue );
+
+	void     ( *freeMem )( void* );
 }
 	XML_API;
 

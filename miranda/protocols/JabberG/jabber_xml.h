@@ -94,7 +94,7 @@ struct XmlNode : public MXmlNode
 	LPCTSTR getName();
 	LPCTSTR getText();
 
-	LPCTSTR getAsString();
+	LPTSTR getAsString();
 };
 
 class CJabberIqInfo;

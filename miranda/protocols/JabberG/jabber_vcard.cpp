@@ -977,7 +977,7 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 	// is always synced with db
 }	}
 
-void CJabberProto::AppendVcardFromDB( XmlNode n, char* tag, char* key )
+void CJabberProto::AppendVcardFromDB( XmlNode& n, char* tag, char* key )
 {
 	if ( n == NULL || tag == NULL || key == NULL )
 		return;
@@ -1060,7 +1060,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	n = v.addChild( "ORG" );
 	AppendVcardFromDB( n, "ORGNAME", "Company" );
 	AppendVcardFromDB( n, "ORGUNIT", "CompanyDepartment" );
-
+	
 	AppendVcardFromDB( v, "TITLE", "CompanyPosition" );
 	AppendVcardFromDB( v, "ROLE", "Role" );
 	AppendVcardFromDB( v, "URL", "Homepage" );

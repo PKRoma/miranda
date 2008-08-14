@@ -430,7 +430,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_form.c -----------------------------------------------------------------
 
-	void   FormCreateDialog( XmlNode xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
+	void   FormCreateDialog( XmlNode& xNode, TCHAR* defTitle, JABBER_FORM_SUBMIT_FUNC pfnSubmit, void *userdata );
 	
 	//---- jabber_ft.c -------------------------------------------------------------------
 
@@ -790,7 +790,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   GroupchatJoinByHContact( HANDLE hContact, bool autojoin=false );
 	int    SendGetVcard( const TCHAR* jid );
-	void   AppendVcardFromDB( XmlNode n, char* tag, char* key );
+	void   AppendVcardFromDB( XmlNode& n, char* tag, char* key );
 	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );
 	void   SaveVcardToDB( HWND hwndPage, int iPage );
 
