@@ -561,7 +561,7 @@ protected:
 		switch (msg)
 		{
 		case WM_JABBER_REFRESH:
-			RefreshServers( *(XmlNode*)lParam);
+			RefreshServers(( XmlNode* )lParam );
 			break;
 		}
 		return CSuper::DlgProc(msg, wParam, lParam);
@@ -683,7 +683,7 @@ private:
 			EnableWindow( GetDlgItem( m_hwnd, IDC_BUTTON_REGISTER ), FALSE );
 	}
 
-	void RefreshServers(XmlNode node)
+	void RefreshServers(XmlNode* node)
 	{
 		m_gotservers = node ? true : false;
 
@@ -694,7 +694,7 @@ private:
 		m_cbServer.ResetContent();
 		if ( node ) {
 			for (int i = 0; ; ++i) {
-				XmlNode n = node.getChild(i);
+				XmlNode n = node->getChild(i);
 				if ( !n )
 					break;
 
@@ -711,21 +711,11 @@ private:
 		mir_free(server);
 	}
 
-	static void QueryServerListXmlCallback(XmlNode node, void *userdata)
-	{
-		HWND hwnd = (HWND)userdata;
-
-		const TCHAR *xmlns = node.getAttrValue( _T("xmlns"));
-		if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd))
-			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)node);
-		else
-			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-	}
-
 	static void QueryServerListThread(void *arg)
 	{
 		CDlgOptAccount *wnd = (CDlgOptAccount *)arg;
 		HWND hwnd = wnd->GetHwnd();
+		bool bIsError = true;
 
 		NETLIBHTTPREQUEST request = {0};
 		request.cbSize = sizeof(request);
@@ -734,31 +724,23 @@ private:
 		request.szUrl = "http://www.jabber.org/basicservers.xml";
 
 		NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
+		if ( result && IsWindow(hwnd)) {
+			if ( result->resultCode == 200 && result->dataLength && result->pData ) {
+				TCHAR* buf = mir_a2t( result->pData );
+				XmlNode node;
+				if ( xi.parseString( &node, buf, NULL, NULL )) {
+					const TCHAR *xmlns = node.getAttrValue( _T("xmlns"));
+					if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd)) {
+						SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&node);
+						bIsError = false;
+				}	}
+				mir_free( buf );
+		}	}
 
-		if (!result)
-		{
+		if ( result )
+			CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
+		if ( bIsError )
 			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-			return;
-		}
-
-		if (IsWindow(hwnd))
-		{
-			if ((result->resultCode == 200) && result->dataLength && result->pData)
-			{
-				/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				XmlState xmlstate;
-				JabberXmlInitState(&xmlstate);
-				JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, QueryServerListXmlCallback, (void *)hwnd);
-				wnd->GetProto()->OnXmlParse(&xmlstate, result->pData);
-				JabberXmlDestroyState(&xmlstate);
-				*/
-			} else
-			{
-				SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-			}
-		}
-
-		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
 	}
 };
 
@@ -1349,64 +1331,6 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 	fclose(fp);
 }
 
-static void _RosterParseXmlWorkbook( XmlNode node, void *userdata )
-{
-	HWND hList=(HWND)userdata;
-	if ( !lstrcmpi(node.getName(),_T("Workbook")))
-	{
-		XmlNode  Worksheet = node.getChild( "Worksheet");
-		if (Worksheet)
-		{
-			XmlNode  Table = Worksheet.getChild( "Table");
-			if (Table)
-			{
-				int index=1;
-				XmlNode Row;
-				while (TRUE)
-				{
-					Row = Table.getNthChild( _T("Row"), index++ );
-					if (!Row)
-						break;
-
-					BOOL bAdd=FALSE;
-					const TCHAR* jid=NULL;
-					const TCHAR* name=NULL;
-					const TCHAR* group=NULL;
-					const TCHAR* subscr=NULL;
-					XmlNode Cell = Row.getNthChild( _T("Cell"), 1 );
-					XmlNode Data = (Cell) ? Cell.getChild( "Data") : NULL;
-					if ( Data )
-					{
-						if (!lstrcmpi(Data.getText(),_T("+"))) bAdd=TRUE;
-						else if (lstrcmpi(Data.getText(),_T("-"))) continue;
-
-						Cell = Row.getNthChild( _T("Cell"),2);
-						if (Cell) Data=Cell.getChild( "Data");
-						else Data=NULL;
-						if (Data)
-						{
-							jid=Data.getText();
-							if (!jid || lstrlen(jid)==0) continue;
-						}
-
-						Cell=Row.getNthChild(_T("Cell"),3);
-						if (Cell) Data=Cell.getChild( "Data");
-						else Data=NULL;
-						if (Data) name=Data.getText();
-
-						Cell=Row.getNthChild(_T("Cell"),4);
-						if (Cell) Data=Cell.getChild( "Data");
-						else Data=NULL;
-						if (Data) group=Data.getText();
-
-						Cell=Row.getNthChild(_T("Cell"),5);
-						if (Cell) Data=Cell.getChild( "Data");
-						else Data=NULL;
-						if (Data) subscr=Data.getText();
-					}
-					_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
-}	}	}	}	}
-
 void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 {
 	char filename[MAX_PATH]={0};
@@ -1421,31 +1345,85 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	ofn.nMaxFile = sizeof(filename);
 	ofn.nMaxFileTitle = MAX_PATH;
 	ofn.lpstrDefExt = "xml";
-	if(!GetOpenFileNameA(&ofn)) return;
+	if ( !GetOpenFileNameA( &ofn ))
+		return;
 
 	FILE * fp=fopen(filename,"r");
-	if (!fp) return;
+	if (!fp)
+		return;
+
 	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 	char * buffer;
 	DWORD bufsize=_filelength(_fileno(fp));
 	if (bufsize>0)
-		buffer=(char*)malloc(bufsize);
+		buffer=(char*)mir_alloc(bufsize);
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
 	_RosterListClear(hwndDlg);
 
-	/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	XmlState xmlstate;
-	JabberXmlInitState(&xmlstate);
-	JabberXmlSetCallback( &xmlstate, 2, ELEM_CLOSE, _RosterParseXmlWorkbook, (void*)hList );
-	OnXmlParse(&xmlstate,buffer);
-	xmlstate=xmlstate;
-	JabberXmlDestroyState(&xmlstate);
-	*/
-	free(buffer);
-	SendMessage(hwndDlg,JM_STATUSCHANGED, 0 , 0);
-}
+	#if defined( _UNICODE )
+		TCHAR* newBuf = mir_a2t( buffer );
+		mir_free( buffer );
+	#else
+		TCHAR* newBuf = buffer;
+	#endif		
 
+	XmlNode node;
+	if ( xi.parseString( &node, newBuf, NULL, NULL )) {
+		if ( !lstrcmpi(node.getName(),_T("Workbook"))) {
+			XmlNode Worksheet = node.getChild( "Worksheet");
+			if ( Worksheet ) {
+				XmlNode Table = Worksheet.getChild( "Table" );
+				if ( Table ) {
+					int index=1;
+					while (TRUE)
+					{
+						XmlNode Row = Table.getNthChild( _T("Row"), index++ );
+						if (!Row)
+							break;
+
+						BOOL bAdd=FALSE;
+						const TCHAR* jid=NULL;
+						const TCHAR* name=NULL;
+						const TCHAR* group=NULL;
+						const TCHAR* subscr=NULL;
+						XmlNode Cell = Row.getNthChild( _T("Cell"), 1 );
+						XmlNode Data = (Cell) ? Cell.getChild( "Data") : NULL;
+						if ( Data )
+						{
+							if (!lstrcmpi(Data.getText(),_T("+"))) bAdd=TRUE;
+							else if (lstrcmpi(Data.getText(),_T("-"))) continue;
+
+							Cell = Row.getNthChild( _T("Cell"),2);
+							if (Cell) Data=Cell.getChild( "Data");
+							else Data=NULL;
+							if (Data)
+							{
+								jid=Data.getText();
+								if (!jid || lstrlen(jid)==0) continue;
+							}
+
+							Cell=Row.getNthChild(_T("Cell"),3);
+							if (Cell) Data=Cell.getChild( "Data");
+							else Data=NULL;
+							if (Data) name=Data.getText();
+
+							Cell=Row.getNthChild(_T("Cell"),4);
+							if (Cell) Data=Cell.getChild( "Data");
+							else Data=NULL;
+							if (Data) group=Data.getText();
+
+							Cell=Row.getNthChild(_T("Cell"),5);
+							if (Cell) Data=Cell.getChild( "Data");
+							else Data=NULL;
+							if (Data) subscr=Data.getText();
+						}
+						_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
+	}	}	}	}	}
+
+	free( newBuf );
+	SendMessage(hwndDlg, JM_STATUSCHANGED, 0, 0);
+}
 
 static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -1923,10 +1901,9 @@ protected:
 
 	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		switch (msg)
-		{
+		switch (msg) {
 		case WM_JABBER_REFRESH:
-			RefreshServers( *( XmlNode* )lParam); ///!!!!!!!!!!!!!!
+			RefreshServers(( XmlNode* )lParam); ///!!!!!!!!!!!!!!
 			break;
 		}
 		return CSuper::DlgProc(msg, wParam, lParam);
@@ -1999,8 +1976,7 @@ private:
 	void setupSecureSSL();
 	void setupGoogle();
 	void setupLJ();
-	void RefreshServers(XmlNode node);
-	static void QueryServerListXmlCallback(XmlNode node, void *userdata);
+	void RefreshServers(XmlNode* node);
 	static void QueryServerListThread(void *arg);
 };
 
@@ -2125,7 +2101,7 @@ void CJabberDlgAccMgrUI::setupLJ()
 	m_btnRegister.Disable();
 }
 
-void CJabberDlgAccMgrUI::RefreshServers(XmlNode node)
+void CJabberDlgAccMgrUI::RefreshServers(XmlNode* node)
 {
 	m_gotservers = node ? true : false;
 
@@ -2137,7 +2113,7 @@ void CJabberDlgAccMgrUI::RefreshServers(XmlNode node)
 	if ( node )
 	{
 		for (int i = 0; ; ++i) {
-			XmlNode n = node.getChild(i);
+			XmlNode n = node->getChild(i);
 			if ( !n )
 				break;
 
@@ -2154,21 +2130,11 @@ void CJabberDlgAccMgrUI::RefreshServers(XmlNode node)
 	mir_free(server);
 }
 
-void CJabberDlgAccMgrUI::QueryServerListXmlCallback(XmlNode node, void *userdata)
-{
-	HWND hwnd = (HWND)userdata;
-
-	const TCHAR *xmlns = node.getAttrValue( _T("xmlns" ));
-	if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd))
-		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)node);
-	else
-		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-}
-
 void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 {
 	CDlgOptAccount *wnd = (CDlgOptAccount *)arg;
 	HWND hwnd = wnd->GetHwnd();
+	bool bIsError = true;
 
 	NETLIBHTTPREQUEST request = {0};
 	request.cbSize = sizeof(request);
@@ -2177,31 +2143,23 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	request.szUrl = "http://www.jabber.org/basicservers.xml";
 
 	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
+	if ( result && IsWindow( hwnd )) {
+		if ((result->resultCode == 200) && result->dataLength && result->pData) {
+			XmlNode node;
+			TCHAR* ptszText = mir_a2t( result->pData );
+			if ( xi.parseString( &node, ptszText, NULL, NULL )) {
+				const TCHAR *xmlns = node.getAttrValue( _T("xmlns" ));
+				if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd)) {
+					SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&node );
+					bIsError = false;
+			}	}
+			mir_free( ptszText );
+	}	}
 
-	if (!result)
-	{
+	if ( result )
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
+	if ( bIsError )
 		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-		return;
-	}
-
-	if (IsWindow(hwnd))
-	{
-		if ((result->resultCode == 200) && result->dataLength && result->pData)
-		{
-			/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			XmlState xmlstate;
-			JabberXmlInitState(&xmlstate);
-			JabberXmlSetCallback(&xmlstate, 1, ELEM_CLOSE, QueryServerListXmlCallback, (void *)hwnd);
-			wnd->GetProto()->OnXmlParse(&xmlstate, result->pData);
-			JabberXmlDestroyState(&xmlstate);
-			*/
-		} else
-		{
-			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
-		}
-	}
-
-	CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
 }
 
 int CJabberProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)

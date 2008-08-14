@@ -261,7 +261,7 @@ static BOOL CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 								( dat->type == MUC_BANLIST ) ? TranslateT( "Ban List" ) :
 								( dat->type == MUC_ADMINLIST ) ? TranslateT( "Admin List" ) :
 								( dat->type == MUC_OWNERLIST ) ? TranslateT( "Owner List" ) :
-								TranslateT( "JID List" ), 1, /* !!!!!!queryNode.numChild */ localFrom );
+								TranslateT( "JID List" ), queryNode.getChildCount(), localFrom );
 							mir_free( localFrom );
 			}	}	}	}
 			SetWindowText( hwndDlg, title );
@@ -541,10 +541,6 @@ void CJabberProto::OnIqResultMucGetOwnerList( XmlNode iqNode, void *userdata )
 JABBER_MUC_JIDLIST_INFO::~JABBER_MUC_JIDLIST_INFO()
 {
 	mir_free( roomJid );
-	/* !!!!!!!!!!!!!!
-	if ( iqNode != NULL )
-		delete iqNode;
-	*/
 }
 
 TCHAR* JABBER_MUC_JIDLIST_INFO::type2str() const

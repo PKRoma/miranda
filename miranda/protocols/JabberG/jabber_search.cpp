@@ -619,7 +619,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 		{
 			dat->fSearchRequestIsXForm=TRUE;
 			dat->xNode = *( MXmlNode* )wParam;
-			// !!!!!!!!!!!!JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
+			JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_FRAME), SW_SHOW);
 			dat->nJSInfCount=1;
 			return TRUE;
