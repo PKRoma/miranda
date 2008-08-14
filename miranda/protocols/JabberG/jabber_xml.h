@@ -33,13 +33,11 @@ Last change by : $Author$
 
 #include <m_xml.h>
 
-struct XmlNode : public MXmlNode
+struct XmlNode
 {
-	__forceinline XmlNode()
-	{	unused = NULL;
-	}
+	__forceinline XmlNode() { __unused = NULL; }
+	__forceinline XmlNode( HANDLE h ) { __unused = h; }
 
-	XmlNode( MXmlNode n );
 	XmlNode( const XmlNode& n );
 	XmlNode( LPCTSTR name );
 	XmlNode( LPCTSTR pszName, LPCTSTR ptszText );
@@ -50,8 +48,8 @@ struct XmlNode : public MXmlNode
 
 	XmlNode& operator =( const XmlNode& n );
 
-	__forceinline operator bool() const
-	{	return unused != NULL;
+	__forceinline operator HANDLE() const
+	{	return __unused;
 	}
 
 	void addAttr( LPCTSTR pszName, LPCTSTR ptszValue );
@@ -89,6 +87,9 @@ struct XmlNode : public MXmlNode
 	LPCTSTR getText();
 
 	LPTSTR getAsString();
+
+private:
+	HANDLE __unused;
 };
 
 class CJabberIqInfo;

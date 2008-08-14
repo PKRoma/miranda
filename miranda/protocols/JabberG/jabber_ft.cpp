@@ -88,7 +88,7 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	char *filename, *p;
 	int i;
 	TCHAR sid[9];
-	XmlNode option = NULL;
+	XmlNode option;
 
 	if ( jid==NULL || ft==NULL || !m_bJabberOnline || ( rs=ListGetBestClientResourceNamePtr( jid ))==NULL ) {
 		if ( ft ) {

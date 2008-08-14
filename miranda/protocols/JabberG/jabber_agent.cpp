@@ -99,7 +99,6 @@ public:
 	virtual void OnInitDialog()
 	{
 		EnableWindow( GetParent( m_hwnd ), FALSE );
-		m_agentRegIqNode = NULL;
 		m_proto->m_hwndAgentRegInput = m_hwnd;
 		SetWindowText( m_hwnd, TranslateT( "Jabber Agent Registration" ));
 		SetDlgItemText( m_hwnd, IDC_SUBMIT, TranslateT( "Register" ));

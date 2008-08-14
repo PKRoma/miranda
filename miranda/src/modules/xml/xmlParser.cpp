@@ -2813,3 +2813,20 @@ unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *
 	return (unsigned char*)buf;
 }
 
+//////////////////////////////////////////////////////////
+//      Helpers for external C APIs.                    //
+//////////////////////////////////////////////////////////
+
+XMLNode::XMLNode( HANDLE h ) :
+	d(( XMLNodeDataTag* )h )
+{
+	if (d)
+		d->ref_count++;
+}
+
+HANDLE XMLNode::detach()
+{
+	HANDLE res = (HANDLE)d;
+	d = NULL;
+	return res;
+}

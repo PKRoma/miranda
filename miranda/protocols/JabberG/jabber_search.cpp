@@ -149,7 +149,7 @@ void CJabberProto::OnIqResultGetSearchFields( XmlNode& iqNode, void *userdata )
 		ShowWindow(searchHandleDlg,SW_HIDE);
 		if ( xNode ) {
 			//1. Form
-			PostMessage( searchHandleDlg, WM_USER+11, ( WPARAM ) xNode, ( LPARAM )0 );
+			PostMessage( searchHandleDlg, WM_USER+11, ( WPARAM )&xNode, ( LPARAM )0 );
 			XmlNode xcNode = xNode.getNthChild( _T("instructions"), 1 );
 			if ( xcNode )
 				SetDlgItemText( searchHandleDlg, IDC_INSTRUCTIONS, xcNode.getText());
@@ -618,7 +618,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 	case WM_USER+11:
 		{
 			dat->fSearchRequestIsXForm=TRUE;
-			dat->xNode = *( MXmlNode* )wParam;
+			dat->xNode = *( XmlNode* )wParam;
 			JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_FRAME), SW_SHOW);
 			dat->nJSInfCount=1;

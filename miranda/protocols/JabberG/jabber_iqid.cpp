@@ -1388,7 +1388,7 @@ void CJabberProto::OnIqResultGetAvatar( XmlNode& iqNode, void *userdata )
 	HANDLE hContact = HContactFromJID( from );
 	if ( hContact == NULL )
 		return;
-	XmlNode n = NULL;
+	XmlNode n;
 	const TCHAR* mimeType = NULL;
 	if ( JGetByte( hContact, "AvatarXVcard", 0 )) {
 		XmlNode vCard = iqNode.getChild( "vCard" );

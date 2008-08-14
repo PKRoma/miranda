@@ -23,43 +23,33 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tchar.h>
 
-#if defined( _STATIC )
-	typedef struct XMLNode MXmlNode;
-#else
-	typedef struct 
-	{
-		void* unused;
-	}
-		MXmlNode;
-#endif
-
 typedef struct
 {
 	int cbSize;
 
-	void     ( *createNode )( MXmlNode* result, LPCTSTR name, LPCTSTR text );
-	void     ( *destroyNode )( MXmlNode* node );
+	HANDLE   ( *createNode )( LPCTSTR name, LPCTSTR text );
+	void     ( *destroyNode )( HANDLE node );
 
-	int      ( *parseString )( MXmlNode* result, LPCTSTR string, int* datalen, LPCTSTR tag );
-	LPTSTR   ( *toString )( MXmlNode* result, int* datalen );
+	HANDLE   ( *parseString )( LPCTSTR string, int* datalen, LPCTSTR tag );
+	LPTSTR   ( *toString )( HANDLE node, int* datalen );
 
-	void     ( *addChild )( MXmlNode* result, MXmlNode* parent, LPCTSTR name, LPCTSTR text );
-	void     ( *addChild2 )( MXmlNode* child, MXmlNode* parent );
-	void     ( *copyNode )( MXmlNode* result, const MXmlNode* parent);
-	void     ( *getChild )( MXmlNode* result, const MXmlNode* parent, int number );
-	int      ( *getChildCount )( MXmlNode* );
-	void     ( *getChildByAttrValue )( MXmlNode* result, const MXmlNode* parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
-	void     ( *getFirstChild )( MXmlNode* result, const MXmlNode* parent );
-	void     ( *getNthChild )( MXmlNode* result, const MXmlNode* parent, LPCTSTR name, int n );
-	LPCTSTR  ( *getName )( MXmlNode* );
-	LPCTSTR  ( *getText )( MXmlNode* );
+	HANDLE   ( *addChild )( HANDLE parent, LPCTSTR name, LPCTSTR text );
+	void     ( *addChild2 )( HANDLE child, HANDLE parent );
+	HANDLE   ( *copyNode )( HANDLE parent);
+	HANDLE   ( *getChild )( HANDLE parent, int number );
+	int      ( *getChildCount )( HANDLE );
+	HANDLE   ( *getChildByAttrValue )( HANDLE parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
+	HANDLE   ( *getFirstChild )( HANDLE parent );
+	HANDLE   ( *getNthChild )( HANDLE parent, LPCTSTR name, int n );
+	LPCTSTR  ( *getName )( HANDLE );
+	LPCTSTR  ( *getText )( HANDLE );
 
-	LPCTSTR  ( *getAttr )( MXmlNode*, int n );
-	LPCTSTR  ( *getAttrName )( MXmlNode*, int n );
-	LPCTSTR  ( *getAttrValue )( MXmlNode*, LPCTSTR attrName );
-	int      ( *getAttrCount )( MXmlNode* );
-	void     ( *addAttr )( MXmlNode*, LPCTSTR attrName, LPCTSTR attrValue );
-	void     ( *addAttrInt )( MXmlNode*, LPCTSTR attrName, int attrValue );
+	LPCTSTR  ( *getAttr )( HANDLE, int n );
+	LPCTSTR  ( *getAttrName )( HANDLE, int n );
+	LPCTSTR  ( *getAttrValue )( HANDLE, LPCTSTR attrName );
+	int      ( *getAttrCount )( HANDLE );
+	void     ( *addAttr )( HANDLE, LPCTSTR attrName, LPCTSTR attrValue );
+	void     ( *addAttrInt )( HANDLE, LPCTSTR attrName, int attrValue );
 
 	void     ( *freeMem )( void* );
 }

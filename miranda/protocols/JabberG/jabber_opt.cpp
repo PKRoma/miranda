@@ -727,8 +727,8 @@ private:
 		if ( result && IsWindow(hwnd)) {
 			if ( result->resultCode == 200 && result->dataLength && result->pData ) {
 				TCHAR* buf = mir_a2t( result->pData );
-				XmlNode node;
-				if ( xi.parseString( &node, buf, NULL, NULL )) {
+				XmlNode node = xi.parseString( buf, NULL, NULL );
+				if ( node ) {
 					const TCHAR *xmlns = node.getAttrValue( _T("xmlns"));
 					if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd)) {
 						SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&node);
@@ -1368,8 +1368,8 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 		TCHAR* newBuf = buffer;
 	#endif		
 
-	XmlNode node;
-	if ( xi.parseString( &node, newBuf, NULL, NULL )) {
+	XmlNode node = xi.parseString( newBuf, NULL, NULL );
+	if ( node ) {
 		if ( !lstrcmpi(node.getName(),_T("Workbook"))) {
 			XmlNode Worksheet = node.getChild( "Worksheet");
 			if ( Worksheet ) {
@@ -1388,7 +1388,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 						const TCHAR* group=NULL;
 						const TCHAR* subscr=NULL;
 						XmlNode Cell = Row.getNthChild( _T("Cell"), 1 );
-						XmlNode Data = (Cell) ? Cell.getChild( "Data") : NULL;
+						XmlNode Data = (Cell) ? Cell.getChild( "Data") : XmlNode();
 						if ( Data )
 						{
 							if (!lstrcmpi(Data.getText(),_T("+"))) bAdd=TRUE;
@@ -1396,7 +1396,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 
 							Cell = Row.getNthChild( _T("Cell"),2);
 							if (Cell) Data=Cell.getChild( "Data");
-							else Data=NULL;
+							else Data = XmlNode();
 							if (Data)
 							{
 								jid=Data.getText();
@@ -1405,17 +1405,17 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 
 							Cell=Row.getNthChild(_T("Cell"),3);
 							if (Cell) Data=Cell.getChild( "Data");
-							else Data=NULL;
+							else Data = XmlNode();
 							if (Data) name=Data.getText();
 
 							Cell=Row.getNthChild(_T("Cell"),4);
 							if (Cell) Data=Cell.getChild( "Data");
-							else Data=NULL;
+							else Data = XmlNode();
 							if (Data) group=Data.getText();
 
 							Cell=Row.getNthChild(_T("Cell"),5);
 							if (Cell) Data=Cell.getChild( "Data");
-							else Data=NULL;
+							else Data = XmlNode();
 							if (Data) subscr=Data.getText();
 						}
 						_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
@@ -2145,9 +2145,9 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
 	if ( result && IsWindow( hwnd )) {
 		if ((result->resultCode == 200) && result->dataLength && result->pData) {
-			XmlNode node;
 			TCHAR* ptszText = mir_a2t( result->pData );
-			if ( xi.parseString( &node, ptszText, NULL, NULL )) {
+			XmlNode node = xi.parseString( ptszText, NULL, NULL );
+			if ( node ) {
 				const TCHAR *xmlns = node.getAttrValue( _T("xmlns" ));
 				if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(node.getName(), _T("query")) && IsWindow(hwnd)) {
 					SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)&node );

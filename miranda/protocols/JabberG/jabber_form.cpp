@@ -609,7 +609,7 @@ XmlNode JabberFormGetData( HWND hwndStatic, XmlNode& xNode )
 	TCHAR *p, *q, *str;
 
 	if ( xNode == NULL || xNode.getName() == NULL || lstrcmp( xNode.getName(), _T("x")) || hwndStatic == NULL )
-		return NULL;
+		return XmlNode();
 
 	hFrame = hwndStatic;
 	id = 0;

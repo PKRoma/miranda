@@ -218,7 +218,8 @@ int sttReadXml( char* buf, int bufLen, XmlNode& n, LPCTSTR tag )
 	#endif
 
 	int bytesProcessed = 0;
-	bytesProcessed = ( xi.parseString( &n, str, &bytesProcessed, tag )) ? utfLen( str, bytesProcessed ) : 0;
+	n = xi.parseString( str, &bytesProcessed, tag );
+	bytesProcessed = ( n ) ? utfLen( str, bytesProcessed ) : 0;
 	#if defined( _UNICODE )
 		mir_free(str);
 	#endif

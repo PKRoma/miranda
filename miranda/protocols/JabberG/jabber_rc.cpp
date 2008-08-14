@@ -346,7 +346,7 @@ int CJabberProto::AdhocSetStatusHandler( XmlNode& iqNode, void* usedata, CJabber
 		xNode.addChild( "title", "Change Status" );
 		xNode.addChild( "instructions", "Choose the status and status message" );
 
-		XmlNode fieldNode = NULL;
+		XmlNode fieldNode;
 
 		fieldNode = xNode.addChild( "field" );
 		fieldNode.addAttr( "type", "hidden" );
@@ -386,7 +386,7 @@ int CJabberProto::AdhocSetStatusHandler( XmlNode& iqNode, void* usedata, CJabber
 			break;
 		}
 
-		XmlNode optionNode = NULL;
+		XmlNode optionNode;
 		optionNode = fieldNode.addChild( "option" );
 		optionNode.addAttr( "label", "Free for chat" );
 		optionNode.addAttr( "value", "chat" );
@@ -537,7 +537,7 @@ int CJabberProto::AdhocOptionsHandler( XmlNode& iqNode, void *usedata, CJabberIq
 		xNode.addChild( "title", "Set Options" );
 		xNode.addChild( "instructions", "Set the desired options" );
 
-		XmlNode fieldNode = NULL;
+		XmlNode fieldNode;
 		TCHAR szTmpBuff[ 1024 ];
 
 		fieldNode = xNode.addChild( "field" );
@@ -578,8 +578,7 @@ int CJabberProto::AdhocOptionsHandler( XmlNode& iqNode, void *usedata, CJabberIq
 		if ( !xNode )
 			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 
-		XmlNode fieldNode = NULL;
-		XmlNode valueNode = NULL;
+		XmlNode fieldNode, valueNode;
 
 		// Automatically Accept File Transfers
 		fieldNode = xNode.getChildByTag( "field", "var", _T("auto-files") );
@@ -683,7 +682,7 @@ int CJabberProto::AdhocForwardHandler( XmlNode& iqNode, void *usedata, CJabberIq
 		mir_sntprintf( szMsg, SIZEOF(szMsg), _T("%d message(s) to be forwarded"), nUnreadEvents );
 		xNode.addChild( "instructions", szMsg );
 
-		XmlNode fieldNode = NULL;
+		XmlNode fieldNode;
 
 		fieldNode = xNode.addChild( "field" );
 		fieldNode.addAttr( "type", "hidden" );
@@ -707,8 +706,7 @@ int CJabberProto::AdhocForwardHandler( XmlNode& iqNode, void *usedata, CJabberIq
 		if ( !xNode )
 			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 
-		XmlNode fieldNode = NULL;
-		XmlNode valueNode = NULL;
+		XmlNode fieldNode, valueNode;
 
 		BOOL bRemoveCListEvents = TRUE;
 
@@ -865,9 +863,7 @@ int CJabberProto::AdhocQuitMirandaHandler( XmlNode& iqNode, void *usedata, CJabb
 		xNode.addChild( "title", "Confirmation needed" );
 		xNode.addChild( "instructions", "Please confirm Miranda IM shutdown" );
 
-		XmlNode fieldNode = NULL;
-
-		fieldNode = xNode.addChild( "field" );
+		XmlNode fieldNode = xNode.addChild( "field" );
 		fieldNode.addAttr( "type", "hidden" );
 		fieldNode.addAttr( "var", "FORM_TYPE" );
 		fieldNode.addChild( "value", JABBER_FEAT_RC );
@@ -889,8 +885,7 @@ int CJabberProto::AdhocQuitMirandaHandler( XmlNode& iqNode, void *usedata, CJabb
 		if ( !xNode )
 			return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 
-		XmlNode fieldNode = NULL;
-		XmlNode valueNode = NULL;
+		XmlNode fieldNode, valueNode;
 
 		// I Agree checkbox
 		fieldNode = xNode.getChildByTag("field", "var", _T("allow-shutdown") );
@@ -952,9 +947,7 @@ int CJabberProto::AdhocLeaveGroupchatsHandler( XmlNode& iqNode, void *usedata, C
 		xNode.addChild( "title", "Leave groupchats" );
 		xNode.addChild( "instructions", "Choose the groupchats you want to leave" );
 
-		XmlNode fieldNode = NULL;
-
-		fieldNode = xNode.addChild( "field" );
+		XmlNode fieldNode = xNode.addChild( "field" );
 		fieldNode.addAttr( "type", "hidden" );
 		fieldNode.addAttr( "var", "FORM_TYPE" );
 		fieldNode.addAttr( "value", JABBER_FEAT_RC );

@@ -31,93 +31,74 @@ Last change by : $Author$
 #define TAG_MAX_LEN 128
 #define ATTR_MAX_LEN 8192
 
-XmlNode::XmlNode( MXmlNode n )
-{
-	unused = NULL;
-	xi.copyNode( this, &n );
-}
-
 XmlNode::XmlNode( const XmlNode& n )
 {
-	unused = NULL;
-	xi.copyNode( this, &n );
+	__unused = xi.copyNode( n );
 }
 
 XmlNode& XmlNode::operator =( const XmlNode& n )
 {	
-	xi.copyNode( this, &n );
+	__unused = xi.copyNode( n );
 	return *this;
 }
 
 void XmlNode::addAttr( LPCTSTR name, LPCTSTR value )
 {
-	xi.addAttr( this, name, value );
+	xi.addAttr( __unused, name, value );
 }
 
 LPCTSTR XmlNode::getAttr( int n )
 {
-	return xi.getAttr( this, n );
+	return xi.getAttr( __unused, n );
 }
 
 LPCTSTR XmlNode::getAttrName( int n )
 {
-	return xi.getAttrName( this, n );
+	return xi.getAttrName( __unused, n );
 }
 
 int XmlNode::getAttrCount()
 {
-	return xi.getAttrCount( this );
+	return xi.getAttrCount( __unused );
 }
 
 LPCTSTR XmlNode::getAttrValue( LPCTSTR key )
 {
-	return xi.getAttrValue( this, key );
+	return xi.getAttrValue( __unused, key );
 }
 
 XmlNode XmlNode::addChild( LPCTSTR name, int value )
 {
 	TCHAR buf[40];
 	_itot( value, buf, 10 );
-
-	XmlNode result;
-	xi.addChild( &result, this, name, buf );
-	return result;
+	return xi.addChild( __unused, name, buf );
 }
 
 XmlNode XmlNode::addChild( LPCTSTR name, LPCTSTR value )
 {
-	XmlNode result;
-	xi.addChild( &result, this, name, value );
-	return result;
+	return xi.addChild( __unused, name, value );
 }
 
 XmlNode XmlNode::addChild( LPCTSTR name )
 {
-	XmlNode result;
-	xi.addChild( &result, this, name, NULL );
-	return result;
+	return xi.addChild( __unused, name, NULL );
 }
 
 XmlNode XmlNode::getChild( int n )
 {
-	XmlNode result;
-	xi.getChild( &result, this, n );
-	return result;
+	return xi.getChild( __unused, n );
 }
 
 XmlNode XmlNode::getChild( LPCTSTR key )
 {
-	XmlNode result;
-	xi.getNthChild( &result, this, key, 0 );
-	return result;
+	return xi.getNthChild( __unused, key, 0 );
 }
 
 #if defined( _UNICODE )
 XmlNode XmlNode::getChild( LPCSTR key )
 {
 	LPTSTR wszKey = mir_a2t( key );
-	XmlNode result;
-	xi.getNthChild( &result, this, wszKey, 0 );
+	HANDLE result = xi.getNthChild( __unused, wszKey, 0 );
 	mir_free( wszKey );
 	return result;
 }
@@ -125,8 +106,7 @@ XmlNode XmlNode::getChild( LPCSTR key )
 XmlNode XmlNode::getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
 {
 	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
-	XmlNode result;
-	xi.getChildByAttrValue( &result, this, wszKey, wszName, attrValue );
+	HANDLE result = xi.getChildByAttrValue( __unused, wszKey, wszName, attrValue );
 	mir_free( wszKey ), mir_free( wszName );
 	return result;
 }
@@ -134,26 +114,24 @@ XmlNode XmlNode::getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
 
 XmlNode XmlNode::getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
 {
-	XmlNode result;
-	xi.getChildByAttrValue( &result, this, key, attrName, attrValue );
-	return result;
+	return xi.getChildByAttrValue( __unused, key, attrName, attrValue );
 }
 
 int XmlNode::getChildCount() 
 {
-	return xi.getChildCount( this );
+	return xi.getChildCount( __unused );
 }
 
 LPCTSTR XmlNode::getName()
 {
-	return xi.getName( this );
+	return xi.getName( __unused );
 }
 
 XmlNode XmlNode::getNthChild( LPCTSTR tag, int nth )
 {
 	int i, num;
 
-	if ( !unused || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
+	if ( !__unused || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
 		return XmlNode();
 
 	num = 1;
@@ -173,13 +151,13 @@ XmlNode XmlNode::getNthChild( LPCTSTR tag, int nth )
 
 LPCTSTR XmlNode::getText()
 {
-	return xi.getText( this );
+	return xi.getText( __unused );
 }
 
 LPTSTR XmlNode::getAsString()
 {
 	int datalen;
-	return xi.toString( this, &datalen );
+	return xi.toString( __unused, &datalen );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -247,38 +225,35 @@ XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
 
 XmlNode::XmlNode( LPCTSTR pszName )
 {
-	unused = NULL;
-	xi.createNode( this, pszName, NULL );
+	__unused = xi.createNode( pszName, NULL );
 }
 
 XmlNode::XmlNode( LPCTSTR pszName, LPCTSTR ptszText )
 {
-	unused = NULL;
-	xi.createNode( this, pszName, ptszText );
+	__unused = xi.createNode( pszName, ptszText );
 }
 
 #if defined( _UNICODE )
 XmlNode::XmlNode( const char* pszName, const char* ptszText )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( ptszText );
-	unused = NULL;
-	xi.createNode( this, wszName, wszValue );
+	__unused = xi.createNode( wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 }
 #endif
 
 XmlNode::~XmlNode()
 {
-	if ( unused ) {
-		xi.destroyNode( this );
-		unused = NULL;
+	if ( __unused ) {
+		xi.destroyNode( __unused );
+		__unused = NULL;
 	}
 }
 
 void XmlNode::addAttr( const char* pszName, LPCTSTR ptszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName );
-	xi.addAttr( this, wszName, ptszValue );
+	xi.addAttr( __unused, wszName, ptszValue );
 	mir_free( wszName );
 }
 
@@ -286,14 +261,14 @@ void XmlNode::addAttr( const char* pszName, LPCTSTR ptszValue )
 void XmlNode::addAttr( const char* pszName, const char* pszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	xi.addAttr( this, wszName, wszValue );
+	xi.addAttr( __unused, wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 }
 #endif
 
 void XmlNode::addAttr( LPCTSTR pszName, int value )
 {
-	xi.addAttrInt( this, pszName, value );
+	xi.addAttrInt( __unused, pszName, value );
 }
 
 void XmlNode::addAttrID( int id )
@@ -305,14 +280,13 @@ void XmlNode::addAttrID( int id )
 
 void XmlNode::addChild( XmlNode& pNode )
 {
-	xi.addChild2( &pNode, this );
+	xi.addChild2( &pNode, __unused );
 }
 
 XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
 {
-	XmlNode n;
 	TCHAR *wszName = mir_a2t( pszName );
-	xi.addChild( &n, this, wszName, ptszValue );
+	HANDLE n = xi.addChild( __unused, wszName, ptszValue );
 	mir_free( wszName );
 	return n;
 }
@@ -320,9 +294,8 @@ XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
 #if defined( _UNICODE )
 XmlNode XmlNode::addChild( const char* pszName, const char* pszValue )
 {
-	XmlNode n;
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	xi.addChild( &n, this, wszName, wszValue );
+	HANDLE n = xi.addChild( __unused, wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 	return n;
 }

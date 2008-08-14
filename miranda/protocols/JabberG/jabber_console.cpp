@@ -586,8 +586,9 @@ BOOL CJabberDlgConsole::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					GetWindowText(GetDlgItem(m_hwnd, IDC_CONSOLEIN), textToSend, length);
 
 					int bytesProcessed = 0;
-					XmlNode xmlTmp;
-					if (xi.parseString(&xmlTmp, textToSend, &bytesProcessed, NULL)) {
+					XmlNode xmlTmp = xi.parseString( textToSend, &bytesProcessed, NULL);
+					if (xmlTmp)
+					{
 						m_proto->m_ThreadInfo->send( xmlTmp );
 					}
 					else

@@ -305,6 +305,10 @@ typedef struct XMLDLLENTRY XMLNode
     static XMLClear emptyXMLClear;
     static XMLAttribute emptyXMLAttribute;
 
+    /** helpers for external C applications **/
+	 XMLNode( HANDLE h );
+	 HANDLE detach();
+
     /** @defgroup xmlModify Create or Update the XMLNode structure
      *  The functions in this group allows you to create from scratch (or update) a XMLNode structure. Start by creating your top
      *  node with the "createXMLTopNode" function and then add new nodes with the "addChild" function. The parameter 'pos' gives
