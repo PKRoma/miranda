@@ -464,7 +464,9 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	struct NetlibConnection *nlc;
 	SOCKADDR_IN sin;
     
-    EnterCriticalSection(&csNetlibUser);
+	Netlib_Logf(nlu,"Connecting to %s:%d (%u)....", nloc->szHost, nloc->wPort, nloc->flags);
+
+	EnterCriticalSection(&csNetlibUser);
     if(iUPnPCleanup==0) {
         forkthread(NetlibUPnPCleanup, 0, NULL);
         iUPnPCleanup = 1;
@@ -618,6 +620,8 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	}
 	if (NLOCF_SSL & nloc->flags)
 	{
+		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Statrting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
+
 		nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nloc->szHost);
 		if (nlc->hSsl == NULL)
 		{
