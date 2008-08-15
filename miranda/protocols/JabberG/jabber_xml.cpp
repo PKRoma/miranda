@@ -280,7 +280,7 @@ void XmlNode::addAttrID( int id )
 
 void XmlNode::addChild( XmlNode& pNode )
 {
-	xi.addChild2( &pNode, __unused );
+	xi.addChild2( pNode, __unused );
 }
 
 XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
