@@ -119,6 +119,12 @@ static HANDLE xmlGetNthChild( HANDLE _n, LPCTSTR name, int i )
     return result.detach();
 }
 
+static HANDLE xmlGetNextChild( HANDLE _n, LPCTSTR name, int* i )
+{
+    XMLNode result = XMLNode(_n).getChildNode( name, i );
+    return result.detach();
+}
+
 static HANDLE xmlGetChildByPath( HANDLE _n, LPCTSTR path, char createNodeIfMissing )
 {
     XMLNode result = XMLNode(_n).getChildNodeByPath( path, createNodeIfMissing );
@@ -188,6 +194,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
     xi->getChildCount       = xmlGetChildCount;
     xi->getFirstChild		= xmlGetFirstChild;
     xi->getNthChild			= xmlGetNthChild;
+    xi->getNextChild		= xmlGetNextChild;
     xi->getChildByPath		= xmlGetChildByPath;
     xi->getName				= xmlGetName;
     xi->getText				= xmlGetText;

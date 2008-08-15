@@ -41,6 +41,7 @@ typedef struct
 	HANDLE   ( *getChildByAttrValue )( HANDLE parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
 	HANDLE   ( *getFirstChild )( HANDLE parent );
 	HANDLE   ( *getNthChild )( HANDLE parent, LPCTSTR name, int n );
+	HANDLE   ( *getNextChild )( HANDLE parent, LPCTSTR name, int *i );
 	HANDLE   ( *getChildByPath )( HANDLE parent, LPCTSTR path, char createNodeIfMissing );
 	LPCTSTR  ( *getName )( HANDLE );
 	LPCTSTR  ( *getText )( HANDLE );
