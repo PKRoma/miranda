@@ -35,8 +35,7 @@ static HANDLE xmlCreateNode( LPCTSTR name, LPCTSTR text )
 
 static void xmlDestroyNode( HANDLE n )
 {
-	XMLNode tmp(n);
-	tmp = XMLNode();
+	XMLNode tmp; tmp.attach(n);
 }
 
 static HANDLE xmlParseString( LPCTSTR str, int* datalen, LPCTSTR tag )

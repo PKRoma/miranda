@@ -2885,6 +2885,11 @@ XMLNode::XMLNode( HANDLE h ) :
 		d->ref_count++;
 }
 
+void XMLNode::attach( HANDLE h )
+{
+	d = ( XMLNodeDataTag* )h;
+}
+
 HANDLE XMLNode::detach()
 {
 	HANDLE res = (HANDLE)d;

@@ -384,6 +384,7 @@ typedef struct XMLDLLENTRY XMLNode
 
     /** helpers for external C applications **/
 	 XMLNode( HANDLE h );
+	 void   attach( HANDLE h );
 	 HANDLE detach();
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
