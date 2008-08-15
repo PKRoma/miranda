@@ -38,6 +38,8 @@ XmlNode::XmlNode( const XmlNode& n )
 
 XmlNode& XmlNode::operator =( const XmlNode& n )
 {	
+	if ( __unused )
+		xi.destroyNode( __unused );
 	__unused = xi.copyNode( n );
 	return *this;
 }
