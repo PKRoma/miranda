@@ -1357,6 +1357,7 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 		// Message is the same, no update needed
 		if ( newModeMsg != NULL )
 			mir_free( newModeMsg );
+		LeaveCriticalSection( &m_csModeMsgMutex );
 	}
 	else {
 		// Update with the new mode message
@@ -1364,11 +1365,11 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 			mir_free( *szMsg );
 		*szMsg = newModeMsg;
 		// Send a presence update if needed
+		LeaveCriticalSection( &m_csModeMsgMutex );
 		if ( status == m_iStatus ) {
 			SendPresence( m_iStatus, true );
 	}	}
 
-	LeaveCriticalSection( &m_csModeMsgMutex );
 	return 0;
 }
 

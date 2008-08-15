@@ -831,8 +831,6 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 	if ( !m_bJabberOnline ) return;
 
 	// Send <presence/> update for status ( we won't handle ID_STATUS_OFFLINE here )
-	EnterCriticalSection( &m_csModeMsgMutex );
-
 	short iPriority = (short)JGetWord( NULL, "Priority", 0 );
 	UpdatePriorityMenu(iPriority);
 
@@ -902,6 +900,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 			x.addChild( "photo", hashValue );
 	}	}
 
+	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
 		if ( m_modeMsgs.szOnline )
@@ -937,8 +936,8 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 		// Should not reach here
 		break;
 	}
-	m_ThreadInfo->send( p );
 	LeaveCriticalSection( &m_csModeMsgMutex );
+	m_ThreadInfo->send( p );
 }
 
 void CJabberProto::SendPresence( int status, bool bSendToAll )
