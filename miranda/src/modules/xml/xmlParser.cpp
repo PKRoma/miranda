@@ -1758,6 +1758,7 @@ XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults)
             // Find which line and column it starts on.
             CountLinesAndColumns(xml.lpXML, xml.nIndex, pResults);
         }
+		else pResults->nColumn = xml.nIndex+1;
     }
     return xnode;
 }
