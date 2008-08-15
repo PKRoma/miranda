@@ -188,6 +188,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		}
 
 		info->send( buf, bufLen );
+		mir_free( buf );
 		xi.freeMem( xmlQuery );
 }	}
 
@@ -205,25 +206,6 @@ static int utfLen( TCHAR* p, size_t len )
 	}
 
 	return result;
-}
-
-int sttReadXml( char* buf, int bufLen, XmlNode& n, LPCTSTR tag )
-{
-	TCHAR* str;
-	#if defined( _UNICODE )
-		str = mir_utf8decodeW( buf );
-	#else
-		char* bufCopy = NEWSTR_ALLOCA(buf);
-		str = mir_utf8decode( bufCopy, 0 );
-	#endif
-
-	int bytesProcessed = 0;
-	n = xi.parseString( str, &bytesProcessed, tag );
-	bytesProcessed = ( n ) ? utfLen( str, bytesProcessed ) : 0;
-	#if defined( _UNICODE )
-		mir_free(str);
-	#endif
-	return bytesProcessed;
 }
 
 void CJabberProto::ServerThread( ThreadData* info )
@@ -500,8 +482,21 @@ LBL_FatalError:
 			buffer[datalen] = '\0';
 
 			XmlNode root;
-			bytesParsed = sttReadXml( buffer, datalen, root, tag );
-			Log( "bytesParsed = %d", bytesParsed );
+			{
+				TCHAR* str;
+				#if defined( _UNICODE )
+					str = mir_utf8decodeW( buffer );
+				#else
+					char* bufCopy = NEWSTR_ALLOCA(buffer);
+					str = mir_utf8decode( bufCopy, 0 );
+				#endif
+
+				bytesParsed = 0;
+				root = xi.parseString( str, &bytesParsed, tag );
+				bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
+				Log( "bytesParsed = %d", bytesParsed );
+				mir_free(str);
+			}
 			tag = NULL;
 
 			if ( root.getName() == NULL ) {

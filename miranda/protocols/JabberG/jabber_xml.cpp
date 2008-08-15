@@ -31,137 +31,6 @@ Last change by : $Author$
 #define TAG_MAX_LEN 128
 #define ATTR_MAX_LEN 8192
 
-XmlNode::XmlNode( const XmlNode& n )
-{
-	__unused = xi.copyNode( n );
-}
-
-XmlNode& XmlNode::operator =( const XmlNode& n )
-{	
-	if ( __unused )
-		xi.destroyNode( __unused );
-	__unused = xi.copyNode( n );
-	return *this;
-}
-
-void XmlNode::addAttr( LPCTSTR name, LPCTSTR value )
-{
-	xi.addAttr( __unused, name, value );
-}
-
-LPCTSTR XmlNode::getAttr( int n )
-{
-	return xi.getAttr( __unused, n );
-}
-
-LPCTSTR XmlNode::getAttrName( int n )
-{
-	return xi.getAttrName( __unused, n );
-}
-
-int XmlNode::getAttrCount()
-{
-	return xi.getAttrCount( __unused );
-}
-
-LPCTSTR XmlNode::getAttrValue( LPCTSTR key )
-{
-	return xi.getAttrValue( __unused, key );
-}
-
-XmlNode XmlNode::addChild( LPCTSTR name, int value )
-{
-	TCHAR buf[40];
-	_itot( value, buf, 10 );
-	return xi.addChild( __unused, name, buf );
-}
-
-XmlNode XmlNode::addChild( LPCTSTR name, LPCTSTR value )
-{
-	return xi.addChild( __unused, name, value );
-}
-
-XmlNode XmlNode::addChild( LPCTSTR name )
-{
-	return xi.addChild( __unused, name, NULL );
-}
-
-XmlNode XmlNode::getChild( int n )
-{
-	return xi.getChild( __unused, n );
-}
-
-XmlNode XmlNode::getChild( LPCTSTR key )
-{
-	return xi.getNthChild( __unused, key, 0 );
-}
-
-#if defined( _UNICODE )
-XmlNode XmlNode::getChild( LPCSTR key )
-{
-	LPTSTR wszKey = mir_a2t( key );
-	HANDLE result = xi.getNthChild( __unused, wszKey, 0 );
-	mir_free( wszKey );
-	return result;
-}
-
-XmlNode XmlNode::getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
-{
-	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
-	HANDLE result = xi.getChildByAttrValue( __unused, wszKey, wszName, attrValue );
-	mir_free( wszKey ), mir_free( wszName );
-	return result;
-}
-#endif
-
-XmlNode XmlNode::getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
-{
-	return xi.getChildByAttrValue( __unused, key, attrName, attrValue );
-}
-
-int XmlNode::getChildCount() 
-{
-	return xi.getChildCount( __unused );
-}
-
-LPCTSTR XmlNode::getName()
-{
-	return xi.getName( __unused );
-}
-
-XmlNode XmlNode::getNthChild( LPCTSTR tag, int nth )
-{
-	int i, num;
-
-	if ( !__unused || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
-		return XmlNode();
-
-	num = 1;
-	for ( i=0; ; i++ ) {
-		XmlNode n = getChild(i);
-		if ( !n )
-			break;
-		if ( !lstrcmp( tag, n.getName())) {
-			if ( num == nth )
-				return n;
-
-			num++;
-	}	}
-
-	return XmlNode();
-}
-
-LPCTSTR XmlNode::getText()
-{
-	return xi.getText( __unused );
-}
-
-LPTSTR XmlNode::getAsString()
-{
-	int datalen;
-	return xi.toString( __unused, &datalen );
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // XmlNodeIq class members
 
@@ -244,12 +113,31 @@ XmlNode::XmlNode( const char* pszName, const char* ptszText )
 }
 #endif
 
+XmlNode::XmlNode( const XmlNode& n )
+{
+	__unused = xi.copyNode( n );
+}
+
+XmlNode& XmlNode::operator =( const XmlNode& n )
+{	
+	if ( __unused )
+		xi.destroyNode( __unused );
+	__unused = xi.copyNode( n );
+	return *this;
+}
+
 XmlNode::~XmlNode()
 {
 	if ( __unused ) {
 		xi.destroyNode( __unused );
 		__unused = NULL;
-	}
+}	}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void XmlNode::addAttr( LPCTSTR name, LPCTSTR value )
+{
+	xi.addAttr( __unused, name, value );
 }
 
 void XmlNode::addAttr( const char* pszName, LPCTSTR ptszValue )
@@ -280,9 +168,16 @@ void XmlNode::addAttrID( int id )
 	addAttr( _T("id"), text );
 }
 
-void XmlNode::addChild( XmlNode& pNode )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+XmlNode XmlNode::addChild( LPCTSTR name )
 {
-	xi.addChild2( pNode, __unused );
+	return xi.addChild( __unused, name, NULL );
+}
+
+XmlNode XmlNode::addChild( LPCTSTR name, LPCTSTR value )
+{
+	return xi.addChild( __unused, name, value );
 }
 
 XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
@@ -303,10 +198,120 @@ XmlNode XmlNode::addChild( const char* pszName, const char* pszValue )
 }
 #endif
 
+XmlNode XmlNode::addChild( LPCTSTR name, int value )
+{
+	TCHAR buf[40];
+	_itot( value, buf, 10 );
+	return xi.addChild( __unused, name, buf );
+}
+
+void XmlNode::addChild( XmlNode& pNode )
+{
+	xi.addChild2( pNode, __unused );
+}
+
 XmlNode XmlNode::addQuery( LPCTSTR szNameSpace )
 {
 	XmlNode n = addChild( "query" );
 	if ( n )
 		n.addAttr( "xmlns", szNameSpace );
 	return n;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+LPTSTR XmlNode::getAsString()
+{
+	int datalen;
+	return xi.toString( __unused, &datalen );
+}
+
+LPCTSTR XmlNode::getAttr( int n )
+{
+	return xi.getAttr( __unused, n );
+}
+
+int XmlNode::getAttrCount()
+{
+	return xi.getAttrCount( __unused );
+}
+
+LPCTSTR XmlNode::getAttrName( int n )
+{
+	return xi.getAttrName( __unused, n );
+}
+
+LPCTSTR XmlNode::getAttrValue( LPCTSTR key )
+{
+	return xi.getAttrValue( __unused, key );
+}
+
+XmlNode XmlNode::getChild( int n )
+{
+	return xi.getChild( __unused, n );
+}
+
+XmlNode XmlNode::getChild( LPCTSTR key )
+{
+	return xi.getNthChild( __unused, key, 0 );
+}
+
+#if defined( _UNICODE )
+XmlNode XmlNode::getChild( LPCSTR key )
+{
+	LPTSTR wszKey = mir_a2t( key );
+	HANDLE result = xi.getNthChild( __unused, wszKey, 0 );
+	mir_free( wszKey );
+	return result;
+}
+
+XmlNode XmlNode::getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
+{
+	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
+	HANDLE result = xi.getChildByAttrValue( __unused, wszKey, wszName, attrValue );
+	mir_free( wszKey ), mir_free( wszName );
+	return result;
+}
+#endif
+
+XmlNode XmlNode::getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
+{
+	return xi.getChildByAttrValue( __unused, key, attrName, attrValue );
+}
+
+int XmlNode::getChildCount() 
+{
+	return xi.getChildCount( __unused );
+}
+
+LPCTSTR XmlNode::getName()
+{
+	return xi.getName( __unused );
+}
+
+XmlNode XmlNode::getNthChild( LPCTSTR tag, int nth )
+{
+	int i, num;
+
+	if ( !__unused || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
+		return XmlNode();
+
+	num = 1;
+	for ( i=0; ; i++ ) {
+		XmlNode n = getChild(i);
+		if ( !n )
+			break;
+		if ( !lstrcmp( tag, n.getName())) {
+			if ( num == nth )
+				return n;
+
+			num++;
+	}	}
+
+	return XmlNode();
+}
+
+LPCTSTR XmlNode::getText()
+{
+	return xi.getText( __unused );
 }

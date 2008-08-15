@@ -590,8 +590,8 @@ void CJabberProto::OnIqResultGetRegister( XmlNode& iqNode, void *userdata )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		if ( m_hwndAgentRegInput ) {
-			XmlNode n = iqNode;
-			SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )&n );
+			HANDLE n = iqNode;
+			SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )n );
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
