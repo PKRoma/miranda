@@ -339,6 +339,17 @@ typedef struct _tagFI_interface {
     BYTE  reserved[200];            // future usage
 } FI_INTERFACE;
 
+
+#if defined(UNICODE) || defined(_UNICODE)
+#define FI_GetFIFFromFilenameT FI_GetFIFFromFilenameU
+#define FI_GetFileTypeT FI_GetFileTypeU
+#define FI_LoadT FI_LoadU
+#else
+#define FI_GetFIFFromFilenameT FI_GetFIFFromFilename
+#define FI_GetFileTypeT FI_GetFileType
+#define FI_LoadT FI_Load
+#endif
+
 /*
  * image services
  * 
