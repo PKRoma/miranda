@@ -31,7 +31,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Behaviour",IDC_STATIC,0,0,304,183
+    GROUPBOX        "Behaviour",IDC_STATIC,0,0,304,172
     CONTROL         "Automatically pop up the window when",
                     IDC_AUTOPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,
                     155,10
@@ -43,35 +43,35 @@ BEGIN
     CONTROL         "and do not steal focus",IDC_DONOTSTEALFOCUS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,20,34,141,10
     CONTROL         "Minimize on send",IDC_AUTOMIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,69,152,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,58,152,10
     CONTROL         "Save splitter position for each contact",
                     IDC_SAVESPLITTERPERCONTACT,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,8,80,292,10
+                    WS_TABSTOP,8,69,292,10
     CONTROL         "Remember unsent messages",
                     IDC_SAVEDRAFTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-                    91,292,10
+                    80,292,10
     CONTROL         "Delete temporary contacts on closing",
-                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,102,
+                    IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,91,
                     292,10
 
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,113,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,102,140,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,113,138,10
 
     LTEXT           "Show warning when message has not been received after",
-                    IDC_STATIC,8,136,211,8
-    EDITTEXT        IDC_SECONDS,223,134,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,136,44,8
+                    IDC_STATIC,8,125,211,8
+    EDITTEXT        IDC_SECONDS,223,123,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,125,44,8
 
 	CONTROL         "Cascade new windows",IDC_CASCADE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,148,200,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,137,200,10
     CONTROL         "Save size and location for each contact",
                     IDC_SAVEPERCONTACT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,159,260,10
+                    8,148,260,10
     CONTROL         "Hide containers on close",
                     IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,170,260,10
+                    8,159,260,10
 
 END
 
@@ -110,7 +110,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Layout",IDC_STATIC,0,0,304,222
+    GROUPBOX        "Layout",IDC_STATIC,0,0,304,133
 	CONTROL         "Show titlebar",IDC_SHOWTITLEBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,8,12,140,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
@@ -128,21 +128,21 @@ BEGIN
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,59,70,11
     LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,59,22,8
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,75,
                     292,10
     CONTROL         "Show progress indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,173,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,86,138,10
     CONTROL         "Enable avatar support",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,184,292,10
+                    8,97,292,10
     CONTROL         "Limit height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,195,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,194,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,195,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,194,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,195,35,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,108,106,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,107,28,12,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,108,35,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,107,28,12,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,108,35,8
     CONTROL         "Use original size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,205,106,10
+                    WS_TABSTOP,20,119,106,10
 
 END
 
@@ -418,8 +418,8 @@ BEGIN
     CONTROL         "Custom2",IDC_CHAT_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
     LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
     EDITTEXT        IDC_CHAT_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
     CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
+    LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
 END
 
 IDD_COLORCHOOSER DIALOGEX 0, 0, 198, 150

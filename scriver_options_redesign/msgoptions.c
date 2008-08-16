@@ -637,7 +637,7 @@ static BOOL CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
 			}
 
-                        CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
+			CheckDlgButton(hwndDlg, IDC_STATUSWIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON));
 			CheckDlgButton(hwndDlg, IDC_SHOWPROGRESS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, SRMSGDEFSET_SHOWPROGRESS));
 
 			CheckDlgButton(hwndDlg, IDC_AVATARSUPPORT, g_dat->flags&SMF_AVATAR);
@@ -706,6 +706,10 @@ static BOOL CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                         case IDC_ORIGINALAVATARH:
                             {
                                     CheckDlgButton(hwndDlg, IDC_LIMITAVATARH, FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHT), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARHEIGHTMIN), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT1), FALSE);
+                                    EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARTEXT2), FALSE);
                             }
                             break;
                         case IDC_AVATARHEIGHT:
