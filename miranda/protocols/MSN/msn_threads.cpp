@@ -342,7 +342,9 @@ void  CMsnProto::MSN_CloseThreads()
 
 void CMsnProto::Threads_Uninit( void )
 {
+	EnterCriticalSection( &sttLock );
 	sttThreads.destroy();
+	LeaveCriticalSection( &sttLock );
 	DeleteCriticalSection( &sttLock );
 }
 
