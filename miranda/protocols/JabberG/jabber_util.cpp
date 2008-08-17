@@ -613,7 +613,7 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-			HXML p( _T("presence" )); xmlAddAttr( p, "to", item->jid ); xmlAddAttr( p, "type", "invisible" );
+			XmlNode p( _T("presence" )); xmlAddAttr( p, "to", item->jid ); xmlAddAttr( p, "type", "invisible" );
 			m_ThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )

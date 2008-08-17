@@ -694,7 +694,7 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 				if ( !_tcscmp( xmlGetName( c ), _T("method"))) {
 					if ( !_tcscmp( xmlGetText( c ), _T("zlib")) && info->zlibInit() == TRUE ) {
 						Log("Requesting Zlib compression");
-						HXML szlib( _T("compress")); xmlAddAttr( szlib, "xmlns", "http://jabber.org/protocol/compress" );
+						XmlNode szlib( _T("compress")); xmlAddAttr( szlib, "xmlns", "http://jabber.org/protocol/compress" );
 						xmlAddChild( szlib, "method", "zlib" );
 						info->send( szlib );
 						return;

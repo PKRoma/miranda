@@ -215,7 +215,7 @@ HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, LPCTSTR value )
 HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, LPCTSTR ptszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName );
-	HANDLE n = xi.addChild( hXml, wszName, ptszValue );
+	HXML n = xi.addChild( hXml, wszName, ptszValue );
 	mir_free( wszName );
 	return n;
 }
@@ -258,7 +258,7 @@ HXML __fastcall xmlGetChild( HXML hXml, LPCTSTR key )
 HXML __fastcall xmlGetChild( HXML hXml, LPCSTR key )
 {
 	LPTSTR wszKey = mir_a2t( key );
-	HANDLE result = xi.getNthChild( hXml, wszKey, 0 );
+	HXML result = xi.getNthChild( hXml, wszKey, 0 );
 	mir_free( wszKey );
 	return result;
 }
@@ -267,7 +267,7 @@ HXML __fastcall xmlGetChild( HXML hXml, LPCSTR key )
 HXML __fastcall xmlGetChildByTag( HXML hXml, LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
 {
 	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
-	HANDLE result = xi.getChildByAttrValue( hXml, wszKey, wszName, attrValue );
+	HXML result = xi.getChildByAttrValue( hXml, wszKey, wszName, attrValue );
 	mir_free( wszKey ), mir_free( wszName );
 	return result;
 }

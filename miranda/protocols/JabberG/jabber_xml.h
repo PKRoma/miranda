@@ -33,8 +33,6 @@ Last change by : $Author$
 
 #include <m_xml.h>
 
-typedef HANDLE HXML;
-
 void    __fastcall xmlAddChild( HXML, HXML );
 HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName );
 HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName, LPCTSTR ptszValue );

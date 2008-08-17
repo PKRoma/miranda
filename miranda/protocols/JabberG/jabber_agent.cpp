@@ -143,7 +143,7 @@ public:
 				ShowWindow( GetDlgItem( m_hwnd, IDC_FRAME_TEXT ), SW_HIDE );
 
 				HXML queryNode, xNode;
-				if (( m_agentRegIqNode = ( HANDLE )lParam ) == NULL ) return TRUE;
+				if (( m_agentRegIqNode = ( HXML )lParam ) == NULL ) return TRUE;
 				if (( queryNode = xmlGetChild( m_agentRegIqNode , "query" )) == NULL ) return TRUE;
 				int id = 0, ypos = 14;
 

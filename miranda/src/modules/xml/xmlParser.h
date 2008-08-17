@@ -383,10 +383,10 @@ typedef struct XMLDLLENTRY XMLNode
     static XMLAttribute emptyXMLAttribute;
 
     /** helpers for external C applications **/
-	 XMLNode( HANDLE h );
-	 void   attach( HANDLE h );
-	 HANDLE detach();
-	 operator HANDLE() const { return (HANDLE)d; }
+	 XMLNode( HXML h );
+	 void   attach( HXML h );
+	 HXML   detach();
+	 operator HXML() const { return (HXML)d; }
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
      * @ingroup XMLParserGeneral

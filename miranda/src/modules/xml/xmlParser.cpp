@@ -2878,21 +2878,21 @@ unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *
 //      Helpers for external C APIs.                    //
 //////////////////////////////////////////////////////////
 
-XMLNode::XMLNode( HANDLE h ) :
+XMLNode::XMLNode( HXML h ) :
 	d(( XMLNodeDataTag* )h )
 {
 	if (d)
 		d->ref_count++;
 }
 
-void XMLNode::attach( HANDLE h )
+void XMLNode::attach( HXML h )
 {
 	d = ( XMLNodeDataTag* )h;
 }
 
-HANDLE XMLNode::detach()
+HXML XMLNode::detach()
 {
-	HANDLE res = (HANDLE)d;
+	HXML res = (HXML)d;
 	d = NULL;
 	return res;
 }

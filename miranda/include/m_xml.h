@@ -23,37 +23,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tchar.h>
 
+DECLARE_HANDLE(HXML);
+
 typedef struct
 {
 	int cbSize;
 
-	HANDLE   ( *createNode )( LPCTSTR name, LPCTSTR text );
-	void     ( *destroyNode )( HANDLE node );
+	HXML    ( *createNode )( LPCTSTR name, LPCTSTR text );
+	void    ( *destroyNode )( HXML node );
 
-	HANDLE   ( *parseString )( LPCTSTR string, int* datalen, LPCTSTR tag );
-	LPTSTR   ( *toString )( HANDLE node, int* datalen );
+	HXML    ( *parseString )( LPCTSTR string, int* datalen, LPCTSTR tag );
+	LPTSTR  ( *toString )( HXML node, int* datalen );
 
-	HANDLE   ( *addChild )( HANDLE parent, LPCTSTR name, LPCTSTR text );
-	void     ( *addChild2 )( HANDLE child, HANDLE parent );
-	HANDLE   ( *copyNode )( HANDLE parent);
-	HANDLE   ( *getChild )( HANDLE parent, int number );
-	int      ( *getChildCount )( HANDLE );
-	HANDLE   ( *getChildByAttrValue )( HANDLE parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
-	HANDLE   ( *getFirstChild )( HANDLE parent );
-	HANDLE   ( *getNthChild )( HANDLE parent, LPCTSTR name, int n );
-	HANDLE   ( *getNextChild )( HANDLE parent, LPCTSTR name, int *i );
-	HANDLE   ( *getChildByPath )( HANDLE parent, LPCTSTR path, char createNodeIfMissing );
-	LPCTSTR  ( *getName )( HANDLE );
-	LPCTSTR  ( *getText )( HANDLE );
+	HXML    ( *addChild )( HXML parent, LPCTSTR name, LPCTSTR text );
+	void    ( *addChild2 )( HXML child, HXML parent );
+	HXML    ( *copyNode )( HXML parent);
+	HXML    ( *getChild )( HXML parent, int number );
+	int     ( *getChildCount )( HXML );
+	HXML    ( *getChildByAttrValue )( HXML parent, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue );
+	HXML    ( *getFirstChild )( HXML parent );
+	HXML    ( *getNthChild )( HXML parent, LPCTSTR name, int n );
+	HXML    ( *getNextChild )( HXML parent, LPCTSTR name, int *i );
+	HXML    ( *getChildByPath )( HXML parent, LPCTSTR path, char createNodeIfMissing );
+	LPCTSTR ( *getName )( HXML );
+	LPCTSTR ( *getText )( HXML );
 
-	LPCTSTR  ( *getAttr )( HANDLE, int n );
-	LPCTSTR  ( *getAttrName )( HANDLE, int n );
-	LPCTSTR  ( *getAttrValue )( HANDLE, LPCTSTR attrName );
-	int      ( *getAttrCount )( HANDLE );
-	void     ( *addAttr )( HANDLE, LPCTSTR attrName, LPCTSTR attrValue );
-	void     ( *addAttrInt )( HANDLE, LPCTSTR attrName, int attrValue );
+	LPCTSTR ( *getAttr )( HXML, int n );
+	LPCTSTR ( *getAttrName )( HXML, int n );
+	LPCTSTR ( *getAttrValue )( HXML, LPCTSTR attrName );
+	int     ( *getAttrCount )( HXML );
+	void    ( *addAttr )( HXML, LPCTSTR attrName, LPCTSTR attrValue );
+	void    ( *addAttrInt )( HXML, LPCTSTR attrName, int attrValue );
 
-	void     ( *freeMem )( void* );
+	void    ( *freeMem )( void* );
 }
 	XML_API;
 

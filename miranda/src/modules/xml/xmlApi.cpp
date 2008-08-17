@@ -23,9 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "xmlParser.h"
-#include "m_xml.h"
 
-static HANDLE xmlCreateNode( LPCTSTR name, LPCTSTR text )
+static HXML xmlapiCreateNode( LPCTSTR name, LPCTSTR text )
 {
 	XMLNode result = XMLNode::createXMLTopNode( name );
 	if ( text )
@@ -33,12 +32,12 @@ static HANDLE xmlCreateNode( LPCTSTR name, LPCTSTR text )
 	return result.detach();
 }
 
-static void xmlDestroyNode( HANDLE n )
+static void xmlapiDestroyNode( HXML n )
 {
 	XMLNode tmp; tmp.attach(n);
 }
 
-static HANDLE xmlParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
+static HXML xmlapiParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
 {
 	XMLResults res;
 	XMLNode result = XMLNode::parseString( str, tag, &res );
@@ -54,7 +53,7 @@ static HANDLE xmlParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
 	return (tag != NULL || res.error == eXMLErrorNone) ? result.detach() : NULL;
 }
 
-static HANDLE xmlAddChild( HANDLE _n, LPCTSTR name, LPCTSTR text )
+static HXML xmlapiAddChild( HXML _n, LPCTSTR name, LPCTSTR text )
 {
 	XMLNode result = XMLNode(_n).addChild( name );
 	if ( text != NULL )
@@ -62,101 +61,101 @@ static HANDLE xmlAddChild( HANDLE _n, LPCTSTR name, LPCTSTR text )
 	return result;
 }
 
-static void xmlAddChild2( HANDLE _child, HANDLE _parent )
+static void xmlapiAddChild2( HXML _child, HXML _parent )
 {
 	XMLNode child(_child), parent(_parent);
 	parent.addChild( child );
 }
 
-static HANDLE xmlCopyNode( HANDLE _n )
+static HXML xmlapiCopyNode( HXML _n )
 {
 	XMLNode result = XMLNode(_n);
 	return result.detach();
 }
 
-static LPCTSTR xmlGetAttr( HANDLE _n, int i )
+static LPCTSTR xmlapiGetAttr( HXML _n, int i )
 {
 	return XMLNode(_n).getAttributeValue( i );
 }
 
-static int xmlGetAttrCount( HANDLE _n )
+static int xmlapiGetAttrCount( HXML _n )
 {
 	return XMLNode(_n).nAttribute();
 }
 
-static LPCTSTR xmlGetAttrName( HANDLE _n, int i )
+static LPCTSTR xmlapiGetAttrName( HXML _n, int i )
 {
 	return XMLNode(_n).getAttributeName( i );
 }
 
-static HANDLE xmlGetChild( HANDLE _n, int i )
+static HXML xmlapiGetChild( HXML _n, int i )
 {
 	return XMLNode(_n).getChildNode( i );
 }
 
-static HANDLE xmlGetChildByAttrValue( HANDLE _n, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue )
+static HXML xmlapiGetChildByAttrValue( HXML _n, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue )
 {
 	return XMLNode(_n).getChildNodeWithAttribute( name, attrName, attrValue );
 }
 
-static int xmlGetChildCount( HANDLE _n )
+static int xmlapiGetChildCount( HXML _n )
 {
 	return XMLNode(_n).nChildNode();
 }
 
-static HANDLE xmlGetFirstChild( HANDLE _n )
+static HXML xmlapiGetFirstChild( HXML _n )
 {
 	return XMLNode(_n).getChildNode( 0 );
 }
 
-static HANDLE xmlGetNthChild( HANDLE _n, LPCTSTR name, int i )
+static HXML xmlapiGetNthChild( HXML _n, LPCTSTR name, int i )
 {
 	return XMLNode(_n).getChildNode( name, i );
 }
 
-static HANDLE xmlGetNextChild( HANDLE _n, LPCTSTR name, int* i )
+static HXML xmlapiGetNextChild( HXML _n, LPCTSTR name, int* i )
 {
 	return XMLNode(_n).getChildNode( name, i );
 }
 
-static HANDLE xmlGetChildByPath( HANDLE _n, LPCTSTR path, char createNodeIfMissing )
+static HXML xmlapiGetChildByPath( HXML _n, LPCTSTR path, char createNodeIfMissing )
 {
 	return XMLNode(_n).getChildNodeByPath( path, createNodeIfMissing );
 }
 
-static LPCTSTR xmlGetName( HANDLE _n )
+static LPCTSTR xmlapiGetName( HXML _n )
 {
 	return XMLNode(_n).getName();
 }
 
-static LPCTSTR xmlGetText( HANDLE _n )
+static LPCTSTR xmlapiGetText( HXML _n )
 {
 	return XMLNode(_n).getText();
 }
 
-static LPCTSTR xmlGetAttrValue( HANDLE _n, LPCTSTR attrName )
+static LPCTSTR xmlapiGetAttrValue( HXML _n, LPCTSTR attrName )
 {
 	return XMLNode(_n).getAttribute( attrName );
 }
 
-static LPTSTR xmlToString( HANDLE _n, int* datalen )
+static LPTSTR xmlapiToString( HXML _n, int* datalen )
 {
 	return XMLNode(_n).createXMLString( 0, datalen );
 }
 
-static void xmlAddAttr( HANDLE _n, LPCTSTR attrName, LPCTSTR attrValue )
+static void xmlapiAddAttr( HXML _n, LPCTSTR attrName, LPCTSTR attrValue )
 {
 	XMLNode(_n).addAttribute( attrName, attrValue );
 }
 
-static void xmlAddAttrInt( HANDLE _n, LPCTSTR attrName, int attrValue )
+static void xmlapiAddAttrInt( HXML _n, LPCTSTR attrName, int attrValue )
 {
 	TCHAR buf[40];
 	_itot( attrValue, buf, 10 );
 	XMLNode(_n).addAttribute( attrName, buf );
 }
 
-static void xmlFree( void* p )
+static void xmlapiFree( void* p )
 {
 	free( p );
 }
@@ -172,32 +171,32 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 	if ( xi->cbSize != sizeof(XML_API))
 		return FALSE;
 
-	xi->createNode          = xmlCreateNode;
-	xi->destroyNode         = xmlDestroyNode;
+	xi->createNode          = xmlapiCreateNode;
+	xi->destroyNode         = xmlapiDestroyNode;
 
-	xi->parseString         = xmlParseString;
-	xi->toString            = xmlToString;
-	xi->freeMem             = xmlFree;
+	xi->parseString         = xmlapiParseString;
+	xi->toString            = xmlapiToString;
+	xi->freeMem             = xmlapiFree;
 
-	xi->addChild            = xmlAddChild;
-	xi->addChild2           = xmlAddChild2;
-	xi->copyNode            = xmlCopyNode;
-	xi->getChild            = xmlGetChild;
-	xi->getChildByAttrValue = xmlGetChildByAttrValue;
-	xi->getChildCount       = xmlGetChildCount;
-	xi->getFirstChild       = xmlGetFirstChild;
-	xi->getNthChild         = xmlGetNthChild;
-	xi->getNextChild        = xmlGetNextChild;
-	xi->getChildByPath      = xmlGetChildByPath;
-	xi->getName             = xmlGetName;
-	xi->getText             = xmlGetText;
+	xi->addChild            = xmlapiAddChild;
+	xi->addChild2           = xmlapiAddChild2;
+	xi->copyNode            = xmlapiCopyNode;
+	xi->getChild            = xmlapiGetChild;
+	xi->getChildByAttrValue = xmlapiGetChildByAttrValue;
+	xi->getChildCount       = xmlapiGetChildCount;
+	xi->getFirstChild       = xmlapiGetFirstChild;
+	xi->getNthChild         = xmlapiGetNthChild;
+	xi->getNextChild        = xmlapiGetNextChild;
+	xi->getChildByPath      = xmlapiGetChildByPath;
+	xi->getName             = xmlapiGetName;
+	xi->getText             = xmlapiGetText;
 
-	xi->getAttr             = xmlGetAttr;
-	xi->getAttrCount        = xmlGetAttrCount;
-	xi->getAttrName         = xmlGetAttrName;
-	xi->getAttrValue        = xmlGetAttrValue;
-	xi->addAttr             = xmlAddAttr;
-	xi->addAttrInt          = xmlAddAttrInt;
+	xi->getAttr             = xmlapiGetAttr;
+	xi->getAttrCount        = xmlapiGetAttrCount;
+	xi->getAttrName         = xmlapiGetAttrName;
+	xi->getAttrValue        = xmlapiGetAttrValue;
+	xi->addAttr             = xmlapiAddAttr;
+	xi->addAttrInt          = xmlapiAddAttrInt;
 	return TRUE;
 }
 

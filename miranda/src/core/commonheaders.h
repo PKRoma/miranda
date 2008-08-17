@@ -81,5 +81,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../modules/database/dblists.h"
 
 #include <m_netlib.h>
+#include <m_xml.h>
 
 #include "../resource.h"
