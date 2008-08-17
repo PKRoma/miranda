@@ -118,6 +118,11 @@ static HXML xmlapiGetNextChild( HXML _n, LPCTSTR name, int* i )
 	return XMLNode(_n).getChildNode( name, i );
 }
 
+static HXML xmlapiGetNextNode( HXML _n )
+{
+	return XMLNode(_n).getNextNode( );
+}
+
 static HXML xmlapiGetChildByPath( HXML _n, LPCTSTR path, char createNodeIfMissing )
 {
 	return XMLNode(_n).getChildNodeByPath( path, createNodeIfMissing );
@@ -187,6 +192,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 	xi->getFirstChild       = xmlapiGetFirstChild;
 	xi->getNthChild         = xmlapiGetNthChild;
 	xi->getNextChild        = xmlapiGetNextChild;
+	xi->getNextNode         = xmlapiGetNextNode;
 	xi->getChildByPath      = xmlapiGetChildByPath;
 	xi->getName             = xmlapiGetName;
 	xi->getText             = xmlapiGetText;

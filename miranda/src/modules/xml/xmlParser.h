@@ -353,6 +353,7 @@ typedef struct XMLDLLENTRY XMLNode
                                                                    ///< return the first child node with specific path. WARNING: the value of the parameter "path" is destroyed!
     XMLNode getChildNodeByPath(XMLCSTR path, char createNodeIfMissing=0, XMLCHAR sep='/');
                                                                    ///< return the first child node with specific path
+	XMLNode getNextNode() const;
 
     int nChildNode(XMLCSTR name) const;                            ///< return the number of child node with specific name
     int nChildNode() const;                                        ///< nbr of child node
