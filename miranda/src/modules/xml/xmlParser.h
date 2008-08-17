@@ -386,6 +386,7 @@ typedef struct XMLDLLENTRY XMLNode
 	 XMLNode( HANDLE h );
 	 void   attach( HANDLE h );
 	 HANDLE detach();
+	 operator HANDLE() const { return (HANDLE)d; }
 
     /** @defgroup xmlModify Create or Update the XMLNode structure
      * @ingroup XMLParserGeneral

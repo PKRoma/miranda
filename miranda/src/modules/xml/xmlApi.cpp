@@ -59,7 +59,7 @@ static HANDLE xmlAddChild( HANDLE _n, LPCTSTR name, LPCTSTR text )
 	XMLNode result = XMLNode(_n).addChild( name );
 	if ( text != NULL )
 		result.updateText( text );
-	return result.detach();
+	return result;
 }
 
 static void xmlAddChild2( HANDLE _child, HANDLE _parent )
@@ -91,14 +91,12 @@ static LPCTSTR xmlGetAttrName( HANDLE _n, int i )
 
 static HANDLE xmlGetChild( HANDLE _n, int i )
 {
-	XMLNode result = XMLNode(_n).getChildNode( i );
-	return result.detach();
+	return XMLNode(_n).getChildNode( i );
 }
 
 static HANDLE xmlGetChildByAttrValue( HANDLE _n, LPCTSTR name, LPCTSTR attrName, LPCTSTR attrValue )
 {
-	XMLNode result = XMLNode(_n).getChildNodeWithAttribute( name, attrName, attrValue );
-	return result.detach();
+	return XMLNode(_n).getChildNodeWithAttribute( name, attrName, attrValue );
 }
 
 static int xmlGetChildCount( HANDLE _n )
@@ -108,26 +106,22 @@ static int xmlGetChildCount( HANDLE _n )
 
 static HANDLE xmlGetFirstChild( HANDLE _n )
 {
-	XMLNode result = XMLNode(_n).getChildNode( 0 );
-	return result.detach();
+	return XMLNode(_n).getChildNode( 0 );
 }
 
 static HANDLE xmlGetNthChild( HANDLE _n, LPCTSTR name, int i )
 {
-	XMLNode result = XMLNode(_n).getChildNode( name, i );
-	return result.detach();
+	return XMLNode(_n).getChildNode( name, i );
 }
 
 static HANDLE xmlGetNextChild( HANDLE _n, LPCTSTR name, int* i )
 {
-	XMLNode result = XMLNode(_n).getChildNode( name, i );
-	return result.detach();
+	return XMLNode(_n).getChildNode( name, i );
 }
 
 static HANDLE xmlGetChildByPath( HANDLE _n, LPCTSTR path, char createNodeIfMissing )
 {
-	XMLNode result = XMLNode(_n).getChildNodeByPath( path, createNodeIfMissing );
-	return result.detach();
+	return XMLNode(_n).getChildNodeByPath( path, createNodeIfMissing );
 }
 
 static LPCTSTR xmlGetName( HANDLE _n )
