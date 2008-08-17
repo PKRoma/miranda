@@ -92,6 +92,16 @@ static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data);
 static void sttTreeList_CreateItems_List(HTREELISTITEM hItem, LPARAM data);
 static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 
+static __forceinline void sttTreeList_SeWindowData(HWND hwnd, LONG data)
+{
+	SetPropA(hwnd, "Miranda.TreeList", (HANDLE)data);
+}
+
+static __forceinline LONG sttTreeList_GeWindowData(HWND hwnd)
+{
+	return (LONG)GetPropA(hwnd, "Miranda.TreeList");
+}
+
 // tree list implementation
 LPARAM TreeList_GetData(HTREELISTITEM hItem)
 {
@@ -100,7 +110,7 @@ LPARAM TreeList_GetData(HTREELISTITEM hItem)
 
 HTREELISTITEM TreeList_GetRoot(HWND hwnd)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	return data->root;
 }
 
@@ -121,7 +131,7 @@ void TreeList_Create(HWND hwnd)
 	data->root->flags = TLIF_EXPANDED|TLIF_VISIBLE|TLIF_ROOT;
 	data->root->indent = -1;
 	data->hItemSelected = data->root;
-	SetWindowLong(hwnd, GWL_USERDATA, (LONG)data);
+	sttTreeList_SeWindowData(hwnd, (LONG)data);
 
 	ListView_SetExtendedListViewStyle(hwnd, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES | LVS_EX_INFOTIP );
 
@@ -139,14 +149,14 @@ void TreeList_Create(HWND hwnd)
 void TreeList_Destroy(HWND hwnd)
 {
 	ListView_DeleteAllItems(hwnd);
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	delete data;
 }
 
 void TreeList_Reset(HWND hwnd)
 {
 	ListView_DeleteAllItems(hwnd);
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	delete data->root;
 	data->root = new TTreeList_ItemInfo;
 	data->root->flags = TLIF_EXPANDED|TLIF_VISIBLE|TLIF_ROOT;
@@ -156,7 +166,7 @@ void TreeList_Reset(HWND hwnd)
 
 void TreeList_SetMode(HWND hwnd, int mode)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	data->mode = mode;
 	ListView_DeleteAllItems(hwnd);
 	TreeList_Update(hwnd);
@@ -164,7 +174,7 @@ void TreeList_SetMode(HWND hwnd, int mode)
 
 void TreeList_SetSortMode(HWND hwnd, int col, BOOL descending)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	if ((col >= 0) && (col < 2))
 		data->sortMode = 1 + col * 2 + (descending ? 1 : 0);
 	else
@@ -174,7 +184,7 @@ void TreeList_SetSortMode(HWND hwnd, int col, BOOL descending)
 
 void TreeList_SetFilter(HWND hwnd, TCHAR *filter)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	if (data->filter) mir_free(data->filter);
 	data->filter = NULL;
 	if (filter) data->filter = mir_tstrdup(filter);
@@ -183,7 +193,7 @@ void TreeList_SetFilter(HWND hwnd, TCHAR *filter)
 
 HTREELISTITEM TreeList_GetActiveItem(HWND hwnd)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	LVITEM lvi = {0};
 	lvi.mask = LVIF_PARAM;
 	lvi.iItem = ListView_GetNextItem(hwnd, -1, LVNI_SELECTED);
@@ -195,7 +205,7 @@ HTREELISTITEM TreeList_GetActiveItem(HWND hwnd)
 
 HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LPARAM nodeDdata)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	if (!hParent) hParent = data->root;
 
 	TTreeList_ItemInfo *item = new TTreeList_ItemInfo;
@@ -215,7 +225,7 @@ HTREELISTITEM TreeList_AddItem(HWND hwnd, HTREELISTITEM hParent, TCHAR *text, LP
 
 void TreeList_ResetItem(HWND hwnd, HTREELISTITEM hParent)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 
 	for (int i = hParent->subItems.getCount(); i--; )
 		delete hParent->subItems[i];
@@ -264,7 +274,7 @@ void TreeList_RecursiveApply(HTREELISTITEM hItem, void (*func)(HTREELISTITEM, LP
 
 void TreeList_Update(HWND hwnd)
 {
-	TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(hwnd, GWL_USERDATA);
+	TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(hwnd);
 	HTREELISTITEM hItem = data->root;
 	int sortIndex = 0;
 
@@ -336,7 +346,7 @@ BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, 
 		if (((LPNMHDR)lparam)->idFrom != idc)
 			break;
 
-		TTreeList_Data *data = (TTreeList_Data *)GetWindowLong(GetDlgItem(hwnd, idc), GWL_USERDATA);
+		TTreeList_Data *data = (TTreeList_Data *)sttTreeList_GeWindowData(GetDlgItem(hwnd, idc));
 		switch (((LPNMHDR)lparam)->code) {
 		case LVN_COLUMNCLICK:
 			{
@@ -523,7 +533,7 @@ static void sttTreeList_FilterItems(HTREELISTITEM hItem, LPARAM data)
 
 static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data)
 {
-	TTreeList_Data *listData = (TTreeList_Data *)GetWindowLong((HWND)data, GWL_USERDATA);
+	TTreeList_Data *listData = (TTreeList_Data *)sttTreeList_GeWindowData((HWND)data);
 	if (( hItem->flags & TLIF_VISIBLE ) && (!listData->filter || ( hItem->flags & TLIF_FILTERED )) && !( hItem->flags & TLIF_HASITEM ) && !( hItem->flags & TLIF_ROOT )) {
 		LVITEM lvi = {0};
 		lvi.mask = LVIF_INDENT | LVIF_PARAM | LVIF_IMAGE | LVIF_TEXT | LVIF_STATE;
@@ -545,7 +555,7 @@ static void sttTreeList_CreateItems(HTREELISTITEM hItem, LPARAM data)
 
 static void sttTreeList_CreateItems_List(HTREELISTITEM hItem, LPARAM data)
 {
-	TTreeList_Data *listData = (TTreeList_Data *)GetWindowLong((HWND)data, GWL_USERDATA);
+	TTreeList_Data *listData = (TTreeList_Data *)sttTreeList_GeWindowData((HWND)data);
 	if ((!listData->filter || ( hItem->flags & TLIF_FILTERED )) && !( hItem->flags & TLIF_HASITEM ) && !( hItem->flags & TLIF_ROOT )) {
 		LVITEM lvi = {0};
 		lvi.mask = LVIF_INDENT | LVIF_PARAM | LVIF_IMAGE | LVIF_TEXT | LVIF_STATE;

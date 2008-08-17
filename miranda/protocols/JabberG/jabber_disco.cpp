@@ -602,9 +602,7 @@ private:
 	CCtrlMButton m_btnBookmarks;
 	CCtrlMButton m_btnRefresh;
 	CCtrlMButton m_btnBrowse;
-	CCtrlMButton m_btnFilter;
-	CCtrlMButton m_btnFilterOff;
-	CCtrlEdit    m_txtFilter;
+	CCtrlFilterListView m_lstDiscoTree;
 
 	void btnViewAsTree_OnClick(CCtrlButton *);
 	void btnViewAsList_OnClick(CCtrlButton *);
@@ -612,8 +610,7 @@ private:
 	void btnBookmarks_OnClick(CCtrlButton *);
 	void btnRefresh_OnClick(CCtrlButton *);
 	void btnBrowse_OnClick(CCtrlButton *);
-	void btnFilter_OnClick(CCtrlButton *);
-	void btnFilterOff_OnClick(CCtrlButton *);
+	void lstDiscoTree_OnFilter(CCtrlFilterListView *);
 };
 
 CJabberDlgDiscovery::CJabberDlgDiscovery(CJabberProto *proto, TCHAR *jid) :
@@ -625,9 +622,7 @@ CJabberDlgDiscovery::CJabberDlgDiscovery(CJabberProto *proto, TCHAR *jid) :
 	m_btnBookmarks(this, IDC_BTN_FAVORITE, proto->LoadIconEx("bookmarks"), "Favorites"),
 	m_btnRefresh(this, IDC_BTN_REFRESH, proto->LoadIconEx("sd_nav_refresh"), "Refresh node"),
 	m_btnBrowse(this, IDC_BUTTON_BROWSE, proto->LoadIconEx("sd_browse"), "Browse"),
-	m_btnFilter(this, IDC_BTN_FILTERAPPLY, proto->LoadIconEx("sd_filter_apply"), "Apply filter"),
-	m_btnFilterOff(this, IDC_BTN_FILTERRESET, proto->LoadIconEx("sd_filter_reset"), "Reset filter"),
-	m_txtFilter(this, IDC_TXT_FILTER)
+	m_lstDiscoTree(this, IDC_TREE_DISCO, true, false)
 {
 	m_btnViewAsTree.OnClick = Callback(this, &CJabberDlgDiscovery::btnViewAsTree_OnClick);
 	m_btnViewAsList.OnClick = Callback(this, &CJabberDlgDiscovery::btnViewAsList_OnClick);
@@ -635,9 +630,7 @@ CJabberDlgDiscovery::CJabberDlgDiscovery(CJabberProto *proto, TCHAR *jid) :
 	m_btnBookmarks.OnClick = Callback(this, &CJabberDlgDiscovery::btnBookmarks_OnClick);
 	m_btnRefresh.OnClick = Callback(this, &CJabberDlgDiscovery::btnRefresh_OnClick);
 	m_btnBrowse.OnClick = Callback(this, &CJabberDlgDiscovery::btnBrowse_OnClick);
-	m_btnFilter.OnClick = Callback(this, &CJabberDlgDiscovery::btnFilter_OnClick);
-	m_btnFilterOff.OnClick = Callback(this, &CJabberDlgDiscovery::btnFilterOff_OnClick);
-	//m_txtFilter;
+	m_lstDiscoTree.OnFilterChanged = Callback(this, &CJabberDlgDiscovery::lstDiscoTree_OnFilter);
 }
 
 void CJabberDlgDiscovery::OnInitDialog()
@@ -677,7 +670,7 @@ void CJabberDlgDiscovery::OnInitDialog()
 	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_JID, "discoWnd_rcJid");
 	m_proto->ComboLoadRecentStrings(m_hwnd, IDC_COMBO_NODE, "discoWnd_rcNode");
 
-	HWND hwndList = GetDlgItem(m_hwnd, IDC_TREE_DISCO);
+	HWND hwndList = m_lstDiscoTree.GetHwnd();//GetDlgItem(m_hwnd, IDC_TREE_DISCO);
 	LVCOLUMN lvc = {0};
 	lvc.mask = LVCF_SUBITEM|LVCF_WIDTH|LVCF_TEXT;
 	lvc.cx = DBGetContactSettingWord(NULL, m_proto->m_szModuleName, "discoWnd_cx0", 200);
@@ -949,20 +942,9 @@ void CJabberDlgDiscovery::btnBrowse_OnClick(CCtrlButton *)
 	m_proto->PerformBrowse(m_hwnd);
 }
 
-void CJabberDlgDiscovery::btnFilter_OnClick(CCtrlButton *)
+void CJabberDlgDiscovery::lstDiscoTree_OnFilter(CCtrlFilterListView *)
 {
-	int length = GetWindowTextLength(GetDlgItem(m_hwnd, IDC_TXT_FILTERTEXT))+1;
-	TCHAR *txt = (TCHAR *)mir_alloc(sizeof(TCHAR)*length);
-	GetDlgItemText(m_hwnd, IDC_TXT_FILTERTEXT, txt, length);
-	TreeList_SetFilter(GetDlgItem(m_hwnd, IDC_TREE_DISCO), txt);
-	mir_free(txt);
-	EnableWindow(GetDlgItem(m_hwnd, IDC_BTN_FILTERRESET), TRUE);
-}
-
-void CJabberDlgDiscovery::btnFilterOff_OnClick(CCtrlButton *)
-{
-	TreeList_SetFilter(GetDlgItem(m_hwnd, IDC_TREE_DISCO), NULL);
-	EnableWindow(GetDlgItem(m_hwnd, IDC_BTN_FILTERRESET), FALSE);
+	TreeList_SetFilter(GetDlgItem(m_hwnd, IDC_TREE_DISCO), m_lstDiscoTree.GetFilterText());
 }
 
 BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)

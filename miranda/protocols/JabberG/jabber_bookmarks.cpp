@@ -191,14 +191,14 @@ private:
 	CCtrlMButton	m_btnAdd;
 	CCtrlMButton	m_btnEdit;
 	CCtrlMButton	m_btnRemove;
-	CCtrlListView	m_lvBookmarks;
+	CCtrlFilterListView	m_lvBookmarks;
 
-	void lvBookmarks_OnDoubleClick(CCtrlListView *)
+	void lvBookmarks_OnDoubleClick(CCtrlFilterListView *)
 	{
 		OpenBookmark();
 	}
 
-	void btnAdd_OnClick(CCtrlListView *)
+	void btnAdd_OnClick(CCtrlFilterListView *)
 	{
 		if (!m_proto->m_bJabberOnline) return;
 
@@ -208,7 +208,7 @@ private:
 		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), m_hwnd, JabberAddBookmarkDlgProc, (LPARAM)&param);
 	}
 
-	void btnEdit_OnClick(CCtrlListView *)
+	void btnEdit_OnClick(CCtrlFilterListView *)
 	{
 		if (!m_proto->m_bJabberOnline) return;
 
@@ -227,7 +227,7 @@ private:
 		DialogBoxParam( hInst, MAKEINTRESOURCE( IDD_BOOKMARK_ADD ), m_hwnd, JabberAddBookmarkDlgProc, (LPARAM)&param);
 	}
 
-	void btnRemove_OnClick(CCtrlListView *)
+	void btnRemove_OnClick(CCtrlFilterListView *)
 	{
 		if (!m_proto->m_bJabberOnline) return;
 
@@ -263,7 +263,7 @@ CJabberDlgBookmarks::CJabberDlgBookmarks(CJabberProto *proto) :
 	m_btnAdd(this,      IDC_ADD,    SKINICON_OTHER_ADDCONTACT, LPGEN("Add")),
 	m_btnEdit(this,     IDC_EDIT,   SKINICON_OTHER_RENAME,     LPGEN("Edit")),
 	m_btnRemove(this,   IDC_REMOVE, SKINICON_OTHER_DELETE,     LPGEN("Remove")),
-	m_lvBookmarks(this, IDC_BM_LIST)
+	m_lvBookmarks(this, IDC_BM_LIST, true, true)
 {
 	m_lvBookmarks.OnItemActivate = Callback(this, &CJabberDlgBookmarks::lvBookmarks_OnDoubleClick);
 	m_btnAdd.OnClick = Callback(this, &CJabberDlgBookmarks::btnAdd_OnClick);

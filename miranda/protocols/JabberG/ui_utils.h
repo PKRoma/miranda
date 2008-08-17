@@ -930,6 +930,28 @@ protected:
 	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
 };
 
+struct CFilterData;
+class CCtrlFilterListView : public CCtrlListView
+{
+	typedef CCtrlListView CSuper;
+
+public:
+	CCtrlFilterListView(CDlgBase* dlg, int ctrlId, bool trackFilter, bool keepHiglight);
+	~CCtrlFilterListView();
+
+	TCHAR *GetFilterText();
+	CCallback<CCtrlFilterListView> OnFilterChanged;
+
+protected:
+	CFilterData *fdat;
+	bool m_trackFilter;
+	bool m_keepHiglight;
+
+	void OnInit();
+	LRESULT CustomWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+	void FilterHighlight(TCHAR *filter);
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlTreeView
 
