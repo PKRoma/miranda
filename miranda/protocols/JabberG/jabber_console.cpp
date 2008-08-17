@@ -89,12 +89,12 @@ static void sttEmptyBuf(StringBuf *buf);
 #define RTF_ENDPLAINXML		"\\par"
 #define RTF_SEPARATOR		"\\sl-1\\slmult0\\highlight5\\cf5\\-\\par\\sl0"
 
-static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int indent);
+static void sttRtfAppendXml(StringBuf *buf, HXML node, DWORD flags, int indent);
 
-void CJabberProto::OnConsoleProcessXml(XmlNode& node, DWORD flags)
+void CJabberProto::OnConsoleProcessXml(HXML node, DWORD flags)
 {
 	if ( node && m_pDlgConsole ) {
-		if ( node.getName() ) {
+		if ( xmlGetName( node ) ) {
 			if ( FilterXml( node, flags )) {
 				StringBuf buf = {0};
 				sttAppendBufRaw(&buf, RTF_HEADER);
@@ -106,35 +106,35 @@ void CJabberProto::OnConsoleProcessXml(XmlNode& node, DWORD flags)
 			}
 		}
 		else {
-			for ( int i = 0; node.getChildCount(); i++ )
-				OnConsoleProcessXml( node.getChild(i), flags );
+			for ( int i = 0; i < xmlGetChildCount( node ); i++ )
+				OnConsoleProcessXml( xmlGetChild( node, i), flags );
 		}
 	}
 }
 
-bool CJabberProto::RecursiveCheckFilter(XmlNode& node, DWORD flags)
+bool CJabberProto::RecursiveCheckFilter(HXML node, DWORD flags)
 {
 	int i;
 
-	for (i = 0; i < node.getAttrCount(); ++i)
+	for (i = 0; i < xmlGetAttrCount(node); ++i)
 	{
-		if ( JabberStrIStr(node.getAttr(i), m_filterInfo.pattern ))
+		if ( JabberStrIStr( xmlGetAttr( node,i ), m_filterInfo.pattern ))
 			return true;
 	}
 
-	for (i = 0; i < node.getChildCount(); ++i) {
-		if (RecursiveCheckFilter(node.getChild(i), flags))
+	for (i = 0; i < xmlGetChildCount( node ); ++i) {
+		if (RecursiveCheckFilter( xmlGetChild( node, i ), flags))
 			return true;
 	}
 
 	return false;
 }
 
-bool CJabberProto::FilterXml(XmlNode& node, DWORD flags)
+bool CJabberProto::FilterXml(HXML node, DWORD flags)
 {
-	if (!m_filterInfo.msg && !lstrcmp(node.getName(), _T("message"))) return false;
-	if (!m_filterInfo.presence && !lstrcmp(node.getName(), _T("presence"))) return false;
-	if (!m_filterInfo.iq && !lstrcmp(node.getName(), _T("iq"))) return false;
+	if (!m_filterInfo.msg && !lstrcmp(xmlGetName( node ), _T("message"))) return false;
+	if (!m_filterInfo.presence && !lstrcmp(xmlGetName( node ), _T("presence"))) return false;
+	if (!m_filterInfo.iq && !lstrcmp(xmlGetName( node ), _T("iq"))) return false;
 	if (m_filterInfo.type == TFilterInfo::T_OFF) return true;
 
 	bool result = false;
@@ -144,7 +144,7 @@ bool CJabberProto::FilterXml(XmlNode& node, DWORD flags)
 	{
 		case TFilterInfo::T_JID:
 		{
-			const TCHAR *attrValue = node.getAttrValue((flags&JCPF_OUT)?_T("to"):_T("from"));
+			const TCHAR *attrValue = xmlGetAttrValue( node,(flags&JCPF_OUT)?_T("to"):_T("from"));
 			if (!attrValue) break;
 
 			result = JabberStrIStr(attrValue, m_filterInfo.pattern) ? true : false;
@@ -152,9 +152,9 @@ bool CJabberProto::FilterXml(XmlNode& node, DWORD flags)
 		}
 		case TFilterInfo::T_XMLNS:
 		{
-			if ( !node.getChildCount() ) break;
+			if ( !xmlGetChildCount( node )) break;
 
-			const TCHAR *attrValue = node.getChild(0).getAttrValue( _T("xmlns"));
+			const TCHAR *attrValue = xmlGetAttrValue( xmlGetChild( node, 0 ), _T("xmlns"));
 			if ( !attrValue )
 				break;
 
@@ -247,7 +247,7 @@ static void sttEmptyBuf(StringBuf *buf)
 	buf->offset = 0;
 }
 
-static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int indent)
+static void sttRtfAppendXml(StringBuf *buf, HXML node, DWORD flags, int indent)
 {
 	int i;
 	char *indentLevel = (char *)mir_alloc(128);
@@ -261,33 +261,33 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int inden
 	if (flags&JCPF_OUT)	sttAppendBufRaw(buf, "\\highlight4 ");
 	sttAppendBufRaw(buf, "<");
 	sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
-	sttAppendBufW(buf, (TCHAR*)node.getName());
+	sttAppendBufW(buf, (TCHAR*)xmlGetName( node ));
 	sttAppendBufRaw(buf, RTF_ENDTAGNAME);
 
-	for (i = 0; i < node.getAttrCount(); i++)
+	for (i = 0; i < xmlGetAttrCount( node); i++)
 	{
-		TCHAR* attr = ( TCHAR* )node.getAttrName( i );
+		TCHAR* attr = ( TCHAR* )xmlGetAttrName( node, i );
 		sttAppendBufRaw(buf, " ");
 		sttAppendBufRaw(buf, RTF_BEGINATTRNAME);
 		sttAppendBufW(buf, attr);
 		sttAppendBufRaw(buf, RTF_ENDATTRNAME);
 		sttAppendBufRaw(buf, "=\"");
 		sttAppendBufRaw(buf, RTF_BEGINATTRVAL);
-		sttAppendBufT(buf, ( TCHAR* )node.getAttr(i) );
+		sttAppendBufT(buf, ( TCHAR* )xmlGetAttr( node, i) );
 		sttAppendBufRaw(buf, "\"");
 		sttAppendBufRaw(buf, RTF_ENDATTRVAL);
 	}
 
-	if (node.getChild() || node.getText())
+	if ( xmlGetChild( node ) || xmlGetText( node ))
 	{
 		sttAppendBufRaw(buf, ">");
-		if (node.getChild())
+		if ( xmlGetChild( node ))
 			sttAppendBufRaw(buf, RTF_ENDTAG);
 	}
 
-	if (node.getText())
+	if (xmlGetText( node ))
 	{
-		if (node.getChildCount())
+		if ( xmlGetChildCount( node ))
 		{
 			sttAppendBufRaw(buf, RTF_BEGINTEXT);
 			char *indentTextLevel = (char *)mir_alloc(128);
@@ -296,21 +296,21 @@ static void sttRtfAppendXml(StringBuf *buf, XmlNode node, DWORD flags, int inden
 			mir_free(indentTextLevel);
 		}
 
-		sttAppendBufT(buf, node.getText());
-		if (node.getChild())
+		sttAppendBufT(buf, xmlGetText( node ));
+		if ( xmlGetChild( node ))
 			sttAppendBufRaw(buf, RTF_ENDTEXT);
 	}
 
-	for (i = 0; i < node.getChildCount() ; ++i)
-		sttRtfAppendXml(buf, node.getChild(i), flags & ~(JCPF_IN|JCPF_OUT), indent+1);
+	for (i = 0; i < xmlGetChildCount( node ) ; ++i)
+		sttRtfAppendXml(buf, xmlGetChild( node ,i), flags & ~(JCPF_IN|JCPF_OUT), indent+1);
 
-	if (node.getChildCount() || node.getText())
+	if (xmlGetChildCount( node ) || xmlGetText( node ))
 	{
 		sttAppendBufRaw(buf, RTF_BEGINTAG);
 		sttAppendBufRaw(buf, indentLevel);
 		sttAppendBufRaw(buf, "</");
 		sttAppendBufRaw(buf, RTF_BEGINTAGNAME);
-		sttAppendBufT(buf, node.getName());
+		sttAppendBufT(buf, xmlGetName( node ));
 		sttAppendBufRaw(buf, RTF_ENDTAGNAME);
 		sttAppendBufRaw(buf, ">");
 	} else
@@ -337,7 +337,7 @@ DWORD CALLBACK sttStreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, L
 	return 0;
 }
 
-static void JabberConsoleXmlCallback(XmlNode node, CJabberProto *ppro)
+static void JabberConsoleXmlCallback( HXML node, CJabberProto *ppro)
 {
 	ppro->OnConsoleProcessXml(node, JCPF_OUT);
 }

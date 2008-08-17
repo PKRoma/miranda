@@ -50,13 +50,13 @@ XmlNodeIq::XmlNodeIq( const char* type, LPCTSTR idStr, LPCTSTR to ) :
 	if ( idStr != NULL ) addAttr( "id",   idStr );
 }
 
-XmlNodeIq::XmlNodeIq( const char* type, XmlNode node, LPCTSTR to ) :
+XmlNodeIq::XmlNodeIq( const char* type, HXML node, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
 	if ( type  != NULL ) addAttr( "type", type  );
 	if ( to    != NULL ) addAttr( "to",   to    );
 	if ( node  != NULL ) {
-		const TCHAR *iqId = getAttrValue( _T( "id" ));
+		const TCHAR *iqId = xmlGetAttrValue( *this, _T( "id" ));
 		if ( iqId != NULL ) addAttr( "id", iqId );
 	}
 }
@@ -96,222 +96,220 @@ XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
 
 XmlNode::XmlNode( LPCTSTR pszName )
 {
-	__unused = xi.createNode( pszName, NULL );
+	m_hXml = xi.createNode( pszName, NULL );
 }
 
 XmlNode::XmlNode( LPCTSTR pszName, LPCTSTR ptszText )
 {
-	__unused = xi.createNode( pszName, ptszText );
+	m_hXml = xi.createNode( pszName, ptszText );
 }
 
 #if defined( _UNICODE )
 XmlNode::XmlNode( const char* pszName, const char* ptszText )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( ptszText );
-	__unused = xi.createNode( wszName, wszValue );
+	m_hXml = xi.createNode( wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 }
 #endif
 
 XmlNode::XmlNode( const XmlNode& n )
 {
-	__unused = xi.copyNode( n );
+	m_hXml = xi.copyNode( n );
 }
 
 XmlNode& XmlNode::operator =( const XmlNode& n )
 {	
-	if ( __unused )
-		xi.destroyNode( __unused );
-	__unused = xi.copyNode( n );
+	if ( m_hXml )
+		xi.destroyNode( m_hXml );
+	m_hXml = xi.copyNode( n );
 	return *this;
 }
 
 XmlNode::~XmlNode()
 {
-	if ( __unused ) {
-		xi.destroyNode( __unused );
-		__unused = NULL;
+	if ( m_hXml ) {
+		xi.destroyNode( m_hXml );
+		m_hXml = NULL;
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void XmlNode::addAttr( LPCTSTR name, LPCTSTR value )
+void __fastcall xmlAddAttr( HXML hXml, LPCTSTR name, LPCTSTR value )
 {
-	xi.addAttr( __unused, name, value );
+	xi.addAttr( hXml, name, value );
 }
 
-void XmlNode::addAttr( const char* pszName, LPCTSTR ptszValue )
+void __fastcall xmlAddAttr( HXML hXml, const char* pszName, LPCTSTR ptszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName );
-	xi.addAttr( __unused, wszName, ptszValue );
+	xi.addAttr( hXml, wszName, ptszValue );
 	mir_free( wszName );
 }
 
 #if defined( _UNICODE )
-void XmlNode::addAttr( const char* pszName, const char* pszValue )
+void __fastcall xmlAddAttr( HXML hXml, const char* pszName, const char* pszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	xi.addAttr( __unused, wszName, wszValue );
+	xi.addAttr( hXml, wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 }
 #endif
 
-void XmlNode::addAttr( LPCTSTR pszName, int value )
+void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, int value )
 {
-	xi.addAttrInt( __unused, pszName, value );
+	xi.addAttrInt( hXml, pszName, value );
 }
 
-void XmlNode::addAttrID( int id )
+void __fastcall xmlAddAttrID( HXML hXml, int id )
 {
 	TCHAR text[ 100 ];
 	mir_sntprintf( text, SIZEOF(text), _T("mir_%d"), id );
-	addAttr( _T("id"), text );
+	xmlAddAttr( hXml, _T("id"), text );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-XmlNode XmlNode::addChild( LPCTSTR name )
+void __fastcall xmlAddChild( HXML hXml, HXML n )
 {
-	return xi.addChild( __unused, name, NULL );
+	xi.addChild2( n, hXml );
 }
 
-XmlNode XmlNode::addChild( LPCTSTR name, LPCTSTR value )
+HXML XmlNode::addQuery( LPCTSTR szNameSpace )
 {
-	return xi.addChild( __unused, name, value );
+	HXML n = xmlAddChild( *this, "query" );
+	if ( n )
+		xmlAddAttr( n, "xmlns", szNameSpace );
+	return n;
 }
 
-XmlNode XmlNode::addChild( const char* pszName, LPCTSTR ptszValue )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+LPCTSTR __fastcall xmlGetAttr( HXML hXml, int n )
+{
+	return xi.getAttr( hXml, n );
+}
+
+int __fastcall xmlGetAttrCount( HXML hXml )
+{
+	return xi.getAttrCount( hXml );
+}
+
+LPCTSTR __fastcall xmlGetAttrName( HXML hXml, int n )
+{
+	return xi.getAttrName( hXml, n );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name )
+{
+	return xi.addChild( hXml, name, NULL );
+}
+
+HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, LPCTSTR value )
+{
+	return xi.addChild( hXml, name, value );
+}
+
+HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, LPCTSTR ptszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName );
-	HANDLE n = xi.addChild( __unused, wszName, ptszValue );
+	HANDLE n = xi.addChild( hXml, wszName, ptszValue );
 	mir_free( wszName );
 	return n;
 }
 
 #if defined( _UNICODE )
-XmlNode XmlNode::addChild( const char* pszName, const char* pszValue )
+HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, const char* pszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	HANDLE n = xi.addChild( __unused, wszName, wszValue );
+	HXML n = xi.addChild( hXml, wszName, wszValue );
 	mir_free( wszName ), mir_free( wszValue );
 	return n;
 }
 #endif
 
-XmlNode XmlNode::addChild( LPCTSTR name, int value )
+HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, int value )
 {
 	TCHAR buf[40];
 	_itot( value, buf, 10 );
-	return xi.addChild( __unused, name, buf );
-}
-
-void XmlNode::addChild( XmlNode& pNode )
-{
-	xi.addChild2( pNode, __unused );
-}
-
-XmlNode XmlNode::addQuery( LPCTSTR szNameSpace )
-{
-	XmlNode n = addChild( "query" );
-	if ( n )
-		n.addAttr( "xmlns", szNameSpace );
-	return n;
+	return xi.addChild( hXml, name, buf );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-LPTSTR XmlNode::getAsString()
+LPCTSTR __fastcall xmlGetAttrValue( HXML hXml, LPCTSTR key )
 {
-	int datalen;
-	return xi.toString( __unused, &datalen );
+	return xi.getAttrValue( hXml, key );
 }
 
-LPCTSTR XmlNode::getAttr( int n )
+HXML __fastcall xmlGetChild( HXML hXml, int n )
 {
-	return xi.getAttr( __unused, n );
+	return xi.getChild( hXml, n );
 }
 
-int XmlNode::getAttrCount()
+HXML __fastcall xmlGetChild( HXML hXml, LPCTSTR key )
 {
-	return xi.getAttrCount( __unused );
-}
-
-LPCTSTR XmlNode::getAttrName( int n )
-{
-	return xi.getAttrName( __unused, n );
-}
-
-LPCTSTR XmlNode::getAttrValue( LPCTSTR key )
-{
-	return xi.getAttrValue( __unused, key );
-}
-
-XmlNode XmlNode::getChild( int n )
-{
-	return xi.getChild( __unused, n );
-}
-
-XmlNode XmlNode::getChild( LPCTSTR key )
-{
-	return xi.getNthChild( __unused, key, 0 );
+	return xi.getNthChild( hXml, key, 0 );
 }
 
 #if defined( _UNICODE )
-XmlNode XmlNode::getChild( LPCSTR key )
+HXML __fastcall xmlGetChild( HXML hXml, LPCSTR key )
 {
 	LPTSTR wszKey = mir_a2t( key );
-	HANDLE result = xi.getNthChild( __unused, wszKey, 0 );
+	HANDLE result = xi.getNthChild( hXml, wszKey, 0 );
 	mir_free( wszKey );
-	return result;
-}
-
-XmlNode XmlNode::getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
-{
-	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
-	HANDLE result = xi.getChildByAttrValue( __unused, wszKey, wszName, attrValue );
-	mir_free( wszKey ), mir_free( wszName );
 	return result;
 }
 #endif
 
-XmlNode XmlNode::getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
+HXML __fastcall xmlGetChildByTag( HXML hXml, LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
 {
-	return xi.getChildByAttrValue( __unused, key, attrName, attrValue );
+	LPTSTR wszKey = mir_a2t( key ), wszName = mir_a2t( attrName );
+	HANDLE result = xi.getChildByAttrValue( hXml, wszKey, wszName, attrValue );
+	mir_free( wszKey ), mir_free( wszName );
+	return result;
 }
 
-int XmlNode::getChildCount() 
+HXML __fastcall xmlGetChildByTag( HXML hXml, LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
 {
-	return xi.getChildCount( __unused );
+	return xi.getChildByAttrValue( hXml, key, attrName, attrValue );
 }
 
-LPCTSTR XmlNode::getName()
+int __fastcall xmlGetChildCount( HXML hXml )
 {
-	return xi.getName( __unused );
+	return xi.getChildCount( hXml );
 }
 
-XmlNode XmlNode::getNthChild( LPCTSTR tag, int nth )
+HXML __fastcall xmlGetNthChild( HXML hXml, LPCTSTR tag, int nth )
 {
 	int i, num;
 
-	if ( !__unused || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
-		return XmlNode();
+	if ( !hXml || tag == NULL || _tcslen( tag ) <= 0 || nth < 1 )
+		return NULL;
 
 	num = 1;
 	for ( i=0; ; i++ ) {
-		XmlNode n = getChild(i);
+		HXML n = xi.getChild( hXml, i );
 		if ( !n )
 			break;
-		if ( !lstrcmp( tag, n.getName())) {
+		if ( !lstrcmp( tag, xmlGetName( n ))) {
 			if ( num == nth )
 				return n;
 
 			num++;
 	}	}
 
-	return XmlNode();
+	return NULL;
 }
 
-LPCTSTR XmlNode::getText()
+LPCTSTR __fastcall xmlGetName( HXML xml )
 {
-	return xi.getText( __unused );
+	return xi.getName( xml );
+}
+
+LPCTSTR __fastcall xmlGetText( HXML xml )
+{
+	return xi.getText( xml );
 }

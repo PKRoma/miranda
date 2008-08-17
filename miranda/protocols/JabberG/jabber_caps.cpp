@@ -82,16 +82,16 @@ JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	NULL,                             0                                }
 };
 
-void CJabberProto::OnIqResultCapsDiscoInfo( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultCapsDiscoInfo( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
 
-	XmlNode query = pInfo->GetChildNode();
+	HXML query = pInfo->GetChildNode();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT && query ) {
 		JabberCapsBits jcbCaps = 0;
-		XmlNode feature;
-		for ( int i = 1; ( feature = query.getNthChild( _T("feature"), i )) != NULL; i++ ) {
-			const TCHAR *featureName = feature.getAttrValue( _T("var"));
+		HXML feature;
+		for ( int i = 1; ( feature = xmlGetNthChild( query, _T("feature"), i )) != NULL; i++ ) {
+			const TCHAR *featureName = xmlGetAttrValue( feature, _T("var"));
 			if ( featureName ) {
 				for ( int j = 0; g_JabberFeatCapPairs[j].szFeature; j++ ) {
 					if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
@@ -181,11 +181,11 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 			
 			XmlNodeIq iq( pInfo );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
 
 			TCHAR queryNode[512];
 			mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, r->szCapsVer );
-			query.addAttr( "node", queryNode );
+			xmlAddAttr( query, "node", queryNode );
 			m_ThreadInfo->send( iq );
 
 			bRequestSent = TRUE;
@@ -208,11 +208,11 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 					m_clientCapsManager.SetClientCaps( r->szCapsNode, token, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
 
 					XmlNodeIq iq( pInfo );
-					XmlNode query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+					HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
 
 					TCHAR queryNode[512];
 					mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, token );
-					query.addAttr( "node", queryNode );
+					xmlAddAttr( query, "node", queryNode );
 					m_ThreadInfo->send( iq );
 
 					bRequestSent = TRUE;
@@ -246,7 +246,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwVersionRequestTime = pInfo->GetRequestTime();
 			
 			XmlNodeIq iq( pInfo );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_VERSION));
+			HXML query = iq.addQuery( _T(JABBER_FEAT_VERSION));
 			m_ThreadInfo->send( iq );
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		}
@@ -267,7 +267,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -310,7 +310,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			jcbMainCaps = JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -542,7 +542,7 @@ BOOL CJabberClientCapsManager::SetClientCaps( int nIqId, JabberCapsBits jcbCaps 
 	return bOk;
 }
 
-BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
+BOOL CJabberClientCapsManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
 	JabberCapsBits jcb = 0;
 
@@ -564,34 +564,34 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode iqNode, void* userdata
 
 	XmlNodeIq iq( "result", pInfo );
 
-	XmlNode query = iq.addChild( "query" );
-	query.addAttr( "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+	HXML query = xmlAddChild( iq, "query" );
+	xmlAddAttr( query, "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
 	if ( szNode )
-		query.addAttr( "node", szNode );
+		xmlAddAttr( query, "node", szNode );
 
-	XmlNode identity = query.addChild( "identity" );
-	identity.addAttr( "category", "client" );
-	identity.addAttr( "type", "pc" );
-	identity.addAttr( "name", "Miranda" );
+	HXML identity = xmlAddChild( query, "identity" );
+	xmlAddAttr( identity, "category", "client" );
+	xmlAddAttr( identity, "type", "pc" );
+	xmlAddAttr( identity, "name", "Miranda" );
 
 	for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 		if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
-			XmlNode feature = query.addChild( "feature" );
-			feature.addAttr( "var", g_JabberFeatCapPairs[i].szFeature );
+			HXML feature = xmlAddChild( query, "feature" );
+			xmlAddAttr( feature, "var", g_JabberFeatCapPairs[i].szFeature );
 	}
 
-	XmlNode form = iq.addChild( "x" );
-	form.addAttr( "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
-	form.addAttr( "type", _T("result") );
+	HXML form = xmlAddChild( iq, "x" );
+	xmlAddAttr( form, "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
+	xmlAddAttr( form, "type", _T("result") );
 
-	XmlNode field = form.addChild( "field" );
-	field.addAttr( "var", _T("FORM_TYPE") );
-	field.addAttr( "type", _T("hidden") );
-	field.addAttr( "value", _T("urn:xmpp:dataforms:softwareinfo") );
+	HXML field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("FORM_TYPE") );
+	xmlAddAttr( field, "type", _T("hidden") );
+	xmlAddAttr( field, "value", _T("urn:xmpp:dataforms:softwareinfo") );
 
-	field = form.addChild( "field" );
-	field.addAttr( "var", _T("os") );
-	field.addAttr( "value", _T("Windows") );
+	field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("os") );
+	xmlAddAttr( field, "value", _T("Windows") );
 
 	TCHAR* os = NULL;
 
@@ -622,17 +622,17 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode iqNode, void* userdata
 	}
 	if ( os == NULL ) os = _T( "Unknown" );
 
-	field = form.addChild( "field" );
-	field.addAttr( "var", _T("os_version") );
-	field.addAttr( "value", os );
+	field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("os_version") );
+	xmlAddAttr( field, "value", os );
 
-	field = form.addChild( "field" );
-	field.addAttr( "var", _T("software") );
-	field.addAttr( "value", _T("Miranda IM Jabber") );
+	field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("software") );
+	xmlAddAttr( field, "value", _T("Miranda IM Jabber") );
 
-	field = form.addChild( "field" );
-	field.addAttr( "var", _T("software_version") );
-	field.addAttr( "value", _T(__VERSION_STRING) );
+	field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("software_version") );
+	xmlAddAttr( field, "value", _T(__VERSION_STRING) );
 
 	DWORD dwCoreVersion = JCallService( MS_SYSTEM_GETVERSION, NULL, NULL );
 	TCHAR szCoreVersion[ 256 ];
@@ -640,22 +640,22 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( XmlNode iqNode, void* userdata
 		( dwCoreVersion >> 24 ) & 0xFF, ( dwCoreVersion >> 16 ) & 0xFF,
 		( dwCoreVersion >> 8)  & 0xFF, dwCoreVersion & 0xFF );
 
-	field = form.addChild( "field" );
-	field.addAttr( "var", _T("x-miranda-core-version") );
-	field.addAttr( "value", szCoreVersion );
+	field = xmlAddChild( form, "field" );
+	xmlAddAttr( field, "var", _T("x-miranda-core-version") );
+	xmlAddAttr( field, "value", szCoreVersion );
 
 	char szMirandaVersion[100];
 	if (!JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( szMirandaVersion ), ( LPARAM )szMirandaVersion ))
 	{
 		_strlwr( szMirandaVersion );
 
-		field = form.addChild( "field" );
-		field.addAttr( "var", _T("x-miranda-is-unicode") );
-		field.addAttr( "value", strstr( szMirandaVersion, "unicode" ) ? _T("1") : _T("0") );
+		field = xmlAddChild( form, "field" );
+		xmlAddAttr( field, "var", _T("x-miranda-is-unicode") );
+		xmlAddAttr( field, "value", strstr( szMirandaVersion, "unicode" ) ? _T("1") : _T("0") );
 
-		field = form.addChild( "field" );
-		field.addAttr( "var", _T("x-miranda-is-alpha") );
-		field.addAttr( "value", strstr( szMirandaVersion, "alpha" ) ? _T("1") : _T("0") );
+		field = xmlAddChild( form, "field" );
+		xmlAddAttr( field, "var", _T("x-miranda-is-alpha") );
+		xmlAddAttr( field, "value", strstr( szMirandaVersion, "alpha" ) ? _T("1") : _T("0") );
 	}
 
 	ppro->m_ThreadInfo->send( iq );

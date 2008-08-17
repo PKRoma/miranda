@@ -241,12 +241,10 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 	replaceStr( item->nick, nick );
 
 	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;
-	XmlNode* x = new XmlNode( _T("x")); x->addChild( "xmlns", JABBER_FEAT_MUC );
+	XmlNode x( _T("x")); xmlAddChild( x, "xmlns", JABBER_FEAT_MUC );
 	if ( password && password[0]!='\0' )
-		x->addChild( "password", password );
-//	XmlNode history = x.addChild( "history" );
-//	history.addAttr( "maxstanzas", 20 );
-	SendPresenceTo( status, text, *x );
+		xmlAddChild( x, "password", password );
+	SendPresenceTo( status, text, x );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +272,7 @@ static int sttRoomListAppend(HWND hwndList, RoomInfo::Overlay overlay, const TCH
 	return id;
 }
 
-void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberIqInfo *pInfo)
+void CJabberProto::OnIqResultDiscovery(HXML iqNode, void *userdata, CJabberIqInfo *pInfo)
 {
 	if (!iqNode || !userdata || !pInfo)
 		return;
@@ -285,7 +283,7 @@ void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberI
 
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
 	{
-		XmlNode query = iqNode.getChild( "query" );
+		HXML query = xmlGetChild( iqNode , "query" );
 		if ( !query )
 		{
 			sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
@@ -295,10 +293,10 @@ void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberI
 		} else
 		{
 			bool found = false;
-			XmlNode item;
-			for ( int i = 1; item = query.getNthChild( _T("item"), i ); i++ )
+			HXML item;
+			for ( int i = 1; item = xmlGetNthChild( query, _T("item"), i ); i++ )
 			{
-				const TCHAR *jid = item.getAttrValue( _T("jid"));
+				const TCHAR *jid = xmlGetAttrValue( item, _T("jid"));
 				TCHAR *name = NEWTSTR_ALLOCA(jid);
 				if (name)
 				{
@@ -311,7 +309,7 @@ void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberI
 
 				sttRoomListAppend(hwndList,
 					ListGetItemPtr(LIST_BOOKMARK, jid) ? RoomInfo::ROOM_BOOKMARK : RoomInfo::ROOM_DEFAULT,
-					item.getAttrValue( _T("name")),
+					xmlGetAttrValue( item, _T("name")),
 					jid, name);
 
 				found = true;
@@ -328,7 +326,7 @@ void CJabberProto::OnIqResultDiscovery(XmlNode& iqNode, void *userdata, CJabberI
 	} else
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_ERROR )
 	{
-		XmlNode errorNode = iqNode.getChild( "error" );
+		HXML errorNode = xmlGetChild( iqNode , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
 		sttRoomListAppend(hwndList, RoomInfo::ROOM_FAIL,
 			TranslateT("Jabber Error"),
@@ -757,23 +755,23 @@ void CJabberProto::GroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGroupchatProcessPresence - handles the group chat presence packet
 
-static int sttGetStatusCode( XmlNode node )
+static int sttGetStatusCode( HXML node )
 {
-	XmlNode statusNode = node.getChild( "status" );
+	HXML statusNode = xmlGetChild( node , "status" );
 	if ( statusNode == NULL )
 		return -1;
 
-	const TCHAR* statusCode = statusNode.getAttrValue( _T("code"));
+	const TCHAR* statusCode = xmlGetAttrValue( statusNode, _T("code"));
 	if ( statusCode == NULL )
 		return -1;
 
 	return _ttol( statusCode );
 }
 
-void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, XmlNode& itemNode )
+void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* oldNick, HXML itemNode )
 {
-	const TCHAR* newNick = itemNode.getAttrValue( _T("nick"));
-	const TCHAR* jid = itemNode.getAttrValue( _T("jid"));
+	const TCHAR* newNick = xmlGetAttrValue( itemNode, _T("nick"));
+	const TCHAR* jid = xmlGetAttrValue( itemNode, _T("jid"));
 	if ( newNick == NULL )
 		return;
 
@@ -812,19 +810,19 @@ void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* o
 			break;
 }	}	}
 
-void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
+void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 {
 	ThreadData* info;
-	XmlNode showNode, statusNode, errorNode, itemNode, n, priorityNode;
+	HXML showNode, statusNode, errorNode, itemNode, n, priorityNode;
 	const TCHAR* from;
 	int status, newRes = 0;
 	bool bStatusChanged = false;
 	int i;
 	BOOL roomCreated;
 
-	if ( !node || !node.getName() || lstrcmp( node.getName(), _T("presence"))) return;
+	if ( !node || !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("presence"))) return;
 	if (( info = ( ThreadData* ) userdata ) == NULL ) return;
-	if (( from = node.getAttrValue( _T("from"))) == NULL ) return;
+	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 
 	const TCHAR* nick = _tcschr( from, '/' );
 	if ( nick == NULL || nick[1] == '\0' )
@@ -835,9 +833,9 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 	if ( item == NULL )
 		return;
 
-	XmlNode xNode = node.getChildByTag( "x", "xmlns", _T("http://jabber.org/protocol/muc#user"));
+	HXML xNode = xmlGetChildByTag( node, "x", "xmlns", _T("http://jabber.org/protocol/muc#user"));
 
-	const TCHAR* type = node.getAttrValue( _T("type"));
+	const TCHAR* type = xmlGetAttrValue( node, _T("type"));
 	if ( type == NULL || !_tcscmp( type, _T("available"))) {
 		TCHAR* room = JabberNickFromJID( from );
 		if ( room == NULL )
@@ -847,23 +845,23 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 
 		// Update status of room participant
 		status = ID_STATUS_ONLINE;
-		if (( showNode = node.getChild( "show" )) != NULL ) {
-			if ( showNode.getText() != NULL ) {
-				if ( !_tcscmp( showNode.getText() , _T("away"))) status = ID_STATUS_AWAY;
-				else if ( !_tcscmp( showNode.getText() , _T("xa"))) status = ID_STATUS_NA;
-				else if ( !_tcscmp( showNode.getText() , _T("dnd"))) status = ID_STATUS_DND;
-				else if ( !_tcscmp( showNode.getText() , _T("chat"))) status = ID_STATUS_FREECHAT;
+		if (( showNode = xmlGetChild( node , "show" )) != NULL ) {
+			if ( xmlGetText( showNode ) != NULL ) {
+				if ( !_tcscmp( xmlGetText( showNode ) , _T("away"))) status = ID_STATUS_AWAY;
+				else if ( !_tcscmp( xmlGetText( showNode ) , _T("xa"))) status = ID_STATUS_NA;
+				else if ( !_tcscmp( xmlGetText( showNode ) , _T("dnd"))) status = ID_STATUS_DND;
+				else if ( !_tcscmp( xmlGetText( showNode ) , _T("chat"))) status = ID_STATUS_FREECHAT;
 		}	}
 
 		const TCHAR* str;
-		if (( statusNode = node.getChild( "status" )) != NULL && statusNode.getText() != NULL )
-			str = statusNode.getText();
+		if (( statusNode = xmlGetChild( node , "status" )) != NULL && xmlGetText( statusNode ) != NULL )
+			str = xmlGetText( statusNode );
 		else
 			str = NULL;
 
 		char priority = 0;
-		if (( priorityNode = node.getChild( "priority" )) != NULL && priorityNode.getText() != NULL )
-			priority = (char)_ttoi( priorityNode.getText() );
+		if (( priorityNode = xmlGetChild( node , "priority" )) != NULL && xmlGetText( priorityNode ) != NULL )
+			priority = (char)_ttoi( xmlGetText( priorityNode ) );
 
 		if (JABBER_RESOURCE_STATUS *oldRes = ListFindResource(LIST_CHATROOM, from))
 			if ((oldRes->status != status) || lstrcmp_null(oldRes->statusMessage, str))
@@ -875,21 +873,21 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 
 		// Check additional MUC info for this user
 		if ( xNode != NULL ) {
-			if (( itemNode = node.getChild( "item" )) != NULL ) {
+			if (( itemNode = xmlGetChild( node , "item" )) != NULL ) {
 				JABBER_RESOURCE_STATUS* r = item->resource;
 				for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, nick ); i++, r++ );
 				if ( i < item->resourceCount ) {
 					JABBER_GC_AFFILIATION affiliation = r->affiliation;
 					JABBER_GC_ROLE role = r->role;
 
-					if (( str = node.getAttrValue( _T("affiliation"))) != NULL ) {
+					if (( str = xmlGetAttrValue( node, _T("affiliation"))) != NULL ) {
 						     if ( !_tcscmp( str, _T("owner")))       affiliation = AFFILIATION_OWNER;
 						else if ( !_tcscmp( str, _T("admin")))       affiliation = AFFILIATION_ADMIN;
 						else if ( !_tcscmp( str, _T("member")))      affiliation = AFFILIATION_MEMBER;
 						else if ( !_tcscmp( str, _T("none")))	     affiliation = AFFILIATION_NONE;
 						else if ( !_tcscmp( str, _T("outcast")))     affiliation = AFFILIATION_OUTCAST;
 					}
-					if (( str = node.getAttrValue( _T("role"))) != NULL ) {
+					if (( str = xmlGetAttrValue( node, _T("role"))) != NULL ) {
 						     if ( !_tcscmp( str, _T("moderator")))   role = ROLE_MODERATOR;
 						else if ( !_tcscmp( str, _T("participant"))) role = ROLE_PARTICIPANT;
 						else if ( !_tcscmp( str, _T("visitor")))     role = ROLE_VISITOR;
@@ -897,7 +895,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 					}
 
 					if ( (role != ROLE_NONE) && (JabberGcGetStatus(r) != JabberGcGetStatus(affiliation, role)) ) {
-						GcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, XmlNode() );
+						GcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
 						if (!newRes) newRes = GC_EVENT_ADDSTATUS;
 					}
 
@@ -912,7 +910,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 							GcLogShowInformation(item, r, INFO_ROLE);
 					}
 
-					if ( str = itemNode.getAttrValue( _T("jid")))
+					if ( str = xmlGetAttrValue( itemNode, _T("jid")))
 						replaceStr( r->szRealJid, str );
 			}	}
 
@@ -926,7 +924,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 				GcLogShowInformation(item, res, INFO_STATUS);
 
 		// Update groupchat log window
-		GcLogUpdateMemberStatus( item, nick, str, newRes, XmlNode() );
+		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
 
 		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
@@ -941,8 +939,8 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 
 		// Check <created/>
 		if ( roomCreated ||
-			(( n = node.getChild( "created" ))!=NULL &&
-				( str = n.getAttrValue( _T("xmlns")))!=NULL &&
+			(( n = xmlGetChild( node , "created" ))!=NULL &&
+				( str = xmlGetAttrValue( n, _T("xmlns")))!=NULL &&
 				!_tcscmp( str, _T("http://jabber.org/protocol/muc#owner"))) ) {
 			// A new room just created by me
 			// Request room config
@@ -950,7 +948,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
 
 			XmlNodeIq iq( "get", iqId, item->jid );
-			XmlNode query = iq.addQuery( xmlnsOwner );
+			iq.addQuery( xmlnsOwner );
 			m_ThreadInfo->send( iq );
 		}
 
@@ -959,9 +957,9 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 	else if ( !lstrcmp( type, _T("unavailable"))) {
 		const TCHAR* str = 0;
 		if ( xNode != NULL && item->nick != NULL ) {
-			itemNode = xNode.getChild( "item" );
-			XmlNode reasonNode = xNode.getChild( "reason" );
-			str = itemNode.getAttrValue( _T( "jid" ));
+			itemNode = xmlGetChild( xNode , "item" );
+			HXML reasonNode = xmlGetChild( xNode , "reason" );
+			str = xmlGetAttrValue( itemNode, _T( "jid" ));
 			int iStatus = sttGetStatusCode( xNode );
 			if (iStatus == 301)
 			{
@@ -998,7 +996,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 					return;
 		}	}	}
 
-		statusNode = node.getChild( "status" );
+		statusNode = xmlGetChild( node , "status" );
 		ListRemoveResource( LIST_CHATROOM, from );
 		GcLogUpdateMemberStatus( item, nick, str, GC_EVENT_PART, statusNode );
 
@@ -1007,7 +1005,7 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 			JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		errorNode = node.getChild( "error" );
+		errorNode = xmlGetChild( node , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode );
 		MessageBox( NULL, str, TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
 		//JabberListRemoveResource( LIST_CHATROOM, from );
@@ -1017,19 +1015,19 @@ void CJabberProto::GroupchatProcessPresence( XmlNode& node, void *userdata )
 		mir_free( str );
 }	}
 
-void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
+void CJabberProto::GroupchatProcessMessage( HXML node, void *userdata )
 {
 	ThreadData* info;
-	XmlNode n, xNode;
+	HXML n, xNode;
 	const TCHAR* from, *type, *p, *nick;
 	JABBER_LIST_ITEM *item;
 
-	if ( !node.getName() || lstrcmp( node.getName(), _T("message"))) return;
+	if ( !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("message"))) return;
 	if (( info=( ThreadData* ) userdata ) == NULL ) return;
-	if (( from = node.getAttrValue( _T("from"))) == NULL ) return;
+	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 	if (( item = ListGetItemPtr( LIST_CHATROOM, from )) == NULL ) return;
 
-	if (( type = node.getAttrValue( _T("type"))) == NULL ) return;
+	if (( type = xmlGetAttrValue( node, _T("type"))) == NULL ) return;
 	if ( !lstrcmp( type, _T("error")))
 		return;
 
@@ -1038,11 +1036,11 @@ void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
 
 	TCHAR* msgText = NULL;
 	
-	if (( n = node.getChild( "subject" )) != NULL ) {
-		if ( n.getText() == NULL || n.getText()[0] == '\0' )
+	if (( n = xmlGetChild( node , "subject" )) != NULL ) {
+		if ( xmlGetText( n ) == NULL || xmlGetText( n )[0] == '\0' )
 			return;
 
-		msgText = ( TCHAR* )n.getText();
+		msgText = ( TCHAR* )xmlGetText( n );
 
 		gcd.iType = GC_EVENT_TOPIC;
 
@@ -1057,8 +1055,8 @@ void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
 		replaceStr(item->itemResource.statusMessage, msgText);
 	}
 	else {
-		if (( n = node.getChild( "body" )) == NULL ) return;
-		if ( n.getText() == NULL )
+		if (( n = xmlGetChild( node , "body" )) == NULL ) return;
+		if ( xmlGetText( n ) == NULL )
 			return;
 
 		nick = _tcschr( from, '/' );
@@ -1066,7 +1064,7 @@ void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
 			return;
 		nick++;
 
-		msgText = ( TCHAR* )n.getText();
+		msgText = ( TCHAR* )xmlGetText( n );
 
 		if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
 			msgText += 4;
@@ -1079,10 +1077,10 @@ void CJabberProto::GroupchatProcessMessage( XmlNode& node, void *userdata )
 
 	time_t msgTime = 0;
 	BOOL delivered = FALSE;
-	for ( int i = 1; ( xNode = node.getNthChild( _T("x"), i )) != NULL; i++ )
-		if (( p = xNode.getAttrValue( _T("xmlns"))) != NULL )
+	for ( int i = 1; ( xNode = xmlGetNthChild( node, _T("x"), i )) != NULL; i++ )
+		if (( p = xmlGetAttrValue( xNode, _T("xmlns"))) != NULL )
 			if ( !_tcscmp( p, _T("jabber:x:delay")) && msgTime==0 )
-				if (( p = xNode.getAttrValue( _T("stamp"))) != NULL )
+				if (( p = xmlGetAttrValue( xNode, _T("stamp"))) != NULL )
 					msgTime = JabberIsoToUnixTime( p );
 
 	time_t now = time( NULL );

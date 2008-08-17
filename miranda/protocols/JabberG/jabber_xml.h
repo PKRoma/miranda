@@ -33,10 +33,46 @@ Last change by : $Author$
 
 #include <m_xml.h>
 
+typedef HANDLE HXML;
+
+void    __fastcall xmlAddChild( HXML, HXML );
+HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName );
+HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName, LPCTSTR ptszValue );
+HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName, int iValue );
+HXML    __fastcall xmlAddChild( HXML, LPCSTR pszName, LPCTSTR ptszValue );
+#if defined( _UNICODE )
+	HXML __fastcall xmlAddChild( HXML, LPCSTR pszName, LPCSTR pszValue = NULL );
+#endif
+
+LPCTSTR __fastcall xmlGetAttrValue( HXML, LPCTSTR key );
+HXML    __fastcall xmlGetChild( HXML, int n = 0 );
+HXML    __fastcall xmlGetChild( HXML, LPCSTR key );
+HXML    __fastcall xmlGetChild( HXML, LPCTSTR key );
+int     __fastcall xmlGetChildCount( HXML );
+HXML    __fastcall xmlGetChildByTag( HXML, LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue );
+HXML    __fastcall xmlGetChildByTag( HXML, LPCSTR key, LPCSTR attrName, LPCTSTR attrValue );
+HXML    __fastcall xmlGetNthChild( HXML, LPCTSTR key, int n = 0 );
+
+LPCTSTR __fastcall xmlGetName( HXML );
+LPCTSTR __fastcall xmlGetText( HXML );
+
+void    __fastcall xmlAddAttr( HXML, LPCTSTR pszName, LPCTSTR ptszValue );
+void    __fastcall xmlAddAttr( HXML, LPCSTR pszName, LPCTSTR ptszValue );
+#if defined( _UNICODE )
+	void __fastcall xmlAddAttr( HXML, LPCSTR pszName, LPCSTR pszValue );
+#endif
+void    __fastcall xmlAddAttr( HXML, LPCTSTR pszName, int value );
+void    __fastcall xmlAddAttrID( HXML, int id );
+
+int     __fastcall xmlGetAttrCount( HXML );
+LPCTSTR __fastcall xmlGetAttr( HXML, int n );
+LPCTSTR __fastcall xmlGetAttrName( HXML, int n );
+LPCTSTR __fastcall xmlGetAttrValue( HXML, LPCTSTR key );
+
 struct XmlNode
 {
-	__forceinline XmlNode() { __unused = NULL; }
-	__forceinline XmlNode( HANDLE h ) { __unused = h; }
+	__forceinline XmlNode() { m_hXml = NULL; }
+	__forceinline XmlNode( HXML h ) { m_hXml = h; }
 
 	XmlNode( const XmlNode& n );
 	XmlNode( LPCTSTR name );
@@ -48,48 +84,22 @@ struct XmlNode
 
 	XmlNode& operator =( const XmlNode& n );
 
-	__forceinline operator HANDLE() const
-	{	return __unused;
+	__forceinline operator HXML() const
+	{	return m_hXml;
 	}
 
-	void addAttr( LPCTSTR pszName, LPCTSTR ptszValue );
-	void addAttr( LPCSTR pszName, LPCTSTR ptszValue );
+	void __forceinline addAttr( LPCTSTR pszName, LPCTSTR ptszValue ) { xmlAddAttr( m_hXml, pszName, ptszValue ); }
+	void __forceinline addAttr( LPCSTR pszName, LPCTSTR ptszValue ) { xmlAddAttr( m_hXml, pszName, ptszValue ); }
 	#if defined( _UNICODE )
-		void addAttr( LPCSTR pszName, LPCSTR pszValue );
+		void __forceinline addAttr( LPCSTR pszName, LPCSTR pszValue ) { xmlAddAttr( m_hXml, pszName, pszValue ); }
 	#endif
-	void addAttr( LPCTSTR pszName, int value );
-	void addAttrID( int id );
+	void __forceinline addAttr( LPCTSTR pszName, int value ) { xmlAddAttr( m_hXml, pszName, value ); }
+	void __forceinline addAttrID( int id ) { xmlAddAttrID( m_hXml, id ); }
 
-	int     getAttrCount();
-	LPCTSTR getAttr( int n );
-	LPCTSTR getAttrName( int n );
-	LPCTSTR getAttrValue( LPCTSTR attrName );
-
-	void    addChild( XmlNode& );
-	XmlNode addChild( LPCTSTR pszName );
-	XmlNode addChild( LPCTSTR pszName, LPCTSTR ptszValue );
-	XmlNode addChild( LPCTSTR pszName, int iValue );
-	XmlNode addChild( LPCSTR pszName, LPCTSTR ptszValue );
-	#if defined( _UNICODE )
-		XmlNode addChild( LPCSTR pszName, LPCSTR pszValue = NULL );
-	#endif
-	XmlNode getChild( int n = 0 );
-	XmlNode getChild( LPCSTR key );
-	XmlNode getChild( LPCTSTR key );
-	int     getChildCount();
-	XmlNode getChildByTag( LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue );
-	XmlNode getChildByTag( LPCSTR key, LPCSTR attrName, LPCTSTR attrValue );
-	XmlNode getNthChild( LPCTSTR key, int n = 0 );
-
-	XmlNode addQuery( LPCTSTR szNameSpace );
-
-	LPCTSTR getName();
-	LPCTSTR getText();
-
-	LPTSTR getAsString();
+	HXML    addQuery( LPCTSTR szNameSpace );
 
 private:
-	HANDLE __unused;
+	HXML m_hXml;
 };
 
 class CJabberIqInfo;
@@ -98,7 +108,7 @@ struct XmlNodeIq : public XmlNode
 {
 	XmlNodeIq( const char* type, int id = -1, const TCHAR* to = NULL );
 	XmlNodeIq( const char* type, const TCHAR* idStr, const TCHAR* to );
-	XmlNodeIq( const char* type, XmlNode node, const TCHAR* to );
+	XmlNodeIq( const char* type, HXML node, const TCHAR* to );
 	#if defined( _UNICODE )
 		XmlNodeIq( const char* type, int id, const char* to );
 	#endif
@@ -108,11 +118,6 @@ struct XmlNodeIq : public XmlNode
 	XmlNodeIq( const char* type, CJabberIqInfo* pInfo );
 };
 
-typedef void ( *JABBER_XML_CALLBACK )( XmlNode, void* );
-
-inline XmlNode& operator+( XmlNode& n1, XmlNode& n2 )
-{	n1.addChild( n2 );
-	return n1;
-}
+typedef void ( *JABBER_XML_CALLBACK )( HXML, void* );
 
 #endif

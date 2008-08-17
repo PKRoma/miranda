@@ -39,7 +39,7 @@ public:
 	virtual ~CPepService();
 
 	TCHAR *GetNode() { return m_node; }
-	virtual void ProcessItems(const TCHAR *from, XmlNode items) = 0;
+	virtual void ProcessItems(const TCHAR *from, HXML items) = 0;
 
 	void Publish();
 	void Retract();
@@ -54,7 +54,7 @@ protected:
 	char *m_name;
 	TCHAR *m_node;
 
-	virtual void CreateData(XmlNode itemNode) = 0;
+	virtual void CreateData(HXML itemNode) = 0;
 };
 
 class CPepServiceList: public OBJLIST<CPepService>
@@ -62,12 +62,12 @@ class CPepServiceList: public OBJLIST<CPepService>
 public:
 	CPepServiceList(): OBJLIST<CPepService>(1) {}
 
-	void ProcessEvent(const TCHAR *from, XmlNode eventNode)
+	void ProcessEvent(const TCHAR *from, HXML eventNode)
 	{
 		for (int i = 0; i < getCount(); ++i)
 		{
 			CPepService &pepSvc = (*this)[i];
-			XmlNode itemsNode = eventNode.getChildByTag( _T("items"), _T("node"), pepSvc.GetNode());
+			HXML itemsNode = xmlGetChildByTag( eventNode, _T("items"), _T("node"), pepSvc.GetNode());
 			if ( itemsNode )
 				pepSvc.ProcessItems(from, itemsNode);
 		}
@@ -144,7 +144,7 @@ public:
 	CPepMood(CJabberProto *proto);
 	~CPepMood();
 	void InitGui();
-	void ProcessItems(const TCHAR *from, XmlNode items);
+	void ProcessItems(const TCHAR *from, HXML items);
 	void ResetExtraIcon(HANDLE hContact);
 
 public: // FIXME: ugly hack
@@ -153,7 +153,7 @@ public: // FIXME: ugly hack
 	int m_mode;
 
 protected:
-	void CreateData(XmlNode itemNode);
+	void CreateData(HXML itemNode);
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szMood);
 
@@ -167,7 +167,7 @@ public:
 	CPepActivity(CJabberProto *proto);
 	~CPepActivity();
 	void InitGui();
-	void ProcessItems(const TCHAR *from, XmlNode items);
+	void ProcessItems(const TCHAR *from, HXML items);
 	void ResetExtraIcon(HANDLE hContact);
 
 protected:
@@ -175,7 +175,7 @@ protected:
 	TCHAR *m_text;
 	int m_mode;
 
-	void CreateData(XmlNode itemNode);
+	void CreateData(HXML itemNode);
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szActivity);
 

@@ -131,10 +131,11 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 				IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetAvatar );
 
 				XmlNodeIq iq( "get", iqId, szJid );
-				if ( isXVcard )
-					iq.addChild( "vCard" ).addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
-				else
-					iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
+				if ( isXVcard ) {
+					HXML vcard = xmlAddChild( iq, "vCard" );
+					xmlAddAttr( vcard, "xmlns", JABBER_FEAT_VCARD_TEMP );
+				}
+				else iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
 				m_ThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -534,10 +535,10 @@ int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
 		XmlNode m( _T("message"));
-		m.addAttr( "type", "headline" );
-		m.addAttr( "to", dbv.ptszVal );
-		XmlNode pAttention = m.addChild( "attention" );
-		pAttention.addAttr( "xmlns", JABBER_FEAT_ATTENTION );
+		xmlAddAttr( m, "type", "headline" );
+		xmlAddAttr( m, "to", dbv.ptszVal );
+		HXML pAttention = xmlAddChild( m, "attention" );
+		xmlAddAttr( pAttention, "xmlns", JABBER_FEAT_ATTENTION );
 		m_ThreadInfo->send( m );
 
 		JFreeVariant( &dbv );
@@ -553,40 +554,40 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 	if ( pParams->m_nType == CJabberHttpAuthParams::IQ ) {
 		XmlNodeIq iq( bAuthorized ? "result" : "error", pParams->m_szIqId, pParams->m_szFrom );
 		if ( !bAuthorized ) {
-			XmlNode pConfirm = iq.addChild( "confirm" );
-			pConfirm.addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
-			pConfirm.addAttr( "id", pParams->m_szId );
-			pConfirm.addAttr( "method", pParams->m_szMethod );
-			pConfirm.addAttr( "url", pParams->m_szUrl );
+			XmlNode pConfirm = xmlAddChild( iq, "confirm" );
+			xmlAddAttr( pConfirm, "xmlns", JABBER_FEAT_HTTP_AUTH );
+			xmlAddAttr( pConfirm, "id", pParams->m_szId );
+			xmlAddAttr( pConfirm, "method", pParams->m_szMethod );
+			xmlAddAttr( pConfirm, "url", pParams->m_szUrl );
 
-			XmlNode pError = iq.addChild( "error" );
-			pError.addAttr( "code", "401" );
-			pError.addAttr( "type", "auth" );
-			XmlNode pNA = pError.addChild( "not-authorized" );
-			pNA.addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+			HXML pError = xmlAddChild( iq, "error" );
+			xmlAddAttr( pError, "code", "401" );
+			xmlAddAttr( pError, "type", "auth" );
+			HXML pNA = xmlAddChild( pError, "not-authorized" );
+			xmlAddAttr( pNA, "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
 		}
 		m_ThreadInfo->send( iq );
 	}
 	else if ( pParams->m_nType == CJabberHttpAuthParams::MSG ) {
 		XmlNode msg( _T("message"));
-		msg.addAttr( "to", pParams->m_szFrom );
+		xmlAddAttr( msg, "to", pParams->m_szFrom );
 		if ( !bAuthorized )
-			msg.addAttr( "type", "error" );
+			xmlAddAttr( msg, "type", "error" );
 		if ( pParams->m_szThreadId )
-			msg.addChild( "thread", pParams->m_szThreadId );
+			xmlAddChild( msg, "thread", pParams->m_szThreadId );
 
-		XmlNode pConfirm = msg.addChild( "confirm" );
-		pConfirm.addAttr( "xmlns", JABBER_FEAT_HTTP_AUTH );
-		pConfirm.addAttr( "id", pParams->m_szId );
-		pConfirm.addAttr( "method", pParams->m_szMethod );
-		pConfirm.addAttr( "url", pParams->m_szUrl );
+		HXML pConfirm = xmlAddChild( msg, "confirm" );
+		xmlAddAttr( pConfirm, "xmlns", JABBER_FEAT_HTTP_AUTH );
+		xmlAddAttr( pConfirm, "id", pParams->m_szId );
+		xmlAddAttr( pConfirm, "method", pParams->m_szMethod );
+		xmlAddAttr( pConfirm, "url", pParams->m_szUrl );
 
 		if ( !bAuthorized ) {
-			XmlNode pError = msg.addChild( "error" );
-			pError.addAttr( "code", "401" );
-			pError.addAttr( "type", "auth" );
-			XmlNode pNA = pError.addChild( "not-authorized" );
-			pNA.addAttr( "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+			HXML pError = xmlAddChild( msg, "error" );
+			xmlAddAttr( pError, "code", "401" );
+			xmlAddAttr( pError, "type", "auth" );
+			HXML pNA = xmlAddChild( pError, "not-authorized" );
+			xmlAddAttr( pNA, "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
 		}
 		m_ThreadInfo->send( msg );
 	}

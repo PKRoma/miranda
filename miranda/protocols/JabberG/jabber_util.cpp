@@ -576,7 +576,7 @@ TCHAR* __stdcall JabberErrorStr( int errorCode )
 	return JabberErrorCodeToStrMapping[i].str;
 }
 
-TCHAR* __stdcall JabberErrorMsg( XmlNode& errorNode )
+TCHAR* __stdcall JabberErrorMsg( HXML errorNode )
 {
 	TCHAR *errorStr;
 	const TCHAR *str;
@@ -589,9 +589,9 @@ TCHAR* __stdcall JabberErrorMsg( XmlNode& errorNode )
 	}
 
 	errorCode = -1;
-	if (( str = errorNode.getAttrValue( _T("code"))) != NULL )
+	if (( str = xmlGetAttrValue( errorNode, _T("code"))) != NULL )
 		errorCode = _ttoi( str );
-	if (( str=errorNode.getText() ) != NULL )
+	if (( str=xmlGetText( errorNode ) ) != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
@@ -613,11 +613,11 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
 		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-			XmlNode p( _T("presence" )); p.addAttr( "to", item->jid ); p.addAttr( "type", "invisible" );
+			HXML p( _T("presence" )); xmlAddAttr( p, "to", item->jid ); xmlAddAttr( p, "type", "invisible" );
 			m_ThreadInfo->send( p );
 		}
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
-			SendPresenceTo( m_iStatus, item->jid, XmlNode() );
+			SendPresenceTo( m_iStatus, item->jid, NULL );
 }	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -826,7 +826,7 @@ int __stdcall JabberCountryNameToId( const TCHAR* ptszCountryName )
 	return 0xffff;
 }
 
-void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 {
 	if ( !m_bJabberOnline ) return;
 
@@ -837,18 +837,18 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 	char szPriority[40];
 	_itoa( iPriority, szPriority, 10 );
 
-	XmlNode p( _T("presence")); p.addChild( "priority", szPriority );
+	XmlNode p( _T("presence")); xmlAddChild( p, "priority", szPriority );
 	if ( to != NULL )
-		p.addAttr( "to", to );
+		xmlAddAttr( p, "to", to );
 
 	if ( extra )
-		p.addChild( extra );
+		xmlAddChild( p, extra );
 
 	// XEP-0115:Entity Capabilities
-	XmlNode c = p.addChild( "c" );
-	c.addAttr( "xmlns", JABBER_FEAT_ENTITY_CAPS );
-	c.addAttr( "node", JABBER_CAPS_MIRANDA_NODE );
-	c.addAttr( "ver", __VERSION_STRING );
+	HXML c = xmlAddChild( p, "c" );
+	xmlAddAttr( c, "xmlns", JABBER_FEAT_ENTITY_CAPS );
+	xmlAddAttr( c, "node", JABBER_CAPS_MIRANDA_NODE );
+	xmlAddAttr( c, "ver", __VERSION_STRING );
 
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
@@ -884,53 +884,47 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 	}
 
 	if ( _tcslen( szExtCaps ))
-		c.addAttr( "ext", szExtCaps );
+		xmlAddAttr( c, "ext", szExtCaps );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
-			XmlNode x;
-
-			// deprecated XEP-0008
-//			x = p.addChild( "x" ); x.addAttr( "xmlns", "jabber:x:avatar" );
-//			x.addChild( "hash", hashValue );
-
 			// XEP-0153: vCard-Based Avatars
-			x = p.addChild( "x" ); x.addAttr( "xmlns", "vcard-temp:x:update" );
-			x.addChild( "photo", hashValue );
+			HXML x = xmlAddChild( p, "x" ); xmlAddAttr( x, "xmlns", "vcard-temp:x:update" );
+			xmlAddChild( x, "photo", hashValue );
 	}	}
 
 	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
 		if ( m_modeMsgs.szOnline )
-			p.addChild( "status", m_modeMsgs.szOnline );
+			xmlAddChild( p, "status", m_modeMsgs.szOnline );
 		break;
 	case ID_STATUS_INVISIBLE:
-		p.addAttr( "type", "invisible" );
+		xmlAddAttr( p, "type", "invisible" );
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
-		p.addChild( "show", "away" );
+		xmlAddChild( p, "show", "away" );
 		if ( m_modeMsgs.szAway )
-			p.addChild( "status", m_modeMsgs.szAway );
+			xmlAddChild( p, "status", m_modeMsgs.szAway );
 		break;
 	case ID_STATUS_NA:
-		p.addChild( "show", "xa" );
+		xmlAddChild( p, "show", "xa" );
 		if ( m_modeMsgs.szNa )
-			p.addChild( "status", m_modeMsgs.szNa );
+			xmlAddChild( p, "status", m_modeMsgs.szNa );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
-		p.addChild( "show", "dnd" );
+		xmlAddChild( p, "show", "dnd" );
 		if ( m_modeMsgs.szDnd )
-			p.addChild( "status", m_modeMsgs.szDnd );
+			xmlAddChild( p, "status", m_modeMsgs.szDnd );
 		break;
 	case ID_STATUS_FREECHAT:
-		p.addChild( "show", "chat" );
+		xmlAddChild( p, "show", "chat" );
 		if ( m_modeMsgs.szFreechat )
-			p.addChild( "status", m_modeMsgs.szFreechat );
+			xmlAddChild( p, "status", m_modeMsgs.szFreechat );
 		break;
 	default:
 		// Should not reach here
@@ -942,7 +936,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, XmlNode& extra )
 
 void CJabberProto::SendPresence( int status, bool bSendToAll )
 {
-	SendPresenceTo( status, NULL, XmlNode() );
+	SendPresenceTo( status, NULL, NULL );
 	SendVisibleInvisiblePresence( status == ID_STATUS_INVISIBLE );
 
 	// Also update status in all chatrooms
@@ -950,7 +944,7 @@ void CJabberProto::SendPresence( int status, bool bSendToAll )
 		for ( int i = 0; ( i=ListFindNext( LIST_CHATROOM, i )) >= 0; i++ ) {
 			JABBER_LIST_ITEM *item = ListGetItemPtrFromIndex( i );
 			if ( item != NULL )
-				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, XmlNode() );
+				SendPresenceTo( status == ID_STATUS_INVISIBLE ? ID_STATUS_ONLINE : status, item->jid, NULL );
 }	}	}
 
 void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... )
@@ -985,11 +979,11 @@ void __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt
 ///////////////////////////////////////////////////////////////////////////////
 // JabberGetPacketID - converts the xml id attribute into an integer
 
-int __stdcall JabberGetPacketID( XmlNode& n )
+int __stdcall JabberGetPacketID( HXML n )
 {
 	int result = -1;
 
-	const TCHAR* str = n.getAttrValue( _T("id"));
+	const TCHAR* str = xmlGetAttrValue( n, _T("id"));
 	if ( str )
 		if ( !_tcsncmp( str, _T(JABBER_IQID), SIZEOF( JABBER_IQID )-1 ))
 			result = _ttoi( str + SIZEOF( JABBER_IQID )-1 );

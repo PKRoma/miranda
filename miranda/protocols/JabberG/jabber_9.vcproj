@@ -1521,10 +1521,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jabber_iq_handlers.h"
-				>
-			</File>
-			<File
 				RelativePath="jabber_list.h"
 				>
 			</File>

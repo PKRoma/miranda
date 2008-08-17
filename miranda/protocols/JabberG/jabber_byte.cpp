@@ -54,20 +54,20 @@ JABBER_BYTE_TRANSFER::~JABBER_BYTE_TRANSFER()
 	mir_free( szStreamhostUsed );
 }
 
-void CJabberProto::IqResultProxyDiscovery( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::IqResultProxyDiscovery( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
-		XmlNode queryNode = iqNode.getChild( "query" );
+		HXML queryNode = xmlGetChild( iqNode , "query" );
 		if ( queryNode ) {
-			const TCHAR *queryXmlns = queryNode.getAttrValue( _T( "xmlns" ));
+			const TCHAR *queryXmlns = xmlGetAttrValue( queryNode, _T( "xmlns" ));
 			if (queryXmlns && !_tcscmp( queryXmlns, _T(JABBER_FEAT_BYTESTREAMS))) {
-				XmlNode streamHostNode = queryNode.getChild( "streamhost" );
+				HXML streamHostNode = xmlGetChild( queryNode , "streamhost" );
 				if ( streamHostNode ) {
-					const TCHAR *streamJid = streamHostNode.getAttrValue( _T( "jid" ));
-					const TCHAR *streamHost = streamHostNode.getAttrValue( _T( "host" ));
-					const TCHAR *streamPort = streamHostNode.getAttrValue( _T( "port" ));
+					const TCHAR *streamJid = xmlGetAttrValue( streamHostNode, _T( "jid" ));
+					const TCHAR *streamHost = xmlGetAttrValue( streamHostNode, _T( "host" ));
+					const TCHAR *streamPort = xmlGetAttrValue( streamHostNode, _T( "port" ));
 					if ( streamJid && streamHost && streamPort ) {
 						jbt->szProxyHost = mir_tstrdup( streamHost );
 						jbt->szProxyJid = mir_tstrdup( streamJid );
@@ -186,7 +186,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 			pInfo = m_iqManager.AddHandler( &CJabberProto::IqResultProxyDiscovery, JABBER_IQ_TYPE_GET, proxyJid, 0, -1, jbt );
 			nIqId = pInfo->GetIqId();
 			XmlNodeIq iq( pInfo );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
+			iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
 			m_ThreadInfo->send( iq );
 
 			WaitForSingleObject( jbt->hProxyEvent, INFINITE );
@@ -200,8 +200,8 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	pInfo = m_iqManager.AddHandler( &CJabberProto::ByteInitiateResult, JABBER_IQ_TYPE_SET, jbt->dstJID, 0, -1, jbt );
 	nIqId = pInfo->GetIqId();
 	XmlNodeIq iq( pInfo );
-	XmlNode query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
-	query.addAttr( "sid", jbt->sid );
+	HXML query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
+	xmlAddAttr( query, "sid", jbt->sid );
 
 	if ( bDirect ) {
 		localAddr = NULL;
@@ -233,16 +233,16 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		jbt->hEvent = hEvent;
 		jbt->hSendEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-		XmlNode h = query.addChild( "streamhost" );
-		h.addAttr( _T("jid"), m_ThreadInfo->fullJID );  h.addAttr( "host", localAddr );  h.addAttr( _T("port"), nlb.wPort );
+		HXML h = xmlAddChild( query, "streamhost" );
+		xmlAddAttr( h, _T("jid"), m_ThreadInfo->fullJID );  xmlAddAttr( h, "host", localAddr );  xmlAddAttr( h, _T("port"), nlb.wPort );
 		mir_free( localAddr );
 	}
 
 	if ( jbt->bProxyDiscovered ) {
-		XmlNode h = query.addChild( "streamhost" );
-		h.addAttr( "jid", jbt->szProxyJid );
-		h.addAttr( "host", jbt->szProxyHost );
-		h.addAttr( "port", jbt->szProxyPort );
+		HXML h = xmlAddChild( query, "streamhost" );
+		xmlAddAttr( h, "jid", jbt->szProxyJid );
+		xmlAddAttr( h, "host", jbt->szProxyHost );
+		xmlAddAttr( h, "port", jbt->szProxyPort );
 	}
 
 	jbt->hProxyEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
@@ -308,18 +308,18 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	Log( "Thread ended: type=bytestream_send" );
 }
 
-void CJabberProto::ByteInitiateResult( XmlNode& iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::ByteInitiateResult( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
 {
 	JABBER_BYTE_TRANSFER *jbt = ( JABBER_BYTE_TRANSFER * )pInfo->GetUserData();
 
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
-		XmlNode queryNode = iqNode.getChild( "query" );
+		HXML queryNode = xmlGetChild( iqNode , "query" );
 		if ( queryNode ) {
-			const TCHAR* queryXmlns = queryNode.getAttrValue( _T("xmlns"));
+			const TCHAR* queryXmlns = xmlGetAttrValue( queryNode, _T("xmlns"));
 			if ( queryXmlns && !_tcscmp( queryXmlns, _T( JABBER_FEAT_BYTESTREAMS ))) {
-				XmlNode streamHostNode = queryNode.getChild(  "streamhost-used" );
+				HXML streamHostNode = xmlGetChild( queryNode ,  "streamhost-used" );
 				if ( streamHostNode ) {
-					const TCHAR* streamJid = streamHostNode.getAttrValue( _T("jid"));
+					const TCHAR* streamJid = xmlGetAttrValue( streamHostNode, _T("jid"));
 					if ( streamJid )
 						jbt->szStreamhostUsed = mir_tstrdup( streamJid );
 	}	}	}	}
@@ -420,7 +420,7 @@ int CJabberProto::ByteSendParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, char* 
 
 ///////////////// Bytestream receiving /////////////////////////
 
-void CJabberProto::IqResultStreamActivate( XmlNode& iqNode, void* userdata )
+void CJabberProto::IqResultStreamActivate( HXML iqNode, void* userdata )
 {
 	int id = JabberGetPacketID( iqNode );
 
@@ -431,7 +431,7 @@ void CJabberProto::IqResultStreamActivate( XmlNode& iqNode, void* userdata )
 	if ( !item )
 		return;
 
-	if ( !lstrcmp( iqNode.getAttrValue( _T("type")), _T( "result" )))
+	if ( !lstrcmp( xmlGetAttrValue( iqNode, _T("type")), _T( "result" )))
 		item->jbt->bStreamActivated = TRUE;
 
 	if ( item->jbt->hProxyEvent )
@@ -452,8 +452,8 @@ void CJabberProto::ByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt )
 	if ( jbt == NULL ) return;
 	if (( buffer=( char* )mir_alloc( JABBER_NETWORK_BUFFER_SIZE )) == NULL ) {
 		XmlNodeIq iq( "error", jbt->iqId, jbt->srcJID );
-		XmlNode e = iq.addChild( "error" ); e.addAttr( _T("code"), 406 ); e.addAttr( "type", "auth" );
-		XmlNode na = e.addChild( "not-acceptable" ); na.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 406 ); xmlAddAttr( e, "type", "auth" );
+		HXML na = xmlAddChild( e, "not-acceptable" ); xmlAddAttr( na, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 		m_ThreadInfo->send( iq );
 		return;
 	}
@@ -503,8 +503,8 @@ void CJabberProto::ByteSendViaProxy( JABBER_BYTE_TRANSFER *jbt )
 	jbt->userdata = NULL;
 	if ( !validStreamhost ) {
 		XmlNodeIq iq( "error", jbt->iqId, jbt->srcJID );
-		XmlNode e = iq.addChild( "error" ); e.addAttr( _T("code"), 404 ); e.addAttr( "type", _T("cancel"));
-		XmlNode na = e.addChild( "item-not-found" ); na.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 404 ); xmlAddAttr( e, "type", _T("cancel"));
+		HXML na = xmlAddChild( e, "item-not-found" ); xmlAddAttr( na, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 		m_ThreadInfo->send( iq );
 }	}
 
@@ -584,9 +584,9 @@ int CJabberProto::ByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, c
 
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::IqResultStreamActivate );
 			XmlNodeIq iq( "set", iqId, jbt->streamhostJID );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
-			query.addAttr( "sid", jbt->sid );
-			XmlNode stream = query.addChild( "activate", jbt->dstJID );
+			HXML query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
+			xmlAddAttr( query, "sid", jbt->sid );
+			HXML stream = xmlAddChild( query, "activate", jbt->dstJID );
 
 			m_ThreadInfo->send( iq );
 
@@ -612,7 +612,7 @@ int CJabberProto::ByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, c
 
 void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 {
-	XmlNode iqNode, queryNode, n;
+	HXML iqNode, queryNode, n;
 	const TCHAR *sid = NULL, *from = NULL, *to = NULL, *szId = NULL, *szHost, *szPort, *str;
 	int i;
 	WORD port;
@@ -627,25 +627,25 @@ void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 	jbt->state = JBT_INIT;
 
 	if ( iqNode = jbt->iqNode ) {
-		from = iqNode.getAttrValue( _T("from"));
-		to = iqNode.getAttrValue( _T("to"));
-		queryNode = iqNode.getChild( "query" );
-		szId = iqNode.getAttrValue( _T("id"));
+		from = xmlGetAttrValue( iqNode, _T("from"));
+		to = xmlGetAttrValue( iqNode, _T("to"));
+		queryNode = xmlGetChild( iqNode , "query" );
+		szId = xmlGetAttrValue( iqNode, _T("id"));
 		if ( queryNode )
-			sid = queryNode.getAttrValue( _T("sid"));
+			sid = xmlGetAttrValue( queryNode, _T("sid"));
 	}
 
-	if ( szId && from && to && sid && ( n = queryNode.getChild( "streamhost" ))!=NULL ) {
+	if ( szId && from && to && sid && ( n = xmlGetChild( queryNode , "streamhost" ))!=NULL ) {
 		jbt->iqId = mir_tstrdup( szId );
 		jbt->srcJID = mir_tstrdup( from );
 		jbt->dstJID = mir_tstrdup( to );
 		jbt->sid = mir_tstrdup( sid );
 
 		if (( buffer=( char* )mir_alloc( JABBER_NETWORK_BUFFER_SIZE ))) {
-			for ( i=1; ( n = queryNode.getNthChild( _T("streamhost"), i ))!=NULL; i++ ) {
-				if (( szHost = n.getAttrValue( _T("host"))) != NULL &&
-					( szPort = n.getAttrValue( _T("port"))) != NULL &&
-					( str = n.getAttrValue( _T("jid"))) != NULL ) {
+			for ( i=1; ( n = xmlGetNthChild( queryNode, _T("streamhost"), i ))!=NULL; i++ ) {
+				if (( szHost = xmlGetAttrValue( n, _T("host"))) != NULL &&
+					( szPort = xmlGetAttrValue( n, _T("port"))) != NULL &&
+					( str = xmlGetAttrValue( n, _T("jid"))) != NULL ) {
 
 						port = ( WORD )_ttoi( szPort );
 						if ( jbt->streamhostJID ) mir_free( jbt->streamhostJID );
@@ -700,8 +700,8 @@ void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 		Log( "bytestream_recv_connection session not completed" );
 
 		XmlNodeIq iq( "error", szId, from );
-		XmlNode e = iq.addChild( "error" ); e.addAttr( _T("code"), 404 ); e.addAttr( "type", _T("cancel"));
-		XmlNode na = e.addChild( "item-not-found" ); na.addAttr( "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 404 ); xmlAddAttr( e, "type", _T("cancel"));
+		HXML na = xmlAddChild( e, "item-not-found" ); xmlAddAttr( na, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
 		m_ThreadInfo->send( iq );
 	}
 
@@ -771,8 +771,8 @@ int CJabberProto::ByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, cha
 			jbt->state = JBT_RECVING;
 
 			XmlNodeIq iq( "result", jbt->iqId, jbt->srcJID );
-			XmlNode query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
-			XmlNode stream = query.addChild( "streamhost-used" ); stream.addAttr( "jid", jbt->streamhostJID );
+			HXML query = iq.addQuery( _T(JABBER_FEAT_BYTESTREAMS));
+			HXML stream = xmlAddChild( query, "streamhost-used" ); xmlAddAttr( stream, "jid", jbt->streamhostJID );
 			m_ThreadInfo->send( iq );
 		}
 		else jbt->state = JBT_SOCKSERR;

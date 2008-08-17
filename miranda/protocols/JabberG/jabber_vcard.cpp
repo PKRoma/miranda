@@ -44,8 +44,8 @@ int CJabberProto::SendGetVcard( const TCHAR* jid )
 	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
 
 	XmlNodeIq iq( "get", iqId, jid );
-	XmlNode vs = iq.addChild( "vCard" ); vs.addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP ); 
-	vs.addAttr( "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); vs.addAttr( "version", "2.0" );
+	HXML vs = xmlAddChild( iq, "vCard" ); xmlAddAttr( vs, "xmlns", JABBER_FEAT_VCARD_TEMP ); 
+	xmlAddAttr( vs, "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); xmlAddAttr( vs, "version", "2.0" );
 	m_ThreadInfo->send( iq );
 	return iqId;
 }
@@ -977,16 +977,16 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 	// is always synced with db
 }	}
 
-void CJabberProto::AppendVcardFromDB( XmlNode& n, char* tag, char* key )
+void CJabberProto::AppendVcardFromDB( HXML n, char* tag, char* key )
 {
 	if ( n == NULL || tag == NULL || key == NULL )
 		return;
 
 	DBVARIANT dbv;
 	if ( DBGetContactSettingTString( NULL, m_szModuleName, key, &dbv ))
-		n.addChild( tag );
+		xmlAddChild( n, tag );
 	else {
-		n.addChild( tag, dbv.ptszVal );
+		xmlAddChild( n, tag, dbv.ptszVal );
 		JFreeVariant( &dbv );
 }	}
 
@@ -1005,11 +1005,11 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	IqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::OnIqResultSetVcard );
 
 	XmlNodeIq iq( "set", iqId );
-	XmlNode v = iq.addChild( "vCard" ); v.addAttr( "xmlns", JABBER_FEAT_VCARD_TEMP );
+	HXML v = xmlAddChild( iq, "vCard" ); xmlAddAttr( v, "xmlns", JABBER_FEAT_VCARD_TEMP );
 
 	AppendVcardFromDB( v, "FN", "FullName" );
 
-	XmlNode n = v.addChild( "N" );
+	HXML n = xmlAddChild( v, "N" );
 	AppendVcardFromDB( n, "GIVEN", "FirstName" );
 	AppendVcardFromDB( n, "MIDDLE", "MiddleName" );
 	AppendVcardFromDB( n, "FAMILY", "LastName" );
@@ -1023,20 +1023,20 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 		if ( DBGetContactSettingTString( NULL, m_szModuleName, idstr, &dbv )) 
 			break;
 
-		XmlNode e = v.addChild( "EMAIL", dbv.ptszVal );
+		HXML e = xmlAddChild( v, "EMAIL", dbv.ptszVal );
 		JFreeVariant( &dbv );
 		AppendVcardFromDB( e, "USERID", idstr );
 
 		wsprintfA( idstr, "e-mailFlag%d", i );
 		nFlag = DBGetContactSettingWord( NULL, m_szModuleName, idstr, 0 );
-		if ( nFlag & JABBER_VCEMAIL_HOME ) e.addChild( "HOME" );
-		if ( nFlag & JABBER_VCEMAIL_WORK ) e.addChild( "WORK" );
-		if ( nFlag & JABBER_VCEMAIL_INTERNET ) e.addChild( "INTERNET" );
-		if ( nFlag & JABBER_VCEMAIL_X400 ) e.addChild( "X400" );
+		if ( nFlag & JABBER_VCEMAIL_HOME ) xmlAddChild( e, "HOME" );
+		if ( nFlag & JABBER_VCEMAIL_WORK ) xmlAddChild( e, "WORK" );
+		if ( nFlag & JABBER_VCEMAIL_INTERNET ) xmlAddChild( e, "INTERNET" );
+		if ( nFlag & JABBER_VCEMAIL_X400 ) xmlAddChild( e, "X400" );
 	}
 
-	n = v.addChild( "ADR" );
-	n.addChild( "HOME" );
+	n = xmlAddChild( v, "ADR" );
+	xmlAddChild( n, "HOME" );
 	AppendVcardFromDB( n, "STREET", "Street" );
 	AppendVcardFromDB( n, "EXTADR", "Street2" );
 	AppendVcardFromDB( n, "EXTADD", "Street2" );	// for compatibility with client using old vcard format
@@ -1046,8 +1046,8 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	AppendVcardFromDB( n, "CTRY", "CountryName" );
 	AppendVcardFromDB( n, "COUNTRY", "CountryName" );	// for compatibility with client using old vcard format
 
-	n = v.addChild( "ADR" );
-	n.addChild( "WORK" );
+	n = xmlAddChild( v, "ADR" );
+	xmlAddChild( n, "WORK" );
 	AppendVcardFromDB( n, "STREET", "CompanyStreet" );
 	AppendVcardFromDB( n, "EXTADR", "CompanyStreet2" );
 	AppendVcardFromDB( n, "EXTADD", "CompanyStreet2" );	// for compatibility with client using old vcard format
@@ -1057,7 +1057,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	AppendVcardFromDB( n, "CTRY", "CompanyCountryName" );
 	AppendVcardFromDB( n, "COUNTRY", "CompanyCountryName" );	// for compatibility with client using old vcard format
 
-	n = v.addChild( "ORG" );
+	n = xmlAddChild( v, "ORG" );
 	AppendVcardFromDB( n, "ORGNAME", "Company" );
 	AppendVcardFromDB( n, "ORGUNIT", "CompanyDepartment" );
 	
@@ -1071,23 +1071,23 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 		if ( DBGetContactSettingTString( NULL, m_szModuleName, idstr, &dbv )) break;
 		JFreeVariant( &dbv );
 
-		n = v.addChild( "TEL" );
+		n = xmlAddChild( v, "TEL" );
 		AppendVcardFromDB( n, "NUMBER", idstr );
 
 		wsprintfA( idstr, "PhoneFlag%d", i );
 		nFlag = JGetWord( NULL, idstr, 0 );
-		if ( nFlag & JABBER_VCTEL_HOME )  n.addChild( "HOME" );
-		if ( nFlag & JABBER_VCTEL_WORK )  n.addChild( "WORK" );
-		if ( nFlag & JABBER_VCTEL_VOICE ) n.addChild( "VOICE" );
-		if ( nFlag & JABBER_VCTEL_FAX )   n.addChild( "FAX" );
-		if ( nFlag & JABBER_VCTEL_PAGER ) n.addChild( "PAGER" );
-		if ( nFlag & JABBER_VCTEL_MSG )   n.addChild( "MSG" );
-		if ( nFlag & JABBER_VCTEL_CELL )  n.addChild( "CELL" );
-		if ( nFlag & JABBER_VCTEL_VIDEO ) n.addChild( "VIDEO" );
-		if ( nFlag & JABBER_VCTEL_BBS )   n.addChild( "BBS" );
-		if ( nFlag & JABBER_VCTEL_MODEM ) n.addChild( "MODEM" );
-		if ( nFlag & JABBER_VCTEL_ISDN )  n.addChild( "ISDN" );
-		if ( nFlag & JABBER_VCTEL_PCS )   n.addChild( "PCS" );
+		if ( nFlag & JABBER_VCTEL_HOME )  xmlAddChild( n, "HOME" );
+		if ( nFlag & JABBER_VCTEL_WORK )  xmlAddChild( n, "WORK" );
+		if ( nFlag & JABBER_VCTEL_VOICE ) xmlAddChild( n, "VOICE" );
+		if ( nFlag & JABBER_VCTEL_FAX )   xmlAddChild( n, "FAX" );
+		if ( nFlag & JABBER_VCTEL_PAGER ) xmlAddChild( n, "PAGER" );
+		if ( nFlag & JABBER_VCTEL_MSG )   xmlAddChild( n, "MSG" );
+		if ( nFlag & JABBER_VCTEL_CELL )  xmlAddChild( n, "CELL" );
+		if ( nFlag & JABBER_VCTEL_VIDEO ) xmlAddChild( n, "VIDEO" );
+		if ( nFlag & JABBER_VCTEL_BBS )   xmlAddChild( n, "BBS" );
+		if ( nFlag & JABBER_VCTEL_MODEM ) xmlAddChild( n, "MODEM" );
+		if ( nFlag & JABBER_VCTEL_ISDN )  xmlAddChild( n, "ISDN" );
+		if ( nFlag & JABBER_VCTEL_PCS )   xmlAddChild( n, "PCS" );
 	}
 
 	char szAvatarName[ MAX_PATH ];
@@ -1100,7 +1100,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
 	Log( "Before update, file name = %s", szFileName );
 	if ( szFileName == NULL ) {
-		v.addChild( "PHOTO" );
+		xmlAddChild( v, "PHOTO" );
 		DeleteFileA( szAvatarName );
 	}
 	else {
@@ -1116,7 +1116,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 				if (( buffer=( char* )mir_alloc( st.st_size )) != NULL ) {
 					if ( ReadFile( hFile, buffer, st.st_size, &nRead, NULL )) {
 						if (( str=JabberBase64Encode( buffer, nRead )) != NULL ) {
-							n = v.addChild( "PHOTO" );
+							n = xmlAddChild( v, "PHOTO" );
 							char* szFileType;
 							switch( JabberGetPictureType( buffer )) {
 								case PA_FORMAT_PNG:  szFileType = "image/png";   break;
@@ -1124,9 +1124,9 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 								case PA_FORMAT_BMP:  szFileType = "image/bmp";   break;
 								default:             szFileType = "image/jpeg";  break;
 							}
-							n.addChild( "TYPE", szFileType );
+							xmlAddChild( n, "TYPE", szFileType );
 
-							n.addChild( "BINVAL", str );
+							xmlAddChild( n, "BINVAL", str );
 							mir_free( str );
 
 							// NEED TO UPDATE OUR AVATAR HASH:

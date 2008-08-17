@@ -37,7 +37,7 @@ Last change by : $Author$
 
 #define JABBER_PL_BUSY_MSG	 "Sending request, please wait..."
 
-void CJabberProto::OnIqRequestPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqRequestPrivacyLists( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
 		if ( !m_pDlgPrivacyLists )
@@ -51,7 +51,7 @@ void CJabberProto::OnIqRequestPrivacyLists( XmlNode& iqNode, void* userdata, CJa
 		m_ThreadInfo->send( iq );
 }	}
 
-void CJabberProto::OnIqResultPrivacyListModify( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListModify( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_pUserData )
 		return;
@@ -74,23 +74,23 @@ void CJabberProto::OnIqResultPrivacyListModify( XmlNode& iqNode, void* userdata,
 	}
 }
 
-void CJabberProto::OnIqResultPrivacyList( XmlNode& iqNode, void* userdata )
+void CJabberProto::OnIqResultPrivacyList( HXML iqNode, void* userdata )
 {
 	if ( !iqNode )
 		return;
 
-	const TCHAR *type = iqNode.getAttrValue( _T("type"));
+	const TCHAR *type = xmlGetAttrValue( iqNode, _T("type"));
 	if ( !type )
 		return;
 
 	if ( !_tcscmp( type, _T("result"))) {
-		XmlNode query = iqNode.getChild( "query" );
+		HXML query = xmlGetChild( iqNode , "query" );
 		if ( !query )
 			return;
-		XmlNode list = query.getChild( "list" );
+		HXML list = xmlGetChild( query , "list" );
 		if ( !list )
 			return;
-		TCHAR *szListName = ( TCHAR* )list.getAttrValue( _T("name"));
+		TCHAR *szListName = ( TCHAR* )xmlGetAttrValue( list, _T("name"));
 		if ( !szListName )
 			return;
 		m_privacyListManager.Lock();
@@ -103,9 +103,9 @@ void CJabberProto::OnIqResultPrivacyList( XmlNode& iqNode, void* userdata )
 				return;
 		}	}
 
-		XmlNode item;
-		for ( int i = 1; ( item = list.getNthChild( _T("item"), i )) != NULL; i++ ) {
-			const TCHAR *itemType = item.getAttrValue( _T("type"));
+		HXML item;
+		for ( int i = 1; ( item = xmlGetNthChild( list, _T("item"), i )) != NULL; i++ ) {
+			const TCHAR *itemType = xmlGetAttrValue( item, _T("type"));
 			PrivacyListRuleType nItemType = Else;
 			if ( itemType ) {
 				if ( !_tcsicmp( itemType, _T( "jid" )))
@@ -116,26 +116,26 @@ void CJabberProto::OnIqResultPrivacyList( XmlNode& iqNode, void* userdata )
 					nItemType = Subscription;
 			}
 
-			const TCHAR *itemValue = item.getAttrValue( _T("value"));
+			const TCHAR *itemValue = xmlGetAttrValue( item, _T("value"));
 
-			const TCHAR *itemAction = item.getAttrValue( _T("action"));
+			const TCHAR *itemAction = xmlGetAttrValue( item, _T("action"));
 			BOOL bAllow = TRUE;
 			if ( itemAction && !_tcsicmp( itemAction, _T( "deny" )))
 				bAllow = FALSE;
 
-			const TCHAR *itemOrder = item.getAttrValue( _T("order"));
+			const TCHAR *itemOrder = xmlGetAttrValue( item, _T("order"));
 			DWORD dwOrder = 0;
 			if ( itemOrder )
 				dwOrder = _ttoi( itemOrder );
 
 			DWORD dwPackets = 0;
-			if ( item.getChild( "message" ))
+			if ( xmlGetChild( item , "message" ))
 				dwPackets |= JABBER_PL_RULE_TYPE_MESSAGE;
-			if ( item.getChild( "presence-in" ))
+			if ( xmlGetChild( item , "presence-in" ))
 				dwPackets |= JABBER_PL_RULE_TYPE_PRESENCE_IN;
-			if ( item.getChild( "presence-out" ))
+			if ( xmlGetChild( item , "presence-out" ))
 				dwPackets |= JABBER_PL_RULE_TYPE_PRESENCE_OUT;
-			if ( item.getChild( "iq" ))
+			if ( xmlGetChild( item , "iq" ))
 				dwPackets |= JABBER_PL_RULE_TYPE_IQ;
 
 			pList->AddRule( nItemType, itemValue, bAllow, dwOrder, dwPackets );
@@ -174,7 +174,7 @@ CPrivacyListRule* GetSelectedRule(HWND hDlg)
 	return (CPrivacyListRule* )nItemData;
 }
 
-void CJabberProto::OnIqResultPrivacyListActive( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListActive( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -184,7 +184,7 @@ void CJabberProto::OnIqResultPrivacyListActive( XmlNode& iqNode, void* userdata,
 	if ( !iqNode )
 		return;
 
-	const TCHAR *type = iqNode.getAttrValue( _T("type"));
+	const TCHAR *type = xmlGetAttrValue( iqNode, _T("type"));
 	if ( !type )
 		return;
 
@@ -215,7 +215,7 @@ void CJabberProto::OnIqResultPrivacyListActive( XmlNode& iqNode, void* userdata,
 	RebuildStatusMenu();
 }
 
-void CJabberProto::OnIqResultPrivacyListDefault( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyListDefault( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	CPrivacyList *pList = (CPrivacyList *)pInfo->GetUserData();
 
@@ -225,7 +225,7 @@ void CJabberProto::OnIqResultPrivacyListDefault( XmlNode& iqNode, void* userdata
 	if ( !iqNode )
 		return;
 
-	const TCHAR *type = iqNode.getAttrValue( _T("type"));
+	const TCHAR *type = xmlGetAttrValue( iqNode, _T("type"));
 	if ( !type )
 		return;
 
@@ -254,12 +254,12 @@ void CJabberProto::OnIqResultPrivacyListDefault( XmlNode& iqNode, void* userdata
 	}
 }
 
-void CJabberProto::OnIqResultPrivacyLists( XmlNode& iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultPrivacyLists( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->m_nIqType != JABBER_IQ_TYPE_RESULT )
 		return;
 
-	XmlNode query = iqNode.getChild( "query" );
+	HXML query = xmlGetChild( iqNode , "query" );
 	if ( !query )
 		return;
 
@@ -270,11 +270,11 @@ void CJabberProto::OnIqResultPrivacyLists( XmlNode& iqNode, void* userdata, CJab
 	m_privacyListManager.RemoveAllLists();
 
 	for ( int i = 1; ; i++ ) {
-		XmlNode list = query.getNthChild( _T("list"), i );
+		HXML list = xmlGetNthChild( query, _T("list"), i );
 		if ( !list )
 			break;
 
-		const TCHAR *listName = list.getAttrValue( _T("name"));
+		const TCHAR *listName = xmlGetAttrValue( list, _T("name"));
 		if ( listName ) {
 			m_privacyListManager.AddList(( TCHAR* )listName);
 
@@ -283,22 +283,22 @@ void CJabberProto::OnIqResultPrivacyLists( XmlNode& iqNode, void* userdata, CJab
 				int iqId = SerialNext();
 				IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultPrivacyList);
 				XmlNodeIq iq( "get", iqId);
-				XmlNode queryNode = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
-				XmlNode listNode = queryNode.addChild( "list" );
-				listNode.addAttr( "name", listName );
+				HXML queryNode = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
+				HXML listNode = xmlAddChild( queryNode, "list" );
+				xmlAddAttr( listNode, "name", listName );
 				m_ThreadInfo->send( iq );
 	}	}	}
 
 	const TCHAR *szName = NULL;
-	XmlNode node = query.getChild( "active" );
+	HXML node = xmlGetChild( query , "active" );
 	if ( node )
-		szName = node.getAttrValue( _T("name"));
+		szName = xmlGetAttrValue( node, _T("name"));
 	m_privacyListManager.SetActiveListName( szName );
 
 	szName = NULL;
-	node = query.getChild( "default" );
+	node = xmlGetChild( query , "default" );
 	if ( node )
-		szName = node.getAttrValue( _T("name"));
+		szName = xmlGetAttrValue( node, _T("name"));
 	m_privacyListManager.SetDefaultListName( szName );
 
 	m_privacyListManager.Unlock();
@@ -1813,10 +1813,10 @@ void CJabberDlgPrivacyLists::btnActivate_OnClick(CCtrlButton *)
 		CPrivacyList* pList = GetSelectedList(m_hwnd);
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
-		XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
-		XmlNode active = query.addChild( "active" );
+		HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
+		HXML active = xmlAddChild( query, "active" );
 		if ( pList )
-			active.addAttr( "name", pList->GetListName() );
+			xmlAddAttr( active, "name", pList->GetListName() );
 		m_proto->m_privacyListManager.Unlock();
 
 		SetStatusText(TranslateT( JABBER_PL_BUSY_MSG ));
@@ -1835,10 +1835,10 @@ void CJabberDlgPrivacyLists::btnSetDefault_OnClick(CCtrlButton *)
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
 		int iqId = m_proto->SerialNext();
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
-		XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS ));
-		XmlNode defaultTag = query.addChild( "default" );
+		HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS ));
+		HXML defaultTag = xmlAddChild( query, "default" );
 		if ( pList )
-			defaultTag.addAttr( "name", pList->GetListName() );
+			xmlAddAttr( defaultTag, "name", pList->GetListName() );
 		m_proto->m_privacyListManager.Unlock();
 
 		SetStatusText(TranslateT( JABBER_PL_BUSY_MSG ));
@@ -2080,40 +2080,40 @@ void CJabberDlgPrivacyLists::btnApply_OnClick(CCtrlButton *)
 				}
 
 				XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListModify, JABBER_IQ_TYPE_SET, NULL, 0, -1, pUserData, dwGroupId ));
-				XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS ));
-				XmlNode listTag = query.addChild( "list" );
-				listTag.addAttr( "name", pList->GetListName() );
+				HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS ));
+				HXML listTag = xmlAddChild( query, "list" );
+				xmlAddAttr( listTag, "name", pList->GetListName() );
 
 				while ( pRule ) {
-					XmlNode itemTag = listTag.addChild( "item" );
+					HXML itemTag = xmlAddChild( listTag, "item" );
 					switch ( pRule->GetType() ) {
 					case Jid:
-						itemTag.addAttr( "type", "jid" );
+						xmlAddAttr( itemTag, "type", "jid" );
 						break;
 					case Group:
-						itemTag.addAttr( "type", "group" );
+						xmlAddAttr( itemTag, "type", "group" );
 						break;
 					case Subscription:
-						itemTag.addAttr( "type", "subscription" );
+						xmlAddAttr( itemTag, "type", "subscription" );
 						break;
 					}
 					if ( pRule->GetType() != Else )
-						itemTag.addAttr( "value", pRule->GetValue() );
+						xmlAddAttr( itemTag, "value", pRule->GetValue() );
 					if ( pRule->GetAction() )
-						itemTag.addAttr( "action", "allow" );
+						xmlAddAttr( itemTag, "action", "allow" );
 					else
-						itemTag.addAttr( "action", "deny" );
-					itemTag.addAttr( _T("order"), pRule->GetOrder() );
+						xmlAddAttr( itemTag, "action", "deny" );
+					xmlAddAttr( itemTag, _T("order"), pRule->GetOrder() );
 					DWORD dwPackets = pRule->GetPackets();
 					if ( dwPackets != JABBER_PL_RULE_TYPE_ALL ) {
 						if ( dwPackets & JABBER_PL_RULE_TYPE_IQ )
-							itemTag.addChild( "iq" );
+							xmlAddChild( itemTag, "iq" );
 						if ( dwPackets & JABBER_PL_RULE_TYPE_PRESENCE_IN )
-							itemTag.addChild( "presence-in" );
+							xmlAddChild( itemTag, "presence-in" );
 						if ( dwPackets & JABBER_PL_RULE_TYPE_PRESENCE_OUT )
-							itemTag.addChild( "presence-out" );
+							xmlAddChild( itemTag, "presence-out" );
 						if ( dwPackets & JABBER_PL_RULE_TYPE_MESSAGE )
-							itemTag.addChild( "message" );
+							xmlAddChild( itemTag, "message" );
 					}
 					pRule = pRule->GetNext();
 				}
@@ -2225,7 +2225,7 @@ int __cdecl CJabberProto::OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam
 void CJabberProto::QueryPrivacyLists( ThreadData *pThreadInfo )
 {
 	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyLists ) );
-	XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
+	HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
 	if ( pThreadInfo )
 		pThreadInfo->send( iq );
 	else if ( m_ThreadInfo )
@@ -2248,10 +2248,10 @@ int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPAR
 	}
 
 	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
-	XmlNode query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
-	XmlNode active = query.addChild( "active" );
+	HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVACY_LISTS));
+	HXML active = xmlAddChild( query, "active" );
 	if ( pList )
-		active.addAttr( "name", pList->GetListName() );
+		xmlAddAttr( active, "name", pList->GetListName() );
 	m_privacyListManager.Unlock();
 
 	m_ThreadInfo->send( iq );

@@ -82,7 +82,7 @@ class CAgentRegDlg : public CJabberDlgBase
 	int m_curPos;
 	int m_formHeight, m_frameHeight;
 	RECT m_frameRect;
-	XmlNode m_agentRegIqNode;
+	HXML m_agentRegIqNode;
 	TCHAR* m_jid;
 
 	CCtrlButton m_submit;
@@ -107,7 +107,7 @@ public:
 		int iqId = m_proto->SerialNext();
 		m_proto->IqAdd( iqId, IQ_PROC_GETREGISTER, &CJabberProto::OnIqResultGetRegister );
 		XmlNodeIq iq( "get", iqId, m_jid );
-		XmlNode query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
+		iq.addQuery( _T(JABBER_FEAT_REGISTER));
 		m_proto->m_ThreadInfo->send( iq );
 
 		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
@@ -142,9 +142,9 @@ public:
 				HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
 				ShowWindow( GetDlgItem( m_hwnd, IDC_FRAME_TEXT ), SW_HIDE );
 
-				XmlNode queryNode, xNode;
+				HXML queryNode, xNode;
 				if (( m_agentRegIqNode = ( HANDLE )lParam ) == NULL ) return TRUE;
-				if (( queryNode = m_agentRegIqNode.getChild( "query" )) == NULL ) return TRUE;
+				if (( queryNode = xmlGetChild( m_agentRegIqNode , "query" )) == NULL ) return TRUE;
 				int id = 0, ypos = 14;
 
 				RECT rect;
@@ -156,11 +156,11 @@ public:
 				GetClientRect( GetDlgItem( m_hwnd, IDC_FRAME ), &rect );
 				m_frameHeight = rect.bottom - rect.top;
 
-				if (( xNode=queryNode.getChild( "x" )) != NULL ) {
+				if (( xNode=xmlGetChild( queryNode , "x" )) != NULL ) {
 					// use new jabber:x:data form
-					XmlNode n = xNode.getChild( "instructions" );
-					if ( n != NULL && n.getText()!=NULL )
-						JabberFormSetInstruction( m_hwnd, n.getText() );
+					HXML n = xmlGetChild( xNode , "instructions" );
+					if ( n != NULL && xmlGetText( n )!=NULL )
+						JabberFormSetInstruction( m_hwnd, xmlGetText( n ) );
 
 					JabberFormCreateUI( hFrame, xNode, &m_formHeight /*dummy*/ );
 				}
@@ -168,21 +168,21 @@ public:
 					// use old registration information form
 					HJFORMLAYOUT layout_info = JabberFormCreateLayout(hFrame);
 					for ( int i=0; ; i++ ) {
-						XmlNode n = queryNode.getChild(i);
+						HXML n = xmlGetChild( queryNode ,i);
 						if ( !n )
 							break;
 
-						if ( n.getName() ) {
-							if ( !lstrcmp( n.getName(), _T("instructions"))) {
-								JabberFormSetInstruction( m_hwnd, n.getText() );
+						if ( xmlGetName( n ) ) {
+							if ( !lstrcmp( xmlGetName( n ), _T("instructions"))) {
+								JabberFormSetInstruction( m_hwnd, xmlGetText( n ) );
 							}
-							else if ( !lstrcmp( n.getName(), _T("key")) || !lstrcmp( n.getName(), _T("registered"))) {
+							else if ( !lstrcmp( xmlGetName( n ), _T("key")) || !lstrcmp( xmlGetName( n ), _T("registered"))) {
 								// do nothing
 							}
-							else if ( !lstrcmp( n.getName(), _T("password")))
-								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, n.getName(), n.getText());
+							else if ( !lstrcmp( xmlGetName( n ), _T("password")))
+								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_PRIVATE, xmlGetName( n ), xmlGetText( n ));
 							else 	// everything else is a normal text field
-								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, n.getName(), n.getText());
+								JabberFormAppendControl(hFrame, layout_info, JFORM_CTYPE_TEXT_SINGLE, xmlGetName( n ), xmlGetText( n ));
 					}	}
 					JabberFormLayoutControls(hFrame, layout_info, &m_formHeight);
 					mir_free(layout_info);
@@ -229,12 +229,12 @@ public:
 
 	void OnSubmit( CCtrlButton* )
 	{
-		XmlNode queryNode, xNode;
+		HXML queryNode, xNode;
 		const TCHAR *from;
 
 		if ( m_agentRegIqNode == NULL ) return;
-		if (( from = m_agentRegIqNode.getAttrValue( _T("from"))) == NULL ) return;
-		if (( queryNode = m_agentRegIqNode.getChild(  "query" )) == NULL ) return;
+		if (( from = xmlGetAttrValue( m_agentRegIqNode, _T("from"))) == NULL ) return;
+		if (( queryNode = xmlGetChild( m_agentRegIqNode ,  "query" )) == NULL ) return;
 		HWND hFrame = GetDlgItem( m_hwnd, IDC_FRAME );
 
 		TCHAR *str = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
@@ -245,33 +245,33 @@ public:
 		m_proto->IqAdd( iqId, IQ_PROC_SETREGISTER, &CJabberProto::OnIqResultSetRegister );
 
 		XmlNodeIq iq( "set", iqId, from );
-		XmlNode query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
+		HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
 
-		if (( xNode = queryNode.getChild( "x" )) != NULL ) {
+		if (( xNode = xmlGetChild( queryNode , "x" )) != NULL ) {
 			// use new jabber:x:data form
-			query.addChild( JabberFormGetData( hFrame, xNode ));
+			xmlAddChild( query, JabberFormGetData( hFrame, xNode ));
 		}
 		else {
 			// use old registration information form
 			for ( int i=0; ; i++ ) {
-				XmlNode n = queryNode.getChild(i);
+				HXML n = xmlGetChild( queryNode ,i);
 				if ( !n )
 					break;
 
-				if ( n.getName() ) {
-					if ( !lstrcmp( n.getName(), _T("key"))) {
+				if ( xmlGetName( n ) ) {
+					if ( !lstrcmp( xmlGetName( n ), _T("key"))) {
 						// field that must be passed along with the registration
-						if ( n.getText() )
-							query.addChild( n.getName(), n.getText() );
+						if ( xmlGetText( n ) )
+							xmlAddChild( query, xmlGetName( n ), xmlGetText( n ) );
 						else
-							query.addChild( n.getName() );
+							xmlAddChild( query, xmlGetName( n ) );
 					}
-					else if ( !lstrcmp( n.getName(), _T("registered")) || !lstrcmp( n.getName(), _T("instructions"))) {
+					else if ( !lstrcmp( xmlGetName( n ), _T("registered")) || !lstrcmp( xmlGetName( n ), _T("instructions"))) {
 						// do nothing, we will skip these
 					}
 					else {
 						GetDlgItemText( hFrame, id, str2, 128 );
-						query.addChild( n.getName(), str2 );
+						xmlAddChild( query, xmlGetName( n ), str2 );
 						id++;
 		}	}	}	}
 
