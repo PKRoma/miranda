@@ -711,7 +711,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			id++;
 	}	}
 
-	return x;
+	return xi.copyNode( x );
 }
 
 struct JABBER_FORM_INFO
@@ -888,7 +888,7 @@ void CJabberProto::FormCreateDialog( HXML xNode, TCHAR* defTitle, JABBER_FORM_SU
 	JABBER_FORM_INFO *jfi = new JABBER_FORM_INFO;
 	memset( jfi, 0, sizeof( JABBER_FORM_INFO ));
 	jfi->ppro = this;
-	jfi->xNode = xNode;
+	jfi->xNode = xi.copyNode( xNode );
 	if ( defTitle )
 		_tcsncpy( jfi->defTitle, defTitle, SIZEOF( jfi->defTitle ));
 	jfi->pfnSubmit = pfnSubmit;

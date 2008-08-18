@@ -873,21 +873,21 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 
 		// Check additional MUC info for this user
 		if ( xNode != NULL ) {
-			if (( itemNode = xmlGetChild( node , "item" )) != NULL ) {
+			if (( itemNode = xmlGetChild( xNode , "item" )) != NULL ) {
 				JABBER_RESOURCE_STATUS* r = item->resource;
 				for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, nick ); i++, r++ );
 				if ( i < item->resourceCount ) {
 					JABBER_GC_AFFILIATION affiliation = r->affiliation;
 					JABBER_GC_ROLE role = r->role;
 
-					if (( str = xmlGetAttrValue( node, _T("affiliation"))) != NULL ) {
+					if (( str = xmlGetAttrValue( itemNode, _T("affiliation"))) != NULL ) {
 						     if ( !_tcscmp( str, _T("owner")))       affiliation = AFFILIATION_OWNER;
 						else if ( !_tcscmp( str, _T("admin")))       affiliation = AFFILIATION_ADMIN;
 						else if ( !_tcscmp( str, _T("member")))      affiliation = AFFILIATION_MEMBER;
 						else if ( !_tcscmp( str, _T("none")))	     affiliation = AFFILIATION_NONE;
 						else if ( !_tcscmp( str, _T("outcast")))     affiliation = AFFILIATION_OUTCAST;
 					}
-					if (( str = xmlGetAttrValue( node, _T("role"))) != NULL ) {
+					if (( str = xmlGetAttrValue( itemNode, _T("role"))) != NULL ) {
 						     if ( !_tcscmp( str, _T("moderator")))   role = ROLE_MODERATOR;
 						else if ( !_tcscmp( str, _T("participant"))) role = ROLE_PARTICIPANT;
 						else if ( !_tcscmp( str, _T("visitor")))     role = ROLE_VISITOR;
