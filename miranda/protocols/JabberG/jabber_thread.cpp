@@ -458,23 +458,24 @@ LBL_FatalError:
 		datalen = 0;
 
 		for ( ;; ) {
-			NETLIBSELECT nls = {0};
-			nls.cbSize = sizeof( NETLIBSELECT );
-			nls.dwTimeout = 60000; // 60 seconds
-			nls.hReadConns[0] = info->s;
-			int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
-			if ( nSelRes == -1 ) // error
-				break;
-			else if ( nSelRes == 0 ) {
-				if ( JGetByte( "EnableServerXMPPPing", FALSE )) {
-					XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
-					HXML query = xmlAddChild( iq, "query" ); xmlAddAttr( query, "xmlns", JABBER_FEAT_PING );
-					info->send( iq );
-				}
-				else if ( m_bSendKeepAlive )
-					info->send( " \t " );
-				continue;
-			}
+			if ( !info->useZlib || !info->zRecvReady ) {
+				NETLIBSELECT nls = {0};
+				nls.cbSize = sizeof( NETLIBSELECT );
+				nls.dwTimeout = 60000; // 60 seconds
+				nls.hReadConns[0] = info->s;
+				int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
+				if ( nSelRes == -1 ) // error
+					break;
+				else if ( nSelRes == 0 ) {
+					if ( JGetByte( "EnableServerXMPPPing", FALSE )) {
+						XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
+						HXML query = xmlAddChild( iq, "query" ); xmlAddAttr( query, "xmlns", JABBER_FEAT_PING );
+						info->send( iq );
+					}
+					else if ( m_bSendKeepAlive )
+						info->send( " \t " );
+					continue;
+			}	}
 
 			int recvResult = info->recv( buffer+datalen, jabberNetworkBufferSize-datalen), bytesParsed;
 			Log( "recvResult = %d", recvResult );
