@@ -166,8 +166,10 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		xmlStreamToBeInitialized = NULL;
 	}
 	{
-		XmlNode stream( _T("stream:stream" ));
-		// !!!!!!!!!!!!!!!!!stream.props = "<?xml version='1.0' encoding='UTF-8'?>";
+		HXML n = xi.createNode( _T("xml"), NULL, 1 );
+		xmlAddAttr( n, "version", "1.0" );
+		xmlAddAttr( n, "encoding", "UTF-8" );
+		HXML stream = xmlAddChild( n, _T("stream:stream" ));
 		xmlAddAttr( stream, "to", info->server );
 		xmlAddAttr( stream, "xmlns", "jabber:client" );
 		xmlAddAttr( stream, "xmlns:stream", "http://etherx.jabber.org/streams" );
@@ -179,7 +181,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		if ( !JGetByte( "Disable3920auth", 0 ))
 			xmlAddAttr( stream, "version", "1.0" );
 
-		LPTSTR xmlQuery = xi.toString( stream, NULL );
+		LPTSTR xmlQuery = xi.toString( n, NULL );
 		char* buf = mir_utf8encodeT( xmlQuery );
 		int bufLen = strlen( buf );
 		if ( bufLen > 2 ) {
@@ -190,6 +192,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		info->send( buf, bufLen );
 		mir_free( buf );
 		xi.freeMem( xmlQuery );
+		xi.destroyNode( n );
 }	}
 
 static int utfLen( TCHAR* p, size_t len )

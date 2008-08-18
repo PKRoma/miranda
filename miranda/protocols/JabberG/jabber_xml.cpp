@@ -96,19 +96,19 @@ XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
 
 XmlNode::XmlNode( LPCTSTR pszName )
 {
-	m_hXml = xi.createNode( pszName, NULL );
+	m_hXml = xi.createNode( pszName, NULL, 0 );
 }
 
 XmlNode::XmlNode( LPCTSTR pszName, LPCTSTR ptszText )
 {
-	m_hXml = xi.createNode( pszName, ptszText );
+	m_hXml = xi.createNode( pszName, ptszText, 0 );
 }
 
 #if defined( _UNICODE )
 XmlNode::XmlNode( const char* pszName, const char* ptszText )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( ptszText );
-	m_hXml = xi.createNode( wszName, wszValue );
+	m_hXml = xi.createNode( wszName, wszValue, 0 );
 	mir_free( wszName ), mir_free( wszValue );
 }
 #endif

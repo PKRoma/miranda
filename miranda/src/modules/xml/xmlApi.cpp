@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "xmlParser.h"
 
-static HXML xmlapiCreateNode( LPCTSTR name, LPCTSTR text )
+static HXML xmlapiCreateNode( LPCTSTR name, LPCTSTR text, char isDeclaration )
 {
-	XMLNode result = XMLNode::createXMLTopNode( name );
+	XMLNode result = XMLNode::createXMLTopNode( name, isDeclaration );
 	if ( text )
 		result.updateText( text );
 	return result.detach();

@@ -29,7 +29,7 @@ typedef struct
 {
 	int cbSize;
 
-	HXML    ( *createNode )( LPCTSTR name, LPCTSTR text );
+	HXML    ( *createNode )( LPCTSTR name, LPCTSTR text, char bIsDeclaration );
 	void    ( *destroyNode )( HXML node );
 
 	HXML    ( *parseString )( LPCTSTR string, int* datalen, LPCTSTR tag );
