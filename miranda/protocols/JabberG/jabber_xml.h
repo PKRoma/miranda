@@ -118,4 +118,35 @@ struct XmlNodeIq : public XmlNode
 
 typedef void ( *JABBER_XML_CALLBACK )( HXML, void* );
 
+struct ATTR
+{
+	LPCTSTR name, value;
+
+	__forceinline ATTR( LPCTSTR _name, LPCTSTR _value ) :
+		name( _name ),
+		value( _value )
+		{}
+};
+
+struct CHILD
+{
+	LPCTSTR name, value;
+
+	__forceinline CHILD( LPCTSTR _name, LPCTSTR _value = NULL ) :
+		name( _name ),
+		value( _value )
+		{}
+};
+
+HXML __forceinline operator<<( HXML node, ATTR& attr )
+{
+	xmlAddAttr( node, attr.name, attr.value );
+	return node;
+}
+
+HXML __forceinline operator<<( HXML node, CHILD& child )
+{
+	return xmlAddChild( node, child.name, child.value );
+}
+
 #endif

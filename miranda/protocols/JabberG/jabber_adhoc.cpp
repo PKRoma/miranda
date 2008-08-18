@@ -120,9 +120,7 @@ int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg
 {
 	int iqId = (int)hwndDlg;
 	XmlNodeIq iq( "get", iqId, szResponder );
-	HXML query = xmlAddChild( iq, "query" );
-	xmlAddAttr( query, "xmlns", JABBER_FEAT_DISCO_ITEMS );
-	xmlAddAttr( query, "node", JABBER_FEAT_COMMANDS );
+	iq << CHILD( _T("query")) << ATTR( _T("xmlns"), _T(JABBER_FEAT_DISCO_ITEMS)) << ATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
 	IqAdd( iqId, IQ_PROC_DISCOCOMMANDS, &CJabberProto::OnIqResult_ListOfCommands );
 	m_ThreadInfo->send( iq );
 	return iqId;
@@ -144,10 +142,8 @@ int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDa
 
 					int iqId = (int)hwndDlg;
 					XmlNodeIq iq( "set", iqId, jid2 );
-					HXML query = xmlAddChild( iq, "command" );
-					xmlAddAttr( query, "xmlns", JABBER_FEAT_COMMANDS );
-					xmlAddAttr( query, "node", node );
-					xmlAddAttr( query, "action", _T("execute"));
+					iq << CHILD( _T("command")) << ATTR( _T("xmlns"), _T(JABBER_FEAT_COMMANDS))
+						<< ATTR( _T("node"), node ) << ATTR( _T("action"), _T("execute"));
 					IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
 					m_ThreadInfo->send( iq );
 
