@@ -137,6 +137,10 @@ void __cdecl MSNServerThread( ThreadData* info )
 					SetEvent( hKeepAliveThreadEvt );
 				}
 				break;
+
+			case SERVER_SWITCHBOARD:
+				msnNsThread->sendPacket( "XFR", "SB" );
+				break;
 		}
 
 		return;
