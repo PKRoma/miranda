@@ -139,7 +139,7 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 				break;
 
 			case SERVER_SWITCHBOARD:
-                msnNsThread->sendPacket( "XFR", "SB" );
+                if (info->mCaller) msnNsThread->sendPacket( "XFR", "SB" );
                 break;
 		}
 
