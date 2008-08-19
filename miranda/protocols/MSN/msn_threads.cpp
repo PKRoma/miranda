@@ -120,11 +120,11 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 		}	
 	}
 
-	MSN_DebugLog( "Thread started: server='%s', type=%d", tConn.szHost, info->mType );
+    MSN_DebugLog( "Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType );
 
 	info->s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 	if ( info->s == NULL ) {
-		MSN_DebugLog( "Connection Failed (%d)", WSAGetLastError() );
+        MSN_DebugLog( "Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort );
 
 		switch ( info->mType ) {
 			case SERVER_NOTIFICATION:
@@ -137,6 +137,10 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 					SetEvent( hKeepAliveThreadEvt );
 				}
 				break;
+
+			case SERVER_SWITCHBOARD:
+                msnNsThread->sendPacket( "XFR", "SB" );
+                break;
 		}
 
 		return;
