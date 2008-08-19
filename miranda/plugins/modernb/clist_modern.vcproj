@@ -193,6 +193,7 @@
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
+				OutputFile="P:/Test/Plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -554,6 +555,9 @@
 				<File
 					RelativePath=".\hdr\modern_sync.h">
 				</File>
+				<File
+					RelativePath=".\hdr\modern_tstring.h">
+				</File>
 			</Filter>
 			<Filter
 				Name="m_api"
@@ -583,10 +587,10 @@
 					RelativePath="..\..\include\m_clistint.h">
 				</File>
 				<File
-					RelativePath=".\m_api\m_clui.h">
+					RelativePath="..\..\include\m_clui.h">
 				</File>
 				<File
-					RelativePath="..\..\include\m_clui.h">
+					RelativePath=".\m_api\m_clui.h">
 				</File>
 				<File
 					RelativePath=".\m_api\m_cluiframes.h">
