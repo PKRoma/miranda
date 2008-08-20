@@ -189,7 +189,7 @@ void CJabberProto::OnIqResultServiceDiscoveryInfo( HXML iqNode, void* userdata, 
 				pNode->AddFeature( xmlGetAttrValue( feature, _T("var")));
 			HXML identity;
 			for ( i = 1; ( identity = xmlGetNthChild( query, _T("identity"), i )) != NULL; i++ )
-				pNode->AddIdentity( xmlGetAttrValue( query, _T("category")), xmlGetAttrValue( identity, _T("type")), xmlGetAttrValue( identity, _T("name")));
+				pNode->AddIdentity( xmlGetAttrValue( identity, _T("category")), xmlGetAttrValue( identity, _T("type")), xmlGetAttrValue( identity, _T("name")));
 
 			pNode->SetInfoRequestId( JABBER_DISCO_RESULT_OK );
 			pNode->SetInfoRequestErrorText( NULL );
