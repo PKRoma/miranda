@@ -161,9 +161,9 @@ void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
 	}
 	else
 	{
-		time_t ts = time(NULL);
 		for(i=0; i < msgQueueList.getCount(); i++)
 		{
+		    time_t ts = time(NULL);
 			const MsgQueueEntry& E = msgQueueList[i];
 			if (E.hContact == hContact && (!msg || E.msgSize == 0))
 			{
@@ -184,4 +184,9 @@ void  CMsnProto::MsgQueue_Clear( HANDLE hContact, bool msg )
 		}
 	}
 	LeaveCriticalSection(&csMsgQueue);
+}
+
+void __cdecl CMsnProto::MsgQueue_AllClearThread( void* arg )
+{
+    MsgQueue_Clear(arg);
 }

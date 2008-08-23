@@ -928,8 +928,8 @@ int CMsnProto::MSN_HandleCommands( ThreadData* info, char* cmdString )
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
 			ReleaseSemaphore( info->hWaitEvent, 1, NULL );
 
-			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
-				SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
+//			if ( info->mJoinedCount > 0 && MyOptions.SlowSend )
+//				SendBroadcast( info->mJoinedContacts[0], ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE )trid, 0 );
 			break;
 
 		case ' YQF':	//********* FQY: Find Yahoo User
@@ -1152,7 +1152,7 @@ LBL_InvalidCommand:
 			{
 				setWord( hContact, "Status", ID_STATUS_OFFLINE );
 				setDword( hContact, "IdleTS", 0 );
-				MsgQueue_Clear( hContact );
+	            ForkThread(&CMsnProto::MsgQueue_AllClearThread, hContact);
 			}
 			break;
 		}
