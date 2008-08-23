@@ -283,6 +283,8 @@ struct CMsnProto : public PROTO_INTERFACE
 	void __cdecl p2p_fileActiveThread( void* arg  );
 	void __cdecl p2p_filePassiveThread( void* arg );
 
+    void __cdecl MsgQueue_AllClearThread( void* arg );
+
     /////////////////////////////////////////////////////////////////////////////////////////
     // MSN thread support
 
