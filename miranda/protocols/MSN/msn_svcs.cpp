@@ -639,7 +639,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnWindowEvent - creates session on window open
+// OnIdleChanged - transitions to Idle
 
 int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 {
@@ -657,7 +657,7 @@ int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnWindowEvent - creates session on window open
+// OnWindowEvent - creates session on window open
 
 int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
