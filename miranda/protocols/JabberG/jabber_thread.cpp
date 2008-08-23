@@ -1168,8 +1168,8 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	// message receipts delivery request
 	if ( xmlGetChildByTag( node, "request", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
 		info->send(
-			XmlNode( _T("message")) << XATTR( _T("to"), from )
-				<< XCHILDNS( _T("received"), _T(JABBER_FEAT_MESSAGE_RECEIPTS)) << XATTR( _T("id"), idStr ));
+			XmlNode( _T("message")) << XATTR( _T("to"), from ) << XATTR( _T("id"), idStr )
+				<< XCHILDNS( _T("received"), _T(JABBER_FEAT_MESSAGE_RECEIPTS)));
 
 		if ( resourceStatus )
 			resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_MESSAGE_RECEIPTS;

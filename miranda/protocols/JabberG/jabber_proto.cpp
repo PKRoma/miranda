@@ -1110,8 +1110,10 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			// message receipts XEP priority
 			if ( jcb & JABBER_CAPS_MESSAGE_RECEIPTS )
 				m << XCHILDNS( _T("request"), _T(JABBER_FEAT_MESSAGE_RECEIPTS));
-			else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS )
-				(m << XCHILDNS( _T("x"), _T(JABBER_FEAT_MESSAGE_EVENTS))) + XCHILD( _T("delivered")) << XCHILD( _T("offline"));
+			else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+				HXML x = m << XCHILDNS( _T("x"), _T(JABBER_FEAT_MESSAGE_EVENTS));
+				x << XCHILD( _T("delivered")); x << XCHILD( _T("offline"));
+			}
 			else
 				id = 1;
 

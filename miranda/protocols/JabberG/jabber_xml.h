@@ -174,11 +174,6 @@ HXML __forceinline operator<<( HXML node, XCHILD& child )
 {	return xmlAddChild( node, child.name, child.value );
 }
 
-HXML __forceinline operator+( HXML node, XCHILD& child )
-{	xmlAddChild( node, child.name, child.value );
-	return node;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct XCHILDNS
