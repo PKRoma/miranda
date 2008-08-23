@@ -127,7 +127,7 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
         MSN_DebugLog( "Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort );
 
 		switch ( info->mType ) {
-			case SERVER_NOTIFICATION:
+			case SERVER_NOTIFICATION: 
 			case SERVER_DISPATCH:
 				SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER );
 				MSN_GoOffline();
