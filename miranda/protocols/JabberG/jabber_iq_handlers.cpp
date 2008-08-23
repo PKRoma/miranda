@@ -98,7 +98,7 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 		if ( os == NULL ) os = TranslateT( "Windows" );
 	}
 
-	XmlNodeIq iq( "result", pInfo );
+	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq.addQuery( _T(JABBER_FEAT_VERSION));
 	xmlAddChild( query, "name", _T("Miranda IM Jabber") );
 	xmlAddChild( query, "version", _T(__VERSION_STRING) );
@@ -109,7 +109,7 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 // last activity (XEP-0012) support
 void CJabberProto::OnIqRequestLastActivity( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
-	XmlNodeIq iq( "result", pInfo );
+	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
 	xmlAddAttr( query, _T("seconds"), m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 );
 	m_ThreadInfo->send( iq );
@@ -118,7 +118,7 @@ void CJabberProto::OnIqRequestLastActivity( HXML node, void* userdata, CJabberIq
 // XEP-0199: XMPP Ping support
 void CJabberProto::OnIqRequestPing( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
-	XmlNodeIq iq( "result", pInfo );
+	XmlNodeIq iq( _T("result"), pInfo );
 	m_ThreadInfo->send( iq );
 }
 
@@ -152,27 +152,26 @@ void CJabberProto::OnIqRequestTime( HXML node, void* userdata, CJabberIqInfo *pI
 {
 	struct tm *gmt;
 	time_t ltime;
-	char stime[100];
-	char szTZ[10];
+	TCHAR stime[100];
+	TCHAR szTZ[10];
 
 	_tzset();
 	time(&ltime);
 	gmt = gmtime(&ltime);
-	sprintf(stime,"%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ", gmt->tm_year + 1900, gmt->tm_mon + 1,
+	wsprintf(stime,_T("%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ"), 
+		gmt->tm_year + 1900, gmt->tm_mon + 1,
 		gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
 
 	int nGmtOffset = GetGMTOffset();
 	ltime = abs(nGmtOffset);
 
 	gmt = gmtime( &ltime );
-	sprintf(szTZ, "%s%.2i:%.2i", nGmtOffset > 0 ? "+" : "-", gmt->tm_hour, gmt->tm_min );
+	wsprintf(szTZ, _T("%s%.2i:%.2i"), nGmtOffset > 0 ? "+" : "-", gmt->tm_hour, gmt->tm_min );
 
-	XmlNodeIq iq( "result", pInfo );
-	HXML timeNode = xmlAddChild( iq, "time" );
-	xmlAddAttr( timeNode, "xmlns", JABBER_FEAT_ENTITY_TIME );
-	xmlAddChild( timeNode, "utc", stime);
-	xmlAddChild( timeNode, "tzo", szTZ );
-	m_ThreadInfo->send(iq);
+	XmlNodeIq iq( _T("result"), pInfo );
+	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));
+	timeNode << XCHILD( _T("utc"), stime); timeNode << XCHILD( _T("tzo"), szTZ );
+	m_ThreadInfo->send( iq );
 }
 
 void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *pInfo )
@@ -184,12 +183,12 @@ void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *
 	if ( pictureType == PA_FORMAT_UNKNOWN )
 		return;
 
-	char* szMimeType;
+	TCHAR* szMimeType;
 	switch( pictureType ) {
-		case PA_FORMAT_JPEG:	 szMimeType = "image/jpeg";   break;
-		case PA_FORMAT_GIF:	 szMimeType = "image/gif";    break;
-		case PA_FORMAT_PNG:	 szMimeType = "image/png";    break;
-		case PA_FORMAT_BMP:	 szMimeType = "image/bmp";    break;
+		case PA_FORMAT_JPEG:	 szMimeType = _T("image/jpeg");   break;
+		case PA_FORMAT_GIF:	 szMimeType = _T("image/gif");    break;
+		case PA_FORMAT_PNG:	 szMimeType = _T("image/png");    break;
+		case PA_FORMAT_BMP:	 szMimeType = _T("image/bmp");    break;
 		default:	return;
 	}
 
@@ -211,10 +210,7 @@ void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *
 	fclose( in );
 
 	char* str = JabberBase64Encode( buffer, bytes );
-	XmlNodeIq iq( "result", pInfo );
-	HXML query = iq.addQuery( _T(JABBER_FEAT_AVATAR));
-	HXML data = xmlAddChild( query, "data", str ); xmlAddAttr( data, "mimetype", szMimeType );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ).addQuery( _T(JABBER_FEAT_AVATAR)) << XCHILD( _T("query"), _A2T(str)) << XATTR( _T("mimetype"), szMimeType ));
 	mir_free( str );
 	mir_free( buffer );
 }
@@ -226,10 +222,10 @@ void CJabberProto::OnSiRequest( HXML node, void* userdata, CJabberIqInfo *pInfo 
 	if ( szProfile && !_tcscmp( szProfile, _T(JABBER_FEAT_SI_FT)))
 		FtHandleSiRequest( node );
 	else {
-		XmlNodeIq iq( "error", pInfo );
-		HXML error = xmlAddChild( iq, "error" ); xmlAddAttr( error, "code", "400" ); xmlAddAttr( error, "type", "cancel" );
-		HXML brq = xmlAddChild( error, "bad-request" ); xmlAddAttr( brq, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		HXML bp = xmlAddChild( error, "bad-profile" ); 
+		XmlNodeIq iq( _T("error"), pInfo );
+		HXML error = iq << XCHILD( _T("error")) << XATTRI( _T("code"), 400 ) << XATTR( _T("type"), _T("cancel"));
+		error << XCHILDNS( _T("bad-request"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
+		error << XCHILD( _T("bad-profile")); 
 		m_ThreadInfo->send( iq );
 	}
 }
@@ -363,7 +359,7 @@ void CJabberProto::OnIqRequestOOB( HXML node, void* userdata, CJabberIqInfo *pIn
 
 	if ( JGetByte( "BsOnlyIBB", FALSE )) {
 		// reject
-		XmlNodeIq iq( "error", pInfo );
+		XmlNodeIq iq( _T("error"), pInfo );
 		HXML e = xmlAddChild( iq, _T("error"), _T("File transfer refused")); xmlAddAttr( e, _T("code"), 406 );
 		m_ThreadInfo->send( iq );
 		return;
@@ -439,7 +435,7 @@ void CJabberProto::OnIqRequestOOB( HXML node, void* userdata, CJabberIqInfo *pIn
 	}
 	else {
 		// reject
-		XmlNodeIq iq( "error", pInfo );
+		XmlNodeIq iq( _T("error"), pInfo );
 		HXML e = xmlAddChild( iq, _T("error"), _T("File transfer refused")); xmlAddAttr( e, _T("code"), 406 );
 		m_ThreadInfo->send( iq );
 		delete ft;
@@ -461,15 +457,10 @@ void CJabberProto::OnHandleDiscoInfoRequest( HXML iqNode, void* userdata, CJabbe
 		return;
 
 	// another request, send empty result
-	XmlNodeIq iq( "error", pInfo );
-
-	HXML errorNode = xmlAddChild( iq, "error" );
-	xmlAddAttr( errorNode, "code", "404" );
-	xmlAddAttr( errorNode, "type", "cancel" );
-	HXML notfoundNode = xmlAddChild( errorNode, "item-not-found" );
-	xmlAddAttr( notfoundNode, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send(
+		XmlNodeIq( _T("error"), pInfo )
+			<< XCHILD( _T("error")) << XATTRI( _T("code"), 404 ) << XATTR( _T("type"), _T("cancel"))
+				<< XCHILDNS( _T("item-not-found"), _T("urn:ietf:params:xml:ns:xmpp-stanzas")));
 }
 
 void CJabberProto::OnHandleDiscoItemsRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -483,18 +474,14 @@ void CJabberProto::OnHandleDiscoItemsRequest( HXML iqNode, void* userdata, CJabb
 		return;
 
 	// another request, send empty result
-	XmlNodeIq iq( "result", pInfo );
-	HXML resultQuery = xmlAddChild( iq, "query" );
-	xmlAddAttr( resultQuery, "xmlns", _T(JABBER_FEAT_DISCO_ITEMS));
+	XmlNodeIq iq( _T("result"), pInfo );
+	HXML resultQuery = iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
 	if ( szNode )
-		xmlAddAttr( resultQuery, "node", szNode );
+		xmlAddAttr( resultQuery, _T("node"), szNode );
 
-	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE )) {
-		HXML item = xmlAddChild( resultQuery, "item" );
-		xmlAddAttr( item, "jid", m_ThreadInfo->fullJID );
-		xmlAddAttr( item, "node", _T(JABBER_FEAT_COMMANDS) );
-		xmlAddAttr( item, "name", "Ad-hoc commands" );
-	}
+	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE ))
+		resultQuery << XCHILD( _T("item")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) 
+			<< XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS)) << XATTR( _T("name"), _T("Ad-hoc commands"));
 
 	m_ThreadInfo->send( iq );
 }

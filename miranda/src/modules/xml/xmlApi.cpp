@@ -133,6 +133,11 @@ static LPCTSTR xmlapiGetName( HXML _n )
 	return XMLNode(_n).getName();
 }
 
+static HXML xmlapiGetParent( HXML _n )
+{
+	return XMLNode(_n).getParentNode();
+}
+
 static LPCTSTR xmlapiGetText( HXML _n )
 {
 	return XMLNode(_n).getText();
@@ -195,6 +200,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 	xi->getNextNode         = xmlapiGetNextNode;
 	xi->getChildByPath      = xmlapiGetChildByPath;
 	xi->getName             = xmlapiGetName;
+	xi->getParent           = xmlapiGetParent;
 	xi->getText             = xmlapiGetText;
 
 	xi->getAttr             = xmlapiGetAttr;

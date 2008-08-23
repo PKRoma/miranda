@@ -47,6 +47,7 @@ typedef struct
 	HXML    ( *getChildByPath )( HXML parent, LPCTSTR path, char createNodeIfMissing );
 	HXML    ( *getNextNode )( HXML node );
 	LPCTSTR ( *getName )( HXML );
+	HXML    ( *getParent )( HXML );
 	LPCTSTR ( *getText )( HXML );
 
 	LPCTSTR ( *getAttr )( HXML, int n );

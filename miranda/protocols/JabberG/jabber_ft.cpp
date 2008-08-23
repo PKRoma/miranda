@@ -88,7 +88,6 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	char *filename, *p;
 	int i;
 	TCHAR sid[9];
-	HXML option;
 
 	if ( jid==NULL || ft==NULL || !m_bJabberOnline || ( rs=ListGetBestClientResourceNamePtr( jid ))==NULL ) {
 		if ( ft ) {
@@ -111,24 +110,23 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), jid, rs );
 
 	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnFtSiResult, JABBER_IQ_TYPE_SET, tszJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO, -1, ft ));
-	HXML si = xmlAddChild( iq, "si" ); xmlAddAttr( si, "xmlns", JABBER_FEAT_SI ); 
-	xmlAddAttr( si, "id", sid ); xmlAddAttr( si, "mime-type", "binary/octet-stream" );
-	xmlAddAttr( si, "profile", JABBER_FEAT_SI_FT );
-	HXML file = xmlAddChild( si, "file" ); xmlAddAttr( file, "name", filename ); xmlAddAttr( file, _T("size"), ft->fileSize[ ft->std.currentFileNumber ] );
-	xmlAddAttr( file, "xmlns", JABBER_FEAT_SI_FT );
-	xmlAddAttr( file, "desc", ft->szDescription );
-	HXML feature = xmlAddChild( si, "feature" ); xmlAddAttr( feature, "xmlns", JABBER_FEAT_FEATURE_NEG );
-	HXML x = xmlAddChild( feature, "x" ); xmlAddAttr( x, "xmlns", JABBER_FEAT_DATA_FORMS ); xmlAddAttr( x, "type", "form" );
-	HXML field = xmlAddChild( x, "field" ); xmlAddAttr( field, "var", "stream-method" ); xmlAddAttr( field, "type", "list-single" );
+	HXML si = iq << XCHILDNS( _T("si"), _T(JABBER_FEAT_SI)) << XATTR( _T("id"), sid ) 
+						<< XATTR( _T("mime-type"), _T("binary/octet-stream")) << XATTR( _T("profile"), _T(JABBER_FEAT_SI_FT));
+	si << XCHILDNS( _T("file"), _T(JABBER_FEAT_SI_FT)) << XATTR( _T("name"), _A2T(filename)) 
+		<< XATTRI( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XATTR( _T("desc"), _A2T(ft->szDescription));
+	
+	HXML field = si << XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
+							<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("form"))
+							<< XCHILD( _T("field")) << XATTR( _T("var"), _T("stream-method")) << XATTR( _T("type"), _T("list-single"));
 
 	BOOL bDirect = JGetByte( "BsDirect", FALSE );
 	BOOL bProxy = JGetByte( "BsProxyManual", FALSE );
 	
 	// bytestreams support?
-	if ( bDirect || bProxy ) {
-		option = xmlAddChild( field, "option" ); xmlAddChild( option, "value", JABBER_FEAT_BYTESTREAMS );
-	}
-	option = xmlAddChild( field, "option" ); xmlAddChild( option, "value", JABBER_FEAT_IBB );
+	if ( bDirect || bProxy )
+		field << XCHILD( _T("option")) << XCHILD( _T("value"), _T(JABBER_FEAT_BYTESTREAMS));
+
+	field << XCHILD( _T("option")) << XCHILD( _T("value"), _T(JABBER_FEAT_IBB));
 	m_ThreadInfo->send( iq );
 }
 
@@ -243,7 +241,7 @@ BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
 		while (( numRead=_read( fd, buffer, blocksize )) > 0 ) {
 			int iqId = SerialNext();
 			XmlNode msg( _T("message"));
-			xmlAddAttr( msg, "to", ft->jibb->dstJID );
+			xmlAddAttr( msg, _T("to"), ft->jibb->dstJID );
 			msg.addAttrID( iqId );
 
 			// let others send data too
@@ -251,20 +249,14 @@ BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
 
 			char *encoded = JabberBase64Encode(buffer, numRead);
 
-			HXML dataNode = xmlAddChild( msg, "data", encoded );
-			xmlAddAttr( dataNode, "xmlns", JABBER_FEAT_IBB );
-			xmlAddAttr( dataNode, "sid", ft->jibb->sid );
-			xmlAddAttr( dataNode, _T("seq"), ft->jibb->wPacketId );
-			HXML ampNode = xmlAddChild( msg, "amp" );
-			xmlAddAttr( ampNode, "xmlns", JABBER_FEAT_AMP );
-			HXML rule = xmlAddChild( ampNode, "rule" );
-			xmlAddAttr( rule, "condition", "deliver-at" );
-			xmlAddAttr( rule, "value", "stored" );
-			xmlAddAttr( rule, "action", "error" );
-			rule = xmlAddChild( ampNode, "rule" );
-			xmlAddAttr( rule, "condition", "match-resource" );
-			xmlAddAttr( rule, "value", "exact" );
-			xmlAddAttr( rule, "action", "error" );
+			msg << XCHILD( _T("data"), _A2T(encoded)) << XATTR( _T("xmlns"), _T(JABBER_FEAT_IBB))
+				<< XATTR( _T("sid"), ft->jibb->sid ) << XATTRI( _T("seq"), ft->jibb->wPacketId );
+
+			HXML ampNode = msg << XCHILDNS( _T("amp"), _T(JABBER_FEAT_AMP));
+			ampNode << XCHILD( _T("rule")) << XATTR( _T("condition"), _T("deliver-at"))
+				<< XATTR( _T("value"), _T("stored")) << XATTR( _T("action"), _T("error"));
+			ampNode << XCHILD( _T("rule")) << XATTR( _T("condition"), _T("match-resource"))
+				<< XATTR( _T("value"), _T("exact")) << XATTR( _T("action"), _T("error"));
 			ft->jibb->wPacketId++;
 
 			mir_free( encoded );
@@ -405,19 +397,19 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 			}
 			else {
 				// Unknown stream mechanism
-				XmlNodeIq iq( "error", szId, from );
-				HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 400 ); xmlAddAttr( e, "type", "cancel" );
-				HXML br = xmlAddChild( e, "bad-request" ); xmlAddAttr( br, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-				HXML nvs = xmlAddChild( e, "no-valid-streams" ); xmlAddAttr( nvs, "xmlns", JABBER_FEAT_SI );
+				XmlNodeIq iq( _T("error"), szId, from );
+				HXML e = iq << XCHILD( _T("error")) << XATTRI( _T("code"), 400 ) << XATTR( _T("type"), _T("cancel"));
+				e << XCHILDNS( _T("bad-request"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
+				e << XCHILDNS( _T("no-valid-streams"), _T(JABBER_FEAT_SI));
 				m_ThreadInfo->send( iq );
 				return;
 	}	}	}
 
 	// Bad stream initiation, reply with bad-profile
-	XmlNodeIq iq( "error", szId, from );
-	HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 400 ); xmlAddAttr( e, "type", "cancel" );
-	HXML br = xmlAddChild( e, "bad-request" ); xmlAddAttr( br, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-	HXML nvs = xmlAddChild( e, "bad-profile" ); xmlAddAttr( nvs, "xmlns", JABBER_FEAT_SI );
+	XmlNodeIq iq( _T("error"), szId, from );
+	HXML e = iq << XCHILD( _T("error")) << XATTRI( _T("code"), 400 ) << XATTR( _T("type"), _T("cancel"));
+	e << XCHILDNS( _T("bad-request"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
+	e << XCHILDNS( _T("bad-profile"), _T(JABBER_FEAT_SI));
 	m_ThreadInfo->send( iq );
 }
 
@@ -429,13 +421,13 @@ void CJabberProto::FtAcceptSiRequest( filetransfer* ft )
 	if (( item=ListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
 		item->ft = ft;
 
-		XmlNodeIq iq( "result", ft->iqId, ft->jid );
-		HXML si = xmlAddChild( iq, "si" ); xmlAddAttr( si, "xmlns", JABBER_FEAT_SI );
-		HXML f = xmlAddChild( si, "feature" ); xmlAddAttr( f, "xmlns", JABBER_FEAT_FEATURE_NEG );
-		HXML x = xmlAddChild( f, "x" ); xmlAddAttr( x, "xmlns", JABBER_FEAT_DATA_FORMS ); xmlAddAttr( x, "type", "submit" );
-		HXML fl = xmlAddChild( x, "field" ); xmlAddAttr( fl, "var", "stream-method" );
-		xmlAddChild( fl, "value", JABBER_FEAT_BYTESTREAMS );
-		m_ThreadInfo->send( iq );
+		m_ThreadInfo->send(
+			XmlNodeIq( _T("result"), ft->iqId, ft->jid )
+				<< XCHILDNS( _T("si"), _T(JABBER_FEAT_SI))
+				<< XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
+				<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"))
+				<< XCHILD( _T("field")) << XATTR( _T("var"), _T("stream-method"))
+				<< XCHILD( _T("value"), _T(JABBER_FEAT_BYTESTREAMS)));
 }	}
 
 void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
@@ -446,13 +438,13 @@ void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 	if (( item=ListAdd( LIST_FTRECV, ft->sid )) != NULL ) {
 		item->ft = ft;
 
-		XmlNodeIq iq( "result", ft->iqId, ft->jid );
-		HXML si = xmlAddChild( iq, "si" ); xmlAddAttr( si, "xmlns", JABBER_FEAT_SI );
-		HXML f = xmlAddChild( si, "feature" ); xmlAddAttr( f, "xmlns", JABBER_FEAT_FEATURE_NEG );
-		HXML x = xmlAddChild( f, "x" ); xmlAddAttr( x, "xmlns", JABBER_FEAT_DATA_FORMS ); xmlAddAttr( x, "type", "submit" );
-		HXML fl = xmlAddChild( x, "field" ); xmlAddAttr( fl, "var", "stream-method" );
-		xmlAddChild( fl, "value", JABBER_FEAT_IBB );
-		m_ThreadInfo->send( iq );
+		m_ThreadInfo->send(
+			XmlNodeIq( _T("result"), ft->iqId, ft->jid )
+				<< XCHILDNS( _T("si"), _T(JABBER_FEAT_SI))
+				<< XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
+				<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"))
+				<< XCHILD( _T("field")) << XATTR( _T("var"), _T("stream-method"))
+				<< XCHILD( _T("value"), _T(JABBER_FEAT_IBB)));
 }	}
 
 void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -498,10 +490,10 @@ BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
 	// already closed?
 	JABBER_LIST_ITEM *item = ListGetItemPtr( LIST_FTRECV, sid );
 	if ( !item ) {
-		XmlNodeIq iq( "error", id, from );
-		HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 404 ); xmlAddAttr( e, "type", _T("cancel"));
-		HXML na = xmlAddChild( e, "item-not-found" ); xmlAddAttr( na, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		m_ThreadInfo->send( iq );
+		m_ThreadInfo->send(
+			XmlNodeIq( _T("error"), id, from )
+				<< XCHILD( _T("error")) << XATTRI( _T("code"), 404 ) << XATTR( _T("type"), _T("cancel"))
+					<< XCHILDNS( _T("item-not-found"), _T("urn:ietf:params:xml:ns:xmpp-stanzas")));
 		return FALSE;
 	}
 
@@ -519,15 +511,15 @@ BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
 			item->ft->jibb = jibb;
 			item->jibb = jibb;
 			JForkThread(( JThreadFunc )&CJabberProto::IbbReceiveThread, jibb );
-			XmlNodeIq iq( "result", id, from );
-			m_ThreadInfo->send( iq );
+
+			m_ThreadInfo->send( XmlNodeIq( _T("result"), id, from ));
 			return TRUE;
 		}
 		// stream already open
-		XmlNodeIq iq( "error", id, from );
-		HXML e = xmlAddChild( iq, "error" ); xmlAddAttr( e, _T("code"), 404 ); xmlAddAttr( e, "type", _T("cancel"));
-		HXML na = xmlAddChild( e, "item-not-found" ); xmlAddAttr( na, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
-		m_ThreadInfo->send( iq );
+		m_ThreadInfo->send(
+			XmlNodeIq( _T("error"), id, from )
+				<< XCHILD( _T("error")) << XATTRI( _T("code"), 404 ) << XATTR( _T("type"), _T("cancel"))
+					<< XCHILDNS( _T("item-not-found"), _T("urn:ietf:params:xml:ns:xmpp-stanzas")));
 		return FALSE;
 	}
 	
@@ -536,8 +528,7 @@ BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
 		item->jibb->bStreamClosed = TRUE;
 		SetEvent( item->jibb->hEvent );
 
-		XmlNodeIq iq( "result", id, from );
-		m_ThreadInfo->send( iq );
+		m_ThreadInfo->send( XmlNodeIq( _T("result"), id, from ));
 		return TRUE;
 	}
 

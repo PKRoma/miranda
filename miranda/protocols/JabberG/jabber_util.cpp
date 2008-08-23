@@ -612,10 +612,8 @@ void CJabberProto::SendVisibleInvisiblePresence( BOOL invisible )
 			continue;
 
 		WORD apparentMode = JGetWord( hContact, "ApparentMode", 0 );
-		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE ) {
-			XmlNode p( _T("presence" )); xmlAddAttr( p, "to", item->jid ); xmlAddAttr( p, "type", "invisible" );
-			m_ThreadInfo->send( p );
-		}
+		if ( invisible==TRUE && apparentMode==ID_STATUS_OFFLINE )
+			m_ThreadInfo->send( XmlNode( _T("presence" )) << XATTR( _T("to"), item->jid ) << XATTR( _T("type"), _T("invisible")));
 		else if ( invisible==FALSE && apparentMode==ID_STATUS_ONLINE )
 			SendPresenceTo( m_iStatus, item->jid, NULL );
 }	}
@@ -839,16 +837,14 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 
 	XmlNode p( _T("presence")); xmlAddChild( p, "priority", szPriority );
 	if ( to != NULL )
-		xmlAddAttr( p, "to", to );
+		xmlAddAttr( p, _T("to"), to );
 
 	if ( extra )
 		xmlAddChild( p, extra );
 
 	// XEP-0115:Entity Capabilities
-	HXML c = xmlAddChild( p, "c" );
-	xmlAddAttr( c, "xmlns", JABBER_FEAT_ENTITY_CAPS );
-	xmlAddAttr( c, "node", JABBER_CAPS_MIRANDA_NODE );
-	xmlAddAttr( c, "ver", __VERSION_STRING );
+	HXML c = p << XCHILDNS( _T("c"), _T(JABBER_FEAT_ENTITY_CAPS)) << XATTR( _T("node"), _T(JABBER_CAPS_MIRANDA_NODE)) 
+		<< XATTR( _T("ver"), _T(__VERSION_STRING));
 
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
@@ -884,13 +880,13 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	}
 
 	if ( _tcslen( szExtCaps ))
-		xmlAddAttr( c, "ext", szExtCaps );
+		xmlAddAttr( c, _T("ext"), szExtCaps );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
 			// XEP-0153: vCard-Based Avatars
-			HXML x = xmlAddChild( p, "x" ); xmlAddAttr( x, "xmlns", "vcard-temp:x:update" );
+			HXML x = p << XCHILDNS( _T("x"), _T("vcard-temp:x:update"));
 			xmlAddChild( x, "photo", hashValue );
 	}	}
 
@@ -901,7 +897,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 			xmlAddChild( p, "status", m_modeMsgs.szOnline );
 		break;
 	case ID_STATUS_INVISIBLE:
-		xmlAddAttr( p, "type", "invisible" );
+		xmlAddAttr( p, _T("type"), _T("invisible"));
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:

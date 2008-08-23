@@ -57,19 +57,11 @@ int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 		if ( ListExist( LIST_ROSTER, dbv.ptszVal )) {
 			if ( !_tcschr( dbv.ptszVal, _T( '@' )))
-			{
-				XmlNodeIq iq( "set", SerialNext(), dbv.ptszVal );
-				HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
-				xmlAddChild( query, "remove" );
-				m_ThreadInfo->send( iq );
-			}
-			{
-				// Remove from roster, server also handles the presence unsubscription process.
-				XmlNodeIq iq( "set" ); xmlAddAttrID( iq, SerialNext());
-				HXML query = iq.addQuery( _T(JABBER_FEAT_IQ_ROSTER));
-				HXML item = xmlAddChild( query, "item" ); xmlAddAttr( item, "jid", dbv.ptszVal ); xmlAddAttr( item, "subscription", "remove" );
-				m_ThreadInfo->send( iq );
-			}
+				m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), dbv.ptszVal ).addQuery( _T(JABBER_FEAT_REGISTER)) << XCHILD( _T("remove")));
+
+			// Remove from roster, server also handles the presence unsubscription process.
+			m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext()).addQuery( _T(JABBER_FEAT_IQ_ROSTER))
+				<< XCHILD( _T("item")) << XATTR( _T("jid"), dbv.ptszVal ) << XATTR( _T("subscription"), _T("remove")));
 		}
 
 		JFreeVariant( &dbv );
@@ -205,8 +197,7 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 	}
 	else AddContactToRoster( jid.ptszVal, NULL, NULL );
 
-	XmlNode presence( _T("presence")); xmlAddAttr( presence, "to", jid.ptszVal ); xmlAddAttr( presence, "type", "subscribe" );
-	m_ThreadInfo->send( presence );
+	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), jid.ptszVal ) << XATTR( _T("type"), _T("subscribe")));
 
 	SendGetVcard( jid.ptszVal );
 

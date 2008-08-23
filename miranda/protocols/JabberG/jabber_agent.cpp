@@ -106,9 +106,7 @@ public:
 
 		int iqId = m_proto->SerialNext();
 		m_proto->IqAdd( iqId, IQ_PROC_GETREGISTER, &CJabberProto::OnIqResultGetRegister );
-		XmlNodeIq iq( "get", iqId, m_jid );
-		iq.addQuery( _T(JABBER_FEAT_REGISTER));
-		m_proto->m_ThreadInfo->send( iq );
+		m_proto->m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, m_jid ).addQuery( _T(JABBER_FEAT_REGISTER)));
 
 		// Enable WS_EX_CONTROLPARENT on IDC_FRAME ( so tab stop goes through all its children )
 		LONG frameExStyle = GetWindowLong( GetDlgItem( m_hwnd, IDC_FRAME ), GWL_EXSTYLE );
@@ -244,7 +242,7 @@ public:
 		int iqId = m_proto->SerialNext();
 		m_proto->IqAdd( iqId, IQ_PROC_SETREGISTER, &CJabberProto::OnIqResultSetRegister );
 
-		XmlNodeIq iq( "set", iqId, from );
+		XmlNodeIq iq( _T("set"), iqId, from );
 		HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
 
 		if (( xNode = xmlGetChild( queryNode , "x" )) != NULL ) {

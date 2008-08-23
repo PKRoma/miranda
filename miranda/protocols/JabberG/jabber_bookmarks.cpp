@@ -140,7 +140,7 @@ static BOOL CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 					int iqId = param->ppro->SerialNext();
 					param->ppro->IqAdd( iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::OnIqResultSetBookmarks);
 
-					XmlNodeIq iq( "set", iqId);
+					XmlNodeIq iq( _T("set"), iqId);
 					param->ppro->SetBookmarkRequest(iq);
 					param->ppro->m_ThreadInfo->send( iq );
 				}
@@ -251,7 +251,7 @@ private:
 		int iqId = m_proto->SerialNext();
 		m_proto->IqAdd(iqId, IQ_PROC_SETBOOKMARKS, &CJabberProto::OnIqResultSetBookmarks);
 
-		XmlNodeIq iq("set", iqId);
+		XmlNodeIq iq( _T("set"), iqId);
 		m_proto->SetBookmarkRequest(iq);
 		m_proto->m_ThreadInfo->send(iq);
 	}
@@ -277,13 +277,8 @@ void CJabberDlgBookmarks::UpdateData()
 
 	int iqId = m_proto->SerialNext();
 	m_proto->IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
-
-	XmlNodeIq iq( "get", iqId);
-	HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
-	HXML storage = xmlAddChild( query, "storage" );
-	xmlAddAttr( storage, "xmlns", "storage:bookmarks" );
-
-	m_proto->m_ThreadInfo->send( iq );
+	m_proto->m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId ).addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE)) 
+		<< XCHILDNS( _T("storage"), _T("storage:bookmarks")));
 }
 
 void CJabberDlgBookmarks::OnInitDialog()

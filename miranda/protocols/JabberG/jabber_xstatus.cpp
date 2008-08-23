@@ -406,33 +406,21 @@ CPepService::~CPepService()
 
 void CPepService::Publish()
 {
-	XmlNodeIq iq("set", m_proto->SerialNext());
-	HXML pubsubNode = xmlAddChild( iq, "pubsub" );
-	xmlAddAttr( pubsubNode, "xmlns", JABBER_FEAT_PUBSUB );
-
-	HXML publishNode = xmlAddChild( pubsubNode, _T("publish"));
-	xmlAddAttr( publishNode, _T("node"), m_node );
-	HXML itemNode = xmlAddChild( publishNode,"item");
-	xmlAddAttr( itemNode,"id", "current");
-
-	CreateData(itemNode);
-
-	m_proto->m_ThreadInfo->send(iq);
+	XmlNodeIq iq( _T("set"), m_proto->SerialNext());
+	CreateData( 
+		iq << XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
+			<< XCHILD( _T("publish")) << XATTR( _T("node"), m_node )
+				<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
+	m_proto->m_ThreadInfo->send( iq );
 }
 
 void CPepService::Retract()
 {
-	XmlNodeIq iq("set", m_proto->SerialNext());
-	HXML pubsubNode = xmlAddChild( iq,"pubsub");
-	xmlAddAttr( pubsubNode,"xmlns", JABBER_FEAT_PUBSUB);
-
-	HXML retractNode = xmlAddChild( pubsubNode,"retract");
-	xmlAddAttr( retractNode, _T("node"), m_node);
-	xmlAddAttr( retractNode, _T("notify"), 1);
-	HXML itemNode = xmlAddChild( retractNode,"item");
-	xmlAddAttr( itemNode,"id", "current");
-
-	m_proto->m_ThreadInfo->send(iq);
+	m_proto->m_ThreadInfo->send(
+		XmlNodeIq( _T("set"), m_proto->SerialNext())
+			<< XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
+				<< XCHILD( _T("retract")) << XATTR( _T("node"), m_node) << XATTRI( _T("notify"), 1 )
+					<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -621,7 +609,7 @@ void CPepMood::InitGui()
 
 	mir_sntprintf(szSection, SIZEOF(szSection), _T("Status Icons/%s/Moods"), m_proto->m_tszUserName);
 	for (int i = 1; i < SIZEOF(g_arrMoods); i++)
-		m_icons.RegisterIcon(  g_arrMoods[i].szTag, szFile, -(200+i), szSection, TranslateTS(g_arrMoods[i].szName));
+		m_icons.RegisterIcon( g_arrMoods[i].szTag, szFile, -(200+i), szSection, TranslateTS(g_arrMoods[i].szName));
 }
 
 void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
@@ -661,12 +649,12 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 	SetMood(hContact, moodType, moodText);
 }
 
-void CPepMood::CreateData(HXML itemNode)
+void CPepMood::CreateData( HXML n )
 {
-	HXML moodNode = xmlAddChild( itemNode,"mood");
-	xmlAddAttr( moodNode, "xmlns", JABBER_FEAT_USER_MOOD);
-	xmlAddChild( moodNode,g_arrMoods[m_mode].szTag);
-	if (m_text) xmlAddChild( moodNode, _T("text"), m_text);
+	HXML moodNode = n << XCHILDNS( _T("mood"), _T(JABBER_FEAT_USER_MOOD));
+	moodNode << XCHILD( _A2T(g_arrMoods[m_mode].szTag));
+	if ( m_text )
+		moodNode << XCHILD( _T("text"), m_text );
 }
 
 void CPepMood::ResetExtraIcon(HANDLE hContact)
@@ -1039,14 +1027,14 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 	SetActivity(hContact, szFirstNode, szSecondNode, szText);
 }
 
-void CPepActivity::CreateData(HXML itemNode)
+void CPepActivity::CreateData( HXML n )
 {
 	char *szFirstNode = ActivityGetFirst(m_mode);
 	char *szSecondNode = ActivityGetSecond(m_mode);
 
-	HXML activityNode = xmlAddChild( itemNode,"activity");
-	xmlAddAttr( activityNode,"xmlns", JABBER_FEAT_USER_ACTIVITY);
-	HXML firstNode = xmlAddChild( activityNode,szFirstNode);
+	HXML activityNode = n << XCHILDNS( _T("activity"), _T(JABBER_FEAT_USER_ACTIVITY));
+	HXML firstNode = activityNode << XCHILD( _A2T( szFirstNode ));
+			
 	if (firstNode && szSecondNode) xmlAddChild( firstNode,szSecondNode);
 	if (m_text) xmlAddChild( activityNode,"text", m_text);
 }
@@ -1209,30 +1197,23 @@ BOOL CJabberProto::SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSourc
 	if ( !m_bJabberOnline || !m_bPepSupported )
 		return FALSE;
 
-	XmlNodeIq iq( "set", SerialNext() );
-	HXML pubsubNode = xmlAddChild( iq, "pubsub" );
-	xmlAddAttr( pubsubNode, "xmlns", JABBER_FEAT_PUBSUB );
+	XmlNodeIq iq( _T("set"), SerialNext() );
+	HXML pubsubNode = iq << XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB));
 
 	if ( !szArtist && !szLength && !szSource && !szTitle && !szUri ) {
-		HXML retractNode = xmlAddChild( pubsubNode, "retract" );
-		xmlAddAttr( retractNode, "node", JABBER_FEAT_USER_TUNE );
-		xmlAddAttr( retractNode, "notify", "1" );
-		HXML itemNode = xmlAddChild( retractNode, "item" );
-		xmlAddAttr( itemNode, "id", "current" );
+		pubsubNode << XCHILD( _T("retract")) << XATTR( _T("node"), _T(JABBER_FEAT_USER_TUNE)) << XATTRI( _T("notify"), 1 )
+			<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current"));
 	}
 	else {
-		HXML publishNode = xmlAddChild( pubsubNode, "publish" );
-		xmlAddAttr( publishNode, "node", JABBER_FEAT_USER_TUNE );
-		HXML itemNode = xmlAddChild( publishNode, "item" );
-		xmlAddAttr( itemNode, "id", "current" );
-		HXML tuneNode = xmlAddChild( itemNode, "tune" );
-		xmlAddAttr( tuneNode, "xmlns", JABBER_FEAT_USER_TUNE );
-		if ( szArtist ) xmlAddChild( tuneNode, "artist", szArtist );
-		if ( szLength ) xmlAddChild( tuneNode, "length", szLength );
-		if ( szSource ) xmlAddChild( tuneNode, "source", szSource );
-		if ( szTitle ) xmlAddChild( tuneNode, "title", szTitle );
-		if ( szTrack ) xmlAddChild( tuneNode, "track", szTrack );
-		if ( szUri ) xmlAddChild( tuneNode, "uri", szUri );
+		HXML tuneNode = pubsubNode << XCHILD( _T("publish")) << XATTR( _T("node"), _T(JABBER_FEAT_USER_TUNE))
+			<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current"))
+				<< XCHILDNS( _T("tune"), _T(JABBER_FEAT_USER_TUNE));
+		if ( szArtist ) tuneNode << XCHILD( _T("artist"), szArtist );
+		if ( szLength ) tuneNode << XCHILD( _T("length"), szLength );
+		if ( szSource ) tuneNode << XCHILD( _T("source"), szSource );
+		if ( szTitle ) tuneNode << XCHILD( _T("title"), szTitle );
+		if ( szTrack ) tuneNode << XCHILD( _T("track"), szTrack );
+		if ( szUri ) tuneNode << XCHILD( _T("uri"), szUri );
 	}
 	m_ThreadInfo->send( iq );
 

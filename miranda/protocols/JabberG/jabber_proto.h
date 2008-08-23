@@ -331,7 +331,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResult_CommandExecution( HXML iqNode, void *userdata );
 	int    AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg );
 	int    AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, struct JabberAdHocData* dat );
-	int    AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, char * action);
+	int    AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, TCHAR* action);
 	int    AdHoc_AddCommandRadio(HWND hFrame, TCHAR * labelStr, int id, int ypos, int value);
 	int    AdHoc_OnJAHMCommandListResult( HWND hwndDlg, HXML  iqNode, JabberAdHocData* dat );
 	int    AdHoc_OnJAHMProcessResult( HWND hwndDlg, HXML workNode, JabberAdHocData* dat );
@@ -373,8 +373,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   ResetListOptions(HWND hwndList);
 	void   InviteUser(TCHAR *room, TCHAR *pUser, TCHAR *text);
 		  
-	void   AdminSet( const TCHAR* to, const TCHAR* ns, const char* szItem, const TCHAR* itemVal, const char* var, const TCHAR* varVal );
-	void   AdminGet( const TCHAR* to, const TCHAR* ns, const char* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo );
+	void   AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal );
+	void   AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo );
 	void   AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
 	void   DeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* jid );
 

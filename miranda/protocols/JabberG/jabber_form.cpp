@@ -613,7 +613,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 
 	hFrame = hwndStatic;
 	id = 0;
-	XmlNode x( _T("x")); xmlAddAttr( x, "xmlns", _T(JABBER_FEAT_DATA_FORMS)); xmlAddAttr( x, "type", "submit" );
+	HXML x = XmlNode( _T("x")) << XATTR( _T("xmlns"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
 	for ( int i=0; ; i++ ) {
 		n = xmlGetChild( xNode ,i);
 		if ( !n )
@@ -627,7 +627,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			continue;
 
 		hCtrl = GetDlgItem( hFrame, id );
-		HXML field = xmlAddChild( x, "field" ); xmlAddAttr( field, "var", varName );
+		HXML field = x << XCHILD( _T("field")) << XATTR( _T("var"), varName );
 
 		if ( !_tcscmp( type, _T("text-multi")) || !_tcscmp( type, _T("jid-multi"))) {
 			len = GetWindowTextLength( GetDlgItem( hFrame, id ));
@@ -637,7 +637,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			while ( p != NULL ) {
 				if (( q = _tcsstr( p, _T("\r\n"))) != NULL )
 					*q = '\0';
-				xmlAddChild( field, "value", p );
+				field << XCHILD( _T("value"), p );
 				p = q ? q+2 : NULL;
 			}
 			mir_free( str );
@@ -646,7 +646,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 		else if ( !_tcscmp( type, _T("boolean"))) {
 			TCHAR buf[ 10 ];
 			_itot( IsDlgButtonChecked( hFrame, id ) == BST_CHECKED ? 1 : 0, buf, 10 );
-			xmlAddChild( field, "value", buf );
+			field << XCHILD( _T("value"), buf );
 			id++;
 		}
 		else if ( !_tcscmp( type, _T("list-single"))) {
@@ -667,7 +667,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			}	}	}
 
 			if ( o )
-				xmlAddChild( field, "value", xmlGetText( v ) );
+				field << XCHILD( _T("value"), xmlGetText( v ));
 
 			mir_free( str );
 			id++;
@@ -691,7 +691,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 										labelText = xmlGetText( v );
 
 									if ( !lstrcmp( labelText, str ))
-										xmlAddChild( field, "value", xmlGetText( v ) );
+										field << XCHILD( _T("value"), xmlGetText( v ) );
 						}	}	}
 						mir_free( str );
 			}	}	}
@@ -700,18 +700,18 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 		else if ( !_tcscmp( type, _T("fixed")) || !_tcscmp( type, _T("hidden"))) {
 			v = xmlGetChild( n , "value" );
 			if ( v != NULL && xmlGetText( v ) != NULL )
-				xmlAddChild( field, "value", xmlGetText( v ) );
+				field << XCHILD( _T("value"), xmlGetText( v ));
 		}
 		else { // everything else is considered "text-single" or "text-private"
 			len = GetWindowTextLength( GetDlgItem( hFrame, id ));
 			str = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( len+1 ));
 			GetDlgItemText( hFrame, id, str, len+1 );
-			xmlAddChild( field, "value", str );
+			field << XCHILD( _T("value"), str );
 			mir_free( str );
 			id++;
 	}	}
 
-	return xi.copyNode( x );
+	return x;
 }
 
 struct JABBER_FORM_INFO

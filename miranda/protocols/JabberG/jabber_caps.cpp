@@ -180,13 +180,9 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			m_clientCapsManager.SetClientCaps( r->szCapsNode, r->szCapsVer, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 			
-			XmlNodeIq iq( pInfo );
-			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
-
 			TCHAR queryNode[512];
 			mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, r->szCapsVer );
-			xmlAddAttr( query, "node", queryNode );
-			m_ThreadInfo->send( iq );
+			m_ThreadInfo->send( XmlNodeIq( pInfo ).addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
 
 			bRequestSent = TRUE;
 		}
@@ -207,13 +203,10 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 					CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
 					m_clientCapsManager.SetClientCaps( r->szCapsNode, token, JABBER_RESOURCE_CAPS_IN_PROGRESS, pInfo->GetIqId() );
 
-					XmlNodeIq iq( pInfo );
-					HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
-
 					TCHAR queryNode[512];
 					mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, token );
-					xmlAddAttr( query, "node", queryNode );
-					m_ThreadInfo->send( iq );
+					m_ThreadInfo->send(
+						XmlNodeIq( pInfo ).addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
 
 					bRequestSent = TRUE;
 				}
@@ -562,36 +555,23 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML iqNode, void* userdata, C
 	else
 		jcb = JABBER_CAPS_MIRANDA_ALL;
 
-	XmlNodeIq iq( "result", pInfo );
+	XmlNodeIq iq( _T("result"), pInfo );
 
-	HXML query = xmlAddChild( iq, "query" );
-	xmlAddAttr( query, "xmlns", _T(JABBER_FEAT_DISCO_INFO) );
+	HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
 	if ( szNode )
-		xmlAddAttr( query, "node", szNode );
+		query << XATTR( _T("node"), szNode );
 
-	HXML identity = xmlAddChild( query, "identity" );
-	xmlAddAttr( identity, "category", "client" );
-	xmlAddAttr( identity, "type", "pc" );
-	xmlAddAttr( identity, "name", "Miranda" );
+	query << XCHILD( _T("identity")) << XATTR( _T("category"), _T("client")) 
+			<< XATTR( _T("type"), _T("pc")) << XATTR( _T("name"), _T("Miranda"));
 
 	for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
-		if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
-			HXML feature = xmlAddChild( query, "feature" );
-			xmlAddAttr( feature, "var", g_JabberFeatCapPairs[i].szFeature );
-	}
+		if ( jcb & g_JabberFeatCapPairs[i].jcbCap )
+			query << XCHILD( _T("feature")) << XATTR( _T("var"), g_JabberFeatCapPairs[i].szFeature );
 
-	HXML form = xmlAddChild( iq, "x" );
-	xmlAddAttr( form, "xmlns", _T(JABBER_FEAT_DATA_FORMS) );
-	xmlAddAttr( form, "type", _T("result") );
-
-	HXML field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("FORM_TYPE") );
-	xmlAddAttr( field, "type", _T("hidden") );
-	xmlAddAttr( field, "value", _T("urn:xmpp:dataforms:softwareinfo") );
-
-	field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("os") );
-	xmlAddAttr( field, "value", _T("Windows") );
+	HXML form = iq << XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("result"));
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("FORM_TYPE")) << XATTR( _T("type"), _T("hidden"))
+			<< XATTR( _T("value"), _T("urn:xmpp:dataforms:softwareinfo"));
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os")) << XATTR( _T("value"), _T("Windows"));
 
 	TCHAR* os = NULL;
 
@@ -622,40 +602,23 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML iqNode, void* userdata, C
 	}
 	if ( os == NULL ) os = _T( "Unknown" );
 
-	field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("os_version") );
-	xmlAddAttr( field, "value", os );
-
-	field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("software") );
-	xmlAddAttr( field, "value", _T("Miranda IM Jabber") );
-
-	field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("software_version") );
-	xmlAddAttr( field, "value", _T(__VERSION_STRING) );
-
 	DWORD dwCoreVersion = JCallService( MS_SYSTEM_GETVERSION, NULL, NULL );
 	TCHAR szCoreVersion[ 256 ];
 	mir_sntprintf( szCoreVersion, SIZEOF( szCoreVersion ), _T("%d.%d.%d.%d"),
 		( dwCoreVersion >> 24 ) & 0xFF, ( dwCoreVersion >> 16 ) & 0xFF,
 		( dwCoreVersion >> 8)  & 0xFF, dwCoreVersion & 0xFF );
 
-	field = xmlAddChild( form, "field" );
-	xmlAddAttr( field, "var", _T("x-miranda-core-version") );
-	xmlAddAttr( field, "value", szCoreVersion );
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os_version")) << XATTR( _T("value"), os );
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("software")) << XATTR( _T("value"), _T("Miranda IM Jabber"));
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("software_version")) << XATTR( _T("value"), _T(__VERSION_STRING));
+	form << XCHILD( _T("field")) << XATTR( _T("var"), _T("x-miranda-core-version")) << XATTR( _T("value"), szCoreVersion );
 
 	char szMirandaVersion[100];
 	if (!JCallService( MS_SYSTEM_GETVERSIONTEXT, sizeof( szMirandaVersion ), ( LPARAM )szMirandaVersion ))
 	{
 		_strlwr( szMirandaVersion );
-
-		field = xmlAddChild( form, "field" );
-		xmlAddAttr( field, "var", _T("x-miranda-is-unicode") );
-		xmlAddAttr( field, "value", strstr( szMirandaVersion, "unicode" ) ? _T("1") : _T("0") );
-
-		field = xmlAddChild( form, "field" );
-		xmlAddAttr( field, "var", _T("x-miranda-is-alpha") );
-		xmlAddAttr( field, "value", strstr( szMirandaVersion, "alpha" ) ? _T("1") : _T("0") );
+		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("x-miranda-is-unicode")) << XATTRI( _T("value"), strstr( szMirandaVersion, "unicode" ) != NULL );
+		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("x-miranda-core-version")) << XATTRI( _T("value"), strstr( szMirandaVersion, "alpha" ) != NULL );
 	}
 
 	ppro->m_ThreadInfo->send( iq );

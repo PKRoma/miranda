@@ -34,60 +34,50 @@ Last change by : $Author$
 /////////////////////////////////////////////////////////////////////////////////////////
 // XmlNodeIq class members
 
-XmlNodeIq::XmlNodeIq( const char* type, int id, LPCTSTR to ) :
+XmlNodeIq::XmlNodeIq( const TCHAR* type, int id, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type != NULL ) addAttr( "type", type );
-	if ( to   != NULL ) addAttr( "to",   to );
+	if ( type != NULL ) addAttr( _T("type"), type );
+	if ( to   != NULL ) addAttr( _T("to"),   to );
 	if ( id   != -1   ) addAttrID( id );
 }
 
-XmlNodeIq::XmlNodeIq( const char* type, LPCTSTR idStr, LPCTSTR to ) :
+XmlNodeIq::XmlNodeIq( const TCHAR* type, LPCTSTR idStr, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type  != NULL ) addAttr( "type", type  );
-	if ( to    != NULL ) addAttr( "to",   to    );
-	if ( idStr != NULL ) addAttr( "id",   idStr );
+	if ( type  != NULL ) addAttr( _T("type"), type  );
+	if ( to    != NULL ) addAttr( _T("to"),   to    );
+	if ( idStr != NULL ) addAttr( _T("id"),   idStr );
 }
 
-XmlNodeIq::XmlNodeIq( const char* type, HXML node, LPCTSTR to ) :
+XmlNodeIq::XmlNodeIq( const TCHAR* type, HXML node, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type  != NULL ) addAttr( "type", type  );
-	if ( to    != NULL ) addAttr( "to",   to    );
+	if ( type  != NULL ) addAttr( _T("type"), type  );
+	if ( to    != NULL ) addAttr( _T("to"),   to    );
 	if ( node  != NULL ) {
 		const TCHAR *iqId = xmlGetAttrValue( *this, _T( "id" ));
-		if ( iqId != NULL ) addAttr( "id", iqId );
+		if ( iqId != NULL ) addAttr( _T("id"), iqId );
 	}
 }
-
-#if defined( _UNICODE )
-XmlNodeIq::XmlNodeIq( const char* type, int id, const char* to ) :
-	XmlNode( _T( "iq" ))
-{
-	if ( type != NULL ) addAttr( "type", type );
-	if ( to   != NULL ) addAttr( "to",   to );
-	if ( id   != -1  ) addAttrID( id );
-}
-#endif
 
 XmlNodeIq::XmlNodeIq( CJabberIqInfo* pInfo ) :
 	XmlNode( _T( "iq" ))
 {
 	if ( pInfo ) {
-		if ( pInfo->GetCharIqType() != NULL ) addAttr( "type", pInfo->GetCharIqType() );
-		if ( pInfo->GetReceiver()   != NULL ) addAttr( "to", pInfo->GetReceiver() );
+		if ( pInfo->GetCharIqType() != NULL ) addAttr( _T("type"), _A2T(pInfo->GetCharIqType()));
+		if ( pInfo->GetReceiver()   != NULL ) addAttr( _T("to"), pInfo->GetReceiver() );
 		if ( pInfo->GetIqId()       != -1 ) addAttrID( pInfo->GetIqId() );
 	}
 }
 
-XmlNodeIq::XmlNodeIq( const char* type, CJabberIqInfo* pInfo ) :
+XmlNodeIq::XmlNodeIq( const TCHAR* type, CJabberIqInfo* pInfo ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type != NULL ) addAttr( "type", type );
+	if ( type != NULL ) addAttr( _T("type"), type );
 	if ( pInfo ) {
-		if ( pInfo->GetFrom()  != NULL ) addAttr( "to", pInfo->GetFrom() );
-		if ( pInfo->GetIdStr() != NULL ) addAttr( "id", pInfo->GetIdStr() );
+		if ( pInfo->GetFrom()  != NULL ) addAttr( _T("to"), pInfo->GetFrom() );
+		if ( pInfo->GetIdStr() != NULL ) addAttr( _T("id"), pInfo->GetIdStr() );
 	}
 }
 
@@ -135,26 +125,20 @@ XmlNode::~XmlNode()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+HXML __fastcall operator<<( HXML node, XCHILDNS& child )
+{
+	HXML res = xmlAddChild( node, child.name );
+	xmlAddAttr( res, _T("xmlns"), child.ns );
+	return res;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR name, LPCTSTR value )
 {
-	xi.addAttr( hXml, name, value );
+	if ( value )
+		xi.addAttr( hXml, name, value );
 }
-
-void __fastcall xmlAddAttr( HXML hXml, const char* pszName, LPCTSTR ptszValue )
-{
-	TCHAR *wszName = mir_a2t( pszName );
-	xi.addAttr( hXml, wszName, ptszValue );
-	mir_free( wszName );
-}
-
-#if defined( _UNICODE )
-void __fastcall xmlAddAttr( HXML hXml, const char* pszName, const char* pszValue )
-{
-	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	xi.addAttr( hXml, wszName, wszValue );
-	mir_free( wszName ), mir_free( wszValue );
-}
-#endif
 
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, int value )
 {
@@ -177,9 +161,9 @@ void __fastcall xmlAddChild( HXML hXml, HXML n )
 
 HXML XmlNode::addQuery( LPCTSTR szNameSpace )
 {
-	HXML n = xmlAddChild( *this, "query" );
+	HXML n = xmlAddChild( *this, _T("query"));
 	if ( n )
-		xmlAddAttr( n, "xmlns", szNameSpace );
+		xmlAddAttr( n, _T("xmlns"), szNameSpace );
 	return n;
 }
 

@@ -130,12 +130,11 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 				int iqId = SerialNext();
 				IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetAvatar );
 
-				XmlNodeIq iq( "get", iqId, szJid );
-				if ( isXVcard ) {
-					HXML vcard = xmlAddChild( iq, "vCard" );
-					xmlAddAttr( vcard, "xmlns", JABBER_FEAT_VCARD_TEMP );
-				}
-				else iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
+				XmlNodeIq iq( _T("get"), iqId, szJid );
+				if ( isXVcard )
+					iq << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP));
+				else
+					iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
 				m_ThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
@@ -534,12 +533,9 @@ int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		XmlNode m( _T("message"));
-		xmlAddAttr( m, "type", "headline" );
-		xmlAddAttr( m, "to", dbv.ptszVal );
-		HXML pAttention = xmlAddChild( m, "attention" );
-		xmlAddAttr( pAttention, "xmlns", JABBER_FEAT_ATTENTION );
-		m_ThreadInfo->send( m );
+		m_ThreadInfo->send(
+			XmlNode( _T("message")) << XATTR( _T("type"), _T("headline")) << XATTR( _T("to"), dbv.ptszVal )
+				<< XCHILDNS( _T("attention"), _T(JABBER_FEAT_ATTENTION)));
 
 		JFreeVariant( &dbv );
 	}
@@ -552,43 +548,30 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 		return FALSE;
 
 	if ( pParams->m_nType == CJabberHttpAuthParams::IQ ) {
-		XmlNodeIq iq( bAuthorized ? "result" : "error", pParams->m_szIqId, pParams->m_szFrom );
+		XmlNodeIq iq( bAuthorized ? _T("result") : _T("error"), pParams->m_szIqId, pParams->m_szFrom );
 		if ( !bAuthorized ) {
-			XmlNode pConfirm = xmlAddChild( iq, "confirm" );
-			xmlAddAttr( pConfirm, "xmlns", JABBER_FEAT_HTTP_AUTH );
-			xmlAddAttr( pConfirm, "id", pParams->m_szId );
-			xmlAddAttr( pConfirm, "method", pParams->m_szMethod );
-			xmlAddAttr( pConfirm, "url", pParams->m_szUrl );
-
-			HXML pError = xmlAddChild( iq, "error" );
-			xmlAddAttr( pError, "code", "401" );
-			xmlAddAttr( pError, "type", "auth" );
-			HXML pNA = xmlAddChild( pError, "not-authorized" );
-			xmlAddAttr( pNA, "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
+			iq << XCHILDNS( _T("confirm"), _T(JABBER_FEAT_HTTP_AUTH)) << XATTR( _T("id"), pParams->m_szId )
+					<< XATTR( _T("method"), pParams->m_szMethod ) << XATTR( _T("url"), pParams->m_szUrl );
+			iq << XCHILD( _T("error")) << XATTRI( _T("code"), 401 ) << XATTR( _T("type"), _T("auth"))
+					<< XCHILDNS( _T("not-authorized"), _T("urn:ietf:params:xml:xmpp-stanzas"));
 		}
 		m_ThreadInfo->send( iq );
 	}
 	else if ( pParams->m_nType == CJabberHttpAuthParams::MSG ) {
 		XmlNode msg( _T("message"));
-		xmlAddAttr( msg, "to", pParams->m_szFrom );
+		xmlAddAttr( msg, _T("to"), pParams->m_szFrom );
 		if ( !bAuthorized )
-			xmlAddAttr( msg, "type", "error" );
+			xmlAddAttr( msg, _T("type"), _T("error"));
 		if ( pParams->m_szThreadId )
 			xmlAddChild( msg, "thread", pParams->m_szThreadId );
 
-		HXML pConfirm = xmlAddChild( msg, "confirm" );
-		xmlAddAttr( pConfirm, "xmlns", JABBER_FEAT_HTTP_AUTH );
-		xmlAddAttr( pConfirm, "id", pParams->m_szId );
-		xmlAddAttr( pConfirm, "method", pParams->m_szMethod );
-		xmlAddAttr( pConfirm, "url", pParams->m_szUrl );
+		msg << XCHILDNS( _T("confirm"), _T(JABBER_FEAT_HTTP_AUTH)) << XATTR( _T("id"), pParams->m_szId )
+					<< XATTR( _T("method"), pParams->m_szMethod ) << XATTR( _T("url"), pParams->m_szUrl );
 
-		if ( !bAuthorized ) {
-			HXML pError = xmlAddChild( msg, "error" );
-			xmlAddAttr( pError, "code", "401" );
-			xmlAddAttr( pError, "type", "auth" );
-			HXML pNA = xmlAddChild( pError, "not-authorized" );
-			xmlAddAttr( pNA, "xmlns", "urn:ietf:params:xml:xmpp-stanzas" );
-		}
+		if ( !bAuthorized )
+			msg << XCHILD( _T("error")) << XATTRI( _T("code"), 401 ) << XATTR( _T("type"), _T("auth"))
+					<< XCHILDNS( _T("not-authorized"), _T("urn:ietf:params:xml:xmpp-stanzas"));
+
 		m_ThreadInfo->send( msg );
 	}
 	else

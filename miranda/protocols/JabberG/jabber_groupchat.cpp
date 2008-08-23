@@ -946,10 +946,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 			// Request room config
 			int iqId = SerialNext();
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
-
-			XmlNodeIq iq( "get", iqId, item->jid );
-			iq.addQuery( xmlnsOwner );
-			m_ThreadInfo->send( iq );
+			m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, item->jid ).addQuery( xmlnsOwner ));
 		}
 
 		mir_free( room );

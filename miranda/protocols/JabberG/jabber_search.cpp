@@ -448,9 +448,9 @@ static void JabberSearchRefreshFrameScroll(HWND hwndDlg, JabberSearchData * dat)
 
 int CJabberProto::SearchRenewFields(HWND hwndDlg, JabberSearchData * dat)
 {
-	char szServerName[100];
+	TCHAR szServerName[100];
 	EnableWindow(GetDlgItem(hwndDlg, IDC_GO),FALSE);
-	GetDlgItemTextA(hwndDlg,IDC_SERVER,szServerName,sizeof(szServerName));
+	GetDlgItemText(hwndDlg,IDC_SERVER,szServerName,SIZEOF(szServerName));
 	dat->CurrentHeight = 0;
 	dat->curPos = 0;
 	SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, 0, FALSE );
@@ -469,11 +469,8 @@ int CJabberProto::SearchRenewFields(HWND hwndDlg, JabberSearchData * dat)
 	searchHandleDlg = hwndDlg;
 
 	int iqId = SerialNext();
-	XmlNodeIq iq( "get", iqId, szServerName );
-	HXML query = xmlAddChild( iq, "query" );
-	xmlAddAttr( query, "xmlns", "jabber:iq:search" );
 	IqAdd( iqId, IQ_PROC_GETSEARCHFIELDS, &CJabberProto::OnIqResultGetSearchFields );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szServerName ).addQuery( _T("jabber:iq:search")));
 	return iqId;
 }
 
@@ -733,19 +730,19 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 	BOOL fRequestNotEmpty=FALSE;
 
 	// get server name
-	char szServerName[100];
-	GetDlgItemTextA( hwndDlg, IDC_SERVER, szServerName, sizeof( szServerName ));
+	TCHAR szServerName[100];
+	GetDlgItemText( hwndDlg, IDC_SERVER, szServerName, SIZEOF( szServerName ));
 
 	// formating query
 	int iqId = SerialNext();
-	XmlNodeIq iq( "set", iqId, szServerName );
-	HXML query = xmlAddChild( iq, "query" );
+	XmlNodeIq iq( _T("set"), iqId, szServerName );
+	HXML query = iq.addQuery( _T("jabber:iq:search"));
+	
 	TCHAR *szXmlLang = GetXmlLang();
 	if ( szXmlLang ) {
-		xmlAddAttr( iq, "xml:lang", szXmlLang ); // i'm sure :)
+		iq << XATTR( _T("xml:lang"), szXmlLang ); // i'm sure :)
 		mir_free( szXmlLang );
 	}
-	xmlAddAttr( query, "xmlns", "jabber:iq:search" );
 
 	// next can be 2 cases:
 	// Forms: XEP-0055 Example 7

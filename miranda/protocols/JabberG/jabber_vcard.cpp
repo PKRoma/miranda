@@ -42,11 +42,10 @@ int CJabberProto::SendGetVcard( const TCHAR* jid )
 
 	// FIXME: maybe _tcscmp?
 	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
+	m_ThreadInfo->send(
+		XmlNodeIq( _T("get"), iqId, jid ) << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP))
+			<< XATTR( _T("prodid"), _T("-//HandGen//NONSGML vGen v1.0//EN")) << XATTR( _T("version"), _T("2.0")));
 
-	XmlNodeIq iq( "get", iqId, jid );
-	HXML vs = xmlAddChild( iq, "vCard" ); xmlAddAttr( vs, "xmlns", JABBER_FEAT_VCARD_TEMP ); 
-	xmlAddAttr( vs, "prodid", "-//HandGen//NONSGML vGen v1.0//EN" ); xmlAddAttr( vs, "version", "2.0" );
-	m_ThreadInfo->send( iq );
 	return iqId;
 }
 
@@ -1004,12 +1003,12 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_SETVCARD, &CJabberProto::OnIqResultSetVcard );
 
-	XmlNodeIq iq( "set", iqId );
-	HXML v = xmlAddChild( iq, "vCard" ); xmlAddAttr( v, "xmlns", JABBER_FEAT_VCARD_TEMP );
+	XmlNodeIq iq( _T("set"), iqId );
+	HXML v = iq << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP));
 
 	AppendVcardFromDB( v, "FN", "FullName" );
 
-	HXML n = xmlAddChild( v, "N" );
+	HXML n = v << XCHILD( _T("N"));
 	AppendVcardFromDB( n, "GIVEN", "FirstName" );
 	AppendVcardFromDB( n, "MIDDLE", "MiddleName" );
 	AppendVcardFromDB( n, "FAMILY", "LastName" );

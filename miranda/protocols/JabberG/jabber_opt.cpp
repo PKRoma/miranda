@@ -600,12 +600,10 @@ private:
 			TranslateT("This operation will kill your account, roster and all another information stored at the server. Are you ready to do that?"),
 			TranslateT("Account removal warning"), MB_YESNOCANCEL);
 
-		if (res == IDYES)
-		{
-			XmlNodeIq iq("set", NOID, m_proto->m_szJabberJID);
-			HXML reg = iq.addQuery( _T(JABBER_FEAT_REGISTER)); xmlAddChild( reg, "remove" );
-			m_proto->m_ThreadInfo->send(iq);
-		}
+		if ( res == IDYES )
+			m_proto->m_ThreadInfo->send( 
+				XmlNodeIq( _T("set"), NOID, m_proto->m_szJabberJID ).addQuery( _T(JABBER_FEAT_REGISTER))
+					<< XCHILD( _T("remove")));
 	}
 
 	void cbServer_OnDropdown(CCtrlCombo *sender)
@@ -1072,10 +1070,11 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 		IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
 
 		XmlNode iq( _T("iq"));
-		xmlAddAttr( iq, "type", "set" );
+		xmlAddAttr( iq, _T("type"), _T("set"));
 		iq.addAttrID( iqId );
-		HXML query = xmlAddChild( iq, "query" );
-		xmlAddAttr( query, "xmlns", JABBER_FEAT_IQ_ROSTER );
+
+		HXML query = iq << XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER));
+
 		int itemCount=0;
 		int ListItemCount=ListView_GetItemCount(hList);
 		for (int index=0; index<ListItemCount; index++)
@@ -1093,9 +1092,7 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 			if (itemRoster && bRemove)
 			{
 				//delete item
-				HXML item = xmlAddChild( query, "item" );
-				xmlAddAttr( item, "jid", jid );
-				xmlAddAttr( item, "subscription","remove");
+				query << XCHILD( _T("item")) << XATTR( _T("jid"), jid ) << XATTR( _T("subscription") ,_T("remove"));
 				itemCount++;
 			}
 			else if ( !bRemove )
@@ -1128,9 +1125,9 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 					if ( group && _tcslen( group ))
 						xmlAddChild( item, "group", group );
 					if ( name && _tcslen( name ))
-						xmlAddAttr( item, "name", name );
-					xmlAddAttr( item, "jid", jid );
-					xmlAddAttr( item, "subscription", subscr[0] ? subscr : _T("none"));
+						xmlAddAttr( item, _T("name"), name );
+					xmlAddAttr( item, _T("jid"), jid );
+					xmlAddAttr( item, _T("subscription"), subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
 			}
@@ -1160,17 +1157,8 @@ void CJabberProto::_RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
-
-	XmlNode iq( _T("iq"));
-	xmlAddAttr( iq, "type", "get" );
-	iq.addAttrID( iqId );
-	HXML query = xmlAddChild( iq, "query" );
-	xmlAddAttr( query, "xmlns", JABBER_FEAT_IQ_ROSTER );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNode( _T("iq")) << XATTR( _T("type"), _T("get")) << XATTRID( iqId ) << XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER )));
 }
-
-
-
 
 static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel )
 {

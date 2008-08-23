@@ -37,14 +37,10 @@ Last change by : $Author$
 
 void CJabberProto::AddContactToRoster( const TCHAR* jid, const TCHAR* nick, const TCHAR* grpName )
 {
-	XmlNodeIq iq( "set", SerialNext() );
-	HXML query = iq.addQuery( _T(JABBER_FEAT_IQ_ROSTER));
-	HXML item = xmlAddChild( query, "item" ); xmlAddAttr( item, "jid", jid );
-	if ( nick )
-		xmlAddAttr( item, "name", nick );
-	if ( grpName )
-		xmlAddChild( item, "group", grpName );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send(
+		XmlNodeIq( _T("set"), SerialNext()).addQuery( _T(JABBER_FEAT_IQ_ROSTER))
+			<< XCHILD( _T("item")) << XATTR( _T("jid"), jid ) << XATTR( _T("name"), nick )
+				<< (( grpName ) ? XCHILD( _T("group"), grpName ) : NULL ));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

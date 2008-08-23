@@ -165,35 +165,33 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		free(xmlStreamToBeInitialized);
 		xmlStreamToBeInitialized = NULL;
 	}
-	{
-		HXML n = xi.createNode( _T("xml"), NULL, 1 );
-		xmlAddAttr( n, "version", "1.0" );
-		xmlAddAttr( n, "encoding", "UTF-8" );
-		HXML stream = xmlAddChild( n, _T("stream:stream" ));
-		xmlAddAttr( stream, "to", info->server );
-		xmlAddAttr( stream, "xmlns", "jabber:client" );
-		xmlAddAttr( stream, "xmlns:stream", "http://etherx.jabber.org/streams" );
-		TCHAR *szXmlLang = GetXmlLang();
-		if ( szXmlLang ) {
-			xmlAddAttr( stream, "xml:lang", szXmlLang );
-			mir_free( szXmlLang );
-		}
-		if ( !JGetByte( "Disable3920auth", 0 ))
-			xmlAddAttr( stream, "version", "1.0" );
+	
+	HXML n = xi.createNode( _T("xml"), NULL, 1 ) << XATTR( _T("version"), _T("1.0")) << XATTR( _T("encoding"), _T("UTF-8"));
+	
+	HXML stream = n << XCHILDNS( _T("stream:stream" ), _T("jabber:client")) << XATTR( _T("to"), _A2T(info->server))
+		<< XATTR( _T("xmlns:stream"), _T("http://etherx.jabber.org/streams"));
 
-		LPTSTR xmlQuery = xi.toString( n, NULL );
-		char* buf = mir_utf8encodeT( xmlQuery );
-		int bufLen = strlen( buf );
-		if ( bufLen > 2 ) {
-			strdel( buf + bufLen - 2, 1 );
-			bufLen--;
-		}
+	TCHAR *szXmlLang = GetXmlLang();
+	if ( szXmlLang ) {
+		xmlAddAttr( stream, _T("xml:lang"), szXmlLang );
+		mir_free( szXmlLang );
+	}
+	if ( !JGetByte( "Disable3920auth", 0 ))
+		xmlAddAttr( stream, _T("version"), _T("1.0"));
 
-		info->send( buf, bufLen );
-		mir_free( buf );
-		xi.freeMem( xmlQuery );
-		xi.destroyNode( n );
-}	}
+	LPTSTR xmlQuery = xi.toString( n, NULL );
+	char* buf = mir_utf8encodeT( xmlQuery );
+	int bufLen = strlen( buf );
+	if ( bufLen > 2 ) {
+		strdel( buf + bufLen - 2, 1 );
+		bufLen--;
+	}
+
+	info->send( buf, bufLen );
+	mir_free( buf );
+	xi.freeMem( xmlQuery );
+	xi.destroyNode( n );
+}
 
 static int utfLen( TCHAR* p, size_t len )
 {
@@ -467,11 +465,10 @@ LBL_FatalError:
 				if ( nSelRes == -1 ) // error
 					break;
 				else if ( nSelRes == 0 ) {
-					if ( JGetByte( "EnableServerXMPPPing", FALSE )) {
-						XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ));
-						HXML query = xmlAddChild( iq, "query" ); xmlAddAttr( query, "xmlns", JABBER_FEAT_PING );
-						info->send( iq );
-					}
+					if ( JGetByte( "EnableServerXMPPPing", FALSE ))
+						info->send( 
+							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 )).
+								addQuery( _T(JABBER_FEAT_PING)));
 					else if ( m_bSendKeepAlive )
 						info->send( " \t " );
 					continue;
@@ -606,9 +603,8 @@ LBL_FatalError:
 void CJabberProto::PerformRegistration( ThreadData* info )
 {
 	iqIdRegGetReg = SerialNext();
-	XmlNodeIq iq("get",iqIdRegGetReg,(char*)NULL);
-	iq.addQuery( _T(JABBER_FEAT_REGISTER));
-	info->send( iq );
+	info->send( XmlNodeIq( _T("get"), iqIdRegGetReg, NULL).addQuery( _T(JABBER_FEAT_REGISTER )));
+
 	SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
 }
 
@@ -617,10 +613,7 @@ void CJabberProto::PerformIqAuth( ThreadData* info )
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetAuth );
-		XmlNodeIq iq( "get", iqId );
-		HXML query = iq.addQuery( _T("jabber:iq:auth" ));
-		xmlAddChild( query, "username", info->username );
-		info->send( iq );
+		info->send( XmlNodeIq( _T("get"), iqId ).addQuery( _T("jabber:iq:auth" )) << XCHILD( _T("username"), info->username ));
 	}
 	else if ( info->type == JABBER_SESSION_REGISTER )
 		PerformRegistration( info );
@@ -683,8 +676,7 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 		if ( !_tcscmp( xmlGetName( n ), _T("starttls"))) {
 			if ( !info->useSSL && JGetByte( "UseTLS", FALSE )) {
 				Log( "Requesting TLS" );
-				XmlNode stls( xmlGetName( n ) ); xmlAddAttr( stls, "xmlns", "urn:ietf:params:xml:ns:xmpp-tls" );
-				info->send( stls );
+				info->send( XmlNode( xmlGetName( n )) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-tls" )));
 				return;
 		}	}
 
@@ -698,9 +690,8 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 				if ( !_tcscmp( xmlGetName( c ), _T("method"))) {
 					if ( !_tcscmp( xmlGetText( c ), _T("zlib")) && info->zlibInit() == TRUE ) {
 						Log("Requesting Zlib compression");
-						XmlNode szlib( _T("compress")); xmlAddAttr( szlib, "xmlns", "http://jabber.org/protocol/compress" );
-						xmlAddChild( szlib, "method", "zlib" );
-						info->send( szlib );
+						info->send( XmlNode( _T("compress")) << XATTR( _T("xmlns"), _T("http://jabber.org/protocol/compress")) 
+							<< XCHILD( _T("method"), _T("zlib")));
 						return;
 		}	}	}	}
 
@@ -757,10 +748,8 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 			info->auth = auth;
 
 			char* request = auth->getInitialRequest();
-			XmlNode n( "auth", request );
-			xmlAddAttr( n, "xmlns", _T("urn:ietf:params:xml:ns:xmpp-sasl"));
-			xmlAddAttr( n, "mechanism", auth->getName() );
-			info->send( n );
+			info->send( XmlNode( _T("auth"), _A2T(request)) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")) 
+				<< XATTR( _T("mechanism"), _A2T(auth->getName() )));
 			mir_free( request );
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER )
@@ -774,10 +763,8 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 	if ( info->auth ) { //We are already logged-in
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultBind );
-		XmlNodeIq iq("set",iqId);
-		HXML bind = xmlAddChild( iq, "bind" ); xmlAddAttr( bind, "xmlns", "urn:ietf:params:xml:ns:xmpp-bind" );
-		xmlAddChild( bind, "resource", info->resource );
-		info->send( iq );
+		info->send( XmlNodeIq( _T("set"), iqId ) << XCHILDNS( _T("bind"), _T("urn:ietf:params:xml:ns:xmpp-bind" )) 
+			<< XCHILD( _T("resource"), info->resource ));
 
 		if ( isSessionAvailable )
 			info->bIsSessionAvailable = TRUE;
@@ -862,13 +849,8 @@ void CJabberProto::OnProcessChallenge( HXML node, ThreadData* info )
 	if ( lstrcmp( xmlGetAttrValue( node, _T("xmlns")), _T("urn:ietf:params:xml:ns:xmpp-sasl")))
 		return;
 
-	char* response = info->auth->getChallenge( xmlGetText( node ) );
-
-	XmlNode n( "response", response );
-	xmlAddAttr( n, "xmlns", _T("urn:ietf:params:xml:ns:xmpp-sasl"));
-	info->send( n );
-
-	mir_free( response );
+	info->send( XmlNode( _T("response"), _A2T(info->auth->getChallenge( xmlGetText( node ))))
+		<< XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")));
 }
 
 void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
@@ -1185,12 +1167,9 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 	// message receipts delivery request
 	if ( xmlGetChildByTag( node, "request", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
-		XmlNode m( _T("message")); xmlAddAttr( m, "to", from );
-		HXML receivedNode = xmlAddChild( m, "received" );
-		xmlAddAttr( receivedNode, "xmlns", JABBER_FEAT_MESSAGE_RECEIPTS );
-		if ( idStr )
-			xmlAddAttr( m, "id", idStr );
-		info->send( m );
+		info->send(
+			XmlNode( _T("message")) << XATTR( _T("to"), from )
+				<< XCHILDNS( _T("received"), _T(JABBER_FEAT_MESSAGE_RECEIPTS)) << XATTR( _T("id"), idStr ));
 
 		if ( resourceStatus )
 			resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_MESSAGE_RECEIPTS;
@@ -1326,9 +1305,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				if ( !delivered && ( n = xmlGetChild( xNode , "delivered" )) != NULL ) {
 					delivered = TRUE;
 
-					XmlNode m( _T("message" )); xmlAddAttr( m, "to", from );
-					HXML x = xmlAddChild( m, "x" ); xmlAddAttr( x, "xmlns", JABBER_FEAT_MESSAGE_EVENTS ); xmlAddChild( x, "delivered" );
-					xmlAddChild( x, "id", ( idStr != NULL ) ? idStr : NULL );
+					XmlNode m( _T("message" )); m << XATTR( _T("to"), from );
+					HXML x = m << XCHILDNS( _T("x"), _T(JABBER_FEAT_MESSAGE_EVENTS));
+					x << XCHILD( _T("delivered"));
+					x << XCHILD( _T("id"), idStr );
 					info->send( m );
 				}
 				if ( item != NULL && xmlGetChild( xNode , "composing" ) != NULL ) {
@@ -1673,8 +1653,8 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 		// automatically send authorization allowed to agent/transport
 		if ( _tcschr( from, '@' ) == NULL || JGetByte("AutoAcceptAuthorization", FALSE )) {
 			ListAdd( LIST_ROSTER, from );
-			XmlNode p( _T("presence")); xmlAddAttr( p, "to", from ); xmlAddAttr( p, "type", "subscribed" );
-			info->send( p );
+			info->send( XmlNode( _T("presence")) << XATTR( _T("to"), from ) << XATTR( _T("type"), _T("subscribed")));
+
 			if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
 				if (( item = ListGetItemPtr( LIST_ROSTER, from )) == NULL || ( item->subscription != SUB_BOTH && item->subscription != SUB_TO )) {
 					Log( "Try adding contact automatically jid = " TCHAR_STR_PARAM, from );
@@ -1809,16 +1789,14 @@ void CJabberProto::OnProcessIq( HXML node, void *userdata )
 			i++;
 	}	}
 	else if (( !_tcscmp( type, _T("get")) || !_tcscmp( type, _T("set") ))) {
-		XmlNodeIq iq( "error", idStr, xmlGetAttrValue( node, _T("from")) );
+		XmlNodeIq iq( _T("error"), idStr, xmlGetAttrValue( node, _T("from")) );
 
 		HXML pFirstChild = xmlGetChild( node , 0 );
 		if ( pFirstChild )
 			xmlAddChild( iq, pFirstChild );
 		
-		HXML errorNode = xmlAddChild( iq, "error" );
-		xmlAddAttr( errorNode, "type", "cancel" );
-		HXML serviceNode = xmlAddChild( errorNode, "service-unavailable" );
-		xmlAddAttr( serviceNode, "xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas" );
+		iq << XCHILD( _T("error")) << XATTR( _T("type"), _T("cancel"))
+				<< XCHILDNS( _T("service-unavailable"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
 		info->send( iq );
 	}
 }
@@ -1842,7 +1820,7 @@ void CJabberProto::OnProcessRegIq( HXML node, void *userdata )
 		if ( id == iqIdRegGetReg ) {
 			iqIdRegSetReg = SerialNext();
 
-			XmlNodeIq iq( "set", iqIdRegSetReg );
+			XmlNodeIq iq( _T("set"), iqIdRegSetReg );
 			HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
 			xmlAddChild( query, "password", info->password );
 			xmlAddChild( query, "username", info->username );
@@ -1936,6 +1914,9 @@ int ThreadData::send( HXML node )
 {
 	if ( this == NULL )
 		return 0;
+
+	while ( HXML parent = xi.getParent( node ))
+		node = parent;
 
 	proto->OnConsoleProcessXml(node, JCPF_OUT);
 

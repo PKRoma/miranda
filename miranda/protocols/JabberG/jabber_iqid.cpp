@@ -99,19 +99,16 @@ void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, void* userdata, CJ
 		return;
 
 	// is our default delimiter?
-	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") ))) {
-		XmlNodeIq iqNRG( "set", SerialNext() );
-		HXML query = iqNRG.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
-		HXML roster = xmlAddChild( query, "roster", _T("\\") );
-		xmlAddAttr( roster, "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
-		m_ThreadInfo->send( iqNRG );
-	}
+	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") )))
+		m_ThreadInfo->send(
+			XmlNodeIq( _T("set"), SerialNext()).addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE)) 
+				<< XCHILD( _T("roster"), _T("\\")) << XATTR( _T("xmlns"), _T(JABBER_FEAT_NESTED_ROSTER_GROUPS)));
 
 	// roster request
 	TCHAR *szUserData = mir_tstrdup( szGroupDelimeter ? szGroupDelimeter : _T("\\") );
-	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ));
-	HXML query = xmlAddChild( iq, "query" ); xmlAddAttr( query, "xmlns", JABBER_FEAT_IQ_ROSTER );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send(
+		XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnIqResultGetRoster, JABBER_IQ_TYPE_GET, NULL, 0, -1, (void *)szUserData ))
+			<< XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER)));
 }
 
 void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
@@ -156,28 +153,22 @@ void CJabberProto::OnLoggedIn( ThreadData* info )
 		CJabberIqInfo* pIqInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
 		// ugly hack to prevent hangup during login process
 		pIqInfo->SetTimeout( 30000 );
-		XmlNodeIq iqNRG( pIqInfo );
-		HXML query = iqNRG.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
-		HXML roster = xmlAddChild( query, "roster" );
-		xmlAddAttr( roster, "xmlns", JABBER_FEAT_NESTED_ROSTER_GROUPS );
-		info->send( iqNRG );
+		info->send(
+			XmlNodeIq( pIqInfo ).addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE))
+				<< XCHILDNS( _T("roster"), _T(JABBER_FEAT_NESTED_ROSTER_GROUPS)));
 	}
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
-	XmlNodeIq biq( "get", iqId);
-	HXML bquery = biq.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
-	HXML storage = xmlAddChild( bquery, "storage" );
-	xmlAddAttr( storage, "xmlns", "storage:bookmarks" );
-	info->send( biq );
+	info->send(
+		XmlNodeIq( _T("get"), iqId).addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE))
+			<< XCHILDNS( _T("storage"), _T("storage:bookmarks")));
 
 	m_bPepSupported = FALSE;
 	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultServerDiscoInfo );
-	XmlNodeIq diq( "get", iqId, info->server );
-	diq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
-	info->send( diq );
+	info->send( XmlNodeIq( _T("get"), iqId, _A2T(info->server)).addQuery( _T(JABBER_FEAT_DISCO_INFO)));
 
 	QueryPrivacyLists( info );
 
@@ -218,7 +209,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSetAuth );
 
-		XmlNodeIq iq( "set", iqId );
+		XmlNodeIq iq( _T("set"), iqId );
 		HXML query = iq.addQuery( _T("jabber:iq:auth"));
 		xmlAddChild( query, "username", info->username );
 		if ( xmlGetChild( queryNode, "digest" ) != NULL && m_szStreamId ) {
@@ -302,10 +293,9 @@ void CJabberProto::OnIqResultBind( HXML iqNode, void *userdata )
 		if ( info->bIsSessionAvailable ) {
 			int iqId = SerialNext();
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSession );
-
-			XmlNodeIq iq( "set" ); iq.addAttrID( iqId );
-			HXML session = xmlAddChild( iq, "session" ); xmlAddAttr( session, "xmlns", "urn:ietf:params:xml:ns:xmpp-session" );
-			info->send( iq );
+			info->send(
+				XmlNodeIq( _T("set")) << XATTRID( iqId )
+					<< XCHILDNS( _T("session"), _T("urn:ietf:params:xml:ns:xmpp-session")));
 		}
 		else OnLoggedIn( info );
 	}
@@ -1538,8 +1528,7 @@ void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
 void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 {
 	HXML query = iq.addQuery( _T(JABBER_FEAT_PRIVATE_STORAGE));
-	HXML storage = xmlAddChild( query, "storage" );
-	xmlAddAttr( storage, "xmlns", "storage:bookmarks" );
+	HXML storage = query << XCHILDNS( _T("storage"), _T("storage:bookmarks"));
 
 	for ( int i=0; ( i=ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 		JABBER_LIST_ITEM* item = ListGetItemPtrFromIndex( i );
@@ -1550,11 +1539,11 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 			continue;
 		if (!lstrcmp( item->type, _T("conference") )) {
 			HXML itemNode = xmlAddChild( storage,"conference");
-			xmlAddAttr( itemNode, "jid", item->jid );
+			xmlAddAttr( itemNode, _T("jid"), item->jid );
 			if ( item->name )
-				xmlAddAttr( itemNode, "name", item->name );
+				xmlAddAttr( itemNode, _T("name"), item->name );
 			if ( item->bAutoJoin )
-				xmlAddAttr( itemNode, "autojoin", _T("1") );
+				xmlAddAttr( itemNode, _T("autojoin"), 1 );
 			if ( item->nick )
 				xmlAddChild( itemNode, "nick", item->nick );
 			if ( item->password )
@@ -1562,9 +1551,9 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 		}
 		if (!lstrcmp( item->type, _T("url") )) {
 			HXML itemNode = xmlAddChild( storage,"url");
-			xmlAddAttr( itemNode, "url", item->jid );
+			xmlAddAttr( itemNode, _T("url"), item->jid );
 			if ( item->name )
-				xmlAddAttr( itemNode, "name", item->name );
+				xmlAddAttr( itemNode, _T("name"), item->name );
 		}
 	}
 }

@@ -282,8 +282,7 @@ int __cdecl CJabberProto::OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam 
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && m_bJabberOnline ) {
 		if ( !JGetStringT( hContact, "jid", &dbv )) {
-			XmlNode presence( _T("presence")); xmlAddAttr( presence, "to", dbv.ptszVal ); xmlAddAttr( presence, "type", "subscribe" );
-			m_ThreadInfo->send( presence );
+			m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), dbv.ptszVal ) << XATTR( _T("type"), _T("subscribe")));
 			JFreeVariant( &dbv );
 	}	}
 
@@ -297,8 +296,7 @@ int __cdecl CJabberProto::OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 
 	if (( hContact=( HANDLE ) wParam )!=NULL && m_bJabberOnline ) {
 		if ( !JGetStringT( hContact, "jid", &dbv )) {
-			XmlNode presence( _T("presence")); xmlAddAttr( presence, "to", dbv.ptszVal ); xmlAddAttr( presence, "type", "subscribed" );
-			m_ThreadInfo->send( presence );
+			m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), dbv.ptszVal ) << XATTR( _T("type"), _T("subscribed")));
 			JFreeVariant( &dbv );
 	}	}
 
@@ -312,8 +310,7 @@ int __cdecl CJabberProto::OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
 
 	if (( hContact=( HANDLE ) wParam ) != NULL && m_bJabberOnline ) {
 		if ( !JGetStringT( hContact, "jid", &dbv )) {
-			XmlNode presence( _T("presence")); xmlAddAttr( presence, "to", dbv.ptszVal ); xmlAddAttr( presence, "type", "unsubscribed" );
-			m_ThreadInfo->send( presence );
+			m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), dbv.ptszVal ) << XATTR( _T("type"), _T("unsubscribed")));
 			JFreeVariant( &dbv );
 	}	}
 
@@ -369,9 +366,9 @@ int __cdecl CJabberProto::OnMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
 	if ( item != NULL ) {
-		XmlNode p( _T("presence")); xmlAddAttr( p, "to", item->jid );
+		XmlNode p( _T("presence")); xmlAddAttr( p, _T("to"), item->jid );
 		if ( item->itemResource.status == ID_STATUS_ONLINE )
-			xmlAddAttr( p, "type", "unavailable" );
+			xmlAddAttr( p, _T("type"), _T("unavailable"));
 		m_ThreadInfo->send( p );
 	}
 
@@ -850,14 +847,9 @@ int CJabberProto::OnProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
 
 				if ( jcb & JABBER_CAPS_CHATSTATES ) {
 					int iqId = SerialNext();
-					XmlNode msg( _T("message"));
-					xmlAddAttr( msg, "to", jid );
-					xmlAddAttr( msg, "type", "chat" );
-					msg.addAttrID( iqId );
-					HXML goneNode = xmlAddChild( msg, "gone" );
-					xmlAddAttr( goneNode, "xmlns", JABBER_FEAT_CHATSTATES );
-
-					m_ThreadInfo->send( msg );
+					m_ThreadInfo->send( 
+						XmlNode( _T("message")) << XATTR( _T("to"), jid ) << XATTR( _T("type"), _T("chat")) << XATTRID( iqId )
+							<< XCHILDNS( _T("gone"), _T(JABBER_FEAT_CHATSTATES)));
 	}	}	}	}
 
 	return 0;

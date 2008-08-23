@@ -512,6 +512,20 @@ struct JABBER_MUC_JIDLIST_INFO
 
 typedef void ( CJabberProto::*JABBER_FORM_SUBMIT_FUNC )( HXML values, void *userdata );
 
+class _A2T
+{
+	TCHAR* buf;
+
+public:
+	_A2T( const char* s ) : buf( mir_a2t( s )) {}
+	_A2T( const char* s, int cp ) : buf( mir_a2t_cp( s, cp )) {}
+	~_A2T() { mir_free(buf); }
+
+	__forceinline operator TCHAR*() const
+	{	return buf;
+	}
+};
+
 //---- jabber_treelist.c ------------------------------------------------
 
 typedef struct TTreeList_ItemInfo *HTREELISTITEM;

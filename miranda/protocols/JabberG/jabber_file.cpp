@@ -337,10 +337,11 @@ void __cdecl CJabberProto::FileServerThread( filetransfer* ft )
 				int len = lstrlen(ptszResource) + lstrlen(ft->jid) + 2;
 				TCHAR* fulljid = ( TCHAR* )alloca( sizeof( TCHAR )*len );
 				wsprintf( fulljid, _T("%s/%s"), ft->jid, ptszResource );
-				XmlNodeIq iq( "set", id, fulljid );
+
+				XmlNodeIq iq( _T("set"), id, fulljid );
 				HXML query = iq.addQuery( _T(JABBER_FEAT_OOB));
-				xmlAddChild( query, "url", szAddr );
-				xmlAddChild( query, "desc", ft->szDescription );
+				query << XCHILD( _T("url"), _A2T(szAddr));
+				query << XCHILD( _T("desc"), _A2T(ft->szDescription));
 				m_ThreadInfo->send( iq );
 
 				Log( "Waiting for the file to be sent..." );

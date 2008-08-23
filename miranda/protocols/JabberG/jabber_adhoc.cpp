@@ -119,10 +119,9 @@ void CJabberProto::OnIqResult_CommandExecution( HXML iqNode, void *userdata )
 int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg )
 {
 	int iqId = (int)hwndDlg;
-	XmlNodeIq iq( "get", iqId, szResponder );
-	iq << CHILD( _T("query")) << ATTR( _T("xmlns"), _T(JABBER_FEAT_DISCO_ITEMS)) << ATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
 	IqAdd( iqId, IQ_PROC_DISCOCOMMANDS, &CJabberProto::OnIqResult_ListOfCommands );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szResponder ).addQuery( _T(JABBER_FEAT_DISCO_ITEMS)) 
+		<< XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS)));
 	return iqId;
 }
 
@@ -141,11 +140,10 @@ int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDa
 					const TCHAR *jid2 = xmlGetAttrValue( itemNode, _T("jid"));
 
 					int iqId = (int)hwndDlg;
-					XmlNodeIq iq( "set", iqId, jid2 );
-					iq << CHILD( _T("command")) << ATTR( _T("xmlns"), _T(JABBER_FEAT_COMMANDS))
-						<< ATTR( _T("node"), node ) << ATTR( _T("action"), _T("execute"));
 					IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
-					m_ThreadInfo->send( iq );
+					m_ThreadInfo->send(
+						XmlNodeIq( _T("set"), iqId, jid2 )
+							<< XCHILDNS( _T("command"), _T(JABBER_FEAT_COMMANDS)) << XATTR( _T("node"), node ) << XATTR( _T("action"), _T("execute")));
 
 					EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
 					SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
@@ -310,27 +308,26 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 	return TRUE;
 }
 
-int CJabberProto::AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData * dat, char * action)
+int CJabberProto::AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData* dat, TCHAR* action)
 {
 	HXML commandNode = xmlGetChild( dat->AdHocNode, "command" );
-	HXML xNode		   = xmlGetChild( commandNode , "x" );
+	HXML xNode		  = xmlGetChild( commandNode , "x" );
 	HXML dataNode    = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), xNode);
 
 	int iqId = (int)hwndDlg;
-	XmlNodeIq iq( "set", iqId, xmlGetAttrValue( dat->AdHocNode, _T("from")));
-	HXML command = xmlAddChild( iq, "command" );			
-	xmlAddAttr( command, "xmlns", JABBER_FEAT_COMMANDS );
+	XmlNodeIq iq( _T("set"), iqId, xmlGetAttrValue( dat->AdHocNode, _T("from")));
+	HXML command = iq << XCHILDNS( _T("command"), _T(JABBER_FEAT_COMMANDS));
 	
 	const TCHAR* sessionId = xmlGetAttrValue( commandNode, _T("sessionid"));
 	if ( sessionId ) 
-		xmlAddAttr( command, "sessionid", sessionId );
+		command << XATTR( _T("sessionid"), sessionId );
 	
 	const TCHAR* node = xmlGetAttrValue( commandNode, _T("node"));
 	if ( node ) 
-		xmlAddAttr( command, "node", node );
+		command << XATTR( _T("node"), node );
 	
 	if ( action ) 
-		xmlAddAttr( command, "action", action );
+		command << XATTR( _T("action"), action );
 	
 	xmlAddChild( command, dataNode );
 	IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
@@ -421,13 +418,11 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			else
 			{
 				int iqId = (int)hwndDlg;
-				XmlNodeIq iq( "set", iqId, pStartupParams->m_szJid );
-				HXML query = xmlAddChild( iq, "command" );
-				xmlAddAttr( query, "xmlns", JABBER_FEAT_COMMANDS );
-				xmlAddAttr( query, "node", pStartupParams->m_szNode );
-				xmlAddAttr( query, "action", _T("execute"));
 				dat->proto->IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
-				dat->proto->m_ThreadInfo->send( iq );
+				dat->proto->m_ThreadInfo->send(
+					XmlNodeIq( _T("set"), iqId, pStartupParams->m_szJid )
+						<< XCHILDNS( _T("command"), _T(JABBER_FEAT_COMMANDS)) 
+							<< XATTR( _T("node"), pStartupParams->m_szNode ) << XATTR( _T("action"), _T("execute")));
 
 				EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
 				SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
@@ -458,11 +453,11 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			{
 
 			case IDC_PREV:
-				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,"prev");
+				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,_T("prev"));
 			case IDC_NEXT:
-				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,"next");
+				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,_T("next"));
 			case IDC_COMPLETE:
-				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,"complete");
+				return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat,_T("complete"));
 			case IDC_SUBMIT:
 				if (!dat->AdHocNode && dat->CommandsNode && LOWORD( wParam )==IDC_SUBMIT) 
 					return dat->proto->AdHoc_ExecuteCommand(hwndDlg,dat->ResponderJID, dat);

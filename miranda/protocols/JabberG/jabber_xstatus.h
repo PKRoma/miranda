@@ -54,7 +54,7 @@ protected:
 	char *m_name;
 	TCHAR *m_node;
 
-	virtual void CreateData(HXML itemNode) = 0;
+	virtual void CreateData( HXML ) = 0;
 };
 
 class CPepServiceList: public OBJLIST<CPepService>
@@ -153,7 +153,7 @@ public: // FIXME: ugly hack
 	int m_mode;
 
 protected:
-	void CreateData(HXML itemNode);
+	void CreateData( HXML );
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szMood);
 
@@ -175,7 +175,7 @@ protected:
 	TCHAR *m_text;
 	int m_mode;
 
-	void CreateData(HXML itemNode);
+	void CreateData( HXML );
 	void ShowSetDialog();
 	void SetExtraIcon(HANDLE hContact, char *szActivity);
 
