@@ -149,7 +149,7 @@ void CJabberProto::OnIqResultGetSearchFields( HXML iqNode, void *userdata )
 		ShowWindow(searchHandleDlg,SW_HIDE);
 		if ( xNode ) {
 			//1. Form
-			PostMessage( searchHandleDlg, WM_USER+11, ( WPARAM )&xNode, ( LPARAM )0 );
+			PostMessage( searchHandleDlg, WM_USER+11, ( WPARAM )xi.copyNode( xNode ), ( LPARAM )0 );
 			HXML xcNode = xmlGetNthChild( xNode, _T("instructions"), 1 );
 			if ( xcNode )
 				SetDlgItemText( searchHandleDlg, IDC_INSTRUCTIONS, xmlGetText( xcNode ));

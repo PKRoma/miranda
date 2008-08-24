@@ -613,7 +613,9 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 
 	hFrame = hwndStatic;
 	id = 0;
-	HXML x = XmlNode( _T("x")) << XATTR( _T("xmlns"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
+	XmlNode x( _T("x"));
+	x << XATTR( _T("xmlns"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
+
 	for ( int i=0; ; i++ ) {
 		n = xmlGetChild( xNode ,i);
 		if ( !n )
@@ -711,7 +713,7 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			id++;
 	}	}
 
-	return x;
+	return xi.copyNode( x );
 }
 
 struct JABBER_FORM_INFO
