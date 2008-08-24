@@ -925,7 +925,7 @@ SOURCE=.\modules\fonts\services.cpp
 # Begin Source File
 
 SOURCE=.\modules\icolib\extracticon.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
