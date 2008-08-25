@@ -679,11 +679,14 @@ static void ResetListOptions(HWND hwndList)
 
 static void InviteUser(CJabberProto* ppro, TCHAR *room, TCHAR *pUser, TCHAR *text)
 {
-	ppro->m_ThreadInfo->send( 
-		XmlNode( _T("message")) << XATTR( _T("to"), room ) << XATTRID( ppro->SerialNext())
-			<< XCHILDNS( _T("x"), _T("http://jabber.org/protocol/muc#user"))
-				<< XCHILD( _T("invite")) << XATTR( _T("to"), pUser )
-					<< (( text[0] != 0 ) ? XCHILD( _T("reason"), text ) : NULL ));
+	XmlNode msg( _T("message"));
+	HXML invite = msg << XATTR( _T("to"), room ) << XATTRID( ppro->SerialNext())
+		<< XCHILDNS( _T("x"), _T("http://jabber.org/protocol/muc#user"))
+			<< XCHILD( _T("invite")) << XATTR( _T("to"), pUser );
+	if ( text )
+		invite << XCHILD( _T("reason"), text );
+
+	ppro->m_ThreadInfo->send( msg );
 }
 
 struct JabberGcLogInviteDlgJidData
