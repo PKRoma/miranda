@@ -82,7 +82,7 @@ class CAgentRegDlg : public CJabberDlgBase
 	int m_curPos;
 	int m_formHeight, m_frameHeight;
 	RECT m_frameRect;
-	HXML m_agentRegIqNode;
+	XmlNode m_agentRegIqNode;
 	TCHAR* m_jid;
 
 	CCtrlButton m_submit;

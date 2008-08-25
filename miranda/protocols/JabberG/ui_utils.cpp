@@ -1562,7 +1562,6 @@ LRESULT CCtrlFilterListView::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_NCCALCSIZE:
 		{
 			RECT *prect = (RECT *)lParam;
-			RECT oldrect = *prect;
 
 			CSuper::CustomWndProc(msg, wParam, lParam);
 			prect->bottom -= FILTER_BOX_HEIGHT;
@@ -1650,7 +1649,7 @@ LRESULT CCtrlFilterListView::CustomWndProc(UINT msg, WPARAM wParam, LPARAM lPara
 
 			if (fdat->m_filterText)
 			{
-				SetRect(&fdat->m_rcButtonClear, 
+				SetRect(&fdat->m_rcButtonClear,
 					rc.right - FILTER_BOX_HEIGHT + (FILTER_BOX_HEIGHT-16)/2, rc.top + (FILTER_BOX_HEIGHT-16)/2,
 					rc.right - FILTER_BOX_HEIGHT + (FILTER_BOX_HEIGHT-16)/2 + 16, rc.top + (FILTER_BOX_HEIGHT-16)/2 + 16);
 
@@ -2288,7 +2287,7 @@ void CCtrlBase::OnInit()
 
 void CCtrlBase::OnDestroy()
 {
-	Unsubclass(); 
+	Unsubclass();
 	m_hwnd = NULL;
 }
 

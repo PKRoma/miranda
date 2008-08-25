@@ -580,7 +580,7 @@ void CJabberProto::OnIqResultGetRegister( HXML iqNode, void *userdata )
 
 	if ( !lstrcmp( type, _T("result"))) {
 		if ( m_hwndAgentRegInput )
-			SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )iqNode );
+			SendMessage( m_hwndAgentRegInput, WM_JABBER_REGINPUT_ACTIVATE, 1 /*success*/, ( LPARAM )xi.copyNode( iqNode ));
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
 		if ( m_hwndAgentRegInput ) {
