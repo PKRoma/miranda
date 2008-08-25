@@ -1043,7 +1043,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 		#if defined( _UNICODE )
 			mir_utf8decode( NEWSTR_ALLOCA( pszSrc ), &msg );
 		#else
-			msg = mir_strdup( mir_utf8decode( NEWSTR_ALLOCA( pszSrc )));
+			msg = mir_strdup( mir_utf8decode( NEWSTR_ALLOCA( pszSrc ), 0 ));
 		#endif
 	}
 	else if ( flags & PREF_UNICODE )

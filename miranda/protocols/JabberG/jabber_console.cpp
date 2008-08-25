@@ -237,6 +237,8 @@ static void sttAppendBufW(StringBuf *buf, const WCHAR *str)
 	}
 	sttAppendBufRaw(buf, "}");
 }
+#else
+	#define sttAppendBufW sttAppendBufA
 #endif
 
 static void sttEmptyBuf(StringBuf *buf)

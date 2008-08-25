@@ -196,6 +196,7 @@ HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, LPCTSTR value )
 	return xi.addChild( hXml, name, value );
 }
 
+#if defined( _UNICODE )
 HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, LPCTSTR ptszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName );
@@ -204,7 +205,6 @@ HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, LPCTSTR ptszValue )
 	return n;
 }
 
-#if defined( _UNICODE )
 HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, const char* pszValue )
 {
 	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
@@ -246,6 +246,11 @@ HXML __fastcall xmlGetChild( HXML hXml, LPCSTR key )
 	mir_free( wszKey );
 	return result;
 }
+
+HXML __fastcall xmlGetChildByTag( HXML hXml, LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
+{
+	return xi.getChildByAttrValue( hXml, key, attrName, attrValue );
+}
 #endif
 
 HXML __fastcall xmlGetChildByTag( HXML hXml, LPCSTR key, LPCSTR attrName, LPCTSTR attrValue )
@@ -254,11 +259,6 @@ HXML __fastcall xmlGetChildByTag( HXML hXml, LPCSTR key, LPCSTR attrName, LPCTST
 	HXML result = xi.getChildByAttrValue( hXml, wszKey, wszName, attrValue );
 	mir_free( wszKey ), mir_free( wszName );
 	return result;
-}
-
-HXML __fastcall xmlGetChildByTag( HXML hXml, LPCTSTR key, LPCTSTR attrName, LPCTSTR attrValue )
-{
-	return xi.getChildByAttrValue( hXml, key, attrName, attrValue );
 }
 
 int __fastcall xmlGetChildCount( HXML hXml )
