@@ -241,8 +241,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	// Transports list
 	LIST<TCHAR> m_lstTransports;
 
-	char *m_szXmlStreamToBeInitialized;
-
 	CJabberIqManager m_iqManager;
 	CJabberAdhocManager m_adhocManager;
 	CJabberClientCapsManager m_clientCapsManager;
@@ -829,10 +827,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	TCHAR* ReadAdvStatusT(HANDLE hContact, const char *pszSlot, const char *pszValue);
 
 	BOOL   SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSource, TCHAR* szTitle, TCHAR* szTrack, TCHAR* szUri );
-			
+
 	void   XStatusInit( void );
 	void   XStatusUninit( void );
-			
+
 	void   SetContactTune( HANDLE hContact,  LPCTSTR szArtist, LPCTSTR szLength, LPCTSTR szSource, LPCTSTR szTitle, LPCTSTR szTrack, LPCTSTR szUri );
 
 	void InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt);
@@ -843,7 +841,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	CPepServiceList m_pepServices;
 
 private:
-	char*    xmlStreamToBeInitialized;
+	char*    m_szXmlStreamToBeInitialized;
 
 	CRITICAL_SECTION m_csSerial;
 	unsigned int m_nSerial;

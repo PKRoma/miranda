@@ -152,20 +152,23 @@ static int xmpp_client_query( char* domain )
 	return port;
 }
 
-void CJabberProto::xmlStreamInitialize(char *which)
+void CJabberProto::xmlStreamInitialize(char *szWhich)
 {
-	Log("Stream will be initialized %s",which);
-	xmlStreamToBeInitialized = _strdup(which);
+	Log("Stream will be initialized %s", szWhich);
+	if ( m_szXmlStreamToBeInitialized )
+		free( m_szXmlStreamToBeInitialized );
+	m_szXmlStreamToBeInitialized = _strdup( szWhich );
 }
 
 void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 {
-	Log("Stream is initializing %s",xmlStreamToBeInitialized?xmlStreamToBeInitialized:"after connect");
-	if (xmlStreamToBeInitialized) {
-		free(xmlStreamToBeInitialized);
-		xmlStreamToBeInitialized = NULL;
+	Log( "Stream is initializing %s",
+		m_szXmlStreamToBeInitialized ? m_szXmlStreamToBeInitialized : "after connect" );
+	if (m_szXmlStreamToBeInitialized) {
+		free( m_szXmlStreamToBeInitialized );
+		m_szXmlStreamToBeInitialized = NULL;
 	}
-	
+
 	HXML n = xi.createNode( _T("xml"), NULL, 1 ) << XATTR( _T("version"), _T("1.0")) << XATTR( _T("encoding"), _T("UTF-8"));
 	
 	HXML stream = n << XCHILDNS( _T("stream:stream" ), _T("jabber:client")) << XATTR( _T("to"), _A2T(info->server))
@@ -525,7 +528,7 @@ LBL_FatalError:
 			}	}
 			else Log( "Unknown state: bytesParsed=%d, datalen=%d, jabberNetworkBufferSize=%d", bytesParsed, datalen, jabberNetworkBufferSize );
 
-			if ( xmlStreamToBeInitialized ) {
+			if ( m_szXmlStreamToBeInitialized ) {
 				xmlStreamInitializeNow( info );
 				tag = _T("stream:stream");
 		}	}

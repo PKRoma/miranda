@@ -84,6 +84,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	InitializeCriticalSection( &m_csLists );
 
+	m_szXmlStreamToBeInitialized = NULL;
+
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
 	m_szProtoName = mir_strdup( aProtoName );
