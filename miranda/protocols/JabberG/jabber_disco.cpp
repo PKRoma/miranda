@@ -285,7 +285,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, void* userd
 	if (!pInfo->m_pUserData)
 		return;
 
-	HXML packet = NULL;
+	XmlNode packet( _T(""));
 	m_SDManager.Lock();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
 		HXML query = xmlGetChild( iqNode , "query" );
@@ -297,7 +297,10 @@ void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, void* userd
 				CJabberIqInfo* pNewInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultServiceDiscoveryRootInfo, JABBER_IQ_TYPE_GET, szJid );
 				pNewInfo->m_pUserData = pInfo->m_pUserData;
 				pNewInfo->SetTimeout( 30000 );
-				xmlAddChild( packet, XmlNodeIq( pNewInfo ).addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), szNode ));
+				
+				XmlNodeIq iq( pNewInfo );
+				iq.addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), szNode );
+				xmlAddChild( packet, iq );
 	}	}	}
 	m_SDManager.Unlock();
 
