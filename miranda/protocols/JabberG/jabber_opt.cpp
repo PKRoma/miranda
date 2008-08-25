@@ -1097,19 +1097,17 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 			}
 			else if ( !bRemove )
 			{
-				BOOL bPushed=FALSE;
-				{
+				BOOL bPushed = itemRoster ? TRUE : FALSE;
+				if ( !bPushed ) {
 					const TCHAR *rosterName = xmlGetAttrValue( itemRoster, _T("name"));
 					if ( (rosterName!=NULL || name[0]!=_T('\0')) && lstrcmpi(rosterName,name) )
 						bPushed=TRUE;
-					if ( !bPushed)
-					{
+					if ( !bPushed ) {
 						rosterName = xmlGetAttrValue( itemRoster, _T("subscription"));
 						if ((rosterName!=NULL || subscr[0]!=_T('\0')) && lstrcmpi(rosterName,subscr) )
 							bPushed=TRUE;
 					}
-					if ( !bPushed)
-					{
+					if ( !bPushed ) {
 						HXML groupNode = xmlGetChild( itemRoster , "group" );
 						const TCHAR* rosterGroup=NULL;
 						if (groupNode != NULL)
@@ -1117,10 +1115,8 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 						if ((rosterGroup!=NULL || group[0]!=_T('\0')) && lstrcmpi(rosterGroup,group) )
 							bPushed=TRUE;
 					}
-
 				}
-				if (bPushed)
-				{
+				if ( bPushed ) {
 					HXML item = xmlAddChild( query, "item" );
 					if ( group && _tcslen( group ))
 						xmlAddChild( item, "group", group );
