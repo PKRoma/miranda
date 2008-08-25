@@ -296,7 +296,9 @@ int CJabberProto::AdhocSetStatusHandler( HXML iqNode, void* usedata, CJabberIqIn
 			<< XATTR( _T("value"), _T(JABBER_FEAT_RC));
 
 		HXML fieldNode = xNode << XCHILD( _T("field")) << XATTR( _T("label"), _T("Status")) 
-			<< XATTR( _T("type"), _T("list-single")) << XATTR( _T("var"), _T("status")) << XCHILD( _T("required"));
+			<< XATTR( _T("type"), _T("list-single")) << XATTR( _T("var"), _T("status"));
+		
+		fieldNode << XCHILD( _T("required") );
 
 		int status = JCallService( MS_CLIST_GETSTATUSMODE, 0, 0 );
 		switch ( status ) {
@@ -324,19 +326,19 @@ int CJabberProto::AdhocSetStatusHandler( HXML iqNode, void* usedata, CJabberIqIn
 			break;
 		}
 
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Free for chat")) << XATTR( _T("value"), _T("chat"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Online")) << XATTR( _T("value"), _T("online"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Away")) << XATTR( _T("value"), _T("away"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Extended Away (N/A)")) << XATTR( _T("value"), _T("xa"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Do Not Disturb")) << XATTR( _T("value"), _T("dnd"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Invisible")) << XATTR( _T("value"), _T("invisible"));
-		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Offline")) << XATTR( _T("value"), _T("offline"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Free for chat")) << XCHILD( _T("value"), _T("chat"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Online")) << XCHILD( _T("value"), _T("online"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Away")) << XCHILD( _T("value"), _T("away"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Extended Away (N/A)")) << XCHILD( _T("value"), _T("xa"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Do Not Disturb")) << XCHILD( _T("value"), _T("dnd"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Invisible")) << XCHILD( _T("value"), _T("invisible"));
+		fieldNode << XCHILD( _T("option")) << XATTR( _T("label"), _T("Offline")) << XCHILD( _T("value"), _T("offline"));
 
 		// priority
 		TCHAR szPriority[ 256 ];
 		mir_sntprintf( szPriority, SIZEOF(szPriority), _T("%d"), (short)JGetWord( NULL, "Priority", 5 ));
 		xNode << XCHILD( _T("field")) << XATTR( _T("label"), _T("Priority")) << XATTR( _T("type"), _T("text-single"))
-			<< XATTR( _T("var"), _T("status-priority")) << XATTR( _T("value"), szPriority );
+			<< XATTR( _T("var"), _T("status-priority")) << XCHILD( _T("value"), szPriority );
 
 		// status message text
 		xNode << XCHILD( _T("field")) << XATTR( _T("label"), _T("Status message"))

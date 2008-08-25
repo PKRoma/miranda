@@ -108,12 +108,12 @@ static void JabberAdHoc_RefreshFrameScroll(HWND hwndDlg, JabberAdHocData * dat)
 
 void CJabberProto::OnIqResult_ListOfCommands( HXML iqNode, void *userdata )
 {
-	SendMessage( GetWindowFromIq( iqNode ), JAHM_COMMANDLISTRESULT, 0, (LPARAM)iqNode );
+	SendMessage( GetWindowFromIq( iqNode ), JAHM_COMMANDLISTRESULT, 0, (LPARAM)xi.copyNode( iqNode ));
 }
 
 void CJabberProto::OnIqResult_CommandExecution( HXML iqNode, void *userdata )
 {
-	SendMessage( GetWindowFromIq( iqNode ), JAHM_PROCESSRESULT, (WPARAM)iqNode, 0 );
+	SendMessage( GetWindowFromIq( iqNode ), JAHM_PROCESSRESULT, (WPARAM)xi.copyNode( iqNode ), 0 );
 }
 
 int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg )
