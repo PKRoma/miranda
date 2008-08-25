@@ -128,26 +128,24 @@ int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg
 int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocData* dat )
 {
 	for ( int i = 1; ; i++ ) {
-		HXML n = xmlGetChild( dat->CommandsNode, i );
-		if ( !n )
+		HXML itemNode = xmlGetNthChild( dat->CommandsNode, _T("item"), i );
+		if ( !itemNode)
 			break;
+		if ( !IsDlgButtonChecked( GetDlgItem( hwndDlg, IDC_FRAME ), i ))
+			continue;
+		const TCHAR* node = xmlGetAttrValue( itemNode, _T("node"));
+		if ( node ) {
+			const TCHAR *jid2 = xmlGetAttrValue( itemNode, _T("jid"));
 
-		if ( IsDlgButtonChecked( GetDlgItem( hwndDlg, IDC_FRAME ), i )) {
-			HXML itemNode = xmlGetNthChild( dat->CommandsNode, _T("item"), i );
-			if ( itemNode ) {
-				const TCHAR* node = xmlGetAttrValue( itemNode, _T("node"));
-				if ( node ) {
-					const TCHAR *jid2 = xmlGetAttrValue( itemNode, _T("jid"));
+			int iqId = (int)hwndDlg;
+			IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
+			m_ThreadInfo->send(
+				XmlNodeIq( _T("set"), iqId, jid2 )
+					<< XCHILDNS( _T("command"), _T(JABBER_FEAT_COMMANDS)) << XATTR( _T("node"), node ) << XATTR( _T("action"), _T("execute")));
 
-					int iqId = (int)hwndDlg;
-					IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
-					m_ThreadInfo->send(
-						XmlNodeIq( _T("set"), iqId, jid2 )
-							<< XCHILDNS( _T("command"), _T(JABBER_FEAT_COMMANDS)) << XATTR( _T("node"), node ) << XATTR( _T("action"), _T("execute")));
-
-					EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
-					SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
-	}	}	}	}
+			EnableDlgItem( hwndDlg, IDC_SUBMIT, FALSE );
+			SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
+	}	}
 
 	dat->CommandsNode = XmlNode();
 	return TRUE;
