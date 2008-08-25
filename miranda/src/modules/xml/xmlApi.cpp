@@ -155,7 +155,8 @@ static LPTSTR xmlapiToString( HXML _n, int* datalen )
 
 static void xmlapiAddAttr( HXML _n, LPCTSTR attrName, LPCTSTR attrValue )
 {
-	XMLNode(_n).addAttribute( attrName, attrValue );
+	if ( attrName != NULL && attrValue != NULL )
+		XMLNode(_n).addAttribute( attrName, attrValue );
 }
 
 static void xmlapiAddAttrInt( HXML _n, LPCTSTR attrName, int attrValue )
