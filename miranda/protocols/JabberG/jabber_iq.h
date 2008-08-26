@@ -108,7 +108,7 @@ public:// parsed data
 	TCHAR *m_szFrom;
 	TCHAR *m_szChildTagXmlns;
 	TCHAR *m_szChildTagName;
-	XmlNode m_pChildNode;
+	HXML   m_pChildNode;
 	HANDLE m_hContact; 
 	TCHAR *m_szTo;
 	TCHAR *m_szId;

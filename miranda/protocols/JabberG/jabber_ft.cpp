@@ -458,7 +458,7 @@ void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, void* userdata, CJabb
 		// Start Bytestream session
 		JABBER_BYTE_TRANSFER *jbt = new JABBER_BYTE_TRANSFER;
 		ZeroMemory( jbt, sizeof( JABBER_BYTE_TRANSFER ));
-		jbt->iqNode = iqNode;
+		jbt->iqNode = xi.copyNode( iqNode );
 		jbt->pfnRecv = &CJabberProto::FtReceive;
 		jbt->pfnFinal = &CJabberProto::FtReceiveFinal;
 		jbt->userdata = item->ft;
