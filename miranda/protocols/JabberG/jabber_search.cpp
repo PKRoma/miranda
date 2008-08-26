@@ -417,11 +417,11 @@ static void JabberSearchFreeData(HWND hwndDlg, JabberSearchData * dat)
 		free(dat->pJSInf);
 		dat->pJSInf=NULL;
 	}
-	else
-	{
-		dat->xNode = XmlNode();
-		EnumChildWindows(GetDlgItem(hwndDlg,IDC_FRAME),DeleteChildWindowsProc,0);			
-	}
+	else EnumChildWindows(GetDlgItem(hwndDlg,IDC_FRAME),DeleteChildWindowsProc,0);			
+
+	if ( dat->xNode )
+		xi.destroyNode( dat->xNode );
+
 	SendMessage(GetDlgItem(hwndDlg,IDC_FRAME), WM_SETFONT, (WPARAM) SendMessage( hwndDlg, WM_GETFONT, 0, 0 ),0 );
 	dat->nJSInfCount=0;
 	ShowWindow(GetDlgItem(hwndDlg,IDC_VSCROLL),SW_HIDE);
@@ -615,7 +615,7 @@ static BOOL CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPARAM 
 	case WM_USER+11:
 		{
 			dat->fSearchRequestIsXForm=TRUE;
-			dat->xNode = ( HXML )wParam;
+			dat->xNode = xi.copyNode(( HXML )wParam );
 			JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_FRAME), SW_SHOW);
 			dat->nJSInfCount=1;

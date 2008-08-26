@@ -41,7 +41,7 @@ typedef struct _tagJabberSearchData
 {
 	struct CJabberProto* ppro;
 	JabberSearchFieldsInfo *  pJSInf;
-	XmlNode  xNode;
+	HXML xNode;
 	int nJSInfCount;
 	int lastRequestIq;
 	int CurrentHeight;
