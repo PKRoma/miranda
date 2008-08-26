@@ -255,6 +255,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			iRemoveChars = 1;
 			break;
 
+		case '\r': case '\n':
+			bTextHasStarted = TRUE;
+			bJustRemovedRTF = FALSE;
+			iRemoveChars = 1;
+			break;
+
 		case '%': // escape chat -> protocol control character
 			bTextHasStarted = TRUE;
 			bJustRemovedRTF = FALSE;
