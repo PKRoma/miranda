@@ -204,11 +204,22 @@ static SECURITY_STATUS ClientHandshakeLoop(SSL *ssl, BOOL fDoInitialRead)
         {
             if(fDoRead)
             {
+				TIMEVAL tv = {10, 0};
+				fd_set fd;
+
 				// If buffer not large enough reallocate buffer
 				if (ssl->sbIoBuffer <= ssl->cbIoBuffer)
 				{
 					ssl->sbIoBuffer += 2048;
 					ssl->pbIoBuffer = (PUCHAR)realloc(ssl->pbIoBuffer, ssl->sbIoBuffer);
+				}
+
+				FD_ZERO(&fd);
+				FD_SET(ssl->s, &fd);
+				if (select(1, &fd, NULL, NULL, &tv) != 1)
+				{
+					scRet = SEC_E_INTERNAL_ERROR;
+					break;
 				}
 
                 cbData = recv(ssl->s,  
@@ -646,7 +657,7 @@ int SSL_read(SSL *ssl, char *buf, int num)
 				if (ssl->sbRecDataBuf < rbytes) 
 				{
 					ssl->sbRecDataBuf = rbytes;
-					ssl->pbRecDataBuf = (PUCHAR)realloc(ssl->pbRecDataBuf, ssl->sbRecDataBuf);
+					ssl->pbRecDataBuf = (PUCHAR)realloc(ssl->pbRecDataBuf, rbytes);
 				}
 				CopyMemory(ssl->pbRecDataBuf, (char*)pDataBuffer->pvBuffer+bytes, rbytes);
 				ssl->cbRecDataBuf = rbytes;
