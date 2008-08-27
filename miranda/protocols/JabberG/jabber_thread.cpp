@@ -852,8 +852,9 @@ void CJabberProto::OnProcessChallenge( HXML node, ThreadData* info )
 	if ( lstrcmp( xmlGetAttrValue( node, _T("xmlns")), _T("urn:ietf:params:xml:ns:xmpp-sasl")))
 		return;
 
-	info->send( XmlNode( _T("response"), _A2T(info->auth->getChallenge( xmlGetText( node ))))
-		<< XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")));
+	char* challenge = info->auth->getChallenge( xmlGetText( node ));
+	info->send( XmlNode( _T("response"), _A2T(challenge)) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")));
+	mir_free( challenge );
 }
 
 void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )

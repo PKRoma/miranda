@@ -1068,6 +1068,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			xmlAddChild( m, "body", "[This message is encrypted.]" );
 			m << XCHILDNS( _T("x"), _T("jabber:x:encrypted"));
 		}
+		mir_free( msg );
 
 		TCHAR szClientJid[ 256 ];
 		GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
