@@ -475,7 +475,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -548,7 +548,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -621,7 +621,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -694,7 +694,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -767,7 +767,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -840,7 +840,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -913,7 +913,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -986,7 +986,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1059,7 +1059,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1132,7 +1132,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1205,7 +1205,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1278,7 +1278,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1351,7 +1351,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1424,7 +1424,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1497,7 +1497,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
@@ -1570,7 +1570,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	"..\..\include\statusmodes.h"\
-	"..\..\plugins\freeimage\Miranda\include\m_freeimage.h"\
+	"..\..\include\m_freeimage.h"\
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
