@@ -75,7 +75,7 @@ static int IsEmpty(char *str)
 static void ConvertBackslashes(char *str)
 {
 	char *pstr;
-	for(pstr=str;*pstr;pstr=CharNextExA(langPack.defaultANSICp,pstr,0)) {
+	for(pstr=str;*pstr;pstr=CharNextExA((WORD)langPack.defaultANSICp,pstr,0)) {
 		if(*pstr=='\\') {
 			switch(pstr[1]) {
 case 'n': *pstr='\n'; break;

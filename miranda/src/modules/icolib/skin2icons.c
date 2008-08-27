@@ -466,8 +466,14 @@ HICON IcoLib_GetIcon( const char* pszIconName )
 
 HICON IcoLib_GetIconByHandle( HANDLE hItem )
 {
+    
 	HICON result;
-	IconItem* pi = ( IconItem* )hItem;
+	IconItem* pi;
+    
+    if ( hItem == NULL )
+        return NULL;
+
+    pi = ( IconItem* )hItem;
 
 	EnterCriticalSection( &csIconList );
 
