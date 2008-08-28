@@ -193,20 +193,7 @@ void parseURL(char* szUrl, char* szHost, unsigned short* sPort, char* szPath)
 
 static void LongLog(char* szData)
 {
-	char* buf = szData;
-	int sz = strlen(szData);
-
-	while ( sz > 1000)
-	{
-		char* nbuf = buf + 1000;
-		char t = *nbuf;
-		*nbuf = 0;
-		Netlib_Logf(NULL, buf);
-		*nbuf = t;
-		buf = nbuf;
-		sz -= 1000;
-	}
-	Netlib_Logf(NULL, buf);
+    CallService(MS_NETLIB_LOG, 0, (LPARAM)szData);
 }
 
 
@@ -723,20 +710,19 @@ void NetlibUPnPCleanup(void* extra)
 	{
 		char* szData = ( char* )alloca(4096);
 		char buf[50], lip[50];
-		unsigned i, j = 0, k, num;
+		unsigned i, j = 0, k, num = 0;
 
 		WORD ports[30];
 
 		strcpy(lip, inet_ntoa(locIP.sin_addr));
 
-		if (httpTransact(szCtlUrl, szData, 4096, "PortMappingNumberOfEntries", ControlQuery) != 200)
-			return;
+		WaitForSingleObject(portListMutex, INFINITE);
 
-		if (!txtParseParam(szData, "QueryStateVariableResponse", "<return>", "<", buf, sizeof(buf)))
-			return;
+        if (httpTransact(szCtlUrl, szData, 4096, "PortMappingNumberOfEntries", ControlQuery) == 200 &&
+		    txtParseParam(szData, "QueryStateVariableResponse", "<return>", "<", buf, sizeof(buf)))
+		    num = atol(buf);
 
-		num = atol(buf);
-		for (i=0; i<num && !Miranda_Terminated(); ++i)
+        for (i=0; i<num && !Miranda_Terminated(); ++i)
 		{
 			mir_snprintf(szData, 4096, get_port_mapping, i);
 
@@ -768,11 +754,7 @@ void NetlibUPnPCleanup(void* extra)
 		ReleaseMutex(portListMutex);
 
 		for (i=0; i<j && !Miranda_Terminated(); ++i)
-		{
-			WaitForSingleObject(portListMutex, INFINITE);
 			NetlibUPnPDeletePortMapping(ports[i], "TCP");
-			ReleaseMutex(portListMutex);
-		}
 	}
 }
 
