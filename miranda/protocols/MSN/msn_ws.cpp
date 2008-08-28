@@ -344,7 +344,7 @@ int ThreadData::recv_dg( char* data, long datalen )
 		if (tResult == NULL) return SOCKET_ERROR;
 
 		if ( dlen == 0 ) 
-			mGatewayTimeout = max(mGatewayTimeout + 2, 20);
+			mGatewayTimeout = min(mGatewayTimeout + 2, 20);
 
 		unsigned status;
 		MimeHeaders tHeaders;

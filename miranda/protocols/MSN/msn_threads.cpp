@@ -600,11 +600,13 @@ ThreadData::~ThreadData()
 		CloseHandle( hQueueMutex );
 	}
 
-	if (mInitialContact != NULL && mType == SERVER_SWITCHBOARD && 
-		proto->MSN_GetThreadByContact(mInitialContact) == NULL &&
-		proto->MSN_GetUnconnectedThread(mInitialContact) == NULL)
+    HANDLE hContact = mInitialContact;
+    mInitialContact = NULL;
+	if (hContact != NULL && mType == SERVER_SWITCHBOARD && 
+		proto->MSN_GetThreadByContact(hContact) == NULL &&
+		proto->MSN_GetUnconnectedThread(hContact) == NULL)
 	{
-		proto->MsgQueue_Clear(mInitialContact, true);
+		proto->MsgQueue_Clear(hContact, true);
 	}
 
 }
