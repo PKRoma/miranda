@@ -525,7 +525,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			}
 		}
 		
-		_tcslwr(szFilterString); //all strings are stored as lowercase ... make sure filter string is lowercase too
+		_tcslwr_locale(szFilterString); //all strings are stored as lowercase ... make sure filter string is lowercase too
 
 
 		ShowWindow(GetDlgItem(hdlg,IDC_PAGETREE),SW_HIDE);	 //deleteall is annoyingly visible
@@ -777,7 +777,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 							{
 								// Count tabs to calc position
 								int j;
-								int i,pages=0;
+								int pages=0;
 								for ( j=0; j < dat->pageCount && pages < 2; j++ )
 								{
 									if (!CheckPageShow( hdlg, dat, j, szFilterString ) ) continue;

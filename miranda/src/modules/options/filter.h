@@ -38,6 +38,12 @@ BOOL	ContainsFilterString(const PageHash key, TCHAR *data);
 void	ClearFilterStrings();
 void	GetDialogStrings(int enableKeywordFiltering, const PageHash key, TCHAR *pluginName, HWND hWnd,  TCHAR * group, TCHAR * title, TCHAR * tab, TCHAR * name );
 
+_inline TCHAR * _tcslwr_locale( TCHAR * buf )
+{
+	LCMapString( LangPackGetDefaultLocale() , LCMAP_LOWERCASE, buf, _tcslen( buf ), buf, _tcslen( buf ) );
+	return buf;
+}
+
 typedef LIST<TCHAR> KeywordList;
 class CPageKeywords
 {
@@ -59,7 +65,7 @@ public:
 
 	void AddKeyWord( TCHAR * ptKeyWord )
 	{
-		TCHAR * plwrWord = _tcslwr( _tcsdup( ptKeyWord ) );
+		TCHAR * plwrWord = _tcslwr_locale( _tcsdup( ptKeyWord ) );
 		int i = _pageKeyWords.indexOf( plwrWord );
 		if ( _pageKeyWords.getIndex( plwrWord ) == -1 )
 			_pageKeyWords.insert( plwrWord ) ;
@@ -95,6 +101,9 @@ public:
 	~CPageList() {};
 };
 
+
+
+int LangPackGetDefaultLocale();
 
 
 #endif //M_OPTIONS_FILTERING_H
