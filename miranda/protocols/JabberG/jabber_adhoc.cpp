@@ -147,7 +147,7 @@ int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocDa
 			SetDlgItemText( hwndDlg, IDC_SUBMIT, TranslateT( "OK" ) );
 	}	}
 
-	dat->CommandsNode = XmlNode();
+	xi.destroyNode( dat->CommandsNode ); dat->CommandsNode = NULL;
 	return TRUE;
 }
 
@@ -186,7 +186,7 @@ int CJabberProto::AdHoc_OnJAHMCommandListResult( HWND hwndDlg, HXML iqNode, Jabb
 				validResponse = TRUE;
 		}
 		if ( queryNode && xmlGetChild( queryNode ,0) && validResponse ) {
-			dat->CommandsNode = queryNode;
+			dat->CommandsNode = xi.copyNode( queryNode );
 
 			nodeIdx = 1;
 			int ypos = 20;
@@ -221,9 +221,10 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 	dat->curPos = 0;
 	SetScrollPos( GetDlgItem( hwndDlg, IDC_VSCROLL ), SB_CTL, 0, FALSE );
 
-	dat->AdHocNode = workNode;
-	if ( dat->AdHocNode == NULL )
+	if ( workNode == NULL )
 		return TRUE;
+
+	dat->AdHocNode = xi.copyNode( workNode );
 
 	const TCHAR *type;
 	if (( type = xmlGetAttrValue( workNode, _T("type"))) == NULL ) return TRUE;
@@ -463,7 +464,7 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 					return dat->proto->AdHoc_SubmitCommandForm(hwndDlg,dat, NULL);
 			case IDCLOSE:
 			case IDCANCEL:
-				dat->AdHocNode = XmlNode();
+				xi.destroyNode( dat->AdHocNode ); dat->AdHocNode = NULL;
 				DestroyWindow( hwndDlg );
 				return TRUE;
 			}
@@ -531,10 +532,9 @@ static BOOL CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 			JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
 
 			dat->proto->m_hwndCommandWindow = NULL;
-			dat->AdHocNode = XmlNode();
-			if (dat->ResponderJID) mir_free(dat->ResponderJID);
-			dat->ResponderJID = NULL;
-			dat->CommandsNode = XmlNode();
+			mir_free( dat->ResponderJID );
+			xi.destroyNode( dat->CommandsNode );
+			xi.destroyNode( dat->AdHocNode );
 			mir_free(dat);
 			dat=NULL;
 			SetWindowLong(hwndDlg, GWL_USERDATA, 0);

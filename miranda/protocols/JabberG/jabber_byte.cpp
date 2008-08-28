@@ -47,6 +47,8 @@ JABBER_BYTE_TRANSFER::~JABBER_BYTE_TRANSFER()
 	mir_free( iqId );
 	mir_free( sid );
 
+	xi.destroyNode( iqNode );
+
 	// XEP-0065 proxy support
 	mir_free( szProxyHost );
 	mir_free( szProxyPort );

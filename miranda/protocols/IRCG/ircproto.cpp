@@ -154,8 +154,13 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 
 CIrcProto::~CIrcProto()
 {
-	Netlib_CloseHandle(hNetlib);
-	Netlib_CloseHandle(hNetlibDCC);
+	if ( con ) {
+		Netlib_CloseHandle( con );
+		con = NULL;
+	}
+
+	Netlib_CloseHandle(hNetlib); hNetlib = NULL;
+	Netlib_CloseHandle(hNetlibDCC); hNetlibDCC = NULL;
 
 	m_dcc_chats.destroy();
 	m_dcc_xfers.destroy();

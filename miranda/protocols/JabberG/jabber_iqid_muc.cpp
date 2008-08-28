@@ -540,6 +540,7 @@ void CJabberProto::OnIqResultMucGetOwnerList( HXML iqNode, void *userdata )
 
 JABBER_MUC_JIDLIST_INFO::~JABBER_MUC_JIDLIST_INFO()
 {
+	xi.destroyNode( iqNode );
 	mir_free( roomJid );
 }
 

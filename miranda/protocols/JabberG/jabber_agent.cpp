@@ -82,7 +82,7 @@ class CAgentRegDlg : public CJabberDlgBase
 	int m_curPos;
 	int m_formHeight, m_frameHeight;
 	RECT m_frameRect;
-	XmlNode m_agentRegIqNode;
+	HXML m_agentRegIqNode;
 	TCHAR* m_jid;
 
 	CCtrlButton m_submit;
@@ -91,7 +91,8 @@ public:
 	CAgentRegDlg( CJabberProto* _ppro, TCHAR* _jid ) :
 		CJabberDlgBase( _ppro, IDD_FORM, NULL, false ),
 		m_submit( this, IDC_SUBMIT ),
-		m_jid( _jid )
+		m_jid( _jid ),
+		m_agentRegIqNode( NULL )
 	{
 		m_submit.OnClick = Callback( this, &CAgentRegDlg::OnSubmit );
 	}
@@ -116,6 +117,7 @@ public:
 
 	virtual void OnDestroy()
 	{
+		xi.destroyNode( m_agentRegIqNode );
 		JabberFormDestroyUI(GetDlgItem(m_hwnd, IDC_FRAME));
 		m_proto->m_hwndAgentRegInput = NULL;
 		EnableWindow( GetParent( m_hwnd ), TRUE );

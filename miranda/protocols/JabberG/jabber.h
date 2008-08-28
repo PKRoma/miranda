@@ -504,7 +504,7 @@ struct JABBER_MUC_JIDLIST_INFO
 
 	JABBER_MUC_JIDLIST_TYPE type;
 	TCHAR* roomJid;	// filled-in by the WM_JABBER_REFRESH code
-	XmlNode iqNode;
+	HXML   iqNode;
 	CJabberProto* ppro;
 
 	TCHAR* type2str( void ) const;
@@ -729,12 +729,12 @@ struct CJabberAdhocStartupParams
 struct JabberAdHocData
 {
 	CJabberProto* proto;
-	int CurrentHeight;
-	int curPos;
-	int frameHeight;
-	RECT frameRect;
-	XmlNode AdHocNode;
-	XmlNode CommandsNode;
+	int    CurrentHeight;
+	int    curPos;
+	int    frameHeight;
+	RECT   frameRect;
+	HXML   AdHocNode;
+	HXML   CommandsNode;
 	TCHAR* ResponderJID;
 };
 

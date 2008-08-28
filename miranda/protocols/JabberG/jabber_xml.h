@@ -77,10 +77,6 @@ struct XmlNode
 	~XmlNode();
 
 	XmlNode& operator =( const XmlNode& n );
-	__forceinline XmlNode& operator =( HXML n )
-	{	m_hXml = n;
-		return *this;
-	}
 
 	__forceinline operator HXML() const
 	{	return m_hXml;

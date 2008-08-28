@@ -721,7 +721,7 @@ struct JABBER_FORM_INFO
 	~JABBER_FORM_INFO();
 
 	CJabberProto* ppro;
-	XmlNode xNode;
+	HXML xNode;
 	TCHAR defTitle[128];	// Default title if no <title/> in xNode
 	RECT frameRect;		// Clipping region of the frame to scroll
 	int frameHeight;	// Height of the frame ( can be eliminated, redundant to frameRect )
@@ -906,5 +906,6 @@ void CJabberProto::FormCreateDialog( HXML xNode, TCHAR* defTitle, JABBER_FORM_SU
 
 JABBER_FORM_INFO::~JABBER_FORM_INFO()
 {
+	xi.destroyNode( xNode );
 	mir_free( userdata );
 }
