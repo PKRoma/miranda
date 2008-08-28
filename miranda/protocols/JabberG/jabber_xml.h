@@ -71,9 +71,6 @@ struct XmlNode
 	XmlNode( const XmlNode& n );
 	XmlNode( LPCTSTR name );
 	XmlNode( LPCTSTR pszName, LPCTSTR ptszText );
-	#if defined( _UNICODE )
-		XmlNode( const char* pszName, const char* ptszText );
-	#endif
 	~XmlNode();
 
 	XmlNode& operator =( const XmlNode& n );
