@@ -583,7 +583,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 				break;
 
 			case PROXYTYPE_HTTP:
-				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL) {
+				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL)) {
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
 					if(!NetlibInitHttpsConnection(nlc,nlu,nloc)) {
 						//can't do HTTPS: try direct
