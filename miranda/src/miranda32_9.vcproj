@@ -1937,6 +1937,14 @@
 				Name="options"
 				>
 				<File
+					RelativePath=".\modules\options\filter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\filter.h"
+					>
+				</File>
+				<File
 					RelativePath="modules\options\options.cpp"
 					>
 					<FileConfiguration
@@ -3579,13 +3587,6 @@
 				<File
 					RelativePath=".\modules\icolib\extracticon.cpp"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\modules\icolib\IcoLib.h"

@@ -576,6 +576,14 @@ SOURCE=.\modules\netlib\netlibupnp.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\modules\options\filter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\options\filter.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\options\options.cpp
 # End Source File
 # End Group

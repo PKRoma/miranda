@@ -1940,6 +1940,14 @@
 				Name="options"
 				>
 				<File
+					RelativePath=".\modules\options\filter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\filter.h"
+					>
+				</File>
+				<File
 					RelativePath="modules\options\options.cpp"
 					>
 					<FileConfiguration

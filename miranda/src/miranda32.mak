@@ -81,6 +81,7 @@ CLEAN :
 	-@erase "$(INTDIR)\filerecvdlg.obj"
 	-@erase "$(INTDIR)\filesenddlg.obj"
 	-@erase "$(INTDIR)\filexferdlg.obj"
+	-@erase "$(INTDIR)\filter.obj"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\FontOptions.obj"
 	-@erase "$(INTDIR)\FontService.obj"
@@ -273,7 +274,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\filter.obj"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -374,6 +376,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filesenddlg.sbr"
 	-@erase "$(INTDIR)\filexferdlg.obj"
 	-@erase "$(INTDIR)\filexferdlg.sbr"
+	-@erase "$(INTDIR)\filter.obj"
+	-@erase "$(INTDIR)\filter.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
 	-@erase "$(INTDIR)\FontOptions.obj"
@@ -628,7 +632,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\filter.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -744,7 +749,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\filter.obj"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -801,6 +807,7 @@ CLEAN :
 	-@erase "$(INTDIR)\filerecvdlg.obj"
 	-@erase "$(INTDIR)\filesenddlg.obj"
 	-@erase "$(INTDIR)\filexferdlg.obj"
+	-@erase "$(INTDIR)\filter.obj"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\FontOptions.obj"
 	-@erase "$(INTDIR)\FontService.obj"
@@ -993,7 +1000,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\filter.obj"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1094,6 +1102,8 @@ CLEAN :
 	-@erase "$(INTDIR)\filesenddlg.sbr"
 	-@erase "$(INTDIR)\filexferdlg.obj"
 	-@erase "$(INTDIR)\filexferdlg.sbr"
+	-@erase "$(INTDIR)\filter.obj"
+	-@erase "$(INTDIR)\filter.sbr"
 	-@erase "$(INTDIR)\findadd.obj"
 	-@erase "$(INTDIR)\findadd.sbr"
 	-@erase "$(INTDIR)\FontOptions.obj"
@@ -1348,7 +1358,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\filter.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1464,7 +1475,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\updatenotify.obj" \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
-	"$(INTDIR)\vc6.res"
+	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\filter.obj"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -2689,6 +2701,38 @@ SOURCE=.\modules\netlib\netlibupnp.cpp
 
 
 "$(INTDIR)\netlibupnp.obj"	"$(INTDIR)\netlibupnp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF
+
+SOURCE=.\modules\options\filter.cpp
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\filter.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\filter.obj"	"$(INTDIR)\filter.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\filter.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\filter.obj"	"$(INTDIR)\filter.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
