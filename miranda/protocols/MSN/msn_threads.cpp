@@ -120,6 +120,7 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 		}	
 	}
 
+retry:
     MSN_DebugLog( "Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType );
 
 	info->s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
@@ -139,7 +140,13 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 				break;
 
 			case SERVER_SWITCHBOARD:
-                if (info->mCaller) msnNsThread->sendPacket( "XFR", "SB" );
+                if(MyOptions.UseGateway && strcmp(info->mServer, MSN_DEFAULT_GATEWAY))
+                {
+                    strcpy(info->mServer, MSN_DEFAULT_GATEWAY);
+                    goto retry;
+                }
+                else
+                    if (info->mCaller) msnNsThread->sendPacket( "XFR", "SB" );
                 break;
 		}
 

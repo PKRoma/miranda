@@ -328,15 +328,14 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 			
-			int tUseGateway = proto->getByte( "UseGateway", 0 );
-			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, tUseGateway );
+			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, proto->MyOptions.UseGateway );
 			if ( !proto->getString( NULL, "LoginServer", &dbv )) {
 				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 				MSN_FreeVariant( &dbv );
 			}
 			else 
-				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, tUseGateway ? MSN_DEFAULT_GATEWAY : MSN_DEFAULT_LOGIN_SERVER );
-			SetDlgItemInt( hwndDlg, IDC_MSNPORT, tUseGateway ? MSN_DEFAULT_GATEWAY_PORT : MSN_DEFAULT_PORT, FALSE );
+				SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY : MSN_DEFAULT_LOGIN_SERVER );
+			SetDlgItemInt( hwndDlg, IDC_MSNPORT, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY_PORT : MSN_DEFAULT_PORT, FALSE );
 
 			CheckDlgButton( hwndDlg, IDC_USEIEPROXY,  proto->getByte( "UseIeProxy",  0 ));
 			CheckDlgButton( hwndDlg, IDC_SLOWSEND,    proto->getByte( "SlowSend",    0 ));
