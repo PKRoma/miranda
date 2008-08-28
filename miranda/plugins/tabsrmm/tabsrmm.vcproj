@@ -246,7 +246,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="comctl32.lib shlwapi.lib"
-				OutputFile="p:/test/plugins/$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				DelayLoadDLLs=""
@@ -1004,10 +1003,10 @@
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">

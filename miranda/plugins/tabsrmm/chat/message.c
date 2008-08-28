@@ -293,11 +293,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				bJustRemovedRTF = FALSE;
 				bTextHasStarted = TRUE;
 				break;
-			case '\r': case '\n' :
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = FALSE;
-				iRemoveChars = 1;
-				break;
+
 			default: // other text that should not be touched
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
