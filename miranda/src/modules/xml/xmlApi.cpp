@@ -48,7 +48,18 @@ static HXML xmlapiParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
 			DebugBreak();
 		#endif
 
-		*datalen = res.nColumn-1;
+		datalen[0] = 0;
+
+		for ( int i=0; i < res.nLine; i++ ) {
+			LPCTSTR p = _tcschr( str, '\n' );
+			if ( p == NULL )
+				break;
+
+			datalen[0] += int( p-str )+1;
+			str = p+1;
+		}
+
+		datalen[0] += res.nColumn-1;
 	}
 	return (tag != NULL || res.error == eXMLErrorNone) ? result.detach() : NULL;
 }
