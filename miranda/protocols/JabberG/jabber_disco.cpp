@@ -54,6 +54,8 @@ static DWORD sttLastAutoDisco = 0;
 
 enum { SD_OVERLAY_NONE, SD_OVERLAY_FAIL, SD_OVERLAY_PROGRESS, SD_OVERLAY_REGISTERED };
 
+const TCHAR* NULLSTR = NULL;
+
 static struct
 {
 	TCHAR *feature;
@@ -285,7 +287,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, void* userd
 	if (!pInfo->m_pUserData)
 		return;
 
-	XmlNode packet( _T(""));
+	XmlNode packet( NULLSTR );
 	m_SDManager.Lock();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
 		HXML query = xmlGetChild( iqNode , "query" );
@@ -921,7 +923,7 @@ void CJabberDlgDiscovery::btnRefresh_OnClick(CCtrlButton *)
 	if (!hItem) return;
 
 	m_proto->m_SDManager.Lock();
-	XmlNode packet( _T("") );
+	XmlNode packet( NULLSTR );
 	CJabberSDNode* pNode = (CJabberSDNode* )TreeList_GetData(hItem);
 	if ( pNode ) {
 		TreeList_ResetItem(GetDlgItem(m_hwnd, IDC_TREE_DISCO), hItem);
@@ -1023,7 +1025,7 @@ BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (iLast < 0) iLast = ListView_GetItemCount(hwndList) - 1;
 
 			m_proto->m_SDManager.Lock();
-			XmlNode packet( _T("") );
+			XmlNode packet( NULLSTR );
 			for (int i = iFirst; i <= iLast; ++i)
 			{
 				LVITEM lvi = {0};
@@ -1098,7 +1100,7 @@ BOOL CJabberDlgDiscovery::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				HTREELISTITEM hItem = (HTREELISTITEM)pNmTreeView->itemNew.hItem;
 
 				m_proto->m_SDManager.Lock();
-				XmlNode packet( _T("") );
+				XmlNode packet( NULLSTR );
 				CJabberSDNode* pNode;
 				pNode = (CJabberSDNode* )TreeList_GetData(hItem);
 				if ( pNode ) 
@@ -1314,7 +1316,7 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 		case SD_ACT_REFRESH:
 		{
 			m_SDManager.Lock();
-			XmlNode packet( _T("") );
+			XmlNode packet( NULLSTR );
 			if ( pNode ) 
 			{
 				TreeList_ResetItem(GetDlgItem(m_pDlgServiceDiscovery->GetHwnd(), IDC_TREE_DISCO), hItem);
@@ -1332,7 +1334,7 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 		case SD_ACT_REFRESHCHILDREN:
 		{
 			m_SDManager.Lock();
-			XmlNode packet( _T("") );
+			XmlNode packet( NULLSTR );
 			for (int iChild = TreeList_GetChildrenCount(hItem); iChild--; ) {
 				HTREELISTITEM hNode = TreeList_GetChild(hItem, iChild);
 				CJabberSDNode *pNode = (CJabberSDNode *)TreeList_GetData(hNode);
@@ -1346,7 +1348,7 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 
 				if ( xmlGetChildCount( packet ) > 50 ) {
 					m_ThreadInfo->send( packet );
-					packet = XmlNode( _T("") );
+					packet = XmlNode( NULLSTR );
 			}	}
 			m_SDManager.Unlock();
 
