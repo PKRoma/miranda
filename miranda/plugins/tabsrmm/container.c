@@ -281,6 +281,7 @@ struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE
 
 static int tooltip_active = FALSE;
 static POINT ptMouse = {0};
+RECT 	rcLastStatusBarClick;						// remembers click (down event) point for status bar clicks
 
 LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -487,11 +488,19 @@ LRESULT CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 		}
 
 		case WM_LBUTTONDOWN:
-		case WM_RBUTTONDOWN:
+		case WM_RBUTTONDOWN: {
+			POINT 	pt;
+
 			KillTimer(hWnd, TIMERID_HOVER);
 			CallService("mToolTip/HideTip", 0, 0);
 			tooltip_active = FALSE;
+			GetCursorPos(&pt);
+			rcLastStatusBarClick.left = pt.x - 2;
+			rcLastStatusBarClick.right = pt.x + 2;
+			rcLastStatusBarClick.top = pt.y - 2;
+			rcLastStatusBarClick.bottom = pt.y + 2;
 			break;
+		}
 
 		case WM_TIMER:
 			if (wParam == TIMERID_HOVER) {

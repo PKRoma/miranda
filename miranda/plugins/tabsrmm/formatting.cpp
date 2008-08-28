@@ -507,14 +507,14 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 {
 	TCHAR *szResult = 0;
 	int length = 0;
-	int i, tempmark = 0;
+	int i, tempmark = 0, curpos = 0;
 	TCHAR szTemp[512];
 
 	std::wstring title(szFormat);
 
 	while (TRUE) {
 		for (i = 0; i < NR_VARS; i++) {
-			if ((tempmark = title.find(title_variables[i], 0)) != title.npos)
+			if ((tempmark = title.find(title_variables[i], curpos)) != title.npos)
 				break;
 		}
 		if (i >= NR_VARS)
@@ -525,12 +525,14 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				if (szNickname)
 					title.insert(tempmark + 2, szNickname);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szNickname);
 				break;
 			}
 			case 's': {
 				if (szStatus && szStatus[0])
 					title.insert(tempmark + 2, szStatus);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szStatus);
 				break;
 			}
 			case 'u': {
@@ -539,11 +541,13 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 					title.insert(tempmark + 2, szTemp);
 				}
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szTemp);
 				break;
 			}
 			case 'c': {
 				title.insert(tempmark + 2, szContainer);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szContainer);
 				break;
 			}
 			case 'p': {
@@ -552,6 +556,7 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 					title.insert(tempmark + 2, szTemp);
 				}
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szTemp);
 				break;
 			}
 			case 'x': {
@@ -565,9 +570,12 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 						szTemp[500] = 0;
 						MY_DBFreeVariant(&dbv);
 						title.insert(tempmark + 2, szTemp);
+						curpos = tempmark + lstrlen(szTemp);
 					}
-					else
+					else {
 						title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
+						curpos = tempmark + lstrlen(xStatusDescr[xStatus - 1]);
+					}
 				}
 				title.erase(tempmark, 2);
 				break;
@@ -588,8 +596,10 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 				} else
 					szFinalStatus = (TCHAR *)(szStatus && szStatus[0] ? szStatus : _T("(undef)"));
 
-				if (szFinalStatus)
+				if (szFinalStatus) {
 					title.insert(tempmark + 2, szFinalStatus);
+					curpos = tempmark + lstrlen(szFinalStatus);
+				}
 
 				title.erase(tempmark, 2);
 				break;
@@ -636,13 +646,13 @@ extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *s
 {
 	TCHAR *szResult = 0;
 	int length = 0;
-	int i, tempmark = 0;
+	int i, tempmark = 0, curpos = 0;
 
 	std::string title(szFormat);
 
 	while (TRUE) {
 		for (i = 0; i < NR_VARS; i++) {
-			if ((tempmark = title.find(title_variables[i], 0)) != title.npos)
+			if ((tempmark = title.find(title_variables[i], curpos)) != title.npos)
 				break;
 		}
 		if (i >= NR_VARS)
@@ -653,34 +663,41 @@ extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *s
 				if (szNickname)
 					title.insert(tempmark + 2, szNickname);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szNickname);
 				break;
 			}
 			case 's': {
 				if (szStatus && szStatus[0])
 					title.insert(tempmark + 2, szStatus);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szStatus);
 				break;
 			}
 			case 'u': {
 				if (szUin)
 					title.insert(tempmark + 2, szUin);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szUin);
 				break;
 			}
 			case 'c': {
 				title.insert(tempmark + 2, szContainer);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szContainer);
 				break;
 			}
 			case 'p': {
 				if (szProto)
 					title.insert(tempmark + 2, szProto);
 				title.erase(tempmark, 2);
+				curpos = tempmark + lstrlen(szProto);
 				break;
 			}
 			case 'x': {
-				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31)
+				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
 					title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
+					curpos = tempmark + lstrlen(xStatusDescr[xStatus - 1]);
+				}
 				title.erase(tempmark, 2);
 				break;
 			}
@@ -698,7 +715,7 @@ extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *s
 
 				title.insert(tempmark + 2, szFinalStatus);
 				title.erase(tempmark, 2);
-
+				curpos = tempmark + lstrlen(szFinalStatus);
 				if (result)
 					free(result);
 				break;

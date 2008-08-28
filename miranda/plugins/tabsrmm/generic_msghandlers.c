@@ -50,6 +50,7 @@ extern PDTPB  pfnDrawThemeParentBackground;
 extern PGTBCR pfnGetThemeBackgroundContentRect;
 extern HANDLE hMessageWindowList;
 extern struct ContainerWindowData *pFirstContainer;
+extern RECT	  rcLastStatusBarClick;
 
 /*
 * action and callback procedures for the stock button objects
@@ -693,7 +694,7 @@ static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 					}
 
 				WindowList_Broadcast(hMessageWindowList, DM_STATUSICONCHANGE, 0, 0);
-				} 
+				}
 			else {
 					char buff[256];
 					HWND hwnd;
@@ -708,7 +709,7 @@ static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 							struct MessageWindowData *dat =(struct MessageWindowData *) GetWindowLong(hwnd, GWL_USERDATA);
  							struct StatusIconListNode *psi=dat->pSINod;
 							while (psi)
-								{ 
+								{
 								if (strcmp(psi->sid.szModule, sid->szModule) == 0 && psi->sid.dwId == sid->dwId) {
 									siln=psi;
 									break;
@@ -740,7 +741,7 @@ static int SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 							else siln->sid.szTooltip = 0;
 
 								}
-  		
+
 
   							PostMessage(hwnd, DM_STATUSICONCHANGE, 0, 0);
 							}
@@ -770,7 +771,7 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap)
 			flags=current->sid.flags;
 			hIcon=current->sid.hIcon;
  			while (currentSIN)
- 				{ 
+ 				{
  				if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
 					flags=currentSIN->sid.flags;
  					hIcon=currentSIN->sid.hIcon;
@@ -778,7 +779,7 @@ void DrawStatusIcons(struct MessageWindowData *dat, HDC hDC, RECT r, int gap)
  					}
  				currentSIN = currentSIN->next;
  				}
- 			}  
+ 			}
 		else{
 		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
 		flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
@@ -819,29 +820,36 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 	char         buff[100];
 	DWORD		 flags;
 
+	if(dat && (code == NM_CLICK || code == NM_RCLICK)) {
+		POINT	ptScreen;
+
+		GetCursorPos(&ptScreen);
+		if(!PtInRect(&rcLastStatusBarClick, ptScreen))
+			return;
+	}
 	while (current && dat) {
 		if(current->sid.flags&MBF_OWNERSTATE){
 			struct StatusIconListNode *currentSIN = dat->pSINod;
 			flags=current->sid.flags;
 			while (currentSIN)
-				{ 
+				{
 				if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
 					flags=currentSIN->sid.flags;
 					break;
 					}
 				currentSIN = currentSIN->next;
 				}
-			}  
+			}
 		else  {
-		sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
-		flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
+			sprintf(buff, "SRMMStatusIconFlags%d", (int)current->sid.dwId);
+			flags = DBGetContactSettingByte(dat->hContact, current->sid.szModule, buff, current->sid.flags);
 		}
 		if (!(flags & MBF_HIDDEN)) {
 			if (list_icons++ == iconNum)
 				clicked = current;
-			}
-		current = current->next;
 		}
+		current = current->next;
+	}
 
 	if ((int)iconNum == list_icons && code != NM_RCLICK) {
 		if (GetKeyState(VK_SHIFT) & 0x8000) {
@@ -851,24 +859,24 @@ void SI_CheckStatusIconClick(struct MessageWindowData *dat, HWND hwndFrom, POINT
 				piContainer->dwFlags = ((dat->pContainer->dwFlags & CNT_NOSOUND) ? piContainer->dwFlags | CNT_NOSOUND : piContainer->dwFlags & ~CNT_NOSOUND);
 				InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 				piContainer = piContainer->pNextContainer;
-				}
-			} else {
-				dat->pContainer->dwFlags ^= CNT_NOSOUND;
-				InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 			}
-		} else if ((int)iconNum == list_icons + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
-			SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
+		} else {
+			dat->pContainer->dwFlags ^= CNT_NOSOUND;
 			InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
-		} else if (clicked) {
-			sicd.cbSize = sizeof(StatusIconClickData);
-			GetCursorPos(&sicd.clickLocation);
-			sicd.dwId = clicked->sid.dwId;
-			sicd.szModule = clicked->sid.szModule;
-			sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
-			NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
-			InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
-			}
+		}
+	} else if ((int)iconNum == list_icons + 1 && code != NM_RCLICK && dat->bType == SESSIONTYPE_IM) {
+		SendMessage(dat->pContainer->hwndActive, WM_COMMAND, IDC_SELFTYPING, 0);
+		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
+	} else if (clicked) {
+		sicd.cbSize = sizeof(StatusIconClickData);
+		GetCursorPos(&sicd.clickLocation);
+		sicd.dwId = clicked->sid.dwId;
+		sicd.szModule = clicked->sid.szModule;
+		sicd.flags = (code == NM_RCLICK ? MBCF_RIGHTBUTTON : 0);
+		NotifyEventHooks(hHookIconPressedEvt, (WPARAM)dat->hContact, (LPARAM)&sicd);
+		InvalidateRect(dat->pContainer->hwndStatus, NULL, TRUE);
 	}
+}
 
 static HANDLE SI_hServiceIcon[3];
 
@@ -880,7 +888,7 @@ int SI_InitStatusIcons()
 	hHookIconPressedEvt = CreateHookableEvent(ME_MSG_ICONPRESSED);
 
 	return 0;
-	}   	
+	}
 
 
 int SI_DeinitStatusIcons()

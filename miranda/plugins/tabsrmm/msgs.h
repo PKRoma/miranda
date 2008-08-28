@@ -154,10 +154,10 @@ typedef struct _settextex {
 #define MWF_LOG_UNDERLINE 65536
 #define MWF_LOG_SWAPNICK  131072
 //
-//#define MWF_LOG_BBCODE 65536 
-//#define MWF_LOG_STATUSCHANGES 131072 
+//#define MWF_LOG_BBCODE 65536
+//#define MWF_LOG_STATUSCHANGES 131072
 //#define MWF_LOG_LOCALTIME 8192
-#define MWF_LOG_BBCODE		 1 
+#define MWF_LOG_BBCODE		 1
 #define MWF_LOG_STATUSCHANGES 32
 #define MWF_LOG_LOCALTIME	 64
 //_MAD
@@ -596,7 +596,7 @@ typedef struct _globals {
 	HFONT       m_hFontWebdings;
 	struct      infopanelconfig ipConfig;
 	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
-	BOOL        bUnicodeBuild;					   
+	BOOL        bUnicodeBuild;
 	BYTE        bClipBorder;
 	DWORD       bRoundedCorner;
 	BYTE        bAvatarBoderType;
