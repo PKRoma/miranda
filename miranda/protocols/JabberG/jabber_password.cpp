@@ -79,7 +79,7 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 				ppro->IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSetPassword );
 
 				XmlNodeIq iq( _T("set"), iqId, _A2T(ppro->m_ThreadInfo->server));
-				HXML q = iq.addQuery( _T(JABBER_FEAT_REGISTER));
+				HXML q = iq << XQUERY( _T(JABBER_FEAT_REGISTER));
 				q << XCHILD( _T("username"), ppro->m_ThreadInfo->username );
 				q << XCHILD( _T("password"), _A2T(newPasswd));
 				ppro->m_ThreadInfo->send( iq );

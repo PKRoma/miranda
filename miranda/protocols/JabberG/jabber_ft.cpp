@@ -242,7 +242,7 @@ BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
 			int iqId = SerialNext();
 			XmlNode msg( _T("message"));
 			xmlAddAttr( msg, _T("to"), ft->jibb->dstJID );
-			msg.addAttrID( iqId );
+			msg << XATTRID( iqId );
 
 			// let others send data too
 			Sleep(2);

@@ -34,7 +34,7 @@ void CJabberProto::SetMucConfig( HXML node, void *from )
 {
 	if ( m_ThreadInfo && from ) {
 		XmlNodeIq iq( _T("set"), NOID, ( TCHAR* )from );
-		HXML query = iq.addQuery( xmlnsOwner );
+		HXML query = iq << XQUERY( xmlnsOwner );
 		xmlAddChild( query, node );
 		m_ThreadInfo->send( iq );
 }	}

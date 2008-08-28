@@ -470,8 +470,8 @@ LBL_FatalError:
 				else if ( nSelRes == 0 ) {
 					if ( JGetByte( "EnableServerXMPPPing", FALSE ))
 						info->send( 
-							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 )).
-								addQuery( _T(JABBER_FEAT_PING)));
+							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ))
+								<< XQUERY( _T(JABBER_FEAT_PING)));
 					else if ( m_bSendKeepAlive )
 						info->send( " \t " );
 					continue;
@@ -604,7 +604,7 @@ LBL_FatalError:
 void CJabberProto::PerformRegistration( ThreadData* info )
 {
 	iqIdRegGetReg = SerialNext();
-	info->send( XmlNodeIq( _T("get"), iqIdRegGetReg, NULL).addQuery( _T(JABBER_FEAT_REGISTER )));
+	info->send( XmlNodeIq( _T("get"), iqIdRegGetReg, NULL) << XQUERY( _T(JABBER_FEAT_REGISTER )));
 
 	SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 50, ( LPARAM )TranslateT( "Requesting registration instruction..." ));
 }
@@ -614,7 +614,7 @@ void CJabberProto::PerformIqAuth( ThreadData* info )
 	if ( info->type == JABBER_SESSION_NORMAL ) {
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetAuth );
-		info->send( XmlNodeIq( _T("get"), iqId ).addQuery( _T("jabber:iq:auth" )) << XCHILD( _T("username"), info->username ));
+		info->send( XmlNodeIq( _T("get"), iqId ) << XQUERY( _T("jabber:iq:auth" )) << XCHILD( _T("username"), info->username ));
 	}
 	else if ( info->type == JABBER_SESSION_REGISTER )
 		PerformRegistration( info );
@@ -1823,7 +1823,7 @@ void CJabberProto::OnProcessRegIq( HXML node, void *userdata )
 			iqIdRegSetReg = SerialNext();
 
 			XmlNodeIq iq( _T("set"), iqIdRegSetReg );
-			HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
+			HXML query = iq << XQUERY( _T(JABBER_FEAT_REGISTER));
 			query << XCHILD( _T("password"), _A2T(info->password));
 			query << XCHILD( _T("username"), info->username );
 			info->send( iq );

@@ -470,7 +470,7 @@ int CJabberProto::SearchRenewFields(HWND hwndDlg, JabberSearchData * dat)
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_GETSEARCHFIELDS, &CJabberProto::OnIqResultGetSearchFields );
-	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szServerName ).addQuery( _T("jabber:iq:search")));
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szServerName ) << XQUERY( _T("jabber:iq:search")));
 	return iqId;
 }
 
@@ -736,7 +736,7 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 	// formating query
 	int iqId = SerialNext();
 	XmlNodeIq iq( _T("set"), iqId, szServerName );
-	HXML query = iq.addQuery( _T("jabber:iq:search"));
+	HXML query = iq << XQUERY( _T("jabber:iq:search"));
 	
 	TCHAR *szXmlLang = GetXmlLang();
 	if ( szXmlLang ) {

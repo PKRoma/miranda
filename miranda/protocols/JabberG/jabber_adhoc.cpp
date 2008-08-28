@@ -120,7 +120,7 @@ int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg
 {
 	int iqId = (int)hwndDlg;
 	IqAdd( iqId, IQ_PROC_DISCOCOMMANDS, &CJabberProto::OnIqResult_ListOfCommands );
-	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szResponder ).addQuery( _T(JABBER_FEAT_DISCO_ITEMS)) 
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, szResponder ) << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS)) 
 		<< XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS)));
 	return iqId;
 }

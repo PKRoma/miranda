@@ -79,12 +79,6 @@ struct XmlNode
 	{	return m_hXml;
 	}
 
-	void __forceinline addAttr( LPCTSTR pszName, LPCTSTR ptszValue ) { xmlAddAttr( m_hXml, pszName, ptszValue ); }
-	void __forceinline addAttr( LPCTSTR pszName, int value ) { xmlAddAttr( m_hXml, pszName, value ); }
-	void __forceinline addAttrID( int id ) { xmlAddAttrID( m_hXml, id ); }
-
-	HXML    addQuery( LPCTSTR szNameSpace );
-
 private:
 	HXML m_hXml;
 };
@@ -184,5 +178,18 @@ struct XCHILDNS
 };
 
 HXML __fastcall operator<<( HXML node, XCHILDNS& child );
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct XQUERY
+{
+	LPCTSTR ns;
+
+	__forceinline XQUERY( LPCTSTR _ns ) :
+		ns( _ns )
+		{}
+};
+
+HXML __fastcall operator<<( HXML node, XQUERY& child );
 
 #endif

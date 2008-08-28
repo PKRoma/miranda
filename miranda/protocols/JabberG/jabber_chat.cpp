@@ -845,14 +845,14 @@ static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 void CJabberProto::AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal )
 {
-	m_ThreadInfo->send( XmlNodeIq( _T("set"), NOID, to ).addQuery( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
+	m_ThreadInfo->send( XmlNodeIq( _T("set"), NOID, to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
 }
 
 void CJabberProto::AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
 {
 	int id = SerialNext();
 	IqAdd( id, IQ_PROC_NONE, foo );
-	m_ThreadInfo->send( XmlNodeIq( _T("get"), id, to ).addQuery( ns ) << XCHILD( _T("item")) << XATTR( var, varVal ));
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), id, to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( var, varVal ));
 }
 
 // Member info dialog
@@ -1120,7 +1120,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			TCHAR *resourceName_copy = mir_tstrdup(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 				ppro->m_ThreadInfo->send( 
-					XmlNodeIq( _T("set"), NOID, item->jid ).addQuery( xmlnsAdmin )
+					XmlNodeIq( _T("set"), NOID, item->jid ) << XQUERY( xmlnsAdmin )
 						<< XCHILD( _T("item")) << XATTR( _T("nick"), resourceName_copy ) << XATTR( _T("role"), _T("none"))
 						<< XCHILD( _T("reason"), szBuffer ));
 
@@ -1169,7 +1169,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			TCHAR *resourceName_copy = NEWTSTR_ALLOCA(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 				ppro->m_ThreadInfo->send(
-					XmlNodeIq( _T("set"), NOID, item->jid ).addQuery( xmlnsAdmin )
+					XmlNodeIq( _T("set"), NOID, item->jid ) << XQUERY( xmlnsAdmin )
 						<< XCHILD( _T("item")) << XATTR( _T("nick"), resourceName_copy ) << XATTR( _T("affiliation"), _T("outcast"))
 						<< XCHILD( _T("reason"), szBuffer ));
 		}
@@ -1305,7 +1305,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 		ppro->IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
 
 		XmlNodeIq iq( _T("get"), iqId, gch->pDest->ptszID );
-		iq.addQuery( xmlnsOwner );
+		iq << XQUERY( xmlnsOwner );
 		ppro->m_ThreadInfo->send( iq );
 		break;
 	}
@@ -1329,7 +1329,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			break;
 
 		ppro->m_ThreadInfo->send( 
-			XmlNodeIq( _T("set"), NOID, gch->pDest->ptszID ).addQuery( xmlnsOwner )
+			XmlNodeIq( _T("set"), NOID, gch->pDest->ptszID ) << XQUERY( xmlnsOwner )
 				<< XCHILD( _T("destroy")) << XCHILD( _T("reason"), szBuffer ));
 
 	case IDM_LEAVE:
@@ -1433,7 +1433,7 @@ int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
 	case GC_USER_CHANMGR:
 		int iqId = SerialNext();
 		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
-		m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, item->jid ).addQuery( xmlnsOwner ));
+		m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, item->jid ) << XQUERY( xmlnsOwner ));
 		break;
 	}
 

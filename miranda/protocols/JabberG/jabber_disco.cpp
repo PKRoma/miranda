@@ -299,7 +299,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, void* userd
 				pNewInfo->SetTimeout( 30000 );
 				
 				XmlNodeIq iq( pNewInfo );
-				iq.addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), szNode );
+				iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), szNode );
 				xmlAddChild( packet, iq );
 	}	}	}
 	m_SDManager.Unlock();
@@ -320,7 +320,7 @@ BOOL CJabberProto::SendInfoRequest(CJabberSDNode* pNode, HXML parent)
 		pNode->SetInfoRequestId( pInfo->GetIqId() );
 
 		XmlNodeIq iq( pInfo );
-		HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+		HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 		if ( pNode->GetNode() )
 			xmlAddAttr( query, _T("node"), pNode->GetNode() );
 
@@ -350,7 +350,7 @@ BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, HXML parent)
 		pNode->SetInfoRequestId( pInfo->GetIqId() );
 
 		XmlNodeIq iq( pInfo );
-		HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+		HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 		if ( pNode->GetNode() )
 			xmlAddAttr( query, _T("node"), pNode->GetNode() );
 
@@ -367,7 +367,7 @@ BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, HXML parent)
 		pNode->SetItemsRequestId( pInfo->GetIqId() );
 
 		XmlNodeIq iq( pInfo );
-		HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
+		HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 		if ( pNode->GetNode() )
 			xmlAddAttr( query, _T("node"), pNode->GetNode() );
 
@@ -429,7 +429,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 			pInfo->m_pUserData = (void *)_T(JABBER_FEAT_MUC);
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq iq( pInfo );
-			iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
+			iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 			m_ThreadInfo->send( iq );
 			mir_free(szServerJid);
 		}
@@ -440,7 +440,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 			pInfo->m_pUserData = (void *)_T("jabber:iq:gateway");
 			pInfo->SetTimeout( 30000 );
 			XmlNodeIq iq( pInfo );
-			iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
+			iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 			m_ThreadInfo->send( iq );
 			mir_free(szServerJid);
 		}
@@ -1476,9 +1476,9 @@ void CJabberProto::ServiceDiscoveryShowMenu(CJabberSDNode *pNode, HTREELISTITEM 
 			break;
 
 		case SD_ACT_UNREGISTER:
-			m_ThreadInfo->send( XmlNodeIq( _T("set"), NOID, pNode->GetJid() ).addQuery( _T(JABBER_FEAT_REGISTER)) << XCHILD( _T("remove")));
+			m_ThreadInfo->send( XmlNodeIq( _T("set"), NOID, pNode->GetJid() ) << XQUERY( _T(JABBER_FEAT_REGISTER)) << XCHILD( _T("remove")));
 			
-			m_ThreadInfo->send( XmlNodeIq( _T("set")).addQuery( _T(JABBER_FEAT_IQ_ROSTER)) 
+			m_ThreadInfo->send( XmlNodeIq( _T("set")) << XQUERY( _T(JABBER_FEAT_IQ_ROSTER)) 
 				<< XCHILD( _T("item")) << XATTR( _T("jid"), pNode->GetJid()) << XATTR( _T("subscription"), _T("remove")));
 			break;
 

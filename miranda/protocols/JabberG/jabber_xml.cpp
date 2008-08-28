@@ -37,27 +37,27 @@ Last change by : $Author$
 XmlNodeIq::XmlNodeIq( const TCHAR* type, int id, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type != NULL ) addAttr( _T("type"), type );
-	if ( to   != NULL ) addAttr( _T("to"),   to );
-	if ( id   != -1   ) addAttrID( id );
+	if ( type != NULL ) *this << XATTR( _T("type"), type );
+	if ( to   != NULL ) *this << XATTR( _T("to"),   to );
+	if ( id   != -1   ) *this << XATTRID( id );
 }
 
 XmlNodeIq::XmlNodeIq( const TCHAR* type, LPCTSTR idStr, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type  != NULL ) addAttr( _T("type"), type  );
-	if ( to    != NULL ) addAttr( _T("to"),   to    );
-	if ( idStr != NULL ) addAttr( _T("id"),   idStr );
+	if ( type  != NULL ) *this << XATTR( _T("type"), type  );
+	if ( to    != NULL ) *this << XATTR( _T("to"),   to    );
+	if ( idStr != NULL ) *this << XATTR( _T("id"),   idStr );
 }
 
 XmlNodeIq::XmlNodeIq( const TCHAR* type, HXML node, LPCTSTR to ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type  != NULL ) addAttr( _T("type"), type  );
-	if ( to    != NULL ) addAttr( _T("to"),   to    );
+	if ( type  != NULL ) *this << XATTR( _T("type"), type  );
+	if ( to    != NULL ) *this << XATTR( _T("to"),   to    );
 	if ( node  != NULL ) {
 		const TCHAR *iqId = xmlGetAttrValue( *this, _T( "id" ));
-		if ( iqId != NULL ) addAttr( _T("id"), iqId );
+		if ( iqId != NULL ) *this << XATTR( _T("id"), iqId );
 	}
 }
 
@@ -65,19 +65,19 @@ XmlNodeIq::XmlNodeIq( CJabberIqInfo* pInfo ) :
 	XmlNode( _T( "iq" ))
 {
 	if ( pInfo ) {
-		if ( pInfo->GetCharIqType() != NULL ) addAttr( _T("type"), _A2T(pInfo->GetCharIqType()));
-		if ( pInfo->GetReceiver()   != NULL ) addAttr( _T("to"), pInfo->GetReceiver() );
-		if ( pInfo->GetIqId()       != -1 ) addAttrID( pInfo->GetIqId() );
+		if ( pInfo->GetCharIqType() != NULL ) *this << XATTR( _T("type"), _A2T(pInfo->GetCharIqType()));
+		if ( pInfo->GetReceiver()   != NULL ) *this << XATTR( _T("to"), pInfo->GetReceiver() );
+		if ( pInfo->GetIqId()       != -1 )   *this << XATTRID( pInfo->GetIqId() );
 	}
 }
 
 XmlNodeIq::XmlNodeIq( const TCHAR* type, CJabberIqInfo* pInfo ) :
 	XmlNode( _T( "iq" ))
 {
-	if ( type != NULL ) addAttr( _T("type"), type );
+	if ( type != NULL ) *this << XATTR( _T("type"), type );
 	if ( pInfo ) {
-		if ( pInfo->GetFrom()  != NULL ) addAttr( _T("to"), pInfo->GetFrom() );
-		if ( pInfo->GetIdStr() != NULL ) addAttr( _T("id"), pInfo->GetIdStr() );
+		if ( pInfo->GetFrom()  != NULL ) *this << XATTR( _T("to"), pInfo->GetFrom() );
+		if ( pInfo->GetIdStr() != NULL ) *this << XATTR( _T("id"), pInfo->GetIdStr() );
 	}
 }
 
@@ -123,6 +123,14 @@ HXML __fastcall operator<<( HXML node, XCHILDNS& child )
 	return res;
 }
 
+HXML __fastcall operator<<( HXML node, XQUERY& child )
+{
+	HXML n = xmlAddChild( node, _T("query"));
+	if ( n )
+		xmlAddAttr( n, _T("xmlns"), child.ns );
+	return n;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR name, LPCTSTR value )
@@ -145,21 +153,6 @@ void __fastcall xmlAddAttrID( HXML hXml, int id )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void __fastcall xmlAddChild( HXML hXml, HXML n )
-{
-	xi.addChild2( n, hXml );
-}
-
-HXML XmlNode::addQuery( LPCTSTR szNameSpace )
-{
-	HXML n = xmlAddChild( *this, _T("query"));
-	if ( n )
-		xmlAddAttr( n, _T("xmlns"), szNameSpace );
-	return n;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
 LPCTSTR __fastcall xmlGetAttr( HXML hXml, int n )
 {
 	return xi.getAttr( hXml, n );
@@ -176,6 +169,11 @@ LPCTSTR __fastcall xmlGetAttrName( HXML hXml, int n )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+
+void __fastcall xmlAddChild( HXML hXml, HXML n )
+{
+	xi.addChild2( n, hXml );
+}
 
 HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name )
 {

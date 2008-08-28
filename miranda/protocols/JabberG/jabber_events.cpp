@@ -57,10 +57,10 @@ int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 		if ( ListExist( LIST_ROSTER, dbv.ptszVal )) {
 			if ( !_tcschr( dbv.ptszVal, _T( '@' )))
-				m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), dbv.ptszVal ).addQuery( _T(JABBER_FEAT_REGISTER)) << XCHILD( _T("remove")));
+				m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), dbv.ptszVal ) << XQUERY( _T(JABBER_FEAT_REGISTER)) << XCHILD( _T("remove")));
 
 			// Remove from roster, server also handles the presence unsubscription process.
-			m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext()).addQuery( _T(JABBER_FEAT_IQ_ROSTER))
+			m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext()) << XQUERY( _T(JABBER_FEAT_IQ_ROSTER))
 				<< XCHILD( _T("item")) << XATTR( _T("jid"), dbv.ptszVal ) << XATTR( _T("subscription"), _T("remove")));
 		}
 

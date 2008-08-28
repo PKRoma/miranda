@@ -602,7 +602,7 @@ private:
 
 		if ( res == IDYES )
 			m_proto->m_ThreadInfo->send( 
-				XmlNodeIq( _T("set"), NOID, m_proto->m_szJabberJID ).addQuery( _T(JABBER_FEAT_REGISTER))
+				XmlNodeIq( _T("set"), NOID, m_proto->m_szJabberJID ) << XQUERY( _T(JABBER_FEAT_REGISTER))
 					<< XCHILD( _T("remove")));
 	}
 
@@ -1071,7 +1071,7 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 
 		XmlNode iq( _T("iq"));
 		xmlAddAttr( iq, _T("type"), _T("set"));
-		iq.addAttrID( iqId );
+		iq << XATTRID( iqId );
 
 		HXML query = iq << XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER));
 

@@ -98,7 +98,7 @@ BOOL CJabberAdhocManager::HandleItemsRequest( HXML iqNode, void* userdata, CJabb
 	if ( !_tcscmp( szNode, _T(JABBER_FEAT_COMMANDS)))
 	{
 		XmlNodeIq iq( _T("result"), pInfo );
-		HXML resultQuery = iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS)) << XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
+		HXML resultQuery = iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS)) << XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
 
 		Lock();
 		CJabberAdhocNode* pNode = GetFirstNode();
@@ -128,7 +128,7 @@ BOOL CJabberAdhocManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabbe
 	// FIXME: same code twice
 	if ( !_tcscmp( szNode, _T(JABBER_FEAT_COMMANDS))) {
 		XmlNodeIq iq( _T("result"), pInfo );
-		HXML resultQuery = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
+		HXML resultQuery = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS));
 		resultQuery << XCHILD( _T("identity")) << XATTR( _T("name"), _T("Ad-hoc commands"))
 			<< XATTR( _T("category"), _T("automation")) << XATTR( _T("type"), _T("command-node"));
 
@@ -145,7 +145,7 @@ BOOL CJabberAdhocManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabbe
 	CJabberAdhocNode *pNode = FindNode( szNode );
 	if ( pNode ) {
 		XmlNodeIq iq( _T("result"), pInfo );
-		HXML resultQuery = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), _T(JABBER_FEAT_DISCO_INFO));
+		HXML resultQuery = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), _T(JABBER_FEAT_DISCO_INFO));
 		resultQuery << XCHILD( _T("identity")) << XATTR( _T("name"), pNode->GetName())
 			<< XATTR( _T("category"), _T("automation")) << XATTR( _T("type"), _T("command-node"));
 

@@ -639,7 +639,7 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 						CJabberIqInfo *pInfo = m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultDiscovery, JABBER_IQ_TYPE_GET, server, 0, -1, (void *)GetDlgItem(m_hwnd, IDC_ROOM));
 						pInfo->SetTimeout(30000);
 						XmlNodeIq iq(pInfo);
-						iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
+						iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 						m_proto->m_ThreadInfo->send(iq);
 
 						SetWindowLong(GetDlgItem(m_hwnd, IDC_ROOM), GWL_USERDATA, pInfo->GetIqId());
@@ -946,7 +946,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 			// Request room config
 			int iqId = SerialNext();
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetMuc );
-			m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, item->jid ).addQuery( xmlnsOwner ));
+			m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, item->jid ) << XQUERY( xmlnsOwner ));
 		}
 
 		mir_free( room );

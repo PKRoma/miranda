@@ -678,7 +678,7 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 
 			// XEP-0012, last logoff time
 			XmlNodeIq iq2( m_iqManager.AddHandler( &CJabberProto::OnIqResultLastActivity, JABBER_IQ_TYPE_GET, dbv.ptszVal, JABBER_IQ_PARSE_FROM ));
-			iq2.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
+			iq2 << XQUERY( _T(JABBER_FEAT_LAST_ACTIVITY));
 			m_ThreadInfo->send( iq2 );
 
 			JABBER_LIST_ITEM *item = NULL;
@@ -720,18 +720,18 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 						mir_sntprintf( jid, 256, _T("%s/%s"), szp1, item->resource[i].resourceName );
 
 						XmlNodeIq iq3( m_iqManager.AddHandler( &CJabberProto::OnIqResultLastActivity, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM ));
-						iq3.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
+						iq3 << XQUERY( _T(JABBER_FEAT_LAST_ACTIVITY));
 						m_ThreadInfo->send( iq3 );
 
 						if ( !item->resource[i].dwVersionRequestTime ) {
 							XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-							HXML query = iq4.addQuery( _T(JABBER_FEAT_VERSION));
+							HXML query = iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
 							m_ThreadInfo->send( iq4 );
 					}	}
 				}
 				else if ( !item->itemResource.dwVersionRequestTime ) {
 					XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-					HXML query = iq4.addQuery( _T(JABBER_FEAT_VERSION));
+					HXML query = iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
 					m_ThreadInfo->send( iq4 );
 		}	}	}
 
@@ -813,7 +813,7 @@ HANDLE __cdecl CJabberProto::SearchByEmail( const char* email )
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
-	m_ThreadInfo->send( XmlNodeIq( _T("set"), iqId, _A2T(szServerName)).addQuery( _T("jabber:iq:search")) 
+	m_ThreadInfo->send( XmlNodeIq( _T("set"), iqId, _A2T(szServerName)) << XQUERY( _T("jabber:iq:search")) 
 		<< XCHILD( _T("email"), _A2T(email)));
 	return ( HANDLE )iqId;
 }
@@ -834,7 +834,7 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 
 	int iqId = SerialNext();
 	XmlNodeIq iq( _T("set"), iqId, _A2T(szServerName));
-	HXML query = iq.addQuery( _T("jabber:iq:search")), x;
+	HXML query = iq << XQUERY( _T("jabber:iq:search")), x;
 
 	if ( bIsExtFormat ) {
 		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultExtSearch );

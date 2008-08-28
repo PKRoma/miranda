@@ -182,7 +182,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			
 			TCHAR queryNode[512];
 			mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, r->szCapsVer );
-			m_ThreadInfo->send( XmlNodeIq( pInfo ).addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
+			m_ThreadInfo->send( XmlNodeIq( pInfo ) << XQUERY( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
 
 			bRequestSent = TRUE;
 		}
@@ -206,7 +206,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 					TCHAR queryNode[512];
 					mir_sntprintf( queryNode, SIZEOF(queryNode), _T("%s#%s"), r->szCapsNode, token );
 					m_ThreadInfo->send(
-						XmlNodeIq( pInfo ).addQuery( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
+						XmlNodeIq( pInfo ) << XQUERY( _T(JABBER_FEAT_DISCO_INFO)) << XATTR( _T("node"), queryNode ));
 
 					bRequestSent = TRUE;
 				}
@@ -239,7 +239,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwVersionRequestTime = pInfo->GetRequestTime();
 			
 			XmlNodeIq iq( pInfo );
-			HXML query = iq.addQuery( _T(JABBER_FEAT_VERSION));
+			HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
 			m_ThreadInfo->send( iq );
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		}
@@ -260,7 +260,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+			HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -303,7 +303,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+			HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			jcbMainCaps = JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -557,7 +557,7 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML iqNode, void* userdata, C
 
 	XmlNodeIq iq( _T("result"), pInfo );
 
-	HXML query = iq.addQuery( _T(JABBER_FEAT_DISCO_INFO));
+	HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 	if ( szNode )
 		query << XATTR( _T("node"), szNode );
 

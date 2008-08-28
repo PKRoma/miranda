@@ -99,7 +99,7 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 	}
 
 	XmlNodeIq iq( _T("result"), pInfo );
-	HXML query = iq.addQuery( _T(JABBER_FEAT_VERSION));
+	HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
 	query << XCHILD( _T("name"), _T("Miranda IM Jabber") );
 	query << XCHILD( _T("version"), _T(__VERSION_STRING) );
 	if ( os ) 
@@ -111,7 +111,7 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 void CJabberProto::OnIqRequestLastActivity( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
 	m_ThreadInfo->send(
-		XmlNodeIq( _T("result"), pInfo ).addQuery( _T(JABBER_FEAT_LAST_ACTIVITY))
+		XmlNodeIq( _T("result"), pInfo ) << XQUERY( _T(JABBER_FEAT_LAST_ACTIVITY))
 			<< XATTRI( _T("seconds"), m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 ));
 }
 
@@ -209,7 +209,7 @@ void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *
 	fclose( in );
 
 	char* str = JabberBase64Encode( buffer, bytes );
-	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ).addQuery( _T(JABBER_FEAT_AVATAR)) << XCHILD( _T("query"), _A2T(str)) << XATTR( _T("mimetype"), szMimeType ));
+	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ) << XQUERY( _T(JABBER_FEAT_AVATAR)) << XCHILD( _T("query"), _A2T(str)) << XATTR( _T("mimetype"), szMimeType ));
 	mir_free( str );
 	mir_free( buffer );
 }
@@ -474,7 +474,7 @@ void CJabberProto::OnHandleDiscoItemsRequest( HXML iqNode, void* userdata, CJabb
 
 	// another request, send empty result
 	XmlNodeIq iq( _T("result"), pInfo );
-	HXML resultQuery = iq.addQuery( _T(JABBER_FEAT_DISCO_ITEMS));
+	HXML resultQuery = iq << XQUERY( _T(JABBER_FEAT_DISCO_ITEMS));
 	if ( szNode )
 		xmlAddAttr( resultQuery, _T("node"), szNode );
 

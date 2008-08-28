@@ -134,7 +134,7 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 				if ( isXVcard )
 					iq << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP));
 				else
-					iq.addQuery( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
+					iq << XQUERY( isXVcard ? _T("") : _T(JABBER_FEAT_AVATAR));
 				m_ThreadInfo->send( iq );
 
 				JFreeVariant( &dbv );
