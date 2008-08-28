@@ -1117,13 +1117,12 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 					}
 				}
 				if ( bPushed ) {
-					HXML item = xmlAddChild( query, "item" );
+					HXML item = query << XCHILD( _T("item"));
 					if ( group && _tcslen( group ))
-						xmlAddChild( item, "group", group );
+						item << XCHILD( _T("group"), group );
 					if ( name && _tcslen( name ))
-						xmlAddAttr( item, _T("name"), name );
-					xmlAddAttr( item, _T("jid"), jid );
-					xmlAddAttr( item, _T("subscription"), subscr[0] ? subscr : _T("none"));
+						item << XATTR( _T("name"), name );
+					item << XATTR( _T("jid"), jid ) << XATTR( _T("subscription"), subscr[0] ? subscr : _T("none"));
 					itemCount++;
 				}
 			}

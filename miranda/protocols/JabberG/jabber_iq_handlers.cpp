@@ -100,26 +100,25 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq.addQuery( _T(JABBER_FEAT_VERSION));
-	xmlAddChild( query, "name", _T("Miranda IM Jabber") );
-	xmlAddChild( query, "version", _T(__VERSION_STRING) );
-	if (os) xmlAddChild( query, "os", os );
+	query << XCHILD( _T("name"), _T("Miranda IM Jabber") );
+	query << XCHILD( _T("version"), _T(__VERSION_STRING) );
+	if ( os ) 
+		query << XCHILD( _T("os"), os );
 	m_ThreadInfo->send( iq );
 }
 
 // last activity (XEP-0012) support
 void CJabberProto::OnIqRequestLastActivity( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
-	XmlNodeIq iq( _T("result"), pInfo );
-	HXML query = iq.addQuery( _T(JABBER_FEAT_LAST_ACTIVITY));
-	xmlAddAttr( query, _T("seconds"), m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send(
+		XmlNodeIq( _T("result"), pInfo ).addQuery( _T(JABBER_FEAT_LAST_ACTIVITY))
+			<< XATTRI( _T("seconds"), m_tmJabberIdleStartTime ? time( 0 ) - m_tmJabberIdleStartTime : 0 ));
 }
 
 // XEP-0199: XMPP Ping support
 void CJabberProto::OnIqRequestPing( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
-	XmlNodeIq iq( _T("result"), pInfo );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ));
 }
 
 // Returns the current GMT offset in seconds

@@ -1826,8 +1826,8 @@ void CJabberProto::OnProcessRegIq( HXML node, void *userdata )
 
 			XmlNodeIq iq( _T("set"), iqIdRegSetReg );
 			HXML query = iq.addQuery( _T(JABBER_FEAT_REGISTER));
-			xmlAddChild( query, "password", info->password );
-			xmlAddChild( query, "username", info->username );
+			query << XCHILD( _T("password"), _A2T(info->password));
+			query << XCHILD( _T("username"), info->username );
 			info->send( iq );
 
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 75, ( LPARAM )TranslateT( "Sending registration information..." ));

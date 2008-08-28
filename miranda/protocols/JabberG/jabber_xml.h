@@ -37,10 +37,6 @@ void    __fastcall xmlAddChild( HXML, HXML );
 HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName );
 HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName, LPCTSTR ptszValue );
 HXML    __fastcall xmlAddChild( HXML, LPCTSTR pszName, int iValue );
-HXML    __fastcall xmlAddChild( HXML, LPCSTR pszName, LPCTSTR ptszValue );
-#if defined( _UNICODE )
-	HXML __fastcall xmlAddChild( HXML, LPCSTR pszName, LPCSTR pszValue = NULL );
-#endif
 
 LPCTSTR __fastcall xmlGetAttrValue( HXML, LPCTSTR key );
 HXML    __fastcall xmlGetChild( HXML, int n = 0 );

@@ -405,11 +405,11 @@ struct ThreadData
 
 struct JABBER_MODEMSGS
 {
-	char* szOnline;
-	char* szAway;
-	char* szNa;
-	char* szDnd;
-	char* szFreechat;
+	TCHAR* szOnline;
+	TCHAR* szAway;
+	TCHAR* szNa;
+	TCHAR* szDnd;
+	TCHAR* szFreechat;
 };
 
 struct JABBER_REG_ACCOUNT

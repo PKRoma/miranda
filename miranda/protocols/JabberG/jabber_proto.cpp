@@ -813,11 +813,8 @@ HANDLE __cdecl CJabberProto::SearchByEmail( const char* email )
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
-
-	XmlNodeIq iq( _T("set"), iqId, _A2T(szServerName));
-	HXML query = iq.addQuery( _T("jabber:iq:search"));
-	xmlAddChild( query, "email", email );
-	m_ThreadInfo->send( iq );
+	m_ThreadInfo->send( XmlNodeIq( _T("set"), iqId, _A2T(szServerName)).addQuery( _T("jabber:iq:search")) 
+		<< XCHILD( _T("email"), _A2T(email)));
 	return ( HANDLE )iqId;
 }
 
@@ -1061,11 +1058,10 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			msgType = _T("chat");
 
 		XmlNode m( _T("message" )); xmlAddAttr( m, _T("type"), msgType );
-		if ( !isEncrypted ) {
-			xmlAddChild( m, "body", msg );
-		}
+		if ( !isEncrypted )
+			m << XCHILD( _T("body"), msg );
 		else {
-			xmlAddChild( m, "body", "[This message is encrypted.]" );
+			m << XCHILD( _T("body"), _T("[This message is encrypted.]" ));
 			m << XCHILDNS( _T("x"), _T("jabber:x:encrypted"));
 		}
 		mir_free( msg );
@@ -1308,7 +1304,7 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 
 	EnterCriticalSection( &m_csModeMsgMutex );
 
-	char **szMsg;
+	TCHAR **szMsg;
 
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
@@ -1336,13 +1332,12 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 		return 1;
 	}
 
-	char* newModeMsg = mir_strdup( msg );
+	TCHAR* newModeMsg = mir_a2t( msg );
 
 	if (( *szMsg == NULL && newModeMsg == NULL ) ||
-		( *szMsg != NULL && newModeMsg != NULL && !strcmp( *szMsg, newModeMsg )) ) {
+		( *szMsg != NULL && newModeMsg != NULL && !lstrcmp( *szMsg, newModeMsg )) ) {
 		// Message is the same, no update needed
-		if ( newModeMsg != NULL )
-			mir_free( newModeMsg );
+		mir_free( newModeMsg );
 		LeaveCriticalSection( &m_csModeMsgMutex );
 	}
 	else {
@@ -1397,14 +1392,14 @@ int __cdecl CJabberProto::UserIsTyping( HANDLE hContact, int type )
 		else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
 			HXML x = m << XCHILDNS( _T("x"), _T(JABBER_FEAT_MESSAGE_EVENTS));
 			if ( item->messageEventIdStr != NULL )
-				xmlAddChild( x, _T("id"), item->messageEventIdStr );
+				x << XCHILD( _T("id"), item->messageEventIdStr );
 
 			switch ( type ){
 			case PROTOTYPE_SELFTYPING_OFF:
 				m_ThreadInfo->send( m );
 				break;
 			case PROTOTYPE_SELFTYPING_ON:
-				xmlAddChild( x, "composing" );
+				x << XCHILD( _T("composing"));
 				m_ThreadInfo->send( m );
 				break;
 	}	}	}

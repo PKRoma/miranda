@@ -755,9 +755,7 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 			TCHAR szFieldValue[100];
 			GetWindowText(dat->pJSInf[i].hwndValueItem, szFieldValue, SIZEOF(szFieldValue));
 			if ( szFieldValue[0] != _T('\0')) {
-				char* szTemp = mir_t2a(dat->pJSInf[i].szFieldName);
-				xmlAddChild( query, szTemp, szFieldValue );
-				mir_free(szTemp);
+				xmlAddChild( query, dat->pJSInf[i].szFieldName, szFieldValue );
 				fRequestNotEmpty=TRUE;
 	}	}	}
 

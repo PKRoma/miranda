@@ -1035,8 +1035,11 @@ void CPepActivity::CreateData( HXML n )
 	HXML activityNode = n << XCHILDNS( _T("activity"), _T(JABBER_FEAT_USER_ACTIVITY));
 	HXML firstNode = activityNode << XCHILD( _A2T( szFirstNode ));
 			
-	if (firstNode && szSecondNode) xmlAddChild( firstNode,szSecondNode);
-	if (m_text) xmlAddChild( activityNode,"text", m_text);
+	if (firstNode && szSecondNode)
+		firstNode << XCHILD( _A2T(szSecondNode));
+
+	if (m_text)
+		activityNode << XCHILD( _T("text"), m_text);
 }
 
 void CPepActivity::ResetExtraIcon(HANDLE hContact)

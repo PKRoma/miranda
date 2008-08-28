@@ -211,19 +211,19 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
 
 		XmlNodeIq iq( _T("set"), iqId );
 		HXML query = iq.addQuery( _T("jabber:iq:auth"));
-		xmlAddChild( query, "username", info->username );
+		query << XCHILD( _T("username"), info->username );
 		if ( xmlGetChild( queryNode, "digest" ) != NULL && m_szStreamId ) {
 			char* str = mir_utf8encode( info->password );
 			char text[200];
 			mir_snprintf( text, SIZEOF(text), "%s%s", m_szStreamId, str );
 			mir_free( str );
          if (( str=JabberSha1( text )) != NULL ) {
-				xmlAddChild( query, "digest", str );
+				query << XCHILD( _T("digest"), _A2T(str));
 				mir_free( str );
 			}
 		}
 		else if ( xmlGetChild( queryNode, "password" ) != NULL )
-			xmlAddChild( query, "password", info->password );
+			query << XCHILD( _T("password"), _A2T(info->password));
 		else {
 			Log( "No known authentication mechanism accepted by the server." );
 
@@ -232,7 +232,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
 		}
 
 		if ( xmlGetChild( queryNode , "resource" ) != NULL )
-			xmlAddChild( query, "resource", info->resource );
+			query << XCHILD( _T("resource"), info->resource );
 
 		info->send( iq );
 	}
@@ -1537,23 +1537,21 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 
 		if ( item->jid == NULL )
 			continue;
-		if (!lstrcmp( item->type, _T("conference") )) {
-			HXML itemNode = xmlAddChild( storage,"conference");
-			xmlAddAttr( itemNode, _T("jid"), item->jid );
+		if ( !lstrcmp( item->type, _T("conference"))) {
+			HXML itemNode = storage << XCHILD( _T("conference")) << XATTR( _T("jid"), item->jid );
 			if ( item->name )
-				xmlAddAttr( itemNode, _T("name"), item->name );
+				itemNode << XATTR( _T("name"), item->name );
 			if ( item->bAutoJoin )
-				xmlAddAttr( itemNode, _T("autojoin"), 1 );
+				itemNode << XATTRI( _T("autojoin"), 1 );
 			if ( item->nick )
-				xmlAddChild( itemNode, "nick", item->nick );
+				itemNode << XCHILD( _T("nick"), item->nick );
 			if ( item->password )
-				xmlAddChild( itemNode, "password", item->password );
+				itemNode << XCHILD( _T("password"), item->password );
 		}
-		if (!lstrcmp( item->type, _T("url") )) {
-			HXML itemNode = xmlAddChild( storage,"url");
-			xmlAddAttr( itemNode, _T("url"), item->jid );
+		if ( !lstrcmp( item->type, _T("url"))) {
+			HXML itemNode = storage << XCHILD( _T("url")) << XATTR( _T("url"), item->jid );
 			if ( item->name )
-				xmlAddAttr( itemNode, _T("name"), item->name );
+				itemNode << XATTR( _T("name"), item->name );
 		}
 	}
 }

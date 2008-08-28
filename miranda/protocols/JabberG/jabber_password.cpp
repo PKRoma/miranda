@@ -80,8 +80,8 @@ static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM
 
 				XmlNodeIq iq( _T("set"), iqId, _A2T(ppro->m_ThreadInfo->server));
 				HXML q = iq.addQuery( _T(JABBER_FEAT_REGISTER));
-				xmlAddChild( q, "username", ppro->m_ThreadInfo->username );
-				xmlAddChild( q, "password", newPasswd );
+				q << XCHILD( _T("username"), ppro->m_ThreadInfo->username );
+				q << XCHILD( _T("password"), _A2T(newPasswd));
 				ppro->m_ThreadInfo->send( iq );
 			}
 			DestroyWindow( hwndDlg );

@@ -559,11 +559,11 @@ BOOL CJabberProto::SendHttpAuthReply( CJabberHttpAuthParams *pParams, BOOL bAuth
 	}
 	else if ( pParams->m_nType == CJabberHttpAuthParams::MSG ) {
 		XmlNode msg( _T("message"));
-		xmlAddAttr( msg, _T("to"), pParams->m_szFrom );
+		msg << XATTR( _T("to"), pParams->m_szFrom );
 		if ( !bAuthorized )
-			xmlAddAttr( msg, _T("type"), _T("error"));
+			msg << XATTR( _T("type"), _T("error"));
 		if ( pParams->m_szThreadId )
-			xmlAddChild( msg, "thread", pParams->m_szThreadId );
+			msg << XCHILD( _T("thread"), pParams->m_szThreadId );
 
 		msg << XCHILDNS( _T("confirm"), _T(JABBER_FEAT_HTTP_AUTH)) << XATTR( _T("id"), pParams->m_szId )
 					<< XATTR( _T("method"), pParams->m_szMethod ) << XATTR( _T("url"), pParams->m_szUrl );

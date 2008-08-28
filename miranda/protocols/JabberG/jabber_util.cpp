@@ -832,12 +832,12 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	short iPriority = (short)JGetWord( NULL, "Priority", 0 );
 	UpdatePriorityMenu(iPriority);
 
-	char szPriority[40];
-	_itoa( iPriority, szPriority, 10 );
+	TCHAR szPriority[40];
+	_itot( iPriority, szPriority, 10 );
 
-	XmlNode p( _T("presence")); xmlAddChild( p, "priority", szPriority );
+	XmlNode p( _T("presence")); p << XCHILD( _T("priority"), szPriority );
 	if ( to != NULL )
-		xmlAddAttr( p, _T("to"), to );
+		p << XATTR( _T("to"), to );
 
 	if ( extra )
 		xmlAddChild( p, extra );
@@ -849,37 +849,34 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	TCHAR szExtCaps[ 512 ];
 	szExtCaps[ 0 ] = _T('\0');
 
-	if ( bSecureIM ) {
-		if ( _tcslen( szExtCaps ))
-			_tcscat( szExtCaps, _T(" "));
+	if ( bSecureIM )
 		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
-	}
 
 	if ( JGetByte( "EnableRemoteControl", FALSE )) {
-		if ( _tcslen( szExtCaps ))
+		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
 	}
 
 	if ( JGetByte( "EnableUserMood", TRUE )) {
-		if ( _tcslen( szExtCaps ))
+		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_MOOD) );
 	}
 
 	if ( JGetByte( "EnableUserTune", FALSE )) {
-		if ( _tcslen( szExtCaps ))
+		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
 	}
 
 	if ( JGetByte( "EnableUserActivity", TRUE )) {
-		if ( _tcslen( szExtCaps ))
+		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
 	}
 
-	if ( _tcslen( szExtCaps ))
+	if ( szExtCaps[0] )
 		xmlAddAttr( c, _T("ext"), szExtCaps );
 
 	if ( JGetByte( "EnableAvatars", TRUE )) {
@@ -887,40 +884,40 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
 			// XEP-0153: vCard-Based Avatars
 			HXML x = p << XCHILDNS( _T("x"), _T("vcard-temp:x:update"));
-			xmlAddChild( x, "photo", hashValue );
+			x << XCHILD( _T("photo"), _A2T(hashValue));
 	}	}
 
 	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
 		if ( m_modeMsgs.szOnline )
-			xmlAddChild( p, "status", m_modeMsgs.szOnline );
+			p << XCHILD( _T("status"), m_modeMsgs.szOnline );
 		break;
 	case ID_STATUS_INVISIBLE:
-		xmlAddAttr( p, _T("type"), _T("invisible"));
+		p << XATTR( _T("type"), _T("invisible"));
 		break;
 	case ID_STATUS_AWAY:
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
-		xmlAddChild( p, "show", "away" );
+		p << XCHILD( _T("show"), _T("away"));
 		if ( m_modeMsgs.szAway )
-			xmlAddChild( p, "status", m_modeMsgs.szAway );
+			p << XCHILD( _T("status"), m_modeMsgs.szAway );
 		break;
 	case ID_STATUS_NA:
-		xmlAddChild( p, "show", "xa" );
+		p << XCHILD( _T("show"), _T("xa"));
 		if ( m_modeMsgs.szNa )
-			xmlAddChild( p, "status", m_modeMsgs.szNa );
+			p << XCHILD( _T("status"), m_modeMsgs.szNa );
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
-		xmlAddChild( p, "show", "dnd" );
+		p << XCHILD( _T("show"), _T("dnd"));
 		if ( m_modeMsgs.szDnd )
-			xmlAddChild( p, "status", m_modeMsgs.szDnd );
+			p << XCHILD( _T("status"), m_modeMsgs.szDnd );
 		break;
 	case ID_STATUS_FREECHAT:
-		xmlAddChild( p, "show", "chat" );
+		p << XCHILD( _T("show"), _T("chat"));
 		if ( m_modeMsgs.szFreechat )
-			xmlAddChild( p, "status", m_modeMsgs.szFreechat );
+			p << XCHILD( _T("status"), m_modeMsgs.szFreechat );
 		break;
 	default:
 		// Should not reach here

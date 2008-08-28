@@ -196,24 +196,6 @@ HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, LPCTSTR value )
 	return xi.addChild( hXml, name, value );
 }
 
-#if defined( _UNICODE )
-HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, LPCTSTR ptszValue )
-{
-	TCHAR *wszName = mir_a2t( pszName );
-	HXML n = xi.addChild( hXml, wszName, ptszValue );
-	mir_free( wszName );
-	return n;
-}
-
-HXML __fastcall xmlAddChild( HXML hXml, const char* pszName, const char* pszValue )
-{
-	TCHAR *wszName = mir_a2t( pszName ), *wszValue = mir_a2t( pszValue );
-	HXML n = xi.addChild( hXml, wszName, wszValue );
-	mir_free( wszName ), mir_free( wszValue );
-	return n;
-}
-#endif
-
 HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, int value )
 {
 	TCHAR buf[40];
