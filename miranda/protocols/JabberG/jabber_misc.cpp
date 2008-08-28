@@ -439,7 +439,7 @@ TCHAR* UnEscapeChatTags(TCHAR* str_in)
 {
 	TCHAR* s = str_in, *d = str_in;
 	while ( *s ) {
-		if (( *s == '%' && s[1] == '%' ) || ( *s == '\n' && s[1] == '\n' ))
+		if ( *s == '%' && s[1] == '%' )
 			s++;
 		*d++ = *s++;
 	}
