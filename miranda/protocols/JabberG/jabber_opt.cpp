@@ -725,7 +725,7 @@ private:
 		if ( result && IsWindow(hwnd)) {
 			if ( result->resultCode == 200 && result->dataLength && result->pData ) {
 				TCHAR* buf = mir_a2t( result->pData );
-				XmlNode node = xi.parseString( buf, NULL, NULL );
+				XmlNode node( buf, NULL, NULL );
 				if ( node ) {
 					const TCHAR *xmlns = xmlGetAttrValue( node, _T("xmlns"));
 					if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(xmlGetName( node ), _T("query")) && IsWindow(hwnd)) {
@@ -1351,7 +1351,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 		TCHAR* newBuf = buffer;
 	#endif		
 
-	XmlNode node = xi.parseString( newBuf, NULL, NULL );
+	XmlNode node( newBuf, NULL, NULL );
 	if ( node ) {
 		if ( !lstrcmpi(xmlGetName( node ),_T("Workbook"))) {
 			HXML Worksheet = xmlGetChild( node , "Worksheet");
@@ -2129,7 +2129,7 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 	if ( result && IsWindow( hwnd )) {
 		if ((result->resultCode == 200) && result->dataLength && result->pData) {
 			TCHAR* ptszText = mir_a2t( result->pData );
-			XmlNode node = xi.parseString( ptszText, NULL, NULL );
+			XmlNode node( ptszText, NULL, NULL );
 			if ( node ) {
 				const TCHAR *xmlns = xmlGetAttrValue( node, _T("xmlns" ));
 				if ( xmlns && !lstrcmp(xmlns, _T(JABBER_FEAT_DISCO_ITEMS)) && !lstrcmp(xmlGetName( node ), _T("query")) && IsWindow(hwnd)) {

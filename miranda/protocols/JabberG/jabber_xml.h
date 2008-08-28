@@ -62,7 +62,11 @@ LPCTSTR __fastcall xmlGetAttrValue( HXML, LPCTSTR key );
 struct XmlNode
 {
 	__forceinline XmlNode() { m_hXml = NULL; }
-	__forceinline XmlNode( HXML h ) { m_hXml = h; }
+
+	__forceinline XmlNode( LPCTSTR pszString, int* numBytes, LPCTSTR ptszTag )
+	{
+		m_hXml = xi.parseString( pszString, numBytes, ptszTag );
+	}
 
 	XmlNode( const XmlNode& n );
 	XmlNode( LPCTSTR name );
@@ -73,6 +77,10 @@ struct XmlNode
 	~XmlNode();
 
 	XmlNode& operator =( const XmlNode& n );
+	__forceinline XmlNode& operator =( HXML n )
+	{	m_hXml = n;
+		return *this;
+	}
 
 	__forceinline operator HXML() const
 	{	return m_hXml;
