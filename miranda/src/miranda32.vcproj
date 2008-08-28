@@ -188,6 +188,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="vc7to6.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories="../lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -259,6 +260,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalDependencies="wsock32.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -1726,6 +1728,12 @@
 			<Filter
 				Name="options"
 				Filter="">
+				<File
+					RelativePath=".\modules\options\filter.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\options\filter.h">
+				</File>
 				<File
 					RelativePath="modules\options\options.cpp">
 					<FileConfiguration

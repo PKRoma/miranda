@@ -563,7 +563,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				checkIdle(&msg);
 				if ( h != NULL && GetWindowThreadProcessId(h,&pid) && pid==myPid
 					&& GetClassLong(h, GCW_ATOM)==32770 ) {
-					if ( IsDialogMessage(h, &msg) ) continue;
+					if ( IsDialogMessage(h, &msg) ) 
+						continue;
 				}
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);

@@ -118,6 +118,7 @@
 #define IDD_WAITRESTART                 285
 #define IDD_FTMGR                       286
 #define IDD_FTPAGE                      287
+#define IDD_OPT_KEYWORDFILTER           288
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -420,8 +421,7 @@
 #define IDC_ENABLEUPDATES               1700
 #define IDC_ENABLEALPHA                 1701
 #define IDC_RESETMENU                   1702
-#define IDC_MODULES                     1704
-#define IDC_STATIC_FILTERCAPTION        1705
+#define IDC_KEYWORD_FILTER              1704
 #define IDC_FILTER                      1706
 #define IDC_PATH                        1707
 #define IDC_LV_HOTKEYS                  1708
@@ -448,6 +448,7 @@
 #define IDC_ALLPRECENTAGE               1727
 #define IDC_ALLPRECENTS                 1727
 #define IDC_CLOSE                       1728
+#define IDC_ENABLE_KEYWORDFILTERING     1729
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -477,9 +478,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        288
+#define _APS_NEXT_RESOURCE_VALUE        289
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1729
+#define _APS_NEXT_CONTROL_VALUE         1730
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

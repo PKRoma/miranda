@@ -113,6 +113,19 @@ void ListView_GetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText, siz
 	SendMessageA( hwndLV, LVM_GETITEMTEXTA, i, (LPARAM)&ms_lvi);
 }
 
+char * GetPluginNameByInstance( HINSTANCE hInstance )
+{
+	int i = 0;
+	if ( pluginList.realCount == 0 ) return NULL;
+	for ( i =0; i <  pluginList.realCount; i++ )
+	{
+		pluginEntry * pe = (pluginEntry *)pluginList.items[i];
+		if ( pe->bpi.pluginInfo && pe->bpi.hInst == hInstance )
+			return ( pe->bpi.pluginInfo->shortName );
+	}
+	return NULL;
+}
+
 HINSTANCE GetInstByAddress( void* codePtr )
 {
 	int idx;
