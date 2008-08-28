@@ -80,6 +80,7 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 	if ( tPortDelim != NULL )
 		*tPortDelim = '\0';
 
+retry:
 	if (MyOptions.UseGateway) 
 	{
 		if (*info->mServer == 0)
@@ -120,7 +121,6 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 		}	
 	}
 
-retry:
     MSN_DebugLog( "Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType );
 
 	info->s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
@@ -140,9 +140,9 @@ retry:
 				break;
 
 			case SERVER_SWITCHBOARD:
-                if(MyOptions.UseGateway && strcmp(info->mServer, MSN_DEFAULT_GATEWAY))
+                if(MyOptions.UseGateway && info->gatewayType)
                 {
-                    strcpy(info->mServer, MSN_DEFAULT_GATEWAY);
+                    info->gatewayType = 0;
                     goto retry;
                 }
                 else
