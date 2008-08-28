@@ -5,8 +5,6 @@
 	Name="srmm"
 	ProjectGUID="{F47EAB99-C78F-4A92-87D5-B0E16FE5A133}"
 	RootNamespace="srmm"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -324,7 +322,7 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -506,11 +504,11 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
+				RelativePath="..\..\src\res\addcontact.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico"
+				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
 				>
 			</File>
 			<File
@@ -542,19 +540,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\dropuser.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -570,11 +568,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
+				RelativePath="..\..\src\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
 				>
 			</File>
 			<File
