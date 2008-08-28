@@ -63,7 +63,7 @@ int WaitUntilReadable(SOCKET s,DWORD dwTimeout)
 	return 1;
 }
 
-static int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
+int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
 {
 	fd_set writefd;
 	TIMEVAL tv;
@@ -552,7 +552,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	}
 
 	if(nlu->settings.useProxy
-	   && !(nloc->flags&NLOCF_HTTP
+	   && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP
 	        && (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS)))
 	{
 		if(!WaitUntilWritable(nlc->s,30000)) {
@@ -583,7 +583,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 				break;
 
 			case PROXYTYPE_HTTP:
-				if(!(nlu->user.flags&NUF_HTTPGATEWAY)) {
+				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL) {
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
 					if(!NetlibInitHttpsConnection(nlc,nlu,nloc)) {
 						//can't do HTTPS: try direct
