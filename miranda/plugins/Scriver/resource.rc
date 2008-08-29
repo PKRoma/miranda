@@ -406,8 +406,8 @@ BEGIN
     LTEXT           "Background",IDC_STATIC,201,83,67,8
     CONTROL         "Custom2",IDC_CHAT_BKG,"ColourPicker",WS_TABSTOP,201,93,50,14,0x18000000L
     LTEXT           "Timeout (s)",IDC_STATIC,33,138,92,8
-    EDITTEXT        IDC_CHAT_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "(The timeout require at least PopUp plugin v 1.0.1.9. Setting it to 0 means default setting and -1 means indefinite time)",IDC_STATIC,33,151,207,17
+    EDITTEXT        IDC_CHAT_TIMEOUT,132,134,38,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_CHAT_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,169,135,11,14
 END
 
