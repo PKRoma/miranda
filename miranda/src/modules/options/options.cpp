@@ -261,7 +261,6 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			mir_sntprintf( buf, SIZEOF(buf), TranslateT("Loading... %d%%"), FilterLoadProgress );
 		else
 			mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Search" ) );
-		SetBkMode( hdc, TRANSPARENT );
 		DrawText( hdc, buf, -1, &rc, 0 );
 		// Paint into this DC
 		EndPaint( hWnd, &paint);
@@ -1250,7 +1249,7 @@ void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 		DestroyWindow( hFilterSearchWnd );
 		hFilterSearchWnd = NULL;
 	}
-	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN );
+	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME );
 }
 
 static void ExecuteFindFilterStringsTimer( HWND hdlg )
