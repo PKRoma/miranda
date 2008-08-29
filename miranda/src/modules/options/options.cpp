@@ -249,9 +249,9 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 	static HTHEME _hTheme = NULL;
 
 	static HTHEME ( STDAPICALLTYPE *MyOpenThemeData )( HWND, LPCWSTR ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyIsThemeBackgroundPartiallyTransparent )( HTHEME, int, int ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyDrawThemeParentBackground )( HWND, HDC, const RECT * ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyDrawThemeBackground )( HWND, HDC, int, int, const RECT *, const RECT * ) = NULL;
+	static HRESULT ( STDAPICALLTYPE *MyIsThemeBackgroundPartiallyTransparent )( HWND, int, int ) = NULL;
+	static HRESULT ( STDAPICALLTYPE *MyDrawThemeParentBackground )( HTHEME, HDC, const RECT * ) = NULL;
+	static HRESULT ( STDAPICALLTYPE *MyDrawThemeBackground )( HTHEME, HDC, int, int, const RECT *, const RECT * ) = NULL;
 	static HRESULT ( STDAPICALLTYPE *MyDrawThemeText)( HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *) = NULL;
 	static HRESULT ( STDAPICALLTYPE *MyGetThemeFont)( HTHEME,HDC,int,int,int,LOGFONT *) = NULL;
 	static HRESULT ( STDAPICALLTYPE *MyCloseThemeData )( HTHEME ) = NULL;
@@ -266,9 +266,9 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			{
 				// OpenThemeData( m_button, L"COMBOBOX");
 				MyOpenThemeData	= (HTHEME (STDAPICALLTYPE*)(HWND, LPCWSTR))GetProcAddress(hThemeAPI,"OpenThemeData");
-				MyIsThemeBackgroundPartiallyTransparent = (HRESULT (STDAPICALLTYPE*)(HTHEME, int, int))GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
-				MyDrawThemeParentBackground  = (HRESULT (STDAPICALLTYPE*)(HWND, HDC, const RECT * ))GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
-				MyDrawThemeBackground = (HRESULT (STDAPICALLTYPE*)(HWND, HDC, int, int, const RECT *, const RECT *))GetProcAddress(hThemeAPI,"DrawThemeBackground");
+				MyIsThemeBackgroundPartiallyTransparent = (HRESULT (STDAPICALLTYPE*)(HWND, int, int))GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
+				MyDrawThemeParentBackground  = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, const RECT * ))GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
+				MyDrawThemeBackground = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, int, int, const RECT *, const RECT *))GetProcAddress(hThemeAPI,"DrawThemeBackground");
 				MyDrawThemeText = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))GetProcAddress(hThemeAPI,"DrawThemeText");
 				MyGetThemeFont = (HRESULT (STDAPICALLTYPE*)(HTHEME,HDC,int,int,int,LOGFONT *))GetProcAddress(hThemeAPI,"GetThemeFont");
 				MyCloseThemeData  = (HRESULT (STDAPICALLTYPE*)( HTHEME ))GetProcAddress(hThemeAPI,"CloseThemeData");
@@ -323,9 +323,9 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HTHEME hTheme = MyOpenThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
-				if ( MyIsThemeBackgroundPartiallyTransparent( hTheme, EP_EDITTEXT, ETS_ASSIST) )
-					MyDrawThemeParentBackground( hWnd, hdc, &rc );
-				MyDrawThemeBackground( hWnd, hdc, EP_EDITTEXT, ETS_ASSIST, &rc, &rc );
+				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd, EP_EDITTEXT, ETS_ASSIST) )
+					MyDrawThemeParentBackground( hTheme, hdc, &rc );
+				HRESULT hr = MyDrawThemeBackground( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, &rc, NULL );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
@@ -348,8 +348,9 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 			SetTextColor( hdc, GetSysColor(COLOR_GRAYTEXT) );
 			FillRect( hdc, &rc, GetSysColorBrush( COLOR_WINDOW ) );
-			SetBkMode( hdc, TRANSPARENT );
+			int oldMode = SetBkMode( hdc, TRANSPARENT );
 			DrawText( hdc, buf, -1, &rc, 0 );
+            SetBkMode( hdc, oldMode );
 			SelectObject( hdc, oldFont );
 			DeleteObject( hFont );
 		}
@@ -1341,7 +1342,7 @@ void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 		DestroyWindow( hFilterSearchWnd );
 		hFilterSearchWnd = NULL;
 	}
-	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_UPDATENOW | RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME );
+	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN );
 }
 
 static void ExecuteFindFilterStringsTimer( HWND hdlg )
