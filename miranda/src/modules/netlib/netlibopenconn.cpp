@@ -383,12 +383,12 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	// this is for XP SP2 where there is a default connection attempt limit of 10/second
 	EnterCriticalSection(&csNetlibUser);
 	waitdiff=GetTickCount() - g_LastConnectionTick;
+	if ( waitdiff < 1000 && IsWinVerXPPlus()) {
+		// last connection was less than 1 second ago, wait 1 second
+		SleepEx(1000, TRUE);
+	}
 	g_LastConnectionTick=GetTickCount();
 	LeaveCriticalSection(&csNetlibUser);
-	if ( waitdiff < 1000 ) {
-		// last connection was less than 1 second ago, wait 1.2 seconds
-		SleepEx(1200,TRUE);
-	}
 	// might of died in between the wait
 	if ( Miranda_Terminated() )  {
 		rc=SOCKET_ERROR;
