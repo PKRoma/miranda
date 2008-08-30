@@ -435,14 +435,14 @@ static void * _yahoo_default_server_settings()
 {
 	struct yahoo_server_settings *yss = y_new0(struct yahoo_server_settings, 1);
 
-	yss->pager_host = _strdup(pager_host);
+	yss->pager_host = strdup(pager_host);
 	yss->pager_port = pager_port;
-	yss->filetransfer_host = _strdup(filetransfer_host);
+	yss->filetransfer_host = strdup(filetransfer_host);
 	yss->filetransfer_port = filetransfer_port;
-	yss->webcam_host = _strdup(webcam_host);
+	yss->webcam_host = strdup(webcam_host);
 	yss->webcam_port = webcam_port;
-	yss->webcam_description = _strdup(webcam_description);
-	yss->local_host = _strdup(local_host);
+	yss->webcam_description = strdup(webcam_description);
+	yss->local_host = strdup(local_host);
 	yss->conn_type = conn_type;
 	yss->pic_cksum = -1;
 	
@@ -464,32 +464,32 @@ static void * _yahoo_assign_server_settings(va_list ap)
 		if(!strcmp(key, "pager_host")) {
 			svalue = va_arg(ap, char *);
 			free(yss->pager_host);
-			yss->pager_host = _strdup(svalue);
+			yss->pager_host = strdup(svalue);
 		} else if(!strcmp(key, "pager_port")) {
 			nvalue = va_arg(ap, int);
 			yss->pager_port = nvalue;
 		} else if(!strcmp(key, "filetransfer_host")) {
 			svalue = va_arg(ap, char *);
 			free(yss->filetransfer_host);
-			yss->filetransfer_host = _strdup(svalue);
+			yss->filetransfer_host = strdup(svalue);
 		} else if(!strcmp(key, "filetransfer_port")) {
 			nvalue = va_arg(ap, int);
 			yss->filetransfer_port = nvalue;
 		} else if(!strcmp(key, "webcam_host")) {
 			svalue = va_arg(ap, char *);
 			free(yss->webcam_host);
-			yss->webcam_host = _strdup(svalue);
+			yss->webcam_host = strdup(svalue);
 		} else if(!strcmp(key, "webcam_port")) {
 			nvalue = va_arg(ap, int);
 			yss->webcam_port = nvalue;
 		} else if(!strcmp(key, "webcam_description")) {
 			svalue = va_arg(ap, char *);
 			free(yss->webcam_description);
-			yss->webcam_description = _strdup(svalue);
+			yss->webcam_description = strdup(svalue);
 		} else if(!strcmp(key, "local_host")) {
 			svalue = va_arg(ap, char *);
 			free(yss->local_host);
-			yss->local_host = _strdup(svalue);
+			yss->local_host = strdup(svalue);
 		} else if(!strcmp(key, "conn_type")) {
 			nvalue = va_arg(ap, int);
 			yss->conn_type = nvalue;
@@ -713,7 +713,7 @@ static void yahoo_packet_hash(struct yahoo_packet *pkt, int key, const char *val
 {
 	struct yahoo_pair *pair = y_new0(struct yahoo_pair, 1);
 	pair->key = key;
-	pair->value = _strdup(value);
+	pair->value = strdup(value);
 	pkt->hash = y_list_append(pkt->hash, pair);
 }
 
@@ -812,7 +812,7 @@ static void yahoo_packet_read(struct yahoo_packet *pkt, unsigned char *data, int
 			value[x] = 0;
 		pos += 2;
 		if (accept) {
-			pair->value = _strdup(value);
+			pair->value = strdup(value);
 			FREE(value);
 			pkt->hash = y_list_append(pkt->hash, pair);
 			
@@ -907,7 +907,7 @@ static void yahoo_packet_dump(unsigned char *data, int len)
 static const char base64digits[] = 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 				"abcdefghijklmnopqrstuvwxyz"
 				"0123456789._";
-				
+
 static void to_y64(unsigned char *out, const unsigned char *in, int inlen)
 /* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) */
 {
@@ -1095,8 +1095,8 @@ static YList * bud_str2list(char *rawlist)
 
 		for (bud = buddies; bud && *bud; bud++) {
 			newbud = y_new0(struct yahoo_buddy, 1);
-			newbud->id = _strdup(*bud);
-			newbud->group = _strdup(split[0]);
+			newbud->id = strdup(*bud);
+			newbud->group = strdup(split[0]);
 
 			if(y_list_find_custom(l, newbud, is_same_bud)) {
 				FREE(newbud->id);
@@ -1129,13 +1129,13 @@ char * getcookie(char *rawcookie)
 	if (strlen(rawcookie) < 2) 
 		return NULL;
 
-	tmpcookie = _strdup(rawcookie+2);
+	tmpcookie = strdup(rawcookie+2);
 	cookieend = strchr(tmpcookie, ';');
 
 	if(cookieend)
 		*cookieend = '\0';
 
-	cookie = _strdup(tmpcookie);
+	cookie = strdup(tmpcookie);
 	FREE(tmpcookie);
 	/* cookieend=NULL;  not sure why this was there since the value is not preserved in the stack -dd */
 
@@ -1150,11 +1150,11 @@ static char * getlcookie(char *cookie)
 
 	tmpend = strstr(cookie, "n=");
 	if(tmpend) {
-		tmp = _strdup(tmpend+2);
+		tmp = strdup(tmpend+2);
 		tmpend = strchr(tmp, '&');
 		if(tmpend)
 			*tmpend='\0';
-		login_cookie = _strdup(tmp);
+		login_cookie = strdup(tmp);
 		FREE(tmp);
 	}
 
@@ -1490,7 +1490,7 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 			host = pair->value;
 		
 		if (pair->key == 52) {		/* invite */
-			members = y_list_append(members, _strdup(pair->value));
+			members = y_list_append(members, strdup(pair->value));
 		}
 		if (pair->key == 53)		/* logon */
 			who = pair->value;
@@ -1533,7 +1533,7 @@ static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_
 				break;
 		}
 		if(!l)
-			members = y_list_append(members, _strdup(host));
+			members = y_list_append(members, strdup(host));
 	}
 	/* invite, decline, join, left, message -> status == 1 */
 
@@ -1617,7 +1617,7 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 
 			if (pkt->service == YAHOO_SERVICE_CHATJOIN) {
 				currentmember = y_new0(struct yahoo_chat_member, 1);
-				currentmember->id = _strdup(pair->value);
+				currentmember->id = strdup(pair->value);
 				members = y_list_append(members, currentmember);
 			}
 		}
@@ -1637,13 +1637,13 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 		if (pair->key == 141) {
 			/* alias */
 			if (pkt->service == YAHOO_SERVICE_CHATJOIN)
-				currentmember->alias = _strdup(pair->value);
+				currentmember->alias = strdup(pair->value);
 		}
 
 		if (pair->key == 142) {
 			/* location */
 			if (pkt->service == YAHOO_SERVICE_CHATJOIN)
-				currentmember->location = _strdup(pair->value);
+				currentmember->location = strdup(pair->value);
 		}
 
 
@@ -1675,7 +1675,7 @@ static void yahoo_process_chat(struct yahoo_input_data *yid, struct yahoo_packet
 		}
 		if (pkt->service == YAHOO_SERVICE_COMMENT && chaterr)  {
 			YAHOO_CALLBACK(ext_yahoo_chat_yahooerror)(yid->yd->client_id, id);
-			return ;
+			return;
 		}
 
 		WARNING(("We didn't get a room name, ignoring packet"));
@@ -2029,7 +2029,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		switch(pair->key) {
 		case 87: /* buddies */
 			if(!yd->rawbuddylist)
-				yd->rawbuddylist = _strdup(pair->value);
+				yd->rawbuddylist = strdup(pair->value);
 			else {
 				yd->rawbuddylist = y_string_append(yd->rawbuddylist, pair->value);
 			}
@@ -2037,7 +2037,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 
 		case 88: /* ignore list */
 			if(!yd->ignorelist)
-				yd->ignorelist = _strdup("Ignore:");
+				yd->ignorelist = strdup("Ignore:");
 			yd->ignorelist = y_string_append(yd->ignorelist, pair->value);
 			break;
 
@@ -2047,7 +2047,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			int i;
 			for(i=0; identities[i]; i++)
 				yd->identities = y_list_append(yd->identities, 
-						_strdup(identities[i]));
+						strdup(identities[i]));
 			y_strfreev(identities);
 			}
 			YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, yd->identities);
@@ -2079,7 +2079,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 			break;
 		case 185: /* stealth list */
 			if(!yd->rawstealthlist)
-				yd->rawstealthlist = _strdup(pair->value);
+				yd->rawstealthlist = strdup(pair->value);
 			else {
 				yd->rawstealthlist = y_string_append(yd->rawstealthlist, pair->value);
 			}
@@ -2997,8 +2997,8 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 		where = "Unknown";
 
 	bud = y_new0(struct yahoo_buddy, 1);
-	bud->id = _strdup(who);
-	bud->group = _strdup(where);
+	bud->id = strdup(who);
+	bud->group = strdup(where);
 	bud->real_name = NULL;
 
 	yd->buddies = y_list_append(yd->buddies, bud);
@@ -3037,8 +3037,8 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 		return;
 	
 	bud = y_new0(struct yahoo_buddy, 1);
-	bud->id = _strdup(who);
-	bud->group = _strdup(where);
+	bud->id = strdup(who);
+	bud->group = strdup(where);
 
 	buddy = y_list_find_custom(yd->buddies, bud, is_same_bud);
 
@@ -3127,7 +3127,7 @@ static void yahoo_process_ignore(struct yahoo_input_data *yid, struct yahoo_pack
 		if (un_ignore == 1) { /* ignore */
 				struct yahoo_buddy *bud = y_new0(struct yahoo_buddy, 1);
 				
-				bud->id = _strdup(who);
+				bud->id = strdup(who);
 				bud->group = NULL;
 				bud->real_name = NULL;
 
@@ -3640,20 +3640,20 @@ static void _yahoo_webcam_get_server_connected(int fd, int error, void *d)
 	
 	/* send initial packet */
 	if (who)
-		data = _strdup("<RVWCFG>");
+		data = strdup("<RVWCFG>");
 	else
-		data = _strdup("<RUPCFG>");
+		data = strdup("<RUPCFG>");
 	yahoo_add_to_send_queue(yid, data, strlen(data));
 	FREE(data);
 
 	/* send data */
 	if (who)
 	{
-		data = _strdup("g=");
+		data = strdup("g=");
 		data = y_string_append(data, who);
 		data = y_string_append(data, "\r\n");
 	} else {
-		data = _strdup("f=1\r\n");
+		data = strdup("f=1\r\n");
 	}
 	len = strlen(data);
 	packet = y_new0(char, header_len + len);
@@ -3678,9 +3678,9 @@ static void yahoo_webcam_get_server(struct yahoo_input_data *y, char *who, char 
 	yid->type = YAHOO_CONNECTION_WEBCAM_MASTER;
 	yid->yd = y->yd;
 	yid->wcm = y_new0(struct yahoo_webcam, 1);
-	yid->wcm->user = who?_strdup(who):NULL;
+	yid->wcm->user = who?strdup(who):NULL;
 	yid->wcm->direction = who?YAHOO_WEBCAM_DOWNLOAD:YAHOO_WEBCAM_UPLOAD;
-	yid->wcm->key = _strdup(key);
+	yid->wcm->key = strdup(key);
 
 	YAHOO_CALLBACK(ext_yahoo_connect_async)(yid->yd->client_id, yss->webcam_host, yss->webcam_port, yid->type,
 			_yahoo_webcam_get_server_connected, yid);
@@ -4379,7 +4379,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 				yab_used = TRUE;
 				bud->yab_entry = yab;
 				if(yab->nname) {
-					bud->real_name = _strdup(yab->nname);
+					bud->real_name = strdup(yab->nname);
 				} else if(yab->fname && yab->lname) {
 					bud->real_name = y_new0(char, 
 							strlen(yab->fname)+
@@ -4388,7 +4388,7 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 					sprintf(bud->real_name, "%s %s",
 							yab->fname, yab->lname);
 				} else if(yab->fname) {
-					bud->real_name = _strdup(yab->fname);
+					bud->real_name = strdup(yab->fname);
 				}
 				break; /* for */
 			}
@@ -4522,10 +4522,10 @@ static void _yahoo_webcam_connected(int fd, int error, void *d)
 	switch (wcm->direction)
 	{
 		case YAHOO_WEBCAM_DOWNLOAD:
-			data = _strdup("<REQIMG>");
+			data = strdup("<REQIMG>");
 			break;
 		case YAHOO_WEBCAM_UPLOAD:	
-			data = _strdup("<SNDIMG>");
+			data = strdup("<SNDIMG>");
 			break;
 		default:
 			return;
@@ -4538,7 +4538,7 @@ static void _yahoo_webcam_connected(int fd, int error, void *d)
 	{
 		case YAHOO_WEBCAM_DOWNLOAD:
 			header_len = 8;
-			data = _strdup("a=2\r\nc=us\r\ne=21\r\nu=");
+			data = strdup("a=2\r\nc=us\r\ne=21\r\nu=");
 			data = y_string_append(data, yd->user);
 			data = y_string_append(data, "\r\nt=");
 			data = y_string_append(data, wcm->key);
@@ -4553,7 +4553,7 @@ static void _yahoo_webcam_connected(int fd, int error, void *d)
 			break;
 		case YAHOO_WEBCAM_UPLOAD:
 			header_len = 13;
-			data = _strdup("a=2\r\nc=us\r\nu=");
+			data = strdup("a=2\r\nc=us\r\nu=");
 			data = y_string_append(data, yd->user);
 			data = y_string_append(data, "\r\nt=");
 			data = y_string_append(data, wcm->key);
@@ -4638,12 +4638,12 @@ static void yahoo_process_webcam_master_connection(struct yahoo_input_data *yid,
 	if (server)
 	{
 		yss = yid->yd->server_settings;
-		yid->wcm->server = _strdup(server);
+		yid->wcm->server = strdup(server);
 		yid->wcm->port = yss->webcam_port;
 		yid->wcm->conn_type = yss->conn_type;
-		yid->wcm->my_ip = _strdup(yss->local_host);
+		yid->wcm->my_ip = strdup(yss->local_host);
 		if (yid->wcm->direction == YAHOO_WEBCAM_UPLOAD)
-			yid->wcm->description = _strdup(yss->webcam_description);
+			yid->wcm->description = strdup(yss->webcam_description);
 		yahoo_webcam_connect(yid);
 		FREE(server);
 	}
@@ -4743,8 +4743,8 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 	if(!yd)
 		return 0;
 
-	yd->user = _strdup(username);
-	yd->password = _strdup(password);
+	yd->user = strdup(username);
+	yd->password = strdup(password);
 
 	yd->initial_status = -1;
 	yd->current_status = -1;
@@ -5786,7 +5786,7 @@ void yahoo_webcam_get_feed(int id, const char *who)
 	 * order that we request them.
 	 * The queue is popped in yahoo_process_webcam_key
 	 */
-	webcam_queue = y_list_append(webcam_queue, who?_strdup(who):NULL);
+	webcam_queue = y_list_append(webcam_queue, who?strdup(who):NULL);
 
 	yd = yid->yd;
 
@@ -5838,7 +5838,7 @@ void yahoo_webcam_accept_viewer(int id, const char* who, int accept)
 	if (!yid)
 		return;
 
-	data = _strdup("u=");
+	data = strdup("u=");
 	data = y_string_append(data, (char*)who);
 	data = y_string_append(data, "\r\n");
 	len = strlen(data);
@@ -5899,7 +5899,7 @@ static void yahoo_search_internal(int id, int t, const char *text, int g, int ar
 
 	snprintf(buff, sizeof(buff), "&.sq=%%20&.tt=%d&.ss=%d", total, startpos);
 
-	ctext = _strdup(text);
+	ctext = strdup(text);
 	while((p = strchr(ctext, ' ')))
 		*p = '+';
 
@@ -5935,7 +5935,7 @@ void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo
 
 	FREE(yss->lsearch_text);
 	yss->lsearch_type = t;
-	yss->lsearch_text = _strdup(text);
+	yss->lsearch_text = strdup(text);
 	yss->lsearch_gender = g;
 	yss->lsearch_agerange = ar;
 	yss->lsearch_photo = photo;

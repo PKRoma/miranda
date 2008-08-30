@@ -141,7 +141,7 @@ char ** y_strsplit(char * str, char * sep, int nelem)
 	}
 
 	if(i<nelem && *str) /* str didn't end with sep, and str isn't empty */
-		vector[i++] = _strdup(p);
+		vector[i++] = strdup(p);
 			
 	vector[i] = NULL;
 
