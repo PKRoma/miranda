@@ -193,7 +193,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int st
  * 	msg  - the message if stat == YAHOO_STATUS_CUSTOM
  * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
  * 	idle - this is the number of seconds he is idle [if he is idle]
- *  mobile - this is set for mobile users/buddies
+ *	mobile - this is set for mobile users/buddies
  *	TODO: add support for pager, chat, and game states
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile);
@@ -577,6 +577,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_typing_notify)(int id, const char *me, const 
  * 	me   - the handle of the identity the notification is sent to
  * 	who  - the handle of the remote user
  * 	stat - 1 if game, 0 if stopped gaming
+ * 	msg  - game description and/or other text
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_game_notify)(int id, const char *me, const char *who, int stat, const char *msg);
 
@@ -598,6 +599,8 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_mail_notify)(int id, const char *from, const 
  * 	System message
  * Params:
  * 	id   - the id that identifies the server connection
+ * 	me   - the handle of the identity the notification is sent to
+ * 	who  - the source of the system message (there are different types)
  * 	msg  - the message
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_system_message)(int id, const char *me, const char *who, const char *msg);

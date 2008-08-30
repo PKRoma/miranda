@@ -22,7 +22,9 @@
 #ifndef __YAHOO_UTIL_H__
 #define __YAHOO_UTIL_H__
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if HAVE_GLIB
 # include <glib.h>
@@ -36,8 +38,8 @@
 # define y_memdup	g_memdup
 # define y_strsplit	g_strsplit
 # define y_strfreev	g_strfreev
-# ifndef _strdup
-#  define _strdup	g_strdup
+# ifndef strdup
+#  define strdup	g_strdup
 # endif
 # ifndef strncasecmp
 #  define strncasecmp	g_strncasecmp
@@ -62,15 +64,15 @@ void * y_memdup(const void * addr, int n);
 char ** y_strsplit(char * str, char * sep, int nelem);
 void y_strfreev(char ** vector);
 
-/*
+#ifndef _WIN32
 int strncasecmp(const char * s1, const char * s2, size_t n);
 int strcasecmp(const char * s1, const char * s2);
 
-char * _strdup(const char *s);
+char * strdup(const char *s);
 
 int snprintf(char *str, size_t size, const char *format, ...);
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
-*/
+#endif
 
 #endif
 
