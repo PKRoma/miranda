@@ -268,3 +268,248 @@ LPCTSTR __fastcall xmlGetText( HXML xml )
 {
 	return xi.getText( xml );
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void XPath::ProcessPath(LookupInfo &info, bool bCreate)
+{
+	if (!info.nodeName) return;
+
+	TCHAR *nodeName = (TCHAR *)alloca(sizeof(TCHAR) * (info.nodeName.length+1));
+	lstrcpyn(nodeName, info.nodeName.p, info.nodeName.length+1);
+
+	if (info.attrName && info.attrValue)
+	{
+		TCHAR *attrName = (TCHAR *)alloca(sizeof(TCHAR) * (info.attrName.length+1));
+		lstrcpyn(attrName, info.attrName.p, info.attrName.length+1);
+		TCHAR *attrValue = (TCHAR *)alloca(sizeof(TCHAR) * (info.attrValue.length+1));
+		lstrcpyn(attrValue, info.attrValue.p, info.attrValue.length+1);
+		HXML hXml = xmlGetChildByTag(m_hXml, nodeName, attrName, attrValue);
+
+		m_hXml = (hXml || !bCreate) ? hXml : (m_hXml << XCHILD(nodeName) << XATTR(attrName, attrValue));
+	} else
+	if (info.nodeIndex)
+	{
+		int idx = _ttoi(info.nodeIndex.p);
+		m_hXml = lstrcmp(nodeName, _T("*")) ? xmlGetNthChild(m_hXml, nodeName, idx) : xmlGetChild(m_hXml, idx-1);
+
+		// no support for such creation mode
+	} else
+	{
+		HXML hXml = xmlGetChild(m_hXml, nodeName);
+		m_hXml = (hXml || !bCreate) ? hXml : (m_hXml << XCHILD(nodeName));
+	}
+
+	info.Reset();
+}
+
+XPath::PathType XPath::LookupImpl(bool bCreate)
+{
+	LookupState state = S_START;
+	LookupInfo info = {0};
+
+	for (LPCTSTR p = m_szPath; state < S_FINAL; ++p)
+	{
+		switch (state)
+		{
+		case S_START:
+		{
+			ProcessPath(info, bCreate);
+
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T('@'):
+				info.attrName.Begin(p+1);
+				state = S_ATTR_STEP;
+				break;
+			case _T('/'):
+				break;
+			default:
+				info.nodeName.Begin(p);
+				state = S_NODE_NAME;
+				break;
+			};
+			break;
+		}
+		case S_ATTR_STEP:
+		{
+			switch (*p)
+			{
+			case 0:
+				info.attrName.End(p);
+				state = S_FINAL_ATTR;
+				break;
+			default:
+				break;
+			};
+			break;
+		}
+		case S_NODE_NAME:
+		{
+			switch (*p)
+			{
+			case 0:
+				info.nodeName.End(p);
+				state = S_FINAL_NODESET;
+				break;
+			case _T('['):
+				info.nodeName.End(p);
+				state = S_NODE_OPENBRACKET;
+				break;
+			case _T('/'):
+				info.nodeName.End(p);
+				state = S_START;
+				break;
+			default:
+				break;
+			};
+			break;
+		}
+		case S_NODE_OPENBRACKET:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T('@'):
+				info.attrName.Begin(p+1);
+				state = S_NODE_ATTRNAME;
+				break;
+			case _T('0'): case _T('1'): case _T('2'): case _T('3'): case _T('4'):
+			case _T('5'): case _T('6'): case _T('7'): case _T('8'): case _T('9'):
+				info.nodeIndex.Begin(p);
+				state = S_NODE_INDEX;
+				break;
+			default:
+				state = S_FINAL_ERROR;
+				break;
+			};
+			break;
+		}
+		case S_NODE_INDEX:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T(']'):
+				info.nodeIndex.End(p);
+				state = S_NODE_CLOSEBRACKET;
+				break;
+			case _T('0'): case _T('1'): case _T('2'): case _T('3'): case _T('4'):
+			case _T('5'): case _T('6'): case _T('7'): case _T('8'): case _T('9'):
+				break;
+			default:
+				state = S_FINAL_ERROR;
+				break;
+			};
+			break;
+		}
+		case S_NODE_ATTRNAME:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T('='):
+				info.attrName.End(p);
+				state = S_NODE_ATTREQUALS;
+				break;
+			default:
+				break;
+			};
+			break;
+		}
+		case S_NODE_ATTREQUALS:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T('\''):
+				info.attrValue.Begin(p+1);
+				state = S_NODE_ATTRVALUE;
+				break;
+			default:
+				state = S_FINAL_ERROR;
+				break;
+			};
+			break;
+		}
+		case S_NODE_ATTRVALUE:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T('\''):
+				info.attrValue.End(p);
+				state = S_NODE_ATTRCLOSEVALUE;
+				break;
+			default:
+				break;
+			};
+			break;
+		}
+		case S_NODE_ATTRCLOSEVALUE:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_ERROR;
+				break;
+			case _T(']'):
+				state = S_NODE_CLOSEBRACKET;
+				break;
+			default:
+				state = S_FINAL_ERROR;
+				break;
+			};
+			break;
+		}
+		case S_NODE_CLOSEBRACKET:
+		{
+			switch (*p)
+			{
+			case 0:
+				state = S_FINAL_NODE;
+				break;
+			case _T('/'):
+				state = S_START;
+				break;
+			default:
+				state = S_FINAL_ERROR;
+				break;
+			};
+			break;
+		}
+		}
+
+		if (!*p && (state < S_FINAL))
+		{
+			state = S_FINAL_ERROR;
+		}
+	}
+
+	switch (state)
+	{
+	case S_FINAL_ATTR:
+		m_szParam = info.attrName.p;
+		return T_ATTRIBUTE;
+	case S_FINAL_NODE:
+		return T_NODE;
+	case S_FINAL_NODESET:
+		m_szParam = info.nodeName.p;
+		return T_NODESET;
+	}
+
+	return T_ERROR;
+}

@@ -192,4 +192,122 @@ struct XQUERY
 
 HXML __fastcall operator<<( HXML node, XQUERY& child );
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Limited XPath support
+//     path should look like: "node-spec/node-spec/.../result-spec"
+//     where "node-spec" can be "node-name", "node-name[@attr-name='attr-value']" or "node-name[node-index]"
+//     result may be either "node-spec", or "@attr-name"
+//
+// Samples:
+//    LPCTSTR s = XPathT(node, "child/subchild[@attr='value']");          // get node text
+//    LPCTSTR s = XPathT(node, "child/subchild[2]/@attr");                // get attribute value
+//    XPathT(node, "child/subchild[@name='test']/@attr") = _T("Hello");   // create path if needed and set attribute value
+//
+//    XPathT(node, "child/subchild[@name='test']") = _T("Hello");         // TODO: create path if needed and set node text
+
+#define XPathT(a,b) XPath(a, _T(b))
+
+class XPath
+{
+public:
+	XPath(HXML hXml, TCHAR *path):
+		m_type(T_UNKNOWN),
+		m_hXml(hXml),
+		m_szPath(path),
+		m_szParam(NULL)
+		{}
+
+	// Read data
+	__forceinline operator HXML()
+	{
+		return (Lookup() == T_NODE) ? m_hXml : NULL;
+	}
+	__forceinline operator LPCTSTR()
+	{
+		switch (Lookup())
+		{
+			case T_ATTRIBUTE: return xmlGetAttrValue(m_hXml, m_szParam);
+			case T_NODE: return xmlGetText(m_hXml);
+		}
+		return NULL;
+	}
+	__forceinline HXML operator[] (int idx)
+	{
+		return (Lookup() == T_NODESET) ? xmlGetNthChild(m_hXml, m_szParam, idx) : NULL;
+	}
+
+	// Write data
+	__forceinline void operator= (LPCTSTR value)
+	{
+		switch (Lookup(true))
+		{
+			case T_ATTRIBUTE: xmlAddAttr(m_hXml, m_szParam, value); break;
+			case T_NODE: break; // TODO: set node text
+		}
+	}
+
+private:
+	enum PathType
+	{
+		T_UNKNOWN,
+		T_ERROR,
+		T_NODE,
+		T_ATTRIBUTE,
+		T_NODESET
+	};
+
+	__forceinline PathType Lookup(bool bCreate=false)
+	{
+		return (m_type == T_UNKNOWN) ? LookupImpl(bCreate) : m_type;
+	}
+
+	enum LookupState
+	{
+		S_START,
+		S_ATTR_STEP,
+		S_NODE_NAME,
+		S_NODE_OPENBRACKET,
+		S_NODE_INDEX,
+		S_NODE_ATTRNAME,
+		S_NODE_ATTREQUALS,
+		S_NODE_ATTRVALUE,
+		S_NODE_ATTRCLOSEVALUE,
+		S_NODE_CLOSEBRACKET,
+
+		S_FINAL,
+		S_FINAL_ERROR,
+		S_FINAL_ATTR,
+		S_FINAL_NODESET,
+		S_FINAL_NODE
+	};
+
+	struct LookupString
+	{
+		void Begin(const TCHAR *p_) { p = p_; }
+		void End(const TCHAR *p_) { length = p_ - p; }
+		operator bool() { return p ? true : false; }
+
+		const TCHAR *p;
+		int length;
+
+	};
+
+	struct LookupInfo
+	{
+		void Reset() { memset(this, 0, sizeof(*this)); }
+		LookupString nodeName;
+		LookupString attrName;
+		LookupString attrValue;
+		LookupString nodeIndex;
+	};
+
+	void ProcessPath(LookupInfo &info, bool bCreate);
+	PathType LookupImpl(bool bCreate);
+
+	PathType m_type;
+	HXML m_hXml;
+	LPCTSTR m_szPath;
+	LPCTSTR m_szParam;
+};
+
 #endif
