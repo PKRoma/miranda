@@ -220,7 +220,12 @@ public:
 	// Read data
 	__forceinline operator HXML()
 	{
-		return (Lookup() == T_NODE) ? m_hXml : NULL;
+		switch (Lookup())
+		{
+			case T_NODE: return m_hXml;
+			case T_NODESET: return xmlGetNthChild(m_hXml, m_szParam, 1);
+		}
+		return NULL;
 	}
 	__forceinline operator LPCTSTR()
 	{
@@ -228,6 +233,7 @@ public:
 		{
 			case T_ATTRIBUTE: return xmlGetAttrValue(m_hXml, m_szParam);
 			case T_NODE: return xmlGetText(m_hXml);
+			case T_NODESET: return xmlGetText(xmlGetNthChild(m_hXml, m_szParam, 1));
 		}
 		return NULL;
 	}
