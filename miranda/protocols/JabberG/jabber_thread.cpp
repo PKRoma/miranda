@@ -951,37 +951,17 @@ void CJabberProto::OnProcessPubsubEvent( HXML node )
 			return;
 		}
 
-		HXML itemNode = xmlGetChild( itemsNode , "item" );
-		if ( !itemNode )
-			return;
-
-		HXML tuneNode = xmlGetChildByTag( itemNode, "tune", "xmlns", _T(JABBER_FEAT_USER_TUNE));
+		HXML tuneNode = XPath( itemsNode, _T("item/tune[@xmlns='") _T(JABBER_FEAT_USER_TUNE) _T("']") );
 		if ( !tuneNode )
 			return;
 
-		const TCHAR *szArtist = NULL, *szLength = NULL, *szSource = NULL;
-		const TCHAR *szTitle = NULL, *szTrack = NULL, *szUri = NULL;
-		HXML childNode;
-
-		childNode = xmlGetChild( tuneNode , "artist" );
-		if ( childNode && xmlGetText( childNode ) )
-			szArtist = xmlGetText( childNode );
-		childNode = xmlGetChild( tuneNode , "length" );
-		if ( childNode && xmlGetText( childNode ) )
-			szLength = xmlGetText( childNode );
-		childNode = xmlGetChild( tuneNode , "source" );
-		if ( childNode && xmlGetText( childNode ) )
-			szSource = xmlGetText( childNode );
-		childNode = xmlGetChild( tuneNode , "title" );
-		if ( childNode && xmlGetText( childNode ) )
-			szTitle = xmlGetText( childNode );
-		childNode = xmlGetChild( tuneNode , "track" );
-		if ( childNode && xmlGetText( childNode ) )
-			szTrack = xmlGetText( childNode );
-		childNode = xmlGetChild( tuneNode , "uri" );
-		if ( childNode && xmlGetText( childNode ) )
-			szUri = xmlGetText( childNode );
-
+		const TCHAR *szArtist = XPathT( tuneNode, "artist" );
+		const TCHAR *szLength = XPathT( tuneNode, "length" );
+		const TCHAR *szSource = XPathT( tuneNode, "source" );
+		const TCHAR *szTitle = XPathT( tuneNode, "title" );
+		const TCHAR *szTrack = XPathT( tuneNode, "track" );
+		const TCHAR *szUri = XPathT( tuneNode, "uri" );
+	
 		TCHAR szLengthInTime[32];
 		szLengthInTime[0] = _T('\0');
 		if ( szLength ) {

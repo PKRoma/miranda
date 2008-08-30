@@ -505,6 +505,7 @@ XPath::PathType XPath::LookupImpl(bool bCreate)
 		m_szParam = info.attrName.p;
 		return T_ATTRIBUTE;
 	case S_FINAL_NODE:
+		ProcessPath(info, bCreate);
 		return T_NODE;
 	case S_FINAL_NODESET:
 		m_szParam = info.nodeName.p;

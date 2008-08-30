@@ -627,19 +627,11 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 		return;
 	}
 
-	HXML itemNode = xmlGetChild( itemsNode, _T("item"));
-	if (!itemNode) return;
-
-	HXML moodNode = xmlGetChildByTag( itemNode, _T("mood"), _T("xmlns"), _T(JABBER_FEAT_USER_MOOD));
-	if (!moodNode) return;
+	HXML moodNode = XPath( itemsNode, _T("item/mood[@xmlns='") _T(JABBER_FEAT_USER_MOOD) _T("']") );
+	if ( !moodNode ) return;
 
 	LPCTSTR moodType = NULL, moodText = NULL;
-	for ( int i=0; ; i++ )
-	{
-		HXML n = xmlGetChild( moodNode, i );
-		if ( !n )
-			break;
-
+	for ( int i = 0; HXML n = xmlGetChild( moodNode, i ); i++ ) {
 		if ( !_tcscmp( xmlGetName( n ), _T("text")))
 			moodText = xmlGetText( n );
 		else
@@ -996,24 +988,13 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 		return;
 	}
 
-	HXML itemNode = xmlGetChild( itemsNode, "item");
-	if (!itemNode) return;
+	HXML actNode = XPath( itemsNode, _T("item/activity[@xmlns='") _T(JABBER_FEAT_USER_ACTIVITY) _T("']") );
+	if ( !actNode ) return;
 
-	HXML actNode = xmlGetChildByTag( itemNode, "activity", "xmlns", _T(JABBER_FEAT_USER_ACTIVITY));
-	if (!actNode) return;
+	LPCTSTR szText = XPathT( actNode, "text" );
+	LPCTSTR szFirstNode = NULL, szSecondNode = NULL;
 
-	LPCTSTR szFirstNode = NULL, szSecondNode = NULL, szText = NULL;
-
-	HXML textNode = xmlGetChild( actNode, "text");
-	if (textNode && xmlGetText( textNode ))
-		szText = xmlGetText( textNode );
-
-	for ( int i = 0; ; i++ )
-	{
-		HXML n = xmlGetChild( actNode, i );
-		if ( !n )
-			break;
-
+	for ( int i = 0; HXML n = xmlGetChild( actNode, i ); i++ ) {
 		if ( lstrcmp( xmlGetName( n ), _T("text")))
 		{
 			szFirstNode = xmlGetName( n );
