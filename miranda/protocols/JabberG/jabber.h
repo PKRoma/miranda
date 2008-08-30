@@ -50,6 +50,7 @@ Last change by : $Author$
 #include <time.h>
 #include <limits.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_system_cpp.h>

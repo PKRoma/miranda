@@ -316,4 +316,40 @@ private:
 	LPCTSTR m_szParam;
 };
 
+class XPathFmt: public XPath
+{
+public:
+	enum { BUFSIZE = 512 };
+	XPathFmt(HXML hXml, TCHAR *path, ...): XPath(hXml, m_buf)
+	{
+		*m_buf = 0;
+
+		va_list args;
+		va_start(args, path);
+		if (_vsctprintf(path, args) < BUFSIZE)
+			_vsntprintf(m_buf, BUFSIZE, path, args);
+		va_end(args);
+	}
+
+#ifdef _UNICODE
+	XPathFmt(HXML hXml, char *path, ...): XPath(hXml, m_buf)
+	{
+		*m_buf = 0;
+		char buf[BUFSIZE];
+
+		va_list args;
+		va_start(args, path);
+		if (_vscprintf(path, args) < BUFSIZE)
+		{
+			_vsnprintf(buf, BUFSIZE, path, args);
+			MultiByteToWideChar(CP_ACP, 0, buf, -1, m_buf, BUFSIZE);
+		}
+		va_end(args);
+	}
+#endif
+
+private:
+	TCHAR m_buf[BUFSIZE];
+};
+
 #endif
