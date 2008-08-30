@@ -79,6 +79,8 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #if _MSC_VER
 	// uxtheme.h defines
 	#ifndef THEMEAPI
+	    typedef HANDLE HTHEME;
+
 		#define WM_THEMECHANGED		0x031A // when windows changes themes
 		#define BP_PUSHBUTTON		1  // Push Button Type
 		#define PBS_NORMAL			1

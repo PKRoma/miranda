@@ -68,14 +68,9 @@ void SetServiceModePlugin( int idx );
 
 static void ThemeDialogBackground(HWND hwnd)
 {
-	if (IsWinVerXPPlus()) {
-		static HMODULE hThemeAPI = NULL;
-		if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
-		if (hThemeAPI) {
-			HRESULT (STDAPICALLTYPE *MyEnableThemeDialogTexture)(HWND,DWORD) = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
-			if (MyEnableThemeDialogTexture)
-				MyEnableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
-}	}	}
+	if (enableThemeDialogTexture)
+		enableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+}
 
 static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
 {

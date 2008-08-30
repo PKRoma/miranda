@@ -38,22 +38,13 @@ typedef struct {
 	HBITMAP hBitmap;
 	int     pushBtn;
 	int     pbState;
-	HANDLE  hThemeButton;
-	HANDLE  hThemeToolbar;
+	HTHEME  hThemeButton;
+	HTHEME  hThemeToolbar;
 	char	cHot;
 	int     flatBtn;
 	HWND    hwndToolTips;
 } MButtonCtrl;
 
-
-// External theme methods and properties
-static HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
-static HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
-static HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
-static BOOL     (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int);
-static HRESULT  (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT *);
-static HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
-static HRESULT  (WINAPI *MyDrawThemeText)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *);
 
 static CRITICAL_SECTION csTips;
 static SortedList lToolTips;
@@ -106,42 +97,14 @@ void UnloadButtonModule()
 #define BUTTON_POLLID       100
 #define BUTTON_POLLDELAY    50
 
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-
-static int ThemeSupport() {
-	if (IsWinVerXPPlus()) {
-		if (!themeAPIHandle) {
-			themeAPIHandle = GetModuleHandleA("uxtheme");
-			if (themeAPIHandle) {
-				MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-				MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-				MyIsThemeBackgroundPartiallyTransparent = (BOOL (WINAPI *)(HANDLE,int,int))MGPROC("IsThemeBackgroundPartiallyTransparent");
-				MyDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))MGPROC("DrawThemeParentBackground");
-				MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-				MyDrawThemeText = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,LPCWSTR,int,DWORD,DWORD,const RECT *))MGPROC("DrawThemeText");
-			}
-		}
-		// Make sure all of these methods are valid (i would hope either all or none work)
-		if (MyOpenThemeData
-				&&MyCloseThemeData
-				&&MyIsThemeBackgroundPartiallyTransparent
-				&&MyDrawThemeParentBackground
-				&&MyDrawThemeBackground
-				&&MyDrawThemeText) {
-			return 1;
-		}
-	}
-	return 0;
-}
-
 static void DestroyTheme(MButtonCtrl *ctl) {
-	if (ThemeSupport()) {
+	if (closeThemeData) {
 		if (ctl->hThemeButton) {
-			MyCloseThemeData(ctl->hThemeButton);
+			closeThemeData(ctl->hThemeButton);
 			ctl->hThemeButton = NULL;
 		}
 		if (ctl->hThemeToolbar) {
-			MyCloseThemeData(ctl->hThemeToolbar);
+			closeThemeData(ctl->hThemeToolbar);
 			ctl->hThemeToolbar = NULL;
 		}
 	}
@@ -149,10 +112,10 @@ static void DestroyTheme(MButtonCtrl *ctl) {
 
 static void LoadTheme(MButtonCtrl *ctl)
 {
-	if (ThemeSupport()) {
+	if (openThemeData) {
 		DestroyTheme(ctl);
-		ctl->hThemeButton = MyOpenThemeData(ctl->hwnd,L"BUTTON");
-		ctl->hThemeToolbar = MyOpenThemeData(ctl->hwnd,L"TOOLBAR");
+		ctl->hThemeButton = openThemeData(ctl->hwnd,L"BUTTON");
+		ctl->hThemeToolbar = openThemeData(ctl->hwnd,L"TOOLBAR");
 	}
 }
 
@@ -192,10 +155,10 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		if (ctl->flatBtn) {
 			if (ctl->hThemeToolbar) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+                if (isThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+					drawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 				}
-				MyDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
+				drawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
 			}
 			else {
 				HBRUSH hbr;
@@ -227,10 +190,10 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 			// Draw background/border
 			if (ctl->hThemeButton) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-				if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-					MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
+				if (isThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
+					drawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 				}
-				MyDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
+				drawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
 			}
 			else {
 				UINT uState = DFCS_BUTTONPUSH|((ctl->stateId==PBS_HOT)?DFCS_HOT:0)|((ctl->stateId == PBS_PRESSED)?DFCS_PUSHED:0);

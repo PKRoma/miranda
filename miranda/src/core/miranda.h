@@ -31,6 +31,24 @@ extern pfnOpenInputDesktop openInputDesktop;
 typedef HDESK (WINAPI* pfnCloseDesktop)( HDESK );
 extern pfnCloseDesktop closeDesktop;
 
+typedef HTHEME  ( STDAPICALLTYPE *pfnOpenThemeData )( HWND, LPCWSTR );
+typedef HRESULT ( STDAPICALLTYPE *pfnIsThemeBackgroundPartiallyTransparent )( HTHEME, int, int );
+typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeParentBackground )( HWND, HDC, const RECT * );
+typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeBackground )( HTHEME, HDC, int, int, const RECT *, const RECT * );
+typedef HRESULT ( STDAPICALLTYPE *pfnDrawThemeText)( HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *);
+typedef HRESULT ( STDAPICALLTYPE *pfnGetThemeFont)( HTHEME,HDC,int,int,int,LOGFONT *);
+typedef HRESULT ( STDAPICALLTYPE *pfnCloseThemeData )( HTHEME );
+typedef HRESULT ( STDAPICALLTYPE *pfnEnableThemeDialogTexture )( HWND hwnd, DWORD dwFlags );
+
+extern pfnOpenThemeData openThemeData;
+extern pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
+extern pfnDrawThemeParentBackground drawThemeParentBackground;
+extern pfnDrawThemeBackground drawThemeBackground;
+extern pfnDrawThemeText drawThemeText;
+extern pfnGetThemeFont getThemeFont;
+extern pfnCloseThemeData closeThemeData;
+extern pfnEnableThemeDialogTexture enableThemeDialogTexture;
+
 /**** memory.c *************************************************************************/
 
 #ifdef _STATIC

@@ -39,6 +39,15 @@ pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx = NULL;
 pfnOpenInputDesktop openInputDesktop = NULL;
 pfnCloseDesktop closeDesktop = NULL;
 
+pfnOpenThemeData openThemeData;
+pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
+pfnDrawThemeParentBackground drawThemeParentBackground;
+pfnDrawThemeBackground drawThemeBackground;
+pfnDrawThemeText drawThemeText;
+pfnGetThemeFont getThemeFont;
+pfnCloseThemeData closeThemeData;
+pfnEnableThemeDialogTexture enableThemeDialogTexture;
+
 static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles,
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags);
 
@@ -512,7 +521,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
 	DWORD myPid=0;
 	int messageloop=1;
-	HMODULE hUser32;
+	HMODULE hUser32, hThemeAPI;
 
 	hMirandaInst = hInstance;
 
@@ -524,6 +533,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	openInputDesktop = ( pfnOpenInputDesktop )GetProcAddress (hUser32, "OpenInputDesktop");
 	closeDesktop = ( pfnCloseDesktop )GetProcAddress (hUser32, "CloseDesktop");
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
+
+	hThemeAPI = GetModuleHandleA("uxtheme");
+	if ( hThemeAPI )
+	{
+		openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI,"OpenThemeData");
+		isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
+		drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
+		drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI,"DrawThemeBackground");
+		drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
+		getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
+		closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI,"CloseThemeData");
+        enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
+    }
 
 	ParseCommandLine();
 

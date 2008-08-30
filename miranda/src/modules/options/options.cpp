@@ -40,9 +40,6 @@ static int FilterPage = 0;
 static int FilterLoadProgress = 100;
 static int FilterTimerId = 0;
 
-typedef HRESULT (STDAPICALLTYPE *pfnEnableThemeDialogTexture)(HWND,DWORD);
-static pfnEnableThemeDialogTexture MyEnableThemeDialogTexture = NULL;
-
 char * GetPluginNameByInstance( HINSTANCE hInstance );
 
 static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct OptionsPageData * opd, int PageCount);
@@ -168,8 +165,8 @@ static void SaveOptionsTreeState(HWND hdlg)
 
 static void ThemeDialogBackground(HWND hwnd, BOOL tabbed)
 {
-	if (MyEnableThemeDialogTexture)
-		MyEnableThemeDialogTexture(hwnd,(tabbed?0x00000002:0x00000001)|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+	if (enableThemeDialogTexture)
+		enableThemeDialogTexture(hwnd,(tabbed?0x00000002:0x00000001)|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
 }
 
 static int lstrcmpnull(TCHAR *str1, TCHAR *str2)
@@ -243,64 +240,11 @@ static int MatchesFilter(const OptionsPageData *page, TCHAR *szFilterString)
 	return ContainsFilterString(key, szFilterString);
 }
 
-WNDPROC OptionsFilterDefaultProc = NULL;
+static WNDPROC OptionsFilterDefaultProc = NULL;
 
 static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	typedef HANDLE HTHEME;
-
-	static HMODULE hThemeAPI = NULL;
-	static HTHEME _hTheme = NULL;
-
-	static HTHEME ( STDAPICALLTYPE *MyOpenThemeData )( HWND, LPCWSTR ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyIsThemeBackgroundPartiallyTransparent )( HWND, int, int ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyDrawThemeParentBackground )( HTHEME, HDC, const RECT * ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyDrawThemeBackground )( HTHEME, HDC, int, int, const RECT *, const RECT * ) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyDrawThemeText)( HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyGetThemeFont)( HTHEME,HDC,int,int,int,LOGFONT *) = NULL;
-	static HRESULT ( STDAPICALLTYPE *MyCloseThemeData )( HTHEME ) = NULL;
-
-	static BOOL firstMessage = TRUE;
-	if ( firstMessage && message != WM_NCDESTROY )
-	{
-		if ( IsWinVerXPPlus() ) 
-		{
-			if (!hThemeAPI) hThemeAPI = GetModuleHandleA("uxtheme");
-			if ( hThemeAPI )
-			{
-				// OpenThemeData( m_button, L"COMBOBOX");
-				MyOpenThemeData	= (HTHEME (STDAPICALLTYPE*)(HWND, LPCWSTR))GetProcAddress(hThemeAPI,"OpenThemeData");
-				MyIsThemeBackgroundPartiallyTransparent = (HRESULT (STDAPICALLTYPE*)(HWND, int, int))GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
-				MyDrawThemeParentBackground  = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, const RECT * ))GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
-				MyDrawThemeBackground = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, int, int, const RECT *, const RECT *))GetProcAddress(hThemeAPI,"DrawThemeBackground");
-				MyDrawThemeText = (HRESULT (STDAPICALLTYPE*)(HTHEME, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))GetProcAddress(hThemeAPI,"DrawThemeText");
-				MyGetThemeFont = (HRESULT (STDAPICALLTYPE*)(HTHEME,HDC,int,int,int,LOGFONT *))GetProcAddress(hThemeAPI,"GetThemeFont");
-				MyCloseThemeData  = (HRESULT (STDAPICALLTYPE*)( HTHEME ))GetProcAddress(hThemeAPI,"CloseThemeData");
-
-				if (! (MyOpenThemeData && MyIsThemeBackgroundPartiallyTransparent && MyDrawThemeParentBackground &&
-						MyDrawThemeBackground && MyDrawThemeText && MyGetThemeFont&& MyCloseThemeData) )
-				{
-					FreeLibrary( hThemeAPI );
-					hThemeAPI = NULL;
-				}
-			}
-		}
-		firstMessage = FALSE;
-	}
-	if ( message == WM_DESTROY )
-	{
-		if ( hThemeAPI )
-		{
-			FreeLibrary( hThemeAPI );
-			hThemeAPI = NULL;
-		}
-		firstMessage = TRUE;
-	}
-	else if ( message == WM_NCDESTROY )
-	{
-		firstMessage = TRUE;
-	}
-	else if ( message == WM_PAINT )
+	if ( message == WM_PAINT )
 	{
 		if ( GetFocus() == hWnd || GetWindowTextLength( hWnd ) ) 
 			return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
@@ -319,27 +263,27 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 
 		BOOL bDrawnByTheme = FALSE;
 		
-		if ( hThemeAPI ) 
+		if ( openThemeData ) 
 		{
-			HTHEME hTheme = MyOpenThemeData( hWnd, L"EDIT" );
+			HTHEME hTheme = openThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
                 int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
-				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd,  style, ETS_NORMAL) )
-					MyDrawThemeParentBackground( hTheme, hdc, &rc );
-				MyDrawThemeBackground( hTheme, hdc, style, ETS_NORMAL, &rc, &rc );
+				if ( isThemeBackgroundPartiallyTransparent( hTheme,  style, ETS_NORMAL) )
+					drawThemeParentBackground( hWnd, hdc, &rc );
+				drawThemeBackground( hTheme, hdc, style, ETS_NORMAL, &rc, &rc );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
 				WCHAR *w_buf = a2u( buf );
-				MyDrawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_DISABLED, w_buf, -1, 0, 0, &rc );
+				drawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_DISABLED, w_buf, -1, 0, 0, &rc );
 				mir_free( w_buf );
 #else
-				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
+				drawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
 #endif			
 				SelectObject( hdc, oldFont );
 				DeleteObject( hFont );
-				MyCloseThemeData( hTheme );
+				closeThemeData( hTheme );
 				bDrawnByTheme = TRUE;
 			}
 		}
@@ -1309,12 +1253,6 @@ int LoadOptionsModule(void)
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,ShutdownOptionsModule);
 	
 	HookFilterEvents();
-
-	if (IsWinVerXPPlus()) {
-		HMODULE hThemeAPI = GetModuleHandleA("uxtheme");
-		if (hThemeAPI)
-			MyEnableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
-	}
 	return 0;
 }
 
