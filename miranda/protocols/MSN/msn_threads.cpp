@@ -92,7 +92,7 @@ retry:
 			strcpy(info->mGatewayIP, info->mServer);
 		else
 		{
-			if (*info->mGatewayIP == 0 && getStaticString(NULL, "LoginServer", info->mGatewayIP, sizeof(info->mGatewayIP)))
+			if (info->mGatewayIP[0] == 0 && getStaticString(NULL, "LoginServer", info->mGatewayIP, sizeof(info->mGatewayIP)))
 				strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
 		}
 	}
@@ -143,6 +143,7 @@ retry:
                 if(MyOptions.UseGateway && info->gatewayType)
                 {
                     info->gatewayType = 0;
+                    info->mGatewayIP[0] = 0;
                     goto retry;
                 }
                 else
