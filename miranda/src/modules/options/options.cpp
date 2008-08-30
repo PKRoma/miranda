@@ -327,22 +327,22 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HTHEME hTheme = MyOpenThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
-				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd, CP_BACKGROUND, 0) )
+				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd,  EP_EDITTEXT, ETS_ASSIST) )
 					MyDrawThemeParentBackground( hTheme, hdc, &rc );
-				MyDrawThemeBackground( hTheme, hdc, CP_BACKGROUND, 0, &rc, NULL );
+				MyDrawThemeBackground( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, &rc, &rc );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
 				WCHAR *w_buf = a2u( buf );
-				MyDrawThemeText( hTheme, hdc,  CP_BACKGROUND, 0, w_buf, -1, 0, 0, &rc );
+				MyDrawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, w_buf, -1, 0, 0, &rc );
 				mir_free( w_buf );
 #else
 				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_ASSIST, buf, -1, 0, 0, &rc );
 #endif			
-				MyCloseThemeData( hTheme );
-				bDrawnByTheme = TRUE;
 				SelectObject( hdc, oldFont );
 				DeleteObject( hFont );
+				MyCloseThemeData( hTheme );
+				bDrawnByTheme = TRUE;
 			}
 		}
 
@@ -1345,7 +1345,7 @@ void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 		DestroyWindow( hFilterSearchWnd );
 		hFilterSearchWnd = NULL;
 	}
-	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN );
+	RedrawWindow( GetDlgItem(hwnd, IDC_KEYWORD_FILTER ), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE );
 }
 
 static void ExecuteFindFilterStringsTimer( HWND hdlg )
