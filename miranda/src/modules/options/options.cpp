@@ -335,7 +335,7 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 				MyDrawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_DISABLED, w_buf, -1, 0, 0, &rc );
 				mir_free( w_buf );
 #else
-				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_ASSIST, buf, -1, 0, 0, &rc );
+				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
 #endif			
 				SelectObject( hdc, oldFont );
 				DeleteObject( hFont );
