@@ -207,15 +207,19 @@ PageHash GetPluginPageHash(const OptionsPageData *page)
 	return HashFunc(page->pszGroup) + HashFunc(page->pszTitle) + HashFunc(page->pszTab);
 }
 
-static void FindFilterStrings(int enableKeywordFiltering, HWND hWndParent, const OptionsPageData *page)
+static void FindFilterStrings(int enableKeywordFiltering, int current, HWND hWndParent, const OptionsPageData *page)
 {
 	TCHAR pluginName[MAX_PATH];
 	HWND hWnd = 0;
 	if (enableKeywordFiltering)
 	{
-
-		hWnd = CreateDialogIndirectParamA(page->hInst, page->pTemplate, hWndParent, page->dlgProc, page->dwInitParam); //create the options dialog page so we can parse it
-		ShowWindow(hWnd, SW_HIDE); //make sure it's hidden
+        if (current)
+            hWnd = page->hwnd;
+        else
+        {
+		    hWnd = CreateDialogIndirectParamA(page->hInst, page->pTemplate, hWndParent, page->dlgProc, page->dwInitParam); //create the options dialog page so we can parse it
+		    ShowWindow(hWnd, SW_HIDE); //make sure it's hidden
+        }
 	}
 	
 	DWORD key = GetPluginPageHash(page); //get the plugin page hash
@@ -226,7 +230,7 @@ static void FindFilterStrings(int enableKeywordFiltering, HWND hWndParent, const
 	GetDialogStrings(enableKeywordFiltering, key, GetPluginName(page->hInst, pluginName, SIZEOF(pluginName)), hWnd, page->pszGroup, page->pszTitle, page->pszTab, PluginFullName );
 	if ( PluginFullName ) mir_free( PluginFullName ) ;
 	
-	if (enableKeywordFiltering)
+	if (enableKeywordFiltering && !current)
 	{
 		DestroyWindow(hWnd); //destroy the page, we're done with it
 	}
@@ -323,14 +327,14 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HTHEME hTheme = MyOpenThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
-				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd, EP_EDITTEXT, ETS_ASSIST) )
+				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd, CP_BACKGROUND, 0) )
 					MyDrawThemeParentBackground( hTheme, hdc, &rc );
-				HRESULT hr = MyDrawThemeBackground( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, &rc, NULL );
+				MyDrawThemeBackground( hTheme, hdc, CP_BACKGROUND, 0, &rc, NULL );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
 				WCHAR *w_buf = a2u( buf );
-				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_ASSIST, w_buf, -1, 0, 0, &rc );
+				MyDrawThemeText( hTheme, hdc,  CP_BACKGROUND, 0, w_buf, -1, 0, 0, &rc );
 				mir_free( w_buf );
 #else
 				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_ASSIST, buf, -1, 0, 0, &rc );
@@ -1327,8 +1331,7 @@ void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 
 	if ( FilterPage < dat->pageCount )
 	{
-		
-		FindFilterStrings( TRUE, hFilterSearchWnd, &( dat->opd[FilterPage]) );		
+		FindFilterStrings( TRUE, dat->currentPage == FilterPage, hFilterSearchWnd, &( dat->opd[FilterPage]) );		
 	}
 
 	FilterPage++;
@@ -1374,7 +1377,7 @@ static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct Option
 		HINSTANCE inst=opd[i].hInst;
 		
 		if ( !enableKeywordFiltering )
-			FindFilterStrings( enableKeywordFiltering, hDlg, &opd[i]); // only modules name ( fast enougth )
+			FindFilterStrings( enableKeywordFiltering, FALSE, hDlg, &opd[i]); // only modules name ( fast enougth )
 		
 		if (inst==hMirandaInst) continue;
 		for (j=0; j<countKnownInst; j++)
