@@ -534,7 +534,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	closeDesktop = ( pfnCloseDesktop )GetProcAddress (hUser32, "CloseDesktop");
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
 
-	hThemeAPI = GetModuleHandleA("uxtheme");
+	hThemeAPI = LoadLibraryA("uxtheme.dll");
 	if ( hThemeAPI )
 	{
 		openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI,"OpenThemeData");
