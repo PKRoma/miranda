@@ -103,6 +103,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define SP_GRIPPER			3
 		#define EP_EDITTEXT			1 // Edit
 		#define EP_CARET			2
+        #define EP_BACKGROUND       3
 		#define ETS_NORMAL			1
 		#define ETS_HOT				2
 		#define ETS_SELECTED		3

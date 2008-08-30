@@ -327,9 +327,10 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HTHEME hTheme = MyOpenThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
-				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd,  EP_EDITTEXT, ETS_ASSIST) )
+                int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
+				if ( MyIsThemeBackgroundPartiallyTransparent( hWnd,  style, ETS_NORMAL) )
 					MyDrawThemeParentBackground( hTheme, hdc, &rc );
-				MyDrawThemeBackground( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, &rc, &rc );
+				MyDrawThemeBackground( hTheme, hdc, style, ETS_NORMAL, &rc, &rc );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
