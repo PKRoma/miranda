@@ -210,7 +210,7 @@ HXML __fastcall operator<<( HXML node, XQUERY& child );
 class XPath
 {
 public:
-	XPath(HXML hXml, TCHAR *path):
+	__forceinline XPath(HXML hXml, TCHAR *path):
 		m_type(T_UNKNOWN),
 		m_hXml(hXml),
 		m_szPath(path),
@@ -218,7 +218,7 @@ public:
 		{}
 
 	// Read data
-	__forceinline operator HXML()
+	operator HXML()
 	{
 		switch (Lookup())
 		{
@@ -227,29 +227,48 @@ public:
 		}
 		return NULL;
 	}
-	__forceinline operator LPCTSTR()
+	operator LPTSTR()
 	{
 		switch (Lookup())
 		{
-			case T_ATTRIBUTE: return xmlGetAttrValue(m_hXml, m_szParam);
-			case T_NODE: return xmlGetText(m_hXml);
-			case T_NODESET: return xmlGetText(xmlGetNthChild(m_hXml, m_szParam, 1));
+			case T_ATTRIBUTE: return (TCHAR *)xmlGetAttrValue(m_hXml, m_szParam);
+			case T_NODE: return (TCHAR *)xmlGetText(m_hXml);
+			case T_NODESET: return (TCHAR *)xmlGetText(xmlGetNthChild(m_hXml, m_szParam, 1));
 		}
 		return NULL;
 	}
-	__forceinline HXML operator[] (int idx)
+	operator int()
+	{
+		if (TCHAR *s = *this) return _ttoi(s);
+		return 0;
+	}
+	__forceinline bool operator== (TCHAR *str)
+	{
+		return !lstrcmp((LPCTSTR)*this, str);
+	}
+	__forceinline bool operator!= (TCHAR *str)
+	{
+		return lstrcmp((LPCTSTR)*this, str) ? true : false;
+	}
+	HXML operator[] (int idx)
 	{
 		return (Lookup() == T_NODESET) ? xmlGetNthChild(m_hXml, m_szParam, idx) : NULL;
 	}
 
 	// Write data
-	__forceinline void operator= (LPCTSTR value)
+	void operator= (LPCTSTR value)
 	{
 		switch (Lookup(true))
 		{
 			case T_ATTRIBUTE: xmlAddAttr(m_hXml, m_szParam, value); break;
 			case T_NODE: break; // TODO: set node text
 		}
+	}
+	void operator= (int value)
+	{
+		TCHAR buf[16];
+		_itot(value, buf, 10);
+		*this = buf;
 	}
 
 private:
