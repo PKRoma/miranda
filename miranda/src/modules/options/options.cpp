@@ -284,7 +284,6 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 					hThemeAPI = NULL;
 				}
 			}
-
 		}
 		firstMessage = FALSE;
 	}
@@ -296,17 +295,15 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			hThemeAPI = NULL;
 		}
 		firstMessage = TRUE;
-		return OptionsFilterDefaultProc( hWnd, message, wParam, lParam );
 	}
 	else if ( message == WM_NCDESTROY )
 	{
 		firstMessage = TRUE;
-		return OptionsFilterDefaultProc( hWnd, message, wParam, lParam );
 	}
 	else if ( message == WM_PAINT )
 	{
 		if ( GetFocus() == hWnd || GetWindowTextLength( hWnd ) ) 
-			return OptionsFilterDefaultProc( hWnd, message, wParam, lParam );
+			return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
 
 		RECT rc;
 		GetClientRect( hWnd, &rc);
@@ -335,7 +332,7 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
 				WCHAR *w_buf = a2u( buf );
-				MyDrawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_ASSIST, w_buf, -1, 0, 0, &rc );
+				MyDrawThemeText( hTheme, hdc, EP_EDITTEXT, ETS_DISABLED, w_buf, -1, 0, 0, &rc );
 				mir_free( w_buf );
 #else
 				MyDrawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_ASSIST, buf, -1, 0, 0, &rc );
@@ -365,7 +362,7 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 		return 0;
 	}
 
-	return OptionsFilterDefaultProc( hWnd, message, wParam, lParam );
+	return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
 }
 
 
@@ -422,8 +419,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			COMBOBOXINFO cbi;
 			cbi.cbSize = sizeof(COMBOBOXINFO);
 			GetComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
-			OptionsFilterDefaultProc = (WNDPROC)GetWindowLong( cbi.hwndItem, GWL_WNDPROC );
-			SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+			OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
 		}
 
 
@@ -1365,12 +1361,12 @@ static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct Option
 	int index;
 	HINSTANCE* KnownInstances = ( HINSTANCE* )alloca(sizeof(HINSTANCE)*PageCount);
 	int countKnownInst = 0;
-	TCHAR* tszModuleName = ( TCHAR* )alloca(MAX_PATH*sizeof(TCHAR));
 	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_RESETCONTENT, 0,0);
 	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(ALL_MODULES_FILTER));
 	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)NULL);
 	index=SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_ADDSTRING,(WPARAM)0, (LPARAM)TranslateTS(CORE_MODULES_FILTER));
 	SendDlgItemMessage(hDlg, IDC_KEYWORD_FILTER,(UINT) CB_SETITEMDATA,(WPARAM)index, (LPARAM)hMirandaInst);
+	TCHAR* tszModuleName = ( TCHAR* )alloca(MAX_PATH*sizeof(TCHAR));
 	for (i=0; i<PageCount; i++)
 	{		
 		TCHAR * dllName = NULL;
@@ -1386,7 +1382,7 @@ static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct Option
 		if (j!=countKnownInst) continue;
 		KnownInstances[countKnownInst]=inst;
 		countKnownInst++;
-		GetModuleFileName(inst, tszModuleName, MAX_PATH*sizeof(TCHAR));
+		GetModuleFileName(inst, tszModuleName, MAX_PATH);
 		{
 			char * name = GetPluginNameByInstance( inst );
 			if ( name )
