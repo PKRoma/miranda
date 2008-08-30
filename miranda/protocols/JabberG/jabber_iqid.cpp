@@ -70,7 +70,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode, void* userdata )
 						if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
 							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
-						}	
+						}
 					}	
 				}	
 			}	
@@ -85,13 +85,10 @@ void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, void* userdata, CJ
 	BOOL bPrivateStorageSupport = FALSE;
 
 	if ( iqNode && pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
-		HXML pQuery = xmlGetChildByTag( iqNode, "query", "xmlns", _T( JABBER_FEAT_PRIVATE_STORAGE ));
-		if ( pQuery ) {
-			bPrivateStorageSupport = TRUE;
-			HXML pRoster = xmlGetChildByTag( pQuery, "roster", "xmlns", _T( JABBER_FEAT_NESTED_ROSTER_GROUPS ));
-			if ( pRoster && xmlGetText( pRoster ) && *xmlGetText( pRoster ) )
-				szGroupDelimeter = xmlGetText( pRoster );
-		}
+		bPrivateStorageSupport = TRUE;
+		szGroupDelimeter = XPathFmt( iqNode, _T("query[@xmlns='%s']/roster[@xmlns='%s']"), _T(JABBER_FEAT_PRIVATE_STORAGE), _T( JABBER_FEAT_NESTED_ROSTER_GROUPS ) );
+		if ( szGroupDelimeter && !szGroupDelimeter[0] )
+			szGroupDelimeter = NULL; // "" as roster delimeter is not supported :)
 	}
 
 	// global fuckup
@@ -1203,8 +1200,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode, void *userdata )
 void CJabberProto::OnIqResultSetVcard( HXML iqNode, void *userdata )
 {
 	Log( "<iq/> iqIdSetVcard" );
-	const TCHAR* type = xmlGetAttrValue( iqNode, _T("type"));
-	if ( type == NULL )
+	if ( !xmlGetAttrValue( iqNode, _T("type") ))
 		return;
 
 	WindowNotify(WM_JABBER_REFRESH_VCARD);
@@ -1463,8 +1459,8 @@ LBL_ErrFormat:
 void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
-	HXML queryNode, storageNode, nickNode, passNode;
-	const TCHAR* type, *jid;
+	HXML storageNode;//, nickNode, passNode;
+	const TCHAR* type, *jid, *name;
 
 	// RECVED: list of bookmarks
 	// ACTION: refresh bookmarks dialog
@@ -1477,39 +1473,30 @@ void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
 			EnableMenuItems( TRUE );
 		}
 
-		if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
-			if ((storageNode = xmlGetChild( queryNode , "storage" )) != NULL) {
-				ListRemoveList( LIST_BOOKMARK );
-				for ( int i=0; ; i++ ) {
-					HXML itemNode = xmlGetChild( storageNode ,i);
-					if ( !itemNode )
-						break;
+		if ( storageNode = XPathT( iqNode, "query/storage[@xmlns='storage:bookmarks']" )) {
+			ListRemoveList( LIST_BOOKMARK );
+			for ( int i = 0; HXML itemNode = xmlGetChild( storageNode, i ); i++ ) {
+				if ( name = xmlGetName( itemNode)) {
+					if ( !_tcscmp( name, _T("conference") ) && (jid = xmlGetAttrValue( itemNode, _T("jid") ))) {
+						JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
+						item->name = mir_tstrdup( xmlGetAttrValue( itemNode, _T("name")));
+						item->type = mir_tstrdup( _T( "conference" ));
+						item->bUseResource = TRUE;
+						item->nick = mir_tstrdup( XPathT( itemNode, "nick" ));
+						item->password = mir_tstrdup( XPathT( itemNode, "password" ));
 
-					if ( xmlGetName( itemNode ) != NULL) {
-						if ( !lstrcmp( xmlGetName( itemNode ), _T("conference"))) {
-							if (( jid = xmlGetAttrValue( itemNode, _T("jid"))) != NULL ) {
-								JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
-								item->name = mir_tstrdup( xmlGetAttrValue( itemNode, _T("name")));
-								item->type = mir_tstrdup( _T( "conference" ));
-								item->bUseResource = TRUE;
-								
-								const TCHAR* autoJ = xmlGetAttrValue( itemNode, _T("autojoin"));
-								if ( autoJ != NULL )
-									item->bAutoJoin = ( !lstrcmp( autoJ, _T("true")) || !lstrcmp( autoJ, _T("1"))) ? true : false;
-
-								if (( nickNode = xmlGetChild( itemNode , "nick" )) != NULL && xmlGetText( nickNode ) != NULL )
-									replaceStr( item->nick, xmlGetText( nickNode ) );
-								if (( passNode = xmlGetChild( itemNode , "password" )) != NULL && xmlGetText( passNode ) != NULL )
-									replaceStr( item->password, xmlGetText( passNode ) );
-						}	}
-
-						if ( !lstrcmp( xmlGetName( itemNode ), _T("url"))) {
-							if (( jid = xmlGetAttrValue( itemNode, _T("url" ))) != NULL ) {
-								JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
-								item->bUseResource = TRUE;
-								item->name = mir_tstrdup( xmlGetAttrValue( itemNode, _T("name")));
-								item->type = mir_tstrdup( _T("url") );
-			}	}	}	}	}
+						const TCHAR* autoJ = xmlGetAttrValue( itemNode, _T("autojoin"));
+						if ( autoJ != NULL )
+							item->bAutoJoin = ( !lstrcmp( autoJ, _T("true")) || !lstrcmp( autoJ, _T("1"))) ? true : false;
+					}
+					else if ( !_tcscmp( name, _T("url")) && (jid = xmlGetAttrValue( itemNode, _T("url")  ))) {
+						JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );
+						item->bUseResource = TRUE;
+						item->name = mir_tstrdup( xmlGetAttrValue( itemNode, _T("name")));
+						item->type = mir_tstrdup( _T("url") );
+					}
+				}
+			}
 
 			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_REFRESH);
 			info->bBookmarksLoaded = TRUE;
@@ -1587,17 +1574,16 @@ void CJabberProto::OnIqResultLastActivity( HXML iqNode, void *userdata, CJabberI
 
 	time_t lastActivity = -1;
 	if ( pInfo->m_nIqType == JABBER_IQ_TYPE_RESULT ) {
-		HXML queryNode = xmlGetChild( iqNode , "query" );
-		if ( queryNode ) {
-			const TCHAR *seconds = xmlGetAttrValue( queryNode, _T("seconds"));
-			if ( seconds ) {
-				int nSeconds = _ttoi( seconds );
-				if ( nSeconds > 0 )
-					lastActivity = time( 0 ) - nSeconds;
-			}
-			if ( xmlGetText( queryNode ) && *xmlGetText( queryNode ) )
-				replaceStr( r->statusMessage, xmlGetText( queryNode ) );
+		LPCTSTR szSeconds = XPathT( iqNode, "query[@xmlns='jabber:iq:last']/@seconds" );
+		if ( szSeconds ) {
+			int nSeconds = _ttoi( szSeconds );
+			if ( nSeconds > 0 )
+				lastActivity = time( 0 ) - nSeconds;
 		}
+
+		LPCTSTR szLastStatusMessage = XPathT( iqNode, "query[@xmlns='jabber:iq:last']" );
+		if ( szLastStatusMessage ) // replace only if it exists
+			replaceStr( r->statusMessage, szLastStatusMessage );
 	}
 
 	r->idleStartTime = lastActivity;
@@ -1612,23 +1598,21 @@ void CJabberProto::OnIqResultEntityTime( HXML pIqNode, void* pUserdata, CJabberI
 		return;
 
 	if ( pInfo->m_nIqType == JABBER_IQ_TYPE_RESULT ) {
-		HXML pTimeNode = xmlGetChildByTag( pIqNode, "time", "xmlns", _T( JABBER_FEAT_ENTITY_TIME ));
-		if ( pTimeNode ) {
-			HXML pTzo = xmlGetChild( pTimeNode , "tzo");
-			if ( pTzo ) {
-				if ( _tcslen( xmlGetText( pTzo ) ) == 6 ) { // +00:00
-					bool bNegative = xmlGetText( pTzo )[0] == _T('-');
-					int nTz = ( _ttoi( xmlGetText( pTzo )+1 ) * 60 + _ttoi( xmlGetText( pTzo ) + 4 )) / 30;
+		LPCTSTR szTzo = XPathFmt( pIqNode, _T("time[@xmlns='%s']/tzo"), _T( JABBER_FEAT_ENTITY_TIME ));
+		if ( szTzo && _tcslen( szTzo ) == 6 ) {
+			bool bNegative = szTzo[0] == _T('-');
+			int nTz = ( _ttoi( szTzo + 1 ) * 60 + _ttoi( szTzo + 4 )) / 30;
 
-					TIME_ZONE_INFORMATION tzinfo;
-					if ( GetTimeZoneInformation( &tzinfo ) == TIME_ZONE_ID_DAYLIGHT )
-						nTz += ( bNegative ? -tzinfo.DaylightBias : tzinfo.DaylightBias ) / 30;
+			TIME_ZONE_INFORMATION tzinfo;
+			if ( GetTimeZoneInformation( &tzinfo ) == TIME_ZONE_ID_DAYLIGHT )
+				nTz += ( bNegative ? -tzinfo.DaylightBias : tzinfo.DaylightBias ) / 30;
 
-					if ( !bNegative )
-						nTz = 256 - nTz;
-					JSetByte( pInfo->m_hContact, "Timezone", nTz );
-					return;
-	}	}	}	}
+			if ( !bNegative )
+				nTz = 256 - nTz;
+			JSetByte( pInfo->m_hContact, "Timezone", nTz );
+			return;
+		}
+	}
 
 	JDeleteSetting( pInfo->m_hContact, "Timezone" );
 	return;
