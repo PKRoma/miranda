@@ -268,14 +268,14 @@ static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARA
 			HTHEME hTheme = openThemeData( hWnd, L"EDIT" );
 			if ( hTheme )
 			{
-				if ( isThemeBackgroundPartiallyTransparent( hTheme, EP_EDITTEXT, ETS_NORMAL) )
+                int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
+				if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
 					drawThemeParentBackground( hWnd, hdc, &rc );
 
-                DTBGOPTS opts;
-                opts.dwSize = sizeof(DTBGOPTS);
-                opts.dwFlags = DTBG_OMITBORDER;
-				opts.rcClip = rc;
-				drawThemeBackgroundEx( hTheme, hdc, EP_EDITTEXT, ETS_NORMAL, &rc, &opts );
+                DTBGOPTS dtbgopts = { sizeof(DTBGOPTS), DTBG_OMITBORDER };
+				dtbgopts.rcClip = rc;
+
+				drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
 				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
 #ifndef _UNICODE
