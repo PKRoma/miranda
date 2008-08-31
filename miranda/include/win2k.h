@@ -79,8 +79,11 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #if _MSC_VER
 	// uxtheme.h defines
 	#ifndef THEMEAPI
-	    typedef HANDLE HTHEME;
+		typedef HANDLE HTHEME;
+	#endif
 
+	// vssym32.h defines
+	#ifndef EP_EDITTEXT
 		#define WM_THEMECHANGED		0x031A // when windows changes themes
 		#define BP_PUSHBUTTON		1  // Push Button Type
 		#define PBS_NORMAL			1
@@ -101,11 +104,11 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define CBS_CHECKEDNORMAL   5
 		#define CBS_CHECKEDHOT      6
 		#define SP_PANE				1	// STATUS
-		#define	SP_GRIPPERPANE		2
+		#define SP_GRIPPERPANE		2
 		#define SP_GRIPPER			3
 		#define EP_EDITTEXT			1 // Edit
 		#define EP_CARET			2
-        #define EP_BACKGROUND       3
+		#define EP_BACKGROUND       3
 		#define ETS_NORMAL			1
 		#define ETS_HOT				2
 		#define ETS_SELECTED		3
