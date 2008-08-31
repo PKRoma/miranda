@@ -42,13 +42,9 @@ static HXML xmlapiParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
 	XMLResults res;
 	XMLNode result = XMLNode::parseString( str, tag, &res );
 
-	if ( datalen != NULL ) {
-		#if defined( _DEBUG )
-		if ( res.nColumn > 1000000 )
-			DebugBreak();
-		#endif
+	if ( datalen != NULL )
 		datalen[0] += res.nChars;
-	}
+
 	return (tag != NULL || res.error == eXMLErrorNone) ? result.detach() : NULL;
 }
 
