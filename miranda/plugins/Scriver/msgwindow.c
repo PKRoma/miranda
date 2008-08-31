@@ -784,10 +784,11 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
    				pSetLayeredWindowAttributes(hwndDlg, RGB(255,255,255), (BYTE)(255-g_dat->inactiveAlpha), LWA_ALPHA);
 //				RedrawWindow(hwndDlg, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 			}
+            break;
 		}
-		if (LOWORD(wParam) != WA_ACTIVE)
-			break;
-	case WM_MOUSEACTIVATE:
+//		if (LOWORD(wParam) != WA_ACTIVE)
+//			break;
+//	case WM_MOUSEACTIVATE:
 	/*
 		if (!dat->bTopmost) {
 			SetWindowPos(hwndDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
