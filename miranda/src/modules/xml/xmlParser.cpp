@@ -1701,66 +1701,67 @@ static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults)
 // Parse XML and return the root element.
 XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults)
 {
-    if (!lpszXML)
-    {
-        if (pResults)
-        {
-            pResults->error=eXMLErrorNoElements;
-            pResults->nLine=0;
-            pResults->nColumn=0;
-        }
-        return emptyXMLNode;
-    }
+	if (!lpszXML)
+	{
+		if (pResults)
+		{
+			pResults->error=eXMLErrorNoElements;
+			pResults->nLine=0;
+			pResults->nColumn=0;
+		}
+		return emptyXMLNode;
+	}
 
-    XMLNode xnode(NULL,NULL,FALSE);
-    struct XML xml={ lpszXML, lpszXML, 0, 0, eXMLErrorNone, NULL, 0, NULL, 0, TRUE };
+	XMLNode xnode(NULL,NULL,FALSE);
+	struct XML xml={ lpszXML, lpszXML, 0, 0, eXMLErrorNone, NULL, 0, NULL, 0, TRUE };
 
-    // Create header element
-    xnode.ParseXMLElement(&xml);
-    enum XMLError error = xml.error;
-    if (!xnode.nChildNode()) error=eXMLErrorNoXMLTagFound;
-    if ((xnode.nChildNode()==1)&&(xnode.nElement()==1)) xnode=xnode.getChildNode(); // skip the empty node
+	// Create header element
+	xnode.ParseXMLElement(&xml);
+	enum XMLError error = xml.error;
+	if (!xnode.nChildNode()) error=eXMLErrorNoXMLTagFound;
+	if ((xnode.nChildNode()==1)&&(xnode.nElement()==1)) xnode=xnode.getChildNode(); // skip the empty node
 
-    // If no error occurred
-    if ((error==eXMLErrorNone)||(error==eXMLErrorMissingEndTag)||(error==eXMLErrorNoXMLTagFound))
-    {
-        XMLCSTR name=xnode.getName();
-        if (tag&&(*tag)&&((!name)||(xstricmp(name,tag))))
-        {
-            xnode=xnode.getChildNode(tag);
-            if (xnode.isEmpty())
-            {
-                if (pResults)
-                {
-                    pResults->error=eXMLErrorFirstTagNotFound;
-                    pResults->nLine=0;
-                    pResults->nColumn=0;
-                }
-                return emptyXMLNode;
-            }
-        }
-    } else
-    {
-        // Cleanup: this will destroy all the nodes
-        xnode = emptyXMLNode;
-    }
+	// If no error occurred
+	if ((error==eXMLErrorNone)||(error==eXMLErrorMissingEndTag)||(error==eXMLErrorNoXMLTagFound))
+	{
+		XMLCSTR name=xnode.getName();
+		if (tag&&(*tag)&&((!name)||(xstricmp(name,tag))))
+		{
+			xnode=xnode.getChildNode(tag);
+			if (xnode.isEmpty())
+			{
+				if (pResults)
+				{
+					pResults->error=eXMLErrorFirstTagNotFound;
+					pResults->nLine=0;
+					pResults->nColumn=0;
+				}
+				return emptyXMLNode;
+			}
+		}
+	} else
+	{
+		// Cleanup: this will destroy all the nodes
+		xnode = emptyXMLNode;
+	}
 
 
-    // If we have been given somewhere to place results
-    if (pResults)
-    {
-        pResults->error = error;
+	// If we have been given somewhere to place results
+	if (pResults)
+	{
+		pResults->error = error;
 
-        // If we have an error
-        if (error!=eXMLErrorNone)
-        {
-            if (error==eXMLErrorMissingEndTag) xml.nIndex=xml.nIndexMissigEndTag;
-            // Find which line and column it starts on.
-            CountLinesAndColumns(xml.lpXML, xml.nIndex, pResults);
-        }
-		else pResults->nColumn = xml.nIndex+1;
-    }
-    return xnode;
+		// If we have an error
+		if (error!=eXMLErrorNone)
+		{
+			if (error==eXMLErrorMissingEndTag) xml.nIndex=xml.nIndexMissigEndTag;
+			// Find which line and column it starts on.
+			CountLinesAndColumns(xml.lpXML, xml.nIndex, pResults);
+		}
+
+		pResults->nChars = xml.nIndex;
+	}
+	return xnode;
 }
 
 XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)

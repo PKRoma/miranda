@@ -222,7 +222,7 @@ typedef enum XMLElementType
 typedef struct XMLResults
 {
     enum XMLError error;
-    int  nLine,nColumn;
+    int  nLine,nColumn,nChars;
 } XMLResults;
 
 /// Structure for XML clear (unformatted) node (usually comments)
