@@ -491,36 +491,37 @@ nosimpletags:
 #endif
 
 /*
- * format the title bar string for IM chat sessions.
- * the caller must free() the return value
+ * format the title bar string for IM chat sessions using placeholders.
+ * the caller must free() the returned string
  */
-
-#if defined(_UNICODE) || defined(UNICODE)
-
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
-#define NR_VARS 7		// nr. of variables we can handle
 
 extern "C" int MY_DBGetContactSettingTString(HANDLE hContact, char *szModule, char *szSetting, DBVARIANT *dbv);
 extern "C" int MY_DBFreeVariant(DBVARIANT *dbv);
 
-extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
+extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
 {
 	TCHAR *szResult = 0;
 	int length = 0;
 	int i, tempmark = 0, curpos = 0;
 	TCHAR szTemp[512];
 
+#if defined(_UNICODE)
 	std::wstring title(szFormat);
+#else
+	std::string title(szFormat);
+#endif
 
-	while (TRUE) {
-		for (i = 0; i < NR_VARS; i++) {
-			if ((tempmark = title.find(title_variables[i], curpos)) != title.npos)
-				break;
+	while (title[curpos]) {
+		if(title[curpos] != '%') {
+			curpos++;
+			continue;
 		}
-		if (i >= NR_VARS)
+		tempmark = curpos;
+		curpos++;
+		if(title[curpos] == 0)
 			break;
 
-		switch (title[tempmark + 1]) {
+		switch (title[curpos]) {
 			case 'n': {
 				if (szNickname)
 					title.insert(tempmark + 2, szNickname);
@@ -537,8 +538,14 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 			}
 			case 'u': {
 				if (szUin) {
+#if defined(_UNICODE)
 					MultiByteToWideChar(CP_ACP, 0, szUin, -1, szTemp, 500);
 					title.insert(tempmark + 2, szTemp);
+#else
+					_snprintf(szTemp, 512, "%s", szUin);
+					szTemp[511] = 0;
+					title.insert(tempmark + 2, szTemp);
+#endif
 				}
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
@@ -552,8 +559,14 @@ extern "C" WCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 			}
 			case 'p': {
 				if (szProto) {
+#if defined(_UNICODE)
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szTemp, 500);
 					title.insert(tempmark + 2, szTemp);
+#else
+					_snprintf(szTemp, 512, "%s", szProto);
+					szTemp[511] = 0;
+					title.insert(tempmark + 2, szTemp);
+#endif
 				}
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(szTemp);
@@ -637,105 +650,6 @@ extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNi
 }
 */
 
-#else
-
-static TCHAR *title_variables[] = { _T("%n"), _T("%s"), _T("%u"), _T("%p"), _T("%c"), _T("%x"), _T("%m")};
-#define NR_VARS 7
-
-extern "C" char *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const char *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus)
-{
-	TCHAR *szResult = 0;
-	int length = 0;
-	int i, tempmark = 0, curpos = 0;
-
-	std::string title(szFormat);
-
-	while (TRUE) {
-		for (i = 0; i < NR_VARS; i++) {
-			if ((tempmark = title.find(title_variables[i], curpos)) != title.npos)
-				break;
-		}
-		if (i >= NR_VARS)
-			break;
-
-		switch (title[tempmark + 1]) {
-			case 'n': {
-				if (szNickname)
-					title.insert(tempmark + 2, szNickname);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szNickname);
-				break;
-			}
-			case 's': {
-				if (szStatus && szStatus[0])
-					title.insert(tempmark + 2, szStatus);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szStatus);
-				break;
-			}
-			case 'u': {
-				if (szUin)
-					title.insert(tempmark + 2, szUin);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szUin);
-				break;
-			}
-			case 'c': {
-				title.insert(tempmark + 2, szContainer);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szContainer);
-				break;
-			}
-			case 'p': {
-				if (szProto)
-					title.insert(tempmark + 2, szProto);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szProto);
-				break;
-			}
-			case 'x': {
-				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 31) {
-					title.insert(tempmark + 2, xStatusDescr[xStatus - 1]);
-					curpos = tempmark + lstrlen(xStatusDescr[xStatus - 1]);
-				}
-				title.erase(tempmark, 2);
-				break;
-			}
-			case 'm': {
-				char *szFinalStatus = NULL;
-				TCHAR *result = NULL;
-
-				if (wStatus != ID_STATUS_OFFLINE && xStatus > 0 && xStatus <= 32) {
-					if ((result = MY_DBGetContactSettingString(hContact, (char *)szProto, "XStatusName")) != NULL) {
-						szFinalStatus = result;
-					} else
-						szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
-				} else
-					szFinalStatus = (char *)(szStatus && szStatus[0] ? szStatus : "(undef)");
-
-				title.insert(tempmark + 2, szFinalStatus);
-				title.erase(tempmark, 2);
-				curpos = tempmark + lstrlen(szFinalStatus);
-				if (result)
-					free(result);
-				break;
-			}
-			default:
-				title.erase(tempmark, 1);
-				break;
-		}
-	}
-	length = title.length();
-
-	szResult = (TCHAR *)malloc((title.length() + 2) * sizeof(TCHAR));
-	if (szResult) {
-		_tcsncpy(szResult, title.c_str(), length);
-		szResult[length] = 0;
-	}
-	return szResult;
-}
-
-#endif
 
 extern "C" const char *FilterEventMarkersA(char *szText)
 {
