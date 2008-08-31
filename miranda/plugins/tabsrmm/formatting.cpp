@@ -502,7 +502,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 {
 	TCHAR *szResult = 0;
 	int length = 0;
-	int i, tempmark = 0, curpos = 0;
+	int tempmark = 0;
 	TCHAR szTemp[512];
 
 #if defined(_UNICODE)
@@ -511,7 +511,7 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 	std::string title(szFormat);
 #endif
 
-	while (title[curpos]) {
+	for ( size_t curpos = 0; curpos < title.length(); ) {
 		if(title[curpos] != '%') {
 			curpos++;
 			continue;
