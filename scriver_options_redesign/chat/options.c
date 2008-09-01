@@ -1115,7 +1115,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 		odp.position = 910000002;
 		odp.hInstance = g_hInst;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSPOPUP);
-		odp.ptszTitle = LPGENT("Chat");
+		odp.ptszTitle = LPGENT("Group Chat");
 		odp.ptszGroup = LPGENT("Popups");
 		odp.pfnDlgProc = DlgProcOptionsPopup;
 		odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
