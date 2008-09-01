@@ -101,8 +101,6 @@ static CLISTEVENT* MyGetEvent(int iSelection)
 
 LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    BOOL hasTitleBar = wndFrameEventArea ? wndFrameEventArea->TitleBar.ShowTitleBar : 0;
-
     switch(msg) {
 	case WM_CREATE:
 		hwndEventFrame = hwnd;
@@ -125,9 +123,11 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		}
     case WM_NCCALCSIZE:
-        return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
+        return FrameNCCalcSize(hwnd, DefWindowProc, wParam, lParam, 
+			  wndFrameEventArea ? wndFrameEventArea->TitleBar.ShowTitleBar : 0);
     case WM_NCPAINT:
-        return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, hasTitleBar);
+        return FrameNCPaint(hwnd, DefWindowProc, wParam, lParam, 
+			  wndFrameEventArea ? wndFrameEventArea->TitleBar.ShowTitleBar : 0);
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;

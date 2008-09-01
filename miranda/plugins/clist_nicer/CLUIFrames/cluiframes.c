@@ -2030,17 +2030,27 @@ static int CLUIFramesRemoveFrame(WPARAM wParam, LPARAM lParam)
 		return(-1);
 	}
 
-	mir_free(Frames[pos].name);
-	mir_free(Frames[pos].TitleBar.tbname);
-	mir_free(Frames[pos].TitleBar.tooltip);
+	{
+		wndFrame* F = &Frames[pos];
+		if (F->hWnd == g_hwndEventArea)
+			wndFrameEventArea = NULL;
+		else if (F->hWnd == pcli->hwndContactTree)
+			wndFrameCLC = NULL;
+		else if (F->hWnd == g_hwndViewModeFrame)
+			wndFrameViewMode = NULL;
 
-	DestroyWindow(Frames[pos].hWnd);
-	Frames[pos].hWnd = (HWND) - 1;
-	DestroyWindow(Frames[pos].TitleBar.hwnd);
-	Frames[pos].TitleBar.hwnd = (HWND) - 1;
-	DestroyWindow(Frames[pos].ContainerWnd);
-	Frames[pos].ContainerWnd = (HWND) - 1;
-	DestroyMenu(Frames[pos].TitleBar.hmenu);
+		mir_free(F->name);
+		mir_free(F->TitleBar.tbname);
+		mir_free(F->TitleBar.tooltip);
+
+		DestroyWindow(F->hWnd);
+		F->hWnd = (HWND) - 1;
+		DestroyWindow(F->TitleBar.hwnd);
+		F->TitleBar.hwnd = (HWND) - 1;
+		DestroyWindow(F->ContainerWnd);
+		F->ContainerWnd = (HWND) - 1;
+		DestroyMenu(F->TitleBar.hmenu);
+	}
 
 	RemoveItemFromList(pos, &Frames, &nFramescount);
 
