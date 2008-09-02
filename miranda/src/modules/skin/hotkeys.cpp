@@ -920,40 +920,49 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	{
 		LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
 		RECT rc = lpdis->rcItem;
+		int prefix = 65;
+		int width = (lpdis->rcItem.right - lpdis->rcItem.left - prefix) / 3;
 		rc.left += 5;
 
-		if (lpdis->CtlID == IDC_CANVAS) {
+		if (lpdis->CtlID == IDC_CANVAS2) {
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Scope:"), &rc);
+
+			rc.left = prefix + width * 0;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_WINDOWS), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("system global hotkey"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("System"), &rc);
 
-			rc.left += 10;
+			rc.left = prefix + width * 1;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("miranda hotkey (click to toggle)"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Miranda"), &rc);
 
-			rc.left += 40;
+			rc.left = prefix + width * 2;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_WINDOW), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("window hotkey"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Window"), &rc);
 
 			return TRUE;
 		}
 		
-		if (lpdis->CtlID == IDC_CANVAS2) {
+		if (lpdis->CtlID == IDC_CANVAS) {
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Actions:"), &rc);
+			rc.left += 10;
+
+			rc.left = prefix + width * 0;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_UNDO), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("revert change"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Undo"), &rc);
 
-			rc.left += 10;
+			rc.left = prefix + width * 1;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_ADDCONTACT), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("add secondary hotkey"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Add binding"), &rc);
 
-			rc.left += 10;
+			rc.left = prefix + width * 2;
 			DrawIconEx(lpdis->hDC, rc.left, (rc.top+rc.bottom-16)/2, LoadSkinnedIcon(SKINICON_OTHER_DELETE), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 20;
-			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("remove hotkey"), &rc);
+			sttOptionsDrawTextChunk(lpdis->hDC, TranslateT("Remove"), &rc);
 
 			return TRUE;
 		}
@@ -1011,25 +1020,31 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			{
 				enum { MI_CANCEL, MI_CHANGE, MI_SYSTEM, MI_LOCAL, MI_ADD, MI_REMOVE, MI_REVERT };
 
+				MENUITEMINFO mii = {0};
+				mii.cbSize = sizeof(mii);
+				mii.fMask = MIIM_STATE;
+				mii.fState = MFS_DEFAULT;
+
 				HMENU hMenu = CreatePopupMenu();
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_CHANGE, TranslateT("Change binding"));
+				AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_CHANGE, TranslateT("Modify"));
+				SetMenuItemInfo(hMenu, (UINT_PTR)MI_CHANGE, FALSE, &mii);
 				if (item->type != HKT_MANUAL) {
 					AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 					AppendMenu(hMenu, MF_STRING|
 						((item->OptType == HKT_GLOBAL) ? MF_CHECKED : 0),
-						(UINT_PTR)MI_SYSTEM, TranslateT("System global hotkey"));
+						(UINT_PTR)MI_SYSTEM, TranslateT("System scope"));
 					AppendMenu(hMenu, MF_STRING|
 						((item->OptType == HKT_LOCAL) ? MF_CHECKED : 0),
-						(UINT_PTR)MI_LOCAL, TranslateT("Miranda local hotkey"));
+						(UINT_PTR)MI_LOCAL, TranslateT("Miranda scope"));
 				}
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
 				if (!item->rootHotkey)
-					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_ADD, TranslateT("Add secondary binding"));
+					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_ADD, TranslateT("Add binding"));
 				else
-					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_REMOVE, TranslateT("Remove binding"));
+					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_REMOVE, TranslateT("Remove"));
 				if (item->Hotkey != item->OptHotkey) {
 					AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_REVERT, TranslateT("Revert change"));
+					AppendMenu(hMenu, MF_STRING, (UINT_PTR)MI_REVERT, TranslateT("Undo"));
 				}
 
 				switch (TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
