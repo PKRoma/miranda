@@ -1414,7 +1414,7 @@ LBL_InvalidCommand:
 
 			int tNumTokens = sttDivideWords( params, 10, tWords );
 
-			if ( --sttListNumber == 0 )
+			if ( sttListNumber )
 				MSN_SetServerStatus( msnDesiredStatus );
 
 			for ( int i=0; i < tNumTokens; i++ ) {
@@ -1681,6 +1681,9 @@ LBL_InvalidCommand:
 
 			if ( sttDivideWords( params, 3, tWords ) != 3 )
 				goto LBL_InvalidCommand;
+
+			if ( sttListNumber == 0 )
+				MSN_SetServerStatus( msnDesiredStatus );
 
 			if ( trid == tridUrlInbox ) {
 				replaceStr( passport, data.passport );
