@@ -955,7 +955,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 		const TCHAR* str = 0;
 		if ( xNode != NULL && item->nick != NULL ) {
 			itemNode = xmlGetChild( xNode , "item" );
-			HXML reasonNode = xmlGetChild( xNode , "reason" );
+			HXML reasonNode = xmlGetChild( itemNode , "reason" );
 			str = xmlGetAttrValue( itemNode, _T( "jid" ));
 			int iStatus = sttGetStatusCode( xNode );
 			if (iStatus == 301)
