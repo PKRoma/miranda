@@ -71,12 +71,12 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode, void* userdata )
 							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
 						}
-					}	
-				}	
-			}	
+					}
+				}
+			}
 		}
 		OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_SERVERINFO);
-	}	
+	}
 }
 
 void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -98,7 +98,7 @@ void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, void* userdata, CJ
 	// is our default delimiter?
 	if (( !szGroupDelimeter && bPrivateStorageSupport ) || ( szGroupDelimeter && _tcscmp( szGroupDelimeter, _T("\\") )))
 		m_ThreadInfo->send(
-			XmlNodeIq( _T("set"), SerialNext()) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE)) 
+			XmlNodeIq( _T("set"), SerialNext()) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 				<< XCHILD( _T("roster"), _T("\\")) << XATTR( _T("xmlns"), _T(JABBER_FEAT_NESTED_ROSTER_GROUPS)));
 
 	// roster request
@@ -673,7 +673,7 @@ LBL_Ret:
 
 		char* p = strrchr( szAvatarFileName, '.' );
 		if ( p != NULL )
-			lstrcpyA( p+1, szPicType + 6 );	
+			lstrcpyA( p+1, szPicType + 6 );
 	}
 	else GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
 
@@ -1475,7 +1475,9 @@ void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
 
 		if ( storageNode = XPathT( iqNode, "query/storage[@xmlns='storage:bookmarks']" )) {
 			ListRemoveList( LIST_BOOKMARK );
-			for ( int i = 0; HXML itemNode = xmlGetChild( storageNode, i ); i++ ) {
+
+			HXML itemNode;
+			for ( int i = 0; itemNode = xmlGetChild( storageNode, i ); i++ ) {
 				if ( name = xmlGetName( itemNode)) {
 					if ( !_tcscmp( name, _T("conference") ) && (jid = xmlGetAttrValue( itemNode, _T("jid") ))) {
 						JABBER_LIST_ITEM* item = ListAdd( LIST_BOOKMARK, jid );

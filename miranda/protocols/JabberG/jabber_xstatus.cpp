@@ -198,7 +198,7 @@ CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepSe
 {
 	m_btnOk.OnClick = Callback(this, &CJabberDlgPepSimple::btnOk_OnClick);
 	m_cbModes.OnChange = Callback(this, &CJabberDlgPepSimple::cbModes_OnChange);
-	m_cbModes.OnDropdown = 
+	m_cbModes.OnDropdown =
 	m_txtDescription.OnChange = Callback(this, &CJabberDlgPepSimple::global_OnChange);
 
 	m_modes.insert(new CStatusMode(-1, "<none>", LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT), TranslateT("None"), false));
@@ -407,7 +407,7 @@ CPepService::~CPepService()
 void CPepService::Publish()
 {
 	XmlNodeIq iq( _T("set"), m_proto->SerialNext());
-	CreateData( 
+	CreateData(
 		iq << XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
 			<< XCHILD( _T("publish")) << XATTR( _T("node"), m_node )
 				<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
@@ -517,7 +517,7 @@ struct
 {
 	TCHAR	*szName;
 	char* szTag;
-} static g_arrMoods[] = 
+} static g_arrMoods[] =
 {
 	{ LPGENT("None"),			NULL					},
 	{ LPGENT("Afraid"),			"afraid"		},
@@ -627,11 +627,11 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 		return;
 	}
 
-	HXML moodNode = XPath( itemsNode, _T("item/mood[@xmlns='") _T(JABBER_FEAT_USER_MOOD) _T("']") );
+	HXML n, moodNode = XPath( itemsNode, _T("item/mood[@xmlns='") _T(JABBER_FEAT_USER_MOOD) _T("']") );
 	if ( !moodNode ) return;
 
 	LPCTSTR moodType = NULL, moodText = NULL;
-	for ( int i = 0; HXML n = xmlGetChild( moodNode, i ); i++ ) {
+	for ( int i = 0; n = xmlGetChild( moodNode, i ); i++ ) {
 		if ( !_tcscmp( xmlGetName( n ), _T("text")))
 			moodText = xmlGetText( n );
 		else
@@ -767,7 +767,7 @@ struct
 	char *szSecond;
 	TCHAR *szTitle;
 	int iconid;
-} g_arrActivities[] = 
+} g_arrActivities[] =
 {
 	{ "doing_chores", NULL,       _T("Doing chores"),       ACTIVITY_ICON( 0,  0) },
 	{ NULL, "buying_groceries",   _T("buying groceries"),   ACTIVITY_ICON( 0,  1) },
@@ -884,7 +884,7 @@ static int ActivityCheck( LPCTSTR szFirstNode, LPCTSTR szSecondNode )
 
 	if ( nSecond != -1 )
 		return nSecond;
-	
+
 	return nFirst;
 }
 
@@ -994,7 +994,8 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 	LPCTSTR szText = XPathT( actNode, "text" );
 	LPCTSTR szFirstNode = NULL, szSecondNode = NULL;
 
-	for ( int i = 0; HXML n = xmlGetChild( actNode, i ); i++ ) {
+	HXML n;
+	for ( int i = 0; n = xmlGetChild( actNode, i ); i++ ) {
 		if ( lstrcmp( xmlGetName( n ), _T("text")))
 		{
 			szFirstNode = xmlGetName( n );
@@ -1015,7 +1016,7 @@ void CPepActivity::CreateData( HXML n )
 
 	HXML activityNode = n << XCHILDNS( _T("activity"), _T(JABBER_FEAT_USER_ACTIVITY));
 	HXML firstNode = activityNode << XCHILD( _A2T( szFirstNode ));
-			
+
 	if (firstNode && szSecondNode)
 		firstNode << XCHILD( _A2T(szSecondNode));
 
@@ -1124,9 +1125,9 @@ HICON CJabberProto::GetXStatusIcon(int bStatus, UINT flags)
 	return ( flags & LR_SHARED ) ? icon : CopyIcon( icon );
 }
 
-int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam ) 
+int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam )
 {
-	if (m_bJabberOnline && m_bPepSupported && ServiceExists(MS_CLIST_EXTRA_SET_ICON)) 
+	if (m_bJabberOnline && m_bPepSupported && ServiceExists(MS_CLIST_EXTRA_SET_ICON))
 	{
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
 		if ( szProto==NULL || strcmp( szProto, m_szModuleName ))
@@ -1307,7 +1308,7 @@ int __cdecl CJabberProto::OnSetListeningTo( WPARAM wParam, LPARAM lParam )
 
 		SendPepTune( szArtist, szLength ? szLengthInSec : NULL, szSource, szTitle, szTrack, NULL );
 		SetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
-		
+
 		mir_free( szArtist );
 		mir_free( szLength );
 		mir_free( szSource );
@@ -1867,7 +1868,7 @@ void CJabberInfoFrame::PaintNormal(HDC hdc)
 	for (int i = 0; i < m_pItems.getCount(); ++i)
 	{
 		CJabberInfoFrameItem &item = m_pItems[i];
-		
+
 		if (!item.m_bShow)
 		{
 			SetRect(&item.m_rcItem, 0, 0, 0, 0);
