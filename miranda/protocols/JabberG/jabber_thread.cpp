@@ -459,7 +459,7 @@ LBL_FatalError:
 		datalen = 0;
 
 		for ( ;; ) {
-			if ( !info->useZlib || !info->zRecvReady ) {
+			if ( !info->useZlib || info->zRecvReady ) {
 				NETLIBSELECT nls = {0};
 				nls.cbSize = sizeof( NETLIBSELECT );
 				nls.dwTimeout = 60000; // 60 seconds
