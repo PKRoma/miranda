@@ -48,7 +48,7 @@ static iconList[] =
 static int skinIconStatusToResourceId[] = 	{IDI_OFFLINE,	IDI_ONLINE,	IDI_AWAY,	IDI_INVISIBLE};
 static int skinStatusToGGStatus[] = 		{0,				1,			2,			3};
 
-void gg_icolib_init()
+void gg_icolib_init(GGPROTO *gg)
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
@@ -59,11 +59,11 @@ void gg_icolib_init()
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate(GG_PROTONAME);
+	sid.pszSection = Translate(GGDEF_PROTONAME);
 
 	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++) {
 		char szSettingName[100];
-		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GG_PROTO, iconList[i].szName);
+		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, iconList[i].szName);
 		sid.pszName = szSettingName;
 		sid.pszDescription = Translate(iconList[i].szDescr);
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -90,7 +90,7 @@ HANDLE GetIconHandle(int iconId)
 	return NULL;
 }
 
-void gg_refreshblockedicon()
+void gg_refreshblockedicon(GGPROTO *gg)
 {
 	// Store blocked icon
 	char strFmt1[MAX_PATH];
@@ -110,9 +110,9 @@ void gg_refreshblockedicon()
 	}
 }
 
-int gg_iconschanged(WPARAM wParam, LPARAM lParam)
+int gg_iconschanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	gg_refreshblockedicon();
+	gg_refreshblockedicon(gg);
 
 	return 0;
 }

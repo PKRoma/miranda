@@ -20,33 +20,51 @@
 
 #include "gg.h"
 
-static int hTimer = 0;
+/* NOTE: Eventhough SetTimer seems to support UINT_PTR for idEvent, it seems that TimerProc
+ * does not get full pointer but just 2 byte lower bytes.
+ */
+#define MAX_TIMERS 8
+GGPROTO *g_timers[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
-	if (gg_isonline())
+	GGPROTO *gg = g_timers[idEvent];
+	if (gg_isonline(gg))
 	{
 #ifdef DEBUGMODE
 		gg_netlog("Sending keep-alive");
 #endif
-		gg_ping(ggThread->sess);
+		gg_ping(gg->sess);
 	}
 }
 
-void gg_keepalive_init()
+void gg_keepalive_init(GGPROTO *gg)
 {
-	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, GG_KEYDEF_KEEPALIVE)) {
-		hTimer = SetTimer(NULL, 0, 1000 * 60, gg_keepalive);
+	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, GG_KEYDEF_KEEPALIVE))
+	{
+		int i;
+		for(i = 0; i < MAX_TIMERS && g_timers[i] == NULL; i++);
+		if(i < MAX_TIMERS)
+		{
+			gg->timer = SetTimer(NULL, i, 1000 * 60, gg_keepalive);
+			g_timers[i] = gg;
+		}
 	}
 }
 
-void gg_keepalive_destroy()
+void gg_keepalive_destroy(GGPROTO *gg)
 {
 #ifdef DEBUGMODE
 	gg_netlog("gg_destroykeepalive(): Killing Timer");
 #endif
-	if (hTimer) {
-		KillTimer(NULL, hTimer);
+	if (gg->timer)
+	{
+		int i;
+		KillTimer(NULL, gg->timer);
+		for(i = 0; i < MAX_TIMERS; i++)
+			if(g_timers[i] == gg)
+				g_timers[i] = NULL;
+		gg->timer = 0;
 #ifdef DEBUGMODE
 		gg_netlog("gg_destroykeepalive(): Killed Timer");
 #endif

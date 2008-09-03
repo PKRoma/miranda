@@ -135,12 +135,10 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 static HWND hwndGeneral = NULL, hwndConference = NULL, hwndAdvanced = NULL;
 static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = NULL;
 
-int gg_options_init(WPARAM wParam, LPARAM lParam)
+int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	char title[64];
 	OPTIONSDIALOGPAGE odp = { 0 };
 	HMODULE	hUxTheme = NULL;
-	strncpy(title, GG_PROTONAME, sizeof(title));
 
 	if(IsWinVerXPPlus())
 	{
@@ -153,9 +151,10 @@ int gg_options_init(WPARAM wParam, LPARAM lParam)
 	odp.hInstance = hInstance;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_MAIN);
 	odp.pszGroup = LPGEN("Network");
-	odp.pszTitle = title;
+	odp.pszTitle = GG_PROTONAME;
 	odp.pfnDlgProc = gg_mainoptsdlgproc;
 	odp.flags = ODPF_BOLDGROUPS;
+	odp.dwInitParam = (LPARAM)gg;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
@@ -198,6 +197,7 @@ static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
 	RECT rcClient;
 	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
 	int iPages = 0;
+	GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	tci.mask = TCIF_PARAM | TCIF_TEXT;
 
@@ -205,7 +205,7 @@ static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
 	TabCtrl_DeleteAllItems(hwndTab);
 
 	if(!hwndGeneral)
-		hwndGeneral = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_GENERAL), hwnd, gg_genoptsdlgproc);
+		hwndGeneral = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_GENERAL), hwnd, gg_genoptsdlgproc, (LPARAM)gg);
 
 	tci.lParam = (LPARAM)hwndGeneral;
 	tci.pszText = Translate("General");
@@ -213,7 +213,7 @@ static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
 	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8,rcClient.bottom - 29, 1);
 
 	if(!hwndConference)
-		hwndConference = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_CONFERENCE), hwnd, gg_confoptsdlgproc);
+		hwndConference = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_CONFERENCE), hwnd, gg_confoptsdlgproc, (LPARAM)gg);
 
 	tci.lParam = (LPARAM)hwndConference;
 	tci.pszText = Translate("Conference");
@@ -221,7 +221,7 @@ static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
 	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8, rcClient.bottom - 29, 1);
 
 	if(!hwndAdvanced)
-		hwndAdvanced = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED), hwnd, gg_advoptsdlgproc);
+		hwndAdvanced = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED), hwnd, gg_advoptsdlgproc, (LPARAM)gg);
 
 	if(iExpert)
 	{
@@ -259,6 +259,8 @@ static BOOL CALLBACK gg_mainoptsdlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		case WM_INITDIALOG:
 		{
 			int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
+			GGPROTO *gg = (GGPROTO *)lParam;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lParam);
 			iInit = TRUE;
 			gg_setoptionsdlgtotype(hwnd, iExpert);
 			iInit = FALSE;
@@ -333,6 +335,8 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			DBVARIANT dbv;
 			DWORD num;
+			GGPROTO *gg = (GGPROTO *)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 
 			TranslateDialogDefault(hwndDlg);
 			if (num = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
@@ -364,7 +368,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			CheckDlgButton(hwndDlg, IDC_FRIENDSONLY, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FRIENDSONLY, GG_KEYDEF_FRIENDSONLY));
 			CheckDlgButton(hwndDlg, IDC_SHOWINVISIBLE, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWINVISIBLE, GG_KEYDEF_SHOWINVISIBLE));
 			CheckDlgButton(hwndDlg, IDC_LEAVESTATUSMSG, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, GG_KEYDEF_LEAVESTATUSMSG));
-			if(ggGCEnabled)
+			if(gg->gc_enabled)
 				CheckDlgButton(hwndDlg, IDC_IGNORECONF, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF));
 			else
 			{
@@ -427,6 +431,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				{
 					char email[128];
 					uin_t uin;
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					GetDlgItemText(hwndDlg, IDC_UIN, email, sizeof(email));
 					uin = atoi(email);
 					GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
@@ -441,17 +446,17 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						Translate("Your password will be sent to your registration e-mail.\nDo you want to continue ?"),
 						GG_PROTONAME,
 						MB_OKCANCEL | MB_ICONQUESTION) == IDOK)
-							gg_remindpassword(uin, email);
+							gg_remindpassword(gg, uin, email);
 					return FALSE;
 				}
 				case IDC_CREATEACCOUNT:
 				case IDC_REMOVEACCOUNT:
-					if(gg_isonline())
+					if(gg_isonline((GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA)))
 					{
 						if(MessageBox(
 							NULL,
 							Translate("You should disconnect before making any permanent changes with your account.\nDo you want to disconnect now ?"),
-							GG_PROTONAME,
+							((GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA))->proto.m_szModuleName,
 							MB_OKCANCEL | MB_ICONEXCLAMATION) == IDCANCEL)
 							break;
 						else
@@ -464,12 +469,14 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						GGUSERUTILDLGDATA dat;
 						int ret;
 						char pass[128], email[128];
+						GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 						GetDlgItemText(hwndDlg, IDC_UIN, pass, sizeof(pass));
 						dat.uin = atoi(pass);
 						GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
 						GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
 						dat.pass = pass;
 						dat.email = email;
+						dat.gg = gg;
 						if(LOWORD(wParam) == IDC_CREATEACCOUNT)
 						{
 							dat.mode = GG_USERUTIL_CREATE;
@@ -495,7 +502,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						{
 							DBVARIANT dbv;
 							DWORD num;
-
+							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 							// Show reload required window
 							ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
 
@@ -552,6 +559,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case PSN_APPLY:
 				{
 					char str[128];
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 					// Write Gadu-Gadu number
 					GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
@@ -568,7 +576,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_FRIENDSONLY, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_FRIENDSONLY));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWINVISIBLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWINVISIBLE));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LEAVESTATUSMSG));
-					if(ggGCEnabled)
+					if(gg->gc_enabled)
 						DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORECONF));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IMGRECEIVE));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWNOTONMYLIST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWNOTONMYLIST));
@@ -608,6 +616,8 @@ static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_INITDIALOG:
 		{
 			DWORD num;
+			GGPROTO *gg = (GGPROTO *)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 
 			TranslateDialogDefault(hwndDlg);
 			SendDlgItemMessage(hwndDlg, IDC_GC_POLICY_TOTAL, CB_ADDSTRING, 0, (LPARAM)Translate("Allow"));
@@ -649,6 +659,7 @@ static BOOL CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case PSN_APPLY:
 				{
 					char str[128];
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 					// Write groupchat policy
 					DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_GC_POLICY_TOTAL,
@@ -681,6 +692,8 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			DBVARIANT dbv;
 			DWORD num;
+			GGPROTO *gg = (GGPROTO *)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 
 			TranslateDialogDefault(hwndDlg);
 			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv)) {
@@ -756,6 +769,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case PSN_APPLY:
 				{
 					char str[512];
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_KEEPALIVE));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWCERRORS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWCERRORS));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ARECONNECT));
@@ -793,7 +807,7 @@ static BOOL CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 // Info Page : Data
 struct GGDETAILSDLGDATA
 {
-	HINSTANCE hInstIcmp;
+	GGPROTO *gg;
 	HANDLE hContact;
 	int disableUpdate;
 	int updating;
@@ -804,16 +818,19 @@ struct GGDETAILSDLGDATA
 static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct GGDETAILSDLGDATA *dat;
-	dat = (struct GGDETAILSDLGDATA *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct GGDETAILSDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch(msg)
 	{
 		case WM_INITDIALOG:
+		{
+			GGPROTO *gg = (GGPROTO *)lParam;
 			TranslateDialogDefault(hwndDlg);
 			dat = (struct GGDETAILSDLGDATA *)malloc(sizeof(struct GGDETAILSDLGDATA));
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
 			dat->hContact=(HANDLE)lParam;
 			dat->disableUpdate = FALSE;
 			dat->updating = FALSE;
+			dat->gg = gg;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			// Add genders
 			if(!dat->hContact)
 			{
@@ -822,6 +839,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 2
 			}
 			return TRUE;
+		}
 
 		case WM_NOTIFY:
 			switch (((LPNMHDR)lParam)->idFrom)
@@ -833,6 +851,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						{
 							char *szProto;
 							HANDLE hContact = (HANDLE)((LPPSHNOTIFY)lParam)->lParam;
+							GGPROTO *gg = dat->gg;
 
 							// Show updated message
 							if(dat && dat->updating)
@@ -942,7 +961,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				// Run update
 				gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
-				gg_pubdir50(ggThread->sess, req);
+				gg_pubdir50(dat->gg->sess, req);
 				dat->updating = TRUE;
 
 				gg_pubdir50_free(req);
@@ -962,11 +981,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			break;
 		case WM_DESTROY:
-			if(dat)
-			{
-				if(dat->hInstIcmp!=NULL) FreeLibrary(dat->hInstIcmp);
-				free(dat);
-			}
+			if(dat) free(dat);
 			break;
 	}
 	return FALSE;
@@ -974,7 +989,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 ////////////////////////////////////////////////////////////////////////////////
 // Info Page : Init
-int gg_details_init(WPARAM wParam, LPARAM lParam)
+int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char* szProto;
 	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
@@ -991,7 +1006,7 @@ int gg_details_init(WPARAM wParam, LPARAM lParam)
 		odp.pfnDlgProc = gg_detailsdlgproc;
 		odp.position = -1900000000;
 		odp.pszTemplate = ((HANDLE)lParam != NULL) ? MAKEINTRESOURCE(IDD_INFO_GG) : MAKEINTRESOURCE(IDD_CHINFO_GG);
-		odp.pszTitle = GG_PROTONAME;
+		odp.ptszTitle = gg->proto.m_tszUserName;
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 
@@ -999,7 +1014,7 @@ int gg_details_init(WPARAM wParam, LPARAM lParam)
 	if((HANDLE)lParam == NULL)
 	{
 		CCSDATA ccs; ZeroMemory(&ccs, sizeof(ccs));
-		gg_getinfo((WPARAM) 0, (LPARAM) &ccs);
+		gg_getinfo((PROTO_INTERFACE *)gg, NULL, 0);
 	}
 
 	return 0;
