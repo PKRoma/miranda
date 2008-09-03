@@ -26,7 +26,7 @@ Bugfixes:
  - Improve SSL connection timeout handling
  - ICQ: Minor encoding fix
  - MSN: Fixed file transfer with MSN Mobile
- - MSN: COnnection failure fixes
+ - MSN: Connection failure fixes
  - MSN: Fix mail login
 
 
