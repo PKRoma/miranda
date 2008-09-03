@@ -20,6 +20,16 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.9
+Bugfixes:
+ - Fix possible crashes
+ - Improve SSL connection timeout handling
+ - ICQ: Minor encoding fix
+ - MSN: Fixed file transfer with MSN Mobile
+ - MSN: COnnection failure fixes
+ - MSN: Fix mail login
+
+
 * New in 0.7.8
 Enhancements:
  - SSL library included to provide ssl support
