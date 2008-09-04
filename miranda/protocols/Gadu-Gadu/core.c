@@ -1192,7 +1192,7 @@ void gg_notifyall()
 	/* FIXME: If we have nothing on the list but we omit gg_notify_ex we have problem with receiving any contacts */
 	if(count == 0)
 	{
-		if(gg_isonline(gg)) gg_notify_ex(gg->sess, NULL, NULL, 0);
+		if(gg_isonline()) gg_notify_ex(ggThread->sess, NULL, NULL, 0);
 		return;
 	}
 	uins = calloc(sizeof(uin_t), count);
