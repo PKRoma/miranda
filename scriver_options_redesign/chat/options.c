@@ -97,13 +97,16 @@ static struct branch_t branch1[] = {
     {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
 };
 static struct branch_t branch2[] = {
+	{LPGENT("Show icons"), "IconFlags", 	GC_EVENT_TOPIC|GC_EVENT_JOIN|GC_EVENT_QUIT|
+				GC_EVENT_MESSAGE|GC_EVENT_ACTION|GC_EVENT_HIGHLIGHT|GC_EVENT_PART|
+				GC_EVENT_KICK|GC_EVENT_NOTICE|GC_EVENT_NICK|GC_EVENT_INFORMATION|GC_EVENT_ADDSTATUS, 0, NULL},
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
 	{LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
 	{LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
-	{LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
+	{LPGENT("Limit user names to 20 characters"), "LogLimitNames", 0,1, NULL},
 	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
-	{LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
+	{LPGENT("Strip colors from messages"), "StripFormatting", 0, 0, NULL},
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
 };
 static struct branch_t branch3[] = {
@@ -118,21 +121,6 @@ static struct branch_t branch3[] = {
 	{LPGENT("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0, NULL},
 	{LPGENT("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1, NULL},
 	{LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
-};
-
-static struct branch_t branch4[] = {
-	{LPGENT("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{LPGENT("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1, NULL},
-	{LPGENT("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0, NULL},
-	{LPGENT("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{LPGENT("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0, NULL},
-	{LPGENT("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{LPGENT("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0, NULL},
-	{LPGENT("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0, NULL},
-	{LPGENT("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{LPGENT("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0, NULL},
-	{LPGENT("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{LPGENT("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
 static struct branch_t branch5[] = {
@@ -744,7 +732,6 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch1, sizeof(branch1) / sizeof(branch1[0]));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch4, sizeof(branch4) / sizeof(branch4[0]));
 						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
 						if(g_dat->popupInstalled)
 							SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
@@ -785,7 +772,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 {
 	static HTREEITEM hListHeading2= 0;
 	static HTREEITEM hListHeading3= 0;
-	static HTREEITEM hListHeading4= 0;
 	switch (uMsg) {
 	case WM_INITDIALOG:
 	{
@@ -813,10 +799,8 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 		hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
 		hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), DBGetContactSettingByte(NULL, "Chat", "Branch3Exp", 0)?TRUE:FALSE);
-		hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Icons to display in the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch4Exp", 0)?TRUE:FALSE);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x0000);
 		SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 
 		break;
@@ -824,7 +808,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 	case OPT_FIXHEADINGS:
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2);
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3);
-		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
 		break;
 	case WM_COMMAND:
 		if(	(LOWORD(wParam)		  == IDC_CHAT_INSTAMP
@@ -891,8 +874,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2);
 			else if (tvi.hItem == hListHeading3)
 				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3);
-			else if (tvi.hItem == hListHeading4)
-				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
 			else
 				PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -997,7 +978,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
 			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
-			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch4, sizeof(branch4) / sizeof(branch4[0]));
 
 			mir_free(pszText);
 
@@ -1012,8 +992,6 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			DBWriteContactSettingByte(NULL, "Chat", "Branch2Exp", b);
 			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
 			DBWriteContactSettingByte(NULL, "Chat", "Branch3Exp", b);
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
-			DBWriteContactSettingByte(NULL, "Chat", "Branch4Exp", b);
 		}
 		break;
 	}
