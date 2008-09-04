@@ -20,6 +20,12 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.10
+Bugfixes:
+ - Gadu-Gadu: Fix issue adding contacts with empty list
+ - MSN: Error 800 issue in last release
+
+
 * New in 0.7.9
 Bugfixes:
  - Fix possible crashes
