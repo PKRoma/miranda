@@ -392,7 +392,7 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, HXML reason )
 
 		m_ThreadInfo->send(
 			XmlNode( _T("presence")) << XATTR( _T("to"), szPresenceTo ) << XATTR( _T("type"), _T("unavailable")) 
-				<< XATTR( _T("status"), szMessage));
+				<< XCHILD( _T("status"), szMessage));
 
 		ListRemove( LIST_CHATROOM, item->jid );
 }	}
