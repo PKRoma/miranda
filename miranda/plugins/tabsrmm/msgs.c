@@ -867,12 +867,12 @@ static int TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 static int TypingMessage(WPARAM wParam, LPARAM lParam)
 {
 	HWND	hwnd = 0;
-	int		issplit = 1, foundWin = 0;
+	int		issplit = 1, foundWin = 0, preTyping = 0;
 	struct	ContainerWindowData *pContainer = NULL;
 	BOOL	fShowOnClist = TRUE;
 
 	if ((hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
-		SendMessage(hwnd, DM_TYPING, 0, lParam);
+		preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam);
 
 	if (hwnd && IsWindowVisible(hwnd))
 		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
@@ -895,8 +895,8 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	else
 		fShowOnClist = FALSE;
 
-	if(!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)){
-		if (lParam)
+	if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (lParam != 0)){
+		if (lParam && preTyping)
 			SkinPlaySound("TNStart");
 		else
 			SkinPlaySound("TNStop");
