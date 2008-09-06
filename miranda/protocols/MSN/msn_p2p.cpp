@@ -102,7 +102,7 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 
 	newThread->startThread( &CMsnProto::p2p_filePassiveThread, this );
 
-	char hostname[256];
+	char hostname[256] = "";
 
 	gethostname( hostname, sizeof( hostname ));
 	PHOSTENT he = gethostbyname( hostname );

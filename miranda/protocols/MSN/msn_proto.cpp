@@ -1135,13 +1135,13 @@ int __cdecl CMsnProto::SetStatus( int iNewStatus )
 		int ps = getStaticString( NULL, "Password", szPassword, sizeof( szPassword ));
 		if (ps != 0  || *szPassword == 0) {
 			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-			m_iDesiredStatus = m_iStatus;
+			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
 		 
 		if (*MyOptions.szEmail == 0) {
 			SendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
-			m_iDesiredStatus = m_iStatus;
+			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
 
