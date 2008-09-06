@@ -10,7 +10,7 @@ char* strip_html(char *src)
 	char *ptr;
 	char *ptrl;
 	char *rptr;
-	char* dest = strldup(src, strlen(src));
+	char* dest = strldup(src);
 	while ((ptr = strstr(dest,"<P>")) != NULL || (ptr = strstr(dest, "<p>")) != NULL) {
 		memmove(ptr + 4, ptr + 3, strlen(ptr + 3) + 1);
 		memcpy(ptr, "\r\n\r\n", 4);
@@ -68,7 +68,7 @@ char* CAimProto::strip_special_chars(char *src, HANDLE hContact)
 	if (!getString(hContact, AIM_KEY_SN, &dbv))
 	{
 		char *ptr;
-		char* dest=strldup(src,lstrlenA(src));
+		char* dest=strldup(src);
 		while ((ptr = strstr(dest, "%n")) != NULL)
 		{
 			int addr=ptr-dest;
@@ -87,7 +87,7 @@ char* CAimProto::strip_special_chars(char *src, HANDLE hContact)
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 {
 	char *ptr;
-	char* dest=strldup(src, strlen(src));
+	char* dest=strldup(src);
 	while ((ptr = strstr(dest, "<")) != NULL)
 	{
 		int addr=ptr-dest;
@@ -109,7 +109,7 @@ char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
 
 char* strip_linebreaks(char *src)
 {
-	char* dest=strldup(src,lstrlenA(src));
+	char* dest=strldup(src);
 	char *ptr;
 	while ((ptr = strstr(dest, "\r")) != NULL)
 	{
@@ -132,7 +132,7 @@ char* html_to_bbcodes(char *src)
 	char *ptr;
 	char *ptrl;
 	char *rptr;
-	char* dest = strldup(src, strlen(src));
+	char* dest = strldup(src);
 	while ((ptr = strstr(dest, "<B>")) != NULL || (ptr = strstr(dest, "<b>")) != NULL)
 	{
 		*ptr = '[';
@@ -385,7 +385,7 @@ char* bbcodes_to_html(const char *src)
 {
 	char *ptr;
 	char *rptr;
-	char* dest=strldup(src,strlen(src));
+	char* dest=strldup(src);
 	while ((ptr = strstr(dest, "[b]")) != NULL) {
 		*ptr = '<';
 		*(ptr+1) = 'b';

@@ -15,9 +15,9 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+		file=strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
-		wd=strldup(file,lstrlenA(file));
+		wd=strldup(file);
 		char* swd=strrchr(wd,'\\');
 		*swd='\0';
 		size=getDword(hContact, AIM_KEY_FS, 0);
@@ -188,8 +188,8 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
-		pfts.workingDir=strldup(file,lstrlenA(file));
+		file=strldup(dbv.pszVal);
+		pfts.workingDir=strldup(file);
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff

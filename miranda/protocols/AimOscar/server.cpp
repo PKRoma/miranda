@@ -818,7 +818,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						char* tmp = mir_utf8encodeW(wbuf);
 						delete[] wbuf;
 
-						msg_buf = strldup(tmp, strlen(tmp));
+						msg_buf = strldup(tmp);
 						mir_free(tmp);
 					}
 					else

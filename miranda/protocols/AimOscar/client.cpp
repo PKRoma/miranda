@@ -293,7 +293,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 	int msg_size=0;
 	if(msg!=NULL)
 	{
-		html_msg=strldup(msg,lstrlenA(msg));
+		html_msg=strldup(msg);
 		setDword( AIM_KEY_LA, (DWORD)time(NULL));
 		char* smsg=strip_carrots(html_msg);
 		delete[] html_msg;

@@ -91,7 +91,7 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 						if ( !getString( hContact, AIM_KEY_SN, &dbv)) {
 							if ( stage == 1 && sender ) {
 								LOG("Stage 1 Proxy ft and we are the sender.");
-								char* sn=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+								char* sn=strldup(dbv.pszVal);
 								DBFreeVariant(&dbv);
 								char vip[20];
 								char *file, *descr;
@@ -99,10 +99,10 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 								long_ip_to_char_ip(*ip,vip);
 								setString( hContact, AIM_KEY_IP, vip );
 								if ( !getString( hContact, AIM_KEY_FN, &dbv )) {
-									file = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+									file = strldup(dbv.pszVal);
 									DBFreeVariant(&dbv);
 									if ( !getString( hContact, AIM_KEY_FD, &dbv )) {
-										descr = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+										descr = strldup(dbv.pszVal);
 										DBFreeVariant(&dbv);
 										size = getDword(hContact, AIM_KEY_FS, 0);
 										if ( !size )

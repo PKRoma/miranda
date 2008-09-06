@@ -809,7 +809,7 @@ void long_ip_to_char_ip(unsigned long host, char* ip)
 }
 unsigned long char_ip_to_long_ip(char* ip)
 {
-	char* ip2=strldup(ip,lstrlenA(ip));
+	char* ip2=strldup(ip);
 	char* c=strtok(ip2,".");
 	char chost[5];
 	for(int i=0;i<4;i++)
@@ -984,7 +984,7 @@ void string_to_bytes(char* string, char* bytes)
 unsigned short string_to_bytes_count(char* string)
 {
 	unsigned short i=1;
-	char* string2=strldup(string,lstrlenA(string));
+	char* string2=strldup(string);
 	strtok(string2,";");
 	while(strtok(NULL,";"))
 		i++;
@@ -996,7 +996,7 @@ char* getSetting(HANDLE &hContact, const char* module, const char* setting)
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(hContact, module, setting, &dbv))
 	{
-		char* store=strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+		char* store=strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 		return store;
 	}

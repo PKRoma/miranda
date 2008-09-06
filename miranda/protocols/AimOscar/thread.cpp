@@ -33,7 +33,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 	proxy_ip = verified_ip + lstrlenA(verified_ip) + 1;
 	DBVARIANT dbv;
 	if ( !getString(*hContact, AIM_KEY_SN, &dbv)) {
-		sn = strldup(dbv.pszVal,lstrlenA(dbv.pszVal));
+		sn = strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else return;
