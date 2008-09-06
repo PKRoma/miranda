@@ -348,7 +348,7 @@ void __cdecl CAimProto::basic_search_ack_success( void* p )
 {
 	if ( char *sn = normalize_name(( char* )p )) { // normalize it
 		PROTOSEARCHRESULT psr;
-		if (lstrlenA(sn) > 32) {
+		if (strlen(sn) > 32) {
 			ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 			delete[] sn;
 			delete[] p;
@@ -370,7 +370,7 @@ HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
 		return 0;
 
 	//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
-	ForkThread( &CAimProto::basic_search_ack_success, ( char* )szId );
+	ForkThread( &CAimProto::basic_search_ack_success, strldup(szId, strlen(szId)) );
 	return ( HANDLE )1;
 }
 
