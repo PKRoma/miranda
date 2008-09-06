@@ -93,8 +93,7 @@ char* strldup(const char* src,size_t siz)
 char* strldup(const char* src)
 {
     if (src == NULL) return NULL;
-    size_t len = strlen(src);
-    return strldup(src, len);
+    return strldup(src, strlen(src));
 }
 
 wchar_t* wcsldup(const wchar_t* src,size_t siz)
