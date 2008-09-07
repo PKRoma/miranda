@@ -706,8 +706,9 @@ void __cdecl CMsnProto::ThreadStub( void* arg )
 	MSN_DebugLog( "Leaving thread %08X (%08X)", GetCurrentThreadId(), info->mFunc );
 
 	EnterCriticalSection( &sttLock );
-	sttThreads.remove( info );
+    sttThreads.LIST<ThreadData>::remove( info );
 	LeaveCriticalSection( &sttLock );
+    delete info;
 }
 
 void ThreadData::startThread( MsnThreadFunc parFunc, CMsnProto *prt)
