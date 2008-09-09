@@ -351,30 +351,6 @@ TCHAR *GetRichTextWord(HWND hwnd, POINTL *ptl)
 	return pszWord;
 }
 
-void SearchWord(TCHAR * word, int engine)
-{
-	char szURL[4096];
-	if (word && word[0]) {
-		char *wordUTF = mir_utf8encodeT(word);
-		char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
-		mir_free(wordUTF);
-		switch (engine) {
-			case SEARCHENGINE_WIKIPEDIA:
-				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/%s", wordURL );
-				break;
-			case SEARCHENGINE_YAHOO:
-				mir_snprintf( szURL, sizeof( szURL ), "http://search.yahoo.com/search?p=%s&ei=UTF-8", wordURL );
-				break;
-			case SEARCHENGINE_GOOGLE:
-			default:
-				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", wordURL );
-				break;
-		}
-		HeapFree(GetProcessHeap(), 0, wordURL);
-		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
-	}
-}
-
 HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility)
 {
 	int i;
@@ -419,4 +395,103 @@ void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const
 	}
 	va_end(va);
 	*cbBufferEnd += charsDone;
+}
+
+
+int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
+{
+	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
+	if (mis->itemData != g_dat->hButtonIconList && mis->itemData != g_dat->hSearchEngineIconList) {
+		return FALSE;
+	}
+	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
+	mis->itemHeight = GetSystemMetrics(SM_CYSMICON) + 2;
+	return TRUE;
+}
+
+int DrawMenuItem(WPARAM wParam, LPARAM lParam)
+{
+	int y;
+	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
+	if (dis->itemData != g_dat->hButtonIconList && dis->itemData != g_dat->hSearchEngineIconList) {
+		return FALSE;
+	}
+	y = (dis->rcItem.bottom - dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 + 1;
+	if (dis->itemState & ODS_SELECTED) {
+		if (dis->itemState & ODS_CHECKED) {
+			RECT rc;
+			rc.left = 2;
+			rc.right = GetSystemMetrics(SM_CXSMICON) + 2;
+			rc.top = y;
+			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 2;
+			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
+		} else
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
+	} else {
+		if (dis->itemState & ODS_CHECKED) {
+			HBRUSH hBrush;
+			RECT rc;
+			COLORREF menuCol, hiliteCol;
+			rc.left = 0;
+			rc.right = GetSystemMetrics(SM_CXSMICON) + 4;
+			rc.top = y - 2;
+			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 4;
+			DrawEdge(dis->hDC, &rc, BDR_SUNKENOUTER, BF_RECT);
+			InflateRect(&rc, -1, -1);
+			menuCol = GetSysColor(COLOR_MENU);
+			hiliteCol = GetSysColor(COLOR_3DHIGHLIGHT);
+			hBrush = CreateSolidBrush(RGB
+				((GetRValue(menuCol) + GetRValue(hiliteCol)) / 2, (GetGValue(menuCol) + GetGValue(hiliteCol)) / 2,
+				(GetBValue(menuCol) + GetBValue(hiliteCol)) / 2));
+			FillRect(dis->hDC, &rc, hBrush);
+			DeleteObject(hBrush);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
+		} else
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+	}
+	return TRUE;
+}
+
+void SearchWord(TCHAR * word, int engine)
+{
+	char szURL[4096];
+	if (word && word[0]) {
+		char *wordUTF = mir_utf8encodeT(word);
+		char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
+		mir_free(wordUTF);
+		switch (engine) {
+			case SEARCHENGINE_WIKIPEDIA:
+				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/%s", wordURL );
+				break;
+			case SEARCHENGINE_YAHOO:
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.yahoo.com/search?p=%s&ei=UTF-8", wordURL );
+				break;
+			case SEARCHENGINE_FOODNETWORK:
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.foodnetwork.com/food/recipe/korma/search.do?searchString=%s", wordURL );
+				break;
+			case SEARCHENGINE_GOOGLE:
+			default:
+				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", wordURL );
+				break;
+		}
+		HeapFree(GetProcessHeap(), 0, wordURL);
+		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
+	}
+}
+
+void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
+	int i;
+	for (i=0; i<IDI_FOODNETWORK - IDI_GOOGLE + 1; i++) {
+		MENUITEMINFO minfo;
+		minfo.cbSize = sizeof(minfo);
+		minfo.fMask = MIIM_FTYPE | MIIM_ID;
+		GetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
+		minfo.fMask = MIIM_FTYPE | MIIM_BITMAP | MIIM_DATA | MIIM_ID;
+		minfo.hbmpItem = HBMMENU_CALLBACK;
+		minfo.fType = MFT_STRING;
+		minfo.wID = i;
+		minfo.dwItemData = hImageList;
+		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
+	}
 }

@@ -54,20 +54,6 @@ static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
 static UINT buttonSpacing[] = { 0, 0, 12, 0, 0, 0, 0, 0};
 static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
 
-
-static DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
-{
-    char *szFilename = (char *)dwCookie;
-    FILE *file;
-	file = fopen(szFilename, "ab");
-	if (file != NULL) {
-		*pcb = fwrite(pbBuff, cb, 1, file);
-		fclose(file);
-		return 0;
-	}
-    return 1;
-}
-
 static DWORD CALLBACK StreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	MessageSendQueueItem * msi = (MessageSendQueueItem *) dwCookie;
@@ -102,15 +88,6 @@ TCHAR *GetRichEditSelection(HWND hwnd) {
 	return NULL;
 }
 
-void SaveLog(HWND hwnd, const char *filename) {
-	EDITSTREAM stream;
-	DWORD dwFlags = 0;
-	ZeroMemory(&stream, sizeof(stream));
-	stream.pfnCallback = EditStreamCallback;
-	stream.dwCookie = (DWORD) filename;
-	dwFlags = SF_TEXT|SF_UNICODE;
-	SendMessage(hwnd, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) &stream);
-}
 
 static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
 	IEVIEWEVENT event;
@@ -344,7 +321,19 @@ struct MsgEditSubclassData
 
 static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static BOOL inMenu = FALSE;
 	switch (msg) {
+		case WM_MEASUREITEM:
+			MeasureMenuItem(wParam, lParam);
+			return TRUE;
+		case WM_DRAWITEM:
+			return DrawMenuItem(wParam, lParam);
+		case WM_SETCURSOR:
+			if (inMenu) {
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
+				return TRUE;
+			}
+		break;
 		case WM_CONTEXTMENU:
 		{
 			HMENU hMenu, hSubMenu;
@@ -373,11 +362,15 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			pszWord = GetRichTextWord(hwnd, &ptl);
 			if ( pszWord && pszWord[0] ) {
 				TCHAR szMenuText[4096];
+				HMENU hSubSubMenu = GetSubMenu(hMenu, 0);
 				mir_sntprintf( szMenuText, 4096, TranslateT("Look up \'%s\':"), pszWord );
-				ModifyMenu( hSubMenu, 5, MF_STRING|MF_BYPOSITION, 4, szMenuText );
+				ModifyMenu( hSubMenu, 5, MF_STRING|MF_BYPOSITION, 5, szMenuText );
+				SetSearchEngineIcons(hSubSubMenu, g_dat->hSearchEngineIconList);
 			}
-			else ModifyMenu( hSubMenu, 5, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" ));
+			else ModifyMenu( hSubMenu, 5, MF_STRING|MF_GRAYED|MF_BYPOSITION, 5, TranslateT( "No word to look up" ));
+			inMenu = TRUE;
 			uID = TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
+			inMenu = FALSE;
 			switch (uID) {
 			case IDM_COPY:
 				SendMessage(hwnd, WM_COPY, 0, 0);
@@ -396,10 +389,12 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			case IDM_SEARCH_GOOGLE:
 			case IDM_SEARCH_YAHOO:
 			case IDM_SEARCH_WIKIPEDIA:
+			case IDM_SEARCH_FOODNETWORK:
 				SearchWord(pszWord, uID - IDM_SEARCH_GOOGLE + SEARCHENGINE_GOOGLE);
 				break;
 			}
 			DestroyMenu(hMenu);
+			mir_free(pszWord);
 			return TRUE;
 		}
 	}
@@ -689,63 +684,6 @@ static void NotifyTyping(struct MessageWindowData *dat, int mode) {
 	// End user check
 	dat->nTypeMode = mode;
 	CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->windowData.hContact, dat->nTypeMode);
-}
-
-
-static int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
-{
-	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
-	if (mis->itemData != 0xDEAD) {
-		return FALSE;
-	}
-	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
-	mis->itemHeight = GetSystemMetrics(SM_CYSMICON) + 2;
-	return TRUE;
-}
-
-
-static int DrawMenuItem(WPARAM wParam, LPARAM lParam)
-{
-	int y;
-	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-	if (dis->itemData != 0xDEAD) {
-		return FALSE;
-	}
-	y = (dis->rcItem.bottom - dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 + 1;
-	if (dis->itemState & ODS_SELECTED) {
-		if (dis->itemState & ODS_CHECKED) {
-			RECT rc;
-			rc.left = 2;
-			rc.right = GetSystemMetrics(SM_CXSMICON) + 2;
-			rc.top = y;
-			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 2;
-			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
-		} else
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
-	} else {
-		if (dis->itemState & ODS_CHECKED) {
-			HBRUSH hBrush;
-			RECT rc;
-			COLORREF menuCol, hiliteCol;
-			rc.left = 0;
-			rc.right = GetSystemMetrics(SM_CXSMICON) + 4;
-			rc.top = y - 2;
-			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 4;
-			DrawEdge(dis->hDC, &rc, BDR_SUNKENOUTER, BF_RECT);
-			InflateRect(&rc, -1, -1);
-			menuCol = GetSysColor(COLOR_MENU);
-			hiliteCol = GetSysColor(COLOR_3DHIGHLIGHT);
-			hBrush = CreateSolidBrush(RGB
-				((GetRValue(menuCol) + GetRValue(hiliteCol)) / 2, (GetGValue(menuCol) + GetGValue(hiliteCol)) / 2,
-				(GetBValue(menuCol) + GetBValue(hiliteCol)) / 2));
-			FillRect(dis->hDC, &rc, hBrush);
-			DeleteObject(hBrush);
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
-		} else
-			ImageList_DrawEx(g_dat->hButtonIconList, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
-	}
-	return TRUE;
 }
 
 static BOOL CALLBACK ConfirmSendAllDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1091,7 +1029,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				mii.fType = MFT_STRING;
 				mii.fState = (g_dat->buttonVisibility & (1<< i)) ? MFS_CHECKED : MFS_UNCHECKED;
 				mii.wID = i + 1;
-				mii.dwItemData = 0xDEAD;
+				mii.dwItemData = g_dat->hButtonIconList;
 				mii.hbmpItem = HBMMENU_CALLBACK;
 				mii.dwTypeData = TranslateTS((buttonNames[i]));
 				InsertMenuItem(hToolbarMenu, i, TRUE, &mii);

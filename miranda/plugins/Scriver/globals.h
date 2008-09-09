@@ -130,11 +130,8 @@ struct GlobalMessageData
 	int		activeAlpha;
 	int		inactiveAlpha;
 	HMENU	hMenuANSIEncoding;
-	HIMAGELIST hTabIconList;
 	int     tabIconListUsageSize;
 	ImageListUsageEntry     *tabIconListUsage;
-	HIMAGELIST hButtonIconList;
-	HIMAGELIST hHelperIconList;
 	TCmdList *draftList;
 	int		avatarServiceInstalled;
 	int		smileyAddInstalled;
@@ -144,6 +141,10 @@ struct GlobalMessageData
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
 	int		indentSize;
+	HIMAGELIST hTabIconList;
+	HIMAGELIST hButtonIconList;
+	HIMAGELIST hHelperIconList;
+	HIMAGELIST hSearchEngineIconList;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);

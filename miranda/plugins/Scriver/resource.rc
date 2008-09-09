@@ -562,6 +562,13 @@ IDI_OVERLAY             ICON                    "res/chat/overlay.ico"
 IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 IDI_TYPINGOFF           ICON                    "res/typingoff.ico"
+
+IDI_GOOGLE				ICON                    "res/google.ico"
+IDI_YAHOO           	ICON                    "res/yahoo.ico"
+IDI_WIKIPEDIA 			ICON                    "res/wikipedia.ico"
+IDI_FOODNETWORK			ICON                    "res/foodnetwork.ico"
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
@@ -588,7 +595,8 @@ BEGIN
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
-            MENUITEM "Wikipedia",                   IDM_SEARCH_WIKIPEDIA
+            MENUITEM "Wikipedia (en)",           IDM_SEARCH_WIKIPEDIA
+            MENUITEM "Foodnetwork",            	IDM_SEARCH_FOODNETWORK
         END
         MENUITEM SEPARATOR
         MENUITEM "C&lear Log",                  IDM_CLEAR
@@ -637,7 +645,8 @@ BEGIN
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
-            MENUITEM "Wikipedia",                   IDM_SEARCH_WIKIPEDIA
+            MENUITEM "Wikipedia",                  IDM_SEARCH_WIKIPEDIA
+	    MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
         END
     END
     POPUP "Link"

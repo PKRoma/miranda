@@ -1226,9 +1226,11 @@ BOOL CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
+	TabCtrlData *tcdat;
 	TCITEM tci;
 	LPDRAWITEMSTRUCT lpDIS = (LPDRAWITEMSTRUCT) lParam;
 	int	iTabIndex = lpDIS->itemID;
+	tcdat = (TabCtrlData *) GetWindowLong(hwnd, GWL_USERDATA);
 	if (iTabIndex >= 0) {
 		TCHAR szLabel[1024];
 		tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_STATE;
@@ -1284,6 +1286,12 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				}
 				rect.bottom -= GetSystemMetrics(SM_CYEDGE) + 2;
 			}
+			if (iTabIndex == tcdat->destTab && tcdat->bDragged) {
+				RECT rect2 = lpDIS->rcItem;
+				rect2.left = rect2.left + GetSystemMetrics(SM_CXEDGE) + (bSelected ? 2 : 0) - 2;
+				rect2.right = rect2.left + 4;
+				FillRect(lpDIS->hDC, &rect2, GetSysColorBrush(COLOR_HIGHLIGHT));
+			}
 			DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
 			//SetTextColor(lpDIS->hDC, crOldColor);
 			SetBkMode(lpDIS->hDC, iOldBkMode);
@@ -1301,7 +1309,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
 			dat->bDragging = FALSE;
 			dat->bDragged = FALSE;
-			dat->lastClickTab = -1;
+			dat->srcTab = -1;
+			dat->destTab = -1;
 	        return 0;
         case WM_MBUTTONDOWN:
 		{
@@ -1318,6 +1327,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				mwtd = (MessageWindowTabData *) tci.lParam;
 				if (mwtd != NULL) {
 					SendMessage(mwtd->hwnd, WM_CLOSE, 0, 0);
+					dat->srcTab = -1;
     			}
 			}
 	        return 0;
@@ -1329,25 +1339,21 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			thinfo.pt.x = (lParam<<16)>>16;
 			thinfo.pt.y = lParam>>16;
 			tabId = TabCtrl_HitTest(hwnd, &thinfo);
-			if (tabId >=0 ) {
-				HWND clickChild = GetChildFromTab(hwnd, tabId)->hwnd;
-				if (tabId == dat->lastClickTab) {
-					SendMessage(clickChild, WM_CLOSE, 0, 0);
-				}
+			if (tabId >=0 && tabId == dat->srcTab) {
+				SendMessage(GetChildFromTab(hwnd, tabId)->hwnd, WM_CLOSE, 0, 0);
+				dat->srcTab = -1;
 			}
-			dat->lastClickTab = -1;//Child = NULL;
+			dat->destTab = -1;
 		}
 		break;
 		case WM_LBUTTONDOWN:
 			if (!dat->bDragging) {
 				TCHITTESTINFO thinfo;
-				int clickedTab;
 				FILETIME ft;
 				thinfo.pt.x = (lParam<<16)>>16;
 				thinfo.pt.y = lParam>>16;
-				clickedTab = TabCtrl_HitTest(hwnd, &thinfo);
+				dat->srcTab = TabCtrl_HitTest(hwnd, &thinfo);
 				GetSystemTimeAsFileTime(&ft);
-				dat->lastClickTab = dat->srcTab = dat->destTab = clickedTab;
 				if (dat->srcTab >=0 ) {
 					dat->bDragging = TRUE;
 					dat->bDragged = FALSE;
@@ -1396,16 +1402,18 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						TabCtrl_DeleteItem(hwnd, dat->srcTab);
 						TabCtrl_InsertItem(hwnd, dat->destTab, &item );
 						TabCtrl_SetCurSel(hwnd, curSel);
+						dat->destTab = -1;
 						nmh.hwndFrom = hwnd;
 						nmh.idFrom = GetDlgCtrlID(hwnd);
 						nmh.code = TCN_SELCHANGE;
 						SendMessage(GetParent(hwnd), WM_NOTIFY, nmh.idFrom, (LPARAM)&nmh);
 						UpdateWindow(hwnd);
-					} else if (GetKeyState(VK_CONTROL) & 0x8000 && g_dat->flags2 & SMF2_USETABS) {
+					} else if (thinfo.flags == TCHT_NOWHERE && GetKeyState(VK_CONTROL) & 0x8000 && g_dat->flags2 & SMF2_USETABS) {
 						MessageWindowTabData *mwtd;
 						TCITEM tci;
 						POINT pt;
 						NewMessageWindowLParam newData = { 0 };
+						dat->destTab = -1;
 						tci.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, dat->srcTab, &tci);
 						mwtd = (MessageWindowTabData *) tci.lParam;
@@ -1456,13 +1464,16 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								ShowWindow(hParent, SW_SHOWNA);
 							}
 						}
+					} else {
+						dat->destTab = -1;
+						RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 					}
-				} else if (dat->lastClickTab >= 0 && g_dat->flags2 & SMF2_TABCLOSEBUTTON) {
+				} else if (dat->srcTab >= 0 && g_dat->flags2 & SMF2_TABCLOSEBUTTON) {
 					IMAGEINFO info;
 					POINT pt;
 					RECT rect;
 					int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
-					TabCtrl_GetItemRect(hwnd, dat->lastClickTab, &rect);
+					TabCtrl_GetItemRect(hwnd, dat->srcTab, &rect);
 					pt.x = (lParam<<16)>>16;
 					pt.y = lParam>>16;
 					ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
@@ -1490,7 +1501,8 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						DeleteObject(hBmp);
 						ReleaseDC(NULL, hdc);
 						if (color1 != 0x000000 || color2 != 0xFFFFFF) {
-							SendMessage(GetChildFromTab(hwnd, dat->lastClickTab)->hwnd, WM_CLOSE, 0, 0);
+							SendMessage(GetChildFromTab(hwnd, dat->srcTab)->hwnd, WM_CLOSE, 0, 0);
+							dat->srcTab = -1;
 						}
 					} else {
 						SendMessage(hwnd, WM_LBUTTONDOWN, dat->clickWParam, dat->clickLParam);
@@ -1500,6 +1512,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				dat->bDragged = FALSE;
 				dat->bDragging = FALSE;
+				dat->destTab = -1;
 				ReleaseCapture();
 			}
 			break;
@@ -1548,9 +1561,24 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						dat->mouseLBDownPos.x = thinfo.pt.x;
 						dat->mouseLBDownPos.y = thinfo.pt.y;
 					} else {
+						TCHITTESTINFO thinfo;
 						POINT pt;
+						int newDest;
 						GetCursorPos(&pt);
-						ImageList_DragMove(pt.x, pt.y);
+						thinfo.pt = pt;
+						ScreenToClient(hwnd, &thinfo.pt);
+						newDest = TabCtrl_HitTest(hwnd, &thinfo);
+						if (thinfo.flags == TCHT_NOWHERE) {
+							newDest = -1;
+						}
+						if (newDest != dat->destTab) {
+							dat->destTab = 	newDest;
+							ImageList_DragLeave(GetDesktopWindow());
+							RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+							ImageList_DragEnter(GetDesktopWindow(), pt.x, pt.y);
+						} else {
+							ImageList_DragMove(pt.x, pt.y);
+						}
 					}
 					dat->bDragged = TRUE;
 					return 0;

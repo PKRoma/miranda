@@ -111,7 +111,7 @@ void LoadGlobalIcons() {
 	g_dat->hIcons[SMF_ICON_INCOMING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_INCOMING");
 	g_dat->hIcons[SMF_ICON_OUTGOING] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_OUTGOING");
 	g_dat->hIcons[SMF_ICON_NOTICE] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"scriver_NOTICE");
-	for (i=0; i<sizeof(buttonIcons)/sizeof(int); i++) {
+	for (i=0; i<SIZEOF(buttonIcons); i++) {
 		if (buttonIcons[i] == -1) {
 			ImageList_AddIcon_ProtoEx(g_dat->hButtonIconList, NULL, ID_STATUS_OFFLINE);
 		} else {
@@ -123,6 +123,9 @@ void LoadGlobalIcons() {
 		ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
 		overlayIcon = ImageList_AddIcon(g_dat->hHelperIconList, g_dat->hIcons[SMF_ICON_OVERLAY]);
 		ImageList_SetOverlayImage(g_dat->hHelperIconList, overlayIcon, 1);
+	}
+	for (i=0; i<IDI_FOODNETWORK - IDI_GOOGLE + 1; i++) {
+		ImageList_AddIcon(g_dat->hSearchEngineIconList, LoadImage(g_hInst,MAKEINTRESOURCE(IDI_GOOGLE + i),IMAGE_ICON,0,0,LR_SHARED));
 	}
 }
 
@@ -195,6 +198,7 @@ void InitGlobals() {
 	g_dat->hButtonIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hTabIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hHelperIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+	g_dat->hSearchEngineIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
 }
 
@@ -208,6 +212,8 @@ void FreeGlobals() {
 			ImageList_Destroy(g_dat->hButtonIconList);
 		if (g_dat->hHelperIconList)
 			ImageList_Destroy(g_dat->hHelperIconList);
+		if (g_dat->hSearchEngineIconList)
+			ImageList_Destroy(g_dat->hSearchEngineIconList);
 		mir_free(g_dat->tabIconListUsage);
 		mir_free(g_dat);
 	}

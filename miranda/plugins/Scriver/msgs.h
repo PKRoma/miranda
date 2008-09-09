@@ -50,7 +50,6 @@ typedef struct TabCtrlDataStruct
 	WPARAM  clickWParam;
 	LPARAM  clickLParam;
 	POINT	mouseLBDownPos;
-	int		lastClickTab;
 	HIMAGELIST hDragImageList;
 	int		bDragging;
 	int		bDragged;

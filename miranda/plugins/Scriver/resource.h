@@ -22,6 +22,11 @@
 #define IDI_NOTICE                      134
 #define IDI_CLOSEX                      135
 
+#define IDI_GOOGLE                      140
+#define IDI_YAHOO                       141
+#define IDI_WIKIPEDIA		  			142
+#define IDI_FOODNETWORK					143
+
 #define IDR_CONTEXT                     180
 
 /* chat dll */
@@ -184,7 +189,7 @@
 #define IDM_SEARCH_GOOGLE               40080
 #define IDM_SEARCH_YAHOO				40081
 #define IDM_SEARCH_WIKIPEDIA            40082
-
+#define IDM_SEARCH_FOODNETWORK        40083
 /* chat.dll resources */
 
 #define IDC_CHAT_LOG                         5005
