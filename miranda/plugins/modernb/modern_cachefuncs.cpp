@@ -122,12 +122,6 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 *	Get all lines of text
 */ 
 
-//void Cache_GetNewTextFromPDNCE(struct ClcData *dat, struct ClcContact *contact, pdisplayNameCacheEntry cacheEntry)
-//{
-//
-//}
-
-
 void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRenew)
 {
     Cache_GetFirstLineText(dat, contact);
