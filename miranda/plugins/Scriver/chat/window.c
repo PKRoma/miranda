@@ -51,7 +51,7 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
-static TCHAR *buttonNames[] = {_T("Bold"), _T("Italic"), _T("Underline"), _T("Text color"), _T("Background color"), 
+static TCHAR *buttonNames[] = {_T("Bold"), _T("Italic"), _T("Underline"), _T("Text color"), _T("Background color"),
 							   _T("Font size"), _T("Smiley"), _T("History"), _T("Filter"), _T("Manager"), _T("Nick list")};
 static const UINT buttonControls[] = {  IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE,
 										IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_SMILEY,
@@ -658,13 +658,25 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static BOOL inMenu = FALSE;
 	SESSION_INFO* si =(SESSION_INFO*)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
 	int result = InputAreaShortcuts(hwnd, msg, wParam, lParam, &si->windowData);
 	if (result != -1) {
 		return result;
 	}
-   switch (msg) {
-   case WM_LBUTTONUP:
+	switch (msg) {
+	case WM_MEASUREITEM:
+		MeasureMenuItem(wParam, lParam);
+		return TRUE;
+	case WM_DRAWITEM:
+		return DrawMenuItem(wParam, lParam);
+	case WM_SETCURSOR:
+		if (inMenu) {
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			return TRUE;
+		}
+	break;
+	case WM_LBUTTONUP:
       {
          CHARRANGE sel;
 
@@ -710,7 +722,9 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		ptl.y = (LONG)pt.y;
 		ScreenToClient(hwnd, (LPPOINT)&ptl);
 		pszWord = GetRichTextWord(hwnd, &ptl);
+		inMenu = TRUE;
 		uID = CreateGCMenu(hwnd, &hMenu, 1, pt, si, NULL, pszWord);
+		inMenu = FALSE;
 		switch (uID) {
 		case 0:
 			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
@@ -738,6 +752,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		case IDM_SEARCH_GOOGLE:
 		case IDM_SEARCH_YAHOO:
 		case IDM_SEARCH_WIKIPEDIA:
+		case IDM_SEARCH_FOODNETWORK:
 			SearchWord(pszWord, uID - IDM_SEARCH_GOOGLE + SEARCHENGINE_GOOGLE);
 			PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
 			break;

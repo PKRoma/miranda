@@ -645,7 +645,7 @@ BEGIN
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
-            MENUITEM "Wikipedia",                  IDM_SEARCH_WIKIPEDIA
+            MENUITEM "Wikipedia (en)",                  IDM_SEARCH_WIKIPEDIA
 	    MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
         END
     END

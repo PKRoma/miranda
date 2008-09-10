@@ -362,10 +362,9 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			pszWord = GetRichTextWord(hwnd, &ptl);
 			if ( pszWord && pszWord[0] ) {
 				TCHAR szMenuText[4096];
-				HMENU hSubSubMenu = GetSubMenu(hMenu, 0);
 				mir_sntprintf( szMenuText, 4096, TranslateT("Look up \'%s\':"), pszWord );
 				ModifyMenu( hSubMenu, 5, MF_STRING|MF_BYPOSITION, 5, szMenuText );
-				SetSearchEngineIcons(hSubSubMenu, g_dat->hSearchEngineIconList);
+				SetSearchEngineIcons(hMenu, g_dat->hSearchEngineIconList);
 			}
 			else ModifyMenu( hSubMenu, 5, MF_STRING|MF_GRAYED|MF_BYPOSITION, 5, TranslateT( "No word to look up" ));
 			inMenu = TRUE;
