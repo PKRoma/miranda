@@ -123,16 +123,18 @@ static void patchDir( char* str, size_t strSize )
 {
 	size_t len;
 	char szWinUsProfile[64];
-	char szMirPath[MAX_PATH];
+	char szMirPath[MAX_PATH], szProfilePath[MAX_PATH];
 	szWinUsProfile[0] = szMirPath[0] = '\0';
 
 	//Path
 	GetModuleFileNameA(NULL, szMirPath, sizeof(szMirPath));
 	PathRemoveFileSpecA(szMirPath);
 	GetEnvironmentVariableA("USERPROFILE", szWinUsProfile, SIZEOF(szWinUsProfile));
+	CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
 
 	ReplaceStr(str, strSize, "%userprofile%", szWinUsProfile);
 	ReplaceStr(str, strSize, "%miranda_path%", szMirPath);
+	ReplaceStr(str, strSize, "%miranda_profile%", szProfilePath);
 
 	len = lstrlenA( str );
 	if ( len+1 < strSize && str[len-1] != '\\' )
@@ -212,7 +214,7 @@ void GetReceivedFilesDir(char *szDir,int cchDir)
 	ReplaceStr( szTemp, SIZEOF(szTemp), "///", "//");
 	ReplaceStr( szTemp, SIZEOF(szTemp), "//", "/");
 	ReplaceStr( szTemp, SIZEOF(szTemp), "()", "");
-	
+
 	patchDir( szTemp, SIZEOF(szTemp));
 	lstrcpynA( szDir, szTemp, cchDir );
 }
