@@ -361,8 +361,12 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick)
 void gg_registerservices(GGPROTO *gg);
 void *__stdcall gg_mainthread(void *empty);
 int gg_isonline(GGPROTO *gg);
+
+#ifdef DEBUGMODE
 int gg_netlogex(const GGPROTO *gg, const char *fmt, ...);
 #define gg_netlog(format, ...) gg_netlogex(gg, format, ## __VA_ARGS__)
+#endif
+
 int gg_netsend(HANDLE s, char *data, int datalen);
 void gg_broadcastnewstatus(GGPROTO *gg, int s);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
