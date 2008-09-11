@@ -36,6 +36,8 @@ struct NetlibUser {
 	NETLIBUSERSETTINGS settings;
 	char * szStickyHeaders;
 	int toLog;
+    int inportnum;
+    int outportnum;
 };
 
 struct NetlibNestedCriticalSection {
@@ -105,6 +107,7 @@ int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);
 int NetlibBindPort(WPARAM wParam,LPARAM lParam);
 int StringToPortsMask(const char *szPorts,BYTE *mask);
+bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn);
 
 //netlibhttp.c
 int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam);
@@ -131,6 +134,7 @@ void NetlibLogShutdown(void);
 //netlibopenconn.c
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost);
 int WaitUntilReadable(SOCKET s,DWORD dwTimeout);
+int WaitUntilWritable(SOCKET s,DWORD dwTimeout);
 int NetlibOpenConnection(WPARAM wParam,LPARAM lParam);
 int NetlibStartSsl(WPARAM wParam, LPARAM lParam);
 

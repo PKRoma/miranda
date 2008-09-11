@@ -23,51 +23,92 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
-//mask must be 8192 bytes, returns number of bits set
-#define PortInMask(mask,p)  ((mask)[((p)&0xFFFF)>>3]&(1<<((p)&7)))
-int StringToPortsMask(const char *szPorts,BYTE *mask)
-{
-	const char *psz;
-	char *pszEnd;
-	int portMin,portMax,port;
-	int bitCount=0;
+extern CRITICAL_SECTION csNetlibUser;
 
-	ZeroMemory(mask,8192);
-	for(psz=szPorts;*psz;) {
-		while(*psz==' ' || *psz==',') psz++;
-		portMin=strtol(psz,&pszEnd,0);
-		if(pszEnd==psz) break;
-		while(*pszEnd==' ') pszEnd++;
-		if(*pszEnd=='-') {
-			psz=pszEnd+1;
-			portMax=strtol(psz,&pszEnd,0);
-			if(pszEnd==psz) portMax=65535;
-			if(portMin>portMax) {
-				port=portMin;
-				portMin=portMax;
-				portMax=port;
-			}
-		}
-		else portMax=portMin;
-		if(portMax>=1) {
-			if(portMin<=0) portMin=1;
-			for(port=portMin;port<=portMax;port++) {
-				if(port>65535) break;
-				if((port&7)==0 && portMax-port>=7) {mask[port>>3]=0xFF; port+=7; bitCount+=8;}
-				else {mask[port>>3]|=1<<(port&7); bitCount++;}
-			}
-		}
-		psz=pszEnd;
-	}
-	return bitCount;
+bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn)
+{
+    SOCKADDR_IN sin = {0};
+   	sin.sin_family=AF_INET;
+	sin.sin_addr.s_addr=htonl(INADDR_ANY);
+
+	EnterCriticalSection(&csNetlibUser);
+
+    if (--*portn < 0 && s != INVALID_SOCKET)
+    {
+        srand(GetTickCount());
+        BindSocketToPort(szPorts, INVALID_SOCKET, portn);
+        WORD num = 0;
+        CallService(MS_UTILS_GETRANDOM, sizeof(WORD), (LPARAM)&num);
+        *portn = num % *portn;
+    }
+
+    bool before=false;
+    for (;;)
+    {
+	    const char *psz;
+	    char *pszEnd;
+	    int portMin,portMax,port, portnum=0;
+
+        for(psz=szPorts;*psz;) {
+	        while(*psz==' ' || *psz==',') psz++;
+	        portMin=strtol(psz,&pszEnd,0);
+	        if(pszEnd==psz) break;
+	        while(*pszEnd==' ') pszEnd++;
+	        if(*pszEnd=='-') {
+		        psz=pszEnd+1;
+		        portMax=strtol(psz,&pszEnd,0);
+		        if(pszEnd==psz) portMax=65535;
+		        if(portMin>portMax) {
+			        port=portMin;
+			        portMin=portMax;
+			        portMax=port;
+		        }
+	        }
+	        else portMax=portMin;
+	        if(portMax>=1) 
+            {
+		        if (portMin<=0) portMin=1;
+		        for (port=portMin;port<=portMax;port++) 
+                {
+			        if (port>65535) break;
+
+                    ++portnum;
+
+                    if (s == INVALID_SOCKET) continue;
+                    if (!before && portnum <= *portn) continue;
+                    if (before  && portnum >= *portn) 
+                    {
+	                    LeaveCriticalSection(&csNetlibUser);
+                        return false;
+                    }
+
+                    sin.sin_port=htons((WORD)port);
+   		            if (bind(s, (SOCKADDR*)&sin, sizeof(sin)) == 0) 
+                    {
+	                    LeaveCriticalSection(&csNetlibUser);
+                        *portn = portnum + 1;
+                        return true;
+                    }
+		        }
+	        }
+	        psz=pszEnd;
+        }
+        before = true;
+        if (*portn < 0) 
+        {
+           *portn = portnum;
+	        LeaveCriticalSection(&csNetlibUser);
+            return true;
+        }
+   }
 }
+
 
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp)
 {
 	closesocket(nlbp->s);
 	WaitForSingleObject(nlbp->hThread,INFINITE);
 	CloseHandle(nlbp->hThread);
-	NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
 	mir_free(nlbp);
 	return 1;
 }
@@ -80,7 +121,6 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 	struct NetlibConnection *nlc;
 	struct NetlibBoundPort *nlbp = ( NetlibBoundPort* )param;
 
-	srand((unsigned int)time(NULL));
 	Netlib_Logf(nlbp->nlu,"(%d) Port %u opened for incoming connections",nlbp->s,nlbp->wPort);
 	for(;;) {
 		sinLen=sizeof(sin);
@@ -99,6 +139,7 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 		NetlibInitializeNestedCS(&nlc->ncsRecv);
 		nlbp->pfnNewConnectionV2((HANDLE)nlc,ntohl(sin.sin_addr.S_un.S_addr), nlbp->pExtra);
 	}
+	NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
 	return 0;
 }
 
@@ -121,7 +162,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	{
 		return (int)(HANDLE)NULL;
 	}
-	nlbp=(struct NetlibBoundPort*)mir_alloc(sizeof(struct NetlibBoundPort));
+	nlbp=(struct NetlibBoundPort*)mir_calloc(sizeof(struct NetlibBoundPort));
 	nlbp->handleType=NLH_BOUNDPORT;
 	nlbp->nlu=nlu;
 	nlbp->pfnNewConnectionV2=nlb->pfnNewConnectionV2;
@@ -135,44 +176,18 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	sin.sin_family=AF_INET;
 	sin.sin_addr.s_addr=htonl(INADDR_ANY);
 	sin.sin_port=0;
+
 	/* if the netlib user wanted a free port given in the range, then
 	they better have given wPort==0, let's hope so */
-	if(nlu->settings.specifyIncomingPorts && nlb->wPort==0) {
-		int startPort,portNum,i,j;
-		BYTE portsMask[8192];
-		int portsCount;
-
-		portsCount=StringToPortsMask(nlu->settings.szIncomingPorts,portsMask);
-		if(portsCount==0) {
+	if(nlu->settings.specifyIncomingPorts && nlu->settings.szIncomingPorts && nlb->wPort==0) 
+    {
+        if (!BindSocketToPort(nlu->settings.szIncomingPorts, nlbp->s, &nlu->outportnum))
+        {
 			closesocket(nlbp->s);
 			mir_free(nlbp);
 			SetLastError(WSAEADDRINUSE);
-			return (int)(HANDLE)NULL;
+			return 0;
 		}
-		startPort=rand()%portsCount;
-		for(i=0;i<8192;i++) {
-			if(portsMask[i]==0) continue;
-			if(portsMask[i]==0xFF && startPort>=8) {startPort-=8; continue;}
-			for(j=0;j<8;j++)
-				if(portsMask[i]&(1<<j))
-					if(startPort--==0) {
-						portNum=(i<<3)+j;
-						break;
-					}
-			if(startPort==-1) break;
-		}
-		if(i==8192) return (int)(HANDLE)NULL;   //can't happen
-		startPort=portNum;
-		do
-		{
-			sin.sin_port=htons((WORD)portNum);
-			if(bind(nlbp->s,(SOCKADDR *)&sin,sizeof(sin))==0) {
-				foundPort=1;
-				break;
-			}
-			for(portNum++;!PortInMask(portsMask,portNum);portNum++)
-				if(portNum==65535) portNum=0;
-		} while(portNum!=startPort);
 	}
 	else {
 		/* if ->wPort==0 then they'll get any free port, otherwise they'll

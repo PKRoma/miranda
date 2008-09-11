@@ -363,11 +363,10 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 	SetLastError(dwOriginalLastError);
 }
 
-#define PortInMask(mask,p)  ((mask)[((p)&0xFFFF)>>3]&(1<<((p)&7)))
 
-static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLIBOPENCONNECTION * nloc)
+static int my_connect(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 {
-	int rc=0;
+	int rc=0, retrycnt=0;
 	unsigned int dwTimeout=( nloc->cbSize==sizeof(NETLIBOPENCONNECTION) && nloc->flags&NLOCF_V2 ) ? nloc->timeout : 0;
 	u_long notblocking=1;	
 	TIMEVAL tv;
@@ -376,11 +375,8 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	// if dwTimeout is zero then its an old style connection or new with a 0 timeout, select() will error quicker anyway
 	if ( dwTimeout == 0 )
 		dwTimeout += 60;
-	// return the socket to non blocking
-	if ( ioctlsocket(s, FIONBIO, &notblocking) != 0 ) {
-		return SOCKET_ERROR;
-	}
-	// this is for XP SP2 where there is a default connection attempt limit of 10/second
+
+    // this is for XP SP2 where there is a default connection attempt limit of 10/second
 	EnterCriticalSection(&csNetlibUser);
 	waitdiff=GetTickCount() - g_LastConnectionTick;
 	if ( waitdiff < 1000 && IsWinVerXPPlus()) {
@@ -389,20 +385,36 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	}
 	g_LastConnectionTick=GetTickCount();
 	LeaveCriticalSection(&csNetlibUser);
-	// might of died in between the wait
+
+    // might of died in between the wait
 	if ( Miranda_Terminated() )  {
 		rc=SOCKET_ERROR;
 		lasterr=ERROR_TIMEOUT;
+	    LeaveCriticalSection(&csNetlibUser);
 		goto unblock;
 	}
+
+retry:
+    nlc->s=socket(AF_INET,nloc->flags & NLOCF_UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
+    if (nlc->s == INVALID_SOCKET) return SOCKET_ERROR;
+
+    // return the socket to non blocking
+	if ( ioctlsocket(nlc->s, FIONBIO, &notblocking) != 0 ) return SOCKET_ERROR;
+
+    if (nlc->nlu->settings.specifyOutgoingPorts && nlc->nlu->settings.szOutgoingPorts) 
+	{
+        if (!BindSocketToPort(nlc->nlu->settings.szOutgoingPorts, nlc->s, &nlc->nlu->inportnum))
+			Netlib_Logf(nlc->nlu,"Netlib connect: Not enough ports for outgoing connections specified");
+	} 
+
 	// try a connect
-	if ( connect(s, name, namelen) == 0 ) {
+	if ( connect(nlc->s, (SOCKADDR*)&nlc->sinProxy, sizeof(nlc->sinProxy)) == 0 ) {
 		goto unblock;
 	}
+
 	// didn't work, was it cos of nonblocking?
 	if ( WSAGetLastError() != WSAEWOULDBLOCK ) {
 		rc=SOCKET_ERROR;
-		lasterr=WSAGetLastError();
 		goto unblock;
 	}
 	// setup select()
@@ -411,27 +423,32 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	for (;;) {		
 		fd_set r, w, e;
 		FD_ZERO(&r); FD_ZERO(&w); FD_ZERO(&e);
-		FD_SET(s, &r);
-		FD_SET(s, &w);
-		FD_SET(s, &e);		
+		FD_SET(nlc->s, &r);
+		FD_SET(nlc->s, &w);
+		FD_SET(nlc->s, &e);		
 		if ( (rc=select(0, &r, &w, &e, &tv)) == SOCKET_ERROR ) {
 			break;
 		}			
 		if ( rc > 0 ) {			
-			if ( FD_ISSET(s, &r) ) {
+			if ( FD_ISSET(nlc->s, &r) ) {
 				// connection was closed
 				rc=SOCKET_ERROR;
 				lasterr=WSAECONNRESET;
 			}
-			if ( FD_ISSET(s, &w) ) {
+			if ( FD_ISSET(nlc->s, &w) ) {
 				// connection was successful
 				rc=0;
 			}
-			if ( FD_ISSET(s, &e) ) {
+			if ( FD_ISSET(nlc->s, &e) ) {
 				// connection failed.
 				int len=sizeof(lasterr);
 				rc=SOCKET_ERROR;
-				getsockopt(s,SOL_SOCKET,SO_ERROR,(char*)&lasterr,&len);
+				getsockopt(nlc->s,SOL_SOCKET,SO_ERROR,(char*)&lasterr,&len);
+                if (lasterr == WSAEADDRINUSE && ++retrycnt <= 2) 
+                {
+                    closesocket(nlc->s);
+                    goto retry;
+                }
 			}
 			goto unblock;
 		} else if ( Miranda_Terminated() ) {
@@ -452,7 +469,7 @@ static int my_connect(SOCKET s, const struct sockaddr * name, int namelen, NETLI
 	}
 unblock:	
 	notblocking=0;
-	ioctlsocket(s, FIONBIO, &notblocking);
+	ioctlsocket(nlc->s, FIONBIO, &notblocking);
 	SetLastError(lasterr);
 	return rc;
 }
@@ -462,9 +479,8 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	struct NetlibConnection *nlc;
-	SOCKADDR_IN sin;
     
-	Netlib_Logf(nlu,"Connecting to %s:%d (%u)....", nloc->szHost, nloc->wPort, nloc->flags);
+	Netlib_Logf(nlu,"Connecting to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
 
 	EnterCriticalSection(&csNetlibUser);
     if(iUPnPCleanup==0) {
@@ -480,53 +496,8 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc=(struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
 	nlc->handleType=NLH_CONNECTION;
 	nlc->nlu=nlu;
-	nlc->s=socket(AF_INET,nloc->flags & NLOCF_UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
-	if(nlc->s==INVALID_SOCKET) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
-		mir_free(nlc);
-		return (int)(HANDLE)NULL;
-	}
-	if (nlu->settings.specifyOutgoingPorts && nlu->settings.szOutgoingPorts) 
-	{
-		BYTE portsMask[0x2000];
-		int startPort,portNum,i,j,portsCount;
-		int portNotFound = 1;
 
-		sin.sin_family=AF_INET;
-		sin.sin_addr.s_addr=htonl(INADDR_ANY);
-		sin.sin_port=0;
-		
-		portsCount=StringToPortsMask(nlu->settings.szOutgoingPorts,portsMask);
-		if (portsCount) {
-			startPort=rand() % portsCount;
-			for (i=0;i<0x02000;i++) {
-				if(portsMask[i]==0) continue;
-				if(portsMask[i]==0xFF && startPort>=8) {startPort-=8; continue;}
-				for(j=0;j<8;j++)
-					if(portsMask[i]&(1<<j))
-						if(startPort--==0) {
-							portNum=(i<<3)+j;
-							break;
-						}
-				if(startPort==-1) break;
-			} //for
-			if (i!=0x2000) {
-				startPort=portNum;
-				do {
-					sin.sin_port=htons((WORD)portNum);					
-					if(bind(nlc->s,(SOCKADDR*)&sin,sizeof(sin))==0) {
-						portNotFound = 0;
-						break;
-					}
-					for(portNum++;!PortInMask(portsMask,portNum);portNum++)
-					if(portNum==0xFFFF) portNum=0;
-				} while (portNum!=startPort);				
-			} //if
-		} //if
-		if (portNotFound)
-			Netlib_Logf(nlu,"Netlib connect: Not enough ports for outgoing connections specified");
-	} 
-	InitializeCriticalSection(&nlc->csHttpSequenceNums);
+    InitializeCriticalSection(&nlc->csHttpSequenceNums);
 	nlc->hOkToCloseEvent=CreateEvent(NULL,TRUE,TRUE,NULL);
 	nlc->dontCloseNow=0;
 	NetlibInitializeNestedCS(&nlc->ncsSend);
@@ -544,7 +515,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
 	}
 	if(nlc->sinProxy.sin_addr.S_un.S_addr==0
-	   || my_connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy), nloc)==SOCKET_ERROR) {
+	   || my_connect(nlc, nloc)==SOCKET_ERROR) {
 		if(nlc->sinProxy.sin_addr.S_un.S_addr)
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 		FreePartiallyInitedConnection(nlc);		
@@ -587,18 +558,13 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
 					if(!NetlibInitHttpsConnection(nlc,nlu,nloc)) {
 						//can't do HTTPS: try direct
-						if(nlc->s!=INVALID_SOCKET) closesocket(nlc->s);
+						closesocket(nlc->s);
 
-						nlc->s=socket(AF_INET,SOCK_STREAM,0);
-						if(nlc->s==INVALID_SOCKET) {
-							FreePartiallyInitedConnection(nlc);
-							return (int)(HANDLE)NULL;
-						}
 						nlc->sinProxy.sin_family=AF_INET;
 						nlc->sinProxy.sin_port=htons((short)nloc->wPort);
 						nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
-						if(nlc->sinProxy.sin_addr.S_un.S_addr==0
-						   || my_connect(nlc->s,(SOCKADDR *)&nlc->sinProxy,sizeof(nlc->sinProxy), nloc)==SOCKET_ERROR) {
+						if(nlc->sinProxy.sin_addr.S_un.S_addr==0 || my_connect(nlc, nloc)==SOCKET_ERROR) 
+                        {
 							if(nlc->sinProxy.sin_addr.S_un.S_addr)
 								Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 							FreePartiallyInitedConnection(nlc);
