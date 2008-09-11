@@ -262,6 +262,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 					NetlibSslFree(nlc->hSsl);
 					nlc->hSsl = NULL;
 				}
+                shutdown(nlc->s, 2);
 				closesocket(nlc->s);
 				nlc->s=INVALID_SOCKET;
 			}
@@ -336,27 +337,27 @@ int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 {
 	if (wParam) 
 	{
+        SOCKET s = INVALID_SOCKET;
+
 		WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
 		switch(GetNetlibHandleType(wParam)) {
 			case NLH_CONNECTION:
 				{
 					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
-					if (nlc->s != INVALID_SOCKET)
-					{
-						NetlibSslShutdown(nlc->hSsl);
-						shutdown(nlc->s, 2);
-					}
+		            NetlibSslShutdown(nlc->hSsl);
+                    s = nlc->s;
 				}
 				break;
 			case NLH_BOUNDPORT:
 				{
 					struct NetlibBoundPort* nlb = (struct NetlibBoundPort*)wParam;
-					if (nlb->s != INVALID_SOCKET)
-						shutdown(nlb->s, 2);
+                    s = nlb->s;
 				}
 				break;
 		}
 		ReleaseMutex(hConnectionHeaderMutex);
+
+        if (s != INVALID_SOCKET) shutdown(s, 2);
 	}
 	return 0;
 }
