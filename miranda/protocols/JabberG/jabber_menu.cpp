@@ -144,7 +144,10 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 					nMenuResourceItemsNew = item->resourceCount;
 				}
 
-				char text[ 200 ];
+				char text[ 256 ];
+				strcpy( text, m_szModuleName );
+				int nModuleNameLength = strlen( text );
+				char* tDest = text + nModuleNameLength;
 
 				CLISTMENUITEM mi = { 0 };
 				mi.cbSize = sizeof( CLISTMENUITEM );
@@ -156,10 +159,10 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 
 				TCHAR szTmp[512];
 				for (int i = 0; i < nMenuResourceItemsNew; ++i) {
-					mir_snprintf( text, SIZEOF(text), "/UseResource_%d", i );
+					mir_snprintf( tDest, SIZEOF(text) - nModuleNameLength, "/UseResource_%d", i );
 					if ( i >= m_nMenuResourceItems ) {
-						JCreateServiceParam( text, &CJabberProto::OnMenuHandleResource, MENUITEM_RESOURCES+i );
-						JCreateService( text, &CJabberProto::OnMenuHandleRequestAuth );
+						JCreateServiceParam( tDest, &CJabberProto::OnMenuHandleResource, MENUITEM_RESOURCES+i );
+						JCreateService( tDest, &CJabberProto::OnMenuHandleRequestAuth );
 						mi.pszName = "";
 						mi.position = i;
 						mi.pszPopupName = (char *)m_hMenuResourcesRoot;
