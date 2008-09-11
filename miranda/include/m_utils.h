@@ -300,6 +300,12 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Unicode version is available since 0.7.0
 #define MS_UTILS_CREATEDIRTREE "Utils/CreateDirTree"
 
+// Generates Random number of any length
+//wParam=size - length of the random number to generate
+//lParam=(LPARAM)(char*)pszArray - pointer to array to fill with random number
+//Always returns 0
+#define MS_UTILS_GETRANDOM "Utils/GetRandom"
+
 #ifdef _UNICODE
 	#define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
 	#define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"

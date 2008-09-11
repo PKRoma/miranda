@@ -445,6 +445,35 @@ static int RestartMiranda(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+typedef BOOL (APIENTRY *PGENRANDOM)( PVOID, ULONG );
+
+static int GenerateRandom(WPARAM wParam, LPARAM lParam)
+{
+    if (wParam == 0 || lParam == 0) return 0;
+
+    PGENRANDOM pfnRtlGenRandom = NULL;
+    HMODULE hModule = GetModuleHandleA("advapi32");
+    if (hModule)
+    {
+        pfnRtlGenRandom = (PGENRANDOM)GetProcAddress(hModule, "SystemFunction036");
+        if (pfnRtlGenRandom)
+        {
+            if (!pfnRtlGenRandom((PVOID)lParam, wParam)) 
+                pfnRtlGenRandom = NULL;
+        }
+    }
+    if (pfnRtlGenRandom == NULL)
+    {
+        srand(GetTickCount());
+        unsigned short* buf = (unsigned short*)lParam;
+        for ( ; (long)(wParam-=2) >= 0; )
+            *(buf++) = (unsigned short)rand();
+        if (lParam < 0)
+            *(char*)buf = (char)(rand() & 0xFF);
+    }
+    return 0;
+}
+
 int LoadUtilsModule(void)
 {
 	bModuleInitialized = TRUE;
@@ -454,6 +483,7 @@ int LoadUtilsModule(void)
 	CreateServiceFunction(MS_UTILS_RESTOREWINDOWPOSITION,RestoreWindowPosition);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYBYNUMBER,GetCountryByNumber);
 	CreateServiceFunction(MS_UTILS_GETCOUNTRYLIST,GetCountryList);
+	CreateServiceFunction(MS_UTILS_GETRANDOM,GenerateRandom);
 	CreateServiceFunction(MS_SYSTEM_RESTART,RestartMiranda);
 	CreateServiceFunction(MS_SYSTEM_GET_MD5I,GetMD5Interface);
 	CreateServiceFunction(MS_SYSTEM_GET_SHA1I,GetSHA1Interface);
