@@ -44,7 +44,7 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 	// initialize the netlib request
 	nlhr.cbSize = sizeof(nlhr);
 	nlhr.requestType = REQUEST_POST;
-	nlhr.flags = NLHRF_HTTP11;
+	nlhr.flags = NLHRF_HTTP11 | NLHRF_DUMPASTEXT;
 	nlhr.szUrl = *parUrl;
 	nlhr.dataLength = strlen(parAuthInfo);
 	nlhr.pData = (char*)parAuthInfo;

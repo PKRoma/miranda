@@ -186,6 +186,7 @@ void        MSN_EnableMenuItems( bool );
 void		MSN_FreeVariant( DBVARIANT* dbv );
 TCHAR*      MSN_GetContactNameT( HANDLE hContact );
 char*       MSN_Translate( const char* str );
+unsigned    MSN_GenRandom(void);
 
 HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );

@@ -163,7 +163,7 @@ int CMsnProto::MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
 		"Invitation-Command: INVITE\r\n"
 		"Invitation-Cookie: %i\r\n"
 		"Session-ID: {1A879604-D1B8-11D7-9066-0003FF431510}\r\n\r\n",
-		rand() << 16 | rand());
+		MSN_GenRandom());
 
 	thread->sendMessage( 'N', NULL, 1, msg, MSG_DISABLE_HDR );
 	return 0;

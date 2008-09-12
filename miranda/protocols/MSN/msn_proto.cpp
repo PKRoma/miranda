@@ -746,7 +746,7 @@ int __cdecl CMsnProto::GetAwayMsg( HANDLE hContact )
 {
 	AwayMsgInfo* inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
 	inf->hContact = hContact;
-	inf->id = rand();
+	inf->id = MSN_GenRandom();
 
 	ForkThread( &CMsnProto::MsnGetAwayMsgThread, inf );
 	return inf->id;
@@ -1037,7 +1037,7 @@ int __cdecl CMsnProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				{
 					if (netId == NETID_MSN)
 					{
-						seq = rand();
+						seq = MSN_GenRandom();
 						ForkThread( &CMsnProto::MsnSendOim, new TFakeAckParams( hContact, seq, mir_strdup( msg ), this));
 					}
 					else

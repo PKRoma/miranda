@@ -408,9 +408,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	p += sizeof(MsgrUsrKeyHdr);
 	
 	unsigned char iv[8];
-
-	srand(time(NULL));
-	for (int i=0; i<sizeof(iv)/2; ++i) ((unsigned short*)iv)[i] = (unsigned short)(rand() + rand());
+    MSN_CallService(MS_UTILS_GETRANDOM, sizeof(iv), (LPARAM)iv);
 	
 	memcpy(p, iv, sizeof(iv));
 	p += sizeof(iv);
@@ -436,7 +434,7 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 
 char* CMsnProto::HotmailLogin(const char* url)
 {
-	return NULL;
+    return NULL;
 }
 
 void CMsnProto::FreeAuthTokens(void)

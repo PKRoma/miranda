@@ -128,8 +128,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	hMooduleLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
 
-	srand(( unsigned int )time( NULL ));
-
 	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize = sizeof( pd );
 	pd.szName = "MSN";

@@ -63,7 +63,7 @@ void CMsnProto::msnftp_invite( filetransfer *ft )
 	else
 		pszFiles = *ft->std.files;
 
-	mir_snprintf( msg, sizeof( msg ),
+    mir_snprintf( msg, sizeof( msg ),
 		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 		"Application-Name: File Transfer\r\n"
 		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
@@ -71,7 +71,7 @@ void CMsnProto::msnftp_invite( filetransfer *ft )
 		"Invitation-Cookie: %i\r\n"
 		"Application-File: %s\r\n"
 		"Application-FileSize: %i\r\n\r\n",
-		rand() << 16 | rand(), UTF8(pszFiles), ft->std.currentFileSize );
+		MSN_GenRandom(), UTF8(pszFiles), ft->std.currentFileSize );
 
 	if ( thread == NULL )
 		MsgQueue_Add( ft->std.hContact, 'S', msg, -1, ft );
@@ -340,7 +340,7 @@ void CMsnProto::msnftp_startFileSend( ThreadData* info, const char* Invcommand, 
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
 		sb ? "ACCEPT" : "CANCEL",
-		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, rand() << 16 | rand());
+		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( sb ) {
