@@ -35,9 +35,8 @@ bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn)
 
     if (--*portn < 0 && s != INVALID_SOCKET)
     {
-        srand(GetTickCount());
         BindSocketToPort(szPorts, INVALID_SOCKET, portn);
-        WORD num = 0;
+        WORD num;
         CallService(MS_UTILS_GETRANDOM, sizeof(WORD), (LPARAM)&num);
         *portn = num % *portn;
     }
