@@ -496,7 +496,10 @@ bool CMsnProto::MSN_ABGetFull(void)
 				ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
 				MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
 
-				szTmp  = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
+				szTmp = ezxml_txt(ezxml_child(contInf, "CID"));
+				SetAbParam(hContact, "CID", szTmp);
+
+                szTmp  = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
 				setByte(hContact, "MobileAllowed", strcmp(szTmp, "true") != 0);
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));

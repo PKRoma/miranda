@@ -236,15 +236,15 @@ int CMsnProto::SetNicknameUI( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnViewProfile - view a contact's profile at http://members.msn.com
 
-static const char sttUrlPrefix[] = "http://members.msn.com/";
+static const char sttUrlPrefix[] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
 
 int CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM lParam )
 {
-	char tUrl[ MSN_MAX_EMAIL_LEN + sizeof(sttUrlPrefix) ];
+	char tUrl[ 20 + sizeof(sttUrlPrefix) ];
 	strcpy( tUrl, sttUrlPrefix );
 
-	if ( !getStaticString(( HANDLE )wParam, "e-mail", tUrl + sizeof(sttUrlPrefix) - 1, MSN_MAX_EMAIL_LEN ))
-		MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )tUrl );
+	if ( !getStaticString(( HANDLE )wParam, "CID", tUrl + sizeof(sttUrlPrefix) - 1, 20 ))
+        MsnInvokeMyURL(false, tUrl);
 	return 0;
 }
 
