@@ -95,6 +95,7 @@ static struct branch_t branch1[] = {
 	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
     {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,0, NULL},
     {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
+	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL}
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Show icons"), "IconFlags", 	GC_EVENT_TOPIC|GC_EVENT_JOIN|GC_EVENT_QUIT|
@@ -105,7 +106,6 @@ static struct branch_t branch2[] = {
 	{LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
 	{LPGENT("Limit user names to 20 characters"), "LogLimitNames", 0,1, NULL},
-	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
 	{LPGENT("Strip colors from messages"), "StripFormatting", 0, 0, NULL},
 	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
 };
@@ -123,7 +123,7 @@ static struct branch_t branch3[] = {
 	{LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
 };
 
-static struct branch_t branch5[] = {
+static struct branch_t branch4[] = {
 	{LPGENT("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
 	{LPGENT("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
 	{LPGENT("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0, NULL},
@@ -174,9 +174,6 @@ static void FillBranch(HWND hwndTree, HTREEITEM hParent, struct branch_t *branch
 	TVINSERTSTRUCT tvis;
 	int i;
 	int iState;
-
-	if(hParent == 0)
-		return;
 
 	tvis.hParent=hParent;
 	tvis.hInsertAfter=TVI_LAST;
@@ -622,8 +619,7 @@ static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
 BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	static HTREEITEM hListHeading1 = 0;
-	static HTREEITEM hListHeading5= 0;
-	static HTREEITEM hListHeading6= 0;
+	static HTREEITEM hListHeading4= 0;
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
@@ -632,12 +628,9 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETRANGE,0,MAKELONG(255,10));
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
 		hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
-		hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Icons to display in the tray"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
-		if(g_dat->popupInstalled)
-			hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0)?TRUE:FALSE);
+		hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Icons to display in the tray"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x1000);
 		SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 		{
 			TCHAR* pszGroup = NULL;
@@ -649,8 +642,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 	case OPT_FIXHEADINGS:
 		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1);
-		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5);
-		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
+		CheckHeading(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
 		break;
 
 	case WM_COMMAND:
@@ -667,16 +659,10 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			tvi.mask=TVIF_HANDLE|TVIF_STATE;
 			tvi.hItem=(HTREEITEM) lParam;
 			TreeView_GetItem((HWND)wParam,&tvi);
-			if(tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-				TreeView_SetItemState((HWND)wParam, branch1[1].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-			if(tvi.hItem == branch1[1].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-				TreeView_SetItemState((HWND)wParam, branch1[0].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
 			if (tvi.hItem == hListHeading1)
 				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1);
-			else if (tvi.hItem == hListHeading5)
-				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5);
-			else if (tvi.hItem == hListHeading6)
-				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6);
+			else if (tvi.hItem == hListHeading4)
+				CheckBranches(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4);
 			else
 				PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -729,12 +715,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 							DBWriteContactSettingByte(NULL, "Chat", "NicklistRowDist", (BYTE)iLen);
 						else
 							DBDeleteContactSetting(NULL, "Chat", "NicklistRowDist");
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch1, sizeof(branch1) / sizeof(branch1[0]));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch5, sizeof(branch5) / sizeof(branch5[0]));
-						if(g_dat->popupInstalled)
-							SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch6, sizeof(branch6) / sizeof(branch6[0]));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch1, SIZEOF(branch1));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch4, SIZEOF(branch4));
 						g_Settings.dwIconFlags = DBGetContactSettingDword(NULL, "Chat", "IconFlags", 0x0000);
 						g_Settings.dwTrayIconFlags = DBGetContactSettingDword(NULL, "Chat", "TrayIconFlags", 0x1000);
 						g_Settings.dwPopupFlags = DBGetContactSettingDword(NULL, "Chat", "PopupFlags", 0x0000);
@@ -754,13 +736,8 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		{
 		BYTE b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
 		DBWriteContactSettingByte(NULL, "Chat", "Branch1Exp", b);
-		b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading5, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
+		b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
 		DBWriteContactSettingByte(NULL, "Chat", "Branch5Exp", b);
-		if(g_dat->popupInstalled)
-		{
-			b = TreeView_GetItemState(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading6, TVIS_EXPANDED)&TVIS_EXPANDED?1:0;
-			DBWriteContactSettingByte(NULL, "Chat", "Branch6Exp", b);
-		}
 		}break;
 
 	default:break;
@@ -976,8 +953,8 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			iLen = SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN3,UDM_GETPOS,0,0);
 			DBWriteContactSettingWord(NULL, "Chat", "LoggingLimit", (WORD)iLen);
 
-			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, sizeof(branch2) / sizeof(branch2[0]));
-			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch3, sizeof(branch3) / sizeof(branch3[0]));
+			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch2, SIZEOF(branch2));
+			SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch3, SIZEOF(branch3));
 
 			mir_free(pszText);
 
@@ -1000,27 +977,31 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 
 static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
+	static HTREEITEM hListHeading6= 0;
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
 		{
-		TranslateDialogDefault(hwndDlg);
+			TranslateDialogDefault(hwndDlg);
 
-		SendDlgItemMessage(hwndDlg, IDC_CHAT_BKG, CPM_SETCOLOUR,0,g_Settings.crPUBkgColour);
-		SendDlgItemMessage(hwndDlg, IDC_CHAT_TEXT, CPM_SETCOLOUR,0,g_Settings.crPUTextColour);
+			SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_BKG, CPM_SETCOLOUR,0,g_Settings.crPUBkgColour);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_TEXT, CPM_SETCOLOUR,0,g_Settings.crPUTextColour);
 
-		if(g_Settings.iPopupStyle ==2)
-			CheckDlgButton(hwndDlg, IDC_CHAT_RADIO2, BST_CHECKED);
-		else if(g_Settings.iPopupStyle ==3)
-			CheckDlgButton(hwndDlg, IDC_CHAT_RADIO3, BST_CHECKED);
-		else
-			CheckDlgButton(hwndDlg, IDC_CHAT_RADIO1, BST_CHECKED);
+			if(g_Settings.iPopupStyle ==2)
+				CheckDlgButton(hwndDlg, IDC_CHAT_RADIO2, BST_CHECKED);
+			else if(g_Settings.iPopupStyle ==3)
+				CheckDlgButton(hwndDlg, IDC_CHAT_RADIO3, BST_CHECKED);
+			else
+				CheckDlgButton(hwndDlg, IDC_CHAT_RADIO1, BST_CHECKED);
 
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BKG), IsDlgButtonChecked(hwndDlg, IDC_CHAT_RADIO3) ==BST_CHECKED?TRUE:FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_TEXT), IsDlgButtonChecked(hwndDlg, IDC_CHAT_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BKG), IsDlgButtonChecked(hwndDlg, IDC_CHAT_RADIO3) ==BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_TEXT), IsDlgButtonChecked(hwndDlg, IDC_CHAT_RADIO3) ==BST_CHECKED?TRUE:FALSE);
 
-		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN1,UDM_SETRANGE,0,MAKELONG(100,-1));
-		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN1,UDM_SETPOS,0,MAKELONG(g_Settings.iPopupTimeout,0));
+			SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN1,UDM_SETRANGE,0,MAKELONG(100,-1));
+			SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN1,UDM_SETPOS,0,MAKELONG(g_Settings.iPopupTimeout,0));
+			//hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Pop-ups to display"), TRUE);
+			FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), NULL, branch6, SIZEOF(branch6), 0x0000);
 		}break;
 
 	case WM_COMMAND:
@@ -1042,10 +1023,29 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 		}
 
 		break;
+
 	case WM_NOTIFY:
 	{
 		switch(((LPNMHDR)lParam)->idFrom)
 		{
+			case IDC_CHAT_CHECKBOXES:
+				if(((LPNMHDR)lParam)->code==NM_CLICK) {
+					TVHITTESTINFO hti;
+					hti.pt.x=(short)LOWORD(GetMessagePos());
+					hti.pt.y=(short)HIWORD(GetMessagePos());
+					ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
+					if(TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti))
+						if(hti.flags&TVHT_ONITEMSTATEICON) {
+							SendMessage(hwndDlg, UM_CHECKSTATECHANGE, (WPARAM)((LPNMHDR)lParam)->hwndFrom, (LPARAM)hti.hItem);
+						}
+
+				} else if (((LPNMHDR) lParam)->code == TVN_KEYDOWN) {
+					if (((LPNMTVKEYDOWN) lParam)->wVKey == VK_SPACE) {
+						SendMessage(hwndDlg, UM_CHECKSTATECHANGE, (WPARAM)((LPNMHDR)lParam)->hwndFrom,
+							(LPARAM)TreeView_GetSelection(((LPNMHDR)lParam)->hwndFrom));
+					}
+				}
+			break;
 			case 0:
 				switch (((LPNMHDR)lParam)->code)
 				{
@@ -1071,12 +1071,18 @@ static BOOL CALLBACK DlgProcOptionsPopup(HWND hwndDlg,UINT uMsg,WPARAM wParam,LP
 						DBWriteContactSettingDword(NULL, "Chat", "PopupColorBG", (DWORD)SendDlgItemMessage(hwndDlg,IDC_CHAT_BKG,CPM_GETCOLOUR,0,0));
 						g_Settings.crPUTextColour = SendDlgItemMessage(hwndDlg,IDC_CHAT_TEXT,CPM_GETCOLOUR,0,0);
 						DBWriteContactSettingDword(NULL, "Chat", "PopupColorText", (DWORD)SendDlgItemMessage(hwndDlg,IDC_CHAT_TEXT,CPM_GETCOLOUR,0,0));
-
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), branch6, SIZEOF(branch6));
 					}
 					return TRUE;
 				}
 		}
 	}break;
+	case UM_CHECKSTATECHANGE:
+		{
+			PostMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+		}
 
 	default:break;
 	}
@@ -1093,7 +1099,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 		odp.position = 910000002;
 		odp.hInstance = g_hInst;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONSPOPUP);
-		odp.ptszTitle = LPGENT("Group Chat");
+		odp.ptszTitle = LPGENT("Messaging");
 		odp.ptszGroup = LPGENT("Popups");
 		odp.pfnDlgProc = DlgProcOptionsPopup;
 		odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
