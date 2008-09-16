@@ -1250,8 +1250,6 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 			} else if (!pfnIsAppThemed()) {
 				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
 			}
-			if (bSelected) {
-			}
 			if (atTop) {
 				dwFormat = DT_SINGLELINE|DT_TOP|DT_CENTER|DT_NOPREFIX|DT_NOCLIP;
 				rIcon.top = rect.top + GetSystemMetrics(SM_CYEDGE);
@@ -1273,13 +1271,13 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				rIcon.left = rect.left + GetSystemMetrics(SM_CXEDGE) + (bSelected ? 6 : 2);
 				if (tci.iImage >= 0) {
 					ImageList_GetImageInfo(g_dat->hTabIconList, tci.iImage, &info);
-					rIcon.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - 2;
+					rIcon.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - 1;
 					ImageList_DrawEx(g_dat->hTabIconList, tci.iImage, lpDIS->hDC, rIcon.left, rIcon.top, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
 					rect.left = rIcon.left + (info.rcImage.right - info.rcImage.left);
 				}
 				if (dat->flags2 & SMF2_TABCLOSEBUTTON) {
                     ImageList_GetImageInfo(g_dat->hButtonIconList, 0, &info);
-                    rIcon.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - GetSystemMetrics(SM_CYEDGE);
+                    rIcon.top = rect.bottom - (info.rcImage.bottom - info.rcImage.top) - 2;
                     rIcon.left = rect.right - GetSystemMetrics(SM_CXEDGE) - (bSelected ? 6 : 2) - (info.rcImage.right - info.rcImage.left);
                     ImageList_DrawEx(g_dat->hButtonIconList, 0, lpDIS->hDC, rIcon.left, rIcon.top, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
                     rect.right = rIcon.left - 1;
@@ -1287,12 +1285,23 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				rect.bottom -= GetSystemMetrics(SM_CYEDGE) + 2;
 			}
 			DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
-			//SetTextColor(lpDIS->hDC, crOldColor);
 			SetBkMode(lpDIS->hDC, iOldBkMode);
 			if (tcdat->bDragged && iTabIndex == tcdat->destTab && iTabIndex != tcdat->srcTab) {
-				RECT hlRect;
-				TabCtrl_GetItemRect(hwnd, iTabIndex, &hlRect);
-				hlRect.right-=3;
+				RECT hlRect = lpDIS->rcItem;
+				if (bSelected) {
+					hlRect.bottom-=GetSystemMetrics(SM_CYEDGE);
+					hlRect.top+=GetSystemMetrics(SM_CYEDGE);
+					hlRect.left+=GetSystemMetrics(SM_CXEDGE);
+					hlRect.right-=GetSystemMetrics(SM_CXEDGE);
+				} else {
+					if (atTop) {
+						hlRect.top += GetSystemMetrics(SM_CYEDGE);;
+						hlRect.bottom += GetSystemMetrics(SM_CYEDGE);;
+					} else {
+						hlRect.top -= GetSystemMetrics(SM_CYEDGE);;
+						hlRect.bottom -= GetSystemMetrics(SM_CYEDGE);;
+					}
+				}
 				FrameRect(lpDIS->hDC, &hlRect, GetSysColorBrush(COLOR_HIGHLIGHT));
 				hlRect.left++;
 				hlRect.top++;
@@ -1579,7 +1588,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						if (newDest != dat->destTab) {
 							dat->destTab = 	newDest;
 							ImageList_DragLeave(GetDesktopWindow());
-							RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+							RedrawWindow(hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 							ImageList_DragEnter(GetDesktopWindow(), pt.x, pt.y);
 						} else {
 							ImageList_DragMove(pt.x, pt.y);
