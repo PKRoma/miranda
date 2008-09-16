@@ -1286,15 +1286,20 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				}
 				rect.bottom -= GetSystemMetrics(SM_CYEDGE) + 2;
 			}
-			if (iTabIndex == tcdat->destTab && tcdat->bDragged) {
-				RECT rect2 = lpDIS->rcItem;
-				rect2.left = rect2.left + GetSystemMetrics(SM_CXEDGE) + (bSelected ? 2 : 0) - 2;
-				rect2.right = rect2.left + 4;
-				FillRect(lpDIS->hDC, &rect2, GetSysColorBrush(COLOR_HIGHLIGHT));
-			}
 			DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
 			//SetTextColor(lpDIS->hDC, crOldColor);
 			SetBkMode(lpDIS->hDC, iOldBkMode);
+			if (tcdat->bDragged && iTabIndex == tcdat->destTab && iTabIndex != tcdat->srcTab) {
+				RECT hlRect;
+				TabCtrl_GetItemRect(hwnd, iTabIndex, &hlRect);
+				hlRect.right-=3;
+				FrameRect(lpDIS->hDC, &hlRect, GetSysColorBrush(COLOR_HIGHLIGHT));
+				hlRect.left++;
+				hlRect.top++;
+				hlRect.right--;
+				hlRect.bottom--;
+				FrameRect(lpDIS->hDC, &hlRect, GetSysColorBrush(COLOR_HIGHLIGHT));
+			}
 		}
 	}
 }
