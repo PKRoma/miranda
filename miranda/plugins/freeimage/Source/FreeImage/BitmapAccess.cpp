@@ -567,10 +567,10 @@ FreeImage_SetBackgroundColor(FIBITMAP *dib, RGBQUAD *bkcolor) {
 BOOL DLL_CALLCONV
 FreeImage_IsTransparent(FIBITMAP *dib) {
 	if(dib) {
-		if(FreeImage_GetBPP(dib) == 32) {
+//		if(FreeImage_GetBPP(dib) == 32) {
 			if(FreeImage_GetColorType(dib) == FIC_RGBALPHA) {
 				return TRUE;
-			}
+//			}
 		} else {
 			return ((FREEIMAGEHEADER *)dib->data)->transparent ? TRUE : FALSE;
 		}
