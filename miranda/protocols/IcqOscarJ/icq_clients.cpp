@@ -832,6 +832,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 							szClient = szClientBuf;
 						}
 						else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
+            {
 							if (CheckContactCapabilities(hContact, CAPF_RTF))
 							{
 								// most probably Qnext - try to make that shit at least receiving our msgs
@@ -839,8 +840,11 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 								NetLog_Server("Forcing simple messages (QNext client).");
 								szClient = "QNext";
 							}
+              else if (CheckContactCapabilities(hContact, CAPF_HTML) && CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCap(caps, wLen, &captZers, 0x10))
+                szClient = "fring";
 							else
 								szClient = "pyICQ";
+            }
 						else
 							szClient = "ICQ Lite v4";
 					}
