@@ -165,6 +165,7 @@ const capstr capYapp      = {'Y', 'a', 'p', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 const capstr capMipClient = {0x4d, 0x49, 0x50, 0x20, 0x43, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20, 0x76, 0x00, 0x00, 0x00, 0x00};
 const capstr capPigeon    = {'P', 'I', 'G', 'E', 'O', 'N', '!', 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capDigsbyBeta= {0x09, 0x46, 0x01, 0x05, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x45, 0x53, 0x54, 0x00};
+const capstr capDigsby    = {'d', 'i', 'g', 's', 'b', 'y', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capJapp      = {0x6a, 0x61, 0x70, 0x70, 0xa9, 0x20, 0x62, 0x79, 0x20, 0x53, 0x65, 0x72, 0x67, 0x6f, 0x00, 0x00};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
@@ -174,6 +175,7 @@ const capstr capQipMobile = {0xB0, 0x82, 0x62, 0xF6, 0x7F, 0x7C, 0x45, 0x61, 0xA
 const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capQutIm     = {'q', 'u', 't', 'i', 'm', 0x30, 0x2e, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+const capstr capBayan     = {'b', 'a', 'y', 'a', 'n', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capJabberJIT = {'J', 'I', 'T', ' ', 0x76, 0x2E, 0x31, 0x2E, 0x78, 0x2E, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
@@ -675,6 +677,10 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 				strncat(szClientBuf, (char*)(*capId) + 8, 5);
 				szClient = szClientBuf;
 			}
+      else if (MatchCap(caps, wLen, &capDigsby, 0x06))
+      { // http://www.dibsby.com (newer builds)
+        szClient = "Digsby";
+      }
       else if (MatchCap(caps, wLen, &capDigsbyBeta, 0x10))
       { // http://www.digsby.com - probably by mistake (feature detection as well)
         szClient = "Digsby";
@@ -718,6 +724,12 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
               break;
           }
         }
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capBayan, 8))
+      { // http://www.barobin.com/bayanICQ.html
+        strcpy(szClientBuf, "bayanICQ ");
+        strncat(szClientBuf, (char*)(*capId) + 8, 5);
         szClient = szClientBuf;
       }
       else if (capId = MatchCap(caps, wLen, &capJabberJIT, 0x04))
@@ -958,6 +970,10 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 				{
 					szClient = "naim";
 				}
+        else if (MatchCap(caps, wLen, &capDigsby, 0x06))
+        { // http://www.dibsby.com (newer builds)
+          szClient = "Digsby";
+        }
         else if (MatchCap(caps, wLen, &capDigsbyBeta, 0x10))
         { // http://www.digsby.com
           szClient = "Digsby";
