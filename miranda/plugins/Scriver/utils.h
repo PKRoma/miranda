@@ -58,4 +58,5 @@ extern void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * contro
 extern void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...);
 extern int MeasureMenuItem(WPARAM wParam, LPARAM lParam);
 extern int DrawMenuItem(WPARAM wParam, LPARAM lParam);
+extern void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList);
 #endif

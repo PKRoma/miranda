@@ -401,7 +401,7 @@ void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const
 int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
 {
 	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
-	if (mis->itemData != g_dat->hButtonIconList && mis->itemData != g_dat->hSearchEngineIconList) {
+	if (mis->itemData != (ULONG) g_dat->hButtonIconList && mis->itemData != (ULONG) g_dat->hSearchEngineIconList) {
 		return FALSE;
 	}
 	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
@@ -412,9 +412,14 @@ int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
 int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 {
 	int y;
+	int id;
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-	if (dis->itemData != g_dat->hButtonIconList && dis->itemData != g_dat->hSearchEngineIconList) {
+	if (dis->itemData != (ULONG) g_dat->hButtonIconList && dis->itemData != (ULONG) g_dat->hSearchEngineIconList) {
 		return FALSE;
+	}
+	id = dis->itemID;
+	if (id >= IDM_SEARCH_GOOGLE) {
+		id -= IDM_SEARCH_GOOGLE;
 	}
 	y = (dis->rcItem.bottom - dis->rcItem.top - GetSystemMetrics(SM_CYSMICON)) / 2 + 1;
 	if (dis->itemState & ODS_SELECTED) {
@@ -425,9 +430,9 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 			rc.top = y;
 			rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON) + 2;
 			FillRect(dis->hDC, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
-			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_SELECTED);
 		} else
-			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS);
 	} else {
 		if (dis->itemState & ODS_CHECKED) {
 			HBRUSH hBrush;
@@ -446,9 +451,9 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 				(GetBValue(menuCol) + GetBValue(hiliteCol)) / 2));
 			FillRect(dis->hDC, &rc, hBrush);
 			DeleteObject(hBrush);
-			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, GetSysColor(COLOR_MENU), ILD_BLEND25);
 		} else
-			ImageList_DrawEx((HIMAGELIST)dis->itemData, dis->itemID, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
+			ImageList_DrawEx((HIMAGELIST)dis->itemData, id, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
 	}
 	return TRUE;
 }
@@ -468,7 +473,7 @@ void SearchWord(TCHAR * word, int engine)
 				mir_snprintf( szURL, sizeof( szURL ), "http://search.yahoo.com/search?p=%s&ei=UTF-8", wordURL );
 				break;
 			case SEARCHENGINE_FOODNETWORK:
-				mir_snprintf( szURL, sizeof( szURL ), "http://search.foodnetwork.com/food/recipe/korma/search.do?searchString=%s", wordURL );
+				mir_snprintf( szURL, sizeof( szURL ), "http://search.foodnetwork.com/search/delegate.do?fnSearchString=%s", wordURL );
 				break;
 			case SEARCHENGINE_GOOGLE:
 			default:
@@ -490,8 +495,8 @@ void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
 		minfo.fMask = MIIM_FTYPE | MIIM_BITMAP | MIIM_DATA | MIIM_ID;
 		minfo.hbmpItem = HBMMENU_CALLBACK;
 		minfo.fType = MFT_STRING;
-		minfo.wID = i;
-		minfo.dwItemData = hImageList;
+		minfo.wID = IDM_SEARCH_GOOGLE + i;
+		minfo.dwItemData = (ULONG) hImageList;
 		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
 	}
 }
