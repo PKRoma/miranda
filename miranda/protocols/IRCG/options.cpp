@@ -390,7 +390,6 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 
 		if ( m_action == 2 ) {
 			int i = m_owner->m_serverCombo.GetCurSel();
-			m_proto->m_servers.remove(( SERVER_INFO* )m_owner->m_serverCombo.GetItemData( i ));
 			m_owner->m_serverCombo.DeleteString( i );
 		}
 
@@ -647,6 +646,7 @@ void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 			i--;
 		m_serverCombo.SetCurSel( i );
 		OnServerCombo( NULL );
+		SendMessage(GetParent( m_hwnd), PSM_CHANGED,0,0);
 		m_serverlistModified = true;
 	}
 
@@ -813,7 +813,11 @@ void CConnectPrefsDlg::OnApply()
 				else
 					mir_snprintf(TextLine, sizeof(TextLine), "SERVER:%s:%d-%dGROUP:%s", pData->m_address, pData->m_portStart, pData->m_portEnd, pData->m_group);
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
-	}	}	}
+		}	}
+
+		m_proto->m_servers.destroy();
+		m_proto->RereadServers();
+	}
 
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
 
