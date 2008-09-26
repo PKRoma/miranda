@@ -1,7 +1,8 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
+// Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
+#define IDC_STATIC						-1
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDOK2                           2
@@ -494,6 +495,7 @@
 #define IDC_CHECK3                      1395
 #define IDC_INFOPANEL                   1395
 #define IDC_SUPPORT                     1396
+#define IDC_SHOWAVATAR                  1396
 #define IDC_QHTM                        1399
 #define IDC_TSLABEL_ACTIVE              1400
 #define IDC_TSLABEL_INACTIVE            1401

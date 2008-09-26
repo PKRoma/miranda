@@ -89,6 +89,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			BYTE bLTR = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "RTL", 1);
 			BYTE bSplit = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "splitoverride", 0);
 			BYTE bInfoPanel = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "infopanel", 0);
+			BYTE bAvatarVisible = DBGetContactSettingByte((HANDLE)lParam, SRMSGMOD_T, "hideavatar", -1);
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)lParam, 0);
 			int  def_log_index = 1, hpp_log_index = 1, ieview_log_index = 1;
 
@@ -100,10 +101,15 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 
-			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use Global Setting"));
+			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
 			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always On"));
 			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Always Off"));
 			SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_SETCURSEL, bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : 2), 0);
+
+			SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
+			SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Show always (if present)"));
+			SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Never show it at all"));
+			SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_SETCURSEL, bAvatarVisible == 0xff ? 0 : (bAvatarVisible == 1 ? 1 : 2), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Use global Setting"));
 			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)(have_hpp ? TranslateT("Force History++") : TranslateT("Force History++ (plugin missing)")));
@@ -195,6 +201,7 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					DWORD	sCodePage = DBGetContactSettingDword(hContact, SRMSGMOD_T, "ANSIcodepage", 0);
 					DWORD	oldTZ = (DWORD)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 					BYTE	bInfoPanel, bOldInfoPanel = DBGetContactSettingByte(hContact, SRMSGMOD_T, "infopanel", 0);
+					BYTE	bAvatarVisible = 0;
 
 					if (hWnd) {
 						dat = (struct MessageWindowData *)GetWindowLong(hWnd, GWL_USERDATA);
@@ -281,6 +288,12 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						InvalidateRect(GetDlgItem(hWnd, IDC_PANELUIN), NULL, FALSE);
 					}
 
+					bAvatarVisible = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_GETCURSEL, 0, 0);
+					if(bAvatarVisible == 0)
+						DBDeleteContactSetting(hContact, SRMSGMOD_T, "hideavatar");
+					else
+						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "hideavatar", (BYTE)(bAvatarVisible == 1 ? 1 : 0));
+
 					bInfoPanel = (BYTE)SendDlgItemMessage(hwndDlg, IDC_INFOPANEL, CB_GETCURSEL, 0, 0);
 					if (bInfoPanel != bOldInfoPanel) {
 						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "infopanel", (BYTE)(bInfoPanel == 0 ? 0 : (bInfoPanel == 1 ? 1 : -1)));
@@ -311,8 +324,13 @@ static BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						if (hWnd && dat)
 							dat->sendMode &= ~SMODE_NOACK;
 					}
-					if (hWnd && dat)
+					if (hWnd && dat) {
 						SendMessage(hWnd, DM_CONFIGURETOOLBAR, 0, 1);
+						dat->panelWidth = -1;
+						ShowPicture(hWnd, dat, FALSE);
+						SendMessage(hWnd, WM_SIZE, 0, 0);
+						DM_ScrollToBottom(hWnd, dat, 0, 1);
+					}
 
 					if (IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))
 						DBWriteContactSettingByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);

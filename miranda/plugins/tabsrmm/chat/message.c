@@ -151,27 +151,27 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (!memcmp(p1, "\\endash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE) 
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93"); 
-#else 
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96"); 
-#endif 
-					} else if (!memcmp(p1, "\\emdash", 7)) { 
-						bTextHasStarted = bJustRemovedRTF = TRUE; 
-						iRemoveChars = 7; 
-#if defined(_UNICODE) 
-						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94"); 
-#else 
-						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97"); 
-#endif 
-					} else if (!memcmp(p1, "\\bullet", 7)) { 
-						bTextHasStarted = bJustRemovedRTF = TRUE; 
-						iRemoveChars = 7; 
-#if defined(_UNICODE) 
-						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2"); 
-#else 
-						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95"); 
-#endif 
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
+#endif
+					} else if (!memcmp(p1, "\\emdash", 7)) {
+						bTextHasStarted = bJustRemovedRTF = TRUE;
+						iRemoveChars = 7;
+#if defined(_UNICODE)
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
+#else
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
+#endif
+					} else if (!memcmp(p1, "\\bullet", 7)) {
+						bTextHasStarted = bJustRemovedRTF = TRUE;
+						iRemoveChars = 7;
+#if defined(_UNICODE)
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
+#else
+						mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
+#endif
 				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;
@@ -280,7 +280,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 1;
 				break;
- 
+
 			case '%': // escape chat -> protocol control character
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;

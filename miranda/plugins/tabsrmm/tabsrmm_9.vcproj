@@ -1031,50 +1031,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\m_cln_skinedit.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_fingerprint.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_flash.h"
-				>
-			</File>
-			<File
-				RelativePath="m_ieview.h"
-				>
-			</File>
-			<File
-				RelativePath="m_MathModule.h"
-				>
-			</File>
-			<File
-				RelativePath="m_metacontacts.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_nudge.h"
-				>
-			</File>
-			<File
-				RelativePath="m_smileyadd.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_spellchecker.h"
-				>
-			</File>
-			<File
-				RelativePath="m_toptoolbar.h"
-				>
-			</File>
-			<File
-				RelativePath="m_updater.h"
-				>
-			</File>
-			<File
 				RelativePath="msgdlgutils.h"
 				>
 			</File>
@@ -1102,6 +1058,78 @@
 				RelativePath=".\typingnotify.h"
 				>
 			</File>
+			<File
+				RelativePath=".\version.h"
+				>
+			</File>
+			<Filter
+				Name="API"
+				>
+				<File
+					RelativePath=".\API\m_cln_skinedit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_fingerprint.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_flash.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_folders.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_historyevents.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_ieview.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_mathmodule.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_metacontacts.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_msg_buttonsbar.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_nudge.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_popup.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_smileyadd.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_Snapping_windows.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_spellchecker.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_toptoolbar.h"
+					>
+				</File>
+				<File
+					RelativePath=".\API\m_updater.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

@@ -129,3 +129,7 @@ extern struct LIST_INTERFACE li;
 #include "chat/chat.h"
 
 #endif
+
+#if _MSC_VER >= 1500
+	#define wEffects wReserved
+#endif

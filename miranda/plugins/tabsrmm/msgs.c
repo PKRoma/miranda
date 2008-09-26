@@ -35,11 +35,9 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.8\\b0\\ul0\\par ",
-	"*\tbug fixes: Revert option in advanced tweaks, history event suppport (possible crash).\\par ",
-	"*\tLayout tweaks for 120dpi setting.\\par ",
-	"*\tCustom emoticons patch by borkra (show custom emoticons on incoming messages only).\\par ",
-	"*\tVarious fixes for hidden containers.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.10\\b0\\ul0\\par ",
+	"*\tBug fixes: Title bar variables, status bar buttons and more.\\par ",
+	"*\tNew: Added ability to configure avatar visible to the user preference dialog.\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
