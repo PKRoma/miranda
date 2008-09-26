@@ -102,3 +102,7 @@ BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);
 void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor2, BOOL transparent, BYTE FLG_GRADIENT, BYTE FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
 
 void FreeAndNil( void** );
+
+#if _MSC_VER >= 1500
+	#define wEffects wReserved
+#endif
