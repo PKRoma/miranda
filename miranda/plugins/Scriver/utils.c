@@ -488,14 +488,14 @@ void SearchWord(TCHAR * word, int engine)
 void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
 	int i;
 	for (i=0; i<IDI_FOODNETWORK - IDI_GOOGLE + 1; i++) {
-		MENUITEMINFO minfo;
+		MENUITEMINFO minfo = {0};
 		minfo.cbSize = sizeof(minfo);
-		minfo.fMask = MIIM_FTYPE | MIIM_ID;
-		GetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
-		minfo.fMask = MIIM_FTYPE | MIIM_BITMAP | MIIM_DATA | MIIM_ID;
+//		minfo.fMask = MIIM_FTYPE | MIIM_ID;
+//		GetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
+		minfo.fMask = MIIM_BITMAP | MIIM_DATA;
 		minfo.hbmpItem = HBMMENU_CALLBACK;
-		minfo.fType = MFT_STRING;
-		minfo.wID = IDM_SEARCH_GOOGLE + i;
+		//minfo.fType = MFT_STRING;
+		//minfo.wID = IDM_SEARCH_GOOGLE + i;
 		minfo.dwItemData = (ULONG) hImageList;
 		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
 	}

@@ -42,6 +42,7 @@ int Chat_Load()
 {
 	InitializeCriticalSection(&cs);
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
+	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) g_hMenu, 0);
 	HookEvents();
 	CreateServiceFunctions();
 	CreateHookableEvents();

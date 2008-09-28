@@ -1791,7 +1791,6 @@ LABEL_SHOWWINDOW:
 							POINT pt;
 
 							hSubMenu = GetSubMenu(g_hMenu, 2);
-							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 							pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 							pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
