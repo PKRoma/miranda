@@ -126,7 +126,7 @@ void YAHOO_SendAvatar(const char *szFile)
 	}
 
 	sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
-	sf->filename = strdup(szFile);
+	sf->filename = _strdup(szFile);
 	sf->cancel = 0;
 	sf->fsize = statbuf.st_size;
 	
@@ -254,8 +254,8 @@ void YAHOO_get_avatar(const char *who, const char *pic_url, long cksum)
 	struct avatar_info *avt;
 	
 	avt = malloc(sizeof(struct avatar_info));
-	avt->who = strdup(who);
-	avt->pic_url = strdup(pic_url);
+	avt->who = _strdup(who);
+	avt->pic_url = _strdup(pic_url);
 	avt->cksum = cksum;
 	
 	mir_forkthread(yahoo_recv_avatarthread, (void *) avt);
