@@ -137,6 +137,8 @@ int GetGMTOffset(void)
 		nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
 		break;
 	case TIME_ZONE_ID_UNKNOWN:
+		nOffset = -(tzinfo.Bias) * 60;
+		break;
 	case TIME_ZONE_ID_INVALID:
 	default:
 		nOffset = 0;
