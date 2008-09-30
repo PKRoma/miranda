@@ -182,11 +182,11 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
     {
         if (!BindSocketToPort(nlu->settings.szIncomingPorts, nlbp->s, &nlu->outportnum))
         {
-			closesocket(nlbp->s);
-			mir_free(nlbp);
+			Netlib_Logf(nlc->nlu,"Netlib bind: Not enough ports for incoming connections specified");
 			SetLastError(WSAEADDRINUSE);
-			return 0;
 		}
+        else
+            foundPort=1;
 	}
 	else {
 		/* if ->wPort==0 then they'll get any free port, otherwise they'll
