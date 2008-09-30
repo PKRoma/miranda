@@ -31,16 +31,16 @@ static y_filetransfer* new_ft(int id, HANDLE hContact, const char *who, const ch
 	
 	ft = (y_filetransfer*) malloc(sizeof(y_filetransfer));
 	ft->id  = id;
-	ft->who = _strdup(who);
+	ft->who = strdup(who);
 	ft->hWaitEvent = INVALID_HANDLE_VALUE;
 	
 	ft->hContact = hContact;
-	ft->filename = _strdup(fname);
+	ft->filename = strdup(fname);
 	ft->fsize = fesize;
 	
-	ft->url = (url == NULL) ? NULL : _strdup(url);
-	ft->ftoken = (ft_token == NULL) ? NULL : _strdup(ft_token);
-	ft->msg = (msg != NULL) ? _strdup(msg) : _strdup("[no description given]");
+	ft->url = (url == NULL) ? NULL : strdup(url);
+	ft->ftoken = (ft_token == NULL) ? NULL : strdup(ft_token);
+	ft->msg = (msg != NULL) ? strdup(msg) : strdup("[no description given]");
 	
 	ft->cancel = 0;
 	ft->y7 = y7;
@@ -250,7 +250,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		LOG(("dir: %s, file: %s", sf->savepath, sf->filename ));
 		wsprintf(buf, "%s\\%s", sf->savepath, sf->filename);
 		
-		pfts.currentFile = _strdup(buf);		
+		pfts.currentFile = strdup(buf);		
 		LOG(("Saving: %s",  pfts.currentFile));
 		
 		if ( sf->hWaitEvent != INVALID_HANDLE_VALUE )
@@ -296,7 +296,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			}
 			
 			//pfts.files = &buf;
-			pfts.currentFile = _strdup(buf);		
+			pfts.currentFile = strdup(buf);		
 	
 			LOG(("Getting file: %s", buf));
 			myhFile    = CreateFile(buf,
@@ -462,7 +462,7 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 	
 	FREE(ft->url);
 	
-	ft->url = _strdup(url);
+	ft->url = strdup(url);
 	
 	SleepEx(1000, TRUE);
 	
@@ -516,7 +516,7 @@ int YahooFileAllow(WPARAM wParam,LPARAM lParam)
 	YAHOO_DebugLog("[YahooFileAllow]");
 	
     //LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
-    ft->savepath = _strdup((char *) ccs->lParam);
+    ft->savepath = strdup((char *) ccs->lParam);
 	
 	len = lstrlen(ft->savepath) - 1;
 	if (ft->savepath[len] == '\\')
@@ -584,7 +584,7 @@ int YahooFileResume( WPARAM wParam, LPARAM lParam )
 		YAHOO_DebugLog("[YahooFileResume] Renamed file!");
 		FREE( ft->filename );
 
-		ft->filename = _strdup( pfr->szFilename );
+		ft->filename = strdup( pfr->szFilename );
 	}	
 	
 

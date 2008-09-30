@@ -550,19 +550,19 @@ static void __cdecl yahoo_get_statusthread(HANDLE hContact)
 	
 	/* Check Yahoo Games Message */
 	if (! DBGetContactSettingString(( HANDLE )hContact, yahooProtocolName, "YGMsg", &dbv )) {
-		gm = _strdup(dbv.pszVal);
+		gm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	}
 	
 	if (! DBGetContactSettingString(hContact, "CList", "StatusMsg", &dbv )) {
 		if (lstrlen(dbv.pszVal) >= 1)
-			sm = _strdup(dbv.pszVal);
+			sm = strdup(dbv.pszVal);
 		
 		DBFreeVariant( &dbv );
 	} else {
 		sm = yahoo_status_code(DBGetContactSettingWord(hContact, yahooProtocolName, "YStatus", YAHOO_STATUS_OFFLINE));
-		if (sm) sm = _strdup(sm); /* we need this to go global FREE later */
+		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
 	}
 
 	l = 0;
@@ -644,7 +644,7 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 			if (szStartMsg) free(szStartMsg);
 			
 			if (c != NULL) 
-				szStartMsg = _strdup(c);
+				szStartMsg = strdup(c);
 			else
 				szStartMsg = NULL;
 			
@@ -659,7 +659,7 @@ int YahooSetAwayMessage(WPARAM wParam, LPARAM lParam)
 	
 	/* now decide what we tell the server */
 	if (c != 0) {
-		szStartMsg = _strdup(c);
+		szStartMsg = strdup(c);
 		if(wParam == ID_STATUS_ONLINE) {
 			yahoo_set_status(YAHOO_CUSTOM_STATUS, c, 0);
 		} else if(wParam != ID_STATUS_INVISIBLE){ 
@@ -734,7 +734,7 @@ static BOOL CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						
 						/* set for Idle/AA */
 						if (szStartMsg) free(szStartMsg);
-						szStartMsg = _strdup(str);
+						szStartMsg = strdup(str);
 						
 						/* notify Server about status change */
 						yahoo_set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
