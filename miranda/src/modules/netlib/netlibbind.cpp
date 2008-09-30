@@ -179,14 +179,14 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	/* if the netlib user wanted a free port given in the range, then
 	they better have given wPort==0, let's hope so */
 	if(nlu->settings.specifyIncomingPorts && nlu->settings.szIncomingPorts && nlb->wPort==0) 
-    {
-        if (!BindSocketToPort(nlu->settings.szIncomingPorts, nlbp->s, &nlu->outportnum))
-        {
-			Netlib_Logf(nlc->nlu,"Netlib bind: Not enough ports for incoming connections specified");
+	{
+		if (!BindSocketToPort(nlu->settings.szIncomingPorts, nlbp->s, &nlu->outportnum))
+		{
+			Netlib_Logf(nlu,"Netlib bind: Not enough ports for incoming connections specified");
 			SetLastError(WSAEADDRINUSE);
 		}
-        else
-            foundPort=1;
+		else
+			foundPort=1;
 	}
 	else {
 		/* if ->wPort==0 then they'll get any free port, otherwise they'll
