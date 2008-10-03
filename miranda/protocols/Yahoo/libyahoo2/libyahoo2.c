@@ -5288,11 +5288,8 @@ void yahoo_keepalive(int id)
 		return;
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_PING, YPACKET_STATUS_DEFAULT, yd->session_id);
-	
-	// Apparently this doesn't work w/ protocol version 0x0d and I get booted */
-	//pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_PING, YAHOO_STATUS_AVAILABLE, yd->session_id);
-	//yahoo_packet_hash(pkt, 0, yd->user);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_PING, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 0, yd->user);
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }
