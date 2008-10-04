@@ -272,11 +272,11 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 	}
 
 	{	// Idle
-		if ( item->itemResource.idleStartTime > 0 ) {
-			lstrcpyn(buf, _tctime( &item->itemResource.idleStartTime ), SIZEOF( buf ));
+		if ( res->idleStartTime > 0 ) {
+			lstrcpyn(buf, _tctime( &res->idleStartTime ), SIZEOF( buf ));
 			int len = lstrlen(buf);
 			if (len > 0) buf[len-1] = 0;
-		} else if ( !item->itemResource.idleStartTime )
+		} else if ( !res->idleStartTime )
 			lstrcpyn(buf, TranslateT( "unknown" ), SIZEOF( buf ));
 		else
 			lstrcpyn(buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
