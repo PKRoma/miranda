@@ -628,7 +628,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					else mir_sntprintf(text, size, _T("%s: %s"), tszIdName, TranslateT("<unknown>"));
 					mir_free(tszIdName);
 				}
-				else mir_sntprintf(text, size, _T("Protocol is not loaded."));
+				else mir_sntprintf(text, size, TranslateT("Protocol is not loaded."));
 
 				length = lstrlen(text);
 				DrawText(lps->hDC, text, -1, &lps->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_END_ELLIPSIS);
