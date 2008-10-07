@@ -252,7 +252,9 @@ bool CMsnProto::MSN_RefreshContactList(void)
 	if (!MSN_ABGetFull()) return false;
 	MSN_CleanupLists();
 
-	msnLoggedIn = true;
+	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
+        
+    msnLoggedIn = true;
 
 	MSN_CreateContList();
 	MSN_StoreGetProfile();
