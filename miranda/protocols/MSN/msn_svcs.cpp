@@ -597,7 +597,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		char tEmail[ MSN_MAX_EMAIL_LEN ];
 		if ( !getStaticString( hContact, "e-mail", tEmail, sizeof( tEmail ))) 
 		{
-			int isBlocked = Lists_IsInList( LIST_BL, tEmail );
+			bool isBlocked = Lists_IsInList( LIST_BL, tEmail );
 
 			if ( !isBlocked && cws->value.wVal == ID_STATUS_OFFLINE ) 
 			{
