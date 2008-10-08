@@ -92,13 +92,16 @@ bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn)
 	        }
 	        psz=pszEnd;
         }
-        before = true;
         if (*portn < 0) 
         {
            *portn = portnum;
 	        LeaveCriticalSection(&csNetlibUser);
             return true;
         }
+        else if (*portn >= portnum)
+            *portn = 0;
+        else
+            before = true;
    }
 }
 
