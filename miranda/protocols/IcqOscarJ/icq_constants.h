@@ -443,7 +443,7 @@
 #define META_DIRECTORY_QUERY        0x0FA0
 #define META_DIRECTORY_RESPONSE     0x0FB4
 #define META_DIRECTORY_UPDATE       0x0FD2
-#define META_DIRECTORY_RESPONSE2    0x0FDC
+#define META_DIRECTORY_UPDATE_ACK   0x0FDC
 
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
@@ -608,7 +608,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x17AB
+#define CLIENT_VERSION_BUILD        0x1B67
 #define CLIENT_DISTRIBUTION         0x00007535
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
