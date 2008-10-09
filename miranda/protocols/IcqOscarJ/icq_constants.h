@@ -576,7 +576,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x17AB
+#define CLIENT_VERSION_BUILD        0x1B67
 #define CLIENT_DISTRIBUTION         0x00007535
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
