@@ -177,6 +177,8 @@ const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8
 const capstr capQutIm     = {'q', 'u', 't', 'i', 'm', 0x30, 0x2e, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capBayan     = {'b', 'a', 'y', 'a', 'n', 'I', 'C', 'Q', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capJabberJIT = {'J', 'I', 'T', ' ', 0x76, 0x2E, 0x31, 0x2E, 0x78, 0x2E, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
+const capstr capIcqKid2   = {'I', 'c', 'q', 'K', 'i', 'd', '2', 0x00, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+const capstr capWebIcqPro = {'W', 'e', 'b', 'I', 'c', 'q', 'P', 'r', 'o', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
@@ -735,6 +737,20 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
       else if (capId = MatchCap(caps, wLen, &capJabberJIT, 0x04))
       {
         szClient = "Jabber ICQ Transport";
+      }
+      else if (capId = MatchCap(caps, wLen, &capIcqKid2, 0x07))
+      { // http://sourceforge.net/projects/icqkid2
+				unsigned ver1 = (*capId)[0x7];
+				unsigned ver2 = (*capId)[0x8];
+				unsigned ver3 = (*capId)[0x9];
+				unsigned ver4 = (*capId)[0xA];
+
+        makeClientVersion(szClientBuf, "IcqKid2 v", ver1, ver2, ver3, ver4);
+        szClient = szClientBuf;
+      }
+      else if (capId = MatchCap(caps, wLen, &capWebIcqPro, 0x0A))
+      { // http://intrigue.ru/workshop/webicqpro/webicqpro.html
+        szClient = "WebIcqPro";
       }
 			else if (szClient == cliLibicq2k)
 			{ // try to determine which client is behind libicq2000
