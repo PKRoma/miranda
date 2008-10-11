@@ -590,15 +590,16 @@ getdata:
 		if (scRet == SEC_I_CONTEXT_EXPIRED) 
 		{
 			NetlibSslShutdown(ssl);
-			if (peek && ssl->cbRecDataBuf) goto getdata;
+			if (peek && ssl->cbRecDataBuf) 
+            {
+                ssl->cbIoBuffer = 0;
+                goto getdata;
+            }
             return 0;
 		}
 
 		if ( scRet != SEC_E_OK && scRet != SEC_I_RENEGOTIATE && scRet != SEC_I_CONTEXT_EXPIRED)
-        {
-			if (peek && ssl->cbRecDataBuf) goto getdata;
 			return SOCKET_ERROR;
-        }
 
 		// Locate data and (optional) extra buffers.
 		pDataBuffer  = NULL;
