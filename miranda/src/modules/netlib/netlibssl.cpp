@@ -111,6 +111,7 @@ void NetlibSslFree(SslHandle *ssl)
 
 	mir_free(ssl->pbRecDataBuf);
 	mir_free(ssl->pbIoBuffer);
+    memset(ssl, 0, sizeof(SslHandle));
 	mir_free(ssl);
 }
 
@@ -493,6 +494,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 	if (ssl->cbRecDataBuf != 0 && (!peek || ssl->cbRecDataBuf >= (DWORD)num))
 	{
+getdata:
 		DWORD bytes = min((DWORD)num, ssl->cbRecDataBuf);
 		DWORD rbytes = ssl->cbRecDataBuf - bytes;
 
@@ -588,11 +590,15 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		if (scRet == SEC_I_CONTEXT_EXPIRED) 
 		{
 			NetlibSslShutdown(ssl);
-			return 0;
+			if (peek && ssl->cbRecDataBuf) goto getdata;
+            return 0;
 		}
 
 		if ( scRet != SEC_E_OK && scRet != SEC_I_RENEGOTIATE && scRet != SEC_I_CONTEXT_EXPIRED)
+        {
+			if (peek && ssl->cbRecDataBuf) goto getdata;
 			return SOCKET_ERROR;
+        }
 
 		// Locate data and (optional) extra buffers.
 		pDataBuffer  = NULL;
