@@ -586,7 +586,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	}
 	if (NLOCF_SSL & nloc->flags)
 	{
-		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Statrting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
+		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
 
 		nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nloc->szHost);
 		if (nlc->hSsl == NULL)
