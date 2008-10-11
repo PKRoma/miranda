@@ -825,11 +825,11 @@ unsigned long char_ip_to_long_ip(char* ip)
 
 void CAimProto::create_cookie(HANDLE hContact)
 {
-	srand((unsigned long)time(NULL));
-	unsigned long i= rand();
-	unsigned long i2=(unsigned long)hContact;
-	setDword( hContact, AIM_KEY_CK, i2 );
-	setDword( hContact, AIM_KEY_CK2, i );
+    setDword( hContact, AIM_KEY_CK, (unsigned long)hContact );
+
+    unsigned long i;
+    CallService(MS_UTILS_GETRANDOM, sizeof(i), (LPARAM)&i);
+    setDword( hContact, AIM_KEY_CK2, i );
 }
 
 void CAimProto::read_cookie(HANDLE hContact,char* cookie)
