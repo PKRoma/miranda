@@ -489,7 +489,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam,*nlhrReply;
-	HANDLE hConnection;
+	HANDLE hConnection = nlhr->nlc;
 	DWORD dflags;
 
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') {
@@ -497,6 +497,16 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		return (int)(HANDLE)NULL;
 	}
 
+	if (hConnection)
+	{
+		if (!WaitUntilWritable(((struct NetlibConnection*)hConnection)->s, 0))
+		{
+			NetlibCloseHandle((WPARAM)hConnection,0);
+			hConnection = NULL;
+		}
+	}
+
+	if (hConnection==NULL)
 	{
 		NETLIBOPENCONNECTION nloc={0};
 		char szHost[128];
