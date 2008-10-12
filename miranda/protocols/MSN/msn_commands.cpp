@@ -591,11 +591,15 @@ void CMsnProto::sttProcessYFind( char* buf, size_t len )
 		if (szNetId != NULL )
 		{
 			int netId = atol(szNetId);
-			if (MSN_AddUser( NULL, szEmail, netId, LIST_FL ))
+	        HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, true, false);
+			if (MSN_AddUser( hContact, szEmail, netId, LIST_FL ))
 			{
-				MSN_AddUser( NULL, szEmail, netId, LIST_BL + LIST_REMOVE );
-				MSN_AddUser( NULL, szEmail, netId, LIST_AL );
+				MSN_AddUser( hContact, szEmail, netId, LIST_PL + LIST_REMOVE );
+				MSN_AddUser( hContact, szEmail, netId, LIST_BL + LIST_REMOVE );
+				MSN_AddUser( hContact, szEmail, netId, LIST_AL );
+				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 			}
+			MSN_SetContactDb(hContact, szEmail);
 		}
 	}
 
