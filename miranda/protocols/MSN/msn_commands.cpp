@@ -598,7 +598,14 @@ void CMsnProto::sttProcessYFind( char* buf, size_t len )
 				MSN_AddUser( hContact, szEmail, netId, LIST_BL + LIST_REMOVE );
 				MSN_AddUser( hContact, szEmail, netId, LIST_AL );
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-			}
+
+		        DBVARIANT dbv;
+		        if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) 
+                {
+			        MSN_MoveContactToGroup( hContact, dbv.pszVal );
+			        MSN_FreeVariant( &dbv );
+	        	}
+            }
 			MSN_SetContactDb(hContact, szEmail);
 		}
 	}
