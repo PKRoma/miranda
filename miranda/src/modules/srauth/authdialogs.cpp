@@ -205,17 +205,17 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
 		{
 			DBEVENTINFO dbei;
-			DWORD *uin;
+			DWORD uin;
 			char *nick,*first,*last,*email,*reason;
-			HANDLE hDbEvent,*hcontact;		hDbEvent=(HANDLE)lParam;
+			HANDLE hDbEvent, hcontact;		hDbEvent=(HANDLE)lParam;
 			//blob is: uin(DWORD),hcontact(HANDLE),nick(ASCIIZ),first(ASCIIZ),last(ASCIIZ),email(ASCIIZ),reason(ASCIIZ)
 			ZeroMemory(&dbei,sizeof(dbei));
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
 			dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
-			uin=(PDWORD)dbei.pBlob;
-			hcontact=(HANDLE*)(dbei.pBlob+sizeof(DWORD));
+			uin=*(PDWORD)dbei.pBlob;
+			hcontact=*(HANDLE*)(dbei.pBlob+sizeof(DWORD));
 			nick=(char *)(dbei.pBlob+sizeof(DWORD)+sizeof(HANDLE));
 			first=nick+strlen(nick)+1;
 			last=first+strlen(first)+1;
@@ -224,8 +224,8 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			SetDlgItemTextA(hwndDlg,IDC_NAME,nick[0]?nick:Translate("(Unknown)"));
 			if (hcontact == INVALID_HANDLE_VALUE || !DBGetContactSettingByte(hcontact, "CList", "NotOnList", 0))
 				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
-			if (*uin)
-				SetDlgItemInt(hwndDlg,IDC_UIN,*uin,FALSE);
+			if (uin)
+				SetDlgItemInt(hwndDlg,IDC_UIN,uin,FALSE);
 			else {
 				if (hcontact == INVALID_HANDLE_VALUE)
 					SetDlgItemText(hwndDlg,IDC_UIN,TranslateT("(Unknown)"));
