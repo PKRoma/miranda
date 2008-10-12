@@ -33,21 +33,21 @@ template<class T> struct LIST
 	typedef int ( *FTSortFunc )( const T* p1, const T* p2 );
 
 	__inline LIST( int aincr, FTSortFunc afunc = NULL )
-		{	memset( this, 0, sizeof( *this ));
-			increment = aincr;
-			sortFunc = afunc;
-		}
-
-	__inline LIST( const LIST& x )
-		{	items = NULL;
-			List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
-		}
+	{	memset( this, 0, sizeof( *this ));
+		increment = aincr;
+		sortFunc = afunc;
+	}
 
 	__inline T* operator[]( int idx ) const { return ( idx >= 0 && idx < count ) ? items[idx] : NULL; }
 	__inline int getCount( void )     const { return count; }
 	__inline T** getArray( void )     const { return items; }
 
 	#if defined( _STATIC )
+	    __inline LIST( const LIST& x )
+	    {	items = NULL;
+		    List_Copy(( SortedList* )&x, ( SortedList* )this, sizeof( T ));
+	    }
+
 		__inline int getIndex( T* p ) const
 		{	int idx;
 			return ( !List_GetIndex(( SortedList* )this, p, &idx )) ? -1 : idx;
