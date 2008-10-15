@@ -37,13 +37,14 @@ void YahooIconsInit( void )
 {
 	int i;
 	SKINICONDESC sid = {0};
-	char szFile[MAX_PATH];
+	char szFile[MAX_PATH], szSection[MAX_PATH];
 	GetModuleFileNameA(hinstance, szFile, MAX_PATH);
 
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate( yahooProtocolName );
+    mir_snprintf( szSection, sizeof(szSection), "%s/%s", Translate("Protocols"), Translate( yahooProtocolName ) );
+	sid.pszSection = szSection;
 
 	for ( i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
