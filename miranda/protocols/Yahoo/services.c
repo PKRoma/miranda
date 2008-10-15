@@ -836,6 +836,13 @@ static int YahooShowProfileCommand( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
+static int YahooEditMyProfile( WPARAM wParam, LPARAM lParam )
+{
+	YahooOpenURL("http://edit.yahoo.com/config/eval_profile", 1);
+
+	return 0;
+}
+
 //=======================================================
 //Show My profile
 //=======================================================
@@ -962,6 +969,7 @@ int YahooGetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 	
     return mUnreadMessages;
 }
+
 extern HANDLE   hHookContactDeleted;
 extern HANDLE   hHookIdle;
 
@@ -986,6 +994,16 @@ void YahooMenuInit( void )
 	mi.pszName = LPGEN( "Set &Custom Status" );
 	mi.pszService = servicefunction;
 	YahooMenuItems [ 0 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+	// Edit My profile
+	lstrcpy( tDest, YAHOO_EDIT_MY_PROFILE );
+	CreateServiceFunction( servicefunction, YahooEditMyProfile );
+	mi.position = 500090005;
+	mi.hIcon = LoadIconEx( "profile" );
+	mi.pszName = LPGEN( "&Edit My Profile" );
+	mi.pszService = servicefunction;
+	YahooMenuItems [ 1 ] = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+
 
 	// Show My profile
 	lstrcpy( tDest, YAHOO_SHOW_MY_PROFILE );

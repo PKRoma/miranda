@@ -62,6 +62,7 @@ extern int do_yahoo_debug;
 	YAHOO_DEBUGLOG(" ");}
 
 #define YAHOO_SET_CUST_STAT			"/SetCustomStatCommand" 
+#define YAHOO_EDIT_MY_PROFILE		"/YahooEditMyProfileCommand"
 #define YAHOO_SHOW_PROFILE			"/YahooShowProfileCommand"
 #define YAHOO_SHOW_MY_PROFILE		"/YahooShowMyProfileCommand"
 #define YAHOO_YAHOO_MAIL			"/YahooGotoMailboxCommand"
