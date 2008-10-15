@@ -265,12 +265,12 @@ int __declspec(dllexport) Unload(void)
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	/*
-     * We require Miranda 0.8
+     * We require Miranda 0.8.0.24
 	 * This requires the latest trunk... [md5, sha, etc..]
 	 */
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 1)) {
+    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 24)) {
 		MessageBox( NULL, 
-				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.8 or later.", 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM 0.8.0.24 or later.", 
 				"Yahoo", 
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
