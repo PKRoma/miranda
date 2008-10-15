@@ -13,6 +13,7 @@
 #ifndef _YAHOO_YAHOO_H_
 #define _YAHOO_YAHOO_H_
 
+#define MIRANDA_VER 0x0700
 #define _USE_32BIT_TIME_T
 
 #include <windows.h>

@@ -7,6 +7,8 @@
 #define VERSION "0.7.5"
 
 /* Add some WIN32 size savers */
+#define _USE_32BIT_TIME_T
+
 #include <windows.h>
 #include <stdio.h>
 

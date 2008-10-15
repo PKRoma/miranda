@@ -11,6 +11,9 @@
  * and for answering some of my questions during development of this plugin.
  */
 
+/*
+ * Resource Icons
+ */
 #define IDI_YAHOO                       10101
 #define IDI_INBOX                       10102
 #define IDI_PROFILE                     10103
@@ -19,9 +22,14 @@
 #define IDI_SET_STATUS                  10106
 #define IDI_CALENDAR                    10107
 
+/*
+ * Options
+ */
 #define IDD_OPT_YAHOO                   185
+
 #define IDD_SETCUSTSTAT                 186
 #define IDD_OPT_YAHOO_POPUP             187
+
 #define IDC_CUSTSTATBUSY                1000
 #define IDC_CUSTSTAT                    1001
 #define IDC_STYAHOOGROUP                1002
@@ -50,12 +58,18 @@
 #define IDC_MAIL_AUTOLOGIN              1480
 #define IDC_YAHOO_JAPAN					1481
 
+/*
+ * Ignore Options
+ */
 #define IDD_OPT_YAHOO_IGNORE            201
 #define IDC_YIGN_EDIT					202
 #define IDC_YIGN_LIST					203
 #define IDC_IGN_ADD						204
 #define IDC_IGN_REMOVE					205
+#define IDC_OPT_IGN_UNKNOWN				206
+#define IDC_OPT_IGN_LIST				207
 
+#define IDD_OPT_YAHOO_CONNECTION		301
 /*
  *
  */
