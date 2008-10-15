@@ -606,7 +606,7 @@ int CJabberProto::JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 			if (him->szRealJid && *him->szRealJid)
 			{
 				mir_sntprintf(sttRJidBuf, SIZEOF(sttRJidBuf), TranslateT("Real &JID: %s"), him->szRealJid);
-				if (TCHAR *tmp = _tcsrchr(sttRJidBuf, _T('/'))) *tmp = 0;
+				if (TCHAR *tmp = _tcschr(sttRJidBuf, _T('/'))) *tmp = 0;
 
 				if (HANDLE hContact = HContactFromJID(him->szRealJid))
 				{
@@ -1191,7 +1191,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			JABBER_SEARCH_RESULT jsr;
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
-			if (TCHAR *tmp = _tcsrchr(jsr.jid, _T('/'))) *tmp = 0;
+			if (TCHAR *tmp = _tcschr(jsr.jid, _T('/'))) *tmp = 0;
 			
 			JABBER_LIST_ITEM* item = ppro->ListAdd( LIST_VCARD_TEMP, jsr.jid );
 			item->bUseResource = TRUE;
@@ -1208,7 +1208,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			JABBER_SEARCH_RESULT jsr={0};
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
-			if (TCHAR *tmp = _tcsrchr(jsr.jid, _T('/'))) *tmp = 0;
+			if (TCHAR *tmp = _tcschr(jsr.jid, _T('/'))) *tmp = 0;
 			jsr.hdr.nick = mir_t2a( jsr.jid );
 
 			ADDCONTACTSTRUCT acs={0};
