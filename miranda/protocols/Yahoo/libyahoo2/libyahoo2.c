@@ -2023,6 +2023,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 {
 	struct yahoo_data *yd = yid->yd;
 	YList *l;
+	char *fname = NULL, *lname = NULL;
 
 	/* we could be getting multiple packets here */
 	for (l = pkt->hash; l; l = l->next) {
@@ -2052,7 +2053,7 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 						strdup(identities[i]));
 			y_strfreev(identities);
 			}
-			YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, yd->identities);
+			
 			break;
 		case 59: /* cookies */
 			if(pair->value[0]=='Y') {
@@ -2099,14 +2100,24 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		case 217: /*??? Seems like last key */
 					
 			break;
+		
+		case 216: /* Firat Name */
+			fname = pair->value;
+			break;
+			
+		case 254: /* Last Name */
+			lname = pair->value;
+			break;
 		}
 	}
 
+	YAHOO_CALLBACK(ext_yahoo_got_identities)(yd->client_id, fname, lname, yd->identities);
+	
 	/* we could be getting multiple packets here */
 	if (pkt->status != 0) /* Thanks for the fix GAIM */
 		return;
 	
-	if (!yd->rawstealthlist)
+	if (yd->rawstealthlist != NULL)
 		YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
 	
 	if(yd->ignorelist) {
@@ -4759,6 +4770,8 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 	yd->server_settings = _yahoo_assign_server_settings(ap);
 	va_end(ap);
 
+	yd->ignore = yd->buddies = NULL;
+	
 	return yd->client_id;
 }
 

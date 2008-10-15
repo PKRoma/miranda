@@ -142,8 +142,10 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ignore)(int id, YList * igns);
  * Params:
  * 	id   - the id that identifies the server connection
  * 	ids  - the identity list
+ *  fname - first name
+ *  lname - last name
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_identities)(int id, YList * ids);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_identities)(int id, const char *fname, const char *lname, YList *ids);
 
 
 /*

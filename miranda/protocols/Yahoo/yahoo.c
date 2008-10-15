@@ -440,6 +440,7 @@ void ext_yahoo_status_logon(int id, const char *who, int stat, const char *msg, 
 				s = "Yahoo 8.x"; 
 				break;
 		case 2088895:
+		case 4194239:
 				s = "Yahoo 9.0";
 				break;
 	}
@@ -621,7 +622,7 @@ void ext_yahoo_got_stealth(int id, char *stealthlist)
 
 void ext_yahoo_got_buddies(int id, YList * buds)
 {
-    LOG(("ext_yahoo_got_buddies"));
+    LOG(("[ext_yahoo_got_buddies] "));
     
 	if (buds == NULL) {
 		LOG(("No Buddies to work on!"));
@@ -966,13 +967,14 @@ void ext_yahoo_system_message(int id, const char *me, const char *who, const cha
 		YAHOO_ShowPopup( (who != NULL) ? who : "Yahoo System Message", msg, NULL);
 }
 
-void ext_yahoo_got_identities(int id, YList * ids)
+void ext_yahoo_got_identities(int id, const char *fname, const char *lname, YList * ids)
 {
-    LOG(("ext_yahoo_got_identities"));
+    LOG(("[ext_yahoo_got_identities] First Name: %s, Last Name %s", fname, lname));
     /* FIXME - Not implemented - Got list of Yahoo! identities */
     /* We currently only use the default identity */
     /* Also Stubbed in Sample Client */
-	
+	YAHOO_SetString(NULL, "First Name", fname ? fname : "");
+	YAHOO_SetString(NULL, "Last Name", lname ? lname : "");
 }
 
 void __cdecl yahoo_get_yab_thread(void *psf) 
