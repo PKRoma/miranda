@@ -44,7 +44,7 @@
  */
 
 #if HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #ifndef _WIN32
@@ -412,7 +412,7 @@ struct yahoo_input_data {
 	enum yahoo_connection_type type;
 	
 	unsigned char	*rxqueue;
-	int   rxlen;
+	unsigned int   rxlen;
 	int   read_tag;
 
 	YList *txqueues;
@@ -4068,7 +4068,7 @@ static char * yahoo_getwebcam_master(struct yahoo_input_data *yid)
 	DEBUG_MSG(("rxlen is %d", yid->rxlen));
 
 	len = yid->rxqueue[pos++];
-	if ((unsigned int)yid->rxlen < len)
+	if (yid->rxlen < len)
 		return NULL;
 
 	/* extract status (0 = ok, 6 = webcam not online) */
@@ -4154,7 +4154,7 @@ static int yahoo_get_webcam_data(struct yahoo_input_data *yid)
 
 	begin = pos;
 	pos += yid->wcd->to_read;
-	if (pos > (unsigned int)yid->rxlen) pos = yid->rxlen;
+	if (pos > yid->rxlen) pos = yid->rxlen;
 
 	/* if it is not an image then make sure we have the whole packet */
 	if (yid->wcd->packet_type != 0x02) {
@@ -4177,7 +4177,7 @@ static int yahoo_get_webcam_data(struct yahoo_input_data *yid)
 			if (yid->wcd->data_size &&
 				yid->wcm->direction == YAHOO_WEBCAM_UPLOAD) {
 				end = begin;
-				while (end <= (unsigned int)yid->rxlen &&
+				while (end <= yid->rxlen &&
 					yid->rxqueue[end++] != 13);
 				if (end > begin)
 				{

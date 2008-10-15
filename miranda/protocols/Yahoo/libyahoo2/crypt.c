@@ -23,7 +23,7 @@
  * freebsd, crypt works properly on those systems. i hate solaris */
 
 #if HAVE_CONFIG_H
-#include "config.h"
+#  include "config.h"
 #endif
 
 #if HAVE_STRING_H

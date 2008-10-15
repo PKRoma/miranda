@@ -265,7 +265,7 @@ int __declspec(dllexport) Unload(void)
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	/*
-     * We require Miranda 0.7.0.12
+     * We require Miranda 0.8
 	 * This requires the latest trunk... [md5, sha, etc..]
 	 */
     if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 1)) {

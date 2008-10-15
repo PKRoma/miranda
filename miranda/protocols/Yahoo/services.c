@@ -239,24 +239,24 @@ void yahoo_util_broadcaststatus(int s)
         return;
         
     //yahooStatus = s;
-	switch (s) {
-	case ID_STATUS_OFFLINE:
-	case ID_STATUS_CONNECTING:
-	case ID_STATUS_ONLINE: 
-    case ID_STATUS_AWAY:
-    case ID_STATUS_NA:
-    case ID_STATUS_OCCUPIED:
-    case ID_STATUS_ONTHEPHONE:
-    case ID_STATUS_OUTTOLUNCH:
-    case ID_STATUS_INVISIBLE:
-			yahooStatus = s;
-			break;
-	case ID_STATUS_DND:
-			yahooStatus = ID_STATUS_OCCUPIED;
-			break;
-	default:
-			yahooStatus = ID_STATUS_ONLINE;
-	}
+    switch (s) {
+       case ID_STATUS_OFFLINE:
+       case ID_STATUS_CONNECTING:
+       case ID_STATUS_ONLINE:
+       case ID_STATUS_AWAY:
+       case ID_STATUS_NA:
+       case ID_STATUS_OCCUPIED:
+       case ID_STATUS_ONTHEPHONE:
+       case ID_STATUS_OUTTOLUNCH:
+       case ID_STATUS_INVISIBLE:
+            yahooStatus = s;
+            break;
+      case ID_STATUS_DND:
+            yahooStatus = ID_STATUS_OCCUPIED;
+            break;
+      default:
+            yahooStatus = ID_STATUS_ONLINE;
+    }
 
 	YAHOO_DebugLog("[yahoo_util_broadcaststatus] Old Status: %s (%d), New Status: %s (%d)",
 			NEWSTR_ALLOCA((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, oldStatus, 0)), oldStatus,
