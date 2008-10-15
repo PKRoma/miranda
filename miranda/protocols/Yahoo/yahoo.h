@@ -130,6 +130,8 @@ int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE
 DWORD __stdcall YAHOO_SetString( HANDLE hContact, const char* valueName, const char* parValue );
 DWORD __stdcall YAHOO_SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 
+DWORD __stdcall YAHOO_Set_Protocol( HANDLE hContact, int protocol );
+
 int __stdcall	YAHOO_ShowPopup( const char* nickname, const char* msg, const char *szURL );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
@@ -157,12 +159,12 @@ void yahoo_stealth(const char *buddy, int add);
 void register_callbacks();
 char* YAHOO_GetContactName(HANDLE hContact);
 
-void YAHOO_remove_buddy(const char *who);
-void YAHOO_reject(const char *who, const char *msg);
-void YAHOO_accept(const char *who);
-void YAHOO_add_buddy(const char *who, const char *group, const char *msg);
-HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, DWORD flags );
-void YAHOO_sendtyping(const char *who, int stat);
+void YAHOO_remove_buddy(const char *who, int protocol);
+void YAHOO_reject(const char *who, int protocol, const char *msg);
+void YAHOO_accept(const char *who, int protocol);
+void YAHOO_add_buddy(const char *who, int protocol, const char *group, const char *msg);
+HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags );
+void YAHOO_sendtyping(const char *who, int protocol, int stat);
 
 typedef struct {
 	char yahoo_id[255];

@@ -97,19 +97,19 @@ void yahoo_chat_keepalive(int id);
 
 /* from is the identity you're sending from.  if NULL, the default is used */
 /* utf8 is whether msg is a utf8 string or not. */
-void yahoo_send_im(int id, const char *from, const char *who, const char *msg, int utf8, int buddy_icon);
+void yahoo_send_im(int id, const char *from, const char *who, int protocol, const char *msg, int utf8, int buddy_icon);
 /* if type is true, send typing notice, else send stopped typing notice */
-void yahoo_send_typing(int id, const char *from, const char *who, int typ);
+void yahoo_send_typing(int id, const char *from, const char *who, int protocol, int typ);
 
 /* used to set away/back status. */
 /* away says whether the custom message is an away message or a sig */
 void yahoo_set_away(int id, enum yahoo_status state, const char *msg, int away);
-void yahoo_set_stealth(int id, const char *buddy, int add);
+void yahoo_set_stealth(int id, const char *buddy, int protocol, int add);
 
-void yahoo_add_buddy(int id, const char *who, const char *group, const char *msg);
-void yahoo_remove_buddy(int id, const char *who, const char *group);
-void yahoo_accept_buddy(int id, const char *who);
-void yahoo_reject_buddy(int id, const char *who, const char *msg);
+void yahoo_add_buddy(int id, const char *fname, const char *lname, const char *who, int protocol, const char *group, const char *msg);
+void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group);
+void yahoo_accept_buddy(int id, const char *who, int protocol);
+void yahoo_reject_buddy(int id, const char *who, int protocol, const char *msg);
 /* if unignore is true, unignore, else ignore */
 void yahoo_ignore_buddy(int id, const char *who, int unignore);
 void yahoo_change_buddy_group(int id, const char *who, const char *old_group, const char *new_group);

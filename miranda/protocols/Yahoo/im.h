@@ -13,7 +13,7 @@
 #ifndef _YAHOO_IM_H_
 #define _YAHOO_IM_H_
 
-void ext_yahoo_got_im(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
+void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 int YahooSendNudge(WPARAM wParam, LPARAM lParam);
 int YahooRecvMessage(WPARAM wParam, LPARAM lParam);

@@ -61,19 +61,19 @@ int GetCaps(WPARAM wParam,LPARAM lParam)
     int ret = 0;
     switch (wParam) {        
         case PFLAGNUM_1:
-            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV | PF1_MODEMSGSEND |  PF1_BASICSEARCH
-			                        | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
+            ret = PF1_IM  | PF1_ADDED | PF1_AUTHREQ | PF1_MODEMSGRECV | PF1_MODEMSGSEND |  PF1_BASICSEARCH |
+			      PF1_EXTSEARCH | PF1_FILESEND  | PF1_FILERECV| PF1_VISLIST;
 //                          | PF1_SERVERCLIST ;
             break;
 
         case PFLAGNUM_2:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND /*| PF2_HEAVYDND*/; 
+                  PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_LIGHTDND /*| PF2_HEAVYDND*/;
             break;
 
         case PFLAGNUM_3:
             ret = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_ONTHEPHONE | 
-                  PF2_OUTTOLUNCH | PF2_LIGHTDND ; 
+                  PF2_OUTTOLUNCH | PF2_LIGHTDND ;
             break;
             
         case PFLAGNUM_4:
@@ -268,6 +268,7 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 {
 	char* szProto;
 	DBVARIANT dbv;
+	HANDLE hContact = (HANDLE) wParam;
 	
 	YAHOO_DebugLog("[YahooContactDeleted]");
 	
@@ -283,14 +284,14 @@ static int YahooContactDeleted( WPARAM wParam, LPARAM lParam )
 	}
 
 	// he is not a permanent contact!
-	if (DBGetContactSettingByte(( HANDLE )wParam, "CList", "NotOnList", 0) != 0) {
+	if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) != 0) {
 		YAHOO_DebugLog("[YahooContactDeleted] Not a permanent buddy!!!");
 		return 0;
 	}
 	
-	if ( !DBGetContactSettingString(( HANDLE )wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
+	if ( !DBGetContactSettingString(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("[YahooContactDeleted] Removing %s", dbv.pszVal);
-		YAHOO_remove_buddy(dbv.pszVal);
+		YAHOO_remove_buddy(dbv.pszVal, YAHOO_GetWord(hContact, "yprotoid", 0));
 		
 		DBFreeVariant( &dbv );
 	} else {
@@ -318,7 +319,7 @@ int YahooSendAuthRequest(WPARAM wParam,LPARAM lParam)
 					c = (char *)ccs->lParam;
 				
 				YAHOO_DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, c);
-				YAHOO_add_buddy(dbv.pszVal, "miranda", c);
+				YAHOO_add_buddy(dbv.pszVal, YAHOO_GetWord(ccs->hContact, "yprotoid", 0), "miranda", c);
 				YAHOO_SetString(ccs->hContact, "YGroup", "miranda");
 				DBFreeVariant( &dbv );
 				
@@ -337,8 +338,9 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 {
     PROTOSEARCHRESULT *psr=(PROTOSEARCHRESULT*)lParam;
 	HANDLE hContact;
+	int protocol;
 	
-	YAHOO_DebugLog("[YahooAddToList]");
+	YAHOO_DebugLog("[YahooAddToList] Flags: %d", wParam);
 	
 	if (!yahooLoggedIn){
 		YAHOO_DebugLog("[YahooAddToList] WARNING: WE ARE OFFLINE!");
@@ -363,8 +365,9 @@ int YahooAddToList(WPARAM wParam,LPARAM lParam)
 		YAHOO_DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", psr->nick);
 	}
 	
+	protocol = psr->reserved[0];
 	YAHOO_DebugLog("Adding buddy:%s", psr->nick);
-    return (int)add_buddy(psr->nick, psr->nick, wParam);
+    return (int)add_buddy(psr->nick, psr->nick, protocol, wParam);
 }
 
 int YahooAddToListByEvent(WPARAM wParam,LPARAM lParam)
@@ -462,7 +465,7 @@ int YahooAuthAllow(WPARAM wParam,LPARAM lParam)
     /* Need to remove the buddy from our Miranda Lists */
     if (hContact != NULL && !DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("Accepting buddy:%s", dbv.pszVal);    
-	    YAHOO_accept(dbv.pszVal);
+	    YAHOO_accept(dbv.pszVal, YAHOO_GetWord(hContact, "yprotoid", 0));
 		DBFreeVariant(&dbv);
 	}
 
@@ -509,7 +512,7 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
     /* Need to remove the buddy from our Miranda Lists */
     if (hContact != NULL && !DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 		YAHOO_DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
-	    YAHOO_reject(dbv.pszVal,reason);
+	    YAHOO_reject(dbv.pszVal, YAHOO_GetWord(hContact, "yprotoid", 0), reason);
 		DBFreeVariant(&dbv);
 		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
 	}
@@ -518,23 +521,23 @@ int YahooAuthDeny(WPARAM wParam,LPARAM lParam)
 
 int YahooRecvAuth(WPARAM wParam,LPARAM lParam)
 {
-	DBEVENTINFO dbei;
+	DBEVENTINFO dbei = { 0 };
 	CCSDATA *ccs=(CCSDATA*)lParam;
 	PROTORECVEVENT *pre=(PROTORECVEVENT*)ccs->lParam;
-
+	
     YAHOO_DebugLog("[YahooRecvAuth] ");
 	DBDeleteContactSetting(ccs->hContact,"CList","Hidden");
 
-	ZeroMemory(&dbei,sizeof(dbei));
-	dbei.cbSize=sizeof(dbei);
-	dbei.szModule=yahooProtocolName;
-	dbei.timestamp=pre->timestamp;
-	dbei.flags=pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
-	dbei.eventType=EVENTTYPE_AUTHREQUEST;
+	dbei.cbSize = sizeof(dbei);
+	dbei.szModule = yahooProtocolName;
+	dbei.timestamp = pre->timestamp;
+	dbei.flags = pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
+	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	
 	/* Just copy the Blob from PSR_AUTH event. */
-	dbei.cbBlob=pre->lParam;
-	dbei.pBlob=(PBYTE)pre->szMessage;
+	dbei.cbBlob = pre->lParam;
+	dbei.pBlob = (PBYTE)pre->szMessage;
+	
 	CallService(MS_DB_EVENT_ADD,(WPARAM)NULL,(LPARAM)&dbei);
 
 	return 0;
@@ -916,7 +919,7 @@ int YAHOOSendTyping(WPARAM wParam, LPARAM lParam)
     if (szProto==NULL || strcmp(szProto, yahooProtocolName)) return 0;
 	if (!DBGetContactSettingString(hContact, yahooProtocolName, YAHOO_LOGINID, &dbv)) {
 		if (state==PROTOTYPE_SELFTYPING_OFF || state==PROTOTYPE_SELFTYPING_ON) {
-			YAHOO_sendtyping(dbv.pszVal, state == PROTOTYPE_SELFTYPING_ON?1:0);
+			YAHOO_sendtyping(dbv.pszVal, YAHOO_GetWord(hContact, "yprotoid", 0), state == PROTOTYPE_SELFTYPING_ON?1:0);
 		}
 		DBFreeVariant(&dbv);
 	}
@@ -1121,6 +1124,9 @@ int LoadYahooServices( void )
 	YAHOO_CreateProtoServiceFunction( PS_GETAVATARCAPS, YahooGetAvatarCaps);
 	YAHOO_CreateProtoServiceFunction( PS_GETMYAVATAR, YahooGetMyAvatar);
 	YAHOO_CreateProtoServiceFunction( PS_SETMYAVATAR, YahooSetMyAvatar);
+
+	YAHOO_CreateProtoServiceFunction( PS_CREATEADVSEARCHUI, YahooCreateAdvancedSearchUI );
+	YAHOO_CreateProtoServiceFunction( PS_SEARCHBYADVANCED, YahooAdvancedSearch );
 	
 	return 0;
 }

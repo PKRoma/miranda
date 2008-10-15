@@ -112,10 +112,11 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_Y7_FILETRANSFERACCEPT,	/* YMSG13 */
 	YAHOO_SERVICE_Y7_MINGLE = 0xe1, /* YMSG13 */
 	YAHOO_SERVICE_Y7_CHANGE_GROUP = 0xe7, /* YMSG13 */
-	YAHOO_SERVICE_Y8_STATUS = 0xf0,			/* YMSG15 */
+	YAHOO_SERVICE_Y8_STATUS_UPDATE = 0xf0,			/* YMSG15 */
 	YAHOO_SERVICE_Y8_LIST = 0Xf1,			/* YMSG15 */
 	YAHOO_SERVICE_WEBLOGIN = 0x0226,
-	YAHOO_SERVICE_SMS_MSG = 0x02ea
+	YAHOO_SERVICE_SMS_MSG = 0x02ea,
+	YAHOO_SERVICE_Y7_DISCONNECTED = 0x07d1  /* YMSG15, saw this for Auth Failed and ping flood/ban */
 };
 
 enum yahoo_status {
@@ -159,6 +160,13 @@ enum yahoo_login_status {
 	YAHOO_LOGIN_LOCK = 14,
 	YAHOO_LOGIN_DUPL = 99,
 	YAHOO_LOGIN_SOCK = -1
+};
+
+enum yahoo_im_protocols {
+	YAHOO_IM_YAHOO = 0,
+	YAHOO_IM_LCS = 1,
+	YAHOO_IM_MSN = 2,
+	YAHOO_IM_SAMETIME = 9
 };
 
 enum yahoo_error {
@@ -218,7 +226,11 @@ Version 8.0
 YMSG15 Encrypted
 
  */
-#define YAHOO_PROTO_VER 0x000d
+//#define YAHOO_PROTO_VER 0x000d
+
+// Yahoo 8.1 uses protocol 15 (0x0F)
+// Yahoo 9.0 uses protocol 16 (0x10)
+#define YAHOO_PROTO_VER 0x000F
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"
@@ -336,6 +348,8 @@ struct yahoo_buddy {
 	char *group;
 	char *id;
 	char *real_name;
+	int protocol;
+	int stealth;
 	struct yab *yab_entry;
 };
 

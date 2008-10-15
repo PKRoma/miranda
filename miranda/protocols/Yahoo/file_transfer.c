@@ -396,7 +396,7 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) 
-		hContact = add_buddy(who, who, PALF_TEMPORARY);
+		hContact = add_buddy(who, who, 0 /* NO FT for other IMs */, PALF_TEMPORARY);
 	
 	ZeroMemory(fn, 1024);
 	

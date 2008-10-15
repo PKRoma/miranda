@@ -173,6 +173,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  * Params:
  * 	id   - the id that identifies the server connection
  * 	who  - the handle of the remote user
+ * protocol - protocol id of the buddy.
  * 	stat - status code (enum yahoo_status)
  * 	msg  - the message if stat == YAHOO_STATUS_CUSTOM
  * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
@@ -182,7 +183,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  *  buddy_icon - avatar type 
  *  client_version - client version # (Yahoo sends some long numbers for different clients)
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version);
 
 
 /*
@@ -191,6 +192,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int st
  * Params:
  * 	id   - the id that identifies the server connection
  * 	who  - the handle of the remote user
+ * protocol - protocol id of the buddy. 
  * 	stat - status code (enum yahoo_status)
  * 	msg  - the message if stat == YAHOO_STATUS_CUSTOM
  * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
@@ -198,7 +200,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int st
  *	mobile - this is set for mobile users/buddies
  *	TODO: add support for pager, chat, and game states
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int stat, const char *msg, int away, int idle, int mobile);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile);
 
 
 /*
@@ -271,6 +273,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_status)(int id, const char *me, c
  * 	id   - the id that identifies the server connection
  * 	me   - the identity the message was sent to
  * 	who  - the handle of the remote user
+ * protocol - protocol id of the buddy. 
  * 	msg  - the message - NULL if stat == 2
  * 	tm   - timestamp of message if offline
  * 	stat - message status - 0
@@ -280,7 +283,7 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_status)(int id, const char *me, c
  * 	utf8 - whether the message is encoded as utf8 or not
  *  buddy_icon - whether the buddy has buddy_icon set or not.
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, const char *me, const char *who, const char *msg, long tm, int stat, int utf8, int buddy_icon);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon);
 
 
 /*
@@ -518,8 +521,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file7info)(int id, const char *me, const 
  * 	myid - the identity he was added to
  * 	who  - who was added
  * 	msg  - any message sent
+ * protocol - protocol id of the buddy. 
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_contact_added)(int id, const char *myid, const char *who, const char *fname, const char *lname, const char *msg, int protocol);
 
 
 /*
@@ -566,9 +570,10 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_rejected)(int id, const char *who, const char
  * 	id   - the id that identifies the server connection
  * 	me   - the handle of the identity the notification is sent to
  * 	who  - the handle of the remote user
+ * protocol - protocol id of the buddy. 
  * 	stat - 1 if typing, 0 if stopped typing
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_typing_notify)(int id, const char *me, const char *who, int stat);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_typing_notify)(int id, const char *me, const char *who, int protocol, int stat);
 
 
 /*
@@ -811,7 +816,21 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_connect_async)(int id, const char *host, int p
 void YAHOO_CALLBACK_TYPE(ext_yahoo_send_http_request)(int id, const char *method, const char *url, const char *cookies, long content_length,
 		yahoo_get_fd_callback callback, void *callback_data);
 
-
+/*
+ * Name: ext_yahoo_send_https_request
+ * 	This function opens HTTPS connection and sends the proper request for a specified resource
+ *  by utilizing the provided method.
+ *
+ *  This callback allows us to do proper proxy authentication on the user level. As well as
+ *  possibly using some other routines for HTTP requests. (miranda has HTTPS netlib api)
+ * Params:
+ * 	yd   - yahoo_data *, allows HTTPS to read/write cookies
+ *  host - host to use for the request
+ * 	path  - the path that specifies the resource to reference
+ */
+	
+char *YAHOO_CALLBACK_TYPE(ext_yahoo_send_https_request)(struct yahoo_data *yd, const char *host, const char *path);
+		
 #ifdef USE_STRUCT_CALLBACKS
 };
 

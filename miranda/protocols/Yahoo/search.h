@@ -16,4 +16,9 @@
 int YahooBasicSearch(WPARAM wParam,LPARAM lParam);
 void ext_yahoo_got_search_result(int id, int found, int start, int total, YList *contacts);
 
+/*
+ * Adding Advanced Search to Miranda
+ */
+int YahooCreateAdvancedSearchUI(WPARAM wParam, LPARAM lParam);
+int YahooAdvancedSearch(WPARAM wParam, LPARAM lParam);
 #endif

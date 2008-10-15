@@ -87,6 +87,23 @@ WORD __stdcall YAHOO_GetWord( HANDLE hContact, const char* valueName, int parDef
 	return DBGetContactSettingWord( hContact, yahooProtocolName, valueName, parDefltValue );
 }
 
+DWORD __stdcall YAHOO_Set_Protocol( HANDLE hContact, int protocol )
+{
+	char *s=NULL;
+	
+	YAHOO_SetWord(hContact, "yprotoid", protocol);
+	
+	switch (protocol) {
+		case 0: break; /* Yahoo, nothing special here */
+		case 2: s = "MSN"; break;
+		
+	} 
+	
+	YAHOO_SetString(hContact, "MirVer", s);
+	YAHOO_SetString(hContact, "Transport", s);
+	return 0;
+}
+
 int __stdcall YAHOO_SendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam )
 {
 	ACKDATA ack;
@@ -234,7 +251,7 @@ int YAHOO_util_dbsettingchanged(WPARAM wParam, LPARAM lParam)
 
                 if ( !DBGetContactSettingString( (HANDLE) wParam, yahooProtocolName, YAHOO_LOGINID, &dbv )){
 						YAHOO_DebugLog("Adding Permanently %s to list.", dbv.pszVal);
-                        YAHOO_add_buddy(dbv.pszVal, "miranda", NULL);
+                        YAHOO_add_buddy(dbv.pszVal,YAHOO_GetWord((HANDLE) wParam, "yprotoid", 0), "miranda", NULL);
            		 		DBFreeVariant(&dbv);
            		}
 

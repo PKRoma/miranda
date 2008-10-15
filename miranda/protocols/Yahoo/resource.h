@@ -70,6 +70,13 @@
 #define IDC_OPT_IGN_LIST				207
 
 #define IDD_OPT_YAHOO_CONNECTION		301
+
+/*
+ * These are needed for Advanced Search
+ */
+#define IDD_SEARCHUSER					400
+#define IDC_SEARCH_ID					401
+#define IDC_SEARCH_PROTOCOL				402
 /*
  *
  */

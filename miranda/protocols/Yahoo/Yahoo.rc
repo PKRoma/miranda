@@ -113,6 +113,19 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,102,34,50,14
 END
 
+IDD_SEARCHUSER DIALOGEX 0, 0, 109, 148
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "ID:",IDC_STATIC,0,1,97,8
+    EDITTEXT        IDC_SEARCH_ID,0,10,105,15,ES_AUTOHSCROLL 
+	
+    LTEXT           "Protocol:",IDC_STATIC,0,31,97,38
+	COMBOBOX        IDC_SEARCH_PROTOCOL,0,40,105,75,CBS_DROPDOWNLIST
+END
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Icon
