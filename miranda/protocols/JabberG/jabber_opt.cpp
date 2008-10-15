@@ -1349,12 +1349,14 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 		mir_free( buffer );
 	#else
 		TCHAR* newBuf = buffer;
-	#endif		
+	#endif
 
-	XmlNode node( newBuf, NULL, NULL );
+	int nBytesProcessed = 0;
+	XmlNode node( newBuf, &nBytesProcessed, NULL );
 	if ( node ) {
-		if ( !lstrcmpi(xmlGetName( node ),_T("Workbook"))) {
-			HXML Worksheet = xmlGetChild( node , "Worksheet");
+		HXML Workbook = xmlGetChild( node, _T("Workbook") );
+		if ( Workbook ) {
+			HXML Worksheet = xmlGetChild( Workbook , "Worksheet");
 			if ( Worksheet ) {
 				HXML Table = xmlGetChild( Worksheet , "Table" );
 				if ( Table ) {
@@ -1404,7 +1406,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 						_RosterInsertListItem(hList,jid,name,group,subscr,bAdd);
 	}	}	}	}	}
 
-	free( newBuf );
+	mir_free( newBuf );
 	SendMessage(hwndDlg, JM_STATUSCHANGED, 0, 0);
 }
 
