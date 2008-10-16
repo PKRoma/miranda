@@ -727,6 +727,16 @@ static void yahoo_packet_hash(struct yahoo_packet *pkt, int key, const char *val
 	pkt->hash = y_list_append(pkt->hash, pair);
 }
 
+static void yahoo_packet_hash_int(struct yahoo_packet *pkt, int key, int value)
+{
+	char 	c[128];
+	
+	snprintf(c, 128, "%d", value);
+	yahoo_packet_hash(pkt, key, c);
+}
+
+
+
 static int yahoo_packet_length(struct yahoo_packet *pkt)
 {
 	YList *l;
@@ -1074,7 +1084,8 @@ static void yahoo_input_close(struct yahoo_input_data *yid)
 	FREE(yid);
 }
 
-static int is_same_bud(const void * a, const void * b) {
+static int is_same_bud(const void * a, const void * b) 
+{
 	const struct yahoo_buddy *subject = a;
 	const struct yahoo_buddy *object = b;
 
@@ -5260,8 +5271,10 @@ void yahoo_send_im(int id, const char *from, const char *who, int protocol, cons
 	snprintf(buf, sizeof(buf), "%d", buddy_icon);
 	yahoo_packet_hash(pkt, 206, buf); /* buddy_icon, 0 = none, 1=avatar?, 2=picture */
 	
-	snprintf(buf, sizeof(buf), "%d", protocol);
-	yahoo_packet_hash(pkt, 241, buf); 
+	if (protocol != 0) {
+		snprintf(buf, sizeof(buf), "%d", protocol);
+		yahoo_packet_hash(pkt, 241, buf); 
+	}
 	
 	if (yss->web_messenger) {
 			char z[128];
@@ -5297,8 +5310,10 @@ void yahoo_send_typing(int id, const char *from, const char *who, int protocol, 
 	yahoo_packet_hash(pkt, 13, typ ? "1" : "0");
 	yahoo_packet_hash(pkt, 5, who);
 	
-	wsprintf(z, "%d", protocol);
-	yahoo_packet_hash(pkt, 241, z);
+	if (protocol != 0) {
+		wsprintf(z, "%d", protocol);
+		yahoo_packet_hash(pkt, 241, z);
+	}
 	
 	if (yss->web_messenger) {
 			char z[128];
@@ -5760,8 +5775,10 @@ void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group
 	yahoo_packet_hash(pkt, 7, who);
 	yahoo_packet_hash(pkt, 65, group);
 	
-	wsprintf(z, "%d", protocol);
-	yahoo_packet_hash(pkt, 241, z);
+	if (protocol != 0) {
+		wsprintf(z, "%d", protocol);
+		yahoo_packet_hash(pkt, 241, z);
+	}
 	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
@@ -5785,8 +5802,10 @@ void yahoo_accept_buddy(int id, const char *who, int protocol)
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, who);
 	
-	wsprintf(z, "%d", protocol);
-	yahoo_packet_hash(pkt, 241, z); 
+	if (protocol != 0) {
+		wsprintf(z, "%d", protocol);
+		yahoo_packet_hash(pkt, 241, z); 
+	}
 	
 	yahoo_packet_hash(pkt, 13, "1"); // Accept Authorization
 	
@@ -5817,8 +5836,10 @@ void yahoo_reject_buddy(int id, const char *who, int protocol, const char *msg)
 	if (msg != NULL)
 		yahoo_packet_hash(pkt, 14, msg);
 	
-	wsprintf(z, "%d", protocol);
-	yahoo_packet_hash(pkt, 241, z); 
+	if (protocol != 0) {
+		wsprintf(z, "%d", protocol);
+		yahoo_packet_hash(pkt, 241, z); 
+	}
 	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
