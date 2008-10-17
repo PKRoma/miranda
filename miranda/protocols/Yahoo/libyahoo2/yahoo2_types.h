@@ -100,7 +100,7 @@ enum yahoo_service { /* these are easier to see in hex */
 	YAHOO_SERVICE_YAB_UPDATE = 0xc4,
 	YAHOO_SERVICE_Y6_VISIBLE_TOGGLE = 0xc5, /* YMSG13, key 13: 2 = invisible, 1 = visible */
 	YAHOO_SERVICE_Y6_STATUS_UPDATE = 0xc6,  /* YMSG13 */
-	YAHOO_SERVICE_PICTURE_STATUS = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
+	YAHOO_SERVICE_PICTURE_SHARING = 0xc7,	/* YMSG13, key 213: 0 = none, 1 = avatar, 2 = picture */
 	YAHOO_SERVICE_VERIFY_ID_EXISTS = 0xc8,
 	YAHOO_SERVICE_AUDIBLE = 0xd0,
 	YAHOO_SERVICE_Y7_PHOTO_SHARING = 0xd2,

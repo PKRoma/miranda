@@ -218,7 +218,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_YAB_UPDATE,"Yahoo Address Book Update"},
 	{YAHOO_SERVICE_Y6_VISIBLE_TOGGLE, "Y6 Visibility Toggle"},
 	{YAHOO_SERVICE_Y6_STATUS_UPDATE, "Y6 Status Update"},
-	{YAHOO_SERVICE_PICTURE_STATUS, "Picture Sharing Status"},
+	{YAHOO_SERVICE_PICTURE_SHARING, "Picture Sharing Status"},
 	{YAHOO_SERVICE_VERIFY_ID_EXISTS, "Verify ID Exists"},
 	{YAHOO_SERVICE_AUDIBLE, "Audible"},
 	{YAHOO_SERVICE_Y7_CONTACT_DETAILS,"Y7 Contact Details"},
@@ -3667,7 +3667,6 @@ void yahoo_send_picture_update(int id, const char *who, int type)
 	yahoo_packet_free(pkt);
 }
 
-
 void yahoo_send_picture_checksum(int id, const char *who, int cksum)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
@@ -3713,7 +3712,7 @@ void yahoo_send_picture_status(int id, int buddy_icon)
 
 	yd = yid->yd;
 	yss = yd->server_settings;
-	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_STATUS, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE_SHARING, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 3, yd->user);
 
 	yahoo_packet_hash_int(pkt, 213, buddy_icon);
@@ -4155,7 +4154,7 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_YAB_UPDATE:
 		yahoo_process_yab_update(yid, pkt);
 		break;
-	case YAHOO_SERVICE_PICTURE_STATUS:
+	case YAHOO_SERVICE_PICTURE_SHARING:
 		yahoo_process_picture_status(yid, pkt);
 		break;
 	case YAHOO_SERVICE_AUDIBLE:
@@ -6484,10 +6483,16 @@ void yahoo_send_avatar(int id, const char *name, unsigned long size,
 
 	content_length = YAHOO_PACKET_HDRLEN + yahoo_packet_length(pkt);
 
-	snprintf(url, sizeof(url), "http://%s:%d/notifyft", 
-			yss->filetransfer_host, yss->filetransfer_port);
-	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; B=%s;",
-			yd->cookie_y, yd->cookie_t, yd->cookie_b);
+	//snprintf(url, sizeof(url), "http://%s:%d/notifyft", yss->filetransfer_host, yss->filetransfer_port);
+	if (yss->filetransfer_port != 80) {
+		snprintf(url, sizeof(url), "http://%s:%d/notifyft", yss->filetransfer_host, yss->filetransfer_port);
+	} else {
+		snprintf(url, sizeof(url), "http://%s/notifyft", yss->filetransfer_host);
+	}
+	
+	//snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; B=%s;", yd->cookie_y, yd->cookie_t, yd->cookie_b);
+	snprintf((char *)buff, sizeof(buff), "T=%s; Y=%s", yd->cookie_t, yd->cookie_y);
+			
 	inputs = y_list_prepend(inputs, yid);
 
 	sfd = y_new0(struct send_file_data, 1);
