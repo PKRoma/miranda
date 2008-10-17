@@ -133,7 +133,7 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY )
 		{
-			BOOL	    reconnectRequired = FALSE, restartRequired = FALSE;
+			BOOL	    reconnectRequired = FALSE/*, restartRequired = FALSE*/;
 			char	    str[128];
 
 			GetDlgItemText( hwndDlg, IDC_HANDLE, str, sizeof( str ));
@@ -167,9 +167,10 @@ BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 	        YAHOO_SetByte("DisableYahoomail", ( BYTE )!IsDlgButtonChecked( hwndDlg, IDC_DISABLEYAHOOMAIL ));
 			YAHOO_SetByte("ShowErrors", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_ERRORS )); 
 
-			if ( restartRequired )
+			/*if ( restartRequired )
 				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
-			else if ( reconnectRequired && yahooLoggedIn )
+			else */
+			if ( reconnectRequired && yahooLoggedIn )
 				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
@@ -232,19 +233,33 @@ BOOL CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == PSN_APPLY )
 		{
-			BOOL	    reconnectRequired = FALSE, restartRequired = FALSE;
+			BOOL	    reconnectRequired = FALSE/*, restartRequired = FALSE*/;
 			char	    str[128];
+			DBVARIANT 	dbv;
+			int			port;
 
 			GetDlgItemText( hwndDlg, IDC_LOGINSERVER, str, sizeof( str ));
+			
+			if ( DBGetContactSettingString( NULL, yahooProtocolName, YAHOO_LOGINSERVER, &dbv ) || 
+                  lstrcmp( str, dbv.pszVal ))
+				reconnectRequired = TRUE;
+				
+			if ( dbv.pszVal != NULL ) DBFreeVariant( &dbv );
+
 			YAHOO_SetString( NULL, YAHOO_LOGINSERVER, str );
 
-			YAHOO_SetWord( NULL, YAHOO_LOGINPORT, GetDlgItemInt( hwndDlg, IDC_YAHOOPORT, NULL, FALSE ));
+			port = GetDlgItemInt( hwndDlg, IDC_YAHOOPORT, NULL, FALSE );
+			if (YAHOO_GetWord(NULL, YAHOO_LOGINPORT, -1) != port)
+				reconnectRequired = TRUE;
+			
+			YAHOO_SetWord( NULL, YAHOO_LOGINPORT, port);
 
 			YAHOO_SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
 
-			if ( restartRequired )
+			/*if ( restartRequired )
 				MessageBox( hwndDlg, Translate( "The changes you have made require you to restart Miranda IM before they take effect"), Translate("YAHOO Options"), MB_OK );
-			else if ( reconnectRequired && yahooLoggedIn )
+			else */
+			if ( reconnectRequired && yahooLoggedIn )
 				MessageBox( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
 
 			return TRUE;
