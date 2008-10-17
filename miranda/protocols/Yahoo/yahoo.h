@@ -42,16 +42,16 @@
 // If defined, the build will add cvs info to the plugin info
 #define YAHOO_CVSBUILD
 
-#define YAHOO_LOGINSERVER                 "LoginServer"
-#define YAHOO_LOGINPORT                   "LoginPort"
-#define YAHOO_LOGINID                     "yahoo_id"
-#define YAHOO_PASSWORD                    "Password"
-#define YAHOO_CHECKMAIL                   "CheckMail"
-#define YAHOO_CUSTSTATDB                  "CustomStat"
-#define YAHOO_DEFAULT_PORT              5050
-#define YAHOO_DEFAULT_LOGIN_SERVER      "scs.msg.yahoo.com"	
-#define YAHOO_DEFAULT_JAPAN_LOGIN_SERVER      "cs.yahoo.co.jp"	
-#define YAHOO_CUSTOM_STATUS                99
+#define YAHOO_LOGINSERVER					"LoginServer"
+#define YAHOO_LOGINPORT						"LoginPort"
+#define YAHOO_LOGINID						"yahoo_id"
+#define YAHOO_PASSWORD						"Password"
+#define YAHOO_CHECKMAIL						"CheckMail"
+#define YAHOO_CUSTSTATDB					"CustomStat"
+#define YAHOO_DEFAULT_PORT					5050
+#define YAHOO_DEFAULT_LOGIN_SERVER			"mcs.msg.yahoo.com"	
+#define YAHOO_DEFAULT_JAPAN_LOGIN_SERVER	"cs.yahoo.co.jp"	
+#define YAHOO_CUSTOM_STATUS					99
 
 #define YAHOO_DEBUGLOG YAHOO_DebugLog
 
