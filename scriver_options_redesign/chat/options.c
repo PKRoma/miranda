@@ -82,20 +82,20 @@ struct branch_t
 };
 
 static struct branch_t branch1[] = {
-	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0,0, NULL},
-	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
-	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0,1, NULL},
-	{LPGENT("Show button for sending messages"), "ShowSend", 0, 0, NULL},
-	{LPGENT("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1, NULL},
-	{LPGENT("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1, NULL},
-	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
-	{LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
-	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
-	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
-	{LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
-    {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,0, NULL},
-    {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
-	{LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL}
+	{LPGENT("Flash when someone speaks"), "FlashWindow", 0,0, NULL},
+	{LPGENT("Flash when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
+	{LPGENT("Show chat user list"), "ShowNicklist", 0,1, NULL},
+	{LPGENT("Show send button"), "ShowSend", 0, 0, NULL},
+	{LPGENT("Show chat control buttons"), "ShowTopButtons", 0,1, NULL},
+	{LPGENT("Show text formatting buttons"), "ShowFormatButtons", 0,1, NULL},
+	{LPGENT("Enable button context menus"), "RightClickFilter", 0,0, NULL},
+	{LPGENT("Show topic on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
+	{LPGENT("Do not play sounds when focused"), "SoundsFocus", 0, 0, NULL},
+	{LPGENT("Do not pop up when joining"), "PopupOnJoin", 0,0, NULL},
+	{LPGENT("Show and hide by double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
+    {LPGENT("Show contact statuses (if supported)"), "ShowContactStatus", 0,0, NULL},
+    {LPGENT("Display contact status icon before role icon"), "ContactStatusFirst", 0,0, NULL},
+	{LPGENT("Add \':\' to auto-completed names"), "AddColonToAutoComplete", 0, 1, NULL}
 };
 static struct branch_t branch2[] = {
 	{LPGENT("Show icons"), "IconFlags", 	GC_EVENT_TOPIC|GC_EVENT_JOIN|GC_EVENT_QUIT|
@@ -103,11 +103,11 @@ static struct branch_t branch2[] = {
 				GC_EVENT_KICK|GC_EVENT_NOTICE|GC_EVENT_NICK|GC_EVENT_INFORMATION|GC_EVENT_ADDSTATUS, 0, NULL},
 	{LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
 	{LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
-	{LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
+	{LPGENT("Timestamp has same colour as event"), "TimeStampEventColour", 0,0, NULL},
 	{LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
 	{LPGENT("Limit user names to 20 characters"), "LogLimitNames", 0,1, NULL},
 	{LPGENT("Strip colors from messages"), "StripFormatting", 0, 0, NULL},
-	{LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
+	{LPGENT("Enable \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
 };
 static struct branch_t branch3[] = {
 	{LPGENT("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
@@ -627,7 +627,7 @@ BOOL CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_CHAT_CHECKBOXES),GWL_STYLE)|TVS_NOHSCROLL|TVS_CHECKBOXES);
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETRANGE,0,MAKELONG(255,10));
 		SendDlgItemMessage(hwndDlg,IDC_CHAT_SPIN2,UDM_SETPOS,0,MAKELONG(DBGetContactSettingByte(NULL,"Chat","NicklistRowDist",12),0));
-		hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance and functionality of chat room windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
+		hListHeading1 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance and functionality of chat windows"), DBGetContactSettingByte(NULL, "Chat", "Branch1Exp", 0)?TRUE:FALSE);
 		hListHeading4 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Icons to display in the tray"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x1000);
@@ -773,8 +773,9 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), g_Settings.LoggingEnabled?TRUE:FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FONTCHOOSE), g_Settings.LoggingEnabled?TRUE:FALSE);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIMIT), g_Settings.LoggingEnabled?TRUE:FALSE);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIMITTEXT2), g_Settings.LoggingEnabled?TRUE:FALSE);
 
-		hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance of the message log"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
+		hListHeading2 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Appearance"), DBGetContactSettingByte(NULL, "Chat", "Branch2Exp", 0)?TRUE:FALSE);
 		hListHeading3 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), TranslateT("Default events to show in new chat rooms if the \'event filter\' is enabled"), DBGetContactSettingByte(NULL, "Chat", "Branch3Exp", 0)?TRUE:FALSE);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0x0);
 		FillBranch(GetDlgItem(hwndDlg, IDC_CHAT_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
@@ -802,6 +803,7 @@ BOOL CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_CHAT_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_CHAT_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_CHAT_LOGGING) == BST_CHECKED?TRUE:FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIMITTEXT2), IsDlgButtonChecked(hwndDlg, IDC_CHAT_LOGGING) == BST_CHECKED?TRUE:FALSE);
 			break;
 		case  IDC_CHAT_FONTCHOOSE:
 		{

@@ -165,6 +165,9 @@
 #define IDC_HIDECONTAINERS				1638
 #define IDC_ORIGINALAVATARH             1639
 #define IDC_TYPINGSWITCH				1640
+#define IDC_LOADCOUNTTEXT2				1641
+#define IDC_CHAT_NICKROWTEXT2			1642
+#define IDC_CHAT_LIMITTEXT2				1643
 
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001

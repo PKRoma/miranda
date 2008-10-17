@@ -911,6 +911,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					CheckDlgButton(hwndDlg, IDC_LOADCOUNT, BST_CHECKED);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTN), TRUE);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTSPIN), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTTEXT2), TRUE);
 					break;
 				case LOADHISTORY_TIME:
 					CheckDlgButton(hwndDlg, IDC_LOADTIME, BST_CHECKED);
@@ -966,6 +967,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_LOADTIME:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTN), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTSPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTTEXT2), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMEN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
 					EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
