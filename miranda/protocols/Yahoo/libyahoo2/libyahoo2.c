@@ -6584,11 +6584,8 @@ void yahoo_request_buddy_avatar(int id, const char *buddy)
 	yahoo_packet_hash(pkt, 13, "1");
 
 	if (yss->web_messenger) {
-		char z[128];
-		
 		yahoo_packet_hash(pkt, 0, yd->user); 
-		wsprintf(z, "%d", yd->session_timestamp);
-		yahoo_packet_hash(pkt, 24, z);
+		yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
 	}
 	
 	yahoo_send_packet(yid, pkt, 0);
@@ -6690,7 +6687,6 @@ char *yahoo_webmessenger_idle_packet(int id, int *len)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
-	char z[128];
 	int pktlen;
 	unsigned char *data;
 	int pos = 0;
@@ -6708,8 +6704,7 @@ char *yahoo_webmessenger_idle_packet(int id, int *len)
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
-	wsprintf(z, "%d", yd->session_timestamp);
-	yahoo_packet_hash(pkt, 24, z);
+	yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
 
 	pktlen = yahoo_packet_length(pkt);
 	(*len) = YAHOO_PACKET_HDRLEN + pktlen;
@@ -6739,7 +6734,6 @@ void yahoo_send_idle_packet(int id)
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
 	struct yahoo_packet *pkt = NULL;
-	char z[128];
 	
 	if(!yid) {
 		DEBUG_MSG(("NO Yahoo Input Data???"));
@@ -6753,8 +6747,7 @@ void yahoo_send_idle_packet(int id)
 	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
-	wsprintf(z, "%d", yd->session_timestamp);
-	yahoo_packet_hash(pkt, 24, z);
+	yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
 
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
