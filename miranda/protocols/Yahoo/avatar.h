@@ -58,4 +58,7 @@ void ext_yahoo_got_picture_update(int id, const char *me, const char *who, int b
 
 void ext_yahoo_got_picture_status(int id, const char *me, const char *who, int buddy_icon);
 
+void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts);
+
+void ext_yahoo_got_avatar_share(int id, int buddy_icon);
 #endif

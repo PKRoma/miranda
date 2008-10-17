@@ -519,54 +519,6 @@ void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, 
 		YAHOO_shownotification(Translate("Calendar Reminder"), msg, NIIF_INFO);
 }
 
-void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
-{
-	int cksum = 0;
-	DBVARIANT dbv;	
-	
-	LOG(("[ext_yahoo_got_picture_upload] url: %s timestamp: %d", url, ts));
-
-	if (!url) {
-		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
-		return;
-	}
-	
-	
-	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
-	if (cksum != 0) {
-		LOG(("[ext_yahoo_got_picture_upload] Updating Checksum to: %d", cksum));
-		YAHOO_SetDword("AvatarHash", cksum);
-		DBDeleteContactSetting(NULL, yahooProtocolName, "TMPAvatarHash");
-		
-		// This is only meant for message sessions, but we don't got those in miranda yet
-		YAHOO_bcast_picture_checksum(cksum);
-		// need to tell the stupid Yahoo that our icon updated
-		YAHOO_bcast_picture_update(2);
-	}else
-		cksum = YAHOO_GetDword("AvatarHash", 0);
-		
-	YAHOO_SetString(NULL, "AvatarURL", url);
-	//YAHOO_SetDword("AvatarExpires", ts);
-
-	if  (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
-		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
-
-		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
-		//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
-		yahoo_send_picture_info(id, dbv.pszVal, 2, url, cksum);
-
-		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
-		DBFreeVariant(&dbv);
-	}
-}
-
-void ext_yahoo_got_avatar_share(int id, int buddy_icon)
-{
-	LOG(("[ext_yahoo_got_avatar_share] buddy icon: %d", buddy_icon));
-	
-	YAHOO_SetByte( "ShareAvatar", buddy_icon );
-}
-
 void ext_yahoo_got_stealth(int id, char *stealthlist)
 {
 	char **s;
@@ -1319,14 +1271,13 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 	else 
 		LOG(("ERROR: Unknown method: %s", method));
 */
-    NETLIBHTTPREQUEST nlhr={0};
-	NETLIBHTTPHEADER httpHeaders[5];
-	int fd, error = 0;
-
-	char host[255];
-	int port = 80;
-	char path[255];
-	char z[1024];
+    NETLIBHTTPREQUEST 	nlhr={0};
+	NETLIBHTTPHEADER 	httpHeaders[5];
+	int 				fd, error = 0;
+	char 				host[255];
+	int 				port = 80, i=0;
+	char 				path[255];
+	char 				z[1024];
 	
 	LOG(("[ext_yahoo_send_http_request] method: %s, url: %s, cookies: %s, content length: %ld",
 		method, url, cookies, content_length));
@@ -1342,24 +1293,26 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 	} else {
 		nlhr.cbSize=sizeof(nlhr);
 		nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
-		nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+		nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_HTTP11;
 		nlhr.szUrl=(char *)url;
 		nlhr.headers = httpHeaders;
 		nlhr.headersCount = 3;
 		
-		httpHeaders[0].szName="Accept";
-		httpHeaders[0].szValue="*/*";
-		httpHeaders[1].szName="User-Agent";
-		httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
-		httpHeaders[2].szName="Pragma";
-		httpHeaders[2].szValue="no-cache";
-		
 		if (cookies != NULL && cookies[0] != '\0') {
-			httpHeaders[3].szName="Cookie";
-			httpHeaders[3].szValue=(char *)cookies;
+			httpHeaders[i].szName = "Cookie";
+			httpHeaders[i].szValue = (char *)cookies;
 			nlhr.headersCount = 4;
+			i++;
 		}
 		
+		httpHeaders[i].szName = "User-Agent";
+		httpHeaders[i].szValue = "Mozilla/4.0 (compatible; MSIE 5.5)";
+		i++;
+
+		httpHeaders[i].szName = "Host";
+		httpHeaders[i].szValue = host;
+		i++;
+
 		if (nlhr.requestType == REQUEST_POST) {
 			httpHeaders[nlhr.headersCount].szName="Content-Length";
 			mir_snprintf(z, 1024, "%d", content_length);
@@ -1367,6 +1320,10 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 	
 			nlhr.headersCount++;
 		}
+		
+		httpHeaders[i].szName = "Cache-Control";
+		httpHeaders[i].szValue = "no-cache";
+		i++;
 		
 		error = CallService(MS_NETLIB_SENDHTTPREQUEST,(WPARAM)fd,(LPARAM)&nlhr);
 	}

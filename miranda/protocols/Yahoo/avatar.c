@@ -462,17 +462,22 @@ void ext_yahoo_got_picture_checksum(int id, const char *me, const char *who, int
         yahoo_reset_avatar(hContact);
 	} else {
 		if (DBGetContactSettingDword(hContact, yahooProtocolName,"PictCK", 0) != cksum) {
-			//char szFile[MAX_PATH];
+			char szFile[MAX_PATH];
 
 			// Now save the new checksum. No rush requesting new avatar yet.
 			DBWriteContactSettingDword(hContact, yahooProtocolName, "PictCK", cksum);
 			
 			// Need to delete the Avatar File!!
-			/*GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
+			GetAvatarFileName(hContact, szFile, sizeof szFile, 0);
 			DeleteFile(szFile);
 			
 			// Reset the avatar and cleanup.
-			yahoo_reset_avatar(hContact);*/
+			yahoo_reset_avatar(hContact);
+			
+			// Request new avatar here... (might also want to check the sharing status?)
+			
+			if (YAHOO_GetByte( "ShareAvatar", 0 ) == 2)
+				YAHOO_request_avatar(who);
 		}
 	}
 	
@@ -512,6 +517,56 @@ void ext_yahoo_got_picture_status(int id, const char *me, const char *who, int b
 	
 	/* Last thing check the checksum and request new one if we need to */
 	yahoo_reset_avatar(hContact);
+}
+
+void ext_yahoo_got_picture_upload(int id, const char *me, const char *url,unsigned int ts)
+{
+	int cksum = 0;
+	DBVARIANT dbv;	
+	
+	LOG(("[ext_yahoo_got_picture_upload] url: %s timestamp: %d", url, ts));
+
+	if (!url) {
+		LOG(("[ext_yahoo_got_picture_upload] Problem with upload?"));
+		return;
+	}
+	
+	
+	cksum = YAHOO_GetDword("TMPAvatarHash", 0);
+	if (cksum != 0) {
+		LOG(("[ext_yahoo_got_picture_upload] Updating Checksum to: %d", cksum));
+		YAHOO_SetDword("AvatarHash", cksum);
+		DBDeleteContactSetting(NULL, yahooProtocolName, "TMPAvatarHash");
+		
+		// This is only meant for message sessions, but we don't got those in miranda yet
+		//YAHOO_bcast_picture_checksum(cksum);
+		yahoo_send_picture_checksum(ylad->id, NULL, cksum);
+		
+		// need to tell the stupid Yahoo that our icon updated
+		//YAHOO_bcast_picture_update(2);
+	}else
+		cksum = YAHOO_GetDword("AvatarHash", 0);
+		
+	YAHOO_SetString(NULL, "AvatarURL", url);
+	//YAHOO_SetDword("AvatarExpires", ts);
+
+	if  (!DBGetContactSettingString(NULL, yahooProtocolName, "AvatarInv", &dbv) ){
+		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
+
+		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
+		//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
+		yahoo_send_picture_info(id, dbv.pszVal, 2, url, cksum);
+
+		DBDeleteContactSetting(NULL, yahooProtocolName, "AvatarInv");
+		DBFreeVariant(&dbv);
+	}
+}
+
+void ext_yahoo_got_avatar_share(int id, int buddy_icon)
+{
+	LOG(("[ext_yahoo_got_avatar_share] buddy icon: %d", buddy_icon));
+	
+	YAHOO_SetByte( "ShareAvatar", buddy_icon );
 }
 
 void yahoo_reset_avatar(HANDLE 	hContact)
@@ -586,9 +641,9 @@ void YAHOO_bcast_picture_update(int buddy_icon)
 
 void YAHOO_set_avatar(int buddy_icon)
 {
-	yahoo_send_picture_status(ylad->id,buddy_icon);
+	yahoo_send_picture_status(ylad->id, buddy_icon);
 	
-	YAHOO_bcast_picture_update(buddy_icon);
+	//YAHOO_bcast_picture_update(buddy_icon);
 }
 
 void YAHOO_bcast_picture_checksum(int cksum)
