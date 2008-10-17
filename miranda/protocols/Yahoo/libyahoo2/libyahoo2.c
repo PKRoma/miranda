@@ -1991,6 +1991,11 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 				protocol = state = away = idle = mobile = 0;
 			}
 			name = pair->value;
+			
+			if (pkt->service == YAHOO_SERVICE_LOGOFF) {
+				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, YAHOO_STATUS_OFFLINE, NULL, 0, 0, 0);
+				name = NULL;
+			}
 			break;
 		case 10: /* state */
 			state = strtol(pair->value, NULL, 10);
@@ -2016,7 +2021,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			break;
 		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
 			if (pkt->service == YAHOO_SERVICE_LOGOFF || strtol(pair->value, NULL, 10) == 0) {
-				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, YAHOO_STATUS_OFFLINE, NULL, 1, 0, 0);
+				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, YAHOO_STATUS_OFFLINE, NULL, 0, 0, 0);
 				name = NULL;
 				break;
 			}
