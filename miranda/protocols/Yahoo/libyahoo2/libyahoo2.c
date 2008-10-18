@@ -4212,7 +4212,7 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	struct yahoo_packet *pkt;
 	struct yahoo_data *yd = yid->yd;
 	int pos = 0;
-	int pktlen;
+	unsigned pktlen;
 
 	if(!yd)
 		return NULL;
@@ -4349,7 +4349,7 @@ static void yahoo_yab_read(struct yab *yab, unsigned char *d, int len)
 static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 {
 	struct yab *yab = NULL;
-	int pos = 0, end=0;
+	unsigned pos = 0, end=0;
 	struct yahoo_data *yd = yid->yd;
 
 	if(!yd)
@@ -4357,12 +4357,12 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 
 	//DEBUG_MSG(("rxlen is %d", yid->rxlen));
 
-	if(yid->rxlen <= strlen("<record"))
+	if(yid->rxlen < sizeof("<record"))
 		return NULL;
 
 	/* start with <record */
-	while(pos < yid->rxlen-strlen("<record")+1 
-			&& memcmp(yid->rxqueue + pos, "<record", strlen("<record")))
+	while(pos < yid->rxlen-sizeof("<record")+2 
+			&& memcmp(yid->rxqueue + pos, "<record", sizeof("<record")-1))
 		pos++;
 
 	if(pos >= yid->rxlen-1)
@@ -4370,7 +4370,7 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 
 	end = pos+2;
 	/* end with /> */
-	while(end < yid->rxlen-strlen("/>")+1 && memcmp(yid->rxqueue + end, "/>", strlen("/>")))
+	while(end < yid->rxlen-strlen("/>")+1 && memcmp(yid->rxqueue + end, "/>", sizeof("/>")-1))
 		end++;
 
 	if(end >= yid->rxlen-1)
