@@ -61,7 +61,7 @@ void MsnInitIcons( void )
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = MSN_Translate( "MSN" );
+	sid.pszSection = MSN_Translate( "Protocols/MSN" );
 
 	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
