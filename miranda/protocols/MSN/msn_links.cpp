@@ -66,7 +66,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 	arg = strchr(arg, ':');
 	if (arg == NULL) return 1; /* parse failed */
 
-    for (++arg; *arg == '/'; ++arg) {};
+    for (++arg; *arg == '/'; ++arg) {}
 
 	arg = NEWSTR_ALLOCA(arg);
 

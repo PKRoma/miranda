@@ -80,7 +80,6 @@ void __cdecl CMsnProto::MSNServerThread( void* arg )
 	if ( tPortDelim != NULL )
 		*tPortDelim = '\0';
 
-retry:
 	if (MyOptions.UseGateway) 
 	{
 		if (*info->mServer == 0)
@@ -140,14 +139,7 @@ retry:
 				break;
 
 			case SERVER_SWITCHBOARD:
-                if(MyOptions.UseGateway && info->gatewayType)
-                {
-                    info->gatewayType = 0;
-                    info->mGatewayIP[0] = 0;
-                    goto retry;
-                }
-                else
-                    if (info->mCaller) msnNsThread->sendPacket( "XFR", "SB" );
+                if (info->mCaller) msnNsThread->sendPacket( "XFR", "SB" );
                 break;
 		}
 

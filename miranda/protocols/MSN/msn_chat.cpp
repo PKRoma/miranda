@@ -77,10 +77,11 @@ int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv;
 	int bError = getTString( "Nick", &dbv );
 	if ( bError )
-		dbv.ptszVal = _T("");
+		gce.ptszNick = _T("");
+    else
+	    gce.ptszNick = dbv.ptszVal;
 
 	gcd.iType = GC_EVENT_JOIN;
-	gce.ptszNick = dbv.ptszVal;
 	gce.ptszUID = mir_a2t(MyOptions.szEmail);
 	gce.time = 0;
 	gce.bIsMe = TRUE;
@@ -97,7 +98,7 @@ int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	if ( !bError )
 		MSN_FreeVariant( &dbv );
-	mir_free((void*)gce.ptszUID );
+	mir_free((TCHAR*)gce.ptszUID );
 	return 0;
 }
 
