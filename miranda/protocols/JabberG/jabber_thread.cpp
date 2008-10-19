@@ -1456,18 +1456,28 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 	}
 
 	// Determine status to show for the contact based on the remaining resources
-	int r = -1, i = 0;
-	for ( i=0; i < item->resourceCount; i++ )
-		if (( status = JabberCombineStatus( status, item->resource[i].status )) == item->resource[i].status )
-			r = i;
+	int nSelectedResource = -1, i = 0;
+	int nMaxPriority = -999; // -128...+127 valid range
+	for ( i = 0; i < item->resourceCount; i++ )
+	{
+		if ( item->resource[i].priority > nMaxPriority ) {
+			nMaxPriority = item->resource[i].priority;
+			status = item->resource[i].status;
+			nSelectedResource = i;
+		}
+		else if ( item->resource[i].priority == nMaxPriority) {
+			if (( status = JabberCombineStatus( status, item->resource[i].status )) == item->resource[i].status )
+				nSelectedResource = i;
+		}
+	}
 	item->itemResource.status = status;
-	if ( r != -1 ) {
-		Log("JabberUpdateJidDbSettings: updating jid " TCHAR_STR_PARAM " to rc " TCHAR_STR_PARAM, item->jid, item->resource[r].resourceName );
-		if ( item->resource[r].statusMessage )
-			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[r].statusMessage );
+	if ( nSelectedResource != -1 ) {
+		Log("JabberUpdateJidDbSettings: updating jid " TCHAR_STR_PARAM " to rc " TCHAR_STR_PARAM, item->jid, item->resource[nSelectedResource].resourceName );
+		if ( item->resource[nSelectedResource].statusMessage )
+			DBWriteContactSettingTString( hContact, "CList", "StatusMsg", item->resource[nSelectedResource].statusMessage );
 		else
 			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
-		UpdateMirVer( hContact, &item->resource[r] );
+		UpdateMirVer( hContact, &item->resource[nSelectedResource] );
 	}
 
 	if ( _tcschr( jid, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
@@ -1475,7 +1485,7 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 			JSetWord( hContact, "Status", ( WORD )status );
 
 	if (status == ID_STATUS_OFFLINE)
-	{ // remove xstatus icon
+	{ // remove x-status icon
 		JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
 		JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
