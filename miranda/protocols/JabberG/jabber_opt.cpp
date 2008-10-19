@@ -386,6 +386,7 @@ class CDlgOptAccount: public CJabberDlgBase
 	CCtrlCombo		m_cbLocale;
 	CCtrlButton		m_btnRegister;
 	CCtrlButton		m_btnUnregister;
+	CCtrlButton		m_btnChangePassword;
 	CCtrlHyperlink	m_lnkServers;
 
 public:
@@ -410,6 +411,7 @@ public:
 		m_cbLocale(this, IDC_MSGLANG),
 		m_btnRegister(this, IDC_BUTTON_REGISTER),
 		m_btnUnregister(this, IDC_UNREGISTER),
+		m_btnChangePassword(this, IDC_BUTTON_CHANGE_PASSWORD),
 		m_lnkServers(this, IDC_LINK_PUBLIC_SERVER, "http://www.jabber.org/im-services")
 
 	{
@@ -437,6 +439,7 @@ public:
 
 		m_btnRegister.OnClick = Callback(this, &CDlgOptAccount::btnRegister_OnClick);
 		m_btnUnregister.OnClick = Callback(this, &CDlgOptAccount::btnUnregister_OnClick);
+		m_btnChangePassword.OnClick = Callback(this, &CDlgOptAccount::btnChangePassword_OnClick);
 	}
 
 	static CDlgBase *Create(void *param) { return new CDlgOptAccount((CJabberProto *)param); }
@@ -604,6 +607,18 @@ private:
 			m_proto->m_ThreadInfo->send( 
 				XmlNodeIq( _T("set"), NOID, m_proto->m_szJabberJID ) << XQUERY( _T(JABBER_FEAT_REGISTER))
 					<< XCHILD( _T("remove")));
+	}
+
+	void btnChangePassword_OnClick(CCtrlButton *)
+	{
+		if ( !m_proto->m_bJabberOnline ) {
+			MessageBox( NULL,
+				TranslateT("You can change your password only when you are online"),
+				TranslateT("You must be online"), MB_OK | MB_ICONSTOP );
+			return;
+		}
+
+		m_proto->OnMenuHandleChangePassword(0, 0);
 	}
 
 	void cbServer_OnDropdown(CCtrlCombo *sender)
