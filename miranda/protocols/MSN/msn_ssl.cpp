@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_global.h"
 #include "msn_proto.h"
 
-static int findHeader(NETLIBHTTPREQUEST *nlhrReply, char *hdr)
+static int findHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
 {
 	int res = -1, i; 
 	for (i=0; i<nlhrReply->headersCount; i++) 

@@ -984,7 +984,7 @@ int __cdecl CMsnProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 	if ( flags & PREF_UNICODE ) {
 		char* p = strchr(msg, '\0');
 		if (p != msg) {
-			while ( *(++p) == '\0' );
+            while ( *(++p) == '\0' ) {}
 			msg = mir_utf8encodeW(( wchar_t* )p );
 		}
 		else
@@ -995,7 +995,7 @@ int __cdecl CMsnProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 	int rtlFlag = (flags & PREF_RTL ) ? MSG_RTL : 0;
 
-	int seq;
+	int seq = 0;
 	int netId  = Lists_GetNetId(tEmail);
 
 	switch (netId)
@@ -1242,7 +1242,9 @@ int __cdecl CMsnProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 			clmi.flags = CMIM_NAME | CMIF_TCHAR;
 			clmi.ptszName = m_tszUserName;
 			MSN_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
-		}	
+            break;
+		}
+        default: break;              
 	}
 	return 1;
 }

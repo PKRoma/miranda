@@ -76,10 +76,7 @@ int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	DBVARIANT dbv;
 	int bError = getTString( "Nick", &dbv );
-	if ( bError )
-		gce.ptszNick = _T("");
-    else
-	    gce.ptszNick = dbv.ptszVal;
+    gce.ptszNick = bError ? _T("") : dbv.ptszVal;
 
 	gcd.iType = GC_EVENT_JOIN;
 	gce.ptszUID = mir_a2t(MyOptions.szEmail);
@@ -235,8 +232,6 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 
 					DBVARIANT dbv;
 					int bError = getTString( "Nick", &dbv );
-					if ( bError )
-						dbv.ptszVal = _T("");
 
 					GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_MESSAGE };
 					gcd.ptszID = gch->pDest->ptszID;
@@ -245,7 +240,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 					gce.cbSize = sizeof(GCEVENT);
 					gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 					gce.pDest = &gcd;
-					gce.ptszNick = dbv.ptszVal;
+                    gce.ptszNick = bError ? _T("") : dbv.ptszVal;
 					gce.ptszUID = mir_a2t(MyOptions.szEmail);
 					gce.time = time(NULL);
 					gce.ptszText = gch->ptszText;
