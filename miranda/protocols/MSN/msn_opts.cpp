@@ -153,7 +153,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 	case WM_COMMAND:
 		if ( LOWORD( wParam ) == IDC_NEWMSNACCOUNTLINK ) {
-			MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://lc2.law13.hotmail.passport.com/cgi-bin/register" );
+			MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"https://signup.live.com" );
 			return TRUE;
 		}
 
@@ -670,7 +670,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 	case WM_COMMAND:
 		if ( LOWORD( wParam ) == IDC_NEWMSNACCOUNTLINK ) {
-			MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://lc2.law13.hotmail.passport.com/cgi-bin/register" );
+			MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"https://signup.live.com" );
 			return TRUE;
 		}
 
