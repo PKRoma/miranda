@@ -62,8 +62,10 @@ static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 48, 24, 24, 24, 24, 24};
 
 typedef struct
 {
-   time_t lastEnterTime;
-   TCHAR  szTabSave[20];
+	time_t lastEnterTime;
+	TCHAR*  szSearchQuery;
+	TCHAR*  szSearchResult;
+	SESSION_INFO *lastSession;
 } MESSAGESUBDATA;
 
 
@@ -256,6 +258,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 
 static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	static int start;
 	int result;
 	MESSAGESUBDATA *dat;
 	SESSION_INFO* Parentsi;
@@ -276,10 +279,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
    switch (msg) {
    case EM_SUBCLASSED:
       dat = (MESSAGESUBDATA *) mir_alloc(sizeof(MESSAGESUBDATA));
-
+      ZeroMemory(dat, sizeof(MESSAGESUBDATA));
       SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
-      dat->szTabSave[0] = '\0';
-      dat->lastEnterTime = 0;
       return 0;
 
    case WM_MOUSEWHEEL:
@@ -299,9 +300,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	case WM_KEYDOWN:
 	{
-		static int start, end;
         if (wParam == VK_RETURN) {
-            dat->szTabSave[0] = '\0';
+        	mir_free(dat->szSearchQuery);
+            dat->szSearchQuery = NULL;
+        	mir_free(dat->szSearchResult);
+            dat->szSearchResult = NULL;
 			if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
 			   PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 			   return 0;
@@ -325,8 +328,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
         }
 
 		if (wParam == VK_TAB && !isCtrl && !isShift) {    //tab-autocomplete
+			int iLen, end, topicStart;
+			BOOL isTopic = FALSE;
+			BOOL isRoom = FALSE;
             TCHAR* pszText = NULL;
-            int iLen;
             GETTEXTEX gt = {0};
             LRESULT lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
 
@@ -343,7 +348,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			iLen = GetRichTextLength(hwnd, gt.codepage, TRUE);
             if (iLen >0) {
 				TCHAR *pszName = NULL;
-				TCHAR *pszSelName = NULL;
 				pszText = mir_alloc(iLen + 100 * sizeof(TCHAR));
 				gt.cb = iLen + 99 * sizeof(TCHAR);
 				gt.flags = GT_DEFAULT;
@@ -353,43 +357,64 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					start--;
 				while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 					end ++;
-
-               if ( dat->szTabSave[0] =='\0')
-                  lstrcpyn( dat->szTabSave, pszText+start, end-start+1 );
-
-               pszSelName = mir_alloc( sizeof(TCHAR)*( end-start+1 ));
-               lstrcpyn( pszSelName, pszText+start, end-start+1);
-               pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szTabSave, pszSelName);
-               if (pszName == NULL) {
-                  pszName = dat->szTabSave;
-                  SendMessage(hwnd, EM_SETSEL, start, end);
-                  if (end !=start)
-                     SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
-                  dat->szTabSave[0] = '\0';
-               }
-               else {
-                  SendMessage(hwnd, EM_SETSEL, start, end);
-                  if (end !=start)
-                     SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
-               }
-               mir_free(pszText);
-               mir_free(pszSelName);
-            }
+				if (pszText[start] == '#') {
+					isRoom = TRUE;
+				} else {
+					topicStart = start;
+					while ( topicStart >0 && (pszText[topicStart-1] == ' ' || pszText[topicStart-1] == 13 || pszText[topicStart-1] == VK_TAB))
+						topicStart--;
+					if (topicStart > 5 && _tcsstr(&pszText[topicStart-6], _T("/topic")) == &pszText[topicStart-6]) {
+						isTopic = TRUE;
+					}
+				}
+				if ( dat->szSearchQuery == NULL) {
+					dat->szSearchQuery = mir_alloc( sizeof(TCHAR)*( end-start+1 ));
+					lstrcpyn( dat->szSearchQuery, pszText+start, end-start+1);
+					dat->szSearchResult = mir_tstrdup(dat->szSearchQuery);
+					dat->lastSession = NULL;
+				}
+				if (isTopic) {
+					pszName = Parentsi->ptszTopic;
+				} else if (isRoom) {
+					dat->lastSession = SM_FindSessionAutoComplete(Parentsi->pszModule, dat->lastSession, dat->szSearchQuery, dat->szSearchResult);
+					if (dat->lastSession != NULL) {
+						pszName = dat->lastSession->ptszName;
+					}
+				} else {
+					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szSearchQuery, dat->szSearchResult);
+				}
+				mir_free(dat->szSearchResult);
+				dat->szSearchResult = NULL;
+				if (pszName == NULL) {
+					SendMessage(hwnd, EM_SETSEL, start, end);
+					if (end !=start)
+						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) dat->szSearchQuery);
+					mir_free(dat->szSearchQuery);
+					dat->szSearchQuery = NULL;
+				} else {
+					dat->szSearchResult = mir_tstrdup(pszName);
+					SendMessage(hwnd, EM_SETSEL, start, end);
+					if (end !=start)
+						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
+				}
+				mir_free(pszText);
+			}
 
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
             return 0;
+         } else {
+			mir_free(dat->szSearchQuery);
+            dat->szSearchQuery = NULL;
+			mir_free(dat->szSearchResult);
+            dat->szSearchResult = NULL;
          }
-
-         if (dat->szTabSave[0] != '\0' && wParam != VK_RIGHT && wParam != VK_LEFT
-               && wParam != VK_SPACE && wParam != VK_RETURN && wParam != VK_BACK
-               && wParam != VK_DELETE ) {
+/*
+         if (dat->szSearchQuery != NULL && wParam != VK_RIGHT && wParam != VK_LEFT) {
             if (g_Settings.AddColonToAutoComplete && start == 0)
-               SendMessageA(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
-
-            dat->szTabSave[0] = '\0';
+				SendMessageA(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
          }
-
+*/
          if (wParam == 0x49 && isCtrl && !isAlt) { // ctrl-i (italics)
             CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_ITALICS) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
             SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
@@ -556,8 +581,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
       break;
 
    case EM_UNSUBCLASSED:
-      mir_free(dat);
-      return 0;
+		mir_free(dat->szSearchQuery);
+       	mir_free(dat->szSearchResult);
+		mir_free(dat);
+		return 0;
    }
 
    return CallWindowProc(OldMessageProc, hwnd, msg, wParam, lParam);

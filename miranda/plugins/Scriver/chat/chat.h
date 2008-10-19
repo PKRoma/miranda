@@ -403,6 +403,7 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
 USERINFO*     SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int index);
 char          SM_GetStatusIndicator(SESSION_INFO* si, USERINFO * ui);
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent);
 MODULEINFO*   MM_AddModule(const char* pszModule);
 MODULEINFO*   MM_FindModule(const char* pszModule);
 void          MM_FixColors();
