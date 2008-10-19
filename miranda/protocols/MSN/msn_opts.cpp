@@ -61,13 +61,13 @@ void MsnInitIcons( void )
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = MSN_Translate( "Protocols/MSN" );
+	sid.pszSection = LPGEN( "Protocols/MSN" );
 
 	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "MSN_%s", iconList[i].szName );
 		sid.pszName = szSettingName;
-		sid.pszDescription = MSN_Translate( iconList[i].szDescr );
+		sid.pszDescription = iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		hIconLibItem[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
