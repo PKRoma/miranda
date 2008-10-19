@@ -1556,7 +1556,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 		else
 			p = NULL;
 		ListAddResource( LIST_ROSTER, from, status, p, priority );
-		
+
 		// XEP-0115: Entity Capabilities
 		OnProcessPresenceCapabilites( node );
 
@@ -1613,9 +1613,13 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 		if (( item = ListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			ListRemoveResource( LIST_ROSTER, from );
 
-			// remove selfcontact, if where is no more another resources
-			if ( item->resourceCount == 1 && ResourceInfoFromJID( info->fullJID ))
-				ListRemoveResource( LIST_ROSTER, info->fullJID );
+			hContact = HContactFromJID( from );
+			if ( hContact && DBGetContactSettingByte( hContact, "CList", "NotOnList", 0) == 1 ) {
+				// remove selfcontact, if where is no more another resources
+				if ( item->resourceCount == 1 && ResourceInfoFromJID( info->fullJID ))
+					ListRemoveResource( LIST_ROSTER, info->fullJID );
+			}
+
 
 			// set status only if no more available resources
 			if ( !item->resourceCount )
