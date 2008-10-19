@@ -209,7 +209,7 @@ void CMsnProto::p2p_savePicture2disk(filetransfer* ft)
 			return;
 		}
 
-		char* ext;
+		const char* ext;
 		int format;
 		BYTE buf[6];
 

@@ -33,7 +33,7 @@ static CRITICAL_SECTION csInterlocked95;
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaStatusToMSN - status helper functions
 
-char*  CMsnProto::MirandaStatusToMSN( int status )
+const char*  CMsnProto::MirandaStatusToMSN( int status )
 {
 	switch(status)
 	{
@@ -210,7 +210,7 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", m_szProtoName );
 }
 
-int MSN_GetImageFormat(void* buf, char** ext)
+int MSN_GetImageFormat(void* buf, const char** ext)
 {
 	int res;
 	if ( *(unsigned short*)buf == 0xd8ff )
@@ -244,7 +244,7 @@ int MSN_GetImageFormat(void* buf, char** ext)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetCustomSmileyFileName - gets a file name for an contact's custom smiley
 
-void  CMsnProto::MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int type )
+void  CMsnProto::MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, const char* SmileyName, int type )
 {
 	size_t tPathLen;
 
@@ -618,7 +618,7 @@ void  CMsnProto::MSN_SetServerStatus( int newStatus )
 	if ( !msnLoggedIn )
 		return;
 
-	char* szStatusName = MirandaStatusToMSN( newStatus  );
+	const char* szStatusName = MirandaStatusToMSN( newStatus  );
 
 	if ( newStatus != ID_STATUS_OFFLINE ) {
 		char szMsnObject[ 1000 ];

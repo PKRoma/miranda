@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////////////////
 // Starts a file sending thread
 
-void MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void* extra)
+void MSN_ConnectionProc( HANDLE hNewConnection, DWORD /* dwRemoteIP */, void* extra)
 {
 	CMsnProto *proto = (CMsnProto*)extra;
 	
@@ -108,7 +108,7 @@ void CMsnProto::sttInviteMessage( ThreadData* info, char* msgBody, char* email, 
 	const char* AuthCookie = tFileInfo[ "AuthCookie" ];
 	const char* SessionID = tFileInfo[ "Session-ID" ];
 	const char* SessionProtocol = tFileInfo[ "Session-Protocol" ];
-	const char* Connectivity = tFileInfo[ "Connectivity" ];
+//	const char* Connectivity = tFileInfo[ "Connectivity" ];
  
 	if ( AppGUID != NULL ) {
 		if ( !strcmp( AppGUID, "{02D3C01F-BF30-4825-A83A-DE7AF41648AA}" )) {
@@ -591,22 +591,11 @@ void CMsnProto::sttProcessYFind( char* buf, size_t len )
 		if (szNetId != NULL )
 		{
 			int netId = atol(szNetId);
-	        HANDLE hContact = MSN_HContactFromEmail(szEmail, szEmail, true, false);
-			if (MSN_AddUser( hContact, szEmail, netId, LIST_FL ))
+			if (MSN_AddUser( NULL, szEmail, netId, LIST_FL ))
 			{
-				MSN_AddUser( hContact, szEmail, netId, LIST_PL + LIST_REMOVE );
-				MSN_AddUser( hContact, szEmail, netId, LIST_BL + LIST_REMOVE );
-				MSN_AddUser( hContact, szEmail, netId, LIST_AL );
-				DBDeleteContactSetting( hContact, "CList", "Hidden" );
-
-		        DBVARIANT dbv;
-		        if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv )) 
-                {
-			        MSN_MoveContactToGroup( hContact, dbv.pszVal );
-			        MSN_FreeVariant( &dbv );
-	        	}
-            }
-			MSN_SetContactDb(hContact, szEmail);
+				MSN_AddUser( NULL, szEmail, netId, LIST_BL + LIST_REMOVE );
+				MSN_AddUser( NULL, szEmail, netId, LIST_AL );
+			}
 		}
 	}
 

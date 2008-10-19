@@ -263,7 +263,7 @@ void CMsnProto::MSN_CreateContList(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN Server List Manager dialog procedure
 
-static void ResetListOptions(HWND hwndList, CMsnProto* proto)
+static void ResetListOptions(HWND hwndList)
 {
 	SendMessage(hwndList,CLM_SETBKBITMAP,0,(LPARAM)(HBITMAP)NULL);
 	SendMessage(hwndList,CLM_SETBKCOLOR,GetSysColor(COLOR_WINDOW),0);
@@ -391,7 +391,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 		LPNMHDR nmc = (LPNMHDR)lParam;
-		if ( nmc->idFrom == 0 && nmc->code == PSN_APPLY ) {
+		if ( nmc->idFrom == 0 && nmc->code == (unsigned)PSN_APPLY ) {
 			SaveSettings(GetDlgItem(hwndDlg,IDC_LIST), proto);
 			break;
 		}
@@ -405,7 +405,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			SetAllContactIcons(nmc->hwndFrom, proto);
 			//fall through
 		case CLN_OPTIONSCHANGED:
-			ResetListOptions(nmc->hwndFrom, proto);
+			ResetListOptions(nmc->hwndFrom);
 			break;
 
 		case NM_CLICK:

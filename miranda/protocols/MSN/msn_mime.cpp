@@ -190,7 +190,7 @@ const char* MimeHeaders::find( const char* szFieldName )
 static const struct _tag_cpltbl
 {
 	unsigned cp;
-	char* mimecp;
+	const char* mimecp;
 } cptbl[] =
 {
 	{   037, "IBM037" },		  // IBM EBCDIC US-Canada 

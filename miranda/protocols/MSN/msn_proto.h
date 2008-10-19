@@ -202,9 +202,9 @@ struct CMsnProto : public PROTO_INTERFACE
 
     void        MSN_GoOffline( void );
     void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
-    void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, char* SmileyName, int Type);
+    void        MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, size_t cbLen, const char* SmileyName, int Type);
 	
-	char*		MirandaStatusToMSN( int status );
+	const char*	MirandaStatusToMSN( int status );
 	WORD		MSNStatusToMiranda(const char *status);
 	char**		GetStatusMsgLoc( int status );
     

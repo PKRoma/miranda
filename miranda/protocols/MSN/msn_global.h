@@ -156,8 +156,6 @@ struct CMsnProto;
 #define MSN_SHOW_ERROR      8
 #define	MSN_ALERT_POPUP	    16
 
-char*		MirandaStatusToMSN( int status );
-WORD		MSNStatusToMiranda( const char* status );
 void        HtmlDecode( char* str );
 char*       HtmlEncode( const char* str );
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
@@ -171,7 +169,7 @@ void		__cdecl MSN_ConnectionProc( HANDLE hNewConnection, DWORD dwRemoteIP, void*
 
 char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t cbLen );
-int			MSN_GetImageFormat(void* buf, char** ext);
+int			MSN_GetImageFormat(void* buf, const char** ext);
 
 #define		MSN_SendNicknameA(a) MSN_SendNicknameUtf(mir_utf8encode(a))
 #define		MSN_SendNicknameT(a) MSN_SendNicknameUtf(mir_utf8encodeT(a))
