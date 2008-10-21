@@ -342,6 +342,7 @@ void MSN_GoOffline(void)
 
 	mir_free(msnPreviousUUX);
 	msnPreviousUUX = NULL;
+	msnSearchID = -1;
 
 	if ( !Miranda_Terminated() )
 		MSN_EnableMenuItems( false );
