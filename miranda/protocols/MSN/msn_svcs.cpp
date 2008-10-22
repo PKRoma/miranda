@@ -213,7 +213,7 @@ static int MsnAuthDeny(WPARAM wParam,LPARAM lParam)
 
 static int MsnBasicSearch(WPARAM wParam,LPARAM lParam)
 {
-	if ( !msnLoggedIn || msnSearchID != -1 )
+	if ( !msnLoggedIn /* || msnSearchID != -1 */ )
 		return 0;
 
 	return msnSearchID = msnNsThread->sendPacket( "ADC", "BL N=%s", ( char* )lParam );
