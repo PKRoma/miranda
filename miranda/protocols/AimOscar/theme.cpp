@@ -25,10 +25,10 @@ void ThemeSupport()
 
 struct _tag_iconList
 {
-	char*  szDescr;
-	char*  szName;
+	const char*  szDescr;
+	const char*  szName;
 	int    defIconID;
-	char*  szSection;
+	const char*  szSection;
 }
 static const iconList[] =
 {
@@ -73,26 +73,24 @@ void CAimProto::InitIcons(void)
 	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
 
 	char szSettingName[100];
+	char szSectionName[100];
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
+	sid.pszSection = szSectionName;
 
 	for ( int i = 0; i < icolstsz; i++ ) {
 		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
 
-		char szSectionName[100];
 		if (iconList[i].szSection)
-		{
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", m_szModuleName, iconList[i].szSection );
-			sid.pszSection = Translate(szSectionName);
-		}
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "Protocols/%s/%s", m_szModuleName, iconList[i].szSection );
 		else
-			sid.pszSection = Translate( m_szModuleName );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "Protocols/%s", m_szModuleName );
 
-		sid.pszDescription = Translate( iconList[i].szDescr );
+		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		hIconLibItem[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}	
