@@ -19,7 +19,7 @@ int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,uns
 	return 0;
 }
 
-int CAimProto::aim_writetlv(unsigned short type,unsigned short length,char* value,unsigned short &offset,char* out)
+int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const char* value,unsigned short &offset,char* out)
 {
 	TLV tlv(type,length,value);
 	char* buf=tlv.whole();
@@ -56,14 +56,14 @@ int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,
 	return 0;
 }
 
-int CAimProto::aim_writefamily(char *buf,unsigned short &offset,char* out)
+int CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,4);
 	offset+=4;
 	return 0;
 }
 
-int CAimProto::aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out)
+int CAimProto::aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,size);
 	offset=offset+size;

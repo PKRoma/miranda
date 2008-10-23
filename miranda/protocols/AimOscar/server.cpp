@@ -1189,7 +1189,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char* msg="Error removing buddy from list. Error code 0xxx";
+				char msg[] ="Error removing buddy from list. Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
 				if(lstrlenA(ccode)==1)
@@ -1238,7 +1238,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char* msg="Unknown error when adding buddy to list: Error code 0xxx";
+				char msg[] ="Unknown error when adding buddy to list: Error code 0xxx";
 				char ccode[3];
 				_itoa(code,ccode,16);
 				if(lstrlenA(ccode)==1)

@@ -105,7 +105,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 			}
 		}
 	}
-	delete[] param;
+	delete[] (char*)param;
 }
 
 void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending file
@@ -158,7 +158,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 			ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 		}
 	}
-	delete[] param;
+	delete[] (char*)param;
 }
 
 void __cdecl CAimProto::proxy_file_thread( void* param ) //buddy sending file here
@@ -175,5 +175,5 @@ void __cdecl CAimProto::proxy_file_thread( void* param ) //buddy sending file he
 		setString( *hContact, AIM_KEY_IP, proxy_ip );
 		ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 	}
-	delete[] param;
+	delete[] (char*)param;
 }

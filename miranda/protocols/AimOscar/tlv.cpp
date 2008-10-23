@@ -9,7 +9,7 @@ TLV::TLV(char* buf)
 	memcpy(value_,&buf[4],length_);
 	value_[length_]='\0';
 }
-TLV::TLV(unsigned short type, unsigned short length, char* value)
+TLV::TLV(unsigned short type, unsigned short length, const char* value)
 {
 	type_=type;
 	length_=length;

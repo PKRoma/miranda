@@ -1,7 +1,7 @@
 #include "aim.h"
 #include "utility.h"
 
-void CAimProto::assign_modmsg(char* msg)
+void CAimProto::assign_modmsg(const char* msg)
 {
 	delete[] szModeMsg;
 	szModeMsg=new char[lstrlenA(msg)+1];
@@ -129,7 +129,7 @@ HANDLE CAimProto::add_contact(char* buddy)
 	return 0;
 }
 
-void CAimProto::add_contact_to_group(HANDLE hContact,char* group)
+void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 {
 	char* tgroup=trim_name(group);	
 	bool group_exist=1;
@@ -481,7 +481,7 @@ char* lowercase_name(char* s)
 	return buf;
 }
 
-char* trim_name(char* s)
+char* trim_name(const char* s)
 {   
 	if (s == NULL)
 		return NULL;
@@ -497,7 +497,7 @@ void __cdecl CAimProto::msg_ack_success( void* hContact )
 	ProtoBroadcastAck( m_szModuleName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
-void CAimProto::execute_cmd(char* arg) 
+void CAimProto::execute_cmd(const char* arg) 
 {
 	ShellExecuteA(NULL,"open", arg, NULL, NULL, SW_SHOW);
 }
@@ -650,7 +650,7 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-FILE* CAimProto::open_contact_file(char* sn, char* file, char* mode, char* &path, bool contact_dir)
+FILE* CAimProto::open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir)
 {
 	if(char* norm_sn=normalize_name(sn))
 	{
@@ -728,7 +728,7 @@ void CAimProto::write_away_message(HANDLE hContact,char* sn,char* msg)
 	}
 }
 
-void CAimProto::write_profile(char* sn,char* msg)
+void CAimProto::write_profile(const char* sn,const char* msg)
 {
 	char* path;
 	FILE* descr=open_contact_file(sn,"profile.html","wb", path,1);
@@ -847,7 +847,7 @@ void CAimProto::write_cookie(HANDLE hContact,char* cookie)
 	setDword( hContact, AIM_KEY_CK2, *(DWORD*)&cookie[4]);
 }
 
-int cap_cmp(char* cap,char* cap2)
+int cap_cmp(const char* cap,const char* cap2)
 {
 	return memcmp(cap,cap2,16);
 }

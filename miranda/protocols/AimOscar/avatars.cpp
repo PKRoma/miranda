@@ -4,7 +4,7 @@
 void __cdecl CAimProto::avatar_request_thread( void* param )
 {
 	char* data = NEWSTR_ALLOCA(( char* )param );
-	delete[] param;
+	delete[] (char*)param;
 
 	EnterCriticalSection( &avatarMutex );
 	if ( !hAvatarConn && hServerConn ) {

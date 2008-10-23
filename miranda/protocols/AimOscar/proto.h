@@ -202,7 +202,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_send_connection_packet(HANDLE hServerConn,unsigned short &seqno,char *buf);
 	int    aim_authkey_request(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_auth_request(HANDLE hServerConn,unsigned short &seqno,char* key,char* language,char* country);
+	int    aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,const char* country);
 	int    aim_send_cookie(HANDLE hServerConn,unsigned short &seqno,int cookie_size,char * cookie);
 	int    aim_send_service_request(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,unsigned short service);
@@ -211,7 +211,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
 	int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
-	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,char* m_iStatus,char* status_flag);
+	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
 	int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_accept_rates(HANDLE hServerConn,unsigned short &seqno);
@@ -225,7 +225,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);
-	int    aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id);
+	int    aim_add_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id);
 	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
@@ -248,8 +248,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   __cdecl aim_avatar_negotiation( void* );
 
 	int    LOG(const char *fmt, ...);
-	HANDLE aim_connect(char* server, unsigned short port);
-	HANDLE aim_peer_connect(char* ip, unsigned short port);
+	HANDLE aim_connect(const char* server, unsigned short port);
+	HANDLE aim_peer_connect(const char* ip, unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// direct_connect.cpp
@@ -272,10 +272,10 @@ struct CAimProto : public PROTO_INTERFACE
 	// packets.cpp
 
 	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);
-	int    aim_writetlv(unsigned short type,unsigned short size ,char* value,unsigned short &offset,char* out);
+	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
-	int    aim_writefamily(char *buf,unsigned short &offset,char* out);
-	int    aim_writegeneric(unsigned short size,char *buf,unsigned short &offset,char* out);
+	int    aim_writefamily(const char *buf,unsigned short &offset,char* out);
+	int    aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proto.cpp
@@ -340,20 +340,20 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE find_contact(char * sn);
 	HANDLE add_contact(char* buddy);
 	void   add_contacts_to_groups();
-	void   add_contact_to_group(HANDLE hContact,char* group);
+	void   add_contact_to_group(HANDLE hContact, const char* group);
 	void   offline_contacts();
 	void   offline_contact(HANDLE hContact, bool remove_settings);
 	void   add_AT_icons();
 	void   remove_AT_icons();
 	void   add_ES_icons();
 	void   remove_ES_icons();
-	void   execute_cmd(char* arg);
-	char*  strip_special_chars(char *src,HANDLE hContact);
-	void   assign_modmsg(char* msg);
+	void   execute_cmd(const char* arg);
+	char*  strip_special_chars(const char *src,HANDLE hContact);
+	void   assign_modmsg(const char* msg);
 
-	FILE*  open_contact_file(char* sn, char* file, char* mode, char* &path, bool contact_dir);
+	FILE*  open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(HANDLE hContact,char* sn,char* msg);
-	void   write_profile(char* sn,char* msg);
+	void   write_profile(const char* sn,const char* msg);
 
 	WORD   search_for_free_group_id(char *name);
 	WORD   search_for_free_item_id(HANDLE hbuddy);

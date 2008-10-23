@@ -10,7 +10,7 @@ private:
 	char* value_;
 public:
 	TLV(char* buf);
-	TLV(unsigned short type, unsigned short length, char* value);
+	TLV(unsigned short type, unsigned short length, const char* value);
 	~TLV();
 	int cmp(unsigned short type);
 	char* dup();

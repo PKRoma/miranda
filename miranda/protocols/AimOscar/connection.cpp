@@ -12,7 +12,7 @@ int CAimProto::LOG(const char *fmt, ...)
 	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }
 
-HANDLE CAimProto::aim_connect(char* server, unsigned short port)
+HANDLE CAimProto::aim_connect(const char* server, unsigned short port)
 {
 	NETLIBOPENCONNECTION ncon = { 0 };
 	ncon.cbSize = sizeof(ncon);
@@ -25,7 +25,7 @@ HANDLE CAimProto::aim_connect(char* server, unsigned short port)
 	return con;
 }
 
-HANDLE CAimProto::aim_peer_connect(char* ip, unsigned short port)
+HANDLE CAimProto::aim_peer_connect(const char* ip, unsigned short port)
 { 
 	NETLIBOPENCONNECTION ncon = { 0 };
 	ncon.cbSize = sizeof(ncon);

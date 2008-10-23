@@ -62,7 +62,7 @@ char* strip_html(char *src)
 	return dest;
 }
 
-char* CAimProto::strip_special_chars(char *src, HANDLE hContact)
+char* CAimProto::strip_special_chars(const char *src, HANDLE hContact)
 {
 	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv))

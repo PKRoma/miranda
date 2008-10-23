@@ -29,7 +29,7 @@ int CAimProto::aim_authkey_request(HANDLE hServerConn,unsigned short &seqno)
 	}
 }
 
-int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,char* key,char* language,char* country)
+int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,const char* country)
 {
 	unsigned short offset=0;
 	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+lstrlenA(username)+lstrlenA(AIM_CLIENT_ID_STRING)+15+lstrlenA(language)+lstrlenA(country)];
@@ -323,7 +323,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 	}
 }
 
-int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,char* m_iStatus,char* status_flag)
+int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag)
 {
 	unsigned short offset=0;
 	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2];
@@ -564,7 +564,7 @@ int CAimProto::aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn
 	delete[] buf;
 	return res;
 }
-int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id)
+int CAimProto::aim_add_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id)
 {
 	unsigned short offset=0;
 	unsigned short name_length_flipped=_htons((unsigned short)lstrlenA(name));

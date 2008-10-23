@@ -346,22 +346,22 @@ int __cdecl CAimProto::GetInfo( HANDLE hContact, int infoType )
 
 void __cdecl CAimProto::basic_search_ack_success( void* p )
 {
-	if ( char *sn = normalize_name(( char* )p )) { // normalize it
-		PROTOSEARCHRESULT psr;
+    char *sn = normalize_name(( char* )p );
+	if ( sn ) { // normalize it
 		if (strlen(sn) > 32) {
 			ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-			delete[] sn;
-			delete[] p;
-			return;
 		}
-		ZeroMemory(&psr, sizeof(psr));
-		psr.cbSize = sizeof(psr);
-		psr.nick = sn;
-		ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-		ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
-		delete[] sn;
+        else {
+		    PROTOSEARCHRESULT psr;
+		    ZeroMemory(&psr, sizeof(psr));
+		    psr.cbSize = sizeof(psr);
+		    psr.nick = sn;
+		    ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		    ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+        }
 	}
-	delete[] p;
+	delete[] sn;
+	delete[] (char*)p;
 }
 
 HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
