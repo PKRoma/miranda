@@ -172,7 +172,7 @@ __inline static HANDLE FoldersRegisterCustomPathW(const char *section, const cha
 	return (HANDLE) CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
 
-__inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, char *notFound)
+__inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, const char *notFound)
 {
 	FOLDERSGETDATA fgd = {0};
 	int res;
@@ -190,7 +190,7 @@ __inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const 
 	return res;
 }
 
-__inline static int FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, wchar_t *notFoundW)
+__inline static int FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, const wchar_t *notFoundW)
 {
 	FOLDERSGETDATA fgd = {0};
 	int res;

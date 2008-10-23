@@ -416,7 +416,8 @@ char* CMsnProto::GenerateLoginBlob(char* challenge)
 	memcpy(p, hash, sizeof(hash));
 	p += MIR_SHA1_HASH_SIZE;
 
-	des3_context ctxd = {0};
+	des3_context ctxd;
+    memset(&ctxd, 0, sizeof(ctxd));
 	des3_set_3keys(&ctxd, key3);
 	des3_cbc_encrypt(&ctxd, iv, newchl, p, chllen);
 
