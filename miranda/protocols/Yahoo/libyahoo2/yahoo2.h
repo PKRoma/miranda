@@ -92,6 +92,7 @@ void yahoo_get_yab(int id);
 /* add/modify an address book entry.  if yab->dbid is set, it will */
 /* modify that entry else it creates a new entry */
 void yahoo_set_yab(int id, struct yab * yab);
+void yahoo_send_ping(int id);
 void yahoo_keepalive(int id);
 void yahoo_chat_keepalive(int id);
 

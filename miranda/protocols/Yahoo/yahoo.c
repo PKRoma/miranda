@@ -352,7 +352,7 @@ void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, c
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("[ext_yahoo_status_changed] %s with msg %s (stat: %d, away: %d, idle: %d seconds)", who, msg, stat, away, idle);
+	YAHOO_DebugLog("[ext_yahoo_status_changed] %s (prot: %d) with msg %s (stat: %d, away: %d, idle: %d seconds)", who, protocol, msg, stat, away, idle);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {

@@ -230,7 +230,8 @@ YMSG15 Encrypted
 
 // Yahoo 8.1 uses protocol 15 (0x0F)
 // Yahoo 9.0 uses protocol 16 (0x10)
-#define YAHOO_PROTO_VER 0x000F
+//#define YAHOO_PROTO_VER 0x000F
+#define YAHOO_PROTO_VER 0x0010
 
 /* Yahoo style/color directives */
 #define YAHOO_COLOR_BLACK "\033[30m"

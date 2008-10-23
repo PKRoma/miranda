@@ -65,7 +65,7 @@ extern yahoo_local_account * ylad;
 void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
-	time_t lLastPing;
+	time_t lLastPing, lLastKeepAlive;
     YList *l;
     NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;
@@ -79,7 +79,7 @@ void __cdecl yahoo_server_main(void *empty)
 	
 	ext_yahoo_login(status);
 
-	lLastPing = time(NULL);
+	lLastKeepAlive = lLastPing = time(NULL);
 	
 	while (poll_loop) {
 		nls.cbSize = sizeof(nls);
@@ -135,12 +135,20 @@ void __cdecl yahoo_server_main(void *empty)
 			//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
 			if	(!iHTTPGateway) {
 #endif					
-				if (yahooLoggedIn && time(NULL) - lLastPing >= 6 * 60) {
+				if (yahooLoggedIn && time(NULL) - lLastKeepAlive >= 60) {
 					LOG(("[TIMER] Sending a keep alive message"));
 					yahoo_keepalive(ylad->id);
 					
+					lLastKeepAlive = time(NULL);
+				}
+				
+				if (yahooLoggedIn && time(NULL) - lLastPing >= 3600) {
+					LOG(("[TIMER] Sending a keep alive message"));
+					yahoo_send_ping(ylad->id);
+					
 					lLastPing = time(NULL);
 				}
+				
 #ifdef HTTP_GATEWAY					
 			} else {
 				YAHOO_DebugLog("[SERVER] Got packets: %d", ylad->rpkts);

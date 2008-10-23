@@ -1846,6 +1846,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	int mobile = 0;
 	int cksum = 0;
 	int buddy_icon = -1;
+	int protocol = 0;
 	long client_version = 0;
 	char *msg = NULL;
 	
@@ -1868,7 +1869,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			if (name != NULL) {
 				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, 0, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
 				msg = NULL;
-				client_version = cksum = state = away = idle = mobile = 0;
+				protocol = client_version = cksum = state = away = idle = mobile = 0;
 				buddy_icon = -1;
 			}
 			name = pair->value;
@@ -1884,9 +1885,10 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			break;
 		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
 			if (strtol(pair->value, NULL, 10) == 0) {
-				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, 0, YAHOO_STATUS_OFFLINE, NULL, 1, 0, 0);
-				name = NULL;
-				break;
+				//YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, 0, YAHOO_STATUS_OFFLINE, NULL, 1, 0, 0);
+				//name = NULL;
+				state = YAHOO_STATUS_OFFLINE;
+				//break;
 			}
 			break;
 		case 16: /* Custom error message */
@@ -1936,14 +1938,18 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			client_version = strtol(pair->value, NULL, 10);
 			break;
 			
-/*		default:
+		case 241: /* protocol */
+			protocol = strtol(pair->value, NULL, 10);
+			break;
+		
+		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
-			break;*/
+			break;
 		}
 	}
 	
 	if (name != NULL) 
-		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, 0, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
+		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, protocol, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
 	
 }
 
@@ -1992,10 +1998,10 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			}
 			name = pair->value;
 			
-			if (pkt->service == YAHOO_SERVICE_LOGOFF) {
+			/*if (pkt->service == YAHOO_SERVICE_LOGOFF) {
 				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, YAHOO_STATUS_OFFLINE, NULL, 0, 0, 0);
 				name = NULL;
-			}
+			}*/
 			break;
 		case 10: /* state */
 			state = strtol(pair->value, NULL, 10);
@@ -2020,11 +2026,13 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 		case 17: /* in chat? */
 			break;
 		case 13: /* bitmask, bit 0 = pager, bit 1 = chat, bit 2 = game */
-			if (pkt->service == YAHOO_SERVICE_LOGOFF || strtol(pair->value, NULL, 10) == 0) {
+			/*if (pkt->service == YAHOO_SERVICE_LOGOFF || strtol(pair->value, NULL, 10) == 0) {
 				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, YAHOO_STATUS_OFFLINE, NULL, 0, 0, 0);
 				name = NULL;
 				break;
-			}
+			}*/
+			if (strtol(pair->value, NULL, 10) == 0) 
+				state = YAHOO_STATUS_OFFLINE;
 			break;
 		case 60: /* SMS -> 1 MOBILE USER */
 			/* sometimes going offline makes this 2, but invisible never sends it */
@@ -2052,6 +2060,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 				}
 			}
 			break;
+			
 		default:
 			WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
@@ -3035,6 +3044,9 @@ LBL_FAILED:
 	to_y64(magic_hash, result, 16);
 	LOG(("Y64 Hash: %s", magic_hash));
 	
+	yahoo_packet_hash(pack, 1, sn);
+	yahoo_packet_hash(pack, 0, sn);
+	
 	/* yahoo_packet_hash(pack, 277, "v=1&n=11nh9j9k4vpm8&l=64d0xxtsqqt/o&p=m270ar7013000000&jb=33|47|&r=bt&lg=us&intl=us&np=1; path=/; domain=.yahoo.com");
 	 yahoo_packet_hash(pack, 278, "z=xUvdFBxaEeFBfOaVlmk3RSXNDMxBjU2MjQyNjFPNTE-&a=QAE&sk=DAAWDRZBoXexNr&d=c2wBTXpRMkFUSXhOVE0xTVRZNE1qWS0BYQFRQUUBenoBeFV2ZEZCZ1dBAXRpcAFNSVlVN0Q-; path=/; domain=.yahoo.com");
 	 yahoo_packet_hash(pack, 307, "VATg29jzHSXlp_2LL7J4Fw--");*/
@@ -3044,12 +3056,11 @@ LBL_FAILED:
 	yahoo_packet_hash(pack, 307, magic_hash);
 	free(magic_hash);
 
-
-	yahoo_packet_hash(pack, 0, sn);
+	yahoo_packet_hash(pack, 244, "4194239");  // Yahoo 9.0
 	
 	yahoo_packet_hash(pack, 2, sn);
+	yahoo_packet_hash(pack, 2, "1");
 	
-	yahoo_packet_hash(pack, 1, sn);
 	//yss = yd->server_settings;
 	
 	//snprintf(z, sizeof(z), "%d", yss->pic_cksum);
@@ -3057,9 +3068,12 @@ LBL_FAILED:
 	//yahoo_packet_hash(pack, 192, "-1");// no avatar support yet
 	//yahoo_packet_hash(pack, 2, "1");
 
-	yahoo_packet_hash(pack, 244, "2097087");  
-	yahoo_packet_hash(pack, 135, "8.1.0.209"); 
-	yahoo_packet_hash(pack, 148, "300");  // ???
+	//yahoo_packet_hash(pack, 244, "2097087");   // Yahoo 8.0
+	
+	
+	//yahoo_packet_hash(pack, 135, "8.1.0.209");  // Yahoo 8.0
+	yahoo_packet_hash(pack, 135, "9.0.0.1912"); 
+	/////yahoo_packet_hash(pack, 148, "300");  // ???
 
 	yahoo_send_packet(yid, pack, 0);
 	yahoo_packet_free(pack);
@@ -4212,7 +4226,7 @@ static struct yahoo_packet * yahoo_getdata(struct yahoo_input_data * yid)
 	struct yahoo_packet *pkt;
 	struct yahoo_data *yd = yid->yd;
 	int pos = 0;
-	unsigned pktlen;
+	int pktlen;
 
 	if(!yd)
 		return NULL;
@@ -4361,7 +4375,7 @@ static struct yab * yahoo_getyab(struct yahoo_input_data *yid)
 		return NULL;
 
 	/* start with <record */
-	while(pos < yid->rxlen - strlen("<record")+1
+	while(pos < yid->rxlen-strlen("<record")+1 
 			&& memcmp(yid->rxqueue + pos, "<record", strlen("<record")))
 		pos++;
 
@@ -5628,6 +5642,20 @@ void yahoo_refresh(int id)
 	}
 }
 
+void yahoo_send_ping(int id)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt=NULL;
+	if(!yid)
+		return;
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_PING, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+}
+
 void yahoo_keepalive(int id)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
@@ -5732,6 +5760,7 @@ void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 7, who);
 	yahoo_packet_hash(pkt, 65, group);
+	yahoo_packet_hash(pkt, 66, "0"); // Yahoo 9.0 does login status 0?? What for?
 	
 	if (protocol != 0)
 		yahoo_packet_hash_int(pkt, 241, protocol);
