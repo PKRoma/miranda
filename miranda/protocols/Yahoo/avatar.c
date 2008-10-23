@@ -613,65 +613,11 @@ void YAHOO_request_avatar(const char* who)
 	}
 }
 
-void YAHOO_bcast_picture_update(int buddy_icon)
-{
-	HANDLE hContact;
-	char *szProto;
-	
-	/* need to get online buddies and then send then picture_update packets (ARGH YAHOO!)*/
-	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
-	{
-		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
-		{
-			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
-							DBVARIANT dbv;
-
-				if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
-					continue;
-
-				yahoo_send_picture_update(ylad->id, dbv.pszVal, buddy_icon);
-				DBFreeVariant( &dbv );
-			}
-		}
-	}
-}
-
 void YAHOO_set_avatar(int buddy_icon)
 {
 	yahoo_send_picture_status(ylad->id, buddy_icon);
 	
 	//YAHOO_bcast_picture_update(buddy_icon);
-}
-
-void YAHOO_bcast_picture_checksum(int cksum)
-{
-	HANDLE hContact;
-	char *szProto;
-	
-	yahoo_send_picture_checksum(ylad->id, NULL, cksum);
-	
-	/* need to get online buddies and then send then picture_update packets (ARGH YAHOO!)*/
-	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		   hContact != NULL;
-			hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
-	{
-		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-		if ( szProto != NULL && !lstrcmp( szProto, yahooProtocolName ))
-		{
-			if (YAHOO_GetWord(hContact, "Status", ID_STATUS_OFFLINE)!=ID_STATUS_OFFLINE) {
-							DBVARIANT dbv;
-
-				if ( DBGetContactSettingString( hContact, yahooProtocolName, YAHOO_LOGINID, &dbv ))
-					continue;
-
-				yahoo_send_picture_checksum(ylad->id, dbv.pszVal, cksum);
-				DBFreeVariant( &dbv );
-			}
-		}
-	}
 }
 
 void GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, int type)
