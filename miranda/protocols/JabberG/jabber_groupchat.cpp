@@ -1111,6 +1111,7 @@ void CJabberProto::GroupchatProcessMessage( HXML node, void *userdata )
 
 class CGroupchatInviteAcceptDlg : public CJabberDlgFancy
 {
+	typedef CJabberDlgFancy CSuper;
 	CCtrlButton m_accept;
 	JABBER_GROUPCHAT_INVITE_INFO* m_info;
 
@@ -1125,8 +1126,10 @@ public:
 
 	void OnInitDialog()
 	{
+		CSuper::OnInitDialog();
+
+		SetDlgItemText( m_hwnd, IDC_TITLE, m_info->roomJid );
 		SetDlgItemText( m_hwnd, IDC_FROM, m_info->from );
-		SetDlgItemText( m_hwnd, IDC_ROOM, m_info->roomJid );
 
 		if ( m_info->reason != NULL )
 			SetDlgItemText( m_hwnd, IDC_REASON, m_info->reason );
@@ -1136,6 +1139,8 @@ public:
 		mir_free( myNick );
 
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
+
+		SetFocus(GetDlgItem(m_hwnd, IDC_NICK));
 	}
 
 	void OnCommand_Accept( CCtrlButton* )

@@ -903,6 +903,23 @@ char *ActivityGetFirst(int id)
 	return NULL;
 }
 
+char *ActivityGetFirst(char *szId)
+{
+	int id = SIZEOF(g_arrActivities);
+	bool found_second = false;
+
+	while (id >= 0)
+	{
+		if (g_arrActivities[id].szFirst && (found_second || !lstrcmpA(g_arrActivities[id].szFirst, szId)))
+			return g_arrActivities[id].szFirst;
+		if (g_arrActivities[id].szSecond && !found_second && !lstrcmpA(g_arrActivities[id].szSecond, szId))
+			found_second = true;
+		--id;
+	}
+
+	return NULL;
+}
+
 char *ActivityGetSecond(int id)
 {
 	return (id >= 0) ? g_arrActivities[id].szSecond : NULL;
@@ -1035,7 +1052,7 @@ void CPepActivity::SetExtraIcon(HANDLE hContact, char *szActivity)
 {
 	IconExtraColumn iec;
 	iec.cbSize = sizeof(iec);
-	iec.hImage = m_icons.GetClistHandle(szActivity);
+	iec.hImage = m_icons.GetClistHandle(ActivityGetFirst(szActivity));
 	iec.ColumnType = EXTRA_ICON_ADV2;
 	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }

@@ -738,7 +738,7 @@ private:
 	CCtrlMButton	m_btnDownRule;
 	CCtrlMButton	m_btnAddList;
 	CCtrlMButton	m_btnRemoveList;
-	CCtrlMButton	m_btnApply;
+	CCtrlButton		m_btnApply;
 	CCtrlListBox	m_lbLists;
 	CCtrlListBox	m_lbRules;
 	CCtrlClc		m_clcClist;
@@ -775,7 +775,7 @@ CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto):
 	m_btnDownRule(this,   IDC_DOWN_RULE,    proto->LoadIconEx("arrow_down"),      LPGEN("Move rule down")),
 	m_btnAddList(this,    IDC_ADD_LIST,     SKINICON_OTHER_ADDCONTACT,            LPGEN("Add list...")),
 	m_btnRemoveList(this, IDC_REMOVE_LIST,  SKINICON_OTHER_DELETE,                LPGEN("Remove list")),
-	m_btnApply(this,      IDC_APPLY,        SKINICON_EVENT_FILE,                  LPGEN("Save changes")),
+	m_btnApply(this,      IDC_APPLY),
 	m_lbLists(this,       IDC_LB_LISTS),
 	m_lbRules(this,       IDC_PL_RULES_LIST),
 	m_clcClist(this,      IDC_CLIST)

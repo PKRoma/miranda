@@ -248,7 +248,7 @@ struct CJabberOptions
 		KeepAlive(proto, "KeepAlive", 1),
 		LogChatstates(proto, "LogChatstates", FALSE),
 		LogPresence(proto, "LogPresence", TRUE),
-		LogPresenceErrors(proto, "LogPresenceErrors", TRUE),
+		LogPresenceErrors(proto, "LogPresenceErrors", FALSE),
 		ManualConnect(proto, "ManualConnect", FALSE),
 		MsgAck(proto, "MsgAck", FALSE),
 		RosterSync(proto, "RosterSync", FALSE),

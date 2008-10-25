@@ -651,194 +651,173 @@ int CJabberProto::JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Conference invitation dialog
 
-static void FilterList(CJabberProto* ppro, HWND hwndList)
+class CGroupchatInviteDlg : public CJabberDlgFancy
 {
-	for	(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-			hContact;
-			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
+	typedef CJabberDlgFancy CSuper;
+
+	struct JabberGcLogInviteDlgJidData
 	{
-		char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-		if (!proto || lstrcmpA(proto, ppro->m_szModuleName) || DBGetContactSettingByte(hContact, proto, "ChatRoom", 0))
-			if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
-				SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
-}	}
- 
-static void ResetListOptions(HWND hwndList)
-{
-	int i;
-	SendMessage(hwndList,CLM_SETBKBITMAP,0,(LPARAM)(HBITMAP)NULL);
-	SendMessage(hwndList,CLM_SETBKCOLOR,GetSysColor(COLOR_WINDOW),0);
-	SendMessage(hwndList,CLM_SETGREYOUTFLAGS,0,0);
-	SendMessage(hwndList,CLM_SETLEFTMARGIN,4,0);
-	SendMessage(hwndList,CLM_SETINDENT,10,0);
-	SendMessage(hwndList,CLM_SETHIDEEMPTYGROUPS,1,0);
-	SendMessage(hwndList,CLM_SETHIDEOFFLINEROOT,1,0);
-	for ( i=0; i <= FONTID_MAX; i++ )
-		SendMessage( hwndList, CLM_SETTEXTCOLOR, i, GetSysColor( COLOR_WINDOWTEXT ));
-}
+		int hItem;
+		TCHAR jid[JABBER_MAX_JID_LEN];
+	};
 
-static void InviteUser(CJabberProto* ppro, TCHAR *room, TCHAR *pUser, TCHAR *text)
-{
-	XmlNode msg( _T("message"));
-	HXML invite = msg << XATTR( _T("to"), room ) << XATTRID( ppro->SerialNext())
-		<< XCHILDNS( _T("x"), _T("http://jabber.org/protocol/muc#user"))
-			<< XCHILD( _T("invite")) << XATTR( _T("to"), pUser );
-	if ( text )
-		invite << XCHILD( _T("reason"), text );
+	LIST<JabberGcLogInviteDlgJidData> m_newJids;
+	TCHAR *m_room;
 
-	ppro->m_ThreadInfo->send( msg );
-}
+	CCtrlButton  m_btnInvite;
+	CCtrlEdit    m_txtNewJid;
+	CCtrlMButton m_btnAddJid;
+	CCtrlEdit    m_txtReason;
+	CCtrlClc     m_clc;
 
-struct JabberGcLogInviteDlgJidData
-{
-	int hItem;
-	TCHAR jid[JABBER_MAX_JID_LEN];
-};
-
-struct JabberGcLogInviteDlgData 
-{
-	JabberGcLogInviteDlgData(const TCHAR *room2):
-		newJids(1), room(mir_tstrdup(room2)) {}
-	~JabberGcLogInviteDlgData()
+	void FilterList(CCtrlClc *)
 	{
-		for (int i = 0; i < newJids.getCount(); ++i)
-			mir_free(newJids[i]);
-		mir_free(room);
-	}
-
-	LIST<JabberGcLogInviteDlgJidData> newJids;
-	TCHAR *room;
-	CJabberProto* ppro;
-};
-
-static BOOL CALLBACK JabberGcLogInviteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-	JabberGcLogInviteDlgData *data = (JabberGcLogInviteDlgData *)GetWindowLong(hwndDlg, GWL_USERDATA);
-
-	switch ( msg ) {
-	case WM_INITDIALOG:
+		for	(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				hContact;
+				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
 		{
-			// use new operator to properly construct LIST object
-			data = ( JabberGcLogInviteDlgData* )lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam );
-
-			RECT dlgRect, scrRect;
-			GetWindowRect( hwndDlg, &dlgRect );
-			SystemParametersInfo( SPI_GETWORKAREA, 0, &scrRect, 0 );
-			SetWindowPos( hwndDlg, HWND_TOPMOST, (scrRect.right/2)-(dlgRect.right/2), (scrRect.bottom/2)-(dlgRect.bottom/2), 0, 0, SWP_NOSIZE );
-			TranslateDialogDefault( hwndDlg );
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )data->ppro->LoadIconEx( "group" ));
-			SetDlgItemText( hwndDlg, IDC_ROOM, ( TCHAR* )lParam );
-
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE,
-				GetWindowLong(GetDlgItem(hwndDlg, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
-			SendMessage(GetDlgItem(hwndDlg, IDC_CLIST), CLM_SETEXSTYLE, CLS_EX_DISABLEDRAGDROP|CLS_EX_TRACKSELECT, 0);
-			ResetListOptions(GetDlgItem(hwndDlg, IDC_CLIST));
-			FilterList(data->ppro, GetDlgItem(hwndDlg, IDC_CLIST));
-
-			SendDlgItemMessage(hwndDlg, IDC_ADDJID, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage(hwndDlg, IDC_ADDJID, BM_SETIMAGE, IMAGE_ICON, (LPARAM)data->ppro->LoadIconEx("addroster"));
-		}
-		return TRUE;
-
-	case WM_COMMAND:
-		switch ( LOWORD( wParam )) {
-		case IDC_ADDJID:
-			{
-				TCHAR buf[JABBER_MAX_JID_LEN];
-				GetWindowText(GetDlgItem(hwndDlg, IDC_NEWJID), buf, SIZEOF(buf));
-				SetWindowText(GetDlgItem(hwndDlg, IDC_NEWJID), _T(""));
-
-				HANDLE hContact = data->ppro->HContactFromJID(buf);
-				if ( hContact ) {
-					int hItem = SendDlgItemMessage( hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0 );
-					if ( hItem )
-						SendDlgItemMessage( hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, hItem, 1 );
-					break;
-				}
-
-				int i;
-				for (i = 0; i < data->newJids.getCount(); ++i)
-					if (!lstrcmp(data->newJids[i]->jid, buf))
-						break;
-				if (i != data->newJids.getCount())
-					break;
-
-				JabberGcLogInviteDlgJidData *jidData = (JabberGcLogInviteDlgJidData *)mir_alloc(sizeof(JabberGcLogInviteDlgJidData));
-				lstrcpy(jidData->jid, buf);
-				CLCINFOITEM cii = {0};
-				cii.cbSize = sizeof(cii);
-				cii.flags = CLCIIF_CHECKBOX;
-				mir_sntprintf(buf, SIZEOF(buf), _T("%s (%s)"), jidData->jid, TranslateT("not on roster"));
-				cii.pszText = buf;
-				jidData->hItem = SendDlgItemMessage(hwndDlg,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
-				SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETCHECKMARK, jidData->hItem, 1);
-				data->newJids.insert(jidData);
-			}
-			break;
-
-		case IDC_INVITE:
-			{
-				TCHAR* room = data->room;
-				if ( room != NULL ) {
-					TCHAR text[256];
-					GetDlgItemText( hwndDlg, IDC_REASON, text, SIZEOF( text ));
-					HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
-
-					// invite users from roster
-					for	(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-							hContact;
-							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) {
-						char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-						if ( !lstrcmpA(proto, data->ppro->m_szModuleName) && !DBGetContactSettingByte(hContact, proto, "ChatRoom", 0)) {
-							if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0)) {
-								if ( SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0 )) {
-									DBVARIANT dbv={0};
-									data->ppro->JGetStringT(hContact, "jid", &dbv);
-									if (dbv.ptszVal && ( dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR ))
-										InviteUser(data->ppro, room, dbv.ptszVal, text);
-									JFreeVariant(&dbv);
-					}	}	}	}
-
-					// invite others
-					for (int i = 0; i < data->newJids.getCount(); ++i)
-						if (SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)data->newJids[i]->hItem, 0))
-							InviteUser(data->ppro, room, data->newJids[i]->jid, text);
-			}	}
-			// Fall through
-		case IDCANCEL:
-		case IDCLOSE:
-			DestroyWindow( hwndDlg );
-			return TRUE;
-		}
-		break;
-
-	case WM_NOTIFY:
-		if (((LPNMHDR)lParam)->idFrom == IDC_CLIST) {
-			switch (((LPNMHDR)lParam)->code) {
-			case CLN_NEWCONTACT:
-			case CLN_LISTREBUILT:
-				if ( data )
-					FilterList(data->ppro, GetDlgItem(hwndDlg,IDC_CLIST));
-				break;
-			case CLN_OPTIONSCHANGED:
-				ResetListOptions(GetDlgItem(hwndDlg,IDC_CLIST));
-				break;
-		}	}
-		break;
-
-	case WM_CLOSE:
-		DestroyWindow( hwndDlg );
-		break;
-
-	case WM_DESTROY:
-		delete data;
-		SetWindowLong( hwndDlg, GWL_USERDATA, NULL );
-		break;
+			char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+			if (lstrcmpA(proto, m_proto->m_szModuleName) || DBGetContactSettingByte(hContact, proto, "ChatRoom", 0))
+				if (HANDLE hItem = m_clc.FindContact(hContact))
+					m_clc.DeleteItem(hItem);
+	}	}
+	 
+	void ResetListOptions(CCtrlClc *)
+	{
+		m_clc.SetBkBitmap(0, NULL);
+		m_clc.SetBkColor(GetSysColor(COLOR_WINDOW));
+		m_clc.SetGreyoutFlags(0);
+		m_clc.SetLeftMargin(4);
+		m_clc.SetIndent(10);
+		m_clc.SetHideEmptyGroups(1);
+		m_clc.SetHideOfflineRoot(1);
+		for (int i=0; i <= FONTID_MAX; i++)
+			m_clc.SetTextColor(i, GetSysColor(COLOR_WINDOWTEXT));
 	}
 
-	return FALSE;
-}
+	void InviteUser(TCHAR *pUser, TCHAR *text)
+	{
+		XmlNode msg( _T("message"));
+		HXML invite = msg << XATTR( _T("to"), m_room ) << XATTRID( m_proto->SerialNext())
+			<< XCHILDNS( _T("x"), _T("http://jabber.org/protocol/muc#user"))
+				<< XCHILD( _T("invite")) << XATTR( _T("to"), pUser );
+		if ( text )
+			invite << XCHILD( _T("reason"), text );
+
+		m_proto->m_ThreadInfo->send( msg );
+	}
+
+public:
+	CGroupchatInviteDlg(CJabberProto* ppro, TCHAR *room) :
+		CJabberDlgFancy(ppro, IDD_GROUPCHAT_INVITE, NULL),
+		m_newJids(1),
+		m_btnInvite(this, IDC_INVITE),
+		m_txtNewJid(this, IDC_NEWJID),
+		m_btnAddJid(this, IDC_ADDJID, ppro->LoadIconEx("addroster"), "Add"),
+		m_txtReason(this, IDC_REASON),
+		m_clc(this, IDC_CLIST)
+	{
+		m_room = mir_tstrdup(room);
+		m_btnAddJid.OnClick = Callback( this, &CGroupchatInviteDlg::OnCommand_AddJid );
+		m_btnInvite.OnClick = Callback( this, &CGroupchatInviteDlg::OnCommand_Invite );
+		m_clc.OnNewContact =
+		m_clc.OnListRebuilt = Callback( this, &CGroupchatInviteDlg::FilterList );
+		m_clc.OnOptionsChanged = Callback( this, &CGroupchatInviteDlg::ResetListOptions );
+	}
+
+	~CGroupchatInviteDlg()
+	{
+		for (int i = 0; i < m_newJids.getCount(); ++i)
+			mir_free(m_newJids[i]);
+		mir_free(m_room);
+	}
+
+	void OnInitDialog()
+	{
+		CSuper::OnInitDialog();
+
+		SetDlgItemText( m_hwnd, IDC_TITLE, m_room );
+		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
+
+		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
+			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
+		SendMessage(GetDlgItem(m_hwnd, IDC_CLIST), CLM_SETEXSTYLE, CLS_EX_DISABLEDRAGDROP|CLS_EX_TRACKSELECT, 0);
+		ResetListOptions(&m_clc);
+		FilterList(&m_clc);
+	}
+
+	void OnCommand_AddJid( CCtrlButton* )
+	{
+		TCHAR buf[JABBER_MAX_JID_LEN];
+		m_txtNewJid.GetText(buf, SIZEOF(buf));
+		m_txtNewJid.SetTextA("");
+
+		HANDLE hContact = m_proto->HContactFromJID(buf);
+		if ( hContact )
+		{
+			int hItem = SendDlgItemMessage( m_hwnd, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0 );
+			if ( hItem )
+				SendDlgItemMessage( m_hwnd, IDC_CLIST, CLM_SETCHECKMARK, hItem, 1 );
+			return;
+		}
+
+		int i;
+		for (i = 0; i < m_newJids.getCount(); ++i)
+			if (!lstrcmp(m_newJids[i]->jid, buf))
+				break;
+		if (i != m_newJids.getCount())
+			return;
+
+		JabberGcLogInviteDlgJidData *jidData = (JabberGcLogInviteDlgJidData *)mir_alloc(sizeof(JabberGcLogInviteDlgJidData));
+		lstrcpy(jidData->jid, buf);
+		CLCINFOITEM cii = {0};
+		cii.cbSize = sizeof(cii);
+		cii.flags = CLCIIF_CHECKBOX;
+		mir_sntprintf(buf, SIZEOF(buf), _T("%s (%s)"), jidData->jid, TranslateT("not on roster"));
+		cii.pszText = buf;
+		jidData->hItem = SendDlgItemMessage(m_hwnd,IDC_CLIST,CLM_ADDINFOITEM,0,(LPARAM)&cii);
+		SendDlgItemMessage(m_hwnd, IDC_CLIST, CLM_SETCHECKMARK, jidData->hItem, 1);
+		m_newJids.insert(jidData);
+	}
+
+	void OnCommand_Invite( CCtrlButton* )
+	{
+		if (!m_room) return;
+
+		TCHAR *text = m_txtReason.GetText();
+		HWND hwndList = GetDlgItem(m_hwnd, IDC_CLIST);
+
+		// invite users from roster
+		for	(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+				hContact;
+				hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0))
+		{
+			char *proto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+			if (!lstrcmpA(proto, m_proto->m_szModuleName) && !DBGetContactSettingByte(hContact, proto, "ChatRoom", 0))
+			{
+				if (int hItem = SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0))
+				{
+					if (SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
+					{
+						DBVARIANT dbv={0};
+						m_proto->JGetStringT(hContact, "jid", &dbv);
+						if (dbv.ptszVal && ( dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR ))
+							InviteUser(dbv.ptszVal, text);
+						JFreeVariant(&dbv);
+					}
+				}
+			}
+		}
+
+		// invite others
+		for (int i = 0; i < m_newJids.getCount(); ++i)
+			if (SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)m_newJids[i]->hItem, 0))
+				InviteUser(m_newJids[i]->jid, text);
+
+		mir_free(text);
+		Close();
+	}
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Context menu processing
@@ -1292,10 +1271,9 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 		break;
 
 	case IDM_INVITE:
-	{	
-		JabberGcLogInviteDlgData* param = new JabberGcLogInviteDlgData( gch->pDest->ptszID );
-		param->ppro = ppro;
-		CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_GROUPCHAT_INVITE ), NULL, JabberGcLogInviteDlgProc, ( LPARAM )param );
+	{
+		CGroupchatInviteDlg *dlg = new CGroupchatInviteDlg( ppro, gch->pDest->ptszID );
+		dlg->Show();
 		break;	
 	}
 
