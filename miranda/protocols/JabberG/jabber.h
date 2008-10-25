@@ -84,6 +84,7 @@ Last change by : $Author$
 #include "jabber_xml.h"
 #include "jabber_byte.h"
 #include "jabber_ibb.h"
+#include "jabber_db_utils.h"
 #include "ui_utils.h"
 
 struct CJabberProto;

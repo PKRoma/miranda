@@ -417,18 +417,18 @@ public:
 	{
 		CreateLink(m_txtUsername, "LoginName", _T(""));
 		CreateLink(m_txtPriority, "Priority", DBVT_WORD, 0, true);
-		CreateLink(m_chkSavePassword, "SavePassword", DBVT_BYTE, 1);
+		CreateLink(m_chkSavePassword, proto->m_options.SavePassword);
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
-		CreateLink(m_chkUseHostnameAsResource, "HostNameAsResource", DBVT_BYTE, 0);
+		CreateLink(m_chkUseHostnameAsResource, proto->m_options.HostNameAsResource);
 		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
 		CreateLink(m_txtPort, "Port", DBVT_WORD, 5222);
-		CreateLink(m_chkUseSsl, "UseSSL", DBVT_BYTE, 0);
-		CreateLink(m_chkUseTls, "UseTLS", DBVT_BYTE, 1);
-		CreateLink(m_chkManualHost, "ManualConnect", DBVT_BYTE, 0);
+		CreateLink(m_chkUseSsl, proto->m_options.UseSSL);
+		CreateLink(m_chkUseTls, proto->m_options.UseTLS);
+		CreateLink(m_chkManualHost, proto->m_options.ManualConnect);
 		CreateLink(m_txtManualHost, "ManualHost", _T(""));
 		CreateLink(m_txtManualPort, "ManualPort", DBVT_WORD, 0);
-		CreateLink(m_chkKeepAlive, "KeepAlive", DBVT_BYTE, 1);
-		CreateLink(m_chkAutoDeleteContacts, "RosterSync", DBVT_BYTE, 0);
+		CreateLink(m_chkKeepAlive, proto->m_options.KeepAlive);
+		CreateLink(m_chkAutoDeleteContacts, proto->m_options.RosterSync);
 		CreateLink(m_txtUserDirectory, "Jud", _T(""));
 
 		// Bind events
@@ -502,9 +502,9 @@ protected:
 		EnableWindow(GetDlgItem(m_hwnd, IDC_COMBO_RESOURCE ), m_chkUseHostnameAsResource.GetState() != BST_CHECKED);
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberOnline);
 
-		m_chkUseTls.Enable(!m_proto->JGetByte("UseSSL", FALSE));
+		m_chkUseTls.Enable(!m_proto->m_options.UseSSL);
 
-		if (m_proto->JGetByte( "ManualConnect", FALSE ))
+		if (m_proto->m_options.ManualConnect)
 		{
 			m_txtManualHost.Enable();
 			m_txtManualPort.Enable();
@@ -781,9 +781,9 @@ public:
 		m_txtProxy(this, IDC_PROXY_ADDR),
 		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)
 	{
-		CreateLink(m_chkDirect, "BsDirect", DBVT_BYTE, FALSE);
-		CreateLink(m_chkDirectManual, "BsDirectManual", DBVT_BYTE, FALSE);
-		CreateLink(m_chkProxy, "BsProxyManual", DBVT_BYTE, FALSE);
+		CreateLink(m_chkDirect, proto->m_options.BsDirect);
+		CreateLink(m_chkDirectManual, proto->m_options.BsDirectManual);
+		CreateLink(m_chkProxy, proto->m_options.BsProxyManual);
 		CreateLink(m_txtDirect, "BsDirectAddr", _T(""));
 		CreateLink(m_txtProxy, "BsProxyServer", _T(""));
 
@@ -825,7 +825,7 @@ public:
 
 	void OnApply()
 	{
-		BOOL bChecked = m_proto->JGetByte("ShowTransport", TRUE);
+		BOOL bChecked = m_proto->m_options.ShowTransport;
 		int index = 0;
 		while (( index = m_proto->ListFindNext( LIST_ROSTER, index )) >= 0 ) {
 			JABBER_LIST_ITEM* item = m_proto->ListGetItemPtrFromIndex( index );
@@ -1685,7 +1685,7 @@ public:
 		m_btnRegister(this, IDC_BUTTON_REGISTER)
 	{
 		CreateLink(m_txtUsername, "LoginName", _T(""));
-		CreateLink(m_chkSavePassword, "SavePassword", DBVT_BYTE, 1);
+		CreateLink(m_chkSavePassword, proto->m_options.SavePassword);
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
 		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
 
@@ -1761,9 +1761,9 @@ protected:
 			m_cbType.SetCurSel(ACC_GTALK);
 		else if (!lstrcmpA(server, "livejournal.com"))
 			m_cbType.SetCurSel(ACC_LJTALK);
-		else if (m_proto->JGetByte("UseTLS", TRUE))
+		else if (m_proto->m_options.UseTLS)
 			m_cbType.SetCurSel(ACC_TLS);
-		else if (m_proto->JGetByte("UseSSL", FALSE))
+		else if (m_proto->m_options.UseSSL)
 			m_cbType.SetCurSel(ACC_SSL);
 		else
 			m_cbType.SetCurSel(ACC_PUBLIC);
@@ -1771,7 +1771,7 @@ protected:
 
 		if (m_chkManualHost.Enabled())
 		{
-			if (m_proto->JGetByte("ManualConnect", FALSE))
+			if (m_proto->m_options.ManualConnect)
 			{
 				m_chkManualHost.SetState(BST_CHECKED);
 				m_txtManualHost.Enable();
@@ -1820,7 +1820,7 @@ protected:
 			if (!lstrcmp(szCompName, szResource))
 				bUseHostnameAsResource = TRUE;
 		}
-		m_proto->JSetByte("HostNameAsResource", bUseHostnameAsResource);
+		m_proto->m_options.HostNameAsResource = bUseHostnameAsResource;
 
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
@@ -1837,22 +1837,22 @@ protected:
 		{
 		case ACC_PUBLIC:
 		{
-			m_proto->JSetByte("UseSSL", FALSE);
-			m_proto->JSetByte("UseTLS", FALSE);
+			m_proto->m_options.UseSSL = FALSE;
+			m_proto->m_options.UseTLS = FALSE;
 			break;
 		}
 		case ACC_TLS:
 		case ACC_GTALK:
 		case ACC_LJTALK:
 		{
-			m_proto->JSetByte("UseSSL", FALSE);
-			m_proto->JSetByte("UseTLS", TRUE);
+			m_proto->m_options.UseSSL = FALSE;
+			m_proto->m_options.UseTLS = TRUE;
 			break;
 		}
 		case ACC_SSL:
 		{
-			m_proto->JSetByte("UseSSL", TRUE);
-			m_proto->JSetByte("UseTLS", FALSE);
+			m_proto->m_options.UseSSL = TRUE;
+			m_proto->m_options.UseTLS = FALSE;
 			break;
 		}
 		}
@@ -1865,13 +1865,13 @@ protected:
 
 		if ((m_chkManualHost.GetState() == BST_CHECKED) && lstrcmpA(server, manualServer))
 		{
-			m_proto->JSetByte("ManualConnect", TRUE);
+			m_proto->m_options.ManualConnect = TRUE;
 			m_proto->JSetString(NULL, "ManualHost", manualServer);
 			m_proto->JSetWord(NULL, "ManualPort", m_txtPort.GetInt());
 			m_proto->JSetWord(NULL, "Port", m_txtPort.GetInt());
 		} else
 		{
-			m_proto->JSetByte("ManualConnect", FALSE);
+			m_proto->m_options.ManualConnect = FALSE;
 			m_proto->JDeleteSetting(NULL, "ManualHost");
 			m_proto->JDeleteSetting(NULL, "ManualPort");
 			m_proto->JSetWord(NULL, "Port", m_txtPort.GetInt());

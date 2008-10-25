@@ -315,6 +315,11 @@ XPath::PathType XPath::LookupImpl(bool bCreate)
 		case S_START:
 		{
 			ProcessPath(info, bCreate);
+			if (!m_hXml)
+			{
+				state = S_FINAL_ERROR;
+				break;
+			}
 
 			switch (*p)
 			{

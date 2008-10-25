@@ -226,13 +226,13 @@ BOOL CJabberProto::AddDbPresenceEvent(HANDLE hContact, BYTE btEventType)
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
 		{
-			if ( !JGetByte( "LogPresence", TRUE ))
+			if ( !m_options.LogPresence )
 				return FALSE;
 			break;
 		}
 	case JABBER_DB_EVENT_PRESENCE_ERROR:
 		{
-			if ( !JGetByte( "LogPresenceErrors", TRUE ))
+			if ( !m_options.LogPresenceErrors )
 				return FALSE;
 			break;
 		}
@@ -526,7 +526,7 @@ void CJabberProto::FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, in
 	// attach additional info for fingerprint plguin
 	if (resource->resourceName && !_tcsstr(buf, resource->resourceName))
 	{
-		if (_tcsstr(buf, _T("Miranda IM")) || JGetByte("ShowForeignResourceInMirVer", FALSE))
+		if (_tcsstr(buf, _T("Miranda IM")) || m_options.ShowForeignResourceInMirVer )
 		{
 			int offset = lstrlen(buf);
 			mir_sntprintf(buf + offset, bufSize - offset, _T(" [%s]"), resource->resourceName);

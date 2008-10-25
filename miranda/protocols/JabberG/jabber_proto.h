@@ -183,6 +183,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	//====| Data |========================================================================
 
 	ThreadData* m_ThreadInfo;
+	CJabberOptions m_options;
 
 	HANDLE m_hNetlibUser;
 	PVOID  m_sslCtx;
@@ -682,7 +683,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE JForkThreadEx( JThreadFunc, void*, UINT* threadID = NULL );
 
 	void   JDeleteSetting( HANDLE hContact, const char* valueName );
-	DWORD  JGetByte( const char* valueName, int parDefltValue );
+//	DWORD  JGetByte( const char* valueName, int parDefltValue );
 	DWORD  JGetByte( HANDLE hContact, const char* valueName, int parDefltValue );
 	char*  JGetContactName( HANDLE hContact );
 	DWORD  JGetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
@@ -692,7 +693,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	WORD   JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 	void   JHookEvent( const char*, JEventFunc );
 	int    JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
-	DWORD  JSetByte( const char* valueName, int parValue );
+//	DWORD  JSetByte( const char* valueName, int parValue );
 	DWORD  JSetByte( HANDLE hContact, const char* valueName, int parValue );
 	DWORD  JSetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 	DWORD  JSetString( HANDLE hContact, const char* valueName, const char* parValue );

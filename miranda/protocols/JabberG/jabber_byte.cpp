@@ -167,9 +167,9 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	Log( "Thread started: type=bytestream_send" );
 
-	BOOL bDirect = JGetByte( "BsDirect", FALSE );
+	BOOL bDirect = m_options.BsDirect;
 
-	if ( JGetByte( "BsProxyManual" , FALSE ) ) {
+	if ( m_options.BsProxyManual ) {
 		proxyJid = NULL;
 		if ( !DBGetContactSettingString( NULL, m_szModuleName, "BsProxyServer", &dbv )) {
 			proxyJid = mir_a2t( dbv.pszVal );
@@ -204,7 +204,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	if ( bDirect ) {
 		localAddr = NULL;
-		if ( JGetByte( "BsDirectManual", FALSE ) == TRUE ) {
+		if ( m_options.BsDirectManual == TRUE ) {
 			if ( !DBGetContactSettingString( NULL, m_szModuleName, "BsDirectAddr", &dbv )) {
 				localAddr = NEWSTR_ALLOCA( dbv.pszVal );
 				JFreeVariant( &dbv );

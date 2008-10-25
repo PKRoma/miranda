@@ -1166,7 +1166,7 @@ void CJabberProto::GroupchatProcessInvite( const TCHAR* roomJid, const TCHAR* fr
 	if (ListGetItemPtr( LIST_CHATROOM, roomJid ))
 		return;
 
-	if ( JGetByte( "AutoAcceptMUC", FALSE ) == FALSE ) {
+	if ( m_options.AutoAcceptMUC == FALSE ) {
 		JABBER_GROUPCHAT_INVITE_INFO* inviteInfo = ( JABBER_GROUPCHAT_INVITE_INFO * ) mir_alloc( sizeof( JABBER_GROUPCHAT_INVITE_INFO ));
 		inviteInfo->roomJid  = mir_tstrdup( roomJid );
 		inviteInfo->from     = mir_tstrdup( from );

@@ -69,7 +69,7 @@ void CJabberProto::OnIqRequestVersion( HXML node, void* userdata, CJabberIqInfo*
 
 	TCHAR* os = NULL;
 
-	if ( JGetByte( "ShowOSVersion", TRUE )) {
+	if ( m_options.ShowOSVersion ) {
 		OSVERSIONINFO osvi = { 0 };
 		osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
 		if ( GetVersionEx( &osvi )) {
@@ -177,10 +177,10 @@ void CJabberProto::OnIqRequestTime( HXML node, void* userdata, CJabberIqInfo *pI
 
 void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
-	if ( !JGetByte( "EnableAvatars", TRUE ))
+	if ( !m_options.EnableAvatars )
 		return;
 
-	int pictureType = JGetByte( "AvatarType", PA_FORMAT_UNKNOWN );
+	int pictureType = m_options.AvatarType;
 	if ( pictureType == PA_FORMAT_UNKNOWN )
 		return;
 
@@ -358,7 +358,7 @@ void CJabberProto::OnIqRequestOOB( HXML node, void* userdata, CJabberIqInfo *pIn
 	if ( !n || !xmlGetText( n ))
 		return;
 
-	if ( JGetByte( "BsOnlyIBB", FALSE )) {
+	if ( m_options.BsOnlyIBB ) {
 		// reject
 		XmlNodeIq iq( _T("error"), pInfo );
 		HXML e = xmlAddChild( iq, _T("error"), _T("File transfer refused")); xmlAddAttr( e, _T("code"), 406 );
@@ -480,7 +480,7 @@ void CJabberProto::OnHandleDiscoItemsRequest( HXML iqNode, void* userdata, CJabb
 	if ( szNode )
 		xmlAddAttr( resultQuery, _T("node"), szNode );
 
-	if ( !szNode && JGetByte( "EnableRemoteControl", FALSE ))
+	if ( !szNode && m_options.EnableRemoteControl )
 		resultQuery << XCHILD( _T("item")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) 
 			<< XATTR( _T("node"), _T(JABBER_FEAT_COMMANDS)) << XATTR( _T("name"), _T("Ad-hoc commands"));
 
@@ -506,7 +506,7 @@ BOOL CJabberProto::AddClistHttpAuthEvent( CJabberHttpAuthParams *pParams )
 
 void CJabberProto::OnIqHttpAuth( HXML node, void* userdata, CJabberIqInfo* pInfo )
 {
-	if ( !JGetByte( "AcceptHttpAuth", TRUE ))
+	if ( !m_options.AcceptHttpAuth )
 		return;
 
 	if ( !node || !pInfo->GetChildNode() || !pInfo->GetFrom() || !pInfo->GetIdStr() )

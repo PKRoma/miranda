@@ -185,7 +185,28 @@ __inline CCallback<TArgument> Callback(TClass *object, void (TClass::*func)(TArg
 /////////////////////////////////////////////////////////////////////////////////////////
 // CDbLink
 
-class CDbLink
+class CDataLink
+{
+protected:
+	BYTE m_type;
+	bool m_bSigned;
+
+public:
+	CDataLink(BYTE type, bool bSigned): m_type(type), m_bSigned(bSigned) {}
+	virtual ~CDataLink() {}
+
+	__inline BYTE GetDataType() { return m_type; }
+	__inline BYTE GetDataSigned() { return m_bSigned; }
+
+	virtual DWORD LoadUnsigned() = 0;
+	virtual int LoadSigned() = 0;
+	virtual void SaveInt(DWORD value) = 0;
+
+	virtual TCHAR *LoadText() = 0;
+	virtual void SaveText(TCHAR *value) = 0;
+};
+
+class CDbLink: public CDataLink
 {
 	char *m_szModule;
 	char *m_szSetting;
@@ -202,15 +223,29 @@ public:
 	CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *szValue);
 	~CDbLink();
 
-	__inline BYTE GetDataType() { return m_type; }
-	__inline BYTE GetDataSigned() { return m_bSigned; }
-
 	DWORD LoadUnsigned();
 	int LoadSigned();
 	void SaveInt(DWORD value);
 
 	TCHAR *LoadText();
 	void SaveText(TCHAR *value);
+};
+
+template<class T>
+class CMOptionLink: public CDataLink
+{
+private:
+	CMOption<T> &m_option;
+
+public:
+	CMOptionLink(CMOption<T> &option): CDataLink(CMDBTraits<sizeof(T)>::DBTypeId, CMIntTraits<T>::IsSigned()), m_option(option) {}
+
+	DWORD LoadUnsigned() { return (DWORD)(T)m_option; }
+	int LoadSigned() { return (int)(T)m_option; }
+	void SaveInt(DWORD value) { m_option = (T)value; }
+
+	TCHAR *LoadText() { return NULL; }
+	void SaveText(TCHAR *value) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -524,6 +559,7 @@ public:
 
 	void CreateDbLink( const char* szModuleName, const char* szSetting, BYTE type, DWORD iValue, bool bSigned = false );
 	void CreateDbLink( const char* szModuleName, const char* szSetting, TCHAR* szValue );
+	void CreateDbLink( CDataLink *link ) { m_dbLink = link; }
 
 	virtual void OnInit();
 
@@ -531,7 +567,7 @@ public:
 	CCallback<CCtrlData> OnChange;
 
 protected:
-	CDbLink *m_dbLink;
+	CDataLink *m_dbLink;
 	bool m_changed;
 
 	void NotifyChange();
@@ -1207,6 +1243,12 @@ public:
 	__inline void CreateLink( CCtrlData& ctrl, const char *szSetting, TCHAR *szValue )
 	{
 		ctrl.CreateDbLink(m_proto_interface->m_szModuleName, szSetting, szValue);
+	}
+
+	template<class T>
+	__inline void CreateLink( CCtrlData& ctrl, CMOption<T> &option )
+	{
+		ctrl.CreateDbLink(new CMOptionLink<T>(option));
 	}
 
 	__inline PROTO_INTERFACE *GetProtoInterface() { return m_proto_interface; }

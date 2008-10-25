@@ -1140,7 +1140,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 							for ( int j=0; j<MIR_SHA1_HASH_SIZE; j++ )
 								sprintf( buf+( j<<1 ), "%02x", digest[j] );
 
-							JSetByte( "AvatarType", JabberGetPictureType( buffer ));	
+							m_options.AvatarType = JabberGetPictureType( buffer );	
 							JSetString( NULL, "AvatarHash", buf );
 							JSetString( NULL, "AvatarSaved", buf );
 

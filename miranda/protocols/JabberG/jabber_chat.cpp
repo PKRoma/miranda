@@ -172,7 +172,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
 	gcd.iType = GC_EVENT_CONTROL;
-	CallServiceSync( MS_GC_EVENT, (item->bAutoJoin && JGetByte("AutoJoinHidden", TRUE)) ? WINDOW_HIDDEN : SESSION_INITDONE, (LPARAM)&gce );
+	CallServiceSync( MS_GC_EVENT, (item->bAutoJoin && m_options.AutoJoinHidden) ? WINDOW_HIDDEN : SESSION_INITDONE, (LPARAM)&gce );
 	CallServiceSync( MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce );
 	return 0;
 }
@@ -194,13 +194,13 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 	switch (type)
 	{
 		case INFO_BAN:
-			if (JGetByte("GcLogBans", TRUE))
+			if (m_options.GcLogBans)
 			{
 				mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s in now banned."), user->resourceName);
 			}
 			break;
 		case INFO_STATUS:
-			if (JGetByte("GcLogStatuses", FALSE))
+			if (m_options.GcLogStatuses)
 			{
 				if (user->statusMessage && user->statusMessage)
 				{
@@ -217,13 +217,13 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 			}
 			break;
 		case INFO_CONFIG:
-			if (JGetByte("GcLogConfig", FALSE))
+			if (m_options.GcLogConfig)
 			{
 				mir_sntprintf(buf, SIZEOF(buf), TranslateT("Room configuration was changed."));
 			}
 			break;
 		case INFO_AFFILIATION:
-			if (JGetByte("GcLogAffiliations", FALSE))
+			if (m_options.GcLogAffiliations)
 			{
 				TCHAR *name = NULL;
 				switch (user->affiliation)
@@ -238,7 +238,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 			}
 			break;
 		case INFO_ROLE:
-			if (JGetByte("GcLogRoles", FALSE))
+			if (m_options.GcLogRoles)
 			{
 				TCHAR *name = NULL;
 				switch (user->role)

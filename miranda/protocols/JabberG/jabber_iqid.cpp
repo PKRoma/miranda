@@ -115,7 +115,7 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 	if ((info->dwLoginRqs & JABBER_LOGIN_ROSTER) && (info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS) &&
 		(info->dwLoginRqs & JABBER_LOGIN_SERVERINFO) && !(info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS_AJ))
 	{
-		if ( jabberChatDllPresent && JGetByte( "AutoJoinBookmarks", TRUE ) ) {
+		if ( jabberChatDllPresent && m_options.AutoJoinBookmarks) {
 			JABBER_LIST_ITEM* item;
 			for ( int i=0; ( i = ListFindNext( LIST_BOOKMARK, i )) >= 0; i++ ) {
 				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
@@ -502,7 +502,7 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, void* userdata, CJabberIqIn
 	}
 
 	// Delete orphaned contacts ( if roster sync is enabled )
-	if ( JGetByte( "RosterSync", FALSE ) == TRUE ) {
+	if ( m_options.RosterSync == TRUE ) {
 		int listSize = 0, listAllocSize = 0;
 		HANDLE* list = NULL;
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -542,7 +542,7 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, void* userdata, CJabberIqIn
 	m_bModeMsgStatusChangePending = FALSE;
 	SetServerStatus( m_iDesiredStatus );
 
-	if ( JGetByte( "AutoJoinConferences", 0 )) {
+	if ( m_options.AutoJoinConferences ) {
 		for ( i=0; i < chatRooms.realCount; i++ )
 			GroupchatJoinByHContact(( HANDLE )chatRooms.items[i], true);
 	}
@@ -1351,7 +1351,7 @@ void CJabberProto::OnIqResultSetPassword( HXML iqNode, void *userdata )
 /*
 void CJabberProto::OnIqResultDiscoAgentItems( HXML iqNode, void *userdata )
 {
-	if ( !JGetByte( "EnableAvatars", TRUE ))
+	if ( !m_options.EnableAvatars )
 		return;
 }
 */

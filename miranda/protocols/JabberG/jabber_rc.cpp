@@ -78,7 +78,7 @@ void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, void* userdata, CJabb
 	if ( !pInfo->GetChildNode() )
 		return;
 
-	if ( !JGetByte( "EnableRemoteControl", FALSE ) || !IsRcRequestAllowedByACL( pInfo )) {
+	if ( !m_options.EnableRemoteControl || !IsRcRequestAllowedByACL( pInfo )) {
 		// FIXME: send error and return
 		return;
 	}
@@ -92,7 +92,7 @@ void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, void* userdata, CJabb
 
 BOOL CJabberAdhocManager::HandleItemsRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
-	if ( !szNode || !m_pProto->JGetByte( "EnableRemoteControl", FALSE ) || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
+	if ( !szNode || !m_pProto->m_options.EnableRemoteControl || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
 		return FALSE;
 
 	if ( !_tcscmp( szNode, _T(JABBER_FEAT_COMMANDS)))
@@ -122,7 +122,7 @@ BOOL CJabberAdhocManager::HandleItemsRequest( HXML iqNode, void* userdata, CJabb
 
 BOOL CJabberAdhocManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
-	if ( !szNode || !m_pProto->JGetByte( "EnableRemoteControl", FALSE ) || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
+	if ( !szNode || !m_pProto->m_options.EnableRemoteControl || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
 		return FALSE;
 
 	// FIXME: same code twice
@@ -493,7 +493,7 @@ int CJabberProto::AdhocOptionsHandler( HXML iqNode, void *usedata, CJabberIqInfo
 		fieldNode = xmlGetChildByTag( xNode, "field", "var", _T("enable-rc") );
 		if ( fieldNode && (valueNode = xmlGetChild( fieldNode , "value" ))) {
 			if ( xmlGetText( valueNode ) && _ttoi( xmlGetText( valueNode ) ))
-				JSetByte( "EnableRemoteControl", 0 );
+				m_options.EnableRemoteControl = 0;
 		}
 
 		return JABBER_ADHOC_HANDLER_STATUS_COMPLETED;

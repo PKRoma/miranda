@@ -81,12 +81,12 @@ void CJabberProto::JDeleteSetting( HANDLE hContact, const char* valueName )
 {
    DBDeleteContactSetting( hContact, m_szModuleName, valueName );
 }
-
+/*
 DWORD CJabberProto::JGetByte( const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingByte( NULL, m_szModuleName, valueName, parDefltValue );
 }
-
+*/
 DWORD CJabberProto::JGetByte( HANDLE hContact, const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingByte( hContact, m_szModuleName, valueName, parDefltValue );
@@ -151,12 +151,12 @@ int CJabberProto::JSendBroadcast( HANDLE hContact, int type, int result, HANDLE 
 	ack.lParam = lParam;
 	return JCallService( MS_PROTO_BROADCASTACK, 0, ( LPARAM )&ack );
 }
-
+/*
 DWORD CJabberProto::JSetByte( const char* valueName, int parValue )
 {
 	return DBWriteContactSettingByte( NULL, m_szModuleName, valueName, parValue );
 }
-
+*/
 DWORD CJabberProto::JSetByte( HANDLE hContact, const char* valueName, int parValue )
 {
 	return DBWriteContactSettingByte( hContact, m_szModuleName, valueName, parValue );

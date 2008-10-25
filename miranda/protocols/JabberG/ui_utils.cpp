@@ -2393,24 +2393,20 @@ void CCtrlBase::Unsubclass()
 /////////////////////////////////////////////////////////////////////////////////////////
 // CDbLink class
 
-CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue, bool bSigned)
+CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, DWORD iValue, bool bSigned): CDataLink(type, bSigned)
 {
 	m_szModule = mir_strdup(szModule);
 	m_szSetting = mir_strdup(szSetting);
-	m_type = type;
 	m_iDefault = iValue;
 	m_szDefault = 0;
-	m_bSigned = bSigned;
 	dbv.type = DBVT_DELETED;
 }
 
-CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *szValue)
+CDbLink::CDbLink(const char *szModule, const char *szSetting, BYTE type, TCHAR *szValue): CDataLink(type, false)
 {
 	m_szModule = mir_strdup(szModule);
 	m_szSetting = mir_strdup(szSetting);
-	m_type = type;
 	m_szDefault = mir_tstrdup(szValue);
-	m_bSigned = false;
 	dbv.type = DBVT_DELETED;
 }
 

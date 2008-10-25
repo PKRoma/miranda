@@ -52,7 +52,7 @@ int __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( buf == NULL || size <= 0 )
 		return -1;
 
-	if ( !JGetByte( "EnableAvatars", TRUE ))
+	if ( !m_options.EnableAvatars )
 		return -2;
 
 	GetAvatarFileName( NULL, buf, size );
@@ -80,7 +80,7 @@ int __cdecl CJabberProto::JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam )
 		return 1;
 
 	case AF_ENABLED:
-		return JGetByte( "EnableAvatars", TRUE );
+		return m_options.EnableAvatars;
 	}
 	return -1;
 }
@@ -90,7 +90,7 @@ int __cdecl CJabberProto::JabberGetAvatarCaps( WPARAM wParam, LPARAM lParam )
 
 int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 {
-	if ( !JGetByte( "EnableAvatars", TRUE ))
+	if ( !m_options.EnableAvatars )
 		return GAIR_NOAVATAR;
 
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
@@ -289,7 +289,7 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 		for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
 			sprintf( buf+( i<<1 ), "%02x", digest[i] );
 
-		JSetByte( "AvatarType", JabberGetPictureType( pResult ));
+		m_options.AvatarType = JabberGetPictureType( pResult );
 		JSetString( NULL, "AvatarSaved", buf );
 
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );

@@ -179,7 +179,7 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 		xmlAddAttr( stream, _T("xml:lang"), szXmlLang );
 		mir_free( szXmlLang );
 	}
-	if ( !JGetByte( "Disable3920auth", 0 ))
+	if ( !m_options.Disable3920auth )
 		xmlAddAttr( stream, _T("version"), _T("1.0"));
 
 	LPTSTR xmlQuery = xi.toString( n, NULL );
@@ -278,7 +278,7 @@ LBL_FatalError:
 			goto LBL_FatalError;
 		}
 
-		if ( JGetByte( "HostNameAsResource", FALSE ) == FALSE )
+		if ( m_options.HostNameAsResource == FALSE )
 			if ( !JGetStringT( NULL, "Resource", &dbv )) {
 				_tcsncpy( info->resource, dbv.ptszVal, SIZEOF( info->resource ) - 1 );
 				JFreeVariant( &dbv );
@@ -294,7 +294,7 @@ LBL_FatalError:
 		mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM) _T("/%s"), info->username, info->server, info->resource );
 		_tcsncpy( info->fullJID, jidStr, SIZEOF( info->fullJID )-1 );
 
-		if ( JGetByte( "SavePassword", TRUE ) == FALSE ) {
+		if ( m_options.SavePassword == FALSE ) {
 			mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
 
 			// Ugly hack: continue logging on only the return value is &( onlinePassword[0] )
@@ -327,7 +327,7 @@ LBL_FatalError:
 			JFreeVariant( &dbv );
 		}
 
-		if ( JGetByte( "ManualConnect", FALSE ) == TRUE ) {
+		if ( m_options.ManualConnect == TRUE ) {
 			if ( !DBGetContactSettingString( NULL, m_szModuleName, "ManualHost", &dbv )) {
 				strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
 				info->manualHost[sizeof( info->manualHost )-1] = '\0';
@@ -337,7 +337,7 @@ LBL_FatalError:
 		}
 		else info->port = JGetWord( NULL, "Port", JABBER_DEFAULT_PORT );
 
-		info->useSSL = JGetByte( "UseSSL", FALSE );
+		info->useSSL = m_options.UseSSL;
 	}
 
 	else if ( info->type == JABBER_SESSION_REGISTER ) {
@@ -445,7 +445,7 @@ LBL_FatalError:
 			int len = _tcslen( info->username ) + strlen( info->server )+1;
 			m_szJabberJID = ( TCHAR* )mir_alloc( sizeof( TCHAR)*( len+1 ));
 			mir_sntprintf( m_szJabberJID, len+1, _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
-			if ( JGetByte( "KeepAlive", 1 ))
+			if ( m_options.KeepAlive )
 				m_bSendKeepAlive = TRUE;
 			else
 				m_bSendKeepAlive = FALSE;
@@ -468,7 +468,7 @@ LBL_FatalError:
 				if ( nSelRes == -1 ) // error
 					break;
 				else if ( nSelRes == 0 ) {
-					if ( JGetByte( "EnableServerXMPPPing", FALSE ))
+					if ( m_options.EnableServerXMPPPing )
 						info->send( 
 							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, 45000 ))
 								<< XQUERY( _T(JABBER_FEAT_PING)));
@@ -637,9 +637,9 @@ void CJabberProto::OnProcessStreamOpening( HXML node, ThreadData *info )
 
 	// old server - disable SASL then
 	if ( xmlGetAttrValue( node, _T("version")) == NULL )
-		info->proto->JSetByte( "Disable3920auth", TRUE );
+		info->proto->m_options.Disable3920auth = TRUE;
 
-	if ( info->proto->JGetByte( "Disable3920auth", 0 ))
+	if ( info->proto->m_options.Disable3920auth )
 		info->proto->PerformIqAuth( info );
 
 	HXML features = xmlGetChild( node ,0);
@@ -675,13 +675,13 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 			break;
 
 		if ( !_tcscmp( xmlGetName( n ), _T("starttls"))) {
-			if ( !info->useSSL && JGetByte( "UseTLS", FALSE )) {
+			if ( !info->useSSL && m_options.UseTLS ) {
 				Log( "Requesting TLS" );
 				info->send( XmlNode( xmlGetName( n )) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-tls" )));
 				return;
 		}	}
 
-		if ( !_tcscmp( xmlGetName( n ), _T("compression")) && JGetByte( "EnableZlib", FALSE ) == TRUE ) {
+		if ( !_tcscmp( xmlGetName( n ), _T("compression")) && m_options.EnableZlib == TRUE ) {
 			Log("Server compression available");
 			for ( int k=0; ; k++ ) {
 				HXML c = xmlGetChild( n ,k);
@@ -944,7 +944,7 @@ void CJabberProto::OnProcessPubsubEvent( HXML node )
 		return;
 
 	HXML itemsNode;
-	if ( JGetByte( "EnableUserTune", FALSE ) && (itemsNode = xmlGetChildByTag( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
+	if ( m_options.EnableUserTune && (itemsNode = xmlGetChildByTag( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
 		// node retract?
 		if ( xmlGetChild( itemsNode , "retract" )) {
 			SetContactTune( hContact, NULL, NULL, NULL, NULL, NULL, NULL );
@@ -1192,7 +1192,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	}
 
 	// chatstates gone event
-	if ( hContact && xmlGetChildByTag( node, "gone", "xmlns", _T( JABBER_FEAT_CHATSTATES )) && JGetByte( "LogChatstates", FALSE )) {
+	if ( hContact && xmlGetChildByTag( node, "gone", "xmlns", _T( JABBER_FEAT_CHATSTATES )) && m_options.LogChatstates ) {
 		DBEVENTINFO dbei;
 		BYTE bEventType = JABBER_DB_EVENT_CHATSTATES_GONE; // gone event
 		dbei.cbSize = sizeof(dbei);
@@ -1205,7 +1205,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 	}
 
-	if (( n = xmlGetChildByTag( node, "confirm", "xmlns", _T( JABBER_FEAT_HTTP_AUTH ))) && JGetByte( "AcceptHttpAuth", TRUE )) {
+	if (( n = xmlGetChildByTag( node, "confirm", "xmlns", _T( JABBER_FEAT_HTTP_AUTH ))) && m_options.AcceptHttpAuth ) {
 		const TCHAR *szId = xmlGetAttrValue( n, _T("id"));
 		const TCHAR *szMethod = xmlGetAttrValue( n, _T("method"));
 		const TCHAR *szUrl = xmlGetAttrValue( n, _T("url"));
@@ -1331,7 +1331,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 	if ( isChatRoomInvitation ) {
 		if ( inviteRoomJid != NULL ) {
-			if ( JGetByte( "IgnoreMUCInvites", FALSE )) {
+			if ( m_options.IgnoreMUCInvites ) {
 				// FIXME: temporary disabled due to MUC inconsistence on server side
 				/*
 				XmlNode m( "message" ); xmlAddAttr( m, "to", from );
@@ -1384,7 +1384,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		if ( !msgTime )
 			msgTime = now;
 
-		if ( JGetByte( "FixIncorrectTimestamps", TRUE ) && ( msgTime > now || ( msgTime < ( time_t )JabberGetLastContactMessageTime( hContact ))))
+		if ( m_options.FixIncorrectTimestamps && ( msgTime > now || ( msgTime < ( time_t )JabberGetLastContactMessageTime( hContact ))))
 			msgTime = now;
 
 		PROTORECVEVENT recv;
@@ -1480,7 +1480,7 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 		UpdateMirVer( hContact, &item->resource[nSelectedResource] );
 	}
 
-	if ( _tcschr( jid, '@' )!=NULL || JGetByte( "ShowTransport", TRUE )==TRUE )
+	if ( _tcschr( jid, '@' )!=NULL || m_options.ShowTransport==TRUE )
 		if ( JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) != status )
 			JSetWord( hContact, "Status", ( WORD )status );
 
@@ -1570,7 +1570,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 
 		HXML xNode;
 		BOOL hasXAvatar = false;
-		if ( JGetByte( "EnableAvatars", TRUE )) {
+		if ( m_options.EnableAvatars ) {
 			Log( "Avatar enabled" );
 			for ( int i = 1; ( xNode=xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
 				if ( !lstrcmp( xmlGetAttrValue( xNode, _T("xmlns")), _T("jabber:x:avatar"))) {
@@ -1647,11 +1647,11 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 			AddDbPresenceEvent( hContact, JABBER_DB_EVENT_PRESENCE_SUBSCRIBE );
 
 		// automatically send authorization allowed to agent/transport
-		if ( _tcschr( from, '@' ) == NULL || JGetByte("AutoAcceptAuthorization", FALSE )) {
+		if ( _tcschr( from, '@' ) == NULL || m_options.AutoAcceptAuthorization ) {
 			ListAdd( LIST_ROSTER, from );
 			info->send( XmlNode( _T("presence")) << XATTR( _T("to"), from ) << XATTR( _T("type"), _T("subscribed")));
 
-			if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
+			if ( m_options.AutoAdd == TRUE ) {
 				if (( item = ListGetItemPtr( LIST_ROSTER, from )) == NULL || ( item->subscription != SUB_BOTH && item->subscription != SUB_TO )) {
 					Log( "Try adding contact automatically jid = " TCHAR_STR_PARAM, from );
 					if (( hContact=AddToListByJID( from, 0 )) != NULL ) {

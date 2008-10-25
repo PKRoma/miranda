@@ -252,7 +252,7 @@ int __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 				JFreeVariant( &dbv );
 			}
 			AddContactToRoster( roomID, nick, group );
-			if ( JGetByte( "AddRoster2Bookmarks", TRUE ) == TRUE ) {
+			if ( m_options.AddRoster2Bookmarks == TRUE ) {
 
 				JABBER_LIST_ITEM* item = NULL;
 				

@@ -852,25 +852,25 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	if ( bSecureIM )
 		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
 
-	if ( JGetByte( "EnableRemoteControl", FALSE )) {
+	if ( m_options.EnableRemoteControl ) {
 		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_COMMANDS) );
 	}
 
-	if ( JGetByte( "EnableUserMood", TRUE )) {
+	if ( m_options.EnableUserMood ) {
 		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_MOOD) );
 	}
 
-	if ( JGetByte( "EnableUserTune", FALSE )) {
+	if ( m_options.EnableUserTune ) {
 		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_TUNE) );
 	}
 
-	if ( JGetByte( "EnableUserActivity", TRUE )) {
+	if ( m_options.EnableUserActivity ) {
 		if ( szExtCaps[0] )
 			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
@@ -879,7 +879,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 	if ( szExtCaps[0] )
 		xmlAddAttr( c, _T("ext"), szExtCaps );
 
-	if ( JGetByte( "EnableAvatars", TRUE )) {
+	if ( m_options.EnableAvatars ) {
 		char hashValue[ 50 ];
 		if ( !JGetStaticString( "AvatarHash", NULL, hashValue, sizeof( hashValue ))) {
 			// XEP-0153: vCard-Based Avatars

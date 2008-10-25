@@ -70,6 +70,7 @@ static int compareListItems( const JABBER_LIST_ITEM* p1, const JABBER_LIST_ITEM*
 }
 
 CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
+	m_options( this ),
 	m_lstTransports( 50, compareTransports ),
 	m_lstRoster( 50, compareListItems ),
 	m_iqManager( this ),
@@ -431,7 +432,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 	TCHAR* newJid = mir_a2t( jid );
 
 	// Automatically add this user to my roster if option is enabled
-	if ( JGetByte( "AutoAdd", TRUE ) == TRUE ) {
+	if ( m_options.AutoAdd == TRUE ) {
 		HANDLE hContact;
 		JABBER_LIST_ITEM *item;
 
@@ -826,7 +827,7 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 	if ( !m_bJabberOnline )
 		return NULL;
 
-	BOOL bIsExtFormat = JGetByte( "ExtendedSearch", TRUE );
+	BOOL bIsExtFormat = m_options.ExtendedSearch;
 
 	char szServerName[100];
 	if ( JGetStaticString( "Jud", NULL, szServerName, sizeof szServerName ))
@@ -946,7 +947,7 @@ int __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescription, 
 	JabberCapsBits jcb = GetResourceCapabilites( item->jid, TRUE );
 
 	// fix for very smart clients, like gajim
-	if ( !JGetByte( "BsDirect", FALSE ) && !JGetByte( "BsProxyManual", FALSE ) ) {
+	if ( !m_options.BsDirect && !m_options.BsProxyManual ) {
 		// disable bytestreams
 		jcb &= ~JABBER_CAPS_BYTESTREAMS;
 	}
@@ -1089,7 +1090,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			// if message sent to groupchat
 			!lstrcmp( msgType, _T("groupchat")) ||
 			// if message delivery check disabled in settings
-			!JGetByte( "MsgAck", FALSE ) || !JGetByte( hContact, "MsgAck", TRUE )) {
+			!m_options.MsgAck || !JGetByte( hContact, "MsgAck", TRUE )) {
 			if ( !lstrcmp( msgType, _T("groupchat")))
 				xmlAddAttr( m, _T("to"), dbv.ptszVal );
 			else {
