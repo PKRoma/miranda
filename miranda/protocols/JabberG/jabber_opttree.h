@@ -37,10 +37,10 @@ class CCtrlTreeOpts : public CCtrlTreeView
 	typedef CCtrlTreeView CSuper;
 
 public:
-	CCtrlTreeOpts( CDlgBase* dlg, int ctrlId, char *szModule );
+	CCtrlTreeOpts( CDlgBase* dlg, int ctrlId );
 	~CCtrlTreeOpts();
 
-	void AddOption(TCHAR *szOption, char *szSetting, BYTE defValue);
+	void AddOption(TCHAR *szOption, CMOption<BYTE> &option);
 
 	BOOL OnNotify(int idCtrl, NMHDR *pnmh);
 	void OnDestroy();
@@ -53,18 +53,15 @@ protected:
 		TCHAR *m_szOptionName;
 		int m_groupId;
 
-		char *m_szSettingName;
-		BYTE m_defValue;
+		CMOption<BYTE> &m_option;
 
 		HTREEITEM m_hItem;
 
-		COptionsItem(TCHAR *szOption, char *szSetting, BYTE defValue);
+		COptionsItem(TCHAR *szOption, CMOption<BYTE> &option);
 		~COptionsItem();
 	};
 
 	LIST<COptionsItem> m_options;
-
-	char *m_szModule;
 
 	void ProcessItemClick(HTREEITEM hti);
 };

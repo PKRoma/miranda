@@ -32,11 +32,10 @@ Last change by : $Author$
 
 enum { IMG_GROUP, IMG_CHECK, IMG_NOCHECK, IMG_RCHECK, IMG_NORCHECK, IMG_GRPOPEN, IMG_GRPCLOSED };
 
-CCtrlTreeOpts::CCtrlTreeOpts(CDlgBase* dlg, int ctrlId, char *szModule):
+CCtrlTreeOpts::CCtrlTreeOpts(CDlgBase* dlg, int ctrlId):
 	CCtrlTreeView(dlg, ctrlId),
 	m_options(5)
 {
-	m_szModule = mir_strdup(szModule);
 }
 
 CCtrlTreeOpts::~CCtrlTreeOpts()
@@ -44,12 +43,11 @@ CCtrlTreeOpts::~CCtrlTreeOpts()
 	for (int i = 0; i < m_options.getCount(); ++i)
 		delete m_options[i];
 	m_options.destroy();
-	mir_free(m_szModule);
 }
 
-void CCtrlTreeOpts::AddOption(TCHAR *szOption, char *szSetting, BYTE defValue)
+void CCtrlTreeOpts::AddOption(TCHAR *szOption, CMOption<BYTE> &option)
 {
-	m_options.insert(new COptionsItem(szOption, szSetting, defValue), m_options.getCount());
+	m_options.insert(new COptionsItem(szOption, option), m_options.getCount());
 }
 
 BOOL CCtrlTreeOpts::OnNotify(int idCtrl, NMHDR *pnmh)
@@ -170,7 +168,7 @@ void CCtrlTreeOpts::OnInit()
 					{
 						tvis.item.lParam = i;
 
-						BYTE val = DBGetContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, m_options[i]->m_defValue);
+						BYTE val = m_options[i]->m_option;
 
 						if (m_options[i]->m_groupId == OPTTREE_CHECK)
 						{
@@ -208,11 +206,7 @@ void CCtrlTreeOpts::OnApply()
 	{
 		TVITEMEX tvi;
 		GetItem(m_options[i]->m_hItem, &tvi);
-
-		if ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK))
-			DBWriteContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, 1);
-		else
-			DBWriteContactSettingByte(NULL, m_szModule, m_options[i]->m_szSettingName, 0);
+		m_options[i]->m_option = ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK)) ? 1 : 0;
 	}
 }
 
@@ -262,18 +256,13 @@ void CCtrlTreeOpts::ProcessItemClick(HTREEITEM hti)
 	SetItem(&tvi);
 }
 
-CCtrlTreeOpts::COptionsItem::COptionsItem(TCHAR *szOption, char *szSetting, BYTE defValue)
+CCtrlTreeOpts::COptionsItem::COptionsItem(TCHAR *szOption, CMOption<BYTE> &option):
+	m_option(option), m_groupId(OPTTREE_CHECK), m_hItem(NULL)
 {
 	m_szOptionName = mir_tstrdup(szOption);
-	m_szSettingName = mir_strdup(szSetting);
-	m_defValue = defValue;
-
-	m_hItem = NULL;
-	m_groupId = OPTTREE_CHECK;
 }
 
 CCtrlTreeOpts::COptionsItem::~COptionsItem()
 {
 	mir_free(m_szOptionName);
-	mir_free(m_szSettingName);
 }

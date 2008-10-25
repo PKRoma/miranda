@@ -779,7 +779,7 @@ public:
 		m_chkProxy(this, IDC_PROXY_MANUAL),
 		m_txtDirect(this, IDC_DIRECT_ADDR),
 		m_txtProxy(this, IDC_PROXY_ADDR),
-		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)
+		m_otvOptions(this, IDC_OPTTREE)
 	{
 		CreateLink(m_chkDirect, proto->m_options.BsDirect);
 		CreateLink(m_chkDirectManual, proto->m_options.BsDirectManual);
@@ -791,28 +791,28 @@ public:
 		m_chkDirectManual.OnChange = Callback(this, &CDlgOptAdvanced::chkDirect_OnChange);
 		m_chkProxy.OnChange = Callback(this, &CDlgOptAdvanced::chkProxy_OnChange);
 
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"), "MsgAck", FALSE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable avatars"), "EnableAvatars", TRUE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"), "LogChatstates", FALSE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence subscription state changes"), "LogPresence", TRUE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence errors"), "LogPresenceErrors", TRUE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"), "EnableUserMood", TRUE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"), "EnableUserTune", FALSE);
-		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user activity receiving"), "EnableUserActivity", TRUE);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Send messages slower, but with full acknowledgement"), m_proto->m_options.MsgAck);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable avatars"), m_proto->m_options.EnableAvatars);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log chat state changes"), m_proto->m_options.LogChatstates);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence subscription state changes"), m_proto->m_options.LogPresence);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Log presence errors"), m_proto->m_options.LogPresenceErrors);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user moods receiving"), m_proto->m_options.EnableUserMood);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user tunes receiving"), m_proto->m_options.EnableUserTune);
+		m_otvOptions.AddOption(LPGENT("Messaging") _T("/") LPGENT("Enable user activity receiving"), m_proto->m_options.EnableUserActivity);
 
-		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"), "Disable3920auth", FALSE);
-		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"), "EnableZlib", FALSE);
-		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable XMPP server ping (XEP-0199)"), "EnableServerXMPPPing", FALSE);
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Disable SASL authentication (for old servers)"), m_proto->m_options.Disable3920auth);
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable stream compression (if possible)"), m_proto->m_options.EnableZlib);
+		m_otvOptions.AddOption(LPGENT("Server options") _T("/") LPGENT("Enable XMPP server ping (XEP-0199)"), m_proto->m_options.EnableServerXMPPPing);
 
-		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"), "EnableRemoteControl", FALSE);
-		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"), "ShowTransport", TRUE);
-		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"), "AutoAdd", TRUE);
-		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"), "AutoAcceptAuthorization", FALSE);
-		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"), "FixIncorrectTimestamps", TRUE);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Enable remote controlling (from another resource of same JID only)"), m_proto->m_options.EnableRemoteControl);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Show transport agents on contact list"), m_proto->m_options.ShowTransport);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically add contact when accept authorization"), m_proto->m_options.AutoAdd);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"), m_proto->m_options.AutoAcceptAuthorization);
+		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"), m_proto->m_options.FixIncorrectTimestamps);
 		
-		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), "ShowOSVersion", TRUE);
-		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), "BsOnlyIBB", FALSE);
-		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept HTTP Authentication requests (XEP-0070)"), "AcceptHttpAuth", TRUE);
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), m_proto->m_options.ShowOSVersion);
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), m_proto->m_options.BsOnlyIBB);
+		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept HTTP Authentication requests (XEP-0070)"), m_proto->m_options.AcceptHttpAuth);
 	}
 
 	void OnInitDialog()
@@ -890,21 +890,21 @@ public:
 		CJabberDlgBase(proto, IDD_OPT_JABBER4, NULL, false),
 		m_txtSlap(this, IDC_TXT_SLAP),
 		m_txtQuit(this, IDC_TXT_QUIT),
-		m_otvOptions(this, IDC_OPTTREE, proto->m_szModuleName)
+		m_otvOptions(this, IDC_OPTTREE)
 	{
 		CreateLink(m_txtSlap, "GcMsgSlap", TranslateTS(JABBER_GC_MSG_SLAP));
 		CreateLink(m_txtQuit, "GcMsgQuit", TranslateTS(JABBER_GC_MSG_QUIT));
 
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),   "AutoAcceptMUC",       FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),   "AutoJoinBookmarks",   FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"), "AutoJoinConferences", FALSE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Hide conference windows at startup"),      "AutoJoinHidden",      TRUE);
-		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),  "IgnoreMUCInvites",    TRUE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),                    "GcLogBans",           TRUE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),           "GcLogConfig",         FALSE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),                  "GcLogAffiliations",   FALSE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),                         "GcLogRoles",          FALSE);
-		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Status changes"),                       "GcLogStatuses",       FALSE);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Autoaccept multiuser chat invitations"),   m_proto->m_options.AutoAcceptMUC);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join bookmarks on login"),   m_proto->m_options.AutoJoinBookmarks);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Automatically join conferences on login"), m_proto->m_options.AutoJoinConferences);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Hide conference windows at startup"),      m_proto->m_options.AutoJoinHidden);
+		m_otvOptions.AddOption(LPGENT("General") _T("/") LPGENT("Do not show multiuser chat invitations"),  m_proto->m_options.IgnoreMUCInvites);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Ban notifications"),                    m_proto->m_options.GcLogBans);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Room configuration changes"),           m_proto->m_options.GcLogConfig);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),                  m_proto->m_options.GcLogAffiliations);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),                         m_proto->m_options.GcLogRoles);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Status changes"),                       m_proto->m_options.GcLogStatuses);
 	}
 
 	static CDlgBase *Create(void *param) { return new CDlgOptGc((CJabberProto *)param); }
