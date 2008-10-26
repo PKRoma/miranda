@@ -353,6 +353,9 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				gt.flags = GT_DEFAULT;
 
 				SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
+				if(start > 1 && pszText[start-1] == ' ' && pszText[start-2] == ':') {
+					start--;
+				}
 				while ( start >0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
 					start--;
 				while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
@@ -383,21 +386,31 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				} else {
 					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szSearchQuery, dat->szSearchResult);
 				}
+				mir_free(pszText);
+				pszText = NULL;
 				mir_free(dat->szSearchResult);
 				dat->szSearchResult = NULL;
 				if (pszName == NULL) {
-					SendMessage(hwnd, EM_SETSEL, start, end);
-					if (end !=start)
+					if (end !=start) {
+						SendMessage(hwnd, EM_SETSEL, start, end);
 						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) dat->szSearchQuery);
+					}
 					mir_free(dat->szSearchQuery);
 					dat->szSearchQuery = NULL;
 				} else {
 					dat->szSearchResult = mir_tstrdup(pszName);
-					SendMessage(hwnd, EM_SETSEL, start, end);
-					if (end !=start)
+					if (end !=start) {
+						if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete) {
+							pszText = mir_alloc((_tcslen(pszName) + 4) * sizeof(TCHAR));
+							_tcscpy(pszText, pszName);
+							_tcscat(pszText, _T(": "));
+							pszName = pszText;
+						}
+						SendMessage(hwnd, EM_SETSEL, start, end);
 						SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
+					}
+					mir_free(pszText);
 				}
-				mir_free(pszText);
 			}
 
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
@@ -409,12 +422,6 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			mir_free(dat->szSearchResult);
             dat->szSearchResult = NULL;
          }
-/*
-         if (dat->szSearchQuery != NULL && wParam != VK_RIGHT && wParam != VK_LEFT) {
-            if (g_Settings.AddColonToAutoComplete && start == 0)
-				SendMessageA(hwnd, EM_REPLACESEL, FALSE, (LPARAM) ": ");
-         }
-*/
          if (wParam == 0x49 && isCtrl && !isAlt) { // ctrl-i (italics)
             CheckDlgButton(GetParent(hwnd), IDC_CHAT_ITALICS, IsDlgButtonChecked(GetParent(hwnd), IDC_CHAT_ITALICS) == BST_UNCHECKED?BST_CHECKED:BST_UNCHECKED);
             SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_CHAT_ITALICS, 0), 0);
