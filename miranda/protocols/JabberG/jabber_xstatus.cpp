@@ -905,7 +905,9 @@ char *ActivityGetFirst(int id)
 
 char *ActivityGetFirst(char *szId)
 {
-	int id = SIZEOF(g_arrActivities);
+	if (!szId) return NULL;
+
+	int id = SIZEOF(g_arrActivities) - 1;
 	bool found_second = false;
 
 	while (id >= 0)
