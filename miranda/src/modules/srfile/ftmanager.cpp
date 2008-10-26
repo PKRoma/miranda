@@ -416,13 +416,34 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-HWND FtMgr_Show()
+HWND FtMgr_Show(bool bForceActivate)
 {
+	bool bJustCreated = false;
 	if (!hwndFtMgr)
+	{
 		hwndFtMgr = CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FTMGR), NULL, FtMgrDlgProc);
+		bJustCreated = true;
+	}
 
-	ShowWindow(hwndFtMgr, SW_SHOW);
-	SetForegroundWindow(hwndFtMgr);
+	if (bForceActivate)
+	{
+		ShowWindow(hwndFtMgr, SW_SHOW);
+		SetForegroundWindow(hwndFtMgr);
+		return hwndFtMgr;
+	}
+
+	if (!bJustCreated && IsWindowVisible(hwndFtMgr))
+		return hwndFtMgr;
+
+	if (DBGetContactSettingByte(NULL,"SRFile","AutoMin",0))
+	{
+		ShowWindow(hwndFtMgr, SW_HIDE);
+		ShowWindow(hwndFtMgr, SW_MINIMIZE);
+	} else
+	{
+		ShowWindow(hwndFtMgr, SW_SHOWNOACTIVATE);
+	}
+
 	return hwndFtMgr;
 }
 
@@ -440,7 +461,8 @@ void FtMgr_ShowPage(int page)
 
 HWND FtMgr_AddTransfer(struct FileDlgData *fdd)
 {
-	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLong(FtMgr_Show(), GWL_USERDATA);
+	bool bForceActivate = fdd->send || !DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0);
+	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLong(FtMgr_Show(bForceActivate), GWL_USERDATA);
 	HWND hwndBox = fdd->send ? dat->hwndOutgoing : dat->hwndIncoming;
 	HWND hwndFt = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
 	ShowWindow(hwndFt, SW_SHOW);

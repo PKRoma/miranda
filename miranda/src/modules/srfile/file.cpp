@@ -247,7 +247,7 @@ static int SRFileModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 int FtMgrShowCommand(WPARAM wParam, LPARAM lParam)
 {
-	FtMgr_Show();
+	FtMgr_Show(true);
 	return 0;
 }
 

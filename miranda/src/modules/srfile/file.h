@@ -110,7 +110,7 @@ int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 #define WM_FT_SELECTPAGE	(WM_APP+4)
 #define WM_FT_CLEANUP		(WM_APP+5)
 
-HWND FtMgr_Show();
+HWND FtMgr_Show(bool bForceActivate);
 void FtMgr_Destroy();
 HWND FtMgr_AddTransfer(struct FileDlgData *dat);
 
