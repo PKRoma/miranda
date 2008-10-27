@@ -29,19 +29,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define VSCAN_CA          4
 
 struct virusscannerinfo {
-	char *szProductName;
-	char *szExeRegPath;
-	char *szExeRegValue;
-	char *szCommandLine;
+	const char *szProductName;
+	const char *szExeRegPath;
+	const char *szExeRegValue;
+	const char *szCommandLine;
 };
 
-static struct virusscannerinfo virusScanners[]={
+static const struct virusscannerinfo virusScanners[]={
 	{"Network Associates/McAfee VirusScan","SOFTWARE\\McAfee\\VirusScan","Scan32EXE","\"%s\" %%f /nosplash /comp /autoscan /autoexit /noboot"},
 	{"Dr Solomon's VirusScan (Network Associates)","SOFTWARE\\Network Associates\\TVD\\VirusScan\\AVConsol\\General","szScannerExe","\"%s\" %%f /uinone /noboot /comp /prompt /autoexit"},
 	{"Norton AntiVirus","SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Navw32.exe",NULL,"\"%s\" %%f /b- /m- /s+ /noresults"},
 	{"Computer Associates/Inoculate IT","Software\\Antivirus","ImageFilename","\"%s\" %%f /display=progress /exit"},
 	{"Computer Associates eTrust","SOFTWARE\\ComputerAssociates\\Anti-Virus\\Resident","VetPath","\"%s\" %%f /display=progress /exit"},
 	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\Components\\101","EXEName","\"%s\" /S /Q %%f"},
+	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\SetupFolders","KAV8","\"%savp.exe\" /S /Q %%f"},
 };
 
 #define M_UPDATEENABLING   (WM_USER+100)
