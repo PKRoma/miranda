@@ -43,6 +43,8 @@ static const struct virusscannerinfo virusScanners[]={
 	{"Computer Associates eTrust","SOFTWARE\\ComputerAssociates\\Anti-Virus\\Resident","VetPath","\"%s\" %%f /display=progress /exit"},
 	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\Components\\101","EXEName","\"%s\" /S /Q %%f"},
 	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\SetupFolders","KAV8","\"%savp.exe\" /S /Q %%f"},
+	{"AntiVir PersonalEdition Classic","SOFTWARE\\Avira\\AntiVir PersonalEdition Classic","Path","\"%savscan.exe\" /GUIMODE=2 /PATH=\"%%f\""},
+	{"ESET NOD32 Antivirus","SOFTWARE\\ESET\\ESET Security\\CurrentVersion\\Info","InstallDir","\"%secls.exe\" /log-all /aind /no-boots /adware /sfx /unsafe /unwanted /heur /adv-heur /action=clean \"%%f\""},
 };
 
 #define M_UPDATEENABLING   (WM_USER+100)
