@@ -177,7 +177,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib eh7.lib comctl32.lib shlwapi.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib comctl32.lib shlwapi.lib oldnames.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -1003,10 +1003,10 @@
 				RelativePath=".\res\rightarrow.ico">
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico">
+				RelativePath=".\res\save.ico">
 			</File>
 			<File
-				RelativePath=".\res\save.ico">
+				RelativePath=".\res\angeli-icons\Save.ico">
 			</File>
 			<File
 				RelativePath=".\res\angeli-icons\SaveXP.ico">
