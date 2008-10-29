@@ -210,7 +210,6 @@ class CDbLink: public CDataLink
 {
 	char *m_szModule;
 	char *m_szSetting;
-	BYTE m_type;
 	bool m_bSigned;
 
 	DWORD m_iDefault;
