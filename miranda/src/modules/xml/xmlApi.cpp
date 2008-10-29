@@ -143,6 +143,11 @@ static LPCTSTR xmlapiGetAttrValue( HXML _n, LPCTSTR attrName )
 	return XMLNode(_n).getAttribute( attrName );
 }
 
+static void xmlapiSetText( HXML _n, LPCTSTR _text )
+{
+	XMLNode(_n).updateText( _text );
+}
+
 static LPTSTR xmlapiToString( HXML _n, int* datalen )
 {
 	return XMLNode(_n).createXMLString( 0, datalen );
@@ -198,6 +203,7 @@ static int GetXmlApi( WPARAM wParam, LPARAM lParam )
 	xi->getName             = xmlapiGetName;
 	xi->getParent           = xmlapiGetParent;
 	xi->getText             = xmlapiGetText;
+	xi->setText             = xmlapiSetText;
 
 	xi->getAttr             = xmlapiGetAttr;
 	xi->getAttrCount        = xmlapiGetAttrCount;

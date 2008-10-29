@@ -49,6 +49,7 @@ typedef struct
 	LPCTSTR ( *getName )( HXML );
 	HXML    ( *getParent )( HXML );
 	LPCTSTR ( *getText )( HXML );
+	void    ( *setText )( HXML, LPCTSTR );
 
 	LPCTSTR ( *getAttr )( HXML, int n );
 	LPCTSTR ( *getAttrName )( HXML, int n );
