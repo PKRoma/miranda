@@ -663,15 +663,6 @@ int __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
     switch (status)
     {
     case ID_STATUS_AWAY:
-        {
-	        DBVARIANT dbv;
-	        if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
-		        awaymsg_request_handler( dbv.pszVal );
-		        DBFreeVariant( &dbv );
-	        }
-        }
-        break;
-
     case ID_STATUS_ONLINE:
 	    ForkThread( &CAimProto::get_online_msg_thread, hContact);
         break;

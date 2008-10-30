@@ -378,7 +378,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					{
 						away_user=1;
 						setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
-						awaymsg_request_handler(buddy);
+//						awaymsg_request_handler(buddy);
 					}
 					DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 					setDword(hContact, AIM_KEY_IT, 0);//erase idle time
