@@ -31,7 +31,7 @@ void CAimProto::broadcast_status(int status)
 		list_received=0;
 		state=0;
 	}
-	ProtoBroadcastAck(m_szModuleName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
+	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
 
 void CAimProto::start_connection(int status)
@@ -494,7 +494,7 @@ char* trim_name(const char* s)
 
 void __cdecl CAimProto::msg_ack_success( void* hContact )
 {
-	ProtoBroadcastAck( m_szModuleName, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 void CAimProto::execute_cmd(const char* arg) 
@@ -1088,6 +1088,11 @@ void CAimProto::setWord( const char* name, WORD value )
 
 void CAimProto::setWord( HANDLE hContact, const char* name, WORD value )
 {	DBWriteContactSettingWord(hContact, m_szModuleName, name, value );
+}
+
+int  CAimProto::sendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam )
+{
+    return ProtoBroadcastAck(m_szModuleName, hContact, type, result, hProcess, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

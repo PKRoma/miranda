@@ -55,7 +55,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 	char* buf = (char*)&ft;
 	if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 	{
-		ProtoBroadcastAck(m_szModuleName,hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+		sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 		Netlib_CloseHandle(hNewConnection);
 		return;
 	}
@@ -74,14 +74,14 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 		if (recvResult == 0)
 			{
 				LOG("P2P: File transfer connection Error: 0");
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
                 Netlib_CloseHandle(hNewConnection);
 				break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
 				LOG("P2P: File transfer connection Error: -1");
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
@@ -114,7 +114,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalFiles=1;
 						pfts.totalProgress=0;
 						pfts.workingDir=wd;
-						ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
+						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 						int bytes;
 						unsigned char buffer[1024*4];
 						unsigned int lNotify=GetTickCount()-500;
@@ -125,22 +125,22 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 							pfts.totalProgress+=bytes;
 							if(GetTickCount()>lNotify+500)
 							{
-								ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
+								sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 								lNotify=GetTickCount();
 							}
 						}
-						ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
+						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 						LOG("P2P: Finished sending file bytes.");
 						fclose(fd);
 					}
-					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					delete[] file;
 					return;
 				}
 				else if(type==0x0204)
 				{
 					LOG("P2P: Buddy says they got the file successfully");
-					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					delete[] file;
 					return;
 				}
@@ -153,7 +153,7 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 					char* buf = (char*)recv_ft;
 					if(Netlib_Send(hNewConnection,buf,sizeof(oft2),0)==SOCKET_ERROR)
 					{
-						ProtoBroadcastAck(m_szModuleName,hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 						Netlib_CloseHandle(hNewConnection);
 						return;
 					}
@@ -206,14 +206,14 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 		if (recvResult == 0)
 			{
 				LOG("P2P: File transfer connection Error: 0");
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
         if (recvResult == SOCKET_ERROR)
 			{
 				LOG("P2P: File transfer connection Error: -1");
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				Netlib_CloseHandle(hNewConnection);
                 break;
             }
@@ -261,7 +261,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 				fwrite(packetRecv.buffer,1,packetRecv.bytesAvailable,fd);
 				pfts.currentFileProgress+=packetRecv.bytesAvailable;
 				pfts.totalProgress+=packetRecv.bytesAvailable;
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
 				if(pfts.totalBytes==pfts.currentFileProgress)
 				{
 
@@ -272,7 +272,7 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 					ft.recv_checksum=_htonl(aim_oft_checksum_file(file));
 					LOG("P2P: We got the file successfully");
 					Netlib_Send(hNewConnection,(char*)&ft,sizeof(oft2),0);
-					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
+					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
 					break;
 				}
 			}

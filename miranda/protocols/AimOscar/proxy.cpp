@@ -39,11 +39,11 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 			{
 				recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
 				if ( recvResult == 0) {
-					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
+					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
 					break;
 				}
 				if ( recvResult == SOCKET_ERROR) {
-					ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
+					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,(HANDLE)hContact,0);
 					break;
 				}
 				if ( recvResult > 0 ) {

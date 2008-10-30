@@ -56,11 +56,11 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 				LOG("We failed to connect to the buddy over the proxy transfer.");
 				char cookie[8];
 				read_cookie(hContact,cookie);
-				ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 				aim_deny_file(hServerConn,seqno,dbv.pszVal,cookie);
 				DBFreeVariant(&dbv);
 			}
-			else ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+			else sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 		}
 	}
 	else if ( force_proxy ) { //we are forcing a proxy
@@ -118,7 +118,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 	char* proxy_ip=(char*)param+sizeof(HANDLE)+8+lstrlenA(sn)+lstrlenA(local_ip)+lstrlenA(verified_ip)+3;
 	unsigned short* port=(unsigned short*)&proxy_ip[lstrlenA(proxy_ip)+1];
 	bool* force_proxy=(bool*)&proxy_ip[lstrlenA(proxy_ip)+1+sizeof(unsigned short)];
-	ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING,hContact, 0);
+	sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING,hContact, 0);
 	if(!*force_proxy)
 	{
 		HANDLE hDirect = aim_peer_connect(verified_ip,*port);

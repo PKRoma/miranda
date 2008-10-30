@@ -173,7 +173,7 @@ void CAimProto::avatar_apply(HANDLE &hContact,char* sn,char* filename)
 		AI.format=PA_FORMAT_BMP;
 	DBWriteContactSettingString( hContact, "ContactPhoto", "File", AI.filename );
 	LOG("Successfully added avatar for %s(%s)",sn,AI.filename);
-	ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
+	sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS,&AI,0);
 }
 
 void detect_image_type(char* stream,char* type_ret)

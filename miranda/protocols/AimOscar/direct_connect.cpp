@@ -35,7 +35,7 @@ void aim_direct_connection_initiated(HANDLE hNewConnection, DWORD dwRemoteIP, CA
 		hContact = ppro->current_rendezvous_accept_user;
 	if(hContact)
 	{
-		ProtoBroadcastAck(ppro->m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED,hContact, 0);
+		ppro->sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED,hContact, 0);
 		file_transfer_type=ppro->getByte(hContact,AIM_KEY_FT,255);//okay now we see if they belong
 	}
 	if(file_transfer_type==1)//we are sending

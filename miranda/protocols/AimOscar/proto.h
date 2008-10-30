@@ -193,6 +193,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   __cdecl awaymsg_request_thread( void* param );
 	void   __cdecl awaymsg_request_limit_thread( void* );
+    void   __cdecl get_online_msg_thread( void* arg );
 
 	void   awaymsg_request_handler(char* sn);
 	void   awaymsg_retrieval_handler(char* sn,char* msg);
@@ -397,6 +398,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   setTString( HANDLE hContact, const char* name, const TCHAR* value );
 	void   setWord( const char* name, WORD value );
 	void   setWord( HANDLE hContact, const char* name, WORD value );
+
+    int    sendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
 };
 
 #endif

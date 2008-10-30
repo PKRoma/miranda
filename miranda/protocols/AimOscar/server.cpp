@@ -555,8 +555,24 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			{
 				if(hContact)
 					for(int i=0;i<tlv.len();i+=(4+tlv.ubyte(i+3)))
-						if(tlv.ushort(i)==0x0001)
+                    {
+                        unsigned short type=tlv.ushort(i);
+						if(type==0x0001)
 							avatar_request_handler(tlv,hContact,buddy,i);
+						else if(type==0x0002)
+                        {
+                            if ((tlv.ubyte(i+2) & 4) && tlv.ubyte(i+3) && tlv.ubyte(i+5))
+                            {
+                                unsigned char len=tlv.ubyte(i+5);
+                                char* msg = tlv.part(i+6,len);
+                      		    DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_SM, msg);
+	                            sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)msg);
+                                delete[] msg;
+                            }
+                            else
+                      		    DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
+                        }
+                    }
 			}
 			else if(tlv.cmp(0x0004))//idle tlv
 			{
@@ -1044,7 +1060,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		else if(recv_file_type==1)//buddy cancelled or denied file transfer
 		{
 			LOG("File transfer cancelled or denied.");
-			ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_DENIED,hContact,0);
+			sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DENIED,hContact,0);
 			deleteSetting(hContact, AIM_KEY_FT);
 		}
 		else if(recv_file_type==2)//buddy accepts our file transfer request
@@ -1079,7 +1095,7 @@ void CAimProto::snac_busted_payload(SNAC &snac)//family 0x0004
 					HANDLE hContact=find_contact(sn);
 					if(hContact)
 					{
-						ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
 						deleteSetting(hContact, AIM_KEY_FT);
 					}
 				}

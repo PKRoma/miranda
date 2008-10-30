@@ -305,7 +305,7 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
 
 	case PFLAGNUM_3:
-		return PF2_SHORTAWAY;
+		return  PF2_ONLINE | PF2_SHORTAWAY;
 
 	case PFLAGNUM_4:
 		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS | PF4_IMSENDUTF;
@@ -349,15 +349,15 @@ void __cdecl CAimProto::basic_search_ack_success( void* p )
     char *sn = normalize_name(( char* )p );
 	if ( sn ) { // normalize it
 		if (strlen(sn) > 32) {
-			ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		}
         else {
 		    PROTOSEARCHRESULT psr;
 		    ZeroMemory(&psr, sizeof(psr));
 		    psr.cbSize = sizeof(psr);
 		    psr.nick = sn;
-		    ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
-		    ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+		    sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		    sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
         }
 	}
 	delete[] sn;
@@ -641,20 +641,45 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetAwayMsg - returns a contact's away message
 
+void __cdecl CAimProto::get_online_msg_thread( void* arg )
+{
+	Sleep( 150 );
+
+	const HANDLE hContact = arg;
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingString( hContact, "CList", "StatusMsg", &dbv )) {
+		sendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )dbv.pszVal );
+		DBFreeVariant( &dbv );
+	}
+	else sendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )0 );
+}
+
 int __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
 {
 	if ( state != 1 )
 		return 0;
 
-	int m_iStatus = getWord( hContact, AIM_KEY_ST, ID_STATUS_OFFLINE );
-	if ( ID_STATUS_AWAY != m_iStatus )
-		return 0;
+	int status = getWord( hContact, AIM_KEY_ST, ID_STATUS_OFFLINE );
+    switch (status)
+    {
+    case ID_STATUS_AWAY:
+        {
+	        DBVARIANT dbv;
+	        if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
+		        awaymsg_request_handler( dbv.pszVal );
+		        DBFreeVariant( &dbv );
+	        }
+        }
+        break;
 
-	DBVARIANT dbv;
-	if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
-		awaymsg_request_handler( dbv.pszVal );
-		DBFreeVariant( &dbv );
-	}
+    case ID_STATUS_ONLINE:
+	    ForkThread( &CAimProto::get_online_msg_thread, hContact);
+        break;
+
+    default:
+        return 0;
+    }
+
 	return 1;
 }
 
@@ -663,7 +688,7 @@ int __cdecl CAimProto::GetAwayMsg( HANDLE hContact )
 
 int __cdecl CAimProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* pre )
 {	
-	ProtoBroadcastAck(m_szModuleName, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)1, (LPARAM)pre->szMessage);
+	sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)1, (LPARAM)pre->szMessage);
 	return 0;
 }
 
