@@ -58,8 +58,8 @@ void __cdecl CIcqProto::icq_LogMessageThread(void* arg)
 		{
 			SAFE_FREE((void**)&err->szMsg);
 			SAFE_FREE((void**)&err);
-			return; // Popup showed successfuly
 		}
+		return; // Popup showed successfuly
 	}
 
 	bErrorVisible = TRUE;
