@@ -19,7 +19,8 @@ HANDLE CAimProto::aim_connect(const char* server, unsigned short port)
 	ncon.szHost = server;
 	ncon.wPort = port;
 	ncon.timeout = 5;
-	ncon.flags = NLOCF_SSL | NLOCF_V2;
+	ncon.flags = NLOCF_V2;
+    if (!getByte( AIM_KEY_DSSL, 0)) ncon.flags |= NLOCF_SSL;
 	LOG("%s:%u", server, port);
 	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
 	return con;

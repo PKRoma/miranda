@@ -106,7 +106,6 @@ struct CAimProto : public PROTO_INTERFACE
 	char* ID_GROUP_KEY;
 	char* FILE_TRANSFER_KEY;
 	
-	CRITICAL_SECTION modeMsgsMutex;
 	CRITICAL_SECTION statusMutex;
 	CRITICAL_SECTION connectionMutex;
 	CRITICAL_SECTION SendingMutex;
@@ -124,8 +123,6 @@ struct CAimProto : public PROTO_INTERFACE
 	unsigned short seqno;//main connection sequence number
 	int state;//m_iStatus of the connection; e.g. whether connected or not
 	int packet_offset;//current offset of main connection client to server packet
-	int initial_status;//start up m_iStatus
-	char* szModeMsg;//away message
 	unsigned short port;
 
 	//Some bools to keep track of different things
@@ -168,6 +165,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//away message retrieval stuff
 	HANDLE hAwayMsgEvent;
+    char* modeMsgs[9];
 
 	//Some Icon handles
 	HANDLE bot_icon;
@@ -198,6 +196,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   awaymsg_request_handler(char* sn);
 	void   awaymsg_retrieval_handler(char* sn,char* msg);
 
+    char**  getStatusMsgLoc( int status );
+
 	//////////////////////////////////////////////////////////////////////////////////////
 	// client.cpp
 
@@ -212,6 +212,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
 	int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
+    int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
 	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
 	int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
@@ -277,6 +278,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
 	int    aim_writefamily(const char *buf,unsigned short &offset,char* out);
 	int    aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
+	int    aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proto.cpp
@@ -350,7 +352,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   remove_ES_icons();
 	void   execute_cmd(const char* arg);
 	char*  strip_special_chars(const char *src,HANDLE hContact);
-	void   assign_modmsg(const char* msg);
 
 	FILE*  open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(HANDLE hContact,char* sn,char* msg);

@@ -95,6 +95,11 @@ char* strldup(const char* src)
     if (src == NULL) return NULL;
     return strldup(src, strlen(src));
 }
+void strlrep(char*& dest, const char* src)
+{
+    if (dest != NULL) delete[] dest;
+    dest = strldup(src);
+}
 
 wchar_t* wcsldup(const wchar_t* src,size_t siz)
 {

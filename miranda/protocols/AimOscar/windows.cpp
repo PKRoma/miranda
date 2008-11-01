@@ -684,11 +684,17 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte( AIM_KEY_CM, 0));//Check Mail
 			CheckDlgButton(hwndDlg, IDC_KA, ppro->getByte( AIM_KEY_KA, 0));//Keep Alive
 			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte( AIM_KEY_DA, 0));//Disable Avatars
+			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte( AIM_KEY_DSSL, 0));//Disable SSL
 		}
 		break;
 
 	case WM_COMMAND:
 		{
+			if (LOWORD(wParam) == IDC_DSSL) 
+			{
+                SetDlgItemTextA(hwndDlg, IDC_HN, 
+                    IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+			}
 			if (LOWORD(wParam) == IDC_SVRRESET) 
 			{
 				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
@@ -767,7 +773,11 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				ppro->setByte( AIM_KEY_DA, IsDlgButtonChecked(hwndDlg, IDC_DA) != 0);
 				//Disable Avatar
 
-				//Force Proxy Transfer
+				//Disable SSL
+				ppro->setByte( AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
+				//Disable SSL
+
+                //Force Proxy Transfer
 				ppro->setByte( AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
 				//End Force Proxy Transfer
 

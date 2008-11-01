@@ -1,13 +1,6 @@
 #include "aim.h"
 #include "utility.h"
 
-void CAimProto::assign_modmsg(const char* msg)
-{
-	delete[] szModeMsg;
-	szModeMsg=new char[lstrlenA(msg)+1];
-	memcpy(szModeMsg,msg,lstrlenA(msg)+1);
-}
-
 void CAimProto::broadcast_status(int status)
 {
 	LOG("Broadcast Status: %d",status);
@@ -70,7 +63,7 @@ void CAimProto::start_connection(int status)
 
 		if ( hServerConn )
 		{
-			initial_status = status;
+			m_iDesiredStatus = status;
 			aim_connection_authorization( this );
 		}
 		else broadcast_status(ID_STATUS_OFFLINE);

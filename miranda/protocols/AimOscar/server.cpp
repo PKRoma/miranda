@@ -110,160 +110,36 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 	{
 		aim_set_icbm(hServerConn,seqno);
 		aim_set_caps(hServerConn,seqno);
-		switch(initial_status)
+
+        char** msgptr = getStatusMsgLoc(m_iDesiredStatus);
+		switch(m_iDesiredStatus)
 		{
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
-			{
-				broadcast_status(ID_STATUS_ONLINE);
-				aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
-				aim_set_away(hServerConn,seqno,NULL);
-				break;
-			}
-		case ID_STATUS_INVISIBLE:
-			{
-				broadcast_status(ID_STATUS_INVISIBLE);
-				aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-				break;
-			}
-		case ID_STATUS_AWAY:
+			broadcast_status(ID_STATUS_ONLINE);
+			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
+			aim_set_statusmsg(hServerConn,seqno,*msgptr);
+			break;
+
+        case ID_STATUS_INVISIBLE:
+			broadcast_status(ID_STATUS_INVISIBLE);
+			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
+			aim_set_statusmsg(hServerConn,seqno,*msgptr);
+			break;
+
+        case ID_STATUS_AWAY:
 		case ID_STATUS_OUTTOLUNCH:
 		case ID_STATUS_NA:
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:
 		case ID_STATUS_ONTHEPHONE:
-			{
-				broadcast_status(ID_STATUS_AWAY);
-				if(!szModeMsg)
-				{
-					DBVARIANT dbv;
-					if(initial_status==ID_STATUS_AWAY)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_AD,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_AM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-					else if(initial_status==ID_STATUS_DND)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_DI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_DD,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_DM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-					else if(initial_status==ID_STATUS_OCCUPIED)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_OI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_OD,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_OM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-					else if(initial_status==ID_STATUS_ONTHEPHONE)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_PI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_PD,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_PM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-					else if(initial_status==ID_STATUS_NA)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_NI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_ND,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else if(!DBGetContactSetting(NULL,MOD_KEY_SA,OTH_KEY_NM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-					else if(initial_status==ID_STATUS_OUTTOLUNCH)
-					{
-						if(!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_LI,0))
-						{
-							if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_LD,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else if(!DBGetContactSettingString(NULL,MOD_KEY_SA,OTH_KEY_LM,&dbv))
-							{
-								assign_modmsg(dbv.pszVal);
-								DBFreeVariant(&dbv);
-							}
-							else
-								assign_modmsg(DEFAULT_AWAY_MSG);
-						}
-						else
-							assign_modmsg(DEFAULT_AWAY_MSG);
-					}
-				}
-					aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
-					aim_set_away(hServerConn,seqno,szModeMsg);
-
-			}
+			broadcast_status(ID_STATUS_AWAY);
+			aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
+            aim_set_away(hServerConn,seqno, *msgptr ? *msgptr : DEFAULT_AWAY_MSG);
+            break;
 		}
-		if(getByte( AIM_KEY_II,0))
+
+        if(getByte( AIM_KEY_II,0))
 		{
 			unsigned long time = getDword( AIM_KEY_IIT, 0);
 			aim_set_idle(hServerConn,seqno,time*60);
@@ -380,7 +256,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
 //						awaymsg_request_handler(buddy);
 					}
-					DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 					setDword(hContact, AIM_KEY_IT, 0);//erase idle time
 					setDword(hContact, AIM_KEY_OT, 0);//erase online time
 				}
@@ -849,7 +724,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				recv_file_type=snac.ushort(offset);
 				icbm_cookie=snac.part(offset+2,8);
-				if(cap_cmp(snac.val(offset+10),AIM_CAP_SEND_FILES))//is it a file transfer request?
+				if(cap_cmp(snac.val(offset+10),AIM_CAP_FILE_TRANSFER))//is it a file transfer request?
 					return;//not a file transfer
 				hContact=find_contact(sn);
 				if(!hContact)
@@ -945,11 +820,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
 				unsigned long away_time = getDword(AIM_KEY_LA, 0);
-				if(away_time>msg_time&&szModeMsg&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
+				if(away_time>msg_time&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
 				{
-					char* temp=new char[lstrlenA(szModeMsg)+20];
-					memcpy(temp,szModeMsg,lstrlenA(szModeMsg)+1);
-					char* s_msg=strip_special_chars(temp,hContact);
+	                char** msgptr = getStatusMsgLoc(m_iStatus);
+                    char* s_msg=strip_special_chars(*msgptr?*msgptr:DEFAULT_AWAY_MSG,hContact);
 					char* temp2=new char[lstrlenA(s_msg)+20];
 					mir_snprintf(temp2,lstrlenA(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
 					DBEVENTINFO dbei;
@@ -963,7 +837,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
-					delete[] temp;
 					delete[] temp2;
 					delete[] s_msg;
 				}

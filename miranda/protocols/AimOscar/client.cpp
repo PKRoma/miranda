@@ -215,22 +215,24 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 		buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+lstrlenA(AIM_MSG_TYPE)];
 	}
 	char temp[AIM_CAPS_LENGTH*50];
-	memcpy(temp,AIM_CAP_ICHAT,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN3,AIM_CAPS_LENGTH);
+	memcpy(temp,AIM_CAP_SHORT_CAPS,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HOST_STATUS_TEXT_AWARE,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNA,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNB,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWND,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SEND_FILES,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ROUTER_FIND,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ADDINS,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RECEIVE_FILES,AIM_CAPS_LENGTH);
+	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_SHARING,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHANNEL_TWO,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SUPPORT,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN4,AIM_CAPS_LENGTH);
 	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN1,AIM_CAPS_LENGTH);
@@ -286,50 +288,13 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *ms
 	}
 }
 
-int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
-{
-	unsigned short offset=0;
-	char* html_msg=0;
-	int msg_size=0;
-	if(msg!=NULL)
-	{
-		html_msg=strldup(msg);
-		setDword( AIM_KEY_LA, (DWORD)time(NULL));
-		char* smsg=strip_carrots(html_msg);
-		delete[] html_msg;
-		html_msg=strip_linebreaks(smsg);
-		delete[] smsg;
-		msg_size=lstrlenA(html_msg);
-	}
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*2+lstrlenA(AIM_MSG_TYPE)+msg_size];
-	aim_writesnac(0x02,0x04,6,offset,buf);
-	aim_writetlv(0x03,(unsigned short)lstrlenA(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
-	if(msg!=NULL)
-	{
-		aim_writetlv(0x04,(unsigned short)lstrlenA(html_msg),html_msg,offset,buf);
-		delete[] html_msg;
-	}
-	else
-		aim_writetlv(0x04,0,0,offset,buf);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] buf;
-		return 0;
-	}
-	else
-	{
-		delete[] buf;
-		return -1;
-	}
-}
-
-int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag)
+int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* status,const char* status_flag)
 {
 	unsigned short offset=0;
 	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2];
 	char temp[4];
 	memcpy(temp,status_flag,2);
-	memcpy(&temp[sizeof(status_flag)-2],m_iStatus,2);
+	memcpy(&temp[sizeof(status_flag)-2],status,2);
 	aim_writesnac(0x01,0x1E,6,offset,buf);
 	aim_writetlv(0x06,4,temp,offset,buf);
 	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
@@ -611,19 +576,19 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_SEND_FILES)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_FILE_TRANSFER)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
 
-	char* msg_frag=new char[TLV_HEADER_SIZE*50+sizeof(AIM_CAP_SEND_FILES)+lstrlenA(descr)+lstrlenA(file_name)];
+	char* msg_frag=new char[TLV_HEADER_SIZE*50+sizeof(AIM_CAP_FILE_TRANSFER)+lstrlenA(descr)+lstrlenA(file_name)];
 	unsigned short frag_offset=0;
 	{
 		aim_writegeneric(2,"\0\0",frag_offset,msg_frag);//request type
 		aim_writegeneric(8,icbm_cookie,frag_offset,msg_frag);//cookie
-		aim_writegeneric(AIM_CAPS_LENGTH,AIM_CAP_SEND_FILES,frag_offset,msg_frag);
+		aim_writegeneric(AIM_CAPS_LENGTH,AIM_CAP_FILE_TRANSFER,frag_offset,msg_frag);
 		request_num=_htons(request_num);
 		aim_writetlv(0x0a,2,(char*)&request_num,frag_offset,msg_frag);//request number
 		aim_writetlv(0x0f,0,0,frag_offset,msg_frag);
@@ -695,9 +660,9 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	char temp[]="\0\x0a\0\x02\0\x01\0\x0f\0\0\0\x0e\0\x02\x65\x6e\0\x0d\0\x08us-ascii\0\x0c";
-	char* msg_frag=new char[75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)];
+	char* msg_frag=new char[75+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)];
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+86+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+86+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+lstrlenA(descr)+lstrlenA(file_name)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -707,45 +672,45 @@ int CAimProto::aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char
 	//0x05 tlv data begin
 	memcpy(&msg_frag[0],"\0\0",2);
 	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-	memcpy(&msg_frag[9+sizeof(AIM_CAP_SEND_FILES)],temp,sizeof(temp));	
+	memcpy(&msg_frag[10],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
+	memcpy(&msg_frag[9+sizeof(AIM_CAP_FILE_TRANSFER)],temp,sizeof(temp));	
 	unsigned short descr_size =_htons((unsigned short)lstrlenA(descr));
-	memcpy(&msg_frag[8+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],(char*)&descr_size,2);
+	memcpy(&msg_frag[8+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)],(char*)&descr_size,2);
 	descr_size =_htons(descr_size);
-	memcpy(&msg_frag[10+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)],descr,descr_size);
-	memcpy(&msg_frag[10+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x02\0\x04",4);
+	memcpy(&msg_frag[10+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)],descr,descr_size);
+	memcpy(&msg_frag[10+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x02\0\x04",4);
 
 	unsigned long lip=_htonl(proxy_ip);
 	char *ip=(char*)&lip;
-	memcpy(&msg_frag[14+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],ip,4);
-	memcpy(&msg_frag[18+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x16\0\x04",4);
+	memcpy(&msg_frag[14+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],ip,4);
+	memcpy(&msg_frag[18+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x16\0\x04",4);
 	unsigned long bw_lip=~lip;
 	char* bw_ip=(char*)&bw_lip;
-	memcpy(&msg_frag[22+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],bw_ip,4);
+	memcpy(&msg_frag[22+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],bw_ip,4);
 
-	memcpy(&msg_frag[26+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x03\0\x04",4);
-	memcpy(&msg_frag[30+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],ip,4);
+	memcpy(&msg_frag[26+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x03\0\x04",4);
+	memcpy(&msg_frag[30+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],ip,4);
 
 
 	unsigned short lport=_htons(port);
-	memcpy(&msg_frag[34+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x05\0\x02",4);
+	memcpy(&msg_frag[34+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x05\0\x02",4);
 	char *port=(char*)&lport;
-	memcpy(&msg_frag[38+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],port,2);
+	memcpy(&msg_frag[38+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],port,2);
 	unsigned short bw_lport=~lport;
-	memcpy(&msg_frag[40+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x17\0\x02",4);
+	memcpy(&msg_frag[40+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x17\0\x02",4);
 	char *bw_port=(char*)&bw_lport;
-	memcpy(&msg_frag[44+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],bw_port,2);
+	memcpy(&msg_frag[44+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],bw_port,2);
 
-	memcpy(&msg_frag[46+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x10\0\0\x27\x11",6);
+	memcpy(&msg_frag[46+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x10\0\0\x27\x11",6);
 	unsigned short packet_size=_htons(9+(unsigned short)lstrlenA(file_name));
-	memcpy(&msg_frag[52+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&packet_size,2);
-	memcpy(&msg_frag[54+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],"\0\x01\0\x01",4);
+	memcpy(&msg_frag[52+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],(char*)&packet_size,2);
+	memcpy(&msg_frag[54+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],"\0\x01\0\x01",4);
 	total_bytes=_htonl(total_bytes);
-	memcpy(&msg_frag[58+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],(char*)&total_bytes,4);
-	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size],file_name,lstrlenA(file_name));
-	memcpy(&msg_frag[62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\0",1);
-	memcpy(&msg_frag[63+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\x27\x12\0\x08us-ascii",12);
-	aim_writetlv(0x05,(unsigned short)(75+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+descr_size+lstrlenA(file_name)),msg_frag,offset,buf);
+	memcpy(&msg_frag[58+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],(char*)&total_bytes,4);
+	memcpy(&msg_frag[62+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size],file_name,lstrlenA(file_name));
+	memcpy(&msg_frag[62+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\0",1);
+	memcpy(&msg_frag[63+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size+lstrlenA(file_name)],"\x27\x12\0\x08us-ascii",12);
+	aim_writetlv(0x05,(unsigned short)(75+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+descr_size+lstrlenA(file_name)),msg_frag,offset,buf);
 	//end huge ass tlv hell
 	}
 	char cip[20];
@@ -762,9 +727,9 @@ int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &se
 {	
 	unsigned short offset=0;
 	char temp[]="\0\x0a\0\x02\0\x02\0\x02\0\x04";
-	char* msg_frag=new char[51+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)];
+	char* msg_frag=new char[51+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)];
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+62+sizeof(AIM_CAP_SEND_FILES)+sizeof(temp)+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+62+sizeof(AIM_CAP_FILE_TRANSFER)+sizeof(temp)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -774,26 +739,26 @@ int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &se
 	//0x05 tlv data begin
 	memcpy(&msg_frag[0],"\0\0",2);
 	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-	memcpy(&msg_frag[9+sizeof(AIM_CAP_SEND_FILES)],temp,sizeof(temp));
+	memcpy(&msg_frag[10],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
+	memcpy(&msg_frag[9+sizeof(AIM_CAP_FILE_TRANSFER)],temp,sizeof(temp));
 	unsigned long proxy_ip=_htonl(InternalIP);
 	char *ip=(char*)&proxy_ip;
-	memcpy(&msg_frag[19+sizeof(AIM_CAP_SEND_FILES)],ip,4);
-	memcpy(&msg_frag[23+sizeof(AIM_CAP_SEND_FILES)],"\0\x16\0\x04",4);
+	memcpy(&msg_frag[19+sizeof(AIM_CAP_FILE_TRANSFER)],ip,4);
+	memcpy(&msg_frag[23+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x16\0\x04",4);
 	unsigned long bw_lip=~proxy_ip;
 	char* bw_ip=(char*)&bw_lip;
-	memcpy(&msg_frag[27+sizeof(AIM_CAP_SEND_FILES)],bw_ip,4);
-	memcpy(&msg_frag[31+sizeof(AIM_CAP_SEND_FILES)],"\0\x03\0\x04",4);
-	memcpy(&msg_frag[35+sizeof(AIM_CAP_SEND_FILES)],ip,4);
+	memcpy(&msg_frag[27+sizeof(AIM_CAP_FILE_TRANSFER)],bw_ip,4);
+	memcpy(&msg_frag[31+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x03\0\x04",4);
+	memcpy(&msg_frag[35+sizeof(AIM_CAP_FILE_TRANSFER)],ip,4);
 	unsigned short lport=_htons(LocalPort);
-	memcpy(&msg_frag[39+sizeof(AIM_CAP_SEND_FILES)],"\0\x05\0\x02",4);
+	memcpy(&msg_frag[39+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x05\0\x02",4);
 	char *port=(char*)&lport;
-	memcpy(&msg_frag[43+sizeof(AIM_CAP_SEND_FILES)],port,2);
+	memcpy(&msg_frag[43+sizeof(AIM_CAP_FILE_TRANSFER)],port,2);
 	unsigned short bw_lport=~lport;
-	memcpy(&msg_frag[45+sizeof(AIM_CAP_SEND_FILES)],"\0\x17\0\x02",4);
+	memcpy(&msg_frag[45+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x17\0\x02",4);
 	char *bw_port=(char*)&bw_lport;
-	memcpy(&msg_frag[49+sizeof(AIM_CAP_SEND_FILES)],bw_port,2);
-	aim_writetlv(0x05,(51+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
+	memcpy(&msg_frag[49+sizeof(AIM_CAP_FILE_TRANSFER)],bw_port,2);
+	aim_writetlv(0x05,(51+sizeof(AIM_CAP_FILE_TRANSFER)),msg_frag,offset,buf);
 	}
 	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 	delete[] msg_frag;
@@ -804,9 +769,9 @@ int CAimProto::aim_file_redirected_request(HANDLE hServerConn,unsigned short &se
 int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port)//used when a direct & redirected connection failed so we request a proxy connection
 {	
 	unsigned short offset=0;
-	char* msg_frag=new char[47+sizeof(AIM_CAP_SEND_FILES)+10];
+	char* msg_frag=new char[47+sizeof(AIM_CAP_FILE_TRANSFER)+10];
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+58+sizeof(AIM_CAP_SEND_FILES)+10+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+58+sizeof(AIM_CAP_FILE_TRANSFER)+10+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -816,29 +781,29 @@ int CAimProto::aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,c
 	//0x05 tlv data begin
 	memcpy(&msg_frag[0],"\0\0",2);
 	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
+	memcpy(&msg_frag[10],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
 	char temp[10];
 	memcpy(temp,"\0\x0a\0\x02\0",5);
 	memcpy(&temp[5],&request_num,1);
 	memcpy(&temp[6],"\0\x02\0\x04",4);
-	memcpy(&msg_frag[9+sizeof(AIM_CAP_SEND_FILES)],temp,sizeof(temp));
+	memcpy(&msg_frag[9+sizeof(AIM_CAP_FILE_TRANSFER)],temp,sizeof(temp));
 	proxy_ip=_htonl(proxy_ip);
 	char *ip=(char*)&proxy_ip;
-	memcpy(&msg_frag[19+sizeof(AIM_CAP_SEND_FILES)],ip,4);
-	memcpy(&msg_frag[23+sizeof(AIM_CAP_SEND_FILES)],"\0\x16\0\x04",4);
+	memcpy(&msg_frag[19+sizeof(AIM_CAP_FILE_TRANSFER)],ip,4);
+	memcpy(&msg_frag[23+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x16\0\x04",4);
 	unsigned long bw_lip=~proxy_ip;
 	char* bw_ip=(char*)&bw_lip;
-	memcpy(&msg_frag[27+sizeof(AIM_CAP_SEND_FILES)],bw_ip,4);
+	memcpy(&msg_frag[27+sizeof(AIM_CAP_FILE_TRANSFER)],bw_ip,4);
 	unsigned short lport=_htons(port);
-	memcpy(&msg_frag[31+sizeof(AIM_CAP_SEND_FILES)],"\0\x05\0\x02",4);
+	memcpy(&msg_frag[31+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x05\0\x02",4);
 	char *port=(char*)&lport;
-	memcpy(&msg_frag[35+sizeof(AIM_CAP_SEND_FILES)],port,2);
+	memcpy(&msg_frag[35+sizeof(AIM_CAP_FILE_TRANSFER)],port,2);
 	unsigned short bw_lport=~lport;
-	memcpy(&msg_frag[37+sizeof(AIM_CAP_SEND_FILES)],"\0\x17\0\x02",4);
+	memcpy(&msg_frag[37+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x17\0\x02",4);
 	char *bw_port=(char*)&bw_lport;
-	memcpy(&msg_frag[41+sizeof(AIM_CAP_SEND_FILES)],bw_port,2);
-	memcpy(&msg_frag[43+sizeof(AIM_CAP_SEND_FILES)],"\0\x10\0\0",4);
-	aim_writetlv(0x05,(47+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
+	memcpy(&msg_frag[41+sizeof(AIM_CAP_FILE_TRANSFER)],bw_port,2);
+	memcpy(&msg_frag[43+sizeof(AIM_CAP_FILE_TRANSFER)],"\0\x10\0\0",4);
+	aim_writetlv(0x05,(47+sizeof(AIM_CAP_FILE_TRANSFER)),msg_frag,offset,buf);
 	}
 	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 	delete[] msg_frag;
@@ -850,9 +815,9 @@ int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn
 {	
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
-	char msg_frag[10+sizeof(AIM_CAP_SEND_FILES)];
+	char msg_frag[10+sizeof(AIM_CAP_FILE_TRANSFER)];
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
+	char* buf=new char[SNAC_SIZE+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_FILE_TRANSFER)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -862,8 +827,8 @@ int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn
 	//0x05 tlv data begin
 	memcpy(&msg_frag[0],"\0\x02",2);//accept
 	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-	aim_writetlv(0x05,(9+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
+	memcpy(&msg_frag[10],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
+	aim_writetlv(0x05,(9+sizeof(AIM_CAP_FILE_TRANSFER)),msg_frag,offset,buf);
 	//end tlv
 	}
 	LOG("Accepting a file transfer.");
@@ -876,9 +841,9 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 {	
 	unsigned short offset=0;
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
-	char msg_frag[10+sizeof(AIM_CAP_SEND_FILES)];
+	char msg_frag[10+sizeof(AIM_CAP_FILE_TRANSFER)];
 	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE*2+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_SEND_FILES)+sn_length];
+	char* buf=new char[SNAC_SIZE*2+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_FILE_TRANSFER)+sn_length];
 	aim_writesnac(0x04,0x06,6,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
@@ -888,8 +853,8 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	//0x05 tlv data begin
 	memcpy(&msg_frag[0],"\0\x01",2);//deny or cancel
 	memcpy(&msg_frag[2],icbm_cookie,8);
-	memcpy(&msg_frag[10],AIM_CAP_SEND_FILES,sizeof(AIM_CAP_SEND_FILES));
-	aim_writetlv(0x05,(9+sizeof(AIM_CAP_SEND_FILES)),msg_frag,offset,buf);
+	memcpy(&msg_frag[10],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
+	aim_writetlv(0x05,(9+sizeof(AIM_CAP_FILE_TRANSFER)),msg_frag,offset,buf);
 	//end tlv
 	}
 	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;

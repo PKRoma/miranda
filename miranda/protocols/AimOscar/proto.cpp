@@ -21,7 +21,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
 
-	InitializeCriticalSection( &modeMsgsMutex );
 	InitializeCriticalSection( &statusMutex );
 	InitializeCriticalSection( &connectionMutex );
 	InitializeCriticalSection( &SendingMutex );
@@ -58,14 +57,15 @@ CAimProto::~CAimProto()
 	Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibPeer);
 
-	DeleteCriticalSection(&modeMsgsMutex);
 	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
 	DeleteCriticalSection(&avatarMutex);
 
+    for (int i=0; i<9; ++i)
+        if (modeMsgs[i]) delete[] modeMsgs[i];
+
 	delete[] CWD;
-	delete[] szModeMsg;
 	delete[] COOKIE;
 	delete[] MAIL_COOKIE;
 	delete[] AVATAR_COOKIE;
@@ -305,7 +305,7 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
 
 	case PFLAGNUM_3:
-		return  PF2_ONLINE | PF2_SHORTAWAY;
+		return  PF2_ONLINE | PF2_SHORTAWAY | PF2_INVISIBLE;
 
 	case PFLAGNUM_4:
 		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTIDLE | PF4_AVATARS | PF4_IMSENDUTF;
@@ -586,21 +586,25 @@ void CAimProto::SetStatusWorker( int iNewStatus )
 	EnterCriticalSection( &statusMutex );
 	start_connection( iNewStatus );
 	if ( state == 1 ) {
+	    char** msgptr = getStatusMsgLoc(iNewStatus);
 		switch( iNewStatus ) {
 		case ID_STATUS_OFFLINE:
+			aim_set_away(hServerConn,seqno,NULL);//unset away message
+			aim_set_statusmsg(hServerConn,seqno,NULL);//unset away message
 			broadcast_status(ID_STATUS_OFFLINE);
 			break;
 
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
-			aim_set_away(hServerConn,seqno,NULL);//unset away message
 			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis
+			aim_set_away(hServerConn,seqno,NULL);//unset away message
 			break;
 
 		case ID_STATUS_INVISIBLE:
 			broadcast_status(ID_STATUS_INVISIBLE);
 			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
+			aim_set_away(hServerConn,seqno,NULL);//unset away message
 			break;
 
 		case ID_STATUS_AWAY:
@@ -611,8 +615,7 @@ void CAimProto::SetStatusWorker( int iNewStatus )
 		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_AWAY);
 			if(m_iStatus != ID_STATUS_AWAY) {
-				assign_modmsg(DEFAULT_AWAY_MSG);
-				aim_set_away(hServerConn,seqno,szModeMsg);//set actual away message
+                aim_set_away(hServerConn,seqno,*msgptr?*msgptr:DEFAULT_AWAY_MSG);//set actual away message
 				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 			}
 			//see SetAwayMsg for m_iStatus away
@@ -647,7 +650,7 @@ void __cdecl CAimProto::get_online_msg_thread( void* arg )
 
 	const HANDLE hContact = arg;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingString( hContact, "CList", "StatusMsg", &dbv )) {
+	if ( !DBGetContactSettingString( hContact, MOD_KEY_CL, OTH_KEY_SM, &dbv )) {
 		sendBroadcast( hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, ( HANDLE )1, ( LPARAM )dbv.pszVal );
 		DBFreeVariant( &dbv );
 	}
@@ -696,22 +699,30 @@ int __cdecl CAimProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char
 
 int __cdecl CAimProto::SetAwayMsg( int status, const char* msg )
 {
-	EnterCriticalSection(&modeMsgsMutex);
-	if ( state == 1 )
+	char** msgptr = getStatusMsgLoc(status);
+	if (msgptr==NULL) return 1;
+
+	strlrep(*msgptr, msg);
+
+	if ( state == 1 && status == m_iStatus)
+    {
 		switch( status ) {
-		case ID_STATUS_AWAY:
+		case ID_STATUS_ONLINE:
+		case ID_STATUS_FREECHAT:
+		case ID_STATUS_INVISIBLE:
+            aim_set_statusmsg( hServerConn, seqno, *msgptr );
+            break;
+
+        case ID_STATUS_AWAY:
 		case ID_STATUS_OUTTOLUNCH:
 		case ID_STATUS_NA:
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:
 		case ID_STATUS_ONTHEPHONE:
-			if ( !msg )
-				msg = ( const char* )&DEFAULT_AWAY_MSG;
-
-			assign_modmsg(( char* )msg );
-			aim_set_away( hServerConn, seqno, szModeMsg ); //set actual away message
+            aim_set_away( hServerConn, seqno, *msgptr?*msgptr:DEFAULT_AWAY_MSG); //set actual away message
+            break;
 		}
-	LeaveCriticalSection(&modeMsgsMutex);
+    }
 	return 0;
 }
 
