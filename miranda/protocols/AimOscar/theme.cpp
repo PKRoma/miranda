@@ -136,8 +136,8 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
 
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
-	char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-	mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	char* item= new char[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	if ( !getWord((HANDLE)wParam, item, 0 ) && state == 1 )
 		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
 	else

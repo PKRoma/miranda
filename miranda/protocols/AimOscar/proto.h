@@ -122,7 +122,6 @@ struct CAimProto : public PROTO_INTERFACE
 	char *password;
 	unsigned short seqno;//main connection sequence number
 	int state;//m_iStatus of the connection; e.g. whether connected or not
-	int packet_offset;//current offset of main connection client to server packet
 	unsigned short port;
 
 	//Some bools to keep track of different things
@@ -156,7 +155,6 @@ struct CAimProto : public PROTO_INTERFACE
 	//Some mail connection stuff
 	HANDLE hMailConn;
 	unsigned short mail_seqno;
-	int mail_packet_offset;
 	
 	//avatar connection stuff
 	HANDLE hAvatarConn;

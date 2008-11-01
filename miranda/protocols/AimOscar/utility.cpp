@@ -126,8 +126,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 {
 	char* tgroup=trim_name(group);	
 	bool group_exist=1;
-	char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
-	mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+	char* groupNum= new char[sizeof(AIM_KEY_GI)+10];
+	mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 	unsigned short old_group_id = getWord(hContact, groupNum, 0);		
 	delete[] groupNum;
 	if(old_group_id)
@@ -143,8 +143,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 			}
 			DBFreeVariant(&dbv);
 	}
-	char* buddyNum= new char[lstrlenA(AIM_KEY_BI)+10];
-	mir_snprintf(buddyNum,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	char* buddyNum= new char[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(buddyNum,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	unsigned short item_id = getWord(hContact, buddyNum, 0);
 	delete[] buddyNum;
 	char* lowercased_group=lowercase_name(tgroup);
@@ -165,8 +165,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 		DBVARIANT dbv;
 		if(!getString(hContact, AIM_KEY_SN,&dbv))
 		{
-			char* groupNum= new char[lstrlenA(AIM_KEY_GI)+10];
-			mir_snprintf(groupNum,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* groupNum= new char[sizeof(AIM_KEY_GI)+10];
+			mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			setWord(hContact, groupNum, new_group_id);
 			unsigned short user_id_array_size;
 			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
@@ -207,8 +207,8 @@ void CAimProto::add_contacts_to_groups()
 		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			//MessageBox( NULL, "Matching contact...making a groupid key...", m_szModuleName, MB_OK );
-			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
-			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
+			char* group= new char[sizeof(AIM_KEY_GI)+10];
+			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, m_szModuleName, MB_OK );
 			unsigned short group_id=(unsigned short)getWord(hContact, group,0);	
 			delete[] group;
@@ -560,8 +560,8 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 				int i=1;
 				for(;;)
 				{
-					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					char* item= new char[sizeof(AIM_KEY_BI)+10];
+					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=(unsigned short)getWord(hContact, item,0))
 					{
 						if(item_id==id)
@@ -586,8 +586,8 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		}
 		if(!used_id)
 		{
-			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+			char* item= new char[sizeof(AIM_KEY_BI)+10];
+			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 			setWord(hbuddy, item, id);
 			delete[] item;
 			return id;
@@ -609,10 +609,10 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 				int i=1;
 				for(;;)
 				{
-					char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-					char* group= new char[lstrlenA(AIM_KEY_GI)+10];
-					mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+					char* item= new char[sizeof(AIM_KEY_BI)+10];
+					char* group= new char[sizeof(AIM_KEY_GI)+10];
+					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+					mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 					if(unsigned short user_group_id=(unsigned short)getWord(hContact, group,0))
 					{
 						if(group_id==user_group_id)

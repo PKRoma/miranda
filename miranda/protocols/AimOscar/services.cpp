@@ -111,10 +111,10 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 		int i=1;
 		for(;;)
 		{
-			char* item= new char[lstrlenA(AIM_KEY_BI)+10];
-			char* group= new char[lstrlenA(AIM_KEY_GI)+10];
-			mir_snprintf(item,lstrlenA(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,lstrlenA(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+			char* item= new char[sizeof(AIM_KEY_BI)+10];
+			char* group= new char[sizeof(AIM_KEY_GI)+10];
+			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if ( unsigned short item_id=(unsigned short)getWord((HANDLE)wParam, item, 0)) {
 				unsigned short group_id=(unsigned short)getWord((HANDLE)wParam, group, 0);
 				if(group_id)

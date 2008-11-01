@@ -96,13 +96,14 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
 	nlu.szSettingsModule = m_szModuleName;
-	nlu.szDescriptiveName = "AOL Instant Messenger server connection";
+    mir_snprintf(store, sizeof(store), "%s server connection", m_szModuleName);
+	nlu.szDescriptiveName = store;
 	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 
 	char szP2P[128];
 	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-	nlu.szDescriptiveName = "AOL Instant Messenger Client-to-client connection";
+    mir_snprintf(store, sizeof(store), "%s Client-to-client connection", m_szModuleName);
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
