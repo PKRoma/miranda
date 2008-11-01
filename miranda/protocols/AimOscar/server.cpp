@@ -823,8 +823,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				{
 	                char** msgptr = getStatusMsgLoc(m_iStatus);
                     char* s_msg=strip_special_chars(*msgptr?*msgptr:DEFAULT_AWAY_MSG,hContact);
-					char* temp2=new char[lstrlenA(s_msg)+20];
-					mir_snprintf(temp2,lstrlenA(s_msg)+20,"%s %s",Translate("[Auto-Response]:"),s_msg);
+                    size_t temp2sz=strlen(s_msg)+20;
+					char* temp2=new char[temp2sz];
+					temp2sz = mir_snprintf(temp2,temp2sz,"%s %s",Translate("[Auto-Response]:"),s_msg);
 					DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
@@ -832,7 +833,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.timestamp = (DWORD)time(NULL);
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = lstrlenA(temp2) + 1;
+					dbei.cbBlob = temp2sz + 1;
 					dbei.pBlob = (PBYTE) temp2;
 					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
 					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
