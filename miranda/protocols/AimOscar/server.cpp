@@ -982,12 +982,12 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 	{   
 		unsigned short offset=0;
 		int i=0;
-		bool away_message_received=0;
-		bool profile_received=0;
+		bool away_message_received=false;
+        bool away_message_unicode=false;
+		bool profile_received=false;
+        bool profile_unicode=false;
 		unsigned char sn_length=snac.ubyte();
 		char* sn=snac.part(1,sn_length);
-		//unsigned short* tlv_count=(unsigned short*)&buf[SNAC_SIZE+TLV_PART_SIZE+1+sn_length];
-		//*tlv_count=htons(*tlv_count);
 		unsigned short tlv_count=snac.ushort(3+sn_length);
 		offset=5+sn_length;
 		HANDLE hContact=find_contact(sn);
@@ -999,24 +999,54 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 		{
 			TLV tlv(snac.val(offset));
 			offset+=TLV_HEADER_SIZE;
-			if(tlv.cmp(0x0002)&&i>tlv_count)//profile message string
+			if(tlv.cmp(0x0001)&&i>=tlv_count)//profile encoding
+            {
+                char* enc=tlv.dup();
+                profile_unicode = strstr(enc,"unicode-2-0") != NULL;
+                delete[] enc;
+            }
+			else if(tlv.cmp(0x0002)&&i>=tlv_count)//profile message string
 			{
-				profile_received=1;
-				HANDLE hContact;
-				char* msg=tlv.dup();
-				hContact=find_contact(sn);
-				if(hContact)
-				{
-					write_profile(sn,msg);
+				char* msg;
+                if (profile_unicode) {
+				    wchar_t* msgw=tlv.dupw();
+                    wcs_htons(msgw);
+                    char* msgu=mir_utf8encodeW(msgw);
+                    delete[] msgw;
+                    msg=strldup(msgu);
+                    mir_free(msgu);
+                }
+                else
+				    msg=tlv.dup();
 
-				}
+				profile_received=1;
+				HANDLE hContact=find_contact(sn);
+				if(hContact) write_profile(sn,msg,profile_unicode);
 				delete[] msg;
 			}
-			else if(tlv.cmp(0x0004)&&i>tlv_count)//away message string
+			else if(tlv.cmp(0x0003)&&i>=tlv_count)//away message encoding
+            {
+                char* enc=tlv.dup();
+                away_message_unicode = strstr(enc,"unicode-2-0") != NULL;
+                delete[] enc;
+            }
+			else if(tlv.cmp(0x0004)&&i>=tlv_count)//away message string
 			{
+				char* msg;
+                if (away_message_unicode) {
+				    wchar_t* msgw=tlv.dupw();
+                    wcs_htons(msgw);
+                    char* msgu=mir_utf8encodeW(msgw);
+                    delete[] msgw;
+                    msg=strldup(msgu);
+                    mir_free(msgu);
+                }
+                else
+				    msg=tlv.dup();
+
 				away_message_received=1;
-				char* msg=tlv.dup();
-				awaymsg_retrieval_handler(sn,msg);
+	            HANDLE hContact = find_contact( sn );
+	            if (hContact) write_away_message(sn, msg, away_message_unicode);
 				delete[] msg;
 			}
 			i++;
@@ -1025,12 +1055,13 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 		if(hContact)
 		{
 			if(getWord(hContact,AIM_KEY_ST,ID_STATUS_OFFLINE)==ID_STATUS_AWAY)
-				if(!away_message_received&&!request_HTML_profile)
-				{
-					write_away_message(hContact,sn,Translate("No information has been provided by the server."));
-				}
+            {
+				if(!away_message_received&&request_away_message)
+					write_away_message(sn,Translate("No information has been provided by the server."),false);
+                request_away_message = 0;
+            }
 			if(!profile_received&&request_HTML_profile)
-				write_profile(sn,"No Profile");
+				write_profile(sn,"No Profile",false);
 			request_HTML_profile=0;
 		}
 		delete[] sn;

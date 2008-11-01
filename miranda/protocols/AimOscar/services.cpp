@@ -68,9 +68,8 @@ int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 
 	DBVARIANT dbv;
 	if ( !getString((HANDLE)wParam, AIM_KEY_SN, &dbv )) {
-		char URL[256];
-		mir_snprintf(URL,lstrlenA(CWD)+lstrlenA(m_szModuleName)+lstrlenA(dbv.pszVal)+9+4,"%s\\%s\\%s\\away.html",CWD,m_szModuleName,dbv.pszVal);
-		execute_cmd(URL);
+        request_away_message = 1;
+        aim_query_away_message( hServerConn, seqno, dbv.pszVal );
 	}
 	return 0;
 }

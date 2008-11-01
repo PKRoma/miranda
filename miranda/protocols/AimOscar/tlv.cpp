@@ -38,6 +38,14 @@ char* TLV::dup()//duplicates the tlv value
 	value[length_]='\0';
 	return value;
 }
+wchar_t* TLV::dupw()//duplicates the tlv value
+{
+    size_t len = length_ / sizeof(wchar_t);
+	wchar_t* value=new wchar_t[len+1];
+	memcpy(value,value_,length_);
+	value[len]=0;
+	return value;
+}
 unsigned short TLV::len()
 {
 	return length_;

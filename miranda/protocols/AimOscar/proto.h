@@ -127,6 +127,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//Some bools to keep track of different things
 	bool request_HTML_profile;
+	bool request_away_message;
 	bool extra_icons_loaded;
 	bool idle;
 	bool instantidle;
@@ -189,8 +190,6 @@ struct CAimProto : public PROTO_INTERFACE
 	// away.cpp
 
     void   __cdecl get_online_msg_thread( void* arg );
-
-	void   awaymsg_retrieval_handler(char* sn,char* msg);
 
     int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
     int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
@@ -351,8 +350,8 @@ struct CAimProto : public PROTO_INTERFACE
 	char*  strip_special_chars(const char *src,HANDLE hContact);
 
 	FILE*  open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
-	void   write_away_message(HANDLE hContact,char* sn,char* msg);
-	void   write_profile(const char* sn,const char* msg);
+	void   write_away_message(const char* sn, const char* msg, bool utf);
+	void   write_profile(const char* sn, const char* msg, bool utf);
 
 	WORD   search_for_free_group_id(char *name);
 	WORD   search_for_free_item_id(HANDLE hbuddy);

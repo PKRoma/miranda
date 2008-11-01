@@ -1,12 +1,5 @@
 #include "aim.h"
 
-void CAimProto::awaymsg_retrieval_handler(char* sn,char* msg)
-{
-	HANDLE hContact = find_contact( sn );
-	if ( hContact )
-		write_away_message( hContact, sn, msg );
-}
-
 char**  CAimProto::getStatusMsgLoc( int status )
 {
 	static const int modes[] = {
@@ -31,7 +24,7 @@ char**  CAimProto::getStatusMsgLoc( int status )
 int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
 {
 	unsigned short offset=0;
-	char* html_msg=0;
+	char* html_msg=NULL;
 	unsigned short msg_size=0;
 	if(msg!=NULL)
 	{
@@ -68,13 +61,10 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 
     aim_writesnac(0x02,0x04,6,offset,buf);
     aim_writetlv(0x03,typsz,typ,offset,buf);
-    if(msg!=NULL)
-    {
-	    aim_writetlv(0x04,msg_size,html_msg,offset,buf);
-	    delete[] html_msg;
-    }
-    else
-	    aim_writetlv(0x04,0,0,offset,buf);
+    aim_writetlv(0x04,msg_size,html_msg,offset,buf);
+    
+    if (html_msg) delete[] html_msg;
+
     if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
 	    return 0;
     else
@@ -103,14 +93,13 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *
 int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn)
 {
 	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+5+sn_length];
+	unsigned short sn_length=(unsigned short)strlen(sn);
+	char* buf=(char*)alloca(SNAC_SIZE+5+sn_length);
 	aim_writesnac(0x02,0x15,0x06,offset,buf);
 	aim_writegeneric(4,"\0\0\0\x02",offset,buf);
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
 	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
-	delete[] buf;
 	return res;
 }
 

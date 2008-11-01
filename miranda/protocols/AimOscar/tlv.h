@@ -14,6 +14,7 @@ public:
 	~TLV();
 	int cmp(unsigned short type);
 	char* dup();
+    wchar_t* dupw();
 	unsigned short len();
 	char* part(int pos, int length);
 	char* whole();

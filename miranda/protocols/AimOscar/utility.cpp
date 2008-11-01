@@ -685,33 +685,21 @@ FILE* CAimProto::open_contact_file(const char* sn, const char* file, const char*
 	return 0;
 }
 
-void CAimProto::write_away_message(HANDLE hContact,char* sn,char* msg)
+void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 {
 	char* path;
 	FILE* descr=open_contact_file(sn,"away.html","wb",path,1);
 	if(descr)
 	{
+        if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
 		char* s_msg=strip_special_chars(msg,NULL);
-		CCSDATA ccs;
-		PROTORECVEVENT pre;
 		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,lstrlenA(sn),descr);
+		fwrite(sn,1,strlen(sn),descr);
 		fwrite("'s Away Message:</h3>",1,21,descr);
-		fwrite(s_msg,1,lstrlenA(s_msg),descr);
+		fwrite(s_msg,1,strlen(s_msg),descr);
 		fclose(descr);
-		ccs.szProtoService = PSR_AWAYMSG;
-		ccs.hContact = hContact;
-		ccs.wParam = ID_STATUS_AWAY;
-		ccs.lParam = (LPARAM)&pre;
-		pre.flags = 0;
-		char* txt=strip_html(s_msg);
-		pre.szMessage = txt;
-		pre.timestamp = (DWORD)time(NULL);
-		pre.lParam = 1;
-		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-		DBWriteContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_SM,txt);
+		execute_cmd(path);
 		delete[] path;
-		delete[] txt;
 		delete[] s_msg;
 	}
 	else
@@ -721,17 +709,18 @@ void CAimProto::write_away_message(HANDLE hContact,char* sn,char* msg)
 	}
 }
 
-void CAimProto::write_profile(const char* sn,const char* msg)
+void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 {
 	char* path;
 	FILE* descr=open_contact_file(sn,"profile.html","wb", path,1);
 	if(descr)
 	{
+        if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
 		char* s_msg=strip_special_chars(msg,NULL);
 		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,lstrlenA(sn),descr);
+		fwrite(sn,1,strlen(sn),descr);
 		fwrite("'s Profile:</h3>",1,16,descr);
-		fwrite(s_msg,1,lstrlenA(s_msg),descr);
+		fwrite(s_msg,1,strlen(s_msg),descr);
 		fclose(descr);
 		execute_cmd(path);
 		delete[] path;
