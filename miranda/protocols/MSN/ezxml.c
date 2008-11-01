@@ -529,8 +529,8 @@ ezxml_t ezxml_parse_str(char *s, size_t len)
                         }
 
                         for (j = 1; a && a[j] && strcmp(a[j], attr[l]); j +=3);
-                        attr[l + 1] = ezxml_decode(attr[l + 1], root->ent, (a
-                                                   && a[j]) ? *a[j + 2] : ' ');
+                        attr[l + 1] = ezxml_decode(attr[l + 1], root->ent, 
+                                        (char)((a && a[j]) ? *a[j + 2] : ' '));
                         if (attr[l + 1] < d || attr[l + 1] > s)
                             attr[l + 3][l / 2] = EZXML_TXTM; // value malloced
                     }
@@ -904,7 +904,7 @@ ezxml_t ezxml_set_attr(ezxml_t xml, const char *name, const char *value)
         xml->attr[l + 3] = realloc(xml->attr[l + 1],
                                    (c = strlen(xml->attr[l + 1])) + 2);
         strcpy(xml->attr[l + 3] + c, " "); // set name/value as not malloced
-        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = EZXML_NAMEM;
+        if (xml->flags & EZXML_DUP) xml->attr[l + 3][c] = (char)EZXML_NAMEM;
     }
     else if (xml->flags & EZXML_DUP) free((char *)name); // name was strduped
 
