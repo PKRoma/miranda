@@ -464,20 +464,6 @@ int CAimProto::aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno
 	}
 }
 
-int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn)
-{
-	unsigned short offset=0;
-	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	char* buf=new char[SNAC_SIZE+5+sn_length];
-	aim_writesnac(0x02,0x15,0x06,offset,buf);
-	aim_writegeneric(4,"\0\0\0\x02",offset,buf);
-	aim_writegeneric(1,(char*)&sn_length,offset,buf);
-	aim_writegeneric(sn_length,sn,offset,buf);
-	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
-	delete[] buf;
-	return res;
-}
-
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)
 {
 	unsigned short offset=0;

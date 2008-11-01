@@ -674,6 +674,22 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	pos+=7;
 	return buf;
 }
+
+bool is_utf(char* msg)
+{
+    bool res = false;
+    if (msg)
+    {
+   	    for (unsigned i=0; !res; ++i)
+	    {
+		    char c = msg[i];
+		    if (c == 0) break;
+		    res = (c & 0x80) != 0;
+	    }
+    }
+    return res;
+}
+
 #if _MSC_VER
 	#pragma warning( default: 4706 )
 #endif

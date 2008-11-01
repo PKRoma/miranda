@@ -13,7 +13,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 
 	//create some events
 	hAvatarEvent = CreateEvent(NULL,false,false,NULL);
-	hAwayMsgEvent = CreateEvent(NULL,false,false,NULL);
 
 	char* p = NEWSTR_ALLOCA( m_szModuleName );
 	_strupr( p );
@@ -61,9 +60,11 @@ CAimProto::~CAimProto()
 	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
 	DeleteCriticalSection(&avatarMutex);
+    
+    CloseHandle(hAvatarEvent);
 
     for (int i=0; i<9; ++i)
-        if (modeMsgs[i]) delete[] modeMsgs[i];
+            mir_free(modeMsgs[i]);
 
 	delete[] CWD;
 	delete[] COOKIE;
@@ -539,13 +540,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		msg = smsg;
 
 	// Figure out is this message is actually ANSI
-	fl = (flags & (PREF_UNICODE | PREF_UTF)) != 0;
-	for (unsigned i=0; fl; ++i)
-	{
-		char c = msg[i];
-		if (c == 0) break;
-		fl = !(c & 0x80);
-	}
+	fl = (flags & (PREF_UNICODE | PREF_UTF)) == 0 || !is_utf(msg);
 
 	int res;
 	if (fl)
@@ -702,7 +697,8 @@ int __cdecl CAimProto::SetAwayMsg( int status, const char* msg )
 	char** msgptr = getStatusMsgLoc(status);
 	if (msgptr==NULL) return 1;
 
-	strlrep(*msgptr, msg);
+    mir_free(*msgptr);
+    *msgptr = mir_utf8encode(msg);
 
 	if ( state == 1 && status == m_iStatus)
     {

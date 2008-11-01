@@ -203,6 +203,7 @@
 #define AIM_LANGUAGE					"en"
 #define AIM_COUNTRY						"us"
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
+#define AIM_MSG_TYPE_UNICODE			"text/x-aolrtf; charset=\"unicode-2-0\""
 #define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
 extern char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 //Supported Clients

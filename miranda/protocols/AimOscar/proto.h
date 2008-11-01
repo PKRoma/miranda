@@ -164,7 +164,6 @@ struct CAimProto : public PROTO_INTERFACE
 	bool AvatarLimitThread;
 
 	//away message retrieval stuff
-	HANDLE hAwayMsgEvent;
     char* modeMsgs[9];
 
 	//Some Icon handles
@@ -189,12 +188,13 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// away.cpp
 
-	void   __cdecl awaymsg_request_thread( void* param );
-	void   __cdecl awaymsg_request_limit_thread( void* );
     void   __cdecl get_online_msg_thread( void* arg );
 
-	void   awaymsg_request_handler(char* sn);
 	void   awaymsg_retrieval_handler(char* sn,char* msg);
+
+    int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
+    int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
+	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn);
 
     char**  getStatusMsgLoc( int status );
 
@@ -211,8 +211,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_request_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
-	int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
-    int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
 	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
 	int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
@@ -223,7 +221,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response);
 	int    aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg);
-	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);

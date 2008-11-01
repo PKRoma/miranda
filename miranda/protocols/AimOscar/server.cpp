@@ -616,7 +616,6 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			list_received=1;
 			aim_client_ready(hServerConn,seqno);
 			aim_activate_list(hServerConn,seqno);
-			ForkThread( &CAimProto::awaymsg_request_limit_thread, 0 );
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018);//mail
 			LOG("Connection Negotiation Finished");

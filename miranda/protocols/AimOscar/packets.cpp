@@ -74,10 +74,10 @@ int CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigne
 {
     out[offset++]=(unsigned char)(type >> 8);
     out[offset++]=(unsigned char)(type & 0xff);
-    out[offset++]=flags;
 
     if (size)
     {
+        out[offset++]=flags | 4;
         out[offset++]=(unsigned char)size+4;
 
         out[offset++]=(unsigned char)(size >> 8);
@@ -88,7 +88,10 @@ int CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigne
         out[offset++]=0;
     }
     else
+    {
+        out[offset++]=flags & (char)~4;
         out[offset++]=0;
+    }
 
     return 0;
 }

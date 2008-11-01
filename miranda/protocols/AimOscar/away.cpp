@@ -1,37 +1,5 @@
 #include "aim.h"
 
-void __cdecl CAimProto::awaymsg_request_thread( void* param )
-{
-	if ( WaitForSingleObject( hAwayMsgEvent, INFINITE ) == WAIT_OBJECT_0 ) {
-		if ( m_iStatus==ID_STATUS_OFFLINE || Miranda_Terminated()) {
-			SetEvent( hAwayMsgEvent );
-			mir_free( param );
-			return;
-		}
-
-		if ( hServerConn )
-			aim_query_away_message( hServerConn, seqno, ( char* )param );
-	}
-	mir_free( param );
-}
-
-void CAimProto::awaymsg_request_handler(char* sn)
-{
-	ForkThread( &CAimProto::awaymsg_request_thread, mir_strdup( sn ));
-}
-
-void __cdecl CAimProto::awaymsg_request_limit_thread( void* )
-{
-	LOG("Awaymsg Request Limit thread begin");
-	while (!Miranda_Terminated() && m_iStatus!=ID_STATUS_OFFLINE)
-	{
-		SleepEx(500, TRUE);
-		//LOG("Setting Awaymsg Request Event...");
-		SetEvent( hAwayMsgEvent );
-	}
-	LOG("Awaymsg Request Limit Thread has ended");
-}
-
 void CAimProto::awaymsg_retrieval_handler(char* sn,char* msg)
 {
 	HANDLE hContact = find_contact( sn );
@@ -75,10 +43,31 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 		delete[] smsg;
 		msg_size=strlen(html_msg);
 	}
-	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+sizeof(AIM_MSG_TYPE)+msg_size);
+
+    const char *typ;
+    unsigned short typsz;
+    if (is_utf(msg))
+    {
+        typ=AIM_MSG_TYPE_UNICODE;
+        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
+        wchar_t* msgu = mir_utf8decodeW(html_msg);
+		delete[] html_msg;
+        msg_size=wcslen(msgu);
+        wcs_htons(msgu);
+        html_msg=(char*)wcsldup(msgu, msg_size);
+        msg_size *= sizeof(wchar_t);
+        mir_free(msgu);
+    }
+    else
+    {
+        typ=AIM_MSG_TYPE;
+        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE)-1);
+    }
+
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+typsz+msg_size);
 
     aim_writesnac(0x02,0x04,6,offset,buf);
-    aim_writetlv(0x03,(unsigned short)sizeof(AIM_MSG_TYPE)-1,AIM_MSG_TYPE,offset,buf);
+    aim_writetlv(0x03,typsz,typ,offset,buf);
     if(msg!=NULL)
     {
 	    aim_writetlv(0x04,msg_size,html_msg,offset,buf);
@@ -96,7 +85,7 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *
 {
     unsigned short msg_size = msg ? strlen(msg) : 0;
 
-	unsigned short msgoffset=0;
+    unsigned short msgoffset=0;
     char* msgbuf=(char*)alloca(10+msg_size);
     aim_writebartid(2,4,msg_size,msg,msgoffset,msgbuf);
 
@@ -109,5 +98,19 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *
 	    return 0;
     else
 	    return -1;
+}
+
+int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn)
+{
+	unsigned short offset=0;
+	unsigned short sn_length=(unsigned short)lstrlenA(sn);
+	char* buf=new char[SNAC_SIZE+5+sn_length];
+	aim_writesnac(0x02,0x15,0x06,offset,buf);
+	aim_writegeneric(4,"\0\0\0\x02",offset,buf);
+	aim_writegeneric(1,(char*)&sn_length,offset,buf);
+	aim_writegeneric(sn_length,sn,offset,buf);
+	int res=aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	delete[] buf;
+	return res;
 }
 
