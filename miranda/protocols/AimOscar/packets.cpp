@@ -56,21 +56,25 @@ int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,
 	return 0;
 }
 
-int CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out)
+void CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,4);
 	offset+=4;
-	return 0;
 }
 
-int CAimProto::aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
+void CAimProto::aim_writeshort(unsigned short val, unsigned short &offset,char* out)
+{
+    out[offset++] = (char)(val >> 8);
+    out[offset++] = (char)(val & 0xFF);
+}
+
+void CAimProto::aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
 	memcpy(&out[offset],buf,size);
 	offset+=size;
-	return 0;
 }
 
-int CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out)
+void CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
     out[offset++]=(unsigned char)(type >> 8);
     out[offset++]=(unsigned char)(type & 0xff);
@@ -92,6 +96,4 @@ int CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsigne
         out[offset++]=flags & (char)~4;
         out[offset++]=0;
     }
-
-    return 0;
 }

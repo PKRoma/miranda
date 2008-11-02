@@ -30,7 +30,11 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	CreateProtoService(PS_GETSTATUS, &CAimProto::GetStatus );
 	CreateProtoService(PS_GETAVATARINFO, &CAimProto::GetAvatarInfo );
 
-	InitIcons();
+	CreateProtoService( PS_GETMYAVATAR,   &CAimProto::GetAvatar );
+	CreateProtoService( PS_SETMYAVATAR,   &CAimProto::SetAvatar );
+	CreateProtoService( PS_GETAVATARCAPS, &CAimProto::GetAvatarCaps );
+
+    InitIcons();
 	InitMenus();
 
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);

@@ -211,6 +211,81 @@ int CAimProto::GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
 	return 1;
 }
 
+int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+{
+	int res = 0;
+
+	switch (wParam)
+	{
+	case AF_MAXSIZE:
+		((POINT*)lParam)->x = 64;
+		((POINT*)lParam)->y = 64;
+		break;
+
+	case AF_PROPORTION:
+		res = PIP_SQUARE;
+		break;
+
+	case AF_FORMATSUPPORTED:
+		res = lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_BMP;
+		break;
+
+	case AF_ENABLED:
+		res = 1;
+		break;
+	}
+
+	return res;
+}
+
+int CAimProto::GetAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char* buf = (char*)wParam;
+	int  size = (int)lParam;
+
+	if (buf == NULL || size <= 0)
+		return -1;
+
+	get_avatar_filename(NULL, buf, size, NULL);
+	return _access(buf, 0);
+}
+
+int CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
+{
+	char* szFileName = (char*)lParam;
+
+    if (szFileName == NULL)
+	{
+		char tFileName[MAX_PATH];
+		get_avatar_filename(NULL, tFileName, sizeof(tFileName), NULL);
+		remove(tFileName);
+        aim_set_avatar_hash(hServerConn, seqno, 0, 5, "\x02\x01\xd2\x04\x72");
+	}
+	else
+	{
+        char hash[16], *data;
+        unsigned short size;
+        if (!get_avatar_hash(szFileName, hash, &data, size))
+            return 1;
+
+		char* tFileName = new char[MAX_PATH];
+        char *ext = strrchr(szFileName, '.');
+		get_avatar_filename(NULL, tFileName, MAX_PATH, ext);
+		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+		if (fileId < 0)
+        {
+//			ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
+            delete[] tFileName;         
+            return 1; 
+		}
+		_write(fileId, data, size);
+		_close(fileId);
+    
+        ForkThread(&CAimProto::avatar_upload_thread, tFileName);
+    }
+    return 0;
+}
+
 int CAimProto::OnExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if ( ServiceExists( MS_CLIST_EXTRA_ADD_ICON ))

@@ -31,6 +31,38 @@ void __cdecl CAimProto::avatar_request_thread( void* param )
 	}
 }
 
+void __cdecl CAimProto::avatar_upload_thread( void* param )
+{
+	char* file = NEWSTR_ALLOCA(( char* )param );
+	delete[] (char*)param;
+
+	EnterCriticalSection( &avatarMutex );
+	if ( !hAvatarConn && hServerConn ) {
+		LOG("Starting Avatar Connection.");
+		ResetEvent( hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
+		hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
+		aim_new_service_request( hServerConn, seqno, 0x0010 ) ;//avatar service connection!
+	}
+	LeaveCriticalSection( &avatarMutex );//not further below because the thread will become trapped if the connection dies.
+
+	if ( WaitForSingleObject( hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
+		if (Miranda_Terminated() || m_iStatus==ID_STATUS_OFFLINE) {
+			SetEvent( hAvatarEvent );
+			LeaveCriticalSection( &avatarMutex );
+			return;
+		}
+		
+        char hash[16], *data;
+        unsigned short size;
+        if (!get_avatar_hash(file, hash, &data, size))
+            return;
+
+        aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
+        aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
+        delete[] data;
+	}
+}
+
 void CAimProto::avatar_request_handler(TLV &tlv, HANDLE &hContact,char* sn,int &offset)//checks to see if the avatar needs requested
 {
 	if(!getByte( AIM_KEY_DA, 0))
@@ -186,4 +218,77 @@ void detect_image_type(char* stream,char* type_ret)
 		strlcpy(type_ret,".bmp",5);
 	else//assume jpg
 		strlcpy(type_ret,".jpg",5);
+}
+
+void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
+{
+	size_t tPathLen;
+
+//	InitCustomFolders();
+
+	char* path = ( char* )alloca( cbLen );
+	if ( hAvatarsFolder == NULL /*|| FoldersGetCustomPath( hAvatarsFolder, path, cbLen, "" )*/)
+	{
+		CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+		
+		tPathLen = strlen(pszDest);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szProtoName);
+	}
+	else {
+		strcpy( pszDest, path );
+		tPathLen = strlen( pszDest );
+	}
+
+	if (_access(pszDest, 0))
+		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
+
+	if (hContact != NULL) 
+	{
+	}
+	else 
+    {
+	    size_t tPathLen2 = tPathLen;
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szProtoName);
+        if (ext == NULL)
+        {
+		    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ".*");
+
+            _finddata_t c_file;
+	        long hFile = _findfirst(pszDest, &c_file);
+	        if (hFile > -1L)
+	        {
+                mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+		        _findclose( hFile );
+            }
+        }
+        else
+		    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
+    }
+}
+
+bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &size)
+{
+	int fileId = _open(file, _O_RDONLY | _O_BINARY, _S_IREAD);
+	if (fileId == -1) return false;
+
+	long  dwAvatar = _filelength(fileId);
+	char* pResult = new char[dwAvatar];
+
+	_read(fileId, pResult, dwAvatar);
+	_close(fileId);
+
+    mir_md5_state_t state;
+    mir_md5_init(&state);
+    mir_md5_append(&state, (unsigned char*)pResult, dwAvatar);
+    mir_md5_finish(&state, (unsigned char*)hash);
+
+    if (data)
+    {
+        *data = pResult;
+        size = (unsigned short)dwAvatar;
+    }
+    else
+        delete[] pResult;
+
+    return true;
 }

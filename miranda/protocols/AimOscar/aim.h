@@ -31,6 +31,7 @@
 #pragma warning( disable: 4201 )
 #include <newpluginapi.h>
 #include <statusmodes.h>
+#include <m_avatars.h>
 #include <m_button.h>
 #include <m_clist.h>
 #include <m_clui.h>

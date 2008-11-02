@@ -80,6 +80,10 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl GetStatus(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
 
+    int  __cdecl GetAvatar(WPARAM wParam, LPARAM lParam);
+    int  __cdecl SetAvatar(WPARAM wParam, LPARAM lParam);
+    int  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
+
 	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
 	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
@@ -157,10 +161,12 @@ struct CAimProto : public PROTO_INTERFACE
 	unsigned short mail_seqno;
 	
 	//avatar connection stuff
-	HANDLE hAvatarConn;
 	unsigned short avatar_seqno;
-	HANDLE hAvatarEvent;
+    unsigned short avatarid;
 	bool AvatarLimitThread;
+	HANDLE hAvatarConn;
+	HANDLE hAvatarEvent;
+    HANDLE hAvatarsFolder;
 
 	//away message retrieval stuff
     char* modeMsgs[9];
@@ -178,11 +184,13 @@ struct CAimProto : public PROTO_INTERFACE
 	// avatars.cpp
 
 	void   __cdecl avatar_request_thread( void* param );
+    void   __cdecl avatar_upload_thread( void* param );
 	void   __cdecl avatar_request_limit_thread( void* );
 
 	void   avatar_request_handler(TLV &tlv, HANDLE &hContact, char* sn,int &offset);
 	void   avatar_retrieval_handler(SNAC &snac);
 	void   avatar_apply(HANDLE &hContact,char* sn,char* filename);
+    void   get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// away.cpp
@@ -206,6 +214,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,unsigned short service);
 	int    aim_request_rates(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_request_icbm(HANDLE hServerConn,unsigned short &seqno);
+	int    aim_request_offline_msgs(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
 	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
@@ -233,7 +242,9 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,char* sn, char* hash, unsigned short hash_size);//family 0x0010
+	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, const char* hash, unsigned short hash_size);//family 0x0010
+    int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash);
+    int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
@@ -270,9 +281,10 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);
 	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
-	int    aim_writefamily(const char *buf,unsigned short &offset,char* out);
-	int    aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
-	int    aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
+	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
+	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
+	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
+    void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proto.cpp

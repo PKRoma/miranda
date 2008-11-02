@@ -606,6 +606,14 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
 				}
 			}
+			else if(type==0x0014)//avatar record
+            {
+				if(!group_id && name_length==1 && name[0]=='1')
+				{
+                    avatarid=item_id;
+                }
+            }
+
 			unsigned short tlv_size=snac.ushort(offset+8+name_length);
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
@@ -615,6 +623,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 		{//only want one finished connection
 			list_received=1;
 			aim_client_ready(hServerConn,seqno);
+			aim_request_offline_msgs(hServerConn,seqno);
 			aim_activate_list(hServerConn,seqno);
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018);//mail
