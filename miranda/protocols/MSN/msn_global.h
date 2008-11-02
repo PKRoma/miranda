@@ -497,7 +497,7 @@ struct ThreadData
 	void           processSessionData( const char* );
 	void           startThread( pThreadFunc );
 
-	int            send( char data[], int datalen );
+	int            send( const char data[], int datalen );
 	int            recv( char* data, long datalen );
 	int            recv_dg( char* data, long datalen );
 	bool           isTimeout( void );

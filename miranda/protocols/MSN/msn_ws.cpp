@@ -36,9 +36,9 @@ static char sttGatewayHeader[] =
 
 //=======================================================================================
 
-int ThreadData::send( char data[], int datalen )
+int ThreadData::send( const char data[], int datalen )
 {
-	NETLIBBUFFER nlb = { data, datalen, 0 };
+	NETLIBBUFFER nlb = { (char*)data, datalen, 0 };
 
 	mWaitPeriod = 60;
 
@@ -169,6 +169,11 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 			s = ( HANDLE )MSN_CallService( MS_NETLIB_OPENCONNECTION, ( WPARAM )hNetlibUser, ( LPARAM )&tConn );
 			if (s == NULL) 
 			{
+				if (mType == SERVER_SWITCHBOARD && mCaller && mInitialContact)
+				{
+					msnNsThread->sendPacket( "XFR", "SB" );
+					break;
+				}
 				Sleep(3000);
 				continue;
 			}
