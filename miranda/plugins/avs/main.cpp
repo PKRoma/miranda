@@ -1399,7 +1399,7 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 
 	DeleteObject(hBmp);
 
-	ReportMyAvatarChanged((WPARAM) "", 0);
+	ReportMyAvatarChanged((WPARAM)(( protocol == NULL ) ? "" : protocol ), 0);
 	return ret;
 }
 
