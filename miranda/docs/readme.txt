@@ -20,6 +20,17 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.11
+Bugfixes:
+ - Avatar refresh issue from "View/Change My details"
+ - Updated Anti-Virus client list
+ - Fixed display issue with authorization dialog
+ - ICQ: Updated client detection
+ - MSN: Improved search stability
+ - MSN: Improved timeout handling with switchboard server
+ - MSN: Fixed avatar transfer with certain clients
+
+
 * New in 0.7.10
 Bugfixes:
  - Gadu-Gadu: Fix issue adding contacts with empty list
