@@ -75,7 +75,7 @@ void msnftp_invite( filetransfer *ft )
 		"Invitation-Cookie: %i\r\n"
 		"Application-File: %s\r\n"
 		"Application-FileSize: %i\r\n\r\n",
-		rand() << 16 | rand(), UTF8(pszFiles), ft->std.currentFileSize );
+		MSN_GenRandom(), UTF8(pszFiles), ft->std.currentFileSize );
 
 	if ( thread == NULL )
 		MsgQueue_Add( ft->std.hContact, 'S', msg, -1, ft );
@@ -340,7 +340,7 @@ void ft_startFileSend( ThreadData* info, const char* Invcommand, const char* Inv
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
 		sb ? "ACCEPT" : "CANCEL",
-		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, rand() << 16 | rand());
+		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
 	info->sendPacket( "MSG", "N %d\r\n%s", nBytes, command );
 
 	if ( sb ) {

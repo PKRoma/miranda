@@ -310,8 +310,6 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK* link )
 
 	arHooks.insert( HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded ));
 
-	srand(( unsigned int )time( NULL ));
-
 	LoadOptions();
 	arHooks.insert( HookEvent( ME_OPT_INITIALISE, MsnOptInit ));
 	arHooks.insert( HookEvent( ME_SYSTEM_PRESHUTDOWN, OnPreShutdown ));

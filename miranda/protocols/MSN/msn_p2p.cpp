@@ -100,7 +100,7 @@ char* getNewUuid(void)
 unsigned p2p_getMsgId( HANDLE hContact, int inc )
 {
 	unsigned cid = MSN_GetDword( hContact, "p2pMsgId", 0 );
-	unsigned res = cid ? cid + inc : ( rand() << 16 | rand()); 
+	unsigned res = cid ? cid + inc : MSN_GenRandom(); 
 	if ( res != cid ) MSN_SetDword( hContact, "p2pMsgId", res );
 	
 	return res;
@@ -923,10 +923,8 @@ static void sttInitFileTransfer(
 
 	szContext = MSN_Base64Decode( szContext );
 
-	srand( time( NULL ));
-
 	filetransfer* ft = new filetransfer();
-	ft->p2p_acksessid = rand() << 16 | rand();
+	ft->p2p_acksessid = MSN_GenRandom();
 	ft->p2p_sessionid = strtoul( szSessionID, NULL, 10 );
 	ft->p2p_appID = dwAppID == MSN_APPID_AVATAR ? MSN_APPID_AVATAR2 : dwAppID;
 	ft->p2p_type = dwAppID;
@@ -1095,7 +1093,7 @@ static void sttInitDirectTransfer(
 
 	replaceStr( ft->p2p_callID, szCallID );
 	replaceStr( ft->p2p_branch, szBranch );
-	ft->p2p_acksessid = rand() << 16 | rand();
+	ft->p2p_acksessid = MSN_GenRandom();
 
 	const char	*szConnType = tFileInfo2[ "Conn-Type" ],
 				*szUPnPNat = tFileInfo2[ "UPnPNat" ],
@@ -1641,8 +1639,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
 	MSN_GetStaticString( "e-mail", hContact, szEmail, sizeof( szEmail ));
 
-	srand( (unsigned)time( NULL ) );
-	long sessionID = rand() << 16 | rand();
+	long sessionID = MSN_GenRandom();
 
 	if ( ft == NULL ) {
 		ft = new filetransfer();
@@ -1650,7 +1647,7 @@ void  p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	}
 
 	ft->p2p_type = iAppID;
-	ft->p2p_acksessid = rand() << 16 | rand();
+	ft->p2p_acksessid = MSN_GenRandom();
 	ft->p2p_sessionid = sessionID;
 	ft->p2p_callID = getNewUuid();
 

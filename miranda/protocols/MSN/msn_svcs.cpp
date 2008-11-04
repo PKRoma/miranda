@@ -724,7 +724,7 @@ static int MsnGetAwayMsg(WPARAM wParam,LPARAM lParam)
 	
 	AwayMsgInfo* inf = (AwayMsgInfo*)mir_alloc( sizeof( AwayMsgInfo ));
 	inf->hContact = ccs->hContact;
-	inf->id = rand();
+	inf->id = MSN_GenRandom();
 
 	mir_forkthread( MsnGetAwayMsgThread, inf );
 	return inf->id;
@@ -989,7 +989,7 @@ static int MsnSendMessage( WPARAM wParam, LPARAM lParam )
 	{
 		if ( isOffline ) 
 		{
-			seq = rand();
+			seq = MSN_GenRandom();
 			mir_forkthread( sttSendOim, new TFakeAckParams( ccs->hContact, seq, msg ));
 			return seq;
 		}

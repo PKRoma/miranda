@@ -245,6 +245,7 @@ DWORD       MSN_SetStringT( HANDLE hContact, const char* valueName, const TCHAR*
 DWORD       MSN_SetStringUtf( HANDLE hContact, const char* valueName, char* parValue );
 void        MSN_ShowError( const char* msgtext, ... );
 char*       MSN_Translate( const char* str );
+unsigned    MSN_GenRandom(void);
 
 HANDLE      GetIconHandle( int iconId );
 HICON       LoadIconEx( const char* );
