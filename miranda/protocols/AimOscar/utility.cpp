@@ -973,18 +973,6 @@ unsigned short string_to_bytes_count(char* string)
 	return i;
 }
 
-char* getSetting(HANDLE hContact, const char* module, const char* setting)
-{
-	DBVARIANT dbv;
-	if (!DBGetContactSettingString(hContact, module, setting, &dbv))
-	{
-		char* store=strldup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-		return store;
-	}
-	return NULL;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions
 
