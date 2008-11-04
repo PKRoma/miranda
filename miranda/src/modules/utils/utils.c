@@ -429,6 +429,37 @@ int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+typedef BOOL (APIENTRY *PGENRANDOM)( PVOID, ULONG );
+
+static int GenerateRandom(WPARAM wParam, LPARAM lParam)
+{
+    PGENRANDOM pfnRtlGenRandom = NULL;
+    HMODULE hModule;
+    
+    if (wParam == 0 || lParam == 0) return 0;
+
+    hModule = GetModuleHandleA("advapi32");
+    if (hModule)
+    {
+        pfnRtlGenRandom = (PGENRANDOM)GetProcAddress(hModule, "SystemFunction036");
+        if (pfnRtlGenRandom)
+        {
+            if (!pfnRtlGenRandom((PVOID)lParam, wParam))
+                pfnRtlGenRandom = NULL;
+        }
+    }
+    if (pfnRtlGenRandom == NULL)
+    {
+        unsigned short* buf = (unsigned short*)lParam;
+        srand(GetTickCount());
+        for ( ; (long)(wParam-=2) >= 0; )
+            *(buf++) = (unsigned short)rand();
+        if (lParam < 0)
+            *(char*)buf = (char)(rand() & 0xFF);
+    }
+    return 0;
+}
+
 int LoadUtilsModule(void)
 {
 	CreateServiceFunction(MS_UTILS_RESIZEDIALOG,ResizeDialog);
