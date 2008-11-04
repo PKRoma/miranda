@@ -106,7 +106,6 @@ int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
 //netlibbind.c
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);
 int NetlibBindPort(WPARAM wParam,LPARAM lParam);
-int StringToPortsMask(const char *szPorts,BYTE *mask);
 bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn);
 
 //netlibhttp.c
