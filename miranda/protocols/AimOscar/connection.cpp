@@ -208,6 +208,17 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 						snac_error(snac);
 						snac_busted_payload(snac);
 					}
+					else if(snac.cmp(0x000A))
+					{
+						snac_email_search_results(snac);
+						/* 
+							If there's no match (error 0x14), AIM will pop up a message.
+						    Since it's annoying and there's no other errors that'll get
+						    generated, I just assume leave this commented out. It's here
+							for consistency.
+						*/
+						//snac_error(snac); 
+					}
 					else if(snac.cmp(0x0013))
 					{
 						snac_contact_list(snac,hServerConn,seqno);

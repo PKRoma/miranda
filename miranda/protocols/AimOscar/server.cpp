@@ -433,7 +433,12 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
                     {
                         unsigned short type=tlv.ushort(i);
 						if(type==0x0001)
-							avatar_request_handler(tlv,hContact,buddy,i);
+                        {
+                       		int hash_size=tlv.ubyte(i+3);
+		                    char* hash=tlv.part(i+4,hash_size);
+							avatar_request_handler(hContact, hash, hash_size);
+		                    delete[] hash;
+                        }
 						else if(type==0x0002)
                         {
                             if ((tlv.ubyte(i+2) & 4) && tlv.ubyte(i+3) && tlv.ubyte(i+5))
@@ -535,13 +540,10 @@ void CAimProto::snac_user_offline(SNAC &snac)//family 0x0003
 	{
 		unsigned char buddy_length=snac.ubyte();
 		char* buddy=snac.part(1,buddy_length);
-		HANDLE hContact;
-		hContact=find_contact(buddy);
-		if(!hContact)
-		{
-			hContact=add_contact(buddy);
-		}
-		if(hContact)
+		HANDLE hContact = find_contact(buddy);
+		if (!hContact) 
+            hContact = add_contact(buddy);
+		if (hContact)
 			offline_contact(hContact,0);
 		delete[] buddy;
 	}
@@ -571,13 +573,13 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 				HANDLE hContact=find_contact(name);
 				if(!hContact)
 				{
-					if(lstrcmpA(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+					if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
 						hContact=add_contact(name);
 				}
 				if(hContact)
 				{
-					char* item= new char[sizeof(AIM_KEY_BI)+10];
-					char* group= new char[sizeof(AIM_KEY_GI)+10];
+					char item[sizeof(AIM_KEY_BI)+10];
+					char group[sizeof(AIM_KEY_GI)+10];
 					for(int i=1; ;i++)
 					{
 						mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
@@ -589,8 +591,6 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 							break;
 						}
 					}
-					delete[] item;
-					delete[] group;
 					setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 				}
 			}
@@ -1364,6 +1364,27 @@ void CAimProto::snac_retrieve_avatar(SNAC &snac)//family 0x0010
 {
 	if(snac.subcmp(0x0005))
 		avatar_retrieval_handler(snac);
+}
+void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
+{
+	if(snac.subcmp(0x0003)){ // Found some buddies
+		PROTOSEARCHRESULT psr;
+		ZeroMemory(&psr, sizeof(psr));
+		psr.cbSize = sizeof(psr);
+
+		unsigned short offset=0;
+		while(offset<snac.len())	// Loop through all the TLVs and pull out the buddy name
+		{
+			TLV tlv(snac.val(offset));
+			offset+=TLV_HEADER_SIZE;
+			psr.nick = tlv.dup();
+			offset+=tlv.len();
+			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+		}
+		sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	}
+	else // If no match, stop the search.
+		CAimProto::sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 /*void CAimProto::snac_delete_contact(SNAC &snac, char* buf)//family 0x0013
 {

@@ -169,46 +169,44 @@ int CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	return 0;
 }
 
-int CAimProto::GetAvatarInfo(WPARAM /*wParam*/,LPARAM lParam)
+int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+    
+    int res = GAIR_NOAVATAR;
+    AI->filename[0] = 0;
 
-	if(char* sn=getSetting(AI->hContact,m_szModuleName,AIM_KEY_SN))
-	{
-		if(char* photo_path=getSetting(AI->hContact,"ContactPhoto","File"))
-		{
-			FILE* photo_file=fopen(photo_path,"rb");
-			if(photo_file)
-			{
-				char buf[10];
-				fread(buf,1,10,photo_file);
-				fclose(photo_file);
-				char filetype[5];
-				detect_image_type(buf,filetype);
-				if(!lstrcmpiA(filetype,".jpg"))
-					AI->format=PA_FORMAT_JPEG;
-				else if(!lstrcmpiA(filetype,".gif"))
-					AI->format=PA_FORMAT_GIF;
-				else if(!lstrcmpiA(filetype,".png"))
-					AI->format=PA_FORMAT_PNG;
-				else if(!lstrcmpiA(filetype,".bmp"))
-					AI->format=PA_FORMAT_BMP;
-				strlcpy(AI->filename,photo_path,lstrlenA(photo_path));
-				delete[] photo_path;
-				delete[] sn;
-				return GAIR_SUCCESS;
-			}
-			delete[] photo_path;
-		}
-		else if(char* hash=getSetting(AI->hContact,m_szModuleName,AIM_KEY_AH))
-		{
-			delete[] sn;
-			return GAIR_WAITFOR;
-		}
-		delete[] sn;
-		return GAIR_NOAVATAR;
-	}
-	return 1;
+    char* hash=getSetting(AI->hContact,AIM_KEY_AH);
+    if (hash)
+    {
+	    get_avatar_filename( AI->hContact, AI->filename, sizeof(AI->filename), NULL);
+        char* hashs=getSetting(AI->hContact,AIM_KEY_ASH);
+        if (hashs && strcmp(hashs, hash) == 0 && AI->filename[0])
+            res = GAIR_SUCCESS;
+        delete[] hashs;
+
+	    if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )
+	    {
+		    WORD wStatus = getWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
+		    if ( wStatus == ID_STATUS_OFFLINE ) 
+		    {
+			    deleteSetting( AI->hContact, "AvatarHash" );
+		    }
+		    else 
+		    {
+                char* sn = getSetting(AI->hContact, AIM_KEY_SN);
+			    int length=strlen(sn)+2+strlen(hash)*2;
+			    char* blob= new char[length];
+			    mir_snprintf(blob,length,"%s;%s",sn,hash);
+			    LOG("Starting avatar request thread for %s)",sn);
+			    ForkThread( &CAimProto::avatar_request_thread, blob );
+                res = GAIR_WAITFOR;
+                delete[] sn;
+		    }
+	    }
+        delete[] hash;
+    }
+	return res;
 }
 
 int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
@@ -230,7 +228,8 @@ int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		res = lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_BMP;
 		break;
 
-	case AF_ENABLED:
+    case AF_ENABLED:
+    case AF_DONTNEEDDELAYS:
 		res = 1;
 		break;
 	}

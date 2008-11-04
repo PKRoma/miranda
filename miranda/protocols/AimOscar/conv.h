@@ -10,6 +10,6 @@ char* bbcodes_to_html(const char *src);
 void strip_tag(char* begin, char* end);
 char* strip_tag_within(char* begin, char* end);
 char* rtf_to_html(HWND hwndDlg,int DlgItem);
-bool is_utf(char* msg);
+bool is_utf(const char* msg);
 
 #endif

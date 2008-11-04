@@ -211,28 +211,11 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(temp,AIM_CAP_SHORT_CAPS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HOST_STATUS_TEXT_AWARE,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNA,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNB,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWND,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_VOICE_CHAT,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_PLAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ROUTER_FIND,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_DIRECT_IM,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_AVATARS,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ADDINS,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_SHARING,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHANNEL_TWO,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_GAMES,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_LIST_TRANSFER,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN4,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWN1,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UNKNOWNC,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_IM2,AIM_CAPS_LENGTH);
-	//memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_TRILLIAN,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
 	if(getByte( AIM_KEY_HF, 0))
 		memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HIPTOP,AIM_CAPS_LENGTH);
@@ -928,4 +911,17 @@ int CAimProto::aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const
 	aim_writegeneric(avatar_size,avatar,offset,buf);
 	int res = aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
 	return res;
+}
+
+int CAimProto::aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email)
+{
+	unsigned short offset=0;
+	char em_length=(char)strlen(email);
+	char* buf= (char*)alloca(SNAC_SIZE+em_length);
+	aim_writesnac(0x0a,0x02,6,offset,buf);	// Email search
+	aim_writegeneric(em_length,email,offset,buf);
+	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
+		return 0;
+	else
+		return -1;
 }

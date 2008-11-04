@@ -973,7 +973,7 @@ unsigned short string_to_bytes_count(char* string)
 	return i;
 }
 
-char* getSetting(HANDLE &hContact, const char* module, const char* setting)
+char* getSetting(HANDLE hContact, const char* module, const char* setting)
 {
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(hContact, module, setting, &dbv))
@@ -1030,6 +1030,18 @@ int CAimProto::getWord( const char* name, WORD defaultValue )
 
 int CAimProto::getWord( HANDLE hContact, const char* name, WORD defaultValue )
 {	return DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue );
+}
+
+char* CAimProto::getSetting(HANDLE hContact, const char* setting)
+{
+	DBVARIANT dbv;
+	if (!DBGetContactSettingString(hContact, m_szModuleName, setting, &dbv))
+	{
+		char* store=strldup(dbv.pszVal);
+		DBFreeVariant(&dbv);
+		return store;
+	}
+	return NULL;
 }
 
 void CAimProto::setByte( const char* name, BYTE value )

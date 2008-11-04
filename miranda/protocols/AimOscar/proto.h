@@ -187,9 +187,8 @@ struct CAimProto : public PROTO_INTERFACE
     void   __cdecl avatar_upload_thread( void* param );
 	void   __cdecl avatar_request_limit_thread( void* );
 
-	void   avatar_request_handler(TLV &tlv, HANDLE &hContact, char* sn,int &offset);
+	void   avatar_request_handler(HANDLE hContact, char* hash, int hash_size);
 	void   avatar_retrieval_handler(SNAC &snac);
-	void   avatar_apply(HANDLE &hContact,char* sn,char* filename);
     void   get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -197,9 +196,9 @@ struct CAimProto : public PROTO_INTERFACE
 
     void   __cdecl get_online_msg_thread( void* arg );
 
-    int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
-    int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg);//user info
-	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn);
+    int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+    int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 
     char**  getStatusMsgLoc( int status );
 
@@ -245,6 +244,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, const char* hash, unsigned short hash_size);//family 0x0010
     int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash);
     int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);
+	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
@@ -290,6 +290,7 @@ struct CAimProto : public PROTO_INTERFACE
 	// proto.cpp
 
 	void   __cdecl basic_search_ack_success( void* p );
+	void   __cdecl email_search_ack_success( void* p );
 	void   __cdecl setstatusthread( void* arg );
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -321,6 +322,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_list_modification_ack(SNAC &snac);//family 0x0013
 	void   snac_mail_response(SNAC &snac);//family 0x0018
 	void   snac_retrieve_avatar(SNAC &snac);//family 0x0010
+	void   snac_email_search_results(SNAC &snac);//family 0x000A
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
@@ -394,6 +396,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    getTString( HANDLE hContact, const char* name, DBVARIANT* );
 	int    getWord( const char* name, WORD defaultValue );
 	int    getWord( HANDLE hContact, const char* name, WORD defaultValue );
+    char*  getSetting(HANDLE hContact, const char* setting);
 
 	void   setByte( const char* name, BYTE value );
 	void   setByte( HANDLE hContact, const char* name, BYTE value );

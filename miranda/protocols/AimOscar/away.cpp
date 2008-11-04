@@ -21,7 +21,7 @@ char**  CAimProto::getStatusMsgLoc( int status )
 }
 
 
-int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
+int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
 	unsigned short offset=0;
 	char* html_msg=NULL;
@@ -71,7 +71,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,char *msg)/
 	    return -1;
 }
 
-int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
+int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
     unsigned short msg_size = msg ? strlen(msg) : 0;
 
@@ -90,7 +90,7 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,char *
 	    return -1;
 }
 
-int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,char* sn)
+int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn)
 {
 	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)strlen(sn);

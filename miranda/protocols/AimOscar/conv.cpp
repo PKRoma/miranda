@@ -675,7 +675,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	return buf;
 }
 
-bool is_utf(char* msg)
+bool is_utf(const char* msg)
 {
     bool res = false;
     if (msg)

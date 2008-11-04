@@ -305,7 +305,7 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 {
 	switch ( type ) {
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_FILE;
+		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_FILE;
 
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
@@ -385,7 +385,12 @@ HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
 
 HANDLE __cdecl CAimProto::SearchByEmail( const char* email )
 {
-	return 0;
+	// Maximum email size should really be 320, but the char string is limited to 255.
+	if ( state != 1 || email == NULL || strlen(email) >= 254)
+		return NULL;
+
+	aim_search_by_email(hServerConn,seqno,email);
+	return ( HANDLE )1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
