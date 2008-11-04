@@ -23,7 +23,7 @@ Contents
 * New in 0.7.11
 Bugfixes:
  - Avatar refresh issue from "View/Change My details"
- - Updated Anti-Virus client list
+ - Updated anti-virus client list
  - Fixed display issue with authorization dialog
  - ICQ: Updated client detection
  - MSN: Improved search stability
