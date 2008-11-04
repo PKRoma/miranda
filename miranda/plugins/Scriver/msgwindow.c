@@ -1422,7 +1422,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						nmh.code = TCN_SELCHANGE;
 						SendMessage(GetParent(hwnd), WM_NOTIFY, nmh.idFrom, (LPARAM)&nmh);
 						UpdateWindow(hwnd);
-					} else if (thinfo.flags == TCHT_NOWHERE && GetKeyState(VK_CONTROL) & 0x8000 && g_dat->flags2 & SMF2_USETABS) {
+					} else if (thinfo.flags == TCHT_NOWHERE) {
 						MessageWindowTabData *mwtd;
 						TCITEM tci;
 						POINT pt;
@@ -1441,7 +1441,7 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								hParent = GetParent(hParent);
 							}
 							hParent = WindowList_Find(g_dat->hParentWindowList, hParent);
-							if ((hParent != NULL && hParent != GetParent(hwnd)) || (hParent == NULL && mwtd->parent->childrenCount > 1)) {
+							if ((hParent != NULL && hParent != GetParent(hwnd)) || (hParent == NULL && mwtd->parent->childrenCount > 1  && (GetKeyState(VK_CONTROL) & 0x8000))) {
 								if (hParent == NULL) {
 									MONITORINFO mi;
 									HMONITOR hMonitor;
