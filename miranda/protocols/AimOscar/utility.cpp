@@ -1088,10 +1088,11 @@ unsigned long char_ip_to_long_ip(char* ip)
 }
 void create_cookie(HANDLE hContact)
 {
-	srand((unsigned long)time(NULL));
-	unsigned long i= rand();
+	unsigned long i;
 	unsigned long i2=(unsigned long)hContact;
+    
 	DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_CK,i2);
+    CallService(MS_UTILS_GETRANDOM, sizeof(i), (LPARAM)&i);
 	DBWriteContactSettingDword(hContact,AIM_PROTOCOL_NAME,AIM_KEY_CK2,i);
 }
 void read_cookie(HANDLE hContact,char* cookie)
