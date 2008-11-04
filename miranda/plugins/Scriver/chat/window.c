@@ -416,7 +416,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
             RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
             return 0;
-         } else {
+		} else if (wParam != VK_RIGHT && wParam != VK_LEFT) {
 			mir_free(dat->szSearchQuery);
             dat->szSearchQuery = NULL;
 			mir_free(dat->szSearchResult);
