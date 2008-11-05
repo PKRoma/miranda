@@ -220,6 +220,10 @@ int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		((POINT*)lParam)->y = 64;
 		break;
 
+    case AF_MAXFILESIZE:
+        res = 7168;
+        break;
+
 	case AF_PROPORTION:
 		res = PIP_SQUARE;
 		break;
