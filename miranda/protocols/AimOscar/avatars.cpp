@@ -127,7 +127,7 @@ void CAimProto::avatar_retrieval_handler(SNAC &snac)
 
             char* file_data=snac.val(7+sn_length+hash_size);
 			
-            char type[5]; 
+            const char *type; 
             detect_image_type(file_data,type, AI.format);
 
 	        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
@@ -153,27 +153,27 @@ void CAimProto::avatar_retrieval_handler(SNAC &snac)
     sendBroadcast( AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0 );
 }
 
-void detect_image_type(const char* stream, char* type_ret, int& type)
+void detect_image_type(const char* stream, const char* &type_ret, int& type)
 {
 	if(stream[0]=='G'&&stream[1]=='I'&&stream[2]=='F')
     {
-		strlcpy(type_ret,".gif",5);
-		type=PA_FORMAT_GIF;
+		type_ret = ".gif";
+		type = PA_FORMAT_GIF;
     }
 	else if(stream[1]=='P'&&stream[2]=='N'&&stream[3]=='G')
     {
-		strlcpy(type_ret,".png",5);
-		type=PA_FORMAT_PNG;
+		type_ret = ".png";
+		type = PA_FORMAT_PNG;
     }
 	else if(stream[0]=='B'&&stream[1]=='M')
     {
-		strlcpy(type_ret,".bmp",5);
-		type=PA_FORMAT_BMP;
+		type_ret = ".bmp";
+		type = PA_FORMAT_BMP;
     }
 	else//assume jpg
     {
-		strlcpy(type_ret,".jpg",5);
-		type=PA_FORMAT_JPEG;
+		type_ret = ".jpg";
+		type = PA_FORMAT_JPEG;
     }
 }
 
