@@ -20,6 +20,11 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.12
+Bugfixes:
+ - MSN: File transfer was broken
+
+
 * New in 0.7.11
 Bugfixes:
  - Avatar refresh issue from "View/Change My details"
