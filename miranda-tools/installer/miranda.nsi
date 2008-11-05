@@ -4,11 +4,13 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.12"
+!define MIM_VERSION             "0.7.13"
 !define MIM_PREVIEW             "0" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
+!define MIM_BUILD_OPTIONS_FILE  "miranda32.lst"
+!define MIM_BUILD_OPTIONS_SECT  "InstalledSections"
 
 !ifdef MIM_BUILD_UNICODE
 !define MIM_BUILD_TYPE          "unicode"
@@ -90,8 +92,24 @@ var INST_SUCCESS
   SetOverWrite on
 !macroend
 
+!macro WriteInstallerOption IniOption IniValue
+  SetOutPath "$INSTDIR"
+  WriteINIStr "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" "${MIM_BUILD_OPTIONS_SECT}" "${IniValue}" "${IniOption}"
+!macroend
+
 Section "Miranda IM"
   SectionIn RO
+  !insertmacro WriteInstallerOption "2" "AIM"
+  !insertmacro WriteInstallerOption "2" "Gadu-Gadu"
+  !insertmacro WriteInstallerOption "2" "ICQ"
+  !insertmacro WriteInstallerOption "2" "IRC"
+  !insertmacro WriteInstallerOption "2" "Jabber"
+  !insertmacro WriteInstallerOption "2" "MSN"
+  !insertmacro WriteInstallerOption "2" "Yahoo"
+  !insertmacro WriteInstallerOption "2" "Import"
+  !insertmacro WriteInstallerOption "2" "StartMenuShortCut"
+  !insertmacro WriteInstallerOption "2" "DesktopShortCut"
+  !insertmacro WriteInstallerOption "2" "QuickLaunchShortCut"
   !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
 
   SetOutPath "$INSTDIR"
@@ -127,22 +145,25 @@ Section "Miranda IM"
 SectionEnd
 
 SubSection /e "Protocols"
-  Section "AIM"
+  Section "AIM" pProtoAim
     !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
+    !insertmacro WriteInstallerOption "1" "AIM"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\Aim.dll"
     !insertmacro InstallMirandaProtoIcon "AIM"
   SectionEnd
   
-  Section "Gadu-Gadu"
+  Section "Gadu-Gadu" pProtoGaduGadu
     !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
+    !insertmacro WriteInstallerOption "1" "Gadu-Gadu"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\GG.dll"
     ; GG uses embedded icons
   SectionEnd
   
-  Section "ICQ"
+  Section "ICQ" pProtoICQ
     !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
+    !insertmacro WriteInstallerOption "1" "ICQ"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\icq.dll"
     SetOutPath "$INSTDIR\Icons"
@@ -150,8 +171,9 @@ SubSection /e "Protocols"
     !insertmacro InstallMirandaProtoIcon "ICQ"
   SectionEnd
 
-  Section "IRC"
+  Section "IRC" pProtoIRC
     !insertmacro PrintInstallerDetails "Installing IRC Protocol..."
+    !insertmacro WriteInstallerOption "1" "IRC"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\irc.dll"
     ${If} $INST_UPGRADE = 0
@@ -162,38 +184,43 @@ SubSection /e "Protocols"
     !insertmacro InstallMirandaProtoIcon "IRC"
   SectionEnd
 
-  Section "Jabber" JABBER
+  Section "Jabber" pProtoJabber
     !insertmacro PrintInstallerDetails "Installing Jabber Protocol..."
+    !insertmacro WriteInstallerOption "1" "Jabber"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\jabber.dll"
     SetOutPath "$INSTDIR\Icons"
     !insertmacro InstallMirandaProtoIcon "Jabber"
   SectionEnd
 
-  Section "MSN"
+  Section "MSN" pProtoMSN
     !insertmacro PrintInstallerDetails "Installing MSN Protocol..."
+    !insertmacro WriteInstallerOption "1" "MSN"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIR}\plugins\msn.dll"
     !insertmacro InstallMirandaProtoIcon "MSN"
   SectionEnd
 
-  Section "Yahoo"
+  Section "Yahoo" pProtoYahoo
     !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
+    !insertmacro WriteInstallerOption "1" "Yahoo"
     SetOutPath "$INSTDIR\Plugins"
     File "${MIM_BUILD_DIRANSI}\plugins\yahoo.dll"
     !insertmacro InstallMirandaProtoIcon "Yahoo"
   SectionEnd
 SubSectionEnd
 
-Section "Import Plugin"
+Section "Import Plugin" pImport
   !insertmacro PrintInstallerDetails "Installing Import Plugin..."
+  !insertmacro WriteInstallerOption "1" "Import"
   SetOutPath "$INSTDIR\Plugins"
   File "${MIM_BUILD_DIR}\plugins\import.dll"
 SectionEnd
 
 SubSection /e "Options" pOptions
-  Section "Install Start Menu Shortcuts"
+  Section "Install Start Menu Shortcuts" pSCStartMenu
     !insertmacro PrintInstallerDetails "Installing Start Menu Shortcuts..."
+    !insertmacro WriteInstallerOption "1" "StartMenuShortCut"
     SetOutPath "$INSTDIR"
     RMDir /r "$SMPROGRAMS\Miranda IM"
     CreateDirectory "$SMPROGRAMS\Miranda IM"
@@ -202,14 +229,16 @@ SubSection /e "Options" pOptions
     WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
   SectionEnd
 
-  Section "Install Desktop Shortcut"
+  Section "Install Desktop Shortcut" pSCDesktop
     !insertmacro PrintInstallerDetails "Installing Desktop Shortcut..."
+    !insertmacro WriteInstallerOption "1" "DesktopShortCut"
     SetOutPath "$INSTDIR"
     CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
 
-  Section "Install Quicklaunch Shortcut"
+  Section "Install Quicklaunch Shortcut" pSCQuickLaunch
     !insertmacro PrintInstallerDetails "Installing Quicklaunch Shortcut..."
+    !insertmacro WriteInstallerOption "1" "QuickLaunchShortCut"
     SetOutPath "$INSTDIR"
     CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
@@ -284,5 +313,74 @@ Function VerifyInstallDir
     !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
   ${EndIf}
   !endif
+  
+  ${If} $INST_UPGRADE = 1
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "AIM"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoAim} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "IRC"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoIRC} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Jabber"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoJabber} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "MSN"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoMSN} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Yahoo"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pProtoYahoo} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "DesktopShortCut"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pSCDesktop} ${SF_SELECTED}
+      ${EndIf}
+      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "QuickLaunchShortCut"
+      ${If} $0 = "2"
+        !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+      ${Else}
+        !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+  ${EndIf}
+  ${EndIf}
 FunctionEnd
 
