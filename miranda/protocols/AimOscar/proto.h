@@ -394,8 +394,8 @@ struct CAimProto : public PROTO_INTERFACE
 	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
 	int    getTString( const char* name, DBVARIANT* );
 	int    getTString( HANDLE hContact, const char* name, DBVARIANT* );
-	int    getWord( const char* name, WORD defaultValue );
-	int    getWord( HANDLE hContact, const char* name, WORD defaultValue );
+	WORD   getWord( const char* name, WORD defaultValue );
+	WORD   getWord( HANDLE hContact, const char* name, WORD defaultValue );
     char*  getSetting(HANDLE hContact, const char* setting);
 
 	void   setByte( const char* name, BYTE value );

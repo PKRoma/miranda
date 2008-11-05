@@ -1012,12 +1012,12 @@ int CAimProto::getTString( HANDLE hContact, const char* name, DBVARIANT* result 
 {	return DBGetContactSettingTString( hContact, m_szModuleName, name, result );
 }
 
-int CAimProto::getWord( const char* name, WORD defaultValue )
-{	return DBGetContactSettingWord( NULL, m_szModuleName, name, defaultValue );
+WORD CAimProto::getWord( const char* name, WORD defaultValue )
+{	return (WORD)DBGetContactSettingWord( NULL, m_szModuleName, name, defaultValue );
 }
 
-int CAimProto::getWord( HANDLE hContact, const char* name, WORD defaultValue )
-{	return DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue );
+WORD CAimProto::getWord( HANDLE hContact, const char* name, WORD defaultValue )
+{	return (WORD)DBGetContactSettingWord(hContact, m_szModuleName, name, defaultValue );
 }
 
 char* CAimProto::getSetting(HANDLE hContact, const char* setting)

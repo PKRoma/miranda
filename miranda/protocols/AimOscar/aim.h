@@ -3,13 +3,6 @@
 
 #define MIRANDA_VER 0x800
 
-#if defined __GNUC__
-#pragma GCC system_header
-#endif 
-
-#define  _CRT_SECURE_NO_DEPRECATE
-#pragma warning (disable : 4996)
-
 #include <m_stdhdr.h>
 
 //System includes
@@ -17,20 +10,16 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>
-#include <process.h>
 #include <prsht.h>
 #include <richedit.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <winuser.h>
 
 //Miranda IM includes
 #pragma warning( disable: 4100 )
-#pragma warning( disable: 4244 )
 #pragma warning( disable: 4201 )
 #include <newpluginapi.h>
-#include <statusmodes.h>
 #include <m_avatars.h>
 #include <m_button.h>
 #include <m_clist.h>
@@ -56,9 +45,6 @@
 #include <m_system_cpp.h>
 #include <win2k.h>
 
-#pragma warning( default: 4100 )
-#pragma warning( default: 4244 )
-#pragma warning( default: 4201 )
 //independent includes
 #include "strl.h"
 #include "flap.h"

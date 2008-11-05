@@ -25,7 +25,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 {
 	unsigned short offset=0;
 	char* html_msg=NULL;
-	unsigned short msg_size=0;
+	size_t msg_size=0;
 	if(msg!=NULL)
 	{
 		html_msg=strldup(msg);
@@ -61,7 +61,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 
     aim_writesnac(0x02,0x04,6,offset,buf);
     aim_writetlv(0x03,typsz,typ,offset,buf);
-    aim_writetlv(0x04,msg_size,html_msg,offset,buf);
+    aim_writetlv(0x04,(unsigned short)msg_size,html_msg,offset,buf);
     
     if (html_msg) delete[] html_msg;
 
@@ -73,11 +73,11 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
 
 int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
-    unsigned short msg_size = msg ? strlen(msg) : 0;
+    size_t msg_size = msg ? strlen(msg) : 0;
 
     unsigned short msgoffset=0;
     char* msgbuf=(char*)alloca(10+msg_size);
-    aim_writebartid(2,4,msg_size,msg,msgoffset,msgbuf);
+    aim_writebartid(2,4,(unsigned short)msg_size,msg,msgoffset,msgbuf);
 
 	unsigned short offset=0;
 	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+msgoffset+8);
