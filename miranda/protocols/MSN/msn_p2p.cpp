@@ -1399,7 +1399,7 @@ void  p2p_processMsg( ThreadData* info,  char* msgbody )
 	sttLogHeader( hdrdata );
 
 	//---- if we got a message
-	if ( hdrdata->mFlags == 0 && hdrdata->mSessionID == 0 )
+	if ( LOWORD(hdrdata->mFlags) == 0 && hdrdata->mSessionID == 0 )
 	{
 		char* newbody = NULL;
 
