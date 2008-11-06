@@ -141,7 +141,7 @@ static void patchDir( char* str, size_t strSize )
 		lstrcpyA( str+len, "\\" );
 }
 
-void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
+void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir, BOOL patchVars)
 {
 	DBVARIANT dbv;
 	char szTemp[MAX_PATH];
@@ -192,7 +192,8 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir)
 		ReplaceStr(szTemp, sizeof(szTemp), "%proto%", szProto);
 	}
 
-	patchDir( szTemp, SIZEOF(szTemp));
+	if (patchVars)
+		patchDir( szTemp, SIZEOF(szTemp));
 	lstrcpynA( szDir, szTemp, cchDir );
 }
 
@@ -248,7 +249,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 		contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
-		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath));
+		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath),TRUE);
 		SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);
 		{	int i;
 			char idstr[32];
@@ -371,7 +372,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			{	//most recently used directories
 				char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
 				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
-				GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir));
+				GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir),TRUE);
 				if(_strnicmp(szRecvDir,szDefaultRecvDir,lstrlenA(szDefaultRecvDir))) {
 					char idstr[32];
 					int i;

@@ -53,12 +53,11 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-		{	DBVARIANT dbv;
-
+		{
 			TranslateDialogDefault(hwndDlg);
 			{
 				char str[MAX_PATH];
-				GetContactReceivedFilesDir(NULL,str,SIZEOF(str));
+				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
 				SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
 			}
 			{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
@@ -84,6 +83,8 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 				}
 			}
+
+			DBVARIANT dbv;
 			if(DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
 				SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
 				DBFreeVariant(&dbv);

@@ -43,7 +43,7 @@ static int SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 
 static int GetReceivedFilesFolder(WPARAM wParam,LPARAM lParam)
 {
-	GetContactReceivedFilesDir((HANDLE)wParam,(char*)lParam,MAX_PATH);
+	GetContactReceivedFilesDir((HANDLE)wParam,(char*)lParam,MAX_PATH,TRUE);
 	return 0;
 }
 
@@ -255,7 +255,7 @@ int openContRecDir(WPARAM wparam,LPARAM lparam)
 {
 	char szContRecDir[MAX_PATH];
 	HANDLE hContact = (HANDLE)wparam;
-	GetContactReceivedFilesDir(hContact, szContRecDir, SIZEOF(szContRecDir));
+	GetContactReceivedFilesDir(hContact, szContRecDir, SIZEOF(szContRecDir),TRUE);
 	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
 	return 0;
 }
