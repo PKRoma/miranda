@@ -53,6 +53,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <commdlg.h>
 #include <ole2.h>
 #include <stddef.h>
+#undef PBT_APMSUSPEND
+#undef PBT_APMRESUMESUSPEND
 #include <win2k.h>
 
 #include <newpluginapi.h>

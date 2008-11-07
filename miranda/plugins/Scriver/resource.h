@@ -4,8 +4,9 @@
 #define IDD_CONFIRM_SENDALL             103
 #define IDD_OPT_MSGDLG                  111
 #define IDD_OPT_MSGLOG                  112
-#define IDD_OPT_CONTAINER				113
 #define IDD_OPT_MSGTYPE                 114
+#define IDD_OPT_MSGTABS                 115
+#define IDD_OPT_LAYOUT                  116
 #define IDI_ADDCONTACT                  120
 #define IDI_USERDETAILS                 121
 #define IDI_HISTORY                     122
@@ -76,7 +77,6 @@
 #define IDC_LOG                         1001
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOPOPUP                   1003
-#define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
 #define IDC_STAYMINIMIZED				1006
 #define IDC_SWITCHTOACTIVE				1007
@@ -107,7 +107,7 @@
 #define IDC_LOADCOUNTSPIN               1040
 #define IDC_SHOWINFOLINE                1041
 #define IDC_SHOWSTATUSBAR               1041
-#define IDC_SHOWBUTTONLINE              1042
+#define IDC_SHOWTOOLBAR                 1042
 #define IDC_LOADUNREAD                  1043
 #define IDC_SENDONENTER                 1043
 #define IDC_LOADCOUNT                   1044
@@ -152,7 +152,7 @@
 #define IDC_ATRANSPARENCYPERC           1620
 #define IDC_ITRANSPARENCYVALUE			1621
 #define IDC_ITRANSPARENCYPERC           1622
-#define IDC_HIDEONETAB					1623
+#define IDC_ALWAYSSHOWTABS              1623
 #define IDC_SENDALL						1624
 #define IDC_AVATARTEXT1                 1625
 #define IDC_AVATARTEXT2					1626
@@ -170,6 +170,9 @@
 #define IDC_HIDECONTAINERS				1638
 #define IDC_ORIGINALAVATARH             1639
 #define IDC_TYPINGSWITCH				1640
+#define IDC_LOADCOUNTTEXT2				1641
+#define IDC_CHAT_NICKROWTEXT2			1642
+#define IDC_CHAT_LIMITTEXT2				1643
 
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001

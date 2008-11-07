@@ -2,6 +2,7 @@
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
+Copyright 2003-2008 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -305,11 +306,11 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
             dat->szSearchQuery = NULL;
         	mir_free(dat->szSearchResult);
             dat->szSearchResult = NULL;
-			if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, "Chat", "SendOnEnter", 1))) {
+			if (( isCtrl != 0 ) ^ (0 != DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER))) {
 			   PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 			   return 0;
 			}
-			if (DBGetContactSettingByte(NULL, "Chat", "SendOnDblEnter", 0)) {
+			if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SENDONDBLENTER, SRMSGDEFSET_SENDONDBLENTER)) {
 			   if (dat->lastEnterTime + 2 < time(NULL))
 				  dat->lastEnterTime = time(NULL);
 			   else {
@@ -1268,8 +1269,8 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
             int font;
             int height;
 
-            ih = GetTextPixelSize( _T("AQGglo'"), g_Settings.UserListFont,FALSE);
-            ih2 = GetTextPixelSize( _T("AQGglo'"), g_Settings.UserListHeadingsFont,FALSE);
+            ih = GetTextPixelSize( _T("AQG_glo'"), g_Settings.UserListFont,FALSE);
+            ih2 = GetTextPixelSize( _T("AQG_glo'"), g_Settings.UserListHeadingsFont,FALSE);
             height = DBGetContactSettingByte(NULL, "Chat", "NicklistRowDist", 12);
             font = ih > ih2?ih:ih2;
 			// make sure we have space for icon!
