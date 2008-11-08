@@ -1362,8 +1362,26 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
 }
 void CAimProto::snac_retrieve_avatar(SNAC &snac)//family 0x0010
 {
-	if(snac.subcmp(0x0005))
-		avatar_retrieval_handler(snac);
+	if(snac.subcmp(0x0007))
+    {
+        int sn_length = snac.ubyte(0);
+	    char* sn = snac.part(1, sn_length);
+
+        int parse_off = sn_length + 4;
+        parse_off += snac.ubyte(parse_off);
+
+        int hash_size=snac.ubyte(5+parse_off);
+		char* hash_string=bytes_to_string(snac.val(6+parse_off), hash_size);
+        parse_off += hash_size + 6; 
+
+        int icon_length=snac.ushort(parse_off);
+        char* icon_data=snac.val(parse_off+2);
+
+		avatar_retrieval_handler(sn, hash_string, icon_data, icon_length);
+
+        delete[] hash_string;
+        delete[] sn;
+    }
 }
 void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 {

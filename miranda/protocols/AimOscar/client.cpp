@@ -759,14 +759,12 @@ int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, cons
 {
 	unsigned short offset=0;
 	char sn_length=(char)strlen(sn);
-	char* buf= (char*)alloca(SNAC_SIZE+sn_length+22);
-	aim_writesnac(0x10,0x04,6,offset,buf);
-	aim_writegeneric(1,&sn_length,offset,buf);
+	char* buf= (char*)alloca(SNAC_SIZE+sn_length+hash_size+12);
+	aim_writesnac(0x10,0x06,6,offset,buf);
+	aim_writechar(sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
-	aim_writegeneric(4,"\x01\0\x01\0",offset,buf);
-	char* size=(char*)&hash_size;
-	aim_writegeneric(1,&size[0],offset,buf);
-	aim_writegeneric(hash_size,hash,offset,buf);
+	aim_writechar(1,offset,buf);                   // Number of BART ID
+    aim_writebartid(1,0,hash_size,hash,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
 }
 

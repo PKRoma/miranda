@@ -188,7 +188,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   __cdecl avatar_request_limit_thread( void* );
 
 	void   avatar_request_handler(HANDLE hContact, char* hash, int hash_size);
-	void   avatar_retrieval_handler(SNAC &snac);
+	void   avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len);
     void   get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -284,6 +284,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
+    void   aim_writechar(char val, unsigned short &offset,char* out);
     void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////

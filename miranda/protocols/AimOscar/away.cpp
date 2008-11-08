@@ -77,7 +77,20 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const 
 
     unsigned short msgoffset=0;
     char* msgbuf=(char*)alloca(10+msg_size);
-    aim_writebartid(2,4,(unsigned short)msg_size,msg,msgoffset,msgbuf);
+
+    if (msg_size)
+    {
+        char* msgb=(char*)alloca(4+msg_size);
+        msgb[0]=(unsigned char)(msg_size >> 8);
+        msgb[1]=(unsigned char)(msg_size & 0xff);
+        memcpy(&msgb[2],msg,msg_size);
+        msgb[msg_size+2]=0;
+        msgb[msg_size+3]=0;
+        
+        aim_writebartid(2,4,(unsigned short)(msg_size+4),msgb,msgoffset,msgbuf);
+    }
+    else
+        aim_writebartid(2,0,0,NULL,msgoffset,msgbuf);
 
 	unsigned short offset=0;
 	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+msgoffset+8);

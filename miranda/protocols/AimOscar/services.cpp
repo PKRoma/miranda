@@ -175,9 +175,12 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
     if (hash)
     {
 	    get_avatar_filename( AI->hContact, AI->filename, sizeof(AI->filename), NULL);
-        char* hashs=getSetting(AI->hContact,AIM_KEY_ASH);
+        char* hashs=getSetting(AI->hContact, AIM_KEY_ASH);
         if (hashs && strcmp(hashs, hash) == 0 && AI->filename[0])
+        {
+            AI->format = detect_image_type(AI->filename);
             res = GAIR_SUCCESS;
+        }
         delete[] hashs;
 
 	    if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )

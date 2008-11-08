@@ -62,6 +62,11 @@ void CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out
 	offset+=4;
 }
 
+void CAimProto::aim_writechar(char val, unsigned short &offset,char* out)
+{
+    out[offset++] = val;
+}
+
 void CAimProto::aim_writeshort(unsigned short val, unsigned short &offset,char* out)
 {
     out[offset++] = (char)(val >> 8);
@@ -78,22 +83,8 @@ void CAimProto::aim_writebartid(unsigned short type, unsigned char flags, unsign
 {
     out[offset++]=(unsigned char)(type >> 8);
     out[offset++]=(unsigned char)(type & 0xff);
-
-    if (size)
-    {
-        out[offset++]=flags | 4;
-        out[offset++]=(unsigned char)size+4;
-
-        out[offset++]=(unsigned char)(size >> 8);
-        out[offset++]=(unsigned char)(size & 0xff);
-        memcpy(&out[offset],buf,size);
-	    offset+=size;
-        out[offset++]=0;
-        out[offset++]=0;
-    }
-    else
-    {
-        out[offset++]=flags & (char)~4;
-        out[offset++]=0;
-    }
+    out[offset++]=flags;
+    out[offset++]=(char)size;
+    memcpy(&out[offset],buf,size);
+    offset+=size;
 }

@@ -106,75 +106,75 @@ void __cdecl CAimProto::avatar_request_limit_thread( void* )
 	LOG("Avatar Request Limit Thread has ended");
 }
 
-void CAimProto::avatar_retrieval_handler(SNAC &snac)
+void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)
 {
     bool res = false;
     PROTO_AVATAR_INFORMATION AI = {0};
 	AI.cbSize = sizeof(AI);
 
-    int sn_length=(int)snac.ubyte(0);
-	char* sn=snac.part(1,sn_length);
-	if(char* norm_sn=normalize_name(sn))
+    char* norm_sn=normalize_name(sn);
+	AI.hContact=find_contact(norm_sn);
+	if (data_len>0)
 	{
-		AI.hContact=find_contact(norm_sn);
-		int hash_size=snac.ubyte(4+sn_length);
-		unsigned short icon_length=snac.ushort(5+sn_length+hash_size);
-		if(icon_length>0)
-		{
-			char* hash=snac.part(5+sn_length,hash_size);
-			char* hash_string=bytes_to_string(hash,hash_size);
-			setString(AI.hContact,AIM_KEY_ASH,hash_string);
+		setString(AI.hContact, AIM_KEY_ASH,hash);
 
-            char* file_data=snac.val(7+sn_length+hash_size);
-			
-            const char *type; 
-            detect_image_type(file_data,type, AI.format);
+        const char *type; 
+        AI.format = detect_image_type(data, type);
 
-	        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
+        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
 
-		    int fileId = _open(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
-		    if (fileId >= 0)
-            {
-		        _write(fileId, file_data, icon_length);
-		        _close(fileId);
-                res=true;
-		    }
+	    int fileId = _open(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+	    if (fileId >= 0)
+        {
+	        _write(fileId, data, data_len);
+	        _close(fileId);
+            res=true;
+	    }
 //            else
 //			    ShowError("Cannot set avatar. File '%s' could not be created/overwritten", file);
-
-			delete[] hash;
-			delete[] hash_string;
-		}
-		else
-			LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
-		delete[] norm_sn;	
 	}
-	delete[] sn;
+	else
+		LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
+
     sendBroadcast( AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0 );
+	delete[] norm_sn;	
 }
 
-void detect_image_type(const char* stream, const char* &type_ret, int& type)
+int detect_image_type(const char* stream, const char* &type_ret)
 {
 	if(stream[0]=='G'&&stream[1]=='I'&&stream[2]=='F')
     {
 		type_ret = ".gif";
-		type = PA_FORMAT_GIF;
+		return PA_FORMAT_GIF;
     }
 	else if(stream[1]=='P'&&stream[2]=='N'&&stream[3]=='G')
     {
 		type_ret = ".png";
-		type = PA_FORMAT_PNG;
+		return PA_FORMAT_PNG;
     }
 	else if(stream[0]=='B'&&stream[1]=='M')
     {
 		type_ret = ".bmp";
-		type = PA_FORMAT_BMP;
+		return PA_FORMAT_BMP;
     }
 	else//assume jpg
     {
 		type_ret = ".jpg";
-		type = PA_FORMAT_JPEG;
+		return PA_FORMAT_JPEG;
     }
+}
+
+int detect_image_type(const char* file)
+{
+   const char *ext = strrchr(file, '.');
+   if (strcmp(ext, ".gif") == 0)
+       return PA_FORMAT_GIF;
+   else if (strcmp(ext, ".bmp") == 0)
+       return PA_FORMAT_BMP;
+   else if (strcmp(ext, ".png") == 0)
+       return PA_FORMAT_PNG;
+   else
+       return PA_FORMAT_JPEG;
 }
 
 void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
