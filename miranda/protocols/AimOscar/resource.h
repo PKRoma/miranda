@@ -56,7 +56,6 @@
 #define IDC_HN                          1060
 #define IDC_PN                          1061
 #define IDC_GP                          1070
-#define IDC_KA                          1090
 #define IDC_DM                          1100
 #define IDC_DC                          1110
 #define IDC_FP                          1120
@@ -65,7 +64,6 @@
 #define IDC_FI                          1150
 #define IDC_FO                          1160
 #define IDC_DA                          1161
-#define IDC_DISABLESSL                  1162
 #define IDC_DSSL                        1162
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180

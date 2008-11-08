@@ -41,8 +41,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);
 	HookProtoEvent(ME_DB_CONTACT_DELETED, &CAimProto::OnContactDeleted);
 
-	if ( getByte( AIM_KEY_KA, 0 ))
-		ForkThread( &CAimProto::aim_keepalive_thread, 0 );
+	ForkThread( &CAimProto::aim_keepalive_thread, 0 );
 }
 
 CAimProto::~CAimProto()

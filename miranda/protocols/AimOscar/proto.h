@@ -136,7 +136,6 @@ struct CAimProto : public PROTO_INTERFACE
 	bool instantidle;
 	bool checking_mail;
 	bool list_received;
-	HANDLE hKeepAliveEvent;
 
 	//Some main connection stuff
 	HANDLE hServerConn;//handle to the main connection

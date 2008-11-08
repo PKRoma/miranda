@@ -682,7 +682,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte( AIM_KEY_FO, 0));//Format outgoing messages
 			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte( AIM_KEY_II, 0));//Instant Idle
 			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte( AIM_KEY_CM, 0));//Check Mail
-			CheckDlgButton(hwndDlg, IDC_KA, ppro->getByte( AIM_KEY_KA, 0));//Keep Alive
 			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte( AIM_KEY_DA, 0));//Disable Avatars
 			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte( AIM_KEY_DSSL, 0));//Disable SSL
 		}
@@ -850,19 +849,6 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//Check Mail on Login
 				ppro->setByte( AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
 				//End
-
-				//Keep alive timer
-				if (IsDlgButtonChecked(hwndDlg, IDC_KA))
-				{
-					ppro->setByte( AIM_KEY_KA, 1 );
-					ppro->ForkThread( &CAimProto::aim_keepalive_thread, 0 );
-				}
-				else
-				{
-					ppro->setByte( AIM_KEY_KA, 0);
-					SetEvent(ppro->hKeepAliveEvent);
-				}
-				//End 
 			}
 		}
 		break;

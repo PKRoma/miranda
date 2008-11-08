@@ -2,23 +2,14 @@
 
 void __cdecl CAimProto::aim_keepalive_thread( void* )
 {
-	if ( !hKeepAliveEvent ) {
-		hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		for(;;)
-		{
-			DWORD dwWait = WaitForSingleObjectEx(hKeepAliveEvent, 1000*DEFAULT_KEEPALIVE_TIMER, TRUE);
-			if (dwWait == WAIT_OBJECT_0) break; // we should end
-			else if (dwWait == WAIT_TIMEOUT)
-			{
-				if ( state == 1 )
-					aim_keepalive( hServerConn, seqno );
-			}
-			//else if (dwWait == WAIT_IO_COMPLETION)
-			// Possible shutdown in progress
-			if (Miranda_Terminated()) break;
+	for(;;)
+	{
+        if (SleepEx(1000*DEFAULT_KEEPALIVE_TIMER, TRUE) == 0)
+        {
+			if ( state == 1 )
+				aim_keepalive( hServerConn, seqno );
 		}
-		CloseHandle( hKeepAliveEvent );
-		hKeepAliveEvent = NULL;
+		if (Miranda_Terminated()) break;
 	}
 }
 

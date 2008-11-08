@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="aim"
 	ProjectGUID="{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
+	RootNamespace="aim"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -239,7 +240,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
@@ -260,6 +261,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib"
+				OutputFile="c:\Miranda IM\plugins\Aim.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -530,6 +532,10 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icons\add.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\admin.ico"
 				>
 			</File>
@@ -542,11 +548,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\away.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\backgroundcolor.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\bold.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\bot.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\icons\confirmed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\foregroundcolor.ico"
 				>
 			</File>
 			<File
@@ -558,11 +580,67 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icons\idle.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\inbox.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\italic.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nbold.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nitalic.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nnormalscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\normalscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nsubscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nsuperscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\nunderline.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\oscar.ico"
 				>
 			</File>
 			<File
+				RelativePath=".\icons\profile.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\subscript.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\superscript.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\icons\unconfirmed.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\underline.ico"
 				>
 			</File>
 		</Filter>
@@ -579,15 +657,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\away.h"
-				>
-			</File>
-			<File
 				RelativePath=".\client.h"
-				>
-			</File>
-			<File
-				RelativePath=".\connection.h"
 				>
 			</File>
 			<File
@@ -656,10 +726,6 @@
 			</File>
 			<File
 				RelativePath=".\theme.h"
-				>
-			</File>
-			<File
-				RelativePath=".\thread.h"
 				>
 			</File>
 			<File
