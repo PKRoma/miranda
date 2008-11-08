@@ -12,7 +12,7 @@ static HANDLE hMooduleLoaded;
 
 
 #define AIM_OSCAR_VERSION "\0\x08\0\x0"
-char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.0.0";
+const char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.0.0";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,8 +53,8 @@ PLUGININFOEX pluginInfo={
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	unsigned long mv=_htonl(mirandaVersion);
-	memcpy((char*)&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
-	memcpy((char*)&AIM_CAP_MIRANDA[12],(char*)&AIM_OSCAR_VERSION,sizeof(DWORD));
+	memcpy(&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
+	memcpy(&AIM_CAP_MIRANDA[12],AIM_OSCAR_VERSION,sizeof(DWORD));
 	return &pluginInfo;
 }
 

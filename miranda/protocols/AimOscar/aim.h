@@ -192,8 +192,8 @@
 #define AIM_COUNTRY						"us"
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_MSG_TYPE_UNICODE			"text/x-aolrtf; charset=\"unicode-2-0\""
-#define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
-extern char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
+#define AIM_TOOL_VERSION				"\x01\x10\x17\x54"
+extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 //Supported Clients
 #define CLIENT_UNKNOWN					"?"
 #define CLIENT_AIM5						"AIM 5.x"
@@ -267,7 +267,7 @@ extern char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define AIM_CAP_UNKNOWNC				"\x09\x46\xf0\x05\x4c\x7f\x11\xD1\x82\x22\x44\x45\x53\x54\0\0"
 #define AIM_CAP_IM2						"\x74\xed\xc3\x36\x44\xdf\x48\x5b\x8b\x1c\x67\x1a\x1f\x86\x09\x9f"
 #define AIM_CAP_TRILLIAN				"\xF2\xE7\xC7\xF4\xFE\xAD\x4D\xFB\xB2\x35\x36\x79\x8B\xDF\0\0"
-extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
+extern char AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 
 //Aim Services
 #define AIM_SERVICE_GENERIC				"\0\x01\0\x04"//version 4
@@ -282,6 +282,7 @@ extern char	AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define AIM_SERVICE_USERLOOKUP			"\0\x0A\0\x01"//version 1
 #define AIM_SERVICE_STATS				"\0\x0B\0\x01"//version 1
 #define AIM_SERVICE_CHAT				"\0\x0D\0\x01"//version 1
+#define AIM_SERVICE_ICQ 				"\0\x15\0\x01"//version 1
 #define AIM_SERVICE_MAIL				"\0\x18\0\x01"//version 1
 #define AIM_SERVICE_RATES				"\0\x01\0\x02\0\x03\0\x04\0\x05"
 //Aim Statuses

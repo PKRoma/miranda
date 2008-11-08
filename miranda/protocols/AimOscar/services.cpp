@@ -111,8 +111,8 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 		int i=1;
 		for(;;)
 		{
-			char* item= new char[sizeof(AIM_KEY_BI)+10];
-			char* group= new char[sizeof(AIM_KEY_GI)+10];
+			char item[sizeof(AIM_KEY_BI)+10];
+			char group[sizeof(AIM_KEY_GI)+10];
 			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 			if ( unsigned short item_id=(unsigned short)getWord((HANDLE)wParam, item, 0)) {
@@ -120,13 +120,8 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 				if(group_id)
 					aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,group_id);
 			}
-			else {
-				delete[] item;
-				delete[] group;
+			else
 				break;
-			}
-			delete[] item;
-			delete[] group;
 			i++;
 		}
 		DBFreeVariant(&dbv);

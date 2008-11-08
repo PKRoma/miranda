@@ -71,6 +71,7 @@ int CAimProto::aim_send_service_request(HANDLE hServerConn,unsigned short &seqno
 	aim_writefamily(AIM_SERVICE_LOCATION,offset,buf);
 	aim_writefamily(AIM_SERVICE_BUDDYLIST,offset,buf);
 	aim_writefamily(AIM_SERVICE_MESSAGING,offset,buf);
+	aim_writefamily(AIM_SERVICE_ICQ,offset,buf);
 	aim_writefamily(AIM_SERVICE_INVITATION,offset,buf);
 	aim_writefamily(AIM_SERVICE_POPUP,offset,buf);
 	aim_writefamily(AIM_SERVICE_BOS,offset,buf);
@@ -178,7 +179,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
-//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
 	if(getByte( AIM_KEY_HF, 0))
@@ -249,6 +250,8 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
 	aim_writefamily(AIM_SERVICE_BUDDYLIST,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_MESSAGING,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_ICQ,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
 	aim_writefamily(AIM_SERVICE_INVITATION,offset,buf);
 	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
