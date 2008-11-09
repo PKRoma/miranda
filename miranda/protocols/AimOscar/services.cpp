@@ -118,7 +118,7 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			if ( unsigned short item_id=(unsigned short)getWord((HANDLE)wParam, item, 0)) {
 				unsigned short group_id=(unsigned short)getWord((HANDLE)wParam, group, 0);
 				if(group_id)
-					aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,group_id);
+					aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,group_id,0);
 			}
 			else
 				break;
@@ -146,26 +146,54 @@ int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 
 int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if (state != 1)
-		return 0;
+	if (state != 1)	return 0;
 
     HANDLE hContact = (HANDLE)wParam;
+    unsigned short item_id;
 	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+	if (getString(hContact, AIM_KEY_SN, &dbv)) return 0;
+
+    switch(pd_mode)
     {
-        unsigned short item_id = find_list_item_id(block_list, dbv.pszVal);
-        bool remove = item_id != 0;
-		if (remove)
+    case 0:
+        pd_mode = 3;
+        aim_set_pd_info(hServerConn, seqno);
+
+    case 3:
+        item_id = find_list_item_id(block_list, dbv.pszVal);
+		if (item_id != 0)
+        {
             remove_list_item_id(block_list, item_id);
+            aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
+        }
         else
         {
             item_id = get_free_list_item_id(block_list);
             block_list.insert(new PDList(dbv.pszVal, item_id));
+            aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
         }
-        
-        aim_block_buddy(hServerConn, seqno, remove, dbv.pszVal, item_id);
-		DBFreeVariant(&dbv);
+        break;
+
+    case 1:
+        pd_mode = 2;
+        aim_set_pd_info(hServerConn, seqno);
+
+    case 2:
+        item_id = find_list_item_id(allow_list, dbv.pszVal);
+		if (item_id != 0)
+        {
+            remove_list_item_id(allow_list, item_id);
+            aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
+        }
+        else
+        {
+            item_id = get_free_list_item_id(allow_list);
+            allow_list.insert(new PDList(dbv.pszVal, item_id));
+            aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
+        }
+        break;
 	}
+	DBFreeVariant(&dbv);
 
 	return 0;
 }

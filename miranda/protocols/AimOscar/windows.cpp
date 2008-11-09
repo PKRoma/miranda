@@ -886,13 +886,23 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         {
             char nick[80];
             SendDlgItemMessageA(hwndDlg, IDC_ALLOWEDIT, WM_GETTEXT, 80, (LPARAM)nick);
-            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)nick);
+            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)trim_str(nick));
         }
-        if (LOWORD(wParam) == IDC_BLOCKADD)
+        else if (LOWORD(wParam) == IDC_BLOCKADD)
         {
             char nick[80];
             SendDlgItemMessageA(hwndDlg, IDC_BLOCKEDIT, WM_GETTEXT, 80, (LPARAM)nick);
-            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)nick);
+            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)trim_str(nick));
+        }
+        else if (LOWORD(wParam) == IDC_ALLOWREMOVE)
+        {
+            i = SendDlgItemMessage(hwndDlg, IDC_ALLOWLIST, LB_GETCURSEL, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_ALLOWLIST, LB_DELETESTRING, i, 0);
+        }
+        else if (LOWORD(wParam) == IDC_BLOCKREMOVE)
+        {
+            i = SendDlgItemMessage(hwndDlg, IDC_BLOCKLIST, LB_GETCURSEL, 0, 0);
+            SendDlgItemMessage(hwndDlg, IDC_BLOCKLIST, LB_DELETESTRING, i, 0);
         }
 
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -901,22 +911,68 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     case WM_NOTIFY:
 		if (((LPNMHDR) lParam)->code == PSN_APPLY) 
         {
-            for (char i=0; i<5; ++i)
+            ppro->aim_ssi_update(ppro->hServerConn, ppro->seqno, true);
+            for (i=0; i<5; ++i)
             {
                 if (IsDlgButtonChecked(hwndDlg, btns[i]) && ppro->pd_mode != i + 1)
                 {
-                    ppro->pd_mode = i + 1;
+                    ppro->pd_mode = (char)(i + 1);
                     ppro->pd_flags = 1;
                     ppro->aim_set_pd_info(ppro->hServerConn, ppro->seqno);
                     break;
                 }
             }
+            for (i=0; i<ppro->block_list.getCount(); ++i)
+            {
+                PDList& pd = ppro->block_list[i];
+                if (SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.sn) == LB_ERR)
+                {
+                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.sn, pd.item_id, 0, 3);
+                    ppro->block_list.remove(i--);
+                }
+            }
+            i = SendDlgItemMessage(hwndDlg, IDC_BLOCKLIST, LB_GETCOUNT, 0, 0);
+            for (; i--;)
+            {
+                char nick[80];
+                SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_GETTEXT, i, (LPARAM)nick);
+                if (ppro->find_list_item_id(ppro->block_list, nick) == 0)
+                {
+                    unsigned short id = ppro->get_free_list_item_id(ppro->block_list);
+                    ppro->aim_add_contact(ppro->hServerConn, ppro->seqno, nick, id, 0, 3);
+                    ppro->block_list.insert(new PDList(nick, id));
+                }
+            }
+
+            for (i=0; i<ppro->allow_list.getCount(); ++i)
+            {
+                PDList& pd = ppro->allow_list[i];
+                if (SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.sn) == LB_ERR)
+                {
+                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.sn, pd.item_id, 0, 2);
+                    ppro->allow_list.remove(i--);
+                }
+            }
+            i = SendDlgItemMessage(hwndDlg, IDC_ALLOWLIST, LB_GETCOUNT, 0, 0);
+            for (; i--;)
+            {
+                char nick[80];
+                SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_GETTEXT, i, (LPARAM)nick);
+                if (ppro->find_list_item_id(ppro->allow_list, nick) == 0)
+                {
+                    unsigned short id = ppro->get_free_list_item_id(ppro->allow_list);
+                    ppro->aim_add_contact(ppro->hServerConn, ppro->seqno, nick, id, 0, 2);
+                    ppro->allow_list.insert(new PDList(nick, id));
+                }
+            }
+
+            ppro->aim_ssi_update(ppro->hServerConn, ppro->seqno, false);
         }
         break;
     }
 	return FALSE;
 }		
-
+ 
 
 int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 {

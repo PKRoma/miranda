@@ -236,10 +236,10 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response);
 	int    aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
-	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);
-	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id);
-	int    aim_add_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id);
+	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
+	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
 	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length);
+    int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
 	int    aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr,unsigned long proxy_ip, unsigned short port);
@@ -289,7 +289,7 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp
 
-	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset,char* out);
+	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out);
 	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);

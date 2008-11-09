@@ -4,6 +4,7 @@
 char *normalize_name(const char *s);
 char* lowercase_name(char* s);
 char* trim_name(const char* s);
+char* trim_str(char* s);
 void create_group(char *group);
 void set_extra_icon(char* data);
 unsigned int aim_oft_checksum_file(char *filename);

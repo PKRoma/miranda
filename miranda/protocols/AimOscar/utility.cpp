@@ -171,10 +171,10 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 			if(old_group_id)
 			{
 				LOG("Removing buddy %s:%u to the serverside list",dbv.pszVal,item_id);
-				aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,old_group_id);
+				aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,old_group_id, 0);
 			}
 			LOG("Adding buddy %s:%u to the serverside list",dbv.pszVal,item_id);
-			aim_add_contact(hServerConn,seqno,dbv.pszVal,item_id,new_group_id);
+			aim_add_contact(hServerConn,seqno,dbv.pszVal,item_id,new_group_id, 0);
 			if(!group_exist)
 			{
 				char group_id_string[32];
@@ -182,7 +182,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 				DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, tgroup);
 				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
 				LOG("Adding group %s:%u to the serverside list",group,new_group_id);
-				aim_add_group(hServerConn,seqno,group,new_group_id);//add the group server-side even if it exist
+				aim_add_contact(hServerConn,seqno,group,0,new_group_id,1);//add the group server-side even if it exist
 			}
 			LOG("Modifying group %s:%u on the serverside list",tgroup,new_group_id);
 			aim_mod_group(hServerConn,seqno,tgroup,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's m_iStatus during this session			
@@ -482,6 +482,25 @@ char* trim_name(const char* s)
 	return buf;
 }
 
+char* trim_str(char* s)
+{   
+	if (s == NULL) return NULL;
+    size_t len = strlen(s);
+
+    while (len)
+    {
+        if (isspace(s[len-1])) --len;
+        else break;
+    }
+    s[len]=0;
+
+    char* sc = s; 
+	while (isspace(*sc)) ++sc;
+	memcpy(s,sc,strlen(sc)+1);
+
+    return s;
+}
+
 void __cdecl CAimProto::msg_ack_success( void* hContact )
 {
 	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
@@ -631,16 +650,14 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 unsigned short CAimProto::get_free_list_item_id(OBJLIST<PDList> & list)
 {
     unsigned short id;
+
+retry:
     CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
+    id &= 0x7fff;
 
     for (int i=0; i<list.getCount(); ++i)
-    {
-        if (list[i].item_id == id)
-        {
-            CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
-            i=-1;
-        }
-    }
+        if (list[i].item_id == id) goto retry;
+
     return id;
 }
 

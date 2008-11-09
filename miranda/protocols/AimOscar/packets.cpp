@@ -1,15 +1,16 @@
 #include "aim.h"
 #include "packets.h"
 
-int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short request_id,unsigned short &offset, char* out)
+int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out)
 {
 	struct snac_header snac;
 	unsigned short slen=0;
 	snac.service=_htons(service);
 	snac.subgroup=_htons(subgroup);
 	snac.flags=0;
-	snac.request_id[0]=0;
-	snac.request_id[1]=_htons(request_id);
+    snac.request_id[0]=0;
+//    CallService(MS_UTILS_GETRANDOM, 2, (LPARAM)&snac.request_id[0]);
+	snac.request_id[1]=_htons(subgroup);
 	slen=sizeof(snac);
 	char* buf=new char[slen];
 	memcpy(buf, &snac, slen);
