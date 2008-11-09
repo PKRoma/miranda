@@ -126,10 +126,9 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 {
 	char* tgroup=trim_name(group);	
 	bool group_exist=1;
-	char* groupNum= new char[sizeof(AIM_KEY_GI)+10];
+	char groupNum[sizeof(AIM_KEY_GI)+10];
 	mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 	unsigned short old_group_id = getWord(hContact, groupNum, 0);		
-	delete[] groupNum;
 	if(old_group_id)
 	{
 		char group_id_string[32];
@@ -143,12 +142,11 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 			}
 			DBFreeVariant(&dbv);
 	}
-	char* buddyNum= new char[sizeof(AIM_KEY_BI)+10];
+	char buddyNum[sizeof(AIM_KEY_BI)+10];
 	mir_snprintf(buddyNum,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	unsigned short item_id = getWord(hContact, buddyNum, 0);
-	delete[] buddyNum;
 	char* lowercased_group=lowercase_name(tgroup);
-	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY,lowercased_group,0);
+	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY ,lowercased_group,0);
 	if(!new_group_id)
 	{
 		LOG("Group %s not on list.",tgroup);
@@ -165,7 +163,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
 		DBVARIANT dbv;
 		if(!getString(hContact, AIM_KEY_SN,&dbv))
 		{
-			char* groupNum= new char[sizeof(AIM_KEY_GI)+10];
+			char groupNum[sizeof(AIM_KEY_GI)+10];
 			mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			setWord(hContact, groupNum, new_group_id);
 			unsigned short user_id_array_size;
@@ -207,11 +205,10 @@ void CAimProto::add_contacts_to_groups()
 		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
 		{
 			//MessageBox( NULL, "Matching contact...making a groupid key...", m_szModuleName, MB_OK );
-			char* group= new char[sizeof(AIM_KEY_GI)+10];
+			char group[sizeof(AIM_KEY_GI)+10];
 			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
 			//MessageBox( NULL, group, m_szModuleName, MB_OK );
 			unsigned short group_id=(unsigned short)getWord(hContact, group,0);	
-			delete[] group;
 			if(group_id)
 			{
 				//MessageBox( NULL, "Group Id was valid...", m_szModuleName, MB_OK );
@@ -479,7 +476,7 @@ char* trim_name(const char* s)
 	if (s == NULL)
 		return NULL;
 	static char buf[64];
-	while(s[0]==0x20)
+	while(s[0]==' ')
 		s++;
 	strlcpy(buf,s,strlen(s)+1);
 	return buf;
@@ -555,28 +552,23 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		while (hContact)
 		{
 			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+			if (protocol != NULL && !strcmp(protocol, m_szModuleName))
 			{		
 				int i=1;
 				for(;;)
 				{
-					char* item= new char[sizeof(AIM_KEY_BI)+10];
+					char item[sizeof(AIM_KEY_BI)+10];
 					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					if(unsigned short item_id=(unsigned short)getWord(hContact, item,0))
 					{
 						if(item_id==id)
 						{
 							used_id=1;
-							delete[] item;
 							break;//found one no need to look through anymore
 						}
 					}
 					else
-					{
-						delete[] item;
 						break;//no more ids for this user
-					}
-					delete[] item;
 					i++;
 				}
 				if(used_id)
@@ -586,10 +578,9 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		}
 		if(!used_id)
 		{
-			char* item= new char[sizeof(AIM_KEY_BI)+10];
+			char item[sizeof(AIM_KEY_BI)+10];
 			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 			setWord(hbuddy, item, id);
-			delete[] item;
 			return id;
 		}
 	}
@@ -609,8 +600,8 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 				int i=1;
 				for(;;)
 				{
-					char* item= new char[sizeof(AIM_KEY_BI)+10];
-					char* group= new char[sizeof(AIM_KEY_GI)+10];
+					char item[sizeof(AIM_KEY_BI)+10];
+					char group[sizeof(AIM_KEY_GI)+10];
 					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
 					mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
 					if(unsigned short user_group_id=(unsigned short)getWord(hContact, group,0))
@@ -626,19 +617,53 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 						}
 					}
 					else
-					{
-						delete[] item;
-						delete[] group;
 						break;
-					}
-					delete[] item;
-					delete[] group;
 					i++;
 				}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	return list;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned short CAimProto::get_free_list_item_id(OBJLIST<PDList> & list)
+{
+    unsigned short id;
+    CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
+
+    for (int i=0; i<list.getCount(); ++i)
+    {
+        if (list[i].item_id == id)
+        {
+            CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
+            i=-1;
+        }
+    }
+    return id;
+}
+
+unsigned short CAimProto::find_list_item_id(OBJLIST<PDList> & list, char* sn)
+{
+    for (int i=0; i<list.getCount(); ++i)
+    {
+        if (strcmp(list[i].sn, sn) == 0)
+            return list[i].item_id;
+    }
+    return 0;
+}
+
+void CAimProto::remove_list_item_id(OBJLIST<PDList> & list, unsigned short id)
+{
+    for (int i=0; i<list.getCount(); ++i)
+    {
+        if (list[i].item_id == id)
+        {
+            list.remove(i);
+            break;
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -927,51 +952,6 @@ void set_extra_icon(char* data)
 	delete[] data;
 }
 
-void wcs_htons(wchar_t * ch)
-{
-	for(size_t i=0;i<wcslen(ch);i++)
-		ch[i]=_htons(ch[i]);
-}
-
-char* bytes_to_string(char* bytes, int num_bytes)
-{
-	char* string = new char[num_bytes*2+1];
-	for(int i=0;i<num_bytes;i++)
-	{
-		char store[2];
-		unsigned char bit=(bytes[i]&0xF0)>>4;
-		_itoa(bit,store,16);
-		memcpy(&string[i*2],store,1);
-		bit=(bytes[i]&0x0F);
-		_itoa(bit,store,16);
-		memcpy(&string[i*2+1],store,1);
-	}
-	string[num_bytes*2]='\0';
-	return string;
-}
-
-void string_to_bytes(char* string, char* bytes)
-{
-	char sbyte[3];
-	sbyte[2]='\0';
-	int length=lstrlenA(string);
-	for(int i=0;i<length;i=i+2)
-	{
-		sbyte[0]=string[i];
-		sbyte[1]=string[i+1];
-		bytes[i/2]=(char)strtol(sbyte,NULL,16);
-	}
-}
-
-unsigned short string_to_bytes_count(char* string)
-{
-	unsigned short i=1;
-	char* string2=strldup(string);
-	strtok(string2,";");
-	while(strtok(NULL,";"))
-		i++;
-	return i;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions

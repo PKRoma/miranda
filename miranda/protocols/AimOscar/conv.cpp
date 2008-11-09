@@ -675,6 +675,52 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	return buf;
 }
 
+void wcs_htons(wchar_t * ch)
+{
+	for(size_t i=0;i<wcslen(ch);i++)
+		ch[i]=_htons(ch[i]);
+}
+
+char* bytes_to_string(char* bytes, int num_bytes)
+{
+	char* string = new char[num_bytes*2+1];
+	for(int i=0;i<num_bytes;i++)
+	{
+		char store[2];
+		unsigned char bit=(bytes[i]&0xF0)>>4;
+		_itoa(bit,store,16);
+		memcpy(&string[i*2],store,1);
+		bit=(bytes[i]&0x0F);
+		_itoa(bit,store,16);
+		memcpy(&string[i*2+1],store,1);
+	}
+	string[num_bytes*2]='\0';
+	return string;
+}
+
+void string_to_bytes(char* string, char* bytes)
+{
+	char sbyte[3];
+	sbyte[2]='\0';
+	int length=lstrlenA(string);
+	for(int i=0;i<length;i=i+2)
+	{
+		sbyte[0]=string[i];
+		sbyte[1]=string[i+1];
+		bytes[i/2]=(char)strtol(sbyte,NULL,16);
+	}
+}
+
+unsigned short string_to_bytes_count(char* string)
+{
+	unsigned short i=1;
+	char* string2=strldup(string);
+	strtok(string2,";");
+	while(strtok(NULL,";"))
+		i++;
+	return i;
+}
+
 bool is_utf(const char* msg)
 {
     bool res = false;

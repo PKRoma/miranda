@@ -126,25 +126,35 @@ int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 
 int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
+    HANDLE hContact = (HANDLE)wParam;
+
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
-	//see if we should add the html away message context menu items
-	if ( getWord((HANDLE)wParam, AIM_KEY_ST, ID_STATUS_OFFLINE ) == ID_STATUS_AWAY )
-		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
-	else
-		mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE|CMIF_HIDDEN;
+
+    //see if we should add the html away message context menu items
+	mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
+	if ( getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE ) != ID_STATUS_AWAY )
+		mi.flags |= CMIF_HIDDEN;
 
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
-	char* item= new char[sizeof(AIM_KEY_BI)+10];
-	mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-	if ( !getWord((HANDLE)wParam, item, 0 ) && state == 1 )
-		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE;
-	else
-		mi.flags=CMIM_FLAGS|CMIF_NOTONLINE|CMIF_HIDDEN;
 
-	delete[] item;
+    char item[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
+	mi.flags = CMIM_FLAGS | CMIF_NOTONLINE;
+	if ( getWord(hContact, item, 0 ) || state == 0 )
+		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
+
+   	DBVARIANT dbv;
+	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+    {
+        mi.pszName = find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block";
+	    mi.flags = CMIM_NAME;
+	    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockContextMenuItem, (LPARAM)&mi);
+		DBFreeVariant(&dbv);
+	}
+   
 	return 0;
 }
 
@@ -155,9 +165,10 @@ void CAimProto::InitMenus()
 
 	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof( mi );
+	mi.pszContactOwner = m_szModuleName;
+
 	mi.popupPosition = 500090000;
 	mi.position = 500090000;
-	mi.pszContactOwner = m_szModuleName;
 	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
 	mi.icolibItem = GetIconHandle("aim");
 	mi.ptszName = m_tszUserName;
@@ -185,10 +196,11 @@ void CAimProto::InitMenus()
 	mi.pszName = LPGEN( "Instant Idle" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
+	mi.pszPopupName=NULL;
+	mi.popupPosition=0;
+
+    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
 	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
-	mi.pszPopupName=Translate("Read &HTML Away Message");
-	mi.popupPosition=-2000006000;
 	mi.position=-2000006000;
 	mi.icolibItem = GetIconHandle("away");
 	mi.pszName = LPGEN("Read &HTML Away Message");
@@ -197,8 +209,6 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
 	CreateProtoService("/GetProfile",&CAimProto::GetProfile);
-	mi.pszPopupName=Translate("Read Profile");
-	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
 	mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
@@ -207,11 +217,17 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
 	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList);
-	mi.pszPopupName=Translate("Add To Server List");
-	mi.popupPosition=-2000006500;
 	mi.position=-2000006500;
 	mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
+	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
+	mi.position=-2000006500;
+	mi.icolibItem = GetIconHandle("add");
+	mi.pszName = LPGEN("&Block");
+	mi.flags=CMIF_ICONFROMICOLIB;
+	hBlockContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 }

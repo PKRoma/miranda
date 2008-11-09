@@ -91,6 +91,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
+    int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
@@ -154,6 +155,7 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hHTMLAwayContextMenuItem;
 	HANDLE hAddToServerListContextMenuItem;
 	HANDLE hReadProfileMenuItem;
+    HANDLE hBlockContextMenuItem;
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -171,6 +173,9 @@ struct CAimProto : public PROTO_INTERFACE
     unsigned long pd_flags;
     unsigned short pd_info_id;
     char pd_mode;
+
+    OBJLIST<PDList> allow_list;
+    OBJLIST<PDList> block_list;
 
 	//away message retrieval stuff
     char* modeMsgs[9];
@@ -250,6 +255,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
     int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
+    int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
@@ -371,9 +377,13 @@ struct CAimProto : public PROTO_INTERFACE
 	void   write_away_message(const char* sn, const char* msg, bool utf);
 	void   write_profile(const char* sn, const char* msg, bool utf);
 
-	WORD   search_for_free_group_id(char *name);
-	WORD   search_for_free_item_id(HANDLE hbuddy);
+	unsigned short search_for_free_group_id(char *name);
+	unsigned short search_for_free_item_id(HANDLE hbuddy);
 	char*  get_members_of_group( WORD group_id, WORD& size);
+
+    unsigned short get_free_list_item_id(OBJLIST<PDList> & list);
+    unsigned short find_list_item_id(OBJLIST<PDList> & list, char* sn);
+    void   remove_list_item_id(OBJLIST<PDList> & list, unsigned short id);
 
 	void   create_cookie(HANDLE hContact);
 	void   read_cookie(HANDLE hContact,char* cookie);

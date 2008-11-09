@@ -134,12 +134,39 @@ int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 	if ( state != 1 )
 		return 0;
 
+    HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingString(( HANDLE )wParam, MOD_KEY_CL, OTH_KEY_GP, &dbv )) {
-		add_contact_to_group((HANDLE)wParam, dbv.pszVal );
+	if ( !DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv )) {
+		add_contact_to_group(hContact, dbv.pszVal );
 		DBFreeVariant( &dbv );
 	}
-	else add_contact_to_group((HANDLE)wParam, AIM_DEFAULT_GROUP );
+	else add_contact_to_group(hContact, AIM_DEFAULT_GROUP );
+	return 0;
+}
+
+int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (state != 1)
+		return 0;
+
+    HANDLE hContact = (HANDLE)wParam;
+	DBVARIANT dbv;
+	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+    {
+        unsigned short item_id = find_list_item_id(block_list, dbv.pszVal);
+        bool remove = item_id != 0;
+		if (remove)
+            remove_list_item_id(block_list, item_id);
+        else
+        {
+            item_id = get_free_list_item_id(block_list);
+            block_list.insert(new PDList(dbv.pszVal, item_id));
+        }
+        
+        aim_block_buddy(hServerConn, seqno, remove, dbv.pszVal, item_id);
+		DBFreeVariant(&dbv);
+	}
+
 	return 0;
 }
 

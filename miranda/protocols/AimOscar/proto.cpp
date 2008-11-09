@@ -3,6 +3,7 @@
 #include "m_genmenu.h"
 
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
+    : allow_list(2), block_list(2)
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );

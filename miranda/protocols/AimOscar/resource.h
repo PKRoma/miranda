@@ -56,6 +56,15 @@
 #define IDC_ALLOWBELOW                  146
 #define IDC_BLOCKALL                    147
 #define IDC_BLOCKBELOW                  148
+#define IDC_ALLOWLIST                   149
+#define IDC_BLOCKLIST                   150
+#define IDC_ALLOWEDIT                   151
+#define IDC_ALLOWADD                    152
+#define IDC_BLOCKEDIT                   153
+#define IDC_BLOCKADD                    154
+#define IDC_BUTTON2                     155
+#define IDC_ALLOWREMOVE                 155
+#define IDC_BLOCKREMOVE                 156
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
@@ -64,7 +73,6 @@
 #define IDC_GP                          1070
 #define IDC_DM                          1100
 #define IDC_DC                          1110
-#define IDC_DC2                         1111
 #define IDC_FP                          1120
 #define IDC_AT                          1130
 #define IDC_ES                          1140
@@ -87,7 +95,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        37
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         145
+#define _APS_NEXT_CONTROL_VALUE         156
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

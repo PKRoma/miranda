@@ -612,9 +612,11 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                     break;
 
                 case 0x0002: //permit record
+                    allow_list.insert(new PDList(name, item_id));
                     break;
 
                 case 0x0003: //deny record
+                    block_list.insert(new PDList(name, item_id));
                     break;
 
                 case 0x0004: //privacy record
@@ -622,14 +624,15 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
                     {
                         pd_info_id = item_id;
 
-                        unsigned short tlv_offset = 0;
+                        const int tlv_base = offset + name_length + 10; 
+                        int tlv_offset = 0;
                    		while (tlv_offset<tlv_size)
 		                {
-			                TLV tlv(snac.val(offset+name_length+10+tlv_offset));
-			                if(tlv.cmp(0x00cc))
-                                pd_flags = tlv.ulong();
-			                else if(tlv.cmp(0x00ca))
+			                TLV tlv(snac.val(tlv_base + tlv_offset));
+			                if(tlv.cmp(0x00ca))
                                 pd_mode = tlv.ubyte();
+			                else if(tlv.cmp(0x00cc))
+                                pd_flags = tlv.ulong();
 
 			                tlv_offset += TLV_HEADER_SIZE + tlv.len();
                         }

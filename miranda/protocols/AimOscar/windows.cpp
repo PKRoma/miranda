@@ -859,8 +859,9 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    static const int btns[] = {  IDC_ALLOWALL, IDC_BLOCKALL, IDC_ALLOWBELOW, IDC_BLOCKBELOW, IDC_ALLOWCONT };
+    static const int btns[] = { IDC_ALLOWALL, IDC_BLOCKALL, IDC_ALLOWBELOW, IDC_BLOCKBELOW, IDC_ALLOWCONT };
     CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+    int i;
 
 	switch (msg) 
     {
@@ -871,9 +872,29 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		ppro = (CAimProto*)lParam;
 
         CheckRadioButton(hwndDlg, IDC_ALLOWALL, IDC_BLOCKBELOW, btns[ppro->pd_mode-1]);
+
+        for (i=0; i<ppro->allow_list.getCount(); ++i)
+            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)ppro->allow_list[i].sn);
+
+        for (i=0; i<ppro->block_list.getCount(); ++i)
+            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)ppro->block_list[i].sn);
+
         break;
     
 	case WM_COMMAND:
+        if (LOWORD(wParam) == IDC_ALLOWADD)
+        {
+            char nick[80];
+            SendDlgItemMessageA(hwndDlg, IDC_ALLOWEDIT, WM_GETTEXT, 80, (LPARAM)nick);
+            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)nick);
+        }
+        if (LOWORD(wParam) == IDC_BLOCKADD)
+        {
+            char nick[80];
+            SendDlgItemMessageA(hwndDlg, IDC_BLOCKEDIT, WM_GETTEXT, 80, (LPARAM)nick);
+            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)nick);
+        }
+
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 

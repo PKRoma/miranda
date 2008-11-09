@@ -301,9 +301,6 @@ extern char AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define	AIM_STATUS_FREE4CHAT			"\0\x20"
 #define AIM_STATUS_INVISIBLE			"\x01\0"
 
-#define HOOKEVENT_SIZE 10
-#define SERVICES_SIZE  30
-
 extern HINSTANCE hInstance; //plugin dll instance
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)

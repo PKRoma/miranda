@@ -819,8 +819,23 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
     aim_writeshort(0x4,offset,buf); // PD Info
     aim_writeshort(0x15,offset,buf); //Size
     unsigned long inv_flags = _htonl(pd_flags);
-    aim_writetlv(0xcc,4,(char*)&inv_flags,offset,buf);
-    aim_writetlv(0xcb,4,"\xff\xff\xff\xff",offset,buf);
     aim_writetlv(0xca,1,&pd_mode,offset,buf);
+    aim_writetlv(0xcb,4,"\xff\xff\xff\xff",offset,buf);
+    aim_writetlv(0xcc,4,(char*)&inv_flags,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id)
+{
+	unsigned short offset=0;
+	unsigned short sn_length=(char)strlen(sn);
+	char* buf=(char*)alloca(SNAC_SIZE+sn_length+12);
+    aim_writesnac(0x13,remove?0x0a:0x08,8,offset,buf);
+    aim_writeshort(sn_length,offset,buf);       // Nickname length
+	aim_writegeneric(sn_length,sn,offset,buf);  // Nickname
+    aim_writeshort(0,offset,buf);               // Group Id
+    aim_writeshort(item_id,offset,buf);               // Buddy Id
+    aim_writeshort(3,offset,buf);               // Deny Conmmand
+    aim_writeshort(0,offset,buf);               // TLV Length
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
