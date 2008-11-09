@@ -64,7 +64,7 @@ int CAimProto::aim_send_cookie(HANDLE hServerConn,unsigned short &seqno,int cook
 int CAimProto::aim_send_service_request(HANDLE hServerConn,unsigned short &seqno)
 {
 	unsigned short offset=0;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE*11];
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*12];
 	aim_writesnac(0x01,0x17,offset,buf);
 	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
 	aim_writefamily(AIM_SERVICE_SSI,offset,buf);
@@ -172,7 +172,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	{
 		buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE));
 	}
-	char temp[AIM_CAPS_LENGTH*50];
+	char temp[AIM_CAPS_LENGTH*20];
 	memcpy(temp,AIM_CAP_SHORT_CAPS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HOST_STATUS_TEXT_AWARE,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
