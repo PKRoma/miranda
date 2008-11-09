@@ -281,9 +281,11 @@ extern char AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define AIM_SERVICE_AVATAR				"\0\x10\0\x01"//version 1
 #define AIM_SERVICE_USERLOOKUP			"\0\x0A\0\x01"//version 1
 #define AIM_SERVICE_STATS				"\0\x0B\0\x01"//version 1
-#define AIM_SERVICE_CHAT				"\0\x0D\0\x01"//version 1
+#define AIM_SERVICE_CHATNAV				"\0\x0D\0\x01"//version 1
+#define AIM_SERVICE_CHAT				"\0\x0E\0\x01"//version 1
 #define AIM_SERVICE_ICQ 				"\0\x15\0\x01"//version 1
 #define AIM_SERVICE_MAIL				"\0\x18\0\x01"//version 1
+#define AIM_SERVICE_UNKNOWN				"\0\x22\0\x01"//version 1
 #define AIM_SERVICE_RATES				"\0\x01\0\x02\0\x03\0\x04\0\x05"
 //Aim Statuses
 #define AIM_STATUS_WEBAWARE				"\0\x01"	

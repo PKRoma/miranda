@@ -77,7 +77,7 @@ int CAimProto::aim_send_service_request(HANDLE hServerConn,unsigned short &seqno
 	aim_writefamily(AIM_SERVICE_BOS,offset,buf);
 	aim_writefamily(AIM_SERVICE_USERLOOKUP,offset,buf);
 	aim_writefamily(AIM_SERVICE_STATS,offset,buf);
-	//aim_writefamily(AIM_SERVICE_MAIL,offset,buf);
+	aim_writefamily(AIM_SERVICE_UNKNOWN,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno) ? -1 : 0;
 }
 
@@ -178,6 +178,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);

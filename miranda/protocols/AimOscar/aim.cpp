@@ -11,8 +11,8 @@ HINSTANCE hInstance;
 static HANDLE hMooduleLoaded;
 
 
-#define AIM_OSCAR_VERSION "\0\x08\0\x0"
-const char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.0.0";
+#define AIM_OSCAR_VERSION "\0\x08\1\x0"
+const char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.1.0";
 char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,12 +39,12 @@ DWORD WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved
 PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFOEX),
 	"AIM OSCAR Plugin",
-	PLUGIN_MAKE_VERSION(0,8,0,0),
+	PLUGIN_MAKE_VERSION(0,8,1,0),
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
-	"Aaron Myles Landwehr",
-	"aaron@miranda-im.org",
-	"© 2005-2006 Aaron Myles Landwehr",
-	"http://www.snaphat.com/oscar",
+	"Boris Krasnovskiy, Aaron Myles Landwehr",
+	"borkra@miranda-im.org",
+	"© 2008 Boris Krasnovskiy, 2005-2006 Aaron Myles Landwehr",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,		//not transient
 	0,		//doesn't replace anything built-in
     {0xb4ef58c4, 0x4458, 0x4e47, { 0xa7, 0x67, 0x5c, 0xae, 0xe5, 0xe7, 0xc, 0x81 }} //{B4EF58C4-4458-4e47-A767-5CAEE5E70C81}
