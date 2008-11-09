@@ -52,42 +52,42 @@ END
 // Dialog
 //
 
-IDD_AIM DIALOGEX 0, 0, 324, 232
+IDD_AIM DIALOGEX 0, 0, 305, 203
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,161,80,WS_GROUP
-    LTEXT           "Screenname:",IDC_STATIC,12,20,45,15
-    EDITTEXT        IDC_SN,63,17,93,15,ES_LOWERCASE | ES_AUTOHSCROLL
-    LTEXT           "Display Name:",IDC_STATIC,9,39,48,15
-    EDITTEXT        IDC_NK,63,37,93,15,ES_AUTOHSCROLL
-    LTEXT           "Password:",IDC_STATIC,21,59,35,15
-    EDITTEXT        IDC_PW,63,57,93,15,ES_PASSWORD | ES_AUTOHSCROLL
-    LTEXT           "Login Server:",IDC_STATIC,172,104,44,12
-    EDITTEXT        IDC_HN,220,102,94,13,ES_AUTOHSCROLL
-    GROUPBOX        "AIM Options",IDC_OPTIONS,3,89,161,124,WS_GROUP
-    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,99,130,13
-    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,111,143,13
-    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,123,143,13
-    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,135,143,13
-    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,147,143,13
-    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,159,133,13
-    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,171,143,13
-    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,183,143,13
-    GROUPBOX        "Advanced Options",IDC_EXPERT,167,7,156,80,WS_GROUP
-    LTEXT           "File Transfer Grace Period:",IDC_STATIC,174,19,87,12
-    EDITTEXT        IDC_GP,261,18,20,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
-    LTEXT           "(seconds)",IDC_STATIC,285,20,32,12
-    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,31,93,13
-    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,44,130,11
-    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,55,143,13
-    LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,182,189,115,18,NOT WS_VISIBLE
-    GROUPBOX        "Connection",IDC_STATIC,168,90,152,71
-    EDITTEXT        IDC_PN,221,119,37,13,ES_AUTOHSCROLL
-    LTEXT           "Port:",IDC_STATIC,172,121,44,12
-    PUSHBUTTON      "Reset",IDC_SVRRESET,279,118,35,14
-    CONTROL         "Disable SSL",IDC_DSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,171,135,143,10
+    GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,147,80,WS_GROUP
+    LTEXT           "Screenname:",IDC_STATIC,8,20,45,11
+    EDITTEXT        IDC_SN,59,17,86,15,ES_LOWERCASE | ES_AUTOHSCROLL
+    LTEXT           "Display Name:",IDC_STATIC,5,39,48,9
+    EDITTEXT        IDC_NK,59,37,86,15,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,17,59,35,15
+    EDITTEXT        IDC_PW,59,57,86,15,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Login Server:",IDC_STATIC,158,104,44,12
+    EDITTEXT        IDC_HN,206,102,83,13,ES_AUTOHSCROLL
+    GROUPBOX        "AIM Options",IDC_OPTIONS,3,89,147,110,WS_GROUP
+    CONTROL         "Message Delivery Confirmation",IDC_DC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,99,130,13
+    CONTROL         "Do Not Autoreply When Away",IDC_DM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,111,134,13
+    CONTROL         "Convert Incoming Messages to BBCode",IDC_FI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,123,137,13
+    CONTROL         "Convert Outgoing Messages to HTML",IDC_FO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,135,136,13
+    CONTROL         "Disable Avatars",IDC_DA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,147,136,13
+    CONTROL         "Disable Account Type Icons",IDC_AT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,159,133,13
+    CONTROL         "Disable Extended Status Icons",IDC_ES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,171,134,13
+    CONTROL         "Check Mail on Login",IDC_CM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,183,112,13
+    GROUPBOX        "Advanced Options",IDC_EXPERT,154,7,142,80,WS_GROUP
+    LTEXT           "File Transfer Grace Period:",IDC_STATIC,158,19,87,12
+    EDITTEXT        IDC_GP,245,18,17,12,ES_AUTOHSCROLL | ES_NUMBER,WS_EX_RIGHT
+    LTEXT           "sec",IDC_STATIC,266,19,18,9
+    CONTROL         "Instant Idle on Login",IDC_II,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,31,93,13
+    CONTROL         "Force Proxy File Transfers",IDC_FP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,44,130,11
+    CONTROL         "Masquerade as a Sidekick/Hiptop User",IDC_HF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,158,55,135,13
+    LTEXT           "*Aim must be reconnected  for some option to take effect.",IDC_MASQ,171,169,115,18,NOT WS_VISIBLE
+    GROUPBOX        "Connection",IDC_STATIC,154,89,142,71
+    EDITTEXT        IDC_PN,207,119,37,13,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,158,121,44,12
+    PUSHBUTTON      "Reset",IDC_SVRRESET,254,118,35,14
+    CONTROL         "Disable SSL",IDC_DSSL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,135,85,10
 END
 
 IDD_INFO DIALOGEX 0, 0, 334, 190
@@ -137,6 +137,18 @@ BEGIN
     PUSHBUTTON      "Unset Idle",IDCANCEL,129,50,39,14
 END
 
+IDD_PRIVACY DIALOGEX 0, 0, 291, 215
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Allow all users",IDC_ALLOWALL,"Button",BS_AUTORADIOBUTTON,15,37,128,10
+    CONTROL         "Allow only users on contact list",IDC_ALLOWCONT,"Button",BS_AUTORADIOBUTTON,15,52,145,10
+    CONTROL         "Allow only users below",IDC_ALLOWBELOW,"Button",BS_AUTORADIOBUTTON,15,67,150,10
+    CONTROL         "Block all users",IDC_BLOCKALL,"Button",BS_AUTORADIOBUTTON,169,52,107,10
+    CONTROL         "Block only users below",IDC_BLOCKBELOW,"Button",BS_AUTORADIOBUTTON,169,67,103,10
+    LTEXT           "Users who can contact me:",IDC_STATIC,17,22,91,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -146,6 +158,11 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_AIM, DIALOG
+    BEGIN
+        RIGHTMARGIN, 299
+    END
+
     IDD_INFO, DIALOG
     BEGIN
         RIGHTMARGIN, 333
@@ -162,6 +179,14 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 172
         BOTTOMMARGIN, 73
+    END
+
+    IDD_PRIVACY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 284
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 208
     END
 END
 #endif    // APSTUDIO_INVOKED

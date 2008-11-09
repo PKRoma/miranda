@@ -856,6 +856,47 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
+
+static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    static const int btns[] = {  IDC_ALLOWALL, IDC_BLOCKALL, IDC_ALLOWBELOW, IDC_BLOCKBELOW, IDC_ALLOWCONT };
+    CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (msg) 
+    {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		ppro = (CAimProto*)lParam;
+
+        CheckRadioButton(hwndDlg, IDC_ALLOWALL, IDC_BLOCKBELOW, btns[ppro->pd_mode-1]);
+        break;
+    
+	case WM_COMMAND:
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+		break;
+
+    case WM_NOTIFY:
+		if (((LPNMHDR) lParam)->code == PSN_APPLY) 
+        {
+            for (char i=0; i<5; ++i)
+            {
+                if (IsDlgButtonChecked(hwndDlg, btns[i]) && ppro->pd_mode != i + 1)
+                {
+                    ppro->pd_mode = i + 1;
+                    ppro->pd_flags = 1;
+                    ppro->aim_set_pd_info(ppro->hServerConn, ppro->seqno);
+                    break;
+                }
+            }
+        }
+        break;
+    }
+	return FALSE;
+}		
+
+
 int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
@@ -864,14 +905,23 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.hInstance = hInstance;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
 	odp.ptszGroup = LPGENT("Network");
+	odp.ptszTab   = LPGENT("Basic");
 	odp.ptszTitle = m_tszUserName;
 	odp.pfnDlgProc = options_dialog;
 	odp.dwInitParam = LPARAM(this);
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.nIDBottomSimpleControl = IDC_OPTIONS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
-	return 0;
+	
+	odp.ptszTab     = LPGENT("Privacy");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_PRIVACY);
+	odp.pfnDlgProc  = privacy_dialog;
+	odp.nIDBottomSimpleControl = 0;
+	CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);
+
+    return 0;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Brief account info dialog

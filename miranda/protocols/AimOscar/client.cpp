@@ -765,7 +765,7 @@ int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, cons
 	aim_writegeneric(sn_length,sn,offset,buf);
 	aim_writechar(1,offset,buf);                   // Number of BART ID
     aim_writebartid(1,0,hash_size,hash,offset,buf);
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash)
@@ -774,8 +774,8 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, cha
 	char* buf = (char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+size+20);
 	aim_writesnac(0x13,0x09,6,offset,buf);
    	aim_writegeneric(5,"\0\x01\x31\0\0",offset,buf); //SSI Edit
-    aim_writeshort(avatarid,offset,buf);
-    aim_writeshort(0x14,offset,buf); //Size
+    aim_writeshort(avatar_id,offset,buf);
+    aim_writeshort(0x14,offset,buf); // Buddy Icon
     aim_writeshort(size+10,offset,buf); //Size
     aim_writetlv(0x131,0,NULL,offset,buf); //Buddy Name
 
@@ -785,7 +785,7 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, cha
     memcpy(&buf2[2], hash, size);
     aim_writetlv(0xd5,2+size,buf2,offset,buf); //BART ID
 
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size)
@@ -796,7 +796,7 @@ int CAimProto::aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const
    	aim_writeshort(1,offset,buf); //BART Id
     aim_writeshort(avatar_size,offset,buf);
 	aim_writegeneric(avatar_size,avatar,offset,buf);
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email)
@@ -806,5 +806,21 @@ int CAimProto::aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, con
 	char* buf= (char*)alloca(SNAC_SIZE+em_length);
 	aim_writesnac(0x0a,0x02,6,offset,buf);	// Email search
 	aim_writegeneric(em_length,email,offset,buf);
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno) ? -1 : 0;
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+20);
+	aim_writesnac(0x13,0x9,0x9,offset,buf);
+   	aim_writegeneric(4,"\0\0\0\0",offset,buf); //SSI Edit
+    aim_writeshort(pd_info_id,offset,buf);
+    aim_writeshort(0x4,offset,buf); // PD Info
+    aim_writeshort(0x15,offset,buf); //Size
+    unsigned long inv_flags = _htonl(pd_flags);
+    aim_writetlv(0xcc,4,(char*)&inv_flags,offset,buf);
+    aim_writetlv(0xcb,4,"\xff\xff\xff\xff",offset,buf);
+    aim_writetlv(0xca,1,&pd_mode,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }

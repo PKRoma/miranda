@@ -161,11 +161,16 @@ struct CAimProto : public PROTO_INTERFACE
 	
 	//avatar connection stuff
 	unsigned short avatar_seqno;
-    unsigned short avatarid;
+    unsigned short avatar_id;
 	bool AvatarLimitThread;
 	HANDLE hAvatarConn;
 	HANDLE hAvatarEvent;
     HANDLE hAvatarsFolder;
+
+    // privacy settings
+    unsigned long pd_flags;
+    unsigned short pd_info_id;
+    char pd_mode;
 
 	//away message retrieval stuff
     char* modeMsgs[9];
@@ -244,6 +249,7 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash);
     int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
+    int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp

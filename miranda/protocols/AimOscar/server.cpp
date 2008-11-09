@@ -568,53 +568,80 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			unsigned short group_id=snac.ushort(offset+2+name_length);
 			unsigned short item_id=snac.ushort(offset+4+name_length);
 			unsigned short type=snac.ushort(offset+6+name_length);
-			if(type==0x0000)//buddy record
-			{
-				HANDLE hContact=find_contact(name);
-				if(!hContact)
-				{
-					if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
-						hContact=add_contact(name);
-				}
-				if(hContact)
-				{
-					char item[sizeof(AIM_KEY_BI)+10];
-					char group[sizeof(AIM_KEY_GI)+10];
-					for(int i=1; ;i++)
-					{
-						mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-						mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-						if(!getWord(hContact, item, 0))
-						{
-							setWord(hContact, item, item_id);	
-                			setWord(hContact, group, group_id);
-							break;
-						}
-					}
-					setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
-				}
-			}
-			else if(type==0x0001)//group record
-			{
-				if(group_id)
-				{
-					char group_id_string[32];
-					_itoa(group_id,group_id_string,10);
-					char* trimmed_name=trim_name(name);
-					DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
-					char* lowercased_name=lowercase_name(trimmed_name);
-					DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
-				}
-			}
-			else if(type==0x0014)//avatar record
+			unsigned short tlv_size=snac.ushort(offset+8+name_length);
+            switch (type)
             {
-				if(!group_id && name_length==1 && name[0]=='1')
-				{
-                    avatarid=item_id;
-                }
+                case 0x0000: //buddy record
+			    {
+				    HANDLE hContact=find_contact(name);
+				    if(!hContact)
+				    {
+					    if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
+						    hContact=add_contact(name);
+				    }
+				    if(hContact)
+				    {
+					    char item[sizeof(AIM_KEY_BI)+10];
+					    char group[sizeof(AIM_KEY_GI)+10];
+					    for(int i=1; ;i++)
+					    {
+						    mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
+						    mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
+						    if(!getWord(hContact, item, 0))
+						    {
+							    setWord(hContact, item, item_id);	
+                			    setWord(hContact, group, group_id);
+							    break;
+						    }
+					    }
+					    setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
+				    }
+			    }
+                break;
+
+                case 0x0001: //group record
+		            if (group_id)
+		            {
+			            char group_id_string[32];
+			            _itoa(group_id,group_id_string,10);
+			            char* trimmed_name=trim_name(name);
+			            DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
+			            char* lowercased_name=lowercase_name(trimmed_name);
+			            DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
+		            }
+                    break;
+
+                case 0x0002: //permit record
+                    break;
+
+                case 0x0003: //deny record
+                    break;
+
+                case 0x0004: //privacy record
+                    if (group_id == 0)
+                    {
+                        pd_info_id = item_id;
+
+                        unsigned short tlv_offset = 0;
+                   		while (tlv_offset<tlv_size)
+		                {
+			                TLV tlv(snac.val(offset+name_length+10+tlv_offset));
+			                if(tlv.cmp(0x00cc))
+                                pd_flags = tlv.ulong();
+			                else if(tlv.cmp(0x00ca))
+                                pd_mode = tlv.ubyte();
+
+			                tlv_offset += TLV_HEADER_SIZE + tlv.len();
+                        }
+                    }
+                    break;
+
+                case 0x0014: //avatar record
+				    if (group_id == 0 && name_length == 1 && name[0] == '1')
+                        avatar_id = item_id;
+                    break;
             }
 
-			unsigned short tlv_size=snac.ushort(offset+8+name_length);
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
 		}

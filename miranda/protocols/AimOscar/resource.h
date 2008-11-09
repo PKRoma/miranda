@@ -21,6 +21,7 @@
 #define IDI_AOL                         28
 #define IDI_FOREGROUNDCOLOR             31
 #define IDI_BACKGROUNDCOLOR             32
+#define IDD_PRIVACY                     36
 #define IDI_BOLD                        41
 #define IDI_NBOLD                       42
 #define IDI_ITALIC                      43
@@ -50,6 +51,11 @@
 #define IDC_FONTSIZE                    141
 #define IDC_SVRRESET                    142
 #define IDC_NEWAIMACCOUNTLINK           143
+#define IDC_ALLOWALL                    144
+#define IDC_ALLOWCONT                   145
+#define IDC_ALLOWBELOW                  146
+#define IDC_BLOCKALL                    147
+#define IDC_BLOCKBELOW                  148
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
@@ -58,6 +64,7 @@
 #define IDC_GP                          1070
 #define IDC_DM                          1100
 #define IDC_DC                          1110
+#define IDC_DC2                         1111
 #define IDC_FP                          1120
 #define IDC_AT                          1130
 #define IDC_ES                          1140
@@ -78,9 +85,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        36
+#define _APS_NEXT_RESOURCE_VALUE        37
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         144
+#define _APS_NEXT_CONTROL_VALUE         145
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
