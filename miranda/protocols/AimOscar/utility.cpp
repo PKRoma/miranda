@@ -281,6 +281,8 @@ void CAimProto::offline_contacts()
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)GROUP_ID_KEY);
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)ID_GROUP_KEY);
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)FILE_TRANSFER_KEY);
+    allow_list.destroy();
+    block_list.destroy();
 }
 
 void CAimProto::remove_AT_icons()

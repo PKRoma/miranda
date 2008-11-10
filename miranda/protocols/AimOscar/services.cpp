@@ -282,7 +282,7 @@ int CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case AF_FORMATSUPPORTED:
-		res = lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_BMP;
+		res = (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_BMP);
 		break;
 
     case AF_ENABLED:
