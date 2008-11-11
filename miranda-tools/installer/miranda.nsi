@@ -314,73 +314,71 @@ Function VerifyInstallDir
   ${EndIf}
   !endif
   
-  ${If} $INST_UPGRADE = 1
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "AIM"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoAim} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "IRC"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoIRC} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Jabber"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoJabber} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "MSN"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoMSN} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Yahoo"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pProtoYahoo} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pSCStartMenu} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pSCStartMenu} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "DesktopShortCut"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pSCDesktop} ${SF_SELECTED}
-      ${EndIf}
-      ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "QuickLaunchShortCut"
-      ${If} $0 == "0"
-        !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
-      ${Else}
-        !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "AIM"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoAim} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoAim} ${SF_SELECTED}
   ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Gadu-Gadu"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoGaduGadu} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "ICQ"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoICQ} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoICQ} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "IRC"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoIRC} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoIRC} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Jabber"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoJabber} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoJabber} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "MSN"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoMSN} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoMSN} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Yahoo"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pProtoYahoo} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pProtoYahoo} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "DesktopShortCut"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pSCDesktop} ${SF_SELECTED}
+  ${EndIf}
+  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "QuickLaunchShortCut"
+  ${If} $0 == "0"
+    !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+  ${Else}
+    !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
   ${EndIf}
 FunctionEnd
 
