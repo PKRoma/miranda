@@ -118,7 +118,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 							goto exit;
 					}
 				}
-				if(flap.cmp(0x04))
+				else if(flap.cmp(0x04))
 				{
 					LOG("Connection Authorization Thread Ending: Flap 0x04");
 					goto exit;
@@ -371,4 +371,134 @@ exit:
 	LOG("Avatar Server Connection has ended");
 	hAvatarConn=NULL;
 	AvatarLimitThread=false;
+}
+
+void __cdecl CAimProto::aim_chatnav_negotiation( void* )
+{
+	NETLIBPACKETRECVER packetRecv;
+	int recvResult=0;
+	ZeroMemory(&packetRecv, sizeof(packetRecv));
+	HANDLE hServerPacketRecver=NULL;
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hChatNavConn, 2048 * 8);
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = 300000;//5 minutes connected
+	for(;;)
+	{
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
+		if (recvResult == 0)
+			break;
+
+		if (recvResult == SOCKET_ERROR)
+			break;
+
+		if(recvResult>0)
+		{
+			unsigned short flap_length=0;
+			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			{
+				if(!packetRecv.buffer)
+					break;
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
+					break;
+				flap_length+=FLAP_SIZE+flap.len();
+				if(flap.cmp(0x01))
+				{
+					aim_send_cookie(hChatNavConn,chatnav_seqno,CHATNAV_COOKIE_LENGTH,CHATNAV_COOKIE);//cookie challenge
+					delete[] CHATNAV_COOKIE;
+					CHATNAV_COOKIE=NULL;
+					CHATNAV_COOKIE_LENGTH=0;
+				}
+				else if(flap.cmp(0x02))
+				{
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
+					{
+						snac_supported_families(snac,hChatNavConn,chatnav_seqno);
+						snac_supported_family_versions(snac,hChatNavConn,chatnav_seqno);
+						snac_chatnav_rate_limitations(snac,hChatNavConn,chatnav_seqno);
+						snac_error(snac);
+					}
+					if(snac.cmp(0x000D))
+					{
+						snac_chatnav_info_response(snac,hChatNavConn,chatnav_seqno);
+						snac_error(snac);
+					}
+				}
+				else if(flap.cmp(0x04))
+					goto exit;
+			}
+		}
+	}
+
+exit:
+	Netlib_CloseHandle(hServerPacketRecver);
+	LOG("Chat Navigation Server Connection has ended");
+	hChatNavConn=NULL;
+}
+
+void __cdecl CAimProto::aim_chat_negotiation( void* )
+{
+	NETLIBPACKETRECVER packetRecv;
+	int recvResult=0;
+	ZeroMemory(&packetRecv, sizeof(packetRecv));
+	HANDLE hServerPacketRecver=NULL;
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hChatConn, 2048 * 8);
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = INFINITE;
+	for(;;)
+	{
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
+		if (recvResult == 0)
+			break;
+
+		if (recvResult == SOCKET_ERROR)
+			break;
+
+		if(recvResult>0)
+		{
+			unsigned short flap_length=0;
+			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			{
+				if(!packetRecv.buffer)
+					break;
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
+					break;
+				flap_length+=FLAP_SIZE+flap.len();
+				if(flap.cmp(0x01))
+				{
+					aim_send_cookie(hChatConn,chat_seqno,CHAT_COOKIE_LENGTH,CHAT_COOKIE);//cookie challenge
+					delete[] CHAT_COOKIE;
+					CHAT_COOKIE=NULL;
+					CHAT_COOKIE_LENGTH=0;
+					hChatNavConn=NULL;		// Close this, we don't need it anymore.
+				}
+				else if(flap.cmp(0x02))
+				{
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
+					{
+						snac_supported_families(snac,hChatConn,chat_seqno);
+						snac_supported_family_versions(snac,hChatConn,chat_seqno);
+						snac_chat_rate_limitations(snac,hChatConn,chat_seqno);
+						snac_error(snac);
+					}
+					if(snac.cmp(0x000E))
+					{
+						snac_chat_received_message(snac);
+						snac_chat_joined_left_users(snac);
+						snac_error(snac);
+					}
+				}
+				else if(flap.cmp(0x04))
+					goto exit;
+			}
+		}
+	}
+
+exit:
+	Netlib_CloseHandle(hServerPacketRecver);
+	LOG("Chat Server Connection has ended");
+	hChatConn=NULL;
 }

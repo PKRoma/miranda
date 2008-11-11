@@ -289,6 +289,30 @@ int CAimProto::aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
+int CAimProto::aim_chatnav_ready(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4];
+	aim_writesnac(0x01,0x02,offset,buf);
+	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_CHATNAV,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_chat_ready(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4];
+	aim_writesnac(0x01,0x02,offset,buf);
+	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_CHAT,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
 int CAimProto::aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response)
 {	
 	unsigned short offset=0;
@@ -821,4 +845,55 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
     aim_writetlv(0xcb,4,"\xff\xff\xff\xff",offset,buf);
     aim_writetlv(0xcc,4,(char*)&inv_flags,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE];
+	aim_writesnac(0x0d,0x02,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) ? -1 : 0;
+}
+
+int CAimProto::aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room)
+{
+	//* Join Pseudo Room (Get's the info we need for the real connection)
+	unsigned short offset=0;
+	const char* charset = "us-ascii";
+	const char* lang = "en";
+	char* buf=(char*)alloca(SNAC_SIZE+strlen(charset)+strlen(lang)+strlen(room)+26);
+	aim_writesnac(0x0d,0x08,offset,buf);
+	aim_writegeneric(2,"\0\x04",offset,buf);					// Exchange
+	aim_writegeneric(1,"\x06",offset,buf);						// Cookie Length
+	aim_writegeneric(6,"create",offset,buf);					// Cookie
+	aim_writegeneric(2,"\xff\xff",offset,buf);					// Last Instance
+	aim_writegeneric(1,"\x01",offset,buf);						// Detail
+	aim_writegeneric(2,"\0\x03",offset,buf);					// Number of TLVs
+	aim_writetlv(0xd3,(unsigned short)strlen(room),room,offset,buf);			// Room Name
+	aim_writetlv(0xd6,(unsigned short)strlen(charset),charset,offset,buf);		// Character Set
+	aim_writetlv(0xd7,(unsigned short)strlen(lang),lang,offset,buf);			// Language Encoding
+
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg)
+{
+	unsigned short offset=0;
+	const char* charset = "us-ascii";
+	const char* lang = "en";
+	unsigned short tlv_len = (unsigned short)strlen(charset)+(unsigned short)strlen(lang)+(unsigned short)strlen(msg);
+	char* buf=(char*)alloca(SNAC_SIZE+tlv_len+34);
+	aim_writesnac(0x0e,0x05,offset,buf);
+	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);			// Message Cookie (can be random)
+	aim_writeshort(0x03,offset,buf);							// Message Channel (Always 3 for chat)
+	aim_writetlv(0x01,0,NULL,offset,buf);						// Public/Whisper flag
+	aim_writetlv(0x06,0,NULL,offset,buf);						// Enable Reflection flag
+	aim_writeshort(0x05,offset,buf);							// Message Information TLV
+	aim_writeshort(tlv_len+(3*TLV_HEADER_SIZE),offset,buf);		// TLV length
+	aim_writetlv(0x02,(unsigned short)strlen(charset),charset,offset,buf);		// Character Set
+	aim_writetlv(0x03,(unsigned short)strlen(lang),lang,offset,buf);			// Language Encoding
+	aim_writetlv(0x01,(unsigned short)strlen(msg),msg,offset,buf);				// Message
+
+	// The hChatConn and chat_seqno should be determined by the current room we're in
+	return aim_sendflap(hChatConn,0x02,offset,buf,chat_seqno);
 }

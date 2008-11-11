@@ -14,9 +14,11 @@ void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &s
 char *COOKIE=NULL;
 char *MAIL_COOKIE=NULL;
 char *AVATAR_COOKIE=NULL;
+char *CHAT_COOKIE=NULL;
 int COOKIE_LENGTH=0;
 int MAIL_COOKIE_LENGTH=0;
 int AVATAR_COOKIE_LENGTH;
+int CHAT_COOKIE_LENGTH;
 
 int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 {
@@ -99,8 +101,26 @@ void CAimProto::snac_avatar_rate_limitations(SNAC &snac,HANDLE hServerConn,unsig
 	{
 		aim_accept_rates(hServerConn,seqno);
 		aim_avatar_ready(hServerConn,seqno);
-		AvatarLimitThread=1;
+		AvatarLimitThread=true;
 		ForkThread( &CAimProto::avatar_request_limit_thread, 0 );
+	}
+}
+
+void CAimProto::snac_chatnav_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)// family 0x0001
+{
+	if(snac.subcmp(0x0007))
+	{
+		aim_accept_rates(hServerConn,seqno);
+		aim_chatnav_ready(hServerConn,seqno);
+	}
+}
+
+void CAimProto::snac_chat_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)// family 0x0001
+{
+	if(snac.subcmp(0x0007))
+	{
+		aim_accept_rates(hServerConn,seqno);
+		aim_chat_ready(hServerConn,seqno);
 	}
 }
 
@@ -1281,7 +1301,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				ForkThread( &CAimProto::aim_mail_negotiation, 0 );
 			}
 			else
-				LOG("Failed to connected to the Mail Server.");
+				LOG("Failed to connect to the Mail Server.");
 		}
 		else if(family==0x0010)
 		{
@@ -1295,9 +1315,37 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			}
 			else
 			{
-				LOG("Failed to connected to the Avatar Server.");
+				LOG("Failed to connect to the Avatar Server.");
 				hAvatarConn=0;
 			}
+		}
+		else if(family==0x000D)
+		{
+			hChatNavConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			if(hChatNavConn)
+			{
+				LOG("Successfully Connected to the Chat Navigation Server.");
+				CHATNAV_COOKIE = local_cookie;
+				CHATNAV_COOKIE_LENGTH = local_cookie_length;
+				ForkThread( &CAimProto::aim_chatnav_negotiation, 0 );
+			}
+			else
+				LOG("Failed to connect to the Chat Navigation Server.");
+
+		}
+		else if(family==0x000E)
+		{
+			hChatConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			if(hChatConn)
+			{
+				LOG("Successfully Connected to the Chat Server.");
+				CHAT_COOKIE = local_cookie;
+				CHAT_COOKIE_LENGTH = local_cookie_length;
+				ForkThread( &CAimProto::aim_chat_negotiation, 0 );
+			}
+			else
+				LOG("Failed to connect to the Chat Server.");
+
 		}
 		delete[] server;
 	}
@@ -1433,6 +1481,221 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 	}
 	else // If no match, stop the search.
 		CAimProto::sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+}
+void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x000D
+{
+	if(snac.subcmp(0x0009))
+	{
+		LOG("Chat Info Received");
+		TLV info_tlv(snac.val());
+		if (info_tlv.cmp(0x0001)) // Redirect
+		{
+			char * redirect = 0;
+			redirect = info_tlv.part(0,info_tlv.len());	
+		}
+		else if (info_tlv.cmp(0x0002)) // Max Concurrent Rooms (usually 10)
+		{
+            // This typecasting pointer to number and as such bogus
+			//MAX_ROOMS = (char)info_tlv.part(0,info_tlv.len());
+			
+			////////////////////////////////////////////////
+			// Use this to allocate hChatConn connections //
+			////////////////////////////////////////////////
+		}
+		else if (info_tlv.cmp(0x0004)) // Room Info
+		{
+			// Main TLV info
+			unsigned short exchange = 0;
+			unsigned short cookie_len = 0;
+			char* cookie = 0;
+			unsigned short instance = 0;
+			unsigned short num_tlv = 0;
+			unsigned short tlv_offset = 0;
+
+			exchange = info_tlv.ushort(0);				// Exchange
+			cookie_len = info_tlv.ubyte(2);				// Cookie Length
+			cookie = info_tlv.part(3,cookie_len);		// Cookie String
+			instance = info_tlv.ushort(3+cookie_len);	// Instance
+			num_tlv = info_tlv.ushort(6+cookie_len);	// Number of TLVs
+			tlv_offset = 12+cookie_len;					// We're looking at any remaining TLVs
+			unsigned short offset = 0;
+
+			/* Not really needed
+			char* name = 0;
+			char* max_occupancy = 0;
+			char* fqn = 0;
+			char* flags = 0;
+			char* create_time = 0;
+			char* max_msg_len = 0;
+			char* create_perms = 0;
+
+			for (int i = 0; i < num_tlv; i++)	// Loop through all the TLVs
+			{
+				TLV tlv(snac.val(tlv_offset+offset));
+				offset+=TLV_HEADER_SIZE;
+				
+				// TLV List
+				if (tlv.cmp(0x00d3))
+					name = tlv.dup();
+				if (tlv.cmp(0x00d2))
+					max_occupancy = tlv.dup();
+				if (tlv.cmp(0x006a))
+					fqn = tlv.dup();
+				if (tlv.cmp(0x00c9))
+					flags = tlv.dup();
+				if (tlv.cmp(0x00ca))
+					create_time = tlv.dup();
+				if (tlv.cmp(0x00d1))
+					max_msg_len = tlv.dup();
+				if (tlv.cmp(0x00d5))
+					create_perms = tlv.dup();
+
+				offset+=tlv.len();
+			}
+			*/
+
+			//Join the real room
+			char* buf=(char*)alloca(SNAC_SIZE+cookie_len+12);
+			aim_writesnac(0x01,0x04,offset,buf);
+			aim_writegeneric(2,"\0\x0e",offset,buf);				// Service request for Chat
+			aim_writeshort(0x01,offset,buf);						// Tag
+			aim_writeshort(cookie_len+5,offset,buf);				// Length
+			aim_writeshort(exchange,offset,buf);					// Value - Exchange
+			buf[offset++] = (char)cookie_len;						// Value - Cookie Length
+			aim_writegeneric(cookie_len,cookie,offset,buf);			// Value - Cookie
+			aim_writeshort(instance,offset,buf);					// Value - Instance
+			aim_sendflap(CAimProto::hServerConn,0x02,offset,buf,CAimProto::seqno);
+		}
+	}
+}
+void CAimProto::snac_chat_joined_left_users(SNAC &snac)//family 0x000E
+{	// Handles both joining and leaving users.
+	if(snac.subcmp(0x0003) || snac.subcmp(0x0004))
+	{
+		unsigned short offset = 0;
+		while (offset < snac.len()){
+			unsigned short sn_len = 0;
+			char* sn = 0;
+
+			sn_len = snac.ubyte(offset);
+			sn = snac.val(offset+1);				// Most important part (screenname)
+
+			/////////////////////////////////////////////////
+			// Send the screenname off to the chat module. //
+			/////////////////////////////////////////////////
+
+			unsigned short warning = 0;
+			unsigned short num_tlv = 0;
+			unsigned short tlv_offset = 0;
+
+			warning = snac.ushort(offset+1+sn_len);
+			num_tlv = snac.ushort(offset+3+sn_len);
+			tlv_offset = offset+5+sn_len;			// We're looking at any remaining TLVs
+			
+			char* user_class = 0;
+			char* idle_time = 0;
+			char* signon_time = 0;
+			char* creation_time = 0;				//Server uptime?
+
+			unsigned short offset2 = 0;
+			for (int i = 0; i < num_tlv; i++)		// Loop through all the TLVs
+			{
+				TLV tlv(snac.val(tlv_offset+offset2));
+				offset+=TLV_HEADER_SIZE;
+				offset2+=TLV_HEADER_SIZE;
+				if (tlv.cmp(0x0001))
+					user_class = tlv.dup();
+				if (tlv.cmp(0x0003))
+					signon_time = tlv.dup();
+				if (tlv.cmp(0x0005))
+					creation_time = tlv.dup();
+				if (tlv.cmp(0x000F))
+					idle_time = tlv.dup();
+
+				offset+=tlv.len();
+				offset2+=tlv.len();
+			}
+			offset+=tlv_offset;
+		}
+	}		
+}
+void CAimProto::snac_chat_received_message(SNAC &snac)//family 0x000E
+{
+	if(snac.subcmp(0x0006))
+	{
+		unsigned long cookie = 0;
+		unsigned short channel = 0;
+		unsigned short sn_len = 0;
+		char* screenname = 0;
+		unsigned short warning = 0;
+		unsigned short num_tlv = 0;
+		unsigned short tlv_offset = 0;
+
+		cookie = snac.ulong(0);
+		channel = snac.ushort(8);
+		TLV info_tlv(snac.val(10));					// Sender information
+		sn_len = info_tlv.ubyte(0);
+		screenname = info_tlv.part(1,sn_len);
+		warning = info_tlv.ushort(1+sn_len);
+		num_tlv = info_tlv.ushort(3+sn_len);
+		
+		tlv_offset = 19+sn_len;
+
+		unsigned short offset = 0;
+		
+		char* user_class = 0;
+		char* idle_time = 0;
+		char* signon_time = 0;
+		char* creation_time = 0;					//Server uptime?
+
+		for (int i = 0; i < num_tlv; i++)			// Loop through all the TLVs
+		{
+			TLV tlv(snac.val(tlv_offset+offset));
+			offset+=TLV_HEADER_SIZE;
+			
+			// TLV List
+			if (tlv.cmp(0x0001))
+				user_class = tlv.dup();
+			if (tlv.cmp(0x0003))
+				signon_time = tlv.dup();
+			if (tlv.cmp(0x0005))
+				creation_time = tlv.dup();
+			if (tlv.cmp(0x000F))
+				idle_time = tlv.dup();
+
+			offset+=tlv.len();
+		}
+		
+		tlv_offset+=offset;
+		TLV pub_whisp_tlv(snac.val(tlv_offset));	// Public/Whisper flag
+		tlv_offset+=TLV_HEADER_SIZE;
+
+		offset = 0;
+		char* encoding = 0;
+		char* language = 0;
+		char* message = 0;
+		TLV msg_tlv(snac.val(tlv_offset));			// Message information
+		tlv_offset+=TLV_HEADER_SIZE;
+		while (offset < msg_tlv.len()){
+			TLV tlv(snac.val(tlv_offset+offset));
+			offset+=TLV_HEADER_SIZE;
+			
+			// TLV List
+			if (tlv.cmp(0x0001))
+				message = tlv.dup();
+			if (tlv.cmp(0x0002))
+				encoding = tlv.dup();
+			if (tlv.cmp(0x0003))
+				language = tlv.dup();
+
+			offset+=tlv.len();
+		}
+
+		//////////////////////////////////////////////
+		// Send the message off to the chat module. //
+		//////////////////////////////////////////////
+
+	}
 }
 /*void CAimProto::snac_delete_contact(SNAC &snac, char* buf)//family 0x0013
 {

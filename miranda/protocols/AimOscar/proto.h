@@ -87,6 +87,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
 	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
+	int  __cdecl JoinChat(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
@@ -122,6 +123,10 @@ struct CAimProto : public PROTO_INTERFACE
 	int MAIL_COOKIE_LENGTH;
 	char* AVATAR_COOKIE;
 	int AVATAR_COOKIE_LENGTH;
+	char* CHATNAV_COOKIE;
+	int CHATNAV_COOKIE_LENGTH;
+	char* CHAT_COOKIE;
+	int CHAT_COOKIE_LENGTH;
 
 	char *username;
 	char *password;
@@ -169,6 +174,17 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAvatarEvent;
     HANDLE hAvatarsFolder;
 
+	//chatnav connection stuff
+	unsigned short chatnav_seqno;
+	HANDLE hChatNavConn;
+	
+	//chat connection stuff
+	unsigned short chat_seqno;
+	HANDLE hChatConn;
+	HANDLE hChatEvent;
+	char MAX_ROOMS;
+	char OPEN_ROOMS;
+
     // privacy settings
     unsigned long pd_flags;
     unsigned short pd_info_id;
@@ -212,6 +228,11 @@ struct CAimProto : public PROTO_INTERFACE
     char**  getStatusMsgLoc( int status );
 
 	//////////////////////////////////////////////////////////////////////////////////////
+	// chat.cpp
+
+    void   __cdecl chatnav_request_thread( void* param );
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// client.cpp
 
 	int    aim_send_connection_packet(HANDLE hServerConn,unsigned short &seqno,char *buf);
@@ -233,6 +254,8 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_client_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_mail_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
+	int    aim_chatnav_ready(HANDLE hServerConn,unsigned short &seqno);
+	int    aim_chat_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response);
 	int    aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
@@ -256,6 +279,9 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
     int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
     int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);
+	int	   aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
+	int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room);
+	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
@@ -264,6 +290,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   __cdecl aim_protocol_negotiation( void* );
 	void   __cdecl aim_mail_negotiation( void* );
 	void   __cdecl aim_avatar_negotiation( void* );
+	void   __cdecl aim_chatnav_negotiation( void* );
+	void   __cdecl aim_chat_negotiation( void* );
 
 	int    LOG(const char *fmt, ...);
 	HANDLE aim_connect(const char* server, unsigned short port);
@@ -320,6 +348,8 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0001
 	void   snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_avatar_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
+	void   snac_chatnav_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
+	void   snac_chat_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_service_redirect(SNAC &snac);// family 0x0001
 	void   snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0004
 	void   snac_user_online(SNAC &snac);
@@ -335,6 +365,9 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_mail_response(SNAC &snac);//family 0x0018
 	void   snac_retrieve_avatar(SNAC &snac);//family 0x0010
 	void   snac_email_search_results(SNAC &snac);//family 0x000A
+	void   snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x000D
+	void   snac_chat_joined_left_users(SNAC &snac);//family 0x000E
+	void   snac_chat_received_message(SNAC &snac);//family 0x000E
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
