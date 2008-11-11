@@ -226,19 +226,26 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
     int res = GAIR_NOAVATAR;
     AI->filename[0] = 0;
 
-    char* hash=getSetting(AI->hContact,AIM_KEY_AH);
+    if (AI->hContact == NULL)
+    {
+	    get_avatar_filename(NULL, AI->filename, sizeof(AI->filename), NULL);
+        AI->format = detect_image_type(AI->filename);
+        return (AI->format ? GAIR_SUCCESS : GAIR_NOAVATAR);
+    }
+
+    char* hash=getSetting(AI->hContact, AIM_KEY_AH);
     if (hash)
     {
-	    get_avatar_filename( AI->hContact, AI->filename, sizeof(AI->filename), NULL);
+	    get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
         char* hashs=getSetting(AI->hContact, AIM_KEY_ASH);
-        if (hashs && strcmp(hashs, hash) == 0 && AI->filename[0])
+        if (hashs && strcmp(hashs, hash) == 0)
         {
             AI->format = detect_image_type(AI->filename);
-            res = GAIR_SUCCESS;
+            if (AI->format != PA_FORMAT_UNKNOWN) res = GAIR_SUCCESS;
         }
         delete[] hashs;
 
-	    if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL )
+	    if ((wParam & GAIF_FORCE ) != 0 && res != GAIR_SUCCESS)
 	    {
 		    WORD wStatus = getWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
 		    if ( wStatus == ID_STATUS_OFFLINE ) 

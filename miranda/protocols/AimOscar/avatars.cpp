@@ -167,6 +167,8 @@ int detect_image_type(const char* stream, const char* &type_ret)
 int detect_image_type(const char* file)
 {
    const char *ext = strrchr(file, '.');
+   if (ext == NULL) 
+       return PA_FORMAT_UNKNOWN;
    if (strcmp(ext, ".gif") == 0)
        return PA_FORMAT_GIF;
    else if (strcmp(ext, ".bmp") == 0)
@@ -213,15 +215,22 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
     {
 	    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ".*");
 
+        bool found = false;
         _finddata_t c_file;
         long hFile = _findfirst(pszDest, &c_file);
         if (hFile > -1L)
         {
-            mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+      		do {
+			    if (strrchr(c_file.name, '.'))
+			    {
+                    mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+                    found = true;
+			    }
+		    } while(_findnext(hFile, &c_file) == 0);
 	        _findclose( hFile );
         }
-        else
-            pszDest[0] = 0;
+        
+        if (!found) pszDest[0] = 0;
     }
     else
 	    mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
