@@ -123,7 +123,6 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 
         const char *type; 
         AI.format = detect_image_type(data, type);
-
         get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
 
 	    int fileId = _open(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
