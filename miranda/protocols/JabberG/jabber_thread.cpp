@@ -1626,10 +1626,11 @@ static void JabberProcessPresence( XmlNode *node, void *userdata )
 		if (( item = JabberListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			JabberListRemoveResource( LIST_ROSTER, from );
 
-			// remove selfcontact, if where is no more another resources
-			if ( item->resourceCount == 1 && JabberResourceInfoFromJID( info->fullJID ))
-				JabberListRemoveResource( LIST_ROSTER, info->fullJID );
-
+            if ( hContact && DBGetContactSettingByte( hContact, "CList", "NotOnList", 0) == 1 ) {
+                // remove selfcontact, if where is no more another resources
+                if ( item->resourceCount == 1 && JabberResourceInfoFromJID( info->fullJID ))
+                    JabberListRemoveResource( LIST_ROSTER, info->fullJID );
+            }
 			// set status only if no more available resources
 			if ( !item->resourceCount )
 			{
