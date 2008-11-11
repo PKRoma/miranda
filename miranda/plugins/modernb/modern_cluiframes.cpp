@@ -1493,8 +1493,11 @@ static int _us_DoShowHideFrame(WPARAM wParam,LPARAM lParam)
 
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-
-	pos=id2pos(wParam);
+	if (wParam == 0) {
+		pos =  lParam;
+	} else {
+    	pos=id2pos(wParam);
+	}
 	if(pos>=0&&(int)pos<g_nFramesCount)
 	{
 		g_pfwFrames[pos].visible=!g_pfwFrames[pos].visible;
@@ -1523,8 +1526,11 @@ static int _us_DoShowHideFrameTitle(WPARAM wParam,LPARAM lParam)
 
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-
-	pos=id2pos(wParam);
+	if (wParam == 0) {
+		pos =  lParam;
+	} else {
+    	pos=id2pos(wParam);
+	}
 	if(pos>=0&&(int)pos<g_nFramesCount)
 		g_pfwFrames[pos].TitleBar.ShowTitleBar=!g_pfwFrames[pos].TitleBar.ShowTitleBar;
 	//if (Frames[pos].height>
@@ -1646,8 +1652,11 @@ static int _us_DoLockFrame(WPARAM wParam,LPARAM lParam)
 
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-
-	pos=id2pos(wParam);
+	if (wParam == 0) {
+		pos =  lParam;
+	} else {
+    	pos=id2pos(wParam);
+	}
 	if(pos>=0&&(int)pos<g_nFramesCount)	{
 		g_pfwFrames[pos].Locked=!g_pfwFrames[pos].Locked;
 		CLUIFramesStoreFrameSettings(pos);
@@ -1666,8 +1675,11 @@ static int _us_DoSetFrameBorder(WPARAM wParam,LPARAM lParam)
 
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-
-	FrameId=id2pos(wParam);
+	if (wParam == 0) {
+		FrameId =  lParam;
+	} else {
+    	FrameId=id2pos(wParam);
+	}
 	if (FrameId==-1){return(-1);};
 	flt=
 		oldflags=CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS,MAKEWPARAM(FO_FLAGS,wParam),0);
@@ -1696,8 +1708,11 @@ static int _us_DoCollapseFrame(WPARAM wParam,LPARAM lParam)
 
 	if (_fCluiFramesModuleNotStarted) return -1;
 
-
-	FrameId=id2pos(wParam);
+	if (wParam == 0) {
+		FrameId =  lParam;
+	} else {
+    	FrameId=id2pos(wParam);
+	}
 	if(FrameId>=0&&FrameId<g_nFramesCount)
 	{
 		int oldHeight;

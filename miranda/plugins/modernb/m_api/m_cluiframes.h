@@ -231,39 +231,45 @@ typedef struct tagCLISTFrame {
 //////////////////////////////////////////////////////////////////////////
 //shows the frame if it is hidden,
 //hides the frame if it is shown
-//wParam=FrameId
-//lParam=0
+//wParam = FrameId
+//lParam = Frame number (can be shown in profile in CLUIFrames key)
 //returns 0 on success, -1 on failure
+//note that Frame number will be taken only if wParam == 0 
 #define MS_CLIST_FRAMES_SHFRAME				"CListFrames/SHFrame"
 
 //////////////////////////////////////////////////////////////////////////
 //shows the frame titlebar if it is hidden,
 //hides the frame titlebar if it is shown
 //wParam=FrameId
-//lParam=0
+//lParam = Frame number (can be shown in profile in CLUIFrames key)
 //returns 0 on success, -1 on failure
+//note that Frame number will be taken only if wParam == 0 
 #define MS_CLIST_FRAMES_SHFRAMETITLEBAR		"CListFrame/SHFrameTitleBar"
 
 //////////////////////////////////////////////////////////////////////////
 //locks the frame if it is unlocked,
 //unlock the frame if it is locked
 //wParam=FrameId
-//lParam=0
+//lParam = Frame number (can be shown in profile in CLUIFrames key)
 //returns 0 on success, -1 on failure
+//note that Frame number will be taken only if wParam == 0 
 #define MS_CLIST_FRAMES_ULFRAME				"CListFrame/ULFrame"
 
 //////////////////////////////////////////////////////////////////////////
 //collapses the frame if it is uncollapsed,
 //uncollapses the frame if it is collapsed
 //wParam=FrameId
-//lParam=0
+//lParam = Frame number (can be shown in profile in CLUIFrames key)
 //returns 0 on success, -1 on failure
+//note that Frame number will be taken only if wParam == 0 
 #define MS_CLIST_FRAMES_UCOLLFRAME			"CListFrame/UCOLLFrame"
 
 //////////////////////////////////////////////////////////////////////////
 //trigger border flags
 //wparam=frameid
-//lparam=0
+//lParam = Frame number (can be shown in profile in CLUIFrames key)
+//returns 0 on success, -1 on failure
+//note that Frame number will be taken only if wParam == 0 
 #define MS_CLIST_FRAMES_SETUNBORDER			"CListFrame/SetUnBorder"
 
 //////////////////////////////////////////////////////////////////////////
