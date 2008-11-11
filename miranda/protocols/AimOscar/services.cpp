@@ -156,7 +156,7 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
     switch(pd_mode)
     {
     case 1:
-        pd_mode = 3;
+        pd_mode = 4;
         aim_set_pd_info(hServerConn, seqno);
 
     case 4:
@@ -175,7 +175,7 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
         break;
 
     case 2:
-        pd_mode = 2;
+        pd_mode = 3;
         aim_set_pd_info(hServerConn, seqno);
 
     case 3:
