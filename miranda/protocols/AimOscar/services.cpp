@@ -155,11 +155,11 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 
     switch(pd_mode)
     {
-    case 0:
+    case 1:
         pd_mode = 3;
         aim_set_pd_info(hServerConn, seqno);
 
-    case 3:
+    case 4:
         item_id = find_list_item_id(block_list, dbv.pszVal);
 		if (item_id != 0)
         {
@@ -174,11 +174,11 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
         }
         break;
 
-    case 1:
+    case 2:
         pd_mode = 2;
         aim_set_pd_info(hServerConn, seqno);
 
-    case 2:
+    case 3:
         item_id = find_list_item_id(allow_list, dbv.pszVal);
 		if (item_id != 0)
         {

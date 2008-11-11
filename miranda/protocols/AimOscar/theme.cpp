@@ -149,27 +149,31 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
    	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
     {
+        mi.flags = CMIM_NAME | CMIM_FLAGS;
         switch(pd_mode)
         {
-        case 0:
-        case 4:
+        case 1:
             mi.pszName = "&Block";
             break;
 
-        case 1:
+        case 2:
             mi.pszName = "&Unblock";
             break;
 
-        case 2:
+        case 3:
             mi.pszName = find_list_item_id(allow_list, dbv.pszVal) ? "&Block" : "&Unblock";
             break;
 
-        case 3:
+        case 4:
             mi.pszName = find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block";
+            break;
+
+        case 5:
+            mi.pszName = "&Block";
+		    mi.flags |= CMIF_HIDDEN;
             break;
         }
 
-        mi.flags = CMIM_NAME;
 	    CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockContextMenuItem, (LPARAM)&mi);
 		DBFreeVariant(&dbv);
 	}
