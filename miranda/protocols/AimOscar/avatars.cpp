@@ -118,6 +118,9 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 	{
 		setString(AI.hContact, AIM_KEY_ASH,hash);
 
+        get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), NULL);
+        remove(AI.filename);
+
         const char *type; 
         AI.format = detect_image_type(data, type);
 
