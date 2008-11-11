@@ -1134,7 +1134,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		unsigned short id=snac.id();
 		TLV tlv(snac.val(2));
 		unsigned short code=snac.ushort(6+tlv.len());
-		if(id==0x000d)
+		if(id==0x000a)
 		{
 			if(code==0x0000)
 			{
@@ -1163,7 +1163,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
-		else if(id==0x000a)
+		else if(id==0x0008)
 		{
 			if(code==0x0000)
 			{
@@ -1212,7 +1212,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				ShowPopup("Aim Protocol",msg, 0);
 			}
 		}
-		else if(id==0x000e)
+		else if(id==0x0009)
 		{
 			if(code==0x0000)
 			{
