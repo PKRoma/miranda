@@ -942,7 +942,7 @@ void CCtcpPrefsDlg::OnApply()
 	m_proto->m_DCCPacketSize = m_combo.GetInt();
 	m_proto->m_DCCPassive = m_passive.GetState();
 	m_proto->m_sendNotice = m_sendNotice.GetState();
-	m_proto->m_DCCMode = m_slow.GetState();
+	m_proto->m_DCCMode = m_fast.GetState();
 	m_proto->m_manualHost = m_enableIP.GetState();
 	m_proto->m_IPFromServer = m_fromServer.GetState();
 	m_proto->m_disconnectDCCChats = m_disc.GetState();
