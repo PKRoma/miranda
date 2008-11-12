@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX- /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -99,7 +99,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX- /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -349,11 +349,123 @@ SOURCE=.\windows.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\icons\add.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\admin.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\aim.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\icons\aol.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\away.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\backgroundcolor.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\block.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\bold.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\bot.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\confirmed.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\foregroundcolor.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\hiptop.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\icq.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\idle.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\inbox.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\italic.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\link.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nbold.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nitalic.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nnormalscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\normalscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nsubscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nsuperscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\nunderline.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icons\oscar.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\profile.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\subscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\superscript.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\unconfirmed.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\underline.ico
 # End Source File
 # End Group
 # End Target

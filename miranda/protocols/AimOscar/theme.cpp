@@ -34,6 +34,7 @@ static const iconList[] =
 {
 	{	"ICQ",                    "icq",         IDI_ICQ             },
 	{	"Add",                    "add",         IDI_ADD             },
+	{	"Block",                  "block",       IDI_BLOCK           },
 	{	"Profile",                "profile",     IDI_PROFILE         },
 	{	"AOL Mail",               "mail",        IDI_MAIL            },
 	{	"AIM Icon",               "aim",         IDI_AIM             },     
@@ -168,7 +169,7 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
             mi.pszName = find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block";
             break;
 
-        case 5:
+        default:
             mi.pszName = "&Block";
 		    mi.flags |= CMIF_HIDDEN;
             break;
@@ -249,7 +250,7 @@ void CAimProto::InitMenus()
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
 	mi.position=-2000006500;
-	mi.icolibItem = GetIconHandle("add");
+	mi.icolibItem = GetIconHandle("block");
 	mi.pszName = LPGEN("&Block");
 	mi.flags=CMIF_ICONFROMICOLIB;
 	hBlockContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
