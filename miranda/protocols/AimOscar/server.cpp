@@ -708,6 +708,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		CCSDATA ccs={0};
 		PROTORECVEVENT pre;
 		char* msg_buf=NULL;
+		unsigned long offline_timestamp = 0;
+		bool is_offline = false;
 		//file transfer stuff
 		char* icbm_cookie=NULL;
 		char* filename=NULL;
@@ -835,6 +837,14 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					i+=tlv.len()+TLV_HEADER_SIZE;
 				}
 			}
+			if (tlv.cmp(0x0006))//Offline message flag
+			{
+				is_offline = true;
+			}
+			if (tlv.cmp(0x0016))//Offline message timestamp
+			{
+				offline_timestamp = tlv.ulong(0);
+			}
 			offset+=(tlv.len());
 		}
 		if(!port_tlv)
@@ -866,7 +876,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			delete[] msg_buf;
 			msg_buf = bbuf;
 
-			pre.timestamp = (DWORD)time(NULL);
+			if (is_offline)
+				pre.timestamp = offline_timestamp;
+			else
+				pre.timestamp = (DWORD)time(NULL);
 			pre.szMessage = msg_buf;
 			pre.lParam = 0;
 			ccs.szProtoService = PSR_MESSAGE;	
