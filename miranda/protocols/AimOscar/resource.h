@@ -62,7 +62,6 @@
 #define IDC_ALLOWADD                    152
 #define IDC_BLOCKEDIT                   153
 #define IDC_BLOCKADD                    154
-#define IDC_BUTTON2                     155
 #define IDC_ALLOWREMOVE                 155
 #define IDC_BLOCKREMOVE                 156
 #define IDC_SN                          1030
