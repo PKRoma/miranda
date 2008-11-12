@@ -233,7 +233,7 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
 	CreateProtoService("/GetProfile",&CAimProto::GetProfile);
-	mi.position=-2000006500;
+	mi.position=-2000006010;
 	mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
 	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
@@ -241,7 +241,7 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
 	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList);
-	mi.position=-2000006500;
+	mi.position=-2000006020;
 	mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
@@ -249,7 +249,7 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
-	mi.position=-2000006500;
+	mi.position=-2000006030;
 	mi.icolibItem = GetIconHandle("block");
 	mi.pszName = LPGEN("&Block");
 	mi.flags=CMIF_ICONFROMICOLIB;

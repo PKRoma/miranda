@@ -65,34 +65,31 @@ void __cdecl CAimProto::avatar_upload_thread( void* param )
 
 void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_size)//checks to see if the avatar needs requested
 {
-	if(!getByte( AIM_KEY_DA, 0))
+	char* hash_string = bytes_to_string(hash, hash_size);
+
+    if(strcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 	{
-		char* hash_string = bytes_to_string(hash, hash_size);
+        char* saved_hash = getSetting(hContact,AIM_KEY_ASH);
+		setString(hContact, AIM_KEY_AH, hash_string);
 
-        if(strcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
-		{
-            char* saved_hash = getSetting(hContact,AIM_KEY_ASH);
-			setString(hContact, AIM_KEY_AH, hash_string);
+        if (saved_hash == NULL || strcmp(saved_hash, hash_string))
+			sendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
+    
+        delete[] saved_hash;
+    }
+    else
+    {
+	    deleteSetting(hContact, AIM_KEY_AH);
+	    deleteSetting(hContact, AIM_KEY_ASH);
 
-            if (saved_hash == NULL || strcmp(saved_hash, hash_string))
-				sendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
-        
-            delete[] saved_hash;
-        }
-        else
-        {
-		    deleteSetting(hContact, AIM_KEY_AH);
-		    deleteSetting(hContact, AIM_KEY_ASH);
+        char file[MAX_PATH];
+		get_avatar_filename(hContact, file, sizeof(file), NULL);
+		remove(file);
 
-            char file[MAX_PATH];
-			get_avatar_filename(hContact, file, sizeof(file), NULL);
-			remove(file);
+        sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
+    }
 
-            sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
-        }
-
-        delete[] hash_string;
-	}
+    delete[] hash_string;
 }
 
 void __cdecl CAimProto::avatar_request_limit_thread( void* )

@@ -225,6 +225,9 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
     
     int res = GAIR_NOAVATAR;
     AI->filename[0] = 0;
+    AI->format = PA_FORMAT_UNKNOWN;
+
+	if (getByte( AIM_KEY_DA, 0)) return res;
 
     if (AI->hContact == NULL)
     {
