@@ -185,7 +185,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				DBVARIANT dbv;
 				if (!ppro->getString(AIM_KEY_PR, &dbv))
 				{
-                    char *prf = strip_html(dbv.pszVal)
+                    char *prf = strip_html(dbv.pszVal);
 					SetDlgItemTextA(hwndDlg, IDC_PROFILE, prf);
                     delete[] prf;
 					DBFreeVariant(&dbv);
