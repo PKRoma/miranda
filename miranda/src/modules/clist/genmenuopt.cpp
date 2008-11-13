@@ -4,8 +4,7 @@
 #define STR_SEPARATOR _T("---------------------------------------------")
 
 extern int DefaultImageListColorDepth;
-extern PIntMenuObject MenuObjects;
-extern int MenuObjectsCount, hStatusMenuObject;
+extern int hStatusMenuObject;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
 
 int hInst;
@@ -53,7 +52,7 @@ static int SaveTree(HWND hwndDlg)
 	char menuItemName[256], DBString[256], MenuNameItems[256];
 	int menupos;
 	int MenuObjectId, runtimepos;
-	PIntMenuObject pimo;
+	TIntMenuObject* pimo;
 	MenuItemOptData* iod;
 	HWND hTree = GetDlgItem( hwndDlg, IDC_MENUITEMS );
 
@@ -70,7 +69,7 @@ static int SaveTree(HWND hwndDlg)
 	if ( menupos == -1 )
 		return -1;
 
-	pimo = &MenuObjects[menupos];
+	pimo = g_menus[menupos];
 
 	mir_snprintf( MenuNameItems, sizeof(MenuNameItems), "%s_Items", pimo->Name);
 	runtimepos = 100;
@@ -115,15 +114,15 @@ static int BuildMenuObjectsTree(HWND hwndDlg)
 	tvis.hInsertAfter = TVI_LAST;
 	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	TreeView_DeleteAllItems( hTree );
-	if ( MenuObjectsCount == 0 )
+	if ( g_menus.getCount() == 0 )
 		return FALSE;
 
-	for ( i=0; i < MenuObjectsCount; i++ ) {
-		if ( MenuObjects[i].id == hStatusMenuObject )
+	for ( i=0; i < g_menus.getCount(); i++ ) {
+		if ( g_menus[i]->id == hStatusMenuObject )
 			continue;
 
-		tvis.item.lParam  = ( LPARAM )MenuObjects[i].id;
-		tvis.item.pszText = LangPackPcharToTchar( MenuObjects[i].Name );
+		tvis.item.lParam  = ( LPARAM )g_menus[i]->id;
+		tvis.item.pszText = LangPackPcharToTchar( g_menus[i]->Name );
 		tvis.item.iImage  = tvis.item.iSelectedImage = TRUE;
 		TreeView_InsertItem( hTree, &tvis );
 		mir_free( tvis.item.pszText );
@@ -211,7 +210,7 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	char menuItemName[256],MenuNameItems[256];
 	char buf[256];
 	int i,count,menupos,lastpos;
-	PIntMenuObject pimo;
+	TIntMenuObject* pimo;
 
 	dat = ( struct OrderData* )GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
 
@@ -222,15 +221,15 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	if ( menupos == -1 )
 		return FALSE;
 
-	pimo = &MenuObjects[menupos];
-	if ( pimo->MenuItemsCount == 0 )
+	pimo = g_menus[menupos];
+	if ( pimo->m_items.getCount() == 0 )
 		return FALSE;
 
 	mir_snprintf( MenuNameItems, sizeof(MenuNameItems), "%s_Items", pimo->Name );
 
 	count = 0;
-	for ( i=0; i < pimo->MenuItemsCount; i++ ) {
-		if ( pimo->MenuItems[i].mi.root != -1 )
+	for ( i=0; i < pimo->m_items.getCount(); i++ ) {
+		if ( pimo->m_items[i]->mi.root != -1 )
 			continue;
 
 		count++;
@@ -239,12 +238,12 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	PDar = ( lpMenuItemOptData* )mir_alloc( sizeof( lpMenuItemOptData )*count );
 
 	count = 0;
-	for ( i=0; i < pimo->MenuItemsCount; i++ ) {
-		if ( pimo->MenuItems[i].mi.root != -1 )
+	for ( i=0; i < pimo->m_items.getCount(); i++ ) {
+		if ( pimo->m_items[i]->mi.root != -1 )
 			continue;
 
 		PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
-		GetMenuItemName( &pimo->MenuItems[i], menuItemName, sizeof( menuItemName ));
+		GetMenuItemName( pimo->m_items[i], menuItemName, sizeof( menuItemName ));
 		{
 			DBVARIANT dbv;
 			wsprintfA(buf, "%s_name", menuItemName);
@@ -253,11 +252,11 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 				PD->name = mir_tstrdup( dbv.ptszVal );
 				DBFreeVariant( &dbv );
 			}
-			else PD->name = mir_tstrdup( pimo->MenuItems[i].mi.ptszName );
+			else PD->name = mir_tstrdup( pimo->m_items[i]->mi.ptszName );
 		}
 
-		PD->pimi = &pimo->MenuItems[i];
-		PD->defname = mir_tstrdup( pimo->MenuItems[i].mi.ptszName );
+		PD->pimi = pimo->m_items[i];
+		PD->defname = mir_tstrdup( pimo->m_items[i]->mi.ptszName );
 
 		wsprintfA( buf, "%s_visible", menuItemName );
 		PD->show = DBGetContactSettingByte( NULL, MenuNameItems, buf, 1 );
@@ -268,10 +267,10 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 		}
 		else PD->pos = ( PD->pimi ) ? PD->pimi->originalPosition : 0;
 
-		PD->id = pimo->MenuItems[i].id;
+		PD->id = pimo->m_items[i]->id;
 
-		if ( pimo->MenuItems[i].UniqName )
-			PD->uniqname = mir_strdup( pimo->MenuItems[i].UniqName );
+		if ( pimo->m_items[i]->UniqName )
+			PD->uniqname = mir_strdup( pimo->m_items[i]->UniqName );
 
 		PDar[ count ] = PD;
 		count++;
@@ -313,9 +312,9 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 
 	SendDlgItemMessage( hwndDlg, IDC_MENUITEMS, WM_SETREDRAW, TRUE, 0 );
 	mir_free( PDar );
-	ShowWindow( GetDlgItem( hwndDlg, IDC_NOTSUPPORTWARNING ),( pimo->bUseUserDefinedItems ) ? SW_HIDE : SW_SHOW );
-	EnableWindow( GetDlgItem( hwndDlg, IDC_MENUITEMS ), pimo->bUseUserDefinedItems );
-	EnableWindow( GetDlgItem( hwndDlg, IDC_INSERTSEPARATOR ), pimo->bUseUserDefinedItems );
+	ShowWindow( GetDlgItem( hwndDlg, IDC_NOTSUPPORTWARNING ),( pimo->m_bUseUserDefinedItems ) ? SW_HIDE : SW_SHOW );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_MENUITEMS ), pimo->m_bUseUserDefinedItems );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_INSERTSEPARATOR ), pimo->m_bUseUserDefinedItems );
 	return 1;
 }
 

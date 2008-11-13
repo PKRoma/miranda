@@ -3,10 +3,20 @@
 //general menu object module
 #include "m_genmenu.h"
 
-typedef struct
+struct TIntMenuObject
 {
+	TIntMenuObject();
+	~TIntMenuObject();
+
+	__inline void* operator new( size_t size )
+	{	return mir_calloc( size );
+	}
+	__inline void operator delete( void* p )
+	{	mir_free( p );
+	}
+
 	char* Name;
-	int id;
+	int   id;
 
 	//ExecService
 	//LPARAM lParam;//owner data
@@ -27,13 +37,14 @@ typedef struct
 	//WPARAM wParam;//menuitemhandle
 	char *onAddService;//called just before add MENUITEMINFO to hMenu
 
-	PMO_IntMenuItem MenuItems;
-	int MenuItemsCount;
-	HIMAGELIST hMenuIcons;
-	BOOL bUseUserDefinedItems;
-}
-	TIntMenuObject,*PIntMenuObject;
+	LIST<TMO_IntMenuItem> m_items;
+	HIMAGELIST m_hMenuIcons;
+	BOOL m_bUseUserDefinedItems;
 
+	void freeItem( TMO_IntMenuItem* );
+};
+
+extern LIST<TIntMenuObject> g_menus;
 
 #define SEPARATORPOSITIONINTERVAL	100000
 
