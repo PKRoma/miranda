@@ -348,7 +348,7 @@
 				RelativePath=".\utility.cpp">
 			</File>
 			<File
-				RelativePath=".\windows.cpp">
+				RelativePath=".\ui.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -461,7 +461,7 @@
 				RelativePath=".\utility.h">
 			</File>
 			<File
-				RelativePath=".\windows.h">
+				RelativePath=".\ui.h">
 			</File>
 		</Filter>
 		<File

@@ -1,5 +1,5 @@
 #include "aim.h"
-#include "windows.h"
+#include "ui.h"
 
 HANDLE hThemeButton = NULL;
 COLORREF foreground=0;
@@ -183,7 +183,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				SetWindowLong(hwndDlg, GWL_USERDATA, LPARAM( ppro ));
 
 				DBVARIANT dbv;
-				if ( !DBGetContactSettingString(NULL, ppro->m_szModuleName, AIM_KEY_PR, &dbv))
+				if (!ppro->getString(AIM_KEY_PR, &dbv))
 				{
 					SetDlgItemTextA(hwndDlg, IDC_PROFILE, dbv.pszVal);
 					DBFreeVariant(&dbv);

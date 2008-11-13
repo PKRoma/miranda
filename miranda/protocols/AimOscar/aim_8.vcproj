@@ -64,6 +64,7 @@
 				PrecompiledHeaderThrough="aim.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -348,6 +349,7 @@
 				PrecompiledHeaderThrough="aim.h"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
 			/>
@@ -534,11 +536,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\utility.cpp"
+				RelativePath=".\ui.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\windows.cpp"
+				RelativePath=".\utility.cpp"
 				>
 			</File>
 		</Filter>
@@ -768,11 +770,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\utility.h"
+				RelativePath=".\ui.h"
 				>
 			</File>
 			<File
-				RelativePath=".\windows.h"
+				RelativePath=".\utility.h"
 				>
 			</File>
 		</Filter>

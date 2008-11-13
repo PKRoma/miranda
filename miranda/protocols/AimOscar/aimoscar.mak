@@ -21,7 +21,7 @@ CFG=aim - Win32 Debug Unicode
 !ERROR An invalid configuration is specified.
 !ENDIF 
 
-!IF "$(OS)" == "Windows_NT"
+!IF "$(OS)" == "ui.NT"
 NULL=
 !ELSE 
 NULL=nul
@@ -66,7 +66,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\windows.obj"
+	-@erase "$(INTDIR)\ui.obj"
 	-@erase "$(OUTDIR)\Aim.exp"
 	-@erase "$(OUTDIR)\Aim.lib"
 	-@erase "$(OUTDIR)\Aim.map"
@@ -76,7 +76,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_ui. /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -109,7 +109,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\ui.obj" \
 	"$(INTDIR)\aim.res"
 
 "..\..\bin\release\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -178,8 +178,8 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\windows.obj"
-	-@erase "$(INTDIR)\windows.sbr"
+	-@erase "$(INTDIR)\ui.obj"
+	-@erase "$(INTDIR)\ui.sbr"
 	-@erase "$(OUTDIR)\Aim.exp"
 	-@erase "$(OUTDIR)\Aim.lib"
 	-@erase "$(OUTDIR)\Aim.pdb"
@@ -190,7 +190,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_ui. /D "_MBCS" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -219,7 +219,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\thread.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utility.sbr" \
-	"$(INTDIR)\windows.sbr"
+	"$(INTDIR)\ui.sbr"
 
 "$(OUTDIR)\aimoscar.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -252,7 +252,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\ui.obj" \
 	"$(INTDIR)\aim.res"
 
 "..\..\bin\debug\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -295,7 +295,7 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\windows.obj"
+	-@erase "$(INTDIR)\ui.obj"
 	-@erase "$(OUTDIR)\Aim.exp"
 	-@erase "$(OUTDIR)\Aim.lib"
 	-@erase "$(OUTDIR)\Aim.map"
@@ -305,7 +305,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_ui. /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "NDEBUG" 
 BSC32=bscmake.exe
@@ -338,7 +338,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\ui.obj" \
 	"$(INTDIR)\aim.res"
 
 "..\..\bin\release unicode\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -407,8 +407,8 @@ CLEAN :
 	-@erase "$(INTDIR)\utility.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
-	-@erase "$(INTDIR)\windows.obj"
-	-@erase "$(INTDIR)\windows.sbr"
+	-@erase "$(INTDIR)\ui.obj"
+	-@erase "$(INTDIR)\ui.sbr"
 	-@erase "$(OUTDIR)\Aim.exp"
 	-@erase "$(OUTDIR)\Aim.lib"
 	-@erase "$(OUTDIR)\Aim.pdb"
@@ -419,7 +419,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MDd /W2 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_ui. /D "UNICODE" /D "_USRDLL" /D "AIM_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\aimoscar.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\aim.res" /d "_DEBUG" 
 BSC32=bscmake.exe
@@ -448,7 +448,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\thread.sbr" \
 	"$(INTDIR)\tlv.sbr" \
 	"$(INTDIR)\utility.sbr" \
-	"$(INTDIR)\windows.sbr"
+	"$(INTDIR)\ui.sbr"
 
 "$(OUTDIR)\aimoscar.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -481,7 +481,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\tlv.obj" \
 	"$(INTDIR)\utility.obj" \
-	"$(INTDIR)\windows.obj" \
+	"$(INTDIR)\ui.obj" \
 	"$(INTDIR)\aim.res"
 
 "..\..\bin\debug unicode\plugins\Aim.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -1176,30 +1176,30 @@ SOURCE=.\utility.cpp
 
 !ENDIF 
 
-SOURCE=.\windows.cpp
+SOURCE=.\ui.cpp
 
 !IF  "$(CFG)" == "aim - Win32 Release"
 
 
-"$(INTDIR)\windows.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\ui.obj" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "aim - Win32 Debug"
 
 
-"$(INTDIR)\windows.obj"	"$(INTDIR)\windows.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\ui.obj"	"$(INTDIR)\ui.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "aim - Win32 Release Unicode"
 
 
-"$(INTDIR)\windows.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\ui.obj" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "aim - Win32 Debug Unicode"
 
 
-"$(INTDIR)\windows.obj"	"$(INTDIR)\windows.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\ui.obj"	"$(INTDIR)\ui.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 

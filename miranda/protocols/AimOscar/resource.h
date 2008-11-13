@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by aim.rc
 //
+#define IDC_STATIC                     -1
 #define IDD_INFO                        6
 #define IDD_AIMACCOUNT                  7
 #define IDD_AIM                         8

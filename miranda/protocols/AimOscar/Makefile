@@ -38,7 +38,7 @@ SRC =\
 	proxy.cpp \
 	direct_connect.cpp \
 	file.cpp \
-	windows.cpp \
+	ui.cpp \
 	strl.cpp \
 	links.cpp \
 	server.cpp \
@@ -70,7 +70,7 @@ HDR = defines.h \
 	direct_connect.ch \
 	file.h \
 	resource.h \
-	windows. h \
+	ui.h \
 	m_cluiframes.h \
 	strl.h \
 	links.h \

@@ -245,7 +245,7 @@ SOURCE=.\utility.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\windows.cpp
+SOURCE=.\ui.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -341,7 +341,7 @@ SOURCE=.\utility.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\windows.h
+SOURCE=.\ui.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

@@ -66,7 +66,7 @@
 #include "services.h"
 #include "server.h"
 #include "theme.h"
-#include "windows.h"
+#include "ui.h"
 #include "proto.h"
 
 //Packet Stuff
