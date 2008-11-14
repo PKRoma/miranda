@@ -99,6 +99,8 @@ var INST_SUCCESS
 
 Section "Miranda IM"
   SectionIn RO
+  !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
+  
   !insertmacro WriteInstallerOption "0" "AIM"
   !insertmacro WriteInstallerOption "0" "Gadu-Gadu"
   !insertmacro WriteInstallerOption "0" "ICQ"
@@ -110,7 +112,6 @@ Section "Miranda IM"
   !insertmacro WriteInstallerOption "0" "StartMenuShortCut"
   !insertmacro WriteInstallerOption "0" "DesktopShortCut"
   !insertmacro WriteInstallerOption "0" "QuickLaunchShortCut"
-  !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
 
   SetOutPath "$INSTDIR"
   File "${MIM_BUILD_DIR}\miranda32.exe"
