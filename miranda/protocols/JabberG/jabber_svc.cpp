@@ -117,8 +117,9 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 		if ( !JGetStringT( AI->hContact, "jid", &dbv )) {
 			JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 			if ( item != NULL ) {
-				TCHAR szJid[ 512 ];
 				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
+
+				TCHAR szJid[ 512 ];
 				if ( item->resourceCount != NULL && !isXVcard ) {
 					TCHAR *bestResName = ListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
@@ -128,7 +129,10 @@ int __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam )
 				Log( "Rereading %s for " TCHAR_STR_PARAM, isXVcard ? JABBER_FEAT_VCARD_TEMP : JABBER_FEAT_AVATAR, szJid );
 
 				int iqId = SerialNext();
-				IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetAvatar );
+				if ( isXVcard )
+					IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetVCardAvatar );
+				else
+					IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetClientAvatar );
 
 				XmlNodeIq iq( _T("get"), iqId, szJid );
 				if ( isXVcard )
@@ -256,9 +260,18 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 
-	if ( m_bJabberOnline ) {	
+	if ( m_bJabberOnline ) {
 		SetServerVcard( TRUE, szFileName );
 		SendPresence( m_iDesiredStatus, false );
+	}
+	else if ( szFileName == NULL || szFileName[0] == 0 ) {
+		// Remove avatar
+		char tFileName[ MAX_PATH ];
+		GetAvatarFileName( NULL, tFileName, MAX_PATH );
+		DeleteFileA( tFileName );
+
+		JDeleteSetting( NULL, "AvatarSaved" );
+		JDeleteSetting( NULL, "AvatarHash" );
 	}
 	else {
 		int fileIn = _open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
@@ -290,7 +303,6 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 			sprintf( buf+( i<<1 ), "%02x", digest[i] );
 
 		m_options.AvatarType = JabberGetPictureType( pResult );
-		JSetString( NULL, "AvatarSaved", buf );
 
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
 		FILE* out = fopen( tFileName, "wb" );
@@ -299,6 +311,8 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 			fclose( out );
 		}
 		delete[] pResult;
+
+		JSetString( NULL, "AvatarSaved", buf );
 	}
 
 	return 0;

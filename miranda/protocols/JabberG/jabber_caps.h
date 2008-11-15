@@ -86,6 +86,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_VCARD_TEMP                  "vcard-temp"
 #define JABBER_CAPS_VCARD_TEMP                  ((JabberCapsBits)1<<18)
 #define JABBER_FEAT_AVATAR                      "jabber:iq:avatar"
+#define JABBER_FEAT_SERVER_AVATAR               "storage:client:avatar"
 #define JABBER_CAPS_AVATAR                      ((JabberCapsBits)1<<19)
 #define JABBER_FEAT_XHTML                       "http://jabber.org/protocol/xhtml-im"
 #define JABBER_CAPS_XHTML                       ((JabberCapsBits)1<<20)

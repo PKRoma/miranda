@@ -1092,15 +1092,17 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	char szAvatarName[ MAX_PATH ];
 	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 	if ( bPhotoChanged )
-		szFileName = ( szPhotoFileName != NULL && szPhotoFileName[0] ) ? szPhotoFileName : NULL;
+		szFileName = szPhotoFileName;
 	else
 		szFileName = szAvatarName;
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
 	Log( "Before update, file name = %s", szFileName );
-	if ( szFileName == NULL ) {
+	if ( szFileName == NULL || szFileName[0] == 0 ) {
 		v << XCHILD( _T("PHOTO"));
 		DeleteFileA( szAvatarName );
+		JDeleteSetting( NULL, "AvatarSaved" );
+		JDeleteSetting( NULL, "AvatarHash" );
 	}
 	else {
 		HANDLE hFile;
@@ -1141,13 +1143,18 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 								sprintf( buf+( j<<1 ), "%02x", digest[j] );
 
 							m_options.AvatarType = JabberGetPictureType( buffer );	
-							JSetString( NULL, "AvatarHash", buf );
-							JSetString( NULL, "AvatarSaved", buf );
 
 							if ( bPhotoChanged ) {
 								DeleteFileA( szAvatarName );
+
+								GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+
 								CopyFileA( szFileName, szAvatarName, FALSE );
-					}	}	}
+							}
+
+							JSetString( NULL, "AvatarHash", buf );
+							JSetString( NULL, "AvatarSaved", buf );
+					}	}
 					mir_free( buffer );
 				}
 				CloseHandle( hFile );

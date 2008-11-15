@@ -885,7 +885,11 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 			// XEP-0153: vCard-Based Avatars
 			HXML x = p << XCHILDNS( _T("x"), _T("vcard-temp:x:update"));
 			x << XCHILD( _T("photo"), _A2T(hashValue));
-	}	}
+		} else {
+			HXML x = p << XCHILDNS( _T("x"), _T("vcard-temp:x:update"));
+			x << XCHILD( _T("photo"));
+		}
+	}
 
 	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {

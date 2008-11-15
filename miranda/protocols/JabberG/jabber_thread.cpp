@@ -1569,8 +1569,10 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 		mir_free( nick );
 
 		HXML xNode;
-		BOOL hasXAvatar = false;
 		if ( m_options.EnableAvatars ) {
+			BOOL hasAvatar = false;
+			BOOL removedAvatar = false;
+
 			Log( "Avatar enabled" );
 			for ( int i = 1; ( xNode=xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
 				if ( !lstrcmp( xmlGetAttrValue( xNode, _T("xmlns")), _T("jabber:x:avatar"))) {
@@ -1578,7 +1580,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 						JDeleteSetting(hContact,"AvatarXVcard");
 						Log( "AvatarXVcard deleted" );
 						JSetStringT( hContact, "AvatarHash", xmlGetText( xNode ) );
-						hasXAvatar = true;
+						hasAvatar = true;
 						DBVARIANT dbv = {0};
 						int result = JGetStringT( hContact, "AvatarSaved", &dbv );
 						if ( !result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
@@ -1586,24 +1588,42 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 							JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 						} else Log( "Not broadcasting avatar changed" );
 						if ( !result ) JFreeVariant( &dbv );
-			}	}	}
-			if ( !hasXAvatar ) { //no jabber:x:avatar. try vcard-temp:x:update
+					} else {
+						removedAvatar = true;
+					}
+			}	}
+			if ( !hasAvatar ) { //no jabber:x:avatar. try vcard-temp:x:update
 				Log( "Not hasXAvatar" );
 				for ( int i = 1; ( xNode=xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
 					if ( !lstrcmp( xmlGetAttrValue( xNode, _T("xmlns")), _T("vcard-temp:x:update"))) {
-						if (( xNode = xmlGetChild( xNode , "photo" )) != NULL && xmlGetText( xNode ) != NULL ) {
-							JSetByte( hContact, "AvatarXVcard", 1 );
-							Log( "AvatarXVcard set" );
-							JSetStringT( hContact, "AvatarHash", xmlGetText( xNode ) );
-							DBVARIANT dbv = {0};
-							int result = JGetStringT( hContact, "AvatarSaved", &dbv );
-							if ( !result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
-								Log( "Avatar was changed. Using vcard-temp:x:update" );
-								JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
+						if (( xNode = xmlGetChild( xNode , "photo" )) != NULL ){
+							LPCTSTR txt = xmlGetText( xNode );
+							if ( txt != NULL && txt[0] != 0) {
+								JSetByte( hContact, "AvatarXVcard", 1 );
+								Log( "AvatarXVcard set" );
+								JSetStringT( hContact, "AvatarHash", txt );
+								hasAvatar = true;
+								DBVARIANT dbv = {0};
+								int result = JGetStringT( hContact, "AvatarSaved", &dbv );
+								if ( !result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
+									Log( "Avatar was changed. Using vcard-temp:x:update" );
+									JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
+								}
+								else Log( "Not broadcasting avatar changed" );
+								if ( !result ) JFreeVariant( &dbv );
+							} else {
+								removedAvatar = true;
 							}
-							else Log( "Not broadcasting avatar changed" );
-							if ( !result ) JFreeVariant( &dbv );
-		}	}	}	}	}
+			}	}	}	}
+			if ( !hasAvatar && removedAvatar ) {
+				Log( "Has no avatar" );
+				JDeleteSetting( hContact, "AvatarHash" );
+				DBVARIANT dbv = {0};
+				if ( !JGetStringT( hContact, "AvatarSaved", &dbv ) ) {
+					JFreeVariant( &dbv );
+					JDeleteSetting( hContact, "AvatarSaved" );
+					JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, NULL, NULL );
+		}	}	}
 		return;
 	}
 

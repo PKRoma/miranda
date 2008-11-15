@@ -484,7 +484,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultSetBookmarks( HXML iqNode, void *userdata );
 	void   OnIqResultExtSearch( HXML iqNode, void *userdata );
 	void   OnIqResultGetAuth( HXML iqNode, void *userdata );
-	void   OnIqResultGetAvatar( HXML iqNode, void *userdata );
+	void   OnIqResultGetVCardAvatar( HXML iqNode, void *userdata );
+	void   OnIqResultGetClientAvatar( HXML iqNode, void *userdata );
+	void   OnIqResultGetServerAvatar( HXML iqNode, void *userdata );
+	void   OnIqResultGotAvatar( HANDLE hContact, HXML n, const TCHAR* mimeType );
 	void   OnIqResultGetMuc( HXML iqNode, void *userdata );
 	void   OnIqResultGetRegister( HXML iqNode, void *userdata );
 	void   OnIqResultGetRoster( HXML iqNode, void *userdata, CJabberIqInfo* pInfo );

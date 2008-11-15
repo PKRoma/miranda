@@ -1355,16 +1355,12 @@ void CJabberProto::OnIqResultDiscoAgentItems( HXML iqNode, void *userdata )
 		return;
 }
 */
-void CJabberProto::OnIqResultGetAvatar( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetVCardAvatar( HXML iqNode, void *userdata )
 {
 	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
 
-	// RECVED: agent list
-	// ACTION: refresh agent list dialog
-	Log( "<iq/> iqIdResultGetAvatar" );
-	if (( type = xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
-	if ( _tcscmp( type, _T("result")))                       return;
+	Log( "<iq/> OnIqResultGetVCardAvatar" );
 
 	const TCHAR* from = xmlGetAttrValue( iqNode, _T("from"));
 	if ( from == NULL )
@@ -1372,33 +1368,138 @@ void CJabberProto::OnIqResultGetAvatar( HXML iqNode, void *userdata )
 	HANDLE hContact = HContactFromJID( from );
 	if ( hContact == NULL )
 		return;
-	HXML n;
+
+	if (( type = xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
+	if ( _tcscmp( type, _T("result"))) return;
+
+	HXML vCard = xmlGetChild( iqNode , "vCard" );
+	if (vCard == NULL) return;
+	vCard = xmlGetChild( vCard , "PHOTO" );
+	if (vCard == NULL) return;
+
+	if ( xmlGetChildCount( vCard ) == 0 ) {
+		JDeleteSetting( hContact, "AvatarHash" );
+		DBVARIANT dbv = {0};
+		if ( !JGetStringT( hContact, "AvatarSaved", &dbv ) ) {
+			JFreeVariant( &dbv );
+			JDeleteSetting( hContact, "AvatarSaved" );
+			JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, NULL, NULL );
+		}
+
+		return;
+	}
+
+	HXML typeNode = xmlGetChild( vCard , "TYPE" );
 	const TCHAR* mimeType = NULL;
-	if ( JGetByte( hContact, "AvatarXVcard", 0 )) {
-		HXML vCard = xmlGetChild( iqNode , "vCard" );
-		if (vCard == NULL) return;
-		vCard = xmlGetChild( vCard , "PHOTO" );
-		if (vCard == NULL) return;
-		HXML typeNode = xmlGetChild( vCard , "TYPE" );
-		if (typeNode != NULL) mimeType = xmlGetText( typeNode );
-		n = xmlGetChild( vCard , "BINVAL" );
-	}
-	else {
-		HXML queryNode = xmlGetChild( iqNode , "query" );
-		if ( queryNode == NULL )
-			return;
-
-		const TCHAR* xmlns = xmlGetAttrValue( queryNode, _T("xmlns"));
-		if ( lstrcmp( xmlns, _T(JABBER_FEAT_AVATAR)))
-			return;
-
-		n = xmlGetChild( queryNode , "data" );
-		if ( n )
-			mimeType = xmlGetAttrValue( n, _T("mimetype"));
-	}
-	if ( n == NULL )
+	if (typeNode != NULL) mimeType = xmlGetText( typeNode );
+	HXML n = xmlGetChild( vCard , "BINVAL" );
+	if ( n == NULL ) 
 		return;
 
+	JSetByte( hContact, "AvatarXVcard", 1 );
+	OnIqResultGotAvatar( hContact, n, mimeType);
+}
+
+void CJabberProto::OnIqResultGetClientAvatar( HXML iqNode, void *userdata )
+{
+	ThreadData* info = ( ThreadData* ) userdata;
+	const TCHAR* type;
+
+	Log( "<iq/> iqIdResultGetClientAvatar" );
+
+	const TCHAR* from = xmlGetAttrValue( iqNode, _T("from"));
+	if ( from == NULL )
+		return;
+	HANDLE hContact = HContactFromJID( from );
+	if ( hContact == NULL )
+		return;
+
+	HXML n = NULL;
+	if (( type = xmlGetAttrValue( iqNode, _T("type"))) != NULL && !_tcscmp( type, _T("result")) ) {
+		HXML queryNode = xmlGetChild( iqNode , "query" );
+		if ( queryNode != NULL ) {
+			const TCHAR* xmlns = xmlGetAttrValue( queryNode, _T("xmlns"));
+			if ( !lstrcmp( xmlns, _T(JABBER_FEAT_AVATAR))) {
+				n = xmlGetChild( queryNode , "data" );
+			}
+		}
+	}
+
+	if ( n == NULL ) {
+		TCHAR szJid[ 512 ];
+		lstrcpyn(szJid, from, 512);
+		TCHAR *res = _tcschr(szJid, _T('/'));
+		if ( res != NULL )
+			*res = 0;
+
+		// Try server stored avatar
+		int iqId = SerialNext();
+		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetServerAvatar );
+
+		XmlNodeIq iq( _T("get"), iqId, szJid );
+		iq << XQUERY( _T(JABBER_FEAT_SERVER_AVATAR));
+		m_ThreadInfo->send( iq );
+
+		return;
+	}
+
+	const TCHAR* mimeType = mimeType = xmlGetAttrValue( n, _T("mimetype"));
+
+	OnIqResultGotAvatar( hContact, n, mimeType);
+}
+
+
+void CJabberProto::OnIqResultGetServerAvatar( HXML iqNode, void *userdata )
+{
+	ThreadData* info = ( ThreadData* ) userdata;
+	const TCHAR* type;
+
+	Log( "<iq/> iqIdResultGetServerAvatar" );
+
+	const TCHAR* from = xmlGetAttrValue( iqNode, _T("from"));
+	if ( from == NULL )
+		return;
+	HANDLE hContact = HContactFromJID( from );
+	if ( hContact == NULL )
+		return;
+
+	HXML n = NULL;
+	if (( type = xmlGetAttrValue( iqNode, _T("type"))) != NULL && !_tcscmp( type, _T("result")) ) {
+		HXML queryNode = xmlGetChild( iqNode , "query" );
+		if ( queryNode != NULL ) {
+			const TCHAR* xmlns = xmlGetAttrValue( queryNode, _T("xmlns"));
+			if ( !lstrcmp( xmlns, _T(JABBER_FEAT_SERVER_AVATAR)) ) {
+				n = xmlGetChild( queryNode , "data" );
+			}
+		}
+	}
+
+	if ( n == NULL ) {
+		TCHAR szJid[ 512 ];
+		lstrcpyn(szJid, from, 512);
+		TCHAR *res = _tcschr(szJid, _T('/'));
+		if ( res != NULL )
+			*res = 0;
+
+		// Try VCard photo
+		int iqId = SerialNext();
+		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultGetVCardAvatar );
+
+		XmlNodeIq iq( _T("get"), iqId, szJid );
+		iq << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP));
+		m_ThreadInfo->send( iq );
+
+		return;
+	}
+
+	const TCHAR* mimeType = xmlGetAttrValue( n, _T("mimetype"));
+
+	OnIqResultGotAvatar( hContact, n, mimeType);
+}
+
+
+void CJabberProto::OnIqResultGotAvatar( HANDLE hContact, HXML n, const TCHAR* mimeType ) 
+{
 	int resultLen = 0;
 	char* body = JabberBase64Decode( xmlGetText( n ), &resultLen );
 
@@ -1437,7 +1538,6 @@ LBL_ErrFormat:
 	mir_sha1_finish( &sha, digest );
 	for ( int i=0; i<20; i++ )
 		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
-	JSetString( hContact, "AvatarSaved", buffer );
 
 	GetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
 
@@ -1445,6 +1545,7 @@ LBL_ErrFormat:
 	if ( out != NULL ) {
 		fwrite( body, resultLen, 1, out );
 		fclose( out );
+		JSetString( hContact, "AvatarSaved", buffer );
 		JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
 		Log("Broadcast new avatar: %s",AI.filename);
 	}
