@@ -667,25 +667,25 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBFreeVariant(&dbv);
 			}
 			else
-				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
+                SetDlgItemTextA(hwndDlg, IDC_HN, ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
 			SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
 
-			WORD timeout = (WORD)ppro->getWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
+			WORD timeout = (WORD)ppro->getWord(AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 			SetDlgItemInt(hwndDlg, IDC_GP, timeout,0);
 
-			CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte( AIM_KEY_DC, 0));//Message Delivery Confirmation
-			CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte( AIM_KEY_FP, 0));//force proxy
-			CheckDlgButton(hwndDlg, IDC_AT, ppro->getByte( AIM_KEY_AT, 0));//Account Type Icons
-			CheckDlgButton(hwndDlg, IDC_ES, ppro->getByte( AIM_KEY_ES, 0));//Extended Status Type Icons
-			CheckDlgButton(hwndDlg, IDC_HF, ppro->getByte( AIM_KEY_HF, 0));//Fake hiptopness
-			CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte( AIM_KEY_DM, 0));//Disable Sending Mode Message
-			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte( AIM_KEY_FI, 0));//Format imcoming messages
-			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte( AIM_KEY_FO, 0));//Format outgoing messages
-			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte( AIM_KEY_II, 0));//Instant Idle
-			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte( AIM_KEY_CM, 0));//Check Mail
-			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte( AIM_KEY_DA, 0));//Disable Avatars
-			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte( AIM_KEY_DSSL, 0));//Disable SSL
+			CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
+			CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
+			CheckDlgButton(hwndDlg, IDC_AT, ppro->getByte(AIM_KEY_AT, 0));//Account Type Icons
+			CheckDlgButton(hwndDlg, IDC_ES, ppro->getByte(AIM_KEY_ES, 0));//Extended Status Type Icons
+			CheckDlgButton(hwndDlg, IDC_HF, ppro->getByte(AIM_KEY_HF, 0));//Fake hiptopness
+			CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte(AIM_KEY_DM, 0));//Disable Sending Mode Message
+			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte(AIM_KEY_FI, 0));//Format imcoming messages
+			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 0));//Format outgoing messages
+			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte(AIM_KEY_II, 0));//Instant Idle
+			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte(AIM_KEY_CM, 0));//Check Mail
+			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte(AIM_KEY_DA, 0));//Disable Avatars
+			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte(AIM_KEY_DSSL, 0));//Disable SSL
 		}
 		break;
 

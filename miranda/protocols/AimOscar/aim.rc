@@ -143,7 +143,7 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Users who can contact me:",IDC_STATIC,16,14,91,8
+    LTEXT           "Users who can contact me:",IDC_STATIC,16,14,141,8
     CONTROL         "Allow all users",IDC_ALLOWALL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,29,145,10
     CONTROL         "Allow only users on contact list",IDC_ALLOWCONT,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,40,145,10
     CONTROL         "Allow only users below",IDC_ALLOWBELOW,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,51,145,10
