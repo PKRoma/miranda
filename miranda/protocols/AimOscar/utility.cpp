@@ -51,7 +51,7 @@ void CAimProto::start_connection(int status)
 		}
 
 		int dbkey = getString(AIM_KEY_HN, &dbv);
-        if (dbkey) dbv.pszVal = getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS;
+        if (dbkey) dbv.pszVal = getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER;
 
 		broadcast_status(ID_STATUS_CONNECTING);
 		hServerConn = NULL;

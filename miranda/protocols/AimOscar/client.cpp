@@ -476,14 +476,14 @@ int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
 	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
 	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)strlen(sn);
-	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_FILE_TRANSFER)+strlen(descr)+strlen(file_name)+sn_length);
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*51+sizeof(AIM_CAP_FILE_TRANSFER)+lstrlenA(descr)+lstrlenA(file_name)+sn_length);
 	aim_writesnac(0x04,0x06,offset,buf);
 	aim_writegeneric(8,icbm_cookie,offset,buf);
 	aim_writegeneric(2,"\0\x02",offset,buf);//channel
 	aim_writegeneric(1,(char*)&sn_length,offset,buf);
 	aim_writegeneric(sn_length,sn,offset,buf);
 
-	char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*50+sizeof(AIM_CAP_FILE_TRANSFER)+strlen(descr)+strlen(file_name));
+	char* msg_frag=(char*)alloca(TLV_HEADER_SIZE*50+sizeof(AIM_CAP_FILE_TRANSFER)+lstrlenA(descr)+lstrlenA(file_name));
 	unsigned short frag_offset=0;
 	{
 		aim_writegeneric(2,"\0\0",frag_offset,msg_frag);//request type
