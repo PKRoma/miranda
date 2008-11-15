@@ -179,7 +179,7 @@ char *gg_makecontacts(GGPROTO *gg, int cr)
 	contacts = string_free(s, 0);
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_makecontacts(): \n%s", contacts);
+	gg_netlog(gg, "gg_makecontacts(): \n%s", contacts);
 #endif
 
 	return contacts;
@@ -282,7 +282,7 @@ void gg_parsecontacts(GGPROTO *gg, char *contacts)
 		{
 			HANDLE hContact = gg_getcontact(gg, uin, 1, 1, strNick);
 #ifdef DEBUGMODE
-			gg_netlog("gg_parsecontacts(): Found contact %d with nickname \"%s\".", uin, strNick);
+			gg_netlog(gg, "gg_parsecontacts(): Found contact %d with nickname \"%s\".", uin, strNick);
 #endif
 
 			// Write group
@@ -350,7 +350,7 @@ static int gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			MB_OK | MB_ICONSTOP
 		);
 #ifdef DEBUGMODE
-		gg_netlog("gg_import_serverthread(): Cannot import list because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_import_serverthread(): Cannot import list because of \"%s\".", strerror(errno));
 #endif
 	}
 	free(password);
@@ -401,7 +401,7 @@ static int gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
 #endif
 	}
 
@@ -461,7 +461,7 @@ static int gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	ofn.lpstrDefExt = "txt";
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_import_text()");
+		gg_netlog(gg, "gg_import_text()");
 #endif
 	if(!GetOpenFileName(&ofn)) return 0;
 
@@ -535,7 +535,7 @@ static int gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	ofn.lpstrDefExt = "txt";
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_export_text(%s).", str);
+	gg_netlog(gg, "gg_export_text(%s).", str);
 #endif
 	if(!GetSaveFileName(&ofn)) return 0;
 
@@ -602,7 +602,7 @@ static int gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	contacts = gg_makecontacts(gg, 1);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_userlist_request(%s).", contacts);
+		gg_netlog(gg, "gg_userlist_request(%s).", contacts);
 #endif
 
 	if (gg_userlist_request(gg->sess, GG_USERLIST_PUT, contacts) == -1)
@@ -616,7 +616,7 @@ static int gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			MB_OK | MB_ICONSTOP
 		);
 #ifdef DEBUGMODE
-		gg_netlog("gg_export_serverthread(): Cannot export list because of \"%s\".", strerror(errno));
+		gg_netlog(gg, "gg_export_serverthread(): Cannot export list because of \"%s\".", strerror(errno));
 #endif
 	}
 

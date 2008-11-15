@@ -363,8 +363,7 @@ void *__stdcall gg_mainthread(void *empty);
 int gg_isonline(GGPROTO *gg);
 
 #ifdef DEBUGMODE
-int gg_netlogex(const GGPROTO *gg, const char *fmt, ...);
-#define gg_netlog(format, ...) gg_netlogex(gg, format, ## __VA_ARGS__)
+int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 #endif
 
 int gg_netsend(HANDLE s, char *data, int datalen);

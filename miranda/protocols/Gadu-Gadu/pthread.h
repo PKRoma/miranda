@@ -45,8 +45,8 @@ void pthread_exit(void *value_ptr);
 #define pthread_mutex_init(pmutex, pattr)	 InitializeCriticalSection(pmutex)
 #define pthread_mutex_destroy(pmutex)		 DeleteCriticalSection(pmutex)
 #ifdef DEBUGMODE
-#define pthread_mutex_lock(pmutex)			 {gg_netlog("pthread_mutex_lock @ %s:%d", __FILE__, __LINE__); EnterCriticalSection(pmutex);}
-#define pthread_mutex_unlock(pmutex)		 {gg_netlog("pthread_mutex_unlock @ %s:%d", __FILE__, __LINE__); LeaveCriticalSection(pmutex);}
+#define pthread_mutex_lock(pmutex)			 {gg_netlog(gg,"pthread_mutex_lock @ %s:%d", __FILE__, __LINE__); EnterCriticalSection(pmutex);}
+#define pthread_mutex_unlock(pmutex)		 {gg_netlog(gg,"pthread_mutex_unlock @ %s:%d", __FILE__, __LINE__); LeaveCriticalSection(pmutex);}
 #else
 #define pthread_mutex_lock(pmutex)			 EnterCriticalSection(pmutex)
 #define pthread_mutex_unlock(pmutex)		 LeaveCriticalSection(pmutex)

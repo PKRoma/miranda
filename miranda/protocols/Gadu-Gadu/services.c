@@ -136,14 +136,14 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 		if(szMsg)
 		{
 #ifdef DEBUGMODE
-			gg_netlog("gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
+			gg_netlog(gg, "gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
 #endif
 			gg_change_status_descr(gg->sess, status_m2gg(gg, status, szMsg != NULL), szMsg);
 		}
 		else
 		{
 #ifdef DEBUGMODE
-			gg_netlog("gg_refreshstatus(): Setting just status.");
+			gg_netlog(gg, "gg_refreshstatus(): Setting just status.");
 #endif
 			gg_change_status(gg->sess, status_m2gg(gg, status, 0));
 		}
@@ -181,7 +181,7 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 	// Depreciated due status description changing
 	// if (gg->proto.m_iStatus == status) return 0;
 #ifdef DEBUGMODE
-	gg_netlogex((GGPROTO *)proto, "gg_setstatus(): PS_SETSTATUS(%s) normalized to %s",
+	gg_netlog((GGPROTO *)proto, "gg_setstatus(): PS_SETSTATUS(%s) normalized to %s",
 		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0),
 		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, proto->m_iDesiredStatus, 0));
 #endif
@@ -193,7 +193,7 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 	// Miranda will always ask for a new status message
 #ifdef DEBUGMODE
 	else
-		gg_netlogex((GGPROTO *)proto, "gg_setstatus(): Postponed to gg_setawaymsg().");
+		gg_netlog((GGPROTO *)proto, "gg_setstatus(): Postponed to gg_setawaymsg().");
 #endif
 	return 0;
 }
@@ -266,7 +266,7 @@ static void *__stdcall gg_searchthread(void *empty)
 	GGPROTO *gg = (GGPROTO *)empty;
 	SleepEx(100, FALSE);
 #ifdef DEBUGMODE
-	gg_netlog("gg_searchthread(): Failed search.");
+	gg_netlog(gg, "gg_searchthread(): Failed search.");
 #endif
 	ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, (HANDLE)1, 0);
 	return NULL;
@@ -294,7 +294,7 @@ HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const char *id)
 	if(!gg_pubdir50(gg->sess, req))
 	{ pthread_create(&tid, NULL, gg_searchthread, gg); pthread_detach(&tid); return (HANDLE)1; }
 #ifdef DEBUGMODE
-	gg_netlog("gg_basicsearch(): Seq %d.", req->seq);
+	gg_netlog(gg, "gg_basicsearch(): Seq %d.", req->seq);
 #endif
 	gg_pubdir50_free(req);
 
@@ -357,7 +357,7 @@ static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const char *nick, const
 	if(!gg_pubdir50(gg->sess, req))
 	{ pthread_create(&tid, NULL, gg_searchthread, gg); pthread_detach(&tid); return (HANDLE)1; }
 #ifdef DEBUGMODE
-	gg_netlog("gg_searchbyname(): Seq %d.", req->seq);
+	gg_netlog(gg, "gg_searchbyname(): Seq %d.", req->seq);
 #endif
 	gg_pubdir50_free(req);
 
@@ -381,7 +381,7 @@ static void *__stdcall gg_cmdgetinfothread(void *empty)
 	GGCONTEXT *ctx = (GGCONTEXT *)empty;
 	SleepEx(100, FALSE);
 #ifdef DEBUGMODE
-	gg_netlogex(ctx->gg, "gg_cmdgetinfothread(): Failed info retreival.");
+	gg_netlog(ctx->gg, "gg_cmdgetinfothread(): Failed info retreival.");
 #endif
 	ProtoBroadcastAck(ctx->gg->proto.m_szModuleName, ctx->hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE) 1, 0);
 	return NULL;
@@ -409,7 +409,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 		gg_pubdir50_seq_set(req, GG_SEQ_INFO);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_getinfo(): Requesting user info.", req->seq);
+		gg_netlog(gg, "gg_getinfo(): Requesting user info.", req->seq);
 #endif
 		pthread_mutex_lock(&gg->sess_mutex);
 		if(gg_isonline(gg) && !gg_pubdir50(gg->sess, req))
@@ -437,7 +437,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 		gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
 
 #ifdef DEBUGMODE
-		gg_netlog("gg_getinfo(): Requesting owner info.", req->seq);
+		gg_netlog(gg, "gg_getinfo(): Requesting owner info.", req->seq);
 #endif
 		pthread_mutex_lock(&gg->sess_mutex);
 		if(gg_isonline(gg) && !gg_pubdir50(gg->sess, req))
@@ -452,7 +452,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 		pthread_mutex_unlock(&gg->sess_mutex);
 	}
 #ifdef DEBUGMODE
-	gg_netlog("gg_getinfo(): Seq %d.", req->seq);
+	gg_netlog(gg, "gg_getinfo(): Seq %d.", req->seq);
 #endif
 	gg_pubdir50_free(req);
 
@@ -472,7 +472,7 @@ static void *__stdcall gg_getawaymsgthread(void *empty)
 		ProtoBroadcastAck(ctx->gg->proto.m_szModuleName, ctx->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM) dbv.pszVal);
 
 #ifdef DEBUGMODE
-		gg_netlogex(ctx->gg, "gg_getawaymsg(): Reading away msg \"%s\".", dbv.pszVal);
+		gg_netlog(ctx->gg, "gg_getawaymsg(): Reading away msg \"%s\".", dbv.pszVal);
 #endif
 		DBFreeVariant(&dbv);
 	}
@@ -502,7 +502,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 	char **szMsg;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
+	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
 #endif
 	pthread_mutex_lock(&gg->sess_mutex);
 
@@ -530,7 +530,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 		if(status == gg->proto.m_iDesiredStatus && gg->proto.m_iDesiredStatus == gg->proto.m_iStatus)
 		{
 #ifdef DEBUGMODE
-			gg_netlog("gg_setawaymsg(): Message hasn't been changed, return.");
+			gg_netlog(gg, "gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
 			pthread_mutex_unlock(&gg->sess_mutex);
 			return 0;
@@ -542,7 +542,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 			free(*szMsg);
 		*szMsg = msg && *msg ? _strdup(msg) : NULL;
 #ifdef DEBUGMODE
-		gg_netlog("gg_setawaymsg(): Message changed.");
+		gg_netlog(gg, "gg_setawaymsg(): Message changed.");
 #endif
 	}
 	pthread_mutex_unlock(&gg->sess_mutex);
@@ -731,7 +731,7 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 	}
 	pthread_mutex_unlock(&gg->sess_mutex);
 #ifdef DEBUGMODE
-	gg_netlog("gg_searchbyadvanced(): Seq %d.", req->seq);
+	gg_netlog(gg, "gg_searchbyadvanced(): Seq %d.", req->seq);
 #endif
 	gg_pubdir50_free(req);
 

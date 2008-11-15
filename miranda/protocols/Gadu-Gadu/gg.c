@@ -168,7 +168,7 @@ void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 	if(version < PLUGIN_MAKE_VERSION(0, 0, 1, 4))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Phone settings from < 0.0.1.4 ...", version);
+		gg_netlog(gg, "gg_cleanuplastplugin(%d): Cleaning junk Phone settings from < 0.0.1.4 ...", version);
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -189,7 +189,7 @@ void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 	if(version < PLUGIN_MAKE_VERSION(0, 0, 3, 5))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_cleanuplastplugin(%d): Cleaning junk Nick settings from < 0.0.3.5 ...", version);
+		gg_netlog(gg, "gg_cleanuplastplugin(%d): Cleaning junk Nick settings from < 0.0.3.5 ...", version);
 #endif
 		// Look for contact in DB
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -248,7 +248,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg->hookSettingChanged = HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged, gg);
 			gg->hookIconsChanged = HookProtoEvent(ME_SKIN2_ICONSCHANGED, gg_iconschanged, gg);
 #ifdef DEBUGMODE
-			gg_netlog("gg_event(EV_PROTO_ONLOAD): loading modules...");
+			gg_netlog(gg, "gg_event(EV_PROTO_ONLOAD): loading modules...");
 #endif
 
 			// Init misc thingies
@@ -262,7 +262,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 		}
 		case EV_PROTO_ONEXIT:
 #ifdef DEBUGMODE
-			gg_netlog("gg_event(EV_PROTO_ONEXIT)/gg_preshutdown(): signalling shutdown...");
+			gg_netlog(gg, "gg_event(EV_PROTO_ONEXIT)/gg_preshutdown(): signalling shutdown...");
 #endif
 			gg_img_shutdown(gg);
 			break;
@@ -328,7 +328,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	GGPROTO *gg = (GGPROTO *)proto;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_proto_uninit(): destroying protocol interface");
+	gg_netlog(gg, "gg_proto_uninit(): destroying protocol interface");
 #endif
 
 	// Destroy modules
@@ -479,7 +479,7 @@ void gg_debughandler(int level, const char *format, va_list ap)
 
 ////////////////////////////////////////////////////////////
 // Log funcion
-int gg_netlogex(const GGPROTO *gg, const char *fmt, ...)
+int gg_netlog(const GGPROTO *gg, const char *fmt, ...)
 {
 	va_list va;
 	char szText[1024];

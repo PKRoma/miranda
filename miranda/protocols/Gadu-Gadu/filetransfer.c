@@ -34,7 +34,7 @@ void gg_dccwait(GGPROTO *gg)
 	if (GetCurrentThreadId() != gg->pth_dcc.dwThreadId && exitCode == STILL_ACTIVE)
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_dccstop(): Waiting until gg_dccmainthread() finished.");
+		gg_netlog(gg, "gg_dccstop(): Waiting until gg_dccmainthread() finished.");
 #endif
 		while (WaitForSingleObjectEx(gg->pth_dcc.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 	}
@@ -55,7 +55,7 @@ void gg_dccstart(GGPROTO *gg)
 	if(exitCode == STILL_ACTIVE)
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_dccstart(): DCC thread still active. Exiting...");
+		gg_netlog(gg, "gg_dccstart(): DCC thread still active. Exiting...");
 #endif
 		// Signalize mainthread it's started
 		if(gg->event) SetEvent(gg->event);
@@ -66,7 +66,7 @@ void gg_dccstart(GGPROTO *gg)
 	if(!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_DIRECTCONNS, GG_KEYDEF_DIRECTCONNS))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_dccstart(): No direct connections setup.");
+		gg_netlog(gg, "gg_dccstart(): No direct connections setup.");
 #endif
 		if(gg->event) SetEvent(gg->event);
 		return;
@@ -83,7 +83,7 @@ void gg_dccconnect(GGPROTO *gg, uin_t uin)
 	DWORD ip, myuin; WORD port;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dccconnect(): Connecting to uin %d.", uin);
+	gg_netlog(gg, "gg_dccconnect(): Connecting to uin %d.", uin);
 #endif
 
 	// If unknown user or not on list ignore
@@ -120,7 +120,7 @@ static void *__stdcall gg_ftfailthread(void *empty)
 	const GGPROTO *gg = ft->gg;
 	SleepEx(100, FALSE);
 #ifdef DEBUGMODE
-	gg_netlog("gg_ftfailthread(): Sending failed file transfer.");
+	gg_netlog(gg, "gg_ftfailthread(): Sending failed file transfer.");
 #endif
 	ProtoBroadcastAck(GG_PROTO, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft->hProcess, 0);
 	free(ft);
@@ -131,7 +131,7 @@ int ftfail(GGPROTO *gg, HANDLE hContact)
 	pthread_t tid;
 	struct ftfaildata *ft = malloc(sizeof(struct ftfaildata));
 #ifdef DEBUGMODE
-	gg_netlog("gg_ftfail(): Failing file transfer...");
+	gg_netlog(gg, "gg_ftfail(): Failing file transfer...");
 #endif
 	srand(time(NULL));
 	ft->hProcess = (HANDLE)rand();
@@ -164,14 +164,14 @@ void *__stdcall gg_dccmainthread(void *empty)
 	gg->watches = gg->transfers = gg->requests = l = NULL;
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_dccmainthread(): DCC Server Thread Starting");
+	gg_netlog(gg, "gg_dccmainthread(): DCC Server Thread Starting");
 #endif
 
 	// Readup number
 	if (!(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_dccmainthread(): No Gadu-Gadu number specified. Exiting.");
+		gg_netlog(gg, "gg_dccmainthread(): No Gadu-Gadu number specified. Exiting.");
 #endif
 		if(gg->event) SetEvent(gg->event);
 		return NULL;
@@ -181,7 +181,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 	if(!(gg->dcc = gg_dcc_socket_create(uin, DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_DIRECTPORT, GG_KEYDEF_DIRECTPORT))))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_dccmainthread(): Cannot create DCC listen socket. Exiting.");
+		gg_netlog(gg, "gg_dccmainthread(): Cannot create DCC listen socket. Exiting.");
 #endif
 		// Signalize mainthread we haven't start
 		if(gg->event) SetEvent(gg->event);
@@ -191,7 +191,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 	gg_dcc_port = gg->dcc->port;
 	gg_dcc_ip = inet_addr("255.255.255.255");
 #ifdef DEBUGMODE
-	gg_netlog("gg_dccmainthread(): Listening on port %d.", gg_dcc_port);
+	gg_netlog(gg, "gg_dccmainthread(): Listening on port %d.", gg_dcc_port);
 #endif
 
 	// Signalize mainthread we started
@@ -237,9 +237,9 @@ void *__stdcall gg_dccmainthread(void *empty)
 		{
 #ifdef DEBUGMODE
 			if (errno == EBADF)
-				gg_netlog("gg_dccmainthread(): Bad descriptor on select().");
+				gg_netlog(gg, "gg_dccmainthread(): Bad descriptor on select().");
 			else if (errno != EINTR)
-				gg_netlog("gg_dccmainthread(): Unknown error on select().");
+				gg_netlog(gg, "gg_dccmainthread(): Unknown error on select().");
 #endif
 			continue;
 		}
@@ -262,7 +262,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 			if (!(e = gg_dcc_socket_watch_fd(dcc)))
 			{
 #ifdef DEBUGMODE
-				gg_netlog("gg_dccmainthread(): Socket closed.");
+				gg_netlog(gg, "gg_dccmainthread(): Socket closed.");
 #endif
 				// Remove socket and _close
 				list_remove(&gg->watches, dcc, 0);
@@ -273,7 +273,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 				continue;
 			}
 #ifdef DEBUGMODE
-			else gg_netlog("gg_dccmainthread(): Event: %s", ggdebug_eventtype(e));
+			else gg_netlog(gg, "gg_dccmainthread(): Event: %s", ggdebug_eventtype(e));
 #endif
 
 			switch(e->type)
@@ -313,7 +313,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 				// Connection was successfuly ended
 				case GG_EVENT_DCC_DONE:
 #ifdef DEBUGMODE
-					gg_netlog("gg_dccmainthread(): Client: %d, Transfer done ! Closing connection.", dcc->peer_uin);
+					gg_netlog(gg, "gg_dccmainthread(): Client: %d, Transfer done ! Closing connection.", dcc->peer_uin);
 #endif
 					// Remove from watches
 					list_remove(&gg->watches, dcc, 0);
@@ -351,16 +351,16 @@ void *__stdcall gg_dccmainthread(void *empty)
 					switch (e->event.dcc_error)
 					{
 						case GG_ERROR_DCC_HANDSHAKE:
-							gg_netlog("gg_dccmainthread(): Client: %d, Error handshake.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error handshake.", dcc->peer_uin);
 							break;
 						case GG_ERROR_DCC_NET:
-							gg_netlog("gg_dccmainthread(): Client: %d, Error network.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error network.", dcc->peer_uin);
 							break;
 						case GG_ERROR_DCC_REFUSED:
-							gg_netlog("gg_dccmainthread(): Client: %d, Error refused.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error refused.", dcc->peer_uin);
 							break;
 						default:
-							gg_netlog("gg_dccmainthread(): Client: %d, Error unknown.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error unknown.", dcc->peer_uin);
 					}
 #endif
 					// Don't do anything if it's main socket
@@ -382,7 +382,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 				// Need file acknowledgement
 				case GG_EVENT_DCC_NEED_FILE_ACK:
 #ifdef DEBUGMODE
-					gg_netlog("gg_dccmainthread(): Client: %d, File ack filename \"%s\" size %d.", dcc->peer_uin,
+					gg_netlog(gg, "gg_dccmainthread(): Client: %d, File ack filename \"%s\" size %d.", dcc->peer_uin,
 						dcc->file_info.filename, dcc->file_info.size);
 #endif
 					// Do not watch for transfer until user accept it
@@ -424,7 +424,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 				// Need client accept
 				case GG_EVENT_DCC_CLIENT_ACCEPT:
 #ifdef DEBUGMODE
-					gg_netlog("gg_dccmainthread(): Client: %d, Client accept.", dcc->peer_uin);
+					gg_netlog(gg, "gg_dccmainthread(): Client: %d, Client accept.", dcc->peer_uin);
 #endif
 					// Check if user is on the list and if it is my uin
 					if(gg_getcontact(gg, dcc->peer_uin, 0, 0, NULL) &&
@@ -442,7 +442,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 					int found = 0;
 
 #ifdef DEBUGMODE
-					gg_netlog("gg_dccmainthread(): Callback from client.", dcc->peer_uin);
+					gg_netlog(gg, "gg_dccmainthread(): Callback from client.", dcc->peer_uin);
 #endif
 					// Seek for stored callback request
 					for (l = gg->requests; l; l = l->next)
@@ -472,7 +472,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 							free(dcc);
 
 #ifdef DEBUGMODE
-							gg_netlog("gg_dccmainthread(): Found stored request to client %d, filename \"%s\" size %d, folder \"%s\".",
+							gg_netlog(gg, "gg_dccmainthread(): Found stored request to client %d, filename \"%s\" size %d, folder \"%s\".",
 								req->peer_uin, req->file_info.filename, req->file_info.size, req->folder);
 #endif
 							break;
@@ -482,7 +482,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 					if (!found)
 					{
 #ifdef DEBUGMODE
-						gg_netlog("gg_dccmainthread(): Unknown request to client %d.", dcc->peer_uin);
+						gg_netlog(gg, "gg_dccmainthread(): Unknown request to client %d.", dcc->peer_uin);
 #endif
 						// Kill unauthorized dcc
 						list_remove(&gg->watches, dcc, 0);
@@ -524,7 +524,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 	gg_dcc_port = 0;
 	gg_dcc_ip = 0;
 #ifdef DEBUGMODE
-	gg_netlog("gg_dccmainthread(): DCC Server Thread Ending");
+	gg_netlog(gg, "gg_dccmainthread(): DCC Server Thread Ending");
 #endif
 
 	ZeroMemory(&gg->pth_dcc, sizeof(gg->pth_dcc));
@@ -563,7 +563,7 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 	if(!port || !uin || !myuin)
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_sendfile(): Bad contact uin or my uin. Exit.");
+		gg_netlog(gg, "gg_sendfile(): Bad contact uin or my uin. Exit.");
 #endif
 		return ftfail(gg, hContact);
 	}
@@ -580,7 +580,7 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 		dcc->fd = -1;
 		dcc->type = GG_SESSION_DCC_SEND;
 #ifdef DEBUGMODE
-		gg_netlog("gg_sendfile(): Requesting user to connect us and scheduling gg_dcc struct for a later use.");
+		gg_netlog(gg, "gg_sendfile(): Requesting user to connect us and scheduling gg_dcc struct for a later use.");
 #endif
 		gg_dcc_request(gg->sess, uin);
 		list_add(&gg->requests, dcc, 0);
@@ -590,14 +590,14 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 	if(gg_dcc_fill_file_info(dcc, files[0]) == -1)
 	{
 #ifdef DEBUGMODE
-		gg_netlog("gg_sendfile(): Cannot open and file fileinfo \"%s\".", files[0]);
+		gg_netlog(gg, "gg_sendfile(): Cannot open and file fileinfo \"%s\".", files[0]);
 #endif
 		gg_free_dcc(dcc);
 		return ftfail(gg, hContact);
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_sendfile(): Sending file \"%s\" to %d in %s mode.", files[0], uin, (dcc->fd != -1) ? "active" : "passive");
+	gg_netlog(gg, "gg_sendfile(): Sending file \"%s\" to %d in %s mode.", files[0], uin, (dcc->fd != -1) ? "active" : "passive");
 #endif
 
 	// Add dcc to watches if not passive
@@ -641,7 +641,7 @@ int gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, cons
 		// Free transfer
 		gg_free_dcc(dcc);
 #ifdef DEBUGMODE
-		gg_netlog("gg_fileallow(): Failed to create file \"%s\".", fileName);
+		gg_netlog(gg, "gg_fileallow(): Failed to create file \"%s\".", fileName);
 #endif
 		ProtoBroadcastAck(proto->m_szModuleName, dcc->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc, 0);
 		return 0;
@@ -656,7 +656,7 @@ int gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, cons
 	pthread_mutex_unlock(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_fileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog(gg, "gg_fileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	return (int) hTransfer;
@@ -678,7 +678,7 @@ int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const
 	pthread_mutex_unlock(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_filedeny(): Rejected file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog(gg, "gg_filedeny(): Rejected file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	// Free transfer
@@ -712,7 +712,7 @@ int gg_filecancel(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer)
 	}
 
 #ifdef DEBUGMODE
-	gg_netlog("gg_filecancel(): Canceled file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
+	gg_netlog(gg, "gg_filecancel(): Canceled file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
 #endif
 
 	// Free transfer

@@ -32,7 +32,7 @@ static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWO
 	if (gg_isonline(gg))
 	{
 #ifdef DEBUGMODE
-		gg_netlog("Sending keep-alive");
+		gg_netlog(gg, "Sending keep-alive");
 #endif
 		gg_ping(gg->sess);
 	}
@@ -55,7 +55,7 @@ void gg_keepalive_init(GGPROTO *gg)
 void gg_keepalive_destroy(GGPROTO *gg)
 {
 #ifdef DEBUGMODE
-	gg_netlog("gg_destroykeepalive(): Killing Timer");
+	gg_netlog(gg, "gg_destroykeepalive(): Killing Timer");
 #endif
 	if (gg->timer)
 	{
@@ -66,10 +66,10 @@ void gg_keepalive_destroy(GGPROTO *gg)
 				g_timers[i] = NULL;
 		gg->timer = 0;
 #ifdef DEBUGMODE
-		gg_netlog("gg_destroykeepalive(): Killed Timer");
+		gg_netlog(gg, "gg_destroykeepalive(): Killed Timer");
 #endif
 	}
 #ifdef DEBUGMODE
-	gg_netlog("gg_destroykeepalive(): End");
+	gg_netlog(gg, "gg_destroykeepalive(): End");
 #endif
 }
