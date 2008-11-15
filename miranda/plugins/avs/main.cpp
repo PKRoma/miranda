@@ -810,7 +810,10 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 	{
         if (ack->result == ACKRESULT_SUCCESS)
 		{
-			ProcessAvatarInfo(ack->hContact, GAIR_SUCCESS, (PROTO_AVATAR_INFORMATION *) ack->hProcess, ack->szModule);
+			if (ack->hProcess == NULL)
+				ProcessAvatarInfo(ack->hContact, GAIR_NOAVATAR, NULL, ack->szModule);
+			else
+				ProcessAvatarInfo(ack->hContact, GAIR_SUCCESS, (PROTO_AVATAR_INFORMATION *) ack->hProcess, ack->szModule);
         }
 		else if (ack->result == ACKRESULT_FAILED)
 		{
@@ -1209,8 +1212,24 @@ static void DeleteGlobalUserAvatar()
 	DBDeleteContactSetting(NULL, AVS_MODULE, "GlobalUserAvatarFile");
 }
 
+
+static void SetIgnoreNotify(char *protocol, BOOL ignore)
+{
+	for(int i = 0; i < g_MyAvatarsCount + 1; i++) {
+		if(protocol == NULL || !strcmp(g_MyAvatars[i].szProtoname, protocol)) {
+			if (ignore)
+				g_MyAvatars[i].dwFlags |= AVS_IGNORENOTIFY;
+			else
+				g_MyAvatars[i].dwFlags &= ~AVS_IGNORENOTIFY;
+		}
+	}
+}
+
+
 static int InternalRemoveMyAvatar(char *protocol)
 {
+	SetIgnoreNotify(protocol, TRUE);
+
 	// Remove avatar
 	int ret = 0;
 	if (protocol != NULL)
@@ -1260,6 +1279,8 @@ static int InternalRemoveMyAvatar(char *protocol)
 			DBWriteContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 0);
 	}
 
+	SetIgnoreNotify(protocol, FALSE);
+
 	ReportMyAvatarChanged((WPARAM)(( protocol == NULL ) ? "" : protocol ), 0);
 	return ret;
 }
@@ -1295,6 +1316,8 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 		if (hBmp == NULL)
 			return -4;
 	}
+
+	SetIgnoreNotify(protocol, TRUE);
 
 	int ret = 0;
 	if (protocol != NULL)
@@ -1398,6 +1421,8 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 	}
 
 	DeleteObject(hBmp);
+
+	SetIgnoreNotify(protocol, FALSE);
 
 	ReportMyAvatarChanged((WPARAM)(( protocol == NULL ) ? "" : protocol ), 0);
 	return ret;
@@ -2122,18 +2147,32 @@ static void ReloadMyAvatar(LPVOID lpParam)
 {
 	char *szProto = (char *)lpParam;
 
-    mir_sleep(1000);
+    mir_sleep(500);
 	for(int i = 0; !g_shutDown && i < g_MyAvatarsCount + 1; i++) {
-		if(!strcmp(g_MyAvatars[i].szProtoname, szProto)) {
-			if(g_MyAvatars[i].hbmPic)
-				DeleteObject(g_MyAvatars[i].hbmPic);
+		char *myAvatarProto = g_MyAvatars[i].szProtoname;
 
-			if(CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[i], szProto) != -1)
-				NotifyEventHooks(hMyAvatarChanged, (WPARAM)szProto, (LPARAM)&g_MyAvatars[i]);
-			else
-				NotifyEventHooks(hMyAvatarChanged, (WPARAM)szProto, 0);
+		if(szProto[0] == 0) {
+			// Notify to all possibles
+			if (strcmp(myAvatarProto, szProto)) {
+				if (!ProtoServiceExists( myAvatarProto, PS_SETMYAVATAR))
+					continue;
+				if (!Proto_IsAvatarsEnabled( myAvatarProto ))
+					continue;
+			}
+
+		} else if (strcmp(myAvatarProto, szProto)) {
+			continue;
 		}
+
+		if(g_MyAvatars[i].hbmPic)
+			DeleteObject(g_MyAvatars[i].hbmPic);
+
+		if(CreateAvatarInCache((HANDLE)-1, (struct avatarCacheEntry *)&g_MyAvatars[i], myAvatarProto) != -1)
+			NotifyEventHooks(hMyAvatarChanged, (WPARAM)myAvatarProto, (LPARAM)&g_MyAvatars[i]);
+		else
+			NotifyEventHooks(hMyAvatarChanged, (WPARAM)myAvatarProto, 0);
 	}
+
 	free(lpParam);
 }
 
@@ -2144,8 +2183,10 @@ static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 
 	char *proto = (char *) wParam;
 
-	int i;
-	for(i = 0; i < g_MyAvatarsCount + 1; i++) {
+	for(int i = 0; i < g_MyAvatarsCount + 1; i++) {
+		if (g_MyAvatars[i].dwFlags & AVS_IGNORENOTIFY)
+			continue;
+
 		if(!strcmp(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
@@ -2167,7 +2208,8 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	if(wParam == 0) {
 		if(!strcmp(cws->szSetting, "AvatarFile")
 			|| !strcmp(cws->szSetting, "PictObject")
-			|| !strcmp(cws->szSetting, "AvatarHash"))
+			|| !strcmp(cws->szSetting, "AvatarHash")
+			|| !strcmp(cws->szSetting, "AvatarSaved"))
 		{
 			ReportMyAvatarChanged((WPARAM) cws->szModule, 0);
 		}
