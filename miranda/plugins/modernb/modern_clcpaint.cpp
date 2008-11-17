@@ -2113,10 +2113,10 @@ void CLCPaint::_DrawLines( HWND hWnd, struct ClcData * dat, HDC hdc, int paintMo
                             {
                                 int i = y;
                                 int row_height = row_rc.bottom-row_rc.top;
-                                for ( i = y; i<y+row_height; i+= dat->row_min_heigh )
+                                for ( i = y; i<y+row_height; i+= max( dat->row_min_heigh, 1 ) )
                                 {
                                     ImageList_DrawEx( dat->himlHighlight, 0, pc.hdcMem, 0, i, clRect.right, 
-                                        min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
+                                        min( y+row_height-i, max( dat->row_min_heigh, 1 ) ), CLR_NONE, CLR_NONE, 
                                         dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
                                 }
                                 SetTextColor( pc.hdcMem, paintMode&DM_CONTROL ? GetSysColor( COLOR_HIGHLIGHTTEXT ) : dat->selTextColour );
@@ -2127,10 +2127,10 @@ void CLCPaint::_DrawLines( HWND hWnd, struct ClcData * dat, HDC hdc, int paintMo
                             {
                                 int i;
                                 int row_height = row_rc.bottom-row_rc.top-1;
-                                for ( i = y+1; i<y+row_height; i+= dat->row_min_heigh )
+                                for ( i = y+1; i<y+row_height; i+= max( dat->row_min_heigh, 1 ) )
                                 {
                                     ImageList_DrawEx( dat->himlHighlight, 0, pc.hdcMem, 1, i, clRect.right-2, 
-                                        min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
+                                        min( y+row_height-i, max( dat->row_min_heigh, 1 )), CLR_NONE, CLR_NONE, 
                                         dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
                                 }
                                 SetTextColor( pc.hdcMem, paintMode&DM_CONTROL ? GetSysColor( COLOR_HIGHLIGHTTEXT ) : dat->selTextColour );

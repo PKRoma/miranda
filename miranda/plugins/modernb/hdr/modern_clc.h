@@ -245,6 +245,7 @@ struct ClcContact {
 	SIZE avatar_size;
 	CSmileyString ssText;
 
+
 	// For hittest
 	int pos_indent;
 	RECT pos_check;

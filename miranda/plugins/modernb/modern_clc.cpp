@@ -558,7 +558,7 @@ static LRESULT clcOnSize(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wParam
 		if (rc.right == 0)
 			return corecli.pfnContactListControlWndProc(hwnd,msg,wParam,lParam);;
 		
-		rc.bottom = dat->row_min_heigh;
+		rc.bottom = max ( dat->row_min_heigh, 1 );
 		//rc.bottom=8;
 		//rc.right=8;
 		hdc = GetDC(hwnd);
