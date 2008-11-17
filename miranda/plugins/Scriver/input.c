@@ -126,7 +126,7 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 	amsg.message = msg;
 	amsg.wParam = wParam;
 	amsg.lParam = lParam;
-	switch (action = CallService(MS_HOTKEY_CHECK, (WPARAM)&amsg, (LPARAM)"Scriver"))
+	switch (action = CallService(MS_HOTKEY_CHECK, (WPARAM)&amsg, (LPARAM)"Messaging"))
 	{
 		case KB_PREV_TAB:
 			SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
@@ -171,50 +171,6 @@ int InputAreaShortcuts(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, Common
 	switch (msg) {
 		case WM_KEYDOWN:
 		{
-			if (wParam == VK_TAB && isCtrl && isShift) { // ctrl-shift tab
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-				return FALSE;
-			}
-			if (wParam == VK_PRIOR && isCtrl) { // page up
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEPREV, 0, (LPARAM)GetParent(hwnd));
-				return FALSE;
-			}
-			if (wParam == VK_TAB && isCtrl) { // ctrl tab
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-				return FALSE;
-			}
-			if (wParam == VK_NEXT && isCtrl) { // page down
-				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATENEXT, 0, (LPARAM)GetParent(hwnd));
-				return FALSE;
-			}
-			if (wParam == 'T' && isCtrl && isShift) {     // ctrl-shift-t
-				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTOOLBAR, 0, 0);
-				return FALSE;
-			}
-			if (wParam == 'S' && isCtrl && isShift) {     // ctrl-shift-s
-				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHSTATUSBAR, 0, 0);
-				return FALSE;
-			}
-			if (wParam == 'M' && isCtrl && isShift) {     // ctrl-shift-m
-				SendMessage(GetParent(GetParent(hwnd)), DM_SWITCHTITLEBAR, 0, 0);
-				return FALSE;
-			}
-			if (wParam == VK_ESCAPE && isShift) { // shift+ESC
-				ShowWindow(GetParent(GetParent(hwnd)), SW_MINIMIZE);
-				return FALSE;
-			}
-			if (wParam == VK_F4 && isCtrl && !isShift) { // ctrl + F4
-				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-				return FALSE;
-			}
-			if (wParam == 'W' && isCtrl && !isAlt) {     // ctrl-w; close
-				SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-				return FALSE;
-			}
-			if (wParam == 'L' && isCtrl) { // ctrl-l clear log
-				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
-				return FALSE;
-			}
 			if (wParam >= '1' && wParam <='9' && isCtrl) {
 				SendMessage(GetParent(GetParent(hwnd)), CM_ACTIVATEBYINDEX, 0, wParam - '1');
 				return 0;
