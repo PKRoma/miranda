@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../m_api/m_xpTheme.h"
 
 #include "modern_defsettings.h"
+#include "modern_clist.h"
 
 
 
@@ -242,8 +243,7 @@ struct ClcContact {
 	int avatar_pos;
 	struct avatarCacheEntry *avatar_data;
 	SIZE avatar_size;
-	SortedList *plText;						// List of ClcContactTextPiece
-    int iTextMaxSmileyHeight;
+	CSmileyString ssText;
 
 	// For hittest
 	int pos_indent;
@@ -263,6 +263,8 @@ struct ClcContact {
 	tContactItems ext_mpItemsDesc[MAXEXTRACOLUMNS+10];  //up to 10 items
 	
 	WORD iWideExtraImage[MAXEXTRACOLUMNS];
+
+
 };
 
 

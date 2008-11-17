@@ -480,7 +480,10 @@ static LRESULT clcOnCreate(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPar
 	//LoadCLCOptions(hwnd,dat);
 	corecli.pfnContactListControlWndProc(hwnd, msg, wParam, lParam);	
 	LoadCLCOptions(hwnd,dat);
-	CLUI_SafeSetTimer(hwnd,TIMERID_INVALIDATE,5000,NULL);
+	if ( dat->contact_time_show || dat->second_line_type == TEXT_CONTACT_TIME || dat->third_line_type == TEXT_CONTACT_TIME )
+		CLUI_SafeSetTimer( hwnd, TIMERID_INVALIDATE, 5000, NULL );
+	else
+		KillTimer( hwnd, TIMERID_INVALIDATE );
 	//if (dat->force_in_dialog)
 	//	pcli->pfnRebuildEntireList(hwnd,dat);		
 	TRACE("Create New ClistControl TO END\r\n");		

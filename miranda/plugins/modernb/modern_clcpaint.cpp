@@ -870,8 +870,8 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             ChangeToFont( hdcMem, dat, GetBasicFontID( Drawing ), NULL );
 
             // Get text size
-            GetTextSize( &text_size, hdcMem, fr_rc, Drawing->szText, Drawing->plText, uTextFormat, 
-                dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight );
+            GetTextSize( &text_size, hdcMem, fr_rc, Drawing->szText, Drawing->ssText.plText, uTextFormat, 
+                dat->text_resize_smileys ? 0 : Drawing->ssText.iMaxSmileyHeight );
             // counters
             if ( Drawing->type == CLCIT_GROUP && InClistWindow )
             {
@@ -901,7 +901,7 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                     SIZE text_size = {0};
                     int wid = fr_rc.right-fr_rc.left;
                     ChangeToFont( hdcMem, dat, Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS, NULL );
-                    GetTextSize( &text_size, hdcMem, fr_rc, Drawing->szText, Drawing->plText, 0, dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight );
+                    GetTextSize( &text_size, hdcMem, fr_rc, Drawing->szText, Drawing->ssText.plText, 0, dat->text_resize_smileys ? 0 : Drawing->ssText.iMaxSmileyHeight );
 
                     if ( wid-count_size.cx > text_size.cx )
                     {
@@ -946,11 +946,11 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                 else if( hottrack )
                     _SetHotTrackColour( hdcMem, dat );
                 if ( dat->text_rtl != 0 ) _RTLRect( &nameRect, free_row_rc.right, dx );
-                _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                 if( selected && dat->szQuickSearch[0] != '\0' )
                 {
                     SetTextColor( hdcMem, dat->quickSearchColour );
-                    _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                    _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                 }
                 if( szCounts && strlen( szCounts )>0 )
                 {
@@ -1022,11 +1022,11 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
             else if( hottrack )
                 _SetHotTrackColour( hdcMem, dat );
             if ( dat->text_rtl != 0 ) _RTLRect( &text_rect, free_row_rc.right, dx );
-            _DrawTextSmiley( hdcMem, &text_rect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+            _DrawTextSmiley( hdcMem, &text_rect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
             if( selected && dat->szQuickSearch[0] != '\0' )
             {
                 SetTextColor( hdcMem, dat->quickSearchColour );
-                _DrawTextSmiley( hdcMem, &text_rect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                _DrawTextSmiley( hdcMem, &text_rect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
             }
             if ( Drawing->type == CLCIT_GROUP && szCounts && szCounts[0] && counts_rc.right-counts_rc.left>0 )
             {
@@ -1107,16 +1107,16 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                             SetTextColor( hdcMem, dat->selTextColour );
                         else if( hottrack )
                             _SetHotTrackColour( hdcMem, dat );
-                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                         if( selected && dat->szQuickSearch[0] != '\0' )
                         {
                             SetTextColor( hdcMem, dat->quickSearchColour );
-                            _DrawTextSmiley( hdcMem, &p_rect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                            _DrawTextSmiley( hdcMem, &p_rect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                         }
                         Drawing->pos_rename_rect = p_rect;
                         {
                             SIZE size;
-                            GetTextSize( &size, hdcMem, p_rect, Drawing->szText, Drawing->plText, 0, dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight );
+                            GetTextSize( &size, hdcMem, p_rect, Drawing->szText, Drawing->ssText.plText, 0, dat->text_resize_smileys ? 0 : Drawing->ssText.iMaxSmileyHeight );
                             Drawing->pos_label = p_rect;
                             Drawing->pos_label.right = min( Drawing->pos_label.right, Drawing->pos_label.left+size.cx );
                         }
@@ -1152,7 +1152,7 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                             SIZE text_size = {0};
                             int wid = p_rect.right-p_rect.left;
                             ChangeToFont( hdcMem, dat, Drawing->group->expanded?FONTID_OPENGROUPS:FONTID_CLOSEDGROUPS, NULL );
-                            GetTextSize( &text_size, hdcMem, p_rect, Drawing->szText, Drawing->plText, 0, dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight );
+                            GetTextSize( &text_size, hdcMem, p_rect, Drawing->szText, Drawing->ssText.plText, 0, dat->text_resize_smileys ? 0 : Drawing->ssText.iMaxSmileyHeight );
 
                             if ( wid-count_size.cx > text_size.cx )
                             {
@@ -1196,11 +1196,11 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                             SetTextColor( hdcMem, dat->selTextColour );
                         else if( hottrack )
                             _SetHotTrackColour( hdcMem, dat );
-                        _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                        _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( Drawing->szText ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                         if( selected && dat->szQuickSearch[0] != '\0' )
                         {
                             SetTextColor( hdcMem, dat->quickSearchColour );
-                            _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+                            _DrawTextSmiley( hdcMem, &nameRect, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
                         }
                         if( szCounts && strlen( szCounts )>0 )
                         {
@@ -1253,7 +1253,7 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                     ChangeToFont( hdcMem, dat, FONTID_SECONDLINE, NULL );
                     uTextFormat = uTextFormat | ( gl_TrimText?DT_END_ELLIPSIS:0 )|DT_SINGLELINE;
                     if ( Drawing->type == CLCIT_CONTACT )
-                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, pdnce->szSecondLineText, lstrlen( pdnce->szSecondLineText ), pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys );
+                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, pdnce->szSecondLineText, lstrlen( pdnce->szSecondLineText ), pdnce->ssSecondLine.plText, uTextFormat, dat->text_resize_smileys );
                     break;
                 }
             case TC_TEXT3:
@@ -1290,7 +1290,7 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                     ChangeToFont( hdcMem, dat, FONTID_THIRDLINE, NULL );
                     uTextFormat = uTextFormat | ( gl_TrimText?DT_END_ELLIPSIS:0 )|DT_SINGLELINE;
                     if ( Drawing->type == CLCIT_CONTACT )
-                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, pdnce->szThirdLineText, lstrlen( pdnce->szThirdLineText ), pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys );
+                        _DrawTextSmiley( hdcMem, &p_rect, &text_size, pdnce->szThirdLineText, lstrlen( pdnce->szThirdLineText ), pdnce->ssThirdLine.plText, uTextFormat, dat->text_resize_smileys );
                     break;
                 }
             case TC_STATUS:
@@ -2288,9 +2288,11 @@ void CLCPaint::_FreePaintContext( _PaintContext& pc )
 }
 void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *_rcPaint )
 {
+    g_CluiData.t_now = time( NULL );
+
     if ( _rcPaint && IsRectEmpty( _rcPaint ) ) return;       // check if draw area is not empty
     if ( !IsWindowVisible( hwnd ) ) return;                  // and window is visible
-    
+
     RECT clRect;
     GetClientRect( hwnd, &clRect );
 
@@ -3109,8 +3111,8 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
         ChangeToFont( hdcMem, dat, GetBasicFontID( Drawing ), NULL );
 
         // Get text size
-        GetTextSize( &text_size, hdcMem, free_row_rc, Drawing->szText, Drawing->plText, uTextFormat, 
-            dat->text_resize_smileys ? 0 : Drawing->iTextMaxSmileyHeight );
+        GetTextSize( &text_size, hdcMem, free_row_rc, Drawing->szText, Drawing->ssText.plText, uTextFormat, 
+            dat->text_resize_smileys ? 0 : Drawing->ssText.iMaxSmileyHeight );
 
         // Get rect
         text_rc = free_row_rc;
@@ -3240,8 +3242,8 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
                 ChangeToFont( hdcMem, dat, FONTID_SECONDLINE, NULL );
 
                 // Get sizes
-                GetTextSize( &second_line_text_size, hdcMem, free_row_rc, pdnce->szSecondLineText, pdnce->plSecondLineText, 
-                    uTextFormat, dat->text_resize_smileys ? 0 : pdnce->iSecondLineMaxSmileyHeight );
+                GetTextSize( &second_line_text_size, hdcMem, free_row_rc, pdnce->szSecondLineText, pdnce->ssSecondLine.plText, 
+                    uTextFormat, dat->text_resize_smileys ? 0 : pdnce->ssSecondLine.iMaxSmileyHeight );
 
                 // Get rect
                 tmp = min( free_height, dat->second_line_top_space + second_line_text_size.cy );
@@ -3285,8 +3287,8 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
                 ChangeToFont( hdcMem, dat, FONTID_THIRDLINE, NULL );
 
                 // Get sizes
-                GetTextSize( &third_line_text_size, hdcMem, free_row_rc, pdnce->szThirdLineText, pdnce->plThirdLineText, 
-                    uTextFormat, dat->text_resize_smileys ? 0 : pdnce->iThirdLineMaxSmileyHeight );
+                GetTextSize( &third_line_text_size, hdcMem, free_row_rc, pdnce->szThirdLineText, pdnce->ssThirdLine.plText, 
+                    uTextFormat, dat->text_resize_smileys ? 0 : pdnce->ssThirdLine.iMaxSmileyHeight );
 
                 // Get rect
                 tmp = min( free_height, dat->third_line_top_space + third_line_text_size.cy );
@@ -3691,11 +3693,11 @@ void CLCPaint::_DrawContactText( HDC hdcMem, struct ClcData *dat, struct ClcCont
 		text_size.cy = _rcHeight( prcItem );
 		uTextFormat|= DT_VCENTER;
 		//get font
-		_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, -1, Drawing->plText, uTextFormat, dat->text_resize_smileys );                                               
+		_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, -1, Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );                                               
 		if ( selected && dat->szQuickSearch[0] != '\0' )
 		{
 			SetTextColor( hdcMem, dat->quickSearchColour );
-			_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->plText, uTextFormat, dat->text_resize_smileys );
+			_DrawTextSmiley( hdcMem, prcItem, &text_size, Drawing->szText, lstrlen( dat->szQuickSearch ), Drawing->ssText.plText, uTextFormat, dat->text_resize_smileys );
 		}
 	}
 	else
@@ -3737,9 +3739,9 @@ void CLCPaint::_DrawContactSubText( HDC hdcMem, struct ClcData *dat, struct ClcC
 				_SetHotTrackColour( hdcMem, dat );
 			uTextFormat|= DT_VCENTER;
 			if ( itemType == CIT_SUBTEXT1 )
-				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szSecondLineText, -1, pdnce->plSecondLineText, uTextFormat, dat->text_resize_smileys );  
+				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szSecondLineText, -1, pdnce->ssSecondLine.plText, uTextFormat, dat->text_resize_smileys );  
 			else
-				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szThirdLineText, -1, pdnce->plThirdLineText, uTextFormat, dat->text_resize_smileys );    
+				_DrawTextSmiley( hdcMem, prcItem,  &text_size, pdnce->szThirdLineText, -1, pdnce->ssThirdLine.plText, uTextFormat, dat->text_resize_smileys );    
 		}
 	}
 	text_rc.right = max( text_rc.right, prcItem->right );

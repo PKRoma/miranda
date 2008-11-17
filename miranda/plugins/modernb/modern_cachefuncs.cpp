@@ -51,47 +51,8 @@ static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size);
 static BOOL ExecuteOnAllContacts(struct ClcData *dat, ExecuteOnAllContactsFuncPtr func, void *param);
 static BOOL ExecuteOnAllContactsOfGroup(struct ClcGroup *group, ExecuteOnAllContactsFuncPtr func, void *param);
 int CLUI_SyncGetShortData(WPARAM wParam, LPARAM lParam);
-SortedList *CopySmileyString(SortedList *plInput);
 void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst);
 void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD flag );
-/*
-typedef struct tagSYNCCALLITEM
-{
-    WPARAM  wParam;
-    LPARAM  lParam;
-    int     nResult;
-    HANDLE  hDoneEvent;
-    PSYNCCALLBACKPROC pfnProc;    
-} SYNCCALLITEM;
-
-static void CALLBACK cache_SyncCallerUserAPCProc(DWORD dwParam)
-{
-    SYNCCALLITEM* item = (SYNCCALLITEM*) dwParam;
-    item->nResult = item->pfnProc(item->wParam, item->lParam);
-    SetEvent(item->hDoneEvent);
-}
-
-int cache_CallProcSync(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam)
-{  
-    SYNCCALLITEM item={0};
-    int res=0;
-    if (g_hMainThread==NULL || pfnProc==NULL) return 0;   
-    if (GetCurrentThreadId()!=g_dwMainThreadID)
-    {
-        item.wParam = wParam;
-        item.lParam = lParam;
-        item.pfnProc = pfnProc;
-        item.hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-        QueueUserAPC(cache_SyncCallerUserAPCProc, g_hMainThread, (DWORD) &item);
-        PostMessage(pcli->hwndContactList,WM_NULL,0,0); // let this get processed in its own time
-        WaitForSingleObject(item.hDoneEvent, INFINITE);
-        CloseHandle(item.hDoneEvent);
-        return item.nResult;
-    }
-    else 
-        return pfnProc(wParam, lParam);
-}*/
-
 /*
 *	Get time zone for contact
 */
@@ -136,60 +97,16 @@ void Cache_GetText(struct ClcData *dat, struct ClcContact *contact, BOOL forceRe
     }
 }
 
-/*
-*	Destroy smiley list
-*/ 
-void Cache_DestroySmileyList( SortedList* p_list )
+void CSmileyString::AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *szText, BOOL replace_smileys)
 {
-    if ( p_list == NULL )
-        return;
+    iMaxSmileyHeight = 0;
+	DestroySmileyList();
 
-	if ( IsBadReadPtr( p_list, sizeof(SortedList) ) )
-		return;
+    if (szText == NULL) return;
 
-    if ( p_list->realCount != 0 )
-    {
-        int i;
-        for ( i = 0 ; i < p_list->realCount ; i++ )
-        {
-            if ( p_list->items[i] != NULL )
-            {
-                ClcContactTextPiece *piece = (ClcContactTextPiece *) p_list->items[i];
-
-                if (!IsBadWritePtr(piece, sizeof(ClcContactTextPiece)))
-                {
-                    if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != g_hListeningToIcon)
-                        DestroyIcon_protect(piece->smiley);
-                    mir_free_and_nill(piece);
-                }
-            }
-        }
-        li.List_Destroy( p_list );
-    }
-    mir_free_and_nill(p_list);
-
-}
-
-void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
-                              int *max_smiley_height, BOOL replace_smileys)
-{
-    *max_smiley_height = 0;
-
-    if (/*!dat->text_replace_smileys || !replace_smileys ||*/ text == NULL)
-    {
-        Cache_DestroySmileyList(*plText);
-        *plText = NULL;
-        return;
-    }
-
-    // Free old list
-    if (*plText != NULL)
-    {
-        Cache_DestroySmileyList(*plText);
-        *plText = NULL;
-    }
-
-    *plText = li.List_Create( 0, 1 );
+	int text_size = _tcslen( szText );
+    
+    plText = li.List_Create( 0, 1 );
 
     // Add Icon
     {
@@ -217,9 +134,9 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
         }
 
         dat->text_smiley_height = max(piece->smiley_height, dat->text_smiley_height);
-        *max_smiley_height = max(piece->smiley_height, *max_smiley_height);
+        iMaxSmileyHeight = max(piece->smiley_height, iMaxSmileyHeight);
 
-        li.List_Insert(*plText, piece, plText[0]->realCount);
+        li.List_Insert( plText, piece, plText->realCount);
     }
 
     // Add text
@@ -229,33 +146,81 @@ void Cache_AddListeningToIcon(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, i
         piece->type = TEXT_PIECE_TYPE_TEXT;
         piece->start_pos = 0;
         piece->len = text_size;
-        li.List_Insert(*plText, piece, plText[0]->realCount);
+        li.List_Insert( plText, piece, plText->realCount);
     }
 }
 
+void CSmileyString::_CopySmileyList( SortedList *plInput )
+{
+//	ASSERT( plText == NULL );
+
+	if ( !plInput || plInput->realCount == 0 ) return;
+	plText=li.List_Create( 0, 1 );
+	for ( int i = 0; i < plInput->realCount; i++ )
+	{
+		ClcContactTextPiece *pieceFrom=(ClcContactTextPiece *) plInput->items[i];
+		if ( pieceFrom != NULL )
+		{
+			ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc( sizeof(ClcContactTextPiece) );			
+			*piece=*pieceFrom;
+			if ( pieceFrom->type == TEXT_PIECE_TYPE_SMILEY) 
+				piece->smiley = CopyIcon( pieceFrom->smiley );
+			li.List_Insert( plText, piece, plText->realCount );
+		}
+	}
+}
+void CSmileyString::DestroySmileyList()
+{
+	//ASSERT( plText == NULL );
+
+	if ( plText == NULL ) return;
+
+	//if ( IsBadReadPtr( plText, sizeof(SortedList) ) )
+	{
+		plText = NULL;
+		return;
+	}
+
+	if ( plText->realCount != 0 )
+	{
+		int i;
+		for ( i = 0 ; i < plText->realCount ; i++ )
+		{
+			if ( plText->items[i] != NULL )
+			{
+				ClcContactTextPiece *piece = (ClcContactTextPiece *) plText->items[i];
+
+				//if ( !IsBadWritePtr(piece, sizeof(ClcContactTextPiece) ) )
+				{
+					if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != g_hListeningToIcon)
+						DestroyIcon_protect(piece->smiley);
+					mir_free(piece);
+				}
+			}
+		}
+		li.List_Destroy( plText );
+	}
+	mir_free(plText);
+
+	plText = NULL;
+}
 /*
 * Parsing of text for smiley
 */
-void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int text_size, SortedList **plText, 
-                          int *max_smiley_height, BOOL replace_smileys)
+void CSmileyString::ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR * szText, BOOL replace_smileys)
 {
     SMADD_PARSET sp={0};
     int last_pos=0;
-    *max_smiley_height = 0;
+    iMaxSmileyHeight = 0;
 
-    if (!dat->text_replace_smileys || !replace_smileys || text == NULL || !ServiceExists(MS_SMILEYADD_PARSE))
+	DestroySmileyList();
+
+    if (!dat->text_replace_smileys || !replace_smileys || szText == NULL || !ServiceExists(MS_SMILEYADD_PARSE))
     {
-        Cache_DestroySmileyList(*plText);
-        *plText = NULL;
         return;
     }
 
-    // Free old list
-    if (*plText != NULL)
-    {
-        Cache_DestroySmileyList(*plText);
-        *plText = NULL;
-    }
+	int text_size = _tcslen( szText );
 
     // Call service for the first time to see if needs to be used...
     sp.cbSize = sizeof(sp);
@@ -278,7 +243,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
         sp.Protocolname = "clist";
     }
 
-    sp.str = text;
+    sp.str = szText;
     sp.startChar = 0;
     sp.size = 0;
 
@@ -292,7 +257,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
     }
 
     // Lets add smileys
-    *plText = li.List_Create( 0, 1 );
+    plText = li.List_Create( 0, 1 );
 
     do
     {
@@ -306,7 +271,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
                 piece->type = TEXT_PIECE_TYPE_TEXT;
                 piece->start_pos = last_pos ;//sp.str - text;
                 piece->len = sp.startChar-last_pos;
-                li.List_Insert(*plText, piece, (*plText)->realCount);
+                li.List_Insert(plText, piece, plText->realCount);
             }
 
             // Add smiley
@@ -333,15 +298,12 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
                     DeleteObject(icon.hbmColor);
                 }
 
-                dat->text_smiley_height = max(piece->smiley_height, dat->text_smiley_height);
-                *max_smiley_height = max(piece->smiley_height, *max_smiley_height);
+                dat->text_smiley_height = max( piece->smiley_height, dat->text_smiley_height );
+                iMaxSmileyHeight = max( piece->smiley_height, iMaxSmileyHeight );
 
-                li.List_Insert(*plText, piece, (*plText)->realCount);
+                li.List_Insert(plText, piece, plText->realCount);
             }
         }
-        /*
-        *	Bokra SmileyAdd Fix:
-        */
         // Get next
         last_pos=sp.startChar+sp.size;
         if (ServiceExists(MS_SMILEYADD_PARSET))
@@ -349,14 +311,6 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
 
     }
     while (sp.size != 0);
-
-    //	// Get next
-    //	sp.str += sp.startChar + sp.size;
-    //	sp.startChar = 0;
-    //	sp.size = 0;
-    //	CallService(MS_SMILEYADD_PARSE, 0, (LPARAM)&sp);
-    //}
-    //while (sp.SmileyIcon != NULL && sp.size != 0);
 
     // Add rest of text
     if (last_pos < text_size)
@@ -367,7 +321,7 @@ void Cache_ReplaceSmileys(struct SHORTDATA *dat, PDNCE pdnce, TCHAR *text, int t
         piece->start_pos = last_pos;
         piece->len = text_size-last_pos;
 
-        li.List_Insert(*plText, piece, (*plText)->realCount);
+        li.List_Insert(plText, piece, plText->realCount);
     }
 }
 
@@ -681,8 +635,7 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact)
     {
         struct SHORTDATA data={0};
         Sync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
-        Cache_ReplaceSmileys(&data, pdnce, contact->szText, lstrlen(contact->szText)+1, &(contact->plText),
-            &contact->iTextMaxSmileyHeight,dat->first_line_draw_smileys);
+        contact->ssText.ReplaceSmileys(&data, pdnce, contact->szText, dat->first_line_draw_smileys);
     }
 }
 
@@ -715,13 +668,11 @@ void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce)
     {
         if (type == TEXT_LISTENING_TO && pdnce->szSecondLineText[0] != _T('\0'))
         {
-            Cache_AddListeningToIcon(dat, pdnce, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), &pdnce->plSecondLineText, 
-                &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
+            pdnce->ssSecondLine.AddListeningToIcon(dat, pdnce, pdnce->szSecondLineText, dat->second_line_draw_smileys);
         }
         else
         {
-            Cache_ReplaceSmileys(dat, pdnce, pdnce->szSecondLineText, lstrlen(pdnce->szSecondLineText), &pdnce->plSecondLineText, 
-                &pdnce->iSecondLineMaxSmileyHeight,dat->second_line_draw_smileys);
+            pdnce->ssSecondLine.ReplaceSmileys(dat, pdnce, pdnce->szSecondLineText, dat->second_line_draw_smileys);
         }
     }
     //UnlockCacheItem(hContact);
@@ -753,13 +704,11 @@ void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce)
     {
         if (type == TEXT_LISTENING_TO && pdnce->szThirdLineText[0] != _T('\0'))
         {
-            Cache_AddListeningToIcon(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
-                &pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);
+            pdnce->ssThirdLine.AddListeningToIcon(dat, pdnce, pdnce->szThirdLineText, dat->third_line_draw_smileys);
         }
         else
         {
-            Cache_ReplaceSmileys(dat, pdnce, pdnce->szThirdLineText, lstrlen(pdnce->szThirdLineText), &pdnce->plThirdLineText, 
-                &pdnce->iThirdLineMaxSmileyHeight,dat->third_line_draw_smileys);
+			pdnce->ssThirdLine.ReplaceSmileys(dat, pdnce, pdnce->szThirdLineText, dat->third_line_draw_smileys);
         }
     }
     // UnlockCacheItem(hContact);
@@ -829,98 +778,6 @@ static int CopySkipUnprintableChars(TCHAR *to, TCHAR * buf, DWORD size)
         RemoveTag(to,_T("<I>")); RemoveTag(to,_T("</I>"));
     }
     return i;
-}
-
-typedef struct _CONTACTDATASTORED
-{
-    BOOL used;
-    HANDLE hContact;
-    TCHAR * szSecondLineText;
-    TCHAR * szThirdLineText;
-    SortedList *plSecondLineText;
-    SortedList *plThirdLineText;
-} CONTACTDATASTORED;
-
-CONTACTDATASTORED * StoredContactsList=NULL;
-static int ContactsStoredCount=0;
-
-SortedList *CopySmileyString(SortedList *plInput)
-{
-    SortedList * plText=NULL;
-    int i;
-    if (!plInput || plInput->realCount==0) return NULL;
-    plText=li.List_Create( 0,1 );
-    for (i=0; i<plInput->realCount; i++)
-    {
-        ClcContactTextPiece *pieceFrom=(ClcContactTextPiece *)plInput->items[i];
-        if (pieceFrom!=NULL)
-        {
-            ClcContactTextPiece *piece = (ClcContactTextPiece *) mir_alloc(sizeof(ClcContactTextPiece));			
-            *piece=*pieceFrom;
-            if (pieceFrom->type==TEXT_PIECE_TYPE_SMILEY)
-                piece->smiley=CopyIcon(pieceFrom->smiley);
-            li.List_Insert(plText, piece, plText->realCount);
-        }
-    }
-    return plText;
-}
-
-BOOL StoreOneContactData(struct ClcContact *contact, BOOL subcontact, void *param)
-{
-    StoredContactsList=(CONTACTDATASTORED*)mir_realloc(StoredContactsList,sizeof(CONTACTDATASTORED)*(ContactsStoredCount+1));
-    {
-        CONTACTDATASTORED empty={0};
-        StoredContactsList[ContactsStoredCount]=empty;
-        StoredContactsList[ContactsStoredCount].hContact=contact->hContact;	
-    }
-    ContactsStoredCount++;
-    return 1;
-}
-
-BOOL RestoreOneContactData(struct ClcContact *contact, BOOL subcontact, void *param)
-{
-    int i;
-    for (i=0; i<ContactsStoredCount; i++)
-    {
-        if (StoredContactsList[i].hContact==contact->hContact)
-        {
-            memmove(StoredContactsList+i,StoredContactsList+i+1,sizeof(CONTACTDATASTORED)*(ContactsStoredCount-i-1));
-            ContactsStoredCount--;
-            break;
-        }
-    }
-    return 1;
-}
-
-int StoreAllContactData(struct ClcData *dat)
-{
-    /*
-    ExecuteOnAllContacts(dat,StoreOneContactData,NULL);
-    */
-    return 1;
-}
-
-int RestoreAllContactData(struct ClcData *dat)
-{
-    /*
-    int i;
-    ExecuteOnAllContacts(dat,RestoreOneContactData,NULL);
-    for (i=0; i<ContactsStoredCount; i++)
-    {
-        if (StoredContactsList[i].szSecondLineText)
-            mir_free_and_nill(StoredContactsList[i].szSecondLineText);
-        if (StoredContactsList[i].szThirdLineText)
-            mir_free_and_nill(StoredContactsList[i].szThirdLineText);
-        if (StoredContactsList[i].plSecondLineText)
-            Cache_DestroySmileyList(StoredContactsList[i].plSecondLineText);
-        if (StoredContactsList[i].plThirdLineText)
-            Cache_DestroySmileyList(StoredContactsList[i].plThirdLineText);
-    }
-    if (StoredContactsList) mir_free_and_nill(StoredContactsList);
-    StoredContactsList=NULL;
-    ContactsStoredCount=0;
-    */
-    return 1;
 }
 
 // If ExecuteOnAllContactsFuncPtr returns FALSE, stop loop

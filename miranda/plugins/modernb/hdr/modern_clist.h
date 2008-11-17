@@ -40,7 +40,43 @@ extern pfnMyMonitorFromWindow MyMonitorFromWindow;
 typedef BOOL(WINAPI *pfnMyGetMonitorInfo) (HMONITOR, LPMONITORINFO);
 extern pfnMyGetMonitorInfo MyGetMonitorInfo;
 
-typedef struct  {
+class CSmileyString
+{	 
+public:
+	SortedList*	plText;
+	int			iMaxSmileyHeight;
+
+	CSmileyString()   : plText( NULL ), iMaxSmileyHeight( 0 ) {};
+	CSmileyString( const CSmileyString& ssIn )
+	{	
+		_CopySmileyList( ssIn.plText );
+		iMaxSmileyHeight = ssIn.iMaxSmileyHeight;
+	}
+
+	CSmileyString& operator= ( const CSmileyString& ssIn )
+	{
+		DestroySmileyList();
+		_CopySmileyList( ssIn.plText );
+		iMaxSmileyHeight = ssIn.iMaxSmileyHeight;
+		return *this;
+	}
+
+	~CSmileyString()
+	{
+		DestroySmileyList();
+	}
+
+	void ReplaceSmileys(struct SHORTDATA *dat, struct tag_DNCE * pdnce, TCHAR *szText, BOOL replace_smileys);
+
+	/**	Destroy smiley list */ 
+	void DestroySmileyList();
+	/**  Copy Smiley List */
+	void _CopySmileyList( SortedList *plInput );
+	void AddListeningToIcon(struct SHORTDATA *dat, struct tag_DNCE * pdnce, TCHAR *szText, BOOL replace_smileys);
+
+};
+
+struct tag_DNCE{
 	HANDLE	m_cache_hContact;
 	TCHAR*	m_cache_tcsName;
 #if defined( _UNICODE )
@@ -63,16 +99,19 @@ typedef struct  {
 	BYTE	IsExpanded;
 	boolean isUnknown;
 
-	TCHAR*	szSecondLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList*	plSecondLineText;				// List of ClcContactTextPiece
-	TCHAR*	szThirdLineText;//[120-MAXEXTRACOLUMNS];
-	SortedList*	plThirdLineText;				// List of ClcContactTextPiece
-	int		iThirdLineMaxSmileyHeight;
-    int		iSecondLineMaxSmileyHeight;
+	TCHAR	*	szSecondLineText;
+	CSmileyString ssSecondLine;
+
+	TCHAR	*	szThirdLineText;
+	CSmileyString ssThirdLine;
+
 	DWORD	timezone;
     DWORD	timediff;
 	DWORD	dwLastMsgTime;
-} displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
+};
+typedef tag_DNCE displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;
+
+
 
 typedef struct tagEXTRASLOTINFO
 {

@@ -60,29 +60,6 @@ static int handleCompare( void* c1, void* c2 )
 	return p1 - p2;
 }
 
-
-
-//	int i, idx;
-//	HANDLE hContact;
-//
-//	memset(list,0,sizeof(SortedList));
-//	list->sortFunc = handleCompare;
-//	list->increment = 100;
-//
-//	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-//	i=0;
-//	while (hContact!=0)
-//	{
-//		displayNameCacheEntry *pdnce = mir_calloc(1,sizeof(displayNameCacheEntry));
-//		pdnce->hContact = hContact;
-//		InvalidateDisplayNameCacheEntryByPDNE(hContact,pdnce,0);
-//		li.List_GetIndex(list,pdnce,&idx);
-//		li.List_Insert(list,pdnce,idx);
-//		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-//		i++;
-//}	}
-
-
 void InitCacheAsync();
 void UninitCacheAsync();
 
@@ -128,8 +105,6 @@ ClcCacheEntryBase* cliGetCacheEntry(HANDLE hContact)
 	return p;
 }
 
-SortedList *CopySmileyString( SortedList *plInput );
-void Cache_DestroySmileyList( SortedList *p_list );
 
 void CListSettings_FreeCacheItemData(pdisplayNameCacheEntry pDst)
 {
@@ -158,8 +133,8 @@ void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD f
 	{
 		if (pDst->szSecondLineText) mir_free_and_nill(pDst->szSecondLineText);
 		if (pDst->szThirdLineText)  mir_free_and_nill(pDst->szThirdLineText);
-		if (pDst->plSecondLineText) {Cache_DestroySmileyList(pDst->plSecondLineText); pDst->plSecondLineText=NULL;}
-		if (pDst->plThirdLineText) {Cache_DestroySmileyList(pDst->plThirdLineText); pDst->plThirdLineText=NULL;}
+		pDst->ssSecondLine.DestroySmileyList();
+		pDst->ssThirdLine.DestroySmileyList();
 	}
 }
 
@@ -185,14 +160,16 @@ void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCache
 	if ( flag & CCI_STATUS ) pDst->m_cache_nStatus=pSrc->m_cache_nStatus;
 	if ( flag & CCI_LINES )
 	{
-		pDst->iThirdLineMaxSmileyHeight=pSrc->iThirdLineMaxSmileyHeight;
-		pDst->iSecondLineMaxSmileyHeight=pSrc->iSecondLineMaxSmileyHeight;
+		if ( pDst->szThirdLineText )	mir_free( pDst->szThirdLineText );
+		pDst->szThirdLineText = NULL;
+		if ( pSrc->szThirdLineText )	pDst->szThirdLineText = mir_tstrdup( pSrc->szThirdLineText );
+	
+		if ( pDst->szSecondLineText )	mir_free( pDst->szSecondLineText );
+		pDst->szSecondLineText = NULL;
+		if ( pSrc->szSecondLineText )	pDst->szSecondLineText = mir_tstrdup( pSrc->szSecondLineText );
 
-		pDst->szSecondLineText=mir_tstrdup(pSrc->szSecondLineText);
-		pDst->szThirdLineText=mir_tstrdup(pSrc->szThirdLineText);
-
-		if (pSrc->plSecondLineText) pDst->plSecondLineText=CopySmileyString(pSrc->plSecondLineText);  
-		if (pSrc->plThirdLineText) pDst->plThirdLineText=CopySmileyString(pSrc->plThirdLineText);
+		pDst->ssThirdLine  = pSrc->ssThirdLine;
+		pDst->ssSecondLine = pSrc->ssSecondLine;
 	}
 	if ( flag & CCI_TIME)	
 	{
@@ -259,8 +236,8 @@ void cliFreeCacheItem( pdisplayNameCacheEntry p )
 	if ( p->m_cache_tcsGroup) { mir_free_and_nill(p->m_cache_tcsGroup); p->m_cache_tcsGroup = NULL; }
 	if ( p->szSecondLineText) mir_free_and_nill(p->szSecondLineText);
 	if ( p->szThirdLineText) mir_free_and_nill(p->szThirdLineText);
-	if ( p->plSecondLineText) {Cache_DestroySmileyList(p->plSecondLineText);p->plSecondLineText=NULL;}
-	if ( p->plThirdLineText)  {Cache_DestroySmileyList(p->plThirdLineText);p->plThirdLineText=NULL;}
+	p->ssSecondLine.DestroySmileyList();
+	p->ssThirdLine.DestroySmileyList();
 }
 
 
@@ -431,27 +408,12 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 	{
 		if (SettingType==16)
 		{
-			if (pdnce->szSecondLineText) 
-			{
-				
-				if (pdnce->plSecondLineText) 
-				{
-					Cache_DestroySmileyList(pdnce->plSecondLineText);
-					pdnce->plSecondLineText=NULL;
-				}
-				mir_free_and_nill(pdnce->szSecondLineText);
-			}
-			if (pdnce->szThirdLineText) 
-			{
-				if (pdnce->plThirdLineText) 
-				{
-					Cache_DestroySmileyList(pdnce->plThirdLineText);
-					pdnce->plThirdLineText=NULL;
-				}
-				mir_free_and_nill(pdnce->szThirdLineText);
-			}
-			pdnce->iSecondLineMaxSmileyHeight=0;
-			pdnce->iThirdLineMaxSmileyHeight=0;
+			pdnce->ssSecondLine.DestroySmileyList();
+			if (pdnce->szSecondLineText) mir_free_and_nill(pdnce->szSecondLineText);
+			pdnce->ssThirdLine.DestroySmileyList();
+			if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
+			pdnce->ssSecondLine.iMaxSmileyHeight=0;
+			pdnce->ssThirdLine.iMaxSmileyHeight=0;
 			pdnce->timediff=0;
 			pdnce->timezone=-1;
 			pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);

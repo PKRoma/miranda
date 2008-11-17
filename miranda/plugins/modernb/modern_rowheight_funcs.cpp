@@ -93,7 +93,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
     int tmp=0;
     tmp = dat->fontModernInfo[g_clcPainter.GetBasicFontID(contact)].fontHeight;
     if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
-      tmp = max(tmp, contact->iTextMaxSmileyHeight);
+      tmp = max(tmp, contact->ssText.iMaxSmileyHeight);
     if (contact->type == CLCIT_GROUP)
     {
       char * szCounts = pcli->pfnGetGroupCountsText(dat, contact);
@@ -126,7 +126,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
           int tmp=0;
           tmp = dat->fontModernInfo[g_clcPainter.GetBasicFontID(contact)].fontHeight;
           if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
-            tmp = max(tmp, contact->iTextMaxSmileyHeight);
+            tmp = max(tmp, contact->ssText.iMaxSmileyHeight);
           if (item==-1)
           {
             //calculate text width here
@@ -134,7 +134,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
             RECT dummyRect={0,0,1024,tmp};
             HDC hdc=CreateCompatibleDC(NULL);
             g_clcPainter.ChangeToFont(hdc,dat,g_clcPainter.GetBasicFontID(contact),NULL);
-            g_clcPainter.GetTextSize(&size,hdc,dummyRect,contact->szText,contact->plText,0, dat->text_resize_smileys ? 0 : contact->iTextMaxSmileyHeight);
+            g_clcPainter.GetTextSize(&size,hdc,dummyRect,contact->szText,contact->ssText.plText,0, dat->text_resize_smileys ? 0 : contact->ssText.iMaxSmileyHeight);
             if (contact->type==CLCIT_GROUP)
             {
               char * szCounts = pcli->pfnGetGroupCountsText(dat, contact);
@@ -169,7 +169,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
           {
             tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
             if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
-              tmp = max(tmp, pdnce->iSecondLineMaxSmileyHeight);
+              tmp = max(tmp, pdnce->ssSecondLine.iMaxSmileyHeight);
             if (item==-1)
             {
               //calculate text width here
@@ -178,7 +178,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
               RECT dummyRect={0,0,1024,tmp};
               HDC hdc=CreateCompatibleDC(NULL);
               g_clcPainter.ChangeToFont(hdc,dat,FONTID_SECONDLINE,NULL);
-              g_clcPainter.GetTextSize(&size,hdc,dummyRect,pdnce->szSecondLineText,pdnce->plSecondLineText,0, dat->text_resize_smileys ? 0 : pdnce->iSecondLineMaxSmileyHeight);
+              g_clcPainter.GetTextSize(&size,hdc,dummyRect,pdnce->szSecondLineText,pdnce->ssSecondLine.plText,0, dat->text_resize_smileys ? 0 : pdnce->ssSecondLine.iMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 			  ske_ResetTextEffect(hdc);
@@ -196,7 +196,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
           {
             tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
             if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
-              tmp = max(tmp, pdnce->iThirdLineMaxSmileyHeight);
+              tmp = max(tmp, pdnce->ssThirdLine.iMaxSmileyHeight);
             if (item==-1)
             {
               //calculate text width here
@@ -204,7 +204,7 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
               RECT dummyRect={0,0,1024,tmp};
               HDC hdc=CreateCompatibleDC(NULL);
               g_clcPainter.ChangeToFont(hdc,dat,FONTID_THIRDLINE,NULL);
-              g_clcPainter.GetTextSize(&size,hdc,dummyRect,pdnce->szThirdLineText,pdnce->plThirdLineText,0, dat->text_resize_smileys ? 0 : pdnce->iThirdLineMaxSmileyHeight);
+              g_clcPainter.GetTextSize(&size,hdc,dummyRect,pdnce->szThirdLineText,pdnce->ssThirdLine.plText,0, dat->text_resize_smileys ? 0 : pdnce->ssThirdLine.iMaxSmileyHeight);
               gl_RowTabAccess[i]->w=size.cx;
               SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
 			  ske_ResetTextEffect(hdc);
@@ -655,7 +655,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
         tmp = dat->fontModernInfo[g_clcPainter.GetBasicFontID(contact)].fontHeight;
         if (dat->text_replace_smileys && dat->first_line_draw_smileys && !dat->text_resize_smileys)
         {
-          tmp = max(tmp, contact->iTextMaxSmileyHeight);
+          tmp = max(tmp, contact->ssText.iMaxSmileyHeight);
         }
         height += tmp;
 
@@ -664,7 +664,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           tmp = dat->fontModernInfo[FONTID_SECONDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->second_line_draw_smileys && !dat->text_resize_smileys)
           {
-            tmp = max(tmp, pdnce->iSecondLineMaxSmileyHeight);
+            tmp = max(tmp, pdnce->ssSecondLine.iMaxSmileyHeight);
           }
           height += dat->second_line_top_space + tmp;
         }
@@ -674,7 +674,7 @@ int RowHeights_GetRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcCon
           tmp = dat->fontModernInfo[FONTID_THIRDLINE].fontHeight;
           if (dat->text_replace_smileys && dat->third_line_draw_smileys && !dat->text_resize_smileys)
           {
-            tmp = max(tmp, pdnce->iThirdLineMaxSmileyHeight);
+            tmp = max(tmp, pdnce->ssThirdLine.iMaxSmileyHeight);
           }
           height += dat->third_line_top_space + tmp;
         }

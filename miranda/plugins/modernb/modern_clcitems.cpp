@@ -133,7 +133,7 @@ void cli_FreeContact(struct ClcContact *p)
 		if ( p->subcontacts && !p->isSubcontact) {
 			int i;
 			for ( i = 0 ; i < p->SubAllocated ; i++ ) {
-				Cache_DestroySmileyList(p->subcontacts[i].plText);
+				p->subcontacts[i].ssText.DestroySmileyList();
 				if ( p->subcontacts[i].avatar_pos==AVATAR_POS_ANIMATED )
 					AniAva_RemoveAvatar( p->subcontacts[i].hContact );
 					p->subcontacts[i].avatar_pos=AVATAR_POS_DONT_HAVE;
@@ -141,8 +141,7 @@ void cli_FreeContact(struct ClcContact *p)
 			mir_free_and_nill(p->subcontacts);
 	}	}
 
-	Cache_DestroySmileyList(p->plText);
-	p->plText=NULL;
+	p->ssText.DestroySmileyList();
 	if ( p->avatar_pos==AVATAR_POS_ANIMATED )
 		AniAva_RemoveAvatar( p->hContact );
 	p->avatar_pos=AVATAR_POS_DONT_HAVE;
@@ -533,8 +532,6 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	struct ClcGroup *group;
 	struct ClcContact *contact;
 	
-	StoreAllContactData(dat);
-	
 	pcli->pfnHideInfoTip(hwnd, dat);
 	KillTimer(hwnd, TIMERID_INFOTIP);
 	KillTimer(hwnd, TIMERID_RENAME);
@@ -642,7 +639,6 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	}
 	if (savedInfo)
 		mir_free_and_nill(savedInfo);
-	RestoreAllContactData(dat);
 	LOCK_RECALC_SCROLLBAR=FALSE;
 	pcli->pfnRecalculateGroupCheckboxes(hwnd, dat);
 
@@ -694,8 +690,8 @@ ClcCacheEntryBase* cliCreateCacheItem( HANDLE hContact )
 		InvalidateDNCEbyPointer(hContact,p,0);
 		p->szSecondLineText=NULL;
 		p->szThirdLineText=NULL;
-		p->plSecondLineText=NULL;
-		p->plThirdLineText=NULL;
+		p->ssSecondLine.plText=NULL;
+		p->ssThirdLine.plText=NULL;
 	}
 	return (ClcCacheEntryBase*)p;
 }

@@ -36,7 +36,6 @@ void Cache_GetFirstLineText(struct ClcData *dat, struct ClcContact *contact);
 void Cache_GetSecondLineText(struct SHORTDATA *dat, PDNCE pdnce);
 void Cache_GetThirdLineText(struct SHORTDATA *dat, PDNCE pdnce);
 void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact);
-void Cache_DestroySmileyList(SortedList* p_list);
 void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact);
 int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *variable_text, BOOL xstatus_has_priority, 
 					  BOOL show_status_if_no_away, BOOL show_listening_if_no_away, BOOL use_name_and_message_for_xstatus, 
