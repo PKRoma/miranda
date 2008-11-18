@@ -243,7 +243,7 @@ BOOL CJabberProto::AddDbPresenceEvent(HANDLE hContact, BYTE btEventType)
 	dbei.pBlob = &btEventType;
 	dbei.cbBlob = sizeof( btEventType );
 	dbei.eventType = JABBER_DB_EVENT_TYPE_PRESENCE;
-	dbei.flags = 0;
+	dbei.flags = DBEF_READ;
 	dbei.timestamp = time( NULL );
 	dbei.szModule = m_szModuleName;
 	CallService( MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei );

@@ -1199,7 +1199,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		dbei.pBlob = &bEventType;
 		dbei.cbBlob = 1;
 		dbei.eventType = JABBER_DB_EVENT_TYPE_CHATSTATES;
-		dbei.flags = 0;
+		dbei.flags = DBEF_READ;
 		dbei.timestamp = time(NULL);
 		dbei.szModule = m_szModuleName;
 		CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
