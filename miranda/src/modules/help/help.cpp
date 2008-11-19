@@ -39,7 +39,7 @@ static int AboutCommand(WPARAM wParam,LPARAM lParam)
 
 static int IndexCommand(WPARAM wParam,LPARAM lParam)
 {
-	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org/support/");
+	CallService(MS_UTILS_OPENURL,1,(LPARAM)Translate("http://wiki.miranda-im.org/"));
 	return 0;
 }
 
