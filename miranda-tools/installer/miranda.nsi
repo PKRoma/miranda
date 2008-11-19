@@ -35,7 +35,7 @@ InstallDir                      "$PROGRAMFILES\Miranda IM"
 InstallDirRegKey                HKLM "Software\Miranda" "Install_Dir"
 SetCompressor                   lzma
 SetOverWrite                    on
-BrandingText                    "www.miranda-im.org"
+BrandingText                    "miranda-im.org"
 
 VAR INST_UPGRADE
 var INST_SUCCESS
