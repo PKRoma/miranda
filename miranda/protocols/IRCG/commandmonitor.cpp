@@ -765,257 +765,196 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 {
 	// is it a ctcp command, i e is the first and last characer of a PRIVMSG or NOTICE text ASCII 1
 	CMString mess = pmsg->parameters[1];
-	if ( mess.GetLength() > 3 && mess[0] == 1 && mess[ mess.GetLength()-1] == 1 ) {
-		// set mess to contain the ctcp command, excluding the leading and trailing  ASCII 1
-		mess.Delete(0,1);
-		mess.Delete(mess.GetLength()-1,1);
-		
-		// exploit???
-		if ( mess.Find(1) != -1 || mess.Find( _T("%newl")) != -1 ) {
-			TCHAR temp[4096];
-			mir_sntprintf(temp, SIZEOF(temp), TranslateT( "CTCP ERROR: Malformed CTCP command received from %s!%s@%s. Possible attempt to take control of your irc client registered"), pmsg->prefix.sNick.c_str(), pmsg->prefix.sUser.c_str(), pmsg->prefix.sHost.c_str());
-			DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
-			return true;
+	if ( !( mess.GetLength() > 3 && mess[0] == 1 && mess[ mess.GetLength()-1] == 1 ))
+		return false;
+
+	// set mess to contain the ctcp command, excluding the leading and trailing  ASCII 1
+	mess.Delete(0,1);
+	mess.Delete(mess.GetLength()-1,1);
+	
+	// exploit???
+	if ( mess.Find(1) != -1 || mess.Find( _T("%newl")) != -1 ) {
+		TCHAR temp[4096];
+		mir_sntprintf(temp, SIZEOF(temp), TranslateT( "CTCP ERROR: Malformed CTCP command received from %s!%s@%s. Possible attempt to take control of your irc client registered"), pmsg->prefix.sNick.c_str(), pmsg->prefix.sUser.c_str(), pmsg->prefix.sHost.c_str());
+		DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), temp, NULL, NULL, NULL, true, false); 
+		return true;
+	}
+
+	// extract the type of ctcp command
+	CMString ocommand = GetWord(mess.c_str(), 0);
+	CMString command = GetWord(mess.c_str(), 0);
+	command.MakeLower();
+
+	// should it be ignored?
+	if ( m_ignore ) {
+		if ( IsChannel( pmsg->parameters[0] )) {
+			if ( command == _T("action") && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'm'))
+				return true;
+		}
+		else {
+			if ( command == _T("action")) {
+				if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'q' ))
+					return true;
+			}
+			else if ( command == _T("dcc")) {
+				if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd' ))
+					return true;
+			}
+			else if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c' ))
+				return true;
+	}	}
+
+	if ( pmsg->sCommand == _T("PRIVMSG")) {
+		// incoming ACTION
+		if ( command == _T("action")) {
+			mess.Delete(0,6);
+
+			if ( IsChannel( pmsg->parameters[0] )) {
+				if ( mess.GetLength() > 1 ) {
+					mess.Delete(0,1);
+					if ( !pmsg->m_bIncoming )
+						ReplaceString(mess, _T("%%"), _T("%"));
+
+					DoEvent(GC_EVENT_ACTION, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_info.sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
+				}
+			}
+			else if (pmsg->m_bIncoming)
+			{
+				mess.Insert(0, pmsg->prefix.sNick.c_str());
+				mess.Insert(0, _T("* "));
+				mess.Insert(mess.GetLength(), _T(" *"));
+				CIrcMessage msg = *pmsg;
+				msg.parameters[1] = mess;
+				OnIrc_PRIVMSG(&msg);
+			}
+		}
+		// incoming FINGER
+		else if (pmsg->m_bIncoming && command == _T("finger")) {
+			PostIrcMessage( _T("/NOTICE %s \001FINGER %s (%s)\001"), pmsg->prefix.sNick.c_str(), m_name, m_userID);
+			
+			TCHAR temp[300];
+			mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP FINGER requested by %s"), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
 		}
 
-		// extract the type of ctcp command
-		CMString ocommand = GetWord(mess.c_str(), 0);
-		CMString command = GetWord(mess.c_str(), 0);
-		command.MakeLower();
+		// incoming VERSION
+		else if (pmsg->m_bIncoming && command == _T("version")) {
+			PostIrcMessage( _T("/NOTICE %s \001VERSION Miranda IM %s (IRC v.%s%s), (c) 2003-07 J.Persson, G.Hazan\001"), 
+				pmsg->prefix.sNick.c_str(), _T("%mirver"), _T("%version"),
+				#if defined( _UNICODE )
+					_T(" Unicode"));
+				#else
+					"" );
+				#endif
 
-		// should it be ignored?
-		if ( m_ignore ) {
-			if ( IsChannel( pmsg->parameters[0] )) {
-				if ( command == _T("action") && IsIgnored(pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'm'))
-					return true;
-			}
-			else {
-				if ( command == _T("action")) {
-					if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'q' ))
-						return true;
+			TCHAR temp[300];
+			mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+		}
+
+		// incoming SOURCE
+		else if (pmsg->m_bIncoming && command == _T("source")) {
+			PostIrcMessage( _T("/NOTICE %s \001SOURCE Get Miranda IRC here: http://miranda-im.org/ \001"), pmsg->prefix.sNick.c_str());
+			
+			TCHAR temp[300];
+			mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP SOURCE requested by %s"), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+		}
+
+		// incoming USERINFO
+		else if (pmsg->m_bIncoming && command == _T("userinfo")) {
+			PostIrcMessage( _T("/NOTICE %s \001USERINFO %s\001"), pmsg->prefix.sNick.c_str(), m_userInfo );
+			
+			TCHAR temp[300];
+			mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP USERINFO requested by %s") , pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+		}
+
+		// incoming PING
+		else if (pmsg->m_bIncoming && command == _T("ping")) {
+			PostIrcMessage( _T("/NOTICE %s \001%s\001"), pmsg->prefix.sNick.c_str(), mess.c_str());
+			
+			TCHAR temp[300];
+			mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP PING requested by %s"), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+		}
+
+		// incoming TIME
+		else if (pmsg->m_bIncoming && command == _T("time")) {
+			TCHAR temp[300];
+			time_t tim = time(NULL);
+			lstrcpyn( temp, _tctime( &tim ), 25 );
+			PostIrcMessage( _T("/NOTICE %s \001TIME %s\001"), pmsg->prefix.sNick.c_str(), temp);
+			
+			mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP TIME requested by %s"), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+		}
+
+		// incoming DCC request... lots of stuff happening here...
+		else if (pmsg->m_bIncoming && command == _T("dcc")) {
+			CMString type = GetWord(mess.c_str(), 1);
+			type.MakeLower();
+
+			// components of a dcc message
+			CMString sFile = _T("");
+			DWORD dwAdr = 0;
+			int iPort = 0;
+			DWORD dwSize = 0;
+			CMString sToken = _T("");
+			bool bIsChat = ( type == _T("chat"));
+
+			// 1. separate the dcc command into the correct pieces
+			if ( bIsChat || type == _T("send")) {
+				// if the filename is surrounded by quotes, do this
+				if ( GetWord(mess.c_str(), 2)[0] == '\"' ) {
+					int end = 0;
+					int begin = mess.Find('\"', 0);
+					if ( begin >= 0 ) {
+						end = mess.Find('\"', begin + 1); 
+						if ( end >= 0 ) {
+							sFile = mess.Mid(begin+1, end-begin-1);
+
+							begin = mess.Find(' ', end);
+							if ( begin >= 0 ) {
+								CMString rest = mess.Mid(begin, mess.GetLength());
+								dwAdr = _ttoi(GetWord(rest.c_str(), 0).c_str());
+								iPort = _ttoi(GetWord(rest.c_str(), 1).c_str());
+								dwSize = _ttoi(GetWord(rest.c_str(), 2).c_str());
+								sToken = GetWord(rest.c_str(), 3);
+					}	}	}
 				}
-				else if ( command == _T("dcc")) {
-					if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'd' ))
-						return true;
-				}
-				else if ( IsIgnored( pmsg->prefix.sNick, pmsg->prefix.sUser, pmsg->prefix.sHost, 'c' ))
-					return true;
-		}	}
+				// ... or try another method of separating the dcc command
+				else if ( !GetWord(mess.c_str(), (bIsChat) ? 4 : 5 ).IsEmpty() ) {
+					int index = (bIsChat) ? 4 : 5;
+					bool bFlag = false;
 
-		if ( pmsg->sCommand == _T("PRIVMSG")) {
-			// incoming ACTION
-			if ( command == _T("action")) {
-				mess.Delete(0,6);
-
-				if ( IsChannel( pmsg->parameters[0] )) {
-					if ( mess.GetLength() > 1 ) {
-						mess.Delete(0,1);
-						if ( !pmsg->m_bIncoming )
-							ReplaceString(mess, _T("%%"), _T("%"));
-
-						DoEvent(GC_EVENT_ACTION, pmsg->parameters[0].c_str(), pmsg->m_bIncoming?pmsg->prefix.sNick.c_str():m_info.sNick.c_str(), mess.c_str(), NULL, NULL, NULL, true, pmsg->m_bIncoming?false:true); 
-					}
-				}
-				else if (pmsg->m_bIncoming)
-				{
-					mess.Insert(0, pmsg->prefix.sNick.c_str());
-					mess.Insert(0, _T("* "));
-					mess.Insert(mess.GetLength(), _T(" *"));
-					CIrcMessage msg = *pmsg;
-					msg.parameters[1] = mess;
-					OnIrc_PRIVMSG(&msg);
-				}
-			}
-			// incoming FINGER
-			else if (pmsg->m_bIncoming && command == _T("finger")) {
-				PostIrcMessage( _T("/NOTICE %s \001FINGER %s (%s)\001"), pmsg->prefix.sNick.c_str(), m_name, m_userID);
-				
-				TCHAR temp[300];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP FINGER requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming VERSION
-			else if (pmsg->m_bIncoming && command == _T("version")) {
-				PostIrcMessage( _T("/NOTICE %s \001VERSION Miranda IM %s (IRC v.%s%s), (c) 2003-07 J.Persson, G.Hazan\001"), 
-					pmsg->prefix.sNick.c_str(), _T("%mirver"), _T("%version"),
-					#if defined( _UNICODE )
-						_T(" Unicode"));
-					#else
-						"" );
-					#endif
-
-				TCHAR temp[300];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP VERSION requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming SOURCE
-			else if (pmsg->m_bIncoming && command == _T("source")) {
-				PostIrcMessage( _T("/NOTICE %s \001SOURCE Get Miranda IRC here: http://miranda-im.org/ \001"), pmsg->prefix.sNick.c_str());
-				
-				TCHAR temp[300];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP SOURCE requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming USERINFO
-			else if (pmsg->m_bIncoming && command == _T("userinfo")) {
-				PostIrcMessage( _T("/NOTICE %s \001USERINFO %s\001"), pmsg->prefix.sNick.c_str(), m_userInfo );
-				
-				TCHAR temp[300];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP USERINFO requested by %s") , pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming PING
-			else if (pmsg->m_bIncoming && command == _T("ping")) {
-				PostIrcMessage( _T("/NOTICE %s \001%s\001"), pmsg->prefix.sNick.c_str(), mess.c_str());
-				
-				TCHAR temp[300];
-				mir_sntprintf( temp, SIZEOF(temp), TranslateT("CTCP PING requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming TIME
-			else if (pmsg->m_bIncoming && command == _T("time")) {
-				TCHAR temp[300];
-				time_t tim = time(NULL);
-				lstrcpyn( temp, _tctime( &tim ), 25 );
-				PostIrcMessage( _T("/NOTICE %s \001TIME %s\001"), pmsg->prefix.sNick.c_str(), temp);
-				
-				mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP TIME requested by %s"), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-			}
-
-			// incoming DCC request... lots of stuff happening here...
-			else if (pmsg->m_bIncoming && command == _T("dcc")) {
-				CMString type = GetWord(mess.c_str(), 1);
-				type.MakeLower();
-
-				// components of a dcc message
-				CMString sFile = _T("");
-				DWORD dwAdr = 0;
-				int iPort = 0;
-				DWORD dwSize = 0;
-				CMString sToken = _T("");
-				bool bIsChat = ( type == _T("chat"));
-
-				// 1. separate the dcc command into the correct pieces
-				if ( bIsChat || type == _T("send")) {
-					// if the filename is surrounded by quotes, do this
-					if ( GetWord(mess.c_str(), 2)[0] == '\"' ) {
-						int end = 0;
-						int begin = mess.Find('\"', 0);
-						if ( begin >= 0 ) {
-							end = mess.Find('\"', begin + 1); 
-							if ( end >= 0 ) {
-								sFile = mess.Mid(begin+1, end-begin-1);
-
-								begin = mess.Find(' ', end);
-								if ( begin >= 0 ) {
-									CMString rest = mess.Mid(begin, mess.GetLength());
-									dwAdr = _ttoi(GetWord(rest.c_str(), 0).c_str());
-									iPort = _ttoi(GetWord(rest.c_str(), 1).c_str());
-									dwSize = _ttoi(GetWord(rest.c_str(), 2).c_str());
-									sToken = GetWord(rest.c_str(), 3);
-						}	}	}
-					}
-					// ... or try another method of separating the dcc command
-					else if ( !GetWord(mess.c_str(), (bIsChat) ? 4 : 5 ).IsEmpty() ) {
-						int index = (bIsChat) ? 4 : 5;
-						bool bFlag = false;
-
-						// look for the part of the ctcp command that contains adress, port and size
-						while ( !bFlag && !GetWord(mess.c_str(), index).IsEmpty() ) {
-							CMString sTemp;
-							
-							if ( type == _T("chat"))
-								sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
-							else	
-								sTemp = GetWord(mess.c_str(), index-2) + GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
-							
-							// if all characters are number it indicates we have found the adress, port and size parameters
-							int ind = 0;
-							while ( sTemp[ind] != '\0' ) {
-								if( !_istdigit( sTemp[ind] ))
-									break;
-								ind++;
-							}
-							
-							if ( sTemp[ind] == '\0' && GetWord( mess.c_str(), index + ((bIsChat) ? 1 : 2 )).IsEmpty() )
-								bFlag = true;
-							index++;
+					// look for the part of the ctcp command that contains adress, port and size
+					while ( !bFlag && !GetWord(mess.c_str(), index).IsEmpty() ) {
+						CMString sTemp;
+						
+						if ( type == _T("chat"))
+							sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
+						else	
+							sTemp = GetWord(mess.c_str(), index-2) + GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
+						
+						// if all characters are number it indicates we have found the adress, port and size parameters
+						int ind = 0;
+						while ( sTemp[ind] != '\0' ) {
+							if( !_istdigit( sTemp[ind] ))
+								break;
+							ind++;
 						}
 						
-						if ( bFlag ) {
-							TCHAR* p1 = _tcsdup( GetWordAddress(mess.c_str(), 2 ));
-							TCHAR* p2 = ( TCHAR* )GetWordAddress( p1, index-5 );
-							
-							if ( type == _T("send")) {
-								if ( p2 > p1 ) {
-									p2--;
-									while( p2 != p1 && *p2 == ' ' ) {
-										*p2 = '\0';
-										p2--;
-									}
-									sFile = p1;
-								}
-							}
-							else sFile = _T("chat");
-
-							free( p1 );
-
-							dwAdr = _ttoi(GetWord(mess.c_str(), index - (bIsChat?2:3)).c_str());
-							iPort = _ttoi(GetWord(mess.c_str(), index - (bIsChat?1:2)).c_str());
-							dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
-							sToken = GetWord(mess.c_str(), index);
-					}	} 
-				}
-				else if (type == _T("accept") || type == _T("resume")) {
-					// if the filename is surrounded by quotes, do this
-					if ( GetWord(mess.c_str(), 2)[0] == '\"' ) {
-						int end = 0;
-						int begin = mess.Find('\"', 0);
-						if ( begin >= 0 ) {
-							end = mess.Find('\"', begin + 1); 
-							if ( end >= 0 ) {
-								sFile = mess.Mid(begin+1, end);
-
-								begin = mess.Find(' ', end);
-								if ( begin >= 0 ) {
-									CMString rest = mess.Mid(begin, mess.GetLength());
-									iPort = _ttoi(GetWord(rest.c_str(), 0).c_str());
-									dwSize = _ttoi(GetWord(rest.c_str(), 1).c_str());
-									sToken = GetWord(rest.c_str(), 2);
-						}	}	}
+						if ( sTemp[ind] == '\0' && GetWord( mess.c_str(), index + ((bIsChat) ? 1 : 2 )).IsEmpty() )
+							bFlag = true;
+						index++;
 					}
-					// ... or try another method of separating the dcc command
-					else if ( !GetWord(mess.c_str(), 4).IsEmpty() ) {
-						int index = 4;
-						bool bFlag = false;
-
-						// look for the part of the ctcp command that contains adress, port and size
-						while ( !bFlag && !GetWord(mess.c_str(), index).IsEmpty() ) {
-							CMString sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
-							
-							// if all characters are number it indicates we have found the adress, port and size parameters
-							int ind = 0;
-
-							while ( sTemp[ind] != '\0' ) {
-								if( !_istdigit( sTemp[ind] ))
-									break;
-								ind++;
-							}
-							
-							if ( sTemp[ind] == '\0' && GetWord(mess.c_str(), index + 2).IsEmpty() )
-								bFlag = true;
-							index++;
-						}
-						if ( bFlag ) {
-							TCHAR* p1 = _tcsdup(GetWordAddress(mess.c_str(), 2));
-							TCHAR* p2 = ( TCHAR* )GetWordAddress(p1, index-4);
-							
+					
+					if ( bFlag ) {
+						TCHAR* p1 = _tcsdup( GetWordAddress(mess.c_str(), 2 ));
+						TCHAR* p2 = ( TCHAR* )GetWordAddress( p1, index-5 );
+						
+						if ( type == _T("send")) {
 							if ( p2 > p1 ) {
 								p2--;
 								while( p2 != p1 && *p2 == ' ' ) {
@@ -1024,248 +963,308 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 								}
 								sFile = p1;
 							}
-
-							free( p1 );
-
-							iPort = _ttoi(GetWord(mess.c_str(), index-2).c_str());
-							dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
-							sToken = GetWord(mess.c_str(), index);
-				}	}	} 
-				// end separating dcc commands
-
-				// 2. Check for malformed dcc commands or other errors
-				if ( bIsChat || type == _T("send")) {
-					TCHAR szTemp[256];
-					szTemp[0] = '\0';
-
-					unsigned long ulAdr = 0;
-					if ( m_manualHost )
-						ulAdr = ConvertIPToInteger( m_mySpecifiedHostIP );
-					else
-						ulAdr = ConvertIPToInteger( m_IPFromServer ? m_myHost : m_myLocalHost );
-
-					if ( bIsChat && !m_DCCChatEnabled)
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: Chat request from %s denied"),pmsg->prefix.sNick.c_str());
-
-					else if(type == _T("send") && !m_DCCFileEnabled)
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: File transfer request from %s denied"),pmsg->prefix.sNick.c_str());
-
-					else if(type == _T("send") && !iPort && ulAdr == 0)
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: Reverse file transfer request from %s denied [No local IP]"),pmsg->prefix.sNick.c_str());
-
-					if ( sFile.IsEmpty() || dwAdr == 0 || dwSize == 0 || iPort == 0 && sToken.IsEmpty())
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Malformed CTCP request from %s [%s]"),pmsg->prefix.sNick.c_str(), mess.c_str());
-				
-					if ( szTemp[0] ) {
-						DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
-						return true;
-					}
-
-					// remove path from the filename if the remote client (stupidly) sent it
-					CMString sFileCorrected = sFile;
-					int i = sFile.ReverseFind( '\\' );
-					if (i != -1 )
-						sFileCorrected = sFile.Mid(i+1, sFile.GetLength());
-					sFile = sFileCorrected;
-				}
-				else if ( type == _T("accept") || type == _T("resume")) {
-					TCHAR szTemp[256];
-					szTemp[0] = '\0';
-
-					if ( type == _T("resume") && !m_DCCFileEnabled)
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: File transfer resume request from %s denied"),pmsg->prefix.sNick.c_str());
-
-					if ( sToken.IsEmpty() && iPort == 0 || sFile.IsEmpty())
-						mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Malformed CTCP request from %s [%s]"),pmsg->prefix.sNick.c_str(), mess.c_str());
-				
-					if ( szTemp[0] ) {
-						DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
-						return true;
-					}
-
-					// remove path from the filename if the remote client (stupidly) sent it
-					CMString sFileCorrected = sFile;
-					int i = sFile.ReverseFind( '\\' );
-					if ( i != -1 )
-						sFileCorrected = sFile.Mid(i+1, sFile.GetLength());
-					sFile = sFileCorrected;
-				}
-
-				// 3. Take proper actions considering type of command
-
-				// incoming chat request
-				if ( bIsChat ) {
-					CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), 0, 0, false, false, true};
-					HANDLE hContact = CList_FindContact( &user );
-
-					// check if it should be ignored
-					if ( m_DCCChatIgnore == 1 || 
-						m_DCCChatIgnore == 2 && hContact && 
-						DBGetContactSettingByte(hContact,"CList", "NotOnList", 0) == 0 && 
-						DBGetContactSettingByte(hContact,"CList", "Hidden", 0) == 0)
-					{
-						CMString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
-						CList_AddDCCChat(pmsg->prefix.sNick, host, dwAdr, iPort); // add a CHAT event to the clist
-					}
-					else {
-						TCHAR szTemp[512];
-						mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC: Chat request from %s denied"),pmsg->prefix.sNick.c_str());
-						DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
-				}	}
-
-				// remote requested that the file should be resumed
-				if ( type == _T("resume")) {
-					CDccSession* dcc;
-					if ( sToken.IsEmpty())
-						dcc = FindDCCSendByPort( iPort );
-					else
-						dcc = FindPassiveDCCSend( _ttoi( sToken.c_str())); // reverse ft
-
-					if ( dcc ) {
-						InterlockedExchange(&dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME);
-						InterlockedExchange(&dcc->dwResumePos, dwSize); // dwSize is the resume position
-						PostIrcMessage( _T("/PRIVMSG %s \001DCC ACCEPT %s\001"), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 2));
-				}	}
-
-				// remote accepted your request for a file resume
-				if ( type == _T("accept")) {
-					CDccSession* dcc;
-					if ( sToken.IsEmpty())
-						dcc = FindDCCRecvByPortAndName(iPort, pmsg->prefix.sNick.c_str());
-					else
-						dcc = FindPassiveDCCRecv(pmsg->prefix.sNick, sToken); // reverse ft
-
-					if ( dcc ) {
-						InterlockedExchange( &dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME );
-						InterlockedExchange( &dcc->dwResumePos, dwSize );	// dwSize is the resume position					
-						SetEvent( dcc->hEvent );
-				}	}
-
-				if ( type == _T("send")) {
-					CMString sTokenBackup = sToken;
-					bool bTurbo = false; // TDCC indicator
-
-					if ( !sToken.IsEmpty() && sToken[sToken.GetLength()-1] == 'T' ) {
-						bTurbo = true;
-						sToken.Delete(sToken.GetLength()-1,1);
-					}
-
-					// if a token exists and the port is non-zero it is the remote
-					// computer telling us that is has accepted to act as server for
-					// a reverse filetransfer. The plugin should connect to that computer
-					// and start sedning the file (if the token is valid). Compare to DCC RECV
-					if ( !sToken.IsEmpty() && iPort ) {
-						CDccSession* dcc = FindPassiveDCCSend( _ttoi( sToken.c_str()));
-						if ( dcc ) {
-							dcc->SetupPassive( dwAdr, iPort );
-							dcc->Connect();
 						}
-					}
-					else {
-						struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
-						if ( CallService( MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_FILE )) 
-							if ( !CList_FindContact( &user ))
-								return true;
+						else sFile = _T("chat");
 
-						HANDLE hContact = CList_AddContact( &user, false, true );
-						if ( hContact ) {
-							char* szFileName = mir_t2a( sFile.c_str() );
+						free( p1 );
 
-							DCCINFO* di = new DCCINFO;
-							di->hContact = hContact;
-							di->sFile = sFile;
-							di->dwSize = dwSize;
-							di->sContactName = pmsg->prefix.sNick;
-							di->dwAdr = dwAdr;
-							di->iPort = iPort;
-							di->iType = DCC_SEND;
-							di->bSender = false;
-							di->bTurbo = bTurbo;
-							di->bSSL = false;
-							di->bReverse = (iPort == 0 && !sToken.IsEmpty() ) ? true : false;
-							if( di->bReverse )
-								di->sToken = sTokenBackup;
-
-							CCSDATA ccs = {0}; 
-							PROTORECVEVENT pre = {0};
-							ccs.szProtoService = PSR_FILE;
-							pre.flags = 0;
-							pre.timestamp = (DWORD)time(NULL);
-
-							char* szBlob = ( char* ) malloc(sizeof(DWORD) + strlen(szFileName) + 3);
-							*((PDWORD) szBlob) = (DWORD) di;
-							strcpy(szBlob + sizeof(DWORD), szFileName );
-							strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
-
-							setTString(hContact, "User", pmsg->prefix.sUser.c_str());
-							setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
-
-							pre.szMessage = szBlob;
-							ccs.hContact = hContact;
-							ccs.lParam = (LPARAM) & pre;
-							CallService( MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );
-
-							mir_free( szFileName );
-				}	}	}
-				// end type == "send"
+						dwAdr = _ttoi(GetWord(mess.c_str(), index - (bIsChat?2:3)).c_str());
+						iPort = _ttoi(GetWord(mess.c_str(), index - (bIsChat?1:2)).c_str());
+						dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
+						sToken = GetWord(mess.c_str(), index);
+				}	} 
 			}
-			else if ( pmsg->m_bIncoming ) {
-				TCHAR temp[300];
-				mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP %s requested by %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str());
-				DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
-		}	}
+			else if (type == _T("accept") || type == _T("resume")) {
+				// if the filename is surrounded by quotes, do this
+				if ( GetWord(mess.c_str(), 2)[0] == '\"' ) {
+					int end = 0;
+					int begin = mess.Find('\"', 0);
+					if ( begin >= 0 ) {
+						end = mess.Find('\"', begin + 1); 
+						if ( end >= 0 ) {
+							sFile = mess.Mid(begin+1, end);
 
-		// handle incoming ctcp in notices. This technique is used for replying to CTCP queries
-		else if(pmsg->sCommand == _T("NOTICE")) {
-			TCHAR szTemp[300]; 
-			szTemp[0] = '\0';
+							begin = mess.Find(' ', end);
+							if ( begin >= 0 ) {
+								CMString rest = mess.Mid(begin, mess.GetLength());
+								iPort = _ttoi(GetWord(rest.c_str(), 0).c_str());
+								dwSize = _ttoi(GetWord(rest.c_str(), 1).c_str());
+								sToken = GetWord(rest.c_str(), 2);
+					}	}	}
+				}
+				// ... or try another method of separating the dcc command
+				else if ( !GetWord(mess.c_str(), 4).IsEmpty() ) {
+					int index = 4;
+					bool bFlag = false;
 
-			//if we got incoming CTCP Version for contact in CList - then write its as MirVer for that contact!
-			if (pmsg->m_bIncoming && command == _T("version"))
-				{
-				struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
-				HANDLE hContact = CList_FindContact(&user);
-				if (hContact) 
-					setTString( hContact, "MirVer", DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE)); 
+					// look for the part of the ctcp command that contains adress, port and size
+					while ( !bFlag && !GetWord(mess.c_str(), index).IsEmpty() ) {
+						CMString sTemp = GetWord(mess.c_str(), index-1) + GetWord(mess.c_str(), index);
+						
+						// if all characters are number it indicates we have found the adress, port and size parameters
+						int ind = 0;
+
+						while ( sTemp[ind] != '\0' ) {
+							if( !_istdigit( sTemp[ind] ))
+								break;
+							ind++;
+						}
+						
+						if ( sTemp[ind] == '\0' && GetWord(mess.c_str(), index + 2).IsEmpty() )
+							bFlag = true;
+						index++;
+					}
+					if ( bFlag ) {
+						TCHAR* p1 = _tcsdup(GetWordAddress(mess.c_str(), 2));
+						TCHAR* p2 = ( TCHAR* )GetWordAddress(p1, index-4);
+						
+						if ( p2 > p1 ) {
+							p2--;
+							while( p2 != p1 && *p2 == ' ' ) {
+								*p2 = '\0';
+								p2--;
+							}
+							sFile = p1;
+						}
+
+						free( p1 );
+
+						iPort = _ttoi(GetWord(mess.c_str(), index-2).c_str());
+						dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
+						sToken = GetWord(mess.c_str(), index);
+			}	}	} 
+			// end separating dcc commands
+
+			// 2. Check for malformed dcc commands or other errors
+			if ( bIsChat || type == _T("send")) {
+				TCHAR szTemp[256];
+				szTemp[0] = '\0';
+
+				unsigned long ulAdr = 0;
+				if ( m_manualHost )
+					ulAdr = ConvertIPToInteger( m_mySpecifiedHostIP );
+				else
+					ulAdr = ConvertIPToInteger( m_IPFromServer ? m_myHost : m_myLocalHost );
+
+				if ( bIsChat && !m_DCCChatEnabled)
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: Chat request from %s denied"),pmsg->prefix.sNick.c_str());
+
+				else if(type == _T("send") && !m_DCCFileEnabled)
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: File transfer request from %s denied"),pmsg->prefix.sNick.c_str());
+
+				else if(type == _T("send") && !iPort && ulAdr == 0)
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: Reverse file transfer request from %s denied [No local IP]"),pmsg->prefix.sNick.c_str());
+
+				if ( sFile.IsEmpty() || dwAdr == 0 || dwSize == 0 || iPort == 0 && sToken.IsEmpty())
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Malformed CTCP request from %s [%s]"),pmsg->prefix.sNick.c_str(), mess.c_str());
+			
+				if ( szTemp[0] ) {
+					DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					return true;
 				}
 
-			// if the whois window is visible and the ctcp reply belongs to the user in it, then show the reply in the whois window
-			if ( m_whoisDlg && IsWindowVisible( m_whoisDlg->GetHwnd() )) {
-				m_whoisDlg->m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
-				if ( lstrcmpi(szTemp, pmsg->prefix.sNick.c_str()) == 0 ) {
-					if ( pmsg->m_bIncoming && (command == _T("version") || command == _T("userinfo") || command == _T("time"))) {
-						SetActiveWindow( m_whoisDlg->GetHwnd() );
-						m_whoisDlg->m_Reply.SetText( DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE));
-						return true;
-					}
-					if (pmsg->m_bIncoming && command == _T("ping")) {
-						SetActiveWindow( m_whoisDlg->GetHwnd() );
-						int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
-						TCHAR szTemp[30];
-						if ( s == 1 )
-							mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u second"), s );
-						else
-							mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u seconds"), s );
-
-						m_whoisDlg->m_Reply.SetText( DoColorCodes( szTemp, TRUE, FALSE ));
-						return true;
-			}	}	}
-
-			//... else show the reply in the current window
-			if ( pmsg->m_bIncoming && command == _T("ping")) {
-				int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
-				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP PING reply from %s: %u sec(s)"), pmsg->prefix.sNick.c_str(), s); 
-				DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
+				// remove path from the filename if the remote client (stupidly) sent it
+				CMString sFileCorrected = sFile;
+				int i = sFile.ReverseFind( '\\' );
+				if (i != -1 )
+					sFileCorrected = sFile.Mid(i+1, sFile.GetLength());
+				sFile = sFileCorrected;
 			}
-			else {
-				mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s reply from %s: %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 1));	
-				DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
-		}	}		
-		
-		return true;
-	}
-	
-	return false;
+			else if ( type == _T("accept") || type == _T("resume")) {
+				TCHAR szTemp[256];
+				szTemp[0] = '\0';
+
+				if ( type == _T("resume") && !m_DCCFileEnabled)
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC: File transfer resume request from %s denied"),pmsg->prefix.sNick.c_str());
+
+				if ( sToken.IsEmpty() && iPort == 0 || sFile.IsEmpty())
+					mir_sntprintf(szTemp, SIZEOF(szTemp), TranslateT("DCC ERROR: Malformed CTCP request from %s [%s]"),pmsg->prefix.sNick.c_str(), mess.c_str());
+			
+				if ( szTemp[0] ) {
+					DoEvent( GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+					return true;
+				}
+
+				// remove path from the filename if the remote client (stupidly) sent it
+				CMString sFileCorrected = sFile;
+				int i = sFile.ReverseFind( '\\' );
+				if ( i != -1 )
+					sFileCorrected = sFile.Mid(i+1, sFile.GetLength());
+				sFile = sFileCorrected;
+			}
+
+			// 3. Take proper actions considering type of command
+
+			// incoming chat request
+			if ( bIsChat ) {
+				CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), 0, 0, false, false, true};
+				HANDLE hContact = CList_FindContact( &user );
+
+				// check if it should be ignored
+				if ( m_DCCChatIgnore == 1 || 
+					m_DCCChatIgnore == 2 && hContact && 
+					DBGetContactSettingByte(hContact,"CList", "NotOnList", 0) == 0 && 
+					DBGetContactSettingByte(hContact,"CList", "Hidden", 0) == 0)
+				{
+					CMString host = pmsg->prefix.sUser + _T("@") + pmsg->prefix.sHost;
+					CList_AddDCCChat(pmsg->prefix.sNick, host, dwAdr, iPort); // add a CHAT event to the clist
+				}
+				else {
+					TCHAR szTemp[512];
+					mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("DCC: Chat request from %s denied"),pmsg->prefix.sNick.c_str());
+					DoEvent(GC_EVENT_INFORMATION, 0, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
+			}	}
+
+			// remote requested that the file should be resumed
+			if ( type == _T("resume")) {
+				CDccSession* dcc;
+				if ( sToken.IsEmpty())
+					dcc = FindDCCSendByPort( iPort );
+				else
+					dcc = FindPassiveDCCSend( _ttoi( sToken.c_str())); // reverse ft
+
+				if ( dcc ) {
+					InterlockedExchange(&dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME);
+					InterlockedExchange(&dcc->dwResumePos, dwSize); // dwSize is the resume position
+					PostIrcMessage( _T("/PRIVMSG %s \001DCC ACCEPT %s\001"), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 2));
+			}	}
+
+			// remote accepted your request for a file resume
+			if ( type == _T("accept")) {
+				CDccSession* dcc;
+				if ( sToken.IsEmpty())
+					dcc = FindDCCRecvByPortAndName(iPort, pmsg->prefix.sNick.c_str());
+				else
+					dcc = FindPassiveDCCRecv(pmsg->prefix.sNick, sToken); // reverse ft
+
+				if ( dcc ) {
+					InterlockedExchange( &dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME );
+					InterlockedExchange( &dcc->dwResumePos, dwSize );	// dwSize is the resume position					
+					SetEvent( dcc->hEvent );
+			}	}
+
+			if ( type == _T("send")) {
+				CMString sTokenBackup = sToken;
+				bool bTurbo = false; // TDCC indicator
+
+				if ( !sToken.IsEmpty() && sToken[sToken.GetLength()-1] == 'T' ) {
+					bTurbo = true;
+					sToken.Delete(sToken.GetLength()-1,1);
+				}
+
+				// if a token exists and the port is non-zero it is the remote
+				// computer telling us that is has accepted to act as server for
+				// a reverse filetransfer. The plugin should connect to that computer
+				// and start sedning the file (if the token is valid). Compare to DCC RECV
+				if ( !sToken.IsEmpty() && iPort ) {
+					CDccSession* dcc = FindPassiveDCCSend( _ttoi( sToken.c_str()));
+					if ( dcc ) {
+						dcc->SetupPassive( dwAdr, iPort );
+						dcc->Connect();
+					}
+				}
+				else {
+					struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+					if ( CallService( MS_IGNORE_ISIGNORED, NULL, IGNOREEVENT_FILE )) 
+						if ( !CList_FindContact( &user ))
+							return true;
+
+					HANDLE hContact = CList_AddContact( &user, false, true );
+					if ( hContact ) {
+						char* szFileName = mir_t2a( sFile.c_str() );
+
+						DCCINFO* di = new DCCINFO;
+						di->hContact = hContact;
+						di->sFile = sFile;
+						di->dwSize = dwSize;
+						di->sContactName = pmsg->prefix.sNick;
+						di->dwAdr = dwAdr;
+						di->iPort = iPort;
+						di->iType = DCC_SEND;
+						di->bSender = false;
+						di->bTurbo = bTurbo;
+						di->bSSL = false;
+						di->bReverse = (iPort == 0 && !sToken.IsEmpty() ) ? true : false;
+						if( di->bReverse )
+							di->sToken = sTokenBackup;
+
+						CCSDATA ccs = {0}; 
+						PROTORECVEVENT pre = {0};
+						ccs.szProtoService = PSR_FILE;
+						pre.flags = 0;
+						pre.timestamp = (DWORD)time(NULL);
+
+						char* szBlob = ( char* )alloca(sizeof(DWORD) + strlen(szFileName) + 3);
+						*((PDWORD) szBlob) = (DWORD) di;
+						strcpy(szBlob + sizeof(DWORD), szFileName );
+						strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
+
+						setTString(hContact, "User", pmsg->prefix.sUser.c_str());
+						setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
+
+						pre.szMessage = szBlob;
+						ccs.hContact = hContact;
+						ccs.lParam = (LPARAM) & pre;
+						CallService( MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );
+
+						mir_free( szFileName );
+			}	}	}
+			// end type == "send"
+		}
+		else if ( pmsg->m_bIncoming ) {
+			TCHAR temp[300];
+			mir_sntprintf(temp, SIZEOF(temp), TranslateT("CTCP %s requested by %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str());
+			DoEvent(GC_EVENT_INFORMATION, SERVERWINDOW, NULL, temp, NULL, NULL, NULL, true, false); 
+	}	}
+
+	// handle incoming ctcp in notices. This technique is used for replying to CTCP queries
+	else if(pmsg->sCommand == _T("NOTICE")) {
+		TCHAR szTemp[300]; 
+		szTemp[0] = '\0';
+
+		//if we got incoming CTCP Version for contact in CList - then write its as MirVer for that contact!
+		if (pmsg->m_bIncoming && command == _T("version"))
+			{
+			struct CONTACT user = { (TCHAR*)pmsg->prefix.sNick.c_str(), (TCHAR*)pmsg->prefix.sUser.c_str(), (TCHAR*)pmsg->prefix.sHost.c_str(), false, false, false};
+			HANDLE hContact = CList_FindContact(&user);
+			if (hContact) 
+				setTString( hContact, "MirVer", DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE)); 
+			}
+
+		// if the whois window is visible and the ctcp reply belongs to the user in it, then show the reply in the whois window
+		if ( m_whoisDlg && IsWindowVisible( m_whoisDlg->GetHwnd() )) {
+			m_whoisDlg->m_InfoNick.GetText( szTemp, SIZEOF(szTemp));
+			if ( lstrcmpi(szTemp, pmsg->prefix.sNick.c_str()) == 0 ) {
+				if ( pmsg->m_bIncoming && (command == _T("version") || command == _T("userinfo") || command == _T("time"))) {
+					SetActiveWindow( m_whoisDlg->GetHwnd() );
+					m_whoisDlg->m_Reply.SetText( DoColorCodes(GetWordAddress(mess.c_str(), 1), TRUE, FALSE));
+					return true;
+				}
+				if (pmsg->m_bIncoming && command == _T("ping")) {
+					SetActiveWindow( m_whoisDlg->GetHwnd() );
+					int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
+					TCHAR szTemp[30];
+					if ( s == 1 )
+						mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u second"), s );
+					else
+						mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u seconds"), s );
+
+					m_whoisDlg->m_Reply.SetText( DoColorCodes( szTemp, TRUE, FALSE ));
+					return true;
+		}	}	}
+
+		//... else show the reply in the current window
+		if ( pmsg->m_bIncoming && command == _T("ping")) {
+			int s = (int)time(0) - (int)_ttol(GetWordAddress(mess.c_str(), 1));
+			mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP PING reply from %s: %u sec(s)"), pmsg->prefix.sNick.c_str(), s); 
+			DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
+		}
+		else {
+			mir_sntprintf( szTemp, SIZEOF(szTemp), TranslateT("CTCP %s reply from %s: %s"), ocommand.c_str(), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 1));	
+			DoEvent( GC_EVENT_INFORMATION, SERVERWINDOW, NULL, szTemp, NULL, NULL, NULL, true, false ); 
+	}	}		
+
+	return true;
 }
 
 bool CIrcProto::OnIrc_NAMES( const CIrcMessage* pmsg )
