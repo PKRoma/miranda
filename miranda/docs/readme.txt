@@ -20,6 +20,16 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.13
+Enhancements:
+ - Installer remembers install options for upgrades
+
+Bugfixes:
+ - Update Help/Support link
+ - Jabber: Don't remove self contact from contact list if still in roster
+ - Jabber: Fixed timezone conversion issue
+
+
 * New in 0.7.12
 Bugfixes:
  - MSN: File transfer was broken
