@@ -1958,7 +1958,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	YList *l;
 	struct yahoo_data *yd = yid->yd;
 	char *name = NULL;
-	int state = 0;
+	int state = YAHOO_STATUS_AVAILABLE;
 	int away = 0;
 	int idle = 0;
 	int mobile = 0;
@@ -1972,6 +1972,9 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 		return;
 	}*/
 
+	if (pkt->service == YAHOO_SERVICE_LOGOFF) 
+		state = YAHOO_STATUS_OFFLINE;
+	
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
 
@@ -1994,7 +1997,8 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			if (name != NULL) {
 				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile);
 				msg = NULL;
-				protocol = state = away = idle = mobile = 0;
+				protocol = away = idle = mobile = 0;
+				state = (pkt->service == YAHOO_SERVICE_LOGOFF) ? YAHOO_STATUS_OFFLINE : YAHOO_STATUS_AVAILABLE;
 			}
 			name = pair->value;
 			
