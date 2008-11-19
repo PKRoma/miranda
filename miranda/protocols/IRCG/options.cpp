@@ -400,8 +400,8 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 		if(IsDlgButtonChecked( m_hwnd, IDC_AUTO))
 			pData->m_iSSL = 1;
 
-		pData->m_portEnd = m_port.GetInt();
-		pData->m_portStart = m_port2.GetInt();
+		pData->m_portStart = m_port.GetInt();
+		pData->m_portEnd = m_port2.GetInt();
 		pData->m_address = m_address.GetTextA();
 		pData->m_group = m_groupCombo.GetTextA();
 		pData->m_name = m_server.GetTextA();
