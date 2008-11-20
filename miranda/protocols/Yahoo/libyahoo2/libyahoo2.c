@@ -2912,10 +2912,13 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 	
 	if (token == NULL ) {
 
+		c = yahoo_urlencode(yd->password);
 		
 		_snprintf(url, sizeof(url), "/config/pwtoken_get?src=ymsgr&ts=%u&login=%s&passwd=%s&chal=%s",
-					time(NULL),sn, yd->password, seed);
+					time(NULL),sn, c, seed);
 		response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, "login.yahoo.com", url);
+		
+		FREE(c);
 		
 		if (response == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
