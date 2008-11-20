@@ -156,7 +156,7 @@ static int sttServerEnum( const char* szSetting, LPARAM lParam )
 		lstrcpynA( buf, p1, p2-p1+1 );
 		pData->m_portEnd = atoi( buf );
 	}
-   
+
    p1 = strchr(p2, ':')+1;
 	p2 = strchr(p1, '\0');
 	pData->m_group = ( char* )mir_alloc( p2-p1+1 );
@@ -311,7 +311,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 {
 	CConnectPrefsDlg* m_owner;
 	int m_action;
-	
+
 	CCtrlButton m_OK;
 	CCtrlEdit m_server, m_address, m_port, m_port2;
 	CCtrlCombo m_groupCombo;
@@ -371,7 +371,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 
 		SetFocus( m_groupCombo.GetHwnd());
 	}
-	
+
 	virtual void OnClose()
 	{
 		m_owner->m_serverCombo.Enable();
@@ -422,7 +422,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Connect preferences' dialog
 
-static TDbSetting ConnectSettings[] = 
+static TDbSetting ConnectSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_serverName ), "ServerName", DBVT_ASCIIZ, SIZEOF(pZero->m_serverName) },
 	{	FIELD_OFFSET(CIrcProto, m_portStart ), "PortStart", DBVT_ASCIIZ, SIZEOF(pZero->m_portStart) },
@@ -523,7 +523,7 @@ void CConnectPrefsDlg::OnInitDialog()
 		m_serverCombo.AddStringA( si.m_name, LPARAM( &si ));
 	}
 
-	m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
+	m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );
 	m_server.SetTextA( m_proto->m_serverName );
 	m_port.SetTextA( m_proto->m_portStart );
 	m_port2.SetTextA( m_proto->m_portEnd );
@@ -569,7 +569,7 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_identSystem.Enable( m_proto->m_ident );
 	m_identPort.Enable( m_proto->m_ident );
 	m_identTimer.Enable( m_proto->m_ident );
-	m_identTimer.SetState( m_proto->IdentTimer );				
+	m_identTimer.SetState( m_proto->IdentTimer );
 	m_disableError.SetState( m_proto->m_disableErrorPopups );
 	m_forceVisible.SetState( m_proto->m_forceVisible );
 	m_rejoinChannels.SetState( m_proto->m_rejoinChannels );
@@ -578,11 +578,11 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_retryWait.Enable( m_proto->m_retry );
 	m_retryCount.Enable( m_proto->m_retry );
 	m_enableServer.SetState( !m_proto->m_disableDefaultServer );
-	m_keepAlive.SetState( m_proto->m_sendKeepAlive );				
-	m_useServer.SetState( m_proto->m_useServer );				
+	m_keepAlive.SetState( m_proto->m_sendKeepAlive );
+	m_useServer.SetState( m_proto->m_useServer );
 	m_showServer.SetState( !m_proto->m_hideServerWindow );
 	m_showServer.Enable( m_proto->m_useServer );
-	m_autoJoin.SetState( m_proto->m_joinOnInvite );				
+	m_autoJoin.SetState( m_proto->m_joinOnInvite );
 
 	m_serverCombo.Enable( !m_proto->m_disableDefaultServer );
 	m_add.Enable( !m_proto->m_disableDefaultServer );
@@ -634,7 +634,7 @@ void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 	m_add.Disable();
 	m_edit.Disable();
 	m_del.Disable();
-	
+
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	TCHAR temp[200];
 	mir_sntprintf( temp, SIZEOF(temp), TranslateT("Do you want to delete\r\n%s"), (TCHAR*)_A2T(pData->m_name));
@@ -706,13 +706,13 @@ void CConnectPrefsDlg::OnOnlineNotif( CCtrlData* )
 }
 
 void CConnectPrefsDlg::OnChannelAway( CCtrlData* )
-{	
+{
 	m_spin2.Enable( m_onlineNotif.GetState() && m_channelAway.GetState());
 	m_limit.Enable( m_onlineNotif.GetState() && m_channelAway.GetState());
 }
 
 void CConnectPrefsDlg::OnRetry( CCtrlData* )
-{	
+{
 	m_retryWait.Enable( m_retry.GetState());
 	m_retryCount.Enable( m_retry.GetState());
 }
@@ -790,9 +790,9 @@ void CConnectPrefsDlg::OnApply()
 	SERVER_INFO* pData = ( SERVER_INFO* )m_serverCombo.GetItemData( i );
 	if ( pData && (int)pData != CB_ERR ) {
 		if ( m_enableServer.GetState())
-			lstrcpyA(m_proto->m_network, pData->m_group); 
+			lstrcpyA(m_proto->m_network, pData->m_group);
 		else
-			lstrcpyA(m_proto->m_network, ""); 
+			lstrcpyA(m_proto->m_network, "");
 		m_proto->m_iSSL = pData->m_iSSL;
 	}
 
@@ -827,7 +827,7 @@ void CConnectPrefsDlg::OnApply()
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'CTCP preferences' dialog
 
-static TDbSetting CtcpSettings[] = 
+static TDbSetting CtcpSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_userInfo ), "UserInfo", DBVT_TCHAR, SIZEOF(pZero->m_userInfo) },
 	{	FIELD_OFFSET(CIrcProto, m_DCCPacketSize ), "DccPacketSize", DBVT_WORD, 0, 4096 },
@@ -888,7 +888,7 @@ void CCtcpPrefsDlg::OnInitDialog()
 	if ( m_proto->m_DCCChatAccept == 2 )
 		m_radio2.SetState( true );
 	if ( m_proto->m_DCCChatAccept == 3 )
-		m_radio2.SetState( true );
+		m_radio3.SetState( true );
 
 	m_fromServer.SetState( m_proto->m_IPFromServer );
 	m_enableIP.SetState( m_proto->m_manualHost );
@@ -969,7 +969,7 @@ void CCtcpPrefsDlg::OnApply()
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Advanced preferences' dialog
 
-static TDbSetting OtherSettings[] = 
+static TDbSetting OtherSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_alias ), "Alias", DBVT_TCHAR, -1 },
 	{	FIELD_OFFSET(CIrcProto, m_quitMessage ), "QuitMessage", DBVT_TCHAR, SIZEOF(pZero->m_userInfo) },
@@ -992,9 +992,9 @@ static char* sttPerformEvents[] = {
 	"ALL NETWORKS"
 };
 
-static LRESULT CALLBACK EditSubclassProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
-{ 
-	switch(msg) { 
+static LRESULT CALLBACK EditSubclassProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) {
 	case WM_CHAR :
 		if (wParam == 21 || wParam == 11 || wParam == 2) {
 			char w[2];
@@ -1010,10 +1010,10 @@ static LRESULT CALLBACK EditSubclassProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			return 0;
 		}
 		break;
-	} 
+	}
 
-	return CallWindowProc(OldProc, hwndDlg, msg, wParam, lParam); 
-} 
+	return CallWindowProc(OldProc, hwndDlg, msg, wParam, lParam);
+}
 
 COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_PREFS_OTHER, NULL ),
@@ -1030,7 +1030,7 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 	m_delete( this, IDC_DELETE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Click to delete the commands for this event")),
 	m_performlistModified( false )
 {
-	m_url.OnClick = Callback( this, &COtherPrefsDlg::OnUrl ); 
+	m_url.OnClick = Callback( this, &COtherPrefsDlg::OnUrl );
 	m_performCombo.OnChange = Callback( this, &COtherPrefsDlg::OnPerformCombo );
 	m_codepage.OnChange = Callback( this, &COtherPrefsDlg::OnCodePage );
 	m_pertormEdit.OnChange = Callback( this, &COtherPrefsDlg::OnPerformEdit );
@@ -1041,9 +1041,9 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 
 void COtherPrefsDlg::OnInitDialog()
 {
-	OldProc = (WNDPROC)SetWindowLong( m_alias.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc); 
-	SetWindowLong( m_quitMessage.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc); 
-	SetWindowLong( m_pertormEdit.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc); 
+	OldProc = (WNDPROC)SetWindowLong( m_alias.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
+	SetWindowLong( m_quitMessage.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
+	SetWindowLong( m_pertormEdit.GetHwnd(), GWL_WNDPROC,(LONG)EditSubclassProc);
 
 	m_alias.SetText( m_proto->m_alias );
 	m_quitMessage.SetText( m_proto->m_quitMessage );
@@ -1197,7 +1197,7 @@ void COtherPrefsDlg::OnApply()
 	m_proto->m_scriptingEnabled = m_scripting.GetState();
 	if ( m_add.Enabled())
 		OnAdd( NULL );
-   
+
 	if ( m_performlistModified ) {
 		int count = m_performCombo.GetCount();
 		for ( int i = 0; i < count; i++ ) {
@@ -1207,7 +1207,7 @@ void COtherPrefsDlg::OnApply()
 
 			if ( !pPerf->mText.IsEmpty())
 				m_proto->setTString( pPerf->mSetting.c_str(), pPerf->mText.c_str());
-			else 
+			else
 				DBDeleteContactSetting( NULL, m_proto->m_szModuleName, pPerf->mSetting.c_str());
 	}	}
 	m_proto->WriteSettings( OtherSettings, SIZEOF( OtherSettings ));
@@ -1290,7 +1290,7 @@ void CAddIgnoreDlg::OnClose()
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Ignore' preferences dialog
 
-static TDbSetting IgnoreSettings[] = 
+static TDbSetting IgnoreSettings[] =
 {
 	{	FIELD_OFFSET(CIrcProto, m_DCCFileEnabled ), "EnableCtcpFile", DBVT_BYTE, 0, 1 },
 	{	FIELD_OFFSET(CIrcProto, m_DCCChatEnabled ), "EnableCtcpChat", DBVT_BYTE, 0, 1 },
@@ -1320,15 +1320,15 @@ static int CALLBACK IgnoreListSort(LPARAM lParam1, LPARAM lParam2, LPARAM lParam
 	lvm.iItem = lParam2;
 	lvm.pszText = temp2;
 	hwndDlg->m_list.GetItem( &lvm );
-	
+
 	if ( temp1[0] && temp2[0] )
 		return lstrcmpi( temp1, temp2 );
 
 	return ( temp1[0] == 0 ) ? 1 : -1;
 }
 
-static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
-{ 
+static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
 	switch (msg) {
 	case WM_KEYUP :
 		if ( ListView_GetSelectionMark(GetDlgItem(GetParent(hwnd), IDC_LIST)) != -1) {
@@ -1346,9 +1346,9 @@ static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		if (wParam == VK_SPACE)
 			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(IDC_EDIT, BN_CLICKED), 0);
 		break;
-	} 
+	}
 
-	return CallWindowProc(OldListViewProc, hwnd, msg, wParam, lParam); 
+	return CallWindowProc(OldListViewProc, hwnd, msg, wParam, lParam);
 }
 
 // Callback for the 'Add ignore' dialog
@@ -1397,7 +1397,7 @@ void CIrcProto::InitIgnore( void )
 		DBVARIANT dbv;
 		if ( getTString( settingName, &dbv ))
 			break;
-		
+
 		CMString mask = GetWord( dbv.ptszVal, 0 );
 		CMString flags = GetWord( dbv.ptszVal, 1 );
 		CMString network = GetWord( dbv.ptszVal, 2 );
@@ -1626,7 +1626,7 @@ void CIgnorePrefsDlg::RebuildList()
 			continue;
 
 		LVITEM lvItem;
-		lvItem.iItem = m_list.GetItemCount(); 
+		lvItem.iItem = m_list.GetItemCount();
 		lvItem.mask = LVIF_TEXT|LVIF_PARAM ;
 		lvItem.iSubItem = 0;
 		lvItem.lParam = lvItem.iItem;
@@ -1756,7 +1756,7 @@ void CIrcProto::InitPrefs(void)
 	colors[11] = RGB(0,255,255);
 	colors[12] = RGB(0,0,252);
 	colors[13] = RGB(255,0,255);
-	colors[14] = RGB(127,127,127); 
+	colors[14] = RGB(127,127,127);
 	colors[15] = RGB(210,210,210);
 }
 
@@ -1790,7 +1790,7 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 			SERVER_INFO& si = m_proto->m_servers[i];
 			m_serverCombo.AddStringA( si.m_name, LPARAM( &si ));
 		}
-		m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );				
+		m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );
 		m_server.SetTextA( m_proto->m_serverName );
 		m_port.SetTextA( m_proto->m_portStart );
 		m_port2.SetTextA( m_proto->m_portEnd );
