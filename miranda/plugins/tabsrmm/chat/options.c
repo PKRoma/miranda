@@ -1442,7 +1442,7 @@ int OptionsInit(void)
 	SkinAddNewSoundEx("ChatJoin", "Chat", Translate("User has joined"));
 	SkinAddNewSoundEx("ChatPart", "Chat", Translate("User has left"));
 	SkinAddNewSoundEx("ChatKick", "Chat", Translate("User has kicked some other user"));
-	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User´s status was changed"));
+	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User's status was changed"));
 	SkinAddNewSoundEx("ChatNick", "Chat", Translate("User has changed name"));
 	SkinAddNewSoundEx("ChatNotice", "Chat", Translate("User has sent a notice"));
 	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
