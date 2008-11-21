@@ -547,11 +547,20 @@ int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
 	HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		m_ThreadInfo->send(
-			XmlNode( _T("message")) << XATTR( _T("type"), _T("headline")) << XATTR( _T("to"), dbv.ptszVal )
-				<< XCHILDNS( _T("attention"), _T(JABBER_FEAT_ATTENTION)));
-
+		TCHAR tszJid[ 512 ];
+		TCHAR *szResource = ListGetBestClientResourceNamePtr( dbv.ptszVal );
+		if ( szResource )
+			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), dbv.ptszVal, szResource );
+		else
+			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s"), dbv.ptszVal );
 		JFreeVariant( &dbv );
+
+		JabberCapsBits jcb = GetResourceCapabilites( tszJid, FALSE );
+
+		m_ThreadInfo->send(
+			XmlNode( _T("message")) << XATTR( _T("type"), _T("headline")) << XATTR( _T("to"), tszJid )
+				<< XCHILDNS( _T("attention"),
+				jcb & JABBER_CAPS_ATTENTION ? _T(JABBER_FEAT_ATTENTION) : _T(JABBER_FEAT_ATTENTION_0 )) );
 	}
 	return 0;
 }
