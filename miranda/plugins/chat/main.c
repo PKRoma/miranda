@@ -51,11 +51,11 @@ static void InitREOleCallback(void);
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Chat",
-	PLUGIN_MAKE_VERSION(0,7,5,0),
+	PLUGIN_MAKE_VERSION(0,7,6,0),
 	"Provides chat rooms for protocols supporting it",
 	"Miranda team",
 	"project-info@miranda-im.org",
-	"© 2003-2006 Miranda team",
+	"© 2003-2008 Miranda IM",
 	"http://miranda-im.org/",
 	UNICODE_AWARE,
 	0,
