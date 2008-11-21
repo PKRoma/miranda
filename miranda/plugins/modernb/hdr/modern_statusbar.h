@@ -38,6 +38,8 @@ typedef struct tagSTATUSBARDATA
   BOOL perProtoConfig;
   BYTE SBarRightClk;
 
+  HANDLE hLockIconHandle;
+
 } STATUSBARDATA;
 
 #endif // modern_statusbar_h__

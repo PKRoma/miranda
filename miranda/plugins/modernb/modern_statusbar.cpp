@@ -119,6 +119,7 @@ int LoadStatusBarData()
         g_StatusBarData.backgroundBmpUse=ModernGetSettingWord(NULL,"StatusBar","BkBmpUse",CLCDEFAULT_BKBMPUSE);
     }
     SendMessage(pcli->hwndContactList,WM_SIZE,0,0);
+	
     return 1;
 }
 
@@ -595,6 +596,18 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(ProtosData[i].xStatusMode&4))?(192<<24):0));
 							}
 
+							if ( ( hxIcon || hIcon) && TRUE /* TODO g_StatusBarData.bDrawLockOverlay  options to draw locked proto*/  )
+							{
+								if ( ModernGetSettingByte( NULL,ProtosData[i].ProtoName,"LockMainStatus",0 ) )
+								{
+									if ( g_StatusBarData.hLockIconHandle ) 
+									{
+										HICON hLockOverlay=(HICON)CallService( MS_SKIN2_GETICONBYHANDLE, 0 , (LPARAM) g_StatusBarData.hLockIconHandle );
+										mod_DrawIconEx_helper(hDC, x, iconY, hLockOverlay, GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+									}
+									
+								}
+							}
 							if (hxIcon) DestroyIcon_protect(hxIcon);
 							if (NeedDestroy) DestroyIcon_protect(hIcon);
 							x+=GetSystemMetrics(SM_CXSMICON)+1;
@@ -680,6 +693,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     {
     case WM_CREATE:
 		g_StatusBarData.hTheme=xpt_AddThemeHandle(hwnd,L"STATUS");
+		g_StatusBarData.hLockIconHandle = RegisterIcolibIconHandle("STATUS_LOCK", "Status Icons",Translate("Status is Locked overlay"), _T("clisticons.dll"), 13, g_hInst, IDI_STATUS_LOCKED );			
 		break;
     case WM_DESTROY:
 		xpt_FreeThemeForWindow(hwnd);

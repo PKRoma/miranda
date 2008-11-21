@@ -147,6 +147,7 @@
 #define IDI_SETVIEW                     504
 #define IDI_RESETVIEW                   505
 #define IDD_OPT_TOOLBAR                 507
+#define IDI_STATUS_LOCKED               508
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001
@@ -1030,7 +1031,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        508
+#define _APS_NEXT_RESOURCE_VALUE        509
 #define _APS_NEXT_COMMAND_VALUE         40022
 #define _APS_NEXT_CONTROL_VALUE         2024
 #define _APS_NEXT_SYMED_VALUE           101
