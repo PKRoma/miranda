@@ -406,7 +406,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	struct MsgEditSubclassData *dat;
 	struct MessageWindowData *pdat;
 	CommonWindowData *windowData;
-	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 	dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
@@ -604,32 +603,11 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 }
 
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
-	DBVARIANT dbv;
-
 	if (g_dat->avatarServiceInstalled) {
 		if (dat->ace != NULL) {
 			dat->avatarPic = (dat->ace->dwFlags & AVS_HIDEONCLIST) ? NULL : dat->ace->hbmPic;
 		} else {
 			dat->avatarPic = NULL;
-		}
-	} else {
-		if (dat->avatarPic)  {
-			DeleteObject(dat->avatarPic);
-			dat->avatarPic=0;
-		}
-		if (!DBGetContactSettingString(dat->windowData.hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
-			HANDLE hFile;
-			char tmpPath[MAX_PATH];
-			/* relative to absolute here */
-			strcpy(tmpPath, dbv.pszVal);
-			if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
-				CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)dbv.pszVal, (LPARAM)tmpPath);
-			}
-			DBFreeVariant(&dbv);
-			if((hFile = CreateFileA(tmpPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
-				dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)tmpPath);
-				CloseHandle(hFile);
-			}
 		}
 	}
 	SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
@@ -1978,21 +1956,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					} else {
 						FillRect(hdcMem, &rect, GetSysColorBrush(COLOR_3DFACE));
 					}
-					if (!g_dat->avatarServiceInstalled) {
-						BITMAP bminfo;
-						HPEN hPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
-						HDC hdcTemp = CreateCompatibleDC(dis->hDC);
-						HBITMAP hbmTemp = (HBITMAP)SelectObject(hdcTemp, dat->avatarPic);
-						hPen = (HPEN)SelectObject(hdcMem, hPen);
-						Rectangle(hdcMem, 0, 0, dat->avatarWidth, dat->avatarHeight);
-						GetObject(dat->avatarPic, sizeof(bminfo), &bminfo);
-						SetStretchBltMode(hdcMem, HALFTONE);
-						StretchBlt(hdcMem, 1, 1, dat->avatarWidth-2, dat->avatarHeight-2, hdcTemp, 0, 0, bminfo.bmWidth, bminfo.bmHeight, SRCCOPY);
-						hbmTemp = (HBITMAP) SelectObject(hdcTemp, hbmTemp);
-						DeleteDC(hdcTemp);
-						hPen = (HPEN)SelectObject(hdcMem, hPen);
-						DeleteObject(hPen);
-					} else {
+					if (g_dat->avatarServiceInstalled) {
 						AVATARDRAWREQUEST adr;
 						ZeroMemory(&adr, sizeof(adr));
 						adr.cbSize = sizeof (AVATARDRAWREQUEST);
@@ -2392,8 +2356,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		DBWriteContactSettingWord(dat->windowData.hContact, SRMMMOD, "CodePage", (WORD) dat->windowData.codePage);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterPos", dat->splitterPos);
 		DBWriteContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", dat->toolbarSize.cy);
-		if (dat->avatarPic && !g_dat->avatarServiceInstalled)
-			DeleteObject(dat->avatarPic);
 		if (dat->windowData.hContact && (g_dat->flags & SMF_DELTEMP)) {
 			if (DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {
 				CallService(MS_DB_CONTACT_DELETE, (WPARAM)dat->windowData.hContact, 0);

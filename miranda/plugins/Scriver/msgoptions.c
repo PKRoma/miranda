@@ -1207,8 +1207,8 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
-	odp.ptszTitle = LPGENT("Messaging");
-	odp.ptszGroup = NULL;//LPGENT("Message Sessions"); //Events
+//	odp.ptszTitle = LPGENT("Messaging");
+	odp.ptszTitle = LPGENT("Message Sessions");
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
 	odp.nIDBottomSimpleControl = 0;
 	for (i = 0; i < SIZEOF(tabPages); i++) {
@@ -1218,7 +1218,8 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	}
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-	odp.ptszGroup = LPGENT("Messaging");
+//	odp.ptszGroup = LPGENT("Messaging");
+	odp.ptszGroup = LPGENT("Message Sessions");
 	odp.ptszTitle = TranslateT("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
 	odp.ptszTab = NULL;
