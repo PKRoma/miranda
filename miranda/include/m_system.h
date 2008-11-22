@@ -470,7 +470,7 @@ static __inline int mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, vo
 	params.arg        = arg;
 	params.iStackSize = 0;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
+	return CallService( MS_SYSTEM_FORK_OWNED_THREAD, (WPARAM)owner, (LPARAM)&params );
 }
 
 
