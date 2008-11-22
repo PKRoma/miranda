@@ -461,8 +461,6 @@ passes the owner info and extended parameters info and returns the thread id
 
 */
 
-#define MS_SYSTEM_FORK_OWNED_THREAD    "Miranda/Thread/ForkOwned"
-
 static __inline int mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, void* arg, unsigned* pThreadID )
 {
 	FORK_THREADEX_PARAMS params;
@@ -470,7 +468,7 @@ static __inline int mir_forkthreadowner( pThreadFuncOwner aFunc, void* owner, vo
 	params.arg        = arg;
 	params.iStackSize = 0;
 	params.threadID   = pThreadID;
-	return CallService( MS_SYSTEM_FORK_OWNED_THREAD, (WPARAM)owner, (LPARAM)&params );
+	return CallService( MS_SYSTEM_FORK_THREAD_EX, (WPARAM)owner, (LPARAM)&params );
 }
 
 
