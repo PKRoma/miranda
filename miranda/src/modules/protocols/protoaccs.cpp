@@ -206,8 +206,8 @@ int LoadAccountsModule( void )
 			continue;
 
 		if ( !ActivateAccount( pa )) { // remove damaged account from list
+			UnloadAccount( pa, TRUE );
 			accounts.remove( i-- );
-			UnloadAccount( pa, FALSE );
 	}	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
@@ -333,17 +333,33 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 		pa->bAccMgrUIChanged = FALSE;
 	}
 
-	KillObjectServices( pa->ppro );
-	KillObjectEventHooks( pa->ppro );
-	KillObjectThreads( pa->ppro );
+    pa->ppro->SetStatus(ID_STATUS_OFFLINE);
 
 	if ( bIsDynamic ) {
 		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
 		pa->ppro->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
 	}
 
-	UninitAccount( pa );
-	pa->ppro = NULL;
+    if (bIsDynamic)
+    {
+        for (unsigned tm = GetTickCount(); tm+5000 > GetTickCount(); )
+        {
+	        MSG msg;
+	        while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
+		        if ( IsDialogMessage(msg.hwnd, &msg) ) continue;
+		        TranslateMessage(&msg);
+		        DispatchMessage(&msg);
+	        }
+        }
+    }
+	KillObjectThreads( pa->ppro );
+
+    UninitAccount( pa );
+
+	KillObjectServices( pa->ppro );
+	KillObjectEventHooks( pa->ppro );
+
+    pa->ppro = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -378,6 +394,7 @@ void UnloadAccountsModule()
 	for( i=accounts.getCount()-1; i >= 0; i-- ) {
 		PROTOACCOUNT* pa = accounts[ i ];
 		UnloadAccount( pa, FALSE );
+        accounts.remove(i);
 	}
 
 	accounts.destroy();

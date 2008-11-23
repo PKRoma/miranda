@@ -792,10 +792,10 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						ListBox_SetItemData( hList, idx, 0 );
-						accounts.remove( pa );
-						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
 						EraseAccount( pa );
 						UnloadAccount( pa, TRUE );
+						accounts.remove( pa );
+						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
 						WriteDbAccounts();
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 			}	}	}

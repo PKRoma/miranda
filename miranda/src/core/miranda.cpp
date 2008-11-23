@@ -344,6 +344,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,THREAD_SET_CONTEXT,FALSE,0);
 		p->hThread = hThread;
 		p->dwThreadId = GetCurrentThreadId();
+        p->pObject = (void*)wParam;
 		p->hOwner = GetInstByAddress(( void* )lParam );
 		p->addr = lParam;
 		threads.insert( p );
