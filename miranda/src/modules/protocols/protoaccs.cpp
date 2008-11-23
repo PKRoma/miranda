@@ -206,7 +206,7 @@ int LoadAccountsModule( void )
 			continue;
 
 		if ( !ActivateAccount( pa )) { // remove damaged account from list
-			UnloadAccount( pa, TRUE );
+			UnloadAccount( pa, FALSE );
 			accounts.remove( i-- );
 	}	}
 
@@ -338,10 +338,7 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	if ( bIsDynamic ) {
 		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
 		pa->ppro->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
-	}
 
-    if (bIsDynamic)
-    {
         for (unsigned tm = GetTickCount(); tm+5000 > GetTickCount(); )
         {
 	        MSG msg;
@@ -351,8 +348,8 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 		        DispatchMessage(&msg);
 	        }
         }
+	    KillObjectThreads( pa->ppro );
     }
-	KillObjectThreads( pa->ppro );
 
     UninitAccount( pa );
 
