@@ -187,6 +187,7 @@ const capstr capStrIcq    = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xb
 const shortcapstr capAimIcon   = {0x13, 0x46}; // CAP_AIM_BUDDYICON
 const shortcapstr capAimDirect = {0x13, 0x45}; // CAP_AIM_DIRECTIM
 const shortcapstr capAimFileShare = {0x13, 0x48}; // CAP_AIM_FILE_SHARE
+const shortcapstr capAimSmartCaps = {0x01, 0xFF};
 const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
 const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
@@ -206,6 +207,7 @@ char* cliLicqVer   = "Licq ";
 char* cliCentericq = "Centericq";
 char* cliLibicqUTF = "libicq2000 (Unicode)";
 char* cliTrillian  = "Trillian";
+char* cliTrillian4 = "Trillian Astra";
 char* cliQip       = "QIP %s";
 char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
@@ -411,13 +413,15 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 				if (CheckContactCapabilities(hContact, CAPF_RTF))
 				{
 					if (CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
-						szClient = "Trillian Astra";
+						szClient = cliTrillian4;
 					else
 					{ // workaroud for a bug in Trillian - make it receive msgs, other features will not work!
 						ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
 						szClient = "Trillian v3";
 					}
 				}
+        else if (CheckContactCapabilities(hContact, CAPF_HTML) || CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
+          szClient = cliTrillian4;
 				else
 					szClient = cliTrillian;
 			}
@@ -866,7 +870,9 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 					}
 					else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
 					{
-						if (CheckContactCapabilities(hContact, CAPF_UTF) && !CheckContactCapabilities(hContact, CAPF_RTF))
+            if (CheckContactCapabilities(hContact, CAPF_HTML) && MatchCap(caps, wLen, &capAimChat, 0x10) && MatchShortCap(caps, wLen, &capAimSmartCaps))
+              szClient = cliTrillian4;
+						else if (CheckContactCapabilities(hContact, CAPF_UTF) && !CheckContactCapabilities(hContact, CAPF_RTF))
 							szClient = "pyICQ";
 					}
 				}
