@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "../plugins/zlib/zlib.h"
 #include "netlib.h"
 
 #define HTTPRECVHEADERSTIMEOUT   60000  //in ms
@@ -535,7 +536,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 
 	{
 		NETLIBHTTPREQUEST nlhrSend;
-		int i,doneUserAgentHeader=0;
+		int i,doneUserAgentHeader=0,doneAcceptEncoding=0;
 		char szUserAgent[64];
 
 		nlhrSend=*nlhr;
@@ -544,13 +545,17 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		for(i=0;i<nlhr->headersCount;i++) {
 			if(!lstrcmpiA(nlhr->headers[i].szName,"User-Agent"))
 				doneUserAgentHeader=1;
+			else if(!lstrcmpiA(nlhr->headers[i].szName,"User-Agent"))
+				doneAcceptEncoding=1;
 		}
+		if(!doneUserAgentHeader||!doneAcceptEncoding) {
+			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*nlhrSend.headersCount);
+			CopyMemory(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
+        }
 		if(!doneUserAgentHeader) {
 			char *pspace,szMirandaVer[32];
 
-			nlhrSend.headersCount++;
-			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*nlhrSend.headersCount);
-			CopyMemory(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
+			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_realloc(nlhrSend.headers, sizeof(NETLIBHTTPHEADER)*++nlhrSend.headersCount);
 			nlhrSend.headers[nlhrSend.headersCount-1].szName="User-Agent";
 			nlhrSend.headers[nlhrSend.headersCount-1].szValue=szUserAgent;
 			CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szMirandaVer),(LPARAM)szMirandaVer);
@@ -561,12 +566,17 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			}
 			else mir_snprintf(szUserAgent,SIZEOF(szUserAgent),"Miranda/%s",szMirandaVer);
 		}
+        if (!doneAcceptEncoding) {
+			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_realloc(nlhrSend.headers, sizeof(NETLIBHTTPHEADER)*++nlhrSend.headersCount);
+			nlhrSend.headers[nlhrSend.headersCount-1].szName="Accept-Encoding";
+			nlhrSend.headers[nlhrSend.headersCount-1].szValue="gzip, deflate";
+        }
 		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
-			if(!doneUserAgentHeader) mir_free(nlhrSend.headers);
+			if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 			NetlibCloseHandle((WPARAM)hConnection,0);
 			return (int)(HANDLE)NULL;
 		}
-		if(!doneUserAgentHeader) mir_free(nlhrSend.headers);
+		if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 	}
 
 	dflags = (nlhr->flags&NLHRF_DUMPASTEXT?MSG_DUMPASTEXT:0) |
@@ -602,6 +612,40 @@ void NetlibHttpSetLastErrorUsingHttpResult(int result)
 	}
 }
 
+char* gzip_decode(char *gzip_data, int *len_ptr, int window)
+{
+    size_t gzip_len = *len_ptr * 5;
+    char* output_data = NULL;
+
+    int gzip_err;
+    z_stream zstr;
+
+    do
+    {
+        output_data = (char*)mir_realloc(output_data, gzip_len+1);
+
+        zstr.next_in = (Bytef*)gzip_data;
+        zstr.avail_in = *len_ptr;
+        zstr.zalloc = Z_NULL;
+        zstr.zfree = Z_NULL;
+        zstr.opaque = Z_NULL;
+        inflateInit2_(&zstr, window, ZLIB_VERSION, sizeof(z_stream));
+
+        zstr.next_out = (Bytef*)output_data;
+        zstr.avail_out = gzip_len;
+
+        gzip_err = inflate(&zstr, Z_FINISH);
+
+        inflateEnd(&zstr);
+        gzip_len *= 2;
+    }
+    while (gzip_err == Z_BUF_ERROR);
+    
+    *len_ptr = gzip_err == Z_STREAM_END ? zstr.total_out : 0;
+
+    return output_data;
+}
+
 int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
 {
 	char data[32], *peol1;
@@ -633,6 +677,7 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 {
 	int dataLen = -1, i, chunkhdr;
 	int chunked = FALSE;
+    int cenc = 0;
 
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
@@ -650,7 +695,10 @@ next:
 		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Length")) 
 			dataLen = atoi(nlhrReply->headers[i].szValue);
 
-		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
+		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Encoding")) 
+			cenc = i+1;
+
+        if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
 			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
 		{
 			chunked = TRUE;
@@ -736,6 +784,41 @@ next:
 		nlhrReply->headers[chunkhdr].szValue = ( char* )mir_realloc(nlhrReply->headers[chunkhdr].szValue, 16);
 		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
+
+    if (cenc--)
+    {
+        int bufsz = nlhrReply->dataLength;
+        char* szData = NULL;
+
+        if (strstr(nlhrReply->headers[cenc].szValue, "gzip"))
+        {
+            szData = gzip_decode(nlhrReply->pData, &bufsz, 0x10 | MAX_WBITS);
+        }
+        else if (strstr(nlhrReply->headers[cenc].szValue, "deflate"))
+        {
+            szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
+            if (bufsz == 0)
+            {
+                mir_free(szData);
+                bufsz = nlhrReply->dataLength;
+                szData = gzip_decode(nlhrReply->pData, &bufsz, MAX_WBITS);
+            }
+        }
+        else
+            bufsz = 0;
+
+        if (bufsz)
+        {
+	        NetlibDumpData( (NetlibConnection*)hConnection, ( PBYTE )szData, bufsz, 0, dflags );
+            mir_free(nlhrReply->pData);
+            nlhrReply->pData = szData;
+            nlhrReply->dataLength = bufsz;
+
+            memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
+        }
+        else
+            mir_free(szData);
+    }
 
 	return nlhrReply;
 }
