@@ -1462,7 +1462,7 @@ char *ext_yahoo_send_https_request(struct yahoo_data *yd, const char *host, cons
 	wsprintf(z, "https://%s%s", host, path);
 	nlhr.cbSize		= sizeof(nlhr);
 	nlhr.requestType= REQUEST_GET;
-	nlhr.flags		= NLHRF_HTTP11/*|NLHRF_GENERATEHOST|NLHRF_SMARTAUTHHEADER*/;
+	nlhr.flags		= NLHRF_HTTP11 | NLHRF_NODUMP; /* Use HTTP/1.1 and don't dump the requests to the log */
 	nlhr.szUrl		= z;
 
 	nlhr.headersCount = 3;
