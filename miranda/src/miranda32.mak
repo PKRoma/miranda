@@ -27,19 +27,26 @@ NULL=
 NULL=nul
 !ENDIF
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 OUTDIR=.\Release
 INTDIR=.\Release
 
+!IF "$(RECURSE)" == "0"
+
 ALL : "..\bin\release\miranda32.exe"
 
+!ELSE
 
+ALL : "zlib - Win32 Release" "..\bin\release\miranda32.exe"
+
+!ENDIF
+
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 ReleaseCLEAN"
+!ELSE
 CLEAN :
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\addcontact.obj"
 	-@erase "$(INTDIR)\auth.obj"
@@ -158,8 +165,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
@@ -203,6 +244,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\filter.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -275,7 +317,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\filter.obj"
+	"..\plugins\zlib\Release\zlib.lib"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -290,10 +332,21 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
+!IF "$(RECURSE)" == "0"
+
 ALL : "..\bin\debug\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
+!ELSE
 
+ALL : "zlib - Win32 Debug" "..\bin\debug\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
+
+!ENDIF
+
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 DebugCLEAN"
+!ELSE
 CLEAN :
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -521,8 +574,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
@@ -562,6 +649,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibssl.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
+	"$(INTDIR)\filter.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protoaccs.sbr" \
@@ -632,8 +720,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\filter.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -678,6 +765,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\filter.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -750,7 +838,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\filter.obj"
+	"..\plugins\zlib\Debug\zlib.lib"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -762,10 +850,21 @@ LINK32_OBJS= \
 OUTDIR=.\Release_Unicode
 INTDIR=.\Release_Unicode
 
+!IF "$(RECURSE)" == "0"
+
 ALL : "..\bin\Release Unicode\miranda32.exe"
 
+!ELSE
 
+ALL : "zlib - Win32 Release Unicode" "..\bin\Release Unicode\miranda32.exe"
+
+!ENDIF
+
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 Release UnicodeCLEAN"
+!ELSE
 CLEAN :
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\addcontact.obj"
 	-@erase "$(INTDIR)\auth.obj"
@@ -884,8 +983,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
@@ -929,6 +1062,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\filter.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -1001,7 +1135,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\filter.obj"
+	"..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1016,10 +1150,21 @@ INTDIR=.\Debug_Unicode
 OutDir=.\Debug_Unicode
 # End Custom Macros
 
+!IF "$(RECURSE)" == "0"
+
 ALL : "..\bin\Debug Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
+!ELSE
 
+ALL : "zlib - Win32 Debug Unicode" "..\bin\Debug Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
+
+!ENDIF
+
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 Debug UnicodeCLEAN"
+!ELSE
 CLEAN :
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -1247,8 +1392,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
@@ -1288,6 +1467,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibssl.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
+	"$(INTDIR)\filter.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protoaccs.sbr" \
@@ -1358,8 +1538,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\filter.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1404,6 +1583,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\filter.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -1476,7 +1656,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\filter.obj"
+	"..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1484,36 +1664,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -5027,6 +5177,56 @@ SOURCE=.\vc6.rc
 "$(INTDIR)\vc6.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+"zlib - Win32 Release" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
+   cd "..\..\src"
+
+"zlib - Win32 ReleaseCLEAN" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
+   cd "..\..\src"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+"zlib - Win32 Debug" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
+   cd "..\..\src"
+
+"zlib - Win32 DebugCLEAN" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
+   cd "..\..\src"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+"zlib - Win32 Release Unicode" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode"
+   cd "..\..\src"
+
+"zlib - Win32 Release UnicodeCLEAN" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN
+   cd "..\..\src"
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+"zlib - Win32 Debug Unicode" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode"
+   cd "..\..\src"
+
+"zlib - Win32 Debug UnicodeCLEAN" :
+   cd "\Miranda\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN
+   cd "..\..\src"
+
+!ENDIF
 
 
 !ENDIF
