@@ -407,7 +407,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 	if ( !m_bJabberOnline )
 		return 1;
 
-	memset( &dbei, sizeof( dbei ), 0 );
+	memset( &dbei, 0, sizeof( dbei ) );
 	dbei.cbSize = sizeof( dbei );
 	if (( dbei.cbBlob=JCallService( MS_DB_EVENT_GETBLOBSIZE, ( WPARAM )hContact, 0 )) == ( DWORD )( -1 ))
 		return 1;
@@ -460,7 +460,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 		return 1;
 
 	Log( "Entering AuthDeny" );
-	memset( &dbei, sizeof( dbei ), 0 );
+	memset( &dbei, 0, sizeof( dbei ) );
 	dbei.cbSize = sizeof( dbei );
 	if (( dbei.cbBlob=JCallService( MS_DB_EVENT_GETBLOBSIZE, ( WPARAM )hContact, 0 )) == ( DWORD )( -1 ))
 		return 1;
