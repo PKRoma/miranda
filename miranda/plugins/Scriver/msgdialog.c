@@ -1006,7 +1006,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				mii.fType = MFT_STRING;
 				mii.fState = (g_dat->buttonVisibility & (1<< i)) ? MFS_CHECKED : MFS_UNCHECKED;
 				mii.wID = i + 1;
-				mii.dwItemData = g_dat->hButtonIconList;
+				mii.dwItemData = (ULONG_PTR)g_dat->hButtonIconList;
 				mii.hbmpItem = HBMMENU_CALLBACK;
 				mii.dwTypeData = TranslateTS((buttonNames[i]));
 				InsertMenuItem(hToolbarMenu, i, TRUE, &mii);
