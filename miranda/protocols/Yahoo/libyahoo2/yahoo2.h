@@ -209,6 +209,7 @@ void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token);
 void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token);
 char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
+void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
 #include "yahoo_httplib.h"
 
 #ifdef __cplusplus

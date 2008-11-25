@@ -234,6 +234,7 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_WEBLOGIN, "Web Login"},
 	{YAHOO_SERVICE_SMS_MSG, "SMS Message"},
 	{YAHOO_SERVICE_Y7_DISCONNECTED, "Y7 Disconnected"},
+	{YAHOO_SERVICE_Y9_MESSAGE_ACK, "Y9 Message Ack"},
 	{0, NULL}
 };
 
@@ -1756,6 +1757,8 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 		int  utf8;
 		int  buddy_icon;
 		int  protocol;
+		char *seqn;
+		int  sendn;
 	} *message = y_new0(struct m, 1);
 
 	message->buddy_icon = -1; // no info
@@ -1811,10 +1814,20 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 			case 241:
 				message->protocol = strtol(pair->value, NULL, 10);
 				break;
+			
+			case 429: /* message sequence # */
+				message->seqn = pair->value;
+				break;
 				
-			default:
+			case 450: /* attempt # */
+				message->sendn = atoi(pair->value);
+				break;
+				
+				
+			/*default:
 				LOG(("yahoo_process_message: status: %d, key: %d, value: %s",
 					pkt->status, pair->key, pair->value));
+			*/
 		}
 	}
 
@@ -1823,9 +1836,13 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 	for (l = messages; l; l=l->next) {
 		message = l->data;
 		if (pkt->service == YAHOO_SERVICE_SYSMESSAGE) {
-			YAHOO_CALLBACK(ext_yahoo_system_message)(yd->client_id, message->to, message->from, message->msg);
+			YAHOO_CALLBACK(ext_yahoo_system_message)(yd->client_id, message->to, 
+													message->from, message->msg);
 		} else if (pkt->status <= 2 || pkt->status == 5) {
-			YAHOO_CALLBACK(ext_yahoo_got_im)(yd->client_id, message->to, message->from, message->protocol, message->msg, message->tm, pkt->status, message->utf8, message->buddy_icon);
+			YAHOO_CALLBACK(ext_yahoo_got_im)(yd->client_id, message->to, message->from, 
+											message->protocol, message->msg, message->tm, 
+											pkt->status, message->utf8, message->buddy_icon, 
+											message->seqn, message->sendn);
 		} else if (pkt->status == 0xffffffff) {
 			YAHOO_CALLBACK(ext_yahoo_error)(yd->client_id, message->msg, 0, E_SYSTEM);
 		}
@@ -6798,3 +6815,34 @@ void yahoo_send_idle_packet(int id)
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 }
+
+void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn) 
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+	
+	if(!yid) {
+		DEBUG_MSG(("NO Yahoo Input Data???"));
+		return;
+	}
+
+	yd = yid->yd;
+
+	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
+	
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y9_MESSAGE_ACK, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	
+	yahoo_packet_hash(pkt, 302, "430");
+	yahoo_packet_hash(pkt, 430, seqn);
+	yahoo_packet_hash(pkt, 303, "430");
+	yahoo_packet_hash_int(pkt, 450, sendn);
+	//yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
+
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+}
+
+

@@ -282,8 +282,10 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_picture_status)(int id, const char *me, c
  * 				5
  * 	utf8 - whether the message is encoded as utf8 or not
  *  buddy_icon - whether the buddy has buddy_icon set or not.
+ * seqn - message sequence #
+ * sendn - this is the try #. (starts from 0 and tries to re-send the message)
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_im)(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char* seqn, int sendn);
 
 
 /*

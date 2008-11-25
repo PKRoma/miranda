@@ -34,7 +34,7 @@ static void yahoo_send_msg(const char *id, int protocol, const char *msg, int ut
 	yahoo_send_im(ylad->id, NULL, id, protocol, msg, utf8, buddy_icon);
 }
 
-void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon)
+void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn, int sendn)
 {
     char 		*umsg;
 	const char	*c = msg;
@@ -147,6 +147,10 @@ void ext_yahoo_got_im(int id, const char *me, const char *who, int protocol, con
     CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, PROTOTYPE_CONTACTTYPING_OFF);
 	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 
+	// ack the message we just got
+	if (seqn)
+		yahoo_send_im_ack(id, who, seqn, sendn);
+	
 	if (buddy_icon < 0) return;
 	
 	//?? Don't generate floods!!

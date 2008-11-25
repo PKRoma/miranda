@@ -508,7 +508,7 @@ void ext_yahoo_got_audible(int id, const char *me, const char *who, const char *
 	}
 	
 	mir_snprintf(z, sizeof(z), "[miranda-audible] %s", msg ?msg:"");
-	ext_yahoo_got_im(id, (char*)me, (char*)who, 0, z, 0, 0, 1, -1);
+	ext_yahoo_got_im(id, (char*)me, (char*)who, 0, z, 0, 0, 1, -1, NULL, 0);
 }
 
 void ext_yahoo_got_calendar(int id, const char *url, int type, const char *msg, int svc)
