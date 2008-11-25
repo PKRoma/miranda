@@ -460,6 +460,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\chat.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\client.cpp"
 				>
 			</File>
@@ -679,6 +683,10 @@
 			</File>
 			<File
 				RelativePath=".\away.h"
+				>
+			</File>
+			<File
+				RelativePath=".\chat.h"
 				>
 			</File>
 			<File
