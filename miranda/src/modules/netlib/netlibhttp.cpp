@@ -571,7 +571,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			nlhrSend.headers[nlhrSend.headersCount].szValue="gzip, deflate";
 			++nlhrSend.headersCount;
         }
-		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)=SOCKET_ERROR) {
+		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 			if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 			NetlibCloseHandle((WPARAM)hConnection,0);
 			return (int)(HANDLE)NULL;
