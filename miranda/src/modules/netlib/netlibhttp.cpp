@@ -549,15 +549,15 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 				doneAcceptEncoding=1;
 		}
 		if(!doneUserAgentHeader||!doneAcceptEncoding) {
-			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*nlhrSend.headersCount);
-			CopyMemory(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
+			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*(nlhrSend.headersCount+2));
+			memcpy(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
         }
 		if(!doneUserAgentHeader) {
 			char *pspace,szMirandaVer[32];
 
-			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_realloc(nlhrSend.headers, sizeof(NETLIBHTTPHEADER)*++nlhrSend.headersCount);
-			nlhrSend.headers[nlhrSend.headersCount-1].szName="User-Agent";
-			nlhrSend.headers[nlhrSend.headersCount-1].szValue=szUserAgent;
+			nlhrSend.headers[nlhrSend.headersCount].szName="User-Agent";
+			nlhrSend.headers[nlhrSend.headersCount].szValue=szUserAgent;
+			++nlhrSend.headersCount;
 			CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szMirandaVer),(LPARAM)szMirandaVer);
 			pspace=strchr(szMirandaVer,' ');
 			if(pspace) {
@@ -567,11 +567,11 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			else mir_snprintf(szUserAgent,SIZEOF(szUserAgent),"Miranda/%s",szMirandaVer);
 		}
         if (!doneAcceptEncoding) {
-			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_realloc(nlhrSend.headers, sizeof(NETLIBHTTPHEADER)*++nlhrSend.headersCount);
-			nlhrSend.headers[nlhrSend.headersCount-1].szName="Accept-Encoding";
-			nlhrSend.headers[nlhrSend.headersCount-1].szValue="gzip, deflate";
+			nlhrSend.headers[nlhrSend.headersCount].szName="Accept-Encoding";
+			nlhrSend.headers[nlhrSend.headersCount].szValue="gzip, deflate";
+			++nlhrSend.headersCount;
         }
-		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
+		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)=SOCKET_ERROR) {
 			if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 			NetlibCloseHandle((WPARAM)hConnection,0);
 			return (int)(HANDLE)NULL;
