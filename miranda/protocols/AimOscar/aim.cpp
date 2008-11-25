@@ -1,4 +1,5 @@
 #include "aim.h"
+#include "version.h"
 
 PLUGINLINK *pluginLink;
 MD5_INTERFACE md5i;
@@ -9,11 +10,6 @@ LIST_INTERFACE li;
 HINSTANCE hInstance;
 
 static HANDLE hMooduleLoaded;
-
-
-#define AIM_OSCAR_VERSION "\0\x08\1\x0"
-const char AIM_CLIENT_ID_STRING[]="Miranda Oscar Plugin, version 0.8.1.0";
-char AIM_CAP_MIRANDA[]="MirandaA\0\0\0\0\0\0\0";
 
 /////////////////////////////////////////////////////////////////////////////
 // Protocol instances
@@ -39,7 +35,7 @@ DWORD WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved
 PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFOEX),
 	"AIM OSCAR Plugin",
-	PLUGIN_MAKE_VERSION(0,8,1,0),
+	__VERSION_DWORD,
 	"Provides basic support for AOL® OSCAR Instant Messenger protocol. [Built: "__DATE__" "__TIME__"]",
 	"Boris Krasnovskiy, Aaron Myles Landwehr",
 	"borkra@miranda-im.org",
@@ -52,6 +48,11 @@ PLUGININFOEX pluginInfo={
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 0 )) {
+		MessageBox( NULL, _T("The AIM protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.0 or later."), _T("Miranda"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		return NULL;
+	}
+
 	unsigned long mv=_htonl(mirandaVersion);
 	memcpy(&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
 	memcpy(&AIM_CAP_MIRANDA[12],AIM_OSCAR_VERSION,sizeof(DWORD));

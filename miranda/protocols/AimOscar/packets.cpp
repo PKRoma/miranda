@@ -1,15 +1,14 @@
 #include "aim.h"
 #include "packets.h"
 
-int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out)
+int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out, unsigned short id)
 {
 	struct snac_header snac;
 	unsigned short slen=0;
 	snac.service=_htons(service);
 	snac.subgroup=_htons(subgroup);
 	snac.flags=0;
-    snac.request_id[0]=0;
-//    CallService(MS_UTILS_GETRANDOM, 2, (LPARAM)&snac.request_id[0]);
+    snac.request_id[0]=_htons(id);
 	snac.request_id[1]=_htons(subgroup);
 	slen=sizeof(snac);
 	char* buf=new char[slen];
@@ -33,28 +32,19 @@ int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const cha
 int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,char *buf, unsigned short &seqno)
 {
 	EnterCriticalSection(&SendingMutex);
-	int slen = 0;
-	int rlen;
-	char* obuf=new char[FLAP_SIZE+length];
+    const int slen = FLAP_SIZE + length;
+	char* obuf = (char*)alloca(slen);
 	struct flap_header flap;
 	flap.ast = '*';
 	flap.type = type;
 	flap.seqno = _htons(seqno++ & 0xffff);
 	flap.len = _htons(length);
 	memcpy(obuf, &flap, sizeof(flap));
-	slen += sizeof(flap);
-	memcpy(&obuf[slen], buf, length);
-	slen += length;
-	rlen= Netlib_Send(hServerConn, obuf, slen, 0);
-	delete[] obuf;
-	if (rlen == SOCKET_ERROR)
-	{
-		seqno--;
-		LeaveCriticalSection(&SendingMutex);
-		return -1;
-	}
+	memcpy(&obuf[FLAP_SIZE], buf, length);
+	int rlen= Netlib_Send(hServerConn, obuf, slen, 0);
+	if (rlen == SOCKET_ERROR) seqno--;
 	LeaveCriticalSection(&SendingMutex);
-	return 0;
+    return rlen >= 0 ? 0 : -1;
 }
 
 void CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out)
@@ -71,6 +61,14 @@ void CAimProto::aim_writechar(char val, unsigned short &offset,char* out)
 void CAimProto::aim_writeshort(unsigned short val, unsigned short &offset,char* out)
 {
     out[offset++] = (char)(val >> 8);
+    out[offset++] = (char)(val & 0xFF);
+}
+
+void CAimProto::aim_writelong(unsigned long val, unsigned short &offset,char* out)
+{
+    out[offset++] = (char)(val >> 24);
+    out[offset++] = (char)((val >> 16) & 0xFF);
+    out[offset++] = (char)((val >> 8) & 0xFF);
     out[offset++] = (char)(val & 0xFF);
 }
 

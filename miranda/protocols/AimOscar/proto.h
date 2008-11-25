@@ -62,7 +62,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	virtual	int    __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int    __cdecl SetStatus( int iNewStatus );
-	void                   SetStatusWorker( int iNewStatus );
 
 	virtual	int    __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
@@ -93,6 +92,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
     int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
+    int  __cdecl LeaveChat(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
@@ -105,6 +105,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnSettingChanged(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
+    int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory
@@ -112,10 +113,9 @@ struct CAimProto : public PROTO_INTERFACE
 	char* ID_GROUP_KEY;
 	char* FILE_TRANSFER_KEY;
 	
-	CRITICAL_SECTION statusMutex;
 	CRITICAL_SECTION connectionMutex;
 	CRITICAL_SECTION SendingMutex;
-	CRITICAL_SECTION avatarMutex;
+	CRITICAL_SECTION connMutex;
 
 	char* COOKIE;
 	int COOKIE_LENGTH;
@@ -125,8 +125,8 @@ struct CAimProto : public PROTO_INTERFACE
 	int AVATAR_COOKIE_LENGTH;
 	char* CHATNAV_COOKIE;
 	int CHATNAV_COOKIE_LENGTH;
-	char* CHAT_COOKIE;
-	int CHAT_COOKIE_LENGTH;
+    char* ADMIN_COOKIE;
+    int ADMIN_COOKIE_LENGTH;
 
 	char *username;
 	char *password;
@@ -161,6 +161,7 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAddToServerListContextMenuItem;
 	HANDLE hReadProfileMenuItem;
     HANDLE hBlockContextMenuItem;
+    HANDLE hLeaveChatMenuItem;
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -169,7 +170,6 @@ struct CAimProto : public PROTO_INTERFACE
 	//avatar connection stuff
 	unsigned short avatar_seqno;
     unsigned short avatar_id;
-	bool AvatarLimitThread;
 	HANDLE hAvatarConn;
 	HANDLE hAvatarEvent;
     HANDLE hAvatarsFolder;
@@ -177,13 +177,15 @@ struct CAimProto : public PROTO_INTERFACE
 	//chatnav connection stuff
 	unsigned short chatnav_seqno;
 	HANDLE hChatNavConn;
-	
-	//chat connection stuff
-	unsigned short chat_seqno;
-	HANDLE hChatConn;
-	HANDLE hChatEvent;
+	HANDLE hChatNavEvent;
 	char MAX_ROOMS;
-	char OPEN_ROOMS;
+
+    OBJLIST<chat_list_item> chat_rooms;
+
+    //admin connection stuff
+    unsigned short admin_seqno;
+    HANDLE hAdminConn;
+    HANDLE hAdminEvent;
 
     // privacy settings
     unsigned long pd_flags;
@@ -205,12 +207,11 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE confirmed_icon;
 	HANDLE unconfirmed_icon;
 
-	//////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
 
 	void   __cdecl avatar_request_thread( void* param );
     void   __cdecl avatar_upload_thread( void* param );
-	void   __cdecl avatar_request_limit_thread( void* );
 
 	void   avatar_request_handler(HANDLE hContact, char* hash, int hash_size);
 	void   avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len);
@@ -230,7 +231,19 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// chat.cpp
 
-    void   __cdecl chatnav_request_thread( void* param );
+	void   __cdecl chatnav_request_thread( void* param );
+
+    void chat_register(void);
+    void chat_start(const char* id);
+    void chat_event(const char* id, const char* sn, int evt, const char* msg = NULL);
+    void chat_leave(const char* id);
+
+    chat_list_item* find_chat_by_cid(unsigned short cid);
+    chat_list_item* find_chat_by_id(char* id);
+    chat_list_item* find_chat_by_conn(HANDLE conn);
+    void remove_chat_by_ptr(chat_list_item* item);
+    void shutdown_chat_conn(void);
+    void close_chat_conn(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// client.cpp
@@ -281,19 +294,30 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);
 	int	   aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
 	int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room);
+    int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
+    int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
 	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg);
+	int	   aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
+    int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
+    int    aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn);
+    int    aim_admin_change_password(HANDLE hServerConn,unsigned short &seqno, const char* cur_pw, const char* new_pw);
+    int    aim_admin_change_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
+    int    aim_admin_request_info(HANDLE hServerConn,unsigned short &seqno, const unsigned short &type);
+    int    aim_admin_account_confirm(HANDLE hServerConn,unsigned short &seqno);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// connection.cpp
 
-	void   __cdecl aim_connection_authorization( void* );
+	void    aim_connection_authorization( void );
+
 	void   __cdecl aim_protocol_negotiation( void* );
 	void   __cdecl aim_mail_negotiation( void* );
 	void   __cdecl aim_avatar_negotiation( void* );
 	void   __cdecl aim_chatnav_negotiation( void* );
 	void   __cdecl aim_chat_negotiation( void* );
+    void   __cdecl aim_admin_negotiation( void* );
 
-	int    LOG(const char *fmt, ...);
+    int    LOG(const char *fmt, ...);
 	HANDLE aim_connect(const char* server, unsigned short port);
 	HANDLE aim_peer_connect(const char* ip, unsigned short port);
 
@@ -307,8 +331,9 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   login_error(unsigned short error);
 	void   get_error(unsigned short error);
+    void   admin_error(unsigned short error);
 
-	//////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 	// file.cpp
 
 	void   sending_file(HANDLE hContact, HANDLE hNewConnection);
@@ -317,7 +342,7 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// packets.cpp
 
-	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out);
+	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out, unsigned short id=0);
 	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
@@ -325,13 +350,14 @@ struct CAimProto : public PROTO_INTERFACE
 	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
     void   aim_writechar(char val, unsigned short &offset,char* out);
     void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
+    void   aim_writelong(unsigned long val, unsigned short &offset,char* out);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proto.cpp
 
 	void   __cdecl basic_search_ack_success( void* p );
 	void   __cdecl email_search_ack_success( void* p );
-	void   __cdecl setstatusthread( void* arg );
+	void   __cdecl SetStatusWorker( void* arg );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// proxy.cpp
@@ -350,6 +376,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_avatar_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_chatnav_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_chat_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
+    void   snac_admin_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);// family 0x0001
 	void   snac_service_redirect(SNAC &snac);// family 0x0001
 	void   snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0004
 	void   snac_user_online(SNAC &snac);
@@ -366,10 +393,12 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_retrieve_avatar(SNAC &snac);//family 0x0010
 	void   snac_email_search_results(SNAC &snac);//family 0x000A
 	void   snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x000D
-	void   snac_chat_joined_left_users(SNAC &snac);//family 0x000E
-	void   snac_chat_received_message(SNAC &snac);//family 0x000E
+	void   snac_chat_joined_left_users(SNAC &snac,chat_list_item* item);//family 0x000E
+	void   snac_chat_received_message(SNAC &snac,chat_list_item* item);//family 0x000E
+    void   snac_admin_account_infomod(SNAC &snac);//family 0x0007
+    void   snac_admin_account_confirm(SNAC &snac);//family 0x0007
 
-	//////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
 
 	void   InitIcons(void);
@@ -381,7 +410,6 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// thread.cpp
 
-	void   __cdecl aim_keepalive_thread( void* );
 	void   __cdecl accept_file_thread( void* );
 	void   __cdecl redirected_file_thread( void* );
 	void   __cdecl proxy_file_thread( void* );
@@ -393,6 +421,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   broadcast_status(int status);
 	void   start_connection(int initial_status);
+    bool   wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service);
 	HANDLE find_contact(char * sn);
 	HANDLE add_contact(char* buddy);
 	void   add_contacts_to_groups();

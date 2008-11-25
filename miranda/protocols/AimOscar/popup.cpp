@@ -1,5 +1,4 @@
 #include "aim.h"
-#include "popup.h"
 
 struct CAimPopupData
 {

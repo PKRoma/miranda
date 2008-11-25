@@ -1131,3 +1131,53 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	}
 	return FALSE;
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Join chat dialog
+
+BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		ppro = (CAimProto*)lParam;
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
+		break;
+
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+
+	case WM_DESTROY:
+		ppro->ReleaseIconEx("aol");
+		break;
+
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+			case IDOK:
+                char room[128];
+			    GetDlgItemTextA(hwndDlg, IDC_ROOM, room, sizeof(room));
+			    if (ppro->state==1 && strlen(room) > 0)
+                {
+                    chatnav_param* par = new chatnav_param(strldup(room));
+                    ppro->ForkThread(&CAimProto::chatnav_request_thread, par);
+                }
+				EndDialog(hwndDlg, IDOK);
+				break;
+
+			case IDCANCEL:
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			}
+		}
+		break;
+	}
+
+	return FALSE;
+}

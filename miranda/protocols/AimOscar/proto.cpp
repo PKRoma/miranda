@@ -3,7 +3,7 @@
 #include "m_genmenu.h"
 
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
-    : allow_list(2), block_list(2)
+    : allow_list(5), block_list(5), chat_rooms(5)
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
@@ -13,7 +13,8 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
 	//create some events
-	hAvatarEvent = CreateEvent(NULL,false,false,NULL);
+	hAvatarEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
+	hChatNavEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	char* p = NEWSTR_ALLOCA( m_szModuleName );
 	_strupr( p );
@@ -21,10 +22,9 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
 
-	InitializeCriticalSection( &statusMutex );
 	InitializeCriticalSection( &connectionMutex );
 	InitializeCriticalSection( &SendingMutex );
-	InitializeCriticalSection( &avatarMutex );
+	InitializeCriticalSection( &connMutex );
 
 	CreateProtoService(PS_CREATEACCMGRUI, &CAimProto::SvcCreateAccMgrUI );
 	CreateProtoService(PS_GETNAME, &CAimProto::GetName );
@@ -41,8 +41,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);
 	HookProtoEvent(ME_DB_CONTACT_DELETED, &CAimProto::OnContactDeleted);
-
-	ForkThread( &CAimProto::aim_keepalive_thread, 0 );
 }
 
 CAimProto::~CAimProto()
@@ -52,20 +50,31 @@ CAimProto::~CAimProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hHTMLAwayContextMenuItem, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hAddToServerListContextMenuItem, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hReadProfileMenuItem, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hBlockContextMenuItem, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hLeaveChatMenuItem, 0 );
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);
 	if(hServerConn)
 		Netlib_CloseHandle(hServerConn);
-	Netlib_CloseHandle(hNetlib);
+	if(hAvatarConn)
+		Netlib_CloseHandle(hAvatarConn);
+	if(hChatNavConn)
+		Netlib_CloseHandle(hChatNavConn);
+	if(hAdminConn)
+		Netlib_CloseHandle(hAdminConn);
+
+    close_chat_conn();
+
+    Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibPeer);
 
-	DeleteCriticalSection(&statusMutex);
 	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
-	DeleteCriticalSection(&avatarMutex);
+	DeleteCriticalSection(&connMutex);
     
     CloseHandle(hAvatarEvent);
+    CloseHandle(hChatNavEvent);
 
     for (int i=0; i<9; ++i)
             mir_free(modeMsgs[i]);
@@ -74,9 +83,11 @@ CAimProto::~CAimProto()
 	delete[] COOKIE;
 	delete[] MAIL_COOKIE;
 	delete[] AVATAR_COOKIE;
-	delete[] GROUP_ID_KEY;
+    delete[] CHATNAV_COOKIE;
+    delete[] ADMIN_COOKIE;
 	delete[] ID_GROUP_KEY;
 	delete[] FILE_TRANSFER_KEY;
+   	delete[] username;
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -143,6 +154,8 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CAimProto::OnExtraIconsApply);
 
 	offline_contacts();
+    chat_register();
+
 	return 0;
 }
 
@@ -586,19 +599,16 @@ int __cdecl CAimProto::SetApparentMode( HANDLE hContact, int mode )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetStatusWorker - sets the protocol m_iStatus
 
-void CAimProto::SetStatusWorker( int iNewStatus )
+void __cdecl CAimProto::SetStatusWorker( void* arg )
 {
-	EnterCriticalSection( &statusMutex );
-	start_connection( iNewStatus );
-	if ( state == 1 ) {
-	    char** msgptr = getStatusMsgLoc(iNewStatus);
-		switch( iNewStatus ) {
-		case ID_STATUS_OFFLINE:
-			aim_set_away(hServerConn,seqno,NULL);//unset away message
-			aim_set_statusmsg(hServerConn,seqno,NULL);//unset away message
-			broadcast_status(ID_STATUS_OFFLINE);
-			break;
+    int iNewStatus = ( int )arg;
 
+    start_connection( iNewStatus );
+	if ( state == 1 ) 
+    {
+	    char** msgptr = getStatusMsgLoc(iNewStatus);
+		switch( iNewStatus ) 
+        {
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
@@ -625,24 +635,27 @@ void CAimProto::SetStatusWorker( int iNewStatus )
 			}
 			//see SetAwayMsg for m_iStatus away
 			break;
-	}	}
-	LeaveCriticalSection(&statusMutex);
+	    }	
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetStatus - sets the protocol m_iStatus
-
-void __cdecl CAimProto::setstatusthread(void* arg)
-{
-	SetStatusWorker(( int )arg );
-}
 
 int __cdecl CAimProto::SetStatus( int iNewStatus )
 {
 	if ( iNewStatus == m_iStatus )
 		return 0;
 
-	ForkThread( &CAimProto::setstatusthread, ( void* )iNewStatus );
+    if (iNewStatus == ID_STATUS_OFFLINE)
+    {
+		aim_set_away(hServerConn,seqno,NULL);//unset away message
+		aim_set_statusmsg(hServerConn,seqno,NULL);//unset away message
+		broadcast_status(ID_STATUS_OFFLINE);
+        return 0;
+    }
+
+	ForkThread( &CAimProto::SetStatusWorker, ( void* )iNewStatus );
 	return 0;
 }
 

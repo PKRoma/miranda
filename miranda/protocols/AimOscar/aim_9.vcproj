@@ -457,6 +457,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\chat.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\client.cpp"
 				>
 			</File>
@@ -661,6 +665,10 @@
 				RelativePath=".\icons\underline.ico"
 				>
 			</File>
+			<File
+				RelativePath=".\version.rc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -675,19 +683,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\client.h"
-				>
-			</File>
-			<File
 				RelativePath=".\conv.h"
 				>
 			</File>
 			<File
 				RelativePath=".\direct_connect.h"
-				>
-			</File>
-			<File
-				RelativePath=".\error.h"
 				>
 			</File>
 			<File
@@ -711,10 +711,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\popup.h"
-				>
-			</File>
-			<File
 				RelativePath=".\proto.h"
 				>
 			</File>
@@ -728,10 +724,6 @@
 			</File>
 			<File
 				RelativePath=".\server.h"
-				>
-			</File>
-			<File
-				RelativePath=".\services.h"
 				>
 			</File>
 			<File
@@ -756,6 +748,10 @@
 			</File>
 			<File
 				RelativePath=".\utility.h"
+				>
+			</File>
+			<File
+				RelativePath=".\version.h"
 				>
 			</File>
 		</Filter>

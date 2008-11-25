@@ -18,11 +18,24 @@ void CAimProto::broadcast_status(int status)
 			Netlib_CloseHandle(hDirectBoundPort);
 			hDirectBoundPort=NULL;
 		}
+        if (hAvatarConn)
+		{
+			aim_sendflap(hAvatarConn,0x04,0,NULL,avatar_seqno);
+			Netlib_Shutdown(hAvatarConn);
+		}
+        if (hChatNavConn)
+		{
+			aim_sendflap(hChatNavConn,0x04,0,NULL,chatnav_seqno);
+			Netlib_Shutdown(hChatNavConn);
+		}
+        shutdown_chat_conn();
+
 		idle=0;
 		instantidle=0;
 		checking_mail=0;
 		list_received=0;
 		state=0;
+        m_iDesiredStatus=ID_STATUS_OFFLINE;
 	}
 	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
@@ -51,7 +64,7 @@ void CAimProto::start_connection(int status)
 		}
 
 		int dbkey = getString(AIM_KEY_HN, &dbv);
-        if (dbkey) dbv.pszVal = getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER;
+        if (dbkey) dbv.pszVal = (char*)(getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
 		broadcast_status(ID_STATUS_CONNECTING);
 		hServerConn = NULL;
@@ -64,11 +77,31 @@ void CAimProto::start_connection(int status)
 		if ( hServerConn )
 		{
 			m_iDesiredStatus = status;
-			aim_connection_authorization( this );
+			aim_connection_authorization();
 		}
 		else broadcast_status(ID_STATUS_OFFLINE);
 	}
 }
+
+bool CAimProto::wait_conn( HANDLE& hConn, HANDLE& hEvent, unsigned short service )
+{
+	EnterCriticalSection( &connMutex );
+	if ( hConn == NULL && hServerConn ) {
+		LOG("Starting Connection.");
+		hConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
+		aim_new_service_request( hServerConn, seqno, service ) ;//avatar service connection!
+	}
+	LeaveCriticalSection( &connMutex );
+
+    if (WaitForSingleObjectEx(hEvent, 10000, TRUE) != WAIT_OBJECT_0)
+        return false;
+
+	if (Miranda_Terminated() || m_iStatus == ID_STATUS_OFFLINE) 
+		return false;
+
+    return true;
+}
+
 
 HANDLE CAimProto::find_contact(char * sn)
 {
@@ -654,8 +687,7 @@ unsigned short CAimProto::get_free_list_item_id(OBJLIST<PDList> & list)
     unsigned short id;
 
 retry:
-    CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
-    id &= 0x7fff;
+    id = get_random();
 
     for (int i=0; i<list.getCount(); ++i)
         if (list[i].item_id == id) goto retry;
@@ -849,6 +881,14 @@ unsigned long char_ip_to_long_ip(char* ip)
 	return _htonl(*host);
 }
 
+unsigned short get_random(void)
+{
+    unsigned short id;
+    CallService(MS_UTILS_GETRANDOM, sizeof(id), (LPARAM)&id);
+    id &= 0x7fff;
+    return id;
+}
+
 void CAimProto::create_cookie(HANDLE hContact)
 {
     setDword( hContact, AIM_KEY_CK, (unsigned long)hContact );
@@ -857,6 +897,7 @@ void CAimProto::create_cookie(HANDLE hContact)
     CallService(MS_UTILS_GETRANDOM, sizeof(i), (LPARAM)&i);
     setDword( hContact, AIM_KEY_CK2, i );
 }
+
 
 void CAimProto::read_cookie(HANDLE hContact,char* cookie)
 {

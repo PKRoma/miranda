@@ -22,6 +22,7 @@
 #include <newpluginapi.h>
 #include <m_avatars.h>
 #include <m_button.h>
+#include <m_chat.h>
 #include <m_clist.h>
 #include <m_clui.h>
 #include "m_cluiframes.h"
@@ -53,17 +54,14 @@
 //rest o includes
 #include "avatars.h"
 #include "utility.h"
-#include "client.h"
+#include "chat.h"
 #include "direct_connect.h"
 #include "conv.h"
-#include "error.h"
 #include "file.h"
 #include "links.h"
 #include "packets.h"
-#include "popup.h"
 #include "proxy.h"
 #include "resource.h"
-#include "services.h"
 #include "server.h"
 #include "theme.h"
 #include "ui.h"
@@ -152,6 +150,7 @@
 #define AIM_KEY_NC						"NewContact"
 #define AIM_KEY_AH						"AvatarHash"
 #define AIM_KEY_ASH						"AvatarSavedHash"
+#define AIM_KEY_MS                      "MemberTS"  
 //File Transfer Keys
 #define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
 #define AIM_KEY_CK						"Cookie"
@@ -276,6 +275,7 @@ extern char AIM_CAP_MIRANDA[];			//Miranda cap EXTERN
 #define AIM_SERVICE_BUDDYLIST			"\0\x03\0\x01"//version 1
 #define AIM_SERVICE_MESSAGING			"\0\x04\0\x01"//version 1
 #define AIM_SERVICE_INVITATION			"\0\x06\0\x01"//version 1
+#define AIM_SERVICE_ADMIN				"\0\x07\0\x01"//version 1
 #define AIM_SERVICE_POPUP				"\0\x08\0\x01"//version 1
 #define AIM_SERVICE_BOS					"\0\x09\0\x01"//version 1
 #define AIM_SERVICE_AVATAR				"\0\x10\0\x01"//version 1

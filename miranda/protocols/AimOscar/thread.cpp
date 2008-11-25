@@ -1,18 +1,5 @@
 #include "aim.h"
 
-void __cdecl CAimProto::aim_keepalive_thread( void* )
-{
-	for(;;)
-	{
-        if (SleepEx(1000*DEFAULT_KEEPALIVE_TIMER, TRUE) == 0)
-        {
-			if ( state == 1 )
-				aim_keepalive( hServerConn, seqno );
-		}
-		if (Miranda_Terminated()) break;
-	}
-}
-
 void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 {
 	char *szDesc, *szFile, *local_ip, *verified_ip, *proxy_ip,* sn;

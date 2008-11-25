@@ -1,5 +1,4 @@
 #include "aim.h"
-#include "services.h"
 
 int CAimProto::GetName(WPARAM wParam, LPARAM lParam)
 {
@@ -196,6 +195,23 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 	DBFreeVariant(&dbv);
 
 	return 0;
+}
+
+ int CAimProto::JoinChat(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHAT), NULL, join_chat_dialog, LPARAM( this ));
+	return 0;
+}
+
+int CAimProto::LeaveChat(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (state != 1)	return 0;
+
+    HANDLE hContact = (HANDLE)wParam;
+
+    char* id = getSetting(hContact, "ChatRoomID");
+    if (id != NULL) chat_leave(id);
+    return 0;
 }
 
 int CAimProto::InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)

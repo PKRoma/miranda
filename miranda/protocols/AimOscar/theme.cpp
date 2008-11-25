@@ -128,14 +128,15 @@ int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
     HANDLE hContact = (HANDLE)wParam;
+    bool isChatRoom = getByte(hContact, "ChatRoom", 0) != 0;
 
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 
     //see if we should add the html away message context menu items
-	mi.flags=CMIM_FLAGS|CMIF_NOTOFFLINE;
-	if ( getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE ) != ID_STATUS_AWAY )
+	mi.flags=CMIM_FLAGS | CMIF_NOTOFFLINE;
+	if ( getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE ) != ID_STATUS_AWAY || isChatRoom)
 		mi.flags |= CMIF_HIDDEN;
 
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
@@ -143,11 +144,16 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
     char item[sizeof(AIM_KEY_BI)+10];
 	mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	mi.flags = CMIM_FLAGS | CMIF_NOTONLINE;
-	if ( getWord(hContact, item, 0 ) || state == 0 )
+	if (getWord(hContact, item, 0 ) || state == 0 || isChatRoom)
 		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
 
-   	DBVARIANT dbv;
+	mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
+	if (state == 0 || !isChatRoom)
+		mi.flags |= CMIF_HIDDEN;
+	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hLeaveChatMenuItem,(LPARAM)&mi);
+
+    DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
     {
         mi.flags = CMIM_NAME | CMIM_FLAGS;
@@ -162,11 +168,11 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
             break;
 
         case 3:
-            mi.pszName = find_list_item_id(allow_list, dbv.pszVal) ? "&Block" : "&Unblock";
+            mi.pszName = (char*)(find_list_item_id(allow_list, dbv.pszVal) ? "&Block" : "&Unblock");
             break;
 
         case 4:
-            mi.pszName = find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block";
+            mi.pszName = (char*)(find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block");
             break;
 
         default:
@@ -220,6 +226,12 @@ void CAimProto::InitMenus()
 	mi.pszName = LPGEN( "Instant Idle" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
+	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
+	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChat);
+	mi.icolibItem = GetIconHandle("aol");
+	mi.pszName = LPGEN( "Join Chat Room" );
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
 	mi.pszPopupName=NULL;
 	mi.popupPosition=0;
 
@@ -233,25 +245,33 @@ void CAimProto::InitMenus()
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
 	CreateProtoService("/GetProfile",&CAimProto::GetProfile);
-	mi.position=-2000006010;
+	mi.position=-2000005090;
 	mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
 	mi.flags=CMIF_NOTOFFLINE|CMIF_ICONFROMICOLIB;
 	hReadProfileMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
-	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList);
-	mi.position=-2000006020;
+	CreateProtoService("/AddToServerList",&CAimProto::AddToServerList); 
+	mi.position=-2000005080;
 	mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
-	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
+    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/LeaveChat");
+	CreateProtoService("/LeaveChat",&CAimProto::LeaveChat);
+	mi.position=-2000005070;
+	mi.icolibItem = GetIconHandle("block");
+	mi.pszName = LPGEN("&Leave Chat");
+	mi.flags=CMIF_ICONFROMICOLIB;
+	hLeaveChatMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+
+    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);
-	mi.position=-2000006030;
+	mi.position=-2000005060;
 	mi.icolibItem = GetIconHandle("block");
 	mi.pszName = LPGEN("&Block");
-	mi.flags=CMIF_ICONFROMICOLIB;
+	mi.flags=CMIF_ICONFROMICOLIB|CMIF_HIDDEN;
 	hBlockContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 }

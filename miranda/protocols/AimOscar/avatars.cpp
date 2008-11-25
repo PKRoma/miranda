@@ -3,64 +3,38 @@
 
 void __cdecl CAimProto::avatar_request_thread( void* param )
 {
-	char* data = NEWSTR_ALLOCA(( char* )param );
-	delete[] (char*)param;
+	char* data = (char*)param;
 
-	EnterCriticalSection( &avatarMutex );
-	if ( !hAvatarConn && hServerConn ) {
-		LOG("Starting Avatar Connection.");
-		ResetEvent( hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
-		hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request( hServerConn, seqno, 0x0010 ) ;//avatar service connection!
-	}
-	LeaveCriticalSection( &avatarMutex );//not further below because the thread will become trapped if the connection dies.
+    if (!wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+        return;
 
-	if ( WaitForSingleObject( hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
-		if (Miranda_Terminated() || m_iStatus==ID_STATUS_OFFLINE) {
-			SetEvent( hAvatarEvent );
-			LeaveCriticalSection( &avatarMutex );
-			return;
-		}
-		
-		char* sn = strtok(data,";");
-		char* hash_string = strtok(NULL,";");
-		char* hash = new char[lstrlenA(hash_string)/2];
-		string_to_bytes( hash_string, hash );
-		LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-		aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
-	}
+	char* sn = strtok(data,";");
+	char* hash_string = strtok(NULL,";");
+	char* hash = new char[lstrlenA(hash_string)/2];
+	string_to_bytes( hash_string, hash );
+	LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
+	aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
+
+    delete[] data;
 }
 
 void __cdecl CAimProto::avatar_upload_thread( void* param )
 {
-	char* file = NEWSTR_ALLOCA(( char* )param );
-	delete[] (char*)param;
+	char* file = (char*)param;
 
-	EnterCriticalSection( &avatarMutex );
-	if ( !hAvatarConn && hServerConn ) {
-		LOG("Starting Avatar Connection.");
-		ResetEvent( hAvatarEvent ); //reset incase a disconnection occured and state is now set following the removal of queued threads
-		hAvatarConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request( hServerConn, seqno, 0x0010 ) ;//avatar service connection!
-	}
-	LeaveCriticalSection( &avatarMutex );//not further below because the thread will become trapped if the connection dies.
+    if (!wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+        return;
 
-	if ( WaitForSingleObject( hAvatarEvent, INFINITE ) == WAIT_OBJECT_0 ) 	{
-		if (Miranda_Terminated() || m_iStatus==ID_STATUS_OFFLINE) {
-			SetEvent( hAvatarEvent );
-			LeaveCriticalSection( &avatarMutex );
-			return;
-		}
-		
-        char hash[16], *data;
-        unsigned short size;
-        if (!get_avatar_hash(file, hash, &data, size))
-            return;
+    char hash[16], *data;
+    unsigned short size;
+    if (!get_avatar_hash(file, hash, &data, size))
+        return;
 
-        aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
-        aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
-        delete[] data;
-	}
+    aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
+    aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
+   
+    delete[] data;
+	delete[] file;
 }
 
 void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_size)//checks to see if the avatar needs requested
@@ -90,17 +64,6 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_siz
     }
 
     delete[] hash_string;
-}
-
-void __cdecl CAimProto::avatar_request_limit_thread( void* )
-{
-	LOG("Avatar Request Limit thread begin");
-	while( AvatarLimitThread ) {
-		SleepEx(1000, TRUE);
-		LOG("Setting Avatar Request Event...");
-		SetEvent( hAvatarEvent );
-	}
-	LOG("Avatar Request Limit Thread has ended");
 }
 
 void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)

@@ -165,6 +165,10 @@ SOURCE=.\away.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\chat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\client.cpp
 # End Source File
 # Begin Source File
@@ -241,11 +245,11 @@ SOURCE=.\tlv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\utility.cpp
+SOURCE=.\ui.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ui.cpp
+SOURCE=.\utility.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -258,6 +262,10 @@ SOURCE=.\aim.h
 # Begin Source File
 
 SOURCE=.\avatars.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\chat.h
 # End Source File
 # Begin Source File
 
@@ -337,11 +345,11 @@ SOURCE=.\tlv.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\utility.h
+SOURCE=.\ui.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ui.h
+SOURCE=.\utility.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

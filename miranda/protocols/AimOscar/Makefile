@@ -28,6 +28,7 @@ SRC =\
 	flap.cpp \
 	conv.cpp \
 	aim.cpp \
+	chat.cpp \
  	connection.cpp \
 	packets.cpp \
 	services.cpp \
@@ -56,6 +57,7 @@ HDR = defines.h \
 	snac.h \
 	flap.h  \
 	aim.h \
+	chat.h \
 	client.h \
  	connection.h \
 	packets.h \

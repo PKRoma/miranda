@@ -6,6 +6,7 @@ SNAC::SNAC(char* buf,unsigned short length)
 {
 	service_=_htons((*(unsigned short*)&buf[0]));
 	subgroup_=_htons((*(unsigned short*)&buf[2]));
+	idh_=_htons((*(unsigned short*)&buf[6]));
 	id_=_htons((*(unsigned short*)&buf[8]));
 	value_=&buf[SNAC_SIZE];
 	length_=length;
@@ -42,16 +43,4 @@ char* SNAC::part(int pos, int length)
 	memcpy(value,&value_[pos],length);
 	value[length]='\0';
 	return value;
-}
-char* SNAC::val(int pos)
-{
-	return &value_[pos];
-}
-unsigned short SNAC::len()
-{
-	return length_;
-}
-unsigned short SNAC::id()
-{
-	return id_;
 }

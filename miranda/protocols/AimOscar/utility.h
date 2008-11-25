@@ -19,6 +19,7 @@ int is_micq_ver_cap(char* cap);
 int is_im2_ver_cap(char* cap);
 int is_sim_ver_cap(char* cap);
 int is_naim_ver_cap(char* cap);
+unsigned short get_random(void);
 
 template <class T>
 T* renew(T* src, int size, int size_chg)

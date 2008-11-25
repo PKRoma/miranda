@@ -38,7 +38,7 @@ HANDLE CAimProto::aim_peer_connect(const char* ip, unsigned short port)
 	return con;
 }
 
-void __cdecl CAimProto::aim_connection_authorization( void* )
+void CAimProto::aim_connection_authorization(void)
 {
 	EnterCriticalSection(&connectionMutex);
 	NETLIBPACKETRECVER packetRecv;
@@ -57,6 +57,7 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 	}
 	if (!getString(AIM_KEY_SN, &dbv))
 	{
+        if (username) delete[] username;
 		username = strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -107,7 +108,6 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 						int authres=snac_authorization_reply(snac);
 						if(authres==1)
 						{
-							delete[] username;
 							delete[] password;
 							Netlib_CloseHandle(hServerPacketRecver);
 							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
@@ -128,7 +128,6 @@ void __cdecl CAimProto::aim_connection_authorization( void* )
 	}
 
 exit:
-	delete[] username;
 	delete[] password;
 	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
 	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
@@ -145,7 +144,7 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;	
+	packetRecv.dwTimeout = DEFAULT_KEEPALIVE_TIMER*1000;	
 	for(;;)
 	{
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hServerPacketRecver, (LPARAM) & packetRecv);
@@ -156,8 +155,13 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 		}
 		else if (recvResult == SOCKET_ERROR)
 		{
-			LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
-			break;
+            if (WSAGetLastError() == ERROR_TIMEOUT)
+                aim_keepalive(hServerConn,seqno);
+            else
+            {
+			    LOG("Connection Closed: Socket Error during Connection Negotiation %d", WSAGetLastError());
+			    break;
+            }
 		}
 		else if(recvResult>0)
 		{
@@ -239,7 +243,6 @@ exit:
 	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
 	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
-	SetEvent(hAvatarEvent);
 	LOG("Connection Negotiation Thread Ending: End of Thread");
 	LeaveCriticalSection(&connectionMutex);
 	offline_contacts();
@@ -253,7 +256,7 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 	HANDLE hServerPacketRecver;
 	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hMailConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;
+	packetRecv.dwTimeout = DEFAULT_KEEPALIVE_TIMER*1000;
 	while(m_iStatus!=ID_STATUS_OFFLINE)
 	{
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
@@ -263,7 +266,10 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 		}
 		if (recvResult == SOCKET_ERROR)
 		{
-			break;
+            if (WSAGetLastError() == ERROR_TIMEOUT)
+                aim_keepalive(hMailConn,seqno);
+            else
+			    break;
 		}
 		if(recvResult>0)
 		{
@@ -368,9 +374,10 @@ void __cdecl CAimProto::aim_avatar_negotiation( void* )
 
 exit:
 	Netlib_CloseHandle(hServerPacketRecver);
-	LOG("Avatar Server Connection has ended");
+	Netlib_CloseHandle(hAvatarConn);
 	hAvatarConn=NULL;
-	AvatarLimitThread=false;
+	ResetEvent(hAvatarEvent);
+	LOG("Avatar Server Connection has ended");
 }
 
 void __cdecl CAimProto::aim_chatnav_negotiation( void* )
@@ -433,19 +440,94 @@ void __cdecl CAimProto::aim_chatnav_negotiation( void* )
 
 exit:
 	Netlib_CloseHandle(hServerPacketRecver);
-	LOG("Chat Navigation Server Connection has ended");
+	Netlib_CloseHandle(hChatNavConn);
 	hChatNavConn=NULL;
+    ResetEvent(hChatNavEvent);
+	LOG("Chat Navigation Server Connection has ended");
 }
 
-void __cdecl CAimProto::aim_chat_negotiation( void* )
+void __cdecl CAimProto::aim_chat_negotiation( void* param )
+{
+    chat_list_item *item = (chat_list_item*)param;
+	NETLIBPACKETRECVER packetRecv;
+	int recvResult=0;
+	ZeroMemory(&packetRecv, sizeof(packetRecv));
+	HANDLE hServerPacketRecver=NULL;
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)item->hconn, 2048 * 8);
+	packetRecv.cbSize = sizeof(packetRecv);
+	packetRecv.dwTimeout = DEFAULT_KEEPALIVE_TIMER*1000;
+	for(;;)
+	{
+		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
+		if (recvResult == 0)
+			break;
+
+		if (recvResult == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() == ERROR_TIMEOUT)
+                aim_keepalive(item->hconn,item->seqno);
+            else
+			    break;
+        }
+
+		if(recvResult>0)
+		{
+			unsigned short flap_length=0;
+			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			{
+				if(!packetRecv.buffer)
+					break;
+				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
+				if(!flap.len())
+					break;
+				flap_length+=FLAP_SIZE+flap.len();
+				if(flap.cmp(0x01))
+				{
+					aim_send_cookie(item->hconn,item->seqno,item->CHAT_COOKIE_LENGTH,item->CHAT_COOKIE);//cookie challenge
+					delete[] item->CHAT_COOKIE;
+					item->CHAT_COOKIE=NULL;
+					item->CHAT_COOKIE_LENGTH=0;
+				}
+				else if(flap.cmp(0x02))
+				{
+					SNAC snac(flap.val(),flap.snaclen());
+					if(snac.cmp(0x0001))
+					{
+						snac_supported_families(snac,item->hconn,item->seqno);
+						snac_supported_family_versions(snac,item->hconn,item->seqno);
+						snac_chat_rate_limitations(snac,item->hconn,item->seqno);
+						snac_error(snac);
+					}
+					if(snac.cmp(0x000E))
+					{
+						snac_chat_received_message(snac, item);
+						snac_chat_joined_left_users(snac, item);
+						snac_error(snac);
+					}
+				}
+				else if(flap.cmp(0x04))
+					goto exit;
+			}
+		}
+	}
+
+exit:
+	Netlib_CloseHandle(hServerPacketRecver);
+	Netlib_CloseHandle(item->hconn);
+    chat_leave(item->id);
+    remove_chat_by_ptr(item);
+	LOG("Chat Server Connection has ended");
+}
+
+void __cdecl CAimProto::aim_admin_negotiation( void* )
 {
 	NETLIBPACKETRECVER packetRecv;
 	int recvResult=0;
 	ZeroMemory(&packetRecv, sizeof(packetRecv));
 	HANDLE hServerPacketRecver=NULL;
-	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hChatConn, 2048 * 8);
+	hServerPacketRecver = (HANDLE) CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hAdminConn, 2048 * 8);
 	packetRecv.cbSize = sizeof(packetRecv);
-	packetRecv.dwTimeout = INFINITE;
+	packetRecv.dwTimeout = 300000;//5 minutes connected
 	for(;;)
 	{
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM) hServerPacketRecver, (LPARAM) & packetRecv);
@@ -468,26 +550,25 @@ void __cdecl CAimProto::aim_chat_negotiation( void* )
 				flap_length+=FLAP_SIZE+flap.len();
 				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(hChatConn,chat_seqno,CHAT_COOKIE_LENGTH,CHAT_COOKIE);//cookie challenge
-					delete[] CHAT_COOKIE;
-					CHAT_COOKIE=NULL;
-					CHAT_COOKIE_LENGTH=0;
-					hChatNavConn=NULL;		// Close this, we don't need it anymore.
+					aim_send_cookie(hAdminConn,admin_seqno,ADMIN_COOKIE_LENGTH,ADMIN_COOKIE);//cookie challenge
+					delete[] ADMIN_COOKIE;
+					ADMIN_COOKIE=NULL;
+					ADMIN_COOKIE_LENGTH=0;
 				}
 				else if(flap.cmp(0x02))
 				{
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0001))
 					{
-						snac_supported_families(snac,hChatConn,chat_seqno);
-						snac_supported_family_versions(snac,hChatConn,chat_seqno);
-						snac_chat_rate_limitations(snac,hChatConn,chat_seqno);
+						snac_supported_families(snac,hAdminConn,admin_seqno);
+						snac_supported_family_versions(snac,hAdminConn,admin_seqno);
+						snac_admin_rate_limitations(snac,hAdminConn,admin_seqno);
 						snac_error(snac);
 					}
-					if(snac.cmp(0x000E))
+					if(snac.cmp(0x0007))
 					{
-						snac_chat_received_message(snac);
-						snac_chat_joined_left_users(snac);
+						snac_admin_account_infomod(snac);
+						snac_admin_account_confirm(snac);
 						snac_error(snac);
 					}
 				}
@@ -499,6 +580,6 @@ void __cdecl CAimProto::aim_chat_negotiation( void* )
 
 exit:
 	Netlib_CloseHandle(hServerPacketRecver);
-	LOG("Chat Server Connection has ended");
-	hChatConn=NULL;
+	LOG("Admin Server Connection has ended");
+	hAdminConn=NULL;
 }

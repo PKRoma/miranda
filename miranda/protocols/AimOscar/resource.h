@@ -23,6 +23,7 @@
 #define IDI_FOREGROUNDCOLOR             31
 #define IDI_BACKGROUNDCOLOR             32
 #define IDD_PRIVACY                     36
+#define IDD_CHAT                        37
 #define IDI_BLOCK                       38
 #define IDI_BOLD                        41
 #define IDI_NBOLD                       42
@@ -66,6 +67,7 @@
 #define IDC_BLOCKADD                    154
 #define IDC_ALLOWREMOVE                 155
 #define IDC_BLOCKREMOVE                 156
+#define IDC_ROOM                        157
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
@@ -94,9 +96,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        39
+#define _APS_NEXT_RESOURCE_VALUE        37
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         156
+#define _APS_NEXT_CONTROL_VALUE         158
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

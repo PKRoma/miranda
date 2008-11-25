@@ -1,5 +1,4 @@
 #include "aim.h"
-#include "client.h"
 
 int CAimProto::aim_send_connection_packet(HANDLE hServerConn,unsigned short &seqno,char *buf)
 {
@@ -53,7 +52,7 @@ int CAimProto::aim_send_cookie(HANDLE hServerConn,unsigned short &seqno,int cook
 {
 	unsigned short offset=0;
 	char* buf=(char*)alloca(TLV_HEADER_SIZE*2+cookie_size);
-	aim_writegeneric(4,"\0\0\0\x01",offset,buf);//protocol version number
+	aim_writelong(0x01,offset,buf);//protocol version number
 	aim_writetlv(0x06,(unsigned short)cookie_size,cookie,offset,buf);
     return aim_sendflap(hServerConn,0x01,offset,buf,seqno);
 }
@@ -83,8 +82,7 @@ int CAimProto::aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,
 	unsigned short offset=0;
 	char buf[SNAC_SIZE+2];
 	aim_writesnac(0x01,0x04,offset,buf);
-	service=_htons(service);
-	aim_writegeneric(2,(char*)&service,offset,buf);
+	aim_writeshort(service,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -118,13 +116,12 @@ int CAimProto::aim_set_icbm(HANDLE hServerConn,unsigned short &seqno)
 	unsigned short offset=0;
 	char buf[SNAC_SIZE+16];
 	aim_writesnac(0x04,0x02,offset,buf);
-	aim_writegeneric(2,"\0\0",offset,buf);//channel
-	aim_writegeneric(4,"\0\0\x01\x1b",offset,buf);//flags
-	aim_writegeneric(2,"\x0f\xa0",offset,buf);//max snac size
-	aim_writegeneric(2,"\x03\xe7",offset,buf);//max sender warning level
-	aim_writegeneric(2,"\x03\xe7",offset,buf);//max receiver warning level
-	aim_writegeneric(2,"\0\0",offset,buf);//min msg interval
-	aim_writegeneric(2,"\0\0",offset,buf);//unknown
+	aim_writeshort(0,offset,buf);           //channel
+	aim_writelong(0x11b,offset,buf);        //flags
+	aim_writeshort(0x0fa0,offset,buf);      //max snac size
+	aim_writeshort(0x03e7,offset,buf);      //max sender warning level
+	aim_writeshort(0x03e7,offset,buf);      //max receiver warning level
+	aim_writelong(0,offset,buf);            //min msg interval, ms
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -175,7 +172,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
-//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
+	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
@@ -876,6 +873,37 @@ int CAimProto::aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
+int CAimProto::aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance) 
+{ 
+    unsigned short offset=0; 
+    unsigned short chat_cookie_len = (unsigned short)strlen(chat_cookie); 
+    char* buf=(char*)alloca(SNAC_SIZE+7+chat_cookie_len); 
+    aim_writesnac(0x0d,0x04,offset,buf); 
+    aim_writeshort(exchange,offset,buf);                         // Exchange 
+    aim_writechar((char)chat_cookie_len,offset,buf);             // Cookie Length 
+    aim_writegeneric(chat_cookie_len,chat_cookie,offset,buf);    // Cookie 
+    aim_writeshort(instance,offset,buf);                         // Last Instance 
+    aim_writechar(1,offset,buf);                                 // Detail 
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno); 
+}  
+
+int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, 
+                                  unsigned short exchange, unsigned short instance, unsigned short id)
+{
+	unsigned short offset=0;
+	unsigned short cookie_len = (unsigned short)strlen(chat_cookie);
+	char* buf=(char*)alloca(SNAC_SIZE+cookie_len+12);
+	aim_writesnac(0x01,0x04,offset,buf,id);
+	aim_writegeneric(2,"\0\x0e",offset,buf);				// Service request for Chat
+	aim_writeshort(0x01,offset,buf);						// Tag
+	aim_writeshort(cookie_len+5,offset,buf);				// Length
+	aim_writeshort(exchange,offset,buf);					// Value - Exchange
+	aim_writegeneric(1,(char*)&cookie_len,offset,buf);		// Value - Cookie Length
+	aim_writegeneric(cookie_len,chat_cookie,offset,buf);	// Value - Cookie
+	aim_writeshort(instance,offset,buf);					// Value - Instance
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
 int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg)
 {
 	unsigned short offset=0;
@@ -894,6 +922,101 @@ int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, c
 	aim_writetlv(0x03,(unsigned short)strlen(lang),lang,offset,buf);			// Language Encoding
 	aim_writetlv(0x01,(unsigned short)strlen(msg),msg,offset,buf);				// Message
 
-	// The hChatConn and chat_seqno should be determined by the current room we're in
-	return aim_sendflap(hChatConn,0x02,offset,buf,chat_seqno);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg)
+{
+	unsigned short offset=0;
+	unsigned short chat_cookie_len = (unsigned short)strlen(chat_cookie);
+	unsigned short sn_len = (unsigned short)strlen(sn);
+	unsigned short msg_len = (unsigned short)strlen(msg);
+	char* buf=(char*)alloca(SNAC_SIZE+64+chat_cookie_len+sn_len+msg_len);
+	aim_writesnac(0x04,0x06,offset,buf);
+	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);		// Cookie
+	aim_writegeneric(2,"\0\x02",offset,buf);				// Channel
+	aim_writegeneric(1,(char*)&sn_len,offset,buf);			// Screenname Length
+	aim_writegeneric(sn_len,sn,offset,buf);					// Screenname
+
+	aim_writeshort(0x05,offset,buf);						// Rendezvous Message Data TLV
+	aim_writeshort(49+msg_len+chat_cookie_len,offset,buf);	// TLV size
+	
+	aim_writeshort(0,offset,buf);							// Message Type (0) - Request
+	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);		// Cookie (same as above)
+	aim_writegeneric(16,AIM_CAP_CHAT,offset,buf);			// Capability
+
+	aim_writetlv(0x0A,2,"\0\x01",offset,buf);				// Unknown TLV
+	aim_writetlv(0x0F,0,NULL,offset,buf);					// Unknown TLV
+	aim_writetlv(0x0C,msg_len,msg,offset,buf);				// Message TLV
+
+	aim_writeshort(0x2711,offset,buf);							// Capability TLV
+	aim_writeshort(chat_cookie_len+5,offset,buf);				// Length
+	aim_writeshort(exchange,offset,buf);						// Value - Exchange
+	aim_writegeneric(1,(char*)&chat_cookie_len,offset,buf);		// Value - Cookie Length
+	aim_writegeneric(chat_cookie_len,chat_cookie,offset,buf);	// Value - Cookie
+	aim_writeshort(instance,offset,buf);						// Value - Instance
+
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_ready(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4];
+	aim_writesnac(0x01,0x02,offset,buf);
+	aim_writefamily(AIM_SERVICE_GENERIC,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+	aim_writefamily(AIM_SERVICE_ADMIN,offset,buf);
+	aim_writegeneric(4,AIM_TOOL_VERSION,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn)
+{
+	unsigned short offset=0;
+	unsigned short sn_len = (unsigned short)strlen(sn);
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+sn_len);
+	aim_writesnac(0x07,0x04,offset,buf);
+	aim_writetlv(0x01,sn_len,sn,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_change_email(HANDLE hServerConn,unsigned short &seqno, const char* email)
+{
+	unsigned short offset=0;
+	unsigned short email_len = (unsigned short)strlen(email);
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+email_len);
+	aim_writesnac(0x07,0x04,offset,buf);
+	aim_writetlv(0x11,email_len,email,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_change_password(HANDLE hServerConn,unsigned short &seqno, const char* cur_pw, const char* new_pw)
+{
+	unsigned short offset=0;
+	unsigned short cur_pw_len = (unsigned short)strlen(cur_pw);
+	unsigned short new_pw_len = (unsigned short)strlen(new_pw);
+	char* buf=(char*)alloca(SNAC_SIZE+2*TLV_HEADER_SIZE+cur_pw_len+new_pw_len);
+	aim_writesnac(0x07,0x04,offset,buf);
+	aim_writetlv(0x02,new_pw_len,new_pw,offset,buf);
+	aim_writetlv(0x12,cur_pw_len,cur_pw,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_request_info(HANDLE hServerConn,unsigned short &seqno, const unsigned short &type)
+{
+	// types: 0x01 - nickname, 0x11 - email info, 0x13 - registration status
+	unsigned short offset=0;
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE);
+	aim_writesnac(0x07,0x02,offset,buf);
+	aim_writetlv(type,0,NULL,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_admin_account_confirm(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE);
+	aim_writesnac(0x07,0x06,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
