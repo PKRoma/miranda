@@ -28,7 +28,7 @@ struct chat_list_item
 	int CHAT_COOKIE_LENGTH;
 
     chat_list_item(char* tid)
-    { id = tid; cid = get_random(); seqno = 0; hconn = NULL; }
+    { id = strldup(tid); cid = get_random(); seqno = 0; hconn = NULL; }
 
     ~chat_list_item()
     { delete[] id; }

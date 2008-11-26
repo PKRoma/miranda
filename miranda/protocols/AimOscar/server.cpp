@@ -1617,10 +1617,12 @@ void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigne
                 {
                     item = new chat_list_item(name); 
                     chat_rooms.insert(item); 
-
-                    //Join the actual room
-                    aim_chat_join_room(CAimProto::hServerConn, CAimProto::seqno, cookie, exchange, instance, item->cid);
                 }
+
+                //Join the actual room
+                aim_chat_join_room(CAimProto::hServerConn, CAimProto::seqno, cookie, exchange, instance, item->cid);
+
+                delete[] name;
                 delete[] cookie;
 		    }
 			offset_info += TLV_HEADER_SIZE + info_tlv.len();
