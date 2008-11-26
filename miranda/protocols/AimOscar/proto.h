@@ -269,8 +269,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_chatnav_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_chat_ready(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response);
-	int    aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg);
+    int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* msg,bool uni,bool auto_response);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
@@ -348,7 +347,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);
-    void   aim_writechar(char val, unsigned short &offset,char* out);
+    void   aim_writechar(unsigned char val, unsigned short &offset,char* out);
     void   aim_writeshort(unsigned short val, unsigned short &offset,char* out);
     void   aim_writelong(unsigned long val, unsigned short &offset,char* out);
 

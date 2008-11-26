@@ -567,11 +567,11 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 	int res;
 	if (fl)
-		res = aim_send_plaintext_message(hServerConn, seqno, dbv.pszVal, msg, 0);
+		res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false, false);
 	else
 	{
 		wchar_t *wmsg = mir_utf8decodeW(msg);
-		res = aim_send_unicode_message(hServerConn, seqno, dbv.pszVal, wmsg);
+		res = aim_send_message(hServerConn, seqno, dbv.pszVal, (char*)wmsg, true, false);
 		mir_free(wmsg);
 	}
 

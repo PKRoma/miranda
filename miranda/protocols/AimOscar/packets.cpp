@@ -53,7 +53,7 @@ void CAimProto::aim_writefamily(const char *buf,unsigned short &offset,char* out
 	offset+=4;
 }
 
-void CAimProto::aim_writechar(char val, unsigned short &offset,char* out)
+void CAimProto::aim_writechar(unsigned char val, unsigned short &offset,char* out)
 {
     out[offset++] = val;
 }

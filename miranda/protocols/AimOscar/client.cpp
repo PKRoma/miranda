@@ -310,90 +310,40 @@ int CAimProto::aim_chat_ready(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_send_plaintext_message(HANDLE hServerConn,unsigned short &seqno,char* sn,char* msg,bool auto_response)
+int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* msg,bool uni,bool auto_response)
 {	
-	unsigned short offset=0;
-	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
-	static const char caps_frag[]={0x05,0x01,0x00,0x01,0x01};
-	char* msg_frag=new char[8+lstrlenA(msg)];
-	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	unsigned short msg_length=_htons((unsigned short)lstrlenA(msg)+4);
-	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0",8);//last two bytes are charset if 0xFFFF then triton doesn't accept message
-	char* tlv_frag= new char[sizeof(caps_frag)+lstrlenA(msg)+8];
-	memcpy(&msg_frag[2],(char*)&msg_length,2);
-	memcpy(&msg_frag[8],msg,lstrlenA(msg));
-	memcpy(tlv_frag,caps_frag,sizeof(caps_frag));
-	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,lstrlenA(msg)+8);
-	char* buf= new char[SNAC_SIZE+11+sn_length+TLV_HEADER_SIZE*3+sizeof(caps_frag)+strlen(msg)+8];
-	aim_writesnac(0x04,0x06,offset,buf);
-	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);
-	aim_writegeneric(2,"\0\x01",offset,buf);//channel
-	aim_writegeneric(1,(char*)&sn_length,offset,buf);
-	aim_writegeneric(sn_length,sn,offset,buf);
-	aim_writetlv(0x02,(unsigned short)(sizeof(caps_frag)+strlen(msg)+8),tlv_frag,offset,buf);
-	if(auto_response)
-		aim_writetlv(0x04,0,0,offset,buf);
-	else{
-		aim_writetlv(0x03,0,0,offset,buf);
-		aim_writetlv(0x06,0,0,offset,buf);
-	}
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] tlv_frag;
-		delete[] buf;
-		return 1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] tlv_frag;
-		delete[] buf;
-		return 0;
-	}
-}
+    unsigned short msg_len=(unsigned short)(uni ? wcslen((wchar_t*)msg)*sizeof(wchar_t) : strlen(msg));
 
-int CAimProto::aim_send_unicode_message(HANDLE hServerConn,unsigned short &seqno,char* sn,wchar_t* msg)
-{	
+	unsigned short tlv_offset=0;
+	char* tlv_buf=(char*)alloca(5+msg_len+8);
+ 
+    aim_writegeneric(5,"\x05\x01\x00\x01\x01",tlv_offset,tlv_buf);   // icbm im capabilities
+	aim_writeshort(0x0101,tlv_offset,tlv_buf);                       // icbm im text tag
+	aim_writeshort(msg_len+4,tlv_offset,tlv_buf);                    // icbm im text tag length
+    aim_writeshort(uni?2:0,tlv_offset,tlv_buf);                      // character set
+	aim_writeshort(0,tlv_offset,tlv_buf);                            // language
+
+    if (uni) wcs_htons((wchar_t*)msg);
+	aim_writegeneric(msg_len,msg,tlv_offset,tlv_buf);                // message text
+    
 	unsigned short offset=0;
-	//see http://iserverd.khstu.ru/oscar/snac_04_06_ch1.html
-	static const char caps_frag[]={0x05,0x01,0x00,0x03,0x01,0x01,0x01};
-	char* msg_frag=new char[8+wcslen(msg)*2];
-	unsigned short sn_length=(unsigned short)lstrlenA(sn);
-	unsigned short msg_length=_htons((unsigned short)wcslen(msg)*2+4);
-	memcpy(msg_frag,"\x01\x01\0\0\0\0\0\0",8);//second before last two bytes are charset if 0xFFFF then triton doesn't accept message
-	memcpy(&msg_frag[2],(char*)&msg_length,2);
-	memcpy(&msg_frag[4],"\0\x02",2);
-	char* tlv_frag= new char[sizeof(caps_frag)+wcslen(msg)*2+8];
-	char* buf= new char[SNAC_SIZE+11+sn_length+TLV_HEADER_SIZE*3+sizeof(caps_frag)+wcslen(msg)*2+8];
-	aim_writesnac(0x04,0x06,offset,buf);
-	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);
-	aim_writegeneric(2,"\0\x01",offset,buf);//channel
-	aim_writegeneric(1,(char*)&sn_length,offset,buf);
-	aim_writegeneric(sn_length,sn,offset,buf);
-	wcs_htons(msg);
-	memcpy(&msg_frag[8],msg,wcslen(msg)*2);
-	memcpy(tlv_frag,caps_frag,sizeof(caps_frag));
-	memcpy(&tlv_frag[sizeof(caps_frag)],msg_frag,wcslen(msg)*2+8);
-	aim_writetlv(0x02,(unsigned short)(sizeof(caps_frag)+wcslen(msg)*2+8),tlv_frag,offset,buf);
-	//buf[packet_offset-(sizeof(caps_frag)+wcslen(msg)*2+1+8)-1]=_htons(msg_length)+12;
-	aim_writetlv(0x03,0,0,offset,buf);
-	aim_writetlv(0x06,0,0,offset,buf);
-	wcs_htons(msg);
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	{
-		delete[] msg_frag;
-		delete[] tlv_frag;
-		delete[] buf;
-		return 1;
+	unsigned short sn_length=(unsigned short)strlen(sn);
+	char* buf= (char*)alloca(SNAC_SIZE+8+3+sn_length+TLV_HEADER_SIZE*3+tlv_offset);
+	
+    aim_writesnac(0x04,0x06,offset,buf);
+	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);               // icbm cookie
+	aim_writeshort(0x01,offset,buf);                                 // channel
+	aim_writechar((unsigned char)sn_length,offset,buf);              // screen name len
+	aim_writegeneric(sn_length,sn,offset,buf);                       // screen name
+
+	aim_writetlv(0x02,tlv_offset,tlv_buf,offset,buf);
+	if(auto_response)
+		aim_writetlv(0x04,0,0,offset,buf);                           // auto-response message
+	else{
+		aim_writetlv(0x03,0,0,offset,buf);                           // message ack request
+		aim_writetlv(0x06,0,0,offset,buf);                           // offline message storage
 	}
-	else
-	{
-		delete[] msg_frag;
-		delete[] tlv_frag;
-		delete[] buf;
-		return 0;
-	}
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)
@@ -777,7 +727,7 @@ int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
 int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, const char* sn, const char* hash, unsigned short hash_size)
 {
 	unsigned short offset=0;
-	char sn_length=(char)strlen(sn);
+	unsigned char sn_length=(unsigned char)strlen(sn);
 	char* buf= (char*)alloca(SNAC_SIZE+sn_length+hash_size+12);
 	aim_writesnac(0x10,0x06,offset,buf);
 	aim_writechar(sn_length,offset,buf);
@@ -880,7 +830,7 @@ int CAimProto::aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, c
     char* buf=(char*)alloca(SNAC_SIZE+7+chat_cookie_len); 
     aim_writesnac(0x0d,0x04,offset,buf); 
     aim_writeshort(exchange,offset,buf);                         // Exchange 
-    aim_writechar((char)chat_cookie_len,offset,buf);             // Cookie Length 
+    aim_writechar((unsigned char)chat_cookie_len,offset,buf);    // Cookie Length 
     aim_writegeneric(chat_cookie_len,chat_cookie,offset,buf);    // Cookie 
     aim_writeshort(instance,offset,buf);                         // Last Instance 
     aim_writechar(1,offset,buf);                                 // Detail 

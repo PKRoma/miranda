@@ -912,18 +912,20 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			ccs.wParam = 0;
 			ccs.lParam = (LPARAM) & pre;
 			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
-			if(m_iStatus==ID_STATUS_AWAY&&!auto_response&&!getByte( AIM_KEY_DM,0))
+			if(m_iStatus==ID_STATUS_AWAY && !auto_response && !getByte(AIM_KEY_DM,0))
 			{
 				unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
 				unsigned long away_time = getDword(AIM_KEY_LA, 0);
-				if(away_time>msg_time&&!DBGetContactSettingByte(NULL,MOD_KEY_SA,OTH_KEY_AI,0))
+                char** msgptr = getStatusMsgLoc(m_iStatus);
+				if(away_time>msg_time && *msgptr)
 				{
-	                char** msgptr = getStatusMsgLoc(m_iStatus);
-                    char* s_msg=strip_special_chars(*msgptr?*msgptr:DEFAULT_AWAY_MSG,hContact);
+                    char* s_msg=strip_special_chars(*msgptr, hContact);
                     size_t temp2sz=strlen(s_msg)+20;
-					char* temp2=new char[temp2sz];
+					char* temp2=(char*)alloca(temp2sz);
 					temp2sz = mir_snprintf(temp2,temp2sz,"%s %s",Translate("[Auto-Response]:"),s_msg);
-					DBEVENTINFO dbei;
+					delete[] s_msg;
+
+                    DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
 					dbei.szModule = m_szModuleName;
@@ -931,11 +933,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.flags = DBEF_SENT;
 					dbei.eventType = EVENTTYPE_MESSAGE;
 					dbei.cbBlob = temp2sz + 1;
-					dbei.pBlob = (PBYTE) temp2;
-					CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
-					aim_send_plaintext_message(hServerConn,seqno,sn,s_msg,1);
-					delete[] temp2;
-					delete[] s_msg;
+					dbei.pBlob = (PBYTE)temp2;
+					CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
+					aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
 				}
 				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
 			}
