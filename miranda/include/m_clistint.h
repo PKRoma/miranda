@@ -113,18 +113,32 @@ struct trayIconInfo_t
 
 /* genmenu structs */
 
+#define MENUITEM_SIGNATURE 0xDEADBEEF
+
 typedef struct
 {
-	int          id;
-	int          globalid;
+	struct _tagIntMenuItem *first, // first element of submenu, or NULL
+		                    *last;  // last element of submenu, or NULL
+}
+	TMO_LinkedList;
+
+typedef struct _tagIntMenuItem
+{
+	DWORD        signature;
+	int          iCommand;
 	int          iconId;          // icon index in the section's image list
 	TMO_MenuItem mi;              // user-defined data
 	BOOL         OverrideShow;
-	char*        UniqName;        // uniqie name
+	char*        UniqName;        // unique name
 	TCHAR*       CustomName;
 	HANDLE       hIcolibItem;     // handle of iconlib item
 	HMENU        hSubMenu;
 	int          originalPosition;
+
+	struct _tagIntMenuItem *next; // next item in list
+	struct TIntMenuObject  *parent; 
+	TMO_LinkedList         *owner;
+	TMO_LinkedList			   submenu;
 }
 	TMO_IntMenuItem,*PMO_IntMenuItem;
 

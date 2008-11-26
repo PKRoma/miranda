@@ -436,7 +436,7 @@ int FreeOwnerDataContactMenu (WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // STATUS MENU
 
-BOOL FindMenuHandleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
+BOOL FindMenuHandleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itdat)
 {
 	int i;
 	PMO_IntMenuItem pimi;
@@ -452,13 +452,13 @@ BOOL FindMenuHandleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
 		if ( mii.fType == MFT_SEPARATOR )
 			continue;
 		if ( mii.hSubMenu )
-			inSub = FindMenuHandleByGlobalID(mii.hSubMenu, globalID,itdat);
+			inSub = FindMenuHandleByGlobalID(mii.hSubMenu, id, itdat);
 		if ( inSub )
 			return inSub;
 
 		pimi = cli.pfnMOGetIntMenuItem( mii.dwItemData );
 		if ( pimi != NULL ) {
-			if ( pimi->globalid == globalID ) {
+			if ( pimi == id ) {
 				itdat->OwnerMenu=hMenu;
 				itdat->position=i;
 				return TRUE;
@@ -544,7 +544,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 							MenuItemData it={0};
 							mi.cbSize=sizeof(mi);
 							mi.fMask=MIIM_STRING;
-							m=FindMenuHandleByGlobalID(hStatusMenu,timiParent->globalid,&it);
+							m = FindMenuHandleByGlobalID(hStatusMenu, timiParent, &it );
 							if ( m ) {
 								GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);
 								mi.fMask=MIIM_STRING|MIIM_BITMAP;
@@ -617,7 +617,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 				if (timi->mi.hIcon)
 				{
 					timi->mi.flags |= CMIM_ICON;
-					MO_ModifyMenuItem( timi->globalid, &timi->mi );
+					MO_ModifyMenuItem( LPARAM(timi), &timi->mi );
 					if ( IconNeedDestroy ) {
 						DestroyIcon( timi->mi.hIcon );
 						timi->mi.hIcon = NULL;
@@ -745,16 +745,18 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 		return 0; // DO NOT process ids outside from clist menu id range		v0.7.0.27+
 
 	//process old menu sys
+	/* !!!!!!!!!!!!!!!!!!!!!
 	if ( HIWORD(wParam) & MPCF_CONTACTMENU ) {
 		//make faked globalid
 		return CallService( MO_PROCESSCOMMAND, getGlobalId( hContactMenuObject, LOWORD(wParam)), lParam );
 	}
+	*/
 
 	//unknown old menu
 	return CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam);
 }
 
-BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
+BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itdat)
 {
 	int i;
 	PMO_IntMenuItem pimi;
@@ -772,13 +774,13 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, int globalID, MenuItemData* itdat)
 			continue;
 
 		if ( mii.hSubMenu )
-			inSub = FindMenuHanleByGlobalID( mii.hSubMenu, globalID, itdat );
+			inSub = FindMenuHanleByGlobalID( mii.hSubMenu, id, itdat );
 		if (inSub)
 			return inSub;
 
 		pimi = MO_GetIntMenuItem(mii.dwItemData);
 		if ( pimi != NULL ) {
-			if ( pimi->globalid == globalID ) {
+			if ( pimi == id ) {
 				itdat->OwnerMenu = hMenu;
 				itdat->position = i;
 				return TRUE;

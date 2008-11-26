@@ -201,91 +201,86 @@ static void FreeTreeData( HWND hwndDlg )
 
 static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 {
-	struct OrderData *dat;
-	TVINSERTSTRUCT tvis;
-	MenuItemOptData *PD;
-	lpMenuItemOptData *PDar;
-	boolean first;
-
 	char menuItemName[256],MenuNameItems[256];
 	char buf[256];
-	int i,count,menupos,lastpos;
-	TIntMenuObject* pimo;
 
-	dat = ( struct OrderData* )GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
+	OrderData *dat = ( struct OrderData* )GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
 
 	FreeTreeData( hwndDlg );
 	TreeView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_MENUITEMS));
 
-	menupos = GetMenuObjbyId( MenuObjectId );
+	int menupos = GetMenuObjbyId( MenuObjectId );
 	if ( menupos == -1 )
 		return FALSE;
 
-	pimo = g_menus[menupos];
-	if ( pimo->m_items.getCount() == 0 )
+	TIntMenuObject* pimo = g_menus[menupos];
+	if ( pimo->m_items.first == NULL )
 		return FALSE;
 
 	mir_snprintf( MenuNameItems, sizeof(MenuNameItems), "%s_Items", pimo->Name );
 
-	count = 0;
-	for ( i=0; i < pimo->m_items.getCount(); i++ ) {
-		if ( pimo->m_items[i]->mi.root != -1 )
-			continue;
-
-		count++;
+	int count = 0;
+	{	
+		for ( PMO_IntMenuItem p = pimo->m_items.first; p != NULL; p = p->next )
+			if ( p->mi.root == -1 )
+				count++;
 	}
 
-	PDar = ( lpMenuItemOptData* )mir_alloc( sizeof( lpMenuItemOptData )*count );
+	lpMenuItemOptData *PDar = ( lpMenuItemOptData* )mir_alloc( sizeof( lpMenuItemOptData )*count );
 
 	count = 0;
-	for ( i=0; i < pimo->m_items.getCount(); i++ ) {
-		if ( pimo->m_items[i]->mi.root != -1 )
-			continue;
+	{
+		for ( PMO_IntMenuItem p = pimo->m_items.first; p != NULL; p = p->next ) {
+			if ( p->mi.root != -1 )
+				continue;
 
-		PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
-		GetMenuItemName( pimo->m_items[i], menuItemName, sizeof( menuItemName ));
-		{
-			DBVARIANT dbv;
-			wsprintfA(buf, "%s_name", menuItemName);
+			MenuItemOptData *PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
+			GetMenuItemName( p, menuItemName, sizeof( menuItemName ));
+			{
+				DBVARIANT dbv;
+				wsprintfA(buf, "%s_name", menuItemName);
 
-			if ( !DBGetContactSettingTString( NULL, MenuNameItems, buf, &dbv )) {
-				PD->name = mir_tstrdup( dbv.ptszVal );
-				DBFreeVariant( &dbv );
+				if ( !DBGetContactSettingTString( NULL, MenuNameItems, buf, &dbv )) {
+					PD->name = mir_tstrdup( dbv.ptszVal );
+					DBFreeVariant( &dbv );
+				}
+				else PD->name = mir_tstrdup( p->mi.ptszName );
 			}
-			else PD->name = mir_tstrdup( pimo->m_items[i]->mi.ptszName );
-		}
 
-		PD->pimi = pimo->m_items[i];
-		PD->defname = mir_tstrdup( pimo->m_items[i]->mi.ptszName );
+			PD->pimi = p;
+			PD->defname = mir_tstrdup( p->mi.ptszName );
 
-		wsprintfA( buf, "%s_visible", menuItemName );
-		PD->show = DBGetContactSettingByte( NULL, MenuNameItems, buf, 1 );
+			wsprintfA( buf, "%s_visible", menuItemName );
+			PD->show = DBGetContactSettingByte( NULL, MenuNameItems, buf, 1 );
 
-		if ( bReread ) {
-			wsprintfA( buf, "%s_pos", menuItemName );
-			PD->pos = DBGetContactSettingDword( NULL, MenuNameItems, buf, 1 );
-		}
-		else PD->pos = ( PD->pimi ) ? PD->pimi->originalPosition : 0;
+			if ( bReread ) {
+				wsprintfA( buf, "%s_pos", menuItemName );
+				PD->pos = DBGetContactSettingDword( NULL, MenuNameItems, buf, 1 );
+			}
+			else PD->pos = ( PD->pimi ) ? PD->pimi->originalPosition : 0;
 
-		PD->id = pimo->m_items[i]->id;
+			PD->id = p->iCommand;
 
-		if ( pimo->m_items[i]->UniqName )
-			PD->uniqname = mir_strdup( pimo->m_items[i]->UniqName );
+			if ( p->UniqName )
+				PD->uniqname = mir_strdup( p->UniqName );
 
-		PDar[ count ] = PD;
-		count++;
-	}
+			PDar[ count ] = PD;
+			count++;
+	}	}
+
 	qsort( PDar, count, sizeof( lpMenuItemOptData ), sortfunc );
 
 	SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, WM_SETREDRAW, FALSE, 0);
-	lastpos = 0;
-	first = TRUE;
+	int lastpos = 0;
+	bool first = TRUE;
+
+	TVINSERTSTRUCT tvis;
 	tvis.hParent = NULL;
 	tvis.hInsertAfter = TVI_LAST;
 	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-	for ( i=0; i < count; i++ ) {
+	for ( int i=0; i < count; i++ ) {
 		if ( PDar[i]->pos - lastpos >= SEPARATORPOSITIONINTERVAL ) {
-			PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
+			MenuItemOptData *PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));
 			PD->id = -1;
 			PD->name = mir_tstrdup( STR_SEPARATOR );
 			PD->pos = PDar[i]->pos - 1;
@@ -300,12 +295,12 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 		tvis.item.lParam = ( LPARAM )PDar[i];
 		tvis.item.pszText = PDar[i]->name;
 		tvis.item.iImage = tvis.item.iSelectedImage = PDar[i]->show;
-		{
-			HTREEITEM hti = (HTREEITEM)SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_INSERTITEM, 0, (LPARAM)&tvis);
-			if ( first ) {
-				TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),hti);
-				first=FALSE;
-		}	}
+		
+		HTREEITEM hti = (HTREEITEM)SendDlgItemMessage(hwndDlg, IDC_MENUITEMS, TVM_INSERTITEM, 0, (LPARAM)&tvis);
+		if ( first ) {
+			TreeView_SelectItem(GetDlgItem(hwndDlg,IDC_MENUITEMS),hti);
+			first=FALSE;
+		}
 
 		lastpos = PDar[i]->pos;
 	}

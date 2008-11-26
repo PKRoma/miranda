@@ -37,7 +37,7 @@ struct TIntMenuObject
 	//WPARAM wParam;//menuitemhandle
 	char *onAddService;//called just before add MENUITEMINFO to hMenu
 
-	LIST<TMO_IntMenuItem> m_items;
+	TMO_LinkedList m_items;
 	HIMAGELIST m_hMenuIcons;
 	BOOL m_bUseUserDefinedItems;
 
@@ -49,9 +49,7 @@ extern LIST<TIntMenuObject> g_menus;
 #define SEPARATORPOSITIONINTERVAL	100000
 
 //internal usage
-HMENU BuildRecursiveMenu(HMENU hMenu,ListParam *param);
-int RecursiveRemoveChilds(int pos,ListParam *param);
-void UnpackGlobalId(int id,int *MenuObjectId,int *MenuItemId);
+HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem, ListParam *param);
 void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
 PMO_IntMenuItem MO_GetIntMenuItem(int globid);
@@ -66,8 +64,11 @@ int MO_ProcessHotKeys( int menuHandle, int vKey );
 int MO_SetOptionsMenuItem( int menuobjecthandle, int setting, int value );
 int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
 
-//for old processcommand
-int getGlobalId(const int MenuObjectId,const int MenuItemId);
+// function returns TRUE if the walk should be immediately stopped
+typedef int ( *pfnWalkFunc )( PMO_IntMenuItem, void* );
+
+// returns the item, on which pfnWalkFunc returned TRUE
+PMO_IntMenuItem MO_RecursiveWalkMenu( PMO_IntMenuItem, pfnWalkFunc, void* );
 
 //general stuff
 int InitGenMenu();
