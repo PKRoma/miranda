@@ -64,30 +64,31 @@ CAimProto::~CAimProto()
 	if(hAdminConn)
 		Netlib_CloseHandle(hAdminConn);
 
-    close_chat_conn();
+	close_chat_conn();
 
-    Netlib_CloseHandle(hNetlib);
+	Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibPeer);
 
 	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
 	DeleteCriticalSection(&connMutex);
-    
-    CloseHandle(hAvatarEvent);
-    CloseHandle(hChatNavEvent);
 
-    for (int i=0; i<9; ++i)
-            mir_free(modeMsgs[i]);
+	CloseHandle(hAvatarEvent);
+	CloseHandle(hChatNavEvent);
+
+	for (int i=0; i<9; ++i)
+		mir_free(modeMsgs[i]);
 
 	delete[] CWD;
 	delete[] COOKIE;
 	delete[] MAIL_COOKIE;
 	delete[] AVATAR_COOKIE;
-    delete[] CHATNAV_COOKIE;
-    delete[] ADMIN_COOKIE;
+	delete[] CHATNAV_COOKIE;
+	delete[] ADMIN_COOKIE;
 	delete[] ID_GROUP_KEY;
+	delete[] GROUP_ID_KEY;
 	delete[] FILE_TRANSFER_KEY;
-   	delete[] username;
+	delete[] username;
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
