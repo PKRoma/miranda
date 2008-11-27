@@ -271,12 +271,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
 				RelativePath=".\aim.cpp">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						RuntimeLibrary="3"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\aim.rc">

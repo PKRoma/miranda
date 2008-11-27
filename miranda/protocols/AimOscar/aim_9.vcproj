@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="aim"
 	ProjectGUID="{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
 	RootNamespace="aim"
@@ -245,7 +245,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
@@ -426,7 +426,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
@@ -435,7 +434,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>

@@ -244,7 +244,7 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;AIM_EXPORTS"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				PrecompiledHeaderThrough="aim.h"
 				BrowseInformation="1"
 				WarningLevel="3"
@@ -425,7 +425,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
@@ -434,7 +433,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						RuntimeLibrary="1"
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
