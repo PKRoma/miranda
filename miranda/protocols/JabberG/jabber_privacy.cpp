@@ -2264,11 +2264,8 @@ void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	CLISTMENUITEM mi = { 0 };
 	int i=0;
 	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
-	char szItem[MAX_PATH + 64];
 	HANDLE hPrivacyRoot;
-	HANDLE hRoot = ( HANDLE )szItem;
-
-	mir_snprintf( szItem, SIZEOF(szItem), LPGEN("Privacy Lists") );
+	HANDLE hRoot = LPGENT("Privacy Lists");
 
 	mi.cbSize = sizeof(mi);
 	mi.popupPosition= 500084000;

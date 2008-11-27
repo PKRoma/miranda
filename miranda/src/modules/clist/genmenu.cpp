@@ -214,7 +214,7 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 
 //wparam MenuItemHandle
 //lparam PMO_MenuItem
-int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmi )
+int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 {
 	int oldflags;
 
@@ -223,7 +223,7 @@ int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmi )
 
 	EnterCriticalSection( &csMenuHook );
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( menuHandle );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )menuHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -360,13 +360,13 @@ int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int MO_SetOptionsMenuItem( int handle, int setting, int value )
+int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, int value )
 {
 	if ( !bIsGenMenuInited )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( handle );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )aHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -528,10 +528,10 @@ static int GetNextObjectMenuItemId()
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
 //return MenuItemHandle
-int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
+PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 {
 	if ( !bIsGenMenuInited || pmi == NULL || pmi->cbSize != sizeof( TMO_MenuItem ))
-		return -1;
+		return NULL;
 
 	//old mode
 	if ( !( pmi->flags & ( CMIF_ROOTPOPUP | CMIF_CHILDPOPUP )))
@@ -541,7 +541,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 	int objidx = GetMenuObjbyId( menuobjecthandle );
 	if ( objidx == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
-		return -1;
+		return NULL;
 	}
 
 	TIntMenuObject* pmo = g_menus[objidx];
@@ -602,7 +602,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 	p->owner->last = p;
 
 	LeaveCriticalSection( &csMenuHook );
-	return ( int )p;
+	return p;
 }
 
 //wparam=MenuObjectHandle
@@ -617,20 +617,20 @@ int FindRoot( PMO_IntMenuItem pimi, void* param )
 	return FALSE;
 }
 
-int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
+PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 {
 	if ( !bIsGenMenuInited || pmi == NULL )
-		return -1;
+		return NULL;
 
 	int objidx = GetMenuObjbyId( menuobjecthandle );
 	if ( objidx == -1 )
-		return -1;
+		return NULL;
 
 	if ( pmi->cbSize != sizeof( TMO_MenuItem ))
-		return 0;
+		return NULL;
 
 	if (( pmi->flags & CMIF_ROOTPOPUP ) || ( pmi->flags & CMIF_CHILDPOPUP ))
-		return 0;
+		return NULL;
 
 	//is item with popup or not
 	if ( pmi->root == 0 ) {
@@ -648,7 +648,7 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		tszRoot = mir_tstrdup(( TCHAR* )pmi->root );
 #endif
 
-		LPARAM oldroot = ( LPARAM )MO_RecursiveWalkMenu( g_menus[objidx]->m_items.first, FindRoot, tszRoot );
+		PMO_IntMenuItem oldroot = MO_RecursiveWalkMenu( g_menus[objidx]->m_items.first, FindRoot, tszRoot );
 		mir_free( tszRoot );
 
 		if ( oldroot == NULL ) {
@@ -660,10 +660,10 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			tmi.root = -1;
 			//copy pszPopupName
 			tmi.ptszName = ( TCHAR* )pmi->root;
-			if (( oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi )) != -1 )
+			if (( oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi )) != NULL )
 				MO_SetOptionsMenuItem( oldroot, OPT_MENUITEMSETUNIQNAME, (int)pmi->root );
 		}
-		pmi->root = oldroot;
+		pmi->root = ( int )oldroot;
 
 		//popup will be created in next commands
 	}
@@ -1077,7 +1077,7 @@ static int SRVMO_SetOptionsMenuItem( WPARAM wParam, LPARAM lParam)
 	if ( lpop == NULL )
 		return 0;
 
-	return MO_SetOptionsMenuItem( lpop->Handle, lpop->Setting, lpop->Value );
+	return MO_SetOptionsMenuItem(( PMO_IntMenuItem )lpop->Handle, lpop->Setting, lpop->Value );
 }
 
 int InitGenMenu()

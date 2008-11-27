@@ -52,16 +52,17 @@ extern LIST<TIntMenuObject> g_menus;
 HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem, ListParam *param);
 void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
-PMO_IntMenuItem MO_GetIntMenuItem(int globid);
+PMO_IntMenuItem MO_GetIntMenuItem( int globid );
 
-int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
-int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
+
 int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis );
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
-int MO_ModifyMenuItem( int menuHandle, PMO_MenuItem pmiparam );
+int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmiparam );
 int MO_ProcessCommand( WPARAM wParam, LPARAM lParam );
 int MO_ProcessHotKeys( int menuHandle, int vKey );
-int MO_SetOptionsMenuItem( int menuobjecthandle, int setting, int value );
+int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, int value );
 int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
 
 // function returns TRUE if the walk should be immediately stopped

@@ -136,7 +136,7 @@ typedef struct _tagIntMenuItem
 	int          originalPosition;
 
 	struct _tagIntMenuItem *next; // next item in list
-	struct TIntMenuObject  *parent; 
+	struct TIntMenuObject  *parent;
 	TMO_LinkedList         *owner;
 	TMO_LinkedList			   submenu;
 }
@@ -144,10 +144,9 @@ typedef struct _tagIntMenuItem
 
 typedef struct _menuProto
 {
-	char*  szProto;             //This is DLL-based unique name
-	HANDLE menuID;
-	HANDLE hasAdded;
-	HICON  hIcon;
+	char*           szProto; //This is DLL-based unique name
+	PMO_IntMenuItem pMenu;
+	HICON           hIcon;
 }
 	MenuProto;
 
@@ -426,7 +425,7 @@ typedef struct
 	int    ( *pfnTrayIconSetBaseInfo )( HICON hIcon, const char *szPreferredProto );
 	void   ( *pfnTrayIconTaskbarCreated )( HWND hwnd );
 	int    ( *pfnTrayIconUpdate )( HICON hNewIcon, const TCHAR *szNewTip, const char *szPreferredProto, int isBase );
-	
+
 	void   ( *pfnUninitTray )( void );
 	void   ( *pfnLockTray )( void );
 	void   ( *pfnUnlockTray )( void );
