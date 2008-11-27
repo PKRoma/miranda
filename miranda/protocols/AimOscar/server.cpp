@@ -1639,25 +1639,22 @@ void CAimProto::snac_chat_joined_left_users(SNAC &snac,chat_list_item* item)//fa
 	        int sn_len = snac.ubyte(offset);
 	        char* sn = snac.part(offset+1, sn_len);				// Most important part (screenname)
 
-		    /////////////////////////////////////////////////
-		    // Send the screenname off to the chat module. //
-		    /////////////////////////////////////////////////
             chat_event(item->id, sn, snac.subcmp(0x0003) ? GC_EVENT_JOIN : GC_EVENT_PART);
 
             delete[] sn;
 
 //          int warning = snac.ushort(offset+1+sn_len);
 		    int num_tlv = snac.ushort(offset+3+sn_len);
-		    int  tlv_offset = offset+5+sn_len;			// We're looking at any remaining TLVs
+		    offset += 5+sn_len;			                    // We're looking at any remaining TLVs
 /*
             unsigned short user_class = 0;
 		    unsigned long idle_time = 0;
 		    unsigned long signon_time = 0;
-		    unsigned long creation_time = 0;				//Server uptime?
+		    unsigned long creation_time = 0;				// Server uptime?
 */
-		    for (int i = 0; i < num_tlv; i++)		// Loop through all the TLVs
+		    for (int i = 0; i < num_tlv; i++)		        // Loop through all the TLVs
 		    {
-			    TLV tlv(snac.val(tlv_offset));
+			    TLV tlv(snac.val(offset));
 /*
                 if (tlv.cmp(0x0001))
 				    user_class = tlv.ushort();
@@ -1668,9 +1665,8 @@ void CAimProto::snac_chat_joined_left_users(SNAC &snac,chat_list_item* item)//fa
 			    else if (tlv.cmp(0x000F))
 				    idle_time = tlv.ulong();
 */
-			    tlv_offset+=TLV_HEADER_SIZE+tlv.len();
+			    offset+=TLV_HEADER_SIZE+tlv.len();
 		    }
-		    offset=tlv_offset;
         }
 	}		
 }
