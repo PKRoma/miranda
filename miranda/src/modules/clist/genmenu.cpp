@@ -183,7 +183,7 @@ int MO_ProcessHotKeys( int menuHandle, int vKey )
 		if ( !(LOWORD(pimi->mi.hotKey) & MOD_CONTROL ) != !( GetKeyState( VK_CONTROL ) & 0x8000)) continue;
 		if ( !(LOWORD(pimi->mi.hotKey) & MOD_SHIFT   ) != !( GetKeyState( VK_SHIFT   ) & 0x8000)) continue;
 
-		MO_ProcessCommand(( WPARAM )pimi, 0 );
+		MO_ProcessCommand( pimi, 0 );
 		LeaveCriticalSection( &csMenuHook );
 		return TRUE;
 	}
@@ -323,6 +323,29 @@ static int FindMenuByCommand( PMO_IntMenuItem pimi, void* pCommand )
 	return ( pimi->iCommand == (int)pCommand );
 }
 
+int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam)
+{
+	if ( !bIsGenMenuInited )
+		return -1;
+
+	EnterCriticalSection( &csMenuHook );
+
+	int objidx = GetMenuObjbyId( menuID );
+	if ( objidx == -1 ) {
+		LeaveCriticalSection( &csMenuHook );
+		return -1;
+	}
+
+	PMO_IntMenuItem pimi = MO_RecursiveWalkMenu( g_menus[objidx]->m_items.first, FindMenuByCommand, ( void* )command );
+	if ( pimi ) {
+		LeaveCriticalSection( &csMenuHook );
+		return MO_ProcessCommand( pimi, lParam );
+	}
+
+	LeaveCriticalSection( &csMenuHook );
+	return -1;
+}
+
 int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
 {
 	if ( !bIsGenMenuInited )
@@ -334,20 +357,20 @@ int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
 		PMO_IntMenuItem pimi = MO_RecursiveWalkMenu( g_menus[i]->m_items.first, FindMenuByCommand, ( void* )wParam );
 		if ( pimi ) {
 			LeaveCriticalSection( &csMenuHook );
-			return MO_ProcessCommand( WPARAM(pimi), lParam );
+			return MO_ProcessCommand( pimi, lParam );
 	}	}
 
 	LeaveCriticalSection( &csMenuHook );
 	return FALSE;
 }
 
-int MO_ProcessCommand(WPARAM wParam,LPARAM lParam)
+int MO_ProcessCommand( PMO_IntMenuItem aHandle, LPARAM lParam )
 {
 	if ( !bIsGenMenuInited )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( wParam );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )aHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -1085,7 +1108,7 @@ int InitGenMenu()
 	InitializeCriticalSection( &csMenuHook );
 	CreateServiceFunction( MO_BUILDMENU, MO_BuildMenu );
 
-	CreateServiceFunction( MO_PROCESSCOMMAND, MO_ProcessCommand );
+	CreateServiceFunction( MO_PROCESSCOMMAND, ( MIRANDASERVICE )MO_ProcessCommand );
 	CreateServiceFunction( MO_CREATENEWMENUOBJECT, MO_CreateNewMenuObject );
 	CreateServiceFunction( MO_REMOVEMENUITEM, MO_RemoveMenuItem );
 	CreateServiceFunction( MO_ADDNEWMENUITEM, ( MIRANDASERVICE )MO_AddNewMenuItem );

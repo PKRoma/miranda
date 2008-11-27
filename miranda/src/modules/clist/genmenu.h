@@ -60,10 +60,13 @@ PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
 int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis );
 int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
 int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmiparam );
-int MO_ProcessCommand( WPARAM wParam, LPARAM lParam );
+int MO_ProcessCommand( PMO_IntMenuItem pimi, LPARAM lParam );
 int MO_ProcessHotKeys( int menuHandle, int vKey );
 int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, int value );
 int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
+
+int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam);
+int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam);
 
 // function returns TRUE if the walk should be immediately stopped
 typedef int ( *pfnWalkFunc )( PMO_IntMenuItem, void* );

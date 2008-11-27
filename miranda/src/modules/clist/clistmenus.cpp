@@ -22,11 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-#include "genmenu.h"
 #include "m_clui.h"
 #pragma hdrstop
 
 #include "clc.h"
+#include "genmenu.h"
 
 #define FIRSTCUSTOMMENUITEMID	30000
 #define MENU_CUSTOMITEMMAIN		0x80000000
@@ -735,22 +735,18 @@ int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 		if ( hst >= ID_STATUS_OFFLINE && hst <= ID_STATUS_OUTTOLUNCH ) {
 			int pos = statustopos( hst );
 			if ( pos != -1 && hStatusMainMenuHandles != NULL )
-				return CallService( MO_PROCESSCOMMAND, ( WPARAM )hStatusMainMenuHandles[ pos ], lParam );
+				return MO_ProcessCommand( hStatusMainMenuHandles[ pos ], lParam );
 		}	}
 
 	if ( !( cmd >= CLISTMENUIDMIN && cmd <= CLISTMENUIDMAX   ))
 		return 0; // DO NOT process ids outside from clist menu id range		v0.7.0.27+
 
 	//process old menu sys
-	/* !!!!!!!!!!!!!!!!!!!!!
-	if ( HIWORD(wParam) & MPCF_CONTACTMENU ) {
-		//make faked globalid
-		return CallService( MO_PROCESSCOMMAND, getGlobalId( hContactMenuObject, LOWORD(wParam)), lParam );
-	}
-	*/
+	if ( HIWORD(wParam) & MPCF_CONTACTMENU )
+		return MO_ProcessCommandBySubMenuIdent( hContactMenuObject, LOWORD(wParam), lParam );
 
 	//unknown old menu
-	return CallService(MO_PROCESSCOMMANDBYMENUIDENT,LOWORD(wParam),lParam);
+	return MO_ProcessCommandByMenuIdent( LOWORD(wParam), lParam );
 }
 
 BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itdat)
