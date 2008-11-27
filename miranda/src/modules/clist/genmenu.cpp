@@ -755,21 +755,19 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 		GetMenuItemInfo( hMenu, uItem, TRUE, &mii );
 	}
 
-	{	// create local copy *lpmii so we can change some flags
-		MENUITEMINFO mii_copy = *lpmii;
-		lpmii = &mii_copy;
+	// create local copy *lpmii so we can change some flags
+	MENUITEMINFO mii_copy = *lpmii;
+	lpmii = &mii_copy;
 
-		if (( GetMenuItemCount( hMenu ) % 35 ) == 33 /* will be 34 after addition :) */ && pimi != NULL )
-			if ( pimi->mi.root != -1 )
-			{
-				if (!(lpmii->fMask&MIIM_FTYPE))
-					lpmii->fType = 0;
-				lpmii->fMask |= MIIM_FTYPE;
-				lpmii->fType |= MFT_MENUBARBREAK;
-			}
+	if (( GetMenuItemCount( hMenu ) % 35 ) == 33 /* will be 34 after addition :) */ && pimi != NULL )
+		if ( pimi->mi.root != -1 ) {
+			if (!(lpmii->fMask&MIIM_FTYPE))
+				lpmii->fType = 0;
+			lpmii->fMask |= MIIM_FTYPE;
+			lpmii->fType |= MFT_MENUBARBREAK;
+		}
 
-			InsertMenuItem( hMenu, uItem, TRUE, lpmii );
-	}
+	InsertMenuItem( hMenu, uItem, TRUE, lpmii );
 }
 
 //wparam started hMenu
@@ -884,40 +882,34 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 		/**************************************/
 
-		MENUITEMINFO mii = { 0 };
-		int i = 0;
-
-		mii.cbSize = MENUITEMINFO_V4_SIZE;
-		mii.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_DATA;
-		mii.dwItemData = ( LPARAM )pmi;
-		HMENU hSubMenu = NULL;
-
 		if ( rootlevel != (int)pmi->mi.root )
 			continue;
 
-		//our level
+		MENUITEMINFO mii = { 0 };
+		mii.cbSize = MENUITEMINFO_V4_SIZE;
+		mii.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_DATA;
+		mii.dwItemData = ( LPARAM )pmi;
+		mii.fType = MFT_STRING;
+
+		int i = WhereToPlace( hMenu, mi, &mii, &localparam );
+
+		if ( !IsWinVer98Plus()) {
+			mii.cbSize = MENUITEMINFO_V4_SIZE;
+			mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID;
+		}
+		else {
+			mii.cbSize = sizeof( mii );
+			mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING;
+			if ( pmi->iconId != -1 )
+				mii.fMask |= MIIM_BITMAP;
+		}
+
+		// it's a submenu
 		if ( pmi->mi.flags & CMIF_ROOTPOPUP ) {
-			i = WhereToPlace( hMenu, mi, &mii, &localparam );
-
-			if ( !IsWinVer98Plus()) {
-				mii.cbSize = MENUITEMINFO_V4_SIZE;
-				mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID | MIIM_SUBMENU;
-			}
-			else {
-				mii.cbSize = sizeof( mii );
-				mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING | MIIM_SUBMENU;
-				if ( pmi->iconId != -1 )
-					mii.fMask |= MIIM_BITMAP;
-			}
-
-			mii.fType = MFT_STRING;
-			mii.dwItemData = ( LPARAM )pmi;
-
-			hSubMenu = CreatePopupMenu();
-			mii.hSubMenu = hSubMenu;
+			mii.fMask |= MIIM_SUBMENU;
+			mii.hSubMenu = pmi->hSubMenu = CreatePopupMenu();
 			mii.hbmpItem = HBMMENU_CALLBACK;
 			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
-			pmi->hSubMenu = hSubMenu;
 
 			#ifdef PUTPOSITIONSONMENU
 				if ( GetKeyState(VK_CONTROL) & 0x8000) {
@@ -929,45 +921,31 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 			InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
 			localparam.rootlevel = LPARAM( pmi );
-			BuildRecursiveMenu( hSubMenu, pmi->submenu.first, &localparam );
-			continue;
-		}
-
-		i = WhereToPlace( hMenu, mi, &mii, &localparam );
-
-		if ( !IsWinVer98Plus()) {
-			mii.cbSize = MENUITEMINFO_V4_SIZE;
-			mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID | MIIM_STATE;
+			BuildRecursiveMenu( pmi->hSubMenu, pmi->submenu.first, &localparam );
 		}
 		else {
-			mii.cbSize = sizeof( mii );
-			mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING | MIIM_STATE;
-			if ( pmi->iconId != -1 )
-				mii.fMask |= MIIM_BITMAP;
-		}
-		mii.fState = (( pmi->mi.flags & CMIF_GRAYED ) ? MFS_GRAYED : MFS_ENABLED );
-		mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
-		mii.fType = MFT_STRING;
-		mii.wID = pmi->iCommand;
-		mii.dwItemData = LPARAM( pmi );
+			mii.fMask |= MIIM_STATE;
+			mii.fState = (( pmi->mi.flags & CMIF_GRAYED ) ? MFS_GRAYED : MFS_ENABLED );
+			mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
+			mii.wID = pmi->iCommand;
 
-		mii.hbmpItem = HBMMENU_CALLBACK;
-		mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
+			mii.hbmpItem = HBMMENU_CALLBACK;
+			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
-		#ifdef PUTPOSITIONSONMENU
-			if ( GetKeyState(VK_CONTROL) & 0x8000) {
-				TCHAR str[256];
-				mir_sntprintf( str, SIZEOF(str), _T("%s (%d,id %x)"), mi->pszName, mi->position, mii.dwItemData );
-				mii.dwTypeData = str;
-			}
-		#endif
+			#ifdef PUTPOSITIONSONMENU
+				if ( GetKeyState(VK_CONTROL) & 0x8000) {
+					TCHAR str[256];
+					mir_sntprintf( str, SIZEOF(str), _T("%s (%d,id %x)"), mi->pszName, mi->position, mii.dwItemData );
+					mii.dwTypeData = str;
+				}
+			#endif
 
-		if ( pmo->onAddService != NULL )
-			if ( CallService( pmo->onAddService, ( WPARAM )&mii, ( LPARAM )pmi ) == FALSE )
-				continue;
+			if ( pmo->onAddService != NULL )
+				if ( CallService( pmo->onAddService, ( WPARAM )&mii, ( LPARAM )pmi ) == FALSE )
+					continue;
 
-		InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
-	}
+			InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
+	}	}
 
 	return hMenu;
 }
