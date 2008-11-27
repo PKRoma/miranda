@@ -12,7 +12,7 @@ int CAimProto::LOG(const char *fmt, ...)
 	return CallService(MS_NETLIB_LOG, (WPARAM) hNetlib, (LPARAM) szText);
 }
 
-HANDLE CAimProto::aim_connect(const char* server, unsigned short port)
+HANDLE CAimProto::aim_connect(const char* server, unsigned short port, bool use_ssl)
 {
 	NETLIBOPENCONNECTION ncon = { 0 };
 	ncon.cbSize = sizeof(ncon);
@@ -20,7 +20,7 @@ HANDLE CAimProto::aim_connect(const char* server, unsigned short port)
 	ncon.wPort = port;
 	ncon.timeout = 5;
 	ncon.flags = NLOCF_V2;
-    if (!getByte( AIM_KEY_DSSL, 0)) ncon.flags |= NLOCF_SSL;
+    if (use_ssl) ncon.flags |= NLOCF_SSL;
 	LOG("%s:%u", server, port);
 	HANDLE con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlib, (LPARAM) & ncon);
 	return con;

@@ -6,6 +6,7 @@ SNAC::SNAC(char* buf,unsigned short length)
 {
 	service_=_htons((*(unsigned short*)&buf[0]));
 	subgroup_=_htons((*(unsigned short*)&buf[2]));
+	flags_=_htons((*(unsigned short*)&buf[4]));
 	idh_=_htons((*(unsigned short*)&buf[6]));
 	id_=_htons((*(unsigned short*)&buf[8]));
 	value_=&buf[SNAC_SIZE];

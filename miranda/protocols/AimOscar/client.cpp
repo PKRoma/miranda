@@ -80,9 +80,11 @@ int CAimProto::aim_send_service_request(HANDLE hServerConn,unsigned short &seqno
 int CAimProto::aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,unsigned short service)
 {
     unsigned short offset=0;
-    char buf[SNAC_SIZE+2];
+    char buf[SNAC_SIZE+2+TLV_HEADER_SIZE];
     aim_writesnac(0x01,0x04,offset,buf);
     aim_writeshort(service,offset,buf);
+    if (!getByte( AIM_KEY_DSSL, 0))
+        aim_writetlv(0x8c,0,NULL,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -843,15 +845,20 @@ int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char
 {
     unsigned short offset=0;
     unsigned short cookie_len = (unsigned short)strlen(chat_cookie);
-    char* buf=(char*)alloca(SNAC_SIZE+cookie_len+12);
+    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+cookie_len+8);
     aim_writesnac(0x01,0x04,offset,buf,id);
     aim_writeshort(0x0e,offset,buf);	        			// Service request for Chat
+
     aim_writeshort(0x01,offset,buf);						// Tag
     aim_writeshort(cookie_len+5,offset,buf);				// Length
     aim_writeshort(exchange,offset,buf);					// Value - Exchange
     aim_writechar((unsigned char)cookie_len,offset,buf);	// Value - Cookie Length
     aim_writegeneric(cookie_len,chat_cookie,offset,buf);	// Value - Cookie
     aim_writeshort(instance,offset,buf);					// Value - Instance
+
+//    if (!getByte( AIM_KEY_DSSL, 0))
+        aim_writetlv(0x8c,0,NULL,offset,buf);               // Request SSL connection
+
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

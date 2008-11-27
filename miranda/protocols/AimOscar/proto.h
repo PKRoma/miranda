@@ -317,7 +317,7 @@ struct CAimProto : public PROTO_INTERFACE
     void   __cdecl aim_admin_negotiation( void* );
 
     int    LOG(const char *fmt, ...);
-	HANDLE aim_connect(const char* server, unsigned short port);
+	HANDLE aim_connect(const char* server, unsigned short port, bool use_ssl);
 	HANDLE aim_peer_connect(const char* ip, unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////

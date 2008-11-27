@@ -34,7 +34,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 					port = (unsigned short)atol(delim+1);
 					*delim = 0;
 				}
-				hServerConn = aim_connect(server, port);
+				hServerConn = aim_connect(server, port, !getByte( AIM_KEY_DSSL, 0));
 				delete[] server;
 				if(hServerConn)
 				{
@@ -157,8 +157,6 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 			instantidle=1;
 		}
 		aim_request_list(hServerConn,seqno);
-		//if(getByte( AIM_KEY_CM, 0))
-		//	aim_new_service_request(hServerConn,seqno,0x0018);
 	}
 }
 void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
@@ -672,7 +670,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			aim_request_offline_msgs(hServerConn,seqno);
 			aim_activate_list(hServerConn,seqno);
 			if(getByte( AIM_KEY_CM, 0))
-				aim_new_service_request(hServerConn,seqno,0x0018);//mail
+				aim_new_service_request(hServerConn,seqno,0x0018 );//mail
 			LOG("Connection Negotiation Finished");
 			state=1;
 		}
@@ -1148,7 +1146,7 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 				delete[] msg;
 			}
 			i++;
-			offset=offset+tlv.len();
+			offset+=tlv.len();
 		}
 		if(hContact)
 		{
@@ -1305,19 +1303,21 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 {
 	if(snac.subcmp(0x0005))
 	{
-		int position=2;//extra 0x06 before snac if done after main connection negotiation has finished.
-		char* server=0;
-		char* local_cookie=0;
+		char* server=NULL;
+		char* local_cookie=NULL;
 		int local_cookie_length=0;
 		unsigned short family=0;
-		for(int i=0;i<4;i++)
+        unsigned char use_ssl=0;
+
+        int offset=2;
+        while(offset<snac.len())
 		{
-			TLV tlv(snac.val(position));
+			TLV tlv(snac.val(offset));
 			if(tlv.cmp(0x000d))
 			{
 				family=tlv.ushort();
 			}
-			if(tlv.cmp(0x0005))
+			else if(tlv.cmp(0x0005))
 			{
 				server=tlv.dup();
 			}
@@ -1326,11 +1326,15 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				local_cookie=tlv.dup();
 				local_cookie_length=tlv.len();
 			}
-			position+=(TLV_HEADER_SIZE+tlv.len());
+			else if(tlv.cmp(0x008e))
+            {
+                use_ssl=tlv.ubyte();
+            }
+			offset+=TLV_HEADER_SIZE+tlv.len();
 		}
 		if(family==0x0018)
 		{
-			hMailConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			hMailConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
 			if(hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");
@@ -1343,7 +1347,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0010)
 		{
-			hAvatarConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			hAvatarConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
@@ -1359,7 +1363,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x000D)
 		{
-			hChatNavConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			hChatNavConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
 			if(hChatNavConn)
 			{
 				LOG("Successfully Connected to the Chat Navigation Server.");
@@ -1376,7 +1380,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
             chat_list_item* item = find_chat_by_cid(snac.idh());
             if (item)
             {
-			    item->hconn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			    item->hconn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
 			    if(item->hconn)
 			    {
 				    LOG("Successfully Connected to the Chat Server.");
@@ -1391,7 +1395,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0007)
 		{
-			hAdminConn=aim_peer_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT));
+			hAdminConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
 			if(hAdminConn)
 			{
 				LOG("Successfully Connected to the Admin Server.");

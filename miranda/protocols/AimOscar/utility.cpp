@@ -18,12 +18,12 @@ void CAimProto::broadcast_status(int status)
 			Netlib_CloseHandle(hDirectBoundPort);
 			hDirectBoundPort=NULL;
 		}
-        if (hAvatarConn)
+        if (hAvatarConn && hAvatarConn != (HANDLE)1)
 		{
 			aim_sendflap(hAvatarConn,0x04,0,NULL,avatar_seqno);
 			Netlib_Shutdown(hAvatarConn);
 		}
-        if (hChatNavConn)
+        if (hChatNavConn && hChatNavConn != (HANDLE)1)
 		{
 			aim_sendflap(hChatNavConn,0x04,0,NULL,chatnav_seqno);
 			Netlib_Shutdown(hChatNavConn);
@@ -70,7 +70,7 @@ void CAimProto::start_connection(int status)
 		hServerConn = NULL;
 		hServerPacketRecver = NULL;
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(dbv.pszVal, port);
+		hServerConn = aim_connect(dbv.pszVal, port, !getByte( AIM_KEY_DSSL, 0));
 
 		if (!dbkey) DBFreeVariant(&dbv);
 

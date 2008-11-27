@@ -57,11 +57,11 @@ CAimProto::~CAimProto()
 		Netlib_CloseHandle(hDirectBoundPort);
 	if(hServerConn)
 		Netlib_CloseHandle(hServerConn);
-	if(hAvatarConn)
+	if(hAvatarConn && hAvatarConn != (HANDLE)1)
 		Netlib_CloseHandle(hAvatarConn);
-	if(hChatNavConn)
+	if(hChatNavConn && hChatNavConn != (HANDLE)1)
 		Netlib_CloseHandle(hChatNavConn);
-	if(hAdminConn)
+	if(hAdminConn && hAdminConn != (HANDLE)1)
 		Netlib_CloseHandle(hAdminConn);
 
 	close_chat_conn();

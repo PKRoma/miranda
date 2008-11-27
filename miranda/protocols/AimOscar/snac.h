@@ -7,6 +7,7 @@ private:
 	unsigned short service_;
 	unsigned short subgroup_;
 	unsigned short length_;
+    unsigned short flags_;
 	unsigned short idh_;
 	unsigned short id_;
 	char* value_;
@@ -20,6 +21,7 @@ public:
 	char* part(int pos, int length);
     char* val(int pos=0) { return &value_[pos]; }
 	unsigned short len(void) { return length_; }
+	unsigned short flags(void) { return flags_; }
 	unsigned short id(void) { return id_; }
     unsigned short idh(void) { return idh_; }
 };
