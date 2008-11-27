@@ -204,7 +204,7 @@ void RegisterFontServiceFonts() {
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 	}
 	cid.cbSize = sizeof(ColourIDT);
-        mir_sntprintf(cid.group, SIZEOF(cid.group), _T("%s/%s"), LPGENT("Message Sessions"), LPGENT("Messaging"));
+        mir_sntprintf(cid.group, SIZEOF(cid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Single Messaging"));
 	strncpy(cid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
 	cid.flags = 0;
 	cid.order = 0;
