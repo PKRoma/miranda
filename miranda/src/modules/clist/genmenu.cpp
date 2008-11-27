@@ -672,19 +672,19 @@ int MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 	return MO_AddNewMenuItem( menuobjecthandle, pmi );
 }
 
-static int WhereToPlace(HMENU hMenu,PMO_MenuItem mi,MENUITEMINFO *mii,ListParam *param)
+static int WhereToPlace( HMENU hMenu, PMO_MenuItem mi )
 {
-	int i=0;
-
-	mii->fMask = MIIM_SUBMENU | MIIM_DATA;
-	for ( i=GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
-		GetMenuItemInfo( hMenu, i, TRUE, mii );
-		if ( mii->fType != MFT_SEPARATOR ) {
-			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii->dwItemData);
+	MENUITEMINFO mii = { 0 };
+	mii.cbSize = MENUITEMINFO_V4_SIZE;
+	mii.fMask = MIIM_SUBMENU | MIIM_DATA;
+	for ( int i=GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
+		GetMenuItemInfo( hMenu, i, TRUE, &mii );
+		if ( mii.fType != MFT_SEPARATOR ) {
+			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii.dwItemData);
 			if ( pimi != NULL )
 				if ( pimi->mi.position <= mi->position )
 					break;
-		}	}
+	}	}
 
 	return i+1;
 }
@@ -886,12 +886,10 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			continue;
 
 		MENUITEMINFO mii = { 0 };
-		mii.cbSize = MENUITEMINFO_V4_SIZE;
-		mii.fMask = MIIM_SUBMENU | MIIM_TYPE | MIIM_DATA;
 		mii.dwItemData = ( LPARAM )pmi;
 		mii.fType = MFT_STRING;
 
-		int i = WhereToPlace( hMenu, mi, &mii, &localparam );
+		int i = WhereToPlace( hMenu, mi );
 
 		if ( !IsWinVer98Plus()) {
 			mii.cbSize = MENUITEMINFO_V4_SIZE;
