@@ -74,6 +74,8 @@ PMO_IntMenuItem MO_RecursiveWalkMenu( PMO_IntMenuItem, pfnWalkFunc, void* );
 int InitGenMenu();
 int UnitGenMenu();
 
+int FindRoot( PMO_IntMenuItem pimi, void* param );
+
 TMO_IntMenuItem * GetMenuItemByGlobalID(int globalMenuID);
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c
 

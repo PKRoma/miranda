@@ -608,7 +608,7 @@ int MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 //wparam=MenuObjectHandle
 //lparam=PMO_MenuItem
 
-static int FindRoot( PMO_IntMenuItem pimi, void* param )
+int FindRoot( PMO_IntMenuItem pimi, void* param )
 {
 	if ( pimi->mi.pszName != NULL )
 		if (( pimi->mi.flags & CMIF_ROOTPOPUP ) && !_tcscmp( pimi->mi.ptszName, ( TCHAR* )param ))
