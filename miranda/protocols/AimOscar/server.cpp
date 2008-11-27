@@ -1670,7 +1670,7 @@ void CAimProto::snac_chat_joined_left_users(SNAC &snac,chat_list_item* item)//fa
 */
 			    tlv_offset+=TLV_HEADER_SIZE+tlv.len();
 		    }
-		    offset+=tlv_offset;
+		    offset=tlv_offset;
         }
 	}		
 }
