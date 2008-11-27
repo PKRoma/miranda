@@ -1714,9 +1714,9 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 		tlv_offset+=TLV_HEADER_SIZE;
 
 		offset = 0;
-		char* encoding = NULL;
+        bool uni = false;
 //		char* language = NULL;
-		char* message = NULL;
+		TCHAR* message = NULL;
 		TLV msg_tlv(snac.val(tlv_offset));			// Message information
 		tlv_offset+=TLV_HEADER_SIZE;
 		while (offset < msg_tlv.len())
@@ -1726,21 +1726,50 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 			
 			// TLV List
 			if (tlv.cmp(0x0001))
-				message = tlv.dup();
-			if (tlv.cmp(0x0002))
-				encoding = tlv.dup();
+            {
+                if (uni) 
+                {
+				    wchar_t* msgw=tlv.dupw();
+                    wcs_htons(msgw);
+#ifdef UNICODE
+                    char* msgu=mir_utf8encodeW(msgw);
+#else
+                    char* msgu=mir_w2a(msgw);
+#endif
+                    delete[] msgw;
+		            char* bbuf = strip_html(msgu);
+                    mir_free(msgu);
+#ifdef UNICODE
+                    message=mir_utf8decodeW(bbuf);
+#else
+                    message=mir_strdup(bbuf);
+#endif
+                    delete[] bbuf;
+                }
+                else
+                {
+				    char* msg=tlv.dup();
+		            char* bbuf = strip_html(msg);
+                    delete[] msg;
+                    message = mir_a2t(bbuf);
+                    delete[] bbuf;
+                }
+            }
+			else if (tlv.cmp(0x0002))
+            {
+                char* enc=tlv.dup();
+                uni = strstr(enc,"unicode-2-0") != NULL;
+                delete[] enc;
+            }
 //			if (tlv.cmp(0x0003))
 //				language = tlv.dup();
 
 			offset+=tlv.len();
 		}
 
-		char* bbuf = strip_html(message);
-        chat_event(item->id, sn, GC_EVENT_MESSAGE, bbuf);
+        chat_event(item->id, sn, GC_EVENT_MESSAGE, message);
 
-        delete[] encoding;
-        delete[] message;
-        delete[] bbuf;
+        mir_free(message);
         delete[] sn;
 	}
 }

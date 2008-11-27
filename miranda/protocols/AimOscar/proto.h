@@ -235,7 +235,7 @@ struct CAimProto : public PROTO_INTERFACE
 
     void chat_register(void);
     void chat_start(const char* id);
-    void chat_event(const char* id, const char* sn, int evt, const char* msg = NULL);
+    void chat_event(const char* id, const char* sn, int evt, const TCHAR* msg = NULL);
     void chat_leave(const char* id);
 
     chat_list_item* find_chat_by_cid(unsigned short cid);
@@ -295,7 +295,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room);
     int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
     int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
-	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg);
+	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg, bool uni);
 	int	   aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
     int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
     int    aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn);
@@ -343,7 +343,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out, unsigned short id=0);
 	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
-	int    aim_sendflap(HANDLE conn, char type,unsigned short length,char *buf, unsigned short &seqno);
+	int    aim_sendflap(HANDLE conn, char type,unsigned short length,const char *buf, unsigned short &seqno);
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 	void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);

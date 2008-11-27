@@ -29,7 +29,7 @@ int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const cha
 	return 0;
 }
 
-int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,char *buf, unsigned short &seqno)
+int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,const char *buf, unsigned short &seqno)
 {
 	EnterCriticalSection(&SendingMutex);
     const int slen = FLAP_SIZE + length;

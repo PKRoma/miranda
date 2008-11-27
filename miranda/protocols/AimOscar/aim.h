@@ -172,7 +172,7 @@
 #define AIM_DEFAULT_PORT				5190
 
 //Some Defaults for various things
-#define DEFAULT_KEEPALIVE_TIMER			60// 1000 milliseconds * 60 = 60 secs
+#define DEFAULT_KEEPALIVE_TIMER			39 // secs
 #define DEFAULT_GRACE_PERIOD			60
 #define AIM_DEFAULT_GROUP				"miranda merged"
 #define SYSTEM_BUDDY					"aolsystemmsg"

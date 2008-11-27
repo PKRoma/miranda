@@ -415,7 +415,8 @@ int CAimProto::aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool st
 
 int CAimProto::aim_keepalive(HANDLE hServerConn,unsigned short &seqno)
 {
-    return aim_sendflap(hServerConn,0x05,0,0,seqno)==0 ? 0 : -1;
+    static const char data[] = "\x0\x0\x0\xEE";
+    return aim_sendflap(hServerConn,0x05,4,data,seqno);
 }
 
 int CAimProto::aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr)//used when requesting a regular file transfer
@@ -854,23 +855,39 @@ int CAimProto::aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg)
+int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg, bool uni)
 {
+    unsigned short msg_len;
+    const char* charset;
+
+    if (uni)
+    {
+        msg_len = (unsigned short)(wcslen((wchar_t*)msg) * sizeof(wchar_t));
+        wcs_htons((wchar_t*)msg);
+        charset = "unicode-2-0";
+    }
+    else
+    {
+        msg_len = (unsigned short)strlen(msg);
+        charset = "us-ascii";
+    }
+    unsigned short chrset_len = (unsigned short)strlen(charset);
+
+    unsigned short tlv_offset=0;
+    char* tlv_buf=(char*)alloca(TLV_HEADER_SIZE*4+chrset_len+msg_len+20);
+    aim_writetlv(0x04,13,"text/x-aolrtf",tlv_offset,tlv_buf);   // Format
+    aim_writetlv(0x02,chrset_len,charset,tlv_offset,tlv_buf);   // Character Set
+    aim_writetlv(0x03,2,"en",tlv_offset,tlv_buf);			    // Language Encoding
+    aim_writetlv(0x01,msg_len,msg,tlv_offset,tlv_buf);			// Message
+
     unsigned short offset=0;
-    const char* charset = "us-ascii";
-    const char* lang = "en";
-    unsigned short tlv_len = (unsigned short)strlen(charset)+(unsigned short)strlen(lang)+(unsigned short)strlen(msg);
-    char* buf=(char*)alloca(SNAC_SIZE+tlv_len+34);
+    char* buf=(char*)alloca(SNAC_SIZE+8+2+TLV_HEADER_SIZE*3+tlv_offset);
     aim_writesnac(0x0e,0x05,offset,buf);
     aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);			// Message Cookie (can be random)
     aim_writeshort(0x03,offset,buf);							// Message Channel (Always 3 for chat)
     aim_writetlv(0x01,0,NULL,offset,buf);						// Public/Whisper flag
     aim_writetlv(0x06,0,NULL,offset,buf);						// Enable Reflection flag
-    aim_writeshort(0x05,offset,buf);							// Message Information TLV
-    aim_writeshort(tlv_len+(3*TLV_HEADER_SIZE),offset,buf);		// TLV length
-    aim_writetlv(0x02,(unsigned short)strlen(charset),charset,offset,buf);		// Character Set
-    aim_writetlv(0x03,(unsigned short)strlen(lang),lang,offset,buf);			// Language Encoding
-    aim_writetlv(0x01,(unsigned short)strlen(msg),msg,offset,buf);				// Message
+    aim_writetlv(0x05,tlv_offset,tlv_buf,offset,buf);			// Message Information TLV
 
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }

@@ -20,63 +20,78 @@ void CAimProto::chat_register(void)
 
 void CAimProto::chat_start(const char* id)
 {
+    TCHAR* idt = mir_a2t(id);
+
 	GCSESSION gcw = {0};
 	gcw.cbSize = sizeof(gcw);
-//	gcw.dwFlags = GC_TCHAR;
+	gcw.dwFlags = GC_TCHAR;
 	gcw.iType = GCW_CHATROOM;
 	gcw.pszModule = m_szModuleName;
-	gcw.pszName = id;
-	gcw.pszID = id;
+	gcw.ptszName = idt;
+	gcw.ptszID = idt;
 	CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM)&gcw);
 
 	GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_ADDGROUP };
-	gcd.pszID = (char*)id;
-	GCEVENT gce = {0};
+	gcd.ptszID = idt;
+
+    GCEVENT gce = {0};
 	gce.cbSize = sizeof(gce);
-//	gce.dwFlags = GC_TCHAR;
+	gce.dwFlags = GC_TCHAR;
 	gce.pDest = &gcd;
-//	gce.pszUID = name;
-	gce.pszStatus = Translate("Me");
+	gce.ptszStatus = TranslateT("Me");
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
 	gcd.iType = GC_EVENT_ADDGROUP;
-	gce.pszStatus = Translate("Others");
+	gce.ptszStatus = TranslateT("Others");
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
 	gcd.iType = GC_EVENT_CONTROL;
 	CallServiceSync(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
 	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE,   (LPARAM)&gce);
 	CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE,   (LPARAM)&gce);
+
+    mir_free(idt);
 }
 
-void CAimProto::chat_event(const char* id, const char* sn, int evt, const char* msg)
+void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR* msg)
 {
-	GCDEST gcd = { m_szModuleName, { NULL },  evt };
-	gcd.pszID = (char*)id;
+    TCHAR* idt = mir_a2t(id);
+    TCHAR* snt = mir_a2t(sn);
+
+    GCDEST gcd = { m_szModuleName, { NULL },  evt };
+	gcd.ptszID = idt;
 
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(gce);
-    gce.dwFlags = GCEF_ADDTOLOG;
+    gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	gce.pDest = &gcd;
-	gce.pszNick = sn;
-	gce.pszUID = sn;
+	gce.ptszNick = snt;
+	gce.ptszUID = snt;
     gce.bIsMe = stricmp(sn, username) == 0;
-    gce.pszStatus = Translate(gce.bIsMe ? "Me" : "Others");
-    gce.pszText = msg;
+    gce.ptszStatus = gce.bIsMe ? TranslateT("Me") : TranslateT("Others");
+    gce.ptszText = msg;
 	gce.time = time(NULL);
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
+
+    mir_free(snt);
+    mir_free(idt);
 }
 
 void CAimProto::chat_leave(const char* id)
 {
+    TCHAR* idt = mir_a2t(id);
+
     GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_CONTROL };
-    gcd.pszID = (char*)id;
+    gcd.ptszID = idt;
 
     GCEVENT gce = {0};
     gce.cbSize = sizeof(GCEVENT);
+    gce.dwFlags = GC_TCHAR;
     gce.pDest = &gcd;
     CallServiceSync(MS_GC_EVENT, SESSION_OFFLINE, (LPARAM)&gce);
     CallServiceSync(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
+
+    mir_free(idt);
 }
 
 
@@ -87,7 +102,9 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 
 	if (stricmp(gch->pDest->pszModule, m_szModuleName)) return 0;
 
-    chat_list_item* item = find_chat_by_id(gch->pDest->pszID);
+    char* id = mir_t2a(gch->pDest->ptszID);
+    chat_list_item* item = find_chat_by_id(id);
+    mir_free(id);
 
     switch (gch->pDest->iType) 
     {
@@ -100,16 +117,21 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 			break;
 
         case GC_USER_MESSAGE:
-			if (gch && gch->pszText && strlen(gch->pszText)&& item) 
+			if (gch->ptszText && _tcslen(gch->ptszText)&& item) 
 			{
-                aim_chat_send_message(item->hconn, item->seqno, gch->pszText);
+                aim_chat_send_message(item->hconn, item->seqno, gch->pszText, sizeof(TCHAR)-1);
 			}
 			break;
 		case GC_USER_CHANMGR: 
 			break;
 
         case GC_USER_PRIVMESS:
-			CallService(MS_MSG_SENDMESSAGE, (WPARAM)find_contact(gch->pszUID), 0);
+            {
+                char* sn = mir_t2a(gch->ptszUID);
+                HANDLE hContact = find_contact(sn);
+                mir_free(sn);
+			    CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
+            }
 			break;
 
         case GC_USER_LOGMENU:

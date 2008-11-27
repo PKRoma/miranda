@@ -89,7 +89,7 @@ bool CAimProto::wait_conn( HANDLE& hConn, HANDLE& hEvent, unsigned short service
 	if ( hConn == NULL && hServerConn ) {
 		LOG("Starting Connection.");
 		hConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
-		aim_new_service_request( hServerConn, seqno, service ) ;//avatar service connection!
+		aim_new_service_request( hServerConn, seqno, service ) ;//general service connection!
 	}
 	LeaveCriticalSection( &connMutex );
 
