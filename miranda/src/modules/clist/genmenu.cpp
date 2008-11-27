@@ -683,10 +683,10 @@ static int WhereToPlace( HMENU hMenu, PMO_MenuItem mi )
 			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii.dwItemData);
 			if ( pimi != NULL )
 				if ( pimi->mi.position <= mi->position )
-					break;
+					return i+1;
 	}	}
 
-	return i+1;
+	return 0;
 }
 
 static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFO *lpmii,ListParam *param)
