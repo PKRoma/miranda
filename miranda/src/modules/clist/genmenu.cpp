@@ -506,8 +506,10 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 		return -1;
 	}
 
-	if ( pimi->submenu.first )
+	if ( pimi->submenu.first ) {
 		MO_RecursiveWalkMenu( pimi->submenu.first, FreeMenuItem, NULL );
+		pimi->submenu.first = NULL;
+	}
 
 	PMO_IntMenuItem prev = MO_RecursiveWalkMenu( pimi->owner->first, FindParent, pimi );
 	if ( prev )
