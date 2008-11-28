@@ -232,7 +232,7 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     }
     if (hDirectBoundPort == NULL)
     {
-        ShowPopup("Aim Protocol","Aim was unable to bind to a port. File transfers may not succeed in some cases.", 0);
+        ShowPopup(NULL,"Aim was unable to bind to a port. File transfers may not succeed in some cases.", 0);
     }
     LocalPort=nlb.wPort;
     InternalIP=nlb.dwInternalIP;
@@ -713,10 +713,9 @@ int CAimProto::aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned lo
 {
     unsigned short offset=0;
     char buf[SNAC_SIZE+4];
-    seconds=_htonl(seconds);
     aim_writesnac(0x01,0x11,offset,buf);
-    aim_writegeneric(4,(char*)&seconds,offset,buf);
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+    aim_writelong(seconds,offset,buf);
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
@@ -724,7 +723,7 @@ int CAimProto::aim_request_mail(HANDLE hServerConn,unsigned short &seqno)
     unsigned short offset=0;
     char buf[SNAC_SIZE];
     aim_writesnac(0x18,0x06,offset,buf);
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, const char* sn, const char* hash, unsigned short hash_size)
@@ -805,7 +804,7 @@ int CAimProto::aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seq
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno) ? -1 : 0;
 }
 
-int CAimProto::aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room)
+int CAimProto::aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage)
 {
     //* Join Pseudo Room (Get's the info we need for the real connection)
     unsigned short offset=0;
@@ -813,7 +812,7 @@ int CAimProto::aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char
     const char* lang = "en";
     char* buf=(char*)alloca(SNAC_SIZE+strlen(charset)+strlen(lang)+strlen(room)+26);
     aim_writesnac(0x0d,0x08,offset,buf);
-    aim_writeshort(4,offset,buf);           					// Exchange
+    aim_writeshort(exchage,offset,buf);           				// Exchange
     aim_writechar(6,offset,buf);		        				// Cookie Length
     aim_writegeneric(6,"create",offset,buf);					// Cookie
     aim_writeshort(0xffff,offset,buf);      					// Last Instance
@@ -909,8 +908,8 @@ int CAimProto::aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char
     aim_writesnac(0x04,0x06,offset,buf);
     aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);		    // Cookie
     aim_writeshort(2,offset,buf);				                // Channel
-    aim_writechar((unsigned char)sn_len,offset,buf);		    // Screenname Length
-    aim_writegeneric(sn_len,sn,offset,buf);					    // Screenname
+    aim_writechar((unsigned char)sn_len,offset,buf);		    // Screen Name Length
+    aim_writegeneric(sn_len,sn,offset,buf);					    // Screen Name
 
     aim_writeshort(0x05,offset,buf);						    // Rendezvous Message Data TLV
     aim_writeshort(49+msg_len+chat_cookie_len,offset,buf);	    // TLV size

@@ -2,7 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by aim.rc
 //
-#define IDC_STATIC                     -1
+#define IDC_SAVECHANGES                 3
+#define IDC_CONFIRM                     4
 #define IDD_INFO                        6
 #define IDD_AIMACCOUNT                  7
 #define IDD_AIM                         8
@@ -25,6 +26,7 @@
 #define IDD_PRIVACY                     36
 #define IDD_CHAT                        37
 #define IDI_BLOCK                       38
+#define IDD_ADMIN                       39
 #define IDI_BOLD                        41
 #define IDI_NBOLD                       42
 #define IDI_ITALIC                      43
@@ -68,6 +70,14 @@
 #define IDC_ALLOWREMOVE                 155
 #define IDC_BLOCKREMOVE                 156
 #define IDC_ROOM                        157
+#define IDC_CEMAIL                      158
+#define IDC_FNAME                       159
+#define IDC_NPW1                        161
+#define IDC_NPW2                        162
+#define IDC_NPW3                        164
+#define IDC_NPW                         164
+#define IDC_CPW                         164
+#define IDC_PINFO                       165
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
@@ -91,6 +101,7 @@
 #define IDC_PROFILE                     1220
 #define IDC_IIM                         1230
 #define IDC_IIH                         1240
+#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
@@ -98,7 +109,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        37
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         158
+#define _APS_NEXT_CONTROL_VALUE         166
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

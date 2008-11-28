@@ -50,7 +50,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup("Aim Protocol","Please, enter a username in the options dialog.", 0);
+			ShowPopup(NULL,"Please, enter a username in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -58,7 +58,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup("Aim Protocol","Please, enter a password in the options dialog.", 0);
+			ShowPopup(NULL,"Please, enter a password in the options dialog.", 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -781,7 +781,7 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup("Aim Protocol",error, 0);
+		ShowPopup(NULL,error, 0);
 	}
 }
 
@@ -805,7 +805,7 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup("Aim Protocol",error, 0);
+		ShowPopup(NULL,error, 0);
 	}
 }
 unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, unsigned long prevcheck)

@@ -11,8 +11,8 @@ struct chatnav_param
     chatnav_param(char* tid, unsigned short ex, unsigned short in)
     { id = tid; exchange = ex; instance = in; isroom = false; }
 
-    chatnav_param(char* tid)
-    { id = tid; isroom = true; }
+    chatnav_param(char* tid, unsigned short ex)
+    { id = strldup(tid); exchange = ex; isroom = true; }
 
     ~chatnav_param()
     { delete[] id; }

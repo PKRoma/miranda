@@ -82,8 +82,8 @@ void CAimProto::snac_mail_rate_limitations(SNAC &snac,HANDLE hServerConn,unsigne
 	if(snac.subcmp(0x0007))
 	{
 		aim_accept_rates(hServerConn,seqno);
-		aim_mail_ready(hServerConn,seqno);
 		aim_request_mail(hServerConn,seqno);
+		aim_mail_ready(hServerConn,seqno);
 	}
 }
 
@@ -943,7 +943,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Buddy Wants to Send us a file. Request 1");
 			if (getByte(hContact, AIM_KEY_FT, 255) != 255)
 			{
-				ShowPopup("Aim Protocol","Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
+				ShowPopup(NULL,"Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
 				return;
 			}
 			if(force_proxy)
@@ -1195,12 +1195,12 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			if(code==0x0000)
 			{
 				LOG("Successfully removed buddy from list.");
-				ShowPopup("Aim Protocol","Successfully removed buddy from list.", 0);
+				ShowPopup(NULL,"Successfully removed buddy from list.", 0);
 			}
 			else if(code==0x0002)
 			{
 				LOG("Item you want to delete not found in list.");
-				ShowPopup("Aim Protocol","Item you want to delete not found in list.", 0);
+				ShowPopup(NULL,"Item you want to delete not found in list.", 0);
 			}
 			else
 			{
@@ -1216,7 +1216,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				msg[lstrlenA(msg)-2]=ccode[0];
 				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG("msg");
-				ShowPopup("Aim Protocol",msg, 0);
+				ShowPopup(NULL,msg, 0);
 			}
 		}
 		else if(id==0x0008)
@@ -1224,32 +1224,32 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			if(code==0x0000)
 			{
 				LOG("Successfully added buddy to list.");
-				ShowPopup("Aim Protocol","Successfully added buddy to list.", 0);
+				ShowPopup(NULL,"Successfully added buddy to list.", 0);
 			}
 			else if(code==0x0003)
 			{
 				LOG("Failed to add buddy to list: Item already exist.");
-				ShowPopup("Aim Protocol","Failed to add buddy to list: Item already exist.", 0);
+				ShowPopup(NULL,"Failed to add buddy to list: Item already exist.", 0);
 			}
 			else if(code==0x000a)
 			{
 				LOG("Error adding buddy(invalid id?, already in list?)");
-				ShowPopup("Aim Protocol","Error adding buddy(invalid id?, already in list?)", 0);
+				ShowPopup(NULL,"Error adding buddy(invalid id?, already in list?)", 0);
 			}
 			else if(code==0x000c)
 			{
 				LOG("Cannot add buddy. Limit for this type of item exceeded.");
-				ShowPopup("Aim Protocol","Cannot add buddy. Limit for this type of item exceeded.", 0);
+				ShowPopup(NULL,"Cannot add buddy. Limit for this type of item exceeded.", 0);
 			}
 			else if(code==0x000d)
 			{
 				LOG("Error? Attempting to add ICQ contact to an AIM list.");
-				ShowPopup("Aim Protocol","Error? Attempting to add ICQ contact to an AIM list.", 0);
+				ShowPopup(NULL,"Error? Attempting to add ICQ contact to an AIM list.", 0);
 			}
 			else if(code==0x000e)
 			{
 				LOG("Cannot add this buddy because it requires authorization.");
-				ShowPopup("Aim Protocol","Cannot add this buddy because it requires authorization.", 0);
+				ShowPopup(NULL,"Cannot add this buddy because it requires authorization.", 0);
 			}
 			else
 			{
@@ -1265,7 +1265,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				msg[lstrlenA(msg)-2]=ccode[0];
 				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG(msg);
-				ShowPopup("Aim Protocol",msg, 0);
+				ShowPopup(NULL,msg, 0);
 			}
 		}
 		else if(id==0x0009)
@@ -1273,12 +1273,12 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			if(code==0x0000)
 			{
 				LOG("Successfully modified group.");
-				ShowPopup("Aim Protocol","Successfully modified group.", 0);
+				ShowPopup(NULL,"Successfully modified group.", 0);
 			}
 			else if(code==0x0002)
 			{
 				LOG("Item you want to modify not found in list.");
-				ShowPopup("Aim Protocol","Item you want to modify not found in list.", 0);
+				ShowPopup(NULL,"Item you want to modify not found in list.", 0);
 			}
 			else
 			{
@@ -1294,7 +1294,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 				msg[lstrlenA(msg)-2]=ccode[0];
 				msg[lstrlenA(msg)-1]=ccode[1];
 				LOG(msg);
-				ShowPopup("Aim Protocol",msg, 0);
+				ShowPopup(NULL,msg, 0);
 			}
 		}
 	}
@@ -1309,7 +1309,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		unsigned short family=0;
         unsigned char use_ssl=0;
 
-        int offset=2;
+        int offset=2; // skip number of bytes in family version tlv
         while(offset<snac.len())
 		{
 			TLV tlv(snac.val(offset));
@@ -1784,13 +1784,14 @@ void CAimProto::snac_admin_rate_limitations(SNAC &snac,HANDLE hServerConn,unsign
 	{
 		aim_accept_rates(hServerConn,seqno);
 		aim_admin_ready(hServerConn,seqno);
+        SetEvent(hAdminEvent);
 	}
 }
 
 void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
 {
-	if(snac.subcmp(0x0003) || snac.subcmp(0x0005)){ // Handles info response and modification response
-	 
+	if(snac.subcmp(0x0003) || snac.subcmp(0x0005)) // Handles info response and modification response
+    {
 		bool err = false;
 		bool req_email = false;
 		unsigned short perms = 0;
@@ -1799,8 +1800,8 @@ void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
 		perms = snac.ushort();				// Permissions
 		num_tlv = snac.ushort(2);			// Number of TLVs
 
-		char* sn = 0;						// Screenname
-		char* email = 0;					// Email address
+		char* sn = NULL;					// Screen Name
+		char* email = NULL;					// Email address
 		//unsigned short status = 0;		// Account status
 
 		unsigned short offset = 0;
@@ -1834,34 +1835,25 @@ void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
 		{
 			// Display messages
 			if (email)
-			{
-				size_t msg_len = strlen(email)+40;
-				char* buf= new char[msg_len];
-				mir_snprintf(buf,msg_len,"The email address for this account is: %s",email);
-				ShowPopup("Aim Protocol",buf, 0);
-				delete[] buf;
-			}
-			else if(sn)
-			{
-				size_t msg_len = strlen(sn)+21;
-				char* buf= new char[msg_len];
-				mir_snprintf(buf,msg_len,"Your screenname is: %s",sn);
-				ShowPopup("Aim Protocol",buf, 0);
-				delete[] buf;
-			}
+				setString(AIM_KEY_EM,email); // Save our email for future reference.
+			if(sn)
+				setString(AIM_KEY_SN,sn); // Update the database to reflect the formatted name.
+            sendBroadcast( NULL, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1, 0 );
+            
 		}
 		else if (snac.subcmp(0x0005) && !err) // Changed info
 		{
 			// Display messages
 			if (email && req_email)	// We requested to change the email
-				ShowPopup("Aim Protocol","A confirmation message has been sent to the new email address. Please follow its instructions.", 0);
+				ShowPopup(NULL,"A confirmation message has been sent to the new email address. Please follow its instructions.", 0);
 			else if (sn)
 			{
 				setString(AIM_KEY_SN,sn); // Update the database to reflect the formatted name.
-				ShowPopup("Aim Protocol","Your screenname has been successfully formatted.", 0);
+				//ShowPopup(NULL,"Your Screen Name has been successfully formatted.", 0);
 			}
 		}
-
+        delete[] sn;
+        delete[] email;
 	}
 }
 
@@ -1873,13 +1865,13 @@ void CAimProto::snac_admin_account_confirm(SNAC &snac)//family 0x0007
 		status = snac.ushort();
 
 		if (status == 0)
-			ShowPopup("Aim Protocol","A confirmation message has been sent to your email address. Please follow its instructions.", 0);
+			ShowPopup(NULL,"A confirmation message has been sent to your email address. Please follow its instructions.", 0);
 		else if (status == 0x13)
-			ShowPopup("Aim Protocol","Unable to confirm at this time. Please try again later.", 0);
+			ShowPopup(NULL,"Unable to confirm at this time. Please try again later.", 0);
 		else if (status == 0x1e)
-			ShowPopup("Aim Protocol","Your account has already been confirmed.", 0);
+			ShowPopup(NULL,"Your account has already been confirmed.", 0);
 		else if (status == 0x23)
-			ShowPopup("Aim Protocol","Can't start the confirmation procedure.", 0);
+			ShowPopup(NULL,"Can't start the confirmation procedure.", 0);
 
 		//TLV tlv(snac.val(2));
 		//if (tlv.cmp(0x0004))

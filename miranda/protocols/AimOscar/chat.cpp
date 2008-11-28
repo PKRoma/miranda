@@ -67,7 +67,7 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 	gce.pDest = &gcd;
 	gce.ptszNick = snt;
 	gce.ptszUID = snt;
-    gce.bIsMe = stricmp(sn, username) == 0;
+    gce.bIsMe = _stricmp(sn, username) == 0;
     gce.ptszStatus = gce.bIsMe ? TranslateT("Me") : TranslateT("Others");
     gce.ptszText = msg;
 	gce.time = time(NULL);
@@ -169,7 +169,7 @@ void   __cdecl CAimProto::chatnav_request_thread( void* param )
         if (item == NULL)
         {
             chat_rooms.insert(new chat_list_item(par->id));
-            aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id);
+            aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id, par->exchange);
         }
     }
     else

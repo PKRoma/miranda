@@ -118,13 +118,19 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
         for(tok=arg+6;tok!=NULL;tok=tok2) {
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
-            if(!_strnicmp(tok,"roomname=",9) && *(tok+9)!=0)
+            if (!_strnicmp(tok,"roomname=",9) && *(tok+9)!=0)
+            {
                 rm=Netlib_UrlDecode(tok+9);
-            if(!_strnicmp(tok,"exchange=",9))
+                for (char *ch=rm; *ch; ++ch)
+                    if (*ch == '+') *ch = ' ';
+            }
+            if (!_strnicmp(tok,"exchange=",9))
                 exchange=atoi(Netlib_UrlDecode(tok+9)); 
         }
-        if(rm==NULL || exchange<=0) return 1; /* parse failed */
-//        proto->aim_gchat_joinrequest(rm,exchange);
+        if (rm==NULL || exchange<=0) return 1; /* parse failed */
+
+        chatnav_param* par = new chatnav_param(rm, (unsigned short)exchange);
+        proto->ForkThread(&CAimProto::chatnav_request_thread, par);
         return 0;
     }
     return 1; /* parse failed */

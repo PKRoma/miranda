@@ -607,6 +607,117 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// View admin dialog
+
+BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+    DBVARIANT dbv;
+
+	switch (msg) 
+    {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+		break;
+
+    case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code) 
+        {
+		case PSN_PARAMCHANGED:
+		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
+            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)ppro);
+
+		    if (!ppro->getString(AIM_KEY_SN, &dbv)) 
+		    {
+			    SetDlgItemTextA(hwndDlg, IDC_FNAME, dbv.pszVal);
+		        DBFreeVariant(&dbv);
+		    }
+		    if (!ppro->getString(AIM_KEY_EM, &dbv))
+		    {
+			    SetDlgItemTextA(hwndDlg, IDC_CEMAIL, dbv.pszVal);
+		        DBFreeVariant(&dbv);
+		    }
+		    if (ppro->state==1)	// Otherwise, get the info, save it, and then display it.
+		    {
+			    if (!ppro->hAdminConn)
+				    ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
+
+			    ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
+			    ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
+            }
+            break;
+
+        case PSN_INFOCHANGED:
+		    if (!ppro->getString(AIM_KEY_SN, &dbv))
+            {
+		        SetDlgItemTextA(hwndDlg, IDC_FNAME, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+		    if (!ppro->getString(AIM_KEY_EM, &dbv))
+            {
+		        SetDlgItemTextA(hwndDlg, IDC_CEMAIL, dbv.pszVal);
+                DBFreeVariant(&dbv);
+            }
+            break;
+        }
+        break;
+
+	case WM_COMMAND:
+	    if  (LOWORD(wParam) == IDC_SAVECHANGES && ppro->state==1) 
+        {
+	        if (!ppro->hAdminConn)
+		        ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
+
+            char name[64];
+            GetDlgItemTextA(hwndDlg, IDC_FNAME, name, sizeof(name));
+            if (strlen(name) > 0)
+	        {
+		        ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
+	        }
+
+            char email[254];
+	        GetDlgItemTextA(hwndDlg, IDC_CEMAIL, email, sizeof(email));
+            if (strlen(email) < 254 && strlen(email) > 1) // Must be greater than 1 or a SNAC error is thrown.
+	        {
+		        ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
+	        }
+
+            ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_HIDE);
+
+            char cpw[256], npw1[256], npw2[256];
+            GetDlgItemTextA(hwndDlg, IDC_CPW, cpw, sizeof(cpw));
+            GetDlgItemTextA(hwndDlg, IDC_NPW1, npw1, sizeof(npw1));
+            GetDlgItemTextA(hwndDlg, IDC_NPW2, npw2, sizeof(npw2));
+            if (strlen(cpw) > 0 && strlen(npw1) > 0 && strlen(npw2) > 0)
+            {
+	            // AOL only requires that you send the current password and a (single) new password.
+	            // Let's allow the client to type (two) new passwords incase they make a mistake so we
+	            // can handle any input error locally.
+	            if (strcmp(npw1,npw2) == 0)
+	            {
+		            ppro->aim_admin_change_password(ppro->hAdminConn,ppro->admin_seqno,cpw,npw1);
+	            }
+	            else
+	            {
+		            SetDlgItemTextA(hwndDlg, IDC_CPW, "");
+		            SetDlgItemTextA(hwndDlg, IDC_NPW1, "");
+		            SetDlgItemTextA(hwndDlg, IDC_NPW2, "");
+		            ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_SHOW);
+	            }
+            }
+            else if (LOWORD(wParam) == IDC_CONFIRM && ppro->state==1)	// Confirmation
+            {
+				if (!ppro->hAdminConn)
+					ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
+				ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
+			}
+        }
+		break;
+	}
+	return FALSE;
+}
+
 int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 {
 	if ( !lParam )//hContact
@@ -614,12 +725,20 @@ int CAimProto::OnUserInfoInit(WPARAM wParam,LPARAM lParam)
 		OPTIONSDIALOGPAGE odp = { 0 };
 		odp.cbSize = sizeof(odp);
 		odp.position = -1900000000;
+	    odp.flags = ODPF_USERINFOTAB | ODPF_TCHAR;
 		odp.hInstance = hInstance;
-		odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO);
-		odp.pszTitle = m_szModuleName;
+		odp.ptszTitle = m_tszUserName;
 		odp.dwInitParam = LPARAM(this);
+
+        odp.ptszTab = LPGENT("Profile");
+        odp.pszTemplate = MAKEINTRESOURCEA(IDD_INFO);
 		odp.pfnDlgProc = userinfo_dialog;
-		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM) & odp);
+		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+
+        odp.ptszTab = LPGENT("Admin");
+        odp.pszTemplate = MAKEINTRESOURCEA(IDD_ADMIN);
+		odp.pfnDlgProc = admin_dialog;
+		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 	return 0;
 }
@@ -982,13 +1101,14 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 1003000;
 	odp.hInstance = hInstance;
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
 	odp.ptszGroup = LPGENT("Network");
-	odp.ptszTab   = LPGENT("Basic");
 	odp.ptszTitle = m_tszUserName;
-	odp.pfnDlgProc = options_dialog;
 	odp.dwInitParam = LPARAM(this);
 	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+
+	odp.ptszTab   = LPGENT("Basic");
+    odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
+	odp.pfnDlgProc = options_dialog;
 	odp.nIDBottomSimpleControl = IDC_OPTIONS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	
@@ -1165,7 +1285,7 @@ BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 			    GetDlgItemTextA(hwndDlg, IDC_ROOM, room, sizeof(room));
 			    if (ppro->state==1 && strlen(room) > 0)
                 {
-                    chatnav_param* par = new chatnav_param(strldup(room));
+                    chatnav_param* par = new chatnav_param(room, 4);
                     ppro->ForkThread(&CAimProto::chatnav_request_thread, par);
                 }
 				EndDialog(hwndDlg, IDOK);

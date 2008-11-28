@@ -81,6 +81,7 @@
 
 //Popup flags
 #define	MAIL_POPUP						4
+#define	ERROR_POPUP						8
 
 //Main Option Window Keys
 #define AIM_KEY_SN						"SN"
@@ -151,6 +152,7 @@
 #define AIM_KEY_AH						"AvatarHash"
 #define AIM_KEY_ASH						"AvatarSavedHash"
 #define AIM_KEY_MS                      "MemberTS"  
+#define AIM_KEY_EM						"Email"
 //File Transfer Keys
 #define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
 #define AIM_KEY_CK						"Cookie"

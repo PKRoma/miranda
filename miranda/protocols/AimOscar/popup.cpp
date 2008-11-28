@@ -48,18 +48,27 @@ void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* 
 {
 	POPUPDATAEX ppd;
 
-	if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
+	if (title == NULL) 
+    {    
+        size_t len = strlen(m_szModuleName) + 20;
+        char* ttl = (char*)alloca(len);
+        mir_snprintf(ttl, len, Translate("%s Protocol"), m_szModuleName);
+        title = ttl;
+    }
+
+	if (flags & ERROR_POPUP) LOG(msg);
+
+    if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
 	{	
-		if(flags & MAIL_POPUP)
+		if (flags & MAIL_POPUP)
 		{
 			int size=strlen(msg)+20;
-			char* buf= new char[size];
+			char* buf= (char*)alloca(size);
 			strlcpy(buf,msg,size);
 			strlcpy(&buf[strlen(msg)]," Open mail account?",size);
 			if ( MessageBoxA( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION ) == IDYES )
 				execute_cmd(url);
 
-			delete[] buf;
 			return;
 		}
 		else
@@ -69,8 +78,8 @@ void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* 
 		}
 	}
 	ZeroMemory(&ppd, sizeof(ppd) );
-	lstrcpyA( ppd.lpzContactName, title );
-	lstrcpyA( ppd.lpzText, msg );
+	strcpy( ppd.lpzContactName, title );
+	strcpy( ppd.lpzText, Translate(msg));
 	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
 	ppd.lchIcon = LoadIconEx( "aim" );
 	if (flags & MAIL_POPUP)

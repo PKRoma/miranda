@@ -58,7 +58,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "AIM User Details",IDC_DETAILS,3,7,147,80,WS_GROUP
-    LTEXT           "Screenname:",IDC_STATIC,8,20,45,11
+    LTEXT           "Screen Name:",IDC_STATIC,8,20,45,11
     EDITTEXT        IDC_SN,59,17,86,15,ES_LOWERCASE | ES_AUTOHSCROLL
     LTEXT           "Display Name:",IDC_STATIC,5,39,48,9
     EDITTEXT        IDC_NK,59,37,86,15,ES_AUTOHSCROLL
@@ -116,11 +116,11 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Screenname:",IDC_STATIC,15,13,60,10
+    LTEXT           "Screen Name:",IDC_STATIC,15,13,60,10
     EDITTEXT        IDC_SN,80,12,87,12,ES_AUTOHSCROLL
     LTEXT           "Password:",IDC_STATIC,17,33,56,10
     EDITTEXT        IDC_PW,80,32,87,12,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Create a new AIM screenname",IDC_NEWAIMACCOUNTLINK,
+    CONTROL         "Create a new AIM Screen Name",IDC_NEWAIMACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,39,54,127,9
 END
 
@@ -171,6 +171,27 @@ BEGIN
     PUSHBUTTON      "&Cancel",IDCANCEL,114,24,45,14
 END
 
+IDD_ADMIN DIALOGEX 0, 0, 224, 147
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "Change Password",IDC_STATIC,2,2,101,103
+    LTEXT           "New",IDC_STATIC,7,40,87,8
+    EDITTEXT        IDC_NPW1,5,49,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Repeat",IDC_STATIC,7,65,88,8
+    EDITTEXT        IDC_NPW2,5,74,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "*Passwords don't match.",IDC_PINFO,7,92,82,9,NOT WS_VISIBLE
+    LTEXT           "Screen Name",IDC_STATIC,118,15,92,8
+    EDITTEXT        IDC_FNAME,117,23,93,14,ES_AUTOHSCROLL
+    LTEXT           "E-mail",IDC_STATIC,118,41,92,8
+    EDITTEXT        IDC_CEMAIL,117,49,93,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Confirm Account",IDC_CONFIRM,5,122,86,16,BS_MULTILINE
+    LTEXT           "*Applied upon reconnect",IDC_STATIC,127,109,80,8
+    PUSHBUTTON      "Save Changes",IDC_SAVECHANGES,131,122,79,16
+    LTEXT           "Original",IDC_STATIC,8,14,87,8
+    EDITTEXT        IDC_CPW,5,23,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -209,6 +230,12 @@ BEGIN
         RIGHTMARGIN, 295
         TOPMARGIN, 7
         BOTTOMMARGIN, 208
+    END
+
+    IDD_ADMIN, DIALOG
+    BEGIN
+        RIGHTMARGIN, 223
+        BOTTOMMARGIN, 146
     END
 END
 #endif    // APSTUDIO_INVOKED

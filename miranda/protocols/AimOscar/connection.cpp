@@ -303,9 +303,7 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 						snac_mail_response(snac);
 				}
 				else if(flap.cmp(0x04))
-				{
 					goto exit;
-				}
 			}
 		}
 	}
@@ -497,6 +495,7 @@ void __cdecl CAimProto::aim_chat_negotiation( void* param )
 						snac_supported_family_versions(snac,item->hconn,item->seqno);
 						snac_chat_rate_limitations(snac,item->hconn,item->seqno);
 						snac_error(snac);
+
 					}
 					if(snac.cmp(0x000E))
 					{
@@ -580,6 +579,8 @@ void __cdecl CAimProto::aim_admin_negotiation( void* )
 
 exit:
 	Netlib_CloseHandle(hServerPacketRecver);
-	LOG("Admin Server Connection has ended");
+	Netlib_CloseHandle(hAdminConn);
 	hAdminConn=NULL;
+    ResetEvent(hChatNavEvent);
+	LOG("Admin Server Connection has ended");
 }
