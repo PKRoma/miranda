@@ -1274,7 +1274,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	if ( mp && mi->pszPopupName ) {
 		#if defined _UNICODE
 			TCHAR* ptszName = ( mi->flags & CMIF_UNICODE ) ? mir_tstrdup(mi->ptszPopupName) : mir_a2t(mi->pszPopupName);
-			pRoot = MO_RecursiveWalkMenu( mp->pMenu, FindRoot, ptszName );
+			pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, ptszName );
 			mir_free( ptszName );
 		#else
 			pRoot = ( int )MO_RecursiveWalkMenu( MO_GetIntMenuItem(( int )mp->menuID ), FindRoot, mi->pszPopupName );
