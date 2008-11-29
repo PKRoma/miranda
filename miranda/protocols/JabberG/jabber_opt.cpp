@@ -605,7 +605,7 @@ private:
 
 		if ( res == IDYES )
 			m_proto->m_ThreadInfo->send( 
-				XmlNodeIq( _T("set"), NOID, m_proto->m_szJabberJID ) << XQUERY( _T(JABBER_FEAT_REGISTER))
+				XmlNodeIq( _T("set"), m_proto->SerialNext(), m_proto->m_szJabberJID ) << XQUERY( _T(JABBER_FEAT_REGISTER))
 					<< XCHILD( _T("remove")));
 	}
 

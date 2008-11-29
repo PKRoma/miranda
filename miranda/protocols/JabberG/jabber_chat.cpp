@@ -824,7 +824,7 @@ public:
 
 void CJabberProto::AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal )
 {
-	m_ThreadInfo->send( XmlNodeIq( _T("set"), NOID, to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
+	m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
 }
 
 void CJabberProto::AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
@@ -1099,7 +1099,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			TCHAR *resourceName_copy = mir_tstrdup(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 				ppro->m_ThreadInfo->send( 
-					XmlNodeIq( _T("set"), NOID, item->jid ) << XQUERY( xmlnsAdmin )
+					XmlNodeIq( _T("set"), ppro->SerialNext(), item->jid ) << XQUERY( xmlnsAdmin )
 						<< XCHILD( _T("item")) << XATTR( _T("nick"), resourceName_copy ) << XATTR( _T("role"), _T("none"))
 						<< XCHILD( _T("reason"), szBuffer ));
 
@@ -1148,7 +1148,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 			TCHAR *resourceName_copy = NEWTSTR_ALLOCA(him->resourceName); // copy resource name to prevent possible crash if user list rebuilds
 			if ( ppro->EnterString(szBuffer, SIZEOF(szBuffer), szTitle, JES_MULTINE, "gcReason_" ))
 				ppro->m_ThreadInfo->send(
-					XmlNodeIq( _T("set"), NOID, item->jid ) << XQUERY( xmlnsAdmin )
+					XmlNodeIq( _T("set"), ppro->SerialNext(), item->jid ) << XQUERY( xmlnsAdmin )
 						<< XCHILD( _T("item")) << XATTR( _T("nick"), resourceName_copy ) << XATTR( _T("affiliation"), _T("outcast"))
 						<< XCHILD( _T("reason"), szBuffer ));
 		}
@@ -1307,7 +1307,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 			break;
 
 		ppro->m_ThreadInfo->send( 
-			XmlNodeIq( _T("set"), NOID, gch->pDest->ptszID ) << XQUERY( xmlnsOwner )
+			XmlNodeIq( _T("set"), ppro->SerialNext(), gch->pDest->ptszID ) << XQUERY( xmlnsOwner )
 				<< XCHILD( _T("destroy")) << XCHILD( _T("reason"), szBuffer ));
 
 	case IDM_LEAVE:

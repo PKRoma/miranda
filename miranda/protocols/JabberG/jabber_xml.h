@@ -29,8 +29,6 @@ Last change by : $Author$
 #ifndef _JABBER_XML_H_
 #define _JABBER_XML_H_
 
-#define NOID -1
-
 #include <m_xml.h>
 
 void    __fastcall xmlAddChild( HXML, HXML );
