@@ -250,6 +250,8 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
 					}
 					SetDlgItemTextA(hwndDlg,IDC_UIN,buf[0]?buf:Translate("(Unknown)"));
+                    PROTOACCOUNT* acc =  ProtoGetAccount(ci.szProto);
+					SetDlgItemText(hwndDlg,IDC_PROTONAME,acc->tszAccountName);
 				}
 			}
 			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));

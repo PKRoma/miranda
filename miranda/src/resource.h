@@ -199,6 +199,8 @@
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113
 #define IDC_UIN                         1123
+#define IDC_UIN2                        1124
+#define IDC_PROTONAME                   1124
 #define IDC_FINDWHAT                    1131
 #define IDC_FIND                        1132
 #define IDC_FILE                        1133
