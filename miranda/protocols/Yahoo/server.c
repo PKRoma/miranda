@@ -143,7 +143,7 @@ void __cdecl yahoo_server_main(void *empty)
 				}
 				
 				if (yahooLoggedIn && time(NULL) - lLastPing >= 3600) {
-					LOG(("[TIMER] Sending a keep alive message"));
+					LOG(("[TIMER] Sending ping"));
 					yahoo_send_ping(ylad->id);
 					
 					lLastPing = time(NULL);
