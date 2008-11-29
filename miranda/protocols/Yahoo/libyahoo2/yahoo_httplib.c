@@ -443,7 +443,7 @@ void yahoo_get_url_fd(int id, const char *url, const struct yahoo_data *yd,
 	struct url_data *ud = y_new0(struct url_data, 1);
 	
 	//buff[0]='\0'; /*don't send them our cookies!! */
-	snprintf(buff, sizeof(buff), "Y=%s; T=%s", yd->cookie_y, yd->cookie_t);
+	snprintf(buff, sizeof(buff), "Y=%s; T=%s; B=%s", yd->cookie_y, yd->cookie_t, yd->cookie_b);
 
 	ud->callback = callback;
 	ud->user_data = data;
