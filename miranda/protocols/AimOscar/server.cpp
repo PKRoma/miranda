@@ -1619,12 +1619,12 @@ void CAimProto::snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigne
                 chat_list_item *item = find_chat_by_id(name);
                 if (item == NULL)
                 {
-                    item = new chat_list_item(name); 
+                    item = new chat_list_item(name, cookie, exchange, instance); 
                     chat_rooms.insert(item); 
-                }
 
-                //Join the actual room
-                aim_chat_join_room(CAimProto::hServerConn, CAimProto::seqno, cookie, exchange, instance, item->cid);
+                    //Join the actual room
+                    aim_chat_join_room(CAimProto::hServerConn, CAimProto::seqno, cookie, exchange, instance, item->cid);
+                }
 
                 delete[] name;
                 delete[] cookie;

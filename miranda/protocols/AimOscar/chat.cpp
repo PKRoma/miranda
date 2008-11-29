@@ -165,12 +165,7 @@ void   __cdecl CAimProto::chatnav_request_thread( void* param )
 	chatnav_param* par = (chatnav_param*)param;
     if (par->isroom)
     {
-        chat_list_item *item = find_chat_by_id(par->id);
-        if (item == NULL)
-        {
-            chat_rooms.insert(new chat_list_item(par->id));
-            aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id, par->exchange);
-        }
+        aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id, par->exchange);
     }
     else
         aim_chatnav_room_info(hChatNavConn, chatnav_seqno, par->id, par->exchange, par->instance);
