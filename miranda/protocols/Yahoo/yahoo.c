@@ -1294,7 +1294,7 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
 		nlhr.cbSize=sizeof(nlhr);
 		nlhr.requestType=(lstrcmpi(method, "GET") == 0) ? REQUEST_GET : REQUEST_POST;
 		nlhr.flags=NLHRF_DUMPASTEXT|NLHRF_HTTP11;
-		nlhr.szUrl=(char *)url;
+		nlhr.szUrl=(char *)path;
 		nlhr.headers = httpHeaders;
 		nlhr.headersCount = 3;
 		
