@@ -157,6 +157,7 @@ void JabberByteSendConnection( HANDLE hConn, DWORD dwRemoteIP, void* extra )
 void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 {
 	char* localAddr;
+	char* localAddrInternal;
 	struct in_addr in;
 	DBVARIANT dbv;
 	TCHAR szPort[8];
@@ -223,8 +224,10 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		}
 		if ( localAddr == NULL ) {
 			in.S_un.S_addr = htonl(nlb.dwExternalIP);
-			localAddr = mir_strdup( inet_ntoa( in ));
+			localAddr = NEWSTR_ALLOCA( inet_ntoa( in ));
 		}
+		in.S_un.S_addr = htonl(nlb.dwInternalIP);
+		localAddrInternal = NEWSTR_ALLOCA( inet_ntoa( in ));
 
 		mir_sntprintf( szPort, SIZEOF( szPort ), _T("%d"), nlb.wPort );
 		JABBER_LIST_ITEM *item = ListAdd( LIST_BYTE, szPort );
@@ -233,6 +236,8 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 		jbt->hEvent = hEvent;
 		jbt->hSendEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 		query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddr)) << XATTRI( _T("port"), nlb.wPort );
+		if ( strcmp( localAddr, localAddrInternal ))
+			query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddrInternal)) << XATTRI( _T("port"), nlb.wPort );
 	}
 
 	if ( jbt->bProxyDiscovered )
