@@ -399,6 +399,11 @@ struct yahoo_chat_member {
 	char *location;
 };
 
+struct yahoo_file_info {
+	char *filename;
+	unsigned long filesize;
+};
+
 #ifdef __cplusplus
 }
 #endif

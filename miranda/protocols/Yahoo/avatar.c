@@ -18,7 +18,6 @@
 #include "yahoo.h"
 #include <m_langpack.h>
 #include "avatar.h"
-#include "file_transfer.h"
 #include "resource.h"
 
 extern yahoo_local_account *ylad;
@@ -45,7 +44,7 @@ int YAHOO_avt_hash(const char *key, DWORD ksize)
 
 void upload_avt(int id, int fd, int error, void *data)
 {
-    y_filetransfer *sf = (y_filetransfer*) data;
+    struct yahoo_file_info *sf = (struct yahoo_file_info*) data;
     unsigned long size = 0;
 	char buf[1024];
 	int rw;			/* */
@@ -70,7 +69,7 @@ void upload_avt(int id, int fd, int error, void *data)
 		return;
 	}
 	
-	LOG(("Sending file: %s size: %ld", sf->filename, sf->fsize));
+	LOG(("Sending file: %s size: %ld", sf->filename, sf->filesize));
 	
 	do {
 		rw = ReadFile(myhFile, buf, sizeof(buf), &dw, NULL);
@@ -86,7 +85,7 @@ void upload_avt(int id, int fd, int error, void *data)
 			
 			size += rw;
 		}
-	} while (rw >= 0 && size < sf->fsize);
+	} while (rw >= 0 && size < sf->filesize);
 	
 	CloseHandle(myhFile);
 	
@@ -100,7 +99,7 @@ void upload_avt(int id, int fd, int error, void *data)
 
 void __cdecl yahoo_send_avt_thread(void *psf) 
 {
-	y_filetransfer *sf = psf;
+	struct yahoo_file_info *sf = psf;
 	
 	if (sf == NULL) {
 		YAHOO_DebugLog("[yahoo_send_avt_thread] SF IS NULL!!!");
@@ -108,16 +107,17 @@ void __cdecl yahoo_send_avt_thread(void *psf)
 	}
 	
 	YAHOO_SetByte("AvatarUL", 1);
-	yahoo_send_avatar(ylad->id, sf->filename, sf->fsize, &upload_avt, sf);
+	yahoo_send_avatar(ylad->id, sf->filename, sf->filesize, &upload_avt, sf);
 
 	free(sf->filename);
 	free(sf);
+	
 	if (YAHOO_GetByte("AvatarUL", 1) == 1) YAHOO_SetByte("AvatarUL", 0);
 }
 
 void YAHOO_SendAvatar(const char *szFile)
 {
-	y_filetransfer *sf;
+	struct yahoo_file_info *sf;
 	struct _stat statbuf;
 	
 	if ( _stat( szFile, &statbuf ) != 0 ) {
@@ -125,12 +125,11 @@ void YAHOO_SendAvatar(const char *szFile)
 		return;
 	}
 
-	sf = (y_filetransfer*) malloc(sizeof(y_filetransfer));
+	sf = y_new(struct yahoo_file_info, 1);
 	sf->filename = strdup(szFile);
-	sf->cancel = 0;
-	sf->fsize = statbuf.st_size;
+	sf->filesize = statbuf.st_size;
 	
-	YAHOO_DebugLog("[Uploading avatar] filename: %s size: %ld", sf->filename, sf->fsize);
+	YAHOO_DebugLog("[Uploading avatar] filename: %s size: %ld", sf->filename, sf->filesize);
 
 	mir_forkthread(yahoo_send_avt_thread, sf);
 }
