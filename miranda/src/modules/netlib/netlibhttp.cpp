@@ -415,7 +415,9 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	}
 	for(;;) {
 		bytesPeeked=RecvWithTimeoutTime(nlc,dwRequestTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|lParam);
-		if(bytesPeeked==0 || bytesPeeked==SOCKET_ERROR) {
+        if (bytesPeeked==0) break;
+
+		if(bytesPeeked==SOCKET_ERROR) {
 			NetlibLeaveNestedCS(&nlc->ncsRecv);
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
@@ -425,13 +427,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		for(pbuffer=buffer;;) {
 			peol=strchr(pbuffer,'\n');
 			if(peol==NULL) {
-				if(lstrlenA(buffer)<bytesPeeked) {
-					NetlibLeaveNestedCS(&nlc->ncsRecv);
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-					SetLastError(ERROR_BAD_FORMAT);
-					return (int)(NETLIBHTTPREQUEST*)NULL;
-				}
-				if((bytesPeeked == SIZEOF(buffer)-1 && pbuffer==buffer)	//buffer overflow
+                if((bytesPeeked == SIZEOF(buffer)-1 && pbuffer==buffer)	//buffer overflow
 				   || (pbuffer!=buffer && NLRecv(nlc,buffer,pbuffer-buffer,lParam|MSG_DUMPASTEXT)==SOCKET_ERROR)) {	 //error removing read bytes from buffer
 					NetlibLeaveNestedCS(&nlc->ncsRecv);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
@@ -587,8 +583,8 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 	else
 		nlhrReply = NetlibHttpRecv(hConnection, 0, dflags);
 
-
-	NetlibCloseHandle((WPARAM)hConnection,0);
+    if ((nlhr->flags&NLHRF_PERSISTENT) == 0)
+	    NetlibCloseHandle((WPARAM)hConnection,0);
 	return (int)nlhrReply;
 }
 
@@ -677,7 +673,7 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags
 {
 	int dataLen = -1, i, chunkhdr;
 	int chunked = FALSE;
-    int cenc = 0;
+    int cenc = 0, cenctype = 0;
 
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
@@ -696,7 +692,13 @@ next:
 			dataLen = atoi(nlhrReply->headers[i].szValue);
 
 		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Encoding")) 
-			cenc = i+1;
+        {
+			cenc = i;
+            if (strstr(nlhrReply->headers[i].szValue, "gzip"))
+                cenctype = 1;
+            else if (strstr(nlhrReply->headers[i].szValue, "deflate"))
+                cenctype = 2;
+        }
 
         if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
 			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
@@ -729,7 +731,7 @@ next:
 			for(;;) 
 			{
 				recvResult = NLRecv((struct NetlibConnection*)hConnection, nlhrReply->pData+nlhrReply->dataLength,
-					dataBufferAlloced-nlhrReply->dataLength-1, dflags);
+                    dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
 				if (recvResult == SOCKET_ERROR) {
@@ -785,16 +787,16 @@ next:
 		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
 
-    if (cenc--)
+    if (cenctype)
     {
         int bufsz = nlhrReply->dataLength;
         char* szData = NULL;
 
-        if (strstr(nlhrReply->headers[cenc].szValue, "gzip"))
+        if (cenctype == 1)
         {
             szData = gzip_decode(nlhrReply->pData, &bufsz, 0x10 | MAX_WBITS);
         }
-        else if (strstr(nlhrReply->headers[cenc].szValue, "deflate"))
+        else if (cenctype == 2)
         {
             szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
             if (bufsz == 0)
