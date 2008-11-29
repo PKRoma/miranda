@@ -232,7 +232,7 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     }
     if (hDirectBoundPort == NULL)
     {
-        ShowPopup(NULL,"Aim was unable to bind to a port. File transfers may not succeed in some cases.", 0);
+        ShowPopup(NULL,LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);
     }
     LocalPort=nlb.wPort;
     InternalIP=nlb.dwInternalIP;

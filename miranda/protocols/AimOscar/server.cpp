@@ -943,7 +943,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			LOG("Buddy Wants to Send us a file. Request 1");
 			if (getByte(hContact, AIM_KEY_FT, 255) != 255)
 			{
-				ShowPopup(NULL,"Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
+				ShowPopup(NULL,LPGEN("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."), 0);
 				return;
 			}
 			if(force_proxy)
@@ -1194,13 +1194,11 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				LOG("Successfully removed buddy from list.");
-				ShowPopup(NULL,"Successfully removed buddy from list.", 0);
+				ShowPopup(NULL,LPGEN("Successfully removed buddy from list."), ERROR_POPUP);
 			}
 			else if(code==0x0002)
 			{
-				LOG("Item you want to delete not found in list.");
-				ShowPopup(NULL,"Item you want to delete not found in list.", 0);
+				ShowPopup(NULL,LPGEN("Item you want to delete not found in list."), ERROR_POPUP);
 			}
 			else
 			{
@@ -1223,33 +1221,27 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				LOG("Successfully added buddy to list.");
-				ShowPopup(NULL,"Successfully added buddy to list.", 0);
+				ShowPopup(NULL,"Successfully added buddy to list.", ERROR_POPUP);
 			}
 			else if(code==0x0003)
 			{
-				LOG("Failed to add buddy to list: Item already exist.");
-				ShowPopup(NULL,"Failed to add buddy to list: Item already exist.", 0);
+				ShowPopup(NULL,LPGEN("Failed to add buddy to list: Item already exist."), ERROR_POPUP);
 			}
 			else if(code==0x000a)
 			{
-				LOG("Error adding buddy(invalid id?, already in list?)");
-				ShowPopup(NULL,"Error adding buddy(invalid id?, already in list?)", 0);
+				ShowPopup(NULL,LPGEN("Error adding buddy(invalid id?, already in list?)"), ERROR_POPUP);
 			}
 			else if(code==0x000c)
 			{
-				LOG("Cannot add buddy. Limit for this type of item exceeded.");
-				ShowPopup(NULL,"Cannot add buddy. Limit for this type of item exceeded.", 0);
+				ShowPopup(NULL,LPGEN("Cannot add buddy. Limit for this type of item exceeded."), ERROR_POPUP);
 			}
 			else if(code==0x000d)
 			{
-				LOG("Error? Attempting to add ICQ contact to an AIM list.");
-				ShowPopup(NULL,"Error? Attempting to add ICQ contact to an AIM list.", 0);
+				ShowPopup(NULL,LPGEN("Error? Attempting to add ICQ contact to an AIM list."), ERROR_POPUP);
 			}
 			else if(code==0x000e)
 			{
-				LOG("Cannot add this buddy because it requires authorization.");
-				ShowPopup(NULL,"Cannot add this buddy because it requires authorization.", 0);
+				ShowPopup(NULL,LPGEN("Cannot add this buddy because it requires authorization."), ERROR_POPUP);
 			}
 			else
 			{
@@ -1272,13 +1264,11 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				LOG("Successfully modified group.");
-				ShowPopup(NULL,"Successfully modified group.", 0);
+				ShowPopup(NULL,LPGEN("Successfully modified group."), ERROR_POPUP);
 			}
 			else if(code==0x0002)
 			{
-				LOG("Item you want to modify not found in list.");
-				ShowPopup(NULL,"Item you want to modify not found in list.", 0);
+				ShowPopup(NULL,LPGEN("Item you want to modify not found in list."), ERROR_POPUP);
 			}
 			else
 			{
@@ -1845,7 +1835,7 @@ void CAimProto::snac_admin_account_infomod(SNAC &snac)//family 0x0007
 		{
 			// Display messages
 			if (email && req_email)	// We requested to change the email
-				ShowPopup(NULL,"A confirmation message has been sent to the new email address. Please follow its instructions.", 0);
+				ShowPopup(NULL,LPGEN("A confirmation message has been sent to the new email address. Please follow its instructions."), 0);
 			else if (sn)
 			{
 				setString(AIM_KEY_SN,sn); // Update the database to reflect the formatted name.
@@ -1865,13 +1855,13 @@ void CAimProto::snac_admin_account_confirm(SNAC &snac)//family 0x0007
 		status = snac.ushort();
 
 		if (status == 0)
-			ShowPopup(NULL,"A confirmation message has been sent to your email address. Please follow its instructions.", 0);
+			ShowPopup(NULL,LPGEN("A confirmation message has been sent to your email address. Please follow its instructions."), 0);
 		else if (status == 0x13)
-			ShowPopup(NULL,"Unable to confirm at this time. Please try again later.", 0);
+			ShowPopup(NULL,LPGEN("Unable to confirm at this time. Please try again later."), 0);
 		else if (status == 0x1e)
-			ShowPopup(NULL,"Your account has already been confirmed.", 0);
+			ShowPopup(NULL,LPGEN("Your account has already been confirmed."), 0);
 		else if (status == 0x23)
-			ShowPopup(NULL,"Can't start the confirmation procedure.", 0);
+			ShowPopup(NULL,LPGEN("Can't start the confirmation procedure."), 0);
 
 		//TLV tlv(snac.val(2));
 		//if (tlv.cmp(0x0004))

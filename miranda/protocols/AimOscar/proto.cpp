@@ -479,7 +479,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 
 	if ( hContact && szDescription && ppszFiles ) {
 		if ( getByte( hContact, AIM_KEY_FT, 255 ) != 255 ) {
-			ShowPopup(NULL,"Cannot start a file transfer with this contact while another file transfer with the same contact is pending.", 0);
+			ShowPopup(NULL,LPGEN("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."), 0);
 			return 0;
 		}
 
@@ -494,7 +494,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		if ( !getString(hContact, AIM_KEY_SN, &dbv )) {
 			for ( int file_amt = 0; files[file_amt]; file_amt++ )
 				if ( file_amt == 1 ) {
-					ShowPopup(NULL,"Aim allows only one file to be sent at a time.", 0);
+					ShowPopup(NULL,LPGEN("Aim allows only one file to be sent at a time."), 0);
 					DBFreeVariant(&dbv);
 					return 0;
 				}

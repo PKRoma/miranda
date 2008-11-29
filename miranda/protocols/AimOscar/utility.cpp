@@ -50,7 +50,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup(NULL,"Please, enter a username in the options dialog.", 0);
+			ShowPopup(NULL,LPGEN("Please, enter a username in the options dialog."), 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -58,7 +58,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup(NULL,"Please, enter a password in the options dialog.", 0);
+			ShowPopup(NULL,LPGEN("Please, enter a password in the options dialog."), 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
