@@ -225,7 +225,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void		sttProcessYFind( char* buf, size_t len );
 	void		sttCustomSmiley( const char* msgBody, char* email, char* nick, int iSmileyType );
 	void		sttInviteMessage( ThreadData* info, char* msgBody, char* email, char* nick );
-	void		sttSetMirVer( HANDLE hContact, DWORD dwValue );
+	void		sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always );
     
     void        LoadOptions( void );
 
@@ -490,14 +490,14 @@ struct CMsnProto : public PROTO_INTERFACE
     bool MSN_SharingFindMembership(void);
     bool MSN_SharingAddDelMember(const char* szEmail, const int listId, const int netId, const char* szMethod);
     bool MSN_ABAdd(void);
-    bool MSN_ABGetFull(void);
+    bool MSN_ABFind(const char* szMethod, const char* szGuid);
     bool MSN_ABAddDelContactGroup(const char* szCntId, const char* szGrpId, const char* szMethod);
     void MSN_ABAddGroup(const char* szGrpName);
     void MSN_ABRenameGroup(const char* szGrpName, const char* szGrpId);
     void MSN_ABUpdateNick(const char* szNick, const char* szCntId);
     void MSN_ABUpdateAttr(const char* szCntId, const char* szAttr, const char* szValue);
     void MSN_ABUpdateProperty(const char* szCntId, const char* propName, const char* propValue);
-    unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search);
+    unsigned MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry=false);
     void MSN_ABUpdateDynamicItem(void);
 
     ezxml_t abSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);
@@ -505,7 +505,10 @@ struct CMsnProto : public PROTO_INTERFACE
 	void SetAbParam(HANDLE hContact, const char *name, const char *par);
     void UpdateABHost(const char* service, const char* url);
 
-	char mycid[32];
+    ezxml_t getSoapResponse(ezxml_t bdy, const char* service);
+    ezxml_t getSoapFault(ezxml_t bdy, bool err);
+
+    char mycid[32];
 	char mypuid[32];
 
 	/////////////////////////////////////////////////////////////////////////////////////////

@@ -405,6 +405,9 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact( HANDLE hContact )
 			case SERVER_P2P_DIRECT:
 				p2pT = T;
 				break;
+
+            default:
+                break;
 	}	}	}
 
 	LeaveCriticalSection( &sttLock );

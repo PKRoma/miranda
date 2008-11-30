@@ -260,9 +260,14 @@ void CMsnProto::MSN_SyncContactToServerGroup( HANDLE hContact, const char* szCon
 {
 	if ( !MyOptions.ManageServer ) return;
 
+    const char* szGrpName = "";
+
 	DBVARIANT dbv;
-	if ( DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv ))
-		dbv.pszVal = "";
+	if ( !DBGetContactSettingStringUtf( hContact, "CList", "Group", &dbv ))
+    {
+		szGrpName = NEWSTR_ALLOCA(dbv.pszVal);
+	    MSN_FreeVariant( &dbv );
+    }
 
 	const char* szGrpIdF = NULL;
 	while( cgrp != NULL)
@@ -270,7 +275,7 @@ void CMsnProto::MSN_SyncContactToServerGroup( HANDLE hContact, const char* szCon
 		const char* szGrpId  = ezxml_txt(cgrp);
 		cgrp = ezxml_next(cgrp);
 
-		if (strcmp(MSN_GetGroupById(szGrpId), dbv.pszVal) == 0 || 
+		if (strcmp(MSN_GetGroupById(szGrpId), szGrpName) == 0 || 
 			(cgrp == NULL && szGrpIdF == NULL)) 
 			szGrpIdF = szGrpId;
 		else 
@@ -286,8 +291,6 @@ void CMsnProto::MSN_SyncContactToServerGroup( HANDLE hContact, const char* szCon
 		DBDeleteContactSetting( hContact, "CList", "Group" );
 		deleteSetting( hContact, "GroupID" );
 	}	
-
-	if ( *dbv.pszVal ) MSN_FreeVariant( &dbv );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

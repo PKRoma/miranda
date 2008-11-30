@@ -55,7 +55,7 @@ int CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	MSN_GetAvatarFileName( NULL, buf, size );
-	return 0;
+	return _access(buf, 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

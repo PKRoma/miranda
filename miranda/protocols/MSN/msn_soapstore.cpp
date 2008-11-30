@@ -179,12 +179,11 @@ bool CMsnProto::MSN_StoreGetProfile(void)
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		ezxml_t resxml = ezxml_get(xmlm, "soap:Body", 0, "GetProfileResponse", 0, 
-			"GetProfileResult", -1);
-		
-		mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(resxml, "ResourceID")));
+        ezxml_t body = getSoapResponse(xmlm, "GetProfile");
 
-		ezxml_t expr = ezxml_child(resxml, "ExpressionProfile");
+		mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(body, "ResourceID")));
+
+		ezxml_t expr = ezxml_child(body, "ExpressionProfile");
 		if (expr == NULL) 
 			MSN_StoreCreateProfile();
 		else

@@ -89,10 +89,10 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 		if (tResult != NULL && status == 200)
 		{
 			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-			ezxml_t tokm = ezxml_get(xmlm, "soap:Body", 0, "GetMessageResponse", 0, "GetMessageResult", -1);
-			
+            ezxml_t body = getSoapResponse(xmlm, "GetMessage");
+
 			MimeHeaders mailInfo;
-			const char* mailbody = mailInfo.readFromBuffer((char*)ezxml_txt(tokm));
+			const char* mailbody = mailInfo.readFromBuffer((char*)ezxml_txt(body));
 
 			time_t evtm = time( NULL );
 			const char* arrTime = mailInfo["X-OriginalArrivalTime"];
@@ -131,7 +131,7 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 			ezxml_t delmid = ezxml_add_child(delmids, "messageId", 0);
 			ezxml_set_txt(delmid, szId);
 			
-			ezxml_free(tokm);
+			ezxml_free(xmlm);
 		}
 		mir_free( tResult );
 		toki = ezxml_next(toki);
@@ -271,12 +271,11 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 #ifdef _UNICODE
 		TCHAR* msgtxt = _stricmp( From, Fromaddr ) ?
 			TranslateT("Hotmail from %s (%S)") : TranslateT( "Hotmail from %s" );
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 #else
 		TCHAR* msgtxt = _strcmpi( From, Fromaddr ) ?
 			TranslateT("Hotmail from %S (%s)") : TranslateT( "Hotmail from %S" );
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 #endif
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), msgtxt, mimeFromW, Fromaddr );
 		mir_free(mimeFromW);
 		mir_free(mimeSubjectW);
 		ShowPopUp = true;
@@ -286,9 +285,11 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL ) processMailData((char*)MailData);
 
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), TranslateT( "Hotmail" ));
-		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d messages (%d junk e-mails)." ),
+        TCHAR* pname = mir_a2t(m_szProtoName);
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), pname);
+		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d in Inbox and %d in other folders)." ),
 			mUnreadMessages, mUnreadJunkEmails );
+        mir_free(pname);
 	}
 
 	if (UnreadMessages == mUnreadMessages && UnreadJunkEmails == mUnreadJunkEmails  && !isInitial)
@@ -501,7 +502,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 			if (status == 500)
 			{
 				ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-				ezxml_t flt = ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", -1);
+				ezxml_t flt = getSoapFault(xmlm, false);
 				const char* szFltCode = ezxml_txt(ezxml_child(flt, "faultcode"));
 				
 				if (strcmp(szFltCode, "q0:AuthenticationFailed") == 0)

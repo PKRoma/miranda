@@ -54,7 +54,7 @@ void MSN_ConnectionProc( HANDLE hNewConnection, DWORD /* dwRemoteIP */, void* ex
 }
 
 
-void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue )
+void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always )
 {
 	static const char* MirVerStr[] =
 	{
@@ -83,10 +83,15 @@ void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue )
 		setString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 0x30000024 )
 		setString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-	else {
+	else if (always || getByte("StdMirVer", 0)) 
+    {
 		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr)-1);
 		setString( hContact, "MirVer", MirVerStr[ wlmId ] );
 	}
+    else 
+        return;
+
+    setByte("StdMirVer", 1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -402,14 +407,17 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 		HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 		const char* mirver = tFileInfo[ "Client-Name" ];
 		if ( hContact != NULL && mirver != NULL )
+        {
 			setString( hContact, "MirVer", mirver );
+            deleteSetting(hContact, "StdMirVer");
+        }
 	}
 	else {
 		if ( !info->firstMsgRecv ) {
 			info->firstMsgRecv = true;
 			HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false );
 			if ( hContact != NULL )
-				sttSetMirVer( hContact, getDword( hContact, "FlagBits", 0 ));
+				sttSetMirVer( hContact, getDword( hContact, "FlagBits", 0 ), true);
 	}	}
 
 	if ( !_strnicmp( tContentType, "text/plain", 10 )) {
@@ -1201,10 +1209,9 @@ LBL_InvalidCommand:
 
 				if ( lastStatus == ID_STATUS_OFFLINE ) {
 					DBVARIANT dbv;
-					if ( atol(data.netId) != 1 || getTString( hContact, "MirVer", &dbv ))
-						sttSetMirVer( hContact, dwValue );
-					else
-						MSN_FreeVariant( &dbv );
+                    bool always = getString( hContact, "MirVer", &dbv ) != 0;
+					if (!always) MSN_FreeVariant( &dbv );
+					sttSetMirVer( hContact, dwValue, always );
 				}
 
 				if (( dwValue & 0xf0000000 ) && data.cmdstring[0] && strcmp( data.cmdstring, "0" )) {
@@ -1271,7 +1278,7 @@ LBL_InvalidCommand:
 				mir_utf8decode( data.userNick, NULL );
 
 			// only start the chat session after all the IRO messages has been recieved
-			if ( msnHaveChatDll && info->mJoinedCount > 1 && !lstrcmpA(data.strThisContact, data.totalContacts) )
+			if ( msnHaveChatDll && info->mJoinedCount > 1 && !strcmp(data.strThisContact, data.totalContacts) )
 				MSN_ChatStart(info);
 
 			break;

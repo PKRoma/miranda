@@ -194,11 +194,13 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 	if ( !gch )
 		return 1;
 
-	if ( !lstrcmpiA(gch->pDest->pszModule, m_szProtoName )) {
-		switch (gch->pDest->iType) {
+	if ( _stricmp(gch->pDest->pszModule, m_szProtoName )) return 0;
+
+	HANDLE hChatContact = (HANDLE)-_ttoi( gch->pDest->ptszID );
+
+    switch (gch->pDest->iType) {
 		case GC_SESSION_TERMINATE: {
-			int chatID = _ttoi( gch->pDest->ptszID );
-			ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
+			ThreadData* thread = MSN_GetThreadByContact(hChatContact);
 			if ( thread != NULL ) {
 				// open up srmm dialog when quit while 1 person left
 				if ( thread->mJoinedCount == 1 ) {
@@ -213,12 +215,10 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 			break;
 		}
 		case GC_USER_MESSAGE:
-			if ( gch && gch->pszText && strlen( gch->pszText ) > 0 ) 
+			if ( gch->pszText && strlen( gch->pszText ) > 0 ) 
 			{
-				HANDLE hContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
-
 				bool isOffline;
-				ThreadData* thread = MSN_StartSB(hContact, isOffline);
+				ThreadData* thread = MSN_StartSB(hChatContact, isOffline);
 
 				if (thread)
 				{
@@ -254,23 +254,23 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case GC_USER_CHANMGR: {
-			int chatID = _ttoi( gch->pDest->ptszID );
-			ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
+			ThreadData* thread = MSN_GetThreadByContact(hChatContact);
 			if ( thread != NULL ) {
 				InviteUser(thread);
 			}
 			break;
 		}
 		case GC_USER_PRIVMESS: {
-			HANDLE hContact = MSN_HContactFromEmail((char*)gch->pszUID, NULL, false, false);
+			char *email = mir_t2a(gch->ptszUID);
+			HANDLE hContact = MSN_HContactFromEmail(email, NULL, false, false);
 			MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
+			mir_free(email);
 			break;
 		}
 		case GC_USER_LOGMENU:
 			switch(gch->dwData) {
 			case 10: {
-				int chatID = _ttoi( gch->pDest->ptszID );
-				ThreadData* thread = MSN_GetThreadByContact((HANDLE)-chatID);
+				ThreadData* thread = MSN_GetThreadByContact(hChatContact);
 				if ( thread != NULL )
 					InviteUser( thread );
 
@@ -282,13 +282,9 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case GC_USER_NICKLISTMENU: {
-#ifdef _UNICODE
-			char *email = mir_u2a(gch->ptszUID);
+			char *email = mir_t2a(gch->ptszUID);
 			HANDLE hContact = MSN_HContactFromEmail( email, email, false, false );
 			mir_free(email);
-#else
-			HANDLE hContact = MSN_HContactFromEmail( gch->ptszUID, gch->ptszUID, false, false );
-#endif
 
 			switch(gch->dwData) {
 			case 10:
@@ -314,7 +310,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 				break;
 			}
 */
-	}	}
+	}
 
 	return 0;
 }
@@ -323,35 +319,35 @@ int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam)
 {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 
-	if ( gcmi ) {
-		if ( !lstrcmpiA(gcmi->pszModule, m_szProtoName )) {
-			if ( gcmi->Type == MENU_ON_LOG ) {
-				static const struct gc_item Items[] = {
-					{ TranslateT("&Invite user..."), 10, MENU_ITEM, FALSE },
-					{ TranslateT("&Leave chat session"), 20, MENU_ITEM, FALSE }
-				};
-				gcmi->nItems = SIZEOF(Items);
-				gcmi->Item = (gc_item*)Items;
-			}
-			if ( gcmi->Type == MENU_ON_NICKLIST ) {
-				if ( !lstrcmpA(MyOptions.szEmail, (char *)gcmi->pszUID)) {
-					static const struct gc_item Items[] = {
-						{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
-						{ TranslateT("User &history"), 20, MENU_ITEM, FALSE },
-						{ TranslateT(""), 100, MENU_SEPARATOR, FALSE },
-						{ TranslateT("&Leave chat session"), 110, MENU_ITEM, FALSE }
-					};
-					gcmi->nItems = SIZEOF(Items);
-					gcmi->Item = (gc_item*)Items;
-				}
-				else {
-					static const struct gc_item Items[] = {
-						{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
-						{ TranslateT("User &history"), 20, MENU_ITEM, FALSE }
-					};
-					gcmi->nItems = SIZEOF(Items);
-					gcmi->Item = (gc_item*)Items;
-	}	}	}	}
+	if ( gcmi == NULL || _stricmp(gcmi->pszModule, m_szProtoName )) return 0;
+
+	if ( gcmi->Type == MENU_ON_LOG ) {
+		static const struct gc_item Items[] = {
+			{ TranslateT("&Invite user..."), 10, MENU_ITEM, FALSE },
+			{ TranslateT("&Leave chat session"), 20, MENU_ITEM, FALSE }
+		};
+		gcmi->nItems = SIZEOF(Items);
+		gcmi->Item = (gc_item*)Items;
+	}
+	if ( gcmi->Type == MENU_ON_NICKLIST ) {
+		if ( !strcmp(MyOptions.szEmail, (char *)gcmi->pszUID)) {
+			static const struct gc_item Items[] = {
+				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
+				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE },
+				{ _T(""), 100, MENU_SEPARATOR, FALSE },
+				{ TranslateT("&Leave chat session"), 110, MENU_ITEM, FALSE }
+			};
+			gcmi->nItems = SIZEOF(Items);
+			gcmi->Item = (gc_item*)Items;
+		}
+		else {
+			static const struct gc_item Items[] = {
+				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
+				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE }
+			};
+			gcmi->nItems = SIZEOF(Items);
+			gcmi->Item = (gc_item*)Items;
+    }	}
 
 	return 0;
 }

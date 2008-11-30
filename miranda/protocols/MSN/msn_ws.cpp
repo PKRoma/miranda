@@ -388,8 +388,19 @@ LBL_RecvAgain:
 		nls.cbSize = sizeof( nls );
 		nls.dwTimeout = 1000;
 		nls.hReadConns[0] = s;
-		while ( MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls ) == 0 )
-			if ( isTimeout() ) return 0;
+
+        for (;;)
+        {
+            int ret = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
+	        if ( ret < 0 ) {
+		        proto->MSN_DebugLog( "Connection abortively closed, error %d", WSAGetLastError() );
+		        return ret;
+	        }
+	        else if ( ret == 0 && isTimeout()) 
+                return 0;
+            else
+                break;
+        }
 	}
 
 	int ret = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )s, ( LPARAM )&nlb );

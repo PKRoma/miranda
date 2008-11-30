@@ -40,11 +40,8 @@ static TCHAR* a2tf( const TCHAR* str, bool unicode )
 
 void overrideStr( TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def )
 {
-	if ( dest != NULL )
-	{
-		mir_free( dest );
-		dest = NULL;
-	}
+	mir_free( dest );
+	dest = NULL;
 
 	if ( src != NULL )
 		dest = a2tf( src, unicode );

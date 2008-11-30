@@ -67,6 +67,22 @@ ezxml_t CMsnProto::abSoapHdr(const char* service, const char* scenario, ezxml_t&
 	return xmlp;
 }
 
+
+ezxml_t CMsnProto::getSoapResponse(ezxml_t bdy, const char* service)
+{
+    char resp[40], res[40];
+    mir_snprintf(resp, sizeof(resp), "%sResponse", service);
+    mir_snprintf(res, sizeof(res), "%sResult", service);
+
+	return ezxml_get(bdy, "soap:Body", 0, resp, 0, res, -1); 
+}
+
+ezxml_t CMsnProto::getSoapFault(ezxml_t bdy, bool err)
+{
+	ezxml_t flt = ezxml_get(bdy, "soap:Body", 0, "soap:Fault", -1);
+    return err ? ezxml_get(flt, "detail", 0, "errorcode", -1) : flt;
+}
+
 void CMsnProto::UpdateABHost(const char* service, const char* url)
 {
 	char hostname[128];
@@ -171,8 +187,8 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 
 		if (status == 200)
 		{
-			ezxml_t svcs = ezxml_get(xmlm, "soap:Body", 0, "FindMembershipResponse", 0, 
-				"FindMembershipResult", 0, "Services", 0, "Service", -1); 
+            ezxml_t body = getSoapResponse(xmlm, "FindMembership");
+			ezxml_t svcs = ezxml_get(body, "Services", 0, "Service", -1); 
 			
 			while (svcs != NULL)
 			{
@@ -232,8 +248,7 @@ bool CMsnProto::MSN_SharingFindMembership(void)
 		}
 		else
 		{
-			const char* szErr = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, 
-				"detail", 0, "errorcode", -1));
+			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
 			if (strcmp(szErr, "ABDoesNotExist") == 0)
 			{
 				MSN_ABAdd();
@@ -350,26 +365,33 @@ void CMsnProto::SetAbParam(HANDLE hContact, const char *name, const char *par)
 //	else deleteSetting(hContact, "FirstName");
 }
 
-
-bool CMsnProto::MSN_ABGetFull(void)
+//		"ABFindAll"
+bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
-	ezxml_t xmlp = abSoapHdr("ABFindAll", "Initial", tbdy, reqHdr);
+	ezxml_t xmlp = abSoapHdr(szMethod, "Initial", tbdy, reqHdr);
 
 	ezxml_t node = ezxml_add_child(tbdy, "abView", 0);
 	ezxml_set_txt(node, "Full");
 	node = ezxml_add_child(tbdy, "deltasOnly", 0);
 	ezxml_set_txt(node, "false");
-//	node = ezxml_add_child(tbdy, "dynamicItemView", 0);
-//	ezxml_set_txt(node, "Gleam");
+	node = ezxml_add_child(tbdy, "dynamicItemView", 0);
+	ezxml_set_txt(node, "Gleam");
+    
+    if (szGuid)
+    {
+	    node = ezxml_add_child(tbdy, "contactIds", 0);
+	    node = ezxml_add_child(node, "guid", 0);
+    	ezxml_set_txt(node, szGuid);
+    }
 
 	char* szData = ezxml_toxml(xmlp, true);
 	ezxml_free(xmlp);
 
 	unsigned status;
 
-	char* abUrl = GetABHost("ABFindAll", false);
+	char* abUrl = GetABHost(szMethod, false);
 	char* tResult = getSslResult(&abUrl, szData, reqHdr, status);
 
 	mir_free(reqHdr);
@@ -378,18 +400,17 @@ bool CMsnProto::MSN_ABGetFull(void)
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		ezxml_t abook = ezxml_get(xmlm, "soap:Body", 0, "ABFindAllResponse", 0, 
-			"ABFindAllResult", -1);
-		
-		UpdateABHost("ABFindAll", abUrl);
+        ezxml_t body = getSoapResponse(xmlm, szMethod);
 
-		ezxml_t abinf = ezxml_get(abook, "ab", 0, "abInfo", -1);
+		UpdateABHost(szMethod, abUrl);
+
+		ezxml_t abinf = ezxml_get(body, "ab", 0, "abInfo", -1);
 		mir_snprintf(mycid,  sizeof(mycid), "%s", ezxml_txt(ezxml_child(abinf, "OwnerCID")));
 		mir_snprintf(mypuid, sizeof(mycid), "%s", ezxml_txt(ezxml_child(abinf, "ownerPuid")));
 
 		if (MyOptions.ManageServer)
 		{
-			ezxml_t grp = ezxml_get(abook, "groups", 0, "Group", -1); 
+			ezxml_t grp = ezxml_get(body, "groups", 0, "Group", -1); 
 			while (grp != NULL)
 			{
 				const char* szGrpId = ezxml_txt(ezxml_child(grp, "groupId"));
@@ -400,7 +421,7 @@ bool CMsnProto::MSN_ABGetFull(void)
 			}
 		}
 
-		ezxml_t cont = ezxml_get(abook, "contacts", 0, "Contact", -1); 
+		ezxml_t cont = ezxml_get(body, "contacts", 0, "Contact", -1); 
 		while (cont != NULL)
 		{
 			const char* szContId = ezxml_txt(ezxml_child(cont, "contactId"));
@@ -691,9 +712,9 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		
-		const char* szGrpId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABGroupAddResponse", 0, 
-			"ABGroupAddResult", 0, "guid", -1));
+        ezxml_t body = getSoapResponse(xmlm, "ABGroupAdd");
+
+		const char* szGrpId = ezxml_txt(ezxml_child(body, "guid"));
 
 		UpdateABHost("ABGroupAdd", abUrl);
 		MSN_AddGroup(szGrpName, szGrpId, false); 
@@ -851,7 +872,7 @@ void CMsnProto::MSN_ABUpdateNick(const char* szNick, const char* szCntId)
 }
 
 
-unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search)
+unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, int netId, const bool search, const bool retry)
 {
 	char* reqHdr;
 	ezxml_t tbdy;
@@ -938,9 +959,9 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		if (status == 200)
 		{
+            ezxml_t body = getSoapResponse(xmlm, "ABContactAdd");
 		
-			const char* szContId = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "ABContactAddResponse", 0, 
-				"ABContactAddResult", 0, "guid", -1));
+			const char* szContId = ezxml_txt(ezxml_child(body, "guid"));
 
 			if (search) 
 				MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
@@ -953,10 +974,38 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 		}
 		else 
 		{
-			const char* szErr = ezxml_txt(ezxml_get(xmlm, "soap:Body", 0, "soap:Fault", 0, 
-				"detail", 0, "errorcode", -1));
-			status = strcmp(szErr, "EmailDomainIsFederated") ? 1 : 2;
-			status = strcmp(szErr, "ContactAlreadyExists") ? status : 3;
+			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
+
+            if (strcmp(szErr, "InvalidPassportUser") == 0)
+                status = 1;
+            else if (strcmp(szErr, "EmailDomainIsFederated") == 0)
+                status = 2;
+            else if (strcmp(szErr, "ContactAlreadyExists") == 0) 
+            {
+                status = 3;
+
+                ezxml_t node = getSoapFault(xmlm, false);
+                node = ezxml_get(node, "detail", 0, "additionalDetails", 0, "conflictObjectId", -1);
+			    const char* szContId = ezxml_txt(node);
+
+                if (search) 
+                {
+                    if (retry)
+                    {
+				        MSN_ABAddDelContactGroup(szContId , NULL, "ABContactDelete");
+			            status = 0;
+                    }
+                }
+			    else
+			    {
+				    HANDLE hContact = MSN_HContactFromEmail( szEmail, szNick ? szNick : szEmail, true, false );
+				    setString(hContact, "ID", szContId);
+			    }
+            }
+            else
+            {
+                status = MSN_ABContactAdd(szEmail, szNick, netId, search, true);
+            }
 		}
 		ezxml_free(xmlm);
 	}
