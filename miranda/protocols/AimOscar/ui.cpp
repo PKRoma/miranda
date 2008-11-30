@@ -708,9 +708,8 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             else if (LOWORD(wParam) == IDC_CONFIRM && ppro->state==1)	// Confirmation
             {
-				if (!ppro->hAdminConn)
-					ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
-				ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
+                if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
+				    ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
 			}
         }
 		break;
