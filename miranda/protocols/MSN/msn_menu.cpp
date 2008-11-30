@@ -39,7 +39,7 @@ int CMsnProto::MsnBlockCommand( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnGotoInbox - goes to the Inbox folder at the Hotmail.com
+// MsnGotoInbox - goes to the Inbox folder at the live.com
 int CMsnProto::MsnGotoInbox( WPARAM, LPARAM )
 {
 	MsnInvokeMyURL( true, NULL );
@@ -47,11 +47,20 @@ int CMsnProto::MsnGotoInbox( WPARAM, LPARAM )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnEditProfile - goes to the Profile section at the Hotmail.com
+// MsnEditProfile - goes to the Profile section at the live.com
 
 int CMsnProto::MsnEditProfile( WPARAM, LPARAM )
 {
 	MsnInvokeMyURL( false, NULL );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// MsnSetupAlerts - goes to the alerts section at the live.com
+
+int CMsnProto::MsnSetupAlerts( WPARAM wParam, LPARAM lParam )
+{
+    MsnInvokeMyURL(false, "http://alerts.live.com");
 	return 0;
 }
 
@@ -298,15 +307,22 @@ void CMsnProto::MsnInitMenus( void )
 	CreateProtoService( MS_EDIT_PROFILE, &CMsnProto::MsnEditProfile );
 	mi.position = 2000060002;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
-	mi.ptszName = LPGENT("My MSN &Space");
+	mi.ptszName = LPGENT("My Live &Space");
 	menuItemsAll[ 1 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
-	strcpy( tDest, MS_VIEW_STATUS );
-	CreateProtoService( MS_VIEW_STATUS, &CMsnProto::MsnViewServiceStatus );
+	strcpy( tDest, MS_EDIT_ALERTS );
+	CreateProtoService( MS_EDIT_ALERTS, &CMsnProto::MsnSetupAlerts );
 	mi.position = 2000060003;
+	mi.icolibItem = GetIconHandle( IDI_PROFILE );
+	mi.ptszName = LPGENT("Setup Live &Alerts");
+	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+
+    strcpy( tDest, MS_VIEW_STATUS );
+	CreateProtoService( MS_VIEW_STATUS, &CMsnProto::MsnViewServiceStatus );
+	mi.position = 2000060004;
 	mi.icolibItem = GetIconHandle( IDI_SERVICES );
 	mi.ptszName = LPGENT("View MSN Services &Status");
-	menuItemsAll[ 2 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -328,14 +344,14 @@ void CMsnProto::MsnInitMenus( void )
 	mi.position = -500050002;
 	mi.icolibItem = GetIconHandle( IDI_NETMEETING );
 	mi.ptszName = LPGENT("&Start Netmeeting");
-	menuItemsAll[ 3 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_VIEW_PROFILE );
 	CreateProtoService( MSN_VIEW_PROFILE, &CMsnProto::MsnViewProfile );
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.ptszName = LPGENT("&View Profile");
-	menuItemsAll[ 4 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	strcpy( tDest, MSN_INVITE );
 	CreateProtoService( MSN_INVITE, &CMsnProto::MsnInviteCommand );
@@ -343,7 +359,7 @@ void CMsnProto::MsnInitMenus( void )
 	mi.position = -500050001;
 	mi.icolibItem = GetIconHandle( IDI_INVITE );
 	mi.ptszName = LPGENT("&Invite to chat");
-	menuItemsAll[ 5 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
+	menuItemsAll[ 6 ] = ( HANDLE )MSN_CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	MSN_EnableMenuItems( false );
 }

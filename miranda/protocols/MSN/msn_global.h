@@ -136,6 +136,7 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 
 #define MS_GOTO_INBOX		"/GotoInbox"
 #define MS_EDIT_PROFILE		"/EditProfile"
+#define MS_EDIT_ALERTS		"/EditAlerts"
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
 #define MS_SET_NICKNAME_UI  "/SetNicknameUI"
 

@@ -250,7 +250,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	HANDLE mainMenuRoot;
 	HANDLE blockMenuItem;
 	HANDLE menuItems[ 1 ];
-	HANDLE menuItemsAll[ 6 ];
+	HANDLE menuItemsAll[ 7 ];
 
 	void MsnInitMenus( void );
 	void MSN_EnableMenuItems( bool parEnable );
@@ -263,6 +263,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	int __cdecl MsnSendNetMeeting( WPARAM wParam, LPARAM lParam );
 	int __cdecl SetNicknameUI( WPARAM wParam, LPARAM lParam );
 	int __cdecl MsnViewProfile( WPARAM wParam, LPARAM lParam );
+    int __cdecl MsnSetupAlerts( WPARAM wParam, LPARAM lParam );
 	int __cdecl MsnViewServiceStatus( WPARAM wParam, LPARAM lParam );
 
 	/////////////////////////////////////////////////////////////////////////////////////////
