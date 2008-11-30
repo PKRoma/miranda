@@ -619,6 +619,11 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
+        SendDlgItemMessage(hwndDlg, IDC_FNAME, EM_LIMITTEXT, 63, 0);
+        SendDlgItemMessage(hwndDlg, IDC_CEMAIL, EM_LIMITTEXT, 253, 0);
+        SendDlgItemMessage(hwndDlg, IDC_CPW, EM_LIMITTEXT, 253, 0);
+        SendDlgItemMessage(hwndDlg, IDC_NPW1, EM_LIMITTEXT, 253, 0);
+        SendDlgItemMessage(hwndDlg, IDC_NPW2, EM_LIMITTEXT, 253, 0);
 		break;
 
     case WM_NOTIFY:
@@ -628,16 +633,6 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)ppro);
 
-		    if (!ppro->getString(AIM_KEY_SN, &dbv)) 
-		    {
-			    SetDlgItemTextA(hwndDlg, IDC_FNAME, dbv.pszVal);
-		        DBFreeVariant(&dbv);
-		    }
-		    if (!ppro->getString(AIM_KEY_EM, &dbv))
-		    {
-			    SetDlgItemTextA(hwndDlg, IDC_CEMAIL, dbv.pszVal);
-		        DBFreeVariant(&dbv);
-		    }
 		    if (ppro->state==1)	// Otherwise, get the info, save it, and then display it.
 		    {
                 if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
@@ -646,7 +641,6 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
                 }
             }
-            break;
 
         case PSN_INFOCHANGED:
 		    if (!ppro->getString(AIM_KEY_SN, &dbv))
@@ -671,16 +665,20 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
             char name[64];
             GetDlgItemTextA(hwndDlg, IDC_FNAME, name, sizeof(name));
-            if (strlen(name) > 0)
+            if (strlen(name) > 0 && !ppro->getString(AIM_KEY_SN, &dbv))
 	        {
-		        ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
+                if (strcmp(name, dbv.pszVal))
+		            ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
+                DBFreeVariant(&dbv);
 	        }
 
             char email[254];
 	        GetDlgItemTextA(hwndDlg, IDC_CEMAIL, email, sizeof(email));
-            if (strlen(email) < 254 && strlen(email) > 1) // Must be greater than 1 or a SNAC error is thrown.
+            if (strlen(email) > 1 && !ppro->getString(AIM_KEY_EM, &dbv)) // Must be greater than 1 or a SNAC error is thrown.
 	        {
-		        ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
+                if (strcmp(email, dbv.pszVal))
+		            ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
+                DBFreeVariant(&dbv);
 	        }
 
             ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_HIDE);
