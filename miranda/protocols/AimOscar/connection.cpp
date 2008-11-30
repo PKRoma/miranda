@@ -581,6 +581,6 @@ exit:
 	Netlib_CloseHandle(hServerPacketRecver);
 	Netlib_CloseHandle(hAdminConn);
 	hAdminConn=NULL;
-    ResetEvent(hChatNavEvent);
+    ResetEvent(hAdminEvent);
 	LOG("Admin Server Connection has ended");
 }

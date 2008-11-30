@@ -1385,7 +1385,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0007)
 		{
-			hAdminConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
+			hAdminConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false /*use_ssl != 0*/);
 			if(hAdminConn)
 			{
 				LOG("Successfully Connected to the Admin Server.");

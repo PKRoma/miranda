@@ -640,11 +640,11 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		    }
 		    if (ppro->state==1)	// Otherwise, get the info, save it, and then display it.
 		    {
-			    if (!ppro->hAdminConn)
-				    ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
-
-			    ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
-			    ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
+                if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
+                {
+			        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
+			        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
+                }
             }
             break;
 
@@ -666,8 +666,8 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 	    if  (LOWORD(wParam) == IDC_SAVECHANGES && ppro->state==1) 
         {
-	        if (!ppro->hAdminConn)
-		        ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07); // Make a connection
+            if (!ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
+                break;
 
             char name[64];
             GetDlgItemTextA(hwndDlg, IDC_FNAME, name, sizeof(name));
@@ -1301,3 +1301,134 @@ BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 	return FALSE;
 }
+/////////////////////////////////////////////////////////////////////////////////////////
+// Invite to chat dialog
+/*
+BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	HANDLE hContact;
+	char *szProto;
+	DBVARIANT dbv;
+	int nIndex;
+	HWND hComboBox;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		ppro = (CAimProto*)lParam;
+
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
+
+		// Propagate the name list
+		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+		do {
+			szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
+			if(szProto)
+			{
+				DBGetContactSettingString(hContact,szProto,AIM_KEY_SN,&dbv);
+				SendDlgItemMessageA( hwndDlg, IDC_CNAME, CB_ADDSTRING, 0, (LPARAM)dbv.pszVal);
+			}
+			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
+		} while(hContact);
+		DBFreeVariant( &dbv );
+		SendDlgItemMessage(hwndDlg, IDC_CNAME, CB_SETCURSEL, 0, 0);
+
+		// Propagate the chat room list with open chats
+		for (int i = 0; i < ppro->chat_rooms.getCount(); i++)
+			SendDlgItemMessageA( hwndDlg, IDC_CROOM, CB_ADDSTRING, 0, (LPARAM)ppro->chat_rooms[i].id);
+		SendDlgItemMessage(hwndDlg, IDC_CROOM, CB_SETCURSEL, 0, 0);
+		break;
+
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+
+	case WM_DESTROY:
+		ppro->ReleaseIconEx("aol");
+		break;
+
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+			case IDOK:
+				char name[64];
+				char msg[1024];
+			    GetDlgItemTextA(hwndDlg, IDC_CNAME, name, sizeof(name));
+				GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
+				hComboBox = GetDlgItem( hwndDlg, IDC_CROOM );
+				nIndex = SendMessage( hComboBox , CB_GETCURSEL, 0, 0 );
+			    if (ppro->state==1 && strlen(name) > 0)
+					ppro->aim_invite_to_chat(ppro->hServerConn,ppro->seqno, ppro->chat_rooms[nIndex].cookie, ppro->chat_rooms[nIndex].exchange, ppro->chat_rooms[nIndex].instance, name, msg);
+
+				EndDialog(hwndDlg, IDOK);
+				break;
+
+			case IDCANCEL:
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			}
+		}
+		break;
+	}
+	return FALSE;
+}
+*/
+/////////////////////////////////////////////////////////////////////////////////////////
+// Chat request dialog
+/*
+BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	int size;
+	char* buf;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		ppro = (CAimProto*)lParam;
+
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
+
+//		size = strlen(ppro->par->name)+strlen(ppro->par->id)+33;
+		buf = new char[size];
+		sprintf(buf,"%s has sent you a chat invite to: %s",ppro->par->name,ppro->par->id);
+		SetDlgItemTextA(hwndDlg, IDC_NAME, buf);
+		SetDlgItemTextA(hwndDlg, IDC_MSG, ppro->par->message);
+		delete[] buf;
+		break;
+
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+
+	case WM_DESTROY:
+		ppro->ReleaseIconEx("aol");
+		break;
+
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+			case IDOK:
+			    if (ppro->state==1)
+					ppro->ForkThread(&CAimProto::chatnav_request_thread, ppro->par);
+				EndDialog(hwndDlg, IDOK);
+				break;
+
+			case IDCANCEL:
+				if (ppro->state==1)
+					ppro->aim_deny_invite(ppro->hServerConn,ppro->seqno,ppro->par->name,ppro->par->icbm_cookie);
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			}
+		}
+		break;
+	}
+	return FALSE;
+}
+*/
