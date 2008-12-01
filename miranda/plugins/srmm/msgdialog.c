@@ -1208,7 +1208,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					ci.cbSize = sizeof(ci);
 					ci.hContact = dat->hContact;
 					ci.szProto = dat->szProto;
-					ci.dwFlag = CNF_UNIQUEID;
+					ci.dwFlag = CNF_DISPLAYUID;
 					if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 						switch (ci.type) {
 						case CNFT_ASCIIZ:

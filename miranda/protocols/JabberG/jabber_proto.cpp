@@ -163,6 +163,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	char text[ MAX_PATH ];
 	mir_snprintf( text, sizeof( text ), "%s/Status", m_szModuleName );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+	mir_snprintf( text, sizeof( text ), "%s/%s", m_szModuleName, DBSETTING_DISPLAY_UID );
+	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 }
 
 CJabberProto::~CJabberProto()

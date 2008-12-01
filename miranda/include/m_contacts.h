@@ -71,6 +71,7 @@ typedef struct {
 #define CNF_COZIP		36 // returns company zip code (string)
 #define CNF_COCOUNTRY	37 // returns company country (string)
 #define CNF_COHOMEPAGE	38 // returns company homepage (string)
+#define CNF_DISPLAYUID	39 // returns uniqueid to display in interface (must check type for type of return)
 
 // Special types
 // Return the custom name using the name order setting

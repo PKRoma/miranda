@@ -997,7 +997,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	if (hwnd) {
-		if (strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId", cws->szSetting)) {
+		if (strstr("MyHandle,Status,Nick,ApparentMode,Default,ForceSend,IdleTS,XStatusId,display_uid", cws->szSetting)) {
 			if (!strcmp(cws->szSetting, "XStatusId"))
 				PostMessage(hwnd, DM_UPDATESTATUSMSG, 0, 0);
 			PostMessage(hwnd, DM_UPDATETITLE, 0, 0);
@@ -1804,7 +1804,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 		if (dat->bType == SESSIONTYPE_IM)
 			SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		if (IsIconic(pContainer->hwnd)) {
-			SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+			ShowWindow(pContainer->hwnd, SW_RESTORE);
+			//SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 			SetForegroundWindow(pContainer->hwnd);
 		}
 		//MaD - hide on close feature

@@ -190,6 +190,17 @@ static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
 
 			break;
 		}
+		case CNF_DISPLAYUID:
+		{
+			if (!ProcessDatabaseValueDefault(ci, "display_uid"))
+				return 0;
+			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
+			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid)
+				if (!ProcessDatabaseValueDefault(ci,uid))
+					return 0;
+
+			break;
+		}
 		case CNF_DISPLAYNC:
 		case CNF_DISPLAY:
 		{

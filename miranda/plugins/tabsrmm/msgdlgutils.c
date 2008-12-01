@@ -1531,7 +1531,7 @@ void GetContactUIN(HWND hwndDlg, struct MessageWindowData *dat)
 		ci.szProto = dat->szProto;
 	}
 	ci.cbSize = sizeof(ci);
-	ci.dwFlag = CNF_UNIQUEID;
+	ci.dwFlag = CNF_DISPLAYUID;
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		switch (ci.type) {
 			case CNFT_ASCIIZ:

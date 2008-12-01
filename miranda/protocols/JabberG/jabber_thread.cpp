@@ -1371,9 +1371,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				if ( *fromResource != '\0' ) {
 					for ( int i=0; i<item->resourceCount; i++ ) {
 						if ( !lstrcmp( item->resource[i].resourceName, fromResource )) {
-							if ((item->resourceMode==RSMODE_LASTSEEN) && (i != item->lastSeenResource))
-								UpdateMirVer(item);
+							int nLastSeenResource = item->lastSeenResource;
 							item->lastSeenResource = i;
+							if ((item->resourceMode==RSMODE_LASTSEEN) && (i != nLastSeenResource))
+								UpdateMirVer(item);
 							break;
 		}	}	}	}	}
 
@@ -1479,6 +1480,9 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 		else
 			DBDeleteContactSetting( hContact, "CList", "StatusMsg" );
 		UpdateMirVer( hContact, &item->resource[nSelectedResource] );
+	}
+	else {
+		JDeleteSetting( hContact, DBSETTING_DISPLAY_UID );
 	}
 
 	if ( _tcschr( jid, '@' )!=NULL || m_options.ShowTransport==TRUE )

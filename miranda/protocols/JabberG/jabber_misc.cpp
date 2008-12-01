@@ -510,7 +510,7 @@ void CJabberProto::FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, in
 
 		int i;
 
-		// search throught known software list
+		// search through known software list
 		for (i = 0; i < SIZEOF(sttCapsNodeToName_Map); ++i)
 			if ( _tcsstr( resource->szCapsNode, sttCapsNodeToName_Map[i].node ) )
 			{
@@ -546,6 +546,14 @@ void CJabberProto::UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resourc
 	TCHAR szMirVer[ 512 ];
 	FormatMirVer(resource, szMirVer, SIZEOF(szMirVer));
 	JSetStringT( hContact, "MirVer", szMirVer );
+
+	DBVARIANT dbv;
+	if ( !JGetStringT( hContact, "jid", &dbv )) {
+		TCHAR szFullJid[ 512 ];
+		mir_sntprintf( szFullJid, SIZEOF( szFullJid ), _T("%s/%s"), dbv.ptszVal, resource->resourceName );
+		JSetStringT( hContact, DBSETTING_DISPLAY_UID, szFullJid );
+		JFreeVariant( &dbv );
+	}
 }
 
 
@@ -557,6 +565,7 @@ void CJabberProto::SetContactOfflineStatus( HANDLE hContact )
 	JDeleteSetting( hContact, DBSETTING_XSTATUSID );
 	JDeleteSetting( hContact, DBSETTING_XSTATUSNAME );
 	JDeleteSetting( hContact, DBSETTING_XSTATUSMSG );
+	JDeleteSetting( hContact, DBSETTING_DISPLAY_UID );
 
 	ResetAdvStatus( hContact, ADVSTATUS_MOOD );
 	ResetAdvStatus( hContact, ADVSTATUS_TUNE );

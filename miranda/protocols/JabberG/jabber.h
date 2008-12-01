@@ -282,6 +282,7 @@ enum {
 
 #define JS_HTTP_AUTH               "/HttpAuthRequest"
 
+#define DBSETTING_DISPLAY_UID      "display_uid"
 #define DBSETTING_XSTATUSID        "XStatusId"
 #define DBSETTING_XSTATUSNAME      "XStatusName"
 #define DBSETTING_XSTATUSMSG       "XStatusMsg"

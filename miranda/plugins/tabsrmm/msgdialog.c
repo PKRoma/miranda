@@ -2537,10 +2537,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->szProto) {
 					TCHAR	*wUIN = NULL;
 
+					GetContactUIN(hwndDlg, dat);
+
 					if (dat->bIsMeta) {
 						szOldMetaProto = dat->szMetaProto;
 						szProto = GetCurrentMetaContactProto(hwndDlg, dat);
-						GetContactUIN(hwndDlg, dat);
 					}
 					szActProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 					hActContact = /* dat->bIsMeta ? dat->hSubContact :*/ dat->hContact;
