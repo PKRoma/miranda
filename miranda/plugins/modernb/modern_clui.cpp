@@ -2444,19 +2444,30 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 		return 0;
 
 	case WM_MEASUREITEM:
-		if(((LPMEASUREITEMSTRUCT)lParam)->itemData==MENU_STATUSMENU) {
-			HDC hdc;
-			SIZE textSize;
-			hdc=GetDC(hwnd);
-			GetTextExtentPoint32A(hdc,Translate("Status"),lstrlenA(Translate("Status")),&textSize);	
-			((LPMEASUREITEMSTRUCT)lParam)->itemWidth=textSize.cx;
-			//GetSystemMetrics(SM_CXSMICON)*4/3;
-			((LPMEASUREITEMSTRUCT)lParam)->itemHeight=0;
-			ReleaseDC(hwnd,hdc);
-			return TRUE;
+		{
+			LPMEASUREITEMSTRUCT pmis = (LPMEASUREITEMSTRUCT)lParam;
+			switch ( pmis->itemData )
+			{
+			case MENU_MIRANDAMENU:
+				{
+					pmis->itemWidth = GetSystemMetrics( SM_CXSMICON ) * 4 / 3;
+					pmis->itemHeight = 0;
+				}
+				return TRUE;
+			case MENU_STATUSMENU:
+				{
+					HDC hdc;
+					SIZE textSize;
+					hdc=GetDC( hwnd );
+					GetTextExtentPoint32A( hdc, Translate("Status"), lstrlenA( Translate( "Status" ) ), &textSize );
+					pmis->itemWidth = textSize.cx;
+					pmis->itemHeight = 0;
+					ReleaseDC( hwnd, hdc );
+				}
+				return TRUE;
+			}
+			return CallService( MS_CLIST_MENUMEASUREITEM, wParam, lParam );
 		}
-		break;
-
 	case WM_DRAWITEM:
 		{
 			struct ClcData * dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
@@ -2597,7 +2608,8 @@ LRESULT CALLBACK CLUI__cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam
 			pcli->hwndStatus=NULL;
 			PostQuitMessage(0);
 			return 0;
-		}	}
+		}	
+	}
 
 	return corecli.pfnContactListWndProc( hwnd, msg, wParam, lParam );
 }

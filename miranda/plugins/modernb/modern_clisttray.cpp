@@ -399,11 +399,12 @@ int cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			pcli->bTrayMenuOnScreen=FALSE;
 		break;
 
-	case WM_DRAWITEM:
-		return CallService(MS_CLIST_MENUDRAWITEM,msg->wParam,msg->lParam);
+		// case WM_DRAWITEM:
+	//	return CallService(MS_CLIST_MENUDRAWITEM,msg->wParam,msg->lParam);
 
-	case WM_MEASUREITEM:
-		return CallService(MS_CLIST_MENUMEASUREITEM,msg->wParam,msg->lParam);
+	// case WM_MEASUREITEM:
+	//	return CallService(MS_CLIST_MENUMEASUREITEM,msg->wParam,msg->lParam);
+
 
 	case WM_ACTIVATE:
 		{

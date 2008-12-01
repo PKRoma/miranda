@@ -2363,7 +2363,7 @@ void CLCPaint::_PaintClcOld( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPa
     COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( !dat->useWindowsColours ?  dat->bkColour : GetSysColor( COLOR_3DFACE ) ) : dat->bkColour;
     DWORD currentCounter;
 
-    g_CluiData.t_now = time( NULL );
+    g_CluiData.t_now = (DWORD)time( NULL );
     if ( !IsWindowVisible( hwnd ) ) return;
     if( dat->greyoutFlags&pcli->pfnClcStatusToPf2( status ) || style&WS_DISABLED ) grey = 1;
     else if( GetFocus() != hwnd && dat->greyoutFlags&GREYF_UNFOCUS ) grey = 1;

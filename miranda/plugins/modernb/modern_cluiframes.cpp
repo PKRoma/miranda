@@ -1024,6 +1024,8 @@ static HMENU CLUIFramesCreateMenuForFrame(int frameid,int root,int popuppos,char
 
 static int ModifyMItem(WPARAM wParam,LPARAM lParam)
 {
+	if ( (int) wParam == -1 ) return 0;	   // FIXME 
+
 	return ModifyMenuItemProxy(wParam,lParam);
 };
 
