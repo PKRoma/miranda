@@ -462,12 +462,12 @@ int __cdecl CIrcProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
 // PSS_AUTHREQUEST
 
 int __cdecl CIrcProto::AuthRequest( HANDLE hContact, const char* szMessage )
-{	
+{
 	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// ChangeInfo 
+// ChangeInfo
 
 HANDLE __cdecl CIrcProto::ChangeInfo( int iInfoType, void* pInfoData )
 {
@@ -994,14 +994,17 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 		return 0;
 	}
 
-	if ( iNewStatus == ID_STATUS_FREECHAT && m_perform && IsConnected() )
-		DoPerform( "Event: Free for chat" );
-	if ( iNewStatus == ID_STATUS_ONTHEPHONE && m_perform && IsConnected() )
-		DoPerform( "Event: On the phone" );
-	if ( iNewStatus == ID_STATUS_OUTTOLUNCH && m_perform && IsConnected() )
-		DoPerform( "Event: Out for lunch" );
-	if ( iNewStatus == ID_STATUS_ONLINE && m_perform && IsConnected() && (m_iStatus ==ID_STATUS_ONTHEPHONE ||m_iStatus  ==ID_STATUS_OUTTOLUNCH) && m_iDesiredStatus  !=ID_STATUS_AWAY)
-		DoPerform( "Event: Available" );
+	if ( m_perform && IsConnected())
+		switch( iNewStatus ) {
+			case ID_STATUS_AWAY:       DoPerform( "Event: Away" );            break;
+			case ID_STATUS_NA:         DoPerform( "Event: N/A" );             break;
+			case ID_STATUS_DND:        DoPerform( "Event: DND" );             break;
+			case ID_STATUS_OCCUPIED:   DoPerform( "Event: Occupied" );        break;
+			case ID_STATUS_FREECHAT:   DoPerform( "Event: Free for chat" );   break;
+			case ID_STATUS_ONTHEPHONE: DoPerform( "Event: On the phone" );    break;
+			case ID_STATUS_OUTTOLUNCH: DoPerform( "Event: Out for lunch" );   break;
+			case ID_STATUS_ONLINE:     DoPerform( "Event: Available" );       break;
+      }
 
 	if ( !bIsInternal )
 		m_iStatus = iNewStatus;
@@ -1060,7 +1063,7 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 // PSR_AWAYMSG
 
 int __cdecl CIrcProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
-{	
+{
 	return 1;
 }
 
@@ -1068,7 +1071,7 @@ int __cdecl CIrcProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEV
 // PSS_AWAYMSG
 
 int __cdecl CIrcProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg )
-{	
+{
 	return 1;
 }
 
@@ -1078,7 +1081,7 @@ int __cdecl CIrcProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char
 int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 {
 	switch( status ) {
-	case ID_STATUS_ONLINE:     case ID_STATUS_INVISIBLE:   case ID_STATUS_FREECHAT:  
+	case ID_STATUS_ONLINE:     case ID_STATUS_INVISIBLE:   case ID_STATUS_FREECHAT:
 	case ID_STATUS_CONNECTING: case ID_STATUS_OFFLINE:
 		break;
 
@@ -1115,12 +1118,12 @@ int __cdecl CIrcProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 	case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 	case EV_PROTO_ONOPTIONS: return OnInitOptionsPages( wParam, lParam );
 	case EV_PROTO_ONRENAME:
-		{	
+		{
 			CLISTMENUITEM clmi = { 0 };
 			clmi.cbSize = sizeof( CLISTMENUITEM );
 			clmi.flags = CMIM_NAME | CMIF_TCHAR;
 			clmi.ptszName = m_tszUserName;
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuRoot, ( LPARAM )&clmi );
-	}	}	
+	}	}
 	return 1;
 }
