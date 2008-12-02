@@ -321,7 +321,8 @@ int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam)
 
 	if ( gcmi == NULL || _stricmp(gcmi->pszModule, m_szProtoName )) return 0;
 
-	if ( gcmi->Type == MENU_ON_LOG ) {
+	if ( gcmi->Type == MENU_ON_LOG ) 
+    {
 		static const struct gc_item Items[] = {
 			{ TranslateT("&Invite user..."), 10, MENU_ITEM, FALSE },
 			{ TranslateT("&Leave chat session"), 20, MENU_ITEM, FALSE }
@@ -329,8 +330,11 @@ int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam)
 		gcmi->nItems = SIZEOF(Items);
 		gcmi->Item = (gc_item*)Items;
 	}
-	if ( gcmi->Type == MENU_ON_NICKLIST ) {
-		if ( !strcmp(MyOptions.szEmail, (char *)gcmi->pszUID)) {
+	else if ( gcmi->Type == MENU_ON_NICKLIST ) 
+    {
+        char* email = mir_t2a(gcmi->pszUID);
+		if ( !strcmp(MyOptions.szEmail, email)) 
+        {
 			static const struct gc_item Items[] = {
 				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
 				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE },
@@ -340,14 +344,17 @@ int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam)
 			gcmi->nItems = SIZEOF(Items);
 			gcmi->Item = (gc_item*)Items;
 		}
-		else {
+		else 
+        {
 			static const struct gc_item Items[] = {
 				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
 				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE }
 			};
 			gcmi->nItems = SIZEOF(Items);
 			gcmi->Item = (gc_item*)Items;
-    }	}
+        }
+        mir_free(email);
+    }
 
 	return 0;
 }
