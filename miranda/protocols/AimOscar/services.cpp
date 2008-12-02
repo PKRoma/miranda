@@ -203,12 +203,6 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
-int CAimProto::InviteChat(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-//	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_SINVITE), NULL, invite_to_chat_dialog, LPARAM( this ));
-	return 0;
-}
-
 int CAimProto::LeaveChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;

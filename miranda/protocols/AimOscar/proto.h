@@ -87,7 +87,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
 	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
 	int  __cdecl JoinChat(WPARAM wParam, LPARAM lParam);
-	int  __cdecl InviteChat(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);

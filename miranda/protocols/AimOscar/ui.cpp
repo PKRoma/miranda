@@ -704,12 +704,12 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		            ShowWindow(GetDlgItem(hwndDlg, IDC_PINFO), SW_SHOW);
 	            }
             }
-            else if (LOWORD(wParam) == IDC_CONFIRM && ppro->state==1)	// Confirmation
-            {
-                if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
-				    ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
-			}
         }
+        else if (LOWORD(wParam) == IDC_CONFIRM && ppro->state==1)	// Confirmation
+        {
+            if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
+			    ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
+		}
 		break;
 	}
 	return FALSE;
