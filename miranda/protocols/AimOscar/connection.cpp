@@ -267,7 +267,7 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 		if (recvResult == SOCKET_ERROR)
 		{
             if (WSAGetLastError() == ERROR_TIMEOUT)
-                aim_keepalive(hMailConn,seqno);
+                aim_keepalive(hMailConn, mail_seqno);
             else
 			    break;
 		}
