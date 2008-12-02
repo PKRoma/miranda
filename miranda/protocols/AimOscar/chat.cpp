@@ -15,7 +15,7 @@ void CAimProto::chat_register(void)
 	CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 
 	HookProtoEvent(ME_GC_EVENT, &CAimProto::OnGCEvent);
-//	HookProtoEvent(ME_GC_BUILDMENU, &CAimProto::MSN_GCMenuHook );
+	HookProtoEvent(ME_GC_BUILDMENU, &CAimProto::OnGCMenuHook );
 }
 
 void CAimProto::chat_start(const char* id, unsigned short exchange)
@@ -106,20 +106,18 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 
     char* id = mir_t2a(gch->pDest->ptszID);
     chat_list_item* item = find_chat_by_id(id);
-    mir_free(id);
+
+    if (item == NULL) return 0;
 
     switch (gch->pDest->iType) 
     {
 		case GC_SESSION_TERMINATE: 
-            if (item)
-		    {
-			    aim_sendflap(item->hconn,0x04,0,NULL,item->seqno);
-			    Netlib_Shutdown(item->hconn);
-		    }
+		    aim_sendflap(item->hconn,0x04,0,NULL,item->seqno);
+		    Netlib_Shutdown(item->hconn);
 			break;
 
         case GC_USER_MESSAGE:
-			if (gch->ptszText && _tcslen(gch->ptszText)&& item) 
+			if (gch->ptszText && _tcslen(gch->ptszText)) 
 			{
                 char* msg = mir_utf8encodeT(gch->ptszText);
                 if (is_utf(msg))
@@ -149,17 +147,93 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 			break;
 
         case GC_USER_LOGMENU:
+			switch(gch->dwData) 
+            {
+			case 10:
+                DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
+                    LPARAM( new invite_chat_param(item->id, this )));
+				break;
+
+			case 20:
+                chat_leave(id);
+				break;
+			}
 			break;
 		
         case GC_USER_NICKLISTMENU: 
+            {
+			    char *sn = mir_t2a(gch->ptszUID);
+			    HANDLE hContact = find_contact(sn);
+			    mir_free(sn);
+
+			    switch (gch->dwData) 
+                {
+			    case 10:
+				    CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)hContact, 0);
+				    break;
+
+			    case 20:
+				    CallService(MS_HISTORY_SHOWCONTACTHISTORY, (WPARAM)hContact, 0);
+				    break;
+
+			    case 110:
+                    chat_leave(id);
+				    break;
+			    }
+            }
 			break;
 
         case GC_USER_TYPNOTIFY: 
 			break;
 	}
+    mir_free(id);
 
 	return 0;
 }
+
+int CAimProto::OnGCMenuHook(WPARAM wParam,LPARAM lParam) 
+{
+	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
+
+	if ( gcmi == NULL || _stricmp(gcmi->pszModule, m_szModuleName )) return 0;
+
+	if ( gcmi->Type == MENU_ON_LOG ) 
+    {
+		static const struct gc_item Items[] = {
+			{ TranslateT("&Invite user..."), 10, MENU_ITEM, FALSE },
+			{ TranslateT("&Leave chat session"), 20, MENU_ITEM, FALSE }
+		};
+		gcmi->nItems = SIZEOF(Items);
+		gcmi->Item = (gc_item*)Items;
+	}
+	else if ( gcmi->Type == MENU_ON_NICKLIST ) 
+    {
+        char* sn = mir_t2a(gcmi->pszUID);
+		if ( !strcmp(username, sn)) 
+        {
+			static const struct gc_item Items[] = {
+				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
+				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE },
+				{ _T(""), 100, MENU_SEPARATOR, FALSE },
+				{ TranslateT("&Leave chat session"), 110, MENU_ITEM, FALSE }
+			};
+			gcmi->nItems = SIZEOF(Items);
+			gcmi->Item = (gc_item*)Items;
+		}
+		else {
+			static const struct gc_item Items[] = {
+				{ TranslateT("User &details"), 10, MENU_ITEM, FALSE },
+				{ TranslateT("User &history"), 20, MENU_ITEM, FALSE }
+			};
+			gcmi->nItems = SIZEOF(Items);
+			gcmi->Item = (gc_item*)Items;
+        }	
+        mir_free(sn);
+    }
+
+	return 0;
+}
+
 
 void   __cdecl CAimProto::chatnav_request_thread( void* param )
 {

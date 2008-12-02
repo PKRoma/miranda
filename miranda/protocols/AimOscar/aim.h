@@ -28,6 +28,7 @@
 #include <m_clui.h>
 #include "m_cluiframes.h"
 #include <m_database.h>
+#include <m_history.h>
 #include <m_idle.h>
 #include <m_langpack.h>
 #include <m_message.h>

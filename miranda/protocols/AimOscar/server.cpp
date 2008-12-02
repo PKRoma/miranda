@@ -1346,10 +1346,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 				ForkThread( &CAimProto::aim_avatar_negotiation, 0 );
 			}
 			else
-			{
 				LOG("Failed to connect to the Avatar Server.");
-				hAvatarConn=0;
-			}
 		}
 		else if(family==0x000D)
 		{
