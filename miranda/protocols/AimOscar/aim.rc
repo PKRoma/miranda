@@ -173,9 +173,12 @@ END
 
 IDD_ADMIN DIALOGEX 0, 0, 224, 147
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Change Password",IDC_STATIC,2,2,101,103
+    LTEXT           "Original",IDC_STATIC,8,14,87,8
+    EDITTEXT        IDC_CPW,5,23,90,14,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "New",IDC_STATIC,7,40,87,8
     EDITTEXT        IDC_NPW1,5,49,90,14,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Repeat",IDC_STATIC,7,65,88,8
@@ -188,8 +191,36 @@ BEGIN
     PUSHBUTTON      "Confirm Account",IDC_CONFIRM,5,122,86,16,BS_MULTILINE
     LTEXT           "*Applied upon reconnect",IDC_STATIC,127,109,80,8
     PUSHBUTTON      "Save Changes",IDC_SAVECHANGES,131,122,79,16
-    LTEXT           "Original",IDC_STATIC,8,14,87,8
-    EDITTEXT        IDC_CPW,5,23,90,14,ES_PASSWORD | ES_AUTOHSCROLL
+END
+
+IDD_CHATROOM_INVITE DIALOGEX 0, 0, 302, 125
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "Invite Buddy To Chat Room"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Screen Name",-1,154,31,43,9
+    PUSHBUTTON      "&Invite",IDOK,165,107,46,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,234,107,45,14
+    LTEXT           "Invitation reason",-1,154,58,60,9
+    EDITTEXT        IDC_MSG,154,68,140,32,ES_MULTILINE | ES_LOWERCASE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "",IDC_CCLIST,"CListControl",WS_TABSTOP | 0x16e,7,4,141,117,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDIT1,154,41,93,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Add",IDC_ADDSCR,247,40,49,14
+    LTEXT           "Static",IDC_ROOMNAME,161,10,126,8
+END
+
+IDD_RINVITE DIALOGEX 0, 0, 163, 105
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST
+CAPTION "Chat Room Invitation Request"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "&Join",IDOK,65,87,46,14
+    PUSHBUTTON      "&Deny",IDCANCEL,113,87,45,14
+    LTEXT           "Message:",-1,6,23,60,12
+    LTEXT           "",IDC_NAME,6,3,151,20
+    EDITTEXT        IDC_MSG,6,33,151,50,ES_MULTILINE | ES_LOWERCASE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
 END
 
 
@@ -237,6 +268,18 @@ BEGIN
         RIGHTMARGIN, 223
         BOTTOMMARGIN, 146
     END
+
+    IDD_CHATROOM_INVITE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 300
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 121
+    END
+
+    IDD_RINVITE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 101
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -276,6 +319,8 @@ IDI_NORMALSCRIPT        ICON                    "icons/normalscript.ico"
 IDI_SUBSCRIPT           ICON                    "icons/subscript.ico"
 IDI_SUPERSCRIPT         ICON                    "icons/superscript.ico"
 IDI_BLOCK               ICON                    "icons\\block.ico"
+IDI_JOIN                ICON                    "icons\\join.ico"
+IDI_PART                ICON                    "icons\\part.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

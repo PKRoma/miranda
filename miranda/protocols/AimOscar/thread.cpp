@@ -35,7 +35,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 				char cookie[8];
 				read_cookie(hContact,cookie);
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
-				aim_deny_file(hServerConn,seqno,dbv.pszVal,cookie);
+				aim_file_deny(hServerConn,seqno,dbv.pszVal,cookie);
 				DBFreeVariant(&dbv);
 			}
 			else sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);

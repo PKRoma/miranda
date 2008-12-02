@@ -1337,7 +1337,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if(family==0x0010)
 		{
-			hAvatarConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),use_ssl != 0);
+			hAvatarConn=aim_connect(server,getWord(AIM_KEY_PN, AIM_DEFAULT_PORT),false/*use_ssl != 0*/);
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
@@ -1374,7 +1374,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			    if(item->hconn)
 			    {
 				    LOG("Successfully Connected to the Chat Server.");
-                    chat_start(item->id);
+                    chat_start(item->id, item->exchange);
 				    item->CHAT_COOKIE = local_cookie;
 				    item->CHAT_COOKIE_LENGTH = local_cookie_length;
 				    ForkThread( &CAimProto::aim_chat_negotiation, item );
@@ -1728,7 +1728,7 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 #ifdef UNICODE
                     char* msgu=mir_utf8encodeW(msgw);
 #else
-                    char* msgu=mir_w2a(msgw);
+                    char* msgu=mir_u2a(msgw);
 #endif
                     delete[] msgw;
 		            char* bbuf = strip_html(msgu);

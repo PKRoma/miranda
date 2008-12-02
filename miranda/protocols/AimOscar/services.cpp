@@ -79,21 +79,21 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 	if (state!=1)
 		return 0;
 
-	char* protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO,wParam, 0);
-	if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+    HANDLE hContact = (HANDLE)wParam;
+	if (is_my_contact(hContact))
 	{
 		if(!lstrcmpA(cws->szSetting,AIM_KEY_NL)&&!lstrcmpA(cws->szModule,MOD_KEY_CL))
 		{
 			if(cws->value.type == DBVT_DELETED)
 			{
 				DBVARIANT dbv;
-				if(!DBGetContactSettingString((HANDLE)wParam,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+				if(!DBGetContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
-					add_contact_to_group((HANDLE)wParam,dbv.pszVal);
+					add_contact_to_group(hContact,dbv.pszVal);
 					DBFreeVariant(&dbv);
 				}
 				else
-					add_contact_to_group((HANDLE)wParam,AIM_DEFAULT_GROUP);
+					add_contact_to_group(hContact,AIM_DEFAULT_GROUP);
 			}
 		}
 	}
@@ -203,6 +203,12 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
+int CAimProto::InviteChat(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+//	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_SINVITE), NULL, invite_to_chat_dialog, LPARAM( this ));
+	return 0;
+}
+
 int CAimProto::LeaveChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
@@ -210,7 +216,17 @@ int CAimProto::LeaveChat(WPARAM wParam, LPARAM /*lParam*/)
     HANDLE hContact = (HANDLE)wParam;
 
     char* id = getSetting(hContact, "ChatRoomID");
-    if (id != NULL) chat_leave(id);
+    if (id == NULL) return 0;
+
+    if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+    {
+        chatnav_param* par = new chatnav_param(id, getWord(hContact, "Exchange", 4));
+        ForkThread(&CAimProto::chatnav_request_thread, par);
+    }
+    else
+        chat_leave(id);
+
+    delete[] id;
     return 0;
 }
 

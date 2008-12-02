@@ -102,8 +102,13 @@ bool CAimProto::wait_conn( HANDLE& hConn, HANDLE& hEvent, unsigned short service
     return true;
 }
 
+bool CAimProto::is_my_contact(HANDLE hContact)
+{
+	const char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	return szProto != NULL && strcmp(m_szModuleName, szProto) == 0;
+}
 
-HANDLE CAimProto::find_contact(char * sn)
+HANDLE CAimProto::find_contact(const char * sn)
 {
 	HANDLE hContact = NULL;
 	if(char* norm_sn=normalize_name(sn))
@@ -111,8 +116,7 @@ HANDLE CAimProto::find_contact(char * sn)
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
 		{
-			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+			if (is_my_contact(hContact))
 			{
 				DBVARIANT dbv;
 				if (!getString(hContact, AIM_KEY_SN, &dbv))
@@ -125,6 +129,27 @@ HANDLE CAimProto::find_contact(char * sn)
 			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
 		delete[] norm_sn;
+	}
+	return hContact;
+}
+
+HANDLE CAimProto::find_chat_contact(const char * room)
+{
+	HANDLE hContact = NULL;
+	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+		if (is_my_contact(hContact))
+		{
+			DBVARIANT dbv;
+            if (!getString(hContact, "ChatRoomID", &dbv))
+			{
+				bool found = !strcmp(room, dbv.pszVal); 
+				DBFreeVariant(&dbv);
+				if (found) break; 
+			}
+		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 	return hContact;
 }
@@ -233,9 +258,8 @@ void CAimProto::add_contacts_to_groups()
 	//MessageBox( NULL, m_szModuleName, m_szModuleName, MB_OK );
 	while (hContact)
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		//MessageBox( NULL, protocol, m_szModuleName, MB_OK );
-		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+		if (is_my_contact(hContact))
 		{
 			//MessageBox( NULL, "Matching contact...making a groupid key...", m_szModuleName, MB_OK );
 			char group[sizeof(AIM_KEY_GI)+10];
@@ -306,8 +330,7 @@ void CAimProto::offline_contacts()
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !strcmp(protocol, m_szModuleName))
+		if (is_my_contact(hContact))
 			offline_contact(hContact,true);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
@@ -325,8 +348,7 @@ void CAimProto::remove_AT_icons()
 		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
 		{
-			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+			if (is_my_contact(hContact))
 			{
 				DBVARIANT dbv;
 				if (!getString(hContact, AIM_KEY_SN, &dbv))
@@ -353,8 +375,7 @@ void CAimProto::remove_ES_icons()
 		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
 		{
-			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+			if (is_my_contact(hContact))
 			{
 				DBVARIANT dbv;
 				if (!getString(hContact, AIM_KEY_SN, &dbv))
@@ -379,8 +400,7 @@ void CAimProto::add_AT_icons()
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+		if (is_my_contact(hContact))
 		{
 			DBVARIANT dbv;
 			if (!getString(hContact, AIM_KEY_SN, &dbv))
@@ -443,8 +463,7 @@ void CAimProto::add_ES_icons()
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+		if (is_my_contact(hContact))
 		{
 			DBVARIANT dbv;
 			if (!getString(hContact, AIM_KEY_SN, &dbv))
@@ -605,8 +624,7 @@ unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free
 		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		while (hContact)
 		{
-			char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-			if (protocol != NULL && !strcmp(protocol, m_szModuleName))
+			if (is_my_contact(hContact))
 			{		
 				int i=1;
 				for(;;)
@@ -648,8 +666,7 @@ char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &si
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
-		char *protocol = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (protocol != NULL && !lstrcmpA(protocol, m_szModuleName))
+		if (is_my_contact(hContact))
 		{
 				int i=1;
 				for(;;)

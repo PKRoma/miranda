@@ -673,7 +673,7 @@ int CAimProto::aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
-int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
+int CAimProto::aim_file_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
 {	
     unsigned short offset=0;
     //see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
@@ -696,7 +696,7 @@ int CAimProto::aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
-int CAimProto::aim_deny_invite(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
+int CAimProto::aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
 {	
     unsigned short offset=0;
     //see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
@@ -921,7 +921,7 @@ int CAimProto::aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, c
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg)
+int CAimProto::aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg)
 {
     unsigned short offset=0;
     unsigned short chat_cookie_len = (unsigned short)strlen(chat_cookie);

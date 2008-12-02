@@ -25,9 +25,13 @@
 #define IDI_BACKGROUNDCOLOR             32
 #define IDD_PRIVACY                     36
 #define IDD_CHAT                        37
+#define IDI_JOIN                        37
 #define IDI_BLOCK                       38
 #define IDD_ADMIN                       39
+#define IDI_PART                        40
+#define IDD_CHATROOM_INVITE             40
 #define IDI_BOLD                        41
+#define IDD_RINVITE                     41
 #define IDI_NBOLD                       42
 #define IDI_ITALIC                      43
 #define IDI_NITALIC                     44
@@ -71,13 +75,17 @@
 #define IDC_BLOCKREMOVE                 156
 #define IDC_ROOM                        157
 #define IDC_CEMAIL                      158
+#define IDC_MSG                         158
 #define IDC_FNAME                       159
 #define IDC_NPW1                        161
 #define IDC_NPW2                        162
-#define IDC_NPW3                        164
-#define IDC_NPW                         164
 #define IDC_CPW                         164
 #define IDC_PINFO                       165
+#define IDC_NAME                        168
+#define IDC_CCLIST                      173
+#define IDC_EDIT1                       174
+#define IDC_ADDSCR                      175
+#define IDC_ROOMNAME                    176
 #define IDC_SN                          1030
 #define IDC_NK                          1040
 #define IDC_PW                          1050
@@ -107,9 +115,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        37
+#define _APS_NEXT_RESOURCE_VALUE        41
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         166
+#define _APS_NEXT_CONTROL_VALUE         177
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

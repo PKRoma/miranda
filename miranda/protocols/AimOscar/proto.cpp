@@ -275,7 +275,7 @@ int __cdecl CAimProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 
 		char cookie[8];
 		read_cookie( hContact, cookie );
-		aim_deny_file( hServerConn, seqno, dbv.pszVal, cookie );
+		aim_file_deny( hServerConn, seqno, dbv.pszVal, cookie );
 		DBFreeVariant( &dbv );
 	}
 
@@ -299,7 +299,7 @@ int __cdecl CAimProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 
 		char cookie[8];
 		read_cookie( hContact,cookie );
-		aim_deny_file( hServerConn, seqno, dbv.pszVal, cookie );
+		aim_file_deny( hServerConn, seqno, dbv.pszVal, cookie );
 		DBFreeVariant( &dbv );
 	}
 	deleteSetting( hContact, AIM_KEY_FT );

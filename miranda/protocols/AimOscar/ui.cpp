@@ -665,7 +665,7 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
             char name[64];
             GetDlgItemTextA(hwndDlg, IDC_FNAME, name, sizeof(name));
-            if (strlen(name) > 0 && !ppro->getString(AIM_KEY_SN, &dbv))
+            if (strlen(trim_str(name)) > 0 && !ppro->getString(AIM_KEY_SN, &dbv))
 	        {
                 if (strcmp(name, dbv.pszVal))
 		            ppro->aim_admin_format_name(ppro->hAdminConn,ppro->admin_seqno,name);
@@ -674,7 +674,7 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
             char email[254];
 	        GetDlgItemTextA(hwndDlg, IDC_CEMAIL, email, sizeof(email));
-            if (strlen(email) > 1 && !ppro->getString(AIM_KEY_EM, &dbv)) // Must be greater than 1 or a SNAC error is thrown.
+            if (strlen(trim_str(email)) > 1 && !ppro->getString(AIM_KEY_EM, &dbv)) // Must be greater than 1 or a SNAC error is thrown.
 	        {
                 if (strcmp(email, dbv.pszVal))
 		            ppro->aim_admin_change_email(ppro->hAdminConn,ppro->admin_seqno,email);
@@ -1300,68 +1300,95 @@ BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 }
 /////////////////////////////////////////////////////////////////////////////////////////
 // Invite to chat dialog
-/*
+
 BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	invite_chat_param* param = (invite_chat_param*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-	HANDLE hContact;
-	char *szProto;
-	DBVARIANT dbv;
-	int nIndex;
-	HWND hComboBox;
-
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
 		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
+		param = (invite_chat_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
-
-		// Propagate the name list
-		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-		do {
-			szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-			if(szProto)
-			{
-				DBGetContactSettingString(hContact,szProto,AIM_KEY_SN,&dbv);
-				SendDlgItemMessageA( hwndDlg, IDC_CNAME, CB_ADDSTRING, 0, (LPARAM)dbv.pszVal);
-			}
-			hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
-		} while(hContact);
-		DBFreeVariant( &dbv );
-		SendDlgItemMessage(hwndDlg, IDC_CNAME, CB_SETCURSEL, 0, 0);
-
-		// Propagate the chat room list with open chats
-		for (int i = 0; i < ppro->chat_rooms.getCount(); i++)
-			SendDlgItemMessageA( hwndDlg, IDC_CROOM, CB_ADDSTRING, 0, (LPARAM)ppro->chat_rooms[i].id);
-		SendDlgItemMessage(hwndDlg, IDC_CROOM, CB_SETCURSEL, 0, 0);
-		break;
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
+        SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->room);
+        break;
 
 	case WM_CLOSE:
 		EndDialog(hwndDlg, 0);
 		break;
 
-	case WM_DESTROY:
-		ppro->ReleaseIconEx("aol");
+	case WM_NCDESTROY:
+		param->ppro->ReleaseIconEx("aol");
+        delete param;
 		break;
 
-	case WM_COMMAND:
-		{
-			switch (LOWORD(wParam)) {
-			case IDOK:
-				char name[64];
-				char msg[1024];
-			    GetDlgItemTextA(hwndDlg, IDC_CNAME, name, sizeof(name));
-				GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
-				hComboBox = GetDlgItem( hwndDlg, IDC_CROOM );
-				nIndex = SendMessage( hComboBox , CB_GETCURSEL, 0, 0 );
-			    if (ppro->state==1 && strlen(name) > 0)
-					ppro->aim_invite_to_chat(ppro->hServerConn,ppro->seqno, ppro->chat_rooms[nIndex].cookie, ppro->chat_rooms[nIndex].exchange, ppro->chat_rooms[nIndex].instance, name, msg);
+	case WM_NOTIFY:
+	{
+		LPNMHDR nmc = (LPNMHDR)lParam;
+		if (nmc->idFrom == IDC_CCLIST)
+        {
+		    switch (nmc->code) 
+            {
+		    case CLN_NEWCONTACT:
+		    case CLN_LISTREBUILT:
+	            for (HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		            hContact != NULL; 
+		            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) 
+	            {
+		            HANDLE hItem = (HANDLE)SendMessage(nmc->hwndFrom, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		            if (hItem == NULL) continue;
 
-				EndDialog(hwndDlg, IDOK);
+			        if (!param->ppro->is_my_contact(hContact) || param->ppro->getByte(hContact, "ChatRoom", 0) || 
+                        param->ppro->getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+			        {
+			            SendMessage(nmc->hwndFrom, CLM_DELETEITEM, (WPARAM)hItem, 0);
+                    }
+                }
+                break;
+            }
+        }
+    }
+    break;
+
+    case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) 
+            {
+			case IDOK:
+                {
+                    char msg[1024];
+				    GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
+
+                    chat_list_item* item = param->ppro->find_chat_by_id(param->room);
+                    if (item == NULL) break;
+
+                    HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
+                    for (HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		                hContact != NULL; 
+		                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) 
+	                {
+		                HANDLE hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		                if (hItem == NULL) continue;
+
+		                int chk = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0);
+    			        if (chk && param->ppro->state==1)
+                        {
+                            DBVARIANT dbv;
+                            if (!param->ppro->getString(hContact, AIM_KEY_SN, &dbv))
+                            {
+    					        param->ppro->aim_chat_invite(param->ppro->hServerConn, param->ppro->seqno, 
+                                    item->cookie, item->exchange, item->instance, dbv.pszVal, msg);
+                                DBFreeVariant(&dbv);
+                            }
+                        }
+                    }
+
+				    EndDialog(hwndDlg, IDOK);
+                }
 				break;
 
 			case IDCANCEL:
@@ -1373,7 +1400,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	}
 	return FALSE;
 }
-*/
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Chat request dialog
 /*

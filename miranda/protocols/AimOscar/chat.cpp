@@ -18,7 +18,7 @@ void CAimProto::chat_register(void)
 //	HookProtoEvent(ME_GC_BUILDMENU, &CAimProto::MSN_GCMenuHook );
 }
 
-void CAimProto::chat_start(const char* id)
+void CAimProto::chat_start(const char* id, unsigned short exchange)
 {
     TCHAR* idt = mir_a2t(id);
 
@@ -49,6 +49,8 @@ void CAimProto::chat_start(const char* id)
 	CallServiceSync(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gce);
 	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE,   (LPARAM)&gce);
 	CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE,   (LPARAM)&gce);
+
+    setWord(find_chat_contact(id), "Exchange", exchange);
 
     mir_free(idt);
 }
@@ -133,6 +135,8 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case GC_USER_CHANMGR: 
+            DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
+                LPARAM( new invite_chat_param(item->id, this )));
 			break;
 
         case GC_USER_PRIVMESS:

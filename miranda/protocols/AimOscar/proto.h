@@ -87,6 +87,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
 	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
 	int  __cdecl JoinChat(WPARAM wParam, LPARAM lParam);
+	int  __cdecl InviteChat(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
@@ -234,7 +235,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   __cdecl chatnav_request_thread( void* param );
 
     void chat_register(void);
-    void chat_start(const char* id);
+    void chat_start(const char* id, unsigned short exchange);
     void chat_event(const char* id, const char* sn, int evt, const TCHAR* msg = NULL);
     void chat_leave(const char* id);
 
@@ -281,7 +282,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_file_redirected_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
 	int    aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port);
 	int    aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
-	int    aim_deny_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
+	int    aim_file_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
@@ -296,7 +297,8 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
     int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
 	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char* msg, bool uni);
-	int	   aim_invite_to_chat(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
+	int	   aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
+	int    aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
     int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
     int    aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn);
     int    aim_admin_change_password(HANDLE hServerConn,unsigned short &seqno, const char* cur_pw, const char* new_pw);
@@ -421,7 +423,9 @@ struct CAimProto : public PROTO_INTERFACE
 	void   broadcast_status(int status);
 	void   start_connection(int initial_status);
     bool   wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service);
-	HANDLE find_contact(char * sn);
+    bool   is_my_contact(HANDLE hContact);
+	HANDLE find_contact(const char * sn);
+    HANDLE find_chat_contact(const char * room);
 	HANDLE add_contact(char* buddy);
 	void   add_contacts_to_groups();
 	void   add_contact_to_group(HANDLE hContact, const char* group);

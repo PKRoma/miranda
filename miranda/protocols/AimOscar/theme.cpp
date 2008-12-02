@@ -46,6 +46,8 @@ static const iconList[] =
 	{	"Blocked list",           "away",        IDI_AWAY            },
 	{	"Idle",                   "idle",        IDI_IDLE            },
 	{	"AOL",                    "aol",         IDI_AOL             },
+	{	"Join",                   "join",        IDI_JOIN            },
+	{	"Part",                   "part",        IDI_PART            },
 
 	{	"Foreground Color",       "foreclr",     IDI_FOREGROUNDCOLOR, "Profile Editor" },
 	{	"Background Color",       "backclr",     IDI_BACKGROUNDCOLOR, "Profile Editor" },
@@ -148,9 +150,22 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
 
-	mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
-	if (state == 0 || !isChatRoom)
-		mi.flags |= CMIF_HIDDEN;
+	if (state == 0 || !isChatRoom) 
+        mi.flags = CMIF_HIDDEN | CMIM_FLAGS;
+    else
+    {
+        mi.flags = CMIM_NAME | CMIM_FLAGS | CMIM_ICON | CMIF_ICONFROMICOLIB;
+        if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+        {
+      	    mi.icolibItem = GetIconHandle("join");
+            mi.pszName = LPGEN("&Join Chat");
+        }
+        else
+        {
+      	    mi.icolibItem = GetIconHandle("part");
+            mi.pszName = LPGEN("&Leave Chat");
+        }
+    }
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hLeaveChatMenuItem,(LPARAM)&mi);
 
     DBVARIANT dbv;
@@ -160,23 +175,23 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
         switch(pd_mode)
         {
         case 1:
-            mi.pszName = "&Block";
+            mi.pszName = LPGEN("&Block");
             break;
 
         case 2:
-            mi.pszName = "&Unblock";
+            mi.pszName = LPGEN("&Unblock");
             break;
 
         case 3:
-            mi.pszName = (char*)(find_list_item_id(allow_list, dbv.pszVal) ? "&Block" : "&Unblock");
+            mi.pszName = (char*)(find_list_item_id(allow_list, dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
             break;
 
         case 4:
-            mi.pszName = (char*)(find_list_item_id(block_list, dbv.pszVal) ? "&Unblock" : "&Block");
+            mi.pszName = (char*)(find_list_item_id(block_list, dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
             break;
 
         default:
-            mi.pszName = "&Block";
+            mi.pszName = LPGEN("&Block");
 		    mi.flags |= CMIF_HIDDEN;
             break;
         }
@@ -262,7 +277,7 @@ void CAimProto::InitMenus()
     mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/LeaveChat");
 	CreateProtoService("/LeaveChat",&CAimProto::LeaveChat);
 	mi.position=-2000005070;
-	mi.icolibItem = GetIconHandle("block");
+	mi.icolibItem = GetIconHandle("part");
 	mi.pszName = LPGEN("&Leave Chat");
 	mi.flags=CMIF_ICONFROMICOLIB;
 	hLeaveChatMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
