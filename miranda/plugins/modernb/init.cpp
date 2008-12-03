@@ -216,7 +216,7 @@ static HRESULT SubclassClistInterface()
 	pcli->pfnAddContactToTree	= cli_AddContactToTree;
 	pcli->pfnAddInfoItemToGroup = cli_AddInfoItemToGroup;
 	pcli->pfnAddItemToGroup		= cli_AddItemToGroup;
-	pcli->pfnContactListWndProc = CLUI__cli_ContactListWndProc;
+	pcli->pfnContactListWndProc = CLUI::cli_ContactListWndProc;
 	pcli->pfnDeleteItemFromTree = cli_DeleteItemFromTree;
 	pcli->pfnFreeContact		= cli_FreeContact;
 	pcli->pfnFreeGroup			= cli_FreeGroup;

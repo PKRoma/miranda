@@ -11,7 +11,7 @@
 
 #define DEFAULTSKINSECTION  "ModernSkin"
 
-#define UM_UPDATE           WM_USER+50
+
 
 #define MAX_BUFF_SIZE       255*400
 #define MAXSN_BUFF_SIZE     255*1000

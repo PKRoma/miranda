@@ -148,6 +148,24 @@ extern char *g_szMetaModuleName;
 #define CS_DROPSHADOW 0x00020000
 #endif
 
+#define MENU_MIRANDAMENU            0xFFFF1234
+#define MENU_STATUSMENU             0xFFFF1235
+#define MENU_MINIMIZE               0xFFFF1236
+
+#define UM_CREATECLC                (WM_USER+1)
+#define UM_SETALLEXTRAICONS         (WM_USER+2)
+#define UM_UPDATE                   (WM_USER+50)
+#define UM_SYNCCALL                 (WM_USER+654)
+
+// Define constants for CLUI_SizingOnBorder SC_SIZE
+
+#define SCF_NONE    0
+#define SCF_LEFT    1
+#define SCF_RIGHT   2
+#define SCF_TOP     3
+#define SCF_BOTTOM  6
+
+
 extern BOOL __cdecl strstri(const char *a, const char *b);
 extern BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_strcmp (const char *a, const char *b);

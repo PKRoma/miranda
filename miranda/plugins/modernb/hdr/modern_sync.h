@@ -2,7 +2,7 @@
 #define modern_sync_h__
 
 #include "hdr/modern_commonheaders.h"
-#define UM_SYNCCALL WM_USER+654
+
 
 typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 
