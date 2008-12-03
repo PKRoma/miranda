@@ -695,7 +695,7 @@ static BOOL _ModernStatus_OnExtraIconClick( int protoIndex )
         move This portion of code to related Protocols
     */
     
-    if ( !strcmpi( ProtosData[protoIndex].ProtoName, "ICQ" ) )
+    if ( !mir_strcmpi( ProtosData[protoIndex].ProtoName, "ICQ" ) )
     {
         if ( ProtosData[protoIndex].ProtoStatus < ID_STATUS_ONLINE ) return FALSE;
 
@@ -716,7 +716,7 @@ static BOOL _ModernStatus_OnExtraIconClick( int protoIndex )
         }
         return TRUE;
     } 
-    else if ( !strcmpi( ProtosData[protoIndex].ProtoName, "JABBER" ) )
+    else if ( !mir_strcmpi( ProtosData[protoIndex].ProtoName, "JABBER" ) )
     {
         if ( ProtosData[protoIndex].ProtoStatus < ID_STATUS_ONLINE ) return FALSE;
         // Show Moods
