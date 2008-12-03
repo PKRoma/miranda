@@ -486,141 +486,113 @@ BOOL __inline wildcmp(char * name, char * mask, BYTE option)
 
 int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 {
-	PCheckProcParam pcpp=(PCheckProcParam)wParam;
-	StatusMenuExecParam *smep;
-	TMO_IntMenuItem * timi;
-	char * prot=NULL;
-	static BOOL reset=FALSE;
-	if (!pcpp) return TRUE;
+	PCheckProcParam pcpp = ( PCheckProcParam )wParam;
+	if ( !pcpp )
+		return TRUE;
 
-	smep = ( StatusMenuExecParam* )pcpp->MenuItemOwnerData;
+	PMO_IntMenuItem timi = MO_GetIntMenuItem( pcpp->MenuItemHandle );
+	if ( !timi )
+		return TRUE;
+
+	StatusMenuExecParam *smep = ( StatusMenuExecParam* )pcpp->MenuItemOwnerData;
 	if (smep && !smep->status && smep->custom ) {
 		if ( wildcmp( smep->svc,"*XStatus*", 255 )) {
 			//TODO Set parent icon/text as current
 			//Get parent menu ID
-			BOOL check=FALSE;
-			TMO_IntMenuItem * timiParent;
-			int XStatus=CallProtoService(smep->proto,"/GetXStatus",0,0);
+			BOOL check = FALSE;
+			int XStatus = CallProtoService(smep->proto,"/GetXStatus",0,0);
 			{
 				char buf[255];
-				_snprintf(buf,sizeof(buf),"*XStatus%d",XStatus);
-				if (wildcmp(smep->svc,buf,255))
+				_snprintf( buf, sizeof(buf), "*XStatus%d", XStatus );
+				if ( wildcmp( smep->svc, buf, 255 ))
 					check = TRUE;
 			}
-			if (wildcmp(smep->svc,"*XStatus0",255))
-				reset=TRUE;
+			BOOL reset = (wildcmp(smep->svc,"*XStatus0",255)) ? TRUE : FALSE;
+
+			if ( check )
+				timi->mi.flags |= CMIF_CHECKED;
 			else
-				reset=FALSE;
+				timi->mi.flags &= ~CMIF_CHECKED;
+			if ( timi->mi.flags & CMIF_CHECKED || reset || check ) {
+				PMO_IntMenuItem timiParent = MO_GetIntMenuItem( timi->mi.root );
+				if ( timiParent ) {
+					CLISTMENUITEM mi2 = {0};
+					mi2.cbSize = sizeof(mi2);
+					mi2.flags = CMIM_NAME | CMIF_TCHAR;
+					mi2.ptszName = (timi->mi.hIcon) ? timi->mi.ptszName : TranslateT("Custom status");
 
-			if ( timi = MO_GetIntMenuItem( pcpp->MenuItemHandle )) {
-				if ( check )
-					timi->mi.flags |= CMIF_CHECKED;
-				else
-					timi->mi.flags &= ~CMIF_CHECKED;
-				if ( timi->mi.flags & CMIF_CHECKED || reset || check ) {
 					timiParent = MO_GetIntMenuItem( timi->mi.root );
-					if ( timiParent ) {
-						CLISTMENUITEM mi2={0};
-						reset=FALSE;
-						mi2.cbSize = sizeof(mi2);
-						mi2.flags=CMIM_NAME;
-						if (timi->mi.hIcon) {
-							mi2.ptszName= timi->mi.ptszName;
-							mi2.flags|=CMIF_TCHAR;
-						}
-						else {
-							mi2.ptszName=TranslateT("Custom status");
-							mi2.flags|=CMIF_TCHAR;
-						}
-						timiParent=MO_GetIntMenuItem(timi->mi.root);
-						{
-							MENUITEMINFO mi={0};
-							int res=0;
-							TCHAR d[200];
-							BOOL m;
-							MenuItemData it={0};
-							mi.cbSize=sizeof(mi);
-							mi.fMask=MIIM_STRING;
-							m = FindMenuHandleByGlobalID(hStatusMenu, timiParent, &it );
-							if ( m ) {
-								GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);
-								mi.fMask=MIIM_STRING|MIIM_BITMAP;
-								mi.fType=MFT_STRING;
-								mi.hbmpChecked=mi.hbmpItem=mi.hbmpUnchecked=(HBITMAP)mi2.hIcon;
-								mi.dwTypeData=mi2.ptszName;
-								mi.hbmpItem=HBMMENU_CALLBACK;
-								res=SetMenuItemInfo(it.OwnerMenu,it.position,TRUE,&mi);
-						}	}
+					{
+						MENUITEMINFO mi={0};
+						int res=0;
+						TCHAR d[200];
+						BOOL m;
+						MenuItemData it={0};
+						mi.cbSize = sizeof(mi);
+						mi.fMask = MIIM_STRING;
+						m = FindMenuHandleByGlobalID(hStatusMenu, timiParent, &it );
+						if ( m ) {
+							GetMenuString(it.OwnerMenu,it.position,d,100,MF_BYPOSITION);
+							mi.fMask = MIIM_STRING|MIIM_BITMAP;
+							mi.fType = MFT_STRING;
+							mi.hbmpChecked = mi.hbmpItem = mi.hbmpUnchecked = (HBITMAP)mi2.hIcon;
+							mi.dwTypeData = mi2.ptszName;
+							mi.hbmpItem = HBMMENU_CALLBACK;
+							res = SetMenuItemInfo(it.OwnerMenu,it.position,TRUE,&mi);
+					}	}
 
-						CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)timi->mi.root, (LPARAM)&mi2);
-						timiParent->iconId=timi->iconId;
-		}	}	}	}
+					CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)timi->mi.root, (LPARAM)&mi2);
+					timiParent->iconId = timi->iconId;
+		}	}	}
 	}
 	else if ( smep && smep->status && !smep->custom ) {
-		if ( smep->proto ) {
-			int curProtoStatus;
-			curProtoStatus = CallProtoService(smep->proto,PS_GETSTATUS,0,0);
-			if (timi=MO_GetIntMenuItem(pcpp->MenuItemHandle)) {
-				if (smep->status == curProtoStatus)
-					timi->mi.flags |= CMIF_CHECKED;
-				else
-					timi->mi.flags &= ~CMIF_CHECKED;
-			}
-		}
-		else if ( !smep->custom && smep->status ) {
-			int curStatus;
-			curStatus = GetAverageMode();
-			if ( timi = MO_GetIntMenuItem(pcpp->MenuItemHandle)) {
-				if ( smep->status == curStatus )
-					timi->mi.flags |= CMIF_CHECKED;
-				else
-					timi->mi.flags &= ~CMIF_CHECKED;
-		}	}
+		int curProtoStatus = ( smep->proto ) ? CallProtoService(smep->proto,PS_GETSTATUS,0,0) : GetAverageMode();
+		if ( smep->status == curProtoStatus )
+			timi->mi.flags |= CMIF_CHECKED;
+		else
+			timi->mi.flags &= ~CMIF_CHECKED;
 	}
-	else {
-		if ( !smep || smep->proto ) {
-			timi = MO_GetIntMenuItem( pcpp->MenuItemHandle );
-			if ( timi && timi->mi.pszName ) {
-				int curProtoStatus=0;
-				BOOL IconNeedDestroy=FALSE;
-				char* prot;
-				if (smep)
-					prot = smep->proto;
-				else
-				{
-					#ifdef UNICODE
-						char *prn=u2a(timi->mi.ptszName);
-						prot = NEWSTR_ALLOCA( prn );  // !!!!!!!!!!!!!!!!!!!!
-						if (prn) mir_free(prn);
-					#else
-						prot = timi->mi.ptszName;
-					#endif
-				}
-				if ( Proto_GetAccount( prot ) == NULL )
-					return TRUE;
+	else if (( !smep || smep->proto ) && timi->mi.pszName ) {
+		int curProtoStatus=0;
+		BOOL IconNeedDestroy=FALSE;
+		char* prot;
+		if (smep)
+			prot = smep->proto;
+		else
+		{
+			#ifdef UNICODE
+				char *prn=u2a(timi->mi.ptszName);
+				prot = NEWSTR_ALLOCA( prn );
+				if (prn) mir_free(prn);
+			#else
+				prot = timi->mi.ptszName;
+			#endif
+		}
+		if ( Proto_GetAccount( prot ) == NULL )
+			return TRUE;
 
-				if (( curProtoStatus = CallProtoService(prot,PS_GETSTATUS,0,0)) == CALLSERVICE_NOTFOUND )
-					curProtoStatus = 0;
+		if (( curProtoStatus = CallProtoService(prot,PS_GETSTATUS,0,0)) == CALLSERVICE_NOTFOUND )
+			curProtoStatus = 0;
 
-				if ( curProtoStatus >= ID_STATUS_OFFLINE && curProtoStatus < ID_STATUS_IDLE )
-					timi->mi.hIcon = LoadSkinProtoIcon(prot,curProtoStatus);
-				else {
-					timi->mi.hIcon=(HICON)CallProtoService(prot,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
-					if ( timi->mi.hIcon == (HICON)CALLSERVICE_NOTFOUND )
-						timi->mi.hIcon = NULL;
-					else
-						IconNeedDestroy = TRUE;
-				}
-				if (timi->mi.hIcon)
-				{
-					timi->mi.flags |= CMIM_ICON;
-					MO_ModifyMenuItem( timi, &timi->mi );
-					if ( IconNeedDestroy ) {
-						DestroyIcon( timi->mi.hIcon );
-						timi->mi.hIcon = NULL;
-					}
-					else IconLib_ReleaseIcon(timi->mi.hIcon,0);
-	}	}	}	}
+		if ( curProtoStatus >= ID_STATUS_OFFLINE && curProtoStatus < ID_STATUS_IDLE )
+			timi->mi.hIcon = LoadSkinProtoIcon(prot,curProtoStatus);
+		else {
+			timi->mi.hIcon=(HICON)CallProtoService(prot,PS_LOADICON,PLI_PROTOCOL|PLIF_SMALL,0);
+			if ( timi->mi.hIcon == (HICON)CALLSERVICE_NOTFOUND )
+				timi->mi.hIcon = NULL;
+			else
+				IconNeedDestroy = TRUE;
+		}
+
+		if (timi->mi.hIcon) {
+			timi->mi.flags |= CMIM_ICON;
+			MO_ModifyMenuItem( timi, &timi->mi );
+			if ( IconNeedDestroy ) {
+				DestroyIcon( timi->mi.hIcon );
+				timi->mi.hIcon = NULL;
+			}
+			else IconLib_ReleaseIcon(timi->mi.hIcon,0);
+	}	}
 
 	return TRUE;
 }
