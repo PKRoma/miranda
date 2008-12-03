@@ -453,7 +453,7 @@ BOOL FindMenuHandleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itd
 		if ( inSub )
 			return inSub;
 
-		pimi = cli.pfnMOGetIntMenuItem( mii.dwItemData );
+		pimi = MO_GetIntMenuItem( mii.dwItemData );
 		if ( pimi != NULL ) {
 			if ( pimi == id ) {
 				itdat->OwnerMenu=hMenu;
@@ -512,13 +512,13 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 			else
 				reset=FALSE;
 
-			if ( timi = cli.pfnMOGetMenuItemByGlobalID( pcpp->MenuItemHandle )) {
+			if ( timi = MO_GetIntMenuItem( pcpp->MenuItemHandle )) {
 				if ( check )
 					timi->mi.flags |= CMIF_CHECKED;
 				else
 					timi->mi.flags &= ~CMIF_CHECKED;
 				if ( timi->mi.flags & CMIF_CHECKED || reset || check ) {
-					timiParent = cli.pfnMOGetMenuItemByGlobalID( timi->mi.root );
+					timiParent = MO_GetIntMenuItem( timi->mi.root );
 					if ( timiParent ) {
 						CLISTMENUITEM mi2={0};
 						reset=FALSE;
@@ -532,7 +532,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 							mi2.ptszName=TranslateT("Custom status");
 							mi2.flags|=CMIF_TCHAR;
 						}
-						timiParent=cli.pfnMOGetMenuItemByGlobalID(timi->mi.root);
+						timiParent=MO_GetIntMenuItem(timi->mi.root);
 						{
 							MENUITEMINFO mi={0};
 							int res=0;
@@ -560,7 +560,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 		if ( smep->proto ) {
 			int curProtoStatus;
 			curProtoStatus = CallProtoService(smep->proto,PS_GETSTATUS,0,0);
-			if (timi=cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle)) {
+			if (timi=MO_GetIntMenuItem(pcpp->MenuItemHandle)) {
 				if (smep->status == curProtoStatus)
 					timi->mi.flags |= CMIF_CHECKED;
 				else
@@ -570,7 +570,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 		else if ( !smep->custom && smep->status ) {
 			int curStatus;
 			curStatus = GetAverageMode();
-			if ( timi = cli.pfnMOGetMenuItemByGlobalID(pcpp->MenuItemHandle)) {
+			if ( timi = MO_GetIntMenuItem(pcpp->MenuItemHandle)) {
 				if ( smep->status == curStatus )
 					timi->mi.flags |= CMIF_CHECKED;
 				else
@@ -579,7 +579,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 	}
 	else {
 		if ( !smep || smep->proto ) {
-			timi = cli.pfnMOGetMenuItemByGlobalID( pcpp->MenuItemHandle );
+			timi = MO_GetIntMenuItem( pcpp->MenuItemHandle );
 			if ( timi && timi->mi.pszName ) {
 				int curProtoStatus=0;
 				BOOL IconNeedDestroy=FALSE;
@@ -645,7 +645,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 				DBWriteContactSettingByte(NULL,prot,"LockMainStatus",(BYTE)i);
 
 				CallProtoService(smep->proto,PS_GETNAME,(WPARAM)SIZEOF(szHumanName),(LPARAM)szHumanName);
-				pimi = cli.pfnMOGetIntMenuItem(smep->protoindex);
+				pimi = MO_GetIntMenuItem(smep->protoindex);
 				if ( i ) {
 					TCHAR buf[256];
 					pimi->mi.flags|=CMIF_CHECKED;

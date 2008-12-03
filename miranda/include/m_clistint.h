@@ -111,42 +111,11 @@ struct trayIconInfo_t
 	TCHAR* ptszToolTip;
 };
 
-/* genmenu structs */
-
-#define MENUITEM_SIGNATURE 0xDEADBEEF
-
-typedef struct
-{
-	struct _tagIntMenuItem *first, // first element of submenu, or NULL
-		                    *last;  // last element of submenu, or NULL
-}
-	TMO_LinkedList;
-
-typedef struct _tagIntMenuItem
-{
-	DWORD        signature;
-	int          iCommand;
-	int          iconId;          // icon index in the section's image list
-	TMO_MenuItem mi;              // user-defined data
-	BOOL         OverrideShow;
-	char*        UniqName;        // unique name
-	TCHAR*       CustomName;
-	HANDLE       hIcolibItem;     // handle of iconlib item
-	HMENU        hSubMenu;
-	int          originalPosition;
-
-	struct _tagIntMenuItem *next; // next item in list
-	struct TIntMenuObject  *parent;
-	TMO_LinkedList         *owner;
-	TMO_LinkedList			   submenu;
-}
-	TMO_IntMenuItem,*PMO_IntMenuItem;
-
 typedef struct _menuProto
 {
-	char*           szProto; //This is DLL-based unique name
-	PMO_IntMenuItem pMenu;
-	HICON           hIcon;
+	char*                   szProto; //This is DLL-based unique name
+	struct _tagIntMenuItem* pMenu;
+	HICON                   hIcon;
 }
 	MenuProto;
 
@@ -396,12 +365,12 @@ typedef struct
 	int    currentStatusMenuItem, currentDesiredStatusMode;
 	BOOL   bDisplayLocked;
 
-	PMO_IntMenuItem ( *pfnMOGetIntMenuItem )( int );
-	PMO_IntMenuItem ( *pfnMOGetMenuItemByGlobalID )( int globalMenuID );
+	int    ( *pfnStub1 )( int );
+	int    ( *pfnStub2 )( int );
 
-	int   ( *pfnGetProtocolVisibility )( const char* );
-	int   ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
-	void  ( *pfnReloadProtoMenus )( void );
+	int    ( *pfnGetProtocolVisibility )( const char* );
+	int    ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);
+	void   ( *pfnReloadProtoMenus )( void );
 
 	/*************************************************************************************
 	 * version 5 additions (0.7.0.x) - tray icons

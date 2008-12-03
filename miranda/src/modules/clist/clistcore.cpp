@@ -196,8 +196,6 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnHotKeysProcess						= fnHotKeysProcess;
 		cli.pfnHotkeysProcessMessage			   = fnHotkeysProcessMessage;
 
-		cli.pfnMOGetIntMenuItem                = MO_GetIntMenuItem;
-		cli.pfnMOGetMenuItemByGlobalID         = MO_GetIntMenuItem;
 		cli.pfnGetProtocolVisibility           = fnGetProtocolVisibility;
 		cli.pfnGetProtoIndexByPos              = fnGetProtoIndexByPos;
 		cli.pfnReloadProtoMenus                = fnReloadProtoMenus;
