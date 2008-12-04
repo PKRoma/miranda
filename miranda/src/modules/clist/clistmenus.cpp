@@ -1211,61 +1211,36 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+static MenuProto* FindProtocolMenu( const char* proto )
+{
+	for (int i=0; i < cli.menuProtoCount; i++)
+		if ( cli.menuProtos[i].pMenu && !lstrcmpiA( cli.menuProtos[i].szProto, proto ))
+			return &cli.menuProtos[i];
+
+	if ( cli.menuProtoCount == 1 )
+		if ( !lstrcmpiA( cli.menuProtos[0].szProto, proto ))
+			return &cli.menuProtos[0];
+
+	return NULL;
+}
+
+HANDLE fnGetProtocolMenu( const char* proto )
+{
+	MenuProto* mp = FindProtocolMenu( proto );
+	if ( mp )
+		return mp->pMenu;
+
+	return NULL;
+}
+
 static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 {
-	CLISTMENUITEM *mi=( CLISTMENUITEM* )lParam;
+	CLISTMENUITEM *mi = ( CLISTMENUITEM* )lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
 		return 0;
 
 	PMO_IntMenuItem pRoot = NULL;
-	MenuProto* mp=NULL;
-	char buf[MAX_PATH+64];
-	BOOL val = ( wParam != 0 && !IsBadStringPtrA( mi->pszContactOwner, 130 )); //proto name should be less than 128
-
-	for (int i=0; i<cli.menuProtoCount; i++) {
-		if (!val)
-			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),cli.menuProtos[i].szProto);
-		if (  cli.menuProtos[i].pMenu &&
-			( (val && !lstrcmpiA(cli.menuProtos[i].szProto,mi->pszContactOwner))||
-			(wParam==0 && !lstrcmpiA(buf,mi->pszPopupName)) ) )
-		{
-			mp = &cli.menuProtos[i];
-			break;
-	}	}
-
-	if ( cli.menuProtoCount == 1 ) {
-		if (!val)
-			_snprintf(buf,sizeof(buf),Translate("%s Custom Status"),cli.menuProtos[0].szProto);
-		if ( (val && !lstrcmpiA(cli.menuProtos[0].szProto,mi->pszContactOwner))||
-			(wParam==0 && !lstrcmpiA(buf,mi->pszPopupName)) )
-		{
-			mp = &cli.menuProtos[0];
-	}	}
-	// End
-
-	if ( mp && mi->pszPopupName ) {
-		#if defined _UNICODE
-			TCHAR* ptszName = ( mi->flags & CMIF_UNICODE ) ? mir_tstrdup(mi->ptszPopupName) : mir_a2t(mi->pszPopupName);
-			pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, ptszName );
-			mir_free( ptszName );
-		#else
-			pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, mi->pszPopupName );
-		#endif
-		if ( pRoot == NULL ) {
-			TMO_MenuItem tmi = { 0 };
-			tmi.cbSize = sizeof(tmi);
-			tmi.flags = (mi->flags & CMIF_UNICODE) | CMIF_CHILDPOPUP | CMIF_ROOTPOPUP;
-			tmi.position = 1001;
-			tmi.root = (int)mp->pMenu;
-			tmi.hIcon = NULL;
-			tmi.pszName = mi->pszPopupName;
-			pRoot = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
-	}	}
-
-	if (wParam) {
-		int * res=(int*)wParam;
-		*res = ( int )pRoot;
-	}
+	lpStatusMenuExecParam smep = NULL;
 
 	TMO_MenuItem tmi = { 0 };
 	tmi.cbSize = sizeof(tmi);
@@ -1274,29 +1249,64 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.position = mi->position;
 	tmi.pszName = mi->pszName;
 	tmi.flags = mi->flags;
-	if ( mp ) {
-		tmi.flags |= CMIF_CHILDPOPUP;
-		tmi.root = ( int )pRoot;
+	tmi.root = ( int )mi->pszPopupName;
+
+	// for new style menus the pszPopupName contains the root menu handle
+	if ( mi->flags & ( CMIF_CHILDPOPUP | CMIF_ROOTPOPUP ))
+		pRoot = MO_GetIntMenuItem(( int )mi->ptszPopupName );
+
+	// for old style menus the pszPopupName really means the popup name
+	else {
+		MenuProto* mp = FindProtocolMenu( mi->pszContactOwner );
+		if ( mp && mi->pszPopupName ) {
+			#if defined _UNICODE
+				TCHAR* ptszName = ( mi->flags & CMIF_UNICODE ) ? mir_tstrdup(mi->ptszPopupName) : mir_a2t(mi->pszPopupName);
+				pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, ptszName );
+				mir_free( ptszName );
+			#else
+				pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, mi->pszPopupName );
+			#endif
+			if ( pRoot == NULL ) {
+				TMO_MenuItem tmi = { 0 };
+				tmi.cbSize = sizeof(tmi);
+				tmi.flags = (mi->flags & CMIF_UNICODE) | CMIF_CHILDPOPUP | CMIF_ROOTPOPUP;
+				tmi.position = 1001;
+				tmi.root = (int)mp->pMenu;
+				tmi.hIcon = NULL;
+				tmi.pszName = mi->pszPopupName;
+				pRoot = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
+			}	
+
+			tmi.flags |= CMIF_CHILDPOPUP;
+			tmi.root = ( int )pRoot;
+	}	}
+
+	if (wParam) {
+		int * res=(int*)wParam;
+		*res = ( int )pRoot;
 	}
-	else tmi.root = ( int )mi->pszPopupName;
 
 	//owner data
-	lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc(sizeof(StatusMenuExecParam));
-	memset(smep,0,sizeof(StatusMenuExecParam));
-	smep->custom = TRUE;
-	smep->svc=mir_strdup(mi->pszService);
-	{
-		char *buf=mir_strdup(mi->pszService);
-		int i=0;
-		while(buf[i]!='\0' && buf[i]!='/') i++;
-		buf[i]='\0';
-         smep->proto=mir_strdup(buf);
-		mir_free(buf);
+	if ( mi->pszService ) {
+		lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc(sizeof(StatusMenuExecParam));
+		memset(smep,0,sizeof(StatusMenuExecParam));
+		smep->custom = TRUE;
+		smep->svc=mir_strdup(mi->pszService);
+		{
+			char *buf=mir_strdup(mi->pszService);
+			int i=0;
+			while(buf[i]!='\0' && buf[i]!='/') i++;
+			buf[i]='\0';
+				smep->proto=mir_strdup(buf);
+			mir_free(buf);
+		}
+		tmi.ownerdata = smep;
 	}
-	tmi.ownerdata = smep;
 	PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
-	smep->hMenuItem = menuHandle;
+	if ( smep )
+		smep->hMenuItem = menuHandle;
 
+	char buf[MAX_PATH+64];
 	sprintf(buf,"%s/%s",mi->pszPopupName?mi->pszPopupName:"",mi->pszService?mi->pszService:"");
 	MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
 

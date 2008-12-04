@@ -369,7 +369,7 @@ typedef struct
 	int    currentStatusMenuItem, currentDesiredStatusMode;
 	BOOL   bDisplayLocked;
 
-	int    ( *pfnStub1 )( int );
+	HANDLE ( *pfnGetProtocolMenu )( const char* );
 	int    ( *pfnStub2 )( int );
 
 	int    ( *pfnGetProtocolVisibility )( const char* );

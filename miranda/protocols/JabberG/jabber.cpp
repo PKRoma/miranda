@@ -67,6 +67,8 @@ MD5_INTERFACE   md5i;
 SHA1_INTERFACE  sha1i;
 XML_API         xi;
 
+CLIST_INTERFACE* pcli;
+
 /////////////////////////////////////////////////////////////////////////////
 // Theme API
 BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION) = NULL;
@@ -232,6 +234,15 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getMD5I( &md5i );
 	mir_getSHA1I( &sha1i );
 	mir_getXI( &xi );
+
+	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInst);
+	if ( (int)pcli == CALLSERVICE_NOTFOUND ) {
+LBL_Error:
+		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
+		return 1;
+	}
+	if ( pcli->version < 6 )
+		goto LBL_Error;
 
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, THREAD_SET_CONTEXT, FALSE, 0 );
 	jabberMainThreadId = GetCurrentThreadId();

@@ -2261,34 +2261,29 @@ void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 	if ( !m_bJabberOnline )
 		return;
 
-	CLISTMENUITEM mi = { 0 };
 	int i=0;
 	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
-	HANDLE hPrivacyRoot;
-	HANDLE hRoot = LPGENT("Privacy Lists");
 
+	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.popupPosition= 500084000;
+	mi.position = 1001;
 	mi.pszContactOwner = m_szModuleName;
+	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_TCHAR;
+	mi.ptszName = LPGENT("Privacy Lists");
+	mi.pszPopupName = (char *)pcli->pfnGetProtocolMenu( m_szModuleName );
+	int hPrivacyRoot = CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+
 	mi.pszService = srvFce;
-	mi.pszPopupName = (char *)hRoot;
-
 	mi.position = 3000040000;
-	mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB;
-
+	mi.flags = CMIF_CHILDPOPUP | CMIF_TCHAR | CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
+	mi.pszPopupName = (char*)hPrivacyRoot;
 	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/PrivacyLists", m_szModuleName );
-	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
-
-	CLISTMENUITEM miTmp = {0};
-	miTmp.cbSize = sizeof(miTmp);
-	miTmp.flags = CMIM_ICON|CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-	miTmp.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPrivacyRoot, (LPARAM)&miTmp);
+	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
 	mi.position = 2000040000;
-	mi.flags = CMIF_ICONFROMICOLIB|CMIF_TCHAR;
+	mi.flags = CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
 
 	m_privacyListManager.Lock();
 
@@ -2303,7 +2298,7 @@ void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 			SKINICON_OTHER_SMALLDOT :
 			SKINICON_OTHER_EMPTYBLOB);
 	mi.ptszName = LPGENT("<none>");
-	CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
+	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;

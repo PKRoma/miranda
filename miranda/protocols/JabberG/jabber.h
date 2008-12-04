@@ -69,6 +69,7 @@ Last change by : $Author$
 #include <m_skin.h>
 #include <m_chat.h>
 #include <m_clc.h>
+#include <m_clistint.h>
 #include <m_button.h>
 #include <m_avatars.h>
 #include <m_idle.h>

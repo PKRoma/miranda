@@ -200,6 +200,7 @@ static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
 		cli.pfnGetProtoIndexByPos              = fnGetProtoIndexByPos;
 		cli.pfnReloadProtoMenus                = fnReloadProtoMenus;
 		cli.pfnGetAccountIndexByPos            = fnGetAccountIndexByPos;
+		cli.pfnGetProtocolMenu                 = fnGetProtocolMenu;
 
 		cli.hInst = ( HMODULE )lParam;
 
