@@ -62,15 +62,15 @@ int statusModeList[ MAX_STATUS_COUNT ] =
 	ID_STATUS_DND, ID_STATUS_FREECHAT, ID_STATUS_INVISIBLE, ID_STATUS_ONTHEPHONE, ID_STATUS_OUTTOLUNCH
 };
 
-int skinIconStatusList[ MAX_STATUS_COUNT ] = 
+int skinIconStatusList[ MAX_STATUS_COUNT ] =
 {
 	SKINICON_STATUS_OFFLINE, SKINICON_STATUS_ONLINE, SKINICON_STATUS_AWAY, SKINICON_STATUS_NA, SKINICON_STATUS_OCCUPIED,
 	SKINICON_STATUS_DND, SKINICON_STATUS_FREE4CHAT, SKINICON_STATUS_INVISIBLE, SKINICON_STATUS_ONTHEPHONE, SKINICON_STATUS_OUTTOLUNCH
 };
 
-int statusModePf2List[ MAX_STATUS_COUNT ] = 
+int statusModePf2List[ MAX_STATUS_COUNT ] =
 {
-	0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND, 
+	0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND,
 	PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH
 };
 
@@ -320,14 +320,14 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 		cmep->param=mi->popupPosition;
 		tmi.ownerdata=cmep;
 	}
-	
+
 	//may be need to change how UniqueName is formed?
 	PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hContactMenuObject, &tmi );
 	char buf[ 256 ];
 	if (mi->pszService)
 		sprintf( buf,"%s/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", (mi->pszService) ? mi->pszService : "" );
 	else if (mi->ptszName)
-	{		
+	{
 		if (tmi.flags&CMIF_UNICODE)
 		{
 			char * temp=t2a(mi->ptszName);
@@ -930,7 +930,7 @@ void RebuildMenuOrder( void )
 		i = cli.pfnGetAccountIndexByPos( s );
 		if ( i == -1 )
 			continue;
-	
+
 		pa = accounts[i];
 		pos = 0;
 		if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
@@ -946,7 +946,7 @@ void RebuildMenuOrder( void )
 			char protoName[128];
 			int j;
 			HICON ic;
-			
+
 			//adding root
 			memset( &tmi, 0, sizeof( tmi ));
 			memset( protoName, 0, 128 );
@@ -1249,7 +1249,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 			pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, ptszName );
 			mir_free( ptszName );
 		#else
-			pRoot = ( int )MO_RecursiveWalkMenu( MO_GetIntMenuItem(( int )mp->menuID ), FindRoot, mi->pszPopupName );
+			pRoot = MO_RecursiveWalkMenu( mp->pMenu->submenu.first, FindRoot, mi->pszPopupName );
 		#endif
 		if ( pRoot == NULL ) {
 			TMO_MenuItem tmi = { 0 };
@@ -1279,7 +1279,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 		tmi.root = ( int )pRoot;
 	}
 	else tmi.root = ( int )mi->pszPopupName;
-	
+
 	//owner data
 	lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc(sizeof(StatusMenuExecParam));
 	memset(smep,0,sizeof(StatusMenuExecParam));
@@ -1296,10 +1296,10 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.ownerdata = smep;
 	PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 	smep->hMenuItem = menuHandle;
-		
+
 	sprintf(buf,"%s/%s",mi->pszPopupName?mi->pszPopupName:"",mi->pszService?mi->pszService:"");
 	MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
-	
+
 	return ( int )menuHandle;
 }
 
