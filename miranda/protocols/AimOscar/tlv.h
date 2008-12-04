@@ -17,7 +17,7 @@ public:
     wchar_t* dupw();
 	unsigned short len();
 	char* part(int pos, int length);
-	char* whole();
+	int whole(char* buf);
 	unsigned short ushort(int pos=0);
 	unsigned long ulong(int pos=0);
 	unsigned char ubyte(int pos=0);

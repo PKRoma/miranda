@@ -71,14 +71,10 @@ char* TLV::part(int pos, int length)//returns part of the tlv value
 	value[length]='\0';
 	return value;
 }
-char* TLV::whole()//returns the whole tlv
+int TLV::whole(char* buf)//returns the whole tlv
 {
-	char* value=new char[length_+1+TLV_HEADER_SIZE];
-	unsigned short type=_htons(type_);
-	unsigned short length=_htons(length_);
-	memcpy(value,&type,2);
-	memcpy(&value[2],&length,2);
-	memcpy(&value[4],value_,length_);
-	value[length_+TLV_HEADER_SIZE]='\0';
-	return value;
+	*(unsigned short*)buf = _htons(type_);
+	*(unsigned short*)&buf[2] = _htons(length_);
+	memcpy(&buf[4], value_, length_);
+	return length_ + TLV_HEADER_SIZE;
 }

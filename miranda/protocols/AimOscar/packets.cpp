@@ -3,29 +3,20 @@
 
 int CAimProto::aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset, char* out, unsigned short id)
 {
-	struct snac_header snac;
-	unsigned short slen=0;
-	snac.service=_htons(service);
-	snac.subgroup=_htons(subgroup);
-	snac.flags=0;
-    snac.request_id[0]=_htons(id);
-	snac.request_id[1]=_htons(subgroup);
-	slen=sizeof(snac);
-	char* buf=new char[slen];
-	memcpy(buf, &snac, slen);
-	memcpy(&out[offset],buf,slen);
-	offset=offset+slen;
-	delete[] buf;
+	snac_header *snac = (snac_header*)&out[offset];
+	snac->service=_htons(service);
+	snac->subgroup=_htons(subgroup);
+	snac->flags=0;
+    snac->request_id[0]=_htons(id);
+	snac->request_id[1]=_htons(subgroup);
+	offset+=sizeof(snac_header);
 	return 0;
 }
 
 int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const char* value,unsigned short &offset,char* out)
 {
 	TLV tlv(type,length,value);
-	char* buf=tlv.whole();
-	memcpy(&out[offset],buf,length+TLV_HEADER_SIZE);
-	offset+=length+TLV_HEADER_SIZE;
-	delete[] buf;
+	offset += tlv.whole(&out[offset]);
 	return 0;
 }
 
