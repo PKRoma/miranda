@@ -541,7 +541,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		for(i=0;i<nlhr->headersCount;i++) {
 			if(!lstrcmpiA(nlhr->headers[i].szName,"User-Agent"))
 				doneUserAgentHeader=1;
-			else if(!lstrcmpiA(nlhr->headers[i].szName,"User-Agent"))
+			else if(!lstrcmpiA(nlhr->headers[i].szName,"Accept-Encoding"))
 				doneAcceptEncoding=1;
 		}
 		if(!doneUserAgentHeader||!doneAcceptEncoding) {
@@ -564,7 +564,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		}
         if (!doneAcceptEncoding) {
 			nlhrSend.headers[nlhrSend.headersCount].szName="Accept-Encoding";
-			nlhrSend.headers[nlhrSend.headersCount].szValue="gzip, deflate";
+			nlhrSend.headers[nlhrSend.headersCount].szValue="deflate, gzip";
 			++nlhrSend.headersCount;
         }
 		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
