@@ -27,22 +27,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "windowsX.h"
 #define HANDLE_MESSAGE( _message, _fn)    \
-	case (_message): return _fn( (hwnd), (_message), (wParam), (lParam) )
+	case (_message): return This->_fn( (_message), (wParam), (lParam) )
 
 class CLUI
 {
+public:
+	static HWND   m_hWnd;
+	static CLUI * m_pCLUI;
+	static BOOL   m_fMainMenuInited;
+
 private:
 	CLUI();			// is protected use InitClui to initialize instead
-  
 
-public:    
-
-	static HRESULT InitClui();
+public:
 	~CLUI();
 
-	static HWND& ClcWnd();		//TODO: move to Clc.h
-	static HWND& CluiWnd();
-	
+	static HRESULT InitClui()         { m_pCLUI = new CLUI(); return S_OK; };
+	static HWND&   ClcWnd()           { return pcli->hwndContactTree; }
+	static HWND&   CluiWnd()          { return pcli->hwndContactList; }
+	static CLUI *  GetClui()          { return m_pCLUI; } 
+	static BOOL    IsMainMenuInited() { return CLUI::m_fMainMenuInited; }
+
 	CLINTERFACE void cliOnCreateClc();
 
 	EVENTHOOK( OnEvent_ModulesLoaded );
@@ -54,24 +59,13 @@ public:
 	SERVICE( Service_Menu_ShowContactAvatar );
 	SERVICE( Service_Menu_HideContactAvatar );
 
-	static CLUI * m_pCLUI;  
-	static BOOL m_fMainMenuInited;
-	
-	static HRESULT FillAlphaChannel(HWND hwndClui, HDC hDC, RECT* prcParent, BYTE bAlpha);
-	static HRESULT CreateCLC(HWND hwndClui);
-	static HRESULT SnappingToEdge(HWND hCluiWnd, WINDOWPOS * lpWindowPos);
-	static BOOL IsMainMenuInited() { return CLUI::m_fMainMenuInited; }
-	
-	static LRESULT DefCluiWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
-	{
-		return corecli.pfnContactListWndProc( hwnd, msg, wParam, lParam );
-	}
-
-	// MessageMap
 	static LRESULT CALLBACK cli_ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		CLUI * This = m_pCLUI;
+		if ( !m_hWnd ) m_hWnd = hwnd;
+
 		BOOL bHandled = FALSE;
-		LRESULT lRes= PreProcessWndProc( hwnd, msg, wParam, lParam, bHandled ); 
+		LRESULT lRes= This->PreProcessWndProc( msg, wParam, lParam, bHandled ); 
 		if ( bHandled ) return lRes;
 
 		switch ( msg )
@@ -116,70 +110,77 @@ public:
 			HANDLE_MESSAGE( WM_DRAWITEM,				OnDrawItem );
 			HANDLE_MESSAGE( WM_DESTROY,					OnDestroy );
 		default:
-			return DefCluiWndProc( hwnd, msg, wParam, lParam );
+			return This->DefCluiWndProc( msg, wParam, lParam );
 		}
 		return FALSE;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// METHODS
+	//
 private:
-	static LRESULT PreProcessWndProc( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled = FALSE );
-	static LRESULT OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnThemeChanged( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnDwmCompositionChanged( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnSyncCall( HWND /*hwnd*/, UINT /*msg*/, WPARAM wParam, LPARAM /*lParam*/ );
-	static LRESULT OnUpdate( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnInitMenu( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnNcPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnEraseBkgnd( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnNcCreate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnCreate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnSetAllExtraIcons( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnCreateClc( HWND hwnd, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ );
-	static LRESULT OnLButtonDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnParentNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnSetFocus( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	
-	static LRESULT OnTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnStatusBarUpdateTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnAutoAlphaTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnSmoothAlphaTransitionTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnDelayedSizingTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnBringOutTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnBringInTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnUpdateBringTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-
-	static LRESULT OnActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnSetCursor( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnMouseActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnNcLButtonDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnNcLButtonDblClk( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnNcHitTest( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnShowWindow( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnSysCommand( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnKeyDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnGetMinMaxInfo( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-
-	static LRESULT OnNewContactNotify( HWND hwnd, NMCLISTCONTROL * pnmc );
-	static LRESULT OnListRebuildNotify( HWND hwnd, NMCLISTCONTROL * pnmc );
-	static LRESULT OnListSizeChangeNotify( HWND hwnd, NMCLISTCONTROL * pnmc );
-	static LRESULT OnClickNotify( HWND hwnd, NMCLISTCONTROL * pnmc );
-
-	static LRESULT OnContextMenu( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnMeasureItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-	static LRESULT OnDestroy( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
-
-private:
+	HRESULT CreateCLC();
+	HRESULT FillAlphaChannel( HDC hDC, RECT* prcParent, BYTE bAlpha);
+	HRESULT SnappingToEdge( WINDOWPOS * lpWindowPos );
 	HRESULT LoadDllsRuntime();
 	HRESULT RegisterAvatarMenu();  // TODO move to CLC class
 	HRESULT CreateCluiFrames();
 	HRESULT CreateCLCWindow(const HWND parent);
 	HRESULT CreateUIFrames();
 
-	
+	LRESULT DefCluiWndProc( UINT msg, WPARAM wParam, LPARAM lParam )
+	{
+		return corecli.pfnContactListWndProc( m_hWnd, msg, wParam, lParam );
+	}
+
+	// MessageMap
+	LRESULT PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled = FALSE );
+	LRESULT OnSizingMoving( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnThemeChanged( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnDwmCompositionChanged( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSyncCall( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnUpdate( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnInitMenu( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNcPaint( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnEraseBkgnd( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNcCreate( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnPaint( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnCreate( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSetAllExtraIcons( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnCreateClc( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnLButtonDown( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnParentNotify( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSetFocus( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnStatusBarUpdateTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnAutoAlphaTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSmoothAlphaTransitionTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnDelayedSizingTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnBringOutTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnBringInTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnUpdateBringTimer( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnActivate( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSetCursor( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnMouseActivate( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNcLButtonDown( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNcLButtonDblClk( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNcHitTest( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnShowWindow( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnSysCommand( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnKeyDown( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnGetMinMaxInfo( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnMoving( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNotify( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnNewContactNotify( NMCLISTCONTROL * pnmc );
+	LRESULT OnListRebuildNotify( NMCLISTCONTROL * pnmc );
+	LRESULT OnListSizeChangeNotify( NMCLISTCONTROL * pnmc );
+	LRESULT OnClickNotify( NMCLISTCONTROL * pnmc );
+	LRESULT OnContextMenu( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnMeasureItem( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam );
+	LRESULT OnDestroy( UINT msg, WPARAM wParam, LPARAM lParam );
+
 protected:
 	HMODULE m_hDwmapiDll;
 	HMODULE m_hUserDll;

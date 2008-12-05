@@ -207,7 +207,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			for (k=0; k<allocedItemData; k++)
 			{
 				if(ProtosData[k].ProtoXStatus) mir_free_and_nill (ProtosData[k].ProtoXStatus);
-                if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
+				if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
 				if(ProtosData[k].AccountName) mir_free_and_nill (ProtosData[k].AccountName);
 				if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
 				if(ProtosData[k].ProtoEMailCount) mir_free_and_nill (ProtosData[k].ProtoEMailCount);
@@ -750,6 +750,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 			for (k=0; k<allocedItemData; k++)
 			{
 				if(ProtosData[k].AccountName) mir_free_and_nill (ProtosData[k].AccountName);
+				if(ProtosData[k].ProtoName) mir_free_and_nill (ProtosData[k].ProtoName);
 				if(ProtosData[k].ProtoEMailCount) mir_free_and_nill (ProtosData[k].ProtoEMailCount);
 				if(ProtosData[k].ProtoHumanName) mir_free_and_nill (ProtosData[k].ProtoHumanName);
 				if(ProtosData[k].ProtoStatusText) mir_free_and_nill (ProtosData[k].ProtoStatusText);

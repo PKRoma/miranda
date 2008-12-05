@@ -52,303 +52,18 @@ BOOL CALLBACK ProcessCLUIFrameInternalMsg(HWND hwnd, UINT msg, WPARAM wParam, LP
 //////////////// CLUI CLASS IMPLEMENTATION /////////////////////////////////
 #include "hdr/modern_clui.h"
 
-#define This CLUI::m_pCLUI
 #define STATIC_METHOD
 
 CLUI* CLUI::m_pCLUI = NULL;
 BOOL CLUI::m_fMainMenuInited = FALSE;
-
-HRESULT CLUI::InitClui()
-{
-	STATIC_METHOD;
-
-	_ASSERT( This == NULL );
-
-	This=new CLUI();
-
-	_ASSERT( This ); 
-
-	return S_OK;
-}
-
-HRESULT CLUI::CreateCluiFrames()
-{
-	g_hMenuMain=GetMenu(pcli->hwndContactList);
-	MENUITEMINFO mii;
-	ZeroMemory(&mii,sizeof(mii));
-	mii.cbSize=MENUITEMINFO_V4_SIZE;
-	mii.fMask=MIIM_SUBMENU;
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
-	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
-
-	CreateCLCWindow(CluiWnd());
-
-	CLUI_ChangeWindowMode();
-
-	RegisterAvatarMenu(); 
-
-	CLUI_ReloadCLUIOptions();	
-
-	CreateUIFrames();
-
-	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
-	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
-	return S_OK;
-}
-CLUI::CLUI() :
-m_hUserDll( NULL ),
-m_hDwmapiDll( NULL )
-{
-	g_CluiData.bSTATE = STATE_CLUI_LOADING;
-	LoadDllsRuntime();
-	hFrameContactTree=NULL;
-
-
-	CLUIServices_LoadModule();
-
-	// Call InitGroup menus before
-	GroupMenus_Init();
-
-	CreateServiceFunction(MS_CLUI_SHOWMAINMENU,Service_ShowMainMenu);
-	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,Service_ShowStatusMenu);
-
-
-	//TODO Add Row template loading here.
-
-	RowHeight_InitModernRow();
-	nLastRequiredHeight=0;
-
-	LoadCLUIFramesModule();
-	ExtraImage_LoadModule();	
-
-	g_CluiData.boldHideOffline=-1;
-	bOldHideOffline=ModernGetSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
-
-	g_CluiData.bOldUseGroups=-1;
-	bOldUseGroups = ModernGetSettingByte( NULL,"CList","UseGroups", SETTING_USEGROUPS_DEFAULT );
-}
-
-CLUI::~CLUI()
-{
-	FreeLibrary(m_hUserDll);
-	FreeLibrary(m_hDwmapiDll);
-}
-
-HRESULT CLUI::LoadDllsRuntime()
-{
-	m_hUserDll = LoadLibrary(TEXT("user32.dll"));
-	if (m_hUserDll)
-	{
-		g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(m_hUserDll, "UpdateLayeredWindow");
-		g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(m_hUserDll, "SetLayeredWindowAttributes");
-		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(m_hUserDll,"AnimateWindow");
-
-		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
-		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&ModernGetSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
-		g_CluiData.fLayered=(g_CluiData.fLayered*ModernGetSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
-	}
-
-	m_hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
-	if (m_hDwmapiDll)
-	{
-		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(m_hDwmapiDll, "DwmEnableBlurBehindWindow");
-	}
-	g_CluiData.fAeroGlass = FALSE;
-
-	return S_OK;
-}
-HRESULT CLUI::RegisterAvatarMenu()
-{
-	CLISTMENUITEM mi;
-
-	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
-	mi.flags=0;
-	mi.pszContactOwner=NULL;    //on every contact
-	CreateServiceFunction("CList/ShowContactAvatar",CLUI::Service_Menu_ShowContactAvatar);
-	mi.position=2000150000;
-	mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
-	mi.pszName=LPGEN("Show Contact &Avatar");
-	mi.pszService="CList/ShowContactAvatar";
-	hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	DestroyIcon_protect(mi.hIcon);
-
-	CreateServiceFunction("CList/HideContactAvatar",CLUI::Service_Menu_HideContactAvatar);
-	mi.position=2000150001;
-	mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
-	mi.pszName=LPGEN("Hide Contact &Avatar");
-	mi.pszService="CList/HideContactAvatar";
-	hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	DestroyIcon_protect(mi.hIcon);
-
-	ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI::OnEvent_ContactMenuPreBuild);
-
-	return S_OK;
-}
-HRESULT CLUI::CreateCLCWindow(const HWND hwndClui)
-{    
-	ClcWnd() = CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
-		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
-		|(ModernGetSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
-		|(ModernGetSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
-		|(ModernGetSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
-		|CLS_MULTICOLUMN
-		),
-		0,0,0,0,hwndClui,NULL,g_hInst,NULL);
-
-	return S_OK;
-}
-
-HRESULT CLUI::CreateUIFrames()
-{
-	EventArea_Create(pcli->hwndContactList);
-	CreateViewModeFrame();
-	pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
-
-	return S_OK;
-}
-
-
-
-HRESULT CLUI::FillAlphaChannel(HWND hwndClui, HDC hDC, RECT * prcParent, BYTE bAlpha)
-{
-	STATIC_METHOD
-
-		RECT rcWindow;
-	GetWindowRect( hwndClui, &rcWindow );
-
-	HRGN hRgn = CreateRectRgn(0,0,0,0);
-
-	if ( GetWindowRgn(hwndClui,hRgn)==ERROR )
-	{
-		DeleteObject(hRgn);
-		hRgn=CreateRectRgn(rcWindow.left ,rcWindow.top ,rcWindow.right,rcWindow.bottom);
-	}
-
-	OffsetRgn(hRgn,-prcParent->left,-prcParent->top);
-
-	RECT rcBounds;
-	GetRgnBox(hRgn,&rcBounds);
-
-	if ( IsRectEmpty(&rcBounds) ) 
-	{
-		DeleteObject(hRgn);
-		return S_FALSE;
-	}
-
-	DWORD dwRgnSize = GetRegionData( hRgn, 0, NULL );
-	RGNDATA * rgnData=(RGNDATA *)malloc(dwRgnSize);
-	GetRegionData(hRgn,dwRgnSize,rgnData);
-
-	RECT * pRect=(RECT *)rgnData->Buffer;
-
-	for (DWORD i=0; i<rgnData->rdh.nCount; i++)
-		ske_SetRectOpaque( hDC, &pRect[i] );
-
-	free(rgnData);
-	DeleteObject(hRgn);
-
-	return S_OK;
-}
-
-HRESULT CLUI::CreateCLC(HWND hwndClui)
-{
-
-	INIT<CLISTFrame> Frame;
-
-	Frame.hWnd=ClcWnd();
-	Frame.align=alClient;
-	Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NO_SUBCONTAINER|F_TCHAR;
-	Frame.tname=LPGENT("My Contacts");
-	Frame.TBtname=TranslateT("My Contacts");
-	hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
-
-	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)CLCPaint::PaintCallbackProc);
-	CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
-
-	ExtraImage_ReloadExtraIcons();
-
-	nLastRequiredHeight=0;
-	if ( g_CluiData.current_viewmode[0] == '\0' )
-	{
-		if (bOldHideOffline != (BYTE)-1) 
-			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)bOldHideOffline, 0);
-		else
-			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)0, 0);
-		if (bOldUseGroups !=(BYTE)-1)  
-			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
-		else
-			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
-	}
-	nLastRequiredHeight=0;
-	mutex_bDisableAutoUpdate=0;
-
-	hSettingChangedHook=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI::OnEvent_DBSettingChanging);
-
-	return S_OK;
-
-};
-HRESULT CLUI::SnappingToEdge(HWND hwndClui, WINDOWPOS * lpWindowPos)
-{ 
-	//by ZORG
-	if ( MyMonitorFromWindow == NULL || MyGetMonitorInfo == NULL )
-		return S_FALSE;
-
-	if (ModernGetSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT))
-	{
-		RECT* dr;
-		MONITORINFO monInfo;
-		HMONITOR curMonitor = MyMonitorFromWindow(hwndClui, MONITOR_DEFAULTTONEAREST);
-
-		monInfo.cbSize = sizeof(monInfo);
-		MyGetMonitorInfo(curMonitor, &monInfo);
-
-		dr = &(monInfo.rcWork);
-
-		// Left side
-		if ( lpWindowPos->x < dr->left + SNAPTOEDGESENSIVITY && lpWindowPos->x > dr->left - SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=1)
-			lpWindowPos->x = dr->left;
-
-		// Right side
-		if ( dr->right - lpWindowPos->x - lpWindowPos->cx <SNAPTOEDGESENSIVITY && dr->right - lpWindowPos->x - lpWindowPos->cx > -SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=2)
-			lpWindowPos->x = dr->right - lpWindowPos->cx;
-
-		// Top side
-		if ( lpWindowPos->y < dr->top + SNAPTOEDGESENSIVITY && lpWindowPos->y > dr->top - SNAPTOEDGESENSIVITY)
-			lpWindowPos->y = dr->top;
-
-		// Bottom side
-		if ( dr->bottom - lpWindowPos->y - lpWindowPos->cy <SNAPTOEDGESENSIVITY && dr->bottom - lpWindowPos->y - lpWindowPos->cy > -SNAPTOEDGESENSIVITY)
-			lpWindowPos->y = dr->bottom - lpWindowPos->cy;
-	}
-	return S_OK;
-}
-
-inline HWND& CLUI::CluiWnd()
-{
-	return pcli->hwndContactList;
-}
-
-inline HWND& CLUI::ClcWnd()
-{
-	return pcli->hwndContactTree;
-}
+HWND CLUI::m_hWnd = NULL;
 
 void CLUI::cliOnCreateClc(void)
 {  
 	STATIC_METHOD;
-
-	_ASSERT( This );
-
-	This->CreateCluiFrames();
-
-	_ASSERT( This ); 
+	_ASSERT( m_pCLUI );
+	m_pCLUI->CreateCluiFrames();
 }
-
-
 
 int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -501,7 +216,263 @@ int CLUI::Service_Menu_HideContactAvatar(WPARAM wParam,LPARAM lParam)
 }
 
 
-////////////////////////////////////////////////////////////////////////////
+
+HRESULT CLUI::CreateCluiFrames()
+{
+	g_hMenuMain=GetMenu(pcli->hwndContactList);
+	MENUITEMINFO mii;
+	ZeroMemory(&mii,sizeof(mii));
+	mii.cbSize=MENUITEMINFO_V4_SIZE;
+	mii.fMask=MIIM_SUBMENU;
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+	SetMenuItemInfo(g_hMenuMain,0,TRUE,&mii);
+	mii.hSubMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+	SetMenuItemInfo(g_hMenuMain,1,TRUE,&mii);
+
+	CreateCLCWindow(CluiWnd());
+
+	CLUI_ChangeWindowMode();
+
+	RegisterAvatarMenu(); 
+
+	CLUI_ReloadCLUIOptions();	
+
+	CreateUIFrames();
+
+	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
+	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
+	return S_OK;
+}
+CLUI::CLUI() :
+m_hUserDll( NULL ),
+m_hDwmapiDll( NULL )
+{
+	m_pCLUI = this;
+	g_CluiData.bSTATE = STATE_CLUI_LOADING;
+	LoadDllsRuntime();
+	hFrameContactTree=NULL;
+
+	CLUIServices_LoadModule();
+
+	// Call InitGroup menus before
+	GroupMenus_Init();
+
+	CreateServiceFunction(MS_CLUI_SHOWMAINMENU,Service_ShowMainMenu);
+	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU,Service_ShowStatusMenu);
+
+
+	//TODO Add Row template loading here.
+
+	RowHeight_InitModernRow();
+	nLastRequiredHeight=0;
+
+	LoadCLUIFramesModule();
+	ExtraImage_LoadModule();	
+
+	g_CluiData.boldHideOffline=-1;
+	bOldHideOffline=ModernGetSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT);
+
+	g_CluiData.bOldUseGroups=-1;
+	bOldUseGroups = ModernGetSettingByte( NULL,"CList","UseGroups", SETTING_USEGROUPS_DEFAULT );
+}
+
+CLUI::~CLUI()
+{
+	FreeLibrary(m_hUserDll);
+	FreeLibrary(m_hDwmapiDll);
+	m_pCLUI = NULL;
+}
+
+HRESULT CLUI::LoadDllsRuntime()
+{
+	m_hUserDll = LoadLibrary(TEXT("user32.dll"));
+	if (m_hUserDll)
+	{
+		g_proc_UpdateLayeredWindow = (BOOL (WINAPI *)(HWND,HDC,POINT*,SIZE*,HDC,POINT*,COLORREF,BLENDFUNCTION*,DWORD))GetProcAddress(m_hUserDll, "UpdateLayeredWindow");
+		g_proc_SetLayeredWindowAttributesNew = (BOOL (WINAPI *)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(m_hUserDll, "SetLayeredWindowAttributes");
+		g_proc_AnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(m_hUserDll,"AnimateWindow");
+
+		g_CluiData.fLayered=(g_proc_UpdateLayeredWindow!=NULL) && !ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
+		g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&ModernGetSettingByte(NULL, "CLUI", "FadeInOut", SETTING_FADEIN_DEFAULT);
+		g_CluiData.fLayered=(g_CluiData.fLayered*ModernGetSettingByte(NULL, "ModernData", "EnableLayering", g_CluiData.fLayered))&&!ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
+	}
+
+	m_hDwmapiDll = LoadLibrary(TEXT("dwmapi.dll"));
+	if (m_hDwmapiDll)
+	{
+		g_proc_DWMEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND, DWM_BLURBEHIND *))GetProcAddress(m_hDwmapiDll, "DwmEnableBlurBehindWindow");
+	}
+	g_CluiData.fAeroGlass = FALSE;
+
+	return S_OK;
+}
+HRESULT CLUI::RegisterAvatarMenu()
+{
+	CLISTMENUITEM mi;
+
+	ZeroMemory(&mi,sizeof(mi));
+	mi.cbSize=sizeof(mi);
+	mi.flags=0;
+	mi.pszContactOwner=NULL;    //on every contact
+	CreateServiceFunction("CList/ShowContactAvatar",CLUI::Service_Menu_ShowContactAvatar);
+	mi.position=2000150000;
+	mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_SHOW_AVATAR));
+	mi.pszName=LPGEN("Show Contact &Avatar");
+	mi.pszService="CList/ShowContactAvatar";
+	hShowAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	DestroyIcon_protect(mi.hIcon);
+
+	CreateServiceFunction("CList/HideContactAvatar",CLUI::Service_Menu_HideContactAvatar);
+	mi.position=2000150001;
+	mi.hIcon=LoadSmallIcon(g_hInst,MAKEINTRESOURCE(IDI_HIDE_AVATAR));
+	mi.pszName=LPGEN("Hide Contact &Avatar");
+	mi.pszService="CList/HideContactAvatar";
+	hHideAvatarMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+	DestroyIcon_protect(mi.hIcon);
+
+	ModernHookEvent(ME_CLIST_PREBUILDCONTACTMENU, CLUI::OnEvent_ContactMenuPreBuild);
+
+	return S_OK;
+}
+HRESULT CLUI::CreateCLCWindow(const HWND hwndClui)
+{    
+	ClcWnd() = CreateWindow(CLISTCONTROL_CLASS,TEXT(""),
+		WS_CHILD|WS_CLIPCHILDREN|CLS_CONTACTLIST
+		|(ModernGetSettingByte(NULL,"CList","UseGroups",SETTING_USEGROUPS_DEFAULT)?CLS_USEGROUPS:0)
+		|(ModernGetSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
+		|(ModernGetSettingByte(NULL,"CList","HideEmptyGroups",SETTING_HIDEEMPTYGROUPS_DEFAULT)?CLS_HIDEEMPTYGROUPS:0
+		|CLS_MULTICOLUMN
+		),
+		0,0,0,0,hwndClui,NULL,g_hInst,NULL);
+
+	return S_OK;
+}
+
+HRESULT CLUI::CreateUIFrames()
+{
+	EventArea_Create(pcli->hwndContactList);
+	CreateViewModeFrame();
+	pcli->hwndStatus=(HWND)StatusBar_Create(pcli->hwndContactList);    
+
+	return S_OK;
+}
+
+
+
+HRESULT CLUI::FillAlphaChannel( HDC hDC, RECT * prcParent, BYTE bAlpha)
+{
+
+	RECT rcWindow;
+	GetWindowRect( m_hWnd, &rcWindow );
+
+	HRGN hRgn = CreateRectRgn(0,0,0,0);
+
+	if ( GetWindowRgn(m_hWnd,hRgn)==ERROR )
+	{
+		DeleteObject(hRgn);
+		hRgn=CreateRectRgn(rcWindow.left ,rcWindow.top ,rcWindow.right,rcWindow.bottom);
+	}
+
+	OffsetRgn(hRgn,-prcParent->left,-prcParent->top);
+
+	RECT rcBounds;
+	GetRgnBox(hRgn,&rcBounds);
+
+	if ( IsRectEmpty(&rcBounds) ) 
+	{
+		DeleteObject(hRgn);
+		return S_FALSE;
+	}
+
+	DWORD dwRgnSize = GetRegionData( hRgn, 0, NULL );
+	RGNDATA * rgnData=(RGNDATA *)malloc(dwRgnSize);
+	GetRegionData(hRgn,dwRgnSize,rgnData);
+
+	RECT * pRect=(RECT *)rgnData->Buffer;
+
+	for (DWORD i=0; i<rgnData->rdh.nCount; i++)
+		ske_SetRectOpaque( hDC, &pRect[i] );
+
+	free(rgnData);
+	DeleteObject(hRgn);
+
+	return S_OK;
+}
+
+HRESULT CLUI::CreateCLC()
+{
+
+	INIT<CLISTFrame> Frame;
+
+	Frame.hWnd=ClcWnd();
+	Frame.align=alClient;
+	Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NO_SUBCONTAINER|F_TCHAR;
+	Frame.tname=LPGENT("My Contacts");
+	Frame.TBtname=TranslateT("My Contacts");
+	hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
+
+	CallService(MS_SKINENG_REGISTERPAINTSUB,(WPARAM)Frame.hWnd,(LPARAM)CLCPaint::PaintCallbackProc);
+	CallService(MS_CLIST_FRAMES_SETFRAMEOPTIONS,MAKEWPARAM(FO_TBTIPNAME,hFrameContactTree),(LPARAM)Translate("My Contacts"));	
+
+	ExtraImage_ReloadExtraIcons();
+
+	nLastRequiredHeight=0;
+	if ( g_CluiData.current_viewmode[0] == '\0' )
+	{
+		if (bOldHideOffline != (BYTE)-1) 
+			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)bOldHideOffline, 0);
+		else
+			CallService( MS_CLIST_SETHIDEOFFLINE,(WPARAM)0, 0);
+		if (bOldUseGroups !=(BYTE)-1)  
+			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
+		else
+			CallService( MS_CLIST_SETUSEGROUPS ,(WPARAM)bOldUseGroups, 0);
+	}
+	nLastRequiredHeight=0;
+	mutex_bDisableAutoUpdate=0;
+
+	hSettingChangedHook=ModernHookEvent(ME_DB_CONTACT_SETTINGCHANGED,CLUI::OnEvent_DBSettingChanging);
+
+	return S_OK;
+
+};
+HRESULT CLUI::SnappingToEdge( WINDOWPOS * lpWindowPos )
+{ 
+	//by ZORG
+	if ( MyMonitorFromWindow == NULL || MyGetMonitorInfo == NULL )
+		return S_FALSE;
+
+	if (ModernGetSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT))
+	{
+		RECT* dr;
+		MONITORINFO monInfo;
+		HMONITOR curMonitor = MyMonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+
+		monInfo.cbSize = sizeof(monInfo);
+		MyGetMonitorInfo(curMonitor, &monInfo);
+
+		dr = &(monInfo.rcWork);
+
+		// Left side
+		if ( lpWindowPos->x < dr->left + SNAPTOEDGESENSIVITY && lpWindowPos->x > dr->left - SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=1)
+			lpWindowPos->x = dr->left;
+
+		// Right side
+		if ( dr->right - lpWindowPos->x - lpWindowPos->cx <SNAPTOEDGESENSIVITY && dr->right - lpWindowPos->x - lpWindowPos->cx > -SNAPTOEDGESENSIVITY && g_CluiData.bBehindEdgeSettings!=2)
+			lpWindowPos->x = dr->right - lpWindowPos->cx;
+
+		// Top side
+		if ( lpWindowPos->y < dr->top + SNAPTOEDGESENSIVITY && lpWindowPos->y > dr->top - SNAPTOEDGESENSIVITY)
+			lpWindowPos->y = dr->top;
+
+		// Bottom side
+		if ( dr->bottom - lpWindowPos->y - lpWindowPos->cy <SNAPTOEDGESENSIVITY && dr->bottom - lpWindowPos->y - lpWindowPos->cy > -SNAPTOEDGESENSIVITY)
+			lpWindowPos->y = dr->bottom - lpWindowPos->cy;
+	}
+	return S_OK;
+}
+
 
 HICON GetMainStatusOverlay(int STATUS)
 {
@@ -523,10 +494,6 @@ void UnloadAvatarOverlayIcon()
 }
 
 
-/*
-*  Function CLUI_CheckOwnedByClui returns true if given window is in 
-*  frames.
-*/
 BOOL CLUI_CheckOwnedByClui(HWND hWnd)
 {
 	HWND hWndMid, hWndClui;
@@ -542,11 +509,6 @@ BOOL CLUI_CheckOwnedByClui(HWND hWnd)
 	return FALSE;
 }
 
-/*
-*  Function CLUI_ShowWindowMod overloads API ShowWindow in case of
-*  dropShaddow is enabled: it force to minimize window before hiding
-*  to remove shadow.
-*/
 int CLUI_ShowWindowMod(HWND hWnd, int nCmd) 
 {
 	int res=0;
@@ -1111,7 +1073,6 @@ static HICON CLUI_GetConnectingIconForProto(char *szProto,int b)
 }
 
 
-//wParam = szProto
 int CLUI_GetConnectingIconService(WPARAM wParam,LPARAM lParam)
 {
 	int b;						
@@ -1196,8 +1157,6 @@ static int CLUI_CreateTimerForConnectingIcon(WPARAM wParam,LPARAM lParam)
 	}
 	return 0;
 }
-// Restore protocols to the last global status.
-// Used to reconnect on restore after standby.
 static void CLUI_RestoreMode(HWND hwnd)
 {
 
@@ -1263,8 +1222,6 @@ int CLUI_ReloadCLUIOptions()
 
 
 
-// Disconnect all protocols.
-// Happens on shutdown and standby.
 void CLUI_DisconnectAll()
 {
 	PROTOACCOUNT **accs;
@@ -1635,9 +1592,7 @@ int CLUI_SizingOnBorder(POINT pt, int PerformSize)
 	}
 	return SCF_NONE;
 }
-//typedef int (*PSYNCCALLBACKPROC)(WPARAM,LPARAM);
 int CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam);
-
 static void CLUI_SmoothAnimationThreadProc(HWND hwnd)
 {
 	//  return;
@@ -1825,7 +1780,6 @@ static BOOL FileExists(TCHAR * tszFilename)
 	return TRUE;
 }
 
-//return not icon but handle in icolib
 HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szDescription, TCHAR * tszDefaultFile, int iDefaultIndex, HINSTANCE hDefaultModuleInst, int iDefaultResource )
 {
 	TCHAR fileFull[MAX_PATH]={0};
@@ -1862,11 +1816,11 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 }
 
 // MAIN WINPROC MESSAGE HANDLERS
-LRESULT CLUI::PreProcessWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled /*=FALSE*/)
+LRESULT CLUI::PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled /*=FALSE*/)
 {
 	// proxy CLUI Messages
 	LRESULT result = 0;
-	if ( ProcessCLUIFrameInternalMsg( hwnd, msg, wParam, lParam, result ) )
+	if ( ProcessCLUIFrameInternalMsg( m_hWnd, msg, wParam, lParam, result ) )
 	{
 		bHandled = TRUE;
 		return result;
@@ -1913,7 +1867,7 @@ LRESULT CLUI::PreProcessWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 
-LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnSizingMoving( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if (g_CluiData.fLayered)
 	{
@@ -1941,10 +1895,10 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 			RECT work_rect={0};
 			RECT temp_rect={0};
 			wp=(WINDOWPOS *)lParam;
-			GetWindowRect(hwnd,&rcOldWindowRect);
+			GetWindowRect(m_hWnd,&rcOldWindowRect);
 
 			// Прилипание к краям by ZorG	
-			CLUI::SnappingToEdge(hwnd, wp);
+			CLUI::SnappingToEdge(wp);
 
 			if ((rcOldWindowRect.bottom-rcOldWindowRect.top!=wp->cy || rcOldWindowRect.right-rcOldWindowRect.left !=wp->cx)&&!(wp->flags&SWP_NOSIZE))
 			{
@@ -1970,7 +1924,7 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 				}
 				//Check rect after frames resize
 				{
-					GetWindowRect(hwnd,&temp_rect);
+					GetWindowRect(m_hWnd,&temp_rect);
 				}
 				//Here work_rect should be changed to fit possible changes in cln_listsizechange
 				if(bNeedFixSizingRect)
@@ -1984,7 +1938,7 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 				}
 				//reposition buttons and new size applying
 				{
-					ModernSkinButton_ReposButtons( hwnd, SBRF_DO_NOT_DRAW, &work_rect );
+					ModernSkinButton_ReposButtons( m_hWnd, SBRF_DO_NOT_DRAW, &work_rect );
 					ske_PrepeareImageButDontUpdateIt(&work_rect);
 					g_CluiData.mutexPreventDockMoving=0;			
 					ske_UpdateWindowImageRect(&work_rect);        
@@ -1993,15 +1947,15 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 				}       
 				Sleep(0);               
 				mutex_bDuringSizing=0; 
-				DefWindowProc(hwnd,msg,wParam,lParam);
-				return SendMessage(hwnd,WM_WINDOWPOSCHANGED,wParam,lParam);
+				DefWindowProc(m_hWnd,msg,wParam,lParam);
+				return SendMessage(m_hWnd,WM_WINDOWPOSCHANGED,wParam,lParam);
 			}
 			else
 			{
 				SetRect(&rcCorrectSizeRect,0,0,0,0);
 				// bNeedFixSizingRect=0;
 			}
-			return DefWindowProc(hwnd,msg,wParam,lParam); 
+			return DefWindowProc(m_hWnd,msg,wParam,lParam); 
 		}	
 	}
 
@@ -2010,32 +1964,31 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 		// Snaping if it is not in LayeredMode	
 		WINDOWPOS * wp;
 		wp=(WINDOWPOS *)lParam;
-		CLUI::SnappingToEdge(hwnd, wp);
-		return DefWindowProc(hwnd,msg,wParam,lParam); 
+		CLUI::SnappingToEdge( wp );
+		return DefWindowProc(m_hWnd,msg,wParam,lParam); 
 	}
 	switch (msg)
 	{
 	case WM_EXITSIZEMOVE:
 		{
-			int res=DefWindowProc(hwnd, msg, wParam, lParam);
+			int res=DefWindowProc(m_hWnd, msg, wParam, lParam);
 			ReleaseCapture();
 			TRACE("WM_EXITSIZEMOVE\n");
-			SendMessage(hwnd, WM_ACTIVATE, (WPARAM)WA_ACTIVE, (LPARAM)hwnd);
+			SendMessage(m_hWnd, WM_ACTIVATE, (WPARAM)WA_ACTIVE, (LPARAM)m_hWnd);
 			return res;
 		}
 
 	case WM_SIZING:
-		return DefWindowProc(hwnd, msg, wParam, lParam);;
-
+		return DefWindowProc(m_hWnd, msg, wParam, lParam);;
 	case WM_MOVE:
 		{
 			RECT rc;
-			CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+			CallWindowProc(DefWindowProc, m_hWnd, msg, wParam, lParam);
 			mutex_bDuringSizing=0;      
-			GetWindowRect(hwnd, &rc);
+			GetWindowRect(m_hWnd, &rc);
 			CheckFramesPos(&rc);
-			Sync(CLUIFrames_OnMoving,hwnd,&rc);
-			if(!IsIconic(hwnd)) {
+			Sync(CLUIFrames_OnMoving,m_hWnd,&rc);
+			if(!IsIconic(m_hWnd)) {
 				if(!CallService(MS_CLIST_DOCKINGISDOCKED,0,0))
 				{ //if g_CluiData.fDocked, dont remember pos (except for width)
 					ModernWriteSettingDword(NULL,"CList","Height",(DWORD)(rc.bottom - rc.top));
@@ -2050,7 +2003,7 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 		{   
 			RECT rc;
 			if (g_mutex_bSizing) return 0;
-			if(wParam!=SIZE_MINIMIZED /*&& IsWindowVisible(hwnd)*/) 
+			if(wParam!=SIZE_MINIMIZED /*&& IsWindowVisible(m_hWnd)*/) 
 			{
 				if ( pcli->hwndContactList == NULL )
 					return 0;
@@ -2058,20 +2011,20 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 				if (!g_CluiData.fLayered && !g_CluiData.fDisableSkinEngine)
 					ske_ReCreateBackImage(TRUE,NULL);
 
-				GetWindowRect(hwnd, &rc);
+				GetWindowRect(m_hWnd, &rc);
 				CheckFramesPos(&rc);
-				ModernSkinButton_ReposButtons( hwnd, SBRF_DO_NOT_DRAW, &rc);
-				ModernSkinButton_ReposButtons( hwnd, SBRF_REDRAW, NULL);
+				ModernSkinButton_ReposButtons( m_hWnd, SBRF_DO_NOT_DRAW, &rc);
+				ModernSkinButton_ReposButtons( m_hWnd, SBRF_REDRAW, NULL);
 				if (g_CluiData.fLayered)
-					CallService(MS_SKINENG_UPTATEFRAMEIMAGE,(WPARAM)hwnd,0);
+					CallService(MS_SKINENG_UPTATEFRAMEIMAGE,(WPARAM)m_hWnd,0);
 
 				if (!g_CluiData.fLayered)
 				{
 					g_mutex_bSizing=1;
-					Sync(CLUIFrames_OnClistResize_mod,(WPARAM)hwnd,(LPARAM)1);
+					Sync(CLUIFrames_OnClistResize_mod,(WPARAM)m_hWnd,(LPARAM)1);
 					CLUIFrames_ApplyNewSizes(2);
 					CLUIFrames_ApplyNewSizes(1);
-					SendMessage(hwnd,CLN_LISTSIZECHANGE,0,0);				  
+					SendMessage(m_hWnd,CLN_LISTSIZECHANGE,0,0);				  
 					g_mutex_bSizing=0;
 				}
 
@@ -2082,7 +2035,7 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 					ModernWriteSettingDword(NULL,"CList","x",(DWORD)rc.left);
 					ModernWriteSettingDword(NULL,"CList","y",(DWORD)rc.top);
 				}
-				else SetWindowRgn(hwnd,NULL,0);
+				else SetWindowRgn(m_hWnd,NULL,0);
 				ModernWriteSettingDword(NULL,"CList","Width",(DWORD)(rc.right - rc.left));	                               
 
 				if (!g_CluiData.fLayered)
@@ -2091,24 +2044,24 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 					RECT r;
 					int v,h;
 					int w=10;
-					GetWindowRect(hwnd,&r);
+					GetWindowRect(m_hWnd,&r);
 					h=(r.right-r.left)>(w*2)?w:(r.right-r.left);
 					v=(r.bottom-r.top)>(w*2)?w:(r.bottom-r.top);
 					h=(h<v)?h:v;
 					hRgn1=CreateRoundRectRgn(0,0,(r.right-r.left+1),(r.bottom-r.top+1),h,h);
 					if ((ModernGetSettingByte(NULL,"CLC","RoundCorners",SETTING_ROUNDCORNERS_DEFAULT)) && (!CallService(MS_CLIST_DOCKINGISDOCKED,0,0)))
-						SetWindowRgn(hwnd,hRgn1,FALSE); 
+						SetWindowRgn(m_hWnd,hRgn1,FALSE); 
 					else
 					{
 						DeleteObject(hRgn1);
-						SetWindowRgn(hwnd,NULL,FALSE);
+						SetWindowRgn(m_hWnd,NULL,FALSE);
 					}
-					RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
+					RedrawWindow(m_hWnd,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);   
 				} 			
 			}
 			else {
 				if(ModernGetSettingByte(NULL,"CList","Min2Tray",SETTING_MIN2TRAY_DEFAULT)) {
-					CLUI_ShowWindowMod(hwnd, SW_HIDE);
+					CLUI_ShowWindowMod(m_hWnd, SW_HIDE);
 					ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
 				}
 				else ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
@@ -2124,36 +2077,36 @@ LRESULT CLUI::OnSizingMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 				return 0;               
 			if (g_CluiData.fOnDesktop)
 				wp->flags|=SWP_NOACTIVATE|SWP_NOZORDER;
-			return DefWindowProc(hwnd, msg, wParam, lParam);
+			return DefWindowProc(m_hWnd, msg, wParam, lParam);
 		}
 	}
 	return 0;
 }
 
-LRESULT CLUI::OnThemeChanged( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnThemeChanged( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	xpt_OnWM_THEMECHANGED();
 	return FALSE;
 }
 
-LRESULT CLUI::OnDwmCompositionChanged( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnDwmCompositionChanged( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	g_CluiData.fAeroGlass = false;
 	CLUI_UpdateAeroGlass();
 	return FALSE;
 }
 
-LRESULT CLUI::OnSyncCall( HWND /*hwnd*/, UINT /*msg*/, WPARAM wParam, LPARAM /*lParam*/ )
+LRESULT CLUI::OnSyncCall( UINT /*msg*/, WPARAM wParam, LPARAM /*lParam*/ )
 {
 	return SyncOnWndProcCall( wParam );
 }
 
-LRESULT CLUI::OnUpdate( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnUpdate( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	if ( g_flag_bPostWasCanceled ) return FALSE;
 	return ske_ValidateFrameImageProc( NULL );
 }
-LRESULT CLUI::OnInitMenu( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnInitMenu( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	if ( !CLUI::IsMainMenuInited() )
 	{
@@ -2162,32 +2115,32 @@ LRESULT CLUI::OnInitMenu( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM
 	}
 	return FALSE;
 }
-LRESULT CLUI::OnNcPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNcPaint( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	int lRes = DefWindowProc( hwnd, msg, wParam, lParam );
+	int lRes = DefWindowProc( m_hWnd, msg, wParam, lParam );
 	if ( !g_CluiData.fLayered && ModernGetSettingByte( NULL,"CLUI","ShowMainMenu",SETTING_SHOWMAINMENU_DEFAULT ) )
 	{
 		HDC hdc = NULL;
 		if ( msg == WM_PRINT ) hdc=(HDC)wParam;
-		if ( !hdc ) hdc = GetWindowDC( hwnd );
-		CLUI_DrawMenuBackGround( hwnd, hdc, 0, 0 );
-		if ( msg != WM_PRINT ) ReleaseDC( hwnd, hdc );
+		if ( !hdc ) hdc = GetWindowDC( m_hWnd );
+		CLUI_DrawMenuBackGround( m_hWnd, hdc, 0, 0 );
+		if ( msg != WM_PRINT ) ReleaseDC( m_hWnd, hdc );
 	}
 	return lRes;
 }
-LRESULT CLUI::OnEraseBkgnd( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnEraseBkgnd( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	return TRUE;
 }
-LRESULT CLUI::OnNcCreate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNcCreate( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	( (LPCREATESTRUCT)lParam )->style &= ~(CS_HREDRAW | CS_VREDRAW);
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnPaint( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if (!g_CluiData.fLayered && IsWindowVisible(hwnd))
+	if (!g_CluiData.fLayered && IsWindowVisible(m_hWnd))
 	{
 		RECT w={0};
 		RECT w2={0};
@@ -2196,12 +2149,12 @@ LRESULT CLUI::OnPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		HBITMAP hbmp,oldbmp;
 		HDC paintDC;
 
-		GetClientRect(hwnd,&w);
-		if (!(w.right>0 && w.bottom>0)) return DefWindowProc(hwnd, msg, wParam, lParam); 
+		GetClientRect(m_hWnd,&w);
+		if (!(w.right>0 && w.bottom>0)) return DefWindowProc(m_hWnd, msg, wParam, lParam); 
 
 		if (!g_CluiData.fDisableSkinEngine)
 		{ 
-			paintDC = GetDC(hwnd);
+			paintDC = GetDC(m_hWnd);
 			w2=w;
 			hdc=CreateCompatibleDC(paintDC);
 			hbmp=ske_CreateDIB32(w.right,w.bottom);
@@ -2211,48 +2164,48 @@ LRESULT CLUI::OnPaint( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			SelectObject(hdc,oldbmp);
 			DeleteObject(hbmp);
 			mod_DeleteDC(hdc);
-			ReleaseDC(hwnd,paintDC);
+			ReleaseDC(m_hWnd,paintDC);
 		}
 		else
 		{
-			HDC hdc=BeginPaint(hwnd,&ps);
-			ske_BltBackImage(hwnd,hdc,&ps.rcPaint);
+			HDC hdc=BeginPaint(m_hWnd,&ps);
+			ske_BltBackImage(m_hWnd,hdc,&ps.rcPaint);
 			ps.fErase=FALSE;
-			EndPaint(hwnd,&ps); 
+			EndPaint(m_hWnd,&ps); 
 		}
 
-		ValidateRect(hwnd,NULL);
+		ValidateRect(m_hWnd,NULL);
 
 	}
 	if (0&&(ModernGetSettingDword(NULL,"CLUIFrames","GapBetweenFrames",SETTING_GAPFRAMES_DEFAULT) || ModernGetSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",SETTING_GAPTITLEBAR_DEFAULT)))
 	{
-		if (IsWindowVisible(hwnd))
+		if (IsWindowVisible(m_hWnd))
 			if (g_CluiData.fLayered)
-				SkinInvalidateFrame(hwnd,NULL,0);				
+				SkinInvalidateFrame(m_hWnd,NULL,0);				
 			else 
 			{
 				RECT w={0};
 				RECT w2={0};
 				PAINTSTRUCT ps={0};
-				GetWindowRect(hwnd,&w);
+				GetWindowRect(m_hWnd,&w);
 				OffsetRect(&w,-w.left,-w.top);
-				BeginPaint(hwnd,&ps);
+				BeginPaint(m_hWnd,&ps);
 				if ((ps.rcPaint.bottom-ps.rcPaint.top)*(ps.rcPaint.right-ps.rcPaint.left)==0)
 					w2=w;
 				else
 					w2=ps.rcPaint;
 				SkinDrawGlyph(ps.hdc,&w,&w2,"Main,ID=Background,Opt=Non-Layered");
 				ps.fErase=FALSE;
-				EndPaint(hwnd,&ps); 
+				EndPaint(m_hWnd,&ps); 
 			}
 	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProc(m_hWnd, msg, wParam, lParam);
 }
 
-LRESULT CLUI::OnCreate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnCreate( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)GetMenu(hwnd),0);
-	DrawMenuBar(hwnd);       
+	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)GetMenu(m_hWnd),0);
+	DrawMenuBar(m_hWnd);       
 	CLUIServices_ProtocolStatusChanged(0,0);
 
 	{	MENUITEMINFO mii;
@@ -2264,59 +2217,58 @@ LRESULT CLUI::OnCreate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	mii.dwItemData=MENU_MIRANDAMENU;
 	mii.fType=MFT_OWNERDRAW;
 	mii.dwTypeData=NULL;
-	SetMenuItemInfo(GetMenu(hwnd),0,TRUE,&mii);
+	SetMenuItemInfo(GetMenu(m_hWnd),0,TRUE,&mii);
 
 	// mii.fMask=MIIM_TYPE;
 	mii.fType=MFT_OWNERDRAW;
 	mii.dwItemData=MENU_STATUSMENU;
-	SetMenuItemInfo(GetMenu(hwnd),1,TRUE,&mii);
+	SetMenuItemInfo(GetMenu(m_hWnd),1,TRUE,&mii);
 
 	// mii.fMask=MIIM_TYPE;
 	mii.fType=MFT_OWNERDRAW;
 	mii.dwItemData=MENU_MINIMIZE;
-	SetMenuItemInfo(GetMenu(hwnd),2,TRUE,&mii);		
+	SetMenuItemInfo(GetMenu(m_hWnd),2,TRUE,&mii);		
 	}
-	//PostMessage(hwnd, M_CREATECLC, 0, 0);
-	//pcli->hwndContactList=hwnd;
+	//PostMessage(m_hWnd, M_CREATECLC, 0, 0);
+	//pcli->hwndContactList=m_hWnd;
 	uMsgGetProfile=RegisterWindowMessage(TEXT("Miranda::GetProfile")); // don't localise
 #ifndef _DEBUG
 	// Miranda is starting up! Restore last status mode.
 	// This is not done in debug builds because frequent
 	// reconnections will get you banned from the servers.
-	CLUI_RestoreMode(hwnd);
+	CLUI_RestoreMode(m_hWnd);
 #endif
 	bTransparentFocus=1;
 	return FALSE;
 }
-LRESULT CLUI::OnSetAllExtraIcons( HWND /*hwnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnSetAllExtraIcons( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
 	return FALSE;
 }
-
-LRESULT CLUI::OnCreateClc( HWND hwnd, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
+LRESULT CLUI::OnCreateClc( UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/ )
 {
-	CLUI::CreateCLC( hwnd );
+	CreateCLC();
 	if ( ModernGetSettingByte( NULL, "CList", "ShowOnStart", SETTING_SHOWONSTART_DEFAULT ) ) 
-		cliShowHide( (WPARAM) hwnd, (LPARAM)TRUE );
+		cliShowHide( (WPARAM) m_hWnd, (LPARAM)TRUE );
 	PostMessage( pcli->hwndContactTree, CLM_AUTOREBUILD, 0, 0 );
 
 	return FALSE;
 }
-LRESULT CLUI::OnLButtonDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnLButtonDown( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	POINT pt;
 	pt.x = (short)LOWORD(lParam);
 	pt.y = (short)HIWORD(lParam);
-	ClientToScreen( hwnd, &pt );
+	ClientToScreen( m_hWnd, &pt );
 
 	if ( CLUI_SizingOnBorder( pt, 1 ) )
 	{
 		mutex_bIgnoreActivation = TRUE;
 		return FALSE;
 	}
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
-LRESULT CLUI::OnParentNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnParentNotify( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	switch ( wParam )
 	{
@@ -2326,7 +2278,7 @@ LRESULT CLUI::OnParentNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 
 			pt.x = (short)LOWORD(lParam); 
 			pt.y = (short)HIWORD(lParam); 
-			ClientToScreen( hwnd, &pt );
+			ClientToScreen( m_hWnd, &pt );
 			wParam = 0;
 			lParam = 0;
 
@@ -2337,10 +2289,10 @@ LRESULT CLUI::OnParentNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam 
 			}
 		}
 	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);;
+	return DefWindowProc(m_hWnd, msg, wParam, lParam);;
 }
 
-LRESULT CLUI::OnSetFocus( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnSetFocus( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if ( hFrameContactTree && ( !CallService( MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM( FO_FLOATING, hFrameContactTree ), 0 ) ) )
 	{
@@ -2350,7 +2302,7 @@ LRESULT CLUI::OnSetFocus( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return FALSE;
 }
 
-LRESULT CLUI::OnStatusBarUpdateTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnStatusBarUpdateTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	int status,i;
 	PROTOTICKS *pt=NULL;
@@ -2372,7 +2324,7 @@ LRESULT CLUI::OnStatusBarUpdateTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				pt->nCycleStartTick=0;
 				ImageList_Destroy(pt->himlIconList);
 				pt->himlIconList=NULL;
-				KillTimer(hwnd,TM_STATUSBARUPDATE+pt->nIndex);
+				KillTimer(m_hWnd,TM_STATUSBARUPDATE+pt->nIndex);
 				pt->bTimerCreated=0;
 			}
 		}
@@ -2390,16 +2342,16 @@ LRESULT CLUI::OnStatusBarUpdateTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 	}
 	pcli->pfnInvalidateRect(pcli->hwndStatus,NULL,TRUE);
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnAutoAlphaTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnAutoAlphaTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	int inwnd;
 
-	if (GetForegroundWindow()==hwnd)
+	if (GetForegroundWindow()==m_hWnd)
 	{
-		KillTimer(hwnd,TM_AUTOALPHA);
+		KillTimer(m_hWnd,TM_AUTOALPHA);
 		inwnd=1;
 	}
 	else 
@@ -2421,99 +2373,99 @@ LRESULT CLUI::OnAutoAlphaTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		HWND hwn=GetCapture();
 		hwn=hwn;
 		bTransparentFocus=inwnd;
-		if(bTransparentFocus) CLUI_SmoothAlphaTransition(hwnd, (BYTE)ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
+		if(bTransparentFocus) CLUI_SmoothAlphaTransition(m_hWnd, (BYTE)ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 		else  
 		{
-			CLUI_SmoothAlphaTransition(hwnd, (BYTE)(g_bTransparentFlag?ModernGetSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT):255), 1);
+			CLUI_SmoothAlphaTransition(m_hWnd, (BYTE)(g_bTransparentFlag?ModernGetSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT):255), 1);
 		}
 	}
-	if(!bTransparentFocus) KillTimer(hwnd,TM_AUTOALPHA);
+	if(!bTransparentFocus) KillTimer(m_hWnd,TM_AUTOALPHA);
 	return TRUE;
 }
-LRESULT CLUI::OnSmoothAlphaTransitionTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnSmoothAlphaTransitionTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CLUI_SmoothAlphaTransition(hwnd, 0, 2);
+	CLUI_SmoothAlphaTransition(m_hWnd, 0, 2);
 	return TRUE;
 }
-LRESULT CLUI::OnDelayedSizingTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnDelayedSizingTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if ( mutex_bDelayedSizing && !mutex_bDuringSizing )
 	{
 		mutex_bDelayedSizing = 0;
-		KillTimer( hwnd,TM_DELAYEDSIZING );
+		KillTimer( m_hWnd,TM_DELAYEDSIZING );
 		pcli->pfnClcBroadcast( INTM_SCROLLBARCHANGED, 0, 0 );
 	}
 	return TRUE;
 }
-LRESULT CLUI::OnBringOutTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnBringOutTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	//hide
-	KillTimer(hwnd,TM_BRINGINTIMEOUT);
-	KillTimer(hwnd,TM_BRINGOUTTIMEOUT);
+	KillTimer(m_hWnd,TM_BRINGINTIMEOUT);
+	KillTimer(m_hWnd,TM_BRINGOUTTIMEOUT);
 	bShowEventStarted=0;
 	POINT pt; GetCursorPos(&pt);
 	HWND hAux = WindowFromPoint(pt);
 	BOOL mouse_in_window = CLUI_CheckOwnedByClui(hAux);
-	if ( !mouse_in_window && GetForegroundWindow() != hwnd ) 
+	if ( !mouse_in_window && GetForegroundWindow() != m_hWnd ) 
 		CLUI_HideBehindEdge(); 
 	return TRUE;
 }
-LRESULT CLUI::OnBringInTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnBringInTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	//show	
-	KillTimer(hwnd,TM_BRINGINTIMEOUT);
+	KillTimer(m_hWnd,TM_BRINGINTIMEOUT);
 	bShowEventStarted=0;
-	KillTimer(hwnd,TM_BRINGOUTTIMEOUT);
+	KillTimer(m_hWnd,TM_BRINGOUTTIMEOUT);
 	POINT pt; GetCursorPos(&pt);
 	HWND hAux = WindowFromPoint(pt);
 	BOOL mouse_in_window = FALSE;
 	while(hAux != NULL) 
 	{
-		if (hAux == hwnd) { mouse_in_window = TRUE; break;}
+		if (hAux == m_hWnd) { mouse_in_window = TRUE; break;}
 		hAux = GetParent(hAux);
 	}
 	if ( mouse_in_window )
 		CLUI_ShowFromBehindEdge();
 	return TRUE;
 }
-LRESULT CLUI::OnUpdateBringTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnUpdateBringTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	CLUI_UpdateTimer( 0 );
 	return TRUE;
 }
 
-LRESULT CLUI::OnTimer( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnTimer( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if ( MirandaExiting() ) return FALSE;
 
 	if ( (int)wParam >= TM_STATUSBARUPDATE && (int)wParam<=TM_STATUSBARUPDATE+64 )
 	{
 		if ( !pcli->hwndStatus ) return FALSE;
-		else return OnStatusBarUpdateTimer( hwnd, msg, wParam, lParam );
+		else return OnStatusBarUpdateTimer( msg, wParam, lParam );
 	}
 
 	switch ( wParam )
 	{
-	case TM_AUTOALPHA:				return OnAutoAlphaTimer( hwnd, msg, wParam, lParam );
-	case TM_SMOTHALPHATRANSITION:	return OnSmoothAlphaTransitionTimer( hwnd, msg, wParam, lParam );
-	case TM_DELAYEDSIZING:			return OnDelayedSizingTimer( hwnd, msg, wParam, lParam );
-	case TM_BRINGOUTTIMEOUT:		return OnBringOutTimer( hwnd, msg, wParam, lParam );
-	case TM_BRINGINTIMEOUT:			return OnBringInTimer( hwnd, msg, wParam, lParam );
-	case TM_UPDATEBRINGTIMER:		return OnUpdateBringTimer( hwnd, msg, wParam, lParam );
-	default:						return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	case TM_AUTOALPHA:				return OnAutoAlphaTimer( msg, wParam, lParam );
+	case TM_SMOTHALPHATRANSITION:	return OnSmoothAlphaTransitionTimer( msg, wParam, lParam );
+	case TM_DELAYEDSIZING:			return OnDelayedSizingTimer( msg, wParam, lParam );
+	case TM_BRINGOUTTIMEOUT:		return OnBringOutTimer( msg, wParam, lParam );
+	case TM_BRINGINTIMEOUT:			return OnBringInTimer( msg, wParam, lParam );
+	case TM_UPDATEBRINGTIMER:		return OnUpdateBringTimer( msg, wParam, lParam );
+	default:						return DefCluiWndProc( msg, wParam, lParam );
 	}
 	return TRUE;
 }
 
 
-LRESULT CLUI::OnActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnActivate( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	BOOL IsOption=FALSE;
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
 	SendMessage(pcli->hwndContactTree, WM_ACTIVATE, wParam, lParam);
 	if (ModernGetSettingByte(NULL, "ModernData", "HideBehind", SETTING_HIDEBEHIND_DEFAULT))
 	{
-		if(wParam==WA_INACTIVE && ((HWND)lParam!=hwnd) && GetParent((HWND)lParam)!=hwnd && !IsOption) 
+		if(wParam==WA_INACTIVE && ((HWND)lParam!=m_hWnd) && GetParent((HWND)lParam)!=m_hWnd && !IsOption) 
 		{
 			if (!g_bCalledFromShowHide) CLUI_UpdateTimer(0);
 		}
@@ -2523,58 +2475,58 @@ LRESULT CLUI::OnActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
-	if (!IsWindowVisible(hwnd) || mutex_bShowHideCalledFromAnimation) 
+	if (!IsWindowVisible(m_hWnd) || mutex_bShowHideCalledFromAnimation) 
 	{
-		KillTimer(hwnd,TM_AUTOALPHA);
+		KillTimer(m_hWnd,TM_AUTOALPHA);
 		return 0;
 	}
-	if(wParam==WA_INACTIVE && ((HWND)lParam!=hwnd) && !CLUI_CheckOwnedByClui((HWND)lParam) && !IsOption) 
+	if(wParam==WA_INACTIVE && ((HWND)lParam!=m_hWnd) && !CLUI_CheckOwnedByClui((HWND)lParam) && !IsOption) 
 	{
 		if(g_bTransparentFlag)
 			if(bTransparentFocus)
-				CLUI_SafeSetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+				CLUI_SafeSetTimer(m_hWnd, TM_AUTOALPHA,250,NULL);
 
 	}
 	else {
 		if (!ModernGetSettingByte(NULL,"CList","OnTop",SETTING_ONTOP_DEFAULT))
 			Sync(CLUIFrames_ActivateSubContainers,TRUE);
 		if(g_bTransparentFlag) {
-			KillTimer(hwnd,TM_AUTOALPHA);
-			CLUI_SmoothAlphaTransition(hwnd, ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
+			KillTimer(m_hWnd,TM_AUTOALPHA);
+			CLUI_SmoothAlphaTransition(m_hWnd, ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 			bTransparentFocus=1;
 		}
 	}
-	RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN);
+	RedrawWindow(m_hWnd,NULL,NULL,RDW_INVALIDATE|RDW_ALLCHILDREN);
 	if(g_bTransparentFlag)
 	{
 		BYTE alpha;
-		if (wParam!=WA_INACTIVE || CLUI_CheckOwnedByClui((HWND)lParam)|| IsOption || ((HWND)lParam==hwnd) || GetParent((HWND)lParam)==hwnd) alpha=ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT);
+		if (wParam!=WA_INACTIVE || CLUI_CheckOwnedByClui((HWND)lParam)|| IsOption || ((HWND)lParam==m_hWnd) || GetParent((HWND)lParam)==m_hWnd) alpha=ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT);
 		else 
 			alpha=g_bTransparentFlag?ModernGetSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT):255;
-		CLUI_SmoothAlphaTransition(hwnd, alpha, 1);
-		if(IsOption) DefWindowProc(hwnd,msg,wParam,lParam);
+		CLUI_SmoothAlphaTransition(m_hWnd, alpha, 1);
+		if(IsOption) DefWindowProc(m_hWnd,msg,wParam,lParam);
 		else   return 1; 	
 	}
-	return  DefWindowProc(hwnd,msg,wParam,lParam);
+	return  DefWindowProc(m_hWnd,msg,wParam,lParam);
 }
 
-LRESULT CLUI::OnSetCursor( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnSetCursor( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	HWND gf=GetForegroundWindow();
 	if (g_CluiData.nBehindEdgeState>=0)  CLUI_UpdateTimer(1);
 	if(g_bTransparentFlag) {
-		if (!bTransparentFocus && gf!=hwnd)
+		if (!bTransparentFocus && gf!=m_hWnd)
 		{
-			CLUI_SmoothAlphaTransition(hwnd, ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
+			CLUI_SmoothAlphaTransition(m_hWnd, ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT), 1);
 			bTransparentFocus=1;
-			CLUI_SafeSetTimer(hwnd, TM_AUTOALPHA,250,NULL);
+			CLUI_SafeSetTimer(m_hWnd, TM_AUTOALPHA,250,NULL);
 		}
 	} 
 	int k = CLUI_TestCursorOnBorders();               
 	return k ? k : 1;
 }
 
-LRESULT CLUI::OnMouseActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnMouseActivate( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 
 	if ( mutex_bIgnoreActivation ) 
@@ -2582,39 +2534,39 @@ LRESULT CLUI::OnMouseActivate( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		mutex_bIgnoreActivation = 0;
 		return( MA_NOACTIVATEANDEAT );
 	}
-	int lRes=DefWindowProc(hwnd,msg,wParam,lParam);
+	int lRes=DefWindowProc(m_hWnd,msg,wParam,lParam);
 	CLUIFrames_RepaintSubContainers();
 	return lRes;
 }
 
-LRESULT CLUI::OnNcLButtonDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNcLButtonDown( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	POINT pt;
 	pt.x = (short)LOWORD(lParam); 
 	pt.y = (short)HIWORD(lParam); 
 	int k = CLUI_SizingOnBorder(pt,1);
-	return k ? k : DefWindowProc( hwnd, msg, wParam, lParam );
+	return k ? k : DefWindowProc( m_hWnd, msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnNcLButtonDblClk( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNcLButtonDblClk( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if (wParam == HTMENU || wParam == HTCAPTION)
 	{
 		RECT rc;
-		GetWindowRect(hwnd, &rc);
+		GetWindowRect(m_hWnd, &rc);
 		POINT pt;
 		pt.x = (short)LOWORD(lParam); 
 		pt.y = (short)HIWORD(lParam); 
 		if ( pt.x > rc.right - 16 && pt.x < rc.right )
 			return CallService(MS_CLIST_SHOWHIDE, 0, 0);
 	}
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnNcHitTest( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNcHitTest( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	LRESULT result;
-	result=DefWindowProc(hwnd,WM_NCHITTEST,wParam,lParam);
+	result=DefWindowProc(m_hWnd,WM_NCHITTEST,wParam,lParam);
 
 	if( (g_CluiData.fAutoSize) && ( result == HTSIZE || result == HTTOP || 
 		result == HTTOPLEFT || result == HTTOPRIGHT ||
@@ -2628,7 +2580,7 @@ LRESULT CLUI::OnNcHitTest( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		POINT pt;
 		pt.x=(short)LOWORD(lParam);
 		pt.y=(short)HIWORD(lParam);
-		t=MenuItemFromPoint(hwnd,g_hMenuMain,pt);
+		t=MenuItemFromPoint(m_hWnd,g_hMenuMain,pt);
 
 		if (t==-1 && (ModernGetSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)))
 			return HTCAPTION;
@@ -2648,7 +2600,7 @@ LRESULT CLUI::OnNcHitTest( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return result;
 }
 
-LRESULT CLUI::OnShowWindow( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnShowWindow( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	BYTE gAlpha;
 
@@ -2665,32 +2617,32 @@ LRESULT CLUI::OnShowWindow( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			Sync(CLUIFrames_OnShowHide, pcli->hwndContactList,1);
 			ske_RedrawCompleteWindow();
 		}
-		CLUI_SmoothAlphaTransition(hwnd, gAlpha, 1);
+		CLUI_SmoothAlphaTransition(m_hWnd, gAlpha, 1);
 	}
 	return FALSE;
 }
 
-LRESULT CLUI::OnSysCommand( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnSysCommand( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if( wParam == SC_MAXIMIZE ) 
 		return FALSE;
 
-	DefWindowProc(hwnd, msg, wParam, lParam);
+	DefWindowProc(m_hWnd, msg, wParam, lParam);
 	if (ModernGetSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
 		Sync( CLUIFrames_ActivateSubContainers, TRUE );
 	return FALSE;
 }
 
-LRESULT CLUI::OnKeyDown( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnKeyDown( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	if (wParam==VK_F5)
 		SendMessage(pcli->hwndContactTree,CLM_AUTOREBUILD,0,0);
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnGetMinMaxInfo( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnGetMinMaxInfo( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	DefWindowProc(hwnd,msg,wParam,lParam);
+	DefWindowProc(m_hWnd,msg,wParam,lParam);
 	((LPMINMAXINFO)lParam)->ptMinTrackSize.x=max(ModernGetSettingWord(NULL,"CLUI","MinWidth",SETTING_MINWIDTH_DEFAULT),max(18,ModernGetSettingByte(NULL,"CLUI","LeftClientMargin",SETTING_LEFTCLIENTMARIGN_DEFAULT)+ModernGetSettingByte(NULL,"CLUI","RightClientMargin",SETTING_RIGHTCLIENTMARIGN_DEFAULT)+18));
 	if (nRequiredHeight==0)
 	{
@@ -2699,28 +2651,28 @@ LRESULT CLUI::OnGetMinMaxInfo( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	return FALSE;
 }
 
-LRESULT CLUI::OnMoving( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnMoving( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	CallWindowProc( DefWindowProc, hwnd, msg, wParam, lParam );
+	CallWindowProc( DefWindowProc, m_hWnd, msg, wParam, lParam );
 	if ( FALSE )  //showcontents is turned on
 	{
-		Sync(CLUIFrames_OnMoving,hwnd,(RECT*)lParam);
+		Sync(CLUIFrames_OnMoving,m_hWnd,(RECT*)lParam);
 	}
 	return TRUE;
 }
 
-LRESULT CLUI::OnNewContactNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
+LRESULT CLUI::OnNewContactNotify( NMCLISTCONTROL * pnmc )
 {
 	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, 0 );
 	return FALSE;
 }
 
-LRESULT CLUI::OnListRebuildNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
+LRESULT CLUI::OnListRebuildNotify( NMCLISTCONTROL * pnmc )
 {
 	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, pnmc->hItem );
 	return FALSE;
 }
-LRESULT CLUI::OnListSizeChangeNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
+LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 {
 
 	// TODO: Check and refactor possible problem of clist resized to full screen problem
@@ -2732,14 +2684,14 @@ LRESULT CLUI::OnListSizeChangeNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
 	if (mutex_bDuringSizing)
 		rcWindow=rcSizingRect;
 	else					
-		GetWindowRect(hwnd,&rcWindow);
+		GetWindowRect(m_hWnd,&rcWindow);
 	if ( !g_CluiData.fAutoSize || pcli->hwndContactTree==0 || CallService(MS_CLIST_DOCKINGISDOCKED,0,0) )
 		return FALSE;
 
 	maxHeight=ModernGetSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT);
 	rcOld=rcWindow;
 	GetWindowRect(pcli->hwndContactTree,&rcTree);
-	
+
 	FRAMEWND* frm=FindFrameByItsHWND(pcli->hwndContactTree);
 	if (frm) 
 		rcTree2=frm->wndSize;
@@ -2787,17 +2739,17 @@ LRESULT CLUI::OnListSizeChangeNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
 		bNeedFixSizingRect=0;
 	}
 	if (!mutex_bDuringSizing)
-		SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
+		SetWindowPos(m_hWnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
 	else
 	{
-		SetWindowPos(hwnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
+		SetWindowPos(m_hWnd,0,rcWindow.left,rcWindow.top,rcWindow.right-rcWindow.left,rcWindow.bottom-rcWindow.top,SWP_NOZORDER|SWP_NOACTIVATE);
 	}
 	nRequiredHeight=0;
 
 	return FALSE;
 }
 
-LRESULT CLUI::OnClickNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
+LRESULT CLUI::OnClickNotify( NMCLISTCONTROL * pnmc )
 {
 	DWORD hitFlags;
 	HANDLE hItem = (HANDLE)SendMessage(pcli->hwndContactTree,CLM_HITTEST,(WPARAM)&hitFlags,MAKELPARAM(pnmc->pt.x,pnmc->pt.y));
@@ -2828,7 +2780,7 @@ LRESULT CLUI::OnClickNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
 				{
 					sprintf(buf,"mailto:%s",email);
 					mir_free_and_nill(email);
-					ShellExecuteA(hwnd,"open",buf,NULL,NULL,SW_SHOW);
+					ShellExecuteA(m_hWnd,"open",buf,NULL,NULL,SW_SHOW);
 				}											
 			};	
 			if(pnmc->iColumn==w) {
@@ -2838,22 +2790,22 @@ LRESULT CLUI::OnClickNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
 					homepage= ModernGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
 				if (homepage!=NULL)
 				{											
-					ShellExecuteA(hwnd,"open",homepage,NULL,NULL,SW_SHOW);
+					ShellExecuteA(m_hWnd,"open",homepage,NULL,NULL,SW_SHOW);
 					mir_free_and_nill(homepage);
 				}
 			}
 		}
 	};	
 	if(hItem && !(hitFlags&CLCHT_NOWHERE))
-		return DefCluiWndProc( hwnd, WM_NOTIFY, 0, (LPARAM)pnmc );
+		return DefCluiWndProc( WM_NOTIFY, 0, (LPARAM)pnmc );
 	if((hitFlags&(CLCHT_NOWHERE|CLCHT_INLEFTMARGIN|CLCHT_BELOWITEMS))==0) 
-		return DefCluiWndProc( hwnd, WM_NOTIFY, 0, (LPARAM)pnmc );
+		return DefCluiWndProc( WM_NOTIFY, 0, (LPARAM)pnmc );
 	if (ModernGetSettingByte(NULL,"CLUI","ClientAreaDrag",SETTING_CLIENTDRAG_DEFAULT)) {
 		POINT pt;
 		int res;
 		pt=pnmc->pt;
 		ClientToScreen(pcli->hwndContactTree,&pt);
-		res=PostMessage(hwnd, WM_SYSCOMMAND, SC_MOVE|HTCAPTION,MAKELPARAM(pt.x,pt.y));
+		res=PostMessage(m_hWnd, WM_SYSCOMMAND, SC_MOVE|HTCAPTION,MAKELPARAM(pt.x,pt.y));
 		return res;
 	}
 	/*===================*/
@@ -2863,24 +2815,24 @@ LRESULT CLUI::OnClickNotify( HWND hwnd, NMCLISTCONTROL * pnmc )
 	return 0;
 }	
 
-LRESULT CLUI::OnNotify( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnNotify( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	LPNMHDR pnmhdr = (LPNMHDR)lParam;
 	if ( pnmhdr->hwndFrom != pcli->hwndContactTree ) 
-		return DefCluiWndProc( hwnd, msg, wParam, lParam );
+		return DefCluiWndProc( msg, wParam, lParam );
 
 	switch ( pnmhdr->code) 
 	{
-	case CLN_NEWCONTACT:     return OnNewContactNotify( hwnd, (NMCLISTCONTROL *)pnmhdr );
-	case CLN_LISTREBUILT:    return OnListRebuildNotify( hwnd, (NMCLISTCONTROL *)pnmhdr );
-	case CLN_LISTSIZECHANGE: return OnListSizeChangeNotify( hwnd, (NMCLISTCONTROL *)pnmhdr );
-	case NM_CLICK:           return OnClickNotify( hwnd, (NMCLISTCONTROL *)pnmhdr );
-	
+	case CLN_NEWCONTACT:     return OnNewContactNotify( (NMCLISTCONTROL *)pnmhdr );
+	case CLN_LISTREBUILT:    return OnListRebuildNotify( (NMCLISTCONTROL *)pnmhdr );
+	case CLN_LISTSIZECHANGE: return OnListSizeChangeNotify( (NMCLISTCONTROL *)pnmhdr );
+	case NM_CLICK:           return OnClickNotify( (NMCLISTCONTROL *)pnmhdr );
+
 	} 
-	return DefCluiWndProc( hwnd, msg, wParam, lParam );
+	return DefCluiWndProc( msg, wParam, lParam );
 }
 
-LRESULT CLUI::OnContextMenu( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnContextMenu( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	RECT rc;
 	POINT pt;
@@ -2902,12 +2854,12 @@ LRESULT CLUI::OnContextMenu( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	{
 		HMENU hMenu;
 		hMenu=(HMENU)CallService(MS_CLIST_MENUBUILDGROUP,0,0);
-		TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,hwnd,NULL);
+		TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,m_hWnd,NULL);
 	}
 	return FALSE;
 
 }
-LRESULT CLUI::OnMeasureItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnMeasureItem( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	LPMEASUREITEMSTRUCT pmis = (LPMEASUREITEMSTRUCT)lParam;
 	switch ( pmis->itemData )
@@ -2922,18 +2874,18 @@ LRESULT CLUI::OnMeasureItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 		{
 			HDC hdc;
 			SIZE textSize;
-			hdc=GetDC( hwnd );
+			hdc=GetDC( m_hWnd );
 			GetTextExtentPoint32A( hdc, Translate("Status"), lstrlenA( Translate( "Status" ) ), &textSize );
 			pmis->itemWidth = textSize.cx;
 			pmis->itemHeight = 0;
-			ReleaseDC( hwnd, hdc );
+			ReleaseDC( m_hWnd, hdc );
 		}
 		return TRUE;
 	}
 	return CallService( MS_CLIST_MENUMEASUREITEM, wParam, lParam );
 }
 
-LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	struct ClcData * dat=(struct ClcData*)GetWindowLong(pcli->hwndContactTree,0);
 	LPDRAWITEMSTRUCT dis=(LPDRAWITEMSTRUCT)lParam;
@@ -2946,7 +2898,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 				char buf[255]={0};	
 				short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
 				HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
-				CLUI_DrawMenuBackGround(hwnd, dis->hDC, 1, dis->itemState);
+				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 1, dis->itemState);
 				_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 				DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
@@ -2954,7 +2906,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 				nMirMenuState=dis->itemState;
 			} else {
 				nMirMenuState=dis->itemState;
-				pcli->pfnInvalidateRect(hwnd,NULL,0);
+				pcli->pfnInvalidateRect(m_hWnd,NULL,0);
 			}
 			return TRUE;
 		}
@@ -2971,7 +2923,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 					rc.right-=1;
 					rc.bottom-=1;
 				}
-				CLUI_DrawMenuBackGround(hwnd, dis->hDC, 2, dis->itemState);
+				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 2, dis->itemState);
 				SetBkMode(dis->hDC,TRANSPARENT);
 				_snprintf(buf,sizeof(buf),"Main,ID=StatusMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
@@ -2980,7 +2932,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 				nStatusMenuState=dis->itemState;
 			} else {
 				nStatusMenuState=dis->itemState;
-				pcli->pfnInvalidateRect(hwnd,NULL,0);
+				pcli->pfnInvalidateRect(m_hWnd,NULL,0);
 			}
 			return TRUE;
 		} else if(dis->itemData==MENU_MINIMIZE && !g_CluiData.fLayered)
@@ -2989,7 +2941,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			char buf[255]={0};	
 			short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
 			HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
-			CLUI_DrawMenuBackGround(hwnd, dis->hDC, 3, dis->itemState);
+			CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 3, dis->itemState);
 			_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 			SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 			DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
@@ -3002,7 +2954,7 @@ LRESULT CLUI::OnDrawItem( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-LRESULT CLUI::OnDestroy( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CLUI::OnDestroy( UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	int state=ModernGetSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 	BOOL wait = FALSE;
@@ -3026,7 +2978,7 @@ LRESULT CLUI::OnDestroy( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	}
 
 	TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion \n");
-	if (CLUI_WaitThreadsCompletion(hwnd)) return 0; //stop all my threads                
+	if (CLUI_WaitThreadsCompletion(m_hWnd)) return 0; //stop all my threads                
 	TRACE("CLUI.c: WM_DESTROY - WaitThreadsCompletion DONE\n");
 	{
 		int i=0;
@@ -3034,13 +2986,13 @@ LRESULT CLUI::OnDestroy( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 			if(CycleStartTick[i].szProto) mir_free_and_nill(CycleStartTick[i].szProto);
 	}
 
-	if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(hwnd,SW_HIDE);};
+	if (state==SETTING_STATE_NORMAL){CLUI_ShowWindowMod(m_hWnd,SW_HIDE);};
 	UnLoadContactListModule();
 	if(hSettingChangedHook!=0)	ModernUnhookEvent(hSettingChangedHook);
 	ClcUnloadModule();
 
 
-	pcli->pfnTrayIconDestroy(hwnd);	
+	pcli->pfnTrayIconDestroy(m_hWnd);	
 	mutex_bAnimationInProgress=0;  		
 	CallService(MS_CLIST_FRAMES_REMOVEFRAME,(WPARAM)hFrameContactTree,(LPARAM)0);		
 	TRACE("CLUI.c: WM_DESTROY - hFrameContactTree removed\n");
@@ -3066,10 +3018,10 @@ LRESULT CLUI::OnDestroy( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 	ModernWriteSettingByte(NULL,"CList","State",(BYTE)state);
 	ske_UnloadSkin(&g_SkinObjectList);
 
-	delete This;
+	delete m_pCLUI;
 
 	pcli->hwndContactList=NULL;
 	pcli->hwndStatus=NULL;
 	PostQuitMessage(0);
 	return 0;
-}	
+}
