@@ -996,13 +996,11 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
-/*	if( yid->type == YAHOO_CONNECTION_FT )
+	if( yid->type == YAHOO_CONNECTION_FT )
 		yahoo_send_data(yid->fd, data, len);
 	else
-	yahoo_add_to_send_queue(yid, data, len);
-	*/
-	yahoo_send_data(yid->fd, data, len);
-
+		yahoo_add_to_send_queue(yid, data, len);
+	
 	FREE(data);
 }
 
