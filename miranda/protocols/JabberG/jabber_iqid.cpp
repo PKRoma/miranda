@@ -55,7 +55,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode, void* userdata )
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				m_bPepSupported = TRUE;
 
-				RebuildStatusMenu();
+				EnableMenuItems( TRUE );
 				RebuildInfoFrame();
 				break;
 			}

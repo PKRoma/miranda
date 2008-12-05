@@ -38,6 +38,7 @@ public:
 	CPepService(CJabberProto *proto, char *name, TCHAR *node);
 	virtual ~CPepService();
 
+	HANDLE GetMenu() { return m_hMenuItem; }
 	TCHAR *GetNode() { return m_node; }
 	virtual void ProcessItems(const TCHAR *from, HXML items) = 0;
 
@@ -53,6 +54,7 @@ protected:
 	CJabberProto *m_proto;
 	char *m_name;
 	TCHAR *m_node;
+	HANDLE m_hMenuItem;
 
 	virtual void CreateData( HXML ) = 0;
 };
@@ -127,7 +129,6 @@ protected:
 	virtual void ShowSetDialog() = 0;
 
 private:
-	HANDLE m_hMenuItem;
 	HANDLE m_hMenuService;
 	HANDLE m_hIcolibItem;
 	TCHAR *m_szText;

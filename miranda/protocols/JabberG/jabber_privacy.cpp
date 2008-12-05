@@ -201,9 +201,8 @@ void CJabberProto::OnIqResultPrivacyListActive( HXML iqNode, void* userdata, CJa
 			mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Active privacy list successfully declined"));
 		}
 	}
-	else {
-		mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting active list") );
-	}
+	else mir_sntprintf( szText, SIZEOF( szText ), TranslateT("Error occurred while setting active list") );
+
 	m_privacyListManager.Unlock();
 
 	if ( m_pDlgPrivacyLists )
@@ -212,7 +211,7 @@ void CJabberProto::OnIqResultPrivacyListActive( HXML iqNode, void* userdata, CJa
 		RedrawWindow(GetDlgItem(m_pDlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 
-	RebuildStatusMenu();
+	BuildPrivacyListsMenu();
 }
 
 void CJabberProto::OnIqResultPrivacyListDefault( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
@@ -301,7 +300,7 @@ void CJabberProto::OnIqResultPrivacyLists( HXML iqNode, void* userdata, CJabberI
 
 	UI_SAFE_NOTIFY(m_pDlgPrivacyLists, WM_JABBER_REFRESH);
 
-	RebuildStatusMenu();
+	BuildPrivacyListsMenu();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -2174,8 +2173,7 @@ void CJabberDlgPrivacyLists::clcClist_OnClick(CCtrlClc::TEventInfo *evt)
 
 int CJabberDlgPrivacyLists::Resizer(UTILRESIZECONTROL *urc)
 {
-	switch (urc->wId)
-	{
+	switch (urc->wId) {
 	case IDC_WHITERECT:
 	case IDC_TITLE:
 	case IDC_DESCRIPTION:
@@ -2256,36 +2254,46 @@ int __cdecl CJabberProto::menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPAR
 /////////////////////////////////////////////////////////////////////////////////////////
 // init privacy menu
 
-void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
+void CJabberProto::BuildPrivacyMenu()
 {
-	if ( !m_bJabberOnline )
-		return;
-
-	int i=0;
-	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
-
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.position = 1001;
 	mi.pszContactOwner = m_szModuleName;
-	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_TCHAR;
-	mi.ptszName = LPGENT("Privacy Lists");
+	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_HIDDEN;
+	mi.pszName = LPGEN("Privacy Lists");
 	mi.pszPopupName = (char *)pcli->pfnGetProtocolMenu( m_szModuleName );
-	int hPrivacyRoot = CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	m_hPrivacyMenuRoot = CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
+	char srvFce[MAX_PATH + 64];
+	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/PrivacyLists", m_szModuleName );
 	mi.pszService = srvFce;
 	mi.position = 3000040000;
 	mi.flags = CMIF_CHILDPOPUP | CMIF_TCHAR | CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
-	mi.pszPopupName = (char*)hPrivacyRoot;
-	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/PrivacyLists", m_szModuleName );
+	mi.pszPopupName = (char*)m_hPrivacyMenuRoot;
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+}
 
-	mi.position = 2000040000;
-	mi.flags = CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+void CJabberProto::BuildPrivacyListsMenu()
+{
+	int i;
+	for ( i=0; i < m_hPrivacyMenuItems.getCount(); i++ )
+		JCallService( MO_REMOVEMENUITEM, (WPARAM)m_hPrivacyMenuItems[i], 0 );
+	m_hPrivacyMenuItems.destroy();
 
 	m_privacyListManager.Lock();
+
+	i = 0;
+	char srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
+
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.position = 2000040000;
+	mi.flags = CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+	mi.pszPopupName = (char*)m_hPrivacyMenuRoot;
+	mi.pszService = srvFce;
 
 	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/menuPrivacy%d", m_szModuleName, i );
 	if ( i > m_privacyMenuServiceAllocated ) {
@@ -2298,7 +2306,7 @@ void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 			SKINICON_OTHER_SMALLDOT :
 			SKINICON_OTHER_EMPTYBLOB);
 	mi.ptszName = LPGENT("<none>");
-	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
@@ -2315,7 +2323,7 @@ void CJabberProto::BuildPrivacyMenu( WPARAM wParam, LPARAM lParam )
 				SKINICON_OTHER_SMALLDOT :
 				SKINICON_OTHER_EMPTYBLOB);
 		mi.ptszName = pList->GetListName();
-		CallService( MS_CLIST_ADDSTATUSMENUITEM, ( WPARAM )&hPrivacyRoot, ( LPARAM )&mi );
+		m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
 	}
 
 	m_privacyListManager.Unlock();

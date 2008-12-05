@@ -1153,21 +1153,12 @@ void CJabberProto::ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param
 	JSetByte(NULL, param, (id+1)%recentCount);
 }
 
-////////////////////////////////////////////////////////////////////////
-// Rebuild status menu
-static VOID CALLBACK sttRebuildMenusApcProc( DWORD param )
-{
-	CJabberProto *ppro = (CJabberProto *)param;
-
-	CLIST_INTERFACE* pcli = ( CLIST_INTERFACE* )CallService( MS_CLIST_RETRIEVE_INTERFACE, 0, 0 );
-	if ( pcli && pcli->version > 4 )
-		pcli->pfnReloadProtoMenus();
-}
+/////////////////////////////////////////////////////////////////////////////////////////
+// jabber frame maintenance code
 
 static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
 {
 	CJabberProto *ppro = (CJabberProto *)param;
-
 	if (!ppro->m_pInfoFrame)
 		return;
 
@@ -1223,11 +1214,6 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD param )
 		}
 	}
 	ppro->m_pInfoFrame->Update();
-}
-
-void CJabberProto::RebuildStatusMenu()
-{
-	QueueUserAPC(sttRebuildMenusApcProc, hMainThread, (ULONG_PTR)this);
 }
 
 void CJabberProto::RebuildInfoFrame()

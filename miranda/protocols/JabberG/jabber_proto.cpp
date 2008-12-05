@@ -79,7 +79,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_privacyListManager( this ),
 	m_privacyMenuServiceAllocated( -1 ),
 	m_priorityMenuVal( 0 ),
-	m_priorityMenuValSet( false )
+	m_priorityMenuValSet( false ),
+	m_hPrivacyMenuRoot( 0 ),
+	m_hPrivacyMenuItems( 10 )
 {
 	InitializeCriticalSection( &m_csModeMsgMutex );
 
@@ -1193,7 +1195,6 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 			m_ThreadInfo = NULL;
 			if ( m_bJabberConnected ) {
 				m_bJabberConnected = m_bJabberOnline = FALSE;
-				RebuildStatusMenu();
 				RebuildInfoFrame();
 			}
 		}

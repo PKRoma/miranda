@@ -537,7 +537,6 @@ LBL_FatalError:
 			m_bJabberConnected = FALSE;
 			info->zlibUninit();
 			EnableMenuItems( FALSE );
-			RebuildStatusMenu();
 			RebuildInfoFrame();
 			if ( m_hwndJabberChangePassword ) {
 				//DestroyWindow( hwndJabberChangePassword );

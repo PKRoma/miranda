@@ -591,7 +591,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	void   AuthWorker( HANDLE hContact, char* authReqType );
 
-	void   BuildPriorityMenu(WPARAM, LPARAM);
+	void   BuildPriorityMenu();
 	void   UpdatePriorityMenu(short priority);
 
 	HANDLE m_hMenuPriorityRoot;
@@ -639,7 +639,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl menuSetPrivacyList( WPARAM wParam, LPARAM lParam, LPARAM iList );
 	int    __cdecl OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
-	void   BuildPrivacyMenu( WPARAM, LPARAM );
+	void   BuildPrivacyMenu( void );
+	void   BuildPrivacyListsMenu( void );
 
 	void   QueryPrivacyLists( ThreadData *pThreadInfo = NULL );
 
@@ -775,7 +776,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   StringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );
 	TCHAR* GetXmlLang( void );
-	void   RebuildStatusMenu( void );
 	void   RebuildInfoFrame( void );
 
 	void   ComboLoadRecentStrings(HWND hwndDlg, UINT idcCombo, char *param, int recentCount=JABBER_DEFAULT_RECENT_COUNT);
@@ -845,13 +845,15 @@ struct CJabberProto : public PROTO_INTERFACE
 	CPepServiceList m_pepServices;
 
 private:
-	char*    m_szXmlStreamToBeInitialized;
+	char*   m_szXmlStreamToBeInitialized;
 
 	CRITICAL_SECTION m_csSerial;
 	unsigned int m_nSerial;
 
-	HANDLE m_hInitChat;
-	HANDLE m_hPrebuildStatusMenu;
+	HANDLE  m_hInitChat;
+	HANDLE  m_hPrebuildStatusMenu;
+	int     m_hPrivacyMenuRoot;
+	LIST<void> m_hPrivacyMenuItems;
 	
 	int     m_nMenuResourceItems;
 	HANDLE* m_phMenuResourceItems;

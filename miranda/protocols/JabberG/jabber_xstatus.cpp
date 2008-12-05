@@ -396,7 +396,8 @@ BOOL CJabberDlgPepSimple::OnWmGetMinMaxInfo(UINT msg, WPARAM wParam, LPARAM lPar
 CPepService::CPepService(CJabberProto *proto, char *name, TCHAR *node):
 	m_proto(proto),
 	m_name(name),
-	m_node(node)
+	m_node(node),
+	m_hMenuItem(NULL)
 {
 }
 
@@ -427,7 +428,6 @@ void CPepService::Retract()
 // CPepGuiService base class
 CPepGuiService::CPepGuiService(CJabberProto *proto, char *name, TCHAR *node):
 	CPepService(proto, name, node),
-	m_hMenuItem(NULL),
 	m_bGuiOpen(false),
 	m_hIcolibItem(NULL),
 	m_szText(NULL)
@@ -459,9 +459,6 @@ void CPepGuiService::InitGui()
 
 void CPepGuiService::RebuildMenu()
 {
-	if (!m_proto->m_bJabberOnline || !m_proto->m_bPepSupported)
-		return;
-
 	char szService[128];
 	mir_snprintf(szService, SIZEOF(szService), "%s/AdvStatusSet/%s", m_proto->m_szModuleName, m_name);
 
@@ -469,8 +466,8 @@ void CPepGuiService::RebuildMenu()
 	mi.cbSize = sizeof(mi);
 	mi.ptszPopupName = m_proto->m_tszUserName;
 	mi.pszService = szService;
-	mi.position = 10000;
-	mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB;
+	mi.position = 1010;
+	mi.flags = CMIF_TCHAR | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 
 	mi.icolibItem = m_hIcolibItem;
 	mi.ptszName = m_szText ? m_szText : _T("<advanced status slot>");

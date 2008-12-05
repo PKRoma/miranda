@@ -854,6 +854,9 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		if ( mi->cbSize != sizeof( TMO_MenuItem ))
 			continue;
 
+		if ( mi->flags & CMIF_HIDDEN )
+			continue;
+
 		if ( pmo->CheckService != NULL )	{
 			TCheckProcParam CheckParam;
 			CheckParam.lParam = param->lParam;
