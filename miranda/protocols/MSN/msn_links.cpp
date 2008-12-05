@@ -100,7 +100,7 @@ static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			PROTOSEARCHRESULT psr = {0};
 
 			acs.handleType = HANDLE_SEARCHRESULT;
-			acs.szProto = proto->m_szProtoName;
+			acs.szProto = proto->m_szModuleName;
 			acs.psr = &psr;
 
 			psr.cbSize = sizeof(psr);

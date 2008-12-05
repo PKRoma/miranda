@@ -285,11 +285,9 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 		const char* MailData = tFileInfo[ "Mail-Data" ];
 		if ( MailData != NULL ) processMailData((char*)MailData);
 
-        TCHAR* pname = mir_a2t(m_szProtoName);
-		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), pname);
+		mir_sntprintf( tBuffer, SIZEOF( tBuffer ), m_tszUserName);
 		mir_sntprintf( tBuffer2, SIZEOF( tBuffer2 ), TranslateT( "Unread mail is available: %d in Inbox and %d in other folders)." ),
 			mUnreadMessages, mUnreadJunkEmails );
-        mir_free(pname);
 	}
 
 	if (UnreadMessages == mUnreadMessages && UnreadJunkEmails == mUnreadJunkEmails  && !isInitial)
@@ -298,7 +296,7 @@ void CMsnProto::sttNotificationMessage( char* msgBody, bool isInitial )
 	SendBroadcast( NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0 );
 
 	// Disable to notify receiving hotmail
-	if ( !getByte( "DisableHotmail", 1 ) && ShowPopUp && 
+	if ( !getByte( "DisableHotmail", 1 ) &&  ShowPopUp && 
 		(mUnreadMessages != 0 || 
 		(mUnreadJunkEmails != 0 && !getByte( "DisableHotmailJunk", 0 ))))
 	{
@@ -389,7 +387,7 @@ int CMsnProto::MSN_SendOIM(const char* szEmail, const char* msg)
 	{
 		DBVARIANT dbv;
 		char *mynick, *mynickenc;
-		if (!DBGetContactSettingStringUtf( NULL, m_szProtoName, "Nick", &dbv ))
+		if (!getStringUtf("Nick", &dbv))
 			mynick = dbv.pszVal;
 		else 
 		{

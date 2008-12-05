@@ -28,7 +28,7 @@ extern int avsPresent;
 
 int CMsnProto::GetName( WPARAM wParam, LPARAM lParam )
 {
-	mir_snprintf(( char* )lParam, wParam, "%s", m_szProtoName );
+	mir_snprintf(( char* )lParam, wParam, "%s", m_szModuleName );
 	return 0;
 }
 
@@ -79,7 +79,7 @@ int CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	char *szContext;
 	DBVARIANT dbv;
-	if (DBGetContactSettingString(AI->hContact, m_szProtoName, AI->hContact ? "PictContext" : "PictObject", &dbv) == 0)
+	if (getString(AI->hContact, AI->hContact ? "PictContext" : "PictObject", &dbv) == 0)
 	{
 		szContext = (char*)NEWSTR_ALLOCA(dbv.pszVal);
 		MSN_FreeVariant( &dbv );
@@ -154,7 +154,7 @@ int CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if ( AI->format != PA_FORMAT_UNKNOWN ) 
 	{
 		bool needupdate = true;
-		if (DBGetContactSettingString(AI->hContact, m_szProtoName, "PictSavedContext", &dbv) == 0)
+		if (getString(AI->hContact, "PictSavedContext", &dbv) == 0)
 		{
 			needupdate = strcmp(dbv.pszVal, szContext) != 0;
 			MSN_FreeVariant( &dbv );
@@ -500,7 +500,7 @@ int CMsnProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 	if ( !MSN_IsMyContact( hContact ))
 		return 0;
 
-	int type = DBGetContactSettingByte( hContact, m_szProtoName, "ChatRoom", 0 );
+	int type = getByte( hContact, "ChatRoom", 0 );
 	if ( type != 0 ) 
 	{
 		DBVARIANT dbv;

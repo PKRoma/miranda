@@ -454,7 +454,7 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 		}
 
 		if ( info->mChatID[0] ) {
-			GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_MESSAGE };
+			GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_MESSAGE };
 			gcd.ptszID = info->mChatID;
 
 			GCEVENT gce = {0};
@@ -512,7 +512,7 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 		{
 			GC_INFO gci = {0};
 			gci.Flags = HCONTACT;
-			gci.pszModule = m_szProtoName;
+			gci.pszModule = m_szModuleName;
 			gci.pszID = info->mChatID;
 			CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
 			tContact = gci.hContact;
@@ -1057,7 +1057,7 @@ LBL_InvalidCommand:
 
 			// modified for chat
 			if ( msnHaveChatDll ) {
-				GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_QUIT };
+				GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_QUIT };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1082,7 +1082,7 @@ LBL_InvalidCommand:
 
 			// see if the session is quit due to idleness
 			if ( personleft == 1 && !lstrcmpA( data.isIdle, "1" ) ) {
-				GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_INFORMATION };
+				GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_INFORMATION };
 				gcd.ptszID = info->mChatID;
 
 				GCEVENT gce = {0};
@@ -1345,7 +1345,7 @@ LBL_InvalidCommand:
 
 				if ( msnHaveChatDll ) {
 					if ( chatCreated ) {
-						GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_JOIN };
+						GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_JOIN };
 						gcd.ptszID = info->mChatID;
 
 						GCEVENT gce = {0};
@@ -1610,7 +1610,7 @@ LBL_InvalidCommand:
 					}
 
 					DBVARIANT dbv;
-					if ( !DBGetContactSettingStringUtf( NULL, m_szProtoName, "Nick", &dbv )) {
+					if ( !getStringUtf("Nick", &dbv)) {
 						if (dbv.pszVal[0]) MSN_SetNicknameUtf( dbv.pszVal );
 						MSN_FreeVariant( &dbv );
 					}

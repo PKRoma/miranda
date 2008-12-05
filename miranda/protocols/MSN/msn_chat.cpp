@@ -54,18 +54,18 @@ int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM lParam )
 
 	TCHAR szName[ 512 ];
 	mir_sntprintf( szName, SIZEOF( szName ), _T(TCHAR_STR_PARAM) _T(" %s%s"), 
-		m_szProtoName, TranslateT( "Chat #" ), info->mChatID );
+		m_szModuleName, TranslateT( "Chat #" ), info->mChatID );
 
 	GCSESSION gcw = {0};
 	gcw.cbSize = sizeof(GCSESSION);
 	gcw.dwFlags = GC_TCHAR;
 	gcw.iType = GCW_CHATROOM;
-	gcw.pszModule = m_szProtoName;
+	gcw.pszModule = m_szModuleName;
 	gcw.ptszName = szName;
 	gcw.ptszID = info->mChatID;
 	CallServiceSync( MS_GC_NEWSESSION, 0, (LPARAM)&gcw );
 
-	GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_ADDGROUP };
+	GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_ADDGROUP };
 	gcd.ptszID = info->mChatID;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -109,7 +109,7 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 	NotifyEventHooks( hInitChat, (WPARAM)info, 0 );
 
 	// add all participants onto the list
-	GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_JOIN };
+	GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_JOIN };
 	gcd.ptszID = info->mChatID;
 
 	GCEVENT gce = {0};
@@ -134,7 +134,7 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 
 void CMsnProto::MSN_KillChatSession( TCHAR* id )
 {
-	GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_CONTROL };
+	GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_CONTROL };
 	gcd.ptszID = id;
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
@@ -194,7 +194,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 	if ( !gch )
 		return 1;
 
-	if ( _stricmp(gch->pDest->pszModule, m_szProtoName )) return 0;
+	if ( _stricmp(gch->pDest->pszModule, m_szModuleName )) return 0;
 
 	HANDLE hChatContact = (HANDLE)-_ttoi( gch->pDest->ptszID );
 
@@ -233,7 +233,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 					DBVARIANT dbv;
 					int bError = getTString( "Nick", &dbv );
 
-					GCDEST gcd = { m_szProtoName, { NULL }, GC_EVENT_MESSAGE };
+					GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_MESSAGE };
 					gcd.ptszID = gch->pDest->ptszID;
 
 					GCEVENT gce = {0};
@@ -319,7 +319,7 @@ int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam)
 {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 
-	if ( gcmi == NULL || _stricmp(gcmi->pszModule, m_szProtoName )) return 0;
+	if ( gcmi == NULL || _stricmp(gcmi->pszModule, m_szModuleName )) return 0;
 
 	if ( gcmi->Type == MENU_ON_LOG ) 
     {

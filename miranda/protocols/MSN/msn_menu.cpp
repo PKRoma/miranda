@@ -90,7 +90,7 @@ int CMsnProto::MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 			{
 				char sessionName[ 255 ];
 				mir_snprintf( sessionName, sizeof( sessionName ), "%s %s%s",
-					m_szProtoName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
+					m_szModuleName, MSN_Translate( "Chat #" ), tActiveThreads[i]->mChatID );
 				::AppendMenuA( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), sessionName );
 			}
 			else ::AppendMenu( tMenu, MF_STRING, ( UINT_PTR )( i+1 ), MSN_GetContactNameT( *tActiveThreads[i]->mJoinedContacts ));
@@ -272,7 +272,7 @@ int CMsnProto::MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
 void CMsnProto::MsnInitMenus( void )
 {
 	char servicefunction[ 100 ];
-	strcpy( servicefunction, m_szProtoName );
+	strcpy( servicefunction, m_szModuleName );
 	char* tDest = servicefunction + strlen( servicefunction );
 
 	CLISTMENUITEM mi = { 0 };
@@ -330,7 +330,7 @@ void CMsnProto::MsnInitMenus( void )
 
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
 	mi.pszPopupName = NULL;
-	mi.pszContactOwner = m_szProtoName;
+	mi.pszContactOwner = m_szModuleName;
 
 	strcpy( tDest, MSN_BLOCK );
 	CreateProtoService( MSN_BLOCK, &CMsnProto::MsnBlockCommand );

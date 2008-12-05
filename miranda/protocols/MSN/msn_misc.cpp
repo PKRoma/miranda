@@ -137,10 +137,10 @@ void CMsnProto::InitCustomFolders(void)
 	char AvatarsFolder[MAX_PATH]= "";
 	CallService(MS_DB_GETPROFILEPATH, (WPARAM) MAX_PATH, (LPARAM)AvatarsFolder);
 	strcat(AvatarsFolder, "\\");
-	strcat(AvatarsFolder, m_szProtoName);
-	hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szProtoName, "Avatars", AvatarsFolder);
+	strcat(AvatarsFolder, m_szModuleName);
+	hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", AvatarsFolder);
 	strcat(AvatarsFolder, "\\CustomSmiley");
-	hCustomSmileyFolder = FoldersRegisterCustomPath(m_szProtoName, "Custom Smiley", AvatarsFolder);
+	hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", AvatarsFolder);
 
 	InitCstFldRan = true;
 }
@@ -182,7 +182,7 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szProtoName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -207,7 +207,7 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 		}
 	}
 	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", m_szProtoName );
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", m_szModuleName );
 }
 
 int MSN_GetImageFormat(void* buf, const char** ext)
@@ -255,7 +255,7 @@ void  CMsnProto::MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, si
 	{
 		CallService(MS_DB_GETPROFILEPATH, (WPARAM) cbLen, (LPARAM)pszDest);
 		tPathLen = strlen( pszDest );
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", m_szProtoName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s\\CustomSmiley", m_szModuleName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -270,7 +270,7 @@ void  CMsnProto::MSN_GetCustomSmileyFileName( HANDLE hContact, char* pszDest, si
 		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", szEmail );
 	}
 	else 
-		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", m_szProtoName );
+		tPathLen += mir_snprintf( pszDest + tPathLen, cbLen - tPathLen, "\\%s", m_szModuleName );
 		
 	bool exist = _access(pszDest, 0) == 0;
 	
@@ -704,7 +704,7 @@ void CMsnProto::MSN_ShowError( const char* msgtext, ... )
 	mir_vsnprintf( tBuffer, sizeof( tBuffer ), MSN_Translate( msgtext ), tArgs );
 	va_end( tArgs );
 
-	TCHAR* buf1 = mir_a2t( m_szProtoName );
+	TCHAR* buf1 = mir_a2t( m_szModuleName );
 	TCHAR* buf2 = mir_a2t( tBuffer );
 
 	MSN_ShowPopup( buf1, buf2, MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR, NULL );
@@ -1160,7 +1160,7 @@ char* MSN_Base64Decode( const char* str )
 bool CMsnProto::MSN_IsMyContact( HANDLE hContact )
 {
 	const char* szProto = ( char* )MSN_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
-	return szProto != NULL && strcmp( m_szProtoName, szProto ) == 0;
+	return szProto != NULL && strcmp( m_szModuleName, szProto ) == 0;
 }
 
 bool CMsnProto::MSN_IsMeByContact( HANDLE hContact, char* szEmail )

@@ -59,24 +59,27 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	char path[ MAX_PATH ];
 
 	m_tszUserName = mir_tstrdup( aUserName );
+	m_szModuleName = mir_strdup( aProtoName );
 	m_szProtoName = mir_strdup( aProtoName );
+	_strlwr( m_szProtoName );
+	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 
-	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s:HotmailNotify", m_szModuleName );
 	ModuleName = mir_strdup( path );
 
-	mir_snprintf( path, sizeof( path ), "%s/Status", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s/Status", m_szModuleName );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	mir_snprintf( path, sizeof( path ), "%s/IdleTS", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s/IdleTS", m_szModuleName );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s/p2pMsgId", m_szModuleName );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	mir_snprintf( path, sizeof( path ), "%s/MobileEnabled", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s/MobileEnabled", m_szModuleName );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	mir_snprintf( path, sizeof( path ), "%s/MobileAllowed", aProtoName );
+	mir_snprintf( path, sizeof( path ), "%s/MobileAllowed", m_szModuleName );
 	MSN_CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
 	// Protocol services and events...
@@ -101,10 +104,7 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService( MSN_GETUNREAD_EMAILCOUNT, &CMsnProto::GetUnreadEmailCount );
 
 	// service to get from protocol chat buddy info
-//	CreateProtoService( MS_GC_PROTO_GETTOOLTIPTEXT, &CMsnProto::JabberGCGetToolTipText );
-
-	// XMPP URI parser service for "File Association Manager" plugin
-//	CreateProtoService( JS_PARSE_XMPP_URI, &CMsnProto::JabberServiceParseXmppURI );
+//	CreateProtoService( MS_GC_PROTO_GETTOOLTIPTEXT, &CMsnProto::GCGetToolTipText );
 
 	HookProtoEvent( ME_DB_CONTACT_DELETED,        &CMsnProto::OnContactDeleted );
 	HookProtoEvent( ME_DB_CONTACT_SETTINGCHANGED, &CMsnProto::OnDbSettingChanged );
@@ -146,12 +146,12 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	}
 
 	mailsoundname = ( char* )mir_alloc( 64 );
-	mir_snprintf(mailsoundname, 64, "%s:Hotmail", m_szProtoName);
-	SkinAddNewSoundEx(mailsoundname, m_szProtoName, MSN_Translate( "Live Mail" ));
+	mir_snprintf(mailsoundname, 64, "%s:Hotmail", m_szModuleName);
+	SkinAddNewSoundEx(mailsoundname, m_szModuleName, MSN_Translate( "Live Mail" ));
 
 	alertsoundname = ( char* )mir_alloc( 64 );
-	mir_snprintf(alertsoundname, 64, "%s:Alerts", m_szProtoName);
-	SkinAddNewSoundEx(alertsoundname, m_szProtoName, MSN_Translate( "Live Alert" ));
+	mir_snprintf(alertsoundname, 64, "%s:Alerts", m_szModuleName);
+	SkinAddNewSoundEx(alertsoundname, m_szModuleName, MSN_Translate( "Live Alert" ));
 
 	m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 
@@ -178,7 +178,7 @@ CMsnProto::~CMsnProto()
 	mir_free( mailsoundname );
 	mir_free( alertsoundname );
 	mir_free( m_tszUserName );
-	mir_free( m_szProtoName );
+	mir_free( m_szModuleName );
 	mir_free( ModuleName );
 
 	for ( int i=0; i < MSN_NUM_MODES; i++ )
@@ -206,14 +206,14 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu1.szSettingsModule = szDbsettings;
 	nlu1.szDescriptiveName = szBuffer;
 
-	mir_snprintf( szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szProtoName );
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), m_szProtoName );
+	mir_snprintf( szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), m_szModuleName );
 	hNetlibUserHttps = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu1 );
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof( nlu );
 	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
-	nlu.szSettingsModule = m_szProtoName;
+	nlu.szSettingsModule = m_szModuleName;
 	nlu.szDescriptiveName = szBuffer;
 
 	if ( MyOptions.UseGateway ) {
@@ -224,7 +224,7 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
 	}
 
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szProtoName );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szModuleName );
 	hNetlibUser = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
 	if ( getByte( "UseIeProxy", 0 )) {
@@ -280,15 +280,15 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = (COLORREF*)crCols;
-		gcr.pszModuleDispName = m_szProtoName;
-		gcr.pszModule = m_szProtoName;
+		gcr.pszModuleDispName = m_szModuleName;
+		gcr.pszModule = m_szModuleName;
 		CallServiceSync( MS_GC_REGISTER, 0, ( LPARAM )&gcr );
 
 		HookProtoEvent( ME_GC_EVENT, &CMsnProto::MSN_GCEventHook );
 		HookProtoEvent( ME_GC_BUILDMENU, &CMsnProto::MSN_GCMenuHook );
 
 		char szEvent[ 200 ];
-		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szProtoName );
+		mir_snprintf( szEvent, sizeof szEvent, "%s\\ChatInit", m_szModuleName );
 		hInitChat = CreateHookableEvent( szEvent );
 		HookProtoEvent( szEvent, &CMsnProto::MSN_ChatInit );
 	}
@@ -359,7 +359,7 @@ HANDLE __cdecl CMsnProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 
 	dbei.pBlob=(PBYTE) alloca(dbei.cbBlob);
 	if ( MSN_CallService(MS_DB_EVENT_GET, ( WPARAM )hDbEvent, ( LPARAM )&dbei))	return NULL;
-	if ( strcmp(dbei.szModule, m_szProtoName))					return NULL;
+	if ( strcmp(dbei.szModule, m_szModuleName))					return NULL;
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST)					return NULL;
 
 	char* nick = (char *) (dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
@@ -375,7 +375,7 @@ int CMsnProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre)
 	DBEVENTINFO dbei = { 0 };
 
 	dbei.cbSize = sizeof(dbei);
-	dbei.szModule = m_szProtoName;
+	dbei.szModule = m_szModuleName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags & ( PREF_CREATEREAD ? DBEF_READ : 0 );
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
@@ -425,7 +425,7 @@ int CMsnProto::Authorize( HANDLE hDbEvent )
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
 		return 1;
 
-	if ( strcmp( dbei.szModule, m_szProtoName ))
+	if ( strcmp( dbei.szModule, m_szModuleName ))
 		return 1;
 
 	char* nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );
@@ -467,7 +467,7 @@ int CMsnProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 	if ( dbei.eventType != EVENTTYPE_AUTHREQUEST )
 		return 1;
 
-	if ( strcmp( dbei.szModule, m_szProtoName ))
+	if ( strcmp( dbei.szModule, m_szModuleName ))
 		return 1;
 
 	char* nick = ( char* )( dbei.pBlob + sizeof( DWORD )*2 );

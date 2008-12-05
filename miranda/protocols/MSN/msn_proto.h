@@ -550,6 +550,8 @@ struct CMsnProto : public PROTO_INTERFACE
     int    getString( HANDLE hContact, const char* name, DBVARIANT* );
     int    getTString( const char* name, DBVARIANT* );
     int    getTString( HANDLE hContact, const char* name, DBVARIANT* );
+    int    getStringUtf( HANDLE hContact, const char* name, DBVARIANT* result );
+    int    getStringUtf( const char* name, DBVARIANT* result );
     int    getWord( const char* name, WORD defaultValue );
     int    getWord( HANDLE hContact, const char* name, WORD defaultValue );
 

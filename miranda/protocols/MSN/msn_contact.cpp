@@ -39,7 +39,7 @@ HANDLE  CMsnProto::MSN_HContactFromEmail( const char* msnEmail, const char* msnN
 	if ( addIfNeeded )
 	{
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_ADD, 0, 0 );
-		MSN_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact, ( LPARAM )m_szProtoName );
+		MSN_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact, ( LPARAM )m_szModuleName );
 		setString( hContact, "e-mail", msnEmail );
 		setStringUtf( hContact, "Nick", ( char* )msnNick );
 		if ( temporary )
@@ -78,7 +78,7 @@ void CMsnProto::MSN_SetContactDb(HANDLE hContact, const char *szEmail)
 			if (( listId & LIST_BL ) && tApparentMode == 0 )
 				setWord( hContact, "ApparentMode", ID_STATUS_OFFLINE );
 			else if (( listId & LIST_AL ) && tApparentMode != 0 )
-				DBDeleteContactSetting( hContact, m_szProtoName, "ApparentMode" );
+				deleteSetting( hContact, "ApparentMode" );
 		}
 
 		int netId = Lists_GetNetId(szEmail);
@@ -177,8 +177,8 @@ bool CMsnProto::MSN_AddUser( HANDLE hContact, const char* email, int netId, int 
 				return true;
 
 			DBVARIANT dbv = {0};
-			if ( !strcmp( email, MyOptions.szEmail ))
-				DBGetContactSettingStringUtf( NULL, m_szProtoName, "Nick", &dbv );
+			if (!strcmp( email, MyOptions.szEmail))
+				getStringUtf("Nick", &dbv);
 
 			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, false);
 			if (netId == NETID_MSN && res1 == 2)
