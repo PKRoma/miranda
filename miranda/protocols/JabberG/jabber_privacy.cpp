@@ -1593,12 +1593,10 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	{
 		hItem = m_clcClist.FindContact(hContact);
 
-		DBVARIANT dbv;
+		DBVARIANT dbv = {0};
 		if ( m_proto->JGetStringT(hContact, "jid", &dbv)) {
-			if ( m_proto->JGetStringT(hContact, "ChatRoomID", &dbv)) {
-				JFreeVariant(&dbv);
+			if ( m_proto->JGetStringT(hContact, "ChatRoomID", &dbv))
 				continue;
-			}
 		}
 
 		szJid = dbv.ptszVal;
@@ -1616,12 +1614,9 @@ void CJabberDlgPrivacyLists::CListBuildList(HWND hwndList, CPrivacyList *pList)
 	{
 		char idstr[33];
 		_itoa(iGroup-1, idstr, 10);
-		DBVARIANT dbv;
+		DBVARIANT dbv = {0};
 		if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
-		{
-			DBFreeVariant(&dbv);
 			break;
-		}
 
 		hItem = m_clcClist.FindGroup((HANDLE)iGroup);
 		szJid = dbv.ptszVal+1;
