@@ -441,6 +441,7 @@ typedef struct {
 #define NLHRF_NODUMPHEADERS   0x00020000   //don't dump http headers (only useful for POSTs and MS_NETLIB_HTTPTRANSACTION)
 #define NLHRF_DUMPPROXY       0x00040000   //this transaction is a proxy communication. For dump filtering only.
 #define NLHRF_DUMPASTEXT      0x00080000   //dump posted and reply data as text. Headers are always dumped as text.
+#define NLHRF_NODUMPSEND      0x00100000   //do not dump sent message.
 struct NETLIBHTTPREQUEST_tag {
 	int cbSize;
 	int requestType;	//a REQUEST_
