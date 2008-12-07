@@ -237,17 +237,15 @@ int CAimProto::OnGCMenuHook(WPARAM wParam,LPARAM lParam)
 
 void   __cdecl CAimProto::chatnav_request_thread( void* param )
 {
-    if (!wait_conn(hChatNavConn, hChatNavEvent, 0x0d))
-        return;
-
 	chatnav_param* par = (chatnav_param*)param;
-    if (par->isroom)
-    {
-        aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id, par->exchange);
-    }
-    else
-        aim_chatnav_room_info(hChatNavConn, chatnav_seqno, par->id, par->exchange, par->instance);
 
+    if (wait_conn(hChatNavConn, hChatNavEvent, 0x0d))
+    {
+        if (par->isroom)
+            aim_chatnav_create(hChatNavConn, chatnav_seqno, par->id, par->exchange);
+        else
+            aim_chatnav_room_info(hChatNavConn, chatnav_seqno, par->id, par->exchange, par->instance);
+    }
     delete par;
 }
 

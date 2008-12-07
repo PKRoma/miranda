@@ -5,16 +5,15 @@ void __cdecl CAimProto::avatar_request_thread( void* param )
 {
 	char* data = (char*)param;
 
-    if (!wait_conn(hAvatarConn, hAvatarEvent, 0x10))
-        return;
-
-	char* sn = strtok(data,";");
-	char* hash_string = strtok(NULL,";");
-	char* hash = new char[lstrlenA(hash_string)/2];
-	string_to_bytes( hash_string, hash );
-	LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-	aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
-
+    if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+    {
+	    char* sn = strtok(data,";");
+	    char* hash_string = strtok(NULL,";");
+	    char* hash = new char[lstrlenA(hash_string)/2];
+	    string_to_bytes( hash_string, hash );
+	    LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
+	    aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
+    }
     delete[] data;
 }
 
@@ -22,18 +21,17 @@ void __cdecl CAimProto::avatar_upload_thread( void* param )
 {
 	char* file = (char*)param;
 
-    if (!wait_conn(hAvatarConn, hAvatarEvent, 0x10))
-        return;
-
-    char hash[16], *data;
-    unsigned short size;
-    if (!get_avatar_hash(file, hash, &data, size))
-        return;
-
-    aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
-    aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
-   
-    delete[] data;
+    if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
+    {
+        char hash[16], *data;
+        unsigned short size;
+        if (get_avatar_hash(file, hash, &data, size))
+        {
+            aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
+            aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
+            delete[] data;
+        }
+    }
 	delete[] file;
 }
 

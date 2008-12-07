@@ -634,13 +634,10 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
             SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)ppro);
 
-		    if (ppro->state==1)	// Otherwise, get the info, save it, and then display it.
-		    {
-                if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
-                {
-			        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
-			        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
-                }
+            if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
+            {
+		        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x01);	// Get our screenname
+		        ppro->aim_admin_request_info(ppro->hAdminConn,ppro->admin_seqno,0x11);	// Get our email
             }
 
         case PSN_INFOCHANGED:
@@ -1430,21 +1427,19 @@ BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_DESTROY:
 		param->ppro->ReleaseIconEx("aol");
-        delete[] param; 
+        delete param; 
 		break;
 
 	case WM_COMMAND:
 		{
 			switch (LOWORD(wParam)) {
 			case IDOK:
-			    if (param->ppro->state==1)
-					param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
+				param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
 				EndDialog(hwndDlg, IDOK);
 				break;
 
 			case IDCANCEL:
-				if (param->ppro->state==1)
-					param->ppro->aim_chat_deny(param->ppro->hServerConn,param->ppro->seqno,param->name,param->icbm_cookie);
+				param->ppro->aim_chat_deny(param->ppro->hServerConn,param->ppro->seqno,param->name,param->icbm_cookie);
                 delete param->cnp;
 				EndDialog(hwndDlg, IDCANCEL);
 				break;

@@ -85,7 +85,10 @@ void CAimProto::start_connection(int status)
 
 bool CAimProto::wait_conn( HANDLE& hConn, HANDLE& hEvent, unsigned short service )
 {
-	EnterCriticalSection( &connMutex );
+	if (m_iStatus == ID_STATUS_OFFLINE) 
+		return false;
+
+    EnterCriticalSection( &connMutex );
 	if ( hConn == NULL && hServerConn ) {
 		LOG("Starting Connection.");
 		hConn = (HANDLE)1;    //set so no additional service request attempts are made while aim is still processing the request
