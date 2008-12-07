@@ -383,57 +383,53 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 		char svc[MAXMODULELABELLENGTH];
 
 		PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, curSel);
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro ? TRUE : FALSE );
+		if ( pa ) {
+			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), pa->bOldProto );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), TRUE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), TRUE );
+			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), pa->ppro ? TRUE : FALSE );
 
-		if (dat->iSelected >= 0)
-		{
-			PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
-			if (pa_old && (pa_old != pa) && pa_old->hwndAccMgrUI)
-				ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
-		}
+			if ( dat->iSelected >= 0 ) {
+				PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
+				if (pa_old && (pa_old != pa) && pa_old->hwndAccMgrUI)
+					ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
+			}
 
-		if (pa->hwndAccMgrUI)
-		{
-			ShowWindow(pa->hwndAccMgrUI, SW_SHOW);
-		} else
-		if (!pa->ppro)
-		{
-			ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-			SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Account is disabled. Please activate it to access options."));
-		} else
-		{
-			mir_snprintf(svc, SIZEOF(svc), "%s%s", pa->szModuleName, PS_CREATEACCMGRUI);
-			hwnd = (HWND)CallService(svc, 0, (LPARAM)hwndDlg);
-			if (hwnd && (hwnd != (HWND)CALLSERVICE_NOTFOUND))
-			{
-				RECT rc;
-
-				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
-
-				GetWindowRect(GetDlgItem(hwndDlg, IDC_TXT_INFO), &rc);
-				MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
-				SetWindowPos(hwnd, NULL, rc.left, rc.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
-
-				pa->hwndAccMgrUI = hwnd;
-			} else
+			if ( pa->hwndAccMgrUI )
+				ShowWindow(pa->hwndAccMgrUI, SW_SHOW);
+			else if ( !pa->ppro )
 			{
 				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-				SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("This account uses legacy protocol. Use Miranda IM options dialogs to change login information for it."));
+				SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Account is disabled. Please activate it to access options."));
 			}
-		}
-	} else
-	{
-		EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-		EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
+			else {
+				mir_snprintf(svc, SIZEOF(svc), "%s%s", pa->szModuleName, PS_CREATEACCMGRUI);
+				hwnd = (HWND)CallService(svc, 0, (LPARAM)hwndDlg);
+				if (hwnd && (hwnd != (HWND)CALLSERVICE_NOTFOUND)) {
+					RECT rc;
 
-		ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-		SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the \"New\" button underneath the list to set up a new IM account."));
-	}
+					ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
+
+					GetWindowRect(GetDlgItem(hwndDlg, IDC_TXT_INFO), &rc);
+					MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
+					SetWindowPos(hwnd, NULL, rc.left, rc.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER|SWP_SHOWWINDOW);
+
+					pa->hwndAccMgrUI = hwnd;
+				}
+				else {
+					ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
+					SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("This account uses legacy protocol. Use Miranda IM options dialogs to change login information for it."));
+			}	}
+			return;
+	}	}
+	
+	EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
+	EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
+
+	ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
+	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the \"New\" button underneath the list to set up a new IM account."));
 }
 
 static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
