@@ -489,15 +489,16 @@ LBL_FatalError:
 			#if defined( _UNICODE )
 				str = mir_utf8decodeW( buffer );
 			#else
-				char* bufCopy = NEWSTR_ALLOCA(buffer);
-				str = mir_utf8decode( bufCopy, 0 );
+				str = buffer;
 			#endif
 
 			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
 			bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
 			Log( "bytesParsed = %d", bytesParsed );
-			mir_free(str);
+			#if defined( _UNICODE )
+				mir_free(str);
+			#endif
 
 			tag = NULL;
 

@@ -819,7 +819,13 @@ XMLSTR fromXMLString(XMLCSTR s, int lo, XML *pXML)
         }
     }
     *d=0;
-    return (XMLSTR)s;
+
+#ifndef _XMLWIDECHAR
+	if (characterEncoding != XMLNode::char_encoding_legacy)
+		Utf8Decode((XMLSTR)s, NULL );
+#endif
+
+	return (XMLSTR)s;
 }
 
 #define XML_isSPACECHAR(ch) ((ch==_CXML('\n'))||(ch==_CXML(' '))||(ch== _CXML('\t'))||(ch==_CXML('\r')))
@@ -2455,8 +2461,9 @@ XMLNode XMLNode::getChildNodeByPath(XMLSTR path, char createIfMissing, XMLCHAR s
 {
     if ((!path)||(!(*path))) return *this;
     XMLNode xn,xbase=*this;
-    XMLCHAR *tend1,sepString[2]; sepString[0]=sep; sepString[1]=0;
-    tend1=xstrstr(path,sepString);
+    XMLSTR tend1;
+	 XMLCHAR sepString[2]; sepString[0]=sep; sepString[1]=0;
+    tend1=xstrstr(path,(XMLSTR)sepString);
     while(tend1)
     {
         *tend1=0;
@@ -2467,8 +2474,8 @@ XMLNode XMLNode::getChildNodeByPath(XMLSTR path, char createIfMissing, XMLCHAR s
             else return XMLNode::emptyXMLNode;
         }
         xbase=xn;
-        path=tend1+1;
-        tend1=xstrstr(path,sepString);
+        path=(XMLSTR)tend1+1;
+        tend1=xstrstr(path,(XMLSTR)sepString);
     }
     xn=xbase.getChildNode(path);
     if (xn.isEmpty()&&createIfMissing) xn=xbase.addChild(path);
