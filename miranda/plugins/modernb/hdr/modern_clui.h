@@ -135,7 +135,7 @@ private:
 	}
 
 	// MessageMap
-	LRESULT PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled = FALSE );
+	LRESULT PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT OnSizingMoving( UINT msg, WPARAM wParam, LPARAM lParam );
 	LRESULT OnThemeChanged( UINT msg, WPARAM wParam, LPARAM lParam );
 	LRESULT OnDwmCompositionChanged( UINT msg, WPARAM wParam, LPARAM lParam );

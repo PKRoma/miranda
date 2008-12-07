@@ -1816,7 +1816,7 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 }
 
 // MAIN WINPROC MESSAGE HANDLERS
-LRESULT CLUI::PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL bHandled /*=FALSE*/)
+LRESULT CLUI::PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
 	// proxy CLUI Messages
 	LRESULT result = 0;
