@@ -153,7 +153,7 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 		CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
 		
 		tPathLen = strlen(pszDest);
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szProtoName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);
 	}
 	else {
 		strcpy( pszDest, path );
@@ -166,12 +166,12 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
     size_t tPathLen2 = tPathLen;
 	if (hContact != NULL) 
 	{
-        char* sn = getSetting(hContact, AIM_KEY_SN);
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", sn);
-        delete[] sn;
+        char* hash = getSetting(hContact, AIM_KEY_AH);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
+        delete[] hash;
     }
 	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szProtoName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szModuleName);
 
     if (ext == NULL)
     {

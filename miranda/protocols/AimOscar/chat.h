@@ -6,16 +6,28 @@ struct chatnav_param
     char* id;
     unsigned short exchange;
     unsigned short instance;
+
+    char* message;
+    char* sn;
+    char* icbm_cookie;
+
     bool isroom;
 
-    chatnav_param(char* tid, unsigned short ex, unsigned short in)
-    { id = tid; exchange = ex; instance = in; isroom = false; }
+    chatnav_param(char* tid, unsigned short ex, unsigned short in, char* msg, char* nm, char* icki)
+    { id = tid; exchange = ex; instance = in; isroom = false; 
+      message = strldup(msg); sn = strldup(nm); icbm_cookie = strldup(icki, 8); }
 
     chatnav_param(char* tid, unsigned short ex)
-    { id = strldup(tid); exchange = ex; isroom = true; }
+    { id = strldup(tid); exchange = ex; isroom = true; 
+      message = NULL; sn = NULL; icbm_cookie = NULL; }
 
     ~chatnav_param()
-    { delete[] id; }
+    { 
+        delete[] id; 
+        if (message) delete[] message;
+        if (sn) delete[] sn;
+        if (icbm_cookie) delete[] icbm_cookie;
+    }
 }; 
 
 struct chat_list_item

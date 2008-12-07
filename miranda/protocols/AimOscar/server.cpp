@@ -50,6 +50,12 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 				login_error(tlv.ushort());
 				return 2;
 			}
+			else if(tlv.cmp(0x0011))
+            {
+                char* email = tlv.dup();
+                setString(AIM_KEY_EM, email);
+                delete[] email;
+            }
 			address+=tlv.len()+4;
 		}
 	} 
@@ -843,16 +849,17 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						TLV tlv(snac.val(offset+i));
 						if(tlv.cmp(0x000c))//optional message
 						{
-							char* description= tlv.dup();		
-							descr_included=1;
-							delete[] description;
+							msg_buf = tlv.dup();		
 						}
 						else if(tlv.cmp(0x2711))//room information
 						{
 							int cookie_len=tlv.ubyte(2);
                             chatnav_param* par = 
-                                new chatnav_param(tlv.part(3,cookie_len), tlv.ushort(), tlv.ushort(3+cookie_len));
-                            ForkThread(&CAimProto::chatnav_request_thread, par);
+                                new chatnav_param(tlv.part(3,cookie_len), tlv.ushort(), tlv.ushort(3+cookie_len),
+                                                  msg_buf, sn, icbm_cookie);
+
+                            invite_chat_req_param* chat_rq = new invite_chat_req_param(par, this, msg_buf, sn, icbm_cookie);
+                            CallFunctionAsync(chat_request_cb, chat_rq);
 						}
 						i+=TLV_HEADER_SIZE+tlv.len();
 					}

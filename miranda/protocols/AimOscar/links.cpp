@@ -75,7 +75,7 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
         if(sn==NULL) return 1; /* parse failed */
         if(proto->find_contact(sn)==NULL) { /* does not yet check if sn is current user */
             acs.handleType=HANDLE_SEARCHRESULT;
-			acs.szProto=proto->m_szProtoName;
+			acs.szProto=proto->m_szModuleName;
             acs.psr=&psr;
             ZeroMemory(&psr,sizeof(PROTOSEARCHRESULT));
             psr.cbSize=sizeof(PROTOSEARCHRESULT);
@@ -131,6 +131,7 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 
         chatnav_param* par = new chatnav_param(rm, (unsigned short)exchange);
         proto->ForkThread(&CAimProto::chatnav_request_thread, par);
+
         return 0;
     }
     return 1; /* parse failed */
@@ -138,7 +139,7 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 
 void aim_links_init(void)
 {
-	static const char szService[] = "AIM/ParseMsnimLink";
+	static const char szService[] = "AIM/ParseAimLink";
 
 	hServiceParseLink = CreateServiceFunction(szService, ServiceParseAimLink);
 	AssocMgr_AddNewUrlType("aim:", Translate("AIM Link Protocol"), hInstance, IDI_AOL, szService, 0);

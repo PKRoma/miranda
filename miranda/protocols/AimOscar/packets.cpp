@@ -25,12 +25,11 @@ int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,
 	EnterCriticalSection(&SendingMutex);
     const int slen = FLAP_SIZE + length;
 	char* obuf = (char*)alloca(slen);
-	struct flap_header flap;
-	flap.ast = '*';
-	flap.type = type;
-	flap.seqno = _htons(seqno++ & 0xffff);
-	flap.len = _htons(length);
-	memcpy(obuf, &flap, sizeof(flap));
+	flap_header *flap = (flap_header*)obuf;
+	flap->ast = '*';
+	flap->type = type;
+	flap->seqno = _htons(seqno++);
+	flap->len = _htons(length);
 	memcpy(&obuf[FLAP_SIZE], buf, length);
 	int rlen= Netlib_Send(hServerConn, obuf, slen, 0);
 	if (rlen == SOCKET_ERROR) seqno--;

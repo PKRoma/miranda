@@ -141,8 +141,8 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			int width=LOWORD(lParam);
 			int height=HIWORD(lParam);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,11,34,width-21,height-83,0);
-			SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-134,height-46,0,0,SWP_NOSIZE);
+			SetWindowPos(GetDlgItem(hwndDlg, IDC_PROFILE),HWND_TOP,6,60,width-12,height-67,0);	// this 'case' should go away
+			SetWindowPos(GetDlgItem(hwndDlg, IDC_SETPROFILE),HWND_TOP,width-97,height-224,0,0,SWP_NOSIZE);	// since there's no profile window resize anymore
 			break;
 		}
 	case WM_NOTIFY:
@@ -397,6 +397,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			}
 			break;
 		}
+
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDC_PROFILE:
@@ -1314,7 +1315,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		param = (invite_chat_param*)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
-        SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->room);
+        SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->id);
         break;
 
 	case WM_CLOSE:
@@ -1363,7 +1364,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
                     char msg[1024];
 				    GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
 
-                    chat_list_item* item = param->ppro->find_chat_by_id(param->room);
+                    chat_list_item* item = param->ppro->find_chat_by_id(param->id);
                     if (item == NULL) break;
 
                     HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
@@ -1403,28 +1404,24 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Chat request dialog
-/*
+
 BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
-	int size;
-	char* buf;
+	invite_chat_req_param* param = (invite_chat_req_param*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-	switch (msg) {
+	switch (msg) 
+    {
 	case WM_INITDIALOG:
-		TranslateDialogDefault(hwndDlg);
+	    TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-		ppro = (CAimProto*)lParam;
+	    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+	    param = (invite_chat_req_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
+	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
 
-//		size = strlen(ppro->par->name)+strlen(ppro->par->id)+33;
-		buf = new char[size];
-		sprintf(buf,"%s has sent you a chat invite to: %s",ppro->par->name,ppro->par->id);
-		SetDlgItemTextA(hwndDlg, IDC_NAME, buf);
-		SetDlgItemTextA(hwndDlg, IDC_MSG, ppro->par->message);
-		delete[] buf;
+	    SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
+	    SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
+        SetDlgItemTextA(hwndDlg, IDC_MSG, param->message);
 		break;
 
 	case WM_CLOSE:
@@ -1432,21 +1429,23 @@ BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_DESTROY:
-		ppro->ReleaseIconEx("aol");
+		param->ppro->ReleaseIconEx("aol");
+        delete[] param; 
 		break;
 
 	case WM_COMMAND:
 		{
 			switch (LOWORD(wParam)) {
 			case IDOK:
-			    if (ppro->state==1)
-					ppro->ForkThread(&CAimProto::chatnav_request_thread, ppro->par);
+			    if (param->ppro->state==1)
+					param->ppro->ForkThread(&CAimProto::chatnav_request_thread, param->cnp);
 				EndDialog(hwndDlg, IDOK);
 				break;
 
 			case IDCANCEL:
-				if (ppro->state==1)
-					ppro->aim_deny_invite(ppro->hServerConn,ppro->seqno,ppro->par->name,ppro->par->icbm_cookie);
+				if (param->ppro->state==1)
+					param->ppro->aim_chat_deny(param->ppro->hServerConn,param->ppro->seqno,param->name,param->icbm_cookie);
+                delete param->cnp;
 				EndDialog(hwndDlg, IDCANCEL);
 				break;
 			}
@@ -1455,4 +1454,10 @@ BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	}
 	return FALSE;
 }
-*/
+
+
+void CALLBACK chat_request_cb(PVOID dwParam)
+{
+	CreateDialogParam (hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
+		 NULL, chat_request_dialog, (LPARAM)dwParam );
+}

@@ -31,7 +31,7 @@
 #define IDI_PART                        40
 #define IDD_CHATROOM_INVITE             40
 #define IDI_BOLD                        41
-#define IDD_RINVITE                     41
+#define IDD_CHATROOM_INVITE_REQ         41
 #define IDI_NBOLD                       42
 #define IDI_ITALIC                      43
 #define IDI_NITALIC                     44
@@ -82,6 +82,8 @@
 #define IDC_CPW                         164
 #define IDC_PINFO                       165
 #define IDC_NAME                        168
+#define IDC_NAME2                       169
+#define IDC_SCREENNAME                  169
 #define IDC_CCLIST                      173
 #define IDC_EDIT1                       174
 #define IDC_ADDSCR                      175
@@ -117,7 +119,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        41
 #define _APS_NEXT_COMMAND_VALUE         40002
-#define _APS_NEXT_CONTROL_VALUE         177
+#define _APS_NEXT_CONTROL_VALUE         178
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

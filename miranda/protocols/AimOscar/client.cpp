@@ -696,29 +696,6 @@ int CAimProto::aim_file_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,c
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
-int CAimProto::aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
-{	
-    unsigned short offset=0;
-    //see http://iserverd.khstu.ru/oscar/snac_04_06_ch2.html
-    char msg_frag[10+sizeof(AIM_CAP_CHAT)];
-    unsigned short sn_length=(unsigned short)strlen(sn);
-    char* buf=(char*)alloca(SNAC_SIZE*2+TLV_HEADER_SIZE+21+sizeof(AIM_CAP_CHAT)+sn_length);
-    aim_writesnac(0x04,0x06,offset,buf);
-    aim_writegeneric(8,icbm_cookie,offset,buf);
-    aim_writeshort(2,offset,buf);//channel
-    aim_writechar((unsigned char)sn_length,offset,buf);
-    aim_writegeneric(sn_length,sn,offset,buf);
-    {
-        //0x05 tlv data begin
-        memcpy(&msg_frag[0],"\0\x01",2);//deny or cancel
-        memcpy(&msg_frag[2],icbm_cookie,8);
-        memcpy(&msg_frag[10],AIM_CAP_CHAT,sizeof(AIM_CAP_CHAT));
-        aim_writetlv(0x05,(9+sizeof(AIM_CAP_CHAT)),msg_frag,offset,buf);
-        //end tlv
-    }
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
-}
-
 int CAimProto::aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type)
 {
     unsigned short offset=0;
@@ -953,6 +930,22 @@ int CAimProto::aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* c
     aim_writeshort(instance,offset,buf);						// Value - Instance
 
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie)
+{	
+    unsigned short offset=0;
+    unsigned short sn_length=(unsigned short)strlen(sn);
+    char* buf=(char*)alloca(SNAC_SIZE+20+sn_length);
+    aim_writesnac(0x04,0x0b,offset,buf);
+    aim_writegeneric(8,icbm_cookie,offset,buf);             // ICBM Cookie
+    aim_writeshort(2,offset,buf);                           // Channel
+    aim_writechar((unsigned char)sn_length,offset,buf);     // Screen Name length
+    aim_writegeneric(sn_length,sn,offset,buf);              // Screen Name
+    aim_writeshort(3,offset,buf);                           // Error code
+    aim_writeshort(2,offset,buf);                           // Error code
+    aim_writeshort(1,offset,buf);                           // Error code
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
 }
 
 int CAimProto::aim_admin_ready(HANDLE hServerConn,unsigned short &seqno)

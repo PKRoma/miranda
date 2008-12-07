@@ -71,7 +71,7 @@ char* TLV::part(int pos, int length)//returns part of the tlv value
 	value[length]='\0';
 	return value;
 }
-int TLV::whole(char* buf)//returns the whole tlv
+unsigned short TLV::whole(char* buf)//returns the whole tlv
 {
 	*(unsigned short*)buf = _htons(type_);
 	*(unsigned short*)&buf[2] = _htons(length_);
