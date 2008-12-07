@@ -66,6 +66,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tchar.h>
 
+#if !defined(M_SYSTEM_H__)
+	#include "m_system.h"
+#endif
+
+#if !defined(M_UTILS_H__)
+	#include "m_utils.h"
+#endif
+
 //DBVARIANT: used by db/contact/getsetting and db/contact/writesetting
 #define DBVT_DELETED 0    //this setting just got deleted, no other values are valid
 #define DBVT_BYTE   1	  //bVal and cVal are valid
@@ -968,7 +976,6 @@ __inline static int DBFreeVariant(DBVARIANT *dbv)
 	return CallService(MS_DB_CONTACT_FREEVARIANT,0,(LPARAM)dbv);
 }
 
-#if defined(M_UTILS_H__) && defined(M_SYSTEM_H__)
 __inline static char *DBGetString(HANDLE hContact,const char *szModule,const char *szSetting)
 {
 	char *str=NULL;
@@ -998,7 +1005,6 @@ __inline static wchar_t *DBGetStringW(HANDLE hContact,const char *szModule,const
 #else
 #define DBGetStringT DBGetString
 #endif
-#endif /* M_UTILS_H__ && M_SYSTEM_H__  */
 
 __inline static int DBDeleteContactSetting(HANDLE hContact,const char *szModule,const char *szSetting)
 {

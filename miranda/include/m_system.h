@@ -200,6 +200,9 @@ __forceinline int mir_getMMI( struct MM_INTERFACE* dest )
 		#define mir_u2a_cp(src,cp) mmi.mir_u2a_cp(src,cp)
 		#define mir_u2a(src)       mmi.mir_u2a(src)
 	#endif
+#else
+	char* mir_strdup(const char *src);
+	WCHAR* mir_wstrdup(const WCHAR *src);
 #endif
 
 #if defined( _UNICODE )

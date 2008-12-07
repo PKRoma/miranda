@@ -26,18 +26,6 @@ typedef struct {
 }
 	tempProtoItem;
 
-char* DBGetStringA( HANDLE hContact,const char *szModule,const char *szSetting )
-{
-	char* str = NULL;
-   DBVARIANT dbv;
-	if ( !DBGetContactSetting( hContact, szModule, szSetting, &dbv )) {
-		if ( dbv.type == DBVT_ASCIIZ )
-        str = mir_strdup( dbv.pszVal );
-		DBFreeVariant( &dbv );
-	}
-	return str;
-}
-
 static int __inline isProtoSuitable( PROTO_INTERFACE* ppi )
 {
 	if ( ppi == NULL )

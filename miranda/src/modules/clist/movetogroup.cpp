@@ -1,22 +1,9 @@
-	#include "commonheaders.h"
-//#include "genmenu.h"
+#include "commonheaders.h"
 
 HANDLE hOnCntMenuBuild;
 HANDLE hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
 HANDLE *lphGroupsItems = NULL;
 int nGroupsItems = 0, cbGroupsItems = 0;
-
-TCHAR* DBGetString(HANDLE hContact, const char* szModule, const char* szSetting)
-{
-	DBVARIANT dbv;
-	if ( !DBGetContactSettingTString( hContact, szModule, szSetting, &dbv )) {
-		TCHAR* str = mir_tstrdup( dbv.ptszVal );
-		DBFreeVariant( &dbv );
-		return str;
-	}
-
-	return NULL;
-}
 
 //service
 //wparam - hcontact
@@ -93,7 +80,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		lphGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
 	}
 
-	szContactGroup = DBGetString((HANDLE)wParam, "CList", "Group");
+	szContactGroup = DBGetStringT((HANDLE)wParam, "CList", "Group");
 
 	i=1;
 	pos = 1000;
@@ -109,7 +96,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		int checked;
 
 		_itoa( i-1, intname, 10 );
-		szGroupName = DBGetString( 0, "CListGroups", intname );
+		szGroupName = DBGetStringT( 0, "CListGroups", intname );
 
 		if ( !szGroupName || !szGroupName[0] )
 			break;

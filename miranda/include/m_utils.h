@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_UTILS_H__
 #define M_UTILS_H__ 1
 
+#include <stdio.h>
+
 #if !defined(M_SYSTEM_H__)
 #include "m_system.h"
 #endif
