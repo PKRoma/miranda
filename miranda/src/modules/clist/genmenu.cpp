@@ -526,28 +526,25 @@ int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 	return -1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// we presume that this function is being called inside csMenuHook only
+
+static int PackMenuItems( PMO_IntMenuItem pimi, void* )
+{
+	pimi->iCommand = NextObjectMenuItemId++;
+	return FALSE;
+}
+
 static int GetNextObjectMenuItemId()
 {
-	int menuID=CLISTMENUIDMIN;
-	if (NextObjectMenuItemId>CLISTMENUIDMAX/2)
-	{
-		// TODO: try to reuse not used (removed menus) ids
-		menuID=NextObjectMenuItemId++;
-	}
-	else 
-	{
-		// TODO: otherwise simple increase
-		menuID=NextObjectMenuItemId++;
+	// if menu commands are exausted, pack the menu array
+	if ( NextObjectMenuItemId >= CLISTMENUIDMAX ) {
+		NextObjectMenuItemId = CLISTMENUIDMIN;
+		for ( int i=0; i < g_menus.getCount(); i++ )
+			MO_RecursiveWalkMenu( g_menus[i]->m_items.first, PackMenuItems, NULL );
 	}
 
-	if (menuID>CLISTMENUIDMAX) 
-	{	
-		MessageBox(NULL,TranslateT("Too many menu items registered, please restart your Miranda to avoid unpredictable behaviour"),
-			TranslateT("Error"),
-			MB_OK|MB_ICONERROR);
-		NextObjectMenuItemId=CLISTMENUIDMIN;
-	}
-	return menuID;
+	return NextObjectMenuItemId++;
 }
 
 //wparam=MenuObjectHandle
