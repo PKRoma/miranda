@@ -1034,7 +1034,7 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 			data->thumbnail = TRUE;
 
 			SetWindowText(GetDlgItem(hwnd, IDC_MAKE_SQUARE), TranslateT("Make the avatar square"));
-			SetWindowText(GetDlgItem(hwnd, IDC_GROW), TranslateT("Resize the avatar to fit max allowed protocol size"));
+			SetWindowText(GetDlgItem(hwnd, IDC_GROW), TranslateT("Grow avatar to fit max allowed protocol size"));
 
 			CheckDlgButton(hwnd, IDC_MAKE_SQUARE, data->square ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwnd, IDC_GROW, data->grow ? BST_CHECKED : BST_UNCHECKED);
