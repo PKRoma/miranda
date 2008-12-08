@@ -1341,38 +1341,32 @@ static void clist_chat_invite_send(HANDLE hItem, HWND hwndList, chat_list_item* 
     }
 }
 
-static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro, bool& dlth)
+static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
 {
     if (hItem == NULL)
-    {
         hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
-        dlth = false;
-    }
 
     while (hItem) 
     {
         bool dlt = false;
-        HANDLE hItemT = hItem;
+        HANDLE hItemN = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
 
         if (IsHContactGroup(hItem))
         {
-            hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
-            if (hItemT) clist_chat_prepare(hItemT, hwndList, ppro, dlth);
+            HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+            if (hItemT) clist_chat_prepare(hItemT, hwndList, ppro);
         }
         else if (IsHContactContact(hItem))
         {
-	        dlt = (!ppro->is_my_contact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || 
+            dlt = (!ppro->is_my_contact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || 
                 ppro->getWord(hItem, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE);
         }
         else
             dlt = true;
 
-        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
-        if (dlt) 
-        {
-            SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItemT, 0);
-            dlth = true;
-        }
+        if (dlt) SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+
+        hItem = hItemN;
    }
 }
 
@@ -1412,10 +1406,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		    case CLN_NEWCONTACT:
 		    case CLN_LISTREBUILT:
                 if (param) 
-                {
-                    bool dlt = true;
-                     while (dlt) clist_chat_prepare(NULL, nmc->hwndFrom, param->ppro, dlt);
-                }
+                clist_chat_prepare(NULL, nmc->hwndFrom, param->ppro);
                 break;
             }
         }
