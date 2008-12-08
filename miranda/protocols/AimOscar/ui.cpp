@@ -656,7 +656,7 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
 	case WM_COMMAND:
-	    if  (LOWORD(wParam) == IDC_SAVECHANGES && ppro->state==1) 
+	    if  (LOWORD(wParam) == IDC_SAVECHANGES) 
         {
             if (!ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
                 break;
@@ -703,7 +703,7 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	            }
             }
         }
-        else if (LOWORD(wParam) == IDC_CONFIRM && ppro->state==1)	// Confirmation
+        else if (LOWORD(wParam) == IDC_CONFIRM)	// Confirmation
         {
             if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
 			    ppro->aim_admin_account_confirm(ppro->hAdminConn,ppro->admin_seqno);
@@ -804,13 +804,12 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		break;
 
 	case WM_COMMAND:
-		{
 			if (LOWORD(wParam) == IDC_DSSL) 
 			{
                 SetDlgItemTextA(hwndDlg, IDC_HN, 
                     IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 			}
-			if (LOWORD(wParam) == IDC_SVRRESET) 
+			else if (LOWORD(wParam) == IDC_SVRRESET) 
 			{
 				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
 				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
@@ -821,8 +820,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				return 0;
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
-		}
-	case WM_NOTIFY:
+
+    case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->code) {
 		case PSN_APPLY:
 			{
@@ -1299,6 +1298,85 @@ BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 /////////////////////////////////////////////////////////////////////////////////////////
 // Invite to chat dialog
 
+static void clist_chat_invite_send(HANDLE hItem, HWND hwndList, chat_list_item* item, CAimProto* ppro, char *msg)
+{
+    if (hItem == NULL)
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
+
+    while (hItem) 
+    {
+        if (IsHContactGroup(hItem))
+        {
+            HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+            if (hItemT) clist_chat_invite_send(hItemT, hwndList, item, ppro, msg);
+        }
+        else
+        {
+            int chk = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0);
+            if (chk)
+            {
+                if (IsHContactInfo(hItem))
+                {
+                    TCHAR buf[128];
+                    SendMessage(hwndList, CLM_GETITEMTEXT, (WPARAM)hItem, (LPARAM)buf);
+
+                    char* sn = mir_t2a(buf);
+                    ppro->aim_chat_invite(ppro->hServerConn, ppro->seqno, 
+                        item->cookie, item->exchange, item->instance, sn, msg);
+                    mir_free(sn);
+                }
+                else 
+                {
+                    DBVARIANT dbv;
+                    if (!ppro->getString(hItem, AIM_KEY_SN, &dbv))
+                    {
+		                ppro->aim_chat_invite(ppro->hServerConn, ppro->seqno, 
+                            item->cookie, item->exchange, item->instance, dbv.pszVal, msg);
+                        DBFreeVariant(&dbv);
+                    }
+                }
+            }
+        }
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+    }
+}
+
+static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro, bool& dlth)
+{
+    if (hItem == NULL)
+    {
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
+        dlth = false;
+    }
+
+    while (hItem) 
+    {
+        bool dlt = false;
+        HANDLE hItemT = hItem;
+
+        if (IsHContactGroup(hItem))
+        {
+            hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+            if (hItemT) clist_chat_prepare(hItemT, hwndList, ppro, dlth);
+        }
+        else if (IsHContactContact(hItem))
+        {
+	        dlt = (!ppro->is_my_contact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || 
+                ppro->getWord(hItem, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE);
+        }
+        else
+            dlt = true;
+
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+        if (dlt) 
+        {
+            SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItemT, 0);
+            dlth = true;
+        }
+   }
+}
+
+
 BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	invite_chat_param* param = (invite_chat_param*)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1333,18 +1411,10 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             {
 		    case CLN_NEWCONTACT:
 		    case CLN_LISTREBUILT:
-	            for (HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		            hContact != NULL; 
-		            hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) 
-	            {
-		            HANDLE hItem = (HANDLE)SendMessage(nmc->hwndFrom, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-		            if (hItem == NULL) continue;
-
-			        if (!param->ppro->is_my_contact(hContact) || param->ppro->getByte(hContact, "ChatRoom", 0) || 
-                        param->ppro->getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
-			        {
-			            SendMessage(nmc->hwndFrom, CLM_DELETEITEM, (WPARAM)hItem, 0);
-                    }
+                if (param) 
+                {
+                    bool dlt = true;
+                     while (dlt) clist_chat_prepare(NULL, nmc->hwndFrom, param->ppro, dlt);
                 }
                 break;
             }
@@ -1356,36 +1426,34 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{
 			switch (LOWORD(wParam)) 
             {
+			case IDC_ADDSCR:
+                if (param->ppro->state == 1)
+                {
+                    TCHAR sn[64];
+				    GetDlgItemText(hwndDlg, IDC_EDITSCR, sn, sizeof(sn));
+
+                    CLCINFOITEM cii = {0};
+		            cii.cbSize = sizeof(cii);
+		            cii.flags = CLCIIF_CHECKBOX | CLCIIF_BELOWCONTACTS;
+		            cii.pszText = sn;
+
+                    HANDLE hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+		            SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_SETCHECKMARK, (LPARAM)hItem, 1);
+                }
+                break;
+
 			case IDOK:
                 {
-                    char msg[1024];
-				    GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
-
                     chat_list_item* item = param->ppro->find_chat_by_id(param->id);
-                    if (item == NULL) break;
+                    if (item)
+                    {
+                        char msg[1024];
+				        GetDlgItemTextA(hwndDlg, IDC_MSG, msg, sizeof(msg));
 
-                    HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
-                    for (HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		                hContact != NULL; 
-		                hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0)) 
-	                {
-		                HANDLE hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-		                if (hItem == NULL) continue;
-
-		                int chk = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0);
-    			        if (chk && param->ppro->state==1)
-                        {
-                            DBVARIANT dbv;
-                            if (!param->ppro->getString(hContact, AIM_KEY_SN, &dbv))
-                            {
-    					        param->ppro->aim_chat_invite(param->ppro->hServerConn, param->ppro->seqno, 
-                                    item->cookie, item->exchange, item->instance, dbv.pszVal, msg);
-                                DBFreeVariant(&dbv);
-                            }
-                        }
+                        HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
+                        clist_chat_invite_send(NULL, hwndList, item, param->ppro, msg);
                     }
-
-				    EndDialog(hwndDlg, IDOK);
+                    EndDialog(hwndDlg, IDOK);
                 }
 				break;
 

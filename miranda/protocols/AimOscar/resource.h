@@ -82,10 +82,10 @@
 #define IDC_CPW                         164
 #define IDC_PINFO                       165
 #define IDC_NAME                        168
-#define IDC_NAME2                       169
 #define IDC_SCREENNAME                  169
 #define IDC_CCLIST                      173
 #define IDC_EDIT1                       174
+#define IDC_EDITSCR                     174
 #define IDC_ADDSCR                      175
 #define IDC_ROOMNAME                    176
 #define IDC_SN                          1030

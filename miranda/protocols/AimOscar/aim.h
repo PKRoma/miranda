@@ -25,6 +25,7 @@
 #include <m_chat.h>
 #include <m_clc.h>
 #include <m_clist.h>
+#include <m_clistint.h>
 #include <m_clui.h>
 #include "m_cluiframes.h"
 #include <m_database.h>
