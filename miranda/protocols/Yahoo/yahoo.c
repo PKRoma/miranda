@@ -381,17 +381,24 @@ void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, c
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
 
-	if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
-		/* TODO: set Idle=-1, because of key 138=1 and don't set idlets then */
-		if (stat > 0) {
-			YAHOO_DebugLog("[ext_yahoo_status_changed] %s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60);
+	if (stat == YAHOO_STATUS_OFFLINE) {
+		/*
+		 * Delete the IdleTS if the user went offline
+		 */
+		DBDeleteContactSetting(hContact, yahooProtocolName, "IdleTS");
+	} else {
+		if ( (away == 2) || (stat == YAHOO_STATUS_IDLE) || (idle > 0)) {
+			/* TODO: set Idle=-1, because of key 138=1 and don't set idlets then */
+			if (stat > 0) {
+				YAHOO_DebugLog("[ext_yahoo_status_changed] %s idle for %d:%02d:%02d", who, idle/3600, (idle/60)%60, idle%60);
+				
+				time(&idlets);
+				idlets -= idle;
+			}
+		} 
 			
-			time(&idlets);
-			idlets -= idle;
-		}
-	} 
-		
-	DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
+		DBWriteContactSettingDword(hContact, yahooProtocolName, "IdleTS", idlets);
+	}
 
 	YAHOO_DebugLog("[ext_yahoo_status_changed] exiting");
 }
@@ -714,6 +721,7 @@ void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int statu
 	
 	switch (status) {
 		case 0: /* we are ok */
+		case 2: /* seems that we ok, not sure what this means.. we already on buddy list? */
 				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 				break;
