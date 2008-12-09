@@ -1406,6 +1406,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		    case CLN_NEWCONTACT:
                 if (param && (nmc->flags & (CLNF_ISGROUP | CLNF_ISINFO)) == 0) 
                     clist_validate_contact(nmc->hItem, nmc->hdr.hwndFrom, param->ppro);
+                break;
 
 		    case CLN_LISTREBUILT:
                 if (param) 
