@@ -1341,6 +1341,13 @@ static void clist_chat_invite_send(HANDLE hItem, HWND hwndList, chat_list_item* 
     }
 }
 
+static void clist_validate_contact(HANDLE hItem, HWND hwndList, CAimProto* ppro)
+{
+    if (!ppro->is_my_contact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || 
+        ppro->getWord(hItem, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+        SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+}
+
 static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
 {
     if (hItem == NULL)
@@ -1348,7 +1355,6 @@ static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
 
     while (hItem) 
     {
-        bool dlt = false;
         HANDLE hItemN = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
 
         if (IsHContactGroup(hItem))
@@ -1357,14 +1363,7 @@ static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
             if (hItemT) clist_chat_prepare(hItemT, hwndList, ppro);
         }
         else if (IsHContactContact(hItem))
-        {
-            dlt = (!ppro->is_my_contact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || 
-                ppro->getWord(hItem, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE);
-        }
-        else
-            dlt = true;
-
-        if (dlt) SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+            clist_validate_contact(hItem, hwndList, ppro);
 
         hItem = hItemN;
    }
@@ -1385,6 +1384,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
         SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->id);
+        SetDlgItemTextA(hwndDlg, IDC_MSG, Translate("Join me in this buddy chat!"));
         break;
 
 	case WM_CLOSE:
@@ -1398,15 +1398,18 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 	case WM_NOTIFY:
 	{
-		LPNMHDR nmc = (LPNMHDR)lParam;
-		if (nmc->idFrom == IDC_CCLIST)
+		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
+        if (nmc->hdr.idFrom == IDC_CCLIST)
         {
-		    switch (nmc->code) 
+		    switch (nmc->hdr.code) 
             {
 		    case CLN_NEWCONTACT:
+                if (param && (nmc->flags & (CLNF_ISGROUP | CLNF_ISINFO)) == 0) 
+                    clist_validate_contact(nmc->hItem, nmc->hdr.hwndFrom, param->ppro);
+
 		    case CLN_LISTREBUILT:
                 if (param) 
-                clist_chat_prepare(NULL, nmc->hwndFrom, param->ppro);
+                    clist_chat_prepare(NULL, nmc->hdr.hwndFrom, param->ppro);
                 break;
             }
         }
