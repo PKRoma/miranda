@@ -2283,6 +2283,12 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 			}
 			break;
 			
+		case 223:  /* Auth request pending */
+			if (bud) {
+				bud->auth = strtol(pair->value, NULL, 10);
+			}
+			break;
+			
 		case 59: /* somebody told cookies come here too, but im not sure */
 			break;
 			
@@ -4739,19 +4745,22 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 	struct yahoo_data *yd = yid->yd;
 	struct yab *yab;
 	YList *buds;
-	int changed=0;
+	//int changed=0;
 	int id = yd->client_id;
 	BOOL yab_used = FALSE;
 
-	if(over)
+	LOG(("yahoo_process_yab_connection(over = %d) ", over));
+	if(over) {
+		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
 		return;
+	}
 
 	while(find_input_by_id_and_type(id, YAHOO_CONNECTION_YAB) 
 			&& (yab = yahoo_getyab(yid)) != NULL) {
 		if(!yab->id)
 			continue;
 		
-		changed=1;
+		//changed=1;
 		yab_used = FALSE;
 		for(buds = yd->buddies; buds; buds=buds->next) {
 			struct yahoo_buddy * bud = buds->data;
@@ -4790,8 +4799,8 @@ static void yahoo_process_yab_connection(struct yahoo_input_data *yid, int over)
 
 	}
 
-	if(changed)
-		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
+	//if(changed)
+	//	YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
 }
 
 static void yahoo_process_search_connection(struct yahoo_input_data *yid, int over)

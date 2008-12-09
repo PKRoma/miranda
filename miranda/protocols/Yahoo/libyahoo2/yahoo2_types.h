@@ -352,6 +352,7 @@ struct yahoo_buddy {
 	char *real_name;
 	int protocol;
 	int stealth;
+	int auth;
 	struct yab *yab_entry;
 };
 

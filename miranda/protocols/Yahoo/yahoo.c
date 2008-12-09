@@ -625,6 +625,10 @@ void ext_yahoo_got_buddies(int id, YList * buds)
 				if (DBGetContactSettingWord(hContact, yahooProtocolName, "ApparentMode", 0))
 					DBDeleteContactSetting(hContact, yahooProtocolName, "ApparentMode");
 		}
+
+		if (bud->auth) {
+			LOG(( "Auth request waiting for: %s", bud->id ));
+		}
 		
 		if (bud->yab_entry) {
 		  //LOG(("YAB_ENTRY"));
