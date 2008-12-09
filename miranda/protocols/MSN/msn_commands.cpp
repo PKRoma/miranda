@@ -83,7 +83,7 @@ void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always )
 		setString( hContact, "MirVer", "Miranda IM 0.5.x (MSN v.0.5.x)" );
 	else if ( dwValue == 0x30000024 )
 		setString( hContact, "MirVer", "Miranda IM 0.4.x (MSN v.0.4.x)" );
-	else if (always || getByte("StdMirVer", 0)) 
+	else if (always || getByte(hContact, "StdMirVer", 0)) 
     {
 		unsigned wlmId = min(dwValue >> 28 & 0xff, SIZEOF(MirVerStr)-1);
 		setString( hContact, "MirVer", MirVerStr[ wlmId ] );
@@ -91,7 +91,7 @@ void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always )
     else 
         return;
 
-    setByte("StdMirVer", 1);
+    setByte(hContact, "StdMirVer", 1);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
