@@ -973,31 +973,98 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 	return hMenu;
 }
 
-/* iconlib in menu */
+/////////////////////////////////////////////////////////////////////////////////////////
+// iconlib in menu
+
 extern int hStatusMenuObject;
-HICON LoadIconFromLibrary(char *SectName,char *Name,char *Description,HICON hIcon,boolean RegisterIt,boolean *RegistredOk)
+
+static int MO_ReloadIcon( PMO_IntMenuItem pmi, void* )
 {
-	return hIcon;
+	if ( pmi->hIcolibItem ) {
+		HICON newIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
+		if ( newIcon )
+			ImageList_ReplaceIcon( pmi->parent->m_hMenuIcons, pmi->iconId, newIcon );
+
+		IconLib_ReleaseIcon(newIcon,0);
+	}
+
+	return FALSE;
 }
 
 int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection( &csMenuHook );
-	for ( int mo=0; mo < g_menus.getCount(); mo++ ) {
-		if ( hStatusMenuObject == g_menus[mo]->id ) //skip status menu
-			continue;
-
-		for ( PMO_IntMenuItem pmi = g_menus[mo]->m_items.first; pmi != NULL; pmi = pmi->next ) {
-			if ( pmi->hIcolibItem ) {
-				HICON newIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
-				if ( newIcon )
-					ImageList_ReplaceIcon( g_menus[mo]->m_hMenuIcons, pmi->iconId, newIcon );
-
-				IconLib_ReleaseIcon(newIcon,0);
-	}	}	}
+	for ( int mo=0; mo < g_menus.getCount(); mo++ )
+		if ( hStatusMenuObject != g_menus[mo]->id ) //skip status menu
+			MO_RecursiveWalkMenu( g_menus[mo]->m_items.first, MO_ReloadIcon, 0 );
 
 	LeaveCriticalSection( &csMenuHook );
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+
+static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
+{
+	char *uname, *descr;
+	uname = pmi->UniqName;
+	if ( uname == NULL )
+		#ifdef UNICODE
+			uname = u2a(pmi->CustomName);
+			descr = u2a(pmi->mi.ptszName);
+		#else
+			uname = pmi->CustomName;
+			descr = pmi->mi.pszName;
+		#endif
+
+	if ( !uname && !descr )
+		return FALSE;
+
+	if ( !pmi->hIcolibItem ) {
+		HICON hIcon = ImageList_GetIcon( pmi->parent->m_hMenuIcons, pmi->iconId, 0 );
+		char* buf = NEWSTR_ALLOCA( descr );
+
+		char sectionName[256], iconame[256];
+		_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", pmi->parent->Name );
+
+		// remove '&'
+		char* start = buf;
+		while ( start = strchr( start, '&' )) {
+			memmove(start,start+1,strlen(start+1)+1);
+			if (*start!='\0') start++;
+			else break;
+		}
+
+		if ( uname != NULL && *uname != 0 )
+			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, uname );
+		else
+			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, descr );
+
+		SKINICONDESC sid={0};
+		sid.cbSize = sizeof(sid);
+		sid.cx = 16;
+		sid.cy = 16;
+		sid.pszSection = Translate(sectionName);
+		sid.pszName = iconame;
+		sid.pszDefaultFile = NULL;
+		sid.pszDescription = buf;
+		sid.hDefaultIcon = hIcon;
+		pmi->hIcolibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+		Safe_DestroyIcon( hIcon );
+		if ( hIcon = ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)iconame )) {
+			ImageList_ReplaceIcon( pmi->parent->m_hMenuIcons, pmi->iconId, hIcon );
+			IconLib_ReleaseIcon( hIcon, 0 );
+	}	}
+
+	#ifdef UNICODE
+		if ( !pmi->UniqName )
+			mir_free( uname );
+		mir_free( descr );
+	#endif
+
+	return FALSE;
 }
 
 int RegisterAllIconsInIconLib()
@@ -1007,64 +1074,8 @@ int RegisterAllIconsInIconLib()
 		if ( hStatusMenuObject == g_menus[mo]->id ) //skip status menu
 			continue;
 
-		for ( PMO_IntMenuItem pmi = g_menus[mo]->m_items.first; pmi != NULL; pmi = pmi->next ) {
-			char *uname, *descr;
-			uname = pmi->UniqName;
-			if ( uname == NULL )
-				#ifdef UNICODE
-					uname = u2a(pmi->CustomName);
-					descr = u2a(pmi->mi.ptszName);
-				#else
-					uname = pmi->CustomName;
-					descr = pmi->mi.pszName;
-				#endif
-
-			if ( !uname && !descr )
-				continue;
-
-			if ( !pmi->hIcolibItem ) {
-				HICON hIcon = ImageList_GetIcon( g_menus[mo]->m_hMenuIcons, pmi->iconId, 0 );
-				char* buf = NEWSTR_ALLOCA( descr );
-
-				char sectionName[256], iconame[256];
-				_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", g_menus[mo]->Name );
-
-				// remove '&'
-				char* start = buf;
-				while ( start = strchr( start, '&' )) {
-					memmove(start,start+1,strlen(start+1)+1);
-					if (*start!='\0') start++;
-					else break;
-				}
-
-				if ( uname != NULL && *uname != 0 )
-					_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", g_menus[mo]->Name, uname );
-				else
-					_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", g_menus[mo]->Name, descr );
-
-				SKINICONDESC sid={0};
-				sid.cbSize = sizeof(sid);
-				sid.cx = 16;
-				sid.cy = 16;
-				sid.pszSection = Translate(sectionName);
-				sid.pszName = iconame;
-				sid.pszDefaultFile = NULL;
-				sid.pszDescription = buf;
-				sid.hDefaultIcon = hIcon;
-				pmi->hIcolibItem = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-				Safe_DestroyIcon( hIcon );
-				if ( hIcon = ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)iconame )) {
-					ImageList_ReplaceIcon( g_menus[mo]->m_hMenuIcons, pmi->iconId, hIcon );
-					IconLib_ReleaseIcon( hIcon, 0 );
-			}	}
-
-			#ifdef UNICODE
-				if ( !pmi->UniqName )
-					mir_free( uname );
-				mir_free( descr );
-			#endif
-	}	}
+		MO_RecursiveWalkMenu( g_menus[mo]->m_items.first, MO_RegisterIcon, 0 );
+	}
 
 	return 0;
 }
