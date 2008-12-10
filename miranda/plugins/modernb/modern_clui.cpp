@@ -2663,13 +2663,13 @@ LRESULT CLUI::OnMoving( UINT msg, WPARAM wParam, LPARAM lParam )
 
 LRESULT CLUI::OnNewContactNotify( NMCLISTCONTROL * pnmc )
 {
-	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, 0 );
+	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, pnmc->hItem );
 	return FALSE;
 }
 
 LRESULT CLUI::OnListRebuildNotify( NMCLISTCONTROL * pnmc )
 {
-	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, pnmc->hItem );
+	ExtraImage_SetAllExtraIcons( pcli->hwndContactTree, 0 );
 	return FALSE;
 }
 LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
