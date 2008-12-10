@@ -319,6 +319,8 @@ static const value_string packet_keys[]={
 	{137, "idle time"},
 	{138, "idle?"},
 	{142, "chat location"},
+	{143, "ping interval (mins)"},
+	{144, "keep-alive interval (mins)"},
 	{185, "stealth/hide?"},
 	{192, "Pictures/Buddy Icons"},
 	{197, "Avatars"},
@@ -336,6 +338,7 @@ static const value_string packet_keys[]={
 	{244, "client version"},
 	{254, "last name"},
 	{265, "FT7 Token"},
+	{267, "FT7 Preview"},
 	{317, "Stealth"},
 	{1002, "YIM6+"},
 	{10093, "YIM7 (sets it to 4)"},
@@ -1958,7 +1961,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			break;
 		
 		default:
-			WARNING(("unknown status key %d:%s", pair->key, pair->value));
+			//WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
 		}
 	}
@@ -2081,7 +2084,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			break;
 			
 		default:
-			WARNING(("unknown status key %d:%s", pair->key, pair->value));
+			//WARNING(("unknown status key %d:%s", pair->key, pair->value));
 			break;
 		}
 	}
@@ -4240,11 +4243,11 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_REJECTCONTACT:
 	case YAHOO_SERVICE_PEERTOPEER:
 		WARNING(("unhandled service 0x%02x", pkt->service));
-		yahoo_dump_unhandled(pkt);
+		//yahoo_dump_unhandled(pkt);
 		break;
 	default:
 		WARNING(("unknown service 0x%02x", pkt->service));
-		yahoo_dump_unhandled(pkt);
+		//yahoo_dump_unhandled(pkt);
 		break;
 	}
 }
@@ -6648,7 +6651,7 @@ void yahoo_request_buddy_avatar(int id, const char *buddy)
 	yd = yid->yd;
 	yss = yd->server_settings;
 	
-	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_PICTURE, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt, 13, "1");
@@ -6673,7 +6676,7 @@ void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const ch
 
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_P2PFILEXFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_P2PFILEXFER, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt, 49, "FILEXFER");
 	yahoo_packet_hash(pkt, 1, yd->user);
@@ -6697,7 +6700,7 @@ void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token)
 
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt,265, ft_token);
@@ -6719,7 +6722,7 @@ void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token)
 
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt,265, ft_token);
@@ -6741,7 +6744,7 @@ void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token)
 
 	yd = yid->yd;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt,265, ft_token);
@@ -6771,7 +6774,7 @@ char *yahoo_webmessenger_idle_packet(int id, int *len)
 
 	DEBUG_MSG(("[yahoo_webmessenger_idle_packet] Session: %d", yd->session_timestamp));
 	
-	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
 	yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
@@ -6814,7 +6817,7 @@ void yahoo_send_idle_packet(int id)
 
 	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
 	
-	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_IDLE, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 0, yd->user);
 	
 	yahoo_packet_hash_int(pkt, 24, yd->session_timestamp);
@@ -6838,7 +6841,7 @@ void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn)
 
 	DEBUG_MSG(("[yahoo_send_idle_packet] Session: %d", yd->session_timestamp));
 	
-	pkt = yahoo_packet_new(YAHOO_SERVICE_Y9_MESSAGE_ACK, YAHOO_STATUS_AVAILABLE, yd->session_id);
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y9_MESSAGE_ACK, YPACKET_STATUS_DEFAULT, yd->session_id);
 	yahoo_packet_hash(pkt, 1, yd->user);
 	yahoo_packet_hash(pkt, 5, buddy);
 	
