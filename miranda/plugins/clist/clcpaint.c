@@ -148,7 +148,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 {
 	HDC hdcMem;
 	RECT clRect;
-	int y, indent, index, fontHeight;
+	int i, y, indent, index, fontHeight;
 	struct ClcGroup *group;
 	HBITMAP hBmpOsb, hOldBitmap;
 	HFONT hOldFont;
@@ -158,6 +158,15 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint)
 	HBRUSH hBrushAlternateGrey = NULL;
 	// yes I know about GetSysColorBrush()
 	COLORREF tmpbkcolour = style & CLS_CONTACTLIST ? (dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour) : dat->bkColour;
+	int minHeight = GetSystemMetrics(SM_CYSMICON);
+	for (i = 0; i < FONTID_LAST; i++) {
+		if (minHeight < dat->fontInfo[i].fontHeight) {
+			minHeight = dat->fontInfo[i].fontHeight;
+		}
+	}
+	if (dat->rowHeight < minHeight) {
+		dat->rowHeight = minHeight;
+	}
 
 	if (dat->greyoutFlags & pcli->pfnClcStatusToPf2(status) || style & WS_DISABLED)
 		grey = 1;
