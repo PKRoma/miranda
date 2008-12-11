@@ -1858,14 +1858,8 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	YList *l;
 	struct yahoo_data *yd = yid->yd;
 	char *name = NULL;
-	int state = 0;
-	int away = 0;
-	int idle = 0;
-	int mobile = 0;
-	int cksum = 0;
-	int buddy_icon = -1;
-	int protocol = 0;
-	long client_version = 0;
+	int state = 0, away = 0, idle = 0, mobile = 0, cksum = 0, buddy_icon = -1, protocol = 0,
+		client_version = 0, utf8 = 0;
 	char *msg = NULL;
 	
 	for (l = pkt->hash; l; l = l->next) {
@@ -1885,9 +1879,9 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			break;
 		case 7: /* the current buddy */
 			if (name != NULL) {
-				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, 0, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
+				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, 0, state, msg, away, idle, mobile, cksum, buddy_icon, client_version, utf8);
 				msg = NULL;
-				protocol = client_version = cksum = state = away = idle = mobile = 0;
+				utf8 = protocol = client_version = cksum = state = away = idle = mobile = 0;
 				buddy_icon = -1;
 			}
 			name = pair->value;
@@ -1929,6 +1923,11 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			if (atoi(pair->value) > 0 )
 				mobile = 1;
 			break;
+			
+		case 97: /* utf8 */
+			utf8 = atoi(pair->value);
+			break;
+			
 		case 137: /* Idle: seconds */
 			idle = atoi(pair->value);
 			break;
@@ -1967,7 +1966,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	}
 	
 	if (name != NULL) 
-		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, protocol, state, msg, away, idle, mobile, cksum, buddy_icon, client_version);
+		YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, protocol, state, msg, away, idle, mobile, cksum, buddy_icon, client_version, utf8);
 	
 }
 
@@ -1977,10 +1976,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	struct yahoo_data *yd = yid->yd;
 	char *name = NULL;
 	int state = YAHOO_STATUS_AVAILABLE;
-	int away = 0;
-	int idle = 0;
-	int mobile = 0;
-	int protocol = 0;
+	int away = 0, idle = 0, mobile = 0, protocol = 0, utf8 = 0;
 	int login_status=YAHOO_LOGIN_LOGOFF;
 	char *msg = NULL;
 	char *errmsg = NULL;
@@ -2013,9 +2009,9 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			break;
 		case 7: /* the current buddy */
 			if (name != NULL) {
-				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile);
+				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile, utf8);
 				msg = NULL;
-				protocol = away = idle = mobile = 0;
+				utf8 = protocol = away = idle = mobile = 0;
 				state = (pkt->service == YAHOO_SERVICE_LOGOFF) ? YAHOO_STATUS_OFFLINE : YAHOO_STATUS_AVAILABLE;
 			}
 			name = pair->value;
@@ -2082,6 +2078,9 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 				}
 			}
 			break;
+		case 97:  /* utf-8 ? */
+			utf8 = strtol(pair->value, NULL, 10);
+			break;
 			
 		default:
 			//WARNING(("unknown status key %d:%s", pair->key, pair->value));
@@ -2090,7 +2089,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	}
 	
 	if (name != NULL) 
-		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile);
+		YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile, utf8);
 	else if (pkt->service == YAHOO_SERVICE_LOGOFF && pkt->status == YPACKET_STATUS_DISCONNECTED) 
 		//
 		//Key: Error msg (16)  	Value: 'Session expired. Please relogin'

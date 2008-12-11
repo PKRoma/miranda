@@ -182,8 +182,9 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_ping)(int id, const char *errormsg);
  *  cksum - picture checksum [avatar support]
  *  buddy_icon - avatar type 
  *  client_version - client version # (Yahoo sends some long numbers for different clients)
+ *  utf8 - status message is utf8? (1 = yes)
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version, int utf8);
 
 
 /*
@@ -198,9 +199,10 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_status_logon)(int id, const char *who, int pr
  * 	away - whether the contact is away or not (YAHOO_STATUS_CUSTOM)
  * 	idle - this is the number of seconds he is idle [if he is idle]
  *	mobile - this is set for mobile users/buddies
+ *  utf8 - is the status UTF-8 (1 = yes)
  *	TODO: add support for pager, chat, and game states
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_status_changed)(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8);
 
 
 /*

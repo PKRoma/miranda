@@ -347,12 +347,12 @@ const char *find_buddy( const char *yahoo_id)
 /* Required handlers bellow */
 
 /* Other handlers */
-void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile)
+void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int utf8)
 {
 	HANDLE 	hContact = 0;
 	time_t  idlets = 0;
 	
-	YAHOO_DebugLog("[ext_yahoo_status_changed] %s (prot: %d) with msg %s (stat: %d, away: %d, idle: %d seconds)", who, protocol, msg, stat, away, idle);
+	YAHOO_DebugLog("[ext_yahoo_status_changed] %s (prot: %d) with msg %s utf8: %d, (stat: %d, away: %d, idle: %d seconds)", who, protocol, msg, utf8, stat, away, idle);
 	
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
@@ -373,10 +373,13 @@ void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, c
 
 	if(msg) {
 		YAHOO_DebugLog("[ext_yahoo_status_changed] %s custom message '%s'", who, msg);
-		//YAHOO_SetString(hContact, "YMsg", msg);
-		//DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
-		//DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", msg);
-		DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
+
+		if (utf8) {
+			DBWriteContactSettingStringUtf( hContact, "CList", "StatusMsg", msg);
+		} else {
+			DBWriteContactSettingString( hContact, "CList", "StatusMsg", msg);
+		}
+		
 	} else {
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg" );
 	}
@@ -403,14 +406,14 @@ void ext_yahoo_status_changed(int id, const char *who, int protocol, int stat, c
 	YAHOO_DebugLog("[ext_yahoo_status_changed] exiting");
 }
 
-void ext_yahoo_status_logon(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version)
+void ext_yahoo_status_logon(int id, const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version, int utf8)
 {
 	HANDLE 	hContact = 0;
 	char 	*s = NULL;
 	
-	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, stat, away, idle, cksum, buddy_icon, client_version);
+	YAHOO_DebugLog("[ext_yahoo_status_logon] %s with msg %s utf8: %d, (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, utf8, stat, away, idle, cksum, buddy_icon, client_version);
 	
-	ext_yahoo_status_changed(id, who, protocol, stat, msg, away, idle, mobile);
+	ext_yahoo_status_changed(id, who, protocol, stat, msg, away, idle, mobile, utf8);
 	hContact = getbuddyH(who);
 	if (hContact == NULL) {
 		YAHOO_DebugLog("[ext_yahoo_status_logon] Can't find handle for %s??? PANIC!!!", who);
