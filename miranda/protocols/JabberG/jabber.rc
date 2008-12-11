@@ -459,7 +459,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,215,32
     LTEXT           "<room jid>",IDC_TITLE,8,7,202,8,NOT WS_GROUP
-    LTEXT           "Send goupchat invitation",IDC_DESCRIPTION,18,18,192,8,NOT WS_GROUP
+    LTEXT           "Send groupchat invitation",IDC_DESCRIPTION,18,18,192,8,NOT WS_GROUP
     CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,214,1
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x1,7,40,201,116,WS_EX_CLIENTEDGE
     LTEXT           "Other JID:",IDC_STATIC,7,162,46,8
@@ -479,7 +479,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_WHITERECT,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,0,0,215,32
     LTEXT           "<room jid>",IDC_TITLE,7,7,202,8,NOT WS_GROUP
-    LTEXT           "Incoming goupchat invitation",IDC_DESCRIPTION,17,17,192,8,NOT WS_GROUP
+    LTEXT           "Incoming groupchat invitation",IDC_DESCRIPTION,17,17,192,8,NOT WS_GROUP
     CONTROL         "",IDC_FRAME1,"Static",SS_ETCHEDHORZ,0,32,215,1
     LTEXT           "You are invited to conference room by",IDC_STATIC,7,40,202,8
     EDITTEXT        IDC_FROM,17,51,192,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
