@@ -216,7 +216,8 @@ bool CMsnProto::MSN_AddUser( HANDLE hContact, const char* email, int netId, int 
 
 		if (netId == 0) netId = Lists_GetNetId(email);
 		res = MSN_SharingAddDelMember(email, flags, netId, needRemove ? "DeleteMember" : "AddMember");
-		if (res || (flags & LIST_RL)) AddDelUserContList(email, flags, netId, needRemove);
+//		if (res || (flags & LIST_RL)) 
+            AddDelUserContList(email, flags, netId, needRemove);
 		if ((flags & LIST_BL) && !needRemove)
 		{
 			if (hContact == NULL)

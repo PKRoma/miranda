@@ -265,7 +265,7 @@ void CMsnProto::MSN_CreateContList(void)
 
 static void ResetListOptions(HWND hwndList)
 {
-	SendMessage(hwndList,CLM_SETBKBITMAP,0,(LPARAM)(HBITMAP)NULL);
+	SendMessage(hwndList,CLM_SETBKBITMAP,0,0);
 	SendMessage(hwndList,CLM_SETBKCOLOR,GetSysColor(COLOR_WINDOW),0);
 	SendMessage(hwndList,CLM_SETGREYOUTFLAGS,0,0);
 	SendMessage(hwndList,CLM_SETLEFTMARGIN,2,0);
@@ -273,40 +273,51 @@ static void ResetListOptions(HWND hwndList)
 
 	for(int i=0; i<=FONTID_MAX; i++)
 		SendMessage(hwndList,CLM_SETTEXTCOLOR,i,GetSysColor(COLOR_WINDOWTEXT));
-
-	SetWindowLong(hwndList,GWL_STYLE,GetWindowLong(hwndList,GWL_STYLE)|CLS_SHOWHIDDEN);
 }
 
-static void SetAllContactIcons( HWND hwndList, CMsnProto* proto )
+static void SetContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 {
-	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		hContact != NULL; 
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
-	{
-		HANDLE hItem = ( HANDLE )SendMessage( hwndList, CLM_FINDCONTACT, ( WPARAM )hContact, 0 );
-		if ( hItem == NULL ) continue;
-
-		if ( !proto->MSN_IsMyContact( hContact )) {
-			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
-			continue;
-		}
-
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( proto->getStaticString( hContact, "e-mail", szEmail, sizeof( szEmail ))) {
-			SendMessage( hwndList, CLM_DELETEITEM, ( WPARAM )hItem, 0 );
-			continue;
-		}
-
-		DWORD dwMask = proto->Lists_GetMask( szEmail );
-		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)) == 0xFF )
-			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(0,( dwMask & LIST_FL )?1:0));
-		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)) == 0xFF )
-			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(1,( dwMask & LIST_AL )?2:0));
-		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)) == 0xFF )
-			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(2,( dwMask & LIST_BL )?3:0));
-		if ( SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(3,0)) == 0xFF )
-			SendMessage( hwndList, CLM_SETEXTRAIMAGE,( WPARAM )hItem, MAKELPARAM(3,( dwMask & LIST_RL )?4:0));
+	if (!proto->MSN_IsMyContact(hItem)) {
+		SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+		return;
 	}
+
+	char szEmail[MSN_MAX_EMAIL_LEN];
+	if (proto->getStaticString(hItem, "e-mail", szEmail, sizeof(szEmail))) {
+		SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+		return;
+	}
+
+	DWORD dwMask = proto->Lists_GetMask( szEmail );
+	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,0)) == 0xFF)
+		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,(dwMask & LIST_FL)?1:0));
+	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,0)) == 0xFF )
+		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,(dwMask & LIST_AL)?2:0));
+	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,0)) == 0xFF )
+		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,(dwMask & LIST_BL)?3:0));
+	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3,0)) == 0xFF )
+		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3,(dwMask & LIST_RL)?4:0));
+}
+
+static void SetAllContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
+{
+    if (hItem == NULL)
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
+
+    while (hItem) 
+    {
+        HANDLE hItemN = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+
+        if (IsHContactGroup(hItem))
+        {
+            HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+            if (hItemT) SetAllContactIcons(hItemT, hwndList, proto);
+        }
+        else if (IsHContactContact(hItem))
+            SetContactIcons(hItem, hwndList, proto);
+
+        hItem = hItemN;
+    }
 }
 
 static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iPrevValue, int iNewValue, CMsnProto* proto )
@@ -320,66 +331,75 @@ static void SaveListItem( HANDLE hContact, const char* szEmail, int list, int iP
 	proto->MSN_AddUser( hContact, szEmail, proto->Lists_GetNetId( szEmail ), list );
 }
 
-static void SaveSettings( HWND hwndList, CMsnProto* proto )
+static void SaveSettings(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 {
-	for ( HANDLE hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-		hContact != NULL; 
-		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 )) 
-	{
-		HANDLE hItem = ( HANDLE )SendMessage( hwndList, CLM_FINDCONTACT, ( WPARAM )hContact, 0 );
-		if ( hItem == NULL ) continue;
+    if (hItem == NULL)
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
 
-		if ( !proto->MSN_IsMyContact( hContact )) continue;
+    while (hItem) 
+    {
+        if (IsHContactGroup(hItem))
+        {
+            HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+            if (hItemT) SaveSettings(hItemT, hwndList, proto);
+        }
+        else if (IsHContactContact(hItem))
+        {
+            char szEmail[MSN_MAX_EMAIL_LEN];
+            if (!proto->getStaticString(hItem, "e-mail", szEmail, sizeof(szEmail))) 
+            {
+                int dwMask = proto->Lists_GetMask(szEmail);
+                SaveListItem(hItem, szEmail, LIST_FL, (dwMask & LIST_FL)?1:0, SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,0)), proto);
+                SaveListItem(hItem, szEmail, LIST_AL, (dwMask & LIST_AL)?2:0, SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,0)), proto);
+                SaveListItem(hItem, szEmail, LIST_BL, (dwMask & LIST_BL)?3:0, SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,0)), proto);
 
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
-		if ( proto->getStaticString( hContact, "e-mail", szEmail, sizeof( szEmail ))) continue;
-
-		int dwMask = proto->Lists_GetMask( szEmail );
-		SaveListItem( hContact, szEmail, LIST_FL, ( dwMask & LIST_FL )?1:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(0,0)), proto);
-		SaveListItem( hContact, szEmail, LIST_AL, ( dwMask & LIST_AL )?2:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(1,0)), proto);
-		SaveListItem( hContact, szEmail, LIST_BL, ( dwMask & LIST_BL )?3:0, SendMessage( hwndList, CLM_GETEXTRAIMAGE, ( WPARAM )hItem, MAKELPARAM(2,0)), proto);
-
-		proto->MSN_SetContactDb(hContact, szEmail );
-	}
+                if (dwMask != proto->Lists_GetMask(szEmail))
+                    proto->MSN_SetContactDb(hItem, szEmail);
+            }
+        }
+        hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+    }
 }
 
 INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch ( msg ) {
+	switch ( msg ) 
+    {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		{	
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-			CMsnProto* proto = (CMsnProto*)lParam;
+        {
+		    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		    CMsnProto* proto = (CMsnProto*)lParam;
 
-			HIMAGELIST hIml = ImageList_Create(
-				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
-			
-			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT);
-			ImageList_AddIcon( hIml, hIcon );
-			CallService( MS_SKIN2_RELEASEICON, ( WPARAM )hIcon, 0 );
-			
-			hIcon =  LoadIconEx( "list_fl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_FL, STM_SETICON, ( WPARAM )hIcon, 0 );
+		    HIMAGELIST hIml = ImageList_Create(
+			    GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+			    ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
+    		
+		    HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT);
+		    ImageList_AddIcon( hIml, hIcon );
+		    CallService( MS_SKIN2_RELEASEICON, ( WPARAM )hIcon, 0 );
+    		
+		    hIcon =  LoadIconEx( "list_fl" );
+		    ImageList_AddIcon( hIml, hIcon );
+		    SendDlgItemMessage( hwndDlg, IDC_ICON_FL, STM_SETICON, ( WPARAM )hIcon, 0 );
 
-			hIcon =  LoadIconEx( "list_al" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_AL, STM_SETICON, ( WPARAM )hIcon, 0 );
-			
-			hIcon =  LoadIconEx( "list_bl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_BL, STM_SETICON, ( WPARAM )hIcon, 0 );
+		    hIcon =  LoadIconEx( "list_al" );
+		    ImageList_AddIcon( hIml, hIcon );
+		    SendDlgItemMessage( hwndDlg, IDC_ICON_AL, STM_SETICON, ( WPARAM )hIcon, 0 );
+    		
+		    hIcon =  LoadIconEx( "list_bl" );
+		    ImageList_AddIcon( hIml, hIcon );
+		    SendDlgItemMessage( hwndDlg, IDC_ICON_BL, STM_SETICON, ( WPARAM )hIcon, 0 );
 
-			hIcon =  LoadIconEx( "list_rl" );
-			ImageList_AddIcon( hIml, hIcon );
-			SendDlgItemMessage( hwndDlg, IDC_ICON_RL, STM_SETICON, ( WPARAM )hIcon, 0 );
+		    hIcon =  LoadIconEx( "list_rl" );
+		    ImageList_AddIcon( hIml, hIcon );
+		    SendDlgItemMessage( hwndDlg, IDC_ICON_RL, STM_SETICON, ( WPARAM )hIcon, 0 );
 
-			SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
-		}
+		    SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
+        }
 		SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRACOLUMNS,4,0);
 
+	    ResetListOptions(GetDlgItem(hwndDlg,IDC_LIST));
 		return TRUE;
 
 //	case WM_SETFOCUS:
@@ -390,67 +410,63 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	{
 		CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-		LPNMHDR nmc = (LPNMHDR)lParam;
-		if ( nmc->idFrom == 0 && nmc->code == (unsigned)PSN_APPLY ) {
-			SaveSettings(GetDlgItem(hwndDlg,IDC_LIST), proto);
-			break;
-		}
+		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
+		if ( nmc->hdr.idFrom == 0 && nmc->hdr.code == (unsigned)PSN_APPLY )
+        {
+			SaveSettings(NULL, GetDlgItem(hwndDlg,IDC_LIST), proto);
+        }
+        else if (nmc->hdr.idFrom == IDC_LIST)
+        {
+		    switch (nmc->hdr.code) 
+            {
+		    case CLN_NEWCONTACT:
+                if ((nmc->flags & (CLNF_ISGROUP | CLNF_ISINFO)) == 0) 
+                    SetContactIcons(nmc->hItem, nmc->hdr.hwndFrom, proto);
+                break;
 
-		if ( nmc->idFrom != IDC_LIST )
-			break;
+		    case CLN_LISTREBUILT:
+                SetAllContactIcons(NULL, nmc->hdr.hwndFrom, proto);
+                break;
 
-		switch ( nmc->code) {
-		case CLN_NEWCONTACT:
-		case CLN_LISTREBUILT:
-			SetAllContactIcons(nmc->hwndFrom, proto);
-			//fall through
-		case CLN_OPTIONSCHANGED:
-			ResetListOptions(nmc->hwndFrom);
-			break;
+		    case CLN_OPTIONSCHANGED:
+			    ResetListOptions(nmc->hdr.hwndFrom);
+			    break;
 
-		case NM_CLICK:
-			HANDLE hItem;
-			NMCLISTCONTROL *nm=(NMCLISTCONTROL*)lParam;
-			DWORD hitFlags;
-			int iImage;
-			int itemType;
+		    case NM_CLICK:
+			    HANDLE hItem;
+			    DWORD hitFlags;
+			    int iImage;
 
-			// Make sure we have an extra column, also we can't change RL list
-			if ( nm->iColumn == -1 || nm->iColumn == 3 )
-				break;
+			    // Make sure we have an extra column, also we can't change RL list
+			    if ( nmc->iColumn == -1 || nmc->iColumn == 3 )
+				    break;
 
-			// Find clicked item
-			hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_HITTEST, (WPARAM)&hitFlags, MAKELPARAM(nm->pt.x,nm->pt.y));
-			// Nothing was clicked
-			if ( hItem == NULL )
-				break;
+			    // Find clicked item
+			    hItem = (HANDLE)SendMessage(nmc->hdr.hwndFrom, CLM_HITTEST, (WPARAM)&hitFlags, MAKELPARAM(nmc->pt.x,nmc->pt.y));
+			    // Nothing was clicked
+			    if ( hItem == NULL || !IsHContactContact(hItem))
+				    break;
 
-			// It was not our extended icon
-			if ( !( hitFlags & CLCHT_ONITEMEXTRA ))
-				break;
+			    // It was not our extended icon
+			    if ( !( hitFlags & CLCHT_ONITEMEXTRA ))
+				    break;
 
-			// Get image in clicked column (0=none, 1=FL, 2=AL, 3=BL, 4=RL)
-			iImage = SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nm->iColumn, 0));
-			if ( iImage == 0 )
-				iImage = nm->iColumn + 1;
-			else
-				iImage = 0;
+			    // Get image in clicked column (0=none, 1=FL, 2=AL, 3=BL, 4=RL)
+			    iImage = SendMessage(nmc->hdr.hwndFrom, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nmc->iColumn, 0));
+                iImage = iImage ? 0 : nmc->iColumn + 1;
 
-			// Get item type (contact, group, etc...)
-			itemType = SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_GETITEMTYPE, (WPARAM)hItem, 0);
-			if ( itemType == CLCIT_CONTACT ) { // A contact
-				SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nm->iColumn, iImage));
-				if (iImage && SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_GETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM( 3-nm->iColumn, 0)) != 0xFF )
-					if ( nm->iColumn == 1 || nm->iColumn == 2 )
-						SendDlgItemMessage(hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM( 3-nm->iColumn, 0));
-			}
+			    SendMessage(nmc->hdr.hwndFrom, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(nmc->iColumn, iImage));
+			    if (iImage && SendMessage(nmc->hdr.hwndFrom,CLM_GETEXTRAIMAGE,(WPARAM)hItem,MAKELPARAM( 3-nmc->iColumn, 0)) != 0xFF )
+				    if ( nmc->iColumn == 1 || nmc->iColumn == 2 )
+					    SendMessage(nmc->hdr.hwndFrom, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM( 3-nmc->iColumn, 0));
 
-			// Activate Apply button
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-		}
-		break;
-	}
+			    // Activate Apply button
+			    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			    break;
+		    }
+	    }
+    }
+    break;
 
 	case WM_DESTROY:
 		HIMAGELIST hIml=(HIMAGELIST)SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_GETEXTRAIMAGELIST,0,0);
