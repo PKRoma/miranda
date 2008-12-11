@@ -787,6 +787,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					TCHAR buf[ 200 ];
 					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
+						// lock controls to avoid changes during remove process
+						ListBox_SetCurSel( hList, -1 );
+						sttUpdateAccountInfo( hwndDlg, dat );
+						EnableWindow( hList, FALSE );
+						EnableWindow( GetDlgItem(hwndDlg, IDC_ADD), FALSE );
+
 						ListBox_SetItemData( hList, idx, 0 );
 						EraseAccount( pa );
 						UnloadAccount( pa, TRUE );
@@ -794,6 +800,9 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
 						WriteDbAccounts();
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
+
+						EnableWindow( hList, TRUE );
+						EnableWindow( GetDlgItem(hwndDlg, IDC_ADD), TRUE );
 			}	}	}
 			break;
 
