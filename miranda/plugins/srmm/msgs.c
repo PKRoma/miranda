@@ -33,8 +33,9 @@ const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-static HANDLE hEventDbEventAdded, hEventDbSettingChange, hEventContactDeleted;
 HANDLE hHookWinEvt = NULL;
+static HANDLE hServices[7];
+static HANDLE hHooks[7];
 
 extern HINSTANCE g_hInst;
 
@@ -372,12 +373,14 @@ int PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
+    int i;
+
 	DestroyCursor(hCurSplitNS);
 	DestroyCursor(hCurHyperlinkHand);
 	DestroyCursor(hCurSplitWE);
-	UnhookEvent(hEventDbEventAdded);
-	UnhookEvent(hEventDbSettingChange);
-	UnhookEvent(hEventContactDeleted);
+	
+    for (i=0; i<7; ++i) if (hHooks[i]) UnhookEvent(hHooks[i]);
+    for (i=0; i<7; ++i) if (hServices[i]) DestroyServiceFunction(hServices[i]);
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
@@ -443,22 +446,22 @@ int LoadSendRecvMessageModule(void)
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitOptions();
-	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
-	hEventDbSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
-	hEventContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
-	HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
-	HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
-	HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
-	HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
-	CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
+	hHooks[0] = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
+	hHooks[1] = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
+	hHooks[2] = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
+	hHooks[3] = HookEvent(ME_SYSTEM_MODULESLOADED, SplitmsgModulesLoaded);
+	hHooks[4] = HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
+	hHooks[5] = HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
+	hHooks[6] = HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+	hServices[0] = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
-	CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
+	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
 #endif
-	CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
-	CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
-	CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
-	CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
-	CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
+	hServices[2] = CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
+	hServices[3] = CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
+	hServices[4] = CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
+	hServices[5] = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
+	hServices[6] = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 	hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);
 	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
 	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
