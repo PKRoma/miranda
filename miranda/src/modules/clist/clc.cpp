@@ -527,7 +527,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
+				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 0);
 				recalcScrollBar = 1;
 				cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
 				if (contact) {
@@ -543,7 +543,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 1);
 				recalcScrollBar = 1;
 			}
 			else {
