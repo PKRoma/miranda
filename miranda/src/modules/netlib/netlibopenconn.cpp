@@ -605,7 +605,9 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
-	nlc->hSsl = NetlibSslConnect(FALSE, nlc->s, nlc->szHost);
+    NETLIBSSL *sp = (NETLIBSSL*)lParam;
+
+    nlc->hSsl = NetlibSslConnect(sp != NULL, nlc->s, sp ? sp->host : nlc->szHost);
 
 	if (nlc->hSsl == NULL)
 		Netlib_Logf(nlc->nlu,"(%d) Failure to negotiate SSL connection",nlc->s);

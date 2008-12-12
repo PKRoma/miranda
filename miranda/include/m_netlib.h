@@ -669,9 +669,17 @@ typedef struct {
 
 //Makes connection SSL 
 //wParam=(WPARAM)(HANDLE)hConn
-//lParam=0
+//lParam=(LPARAM)(NETLIBSSL*)&nlssl or null if no certficate validation required
 //Returns 0 on failure 1 on success
 #define MS_NETLIB_STARTSSL "Netlib/StartSsl"
+
+typedef struct 
+{
+    int cbSize;
+	const char *host; //Expected host name
+	int flags;        //Reserved
+} NETLIBSSL;
+
 
 //here's a handy piece of code to let you log using printf-style specifiers:
 //#include <stdarg.h> and <stdio.h> before including this header in order to
