@@ -82,10 +82,10 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify)
 	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
 	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS;
 
-	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SERVERNAME_CHECK;
+	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
 
-//	if (!verify) 
-//		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
+	if (!verify) 
+		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
 
 	// Create an SSPI credential.
 	scRet = g_pSSPI->AcquireCredentialsHandleA(
