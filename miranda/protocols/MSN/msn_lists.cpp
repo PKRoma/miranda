@@ -289,14 +289,10 @@ static void SetContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 	}
 
 	DWORD dwMask = proto->Lists_GetMask( szEmail );
-	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,0)) == 0xFF)
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,(dwMask & LIST_FL)?1:0));
-	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,0)) == 0xFF )
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,(dwMask & LIST_AL)?2:0));
-	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,0)) == 0xFF )
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,(dwMask & LIST_BL)?3:0));
-	if (SendMessage(hwndList, CLM_GETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3,0)) == 0xFF )
-		SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3,(dwMask & LIST_RL)?4:0));
+	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(0,(dwMask & LIST_FL)?1:0));
+	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(1,(dwMask & LIST_AL)?2:0));
+	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(2,(dwMask & LIST_BL)?3:0));
+	SendMessage(hwndList, CLM_SETEXTRAIMAGE, (WPARAM)hItem, MAKELPARAM(3,(dwMask & LIST_RL)?4:0));
 }
 
 static void SetAllContactIcons(HANDLE hItem, HWND hwndList, CMsnProto* proto)
