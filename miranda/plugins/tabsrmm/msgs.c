@@ -1804,8 +1804,8 @@ int ActivateExistingTab(struct ContainerWindowData *pContainer, HWND hwndChild)
 		if (dat->bType == SESSIONTYPE_IM)
 			SendMessage(pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 		if (IsIconic(pContainer->hwnd)) {
-			//ShowWindow(pContainer->hwnd, SW_RESTORE);
-			SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+			ShowWindow(pContainer->hwnd, SW_RESTORE);
+			//SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 			SetForegroundWindow(pContainer->hwnd);
 		}
 		//MaD - hide on close feature
