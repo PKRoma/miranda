@@ -71,7 +71,7 @@ static int SSL_library_init(void)
 	return 1;
 }
 
-static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify)
+static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 {
 	SCHANNEL_CRED   SchannelCred;
 	TimeStamp       tsExpiry;
@@ -86,6 +86,8 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify)
 
 	if (!verify) 
 		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
+    else if (!chkname)
+        SchannelCred.dwFlags |= SCH_CRED_NO_SERVERNAME_CHECK;
 
 	// Create an SSPI credential.
 	scRet = g_pSSPI->AcquireCredentialsHandleA(
@@ -386,16 +388,18 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 }
 
 
-SslHandle *NetlibSslConnect(BOOL verify, SOCKET s, const char* host)
+SslHandle *NetlibSslConnect(SOCKET s, const char* host)
 {
-	BOOL res;
+	BOOL res, chkname;
 
 	SslHandle *ssl = (SslHandle*)mir_calloc(sizeof(SslHandle));
 	ssl->s = s;
 
 	res = SSL_library_init();
 
-	if (res) res = AcquireCredentials(ssl, verify);
+    chkname = host && inet_addr(host) == INADDR_NONE;
+
+	if (res) res = AcquireCredentials(ssl, FALSE, chkname);
 	if (res) res = ClientConnect(ssl, host);
 
 	if (!res) 
