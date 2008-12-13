@@ -2292,8 +2292,8 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return newData->iActivate ? TRUE : FALSE;
 		}
 		case DM_TYPING: {
-            int preTyping = (dat->nTypeSecs > 0) ? 1 : 0;
-			dat->nTypeSecs = ((int) lParam > 0) ? (int) lParam : 0;
+            int preTyping = dat->nTypeSecs != 0;
+			dat->nTypeSecs = (int)(lParam > 0 ? lParam : 0);
             SetWindowLong(hwndDlg, DWL_MSGRESULT, preTyping);
 			return TRUE;
 		}
