@@ -989,7 +989,7 @@ void CJabberProto::BuildPriorityMenu()
 	mi.pszContactOwner = m_szModuleName;
 	mi.pszPopupName = (char *)pcli->pfnGetProtocolMenu( m_szModuleName );
 	mi.pszName = LPGEN("Resource priority");
-	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
+	mi.flags = CMIF_ROOTPOPUP | CMIF_HIDDEN;
 	m_hMenuPriorityRoot = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
 	char szName[128], srvFce[MAX_PATH + 64], *svcName = srvFce+strlen( m_szModuleName );
@@ -1034,8 +1034,7 @@ void CJabberProto::UpdatePriorityMenu(short priority)
 	TCHAR szName[128];
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIF_TCHAR|CMIF_ICONFROMICOLIB|CMIM_ICON|CMIM_NAME;
-	mi.icolibItem = GetIconHandle(IDI_AGENTS);
+	mi.flags = CMIF_TCHAR | CMIM_NAME;
 	mi.ptszName = szName;
 	mir_sntprintf(szName, SIZEOF(szName), TranslateT("Resource priority [%d]"), (int)priority);
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)m_hMenuPriorityRoot, (LPARAM)&mi);

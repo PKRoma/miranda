@@ -2255,7 +2255,8 @@ void CJabberProto::BuildPrivacyMenu()
 	mi.cbSize = sizeof(mi);
 	mi.position = 1001;
 	mi.pszContactOwner = m_szModuleName;
-	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_HIDDEN;
+	mi.icolibItem = GetIconHandle(IDI_AGENTS);
+	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.pszName = LPGEN("Privacy Lists");
 	mi.pszPopupName = (char *)pcli->pfnGetProtocolMenu( m_szModuleName );
 	m_hPrivacyMenuRoot = CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
