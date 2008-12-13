@@ -1,6 +1,7 @@
 #ifndef CONV_H
 #define CONV_H
 
+char* process_status_msg (const char *src, const char* sn);
 char* strip_html(char *src);
 char* strip_carrots(char *src);
 char* strip_linebreaks(char *src);

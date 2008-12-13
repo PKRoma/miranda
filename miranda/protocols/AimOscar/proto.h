@@ -319,7 +319,7 @@ struct CAimProto : public PROTO_INTERFACE
     void   __cdecl aim_admin_negotiation( void* );
 
     int    LOG(const char *fmt, ...);
-	HANDLE aim_connect(const char* server, unsigned short port, bool use_ssl);
+	HANDLE aim_connect(const char* server, unsigned short port, bool use_ssl, const char* host = NULL);
 	HANDLE aim_peer_connect(const char* ip, unsigned short port);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -436,7 +436,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   add_ES_icons();
 	void   remove_ES_icons();
 	void   execute_cmd(const char* arg);
-	char*  strip_special_chars(const char *src,HANDLE hContact);
 
 	FILE*  open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(const char* sn, const char* msg, bool utf);

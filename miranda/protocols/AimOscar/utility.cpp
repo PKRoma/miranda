@@ -788,7 +788,7 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 	if(descr)
 	{
         if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
-		char* s_msg=strip_special_chars(msg,NULL);
+		char* s_msg=process_status_msg(msg, sn);
 		fwrite("<h3>",1,4,descr);
 		fwrite(sn,1,strlen(sn),descr);
 		fwrite("'s Away Message:</h3>",1,21,descr);
@@ -812,7 +812,7 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 	if(descr)
 	{
         if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
-		char* s_msg=strip_special_chars(msg,NULL);
+		char* s_msg=process_status_msg(msg, sn);
 		fwrite("<h3>",1,4,descr);
 		fwrite(sn,1,strlen(sn),descr);
 		fwrite("'s Profile:</h3>",1,16,descr);

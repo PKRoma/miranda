@@ -62,26 +62,57 @@ char* strip_html(char *src)
 	return dest;
 }
 
-char* CAimProto::strip_special_chars(const char *src, HANDLE hContact)
+char* process_status_msg (const char *str, const char* sn)
 {
-	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN, &dbv))
-	{
-		char *ptr;
-		char* dest=strldup(src);
-		while ((ptr = strstr(dest, "%n")) != NULL)
-		{
-			int addr=ptr-dest;
-			int	sn_length=lstrlenA(dbv.pszVal);
-			dest=renew(dest,lstrlenA(dest)+1,sn_length*2);
-			ptr=dest+addr;
-			memmove(ptr + sn_length, ptr + 2, lstrlenA(ptr + 2) + sn_length);
-			memcpy(ptr,dbv.pszVal,sn_length);
-		}
-		DBFreeVariant(&dbv);
-		return dest;
-	}
-	return 0;
+    const char *src = str;
+    size_t size = strlen(src) + 1;
+    char* res = new char[size];
+    char* dest = res;
+
+    for (; *src; ++src)
+    {
+        if (src[0] == '\n' && (src == str || src[-1] != '\r'))
+        {
+            int off = dest - res;
+            res = renew(res, size++, 1);
+            dest = res + off;
+            *(dest++) = '\r';
+            *(dest++) = *src;
+        }
+        else if (src[0] == '%' && src[1] == 'n')
+        {
+	        size_t len = strlen(sn);
+            int off = dest - res;
+            res = renew(res, size, len);
+            dest = res + off;
+            size += len;
+	        memcpy(dest, sn, len);
+            dest += len;
+            ++src;
+        }
+        else if (src[0] == '%' && src[1] == 'd')
+        {
+            int off = dest - res;
+            res = renew(res, size, 20);
+            dest = res + off;
+            size += 20;
+            dest += GetDateFormatA(LOCALE_USER_DEFAULT, 0, NULL, NULL, dest, 20)-1;
+            ++src;
+        }
+        else if (src[0] == '%' && src[1] == 't')
+        {
+            int off = dest - res;
+            res = renew(res, size, 20);
+            dest = res + off;
+            size += 20;
+            dest += GetTimeFormatA(LOCALE_USER_DEFAULT, 0, NULL, NULL, dest, 20)-1;
+            ++src;
+        }
+        else
+            *(dest++) = *src;
+    }
+    *dest = '\0';
+    return res;
 }
 
 char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!

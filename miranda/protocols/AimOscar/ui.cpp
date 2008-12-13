@@ -811,7 +811,8 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			}
 			else if (LOWORD(wParam) == IDC_SVRRESET) 
 			{
-				SetDlgItemTextA(hwndDlg, IDC_HN, AIM_DEFAULT_SERVER);
+                SetDlgItemTextA(hwndDlg, IDC_HN, 
+                    IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
 			}
 
@@ -1411,7 +1412,7 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		    case CLN_LISTREBUILT:
                 if (param) 
                     clist_chat_prepare(NULL, nmc->hdr.hwndFrom, param->ppro);
-                break;
+                break; 
             }
         }
     }
