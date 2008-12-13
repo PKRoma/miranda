@@ -870,7 +870,7 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	BOOL	fShowOnClist = TRUE;
 
 	if ((hwnd = WindowList_Find(hMessageWindowList, (HANDLE) wParam)) && DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPING, SRMSGDEFSET_SHOWTYPING))
-		preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam);
+		preTyping = SendMessage(hwnd, DM_TYPING, 0, lParam) ? 1 : 0;
 
 	if (hwnd && IsWindowVisible(hwnd))
 		foundWin = MessageWindowOpened(0, (LPARAM)hwnd);
@@ -893,8 +893,8 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 	else
 		fShowOnClist = FALSE;
 
-	if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (lParam != 0)){
-		if (lParam && preTyping)
+	if((!foundWin || !(pContainer->dwFlags&CNT_NOSOUND)) && preTyping != (((int) lParam > 0) ? 1 : 0)){
+		if (lParam)
 			SkinPlaySound("TNStart");
 		else
 			SkinPlaySound("TNStop");
