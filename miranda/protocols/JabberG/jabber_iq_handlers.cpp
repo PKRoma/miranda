@@ -175,6 +175,32 @@ void CJabberProto::OnIqRequestTime( HXML node, void* userdata, CJabberIqInfo *pI
 	m_ThreadInfo->send( iq );
 }
 
+void CJabberProto::OnIqProcessIqOldTime( HXML node, void* userdata, CJabberIqInfo *pInfo )
+{
+	struct tm *gmt;
+	time_t ltime;
+	TCHAR stime[ 100 ], *dtime;
+
+	_tzset();
+	time( &ltime );
+	gmt = gmtime( &ltime );
+	wsprintf( stime, _T("%.4i%.2i%.2iT%.2i:%.2i:%.2i"),
+		gmt->tm_year + 1900, gmt->tm_mon + 1,
+		gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec );
+	dtime = _tctime( &ltime );
+	dtime[ 24 ] = 0;
+
+	XmlNodeIq iq( _T("result"), pInfo );
+	HXML queryNode = iq << XQUERY( _T(JABBER_FEAT_ENTITY_TIME_OLD) );
+	queryNode << XCHILD( _T("utc"), stime );
+	TCHAR *szTZName = mir_a2t( _tzname[1] );
+	if ( szTZName )
+		queryNode << XCHILD( _T("tz"), szTZName );
+	mir_free( szTZName );
+	queryNode << XCHILD( _T("display"), dtime );
+	m_ThreadInfo->send( iq );
+}
+
 void CJabberProto::OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *pInfo )
 {
 	if ( !m_options.EnableAvatars )

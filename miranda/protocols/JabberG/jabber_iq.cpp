@@ -140,6 +140,9 @@ BOOL CJabberIqManager::FillPermanentHandlers()
 	// entity time (XEP-0202)
 	AddPermanentHandler( &CJabberProto::OnIqRequestTime, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME), FALSE, _T("time"));
 
+	// entity time (XEP-0090)
+	AddPermanentHandler( &CJabberProto::OnIqProcessIqOldTime, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_ENTITY_TIME_OLD), FALSE, _T("query"));
+
 	// old avatars support (deprecated XEP-0008)
 	AddPermanentHandler( &CJabberProto::OnIqRequestAvatar, JABBER_IQ_TYPE_GET, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_ID_STR, _T(JABBER_FEAT_AVATAR), FALSE, _T("query"));
 

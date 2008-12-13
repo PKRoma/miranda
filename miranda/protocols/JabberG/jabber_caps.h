@@ -156,6 +156,7 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_FEAT_IQ_ROSTER                   "jabber:iq:roster"
 #define JABBER_FEAT_DELAY                       "jabber:x:delay"
+#define JABBER_FEAT_ENTITY_TIME_OLD             "jabber:iq:time"
 
 #define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
 

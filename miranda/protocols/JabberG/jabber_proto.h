@@ -517,6 +517,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqRequestLastActivity( HXML node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnIqRequestPing( HXML node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnIqRequestTime( HXML node, void* userdata, CJabberIqInfo *pInfo );
+	void   OnIqProcessIqOldTime( HXML node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnIqRequestAvatar( HXML node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnSiRequest( HXML node, void* userdata, CJabberIqInfo *pInfo );
 	void   OnRosterPushRequest( HXML node, void* userdata, CJabberIqInfo *pInfo );
