@@ -140,7 +140,6 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildStatusMenu );
 	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
 	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
-	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
 	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
 	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
 	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
@@ -278,6 +277,8 @@ int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
 	dbEventType.module = m_szModuleName;
 	dbEventType.descr = "Presence notifications";
 	JCallService( MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&dbEventType );
+
+	JHookEvent( ME_IDLE_CHANGED, &CJabberProto::OnIdleChanged );
 
 	CheckAllContactsAreTransported();
 

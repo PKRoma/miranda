@@ -241,12 +241,12 @@ int CJabberProto::OnIdleChanged( WPARAM wParam, LPARAM lParam )
 		return 0;
 	}
 
-	BOOL bIdle = lParam & IDF_ISIDLE;
-
-	// second call, ignore it
-	if (bIdle && m_tmJabberIdleStartTime)
-		return 0;
-
-	m_tmJabberIdleStartTime = bIdle ? time( 0 ) : 0;
+	if ( lParam & IDF_ISIDLE ) {
+		MIRANDA_IDLE_INFO mii = { 0 };
+		mii.cbSize = sizeof( mii );
+		CallService( MS_IDLE_GETIDLEINFO, 0, (LPARAM)&mii );
+		m_tmJabberIdleStartTime = time( 0 ) - mii.idleTime * 60;
+	} else
+		m_tmJabberIdleStartTime = 0;
 	return 0;
 }
