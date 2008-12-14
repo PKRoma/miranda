@@ -312,9 +312,18 @@ extern struct UTF8_INTERFACE utfi;
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
 
+__forceinline char* mir_utf8decodeA(const char* src)
+{
+    char* tmp = mir_strdup(src);
+    mir_utf8decode(tmp, NULL);
+    return tmp;
+}
+
 #if defined( _UNICODE )
+	#define mir_utf8decodeT mir_utf8decodeW
 	#define mir_utf8encodeT mir_utf8encodeW
 #else
+	#define mir_utf8decodeT mir_utf8decodeA
 	#define mir_utf8encodeT mir_utf8encode
 #endif
 
