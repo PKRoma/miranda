@@ -1187,15 +1187,17 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode, void *userdata )
 			const TCHAR* p = _tcschr( jid, '@' );
 			ResolveTransportNicks(( p != NULL ) ?  p+1 : jid );
 		}
-		else if ( hContact != NULL )
-			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
-		else
+		else {
+			if (( hContact = HContactFromJID( jid )) != NULL )
+				JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 			WindowNotify(WM_JABBER_REFRESH_VCARD);
+		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( hContact != NULL )
+		if (( hContact = HContactFromJID( jid )) != NULL )
 			JSendBroadcast( hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
-}	}
+	}
+}
 
 void CJabberProto::OnIqResultSetVcard( HXML iqNode, void *userdata )
 {
