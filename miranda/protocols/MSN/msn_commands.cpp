@@ -466,15 +466,10 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 			gce.time = time( NULL );
 			gce.bIsMe = FALSE;
 
-			#ifdef _UNICODE
-				TCHAR* p;
-				mir_utf8decode(( char* )msgBody, &p );
-				gce.ptszText = EscapeChatTags( p );
-				mir_free( p );
-			#else
-				mir_utf8decode(( char* )msgBody, NULL );
-				gce.ptszText = EscapeChatTags( msgBody );
-			#endif
+			TCHAR* p = mir_utf8decodeT(msgBody);
+			gce.ptszText = EscapeChatTags(p);
+			mir_free(p);
+
 			CallServiceSync( MS_GC_EVENT, 0, (LPARAM)&gce );
 			mir_free(( void* )gce.pszText);
 			mir_free(( void* )gce.ptszUID );
@@ -802,47 +797,32 @@ void CMsnProto::sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContac
 		LISTENINGTOINFO lti = {0};
 		lti.cbSize = sizeof(LISTENINGTOINFO);
 
-		#if defined( _UNICODE )
-			mir_utf8decode( parts[4], &lti.ptszTitle );
-			if ( pCount > 5 ) mir_utf8decode( parts[5], &lti.ptszArtist );
-			if ( pCount > 6 ) mir_utf8decode( parts[6], &lti.ptszAlbum );
-			if ( pCount > 7 ) mir_utf8decode( parts[7], &lti.ptszTrack );
-			if ( pCount > 8 ) mir_utf8decode( parts[8], &lti.ptszYear );
-			if ( pCount > 9 ) mir_utf8decode( parts[9], &lti.ptszGenre );
-			if ( pCount > 10 ) mir_utf8decode( parts[10], &lti.ptszLength );
-			if ( pCount > 11 ) mir_utf8decode( parts[11], &lti.ptszPlayer );
-			else mir_utf8decode( parts[0], &lti.ptszPlayer );
-			if ( pCount > 12 ) mir_utf8decode( parts[12], &lti.ptszType );
-			else mir_utf8decode( parts[1], &lti.ptszType );
-		#else
-			lti.ptszTitle = parts[4];
-			if ( pCount > 5 ) lti.ptszArtist = parts[5];
-			if ( pCount > 6 ) lti.ptszAlbum = parts[6];
-			if ( pCount > 7 ) lti.ptszTrack = parts[7];
-			if ( pCount > 8 ) lti.ptszYear = parts[8];
-			if ( pCount > 9 ) lti.ptszGenre = parts[9];
-			if ( pCount > 10 ) lti.ptszLength = parts[10];
-			if ( pCount > 11 ) lti.ptszPlayer = parts[11];
-			else lti.ptszPlayer = parts[0];
-			if ( pCount > 12 ) lti.ptszType = parts[12];
-			else lti.ptszType = parts[1];
-		#endif
+		lti.ptszTitle = mir_utf8decodeT( parts[4] );
+		if ( pCount > 5 )  lti.ptszArtist = mir_utf8decodeT( parts[5]  );
+		if ( pCount > 6 )  lti.ptszAlbum  = mir_utf8decodeT( parts[6]  );
+		if ( pCount > 7 )  lti.ptszTrack  = mir_utf8decodeT( parts[7]  );
+		if ( pCount > 8 )  lti.ptszYear   = mir_utf8decodeT( parts[8]  );
+		if ( pCount > 9 )  lti.ptszGenre  = mir_utf8decodeT( parts[9]  );
+		if ( pCount > 10 ) lti.ptszLength = mir_utf8decodeT( parts[10] );
+		if ( pCount > 11 ) lti.ptszPlayer = mir_utf8decodeT( parts[11] );
+		else lti.ptszPlayer = mir_utf8decodeT( parts[0] );
+		if ( pCount > 12 ) lti.ptszType = mir_utf8decodeT( parts[12] );
+		else lti.ptszType = mir_utf8decodeT( parts[1] );
 
 		TCHAR *cm = (TCHAR *) CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
 		setTString( hContact, "ListeningTo", cm );
 
 		mir_free( cm );
-		#if defined( _UNICODE )
-			mir_free( lti.ptszArtist );
-			mir_free( lti.ptszAlbum );
-			mir_free( lti.ptszTitle );
-			mir_free( lti.ptszTrack );
-			mir_free( lti.ptszYear );
-			mir_free( lti.ptszGenre );
-			mir_free( lti.ptszLength );
-			mir_free( lti.ptszPlayer );
-			mir_free( lti.ptszType );
-		#endif
+
+        mir_free( lti.ptszArtist );
+		mir_free( lti.ptszAlbum );
+		mir_free( lti.ptszTitle );
+		mir_free( lti.ptszTrack );
+		mir_free( lti.ptszYear );
+		mir_free( lti.ptszGenre );
+		mir_free( lti.ptszLength );
+		mir_free( lti.ptszPlayer );
+		mir_free( lti.ptszType );
 	}
 	ezxml_free(xmli);
 }
@@ -908,16 +888,11 @@ void CMsnProto::sttProcessNotificationMessage( char* buf, unsigned len )
 		mir_snprintf(fullurl+sz, sizeof(fullurl)-sz, "notification_id=%s&message_id=%s",
 			ezxml_attr(xmlnot, "id"), ezxml_attr(xmlmsg, "id"));
 
-		wchar_t* alrtu;
-		const char* txt = ezxml_txt(xmltxt);
-		mir_utf8decode( (char*)txt, &alrtu );
-		SkinPlaySound( alertsoundname );
-#ifdef _UNICODE
-		MSN_ShowPopup(TranslateT("MSN Alert"), alrtu, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
-#else
-		MSN_ShowPopup(TranslateT("MSN Alert"), txt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
-#endif
-		mir_free(alrtu);
+		SkinPlaySound(alertsoundname);
+
+		TCHAR* alrt = mir_utf8decodeT(ezxml_txt(xmltxt));
+		MSN_ShowPopup(TranslateT("MSN Alert"), alrt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
+		mir_free(alrt);
 	}
 	ezxml_free(xmlnot);
 }
@@ -1273,10 +1248,6 @@ LBL_InvalidCommand:
 			if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, data.userEmail))
 				setWord( hContact, "Status", ID_STATUS_INVISIBLE);
 
-			int thisContact = atol( data.strThisContact );
-			if ( thisContact != 1 )
-				mir_utf8decode( data.userNick, NULL );
-
 			// only start the chat session after all the IRO messages has been recieved
 			if ( msnHaveChatDll && info->mJoinedCount > 1 && !strcmp(data.strThisContact, data.totalContacts) )
 				MSN_ChatStart(info);
@@ -1439,7 +1410,7 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			UrlDecode( data.newServer ); UrlDecode( data.callerEmail );
-			UrlDecode( data.callerNick ); mir_utf8decode( data.callerNick, NULL );
+			UrlDecode( data.callerNick );
 			stripBBCode( data.callerNick );
 
 			if ( strcmp( data.security, "CKI" )) {
@@ -1552,7 +1523,6 @@ LBL_InvalidCommand:
 					goto LBL_InvalidCommand;
 
 				UrlDecode( data.userHandle ); UrlDecode( data.friendlyName );
-				mir_utf8decode( data.friendlyName, NULL );
 
 				if ( strcmp( data.status, "OK" )) {
 					MSN_DebugLog( "Unknown status to USR command (SB): '%s'", data.status );

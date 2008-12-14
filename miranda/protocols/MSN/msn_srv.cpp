@@ -38,14 +38,9 @@ void CMsnProto::MSN_AddGroup( const char* grpName, const char *grpId, bool init 
 
 	if ( init )
 	{
-		wchar_t* szNewName;
-		mir_utf8decode((char*)grpName, &szNewName);
-#ifdef _UNICODE
-		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szNewName);
-#else
-		CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)grpName);
-#endif
-		mir_free(szNewName);
+	    TCHAR* szGroupName = mir_utf8decodeT(grpName);
+	    CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szGroupName);
+	    mir_free(szGroupName);
 	}
 }
 
