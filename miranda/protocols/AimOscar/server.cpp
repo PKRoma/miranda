@@ -1,13 +1,13 @@
 #include "aim.h"
 #include "server.h"
 
-void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0017
+void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno, const char* username, const char* password)//family 0x0017
 {
 	if(snac.subcmp(0x0007))//md5 authkey string
 	{
 		unsigned short length=snac.ushort();
 		char* authkey=snac.part(2,length);
-		aim_auth_request(hServerConn,seqno,authkey,AIM_LANGUAGE,AIM_COUNTRY);
+		aim_auth_request(hServerConn,seqno,authkey,AIM_LANGUAGE,AIM_COUNTRY,username, password);
 		delete[] authkey;
 	}
 }

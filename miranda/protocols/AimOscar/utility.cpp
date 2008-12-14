@@ -67,6 +67,7 @@ void CAimProto::start_connection(int status)
         if (dbkey) dbv.pszVal = (char*)(getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
 		broadcast_status(ID_STATUS_CONNECTING);
+		m_iDesiredStatus = status;
 		hServerConn = NULL;
 		hServerPacketRecver = NULL;
 		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
@@ -75,11 +76,9 @@ void CAimProto::start_connection(int status)
 		if (!dbkey) DBFreeVariant(&dbv);
 
 		if ( hServerConn )
-		{
-			m_iDesiredStatus = status;
 			aim_connection_authorization();
-		}
-		else broadcast_status(ID_STATUS_OFFLINE);
+		else 
+            broadcast_status(ID_STATUS_OFFLINE);
 	}
 }
 

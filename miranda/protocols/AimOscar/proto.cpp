@@ -23,7 +23,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
 
-	InitializeCriticalSection( &connectionMutex );
 	InitializeCriticalSection( &SendingMutex );
 	InitializeCriticalSection( &connMutex );
 
@@ -70,7 +69,6 @@ CAimProto::~CAimProto()
 	Netlib_CloseHandle(hNetlib);
 	Netlib_CloseHandle(hNetlibPeer);
 
-	DeleteCriticalSection(&connectionMutex);
 	DeleteCriticalSection(&SendingMutex);
 	DeleteCriticalSection(&connMutex);
 

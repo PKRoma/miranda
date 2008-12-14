@@ -114,7 +114,6 @@ struct CAimProto : public PROTO_INTERFACE
 	char* ID_GROUP_KEY;
 	char* FILE_TRANSFER_KEY;
 	
-	CRITICAL_SECTION connectionMutex;
 	CRITICAL_SECTION SendingMutex;
 	CRITICAL_SECTION connMutex;
 
@@ -130,7 +129,6 @@ struct CAimProto : public PROTO_INTERFACE
     int ADMIN_COOKIE_LENGTH;
 
 	char *username;
-	char *password;
 	unsigned short seqno;//main connection sequence number
 	int state;//m_iStatus of the connection; e.g. whether connected or not
 	unsigned short port;
@@ -251,7 +249,8 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_send_connection_packet(HANDLE hServerConn,unsigned short &seqno,char *buf);
 	int    aim_authkey_request(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,const char* country);
+	int    aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,
+                            const char* country, const char* username, const char* password);
 	int    aim_send_cookie(HANDLE hServerConn,unsigned short &seqno,int cookie_size,char * cookie);
 	int    aim_send_service_request(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_new_service_request(HANDLE hServerConn,unsigned short &seqno,unsigned short service);
@@ -368,7 +367,7 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// server.cpp
 
-	void   snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);
+	void   snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &seqno, const char* username, const char* password);
 	int    snac_authorization_reply(SNAC &snac);
 	void   snac_supported_families(SNAC &snac, HANDLE hServerConn,unsigned short &seqno);
 	void   snac_supported_family_versions(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x0001

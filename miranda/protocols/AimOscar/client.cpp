@@ -16,7 +16,8 @@ int CAimProto::aim_authkey_request(HANDLE hServerConn,unsigned short &seqno)
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,const char* country)
+int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const char* key,const char* language,
+                                const char* country, const char* username, const char* password)
 {
     unsigned short offset=0;
     char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+strlen(username)+strlen(AIM_CLIENT_ID_STRING)+15+strlen(language)+strlen(country));

@@ -46,8 +46,15 @@ HANDLE CAimProto::aim_peer_connect(const char* ip, unsigned short port)
 
 void CAimProto::aim_connection_authorization(void)
 {
-	EnterCriticalSection(&connectionMutex);
 	DBVARIANT dbv;
+	char *password = NULL;
+
+    NETLIBPACKETRECVER packetRecv = {0};
+    HANDLE hServerPacketRecver = NULL;
+
+    if (m_iDesiredStatus == ID_STATUS_OFFLINE)
+        goto exit;
+
 	if (!getString(AIM_KEY_PW, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
@@ -55,24 +62,18 @@ void CAimProto::aim_connection_authorization(void)
 		DBFreeVariant(&dbv);
 	}
 	else
-	{
-		LeaveCriticalSection(&connectionMutex);
-		return;
-	}
-	if (!getString(AIM_KEY_SN, &dbv))
+		goto exit;
+
+    if (!getString(AIM_KEY_SN, &dbv))
 	{
         if (username) delete[] username;
 		username = strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
-	{
-		LeaveCriticalSection(&connectionMutex);
-		return;
-	}
+		goto exit;
 
-    NETLIBPACKETRECVER packetRecv = {0};
-	HANDLE hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 2048 * 4);
+	hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 2048 * 4);
 	packetRecv.cbSize = sizeof(packetRecv);
 	packetRecv.dwTimeout = 5000;
 	for(;;)
@@ -109,14 +110,13 @@ void CAimProto::aim_connection_authorization(void)
 					SNAC snac(flap.val(),flap.snaclen());
 					if(snac.cmp(0x0017))
 					{
-						snac_md5_authkey(snac,hServerConn,seqno);
+						snac_md5_authkey(snac,hServerConn,seqno, username, password);
 						int authres=snac_authorization_reply(snac);
 						if(authres==1)
 						{
 							delete[] password;
 							Netlib_CloseHandle(hServerPacketRecver);
 							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
-							LeaveCriticalSection(&connectionMutex);
 							return;
 						}
 						else if (authres==2)
@@ -133,17 +133,15 @@ void CAimProto::aim_connection_authorization(void)
 	}
 
 exit:
-	delete[] password;
+	if (password) delete[] password;
 	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
-	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
+	if (hServerPacketRecver) Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	LOG("Connection Authorization Thread Ending: End of Thread");
-	LeaveCriticalSection(&connectionMutex);
 }
 
 void __cdecl CAimProto::aim_protocol_negotiation( void* )
 {
-	EnterCriticalSection(&connectionMutex);
 	HANDLE hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 2048 * 8);
 
     NETLIBPACKETRECVER packetRecv = {0};
@@ -248,7 +246,6 @@ exit:
 	Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
 	LOG("Connection Negotiation Thread Ending: End of Thread");
-	LeaveCriticalSection(&connectionMutex);
 	offline_contacts();
 }
 
