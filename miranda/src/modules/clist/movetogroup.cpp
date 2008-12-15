@@ -1,7 +1,7 @@
 #include "commonheaders.h"
 
 HANDLE hOnCntMenuBuild;
-HANDLE hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
+HGENMENU hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
 HANDLE *lphGroupsItems = NULL;
 int nGroupsItems = 0, cbGroupsItems = 0;
 
@@ -28,16 +28,16 @@ static TCHAR* PrepareGroupName( TCHAR* str )
 	return p;
 }
 
-static HANDLE AddGroupItem(HANDLE hRoot, TCHAR* name,int pos,int param,int checked)
+static HANDLE AddGroupItem(HGENMENU hRoot, TCHAR* name,int pos,int param,int checked)
 {
 	HANDLE result;
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize        = sizeof(mi);
-	mi.pszPopupName  = ( char* )hRoot;
+	mi.hParentMenu   = hRoot;
 	mi.popupPosition = param; // param to pszService - only with CMIF_CHILDPOPUP !!!!!!
 	mi.position      = pos;
 	mi.ptszName      = PrepareGroupName( name );
-	mi.flags         = CMIF_CHILDPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+	mi.flags         = CMIF_ROOTHANDLE | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	mi.pszService = MTG_MOVE;
@@ -68,11 +68,11 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	mi.cbSize = sizeof( mi );
 
 	if ( !hMoveToGroupItem ) {
-		mi.pszPopupName = ( char* )-1;
+		mi.hParentMenu = NULL;
 		mi.position = 100000;
 		mi.pszName = LPGEN("&Move to Group");
-		mi.flags = CMIF_ROOTPOPUP;
-		hMoveToGroupItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+		mi.flags = CMIF_ROOTHANDLE;
+		hMoveToGroupItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	}
 
 	if ( !cbGroupsItems ) {

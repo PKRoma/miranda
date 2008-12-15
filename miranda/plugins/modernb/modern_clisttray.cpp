@@ -492,7 +492,6 @@ static int BuildTrayMenu(WPARAM wParam,LPARAM lParam)
 
 	memset(&param,0,sizeof(param));
 	param.MenuObjectHandle=(int)hTrayMenuObject;
-	param.rootlevel=-1;
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -525,7 +524,7 @@ static int AddTrayMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
 	//pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	tmi.ownerdata=NULL;
 

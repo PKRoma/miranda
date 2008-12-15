@@ -68,7 +68,7 @@ int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis )
 	if ( mis == NULL )
 		return FALSE;
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( mis->itemData );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )mis->itemData );
 	if ( pimi == NULL )
 		return FALSE;
 
@@ -92,7 +92,7 @@ int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis )
 
 	EnterCriticalSection( &csMenuHook );
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( dis->itemData );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )dis->itemData );
 	if ( pimi == NULL || pimi->iconId == -1 ) {
 		LeaveCriticalSection( &csMenuHook );
 		return FALSE;
@@ -200,7 +200,7 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 	if ( !bIsGenMenuInited || mi == NULL )
 		return -1;
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem(wParam);
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam);
 	EnterCriticalSection( &csMenuHook );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
@@ -223,7 +223,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 
 	EnterCriticalSection( &csMenuHook );
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )menuHandle );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )menuHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -248,7 +248,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 #endif
 	}
 	if ( pmi->flags & CMIM_FLAGS ) {
-		oldflags = pimi->mi.flags & ( CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB );
+		oldflags = pimi->mi.flags & ( CMIF_ROOTHANDLE | CMIF_ICONFROMICOLIB );
 		pimi->mi.flags = pmi->flags & ~CMIM_ALL;
 		pimi->mi.flags |= oldflags;
 	}
@@ -286,7 +286,7 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( wParam );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -297,7 +297,7 @@ int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
 	return res;
 }
 
-PMO_IntMenuItem MO_GetIntMenuItem(int wParam)
+PMO_IntMenuItem MO_GetIntMenuItem(HGENMENU wParam)
 {
 	PMO_IntMenuItem result = ( PMO_IntMenuItem )wParam;
 	if ( result == NULL )
@@ -370,7 +370,7 @@ int MO_ProcessCommand( PMO_IntMenuItem aHandle, LPARAM lParam )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )aHandle );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem( aHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -389,7 +389,7 @@ int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, int value )
 		return -1;
 
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( int )aHandle );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem( aHandle );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -500,7 +500,7 @@ static int FindParent( TMO_IntMenuItem* pimi, void* p )
 int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	EnterCriticalSection( &csMenuHook );
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( wParam );
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam );
 	if ( !pimi ) {
 		LeaveCriticalSection( &csMenuHook );
 		return -1;
@@ -556,7 +556,7 @@ PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 		return NULL;
 
 	//old mode
-	if ( !( pmi->flags & ( CMIF_ROOTPOPUP | CMIF_CHILDPOPUP )))
+	if ( !( pmi->flags & CMIF_ROOTHANDLE ))
 		return MO_AddOldNewMenuItem( menuobjecthandle, pmi );
 
 	EnterCriticalSection( &csMenuHook );
@@ -608,12 +608,12 @@ PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			else p->iconId = ImageList_AddIcon( pmo->m_hMenuIcons, pmi->hIcon );
 	}	}
 
-	PMO_IntMenuItem root = NULL;
-	if ( pmi->root != -1 && pmi->root != 0 )
-		root = MO_GetIntMenuItem( pmi->root );
+	if ( p->mi.root == HGENMENU_ROOT )
+		p->mi.root = NULL;
 
-	if ( root )
-		p->owner = &root->submenu;
+	PMO_IntMenuItem pRoot = ( p->mi.root != NULL ) ? MO_GetIntMenuItem( p->mi.root ) : NULL;
+	if ( pRoot )
+		p->owner = &pRoot->submenu;
 	else
 		p->owner = &pmo->m_items;
 
@@ -633,7 +633,7 @@ PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 int FindRoot( PMO_IntMenuItem pimi, void* param )
 {
 	if ( pimi->mi.pszName != NULL )
-		if (( pimi->mi.flags & CMIF_ROOTPOPUP ) && !_tcscmp( pimi->mi.ptszName, ( TCHAR* )param ))
+		if ( pimi->submenu.first && !_tcscmp( pimi->mi.ptszName, ( TCHAR* )param ))
 			return TRUE;
 
 	return FALSE;
@@ -651,13 +651,13 @@ PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 	if ( pmi->cbSize != sizeof( TMO_MenuItem ))
 		return NULL;
 
-	if (( pmi->flags & CMIF_ROOTPOPUP ) || ( pmi->flags & CMIF_CHILDPOPUP ))
+	if ( pmi->flags & CMIF_ROOTHANDLE )
 		return NULL;
 
 	//is item with popup or not
 	if ( pmi->root == 0 ) {
 		//yes,this without popup
-		pmi->root = -1; //first level
+		pmi->root = NULL; //first level
 	}
 	else { // no,search for needed root and create it if need
 		TCHAR* tszRoot;
@@ -677,19 +677,19 @@ PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			//not found,creating root
 			TMO_MenuItem tmi = { 0 };
 			tmi = *pmi;
-			tmi.flags |= CMIF_ROOTPOPUP;
+			tmi.flags |= CMIF_ROOTHANDLE;
 			tmi.ownerdata = 0;
-			tmi.root = -1;
+			tmi.root = NULL;
 			//copy pszPopupName
 			tmi.ptszName = ( TCHAR* )pmi->root;
 			if (( oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi )) != NULL )
 				MO_SetOptionsMenuItem( oldroot, OPT_MENUITEMSETUNIQNAME, (int)pmi->root );
 		}
-		pmi->root = ( int )oldroot;
+		pmi->root = oldroot;
 
 		//popup will be created in next commands
 	}
-	pmi->flags |= CMIF_CHILDPOPUP;
+	pmi->flags |= CMIF_ROOTHANDLE;
 	//add popup(root allready exists)
 	return MO_AddNewMenuItem( menuobjecthandle, pmi );
 }
@@ -702,7 +702,7 @@ static int WhereToPlace( HMENU hMenu, PMO_MenuItem mi )
 	for ( int i=GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
 		GetMenuItemInfo( hMenu, i, TRUE, &mii );
 		if ( mii.fType != MFT_SEPARATOR ) {
-			PMO_IntMenuItem pimi = MO_GetIntMenuItem(mii.dwItemData);
+			PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )mii.dwItemData);
 			if ( pimi != NULL )
 				if ( pimi->mi.position <= mi->position )
 					return i+1;
@@ -717,7 +717,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 	MENUITEMINFO mii;
 	PMO_IntMenuItem items=NULL;
 
-	PMO_IntMenuItem pimi = MO_GetIntMenuItem( int( lpmii->dwItemData ));
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )lpmii->dwItemData );
 	if ( pimi == NULL )
 		return;
 
@@ -729,7 +729,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 	if ( uItem ) {
 		mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 		GetMenuItemInfo( hMenu, uItem-1, TRUE, &mii );
-		pimi = MO_GetIntMenuItem( mii.dwItemData );
+		pimi = MO_GetIntMenuItem(( HGENMENU )mii.dwItemData );
 		if ( pimi != NULL ) {
 			if ( mii.fType == MFT_SEPARATOR )
 				needSeparator = 0;
@@ -756,7 +756,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 		mii.fMask = MIIM_SUBMENU | MIIM_DATA | MIIM_TYPE;
 		mii.cch = 0;
 		GetMenuItemInfo( hMenu, uItem, TRUE, &mii );
-		pimi = MO_GetIntMenuItem( mii.dwItemData );
+		pimi = MO_GetIntMenuItem(( HGENMENU )mii.dwItemData );
 		if ( pimi != NULL ) {
 			if ( mii.fType == MFT_SEPARATOR )
 				needSeparator=0;
@@ -782,8 +782,8 @@ static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,
 	lpmii = &mii_copy;
 
 	if (( GetMenuItemCount( hMenu ) % 35 ) == 33 /* will be 34 after addition :) */ && pimi != NULL )
-		if ( pimi->mi.root != -1 ) {
-			if (!(lpmii->fMask&MIIM_FTYPE))
+		if ( pimi->mi.root != NULL ) {
+			if ( !( lpmii->fMask & MIIM_FTYPE ))
 				lpmii->fType = 0;
 			lpmii->fMask |= MIIM_FTYPE;
 			lpmii->fType |= MFT_MENUBARBREAK;
@@ -839,7 +839,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 	TIntMenuObject* pmo = pRootMenu->parent;
 
-	int rootlevel = param->rootlevel;
+	int rootlevel = ( param->rootlevel == -1 ) ? 0 : param->rootlevel;
 
 	ListParam localparam = *param;
 
@@ -859,13 +859,13 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			CheckParam.lParam = param->lParam;
 			CheckParam.wParam = param->wParam;
 			CheckParam.MenuItemOwnerData = mi->ownerdata;
-			CheckParam.MenuItemHandle = int( pmi );
+			CheckParam.MenuItemHandle = pmi;
 			if ( CallService( pmo->CheckService, ( WPARAM )&CheckParam, 0 ) == FALSE )
 				continue;
 		}
 
 		/**************************************/
-		if ( rootlevel == -1 && mi->root == -1 && pmo->m_bUseUserDefinedItems ) {
+		if ( rootlevel == -1 && mi->root == NULL && pmo->m_bUseUserDefinedItems ) {
 			char DBString[256];
 			DBVARIANT dbv = { 0 };
 			int pos;
@@ -899,7 +899,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			wsprintfA( DBString, "%s_pos", menuItemName );
 			if (( pos = DBGetContactSettingDword( NULL, MenuNameItems, DBString, -1 )) == -1 ) {
 				DBWriteContactSettingDword( NULL, MenuNameItems, DBString, mi->position );
-				if ( mi->flags & CMIF_ROOTPOPUP )
+				if ( pmi->submenu.first )
 					mi->position = 0;
 			}
 			else mi->position = pos;
@@ -928,7 +928,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		}
 
 		// it's a submenu
-		if ( pmi->mi.flags & CMIF_ROOTPOPUP ) {
+		if ( pmi->submenu.first ) {
 			mii.fMask |= MIIM_SUBMENU;
 			mii.hSubMenu = pmi->hSubMenu = CreatePopupMenu();
 			mii.hbmpItem = HBMMENU_CALLBACK;

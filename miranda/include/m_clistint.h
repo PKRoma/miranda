@@ -114,11 +114,7 @@ struct trayIconInfo_t
 typedef struct _menuProto
 {
 	char* szProto; //This is DLL-based unique name
-	#if defined _STATIC
-		struct _tagIntMenuItem* pMenu;
-	#else
-		HANDLE pMenu;
-	#endif
+	HGENMENU pMenu;
 	HICON hIcon;
 }
 	MenuProto;

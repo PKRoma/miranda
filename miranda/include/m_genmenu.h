@@ -217,7 +217,7 @@ typedef struct
 		TCHAR *ptszName;
 	};
 	int position;
-	int root;
+	HGENMENU root;
 	int flags;
 	union {
 		HICON hIcon;
@@ -234,7 +234,7 @@ This structure passed to CheckService.
 typedef struct
 {
 	void *MenuItemOwnerData;
-	int MenuItemHandle;
+	HGENMENU MenuItemHandle;
 	WPARAM wParam;//from  ListParam.wParam when building menu
 	LPARAM lParam;//from  ListParam.lParam when building menu
 }

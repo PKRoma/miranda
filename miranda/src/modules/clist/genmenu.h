@@ -83,7 +83,7 @@ extern LIST<TIntMenuObject> g_menus;
 HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem, ListParam *param);
 void GetMenuItemName( PMO_IntMenuItem pMenuItem, char* pszDest, size_t cbDestSize );
 
-PMO_IntMenuItem MO_GetIntMenuItem( int globid );
+PMO_IntMenuItem MO_GetIntMenuItem( HGENMENU );
 
 PMO_IntMenuItem MO_AddNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );
 PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi );

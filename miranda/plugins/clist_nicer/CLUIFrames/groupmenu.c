@@ -71,12 +71,8 @@ static int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
-	ListParam param;
-
-	memset(&param,0,sizeof(param));
+	ListParam param = { 0 };
 	param.MenuObjectHandle=(int)hGroupMenuObject;
-	param.rootlevel=-1;
-
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -112,7 +108,7 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
 	//pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	tmi.ownerdata=NULL;
 
@@ -520,13 +516,9 @@ static int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
 	int tick;
 	HMENU hMenu;
-	ListParam param;
-
-	memset(&param,0,sizeof(param));
+	ListParam param = { 0 };
 	param.MenuObjectHandle=(int)hSubGroupMenuObject;
-	param.rootlevel=-1;
 	param.wParam=wParam;
-
 
 	//hMenu=hMainMenu;
 	hMenu=CreatePopupMenu();
@@ -559,7 +551,7 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
 	//pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	tmi.ownerdata=NULL;
 

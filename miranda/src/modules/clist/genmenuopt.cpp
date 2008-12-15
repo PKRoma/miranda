@@ -222,7 +222,7 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	int count = 0;
 	{	
 		for ( PMO_IntMenuItem p = pimo->m_items.first; p != NULL; p = p->next )
-			if ( p->mi.root == -1 )
+			if ( p->mi.root == ( HGENMENU )-1 || p->mi.root == NULL )
 				count++;
 	}
 
@@ -231,7 +231,7 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	count = 0;
 	{
 		for ( PMO_IntMenuItem p = pimo->m_items.first; p != NULL; p = p->next ) {
-			if ( p->mi.root != -1 )
+			if ( p->mi.root != ( HGENMENU )-1 && p->mi.root != NULL )
 				continue;
 
 			MenuItemOptData *PD = ( MenuItemOptData* )mir_calloc( sizeof( MenuItemOptData ));

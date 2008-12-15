@@ -62,19 +62,13 @@ static int RemoveGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 int BuildGroupMenu(WPARAM wParam,LPARAM lParam)
 {
-	int tick;
-	HMENU hMenu;
-	ListParam param;
-
-	memset(&param,0,sizeof(param));
+	ListParam param = { 0 };
 	param.MenuObjectHandle=(int)hGroupMenuObject;
-	param.rootlevel=-1;
-	
 
 	//hMenu=hMainMenu;
-	hMenu=CreatePopupMenu();
+	HMENU hMenu=CreatePopupMenu();
 	//hMenu=wParam;
-	tick=GetTickCount();
+	int tick=GetTickCount();
 	
 	NotifyEventHooks(g_CluiData.hEventPreBuildGroupMenu,0,0);
 
@@ -105,7 +99,7 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
         //pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	tmi.ownerdata=NULL;
 	
@@ -121,10 +115,8 @@ static int AddGroupMenuItem(WPARAM wParam,LPARAM lParam)
 		{
 			mmep->Param1=gmp->wParam;
 			mmep->Param2=gmp->lParam;
-
 		}
-		
-		
+
 		tmi.ownerdata=mmep;
 	}
 	op.Handle=CallService(MO_ADDNEWMENUITEM,(WPARAM)hGroupMenuObject,(LPARAM)&tmi);
@@ -518,21 +510,15 @@ static int OnBuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 };
 int BuildSubGroupMenu(WPARAM wParam,LPARAM lParam)
 {
-	int tick;
-	HMENU hMenu;
-	ListParam param;
-
-	memset(&param,0,sizeof(param));
+	ListParam param = { 0 };
 	param.MenuObjectHandle=(int)hSubGroupMenuObject;
-	param.rootlevel=-1;
 	param.wParam=wParam;
-  param.lParam=lParam;
+	param.lParam=lParam;
 	
-
 	//hMenu=hMainMenu;
-	hMenu=CreatePopupMenu();
+	HMENU hMenu=CreatePopupMenu();
 	//hMenu=wParam;
-	tick=GetTickCount();
+	int tick=GetTickCount();
 	
 	NotifyEventHooks(g_CluiData.hEventPreBuildSubGroupMenu,wParam,0);
 
@@ -566,7 +552,7 @@ static int AddSubGroupMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//pszPopupName for new system mean root level
         //pszPopupName for old system mean that exists popup
-	tmi.root=(int)mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	tmi.ownerdata=NULL;
 	
