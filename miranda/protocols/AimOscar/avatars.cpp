@@ -71,7 +71,7 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 	AI.cbSize = sizeof(AI);
 
     char* norm_sn=normalize_name(sn);
-	AI.hContact=find_contact(norm_sn);
+	AI.hContact=contact_from_sn(norm_sn);
 	if (data_len>0)
 	{
 		setString(AI.hContact, AIM_KEY_ASH,hash);

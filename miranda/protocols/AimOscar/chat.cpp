@@ -140,7 +140,7 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
         case GC_USER_PRIVMESS:
             {
                 char* sn = mir_t2a(gch->ptszUID);
-                HANDLE hContact = find_contact(sn);
+                HANDLE hContact = contact_from_sn(sn);
                 mir_free(sn);
 			    CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
             }
@@ -163,7 +163,7 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
         case GC_USER_NICKLISTMENU: 
             {
 			    char *sn = mir_t2a(gch->ptszUID);
-			    HANDLE hContact = find_contact(sn);
+			    HANDLE hContact = contact_from_sn(sn);
 			    mir_free(sn);
 
 			    switch (gch->dwData) 

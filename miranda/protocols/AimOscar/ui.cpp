@@ -798,6 +798,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 0));//Format outgoing messages
 			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte(AIM_KEY_II, 0));//Instant Idle
 			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte(AIM_KEY_CM, 0));//Check Mail
+			CheckDlgButton(hwndDlg, IDC_MG, ppro->getByte(AIM_KEY_MG, 1));//Manage Groups
 			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte(AIM_KEY_DA, 0));//Disable Avatars
 			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte(AIM_KEY_DSSL, 0));//Disable SSL
 		}
@@ -965,6 +966,10 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//Check Mail on Login
 				ppro->setByte( AIM_KEY_CM, IsDlgButtonChecked(hwndDlg, IDC_CM) != 0);
 				//End
+
+                //Manage Groups
+				ppro->setByte( AIM_KEY_MG, IsDlgButtonChecked(hwndDlg, IDC_MG) != 0);
+				//End
 			}
 		}
 		break;
@@ -990,10 +995,10 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         CheckRadioButton(hwndDlg, IDC_ALLOWALL, IDC_BLOCKBELOW, btns[ppro->pd_mode-1]);
 
         for (i=0; i<ppro->allow_list.getCount(); ++i)
-            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)ppro->allow_list[i].sn);
+            SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_ADDSTRING, 0, (LPARAM)ppro->allow_list[i].name);
 
         for (i=0; i<ppro->block_list.getCount(); ++i)
-            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)ppro->block_list[i].sn);
+            SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_ADDSTRING, 0, (LPARAM)ppro->block_list[i].name);
 
         break;
     
@@ -1040,10 +1045,10 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             }
             for (i=0; i<ppro->block_list.getCount(); ++i)
             {
-                PDList& pd = ppro->block_list[i];
-                if (SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.sn) == LB_ERR)
+                BdListItem& pd = ppro->block_list[i];
+                if (SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.name) == LB_ERR)
                 {
-                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.sn, pd.item_id, 0, 3);
+                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 3);
                     ppro->block_list.remove(i--);
                 }
             }
@@ -1052,20 +1057,19 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             {
                 char nick[80];
                 SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_GETTEXT, i, (LPARAM)nick);
-                if (ppro->find_list_item_id(ppro->block_list, nick) == 0)
+                if (ppro->block_list.find_id(nick) == 0)
                 {
-                    unsigned short id = ppro->get_free_list_item_id(ppro->block_list);
+                    unsigned short id = ppro->block_list.add(nick);
                     ppro->aim_add_contact(ppro->hServerConn, ppro->seqno, nick, id, 0, 3);
-                    ppro->block_list.insert(new PDList(nick, id));
                 }
             }
 
             for (i=0; i<ppro->allow_list.getCount(); ++i)
             {
-                PDList& pd = ppro->allow_list[i];
-                if (SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.sn) == LB_ERR)
+                BdListItem& pd = ppro->allow_list[i];
+                if (SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.name) == LB_ERR)
                 {
-                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.sn, pd.item_id, 0, 2);
+                    ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 2);
                     ppro->allow_list.remove(i--);
                 }
             }
@@ -1074,11 +1078,10 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
             {
                 char nick[80];
                 SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_GETTEXT, i, (LPARAM)nick);
-                if (ppro->find_list_item_id(ppro->allow_list, nick) == 0)
+                if (ppro->allow_list.find_id(nick) == 0)
                 {
-                    unsigned short id = ppro->get_free_list_item_id(ppro->allow_list);
+                    unsigned short id = ppro->allow_list.add(nick);
                     ppro->aim_add_contact(ppro->hServerConn, ppro->seqno, nick, id, 0, 2);
-                    ppro->allow_list.insert(new PDList(nick, id));
                 }
             }
 

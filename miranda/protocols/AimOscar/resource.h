@@ -106,6 +106,8 @@
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
 #define IDC_CM                          1191
+#define IDC_CM2                         1192
+#define IDC_MG                          1192
 #define IDC_SETPROFILE                  1200
 #define IDC_II                          1210
 #define IDC_PROFILE                     1220

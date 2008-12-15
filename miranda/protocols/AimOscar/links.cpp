@@ -73,7 +73,7 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
                 group=Netlib_UrlDecode(tok+10);  /* group is currently ignored */
         }
         if(sn==NULL) return 1; /* parse failed */
-        if(proto->find_contact(sn)==NULL) { /* does not yet check if sn is current user */
+        if(proto->contact_from_sn(sn)==NULL) { /* does not yet check if sn is current user */
             acs.handleType=HANDLE_SEARCHRESULT;
 			acs.szProto=proto->m_szModuleName;
             acs.psr=&psr;
@@ -97,16 +97,12 @@ static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
             if(!_strnicmp(tok,"message=",8) && *(tok+8)!=0)
                 msg=Netlib_UrlDecode(tok+8);
         }
-        if(sn==NULL) return 1; /* parse failed */
-        if(ServiceExists(MS_MSG_SENDMESSAGE)) {
-            hContact=proto->find_contact(sn);
-            if(hContact==NULL) {
-                hContact=proto->add_contact(sn); /* does not yet check if sn is current user */
-                if(hContact!=NULL)
-                    DBWriteContactSettingByte(hContact,MOD_KEY_CL,AIM_KEY_NL,1);
-            }
-            if(hContact!=NULL)
-                CallService(MS_MSG_SENDMESSAGE,(WPARAM)hContact,(LPARAM)msg);
+        if (sn==NULL) return 1; /* parse failed */
+        if (ServiceExists(MS_MSG_SENDMESSAGE)) 
+        {
+		    hContact = proto->contact_from_sn(sn, true, true);
+            if (hContact)
+                CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)msg);
         }
         return 0;
     }

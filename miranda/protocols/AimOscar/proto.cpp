@@ -3,7 +3,7 @@
 #include "m_genmenu.h"
 
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
-    : allow_list(5), block_list(5), chat_rooms(5)
+    : chat_rooms(5)
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
@@ -19,8 +19,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 
 	char* p = NEWSTR_ALLOCA( m_szModuleName );
 	_strupr( p );
-	GROUP_ID_KEY = strlcat(p,AIM_MOD_GI);
-	ID_GROUP_KEY = strlcat(p,AIM_MOD_IG);
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
 
 	InitializeCriticalSection( &SendingMutex );
@@ -38,9 +36,10 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
     InitIcons();
 	InitMenus();
 
-	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);
-	HookProtoEvent(ME_DB_CONTACT_DELETED, &CAimProto::OnContactDeleted);
+	HookProtoEvent(ME_DB_CONTACT_DELETED,        &CAimProto::OnContactDeleted);
+	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);
+	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CAimProto::OnGroupChange );
 }
 
 CAimProto::~CAimProto()
@@ -85,8 +84,6 @@ CAimProto::~CAimProto()
 	delete[] AVATAR_COOKIE;
 	delete[] CHATNAV_COOKIE;
 	delete[] ADMIN_COOKIE;
-	delete[] ID_GROUP_KEY;
-	delete[] GROUP_ID_KEY;
 	delete[] FILE_TRANSFER_KEY;
 	delete[] username;
 	
@@ -172,13 +169,8 @@ int CAimProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
 
 HANDLE CAimProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 {
-	if ( state != 1 )
-		return 0;
-
-	HANDLE hContact = find_contact( psr->nick );
-	if (!hContact )
-		hContact = add_contact( psr->nick );
-
+	if (state != 1) return 0;
+	HANDLE hContact = contact_from_sn(psr->nick, true, (flags & PALF_TEMPORARY) != 0);
 	return hContact; //See authrequest for serverside addition
 }
 
@@ -751,6 +743,11 @@ int __cdecl CAimProto::SetAwayMsg( int status, const char* msg )
 
 int __cdecl CAimProto::UserIsTyping( HANDLE hContact, int type )
 {
+	if (state != 1) return 0;
+
+    if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+        return 0;
+
 	DBVARIANT dbv;
 	if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
 		if ( type == PROTOTYPE_SELFTYPING_ON )

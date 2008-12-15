@@ -110,35 +110,9 @@ bool CAimProto::is_my_contact(HANDLE hContact)
 	return szProto != NULL && strcmp(m_szModuleName, szProto) == 0;
 }
 
-HANDLE CAimProto::find_contact(const char * sn)
+HANDLE CAimProto::find_chat_contact(const char* room)
 {
-	HANDLE hContact = NULL;
-	if(char* norm_sn=normalize_name(sn))
-	{
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact)
-		{
-			if (is_my_contact(hContact))
-			{
-				DBVARIANT dbv;
-				if (!getString(hContact, AIM_KEY_SN, &dbv))
-				{
-					bool found = !lstrcmpA(norm_sn, dbv.pszVal); 
-					DBFreeVariant(&dbv);
-					if (found) break; 
-				}
-			}
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-		}
-		delete[] norm_sn;
-	}
-	return hContact;
-}
-
-HANDLE CAimProto::find_chat_contact(const char * room)
-{
-	HANDLE hContact = NULL;
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
 		if (is_my_contact(hContact))
@@ -148,146 +122,168 @@ HANDLE CAimProto::find_chat_contact(const char * room)
 			{
 				bool found = !strcmp(room, dbv.pszVal); 
 				DBFreeVariant(&dbv);
-				if (found) break; 
+				if (found) return hContact; 
 			}
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
-	return hContact;
+	return NULL;
 }
 
-HANDLE CAimProto::add_contact(char* buddy)
+HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool temporary )
 {
-	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-	if (hContact)
-	{
-		if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) m_szModuleName) != 0)
-		{
-			CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
-			return 0;
-		}
-		else
-		{
-			if(char* norm_sn=normalize_name(buddy))
-			{
-				setByte(hContact,AIM_KEY_NC,1);
-				setString(hContact, AIM_KEY_SN,norm_sn);
-				setString(hContact, AIM_KEY_NK,buddy);
-				LOG("Adding contact %s to client side list.",norm_sn);
-				delete[] norm_sn;
-				return hContact;
-			}
-		}
-	}
-	return 0;
-}
+	char* norm_sn = normalize_name(sn);
 
-void CAimProto::add_contact_to_group(HANDLE hContact, const char* group)
-{
-	char* tgroup=trim_name(group);	
-	bool group_exist=1;
-	char groupNum[sizeof(AIM_KEY_GI)+10];
-	mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-	unsigned short old_group_id = getWord(hContact, groupNum, 0);		
-	if(old_group_id)
-	{
-		char group_id_string[32];
-		_itoa(old_group_id,group_id_string,10);
-		DBVARIANT dbv;
-		if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-			if(!lstrcmpiA(tgroup,dbv.pszVal))
-			{
-				DBFreeVariant(&dbv);
-				return;
-			}
-			DBFreeVariant(&dbv);
-	}
-	char buddyNum[sizeof(AIM_KEY_BI)+10];
-	mir_snprintf(buddyNum,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-	unsigned short item_id = getWord(hContact, buddyNum, 0);
-	char* lowercased_group=lowercase_name(tgroup);
-	unsigned short new_group_id=(unsigned short)DBGetContactSettingWord(NULL, GROUP_ID_KEY ,lowercased_group,0);
-	if(!new_group_id)
-	{
-		LOG("Group %s not on list.",tgroup);
-		new_group_id=search_for_free_group_id(tgroup);
-		group_exist=0;
-	}
-	if(!item_id)
-	{
-		LOG("Contact %u not on list.",hContact);
-		item_id=search_for_free_item_id(hContact);
-	}
-	if(new_group_id&&new_group_id!=old_group_id)
-	{
-		DBVARIANT dbv;
-		if(!getString(hContact, AIM_KEY_SN,&dbv))
-		{
-			char groupNum[sizeof(AIM_KEY_GI)+10];
-			mir_snprintf(groupNum,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-			setWord(hContact, groupNum, new_group_id);
-			unsigned short user_id_array_size;
-			char* user_id_array=get_members_of_group(new_group_id,user_id_array_size);
-			if(old_group_id)
-			{
-				LOG("Removing buddy %s:%u to the serverside list",dbv.pszVal,item_id);
-				aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,old_group_id, 0);
-			}
-			LOG("Adding buddy %s:%u to the serverside list",dbv.pszVal,item_id);
-			aim_add_contact(hServerConn,seqno,dbv.pszVal,item_id,new_group_id, 0);
-			if(!group_exist)
-			{
-				char group_id_string[32];
-				_itoa(new_group_id,group_id_string,10);
-				DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, tgroup);
-				DBWriteContactSettingWord(NULL, GROUP_ID_KEY,group, new_group_id);
-				LOG("Adding group %s:%u to the serverside list",group,new_group_id);
-				aim_add_contact(hServerConn,seqno,group,0,new_group_id,1);//add the group server-side even if it exist
-			}
-			LOG("Modifying group %s:%u on the serverside list",tgroup,new_group_id);
-			aim_mod_group(hServerConn,seqno,tgroup,new_group_id,user_id_array,user_id_array_size);//mod the group so that aim knows we want updates on the user's m_iStatus during this session			
-			DBFreeVariant(&dbv);
-			delete[] user_id_array;
-			deleteSetting(hContact, AIM_KEY_NC);
-		}
-	}
-}
-
-void CAimProto::add_contacts_to_groups()
-{
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	//MessageBox( NULL, "Entered the function...protocol name next", m_szModuleName, MB_OK );
-	//MessageBox( NULL, m_szModuleName, m_szModuleName, MB_OK );
 	while (hContact)
 	{
-		//MessageBox( NULL, protocol, m_szModuleName, MB_OK );
 		if (is_my_contact(hContact))
 		{
-			//MessageBox( NULL, "Matching contact...making a groupid key...", m_szModuleName, MB_OK );
-			char group[sizeof(AIM_KEY_GI)+10];
-			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",1);
-			//MessageBox( NULL, group, m_szModuleName, MB_OK );
-			unsigned short group_id=(unsigned short)getWord(hContact, group,0);	
-			if(group_id)
+			DBVARIANT dbv;
+			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				//MessageBox( NULL, "Group Id was valid...", m_szModuleName, MB_OK );
-				char group_id_string[32];
-				_itoa(group_id,group_id_string,10);
-				//MessageBox( NULL, "Made string out of it...", m_szModuleName, MB_OK );
-				//MessageBox( NULL, group_id_string, m_szModuleName, MB_OK );
-				DBVARIANT dbv;
-				//MessageBox( NULL, "Utf path... should start writing", m_szModuleName, MB_OK );
-				if(getByte(hContact, AIM_KEY_NC,0))
+				bool found = !strcmp(norm_sn, dbv.pszVal); 
+				DBFreeVariant(&dbv);
+                if (found)
+                {
+			        delete[] norm_sn;
+				    return hContact; 
+                }
+			}
+		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+	}
+
+	if ( addIfNeeded )
+	{
+        hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
+	    if (hContact)
+	    {
+		    if (CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) m_szModuleName) == 0)
+		    {
+			    setString(hContact, AIM_KEY_SN, norm_sn);
+			    setString(hContact, AIM_KEY_NK, sn);
+			    LOG("Adding contact %s to client side list.",norm_sn);
+	            if ( temporary )
+		            DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+			    delete[] norm_sn;
+			    return hContact;
+		    }
+		    else
+			    CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+	    }
+	}
+
+    delete[] norm_sn;
+	return NULL;
+}
+
+void CAimProto::update_server_group(const char* group, unsigned short group_id)
+{
+	unsigned short user_id_array_size;
+    unsigned short* user_id_array;
+
+    if (group_id)
+	    user_id_array = get_members_of_group(group_id, user_id_array_size);
+    else
+    {
+        user_id_array_size = (unsigned short)group_list.getCount();
+        user_id_array = new unsigned short[user_id_array_size];
+        for (unsigned short i=0; i<user_id_array_size; ++i)
+            user_id_array[i] = _htons(group_list[i].item_id);
+    }
+
+    //mod the group so that aim knows we want updates on the user's m_iStatus during this session			
+    LOG("Modifying group %s:%u on the serverside list",group, group_id);
+	aim_mod_group(hServerConn, seqno, group, group_id, (char*)user_id_array, user_id_array_size);
+
+    delete[] user_id_array;
+}
+
+void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
+{
+    if (new_group == NULL) return;
+
+	if (strcmp(new_group, "MetaContacts Hidden Group") == 0)
+		return;
+
+    unsigned short old_group_id = getGroupId(hContact, 1);	
+    char* old_group = group_list.find_name(old_group_id);
+
+	if (old_group && strcmp(new_group, old_group) == 0)
+		return;
+   
+    unsigned short new_group_id = group_list.find_id(new_group);
+	if (new_group_id == 0)
+	{
+		create_group(new_group);	
+		LOG("Group %s not on list.", new_group);
+        new_group_id = group_list.add(new_group);
+		LOG("Adding group %s:%u to the serverside list", new_group, new_group_id);
+		aim_add_contact(hServerConn, seqno, new_group, 0, new_group_id, 1);//add the group server-side even if it exist
+	}
+
+    unsigned short item_id = getBuddyId(hContact, 1);
+	if (!item_id)
+	{
+		LOG("Contact %u not on list.", hContact);
+		item_id = search_for_free_item_id(hContact);
+	}
+
+	DBVARIANT dbv;
+	if (!getString(hContact, AIM_KEY_SN,&dbv))
+	{
+        setGroupId(hContact, 1, new_group_id);
+		DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
+
+        aim_ssi_update(hServerConn, seqno, true);
+
+		if (old_group_id)
+		{
+			LOG("Removing buddy %s:%u to the serverside list", dbv.pszVal, item_id);
+			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
+            LOG("Modifying group %s:%u on the serverside list", old_group, old_group_id);
+            update_server_group(old_group, old_group_id);
+        }
+
+		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
+		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
+
+        LOG("Modifying group %s:%u on the serverside list", new_group, new_group_id);
+        update_server_group(new_group, new_group_id);
+		
+        aim_ssi_update(hServerConn, seqno, false);
+
+        DBFreeVariant(&dbv);
+		deleteSetting(hContact, AIM_KEY_NC);
+	}
+}
+
+void CAimProto::add_contacts_to_groups(void)
+{
+    for (int i=0; i<group_list.getCount(); ++i)
+        create_group(group_list[i].name);
+
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+		if (is_my_contact(hContact))
+		{
+			unsigned short group_id = getGroupId(hContact, 1);	
+			if (group_id)
+			{
+                char* group = group_list.find_name(group_id);
+				if (group)
 				{
-					if(!DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))//utf
-					{
-						//MessageBox( NULL, "Got group name... should add", m_szModuleName, MB_OK );
-						//MessageBox( NULL, dbv.pszVal, m_szModuleName, MB_OK );
-						create_group(dbv.pszVal);
-						DBWriteContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,dbv.pszVal);
-						DBFreeVariant(&dbv);
-					}
-					deleteSetting(hContact, AIM_KEY_NC);
+                    bool ok = false;
+                    DBVARIANT dbv;
+                    if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
+                    {
+                        ok = strcmp(group, dbv.pszVal) == 0;
+                        DBFreeVariant(&dbv);
+                    }
+                    if (!ok)
+					    DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, group);
 				}
 			}
 		}
@@ -302,15 +298,8 @@ void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 		//We need some of this stuff if we are still online.
 		for(int i=1;;++i)
 		{
-			char str[20];
-			mir_snprintf(str,sizeof(str),AIM_KEY_BI"%d",i);
-			if(deleteSetting(hContact, str) == 0)
-			{
-				mir_snprintf(str,sizeof(str),AIM_KEY_GI"%d",i);
-				deleteSetting(hContact, str);
-			}
-			else
-				break;
+			if (deleteBuddyId(hContact, i)) break;
+			deleteGroupId(hContact, i);
 		}
 		deleteSetting(hContact, AIM_KEY_FT);
 		deleteSetting(hContact, AIM_KEY_FN);
@@ -336,11 +325,10 @@ void CAimProto::offline_contacts()
 			offline_contact(hContact,true);
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
-	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)GROUP_ID_KEY);
-	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)ID_GROUP_KEY);
 	CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)FILE_TRANSFER_KEY);
     allow_list.destroy();
     block_list.destroy();
+    group_list.destroy();
 }
 
 void CAimProto::remove_AT_icons()
@@ -567,173 +555,160 @@ void CAimProto::execute_cmd(const char* arg)
 	ShellExecuteA(NULL,"open", arg, NULL, NULL, SW_SHOW);
 }
 
-void create_group(char *group)
+void create_group(const char *group)
 {
-	if (!group) return;
-
-	/*char* outer_group=get_outer_group();
-	if(!lstrcmpA(outer_group,group))
-	{
-		free(outer_group);
-		return;
-	}
-	free(outer_group);*/
-	int i;
-    char str[50], name[256];
-    DBVARIANT dbv;
-    for (i = 0;; i++)
-	{
-        _itoa(i, str, 10);
-		if(DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
-			break;//invalid
-		//only happens if dbv entry exist
-		if (dbv.pszVal[0] != '\0' && !lstrcmpA(dbv.pszVal + 1, group))
-		{
-				DBFreeVariant(&dbv);
-				return;  
-		}
-        DBFreeVariant(&dbv);
-	}
-	name[0] = 1 | GROUPF_EXPANDED;
-    strlcpy(name + 1, group, sizeof(name));
-    name[lstrlenA(group) + 1] = '\0';
-	DBWriteContactSettingStringUtf(NULL, "CListGroups", str, name);
-    CallServiceSync(MS_CLUI_GROUPADDED, i + 1, 0);
-}
-
-unsigned short CAimProto::search_for_free_group_id(char *name)//searches for a free group id and creates the group
-{
-	for(unsigned short i=1;i<0xFFFF;i++)
-	{
-		char group_id_string[32];
-		_itoa(i,group_id_string,10);
-		DBVARIANT dbv;
-		if(DBGetContactSettingStringUtf(NULL,ID_GROUP_KEY,group_id_string,&dbv))
-		{//invalid
-			create_group(name);	
-			return i;
-		}
-		DBFreeVariant(&dbv);//valid so free
-	}
-	return 0;
+	TCHAR* szGroupName = mir_utf8decodeT(group);
+	CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szGroupName);
+	mir_free(szGroupName);
 }
 
 unsigned short CAimProto::search_for_free_item_id(HANDLE hbuddy)//returns a free item id and links the id to the buddy
-{
-	for(unsigned short id=1;id<0xFFFF;id++)
-	{
-		bool used_id=0;
-		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact)
-		{
-			if (is_my_contact(hContact))
-			{		
-				int i=1;
-				for(;;)
-				{
-					char item[sizeof(AIM_KEY_BI)+10];
-					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					if(unsigned short item_id=(unsigned short)getWord(hContact, item,0))
-					{
-						if(item_id==id)
-						{
-							used_id=1;
-							break;//found one no need to look through anymore
-						}
-					}
-					else
-						break;//no more ids for this user
-					i++;
-				}
-				if(used_id)
-					break;
-			}
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-		}
-		if(!used_id)
-		{
-			char item[sizeof(AIM_KEY_BI)+10];
-			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
-			setWord(hbuddy, item, id);
-			return id;
-		}
-	}
-	return 0;
-}
-
-char* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &size)//returns the size of the list array aquired with data
-{
-	size=0;
-	char* list=0;
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-				int i=1;
-				for(;;)
-				{
-					char item[sizeof(AIM_KEY_BI)+10];
-					char group[sizeof(AIM_KEY_GI)+10];
-					mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-					mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-					if(unsigned short user_group_id=(unsigned short)getWord(hContact, group,0))
-					{
-						if(group_id==user_group_id)
-						{
-							if(unsigned short buddy_id=_htons((unsigned short)getWord(hContact, item, 0)))
-							{
-								list=renew(list,size,2);
-								memcpy(&list[size],&buddy_id,2);
-								size=size+2;
-							}
-						}
-					}
-					else
-						break;
-					i++;
-				}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-	return list;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-unsigned short CAimProto::get_free_list_item_id(OBJLIST<PDList> & list)
 {
     unsigned short id;
 
 retry:
     id = get_random();
 
-    for (int i=0; i<list.getCount(); ++i)
-        if (list[i].item_id == id) goto retry;
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+		if (is_my_contact(hContact))
+		{		
+			for(int i=1; ;++i)
+			{
+                unsigned short item_id = getBuddyId(hContact, i);
+				if (item_id == 0) break;
+
+                if (item_id == id) goto retry;    //found one no need to look through anymore
+			}
+		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+	}
+
+	setBuddyId(hbuddy, 1, id);
+	return id;
+}
+
+unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned short &size)//returns the size of the list array aquired with data
+{
+	unsigned short* list = NULL;
+	size = 0;
+
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+		if (is_my_contact(hContact))
+		{
+			for(int i=1; ;++i)
+			{
+                unsigned short user_group_id = getGroupId(hContact, i);
+				if (user_group_id == 0) break;
+
+                if (group_id == user_group_id)
+				{
+                    unsigned short buddy_id = getBuddyId(hContact, i);
+					if (buddy_id)
+					{
+						list = renew(list, size, 1);
+                        list[size++] = _htons(buddy_id);
+					}
+				}
+			}
+		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+	}
+	return list;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned short BdList::get_free_id(void)
+{
+    unsigned short id;
+
+retry:
+    id = get_random();
+
+    for (int i=0; i<count; ++i)
+        if (items[i]->item_id == id) goto retry;
 
     return id;
 }
 
-unsigned short CAimProto::find_list_item_id(OBJLIST<PDList> & list, char* sn)
+unsigned short BdList::find_id(const char* name)
 {
-    for (int i=0; i<list.getCount(); ++i)
+    for (int i=0; i<count; ++i)
     {
-        if (strcmp(list[i].sn, sn) == 0)
-            return list[i].item_id;
+        if (_stricmp(items[i]->name, name) == 0)
+            return items[i]->item_id;
     }
     return 0;
 }
 
-void CAimProto::remove_list_item_id(OBJLIST<PDList> & list, unsigned short id)
+char* BdList::find_name(unsigned short id)
 {
-    for (int i=0; i<list.getCount(); ++i)
+    for (int i=0; i<count; ++i)
     {
-        if (list[i].item_id == id)
+        if (items[i]->item_id == id)
+            return items[i]->name;
+    }
+    return NULL;
+}
+
+void BdList::remove_by_id(unsigned short id)
+{
+    for (int i=0; i<count; ++i)
+    {
+        if (items[i]->item_id == id)
         {
-            list.remove(i);
+            remove(i);
             break;
         }
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+unsigned short CAimProto::getBuddyId(HANDLE hContact, int i)
+{
+	char item[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_BI)+10, AIM_KEY_BI"%d", i);
+    return getWord(hContact, item, 0);
+}
+
+void CAimProto::setBuddyId(HANDLE hContact, int i, unsigned short id)
+{
+	char item[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_BI)+10, AIM_KEY_BI"%d", i);
+    setWord(hContact, item, id);
+}
+
+int CAimProto::deleteBuddyId(HANDLE hContact, int i)
+{
+	char item[sizeof(AIM_KEY_BI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_BI)+10, AIM_KEY_BI"%d", i);
+    return deleteSetting(hContact, item);
+}
+
+unsigned short CAimProto::getGroupId(HANDLE hContact, int i)
+{
+	char item[sizeof(AIM_KEY_GI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_GI)+10, AIM_KEY_GI"%d", i);
+    return getWord(hContact, item, 0);
+}
+
+void CAimProto::setGroupId(HANDLE hContact, int i, unsigned short id)
+{
+	char item[sizeof(AIM_KEY_GI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_GI)+10, AIM_KEY_GI"%d", i);
+    setWord(hContact, item, id);
+}
+
+int CAimProto::deleteGroupId(HANDLE hContact, int i)
+{
+	char item[sizeof(AIM_KEY_GI)+10];
+	mir_snprintf(item, sizeof(AIM_KEY_GI)+10, AIM_KEY_GI"%d", i);
+    return deleteSetting(hContact, item);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -181,11 +181,9 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		int i=0;
 		char* buddy=snac.part(1,buddy_length);
 		unsigned short tlv_count=snac.ushort(offset);
-		HANDLE hContact=find_contact(buddy);
 		int ESIconsDisabled=getByte( AIM_KEY_ES, 0);
 		int ATIconsDisabled=getByte( AIM_KEY_AT, 0);
-		if(!hContact)
-			hContact=add_contact(buddy);
+		HANDLE hContact=contact_from_sn(buddy, true);
 		offset+=2;
 		for(;i<tlv_count;i++)
 		{
@@ -562,9 +560,7 @@ void CAimProto::snac_user_offline(SNAC &snac)//family 0x0003
 	{
 		unsigned char buddy_length=snac.ubyte();
 		char* buddy=snac.part(1,buddy_length);
-		HANDLE hContact = find_contact(buddy);
-		if (!hContact) 
-            hContact = add_contact(buddy);
+		HANDLE hContact=contact_from_sn(buddy, true);
 		if (hContact)
 			offline_contact(hContact,0);
 		delete[] buddy;
@@ -595,24 +591,16 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
             {
                 case 0x0000: //buddy record
 			    {
-				    HANDLE hContact=find_contact(name);
-				    if(!hContact)
-				    {
-					    if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
-						    hContact=add_contact(name);
-				    }
+		            HANDLE hContact=contact_from_sn(name, true, false);
+//					    if(strcmp(name,SYSTEM_BUDDY))//nobody likes that stupid aol buddy anyway
 				    if(hContact)
 				    {
-					    char item[sizeof(AIM_KEY_BI)+10];
-					    char group[sizeof(AIM_KEY_GI)+10];
 					    for(int i=1; ;i++)
 					    {
-						    mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-						    mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-						    if(!getWord(hContact, item, 0))
+						    if(!getBuddyId(hContact, i))
 						    {
-							    setWord(hContact, item, item_id);	
-                			    setWord(hContact, group, group_id);
+							    setBuddyId(hContact, i, item_id);	
+                			    setGroupId(hContact, i, group_id);
 							    break;
 						    }
 					    }
@@ -623,22 +611,15 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 
                 case 0x0001: //group record
 		            if (group_id)
-		            {
-			            char group_id_string[32];
-			            _itoa(group_id,group_id_string,10);
-			            char* trimmed_name=trim_name(name);
-			            DBWriteContactSettingStringUtf(NULL, ID_GROUP_KEY,group_id_string, trimmed_name);
-			            char* lowercased_name=lowercase_name(trimmed_name);
-			            DBWriteContactSettingWord(NULL, GROUP_ID_KEY,lowercased_name, group_id);
-		            }
+                        group_list.add(name, group_id);
                     break;
 
                 case 0x0002: //permit record
-                    allow_list.insert(new PDList(name, item_id));
+                    allow_list.add(name, item_id);
                     break;
 
                 case 0x0003: //deny record
-                    block_list.insert(new PDList(name, item_id));
+                    block_list.add(name, item_id);
                     break;
 
                 case 0x0004: //privacy record
@@ -670,7 +651,8 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			offset+=(name_length+10+tlv_size);
 			delete[] name;
 		}
-		add_contacts_to_groups();//woo
+        if (getByte(AIM_KEY_MG, 1))
+		    add_contacts_to_groups();
 		if(!list_received)//because they can send us multiple buddy list packets
 		{//only want one finished connection
 			list_received=1;
@@ -690,7 +672,7 @@ void CAimProto::snac_message_accepted(SNAC &snac)//family 0x004
 	{
 		unsigned char sn_length=snac.ubyte(10);
 		char* sn=snac.part(11,sn_length);
-		HANDLE hContact=find_contact(sn);
+		HANDLE hContact=contact_from_sn(sn);
 		if ( hContact )
 			ForkThread( &CAimProto::msg_ack_success, hContact );
 
@@ -743,7 +725,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			offset+=TLV_HEADER_SIZE;
 			if(tlv.cmp(0x0004)&&!tlv.len())//auto response flag
 			{
-					auto_response=1;
+			    auto_response=1;
 			}
 			if(tlv.cmp(0x0002))//msg
 			{
@@ -751,13 +733,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				unsigned short msg_length=tlv.ushort(6+caps_length)-4;
 				unsigned short encoding=tlv.ushort(8+caps_length);
 				char* buf=tlv.part(12+caps_length,msg_length);
-				hContact=find_contact(sn);
-				if(!hContact)
-				{
-					hContact=add_contact(sn);
-					DBWriteContactSettingByte(hContact,MOD_KEY_CL,AIM_KEY_NL,1);
-					setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
-				}
+		        hContact=contact_from_sn(sn, true, true);
 				if(hContact)
 				{
 					ccs.hContact = hContact;
@@ -788,11 +764,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				icbm_cookie=snac.part(offset+2,8);
 				if(cap_cmp(snac.val(offset+10),AIM_CAP_FILE_TRANSFER) == 0)
                 {
-				    hContact=find_contact(sn);
-				    if(!hContact)
-				    {
-					    hContact=add_contact(sn);
-				    }
+		            hContact=contact_from_sn(sn, true, true);
 				    for(int i=26;i<tlv.len();)
 				    {
 					    TLV tlv(snac.val(offset+i));
@@ -841,11 +813,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                 }
 				else if(cap_cmp(snac.val(offset+10),AIM_CAP_CHAT)==0)//it's a chat invite request
 				{
-					hContact=find_contact(sn);
-					if(!hContact)
-					{
-						hContact=add_contact(sn);
-					}
+		            hContact = contact_from_sn(sn, true, true);
 					for(int i=26;i<tlv.len();)
 					{
 						TLV tlv(snac.val(offset+i));
@@ -1069,7 +1037,7 @@ void CAimProto::snac_busted_payload(SNAC &snac)//family 0x0004
 				if(error==0x02)
 				{
 					LOG("Buddy says we have a busted payload- BS- end a potential FT");
-					HANDLE hContact=find_contact(sn);
+					HANDLE hContact=contact_from_sn(sn);
 					if(hContact)
 					{
 						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
@@ -1095,11 +1063,7 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 		char* sn=snac.part(1,sn_length);
 		unsigned short tlv_count=snac.ushort(3+sn_length);
 		offset=5+sn_length;
-		HANDLE hContact=find_contact(sn);
-		if(!hContact)
-		{
-			hContact=add_contact(sn);
-		}
+		HANDLE hContact=contact_from_sn(sn, true, true);
 		while(offset<snac.len())
 		{
 			TLV tlv(snac.val(offset));
@@ -1125,7 +1089,7 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 				    msg=tlv.dup();
 
 				profile_received=1;
-				HANDLE hContact=find_contact(sn);
+				HANDLE hContact=contact_from_sn(sn);
 				if(hContact) write_profile(sn,msg,profile_unicode);
 				delete[] msg;
 			}
@@ -1150,7 +1114,7 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 				    msg=tlv.dup();
 
 				away_message_received=1;
-	            HANDLE hContact = find_contact( sn );
+	            HANDLE hContact = contact_from_sn( sn );
 	            if (hContact) write_away_message(sn, msg, away_message_unicode);
 				delete[] msg;
 			}
@@ -1178,7 +1142,7 @@ void CAimProto::snac_typing_notification(SNAC &snac)//family 0x004
 	{
 		unsigned char sn_length=snac.ubyte(10);
 		char* sn=snac.part(11,sn_length);
-		HANDLE hContact=find_contact(sn);
+		HANDLE hContact=contact_from_sn(sn);
 		if(hContact)
 		{
 			unsigned short type=snac.ushort(11+sn_length);
@@ -1203,7 +1167,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				ShowPopup(NULL,LPGEN("Successfully removed buddy from list."), ERROR_POPUP);
+//				ShowPopup(NULL,LPGEN("Successfully removed buddy from list."), ERROR_POPUP);
 			}
 			else if(code==0x0002)
 			{
@@ -1230,7 +1194,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				ShowPopup(NULL,"Successfully added buddy to list.", ERROR_POPUP);
+//				ShowPopup(NULL,"Successfully added buddy to list.", ERROR_POPUP);
 			}
 			else if(code==0x0003)
 			{
@@ -1273,7 +1237,7 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 		{
 			if(code==0x0000)
 			{
-				ShowPopup(NULL,LPGEN("Successfully modified group."), ERROR_POPUP);
+//				ShowPopup(NULL,LPGEN("Successfully modified group."), ERROR_POPUP);
 			}
 			else if(code==0x0002)
 			{
@@ -1737,19 +1701,11 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
                 {
 				    wchar_t* msgw=tlv.dupw();
                     wcs_htons(msgw);
-#ifdef UNICODE
                     char* msgu=mir_utf8encodeW(msgw);
-#else
-                    char* msgu=mir_u2a(msgw);
-#endif
                     delete[] msgw;
 		            char* bbuf = strip_html(msgu);
                     mir_free(msgu);
-#ifdef UNICODE
-                    message=mir_utf8decodeW(bbuf);
-#else
-                    message=mir_strdup(bbuf);
-#endif
+                    message=mir_utf8decodeT(bbuf);
                     delete[] bbuf;
                 }
                 else

@@ -76,8 +76,7 @@ int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-	if (state!=1)
-		return 0;
+	if (state != 1) return 0;
 
     HANDLE hContact = (HANDLE)wParam;
 	if (is_my_contact(hContact))
@@ -102,36 +101,86 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 
 int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 {
-	if ( state != 1 )
-		return 0;
+	if (state != 1) return 0;
+
+    const HANDLE hContact = (HANDLE)wParam;
+
+    if (!is_my_contact(hContact) || DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
+        return 0;
 
 	DBVARIANT dbv;
-	if ( !getString((HANDLE)wParam, AIM_KEY_SN, &dbv )) {
-		int i=1;
-		for(;;)
+	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+    {
+		for(int i=1;;++i)
 		{
-			char item[sizeof(AIM_KEY_BI)+10];
-			char group[sizeof(AIM_KEY_GI)+10];
-			mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",i);
-			mir_snprintf(group,sizeof(AIM_KEY_GI)+10,AIM_KEY_GI"%d",i);
-			if ( unsigned short item_id=(unsigned short)getWord((HANDLE)wParam, item, 0)) {
-				unsigned short group_id=(unsigned short)getWord((HANDLE)wParam, group, 0);
-				if(group_id)
-					aim_delete_contact(hServerConn,seqno,dbv.pszVal,item_id,group_id,0);
-			}
-			else
-				break;
-			i++;
+            unsigned short item_id = getBuddyId(hContact, i);
+			if (item_id == 0) break; 
+
+            unsigned short group_id = getGroupId(hContact, i);
+			if (group_id)
+            {
+				aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, group_id, 0);
+                char* group = group_list.find_name(group_id);
+			    update_server_group(group, group_id);
+            }
 		}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
 }
 
+
+int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
+{
+	if (state != 1 || !getByte(AIM_KEY_MG, 1)) return 0;
+
+	const HANDLE hContact = (HANDLE)wParam;
+	const CLISTGROUPCHANGE* grpchg = (CLISTGROUPCHANGE*)lParam;
+
+	if (hContact == NULL)
+	{
+		if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
+		{
+			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
+            unsigned short group_id = group_list.find_id(szOldName);
+			aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
+            group_list.remove_by_id(group_id);
+		    update_server_group("", 0);
+			mir_free(szOldName);
+		}
+		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
+		{
+			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
+            unsigned short group_id = group_list.find_id(szOldName);
+            if (group_id)
+            {
+			    char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
+			    update_server_group(szNewName, group_id);
+			    mir_free(szNewName);
+            }
+			mir_free(szOldName);
+		}
+	}
+	else
+	{
+        if (is_my_contact(hContact) && !DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
+		{
+            if (grpchg->pszNewName)
+            {
+			    char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
+			    add_contact_to_group(hContact, szNewName);
+			    mir_free(szNewName);
+            }
+            else
+          		ShowPopup(NULL, LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
+		}
+	}
+	return 0;
+}
+
 int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if ( state != 1 )
-		return 0;
+	if (state != 1) return 0;
 
     HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
@@ -159,16 +208,15 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
         aim_set_pd_info(hServerConn, seqno);
 
     case 4:
-        item_id = find_list_item_id(block_list, dbv.pszVal);
+        item_id = block_list.find_id(dbv.pszVal);
 		if (item_id != 0)
         {
-            remove_list_item_id(block_list, item_id);
+            block_list.remove_by_id(item_id);
             aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
         }
         else
         {
-            item_id = get_free_list_item_id(block_list);
-            block_list.insert(new PDList(dbv.pszVal, item_id));
+            item_id = block_list.add(dbv.pszVal);
             aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
         }
         break;
@@ -178,16 +226,15 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
         aim_set_pd_info(hServerConn, seqno);
 
     case 3:
-        item_id = find_list_item_id(allow_list, dbv.pszVal);
+        item_id = allow_list.find_id(dbv.pszVal);
 		if (item_id != 0)
         {
-            remove_list_item_id(allow_list, item_id);
+            allow_list.remove_by_id(item_id);
             aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
         }
         else
         {
-            item_id = get_free_list_item_id(allow_list);
-            allow_list.insert(new PDList(dbv.pszVal, item_id));
+            item_id = allow_list.add(dbv.pszVal);
             aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
         }
         break;

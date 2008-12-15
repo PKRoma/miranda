@@ -143,10 +143,8 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
 
-    char item[sizeof(AIM_KEY_BI)+10];
-	mir_snprintf(item,sizeof(AIM_KEY_BI)+10,AIM_KEY_BI"%d",1);
 	mi.flags = CMIM_FLAGS | CMIF_NOTONLINE;
-	if (getWord(hContact, item, 0 ) || state == 0 || isChatRoom)
+	if (getBuddyId(hContact, 1) || state == 0 || isChatRoom)
 		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
 
@@ -183,11 +181,11 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
             break;
 
         case 3:
-            mi.pszName = (char*)(find_list_item_id(allow_list, dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
+            mi.pszName = (char*)(allow_list.find_id(dbv.pszVal) ? LPGEN("&Block") : LPGEN("&Unblock"));
             break;
 
         case 4:
-            mi.pszName = (char*)(find_list_item_id(block_list, dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
+            mi.pszName = (char*)(block_list.find_id(dbv.pszVal) ? LPGEN("&Unblock") : LPGEN("&Block"));
             break;
 
         default:

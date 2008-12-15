@@ -96,6 +96,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
+    int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnExtraIconsRebuild( WPARAM wParam, LPARAM lParam );
 	int  __cdecl OnExtraIconsApply( WPARAM wParam, LPARAM lParam );
 	int  __cdecl OnIdleChanged( WPARAM wParam, LPARAM lParam );
@@ -110,8 +111,6 @@ struct CAimProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory
-	char* GROUP_ID_KEY;
-	char* ID_GROUP_KEY;
 	char* FILE_TRANSFER_KEY;
 	
 	CRITICAL_SECTION SendingMutex;
@@ -191,10 +190,12 @@ struct CAimProto : public PROTO_INTERFACE
     unsigned short pd_info_id;
     char pd_mode;
 
-    OBJLIST<PDList> allow_list;
-    OBJLIST<PDList> block_list;
+    BdList allow_list;
+    BdList block_list;
 
-	//away message retrieval stuff
+    BdList group_list;
+
+    //away message retrieval stuff
     char* modeMsgs[9];
 
 	//Some Icon handles
@@ -273,7 +274,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
-	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length);
+	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length);
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
@@ -423,11 +424,11 @@ struct CAimProto : public PROTO_INTERFACE
 	void   start_connection(int initial_status);
     bool   wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service);
     bool   is_my_contact(HANDLE hContact);
-	HANDLE find_contact(const char * sn);
     HANDLE find_chat_contact(const char * room);
-	HANDLE add_contact(char* buddy);
+    HANDLE contact_from_sn(const char* sn, bool addIfNeeded = false, bool temporary = false);
 	void   add_contacts_to_groups();
 	void   add_contact_to_group(HANDLE hContact, const char* group);
+    void   update_server_group(const char* group, unsigned short group_id);
 	void   offline_contacts();
 	void   offline_contact(HANDLE hContact, bool remove_settings);
 	void   add_AT_icons();
@@ -440,13 +441,15 @@ struct CAimProto : public PROTO_INTERFACE
 	void   write_away_message(const char* sn, const char* msg, bool utf);
 	void   write_profile(const char* sn, const char* msg, bool utf);
 
-	unsigned short search_for_free_group_id(char *name);
-	unsigned short search_for_free_item_id(HANDLE hbuddy);
-	char*  get_members_of_group( WORD group_id, WORD& size);
+    unsigned short getBuddyId(HANDLE hContact, int i);
+    unsigned short getGroupId(HANDLE hContact, int i);
+    void setBuddyId(HANDLE hContact, int i, unsigned short id);
+    void setGroupId(HANDLE hContact, int i, unsigned short id);
+    int deleteBuddyId(HANDLE hContact, int i);
+    int deleteGroupId(HANDLE hContact, int i);
 
-    unsigned short get_free_list_item_id(OBJLIST<PDList> & list);
-    unsigned short find_list_item_id(OBJLIST<PDList> & list, char* sn);
-    void   remove_list_item_id(OBJLIST<PDList> & list, unsigned short id);
+	unsigned short search_for_free_item_id(HANDLE hbuddy);
+	unsigned short* get_members_of_group(unsigned short group_id, unsigned short& size);
 
 	void   create_cookie(HANDLE hContact);
 	void   read_cookie(HANDLE hContact,char* cookie);

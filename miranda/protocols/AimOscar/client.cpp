@@ -367,14 +367,14 @@ int CAimProto::aim_delete_contact(HANDLE hServerConn, unsigned short &seqno, cha
     unsigned short offset=0;
     unsigned short sn_length=(unsigned short)strlen(sn);
     char* buf=(char*)alloca(SNAC_SIZE+sn_length+10);
-    aim_writesnac(0x13,0x0a,offset,buf);
-    aim_writeshort(sn_length,offset,buf);
-    aim_writegeneric(sn_length,sn,offset,buf);
-    aim_writeshort(group_id,offset,buf);
-    aim_writeshort(item_id,offset,buf);
-    aim_writeshort(list,offset,buf);
-    aim_writeshort(0,offset,buf); 
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+    aim_writesnac(0x13,0x0a,offset,buf);                    // SSI Delete
+    aim_writeshort(sn_length,offset,buf);                   // screen name length
+    aim_writegeneric(sn_length,sn,offset,buf);              // screen name
+    aim_writeshort(group_id,offset,buf);                    // group id
+    aim_writeshort(item_id,offset,buf);                     // buddy id
+    aim_writeshort(list,offset,buf);                        // buddy type
+    aim_writeshort(0,offset,buf);                           // length of extra data
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_add_contact(HANDLE hServerConn, unsigned short &seqno, const char* sn, unsigned short item_id,
@@ -383,29 +383,30 @@ int CAimProto::aim_add_contact(HANDLE hServerConn, unsigned short &seqno, const 
     unsigned short offset=0;
     unsigned short sn_length=(unsigned short)strlen(sn);
     char* buf=(char*)alloca(SNAC_SIZE+sn_length+10);
-    aim_writesnac(0x13,0x08,offset,buf);
-    aim_writeshort(sn_length,offset,buf);
-    aim_writegeneric(sn_length,sn,offset,buf);
-    aim_writeshort(group_id,offset,buf);
-    aim_writeshort(item_id,offset,buf);
-    aim_writeshort(list,offset,buf);
-    aim_writeshort(0,offset,buf); 
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+    aim_writesnac(0x13,0x08,offset,buf);                    // SSI Add
+    aim_writeshort(sn_length,offset,buf);                   // screen name length
+    aim_writegeneric(sn_length,sn,offset,buf);              // screen name
+    aim_writeshort(group_id,offset,buf);                    // group id
+    aim_writeshort(item_id,offset,buf);                     // buddy id
+    aim_writeshort(list,offset,buf);                        // buddy type
+    aim_writeshort(0,offset,buf);                           // length of extra data
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_mod_group(HANDLE hServerConn,unsigned short &seqno,char* name,unsigned short group_id,char* members,unsigned short members_length)
+int CAimProto::aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length)
 {
     unsigned short offset=0;
     unsigned short name_length=(unsigned short)strlen(name);
     char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+name_length+members_length+10);
-    aim_writesnac(0x13,0x09,offset,buf);//0x0e for mod group
-    aim_writeshort(name_length,offset,buf);
-    aim_writegeneric(name_length,name,offset,buf);
-    aim_writeshort(group_id,offset,buf);
-    aim_writegeneric(4,"\0\0\0\x01",offset,buf);//item id[2] item type[2
-    aim_writeshort(TLV_HEADER_SIZE+members_length,offset,buf);
+    aim_writesnac(0x13,0x09,offset,buf);                        // SSI Edit
+    aim_writeshort(name_length,offset,buf);                     // group name length
+    aim_writegeneric(name_length,name,offset,buf);              // group name 
+    aim_writeshort(group_id,offset,buf);                        // group id
+    aim_writeshort(0,offset,buf);                               // buddy id
+    aim_writeshort(1,offset,buf);                               // buddy type: Group
+    aim_writeshort(TLV_HEADER_SIZE+members_length,offset,buf);  // length of extra data 
     aim_writetlv(0xc8,members_length,members,offset,buf);
-    return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start)
@@ -744,18 +745,20 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, cha
 {
     unsigned short offset=0;
     char* buf = (char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+size+20);
-    aim_writesnac(0x13,0x09,offset,buf);
-    aim_writegeneric(5,"\0\x01\x31\0\0",offset,buf); //SSI Edit
-    aim_writeshort(avatar_id,offset,buf);
-    aim_writeshort(0x14,offset,buf); // Buddy Icon
-    aim_writeshort(size+10,offset,buf); //Size
-    aim_writetlv(0x131,0,NULL,offset,buf); //Buddy Name
+    aim_writesnac(0x13,0x09,offset,buf);                        // SSI Edit
+    aim_writeshort(1,offset,buf);                               // name length
+    aim_writechar(' ',offset,buf);                              // name 
+    aim_writeshort(0,offset,buf);                               // group id
+    aim_writeshort(avatar_id,offset,buf);                       // buddy id
+    aim_writeshort(0x14,offset,buf);                            // buddy type: Buddy Icon
+    aim_writeshort(size+10,offset,buf);                         // length of extra data
+    aim_writetlv(0x131,0,NULL,offset,buf);                      // buddy Display Name
 
     char* buf2 = (char*)alloca(2+size);
     buf2[0] = flags;
     buf2[1] = (char)size;
     memcpy(&buf2[2], hash, size);
-    aim_writetlv(0xd5,2+size,buf2,offset,buf); //BART ID
+    aim_writetlv(0xd5,2+size,buf2,offset,buf);                  // BART id
 
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }

@@ -106,6 +106,7 @@
 #define AIM_KEY_II						"InstantIdle"
 #define AIM_KEY_IIT						"InstantIdleTS"
 #define AIM_KEY_CM						"CheckMail"
+#define AIM_KEY_MG						"ManageGroups"
 #define AIM_KEY_DA						"DisableAvatars"
 #define AIM_KEY_DSSL					"DisableSSL"
 
