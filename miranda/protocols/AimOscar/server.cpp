@@ -125,8 +125,6 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 {
 	if(snac.subcmp(0x0005))
 	{
-		aim_request_offline_msgs(hServerConn,seqno);
-
         char** msgptr = getStatusMsgLoc(m_iDesiredStatus);
 		switch(m_iDesiredStatus)
 		{
@@ -688,6 +686,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 		    aim_set_caps(hServerConn,seqno);
 		    aim_set_icbm(hServerConn,seqno);
 			aim_client_ready(hServerConn,seqno);
+		    aim_request_offline_msgs(hServerConn,seqno);
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018 );//mail
 			LOG("Connection Negotiation Finished");
