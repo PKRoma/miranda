@@ -399,6 +399,8 @@ struct CAimProto : public PROTO_INTERFACE
     void   snac_admin_account_infomod(SNAC &snac);//family 0x0007
     void   snac_admin_account_confirm(SNAC &snac);//family 0x0007
 
+    void process_ssi_list(SNAC &snac, int &offset);
+
     //////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
 

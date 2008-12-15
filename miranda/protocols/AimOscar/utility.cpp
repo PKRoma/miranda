@@ -261,9 +261,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 
 void CAimProto::add_contacts_to_groups(void)
 {
-    for (int i=0; i<group_list.getCount(); ++i)
-        create_group(group_list[i].name);
-
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
 	{
