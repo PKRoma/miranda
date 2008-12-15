@@ -119,9 +119,11 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
             unsigned short group_id = getGroupId(hContact, i);
 			if (group_id)
             {
+                aim_ssi_update(hServerConn, seqno, true);
 				aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, group_id, 0);
                 char* group = group_list.find_name(group_id);
 			    update_server_group(group, group_id);
+                aim_ssi_update(hServerConn, seqno, false);
             }
 		}
 		DBFreeVariant(&dbv);

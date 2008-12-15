@@ -182,7 +182,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		unsigned short tlv_count=snac.ushort(offset);
 		int ESIconsDisabled=getByte( AIM_KEY_ES, 0);
 		int ATIconsDisabled=getByte( AIM_KEY_AT, 0);
-		HANDLE hContact=contact_from_sn(buddy, true, true);
+		HANDLE hContact=contact_from_sn(buddy, true);
 		offset+=2;
 		for(;i<tlv_count;i++)
 		{
@@ -559,7 +559,7 @@ void CAimProto::snac_user_offline(SNAC &snac)//family 0x0003
 	{
 		unsigned char buddy_length=snac.ubyte();
 		char* buddy=snac.part(1,buddy_length);
-		HANDLE hContact=contact_from_sn(buddy, true, true);
+		HANDLE hContact=contact_from_sn(buddy, true);
 		if (hContact)
 			offline_contact(hContact,0);
 		delete[] buddy;
@@ -588,7 +588,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 		    if (strcmp(name, SYSTEM_BUDDY) == 0)//nobody likes that stupid aol buddy anyway
                 break;
 
-            HANDLE hContact=contact_from_sn(name, true, false);
+            HANDLE hContact=contact_from_sn(name, true);
 		    if(hContact)
 		    {
                 int i;
@@ -671,7 +671,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 
 void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0013
 {
-	if(snac.subcmp(0x0006))
+	if(snac.subcmp(0x0006))  //contact list
 	{
 		LOG("Contact List Received");
 //      unsigned char ver = snac.ubyte();
@@ -685,8 +685,8 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 		{//only want one finished connection
 			list_received=1;
 			aim_activate_list(hServerConn,seqno);
-		    aim_set_icbm(hServerConn,seqno);
 		    aim_set_caps(hServerConn,seqno);
+		    aim_set_icbm(hServerConn,seqno);
 			aim_client_ready(hServerConn,seqno);
 			if(getByte( AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn,seqno,0x0018 );//mail
@@ -694,10 +694,28 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 			state=1;
 		}
 	}
-    else if (snac.subcmp(0x0008))
+    else if (snac.subcmp(0x0008)) // add buddy
     {
-        int offset=6;
+        int offset=8;
         process_ssi_list(snac, offset);
+    }
+    else if (snac.subcmp(0x000a)) // delete buddy
+    {
+        int offset=8;
+	    unsigned short name_length=snac.ushort(offset);
+	    char* name=snac.part(offset+2,name_length);
+//	    unsigned short group_id=snac.ushort(offset+2+name_length);
+//	    unsigned short item_id=snac.ushort(offset+4+name_length);
+	    unsigned short type=snac.ushort(offset+6+name_length);
+
+        switch (type)
+        {
+        case 0x0000: //buddy record
+            HANDLE hContact = contact_from_sn(name);
+            CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+            break;
+        }
+        delete[] name;
     }
 
 }
