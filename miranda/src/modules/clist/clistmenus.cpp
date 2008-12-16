@@ -197,14 +197,10 @@ static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
 
 static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
 {
-	HMENU hMenu;
-	ListParam param;
+	ListParam param = { 0 };
+	param.MenuObjectHandle = hMainMenuObject;
 
-	memset(&param,0,sizeof(param));
-	param.MenuObjectHandle=hMainMenuObject;
-	param.rootlevel=-1;
-
-	hMenu=hMainMenu;
+	HMENU hMenu = hMainMenu;
 	NotifyEventHooks(hPreBuildMainMenuEvent,(WPARAM)0,(LPARAM)0);
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
@@ -339,30 +335,21 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 
 static int BuildContactMenu(WPARAM wParam,LPARAM lParam)
 {
-	HMENU hMenu;
-	int isOnline,isOnList;
-	HANDLE hContact=(HANDLE)wParam;
-	char *szProto;
-	BuildContactParam bcp;
-	ListParam param;
-
+	HANDLE hContact = ( HANDLE )wParam;
 	NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
 
-	szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-	isOnList=0==DBGetContactSettingByte(hContact,"CList","NotOnList",0);
-	isOnline=szProto!=NULL && ID_STATUS_OFFLINE!=DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE);
+	char *szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
 
-	bcp.szProto=szProto;
-	bcp.isOnList=isOnList;
-	bcp.isOnline=isOnline;
+	BuildContactParam bcp;
+	bcp.szProto = szProto;
+	bcp.isOnList = ( DBGetContactSettingByte(hContact,"CList","NotOnList",0) == 0 );
+	bcp.isOnline = ( szProto != NULL && ID_STATUS_OFFLINE != DBGetContactSettingWord(hContact,szProto,"Status",ID_STATUS_OFFLINE));
 
-	memset(&param,0,sizeof(param));
+	ListParam param = { 0 };
+	param.MenuObjectHandle = hContactMenuObject;
+	param.wParam = (WPARAM)&bcp;
 
-	param.MenuObjectHandle=hContactMenuObject;
-	param.rootlevel=-1;
-	param.wParam=(WPARAM)&bcp;
-
-	hMenu=CreatePopupMenu();
+	HMENU hMenu = CreatePopupMenu();
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 
 	return (int)hMenu;
@@ -804,14 +791,10 @@ static int MenuGetMain(WPARAM wParam,LPARAM lParam)
 
 static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 {
-	HMENU hMenu;
-	ListParam param;
+	ListParam param = { 0 };
+	param.MenuObjectHandle = hStatusMenuObject;
 
-	memset(&param,0,sizeof(param));
-	param.MenuObjectHandle=hStatusMenuObject;
-	param.rootlevel=-1;
-
-	hMenu=hStatusMenu;
+	HMENU hMenu=hStatusMenu;
 	RecursiveDeleteMenu(hStatusMenu);
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	return (int)hMenu;

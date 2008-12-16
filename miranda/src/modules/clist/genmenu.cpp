@@ -843,7 +843,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 	ListParam localparam = *param;
 
-	while ( rootlevel == -1 && GetMenuItemCount( hMenu ) > 0 )
+	while ( rootlevel == 0 && GetMenuItemCount( hMenu ) > 0 )
 		DeleteMenu( hMenu, 0, MF_BYPOSITION );
 
 	for ( PMO_IntMenuItem pmi = pRootMenu; pmi != NULL; pmi = pmi->next ) {
