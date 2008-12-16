@@ -46,7 +46,6 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	return 0;
 }
 
-
 int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
@@ -68,7 +67,6 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-
 
 int CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 {
@@ -100,15 +98,14 @@ int CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws=(DBCONTACTWRITESETTING*)lParam;
-	if (state != 1) return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
-	if (is_my_contact(hContact))
+	if (cws->value.type == DBVT_DELETED)
 	{
-		if(!lstrcmpA(cws->szSetting,AIM_KEY_NL)&&!lstrcmpA(cws->szModule,MOD_KEY_CL))
+		if (!lstrcmpA(cws->szSetting, AIM_KEY_NL) && !lstrcmpA(cws->szModule, MOD_KEY_CL))
 		{
-			if(cws->value.type == DBVT_DELETED)
-			{
+            HANDLE hContact = (HANDLE)wParam;
+	        if (state == 1 && is_my_contact(hContact))
+            {
 				DBVARIANT dbv;
 				if(!DBGetContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
