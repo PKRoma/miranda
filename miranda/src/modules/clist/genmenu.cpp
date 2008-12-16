@@ -865,7 +865,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		}
 
 		/**************************************/
-		if ( rootlevel == -1 && mi->root == NULL && pmo->m_bUseUserDefinedItems ) {
+		if ( rootlevel == 0 && mi->root == NULL && pmo->m_bUseUserDefinedItems ) {
 			char DBString[256];
 			DBVARIANT dbv = { 0 };
 			int pos;
