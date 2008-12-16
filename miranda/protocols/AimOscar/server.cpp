@@ -711,6 +711,7 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
         {
         case 0x0000: //buddy record
             HANDLE hContact = contact_from_sn(name);
+            deleteBuddyId(hContact, 1);
             CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
             break;
         }
