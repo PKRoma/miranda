@@ -551,6 +551,7 @@ char* trim_name(char* s)
 }
 void msg_ack_success(HANDLE hContact)
 {
+	Sleep(150);
 	ProtoBroadcastAck(AIM_PROTOCOL_NAME, hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 void execute_cmd(char* type,char* arg) 

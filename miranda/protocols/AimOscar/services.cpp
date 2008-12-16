@@ -136,12 +136,9 @@ static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
+	int res = 0;
 	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
-		{
-			ForkThread(msg_ack_success,ccs->hContact);
-		}
 		char* msg=strldup((char *)ccs->lParam,lstrlen((char*)ccs->lParam));
 		char* smsg=strip_carrots(msg);
 		delete[] msg;
@@ -150,37 +147,31 @@ static int SendMsg(WPARAM /*wParam*/, LPARAM lParam)
 			char* html_msg=bbcodes_to_html(smsg);
 			delete[] smsg;
 			if(aim_send_plaintext_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg,0))
-			{
-				delete[] html_msg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
+				res = 1;
 			delete[] html_msg;
 		}
 		else
 		{
 			if(aim_send_plaintext_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg,0))
-			{
-				delete[] smsg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
+				res = 1;
 			delete[] smsg;
 		}
 		DBFreeVariant(&dbv);
+
+		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
+		{
+			ForkThread(msg_ack_success,ccs->hContact);
+		}
 	}
-	return 0;
+	return res;
 }
 static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CCSDATA *ccs = (CCSDATA *)lParam;
 	DBVARIANT dbv;
+	int res = 0;
 	if (!DBGetContactSettingString(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
-		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
-		{
-			ForkThread(msg_ack_success,ccs->hContact);
-		}
 		//if(DBGetContactSettingByte(ccs->hContact, AIM_PROTOCOL_NAME, AIM_KEY_US, 0))
 		//{
 		wchar_t* msg=wcsldup((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1),wcslen((wchar_t*)((char*)ccs->lParam+lstrlen((char*)ccs->lParam)+1)));
@@ -192,32 +183,22 @@ static int SendMsgW(WPARAM /*wParam*/, LPARAM lParam)
 			wchar_t* html_msg=bbcodes_to_html(smsg);
 			delete[] smsg;
 			if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,html_msg))
-			{
-				delete[] html_msg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
+				res = 1;
 			delete[] html_msg;
 		}
 		else
 		{
 			if(aim_send_unicode_message(conn.hServerConn,conn.seqno,dbv.pszVal,smsg))
-			{
-				delete[] smsg;
-				DBFreeVariant(&dbv);
-				return 1;
-			}
+				res = 1;
 			delete[] smsg;
 		}
-		//}
-		//else
-		//{
-		//	DBFreeVariant(&dbv);
-		//	return SendMsg(wParam,lParam);
-		//}
 		DBFreeVariant(&dbv);
+		if(0==DBGetContactSettingByte(NULL, AIM_PROTOCOL_NAME, AIM_KEY_DC, 1))
+		{
+			ForkThread(msg_ack_success,ccs->hContact);
+		}
 	}
-	return 0;
+	return res;
 }
 static int RecvMsg(WPARAM /*wParam*/, LPARAM lParam)
 {
