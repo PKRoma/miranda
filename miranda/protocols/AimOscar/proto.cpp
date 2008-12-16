@@ -529,9 +529,6 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 	DBVARIANT dbv;
 	if ( getString( hContact, AIM_KEY_SN, &dbv ))  return 0;
 
-	if ( 0 == getByte( AIM_KEY_DC, 1))
-		ForkThread( &CAimProto::msg_ack_success, hContact );
-
 	bool fl = false;
 	if ( flags & PREF_UNICODE ) 
 	{
@@ -570,7 +567,11 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 	delete[] msg;
 	DBFreeVariant(&dbv);
-	return res;
+	
+	if ( res && 0 == getByte( AIM_KEY_DC, 1))
+		ForkThread( &CAimProto::msg_ack_success, hContact );
+
+    return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -544,6 +544,7 @@ char* trim_str(char* s)
 
 void __cdecl CAimProto::msg_ack_success( void* hContact )
 {
+    Sleep(150);
 	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
