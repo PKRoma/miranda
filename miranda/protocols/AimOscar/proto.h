@@ -97,9 +97,10 @@ struct CAimProto : public PROTO_INTERFACE
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnGroupChange(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnExtraIconsRebuild( WPARAM wParam, LPARAM lParam );
-	int  __cdecl OnExtraIconsApply( WPARAM wParam, LPARAM lParam );
-	int  __cdecl OnIdleChanged( WPARAM wParam, LPARAM lParam );
+	int  __cdecl OnExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnExtraIconsApply(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnIdleChanged(WPARAM wParam, LPARAM lParam);
+    int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);
 	int  __cdecl OnModulesLoaded( WPARAM wParam, LPARAM lParam );
 	int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam);

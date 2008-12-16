@@ -46,6 +46,26 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	return 0;
 }
 
+
+int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
+{
+	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
+
+	if (msgEvData->uType == MSG_WINDOW_EVT_CLOSE) 
+    {
+		if (state != 1 || !is_my_contact(msgEvData->hContact)) return 0;
+        
+        DBVARIANT dbv;
+        if (!getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
+        {
+			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x000f);
+		    DBFreeVariant(&dbv);
+        }
+	}
+	return 0;
+}
+
+
 int CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 {
 	if ( state != 1 )
