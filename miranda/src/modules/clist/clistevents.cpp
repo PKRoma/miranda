@@ -288,7 +288,8 @@ int fnEventsProcessContactDoubleClick(HANDLE hContact)
 			return 0;
 		}
 	}
-	return 1;
+
+	return TryProcessDoubleClick( hContact );
 }
 
 int fnEventsProcessTrayDoubleClick(int index)

@@ -344,6 +344,11 @@ typedef struct
 //-1 on failure
 #define MO_GETMENUITEM						"MO/GetMenuItem"
 
+//wparam=MenuItemHandle
+//lparam=0
+//returns a menu handle on success or NULL on failure
+#define MO_GETDEFAULTMENUITEM				"MO/GetDefaultMenuItem"
+
 //wparam=MenuObjectHandle
 //lparam=vKey
 //returns TRUE if it processed the command, FALSE otherwise

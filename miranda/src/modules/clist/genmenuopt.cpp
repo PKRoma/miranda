@@ -4,7 +4,6 @@
 #define STR_SEPARATOR _T("---------------------------------------------")
 
 extern int DefaultImageListColorDepth;
-extern int hStatusMenuObject;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
 
 int hInst;

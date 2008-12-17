@@ -1146,10 +1146,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
 	if (ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
-		mi.flags = CMIF_ICONFROMICOLIB;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
 		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
 	} else {
-		mi.flags = 0;
+		mi.flags = CMIF_DEFAULT;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
 	mi.pszName = LPGEN("&Message");
@@ -1184,7 +1184,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 		HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
 		HookEvent(ME_AV_MYAVATARCHANGED, MyAvatarChanged);
 	}
-	HookEvent(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
 	HookEvent(ME_FONT_RELOAD, FontServiceFontsChanged);
 	RestoreUnreadMessageAlerts();
 	for (i = 0; i < NR_BUTTONBARICONS; i++)

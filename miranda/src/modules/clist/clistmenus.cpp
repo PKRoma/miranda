@@ -41,9 +41,9 @@ typedef struct  {
 	CListIntMenuItem,*lpCListIntMenuItem;
 
 //new menu sys
-static int hMainMenuObject;
-static int hContactMenuObject;
-int hStatusMenuObject=0;
+int hMainMenuObject = 0;
+int hContactMenuObject = 0;
+int hStatusMenuObject = 0;
 int UnloadMoveToGroup(void);
 
 int statustopos(int status);

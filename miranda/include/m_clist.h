@@ -129,6 +129,7 @@ typedef struct {
 
 #define CMIF_KEEPUNTRANSLATED  1024 // don't translate a menu item
 #define CMIF_ICONFROMICOLIB    2048 // use icolibName instead of hIcon
+#define CMIF_DEFAULT           4096 // this menu item is the default one
 
 // for compatibility. since 0.8.0 they both mean nothing
 #define CMIF_ROOTPOPUP  CMIF_ROOTHANDLE   //root item for new popup(save return id for childs)

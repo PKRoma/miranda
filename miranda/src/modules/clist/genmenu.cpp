@@ -110,17 +110,15 @@ int MO_DrawMenuItem( LPDRAWITEMSTRUCT dis )
 		else ImageList_DrawEx( pimi->parent->m_hMenuIcons, pimi->iconId, dis->hDC, 2, y, 0, 0, CLR_NONE, CLR_DEFAULT, ILD_FOCUS );
 	}
 	else {
-		if ( dis->itemState&ODS_CHECKED) {
-			HBRUSH hBrush;
+		if ( dis->itemState & ODS_CHECKED) {
 			RECT rc;
-			COLORREF menuCol,hiliteCol;
 			rc.left = 0; rc.right = GetSystemMetrics(SM_CXSMICON)+4;
 			rc.top = y-2; rc.bottom = rc.top + GetSystemMetrics(SM_CYSMICON)+4;
 			DrawEdge(dis->hDC,&rc,BDR_SUNKENOUTER,BF_RECT);
 			InflateRect(&rc,-1,-1);
-			menuCol = GetSysColor(COLOR_MENU);
-			hiliteCol = GetSysColor(COLOR_3DHIGHLIGHT);
-			hBrush = CreateSolidBrush(RGB((GetRValue(menuCol)+GetRValue(hiliteCol))/2,(GetGValue(menuCol)+GetGValue(hiliteCol))/2,(GetBValue(menuCol)+GetBValue(hiliteCol))/2));
+			COLORREF menuCol = GetSysColor(COLOR_MENU);
+			COLORREF hiliteCol = GetSysColor(COLOR_3DHIGHLIGHT);
+			HBRUSH hBrush = CreateSolidBrush(RGB((GetRValue(menuCol)+GetRValue(hiliteCol))/2,(GetGValue(menuCol)+GetGValue(hiliteCol))/2,(GetBValue(menuCol)+GetBValue(hiliteCol))/2));
 			FillRect(dis->hDC,&rc,GetSysColorBrush(COLOR_MENU));
 			DeleteObject(hBrush);
 			ImageList_DrawEx(pimi->parent->m_hMenuIcons,pimi->iconId,dis->hDC,2,y,0,0,CLR_NONE,GetSysColor(COLOR_MENU),ILD_BLEND50);
@@ -196,7 +194,7 @@ int MO_ProcessHotKeys( int menuHandle, int vKey )
 //lparam=PMO_MenuItem
 int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 {
-	PMO_MenuItem mi=(PMO_MenuItem)lParam;
+	PMO_MenuItem mi = (PMO_MenuItem)lParam;
 	if ( !bIsGenMenuInited || mi == NULL )
 		return -1;
 
@@ -210,6 +208,25 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 	*mi = pimi->mi;
 	LeaveCriticalSection( &csMenuHook );
 	return 0;
+}
+
+static int FindDefaultItem( PMO_IntMenuItem pimi, void* )
+{
+	return ( pimi->mi.flags & CMIF_DEFAULT ) ? TRUE : FALSE;
+}
+
+int MO_GetDefaultMenuItem(WPARAM wParam,LPARAM lParam)
+{
+	if ( !bIsGenMenuInited )
+		return -1;
+
+	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam);
+	EnterCriticalSection( &csMenuHook );
+	if ( pimi )
+		pimi = MO_RecursiveWalkMenu( pimi, FindDefaultItem, NULL );
+
+	LeaveCriticalSection( &csMenuHook );
+	return ( int )pimi;
 }
 
 //wparam MenuItemHandle
@@ -950,6 +967,8 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			mii.fMask |= MIIM_STATE;
 			mii.fState = (( pmi->mi.flags & CMIF_GRAYED ) ? MFS_GRAYED : MFS_ENABLED );
 			mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
+			if ( pmi->mi.flags & CMIF_DEFAULT )
+				mii.fState |= MFS_DEFAULT;
 			mii.wID = pmi->iCommand;
 
 			mii.hbmpItem = HBMMENU_CALLBACK;
@@ -975,8 +994,6 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // iconlib in menu
-
-extern int hStatusMenuObject;
 
 static int MO_ReloadIcon( PMO_IntMenuItem pmi, void* )
 {
@@ -1080,6 +1097,19 @@ int RegisterAllIconsInIconLib()
 	return 0;
 }
 
+int TryProcessDoubleClick( HANDLE hContact )
+{
+	int iMenuID = GetMenuObjbyId( hContactMenuObject );
+	if ( iMenuID != -1 ) {
+		PMO_IntMenuItem pimi = ( PMO_IntMenuItem )MO_GetDefaultMenuItem(( WPARAM )g_menus[ iMenuID ]->m_items.first, 0 );
+		if ( pimi != NULL ) {
+			MO_ProcessCommand( pimi, ( LPARAM )hContact );
+			return 0;
+	}	}
+
+	return 1;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Static services
 
@@ -1128,6 +1158,7 @@ int InitGenMenu()
 	CreateServiceFunction( MO_MENUITEMGETOWNERDATA, MO_MenuItemGetOwnerData );
 	CreateServiceFunction( MO_MODIFYMENUITEM, ( MIRANDASERVICE )MO_ModifyMenuItem );
 	CreateServiceFunction( MO_GETMENUITEM, MO_GetMenuItem );
+	CreateServiceFunction( MO_GETDEFAULTMENUITEM, MO_GetDefaultMenuItem );
 	CreateServiceFunction( MO_PROCESSCOMMANDBYMENUIDENT, MO_ProcessCommandByMenuIdent );
 	CreateServiceFunction( MO_PROCESSHOTKEYS, ( MIRANDASERVICE )MO_ProcessHotKeys );
 	CreateServiceFunction( MO_REMOVEMENUOBJECT, MO_RemoveMenuObject );

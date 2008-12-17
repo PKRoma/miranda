@@ -530,11 +530,11 @@ static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
 	if ( ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
-		mi.flags = CMIF_ICONFROMICOLIB;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
 		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
 	}
 	else {
-		mi.flags = 0;
+		mi.flags = CMIF_DEFAULT;
 		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	}
 	mi.pszName = LPGEN("&Message");
@@ -549,7 +549,6 @@ static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 	CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
 
-	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, SendMessageCommand);
 	HookEvent_Ex(ME_SMILEYADD_OPTIONSCHANGED, SmileySettingsChanged);
 	HookEvent_Ex(ME_IEVIEW_OPTIONSCHANGED, SmileySettingsChanged);
 	HookEvent_Ex(ME_AV_MYAVATARCHANGED, MyAvatarChanged);

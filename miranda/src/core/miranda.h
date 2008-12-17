@@ -144,9 +144,13 @@ void Window_FreeIcon_IcoLib(HWND hWnd);
 
 /**** clistmenus.c **********************************************************************/
 
+extern int hMainMenuObject, hContactMenuObject, hStatusMenuObject;
+
 extern int statusModeList[ MAX_STATUS_COUNT ];
 extern int skinIconStatusList[ MAX_STATUS_COUNT ];
 extern int skinIconStatusFlags[ MAX_STATUS_COUNT ];
+
+int TryProcessDoubleClick( HANDLE hContact );
 
 /**** protocols.c ***********************************************************************/
 
