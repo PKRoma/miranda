@@ -46,6 +46,7 @@
 #define IDC_INFO_LISTVIEW               1002
 #define IDC_PORT                        1003
 #define IDC_INFO_CHANNELS               1003
+#define IDC_INFO_LISTVIEW2              1003
 #define IDC_NAME                        1004
 #define IDC_INFO_ADDRESS                1004
 #define IDC_PASS                        1005
@@ -181,6 +182,10 @@
 #define IDC_EDIT1                       1232
 #define IDC_STATICTEXT1                 1233
 #define IDC_STATICTEXT2                 1234
+#define IDC_FILTER_STRING               1235
+#define IDC_BUTTON1                     1236
+#define IDC_FILTER_BTN                  1237
+
 #define ID_MENU1_OP                     40013
 #define ID_MENU1_DEOP                   40014
 #define ID_MENU1_VOICE                  40015
@@ -241,7 +246,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        200
 #define _APS_NEXT_COMMAND_VALUE         40067
-#define _APS_NEXT_CONTROL_VALUE         1234
+#define _APS_NEXT_CONTROL_VALUE         1238
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

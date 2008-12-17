@@ -90,12 +90,17 @@ struct CListDlg : public CProtoDlgBase<CIrcProto>
 	CListDlg( CIrcProto* _pro );
 
 	virtual void OnInitDialog();
+	virtual void OnChange( CCtrlBase* ctrl );
+	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 	virtual void OnDestroy();
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 
-	CCtrlListView m_list;
+	TCHAR m_title[255];
+	CCtrlListView m_list, m_list2;
+	CCtrlEdit m_filter, m_status;
+	UINT m_timer;
 
-	CCtrlButton  m_Join;
+	CCtrlButton m_Join;
 	void OnJoin( CCtrlButton* );
 
 	void List_OnColumnClick( CCtrlListView::TEventInfo* ev );

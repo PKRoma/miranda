@@ -303,6 +303,7 @@ public:
 	CCtrlBase(CDlgBase *wnd, int idCtrl );
 	virtual ~CCtrlBase() { Unsubclass(); }
 
+	__inline int GetCtrlId() const { return m_idCtrl; }
 	__inline HWND GetHwnd() const { return m_hwnd; }
 	__inline CDlgBase *GetParent() { return m_parentWnd; }
 
@@ -377,6 +378,9 @@ public:
 	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode);
 
 	CCallback<CCtrlButton> OnClick;
+
+	int GetState();
+	void SetState(int state);
 };
 
 class CCtrlMButton : public CCtrlButton

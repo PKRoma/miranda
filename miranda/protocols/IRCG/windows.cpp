@@ -253,10 +253,15 @@ void CNickDlg::OnOk( CCtrlButton* )
 /////////////////////////////////////////////////////////////////////////////////////////
 // 'Change nickname' dialog
 
+#define LIST_TIMER 10
+
 CListDlg::CListDlg(CIrcProto *_pro) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_LIST, NULL ),
 	m_Join( this, IDC_JOIN ),
-	m_list( this, IDC_INFO_LISTVIEW )
+	m_list( this, IDC_INFO_LISTVIEW ),
+	m_list2( this, IDC_INFO_LISTVIEW2 ),
+	m_status( this, IDC_TEXT ),
+	m_filter( this, IDC_FILTER_STRING )
 {
 	m_list.OnDoubleClick = m_Join.OnClick = Callback( this, &CListDlg::OnJoin );
 	m_list.OnColumnClick = Callback( this, &CListDlg::List_OnColumnClick );
@@ -273,7 +278,7 @@ void CListDlg::OnInitDialog()
 
 	lvC.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 	lvC.fmt = LVCFMT_LEFT;
-	for ( int index = 0;index < 4; index++ ) {
+	for ( int index = 0; index < 4; index++ ) {
 		lvC.iSubItem = index;
 		lvC.cx = COLUMNS_SIZES[index];
 
@@ -285,16 +290,113 @@ void CListDlg::OnInitDialog()
 		}
 		lvC.pszText = szBuffer;
 		m_list.InsertColumn( index, &lvC );
+		m_list2.InsertColumn( index, &lvC );
 	}
 	
 	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "channelList_");
 
 	m_list.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
+	m_list2.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
 	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_LIST)); // Tell the dialog to use it
+	
+	m_status.SetText( TranslateT( "Please wait..." ));
+}
+
+BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if ( msg == WM_TIMER ) {
+		::KillTimer( m_hwnd, m_timer ); m_timer = 0;
+
+		// Retrieve the input text
+		TCHAR strFilterText[255];
+		m_filter.GetText( strFilterText, SIZEOF(strFilterText));
+
+		if ( strFilterText[0] ) {
+			int itemCount = 0;
+			int j = m_list.GetItemCount();
+			if ( j <= 0 )
+				return FALSE;
+
+			// Empty the filtered list
+			m_list2.DeleteAllItems();
+
+			LVITEM lvm;
+			TCHAR text[255];
+			lvm.pszText = text;	// Set buffer for texts
+			lvm.cchTextMax = 128;
+			lvm.mask= LVIF_TEXT;
+			for ( int i = 0; i < j; i++ ) 
+			{
+				lvm.iSubItem = 0;	// First column
+				lvm.iItem = i;
+				m_list.GetItem( &lvm );
+
+				// Match the text?
+				wchar_t* t = wcsstr( lvm.pszText, strFilterText);
+				if ( t ) {
+					++itemCount;
+
+					// Column 0
+					LVITEM lvItem;
+					lvItem.iItem = m_list2.GetItemCount(); 
+					lvItem.mask = LVIF_TEXT | LVIF_PARAM;
+
+					lvItem.iSubItem = 0;
+					lvItem.pszText = lvm.pszText;
+					lvItem.lParam = lvItem.iItem;
+					lvItem.iItem = m_list2.InsertItem( &lvItem );
+
+					// Column 2
+					lvm.mask = LVIF_TEXT;
+					lvm.iSubItem = 1;
+					lvm.iItem = i;
+					m_list.GetItem( &lvm );
+
+					lvItem.mask = LVIF_TEXT;
+					lvItem.iSubItem = 1;
+					lvItem.pszText = lvm.pszText;
+					m_list2.SetItem( &lvItem );
+
+					// Column 4
+					lvm.mask= LVIF_TEXT;
+					lvm.iSubItem = 3;
+					lvm.iItem = i;
+					m_list.GetItem( &lvm );
+
+					lvItem.mask = LVIF_TEXT;
+					lvItem.pszText = lvm.pszText;
+					lvItem.iSubItem = 3;
+					m_list2.SetItem( &lvItem );
+			}	}	
+
+			// Show the list
+			SetWindowPos( m_list2.GetHwnd(), HWND_TOP, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
+			ShowWindow( m_list.GetHwnd(), SW_HIDE );
+
+			// New dialog title
+			TCHAR newTitle[255];
+			wsprintf( newTitle, TranslateT("%s - Filtered - %d items"), m_title, itemCount );
+			SetWindowText( m_hwnd, newTitle );
+		}
+		else {
+			ShowWindow( m_list.GetHwnd(), SW_SHOW );
+			ShowWindow( m_list2.GetHwnd(), SW_HIDE);
+			SetWindowText( m_hwnd, m_title );
+	}	}
+
+	return CProtoDlgBase<CIrcProto>::DlgProc( msg, wParam, lParam );
+}
+
+void CListDlg::OnChange( CCtrlBase* ctrl )
+{
+	if ( ctrl->GetCtrlId() == IDC_FILTER_STRING )
+		m_timer = ::SetTimer( m_hwnd, LIST_TIMER, 200, NULL );
 }
 
 void CListDlg::OnDestroy()
 {
+	if ( m_timer )
+		::KillTimer( m_hwnd, m_timer );
 	Utils_SaveWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "channelList_");
 	m_proto->m_listDlg = NULL;
 }
@@ -337,12 +439,17 @@ int CListDlg::Resizer( UTILRESIZECONTROL *urc)
 {
 	switch( urc->wId ) {
 	case IDC_INFO_LISTVIEW:
+	case IDC_INFO_LISTVIEW2:
 		return RD_ANCHORX_LEFT | RD_ANCHORY_TOP | RD_ANCHORY_HEIGHT | RD_ANCHORX_WIDTH;
+	case IDC_FILTER_STRING:
+	case IDC_FILTER_BTN:
+		return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 	case IDC_TEXT:
 		return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM | RD_ANCHORX_WIDTH;
-	default:
-		return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
-}	}
+	}
+
+	return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+}	
 
 void CListDlg::List_OnColumnClick( CCtrlListView::TEventInfo* ev )
 {
@@ -354,13 +461,19 @@ void CListDlg::List_OnColumnClick( CCtrlListView::TEventInfo* ev )
 void CListDlg::OnJoin( CCtrlButton* )
 {
 	TCHAR szTemp[255];
-	int i = m_list.GetSelectionMark();
-	m_list.GetItemText( i, 0, szTemp, 255 );
+	m_filter.GetText( szTemp, SIZEOF(szTemp));
+
+	if ( szTemp[0] )
+		m_list2.GetItemText( m_list2.GetSelectionMark(), 0, szTemp, 255 );
+	else
+		m_list.GetItemText( m_list.GetSelectionMark(), 0, szTemp, 255 );
 	m_proto->PostIrcMessage( _T("/JOIN %s"), szTemp );
 }
 
 void CListDlg::UpdateList()
 {
+	GetWindowText( m_hwnd, m_title, 128);
+	
 	int j = m_list.GetItemCount();
 	if ( j > 0 ) {
 		LVITEM lvm;

@@ -514,6 +514,17 @@ void CCtrlData::CreateDbLink( const char* szModuleName, const char* szSetting, T
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// CCtrlButton
+
+int CCtrlButton::GetState()
+{	return SendMessage(m_hwnd, BM_GETCHECK, 0, 0);
+}
+
+void CCtrlButton::SetState(int state)
+{	SendMessage(m_hwnd, BM_SETCHECK, state, 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // CCtrlMButton
 
 CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip ) :

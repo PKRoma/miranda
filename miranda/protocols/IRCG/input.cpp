@@ -491,7 +491,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 			PostIrcMessage( _T("/lusers" ));
 			return false;
 		}
-		SetDlgItemText( m_listDlg->GetHwnd(), IDC_TEXT, TranslateT("Aborted")); 
+		m_listDlg->m_status.SetText( TranslateT("Aborted")); 
 		return true;
 	}
 	

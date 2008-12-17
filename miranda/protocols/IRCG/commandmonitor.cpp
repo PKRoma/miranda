@@ -1589,7 +1589,7 @@ bool CIrcProto::OnIrc_LIST( const CIrcMessage* pmsg )
 			mir_sntprintf(text, SIZEOF(text), TranslateT("Downloading list (%u%%) - %u channels"), percent, m_channelNumber);
 		else
 			mir_sntprintf(text, SIZEOF(text), TranslateT("Downloading list - %u channels"), m_channelNumber);
-		SetDlgItemText(m_listDlg->GetHwnd(), IDC_TEXT, text);
+		m_listDlg->m_status.SetText( text );
 	}
 	
 	return true;
