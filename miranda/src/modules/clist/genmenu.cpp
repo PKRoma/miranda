@@ -268,7 +268,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 #endif
 	}
 	if ( pmi->flags & CMIM_FLAGS ) {
-		oldflags = pimi->mi.flags & ( CMIF_ROOTHANDLE | CMIF_ICONFROMICOLIB );
+		oldflags = pimi->mi.flags & ( CMIF_ROOTHANDLE | CMIF_ICONFROMICOLIB | CMIF_DEFAULT );
 		pimi->mi.flags = pmi->flags & ~CMIM_ALL;
 		pimi->mi.flags |= oldflags;
 	}
