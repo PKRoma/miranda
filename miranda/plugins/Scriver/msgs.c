@@ -430,7 +430,7 @@ static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam) {
 
 		CLISTMENUITEM clmi = {0};
 		clmi.cbSize = sizeof( CLISTMENUITEM );
-		clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+		clmi.flags = CMIM_FLAGS | CMIF_DEFAULT | CMIF_HIDDEN;
 
 		if ( szProto ) {
 			// leave this menu item hidden for chats
