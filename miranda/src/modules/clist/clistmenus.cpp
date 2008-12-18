@@ -50,10 +50,9 @@ int statustopos(int status);
 //
 //HIMAGELIST hImlMenuIcons;
 
-//static HANDLE hPreBuildContactMenuEvent;
-static HANDLE hPreBuildMainMenuEvent,hStatusModeChangeEvent;
+HANDLE hPreBuildMainMenuEvent, hStatusModeChangeEvent, hPreBuildContactMenuEvent;
 
-static HANDLE hPreBuildContactMenuEvent,hAckHook;
+static HANDLE hAckHook;
 
 static HMENU hMainMenu,hStatusMenu = 0;
 int statusModeList[ MAX_STATUS_COUNT ] =

@@ -1111,9 +1111,6 @@ struct StatusIconListNode {
 	struct StatusIconListNode *next;
 	StatusIconData sid;
 };
-//MAD
-BOOL newapi;
-//
 
 struct TABSRMM_SessionInfo {
 	unsigned int cbSize;

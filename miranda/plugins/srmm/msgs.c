@@ -33,9 +33,9 @@ const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-HANDLE hHookWinEvt = NULL;
+HANDLE hHookWinEvt = NULL, hMsgMenuItem = NULL;
 static HANDLE hServices[7];
-static HANDLE hHooks[7];
+static HANDLE hHooks[8];
 
 extern HINSTANCE g_hInst;
 
@@ -334,29 +334,18 @@ static int FontsChanged(WPARAM wParam,LPARAM lParam)
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTMENUITEM mi;
-	PROTOACCOUNT** accs;
-	int accCount, i;
-
 	RegisterSRMMFonts();
 	LoadMsgLogIcons();
-
-	ZeroMemory(&mi, sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090000;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
-	mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
-	mi.pszName = LPGEN("&Message");
-	mi.pszService = MS_MSG_SENDMESSAGE;
-	
-	ProtoEnumAccounts( &accCount, &accs );
-	for (i = 0; i < accCount; i++) {
-		PROTOACCOUNT* pa = accs[i];
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND ) {
-			mi.pszContactOwner = pa->szModuleName;
-			CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-	}	}
-
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090000;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
+		mi.icolibItem = LoadSkinnedIconHandle( SKINICON_EVENT_MESSAGE );
+		mi.pszName = LPGEN("&Message");
+		mi.pszService = MS_MSG_SENDMESSAGE;
+		hMsgMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
 	HookEvent(ME_FONT_RELOAD, FontsChanged);
 
 	RestoreUnreadMessageAlerts();
@@ -378,8 +367,14 @@ int SplitmsgShutdown(void)
 	DestroyCursor(hCurHyperlinkHand);
 	DestroyCursor(hCurSplitWE);
 	
-    for (i=0; i<7; ++i) if (hHooks[i]) UnhookEvent(hHooks[i]);
-    for (i=0; i<7; ++i) if (hServices[i]) DestroyServiceFunction(hServices[i]);
+	for (i=0; i < SIZEOF(hHooks); ++i) 
+		if ( hHooks[i] )
+			UnhookEvent( hHooks[i] );
+
+	for ( i=0; i < SIZEOF(hServices); ++i)
+		if ( hServices[i] )
+			DestroyServiceFunction( hServices[i] );
+
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
@@ -395,6 +390,28 @@ static int IconsChanged(WPARAM wParam, LPARAM lParam)
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
 	// change all the icons
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_UPDATEWINICON, 0, 0);
+	return 0;
+}
+
+static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// leave this menu item hidden for chats
+			if ( !DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0 ))
+				if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND )
+					clmi.flags &= ~CMIF_HIDDEN;
+		}
+
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMsgMenuItem, ( LPARAM )&clmi );
+	}
 	return 0;
 }
 
@@ -452,6 +469,8 @@ int LoadSendRecvMessageModule(void)
 	hHooks[4] = HookEvent(ME_SKIN_ICONSCHANGED, IconsChanged);
 	hHooks[5] = HookEvent(ME_PROTO_CONTACTISTYPING, TypingMessage);
 	hHooks[6] = HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
+	hHooks[7] = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
+
 	hServices[0] = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #if defined(_UNICODE)
 	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);

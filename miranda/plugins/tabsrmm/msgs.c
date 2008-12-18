@@ -67,11 +67,10 @@ static int AvatarChanged(WPARAM wParam, LPARAM lParam);
 static int MyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
 HANDLE hMessageWindowList, hUserPrefsWindowList, hEventDbEventAdded;
-static HANDLE hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEvent_ttbInit, hTTB_Slist, hTTB_Tray;
+static HANDLE hEventDbSettingChange, hEventContactDeleted, hEventDispatch, hEventPrebuildMenu;
 static HANDLE hModulesLoadedEvent;
-static HANDLE hEventSmileyAdd = 0;
-HANDLE *hMsgMenuItem = NULL;
-int hMsgMenuItemCount = 0;
+static HANDLE hEventSmileyAdd = 0, hMenuItem;
+static HANDLE hEvent_ttbInit, hTTB_Slist, hTTB_Tray;
 
 static HANDLE hSVC[14];
 #define H_MS_MSG_SENDMESSAGE 0
@@ -725,8 +724,6 @@ int SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 		myGlobals.hLastOpenedContact = (HANDLE)wParam;
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
-		if (DBGetContactSettingByte((HANDLE)wParam, szProto, "ChatRoom", 0))
-			return CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)wParam, 0);
 		if (pContainer == NULL)
 			pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 		CreateNewTabForContact(pContainer, (HANDLE) wParam, 1, (const char *)lParam, TRUE, TRUE, FALSE, 0);
@@ -799,8 +796,6 @@ int SendMessageCommand(WPARAM wParam, LPARAM lParam)
 		myGlobals.hLastOpenedContact = (HANDLE)wParam;
 		GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 		pContainer = FindContainerByName(szName);
-		if (DBGetContactSettingByte((HANDLE)wParam, szProto, "ChatRoom", 0))
-			return CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)wParam, 0);
 		if (pContainer == NULL)
 			pContainer = CreateContainer(szName, FALSE, (HANDLE)wParam);
 		CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, (const char *) lParam, TRUE, TRUE, FALSE, 0);
@@ -1101,12 +1096,8 @@ TCHAR  *mathModDelimiter = NULL;
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTMENUITEM mi;
-	PROTOCOLDESCRIPTOR **protocol;
-	//mad
-	PROTOACCOUNT **accs;
-	//
-	int protoCount, i;
+	CLISTMENUITEM mi = { 0 };
+	int i;
 	DBVARIANT dbv;
 	MENUITEMINFOA mii = {0};
 	HMENU submenu;
@@ -1142,7 +1133,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
 	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
 
-	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
 	if (ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
@@ -1154,30 +1144,8 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
-	//mad
-	if(newapi)   ProtoEnumAccounts( &protoCount, &accs );
-	else	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
-	//
-	for (i = 0; i < protoCount; i++) {
-		if (newapi)
-			{
-			if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-				mi.pszContactOwner = accs[i]->szModuleName;
-				hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-				hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-			}
-			}
-		else
-			{
-			if (protocol[i]->type != PROTOTYPE_PROTOCOL)
-				continue;
-			if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-				mi.pszContactOwner = protocol[i]->szName;
-				hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
-				hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-				}
-		}
-	}
+	hMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
 	if (ServiceExists(MS_SKIN2_ADDICON))
 		HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
 	if (ServiceExists(MS_AV_GETAVATARBITMAP)) {
@@ -1350,6 +1318,7 @@ static int OkToExit(WPARAM wParam, LPARAM lParam)
 	g_sessionshutdown = 1;
 	UnhookEvent(hEventDbEventAdded);
 	UnhookEvent(hEventDispatch);
+	UnhookEvent(hEventPrebuildMenu);
 	UnhookEvent(hEventDbSettingChange);
 	UnhookEvent(hEventContactDeleted);
 	ModPlus_PreShutdown(wParam, lParam);
@@ -1434,11 +1403,6 @@ int SplitmsgShutdown(void)
 	ImageList_Destroy(myGlobals.g_hImageList);
 
 	OleUninitialize();
-	if (hMsgMenuItem) {
-		free(hMsgMenuItem);
-		hMsgMenuItem = NULL;
-		hMsgMenuItemCount = 0;
-	}
 	DestroyMenu(myGlobals.g_hMenuContext);
 	if (myGlobals.g_hMenuContainer)
 		DestroyMenu(myGlobals.g_hMenuContainer);
@@ -1524,19 +1488,30 @@ static int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// leave this menu item hidden for chats
+			if ( !DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0 ))
+				if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND )
+					clmi.flags &= ~CMIF_HIDDEN;
+		}
+
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
+}
+
 int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (hMsgMenuItem && !ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
-		int j;
-		CLISTMENUITEM mi;
-
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-
-		for (j = 0; j < hMsgMenuItemCount; j++)
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-	}
 	CreateImageList(FALSE);
 	CacheMsgLogIcons();
 	WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
@@ -1615,6 +1590,8 @@ tzdone:
 	HookEvent(ME_PROTO_ACK, ProtoAck);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
 	HookEvent(ME_SYSTEM_OKTOEXIT, OkToExit);
+	
+	hEventPrebuildMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
 
 	InitAPI();
 
@@ -1666,7 +1643,6 @@ tzdone:
 	MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
 	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
 	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
-
 	return 0;
 }
 

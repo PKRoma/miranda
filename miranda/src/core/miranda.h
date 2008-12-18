@@ -145,6 +145,7 @@ void Window_FreeIcon_IcoLib(HWND hWnd);
 /**** clistmenus.c **********************************************************************/
 
 extern int hMainMenuObject, hContactMenuObject, hStatusMenuObject;
+extern HANDLE hPreBuildMainMenuEvent, hPreBuildContactMenuEvent;
 
 extern int statusModeList[ MAX_STATUS_COUNT ];
 extern int skinIconStatusList[ MAX_STATUS_COUNT ];

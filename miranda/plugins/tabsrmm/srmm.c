@@ -39,7 +39,6 @@ PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 //MAD
-extern BOOL newapi=FALSE;
 struct LIST_INTERFACE li;
 //
 struct MM_INTERFACE mmi;
@@ -81,8 +80,6 @@ __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 	g_mirandaVersion = mirandaVersion;
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
 		return NULL;
-	else if (mirandaVersion > PLUGIN_MAKE_VERSION(0, 8, 0, 8))
-		newapi=1;
 	return &pluginInfo;
 }
 

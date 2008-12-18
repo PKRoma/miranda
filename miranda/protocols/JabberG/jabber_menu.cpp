@@ -112,8 +112,14 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	if ( bIsChatRoom == GCW_CHATROOM ) {
 		CLISTMENUITEM clmi = { 0 };
 		clmi.cbSize = sizeof( clmi );
-		clmi.pszName = ( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE ) ? (char *)LPGEN("&Leave") : (char *)LPGEN("&Join");
 		clmi.flags = CMIM_NAME | CMIM_FLAGS;
+		if ( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE )
+			clmi.pszName = (char *)LPGEN("&Leave");
+		else {
+			clmi.pszName = (char *)LPGEN("&Join");
+			clmi.flags |= CMIF_DEFAULT;
+		}
+
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuJoinLeave, ( LPARAM )&clmi );
 		return 0;
 	}

@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 extern HANDLE hEventOptInitialise;
-extern HANDLE *hMsgMenuItem;
-extern int hMsgMenuItemCount;
 extern void ChangeStatusIcons();
 extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
 extern int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
@@ -234,17 +232,6 @@ void RegisterFontServiceFonts() {
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
-	if ( hMsgMenuItem && !ServiceExists( MS_SKIN2_GETICONBYHANDLE )) {
-		int j;
-		CLISTMENUITEM mi;
-		mi.cbSize = sizeof(mi);
-		mi.flags = CMIM_ICON;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-		for (j = 0; j < hMsgMenuItemCount; j++) {
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM) hMsgMenuItem[j], (LPARAM) & mi);
-		}
-		CallService(MS_SKIN2_RELEASEICON,(WPARAM)mi.hIcon, 0);
-	}
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	ChangeStatusIcons();

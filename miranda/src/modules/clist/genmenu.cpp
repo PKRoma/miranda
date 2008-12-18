@@ -212,6 +212,9 @@ int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 
 static int FindDefaultItem( PMO_IntMenuItem pimi, void* )
 {
+	if ( pimi->mi.flags & ( CMIF_GRAYED | CMIF_HIDDEN ))
+		return FALSE;
+
 	return ( pimi->mi.flags & CMIF_DEFAULT ) ? TRUE : FALSE;
 }
 
@@ -1101,6 +1104,8 @@ int TryProcessDoubleClick( HANDLE hContact )
 {
 	int iMenuID = GetMenuObjbyId( hContactMenuObject );
 	if ( iMenuID != -1 ) {
+		NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
+
 		PMO_IntMenuItem pimi = ( PMO_IntMenuItem )MO_GetDefaultMenuItem(( WPARAM )g_menus[ iMenuID ]->m_items.first, 0 );
 		if ( pimi != NULL ) {
 			MO_ProcessCommand( pimi, ( LPARAM )hContact );
