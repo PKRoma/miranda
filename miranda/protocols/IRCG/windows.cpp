@@ -324,15 +324,14 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			TCHAR text[255];
 			lvm.pszText = text;	// Set buffer for texts
 			lvm.cchTextMax = 128;
-			lvm.mask= LVIF_TEXT;
-			for ( int i = 0; i < j; i++ ) 
-			{
+			lvm.mask = LVIF_TEXT;
+			for ( int i = 0; i < j; i++ ) {
 				lvm.iSubItem = 0;	// First column
 				lvm.iItem = i;
 				m_list.GetItem( &lvm );
 
 				// Match the text?
-				wchar_t* t = wcsstr( lvm.pszText, strFilterText);
+				TCHAR* t = _tcsstr( lvm.pszText, strFilterText);
 				if ( t == NULL )	// If no, then Check if in the topics
 				{
 					LVITEM lvm2;		// To avoid to overwrite the external lvm
@@ -345,7 +344,7 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					m_list.GetItem( &lvm );
 
 					// Match the text?
-					t = wcsstr( lvm.pszText, strFilterText);
+					t = _tcsstr( lvm.pszText, strFilterText);
 				}
 				if ( t ) {
 					++itemCount;
