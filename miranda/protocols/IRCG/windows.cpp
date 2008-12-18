@@ -333,6 +333,20 @@ BOOL CListDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 				// Match the text?
 				wchar_t* t = wcsstr( lvm.pszText, strFilterText);
+				if ( t == NULL )	// If no, then Check if in the topics
+				{
+					LVITEM lvm2;		// To avoid to overwrite the external lvm
+					TCHAR text[300];
+					lvm2.pszText = text;	// Set buffer for texts
+					lvm2.cchTextMax = SIZEOF(text);
+					lvm2.mask = LVIF_TEXT;
+					lvm2.iSubItem = 3;	// Topic column
+					lvm2.iItem = i;
+					m_list.GetItem( &lvm );
+
+					// Match the text?
+					t = wcsstr( lvm.pszText, strFilterText);
+				}
 				if ( t ) {
 					++itemCount;
 
