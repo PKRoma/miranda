@@ -145,7 +145,7 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 							DBFreeVariant(&dbv);
 							if ( stage == 1 && !sender || stage == 2 && sender || stage == 3 && !sender ) {
 								if ( !getString(hContact, AIM_KEY_SN, &dbv)) {
-									aim_accept_file(hServerConn,seqno,dbv.pszVal,cookie);
+									aim_file_ad(hServerConn,seqno,dbv.pszVal,cookie,false);
 									DBFreeVariant(&dbv);
 								}
 							}
@@ -165,25 +165,15 @@ int proxy_initialize_send(HANDLE connection,char* sn, char* cookie)
 {
 	char sn_length=(char)lstrlenA(sn);
 	unsigned short length = _htons(39+sn_length);
-	char* clength =(char*)&length;
-	char* msg_frag= new char[25+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)];
-	memcpy(msg_frag,clength,2);
+	char* msg_frag= (char*)alloca(25+sn_length+sizeof(AIM_CAP_FILE_TRANSFER));
+	memcpy(msg_frag,(char*)&length,2);
 	memcpy(&msg_frag[2],"\x04\x4a\0\x02\0\0\0\0\0\0",10);
 	memcpy(&msg_frag[12],(char*)&sn_length,1);
 	memcpy(&msg_frag[13],sn,sn_length);
 	memcpy(&msg_frag[13+sn_length],cookie,8);
 	memcpy(&msg_frag[21+sn_length],"\0\x01\0\x10",4);
 	memcpy(&msg_frag[25+sn_length],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
-	if(Netlib_Send(connection,msg_frag,(24+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0)==SOCKET_ERROR)
-	{
-		delete[] msg_frag;
-		return -1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		return 0;
-	}
+    return Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0) >= 0 ? 0 : -1; 
 }
 
 int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned short port_check)
@@ -191,7 +181,7 @@ int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned shor
 	char sn_length=(char)lstrlenA(sn);
 	unsigned short length = _htons(41+sn_length);
 	char* clength =(char*)&length;
-	char* msg_frag= new char[27+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)];
+	char* msg_frag= (char*)alloca(27+sn_length+sizeof(AIM_CAP_FILE_TRANSFER));
 	memcpy(msg_frag,clength,2);
 	memcpy(&msg_frag[2],"\x04\x4a\0\x04\0\0\0\0\0\0",10);
 	memcpy(&msg_frag[12],(char*)&sn_length,1);
@@ -201,14 +191,5 @@ int proxy_initialize_recv(HANDLE connection,char* sn, char* cookie,unsigned shor
 	memcpy(&msg_frag[15+sn_length],cookie,8);
 	memcpy(&msg_frag[23+sn_length],"\0\x01\0\x10",4);
 	memcpy(&msg_frag[27+sn_length],AIM_CAP_FILE_TRANSFER,sizeof(AIM_CAP_FILE_TRANSFER));
-	if(Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0)==SOCKET_ERROR)
-	{
-		delete[] msg_frag;
-		return -1;
-	}
-	else
-	{
-		delete[] msg_frag;
-		return 0;
-	}
+    return Netlib_Send(connection,msg_frag,(26+sn_length+sizeof(AIM_CAP_FILE_TRANSFER)),0) >= 0 ? 0 : -1; 
 }

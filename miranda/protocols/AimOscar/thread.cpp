@@ -35,7 +35,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 				char cookie[8];
 				read_cookie(hContact,cookie);
 				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
-				aim_file_deny(hServerConn,seqno,dbv.pszVal,cookie);
+				aim_file_ad(hServerConn,seqno,dbv.pszVal,cookie,true);
 				DBFreeVariant(&dbv);
 			}
 			else sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
@@ -60,7 +60,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 		HANDLE hDirect = aim_peer_connect(verified_ip,port);
 		if ( hDirect ) {
 			LOG("Connected to buddy over P2P port via verified ip.");
-			aim_accept_file(hServerConn,seqno,sn,cookie);
+			aim_file_ad(hServerConn,seqno,sn,cookie,false);
 			setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 			setString( *hContact, AIM_KEY_IP, verified_ip );
 			ForkThread( &CAimProto::aim_dc_helper, *hContact );
@@ -69,7 +69,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 			hDirect = aim_peer_connect(local_ip,port);
 			if ( hDirect ) {
 				LOG("Connected to buddy over P2P port via local ip.");
-				aim_accept_file( hServerConn, seqno, sn, cookie );
+				aim_file_ad( hServerConn, seqno, sn, cookie, false );
 				setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 				setString( *hContact, AIM_KEY_IP, local_ip );
 				ForkThread( &CAimProto::aim_dc_helper, *hContact );
@@ -101,7 +101,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 	{
 		HANDLE hDirect = aim_peer_connect(verified_ip,*port);
 		if ( hDirect ) {
-			aim_accept_file(hServerConn,seqno,sn,icbm_cookie);
+			aim_file_ad(hServerConn,seqno,sn,icbm_cookie,false);
 			setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 			setString( *hContact, AIM_KEY_IP, verified_ip );
 			ForkThread( &CAimProto::aim_dc_helper, *hContact );
@@ -109,7 +109,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 		else {
 			hDirect = aim_peer_connect( local_ip, *port );	
 			if ( hDirect ) {
-				aim_accept_file( hServerConn, seqno, sn, icbm_cookie );
+				aim_file_ad( hServerConn, seqno, sn, icbm_cookie, false );
 				setDword( *hContact, AIM_KEY_DH, ( DWORD )hDirect );
 				setString( *hContact, AIM_KEY_IP, local_ip );
 				ForkThread( &CAimProto::aim_dc_helper, *hContact );

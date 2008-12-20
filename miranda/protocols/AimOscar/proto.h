@@ -279,11 +279,9 @@ struct CAimProto : public PROTO_INTERFACE
     int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
 	int    aim_keepalive(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,unsigned long ip, unsigned short port, bool force_proxy, unsigned short request_num ,char* file_name,unsigned long total_bytes,char* descr);//used when requesting a regular file transfer
-	int    aim_send_file_proxy(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie, char* file_name,unsigned long total_bytes,char* descr,unsigned long proxy_ip, unsigned short port);
 	int    aim_file_redirected_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
 	int    aim_file_proxy_request(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,char request_num,unsigned long proxy_ip, unsigned short port);
-	int    aim_accept_file(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
-	int    aim_file_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
+	int    aim_file_ad(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie,bool deny);
 	int    aim_typing_notification(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short type);
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
@@ -346,6 +344,9 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short &offset,char* out, unsigned short id=0);
 	int    aim_writetlv(unsigned short type,unsigned short size, const char* value,unsigned short &offset,char* out);
+    int    aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out);
+    int    aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out);
+    int    aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out);
 	int    aim_sendflap(HANDLE conn, char type,unsigned short length,const char *buf, unsigned short &seqno);
 	void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 	void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);

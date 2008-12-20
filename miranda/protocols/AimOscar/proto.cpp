@@ -265,8 +265,8 @@ int __cdecl CAimProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 		LOG("We are cancelling a file transfer.");
 
 		char cookie[8];
-		read_cookie( hContact, cookie );
-		aim_file_deny( hServerConn, seqno, dbv.pszVal, cookie );
+		read_cookie(hContact, cookie );
+		aim_file_ad(hServerConn, seqno, dbv.pszVal, cookie, true);
 		DBFreeVariant( &dbv );
 	}
 
@@ -290,7 +290,7 @@ int __cdecl CAimProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* 
 
 		char cookie[8];
 		read_cookie( hContact,cookie );
-		aim_file_deny( hServerConn, seqno, dbv.pszVal, cookie );
+		aim_file_ad( hServerConn, seqno, dbv.pszVal, cookie, true );
 		DBFreeVariant( &dbv );
 	}
 	deleteSetting( hContact, AIM_KEY_FT );

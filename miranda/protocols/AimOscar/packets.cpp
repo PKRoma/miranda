@@ -20,6 +20,26 @@ int CAimProto::aim_writetlv(unsigned short type,unsigned short length, const cha
 	return 0;
 }
 
+int CAimProto::aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out)
+{
+    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+}
+
+
+int CAimProto::aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out)
+{
+    value = _htons(value);
+    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+}
+
+
+int CAimProto::aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out)
+{
+    value = _htonl(value);
+    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+}
+
+
 int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,const char *buf, unsigned short &seqno)
 {
 	EnterCriticalSection(&SendingMutex);
