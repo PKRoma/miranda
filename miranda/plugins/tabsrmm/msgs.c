@@ -1096,14 +1096,12 @@ TCHAR  *mathModDelimiter = NULL;
 
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTMENUITEM mi = { 0 };
 	int i;
 	DBVARIANT dbv;
 	MENUITEMINFOA mii = {0};
 	HMENU submenu;
 	BOOL bIEView;
 	static Update upd = {0};
-
 
 #if defined(_UNICODE)
 	static char szCurrentVersion[30];
@@ -1132,19 +1130,21 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	hEventDispatch = HookEvent(ME_DB_EVENT_ADDED, DispatchNewEvent);
 	hEventDbEventAdded = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
-
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090000;
-	if (ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
-		mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
-		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
-	} else {
-		mi.flags = CMIF_DEFAULT;
-		mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090000;
+		if (ServiceExists(MS_SKIN2_GETICONBYHANDLE)) {
+			mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
+			mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
+		} else {
+			mi.flags = CMIF_DEFAULT;
+			mi.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+		}
+		mi.pszName = LPGEN("&Message");
+		mi.pszService = MS_MSG_SENDMESSAGE;
+		hMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	}
-	mi.pszName = LPGEN("&Message");
-	mi.pszService = MS_MSG_SENDMESSAGE;
-	hMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
 	if (ServiceExists(MS_SKIN2_ADDICON))
 		HookEvent(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
@@ -1157,7 +1157,6 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	for (i = 0; i < NR_BUTTONBARICONS; i++)
 		myGlobals.g_buttonBarIcons[i] = 0;
 	LoadIconTheme();
-
 
 	CreateImageList(TRUE);
 
@@ -1256,14 +1255,16 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if (nen_options.bTraySupport)
 		CreateSystrayIcon(TRUE);
 
-	ZeroMemory((void *)&mi, sizeof(mi));
-	mi.cbSize = sizeof(mi);
-	mi.position = -500050005;
-	mi.hIcon = myGlobals.g_iconContainer;
-	mi.pszContactOwner = NULL;
-	mi.pszName = LPGEN("&Messaging settings...");
-	mi.pszService = MS_TABMSG_SETUSERPREFS;
-	myGlobals.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -500050005;
+		mi.hIcon = myGlobals.g_iconContainer;
+		mi.pszContactOwner = NULL;
+		mi.pszName = LPGEN("&Messaging settings...");
+		mi.pszService = MS_TABMSG_SETUSERPREFS;
+		myGlobals.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
 	PreTranslateDates();
 	hEvent_ttbInit = HookEvent("TopToolBar/ModuleLoaded", TTB_Loaded);
 

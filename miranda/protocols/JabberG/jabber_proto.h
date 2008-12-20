@@ -449,6 +449,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
 	void   __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
 
+	int    __cdecl OnJoinChat( WPARAM wParam, LPARAM lParam );
+	int    __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
+
 	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin=false );
 	void   GroupchatProcessPresence( HXML node, void *userdata );
 	void   GroupchatProcessMessage( HXML node, void *userdata );
@@ -576,7 +579,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuRosterAdd( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
-	int    __cdecl OnMenuJoinLeave( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuTransportLogin( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuTransportResolve( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );

@@ -432,6 +432,18 @@ typedef struct {
 } PROTOFILERESUME;
 #define PS_FILERESUME     "/FileResume"
 
+//Asks a protocol to join the chatroom from contact  v0.8.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=(LPARAM)0
+//Returns 0 on success, nonzero on failure
+#define PS_JOINCHAT "/JoinChat"
+
+//Asks a protocol to leave the chatroom from contact  v0.8.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=(LPARAM)0
+//Returns 0 on success, nonzero on failure
+#define PS_LEAVECHAT "/LeaveChat"
+
 /****************************** SENDING SERVICES *************************/
 //these should be called with CallContactService()
 
@@ -632,8 +644,8 @@ repeat {
 }
 userNick should be a human-readable description of the user. It need not
 be the nick, or even confined to displaying just one type of
-information. The dbe.flags can contain DBEF_UTF defining userNick as utf-8 
-encoded. 
+information. The dbe.flags can contain DBEF_UTF defining userNick as utf-8d0
+encoded.d0
 userId should be a machine-readable representation of the unique
 protocol identifying field of the user. Because of the need to be
 zero-terminated, binary data should be converted to text.

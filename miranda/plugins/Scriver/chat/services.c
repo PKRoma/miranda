@@ -28,6 +28,8 @@ extern HICON      hIcons[30];
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
+HANDLE            hJoinMenuItem, hLeaveMenuItem;
+HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
 CRITICAL_SECTION	cs;
 
 void RegisterFonts( void );
@@ -36,29 +38,6 @@ void RegisterFonts( void );
 #define SIZEOF_STRUCT_GCWINDOW_V1	32
 #define SIZEOF_STRUCT_GCEVENT_V1	44
 #define SIZEOF_STRUCT_GCEVENT_V2	48
-
-void HookEvents(void)
-{
-	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
-}
-
-void CreateServiceFunctions(void)
-{
-	CreateServiceFunction_Ex(MS_GC_REGISTER,        Service_Register);
-	CreateServiceFunction_Ex(MS_GC_NEWSESSION,      Service_NewChat);
-	CreateServiceFunction_Ex(MS_GC_EVENT,           Service_AddEvent);
-	CreateServiceFunction_Ex(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
-	CreateServiceFunction_Ex(MS_GC_GETINFO,         Service_GetInfo);
-	CreateServiceFunction_Ex(MS_GC_GETSESSIONCOUNT, Service_GetCount);
-	CreateServiceFunction_Ex("GChat/DblClickEvent", CList_EventDoubleclicked);
-}
-
-void CreateHookableEvents(void)
-{
-	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
-	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
-}
-
 
 int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
@@ -118,7 +97,7 @@ int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int Service_GetCount(WPARAM wParam,LPARAM lParam)
+static int Service_GetCount(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 
@@ -133,7 +112,7 @@ int Service_GetCount(WPARAM wParam,LPARAM lParam)
 	return i;
 }
 
-int Service_GetInfo(WPARAM wParam,LPARAM lParam)
+static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 {
 	GC_INFO * gci = (GC_INFO *) lParam;
 	SESSION_INFO * si = NULL;
@@ -191,7 +170,7 @@ void LoadModuleIcons(MODULEINFO * mi) {
     ImageList_Destroy(hList);
 }
 
-int Service_Register(WPARAM wParam, LPARAM lParam)
+static int Service_Register(WPARAM wParam, LPARAM lParam)
 {
 
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
@@ -244,7 +223,7 @@ int Service_Register(WPARAM wParam, LPARAM lParam)
 	return GC_REGISTER_ERROR;
 }
 
-int Service_NewChat(WPARAM wParam, LPARAM lParam)
+static int Service_NewChat(WPARAM wParam, LPARAM lParam)
 {
 	MODULEINFO* mi;
 	GCSESSION *gcw =(GCSESSION *)lParam;
@@ -491,7 +470,7 @@ void ShowRoom(SESSION_INFO * si, WPARAM wp, BOOL bSetForeground)
 	SetFocus(GetDlgItem(si->hWnd, IDC_CHAT_MESSAGE));
 }
 
-int Service_AddEvent(WPARAM wParam, LPARAM lParam)
+static int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam, save_gce;
 	GCDEST *gcd = NULL, save_gcd;
@@ -679,7 +658,7 @@ LBL_Exit:
 	return iRetVal;
 }
 
-int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
+static int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 {
 	GCPTRS * gp = (GCPTRS *) lParam;
 
@@ -688,4 +667,55 @@ int Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam)
 	gp->pfnAddEvent = Service_AddEvent;
 	LeaveCriticalSection(&cs);
 	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Service creation
+
+void HookEvents(void)
+{
+	HookEvent_Ex(ME_CLIST_DOUBLECLICKED, CList_RoomDoubleclicked);
+	HookEvent_Ex(ME_CLIST_PREBUILDCONTACTMENU, CList_PrebuildContactMenu);
+}
+
+void CreateServiceFunctions(void)
+{
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000090001;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
+	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
+	mi.pszName = LPGEN("&Join");
+	mi.pszService = "GChat/JoinChat";
+	hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+	mi.position = -2000090000;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+	mi.pszName = LPGEN("&Leave");
+	mi.pszService = "GChat/LeaveChat";
+	hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+	CreateServiceFunction_Ex(MS_GC_REGISTER,        Service_Register);
+	CreateServiceFunction_Ex(MS_GC_NEWSESSION,      Service_NewChat);
+	CreateServiceFunction_Ex(MS_GC_EVENT,           Service_AddEvent);
+	CreateServiceFunction_Ex(MS_GC_GETEVENTPTR,     Service_GetAddEventPtr);
+	CreateServiceFunction_Ex(MS_GC_GETINFO,         Service_GetInfo);
+	CreateServiceFunction_Ex(MS_GC_GETSESSIONCOUNT, Service_GetCount);
+
+	CreateServiceFunction_Ex("GChat/DblClickEvent",     CList_EventDoubleclicked);
+	CreateServiceFunction_Ex("GChat/PrebuildMenuEvent", CList_PrebuildContactMenu);
+	CreateServiceFunction_Ex("GChat/JoinChat",          CList_JoinChat);
+	CreateServiceFunction_Ex("GChat/LeaveChat",         CList_LeaveChat);
+}
+
+void CreateHookableEvents(void)
+{
+	hSendEvent = CreateHookableEvent(ME_GC_EVENT);
+	hBuildMenuEvent = CreateHookableEvent(ME_GC_BUILDMENU);
+}
+
+void DestroyHookableEvents(void)
+{
+	DestroyHookableEvent(hSendEvent);
+	DestroyHookableEvent(hBuildMenuEvent);
 }

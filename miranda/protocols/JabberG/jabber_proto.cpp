@@ -113,6 +113,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( PS_GETSTATUS, &CJabberProto::JabberGetStatus );
 	JCreateService( PS_SET_LISTENINGTO, &CJabberProto::OnSetListeningTo );
 
+	JCreateService( PS_JOINCHAT, &CJabberProto::OnJoinChat );
+	JCreateService( PS_LEAVECHAT, &CJabberProto::OnLeaveChat );
+
 	JCreateService( JS_GETCUSTOMSTATUSICON, &CJabberProto::OnGetXStatusIcon );
 	JCreateService( JS_GETXSTATUS, &CJabberProto::OnGetXStatus );
 	JCreateService( JS_SETXSTATUS, &CJabberProto::OnSetXStatus );

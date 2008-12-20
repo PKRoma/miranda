@@ -32,7 +32,6 @@ style bitmaps).
 $Id$
 */
 
-#define CPLUSPLUS
 #include "commonheaders.h"
 #pragma hdrstop
 #include <uxtheme.h>

@@ -87,6 +87,7 @@ int Chat_Unload(void)
 
 	DestroyMenu(g_hMenu);
 	DestroyServiceFunctions();
+	DestroyHookableEvents();
 	FreeIcons();
 	OptionsUnInit();
 	UnhookEvents();

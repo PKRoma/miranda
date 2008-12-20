@@ -205,6 +205,51 @@ int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
+int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM lParam )
+{
+	DBVARIANT dbv, jid;
+	HANDLE hContact = ( HANDLE )wParam;
+	if ( JGetStringT( hContact, "ChatRoomID", &jid ))
+		return 0;
+
+	if ( JGetStringT( hContact, "MyNick", &dbv ))
+		if ( JGetStringT( NULL, "Nick", &dbv )) {
+			JFreeVariant( &jid );
+			return 0;
+		}
+
+	if ( JGetWord( hContact, "Status", 0 ) != ID_STATUS_ONLINE ) {
+		if ( !jabberChatDllPresent )
+			JabberChatDllError();
+		else {
+			TCHAR* p = _tcschr( jid.ptszVal, '@' );
+			if ( p != NULL ) {
+				*p++ = 0;
+				GroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
+	}	}	}
+
+	JFreeVariant( &dbv );
+	JFreeVariant( &jid );
+	return 0;
+}
+
+int __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM lParam )
+{
+	DBVARIANT jid;
+	HANDLE hContact = ( HANDLE )wParam;
+	if ( JGetStringT( hContact, "ChatRoomID", &jid ))
+		return 0;
+
+	if ( JGetWord( hContact, "Status", 0 ) != ID_STATUS_OFFLINE ) {
+		JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
+		if ( item != NULL )
+			GcQuit( item, 0, NULL );
+	}
+
+	JFreeVariant( &jid );
+	return 0;
+}
+
 void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin )
 {
 	bool found = false;

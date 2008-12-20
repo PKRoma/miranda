@@ -326,43 +326,6 @@ int __cdecl CJabberProto::OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuJoinLeave( WPARAM wParam, LPARAM lParam )
-{
-	DBVARIANT dbv, jid;
-	if ( JGetStringT(( HANDLE )wParam, "ChatRoomID", &jid ))
-		return 0;
-
-	if ( JGetStringT(( HANDLE )wParam, "MyNick", &dbv ))
-		if ( JGetStringT( NULL, "Nick", &dbv )) {
-			JFreeVariant( &jid );
-			return 0;
-		}
-
-	if ( JGetWord(( HANDLE )wParam, "Status", 0 ) != ID_STATUS_ONLINE ) {
-		if ( !jabberChatDllPresent ) {
-			JabberChatDllError();
-			goto LBL_Return;
-		}
-
-		TCHAR* p = _tcschr( jid.ptszVal, '@' );
-		if ( p == NULL )
-			goto LBL_Return;
-
-		*p++ = 0;
-		GroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
-	}
-	else {
-		JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid.ptszVal );
-		if ( item != NULL )
-			GcQuit( item, 0, NULL );
-	}
-
-LBL_Return:
-	JFreeVariant( &dbv );
-	JFreeVariant( &jid );
-	return 0;
-}
-
 int __cdecl CJabberProto::OnMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE )wParam;
@@ -474,14 +437,6 @@ void CJabberProto::MenuInit()
 	mi.position = -2000001002;
 	mi.icolibItem = GetIconHandle( IDI_AUTHREVOKE );
 	m_hMenuRevokeAuth = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-
-	// "Grant authorization"
-	JCreateService( "/JoinChat", &CJabberProto::OnMenuJoinLeave );
-	strcpy( tDest, "/JoinChat" );
-	mi.pszName = LPGEN("Join chat");
-	mi.position = -2000001003;
-	mi.icolibItem = GetIconHandle( IDI_GROUP );
-	m_hMenuJoinLeave = ( HANDLE ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Convert Chat/Contact"
 	JCreateService( "/ConvertChatContact", &CJabberProto::OnMenuConvertChatContact );

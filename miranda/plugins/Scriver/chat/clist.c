@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE		g_hInst;
 
+extern HANDLE hJoinMenuItem, hLeaveMenuItem;
+
 HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* pszDisplayName, int iType)
 {
 	HANDLE hContact = CList_FindRoom(pszModule, pszRoom);
@@ -169,6 +171,63 @@ int	CList_RoomDoubleclicked(WPARAM wParam,LPARAM lParam)
 int	CList_EventDoubleclicked(WPARAM wParam,LPARAM lParam)
 {
 	return CList_RoomDoubleclicked((WPARAM) ((CLISTEVENT*)lParam)->hContact,(LPARAM) 0);
+}
+
+int CList_JoinChat(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		if ( szProto ) {
+			if ( DBGetContactSettingWord( hContact, szProto, "Status", 0 ) == ID_STATUS_OFFLINE )
+				CallProtoService( szProto, PS_JOINCHAT, wParam, lParam );
+			else
+				CList_RoomDoubleclicked( wParam, 0 );
+	}	}
+
+	return 0;
+}
+
+int CList_LeaveChat(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+		if ( szProto )
+			CallProtoService( szProto, PS_LEAVECHAT, wParam, lParam );
+	}
+	return 0;
+}
+
+int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( hContact ) {
+		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+
+		CLISTMENUITEM clmi = {0};
+		clmi.cbSize = sizeof( CLISTMENUITEM );
+		clmi.flags = CMIM_FLAGS | CMIF_DEFAULT | CMIF_HIDDEN;
+
+		if ( szProto ) {
+			// display this menu item only for chats
+			if ( DBGetContactSettingByte( hContact, szProto, "ChatRoom", 0 )) {
+				// still hide it for offline protos
+				if ( CallProtoService( szProto, PS_GETSTATUS, 0, 0 ) != ID_STATUS_OFFLINE ) {
+					clmi.flags &= ~CMIF_HIDDEN;
+					clmi.flags |= CMIM_NAME;
+
+					if ( DBGetContactSettingWord( hContact, szProto, "Status", 0 ) == ID_STATUS_OFFLINE )
+						clmi.pszName = ( char* )LPGEN("Join chat");
+					else
+						clmi.pszName = ( char* )LPGEN("Open chat window");
+		}	}	}
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hJoinMenuItem, ( LPARAM )&clmi );
+
+		clmi.flags &= ~(CMIM_NAME | CMIF_DEFAULT);
+		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hLeaveMenuItem, ( LPARAM )&clmi );
+	}
+	return 0;
 }
 
 void CList_CreateGroup(TCHAR* group)
