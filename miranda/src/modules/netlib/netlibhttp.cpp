@@ -705,7 +705,6 @@ next:
 		{
 			chunked = TRUE;
 			chunkhdr = i;
-			break;
 		}
 	}
 
