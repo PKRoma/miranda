@@ -110,7 +110,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 	line[lineLen] = 0;
 	va_end(va);
 
-	lineLen = lineLen*9 + 8;
+	lineLen = lineLen*20 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
 		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
