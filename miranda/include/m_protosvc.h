@@ -644,8 +644,8 @@ repeat {
 }
 userNick should be a human-readable description of the user. It need not
 be the nick, or even confined to displaying just one type of
-information. The dbe.flags can contain DBEF_UTF defining userNick as utf-8d0
-encoded.d0
+information. The dbe.flags can contain DBEF_UTF defining userNick as utf-8
+encoded.
 userId should be a machine-readable representation of the unique
 protocol identifying field of the user. Because of the need to be
 zero-terminated, binary data should be converted to text.
