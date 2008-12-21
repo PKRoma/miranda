@@ -54,14 +54,14 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	CreateProtoService( PS_GETNAME,        &CIrcProto::GetName );
 	CreateProtoService( PS_GETSTATUS,      &CIrcProto::GetStatus );
 	CreateProtoService( PS_CREATEACCMGRUI, &CIrcProto::SvcCreateAccMgrUI );
+	CreateProtoService( PS_JOINCHAT,       &CIrcProto::OnJoinChat );
+	CreateProtoService( PS_LEAVECHAT,      &CIrcProto::OnLeaveChat );
 
 	CreateProtoService( IRC_JOINCHANNEL,   &CIrcProto::OnJoinMenuCommand );
 	CreateProtoService( IRC_QUICKCONNECT,  &CIrcProto::OnQuickConnectMenuCommand);
 	CreateProtoService( IRC_CHANGENICK,    &CIrcProto::OnChangeNickMenuCommand );
 	CreateProtoService( IRC_SHOWLIST,      &CIrcProto::OnShowListMenuCommand );
 	CreateProtoService( IRC_SHOWSERVER,    &CIrcProto::OnShowServerMenuCommand );
-	CreateProtoService( IRC_UM_SHOWCHANNEL, &CIrcProto::OnMenuShowChannel );
-	CreateProtoService( IRC_UM_JOINLEAVE,  &CIrcProto::OnMenuJoinLeave );
 	CreateProtoService( IRC_UM_CHANSETTINGS, &CIrcProto::OnMenuChanSettings );
 	CreateProtoService( IRC_UM_WHOIS,      &CIrcProto::OnMenuWhois );
 	CreateProtoService( IRC_UM_DISCONNECT, &CIrcProto::OnMenuDisconnect );

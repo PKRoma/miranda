@@ -78,8 +78,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IRC_CHANGENICK        "/ChangeNickMenu"
 #define IRC_SHOWLIST          "/ShowListMenu"
 #define IRC_SHOWSERVER        "/ShowServerMenu"
-#define IRC_UM_SHOWCHANNEL    "/UMenuShowChannel"
-#define IRC_UM_JOINLEAVE      "/UMenuJoinLeave"
 #define IRC_UM_CHANSETTINGS   "/UMenuChanSettings"
 #define IRC_UM_WHOIS          "/UMenuWhois"
 #define IRC_UM_DISCONNECT     "/UMenuDisconnect"
@@ -341,12 +339,12 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	int __cdecl OnDoubleclicked( WPARAM, LPARAM );
 	int __cdecl OnInitOptionsPages( WPARAM, LPARAM );
 	int __cdecl OnInitUserInfo( WPARAM, LPARAM );
+	int __cdecl OnJoinChat( WPARAM, LPARAM );
 	int __cdecl OnJoinMenuCommand( WPARAM, LPARAM );
+	int __cdecl OnLeaveChat( WPARAM, LPARAM );
 	int __cdecl OnMenuChanSettings( WPARAM, LPARAM );
 	int __cdecl OnMenuDisconnect( WPARAM , LPARAM );
 	int __cdecl OnMenuIgnore( WPARAM, LPARAM );
-	int __cdecl OnMenuJoinLeave( WPARAM, LPARAM );
-	int __cdecl OnMenuShowChannel( WPARAM, LPARAM );
 	int __cdecl OnMenuWhois( WPARAM, LPARAM );
 	int __cdecl OnModulesLoaded( WPARAM, LPARAM );
 	int __cdecl OnMenuPreBuild( WPARAM, LPARAM );

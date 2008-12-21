@@ -83,20 +83,6 @@ void CIrcProto::InitMenus()
 	
 	mi.flags &= ~CMIF_CHILDPOPUP;
 
-	mi.pszName = LPGEN("Sho&w channel");
-	mi.icolibItem = GetIconHandle(IDI_SHOW);
-	strcpy( d, IRC_UM_SHOWCHANNEL );
-	mi.pszContactOwner = m_szModuleName;
-	mi.popupPosition = 500090000;
-	hUMenuShowChannel = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
-	mi.pszName = LPGEN("&Leave channel");
-	mi.icolibItem = GetIconHandle(IDI_PART);
-	strcpy( d, IRC_UM_JOINLEAVE );
-	mi.pszContactOwner = m_szModuleName;
-	mi.popupPosition = 500090001;
-	hUMenuJoinLeave = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
 	strcpy( d, IRC_UM_CHANSETTINGS );
@@ -199,61 +185,41 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuShowChannel(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM lp)
 {
-	if ( !wp )
+	if (!wp )
 		return 0;
 
 	DBVARIANT dbv;
-	if ( !getTString(( HANDLE )wp, "Nick", &dbv )) {
-		int type = getByte(( HANDLE )wp, "ChatRoom", 0);
-		if ( type != 0) {
-			GCEVENT gce = {0};
-			GCDEST gcd = {0};
-			CMString S = _T("");
-			if ( type == GCW_CHATROOM)
-				S = MakeWndID( dbv.ptszVal );
-			if ( type == GCW_SERVER )
-				S = SERVERWINDOW;
-			gcd.iType = GC_EVENT_CONTROL;
-			gcd.ptszID = ( TCHAR* )S.c_str();
-			gce.dwFlags = GC_TCHAR;
-			gcd.pszModule = m_szModuleName;
-			gce.cbSize = sizeof(GCEVENT);
-			gce.pDest = &gcd;
-			CallChatEvent( WINDOW_VISIBLE, (LPARAM)&gce);
-		}
-		else CallService( MS_MSG_SENDMESSAGE, (WPARAM)wp, 0);
+	if ( !getTString(( HANDLE )wp, "Nick", &dbv)) {
+		if ( getByte(( HANDLE )wp, "ChatRoom", 0) == GCW_CHATROOM)
+			PostIrcMessage( _T("/JOIN %s"), dbv.ptszVal);
+		DBFreeVariant(&dbv);
 	}
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuJoinLeave(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM lp)
 {
-	DBVARIANT dbv;
-
 	if (!wp )
 		return 0;
 
+	DBVARIANT dbv;
 	if ( !getTString(( HANDLE )wp, "Nick", &dbv)) {
-		int type = getByte(( HANDLE )wp, "ChatRoom", 0);
-		if ( type != 0 ) {
-			if (type == GCW_CHATROOM) {
-				if ( getWord(( HANDLE )wp, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE)
-					PostIrcMessage( _T("/JOIN %s"), dbv.ptszVal);
-				else {
-					PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
-					GCEVENT gce = {0};
-					GCDEST gcd = {0};
-					CMString S = MakeWndID(dbv.ptszVal);
-					gce.cbSize = sizeof(GCEVENT);
-					gce.dwFlags = GC_TCHAR;
-					gcd.iType = GC_EVENT_CONTROL;
-					gcd.pszModule = m_szModuleName;
-					gce.pDest = &gcd;
-					gcd.ptszID = ( TCHAR* )S.c_str();
-					CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
-		}	}	}
+		if ( getByte(( HANDLE )wp, "ChatRoom", 0) == GCW_CHATROOM) {
+			PostIrcMessage( _T("/PART %s"), dbv.ptszVal);
+
+			GCEVENT gce = {0};
+			GCDEST gcd = {0};
+			CMString S = MakeWndID(dbv.ptszVal);
+			gce.cbSize = sizeof(GCEVENT);
+			gce.dwFlags = GC_TCHAR;
+			gcd.iType = GC_EVENT_CONTROL;
+			gcd.pszModule = m_szModuleName;
+			gce.pDest = &gcd;
+			gcd.ptszID = ( TCHAR* )S.c_str();
+			CallChatEvent( SESSION_TERMINATE, (LPARAM)&gce);
+		}
 		DBFreeVariant(&dbv);
 	}
 	return 0;
