@@ -120,6 +120,7 @@ struct CMsnProto : public PROTO_INTERFACE
     int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnIdleChanged( WPARAM wParam, LPARAM lParam );
     int  __cdecl OnGroupChange( WPARAM wParam, LPARAM lParam );
+    int  __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
     int  __cdecl OnModulesLoaded( WPARAM wParam, LPARAM lParam );
     int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnPrebuildContactMenu(WPARAM wParam,LPARAM lParam);

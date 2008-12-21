@@ -693,3 +693,20 @@ int CMsnProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 		return 0;
 	return mUnreadMessages;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// OnLeaveChat - closes MSN chat window
+
+int CMsnProto::OnLeaveChat(WPARAM wParam,LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if ( getByte( "ChatRoomID", 0 ) != 0 ) {
+		DBVARIANT dbv;
+		if ( getString(hContact, "ChatRoomID", &dbv) == 0)
+		{
+			MSN_KillChatSession( dbv.ptszVal );
+			MSN_FreeVariant(&dbv);
+		}
+	}
+	return 0;
+}

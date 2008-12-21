@@ -91,6 +91,8 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService( PS_GETSTATUS,             &CMsnProto::GetStatus );
 	CreateProtoService( PS_GETAVATARINFO,         &CMsnProto::GetAvatarInfo );
 
+	CreateProtoService( PS_LEAVECHAT,             &CMsnProto::OnLeaveChat );
+
 	CreateProtoService( PS_GETMYAVATAR,           &CMsnProto::GetAvatar );
 	CreateProtoService( PS_SETMYAVATAR,           &CMsnProto::SetAvatar );
 	CreateProtoService( PS_GETAVATARCAPS,         &CMsnProto::GetAvatarCaps );
