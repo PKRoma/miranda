@@ -25,10 +25,8 @@
 #define IDI_BACKGROUNDCOLOR             32
 #define IDD_PRIVACY                     36
 #define IDD_CHAT                        37
-#define IDI_JOIN                        37
 #define IDI_BLOCK                       38
 #define IDD_ADMIN                       39
-#define IDI_PART                        40
 #define IDD_CHATROOM_INVITE             40
 #define IDI_BOLD                        41
 #define IDD_CHATROOM_INVITE_REQ         41
@@ -106,7 +104,6 @@
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
 #define IDC_CM                          1191
-#define IDC_CM2                         1192
 #define IDC_MG                          1192
 #define IDC_SETPROFILE                  1200
 #define IDC_II                          1210

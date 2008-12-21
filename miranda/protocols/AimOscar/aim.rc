@@ -323,8 +323,6 @@ IDI_NORMALSCRIPT        ICON                    "icons/normalscript.ico"
 IDI_SUBSCRIPT           ICON                    "icons/subscript.ico"
 IDI_SUPERSCRIPT         ICON                    "icons/superscript.ico"
 IDI_BLOCK               ICON                    "icons\\block.ico"
-IDI_JOIN                ICON                    "icons\\join.ico"
-IDI_PART                ICON                    "icons\\part.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

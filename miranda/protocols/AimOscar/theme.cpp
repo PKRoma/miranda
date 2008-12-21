@@ -46,8 +46,6 @@ static const iconList[] =
 	{	"Blocked list",           "away",        IDI_AWAY            },
 	{	"Idle",                   "idle",        IDI_IDLE            },
 	{	"AOL",                    "aol",         IDI_AOL             },
-	{	"Join",                   "join",        IDI_JOIN            },
-	{	"Part",                   "part",        IDI_PART            },
 
 	{	"Foreground Color",       "foreclr",     IDI_FOREGROUNDCOLOR, "Profile Editor" },
 	{	"Background Color",       "backclr",     IDI_BACKGROUNDCOLOR, "Profile Editor" },
@@ -148,24 +146,6 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 		mi.flags |= CMIF_HIDDEN;
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hAddToServerListContextMenuItem,(LPARAM)&mi);
 
-	if (state == 0 || !isChatRoom) 
-        mi.flags = CMIF_HIDDEN | CMIM_FLAGS;
-    else
-    {
-        mi.flags = CMIM_NAME | CMIM_FLAGS | CMIM_ICON | CMIF_ICONFROMICOLIB;
-        if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
-        {
-      	    mi.icolibItem = GetIconHandle("join");
-            mi.pszName = LPGEN("&Join Chat");
-        }
-        else
-        {
-      	    mi.icolibItem = GetIconHandle("part");
-            mi.pszName = LPGEN("&Leave Chat");
-        }
-    }
-	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hLeaveChatMenuItem,(LPARAM)&mi);
-
     DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
     {
@@ -240,7 +220,7 @@ void CAimProto::InitMenus()
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
-	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChat);
+	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChatUI);
 	mi.icolibItem = GetIconHandle("aol");
 	mi.pszName = LPGEN( "Join Chat Room" );
 	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
@@ -271,14 +251,6 @@ void CAimProto::InitMenus()
 	mi.pszName = LPGEN("Add To Server List");
 	mi.flags=CMIF_NOTONLINE|CMIF_HIDDEN|CMIF_ICONFROMICOLIB;
 	hAddToServerListContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-
-    mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/LeaveChat");
-	CreateProtoService("/LeaveChat",&CAimProto::LeaveChat);
-	mi.position=-2000005070;
-	mi.icolibItem = GetIconHandle("part");
-	mi.pszName = LPGEN("&Leave Chat");
-	mi.flags=CMIF_ICONFROMICOLIB;
-	hLeaveChatMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
     mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand",&CAimProto::BlockBuddy);

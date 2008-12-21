@@ -86,13 +86,12 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl ManageAccount(WPARAM wParam, LPARAM lParam);
 	int  __cdecl CheckMail(WPARAM wParam, LPARAM lParam);
 	int  __cdecl InstantIdle(WPARAM wParam, LPARAM lParam);
-	int  __cdecl JoinChat(WPARAM wParam, LPARAM lParam);
+	int  __cdecl JoinChatUI(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetHTMLAwayMsg(WPARAM wParam, LPARAM lParam);
 	int  __cdecl GetProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl EditProfile(WPARAM wParam, LPARAM lParam);
 	int  __cdecl AddToServerList(WPARAM wParam, LPARAM lParam);
     int  __cdecl BlockBuddy(WPARAM wParam, LPARAM lParam);
-    int  __cdecl LeaveChat(WPARAM wParam, LPARAM lParam);
 
 	//====| Events |======================================================================
 	int  __cdecl OnContactDeleted(WPARAM wParam,LPARAM lParam);
@@ -109,6 +108,8 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
     int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
+    int  __cdecl OnJoinChat(WPARAM wParam, LPARAM lParam);
+    int  __cdecl OnLeaveChat(WPARAM wParam, LPARAM lParam);
 
 	//====| Data |========================================================================
 	char* CWD;//current working directory
@@ -160,7 +161,6 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAddToServerListContextMenuItem;
 	HANDLE hReadProfileMenuItem;
     HANDLE hBlockContextMenuItem;
-    HANDLE hLeaveChatMenuItem;
 
 	//Some mail connection stuff
 	HANDLE hMailConn;

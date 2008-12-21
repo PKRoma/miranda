@@ -21,17 +21,21 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	_strupr( p );
 	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
 
-	InitializeCriticalSection( &SendingMutex );
-	InitializeCriticalSection( &connMutex );
+	InitializeCriticalSection(&SendingMutex);
+	InitializeCriticalSection(&connMutex);
 
-	CreateProtoService(PS_CREATEACCMGRUI, &CAimProto::SvcCreateAccMgrUI );
-	CreateProtoService(PS_GETNAME, &CAimProto::GetName );
-	CreateProtoService(PS_GETSTATUS, &CAimProto::GetStatus );
-	CreateProtoService(PS_GETAVATARINFO, &CAimProto::GetAvatarInfo );
+	CreateProtoService(PS_CREATEACCMGRUI, &CAimProto::SvcCreateAccMgrUI);
+	
+    CreateProtoService(PS_GETNAME,        &CAimProto::GetName);
+	CreateProtoService(PS_GETSTATUS,      &CAimProto::GetStatus);
 
-	CreateProtoService( PS_GETMYAVATAR,   &CAimProto::GetAvatar );
-	CreateProtoService( PS_SETMYAVATAR,   &CAimProto::SetAvatar );
-	CreateProtoService( PS_GETAVATARCAPS, &CAimProto::GetAvatarCaps );
+	CreateProtoService(PS_GETAVATARINFO,  &CAimProto::GetAvatarInfo);
+	CreateProtoService(PS_GETMYAVATAR,    &CAimProto::GetAvatar);
+	CreateProtoService(PS_SETMYAVATAR,    &CAimProto::SetAvatar);
+	CreateProtoService(PS_GETAVATARCAPS,  &CAimProto::GetAvatarCaps);
+
+	CreateProtoService(PS_JOINCHAT,       &CAimProto::OnJoinChat);
+	CreateProtoService(PS_LEAVECHAT,      &CAimProto::OnLeaveChat);
 
     InitIcons();
 	InitMenus();
@@ -50,7 +54,6 @@ CAimProto::~CAimProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hAddToServerListContextMenuItem, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hReadProfileMenuItem, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hBlockContextMenuItem, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hLeaveChatMenuItem, 0 );
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);

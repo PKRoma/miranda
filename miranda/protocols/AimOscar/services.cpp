@@ -267,30 +267,40 @@ int CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
- int CAimProto::JoinChat(WPARAM /*wParam*/, LPARAM /*lParam*/)
+ int CAimProto::JoinChatUI(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHAT), NULL, join_chat_dialog, LPARAM( this ));
 	return 0;
 }
 
-int CAimProto::LeaveChat(WPARAM wParam, LPARAM /*lParam*/)
+int CAimProto::OnJoinChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
     HANDLE hContact = (HANDLE)wParam;
 
-    char* id = getSetting(hContact, "ChatRoomID");
-    if (id == NULL) return 0;
-
-    if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+    DBVARIANT dbv;
+    if (!getString(hContact, "ChatRoomID", &dbv))
     {
-        chatnav_param* par = new chatnav_param(id, getWord(hContact, "Exchange", 4));
+        chatnav_param* par = new chatnav_param(dbv.pszVal, getWord(hContact, "Exchange", 4));
         ForkThread(&CAimProto::chatnav_request_thread, par);
+        DBFreeVariant(&dbv);
     }
-    else
-        chat_leave(id);
+    return 0;
+}
 
-    delete[] id;
+int CAimProto::OnLeaveChat(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (state != 1)	return 0;
+
+    HANDLE hContact = (HANDLE)wParam;
+
+    DBVARIANT dbv;
+    if (!getString(hContact, "ChatRoomID", &dbv))
+    {
+        chat_leave(dbv.pszVal);
+        DBFreeVariant(&dbv);
+    }
     return 0;
 }
 

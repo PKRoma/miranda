@@ -661,11 +661,11 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
     aim_writeshort(0,offset,buf);                                   // name length
     aim_writeshort(0,offset,buf);                                   // group id
     aim_writeshort(pd_info_id,offset,buf);                          // buddy id
-    aim_writeshort(0x4,offset,buf);                                 // PD Info
-    aim_writeshort(0x15,offset,buf);                                // Size
-    aim_writetlvchar(0xca,pd_mode,offset,buf);
-    aim_writetlvlong(0xcb,0xffffffff,offset,buf);
-    aim_writetlvlong(0xcc,pd_flags,offset,buf);
+    aim_writeshort(0x4,offset,buf);                                 // pd info id
+    aim_writeshort(0x15,offset,buf);                                // size
+    aim_writetlvchar(0xca,pd_mode,offset,buf);                      // pd mode
+    aim_writetlvlong(0xcb,0xffffffff,offset,buf);                   // pd mask
+    aim_writetlvlong(0xcc,pd_flags,offset,buf);                     // pd flags
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
