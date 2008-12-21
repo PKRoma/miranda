@@ -243,6 +243,7 @@ void CJabberDlgPepSimple::OnInitDialog()
 		int idx = m_cbModes.AddString(m_modes[i].m_title, i);
 		if ((m_modes[i].m_id == m_active) || !idx)
 		{
+			m_prevSelected = idx;
 			m_cbModes.SetCurSel(idx);
 			if (idx) m_txtDescription.Enable();
 		}
