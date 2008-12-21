@@ -354,6 +354,7 @@ void   HookEvents(void);
 void   UnhookEvents(void);
 void   CreateServiceFunctions(void);
 void   DestroyServiceFunctions(void);
+void   DestroyHookableEvents(void);
 void   CreateHookableEvents(void);
 int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
 int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);

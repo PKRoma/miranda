@@ -27,7 +27,7 @@ extern CRITICAL_SECTION	cs;
 //globals
 HINSTANCE   g_hInst;
 HMENU       g_hMenu = NULL;
-
+HANDLE      hJoinMenuItem, hLeaveMenuItem;
 
 FONTINFO    aFonts[OPTIONS_FONTCOUNT];
 HICON       hIcons[30];
@@ -50,6 +50,23 @@ int Chat_Load()
 	OptionsInit();
 	AddIcons();
 	LoadIcons();
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090001;
+		mi.flags = CMIF_DEFAULT;
+		mi.hIcon = hIcons[ICON_JOIN];
+		mi.pszName = LPGEN("&Join");
+		mi.pszService = "GChat/JoinChat";
+		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+		mi.position = -2000090000;
+		mi.flags = CMIF_NOTOFFLINE;
+		mi.hIcon = hIcons[ICON_PART];
+		mi.pszName = LPGEN("&Leave");
+		mi.pszService = "GChat/LeaveChat";
+		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
 	return 0;
 }
 

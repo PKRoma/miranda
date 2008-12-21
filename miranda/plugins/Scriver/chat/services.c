@@ -28,7 +28,6 @@ extern HICON      hIcons[30];
 
 HANDLE				hSendEvent;
 HANDLE				hBuildMenuEvent ;
-HANDLE            hJoinMenuItem, hLeaveMenuItem;
 HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
 CRITICAL_SECTION	cs;
 
@@ -157,8 +156,8 @@ static int Service_GetInfo(WPARAM wParam,LPARAM lParam)
 }
 
 void LoadModuleIcons(MODULEINFO * mi) {
-    int index;
-    HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+	int index;
+	HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	int overlayIcon = ImageList_AddIcon(hList, hIcons[ICON_OVERLAY]);
 	ImageList_SetOverlayImage(hList, overlayIcon, 1);
 	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
@@ -167,12 +166,11 @@ void LoadModuleIcons(MODULEINFO * mi) {
 	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_OFFLINE);
 	mi->hOfflineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
 	mi->hOfflineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-    ImageList_Destroy(hList);
+	ImageList_Destroy(hList);
 }
 
 static int Service_Register(WPARAM wParam, LPARAM lParam)
 {
-
 	GCREGISTER *gcr = (GCREGISTER *)lParam;
 	MODULEINFO * mi = NULL;
 	if (gcr== NULL)
@@ -680,21 +678,6 @@ void HookEvents(void)
 
 void CreateServiceFunctions(void)
 {
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090001;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
-	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
-	mi.pszName = LPGEN("&Join");
-	mi.pszService = "GChat/JoinChat";
-	hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
-	mi.position = -2000090000;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
-	mi.pszName = LPGEN("&Leave");
-	mi.pszService = "GChat/LeaveChat";
-	hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
 	CreateServiceFunction_Ex(MS_GC_REGISTER,        Service_Register);
 	CreateServiceFunction_Ex(MS_GC_NEWSESSION,      Service_NewChat);
 	CreateServiceFunction_Ex(MS_GC_EVENT,           Service_AddEvent);

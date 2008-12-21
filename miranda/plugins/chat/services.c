@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_fontservice.h"
 
 extern HANDLE		g_hInst;
+extern HICON      hIcons[30];
 extern HIMAGELIST	hImageList;
 extern HIMAGELIST	hIconsList;
 extern BOOL			SmileyAddInstalled;
@@ -205,6 +206,23 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	RegisterFonts();
 	AddIcons();
 	LoadIcons();
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090001;
+		mi.flags = CMIF_DEFAULT;
+		mi.hIcon = hIcons[ ICON_JOIN ];
+		mi.pszName = LPGEN("&Join");
+		mi.pszService = "GChat/JoinChat";
+		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+		mi.position = -2000090000;
+		mi.hIcon = hIcons[ ICON_PART ];
+		mi.flags = CMIF_NOTOFFLINE;
+		mi.pszName = LPGEN("&Leave");
+		mi.pszService = "GChat/LeaveChat";
+		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
 
 	g_hFontsChanged  = HookEvent(ME_FONT_RELOAD, FontsChanged);
 	g_hIconsChanged2 = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
@@ -805,21 +823,6 @@ void UnhookEvents(void)
 
 void CreateServiceFunctions(void)
 {
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090001;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
-	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
-	mi.pszName = LPGEN("&Join");
-	mi.pszService = "GChat/JoinChat";
-	hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
-	mi.position = -2000090000;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
-	mi.pszName = LPGEN("&Leave");
-	mi.pszService = "GChat/LeaveChat";
-	hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
 	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
 	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
 	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);

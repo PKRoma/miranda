@@ -29,6 +29,7 @@ $Id$
 
 // defs
 extern HANDLE		hMessageWindowList;
+extern HICON      hIcons[30];
 extern BOOL       IEviewInstalled;
 extern int			g_chat_integration_enabled;
 extern int			g_chat_fully_initialized;
@@ -68,6 +69,24 @@ int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 
 	LoadIcons();
+	{
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000090001;
+		mi.flags = CMIF_DEFAULT;
+		mi.hIcon = hIcons[ ICON_JOIN ];
+		mi.pszName = LPGEN("&Join");
+		mi.pszService = "GChat/JoinChat";
+		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+		mi.position = -2000090000;
+		mi.flags = CMIF_NOTOFFLINE;
+		mi.hIcon = hIcons[ ICON_PART ];
+		mi.pszName = LPGEN("&Leave");
+		mi.pszService = "GChat/LeaveChat";
+		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+	}
+
 	if (ServiceExists(MS_IEVIEW_WINDOW))
 		IEviewInstalled = TRUE;
 
@@ -829,21 +848,6 @@ void UnhookEvents(void)
 
 void CreateServiceFunctions(void)
 {
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000090001;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_DEFAULT;
-	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_EVENT_MESSAGE);
-	mi.pszName = LPGEN("&Join");
-	mi.pszService = "GChat/JoinChat";
-	hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
-	mi.position = -2000090000;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
-	mi.pszName = LPGEN("&Leave");
-	mi.pszService = "GChat/LeaveChat";
-	hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-
 	hServiceRegister       = CreateServiceFunction(MS_GC_REGISTER,        Service_Register);
 	hServiceNewChat        = CreateServiceFunction(MS_GC_NEWSESSION,      Service_NewChat);
 	hServiceAddEvent       = CreateServiceFunction(MS_GC_EVENT,           Service_AddEvent);
