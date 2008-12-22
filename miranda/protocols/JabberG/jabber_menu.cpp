@@ -666,6 +666,9 @@ static int g_ToolbarHandleServiceDiscovery(WPARAM w, LPARAM l)
 
 int g_OnModernToolbarInit(WPARAM, LPARAM)
 {
+	if ( g_Instances.getCount() == 0 )
+		return 0;
+
 	TBButton button = {0};
 	button.cbSize = sizeof(button);
 	button.defPos = 1000;
