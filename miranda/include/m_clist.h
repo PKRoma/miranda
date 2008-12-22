@@ -132,8 +132,8 @@ typedef struct {
 #define CMIF_DEFAULT           4096 // this menu item is the default one
 
 // for compatibility. since 0.8.0 they both mean nothing
-#define CMIF_ROOTPOPUP  CMIF_ROOTHANDLE   //root item for new popup(save return id for childs)
-#define CMIF_CHILDPOPUP CMIF_ROOTHANDLE   //child for rootpopup menu
+#define CMIF_ROOTPOPUP  128   //root item for new popup(save return id for childs)
+#define CMIF_CHILDPOPUP 256   //child for rootpopup menu
 
 #define MS_CLIST_ADDMAINMENUITEM        "CList/AddMainMenuItem"
 
