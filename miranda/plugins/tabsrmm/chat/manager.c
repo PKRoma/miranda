@@ -873,15 +873,6 @@ int SM_GetCount(const char* pszModule)
 	return count;
 }
 
-int SM_IsIRC(SESSION_INFO *si)
-{
-	char szServiceName[512];
-
-	mir_snprintf(szServiceName, 512, "%s/GetIrcData", si->pszModule);
-
-	return(ServiceExists(szServiceName));
-}
-
 SESSION_INFO* SM_FindSessionByHWND(HWND hWnd)
 {
 	SESSION_INFO *pTemp = m_WndList;
@@ -1214,8 +1205,8 @@ static int sttCompareNicknames(const TCHAR *s1, const TCHAR *s2)
 		if (!*s1 && !*s2) return 0;
 		if (!*s1 && *s2) return +1;
 		if (*s1 && !*s2) return -1;
-	
-			// compare tails
+
+		// compare tails
 			return lstrcmpi(s1, s2);
 }
  //

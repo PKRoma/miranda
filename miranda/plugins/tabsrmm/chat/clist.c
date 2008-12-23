@@ -240,6 +240,7 @@ int CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hJoinMenuItem, ( LPARAM )&clmi );
 
 		clmi.flags &= ~(CMIM_NAME | CMIF_DEFAULT);
+		clmi.flags |= CMIF_NOTOFFLINE;
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hLeaveMenuItem, ( LPARAM )&clmi );
 	}
 	return 0;

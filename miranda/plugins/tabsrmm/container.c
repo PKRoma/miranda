@@ -2183,14 +2183,10 @@ panel_found:
 						case ID_TABMENU_LEAVECHATROOM: {
 							if (dat && dat->bType == SESSIONTYPE_CHAT) {
 								SESSION_INFO *si = (SESSION_INFO *)dat->si;
-
-								if (si) {
-									char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)si->hContact, 0);
-									char szSvc[128];
-
-									mir_snprintf(szSvc, 128, "%s/Menu2ChannelMenu", szProto);
-									if (ServiceExists(szSvc))
-										CallProtoService(szProto, "/Menu2ChannelMenu", (WPARAM)si->hContact, 0);
+								if (si && dat->hContact) {
+									char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+									if ( szProto )
+										CallProtoService( szProto, PS_LEAVECHAT, (WPARAM)dat->hContact, 0 );
 								}
 							}
 							break;

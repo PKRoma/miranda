@@ -428,7 +428,6 @@ struct MessageWindowData {
 	int     maxHistory, curHistory;
 	HANDLE  hTheme;
 	BYTE    bFlatMsgLog;
-	BYTE    isIRC;
 	PVOID   si;
 	char    szMicroLf[128];
 	DWORD   isAutoRTL;

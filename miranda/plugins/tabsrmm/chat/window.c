@@ -150,7 +150,7 @@ static BOOL CheckCustomLink(HWND hwndDlg, POINT* ptClient, UINT uMsg, WPARAM wPa
 		enlink.wParam = wParam;
 		enlink.lParam = lParam;
 		enlink.chrg.cpMin = cpMin;
-		enlink.chrg.cpMax = cpMax;	
+		enlink.chrg.cpMax = cpMax;
 		SendMessage(GetParent(hwndDlg), WM_NOTIFY, (WPARAM)IDC_CHAT_LOG, (LPARAM)&enlink);
 	}
 	return bIsCustomLink;
@@ -596,8 +596,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isMenu = GetKeyState(VK_MENU) & 0x8000;
 
-			//MAD: sound on typing..						 
-			if(myGlobals.g_bSoundOnTyping&&!isMenu&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab)) 
+			//MAD: sound on typing..
+			if(myGlobals.g_bSoundOnTyping&&!isMenu&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab))
 				SkinPlaySound("SoundOnTyping");
 			//MAD
 
@@ -671,7 +671,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 			//MAD: sound on typing..
-			if(myGlobals.g_bSoundOnTyping&&!isAlt&&wParam == VK_DELETE) 
+			if(myGlobals.g_bSoundOnTyping&&!isAlt&&wParam == VK_DELETE)
 				SkinPlaySound("SoundOnTyping");
 			//
 			if (wParam == VK_INSERT && !isShift && !isCtrl && !isAlt) {
@@ -732,7 +732,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				break;
 			}
 // 			if(wParam == VK_TAB&&myGlobals.m_AllowTab) {
-// 				SendMessage(hwnd, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t"); 
+//					SendMessage(hwnd, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
 // 				return TRUE;
 // 			}
 
@@ -1379,8 +1379,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		case WM_COPY:
 			return(DM_WMCopyHandler(hwnd, OldLogProc, wParam, lParam));
 
-		
-	case WM_SETCURSOR:
+		case WM_SETCURSOR:
 			if (g_Settings.ClickableNicks && (LOWORD(lParam) == HTCLIENT)) {
 				POINT pt;
 				GetCursorPos(&pt);
@@ -1398,7 +1397,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				POINT pt={LOWORD(lParam), HIWORD(lParam)};
 				CheckCustomLink(hwnd, &pt, msg, wParam, lParam, TRUE);
 			}
-			break;   
+			break;
 
 		case WM_LBUTTONUP:
 			{
@@ -1406,7 +1405,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			if (g_Settings.ClickableNicks) {
 				POINT pt={LOWORD(lParam), HIWORD(lParam)};
 				CheckCustomLink(hwnd, &pt, msg, wParam, lParam, TRUE);
-			}  
+			}
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
 			if (sel.cpMin != sel.cpMax) {
 				SendMessage(hwnd, WM_COPY, 0, 0);
@@ -1528,7 +1527,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 	switch (msg) {
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
-		//can't be scrolled with mouse-wheel. 
+		//can't be scrolled with mouse-wheel.
 		case WM_NCCALCSIZE: {
 		   if (myGlobals.g_DisableScrollbars && myGlobals.g_NickListScrollBarFix) {
 			RECT lpRect;
@@ -1572,13 +1571,13 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		return 1;
 
 		//MAD
-		case WM_MOUSEWHEEL: {  
+		case WM_MOUSEWHEEL: {
 			if (myGlobals.g_DisableScrollbars && myGlobals.g_NickListScrollBarFix)
 				{
 				UINT uScroll;
 				int dLines;
 				short zDelta=(short)HIWORD(wParam);
-				if (!SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uScroll, 0)) 
+				if (!SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &uScroll, 0))
 					uScroll = 3;    /* default value */
 
 				if (uScroll == WHEEL_PAGESCROLL)
@@ -1947,7 +1946,6 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
 			dat->bType = SESSIONTYPE_CHAT;
-			dat->isIRC = SM_IsIRC(si);
 			newData->item.lParam = (LPARAM) hwndDlg;
 			TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
 			dat->iTabID = newData->iTabID;
@@ -1967,7 +1965,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			//MAD
 			myGlobals.g_NickListScrollBarFix = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ScrollBarFix", 0);
-			
+
 			BB_InitDlgButtons(hwndDlg,dat);
 			//TODO: unify "change font color" button behavior in IM and Chat windows
 			SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONSETASPUSHBTN, 0, 0);
@@ -2176,15 +2174,15 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 	//TODO: check tooltip module, if not presented, show normal tooltip
 			if (si->pszModule != NULL) {
-				TCHAR* ptszDispName = NULL; 
+				TCHAR* ptszDispName = NULL;
 				TCHAR  szFinalStatusBarText[512];
 				MODULEINFO* mi=NULL;
 				int    x = 12;
-				
+
 				//Mad: strange rare crash here...
 				mi=MM_FindModule(si->pszModule);
 				if(!mi) break;
-				
+
 				ptszDispName=a2tf((TCHAR*)mi->pszModDispName, 0, 0);
 				if(!ptszDispName) break;
 
@@ -2767,7 +2765,6 @@ LABEL_SHOWWINDOW:
 								}
 								break;
 
-  
 							case WM_RBUTTONDOWN:
 							case WM_LBUTTONUP:
 							case WM_LBUTTONDBLCLK: {
@@ -2871,8 +2868,8 @@ LABEL_SHOWWINDOW:
 											ui = ui->next;
 										}
 										return TRUE;
-									} 
-			                                                 else if (msg == WM_LBUTTONUP) {
+									}
+									else if (msg == WM_LBUTTONUP) {
 										USERINFO	*ui = si->pUsers;
 										//BOOL		fFound = TRUE;
 
@@ -3023,7 +3020,7 @@ LABEL_SHOWWINDOW:
 					SM_AddCommand(si->ptszID, si->pszModule, pszRtf);
 					ptszText = Chat_DoRtfToTags(pszRtf, si);
 // 					p1 = _tcschr(ptszText, '\0');
-// 
+//
 // 					//remove trailing linebreaks
 // 					while (p1 > ptszText && (*p1 == '\0' || *p1 == '\r' || *p1 == '\n')) {
 // 						*p1 = '\0';
@@ -3123,7 +3120,7 @@ LABEL_SHOWWINDOW:
 						mir_snprintf(szName, MAX_PATH, "%s", pInfo->pszModDispName ? pInfo->pszModDispName : si->pszModule);
 						ValidateFilename(szName);
 						mir_snprintf(szFolder, MAX_PATH, "%s\\%s", g_Settings.pszLogDir, szName);
-#if defined(_UNICODE) 
+#if defined(_UNICODE)
 						{
 							wchar_t wszName[MAX_PATH];
 							mir_sntprintf(wszName, MAX_PATH, _T("%s.log"), si->ptszID);
@@ -3555,8 +3552,8 @@ LABEL_SHOWWINDOW:
 				CB_DestroyButton(hwndDlg,dat,(DWORD)wParam,(DWORD)lParam);
 			else
 				CB_DestroyAllButtons(hwndDlg,dat);
-			}break;		
-			//	
+			}break;
+		//
 
 		case DM_CONFIGURETOOLBAR:
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -3611,7 +3608,7 @@ LABEL_SHOWWINDOW:
 			if (dat->hSmileyIcon)
 				DestroyIcon(dat->hSmileyIcon);
 
- 					if (hCurHyperlinkHand) 
+			if (hCurHyperlinkHand)
  						DestroyCursor(hCurHyperlinkHand);
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);

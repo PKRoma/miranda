@@ -444,11 +444,9 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 {
 	if (menuID == MENU_TABCONTEXT) {
 		SESSION_INFO *si = dat->si;
-		int iLeave = dat->isIRC ? MF_ENABLED : MF_GRAYED;
 		int iTabs = TabCtrl_GetItemCount(GetParent(hwndDlg));
 
 		EnableMenuItem(submenu, ID_TABMENU_ATTACHTOCONTAINER, DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0) || DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0) ? MF_GRAYED : MF_ENABLED);
-		EnableMenuItem(submenu, ID_TABMENU_LEAVECHATROOM, iLeave);
 		EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
 	} else if (menuID == MENU_PICMENU) {
 		MENUITEMINFO mii = {0};
@@ -518,14 +516,10 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 			case ID_TABMENU_LEAVECHATROOM: {
 				if (dat && dat->bType == SESSIONTYPE_CHAT) {
 					SESSION_INFO *si = (SESSION_INFO *)dat->si;
-
-					if (si) {
-						char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)si->hContact, 0);
-						char szSvc[128];
-
-						mir_snprintf(szSvc, 128, "%s/Menu2ChannelMenu", szProto);
-						if (ServiceExists(szSvc))
-							CallProtoService(szProto, "/Menu2ChannelMenu", (WPARAM)si->hContact, 0);
+					if ( (si != NULL) && (dat->hContact != NULL) ) {
+						char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) dat->hContact, 0);
+						if ( szProto )
+							CallProtoService( szProto, PS_LEAVECHAT, (WPARAM)dat->hContact, 0 );
 					}
 				}
 				return 1;
