@@ -62,7 +62,10 @@ void* List_Find( SortedList* p_list, void* p_value )
 int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 {
 	if ( p_value == NULL )
+	{
+		*p_index = -1;
 		return -1;
+	}
 
 	if ( p_list->sortFunc != NULL )
 	{
