@@ -840,73 +840,63 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			break;
 
 		case IDC_LNK_NETWORK:
-		{
-			OPENOPTIONSDIALOG ood = {0};
-			ood.cbSize = sizeof(ood);
-			ood.pszPage = "Network";
-			CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
-			break;
-		}
+			{
+				OPENOPTIONSDIALOG ood = {0};
+				ood.cbSize = sizeof(ood);
+				ood.pszPage = "Network";
+				CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
+				break;
+			}
 
 		case IDC_LNK_ADDONS:
-		{
 			CallService(MS_UTILS_OPENURL, TRUE, (LPARAM)"http://addons.miranda-im.org/");
 			break;
-		}
 
 		case IDOK:
-		{	int i;
-			PSHNOTIFY pshn = {0};
-			pshn.hdr.code = PSN_APPLY;
-			for (i = 0; i < accounts.getCount(); ++i)
-				if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
-				{
-					pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
-					SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-					accounts[i]->bAccMgrUIChanged = FALSE;
-				}
-			DestroyWindow(hwndDlg);
-			break;
-		}
-
-		case IDCANCEL:
-		{	int i;
-			PSHNOTIFY pshn = {0};
-			pshn.hdr.code = PSN_RESET;
-			for (i = 0; i < accounts.getCount(); ++i)
-				if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
-				{
-					pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
-					SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-					accounts[i]->bAccMgrUIChanged = FALSE;
-				}
-			DestroyWindow(hwndDlg);
-			break;
-		}
-		}
-		break;
-
-	case PSM_CHANGED:
-	{
-		HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
-		int idx = ListBox_GetCurSel( hList );
-		PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
-		if (acc) acc->bAccMgrUIChanged = TRUE;
-		break;
-	}
-
-	case WM_DESTROY:
-	{
-		int i;
-		for (i = 0; i < accounts.getCount(); ++i)
-		{
-			accounts[i]->bAccMgrUIChanged = FALSE;
-			if (accounts[i]->hwndAccMgrUI)
-			{
-				DestroyWindow(accounts[i]->hwndAccMgrUI);
-				accounts[i]->hwndAccMgrUI = NULL;
+			{	int i;
+				PSHNOTIFY pshn = {0};
+				pshn.hdr.code = PSN_APPLY;
+				for (i = 0; i < accounts.getCount(); ++i) {
+					if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged) {
+						pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+						SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+						accounts[i]->bAccMgrUIChanged = FALSE;
+				}	}
+				DestroyWindow(hwndDlg);
+				break;
 			}
+		case IDCANCEL:
+			{	int i;
+				PSHNOTIFY pshn = {0};
+				pshn.hdr.code = PSN_RESET;
+				for (i = 0; i < accounts.getCount(); ++i) {
+					if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
+					{
+						pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+						SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+						accounts[i]->bAccMgrUIChanged = FALSE;
+				}	}
+				DestroyWindow(hwndDlg);
+				break;
+			}
+			break;
 		}
+	case PSM_CHANGED:
+		{
+			HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
+			int idx = ListBox_GetCurSel( hList );
+			PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
+			if (acc) acc->bAccMgrUIChanged = TRUE;
+			break;
+		}
+	case WM_DESTROY:
+		{
+			for (int i = 0; i < accounts.getCount(); ++i) {
+				accounts[i]->bAccMgrUIChanged = FALSE;
+				if (accounts[i]->hwndAccMgrUI) {
+					DestroyWindow(accounts[i]->hwndAccMgrUI);
+					accounts[i]->hwndAccMgrUI = NULL;
+		}	}	}
 
 		Window_FreeIcon_IcoLib( hwndDlg );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_ADD );
@@ -921,7 +911,6 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 		mir_free(dat);
 		hAccMgr = NULL;
 		break;
-	}
 	}
 
 	return FALSE;

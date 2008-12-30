@@ -326,37 +326,27 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 	if ( !pa->ppro )
 		return;
 
-	if ( pa->hwndAccMgrUI )
-	{
+	if ( pa->hwndAccMgrUI ) {
 		DestroyWindow(pa->hwndAccMgrUI);
 		pa->hwndAccMgrUI = NULL;
 		pa->bAccMgrUIChanged = FALSE;
 	}
 
-    pa->ppro->SetStatus(ID_STATUS_OFFLINE);
+	pa->ppro->SetStatus(ID_STATUS_OFFLINE);
 
 	if ( bIsDynamic ) {
 		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
 		pa->ppro->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
+	}
 
-        for (unsigned tm = GetTickCount(); tm+5000 > GetTickCount(); )
-        {
-	        MSG msg;
-	        while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
-		        if ( IsDialogMessage(msg.hwnd, &msg) ) continue;
-		        TranslateMessage(&msg);
-		        DispatchMessage(&msg);
-	        }
-        }
-	    KillObjectThreads( pa->ppro );
-    }
+	KillObjectThreads( pa->ppro );
 
-    UninitAccount( pa );
+	UninitAccount( pa );
 
 	KillObjectServices( pa->ppro );
 	KillObjectEventHooks( pa->ppro );
 
-    pa->ppro = NULL;
+	pa->ppro = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
