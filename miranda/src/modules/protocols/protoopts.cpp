@@ -885,8 +885,11 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 		{
 			HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 			int idx = ListBox_GetCurSel( hList );
-			PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
-			if (acc) acc->bAccMgrUIChanged = TRUE;
+			if ( idx != -1 ) {
+				PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
+				if (acc)
+					acc->bAccMgrUIChanged = TRUE;
+			}
 			break;
 		}
 	case WM_DESTROY:
