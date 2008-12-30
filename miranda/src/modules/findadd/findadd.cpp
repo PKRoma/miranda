@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static HWND hwndFindAdd=NULL;
 static HANDLE hHookModulesLoaded = 0;
+static HANDLE hMainMenuItem = NULL;
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
@@ -976,7 +977,17 @@ int LoadFindAddModule(void)
 {
 	CreateServiceFunction(MS_FINDADD_FINDADD,FindAddCommand);
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnSystemModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, OnSystemModulesLoaded);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,FindAddPreShutdown);
+
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize     = sizeof(mi);
+	mi.position   = 500020000;
+	mi.flags      = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_FINDUSER );
+	mi.pszName    = LPGEN("&Find/Add Contacts...");
+	mi.pszService = MS_FINDADD_FINDADD;
+	hMainMenuItem = ( HANDLE )CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 	return 0;
 }
 
@@ -992,16 +1003,11 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 			netProtoCount++;
 	}
 
-	if ( netProtoCount > 0 ) {
-		CLISTMENUITEM mi = { 0 };
-		mi.cbSize     = sizeof(mi);
-		mi.position   = 500020000;
-		mi.flags      = CMIF_ICONFROMICOLIB;
-		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_FINDUSER );
-		mi.pszName    = LPGEN("&Find/Add Contacts...");
-		mi.pszService = MS_FINDADD_FINDADD;
-		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-	}
-
+	CLISTMENUITEM cmi = { 0 };
+	cmi.cbSize = sizeof(cmi);
+	cmi.flags = CMIM_FLAGS;
+	if ( netProtoCount == 0 )
+		cmi.flags |= CMIF_HIDDEN;
+	CallService( MS_CLIST_MODIFYMENUITEM, (WPARAM)hMainMenuItem, (LPARAM)&cmi );
 	return 0;
 }
