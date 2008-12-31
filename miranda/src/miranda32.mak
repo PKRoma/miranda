@@ -109,7 +109,6 @@ CLEAN :
 	-@erase "$(INTDIR)\memory.obj"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda32.pch"
-	-@erase "$(INTDIR)\module_fonts.obj"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\netlib.obj"
@@ -309,7 +308,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
-	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\skin2icons.obj" \
@@ -470,8 +468,6 @@ CLEAN :
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
 	-@erase "$(INTDIR)\miranda32.pch"
-	-@erase "$(INTDIR)\module_fonts.obj"
-	-@erase "$(INTDIR)\module_fonts.sbr"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
 	-@erase "$(INTDIR)\movetogroup.obj"
@@ -714,7 +710,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\protocolorder.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
-	"$(INTDIR)\module_fonts.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
@@ -830,7 +825,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
-	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\skin2icons.obj" \
@@ -927,7 +921,6 @@ CLEAN :
 	-@erase "$(INTDIR)\memory.obj"
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda32.pch"
-	-@erase "$(INTDIR)\module_fonts.obj"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\movetogroup.obj"
 	-@erase "$(INTDIR)\netlib.obj"
@@ -1127,7 +1120,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
-	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\skin2icons.obj" \
@@ -1288,8 +1280,6 @@ CLEAN :
 	-@erase "$(INTDIR)\miranda.obj"
 	-@erase "$(INTDIR)\miranda.sbr"
 	-@erase "$(INTDIR)\miranda32.pch"
-	-@erase "$(INTDIR)\module_fonts.obj"
-	-@erase "$(INTDIR)\module_fonts.sbr"
 	-@erase "$(INTDIR)\modules.obj"
 	-@erase "$(INTDIR)\modules.sbr"
 	-@erase "$(INTDIR)\movetogroup.obj"
@@ -1532,7 +1522,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\protocolorder.sbr" \
 	"$(INTDIR)\FontOptions.sbr" \
 	"$(INTDIR)\FontService.sbr" \
-	"$(INTDIR)\module_fonts.sbr" \
 	"$(INTDIR)\services.sbr" \
 	"$(INTDIR)\extracticon.sbr" \
 	"$(INTDIR)\skin2icons.sbr" \
@@ -1648,7 +1637,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\protocolorder.obj" \
 	"$(INTDIR)\FontOptions.obj" \
 	"$(INTDIR)\FontService.obj" \
-	"$(INTDIR)\module_fonts.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\extracticon.obj" \
 	"$(INTDIR)\skin2icons.obj" \
@@ -4931,38 +4919,6 @@ SOURCE=.\modules\fonts\FontService.cpp
 
 
 "$(INTDIR)\FontService.obj"	"$(INTDIR)\FontService.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF
-
-SOURCE=.\modules\fonts\module_fonts.cpp
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-
-"$(INTDIR)\module_fonts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-
-"$(INTDIR)\module_fonts.obj"	"$(INTDIR)\module_fonts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-
-"$(INTDIR)\module_fonts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-
-"$(INTDIR)\module_fonts.obj"	"$(INTDIR)\module_fonts.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

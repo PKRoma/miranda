@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_fontservice.h"
 
 #include "FontService.h"
-#include "module_fonts.h"
 
 int code_page = CP_ACP;
 HANDLE hFontReloadEvent, hColourReloadEvent;
@@ -46,9 +45,6 @@ int GetColourW(WPARAM wParam, LPARAM lParam);
 
 static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
-	if ( !GetModuleHandleA( "CLIST_MODERN" ))
-		RegisterCListFonts();
-
 	return 0;
 }
 

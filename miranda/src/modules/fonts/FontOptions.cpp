@@ -175,12 +175,8 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 	return TRUE;
 }
 
-#define INTM_RELOADOPTIONS   (WM_USER+21)
-
 void OptionsChanged()
 {
-	HWND hWnd = FindWindowEx( cli.hwndContactList, 0, CLISTCONTROL_CLASS, 0);
-	if(hWnd) SendMessage(hWnd, INTM_RELOADOPTIONS, 0, 0);
 	NotifyEventHooks(hFontReloadEvent, 0, 0);
 	NotifyEventHooks(hColourReloadEvent, 0, 0);
 }

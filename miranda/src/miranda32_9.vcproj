@@ -3569,14 +3569,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\fonts\module_fonts.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\modules\fonts\module_fonts.h"
-					>
-				</File>
-				<File
 					RelativePath=".\modules\fonts\services.cpp"
 					>
 				</File>
