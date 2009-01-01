@@ -43,11 +43,6 @@ int RegisterColourW(WPARAM wParam, LPARAM lParam);
 int GetColour(WPARAM wParam, LPARAM lParam);
 int GetColourW(WPARAM wParam, LPARAM lParam);
 
-static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
-{
-	return 0;
-}
-
 static int OnPreShutdown(WPARAM wParam, LPARAM lParam)
 {
 	DestroyHookableEvent(hFontReloadEvent);
@@ -82,7 +77,6 @@ int LoadFontserviceModule( void )
 	hColourReloadEvent = CreateHookableEvent(ME_COLOUR_RELOAD);
 
 	// do last for silly dyna plugin
-	HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,   OnPreShutdown);
 	return 0;
 }
