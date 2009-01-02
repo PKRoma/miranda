@@ -734,7 +734,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static ResetCList(HWND hwndDlg)
+static void ResetCList(HWND hwndDlg)
 {
 	int i;
 

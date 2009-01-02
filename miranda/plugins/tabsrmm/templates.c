@@ -268,7 +268,7 @@ BOOL CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				}
 			break;
 		case IDC_VARIABLESHELP:
-			CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/tabsrmm-articles/tabsrmm-message-log-templates/");
+			CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://miranda.or.at/TabSrmm:Templates");
 			break;
 		case IDC_EDITTEMPLATE:
 			if (HIWORD(wParam) == EN_CHANGE) {

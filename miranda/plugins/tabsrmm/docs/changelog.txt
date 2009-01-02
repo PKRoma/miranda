@@ -19,11 +19,38 @@ the file listing the same day.
 Version 2.0.x.x was released in October 2007 and is the current "stable" version.
 It NEEDS Miranda 0.7.x and will not work on older versions.
 
+Version 2.2.1.13  - 2009/01/02
+------------------------------
+
+	* merged changes from main Miranda tree (chat API, bugfixes)
+
+
+Version 2.2.1.12  - 2008/12/30
+------------------------------
+
+	* Windows Vista only: re-enabled transparency settings when using skins for the
+	  message container. Experimental, but it seems to work and none of the 
+	  problems I've seen under XP (very slow redraw, CPU hogging while typing)
+	  does occur. NOTE: When not using the Aero desktop (e.g. Vista Home Basic),
+	  transparency combined with skins may still result in slow window redrawing.
+	  
+	* resolved some translation disambiguities in the user preferences dialog.
+
+	* added some missing translations
+
+	* fixed bug with container creation - in some cases, container may stay hidden
+	  (bug ID #468)
+
+
+
 Version 2.2.1.11  - 2008/09/26
 ------------------------------
 
-	* made compile under Visual Studio 2008 (workaround for the richedit.h issue 
+	* made compile under Visual Studio 2008 (workaround for the richedit.h issue
 	  in PSDK 6.0)
+
+	* per channel event filter dialog is now translatable. (issue #0000435).
+
 
 Version 2.2.1.10  - 2008/09/11
 ------------------------------

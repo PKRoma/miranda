@@ -745,10 +745,10 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 
 		//SendMessage(hwndRich, EM_EXGETSEL, (WPARAM)0, (LPARAM)&newsel);
-		/* 
-		* for new added events, only replace in message or action events. 
-		* no need to replace smileys or math formulas elsewhere 
-		*/ 
+		/*
+		* for new added events, only replace in message or action events.
+		* no need to replace smileys or math formulas elsewhere
+		*/
 
 		fDoReplace = (bRedraw || (lin->ptszText
 								  && (lin->iType == GC_EVENT_MESSAGE || lin->iType == GC_EVENT_ACTION)));
@@ -778,11 +778,11 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 			CallService(MATH_RTF_REPLACE_FORMULAE, 0, (LPARAM)&mathReplaceInfo);
 			bFlag = TRUE;
 		}
-		
-		/* 
-		 * replace marked nicknames with hyperlinks to make the nicks 
-		 * clickable 
-		 */ 
+
+		/*
+		 * replace marked nicknames with hyperlinks to make the nicks
+		 * clickable
+		 */
 
 		if (g_Settings.ClickableNicks) {
 			CHARFORMAT2 cf2 = {0};
@@ -820,7 +820,7 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 // 						cf2.dwMask = CFM_LINK;
 // 						cf2.dwEffects = CFE_LINK;
 // 						}
-// 						
+//
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;
@@ -829,30 +829,30 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		}
 
 
-		/* 
-		* run smileyadd 
-		*/ 
-		if (myGlobals.g_SmileyAddAvail && fDoReplace) { 
-			SMADD_RICHEDIT3 sm = {0}; 
-			
-			newsel.cpMax = -1;
-			newsel.cpMin = sel.cpMin; 
-			if (newsel.cpMin < 0) 
-				newsel.cpMin = 0; 
-			ZeroMemory(&sm, sizeof(sm)); 
-			sm.cbSize = sizeof(sm); 
-			sm.hwndRichEditControl = hwndRich; 
-			sm.Protocolname = si->pszModule; 
-			sm.rangeToReplace = bRedraw ? NULL : &newsel; 
-			sm.disableRedraw = TRUE; 
-			sm.hContact = si->hContact; 
-			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm); 
-			} 
+		/*
+		* run smileyadd
+		*/
+		if (myGlobals.g_SmileyAddAvail && fDoReplace) {
+			SMADD_RICHEDIT3 sm = {0};
 
-		/* 
-		* trim the message log to the number of most recent events 
-		* this uses hidden marks in the rich text to find the events which should be deleted 
-		*/ 
+			newsel.cpMax = -1;
+			newsel.cpMin = sel.cpMin;
+			if (newsel.cpMin < 0)
+				newsel.cpMin = 0;
+			ZeroMemory(&sm, sizeof(sm));
+			sm.cbSize = sizeof(sm);
+			sm.hwndRichEditControl = hwndRich;
+			sm.Protocolname = si->pszModule;
+			sm.rangeToReplace = bRedraw ? NULL : &newsel;
+			sm.disableRedraw = TRUE;
+			sm.hContact = si->hContact;
+			CallService(MS_SMILEYADD_REPLACESMILEYS, 0, (LPARAM)&sm);
+			}
+
+		/*
+		* trim the message log to the number of most recent events
+		* this uses hidden marks in the rich text to find the events which should be deleted
+		*/
 
 
 		if (si->wasTrimmed) {

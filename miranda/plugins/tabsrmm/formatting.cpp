@@ -632,25 +632,6 @@ extern "C" TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *
 	return szResult;
 }
 
-/*
-extern "C" const WCHAR *EncodeWithNickname(const char *string, const WCHAR *szNick, UINT codePage)
-{
-	static std::wstring msg;
-	wchar_t stringW[256];
-	int mark = 0;
-
-	MultiByteToWideChar(codePage, 0, string, -1, stringW, 256);
-	stringW[255] = 0;
-	msg.assign(stringW);
-	if ((mark = msg.find(L"%nick%")) != msg.npos) {
-		msg.erase(mark, 6);
-		msg.insert(mark, szNick, lstrlenW(szNick));
-	}
-	return msg.c_str();
-}
-*/
-
-
 extern "C" const char *FilterEventMarkersA(char *szText)
 {
 	std::string text(szText);
@@ -684,9 +665,19 @@ extern "C" const char *FilterEventMarkersA(char *szText)
 	return szText;
 }
 
+// nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
+
 typedef std::basic_string<TCHAR,std::char_traits<TCHAR> > tstring;
 
-// nightwish: doesn't compile under Visual C++ 6.0 (aka 98, yeah, that c++ compiler is crap)
+// __T() not defined by MingW32
+
+#ifdef __GNUC__
+	#if defined(UNICODE)
+		#define __T(x) L ## x
+	#else
+		#define __T(x) x
+	#endif
+#endif
 
 extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
 {
@@ -710,4 +701,3 @@ extern "C" const TCHAR *DoubleAmpersands(TCHAR *pszText)
 	_tcscpy(pszText, text.c_str());
 	return pszText;
 }
-

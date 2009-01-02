@@ -76,13 +76,15 @@ TCHAR* getMenuEntry(int i)  {
 
 int ChangeClientIconInStatusBar(WPARAM wparam,LPARAM lparam)
 {
-	int i=0;
 	HICON hIcon=NULL;
 	char* msg = getMirVer((HANDLE)wparam);
-	if ( !msg )	return (1);
+
+	if ( !msg )
+		return (1);
 
 	hIcon=(HICON)CallService(MS_FP_GETCLIENTICON,(WPARAM)msg,(LPARAM)1);
-	if ( !hIcon ) return (1);
+	if ( !hIcon )
+		return (1);
 
 	if ( ServiceExists(MS_MSG_MODIFYICON) ) {
 		StatusIconData sid = {0};

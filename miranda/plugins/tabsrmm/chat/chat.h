@@ -1,7 +1,7 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -367,8 +367,7 @@ typedef struct{
 	HWND          hWndTarget;
 	BOOL          bForeground;
 	SESSION_INFO* si;
-}
-	COLORCHOOSER;
+} COLORCHOOSER;
 
 #pragma comment(lib,"comctl32.lib")
 

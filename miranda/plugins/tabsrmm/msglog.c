@@ -785,7 +785,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	 */
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
-		  if (dat->dwFlags & MWF_LOG_LOCALTIME) {
+		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
 			if (!isSent && dat->timediff != 0)
 				final_time = dbei.timestamp - dat->timediff;
 		}
@@ -1352,9 +1352,7 @@ static void SetupLogFormatting(struct MessageWindowData *dat)
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend, DBEVENTINFO *dbei_s)
 {
 	EDITSTREAM stream = { 0 };
-	struct LogStreamData streamData = {
-		0
-	};
+	struct LogStreamData streamData = {	0 };
 	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
 	CHARRANGE oldSel, sel;
 	HWND hwndrtf;

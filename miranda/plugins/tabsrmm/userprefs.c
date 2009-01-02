@@ -492,7 +492,7 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			GetClientRect(hwndDlg, &rcClient);
 
-			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+			mir_sntprintf(szBuffer, safe_sizeof(szBuffer), TranslateT("Set messaging options for %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
 			SetWindowText(hwndDlg, szBuffer);
 
 			tci.mask = TCIF_PARAM | TCIF_TEXT;

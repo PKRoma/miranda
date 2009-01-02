@@ -963,11 +963,11 @@ verify:
 			HandleQueueError(hwndDlg, dat, iNextFailed);
 		//MAD: close on send mode
 		else {
-			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose", 0))
-			{ 
+			if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "AutoClose", 0)) {
 				if(DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_AutoClose_2", 0))
 					SendMessage(dat->hwnd, WM_CLOSE, 0, 1);
-				else SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
+				else
+					SendMessage(dat->pContainer->hwnd, WM_CLOSE, 0, 0);
 			}
 		}
 		//MAD_

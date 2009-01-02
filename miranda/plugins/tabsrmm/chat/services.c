@@ -50,7 +50,7 @@ static HANDLE		hServiceRegister = NULL,
 						hServiceGetCount = NULL,
 						hEventPrebuildMenu = NULL,
 						hEventDoubleclicked = NULL,
-                  hEventJoinChat = NULL, 
+                  hEventJoinChat = NULL,
 						hEventLeaveChat = NULL;
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 28
@@ -604,10 +604,10 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 {
 	GCEVENT *gce = (GCEVENT*)lParam;
 	GCDEST *gcd = NULL;
-#if defined(_UNICODE) 
-	GCEVENT save_gce; 
-	GCDEST  save_gcd; 
-#endif 
+#if defined(_UNICODE)
+	GCEVENT save_gce;
+	GCDEST  save_gcd;
+#endif
 	TCHAR* pWnd = NULL;
 	char* pMod = NULL;
 	BOOL bIsHighlighted = FALSE;

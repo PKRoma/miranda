@@ -1591,7 +1591,7 @@ tzdone:
 	HookEvent(ME_PROTO_ACK, ProtoAck);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN, PreshutdownSendRecv);
 	HookEvent(ME_SYSTEM_OKTOEXIT, OkToExit);
-	
+
 	hEventPrebuildMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
 
 	InitAPI();

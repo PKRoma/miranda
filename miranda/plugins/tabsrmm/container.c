@@ -183,15 +183,6 @@ static int MY_Utils_RestoreWindowPositionNoMove(HWND hwnd, HANDLE hContact, cons
 	return MY_RestoreWindowPosition(wParam | RWPF_NOMOVE, (LPARAM)&swp);
 }
 
-/*
- * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
- * to CreateDialogParam() via the LPARAM. It also adds the struct to the linked list
- * of containers.
- *
- * The WM_DESTROY handler of the container DlgProc is responsible for free()'ing the
- * pointer and for removing the struct from the linked list.
- */
-
 extern HMODULE hDLL;
 extern PSLWA pSetLayeredWindowAttributes;
 extern PULW pUpdateLayeredWindow;
@@ -210,6 +201,15 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
 	}
 	return 1;                                       // doesn't need a paramter
 }
+
+/*
+ * CreateContainer MUST malloc() a struct ContainerWindowData and pass its address
+ * to CreateDialogParam() via the LPARAM. It also adds the struct to the linked list
+ * of containers.
+ *
+ * The WM_DESTROY handler of the container DlgProc is responsible for free()'ing the
+ * pointer and for removing the struct from the linked list.
+ */
 
 struct ContainerWindowData *CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
 	DBVARIANT dbv;
@@ -1315,7 +1315,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			else {
 				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
-				//ShowWindow(hwndDlg, SW_SHOWNORMAL);
+				ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			}
 			SetTimer(hwndDlg, TIMERID_HEARTBEAT, TIMEOUT_HEARTBEAT, NULL);
 			SendMessage(hwndDlg, DM_SETSIDEBARBUTTONS, 0, 0);
@@ -2234,7 +2234,9 @@ panel_found:
 				CallService(MTH_HIDE, 0, 0);
 
 			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != myGlobals.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !bSkinned)
+				BOOL fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
+
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && fTransAllowed)
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)HIWORD(pContainer->dwTransparency), (/* pContainer->bSkinned ? LWA_COLORKEY :  */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 			pContainer->hwndSaved = 0;
@@ -2244,6 +2246,7 @@ panel_found:
 		case WM_MOUSEACTIVATE: {
 			TCITEM item;
 			int curItem = 0;
+			BOOL  fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
 
 			if (pContainer == NULL)
 				break;
@@ -2267,7 +2270,7 @@ panel_found:
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 
-			if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && !bSkinned) {
+			if (pContainer->dwFlags & CNT_TRANSPARENCY && pSetLayeredWindowAttributes != NULL && fTransAllowed) {
 				DWORD trans = LOWORD(pContainer->dwTransparency);
 				pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
@@ -2529,11 +2532,14 @@ panel_found:
 			sBarHeight = (UINT)DBGetContactSettingByte(NULL, SRMSGMOD_T, (bSkinned ? "S_sbarheight" : "sbarheight"), 0);
 
 			if (LOBYTE(LOWORD(GetVersion())) >= 5  && pSetLayeredWindowAttributes != NULL) {
+				BOOL  fTransAllowed = !bSkinned || myGlobals.m_WinVerMajor >= 6;
 				DWORD exold;
+
 				ex = exold = GetWindowLong(hwndDlg, GWL_EXSTYLE);
-				ex = (pContainer->dwFlags & CNT_TRANSPARENCY && !g_skinnedContainers) ? ex | WS_EX_LAYERED : ex & ~WS_EX_LAYERED;
+				ex = (pContainer->dwFlags & CNT_TRANSPARENCY && (!g_skinnedContainers || fTransAllowed)) ? ex | WS_EX_LAYERED : ex & ~(WS_EX_LAYERED);
+
 				SetWindowLong(hwndDlg, GWL_EXSTYLE, ex);
-				if (pContainer->dwFlags & CNT_TRANSPARENCY && !bSkinned) {
+				if (pContainer->dwFlags & CNT_TRANSPARENCY && fTransAllowed) {
 					DWORD trans = LOWORD(pContainer->dwTransparency);
 					pSetLayeredWindowAttributes(hwndDlg, g_ContainerColorKey, (BYTE)trans, (/* pContainer->bSkinned ? LWA_COLORKEY : */ 0) | (pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 				}
@@ -3644,8 +3650,7 @@ void UpdateContainerMenu(HWND hwndDlg, struct MessageWindowData *dat) {
 	BOOL fDisable = FALSE;
 
 	if (dat->bType == SESSIONTYPE_CHAT)             // TODO: chat sessions may get their own message log submenu
-		// in the future. for now, its just disabled
-		fDisable = TRUE;
+		fDisable = TRUE;							// in the future. for now, its just disabled
 	else {
 		if (dat->hwndIEView != 0) {
 			mir_snprintf(szTemp, 100, "%s.SRMMEnable", dat->bIsMeta ? dat->szMetaProto : dat->szProto);

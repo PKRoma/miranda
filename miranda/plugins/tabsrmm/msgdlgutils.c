@@ -354,7 +354,7 @@ void CalcDynamicAvatarSize(HWND hwndDlg, struct MessageWindowData *dat, BITMAP *
 	else
 		picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
 	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? DPISCALEX(24):0) + ((dat->showUIElements != 0) ? DPISCALEX(28) : DPISCALEX(2)))) * picAspect;
-	
+
 	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
 	//	   we can change resize priority to buttons, if needed...
 	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !myGlobals.m_AlwaysFullToolbarWidth)
@@ -601,7 +601,7 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 		switch (selection) {
 			case ID_MESSAGELOGSETTINGS_GLOBAL: {
 				OPENOPTIONSDIALOG	ood = {0};
-				
+
 				ood.cbSize = sizeof(OPENOPTIONSDIALOG);
 				ood.pszGroup = NULL;
 				ood.pszPage = "Message Sessions";
@@ -1207,7 +1207,7 @@ BOOL DoRtfToTags(TCHAR * pszText, struct MessageWindowData *dat)
 	BOOL bTextHasStarted = FALSE;
 	LOGFONTA lf;
 	COLORREF color;
-	static inColor = 0;
+	static int inColor = 0;
 
 	if (!pszText)
 		return FALSE;
@@ -2712,8 +2712,8 @@ void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat)
 	int i;
 	char szTemp[40];
 	COLORREF colour;
-	dat->theme.statbg = myGlobals.crStatus;				
-	dat->theme.oldinbg = myGlobals.crOldIncoming;	
+	dat->theme.statbg = myGlobals.crStatus;
+	dat->theme.oldinbg = myGlobals.crOldIncoming;
 	dat->theme.oldoutbg = myGlobals.crOldOutgoing;
 	dat->theme.inbg = myGlobals.crIncoming;
 	dat->theme.outbg = myGlobals.crOutgoing;

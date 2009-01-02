@@ -354,6 +354,12 @@ do_apply:
 			DWORD dwTransparency = dwTemp[1];
 			char szBuf[20];
 			int  isTrans;
+			BOOL fAllowTrans = FALSE;
+
+			if(myGlobals.m_WinVerMajor >= 6)
+				fAllowTrans = TRUE;
+			else
+				fAllowTrans = (!g_skinnedContainers);
 
 			MY_CheckDlgButton(hwndDlg, IDC_O_HIDETITLE, dwFlags & CNT_NOTITLE);
 			MY_CheckDlgButton(hwndDlg, IDC_O_DONTREPORT, dwFlags & CNT_DONTREPORT);
@@ -378,12 +384,12 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
 			MY_CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
 
-			if (LOBYTE(LOWORD(GetVersion())) >= 5 && !g_skinnedContainers)
+			if (LOBYTE(LOWORD(GetVersion())) >= 5 && fAllowTrans)
 				CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
 			else
 				CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, FALSE);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), myGlobals.m_WinVerMajor >= 5 && !g_skinnedContainers ? TRUE : FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), myGlobals.m_WinVerMajor >= 5 && fAllowTrans ? TRUE : FALSE);
 
 			isTrans = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE), isTrans ? TRUE : FALSE);

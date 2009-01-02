@@ -35,8 +35,6 @@ $Id$
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
 
-//#include "m_MathModule.h"
-
 extern MYGLOBALS myGlobals;
 extern NEN_OPTIONS nen_options;
 extern TemplateSet RTL_Active, LTR_Active;
@@ -66,11 +64,11 @@ extern	char  *FilterEventMarkersA(char *szText);
 extern	WCHAR *FilterEventMarkers(WCHAR *wszText);
 extern  TCHAR *DoubleAmpersands(TCHAR *pszText);
 
-TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"), 
-								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"), 
+TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T("Beer"), _T("Thinking"), _T("Eating"),
+								_T("TV"), _T("Friends"), _T("Coffee"),	_T("Music"), _T("Business"), _T("Camera"), _T("Funny"),
 								_T("Phone"), _T("Games"), _T("College"), _T("Shopping"), _T("Sick"), _T("Sleeping"),
-								_T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating... yummy"), 
-								_T("Having fun"), _T("Chit chatting"),	_T("Crashing"), _T("Going to toilet"), _T("<undef>"), 
+								_T("Surfing"), _T("@Internet"), _T("Engineering"), _T("Typing"), _T("Eating... yummy"),
+								_T("Having fun"), _T("Chit chatting"),	_T("Crashing"), _T("Going to toilet"), _T("<undef>"),
 								_T("<undef>"), _T("<undef>")
 							};
 
@@ -324,10 +322,15 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 	}
 	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
 }
-//MAD: subclassing for keyfilter mod
-LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{	
 
+//MAD: subclassing for keyfilter mod
+
+/*
+ * subclasses IEView to add keyboard filtering (if needed)
+ */
+
+LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(GetParent(GetParent(hwnd))), GWL_USERDATA);
 
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
@@ -351,33 +354,36 @@ LRESULT CALLBACK IEViewKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	}
 	return CallWindowProc(mwdat->oldIEViewLastChildProc, hwnd, msg, wParam, lParam);
 }
+
+/*
+ * sublassing procedure for the h++ based message log viewer
+ */
+
 LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{	
+{
 
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
 	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+
 	switch(msg) {
 
-case WM_KEYDOWN:
-	if(!isCtrl && !isAlt&&!isShift) {
-		{
-			if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
-				wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
-				wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
-				wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
-				wParam != VK_SPACE)
+		case WM_KEYDOWN:
+			if(!isCtrl && !isAlt&&!isShift) {
 			{
-				SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
-				keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-
-				return 0;
+				if (wParam != VK_PRIOR&&wParam != VK_NEXT&&
+					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
+					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
+					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+					wParam != VK_SPACE)	{
+					SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+					keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
+					return 0;
+				}
 			}
+			break;
 		}
-		break;
-
-	}
 	}
 	return CallWindowProc(mwdat->oldIEViewProc, hwnd, msg, wParam, lParam);
 }
@@ -558,7 +564,7 @@ static void AddToFileList(char ***pppFiles, int *totalCount, const TCHAR* szFile
 	*pppFiles = (char**)realloc(*pppFiles, (++*totalCount + 1) * sizeof(char*));
 	(*pppFiles)[*totalCount] = NULL;
 
-#if defined( _UNICODE ) 
+#if defined( _UNICODE )
 {
 	TCHAR tszShortName[ MAX_PATH ];
 	char  szShortName[ MAX_PATH ];
@@ -576,23 +582,24 @@ static void AddToFileList(char ***pppFiles, int *totalCount, const TCHAR* szFile
 	(*pppFiles)[*totalCount-1] = _strdup(szFilename);
 #endif
 
-if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
-	WIN32_FIND_DATA fd;
-	HANDLE hFind;
-	TCHAR szPath[MAX_PATH];
-	lstrcpy(szPath, szFilename);
-	lstrcat(szPath, _T("\\*"));
-	if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
-		do {
-			if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T(".."))) continue;
-			lstrcpy(szPath, szFilename);
-			lstrcat(szPath, _T("\\"));
-			lstrcat(szPath, fd.cFileName);
-			AddToFileList(pppFiles, totalCount, szPath);
-		} while (FindNextFile(hFind, &fd));
-		FindClose(hFind);
+	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+		WIN32_FIND_DATA fd;
+		HANDLE hFind;
+		TCHAR szPath[MAX_PATH];
+
+		lstrcpy(szPath, szFilename);
+		lstrcat(szPath, _T("\\*"));
+		if ((hFind = FindFirstFile(szPath, &fd)) != INVALID_HANDLE_VALUE) {
+			do {
+				if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T(".."))) continue;
+				lstrcpy(szPath, szFilename);
+				lstrcat(szPath, _T("\\"));
+				lstrcat(szPath, fd.cFileName);
+				AddToFileList(pppFiles, totalCount, szPath);
+			} while (FindNextFile(hFind, &fd));
+			FindClose(hFind);
+		}
 	}
-}
 }
 
 void ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControls, int state)
@@ -659,10 +666,7 @@ void SetDialogToType(HWND hwndDlg)
 	GetAvatarVisibility(hwndDlg, dat);
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-	//ShowWindow(GetDlgItem(hwndDlg, IDOK), showToolbar ? SW_SHOW : SW_HIDE);
-
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 
 	EnableSendButton(hwndDlg, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
@@ -824,7 +828,7 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			break;
 
 		case WM_KEYDOWN:
-			if(!isCtrl && !isAlt&&!isShift) 
+			if(!isCtrl && !isAlt&&!isShift)
 			{
 				if (/*wParam != VK_ESCAPE&&*/wParam != VK_PRIOR&&wParam != VK_NEXT&&
 					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
@@ -864,10 +868,10 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			ShowPopupMenu(hwndParent, mwdat, IDC_LOG, hwnd, pt);
 			return TRUE;
 		}
-		case WM_NCDESTROY: 
-         if(OldMessageLogProc) 
-                SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc); 
-			break; 
+		case WM_NCDESTROY:
+         if(OldMessageLogProc)
+                SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc);
+			break;
 
 		}
 	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
@@ -891,8 +895,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
 			BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
-			//MAD: sound on typing..						 
-			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab)) 
+			//MAD: sound on typing..
+			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!isCtrl&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam!=VK_ESCAPE&&!(wParam==VK_TAB&&myGlobals.m_AllowTab))
 		  		SkinPlaySound("SoundOnTyping");
 			 //MAD
 			if (wParam == 0x0d && isCtrl && myGlobals.m_MathModAvail) {
@@ -970,7 +974,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
 
 			//MAD: sound on typing..
-  			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE) 
+  			if(myGlobals.g_bSoundOnTyping&&!isAlt&&!(mwdat->pContainer->dwFlags&CNT_NOSOUND)&&wParam == VK_DELETE)
   				SkinPlaySound("SoundOnTyping");
  			//
 
@@ -1256,10 +1260,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			ShowPopupMenu(hwndParent, mwdat, IDC_MESSAGE, hwnd, pt);
 			return TRUE;
 		}
-		case WM_NCDESTROY: 
-                            if(OldMessageEditProc) 
-                                    SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc); 
-                            break; 
+		case WM_NCDESTROY:
+			if(OldMessageEditProc)
+				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
+			break;
 
 
 	}
@@ -1980,7 +1984,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				if (dat->hContact)
 					LoadLocalFlags(hwndDlg, dat);
 			}
-			
+
 			/*
 			 * allow disabling emoticons per contact (note: currently unused feature)
 			 */
@@ -2096,9 +2100,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			//MAD
 			if(dat->bActualHistory=DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "ActualHistory", 0)){
 				dat->messageCount=(UINT)DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);
-				DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);	
+				DBWriteContactSettingDword(dat->hContact, SRMSGMOD_T, "messagecount", 0);
 				}
-	
+
 			/* OnO: higligh lines to their end */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 
@@ -2207,7 +2211,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				ZeroMemory(&wndClass, sizeof(wndClass));
 				GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
-				//TODO: check compatibility with anismiles!
 				//OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
 				OldMessageLogProc = wndClass.lpfnWndProc;
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
@@ -2293,7 +2296,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		}
 		case DM_TYPING: {
             int preTyping = dat->nTypeSecs != 0;
-			dat->nTypeSecs = (int)(lParam > 0 ? lParam : 0);
+			dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
             SetWindowLong(hwndDlg, DWL_MSGRESULT, preTyping);
 			return TRUE;
 		}
@@ -2348,7 +2351,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SetDialogToType(hwndDlg);
 			}
 			dat->iButtonBarNeeds = dat->showUIElements ? dat->bbLSideWidth+dat->bbRSideWidth : 0;
-// 
+//
 //			dat->iButtonBarReallyNeeds = dat->iButtonBarNeeds + (dat->showUIElements ? (myGlobals.m_AllowSendButtonHidden ? 110 : 70) : 0);
 // 			if (!dat->SendFormat)
 // 				dat->iButtonBarReallyNeeds -= 96;
@@ -2396,9 +2399,10 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->dwFlagsEx |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
 			dat->dwFlagsEx = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwFlagsEx | MWF_SHOW_INFOPANEL : dat->dwFlagsEx & ~MWF_SHOW_INFOPANEL;
 
-			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));
+			// small inner margins (padding) for the text areas
 
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));    // XXX margins in the message area as well
+			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
 
 			GetSendFormat(hwndDlg, dat, 1);
 			SetDialogToType(hwndDlg);
@@ -2440,7 +2444,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				cf2.bCharSet = lf.lfCharSet;
 				strncpy(cf2.szFaceName, lf.lfFaceName, LF_FACESIZE);
 				cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0)|(lf.lfUnderline ? CFE_UNDERLINE : 0)|(lf.lfStrikeOut ? CFE_STRIKEOUT : 0);
-				cf2.wWeight = (WORD)lf.lfWeight;														   
+				cf2.wWeight = (WORD)lf.lfWeight;
 				cf2.bPitchAndFamily = lf.lfPitchAndFamily;
 				cf2.yHeight = abs(lf.lfHeight) * 15;
 				SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
@@ -2595,7 +2599,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					else
 						mir_sntprintf(fulluin, safe_sizeof(fulluin), TranslateT("UIN: %s (SHIFT click -> copy to clipboard)\nClick for User's Details\nClick dropdown for infopanel settings"), iHasName ? wUIN : TranslateT("No UIN"));
 
-					SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, /*iHasName ?*/ (WPARAM)fulluin /*: (WPARAM)_T("")*/, 0);   
+					SendMessage(GetDlgItem(hwndDlg, IDC_NAME), BUTTONADDTOOLTIP, /*iHasName ?*/ (WPARAM)fulluin /*: (WPARAM)_T("")*/, 0);
 					if(wUIN)
 						mir_free(wUIN);
 				}
@@ -2821,12 +2825,12 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 // 				const UINT *hideThisControls = myGlobals.m_ToolbarHideMode ? controlsToHide : controlsToHide1;
 // 				if (!dat->SendFormat)
 // 					hideThisControls = controlsToHide2;
-// 
+//
 //  			}
-			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);   
+			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
 //mad
 			BB_SetButtonsPos(hwndDlg,dat);
-//			
+//
 
 			if (GetDlgItem(hwndDlg, IDC_CLIST) != 0) {
 				RECT rc, rcClient, rcLog;
@@ -2915,7 +2919,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				 * hardcoded limits... better solution is possible, but this works for now
 				 */
 				//mad
-				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) 
+				if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)
 					bottomtoolbarH = 22;
 				//
 				if (dat->splitterY < (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH)) {	// min splitter size
@@ -3173,7 +3177,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 					if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 						if (!(m_pContainer->dwFlags & CNT_NOFLASH))
 							FlashContainer(m_pContainer, 1, 0);
-						// XXX set the message icon in the container
 						SendMessage(hwndContainer, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 						m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
 					}
@@ -4019,7 +4022,7 @@ quote_from_last:
 					isItalic = (cfOld.dwEffects & CFE_ITALIC) && (cfOld.dwMask & CFM_ITALIC);
 					isUnderline = (cfOld.dwEffects & CFE_UNDERLINE) && (cfOld.dwMask & CFM_UNDERLINE);
 					isStrikeout = (cfOld.dwEffects & CFM_STRIKEOUT) && (cfOld.dwMask & CFM_STRIKEOUT);
-					
+
 					if (cmd == IDC_FONTBOLD && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTBOLD)))
 						break;
 					if (cmd == IDC_FONTITALIC && !IsWindowEnabled(GetDlgItem(hwndDlg, IDC_FONTITALIC)))
@@ -4527,7 +4530,7 @@ quote_from_last:
 
 					DestroyMenu(hMenu);
 					}
-					//MAD_     
+					//MAD_
 					break;
 // error control
 				case IDC_CANCELSEND:
@@ -4726,7 +4729,7 @@ quote_from_last:
 							}
 							//MAD: tabulation mod
 							if(msg == WM_KEYDOWN&&wp == VK_TAB&&myGlobals.m_AllowTab) {
-								SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t"); 
+								SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"\t");
 								((MSGFILTER *) lParam)->msg = WM_NULL;
 								((MSGFILTER *) lParam)->wParam = 0;
 								((MSGFILTER *) lParam)->lParam = 0;
@@ -5365,15 +5368,15 @@ quote_from_last:
 			BB_SetButtonsPos(hwndDlg,dat);
 			return 0;
 			}
-			
+
 		case DM_CBDESTROY:{
 			if(lParam)
 				CB_DestroyButton(hwndDlg,dat,(DWORD)wParam,(DWORD)lParam);
 			else
 				CB_DestroyAllButtons(hwndDlg,dat);
 			return 0;
-			}	
-	//		
+			}
+	//
 		case WM_DROPFILES: {
 			BOOL not_sending = GetKeyState(VK_CONTROL) & 0x8000;
 			if (!not_sending) {
@@ -5456,7 +5459,7 @@ quote_from_last:
 				SendMessage(hwndContainer, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				return TRUE;
 			}
-			 
+
 			if (dat->iOpenJobs > 0 && lParam != 2) {
 				if (dat->dwFlags & MWF_ERRORSTATE)
 					SendMessage(hwndDlg, DM_ERRORDECIDED, MSGERROR_CANCEL, 1);
@@ -5495,13 +5498,13 @@ quote_from_last:
 			//MAD_
 			 //mad
 				if(TRUE){
-					
+
 				struct StatusIconListNode *current;
 
 				while (dat->pSINod) {
 					current = dat->pSINod;
 					dat->pSINod = dat->pSINod->next;
-		
+
 					mir_free(current->sid.szModule);
 					DestroyIcon(current->sid.hIcon);
 					if (current->sid.hIconDisabled) DestroyIcon(current->sid.hIconDisabled);
@@ -5803,7 +5806,6 @@ quote_from_last:
 static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	HANDLE hFile;
-
 	char *szFilename = (char *)dwCookie;
 	if ((hFile = CreateFileA(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
 		SetFilePointer(hFile, 0, NULL, FILE_END);

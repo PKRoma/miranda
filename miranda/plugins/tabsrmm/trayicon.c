@@ -319,8 +319,6 @@ void RemoveBalloonTip()
  * is deleted, if necessary.
  */
 
-// TODO correct all calls, szStatus is now TCHAR *
-
 void AddContactToFavorites(HANDLE hContact, TCHAR *szNickname, char *szProto, TCHAR *szStatus, WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu, UINT codePage)
 {
 	MENUITEMINFO	mii = {0};
