@@ -727,7 +727,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					TFontID& F = font_id_list_w2[itemData->font_id];
 
 					CreateFromFontSettings(&F.value, &lf, F.flags);
-					CreateFontIndirect(&lf);
 
 					cf.lStructSize = sizeof(cf);
 					cf.hwndOwner = hwndDlg;
