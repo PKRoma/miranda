@@ -235,7 +235,7 @@ static int MirandaWaitForMutex(HANDLE hEvent)
 {
 	for (;;) {
 		// will get WAIT_IO_COMPLETE for QueueUserAPC() which isnt a result
-		DWORD rc=MsgWaitForMultipleObjectsExWorkaround(1, &hEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
+		DWORD rc = MsgWaitForMultipleObjectsExWorkaround(1, &hEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
 		if ( rc == WAIT_OBJECT_0 + 1 ) {
 			MSG msg;
 			while ( PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) ) {
@@ -253,8 +253,7 @@ static int MirandaWaitForMutex(HANDLE hEvent)
 VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	if ( MirandaWaitForMutex( hStackMutex )) {
-		int j;
-		for ( j=0; j < threads.getCount(); j++ ) {
+		for ( int j=0; j < threads.getCount(); j++ ) {
 			THREAD_WAIT_ENTRY* p = threads[j];
 			char szModuleName[ MAX_PATH ];
 			GetModuleFileNameA( p->hOwner, szModuleName, sizeof(szModuleName));
@@ -275,20 +274,33 @@ void KillObjectThreads( void* owner )
 	if ( owner == NULL )
 		return;
 
-	if ( MirandaWaitForMutex( hStackMutex )) {
-		int j;
-		for ( j = threads.getCount()-1; j >= 0; j-- ) {
-			THREAD_WAIT_ENTRY* p = threads[j];
-			if ( p->pObject == owner ) {
-				TerminateThread( p->hThread, 9999 );
-				CloseHandle( p->hThread );
-				threads.remove( j );
-				mir_free( p );
-		}	}
+	WaitForSingleObject( hStackMutex, INFINITE );
 
-		ReleaseMutex(hStackMutex);
-		SetEvent(hThreadQueueEmpty);
-}	}
+	HANDLE* threadPool = ( HANDLE* )alloca( threads.getCount()*sizeof( HANDLE ));
+	int threadCount = 0;
+
+	for ( int j = threads.getCount()-1; j >= 0; j-- ) {
+		THREAD_WAIT_ENTRY* p = threads[j];
+		if ( p->pObject == owner )
+			threadPool[ threadCount++ ] = p->hThread;
+	}
+	ReleaseMutex(hStackMutex);
+
+	// is there anything to kill?
+	if ( threadCount > 0 ) {
+		if ( WaitForMultipleObjects( threadCount, threadPool, TRUE, 5000 ) == WAIT_TIMEOUT ) {
+			// forcibly kill all remaining threads after 5 secs
+			WaitForSingleObject( hStackMutex, INFINITE );
+			for ( int j = threads.getCount()-1; j >= 0; j-- ) {
+				THREAD_WAIT_ENTRY* p = threads[j];
+				if ( p->pObject == owner ) {
+					TerminateThread( p->hThread, 9999 );
+					CloseHandle( p->hThread );
+					threads.remove( j );
+					mir_free( p );
+			}	}
+			ReleaseMutex(hStackMutex);
+}	}	}
 
 static void UnwindThreadWait(void)
 {

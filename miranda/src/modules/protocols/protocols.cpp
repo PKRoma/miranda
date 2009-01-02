@@ -450,12 +450,13 @@ void UnloadProtocolsModule()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void UninitAccount( PROTOACCOUNT* pa )
+pfnUninitProto GetProtocolDestructor( char* szProto )
 {
 	int idx;	
 	PROTOCOLDESCRIPTOR temp;
-	temp.szName = pa->szProtoName;
+	temp.szName = szProto;
 	if (( idx = protos.getIndex( &temp )) != -1 )
-		if ( protos[idx]->fnUninit != NULL )
-			protos[idx]->fnUninit( pa->ppro );
+		return protos[idx]->fnUninit;
+
+	return NULL;
 }

@@ -87,7 +87,7 @@ int FillTree(HWND hwnd)
 			continue;
 
 		pa = accounts[idx];
-		if ( !pa->bIsEnabled || !isProtoSuitable( pa->ppro ))
+		if ( !IsAccountEnabled( pa ) || !isProtoSuitable( pa->ppro ))
 			continue;
 
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));

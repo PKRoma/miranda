@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_protoint.h"
 
-void UninitAccount( PROTOACCOUNT* pa );
-
 static BOOL bModuleInitialized = FALSE;
 
 static int CompareAccounts( const PROTOACCOUNT* p1, const PROTOACCOUNT* p2 )
@@ -171,7 +169,7 @@ static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-		if ( !pa->ppro || !pa->bIsEnabled )
+		if ( !pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
 		pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
@@ -185,7 +183,7 @@ static int UninitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-		if ( !pa->ppro || !pa->bIsEnabled )
+		if ( !pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
 		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
@@ -202,7 +200,7 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
-		if ( pa->ppro || !pa->bIsEnabled )
+		if ( pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
 		if ( !ActivateAccount( pa )) { // remove damaged account from list
@@ -290,35 +288,72 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 {
 	PROTO_INTERFACE* ppi;
 	PROTOCOLDESCRIPTOR* ppd = Proto_IsProtocolLoaded( pa->szProtoName );
-	if ( ppd == NULL )
-		return pa->bIsEnabled = FALSE;
-
-	if ( ppd->fnInit == NULL )
-		return pa->bIsEnabled = FALSE;
-
-	ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
-	if ( ppi != NULL ) {
-		pa->ppro = ppi;
-		ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
-		CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEOBJ)stub1, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEOBJ)stub2, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEOBJ)stub3, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEOBJ)stub4, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEOBJ)stub7, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEOBJ)stub11, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEOBJ)stub12, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEOBJ)stub13, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEOBJ)stub15, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEOBJ)stub16, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEOBJ)stub17, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEOBJ)stub18, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
-		CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
-		return TRUE;
+	if ( ppd == NULL ) {
+		pa->bDynDisabled = TRUE;
+		return FALSE;
 	}
 
-	return pa->bIsEnabled = FALSE;
+	if ( ppd->fnInit == NULL ) {
+		pa->bDynDisabled = TRUE;
+		return FALSE;
+	}
+
+	ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
+	if ( ppi == NULL ) {
+		pa->bDynDisabled = TRUE;
+		return FALSE;
+	}
+
+	pa->ppro = ppi;
+	ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
+	CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLIST, (MIRANDASERVICEOBJ)stub1, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_ADDTOLISTBYEVENT, (MIRANDASERVICEOBJ)stub2, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_AUTHALLOW, (MIRANDASERVICEOBJ)stub3, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_AUTHDENY, (MIRANDASERVICEOBJ)stub4, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_CHANGEINFO, (MIRANDASERVICEOBJ)stub7, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_FILERESUME, (MIRANDASERVICEOBJ)stub11, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_GETCAPS, (MIRANDASERVICEOBJ)stub12, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_LOADICON, (MIRANDASERVICEOBJ)stub13, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_BASICSEARCH, (MIRANDASERVICEOBJ)stub15, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYEMAIL, (MIRANDASERVICEOBJ)stub16, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEOBJ)stub17, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEOBJ)stub18, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct DeactivationThreadParam
+{
+	tagPROTO_INTERFACE* ppro;
+	pfnUninitProto      fnUninit;
+	BOOL                bIsDynamic;
+};
+
+pfnUninitProto GetProtocolDestructor( char* szProto );
+
+static int DeactivationThread( DeactivationThreadParam* param )
+{
+	tagPROTO_INTERFACE* p = ( tagPROTO_INTERFACE* )param->ppro;
+	p->SetStatus(ID_STATUS_OFFLINE);
+
+	if ( param->bIsDynamic ) {
+		p->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
+		p->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
+	}
+
+	KillObjectThreads( p ); // waits for them before terminating
+
+	if ( param->fnUninit )
+		param->fnUninit( p );
+
+	KillObjectServices( p );
+	KillObjectEventHooks( p );
+	delete param;
+	return 0;
 }
 
 void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
@@ -332,27 +367,31 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 		pa->bAccMgrUIChanged = FALSE;
 	}
 
-	pa->ppro->SetStatus(ID_STATUS_OFFLINE);
-
-	if ( bIsDynamic ) {
-		pa->ppro->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
-		pa->ppro->OnEvent( EV_PROTO_ONEXIT, 0, 0 );
-	}
-
-	KillObjectThreads( pa->ppro );
-
-	UninitAccount( pa );
-
-	KillObjectServices( pa->ppro );
-	KillObjectEventHooks( pa->ppro );
-
+	DeactivationThreadParam* param = new DeactivationThreadParam;
+	param->ppro = pa->ppro;
+	param->fnUninit = GetProtocolDestructor( pa->szProtoName );
+	param->bIsDynamic = bIsDynamic;
 	pa->ppro = NULL;
+	if ( bIsDynamic )
+		mir_forkthread(( pThreadFunc )DeactivationThread, param );
+	else 
+		DeactivationThread( param );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void EraseAccount( PROTOACCOUNT* pa )
 {
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+int IsAccountEnabled( PROTOACCOUNT* pa )
+{
+	if ( !pa )
+		return FALSE;
+
+	return ( pa->bIsEnabled && !pa->bDynDisabled );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +420,7 @@ void UnloadAccountsModule()
 	for( i=accounts.getCount()-1; i >= 0; i-- ) {
 		PROTOACCOUNT* pa = accounts[ i ];
 		UnloadAccount( pa, FALSE );
-        accounts.remove(i);
+		accounts.remove(i);
 	}
 
 	accounts.destroy();

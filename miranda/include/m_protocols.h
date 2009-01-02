@@ -279,6 +279,7 @@ typedef struct tagACCOUNT
 
 	HWND   hwndAccMgrUI;
 	BOOL   bAccMgrUIChanged;
+	BOOL   bDynDisabled;    // dynamic disable flag, is never written to db
 }
 	PROTOACCOUNT;
 

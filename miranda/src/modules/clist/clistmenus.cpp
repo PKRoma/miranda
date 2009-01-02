@@ -815,7 +815,7 @@ int fnGetProtocolVisibility(const char* accName)
 	if ( accName ) {
 		PROTOACCOUNT* pa = Proto_GetAccount( accName );
 		if ( pa )
-			return ( pa->bIsVisible && pa->bIsEnabled ) ? TRUE : FALSE;
+			return ( pa->bIsVisible && IsAccountEnabled( pa )) ? TRUE : FALSE;
 	}
 
 	return FALSE;

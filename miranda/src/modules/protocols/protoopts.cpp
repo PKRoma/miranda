@@ -562,7 +562,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			lps->rcItem.bottom -= 2;
 
 			DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
-				LoadSkinnedIcon(acc->bIsEnabled ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
+				LoadSkinnedIcon( IsAccountEnabled( acc ) ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
 				cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
 
 			lps->rcItem.left += cxIcon + 2;
