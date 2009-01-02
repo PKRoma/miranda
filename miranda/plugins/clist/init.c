@@ -34,6 +34,7 @@ BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL
 /////////////////////////////////////////////////////////////////////////////////////////
 // external functions
 
+void RegisterCListFonts( void );
 void InitCustomMenus( void );
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint);
 
@@ -93,6 +94,7 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
+	RegisterCListFonts();
 	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
 	return 0;
 }

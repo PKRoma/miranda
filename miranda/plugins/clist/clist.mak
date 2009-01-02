@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on clist.dsp
 !IF "$(CFG)" == ""
-CFG=clist - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to clist - Win32 Debug Unicode.
+CFG=clist - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to clist - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "clist - Win32 Release" && "$(CFG)" != "clist - Win32 Debug" && "$(CFG)" != "clist - Win32 Release Unicode" && "$(CFG)" != "clist - Win32 Debug Unicode"
@@ -40,6 +40,7 @@ ALL : "..\..\bin\release\plugins\clist_classic.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\clcfonts.obj"
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clist.pch"
@@ -78,7 +79,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\clcfonts.obj"
 
 "..\..\bin\release\plugins\clist_classic.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -94,6 +96,7 @@ ALL : "..\..\bin\debug\plugins\clist_classic.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\clcfonts.obj"
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
@@ -131,7 +134,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\clcfonts.obj"
 
 "..\..\bin\debug\plugins\clist_classic.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -147,6 +151,7 @@ ALL : "..\..\bin\Release Unicode\plugins\clist_classic.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\clcfonts.obj"
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clist.pch"
@@ -185,7 +190,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\clcfonts.obj"
 
 "..\..\bin\Release Unicode\plugins\clist_classic.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -201,6 +207,7 @@ ALL : "..\..\bin\Debug Unicode\plugins\clist_classic.dll"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\clcfonts.obj"
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
@@ -238,7 +245,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\resource.res" \
+	"$(INTDIR)\clcfonts.obj"
 
 "..\..\bin\Debug Unicode\plugins\clist_classic.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -288,6 +296,11 @@ LINK32_OBJS= \
 
 
 !IF "$(CFG)" == "clist - Win32 Release" || "$(CFG)" == "clist - Win32 Debug" || "$(CFG)" == "clist - Win32 Release Unicode" || "$(CFG)" == "clist - Win32 Debug Unicode"
+SOURCE=.\clcfonts.c
+
+"$(INTDIR)\clcfonts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+
+
 SOURCE=.\clcopts.c
 
 !IF  "$(CFG)" == "clist - Win32 Release"
