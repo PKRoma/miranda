@@ -1148,27 +1148,25 @@ static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
 	if ( networkProtoCount <= 1 )
 		return 0;
 
-	for ( i=0; i < accounts.getCount(); i++ )
-		if ( !lstrcmpA( accounts[i]->szModuleName, ack->szModule ))
+	for ( i=0; i < accounts.getCount(); i++ ) {
+		if ( !lstrcmpA( accounts[i]->szModuleName, ack->szModule )) {
+			//hProcess is previous mode, lParam is new mode
+			if ((( int )ack->hProcess >= ID_STATUS_OFFLINE || ( int )ack->hProcess == 0 ) && ( int )ack->hProcess < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
+				int pos = statustopos(( int )ack->hProcess);
+				if ( pos == -1 )
+					pos = 0;
+				for ( pos = 0; pos < SIZEOF(statusModeList); pos++ ) {
+					tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE;
+					MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
+			}	}
+
+			if ( ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + SIZEOF(statusModeList)) {
+				int pos = statustopos(( int )ack->lParam );
+				if ( pos >= 0 && pos < SIZEOF(statusModeList)) {
+					tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE | CMIF_CHECKED;
+					MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
+			}	}
 			break;
-
-	//hProcess is previous mode, lParam is new mode
-	if ((( int )ack->hProcess >= ID_STATUS_OFFLINE || ( int )ack->hProcess == 0 ) && ( int )ack->hProcess < ID_STATUS_OFFLINE + SIZEOF(statusModeList))
-	{
-		int pos = statustopos(( int )ack->hProcess);
-		if ( pos == -1 )
-			pos = 0;
-		for ( pos = 0; pos < SIZEOF(statusModeList); pos++ ) {
-			tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE;
-			MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
-	}	}
-
-	if ( ack->lParam >= ID_STATUS_OFFLINE && ack->lParam < ID_STATUS_OFFLINE + SIZEOF(statusModeList))
-	{
-		int pos = statustopos(( int )ack->lParam );
-		if ( pos >= 0 && pos < SIZEOF(statusModeList)) {
-			tmi.flags = CMIM_FLAGS | CMIF_ROOTHANDLE | CMIF_CHECKED;
-			MO_ModifyMenuItem( hStatusMenuHandles[i].menuhandle[pos], &tmi );
 	}	}
 
 	BuildStatusMenu(0,0);
