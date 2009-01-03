@@ -355,7 +355,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			DWORD start, end;
 			TCHAR *text;
 			int textLen;
-			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
+			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) & start);
+			if (end != start)
+				SendMessage(hwnd, EM_SETSEL, end, end);
 			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
 			SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
 			textLen = GetWindowTextLength(hwnd);
