@@ -916,14 +916,6 @@ SOURCE=.\modules\fonts\FontService.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\fonts\module_fonts.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\modules\fonts\module_fonts.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\modules\fonts\services.cpp
 # End Source File
 # End Group
