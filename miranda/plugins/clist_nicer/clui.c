@@ -2545,6 +2545,14 @@ static struct {
 	UINT id;
 	char *name;
 } _tagFSINFO[] = {
+	FONTID_CONTACTS, LPGEN( "Standard contacts"),
+	FONTID_INVIS, LPGEN( "Online contacts to whom you have a different visibility"),
+	FONTID_OFFLINE, LPGEN( "Offline contacts"),
+	FONTID_OFFINVIS, LPGEN( "Offline contacts to whom you have a different visibility" ),
+	FONTID_NOTONLIST, LPGEN( "Contacts which are 'not on list'"),
+	FONTID_GROUPS, LPGEN( "Groups"),
+	FONTID_GROUPCOUNTS, LPGEN( "Group member counts"),
+	FONTID_DIVIDERS, LPGEN( "Dividers"),
 	FONTID_STATUS, LPGEN("Status mode"),
 	FONTID_FRAMETITLE, LPGEN("Frame titles"),
 	FONTID_EVENTAREA, LPGEN("Event area"),
@@ -2554,6 +2562,7 @@ static struct {
 
 void FS_RegisterFonts()
 {
+	ColourID colourid;
 	FontID fid = {0};
 	char szTemp[50];
 	DBVARIANT dbv;
@@ -2563,8 +2572,7 @@ void FS_RegisterFonts()
 	strncpy(fid.group, "Contact List", sizeof(fid.group));
 	strncpy(fid.dbSettingsGroup, "CLC", 5);
 	fid.flags = FIDF_DEFAULTVALID | FIDF_ALLOWEFFECTS | FIDF_APPENDNAME | FIDF_SAVEPOINTSIZE;
-
-	while (_tagFSINFO[j].id != 0) {
+	while (_tagFSINFO[j].name != 0) {
 		_snprintf(szTemp, sizeof(szTemp), "Font%d", _tagFSINFO[j].id);
 		strncpy(fid.prefix, szTemp, sizeof(fid.prefix));
 		fid.order = _tagFSINFO[j].id;
@@ -2589,6 +2597,35 @@ void FS_RegisterFonts()
 		CallService(MS_FONT_REGISTER, (WPARAM)&fid, 0);
 		j++;
 	}
+	// and colours
+	colourid.cbSize = sizeof(ColourID);
+	colourid.order = 0;
+	strncpy(colourid.dbSettingsGroup, "CLC", sizeof(colourid.dbSettingsGroup));
+
+	strncpy(colourid.setting, "BkColour", sizeof(colourid.setting));
+	strncpy(colourid.name, LPGEN("Background"), SIZEOF(colourid.name));
+	strncpy(colourid.group, LPGEN("Contact List"), SIZEOF(colourid.group));
+	colourid.defcolour = CLCDEFAULT_BKCOLOUR;
+	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "SelTextColour", sizeof(colourid.setting));
+	strncpy(colourid.name, LPGEN("Selected Text"), SIZEOF(colourid.name));
+	colourid.order = 1;
+	colourid.defcolour = CLCDEFAULT_SELTEXTCOLOUR;
+	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "HotTextColour", sizeof(colourid.setting));
+	strncpy(colourid.name, LPGEN("Hottrack Text"), SIZEOF(colourid.name));
+	colourid.order = 1;
+	colourid.defcolour = CLCDEFAULT_HOTTEXTCOLOUR;
+	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "QuickSearchColour", sizeof(colourid.setting));
+	strncpy(colourid.name, LPGEN("Quicksearch Text"), SIZEOF(colourid.name));
+	colourid.order = 1;
+	colourid.defcolour = CLCDEFAULT_QUICKSEARCHCOLOUR;
+	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
+
 }
 
 #ifdef __LXX

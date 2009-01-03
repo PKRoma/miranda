@@ -212,6 +212,14 @@ struct ClcContact {
 #define DRAGSTAGEF_MAYBERENAME  0x8000
 #define DRAGSTAGEF_OUTSIDE      0x4000
 
+#define FONTID_CONTACTS    0
+#define FONTID_INVIS       1
+#define FONTID_OFFLINE     2
+#define FONTID_NOTONLIST   3
+#define FONTID_GROUPS      4
+#define FONTID_GROUPCOUNTS 5
+#define FONTID_DIVIDERS    6
+#define FONTID_OFFINVIS    7
 #define FONTID_STATUS      8
 #define FONTID_FRAMETITLE  9
 #define FONTID_EVENTAREA   10
