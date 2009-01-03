@@ -978,8 +978,17 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					HICON hIcon = LoadSkinProtoIcon(szProto, status);
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
 						g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
-					x += g_IconWidth + 2;
 					IconLib_ReleaseIcon(hIcon,0);
+					if ( DBGetContactSettingByte( NULL, szProto, "LockMainStatus", 0 )) {
+						hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"STATUS_LOCK");
+						if (hIcon != NULL) {
+							DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
+								g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
+							IconLib_ReleaseIcon(hIcon,0);
+						}
+
+					}
+					x += g_IconWidth + 2;
 				}
 				else
 					x += 2;

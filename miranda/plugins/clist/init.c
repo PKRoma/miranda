@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include <m_icolib.h>
 
 HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
@@ -89,6 +90,22 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 	return interfaces;
 }
 
+static void RegisterIcons() 
+{
+	SKINICONDESC sid = { 0 };
+	TCHAR path[MAX_PATH];
+	GetModuleFileName(g_hInst, path, MAX_PATH);
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.cx = sid.cy = 16;
+	sid.flags = SIDF_ALL_TCHAR;
+    sid.ptszSection = LPGENT("Status Icons");
+	sid.ptszDefaultFile = path;
+	sid.pszName = (char *) "STATUS_LOCK";
+	sid.iDefaultIndex = -IDI_STATUS_LOCKED;
+	sid.ptszDescription = LPGENT("Locked Status");
+	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // called when all modules got loaded
 
@@ -96,6 +113,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	RegisterCListFonts();
 	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
+	RegisterIcons();
 	return 0;
 }
 
