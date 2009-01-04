@@ -328,6 +328,10 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					{
 						strlcpy(client,CLIENT_NAIM,100);
 					}
+					else if(is_digsby_ver_cap(cap))
+					{
+						strlcpy(client,CLIENT_DIGSBY,100);
+					}
 					delete[] cap;
 				}
 			}
@@ -541,10 +545,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				}
 			}
 		}
-		if(caps_included)
-		{
+		if(caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
-		}
 		else
 			setString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
 			

@@ -146,6 +146,7 @@
 #define AIM_KEY_ST						"Status"
 #define AIM_KEY_IT						"IdleTS"
 #define AIM_KEY_OT						"LogonTS"
+#define AIM_KEY_MS                      "MemberTS"  
 #define AIM_KEY_AC						"AccType"//account type		
 #define AIM_KEY_ET						"ESType"//Extended Status type
 #define AIM_KEY_MV						"MirVer"
@@ -155,7 +156,6 @@
 #define AIM_KEY_NC						"NewContact"
 #define AIM_KEY_AH						"AvatarHash"
 #define AIM_KEY_ASH						"AvatarSavedHash"
-#define AIM_KEY_MS                      "MemberTS"  
 #define AIM_KEY_EM						"Email"
 //File Transfer Keys
 #define AIM_KEY_FT						"FileTransfer"//1= sending 0=receiving
@@ -220,6 +220,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_IM2						"IM2"
 #define CLIENT_KOPETE					"Kopete"
 #define CLIENT_MEEBO					"Meebo"
+#define CLIENT_DIGSBY					"Digsby"
 #define CLIENT_MICQ						"mICQ"
 #define CLIENT_AIMOSCAR					"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)"
 #define CLIENT_OSCARJ					"Miranda IM %d.%d.%d.%d(ICQ v0.%d.%d.%d)"

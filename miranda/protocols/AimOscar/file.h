@@ -42,10 +42,19 @@ public:
 	char cookie[8];
 	char* file;
 	unsigned long total_size;
+
 	//below is for when receiving only
-	unsigned long ip;
+	unsigned long local_ip;
+	unsigned long verified_ip;
+	unsigned long proxy_ip;
 	unsigned short port;
 	char* message;
+
+	bool force_proxy;
+
+	file_transfer()  { memset(this, 0, sizeof(*this)); }
+	~file_transfer() { delete[] file; }
 };
+
 
 #endif

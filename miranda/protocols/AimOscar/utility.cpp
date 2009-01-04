@@ -906,65 +906,54 @@ void CAimProto::write_cookie(HANDLE hContact,char* cookie)
 	setDword( hContact, AIM_KEY_CK2, *(DWORD*)&cookie[4]);
 }
 
-int cap_cmp(const char* cap,const char* cap2)
+bool cap_cmp(const char* cap,const char* cap2)
 {
-	return memcmp(cap,cap2,16);
+	return memcmp(cap,cap2,16) != 0;
 }
 
-int is_oscarj_ver_cap(char* cap)
+bool is_oscarj_ver_cap(char* cap)
 {
-	if(!memcmp(cap,"MirandaM",8))
-		return 1;
-	return 0;
+	return memcmp(cap,"MirandaM",8) == 0;
 }
 
-int is_aimoscar_ver_cap(char* cap)
+bool is_aimoscar_ver_cap(char* cap)
 {
-	if(!memcmp(cap,"MirandaA",8))
-		return 1;
-	return 0;
+	return memcmp(cap,"MirandaA",8) == 0;
 }
 
-int is_kopete_ver_cap(char* cap)
+bool is_kopete_ver_cap(char* cap)
 {
-	if(!memcmp(cap,"Kopete ICQ",10))
-		return 1;
-	return 0;
+	return memcmp(cap,"Kopete ICQ",10) == 0;
 }
 
-int is_qip_ver_cap(char* cap)
+bool is_qip_ver_cap(char* cap)
 {
-	if(!memcmp(&cap[7],"QIP",3))
-		return 1;
-	return 0;
+	return memcmp(&cap[7],"QIP",3) == 0;
 }
 
-int is_micq_ver_cap(char* cap)
+bool is_micq_ver_cap(char* cap)
 {
-	if(!memcmp(cap,"mICQ",4))
-		return 1;
-	return 0;
+	return memcmp(cap,"mICQ",4) == 0;
 }
 
-int is_im2_ver_cap(char* cap)
+bool is_im2_ver_cap(char* cap)
 {
-	if(!cap_cmp(cap,AIM_CAP_IM2))
-		return 1;
-	return 0;
+	return cap_cmp(cap,AIM_CAP_IM2) == 0;
 }
 
-int is_sim_ver_cap(char* cap)
+bool is_sim_ver_cap(char* cap)
 {
-	if(!memcmp(cap,"SIM client",10))
-		return 1;
-	return 0;
+	return memcmp(cap,"SIM client",10) == 0;
 }
 
-int is_naim_ver_cap(char* cap)
+bool is_naim_ver_cap(char* cap)
 {
-	if(!memcmp(cap+4,"naim",4))
-		return 1;
-	return 0;
+	return memcmp(cap+4,"naim",4) == 0;
+}
+
+bool is_digsby_ver_cap(char* cap)
+{
+    return memcmp(cap,"digsby",6) == 0;
 }
 
 void CAimProto::load_extra_icons()
