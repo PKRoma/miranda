@@ -1191,19 +1191,9 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char msg[] ="Error removing buddy from list. Error code 0xxx";
-				char ccode[3];
-				_itoa(code,ccode,16);
-				if(lstrlenA(ccode)==1)
-				{
-					ccode[2]='\0';
-					ccode[1]=ccode[0];
-					ccode[0]='0';
-				}
-				msg[lstrlenA(msg)-2]=ccode[0];
-				msg[lstrlenA(msg)-1]=ccode[1];
-				LOG("msg");
-				ShowPopup(NULL,msg, 0);
+                char msg[64];
+                mir_snprintf(msg, sizeof(msg), "Error removing buddy from list. Error code %#x", code);
+				ShowPopup(NULL, msg, ERROR_POPUP);
 			}
 		}
 		else if(id==0x0008)
@@ -1234,19 +1224,9 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char msg[] ="Unknown error when adding buddy to list: Error code 0xxx";
-				char ccode[3];
-				_itoa(code,ccode,16);
-				if(lstrlenA(ccode)==1)
-				{
-					ccode[2]='\0';
-					ccode[1]=ccode[0];
-					ccode[0]='0';
-				}
-				msg[lstrlenA(msg)-2]=ccode[0];
-				msg[lstrlenA(msg)-1]=ccode[1];
-				LOG(msg);
-				ShowPopup(NULL,msg, 0);
+                char msg[64];
+                mir_snprintf(msg, sizeof(msg), "Unknown error when adding buddy to list. Error code %#x", code);
+				ShowPopup(NULL, msg, ERROR_POPUP);
 			}
 		}
 		else if(id==0x0009)
@@ -1261,19 +1241,9 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 			}
 			else
 			{
-				char msg[]="Unknown error when attempting to modify a group: Error code 0xxx";
-				char ccode[3];
-				_itoa(code,ccode,16);
-				if(lstrlenA(ccode)==1)
-				{
-					ccode[2]='\0';
-					ccode[1]=ccode[0];
-					ccode[0]='0';
-				}
-				msg[lstrlenA(msg)-2]=ccode[0];
-				msg[lstrlenA(msg)-1]=ccode[1];
-				LOG(msg);
-				ShowPopup(NULL,msg, 0);
+                char msg[64];
+                mir_snprintf(msg, sizeof(msg), "Unknown error when attempting to modify a group. Error code %#x", code);
+				ShowPopup(NULL, msg, ERROR_POPUP);
 			}
 		}
 	}
