@@ -165,23 +165,27 @@ void WriteDbAccounts()
 
 static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 {
-	int i;
+	int count = 0;
 
-	for ( i = 0; i < accounts.getCount(); i++ ) {
+	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
 		if ( !pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
 		pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
+
+		if ( !pa->bOldProto )
+			count++;
 	}
+
+	if ( count == 0 )
+		CallService( MS_PROTO_SHOWACCMGR, 0, 0 );
 	return 0;
 }
 
 static int UninitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 {
-	int i;
-
-	for ( i = 0; i < accounts.getCount(); i++ ) {
+	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
 		if ( !pa->ppro || !IsAccountEnabled( pa ))
 			continue;

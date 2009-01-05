@@ -926,6 +926,7 @@ static int OptProtosShow(WPARAM wParam,LPARAM lParam)
 
 	ShowWindow( hAccMgr, SW_RESTORE );
 	SetForegroundWindow( hAccMgr );
+	SetActiveWindow( hAccMgr );
 	return 0;
 }
 
