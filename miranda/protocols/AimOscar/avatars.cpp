@@ -3,18 +3,17 @@
 
 void __cdecl CAimProto::avatar_request_thread( void* param )
 {
-	char* data = (char*)param;
+	avatar_req_param* data = (avatar_req_param*)param;
 
     if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
     {
-	    char* sn = strtok(data,";");
-	    char* hash_string = strtok(NULL,";");
-	    char* hash = new char[lstrlenA(hash_string)/2];
-	    string_to_bytes( hash_string, hash );
-	    LOG("Requesting an Avatar: %s(Hash: %s)", sn, hash_string );
-	    aim_request_avatar( hAvatarConn, avatar_seqno, sn, hash, (unsigned short)lstrlenA(hash_string)/2 );
+        size_t len = strlen(data->hash) / 2;
+	    char* hash = (char*)alloca(len);
+	    string_to_bytes(data->hash, hash);
+	    LOG("Requesting an Avatar: %s (Hash: %s)", data->sn, data->hash);
+	    aim_request_avatar(hAvatarConn, avatar_seqno, data->sn, hash, (unsigned short)len);
     }
-    delete[] data;
+    delete data;
 }
 
 void __cdecl CAimProto::avatar_upload_thread( void* param )
@@ -148,10 +147,7 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 	char* path = ( char* )alloca( cbLen );
 	if ( hAvatarsFolder == NULL /*|| FoldersGetCustomPath( hAvatarsFolder, path, cbLen, "" )*/)
 	{
-		CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
-		
-		tPathLen = strlen(pszDest);
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);
+		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", CWD, m_szModuleName);
 	}
 	else {
 		strcpy( pszDest, path );

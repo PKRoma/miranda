@@ -101,12 +101,10 @@ CAimProto::~CAimProto()
 int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char store[MAX_PATH];
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH-1,(LPARAM)&store);
-	if(store[lstrlenA(store)-1]=='\\')
-		store[lstrlenA(store)-1]='\0';
-	CWD=(char*)new char[lstrlenA(store)+1];
-	memcpy(CWD,store,lstrlenA(store));
-	memcpy(&CWD[lstrlenA(store)],"\0",1);
+	CallService(MS_DB_GETPROFILEPATH, MAX_PATH,(LPARAM)&store);
+    size_t len = strlen(store) - 1;
+	if (store[len] == '\\') store[len] = '\0';
+	CWD = strldup(store);
 
 	NETLIBUSER nlu = { 0 };
 	nlu.cbSize = sizeof(nlu);
@@ -124,7 +122,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 
-	if(getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
+	if (getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
 		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
 
 	DBVARIANT dbv;

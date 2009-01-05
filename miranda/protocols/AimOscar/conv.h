@@ -13,7 +13,6 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem);
 void wcs_htons(wchar_t * ch);
 char* bytes_to_string(char* bytes, int num_bytes);
 void string_to_bytes(char* string, char* bytes);
-unsigned short string_to_bytes_count(char* string);
 bool is_utf(const char* msg);
 
 #endif

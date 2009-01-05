@@ -363,14 +363,10 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		    }
 		    else 
 		    {
-                char* sn = getSetting(AI->hContact, AIM_KEY_SN);
-			    int length=strlen(sn)+2+strlen(hash)*2;
-			    char* blob= new char[length];
-			    mir_snprintf(blob,length,"%s;%s",sn,hash);
-			    LOG("Starting avatar request thread for %s)",sn);
-			    ForkThread( &CAimProto::avatar_request_thread, blob );
+                avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), strldup(hash));
+			    LOG("Starting avatar request thread for %s)", ar->sn);
+			    ForkThread(&CAimProto::avatar_request_thread, ar);
                 res = GAIR_WAITFOR;
-                delete[] sn;
 		    }
 	    }
         delete[] hash;

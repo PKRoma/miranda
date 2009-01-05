@@ -441,7 +441,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   remove_ES_icons();
 	void   execute_cmd(const char* arg);
 
-	FILE*  open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
+	int    open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(const char* sn, const char* msg, bool utf);
 	void   write_profile(const char* sn, const char* msg, bool utf);
 

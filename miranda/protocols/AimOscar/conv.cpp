@@ -144,17 +144,17 @@ char* strip_linebreaks(char *src)
 	char *ptr;
 	while ((ptr = strstr(dest, "\r")) != NULL)
 	{
-		memmove(ptr, ptr + 1, lstrlenA(ptr + 1)+1);
+		memmove(ptr, ptr + 1, strlen(ptr + 1) + 1);
 	}
 	while ((ptr = strstr(dest, "\n")) != NULL)
 	{
 		int addr=ptr-dest;
-		dest=renew(dest,lstrlenA(dest)+1,7);
+		dest=renew(dest,strlen(dest)+1,7);
 		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, lstrlenA(ptr + 1) + 4);
+		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
 		memcpy(ptr,"<br>",4);
 	}
-	dest[lstrlenA(dest)]='\0';
+	dest[strlen(dest)]='\0';
 	return dest;
 }
 
@@ -493,7 +493,7 @@ char* bbcodes_to_html(const char *src)
 
 void strip_tag(char* begin, char* end)
 {
-	memmove(begin,end+1,lstrlenA(end+1)+1);
+	memmove(begin,end+1,strlen(end+1)+1);
 }
 
 //strip a tag within a string
@@ -733,23 +733,13 @@ void string_to_bytes(char* string, char* bytes)
 {
 	char sbyte[3];
 	sbyte[2]='\0';
-	int length=lstrlenA(string);
-	for(int i=0;i<length;i=i+2)
+	int length=strlen(string);
+	for(int i=0;i<length;i+=2)
 	{
 		sbyte[0]=string[i];
 		sbyte[1]=string[i+1];
 		bytes[i/2]=(char)strtol(sbyte,NULL,16);
 	}
-}
-
-unsigned short string_to_bytes_count(char* string)
-{
-	unsigned short i=1;
-	char* string2=strldup(string);
-	strtok(string2,";");
-	while(strtok(NULL,";"))
-		i++;
-	return i;
 }
 
 bool is_utf(const char* msg)

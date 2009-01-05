@@ -110,8 +110,10 @@ wchar_t* wcsldup(const wchar_t* src,size_t siz)
 }
 char* strlcat(const char* dst,const char *src)
 {
-	char* nstr=new char[lstrlenA(dst)+lstrlenA(src)+1];
-	memcpy(nstr,dst,lstrlenA(dst));
-	memcpy(&nstr[lstrlenA(dst)],src,lstrlenA(src)+1);
+    size_t dstlen = strlen(dst);
+    size_t srclen = strlen(src);
+	char* nstr = new char[dstlen + srclen + 1];
+	memcpy(nstr, dst, dstlen);
+	memcpy(&nstr[dstlen], src, srclen + 1);
 	return nstr;
 }

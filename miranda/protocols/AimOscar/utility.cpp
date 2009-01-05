@@ -438,7 +438,7 @@ char *normalize_name(const char *s)
 {
     if (s == NULL)
         return NULL;
-	int length=lstrlenA(s)+1;
+	int length = strlen(s)+1;
 	char* buf=new char[length]; 
 	// static char buf[64];
     int i, j;
@@ -664,61 +664,38 @@ int CAimProto::deleteGroupId(HANDLE hContact, int i)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-FILE* CAimProto::open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir)
+int CAimProto::open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir)
 {
-	if(char* norm_sn=normalize_name(sn))
-	{
-		int sn_length=lstrlenA(norm_sn);
-		int file_length=lstrlenA(file);
-		int length=lstrlenA(CWD)+2+lstrlenA(m_szModuleName);
-		path= new char[length+sn_length+file_length+5];
-		mir_snprintf(path,length,"%s\\%s",CWD,m_szModuleName);
-		int dir=0;
-		if(GetFileAttributesA(path)==INVALID_FILE_ATTRIBUTES)
-			dir=CreateDirectoryA(path,NULL);
-		else
-			dir=1;
-		if(dir)
-		{
-			dir=0;
-			if(contact_dir)
-			{
-				mir_snprintf(&path[length-1],2+sn_length,"\\%s",norm_sn);
-				length+=1+sn_length;
-			}
-			if(GetFileAttributesA(path)==INVALID_FILE_ATTRIBUTES)
-				dir=CreateDirectoryA(path,NULL);
-			else
-				dir=1;
-			if(dir)
-			{
-				mir_snprintf(&path[length-1],2+file_length,"\\%s",file);
-				if(FILE* descr=fopen(path, mode))
-				{
-					delete[] norm_sn;
-					return descr;
-				}
-			}
-		}
-		delete[] norm_sn;
-		delete[] path;
-	}
-	return 0;
+	path = new char[MAX_PATH];
+
+    int pos = mir_snprintf(path, MAX_PATH, "%s\\%s", CWD, m_szModuleName);
+	if  (contact_dir)
+    {
+        char* norm_sn = normalize_name(sn);
+	    pos += mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", norm_sn);
+	    delete[] norm_sn;
+    }
+
+    if (_access(path, 0))
+	    CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)path);
+
+    mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", file);
+	return _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
 }
 
 void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 {
 	char* path;
-	FILE* descr=open_contact_file(sn,"away.html","wb",path,1);
-	if(descr)
+	int fid = open_contact_file(sn,"away.html","wb",path,1);
+	if (fid >= 0)
 	{
-        if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
+        if (utf) _write(fid, "\xEF\xBB\xBF", 3);
 		char* s_msg=process_status_msg(msg, sn);
-		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,strlen(sn),descr);
-		fwrite("'s Away Message:</h3>",1,21,descr);
-		fwrite(s_msg,1,strlen(s_msg),descr);
-		fclose(descr);
+		_write(fid, "<h3>", 4);
+		_write(fid, sn, strlen(sn));
+		_write(fid, "'s Away Message:</h3>", 21);
+		_write(fid, s_msg, strlen(s_msg));
+		_close(fid);
 		execute_cmd(path);
 		delete[] path;
 		delete[] s_msg;
@@ -726,23 +703,23 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup(NULL,error, 0);
+		ShowPopup(NULL, error, ERROR_POPUP);
 	}
 }
 
 void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 {
 	char* path;
-	FILE* descr=open_contact_file(sn,"profile.html","wb", path,1);
-	if(descr)
+	int fid = open_contact_file(sn,"profile.html","wb", path, 1);
+	if (fid >= 0)
 	{
-        if (utf) fwrite("\xEF\xBB\xBF",1,3,descr);
+        if (utf) _write(fid, "\xEF\xBB\xBF", 3);
 		char* s_msg=process_status_msg(msg, sn);
-		fwrite("<h3>",1,4,descr);
-		fwrite(sn,1,strlen(sn),descr);
-		fwrite("'s Profile:</h3>",1,16,descr);
-		fwrite(s_msg,1,strlen(s_msg),descr);
-		fclose(descr);
+		_write(fid, "<h3>", 4);
+		_write(fid, sn, strlen(sn));
+		_write(fid, "'s Profile:</h3>", 16);
+		_write(fid, s_msg, strlen(s_msg));
+		_close(fid);
 		execute_cmd(path);
 		delete[] path;
 		delete[] s_msg;
@@ -750,9 +727,10 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup(NULL,error, 0);
+		ShowPopup(NULL, error, ERROR_POPUP);
 	}
 }
+
 unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, unsigned long prevcheck)
 {
 	unsigned long check = (prevcheck >> 16) & 0xffff, oldcheck;
@@ -775,55 +753,55 @@ unsigned int aim_oft_checksum_chunk(const unsigned char *buffer, int bufferlen, 
 	check = ((check & 0x0000ffff) + (check >> 16));
 	return check << 16;
 }
-#if _MSC_VER
-#pragma warning( disable: 4706 )
-#endif
-unsigned int aim_oft_checksum_file(char *filename) {
+
+unsigned int aim_oft_checksum_file(char *filename) 
+{
 	unsigned long checksum = 0xffff0000;
-	FILE* fd=fopen(filename, "rb");
-	if (fd) {
-		int bytes;
-		unsigned char buffer[1024];
-
-		while ((bytes = fread(buffer, 1, 1024, fd)))
+	int fid = _open(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
+	if (fid >= 0)  
+    {
+        for(;;)
+        {
+		    unsigned char buffer[1024];
+		    int bytes = _read(fid, buffer, 1024);
+            if (bytes <= 0) break;
 			checksum = aim_oft_checksum_chunk(buffer, bytes, checksum);
-		fclose(fd);
+        }
+		_close(fid);
 	}
-
 	return checksum;
 }
-#if _MSC_VER
-#pragma warning( default: 4706 )
-#endif
+
 void long_ip_to_char_ip(unsigned long host, char* ip)
 {
-	host=_htonl(host);
-	unsigned char* bytes=(unsigned char*)&host;
-	unsigned short buf_loc=0;
-	for(int i=0;i<4;i++)
+	host = _htonl(host);
+	unsigned char* bytes = (unsigned char*)&host;
+	size_t buf_loc = 0;
+	for(int i=0; i<4; i++)
 	{
 		char store[16];
-		_itoa(bytes[i],store,10);
-		memcpy(&ip[buf_loc],store,lstrlenA(store));
-		ip[lstrlenA(store)+buf_loc]='.';
-		buf_loc+=((unsigned short)lstrlenA(store)+1);
+		_itoa(bytes[i], store, 10);
+        size_t len = strlen(store);
+
+		memcpy(&ip[buf_loc], store, len);
+        buf_loc += len;
+        ip[buf_loc++] = '.';
 	}
-	ip[buf_loc-1]='\0';
+	ip[buf_loc - 1] = '\0';
 }
+
 unsigned long char_ip_to_long_ip(char* ip)
 {
-	char* ip2=strldup(ip);
-	char* c=strtok(ip2,".");
-	char chost[5];
-	for(int i=0;i<4;i++)
+    unsigned char chost[4] = {0}; 
+    char *c = ip;
+	for(int i=4; i--; )
 	{
-		chost[i]=(char)atoi(c);
-		c=strtok(NULL,".");
+		chost[i] = (unsigned char)atoi(c);
+	    c = strchr(c, '.');
+        if (c) ++c;
+        else break;
 	}
-	chost[4]='\0';
-	unsigned long* host=(unsigned long*)&chost;
-	delete[] ip2;
-	return _htonl(*host);
+	return *(unsigned long*)&chost;
 }
 
 unsigned short get_random(void)
@@ -855,8 +833,8 @@ void CAimProto::read_cookie(HANDLE hContact,char* cookie)
 
 void CAimProto::write_cookie(HANDLE hContact,char* cookie)
 {
-	setDword( hContact, AIM_KEY_CK, *(DWORD*)cookie);
-	setDword( hContact, AIM_KEY_CK2, *(DWORD*)&cookie[4]);
+	setDword(hContact, AIM_KEY_CK, *(DWORD*)cookie);
+	setDword(hContact, AIM_KEY_CK2, *(DWORD*)&cookie[4]);
 }
 
 bool cap_cmp(const char* cap,const char* cap2)

@@ -1,6 +1,17 @@
 #ifndef AVATARS_H
 #define AVATARS_H
-class TLV;
+
+struct avatar_req_param
+{
+    char* sn;
+    char* hash;
+
+    avatar_req_param(char* tsn, char* thash)
+    { sn = tsn; hash = thash; }
+
+    ~avatar_req_param()
+    { delete[] sn; delete[] hash; }
+};
 
 int detect_image_type(const char* stream, const char* &type_ret);
 int detect_image_type(const char* file);

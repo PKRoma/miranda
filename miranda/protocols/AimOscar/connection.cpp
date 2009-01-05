@@ -57,7 +57,7 @@ void CAimProto::aim_connection_authorization(void)
 
 	if (!getString(AIM_KEY_PW, &dbv))
 	{
-		CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 		password = strldup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}

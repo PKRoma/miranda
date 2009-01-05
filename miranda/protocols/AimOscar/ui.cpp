@@ -772,7 +772,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				DBFreeVariant(&dbv);
 			}
 			if ( !ppro->getString(AIM_KEY_PW, &dbv)) {
-				CallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
 				SetDlgItemTextA(hwndDlg, IDC_PW, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
@@ -830,7 +830,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				char str[128];
 				//SN
 				GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
-				if(lstrlenA(str)>0)
+				if(strlen(str)>0)
 					ppro->setString(AIM_KEY_SN, str);
 				else
 					ppro->deleteSetting(NULL, AIM_KEY_SN);

@@ -25,26 +25,26 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     mir_md5_byte_t auth_hash[16];
     mir_md5_state_t state;
     mir_md5_init(&state);
-    mir_md5_append(&state,(const mir_md5_byte_t *)password, lstrlenA(password));
+    mir_md5_append(&state,(const mir_md5_byte_t *)password, strlen(password));
     mir_md5_finish(&state,pass_hash);
     mir_md5_init(&state);
-    mir_md5_append(&state,(mir_md5_byte_t*)key, lstrlenA(key));
+    mir_md5_append(&state,(mir_md5_byte_t*)key, strlen(key));
     mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
-    mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, lstrlenA(AIM_MD5_STRING));
+    mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, sizeof(AIM_MD5_STRING)-1);
     mir_md5_finish(&state,auth_hash);
     aim_writesnac(0x17,0x02,offset,buf);
     aim_writetlv(0x01,(unsigned short)strlen(username),username,offset,buf);
     aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
     aim_writetlv(0x4C,0,0,offset,buf);//signifies new password hash instead of old method
-    aim_writetlv(0x03,(unsigned short)lstrlenA(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
+    aim_writetlv(0x03,(unsigned short)strlen(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
     aim_writetlv(0x16,sizeof(AIM_CLIENT_ID_NUMBER)-1,AIM_CLIENT_ID_NUMBER,offset,buf);
     aim_writetlv(0x17,sizeof(AIM_CLIENT_MAJOR_VERSION)-1,AIM_CLIENT_MAJOR_VERSION,offset,buf);
     aim_writetlv(0x18,sizeof(AIM_CLIENT_MINOR_VERSION)-1,AIM_CLIENT_MINOR_VERSION,offset,buf);
     aim_writetlv(0x19,sizeof(AIM_CLIENT_LESSER_VERSION)-1,AIM_CLIENT_LESSER_VERSION,offset,buf);
     aim_writetlv(0x1A,sizeof(AIM_CLIENT_BUILD_NUMBER)-1,AIM_CLIENT_BUILD_NUMBER,offset,buf);
     aim_writetlv(0x14,sizeof(AIM_CLIENT_DISTRIBUTION_NUMBER)-1,AIM_CLIENT_DISTRIBUTION_NUMBER,offset,buf);
-    aim_writetlv(0x0F,(unsigned short)lstrlenA(language),language,offset,buf);
-    aim_writetlv(0x0E,(unsigned short)lstrlenA(country),country,offset,buf);
+    aim_writetlv(0x0F,(unsigned short)strlen(language),language,offset,buf);
+    aim_writetlv(0x0E,(unsigned short)strlen(country),country,offset,buf);
     aim_writetlvchar(0x4A,1,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
