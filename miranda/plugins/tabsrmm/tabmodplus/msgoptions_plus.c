@@ -156,7 +156,7 @@ BOOL CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 				int i = 0;
 
 				while(lvItems[i].szName) {
-					if(lvItems[i].uType = LOI_TYPE_SETTING)
+					if(lvItems[i].uType == LOI_TYPE_SETTING)
 						DBWriteContactSettingByte(NULL, SRMSGMOD_T, (char *)lvItems[i].lParam, (BYTE)lvItems[i].id);
 					i++;
 				}
