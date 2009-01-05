@@ -2441,7 +2441,7 @@ XMLNode XMLNode::getNextNode() const
     if (!d) return emptyXMLNode;
 	XMLNodeDataTag *par=d->pParent;
     if (!par) return emptyXMLNode;
-    int i,n=par->nChild,f=0;
+    int i,n=par->nChild;
    	for (i=0; i<n; ++i)
 	{
 		if (par->pChild[i].d == d) break;

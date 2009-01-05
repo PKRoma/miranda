@@ -387,7 +387,7 @@ int fnFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefi
 	return -1;
 }
 
-void fnEndRename(HWND hwnd, struct ClcData *dat, int save)
+void fnEndRename(HWND, struct ClcData *dat, int save)
 {
 	HWND hwndEdit = dat->hwndRenameEdit;
 
@@ -505,7 +505,7 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 	SetFocus(dat->hwndRenameEdit);
 }
 
-void fnCalcEipPosition( struct ClcData *dat, struct ClcContact *contact, struct ClcGroup *group, POINT *result)
+void fnCalcEipPosition( struct ClcData *dat, struct ClcContact *, struct ClcGroup *group, POINT *result)
 {
 	int indent;
 	for (indent = 0; group->parent; indent++, group = group->parent);
@@ -537,7 +537,7 @@ int fnGetDropTargetInformation(HWND hwnd, struct ClcData *dat, POINT pt)
 	if (movecontact->type == CLCIT_GROUP) {
 		struct ClcContact *bottomcontact = NULL, *topcontact = NULL;
 		struct ClcGroup *topgroup = NULL;
-		int topItem = -1, bottomItem;
+		int topItem = -1, bottomItem = -1;
 		int ok = 0;
 		if (pt.y + dat->yScroll < cli.pfnGetRowTopY(dat, hit) + dat->insertionMarkHitHeight) {
 			//could be insertion mark (above)
@@ -619,7 +619,7 @@ int fnIsHiddenMode(struct ClcData *dat, int status)
 	return dat->offlineModes & cli.pfnClcStatusToPf2(status);
 }
 
-void fnHideInfoTip(HWND hwnd, struct ClcData *dat)
+void fnHideInfoTip(HWND, struct ClcData *dat)
 {
 	CLCINFOTIP it = { 0 };
 
@@ -788,7 +788,7 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 #define GSIF_HASMEMBERS   0x80000000
 #define GSIF_ALLCHECKED   0x40000000
 #define GSIF_INDEXMASK    0x3FFFFFFF
-void fnRecalculateGroupCheckboxes(HWND hwnd, struct ClcData *dat)
+void fnRecalculateGroupCheckboxes(HWND, struct ClcData *dat)
 {
 	struct ClcGroup *group;
 	int check;
@@ -871,7 +871,7 @@ int fnGetRowTotalHeight(struct ClcData *dat)
 {	return dat->rowHeight * cli.pfnGetGroupContentsCount(&dat->list, 1);
 }
 
-int fnGetRowHeight(struct ClcData *dat, int item)
+int fnGetRowHeight(struct ClcData *dat, int)
 {	return dat->rowHeight;
 }
 

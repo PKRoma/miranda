@@ -74,6 +74,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#include "m_utils.h"
 #endif
 
+#ifdef _MSC_VER
+	#pragma warning(disable:4201)
+#endif
+
 //DBVARIANT: used by db/contact/getsetting and db/contact/writesetting
 #define DBVT_DELETED 0    //this setting just got deleted, no other values are valid
 #define DBVT_BYTE   1	  //bVal and cVal are valid
@@ -840,13 +844,24 @@ Disables a setting saving to the database.
 
 #define db_unset(a,b,c)                        DBDeleteContactSetting(a,b,c);
 
-#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSetting(a,b,c,d)           DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
-#define DBGetContactSettingString(a,b,c,d)     DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_ASCIIZ)
-#define DBGetContactSettingWString(a,b,c,d)    DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_WCHAR)
-#define DBGetContactSettingUTF8String(a,b,c,d) DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_UTF8)
+#ifdef _DEBUG
+	#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d,__FILE__,__LINE__)
+	#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
+	#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
+	#define DBGetContactSetting(a,b,c,d)           DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
+	#define DBGetContactSettingString(a,b,c,d)     DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_ASCIIZ)
+	#define DBGetContactSettingWString(a,b,c,d)    DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_WCHAR)
+	#define DBGetContactSettingUTF8String(a,b,c,d) DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_UTF8)
+#else
+	#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d)
+	#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d)
+	#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d)
+	#define DBGetContactSetting(a,b,c,d)           DBGetContactSetting_Helper(a,b,c,d)
+	#define DBGetContactSettingString(a,b,c,d)     DBGetContactSettingString_Helper(a,b,c,d,DBVT_ASCIIZ)
+	#define DBGetContactSettingWString(a,b,c,d)    DBGetContactSettingString_Helper(a,b,c,d,DBVT_WCHAR)
+	#define DBGetContactSettingUTF8String(a,b,c,d) DBGetContactSettingString_Helper(a,b,c,d,DBVT_UTF8)
+#endif
+
 #ifdef _UNICODE
 #define DBGetContactSettingTString DBGetContactSettingWString
 #else
@@ -858,14 +873,21 @@ Disables a setting saving to the database.
 /* Deprecated & bizarre aliases */
 #define DBGetContactSettingStringUtf           DBGetContactSettingUTF8String
 #define DBWriteContactSettingStringUtf         DBWriteContactSettingUTF8String
-#define DBGetContactSettingW(a,b,c,d)          DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,0)
+#ifdef _DEBUG
+	#define DBGetContactSettingW(a,b,c,d)          DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,0)
+#else
+	#define DBGetContactSettingW(a,b,c,d)          DBGetContactSettingString_Helper(a,b,c,d,0)
+#endif
 
 #ifdef _DEBUG
 #include <stdio.h>
 #endif
 
-__inline static int DBGetContactSettingByte_Helper(HANDLE hContact,	const char *szModule,
-	const char *szSetting, int errorValue, const char *szFile, const int nLine)
+__inline static int DBGetContactSettingByte_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue
+#ifdef _DEBUG
+	,const char *szFile, const int nLine
+#endif
+)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
@@ -886,8 +908,11 @@ __inline static int DBGetContactSettingByte_Helper(HANDLE hContact,	const char *
 	return dbv.bVal;
 }
 
-__inline static int DBGetContactSettingWord_Helper(HANDLE hContact,const char *szModule,
-	const char *szSetting,int errorValue,const char *szFile, const int nLine)
+__inline static int DBGetContactSettingWord_Helper(HANDLE hContact,const char *szModule,const char *szSetting,int errorValue
+#ifdef _DEBUG
+	,const char *szFile, const int nLine
+#endif
+)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
@@ -908,8 +933,11 @@ __inline static int DBGetContactSettingWord_Helper(HANDLE hContact,const char *s
 	return dbv.wVal;
 }
 
-__inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char *szModule,
-	const char *szSetting,DWORD errorValue, const char *szFile, const int nLine)
+__inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char *szModule, const char *szSetting, DWORD errorValue
+#ifdef _DEBUG
+	,const char *szFile, const int nLine
+#endif
+)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING cgs;
@@ -930,8 +958,11 @@ __inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char
 	return dbv.dVal;
 }
 
-__inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,
-	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
+__inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv
+#ifdef _DEBUG
+	,const char *szFile, const int nLine
+#endif
+)
 {
 	int rc;
 	DBCONTACTGETSETTING cgs;
@@ -950,8 +981,11 @@ __inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szMod
 	return rc;
 }
 
-__inline static int DBGetContactSettingString_Helper(HANDLE hContact,const char *szModule,
-	const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
+__inline static int DBGetContactSettingString_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv,
+#ifdef _DEBUG
+	const char *szFile, const int nLine,
+#endif
+	const int nType)
 {
 	int rc;
 	DBCONTACTGETSETTING cgs;

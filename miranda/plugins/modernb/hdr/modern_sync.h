@@ -79,7 +79,7 @@ template<class RET, class A> class PARAMS1
 
 public:
 	PARAMS1( proc_t __proc, A __a): _proc( __proc), _a (__a){};
-	static int DoSyncCall( WPARAM wParam, LPARAM lParam )
+	static int DoSyncCall( WPARAM, LPARAM lParam )
 	{
 		PARAMS1 * params = (PARAMS1 *) lParam;	
 		params->_ret = params->_proc( params->_a );

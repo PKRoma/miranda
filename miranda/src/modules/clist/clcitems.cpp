@@ -551,7 +551,6 @@ void fnSortCLC(HWND hwnd, struct ClcData *dat, int useInsertionSort)
 {
 	struct ClcContact *selcontact;
 	struct ClcGroup *group = &dat->list, *selgroup;
-	int dividers = dat->exStyle & CLS_EX_DIVIDERONOFF;
 	HANDLE hSelItem;
 
 	if ( dat->needsResort ) {

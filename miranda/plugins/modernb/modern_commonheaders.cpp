@@ -3,27 +3,47 @@
 
 int __cdecl ModernGetSettingByte_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
-    return DBGetContactSettingByte_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#if defined( _DEBUG )
+		return DBGetContactSettingByte_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#else
+		return DBGetContactSettingByte_Helper( hContact, szModule, szSetting, errorValue );
+	#endif
 }
 
 int __cdecl ModernGetSettingWord_Helper(HANDLE hContact,	const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
-    return DBGetContactSettingWord_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#if defined( _DEBUG )
+		return DBGetContactSettingWord_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#else
+		return DBGetContactSettingWord_Helper( hContact, szModule, szSetting, errorValue );
+	#endif
 }
 
 int __cdecl ModernGetSettingDword_Helper(HANDLE hContact, const char *szModule, const char *szSetting, int errorValue, const char *szFile, const int nLine)
 {
-    return DBGetContactSettingDword_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#if defined( _DEBUG )
+		return DBGetContactSettingDword_Helper( hContact, szModule, szSetting, errorValue, szFile, nLine );
+	#else
+		return DBGetContactSettingDword_Helper( hContact, szModule, szSetting, errorValue );
+	#endif
 }
 
 int __cdecl ModernGetSettingString_Helper(HANDLE hContact,const char *szModule, const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine, const int nType)
 {
-    return DBGetContactSettingString_Helper( hContact, szModule, szSetting, dbv, szFile, nLine, nType );
+	#if defined( _DEBUG )
+		return DBGetContactSettingString_Helper( hContact, szModule, szSetting, dbv, szFile, nLine, nType );
+	#else
+		return DBGetContactSettingString_Helper( hContact, szModule, szSetting, dbv, nType );
+	#endif
 }
 
 int __cdecl ModernGetSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv, const char *szFile, const int nLine)
 {
-    return DBGetContactSetting_Helper(hContact, szModule, szSetting, dbv, szFile, nLine);
+	#if defined( _DEBUG )
+		return DBGetContactSetting_Helper(hContact, szModule, szSetting, dbv, szFile, nLine);
+	#else
+		return DBGetContactSetting_Helper(hContact, szModule, szSetting, dbv);
+	#endif
 }
 
 int __cdecl ModernWriteSettingByte(HANDLE hContact,const char *szModule,const char *szSetting,BYTE val)

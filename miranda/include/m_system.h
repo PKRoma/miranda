@@ -42,6 +42,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		#define FORCEINLINE __inline
 	#endif
 	#define __forceinline static FORCEINLINE
+#else
+	#pragma warning(disable:4244 4245)
 #endif
 
 //miranda/system/modulesloaded

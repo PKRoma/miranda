@@ -1759,7 +1759,7 @@ BOOL CLUI__cliInvalidateRect(HWND hWnd, CONST RECT* lpRect,BOOL bErase )
 	if (CLUI_IsInMainWindow(hWnd) && g_CluiData.fLayered)// && IsWindowVisible(hWnd))
 	{
 		if (IsWindowVisible(hWnd))
-			return SkinInvalidateFrame( hWnd, lpRect, bErase );
+			return SkinInvalidateFrame( hWnd, lpRect );
 		else
 		{
 			g_flag_bFullRepaint=1;
@@ -2181,7 +2181,7 @@ LRESULT CLUI::OnPaint( UINT msg, WPARAM wParam, LPARAM lParam )
 	{
 		if (IsWindowVisible(m_hWnd))
 			if (g_CluiData.fLayered)
-				SkinInvalidateFrame(m_hWnd,NULL,0);				
+				SkinInvalidateFrame(m_hWnd,NULL);
 			else 
 			{
 				RECT w={0};
