@@ -330,55 +330,41 @@ void CAimProto::offline_contacts()
 
 void CAimProto::remove_AT_icons()
 {
-	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	if(!ServiceExists(MS_CLIST_EXTRA_ADD_ICON)) return;
+	
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
 	{
-		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact)
+		if (is_my_contact(hContact))
 		{
-			if (is_my_contact(hContact))
+			DBVARIANT dbv;
+			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				DBVARIANT dbv;
-				if (!getString(hContact, AIM_KEY_SN, &dbv))
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					HANDLE handle=(HANDLE)-1;
-					memcpy(data,&handle,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-					DBFreeVariant(&dbv);
-				}
+		        set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
+				DBFreeVariant(&dbv);
 			}
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 
 void CAimProto::remove_ES_icons()
 {
-	if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	if(!ServiceExists(MS_CLIST_EXTRA_ADD_ICON)) return;
+
+	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
 	{
-		HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-		while (hContact)
+		if (is_my_contact(hContact))
 		{
-			if (is_my_contact(hContact))
+			DBVARIANT dbv;
+			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				DBVARIANT dbv;
-				if (!getString(hContact, AIM_KEY_SN, &dbv))
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					HANDLE handle=(HANDLE)-1;
-					memcpy(data,&handle,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-					DBFreeVariant(&dbv);
-				}
+		        set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
+				DBFreeVariant(&dbv);
 			}
-			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 		}
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 }
 
@@ -392,52 +378,28 @@ void CAimProto::add_AT_icons()
 			DBVARIANT dbv;
 			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				int account_type=getByte(hContact, AIM_KEY_AC,0);		
-				if(account_type==ACCOUNT_TYPE_ADMIN)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&admin_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				else if(account_type==ACCOUNT_TYPE_AOL)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&aol_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				else if(account_type==ACCOUNT_TYPE_ICQ)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&icq_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				else if(account_type==ACCOUNT_TYPE_UNCONFIRMED)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&unconfirmed_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				else if(account_type==ACCOUNT_TYPE_CONFIRMED)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&confirmed_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
+		        switch(getByte(hContact, AIM_KEY_AC, 0))
+                {
+                case ACCOUNT_TYPE_ADMIN:
+			        set_extra_icon(hContact, admin_icon, EXTRA_ICON_ADV2);
+                    break;
+
+                case ACCOUNT_TYPE_AOL:
+			        set_extra_icon(hContact, aol_icon, EXTRA_ICON_ADV2);
+                    break;
+
+                case ACCOUNT_TYPE_ICQ:
+			        set_extra_icon(hContact, icq_icon, EXTRA_ICON_ADV2);
+                    break;
+
+                case ACCOUNT_TYPE_UNCONFIRMED:
+			        set_extra_icon(hContact, unconfirmed_icon, EXTRA_ICON_ADV2);
+                    break;
+
+                case ACCOUNT_TYPE_CONFIRMED:
+			        set_extra_icon(hContact, confirmed_icon, EXTRA_ICON_ADV2);
+                    break;
+                }
 				DBFreeVariant(&dbv);
 			}
 		}
@@ -455,25 +417,16 @@ void CAimProto::add_ES_icons()
 			DBVARIANT dbv;
 			if (!getString(hContact, AIM_KEY_SN, &dbv))
 			{
-				int es_type=getByte(hContact, AIM_KEY_ET,0);		
-				if(es_type==EXTENDED_STATUS_BOT)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&bot_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				else if(es_type==EXTENDED_STATUS_HIPTOP)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&hiptop_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
+		        switch(getByte(hContact, AIM_KEY_ET, 0))
+                {
+                case EXTENDED_STATUS_BOT:
+			        set_extra_icon(hContact, bot_icon, EXTRA_ICON_ADV3);
+                    break;
+
+                case EXTENDED_STATUS_HIPTOP:
+			        set_extra_icon(hContact, hiptop_icon, EXTRA_ICON_ADV3);
+                    break;
+	            }	
 				DBFreeVariant(&dbv);
 			}
 		}
@@ -958,9 +911,9 @@ bool is_digsby_ver_cap(char* cap)
 
 void CAimProto::load_extra_icons()
 {
-	if ( ServiceExists(MS_CLIST_EXTRA_ADD_ICON) && !extra_icons_loaded )
+	if (/*!extra_icons_loaded && */ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
 	{
-		extra_icons_loaded = 1;
+		extra_icons_loaded = true;
 		bot_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("bot"), 0);
 		ReleaseIconEx("bot");
 		icq_icon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)LoadIconEx("icq"), 0);
@@ -978,21 +931,14 @@ void CAimProto::load_extra_icons()
 	}
 }
 
-void set_extra_icon(char* data)
+void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type)
 {
-	if ( ServiceExists( MS_CLIST_EXTRA_ADD_ICON )) {
-		HANDLE* image=(HANDLE*)data;
-		HANDLE* hContact=(HANDLE*)&data[sizeof(HANDLE)];
-		unsigned short* column_type=(unsigned short*)&data[sizeof(HANDLE)*2];
-		IconExtraColumn iec;
-		iec.cbSize = sizeof(iec);
-		iec.hImage = *image;
-		iec.ColumnType = *column_type;
-		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)*hContact, (LPARAM)&iec);
-	}
-	delete[] data;
+	IconExtraColumn iec;
+	iec.cbSize = sizeof(iec);
+	iec.hImage = hImage;
+	iec.ColumnType = column_type;
+	CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Standard functions

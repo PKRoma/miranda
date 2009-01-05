@@ -207,46 +207,37 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					else
 						deleteSetting(hContact, "Transport" );
 
-					if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+					adv2_icon=1;
+                    HANDLE extra_icon = NULL;
+					if(admin_aol)
 					{
-						adv2_icon=1;
-						char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-						if(admin_aol)
-						{
-							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
-							memcpy(data,&admin_icon,sizeof(HANDLE));
-						}
-						else if(aol)
-						{
-							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_AOL);	
-							memcpy(data,&aol_icon,sizeof(HANDLE));						
-						}
-						else if(icq)
-						{
-							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);	
-							memcpy(data,&icq_icon,sizeof(HANDLE));
-						}
-						else if(unconfirmed)
-						{
-							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
-							memcpy(data,&unconfirmed_icon,sizeof(HANDLE));
-						}
-						else
-						{
-							setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
-							memcpy(data,&confirmed_icon,sizeof(HANDLE));
-						}
-						if(!ATIconsDisabled)
-						{
-							memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-							unsigned short column_type=EXTRA_ICON_ADV2;
-							memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-							mir_forkthread((pThreadFunc)set_extra_icon,data);
-						}
-						else
-							delete[] data;
+						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ADMIN);
+						extra_icon = admin_icon;
 					}
-					if(bot)
+					else if(aol)
+					{
+						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_AOL);	
+						extra_icon = aol_icon;
+					}
+					else if(icq)
+					{
+						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_ICQ);	
+						extra_icon = icq_icon;
+					}
+					else if(unconfirmed)
+					{
+						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_UNCONFIRMED);
+						extra_icon = unconfirmed_icon;
+					}
+					else
+					{
+						setByte(hContact, AIM_KEY_AC, ACCOUNT_TYPE_CONFIRMED);
+						extra_icon = confirmed_icon;
+					}
+					if(!ATIconsDisabled)
+						set_extra_icon(hContact, extra_icon, EXTRA_ICON_ADV2);
+
+                    if(bot)
 					{
 						strlcpy(client,CLIENT_BOT,100);
 						bot_user=1;
@@ -264,7 +255,6 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					{
 						away_user=1;
 						setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
-//						awaymsg_request_handler(buddy);
 					}
 					setDword(hContact, AIM_KEY_IT, 0);//erase idle time
 					setDword(hContact, AIM_KEY_OT, 0);//erase online time
@@ -491,59 +481,30 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
             }  			
             offset+=(tlv.len());
 		}
-		if(ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+		if(bot_user)
 		{
-			if(bot_user)
+			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
+			if(!ESIconsDisabled)
 			{
-				setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
-				if(!ESIconsDisabled)
-				{
-					adv1_icon=1;
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&bot_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
+				adv1_icon=1;
+				set_extra_icon(hContact, bot_icon, EXTRA_ICON_ADV3);
 			}
-			else if(hiptop_user)
+		}
+		else if(hiptop_user)
+		{
+			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
+			if(!ESIconsDisabled)
 			{
-				setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
-				if(!ESIconsDisabled)
-				{
-					adv1_icon=1;
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					memcpy(data,&hiptop_icon,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
+				adv1_icon=1;
+				set_extra_icon(hContact, hiptop_icon, EXTRA_ICON_ADV3);
 			}
-			if(caps_included)
-			{
-				if(!adv1_icon)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					HANDLE handle=(HANDLE)-1;
-					memcpy(data,&handle,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV3;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-				if(!adv2_icon)
-				{
-					char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-					HANDLE handle=(HANDLE)-1;
-					memcpy(data,&handle,sizeof(HANDLE));
-					memcpy(&data[sizeof(HANDLE)],&hContact,sizeof(HANDLE));
-					unsigned short column_type=EXTRA_ICON_ADV2;
-					memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-					mir_forkthread((pThreadFunc)set_extra_icon,data);
-				}
-			}
+		}
+		if(caps_included)
+		{
+			if(!adv1_icon)
+				set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV3);
+			if(!adv2_icon)
+				set_extra_icon(hContact, (HANDLE)-1, EXTRA_ICON_ADV2);
 		}
 		if(caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");

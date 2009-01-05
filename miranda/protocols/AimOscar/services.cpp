@@ -460,76 +460,54 @@ int CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 int CAimProto::OnExtraIconsRebuild(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	if ( ServiceExists( MS_CLIST_EXTRA_ADD_ICON ))
-		load_extra_icons();
-
+	load_extra_icons();
 	return 0;
 }
 
 int CAimProto::OnExtraIconsApply(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if ( ServiceExists( MS_CLIST_EXTRA_SET_ICON )) {
-		if ( !getByte( AIM_KEY_AT, 0 )) {
-			int account_type = getByte(( HANDLE )wParam, AIM_KEY_AC, 0 );
-			if ( account_type == ACCOUNT_TYPE_ADMIN ) {
-				char* data = new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&admin_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-			}
-			else if(account_type == ACCOUNT_TYPE_AOL ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&aol_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-			}
-			else if ( account_type == ACCOUNT_TYPE_ICQ ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&icq_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-			}
-			else if ( account_type == ACCOUNT_TYPE_UNCONFIRMED ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&unconfirmed_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-			}
-			else if ( account_type == ACCOUNT_TYPE_CONFIRMED ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&confirmed_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV2;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-		}	}
+	if (!ServiceExists(MS_CLIST_EXTRA_SET_ICON)) return 0;
 
-		if ( !getByte( AIM_KEY_ES, 0 )) {
-			int es_type = getByte(( HANDLE )wParam, AIM_KEY_ET, 0 );
-			if ( es_type == EXTENDED_STATUS_BOT ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&bot_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV3;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-			}
-			else if ( es_type == EXTENDED_STATUS_HIPTOP ) {
-				char* data=new char[sizeof(HANDLE)*2+sizeof(unsigned short)];
-				memcpy(data,&hiptop_icon,sizeof(HANDLE));
-				memcpy(&data[sizeof(HANDLE)],&wParam,sizeof(HANDLE));
-				unsigned short column_type=EXTRA_ICON_ADV3;
-				memcpy(&data[sizeof(HANDLE)*2],(char*)&column_type,sizeof(unsigned short));
-				mir_forkthread((pThreadFunc)set_extra_icon,data);
-	}	}	}
+    HANDLE hContact = (HANDLE)wParam;
+	if (!getByte(AIM_KEY_AT, 0)) 
+    {
+		switch(getByte(hContact, AIM_KEY_AC, 0))
+        {
+        case ACCOUNT_TYPE_ADMIN:
+			set_extra_icon(hContact, admin_icon, EXTRA_ICON_ADV2);
+            break;
+
+        case ACCOUNT_TYPE_AOL:
+			set_extra_icon(hContact, aol_icon, EXTRA_ICON_ADV2);
+            break;
+
+        case ACCOUNT_TYPE_ICQ:
+			set_extra_icon(hContact, icq_icon, EXTRA_ICON_ADV2);
+            break;
+
+        case ACCOUNT_TYPE_UNCONFIRMED:
+			set_extra_icon(hContact, unconfirmed_icon, EXTRA_ICON_ADV2);
+            break;
+
+        case ACCOUNT_TYPE_CONFIRMED:
+			set_extra_icon(hContact, confirmed_icon, EXTRA_ICON_ADV2);
+            break;
+        }
+    }
+
+	if (!getByte(AIM_KEY_ES, 0)) 
+    {
+		switch(getByte(hContact, AIM_KEY_ET, 0))
+        {
+        case EXTENDED_STATUS_BOT:
+			set_extra_icon(hContact, bot_icon, EXTRA_ICON_ADV3);
+            break;
+
+        case EXTENDED_STATUS_HIPTOP:
+			set_extra_icon(hContact, hiptop_icon, EXTRA_ICON_ADV3);
+            break;
+	    }	
+    }
 
 	return 0;
 }
