@@ -10,7 +10,7 @@ typedef struct tagProtocolData
 {
 	char *RealName;
 	int protopos;
-	boolean show;
+	int show, enabled;
 }
 	ProtocolData;
 
@@ -72,11 +72,10 @@ int FillTree(HWND hwnd)
 	PROTOACCOUNT* pa;
 
 	TVINSERTSTRUCT tvis;
-	tvis.hParent=NULL;
-	tvis.hInsertAfter=TVI_LAST;
-	tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
+	tvis.hParent = NULL;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.item.mask = TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;	
 
-	//	ProtocolOrder_CheckOrder();
 	TreeView_DeleteAllItems(hwnd);
 	if ( accounts.getCount() == 0 )
 		return FALSE;
@@ -87,14 +86,19 @@ int FillTree(HWND hwnd)
 			continue;
 
 		pa = accounts[idx];
-		if ( !IsAccountEnabled( pa ) || !isProtoSuitable( pa->ppro ))
-			continue;
-
+	
 		PD = ( ProtocolData* )mir_alloc( sizeof( ProtocolData ));
 		PD->RealName = pa->szModuleName;
-		PD->show = pa->bIsVisible;
 		PD->protopos = pa->iOrder;
-
+		if ( IsAccountEnabled( pa ) && isProtoSuitable( pa->ppro )) {
+			PD->enabled = true;
+			PD->show = pa->bIsVisible;
+		}
+		else {
+			PD->enabled = false;
+			PD->show = 100;
+		}
+				
 		tvis.item.lParam = ( LPARAM )PD;
 		tvis.item.pszText = TranslateTS( pa->tszAccountName );
 		tvis.item.iImage = tvis.item.iSelectedImage = PD->show;
@@ -168,7 +172,8 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						PROTOACCOUNT* pa = Proto_GetAccount( ppd->RealName );
 						if ( pa != NULL ) {
 							pa->iOrder = ( isProtoSuitable( pa->ppro )) ? count++ : 1000000+count;
-							pa->bIsVisible = ppd->show;
+							if ( ppd->enabled )
+								pa->bIsVisible = ppd->show;
 						}
 					}
 
@@ -209,14 +214,17 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if ( TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom, &hti )) {
 						if ( hti.flags & TVHT_ONITEMICON ) {
 							TVITEMA tvi;
-							tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-							tvi.hItem=hti.hItem;
+							tvi.mask = TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+							tvi.hItem = hti.hItem;
 							TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-							tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
-							((ProtocolData *)tvi.lParam)->show=tvi.iImage;
-							TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-							SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
-			}	}	}	}
+
+							ProtocolData *pData = ( ProtocolData* )tvi.lParam;
+							if ( pData->enabled ) {
+								tvi.iImage = tvi.iSelectedImage = !tvi.iImage;
+								pData->show = tvi.iImage;
+								TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+								SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+			}	}	}	}	}
 			break;
 		}
 		break;

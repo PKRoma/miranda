@@ -113,6 +113,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 					pa->szProtoName = mir_strdup( pd->szName );
 					pa->tszAccountName = mir_a2t( pd->szName );
 					pa->bIsVisible = pa->bIsEnabled = TRUE;
+					pa->iOrder = accounts.getCount();
 					accounts.insert( pa );
 				}
 				pa->bOldProto = TRUE;

@@ -45,50 +45,53 @@ void LoadDbAccounts()
 	for ( i=0; i < count; i++ ) {
 		char buf[10];
 		_itoa( i, buf, 10 );
-		if ( !DBGetContactSettingString( NULL, "Protocols", buf, &dbv )) {
-			PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
-			if ( pa ) {
-				pa->cbSize = sizeof( *pa );
-				pa->type = PROTOTYPE_PROTOCOL;
-				pa->szModuleName = mir_strdup( dbv.pszVal );
+		if ( DBGetContactSettingString( NULL, "Protocols", buf, &dbv ))
+			continue;
+
+		PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
+		if ( pa == NULL ) {
+			DBFreeVariant( &dbv );
+			continue;
+		}
+		pa->cbSize = sizeof( *pa );
+		pa->type = PROTOTYPE_PROTOCOL;
+		pa->szModuleName = mir_strdup( dbv.pszVal );
+		DBFreeVariant( &dbv );
+
+		_itoa( OFFSET_VISIBLE+i, buf, 10 );
+		pa->bIsVisible = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+
+		_itoa( OFFSET_PROTOPOS+i, buf, 10 );
+		pa->iOrder = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+
+		if ( ver >= 4 ) {
+			DBFreeVariant( &dbv );
+			_itoa( OFFSET_NAME+i, buf, 10 );
+			if ( !DBGetContactSettingTString( NULL, "Protocols", buf, &dbv )) {
+				pa->tszAccountName = mir_tstrdup( dbv.ptszVal );
 				DBFreeVariant( &dbv );
-
-				_itoa( OFFSET_VISIBLE+i, buf, 10 );
-				pa->bIsVisible = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
-
-				_itoa( OFFSET_PROTOPOS+i, buf, 10 );
-				pa->iOrder = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
-
-				if ( ver >= 4 ) {
-					DBFreeVariant( &dbv );
-					_itoa( OFFSET_NAME+i, buf, 10 );
-					if ( !DBGetContactSettingTString( NULL, "Protocols", buf, &dbv )) {
-						pa->tszAccountName = mir_tstrdup( dbv.ptszVal );
-						DBFreeVariant( &dbv );
-					}
-
-					_itoa( OFFSET_ENABLED+i, buf, 10 );
-					pa->bIsEnabled = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
-
-					if ( !DBGetContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", &dbv )) {
-						pa->szProtoName = mir_strdup( dbv.pszVal );
-						DBFreeVariant( &dbv );
-					}
-				}
-				else pa->bIsEnabled = TRUE;
-
-				if ( !pa->szProtoName ) {
-					pa->szProtoName = mir_strdup( pa->szModuleName );
-					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
-				}
-
-				if ( !pa->tszAccountName )
-					pa->tszAccountName = mir_a2t( pa->szModuleName );
-
-				accounts.insert( pa );
 			}
-			else DBFreeVariant( &dbv );
-}	}	}
+
+			_itoa( OFFSET_ENABLED+i, buf, 10 );
+			pa->bIsEnabled = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+
+			if ( !DBGetContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", &dbv )) {
+				pa->szProtoName = mir_strdup( dbv.pszVal );
+				DBFreeVariant( &dbv );
+			}
+		}
+		else pa->bIsEnabled = TRUE;
+
+		if ( !pa->szProtoName ) {
+			pa->szProtoName = mir_strdup( pa->szModuleName );
+			DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
+		}
+
+		if ( !pa->tszAccountName )
+			pa->tszAccountName = mir_a2t( pa->szModuleName );
+
+		accounts.insert( pa );
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
