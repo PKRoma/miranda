@@ -2906,10 +2906,10 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
                 }
 
                 // Has to draw avatar
-                if ( dat->avatar_cache.nodes && Drawing->avatar_pos>AVATAR_POS_DONT_HAVE ) {
+                if ( dat->avatar_cache.nodes && Drawing->avatar_pos > AVATAR_POS_DONT_HAVE ) {
                     width = dat->avatar_cache.nodes[Drawing->avatar_pos].width;
                     height = dat->avatar_cache.nodes[Drawing->avatar_pos].height;
-                }else if ( Drawing->avatar_pos = AVATAR_POS_ANIMATED ) {
+                }else if ( Drawing->avatar_pos == AVATAR_POS_ANIMATED ) {
                     width = Drawing->avatar_size.cx;
                     height = Drawing->avatar_size.cy;
                 }else {

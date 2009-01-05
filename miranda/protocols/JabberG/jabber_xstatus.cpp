@@ -95,17 +95,14 @@ int CJabberDlgPepBase::Resizer(UTILRESIZECONTROL *urc)
 
 BOOL CJabberDlgPepBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
+	switch (msg) {
 	case WM_TIMER:
-		if (wParam = 1)
-		{
+		if (wParam == 1) {
 			TCHAR buf[128];
 			mir_sntprintf(buf, SIZEOF(buf), _T("%s (%d)"), TranslateT("OK"), --m_time);
 			m_btnOk.SetText(buf);
 
-			if (m_time < 0)
-			{
+			if (m_time < 0) {
 				KillTimer(m_hwnd, 1);
 				UIEmulateBtnClick(m_hwnd, IDOK);
 			}
