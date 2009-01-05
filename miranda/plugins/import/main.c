@@ -49,6 +49,7 @@ static HANDLE hPreviousContact = INVALID_HANDLE_VALUE;
 static HANDLE hPreviousDbEvent = NULL;
 
 static HANDLE hHookModulesLoaded;
+static HANDLE hHookOnExit;
 static HANDLE hImportService = NULL;
 
 BOOL UnicodeDB = FALSE;
@@ -491,6 +492,13 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int OnExit(WPARAM wParam, LPARAM lParam)
+{
+	if ( hwndWizard )
+		SendMessage(hwndWizard, WM_CLOSE, 0, 0);
+	return 0;
+}
+
 int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	pluginLink = link;
@@ -508,6 +516,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 	}
 	hHookModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, ModulesLoaded);
+	hHookOnExit = HookEvent(ME_SYSTEM_OKTOEXIT, OnExit);
 	{
 		INITCOMMONCONTROLSEX icex;
 		icex.dwSize = sizeof(icex);
