@@ -116,14 +116,14 @@ XmlNode::~XmlNode()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-HXML __fastcall operator<<( HXML node, XCHILDNS& child )
+HXML __fastcall operator<<( HXML node, const XCHILDNS& child )
 {
 	HXML res = xmlAddChild( node, child.name );
 	xmlAddAttr( res, _T("xmlns"), child.ns );
 	return res;
 }
 
-HXML __fastcall operator<<( HXML node, XQUERY& child )
+HXML __fastcall operator<<( HXML node, const XQUERY& child )
 {
 	HXML n = xmlAddChild( node, _T("query"));
 	if ( n )

@@ -108,7 +108,7 @@ struct XATTR
 		{}
 };
 
-HXML __forceinline operator<<( HXML node, XATTR& attr )
+HXML __forceinline operator<<( HXML node, const XATTR& attr )
 {	xmlAddAttr( node, attr.name, attr.value );
 	return node;
 }
@@ -126,7 +126,7 @@ struct XATTRI
 		{}
 };
 
-HXML __forceinline operator<<( HXML node, XATTRI& attr )
+HXML __forceinline operator<<( HXML node, const XATTRI& attr )
 {	xmlAddAttr( node, attr.name, attr.value );
 	return node;
 }
@@ -142,7 +142,7 @@ struct XATTRID
 		{}
 };
 
-HXML __forceinline operator<<( HXML node, XATTRID& attr )
+HXML __forceinline operator<<( HXML node, const XATTRID& attr )
 {	xmlAddAttrID( node, attr.id );
 	return node;
 }
@@ -159,7 +159,7 @@ struct XCHILD
 		{}
 };
 
-HXML __forceinline operator<<( HXML node, XCHILD& child )
+HXML __forceinline operator<<( HXML node, const XCHILD& child )
 {	return xmlAddChild( node, child.name, child.value );
 }
 
@@ -175,7 +175,7 @@ struct XCHILDNS
 		{}
 };
 
-HXML __fastcall operator<<( HXML node, XCHILDNS& child );
+HXML __fastcall operator<<( HXML node, const XCHILDNS& child );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -188,7 +188,7 @@ struct XQUERY
 		{}
 };
 
-HXML __fastcall operator<<( HXML node, XQUERY& child );
+HXML __fastcall operator<<( HXML node, const XQUERY& child );
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Limited XPath support
