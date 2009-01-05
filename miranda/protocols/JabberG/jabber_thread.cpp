@@ -52,7 +52,7 @@ int iqIdRegSetReg;
 #define JCPF_ERROR   0x04UL
 
 //extern int bSecureIM;
-static VOID CALLBACK JabberDummyApcFunc( DWORD param )
+static VOID CALLBACK JabberDummyApcFunc( DWORD )
 {
 	return;
 }
@@ -106,7 +106,7 @@ static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Jabber keep-alive thread
 
-void CJabberProto::OnPingReply( HXML node, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnPingReply( HXML, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo )
 		return;
@@ -657,9 +657,8 @@ void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
+void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	bool isPlainAvailable = false;
 	bool isMd5available = false;
 	bool isNtlmAvailable = false;
@@ -717,7 +716,6 @@ void CJabberProto::OnProcessFeatures( HXML node, void *userdata )
 	}
 
 	if ( areMechanismsDefined ) {
-		char *PLAIN = NULL;
 		TJabberAuth* auth = NULL;
 
 		if ( isNtlmAvailable ) {
@@ -881,7 +879,7 @@ void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
 		else if ( !lstrcmp( xmlGetName( node ), _T("presence")))
 			OnProcessPresence( node, info );
 		else if ( !lstrcmp( xmlGetName( node ), _T("iq")))
-			OnProcessIq( node, info );
+			OnProcessIq( node );
 		else
 			Log( "Invalid top-level tag ( only <message/> <presence/> and <iq/> allowed )" );
 	}
@@ -947,7 +945,7 @@ void CJabberProto::OnProcessPubsubEvent( HXML node )
 	if ( m_options.EnableUserTune && (itemsNode = xmlGetChildByTag( eventNode, "items", "node", _T(JABBER_FEAT_USER_TUNE)))) {
 		// node retract?
 		if ( xmlGetChild( itemsNode , "retract" )) {
-			SetContactTune( hContact, NULL, NULL, NULL, NULL, NULL, NULL );
+			SetContactTune( hContact, NULL, NULL, NULL, NULL, NULL );
 			return;
 		}
 
@@ -960,7 +958,6 @@ void CJabberProto::OnProcessPubsubEvent( HXML node )
 		const TCHAR *szSource = XPathT( tuneNode, "source" );
 		const TCHAR *szTitle = XPathT( tuneNode, "title" );
 		const TCHAR *szTrack = XPathT( tuneNode, "track" );
-		const TCHAR *szUri = XPathT( tuneNode, "uri" );
 	
 		TCHAR szLengthInTime[32];
 		szLengthInTime[0] = _T('\0');
@@ -970,7 +967,7 @@ void CJabberProto::OnProcessPubsubEvent( HXML node )
 				nLength / 3600, (nLength / 60) % 60, nLength % 60 );
 		}
 
-		SetContactTune( hContact, szArtist, szLength ? szLengthInTime : NULL, szSource, szTitle, szTrack, szUri );
+		SetContactTune( hContact, szArtist, szLength ? szLengthInTime : NULL, szSource, szTitle, szTrack );
 	}
 }
 
@@ -1073,7 +1070,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	{
 		if ( chatItem )
 		{	// process GC message
-			GroupchatProcessMessage( node, info );
+			GroupchatProcessMessage( node );
 		} else
 		{	// got message from onknown conference... let's leave it :)
 //			TCHAR *conference = NEWTSTR_ALLOCA(from);
@@ -1436,7 +1433,7 @@ void CJabberProto::OnProcessPresenceCapabilites( HXML node )
 	}
 
 	// update user's caps
-	JabberCapsBits jcbCaps = GetResourceCapabilites( from, TRUE );
+	// JabberCapsBits jcbCaps = GetResourceCapabilites( from, TRUE );
 }
 
 void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
@@ -1512,7 +1509,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 
 	if ( ListExist( LIST_CHATROOM, from )) {
-		GroupchatProcessPresence( node, info );
+		GroupchatProcessPresence( node );
 		return;
 	}
 
@@ -1633,7 +1630,6 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 	}
 
 	if ( !_tcscmp( type, _T("unavailable"))) {
-		int status = ID_STATUS_OFFLINE;
 		hContact = HContactFromJID( from );
 		if (( item = ListGetItemPtr( LIST_ROSTER, from )) != NULL ) {
 			ListRemoveResource( LIST_ROSTER, from );
@@ -1730,7 +1726,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 	}	
 }
 
-void CJabberProto::OnIqResultVersion( HXML node, void* userdata, CJabberIqInfo *pInfo )
+void CJabberProto::OnIqResultVersion( HXML /*node*/, CJabberIqInfo *pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
 	if ( r == NULL ) return;
@@ -1760,16 +1756,14 @@ void CJabberProto::OnIqResultVersion( HXML node, void* userdata, CJabberIqInfo *
 	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
-void CJabberProto::OnProcessIq( HXML node, void *userdata )
+void CJabberProto::OnProcessIq( HXML node )
 {
-	ThreadData* info;
 	HXML queryNode;
 	const TCHAR *type, *xmlns;
 	int i;
 	JABBER_IQ_PFUNC pfunc;
 
 	if ( !xmlGetName( node ) || _tcscmp( xmlGetName( node ), _T("iq"))) return;
-	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type=xmlGetAttrValue( node, _T("type"))) == NULL ) return;
 
 	int id = JabberGetPacketID( node );
@@ -1779,11 +1773,11 @@ void CJabberProto::OnProcessIq( HXML node, void *userdata )
 	xmlns = xmlGetAttrValue( queryNode, _T("xmlns"));
 
 	// new match by id
-	if ( m_iqManager.HandleIq( id, node, userdata ))
+	if ( m_iqManager.HandleIq( id, node ))
 		return;
 
 	// new iq handler engine
-	if ( m_iqManager.HandleIqPermanent( node, userdata ))
+	if ( m_iqManager.HandleIqPermanent( node ))
 		return;
 
 	/////////////////////////////////////////////////////////////////////////
@@ -1791,7 +1785,7 @@ void CJabberProto::OnProcessIq( HXML node, void *userdata )
 	/////////////////////////////////////////////////////////////////////////
 	if ( ( !_tcscmp( type, _T("result")) || !_tcscmp( type, _T("error")) ) && (( pfunc=JabberIqFetchFunc( id )) != NULL )) {
 		Log( "Handling iq request for id=%d", id );
-		(this->*pfunc)( node, userdata );
+		(this->*pfunc)( node );
 		return;
 	}
 	// RECVED: <iq type='error'> ...
@@ -1818,18 +1812,16 @@ void CJabberProto::OnProcessIq( HXML node, void *userdata )
 		
 		iq << XCHILD( _T("error")) << XATTR( _T("type"), _T("cancel"))
 				<< XCHILDNS( _T("service-unavailable"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
-		info->send( iq );
+		m_ThreadInfo->send( iq );
 	}
 }
 
-void CJabberProto::OnProcessRegIq( HXML node, void *userdata )
+void CJabberProto::OnProcessRegIq( HXML node, ThreadData* info )
 {
-	ThreadData* info;
 	HXML errorNode;
 	const TCHAR *type;
 
 	if ( !xmlGetName( node ) || _tcscmp( xmlGetName( node ), _T("iq"))) return;
-	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( type=xmlGetAttrValue( node, _T("type"))) == NULL ) return;
 
 	int id = JabberGetPacketID( node );

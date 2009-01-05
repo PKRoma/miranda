@@ -52,7 +52,7 @@ typedef enum {
 } JABBER_IQ_PROCID;
 
 struct CJabberProto;
-typedef void ( CJabberProto::*JABBER_IQ_PFUNC )( HXML iqNode, void *usedata );
+typedef void ( CJabberProto::*JABBER_IQ_PFUNC )( HXML iqNode );
 
 typedef struct {
 	TCHAR* xmlns;
@@ -68,7 +68,7 @@ void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 
 class CJabberIqRequestManager;
 
-typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( HXML iqNode, void *usedata, CJabberIqInfo* pInfo );
+typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( HXML iqNode, /*void *usedata,*/ CJabberIqInfo* pInfo );
 
 #define JABBER_IQ_TYPE_FAIL						0
 #define JABBER_IQ_TYPE_RESULT					1
@@ -414,16 +414,16 @@ public:
 
 		return pInfo;
 	}
-	BOOL HandleIq(int nIqId, HXML pNode, void *pUserData);
-	BOOL HandleIqPermanent(HXML pNode, void *pUserData);
-	BOOL ExpireIq(int nIqId, void *pUserData = NULL)
+	BOOL HandleIq(int nIqId, HXML pNode);
+	BOOL HandleIqPermanent(HXML pNode);
+	BOOL ExpireIq(int nIqId)
 	{
 		Lock();
 		CJabberIqInfo* pInfo = DetachInfo(nIqId, 0);
 		Unlock();
 		if (pInfo)
 		{
-			ExpireInfo(pInfo, pUserData);
+			ExpireInfo(pInfo);
 			delete pInfo;
 			return TRUE;
 		}

@@ -102,18 +102,14 @@ static TCHAR* sttStatuses[] = { _T("Visitors"), _T("Participants"), _T("Moderato
 
 int JabberGcGetStatus(JABBER_GC_AFFILIATION a, JABBER_GC_ROLE r)
 {
-	switch (a)
-	{
+	switch (a) {
 	case AFFILIATION_OWNER:		return 3;
 
 	default:
-		switch (r)
-		{
-		case ROLE_MODERATOR:	return 2;
-		case ROLE_PARTICIPANT:	return 1;
-		default:				return 0;
-		}
-	}
+		switch (r) {
+			case ROLE_MODERATOR:	return 2;
+			case ROLE_PARTICIPANT:	return 1;
+	}	}
 
 	return 0;
 }
@@ -123,7 +119,7 @@ int JabberGcGetStatus(JABBER_RESOURCE_STATUS *r)
 	return JabberGcGetStatus(r->affiliation, r->role);
 }
 
-int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM lParam )
+int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM )
 {
 	int i;
 	JABBER_LIST_ITEM* item = ( JABBER_LIST_ITEM* )wParam;
@@ -434,7 +430,7 @@ static void sttShowGcMenuItems(GCMENUITEMS *items, DWORD *ids, int type)
 		sttShowGcMenuItem(items, *ids, type);
 }
 
-int CJabberProto::JabberGcMenuHook( WPARAM wParam, LPARAM lParam )
+int CJabberProto::JabberGcMenuHook( WPARAM, LPARAM lParam )
 {
 	GCMENUITEMS* gcmi= ( GCMENUITEMS* )lParam;
 	if ( gcmi == NULL )
@@ -1369,7 +1365,7 @@ static void sttSendPrivateMessage( CJabberProto* ppro, JABBER_LIST_ITEM* item, c
 /////////////////////////////////////////////////////////////////////////////////////////
 // General chat event processing hook
 
-int CJabberProto::JabberGcEventHook(WPARAM wParam,LPARAM lParam)
+int CJabberProto::JabberGcEventHook(WPARAM, LPARAM lParam)
 {
 	GCHOOK* gch = ( GCHOOK* )lParam;
 	if ( gch == NULL )

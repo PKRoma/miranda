@@ -54,7 +54,7 @@ struct StringBuf
 };
 
 static void sttAppendBufRaw(StringBuf *buf, const char *str);
-static void sttAppendBufA(StringBuf *buf, const char *str);
+
 #ifdef UNICODE
 	static void sttAppendBufW(StringBuf *buf, const WCHAR *str);
 	#define sttAppendBufT(a,b)		(sttAppendBufW((a),(b)))
@@ -187,28 +187,6 @@ static void sttAppendBufRaw(StringBuf *buf, const char *str)
 	buf->offset += length;
 }
 
-static void sttAppendBufA(StringBuf *buf, const char *str)
-{
-	char tmp[32];
-
-	if (!str) return;
-
-	for (const char *p = str; *p; ++p)
-	{
-		if ((*p == '\\') || (*p == '{') || (*p == '}'))
-		{
-			tmp[0] = '\\';
-			tmp[1] = (char)*p;
-			tmp[2] = 0;
-		} else
-		{
-			tmp[0] = (char)*p;
-			tmp[1] = 0;
-		}
-		sttAppendBufRaw(buf, tmp);
-	}
-}
-
 #ifdef UNICODE
 static void sttAppendBufW(StringBuf *buf, const WCHAR *str)
 {
@@ -337,11 +315,6 @@ DWORD CALLBACK sttStreamInCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, L
 	}
 
 	return 0;
-}
-
-static void JabberConsoleXmlCallback( HXML node, CJabberProto *ppro)
-{
-	ppro->OnConsoleProcessXml(node, JCPF_OUT);
 }
 
 static void sttJabberConsoleRebuildStrings(CJabberProto* ppro, HWND hwndCombo)
@@ -486,7 +459,7 @@ void CJabberDlgConsole::OnDestroy()
 	CSuper::OnDestroy();
 }
 
-void CJabberDlgConsole::OnProtoRefresh(WPARAM wParam, LPARAM lParam)
+void CJabberDlgConsole::OnProtoRefresh(WPARAM, LPARAM lParam)
 {
 	SendDlgItemMessage(m_hwnd, IDC_CONSOLE, WM_SETREDRAW, FALSE, 0);
 
@@ -739,7 +712,7 @@ void CJabberProto::ConsoleUninit()
 	m_filterInfo.type = TFilterInfo::T_OFF;
 }
 
-int __cdecl CJabberProto::OnMenuHandleConsole(WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleConsole(WPARAM, LPARAM)
 {
 	if ( m_pDlgConsole )
 		SetForegroundWindow( m_pDlgConsole->GetHwnd() );

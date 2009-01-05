@@ -33,13 +33,11 @@ Last change by : $Author$
 
 class CJabberAdhocSession;
 
-void JabberHandleAdhocCommandRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo );
-
 #define JABBER_ADHOC_HANDLER_STATUS_EXECUTING            1
 #define JABBER_ADHOC_HANDLER_STATUS_COMPLETED            2
 #define JABBER_ADHOC_HANDLER_STATUS_CANCEL               3
 #define JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION       4
-typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
+typedef int ( CJabberProto::*JABBER_ADHOC_HANDLER )( HXML iqNode, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession );
 
 // 5 minutes to fill out form :)
 #define JABBER_ADHOC_SESSION_EXPIRE_TIME                 300000
@@ -156,11 +154,11 @@ public:
 	{
 		return m_szName;
 	}
-	BOOL CallHandler( HXML iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+	BOOL CallHandler( HXML iqNode, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 	{
 		if ( m_pHandler == NULL )
 			return FALSE;
-		return (m_pProto->*m_pHandler)( iqNode, usedata, pInfo, pSession );
+		return (m_pProto->*m_pHandler)( iqNode, pInfo, pSession );
 	}
 };
 
@@ -304,9 +302,9 @@ public:
 	{
 		return m_pNodes;
 	}
-	BOOL HandleItemsRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
-	BOOL HandleInfoRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
-	BOOL HandleCommandRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleItemsRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleInfoRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
+	BOOL HandleCommandRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
 
 	BOOL ExpireSessions()
 	{

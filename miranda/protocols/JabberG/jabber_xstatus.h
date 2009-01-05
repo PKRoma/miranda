@@ -47,7 +47,7 @@ public:
 
 	virtual void InitGui() {}
 	virtual void RebuildMenu() {}
-	virtual void ResetExtraIcon(HANDLE hContact) {}
+	virtual void ResetExtraIcon(HANDLE /*hContact*/) {}
 	virtual bool LaunchSetGui() { return false; }
 
 protected:

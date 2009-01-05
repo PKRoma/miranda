@@ -35,7 +35,7 @@ Last change by : $Author$
 #include "m_genmenu.h"
 #include "m_clistint.h"
 
-void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode, void* userdata )
+void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 {
 	if ( !iqNode )
 		return;
@@ -75,11 +75,11 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode, void* userdata )
 				}
 			}
 		}
-		OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_SERVERINFO);
+		OnProcessLoginRq( m_ThreadInfo, JABBER_LOGIN_SERVERINFO);
 	}
 }
 
-void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	const TCHAR *szGroupDelimeter = NULL;
 	BOOL bPrivateStorageSupport = FALSE;
@@ -138,43 +138,43 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 	}
 }
 
-void CJabberProto::OnLoggedIn( ThreadData* info )
+void CJabberProto::OnLoggedIn()
 {
 	m_bJabberOnline = TRUE;
 	m_tmJabberLoggedInTime = time(0);
 
-	info->dwLoginRqs = 0;
+	m_ThreadInfo->dwLoginRqs = 0;
 
 	// XEP-0083 support
 	{
 		CJabberIqInfo* pIqInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultNestedRosterGroups, JABBER_IQ_TYPE_GET );
 		// ugly hack to prevent hangup during login process
 		pIqInfo->SetTimeout( 30000 );
-		info->send(
+		m_ThreadInfo->send(
 			XmlNodeIq( pIqInfo ) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 				<< XCHILDNS( _T("roster"), _T(JABBER_FEAT_NESTED_ROSTER_GROUPS)));
 	}
 
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
-	info->send(
+	m_ThreadInfo->send(
 		XmlNodeIq( _T("get"), iqId) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 			<< XCHILDNS( _T("storage"), _T("storage:bookmarks")));
 
 	m_bPepSupported = FALSE;
-	info->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
+	m_ThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 	iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultServerDiscoInfo );
-	info->send( XmlNodeIq( _T("get"), iqId, _A2T(info->server)) << XQUERY( _T(JABBER_FEAT_DISCO_INFO)));
+	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, _A2T(m_ThreadInfo->server)) << XQUERY( _T(JABBER_FEAT_DISCO_INFO)));
 
-	QueryPrivacyLists( info );
+	QueryPrivacyLists( m_ThreadInfo );
 
-	char szServerName[ sizeof(info->server) ];
+	char szServerName[ sizeof(m_ThreadInfo->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
 		SendGetVcard( m_szJabberJID );
-	else if ( strcmp( info->server, szServerName ))
+	else if ( strcmp( m_ThreadInfo->server, szServerName ))
 		SendGetVcard( m_szJabberJID );
-	JSetString( NULL, "LastLoggedServer", info->server );
+	JSetString( NULL, "LastLoggedServer", m_ThreadInfo->server );
 
 	//Check if avatar changed
 	DBVARIANT dbvSaved = {0};
@@ -190,13 +190,12 @@ void CJabberProto::OnLoggedIn( ThreadData* info )
 	DBFreeVariant(&dbvHash);
 }
 
-void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetAuth( HXML iqNode )
 {
 	// RECVED: result of the request for authentication method
 	// ACTION: send account authentication information to log in
 	Log( "<iq/> iqIdGetAuth" );
 
-	ThreadData* info = ( ThreadData* ) userdata;
 	HXML queryNode;
 	const TCHAR* type;
 	if (( type=xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
@@ -208,9 +207,9 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
 
 		XmlNodeIq iq( _T("set"), iqId );
 		HXML query = iq << XQUERY( _T("jabber:iq:auth"));
-		query << XCHILD( _T("username"), info->username );
+		query << XCHILD( _T("username"), m_ThreadInfo->username );
 		if ( xmlGetChild( queryNode, "digest" ) != NULL && m_szStreamId ) {
-			char* str = mir_utf8encode( info->password );
+			char* str = mir_utf8encode( m_ThreadInfo->password );
 			char text[200];
 			mir_snprintf( text, SIZEOF(text), "%s%s", m_szStreamId, str );
 			mir_free( str );
@@ -220,32 +219,31 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode, void *userdata )
 			}
 		}
 		else if ( xmlGetChild( queryNode, "password" ) != NULL )
-			query << XCHILD( _T("password"), _A2T(info->password));
+			query << XCHILD( _T("password"), _A2T(m_ThreadInfo->password));
 		else {
 			Log( "No known authentication mechanism accepted by the server." );
 
-			info->send( "</stream:stream>" );
+			m_ThreadInfo->send( "</stream:stream>" );
 			return;
 		}
 
 		if ( xmlGetChild( queryNode , "resource" ) != NULL )
-			query << XCHILD( _T("resource"), info->resource );
+			query << XCHILD( _T("resource"), m_ThreadInfo->resource );
 
-		info->send( iq );
+		m_ThreadInfo->send( iq );
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
- 		info->send( "</stream:stream>" );
+ 		m_ThreadInfo->send( "</stream:stream>" );
 
 		TCHAR text[128];
-		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
+		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
 		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultSetAuth( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetAuth( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
 
 	// RECVED: authentication result
@@ -256,61 +254,58 @@ void CJabberProto::OnIqResultSetAuth( HXML iqNode, void *userdata )
 	if ( !lstrcmp( type, _T("result"))) {
 		DBVARIANT dbv;
 		if ( JGetStringT( NULL, "Nick", &dbv ))
-			JSetStringT( NULL, "Nick", info->username );
+			JSetStringT( NULL, "Nick", m_ThreadInfo->username );
 		else
 			JFreeVariant( &dbv );
 
-		OnLoggedIn( info );
+		OnLoggedIn();
 	}
 	// What to do if password error? etc...
 	else if ( !lstrcmp( type, _T("error"))) {
 		TCHAR text[128];
 
-		info->send( "</stream:stream>" );
-		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), info->username );
+		m_ThreadInfo->send( "</stream:stream>" );
+		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
 		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultBind( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultBind( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	HXML n = xmlGetChild( iqNode , "bind" );
 	if ( n != NULL ) {
 		if ( n = xmlGetChild( n , "jid" )) {
 			if ( xmlGetText( n ) ) {
-				if ( !_tcsncmp( info->fullJID, xmlGetText( n ), SIZEOF( info->fullJID )))
-					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "confirmed.", NULL );
+				if ( !_tcsncmp( m_ThreadInfo->fullJID, xmlGetText( n ), SIZEOF( m_ThreadInfo->fullJID )))
+					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, m_ThreadInfo->fullJID, "confirmed.", NULL );
 				else {
-					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, info->fullJID, "changed to", xmlGetText( n ));
-					_tcsncpy( info->fullJID, xmlGetText( n ), SIZEOF( info->fullJID ));
+					Log( "Result Bind: "TCHAR_STR_PARAM" %s "TCHAR_STR_PARAM, m_ThreadInfo->fullJID, "changed to", xmlGetText( n ));
+					_tcsncpy( m_ThreadInfo->fullJID, xmlGetText( n ), SIZEOF( m_ThreadInfo->fullJID ));
 		}	}	}
 
-		if ( info->bIsSessionAvailable ) {
+		if ( m_ThreadInfo->bIsSessionAvailable ) {
 			int iqId = SerialNext();
 			IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultSession );
-			info->send(
+			m_ThreadInfo->send(
 				XmlNodeIq( _T("set")) << XATTRID( iqId )
 					<< XCHILDNS( _T("session"), _T("urn:ietf:params:xml:ns:xmpp-session")));
 		}
-		else OnLoggedIn( info );
+		else OnLoggedIn();
 	}
    else if ( n = xmlGetChild( n , "error" )) {
 		//rfc3920 page 39
-		info->send( "</stream:stream>" );
+		m_ThreadInfo->send( "</stream:stream>" );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
-void CJabberProto::OnIqResultSession( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSession( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* )userdata;
-
 	const TCHAR* type;
 	if (( type=xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
 
 	if ( !lstrcmp( type, _T("result")))
-		OnLoggedIn( info );
+		OnLoggedIn();
 }
 
 void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
@@ -354,7 +349,7 @@ void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberIqResultGetRoster - populates LIST_ROSTER and creates contact for any new rosters
 
-void CJabberProto::OnIqResultGetRoster( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	Log( "<iq/> iqIdGetRoster" );
 	TCHAR *szGroupDelimeter = (TCHAR *)pInfo->GetUserData();
@@ -559,17 +554,16 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, void* userdata, CJabberIqIn
 	if ( szGroupDelimeter )
 		mir_free( szGroupDelimeter );
 
-	OnProcessLoginRq((ThreadData *)userdata, JABBER_LOGIN_ROSTER);
+	OnProcessLoginRq(m_ThreadInfo, JABBER_LOGIN_ROSTER);
 	RebuildInfoFrame();
 }
 
-void CJabberProto::OnIqResultGetRegister( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetRegister( HXML iqNode )
 {
 	// RECVED: result of the request for ( agent ) registration mechanism
 	// ACTION: activate ( agent ) registration input dialog
 	Log( "<iq/> iqIdGetRegister" );
 
-	ThreadData* info = ( ThreadData* ) userdata;
 	HXML queryNode;
 	const TCHAR *type;
 	if (( type = xmlGetAttrValue( iqNode, _T("type"))) == NULL ) return;
@@ -587,7 +581,7 @@ void CJabberProto::OnIqResultGetRegister( HXML iqNode, void *userdata )
 			mir_free( str );
 }	}	}
 
-void CJabberProto::OnIqResultSetRegister( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetRegister( HXML iqNode )
 {
 	// RECVED: result of registration process
 	// ACTION: notify of successful agent registration
@@ -724,7 +718,7 @@ static char* sttGetText( HXML node, char* tag )
 	return mir_t2a( xmlGetText( n ) );
 }
 
-void CJabberProto::OnIqResultGetVcard( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 {
 	HXML vCardNode, m, n, o;
 	const TCHAR* type, *jid;
@@ -1199,7 +1193,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode, void *userdata )
 	}
 }
 
-void CJabberProto::OnIqResultSetVcard( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetVcard( HXML iqNode )
 {
 	Log( "<iq/> iqIdSetVcard" );
 	if ( !xmlGetAttrValue( iqNode, _T("type") ))
@@ -1208,7 +1202,7 @@ void CJabberProto::OnIqResultSetVcard( HXML iqNode, void *userdata )
 	WindowNotify(WM_JABBER_REFRESH_VCARD);
 }
 
-void CJabberProto::OnIqResultSetSearch( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetSearch( HXML iqNode )
 {
 	HXML queryNode, n;
 	const TCHAR* type, *jid;
@@ -1261,7 +1255,7 @@ void CJabberProto::OnIqResultSetSearch( HXML iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::OnIqResultExtSearch( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultExtSearch( HXML iqNode )
 {
 	HXML queryNode;
 	const TCHAR* type;
@@ -1335,7 +1329,7 @@ void CJabberProto::OnIqResultExtSearch( HXML iqNode, void *userdata )
 		JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-void CJabberProto::OnIqResultSetPassword( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetPassword( HXML iqNode )
 {
 	Log( "<iq/> iqIdSetPassword" );
 
@@ -1357,9 +1351,8 @@ void CJabberProto::OnIqResultDiscoAgentItems( HXML iqNode, void *userdata )
 		return;
 }
 */
-void CJabberProto::OnIqResultGetVCardAvatar( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetVCardAvatar( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
 
 	Log( "<iq/> OnIqResultGetVCardAvatar" );
@@ -1402,9 +1395,8 @@ void CJabberProto::OnIqResultGetVCardAvatar( HXML iqNode, void *userdata )
 	OnIqResultGotAvatar( hContact, n, mimeType);
 }
 
-void CJabberProto::OnIqResultGetClientAvatar( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetClientAvatar( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
 
 	Log( "<iq/> iqIdResultGetClientAvatar" );
@@ -1451,9 +1443,8 @@ void CJabberProto::OnIqResultGetClientAvatar( HXML iqNode, void *userdata )
 }
 
 
-void CJabberProto::OnIqResultGetServerAvatar( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetServerAvatar( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	const TCHAR* type;
 
 	Log( "<iq/> iqIdResultGetServerAvatar" );
@@ -1559,9 +1550,8 @@ LBL_ErrFormat:
 /////////////////////////////////////////////////////////////////////////////////////////
 // Bookmarks
 
-void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode )
 {
-	ThreadData* info = ( ThreadData* ) userdata;
 	HXML storageNode;//, nickNode, passNode;
 	const TCHAR* type, *jid, *name;
 
@@ -1604,13 +1594,13 @@ void CJabberProto::OnIqResultDiscoBookmarks( HXML iqNode, void *userdata )
 			}
 
 			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_REFRESH);
-			info->bBookmarksLoaded = TRUE;
-			OnProcessLoginRq(info, JABBER_LOGIN_BOOKMARKS);
+			m_ThreadInfo->bBookmarksLoaded = TRUE;
+			OnProcessLoginRq(m_ThreadInfo, JABBER_LOGIN_BOOKMARKS);
 		}
 	}
 	else if ( !lstrcmp( type, _T("error"))) {
-		if ( info->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
-			info->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
+		if ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE ) {
+			m_ThreadInfo->jabberServerCaps &= ~JABBER_CAPS_PRIVATE_STORAGE;
 			EnableMenuItems( TRUE );
 			UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_ACTIVATE);
 			return;
@@ -1648,7 +1638,7 @@ void CJabberProto::SetBookmarkRequest (XmlNodeIq& iq)
 	}
 }
 
-void CJabberProto::OnIqResultSetBookmarks( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultSetBookmarks( HXML iqNode )
 {
 	// RECVED: server's response
 	// ACTION: refresh bookmarks list dialog
@@ -1671,7 +1661,7 @@ void CJabberProto::OnIqResultSetBookmarks( HXML iqNode, void *userdata )
 }	}
 
 // last activity (XEP-0012) support
-void CJabberProto::OnIqResultLastActivity( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultLastActivity( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->m_szFrom );
 	if ( !r )
@@ -1697,7 +1687,7 @@ void CJabberProto::OnIqResultLastActivity( HXML iqNode, void *userdata, CJabberI
 }
 
 // entity time (XEP-0202) support
-void CJabberProto::OnIqResultEntityTime( HXML pIqNode, void* pUserdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultEntityTime( HXML pIqNode, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->m_hContact )
 		return;

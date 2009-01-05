@@ -36,7 +36,7 @@ Last change by : $Author$
 void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 {
 	if ( jibb )  {
-		filetransfer* pft = (filetransfer *)jibb->userdata;
+		filetransfer* pft = jibb->ft;
 		if ( pft )
 			pft->jibb = NULL;
 
@@ -47,7 +47,7 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-void CJabberProto::OnFtHandleIbbIq( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtHandleIbbIq( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	if ( !_tcscmp( pInfo->GetChildNodeName(), _T("open")))
 		FtHandleIbbRequest( iqNode, TRUE );
@@ -70,7 +70,7 @@ void CJabberProto::OnFtHandleIbbIq( HXML iqNode, void *userdata, CJabberIqInfo* 
 	}
 }
 
-void CJabberProto::OnIbbInitiateResult( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbInitiateResult( HXML, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -79,7 +79,7 @@ void CJabberProto::OnIbbInitiateResult( HXML iqNode, void *userdata, CJabberIqIn
 		SetEvent( jibb->hEvent );
 }
 
-void CJabberProto::OnIbbCloseResult( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIbbCloseResult( HXML, CJabberIqInfo* pInfo )
 {
 	JABBER_IBB_TRANSFER *jibb = ( JABBER_IBB_TRANSFER * )pInfo->GetUserData();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT )
@@ -109,7 +109,7 @@ void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 
 		jibb->wPacketId = 0;
 
-		BOOL bSent = (this->*jibb->pfnSend)( JABBER_IBB_BLOCK_SIZE, jibb->userdata );
+		BOOL bSent = (this->*jibb->pfnSend)( JABBER_IBB_BLOCK_SIZE, jibb->ft );
 
 		if ( !jibb->bStreamClosed )
 		{
@@ -131,8 +131,8 @@ void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 		}
 	}
 
-	(this->*jibb->pfnFinal)(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->userdata );
-	jibb->userdata = NULL;
+	(this->*jibb->pfnFinal)(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->ft );
+	jibb->ft = NULL;
 	JabberIbbFreeJibb( jibb );
 }
 
@@ -140,7 +140,7 @@ void __cdecl CJabberProto::IbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 {
 	Log( "Thread started: type=ibb_recv" );
 
-	filetransfer *ft = (filetransfer *)jibb->userdata;
+	filetransfer *ft = jibb->ft;
 
 	jibb->hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
 	jibb->bStreamClosed = FALSE;
@@ -159,8 +159,8 @@ void __cdecl CJabberProto::IbbReceiveThread( JABBER_IBB_TRANSFER *jibb )
 	if ( jibb->bStreamClosed && jibb->dwTransferredSize == ft->dwExpectedRecvFileSize )
 		jibb->state = JIBB_DONE;
 
-	(this->*jibb->pfnFinal)(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->userdata );
-	jibb->userdata = NULL;
+	(this->*jibb->pfnFinal)(( jibb->state==JIBB_DONE )?TRUE:FALSE, jibb->ft );
+	jibb->ft = NULL;
 
 	ListRemove( LIST_FTRECV, jibb->sid );
 

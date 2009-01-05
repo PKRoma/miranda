@@ -161,7 +161,7 @@ int __cdecl CJabberProto::JabberGetName( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetStatus - returns the protocol status
 
-int __cdecl CJabberProto::JabberGetStatus( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::JabberGetStatus( WPARAM, LPARAM )
 {
 	return m_iStatus;
 }
@@ -169,7 +169,7 @@ int __cdecl CJabberProto::JabberGetStatus( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetEventTextChatStates - retrieves a chat state description from an event
 
-int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
@@ -190,7 +190,7 @@ int __cdecl CJabberProto::OnGetEventTextChatStates( WPARAM wParam, LPARAM lParam
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnGetEventTextPresence - retrieves presence state description from an event
 
-int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 {
 	DBEVENTGETTEXT *pdbEvent = ( DBEVENTGETTEXT * )lParam;
 
@@ -256,7 +256,7 @@ int __cdecl CJabberProto::OnGetEventTextPresence( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetAvatar - sets an avatar without UI
 
-int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 {
 	char* szFileName = ( char* )lParam;
 
@@ -321,7 +321,7 @@ int __cdecl CJabberProto::JabberSetAvatar( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // "/SendXML" - Allows external plugins to send XML to the server
 
-int __cdecl CJabberProto::ServiceSendXML( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::ServiceSendXML( WPARAM, LPARAM lParam )
 {
 	return m_ThreadInfo->send( (char*)lParam);
 }
@@ -392,19 +392,19 @@ int __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam )
 		_tcsncat( outBuf, info->statusMessage, SIZEOF(outBuf) );
 	}
 
-	// Role
-	if ( TRUE || info->role ) {
+	// Role???
+	//if ( TRUE || info->role ) {
 		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
 		_tcsncat( outBuf, TranslateT("Role:\t\t"), SIZEOF(outBuf) );
 		_tcsncat( outBuf, TranslateTS( JabberEnum2RoleStr[info->role] ), SIZEOF(outBuf) );
-	}
+	//}
 
 	// Affiliation
-	if ( TRUE || info->affiliation ) {
+	//if ( TRUE || info->affiliation ) {
 		_tcsncat( outBuf, szSeparator, SIZEOF(outBuf) );
 		_tcsncat( outBuf, TranslateT("Affiliation:\t"), SIZEOF(outBuf) );
 		_tcsncat( outBuf, TranslateTS( JabberEnum2AffilationStr[info->affiliation] ), SIZEOF(outBuf) );
-	}
+	//}
 
 	// real jid
 	if ( info->szRealJid ) {
@@ -539,7 +539,7 @@ int __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM lPara
 }
 
 // XEP-0224 support (Attention/Nudge)
-int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
 {
 	if ( !m_bJabberOnline )
 		return 0;
@@ -642,12 +642,12 @@ public:
 		return bRetVal;
 	}
 
-	void btnAuth_OnClick(CCtrlButton *btn)
+	void btnAuth_OnClick(CCtrlButton*)
 	{
 		SendReply( TRUE );
 		Close();
 	}
-	void btnDeny_OnClick(CCtrlButton *btn)
+	void btnDeny_OnClick(CCtrlButton*)
 	{
 		SendReply( FALSE );
 		Close();
@@ -657,7 +657,7 @@ public:
 		UI_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic);
 	UI_MESSAGE_MAP_END();
 
-	BOOL OnCtlColorStatic(UINT msg, WPARAM wParam, LPARAM lParam)
+	BOOL OnCtlColorStatic(UINT, WPARAM, LPARAM)
 	{
 		return (BOOL)GetSysColorBrush(COLOR_WINDOW);
 	}

@@ -83,7 +83,7 @@ JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	NULL,                             0                                }
 };
 
-void CJabberProto::OnIqResultCapsDiscoInfo( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultCapsDiscoInfo( HXML, CJabberIqInfo* pInfo )
 {
 	JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( pInfo->GetFrom() );
 
@@ -240,7 +240,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwVersionRequestTime = pInfo->GetRequestTime();
 			
 			XmlNodeIq iq( pInfo );
-			HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
+			iq << XQUERY( _T(JABBER_FEAT_VERSION));
 			m_ThreadInfo->send( iq );
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
 		}
@@ -261,7 +261,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
+			iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			return JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -304,7 +304,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 			r->dwDiscoInfoRequestTime = pInfo->GetRequestTime();
 
 			XmlNodeIq iq( pInfo );
-			HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
+			iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
 			m_ThreadInfo->send( iq );
 
 			jcbMainCaps = JABBER_RESOURCE_CAPS_IN_PROGRESS;
@@ -536,7 +536,7 @@ BOOL CJabberClientCapsManager::SetClientCaps( int nIqId, JabberCapsBits jcbCaps 
 	return bOk;
 }
 
-BOOL CJabberClientCapsManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
+BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
 	JabberCapsBits jcb = 0;
 

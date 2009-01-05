@@ -95,7 +95,7 @@ static int sttCompareProtocols(const CJabberProto *p1, const CJabberProto *p2)
 LIST<CJabberProto> g_Instances(1, sttCompareProtocols);
 /////////////////////////////////////////////////////////////////////////////
 
-extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD dwReason, LPVOID lpvReserved )
+extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 {
 	#ifdef _DEBUG
 		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
@@ -123,7 +123,7 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 ///////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepares Miranda to be shut down
 
-int __cdecl CJabberProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 {
 	UI_SAFE_CLOSE_HWND(m_hwndAgentRegInput);
 	UI_SAFE_CLOSE_HWND(m_hwndRegProgress);
@@ -158,7 +158,7 @@ static int g_SvcParseXmppUri(WPARAM w, LPARAM l)
 	return 0;
 }
 
-static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+static int OnModulesLoaded( WPARAM, LPARAM )
 {
 	bSecureIM = (ServiceExists("SecureIM/IsContactSecured"));
 

@@ -169,7 +169,7 @@ static struct
 
 static void sttApplyNodeIcon(HTREELISTITEM hItem, CJabberSDNode *pNode);
 
-void CJabberProto::OnIqResultServiceDiscoveryInfo( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryInfo( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), TRUE );
@@ -216,7 +216,7 @@ void CJabberProto::OnIqResultServiceDiscoveryInfo( HXML iqNode, void* userdata, 
 	}
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryItems( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryItems( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	m_SDManager.Lock();
 	CJabberSDNode* pNode = m_SDManager.FindByIqId( pInfo->GetIqId(), FALSE );
@@ -260,7 +260,7 @@ void CJabberProto::OnIqResultServiceDiscoveryItems( HXML iqNode, void* userdata,
 	}
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryRootInfo( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootInfo( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData) return;
 	m_SDManager.Lock();
@@ -280,7 +280,7 @@ void CJabberProto::OnIqResultServiceDiscoveryRootInfo( HXML iqNode, void* userda
 	UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_REFRESH);
 }
 
-void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnIqResultServiceDiscoveryRootItems( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	if (!pInfo->m_pUserData)
 		return;
@@ -1507,25 +1507,25 @@ void CJabberProto::LaunchServiceDiscovery(TCHAR *jid)
 	}
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscovery( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscovery( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(NULL);
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryMyTransports( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryMyTransports( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_MYAGENTS));
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryTransports( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryTransports( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_AGENTS));
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryConferences( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleServiceDiscoveryConferences( WPARAM, LPARAM )
 {
 	LaunchServiceDiscovery(_T(SD_FAKEJID_CONFERENCES));
 	return 0;

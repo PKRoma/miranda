@@ -44,7 +44,7 @@ class CJabberDlgPepBase: public CJabberDlgBase
 {
 	typedef CJabberDlgBase CSuper;
 public:
-	CJabberDlgPepBase(CJabberProto *proto, CPepService *pepService, int id);
+	CJabberDlgPepBase(CJabberProto *proto, int id);
 
 protected:
 	CPepService *m_pepService;
@@ -62,7 +62,7 @@ private:
 	int m_time;
 };
 
-CJabberDlgPepBase::CJabberDlgPepBase(CJabberProto *proto, CPepService *pepService, int id):
+CJabberDlgPepBase::CJabberDlgPepBase(CJabberProto *proto, int id):
 	CJabberDlgBase(proto, id, NULL),
 	m_btnOk(this, IDOK),
 	m_btnCancel(this, IDCANCEL)
@@ -128,7 +128,7 @@ class CJabberDlgPepSimple: public CJabberDlgPepBase
 {
 	typedef CJabberDlgPepBase CSuper;
 public:
-	CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService, TCHAR *title);
+	CJabberDlgPepSimple(CJabberProto *proto, TCHAR *title);
 	~CJabberDlgPepSimple();
 
 	bool OkClicked() { return m_bOkClicked; }
@@ -182,8 +182,8 @@ private:
 	void cbModes_OnChange(CCtrlData *);
 };
 
-CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, CPepService *pepService, TCHAR *title):
-	CJabberDlgPepBase(proto, pepService, IDD_PEP_SIMPLE),
+CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, TCHAR *title):
+	CJabberDlgPepBase(proto, IDD_PEP_SIMPLE),
 	m_cbModes(this, IDC_CB_MODES),
 	m_txtDescription(this, IDC_TXT_DESCRIPTION),
 	m_modes(10),
@@ -261,7 +261,7 @@ int CJabberDlgPepSimple::Resizer(UTILRESIZECONTROL *urc)
 	return CSuper::Resizer(urc);
 }
 
-void CJabberDlgPepSimple::btnOk_OnClick(CCtrlButton *btn)
+void CJabberDlgPepSimple::btnOk_OnClick(CCtrlButton*)
 {
 	m_text = m_txtDescription.GetText();
 	m_selected = m_cbModes.GetCurSel();
@@ -312,7 +312,7 @@ void CJabberDlgPepSimple::cbModes_OnChange(CCtrlData *)
 	}
 }
 
-BOOL CJabberDlgPepSimple::OnWmMeasureItem(UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CJabberDlgPepSimple::OnWmMeasureItem(UINT, WPARAM, LPARAM lParam)
 {
 	LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
 	if (lpmis->CtlID != IDC_CB_MODES)
@@ -329,7 +329,7 @@ BOOL CJabberDlgPepSimple::OnWmMeasureItem(UINT msg, WPARAM wParam, LPARAM lParam
 	return TRUE;
 }
 
-BOOL CJabberDlgPepSimple::OnWmDrawItem(UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CJabberDlgPepSimple::OnWmDrawItem(UINT, WPARAM, LPARAM lParam)
 {
 	LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
 	if (lpdis->CtlID != IDC_CB_MODES)
@@ -381,7 +381,7 @@ BOOL CJabberDlgPepSimple::OnWmDrawItem(UINT msg, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-BOOL CJabberDlgPepSimple::OnWmGetMinMaxInfo(UINT msg, WPARAM wParam, LPARAM lParam)
+BOOL CJabberDlgPepSimple::OnWmGetMinMaxInfo(UINT, WPARAM, LPARAM lParam)
 {
 	LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
 	lpmmi->ptMinTrackSize.x = 200;
@@ -728,7 +728,7 @@ void CPepMood::SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText
 
 void CPepMood::ShowSetDialog()
 {
-	CJabberDlgPepSimple dlg(m_proto, this, TranslateT("Set Mood"));
+	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Mood"));
 	for (int i = 1; i < SIZEOF(g_arrMoods); ++i)
 		dlg.AddStatusMode(i, g_arrMoods[i].szTag, m_icons.GetIcon(g_arrMoods[i].szTag), TranslateTS(g_arrMoods[i].szName));
 	dlg.SetActiveStatus(m_mode, m_text);
@@ -1104,7 +1104,7 @@ void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecon
 
 void CPepActivity::ShowSetDialog()
 {
-	CJabberDlgPepSimple dlg(m_proto, this, TranslateT("Set Activity"));
+	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Activity"));
 	for (int i = 0; i < SIZEOF(g_arrActivities); ++i)
 		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)
 			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(ActivityGetFirst(i)), TranslateTS(g_arrActivities[i].szTitle), g_arrActivities[i].szSecond ? true : false);
@@ -1139,7 +1139,7 @@ HICON CJabberProto::GetXStatusIcon(int bStatus, UINT flags)
 	return ( flags & LR_SHARED ) ? icon : CopyIcon( icon );
 }
 
-int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM lParam )
+int CJabberProto::CListMW_ExtraIconsApply( WPARAM wParam, LPARAM )
 {
 	if (m_bJabberOnline && m_bPepSupported && ServiceExists(MS_CLIST_EXTRA_SET_ICON))
 	{
@@ -1219,7 +1219,7 @@ BOOL CJabberProto::SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSourc
 	return TRUE;
 }
 
-void CJabberProto::SetContactTune( HANDLE hContact, LPCTSTR szArtist, LPCTSTR szLength, LPCTSTR szSource, LPCTSTR szTitle, LPCTSTR szTrack, LPCTSTR szUri )
+void CJabberProto::SetContactTune( HANDLE hContact, LPCTSTR szArtist, LPCTSTR szLength, LPCTSTR szSource, LPCTSTR szTitle, LPCTSTR szTrack )
 {
 	if ( !szArtist && !szTitle ) {
 		JDeleteSetting( hContact, "ListeningTo" );
@@ -1280,7 +1280,7 @@ void overrideStr( TCHAR*& dest, const TCHAR* src, BOOL unicode, const TCHAR* def
 		dest = mir_tstrdup( def );
 }
 
-int __cdecl CJabberProto::OnSetListeningTo( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnSetListeningTo( WPARAM, LPARAM lParam )
 {
 	LISTENINGTOINFO *cm = (LISTENINGTOINFO *)lParam;
 	if ( !cm || cm->cbSize != sizeof(LISTENINGTOINFO) ) {
@@ -1321,7 +1321,7 @@ int __cdecl CJabberProto::OnSetListeningTo( WPARAM wParam, LPARAM lParam )
 		}
 
 		SendPepTune( szArtist, szLength ? szLengthInSec : NULL, szSource, szTitle, szTrack, NULL );
-		SetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack, NULL );
+		SetContactTune( NULL, szArtist, szLength, szSource, szTitle, szTrack );
 
 		mir_free( szArtist );
 		mir_free( szLength );
@@ -1335,12 +1335,12 @@ int __cdecl CJabberProto::OnSetListeningTo( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // process InfoFrame clicks
 
-void CJabberProto::InfoFrame_OnUserMood(CJabberInfoFrame_Event *evt)
+void CJabberProto::InfoFrame_OnUserMood(CJabberInfoFrame_Event*)
 {
 	m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD))->LaunchSetGui();
 }
 
-void CJabberProto::InfoFrame_OnUserActivity(CJabberInfoFrame_Event *evt)
+void CJabberProto::InfoFrame_OnUserActivity(CJabberInfoFrame_Event*)
 {
 	m_pepServices.Find(_T(JABBER_FEAT_USER_ACTIVITY))->LaunchSetGui();
 }
@@ -1369,7 +1369,7 @@ void CJabberProto::XStatusUninit()
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetXStatus - sets the extended status info (mood)
 
-int __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM )
 {
 	if ( !m_bPepSupported || !m_bJabberOnline)
 		return 0;
@@ -1540,7 +1540,6 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 		frame.cbSize = sizeof(frame);
 		HWND hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 		frame.hWnd = CreateWindowEx(0, _T("JabberInfoFrameClass"), NULL, WS_CHILD|WS_VISIBLE, 0, 0, 100, 100, hwndClist, NULL, hInst, this);
-		int e = GetLastError();
 		frame.hIcon = NULL;
 		frame.align = alBottom;
 		frame.height = 2 * SZ_FRAMEPADDING + GetSystemMetrics(SM_CYSMICON) + SZ_LINEPADDING; // compact height by default

@@ -210,7 +210,6 @@ JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const 
 	}
 
 	JABBER_LIST_ITEM* LI = m_lstRoster[i-1];
-	int bIsNewResource = false, j;
 
 	const TCHAR* p = _tcschr( jid, '@' );
 	const TCHAR* q = _tcschr(( p == NULL ) ? jid : p, '/' );
@@ -218,7 +217,7 @@ JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const 
 	{
 		const TCHAR *resource = q+1;
 		if (*resource)
-			for ( j=0; j < LI->resourceCount; j++ )
+			for ( int j=0; j < LI->resourceCount; j++ )
 				if ( !_tcscmp( LI->resource[j].resourceName, resource ))
 				{
 					result = LI->resource + j;

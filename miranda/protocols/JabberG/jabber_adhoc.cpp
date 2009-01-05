@@ -61,7 +61,7 @@ HWND CJabberProto::GetWindowFromIq( HXML iqNode )
 
 }
 // Callback to clear form content
-static BOOL CALLBACK sttDeleteChildWindowsProc( HWND hwnd, LPARAM lParam )
+static BOOL CALLBACK sttDeleteChildWindowsProc( HWND hwnd, LPARAM )
 {
 	DestroyWindow( hwnd );
 	return TRUE;
@@ -106,12 +106,12 @@ static void JabberAdHoc_RefreshFrameScroll(HWND hwndDlg, JabberAdHocData * dat)
 // Iq handlers
 // Forwards to dialog window procedure
 
-void CJabberProto::OnIqResult_ListOfCommands( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResult_ListOfCommands( HXML iqNode )
 {
 	SendMessage( GetWindowFromIq( iqNode ), JAHM_COMMANDLISTRESULT, 0, (LPARAM)xi.copyNode( iqNode ));
 }
 
-void CJabberProto::OnIqResult_CommandExecution( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResult_CommandExecution( HXML iqNode )
 {
 	SendMessage( GetWindowFromIq( iqNode ), JAHM_PROCESSRESULT, (WPARAM)xi.copyNode( iqNode ), 0 );
 }
@@ -125,7 +125,7 @@ int CJabberProto::AdHoc_RequestListOfCommands( TCHAR * szResponder, HWND hwndDlg
 	return iqId;
 }
 
-int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR * jid, JabberAdHocData* dat )
+int CJabberProto::AdHoc_ExecuteCommand( HWND hwndDlg, TCHAR*, JabberAdHocData* dat )
 {
 	for ( int i = 1; ; i++ ) {
 		HXML itemNode = xmlGetNthChild( dat->CommandsNode, _T("item"), i );
@@ -234,12 +234,9 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 		if (( commandNode = xmlGetChild( dat->AdHocNode, _T("command"))) == NULL )
 			return TRUE;
 
-		int id = 0;
-		int ypos = 14;
 		if (( xNode = xmlGetChild( commandNode , "x" ))) {
 			// use jabber:x:data form
 			HWND hFrame = GetDlgItem( hwndDlg, IDC_FRAME );
-			HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
 			ShowWindow( GetDlgItem( hwndDlg, IDC_FRAME_TEXT ), SW_HIDE );
 			if (( n = xmlGetChild( xNode , "instructions" )) != NULL && xmlGetText( n )!=NULL )
 				JabberFormSetInstruction( hwndDlg, xmlGetText( n ) );
@@ -250,8 +247,6 @@ int CJabberProto::AdHoc_OnJAHMProcessResult(HWND hwndDlg, HXML workNode, JabberA
 		} 
 		else {
 			//NO X FORM
-			HWND hFrame = GetDlgItem( hwndDlg, IDC_FRAME );
-
 			int toHide[]={ IDC_FRAME_TEXT, IDC_FRAME, IDC_VSCROLL,   0}; 
 			sttShowControls(hwndDlg, FALSE, toHide );
 

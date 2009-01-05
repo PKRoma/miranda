@@ -60,7 +60,7 @@ static void sttEnableMenuItem( HANDLE hMenuItem, BOOL bEnable )
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuItem, ( LPARAM )&clmi );
 }
 
-int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 {
 	sttEnableMenuItem( m_hMenuRequestAuth, FALSE );
 	sttEnableMenuItem( m_hMenuGrantAuth, FALSE );
@@ -217,7 +217,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 {
 	BuildPrivacyMenu();
 	BuildPriorityMenu();
@@ -225,7 +225,7 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuConvertChatContact( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuConvertChatContact( WPARAM wParam, LPARAM )
 {
 	BYTE bIsChatRoom = (BYTE)JGetByte( (HANDLE ) wParam, "ChatRoom", 0 );
 	if ((bIsChatRoom == GCW_CHATROOM) || bIsChatRoom == 0 ) {
@@ -239,7 +239,7 @@ int __cdecl CJabberProto::OnMenuConvertChatContact( WPARAM wParam, LPARAM lParam
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM )
 {
 	DBVARIANT dbv;
 	if ( !wParam ) return 0; // we do not add ourself to the roster. (buggy situation - should not happen)
@@ -284,7 +284,7 @@ int __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleRequestAuth( WPARAM wParam, LPARAM )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
@@ -298,7 +298,7 @@ int __cdecl CJabberProto::OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam 
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleGrantAuth( WPARAM wParam, LPARAM )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
@@ -312,7 +312,7 @@ int __cdecl CJabberProto::OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuRevokeAuth( WPARAM wParam, LPARAM )
 {
 	HANDLE hContact;
 	DBVARIANT dbv;
@@ -326,7 +326,7 @@ int __cdecl CJabberProto::OnMenuRevokeAuth( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuTransportLogin( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuTransportLogin( WPARAM wParam, LPARAM )
 {
 	HANDLE hContact = ( HANDLE )wParam;
 	if ( !JGetByte( hContact, "IsTransport", 0 ))
@@ -348,7 +348,7 @@ int __cdecl CJabberProto::OnMenuTransportLogin( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuTransportResolve( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuTransportResolve( WPARAM wParam, LPARAM )
 {
 	HANDLE hContact = ( HANDLE )wParam;
 	if ( !JGetByte( hContact, "IsTransport", 0 ))
@@ -362,7 +362,7 @@ int __cdecl CJabberProto::OnMenuTransportResolve( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuBookmarkAdd( WPARAM wParam, LPARAM )
 {
 	DBVARIANT dbv;
 	if ( !wParam ) return 0; // we do not add ourself to the roster. (buggy situation - should not happen)
@@ -788,7 +788,7 @@ void CJabberProto::MenuUpdateSrmmIcon(JABBER_LIST_ITEM *item)
 	CallService(MS_MSG_MODIFYICON, (WPARAM)hContact, (LPARAM)&sid);
 }
 
-int CJabberProto::OnProcessSrmmEvent( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnProcessSrmmEvent( WPARAM, LPARAM lParam )
 {
 	MessageWindowEventData *event = (MessageWindowEventData *)lParam;
 
@@ -893,7 +893,7 @@ int CJabberProto::OnProcessSrmmIconClick( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPARAM res)
+int __cdecl CJabberProto::OnMenuHandleResource(WPARAM wParam, LPARAM, LPARAM res)
 {
 	if ( !m_bJabberOnline || !wParam )
 		return 0;
@@ -930,7 +930,8 @@ int __cdecl CJabberProto::OnMenuHandleResource(WPARAM wParam, LPARAM lParam, LPA
 
 //////////////////////////////////////////////////////////////////////////
 // priority menu
-int CJabberProto::OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta)
+
+int CJabberProto::OnMenuSetPriority(WPARAM, LPARAM, LPARAM dwDelta)
 {
 	int iDelta = (int)dwDelta;
 	short priority = 0;

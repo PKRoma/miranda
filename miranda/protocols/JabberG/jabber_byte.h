@@ -32,6 +32,7 @@ Last change by : $Author$
 typedef enum { JBT_INIT, JBT_AUTH, JBT_CONNECT, JBT_SOCKSERR, JBT_SENDING, JBT_RECVING, JBT_DONE, JBT_ERROR } JABBER_BYTE_STATE;
 
 struct CJabberProto;
+struct filetransfer;
 
 struct JABBER_BYTE_TRANSFER
 {
@@ -46,10 +47,10 @@ struct JABBER_BYTE_TRANSFER
 	HANDLE hConn;
 	HANDLE hEvent;
 	HXML   iqNode;
-	BOOL ( CJabberProto::*pfnSend )( HANDLE hConn, void *userdata );
-	int ( CJabberProto::*pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
-	void ( CJabberProto::*pfnFinal )( BOOL success, void *userdata );
-	void *userdata;
+	BOOL ( CJabberProto::*pfnSend )( HANDLE hConn, filetransfer* ft );
+	int ( CJabberProto::*pfnRecv )( HANDLE hConn, filetransfer* ft, char* buffer, int datalen );
+	void ( CJabberProto::*pfnFinal )( BOOL success, filetransfer* ft );
+	filetransfer* ft;
 
 	// XEP-0065 proxy support
 	BOOL bProxyDiscovered;

@@ -336,7 +336,7 @@ void TreeList_Update(HWND hwnd)
 	UpdateWindow(hwnd);
 }
 
-BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam, UINT idc, BOOL *result)
+BOOL TreeList_ProcessMessage(HWND hwnd, UINT msg, WPARAM, LPARAM lparam, UINT idc, BOOL* )
 {
 	LVITEM lvi = {0};
 
@@ -574,7 +574,7 @@ static void sttTreeList_CreateItems_List(HTREELISTITEM hItem, LPARAM data)
 			ListView_SetItemText((HWND)data, idx, i, hItem->text[i]);
 }	}
 
-static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+static int CALLBACK sttTreeList_SortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM )
 {
 	HTREELISTITEM p1 = ( HTREELISTITEM )lParam1, p2 = ( HTREELISTITEM )lParam2; 
 	if ( p1->sortIndex < p2->sortIndex )

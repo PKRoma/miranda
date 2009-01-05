@@ -407,7 +407,7 @@ BOOL CJabberDlgBookmarks::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CSuper::DlgProc(msg, wParam, lParam);
 }
 
-void CJabberDlgBookmarks::OnProtoCheckOnline(WPARAM wParam, LPARAM lParam)
+void CJabberDlgBookmarks::OnProtoCheckOnline(WPARAM, LPARAM)
 {
 	if (!m_proto->m_bJabberOnline)
 	{
@@ -421,7 +421,7 @@ void CJabberDlgBookmarks::OnProtoCheckOnline(WPARAM wParam, LPARAM lParam)
 
 }
 
-void CJabberDlgBookmarks::OnProtoRefresh(WPARAM wParam, LPARAM lParam)
+void CJabberDlgBookmarks::OnProtoRefresh(WPARAM, LPARAM)
 {
 	m_lvBookmarks.DeleteAllItems();
 
@@ -467,7 +467,7 @@ int CJabberDlgBookmarks::Resizer(UTILRESIZECONTROL *urc)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Launches the Bookmarks manager window
 
-int __cdecl CJabberProto::OnMenuHandleBookmarks( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleBookmarks( WPARAM, LPARAM)
 {
 	UI_SAFE_OPEN_EX(CJabberDlgBookmarks, m_pDlgBookmarks, pDlg);
 	pDlg->UpdateData();

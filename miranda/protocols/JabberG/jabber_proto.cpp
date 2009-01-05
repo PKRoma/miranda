@@ -219,7 +219,7 @@ CJabberProto::~CJabberProto()
 
 static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
-int CJabberProto::OnModulesLoadedEx( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
 	JHookEvent( ME_USERINFO_INITIALISE, &CJabberProto::OnUserInfoInit );
 	XStatusInit();
@@ -365,7 +365,7 @@ HANDLE CJabberProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 	return AddToListByJID( jsr->jid, flags );
 }
 
-HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int iContact, HANDLE hDbEvent )
+HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int /*iContact*/, HANDLE hDbEvent )
 {
 	DBEVENTINFO dbei;
 	HANDLE hContact;
@@ -459,7 +459,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAuthDeny - handles the unsuccessful authorization
 
-int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
+int CJabberProto::AuthDeny( HANDLE hContact, const char* /*szReason*/ )
 {
 	DBEVENTINFO dbei;
 	char* nick, *firstName, *lastName, *jid;
@@ -503,7 +503,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* szReason )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AUTH
 
-int __cdecl CJabberProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
+int __cdecl CJabberProto::AuthRecv( HANDLE, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -511,7 +511,7 @@ int __cdecl CJabberProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CJabberProto::AuthRequest( HANDLE hContact, const char* szMessage )
+int __cdecl CJabberProto::AuthRequest( HANDLE, const char* )
 {	
 	return 1;
 }
@@ -519,7 +519,7 @@ int __cdecl CJabberProto::AuthRequest( HANDLE hContact, const char* szMessage )
 ////////////////////////////////////////////////////////////////////////////////////////
 // ChangeInfo 
 
-HANDLE __cdecl CJabberProto::ChangeInfo( int iInfoType, void* pInfoData )
+HANDLE __cdecl CJabberProto::ChangeInfo( int /*iInfoType*/, void* )
 {
 	return NULL;
 }
@@ -527,7 +527,7 @@ HANDLE __cdecl CJabberProto::ChangeInfo( int iInfoType, void* pInfoData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileAllow - starts a file transfer
 
-int __cdecl CJabberProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+int __cdecl CJabberProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, const char* szPath )
 {
 	if ( !m_bJabberOnline )
 		return 0;
@@ -555,7 +555,7 @@ int __cdecl CJabberProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const ch
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileCancel - cancels a file transfer
 
-int __cdecl CJabberProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
+int __cdecl CJabberProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
 {
 	filetransfer* ft = ( filetransfer* )hTransfer;
 	HANDLE hEvent;
@@ -583,7 +583,7 @@ int __cdecl CJabberProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberFileDeny - denies a file transfer
 
-int __cdecl CJabberProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason )
+int __cdecl CJabberProto::FileDeny( HANDLE /*hContact*/, HANDLE hTransfer, const char* )
 {
 	if ( !m_bJabberOnline )
 		return 1;
@@ -633,7 +633,7 @@ int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const char*
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CJabberProto::GetCaps( int type, HANDLE hContact )
+DWORD __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -666,7 +666,7 @@ HICON __cdecl CJabberProto::GetIcon( int iconIndex )
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetInfo - retrieves a contact info
 
-int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
+int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 {
 	if ( !m_bJabberOnline )
 		return 1;
@@ -734,13 +734,13 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int infoType )
 
 						if ( !item->resource[i].dwVersionRequestTime ) {
 							XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-							HXML query = iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
+							iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
 							m_ThreadInfo->send( iq4 );
 					}	}
 				}
 				else if ( !item->itemResource.dwVersionRequestTime ) {
 					XmlNodeIq iq4( m_iqManager.AddHandler( &CJabberProto::OnIqResultVersion, JABBER_IQ_TYPE_GET, item->jid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_HCONTACT | JABBER_IQ_PARSE_CHILD_TAG_NODE ));
-					HXML query = iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
+					iq4 << XQUERY( _T(JABBER_FEAT_VERSION));
 					m_ThreadInfo->send( iq4 );
 		}	}	}
 
@@ -885,7 +885,7 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvContacts
 
-int __cdecl CJabberProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* )
+int __cdecl CJabberProto::RecvContacts( HANDLE /*hContact*/, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -911,7 +911,7 @@ int __cdecl CJabberProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvUrl
 
-int __cdecl CJabberProto::RecvUrl( HANDLE hContact, PROTORECVEVENT* )
+int __cdecl CJabberProto::RecvUrl( HANDLE /*hContact*/, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -919,7 +919,7 @@ int __cdecl CJabberProto::RecvUrl( HANDLE hContact, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendContacts
 
-int __cdecl CJabberProto::SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList )
+int __cdecl CJabberProto::SendContacts( HANDLE /*hContact*/, int /*flags*/, int /*nContacts*/, HANDLE* /*hContactsList*/ )
 {
 	return 1;
 }
@@ -1136,7 +1136,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendUrl
 
-int __cdecl CJabberProto::SendUrl( HANDLE hContact, int flags, const char* url )
+int __cdecl CJabberProto::SendUrl( HANDLE /*hContact*/, int /*flags*/, const char* /*url*/ )
 {
 	return 1;
 }
@@ -1290,7 +1290,7 @@ int __cdecl CJabberProto::GetAwayMsg( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AWAYMSG
 
-int __cdecl CJabberProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
+int __cdecl CJabberProto::RecvAwayMsg( HANDLE /*hContact*/, int /*statusMode*/, PROTORECVEVENT* )
 {	
 	return 1;
 }
@@ -1298,7 +1298,7 @@ int __cdecl CJabberProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTOREC
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AWAYMSG
 
-int __cdecl CJabberProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg )
+int __cdecl CJabberProto::SendAwayMsg( HANDLE /*hContact*/, HANDLE /*hProcess*/, const char* )
 {	
 	return 1;
 }
@@ -1440,7 +1440,7 @@ void CJabberProto::WindowNotify(UINT msg, bool async)
 /////////////////////////////////////////////////////////////////////////////////////////
 // InfoFrame events
 
-void CJabberProto::InfoFrame_OnSetup(CJabberInfoFrame_Event *evt)
+void CJabberProto::InfoFrame_OnSetup(CJabberInfoFrame_Event*)
 {
 	OPENOPTIONSDIALOG ood = {0};
 	ood.cbSize = sizeof(ood);

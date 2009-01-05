@@ -31,7 +31,7 @@ Last change by : $Author$
 
 static BOOL CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam );
 
-int __cdecl CJabberProto::OnMenuHandleChangePassword( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleChangePassword( WPARAM, LPARAM )
 {
 	if ( IsWindow( m_hwndJabberChangePassword ))
 		SetForegroundWindow( m_hwndJabberChangePassword );

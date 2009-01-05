@@ -209,7 +209,7 @@ char* TJabberAuth::getInitialRequest()
 	return NULL;
 }
 
-char* TJabberAuth::getChallenge( const TCHAR* challenge )
+char* TJabberAuth::getChallenge( const TCHAR* )
 {
 	return NULL;
 }

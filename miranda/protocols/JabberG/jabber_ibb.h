@@ -41,10 +41,10 @@ typedef struct {
 	BOOL bStreamInitialized;
 	BOOL bStreamClosed;
 	WORD wPacketId;
-	BOOL ( CJabberProto::*pfnSend )( int blocksize, void *userdata );
-	int ( CJabberProto::*pfnRecv )( HANDLE hConn, void *userdata, char* buffer, int datalen );
-	void ( CJabberProto::*pfnFinal )( BOOL success, void *userdata );
-	void *userdata;
+	BOOL ( CJabberProto::*pfnSend )( int blocksize, filetransfer* ft );
+	int ( CJabberProto::*pfnRecv )( HANDLE hConn, filetransfer* ft, char* buffer, int datalen );
+	void ( CJabberProto::*pfnFinal )( BOOL success, filetransfer* ft );
+	filetransfer* ft;
 }
 	JABBER_IBB_TRANSFER;
 

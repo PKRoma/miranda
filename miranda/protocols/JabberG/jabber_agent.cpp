@@ -139,13 +139,11 @@ public:
 			if ( wParam == 1 ) { // success
 				// lParam = <iq/> node from agent JID as a result of "get jabber:iq:register"
 				HWND hFrame = GetDlgItem( m_hwnd, IDC_FRAME );
-				HFONT hFont = ( HFONT ) SendMessage( hFrame, WM_GETFONT, 0, 0 );
 				ShowWindow( GetDlgItem( m_hwnd, IDC_FRAME_TEXT ), SW_HIDE );
 
 				HXML queryNode, xNode;
 				if (( m_agentRegIqNode = ( HXML )lParam ) == NULL ) return TRUE;
 				if (( queryNode = xmlGetChild( m_agentRegIqNode , "query" )) == NULL ) return TRUE;
-				int id = 0, ypos = 14;
 
 				RECT rect;
 				
@@ -237,7 +235,6 @@ public:
 		if (( queryNode = xmlGetChild( m_agentRegIqNode ,  "query" )) == NULL ) return;
 		HWND hFrame = GetDlgItem( m_hwnd, IDC_FRAME );
 
-		TCHAR *str = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
 		TCHAR *str2 = ( TCHAR* )alloca( sizeof(TCHAR) * 128 );
 		int id = 0;
 
@@ -283,7 +280,7 @@ public:
 	}
 };
 
-void CJabberProto::RegisterAgent( HWND hwndDlg, TCHAR* jid )
+void CJabberProto::RegisterAgent( HWND /*hwndDlg*/, TCHAR* jid )
 {
 	( new CAgentRegDlg( this, jid ))->Show();
 }

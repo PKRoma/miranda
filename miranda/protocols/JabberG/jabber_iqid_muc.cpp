@@ -41,7 +41,7 @@ void CJabberProto::SetMucConfig( HXML node, void *from )
 
 void LaunchForm(HXML node);
 
-void CJabberProto::OnIqResultGetMuc( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetMuc( HXML iqNode )
 {
 	HXML queryNode, xNode;
 	const TCHAR *type, *from, *str;
@@ -145,7 +145,7 @@ static void sttFillJidList(HWND hwndDlg)
 	RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 }
 
-static int sttJidListResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+static int sttJidListResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId)
 	{
@@ -500,37 +500,37 @@ void CJabberProto::OnIqResultMucGetJidList( HXML iqNode, JABBER_MUC_JIDLIST_TYPE
 			else mir_free( jidListInfo );
 }	}	}
 
-void CJabberProto::OnIqResultMucGetVoiceList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetVoiceList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetVoiceList" );
 	OnIqResultMucGetJidList( iqNode, MUC_VOICELIST );
 }
 
-void CJabberProto::OnIqResultMucGetMemberList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetMemberList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetMemberList" );
 	OnIqResultMucGetJidList( iqNode, MUC_MEMBERLIST );
 }
 
-void CJabberProto::OnIqResultMucGetModeratorList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetModeratorList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetModeratorList" );
 	OnIqResultMucGetJidList( iqNode, MUC_MODERATORLIST );
 }
 
-void CJabberProto::OnIqResultMucGetBanList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetBanList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetBanList" );
 	OnIqResultMucGetJidList( iqNode, MUC_BANLIST );
 }
 
-void CJabberProto::OnIqResultMucGetAdminList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetAdminList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetAdminList" );
 	OnIqResultMucGetJidList( iqNode, MUC_ADMINLIST );
 }
 
-void CJabberProto::OnIqResultMucGetOwnerList( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultMucGetOwnerList( HXML iqNode )
 {
 	Log( "<iq/> iqResultMucGetOwnerList" );
 	OnIqResultMucGetJidList( iqNode, MUC_OWNERLIST );

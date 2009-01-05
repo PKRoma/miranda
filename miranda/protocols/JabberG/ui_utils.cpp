@@ -66,7 +66,7 @@ int CDlgBase::DoModal()
 	return DialogBoxParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this);
 }
 
-int CDlgBase::Resizer(UTILRESIZECONTROL *urc)
+int CDlgBase::Resizer(UTILRESIZECONTROL*)
 {
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
@@ -234,7 +234,7 @@ BOOL CALLBACK CDlgBase::GlobalDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return wnd->DlgProc(msg, wParam, lParam);
 }
 
-int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM lParam, UTILRESIZECONTROL *urc)
+int CDlgBase::GlobalDlgResizer(HWND hwnd, LPARAM, UTILRESIZECONTROL *urc)
 {
 	CDlgBase *wnd = (CDlgBase *)GetWindowLong(hwnd, GWL_USERDATA);
 	if (!wnd) return 0;
@@ -377,7 +377,7 @@ CCtrlListBox::CCtrlListBox( CDlgBase* dlg, int ctrlId ) :
 {
 }
 
-BOOL CCtrlListBox::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+BOOL CCtrlListBox::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
 {
 	switch (idCode)
 	{
@@ -587,7 +587,7 @@ CCtrlButton::CCtrlButton( CDlgBase* wnd, int idCtrl ) :
 {
 }
 
-BOOL CCtrlButton::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+BOOL CCtrlButton::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
 {
 	if ( idCode == BN_CLICKED || idCode == STN_CLICKED )
 		OnClick(this);
@@ -603,7 +603,7 @@ CCtrlHyperlink::CCtrlHyperlink( CDlgBase* wnd, int idCtrl, const char* url ) :
 {
 }
 
-BOOL CCtrlHyperlink::OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+BOOL CCtrlHyperlink::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD /*idCode*/)
 {
 	ShellExecuteA(m_hwnd, "open", m_url, "", "", SW_SHOW);
 	return FALSE;
@@ -616,7 +616,7 @@ CCtrlClc::CCtrlClc( CDlgBase* dlg, int ctrlId ):
 {
 }
 
-BOOL CCtrlClc::OnNotify(int idCtrl, NMHDR *pnmh)
+BOOL CCtrlClc::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, (NMCLISTCONTROL *)pnmh };
 	switch (pnmh->code)
@@ -829,7 +829,7 @@ CCtrlListView::CCtrlListView( CDlgBase* dlg, int ctrlId ) :
 {
 }
 
-BOOL CCtrlListView::OnNotify(int idCtrl, NMHDR *pnmh)
+BOOL CCtrlListView::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, pnmh };
 
@@ -1744,7 +1744,7 @@ CCtrlTreeView::CCtrlTreeView( CDlgBase* dlg, int ctrlId ):
 {
 }
 
-BOOL CCtrlTreeView::OnNotify(int idCtrl, NMHDR *pnmh)
+BOOL CCtrlTreeView::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, pnmh };
 
@@ -2191,7 +2191,7 @@ void CCtrlPages::ActivatePage( int iPage )
 	//ShowPage(iPage);
 }
 
-BOOL CCtrlPages::OnNotify( int idCtrl, NMHDR *pnmh )
+BOOL CCtrlPages::OnNotify( int /*idCtrl*/, NMHDR *pnmh )
 {
 	switch (pnmh->code)
 	{

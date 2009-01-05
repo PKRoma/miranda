@@ -73,7 +73,7 @@ BOOL CJabberProto::IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 	return bRetVal;
 }
 
-void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetChildNode() )
 		return;
@@ -87,10 +87,10 @@ void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, void* userdata, CJabb
 	if ( !szNode )
 		return;
 
-	m_adhocManager.HandleCommandRequest( iqNode, userdata, pInfo, ( TCHAR* )szNode );
+	m_adhocManager.HandleCommandRequest( iqNode, pInfo, ( TCHAR* )szNode );
 }
 
-BOOL CJabberAdhocManager::HandleItemsRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
+BOOL CJabberAdhocManager::HandleItemsRequest( HXML, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
 	if ( !szNode || !m_pProto->m_options.EnableRemoteControl || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
 		return FALSE;
@@ -120,7 +120,7 @@ BOOL CJabberAdhocManager::HandleItemsRequest( HXML iqNode, void* userdata, CJabb
 	return FALSE;
 }
 
-BOOL CJabberAdhocManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
+BOOL CJabberAdhocManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
 	if ( !szNode || !m_pProto->m_options.EnableRemoteControl || !m_pProto->IsRcRequestAllowedByACL( pInfo ))
 		return FALSE;
@@ -161,7 +161,7 @@ BOOL CJabberAdhocManager::HandleInfoRequest( HXML iqNode, void* userdata, CJabbe
 	return FALSE;
 }
 
-BOOL CJabberAdhocManager::HandleCommandRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo, const TCHAR* szNode )
+BOOL CJabberAdhocManager::HandleCommandRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode )
 {
 	// ATTN: ACL and db settings checked in calling function
 
@@ -212,7 +212,7 @@ BOOL CJabberAdhocManager::HandleCommandRequest( HXML iqNode, void* userdata, CJa
 
 	// session id and node exits here, call handler
 
-	int nResultCode = pNode->CallHandler( iqNode, userdata, pInfo, pSession );
+	int nResultCode = pNode->CallHandler( iqNode, pInfo, pSession );
 
 	if ( nResultCode == JABBER_ADHOC_HANDLER_STATUS_COMPLETED ) {
 		m_pProto->m_ThreadInfo->send(
@@ -277,7 +277,7 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 	return str;
 }
 
-int CJabberProto::AdhocSetStatusHandler( HXML iqNode, void* usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocSetStatusHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -429,7 +429,7 @@ int CJabberProto::AdhocSetStatusHandler( HXML iqNode, void* usedata, CJabberIqIn
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int CJabberProto::AdhocOptionsHandler( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocOptionsHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -537,7 +537,7 @@ int CJabberProto::RcGetUnreadEventsCount()
 	return nEventsSent;
 }
 
-int CJabberProto::AdhocForwardHandler( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocForwardHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	TCHAR szMsg[ 1024 ];
 	if ( pSession->GetStage() == 0 ) {
@@ -669,7 +669,7 @@ int CJabberProto::AdhocForwardHandler( HXML iqNode, void *usedata, CJabberIqInfo
 
 typedef BOOL (WINAPI *LWS )( VOID );
 
-int CJabberProto::AdhocLockWSHandler( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocLockWSHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	BOOL bOk = FALSE;
 	HMODULE hLibrary = LoadLibrary( _T("user32.dll") );
@@ -695,13 +695,13 @@ int CJabberProto::AdhocLockWSHandler( HXML iqNode, void *usedata, CJabberIqInfo*
 	return JABBER_ADHOC_HANDLER_STATUS_REMOVE_SESSION;
 }
 
-static void __cdecl JabberQuitMirandaIMThread( void* pParam )
+static void __cdecl JabberQuitMirandaIMThread( void* )
 {
 	SleepEx( 2000, TRUE );
 	JCallService( "CloseAction", 0, 0 );
 }
 
-int CJabberProto::AdhocQuitMirandaHandler( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocQuitMirandaHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	if ( pSession->GetStage() == 0 ) {
 		// first form
@@ -747,7 +747,7 @@ int CJabberProto::AdhocQuitMirandaHandler( HXML iqNode, void *usedata, CJabberIq
 	return JABBER_ADHOC_HANDLER_STATUS_CANCEL;
 }
 
-int CJabberProto::AdhocLeaveGroupchatsHandler( HXML iqNode, void *usedata, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
+int CJabberProto::AdhocLeaveGroupchatsHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocSession* pSession )
 {
 	int i = 0;
 	if ( pSession->GetStage() == 0 ) {

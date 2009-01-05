@@ -502,7 +502,7 @@ int CJabberProto::GetTransportStatusIconIndex(int iID, int Status)
 /////////////////////////////////////////////////////////////////////////////////////////
 // a hook for the IcoLib plugin
 
-int CJabberProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
+int CJabberProto::OnReloadIcons(WPARAM, LPARAM)
 {
 	for ( int i=0; i < SIZEOF(TransportProtoTable); i++ )
 		if ( TransportProtoTable[i].startIndex != -1 )
@@ -520,7 +520,7 @@ int CJabberProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 // if imagelist require advanced painting status overlay(like xStatus)
 // index should be shifted to HIWORD, LOWORD should be 0
 
-int __cdecl CJabberProto::JGetAdvancedStatusIcon(WPARAM wParam, LPARAM lParam)
+int __cdecl CJabberProto::JGetAdvancedStatusIcon(WPARAM wParam, LPARAM)
 {
 	HANDLE hContact=(HANDLE) wParam;
 	if ( !hContact )

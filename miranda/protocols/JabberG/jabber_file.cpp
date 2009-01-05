@@ -192,7 +192,7 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 	return num;
 }
 
-void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD dwRemoteIP, void* extra )
+void JabberFileServerConnection( JABBER_SOCKET hConnection, DWORD /*dwRemoteIP*/, void* extra )
 {
 	CJabberProto* ppro = ( CJabberProto* )extra;
 	WORD localPort = 0;

@@ -530,7 +530,6 @@ protected:
 		int index = m_cbLocale.GetCurSel();
 		if ( index >= 0 )
 		{
-			TCHAR *szDefaultLanguage = m_proto->GetXmlLang();
 			TCHAR *szLanguageCode = (TCHAR *)m_cbLocale.GetItemData(index);
 			if ( szLanguageCode )
 				m_proto->JSetStringT(NULL, "XmlLang", szLanguageCode);
@@ -553,7 +552,7 @@ protected:
 		}
 	}
 
-	void OnChange(CCtrlBase *ctrl)
+	void OnChange(CCtrlBase*)
 	{
 		if (m_initialized)
 			CheckRegistration();
@@ -621,7 +620,7 @@ private:
 		m_proto->OnMenuHandleChangePassword(0, 0);
 	}
 
-	void cbServer_OnDropdown(CCtrlCombo *sender)
+	void cbServer_OnDropdown(CCtrlCombo*)
 	{
 		if ( !m_gotservers )
 			mir_forkthread(QueryServerListThread, this);
@@ -658,7 +657,7 @@ private:
 		}
 	}
 
-	void chkUseSsl_OnChange(CCtrlData *sender)
+	void chkUseSsl_OnChange(CCtrlData*)
 	{
 		if (m_chkManualHost.GetState() != BST_CHECKED)
 		{
@@ -976,7 +975,7 @@ static void _RosterListClear(HWND hwndDlg)
 	column.cx=500;
 
 	column.pszText=_T("JID");
-	int ret=ListView_InsertColumn(hList, 1, &column);
+	ListView_InsertColumn(hList, 1, &column);
 
 	column.pszText=_T("Nick Name");
 	ListView_InsertColumn(hList, 2, &column);
@@ -997,8 +996,7 @@ static void _RosterListClear(HWND hwndDlg)
 	ListView_SetColumnWidth(hList,3,width*10/100);
 }
 
-
-void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
+void CJabberProto::_RosterHandleGetRequest( HXML node )
 {
 	HWND hList=GetDlgItem(rrud.hwndDlg, IDC_ROSTER);
 	if (rrud.bRRAction==RRA_FILLLIST)
@@ -1082,7 +1080,7 @@ void CJabberProto::_RosterHandleGetRequest( HXML node, void* userdata )
 			return;
 
 		int iqId = SerialNext();
-		IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
+		IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::_RosterHandleGetRequest );
 
 		XmlNode iq( _T("iq"));
 		xmlAddAttr( iq, _T("type"), _T("set"));
@@ -1166,7 +1164,7 @@ void CJabberProto::_RosterSendRequest(HWND hwndDlg, BYTE rrAction)
 	rrud.hwndDlg=hwndDlg;
 
 	int iqId = SerialNext();
-	IqAdd( iqId, IQ_PROC_NONE, (JABBER_IQ_PFUNC)&CJabberProto::_RosterHandleGetRequest );
+	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::_RosterHandleGetRequest );
 	m_ThreadInfo->send( XmlNode( _T("iq")) << XATTR( _T("type"), _T("get")) << XATTRID( iqId ) << XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER )));
 }
 
@@ -1183,7 +1181,6 @@ static void _RosterItemEditEnd( HWND hEditor, ROSTEREDITDAT * edat, BOOL bCancel
 		mir_free(buff);
 	}
 	DestroyWindow(hEditor);
-
 }
 
 static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -1350,11 +1347,13 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	if (!fp)
 		return;
 
-	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
-	char * buffer;
-	DWORD bufsize=_filelength(_fileno(fp));
-	if (bufsize>0)
-		buffer=(char*)mir_alloc(bufsize);
+	DWORD bufsize = _filelength(_fileno(fp));
+	if (bufsize <= 0) {
+		fclose(fp);
+		return;
+	}
+	
+	char* buffer=(char*)mir_alloc(bufsize);
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
 	_RosterListClear(hwndDlg);
@@ -1376,6 +1375,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 				HXML Table = xmlGetChild( Worksheet , "Table" );
 				if ( Table ) {
 					int index=1;
+					HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 					while (TRUE)
 					{
 						HXML Row = xmlGetNthChild( Table, _T("Row"), index++ );
@@ -1471,7 +1471,7 @@ static BOOL CALLBACK _RosterNewListProc( HWND hList, UINT msg, WPARAM wParam, LP
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberRosterOptDlgProc - advanced options dialog procedure
 
-static int sttRosterEditorResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+static int sttRosterEditorResizer(HWND /*hwndDlg*/, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId)
 	{
@@ -1600,7 +1600,7 @@ static BOOL CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 	return FALSE;
 }
 
-int __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM, LPARAM )
 {
 	if ( rrud.hwndDlg && IsWindow( rrud.hwndDlg ))
 		SetForegroundWindow( rrud.hwndDlg );
@@ -1613,7 +1613,7 @@ int __cdecl CJabberProto::OnMenuHandleRosterControl( WPARAM wParam, LPARAM lPara
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberOptInit - initializes all options dialogs
 
-int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM )
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 
@@ -1893,7 +1893,7 @@ protected:
 		}
 	}
 
-	void OnChange(CCtrlBase *ctrl)
+	void OnChange(CCtrlBase*)
 	{
 		if (m_initialized)
 			CheckRegistration();
@@ -1936,7 +1936,7 @@ private:
 		}
 	}
 
-	void cbServer_OnDropdown(CCtrlCombo *sender)
+	void cbServer_OnDropdown(CCtrlCombo* )
 	{
 		if ( !m_gotservers )
 			mir_forkthread(QueryServerListThread, this);
@@ -2162,20 +2162,20 @@ void CJabberDlgAccMgrUI::QueryServerListThread(void *arg)
 		SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
 }
 
-int CJabberProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+int CJabberProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 {
 	CJabberDlgAccMgrUI *dlg = new CJabberDlgAccMgrUI(this, (HWND)lParam);
 	dlg->Show();
 	return (int)dlg->GetHwnd();
 }
 
-void CJabberProto::JabberUpdateDialogs( BOOL bEnable )
+void CJabberProto::JabberUpdateDialogs( BOOL )
 {
 	if ( rrud.hwndDlg )
 		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED, 0,0);
 }
 
-int CJabberProto::OnModernOptInit( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnModernOptInit( WPARAM, LPARAM )
 {/*
 	static int iBoldControls[] =
 	{

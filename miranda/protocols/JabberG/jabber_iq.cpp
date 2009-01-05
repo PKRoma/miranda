@@ -223,7 +223,7 @@ void CJabberIqManager::ExpirerThread()
 	}
 }
 
-void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void *pUserData )
+void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void*)
 {
 	if ( !pInfo )
 		return;
@@ -236,7 +236,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void *pUserData )
 	ppro->Log( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
 
 	pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
-	(ppro->*(pInfo->m_pHandler))( NULL, NULL, pInfo );
+	(ppro->*(pInfo->m_pHandler))( NULL, pInfo );
 }
 
 CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)
@@ -262,7 +262,7 @@ CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqT
 	return pInfo;
 }
 
-BOOL CJabberIqManager::HandleIq(int nIqId, HXML pNode, void *pUserData)
+BOOL CJabberIqManager::HandleIq(int nIqId, HXML pNode )
 {
 	if (nIqId == -1 || pNode == NULL)
 		return FALSE;
@@ -306,14 +306,14 @@ BOOL CJabberIqManager::HandleIq(int nIqId, HXML pNode, void *pUserData)
 		if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_ID_STR)
 			pInfo->m_szId = ( TCHAR* )xmlGetAttrValue( pNode, _T("id"));
 
-		(ppro->*(pInfo->m_pHandler))(pNode, pUserData, pInfo);
+		(ppro->*(pInfo->m_pHandler))(pNode, pInfo);
 		delete pInfo;
 		return TRUE;
 	}
 	return FALSE;
 }
 
-BOOL CJabberIqManager::HandleIqPermanent(HXML pNode, void *pUserData)
+BOOL CJabberIqManager::HandleIqPermanent( HXML pNode )
 {
 	const TCHAR *szType = xmlGetAttrValue( pNode, _T("type"));
 	if ( !szType )
@@ -363,7 +363,7 @@ BOOL CJabberIqManager::HandleIqPermanent(HXML pNode, void *pUserData)
 				iqInfo.m_hContact = ppro->HContactFromJID( iqInfo.m_szFrom, 3 );
 
 			ppro->Log( "Handling iq id " TCHAR_STR_PARAM ", type " TCHAR_STR_PARAM ", from " TCHAR_STR_PARAM, iqInfo.m_szId, szType, iqInfo.m_szFrom );
-			(ppro->*(pInfo->m_pHandler))(pNode, pUserData, &iqInfo);
+			(ppro->*(pInfo->m_pHandler))(pNode, &iqInfo);
 			bHandled = TRUE;
 		}
 		pInfo = pInfo->m_pNext;

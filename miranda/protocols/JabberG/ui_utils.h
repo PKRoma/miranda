@@ -244,7 +244,7 @@ public:
 	void SaveInt(DWORD value) { m_option = (T)value; }
 
 	TCHAR *LoadText() { return NULL; }
-	void SaveText(TCHAR *value) {}
+	void SaveText(TCHAR*) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -314,7 +314,7 @@ protected:
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 	virtual void OnApply() {}
 	virtual void OnReset() {}
-	virtual void OnChange(CCtrlBase *ctrl) {}
+	virtual void OnChange(CCtrlBase*) {}
 
 	// main dialog procedure
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -370,12 +370,12 @@ public:
 
 	int GetInt();
 
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { return FALSE; }
-	virtual BOOL OnNotify(int idCtrl, NMHDR *pnmh) { return FALSE; }
+	virtual BOOL OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD /*idCode*/) { return FALSE; }
+	virtual BOOL OnNotify(int /*idCtrl*/, NMHDR* /*pnmh*/) { return FALSE; }
 
-	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT *param) { return FALSE; }
-	virtual BOOL OnDrawItem(DRAWITEMSTRUCT *param) { return FALSE; }
-	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT *param) { return FALSE; }
+	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT*) { return FALSE; }
+	virtual BOOL OnDrawItem(DRAWITEMSTRUCT*) { return FALSE; }
+	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT*) { return FALSE; }
 
 	virtual void OnInit();
 	virtual void OnDestroy();
@@ -589,7 +589,7 @@ class CCtrlCheck : public CCtrlData
 
 public:
 	CCtrlCheck( CDlgBase* dlg, int ctrlId );
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { NotifyChange(); return TRUE; }
+	virtual BOOL OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD /*idCode*/) { NotifyChange(); return TRUE; }
 	virtual void OnInit()
 	{
 		CSuper::OnInit();
@@ -617,7 +617,7 @@ class CCtrlEdit : public CCtrlData
 
 public:
 	CCtrlEdit( CDlgBase* dlg, int ctrlId );
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	virtual BOOL OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
 	{
 		if (idCode == EN_CHANGE)
 			NotifyChange();
@@ -699,7 +699,7 @@ class CCtrlCombo : public CCtrlData
 public:
 	CCtrlCombo( CDlgBase* dlg, int ctrlId );
 
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	virtual BOOL OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
 	{
 		switch (idCode)
 		{
@@ -1261,9 +1261,9 @@ protected:
 
 	BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	virtual void OnProtoRefresh(WPARAM wParam, LPARAM lParam) {}
-	virtual void OnProtoActivate(WPARAM wParam, LPARAM lParam) {}
-	virtual void OnProtoCheckOnline(WPARAM wParam, LPARAM lParam) {}
+	virtual void OnProtoRefresh(WPARAM, LPARAM) {}
+	virtual void OnProtoActivate(WPARAM, LPARAM) {}
+	virtual void OnProtoCheckOnline(WPARAM, LPARAM) {}
 
 private:
 	void UpdateProtoTitle(TCHAR *szText = NULL);
@@ -1306,7 +1306,7 @@ protected:
 /////////////////////////////////////////////////////////////////////////////////////////
 // Safe open/close dialogs
 #define UI_SAFE_OPEN(dlgClass, dlgPtr)	\
-	do {	\
+	{	\
 		if (dlgPtr)	\
 		{	\
 			SetForegroundWindow((dlgPtr)->GetHwnd());	\
@@ -1315,7 +1315,7 @@ protected:
 			(dlgPtr) = new dlgClass(this);	\
 			(dlgPtr)->Show();	\
 		}	\
-	} while (0)
+	}
 
 #define UI_SAFE_OPEN_EX(dlgClass, dlgPtr, dlgLocal)	\
 	if (dlgPtr)	\
@@ -1329,34 +1329,34 @@ protected:
 	dlgClass *dlgLocal = (dlgClass *)(dlgPtr);
 
 #define UI_SAFE_CLOSE(dlg)	\
-	do {	\
+	{	\
 		if ( dlg ) {	\
 			(dlg)->Close();	\
 			(dlg) = NULL;	\
 		}	\
-	} while (0)
+	}
 
 #define UI_SAFE_CLOSE_HWND(hwnd)	\
-	do {	\
+	{	\
 		if ( hwnd ) {	\
 			::SendMessage( (hwnd), WM_CLOSE, 0, 0 );	\
 			(hwnd) = NULL;	\
 		}	\
-	} while (0)
+	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // NULL-Safe dialog notifications
 #define UI_SAFE_NOTIFY(dlg, msg)	\
-	do {	\
+	{	\
 		if ( dlg )	\
 			::SendMessage((dlg)->GetHwnd(), msg, 0, 0);	\
-	} while (0)
+	}
 
 #define UI_SAFE_NOTIFY_HWND(hwnd, msg)	\
-	do {	\
+	{	\
 		if ( hwnd )	\
 			::SendMessage((hwnd), msg, 0, 0);	\
-	} while (0)
+	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Define message maps

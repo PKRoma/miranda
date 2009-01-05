@@ -130,7 +130,7 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	m_ThreadInfo->send( iq );
 }
 
-void CJabberProto::OnFtSiResult( HXML iqNode, void *userdata, CJabberIqInfo* pInfo )
+void CJabberProto::OnFtSiResult( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	HXML siNode, featureNode, xNode, fieldNode, valueNode;
 	filetransfer *ft = (filetransfer *)pInfo->GetUserData();
@@ -156,7 +156,7 @@ void CJabberProto::OnFtSiResult( HXML iqNode, void *userdata, CJabberIqInfo* pIn
 								jbt->sid = mir_tstrdup( ft->sid );
 								jbt->pfnSend = &CJabberProto::FtSend;
 								jbt->pfnFinal = &CJabberProto::FtSendFinal;
-								jbt->userdata = ft;
+								jbt->ft = ft;
 								ft->type = FT_BYTESTREAM;
 								ft->jbt = jbt;
 								JForkThread(( JThreadFunc )&CJabberProto::ByteSendThread, jbt );
@@ -168,7 +168,7 @@ void CJabberProto::OnFtSiResult( HXML iqNode, void *userdata, CJabberIqInfo* pIn
 								jibb->sid = mir_tstrdup( ft->sid );
 								jibb->pfnSend = &CJabberProto::FtIbbSend;
 								jibb->pfnFinal = &CJabberProto::FtSendFinal;
-								jibb->userdata = ft;
+								jibb->ft = ft;
 								ft->type = FT_IBB;
 								ft->jibb = jibb;
 								JForkThread(( JThreadFunc )&CJabberProto::IbbSendThread, jibb );
@@ -180,10 +180,8 @@ void CJabberProto::OnFtSiResult( HXML iqNode, void *userdata, CJabberIqInfo* pIn
 	}
 }
 
-BOOL CJabberProto::FtSend( HANDLE hConn, void *userdata )
+BOOL CJabberProto::FtSend( HANDLE hConn, filetransfer* ft )
 {
-	filetransfer* ft = ( filetransfer* ) userdata;
-
 	struct _stat statbuf;
 	int fd;
 	char* buffer;
@@ -217,10 +215,8 @@ BOOL CJabberProto::FtSend( HANDLE hConn, void *userdata )
 	return TRUE;
 }
 
-BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
+BOOL CJabberProto::FtIbbSend( int blocksize, filetransfer* ft )
 {
-	filetransfer* ft = ( filetransfer* ) userdata;
-
 	struct _stat statbuf;
 	int fd;
 	char* buffer;
@@ -280,10 +276,8 @@ BOOL CJabberProto::FtIbbSend( int blocksize, void *userdata )
 	return TRUE;
 }
 
-void CJabberProto::FtSendFinal( BOOL success, void *userdata )
+void CJabberProto::FtSendFinal( BOOL success, filetransfer* ft )
 {
-	filetransfer* ft = ( filetransfer* )userdata;
-
 	if ( !success ) {
 		Log( "File transfer complete with error" );
 		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
@@ -304,9 +298,6 @@ void CJabberProto::FtSendFinal( BOOL success, void *userdata )
 }
 
 ///////////////// File receiving through stream initiation /////////////////////////
-
-static int JabberFtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen );
-static void JabberFtReceiveFinal( BOOL success, void *userdata );
 
 void CJabberProto::FtHandleSiRequest( HXML iqNode )
 {
@@ -447,7 +438,7 @@ void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 				<< XCHILD( _T("value"), _T(JABBER_FEAT_IBB)));
 }	}
 
-void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, void* userdata, CJabberIqInfo* pInfo )
+void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	HXML queryNode = pInfo->GetChildNode();
 
@@ -461,7 +452,7 @@ void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, void* userdata, CJabb
 		jbt->iqNode = xi.copyNode( iqNode );
 		jbt->pfnRecv = &CJabberProto::FtReceive;
 		jbt->pfnFinal = &CJabberProto::FtReceiveFinal;
-		jbt->userdata = item->ft;
+		jbt->ft = item->ft;
 		item->ft->jbt = jbt;
 		JForkThread(( JThreadFunc )&CJabberProto::ByteReceiveThread, jbt );
 		ListRemove( LIST_FTRECV, sid );
@@ -507,7 +498,7 @@ BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
 			jibb->sid = mir_tstrdup( sid );
 			jibb->pfnRecv = &CJabberProto::FtReceive;
 			jibb->pfnFinal = &CJabberProto::FtReceiveFinal;
-			jibb->userdata = item->ft;
+			jibb->ft = item->ft;
 			item->ft->jibb = jibb;
 			item->jibb = jibb;
 			JForkThread(( JThreadFunc )&CJabberProto::IbbReceiveThread, jibb );
@@ -537,9 +528,8 @@ BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
 	return FALSE;
 }
 
-int CJabberProto::FtReceive( HANDLE hConn, void *userdata, char* buffer, int datalen )
+int CJabberProto::FtReceive( HANDLE, filetransfer* ft, char* buffer, int datalen )
 {
-	filetransfer* ft = ( filetransfer* )userdata;
 	if ( ft->create() == -1 )
 		return -1;
 
@@ -560,10 +550,8 @@ int CJabberProto::FtReceive( HANDLE hConn, void *userdata, char* buffer, int dat
 	return 0;
 }
 
-void CJabberProto::FtReceiveFinal( BOOL success, void *userdata )
+void CJabberProto::FtReceiveFinal( BOOL success, filetransfer* ft )
 {
-	filetransfer* ft = ( filetransfer* )userdata;
-
 	if ( success ) {
 		Log( "File transfer complete successfully" );
 		ft->complete();

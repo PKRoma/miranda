@@ -77,8 +77,6 @@ HANDLE CJabberProto::ChatRoomHContactFromJID( const TCHAR* jid )
 {
 	if ( jid == NULL )
 		return ( HANDLE )NULL;
-
-	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, jid );
 	
 	HANDLE hContactMatched = NULL;
 	HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
@@ -342,36 +340,6 @@ char* __stdcall JabberUrlEncode( const char* str )
 	return s;
 }
 
-static void __stdcall sttUtf8Decode( const BYTE* str, wchar_t* tempBuf )
-{
-	wchar_t* d = tempBuf;
-	BYTE* s = ( BYTE* )str;
-
-	while( *s )
-	{
-		if (( *s & 0x80 ) == 0 ) {
-			*d++ = *s++;
-			continue;
-		}
-
-		if (( s[0] & 0xE0 ) == 0xE0 && ( s[1] & 0xC0 ) == 0x80 && ( s[2] & 0xC0 ) == 0x80 ) {
-			*d++ = (( WORD )( s[0] & 0x0F ) << 12 ) + ( WORD )(( s[1] & 0x3F ) << 6 ) + ( WORD )( s[2] & 0x3F );
-			s += 3;
-			continue;
-		}
-
-		if (( s[0] & 0xE0 ) == 0xC0 && ( s[1] & 0xC0 ) == 0x80 ) {
-			*d++ = ( WORD )(( s[0] & 0x1F ) << 6 ) + ( WORD )( s[1] & 0x3F );
-			s += 2;
-			continue;
-		}
-
-		*d++ = *s++;
-	}
-
-	*d = 0;
-}
-
 void __stdcall JabberUtfToTchar( const char* pszValue, size_t cbLen, LPTSTR& dest )
 {
 	char* pszCopy = NULL;
@@ -633,7 +601,6 @@ char* __stdcall JabberBase64Encode( const char* buffer, int bufferLen )
 		return NULL;
 
 	unsigned char igroup[3];
-	int nGroups = 0;
 	char *r = res;
 	const char* peob = buffer + bufferLen;
 	for ( const char* p = buffer; p < peob; ) {
@@ -1243,7 +1210,6 @@ void JabberCopyText(HWND hwnd, TCHAR *text)
 
 	OpenClipboard(hwnd);
 	EmptyClipboard();
-	int a = lstrlen(text);
 	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR)*(lstrlen(text)+1));
 	TCHAR *s = (TCHAR *)GlobalLock(hMem);
 	lstrcpy(s, text);
@@ -1275,7 +1241,7 @@ struct JabberEnterStringParams
 	int height;
 };
 
-static int sttEnterStringResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
+static int sttEnterStringResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId)
 	{
@@ -1482,7 +1448,7 @@ BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, 
 
 ////////////////////////////////////////////////////////////////////////
 // Choose protocol instance
-CJabberProto *JabberChooseInstance(bool bAllowOffline, bool atCursor)
+CJabberProto *JabberChooseInstance(bool bAllowOffline, bool /*atCursor*/)
 {
 	if (g_Instances.getCount() == 0) return NULL;
 	if (g_Instances.getCount() == 1)

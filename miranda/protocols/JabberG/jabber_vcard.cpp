@@ -669,7 +669,7 @@ static BOOL CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 #define M_REMAKELISTS  ( WM_USER+1 )
-static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
+static BOOL CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam )
 {
 	const unsigned long iPageId = 5;
 	CJabberProto* ppro = ( CJabberProto* )GetWindowLong( hwndDlg, GWL_USERDATA );
@@ -1163,20 +1163,9 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	m_ThreadInfo->send( iq );
 }
 
-static void ThemeDialogBackground( HWND hwnd )
-{
-	if ( IsWinVerXPPlus()) {
-		static HMODULE hThemeAPI = NULL;
-		if ( !hThemeAPI ) hThemeAPI = GetModuleHandleA( "uxtheme" );
-		if ( hThemeAPI ) {
-			HRESULT ( STDAPICALLTYPE *MyEnableThemeDialogTexture )( HWND,DWORD ) = ( HRESULT ( STDAPICALLTYPE* )( HWND,DWORD ))GetProcAddress( hThemeAPI,"EnableThemeDialogTexture" );
-			if ( MyEnableThemeDialogTexture )
-				MyEnableThemeDialogTexture( hwnd,0x00000002|0x00000004 ); //0x00000002|0x00000004=ETDT_ENABLETAB
-}	}	}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CJabberProto::OnUserInfoInit_VCard( WPARAM wParam, LPARAM lParam )
+void CJabberProto::OnUserInfoInit_VCard( WPARAM wParam, LPARAM )
 {
 	m_vCardUpdates = 0;
 	m_bPhotoChanged = FALSE;

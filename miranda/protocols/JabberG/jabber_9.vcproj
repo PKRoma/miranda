@@ -263,7 +263,7 @@
 				PrecompiledHeaderThrough="jabber.h"
 				AssemblerOutput="4"
 				BrowseInformationFile=""
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"

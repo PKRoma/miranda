@@ -44,7 +44,7 @@ Last change by : $Author: m_mluhov $
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnContactDeleted - processes a contact deletion
 
-int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM )
 {
 	if( !m_bJabberOnline )	// should never happen
 		return 0;
@@ -189,8 +189,6 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 		return;
 	}
 
-	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, jid.ptszVal );
-
 	if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
 		AddContactToRoster( jid.ptszVal, nick, dbv.ptszVal );
 		JFreeVariant( &dbv );
@@ -233,7 +231,7 @@ int __cdecl CJabberProto::OnDbSettingChanged( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnIdleChanged - tracks idle start time for XEP-0012 support
 
-int CJabberProto::OnIdleChanged( WPARAM wParam, LPARAM lParam )
+int CJabberProto::OnIdleChanged( WPARAM, LPARAM lParam )
 {
 	// don't report idle time, if user disabled
 	if (lParam & IDF_PRIVACY) {

@@ -27,7 +27,7 @@ Last change by : $Author$
 
 #include "jabber.h"
 
-int JabberHttpGatewayInit( HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQUEST *nlhr )
+int JabberHttpGatewayInit( HANDLE /*hConn*/, NETLIBOPENCONNECTION* /*nloc*/, NETLIBHTTPREQUEST* /*nlhr*/ )
 {
 #ifdef NNNN
 	WORD wLen, wVersion, wType;
@@ -81,7 +81,7 @@ int JabberHttpGatewayInit( HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPR
 	return 1;
 }
 
-int JabberHttpGatewayBegin( HANDLE hConn, NETLIBOPENCONNECTION *nloc )
+int JabberHttpGatewayBegin( HANDLE /*hConn*/, NETLIBOPENCONNECTION* /*nloc*/ )
 {
 	/*
 	icq_packet packet;

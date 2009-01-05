@@ -473,7 +473,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 			if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
 				break;
 
-			JABBER_LIST_ITEM *item = NULL;
 			if (!(dat->item = dat->ppro->ListGetItemPtr(LIST_VCARD_TEMP, dbv.ptszVal)))
 				dat->item = dat->ppro->ListGetItemPtr(LIST_ROSTER, dbv.ptszVal);
 
@@ -569,7 +568,6 @@ static BOOL CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPara
 					if ( dat->ppro->JGetStringT(dat->hContact, "jid", &dbv))
 						break;
 					
-					JABBER_LIST_ITEM *item = NULL;
 					if ( !(dat->item = dat->ppro->ListGetItemPtr( LIST_VCARD_TEMP, dbv.ptszVal )))
 						dat->item = dat->ppro->ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 					JFreeVariant(&dbv);

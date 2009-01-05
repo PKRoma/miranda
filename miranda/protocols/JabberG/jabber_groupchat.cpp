@@ -196,7 +196,7 @@ private:
 	}
 };
 
-int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
 {
 	if ( jabberChatDllPresent )
 		GroupchatJoinRoomByJid( NULL, NULL );
@@ -205,7 +205,7 @@ int __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lPara
 	return 0;
 }
 
-int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
 {
 	DBVARIANT dbv, jid;
 	HANDLE hContact = ( HANDLE )wParam;
@@ -233,7 +233,7 @@ int __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-int __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM lParam )
+int __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM )
 {
 	DBVARIANT jid;
 	HANDLE hContact = ( HANDLE )wParam;
@@ -317,9 +317,9 @@ static int sttRoomListAppend(HWND hwndList, RoomInfo::Overlay overlay, const TCH
 	return id;
 }
 
-void CJabberProto::OnIqResultDiscovery(HXML iqNode, void *userdata, CJabberIqInfo *pInfo)
+void CJabberProto::OnIqResultDiscovery(HXML iqNode, CJabberIqInfo *pInfo)
 {
-	if (!iqNode || !userdata || !pInfo)
+	if (!iqNode || !pInfo)
 		return;
 
 	HWND hwndList = (HWND)pInfo->GetUserData();
@@ -412,7 +412,6 @@ static void sttJoinDlgShowRecentItems(HWND hwndDlg, int newCount)
 	{
 		GetWindowRect(GetDlgItem(hwndDlg, ctrls[i]), &rc);
 		MapWindowPoints(NULL, hwndDlg, (LPPOINT)&rc, 2);
-		HWND h = GetDlgItem(hwndDlg, ctrls[i]);
 		SetWindowPos(GetDlgItem(hwndDlg, ctrls[i]), NULL, rc.left, rc.top + offset, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
 	}
 
@@ -787,7 +786,7 @@ BOOL CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	return CSuper::DlgProc(msg, wParam, lParam);
 }
 
-void CJabberProto::GroupchatJoinRoomByJid( HWND hwndParent, TCHAR *jid )
+void CJabberProto::GroupchatJoinRoomByJid( HWND, TCHAR *jid )
 {
 	if (m_pDlgJabberJoinGroupchat)
 		SetForegroundWindow(m_pDlgJabberJoinGroupchat->GetHwnd());
@@ -855,9 +854,8 @@ void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* o
 			break;
 }	}	}
 
-void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
+void CJabberProto::GroupchatProcessPresence( HXML node )
 {
-	ThreadData* info;
 	HXML showNode, statusNode, errorNode, itemNode, n, priorityNode;
 	const TCHAR* from;
 	int status, newRes = 0;
@@ -866,7 +864,6 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 	BOOL roomCreated;
 
 	if ( !node || !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("presence"))) return;
-	if (( info = ( ThreadData* ) userdata ) == NULL ) return;
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 
 	const TCHAR* nick = _tcschr( from, '/' );
@@ -1005,7 +1002,6 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 			int iStatus = sttGetStatusCode( xNode );
 			if (iStatus == 301)
 			{
-				JABBER_RESOURCE_STATUS *r = NULL;
 				for (int i = 0; i < item->resourceCount; ++i)
 					if (!lstrcmp(item->resource[i].resourceName, nick))
 					{
@@ -1057,15 +1053,13 @@ void CJabberProto::GroupchatProcessPresence( HXML node, void *userdata )
 		mir_free( str );
 }	}
 
-void CJabberProto::GroupchatProcessMessage( HXML node, void *userdata )
+void CJabberProto::GroupchatProcessMessage( HXML node )
 {
-	ThreadData* info;
 	HXML n, xNode;
 	const TCHAR* from, *type, *p, *nick;
 	JABBER_LIST_ITEM *item;
 
 	if ( !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("message"))) return;
-	if (( info=( ThreadData* ) userdata ) == NULL ) return;
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 	if (( item = ListGetItemPtr( LIST_CHATROOM, from )) == NULL ) return;
 
@@ -1118,7 +1112,6 @@ void CJabberProto::GroupchatProcessMessage( HXML node, void *userdata )
 	GcLogCreate( item );
 
 	time_t msgTime = 0;
-	BOOL delivered = FALSE;
 	for ( int i = 1; ( xNode = xmlGetNthChild( node, _T("x"), i )) != NULL; i++ )
 		if (( p = xmlGetAttrValue( xNode, _T("xmlns"))) != NULL )
 			if ( !_tcscmp( p, _T("jabber:x:delay")) && msgTime==0 )

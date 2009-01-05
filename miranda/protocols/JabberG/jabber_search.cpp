@@ -133,7 +133,7 @@ static int JabberSearchAddField(HWND hwndDlg, Data* FieldDat )
 ////////////////////////////////////////////////////////////////////////////////
 // Available search field request result handler  (XEP-0055. Examples 2, 7)
 
-void CJabberProto::OnIqResultGetSearchFields( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultGetSearchFields( HXML iqNode )
 {
 	if  ( !searchHandleDlg )
 		return;
@@ -145,7 +145,7 @@ void CJabberProto::OnIqResultGetSearchFields( HXML iqNode, void *userdata )
 	if ( !lstrcmp( type, _T("result"))) {
 		HXML queryNode = xmlGetNthChild( iqNode, _T("query"), 1 );
 		HXML xNode = xmlGetChildByTag( queryNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
-		int formHeight=0;
+
 		ShowWindow(searchHandleDlg,SW_HIDE);
 		if ( xNode ) {
 			//1. Form
@@ -294,7 +294,7 @@ TCHAR* CopyKey( TCHAR* key )
 ////////////////////////////////////////////////////////////////////////////////
 // Search field request result handler  (XEP-0055. Examples 3, 8)
 
-void CJabberProto::OnIqResultAdvancedSearch( HXML iqNode, void *userdata )
+void CJabberProto::OnIqResultAdvancedSearch( HXML iqNode )
 {
 	const TCHAR* type;
 	int    id;
@@ -394,7 +394,7 @@ void CJabberProto::OnIqResultAdvancedSearch( HXML iqNode, void *userdata )
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, ( HANDLE ) id, 0 );
 }
 
-static BOOL CALLBACK DeleteChildWindowsProc(HWND hwnd,LPARAM lParam)
+static BOOL CALLBACK DeleteChildWindowsProc( HWND hwnd, LPARAM )
 {
 	DestroyWindow(hwnd);
 	return TRUE;
