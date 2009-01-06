@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -79,7 +79,7 @@ typedef struct {
 } MESSAGESUBDATA;
 
 
-static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
+const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 
 
 /*
@@ -263,7 +263,6 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
 /*
  * initialize button bar, set all the icons and ensure proper button state
-
  */
 
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)

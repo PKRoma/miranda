@@ -90,11 +90,11 @@ static void   listdestructor(void * input)
 	}
 
 //from "advanced auto away" plugin by P. Boon
-static struct RemoveSettings{
+struct RemoveSettings {
 	char *szPrefix;
 	int count;
 	char **szSettings;
-	};
+};
 
 static int DBRemoveEnumProc(const char *szSetting, LPARAM lParam)
  {

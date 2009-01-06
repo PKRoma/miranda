@@ -2,7 +2,6 @@
 // Microsoft Developer Studio generated include file.
 // Used by resource.rc
 //
-#define IDC_STATIC						-1
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDOK2                           2

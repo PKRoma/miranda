@@ -35,13 +35,15 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-
+WINDRES=windres.exe
 
 # build
 build: .build-post
 
 .build-pre:
 # Add your pre 'build' code here...
+	${WINDRES} -i ./tabsrmm_private.rc -o build/tabsrmm_private.coff -I . -D __GNUWIN32__
+	${WINDRES} -i ./tabsrmm_private.rc -o build/tabsrmm_privateW.coff -I . -D __GNUWIN32__ -D UNICODE -D _UNICODE
 
 .build-post: .build-impl
 # Add your post 'build' code here...

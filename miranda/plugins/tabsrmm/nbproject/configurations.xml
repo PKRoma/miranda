@@ -5,6 +5,7 @@
       <itemPath>docs/changelog.txt</itemPath>
       <itemPath>docs/contributors.txt</itemPath>
       <itemPath>docs/INSTALL</itemPath>
+      <itemPath>docs/README.GCC</itemPath>
       <itemPath>docs/readme.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles"
@@ -32,6 +33,7 @@
                    projectFiles="true">
       <itemPath>chat/chat.rc</itemPath>
       <itemPath>resource.rc</itemPath>
+      <itemPath>tabsrmm_private.rc</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -123,11 +125,13 @@
         <cCompilerTool>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
         </cCompilerTool>
         <ccCompilerTool>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
         </ccCompilerTool>
         <linkerTool>
@@ -252,6 +256,9 @@
       <item path="docs/INSTALL">
         <itemTool>3</itemTool>
       </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
       <item path="docs/changelog.txt">
         <itemTool>3</itemTool>
       </item>
@@ -338,6 +345,9 @@
       </item>
       <item path="tabmodplus/msgoptions_plus.c">
         <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
       </item>
       <item path="templates.c">
         <itemTool>0</itemTool>
@@ -376,21 +386,40 @@
           <stripSymbols>true</stripSymbols>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
-          <warningLevel>2</warningLevel>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
         </cCompilerTool>
         <ccCompilerTool>
-          <developmentMode>5</developmentMode>
+          <developmentMode>6</developmentMode>
           <stripSymbols>true</stripSymbols>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
+          <preprocessorList>
+            <Elem>__GNUWIN32__</Elem>
+          </preprocessorList>
         </ccCompilerTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
         </fortranCompilerTool>
         <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
           <linkerLibItems>
+            <linkerOptionItem>build/tabsrmm_private.coff</linkerOptionItem>
+            <linkerLibLibItem>uuid</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -511,6 +540,9 @@
       <item path="docs/INSTALL">
         <itemTool>3</itemTool>
       </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
       <item path="docs/changelog.txt">
         <itemTool>3</itemTool>
       </item>
@@ -597,6 +629,9 @@
       </item>
       <item path="tabmodplus/msgoptions_plus.c">
         <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
       </item>
       <item path="templates.c">
         <itemTool>0</itemTool>
@@ -635,10 +670,12 @@
           <stripSymbols>true</stripSymbols>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
           <preprocessorList>
             <Elem>UNICODE</Elem>
             <Elem>_UNICODE</Elem>
+            <Elem>__GNUWIN32__</Elem>
           </preprocessorList>
         </cCompilerTool>
         <ccCompilerTool>
@@ -646,15 +683,29 @@
           <stripSymbols>true</stripSymbols>
           <includeDirectories>
             <directoryPath>../../include</directoryPath>
+            <directoryPath>../../include/mingw</directoryPath>
           </includeDirectories>
           <preprocessorList>
             <Elem>UNICODE</Elem>
             <Elem>_UNICODE</Elem>
+            <Elem>__GNUWIN32__</Elem>
           </preprocessorList>
         </ccCompilerTool>
         <linkerTool>
+          <output>dist/Release_Unicode/${PLATFORM}/tabsrmm.dll</output>
           <stripSymbols>true</stripSymbols>
+          <linkerKpic>false</linkerKpic>
           <linkerLibItems>
+            <linkerOptionItem>build/tabsrmm_privateW.coff</linkerOptionItem>
+            <linkerLibLibItem>kernel32</linkerLibLibItem>
+            <linkerLibLibItem>user32</linkerLibLibItem>
+            <linkerLibLibItem>gdi32</linkerLibLibItem>
+            <linkerLibLibItem>comctl32</linkerLibLibItem>
+            <linkerLibLibItem>comdlg32</linkerLibLibItem>
+            <linkerLibLibItem>ole32</linkerLibLibItem>
+            <linkerLibLibItem>shell32</linkerLibLibItem>
+            <linkerLibLibItem>shlwapi</linkerLibLibItem>
+            <linkerLibLibItem>uuid</linkerLibLibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -775,6 +826,9 @@
       <item path="docs/INSTALL">
         <itemTool>3</itemTool>
       </item>
+      <item path="docs/README.GCC">
+        <itemTool>3</itemTool>
+      </item>
       <item path="docs/changelog.txt">
         <itemTool>3</itemTool>
       </item>
@@ -861,6 +915,9 @@
       </item>
       <item path="tabmodplus/msgoptions_plus.c">
         <itemTool>0</itemTool>
+      </item>
+      <item path="tabsrmm_private.rc">
+        <itemTool>3</itemTool>
       </item>
       <item path="templates.c">
         <itemTool>0</itemTool>

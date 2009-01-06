@@ -1941,17 +1941,6 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					if (nen_options.bMinimizeToTray && pContainer->bInTray) {
-						if (pContainer->bInTray == 2) {
-							MaximiseFromTray(hwndDlg, FALSE, &pContainer->restoreRect);
-							PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
-						}
-						else
-							MaximiseFromTray(hwndDlg, nen_options.bAnimated, &pContainer->restoreRect);
-						DeleteMenu(myGlobals.g_hMenuTrayUnread, (UINT_PTR)pContainer->iContainerIndex + 1, MF_BYCOMMAND);
-						pContainer->bInTray = 0;
-						return 0;
-					}
 					if (bSkinned) {
 						ShowWindow(hwndDlg, SW_SHOW);
 						return 0;
@@ -1961,12 +1950,6 @@ buttons_done:
  					//
 					break;
 				case SC_MINIMIZE:
-					if (nen_options.bMinimizeToTray && (nen_options.bTraySupport || (nen_options.floaterMode && !nen_options.bFloaterOnlyMin)) && myGlobals.m_WinVerMajor >= 5) {
-						pContainer->bInTray = IsZoomed(hwndDlg) ? 2 : 1;
-						GetWindowRect(hwndDlg, &pContainer->restoreRect);
-						MinimiseToTray(hwndDlg, nen_options.bAnimated);
-						return 0;
-					}
 					break;
 			}
 			break;
@@ -3555,17 +3538,6 @@ void FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCoun
 
 	if (MyFlashWindowEx == NULL)
 		return;
-
-	if (pContainer->bInTray && iMode != 0 && nen_options.iAutoRestore > 0) {
-		BOOL old = nen_options.bMinimizeToTray;
-		nen_options.bMinimizeToTray = FALSE;
-		ShowWindow(pContainer->hwnd, SW_HIDE);
-		SetParent(pContainer->hwnd, NULL);
-		SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-		nen_options.bMinimizeToTray = old;
-		SetWindowLong(pContainer->hwnd, GWL_STYLE, GetWindowLong(pContainer->hwnd, GWL_STYLE) | WS_VISIBLE);
-		pContainer->bInTray = 0;
-	}
 
 	if (pContainer->dwFlags & CNT_NOFLASH)                  // container should never flash
 		return;

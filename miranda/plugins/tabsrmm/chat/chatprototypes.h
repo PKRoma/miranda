@@ -40,15 +40,11 @@ int  SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int  PreShutdown(WPARAM wParam,LPARAM lParam);
 int  IconsChanged(WPARAM wParam,LPARAM lParam);
 void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
-int  Service_Register(WPARAM wParam, LPARAM lParam);
 int  Service_AddEvent(WPARAM wParam, LPARAM lParam);
-int  Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam);
-int  Service_NewChat(WPARAM wParam, LPARAM lParam);
 int  Service_ItemData(WPARAM wParam, LPARAM lParam);
 int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
 int  Service_GetCount(WPARAM wParam,LPARAM lParam);
-int  Service_GetInfo(WPARAM wParam,LPARAM lParam);
 
 HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
 

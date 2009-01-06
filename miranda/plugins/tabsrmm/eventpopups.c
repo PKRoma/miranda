@@ -96,7 +96,6 @@ int NEN_ReadOptions(NEN_OPTIONS *options)
 	options->iDisable = (BYTE)DBGetContactSettingByte(NULL, MODULE, OPT_DISABLE, 0);
 	options->dwStatusMask = (DWORD)DBGetContactSettingDword(NULL, MODULE, "statusmask", (DWORD) - 1);
 	options->bTraySupport = (BOOL)DBGetContactSettingByte(NULL, MODULE, "traysupport", 0);
-	options->bMinimizeToTray = (BOOL)DBGetContactSettingByte(NULL, MODULE, "mintotray", 0);
 	options->iAutoRestore = 0;
 	options->bWindowCheck = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, 0);
 	options->bNoRSS = (BOOL)DBGetContactSettingByte(NULL, MODULE, OPT_NORSS, 0);
@@ -145,7 +144,6 @@ int NEN_WriteOptions(NEN_OPTIONS *options)
 	DBWriteContactSettingByte(NULL, MODULE, OPT_SHOW_ON, (BYTE)options->bShowON);
 	DBWriteContactSettingByte(NULL, MODULE, OPT_DISABLE, (BYTE)options->iDisable);
 	DBWriteContactSettingByte(NULL, MODULE, "traysupport", (BYTE)options->bTraySupport);
-	DBWriteContactSettingByte(NULL, MODULE, "mintotray", (BYTE)options->bMinimizeToTray);
 	DBWriteContactSettingByte(NULL, MODULE, OPT_WINDOWCHECK, (BYTE)options->bWindowCheck);
 	DBWriteContactSettingByte(NULL, MODULE, OPT_NORSS, (BYTE)options->bNoRSS);
 	DBWriteContactSettingDword(NULL, MODULE, OPT_LIMITPREVIEW, options->iLimitPreview);
@@ -179,8 +177,6 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Show the floater"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
 	0, _T("When floater is enabled, only show it while the contact list is minimized"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
 	0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
-	0, _T("Minimize containers to system tray or floater"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
-	0, _T("Minimize and restore animated"), IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
 	0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
 	0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
 	0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
@@ -390,7 +386,6 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_URL), options->iDelayUrl != -1);
 						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_FILE), options->iDelayFile != -1);
 						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-						EnableWindow(GetDlgItem(hWnd, IDC_ANIMATED), options->bMinimizeToTray);
 						if (HIWORD(wParam) == CPN_COLOURCHANGED) {
 							options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);
 							options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
@@ -463,24 +458,7 @@ BOOL CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 					CheckForRemoveMask();
 					CreateSystrayIcon(nen_options.bTraySupport);
 					SetEvent(g_hEvent);                                 // wake up the thread which cares about the floater and tray
-					/*
-					* check if there are containers minimized to the tray, get them back, otherwise the're trapped forever :)
-					* need to temporarily re-enable tray support, because the container checks for it.
-					*/
-					if (!nen_options.bTraySupport || !nen_options.bMinimizeToTray) {
-						BOOL oldTray = nen_options.bTraySupport;
-						BOOL oldMin = nen_options.bMinimizeToTray;
 
-						nen_options.bTraySupport = TRUE;
-						nen_options.bMinimizeToTray = TRUE;
-						while (pContainer) {
-							if (pContainer->bInTray)
-								SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-							pContainer = pContainer->pNextContainer;
-						}
-						nen_options.bTraySupport = oldTray;
-						nen_options.bMinimizeToTray = oldMin;
-					}
 					ShowWindow(myGlobals.g_hwndHotkeyHandler, nen_options.floaterMode ? SW_SHOW : SW_HIDE);
 					break;
 				}
@@ -1561,7 +1539,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 	if (windowOpen && pContainer != 0) {               // message window is open, need to check the container config if we want to see a popup nonetheless
 		if (nen_options.bWindowCheck)                  // no popups at all for open windows... no exceptions
 			return 0;
-		if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd) || pContainer->bInTray))        // in tray counts as "minimised"
+		if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd)))        // in tray counts as "minimised"
 			goto passed;
 		if (pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED) {
 			if (!IsIconic(pContainer->hwnd) && GetForegroundWindow() != pContainer->hwnd && GetActiveWindow() != pContainer->hwnd)

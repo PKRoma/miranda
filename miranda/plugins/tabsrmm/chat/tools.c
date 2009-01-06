@@ -4,7 +4,7 @@ astyle --force-indent=tab=4 --brackets=linux --indent-switches
 
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright (C) 2003 Jï¿½rgen Persson
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -181,7 +181,7 @@ static int ShowPopup(HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszP
 		pd.colorText = crBkg;
 	}
 
-	pd.PluginWindowProc = PopupDlgProc;
+	pd.PluginWindowProc = (WNDPROC)PopupDlgProc;
 	pd.PluginData = si;
 	return PUAddPopUpT(&pd);
 }
@@ -284,7 +284,7 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct MessageWindowData* da
 		if (dat && pContainer != 0) {                // message window is open, need to check the container config if we want to see a popup nonetheless
 			if (nen_options.bWindowCheck)                   // no popups at all for open windows... no exceptions
 				return 0;
-			if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd) || pContainer->bInTray))        // in tray counts as "minimised"
+			if (pContainer->dwFlags & CNT_DONTREPORT && (IsIconic(pContainer->hwnd)))        // in tray counts as "minimised"
 				goto passed;
 			if (pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED) {
 				if (!IsIconic(pContainer->hwnd) && GetForegroundWindow() != pContainer->hwnd && GetActiveWindow() != pContainer->hwnd)
@@ -399,7 +399,7 @@ static void DoFlashAndSoundThread(FLASH_PARAMS* p)
 
 		// autoswitch tab..
 		if (p->bMustAutoswitch) {
-			if ((p->dat->pContainer->bInTray || IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
+			if ((IsIconic(p->dat->pContainer->hwnd)) && !IsZoomed(p->dat->pContainer->hwnd) && myGlobals.m_AutoSwitchTabs && p->dat->pContainer->hwndActive != p->si->hWnd) {
 				int iItem = GetTabIndexFromHWND(hwndTab, p->si->hWnd);
 				if (iItem >= 0) {
 					TabCtrl_SetCurSel(hwndTab, iItem);
@@ -856,7 +856,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s kicked %s (%s)"), (char *)gce->pszStatus, gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_NOTICE:
-				p = '¤';
+				p = 'ï¿½';
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("Notice from %s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_TOPIC:

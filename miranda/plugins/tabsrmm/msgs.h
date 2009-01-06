@@ -38,35 +38,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
 #define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
-#define MIM_BACKGROUND              0x00000002
 #define GT_SELECTION 2
 #define ST_SELECTION 2
 #define ST_DEFAULT 0
 #define ST_KEEPUNDO 1
-#define CFM_WEIGHT 0x0040000
 #define SBT_TOOLTIPS 0x0800
 #define DFCS_HOT 0x1000
 
-#if defined(_UNICODE)
-#define TTM_SETTITLE (WM_USER+33)
-#else
-#define TTM_SETTITLE (WM_USER+32)
-#endif
-
 #define FLASHW_STOP 0
-#define FLASHW_TRAY 0x00000002
-#define FLASHW_CAPTION 0x00000001
-#define FLASHW_ALL (FLASHW_TRAY | FLASHW_CAPTION)
-#define FLASHW_TIMERNOFG 0x0000000C
-#define FLASHW_TIMER 0x00000004
 #define IMF_AUTOKEYBOARD 0x0001
 #define ODS_INACTIVE        0x0080
 #define NIN_BALLOONUSERCLICK (WM_USER + 5)
-#define NIN_BALLOONHIDE (WM_USER + 3)
 #define NIN_BALLOONTIMEOUT (WM_USER + 4)
 #define IMF_AUTOFONTSIZEADJUST	0x0010
-
-#define WM_THEMECHANGED 0x031A
 
 typedef struct __gettextex {
 	DWORD	cb;				// Count of bytes in the string
@@ -93,11 +77,6 @@ typedef struct tagNMMOUSE {
 } NMMOUSE, *LPNMMOUSE;
 #endif
 
-#define __forceinline __inline
-
-#define GRADIENT_FILL_RECT_V 1
-#define GRADIENT_FILL_RECT_H 0
-#define CS_DROPSHADOW       0x00020000
 #define CFE_LINK		0x0020
 
 #define __try
@@ -266,7 +245,6 @@ struct ContainerWindowData {
 	DWORD   dwLastActivity;
 	int     hIcon;                // current window icon stick indicator
 	DWORD   dwFlashingStarted;
-	int     bInTray;              // 1 = in tray normal, 2 = in tray (was maximized)
 	RECT    restoreRect;
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;
@@ -1193,7 +1171,7 @@ typedef struct {
  * encryption status bar indicator
  */
 
-extern HANDLE hHookIconPressedEvt;
+// extern HANDLE hHookIconPressedEvt;
 extern int status_icon_list_size;
 
 int SI_InitStatusIcons();

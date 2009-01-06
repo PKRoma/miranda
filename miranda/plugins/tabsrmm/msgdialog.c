@@ -2024,7 +2024,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			pt.x = 0;
 			ScreenToClient(hwndDlg, &pt);
 			dat->originalSplitterY = pt.y;
-			if (m_pContainer->dwFlags & CNT_CREATE_MINIMIZED || (IsIconic(hwndContainer) && m_pContainer->bInTray == 0))
+			if (m_pContainer->dwFlags & CNT_CREATE_MINIMIZED || (IsIconic(hwndContainer)))
 				dat->originalSplitterY--;
 			if (dat->splitterY == -1)
 				dat->splitterY = dat->originalSplitterY + 60;
@@ -5066,7 +5066,7 @@ quote_from_last:
 			 */
 
 		case DM_ACTIVATETOOLTIP: {
-			if (IsIconic(hwndContainer) || m_pContainer->bInTray || m_pContainer->hwndActive != hwndDlg)
+			if (IsIconic(hwndContainer) || m_pContainer->hwndActive != hwndDlg)
 				break;
 
 			if (dat->hwndTip) {

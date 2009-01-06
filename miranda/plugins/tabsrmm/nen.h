@@ -138,7 +138,6 @@ typedef struct {
     int  dwStatusMask;
     BOOL bTraySupport;
     BOOL bTrayExist;
-    BOOL bMinimizeToTray;
     int  iAutoRestore;
     BOOL iNoSounds;
     BOOL iNoAutoPopup;

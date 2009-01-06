@@ -569,7 +569,7 @@ BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 							if((dat->dwFlags & MWF_LOG_ALL) != dwOldFlags) {
 								BOOL	fShouldHide = TRUE;
 
-								if(IsIconic(dat->pContainer->hwnd) || dat->pContainer->bInTray)
+								if(IsIconic(dat->pContainer->hwnd))
 									fShouldHide = FALSE;
 								else
 									ShowWindow(dat->pContainer->hwnd, SW_HIDE);

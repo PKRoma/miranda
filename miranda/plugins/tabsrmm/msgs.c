@@ -35,9 +35,10 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.10\\b0\\ul0\\par ",
-	"*\tBug fixes: Title bar variables, status bar buttons and more.\\par ",
-	"*\tNew: Added ability to configure avatar visible to the user preference dialog.\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.13\\b0\\ul0\\par ",
+	"*\tFixed some translation issues.\\par ",
+	"*\tFixed bug #468 (in some rare cases, message window can stay invisible after creation).\\par ",
+	"*\tRe-enabled container transparency in skinned mode (Windows Vista only).\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -601,7 +602,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			bPopup = (BOOL) DBGetContactSettingByte(NULL, SRMSGMOD_T, "cpopup", 0);
 			pContainer = FindContainerByName(szName);
 			if (pContainer != NULL) {
-				if ((pContainer->bInTray || IsIconic(pContainer->hwnd)) && myGlobals.m_AutoSwitchTabs) {
+				if ((IsIconic(pContainer->hwnd)) && myGlobals.m_AutoSwitchTabs) {
 					bActivate = TRUE;
 					pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
 				}
@@ -1023,7 +1024,7 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 		struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
 
 		if (dat)
-			dat->bWasDeleted = 1;				// indicated deleted contact, avoid recursion and possible crash
+			dat->bWasDeleted = 1;				// indicate a deleted contact. The WM_CLOSE handler will "fast close" the session and skip housekeeping.
 		SendMessage(hwnd, WM_CLOSE, 0, 1);
 	}
 	return 0;

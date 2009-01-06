@@ -24,6 +24,12 @@ Version 2.2.1.13  - 2009/01/02
 
 	* merged changes from main Miranda tree (chat API, bugfixes)
 
+	* project is now fully GCC / MingW compatible. Build files were added to
+	  build tabSRMM with GCC 4.x. See docs/README.GCC for more information.
+
+	* removed minimize to tray (or floater) feature. The same functionality
+	  is now available via the "hidden container" feature.
+
 
 Version 2.2.1.12  - 2008/12/30
 ------------------------------

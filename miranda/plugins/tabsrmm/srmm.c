@@ -54,11 +54,11 @@ PLUGININFOEX pluginInfo = {
 #else
 	"TabSRMM",
 #endif
-	PLUGIN_MAKE_VERSION(2, 2, 1, 11),
+	PLUGIN_MAKE_VERSION(2, 2, 1, 13),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
-	"© 2000-2008 Miranda Project",
+	"ï¿½ 2000-2008 Miranda Project",
 	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
@@ -78,8 +78,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 0)) {
+		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.8.0 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return NULL;
+	}
 	return &pluginInfo;
 }
 
@@ -108,10 +110,10 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getLI(&li);
 	//
 
-	if (!ServiceExists(MS_DB_EVENT_GETTEXT)){
-		MessageBox(0, _T("tabSRMM"), _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), MB_OK);
+	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
+		MessageBox(0, _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return 1;
-		}
+	}
 	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	Chat_Load(pluginLink);

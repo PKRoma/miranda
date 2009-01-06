@@ -332,7 +332,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 								}
 							} while (--i >= 0);
 							if (uid == 0 && pLastActiveContainer != NULL) {                // no session found, restore last active container
-								if (IsIconic(pLastActiveContainer->hwnd) || pLastActiveContainer->bInTray != 0) {
+								if (IsIconic(pLastActiveContainer->hwnd)) {
 									SendMessage(pLastActiveContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 									SetForegroundWindow(pLastActiveContainer->hwnd);
 								} else
@@ -391,8 +391,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 										nen_options.bAnimated = FALSE;
 										while (pContainer) {
-											if (!pContainer->bInTray)
-												SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
+											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
 											pContainer = pContainer->pNextContainer;
 										}
 										nen_options.bAnimated = bAnimatedState;
@@ -404,8 +403,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 										nen_options.bAnimated = FALSE;
 										while (pContainer) {
-											if (pContainer->bInTray)
-												SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
 											pContainer = pContainer->pNextContainer;
 										}
 										nen_options.bAnimated = bAnimatedState;
@@ -421,8 +419,7 @@ BOOL CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 										nen_options.bAnimated = FALSE;
 										while (pContainer) {
-											if (!pContainer->bInTray)
-												SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
+											SendMessage(pContainer->hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 1);
 											pContainer = pContainer->pNextContainer;
 										}
 										nen_options.bAnimated = bAnimatedState;
