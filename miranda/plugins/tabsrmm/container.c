@@ -1941,10 +1941,10 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					if (bSkinned) {
-						ShowWindow(hwndDlg, SW_SHOW);
-						return 0;
-					}
+					//if (bSkinned) {
+					//	ShowWindow(hwndDlg, SW_SHOW);
+					//	return 0;
+					//}
  					//MAD: to fix rare (windows?) bug...
  					ShowWindow(hwndDlg, SW_RESTORE);
  					//

@@ -1,5 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
+#include <winres.h>
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
