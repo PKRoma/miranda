@@ -2,9 +2,9 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-08  George Hazan
-Copyright ( C ) 2007-08  Maxim Mluhov
-Copyright ( C ) 2007-08  Victor Pavlychko
+Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2007-09  Maxim Mluhov
+Copyright ( C ) 2007-09  Victor Pavlychko
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/ui_utils.h $
 Revision       : $Revision: 8244 $
-Last change on : $Date: 2008-08-17 15:09:42 +0300 (Íä, 17 Cåð 2008) $
+Last change on : $Date: 2008-09-17 15:09:42 +0300 (Íä, 17 Cåð 2008) $
 Last change by : $Author: vpavlychko $
 
 */

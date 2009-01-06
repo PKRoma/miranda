@@ -2,9 +2,9 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-08  George Hazan
-Copyright ( C ) 2007-08  Maxim Mluhov
-Copyright ( C ) 2007-08  Victor Pavlychko
+Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2007-09  Maxim Mluhov
+Copyright ( C ) 2007-09  Victor Pavlychko
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
