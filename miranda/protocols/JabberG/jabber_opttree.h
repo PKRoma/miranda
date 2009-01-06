@@ -53,7 +53,7 @@ protected:
 		TCHAR *m_szOptionName;
 		int m_groupId;
 
-		CMOption<BYTE> &m_option;
+		CMOption<BYTE> *m_option;
 
 		HTREEITEM m_hItem;
 

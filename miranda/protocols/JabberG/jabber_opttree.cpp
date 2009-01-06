@@ -168,7 +168,7 @@ void CCtrlTreeOpts::OnInit()
 					{
 						tvis.item.lParam = i;
 
-						BYTE val = m_options[i]->m_option;
+						BYTE val = *m_options[i]->m_option;
 
 						if (m_options[i]->m_groupId == OPTTREE_CHECK)
 						{
@@ -206,7 +206,7 @@ void CCtrlTreeOpts::OnApply()
 	{
 		TVITEMEX tvi;
 		GetItem(m_options[i]->m_hItem, &tvi);
-		m_options[i]->m_option = ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK)) ? 1 : 0;
+		*m_options[i]->m_option = ((tvi.iImage == IMG_CHECK) || (tvi.iImage == IMG_RCHECK)) ? 1 : 0;
 	}
 }
 
@@ -257,7 +257,7 @@ void CCtrlTreeOpts::ProcessItemClick(HTREEITEM hti)
 }
 
 CCtrlTreeOpts::COptionsItem::COptionsItem(TCHAR *szOption, CMOption<BYTE> &option):
-	m_option(option), m_groupId(OPTTREE_CHECK), m_hItem(NULL)
+	m_option(&option), m_groupId(OPTTREE_CHECK), m_hItem(NULL)
 {
 	m_szOptionName = mir_tstrdup(szOption);
 }

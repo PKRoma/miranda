@@ -234,14 +234,14 @@ template<class T>
 class CMOptionLink: public CDataLink
 {
 private:
-	CMOption<T> &m_option;
+	CMOption<T> *m_option;
 
 public:
-	CMOptionLink(CMOption<T> &option): CDataLink(CMDBTraits<sizeof(T)>::DBTypeId, CMIntTraits<T>::IsSigned()), m_option(option) {}
+	CMOptionLink(CMOption<T> &option): CDataLink(CMDBTraits<sizeof(T)>::DBTypeId, CMIntTraits<T>::IsSigned()), m_option(&option) {}
 
-	DWORD LoadUnsigned() { return (DWORD)(T)m_option; }
-	int LoadSigned() { return (int)(T)m_option; }
-	void SaveInt(DWORD value) { m_option = (T)value; }
+	DWORD LoadUnsigned() { return (DWORD)(T)*m_option; }
+	int LoadSigned() { return (int)(T)*m_option; }
+	void SaveInt(DWORD value) { *m_option = (T)value; }
 
 	TCHAR *LoadText() { return NULL; }
 	void SaveText(TCHAR*) {}
