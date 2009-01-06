@@ -29,6 +29,10 @@ Last change by : $Author$
 #ifndef _JABBER_H_
 #define _JABBER_H_
 
+#ifdef _MSC_VER
+	#pragma warning(disable:4706 4121 4127)
+#endif
+
 // this plugin is for Miranda 0.8 only
 #define MIRANDA_VER 0x0800
 

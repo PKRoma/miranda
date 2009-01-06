@@ -843,7 +843,7 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 
 	int iqId = SerialNext();
 	XmlNodeIq iq( _T("set"), iqId, _A2T(szServerName));
-	HXML query = iq << XQUERY( _T("jabber:iq:search")), x;
+	HXML query = iq << XQUERY( _T("jabber:iq:search"));
 
 	if ( bIsExtFormat ) {
 		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultExtSearch );
@@ -853,28 +853,25 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 			iq << XATTR( _T("xml:lang"), szXmlLang );
 			mir_free( szXmlLang );
 		}
-		x = query << XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
-	}
-	else IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
-
-	if ( nick[0] != '\0' ) {
-		if ( bIsExtFormat )
+		HXML x = query << XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
+		if ( nick[0] != '\0' )
 			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("user")) << XATTR( _T("value"), _A2T(nick));
-		else 
-			query << XCHILD( _T("nick"), _A2T(nick));
-	}
 
-	if ( firstName[0] != '\0' ) {
-		if ( bIsExtFormat )
+		if ( firstName[0] != '\0' )
 			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("fn")) << XATTR( _T("value"), _A2T(firstName));
-		else 
-			query << XCHILD( _T("first"), _A2T(firstName));
-	}
 
-	if ( lastName[0] != '\0' ) {
-		if ( bIsExtFormat )
+		if ( lastName[0] != '\0' )
 			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("given")) << XATTR( _T("value"), _A2T(lastName));
-		else
+	}
+	else {
+		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
+		if ( nick[0] != '\0' )
+			query << XCHILD( _T("nick"), _A2T(nick));
+
+		if ( firstName[0] != '\0' )
+			query << XCHILD( _T("first"), _A2T(firstName));
+
+		if ( lastName[0] != '\0' )
 			query << XCHILD( _T("last"), _A2T(lastName));
 	}
 

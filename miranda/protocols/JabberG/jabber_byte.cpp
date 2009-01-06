@@ -161,7 +161,7 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 	struct in_addr in;
 	DBVARIANT dbv;
 	TCHAR szPort[8];
-	HANDLE hEvent;
+	HANDLE hEvent = NULL;
 	TCHAR* proxyJid;
 	CJabberIqInfo* pInfo = NULL;
 	int nIqId = 0;
@@ -605,7 +605,7 @@ int CJabberProto::ByteSendProxyParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, c
 
 void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 {
-	HXML iqNode, queryNode, n;
+	HXML iqNode, queryNode = NULL, n;
 	const TCHAR *sid = NULL, *from = NULL, *to = NULL, *szId = NULL, *szHost, *szPort, *str;
 	int i;
 	WORD port;
@@ -622,8 +622,9 @@ void __cdecl CJabberProto::ByteReceiveThread( JABBER_BYTE_TRANSFER *jbt )
 	if ( iqNode = jbt->iqNode ) {
 		from = xmlGetAttrValue( iqNode, _T("from"));
 		to = xmlGetAttrValue( iqNode, _T("to"));
-		queryNode = xmlGetChild( iqNode , "query" );
 		szId = xmlGetAttrValue( iqNode, _T("id"));
+
+		queryNode = xmlGetChild( iqNode , "query" );
 		if ( queryNode )
 			sid = xmlGetAttrValue( queryNode, _T("sid"));
 	}

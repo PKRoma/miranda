@@ -655,12 +655,13 @@ HXML JabberFormGetData( HWND hwndStatic, HXML xNode )
 			len = GetWindowTextLength( GetDlgItem( hFrame, id ));
 			str = ( TCHAR* )mir_alloc( sizeof( TCHAR )*( len+1 ));
 			GetDlgItemText( hFrame, id, str, len+1 );
+			v = NULL;
 			for ( j=0; ; j++ ) {
 				o = xmlGetChild( n ,j);
 				if ( !o )
 					break;
 
-				if ( o && xmlGetName( o ) && !lstrcmp( xmlGetName( o ), _T("option"))) {
+				if ( !lstrcmp( xmlGetName( o ), _T("option"))) {
 					if (( v = xmlGetChild( o , "value" )) != NULL && xmlGetText( v ) ) {
 						if (( str2 = xmlGetAttrValue( o, _T("label"))) == NULL )
 							str2 = xmlGetText( v );

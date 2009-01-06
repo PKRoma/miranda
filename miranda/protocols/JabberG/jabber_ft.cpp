@@ -302,9 +302,8 @@ void CJabberProto::FtSendFinal( BOOL success, filetransfer* ft )
 void CJabberProto::FtHandleSiRequest( HXML iqNode )
 {
 	const TCHAR* from, *sid, *str, *szId, *filename;
-	HXML siNode, fileNode, optionNode, featureNode, xNode, fieldNode, n;
+	HXML siNode, fileNode, featureNode, xNode, fieldNode, n;
 	int filesize, i;
-	JABBER_FT_TYPE ftType;
 
 	if ( !iqNode ||
 		  ( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL ||
@@ -324,6 +323,8 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 			( fieldNode = xmlGetChildByTag( xNode, "field", "var", _T("stream-method")))!=NULL ) {
 
 			BOOL bIbbOnly = m_options.BsOnlyIBB;
+			HXML optionNode = NULL;
+			JABBER_FT_TYPE ftType = FT_OOB;
 
 			if ( !bIbbOnly ) {
 				for ( i=0; ; i++ ) {
@@ -331,7 +332,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 					if ( !optionNode )
 						break;
 	
-					if ( xmlGetName( optionNode ) && !lstrcmp( xmlGetName( optionNode ), _T("option"))) {
+					if ( !lstrcmp( xmlGetName( optionNode ), _T("option"))) {
 						if (( n = xmlGetChild( optionNode , "value" )) != NULL && xmlGetText( n ) ) {
 							if ( !_tcscmp( xmlGetText( n ), _T(JABBER_FEAT_BYTESTREAMS))) {
 								ftType = FT_BYTESTREAM;
@@ -345,7 +346,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 					if ( !optionNode )
 						break;
 
-					if ( xmlGetName( optionNode ) && !lstrcmp( xmlGetName( optionNode ), _T("option"))) {
+					if ( !lstrcmp( xmlGetName( optionNode ), _T("option"))) {
 						if (( n = xmlGetChild( optionNode , "value" )) != NULL && xmlGetText( n ) ) {
 							if ( !_tcscmp( xmlGetText( n ), _T(JABBER_FEAT_IBB))) {
 								ftType = FT_IBB;

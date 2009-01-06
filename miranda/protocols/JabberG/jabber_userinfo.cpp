@@ -821,8 +821,6 @@ static BOOL CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPar
 		}
 		break;
 
-		photoInfo->ppro = ( CJabberProto* )lParam;
-
 	case WM_DESTROY:
 		if ( photoInfo->hBitmap ) {
 			photoInfo->ppro->Log( "Delete bitmap" );
