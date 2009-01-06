@@ -75,7 +75,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 
 #ifdef _MSC_VER
-	#pragma warning(disable:4201)
+	#pragma warning(disable:4201 4204)
 #endif
 
 //DBVARIANT: used by db/contact/getsetting and db/contact/writesetting

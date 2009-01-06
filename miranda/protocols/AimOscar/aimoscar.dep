@@ -7,8 +7,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -60,8 +62,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -112,8 +116,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -164,8 +170,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -216,8 +224,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -268,8 +278,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -320,8 +332,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -372,8 +386,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -424,8 +440,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -476,8 +494,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -528,8 +548,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -580,8 +602,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -633,8 +657,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -685,8 +711,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -737,6 +765,7 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
 	"..\..\include\m_genmenu.h"\
@@ -790,8 +819,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -842,8 +873,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -894,8 +927,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -946,8 +981,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -998,8 +1035,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1050,8 +1089,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1102,8 +1143,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1154,8 +1197,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1206,8 +1251,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1258,8 +1305,10 @@
 	"..\..\include\m_chat.h"\
 	"..\..\include\m_clc.h"\
 	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_database.h"\
+	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_history.h"\
 	"..\..\include\m_icolib.h"\
 	"..\..\include\m_idle.h"\
@@ -1319,7 +1368,6 @@
 	".\icons\idle.ico"\
 	".\icons\inbox.ico"\
 	".\icons\italic.ico"\
-	".\icons\join.ico"\
 	".\icons\nbold.ico"\
 	".\icons\nitalic.ico"\
 	".\icons\nnormalscript.ico"\
@@ -1328,7 +1376,6 @@
 	".\icons\nsuperscript.ico"\
 	".\icons\nunderline.ico"\
 	".\icons\oscar.ico"\
-	".\icons\part.ico"\
 	".\icons\profile.ico"\
 	".\icons\subscript.ico"\
 	".\icons\superscript.ico"\
