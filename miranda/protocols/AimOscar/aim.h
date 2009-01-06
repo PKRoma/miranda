@@ -220,6 +220,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_IM2						"IM2"
 #define CLIENT_KOPETE					"Kopete"
 #define CLIENT_MEEBO					"Meebo"
+#define CLIENT_IPHONE					"IPhone"
 #define CLIENT_DIGSBY					"Digsby"
 #define CLIENT_MICQ						"mICQ"
 #define CLIENT_AIMOSCAR					"Miranda IM %d.%d.%d.%d(AimOSCAR v%d.%d.%d.%d)"

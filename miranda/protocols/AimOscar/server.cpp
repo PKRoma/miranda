@@ -195,7 +195,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					int admin_aol = m_iStatus&0x0002;
 					int aol = m_iStatus&0x0004;
 					//int nonfree = m_iStatus&0x0008;
-					//int free = m_iStatus&0x0010;
+					//int aim = m_iStatus&0x0010;
 					int away = m_iStatus&0x0020;
 					int icq = m_iStatus&0x0040;
 					int wireless = m_iStatus&0x0080;
@@ -425,6 +425,9 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				}
 				else if(l346&&tlv.len()==2)
 					strlcpy(client,CLIENT_MEEBO,100);
+				else if(l34e&&tlv.len()==2)
+					strlcpy(client,CLIENT_IPHONE,100);
+
 				//if(utf8)
 				//	DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_US, 1);
 				//else
