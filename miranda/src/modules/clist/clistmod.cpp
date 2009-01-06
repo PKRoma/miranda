@@ -140,7 +140,7 @@ static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 	return (int)cli.pfnGetStatusModeDescription(wParam,lParam);
 }
 
-static int ProtocolAck(WPARAM wParam, LPARAM lParam)
+static int ProtocolAck(WPARAM, LPARAM lParam)
 {
 	ACKDATA *ack = (ACKDATA *) lParam;
 
@@ -173,7 +173,7 @@ HICON fnGetIconFromStatusMode( HANDLE hContact, const char *szProto, int status 
 	return ImageList_GetIcon( hCListImages, cli.pfnIconFromStatusMode( szProto, status, hContact ), ILD_NORMAL);
 }
 
-int fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact)
+int fnIconFromStatusMode(const char *szProto, int status, HANDLE )
 {
 	int index, i;
 
@@ -193,7 +193,7 @@ int fnIconFromStatusMode(const char *szProto, int status, HANDLE hContact)
 	return 1;
 }
 
-static int GetContactIcon(WPARAM wParam, LPARAM lParam)
+static int GetContactIcon(WPARAM wParam, LPARAM)
 {
 	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 	HANDLE hContact = (HANDLE)wParam;
@@ -202,7 +202,7 @@ static int GetContactIcon(WPARAM wParam, LPARAM lParam)
 		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), hContact);
 }
 
-static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int ContactListModulesLoaded(WPARAM, LPARAM)
 {
 	int i, j, iImg;
 
@@ -236,7 +236,7 @@ static int ContactListModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ContactDoubleClicked(WPARAM wParam, LPARAM lParam)
+static int ContactDoubleClicked(WPARAM wParam, LPARAM)
 {
 	// Check and an event from the CList queue for this hContact
 	if (cli.pfnEventsProcessContactDoubleClick((HANDLE) wParam))
@@ -245,7 +245,7 @@ static int ContactDoubleClicked(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int GetIconsImageList(WPARAM wParam, LPARAM lParam)
+static int GetIconsImageList(WPARAM, LPARAM)
 {
 	return (int) hCListImages;
 }
@@ -256,7 +256,7 @@ static int ContactFilesDropped(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int CListIconsChanged(WPARAM wParam, LPARAM lParam)
+static int CListIconsChanged(WPARAM, LPARAM)
 {
 	int i, j;
 
@@ -328,7 +328,7 @@ int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 	}
 }
 
-int fnShowHide(WPARAM wParam, LPARAM lParam)
+int fnShowHide(WPARAM, LPARAM)
 {
 	BOOL bShow = FALSE;
 
@@ -351,8 +351,6 @@ int fnShowHide(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	if (bShow == TRUE) {
-		WINDOWPLACEMENT pl = { 0 };
-
 		RECT rcScreen, rcWindow;
 		int offScreen = 0;
 

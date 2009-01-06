@@ -257,7 +257,7 @@ static void IdleObject_Tick(IdleObject * obj)
 		NotifyEventHooks(hIdleEvent, 0, flags);
 }	}
 
-void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime)
+void CALLBACK IdleTimer(HWND, UINT, UINT idEvent, DWORD)
 {
 	if ( gIdleObject.hTimer == idEvent )
 		IdleObject_Tick( &gIdleObject );
@@ -390,7 +390,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static int IdleOptInit(WPARAM wParam, LPARAM lParam)
+static int IdleOptInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
@@ -405,7 +405,7 @@ static int IdleOptInit(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int IdleGetInfo(WPARAM wParam, LPARAM lParam)
+static int IdleGetInfo(WPARAM, LPARAM lParam)
 {
 	MIRANDA_IDLE_INFO *mii = ( MIRANDA_IDLE_INFO* )lParam;
 	if ( !mii || ( mii->cbSize != sizeof(MIRANDA_IDLE_INFO) && mii->cbSize != MIRANDA_IDLE_INFO_SIZE_1 ))

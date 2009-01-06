@@ -126,7 +126,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hVisibleIcon,hInvisibleIcon;
 	static HANDLE hItemAll;
@@ -275,7 +275,7 @@ static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static int VisibilityOptInitialise(WPARAM wParam,LPARAM lParam)
+static int VisibilityOptInitialise(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);

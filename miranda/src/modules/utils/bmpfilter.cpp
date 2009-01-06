@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_png.h"
 
-static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
+static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 {
 	IPicture *pic;
 	HBITMAP hBmp,hBmpCopy;
@@ -63,7 +63,7 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 
 			if ( !ServiceExists( MS_PNG2DIB )) {
 				MessageBox( NULL, TranslateT( "You need an image services plugin to process PNG images." ), TranslateT( "Error" ), MB_OK );
-				return (int)(HBITMAP)NULL;
+				return 0;
 			}
 
 			if (( hFile = CreateFileA( szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
@@ -76,38 +76,36 @@ static int BmpFilterLoadBitmap(WPARAM wParam,LPARAM lParam)
 				param.pSource = ppMap;
 				param.cbSourceSize = cbFileSize;
 				param.pResult = &pDib;
-				if ( CallService( MS_PNG2DIB, 0, ( LPARAM )&param ))
+				if ( CallService( MS_PNG2DIB, 0, ( LPARAM )&param )) {
 					pDibBits = ( BYTE* )( pDib+1 );
-				else
-					cbFileSize = 0;
+					HDC sDC = GetDC( NULL );
+					HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
+					SelectObject( sDC, hBitmap );
+					ReleaseDC( NULL, sDC );
+					GlobalFree( pDib );
+					cbFileSize = (long)hBitmap;
+				}
+				else cbFileSize = 0;
 			}
 
 			if ( ppMap != NULL )	UnmapViewOfFile( ppMap );
 			if ( hMap  != NULL )	CloseHandle( hMap );
 			if ( hFile != NULL ) CloseHandle( hFile );
 
-			if ( cbFileSize == 0 )
-				return (int)(HBITMAP)NULL;
-
-			{	HDC sDC = GetDC( NULL );
-				HBITMAP hBitmap = CreateDIBitmap( sDC, pDib, CBM_INIT, pDibBits, ( BITMAPINFO* )pDib, DIB_PAL_COLORS );
-				SelectObject( sDC, hBitmap );
-				ReleaseDC( NULL, sDC );
-				GlobalFree( pDib );
-				return (int)hBitmap;
-	}	}	}
+			return (int)cbFileSize;
+	}	}
 
 	OleInitialize(NULL);
 	MultiByteToWideChar(CP_ACP,0,szFilename,-1,pszwFilename,MAX_PATH);
 	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) {
 		OleUninitialize();
-		return (int)(HBITMAP)NULL;
+		return 0;
 	}
 	pic->lpVtbl->get_Type(pic,&picType);
 	if(picType!=PICTYPE_BITMAP) {
 		pic->lpVtbl->Release(pic);
 		OleUninitialize();
-		return (int)(HBITMAP)NULL;
+		return 0;
 	}
 	pic->lpVtbl->get_Handle(pic,(OLE_HANDLE*)&hBmp);
 	GetObject(hBmp,sizeof(bmpInfo),&bmpInfo);

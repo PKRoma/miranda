@@ -264,11 +264,11 @@
 				AssemblerOutput="4"
 				BrowseInformation="0"
 				BrowseInformationFile=""
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4996"
+				DisableSpecificWarnings="4996;4706;4127"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

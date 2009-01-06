@@ -423,7 +423,7 @@ static void enumPlugins(SCAN_PLUGINS_CALLBACK cb, WPARAM wParam, LPARAM lParam)
 }
 
 // this is called by the db module to return all DBs plugins, then when it finds the one it likes the others are unloaded
-static int PluginsEnum(WPARAM wParam, LPARAM lParam)
+static int PluginsEnum(WPARAM, LPARAM lParam)
 {
 	PLUGIN_DB_ENUM * de = (PLUGIN_DB_ENUM *) lParam;
 	pluginEntry * x = pluginListDb;
@@ -448,13 +448,13 @@ static int PluginsEnum(WPARAM wParam, LPARAM lParam)
 	return pluginListDb != NULL ? 1 : -1;
 }
 
-static int PluginsGetDefaultArray(WPARAM wParam, LPARAM lParam)
+static int PluginsGetDefaultArray(WPARAM, LPARAM)
 {
 	return (int) &pluginDefModList;
 }
 
 // called in the first pass to create pluginEntry* structures and validate database plugins
-static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, LPARAM lParam )
+static BOOL scanPluginsDir (WIN32_FIND_DATAA * fd, char * path, WPARAM, LPARAM)
 {
 	int isdb = validguess_db_name(fd->cFileName);
 	BASIC_PLUGIN_INFO bpi;
@@ -664,7 +664,7 @@ typedef struct
 }
 	PluginListItemData;
 
-static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM wParam, LPARAM lParam)
+static BOOL dialogListPlugins(WIN32_FIND_DATAA * fd, char * path, WPARAM, LPARAM lParam)
 {
 	LVITEMA it;
 	int iRow;
@@ -734,16 +734,6 @@ static void RemoveAllItems( HWND hwnd )
 		mir_free( dat );
 		lvi.iItem ++;
 }	}
-
-static TCHAR* PluginCutCopyright(TCHAR * buf)
-{
-	/* Some plugins include (C,c)opyright, which is fine but it looks stupid in the UI */
-	TCHAR tmp[16];
-	_tcsncpy(tmp, buf, 9);
-	tmp[9]=0;
-	if ( lstrcmpi( tmp, _T("copyright")) == 0 ) return buf+10;
-	return buf;
-}
 
 static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -914,7 +904,7 @@ static BOOL CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-static int PluginOptionsInit(WPARAM wParam, LPARAM lParam)
+static int PluginOptionsInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);

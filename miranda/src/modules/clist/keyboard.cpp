@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include <m_hotkeys.h>
 
-static int hkHideShow(WPARAM wParam,LPARAM lParam)
+static int hkHideShow(WPARAM, LPARAM)
 {
 	cli.pfnShowHide(0,0);
 	return 0;
@@ -40,7 +40,7 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 */
-static int hkRead(WPARAM wParam,LPARAM lParam)
+static int hkRead(WPARAM, LPARAM)
 {
 	if(cli.pfnEventsProcessTrayDoubleClick(0)==0) return TRUE;
 	SetForegroundWindow(cli.hwndContactList);
@@ -48,7 +48,7 @@ static int hkRead(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int hkOpts(WPARAM wParam,LPARAM lParam)
+static int hkOpts(WPARAM, LPARAM)
 {
 	CallService("Options/OptionsCommand",0, 0);
 	return 0;
@@ -69,7 +69,7 @@ int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 */
-static int hkAllOffline(WPARAM wParam,LPARAM lParam)
+static int hkAllOffline(WPARAM, LPARAM)
 {
 	int nProto;
 
@@ -151,21 +151,21 @@ int InitClistHotKeys(void)
 }
 
 
-int fnHotKeysRegister(HWND hwnd)
+int fnHotKeysRegister(HWND)
 {
 	return 0;
 }
 
-void fnHotKeysUnregister(HWND hwnd)
+void fnHotKeysUnregister(HWND)
 {
 }
 
-int fnHotKeysProcess(HWND hwnd, WPARAM wParam, LPARAM lParam)
+int fnHotKeysProcess(HWND, WPARAM, LPARAM)
 {
 	return TRUE;
 }
 
-int fnHotkeysProcessMessage(WPARAM wParam, LPARAM lParam)
+int fnHotkeysProcessMessage(WPARAM, LPARAM)
 {
 	return FALSE;
 }

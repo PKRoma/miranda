@@ -109,7 +109,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 			lParam=(LPARAM)szText;
 			/* fall thru */
 		case WM_SETTEXT:
-		{	HFONT hPrevFont;
+		{	HFONT hPrevFont = NULL;
 			SIZE textSize;
 			RECT rc;
 			HDC hdc;

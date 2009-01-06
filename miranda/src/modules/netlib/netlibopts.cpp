@@ -495,7 +495,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 static UINT expertOnlyControls[]={IDC_LOGOPTIONS};
-int NetlibOptInitialise(WPARAM wParam,LPARAM lParam)
+int NetlibOptInitialise(WPARAM wParam,LPARAM)
 {
 	OPTIONSDIALOGPAGE odp={0};
 	int i,optionsCount;

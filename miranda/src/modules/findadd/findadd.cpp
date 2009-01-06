@@ -55,7 +55,7 @@ static char* FindAddTrimR(char *s) {
    return s;
 }
 
-static int FindAddDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+static int FindAddDlgResizer(HWND,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
 	static int y,nextY,oldTop;
 	struct FindAddDlgData *dat;
@@ -267,7 +267,6 @@ static void HideAdvancedSearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 
 void EnableResultButtons(HWND hwndDlg,int enable)
 {
-	struct FindAddDlgData* dat = (struct FindAddDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	EnableWindow(GetDlgItem(hwndDlg,IDC_ADD),enable);
 	EnableWindow(GetDlgItem(hwndDlg,IDC_MOREOPTIONS),enable);
 }
@@ -710,7 +709,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 					CreateResultsColumns(GetDlgItem(hwndDlg,IDC_RESULTS),dat,szProto);
 					SetStatusBarSearchInfo(GetDlgItem(hwndDlg,IDC_STATUSBAR),dat);
-					SetStatusBarResultInfo(hwndDlg,dat);
+					SetStatusBarResultInfo(hwndDlg);
 					StartThrobber(hwndDlg,dat);
 					SetDlgItemText(hwndDlg, IDOK, TranslateT("Cancel"));
 					break;
@@ -851,7 +850,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					ListView_SortItemsEx(GetDlgItem(hwndDlg, IDC_RESULTS), SearchResultsCompareFunc, (LPARAM)hwndDlg);
 					i=0;
 					while (ListView_SetColumnWidth(hwndList, i++, LVSCW_AUTOSIZE_USEHEADER));
-					SetStatusBarResultInfo(hwndDlg,dat);
+					SetStatusBarResultInfo(hwndDlg);
 				}
 				break;
 			}
@@ -894,7 +893,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					wsprintfA(str, "%u", isr->uin);
 					ListView_SetItemTextA(GetDlgItem(hwndDlg,IDC_RESULTS),i,col++,str);
 				}
-				SetStatusBarResultInfo(hwndDlg,dat);
+				SetStatusBarResultInfo(hwndDlg);
 			}
 			break;
 		}
@@ -933,7 +932,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-static int FindAddCommand(WPARAM wParam,LPARAM lParam)
+static int FindAddCommand(WPARAM, LPARAM)
 {
 	if(IsWindow(hwndFindAdd)) {
 		ShowWindow(hwndFindAdd,SW_SHOWNORMAL);
@@ -965,7 +964,7 @@ static int FindAddCommand(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int FindAddPreShutdown(WPARAM wParam, LPARAM lParam)
+int FindAddPreShutdown(WPARAM, LPARAM)
 {
 	if ( IsWindow( hwndFindAdd ))
 		DestroyWindow(hwndFindAdd);
@@ -991,7 +990,7 @@ int LoadFindAddModule(void)
 	return 0;
 }
 
-static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int OnSystemModulesLoaded(WPARAM, LPARAM)
 {
 	int netProtoCount, i;
 

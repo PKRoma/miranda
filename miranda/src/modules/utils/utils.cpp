@@ -291,7 +291,7 @@ static struct CountryListEntry countries[]={
 };
 
 
-static int SaveWindowPosition(WPARAM wParam,LPARAM lParam)
+static int SaveWindowPosition(WPARAM, LPARAM lParam)
 {
 	SAVEWINDOWPOS *swp=(SAVEWINDOWPOS*)lParam;
 	WINDOWPLACEMENT wp;
@@ -387,7 +387,7 @@ static int RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int GetCountryByNumber(WPARAM wParam,LPARAM lParam)
+static int GetCountryByNumber(WPARAM wParam, LPARAM)
 {
 	int i;
 
@@ -403,7 +403,7 @@ static int GetCountryList(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int GetMD5Interface(WPARAM wParam, LPARAM lParam)
+int GetMD5Interface(WPARAM, LPARAM lParam)
 {
 	struct MD5_INTERFACE *md5i = (struct MD5_INTERFACE*) lParam;
 	if ( md5i == NULL )
@@ -418,7 +418,7 @@ int GetMD5Interface(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
+int GetSHA1Interface(WPARAM, LPARAM lParam)
 {
 	struct SHA1_INTERFACE *sha1i = (struct SHA1_INTERFACE*) lParam;
 	if ( sha1i == NULL )
@@ -433,7 +433,7 @@ int GetSHA1Interface(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int RestartMiranda(WPARAM wParam, LPARAM lParam)
+static int RestartMiranda(WPARAM, LPARAM)
 {
 	TCHAR mirandaPath[ MAX_PATH ], cmdLine[ 100 ];
 	PROCESS_INFORMATION pi;

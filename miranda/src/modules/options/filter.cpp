@@ -96,7 +96,7 @@ int CALLBACK DlgProcOptSearch(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int OnOptionsInitialise(WPARAM wParam, LPARAM lParam)
+int OnOptionsInitialise(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = {0};
 	

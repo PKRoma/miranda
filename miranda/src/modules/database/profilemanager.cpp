@@ -105,7 +105,7 @@ static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, 
 	return CallWindowProc((WNDPROC)GetWindowLong(edit,GWL_USERDATA),edit,msg,wParam,lParam);
 }
 
-static int FindDbProviders(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
+static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	HWND hwndDlg = (HWND)lParam;
 	HWND hwndCombo = GetDlgItem(hwndDlg, IDC_PROFILEDRIVERS);
@@ -231,7 +231,7 @@ TCHAR* rtrim( TCHAR *string )
    return string;
 }
 
-static int DetectDbProvider(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
+static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	char* fullPath = (char*)lParam;
 	int error;

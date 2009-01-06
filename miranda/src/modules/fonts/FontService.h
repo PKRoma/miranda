@@ -83,4 +83,4 @@ extern OBJLIST<TColourID> colour_id_list;
 extern int code_page;
 extern HANDLE hFontReloadEvent, hColourReloadEvent;
 
-int  CreateFromFontSettings(TFontSettings *fs, LOGFONT *lf, DWORD flags);
+int  CreateFromFontSettings(TFontSettings *fs, LOGFONT *lf );

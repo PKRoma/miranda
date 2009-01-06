@@ -124,7 +124,7 @@ static void ShowEventsInTray()
 	cli.pfnUnlockTray();	
 }
 
-static VOID CALLBACK IconFlashTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static VOID CALLBACK IconFlashTimer(HWND, UINT, UINT idEvent, DWORD)
 {
 	int i, j;
 	ShowEventsInTray();
@@ -357,7 +357,7 @@ int fnEventsProcessTrayDoubleClick(int index)
 	return 1;
 }
 
-static int RemoveEventsForContact(WPARAM wParam, LPARAM lParam)
+static int RemoveEventsForContact(WPARAM wParam, LPARAM)
 {
 	int j, hit;
 
@@ -398,7 +398,7 @@ static int CListEventSettingsChanged(WPARAM wParam, LPARAM lParam)
 /***************************************************************************************/
 
 int AddEventSyncStub(WPARAM wParam, LPARAM lParam) { return CallServiceSync(MS_CLIST_ADDEVENT"_SYNC",wParam, lParam); }
-int AddEventStub(WPARAM wParam, LPARAM lParam) { return cli.pfnAddEvent((CLISTEVENT*)lParam ) == NULL; }
+int AddEventStub(WPARAM, LPARAM lParam) { return cli.pfnAddEvent((CLISTEVENT*)lParam ) == NULL; }
 int RemoveEventStub(WPARAM wParam, LPARAM lParam) { return cli.pfnRemoveEvent((HANDLE)wParam,(HANDLE)lParam ); }
 int GetEventStub(WPARAM wParam, LPARAM lParam) { return (int)cli.pfnGetEvent((HANDLE)wParam,lParam); }
 

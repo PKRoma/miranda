@@ -213,7 +213,7 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-int FileOptInitialise(WPARAM wParam,LPARAM lParam)
+int FileOptInitialise(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp={0};
 	odp.cbSize = sizeof(odp);

@@ -121,7 +121,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 			SIZE size;
 			HFONT hFont, hOldFont;
 			LOGFONT lf;
-			CreateFromFontSettings( &F.value, &lf, F.flags);
+			CreateFromFontSettings( &F.value, &lf );
 			hFont = CreateFontIndirect(&lf);
 
 			hdc = GetDC(hwndDlg);
@@ -184,7 +184,7 @@ void OptionsChanged()
 TOOLINFO ti;
 int x, y;
 
-UINT_PTR CALLBACK CFHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
+UINT_PTR CALLBACK CFHookProc(HWND hdlg, UINT uiMsg, WPARAM, LPARAM) {
 	switch(uiMsg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hdlg);
@@ -502,7 +502,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if (itemData->font_id >= 0) {
 				int iItem = itemData->font_id;
 				bIsFont = TRUE;
-				CreateFromFontSettings( &font_id_list_w2[iItem].value, &lf, font_id_list_w2[iItem].flags);
+				CreateFromFontSettings( &font_id_list_w2[iItem].value, &lf );
 				hFont = CreateFontIndirect(&lf);
 				itemName = TranslateTS(font_id_list_w2[iItem].name);
 			}
@@ -531,7 +531,6 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case WM_DRAWITEM:
 		{
 			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
-			HBRUSH hBrush = NULL;
 			HFONT hFont = NULL, hoFont = NULL;
 			COLORREF clBack = (COLORREF)-1;
 			COLORREF clText = GetSysColor(COLOR_WINDOWTEXT);
@@ -547,7 +546,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			if ( itemData->font_id >= 0 ) {
 				int iItem = itemData->font_id;
 				bIsFont = TRUE;
-				CreateFromFontSettings(&font_id_list_w2[iItem].value, &lf, font_id_list_w2[iItem].flags);
+				CreateFromFontSettings(&font_id_list_w2[iItem].value, &lf );
 				hFont = CreateFontIndirect(&lf);
 				itemName = TranslateTS(font_id_list_w2[iItem].name);
 				clText = font_id_list_w2[iItem].value.colour;
@@ -726,7 +725,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 					TFontID& F = font_id_list_w2[itemData->font_id];
 
-					CreateFromFontSettings(&F.value, &lf, F.flags);
+					CreateFromFontSettings(&F.value, &lf );
 
 					cf.lStructSize = sizeof(cf);
 					cf.hwndOwner = hwndDlg;
@@ -904,7 +903,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						HDC hdc;
 						SIZE size;
 						HFONT hFont, hOldFont;
-						CreateFromFontSettings( &F.value, &lf, F.flags );
+						CreateFromFontSettings( &F.value, &lf );
 						hFont = CreateFontIndirect( &lf );
 						hdc = GetDC(hwndDlg);
 						hOldFont = (HFONT)SelectObject( hdc, hFont );
@@ -983,7 +982,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-int OptInit(WPARAM wParam, LPARAM lParam)
+int OptInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = {0};
 

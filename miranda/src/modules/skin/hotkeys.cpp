@@ -150,13 +150,13 @@ static LRESULT CALLBACK sttKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(hhkKeyboard, code, wParam, lParam);
 }
 
-static int svcHotkeySubclass(WPARAM wParam, LPARAM lParam)
+static int svcHotkeySubclass(WPARAM wParam, LPARAM)
 {
 	sttHotkeyEditCreate((HWND)wParam);
 	return 0;
 }
 
-static int svcHotkeyUnsubclass(WPARAM wParam, LPARAM lParam)
+static int svcHotkeyUnsubclass(WPARAM wParam, LPARAM)
 {
 	sttHotkeyEditDestroy((HWND)wParam);
 	return 0;
@@ -236,7 +236,7 @@ static int svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 	return item->idHotkey;
 }
 
-static int svcHotkeyUnregister(WPARAM wParam, LPARAM lParam)
+static int svcHotkeyUnregister(WPARAM, LPARAM lParam)
 {
 	int i;
 	char *pszName = (char *)lParam;
@@ -577,7 +577,7 @@ static int CALLBACK sttOptionsSortList(LPARAM lParam1, LPARAM lParam2, LPARAM lP
 	return sttCompareHotkeys(item1, item2);
 }
 
-static void sttOptionsAddHotkey(HWND hwndList, int idx, THotkeyItem *item)
+static void sttOptionsAddHotkey(HWND hwndList, THotkeyItem *item)
 {
 	char buf[256];
 	LVITEM lvi = {0};
@@ -659,7 +659,7 @@ static void sttOptionsSaveItem(THotkeyItem *item)
 
 static void sttBuildHotkeyList(HWND hwndList, TCHAR *section)
 {
-	int i, iGroupId=0, nItems=0;
+	int i, nItems=0;
 	ListView_DeleteAllItems(hwndList);
 
 	for (i = 0; i < hotkeys.getCount(); i++) {
@@ -741,7 +741,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
-		int i, nItems=0, iGroupId=-1;
+		int i;
 		LVCOLUMN lvc;
 		RECT rc;
 		HIMAGELIST hIml;
@@ -1065,7 +1065,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					break;
 				case MI_ADD:
 					initialized = FALSE;
-					sttOptionsAddHotkey(hwndList, lvi.iItem, item);
+					sttOptionsAddHotkey(hwndList, item);
 					initialized = FALSE;
 					break;
 				case MI_REMOVE:
@@ -1166,7 +1166,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 							sttOptionsDeleteHotkey(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
 						else {
 							initialized = FALSE;
-							sttOptionsAddHotkey(lpnmia->hdr.hwndFrom, lpnmia->iItem, item);
+							sttOptionsAddHotkey(lpnmia->hdr.hwndFrom, item);
 							initialized = TRUE;
 						}
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -1339,7 +1339,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static int sttOptionsInit(WPARAM wParam, LPARAM lParam)
+static int sttOptionsInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = {0};
 	odp.cbSize = sizeof(odp);
@@ -1354,7 +1354,7 @@ static int sttOptionsInit(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int sttModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int sttModulesLoaded(WPARAM, LPARAM)
 {
 	HookEvent(ME_OPT_INITIALISE, sttOptionsInit);
 	return 0;

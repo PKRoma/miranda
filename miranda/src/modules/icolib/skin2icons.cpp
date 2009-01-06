@@ -626,7 +626,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_RemoveIcon
 
-static int IcoLib_RemoveIcon( WPARAM wParam, LPARAM lParam )
+static int IcoLib_RemoveIcon( WPARAM, LPARAM lParam )
 {
 	if ( lParam ) {
 		int indx;
@@ -705,7 +705,6 @@ HICON IconItem_GetIcon( IconItem* item )
 
 HICON IconItem_GetIcon_Preview( IconItem* item )
 {
-	DBVARIANT dbv = {0};
 	HICON hIcon = NULL;
 
 	if ( !item->temp_reset ) {
@@ -841,7 +840,7 @@ HANDLE IcoLib_IsManaged( HICON hIcon )
 // lParam: NULL
 // wParam: HICON
 
-static int IcoLib_AddRef( WPARAM wParam, LPARAM lParam )
+static int IcoLib_AddRef( WPARAM wParam, LPARAM )
 {
 	IconItem *item = NULL;
 
@@ -1116,7 +1115,7 @@ static HTREEITEM FindNamedTreeItemAt(HWND hwndTree, HTREEITEM hItem, const TCHAR
 /////////////////////////////////////////////////////////////////////////////////////////
 // icon import dialog's window procedure
 
-static int IconDlg_Resize(HWND hwndDlg,LPARAM lParam, UTILRESIZECONTROL *urc)
+static int IconDlg_Resize(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId) {
 	case IDC_ICONSET:
@@ -1364,11 +1363,11 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib options window procedure
 
-static int CALLBACK DoSortIconsFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+static int CALLBACK DoSortIconsFunc(LPARAM lParam1, LPARAM lParam2, LPARAM )
 {	return lstrcmpi(TranslateTS(iconList[lParam1]->description), TranslateTS(iconList[lParam2]->description));
 }
 
-static int CALLBACK DoSortIconsFuncByOrder(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+static int CALLBACK DoSortIconsFuncByOrder(LPARAM lParam1, LPARAM lParam2, LPARAM )
 {	return iconList[lParam1]->orderID - iconList[lParam2]->orderID;
 }
 
@@ -1792,7 +1791,7 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 
-static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
+static int SkinOptionsInit( WPARAM wParam,LPARAM )
 {
 	OPTIONSDIALOGPAGE odp = {0};
 
@@ -1810,7 +1809,7 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int SkinSystemModulesLoaded( WPARAM, LPARAM )
 {
 	HookEvent(ME_OPT_INITIALISE, SkinOptionsInit);
 	return 0;
@@ -1819,19 +1818,19 @@ static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Module initialization and finalization procedure
 
-static int sttIcoLib_AddNewIcon( WPARAM wParam, LPARAM lParam )
+static int sttIcoLib_AddNewIcon( WPARAM, LPARAM lParam )
 {	return (int)IcoLib_AddNewIcon(( SKINICONDESC* )lParam );
 }
 
-static int sttIcoLib_GetIcon( WPARAM wParam, LPARAM lParam )
+static int sttIcoLib_GetIcon( WPARAM, LPARAM lParam )
 {	return (int)IcoLib_GetIcon(( const char* )lParam );
 }
 
-static int sttIcoLib_GetIconHandle( WPARAM wParam, LPARAM lParam )
+static int sttIcoLib_GetIconHandle( WPARAM, LPARAM lParam )
 {	return (int)IcoLib_GetIconHandle(( const char* )lParam );
 }
 
-static int sttIcoLib_GetIconByHandle( WPARAM wParam, LPARAM lParam )
+static int sttIcoLib_GetIconByHandle( WPARAM, LPARAM lParam )
 {	return (int)IcoLib_GetIconByHandle(( HANDLE )lParam );
 }
 

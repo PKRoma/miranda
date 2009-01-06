@@ -117,29 +117,38 @@ static BOOL CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					if(HIWORD(wParam)!=EN_UPDATE) break;
 					if(noRecursion) break;
 					noRecursion=1;
-					{	char szText[256],*pText,*pArea,*pNumber;
+					{	
+						char szText[256],*pText=NULL,*pArea,*pNumber;
 						int isValid=1;
 						GetDlgItemTextA(hwndDlg,IDC_PHONE,szText,SIZEOF(szText));
-						if(szText[0]!='+') isValid=0;
-						if(isValid) {
-							int i,country=strtol(szText+1,&pText,10);
-							if(pText-szText>4) isValid=0;
-							else for(i=SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETCOUNT,0,0)-1;i>=0;i--)
-									if(country==SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETITEMDATA,i,0))
-										{SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_SETCURSEL,i,0); break;}
-							if(i<0) isValid=0;
+						if (szText[0] != '+')
+							isValid=0;
+
+						if ( isValid ) {
+							int i, country = strtol( szText+1, &pText, 10 );
+							if ( pText - szText > 4 )
+								isValid = 0;
+							else {
+								for ( i = SendDlgItemMessage( hwndDlg, IDC_COUNTRY, CB_GETCOUNT, 0, 0 )-1; i >= 0; i-- )
+									if ( country == SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_GETITEMDATA,i,0)) {
+										SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_SETCURSEL,i,0);
+										break;
+									}
+								if ( i < 0 )
+									isValid = 0;
+							}
 						}
-						if(isValid) {
-							pArea=pText+strcspn(pText,"0123456789");
-							pText=pArea+strspn(pArea,"0123456789");
+						if ( isValid ) {
+							pArea = pText+strcspn(pText,"0123456789");
+							pText = pArea+strspn(pArea,"0123456789");
 							if(*pText) {
 								*pText='\0';
-								pNumber=pText+1+strcspn(pText+1,"0123456789");
+								pNumber = pText+1+strcspn(pText+1,"0123456789");
 								SetDlgItemTextA(hwndDlg,IDC_NUMBER,pNumber);
 							}
 							SetDlgItemTextA(hwndDlg,IDC_AREA,pArea);
 						}
-						if(!isValid) {
+						if ( !isValid ) {
 							SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_SETCURSEL,-1,0);
 							SetDlgItemTextA(hwndDlg,IDC_AREA,"");
 							SetDlgItemTextA(hwndDlg,IDC_NUMBER,"");
@@ -365,7 +374,6 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 								case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 								{
 									RECT rc;
-									HICON hIcon;
 									ListView_GetSubItemRect(nm->nmcd.hdr.hwndFrom,nm->nmcd.dwItemSpec,nm->iSubItem,LVIR_LABEL,&rc);
 									if(nm->iSubItem==1 && nm->nmcd.hdr.idFrom==IDC_EMAILS) {
 										HFONT hoFont;
@@ -378,6 +386,8 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 										SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
 										return TRUE;
 									}
+
+									HICON hIcon = NULL;
 									if(nm->nmcd.lItemlParam==(LPARAM)(-2) && nm->iSubItem-3==(nm->nmcd.hdr.idFrom==IDC_PHONES))
 										hIcon = LoadSkinIcon( SKINICON_OTHER_ADDCONTACT );
 									else if(nm->iSubItem>1 && nm->nmcd.lItemlParam!=(LPARAM)(-1) && nm->nmcd.lItemlParam!=(LPARAM)(-2)) {

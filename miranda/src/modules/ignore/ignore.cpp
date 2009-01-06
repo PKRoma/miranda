@@ -188,7 +188,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hIcons[IGNOREEVENT_MAX+2];
 	static HANDLE hItemAll,hItemUnknown;
@@ -339,7 +339,7 @@ static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 static UINT expertOnlyControls[]={IDC_STCHECKMARKS};
-static int IgnoreOptInitialise(WPARAM wParam,LPARAM lParam)
+static int IgnoreOptInitialise(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
@@ -383,7 +383,7 @@ static int Unignore(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int IgnoreContactAdded(WPARAM wParam,LPARAM lParam)
+static int IgnoreContactAdded(WPARAM wParam, LPARAM)
 {
 	CallService(MS_PROTO_ADDTOCONTACT,wParam,(LPARAM)"Ignore");
 	return 0;
@@ -413,7 +413,7 @@ static int IgnoreRecvAuth(WPARAM wParam,LPARAM lParam)
 	return CallService(MS_PROTO_CHAINRECV,wParam,lParam);
 }
 
-static int IgnoreAddedNotify(WPARAM wParam,LPARAM lParam)
+static int IgnoreAddedNotify(WPARAM, LPARAM lParam)
 {
 	DBEVENTINFO *dbei=(DBEVENTINFO*)lParam;
 	if (dbei && dbei->eventType==EVENTTYPE_ADDED && dbei->pBlob!=NULL) {

@@ -310,7 +310,7 @@ void fnTrayIconTaskbarCreated(HWND hwnd)
 	cli.pfnTrayIconInit(hwnd);
 }
 
-static VOID CALLBACK RefreshTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+static VOID CALLBACK RefreshTimerProc(HWND, UINT, UINT, DWORD)
 {
 	int i;
 	if ( RefreshTimerId ) {
@@ -423,11 +423,11 @@ int fnTrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
 void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto)
 {
 	HICON hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
-	int res=cli.pfnTrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
+	cli.pfnTrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
 	DestroyIcon(hIcon);
 }
 
-VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT, DWORD)
 {
 	initcheck;
 	lock;
@@ -563,7 +563,7 @@ void fnTrayIconIconsChanged(void)
 }
 
 static int autoHideTimerId;
-static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT, UINT idEvent, DWORD)
 {
 	HWND hwndClui;
 	initcheck;
@@ -578,7 +578,7 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT message, UINT idEvent
 	{ ulock; return; }
 }
 
-int fnTrayIconPauseAutoHide(WPARAM wParam, LPARAM lParam)
+int fnTrayIconPauseAutoHide(WPARAM, LPARAM)
 {
 	initcheck 0;
 	lock;
@@ -598,7 +598,7 @@ static BYTE s_LastHoverIconID = 0;
 static BOOL g_trayTooltipActive = FALSE;
 static POINT tray_hover_pos = {0};
 
-static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
+static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT, UINT_PTR, DWORD)
 {
 	if ( g_trayTooltipActive ) {
 		POINT pt;
@@ -612,7 +612,7 @@ static void CALLBACK TrayHideToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, 
 	else KillTimer( hwnd, TIMERID_TRAYHOVER_2 );
 }
 
-static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT msg, UINT_PTR id, DWORD elapsed)
+static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT, UINT_PTR id, DWORD)
 {
 	if ( !g_trayTooltipActive && !cli.bTrayMenuOnScreen ) {
 		CLCINFOTIP ti = {0};
@@ -827,7 +827,7 @@ typedef HRESULT(CALLBACK * DLLGETVERSIONPROC) (DLLVERSIONINFO *);
 
 static DLLVERSIONINFO dviShell;
 
-static int pfnCListTrayNotifyStub(WPARAM wParam, LPARAM lParam )
+static int pfnCListTrayNotifyStub(WPARAM, LPARAM lParam )
 {	return cli.pfnCListTrayNotify(( MIRANDASYSTRAYNOTIFY* )lParam );
 }
 

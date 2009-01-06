@@ -121,7 +121,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int ClcModulesLoaded(WPARAM, LPARAM)
 {
 	int i;
 	for (i = 0; i < accounts.getCount(); i++) {
@@ -136,7 +136,7 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ClcProtoAck(WPARAM wParam, LPARAM lParam)
+static int ClcProtoAck(WPARAM, LPARAM lParam)
 {
 	ACKDATA *ack = (ACKDATA *) lParam;
 	int i;
@@ -173,20 +173,20 @@ static int ClcContactIconChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ClcIconsChanged(WPARAM wParam, LPARAM lParam)
+static int ClcIconsChanged(WPARAM, LPARAM)
 {
 	WindowList_BroadcastAsync(hClcWindowList,INTM_INVALIDATE,0,0);
 	return 0;
 }
 
-static int SetInfoTipHoverTime(WPARAM wParam, LPARAM lParam)
+static int SetInfoTipHoverTime(WPARAM wParam, LPARAM)
 {
 	DBWriteContactSettingWord(NULL, "CLC", "InfoTipHoverTime", (WORD) wParam);
 	cli.pfnClcBroadcast( INTM_SETINFOTIPHOVERTIME, wParam, 0);
 	return 0;
 }
 
-static int GetInfoTipHoverTime(WPARAM wParam, LPARAM lParam)
+static int GetInfoTipHoverTime(WPARAM, LPARAM)
 {
 	return DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 750);
 }

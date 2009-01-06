@@ -484,8 +484,8 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 {
 	SECURITY_STATUS scRet;
 	DWORD           cbData;
-	DWORD			resNum;
-	int				i;
+	DWORD           resNum = 0;
+	int             i;
 
 	SecBufferDesc   Message;
 	SecBuffer       Buffers[4];
@@ -656,7 +656,8 @@ getdata:
 		}
 		else ssl->cbIoBuffer = 0;
 
-		if (pDataBuffer && resNum) return resNum;
+		if (pDataBuffer && resNum)
+			return resNum;
 
 		if (scRet == SEC_I_RENEGOTIATE)
 		{

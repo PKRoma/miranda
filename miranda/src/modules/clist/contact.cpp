@@ -137,7 +137,7 @@ int fnCompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 }
 
 static int resortTimerId = 0;
-static VOID CALLBACK SortContactsTimer(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime)
+static VOID CALLBACK SortContactsTimer(HWND, UINT, UINT, DWORD)
 {
 	KillTimer(NULL, resortTimerId);
 	resortTimerId = 0;
@@ -173,9 +173,9 @@ int ContactChangeGroup(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int fnSetHideOffline(WPARAM wParam, LPARAM lParam)
+int fnSetHideOffline(WPARAM wParam, LPARAM)
 {
-	switch ((int) wParam) {
+	switch(( int )wParam ) {
 	case 0:
 		DBWriteContactSettingByte(NULL, "CList", "HideOffline", 0);
 		break;

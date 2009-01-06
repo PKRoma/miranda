@@ -256,7 +256,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 }
 
 // enumerate all plugins that had valid DatabasePluginInfo()
-static int FindDbPluginForProfile(char * pluginname, DATABASELINK * dblink, LPARAM lParam)
+static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	char * szProfile = (char *) lParam;
 	if ( dblink && dblink->cbSize == sizeof(DATABASELINK) ) {

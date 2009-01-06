@@ -919,7 +919,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static int OptProtosShow(WPARAM wParam,LPARAM lParam)
+static int OptProtosShow(WPARAM, LPARAM)
 {
 	if ( !hAccMgr )
 		hAccMgr = CreateDialogParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCMGR), NULL, AccMgrDlgProc, 0 );
@@ -930,7 +930,7 @@ static int OptProtosShow(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int OptProtosLoaded(WPARAM wParam,LPARAM lParam)
+int OptProtosLoaded(WPARAM, LPARAM)
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);

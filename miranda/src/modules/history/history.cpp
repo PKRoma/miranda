@@ -31,7 +31,7 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static HANDLE hWindowList=0;
 
-static int UserHistoryCommand(WPARAM wParam,LPARAM lParam)
+static int UserHistoryCommand(WPARAM wParam, LPARAM)
 {
 	HWND hwnd = WindowList_Find( hWindowList,( HANDLE )wParam );
 	if ( hwnd ) {
@@ -43,7 +43,7 @@ static int UserHistoryCommand(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int HistoryContactDelete(WPARAM wParam,LPARAM lParam)
+static int HistoryContactDelete(WPARAM wParam, LPARAM)
 {
 	HWND hwnd = WindowList_Find(hWindowList,(HANDLE)wParam);
 	if ( hwnd != NULL )
@@ -51,7 +51,7 @@ static int HistoryContactDelete(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int PreShutdownHistoryModule(WPARAM wParam, LPARAM lParam)
+int PreShutdownHistoryModule(WPARAM, LPARAM)
 {
 	if (hWindowList)
 		WindowList_BroadcastAsync(hWindowList,WM_DESTROY,0,0);
@@ -240,7 +240,7 @@ static void FillHistoryThread(void* param)
 	mir_free(hInfo);
 }
 
-static int HistoryDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+static int HistoryDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch(urc->wId) {
 	case IDC_LIST:

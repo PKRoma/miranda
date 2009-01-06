@@ -235,7 +235,7 @@ static void BeginSearchFailed(void * arg)
 	MessageBox(0,buf,TranslateT("Problem with search"),MB_OK | MB_ICONERROR);
 }
 
-int BeginSearch(HWND hwndDlg,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
+int BeginSearch(HWND,struct FindAddDlgData *dat,const char *szProto,const char *szSearchService,DWORD requiredCapability,void *pvSearchParams)
 {
 	int i;
 	if ( szProto == NULL ) {
@@ -303,7 +303,7 @@ struct ProtoResultsSummary {
 	const char *szProto;
 	int count;
 };
-void SetStatusBarResultInfo(HWND hwndDlg,struct FindAddDlgData *dat)
+void SetStatusBarResultInfo(HWND hwndDlg)
 {
 	HWND hwndStatus=GetDlgItem(hwndDlg,IDC_STATUSBAR);
 	HWND hwndResults=GetDlgItem(hwndDlg,IDC_RESULTS);

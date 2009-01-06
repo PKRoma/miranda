@@ -23,12 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "clc.h"
 
-static int GetHwnd(WPARAM wParam, LPARAM lParam)
+static int GetHwnd(WPARAM, LPARAM)
 {
 	return (int)cli.hwndContactList;
 }
 
-static int GetHwndTree(WPARAM wParam,LPARAM lParam)
+static int GetHwndTree(WPARAM, LPARAM)
 {
 	return (int)cli.hwndContactTree;
 }
@@ -39,7 +39,7 @@ static int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int SortList(WPARAM wParam, LPARAM lParam)
+int SortList(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
@@ -63,31 +63,31 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ContactSetIcon(WPARAM wParam, LPARAM lParam)
+static int ContactSetIcon(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactDeleted(WPARAM wParam, LPARAM lParam)
+static int ContactDeleted(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactAdded(WPARAM wParam, LPARAM lParam)
+static int ContactAdded(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListBeginRebuild(WPARAM wParam, LPARAM lParam)
+static int ListBeginRebuild(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListEndRebuild(WPARAM wParam, LPARAM lParam)
+static int ListEndRebuild(WPARAM, LPARAM)
 {
 	int rebuild = 0;
 	//CLC does this automatically, but we need to force it if hideoffline or hideempty has changed
@@ -117,13 +117,13 @@ static int ListEndRebuild(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ContactRenamed(WPARAM wParam, LPARAM lParam)
+static int ContactRenamed(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int GetCaps(WPARAM wParam, LPARAM lParam)
+static int GetCaps(WPARAM wParam, LPARAM)
 {
 	switch (wParam) {
 	case CLUICAPS_FLAGS1:
@@ -151,7 +151,7 @@ void LoadCluiServices(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // default protocol status notification handler
 
-void fnCluiProtocolStatusChanged(int parStatus, const char* szProto)
+void fnCluiProtocolStatusChanged(int, const char* )
 {
 	int i, *partWidths;
 	int borders[3];

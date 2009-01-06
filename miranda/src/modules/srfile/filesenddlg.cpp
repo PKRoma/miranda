@@ -182,7 +182,7 @@ void __cdecl ChooseFilesThread(void* param)
 			PostMessage( hwndDlg, M_FILECHOOSEDONE, 0, ( LPARAM )( TCHAR* )NULL );
 }	}	}
 
-static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd,LPARAM lParam)
+static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd,LPARAM)
 {
 	SetWindowLong(hwnd,GWL_STYLE,GetWindowLong(hwnd,GWL_STYLE)|WS_CLIPSIBLINGS);
 	return TRUE;

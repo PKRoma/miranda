@@ -99,7 +99,7 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	return recvResult;
 }
 
-static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int mode, int& pending)
+static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int& pending)
 {
 	struct NetlibConnection *nlcCheck;
 	int i;
@@ -118,7 +118,7 @@ static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int mode, int&
 	return 1;
 }
 
-int NetlibSelect(WPARAM wParam,LPARAM lParam)
+int NetlibSelect(WPARAM, LPARAM lParam)
 {
 	NETLIBSELECT *nls=(NETLIBSELECT*)lParam;
 	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECT)) {
@@ -133,9 +133,9 @@ int NetlibSelect(WPARAM wParam,LPARAM lParam)
 	int pending = 0;
 	fd_set readfd, writefd, exceptfd;
 	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,NL_SELECT_READ,pending)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,NL_SELECT_WRITE,pending)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,0,pending)) {
+	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,pending)
+	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,pending)
+	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,pending)) {
 		ReleaseMutex(hConnectionHeaderMutex);
 		return SOCKET_ERROR;
 	}
@@ -146,7 +146,7 @@ int NetlibSelect(WPARAM wParam,LPARAM lParam)
 	return select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
 }
 
-int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
+int NetlibSelectEx(WPARAM, LPARAM lParam)
 {
 	NETLIBSELECTEX *nls=(NETLIBSELECTEX*)lParam;
 	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECTEX)) {
@@ -161,9 +161,9 @@ int NetlibSelectEx(WPARAM wParam,LPARAM lParam)
 
 	int pending = 0;
 	fd_set readfd,writefd,exceptfd;
-	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,NL_SELECT_READ,pending)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,NL_SELECT_WRITE,pending)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,0,pending)) {
+	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,pending)
+	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,pending)
+	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,pending)) {
 		ReleaseMutex(hConnectionHeaderMutex);
 		return SOCKET_ERROR;
 	}

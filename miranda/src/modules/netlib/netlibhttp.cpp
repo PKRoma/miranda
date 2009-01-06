@@ -361,7 +361,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	return bytesSent;
 }
 
-int NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam)
+int NetlibHttpFreeRequestStruct(WPARAM, LPARAM lParam)
 {
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
 
@@ -671,9 +671,9 @@ int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
 
 NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags)
 {
-	int dataLen = -1, i, chunkhdr;
+	int dataLen = -1, i, chunkhdr = 0;
 	int chunked = FALSE;
-    int cenc = 0, cenctype = 0;
+	int cenc = 0, cenctype = 0;
 
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
@@ -692,15 +692,15 @@ next:
 			dataLen = atoi(nlhrReply->headers[i].szValue);
 
 		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Encoding")) 
-        {
+		{
 			cenc = i;
-            if (strstr(nlhrReply->headers[i].szValue, "gzip"))
-                cenctype = 1;
-            else if (strstr(nlhrReply->headers[i].szValue, "deflate"))
-                cenctype = 2;
-        }
+			if (strstr(nlhrReply->headers[i].szValue, "gzip"))
+				cenctype = 1;
+			else if (strstr(nlhrReply->headers[i].szValue, "deflate"))
+				cenctype = 2;
+		}
 
-        if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
+		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
 			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
 		{
 			chunked = TRUE;
@@ -730,7 +730,7 @@ next:
 			for(;;) 
 			{
 				recvResult = NLRecv((struct NetlibConnection*)hConnection, nlhrReply->pData+nlhrReply->dataLength,
-                    dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
+					dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
 				if (recvResult == SOCKET_ERROR) {
@@ -786,40 +786,40 @@ next:
 		mir_snprintf(nlhrReply->headers[chunkhdr].szValue, 16, "%u", nlhrReply->dataLength);
 	}
 
-    if (cenctype)
-    {
-        int bufsz = nlhrReply->dataLength;
-        char* szData = NULL;
+	if (cenctype)
+	{
+		int bufsz = nlhrReply->dataLength;
+		char* szData = NULL;
 
-        if (cenctype == 1)
-        {
-            szData = gzip_decode(nlhrReply->pData, &bufsz, 0x10 | MAX_WBITS);
-        }
-        else if (cenctype == 2)
-        {
-            szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
-            if (bufsz == 0)
-            {
-                mir_free(szData);
-                bufsz = nlhrReply->dataLength;
-                szData = gzip_decode(nlhrReply->pData, &bufsz, MAX_WBITS);
-            }
-        }
-        else
-            bufsz = 0;
+		if (cenctype == 1)
+		{
+			szData = gzip_decode(nlhrReply->pData, &bufsz, 0x10 | MAX_WBITS);
+		}
+		else if (cenctype == 2)
+		{
+			szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
+			if (bufsz == 0)
+			{
+				mir_free(szData);
+				bufsz = nlhrReply->dataLength;
+				szData = gzip_decode(nlhrReply->pData, &bufsz, MAX_WBITS);
+			}
+		}
+		else
+			bufsz = 0;
 
-        if (bufsz)
-        {
-	        NetlibDumpData( (NetlibConnection*)hConnection, ( PBYTE )szData, bufsz, 0, dflags );
-            mir_free(nlhrReply->pData);
-            nlhrReply->pData = szData;
-            nlhrReply->dataLength = bufsz;
+		if (bufsz)
+		{
+			NetlibDumpData( (NetlibConnection*)hConnection, ( PBYTE )szData, bufsz, 0, dflags );
+			mir_free(nlhrReply->pData);
+			nlhrReply->pData = szData;
+			nlhrReply->dataLength = bufsz;
 
-            memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
-        }
-        else
-            mir_free(szData);
-    }
+			memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
+		}
+		else
+			mir_free(szData);
+	}
 
 	return nlhrReply;
 }

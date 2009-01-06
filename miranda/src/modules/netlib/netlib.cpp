@@ -116,7 +116,7 @@ static char *GetNetlibUserSettingString(const char *szUserModule,const char *szS
 	}
 }
 
-static int NetlibRegisterUser(WPARAM wParam,LPARAM lParam)
+static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 {
 	NETLIBUSER *nlu=(NETLIBUSER*)lParam;
 	struct NetlibUser *thisUser;
@@ -209,7 +209,7 @@ static int NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
+int NetlibCloseHandle(WPARAM wParam, LPARAM)
 {
 	switch(GetNetlibHandleType(wParam)) {
 		case NLH_USER:
@@ -307,7 +307,7 @@ int NetlibCloseHandle(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int NetlibGetSocket(WPARAM wParam,LPARAM lParam)
+static int NetlibGetSocket(WPARAM wParam, LPARAM)
 {
 	SOCKET s;
 	if(wParam==0) {
@@ -333,7 +333,7 @@ static int NetlibGetSocket(WPARAM wParam,LPARAM lParam)
 	return s;
 }
 
-int NetlibShutdown(WPARAM wParam,LPARAM lParam)
+int NetlibShutdown(WPARAM wParam, LPARAM)
 {
 	if (wParam) 
 	{
@@ -363,7 +363,7 @@ int NetlibShutdown(WPARAM wParam,LPARAM lParam)
 }
 
 static char szHexDigits[]="0123456789ABCDEF";
-int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam)
+int NetlibHttpUrlEncode(WPARAM, LPARAM lParam)
 {
 	unsigned char *szOutput,*szInput=(unsigned char*)lParam;
 	unsigned char *pszIn,*pszOut;
@@ -396,7 +396,7 @@ int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam)
 }
 
 static char base64chars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-int NetlibBase64Encode(WPARAM wParam,LPARAM lParam)
+int NetlibBase64Encode(WPARAM, LPARAM lParam)
 {
 	NETLIBBASE64 *nlb64=(NETLIBBASE64*)lParam;
 	int iIn;
@@ -446,7 +446,7 @@ static BYTE Base64CharToInt(char c)
 	return 255;
 }
 
-int NetlibBase64Decode(WPARAM wParam,LPARAM lParam)
+int NetlibBase64Decode(WPARAM, LPARAM lParam)
 {
 	NETLIBBASE64 *nlb64=(NETLIBBASE64*)lParam;
 	char *pszIn;

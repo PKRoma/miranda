@@ -49,8 +49,8 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 	case CLM_ADDINFOITEMW:
 	{
 		int i;
-		struct ClcContact *groupContact;
-		struct ClcGroup *group;
+		ClcContact *groupContact;
+		ClcGroup *group;
 		CLCINFOITEM *cii = (CLCINFOITEM *) lParam;
 		if (cii==NULL || cii->cbSize != sizeof(CLCINFOITEM))
 			return (LRESULT) (HANDLE) NULL;
@@ -97,8 +97,8 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_ENSUREVISIBLE:
 	{
-		struct ClcContact *contact;
-		struct ClcGroup *group, *tgroup;
+		ClcContact *contact;
+		ClcGroup *group, *tgroup;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
 			break;
 		for (tgroup = group; tgroup; tgroup = tgroup->parent)
@@ -109,7 +109,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_EXPAND:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			break;
 		if (contact->type != CLCIT_GROUP)
@@ -133,7 +133,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETCHECKMARK:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return 0;
 		return (contact->flags & CONTACTF_CHECKED) != 0;
@@ -147,7 +147,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETEXPAND:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return CLE_INVALID;
 		if (contact->type != CLCIT_GROUP)
@@ -160,7 +160,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETEXTRAIMAGE:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (LOWORD(lParam) >= dat->extraColumnsCount)
 			return 0xFF;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
@@ -188,7 +188,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETITEMTEXT:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return 0;
 		lstrcpy(( TCHAR* ) lParam, contact->szText);
@@ -197,7 +197,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETITEMTYPE:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return CLCIT_INVALID;
 		return contact->type;
@@ -208,72 +208,77 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETNEXTITEM:
 	{
-		struct ClcContact *contact;
-		struct ClcGroup *group;
-		int i;
-
-		if (wParam != CLGN_ROOT) {
-			if (!cli.pfnFindItem(hwnd, dat, (HANDLE) lParam, &contact, &group, NULL))
-				return (LRESULT) (HANDLE) NULL;
-			i = List_IndexOf((SortedList*)&group->cl,contact);
-		}
-		switch (wParam) {
-		case CLGN_ROOT:
+		if (wParam == CLGN_ROOT) {
 			if (dat->list.cl.count)
 				return (LRESULT) cli.pfnContactToHItem(dat->list.cl.items[0]);
-			else
-				return (LRESULT) (HANDLE) NULL;
+			return NULL;
+		}
+
+		ClcContact *contact;
+		ClcGroup *group;
+		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) lParam, &contact, &group, NULL))
+			return NULL;
+
+		int i = List_IndexOf((SortedList*)&group->cl,contact);
+		switch (wParam) {
 		case CLGN_CHILD:
 			if (contact->type != CLCIT_GROUP)
 				return (LRESULT) (HANDLE) NULL;
 			group = contact->group;
 			if (group->cl.count == 0)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[0]);
+
 		case CLGN_PARENT:
 			return group->groupId | HCONTACT_ISGROUP;
+
 		case CLGN_NEXT:
 			if (++i >= group->cl.count)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
+
 		case CLGN_PREVIOUS:
 			if (i <= 0)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i - 1]);
+
 		case CLGN_NEXTCONTACT:
 			for (i++; i < group->cl.count; i++)
 				if (group->cl.items[i]->type == CLCIT_CONTACT)
 					break;
 			if (i >= group->cl.count)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
+
 		case CLGN_PREVIOUSCONTACT:
 			if (i >= group->cl.count)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			for (i--; i >= 0; i--)
 				if (group->cl.items[i]->type == CLCIT_CONTACT)
 					break;
 			if (i < 0)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
+
 		case CLGN_NEXTGROUP:
 			for (i++; i < group->cl.count; i++)
 				if (group->cl.items[i]->type == CLCIT_GROUP)
 					break;
 			if (i >= group->cl.count)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
+
 		case CLGN_PREVIOUSGROUP:
 			if (i >= group->cl.count)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			for (i--; i >= 0; i--)
 				if (group->cl.items[i]->type == CLCIT_GROUP)
 					break;
 			if (i < 0)
-				return (LRESULT) (HANDLE) NULL;
+				return NULL;
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
 		}
-		return (LRESULT) (HANDLE) NULL;
+		return NULL;
 	}
 
 	case CLM_GETSCROLLTIME:
@@ -281,9 +286,9 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_GETSELECTION:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (cli.pfnGetRowByIndex(dat, dat->selection, &contact, NULL) == -1)
-			return (LRESULT) (HANDLE) NULL;
+			return NULL;
 		return (LRESULT) cli.pfnContactToHItem(contact);
 	}
 
@@ -294,21 +299,21 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_HITTEST:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		DWORD hitFlags;
 		int hit;
 		hit = cli.pfnHitTest(hwnd, dat, (short) LOWORD(lParam), (short) HIWORD(lParam), &contact, NULL, &hitFlags);
 		if (wParam)
 			*(PDWORD) wParam = hitFlags;
 		if (hit == -1)
-			return (LRESULT) (HANDLE) NULL;
+			return NULL;
 		return (LRESULT) cli.pfnContactToHItem(contact);
 	}
 
 	case CLM_SELECTITEM:
 	{
-		struct ClcContact *contact;
-		struct ClcGroup *group, *tgroup;
+		ClcContact *contact;
+		ClcGroup *group, *tgroup;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL))
 			break;
 		for (tgroup = group; tgroup; tgroup = tgroup->parent)
@@ -341,7 +346,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_SETCHECKMARK:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			return 0;
 		if (lParam)
@@ -362,7 +367,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_SETEXTRAIMAGE:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (LOWORD(lParam) >= dat->extraColumnsCount)
 			return 0;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
@@ -420,7 +425,7 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 
 	case CLM_SETITEMTEXT:
 	{
-		struct ClcContact *contact;
+		ClcContact *contact;
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 			break;
 		lstrcpyn(contact->szText, ( TCHAR* )lParam, SIZEOF( contact->szText ));

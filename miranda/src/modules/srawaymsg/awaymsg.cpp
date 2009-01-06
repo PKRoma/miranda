@@ -114,7 +114,7 @@ static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,
 	return FALSE;
 }
 
-static int GetMessageCommand(WPARAM wParam,LPARAM lParam)
+static int GetMessageCommand(WPARAM wParam, LPARAM)
 {
 	HWND hwnd;
 	if(hwnd=WindowList_Find(hWindowList,(HANDLE)wParam)) {
@@ -125,7 +125,7 @@ static int GetMessageCommand(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
+static int AwayMsgPreBuildMenu(WPARAM wParam, LPARAM)
 {
 	CLISTMENUITEM clmi;
 	TCHAR str[128];
@@ -153,7 +153,7 @@ static int AwayMsgPreBuildMenu(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int AwayMsgPreShutdown(WPARAM wParam, LPARAM lParam)
+static int AwayMsgPreShutdown(WPARAM, LPARAM)
 {
 	if (hWindowList) WindowList_BroadcastAsync(hWindowList,WM_CLOSE,0,0);
 	return 0;

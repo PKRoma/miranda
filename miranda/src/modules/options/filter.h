@@ -66,7 +66,6 @@ public:
 	void AddKeyWord( TCHAR * ptKeyWord )
 	{
 		TCHAR * plwrWord = _tcslwr_locale( _tcsdup( ptKeyWord ) );
-		int i = _pageKeyWords.indexOf( plwrWord );
 		if ( _pageKeyWords.getIndex( plwrWord ) == -1 )
 			_pageKeyWords.insert( plwrWord ) ;
 		else

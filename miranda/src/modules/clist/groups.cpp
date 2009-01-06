@@ -150,7 +150,7 @@ static int GetGroupName(WPARAM wParam, LPARAM lParam)
 	return ret;
 }
 
-static int DeleteGroup(WPARAM wParam, LPARAM lParam)
+static int DeleteGroup(WPARAM wParam, LPARAM)
 {
 	int i;
 	char str[33];
@@ -434,7 +434,7 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 	return shuffleTo + 1;
 }
 
-static int BuildGroupMenu(WPARAM wParam, LPARAM lParam)
+static int BuildGroupMenu(WPARAM, LPARAM)
 {
 	char idstr[33];
 	DBVARIANT dbv;

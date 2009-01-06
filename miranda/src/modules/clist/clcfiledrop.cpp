@@ -86,7 +86,7 @@ static HANDLE HContactFromPoint(HWND hwnd, struct ClcData *dat, int x, int y, in
 	return contact->hContact;
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, DWORD fKeyState, POINTL pt, DWORD * pdwEffect)
+static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, DWORD /*fKeyState*/, POINTL pt, DWORD * pdwEffect)
 {
 	POINT shortPt;
 	struct ClcData *dat;
@@ -194,7 +194,7 @@ static void AddToFileList(char ***pppFiles, int *totalCount, const char *szFilen
 	}
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IDataObject * pData, DWORD fKeyState, POINTL pt, DWORD * pdwEffect)
+static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IDataObject * pData, DWORD /*fKeyState*/, POINTL pt, DWORD * pdwEffect)
 {
 	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stg;
@@ -245,7 +245,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 	return S_OK;
 }
 
-static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT idEvent, DWORD)
 {
 	/* macro defines needed CLSID and IID declarations since
 	they have to be referenced */

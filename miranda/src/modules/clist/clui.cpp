@@ -55,10 +55,9 @@ void fnLoadCluiGlobalOpts()
 	cluiopt.alpha = DBGetContactSettingByte(NULL, "CList", "Alpha", SETTING_ALPHA_DEFAULT);
 }
 
-static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int CluiModulesLoaded(WPARAM, LPARAM)
 {
-	MENUITEMINFO mii;
-	ZeroMemory(&mii, sizeof(mii));
+	MENUITEMINFO mii = { 0 };
 	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	mii.fMask = MIIM_SUBMENU;
 	mii.hSubMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
@@ -86,7 +85,7 @@ static void DisconnectAll()
 		CallProtoService( accounts[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 }
 
-static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)
+static int CluiIconsChanged(WPARAM, LPARAM)
 {
 	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinIcon( SKINICON_OTHER_MIRANDA ));
 	DrawMenuBar(cli.hwndContactList);
@@ -95,7 +94,7 @@ static int CluiIconsChanged(WPARAM wParam, LPARAM lParam)
 
 static HANDLE hRenameMenuItem;
 
-static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
+static int MenuItem_PreBuild(WPARAM, LPARAM)
 {
 	TCHAR cls[128];
 	HANDLE hItem;
@@ -115,7 +114,7 @@ static int MenuItem_PreBuild(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int MenuItem_RenameContact(WPARAM wParam, LPARAM lParam)
+static int MenuItem_RenameContact(WPARAM, LPARAM)
 {
 	TCHAR cls[128];
 	HANDLE hItem;
@@ -234,7 +233,7 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int MenuItem_AddContactToList(WPARAM wParam, LPARAM lParam)
+static int MenuItem_AddContactToList(WPARAM wParam, LPARAM)
 {
 	ADDCONTACTSTRUCT acs = { 0 };
 

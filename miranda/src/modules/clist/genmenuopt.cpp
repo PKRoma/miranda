@@ -203,8 +203,6 @@ static int BuildTree(HWND hwndDlg,int MenuObjectId, BOOL bReread)
 	char menuItemName[256],MenuNameItems[256];
 	char buf[256];
 
-	OrderData *dat = ( struct OrderData* )GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
-
 	FreeTreeData( hwndDlg );
 	TreeView_DeleteAllItems(GetDlgItem(hwndDlg,IDC_MENUITEMS));
 
@@ -811,7 +809,7 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 
 BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int GenMenuOptInit(WPARAM wParam, LPARAM lParam)
+int GenMenuOptInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize=sizeof(odp);

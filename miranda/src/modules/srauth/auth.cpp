@@ -28,20 +28,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-
-int ShowReqWindow(WPARAM wParam,LPARAM lParam)
+int ShowReqWindow(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_AUTHREQ),NULL,DlgProcAuthReq,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;
 }
 
-int ShowAddedWindow(WPARAM wParam,LPARAM lParam)
+int ShowAddedWindow(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_ADDED),NULL,DlgProcAdded,(LPARAM)((CLISTEVENT *)lParam)->hDbEvent);
 	return 0;
 }
 
-static int AuthEventAdded(WPARAM wParam,LPARAM lParam)
+static int AuthEventAdded(WPARAM, LPARAM lParam)
 {
 	DBEVENTINFO dbei;
 	CLISTEVENT cli;

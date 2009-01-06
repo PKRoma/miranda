@@ -58,7 +58,7 @@ static void ModifyGroupItem(HANDLE hItem, TCHAR* name,int checked)
 	mir_free( mi.ptszName );
 }
 
-static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
+static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 {
 	int i, pos;
 	TCHAR *szGroupName, *szContactGroup;

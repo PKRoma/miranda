@@ -66,7 +66,7 @@ static char *StatusModeToDbSetting(int status,const char *suffix)
 }
 
 //remember to mir_free() the return value
-static int GetAwayMessage(WPARAM wParam, LPARAM lParam)
+static int GetAwayMessage(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
 	int statusMode = (int)wParam;
@@ -391,7 +391,7 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	return FALSE;
 }
 
-static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
+static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
@@ -406,7 +406,7 @@ static int AwayMsgOptInitialise(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int AwayMsgSendModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int AwayMsgSendModulesLoaded(WPARAM, LPARAM)
 {
 	int i;
 

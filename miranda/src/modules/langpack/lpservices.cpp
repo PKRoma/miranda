@@ -60,7 +60,7 @@ static int TranslateMenu(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static void TranslateWindow( HWND hwnd, int flags )
+static void TranslateWindow( HWND hwnd )
 {
 	TCHAR title[2048];
 	GetWindowText(hwnd, title, SIZEOF( title ));
@@ -81,36 +81,36 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 
 	GetClassName(hwnd,szClass,SIZEOF(szClass));
 	if(!lstrcmpi(szClass,_T("static")) || !lstrcmpi(szClass,_T("hyperlink")) || !lstrcmpi(szClass,_T("button")) || !lstrcmpi(szClass,_T("MButtonClass")))
-		TranslateWindow(hwnd, lptd->flags);
+		TranslateWindow( hwnd );
 	else if(!lstrcmpi(szClass,_T("edit"))) {
 		if(lptd->flags&LPTDF_NOIGNOREEDIT || GetWindowLong(hwnd,GWL_STYLE)&ES_READONLY)
-			TranslateWindow(hwnd, lptd->flags);
+			TranslateWindow( hwnd );
 	}
 	return TRUE;
 }
 
-static int TranslateDialog(WPARAM wParam,LPARAM lParam)
+static int TranslateDialog(WPARAM, LPARAM lParam)
 {
 	LANGPACKTRANSLATEDIALOG *lptd=(LANGPACKTRANSLATEDIALOG*)lParam;
 	if(lptd==NULL||lptd->cbSize!=sizeof(LANGPACKTRANSLATEDIALOG)) return 1;
 	if(!(lptd->flags&LPTDF_NOTITLE))
-		TranslateWindow( lptd->hwndDlg, wParam );
+		TranslateWindow( lptd->hwndDlg );
 
 	EnumChildWindows(lptd->hwndDlg,TranslateDialogEnumProc,lParam);
 	return 0;
 }
 
-static int GetDefaultCodePage(WPARAM wParam,LPARAM lParam)
+static int GetDefaultCodePage(WPARAM, LPARAM)
 {
 	return LangPackGetDefaultCodePage();
 }
 
-static int GetDefaultLocale(WPARAM wParam,LPARAM lParam)
+static int GetDefaultLocale(WPARAM, LPARAM)
 {
 	return LangPackGetDefaultLocale();
 }
 
-static int PcharToTchar(WPARAM wParam,LPARAM lParam)
+static int PcharToTchar(WPARAM, LPARAM lParam)
 {
 	return ( int )LangPackPcharToTchar((char*)lParam );
 }

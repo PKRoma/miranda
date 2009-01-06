@@ -35,7 +35,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
-	DBVARIANT dbv;
+	DBVARIANT dbv = { 0 };
 	char str[80],*pstr = NULL;
 	TCHAR* ptstr = NULL;
 	int unspecified=0;

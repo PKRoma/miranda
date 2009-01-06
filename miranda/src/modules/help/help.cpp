@@ -26,7 +26,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 HWND hAboutDlg=NULL;
 
-static int AboutCommand(WPARAM wParam,LPARAM lParam)
+static int AboutCommand(WPARAM wParam, LPARAM)
 {
 	if (IsWindow(hAboutDlg)) {
 		SetForegroundWindow(hAboutDlg);
@@ -37,26 +37,26 @@ static int AboutCommand(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int IndexCommand(WPARAM wParam,LPARAM lParam)
+static int IndexCommand(WPARAM, LPARAM)
 {
 	CallService(MS_UTILS_OPENURL,1,(LPARAM)Translate("http://wiki.miranda-im.org/"));
 	return 0;
 }
 
-static int WebsiteCommand(WPARAM wParam,LPARAM lParam)
+static int WebsiteCommand(WPARAM, LPARAM)
 {
 	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://www.miranda-im.org");
 	return 0;
 }
 
-static int BugCommand(WPARAM wParam,LPARAM lParam)
+static int BugCommand(WPARAM, LPARAM)
 {
 	CallService(MS_UTILS_OPENURL,1,(LPARAM)"http://bugs.miranda-im.org/");
 	return 0;
 }
 
 
-int ShutdownHelpModule(WPARAM wParam, LPARAM lParam)
+int ShutdownHelpModule(WPARAM, LPARAM)
 {
 	if (IsWindow(hAboutDlg)) DestroyWindow(hAboutDlg);
 	hAboutDlg=NULL;

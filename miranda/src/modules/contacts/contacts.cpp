@@ -75,7 +75,7 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 	return 1;
 }
 
-static int GetContactInfo(WPARAM wParam, LPARAM lParam) {
+static int GetContactInfo(WPARAM, LPARAM lParam) {
 	DBVARIANT dbv;
 	CONTACTINFO *ci = (CONTACTINFO*)lParam;
 
@@ -344,7 +344,7 @@ struct ContactOptionsData {
 	HTREEITEM hDragItem;
 };
 
-static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {	struct ContactOptionsData *dat;
 
 	dat=(struct ContactOptionsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
@@ -467,7 +467,7 @@ static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-static int ContactOptInit(WPARAM wParam,LPARAM lParam)
+static int ContactOptInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);

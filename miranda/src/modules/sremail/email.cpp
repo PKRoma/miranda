@@ -52,7 +52,7 @@ static int SendEMailCommand(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int EMailPreBuildMenu(WPARAM wParam, LPARAM lParam)
+static int EMailPreBuildMenu(WPARAM wParam, LPARAM)
 {
 	CLISTMENUITEM mi;
 	DBVARIANT dbv = { 0 };

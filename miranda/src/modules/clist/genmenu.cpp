@@ -140,7 +140,7 @@ int MO_RemoveAllObjects()
 }
 
 //wparam=MenuObjectHandle
-int MO_RemoveMenuObject(WPARAM wParam,LPARAM lParam)
+int MO_RemoveMenuObject(WPARAM wParam, LPARAM)
 {
 	int objidx;
 
@@ -218,7 +218,7 @@ static int FindDefaultItem( PMO_IntMenuItem pimi, void* )
 	return ( pimi->mi.flags & CMIF_DEFAULT ) ? TRUE : FALSE;
 }
 
-int MO_GetDefaultMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_GetDefaultMenuItem(WPARAM wParam, LPARAM)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -299,7 +299,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 //wparam MenuItemHandle
 //return ownerdata useful to free ownerdata before delete menu item,
 //NULL on error.
-int MO_MenuItemGetOwnerData(WPARAM wParam,LPARAM lParam)
+int MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -476,7 +476,7 @@ int MO_SetOptionsMenuObject( int handle, int setting, int value )
 //wparam=0;
 //lparam=PMenuParam;
 //result=MenuObjectHandle
-int MO_CreateNewMenuObject(WPARAM wParam,LPARAM lParam)
+int MO_CreateNewMenuObject(WPARAM, LPARAM lParam)
 {
 	PMenuParam pmp = ( PMenuParam )lParam;
 	if ( !bIsGenMenuInited || pmp == NULL )
@@ -516,7 +516,7 @@ static int FindParent( TMO_IntMenuItem* pimi, void* p )
 	return pimi->next == p;
 }
 
-int MO_RemoveMenuItem(WPARAM wParam,LPARAM lParam)
+int MO_RemoveMenuItem(WPARAM wParam, LPARAM)
 {
 	EnterCriticalSection( &csMenuHook );
 	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam );
@@ -730,11 +730,10 @@ static int WhereToPlace( HMENU hMenu, PMO_MenuItem mi )
 	return 0;
 }
 
-static void InsertMenuItemWithSeparators(HMENU hMenu,int uItem,BOOL fByPosition,MENUITEMINFO *lpmii,ListParam *param)
+static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, MENUITEMINFO *lpmii)
 {
 	int needSeparator = 0;
 	MENUITEMINFO mii;
-	PMO_IntMenuItem items=NULL;
 
 	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )lpmii->dwItemData );
 	if ( pimi == NULL )
@@ -961,7 +960,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 				}
 			#endif
 
-			InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
+			InsertMenuItemWithSeparators( hMenu, i, &mii);
 			localparam.rootlevel = LPARAM( pmi );
 			BuildRecursiveMenu( pmi->hSubMenu, pmi->submenu.first, &localparam );
 		}
@@ -988,7 +987,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 				if ( CallService( pmo->onAddService, ( WPARAM )&mii, ( LPARAM )pmi ) == FALSE )
 					continue;
 
-			InsertMenuItemWithSeparators( hMenu, i, TRUE, &mii, &localparam );
+			InsertMenuItemWithSeparators( hMenu, i, &mii );
 	}	}
 
 	return hMenu;
@@ -1010,7 +1009,7 @@ static int MO_ReloadIcon( PMO_IntMenuItem pmi, void* )
 	return FALSE;
 }
 
-int OnIconLibChanges(WPARAM wParam,LPARAM lParam)
+int OnIconLibChanges(WPARAM, LPARAM)
 {
 	EnterCriticalSection( &csMenuHook );
 	for ( int mo=0; mo < g_menus.getCount(); mo++ )
@@ -1119,20 +1118,20 @@ int TryProcessDoubleClick( HANDLE hContact )
 
 int posttimerid;
 
-static VOID CALLBACK PostRegisterIcons( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+static VOID CALLBACK PostRegisterIcons( HWND, UINT, UINT_PTR, DWORD )
 {
 	KillTimer( 0, posttimerid );
 	RegisterAllIconsInIconLib();
 }
 
-static int OnModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int OnModulesLoaded(WPARAM, LPARAM)
 {
 	posttimerid = SetTimer(( HWND )NULL, 0, 5, ( TIMERPROC )PostRegisterIcons );
 	HookEvent(ME_SKIN2_ICONSCHANGED,OnIconLibChanges);
 	return 0;
 }
 
-static int SRVMO_SetOptionsMenuObject( WPARAM wParam, LPARAM lParam)
+static int SRVMO_SetOptionsMenuObject( WPARAM, LPARAM lParam)
 {
 	lpOptParam lpop = ( lpOptParam )lParam;
 	if ( lpop == NULL )
@@ -1141,7 +1140,7 @@ static int SRVMO_SetOptionsMenuObject( WPARAM wParam, LPARAM lParam)
 	return MO_SetOptionsMenuObject( lpop->Handle, lpop->Setting, lpop->Value );
 }
 
-static int SRVMO_SetOptionsMenuItem( WPARAM wParam, LPARAM lParam)
+static int SRVMO_SetOptionsMenuItem( WPARAM, LPARAM lParam)
 {
 	lpOptParam lpop = ( lpOptParam )lParam;
 	if ( lpop == NULL )

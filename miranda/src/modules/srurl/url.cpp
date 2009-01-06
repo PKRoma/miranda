@@ -31,7 +31,7 @@ HANDLE hContactDeleted=NULL;
 BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static int ReadUrlCommand(WPARAM wParam,LPARAM lParam)
+static int ReadUrlCommand(WPARAM, LPARAM lParam)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLRECV),NULL,DlgProcUrlRecv,lParam);
 	return 0;
@@ -63,7 +63,7 @@ static int UrlEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SendUrlCommand(WPARAM wParam,LPARAM lParam)
+static int SendUrlCommand(WPARAM wParam, LPARAM)
 {
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_URLSEND),NULL,DlgProcUrlSend,wParam);
 	return 0;
@@ -112,7 +112,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int SRUrlModulesLoaded(WPARAM, LPARAM)
 {
 	int i;
 
@@ -135,7 +135,7 @@ static int SRUrlModulesLoaded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SRUrlShutdown(WPARAM wParam,LPARAM lParam)
+static int SRUrlShutdown(WPARAM, LPARAM)
 {
 	if (hEventContactSettingChange)
 		UnhookEvent(hEventContactSettingChange);
@@ -149,7 +149,7 @@ static int SRUrlShutdown(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int UrlContactDeleted(WPARAM wParam, LPARAM lParam)
+int UrlContactDeleted(WPARAM wParam, LPARAM)
 {
 	HWND h = WindowList_Find(hUrlWindowList,(HANDLE)wParam);
 	if (h)

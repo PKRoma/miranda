@@ -173,7 +173,7 @@ static void xmlapiFree( void* p )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static int GetXmlApi( WPARAM wParam, LPARAM lParam )
+static int GetXmlApi( WPARAM, LPARAM lParam )
 {
 	XML_API* xi = ( XML_API* )lParam;
 	if ( xi == NULL )

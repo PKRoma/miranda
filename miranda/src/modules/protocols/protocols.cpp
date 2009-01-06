@@ -69,7 +69,7 @@ PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 	return NULL;
 }
 
-int srvProto_IsLoaded(WPARAM wParam,LPARAM lParam)
+int srvProto_IsLoaded(WPARAM, LPARAM lParam)
 {
 	return (int)Proto_GetAccount(( char* )lParam );
 }
@@ -81,12 +81,12 @@ int Proto_EnumProtocols(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static PROTO_INTERFACE* defInitProto( const char* szModuleName, const TCHAR* szUserName )
+static PROTO_INTERFACE* defInitProto( const char* szModuleName, const TCHAR* )
 {
 	return AddDefaultAccount( szModuleName );
 }
 
-static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
+static int Proto_RegisterModule(WPARAM, LPARAM lParam)
 {
 	PROTOCOLDESCRIPTOR* pd = ( PROTOCOLDESCRIPTOR* )lParam, *p;
 	if ( pd->cbSize != sizeof( PROTOCOLDESCRIPTOR ) && pd->cbSize != PROTOCOLDESCRIPTOR_V3_SIZE )
@@ -132,7 +132,7 @@ static int Proto_RegisterModule(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Basic core services
 
-static int Proto_RecvFile(WPARAM wParam,LPARAM lParam)
+static int Proto_RecvFile(WPARAM, LPARAM lParam)
 {
 	CCSDATA* ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT* pre = ( PROTORECVEVENT* )ccs->lParam;
@@ -151,7 +151,7 @@ static int Proto_RecvFile(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Proto_RecvMessage(WPARAM wParam,LPARAM lParam)
+static int Proto_RecvMessage(WPARAM, LPARAM lParam)
 {
 	CCSDATA *ccs = ( CCSDATA* )lParam;
 	PROTORECVEVENT *pre = ( PROTORECVEVENT* )ccs->lParam;
@@ -232,7 +232,7 @@ PROTOACCOUNT* Proto_GetAccount( const char* accName )
 	return accounts[idx];
 }
 
-static int srvProto_GetAccount(WPARAM wParam, LPARAM lParam)
+static int srvProto_GetAccount(WPARAM, LPARAM lParam)
 {
 	return ( int )Proto_GetAccount(( char* )lParam );
 }

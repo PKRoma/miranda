@@ -324,7 +324,7 @@ void NetlibLogShowOptions(void)
 	SetForegroundWindow(logOptions.hwndOpts);
 }
 
-static int ShowOptions(WPARAM wParam, LPARAM lParam)
+static int ShowOptions(WPARAM, LPARAM)
 {
 	NetlibLogShowOptions();
 	return 0;

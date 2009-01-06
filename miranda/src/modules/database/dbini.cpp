@@ -189,18 +189,18 @@ static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 static int IsInSpaceSeparatedList(const char *szWord,const char *szList)
 {
 	char *szItem,*szEnd;
-	int wordLen=lstrlenA(szWord);
+	int wordLen = lstrlenA(szWord);
 
-	for(szItem=(char*)szList;;) {
-		szEnd=strchr(szItem,' ');
-		if(szEnd==NULL) return !lstrcmpA(szItem,szWord);
-		if(szEnd-szItem==wordLen) {
-			if(!strncmp(szItem,szWord,wordLen)) return 1;
+	for(szItem = (char*)szList;;) {
+		szEnd = strchr(szItem,' ');
+		if (szEnd == NULL)
+			return !lstrcmpA( szItem, szWord );
+		if ( szEnd - szItem == wordLen ) {
+			if ( !strncmp( szItem, szWord, wordLen ))
+				return 1;
 		}
-		szItem=szEnd+1;
-	}
-	return 0;
-}
+		szItem = szEnd+1;
+}	}
 
 struct warnSettingChangeInfo_t {
 	char *szIniPath;
@@ -465,7 +465,7 @@ static void DoAutoExec(void)
 	FindClose(hFind);
 }
 
-static int CheckIniImportNow(WPARAM wParam,LPARAM lParam)
+static int CheckIniImportNow(WPARAM, LPARAM)
 {
 	DoAutoExec();
 	FindNextChangeNotification(hIniChangeNotification);

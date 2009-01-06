@@ -46,39 +46,38 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 				acs->szProto = dbei.szModule;
 			}
 			{
-				TCHAR* szName;
+				TCHAR* szName = NULL;
 				if ( acs->handleType == HANDLE_CONTACT )
 					szName = cli.pfnGetContactDisplayName( acs->handle, GCDNF_TCHAR );
 				else {
-                    char *p;
-                    int isSet = 0;
-                    
-                    if (acs->handleType == HANDLE_EVENT) {
-                        DBEVENTINFO dbei;
-                        HANDLE hcontact;
-                        
-                        ZeroMemory(&dbei,sizeof(dbei));
-                        dbei.cbSize=sizeof(dbei);
-                        dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)acs->handle,0);
-                        dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
-                        CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
-                        hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
-                        mir_free(dbei.pBlob);
-                        if (hcontact!=INVALID_HANDLE_VALUE) {
-                            szName = cli.pfnGetContactDisplayName( hcontact, 0 );
-                            isSet = 1;
-                        }
-                    }
+					char *p;
+					int isSet = 0;
+
+					if (acs->handleType == HANDLE_EVENT) {
+						DBEVENTINFO dbei;
+						HANDLE hcontact;
+
+						ZeroMemory(&dbei,sizeof(dbei));
+						dbei.cbSize=sizeof(dbei);
+						dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)acs->handle,0);
+						dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
+						CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
+						hcontact=*((PHANDLE)(dbei.pBlob+sizeof(DWORD)));
+						mir_free(dbei.pBlob);
+						if (hcontact!=INVALID_HANDLE_VALUE) {
+							szName = cli.pfnGetContactDisplayName( hcontact, 0 );
+							isSet = 1;
+						}
+					}
 					if (!isSet) {
-                        p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
-                        #if defined( _UNICODE )
-                            szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
-                            MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
-                        #else
-                            szName = p;
-                        #endif
-                    }
-				}
+						p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
+						#if defined( _UNICODE )
+							szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
+							MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
+						#else
+							szName = p;
+						#endif
+				}	}
 
 				if ( lstrlen( szName )) {
 					TCHAR  szTitle[128];

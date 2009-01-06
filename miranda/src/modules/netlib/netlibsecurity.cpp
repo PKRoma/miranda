@@ -156,7 +156,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 	SecBuffer outputSecurityToken,inputSecurityToken;
 	TimeStamp tokenExpiration;
 	ULONG contextAttributes;
-	NETLIBBASE64 nlb64;
+	NETLIBBASE64 nlb64 = { 0 };
 
 	NtlmHandleType* hNtlm = (NtlmHandleType*)hSecurity;
 
@@ -292,7 +292,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static int InitSecurityProviderService( WPARAM wParam, LPARAM lParam )
+static int InitSecurityProviderService( WPARAM, LPARAM lParam )
 {
 	return (int)NetlibInitSecurityProvider(( char* )lParam );
 }

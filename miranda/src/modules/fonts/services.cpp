@@ -175,7 +175,7 @@ int GetFontSettingFromDB(char *settings_group, char *prefix, LOGFONT* lf, COLORR
 	return retval;
 }
 
-int CreateFromFontSettings(TFontSettings* fs, LOGFONT* lf, DWORD flags)
+int CreateFromFontSettings(TFontSettings* fs, LOGFONT* lf )
 {
 	GetDefaultFontSetting(lf, 0);
 
@@ -201,7 +201,7 @@ void UpdateFontSettings(TFontID* font_id, TFontSettings* fontsettings)
 	LOGFONT lf;
 	COLORREF colour;
 	if ( GetFontSettingFromDB(font_id->dbSettingsGroup, font_id->prefix, &lf, &colour, font_id->flags) && (font_id->flags & FIDF_DEFAULTVALID)) {
-		CreateFromFontSettings(&font_id->deffontsettings, &lf, font_id->flags);// & ~FIDF_SAVEACTUALHEIGHT);
+		CreateFromFontSettings(&font_id->deffontsettings, &lf );
 		colour = font_id->deffontsettings.colour;
 	}
 
@@ -239,13 +239,13 @@ static int sttRegisterFontWorker( TFontID* font_id )
 }
 
 #if defined( _UNICODE )
-int RegisterFontW(WPARAM wParam, LPARAM lParam)
+int RegisterFontW(WPARAM wParam, LPARAM )
 {
 	return sttRegisterFontWorker(( TFontID* )wParam );
 }
 #endif
 
-int RegisterFont(WPARAM wParam, LPARAM lParam)
+int RegisterFont(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TFontID temp;
@@ -267,7 +267,7 @@ static int sttGetFontWorker( TFontID* font_id, LOGFONT* lf )
 		TFontID& F = font_id_list[i];
 		if ( !_tcsncmp( F.name, font_id->name, SIZEOF(F.name)) && !_tcsncmp( F.group, font_id->group, SIZEOF(F.group))) {
 			if ( GetFontSettingFromDB( F.dbSettingsGroup, F.prefix, lf, &colour, F.flags) && ( F.flags & FIDF_DEFAULTVALID )) {
-				CreateFromFontSettings( &F.deffontsettings, lf, F.flags);
+				CreateFromFontSettings( &F.deffontsettings, lf );
 				colour = F.deffontsettings.colour;
 			}
 
@@ -324,13 +324,13 @@ static int sttRegisterColourWorker( TColourID* colour_id )
 }
 
 #if defined( _UNICODE )
-int RegisterColourW(WPARAM wParam, LPARAM lParam)
+int RegisterColourW(WPARAM wParam, LPARAM)
 {
 	return sttRegisterColourWorker(( TColourID* )wParam );
 }
 #endif
 
-int RegisterColour(WPARAM wParam, LPARAM lParam)
+int RegisterColour(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TColourID temp;
@@ -358,13 +358,13 @@ static int sttGetColourWorker( TColourID* colour_id )
 }
 
 #if defined( _UNICODE )
-int GetColourW(WPARAM wParam, LPARAM lParam)
+int GetColourW(WPARAM wParam, LPARAM)
 {
 	return sttGetColourWorker(( TColourID* )wParam );
 }
 #endif
 
-int GetColour(WPARAM wParam, LPARAM lParam)
+int GetColour(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TColourID temp;

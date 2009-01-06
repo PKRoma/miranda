@@ -65,8 +65,8 @@ char* fnGetGroupCountsText(struct ClcData *dat, struct ClcContact *contact)
 
 int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcContact **contact, struct ClcGroup **group, DWORD * flags)
 {
-	struct ClcContact *hitcontact;
-	struct ClcGroup *hitgroup;
+	ClcContact *hitcontact = NULL;
+	ClcGroup *hitgroup = NULL;
 	int hit, indent, width, i;
 	int checkboxWidth;
 	SIZE textSize;
@@ -239,12 +239,11 @@ void fnScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 
 void fnEnsureVisible(HWND hwnd, struct ClcData *dat, int iItem, int partialOk)
 {
-	int itemy, itemh = cli.pfnGetRowHeight(dat, iItem), newY;
+	int itemy = cli.pfnGetRowTopY(dat, iItem), itemh = cli.pfnGetRowHeight(dat, iItem), newY = 0;
 	int moved = 0;
 	RECT clRect;
 
 	GetClientRect(hwnd, &clRect);
-	itemy = cli.pfnGetRowTopY(dat, iItem);
 	if (partialOk) {
 		if (itemy + itemh - 1 < dat->yScroll) {
 			newY = itemy;

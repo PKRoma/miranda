@@ -201,7 +201,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 {
 	// Parse URL
 	char szHost[256], szPath[256], szRes[16];
-	int sz, res = 0;
+	int sz = 0, res = 0;
 	unsigned short sPort;
 	SOCKET sock = INVALID_SOCKET;
 
@@ -213,8 +213,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 	for (;;)
 	{
-		switch(reqtype)
-		{
+		switch(reqtype) {
 		case DeviceGetReq:
 			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
 			break;
@@ -247,7 +246,6 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			break;
 		}
 		szResult[0] = 0;
-
 		{
 			static TIMEVAL tv = { 5, 0 };
 			static unsigned ttl = 4;
@@ -504,7 +502,6 @@ static void discoverUPnP(void)
 	char* buf;
 	int buflen;
 	unsigned i, j, nip = 0;
-	char* szData = NULL;
 	unsigned* ips = NULL;
 
 	static const unsigned any = INADDR_ANY;
@@ -689,7 +686,7 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 	}
 }
 
-void NetlibUPnPCleanup(void* extra)
+void NetlibUPnPCleanup(void*)
 {
     if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0)
         // upnp is disabled globally, no need for a cleanup

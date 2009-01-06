@@ -35,7 +35,7 @@ static void AutoAwaySetProtocol(const char* account, unsigned status)
 	}
 }
 
-static int AutoAwayEvent(WPARAM wParam, LPARAM lParam)
+static int AutoAwayEvent(WPARAM, LPARAM lParam)
 {
 	int i;
 

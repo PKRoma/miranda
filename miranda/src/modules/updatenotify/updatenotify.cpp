@@ -62,7 +62,7 @@ static void UpdateNotifyPerform(void *m);
 static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static int UpdateNotifyModulesLoaded(WPARAM wParam, LPARAM lParam) {
+static int UpdateNotifyModulesLoaded(WPARAM, LPARAM) {
 	NETLIBUSER nlu;
 
 	ZeroMemory(&nlu, sizeof(nlu));
@@ -74,7 +74,7 @@ static int UpdateNotifyModulesLoaded(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-static int UpdateNotifyPreShutdown(WPARAM wParam, LPARAM lParam) {
+static int UpdateNotifyPreShutdown(WPARAM, LPARAM) {
 	if (IsWindow(hwndUpdateDlg)) {
 		SendMessage(hwndUpdateDlg, WM_COMMAND, MAKELONG(IDOK, 0), 0);
 	}
@@ -113,7 +113,7 @@ void UnloadUpdateNotifyModule()
 	UnhookEvent(hHookPreShutdown);
 }
 
-static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam) {
+static int UpdateNotifyOptInit(WPARAM wParam, LPARAM) {
 	OPTIONSDIALOGPAGE odp;
 
 	ZeroMemory(&odp, sizeof(odp));
@@ -129,7 +129,7 @@ static int UpdateNotifyOptInit(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam) {
+static int UpdateNotifyMenuCommand(WPARAM, LPARAM) {
 	UpdateNotifyData und;
 	
 	if (IsWindow(hwndManualUpdateDlg)) {
@@ -148,7 +148,8 @@ static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam) {
 	return 0;	
 }
 
-static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
+static VOID CALLBACK UpdateNotifyTimerCheck(HWND, UINT, UINT_PTR, DWORD)
+{
 	KillTimer(NULL, updateTimerId);
 	if (!DBGetContactSettingByte(NULL, UN_MOD, UN_ENABLE, UN_ENABLE_DEF))
 		return;
@@ -279,7 +280,8 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
 	return und->isNew;
 }
 
-static void UpdateNotifyPerform(void *m) {
+static void UpdateNotifyPerform(void *)
+{
 	UpdateNotifyData und;
 	DBVARIANT dbv;
 	

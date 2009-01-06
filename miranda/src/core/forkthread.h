@@ -59,6 +59,5 @@ unsigned long forkthreadex(
 	unsigned (__stdcall *threadcode)(void*),
 	void *owner,
 	void *arg,
-	unsigned cf,
 	unsigned *thraddr
 );

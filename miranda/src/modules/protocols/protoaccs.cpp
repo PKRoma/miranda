@@ -166,7 +166,7 @@ void WriteDbAccounts()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
+static int InitializeStaticAccounts( WPARAM, LPARAM )
 {
 	int count = 0;
 
@@ -186,7 +186,7 @@ static int InitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
 	return 0;
 }
 
-static int UninitializeStaticAccounts( WPARAM wParam, LPARAM lParam )
+static int UninitializeStaticAccounts( WPARAM, LPARAM )
 {
 	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
@@ -230,12 +230,12 @@ static int stub2( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ( int )ppi->AddToListByEvent( HIWORD(wParam), LOWORD(wParam), (HANDLE)lParam );
 }
 
-static int stub3( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->Authorize( ( HANDLE )wParam );
+static int stub3( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
+{	return ( int )ppi->Authorize(( HANDLE )wParam );
 }
 
 static int stub4( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam );
+{	return ( int )ppi->AuthDeny(( HANDLE )wParam, ( const char* )lParam );
 }
 
 static int stub7( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
@@ -244,39 +244,39 @@ static int stub7( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 
 static int stub11( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-	return ( int )ppi->FileResume( ( HANDLE )wParam, &pfr->action, &pfr->szFilename );
+	return ( int )ppi->FileResume(( HANDLE )wParam, &pfr->action, &pfr->szFilename );
 }
 
 static int stub12( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ( int )ppi->GetCaps( wParam, (HANDLE)lParam );
 }
 
-static int stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static int stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 {	return ( int )ppi->GetIcon( wParam );
 }
 
-static int stub15( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->SearchBasic( ( char* )lParam );
+static int stub15( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( int )ppi->SearchBasic(( char* )lParam );
 }
 
-static int stub16( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->SearchByEmail( ( char* )lParam );
+static int stub16( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( int )ppi->SearchByEmail(( char* )lParam );
 }
 
-static int stub17( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static int stub17( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 {	PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
 	return ( int )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName );
 }
 
-static int stub18( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->SearchAdvanced( ( HWND )lParam );
+static int stub18( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( int )ppi->SearchAdvanced(( HWND )lParam );
 }
 
-static int stub19( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( int )ppi->CreateExtendedSearchUI ( ( HWND )lParam );
+static int stub19( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	return ( int )ppi->CreateExtendedSearchUI (( HWND )lParam );
 }
 
-static int stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+static int stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 {	return ( int )ppi->SetStatus( wParam );
 }
 
@@ -387,7 +387,7 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void EraseAccount( PROTOACCOUNT* pa )
+void EraseAccount( PROTOACCOUNT* )
 {
 }
 

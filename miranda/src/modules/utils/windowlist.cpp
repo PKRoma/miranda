@@ -26,12 +26,12 @@ static WINDOWLISTENTRY *windowList=NULL;
 static int windowListCount=0;
 static int nextWindowListId=1;
 
-static int AllocWindowList(WPARAM wParam,LPARAM lParam)
+static int AllocWindowList(WPARAM, LPARAM)
 {
 	return nextWindowListId++;
 }
 
-static int AddToWindowList(WPARAM wParam,LPARAM lParam)
+static int AddToWindowList(WPARAM, LPARAM lParam)
 {
 	windowList=(WINDOWLISTENTRY*)mir_realloc(windowList,sizeof(WINDOWLISTENTRY)*(windowListCount+1));
 	windowList[windowListCount++]=*(WINDOWLISTENTRY*)lParam;

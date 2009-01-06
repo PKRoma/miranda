@@ -126,7 +126,7 @@ static int Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
 	return CallServiceSync(MS_PROTO_CHAINRECV "ThreadSafe",wParam,lParam);
 }
 
-static int Proto_GetContactBaseProto(WPARAM wParam,LPARAM lParam)
+static int Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
 	PROTOCOLDESCRIPTOR *pd;

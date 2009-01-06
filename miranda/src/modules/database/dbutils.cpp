@@ -37,7 +37,7 @@ static LIST<DBEVENTTYPEDESCR> eventTypes( 10, CompareEventTypes );
 
 static BOOL bModuleInitialized = FALSE;
 
-static int DbEventTypeRegister(WPARAM wParam, LPARAM lParam)
+static int DbEventTypeRegister(WPARAM, LPARAM lParam)
 {
 	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )lParam;
 	if ( eventTypes.getIndex( et ) == -1 ) {
@@ -156,7 +156,7 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
 {
 	DBEVENTINFO* dbei = ( DBEVENTINFO* )lParam;
-	HICON icon;
+	HICON icon = NULL;
 	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )DbEventTypeGet( ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
 
 	if ( et && ServiceExists( et->iconService )) {
@@ -204,7 +204,7 @@ static int sttEnumVars( const char* szVarName, LPARAM lParam )
 	return 0;
 }
 
-static int DbDeleteModule( WPARAM wParam, LPARAM lParam )
+static int DbDeleteModule( WPARAM, LPARAM lParam )
 {
 	LIST<char> vars( 20, NULL );
 

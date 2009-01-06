@@ -575,8 +575,6 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		
 		HWND oldWnd = NULL;
 		HWND oldTab = NULL; 
-		int  oldCurrentPage = -1;
-		int  oldhCurrentPage = -1;
 		if ( dat->currentPage != (-1))
 		{	
 			oldWnd = dat->opd[dat->currentPage].hwnd;
@@ -1139,7 +1137,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			FreeOptionsData( &opi );
 }	}	}
 
-static int OpenOptions(WPARAM wParam,LPARAM lParam)
+static int OpenOptions(WPARAM, LPARAM lParam)
 {
 	OPENOPTIONSDIALOG *ood=(OPENOPTIONSDIALOG*)lParam;
 	if ( ood == NULL )
@@ -1155,7 +1153,7 @@ static int OpenOptions(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int OpenOptionsDialog(WPARAM wParam,LPARAM lParam)
+static int OpenOptionsDialog(WPARAM, LPARAM)
 {
 	OpenOptionsNow(NULL,NULL,NULL);
 	return 0;
@@ -1223,7 +1221,7 @@ static int AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int OptModulesLoaded(WPARAM, LPARAM)
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
@@ -1236,7 +1234,7 @@ static int OptModulesLoaded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int ShutdownOptionsModule(WPARAM wParam,LPARAM lParam)
+int ShutdownOptionsModule(WPARAM, LPARAM)
 {
 	if (IsWindow(hwndOptions)) DestroyWindow(hwndOptions);
 	hwndOptions=NULL;
@@ -1260,7 +1258,7 @@ int LoadOptionsModule(void)
 	return 0;
 }
 
-void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT, UINT_PTR, DWORD )
 {
 	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLong( hwnd, GWL_USERDATA );
 	if ( !dat ) return;

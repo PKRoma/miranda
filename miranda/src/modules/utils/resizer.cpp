@@ -46,13 +46,13 @@ typedef struct {
 	short  cy;
 } START_OF_DLGTEMPLATEEX;
 
-int ResizeDialog(WPARAM wParam,LPARAM lParam)
+int ResizeDialog(WPARAM, LPARAM lParam)
 {
 	UTILRESIZEDIALOG *urd=(UTILRESIZEDIALOG*)lParam;
 	HDWP hDwp;
 	int i;
-	DLGITEMTEMPLATE *pItem;
-	START_OF_DLGITEMTEMPLATEEX *pItemEx;
+	DLGITEMTEMPLATE *pItem = NULL;
+	START_OF_DLGITEMTEMPLATEEX *pItemEx = NULL;
 	RECT rc;
 	PWORD pWord;
 	DLGTEMPLATE *pTemplate;
@@ -145,7 +145,7 @@ int ResizeDialog(WPARAM wParam,LPARAM lParam)
 			urc.rcItem.top+=(urc.dlgNewSize.cy-urc.dlgOriginalSize.cy)/2;
 			urc.rcItem.bottom+=(urc.dlgNewSize.cy-urc.dlgOriginalSize.cy)/2;
 		}
-		hDwp=DeferWindowPos(hDwp,GetDlgItem(urd->hwndDlg,extendedDlg?pItemEx->id:pItem->id),0,urc.rcItem.left,urc.rcItem.top,urc.rcItem.right-urc.rcItem.left,urc.rcItem.bottom-urc.rcItem.top,SWP_NOZORDER);
+		hDwp = DeferWindowPos(hDwp,GetDlgItem(urd->hwndDlg,extendedDlg?pItemEx->id:pItem->id),0,urc.rcItem.left,urc.rcItem.top,urc.rcItem.right-urc.rcItem.left,urc.rcItem.bottom-urc.rcItem.top,SWP_NOZORDER);
 	}
 	EndDeferWindowPos(hDwp);
 	return 0;

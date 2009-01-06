@@ -221,18 +221,15 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 	struct ClcGroup *group;
 	DBVARIANT dbv;
 	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-	WORD status;
+	WORD status = ID_STATUS_OFFLINE;
 	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 
 	dat->needsResort = 1;
 	if (style & CLS_NOHIDEOFFLINE)
 		checkHideOffline = 0;
-	if (checkHideOffline) {
-		if (szProto == NULL)
-			status = ID_STATUS_OFFLINE;
-		else
+	if (checkHideOffline)
+		if (szProto != NULL)
 			status = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-	}
 
 	if ( DBGetContactSettingTString(hContact, "CList", "Group", &dbv))
 		group = &dat->list;

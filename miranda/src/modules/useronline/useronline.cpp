@@ -72,7 +72,7 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int UserOnlineAck(WPARAM wParam, LPARAM lParam)
+static int UserOnlineAck(WPARAM, LPARAM lParam)
 {
 	ACKDATA * ack = (ACKDATA*) lParam;
 	if ( ack != 0 && ack->szModule && ack->type == ACKTYPE_STATUS && ack->result == ACKRESULT_SUCCESS && ack->hProcess == (HANDLE)ID_STATUS_OFFLINE) {
@@ -82,7 +82,7 @@ static int UserOnlineAck(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int UserOnlineModulesLoaded(WPARAM wParam, LPARAM lParam)
+static int UserOnlineModulesLoaded(WPARAM, LPARAM)
 {
 	// reset the counter
 	int j;

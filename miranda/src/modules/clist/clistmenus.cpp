@@ -188,13 +188,13 @@ wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
 
-static int RemoveMainMenuItem(WPARAM wParam,LPARAM lParam)
+static int RemoveMainMenuItem(WPARAM wParam, LPARAM)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
+static int BuildMainMenu(WPARAM, LPARAM)
 {
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hMainMenuObject;
@@ -207,7 +207,7 @@ static int BuildMainMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
+static int AddMainMenuItem(WPARAM, LPARAM lParam)
 {
 	CLISTMENUITEM* mi = ( CLISTMENUITEM* )lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
@@ -242,7 +242,7 @@ static int AddMainMenuItem(WPARAM wParam,LPARAM lParam)
 	return ( int )pimi;
 }
 
-int MainMenuCheckService(WPARAM wParam,LPARAM lParam)
+int MainMenuCheckService(WPARAM, LPARAM)
 {
 	return 0;
 }
@@ -250,7 +250,7 @@ int MainMenuCheckService(WPARAM wParam,LPARAM lParam)
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int MainMenuExecService(WPARAM wParam,LPARAM lParam)
+int MainMenuExecService(WPARAM wParam, LPARAM lParam)
 {
 	lpMainMenuExecParam mmep = ( lpMainMenuExecParam )wParam;
 	if ( mmep != NULL ) {
@@ -263,7 +263,7 @@ int MainMenuExecService(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int FreeOwnerDataMainMenu (WPARAM wParam,LPARAM lParam)
+int FreeOwnerDataMainMenu(WPARAM, LPARAM lParam)
 {
 	lpMainMenuExecParam mmep = ( lpMainMenuExecParam )lParam;
 	if ( mmep != NULL ) {
@@ -276,13 +276,13 @@ int FreeOwnerDataMainMenu (WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // CONTACT MENU
 
-static int RemoveContactMenuItem(WPARAM wParam,LPARAM lParam)
+static int RemoveContactMenuItem(WPARAM wParam, LPARAM)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
+static int AddContactMenuItem(WPARAM, LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
@@ -332,7 +332,7 @@ static int AddContactMenuItem(WPARAM wParam,LPARAM lParam)
 	return ( int )menuHandle;
 }
 
-static int BuildContactMenu(WPARAM wParam,LPARAM lParam)
+static int BuildContactMenu(WPARAM wParam, LPARAM)
 {
 	HANDLE hContact = ( HANDLE )wParam;
 	NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
@@ -368,7 +368,7 @@ int ContactMenuExecService(WPARAM wParam,LPARAM lParam)
 }
 
 //true - ok,false ignore
-int ContactMenuCheckService(WPARAM wParam,LPARAM lParam)
+int ContactMenuCheckService(WPARAM wParam,LPARAM)
 {
 	PCheckProcParam pcpp = ( PCheckProcParam )wParam;
 	BuildContactParam *bcp=NULL;
@@ -400,7 +400,7 @@ int ContactMenuCheckService(WPARAM wParam,LPARAM lParam)
 	return TRUE;
 }
 
-int FreeOwnerDataContactMenu (WPARAM wParam,LPARAM lParam)
+int FreeOwnerDataContactMenu (WPARAM, LPARAM lParam)
 {
 	lpContactMenuExecParam cmep = ( lpContactMenuExecParam )lParam;
 	if ( cmep != NULL ) {
@@ -445,7 +445,7 @@ BOOL FindMenuHandleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itd
 	return FALSE;
 }
 
-BOOL __inline wildcmp(char * name, char * mask, BYTE option)
+BOOL __inline wildcmp(char * name, char * mask)
 {
 	char * last='\0';
 	for(;; mask++, name++)
@@ -465,7 +465,7 @@ BOOL __inline wildcmp(char * name, char * mask, BYTE option)
 		if(*mask != '?' && *mask != *name) name -= (size_t)(mask - last) - 1, mask = last;
 }	}
 
-int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
+int StatusMenuCheckService(WPARAM wParam, LPARAM)
 {
 	PCheckProcParam pcpp = ( PCheckProcParam )wParam;
 	if ( !pcpp )
@@ -477,7 +477,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 
 	StatusMenuExecParam *smep = ( StatusMenuExecParam* )pcpp->MenuItemOwnerData;
 	if (smep && !smep->status && smep->custom ) {
-		if ( wildcmp( smep->svc,"*XStatus*", 255 )) {
+		if ( wildcmp( smep->svc,"*XStatus*" )) {
 			//TODO Set parent icon/text as current
 			//Get parent menu ID
 			BOOL check = FALSE;
@@ -485,10 +485,10 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 			{
 				char buf[255];
 				_snprintf( buf, sizeof(buf), "*XStatus%d", XStatus );
-				if ( wildcmp( smep->svc, buf, 255 ))
+				if ( wildcmp( smep->svc, buf ))
 					check = TRUE;
 			}
-			BOOL reset = (wildcmp(smep->svc,"*XStatus0",255)) ? TRUE : FALSE;
+			BOOL reset = (wildcmp(smep->svc,"*XStatus0")) ? TRUE : FALSE;
 
 			if ( check )
 				timi->mi.flags |= CMIF_CHECKED;
@@ -578,7 +578,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
+int StatusMenuExecService(WPARAM wParam, LPARAM)
 {
 	lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )wParam;
 	if ( smep != NULL ) {
@@ -645,7 +645,7 @@ int StatusMenuExecService(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int FreeOwnerDataStatusMenu (WPARAM wParam,LPARAM lParam)
+int FreeOwnerDataStatusMenu(WPARAM, LPARAM lParam)
 {
 	lpStatusMenuExecParam smep = (lpStatusMenuExecParam)lParam;
 	if ( smep != NULL ) {
@@ -735,7 +735,7 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itda
 	return FALSE;
 }
 
-static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
+static int MenuProcessHotkey(WPARAM vKey, LPARAM)
 {
 	if ( MO_ProcessHotKeys( hStatusMenuObject, vKey ))
 		return TRUE;
@@ -746,7 +746,7 @@ static int MenuProcessHotkey(WPARAM vKey,LPARAM lParam)
 	return 0;
 }
 
-static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
+static int MenuIconsChanged(WPARAM, LPARAM)
 {
 	//just rebuild menu
 	RebuildMenuOrder();
@@ -754,12 +754,12 @@ static int MenuIconsChanged(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int MeasureMenuItem(WPARAM wParam,LPARAM lParam)
+static int MeasureMenuItem(WPARAM, LPARAM lParam)
 {
 	return MO_MeasureMenuItem(( LPMEASUREITEMSTRUCT )lParam );
 }
 
-static int DrawMenuItem(WPARAM wParam,LPARAM lParam)
+static int DrawMenuItem(WPARAM, LPARAM lParam)
 {
 	return MO_DrawMenuItem(( LPDRAWITEMSTRUCT )lParam );
 }
@@ -781,14 +781,14 @@ int RecursiveDeleteMenu(HMENU hMenu)
 	return 0;
 }
 
-static int MenuGetMain(WPARAM wParam,LPARAM lParam)
+static int MenuGetMain(WPARAM, LPARAM)
 {
 	RecursiveDeleteMenu(hMainMenu);
 	BuildMainMenu(0,0);
 	return (int)hMainMenu;
 }
 
-static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
+static int BuildStatusMenu(WPARAM, LPARAM)
 {
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hStatusMenuObject;
@@ -799,13 +799,13 @@ static int BuildStatusMenu(WPARAM wParam,LPARAM lParam)
 	return (int)hMenu;
 }
 
-static int SetStatusMode(WPARAM wParam, LPARAM lParam)
+static int SetStatusMode(WPARAM wParam, LPARAM)
 {
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
 	return 0;
 }
 
-static int MenuGetStatus(WPARAM wParam,LPARAM lParam)
+static int MenuGetStatus(WPARAM, LPARAM)
 {
 	return BuildStatusMenu(0,0);
 }
@@ -853,7 +853,7 @@ int fnGetAccountIndexByPos(int Pos)
 
 void RebuildMenuOrder( void )
 {
-	int i,j,s,networkProtoCount=0;
+	int i,j,s;
 	int visnetworkProtoCount=0;
 	DWORD flags,flags2;
 	TMenuParam tmp;
@@ -1085,7 +1085,7 @@ int statustopos(int status)
 	return -1;
 }
 
-static int MenuProtoAck(WPARAM wParam,LPARAM lParam)
+static int MenuProtoAck(WPARAM, LPARAM lParam)
 {
 	int i,networkProtoCount;
 	ACKDATA* ack=(ACKDATA*)lParam;

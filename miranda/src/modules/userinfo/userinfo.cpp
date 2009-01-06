@@ -72,7 +72,7 @@ static int PageSortProc(OPTIONSDIALOGPAGE *item1,OPTIONSDIALOGPAGE *item2)
 	return lstrcmp(item1->ptszTab, item2->ptszTab);
 }
 
-static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM lParam)
+static int ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
 {
 	HWND hwnd;
 	PROPSHEETHEADER psh;
@@ -204,7 +204,7 @@ static void CreateDetailsPageWindow( HWND hwndDlg, struct DetailsData* dat, stru
 	}
 }
 
-static int UserInfoContactDelete(WPARAM wParam,LPARAM lParam)
+static int UserInfoContactDelete(WPARAM wParam,LPARAM)
 {
 	HWND hwnd;
 	hwnd=WindowList_Find(hWindowList,(HANDLE)wParam);
@@ -571,7 +571,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-int ShutdownUserInfo(WPARAM wParam,LPARAM lParam)
+int ShutdownUserInfo(WPARAM, LPARAM)
 {
 	WindowList_BroadcastAsync(hWindowList,WM_DESTROY,0,0);
 	return 0;

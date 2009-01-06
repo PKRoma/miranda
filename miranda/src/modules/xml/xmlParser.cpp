@@ -677,7 +677,7 @@ int ToXMLStringTool::lengthXMLString(XMLCSTR source)
     int r=0;
     XMLCharacterEntity *entity;
     XMLCHAR ch;
-    while ((ch=*source))
+    while ((ch=*source) != 0)
     {
         entity=XMLEntities;
         do

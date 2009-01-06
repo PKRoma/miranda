@@ -43,7 +43,7 @@ int RegisterColourW(WPARAM wParam, LPARAM lParam);
 int GetColour(WPARAM wParam, LPARAM lParam);
 int GetColourW(WPARAM wParam, LPARAM lParam);
 
-static int OnPreShutdown(WPARAM wParam, LPARAM lParam)
+static int OnPreShutdown(WPARAM, LPARAM)
 {
 	DestroyHookableEvent(hFontReloadEvent);
 	DestroyHookableEvent(hColourReloadEvent);

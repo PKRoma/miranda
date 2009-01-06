@@ -69,7 +69,7 @@ static int CompareSystemTimes(SYSTEMTIME *st,SYSTEMTIME *switchDate)
 	return CompareFileTime(&ft1,&ft2);
 }
 
-static int TimestampToLocal(WPARAM wParam,LPARAM lParam)
+static int TimestampToLocal(WPARAM wParam, LPARAM)
 {
 	TIME_ZONE_INFORMATION tzInfo;
 	LARGE_INTEGER liFiletime;

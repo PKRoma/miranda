@@ -34,7 +34,7 @@ static struct SoundItem *soundList = NULL;
 static int soundCount;
 static HANDLE hPlayEvent = NULL;
 
-static int ServiceSkinAddNewSound(WPARAM wParam,LPARAM lParam)
+static int ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
 {
 	struct SoundItem* item;
 	SKINSOUNDDESCEX *ssd=(SKINSOUNDDESCEX*)lParam;
@@ -70,7 +70,7 @@ static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ServiceSkinPlaySound(WPARAM wParam, LPARAM lParam)
+static int ServiceSkinPlaySound(WPARAM, LPARAM lParam)
 {
 	char* pszSoundName = ( char* )lParam;
 	int j;
@@ -385,7 +385,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 static UINT iconsExpertOnlyControls[]={IDC_IMPORT};
 
-static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
+static int SkinOptionsInit(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
@@ -400,7 +400,7 @@ static int SkinOptionsInit(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int SkinSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
+static int SkinSystemModulesLoaded(WPARAM, LPARAM)
 {
 	HookEvent(ME_OPT_INITIALISE,SkinOptionsInit);
 	return 0;

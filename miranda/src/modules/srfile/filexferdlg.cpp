@@ -148,7 +148,7 @@ static void HideProgressControls(HWND hwndDlg)
 	PostMessage(GetParent(hwndDlg), WM_FT_RESIZE, 0, (LPARAM)hwndDlg);
 }
 
-static int FileTransferDlgResizer(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+static int FileTransferDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 {
 	switch(urc->wId) {
 		case IDC_CONTACTNAME:

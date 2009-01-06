@@ -70,12 +70,12 @@ static DWORD __cdecl sttDefaultFilter( DWORD, EXCEPTION_POINTERS* )
 
 pfnExceptionFilter pMirandaExceptFilter = sttDefaultFilter;
 
-static int GetExceptionFilter( WPARAM wParam, LPARAM lParam )
+static int GetExceptionFilter( WPARAM, LPARAM )
 {
 	return ( int )pMirandaExceptFilter;
 }
 
-static int SetExceptionFilter( WPARAM wParam, LPARAM lParam )
+static int SetExceptionFilter( WPARAM, LPARAM lParam )
 {
 	pfnExceptionFilter oldOne = pMirandaExceptFilter;
 	if ( lParam != 0 )
@@ -168,7 +168,7 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	pThreadFuncOwner threadcodeex = ( pThreadFuncOwner )fa->threadcodeex;
 	void *cookie = fa->arg;
 	void *owner = fa->owner;
-	unsigned long rc;
+	unsigned long rc = 0;
 
 	CallService(MS_SYSTEM_THREAD_PUSH,(WPARAM)fa->owner,(LPARAM)&threadcode);
 	SetEvent(fa->hEvent);
@@ -195,7 +195,6 @@ unsigned long forkthreadex(
 	unsigned (__stdcall *threadcode)(void*),
 	void* owner,
 	void *arg,
-	unsigned cf,
 	unsigned *thraddr )
 {
 	unsigned long rc;
@@ -219,13 +218,13 @@ static int ForkThreadServiceEx(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	UINT threadID;
-	return forkthreadex( NULL, params->iStackSize, params->pFunc, ( void* )wParam, params->arg, 0, params->threadID ? params->threadID : &threadID );
+	return forkthreadex( NULL, params->iStackSize, params->pFunc, ( void* )wParam, params->arg, params->threadID ? params->threadID : &threadID );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // APC and mutex functions
 
-static void __stdcall DummyAPCFunc(DWORD dwArg)
+static void __stdcall DummyAPCFunc(DWORD)
 {
 	/* called in the context of thread that cleared it's APC queue */
 	return;
@@ -250,7 +249,7 @@ static int MirandaWaitForMutex(HANDLE hEvent)
 	}
 }
 
-VOID CALLBACK KillAllThreads(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+VOID CALLBACK KillAllThreads(HWND, UINT, UINT_PTR, DWORD)
 {
 	if ( MirandaWaitForMutex( hStackMutex )) {
 		for ( int j=0; j < threads.getCount(); j++ ) {
@@ -367,7 +366,7 @@ int UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
+int UnwindThreadPop(WPARAM, LPARAM)
 {
 	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0)
 	{
@@ -398,12 +397,12 @@ int UnwindThreadPop(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int MirandaIsTerminated(WPARAM wParam,LPARAM lParam)
+int MirandaIsTerminated(WPARAM, LPARAM)
 {
 	return WaitForSingleObject(hMirandaShutdown,0)==WAIT_OBJECT_0;
 }
 
-static void __cdecl compactHeapsThread(void *dummy)
+static void __cdecl compactHeapsThread(void*)
 {
 	while (!Miranda_Terminated())
 	{
@@ -443,7 +442,7 @@ DWORD CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 HWND hAPCWindow=NULL;
 void (*SetIdleCallback) (void)=NULL;
 
-static int SystemSetIdleCallback(WPARAM wParam, LPARAM lParam)
+static int SystemSetIdleCallback(WPARAM, LPARAM lParam)
 {
 	if (lParam && SetIdleCallback==NULL) {
 		SetIdleCallback=(void (*)(void))lParam;
@@ -462,7 +461,7 @@ void checkIdle(MSG * msg)
 		dwEventTime = GetTickCount();
 }	}
 
-static int SystemGetIdle(WPARAM wParam, LPARAM lParam)
+static int SystemGetIdle(WPARAM, LPARAM lParam)
 {
 	if ( lParam ) *(DWORD*)lParam = dwEventTime;
 	return 0;
@@ -479,7 +478,7 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 	return rc;
 }
 
-static int SystemShutdownProc(WPARAM wParam,LPARAM lParam)
+static int SystemShutdownProc(WPARAM, LPARAM)
 {
 	UnloadDefaultModules();
 	return 0;
@@ -531,7 +530,7 @@ static void ParseCommandLine()
 			CloseHandle( hProcess );
 }	}	}
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 {
 	DWORD myPid=0;
 	int messageloop=1;
@@ -631,12 +630,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
-static int OkToExit(WPARAM wParam,LPARAM lParam)
+static int OkToExit(WPARAM, LPARAM)
 {
 	return NotifyEventHooks(hOkToExitEvent,0,0)==0;
 }
 
-static int GetMirandaVersion(WPARAM wParam,LPARAM lParam)
+static int GetMirandaVersion(WPARAM, LPARAM)
 {
 	char filename[MAX_PATH];
 	DWORD unused;
@@ -690,7 +689,7 @@ int WaitOnHandle(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int RemoveWait(WPARAM wParam,LPARAM lParam)
+static int RemoveWait(WPARAM wParam, LPARAM)
 {
 	int i;
 
@@ -703,7 +702,7 @@ static int RemoveWait(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
+int GetMemoryManagerInterface(WPARAM, LPARAM lParam)
 {
 	struct MM_INTERFACE *mmi = (struct MM_INTERFACE*) lParam;
 	if ( mmi == NULL )
@@ -744,7 +743,7 @@ int GetMemoryManagerInterface(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int GetListInterface(WPARAM wParam, LPARAM lParam)
+int GetListInterface(WPARAM, LPARAM lParam)
 {
 	struct LIST_INTERFACE *li = (struct LIST_INTERFACE*) lParam;
 	if ( li == NULL )
@@ -768,7 +767,7 @@ int GetListInterface(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
-int GetUtfInterface(WPARAM wParam, LPARAM lParam)
+int GetUtfInterface(WPARAM, LPARAM lParam)
 {
 	struct UTF8_INTERFACE *utfi = (struct UTF8_INTERFACE*) lParam;
 	if ( utfi == NULL )

@@ -98,7 +98,7 @@ int CreateDirectoryTree( const char *szDir )
 	return ( CreateDirectoryA( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
-static int createDirTree(WPARAM wParam, LPARAM lParam)
+static int createDirTree(WPARAM, LPARAM lParam)
 {
 	if ( lParam == 0 )
 		return 1;
@@ -184,7 +184,7 @@ int CreateDirectoryTreeW( const WCHAR* szDir )
 	return ( CreateDirectoryW( szTestDir, NULL ) == 0 ) ? GetLastError() : 0;
 }
 
-static int createDirTreeW(WPARAM wParam, LPARAM lParam)
+static int createDirTreeW(WPARAM, LPARAM lParam)
 {
 	if ( lParam == 0 )
 		return 1;

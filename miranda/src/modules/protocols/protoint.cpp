@@ -198,7 +198,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl OnEvent( PROTOEVENTTYPE code, WPARAM wParam, LPARAM lParam )
+	int __cdecl OnEvent( PROTOEVENTTYPE, WPARAM, LPARAM )
 	{
 		return 0;
 	}

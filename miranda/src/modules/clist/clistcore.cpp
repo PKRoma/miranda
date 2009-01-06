@@ -34,7 +34,7 @@ int LoadCLCModule( void );
 
 static int interfaceInited = 0;
 
-static void fnPaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT * rcPaint )
+static void fnPaintClc( HWND, ClcData*, HDC, RECT* )
 {
 }
 
@@ -58,7 +58,7 @@ static void fnReloadProtoMenus( void )
 	cli.pfnCluiProtocolStatusChanged(0,0);
 }
 
-static int srvRetrieveInterface( WPARAM wParam, LPARAM lParam )
+static int srvRetrieveInterface( WPARAM, LPARAM lParam )
 {
 	int rc;
 

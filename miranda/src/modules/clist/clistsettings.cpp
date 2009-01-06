@@ -210,7 +210,6 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL) {
-				size_t len = _tcslen(ci.pszVal);
 				#if defined( _UNICODE )
 					buffer = u2a( ci.pszVal );
 					mir_free(ci.pszVal);
@@ -252,20 +251,20 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 	return (int) buffer;
 }
 
-int InvalidateDisplayName(WPARAM wParam, LPARAM lParam)
+int InvalidateDisplayName(WPARAM wParam, LPARAM)
 {
 	cli.pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 	return 0;
 }
 
-int ContactAdded(WPARAM wParam, LPARAM lParam)
+int ContactAdded(WPARAM wParam, LPARAM)
 {
 	cli.pfnChangeContactIcon((HANDLE)wParam, cli.pfnIconFromStatusMode((char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0), ID_STATUS_OFFLINE, NULL), 1);
 	cli.pfnSortContacts();
 	return 0;
 }
 
-int ContactDeleted(WPARAM wParam, LPARAM lParam)
+int ContactDeleted(WPARAM wParam, LPARAM)
 {
 	CallService(MS_CLUI_CONTACTDELETED, wParam, 0);
 	return 0;
