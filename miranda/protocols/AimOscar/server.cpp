@@ -425,8 +425,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				}
 				else if(l346&&tlv.len()==2)
 					strlcpy(client,CLIENT_MEEBO,100);
-				else if(l34e&&tlv.len()==2)
-					strlcpy(client,CLIENT_IPHONE,100);
+				else if(l34e&&l343&&tlv.len()==4)
+					strlcpy(client,CLIENT_BEEJIVE,100);
 
 				//if(utf8)
 				//	DBWriteContactSettingByte(hContact, m_szModuleName, AIM_KEY_US, 1);
