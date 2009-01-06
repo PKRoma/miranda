@@ -848,14 +848,18 @@ Disables a setting saving to the database.
 	#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d,__FILE__,__LINE__)
 	#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d,__FILE__,__LINE__)
 	#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d,__FILE__,__LINE__)
+#else
+	#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d)
+	#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d)
+	#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d)
+#endif
+
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
 	#define DBGetContactSetting(a,b,c,d)           DBGetContactSetting_Helper(a,b,c,d,__FILE__,__LINE__)
 	#define DBGetContactSettingString(a,b,c,d)     DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_ASCIIZ)
 	#define DBGetContactSettingWString(a,b,c,d)    DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_WCHAR)
 	#define DBGetContactSettingUTF8String(a,b,c,d) DBGetContactSettingString_Helper(a,b,c,d,__FILE__,__LINE__,DBVT_UTF8)
 #else
-	#define DBGetContactSettingByte(a,b,c,d)       DBGetContactSettingByte_Helper(a,b,c,d)
-	#define DBGetContactSettingWord(a,b,c,d)       DBGetContactSettingWord_Helper(a,b,c,d)
-	#define DBGetContactSettingDword(a,b,c,d)      DBGetContactSettingDword_Helper(a,b,c,d)
 	#define DBGetContactSetting(a,b,c,d)           DBGetContactSetting_Helper(a,b,c,d)
 	#define DBGetContactSettingString(a,b,c,d)     DBGetContactSettingString_Helper(a,b,c,d,DBVT_ASCIIZ)
 	#define DBGetContactSettingWString(a,b,c,d)    DBGetContactSettingString_Helper(a,b,c,d,DBVT_WCHAR)
@@ -959,7 +963,7 @@ __inline static DWORD DBGetContactSettingDword_Helper(HANDLE hContact,const char
 }
 
 __inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
 	,const char *szFile, const int nLine
 #endif
 )
@@ -982,7 +986,7 @@ __inline static int DBGetContactSetting_Helper(HANDLE hContact,const char *szMod
 }
 
 __inline static int DBGetContactSettingString_Helper(HANDLE hContact,const char *szModule,const char *szSetting,DBVARIANT *dbv,
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(DBCHECKSETTINGS)
 	const char *szFile, const int nLine,
 #endif
 	const int nType)
