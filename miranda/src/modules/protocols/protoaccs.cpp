@@ -389,8 +389,22 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void EraseAccount( PROTOACCOUNT* )
+void EraseAccount( PROTOACCOUNT* pa )
 {
+	// remove protocol contacts first
+	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+	while ( hContact != NULL ) {
+		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
+		if ( lstrcmpA( szProto, pa->szModuleName ))
+			continue;
+
+		HANDLE h1 = hContact;
+		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
+		CallService( MS_DB_CONTACT_DELETE, ( WPARAM )h1, 0 );
+	}
+
+	// remove all protocol settings
+	CallService( MS_DB_MODULE_DELETE, 0, ( LPARAM )pa->szModuleName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
