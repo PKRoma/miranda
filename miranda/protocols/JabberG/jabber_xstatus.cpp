@@ -707,7 +707,7 @@ void CPepMood::SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText
 	if (szMood)
 	{
 		m_proto->JSetByte(hContact, DBSETTING_XSTATUSID, mood);
-		m_proto->JSetStringT(hContact, DBSETTING_XSTATUSNAME, g_arrMoods[mood].szName);
+		m_proto->JSetStringT(hContact, DBSETTING_XSTATUSNAME, TranslateTS(g_arrMoods[mood].szName));
 		if (szText)
 			m_proto->JSetStringT(hContact, DBSETTING_XSTATUSMSG, szText);
 		else
