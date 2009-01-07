@@ -359,43 +359,41 @@ static void SaveSettings(HANDLE hItem, HWND hwndList, CMsnProto* proto)
 
 INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch ( msg ) 
-    {
+	switch( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-        {
-		    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
-		    CMsnProto* proto = (CMsnProto*)lParam;
+		{
+			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
-		    HIMAGELIST hIml = ImageList_Create(
-			    GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-			    ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
-    		
-		    HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT);
-		    ImageList_AddIcon( hIml, hIcon );
-		    CallService( MS_SKIN2_RELEASEICON, ( WPARAM )hIcon, 0 );
-    		
-		    hIcon =  LoadIconEx( "list_fl" );
-		    ImageList_AddIcon( hIml, hIcon );
-		    SendDlgItemMessage( hwndDlg, IDC_ICON_FL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			HIMAGELIST hIml = ImageList_Create(
+				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+				ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 5, 5 );
 
-		    hIcon =  LoadIconEx( "list_al" );
-		    ImageList_AddIcon( hIml, hIcon );
-		    SendDlgItemMessage( hwndDlg, IDC_ICON_AL, STM_SETICON, ( WPARAM )hIcon, 0 );
-    		
-		    hIcon =  LoadIconEx( "list_bl" );
-		    ImageList_AddIcon( hIml, hIcon );
-		    SendDlgItemMessage( hwndDlg, IDC_ICON_BL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT);
+			ImageList_AddIcon( hIml, hIcon );
+			CallService( MS_SKIN2_RELEASEICON, ( WPARAM )hIcon, 0 );
 
-		    hIcon =  LoadIconEx( "list_rl" );
-		    ImageList_AddIcon( hIml, hIcon );
-		    SendDlgItemMessage( hwndDlg, IDC_ICON_RL, STM_SETICON, ( WPARAM )hIcon, 0 );
+			hIcon =  LoadIconEx( "list_fl" );
+			ImageList_AddIcon( hIml, hIcon );
+			SendDlgItemMessage( hwndDlg, IDC_ICON_FL, STM_SETICON, ( WPARAM )hIcon, 0 );
 
-		    SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
-        }
+			hIcon =  LoadIconEx( "list_al" );
+			ImageList_AddIcon( hIml, hIcon );
+			SendDlgItemMessage( hwndDlg, IDC_ICON_AL, STM_SETICON, ( WPARAM )hIcon, 0 );
+
+			hIcon =  LoadIconEx( "list_bl" );
+			ImageList_AddIcon( hIml, hIcon );
+			SendDlgItemMessage( hwndDlg, IDC_ICON_BL, STM_SETICON, ( WPARAM )hIcon, 0 );
+
+			hIcon =  LoadIconEx( "list_rl" );
+			ImageList_AddIcon( hIml, hIcon );
+			SendDlgItemMessage( hwndDlg, IDC_ICON_RL, STM_SETICON, ( WPARAM )hIcon, 0 );
+
+			SendDlgItemMessage( hwndDlg, IDC_LIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)hIml );
+		}
 		SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_SETEXTRACOLUMNS,4,0);
 
-	    ResetListOptions(GetDlgItem(hwndDlg,IDC_LIST));
+		ResetListOptions(GetDlgItem(hwndDlg,IDC_LIST));
 		return TRUE;
 
 //	case WM_SETFOCUS:

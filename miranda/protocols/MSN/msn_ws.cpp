@@ -214,8 +214,8 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 				{
 					unsigned status; 
 					MimeHeaders tHeaders;
-					char *tbuf, *hdrs;
-					size_t hdrSize;
+					char *tbuf = NULL, *hdrs = NULL;
+					size_t hdrSize = 0;
 
 					for (;;) 
 					{
