@@ -58,6 +58,7 @@ struct FontOptionsList
 
 #define DEFAULT_COLOUR		RGB(0, 0, 0)
 #define DEFAULT_GREYCOLOUR	RGB(128, 128, 128)
+#define DEFAULT_BACKCOLOUR	RGB(255, 255, 255)
 
 #define DEFAULT_FAMILY		_T("Arial")
 #define DEFAULT_EFFECT		{ 0, 0x00000000, 0x00000000 }
@@ -106,6 +107,10 @@ struct ColourOptionsList
 };
 
 static struct ColourOptionsList colourOptionsList[] = {
+
+	{ "BkColour",               CLCGROUP,            LPGENT( "Background"),            DEFAULT_BACKCOLOUR },
+	{ "Rows_BkColour",          CLCLINESGROUP,       LPGENT( "Background"),            DEFAULT_BACKCOLOUR },
+	{ "Frames_BkColour",        CLCFRAMESGROUP,      LPGENT( "Background"),            DEFAULT_BACKCOLOUR},
 
     { "HotTextColour",      CLCCOLOURSGROUP,       LPGENT( "Hot text"),            CLCDEFAULT_MODERN_HOTTEXTCOLOUR },
     { "SelTextColour",      CLCCOLOURSGROUP,       LPGENT( "Selected text"),       CLCDEFAULT_MODERN_SELTEXTCOLOUR },

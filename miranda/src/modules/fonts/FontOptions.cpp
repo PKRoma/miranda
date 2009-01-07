@@ -1085,6 +1085,12 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						FSUIListItemData *itemData = (FSUIListItemData *)SendDlgItemMessage(hwndDlg, IDC_FONTLIST, LB_GETITEMDATA, selItems[i], 0);
 						if (itemData->colour_id < 0) continue;
 						colour_id_list_w2[itemData->colour_id].value = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
+
+						if ( _tcscmp( colour_id_list_w2[itemData->colour_id].name, _T("Background") ) == 0 )
+						{
+							if ( hBkgColourBrush ) DeleteObject( hBkgColourBrush );
+							hBkgColourBrush = CreateSolidBrush( colour_id_list_w2[itemData->colour_id].value );
+						}
 					}
 					mir_free(selItems);
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, FALSE);
