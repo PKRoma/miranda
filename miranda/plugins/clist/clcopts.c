@@ -118,7 +118,6 @@ static LONG CalcMinRowHeight()
 {
 	int i;
 	LONG minHeight = GetSystemMetrics(SM_CYSMICON);
-	DWORD maxHeight = 0;
 	HDC hdc = GetDC(NULL);
 	for (i = 0; i < FONTID_LAST; i++) {
 		HFONT hFont;
