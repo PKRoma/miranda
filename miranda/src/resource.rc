@@ -1702,6 +1702,8 @@ IDI_BLANK               ICON                    "res/_blank.ico"
 IDI_UNDO                ICON                    "res/icon_undo.ico"
 IDI_WINDOW              ICON                    "res/icon_window.ico"
 IDI_WINDOWS             ICON                    "res/icon_windows.ico"
+IDI_JOINCHAT            ICON                    "res/chat_join.ico"
+IDI_LEAVECHAT           ICON                    "res/chat_leave.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -73,6 +73,8 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_EXIT,        LPGEN("Exit"),             0xFFFFFFFF         },
 	{ SKINICON_OTHER_MAINMENU,    LPGEN("Main Menu"),       -IDI_MIRANDA        },
 	{ SKINICON_OTHER_STATUS,      LPGEN("Status"),           0xFFFFFFFF         },
+	{ SKINICON_CHAT_JOIN,         LPGEN("Join chat"),       -IDI_JOINCHAT       },
+	{ SKINICON_CHAT_LEAVE,        LPGEN("Leave chat"),      -IDI_LEAVECHAT      }
 };
 
 struct StandardIconDescription statusIcons[] =

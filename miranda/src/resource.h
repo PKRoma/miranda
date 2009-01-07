@@ -119,6 +119,8 @@
 #define IDD_FTMGR                       286
 #define IDD_FTPAGE                      287
 #define IDD_OPT_KEYWORDFILTER           288
+#define IDI_JOINCHAT                    289
+#define IDI_LEAVECHAT                   290
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002

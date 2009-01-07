@@ -55,14 +55,14 @@ int Chat_Load()
 		mi.cbSize = sizeof(mi);
 		mi.position = -2000090001;
 		mi.flags = CMIF_DEFAULT;
-		mi.hIcon = hIcons[ICON_JOIN];
+		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_JOIN );
 		mi.pszName = LPGEN("&Join");
 		mi.pszService = "GChat/JoinChat";
 		hJoinMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
 		mi.position = -2000090000;
 		mi.flags = CMIF_NOTOFFLINE;
-		mi.hIcon = hIcons[ICON_PART];
+		mi.hIcon = LoadSkinnedIcon( SKINICON_CHAT_LEAVE );
 		mi.pszName = LPGEN("&Leave");
 		mi.pszService = "GChat/LeaveChat";
 		hLeaveMenuItem = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
