@@ -169,7 +169,7 @@ PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
 
 BOOL ActivateAccount( PROTOACCOUNT* pa );
-void EraseAccount( PROTOACCOUNT* pa );
+void EraseAccount( const char* pszProtoName );
 void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );
 BOOL IsAccountEnabled( PROTOACCOUNT* pa );
 void UnloadAccount( PROTOACCOUNT* pa, BOOL bIsDynamic );

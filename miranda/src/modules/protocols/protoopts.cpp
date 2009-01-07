@@ -794,7 +794,6 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						EnableWindow( GetDlgItem(hwndDlg, IDC_ADD), FALSE );
 
 						ListBox_SetItemData( hList, idx, 0 );
-						EraseAccount( pa );
 						UnloadAccount( pa, TRUE );
 						accounts.remove( pa );
 						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );

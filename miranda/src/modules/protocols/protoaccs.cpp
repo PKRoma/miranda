@@ -356,6 +356,9 @@ static int DeactivationThread( DeactivationThreadParam* param )
 
 	KillObjectThreads( p ); // waits for them before terminating
 
+	if ( param->bIsDynamic )
+		EraseAccount( p->m_szModuleName );
+
 	if ( param->fnUninit )
 		param->fnUninit( p );
 
@@ -389,13 +392,26 @@ void DeactivateAccount( PROTOACCOUNT* pa, BOOL bIsDynamic )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void EraseAccount( PROTOACCOUNT* pa )
+void EraseAccount( const char* pszModuleName )
 {
+	DBVARIANT dbv;
+	DBCONTACTGETSETTING dbcgs;
+	char szProtoName[32];
+
+	dbv.type = DBVT_ASCIIZ;
+	dbv.pszVal = szProtoName;
+	dbv.cchVal = SIZEOF(szProtoName);
+	dbcgs.pValue = &dbv;
+	dbcgs.szModule = "Protocol";
+	dbcgs.szSetting = "p";
+
 	// remove protocol contacts first
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
 	while ( hContact != NULL ) {
-		char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-		if ( lstrcmpA( szProto, pa->szModuleName ))
+		if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )hContact, ( LPARAM )&dbcgs ))
+			continue;
+
+		if ( lstrcmpA( szProtoName, pszModuleName ))
 			continue;
 
 		HANDLE h1 = hContact;
@@ -404,7 +420,7 @@ void EraseAccount( PROTOACCOUNT* pa )
 	}
 
 	// remove all protocol settings
-	CallService( MS_DB_MODULE_DELETE, 0, ( LPARAM )pa->szModuleName );
+	CallService( MS_DB_MODULE_DELETE, 0, ( LPARAM )pszModuleName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
