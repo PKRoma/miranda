@@ -192,4 +192,83 @@ typedef struct ColourIDW_tag {
 // wparam = lparam = 0
 #define ME_COLOUR_RELOAD      "Colour/Reload"
 
+
+//////////////////////////////////////////////////////////////////////////
+//
+//  EFFECTS
+//
+typedef struct FONTEFFECT_tag
+{
+    BYTE     effectIndex;
+    DWORD    baseColour;        // ARGB
+    DWORD    secondaryColour;   // ARGB
+}
+    FONTEFFECT;
+
+typedef struct EffectID_tag
+{
+    int      cbSize;
+    char     group[64];
+    char     name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    FONTEFFECT defeffect;
+    int      order;
+
+    FONTEFFECT value;
+} 
+    EffectID;
+
+typedef struct EffectIDW_tag
+{
+    int      cbSize;
+    wchar_t  group[64];
+    wchar_t  name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    FONTEFFECT defeffect;
+    int      order;
+
+    FONTEFFECT value;
+} 
+    EffectIDW;
+
+#if defined( _UNICODE )
+    #define EffectIDT EffectIDW
+#else
+    #define EffectIDT EffectID
+#endif
+
+// register an effect
+// wparam = (EffectID *)&effect_id
+// lparam = 0
+#define MS_EFFECT_REGISTER    "Effect/Register"
+#define MS_EFFECT_REGISTERW   "Effect/RegisterW"
+
+#if defined( _UNICODE )
+    #define MS_EFFECT_REGISTERT MS_EFFECT_REGISTERW
+#else
+    #define MS_EFFECT_REGISTERT MS_EFFECT_REGISTER
+#endif
+
+// get a effect
+// wparam = (EffectID *)&effect_id (only name and group matter)
+// lparam = (FONTEFFECT *)&effect
+// rerturns 0, or -1 if not found
+#define MS_EFFECT_GET         "Effect/Get"
+#define MS_EFFECT_GETW        "Effect/GetW"
+
+#if defined( _UNICODE )
+    #define MS_EFFECT_GETT MS_EFFECT_GETW
+#else
+    #define MS_EFFECT_GETT MS_EFFECT_GET
+#endif
+
+// fired when a user modifies font settings, so reget your fonts and colours
+// wparam = lparam = 0
+#define ME_EFFECT_RELOAD      "Effect/Reload"
+
+
 #endif // _FONT_SERVICE_API_INC

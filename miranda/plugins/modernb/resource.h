@@ -50,6 +50,7 @@
 #define IDD_ICONINDEX                   227
 #define IDD_OPT_CLC                     228
 #define IDD_OPT_CLCTEXT                 229
+#define IDD_OPT_TRAY                    229
 #define IDD_INFO_LOCATION               231
 #define IDD_INFO_WORK                   232
 #define IDD_ADDPHONE                    233
@@ -674,6 +675,7 @@
 #define IDC_HILIGHTMODE3                1661
 #define IDC_SLOC                        1661
 #define IDC_ONDESKTOP                   1662
+#define IDC_HILIGHTMODE4                1663
 #define IDC_SETHOTKEY                   1759
 #define IDC_HKTITLE                     1760
 #define IDC_CHECK1                      1761

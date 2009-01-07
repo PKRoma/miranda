@@ -461,30 +461,35 @@ COLORREF sttGetColor(char * module, char * color, COLORREF defColor)
 	if (useWinColor) return defColor;
 	else return ModernGetSettingDword(NULL, module, color, defColor);
 }
+void RegisterCLUIFonts( void );
 void LoadCLCOptions(HWND hwnd, struct ClcData *dat)
 { 
 	int i;
+    RegisterCLUIFonts();
 	g_CluiData.fDisableSkinEngine=ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT);
 	{	
 
-		LOGFONTA lf;
+		LOGFONT lf;
 		HFONT holdfont;
 		SIZE fontSize;
 		HDC hdc=GetDC(hwnd);
-		for(i=0;i<=FONTID_MODERN_MAX;i++) {
-			if(!dat->fontModernInfo[i].changed && dat->fontModernInfo[i].hFont) DeleteObject(dat->fontModernInfo[i].hFont);
+		for(i=0;i<=FONTID_MODERN_MAX;i++) 
+        {
+			if(!dat->fontModernInfo[i].changed && dat->fontModernInfo[i].hFont) 
+                DeleteObject(dat->fontModernInfo[i].hFont);
 			GetFontSetting(i,&lf,&dat->fontModernInfo[i].colour,&dat->fontModernInfo[i].effect,&dat->fontModernInfo[i].effectColour1,&dat->fontModernInfo[i].effectColour2);
 			{
-				LONG height;
-				HDC hdc=GetDC(NULL);
-				height=lf.lfHeight;
-				lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-				ReleaseDC(NULL,hdc);				
+		//		LONG height;
+		//		HDC hdc=GetDC(NULL);
+		//		height=lf.lfHeight;
+		//		lf.lfHeight=-MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+		//		ReleaseDC(NULL,hdc);				
 
-				dat->fontModernInfo[i].hFont=CreateFontIndirectA(&lf);
+				dat->fontModernInfo[i].hFont=CreateFontIndirect(&lf);
 
-				lf.lfHeight=height;
+		//		lf.lfHeight=height;
 			}
+        
 
 			dat->fontModernInfo[i].changed=0;
 			holdfont=(HFONT)SelectObject(hdc,dat->fontModernInfo[i].hFont);

@@ -95,7 +95,7 @@ static void ske_PreMultiplyChanells(HBITMAP hbmp,BYTE Mult);
 static int  ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting);
 static int ske_Service_UpdateFrameImage(WPARAM wParam, LPARAM lParam);
 static int ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam);
-
+static int ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam );
 
 //Decoders
 static HMODULE hImageDecoderModule;
@@ -491,8 +491,10 @@ HRESULT SkinEngineLoadModule()
 	CreateServiceFunction(MS_SKIN_DRAWGLYPH,ske_Service_DrawGlyph);
 	CreateServiceFunction(MS_SKINENG_UPTATEFRAMEIMAGE,ske_Service_UpdateFrameImage);
 	CreateServiceFunction(MS_SKINENG_INVALIDATEFRAMEIMAGE,ske_Service_InvalidateFrameImage);
-	CreateServiceFunction(MS_SKINENG_ALPHATEXTOUT,ske_Service_AlphaTextOut);
+	CreateServiceFunction(MS_SKINENG_ALPHATEXTOUT,ske_Service_AlphaTextOut);    
 	CreateServiceFunction(MS_SKINENG_DRAWICONEXFIX,ske_Service_DrawIconEx);
+
+    CreateServiceFunction(MS_DRAW_TEXT_WITH_EFFECT,ske_Service_DrawTextWithEffect);
 
 	//create event handle
 	hSkinLoadedEvent=ModernHookEvent(ME_SKIN_SERVICESCREATED,CLUI_OnSkinLoad);
@@ -3000,9 +3002,9 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 		for(i=0;i<256;i++)
 		{
 			double f;
-			double gamma=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma1",700)/1000;
+			double gamma=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma1",600)/1000;
 			double f2;
-			double gamma2=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma2",700)/1000;
+			double gamma2=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma2",600)/1000;
 
 			f=(double)i/255;
 			f=pow(f,(1/gamma));
@@ -3035,7 +3037,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 		memdc=CreateCompatibleDC(hDC);
 		hfnt=(HFONT)GetCurrentObject(hDC,OBJ_FONT);
 		SetBkColor(memdc,0);
-		SetTextColor(memdc,RGB(255,255,255));
+		SetTextColor(memdc,RGB(32,255,32));
 		holdfnt=(HFONT)SelectObject(memdc,hfnt);
 	}
 	{
@@ -3129,7 +3131,10 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 					ske_DrawTextEffect(bufbits,bits,sz.cx,sz.cy,&effect);	
 			}
 			//RenderText
-
+            RECT drawRect;
+            drawRect.left = 0; drawRect.top = 0;
+            drawRect.right = sz.cx;
+            drawRect.bottom = sz.cy;
 			{
 				DWORD x,y;
 				DWORD width=sz.cx;
@@ -3153,17 +3158,26 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 						BYTE bx,rx,gx,mx;
 						pix=ScanLine+x*4;
 						bufpix=BufScanLine+(x<<2);
+
+                        BYTE bm = pix[0];
+                        BYTE gm = pix[1];
+                        BYTE rm = pix[2];
+
+                        BYTE col = bm = rm = gm ;
+
 						if (al!=255)
 						{
-							bx=pbGammaWeightAdv[pix[0]]*al/255;
-							gx=pbGammaWeightAdv[pix[1]]*al/255;
-							rx=pbGammaWeightAdv[pix[2]]*al/255;
+                            bx = gx = rx = pbGammaWeightAdv[ col ]*al/255;
+							//bx=pbGammaWeightAdv[ bm ]*al/255;
+							//gx=pbGammaWeightAdv[ gm ]*al/255;
+							//rx=pbGammaWeightAdv[ rm ]*al/255;
 						}
 						else
 						{
-							bx=pbGammaWeightAdv[pix[0]];
-							gx=pbGammaWeightAdv[pix[1]];
-							rx=pbGammaWeightAdv[pix[2]];
+                            bx = gx = rx = pbGammaWeightAdv[ col ];
+							// bx=pbGammaWeightAdv[ bm ];
+							// gx=pbGammaWeightAdv[ gm ];
+							// rx=pbGammaWeightAdv[ rm ];
 						}
 
 						bx=(pbGammaWeight[bx]*(255-b)+bx*(b))/255;
@@ -3171,7 +3185,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 						rx=(pbGammaWeight[rx]*(255-r)+rx*(r))/255;
 
                         mx=(BYTE)(max(max(bx,rx),gx));
-                        //mx=(BYTE)(((DWORD)bx+(DWORD)rx +(DWORD)gx)/3);
+                        // mx=(BYTE)(((DWORD)bx+(DWORD)rx +(DWORD)gx)/3);
 
 						if (1) 
 						{
@@ -3231,6 +3245,35 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 	return 0;
 }
 
+static int ske_DrawTextWithEffectWorker( HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, MODERNFONTEFFECT * effect )
+{     
+    if (format&DT_CALCRECT) return DrawText(hdc,lpString,nCount,lpRect,format);
+
+    if (format&DT_RTLREADING) SetTextAlign(hdc,TA_RTLREADING);
+    DWORD color=GetTextColor(hdc);
+
+    RECT r=*lpRect;	
+    OffsetRect(&r,1,1);
+    DWORD form = format;
+    if ( effect && effect->effectIndex )
+        ske_SelectTextEffect( hdc, effect->effectIndex - 1, effect->baseColour, effect->secondaryColour );
+
+    int res = ske_AlphaTextOut(hdc, lpString, nCount, lpRect, form, color );
+
+    if ( effect && effect->effectIndex )
+        ske_ResetTextEffect( hdc );
+
+    return res;
+}
+
+int ske_Service_DrawTextWithEffect( WPARAM wParam, LPARAM lParam )
+{
+    DrawTextWithEffectParam * p = ( DrawTextWithEffectParam * ) wParam;
+    if ( p->cbSize != sizeof(DrawTextWithEffectParam) )
+        return FALSE;
+    return ske_DrawTextWithEffectWorker( p->hdc, p->lpchText, p->cchText, p->lprc, p->dwDTFormat, p->pEffect );
+}
+
 BOOL ske_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, UINT format)
 {
 #ifdef UNICODE
@@ -3243,6 +3286,7 @@ BOOL ske_DrawTextA(HDC hdc, char * lpString, int nCount, RECT * lpRect, UINT for
 	return ske_DrawText(hdc,lpString,nCount,lpRect,format);
 #endif
 }
+
 
 BOOL ske_DrawText(HDC hdc, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format)
 {

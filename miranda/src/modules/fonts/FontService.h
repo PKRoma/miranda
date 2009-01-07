@@ -67,6 +67,31 @@ struct TColourID
 	COLORREF value;
 };
 
+// clist_modern related tune-up, adding clist_modern effects to FontService
+
+typedef struct TEffectSettings_tag
+{
+    BYTE     effectIndex;
+    DWORD    baseColour;        // ARGB
+    DWORD    secondaryColour;   // ARGB
+}
+TEffectSettings;
+
+
+struct TEffectID
+{
+    int      cbSize;
+    TCHAR    group[64];
+    TCHAR    name[64];
+    char     dbSettingsGroup[32];
+    char     setting[32];
+    DWORD    flags;
+    TEffectSettings defeffect;
+    int      order;
+
+    TEffectSettings value;
+};
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // global data & functions
 
@@ -79,6 +104,7 @@ typedef struct
 
 extern OBJLIST<TFontID>   font_id_list;
 extern OBJLIST<TColourID> colour_id_list;
+extern OBJLIST<TEffectID> effect_id_list;
 
 extern int code_page;
 extern HANDLE hFontReloadEvent, hColourReloadEvent;

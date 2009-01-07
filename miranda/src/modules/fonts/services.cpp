@@ -67,6 +67,23 @@ void ConvertColourID(ColourID *cid, TColourID* cidw)
 	MultiByteToWideChar( code_page, 0, cid->name, -1, cidw->name, 64);
 }
 
+void ConvertEffectID(EffectID *eid, TEffectID* eidw)
+{
+    eidw->cbSize = sizeof(TEffectID);
+
+    strcpy(eidw->dbSettingsGroup, eid->dbSettingsGroup);
+    strcpy(eidw->setting, eid->setting);
+    eidw->flags = eid->flags;
+    eidw->defeffect.effectIndex = eid->defeffect.effectIndex;
+    eidw->defeffect.baseColour = eid->defeffect.baseColour;
+    eidw->defeffect.secondaryColour = eid->defeffect.secondaryColour;
+    eidw->order = eid->order;
+
+    MultiByteToWideChar( code_page, 0, eid->group, -1, eidw->group, 64);
+    MultiByteToWideChar( code_page, 0, eid->name, -1, eidw->name, 64);
+}
+
+
 void ConvertLOGFONT(LOGFONTW *lfw, LOGFONTA *lfa)
 {
 	lfa->lfHeight = lfw->lfHeight;
@@ -373,4 +390,99 @@ int GetColour(WPARAM wParam, LPARAM)
 	#else
 		return sttGetColourWorker(( TColourID* )wParam );
 	#endif
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Effects
+
+void UpdateEffectSettings(TEffectID* effect_id, TEffectSettings* effectsettings)
+{
+   char str[256];
+
+   wsprintfA(str, "%sEffect", effect_id->setting);
+   effectsettings->effectIndex = DBGetContactSettingByte(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.effectIndex);
+
+   wsprintfA(str, "%sEffectCol1", effect_id->setting);
+   effectsettings->baseColour = DBGetContactSettingDword(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.baseColour);
+
+   wsprintfA(str, "%sEffectCol2", effect_id->setting);
+   effectsettings->secondaryColour = DBGetContactSettingDword(NULL, effect_id->dbSettingsGroup, str, effect_id->defeffect.secondaryColour);
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// RegisterFont service
+
+static int sttRegisterEffectWorker( TEffectID* effect_id )
+{
+    for ( int i = 0; i < effect_id_list.getCount(); i++ ) {
+        TEffectID& E = effect_id_list[i];
+        if ( !_tcscmp( E.group, effect_id->group ) && !_tcscmp( E.name, effect_id->name ))
+            return 1;
+    }
+
+    TEffectID* newItem = new TEffectID;
+    memcpy( newItem, effect_id, sizeof( TEffectID ));
+    UpdateEffectSettings( effect_id, &newItem->value );
+    effect_id_list.insert( newItem );
+    return 0;
+}
+
+#if defined( _UNICODE )
+int RegisterEffectW(WPARAM wParam, LPARAM lParam)
+{
+    return sttRegisterEffectWorker(( TEffectID* )wParam );
+}
+#endif
+
+int RegisterEffect(WPARAM wParam, LPARAM lParam)
+{
+#if defined( _UNICODE )
+    TEffectID temp;
+    ConvertEffectID( ( EffectID* )wParam, &temp );
+    return sttRegisterEffectWorker( &temp );
+#else
+    return sttRegisterEffectWorker(( TEffectID* )wParam );
+#endif
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// GetEffect service
+
+static int sttGetEffectWorker( TEffectID* effect_id, FONTEFFECT* effect )
+{
+    for ( int i = 0; i < effect_id_list.getCount(); i++ ) {
+        TEffectID& E = effect_id_list[i];
+        if ( !_tcsncmp( E.name, effect_id->name, SIZEOF(E.name)) && !_tcsncmp( E.group, effect_id->group, SIZEOF(E.group))) 
+        {
+            TEffectSettings temp;
+            UpdateEffectSettings( effect_id, &temp );
+            
+            effect->effectIndex = temp.effectIndex;
+            effect->baseColour  = temp.baseColour;
+            effect->secondaryColour = temp.secondaryColour;
+
+            return (int) TRUE;
+    }   }	
+    
+    return (int)FALSE;
+}
+
+#if defined( _UNICODE )
+int GetEffectW(WPARAM wParam, LPARAM lParam)
+{
+    return sttGetEffectWorker(( TEffectID* )wParam, ( FONTEFFECT* )lParam );
+}
+#endif
+
+int GetEffect(WPARAM wParam, LPARAM lParam)
+{
+#if defined( _UNICODE )
+    TEffectID temp;
+    ConvertEffectID((EffectID *)wParam, &temp);
+    return sttGetEffectWorker( &temp, ( FONTEFFECT* )lParam );
+#else
+    return sttGetFontWorker(( EffectID* )wParam, ( FONTEFFECT* )lParam );
+#endif
 }

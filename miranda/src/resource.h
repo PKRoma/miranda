@@ -121,6 +121,7 @@
 #define IDD_OPT_KEYWORDFILTER           288
 #define IDI_JOINCHAT                    289
 #define IDI_LEAVECHAT                   290
+#define IDD_CHOOSE_FONT_EFFECT          289
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -163,6 +164,8 @@
 #define IDC_BTN_EXPORT                  1054
 #define IDC_FONTLIST                    1056
 #define IDC_CHOOSEFONT                  1057
+#define IDC_EFFECT                      1058
+#define IDC_EFFECT_STATIC               1059
 #define IDC_GENDER                      1060
 #define IDC_CITY                        1061
 #define IDC_STATE                       1062
@@ -207,6 +210,7 @@
 #define IDC_FIND                        1132
 #define IDC_FILE                        1133
 #define IDC_PROFILELIST                 1134
+#define IDC_EFFECT_COMBO                1140
 #define IDC_TABS                        1141
 #define IDC_RESULTS                     1142
 #define IDC_STATUS                      1144
@@ -270,7 +274,9 @@
 #define IDC_PROTOLIST                   1245
 #define IDC_TODEFICON                   1246
 #define IDC_IMPORTMULTI                 1247
+#define IDC_EFFECT_COLOUR1              1266
 #define IDC_BKGCOLOUR                   1269
+#define IDC_EFFECT_COLOUR2              1269
 #define IDC_FILENAME                    1271
 #define IDC_FONTCOLOUR                  1282
 #define IDC_INTERESTS                   1305
@@ -453,6 +459,11 @@
 #define IDC_ALLPRECENTS                 1727
 #define IDC_CLOSE                       1728
 #define IDC_ENABLE_KEYWORDFILTERING     1729
+#define IDC_BKGCOLOUR_STATIC            1730
+#define IDC_EFFECT_COLOUR_TEXT1         1853
+#define IDC_EFFECT_COLOUR_SPIN1         1854
+#define IDC_EFFECT_COLOUR_TEXT2         11803
+#define IDC_EFFECT_COLOUR_SPIN2         11806
 #define IDI_SEARCHALL                   32548
 #define ID_ICQ_EXIT                     40001
 #define IDM_COPY                        40001
@@ -484,7 +495,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        289
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1730
+#define _APS_NEXT_CONTROL_VALUE         1731
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

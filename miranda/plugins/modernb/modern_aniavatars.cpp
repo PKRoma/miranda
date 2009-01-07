@@ -1301,37 +1301,3 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 #undef aalock
 #undef aaunlock
 
-/*
-COMPLETENESS
-
-Features:
-v TODO: Render animated avatar - DONE
-v Render overlays
-v Render borders
-v Render round corners
-v Option to disable animation
-v Render 'idle' avatars and not in list.
-v Options tune - enable check if animation available (gdi+ and loadavatars presents)
-- Flash avatars support
-- Remove transparance (render background)
-- Remove loadavatars.dll dependance
-- drawing row items above for future extended row layout
-
-Completeness: 7/10
-
-Optimizations:
-v Disable blinking on flash icons
-v do not flash avatar on option saving (delay before real delete avatar)
-v MADE ADD AVATAR THREAD SAFE ( CALL ONLY FROM MAIN WINDOW THREAD )
-v Read setting for painting only once
-v Resource usage:
-v Load images only when they are realy needed and unload it accordingly. (images was remove invalidated for 3 times)
-v Store images on single image
-v Remove unneccessary windows
-- optimize rendring (made hDC_animation outside, create regions outside etc)
-- Avatars outside from clist on 'show offline'
-
-Completeness: 8/10
-
-Total is 75%
-*/

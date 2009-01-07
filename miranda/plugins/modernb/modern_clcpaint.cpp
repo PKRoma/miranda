@@ -2329,470 +2329,471 @@ void CLCPaint::_PaintClc( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *_rcPain
     AniAva_RemoveInvalidatedAvatars();
 
 }
-void CLCPaint::_PaintClcOld( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint )
-{
-	RECT clRect;
-	GetClientRect( hwnd, &clRect );
-	if( IsRectEmpty( rcPaint ) ) 
-		return;
-
-	if( rcPaint == NULL ) 
-		rcPaint = &clRect;
-	
-    HDC     hdcMem = NULL, 
-        hdcMem2 = NULL;
-
-    HBITMAP oldbmp = NULL, 
-        oldbmp2 = NULL, 
-        hBmpOsb = NULL, 
-        hBmpOsb2 = NULL;
-
-    
-    HFONT hdcMemOldFont;
-    int y, indent, subident, subindex, line_num;
-    int status = _GetGeneralisedStatus();
-    int grey = 0;
-    int old_stretch_mode;
-    int old_bk_mode;
-    struct ClcContact *Drawing;
-    struct ClcGroup *group;
-    DWORD style = GetWindowLong( hwnd, GWL_STYLE );
-    HBRUSH hBrushAlternateGrey = NULL;
-    BOOL NotInMain = !CLUI_IsInMainWindow( hwnd );
-    // yes I know about GetSysColorBrush()
-    COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( !dat->useWindowsColours ?  dat->bkColour : GetSysColor( COLOR_3DFACE ) ) : dat->bkColour;
-    DWORD currentCounter;
-
-    g_CluiData.t_now = (DWORD)time( NULL );
-    if ( !IsWindowVisible( hwnd ) ) return;
-    if( dat->greyoutFlags&pcli->pfnClcStatusToPf2( status ) || style&WS_DISABLED ) grey = 1;
-    else if( GetFocus() != hwnd && dat->greyoutFlags&GREYF_UNFOCUS ) grey = 1;
-    
-    
-    if ( rcPaint->top<= clRect.top && rcPaint->bottom>= clRect.bottom )
-        dat->m_paintCouter++;
-    currentCounter = dat->m_paintCouter;
-    y = -dat->yScroll;
-    if ( grey && ( !g_CluiData.fLayered ) )
-    {
-        hdcMem2 = CreateCompatibleDC( hdc );
-        if ( g_CluiData.fDisableSkinEngine )
-            hBmpOsb2 = CreateBitmap( clRect.right, clRect.bottom, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );
-        else
-            hBmpOsb2 = ske_CreateDIB32( clRect.right, clRect.bottom );//, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );       
-        oldbmp2 = ( HBITMAP )  SelectObject( hdcMem2, hBmpOsb2 );
-    }
-    if ( !( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered ||grey ) )
-        hdcMem = hdc;
-    else
-        hdcMem = CreateCompatibleDC( hdc );
-    hdcMemOldFont = ( HFONT )GetCurrentObject( hdcMem, OBJ_FONT );
-    if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered || grey )
-    {
-        hBmpOsb = ske_CreateDIB32( clRect.right, clRect.bottom );//, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );
-        oldbmp = ( HBITMAP )  SelectObject( hdcMem, hBmpOsb );
-    }
-    if( style&CLS_GREYALTERNATE )
-        hBrushAlternateGrey = CreateSolidBrush( GetNearestColor( hdcMem, RGB( GetRValue( tmpbkcolour )-10, GetGValue( tmpbkcolour )-10, GetBValue( tmpbkcolour )-10 ) ) );
-
-    // Set some draw states
-    old_bk_mode = SetBkMode( hdcMem, TRANSPARENT );
-    {
-        POINT org;
-        GetBrushOrgEx( hdcMem, &org );
-        old_stretch_mode = SetStretchBltMode( hdcMem, HALFTONE );
-        SetBrushOrgEx( hdcMem, org.x, org.y, NULL );
-    }
-    // Draw background
-    if ( NotInMain || dat->force_in_dialog )
-    {
-        HBRUSH hBrush = CreateSolidBrush( tmpbkcolour );
-        FillRect( hdcMem, rcPaint, hBrush );
-        DeleteObject( hBrush );
-        ske_SetRectOpaque( hdcMem, rcPaint );
-        if ( !( style&CLS_GREYALTERNATE ) )
-            SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background,Type=Control" );
-    }
-    else if ( g_CluiData.fDisableSkinEngine )
-    {
-        if ( !_DrawNonEnginedBackground( hwnd, hdcMem, rcPaint, clRect, dat ) )
-        {
-            HBRUSH hBrush = CreateSolidBrush( tmpbkcolour );
-            FillRect( hdcMem, rcPaint, hBrush );
-            DeleteObject( hBrush );
-        }       
-    }
-    else
-    {
-        if ( !g_CluiData.fLayered )
-            ske_BltBackImage( hwnd, grey?hdcMem2:hdcMem, rcPaint );
-        SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background" );
-    }
-
-    // Draw lines
-    group = &dat->list;
-    group->scanIndex = 0;
-    indent = 0;
-    subindex = -1;
-    line_num = -1;
-    //---
-    if ( rcPaint->top == 0 && rcPaint->bottom == clRect.bottom && dat->avatars_show )
-    {
-        AniAva_InvalidateAvatarPositions( NULL );
-    }
-    if ( dat->row_heights )
-    {
-        while( y < rcPaint->bottom )
-        {
-            if ( subindex == -1 )
-            {
-                if ( group->scanIndex>= group->cl.count )
-                {
-                    group = group->parent;
-                    indent--;
-                    if( group == NULL ) break;  // Finished list
-                    group->scanIndex++;
-                    continue;
-                }
-            }
-
-            line_num++;     
-
-            // Draw line, if needed
-            if ( y > rcPaint->top - dat->row_heights[line_num] )
-            {
-                //-        int iImage;
-                int selected;
-                int hottrack;
-                int left_pos;
-                int right_pos;
-                int free_row_height;
-                RECT row_rc;
-                RECT free_row_rc;
-                MODERNMASK * mpRequest = NULL;
-                RECT rc;
-
-                // Get item to draw
-                if ( group->scanIndex < group->cl.count )
-                {
-                    if ( subindex == -1 )
-                    {
-                        Drawing = group->cl.items[group->scanIndex];
-                        subident = 0;
-                    }
-                    else
-                    {
-                        Drawing = &( group->cl.items[group->scanIndex]->subcontacts[subindex] );
-                        subident = dat->subIndent;
-                    }
-                }
-                else
-                    Drawing = NULL;
-                if ( mpRequest )
-                {
-                    SkinSelector_DeleteMask( mpRequest );
-                    mir_free_and_nill( mpRequest );
-                }
-
-                // Something to draw?
-                if ( Drawing )
-                {
-
-                    // Calc row height
-                    Drawing->lastPaintCounter = currentCounter;
-
-                    if ( !gl_RowRoot ) RowHeights_GetRowHeight( dat, hwnd, Drawing, line_num );
-                    else RowHeight_CalcRowHeight( dat, hwnd, Drawing, line_num );
-
-                    // Init settings
-					selected = ( ( line_num == dat->selection ) && ( dat->hwndRenameEdit != NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || IsForegroundWindow( hwnd ) ) && Drawing->type != CLCIT_DIVIDER );
-                    hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type != CLCIT_DIVIDER && dat->iHotTrack == line_num;
-                    left_pos = clRect.left + dat->leftMargin + indent * dat->groupIndent + subident;
-                    right_pos = dat->rightMargin;   // Border
-
-                    SetRect( &row_rc, clRect.left, y, clRect.right, y + dat->row_heights[line_num] );
-                    free_row_rc = row_rc;
-                    free_row_rc.left += left_pos;
-                    free_row_rc.right -= right_pos;
-                    free_row_rc.top += dat->row_border;
-                    free_row_rc.bottom -= dat->row_border;
-                    free_row_height = free_row_rc.bottom - free_row_rc.top;
-
-                    {
-                        HRGN rgn = CreateRectRgn( row_rc.left, row_rc.top, row_rc.right, row_rc.bottom );
-                        SelectClipRgn( hdcMem, rgn );
-                        DeleteObject( rgn );
-                    }
-
-                    // Store pos
-                    Drawing->pos_indent = free_row_rc.left;
-                    ZeroMemory( &Drawing->pos_check, sizeof( Drawing->pos_check ) );
-                    ZeroMemory( &Drawing->pos_avatar, sizeof( Drawing->pos_avatar ) );
-                    ZeroMemory( &Drawing->pos_icon, sizeof( Drawing->pos_icon ) );
-                    ZeroMemory( &Drawing->pos_label, sizeof( Drawing->pos_label ) );
-                    ZeroMemory( &Drawing->pos_rename_rect, sizeof( Drawing->pos_rename_rect ) );
-                    ZeroMemory( &Drawing->pos_extra, sizeof( Drawing->pos_extra ) );
-
-
-                    // **** Draw Background
-
-                    // Alternating grey
-                    if ( style&CLS_GREYALTERNATE && line_num&1 )
-                    {
-                        if ( style&CLS_CONTACTLIST || dat->bkChanged || dat->force_in_dialog )
-                        {
-                            FillRect( hdcMem, &row_rc, hBrushAlternateGrey );
-                        }
-                        else
-                            SkinDrawGlyph( hdcMem, &row_rc, rcPaint, "CL,ID=GreyAlternate" );
-                    }
-                    if ( !g_CluiData.fDisableSkinEngine )
-                    {
-                        // Row background
-                        if ( !dat->force_in_dialog )
-                        {   //Build mpRequest string
-                            mpRequest = _GetCLCContactRowBackModernMask( group, Drawing, indent, line_num, selected, hottrack, dat );
-                            {
-                                RECT mrc = row_rc;
-                                if ( group->parent == 0
-                                    && group->scanIndex != 0
-                                    && group->scanIndex<group->cl.count
-                                    && group->cl.items[group->scanIndex]->type == CLCIT_GROUP )
-                                {
-                                    mrc.top+= dat->row_before_group_space;
-                                }
-                                SkinDrawGlyphMask( hdcMem, &mrc, rcPaint, mpRequest );
-                            }
-                        }
-                        if ( selected || hottrack )
-                        {
-                            RECT mrc = row_rc;
-                            if( Drawing->type == CLCIT_GROUP &&
-                                Drawing->group->parent->groupId == 0 &&
-                                Drawing->group->parent->cl.items[0] != Drawing )
-                            {
-                                mrc.top+= dat->row_before_group_space;
-                            }
-                            // Selection background ( only if hole line - full/less )
-                            if ( dat->HiLightMode == 1 ) // Full  or default
-                            {
-                                if ( selected )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL , ID = Selection " );
-                                if( hottrack )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
-                            }
-                            else if ( dat->HiLightMode == 2 ) // Less
-                            {
-                                if ( selected )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=Selection" );      //instead of free_row_rc
-                                if( hottrack )
-                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
-                            }
-                        }
-
-                    }
-                    else
-                    {   
-                        int checkboxWidth;
-                        if( ( style&CLS_CHECKBOXES && Drawing->type == CLCIT_CONTACT ) ||
-                            ( style&CLS_GROUPCHECKBOXES && Drawing->type == CLCIT_GROUP ) ||
-                            ( Drawing->type == CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX ) )
-                            checkboxWidth = dat->checkboxSize+2;
-                        else checkboxWidth = 0;
-                        //background
-                        if( selected ) {
-                            switch ( dat->HiLightMode )
-                            {
-                            case 0:
-                            case 1:                         
-                                {
-                                    int i = y;
-                                    int row_height = row_rc.bottom-row_rc.top;
-                                    for ( i = y; i<y+row_height; i+= dat->row_min_heigh )
-                                    {
-                                        ImageList_DrawEx( dat->himlHighlight, 0, hdcMem, 0, i, clRect.right, 
-                                            min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
-                                            dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
-                                    }
-                                    SetTextColor( hdcMem, dat->selTextColour );
-                                    break;
-                                }
-
-                            case 2:
-                                {
-                                    int i;
-                                    int row_height = row_rc.bottom-row_rc.top-1;
-                                    for ( i = y+1; i<y+row_height; i+= dat->row_min_heigh )
-                                    {
-                                        ImageList_DrawEx( dat->himlHighlight, 0, hdcMem, 1, i, clRect.right-2, 
-                                            min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
-                                            dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
-                                    }
-                                    SetTextColor( hdcMem, dat->selTextColour );
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                    // **** Checkboxes
-                    if( ( style&CLS_CHECKBOXES && Drawing->type == CLCIT_CONTACT ) ||
-                        ( style&CLS_GROUPCHECKBOXES && Drawing->type == CLCIT_GROUP ) ||
-                        ( Drawing->type == CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX ) )
-                    {
-                        //RECT rc;
-                        rc = free_row_rc;
-                        rc.right = rc.left + dat->checkboxSize;
-                        rc.top += ( rc.bottom - rc.top - dat->checkboxSize ) >> 1;
-                        rc.bottom = rc.top + dat->checkboxSize;
-
-                        if ( dat->text_rtl != 0 ) _RTLRect( &rc, free_row_rc.right, 0 );
-
-                        if ( xpt_IsThemed( dat->hCheckBoxTheme ) ) {
-                            xpt_DrawThemeBackground( dat->hCheckBoxTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?( hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL ):( hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL ), &rc, &rc );
-                        }
-                        else DrawFrameControl( hdcMem, &rc, DFC_BUTTON, DFCS_BUTTONCHECK|DFCS_FLAT|( Drawing->flags&CONTACTF_CHECKED?DFCS_CHECKED:0 )|( hottrack?DFCS_HOT:0 ) );
-
-                        left_pos += dat->checkboxSize + EXTRA_CHECKBOX_SPACE + HORIZONTAL_SPACE;
-                        free_row_rc.left = row_rc.left + left_pos;
-
-                        // Store pos
-                        Drawing->pos_check = rc;
-                    }
-                    _PaintRowItems( hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint );
-                    if ( mpRequest && !dat->force_in_dialog )
-                    {
-                        if ( mpRequest->pl_Params[1].szValue )
-                            free( mpRequest->pl_Params[1].szValue );
-                        mpRequest->pl_Params[1].szValue = strdupn( "Ovl", 3 );
-                        mpRequest->pl_Params[1].dwValueHash = mod_CalcHash( "Ovl" );
-                        {
-                            RECT mrc = row_rc;
-                            if( Drawing->type == CLCIT_GROUP &&
-                                Drawing->group->parent->groupId == 0 &&
-                                Drawing->group->parent->cl.items[0] != Drawing )
-                            {
-                                mrc.top+= dat->row_before_group_space;
-                            }
-                            SkinDrawGlyphMask( hdcMem, &mrc, rcPaint, mpRequest );
-                        }
-                        SkinSelector_DeleteMask( mpRequest );
-                        mir_free_and_nill( mpRequest );
-                        mpRequest = NULL;
-                    }
-                }
-            }
-
-
-            // if ( y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom )
-            y += dat->row_heights[line_num];
-            //increment by subcontacts
-            if ( group->cl.items && group->scanIndex<group->cl.count && group->cl.items[group->scanIndex]->subcontacts != NULL && group->cl.items[group->scanIndex]->type != CLCIT_GROUP )
-            {
-                if ( group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta )
-                {
-                    if ( subindex<group->cl.items[group->scanIndex]->SubAllocated-1 )
-                    {
-                        subindex++;
-                    }
-                    else
-                    {
-                        subindex = -1;
-                    }
-                }
-            }
-
-            if( subindex == -1 && group->scanIndex<group->cl.count )
-            {
-                if( group->cl.items[group->scanIndex]->type == CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded )
-                {
-                    group = group->cl.items[group->scanIndex]->group;
-                    indent++;
-                    group->scanIndex = 0;
-                    subindex = -1;
-                    continue;
-                }
-                group->scanIndex++;
-            }
-            else if ( group->scanIndex>= group->cl.count )
-            {
-                subindex = -1;
-            }
-        }
-
-        //---
-    }
-
-    SelectClipRgn( hdcMem, NULL );
-    if( dat->iInsertionMark != -1 ) {   //insertion mark
-        HBRUSH hBrush, hoBrush;
-        POINT pts[8];
-        HRGN hRgn;
-        int identation = dat->nInsertionLevel*dat->groupIndent;
-        int yt = cliGetRowTopY( dat, dat->iInsertionMark );
-        //if ( yt = -1 ) yt = cliGetRowBottomY( dat, dat->iInsertionMark-1 );
-
-        pts[0].y = yt - dat->yScroll - 4;
-        if ( pts[0].y<-3 ) pts[0].y = -3;
-        pts[0].x = 1+identation*( dat->text_rtl?0:1 );/*dat->leftMargin;*/
-
-        pts[1].x = pts[0].x+2;
-        pts[1].y = pts[0].y+3;
-
-        pts[2].x = clRect.right-identation*( dat->text_rtl?1:0 )-4;
-        pts[2].y = pts[1].y;
-
-        pts[3].x = clRect.right-1-identation*( dat->text_rtl?1:0 );
-        pts[3].y = pts[0].y-1;
-
-        pts[4].x = pts[3].x;        pts[4].y = pts[0].y+7;
-        pts[5].x = pts[2].x+1;      pts[5].y = pts[1].y+2;
-        pts[6].x = pts[1].x;        pts[6].y = pts[5].y;
-        pts[7].x = pts[0].x;        pts[7].y = pts[4].y;
-        hRgn = CreatePolygonRgn( pts, sizeof( pts )/sizeof( pts[0] ), ALTERNATE );
-        hBrush = CreateSolidBrush( dat->fontModernInfo[FONTID_CONTACTS].colour );
-        hoBrush = ( HBRUSH )SelectObject( hdcMem, hBrush );
-        FillRgn( hdcMem, hRgn, hBrush );
-        ske_SetRgnOpaque( hdcMem, hRgn );
-        SelectObject( hdcMem, hoBrush );
-        DeleteObject( hBrush );
-    }
-    if( !grey )
-    {
-        if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered )
-        {
-            BitBlt( hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem, rcPaint->left, rcPaint->top, SRCCOPY );
-        }
-    }
-    if( hBrushAlternateGrey ) DeleteObject( hBrushAlternateGrey );
-    if( grey && hdc && hdc != hdcMem )
-    {
-        BLENDFUNCTION bf = {AC_SRC_OVER, 0, 80, AC_SRC_ALPHA };
-        BOOL a = ( grey && ( !g_CluiData.fLayered ) );
-        ske_AlphaBlend( a?hdcMem2:hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, bf );
-        if ( a )
-            BitBlt( hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem2, rcPaint->left, rcPaint->top, SRCCOPY );
-    }
-    if ( old_bk_mode != TRANSPARENT )
-        SetBkMode( hdcMem, old_bk_mode );
-
-    if ( old_stretch_mode != HALFTONE )
-        SetStretchBltMode( hdcMem, old_stretch_mode );
-    SelectObject( hdcMem, hdcMemOldFont );
-    if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered ||grey )
-    {
-        SelectObject( hdcMem, oldbmp );
-        DeleteObject( hBmpOsb );
-        mod_DeleteDC( hdcMem );
-    }
-    if ( grey && ( !g_CluiData.fLayered ) )
-    {
-        SelectObject( hdcMem2, oldbmp2 );
-        DeleteObject( hBmpOsb2 );
-        mod_DeleteDC( hdcMem2 );
-    }
-    AniAva_RemoveInvalidatedAvatars();
-}
+// TODO CLEANUP
+//void CLCPaint::_PaintClcOld( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint )
+//{
+//	RECT clRect;
+//	GetClientRect( hwnd, &clRect );
+//	if( IsRectEmpty( rcPaint ) ) 
+//		return;
+//
+//	if( rcPaint == NULL ) 
+//		rcPaint = &clRect;
+//	
+//    HDC     hdcMem = NULL, 
+//        hdcMem2 = NULL;
+//
+//    HBITMAP oldbmp = NULL, 
+//        oldbmp2 = NULL, 
+//        hBmpOsb = NULL, 
+//        hBmpOsb2 = NULL;
+//
+//    
+//    HFONT hdcMemOldFont;
+//    int y, indent, subident, subindex, line_num;
+//    int status = _GetGeneralisedStatus();
+//    int grey = 0;
+//    int old_stretch_mode;
+//    int old_bk_mode;
+//    struct ClcContact *Drawing;
+//    struct ClcGroup *group;
+//    DWORD style = GetWindowLong( hwnd, GWL_STYLE );
+//    HBRUSH hBrushAlternateGrey = NULL;
+//    BOOL NotInMain = !CLUI_IsInMainWindow( hwnd );
+//    // yes I know about GetSysColorBrush()
+//    COLORREF tmpbkcolour = style&CLS_CONTACTLIST ? ( !dat->useWindowsColours ?  dat->bkColour : GetSysColor( COLOR_3DFACE ) ) : dat->bkColour;
+//    DWORD currentCounter;
+//
+//    g_CluiData.t_now = (DWORD)time( NULL );
+//    if ( !IsWindowVisible( hwnd ) ) return;
+//    if( dat->greyoutFlags&pcli->pfnClcStatusToPf2( status ) || style&WS_DISABLED ) grey = 1;
+//    else if( GetFocus() != hwnd && dat->greyoutFlags&GREYF_UNFOCUS ) grey = 1;
+//    
+//    
+//    if ( rcPaint->top<= clRect.top && rcPaint->bottom>= clRect.bottom )
+//        dat->m_paintCouter++;
+//    currentCounter = dat->m_paintCouter;
+//    y = -dat->yScroll;
+//    if ( grey && ( !g_CluiData.fLayered ) )
+//    {
+//        hdcMem2 = CreateCompatibleDC( hdc );
+//        if ( g_CluiData.fDisableSkinEngine )
+//            hBmpOsb2 = CreateBitmap( clRect.right, clRect.bottom, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );
+//        else
+//            hBmpOsb2 = ske_CreateDIB32( clRect.right, clRect.bottom );//, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );       
+//        oldbmp2 = ( HBITMAP )  SelectObject( hdcMem2, hBmpOsb2 );
+//    }
+//    if ( !( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered ||grey ) )
+//        hdcMem = hdc;
+//    else
+//        hdcMem = CreateCompatibleDC( hdc );
+//    hdcMemOldFont = ( HFONT )GetCurrentObject( hdcMem, OBJ_FONT );
+//    if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered || grey )
+//    {
+//        hBmpOsb = ske_CreateDIB32( clRect.right, clRect.bottom );//, 1, GetDeviceCaps( hdc, BITSPIXEL ), NULL );
+//        oldbmp = ( HBITMAP )  SelectObject( hdcMem, hBmpOsb );
+//    }
+//    if( style&CLS_GREYALTERNATE )
+//        hBrushAlternateGrey = CreateSolidBrush( GetNearestColor( hdcMem, RGB( GetRValue( tmpbkcolour )-10, GetGValue( tmpbkcolour )-10, GetBValue( tmpbkcolour )-10 ) ) );
+//
+//    // Set some draw states
+//    old_bk_mode = SetBkMode( hdcMem, TRANSPARENT );
+//    {
+//        POINT org;
+//        GetBrushOrgEx( hdcMem, &org );
+//        old_stretch_mode = SetStretchBltMode( hdcMem, HALFTONE );
+//        SetBrushOrgEx( hdcMem, org.x, org.y, NULL );
+//    }
+//    // Draw background
+//    if ( NotInMain || dat->force_in_dialog )
+//    {
+//        HBRUSH hBrush = CreateSolidBrush( tmpbkcolour );
+//        FillRect( hdcMem, rcPaint, hBrush );
+//        DeleteObject( hBrush );
+//        ske_SetRectOpaque( hdcMem, rcPaint );
+//        if ( !( style&CLS_GREYALTERNATE ) )
+//            SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background,Type=Control" );
+//    }
+//    else if ( g_CluiData.fDisableSkinEngine )
+//    {
+//        if ( !_DrawNonEnginedBackground( hwnd, hdcMem, rcPaint, clRect, dat ) )
+//        {
+//            HBRUSH hBrush = CreateSolidBrush( tmpbkcolour );
+//            FillRect( hdcMem, rcPaint, hBrush );
+//            DeleteObject( hBrush );
+//        }       
+//    }
+//    else
+//    {
+//        if ( !g_CluiData.fLayered )
+//            ske_BltBackImage( hwnd, grey?hdcMem2:hdcMem, rcPaint );
+//        SkinDrawGlyph( hdcMem, &clRect, rcPaint, "CL,ID=Background" );
+//    }
+//
+//    // Draw lines
+//    group = &dat->list;
+//    group->scanIndex = 0;
+//    indent = 0;
+//    subindex = -1;
+//    line_num = -1;
+//    //---
+//    if ( rcPaint->top == 0 && rcPaint->bottom == clRect.bottom && dat->avatars_show )
+//    {
+//        AniAva_InvalidateAvatarPositions( NULL );
+//    }
+//    if ( dat->row_heights )
+//    {
+//        while( y < rcPaint->bottom )
+//        {
+//            if ( subindex == -1 )
+//            {
+//                if ( group->scanIndex>= group->cl.count )
+//                {
+//                    group = group->parent;
+//                    indent--;
+//                    if( group == NULL ) break;  // Finished list
+//                    group->scanIndex++;
+//                    continue;
+//                }
+//            }
+//
+//            line_num++;     
+//
+//            // Draw line, if needed
+//            if ( y > rcPaint->top - dat->row_heights[line_num] )
+//            {
+//                //-        int iImage;
+//                int selected;
+//                int hottrack;
+//                int left_pos;
+//                int right_pos;
+//                int free_row_height;
+//                RECT row_rc;
+//                RECT free_row_rc;
+//                MODERNMASK * mpRequest = NULL;
+//                RECT rc;
+//
+//                // Get item to draw
+//                if ( group->scanIndex < group->cl.count )
+//                {
+//                    if ( subindex == -1 )
+//                    {
+//                        Drawing = group->cl.items[group->scanIndex];
+//                        subident = 0;
+//                    }
+//                    else
+//                    {
+//                        Drawing = &( group->cl.items[group->scanIndex]->subcontacts[subindex] );
+//                        subident = dat->subIndent;
+//                    }
+//                }
+//                else
+//                    Drawing = NULL;
+//                if ( mpRequest )
+//                {
+//                    SkinSelector_DeleteMask( mpRequest );
+//                    mir_free_and_nill( mpRequest );
+//                }
+//
+//                // Something to draw?
+//                if ( Drawing )
+//                {
+//
+//                    // Calc row height
+//                    Drawing->lastPaintCounter = currentCounter;
+//
+//                    if ( !gl_RowRoot ) RowHeights_GetRowHeight( dat, hwnd, Drawing, line_num );
+//                    else RowHeight_CalcRowHeight( dat, hwnd, Drawing, line_num );
+//
+//                    // Init settings
+//					selected = ( ( line_num == dat->selection ) && ( dat->hwndRenameEdit != NULL || dat->showSelAlways || dat->exStyle&CLS_EX_SHOWSELALWAYS || IsForegroundWindow( hwnd ) ) && Drawing->type != CLCIT_DIVIDER );
+//                    hottrack = dat->exStyle&CLS_EX_TRACKSELECT && Drawing->type != CLCIT_DIVIDER && dat->iHotTrack == line_num;
+//                    left_pos = clRect.left + dat->leftMargin + indent * dat->groupIndent + subident;
+//                    right_pos = dat->rightMargin;   // Border
+//
+//                    SetRect( &row_rc, clRect.left, y, clRect.right, y + dat->row_heights[line_num] );
+//                    free_row_rc = row_rc;
+//                    free_row_rc.left += left_pos;
+//                    free_row_rc.right -= right_pos;
+//                    free_row_rc.top += dat->row_border;
+//                    free_row_rc.bottom -= dat->row_border;
+//                    free_row_height = free_row_rc.bottom - free_row_rc.top;
+//
+//                    {
+//                        HRGN rgn = CreateRectRgn( row_rc.left, row_rc.top, row_rc.right, row_rc.bottom );
+//                        SelectClipRgn( hdcMem, rgn );
+//                        DeleteObject( rgn );
+//                    }
+//
+//                    // Store pos
+//                    Drawing->pos_indent = free_row_rc.left;
+//                    ZeroMemory( &Drawing->pos_check, sizeof( Drawing->pos_check ) );
+//                    ZeroMemory( &Drawing->pos_avatar, sizeof( Drawing->pos_avatar ) );
+//                    ZeroMemory( &Drawing->pos_icon, sizeof( Drawing->pos_icon ) );
+//                    ZeroMemory( &Drawing->pos_label, sizeof( Drawing->pos_label ) );
+//                    ZeroMemory( &Drawing->pos_rename_rect, sizeof( Drawing->pos_rename_rect ) );
+//                    ZeroMemory( &Drawing->pos_extra, sizeof( Drawing->pos_extra ) );
+//
+//
+//                    // **** Draw Background
+//
+//                    // Alternating grey
+//                    if ( style&CLS_GREYALTERNATE && line_num&1 )
+//                    {
+//                        if ( style&CLS_CONTACTLIST || dat->bkChanged || dat->force_in_dialog )
+//                        {
+//                            FillRect( hdcMem, &row_rc, hBrushAlternateGrey );
+//                        }
+//                        else
+//                            SkinDrawGlyph( hdcMem, &row_rc, rcPaint, "CL,ID=GreyAlternate" );
+//                    }
+//                    if ( !g_CluiData.fDisableSkinEngine )
+//                    {
+//                        // Row background
+//                        if ( !dat->force_in_dialog )
+//                        {   //Build mpRequest string
+//                            mpRequest = _GetCLCContactRowBackModernMask( group, Drawing, indent, line_num, selected, hottrack, dat );
+//                            {
+//                                RECT mrc = row_rc;
+//                                if ( group->parent == 0
+//                                    && group->scanIndex != 0
+//                                    && group->scanIndex<group->cl.count
+//                                    && group->cl.items[group->scanIndex]->type == CLCIT_GROUP )
+//                                {
+//                                    mrc.top+= dat->row_before_group_space;
+//                                }
+//                                SkinDrawGlyphMask( hdcMem, &mrc, rcPaint, mpRequest );
+//                            }
+//                        }
+//                        if ( selected || hottrack )
+//                        {
+//                            RECT mrc = row_rc;
+//                            if( Drawing->type == CLCIT_GROUP &&
+//                                Drawing->group->parent->groupId == 0 &&
+//                                Drawing->group->parent->cl.items[0] != Drawing )
+//                            {
+//                                mrc.top+= dat->row_before_group_space;
+//                            }
+//                            // Selection background ( only if hole line - full/less )
+//                            if ( dat->HiLightMode == 1 ) // Full  or default
+//                            {
+//                                if ( selected )
+//                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL , ID = Selection " );
+//                                if( hottrack )
+//                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
+//                            }
+//                            else if ( dat->HiLightMode == 2 ) // Less
+//                            {
+//                                if ( selected )
+//                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=Selection" );      //instead of free_row_rc
+//                                if( hottrack )
+//                                    SkinDrawGlyph( hdcMem, &mrc, rcPaint, "CL,ID=HotTracking" );
+//                            }
+//                        }
+//
+//                    }
+//                    else
+//                    {   
+//                        int checkboxWidth;
+//                        if( ( style&CLS_CHECKBOXES && Drawing->type == CLCIT_CONTACT ) ||
+//                            ( style&CLS_GROUPCHECKBOXES && Drawing->type == CLCIT_GROUP ) ||
+//                            ( Drawing->type == CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX ) )
+//                            checkboxWidth = dat->checkboxSize+2;
+//                        else checkboxWidth = 0;
+//                        //background
+//                        if( selected ) {
+//                            switch ( dat->HiLightMode )
+//                            {
+//                            case 0:
+//                            case 1:                         
+//                                {
+//                                    int i = y;
+//                                    int row_height = row_rc.bottom-row_rc.top;
+//                                    for ( i = y; i<y+row_height; i+= dat->row_min_heigh )
+//                                    {
+//                                        ImageList_DrawEx( dat->himlHighlight, 0, hdcMem, 0, i, clRect.right, 
+//                                            min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
+//                                            dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
+//                                    }
+//                                    SetTextColor( hdcMem, dat->selTextColour );
+//                                    break;
+//                                }
+//
+//                            case 2:
+//                                {
+//                                    int i;
+//                                    int row_height = row_rc.bottom-row_rc.top-1;
+//                                    for ( i = y+1; i<y+row_height; i+= dat->row_min_heigh )
+//                                    {
+//                                        ImageList_DrawEx( dat->himlHighlight, 0, hdcMem, 1, i, clRect.right-2, 
+//                                            min( y+row_height-i, dat->row_min_heigh ), CLR_NONE, CLR_NONE, 
+//                                            dat->exStyle&CLS_EX_NOTRANSLUCENTSEL?ILD_NORMAL:ILD_BLEND25 );
+//                                    }
+//                                    SetTextColor( hdcMem, dat->selTextColour );
+//                                    break;
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//                    // **** Checkboxes
+//                    if( ( style&CLS_CHECKBOXES && Drawing->type == CLCIT_CONTACT ) ||
+//                        ( style&CLS_GROUPCHECKBOXES && Drawing->type == CLCIT_GROUP ) ||
+//                        ( Drawing->type == CLCIT_INFO && Drawing->flags&CLCIIF_CHECKBOX ) )
+//                    {
+//                        //RECT rc;
+//                        rc = free_row_rc;
+//                        rc.right = rc.left + dat->checkboxSize;
+//                        rc.top += ( rc.bottom - rc.top - dat->checkboxSize ) >> 1;
+//                        rc.bottom = rc.top + dat->checkboxSize;
+//
+//                        if ( dat->text_rtl != 0 ) _RTLRect( &rc, free_row_rc.right, 0 );
+//
+//                        if ( xpt_IsThemed( dat->hCheckBoxTheme ) ) {
+//                            xpt_DrawThemeBackground( dat->hCheckBoxTheme, hdcMem, BP_CHECKBOX, Drawing->flags&CONTACTF_CHECKED?( hottrack?CBS_CHECKEDHOT:CBS_CHECKEDNORMAL ):( hottrack?CBS_UNCHECKEDHOT:CBS_UNCHECKEDNORMAL ), &rc, &rc );
+//                        }
+//                        else DrawFrameControl( hdcMem, &rc, DFC_BUTTON, DFCS_BUTTONCHECK|DFCS_FLAT|( Drawing->flags&CONTACTF_CHECKED?DFCS_CHECKED:0 )|( hottrack?DFCS_HOT:0 ) );
+//
+//                        left_pos += dat->checkboxSize + EXTRA_CHECKBOX_SPACE + HORIZONTAL_SPACE;
+//                        free_row_rc.left = row_rc.left + left_pos;
+//
+//                        // Store pos
+//                        Drawing->pos_check = rc;
+//                    }
+//                    _PaintRowItems( hwnd, hdcMem, dat, Drawing, row_rc, free_row_rc, left_pos, right_pos, selected, hottrack, rcPaint );
+//                    if ( mpRequest && !dat->force_in_dialog )
+//                    {
+//                        if ( mpRequest->pl_Params[1].szValue )
+//                            free( mpRequest->pl_Params[1].szValue );
+//                        mpRequest->pl_Params[1].szValue = strdupn( "Ovl", 3 );
+//                        mpRequest->pl_Params[1].dwValueHash = mod_CalcHash( "Ovl" );
+//                        {
+//                            RECT mrc = row_rc;
+//                            if( Drawing->type == CLCIT_GROUP &&
+//                                Drawing->group->parent->groupId == 0 &&
+//                                Drawing->group->parent->cl.items[0] != Drawing )
+//                            {
+//                                mrc.top+= dat->row_before_group_space;
+//                            }
+//                            SkinDrawGlyphMask( hdcMem, &mrc, rcPaint, mpRequest );
+//                        }
+//                        SkinSelector_DeleteMask( mpRequest );
+//                        mir_free_and_nill( mpRequest );
+//                        mpRequest = NULL;
+//                    }
+//                }
+//            }
+//
+//
+//            // if ( y > rcPaint->top - dat->row_heights[line_num] && y < rcPaint->bottom )
+//            y += dat->row_heights[line_num];
+//            //increment by subcontacts
+//            if ( group->cl.items && group->scanIndex<group->cl.count && group->cl.items[group->scanIndex]->subcontacts != NULL && group->cl.items[group->scanIndex]->type != CLCIT_GROUP )
+//            {
+//                if ( group->cl.items[group->scanIndex]->SubExpanded && dat->expandMeta )
+//                {
+//                    if ( subindex<group->cl.items[group->scanIndex]->SubAllocated-1 )
+//                    {
+//                        subindex++;
+//                    }
+//                    else
+//                    {
+//                        subindex = -1;
+//                    }
+//                }
+//            }
+//
+//            if( subindex == -1 && group->scanIndex<group->cl.count )
+//            {
+//                if( group->cl.items[group->scanIndex]->type == CLCIT_GROUP && group->cl.items[group->scanIndex]->group->expanded )
+//                {
+//                    group = group->cl.items[group->scanIndex]->group;
+//                    indent++;
+//                    group->scanIndex = 0;
+//                    subindex = -1;
+//                    continue;
+//                }
+//                group->scanIndex++;
+//            }
+//            else if ( group->scanIndex>= group->cl.count )
+//            {
+//                subindex = -1;
+//            }
+//        }
+//
+//        //---
+//    }
+//
+//    SelectClipRgn( hdcMem, NULL );
+//    if( dat->iInsertionMark != -1 ) {   //insertion mark
+//        HBRUSH hBrush, hoBrush;
+//        POINT pts[8];
+//        HRGN hRgn;
+//        int identation = dat->nInsertionLevel*dat->groupIndent;
+//        int yt = cliGetRowTopY( dat, dat->iInsertionMark );
+//        //if ( yt = -1 ) yt = cliGetRowBottomY( dat, dat->iInsertionMark-1 );
+//
+//        pts[0].y = yt - dat->yScroll - 4;
+//        if ( pts[0].y<-3 ) pts[0].y = -3;
+//        pts[0].x = 1+identation*( dat->text_rtl?0:1 );/*dat->leftMargin;*/
+//
+//        pts[1].x = pts[0].x+2;
+//        pts[1].y = pts[0].y+3;
+//
+//        pts[2].x = clRect.right-identation*( dat->text_rtl?1:0 )-4;
+//        pts[2].y = pts[1].y;
+//
+//        pts[3].x = clRect.right-1-identation*( dat->text_rtl?1:0 );
+//        pts[3].y = pts[0].y-1;
+//
+//        pts[4].x = pts[3].x;        pts[4].y = pts[0].y+7;
+//        pts[5].x = pts[2].x+1;      pts[5].y = pts[1].y+2;
+//        pts[6].x = pts[1].x;        pts[6].y = pts[5].y;
+//        pts[7].x = pts[0].x;        pts[7].y = pts[4].y;
+//        hRgn = CreatePolygonRgn( pts, sizeof( pts )/sizeof( pts[0] ), ALTERNATE );
+//        hBrush = CreateSolidBrush( dat->fontModernInfo[FONTID_CONTACTS].colour );
+//        hoBrush = ( HBRUSH )SelectObject( hdcMem, hBrush );
+//        FillRgn( hdcMem, hRgn, hBrush );
+//        ske_SetRgnOpaque( hdcMem, hRgn );
+//        SelectObject( hdcMem, hoBrush );
+//        DeleteObject( hBrush );
+//    }
+//    if( !grey )
+//    {
+//        if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered )
+//        {
+//            BitBlt( hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem, rcPaint->left, rcPaint->top, SRCCOPY );
+//        }
+//    }
+//    if( hBrushAlternateGrey ) DeleteObject( hBrushAlternateGrey );
+//    if( grey && hdc && hdc != hdcMem )
+//    {
+//        BLENDFUNCTION bf = {AC_SRC_OVER, 0, 80, AC_SRC_ALPHA };
+//        BOOL a = ( grey && ( !g_CluiData.fLayered ) );
+//        ske_AlphaBlend( a?hdcMem2:hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, bf );
+//        if ( a )
+//            BitBlt( hdc, rcPaint->left, rcPaint->top, rcPaint->right-rcPaint->left, rcPaint->bottom-rcPaint->top, hdcMem2, rcPaint->left, rcPaint->top, SRCCOPY );
+//    }
+//    if ( old_bk_mode != TRANSPARENT )
+//        SetBkMode( hdcMem, old_bk_mode );
+//
+//    if ( old_stretch_mode != HALFTONE )
+//        SetStretchBltMode( hdcMem, old_stretch_mode );
+//    SelectObject( hdcMem, hdcMemOldFont );
+//    if ( NotInMain || dat->force_in_dialog || !g_CluiData.fLayered ||grey )
+//    {
+//        SelectObject( hdcMem, oldbmp );
+//        DeleteObject( hBmpOsb );
+//        mod_DeleteDC( hdcMem );
+//    }
+//    if ( grey && ( !g_CluiData.fLayered ) )
+//    {
+//        SelectObject( hdcMem2, oldbmp2 );
+//        DeleteObject( hBmpOsb2 );
+//        mod_DeleteDC( hdcMem2 );
+//    }
+//    AniAva_RemoveInvalidatedAvatars();
+//}
 
 void CLCPaint::_StoreItemPos( struct ClcContact *contact, int ItemType, RECT * rc )
 {

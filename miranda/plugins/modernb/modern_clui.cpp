@@ -94,6 +94,15 @@ int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int CLUI::OnEvent_FontReload(WPARAM wParam,LPARAM lParam)
+{
+    STATIC_METHOD;
+    
+    pcli->pfnClcBroadcast( INTM_RELOADOPTIONS, wParam, lParam );
+
+    return 0;
+}
+
 int CLUI::OnEvent_ContactMenuPreBuild(WPARAM wParam, LPARAM lParam) 
 {
 	TCHAR cls[128];
@@ -241,6 +250,7 @@ HRESULT CLUI::CreateCluiFrames()
 
 	ModernHookEvent(ME_SYSTEM_MODULESLOADED,CLUI::OnEvent_ModulesLoaded);
 	ModernHookEvent(ME_SKIN2_ICONSCHANGED,CLUI_IconsChanged);
+    ModernHookEvent(ME_FONT_RELOAD, CLUI::OnEvent_FontReload);
 	return S_OK;
 }
 CLUI::CLUI() :

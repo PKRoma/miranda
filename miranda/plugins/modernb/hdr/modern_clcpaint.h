@@ -184,7 +184,7 @@ private:
     inline void _CopyPaintToDest( HWND hWnd, struct ClcData * dat, HDC hdc, int paintMode, RECT* rcPaint,  RECT& clRect, _PaintContext& pc );
     inline void _FreePaintContext( _PaintContext& pc );
     
-    void _PaintClcOld( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint );
+    // void _PaintClcOld( HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint );
 };
 
 

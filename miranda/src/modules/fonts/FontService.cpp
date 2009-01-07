@@ -43,6 +43,12 @@ int RegisterColourW(WPARAM wParam, LPARAM lParam);
 int GetColour(WPARAM wParam, LPARAM lParam);
 int GetColourW(WPARAM wParam, LPARAM lParam);
 
+int RegisterEffect(WPARAM wParam, LPARAM lParam);
+int RegisterEffectW(WPARAM wParam, LPARAM lParam);
+
+int GetEffect(WPARAM wParam, LPARAM lParam);
+int GetEffectW(WPARAM wParam, LPARAM lParam);
+
 static int OnPreShutdown(WPARAM, LPARAM)
 {
 	DestroyHookableEvent(hFontReloadEvent);
@@ -65,12 +71,18 @@ int LoadFontserviceModule( void )
 	CreateServiceFunction(MS_COLOUR_REGISTER, RegisterColour);
 	CreateServiceFunction(MS_COLOUR_GET, GetColour);
 
+    CreateServiceFunction(MS_EFFECT_REGISTER, RegisterEffect);
+    CreateServiceFunction(MS_EFFECT_GET, GetEffect);
+
 	#if defined( _UNICODE )
 		CreateServiceFunction(MS_FONT_REGISTERW, RegisterFontW);
 		CreateServiceFunction(MS_FONT_GETW, GetFontW);
 
 		CreateServiceFunction(MS_COLOUR_REGISTERW, RegisterColourW);
 		CreateServiceFunction(MS_COLOUR_GETW, GetColourW);
+        
+        CreateServiceFunction(MS_EFFECT_REGISTERW, RegisterEffectW);
+        CreateServiceFunction(MS_EFFECT_GETW, GetEffectW);
 	#endif
 
 	hFontReloadEvent = CreateHookableEvent(ME_FONT_RELOAD);

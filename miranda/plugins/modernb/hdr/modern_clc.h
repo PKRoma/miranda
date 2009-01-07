@@ -510,7 +510,7 @@ void    CLCPaint_cliPaintClc(HWND hwnd,struct ClcData *dat,HDC hdc,RECT *rcPaint
 //clcopts.c
 int     ClcOptInit(WPARAM wParam,LPARAM lParam);
 DWORD   GetDefaultExStyle(void);
-void    GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2);
+void    GetFontSetting(int i,LOGFONT *lf,COLORREF *colour,BYTE *effect, COLORREF *eColour1,COLORREF *eColour2);
 
 //clistsettings.c
 TCHAR * GetContactDisplayNameW( HANDLE hContact, int mode );
