@@ -421,6 +421,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	char *szBuf;
 	int titleLineLen;
 	struct NetlibUser *nlu;
+    bool useStack = false;
 
 	// This section checks a number of conditions and aborts
 	// the dump if the data should not be written to the log
@@ -466,7 +467,9 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 
 	// Text data
 	if ( isText ) {
-		szBuf = (char*)alloca(titleLineLen + len + 1);
+        int sz = titleLineLen + len + 1;
+        useStack = sz <= 8192;
+        szBuf = (char*)(useStack ? alloca(sz) : mir_alloc(sz));
 		CopyMemory( szBuf, szTitleLine, titleLineLen );
 		CopyMemory( szBuf + titleLineLen, (const char*)buf, len );
 		szBuf[titleLineLen + len] = '\0';
@@ -475,8 +478,10 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	else {
 		int line, col, colsInLine;
 		char *pszBuf;
+        int sz = titleLineLen + ((len+16)>>4) * 76 + 1;
+        useStack = sz <= 8192;
 
-		szBuf = (char*)alloca(titleLineLen + ((len+16)>>4) * 76 + 1);
+        szBuf = (char*)(useStack ? alloca(sz) : mir_alloc(sz));
 		CopyMemory(szBuf, szTitleLine, titleLineLen);
 		pszBuf = szBuf + titleLineLen;
 		for ( line = 0; ; line += 16 ) {
@@ -514,6 +519,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	}
 
 	NetlibLog((WPARAM)nlu,(LPARAM)szBuf);
+    if (!useStack) mir_free(szBuf);
 }
 
 void NetlibLogInit(void)
