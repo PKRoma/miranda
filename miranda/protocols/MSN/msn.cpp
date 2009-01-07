@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2008 Boris Krasnovskiy.
+Copyright (c) 2006-2009 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -53,7 +53,7 @@ PLUGININFOEX pluginInfo =
 	"Adds support for communicating with users of the MSN Messenger network",
 	"Boris Krasnovskiy, George Hazan, Richard Hughes",
 	"borkra@miranda-im.org",
-	"© 2001-2008 Richard Hughes, George Hazan, Boris Krasnovskiy",
+	"© 2001-2009 Richard Hughes, George Hazan, Boris Krasnovskiy",
 	"http://miranda-im.org",
 	UNICODE_AWARE,	
 	0,
