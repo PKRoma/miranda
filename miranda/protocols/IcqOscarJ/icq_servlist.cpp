@@ -253,9 +253,9 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
         }
         SAFE_FREE((void**)&pItem);
         // resize the queue
-        if (servlistQueueSize > servlistQueueCount + 4)
+        if (servlistQueueSize > servlistQueueCount + 6)
         {
-          servlistQueueSize = servlistQueueCount / 4 + 1;
+          servlistQueueSize -= 4;
           servlistQueueList = (ssiqueueditems**)SAFE_REALLOC(servlistQueueList, servlistQueueSize * sizeof(ssiqueueditems*));
         }
       }
