@@ -81,6 +81,9 @@ struct OptionsPageData
 	TCHAR *pszTitle, *pszGroup, *pszTab;
 	BOOL insideTab;
 	LPARAM dwInitParam;
+
+	int offsetX;
+	int offsetY;
 };
 
 struct OptionsDlgData
@@ -139,6 +142,24 @@ static BOOL CALLBACK BoldGroupTitlesEnumChildren(HWND hwnd,LPARAM lParam)
 	GetClassName(hwnd,szClass,SIZEOF(szClass));
 	if(!lstrcmp(szClass,_T("Button")) && (GetWindowLong(hwnd,GWL_STYLE)&0x0F)==BS_GROUPBOX)
 		SendMessage(hwnd,WM_SETFONT,lParam,0);
+	return TRUE;
+}
+
+static BOOL CALLBACK MoveEnumChildren(HWND hwnd,LPARAM lParam)
+{
+	POINT * offset = (POINT *) lParam;
+
+	RECT rcWnd;
+	GetWindowRect( hwnd, &rcWnd);
+
+	HWND hwndParent = GetParent( hwnd );
+	POINT pt; pt.x = 0; pt.y = 0;
+
+	ClientToScreen( hwndParent, &pt );
+	OffsetRect( &rcWnd, -pt.x, -pt.y );
+
+	SetWindowPos( hwnd, NULL, rcWnd.left + offset->x, rcWnd.top + offset->y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE );
+
 	return TRUE;
 }
 
@@ -791,6 +812,10 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 								w=dat->opd[dat->currentPage].simpleWidth;
 								h=dat->opd[dat->currentPage].simpleHeight;
 							}
+
+							dat->opd[dat->currentPage].offsetX = 0;
+							dat->opd[dat->currentPage].offsetY = 0;
+
 							if (dat->opd[dat->currentPage].pszTab != NULL) {
 								// Count tabs to calc position
 								int i;
@@ -852,7 +877,61 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 								TabCtrl_SetCurSel(hwndTab,sel);
 								ShowWindow(hwndTab, dat->opd[dat->currentPage].insideTab ? SW_SHOW : SW_HIDE );
 							}
+							if (dat->opd[dat->currentPage].insideTab) 
+							{
+								ThemeDialogBackground(dat->opd[dat->currentPage].hwnd,TRUE);
+							}
+							else 
+							{
+								ThemeDialogBackground(dat->opd[dat->currentPage].hwnd,FALSE);
+							}
+
 						}
+						// Resizing
+						{
+							int pageWidth, pageHeight;
+
+							if(IsDlgButtonChecked(hdlg,IDC_EXPERT)) 
+							{
+								pageWidth=dat->opd[dat->currentPage].expertWidth;
+								pageHeight=dat->opd[dat->currentPage].expertHeight;
+							}
+							else 
+							{
+								pageWidth=dat->opd[dat->currentPage].simpleWidth;
+								pageHeight=dat->opd[dat->currentPage].simpleHeight;
+							}
+
+							RECT * parentPageRect = &dat->rcDisplay;
+
+							if ( dat->opd[dat->currentPage].insideTab )
+							{
+								parentPageRect = &dat->rcTab;
+							}
+							pageHeight = min( pageHeight, parentPageRect->bottom - parentPageRect->top );
+							pageWidth  = min( pageWidth,  parentPageRect->right - parentPageRect->left );
+
+							int newOffsetX = ( parentPageRect->right - parentPageRect->left - pageWidth ) >> 1;
+							int newOffsetY = dat->opd[dat->currentPage].insideTab ? 0 : ( parentPageRect->bottom - parentPageRect->top - pageHeight ) >> 1;
+
+							POINT offset;
+							offset.x = newOffsetX - dat->opd[dat->currentPage].offsetX;
+							offset.y = newOffsetY - dat->opd[dat->currentPage].offsetY;
+
+							if ( offset.x || offset.y )
+							{
+								EnumChildWindows(dat->opd[dat->currentPage].hwnd,MoveEnumChildren,(LPARAM)(&offset));
+
+								SetWindowPos( dat->opd[dat->currentPage].hwnd, NULL,
+									parentPageRect->left, parentPageRect->top, 
+									parentPageRect->right - parentPageRect->left,
+									parentPageRect->bottom - parentPageRect->top,
+									SWP_NOZORDER | SWP_NOACTIVATE );
+								dat->opd[dat->currentPage].offsetX = newOffsetX;
+								dat->opd[dat->currentPage].offsetY = newOffsetY;
+							}
+						}						
+
 						ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
 						if(((LPNMTREEVIEW)lParam)->action==TVC_BYMOUSE) PostMessage(hdlg,DM_FOCUSPAGE,0,0);
 						else SetFocus(GetDlgItem(hdlg,IDC_PAGETREE));

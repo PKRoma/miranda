@@ -443,42 +443,42 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 256
+IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 251
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Typing Notification",IDC_STATIC,7,5,269,121
+    GROUPBOX        "Typing Notification",IDC_STATIC,7,0,269,121
     LTEXT           "Send typing notifications to the following users when you are typing a message to the them:",
-                    IDC_STATIC,19,15,245,19
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,34,248,
+                    IDC_STATIC,19,10,245,19
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x248,18,29,248,
                     88,WS_EX_CLIENTEDGE
     GROUPBOX        "          Show typing notifications in the message window",
-                    IDC_STATIC,7,129,269,25
+                    IDC_STATIC,7,124,269,25
     CONTROL         "",IDC_SHOWNOTIFY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    16,128,12,12
+                    16,123,12,12
     CONTROL         "Flash window once on typing events (only if flashing enabled)",
                     IDC_TYPEFLASHWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    33,140,230,10
+                    33,135,230,10
     GROUPBOX        "          Show typing notifications in the contact list and tray",
-                    IDC_STATIC,7,157,269,48
+                    IDC_STATIC,7,152,269,48
     CONTROL         "",IDC_NOTIFYTRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    16,155,12,12
+                    16,150,12,12
     CONTROL         "Show typing notification when message dialog is open",
-                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,168,
+                    IDC_TYPEWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,163,
                     230,10
     CONTROL         "Show typing notification when no message dialog is open",
                     IDC_TYPENOWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,
-                    180,230,10
+                    175,230,10
     CONTROL         "Show balloon tooltip in the system tray",
                     IDC_NOTIFYBALLOON,"Button",BS_AUTOCHECKBOX | WS_GROUP,44,
-                    193,206,10
+                    188,206,10
     GROUPBOX        "          Show popups when a user is typing",
-                    IDC_STATIC111,7,208,269,30
-    CONTROL         "",IDC_NOTIFYPOPUP,"Button",BS_AUTOCHECKBOX,16,207,12,12
-    COMBOBOX        IDC_MTN_POPUPMODE,32,221,230,46,CBS_DROPDOWNLIST | 
+                    IDC_STATIC111,7,203,269,30
+    CONTROL         "",IDC_NOTIFYPOPUP,"Button",BS_AUTOCHECKBOX,16,202,12,12
+    COMBOBOX        IDC_MTN_POPUPMODE,32,216,230,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "More about typing notifications",IDC_MTN_HELP,"Hyperlink",
-                    WS_TABSTOP | 0x1,9,242,262,9
+                    WS_TABSTOP | 0x1,9,237,262,9
 END
 
 IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226

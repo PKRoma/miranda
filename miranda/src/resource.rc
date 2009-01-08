@@ -7,8 +7,8 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <winres.h>
 #include <windows.h>
+#include <winres.h>
 #include "../include/statusmodes.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1192,7 +1192,7 @@ BEGIN
                     IDC_NODBDRIVERS,7,113,372,22,NOT WS_VISIBLE
 END
 
-IDD_OPT_PLUGINS DIALOGEX 0, 0, 315, 255
+IDD_OPT_PLUGINS DIALOGEX 0, 0, 315, 252
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -1200,8 +1200,8 @@ BEGIN
     CONTROL         "List1",IDC_PLUGLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | 
                     LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,4,3,306,120
-    GROUPBOX        "",IDC_PLUGININFOFRAME,4,125,307,121,BS_RIGHT
+                    WS_TABSTOP,4,4,306,120
+    GROUPBOX        "",IDC_PLUGININFOFRAME,4,125,307,124,BS_RIGHT
     EDITTEXT        IDC_PLUGINLONGINFO,50,136,253,25,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT 
                     WS_BORDER
@@ -1212,7 +1212,7 @@ BEGIN
     CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,50,201,254,10
     EDITTEXT        IDC_PLUGINPID,50,214,254,12,ES_READONLY | ES_WANTRETURN | 
                     NOT WS_BORDER
-    EDITTEXT        IDC_PLUGINCPYR,50,227,254,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_PLUGINCPYR,50,227,254,19,ES_AUTOHSCROLL | 
                     ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
     RTEXT           "Description:",IDC_STATIC,8,136,38,10
     RTEXT           "Author(s):",IDC_STATIC,8,165,38,10
@@ -1221,7 +1221,7 @@ BEGIN
     RTEXT           "Unique ID:",IDC_STATIC,7,214,38,10
     RTEXT           "Copyright:",IDC_STATIC,8,227,38,10
     CTEXT           "Please restart Miranda IM for your changes to take effect.",
-                    IDC_RESTART,5,244,305,11,NOT WS_VISIBLE
+                    IDC_RESTART,14,241,288,11,NOT WS_VISIBLE
 END
 
 IDD_OPT_FONTS DIALOGEX 0, 0, 316, 251
@@ -1918,7 +1918,7 @@ BEGIN
 
     IDD_OPT_PLUGINS, DIALOG
     BEGIN
-        TOPMARGIN, 3
+        TOPMARGIN, 4
         BOTTOMMARGIN, 250
     END
 
