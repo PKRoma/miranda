@@ -212,10 +212,9 @@ int LoadAccountsModule( void )
 		if ( pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
-		if ( !ActivateAccount( pa )) { // remove damaged account from list
-			UnloadAccount( pa, FALSE );
-			accounts.remove( i-- );
-	}	}
+		if ( !ActivateAccount( pa ))
+			pa->bDynDisabled = TRUE;
+	}
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, UninitializeStaticAccounts );
@@ -297,21 +296,15 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 {
 	PROTO_INTERFACE* ppi;
 	PROTOCOLDESCRIPTOR* ppd = Proto_IsProtocolLoaded( pa->szProtoName );
-	if ( ppd == NULL ) {
-		pa->bDynDisabled = TRUE;
+	if ( ppd == NULL )
 		return FALSE;
-	}
 
-	if ( ppd->fnInit == NULL ) {
-		pa->bDynDisabled = TRUE;
+	if ( ppd->fnInit == NULL )
 		return FALSE;
-	}
 
 	ppi = ppd->fnInit( pa->szModuleName, pa->tszAccountName );
-	if ( ppi == NULL ) {
-		pa->bDynDisabled = TRUE;
+	if ( ppi == NULL )
 		return FALSE;
-	}
 
 	pa->ppro = ppi;
 	ppi->m_iDesiredStatus = ppi->m_iStatus = ID_STATUS_OFFLINE;
