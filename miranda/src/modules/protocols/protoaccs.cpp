@@ -181,8 +181,8 @@ static int InitializeStaticAccounts( WPARAM, LPARAM )
 			count++;
 	}
 
-	if ( count == 0 && !DBGetContactSettingByte( NULL, "Protocols", "FirstRun", 0 )) {
-		DBWriteContactSettingByte( NULL, "Protocols", "FirstRun", 1 );
+	if ( count == 0 && !DBGetContactSettingByte( NULL, "FirstRun", "AccManager", 0 )) {
+		DBWriteContactSettingByte( NULL, "FirstRun", "AccManager", 1 );
 		CallService( MS_PROTO_SHOWACCMGR, 0, 0 );
 	}
 	return 0;
