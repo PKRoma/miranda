@@ -3002,16 +3002,16 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 		for(i=0;i<256;i++)
 		{
 			double f;
-			double gamma=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma1",600)/1000;
+			double gamma=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma1",700)/1000;
 			double f2;
-			double gamma2=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma2",600)/1000;
+			double gamma2=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma2",700)/1000;
 
 			f=(double)i/255;
 			f=pow(f,(1/gamma));
 			f2=(double)i/255;
 			f2=pow(f2,(1/gamma2));
 			pbGammaWeight[i]=(BYTE)(255*f);
-			pbGammaWeightAdv[i]=(BYTE)(255*f);
+			pbGammaWeightAdv[i]=(BYTE)(255*f2);
 		}
 		bGammaWeightFilled=1;
 	}
@@ -3037,7 +3037,7 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
 		memdc=CreateCompatibleDC(hDC);
 		hfnt=(HFONT)GetCurrentObject(hDC,OBJ_FONT);
 		SetBkColor(memdc,0);
-		SetTextColor(memdc,RGB(32,255,32));
+		SetTextColor(memdc,RGB(255,255,255));
 		holdfnt=(HFONT)SelectObject(memdc,hfnt);
 	}
 	{
@@ -3163,21 +3163,21 @@ static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRec
                         BYTE gm = pix[1];
                         BYTE rm = pix[2];
 
-                        BYTE col = bm = rm = gm ;
+                        //BYTE col = bm = rm = gm ;
 
 						if (al!=255)
 						{
-                            bx = gx = rx = pbGammaWeightAdv[ col ]*al/255;
-							//bx=pbGammaWeightAdv[ bm ]*al/255;
-							//gx=pbGammaWeightAdv[ gm ]*al/255;
-							//rx=pbGammaWeightAdv[ rm ]*al/255;
+                            //bx = gx = rx = pbGammaWeightAdv[ col ]*al/255;
+							bx=pbGammaWeightAdv[ bm ]*al/255;
+							gx=pbGammaWeightAdv[ gm ]*al/255;
+							rx=pbGammaWeightAdv[ rm ]*al/255;
 						}
 						else
 						{
-                            bx = gx = rx = pbGammaWeightAdv[ col ];
-							// bx=pbGammaWeightAdv[ bm ];
-							// gx=pbGammaWeightAdv[ gm ];
-							// rx=pbGammaWeightAdv[ rm ];
+                            //bx = gx = rx = pbGammaWeightAdv[ col ];
+							 bx=pbGammaWeightAdv[ bm ];
+							 gx=pbGammaWeightAdv[ gm ];
+							 rx=pbGammaWeightAdv[ rm ];
 						}
 
 						bx=(pbGammaWeight[bx]*(255-b)+bx*(b))/255;
