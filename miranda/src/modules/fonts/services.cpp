@@ -452,21 +452,21 @@ int RegisterEffect(WPARAM wParam, LPARAM lParam)
 
 static int sttGetEffectWorker( TEffectID* effect_id, FONTEFFECT* effect )
 {
-    for ( int i = 0; i < effect_id_list.getCount(); i++ ) {
-        TEffectID& E = effect_id_list[i];
-        if ( !_tcsncmp( E.name, effect_id->name, SIZEOF(E.name)) && !_tcsncmp( E.group, effect_id->group, SIZEOF(E.group))) 
-        {
-            TEffectSettings temp;
-            UpdateEffectSettings( effect_id, &temp );
-            
-            effect->effectIndex = temp.effectIndex;
-            effect->baseColour  = temp.baseColour;
-            effect->secondaryColour = temp.secondaryColour;
+	for ( int i = 0; i < effect_id_list.getCount(); i++ ) {
+		TEffectID& E = effect_id_list[i];
+		if ( !_tcsncmp( E.name, effect_id->name, SIZEOF(E.name)) && !_tcsncmp( E.group, effect_id->group, SIZEOF(E.group))) 
+		{
+			TEffectSettings temp;
+			UpdateEffectSettings( effect_id, &temp );
 
-            return (int) TRUE;
-    }   }	
-    
-    return (int)FALSE;
+			effect->effectIndex = temp.effectIndex;
+			effect->baseColour  = temp.baseColour;
+			effect->secondaryColour = temp.secondaryColour;
+
+			return (int) TRUE;
+	}	}	
+
+	return (int)FALSE;
 }
 
 #if defined( _UNICODE )
@@ -483,6 +483,6 @@ int GetEffect(WPARAM wParam, LPARAM lParam)
     ConvertEffectID((EffectID *)wParam, &temp);
     return sttGetEffectWorker( &temp, ( FONTEFFECT* )lParam );
 #else
-    return sttGetFontWorker(( EffectID* )wParam, ( FONTEFFECT* )lParam );
+    return sttGetEffectWorker(( TEffectID* )wParam, ( FONTEFFECT* )lParam );
 #endif
 }

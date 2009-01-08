@@ -767,7 +767,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, MENUITEMINFO *l
 				InsertMenuItem( hMenu, uItem, TRUE, &mii );
 			}
 			uItem++;
-		}	}
+	}	}
 
 	//check for separator after
 	if ( uItem < GetMenuItemCount( hMenu )) {
@@ -785,7 +785,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, MENUITEMINFO *l
 			mii.fMask = MIIM_TYPE;
 			mii.fType = MFT_SEPARATOR;
 			InsertMenuItem( hMenu, uItem, TRUE, &mii );
-		}	}
+	}	}
 
 	if ( uItem == GetMenuItemCount( hMenu )-1 ) {
 		TCHAR str[32];
