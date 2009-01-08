@@ -16,6 +16,7 @@
 #define IDI_SOUNDS_OFF					170
 #define IDI_SOUNDS_ON					171
 #define IDI_MINIMIZE					180
+#define IDI_ACCMGR                      282
 
 
 #define IDS_IDENTIFY					10

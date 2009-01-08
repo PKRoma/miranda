@@ -703,6 +703,9 @@ static void	ToolBar_DefaultButtonRegistration()
 	
 	sttRegisterToolBarButton( "StatusMenu", "Status Menu", MS_CLUI_SHOWSTATUSMENU,
 		"Status menu", NULL,  105 , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );
+
+	sttRegisterToolBarButton( "AccoMgr", "Accounts", MS_PROTO_SHOWACCMGR,
+		"Accounts...", NULL,  282 , IDI_ACCMGR, IDI_ACCMGR, TRUE  );
 	
 	sttRegisterToolBarButton( "ShowHideOffline","Show/Hide offline contacts", MS_CLIST_TOGGLEHIDEOFFLINE,
 					    "Hide offline contacts", "Show offline contacts", 110 /*and 111 */ , IDI_RESETVIEW, IDI_RESETVIEW, TRUE  );

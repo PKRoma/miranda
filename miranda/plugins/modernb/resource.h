@@ -147,6 +147,7 @@
 #define IDI_FAVORITE_3                  503
 #define IDI_SETVIEW                     504
 #define IDI_RESETVIEW                   505
+#define IDI_ACCMGR                      282
 #define IDD_OPT_TOOLBAR                 507
 #define IDI_STATUS_LOCKED               508
 #define IDC_RESETPROTOCOLDATA           1000

@@ -42,7 +42,7 @@ IDI_GROUPS_OFF       ICON    DISCARDABLE     "icos/icon_groups_off.ico"
 IDI_SOUNDS_ON        ICON    DISCARDABLE     "icos/icon_sounds_on.ico"
 IDI_SOUNDS_OFF       ICON    DISCARDABLE     "icos/icon_sounds_off.ico"
 IDI_MINIMIZE         ICON    DISCARDABLE     "icos/icon_minimize.ico"
-
+IDI_ACCMGR           ICON    DISCARDABLE     "icos/icon_accmgr.ico"
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
