@@ -121,8 +121,11 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
 			case CLGN_PARENT:
 				return group->groupId | HCONTACT_ISGROUP;
 			case CLGN_NEXT:
-				if (++i >= group->cl.count)
-					return (LRESULT) (HANDLE) NULL;
+                do {
+			        if (++i >= group->cl.count)
+				        return NULL;
+                }
+                while (group->cl.items[i]->type == CLCIT_DIVIDER);
 				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
 			case CLGN_PREVIOUS:
 				if (i <= 0)
