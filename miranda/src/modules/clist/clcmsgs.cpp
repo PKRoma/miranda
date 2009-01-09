@@ -241,9 +241,12 @@ LRESULT fnProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPAR
 			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
 
 		case CLGN_PREVIOUS:
-			if (i <= 0)
-				return NULL;
-			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i - 1]);
+            do {
+		        if (--i < 0)
+			        return NULL;
+            }
+            while (group->cl.items[i]->type == CLCIT_DIVIDER);
+			return (LRESULT) cli.pfnContactToHItem(group->cl.items[i]);
 
 		case CLGN_NEXTCONTACT:
 			for (i++; i < group->cl.count; i++)

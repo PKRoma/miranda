@@ -128,9 +128,12 @@ LRESULT cli_ProcessExternalMessages(HWND hwnd,struct ClcData *dat,UINT msg,WPARA
                 while (group->cl.items[i]->type == CLCIT_DIVIDER);
 				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
 			case CLGN_PREVIOUS:
-				if (i <= 0)
-					return (LRESULT) (HANDLE) NULL;
-				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i - 1]);
+                do {
+			        if (--i < 0)
+				        return NULL;
+                }
+                while (group->cl.items[i]->type == CLCIT_DIVIDER);
+				return (LRESULT) pcli->pfnContactToHItem(group->cl.items[i]);
 			case CLGN_NEXTCONTACT:
 				for (i++; i < group->cl.count; i++)
 					if (group->cl.items[i]->type == CLCIT_CONTACT)
