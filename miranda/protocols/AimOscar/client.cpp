@@ -616,7 +616,7 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, cha
     char* buf = (char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+size+20);
     aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
     aim_writeshort(1,offset,buf);                                   // name length
-    aim_writechar(' ',offset,buf);                                  // name 
+    aim_writechar('1',offset,buf);                                  // name 
     aim_writeshort(0,offset,buf);                                   // group id
     aim_writeshort(avatar_id,offset,buf);                           // buddy id
     aim_writeshort(0x14,offset,buf);                                // buddy type: Buddy Icon
