@@ -404,12 +404,11 @@ void EraseAccount( const char* pszModuleName )
 		if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )hContact, ( LPARAM )&dbcgs ))
 			continue;
 
-		if ( lstrcmpA( szProtoName, pszModuleName ))
-			continue;
-
 		HANDLE h1 = hContact;
-		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
-		CallService( MS_DB_CONTACT_DELETE, ( WPARAM )h1, 0 );
+		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
+
+		if ( !lstrcmpA( szProtoName, pszModuleName ))
+			CallService( MS_DB_CONTACT_DELETE, ( WPARAM )h1, 0 );
 	}
 
 	// remove all protocol settings
