@@ -1239,7 +1239,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 				tmi.hIcon = NULL;
 				tmi.pszName = mi->pszPopupName;
 				pRoot = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
-			}	
+			}
 
 			tmi.flags |= CMIF_ROOTHANDLE;
 			tmi.root = pRoot;
@@ -1271,7 +1271,15 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 		smep->hMenuItem = menuHandle;
 
 	char buf[MAX_PATH+64];
-	sprintf(buf,"%s/%s",mi->pszPopupName?mi->pszPopupName:"",mi->pszService?mi->pszService:"");
+	#if defined( _UNICODE )
+	{
+		char* p = ( pRoot ) ? mir_t2a( pRoot->mi.ptszName ) : NULL;
+		mir_snprintf( buf, SIZEOF(buf), "%s/%s", ( p ) ? p : "", mi->pszService ? mi->pszService : "" );
+		mir_free( p );
+	}
+	#else
+		mir_snprintf( buf, SIZEOF(buf), "%s/%s", pRoot ? pRoot->mi.ptszName : _T(""), mi->pszService ? mi->pszService : "" );
+	#endif
 	MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
 
 	return ( int )menuHandle;
