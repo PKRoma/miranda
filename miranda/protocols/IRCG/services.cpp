@@ -56,28 +56,24 @@ void CIrcProto::InitMenus()
 		mi.icolibItem = GetIconHandle(IDI_JOIN);
 		strcpy( d, IRC_JOINCHANNEL );
 		mi.position = 500090001;
-		mi.pszPopupName = (char *)hMenuRoot;
 		hMenuJoin = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Change your nickname");
 		mi.icolibItem = GetIconHandle(IDI_WHOIS);
 		strcpy( d, IRC_CHANGENICK );
 		mi.position = 500090002;
-		mi.pszPopupName = (char *)hMenuRoot;
 		hMenuNick = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("Show the &list of available channels");
 		mi.icolibItem = GetIconHandle(IDI_LIST);
 		strcpy( d, IRC_SHOWLIST );
 		mi.position = 500090003;
-		mi.pszPopupName = (char *)hMenuRoot;
 		hMenuList = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Show the server window");
 		mi.icolibItem = GetIconHandle(IDI_SERVER);
 		strcpy( d, IRC_SHOWSERVER );
 		mi.position = 500090004;
-		mi.pszPopupName = (char *)hMenuRoot;
 		hMenuServer = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
 	
@@ -122,7 +118,7 @@ void CIrcProto::InitMenus()
 		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 }
 
-int __cdecl CIrcProto::OnDoubleclicked(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
 {
 	if (!lParam)
 		return 0;
@@ -144,7 +140,7 @@ int __cdecl CIrcProto::OnDoubleclicked(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM)
 {
 	HANDLE hContact = ( HANDLE )wp;
 	if ( !hContact )
@@ -185,7 +181,7 @@ int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -199,7 +195,7 @@ int __cdecl CIrcProto::OnJoinChat(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -225,7 +221,7 @@ int __cdecl CIrcProto::OnLeaveChat(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM)
 {
 	if (!wp )
 		return 0;
@@ -239,7 +235,7 @@ int __cdecl CIrcProto::OnMenuChanSettings(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM)
 {
 	if ( !wp )
 		return 0;
@@ -253,7 +249,7 @@ int __cdecl CIrcProto::OnMenuWhois(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM)
 {
 	CDccSession* dcc = FindDCCSession((HANDLE)wp);
 	if ( dcc )
@@ -261,7 +257,7 @@ int __cdecl CIrcProto::OnMenuDisconnect(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM)
 {
 	if ( !wp )
 		return 0;
@@ -292,7 +288,7 @@ int __cdecl CIrcProto::OnMenuIgnore(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_joinDlg ) {
 		m_joinDlg = new CJoinDlg( this );
@@ -307,7 +303,7 @@ int __cdecl CIrcProto::OnJoinMenuCommand(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_quickDlg ) {
 		m_quickDlg = new CQuickDlg( this );
@@ -323,13 +319,13 @@ int __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnShowListMenuCommand(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnShowListMenuCommand(WPARAM, LPARAM)
 {
 	PostIrcMessage( _T("/LIST"));
 	return 0;
 }
 
-int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM, LPARAM)
 {
 	GCEVENT gce = {0};
 	GCDEST gcd = {0};
@@ -343,7 +339,7 @@ int __cdecl CIrcProto::OnShowServerMenuCommand(WPARAM wp, LPARAM lp)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM wp, LPARAM lp)
+int __cdecl CIrcProto::OnChangeNickMenuCommand(WPARAM, LPARAM)
 {
 	if ( !m_nickDlg ) {
 		m_nickDlg = new CNickDlg( this );
@@ -782,7 +778,7 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CIrcProto::GCMenuHook(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::GCMenuHook(WPARAM, LPARAM lParam)
 {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 	if ( gcmi ) {
@@ -908,7 +904,7 @@ int __cdecl CIrcProto::GCMenuHook(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::OnPreShutdown(WPARAM, LPARAM)
 {
 	EnterCriticalSection(&cs);
 
@@ -931,7 +927,7 @@ int __cdecl CIrcProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 {
 	DBVARIANT dbv;
 	HANDLE hContact = ( HANDLE )wParam;
@@ -1153,7 +1149,7 @@ void CIrcProto::DisconnectFromServer(void)
 	ircFork( &CIrcProto::DisconnectServerThread, 0 );
 }
 
-int __cdecl CIrcProto::GetStatus(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
 {
 	if (m_iDesiredStatus == ID_STATUS_CONNECTING)
 		return ID_STATUS_CONNECTING;
@@ -1168,7 +1164,7 @@ int __cdecl CIrcProto::GetStatus(WPARAM wParam,LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Service function creation
 
-VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK RetryTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )

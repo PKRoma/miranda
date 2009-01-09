@@ -958,12 +958,12 @@ public:
 #pragma warning (pop)
 	}
 
-	static LPWSTR __stdcall StringUppercase( LPWSTR psz, size_t size )
+	static LPWSTR __stdcall StringUppercase( LPWSTR psz, size_t )
 	{
 		return _wcsupr( psz );
 	}
 
-	static LPWSTR __stdcall StringLowercase( LPWSTR psz, size_t size )
+	static LPWSTR __stdcall StringLowercase( LPWSTR psz, size_t )
 	{
 		return _wcslwr( psz );
 	}

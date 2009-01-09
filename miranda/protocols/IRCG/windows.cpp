@@ -603,7 +603,7 @@ void CQuickDlg::OnInitDialog()
 
 	m_si->m_iSSL = m_proto->getByte( "UseSSL", 0 );
 	
-	int iItem = m_serverCombo.AddStringA( m_si->m_name, ( LPARAM )m_si );
+	m_serverCombo.AddStringA( m_si->m_name, ( LPARAM )m_si );
 
 	if ( m_proto->m_quickComboSelection != -1 ) {
 		m_serverCombo.SetCurSel( m_proto->m_quickComboSelection );

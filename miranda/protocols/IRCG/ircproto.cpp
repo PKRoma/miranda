@@ -175,7 +175,7 @@ CIrcProto::~CIrcProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
 
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hMenuRoot, 0 );
+	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	mir_free( m_alias );
 	mir_free( m_szModuleName );
@@ -233,7 +233,7 @@ static void sttImportIni( const char* szIniFile )
 	::remove( szIniFile );
 }
 
-int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 {
 	char szTemp[MAX_PATH];
 	char szTemp3[256];
@@ -391,7 +391,7 @@ int CIrcProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AddToList - adds a contact to the contact list
 
-HANDLE __cdecl CIrcProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
+HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 {
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return 0;
@@ -429,7 +429,7 @@ HANDLE __cdecl CIrcProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AddToList - adds a contact to the contact list
 
-HANDLE __cdecl CIrcProto::AddToListByEvent( int flags, int iContact, HANDLE hDbEvent )
+HANDLE __cdecl CIrcProto::AddToListByEvent( int, int, HANDLE )
 {
 	return NULL;
 }
@@ -437,7 +437,7 @@ HANDLE __cdecl CIrcProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthAllow - processes the successful authorization
 
-int __cdecl CIrcProto::Authorize( HANDLE hContact )
+int __cdecl CIrcProto::Authorize( HANDLE )
 {
 	return 0;
 }
@@ -445,7 +445,7 @@ int __cdecl CIrcProto::Authorize( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int __cdecl CIrcProto::AuthDeny( HANDLE hContact, const char* szReason )
+int __cdecl CIrcProto::AuthDeny( HANDLE, const char* )
 {
 	return 0;
 }
@@ -453,7 +453,7 @@ int __cdecl CIrcProto::AuthDeny( HANDLE hContact, const char* szReason )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AUTH
 
-int __cdecl CIrcProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
+int __cdecl CIrcProto::AuthRecv( HANDLE, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -461,7 +461,7 @@ int __cdecl CIrcProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CIrcProto::AuthRequest( HANDLE hContact, const char* szMessage )
+int __cdecl CIrcProto::AuthRequest( HANDLE, const char* )
 {
 	return 1;
 }
@@ -469,7 +469,7 @@ int __cdecl CIrcProto::AuthRequest( HANDLE hContact, const char* szMessage )
 ////////////////////////////////////////////////////////////////////////////////////////
 // ChangeInfo
 
-HANDLE __cdecl CIrcProto::ChangeInfo( int iInfoType, void* pInfoData )
+HANDLE __cdecl CIrcProto::ChangeInfo( int, void* )
 {
 	return NULL;
 }
@@ -477,7 +477,7 @@ HANDLE __cdecl CIrcProto::ChangeInfo( int iInfoType, void* pInfoData )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-int __cdecl CIrcProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath )
+int __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -499,7 +499,7 @@ int __cdecl CIrcProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileCancel - cancels a file transfer
 
-int __cdecl CIrcProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
+int __cdecl CIrcProto::FileCancel( HANDLE, HANDLE hTransfer )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -515,7 +515,7 @@ int __cdecl CIrcProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CIrcProto::FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason )
+int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const char* )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 	delete di;
@@ -542,7 +542,6 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 		if (*action == FILERESUME_RESUME) {
 			DWORD dwPos = 0;
 			String sFile;
-			char * pszTemp = NULL;
 			FILE * hFile = NULL;
 
 			hFile = _tfopen(di->sFileAndPath.c_str(), _T("rb"));
@@ -578,7 +577,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD __cdecl CIrcProto::GetCaps( int type, HANDLE hContact )
+DWORD __cdecl CIrcProto::GetCaps( int type, HANDLE )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -620,7 +619,7 @@ HICON __cdecl CIrcProto::GetIcon( int iconIndex )
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetInfo - retrieves a contact info
 
-int __cdecl CIrcProto::GetInfo( HANDLE hContact, int infoType )
+int __cdecl CIrcProto::GetInfo( HANDLE, int )
 {
 	return 1;
 }
@@ -659,7 +658,7 @@ HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CIrcProto::SearchByEmail( const char* email )
+HANDLE __cdecl CIrcProto::SearchByEmail( const char* )
 {
 	return NULL;
 }
@@ -667,17 +666,17 @@ HANDLE __cdecl CIrcProto::SearchByEmail( const char* email )
 ////////////////////////////////////////////////////////////////////////////////////////
 // upsupported search functions
 
-HANDLE __cdecl CIrcProto::SearchByName( const char* nick, const char* firstName, const char* lastName )
+HANDLE __cdecl CIrcProto::SearchByName( const char*, const char*, const char* )
 {
 	return NULL;
 }
 
-HWND __cdecl CIrcProto::CreateExtendedSearchUI( HWND parent )
+HWND __cdecl CIrcProto::CreateExtendedSearchUI( HWND )
 {
 	return NULL;
 }
 
-HWND __cdecl CIrcProto::SearchAdvanced( HWND hwndDlg )
+HWND __cdecl CIrcProto::SearchAdvanced( HWND )
 {
 	return NULL;
 }
@@ -685,7 +684,7 @@ HWND __cdecl CIrcProto::SearchAdvanced( HWND hwndDlg )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvContacts
 
-int __cdecl CIrcProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* )
+int __cdecl CIrcProto::RecvContacts( HANDLE, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -711,7 +710,7 @@ int __cdecl CIrcProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvUrl
 
-int __cdecl CIrcProto::RecvUrl( HANDLE hContact, PROTORECVEVENT* )
+int __cdecl CIrcProto::RecvUrl( HANDLE, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -719,7 +718,7 @@ int __cdecl CIrcProto::RecvUrl( HANDLE hContact, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendContacts
 
-int __cdecl CIrcProto::SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList )
+int __cdecl CIrcProto::SendContacts( HANDLE, int, int, HANDLE* )
 {
 	return 1;
 }
@@ -727,7 +726,7 @@ int __cdecl CIrcProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-int __cdecl CIrcProto::SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles )
+int __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles )
 {
 	DCCINFO* dci = NULL;
 	int iPort = 0;
@@ -931,7 +930,7 @@ int __cdecl CIrcProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendUrl
 
-int __cdecl CIrcProto::SendUrl( HANDLE hContact, int flags, const char* url )
+int __cdecl CIrcProto::SendUrl( HANDLE, int, const char* )
 {
 	return 1;
 }
@@ -939,7 +938,7 @@ int __cdecl CIrcProto::SendUrl( HANDLE hContact, int flags, const char* url )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetApparentMode - sets the visibility status
 
-int __cdecl CIrcProto::SetApparentMode( HANDLE hContact, int mode )
+int __cdecl CIrcProto::SetApparentMode( HANDLE, int )
 {
 	return 0;
 }
@@ -1062,7 +1061,7 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AWAYMSG
 
-int __cdecl CIrcProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
+int __cdecl CIrcProto::RecvAwayMsg( HANDLE, int, PROTORECVEVENT* )
 {
 	return 1;
 }
@@ -1070,7 +1069,7 @@ int __cdecl CIrcProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEV
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AWAYMSG
 
-int __cdecl CIrcProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg )
+int __cdecl CIrcProto::SendAwayMsg( HANDLE, HANDLE, const char* )
 {
 	return 1;
 }
@@ -1103,7 +1102,7 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 /////////////////////////////////////////////////////////////////////////////////////////
 // UserIsTyping - sends a UTN notification
 
-int __cdecl CIrcProto::UserIsTyping( HANDLE hContact, int type )
+int __cdecl CIrcProto::UserIsTyping( HANDLE, int )
 {
 	return 0;
 }

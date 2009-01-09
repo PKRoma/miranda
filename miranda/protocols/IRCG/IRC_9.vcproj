@@ -350,10 +350,10 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="irc.h"
 				AssemblerOutput="4"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4996"
+				DisableSpecificWarnings="4996;4125"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

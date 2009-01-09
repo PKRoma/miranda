@@ -474,7 +474,7 @@ void __cdecl CIrcProto::ThreadProc( void* )
 	m_info.Reset();
 }
 
-void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
+void CIrcProto::AddDCCSession(HANDLE, CDccSession* dcc)
 {
 	EnterCriticalSection(&m_dcc);
 
@@ -487,7 +487,7 @@ void CIrcProto::AddDCCSession(HANDLE hContact, CDccSession* dcc)
 	LeaveCriticalSection(&m_dcc);
 }
 
-void CIrcProto::AddDCCSession(DCCINFO* pdci, CDccSession* dcc)
+void CIrcProto::AddDCCSession(DCCINFO*, CDccSession* dcc)
 {
 	EnterCriticalSection(&m_dcc);
 
@@ -1459,7 +1459,7 @@ int CDccSession::Disconnect()
 ////////////////////////////////////////////////////////////////////
 // check if the dcc chats should disconnect ( default 5 minute timeout )
 
-VOID CALLBACK DCCTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK DCCTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( ppro )
@@ -1474,7 +1474,7 @@ void DoIncomingDcc(HANDLE hConnection, DWORD dwRemoteIP, void * p1)
 }
 
 // ident server
-void DoIdent(HANDLE hConnection, DWORD dwRemoteIP, void* extra )
+void DoIdent(HANDLE hConnection, DWORD, void* extra )
 {
 	char szBuf[1024];
 	int cbRead = Netlib_Recv(hConnection, szBuf, sizeof(szBuf)-1, 0);

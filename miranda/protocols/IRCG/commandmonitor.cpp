@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 using namespace irc;
 
-VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK IdentTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )
@@ -40,7 +40,7 @@ VOID CALLBACK IdentTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 		ppro->KillIdent();
 }
 
-VOID CALLBACK TimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK TimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )
@@ -57,7 +57,7 @@ VOID CALLBACK TimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 		ppro->DoUserhostWithReason(2, (_T("S") + ppro->m_info.sNick).c_str(), true, _T("%s"), ppro->m_info.sNick.c_str());
 }
 
-VOID CALLBACK KeepAliveTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK KeepAliveTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )
@@ -78,7 +78,7 @@ VOID CALLBACK KeepAliveTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD 
 		*ppro << CIrcMessage( ppro, temp2, ppro->getCodepage(), false, false);
 }
 
-VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK OnlineNotifTimerProc3( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )
@@ -121,7 +121,7 @@ VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 		ppro->SetChatTimer( ppro->OnlineNotifTimer3, ppro->m_onlineNotificationTime*1000, OnlineNotifTimerProc3 );
 }
 
-VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+VOID CALLBACK OnlineNotifTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 {
 	CIrcProto* ppro = GetTimerOwner( idEvent );
 	if ( !ppro )
@@ -1277,7 +1277,6 @@ bool CIrcProto::OnIrc_NAMES( const CIrcMessage* pmsg )
 
 bool CIrcProto::OnIrc_ENDNAMES( const CIrcMessage* pmsg )
 {
-	HWND hActiveWindow = GetActiveWindow();
 	if ( pmsg->m_bIncoming && pmsg->parameters.getCount() > 1 ) {
 		CMString name = _T("a");
 		int i = 0;
@@ -2104,8 +2103,6 @@ bool CIrcProto::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 		command = GetNextUserhostReason(1);
 		if ( !command.IsEmpty() && command != _T("U") && pmsg->parameters.getCount() > 1 ) {
 			CONTACT finduser = {NULL, NULL, NULL, false, false, false};
-			TCHAR* params = NULL;
-			TCHAR* next = NULL;
 			TCHAR* p1 = NULL;
 			TCHAR* p2 = NULL;
 			int awaystatus = 0;
@@ -2387,7 +2384,7 @@ static void __stdcall sttMainThrdOnConnect( void* param )
 			ppro->SetChatTimer( ppro->OnlineNotifTimer3, 3000, OnlineNotifTimerProc3);
 }	}
 
-bool CIrcProto::DoOnConnect( const CIrcMessage* pmsg )
+bool CIrcProto::DoOnConnect( const CIrcMessage* )
 {
 	bPerformDone = true;
 	nickflag = true;	
@@ -2449,7 +2446,7 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* pmsg )
 	return 0;
 }
 
-static void __cdecl AwayWarningThread(LPVOID di)
+static void __cdecl AwayWarningThread(LPVOID)
 {
 	MessageBox(NULL, TranslateT("The usage of /AWAY in your perform buffer is restricted\n as IRC sends this command automatically."), TranslateT("IRC Error"), MB_OK);
 }

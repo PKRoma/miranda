@@ -160,7 +160,7 @@ CMString CIrcProto::DoAlias( const TCHAR *text, TCHAR *window)
 	return Messageout;
 }
 
-CMString CIrcProto::DoIdentifiers( CMString text, const TCHAR* window )
+CMString CIrcProto::DoIdentifiers( CMString text, const TCHAR* )
 {
 	SYSTEMTIME time;
 	TCHAR str[100];

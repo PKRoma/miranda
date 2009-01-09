@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "irc.h"
 
-int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
+int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM, LPARAM lParam)
 {
 	char* pszRaw = ( char* ) lParam;
 
@@ -35,7 +35,7 @@ int __cdecl CIrcProto::Scripting_InsertRawIn(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
  
-int __cdecl CIrcProto::Scripting_InsertRawOut( WPARAM wParam, LPARAM lParam )
+int __cdecl CIrcProto::Scripting_InsertRawOut( WPARAM, LPARAM lParam )
 {
 	char* pszRaw = ( char* ) lParam;
 	if ( m_bMbotInstalled && m_scriptingEnabled && pszRaw && IsConnected() ) {	
@@ -99,7 +99,7 @@ static void __cdecl GuiOutThread(LPVOID di)
 	CallFunctionAsync( OnHook, ( void* )gch );
 }
 
-int __cdecl CIrcProto::Scripting_InsertGuiOut( WPARAM wParam,LPARAM lParam )
+int __cdecl CIrcProto::Scripting_InsertGuiOut( WPARAM, LPARAM lParam )
 {
 	GCHOOK* gch = ( GCHOOK* )lParam;
 
@@ -179,7 +179,7 @@ BOOL CIrcProto::Scripting_TriggerMSPGuiOut(GCHOOK* gch)
 	return iVal > 0 ? FALSE : TRUE;
 }
 
-int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM wparam, LPARAM lparam)
+int __cdecl CIrcProto::Scripting_GetIrcData(WPARAM, LPARAM lparam)
 {
 	if ( m_bMbotInstalled && m_scriptingEnabled && lparam ) {
 		String sString = ( char* ) lparam, sRequest;

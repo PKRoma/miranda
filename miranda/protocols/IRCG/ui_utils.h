@@ -246,7 +246,7 @@ protected:
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 	virtual void OnApply() {}
 	virtual void OnReset() {}
-	virtual void OnChange(CCtrlBase *ctrl) {}
+	virtual void OnChange(CCtrlBase *) {}
 
 	// main dialog procedure
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -325,12 +325,12 @@ public:
 
 	int GetInt();
 
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { return FALSE; }
-	virtual BOOL OnNotify(int idCtrl, NMHDR *pnmh) { return FALSE; }
+	virtual BOOL OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD /*idCode*/) { return FALSE; }
+	virtual BOOL OnNotify(int /*idCtrl*/, NMHDR* /*pnmh*/) { return FALSE; }
 
-	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT *param) { return FALSE; }
-	virtual BOOL OnDrawItem(DRAWITEMSTRUCT *param) { return FALSE; }
-	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT *param) { return FALSE; }
+	virtual BOOL OnMeasureItem(MEASUREITEMSTRUCT*) { return FALSE; }
+	virtual BOOL OnDrawItem(DRAWITEMSTRUCT*) { return FALSE; }
+	virtual BOOL OnDeleteItem(DELETEITEMSTRUCT*) { return FALSE; }
 
 	virtual void OnInit();
 	virtual void OnDestroy();
@@ -530,7 +530,7 @@ class CCtrlCheck : public CCtrlData
 {
 public:
 	CCtrlCheck( CDlgBase* dlg, int ctrlId );
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode) { NotifyChange(); return TRUE; }
+	virtual BOOL OnCommand(HWND, WORD, WORD) { NotifyChange(); return TRUE; }
 	virtual void OnInit()
 	{
 		CCtrlData::OnInit();
@@ -556,7 +556,7 @@ class CCtrlEdit : public CCtrlData
 {
 public:
 	CCtrlEdit( CDlgBase* dlg, int ctrlId );
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	virtual BOOL OnCommand(HWND, WORD, WORD idCode)
 	{
 		if (idCode == EN_CHANGE)
 			NotifyChange();
@@ -634,7 +634,7 @@ class CCtrlCombo : public CCtrlData
 public:
 	CCtrlCombo( CDlgBase* dlg, int ctrlId );
 
-	virtual BOOL OnCommand(HWND hwndCtrl, WORD idCtrl, WORD idCode)
+	virtual BOOL OnCommand(HWND, WORD, WORD idCode)
 	{
 		switch (idCode)
 		{

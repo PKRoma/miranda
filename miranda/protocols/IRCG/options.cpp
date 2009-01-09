@@ -187,14 +187,6 @@ static void removeSpaces( TCHAR* p )
 		p++;
 }	}
 
-static char* getControlText( HWND hWnd, int ctrlID )
-{
-	size_t size = GetWindowTextLength( GetDlgItem( hWnd, ctrlID ))+1;
-	char* result = ( char* )mir_alloc( size );
-	GetDlgItemTextA( hWnd, ctrlID, result, size );
-	return result;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // add icons to the skinning module
 
@@ -881,7 +873,7 @@ void CCtcpPrefsDlg::OnInitDialog()
 	mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%u"), m_proto->m_DCCPacketSize );
 	int i = m_combo.SelectString( szTemp );
 	if ( i == CB_ERR )
-		int i = m_combo.SelectString( _T("4096"));
+		m_combo.SelectString( _T("4096"));
 
 	if ( m_proto->m_DCCChatAccept == 1 )
 		m_radio1.SetState( true );
@@ -1468,7 +1460,7 @@ void CIgnorePrefsDlg::OnInitDialog()
 		lvC.iSubItem = index;
 		lvC.cx = COLUMNS_SIZES[index];
 
-		TCHAR* text;
+		TCHAR* text = NULL;
 		switch (index) {
 			case 0: text = TranslateT("Ignore mask"); break;
 			case 1: text = TranslateT("Flags"); break;
@@ -1666,7 +1658,7 @@ void CIgnorePrefsDlg::UpdateList()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int CIrcProto::OnInitOptionsPages(WPARAM wParam,LPARAM lParam)
+int CIrcProto::OnInitOptionsPages(WPARAM wParam, LPARAM)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 
@@ -1844,7 +1836,7 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 	}	}	}
 };
 
-int CIrcProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
+int CIrcProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 {
 	CDlgAccMgrUI *dlg = new CDlgAccMgrUI(this, (HWND)lParam);
 	dlg->Show();

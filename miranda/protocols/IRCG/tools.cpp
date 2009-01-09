@@ -269,7 +269,7 @@ int __stdcall WCCmp( const TCHAR* wild, const TCHAR* string )
 	if ( wild == NULL || !lstrlen(wild) || string == NULL || !lstrlen(string))
 		return 1;
 
-	const TCHAR *cp, *mp;
+	const TCHAR *cp = NULL, *mp = NULL;
 	while ((*string) && (*wild != '*')) {
 		if ((*wild != *string) && (*wild != '?'))
 			return 0;
