@@ -322,8 +322,10 @@ void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 
 	TCHAR* room = roomjid;
 	TCHAR* server = _tcschr( roomjid, '@' );
-	if( !server )
+	if( !server ) {
+		mir_free( roomjid );
 		return;
+	}
 	server[0] = '\0'; server++;
 
 	TCHAR nick[ 256 ];
