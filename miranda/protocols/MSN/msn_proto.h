@@ -254,6 +254,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	HANDLE menuItemsAll[ 7 ];
 
 	void MsnInitMenus( void );
+	void MsnUninitMenus( void );
 	void MSN_EnableMenuItems( bool parEnable );
 	void MsnInvokeMyURL( bool ismail, char* url );
 

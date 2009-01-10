@@ -165,6 +165,8 @@ CMsnProto::CMsnProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 CMsnProto::~CMsnProto()
 {
+	MsnUninitMenus();
+
 	DestroyHookableEvent( hMSNNudge );
 
 	MSN_FreeGroups();
