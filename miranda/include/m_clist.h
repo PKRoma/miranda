@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_CLIST_H__
 #define M_CLIST_H__ 1
 
+#ifdef _MSC_VER
+	#pragma warning(disable:4201 4204)
+#endif
+
 #include "statusmodes.h"
 
 #if defined _STATIC

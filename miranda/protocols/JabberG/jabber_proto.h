@@ -713,6 +713,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_svc.c ------------------------------------------------------------------
 
+	void   CheckMenuItems();
 	void   EnableMenuItems( BOOL bEnable );
 
 	int    __cdecl JabberGetName( WPARAM wParam, LPARAM lParam );
@@ -856,6 +857,7 @@ private:
 	HANDLE  m_hInitChat;
 	HANDLE  m_hPrebuildStatusMenu;
 	int     m_hPrivacyMenuRoot;
+	BOOL    m_menuItemsStatus;
 	LIST<void> m_hPrivacyMenuItems;
 	
 	int     m_nMenuResourceItems;

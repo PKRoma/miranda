@@ -6,6 +6,23 @@ static CRITICAL_SECTION csMenuHook;
 
 static int NextObjectId = 0x100, NextObjectMenuItemId = CLISTMENUIDMIN;
 
+#if defined( _DEBUG )
+static void DumpMenuItem( TMO_IntMenuItem* pParent, int level = 0 )
+{
+	char temp[ 30 ];
+	memset( temp, '\t', level );
+	temp[ level ] = 0;
+
+	for ( PMO_IntMenuItem pimi = pParent; pimi != NULL; pimi = pimi->next ) {
+		Netlib_Logf( NULL, "%sMenu item %08p [%08p]: %S", temp, pimi, pimi->mi.root, pimi->mi.ptszName );
+
+		PMO_IntMenuItem submenu = pimi->submenu.first;
+		if ( submenu )
+			DumpMenuItem( submenu, level+1 );
+}	}
+
+#endif
+
 static int CompareMenus( const TIntMenuObject* p1, const TIntMenuObject* p2 )
 {
 	return lstrcmpA( p1->Name, p2->Name );
@@ -498,13 +515,6 @@ int MO_CreateNewMenuObject(WPARAM, LPARAM lParam)
 //wparam=MenuItemHandle
 //lparam=0
 
-/*
-static int DumpMenuItem( TMO_IntMenuItem* pimi, void* )
-{
-	Netlib_Logf( NULL, "Menu item %08p [%08p]: %S", pimi, pimi->mi.root, pimi->mi.ptszName );
-	return FALSE;
-}
-*/
 static int FreeMenuItem( TMO_IntMenuItem* pimi, void* )
 {
 	pimi->parent->freeItem( pimi );
@@ -826,6 +836,10 @@ int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 		LeaveCriticalSection( &csMenuHook );
 		return 0;
 	}
+
+	#if defined( _DEBUG )
+		// DumpMenuItem( g_menus[pimoidx]->m_items.first );
+	#endif
 
 	int res = (int)BuildRecursiveMenu(( HMENU )wParam, g_menus[pimoidx]->m_items.first, ( ListParam* )lParam );
 	LeaveCriticalSection( &csMenuHook );

@@ -220,8 +220,11 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 {
 	BuildPrivacyMenu();
+	if ( m_menuItemsStatus )
+		BuildPrivacyListsMenu();
 	BuildPriorityMenu();
 	m_pepServices.RebuildMenu();
+	CheckMenuItems();
 	return 0;
 }
 
@@ -725,10 +728,16 @@ void CJabberProto::MenuUninit()
 
 void CJabberProto::EnableMenuItems( BOOL bEnable )
 {
+	m_menuItemsStatus = bEnable;
+	CheckMenuItems();
+}
+
+void CJabberProto::CheckMenuItems()
+{
 	CLISTMENUITEM clmi = { 0 };
 	clmi.cbSize = sizeof( CLISTMENUITEM );
 	clmi.flags = CMIM_FLAGS;
-	if ( !bEnable )
+	if ( !m_menuItemsStatus )
 		clmi.flags |= CMIF_GRAYED;
 
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuAgent, ( LPARAM )&clmi );
@@ -746,7 +755,7 @@ void CJabberProto::EnableMenuItems( BOOL bEnable )
 		clmi.flags |= CMIF_GRAYED;
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuBookmarks, ( LPARAM )&clmi );
 
-	clmi.flags = CMIM_FLAGS | (( bEnable ) ? 0 : CMIF_HIDDEN);
+	clmi.flags = CMIM_FLAGS | (( m_menuItemsStatus ) ? 0 : CMIF_HIDDEN);
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hPrivacyMenuRoot, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuPriorityRoot, ( LPARAM )&clmi );
 
@@ -755,7 +764,7 @@ void CJabberProto::EnableMenuItems( BOOL bEnable )
 	for ( int i=0; i < m_pepServices.getCount(); i++ )
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_pepServices[i].GetMenu(), ( LPARAM )&clmi );
 	
-	JabberUpdateDialogs( bEnable );
+	JabberUpdateDialogs( m_menuItemsStatus );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1048,15 +1057,12 @@ void JMenuAddItem(HMENU hMenu, LPARAM lParam, TCHAR *szText, HANDLE hIcon, bool 
 	mii.hbmpItem = IsWinVerVistaPlus() ? sttCreateVistaMenuBitmap(hIcon, bIcolib) : HBMMENU_CALLBACK;
 	mii.dwTypeData = szText;
 
-	if (!IsWinVerVistaPlus())
-	{
+	if (!IsWinVerVistaPlus()) {
 		// this breaks vista syle for menu :(
-		if ((idx % 35) == 34)
-		{
+		if ((idx % 35) == 34) {
 			mii.fMask |= MIIM_FTYPE;
 			mii.fType |= MFT_MENUBARBREAK;
-		}
-	}
+	}	}
 
 	InsertMenuItem(hMenu, idx, TRUE, &mii);
 }
@@ -1080,15 +1086,12 @@ void JMenuAddPopup(HMENU hMenu, HMENU hPopup, TCHAR *szText, HANDLE hIcon, bool 
 	mii.hbmpItem = IsWinVerVistaPlus() ? sttCreateVistaMenuBitmap(hIcon, bIcolib) : HBMMENU_CALLBACK;
 	mii.dwTypeData = szText;
 
-	if (!IsWinVerVistaPlus())
-	{
+	if (!IsWinVerVistaPlus()) {
 		// this breaks vista syle for menu :(
-		if ((idx % 35) == 34)
-		{
+		if ((idx % 35) == 34) {
 			mii.fMask |= MIIM_FTYPE;
 			mii.fType |= MFT_MENUBARBREAK;
-		}
-	}
+	}	}
 
 	InsertMenuItem(hMenu, idx, TRUE, &mii);
 }
@@ -1102,15 +1105,12 @@ void JMenuAddSeparator(HMENU hMenu)
 	mii.fMask = MIIM_FTYPE;
 	mii.fType = MFT_SEPARATOR;
 
-	if (!IsWinVerVistaPlus())
-	{
+	if (!IsWinVerVistaPlus()) 	{
 		// this breaks vista syle for menu :(
-		if ((idx % 35) == 34)
-		{
+		if ((idx % 35) == 34) {
 			mii.fMask |= MIIM_FTYPE;
 			mii.fType |= MFT_MENUBARBREAK;
-		}
-	}
+	}	}
 
 	InsertMenuItem(hMenu, idx, TRUE, &mii);
 }
@@ -1127,8 +1127,7 @@ static HMENU sttGetMenuItemInfoRecursive(HMENU hMenu, int id, MENUITEMINFO *mii)
 		return hMenu;
 
 	int count = GetMenuItemCount(hMenu);
-	for (int i = 0; i < count; ++i)
-	{
+	for (int i = 0; i < count; ++i) {
 		MENUITEMINFO mii2 = {0};
 		mii2.cbSize = sizeof(mii);
 		mii2.fMask = MIIM_SUBMENU;
@@ -1144,8 +1143,7 @@ static HMENU sttGetMenuItemInfoRecursive(HMENU hMenu, int id, MENUITEMINFO *mii)
 
 int JMenuShow(HMENU hMenu, int x, int y)
 {
-	if (!g_hwndMenuHost)
-	{
+	if (!g_hwndMenuHost) {
 		WNDCLASSEX wcl = {0};
 		wcl.cbSize = sizeof(wcl);
 		wcl.lpfnWndProc = sttJabberMenuHostWndProc;
@@ -1174,8 +1172,7 @@ int JMenuShow(HMENU hMenu, int x, int y)
 	sttGetMenuItemInfoRecursive(hMenu, res, &mii);
 	//GetMenuItemInfo(hMenu, res, FALSE, &mii);
 
-	if (mii.dwItemData)
-	{
+	if (mii.dwItemData) {
 		TMenuItemData *dat = (TMenuItemData *)mii.dwItemData;
 		return dat->lParam;
 	}
@@ -1193,8 +1190,7 @@ void JMenuDestroy(HMENU hMenu, CJabberProto *ppro, void (CJabberProto::*pfnDestr
 		mii.fMask = MIIM_DATA|MIIM_SUBMENU|MIIM_BITMAP;
 		GetMenuItemInfo(hMenu, i, TRUE, &mii);
 
-		if (mii.dwItemData)
-		{
+		if (mii.dwItemData) {
 			TMenuItemData *dat = (TMenuItemData *)mii.dwItemData;
 			if (ppro && pfnDestructor)
 				(ppro->*pfnDestructor)(dat->lParam);
@@ -1288,16 +1284,16 @@ static HBITMAP sttCreateVistaMenuBitmap(HANDLE hIcon, bool bIcolib)
 
 	if (!hic) return NULL;
 
-    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+	bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
 	bi.bmiHeader.biWidth = width;
-    bi.bmiHeader.biHeight = -height;
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB;
+	bi.bmiHeader.biHeight = -height;
+	bi.bmiHeader.biPlanes = 1;
+	bi.bmiHeader.biBitCount = 32;
+	bi.bmiHeader.biCompression = BI_RGB;
 
-    hBmp = (HBITMAP)CreateDIBSection(0, &bi, DIB_RGB_COLORS, (void **)&bits, 0, 0);
-    dcBmp = CreateCompatibleDC(0);
-    hBmpSave = (HBITMAP)SelectObject(dcBmp, hBmp);
+	hBmp = (HBITMAP)CreateDIBSection(0, &bi, DIB_RGB_COLORS, (void **)&bits, 0, 0);
+	dcBmp = CreateCompatibleDC(0);
+	hBmpSave = (HBITMAP)SelectObject(dcBmp, hBmp);
 
 	GdiFlush();
 
