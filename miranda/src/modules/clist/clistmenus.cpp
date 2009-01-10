@@ -805,11 +805,6 @@ static int SetStatusMode(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int MenuGetStatus(WPARAM, LPARAM)
-{
-	return BuildStatusMenu(0,0);
-}
-
 int fnGetProtocolVisibility(const char* accName)
 {
 	if ( accName ) {
@@ -1316,7 +1311,7 @@ void InitCustomMenus(void)
 	CreateServiceFunction(MS_CLIST_MENUMEASUREITEM,MeasureMenuItem);
 	CreateServiceFunction(MS_CLIST_MENUDRAWITEM,DrawMenuItem);
 
-	CreateServiceFunction(MS_CLIST_MENUGETSTATUS,MenuGetStatus);
+	CreateServiceFunction(MS_CLIST_MENUGETSTATUS,BuildStatusMenu);
 	CreateServiceFunction(MS_CLIST_MENUPROCESSCOMMAND,MenuProcessCommand);
 	CreateServiceFunction(MS_CLIST_MENUPROCESSHOTKEY,MenuProcessHotkey);
 
