@@ -864,19 +864,12 @@ static BOOL CALLBACK DlgProcTrayOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 {
     switch (msg)
     {
-    case WM_DESTROY: 
-        {
-            ModernUnhookEvent( (HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA) );
-            break;
-        }
-
     case WM_INITDIALOG:
         {
             TranslateDialogDefault(hwndDlg);
-            SetWindowLong(hwndDlg, GWL_USERDATA, (long)HookEventMessage(ME_DB_CONTACT_SETTINGCHANGED,hwndDlg,WM_USER+1));
-
-            CheckDlgButton(hwndDlg, IDC_NOOFFLINEMOVE, ModernGetSettingByte(NULL,"CList","NoOfflineBottom",SETTING_NOOFFLINEBOTTOM_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_OFFLINETOROOT, ModernGetSettingByte(NULL,"CList","PlaceOfflineToRoot",SETTING_PLACEOFFLINETOROOT_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_NOOFFLINEMOVE, ModernGetSettingByte( NULL,"CList", "NoOfflineBottom",    SETTING_NOOFFLINEBOTTOM_DEFAULT ) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_OFFLINETOROOT, ModernGetSettingByte( NULL,"CList", "PlaceOfflineToRoot", SETTING_PLACEOFFLINETOROOT_DEFAULT ) ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hwndDlg, IDC_ONECLK,        ModernGetSettingByte( NULL,"CList", "Tray1Click",         SETTING_TRAY1CLICK_DEFAULT ) ? BST_CHECKED : BST_UNCHECKED);
             {
                 BYTE trayOption=ModernGetSettingByte(NULL,"CLUI","XStatusTray",SETTING_TRAYOPTION_DEFAULT);
                 CheckDlgButton(hwndDlg, IDC_SHOWXSTATUS, (trayOption&3) ? BST_CHECKED : BST_UNCHECKED);
