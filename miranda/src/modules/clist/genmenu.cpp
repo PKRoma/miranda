@@ -948,7 +948,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		// it's a submenu
 		if ( pmi->submenu.first ) {
 			mii.fMask |= MIIM_SUBMENU;
-			mii.hSubMenu = pmi->hSubMenu = CreatePopupMenu();
+			mii.hSubMenu = CreatePopupMenu();
 			mii.hbmpItem = HBMMENU_CALLBACK;
 			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
@@ -962,7 +962,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 			InsertMenuItemWithSeparators( hMenu, i, &mii);
 			localparam.rootlevel = LPARAM( pmi );
-			BuildRecursiveMenu( pmi->hSubMenu, pmi->submenu.first, &localparam );
+			BuildRecursiveMenu( mii.hSubMenu, pmi->submenu.first, &localparam );
 		}
 		else {
 			mii.fMask |= MIIM_STATE;

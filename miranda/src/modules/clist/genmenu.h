@@ -24,7 +24,6 @@ typedef struct _tagIntMenuItem
 	char*        UniqName;        // unique name
 	TCHAR*       CustomName;
 	HANDLE       hIcolibItem;     // handle of iconlib item
-	HMENU        hSubMenu;
 	int          originalPosition;
 
 	struct _tagIntMenuItem *next; // next item in list
