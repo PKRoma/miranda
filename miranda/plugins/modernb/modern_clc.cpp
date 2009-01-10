@@ -1737,7 +1737,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 		{
 			if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 				hSelItem = pcli->pfnContactToHItem(selcontact);
-			pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
+			pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 0);
 			recalcScrollBar = 1;
 			needRepaint=TRUE;
 			pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
@@ -1765,7 +1765,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 		{
 			if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 				hSelItem = pcli->pfnContactToHItem(selcontact);
-			pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+			pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 1);
 			needRepaint=TRUE;
 			recalcScrollBar = 1;
 			dat->NeedResort = 1;
