@@ -202,9 +202,8 @@ void CJabberProto::OnIqResultServiceDiscoveryInfo( HXML iqNode, CJabberIqInfo* p
 			pNode->SetInfoRequestErrorText( str );
 			mir_free( str );
 		}
-		else {
-			pNode->SetInfoRequestErrorText( _T("request timeout.") );
-		}
+		else pNode->SetInfoRequestErrorText( TranslateT("request timeout.") );
+
 		pNode->SetInfoRequestId( JABBER_DISCO_RESULT_ERROR );
 	}
 
