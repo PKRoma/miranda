@@ -2556,6 +2556,7 @@ LABEL_SHOWWINDOW:
 		case GC_SHOWFILTERMENU: {
 			RECT rc;
 			HWND hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER), hwndDlg, FilterWndProc, (LPARAM)si);
+			TranslateDialogDefault(hwnd);
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_FILTER), &rc);
 			SetWindowPos(hwnd, HWND_TOP, rc.left - 85, (IsWindowVisible(GetDlgItem(hwndDlg, IDC_FILTER)) || IsWindowVisible(GetDlgItem(hwndDlg, IDC_CHAT_BOLD))) ? rc.top - 206 : rc.top - 186, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 		}
