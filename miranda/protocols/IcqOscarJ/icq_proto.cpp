@@ -2153,7 +2153,7 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
     pThreadData->hContact = hContact;
     pThreadData->szMessage = szStatusNote;
     pThreadData->hProcess = (HANDLE)GenerateCookie(0);
-    ForkThread(GetAwayMsgThread, pThreadData);
+	 ForkThread(&CIcqProto::GetAwayMsgThread, pThreadData);
 
     return (int)pThreadData->hProcess;
   }

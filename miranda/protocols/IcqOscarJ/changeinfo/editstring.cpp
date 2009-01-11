@@ -76,12 +76,10 @@ static void EscapesToMultiline(WCHAR *str,PDWORD selStart,PDWORD selEnd)
 
 static void EscapesToBinary(char *str)
 {
-	int i;
-
 	for(;*str;str++) 
 	{
 		if(*str!='\\') continue;
-		if(str[1]=='n') {*str++='\r'; i++; *str='\n'; continue;}
+		if(str[1]=='n') {*str++='\r'; *str='\n'; continue;}
 		if(str[1]=='0') 
 		{
 			char *codeend;
@@ -90,7 +88,7 @@ static void EscapesToBinary(char *str)
 			memmove(str+1,codeend,strlennull(codeend)+1);
 			continue;
 		}
-		for(i=0;i<sizeof(escapes)/sizeof(escapes[0]);i+=2)
+		for(int i=0;i<SIZEOF(escapes);i+=2)
 			if(str[1]==escapes[i]) 
 			{
 				*str=escapes[i+1];

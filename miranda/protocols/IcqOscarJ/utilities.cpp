@@ -1243,7 +1243,7 @@ void CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay)
       setStatusNoteText = null_strdup(szStatusNote);
 
       if (dwDelay)
-        ForkThread(SetStatusNoteThread, (void*)dwDelay);
+			ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
       else // we cannot afford any delay, so do not run in separate thread
         SetStatusNoteThread(NULL);
     }
@@ -1278,7 +1278,7 @@ void CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
       // create thread to change status mood on existing server connection
       setStatusMoodData = null_strdup(szMoodData);
       if (dwDelay)
-        ForkThread(SetStatusNoteThread, (void*)dwDelay);
+        ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
       else // we cannot afford any delay, so do not run in separate thread
         SetStatusNoteThread(NULL);
     }

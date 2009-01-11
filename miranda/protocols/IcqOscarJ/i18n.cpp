@@ -101,6 +101,7 @@ int __stdcall UTF8_IsValid(const char *pszInput)
 		else if ((*c & 0xf8) == 0xf0) nb = 3;
 		else if ((*c & 0xfc) == 0xf8) nb = 4;
 		else if ((*c & 0xfe) == 0xfc) nb = 5;
+		else nb = 0;
 
 		for (i = 1; i<=nb; i++) // we this forward, do not cross end of string
 			if ((*(c + i) & 0xc0) != 0x80)
@@ -473,8 +474,9 @@ char* __stdcall tchar_to_utf8(const TCHAR *szTxt)
 {
 #if defined( _UNICODE )
 	return make_utf8_string((WCHAR*)szTxt);
-#endif
+#else
 	return ansi_to_utf8((char*)szTxt);
+#endif
 }
 
 char* __stdcall mtchar_to_utf8(const TCHAR *szTxt)
