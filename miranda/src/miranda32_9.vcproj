@@ -3842,6 +3842,14 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\chat_join.ico"
+			>
+		</File>
+		<File
+			RelativePath=".\res\chat_leave.ico"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
