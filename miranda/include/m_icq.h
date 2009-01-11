@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,7 +44,14 @@ typedef struct {
   PROTOSEARCHRESULT hdr;
   DWORD uin;
   BYTE auth;
-  char* uid;
+  char *uid;
+  char *nick; // utf-8
+  char *firstName;
+  char *lastName;
+  BYTE gender;
+  BYTE age;
+  DWORD country;
+  BYTE maritalStatus;
 } ICQSEARCHRESULT;
 
 
@@ -153,7 +160,10 @@ typedef struct {
 #define CIXT_CONTACT    0x0008
 #define CIXT_LOCATION   0x0010
 #define CIXT_BACKGROUND 0x0020
-#define CIXT_FULL       0x003F
+#define CIXT_EDUCATION  0x0040
+#define CIXT_EXTRA      0x0080
+#define CIXT_FULL       0x00FF
+
 //wParam=operationType
 #define PS_CHANGEINFOEX "/ChangeInfoEx"
 
