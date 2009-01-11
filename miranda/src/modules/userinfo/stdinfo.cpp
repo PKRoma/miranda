@@ -33,15 +33,26 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 #define SVS_SIGNED        6
 #define SVS_TIMEZONE      7
 
+int Proto_GetContactInfoSetting(HANDLE hContact,const char *szProto,const char *szModule,const char *szSetting,DBVARIANT *dbv, const int nType)
+{
+  DBCONTACTGETSETTING cgs={szModule,szSetting,dbv};
+	dbv->type=(BYTE)nType;
+
+	return CallProtoService(szProto,PS_GETINFOSETTING,(WPARAM)hContact,(LPARAM)&cgs);
+}
+
 static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special)
 {
 	DBVARIANT dbv = { 0 };
 	char str[80],*pstr = NULL;
 	TCHAR* ptstr = NULL;
 	int unspecified=0;
+	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	int proto_service = szProto ? (CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_INFOSETTINGSVC ? TRUE : FALSE) : FALSE;
 
 	dbv.type=DBVT_DELETED;
 	if(szModule==NULL) unspecified=1;
+	else if (proto_service) unspecified=Proto_GetContactInfoSetting(hContact,szProto,szModule,szSetting,&dbv,0);
 	else unspecified=DBGetContactSettingW(hContact,szModule,szSetting,&dbv);
 	if(!unspecified) {
 		switch(dbv.type) {
@@ -122,7 +133,27 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 LBL_Exit:
 #endif
 	EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
-	DBFreeVariant(&dbv);
+	if (proto_service) {
+		switch ( dbv.type ) {
+			case DBVT_ASCIIZ:
+			case DBVT_UTF8:
+			case DBVT_WCHAR:
+			{
+				mir_free(dbv.pszVal);
+				dbv.pszVal=0;
+				break;
+			}
+			case DBVT_BLOB:
+			{
+				mir_free(dbv.pbVal);
+				dbv.pbVal=0;
+				break;
+			}
+		}
+		dbv.type=0;
+	}
+	else
+		DBFreeVariant(&dbv);
 }
 
 static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

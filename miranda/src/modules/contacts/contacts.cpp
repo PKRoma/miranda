@@ -34,6 +34,16 @@ BYTE nameOrder[NAMEORDERCOUNT];
 
 static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* dbv )
 {
+	int proto_service = ( CallProtoService(ci->szProto,PS_GETCAPS,PFLAGNUM_4,0) & PF4_INFOSETTINGSVC ) ? TRUE : FALSE;
+
+  if ( proto_service )
+  {
+    DBCONTACTGETSETTING cgs={ci->szProto,setting,dbv};
+	  dbv->type= ( ci->dwFlag & CNF_UNICODE ) ? DBVT_WCHAR : DBVT_ASCIIZ;
+
+	  return CallProtoService(ci->szProto,PS_GETINFOSETTING,(WPARAM)ci->hContact,(LPARAM)&cgs);
+  }
+
 	if ( ci->dwFlag & CNF_UNICODE )
 		return DBGetContactSettingWString(ci->hContact,ci->szProto,setting,dbv);
 
@@ -51,6 +61,7 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 			ci->pszVal = dbv.ptszVal;
 			return 0;
 		}
+    DBFreeVariant( &dbv );
 	}
 
 	if ( DBGetContactSetting( ci->hContact, ci->szProto, setting, &dbv ))
