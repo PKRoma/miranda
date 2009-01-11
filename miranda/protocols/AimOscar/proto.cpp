@@ -48,12 +48,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 
 CAimProto::~CAimProto()
 {
-	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
-
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hHTMLAwayContextMenuItem, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hAddToServerListContextMenuItem, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hReadProfileMenuItem, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hBlockContextMenuItem, 0 );
+    RemoveMenus();
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);

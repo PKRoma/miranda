@@ -874,10 +874,13 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		{
 			if(auto_response)//this message must be an autoresponse
 			{
-				char* away=Translate("[Auto-Response]: ");
-				msg_buf=renew(msg_buf,lstrlenA(msg_buf)+1,20);
-				memmove(msg_buf+17,msg_buf,lstrlenA(msg_buf)+1);
-				memcpy(msg_buf,away,lstrlenA(away));
+                char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
+                size_t len = strlen(msg_buf) + strlen(away) + 2;
+                char* buf = new char[len];
+                mir_snprintf(buf, len, "%s %s", away, msg_buf);
+                mir_free(away);
+                delete[] msg_buf;
+                msg_buf = buf;
 			}
 			//Okay we are setting up the structure to give the message back to miranda's core
 			if(unicode_message)
@@ -915,23 +918,34 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
                 char** msgptr = getStatusMsgLoc(m_iStatus);
 				if(away_time>msg_time && *msgptr)
 				{
-                    char* s_msg=process_status_msg(*msgptr, sn);
-                    size_t temp2sz=strlen(s_msg)+20;
-					char* temp2=(char*)alloca(temp2sz);
-					temp2sz = mir_snprintf(temp2,temp2sz,"%s %s",Translate("[Auto-Response]:"),s_msg);
-					delete[] s_msg;
+                    char* s_msg = process_status_msg(*msgptr, sn);
 
+                    char* away = mir_utf8encodeT(TranslateT("[Auto-Response]:"));
+                    size_t len = strlen(s_msg) + strlen(away) + 2;
+					char* buf = (char*)alloca(len);
+					mir_snprintf(buf, len, "%s %s", away, s_msg);
+                    mir_free(away);
+					
                     DBEVENTINFO dbei;
 					ZeroMemory(&dbei, sizeof(dbei));
 					dbei.cbSize = sizeof(dbei);
 					dbei.szModule = m_szModuleName;
 					dbei.timestamp = (DWORD)time(NULL);
-					dbei.flags = DBEF_SENT;
+					dbei.flags = DBEF_SENT | DBEF_UTF;
 					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.cbBlob = temp2sz + 1;
-					dbei.pBlob = (PBYTE)temp2;
+					dbei.cbBlob = len;
+					dbei.pBlob = (PBYTE)buf;
 					CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
-					aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
+					
+                    if (!is_utf(s_msg))
+	                    aim_send_message(hServerConn, seqno, sn, s_msg, false, true);
+                    else
+                    {
+	                    wchar_t *wmsg = mir_utf8decodeW(s_msg);
+	                    aim_send_message(hServerConn, seqno, sn, (char*)wmsg, true, true);
+	                    mir_free(wmsg);
+                    }
+                    delete[] s_msg;
 				}
 				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
 			}

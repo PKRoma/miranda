@@ -161,6 +161,7 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAddToServerListContextMenuItem;
 	HANDLE hReadProfileMenuItem;
     HANDLE hBlockContextMenuItem;
+    HANDLE hMainMenu[4];
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -406,8 +407,10 @@ struct CAimProto : public PROTO_INTERFACE
     //////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
 
-	void   InitIcons(void);
 	void   InitMenus(void);
+    void   RemoveMenus(void);
+
+    void   InitIcons(void);
 	HICON  LoadIconEx(const char* name);
 	HANDLE GetIconHandle(const char* name);
 	void   ReleaseIconEx(const char* name);

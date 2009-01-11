@@ -181,7 +181,7 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 	return 0;
 }
 
-void CAimProto::InitMenus()
+void CAimProto::InitMenus(void)
 {
 	//Do not put any services below HTML get away message!!!
 	char service_name[200];
@@ -205,25 +205,25 @@ void CAimProto::InitMenus()
 	CreateProtoService("/ManageAccount",&CAimProto::ManageAccount);
 	mi.icolibItem = GetIconHandle("aim");
 	mi.pszName = LPGEN( "Manage Account" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/CheckMail");
 	CreateProtoService("/CheckMail",&CAimProto::CheckMail);
 	mi.icolibItem = GetIconHandle("mail");
 	mi.pszName = LPGEN( "Check Mail" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
 	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
 	mi.icolibItem = GetIconHandle("idle");
 	mi.pszName = LPGEN( "Instant Idle" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
 	CreateProtoService("/JoinChatRoom",&CAimProto::JoinChatUI);
 	mi.icolibItem = GetIconHandle("aol");
 	mi.pszName = LPGEN( "Join Chat Room" );
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+	hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
 
 	mi.pszPopupName=NULL;
 	mi.popupPosition=0;
@@ -259,4 +259,16 @@ void CAimProto::InitMenus()
 	mi.pszName = LPGEN("&Block");
 	mi.flags=CMIF_ICONFROMICOLIB|CMIF_HIDDEN;
 	hBlockContextMenuItem=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+}
+
+void CAimProto::RemoveMenus(void)
+{
+    for (unsigned i=0; i<4; ++i)
+        CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMainMenu[i], 0);
+   CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMenuRoot, 0);
+
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hHTMLAwayContextMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hReadProfileMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hAddToServerListContextMenuItem, 0);
+    CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockContextMenuItem, 0);
 }
