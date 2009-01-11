@@ -794,7 +794,10 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						EnableWindow( GetDlgItem(hwndDlg, IDC_ADD), FALSE );
 
 						ListBox_SetItemData( hList, idx, 0 );
+
+						char* szSaveModule = NEWSTR_ALLOCA(pa->szModuleName);
 						UnloadAccount( pa, TRUE );
+						EraseAccount( szSaveModule );
 						accounts.remove( pa );
 						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
 						WriteDbAccounts();

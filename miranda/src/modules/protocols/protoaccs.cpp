@@ -349,9 +349,6 @@ static int DeactivationThread( DeactivationThreadParam* param )
 
 	KillObjectThreads( p ); // waits for them before terminating
 
-	if ( param->bIsDynamic )
-		EraseAccount( p->m_szModuleName );
-
 	if ( param->fnUninit )
 		param->fnUninit( p );
 
