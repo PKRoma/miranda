@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -188,8 +188,9 @@ const shortcapstr capAimIcon   = {0x13, 0x46}; // CAP_AIM_BUDDYICON
 const shortcapstr capAimDirect = {0x13, 0x45}; // CAP_AIM_DIRECTIM
 const shortcapstr capAimFileShare = {0x13, 0x48}; // CAP_AIM_FILE_SHARE
 const shortcapstr capAimSmartCaps = {0x01, 0xFF};
-const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
-const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
+const capstr capIcqLiteNew= {0xc8, 0x95, 0x3a, 0x9f, 0x21, 0xf1, 0x4f, 0xaa, 0xb0, 0xb2, 0x6d, 0xe6, 0x63, 0xab, 0xf5, 0xb7};
+const capstr capXtrazVideo= {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
+const capstr capOscarChat = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
 const capstr capRambler   = {0x7E, 0x11, 0xB7, 0x78, 0xA3, 0x53, 0x49, 0x26, 0xA8, 0x02, 0x44, 0x73, 0x52, 0x08, 0xC4, 0x2A};
 const capstr capAbv       = {0x00, 0xE7, 0xE0, 0xDF, 0xA9, 0xD0, 0x4F, 0xe1, 0x91, 0x62, 0xC8, 0x90, 0x9A, 0x13, 0x2A, 0x1B};
@@ -831,7 +832,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 								{
 									strcpy(szClientBuf, "icq5.1");
 								}
-								SetContactCapabilities(hContact, CAPF_STATUSMSGEXT);
+								SetContactCapabilities(hContact, CAPF_STATUSMSG_EXT);
 							}
 							else
 							{
@@ -868,9 +869,11 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 						else
 							szClient = "ICQ Lite v4";
 					}
+          else if (MatchCap(caps, wLen, &capIcqLiteNew, 0x10))
+            szClient = "ICQ Lite"; // the new ICQ Lite based on ICQ6
 					else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
 					{
-            if (CheckContactCapabilities(hContact, CAPF_HTML) && MatchCap(caps, wLen, &capAimChat, 0x10) && MatchShortCap(caps, wLen, &capAimSmartCaps))
+            if (CheckContactCapabilities(hContact, CAPF_HTML) && MatchCap(caps, wLen, &capOscarChat, 0x10) && MatchShortCap(caps, wLen, &capAimSmartCaps))
               szClient = cliTrillian4;
 						else if (CheckContactCapabilities(hContact, CAPF_UTF) && !CheckContactCapabilities(hContact, CAPF_RTF))
 							szClient = "pyICQ";
@@ -929,15 +932,15 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 								szClient = "libgaim";
 						}
 						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchShortCap(caps, wLen, &capAimDirect) &&
-							MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x40)
+							MatchCap(caps, wLen, &capOscarChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x40)
 							szClient = "libgaim"; // Gaim 1.5.1 most probably
-						else if (MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x20)
+						else if (MatchCap(caps, wLen, &capOscarChat, 0x10) && CheckContactCapabilities(hContact, CAPF_OSCAR_FILE) && wLen == 0x20)
 							szClient = "Easy Message";
-						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
+						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capOscarChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
 							szClient = "Meebo";
 						else if (MatchShortCap(caps, wLen, &capAimIcon) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x20)
 							szClient = "PyICQ-t Jabber Transport";
-						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capIcqLite, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
+						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capXtrazVideo, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_XTRAZ))
 							szClient = "PyICQ-t Jabber Transport";
 						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_TYPING) && wLen == 0x40)
 							szClient = "Agile Messenger"; // Smartphone 2002
@@ -1004,7 +1007,7 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
         { // http://www.digsby.com
           szClient = "Digsby";
         }
-				else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capAimChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
+				else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchCap(caps, wLen, &capOscarChat, 0x10) && CheckContactCapabilities(hContact, CAPF_UTF) && wLen == 0x30)
 					szClient = "Meebo";
 				else
 					szClient = "AIM";

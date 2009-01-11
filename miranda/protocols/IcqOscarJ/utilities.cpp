@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -210,6 +210,9 @@ char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)
 {
 	switch (nStatus) {
 
+  case ID_STATUS_ONLINE:
+    return &m_modeMsgs.szOnline;
+
 	case ID_STATUS_AWAY:
 		return &m_modeMsgs.szAway;
 
@@ -224,6 +227,9 @@ char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)
 
 	case ID_STATUS_FREECHAT:
 		return &m_modeMsgs.szFfc;
+
+  case ID_STATUS_OFFLINE:
+    return &m_modeMsgs.szOffline;
 
 	default:
 		return NULL;
@@ -974,9 +980,9 @@ void CIcqProto::ResetSettingsOnLoad()
 		{
 			setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
-			deleteSetting(hContact, DBSETTING_XSTATUSID);
-			deleteSetting(hContact, DBSETTING_XSTATUSNAME);
-			deleteSetting(hContact, DBSETTING_XSTATUSMSG);
+			deleteSetting(hContact, DBSETTING_XSTATUS_ID);
+			deleteSetting(hContact, DBSETTING_XSTATUS_NAME);
+			deleteSetting(hContact, DBSETTING_XSTATUS_MSG);
 		}
 		setSettingByte(hContact, "DCStatus", 0);
 
@@ -989,7 +995,8 @@ int RandRange(int nLow, int nHigh)
 	return nLow + (int)((nHigh-nLow+1)*rand()/(RAND_MAX+1.0));
 }
 
-BOOL IsStringUIN(char* pszString)
+
+BOOL IsStringUIN(const char *pszString)
 {
 	int i;
 	int nLen = strlennull(pszString);
@@ -1005,6 +1012,7 @@ BOOL IsStringUIN(char* pszString)
 
 	return FALSE;
 }
+
 
 void __cdecl CIcqProto::ProtocolAckThread(icq_ack_args* pArguments)
 {
@@ -1038,6 +1046,371 @@ void CIcqProto::SetCurrentStatus(int nStatus)
 	m_iStatus = nStatus;
 	BroadcastAck(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)nOldStatus, nStatus);
 }
+
+
+int CIcqProto::IsMetaInfoChanged(HANDLE hContact)
+{
+  DBVARIANT infoToken = {DBVT_DELETED};
+  int res = 0;
+
+  if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &infoToken))
+  { // contact does have info from directory, check if it is not outdated
+    double dInfoTime = 0;
+    double dInfoSaved = 0;
+
+    if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
+    {
+      if ((dInfoSaved = getSettingDouble(hContact, DBSETTING_METAINFO_SAVED, 0)) > 0)
+      {
+        if (dInfoSaved < dInfoTime)
+          res = 2; // directory info outdated
+      }
+      else
+        res = 1; // directory info not saved at all
+    }
+
+    ICQFreeVariant(&infoToken);
+  }
+  else
+  { // it cannot be detected if user info was not changed, so use a generic threshold
+    DBVARIANT infoSaved = {DBVT_DELETED};
+    DWORD dwInfoTime = 0;
+
+    if (!getSetting(hContact, DBSETTING_METAINFO_SAVED, &infoSaved))
+    {
+      if (infoSaved.type == DBVT_BLOB && infoSaved.cpbVal == 8)
+      {
+        double dwTime = *(double*)infoSaved.pbVal;
+
+        dwInfoTime = (dwTime - 25567) * 86400;
+      }
+      else if (infoSaved.type == DBVT_DWORD)
+        dwInfoTime = infoSaved.dVal;
+
+      ICQFreeVariant(&infoSaved);
+
+      if ((time(NULL) - dwInfoTime) > 14*3600*24)
+      { 
+        res = 3; // threshold exceeded
+      }
+    }
+    else
+      res = 4; // no timestamp found
+  }
+
+  return res;
+}
+
+
+void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
+{
+  if (pDelay)
+    SleepEx((DWORD)pDelay, TRUE);
+
+  EnterCriticalSection(&cookieMutex);
+
+  if (icqOnline() && (setStatusNoteText || setStatusMoodData))
+  { // send status note change packets, write status note to database
+    if (setStatusNoteText)
+    { // change status note in directory
+		  EnterCriticalSection(&ratesMutex);
+		  if (m_rates)
+		  { // rate management
+        WORD wGroup = ratesGroupFromSNAC(m_rates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
+
+  			while (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, RML_LIMIT))
+	  		{ // we are over rate, need to wait before sending
+		  		int nDelay = ratesDelayToLevel(m_rates, wGroup, ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_10));
+
+  				LeaveCriticalSection(&ratesMutex);
+          LeaveCriticalSection(&cookieMutex);
+#ifdef _DEBUG
+		  		NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
+#endif
+			  	SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+          EnterCriticalSection(&cookieMutex);
+  				EnterCriticalSection(&ratesMutex);
+	  			if (!m_rates) // we lost connection when we slept, go away
+		  			break;
+			  }
+      }
+      LeaveCriticalSection(&ratesMutex);
+
+      BYTE *pBuffer = NULL;
+      int cbBuffer = 0;
+
+      ppackTLV(&pBuffer, &cbBuffer, 0x226, strlennull(setStatusNoteText), (BYTE*)setStatusNoteText);
+      icq_changeUserDirectoryInfoServ(pBuffer, cbBuffer, DIRECTORYREQUEST_UPDATENOTE);
+
+      SAFE_FREE((void**)&pBuffer);
+    }
+
+    if (setStatusNoteText || setStatusMoodData)
+    { // change status note and mood in session data
+      EnterCriticalSection(&ratesMutex);
+      if (m_rates)
+      { // rate management
+        WORD wGroup = ratesGroupFromSNAC(m_rates, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+
+        while (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, RML_LIMIT))
+        { // we are over rate, need to wait before sending
+          int nDelay = ratesDelayToLevel(m_rates, wGroup, ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_10));
+
+          LeaveCriticalSection(&ratesMutex);
+          LeaveCriticalSection(&cookieMutex);
+#ifdef _DEBUG
+          NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
+#endif
+          SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+          EnterCriticalSection(&cookieMutex);
+          EnterCriticalSection(&ratesMutex);
+          if (!m_rates) // we lost connection when we slept, go away
+            break;
+        }
+      }
+      LeaveCriticalSection(&ratesMutex);
+
+      // check if the session data were not updated already
+      char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
+      char *szCurrentStatusMood = NULL;
+      DBVARIANT dbv = {DBVT_DELETED};
+
+      if (!getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
+        szCurrentStatusMood = dbv.pszVal;
+
+      if (!setStatusNoteText && szCurrentStatusNote)
+        setStatusNoteText = null_strdup(szCurrentStatusNote);
+      if (!setStatusMoodData && szCurrentStatusMood)
+        setStatusMoodData = null_strdup(szCurrentStatusMood);
+
+      if (strcmpnull(szCurrentStatusNote, setStatusNoteText) || strcmpnull(szCurrentStatusMood, setStatusMoodData))
+      {
+        setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, setStatusNoteText);
+        setSettingString(NULL, DBSETTING_STATUS_MOOD, setStatusMoodData);
+
+        WORD wStatusNoteLen = strlennull(setStatusNoteText);
+        WORD wStatusMoodLen = strlennull(setStatusMoodData);
+        icq_packet packet;
+        WORD wDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
+
+    		serverPacketInit(&packet, wDataLen + 14);
+		    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+        // Change only session data
+		    packWord(&packet, 0x1D);              // TLV 1D
+		    packWord(&packet, wDataLen);          // TLV length
+        packWord(&packet, 0x02);              // Item Type
+        if (wStatusNoteLen)
+        {
+          packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
+          packWord(&packet, wStatusNoteLen);  // Text Length
+          packBuffer(&packet, (LPBYTE)setStatusNoteText, wStatusNoteLen);
+          packWord(&packet, 0);               // Encoding not specified (utf-8 is default)
+        }
+        else
+          packWord(&packet, 0);               // Flags + Item Length
+  			packWord(&packet, 0x0E);              // Item Type
+			  packWord(&packet, wStatusMoodLen);    // Flags + Item Length
+        if (wStatusMoodLen)
+			    packBuffer(&packet, (LPBYTE)setStatusMoodData, wStatusMoodLen); // Mood
+
+        sendServPacket(&packet);
+      }
+      SAFE_FREE((void**)&szCurrentStatusNote);
+      ICQFreeVariant(&dbv);
+		}
+  }
+  SAFE_FREE((void**)&setStatusNoteText);
+  SAFE_FREE((void**)&setStatusMoodData);
+
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+void CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay)
+{
+  if (!icqOnline()) return;
+
+  // reuse generic critical section (used for cookies list and object variables locks)
+  EnterCriticalSection(&cookieMutex);
+
+  if (!setStatusNoteText && !setStatusMoodData)
+  { // check if the status note was changed and if yes, create thread to change it
+    char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
+
+    if (strcmpnull(szCurrentStatusNote, szStatusNote))
+    { // status note was changed
+      // create thread to change status note on existing server connection
+      setStatusNoteText = null_strdup(szStatusNote);
+
+      if (dwDelay)
+        ForkThread(SetStatusNoteThread, (void*)dwDelay);
+      else // we cannot afford any delay, so do not run in separate thread
+        SetStatusNoteThread(NULL);
+    }
+    SAFE_FREE((void**)&szCurrentStatusNote);
+  }
+  else
+  { // only alter status note object with new status note, keep the thread waiting for execution
+    SAFE_FREE((void**)&setStatusNoteText);
+    setStatusNoteText = null_strdup(szStatusNote);
+  }
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+void CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
+{
+  if (!icqOnline()) return;
+
+  // reuse generic critical section (used for cookies list and object variables locks)
+  EnterCriticalSection(&cookieMutex);
+
+  if (!setStatusNoteText && !setStatusMoodData)
+  { // check if the status mood was changed and if yes, create thread to change it
+    char *szCurrentStatusMood = NULL;
+    DBVARIANT dbv = {DBVT_DELETED};
+
+    if (!getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
+      szCurrentStatusMood = dbv.pszVal;
+
+    if (strcmpnull(szCurrentStatusMood, szMoodData))
+    { // status mood was changed
+      // create thread to change status mood on existing server connection
+      setStatusMoodData = null_strdup(szMoodData);
+      if (dwDelay)
+        ForkThread(SetStatusNoteThread, (void*)dwDelay);
+      else // we cannot afford any delay, so do not run in separate thread
+        SetStatusNoteThread(NULL);
+    }
+    ICQFreeVariant(&dbv);
+  }
+  else
+  { // only alter status mood object with new status mood, keep the thread waiting for execution
+    SAFE_FREE((void**)&setStatusMoodData);
+    setStatusMoodData = null_strdup(szMoodData);
+  }
+  LeaveCriticalSection(&cookieMutex);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVStringUtf(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+
+  if (pTLV && pTLV->wLen > 0)
+  {
+    char *str = (char*)_alloca(pTLV->wLen + 1); 
+
+    memcpy(str, pTLV->pData, pTLV->wLen);
+    str[pTLV->wLen] = '\0';
+    setSettingStringUtf(hContact, szSetting, str);
+  }
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVString(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+
+  if (pTLV && pTLV->wLen > 0)
+  {
+    char *str = (char*)_alloca(pTLV->wLen + 1); 
+
+    memcpy(str, pTLV->pData, pTLV->wLen);
+    str[pTLV->wLen] = '\0';
+    setSettingString(hContact, szSetting, str);
+  }
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVWord(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  int num = chain->getNumber(wTlv, 1);
+
+  if (num > 0)
+    setSettingWord(hContact, szSetting, num);
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVByte(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  int num = chain->getNumber(wTlv, 1);
+
+  if (num > 0)
+    setSettingByte(hContact, szSetting, num);
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVDouble(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  double num = chain->getDouble(wTlv, 1);
+
+  if (num > 0)
+    setSettingDouble(hContact, szSetting, num);
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+void CIcqProto::writeDbInfoSettingTLVDate(HANDLE hContact, const char* szSettingYear, const char* szSettingMonth, const char* szSettingDay, oscar_tlv_chain* chain, WORD wTlv)
+{
+  double time = chain->getDouble(wTlv, 1);
+
+  if (time > 0)
+  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
+    SYSTEMTIME sTime = {0};
+    if (VariantTimeToSystemTime(time + 2, &sTime))
+    {
+      setSettingWord(hContact, szSettingYear, sTime.wYear);
+      setSettingByte(hContact, szSettingMonth, (BYTE)sTime.wMonth);
+      setSettingByte(hContact, szSettingDay, (BYTE)sTime.wDay);
+    }
+    else
+    {
+      deleteSetting(hContact, szSettingYear);
+      deleteSetting(hContact, szSettingMonth);
+      deleteSetting(hContact, szSettingDay);
+    }
+  }
+  else
+  {
+    deleteSetting(hContact, szSettingYear);
+    deleteSetting(hContact, szSettingMonth);
+    deleteSetting(hContact, szSettingDay);
+  }
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVTimestamp(HANDLE hContact, const char* szSetting, oscar_tlv_chain* chain, WORD wTlv)
+{
+  double time = chain->getDouble(wTlv, 1); 
+
+  if (time > 0)
+  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
+    setSettingDword(hContact, szSetting, (time - 25567) * 86400);
+  }
+  else
+    deleteSetting(hContact, szSetting);
+}
+
+
+void CIcqProto::writeDbInfoSettingTLVBlob(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
+{
+  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+
+  if (pTLV && pTLV->wLen > 0)
+    setSettingBlob(hContact, szSetting, pTLV->pData, pTLV->wLen);
+  else
+    deleteSetting(hContact, szSetting);
+}
+
 
 BOOL CIcqProto::writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength)
 {
@@ -1099,7 +1472,7 @@ BOOL CIcqProto::writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, c
 	return TRUE;
 }
 
-BOOL CIcqProto::writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
+BOOL CIcqProto::writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, const FieldNamesItem *table, char **buf, WORD* pwLength)
 {
 	WORD wVal;
 	char sbuf[MAX_PATH];
@@ -1138,7 +1511,7 @@ BOOL CIcqProto::writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, 
 	return TRUE;
 }
 
-BOOL CIcqProto::writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength)
+BOOL CIcqProto::writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, const FieldNamesItem *table, char **buf, WORD* pwLength)
 {
 	BYTE byVal;
 	char sbuf[MAX_PATH];

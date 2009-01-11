@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 //
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/fam_0alookup.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -36,7 +36,7 @@
 
 #include "icqoscar.h"
 
-void CIcqProto::handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void CIcqProto::handleLookupFam(BYTE *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
 	switch (pSnacHeader->wSubtype) {
 
@@ -47,7 +47,7 @@ void CIcqProto::handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac
 	case ICQ_ERROR:
 		{ 
 			WORD wError;
-			search_cookie* pCookie;
+			cookie_search *pCookie;
 
 			if (wBufferLength >= 2)
 				unpackWord(&pBuffer, &wError);
@@ -74,7 +74,7 @@ void CIcqProto::handleLookupFam(unsigned char *pBuffer, WORD wBufferLength, snac
 	}
 }
 
-void CIcqProto::ReleaseLookupCookie(DWORD dwCookie, search_cookie* pCookie)
+void CIcqProto::ReleaseLookupCookie(DWORD dwCookie, cookie_search *pCookie)
 {
 	FreeCookie(dwCookie);
 	SAFE_FREE((void**)&pCookie->szObject);
@@ -98,8 +98,7 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
 	ICQSEARCHRESULT sr = {0};
 	oscar_tlv_chain* pChain;
-	search_cookie* pCookie;
-	int i;
+	cookie_search *pCookie;
 
 	if (!FindCookie(dwCookie, NULL, (void**)&pCookie))
 	{
@@ -115,9 +114,9 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 	// Syntax check, read chain
 	if (wLen >= 4 && (pChain = readIntoTLVChain(&buf, wLen, 0)))
 	{
-		for (i = 1; TRUE; i++)
+		for (WORD i = 1; TRUE; i++)
 		{ // collect the results
-			sr.hdr.nick = ( char* )getStrFromChain(pChain, 1, (WORD)i);
+			sr.hdr.nick = pChain->getString(0x01, i);
 			if (!sr.hdr.nick) break;
 			sr.uid = sr.hdr.nick;
 			// broadcast the result

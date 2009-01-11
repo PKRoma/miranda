@@ -41,13 +41,13 @@ ______________
 TO-DO List
 __________
 
+0.6
+  Multi-user chat
+  Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
   
 0.5
   Full support for sub-groups in Manage server-list dialog
   Simple sub-groups support (optional)
-  New White-pages support (like ICQ 6)
-  Multi-user chat
-  Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
 
@@ -61,12 +61,13 @@ Bugfixes:
 
 New Features
   Account management (requires Miranda IM 0.8 and newer)
+  New user details protocol support
+  Added support for status note & mood (introduced by ICQ6)
 
 Improvements:
   URL events are now received as normal messages
   Use new offline messages protocol (supports unicode)
   Ability to send/receive contacts to/from ICQ6 and AIM
-  Ability to view/set ICQ6 compatible custom statuses (icons only)
   Server-list support now groups requests - much more faster & reliable
 
 
@@ -446,8 +447,6 @@ Database items (usually at Contact\ICQ):
 (WORD)InfoCodePage - codepage for interpreting user details
 
 Database items for Main Contact (usually at Settings\ICQ):
-(BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
-
 (DWORD)KeepAliveInterval - Period in which Keep-Alive packets are send if enabled - default is one minute
 
 (BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu (e.g. Revoke Authorization)
@@ -464,7 +463,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2008 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2009 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

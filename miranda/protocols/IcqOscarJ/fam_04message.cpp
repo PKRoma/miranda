@@ -250,7 +250,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 			WORD wMsgPart = 1;
 
 			// Find the capability TLV
-			pCapabilityTLV = getTLV(pChain, 0x0501, 1);
+			pCapabilityTLV = pChain->getTLV(0x0501, 1);
 			if (pCapabilityTLV && (pCapabilityTLV->wLen > 0))
 			{
 				WORD wDataLen;
@@ -277,7 +277,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 
 				hContact = HContactFromUID(dwUin, szUID, &bAdded);
 
-				while (pMessageTLV = getTLV(pChain, 0x0101, wMsgPart))
+				while (pMessageTLV = pChain->getTLV(0x0101, wMsgPart))
 				{ // Loop thru all message parts
 					if (pMessageTLV->wLen > 4)
 					{
@@ -337,7 +337,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 								char *szUtfMsg = ansi_to_utf8_codepage(szMsg, getSettingWord(hContact, "CodePage", m_wAnsiCodepage));
 
 								SAFE_FREE((void**)&szMsg);
-								szMsg = (char*)szUtfMsg;
+								szMsg = szUtfMsg;
 							}
 							pre.flags = PREF_UTF;
 						}
@@ -351,7 +351,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 						// Append the new message part
 						szMsg = (char*)SAFE_REALLOC(szMsg, strlennull(szMsg) + strlennull(szMsgPart) + 1);
 
-						strcat(szMsg, (char*)szMsgPart);
+						strcat(szMsg, szMsgPart);
 						SAFE_FREE((void**)&szMsgPart);
 					}
 					wMsgPart++;
@@ -369,7 +369,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 						if (usMsg)
 						{
 							SAFE_FREE((void**)&szMsg);
-							szMsg = (char*)usMsg;
+							szMsg = usMsg;
 							pre.flags = PREF_UTF;
 						}
 					}
@@ -377,7 +377,7 @@ void CIcqProto::handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUi
 					dwRecvTime = (DWORD)time(NULL);
 
 					{ // Check if the message was received as offline
-						offline_message_cookie *cookie;
+						cookie_offline_messages *cookie;
 
 						if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, (void**)&cookie))
 						{
@@ -518,17 +518,23 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 			// TLV(0x2711): The next message level
 
 			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
+      if (!chain)
+      { // sanity check
+        NetLog_Server("Message (format %u) - Invalid data", 2);
+        SAFE_FREE((void**)&pBuf);
+        return;
+      }
 
-			wAckType = getWordFromChain(chain, 0x0A, 1);
+			wAckType = chain->getWord(0x0A, 1);
 
 			// Update the saved DC info (if contact already exists)
 			if (hContact != INVALID_HANDLE_VALUE)
 			{
-				if (dwExternalIP = getDWordFromChain(chain, 0x03, 1))
+				if (dwExternalIP = chain->getDWord(0x03, 1))
 					setSettingDword(hContact, "RealIP", dwExternalIP);
-				if (dwIP = getDWordFromChain(chain, 0x04, 1))
+				if (dwIP = chain->getDWord(0x04, 1))
 					setSettingDword(hContact, "IP", dwIP);
-				if (wPort = getWordFromChain(chain, 0x05, 1))
+				if (wPort = chain->getWord(0x05, 1))
 					setSettingWord(hContact, "UserPort", wPort);
 
 				// Save tick value
@@ -536,7 +542,7 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 			}
 
 			// Parse the next message level
-			if (tlv = getTLV(chain, 0x2711, 1))
+			if (tlv = chain->getTLV(0x2711, 1))
 			{
 				parseTLV2711(dwUin, hContact, dwID1, dwID2, wAckType, tlv);
 			}
@@ -568,10 +574,16 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 				return;
 			}
 			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
+      if (!chain)
+      { // Malformed packet
+        NetLog_Server("Error: Malformed data in packet");
+        SAFE_FREE((void**)&pBuf);
+        return;
+      }
 
-			wAckType = getWordFromChain(chain, 0x0A, 1);
+			wAckType = chain->getWord(0x0A, 1);
 			// Parse the next message level
-			if (tlv = getTLV(chain, 0x2711, 1))
+			if (tlv = chain->getTLV(0x2711, 1))
 			{
 				if (tlv->wLen == 0x1B)
 				{
@@ -604,13 +616,13 @@ void CIcqProto::handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUi
 						setSettingWord(hContact,  "UserPort", (WORD)dwPort);
 						setSettingByte(hContact,  "DCType", bMode);
 						setSettingWord(hContact,  "Version", wVersion);
-						if (wVersion>6)
+						if (wVersion > 6)
 						{
-							reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
+							cookie_reverse_connect *pCookie = (cookie_reverse_connect*)SAFE_MALLOC(sizeof(cookie_reverse_connect));
 
 							unpackLEDWord(&buf, (DWORD*)&pCookie->ft);
-							pCookie->pMessage.dwMsgID1 = dwID1;
-							pCookie->pMessage.dwMsgID2 = dwID2;
+							pCookie->dwMsgID1 = dwID1;
+							pCookie->dwMsgID2 = dwID2;
 
 							OpenDirectConnection(hContact, DIRECTCONN_REVERSE, (void*)pCookie);
 						}
@@ -955,7 +967,7 @@ void CIcqProto::parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWO
 	}
 }
 
-void CIcqProto::handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
+void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
 {
 	HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
 
@@ -970,12 +982,16 @@ void CIcqProto::handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD d
 			return;
 		}
 		chain = readIntoTLVChain(&buf, wLen, 0);
+    if (!chain)
+    { // sanity check
+      NetLog_Server("Message (format %u) - Invalid data", 2);
+      return;
+    }
 
-		wAckType = getWordFromChain(chain, 0x0A, 1);
+		wAckType = chain->getWord(0x0A, 1);
 
 		if (wAckType == 1)
 		{ // it is really message containing contacts, parse them
-			oscar_tlv *tlvUins, *tlvNames;
 			ICQSEARCHRESULT **contacts;
 			int nContacts = 0x10, iContact = 0;
 			WORD wContactsGroup = 0;
@@ -983,8 +999,8 @@ void CIcqProto::handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD d
 			BYTE* pBuffer;
 			int nLen;
 
-			tlvUins = getTLV(chain, 0x2711, 1);
-			tlvNames = getTLV(chain, 0x2712, 1);
+			oscar_tlv *tlvUins = chain->getTLV(0x2711, 1);
+			oscar_tlv *tlvNames = chain->getTLV(0x2712, 1);
 
 			if (!tlvUins || tlvUins->wLen < 4)
 			{
@@ -1231,7 +1247,7 @@ void CIcqProto::handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUi
 			}
 			else
 			{
-				offline_message_cookie *cookie;
+				cookie_offline_messages *cookie;
 				DWORD dwRecvTime = (DWORD)time(NULL);
 
 				if (!(dwRef & 0x80000000) && FindCookie(dwRef, NULL, (void**)&cookie))
@@ -1568,7 +1584,7 @@ HANDLE CIcqProto::handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int
 	{
 		HANDLE hContact;
 		HANDLE hCookieContact;
-		message_cookie_data* pCookieData = NULL;
+		cookie_message_data *pCookieData = NULL;
 
 		hContact = HContactFromUIN(dwUin, NULL);
 
@@ -2086,7 +2102,7 @@ void CIcqProto::handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags
 	HANDLE hCookieContact;
 	DWORD dwMsgID1, dwMsgID2;
 	WORD wVersion = 0;
-	message_cookie_data* pCookieData = NULL;
+	cookie_message_data *pCookieData = NULL;
 
 
 	unpackLEDWord(&buf, &dwMsgID1);  // Message ID
@@ -2400,7 +2416,7 @@ void CIcqProto::handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags
 
 		case MTYPE_REVERSE_REQUEST:
 			{
-				reverse_cookie *pReverse = (reverse_cookie*)pCookieData;
+				cookie_reverse_connect *pReverse = (cookie_reverse_connect*)pCookieData;
 
 				if (pReverse->ft)
 				{
@@ -2436,7 +2452,7 @@ void CIcqProto::handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlag
 	WORD wError;
 	char* pszErrorMessage;
 	HANDLE hContact;
-	message_cookie_data* pCookieData = NULL;
+	cookie_message_data *pCookieData = NULL;
 	int nMessageType;
 
 
@@ -2458,7 +2474,7 @@ void CIcqProto::handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlag
 			icq_packet packet;
 
 			serverPacketInit(&packet, (WORD)(13 + getUINLen(dwUin)));
-			packFNACHeaderFull(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, (WORD)dwSequence);
+			packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_REQ_USER_INFO, 0, (WORD)dwSequence);
 			packWord(&packet, 0x03);
 			packUIN(&packet, dwUin);
 
@@ -2481,7 +2497,7 @@ void CIcqProto::handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlag
 		case 0x0004:     // Recipient is not logged in (resend in a offline message)
 			if (pCookieData->bMessageType == MTYPE_PLAIN) 
 			{
-				if (((message_cookie_data_ex*)pCookieData)->isOffline)
+				if (((cookie_message_data_ext*)pCookieData)->isOffline)
 				{ // offline failed - most probably to AIM contact
 					pszErrorMessage = ICQTranslate("The contact does not support receiving offline messages.");
 					break;
@@ -2592,7 +2608,7 @@ void CIcqProto::handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 	uid_str szUID;
 	WORD wChannel;
 	HANDLE hContact;
-	message_cookie_data* pCookieData;
+	cookie_message_data *pCookieData;
 
 
 	if (wLen < 13)
@@ -2716,7 +2732,7 @@ void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 	wLen -= 2;
 
   { // offline retrieval process in progress, note that we received missed message notification
-    offline_message_cookie *cookie;
+    cookie_offline_messages *cookie;
 
     if (FindCookieByType(CKT_OFFLINEMESSAGE, NULL, NULL, (void**)&cookie))
       cookie->nMissed++;
@@ -2747,7 +2763,7 @@ void CIcqProto::handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWOR
 
 void CIcqProto::handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
-	offline_message_cookie *cookie;
+	cookie_offline_messages *cookie;
 
 	if (FindCookie(dwRef, NULL, (void**)&cookie))
 	{

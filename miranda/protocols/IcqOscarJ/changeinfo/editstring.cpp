@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,14 +34,10 @@
 
 #include "icqoscar.h"
 
-extern HFONT  hListFont;
-extern char   Password[10];
-extern HANDLE hUpload[2];
-extern HWND   hwndList;
-extern int    iEditItem;
 
-static WNDPROC OldStringEditProc,OldExpandButtonProc;
-static HWND hwndEdit=NULL,hwndExpandButton=NULL,hwndUpDown=NULL;
+static ChangeInfoData *dataStringEdit = NULL;
+static WNDPROC OldStringEditProc, OldExpandButtonProc;
+static HWND hwndEdit = NULL, hwndExpandButton = NULL, hwndUpDown = NULL;
 
 static const char escapes[]={'a','\a',
 'b','\b',
@@ -52,7 +48,7 @@ static const char escapes[]={'a','\a',
 'v','\v',
 '\\','\\'};
 
-static void EscapesToMultiline(wchar_t *str,PDWORD selStart,PDWORD selEnd)
+static void EscapesToMultiline(WCHAR *str,PDWORD selStart,PDWORD selEnd)
 { //converts "\\n" and "\\t" to "\r\n" and "\t" because a multi-line edit box can show them properly
 	DWORD i;
 
@@ -159,26 +155,31 @@ static LRESULT CALLBACK StringEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,
 	switch(msg) 
 	{
 	case WM_KEYDOWN:
-		if(wParam==VK_ESCAPE) 
+		if (wParam==VK_ESCAPE) 
 		{
-			EndStringEdit(0); 
+      if (dataStringEdit)
+			  dataStringEdit->EndStringEdit(0); 
 			return 0;
 		}
-		if(wParam==VK_RETURN) 
+		if (wParam==VK_RETURN) 
 		{
-			if(GetWindowLong(hwnd,GWL_STYLE)&ES_MULTILINE && !(GetKeyState(VK_CONTROL)&0x8000)) break;
-			EndStringEdit(1);
+			if (GetWindowLong(hwnd, GWL_STYLE) & ES_MULTILINE && !(GetKeyState(VK_CONTROL) & 0x8000)) break;
+      if (dataStringEdit)
+			  dataStringEdit->EndStringEdit(1);
 			return 0;
 		}
 		break;
+
 	case WM_GETDLGCODE:
-		return DLGC_WANTALLKEYS|CallWindowProc(OldStringEditProc,hwnd,msg,wParam,lParam);
+		return DLGC_WANTALLKEYS|CallWindowProc(OldStringEditProc, hwnd, msg, wParam, lParam);
+
 	case WM_KILLFOCUS:
-		if((HWND)wParam==hwndExpandButton) break;
-		EndStringEdit(1);
+		if ((HWND)wParam == hwndExpandButton) break;
+    if (dataStringEdit)
+		  dataStringEdit->EndStringEdit(1);
 		return 0;
 	}
-	return CallWindowProc(OldStringEditProc,hwnd,msg,wParam,lParam);
+	return CallWindowProc(OldStringEditProc, hwnd, msg, wParam, lParam);
 }
 
 
@@ -193,7 +194,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 			//do expand
 			RECT rcStart,rcEnd;
 			DWORD selStart,selEnd;
-			wchar_t *text;
+			WCHAR *text;
 			BOOL animEnabled=TRUE;
 
 			GetWindowRect(hwndEdit,&rcStart);
@@ -206,7 +207,7 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 			hwndEdit=CreateWindowExA(WS_EX_TOOLWINDOW,"EDIT","",WS_POPUP|WS_BORDER|WS_VISIBLE|ES_WANTRETURN|ES_AUTOVSCROLL|WS_VSCROLL|ES_MULTILINE,rcStart.left,rcStart.top,rcStart.right-rcStart.left,rcStart.bottom-rcStart.top,NULL,NULL,hInst,NULL);
 			SetWindowTextUcs(hwndEdit, text);
 			OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
-			SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
+			SendMessage(hwndEdit,WM_SETFONT,(WPARAM)dataStringEdit->hListFont,0);
 			SendMessage(hwndEdit,EM_SETSEL,selStart,selEnd);
 			SetFocus(hwndEdit);
 
@@ -239,7 +240,8 @@ static LRESULT CALLBACK ExpandButtonSubclassProc(HWND hwnd,UINT msg,WPARAM wPara
 	return CallWindowProc(OldExpandButtonProc,hwnd,msg,wParam,lParam);
 }
 
-void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
+
+void ChangeInfoData::BeginStringEdit(int iItem, RECT *rc, int i, WORD wVKey)
 {
 	char *szValue;
 	char str[80];
@@ -248,20 +250,21 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 	EndStringEdit(0);
 	InflateRect(rc,-2,-2);
 	rc->left-=2;
-	if(setting[i].displayType&LIF_PASSWORD && !setting[i].changed)
+	if (setting[i].displayType & LIF_PASSWORD && !settingData[i].changed)
 		szValue = "                ";
-	else if ((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
+	else if ((setting[i].displayType & LIM_TYPE) == LI_NUMBER) 
 	{
 		szValue = str;
-		null_snprintf(str,sizeof(str), "%d", setting[i].value );
+		null_snprintf(str, sizeof(str), "%d", settingData[i].value );
 	}
-	else if (setting[i].value) 
+	else if (settingData[i].value) 
 	{
-		szValue = BinaryToEscapes((char*)setting[i].value);
+		szValue = BinaryToEscapes((char*)settingData[i].value);
 		alloced = 1;
 	}
 	else szValue = "";
-	iEditItem = iItem;
+
+  iEditItem = iItem;
 
 	if ((setting[i].displayType & LIM_TYPE)==LI_LONGSTRING) 
 	{
@@ -271,22 +274,23 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 		OldExpandButtonProc=(WNDPROC)SetWindowLong(hwndExpandButton,GWL_WNDPROC,(LONG)ExpandButtonSubclassProc);
 	}
 
-	hwndEdit=CreateWindowA("EDIT","",WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
+  dataStringEdit = this;
+	hwndEdit = CreateWindow(_T("EDIT"),_T(""),WS_VISIBLE|WS_CHILD|ES_AUTOHSCROLL|((setting[i].displayType&LIM_TYPE)==LI_NUMBER?ES_NUMBER:0)|(setting[i].displayType&LIF_PASSWORD?ES_PASSWORD:0),rc->left,rc->top,rc->right-rc->left,rc->bottom-rc->top,hwndList,NULL,hInst,NULL);
 	SetWindowTextUtf(hwndEdit, szValue);
 	if (alloced) SAFE_FREE((void**)&szValue);
 	OldStringEditProc=(WNDPROC)SetWindowLong(hwndEdit,GWL_WNDPROC,(LONG)StringEditSubclassProc);
 	SendMessage(hwndEdit,WM_SETFONT,(WPARAM)hListFont,0);
-	if ((setting[i].displayType&LIM_TYPE)==LI_NUMBER) 
+	if ((setting[i].displayType & LIM_TYPE) == LI_NUMBER) 
 	{
-		int *range=(int*)setting[i].pList;
+		int *range= (int*)setting[i].pList;
 		RECT rcUpDown;
 		hwndUpDown=CreateWindow(UPDOWN_CLASS,_T(""),WS_VISIBLE|WS_CHILD|UDS_AUTOBUDDY|UDS_ALIGNRIGHT|UDS_HOTTRACK|UDS_NOTHOUSANDS|UDS_SETBUDDYINT,0,0,0,0,hwndList,NULL,hInst,NULL);
-		SendMessage(hwndUpDown,UDM_SETRANGE32,range[0],range[1]);
-		SendMessage(hwndUpDown,UDM_SETPOS32,0,setting[i].value);
-		if(!(setting[i].displayType&LIF_ZEROISVALID) && setting[i].value==0)
-			SetWindowTextA(hwndEdit,"");
-		GetClientRect(hwndUpDown,&rcUpDown);
-		rc->right-=rcUpDown.right;
+		SendMessage(hwndUpDown, UDM_SETRANGE32, range[0], range[1]);
+		SendMessage(hwndUpDown, UDM_SETPOS32, 0, settingData[i].value);
+		if(!(setting[i].displayType & LIF_ZEROISVALID) && settingData[i].value==0)
+			SetWindowTextA(hwndEdit, "");
+		GetClientRect(hwndUpDown, &rcUpDown);
+		rc->right -= rcUpDown.right;
 		SetWindowPos(hwndEdit,0,0,0,rc->right-rc->left,rc->bottom-rc->top,SWP_NOZORDER|SWP_NOMOVE);
 	}
 	SendMessage(hwndEdit,EM_SETSEL,0,(LPARAM)-1);
@@ -295,10 +299,9 @@ void BeginStringEdit(int iItem,RECT *rc,int i,WORD wVKey)
 }
 
 
-
-void EndStringEdit(int save)
+void ChangeInfoData::EndStringEdit(int save)
 {
-	if (hwndEdit == NULL || iEditItem == -1) return;
+	if (hwndEdit == NULL || iEditItem == -1 || this != dataStringEdit) return;
 	if (save) 
 	{
 		char *text = (char*)SAFE_MALLOC(GetWindowTextLength(hwndEdit)+1);
@@ -312,39 +315,40 @@ void EndStringEdit(int save)
 			newValue = atoi((char*)text);
 			if (newValue) 
 			{
-				if(newValue<range[0]) newValue=range[0];
-				if(newValue>range[1]) newValue=range[1];
+				if (newValue<range[0]) newValue=range[0];
+				if (newValue>range[1]) newValue=range[1];
 			}
-			setting[iEditItem].changed=setting[iEditItem].value!=newValue;
-			setting[iEditItem].value=newValue;
+			settingData[iEditItem].changed = settingData[iEditItem].value != newValue;
+			settingData[iEditItem].value = newValue;
 			SAFE_FREE((void**)&text);
 		}
 		else
 		{
-			if (!(setting[iEditItem].displayType&LIF_PASSWORD))
+			if (!(setting[iEditItem].displayType & LIF_PASSWORD))
 			{
 				SAFE_FREE((void**)&text);
 				text = GetWindowTextUtf(hwndEdit);
 				EscapesToBinary((char*)text);
 			}
 			if ((setting[iEditItem].displayType & LIF_PASSWORD && strcmpnull(text,"                ")) ||
-				(!(setting[iEditItem].displayType & LIF_PASSWORD) && strcmpnull(text, (char*)setting[iEditItem].value) && (strlennull(text) + strlennull((char*)setting[iEditItem].value))))
+				(!(setting[iEditItem].displayType & LIF_PASSWORD) && strcmpnull(text, (char*)settingData[iEditItem].value) && (strlennull(text) + strlennull((char*)settingData[iEditItem].value))))
 			{
-				SAFE_FREE((void**)&setting[iEditItem].value);
+				SAFE_FREE((void**)&settingData[iEditItem].value);
 				if (text[0])
-					setting[iEditItem].value = (LPARAM)text;
+					settingData[iEditItem].value = (LPARAM)text;
 				else
 				{
-					setting[iEditItem].value=0; 
+					settingData[iEditItem].value = 0; 
 					SAFE_FREE((void**)&text);
 				}
-				setting[iEditItem].changed=1;
+				settingData[iEditItem].changed = 1;
 			}
 		}
-		if (setting[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
+		if (settingData[iEditItem].changed) EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
 	}
 	ListView_RedrawItems(hwndList, iEditItem, iEditItem);
 	iEditItem = -1;
+  dataStringEdit = NULL;
 	DestroyWindow(hwndEdit);
 	hwndEdit = NULL;
 	if (hwndExpandButton) DestroyWindow(hwndExpandButton);

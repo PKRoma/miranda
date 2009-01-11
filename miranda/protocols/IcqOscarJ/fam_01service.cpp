@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -110,7 +110,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 		{
 			DWORD dwLastUpdate;
 			WORD wRecordCount;
-			servlistcookie* ack;
+			cookie_servlist_action* ack;
 			DWORD dwCookie;
 
 			dwLastUpdate = getSettingDword(NULL, "SrvLastUpdate", 0);
@@ -131,7 +131,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				NetLog_Server("Requesting full roster");
 #endif
 				serverPacketInit(&packet, 10);
-				ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+				ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 				if (ack)
 				{ // we try to use standalone cookie if available
 					ack->dwAction = SSA_CHECK_ROSTER; // loading list
@@ -140,7 +140,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				else // if not use that old fake
 					dwCookie = ICQ_LISTS_CLI_REQUEST<<0x10;
 
-				packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQUEST, 0, dwCookie);
+				packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQUEST, 0, dwCookie);
 				sendServPacket(&packet);
 			}
 			else // CLI_CHECKROSTER
@@ -149,7 +149,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				NetLog_Server("Requesting roster check");
 #endif
 				serverPacketInit(&packet, 16);
-				ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+				ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 				if (ack)  // TODO: rewrite - use get list service for empty list
 				{ // we try to use standalone cookie if available
 					ack->dwAction = SSA_CHECK_ROSTER; // loading list
@@ -158,7 +158,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				else // if not use that old fake
 					dwCookie = ICQ_LISTS_CLI_CHECK<<0x10;
 
-				packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
+				packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_CHECK, 0, dwCookie);
 				// check if it was not changed elsewhere (force reload, set that setting to zero)
 				if (IsServerGroupsDefined())
 				{
@@ -191,6 +191,7 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 		// Query flags: 1 = Enable Avatars
 		//              2 = Enable offline status message notification
 		//              4 = Enable Avatars for offline contacts
+    //              8 = Use reject for not authorized contacts
 		packTLVWord(&packet, 0x05, 0x0003); // mimic ICQ 6
 		sendServPacket(&packet);
 
@@ -246,9 +247,9 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 			if (info->cookieDataLen > 0)
 				SAFE_FREE((void**)&info->cookieData);
 
-			info->newServer = (char*)getStrFromChain(chain, 0x05, 1);
-			info->cookieData = getStrFromChain(chain, 0x06, 1);
-			info->cookieDataLen = getLenFromChain(chain, 0x06, 1);
+			info->newServer = chain->getString(0x05, 1);
+			info->cookieData = (BYTE*)chain->getString(0x06, 1);
+			info->cookieDataLen = chain->getLength(0x06, 1);
 
 			if (!info->newServer || !info->cookieData)
 			{
@@ -301,14 +302,14 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				chain = readIntoTLVChain(&pBuffer, wBufferLength, 0);
 
 				// Save external IP
-				dwValue = getDWordFromChain(chain, 10, 1); 
+				dwValue = chain->getDWord(0x0A, 1); 
 				setSettingDword(NULL, "IP", dwValue);
 
 				// Save member since timestamp
-				dwValue = getDWordFromChain(chain, 5, 1); 
+				dwValue = chain->getDWord(0x05, 1); 
 				if (dwValue) setSettingDword(NULL, "MemberTS", dwValue);
 
-				dwValue = getDWordFromChain(chain, 3, 1);
+				dwValue = chain->getDWord(0x03, 1);
 				setSettingDword(NULL, "LogonTS", dwValue ? dwValue : time(NULL));
 
 				disposeChain(&chain);
@@ -359,18 +360,17 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 	case ICQ_SERVER_REDIRECT_SERVICE: // reply to family request, got new connection point
 		{
 			oscar_tlv_chain* pChain = NULL;
-			WORD wFamily;
-			familyrequest_rec* reqdata;
+			cookie_family_request *pCookieData;
 
 			if (!(pChain = readIntoTLVChain(&pBuffer, wBufferLength, 0)))
 			{
 				NetLog_Server("Received Broken Redirect Service SNAC(1,5).");
 				break;
 			}
-			wFamily = getWordFromChain(pChain, 0x0D, 1);
+			WORD wFamily = pChain->getWord(0x0D, 1);
 
 			// pick request data
-			if ((!FindCookie(pSnacHeader->dwRef, NULL, (void**)&reqdata)) || (reqdata->wFamily != wFamily))
+			if ((!FindCookie(pSnacHeader->dwRef, NULL, (void**)&pCookieData)) || (pCookieData->wFamily != wFamily))
 			{
 				disposeChain(&pChain);
 				NetLog_Server("Received unexpected SNAC(1,5), skipping.");
@@ -387,9 +387,9 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				NETLIBOPENCONNECTION nloc = {0};
 				HANDLE hConnection;
 
-				pServer = (char*)getStrFromChain(pChain, 0x05, 1);
-				pCookie = (char*)getStrFromChain(pChain, 0x06, 1);
-				wCookieLen = getLenFromChain(pChain, 0x06, 1);
+				pServer = pChain->getString(0x05, 1);
+				pCookie = pChain->getString(0x06, 1);
+				wCookieLen = pChain->getLength(0x06, 1);
 
 				if (!pServer || !pCookie)
 				{
@@ -397,7 +397,8 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 
 					SAFE_FREE((void**)&pServer);
 					SAFE_FREE((void**)&pCookie);
-					SAFE_FREE((void**)&reqdata);
+					SAFE_FREE((void**)&pCookieData);
+          disposeChain(&pChain);
 					break;
 				}
 
@@ -416,191 +417,87 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				{
 					NetLog_Server("Unable to connect to ICQ new family server.");
 				} // we want the handler to be called even if the connecting failed
-				(this->*reqdata->familyhandler)(hConnection, pCookie, wCookieLen);
+				(this->*pCookieData->familyHandler)(hConnection, pCookie, wCookieLen);
 
 				// Free allocated memory
 				// NOTE: "cookie" will get freed when we have connected to the avatar server.
 				disposeChain(&pChain);
 				SAFE_FREE((void**)&pServer);
-				SAFE_FREE((void**)&reqdata);
+				SAFE_FREE((void**)&pCookieData);
 			}
 
 			break;
 		}
 
-	case ICQ_SERVER_EXTSTATUS: // our avatar
+	case ICQ_SERVER_EXTSTATUS: // our session data
 		{
-			NetLog_Server("Received our avatar hash & status.");
-
-			if (wBufferLength > 4 && pBuffer[1] == AVATAR_HASH_PHOTO)
-			{ // skip photo item
-				if (wBufferLength >= pBuffer[3] + 4)
-				{
-					wBufferLength -= pBuffer[3] + 4;
-					pBuffer += pBuffer[3] + 4;
-				}
-				else
-				{
-					pBuffer += wBufferLength;
-					wBufferLength = 0;
-				}
-			}
-
-			if ((wBufferLength >= 0x14) && m_bAvatarsEnabled)
-			{
-				if (!info->bMyAvatarInited) // signal the server after login
-				{ // this refreshes avatar state - it used to work automatically, but now it does not
-					if (getSettingByte(NULL, "ForceOurAvatar", 0))
-					{ // keep our avatar
-						char* file = loadMyAvatarFileName();
-
-						SetMyAvatar(0, (LPARAM)file);
-						SAFE_FREE((void**)&file);
-					}
-					else // only change avatar hash to the same one
-					{
-						BYTE hash[0x14];
-
-						memcpy(hash, pBuffer, 0x14);
-						hash[2] = 1; // update image status
-						updateServAvatarHash(hash, 0x14);
-					}
-					info->bMyAvatarInited = TRUE;
-					break;
-				}
-
-				switch (pBuffer[2])
-				{
-				case 1: // our avatar is on the server
-					{
-						char* file;
-						BYTE* hash;
-
-						setSettingBlob(NULL, "AvatarHash", pBuffer, 0x14);
-
-						setUserInfo();
-						// here we need to find a file, check its hash, if invalid get avatar from server
-						file = loadMyAvatarFileName();
-						if (!file)
-						{ // we have no avatar file, download from server
-							char szFile[MAX_PATH + 4];
 #ifdef _DEBUG
-							NetLog_Server("We have no avatar, requesting from server.");
+			NetLog_Server("Received owner session data.");
 #endif
-							GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-							GetAvatarData(NULL, m_dwLocalUIN, NULL, pBuffer, 0x14, szFile);
-						}
-						else
-						{ // we know avatar filename
-							hash = calcMD5Hash(file);
-							if (!hash)
-							{ // hash could not be calculated - probably missing file, get avatar from server
-								char szFile[MAX_PATH + 4];
+      while (wBufferLength > 4)
+      { // loop thru all items
+        WORD wItemID = pBuffer[0] * 0x10 | pBuffer[1];
+        BYTE bFlags = pBuffer[2];
+        BYTE nDataLen = pBuffer[3];
+
+			  if (wItemID == AVATAR_HASH_PHOTO)
+			  { // skip photo item
 #ifdef _DEBUG
-								NetLog_Server("We have no avatar, requesting from server.");
+          NetLog_Server("Photo item recognized");
 #endif
-								GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-								GetAvatarData(NULL, m_dwLocalUIN, NULL, pBuffer, 0x14, szFile);
-							} // check if we had set any avatar if yes set our, if not download from server
-							else if (memcmp(hash, pBuffer+4, 0x10))
-							{ // we have different avatar, sync that
-								if (getSettingByte(NULL, "ForceOurAvatar", 1))
-								{ // we want our avatar, update hash
-									DWORD dwPaFormat = DetectAvatarFormat(file);
-									BYTE* pHash = (BYTE*)_alloca(0x14);
-
-									NetLog_Server("Our avatar is different, set our new hash.");
-
-									pHash[0] = 0;
-									pHash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC;
-									pHash[2] = 1; // state of the hash
-									pHash[3] = 0x10; // len of the hash
-									memcpy(pHash + 4, hash, 0x10);
-									updateServAvatarHash(pHash, 0x14);
-								}
-								else
-								{ // get avatar from server
-									char szFile[MAX_PATH + 4];
+			  }
+			  else if ((wItemID == AVATAR_HASH_STATIC || wItemID == AVATAR_HASH_FLASH) && (nDataLen >= 0x10))
+			  {
 #ifdef _DEBUG
-									NetLog_Server("We have different avatar, requesting new from server.");
+          NetLog_Server("Avatar item recognized");
 #endif
-									GetAvatarFileName(0, NULL, szFile, MAX_PATH);
-									GetAvatarData(NULL, m_dwLocalUIN, NULL, pBuffer, 0x14, szFile);
-								}
-							}
-							SAFE_FREE((void**)&hash);
-							SAFE_FREE((void**)&file);
-						}
-						break;
-					}
-				case 0x41: // request to upload avatar data
-				case 0x81:
-					{ // request to re-upload avatar data
-						char* file;
-						BYTE* hash;
-						DWORD dwPaFormat;
+				  if (m_bAvatarsEnabled && !info->bMyAvatarInited) // signal the server after login
+				  { // this refreshes avatar state - it used to work automatically, but now it does not
+					  if (getSettingByte(NULL, "ForceOurAvatar", 0))
+					  { // keep our avatar
+						  char* file = loadMyAvatarFileName();
 
-						if (!m_bSsiEnabled) break; // we could not change serv-list if it is disabled...
+						  SetMyAvatar(0, (LPARAM)file);
+						  SAFE_FREE((void**)&file);
+					  }
+					  else // only change avatar hash to the same one
+					  {
+						  BYTE hash[0x14];
 
-						file = loadMyAvatarFileName();
-						if (!file)
-						{ // we have no file to upload, remove hash from server
-							NetLog_Server("We do not have avatar, removing hash.");
-							SetMyAvatar(0, 0);
-							break;
-						}
-						dwPaFormat = DetectAvatarFormat(file);
-						hash = calcMD5Hash(file);
-						if (!hash)
-						{ // the hash could not be calculated, remove from server
-							NetLog_Server("We could not obtain hash, removing hash.");
-							SetMyAvatar(0, 0);
-						}
-						else if (!memcmp(hash, pBuffer+4, 0x10))
-						{ // we have the right file
-							HANDLE hFile = NULL, hMap = NULL;
-							BYTE* ppMap = NULL;
-							long cbFileSize = 0;
+						  memcpy(hash, pBuffer, 0x14);
+						  hash[2] = 1; // update image status
+						  updateServAvatarHash(hash, 0x14);
+					  }
+					  info->bMyAvatarInited = TRUE;
+					  break;
+				  }
+          // process owner avatar hash changed notification
+          handleAvatarOwnerHash(wItemID, bFlags, pBuffer, nDataLen + 4);
+        }
+        else if (wItemID == 0x02)
+        {
+#ifdef _DEBUG
+          NetLog_Server("Status message item recognized");
+#endif
+        }
+        else if (wItemID == 0x0E)
+        {
+#ifdef _DEBUG
+          NetLog_Server("Status mood item recognized");
+#endif
+        }
 
-							NetLog_Server("Uploading our avatar data.");
-
-							if ((hFile = CreateFileA(file, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
-								if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
-									if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
-										cbFileSize = GetFileSize( hFile, NULL );
-
-							if (cbFileSize != 0)
-							{
-								SetAvatarData(NULL, (WORD)(dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC), (char*)ppMap, cbFileSize);
-							}
-
-							if (ppMap != NULL) UnmapViewOfFile(ppMap);
-							if (hMap  != NULL) CloseHandle(hMap);
-							if (hFile != NULL) CloseHandle(hFile);
-							SAFE_FREE((void**)&hash);
-						}
-						else
-						{
-							BYTE* pHash = (BYTE*)_alloca(0x14);
-
-							NetLog_Server("Our file is different, set our new hash.");
-
-							pHash[0] = 0;
-							pHash[1] = dwPaFormat == PA_FORMAT_XML ? AVATAR_HASH_FLASH : AVATAR_HASH_STATIC;
-							pHash[2] = 1; // state of the hash
-							pHash[3] = 0x10; // len of the hash
-							memcpy(pHash + 4, hash, 0x10);
-							updateServAvatarHash(pHash, 0x14);
-
-							SAFE_FREE((void**)&hash);
-						}
-
-						SAFE_FREE((void**)&file);
-						break;
-				default:
-					NetLog_Server("Received UNKNOWN Avatar Status.");
-					}
-				}
+        // move to next item
+			  if (wBufferLength >= nDataLen + 4)
+			  {
+ 					wBufferLength -= nDataLen + 4;
+  				pBuffer += nDataLen + 4;
+	  		}
+		  	else
+			  {
+				  pBuffer += wBufferLength;
+				  wBufferLength = 0;
+			  }
 			}
 			break;
 		}
@@ -830,6 +727,7 @@ void CIcqProto::setUserInfo()
 #ifdef DBG_AIMCONTACTSEND
 	wAdditionalData += 16;
 #endif
+  wAdditionalData += 16;
 
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
@@ -891,8 +789,18 @@ void CIcqProto::setUserInfo()
 
 	packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQDIRECT
 
-	/*packDWord(&packet, 0x178c2d9b); // Unknown cap
-	packDWord(&packet, 0xdaa545bb);
+/*  packDWord(&packet, 0xb99708b5); /// voice chat ???? unknown
+  packDWord(&packet, 0x3a924202);
+  packDWord(&packet, 0xb069f1e7);
+  packDWord(&packet, 0x57bb2e17);*/
+
+  packDWord(&packet, 0x67361515); /// icq lite audio chat Xtraz "ICQTalk" plugin
+  packDWord(&packet, 0x612d4c07);
+  packDWord(&packet, 0x8f3dbde6);
+  packDWord(&packet, 0x408ea041);
+
+/*	packDWord(&packet, 0x178c2d9b); // Unknown cap
+	packDWord(&packet, 0xdaa545bb); /// icq lite video chat Xtraz "VideoRcv" plugin
 	packDWord(&packet, 0x8ddbf3bd);
 	packDWord(&packet, 0xbd53a10a);*/
 
@@ -1009,27 +917,27 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 	serverPacketInit(&packet, 98);
 	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
 	packDWord(&packet, 0x00220001); // imitate ICQ 6 behaviour
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00010004);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00130004);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00020001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00030001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00150001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00040001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00060001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x00090001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x000A0001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 	packDWord(&packet, 0x000B0001);
-	packDWord(&packet, 0x0110161b);
+	packDWord(&packet, 0x0110164f);
 
 	sendServPacket(&packet);
 
@@ -1043,15 +951,13 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 
 	if (!info->isMigrating)
 	{ /* Get Offline Messages Reqeust */
-		offline_message_cookie *ack;
-
-		ack = (offline_message_cookie*)SAFE_MALLOC(sizeof(offline_message_cookie));
+		cookie_offline_messages *ack = (cookie_offline_messages*)SAFE_MALLOC(sizeof(cookie_offline_messages));
 		if (ack)
 		{
 			DWORD dwCookie = AllocateCookie(CKT_OFFLINEMESSAGE, ICQ_MSG_CLI_REQ_OFFLINE, 0, ack);
 
 			serverPacketInit(&packet, 10);
-			packFNACHeaderFull(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQ_OFFLINE, 0, dwCookie);
+			packFNACHeader(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQ_OFFLINE, 0, dwCookie);
 
 			sendServPacket(&packet);
 		}

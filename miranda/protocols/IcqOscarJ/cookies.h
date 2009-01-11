@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -38,63 +38,66 @@
 #define __COOKIES_H
 
 
-#define CKT_MESSAGE         0x01
-#define CKT_FILE            0x02
-#define CKT_SEARCH          0x04
-#define CKT_SERVERLIST      0x08
-#define CKT_SERVICEREQUEST  0x0A
-#define CKT_REVERSEDIRECT   0x0C
-#define CKT_FAMILYSPECIAL   0x10
-#define CKT_OFFLINEMESSAGE  0x12
-#define CKT_AVATAR          0x20
-#define CKT_CHECKSPAMBOT    0x40
+#define CKT_MESSAGE           0x01
+#define CKT_FILE              0x02
+#define CKT_SEARCH            0x04
+#define CKT_SERVERLIST        0x08
+#define CKT_SERVICEREQUEST    0x0A
+#define CKT_REVERSEDIRECT     0x0C
+#define CKT_FAMILYSPECIAL     0x10
+#define CKT_OFFLINEMESSAGE    0x12
+#define CKT_DIRECTORY_QUERY   0x18
+#define CKT_DIRECTORY_UPDATE  0x19
+#define CKT_AVATAR            0x20
+#define CKT_CHECKSPAMBOT      0x40
 
 struct CIcqProto;
 
-typedef struct icq_cookie_info_s
+/* Basic structure used to hold operation cookies list */
+struct icq_cookie_info
 {
   DWORD dwCookie;
   HANDLE hContact;
   void *pvExtra;
   time_t dwTime;
   BYTE bType;
-} icq_cookie_info;
+};
 
-typedef struct familyrequest_rec_s
+
+/* Specific structures to hold request specific data - pvExtra */
+
+struct cookie_family_request
 {
   WORD wFamily;
-  void (CIcqProto::*familyhandler)(HANDLE hConn, char* cookie, WORD cookieLen);
-} familyrequest_rec;
+  void (CIcqProto::*familyHandler)(HANDLE hConn, char* cookie, WORD cookieLen);
+};
 
 
-typedef struct offline_message_cookie_s
+struct cookie_offline_messages
 {
   int nMessages;
   int nMissed;
-} offline_message_cookie;
+};
 
-typedef struct message_cookie_data_s
-{
-  DWORD dwMsgID1;
-  DWORD dwMsgID2;
-  WORD bMessageType;
-  BYTE nAckType;
-} message_cookie_data;
 
 #define ACKTYPE_NONE   0
 #define ACKTYPE_SERVER 1
 #define ACKTYPE_CLIENT 2
 
-typedef struct message_cookie_data_ex_s
+struct cookie_message_data
 {
-  message_cookie_data msg;
-  BYTE isOffline;
-} message_cookie_data_ex;
+  DWORD dwMsgID1;
+  DWORD dwMsgID2;
+  WORD bMessageType;
+  BYTE nAckType;
+};
 
-typedef struct fam15_cookie_data_s
+
+struct cookie_message_data_ext: public cookie_message_data
 {
-  BYTE bRequestType;
-} fam15_cookie_data;
+  BYTE isOffline;
+};
+
 
 #define REQUESTTYPE_OWNER        0
 #define REQUESTTYPE_USERAUTO     1
@@ -102,21 +105,27 @@ typedef struct fam15_cookie_data_s
 #define REQUESTTYPE_USERDETAILED 3
 #define REQUESTTYPE_PROFILE      4
 
-
-typedef struct search_cookie_s
+struct cookie_fam15_data
 {
-  BYTE bSearchType;
-  char* szObject;
-  DWORD dwMainId;
-  DWORD dwStatus;
-} search_cookie;
+  BYTE bRequestType;
+};
+
 
 #define SEARCHTYPE_UID     0
 #define SEARCHTYPE_EMAIL   1
 #define SEARCHTYPE_NAMES   2
 #define SEARCHTYPE_DETAILS 4
 
-typedef struct avatarcookie_t
+struct cookie_search
+{
+  BYTE bSearchType;
+  char* szObject;
+  DWORD dwMainId;
+  DWORD dwStatus;
+};
+
+
+struct cookie_avatar
 {
   DWORD dwUin;
   HANDLE hContact;
@@ -124,14 +133,30 @@ typedef struct avatarcookie_t
   BYTE *hash;
   unsigned int cbData;
   char *szFile;
-} avatarcookie;
+};
 
-typedef struct {
-  message_cookie_data pMessage;
+
+struct cookie_reverse_connect: public cookie_message_data
+{
   HANDLE hContact;
   DWORD dwUin;
   int type;
   void *ft;
-} reverse_cookie;
+};
+
+
+#define DIRECTORYREQUEST_INFOUSER       0x01
+#define DIRECTORYREQUEST_INFOOWNER      0x02
+#define DIRECTORYREQUEST_INFOMULTI      0x03
+#define DIRECTORYREQUEST_SEARCH         0x08
+#define DIRECTORYREQUEST_UPDATEOWNER    0x10
+#define DIRECTORYREQUEST_UPDATENOTE     0x11
+#define DIRECTORYREQUEST_UPDATEPRIVACY  0x12
+
+struct cookie_directory_data
+{
+  BYTE bRequestType;
+};
+
 
 #endif /* __COOKIES_H */

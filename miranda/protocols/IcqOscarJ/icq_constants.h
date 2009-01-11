@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -68,6 +68,7 @@
 #define DEFAULT_XSTATUS_ENABLED     1
 #define DEFAULT_XSTATUS_AUTO        1
 #define DEFAULT_XSTATUS_RESET       0
+#define DEFAULT_XSTATUS_STATUS_NOTE 1 // use Custom Status message as Status Note
 #define DEFAULT_KILLSPAM_ENABLED    1
 
 #define DEFAULT_SLOWSEND            1
@@ -112,10 +113,15 @@
 // User Details
 #define DBSETTING_METAINFO_TOKEN    "MetaInfoToken"
 #define DBSETTING_METAINFO_TIME     "MetaInfoTime"
+#define DBSETTING_METAINFO_SAVED    "InfoTS"
+// Status Note & Mood
+#define DBSETTING_STATUS_NOTE       "StatusNote"
+#define DBSETTING_STATUS_NOTE_TIME  "StatusNoteTS"
+#define DBSETTING_STATUS_MOOD       "StatusMood"
 // Custom Status
-#define DBSETTING_XSTATUSID         "XStatusId"
-#define DBSETTING_XSTATUSNAME       "XStatusName"
-#define DBSETTING_XSTATUSMSG        "XStatusMsg"
+#define DBSETTING_XSTATUS_ID        "XStatusId"
+#define DBSETTING_XSTATUS_NAME      "XStatusName"
+#define DBSETTING_XSTATUS_MSG       "XStatusMsg"
 
 
 // Status FLAGS (used to determine status of other users)
@@ -181,7 +187,9 @@
 #define CAPF_ICQDIRECT              0x00000080
 #define CAPF_XTRAZ                  0x00000100
 #define CAPF_OSCAR_FILE             0x00000400
-#define CAPF_STATUSMSGEXT           0x01000000
+#define CAPF_STATUSMSG_EXT          0x01000000
+#define CAPF_STATUS_MOOD            0x40000000
+#define CAPF_XSTATUS                0x80000000
 
 
 // Message Capability IDs
@@ -270,10 +278,13 @@
 #define ICQ_BOS_FAMILY              0x0009
 #define ICQ_LOOKUP_FAMILY           0x000a
 #define ICQ_STATS_FAMILY            0x000b
+#define ICQ_CHAT_NAVIGATION_FAMILY  0x000d
+#define ICQ_CHAT_FAMILY             0x000e
 #define ICQ_AVATAR_FAMILY           0x0010
 #define ICQ_LISTS_FAMILY            0x0013
 #define ICQ_EXTENSIONS_FAMILY       0x0015
 #define ICQ_AUTHORIZATION_FAMILY    0x0017
+#define ICQ_DIRECTORY_FAMILY        0x0025
 
 /* Subtypes for Service Family 0x0001 */
 #define ICQ_ERROR                   0x0001
@@ -441,15 +452,22 @@
 #define META_SEARCH_UIN             0x0569 // Search user by UIN (TLV)
 #define META_SEARCH_EMAIL           0x0573 // Search user by E-mail (TLV)
 #define META_DIRECTORY_QUERY        0x0FA0
+#define META_DIRECTORY_DATA         0x0FAA
 #define META_DIRECTORY_RESPONSE     0x0FB4
 #define META_DIRECTORY_UPDATE       0x0FD2
 #define META_DIRECTORY_UPDATE_ACK   0x0FDC
-
 
 #define META_XML_INFO               0x08A2 // Server variable requested via xml
 #define META_SET_FULLINFO_REQ       0x0C3A // Set full user info request
 #define META_SET_FULLINFO_ACK       0x0C3F // Server ack for set fullinfo command
 #define META_SPAM_REPORT_ACK        0x2012 // Server ack for user spam report
+
+// Subtypes for Directory meta requests (family 0x5b9)
+#define DIRECTORY_QUERY_INFO        0x0002
+#define DIRECTORY_SET_INFO          0x0003
+#define DIRECTORY_QUERY_MULTI_INFO  0x0006
+#define DIRECTORY_QUERY_INFO_ACK    0x0009
+#define DIRECTORY_SET_INFO_ACK      0x000A
 
 // TLV types
 
@@ -557,6 +575,7 @@
 #define SSI_ITEM_METAINFO           0x0020  // Owner Details' token & last update time
 
 #define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorized in list
+#define SSI_TLV_NOT_IN_LIST         0x006A  // Always empty
 #define SSI_TLV_UNKNOWN             0x006D  // WTF ?
 #define SSI_TLV_SUBITEMS            0x00C8  // List of sub-items IDs
 #define SSI_TLV_VISIBILITY          0x00CA
@@ -564,6 +583,7 @@
 #define SSI_TLV_TIMESTAMP           0x00D4  // Import Timestamp
 #define SSI_TLV_AVATARHASH          0x00D5
 #define SSI_TLV_NAME                0x0131  // Custom contact nickname
+#define SSI_TLV_GROUP_OPENNED       0x0134
 #define SSI_TLV_EMAIL               0x0137  // Custom contact email
 #define SSI_TLV_PHONE               0x0138  // Custom contact phone number
 #define SSI_TLV_PHONE_CELLULAR      0x0139  // Custom contact cellphone number
@@ -583,13 +603,12 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x80050004
+#define ICQ_PLUG_VERSION            0x80050005
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
 #define MAX_MESSAGESNACSIZE         8000
 #define CLIENTRATELIMIT             0
-#define UPDATE_THRESHOLD            14        // Two weeks
 #define COOKIE_TIMEOUT              3600      // One hour
 #define KEEPALIVE_INTERVAL          57000     // One minute
 #define WEBFRONTPORT                0x50

@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -45,7 +45,7 @@ int CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
 
 	// Does this contact have a UID?
 	if (!getContactUid((HANDLE)wParam, &dwUin, &szUid) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
-	{
+  { /// TODO: remove possible 0x6A TLV in contact server-list data!!!
 		// Read group from DB
 		char *pszGroup = getContactCListGroup((HANDLE)wParam);
 
@@ -54,6 +54,137 @@ int CIcqProto::AddServerContact(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+
+
+static int LookupDatabaseSetting(const FieldNamesItem* table, int code, DBVARIANT *dbv, BYTE type)
+{
+  char *text = LookupFieldName(table, code);
+
+  if (!text)
+  {
+    dbv->type = DBVT_DELETED;
+    return 1;
+  }
+
+  if (type == DBVT_ASCIIZ)
+  {
+    dbv->pszVal = mir_strdup(ICQTranslate(text));
+    dbv->type = DBVT_ASCIIZ;
+  }
+  else if (type == DBVT_UTF8 || !type)
+  {
+    char tmp[MAX_PATH];
+
+    dbv->pszVal = mir_strdup(ICQTranslateUtfStatic(text, tmp, MAX_PATH));
+    dbv->type = DBVT_UTF8;
+  }
+  else if (type == DBVT_WCHAR)
+  {
+    WCHAR* wtext = make_unicode_string(text);
+
+    dbv->pwszVal = mir_wstrdup(TranslateW(wtext));
+    dbv->type = DBVT_WCHAR;
+
+    SAFE_FREE((void**)&wtext);
+  }
+  return 0; // Success
+}
+
+int CIcqProto::GetInfoSetting(WPARAM wParam, LPARAM lParam)
+{
+  DBCONTACTGETSETTING *cgs = (DBCONTACTGETSETTING*)lParam;
+  BYTE type = cgs->pValue->type;
+
+  cgs->pValue->type = 0; // original type without conversion
+	int rc = CallService(MS_DB_CONTACT_GETSETTING_STR, wParam, lParam);
+
+  if (!rc)
+  { // Success
+    DBVARIANT dbv;
+
+    memcpy(&dbv, cgs->pValue, sizeof(DBVARIANT));
+
+    if (dbv.type == DBVT_BLOB)
+    {
+      cgs->pValue->pbVal = (BYTE*)mir_alloc(dbv.cpbVal);
+
+      memcpy(cgs->pValue->pbVal, dbv.pbVal, dbv.cpbVal);
+    }
+    else if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8)
+    { //  convert to the desired type
+      if (!type)
+        type = dbv.type;
+
+      if (dbv.type == type)
+      { // type is correct, only move it to miranda's heap
+        cgs->pValue->pszVal = mir_strdup(dbv.pszVal);
+      }
+	    else if (type == DBVT_WCHAR) 
+      {
+		    if (dbv.type != DBVT_UTF8)
+        {
+			    int len = MultiByteToWideChar(CP_ACP, 0, dbv.pszVal, -1, NULL, 0);
+			    cgs->pValue->pwszVal = (WCHAR*)mir_alloc((len + 1)*sizeof(WCHAR));
+			    if (cgs->pValue->pwszVal == NULL)
+				    rc = 1;
+          else
+          {
+			      MultiByteToWideChar(CP_ACP, 0, dbv.pszVal, -1, cgs->pValue->pwszVal, len);
+			      cgs->pValue->pwszVal[len] = '\0';
+          }
+		    }
+		    else 
+        {
+          char *savePtr = dbv.pszVal ? strcpy((char*)_alloca(strlennull(dbv.pszVal) + 1), dbv.pszVal) : NULL;
+    			if (!mir_utf8decode(savePtr, &cgs->pValue->pwszVal))
+				    rc = 1;
+		    }
+	    }
+	    else if (type == DBVT_UTF8) 
+      {
+		    cgs->pValue->pszVal = mir_utf8encode(dbv.pszVal);
+		    if (cgs->pValue->pszVal == NULL)
+			    rc = 1;
+	    }
+	    else if (type == DBVT_ASCIIZ)
+      {
+        cgs->pValue->pszVal = mir_strdup(dbv.pszVal);
+		    mir_utf8decode(cgs->pValue->pszVal, NULL);
+      }
+
+	    cgs->pValue->type = type;
+    }
+    else if (!strcmpnull(cgs->szModule, m_szModuleName) && (dbv.type == DBVT_BYTE || dbv.type == DBVT_WORD || dbv.type == DBVT_DWORD))
+    {
+      int code = (dbv.type == DBVT_BYTE) ? dbv.bVal : ((dbv.type == DBVT_WORD) ? dbv.wVal : dbv.dVal);
+
+      if (!strcmpnull(cgs->szSetting, "Language1") || !strcmpnull(cgs->szSetting, "Language2") || !strcmpnull(cgs->szSetting, "Language3"))
+        rc = LookupDatabaseSetting(languageField, code, cgs->pValue, type);
+      else if (!strcmpnull(cgs->szSetting, "Country") || !strcmpnull(cgs->szSetting, "OriginCountry") || !strcmpnull(cgs->szSetting, "CompanyCountry"))
+      {
+        if (code == 420) code = 42; // conversion of obsolete codes (OMG!)
+        else if (code == 421) code = 4201;
+        else if (code == 102) code = 1201;
+        rc = LookupDatabaseSetting(countryField, code, cgs->pValue, type);
+      }
+      else if (!strcmpnull(cgs->szSetting, "Gender"))
+        rc = LookupDatabaseSetting(genderField, code, cgs->pValue, type);
+      else if (!strcmpnull(cgs->szSetting, "MaritalStatus"))
+        rc = LookupDatabaseSetting(maritalField, code, cgs->pValue, type);
+      else if (!strcmpnull(cgs->szSetting, "StudyLevel"))
+        rc = LookupDatabaseSetting(studyLevelField, code, cgs->pValue, type);
+      else if (!strcmpnull(cgs->szSetting, "CompanyIndustry"))
+        rc = LookupDatabaseSetting(industryField, code, cgs->pValue, type);
+      else if (!strcmpnull(cgs->szSetting, "Interest0Cat") || !strcmpnull(cgs->szSetting, "Interest1Cat") || !strcmpnull(cgs->szSetting, "Interest2Cat") || !strcmpnull(cgs->szSetting, "Interest3Cat"))
+        rc = LookupDatabaseSetting(interestsField, code, cgs->pValue, type);
+    }
+    // Release database memory
+    ICQFreeVariant(&dbv);
+  }
+
+  return rc;
+}
+
 
 int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 {
@@ -64,92 +195,132 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 		BYTE b;
 
 		// userinfo
-		ppackTLVWord(&buf, &buflen, (WORD)GetACP(), TLV_CODEPAGE, 0);
+		ppackTLVWord(&buf, &buflen, 0x1C2, (WORD)GetACP());
 
 		if (wParam & CIXT_CONTACT)
 		{ // contact information
-			b = !getSettingByte(NULL, "PublishPrimaryEmail", 0);
-			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", b, TLV_EMAIL);
-			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
-			ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+      BYTE *pBlock = NULL;
+      int cbBlock = 0;
+      int nItems = 0;
 
-			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "AllowSpam", 0), TLV_ALLOWSPAM, 1);
+      // Emails
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "e-mail0", 0x78, 0x64, 0x00);
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "e-mail1", 0x78, 0x64, 0x00);
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "e-mail2", 0x78, 0x64, 0x00);
+      ppackTLVBlockItems(&buf, &buflen, 0x8C, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
 
-			ppackTLVLNTSfromDB(&buf, &buflen, "Phone", TLV_PHONE);
-			ppackTLVLNTSfromDB(&buf, &buflen, "Fax", TLV_FAX);
-			ppackTLVLNTSfromDB(&buf, &buflen, "Cellular", TLV_MOBILE);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPhone", TLV_WORKPHONE);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyFax", TLV_WORKFAX);
+      // Phones
+      nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Phone", 0x6E, 0x64, 0x01);
+      nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "CompanyPhone", 0x6E, 0x64, 0x02);
+      nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Cellular", 0x6E, 0x64, 0x03);
+      nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Fax", 0x6E, 0x64, 0x04); 
+      nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "CompanyFax", 0x6E, 0x64, 0x05);
+      ppackTLVBlockItems(&buf, &buflen, 0xC8, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
+
+			ppackTLVByte(&buf, &buflen, 0x1EA, getSettingByte(NULL, "AllowSpam", 0));
 		}
 
 		if (wParam & CIXT_BASIC)
 		{ // upload basic user info
-			ppackTLVLNTSfromDB(&buf, &buflen, "Nick", TLV_NICKNAME);
-			ppackTLVLNTSfromDB(&buf, &buflen, "FirstName", TLV_FIRSTNAME);
-			ppackTLVLNTSfromDB(&buf, &buflen, "LastName", TLV_LASTNAME);
-			ppackTLVLNTSfromDB(&buf, &buflen, "About", TLV_ABOUT);
+      ppackTLVStringUtfFromDB(&buf, &buflen, "Nick", 0x78);
+			ppackTLVStringUtfFromDB(&buf, &buflen, "FirstName", 0x64);
+			ppackTLVStringUtfFromDB(&buf, &buflen, "LastName", 0x6E);
+			ppackTLVStringUtfFromDB(&buf, &buflen, "About", 0x186);
 		}
 
 		if (wParam & CIXT_MORE)
 		{
-			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "Age", 0), TLV_AGE, 1);
 			b = getSettingByte(NULL, "Gender", 0);
-			ppackTLVByte(&buf, &buflen, (BYTE)(b ? (b == 'M' ? 2 : 1) : 0), TLV_GENDER, 1);
-			ppackLEWord(&buf, &buflen, TLV_BIRTH);
-			ppackLEWord(&buf, &buflen, 0x06);
-			ppackLEWord(&buf, &buflen, getSettingWord(NULL, "BirthYear", 0));
-			ppackLEWord(&buf, &buflen, (WORD)getSettingByte(NULL, "BirthMonth", 0));
-			ppackLEWord(&buf, &buflen, (WORD)getSettingByte(NULL, "BirthDay", 0));
+			ppackTLVByte(&buf, &buflen, 0x82, (BYTE)(b ? (b == 'M' ? 2 : 1) : 0));
 
-			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language1", 0), TLV_LANGUAGE, 1);
-			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language2", 0), TLV_LANGUAGE, 1);
-			ppackTLVWord(&buf, &buflen, (WORD)StringToListItemId("Language3", 0), TLV_LANGUAGE, 1);
+      ppackTLVDateFromDB(&buf, &buflen, "BirthYear", "BirthMonth", "BirthDay", 0x1A4);
 
-			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "MaritalStatus", 0), TLV_MARITAL, 1);
+			ppackTLVWord(&buf, &buflen, 0xAA, getSettingByte(NULL, "Language1", 0));
+			ppackTLVWord(&buf, &buflen, 0xB4, getSettingByte(NULL, "Language2", 0));
+			ppackTLVWord(&buf, &buflen, 0xBE, getSettingByte(NULL, "Language3", 0));
+
+			ppackTLVWord(&buf, &buflen, 0x12C, getSettingByte(NULL, "MaritalStatus", 0));
 		}
 
 		if (wParam & CIXT_WORK)
 		{
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyDepartment", TLV_DEPARTMENT);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyPosition", TLV_POSITION);
-			ppackTLVLNTSfromDB(&buf, &buflen, "Company", TLV_COMPANY);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyStreet", TLV_WORKSTREET);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyState", TLV_WORKSTATE);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyCity", TLV_WORKCITY);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyHomepage", TLV_WORKURL);
-			ppackTLVLNTSfromDB(&buf, &buflen, "CompanyZIP", TLV_WORKZIPCODE);
-			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "CompanyCountry", 0), TLV_WORKCOUNTRY, 1);
-			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1);
+      BYTE *pBlock = NULL;
+      int cbBlock = 0;
+      int nItems = 1;
+
+      // Jobs
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyPosition", 0x64);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "Company", 0x6E);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyDepartment", 0x7D);
+			ppackTLVStringFromDB(&pBlock, &cbBlock, "CompanyHomepage", 0x78);
+      ppackTLVWord(&pBlock, &cbBlock, 0x82, getSettingWord(NULL, "CompanyIndustry", 0));
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyStreet", 0xAA);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyCity", 0xB4);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyState", 0xBE);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "CompanyZIP", 0xC8);
+			ppackTLVDWord(&pBlock, &cbBlock, 0xD2, getSettingWord(NULL, "CompanyCountry", 0));
+      /// TODO: pack unknown data (need to preserve them in Block Items)
+      ppackTLVBlockItems(&buf, &buflen, 0x118, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
+
+//			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "CompanyOccupation", 0), TLV_OCUPATION, 1); // Lost In Conversion
 		}
+
+    if (wParam & CIXT_EDUCATION)
+    {
+      BYTE *pBlock = NULL;
+      int cbBlock = 0;
+      int nItems = 1;
+
+      // Studies
+			ppackTLVWord(&pBlock, &cbBlock, 0x64, getSettingWord(NULL, "StudyLevel", 0));
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "StudyInstitute", 0x6E);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "StudyDegree", 0x78);
+			ppackTLVWord(&pBlock, &cbBlock, 0x8C, getSettingWord(NULL, "StudyYear", 0));
+      ppackTLVBlockItems(&buf, &buflen, 0x10E, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
+    }
 
 		if (wParam & CIXT_LOCATION)
 		{
-			ppackTLVLNTSfromDB(&buf, &buflen, "City", TLV_CITY);
-			ppackTLVLNTSfromDB(&buf, &buflen, "State", TLV_STATE);
-			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "Country", 0), TLV_COUNTRY, 1);
-			ppackTLVLNTSfromDB(&buf, &buflen, "OriginCity", TLV_ORGCITY);
-			ppackTLVLNTSfromDB(&buf, &buflen, "OriginState", TLV_ORGSTATE);
-			ppackTLVWord(&buf, &buflen, getSettingWord(NULL, "OriginCountry", 0), TLV_ORGCOUNTRY, 1);
-			ppackTLVLNTSfromDB(&buf, &buflen, "Street", TLV_STREET);
-			ppackTLVLNTSfromDB(&buf, &buflen, "ZIP", TLV_ZIPCODE);
+      BYTE *pBlock = NULL;
+      int cbBlock = 0;
+      int nItems = 1;
 
-			ppackTLVLNTSfromDB(&buf, &buflen, "Homepage", TLV_URL);
+      // Home Address
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "Street", 0x64);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "City", 0x6E);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "State", 0x78);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "ZIP", 0x82);
+			ppackTLVDWord(&pBlock, &cbBlock, 0x8C, getSettingWord(NULL, "Country", 0));
+      ppackTLVBlockItems(&buf, &buflen, 0x96, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
 
-			ppackTLVByte(&buf, &buflen, getSettingByte(NULL, "Timezone", 0), TLV_TIMEZONE, 1);
+      nItems = 1;
+      // Origin Address
+      ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginStreet", 0x64);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginCity", 0x6E);
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginState", 0x78);
+			ppackTLVDWord(&pBlock, &cbBlock, 0x8C, getSettingWord(NULL, "OriginCountry", 0));
+      ppackTLVBlockItems(&buf, &buflen, 0xA0, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
+
+			ppackTLVStringFromDB(&buf, &buflen, "Homepage", 0xFA);
+
+			ppackTLVWord(&buf, &buflen, 0x17C, getSettingByte(NULL, "Timezone", 0));
 		}
 
 		if (wParam & CIXT_BACKGROUND)
 		{
-			WORD w;
+      BYTE *pBlock = NULL;
+      int cbBlock = 0;
+      int nItems = 0;
 
-			w = StringToListItemId("Interest0Cat", 0);
-			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest0Text", TLV_INTERESTS);
-			w = StringToListItemId("Interest1Cat", 0);
-			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest1Text", TLV_INTERESTS);
-			w = StringToListItemId("Interest2Cat", 0);
-			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest2Text", TLV_INTERESTS);
-			w = StringToListItemId("Interest3Cat", 0);
-			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Interest3Text", TLV_INTERESTS);
+      // Interests
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest0Text", 0x6E, 0x64, getSettingWord(NULL, "Interest0Cat", 0));
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest1Text", 0x6E, 0x64, getSettingWord(NULL, "Interest1Cat", 0));
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest2Text", 0x6E, 0x64, getSettingWord(NULL, "Interest2Cat", 0));
+			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest3Text", 0x6E, 0x64, getSettingWord(NULL, "Interest3Cat", 0));
+      ppackTLVBlockItems(&buf, &buflen, 0x122, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
+
+      
+/*      WORD w; /// not supported anymore
 
 			w = StringToListItemId("Past0", 0);
 			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Past0Text", TLV_PASTINFO);
@@ -163,10 +334,14 @@ int CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 			w = StringToListItemId("Affiliation1", 0);
 			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation1Text", TLV_AFFILATIONS);
 			w = StringToListItemId("Affiliation2", 0);
-			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation2Text", TLV_AFFILATIONS);
+			ppackTLVWordLNTSfromDB(&buf, &buflen, w, "Affiliation2Text", TLV_AFFILATIONS);*/
 		}
 
-		return icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, (char*)buf, (WORD)buflen);
+		DWORD dwCookie = icq_changeUserDirectoryInfoServ(buf, (WORD)buflen, DIRECTORYREQUEST_UPDATEOWNER);
+
+    SAFE_FREE((void**)&buf);
+
+    return dwCookie;
 	}
 
 	return 0; // Failure
@@ -254,7 +429,7 @@ int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 		pai->format = dwPaFormat;
 
-		if (!IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
+		if (!IsAvatarChanged(pai->hContact, dbv.pbVal, dbv.cpbVal))
 		{ // hashes are the same
 			if (_access(pai->filename, 0) == 0)
 			{
@@ -265,7 +440,7 @@ int CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-	if (IsAvatarSaved(pai->hContact, dbv.pbVal, dbv.cpbVal))
+	if (IsAvatarChanged(pai->hContact, dbv.pbVal, dbv.cpbVal))
 	{ // we didn't received the avatar before - this ensures we will not request avatar again and again
 		if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
 		{ // request avatar data
@@ -311,7 +486,7 @@ int CIcqProto::GetStatus(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::GrantAuthorization(WPARAM wParam, LPARAM lParam)
 {
-	if (m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING && wParam != 0)
+	if (icqOnline() && wParam != 0)
 	{
 		DWORD dwUin;
 		uid_str szUid;
@@ -347,7 +522,7 @@ int CIcqProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::RevokeAuthorization(WPARAM wParam, LPARAM lParam)
 {
-	if (m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING && wParam != 0)
+	if (icqOnline() && wParam != 0)
 	{
 		DWORD dwUin;
 		uid_str szUid;
@@ -543,7 +718,7 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 		if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0) || getSettingByte(hContact, "Auth", 0))
 		{
 			getContactUid(hContact, &dwUin, &szUid);
-			icq_sendNewContact(dwUin, szUid);
+			icq_sendNewContact(dwUin, szUid); /// FIXME
 		}
 	}
 

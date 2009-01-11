@@ -63,7 +63,7 @@ typedef int (CIcqProto::*PENDING_GROUP_CALLBACK)(const char* pszGroup, WORD wGro
 typedef int (CIcqProto::*PENDING_CONTACT_CALLBACK)(HANDLE hContact, WORD wContactId, WORD wGroupId, LPARAM lParam, int nResult);
 
 // cookie struct for SSI actions
-struct servlistcookie
+struct cookie_servlist_action
 {
 	HANDLE hContact;
   char *szGroup;
@@ -75,7 +75,7 @@ struct servlistcookie
 	int dwAction; 
 	LPARAM lParam;
 	int dwGroupCount;
-	struct servlistcookie **pGroupItems;
+	cookie_servlist_action **pGroupItems;
 };
 
 // id type groups
@@ -131,16 +131,13 @@ struct servlistcookie
 struct servlistgroupitem
 { // generic parent
   DWORD dwOperation;
-  servlistcookie* cookie;
+  cookie_servlist_action* cookie;
   icq_packet packet;
   // perhaps add some dummy bytes
 };
 
-struct servlistgroupitemdouble
+struct servlistgroupitemdouble: public servlistgroupitem
 {
-  DWORD dwOperation;
-  servlistcookie* cookie;
-  icq_packet packet1;
   icq_packet packet2;
   WORD wAction2;
 };

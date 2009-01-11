@@ -84,7 +84,7 @@ DWORD CIcqProto::icq_sendGetAwayMsgDirect(HANDLE hContact, int type)
 {
 	icq_packet packet;
 	DWORD dwCookie;
-	message_cookie_data *pCookieData;
+	cookie_message_data *pCookieData;
 
 	if (getSettingWord(hContact, "Version", 0) == 9)
 		return 0; // v9 DC protocol does not support this message
@@ -214,7 +214,7 @@ int CIcqProto::icq_sendFileSendDirectv8(filetransfer *ft, const char *pszFiles)
 	return SendDirectMessage(ft->hContact, &packet);
 }
 
-DWORD CIcqProto::icq_SendDirectMessage(HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, message_cookie_data *pCookieData, char *szCap)
+DWORD CIcqProto::icq_SendDirectMessage(HANDLE hContact, const char *szMessage, int nBodyLength, WORD wPriority, cookie_message_data *pCookieData, char *szCap)
 {
 	icq_packet packet;
 	DWORD dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);

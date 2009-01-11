@@ -38,7 +38,7 @@
 #define __FAMILIES_H
 
 
-typedef struct snac_header_s
+struct snac_header 
 {
   BOOL  bValid;
   WORD  wFamily;
@@ -46,10 +46,10 @@ typedef struct snac_header_s
   WORD  wFlags;
   DWORD dwRef;
   WORD  wVersion;
-} snac_header;
+};
 
 
-typedef struct message_ack_params_s
+struct message_ack_params 
 {
   BYTE bType;
   DWORD dwUin;
@@ -59,10 +59,18 @@ typedef struct message_ack_params_s
   WORD wCookie;
   int msgType;
   BYTE bFlags;
-} message_ack_params;
+};
 
 #define MAT_SERVER_ADVANCED 0
 #define MAT_DIRECT          1
+
+
+struct UserInfoRecordItem 
+{
+  WORD wTLV;
+  int dbType;
+  char *szDbSetting;
+};
 
 /*---------* Functions *---------------*/
 
@@ -80,5 +88,6 @@ void handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwM
 #define BUL_VISIBLE       1
 #define BUL_INVISIBLE     2
 #define BUL_TEMPVISIBLE   4
+
 
 #endif /* __FAMILIES_H */

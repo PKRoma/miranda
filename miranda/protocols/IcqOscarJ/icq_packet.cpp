@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -149,6 +149,22 @@ void packTLVDWord(icq_packet* pPacket, WORD wType, DWORD dwValue)
 	packDWord(pPacket, dwValue);
 }
 
+
+void packTLVUID(icq_packet *pPacket, WORD wType, DWORD dwUin, const char *szUid)
+{
+	if (dwUin)
+  {
+    char szUin[UINMAXLEN];
+
+    _ltoa(dwUin, szUin, 10);
+
+    packTLV(pPacket, wType, getUINLen(dwUin), (BYTE*)szUin);
+  }
+  else if (szUid)
+    packTLV(pPacket, wType, strlennull(szUid), (BYTE*)szUid);
+}
+
+
 // Pack a preformatted buffer.
 // This can be used to pack strings or any type of raw data.
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength)
@@ -215,24 +231,32 @@ void __fastcall packUID(icq_packet* pPacket, DWORD dwUin, const char *szUid)
 	}
 }
 
-void packFNACHeader(icq_packet* pPacket, WORD wFamily, WORD wSubtype)
+
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype)
 {
-	packWord(pPacket, wFamily);   // Family type
-	packWord(pPacket, wSubtype);  // Family subtype
-	packDWord(pPacket, 0);        // SNAC flags // SNAC request id (sequence)
-	packWord(pPacket, wSubtype);  // SNAC request id (command)
+  packFNACHeader(pPacket, wFamily, wSubtype, 0, wSubtype << 0x10);
 }
 
-void packFNACHeaderFull(icq_packet* pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSeq)
+
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence)
 {
-	WORD wSeq = (WORD)dwSeq & 0x7FFF; // this is necessary, if that bit is there we get disconnected
+	WORD wSequence = (WORD)dwSequence & 0x7FFF; // this is necessary, if that bit is there we get disconnected
 
 	packWord(pPacket, wFamily);   // Family type
 	packWord(pPacket, wSubtype);  // Family subtype
 	packWord(pPacket, wFlags);    // SNAC flags
-	packWord(pPacket, wSeq);      // SNAC request id (sequence)
-	packWord(pPacket, (WORD)(dwSeq>>0x10));  // SNAC request id (command)
+	packWord(pPacket, wSequence); // SNAC request id (sequence)
+	packWord(pPacket, (WORD)(dwSequence >> 0x10)); // SNAC request id (command)
 }
+
+
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence, WORD wVersion)
+{
+  packFNACHeader(pPacket, wFamily, wSubtype, wFlags | 0x8000, dwSequence);
+  packWord(pPacket, 0x06);
+  packTLVWord(pPacket, 0x01, wVersion);
+}
+
 
 void __fastcall packLEWord(icq_packet* pPacket, WORD wValue)
 {
@@ -248,12 +272,46 @@ void __fastcall packLEDWord(icq_packet* pPacket, DWORD dwValue)
 	pPacket->pData[pPacket->wPlace++] = (BYTE)((dwValue & 0xff000000) >> 24);
 }
 
+
+/* helper function to place numerics to buffer */
+static void packWord(PBYTE buf, WORD wValue)
+{
+  *(buf) = ((wValue & 0xff00) >> 8);
+  *(buf + 1) = (wValue & 0x00ff);
+}
+
+
+static void packDWord(PBYTE buf, DWORD dwValue)
+{
+  *(buf) = (BYTE)((dwValue & 0xff000000) >> 24);
+  *(buf + 1) = (BYTE)((dwValue & 0x00ff0000) >> 16);
+  *(buf + 2) = (BYTE)((dwValue & 0x0000ff00) >> 8);
+  *(buf + 3) = (BYTE) (dwValue & 0x000000ff);
+}
+
+
+static void packQWord(PBYTE buf, DWORD64 qwValue)
+{
+	packDWord(buf, (DWORD)(qwValue >> 32));
+	packDWord(buf + 4, (DWORD)(qwValue & 0xffffffff));
+}
+
+
 void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 {
-	*buf=(PBYTE)SAFE_REALLOC(*buf,1+*buflen);
-	*(*buf+*buflen)=b;
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 1 + *buflen);
+	*(*buf + *buflen) = b;
 	++*buflen;
 }
+
+
+void ppackWord(PBYTE *buf, int *buflen, WORD w)
+{
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 2 + *buflen);
+  packWord(*buf + *buflen, w);
+	*buflen += 2;
+}
+
 
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 {
@@ -262,12 +320,14 @@ void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 	*buflen+=2;
 }
 
+
 void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
 	*buf = (PBYTE)SAFE_REALLOC(*buf, 4 + *buflen);
 	*(PDWORD)(*buf + *buflen) = d;
 	*buflen += 4;
 }
+
 
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 {
@@ -278,8 +338,90 @@ void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 	*buflen += len;
 }
 
+
+void ppackBuffer(PBYTE *buf, int *buflen, WORD wLength, const BYTE *pbyValue)
+{
+  if (wLength)
+  {
+	  *buf = (PBYTE)SAFE_REALLOC(*buf, wLength + *buflen);
+	  memcpy(*buf + *buflen, pbyValue, wLength);
+	  *buflen += wLength;
+  }
+}
+
+
+void ppackTLV(PBYTE *buf, int *buflen, WORD wType, WORD wLength, const BYTE *pbyValue)
+{
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 4 + wLength + *buflen);
+	packWord(*buf + *buflen, wType);
+	packWord(*buf + *buflen + 2, wLength);
+  if (wLength)
+	  memcpy(*buf + *buflen + 4, pbyValue, wLength);
+	*buflen += 4 + wLength;
+}
+
+
+void ppackTLVByte(PBYTE *buf, int *buflen, WORD wType, BYTE bValue)
+{
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 5 + *buflen);
+	packWord(*buf + *buflen, wType);
+	packWord(*buf + *buflen + 2, 1);
+  *(*buf + *buflen + 4) = bValue;
+	*buflen += 5;
+}
+
+
+void ppackTLVWord(PBYTE *buf, int *buflen, WORD wType, WORD wValue)
+{
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen);
+	packWord(*buf + *buflen, wType);
+	packWord(*buf + *buflen + 2, 2);
+  packWord(*buf + *buflen + 4, wValue);
+	*buflen += 6;
+}
+
+
+void ppackTLVDWord(PBYTE *buf, int *buflen, WORD wType, DWORD dwValue)
+{
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen);
+	packWord(*buf + *buflen, wType);
+	packWord(*buf + *buflen + 2, 4);
+  packDWord(*buf + *buflen + 4, dwValue);
+	*buflen += 8;
+}
+
+
+void ppackTLVDouble(PBYTE *buf, int *buflen, WORD wType, double dValue)
+{
+  DWORD64 qwValue;
+
+  memcpy(&dValue, &qwValue, 8);
+
+	*buf = (PBYTE)SAFE_REALLOC(*buf, 12 + *buflen);
+	packWord(*buf + *buflen, wType);
+	packWord(*buf + *buflen + 2, 8);
+  packQWord(*buf + *buflen + 4, qwValue);
+	*buflen += 12;
+}
+
+
+void ppackTLVUID(PBYTE *buf, int *buflen, WORD wType, DWORD dwUin, const char *szUid)
+{
+	if (dwUin)
+  {
+    char szUin[UINMAXLEN];
+
+    _ltoa(dwUin, szUin, 10);
+
+    ppackTLV(buf, buflen, wType, getUINLen(dwUin), (BYTE*)szUin);
+  }
+  else if (szUid)
+    ppackTLV(buf, buflen, wType, strlennull(szUid), (BYTE*)szUid);
+}
+
+
 // *** TLV based (!!! WORDs and DWORDs are LE !!!)
-void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
+void ppackLETLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 {
 	if (!always && !b) return;
 
@@ -290,7 +432,8 @@ void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 	*buflen += 5;
 }
 
-void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
+
+void ppackLETLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
 {
 	if (!always && !w) return;
 
@@ -301,7 +444,8 @@ void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
 	*buflen += 6;
 }
 
-void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
+
+void ppackLETLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 {
 	if (!always && !d) return;
 
@@ -312,7 +456,8 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 	*buflen += 8;
 }
 
-void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType)
+
+void packLETLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType)
 {
 	int len = strlennull(str) + 1;
 
@@ -323,17 +468,19 @@ void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType)
 	*bufpos += len + 6;
 }
 
-void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
+
+void ppackLETLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always)
 {
 	int len = strlennull(str) + 1;
 
 	if (!always && len < 2) return;
 
 	*buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen + len);
-	packTLVLNTS(buf, buflen, str, wType);
+	packLETLVLNTS(buf, buflen, str, wType);
 }
 
-void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always)
+
+void ppackLETLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always)
 {
 	int len = strlennull(str) + 1;
 
@@ -348,7 +495,8 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 	*buflen += len + 8;
 }
 
-void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType)
+
+void ppackLETLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType)
 {
 	int len = strlennull(str) + 1;
 
@@ -361,7 +509,8 @@ void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wTy
 	*buflen += len + 7;
 }
 
-void CIcqProto::ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType)
+
+void CIcqProto::ppackLETLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType)
 {
 	char szTmp[1024];
 	char *str = "";
@@ -369,10 +518,10 @@ void CIcqProto::ppackTLVLNTSfromDB(PBYTE *buf, int *buflen, const char *szSettin
 	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
-	ppackTLVLNTS(buf, buflen, str, wType, 1);
+	ppackLETLVLNTS(buf, buflen, str, wType, 1);
 }
 
-void CIcqProto::ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType)
+void CIcqProto::ppackLETLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType)
 {
 	char szTmp[1024];
 	char *str = "";
@@ -380,10 +529,10 @@ void CIcqProto::ppackTLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const ch
 	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
-	ppackTLVWordLNTS(buf, buflen, w, str, wType, 1);
+	ppackLETLVWordLNTS(buf, buflen, w, str, wType, 1);
 }
 
-void CIcqProto::ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType)
+void CIcqProto::ppackLETLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType)
 {
 	char szTmp[1024];
 	char *str = "";
@@ -391,8 +540,116 @@ void CIcqProto::ppackTLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSe
 	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
 		str = szTmp;
 
-	ppackTLVLNTSByte(buf, buflen, str, b, wType);
+	ppackLETLVLNTSByte(buf, buflen, str, b, wType);
 }
+
+
+void CIcqProto::ppackTLVStringFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType)
+{
+	char szTmp[1024];
+	char *str = "";
+
+	if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
+		str = szTmp;
+
+  ppackTLV(buf, buflen, wType, strlennull(str), (PBYTE)str);
+}
+
+
+void CIcqProto::ppackTLVStringUtfFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType)
+{
+	char *str = getSettingStringUtf(NULL, szSetting, NULL);
+
+  ppackTLV(buf, buflen, wType, strlennull(str), (PBYTE)str);
+
+  SAFE_FREE((void**)&str);
+}
+
+
+void CIcqProto::ppackTLVDateFromDB(PBYTE *buf, int *buflen, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, WORD wType)
+{
+  SYSTEMTIME sTime = {0};
+  double time = 0;
+  
+  sTime.wYear = getSettingWord(NULL, szSettingYear, 0);
+  sTime.wMonth = getSettingByte(NULL, szSettingMonth, 0);
+  sTime.wDay = getSettingByte(NULL, szSettingDay, 0);
+  if (sTime.wYear || sTime.wMonth || sTime.wDay)
+  {
+    SystemTimeToVariantTime(&sTime, &time);
+    time -= 2;
+  }
+
+  ppackTLVDouble(buf, buflen, wType, time);
+}
+
+
+int CIcqProto::ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID)
+{
+  char szTmp[1024];
+  char *str = NULL;
+
+  if (!getSettingStringStatic(NULL, szSetting, szTmp, sizeof(szTmp)))
+    str = szTmp;
+
+  if (str)
+  {
+    WORD wLen = strlennull(str);
+
+    ppackWord(buf, buflen, wLen + 0x0A);
+	  ppackTLVWord(buf, buflen, wTypeID, wID);
+    ppackTLV(buf, buflen, wTypeData, wLen, (PBYTE)str);
+
+    return 1; // Success
+  }
+
+  return 0; // No data
+}
+
+
+void ppackTLVBlockItems(PBYTE *buf, int *buflen, WORD wType, int *nItems, PBYTE *pBlock, WORD *wLength, BOOL bSingleItem)
+{
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen + *wLength);
+  packWord(*buf + *buflen, wType);
+  packWord(*buf + *buflen + 2, (bSingleItem ? 4 : 2) + *wLength);
+  packWord(*buf + *buflen + 4, *nItems);
+  if (bSingleItem)
+    packWord(*buf + *buflen + 6, *wLength);
+  if (*wLength)
+    memcpy(*buf + *buflen + (bSingleItem ? 8 : 6), *pBlock, *wLength);
+  *buflen += (bSingleItem ? 8 : 6) + *wLength;
+
+  SAFE_FREE((void**)pBlock);
+  *wLength = 0;
+  *nItems = 0;
+}
+
+
+void ppackTLVBlockItem(PBYTE *buf, int *buflen, WORD wType, PBYTE *pItem, WORD *wLength)
+{
+  if (wLength)
+  {
+    *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen + *wLength);
+    packWord(*buf + *buflen, wType);
+    packWord(*buf + *buflen + 2, 4 + *wLength);
+    packWord(*buf + *buflen + 4, 1);
+    packWord(*buf + *buflen + 6, *wLength);
+    memcpy(*buf + *buflen + 8, *pItem, *wLength);
+    *buflen += 8 + *wLength;
+  }
+  else
+  {
+    *buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen);
+    packWord(*buf + *buflen, wType);
+    packWord(*buf + *buflen + 2, 0x02);
+    packWord(*buf + *buflen + 4, 0);
+    *buflen += 6;
+  }
+
+  SAFE_FREE((void**)pItem);
+  *wLength = 0;
+}
+
 
 void __fastcall unpackByte(BYTE** pSource, BYTE* byDestination)
 {

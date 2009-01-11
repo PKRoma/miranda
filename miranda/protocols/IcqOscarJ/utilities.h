@@ -94,13 +94,7 @@ char *ApplyEncoding(const char *string, const char *pszEncoding);
 
 int RandRange(int nLow, int nHigh);
 
-BOOL IsStringUIN(char* pszString);
-
-BOOL writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
-BOOL writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
-BOOL writeDbInfoSettingWordWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
-BOOL writeDbInfoSettingByte(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
-BOOL writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, struct fieldnames_t *table, char **buf, WORD* pwLength);
+BOOL IsStringUIN(const char *pszString);
 
 int GetGMTOffset(void);
 

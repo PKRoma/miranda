@@ -94,7 +94,7 @@ void CIcqProto::sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
 	if (bSecure)
 	{
 		serverPacketInit(&packet, (WORD)(packet.wLen + 10));
-		packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_LOGIN_REQUEST, 0, 0);
+		packFNACHeader(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_LOGIN_REQUEST, 0, 0);
 	}
 	else
 	{
@@ -126,6 +126,7 @@ void CIcqProto::sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
 	packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(&packet, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
 	packTLV(&packet, 0x000e, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
+//  packTLV(&packet, 0x0094, 0x0001, 0);  /// CLIENT_RECONNECT flag
 
 	sendServPacket(&packet);
 }

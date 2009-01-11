@@ -42,22 +42,23 @@
 
 #define OFT_BUFFER_SIZE 8192
 
-typedef struct {
+struct oft_file_record
+{
 	char *szContainer;
 	char *szFile;
-} oft_file_record;
+};
 
 char *FindFilePathContainer(const char **files, int iFile, char *szContainer);
 
 
-typedef struct {
-	message_cookie_data pMessage;
+struct basic_filetransfer
+{
+	cookie_message_data pMessage;
 	BYTE ft_magic;
-} basic_filetransfer;
+};
 
-typedef struct {
-	message_cookie_data pMessage;
-	BYTE ft_magic;
+struct oscar_filetransfer: public basic_filetransfer
+{
 	HANDLE hContact;
 	int initialized;
 	int sending;
@@ -107,7 +108,7 @@ typedef struct {
 	void* listener;
 	DWORD dwLastNotify;
 	int resumeAction;
-} oscar_filetransfer;
+};
 
 #define OFT_TYPE_REQUEST        0x0101 // I am going to send you this file, is that ok?
 #define OFT_TYPE_READY          0x0202 // Yes, it is ok for you to send me that file
@@ -118,7 +119,8 @@ typedef struct {
 
 void SafeReleaseFileTransfer(void **ft);
 
-struct oscar_connection {
+struct oscar_connection 
+{
 	HANDLE hContact;
 	HANDLE hConnection;
 	int status;
@@ -147,7 +149,8 @@ struct oscar_connection {
 #define OCS_PROXY       8
 #define OCS_WAITING     10
 
-struct oscar_listener {
+struct oscar_listener 
+{
   CIcqProto *ppro;
   WORD wPort;
   HANDLE hBoundPort;

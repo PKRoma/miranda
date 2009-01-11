@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera, Bio
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_advsearch.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -36,7 +36,7 @@
 
 #include "icqoscar.h"
 
-static void InitComboBox(HWND hwndCombo, struct fieldnames_t *names)
+static void InitComboBox(HWND hwndCombo, const FieldNamesItem *names)
 {
 	int iItem;
 	int i;
@@ -62,30 +62,10 @@ BOOL CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, L
 		InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);
-		InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), workField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), occupationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
-
-		{
-			struct CountryListEntry *countries;
-			int countryCount;
-			int i;
-			int iItem;
-			HWND hCombo;
-
-			CallService(MS_UTILS_GETCOUNTRYLIST, (WPARAM)&countryCount, (LPARAM)&countries);
-
-			hCombo = GetDlgItem(hwndDlg, IDC_COUNTRY);
-			iItem = ComboBoxAddStringUtf(hCombo, NULL, 0);
-			SendMessage(hCombo, CB_SETCURSEL, iItem, 0);
-			for (i = 0; i < countryCount; i++)
-			{
-				if (countries[i].id == 0 || countries[i].id == 0xFFFF)
-					continue;
-				iItem = ComboBoxAddStringUtf(hCombo, countries[i].szName, countries[i].id);
-			}
-		}
-
+    InitComboBox(GetDlgItem(hwndDlg, IDC_COUNTRY), countryField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
 
@@ -130,7 +110,7 @@ static void searchPackTLVLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idCont
 
 	GetDlgItemTextA(hwndDlg, idControl, str, sizeof(str));
 
-	ppackTLVLNTS(buf, buflen, str, wType, 0);
+	ppackLETLVLNTS(buf, buflen, str, wType, 0);
 }
 
 static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT idControl, WORD w, WORD wType)
@@ -139,7 +119,7 @@ static void searchPackTLVWordLNTS(PBYTE *buf, int *buflen, HWND hwndDlg, UINT id
 
 	GetDlgItemTextA(hwndDlg, idControl, str, sizeof(str));
 
-	ppackTLVWordLNTS(buf, buflen, w, str, wType, 0);
+	ppackLETLVWordLNTS(buf, buflen, w, str, wType, 0);
 }
 
 static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
@@ -161,12 +141,12 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_POSITION, TLV_POSITION);
 	searchPackTLVLNTS(&buf, &buflen, hwndDlg, IDC_KEYWORDS, TLV_KEYWORDS);
 
-	ppackTLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
-	ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
-	ppackTLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
-	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
-	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
-	ppackTLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
+	ppackLETLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
+	ppackLETLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_GENDER),        TLV_GENDER,    0);
+	ppackLETLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
+	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
+	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_COUNTRY),       TLV_COUNTRY,   0);
+	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_WORKFIELD),     TLV_OCUPATION, 0);
 
 	w = (WORD)getCurItemData(hwndDlg, IDC_PASTCAT);
 	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_PASTKEY, w, TLV_PASTINFO);
@@ -180,7 +160,7 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 	w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);;
 	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
 
-	ppackTLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
+	ppackLETLVByte(&buf, &buflen, (BYTE)IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY), TLV_ONLINEONLY, 1);
 
 	if (length)
 		*length = buflen;

@@ -75,9 +75,9 @@ void CIcqProto::handlePrivacyRightsReply(unsigned char *pBuffer, WORD wBufferLen
 			WORD wMaxInvisibleContacts;
 			WORD wMaxTemporaryVisibleContacts;
 
-			wMaxVisibleContacts = getWordFromChain(pChain, 0x0001, 1);
-			wMaxInvisibleContacts = getWordFromChain(pChain, 0x0002, 1);
-			wMaxTemporaryVisibleContacts = getWordFromChain(pChain, 0x0003, 1);
+			wMaxVisibleContacts = pChain->getWord(0x0001, 1);
+			wMaxInvisibleContacts = pChain->getWord(0x0002, 1);
+			wMaxTemporaryVisibleContacts = pChain->getWord(0x0003, 1);
 
 			disposeChain(&pChain);
 

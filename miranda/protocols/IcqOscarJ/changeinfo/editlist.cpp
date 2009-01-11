@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,13 +34,9 @@
 
 #include "icqoscar.h"
 
-extern HFONT  hListFont;
-extern char   Password[10];
-extern HANDLE hUpload[2];
-extern HWND   hwndList;
-extern int    iEditItem;
 
-static HWND hwndListEdit=NULL;
+static ChangeInfoData *dataListEdit = NULL;
+static HWND hwndListEdit = NULL;
 static BOOL (WINAPI *MyAnimateWindow)(HWND,DWORD,DWORD);
 static WNDPROC OldListEditProc;
 
@@ -49,126 +45,150 @@ static LRESULT CALLBACK ListEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
   switch(msg) 
   {
     case WM_LBUTTONUP:
-      CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
+      CallWindowProc(OldListEditProc, hwnd, msg, wParam, lParam);
       {  
         POINT pt;
 
-        pt.x=(short)LOWORD(lParam);
-        pt.y=(short)HIWORD(lParam);
-        ClientToScreen(hwnd,&pt);
-        if(SendMessage(hwnd,WM_NCHITTEST,0,MAKELPARAM(pt.x,pt.y))==HTVSCROLL) break;
+        pt.x = (short)LOWORD(lParam);
+        pt.y = (short)HIWORD(lParam);
+        ClientToScreen(hwnd, &pt);
+        if (SendMessage(hwnd, WM_NCHITTEST, 0, MAKELPARAM(pt.x, pt.y)) == HTVSCROLL) break;
       }
       {  
-        int i;
+        int i = SendMessage(hwnd, LB_GETCURSEL, 0, 0);
 
-        i=SendMessage(hwnd,LB_GETCURSEL,0,0);
-        EndListEdit(i!=LB_ERR);
+        if (dataListEdit)
+          dataListEdit->EndListEdit(i != LB_ERR);
       }
       return 0;
-    case WM_CHAR:
-      if(wParam!='\r') break;
-      {  
-        int i;
 
-        i=SendMessage(hwnd,LB_GETCURSEL,0,0);
-        EndListEdit(i!=LB_ERR);
+    case WM_CHAR:
+      if (wParam != '\r') break;
+      {  
+        int i = SendMessage(hwnd, LB_GETCURSEL, 0, 0);
+
+        if (dataListEdit)
+          dataListEdit->EndListEdit(i != LB_ERR);
       }
       return 0;
     case WM_KILLFOCUS:
-      EndListEdit(1);
+      if (dataListEdit)
+        dataListEdit->EndListEdit(1);
       return 0;
   }
-  return CallWindowProc(OldListEditProc,hwnd,msg,wParam,lParam);
+  return CallWindowProc(OldListEditProc, hwnd, msg, wParam, lParam);
 }
 
 
-
-void BeginListEdit(int iItem,RECT *rc,int i,WORD wVKey)
+void ChangeInfoData::BeginListEdit(int iItem, RECT *rc, int iSetting, WORD wVKey)
 {
   int j,n;
   POINT pt;
   int itemHeight;
   char str[MAX_PATH];
 
-  EndListEdit(0);
+  if (dataListEdit)
+    dataListEdit->EndListEdit(0);
+
   pt.x=pt.y=0;
   ClientToScreen(hwndList,&pt);
   OffsetRect(rc,pt.x,pt.y);
   InflateRect(rc,-2,-2);
   rc->left-=2;
-  iEditItem=iItem;
-  ListView_RedrawItems(hwndList,iEditItem,iEditItem);
+  iEditItem = iItem;
+  ListView_RedrawItems(hwndList, iEditItem, iEditItem);
   UpdateWindow(hwndList);
 
-  hwndListEdit=CreateWindowExA(WS_EX_TOOLWINDOW|WS_EX_TOPMOST,"LISTBOX","",WS_POPUP|WS_BORDER|WS_VSCROLL,rc->left,rc->bottom,rc->right-rc->left,150,NULL,NULL,hInst,NULL);
-  SendMessage(hwndListEdit,WM_SETFONT,(WPARAM)hListFont,0);
-  itemHeight=SendMessage(hwndListEdit,LB_GETITEMHEIGHT,0,0);
-  for(j=0;j<setting[i].listCount;j++) 
-  {
-    n = ListBoxAddStringUtf(hwndListEdit, ((ListTypeDataItem*)setting[i].pList)[j].szValue);
-    SendMessage(hwndListEdit,LB_SETITEMDATA,n,((ListTypeDataItem*)setting[i].pList)[j].id);
-    if ((setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,((ListTypeDataItem*)setting[i].pList)[j].szValue))
-       || (setting[i].dbType==DBVT_ASCIIZ && (!strcmpnull((char*)setting[i].value,ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH))))
-       || ((char*)setting[i].value==NULL && ((ListTypeDataItem*)setting[i].pList)[j].id==0))
-       || (setting[i].dbType!=DBVT_ASCIIZ && setting[i].value==((ListTypeDataItem*)setting[i].pList)[j].id))
-      SendMessage(hwndListEdit,LB_SETCURSEL,n,0);
+  dataListEdit = this;
+  hwndListEdit = CreateWindowEx(WS_EX_TOOLWINDOW|WS_EX_TOPMOST, _T("LISTBOX"), _T(""), WS_POPUP|WS_BORDER|WS_VSCROLL, rc->left, rc->bottom, rc->right - rc->left, 150, NULL, NULL, hInst, NULL);
+  SendMessage(hwndListEdit, WM_SETFONT, (WPARAM)hListFont, 0);
+  itemHeight = SendMessage(hwndListEdit, LB_GETITEMHEIGHT, 0, 0);
+
+  FieldNamesItem *list = (FieldNamesItem*)setting[iSetting].pList;
+
+  if (list == countryField)
+  { // some country codes were changed leaving old details uknown, convert it for the user
+    if (settingData[iSetting].value == 420) settingData[iSetting].value = 42; // conversion of obsolete codes (OMG!)
+    else if (settingData[iSetting].value == 421) settingData[iSetting].value = 4201;
+    else if (settingData[iSetting].value == 102) settingData[iSetting].value = 1201;
   }
-  SendMessage(hwndListEdit,LB_SETTOPINDEX,SendMessage(hwndListEdit,LB_GETCURSEL,0,0)-3,0);
-  if(itemHeight*setting[i].listCount<150)
-    SetWindowPos(hwndListEdit,0,0,0,rc->right-rc->left,itemHeight*setting[i].listCount+GetSystemMetrics(SM_CYBORDER)*2,SWP_NOZORDER|SWP_NOMOVE);
-  OldListEditProc=(WNDPROC)SetWindowLong(hwndListEdit,GWL_WNDPROC,(LONG)ListEditSubclassProc);
-  if (MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"),"AnimateWindow")) 
+
+  n = ListBoxAddStringUtf(hwndListEdit, "Unspecified");
+  for (j=0; ; j++)
+    if (!list[j].text)
+    {
+      SendMessage(hwndListEdit, LB_SETITEMDATA, n, j);
+      if ((settingData[iSetting].value == 0 && list[j].code == 0)
+       || (setting[iSetting].dbType != DBVT_ASCIIZ && settingData[iSetting].value == list[j].code))
+        SendMessage(hwndListEdit, LB_SETCURSEL, n, 0);
+      break;
+    }
+
+  for (j=0; list[j].text; j++) 
+  {
+    n = ListBoxAddStringUtf(hwndListEdit, list[j].text);
+    SendMessage(hwndListEdit, LB_SETITEMDATA, n, j);
+    if ((setting[iSetting].dbType == DBVT_ASCIIZ && (!strcmpnull((char*)settingData[iSetting].value, list[j].text))
+     || (setting[iSetting].dbType == DBVT_ASCIIZ && (!strcmpnull((char*)settingData[iSetting].value, ICQTranslateUtfStatic(list[j].text, str, MAX_PATH))))
+     || ((char*)settingData[iSetting].value == NULL && list[j].code == 0))
+     || (setting[iSetting].dbType != DBVT_ASCIIZ && settingData[iSetting].value == list[j].code))
+      SendMessage(hwndListEdit, LB_SETCURSEL, n, 0);
+  }
+  SendMessage(hwndListEdit, LB_SETTOPINDEX, SendMessage(hwndListEdit, LB_GETCURSEL, 0, 0) - 3, 0);
+  int listCount = SendMessage(hwndListEdit, LB_GETCOUNT, 0, 0);
+  if (itemHeight * listCount < 150)
+    SetWindowPos(hwndListEdit, 0, 0, 0, rc->right - rc->left, itemHeight * listCount + GetSystemMetrics(SM_CYBORDER) * 2, SWP_NOZORDER|SWP_NOMOVE);
+  OldListEditProc = (WNDPROC)SetWindowLong(hwndListEdit, GWL_WNDPROC, (LONG)ListEditSubclassProc);
+  if (MyAnimateWindow = (BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("user32"), "AnimateWindow")) 
   {
     BOOL enabled;
 
-    SystemParametersInfo(SPI_GETCOMBOBOXANIMATION,0,&enabled,FALSE);
-    if(enabled) MyAnimateWindow(hwndListEdit,200,AW_SLIDE|AW_ACTIVATE|AW_VER_POSITIVE);
+    SystemParametersInfo(SPI_GETCOMBOBOXANIMATION, 0, &enabled, FALSE);
+    if (enabled) MyAnimateWindow(hwndListEdit, 200, AW_SLIDE|AW_ACTIVATE|AW_VER_POSITIVE);
   }
-  ShowWindow(hwndListEdit,SW_SHOW);
+  ShowWindow(hwndListEdit, SW_SHOW);
   SetFocus(hwndListEdit);
-  if(wVKey)
-    PostMessage(hwndListEdit,WM_KEYDOWN,wVKey,0);
+  if (wVKey)
+    PostMessage(hwndListEdit, WM_KEYDOWN, wVKey, 0);
 }
 
 
-
-void EndListEdit(int save)
+void ChangeInfoData::EndListEdit(int save)
 {
-  if(hwndListEdit==NULL || iEditItem==-1) return;
-  if(save) 
+  if (hwndListEdit == NULL || iEditItem == -1 || this != dataListEdit) return;
+  if (save) 
   {
-    int i;
-    LPARAM newValue;
-    i=SendMessage(hwndListEdit,LB_GETCURSEL,0,0);
-    newValue=SendMessage(hwndListEdit,LB_GETITEMDATA,i,0);
-    if (setting[iEditItem].dbType==DBVT_ASCIIZ) 
+    int iItem = SendMessage(hwndListEdit, LB_GETCURSEL, 0, 0);
+    int i = SendMessage(hwndListEdit, LB_GETITEMDATA, iItem, 0);
+
+    if (setting[iEditItem].dbType == DBVT_ASCIIZ) 
     {
-      char *szNewValue = (((ListTypeDataItem*)setting[iEditItem].pList)[i].szValue);
-      if (newValue || setting[iEditItem].displayType & LIF_ZEROISVALID) 
+      char *szNewValue = (((FieldNamesItem*)setting[iEditItem].pList)[i].text);
+      if (((FieldNamesItem*)setting[iEditItem].pList)[i].code || setting[iEditItem].displayType & LIF_ZEROISVALID)
       { 
-        setting[iEditItem].changed = strcmpnull(szNewValue, (char*)setting[iEditItem].value);
-        SAFE_FREE((void**)&setting[iEditItem].value);
-        setting[iEditItem].value=(LPARAM)null_strdup(szNewValue);
+        settingData[iEditItem].changed = strcmpnull(szNewValue, (char*)settingData[iEditItem].value);
+        SAFE_FREE((void**)&settingData[iEditItem].value);
+        settingData[iEditItem].value = (LPARAM)null_strdup(szNewValue);
       }
       else 
       {
-        setting[iEditItem].changed=(char*)setting[iEditItem].value!=NULL;
-        SAFE_FREE((void**)&setting[iEditItem].value);
+        settingData[iEditItem].changed = (char*)settingData[iEditItem].value!=NULL;
+        SAFE_FREE((void**)&settingData[iEditItem].value);
       }
     }
     else 
     {
-      setting[iEditItem].changed=newValue!=setting[iEditItem].value;
-      setting[iEditItem].value=newValue;
+      settingData[iEditItem].changed = ((FieldNamesItem*)setting[iEditItem].pList)[i].code != settingData[iEditItem].value;
+      settingData[iEditItem].value = ((FieldNamesItem*)setting[iEditItem].pList)[i].code;
     }
-    if (setting[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
+    if (settingData[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
   }
   ListView_RedrawItems(hwndList, iEditItem, iEditItem);
   iEditItem = -1;
+  dataListEdit = NULL;
   DestroyWindow(hwndListEdit);
   hwndListEdit = NULL;
 }
-
 
 
 int IsListEditWindow(HWND hwnd)

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_direct.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -37,8 +37,9 @@
 #ifndef __ICQ_DIRECT_H
 #define __ICQ_DIRECT_H
 
-typedef struct {
-  message_cookie_data pMessage;
+struct filetransfer
+{
+  cookie_message_data pMessage;
   BYTE ft_magic;
   int status;
   int sending;
@@ -66,7 +67,7 @@ typedef struct {
   int   nVersion;   // Was this sent with a v7 or a v8 packet?
   BOOL bDC;         // Was this received over a DC or through server?
   BOOL bEmptyDesc;  // Was the description empty ?
-} filetransfer;
+};
 
 #define DIRECTCONN_STANDARD   0
 #define DIRECTCONN_FILE       1
@@ -74,7 +75,8 @@ typedef struct {
 #define DIRECTCONN_REVERSE    10
 #define DIRECTCONN_CLOSING    15
 
-typedef struct {
+struct directconnect
+{
   HANDLE hContact;
   HANDLE hConnection;
   DWORD dwConnectionCookie;
@@ -94,7 +96,7 @@ typedef struct {
   DWORD dwThreadId;
   filetransfer *ft;
   DWORD dwReqId;  // Reverse Connect request cookie
-} directconnect;
+};
 
 int  DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen);
 

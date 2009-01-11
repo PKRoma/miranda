@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,44 +34,51 @@
 
 #include "icqoscar.h"
 
-void CIcqProto::LoadSettingsFromDb(int keepChanged)
-{
-	for ( int i=0; i < settingCount; i++ ) {
-		if (setting[i].displayType == LI_DIVIDER) continue;
-		if (keepChanged && setting[i].changed) continue;
-		if (setting[i].dbType == DBVT_ASCIIZ) 
-			SAFE_FREE((void**)(char**)&setting[i].value);
-		else if (!keepChanged)
-			setting[i].value = 0;
 
-		setting[i].changed=0;
+void ChangeInfoData::LoadSettingsFromDb(int keepChanged)
+{
+	for (int i=0; i < settingCount; i++) 
+  {
+		if (setting[i].displayType == LI_DIVIDER) continue;
+		if (keepChanged && settingData[i].changed) continue;
+		if (setting[i].dbType == DBVT_ASCIIZ) 
+			SAFE_FREE((void**)(char**)&settingData[i].value);
+		else if (!keepChanged)
+			settingData[i].value = 0;
+
+		settingData[i].changed = 0;
 
 		if (setting[i].displayType & LIF_PASSWORD) continue;
 
-		DBVARIANT dbv;
-		if (!getSetting(NULL,setting[i].szDbSetting,&dbv)) {
+    DBVARIANT dbv = {DBVT_DELETED};
+		if (!ppro->getSetting(NULL, setting[i].szDbSetting, &dbv))
+    {
 			switch(dbv.type) {
 			case DBVT_ASCIIZ:
-				setting[i].value=(LPARAM)getSettingStringUtf(NULL,setting[i].szDbSetting, NULL);
-				break;
+				settingData[i].value = (LPARAM)ppro->getSettingStringUtf(NULL, setting[i].szDbSetting, NULL);
+        break;
+
 			case DBVT_UTF8:
-				setting[i].value=(LPARAM)null_strdup(dbv.pszVal);
+				settingData[i].value = (LPARAM)null_strdup(dbv.pszVal);
 				break;
+
 			case DBVT_WORD:
-				if(setting[i].displayType&LIF_SIGNED) 
-					setting[i].value=dbv.sVal;
+				if (setting[i].displayType & LIF_SIGNED) 
+					settingData[i].value = dbv.sVal;
 				else 
-					setting[i].value=dbv.wVal;
+					settingData[i].value = dbv.wVal;
 				break;
+
 			case DBVT_BYTE:
-				if(setting[i].displayType&LIF_SIGNED) 
-					setting[i].value=dbv.cVal;
+				if (setting[i].displayType & LIF_SIGNED) 
+					settingData[i].value = dbv.cVal;
 				else 
-					setting[i].value=dbv.bVal;
+					settingData[i].value = dbv.bVal;
 				break;
+
 #ifdef _DEBUG
 			default:
-				MessageBoxA(NULL,"That's not supposed to happen either","Huh?",MB_OK);
+				MessageBoxA(NULL, "That's not supposed to happen either", "Huh?", MB_OK);
 				break;
 #endif
 			}
@@ -80,25 +87,28 @@ void CIcqProto::LoadSettingsFromDb(int keepChanged)
 	}
 }
 
-void CIcqProto::FreeStoredDbSettings(void)
-{
-	for ( int i=0; i < settingCount; i++ )
-		if (setting[i].dbType == DBVT_ASCIIZ)
-			SAFE_FREE((void**)(char**)&setting[i].value);
-}
 
-int CIcqProto::ChangesMade(void)
+void ChangeInfoData::FreeStoredDbSettings(void)
 {
 	for (int i=0; i < settingCount; i++ )
-		if (setting[i].changed)
+		if (setting[i].dbType == DBVT_ASCIIZ)
+			SAFE_FREE((void**)&settingData[i].value);
+}
+
+
+int ChangeInfoData::ChangesMade(void)
+{
+	for (int i=0; i < settingCount; i++ )
+		if (settingData[i].changed)
 			return 1;
 	return 0;
 }
 
-void CIcqProto::ClearChangeFlags(void)
+
+void ChangeInfoData::ClearChangeFlags(void)
 {
 	for (int i=0; i < settingCount; i++)
-		setting[i].changed = 0;
+		settingData[i].changed = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -154,45 +164,60 @@ static BOOL CALLBACK PwConfirmDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-int CIcqProto::SaveSettingsToDb(HWND hwndDlg)
-{
-	int i,ret=1;
 
-	for( i=0; i < settingCount; i++ ) {
-		if(!setting[i].changed) continue;
-		if(!(setting[i].displayType & LIF_ZEROISVALID) && setting[i].value==0) {
-			deleteSetting(NULL,setting[i].szDbSetting);
+int ChangeInfoData::SaveSettingsToDb(HWND hwndDlg)
+{
+	int ret = 1;
+
+	for (int i = 0; i < settingCount; i++) 
+  {
+		if (!settingData[i].changed) continue;
+		if (!(setting[i].displayType & LIF_ZEROISVALID) && settingData[i].value==0)
+    {
+			ppro->deleteSetting(NULL, setting[i].szDbSetting);
 			continue;
 		}
 		switch(setting[i].dbType) {
 		case DBVT_ASCIIZ:
-			if(setting[i].displayType&LIF_PASSWORD) {
-				int nSettingLen = strlennull((char*)setting[i].value);
+			if (setting[i].displayType & LIF_PASSWORD)
+      {
+				int nSettingLen = strlennull((char*)settingData[i].value);
 
-				if (nSettingLen > 8 || nSettingLen < 1) {
+				if (nSettingLen > 8 || nSettingLen < 1)
+        {
 					MessageBoxUtf(hwndDlg, LPGEN("The ICQ server does not support passwords longer than 8 characters. Please use a shorter password."), LPGEN("Change ICQ Details"), MB_OK);
 					ret=0;
 					break;
 				}
-				PwConfirmDlgParam param = { this, (char*)setting[i].value };
-				if (IDOK != DialogBoxParam(hInst,MAKEINTRESOURCE(IDD_PWCONFIRM),hwndDlg,PwConfirmDlgProc,(LPARAM)&param)) {
+        PwConfirmDlgParam param = { ppro, (char*)settingData[i].value };
+				if (IDOK != DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_PWCONFIRM), hwndDlg, PwConfirmDlgProc, (LPARAM)&param))
+        {
 					ret = 0;
 					break;
 				}
-				strcpy(m_szPassword, (char*)setting[i].value);
+				strcpy(ppro->m_szPassword, (char*)settingData[i].value);
 			}
 			else {
-				if(*(char*)setting[i].value)
-					setSettingStringUtf(NULL,setting[i].szDbSetting,(char*)setting[i].value);
+				if (*(char*)settingData[i].value)
+					ppro->setSettingStringUtf(NULL, setting[i].szDbSetting, (char*)settingData[i].value);
 				else
-					deleteSetting(NULL,setting[i].szDbSetting);
+					ppro->deleteSetting(NULL, setting[i].szDbSetting);
 			}
 			break;
+
+    case DBVT_UTF8:
+			if (*(char*)settingData[i].value)
+				ppro->setSettingStringUtf(NULL, setting[i].szDbSetting, (char*)settingData[i].value);
+			else
+				ppro->deleteSetting(NULL, setting[i].szDbSetting);
+      break;
+
 		case DBVT_WORD:
-			setSettingWord(NULL,setting[i].szDbSetting,(WORD)setting[i].value);
+			ppro->setSettingWord(NULL, setting[i].szDbSetting, (WORD)settingData[i].value);
 			break;
+
 		case DBVT_BYTE:
-			setSettingByte(NULL,setting[i].szDbSetting,(BYTE)setting[i].value);
+			ppro->setSettingByte(NULL, setting[i].szDbSetting, (BYTE)settingData[i].value);
 			break;
 		}
 	}

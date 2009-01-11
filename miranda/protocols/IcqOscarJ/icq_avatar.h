@@ -45,9 +45,8 @@ extern BYTE hashEmptyAvatar[9];
 #define AVATAR_HASH_FLASH   0x08
 #define AVATAR_HASH_PHOTO   0x0C
 
-int  DetectAvatarFormat(char* szFile);
+int  DetectAvatarFormat(const char *szFile);
 void AddAvatarExt(int dwFormat, char* pszDest);
 
-int IsAvatarSaved(HANDLE hContact, BYTE *pHash, int nHashLen);
 
 #endif /* __ICQ_AVATAR_H */

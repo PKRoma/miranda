@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,7 +36,7 @@
 
 #include "icqoscar.h"
 
-void CIcqProto::handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void CIcqProto::handleIcqExtensionsFam(BYTE *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
 	switch (pSnacHeader->wSubtype) {
 
@@ -54,7 +54,8 @@ void CIcqProto::handleIcqExtensionsFam(unsigned char *pBuffer, WORD wBufferLengt
 	}
 }
 
-void CIcqProto::handleExtensionError(unsigned char *buf, WORD wPackLen)
+
+void CIcqProto::handleExtensionError(BYTE *buf, WORD wPackLen)
 {
 	WORD wErrorCode;
 
@@ -74,10 +75,10 @@ void CIcqProto::handleExtensionError(unsigned char *buf, WORD wPackLen)
 		{
 			oscar_tlv* pTLV;
 
-			pTLV = getTLV(chain, 0x21, 1); // get meta error data
+			pTLV = chain->getTLV(0x21, 1); // get meta error data
 			if (pTLV && pTLV->wLen >= 8)
 			{
-				unsigned char* pBuffer = pTLV->pData;
+				BYTE *pBuffer = pTLV->pData;
 				WORD wData;
 				pBuffer += 6;
 				unpackLEWord(&pBuffer, &wData); // get request type
@@ -95,7 +96,7 @@ void CIcqProto::handleExtensionError(unsigned char *buf, WORD wPackLen)
 						if (wSubType == META_REQUEST_FULL_INFO)
 						{
 							HANDLE hContact;
-							fam15_cookie_data* pCookieData = NULL;
+							cookie_fam15_data *pCookieData = NULL;
 							int foundCookie;
 
 							foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
@@ -126,15 +127,11 @@ void CIcqProto::handleExtensionError(unsigned char *buf, WORD wPackLen)
 	LogFamilyError(ICQ_EXTENSIONS_FAMILY, wErrorCode);
 }
 
-void CIcqProto::handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wFlags)
+
+void CIcqProto::handleExtensionServerInfo(BYTE *buf, WORD wPackLen, WORD wFlags)
 {
-	WORD wBytesRemaining;
-	WORD wRequestType;
-	WORD wCookie;
-	DWORD dwMyUin;
-	oscar_tlv_chain* chain;
-	oscar_tlv* dataTlv;
-	unsigned char* databuf;
+	oscar_tlv_chain *chain;
+	oscar_tlv *dataTlv;
 
 	// The entire packet is encapsulated in a TLV type 1
 	chain = readIntoTLVChain(&buf, wPackLen, 0);
@@ -144,14 +141,14 @@ void CIcqProto::handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WOR
 		return;
 	}
 
-	dataTlv = getTLV(chain, 0x0001, 1);
+	dataTlv = chain->getTLV(0x0001, 1);
 	if (dataTlv == NULL)
 	{
 		disposeChain(&chain);
 		NetLog_Server("Error: Broken snac 15/3 %d", 2);
 		return;
 	}
-	databuf = dataTlv->pData;
+	BYTE *databuf = dataTlv->pData;
 	wPackLen -= 4;
 
 	_ASSERTE(dataTlv->wLen == wPackLen);
@@ -159,6 +156,11 @@ void CIcqProto::handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WOR
 
 	if ((dataTlv->wLen == wPackLen) && (wPackLen >= 10))
 	{
+    WORD wBytesRemaining;
+    WORD wRequestType;
+    WORD wCookie;
+    DWORD dwMyUin;
+
 		unpackLEWord(&databuf, &wBytesRemaining);
 		unpackLEDWord(&databuf, &dwMyUin);
 		unpackLEWord(&databuf, &wRequestType);
@@ -187,7 +189,8 @@ void CIcqProto::handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WOR
 		disposeChain(&chain);
 }
 
-void CIcqProto::handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags)
+
+void CIcqProto::handleExtensionMetaResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags)
 {
 	WORD wReplySubtype;
 	BYTE bResultCode;
@@ -206,7 +209,6 @@ void CIcqProto::handleExtensionMetaResponse(unsigned char *databuf, WORD wPacket
 		switch (wReplySubtype)
 		{
 		case META_SET_PASSWORD_ACK:
-		case META_SET_FULLINFO_ACK:
 			parseUserInfoUpdateAck(databuf, wPacketLen, wCookie, wReplySubtype, bResultCode);
 			break;
 
@@ -216,25 +218,11 @@ void CIcqProto::handleExtensionMetaResponse(unsigned char *databuf, WORD wPacket
 			parseSearchReplies(databuf, wPacketLen, wCookie, wReplySubtype, bResultCode);
 			break;
 
-		case META_SHORT_USERINFO:
-		case META_BASIC_USERINFO:
-		case META_WORK_USERINFO:
-		case META_MORE_USERINFO:
-		case META_NOTES_USERINFO:
-		case META_EMAIL_USERINFO:
-		case META_INTERESTS_USERINFO:
-		case META_AFFILATIONS_USERINFO:
-		case META_HPAGECAT_USERINFO:
-			parseUserInfoRequestReplies(databuf, wPacketLen, wCookie, wFlags, wReplySubtype, bResultCode);
-			break;
-
 		case META_PROCESSING_ERROR:  // Meta processing error server reply
 			// Todo: We only use this as an SMS ack, that will have to change
 			{
-				char *pszInfo;
-
 				// Terminate buffer
-				pszInfo = (char *)_alloca(wPacketLen + 1);
+				char *pszInfo = (char *)_alloca(wPacketLen + 1);
 				if (wPacketLen > 0)
 					memcpy(pszInfo, databuf, wPacketLen);
 				pszInfo[wPacketLen] = 0;
@@ -285,6 +273,21 @@ void CIcqProto::handleExtensionMetaResponse(unsigned char *databuf, WORD wPacket
 			NetLog_Server("Error: Failure parsing META_SMS_DELIVERY_RECEIPT");
 			break;
 
+    case META_DIRECTORY_DATA:
+    case META_DIRECTORY_RESPONSE:
+      if (bResultCode == 0x0A)
+        handleDirectoryQueryResponse(databuf, wPacketLen, wCookie, wReplySubtype, wFlags);
+      else
+        NetLog_Server("Error: Directory request failed, code %u", bResultCode);
+      break;
+
+    case META_DIRECTORY_UPDATE_ACK:
+      if (bResultCode == 0x0A)
+        handleDirectoryUpdateResponse(databuf, wPacketLen, wCookie, wReplySubtype);
+      else
+        NetLog_Server("Error: Directory request failed, code %u", bResultCode);
+      break;
+
 		default:
 			NetLog_Server("Warning: Ignored 15/03 replysubtype x%x", wReplySubtype);
 			//      _ASSERTE(0);
@@ -299,7 +302,8 @@ void CIcqProto::handleExtensionMetaResponse(unsigned char *databuf, WORD wPacket
 	NetLog_Server("Warning: Broken 15/03 ExtensionMetaResponse");
 }
 
-void CIcqProto::ReleaseSearchCookie(DWORD dwCookie, search_cookie *pCookie)
+
+void CIcqProto::ReleaseSearchCookie(DWORD dwCookie, cookie_search *pCookie)
 {
 	if (pCookie)
 	{
@@ -324,11 +328,12 @@ void CIcqProto::ReleaseSearchCookie(DWORD dwCookie, search_cookie *pCookie)
 		BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
 }
 
+
 void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
 	BYTE bParsingOK = FALSE; // For debugging purposes only
 	BOOL bLastUser = FALSE;
-	search_cookie* pCookie;
+	cookie_search *pCookie;
 
 	if (!FindCookie(wCookie, NULL, (void**)&pCookie))
 	{
@@ -496,401 +501,11 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 	}
 }
 
-void CIcqProto::parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags, WORD wReplySubtype, BYTE bResultCode)
-{
-	BOOL bMoreDataFollows;
-	fam15_cookie_data* pCookieData = NULL;
-	HANDLE hContact = INVALID_HANDLE_VALUE;
-	DWORD dwCookieUin;
-	int foundCookie;
-	BOOL bOK = TRUE;
-
-
-	foundCookie = FindCookie(wCookie, &hContact, (void**)&pCookieData);
-	if (foundCookie && pCookieData)
-	{
-		if (pCookieData->bRequestType == REQUESTTYPE_OWNER)
-			hContact = NULL; // this is here for situation when we have own uin in clist
-	}
-	else
-	{
-		NetLog_Server("Warning: Ignoring unrequested 15/03 user info reply type 0x%x", wReplySubtype);
-		return;
-	}
-	// obtain contact UIN
-	dwCookieUin = getContactUin(hContact);
-
-	if (bResultCode != 0x0A)
-	{
-		NetLog_Server("Warning: Got 15/03 user info failure reply type 0x%x", wReplySubtype);
-	}
-
-	// Check if this is the last packet for this request
-	bMoreDataFollows = wFlags&0x0001;
-
-	switch (wReplySubtype) {
-
-	case META_BASIC_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "BASIC", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "FirstName", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "LastName", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "e-mail", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "City", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "State", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Phone", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Fax", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Street", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Cellular", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "ZIP", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "Country", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByte(hContact, "Timezone", (char**)&databuf, &wPacketLen);
-
-			if (bOK && (wPacketLen >= 3))
-			{
-				if (hContact == NULL)
-				{ // auth flag is the same for normal contacts also
-					setSettingByte(hContact, "Auth", (BYTE)!(*databuf));
-					databuf += 1;
-
-					// webaware is also the same, but gives different values
-					setSettingByte(hContact, "WebAware", (*databuf));
-					databuf += 1;
-
-					setSettingByte(hContact, "PublishPrimaryEmail", (BYTE)!(*databuf));
-					databuf += 1;
-				}
-				else 
-					databuf += 3;
-
-				wPacketLen -= 3;
-
-				if (wPacketLen >= 1 && (!hContact || dwCookieUin == m_dwLocalUIN))
-				{ // owner or owner contact contains one more unknown byte value
-					databuf += 1; // OMG!
-					wPacketLen -= 1;
-				}
-			}
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "ZIP", (char**)&databuf, &wPacketLen);
-		}
-		break;
-
-	case META_WORK_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "WORK", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyCity", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyState", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyPhone", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyFax", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyStreet", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyZIP", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "CompanyCountry", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Company", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyDepartment",(char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyPosition", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "CompanyOccupation",(char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyHomepage", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "CompanyZIP", (char**)&databuf, &wPacketLen);
-		}
-		break;
-
-	case META_MORE_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "MORE", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "Age", (char**)&databuf, &wPacketLen);
-			if (bOK && (wPacketLen >= 1))
-			{
-				if (*databuf)
-					setSettingByte(hContact, "Gender", (BYTE)(*databuf == 1 ? 'F' : 'M'));
-				else 
-					// Undefined gender
-					deleteSetting(hContact, "Gender");
-				databuf += 1;
-				wPacketLen -= 1;
-			}
-			else
-				bOK = FALSE;
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Homepage", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "BirthYear", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByte(hContact, "BirthMonth", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByte(hContact, "BirthDay", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language1", languageField, (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language2", languageField, (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingByteWithTable(hContact, "Language3", languageField, (char**)&databuf, &wPacketLen);
-
-			if (bOK && (wPacketLen >= 2))
-			{
-				databuf += 2;
-				wPacketLen -= 2;
-			}
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "OriginCity", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "OriginState", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "OriginCountry", (char**)&databuf, &wPacketLen);
-
-			if (bOK) bOK = writeDbInfoSettingByte(hContact, "MaritalStatus", (char**)&databuf, &wPacketLen);
-
-			if (bOK)
-			{
-				if (hContact == NULL)
-					bOK = writeDbInfoSettingByte(hContact, "AllowSpam", (char**)&databuf, &wPacketLen);
-				else
-				{
-					databuf++;
-					wPacketLen--;
-				}
-			}
-			if (bOK) bOK = writeDbInfoSettingWord(hContact, "InfoCP", (char**)&databuf, &wPacketLen);
-		}
-		break;
-
-	case META_NOTES_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "NOTES", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "About", (char**)&databuf, &wPacketLen);
-		}
-		break;
-
-	case META_EMAIL_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "EMAIL", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			int nCount = 0;
-			char pszDatabaseKey[33];
-			WORD wEmailLength;
-
-
-			// This value used to be a e-mail counter. Either that was wrong or
-			// Mirabilis changed the behaviour again. It usually says NULL now so
-			// I use the packet byte count to extract the e-mails instead.
-			databuf++;
-			wPacketLen--;
-
-			while (wPacketLen > 4)
-			{
-
-				// Don't publish flag
-				databuf += 1;
-				wPacketLen -= 1;
-
-				// E-mail length
-				unpackLEWord(&databuf, &wEmailLength);
-				wPacketLen -= 2;
-
-				// Check for buffer overflows
-				if ((wEmailLength > wPacketLen) || (databuf[wEmailLength-1] != 0))
-					break;
-
-				// Rewind buffer pointer for writeDbInfoSettingString().
-				databuf -= 2;
-				wPacketLen += 2;
-
-				if (wEmailLength > 1)
-				{ 
-					null_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
-					if (bOK) bOK = writeDbInfoSettingString(hContact, pszDatabaseKey, (char**)&databuf, &wPacketLen);
-
-					// Stop on parsing errors
-					if (!bOK)
-						break;
-
-					// Increase counter
-					nCount++;
-				}
-				else
-				{
-					databuf += wEmailLength;
-					wPacketLen -= wEmailLength;
-				}
-			}
-
-			// Delete the next key (this may not exist but that is OK)
-			// :TODO:
-			// We should probably continue to enumerate some keys here just in case
-			// many e-mails were deleted. But it is not that important.
-			if (bOK)
-			{
-				// We only delete e-mails when the parsing was successful since nCount
-				// may be incorrect otherwise
-				null_snprintf(pszDatabaseKey, 33, "e-mail%d", nCount);
-				deleteSetting(hContact, pszDatabaseKey);
-			}
-		}
-		break;
-
-	case META_INTERESTS_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "INTERESTS", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			int i, count;
-			char idstr[33];
-
-			wPacketLen--;
-			count = *databuf++;
-			// 4 is the maximum allowed personal interests, if count is
-			// higher it's likely a parsing error
-			_ASSERTE(count <= 4);
-			for (i = 0; i < 4; i++)
-			{
-				if (i < count)
-				{
-					null_snprintf(idstr, 33, "Interest%dCat", i);
-					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, interestsField, (char**)&databuf, &wPacketLen);
-
-					null_snprintf(idstr, 33, "Interest%dText", i);
-					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, (char**)&databuf, &wPacketLen);
-
-					if (!bOK)
-						break;
-				}
-				else
-				{
-					// Delete older entries if the count has decreased since last update
-					null_snprintf(idstr, 33, "Interest%dCat", i);
-					deleteSetting(hContact, idstr);
-
-					null_snprintf(idstr, 33, "Interest%dText", i);
-					deleteSetting(hContact, idstr);
-				}
-			}
-		}
-		break;
-
-	case META_AFFILATIONS_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "AFFILATIONS", dwCookieUin);
-		if (bResultCode == 0x0A)
-		{
-			int i;
-			int count;
-			char idstr[33];
-
-			wPacketLen--;
-			count = *databuf++;
-			// 3 is the maximum allowed backgrounds, if count is
-			// higher it's likely a parsing error
-			_ASSERTE(count <= 3);
-			for (i = 0; i < 3; i++)
-			{
-				if (i < count)
-				{
-					null_snprintf(idstr, 33, "Past%d", i);
-					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, pastField, (char**)&databuf, &wPacketLen);
-
-					null_snprintf(idstr, 33, "Past%dText", i);
-					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, (char**)&databuf, &wPacketLen);
-
-					if (!bOK)
-						break;
-				}
-				else
-				{
-					// Delete older entries if the count has decreased since last update
-					null_snprintf(idstr, 33, "Past%d", i);
-					deleteSetting(hContact, idstr);
-
-					null_snprintf(idstr, 33, "Past%dText", i);
-					deleteSetting(hContact, idstr);
-				}
-			}
-
-			wPacketLen--;
-			count = *databuf++;
-			// 3 is the maximum allowed affiliations, if count is
-			// higher it's likely a parsing error
-			_ASSERTE(count <= 3);
-			for (i = 0; i < 3; i++)
-			{
-				if (i < count)
-				{
-					null_snprintf(idstr, 33, "Affiliation%d", i);
-					if (bOK) bOK = writeDbInfoSettingWordWithTable(hContact, idstr, affiliationField, (char**)&databuf, &wPacketLen);
-
-					null_snprintf(idstr, 33, "Affiliation%dText", i);
-					if (bOK) bOK = writeDbInfoSettingString(hContact, idstr, (char**)&databuf, &wPacketLen);
-
-					if (!bOK)
-						break;
-				}
-				else 
-				{
-					// Delete older entries if the count has decreased since last update
-					null_snprintf(idstr, 33, "Affiliation%d", i);
-					deleteSetting(hContact, idstr);
-
-					null_snprintf(idstr, 33, "Affiliation%dText", i);
-					deleteSetting(hContact, idstr);
-				}
-			}
-
-		}
-		break;
-
-		// This is either a auto update reply or a GetInfo Minimal reply
-	case META_SHORT_USERINFO: 
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "SHORT", dwCookieUin);
-		if (bResultCode == 0xA)
-		{
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "Nick", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "FirstName", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "LastName", (char**)&databuf, &wPacketLen);
-			if (bOK) bOK = writeDbInfoSettingString(hContact, "e-mail", (char**)&databuf, &wPacketLen);
-		}
-		break;
-
-	case META_HPAGECAT_USERINFO:
-		NetLog_Server("SNAC(0x15,0x3): META_%s_USERINFO for %u", "HPAGECAT", dwCookieUin);
-		break;
-
-	default:
-		NetLog_Server("Warning: Ignored 15/03 user info reply type x%x", wReplySubtype);
-		//    _ASSERTE(0);
-		break;
-	}
-
-	if (!bOK)
-		NetLog_Server("Error: Failed parsing 15/03 user info reply type x%x", wReplySubtype);
-
-	// :TRICKY:  * Dont change the following section unless you really understand it *
-	// I have now switched to only send one GETINFO ack instead of 8. The multiple ack
-	// sending originated in a incorrect assumption in the old code and that is long
-	// gone now. The ack will be sent when the last packet has arrived
-	// or when an error has occured. I'm not sure if a error packet will be marked
-	// as the last one but it probably is. Doesn't matter anyway.
-	// The cookie will be freed for all "last packets" but the ack will only be sent if the
-	// request originated from a PS_GETINFO call
-	if (((pCookieData->bRequestType == REQUESTTYPE_USERDETAILED) ||
-		(pCookieData->bRequestType == REQUESTTYPE_USERMINIMAL))
-		&&
-		((bResultCode != 0x0A) || !bMoreDataFollows))
-	{
-		BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
-	}
-
-	// Free cookie
-	if (!bMoreDataFollows || bResultCode != 0x0A)
-	{
-		ReleaseCookie(wCookie);
-
-		// Remove user from info update queue. Removing is fast so we always call this
-		// even if it is likely that the user is not queued at all.
-		setSettingDword(hContact, "InfoTS", time(NULL));
-		icq_DequeueUser(dwCookieUin);
-	}
-
-	// :NOTE:
-	// bResultcode can be xA (success), x14 or x32 (failure). I dont know the difference
-	// between the two failures.
-}
 
 void CIcqProto::parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode)
 {
 	switch (wReplySubtype) {
 	case META_SET_PASSWORD_ACK:  // Set user password server ack
-	case META_SET_FULLINFO_ACK:  // Server ack for set fullinfo command
 
 		if (bResultCode == 0xA)
 			BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
@@ -904,4 +519,575 @@ void CIcqProto::parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, 
 		NetLog_Server("Warning: Ignored 15/03 user info update ack type x%x", wReplySubtype);
 		break;
 	}
+}
+
+
+UserInfoRecordItem rEmail[] = {
+  {0x64, DBVT_ASCIIZ, "e-mail%u"}
+};
+
+UserInfoRecordItem rAddress[] = {
+  {0x64, DBVT_UTF8, "Street"},
+  {0x6E, DBVT_UTF8, "City"},
+  {0x78, DBVT_UTF8, "State"},
+  {0x82, DBVT_UTF8, "ZIP"},
+  {0x8C, DBVT_WORD, "Country"}
+};
+
+UserInfoRecordItem rOriginAddress[] = {
+  {0x64, DBVT_UTF8, "OriginStreet"},
+  {0x6E, DBVT_UTF8, "OriginCity"},
+  {0x78, DBVT_UTF8, "OriginState"},
+  {0x8C, DBVT_WORD, "OriginCountry"}
+};
+
+UserInfoRecordItem rCompany[] = {
+  {0x64, DBVT_UTF8, "CompanyPosition"},
+  {0x6E, DBVT_UTF8, "Company"},
+  {0x7D, DBVT_UTF8, "CompanyDepartment"},
+  {0x78, DBVT_ASCIIZ, "CompanyHomepage"},
+  {0x82, DBVT_WORD, "CompanyIndustry"},
+  {0xAA, DBVT_UTF8, "CompanyStreet"},
+  {0xB4, DBVT_UTF8, "CompanyCity"},
+  {0xBE, DBVT_UTF8, "CompanyState"},
+  {0xC8, DBVT_UTF8, "CompanyZIP"},
+  {0xD2, DBVT_WORD, "CompanyCountry"}
+};
+
+UserInfoRecordItem rEducation[] = {
+  {0x64, DBVT_WORD, "StudyLevel"},
+  {0x6E, DBVT_UTF8, "StudyInstitute"},
+  {0x78, DBVT_UTF8, "StudyDegree"},
+  {0x8C, DBVT_WORD, "StudyYear"}
+};
+
+UserInfoRecordItem rInterest[] = {
+  {0x64, DBVT_UTF8, "Interest%uText"},
+  {0x6E, DBVT_WORD, "Interest%uCat"}
+};
+
+
+int CIcqProto::parseUserInfoRecord(HANDLE hContact, oscar_tlv *pData, UserInfoRecordItem pRecordDef[], int nRecordDef, int nMaxRecords)
+{
+  int nRecords = 0;
+
+  if (pData && pData->wLen >= 2)
+  {
+    BYTE *pRecords = pData->pData;
+    WORD wRecordCount;
+    unpackWord(&pRecords, &wRecordCount);
+    oscar_tlv_record_list *cData = readIntoTLVRecordList(&pRecords, pData->wLen - 2, nMaxRecords > wRecordCount ? wRecordCount : nMaxRecords);
+    oscar_tlv_record_list *cDataItem = cData;
+    while (cDataItem)
+    {
+      oscar_tlv_chain *cItem = cDataItem->item;
+
+      for (int i = 0; i < nRecordDef; i++)
+      {
+        char szItemKey[MAX_PATH];
+
+        null_snprintf(szItemKey, MAX_PATH, pRecordDef[i].szDbSetting, nRecords);
+
+        switch (pRecordDef[i].dbType)
+        {
+        case DBVT_ASCIIZ:
+          writeDbInfoSettingTLVString(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+          break;
+
+        case DBVT_UTF8:
+          writeDbInfoSettingTLVStringUtf(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+          break;
+
+        case DBVT_WORD:
+			    writeDbInfoSettingTLVWord(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+          break;
+        }
+      }
+      nRecords++;
+
+      cDataItem = cDataItem->next;
+    }
+    // release memory
+    disposeRecordList(&cData);
+  }
+  // remove old data from database
+  if (!nRecords || nMaxRecords > 1)
+    for (int i = nRecords + 1; i <= nMaxRecords; i++)
+      for (int j = 0; j < nRecordDef; j++)
+      {
+        char szItemKey[MAX_PATH];
+
+        null_snprintf(szItemKey, MAX_PATH, pRecordDef[j].szDbSetting, i);
+
+        deleteSetting(hContact, szItemKey);
+      }
+
+  return nRecords;
+}
+
+
+void CIcqProto::handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, WORD wFlags)
+{
+  WORD wBytesRemaining = 0;
+	snac_header requestSnac = {0};
+  BYTE requestResult;
+
+  if (wPacketLen >= 2)
+    unpackLEWord(&databuf, &wBytesRemaining);
+  wPacketLen -= 2;
+  _ASSERTE(wPacketLen == wBytesRemaining);
+
+	if (!unpackSnacHeader(&requestSnac, &databuf, &wPacketLen) || !requestSnac.bValid)
+	{
+		NetLog_Server("Error: Failed to parse directory response");
+    return;
+	}
+
+  cookie_directory_data *pCookieData;
+  HANDLE hContact;
+  // check request cookie
+  if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
+  {
+		NetLog_Server("Warning: Ignoring unrequested directory reply type (x%x, x%x)", requestSnac.wFamily, requestSnac.wSubtype);
+		return;
+	}
+  /// FIXME: we should really check the snac contents according to cookie data here ?? 
+
+	// Check if this is the last packet for this request
+	BOOL bMoreDataFollows = wFlags&0x0001 && requestSnac.wFlags&0x0001;
+
+  if (wPacketLen >= 3) 
+    unpackByte(&databuf, &requestResult);
+  else
+  {
+    NetLog_Server("Error: Malformed directory response");
+    if (!bMoreDataFollows)
+      ReleaseCookie(wCookie);
+    return;
+  }
+  if (requestResult != 1 && requestResult != 4)
+  {
+    NetLog_Server("Error: Directory request failed, status %u", requestResult);
+
+    if (!bMoreDataFollows)
+    {
+      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+      ReleaseCookie(wCookie);
+    }
+    return;
+  }
+  WORD wLen;
+
+  unpackWord(&databuf, &wLen);
+  wPacketLen -= 3;
+  if (wLen)
+    NetLog_Server("Warning: Data in error message present!");
+
+  if (wPacketLen <= 0x16)
+  { // sanity check
+    NetLog_Server("Error: Malformed directory response");
+
+    if (!bMoreDataFollows)
+    {
+      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+      ReleaseCookie(wCookie);
+    }
+    return;
+  }
+  databuf += 0x10; // unknown stuff
+  wPacketLen -= 0x10;
+
+  DWORD dwItemCount;
+  WORD wPageCount;
+
+/// FIXME: check itemcount, pagecount against the cookie data ???
+
+  unpackDWord(&databuf, &dwItemCount);
+  unpackWord(&databuf, &wPageCount);
+  wPacketLen -= 6;
+
+  if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH && !bMoreDataFollows)
+    NetLog_Server("Directory Search: %d contacts found (%u pages)", dwItemCount, wPageCount);
+  
+  if (wPacketLen <= 2)
+  { // sanity check, block expected
+    NetLog_Server("Error: Malformed directory response");
+
+    if (!bMoreDataFollows)
+    {
+      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+      ReleaseCookie(wCookie);
+    }
+    return;
+  }
+  WORD wData;
+
+  unpackWord(&databuf, &wData); // This probably the count of items following (a block)
+  wPacketLen -= 2;
+  if (wPacketLen >= 2 && wData >= 1)
+  {
+    unpackWord(&databuf, &wLen);  // This is the size of the first item
+    wPacketLen -= 2;
+  }
+
+  if (wData == 0 && pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+  {
+    NetLog_Server("Directory Search: No contacts found");
+    BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+    ReleaseCookie(wCookie);
+    return;
+  }
+
+  _ASSERTE(wData == 1 && wPacketLen == wLen);
+  if (wData != 1 || wPacketLen != wLen)
+  {
+    NetLog_Server("Error: Malformed directory response (missing data)");
+
+    if (!bMoreDataFollows)
+    {
+      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+      ReleaseCookie(wCookie);
+    }
+    return;
+  }
+  oscar_tlv_chain *pDirectoryData = readIntoTLVChain(&databuf, wLen, -1);
+  if (pDirectoryData)
+  {
+    switch (pCookieData->bRequestType)
+    {
+    case DIRECTORYREQUEST_INFOOWNER:
+      hContact = NULL;
+    case DIRECTORYREQUEST_INFOUSER:
+    case DIRECTORYREQUEST_INFOMULTI:
+      parseDirectoryUserDetailsData(hContact, pDirectoryData, wCookie, pCookieData, wReplySubtype);
+      break;
+
+    case DIRECTORYREQUEST_SEARCH:
+      parseDirectorySearchData(pDirectoryData, wCookie, pCookieData, wReplySubtype);
+      break;
+
+    default:
+      NetLog_Server("Error: Unknown cookie type %x for directory response!", pCookieData->bRequestType);
+    }
+  }
+  else
+    NetLog_Server("Error: Failed parsing directory response");
+
+  // Release Memory
+  if (!bMoreDataFollows)
+    ReleaseCookie(wCookie);
+}
+
+
+void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
+{
+  oscar_tlv *pTLV;
+  WORD wRecordCount;
+
+  if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOMULTI && !hContact)
+  {
+    DWORD dwUin = 0;
+    char *szUid = cDetails->getString(0x32, 1);
+    if (!szUid) 
+    {
+      NetLog_Server("Error: Received unrecognized data from the directory");
+      return;
+    }
+
+    if (IsStringUIN(szUid))
+      dwUin = atoi(szUid);
+
+    hContact = HContactFromUID(dwUin, szUid, NULL);
+    if (hContact == INVALID_HANDLE_VALUE)
+    {
+      NetLog_Server("Error: Received details for unknown contact \"%s\"", szUid);
+      SAFE_FREE((void**)&szUid);
+      return;
+    }
+    SAFE_FREE((void**)&szUid);
+  }
+
+  pTLV = cDetails->getTLV(0x50, 1);
+  if (pTLV && pTLV->wLen > 0)
+		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x50); // Verified e-mail
+  else
+		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x55); // Pending e-mail
+
+	writeDbInfoSettingTLVStringUtf(hContact, "FirstName", cDetails, 0x64);
+	writeDbInfoSettingTLVStringUtf(hContact, "LastName",  cDetails, 0x6E);
+	writeDbInfoSettingTLVStringUtf(hContact, "Nick",      cDetails, 0x78);
+  // Home Address
+  parseUserInfoRecord(hContact, cDetails->getTLV(0x96, 1), rAddress, SIZEOF(rAddress), 1);
+  // Origin Address
+  parseUserInfoRecord(hContact, cDetails->getTLV(0xA0, 1), rOriginAddress, SIZEOF(rOriginAddress), 1);
+  // Phones
+  pTLV = cDetails->getTLV(0xC8, 1);
+  if (pTLV && pTLV->wLen >= 2)
+  {
+    BYTE *pRecords = pTLV->pData;
+    unpackWord(&pRecords, &wRecordCount);
+    oscar_tlv_record_list *cPhones = readIntoTLVRecordList(&pRecords, pTLV->wLen - 2, wRecordCount);
+    if (cPhones)
+    {
+      oscar_tlv_chain *cPhone;
+      cPhone = cPhones->getRecordByTLV(0x6E, 1);
+      writeDbInfoSettingTLVString(hContact, "Phone", cPhone, 0x64);
+      cPhone = cPhones->getRecordByTLV(0x6E, 2);
+      writeDbInfoSettingTLVString(hContact, "CompanyPhone", cPhone, 0x64);
+      cPhone = cPhones->getRecordByTLV(0x6E, 3);
+      writeDbInfoSettingTLVString(hContact, "Cellular", cPhone, 0x64);
+      cPhone = cPhones->getRecordByTLV(0x6E, 4);
+      writeDbInfoSettingTLVString(hContact, "Fax", cPhone, 0x64);
+      cPhone = cPhones->getRecordByTLV(0x6E, 5);
+      writeDbInfoSettingTLVString(hContact, "CompanyFax", cPhone, 0x64);
+
+      disposeRecordList(&cPhones);
+    }
+    else
+    { // Remove old data when phones not available
+      deleteSetting(hContact, "Phone");
+      deleteSetting(hContact, "CompanyPhone");
+      deleteSetting(hContact, "Cellular");
+      deleteSetting(hContact, "Fax");
+      deleteSetting(hContact, "CompanyFax");
+    }
+  }
+  else
+  { // Remove old data when phones not available
+    deleteSetting(hContact, "Phone");
+    deleteSetting(hContact, "CompanyPhone");
+    deleteSetting(hContact, "Cellular");
+    deleteSetting(hContact, "Fax");
+    deleteSetting(hContact, "CompanyFax");
+  }
+  // Emails
+  parseUserInfoRecord(hContact, cDetails->getTLV(0x8C, 1), rEmail, SIZEOF(rEmail), 4);
+
+	writeDbInfoSettingTLVByte(hContact, "Timezone", cDetails, 0x17C);
+  // Company
+  parseUserInfoRecord(hContact, cDetails->getTLV(0x118, 1), rCompany, SIZEOF(rCompany), 1);
+  // Education
+  parseUserInfoRecord(hContact, cDetails->getTLV(0x10E, 1), rEducation, SIZEOF(rEducation), 1);
+
+  switch (cDetails->getNumber(0x82, 1))
+  {
+  case 1: 
+    setSettingByte(hContact, "Gender", 'F');
+    break;
+  case 2:
+    setSettingByte(hContact, "Gender", 'M');
+    break;
+  default:
+    deleteSetting(hContact, "Gender");
+  }
+
+  writeDbInfoSettingTLVString(hContact, "Homepage", cDetails, 0xFA);
+  writeDbInfoSettingTLVDate(hContact, "BirthYear", "BirthMonth", "BirthDay", cDetails, 0x1A4);
+
+  writeDbInfoSettingTLVByte(hContact, "Language1", cDetails, 0xAA);
+  writeDbInfoSettingTLVByte(hContact, "Language2", cDetails, 0xB4);
+  writeDbInfoSettingTLVByte(hContact, "Language3", cDetails, 0xBE);
+
+  writeDbInfoSettingTLVByte(hContact, "MaritalStatus", cDetails, 0x12C);
+  // Interests
+  parseUserInfoRecord(hContact, cDetails->getTLV(0x122, 1), rInterest, SIZEOF(rInterest), 4);
+
+  writeDbInfoSettingTLVStringUtf(hContact, "About", cDetails, 0x186);
+
+  writeDbInfoSettingTLVStringUtf(hContact, DBSETTING_STATUS_NOTE, cDetails, 0x226);
+
+  writeDbInfoSettingTLVByte(hContact, "PrivacyLevel", cDetails, 0x1F9);
+
+  if (!hContact)
+  {
+    setSettingByte(hContact, "Auth", !cDetails->getByte(0x19A, 1));
+    writeDbInfoSettingTLVByte(hContact, "WebAware", cDetails, 0x212);
+    writeDbInfoSettingTLVByte(hContact, "AllowSpam", cDetails, 0x1EA);
+  }
+
+  writeDbInfoSettingTLVWord(hContact, "InfoCP", cDetails, 0x1C2);
+
+  // Remove deprecated setting (Age & Birthdate are not separate fields anymore)
+  deleteSetting(hContact, "Age");
+
+  { // Save user info last update time and privacy token
+    double dInfoTime;
+
+    // !Important, we need to save the MDir server-item time - it can be newer than the one from the directory
+    if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
+      setSettingDouble(hContact, DBSETTING_METAINFO_SAVED, dInfoTime);
+    else
+      writeDbInfoSettingTLVDouble(hContact, DBSETTING_METAINFO_SAVED, cDetails, 0x1CC);
+  }
+//    writeDbInfoSettingTLVBlob(hContact, DBSETTING_METAINFO_TOKEN, cDetails, 0x3C); // no need to save again
+
+  if (wReplySubType == META_DIRECTORY_RESPONSE)
+    if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+      BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+
+  // Remove user from info update queue. Removing is fast so we always call this
+  // even if it is likely that the user is not queued at all.
+  icq_DequeueUser(getContactUin(hContact));
+}
+
+
+void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
+{
+  ICQSEARCHRESULT isr = {0};
+  oscar_tlv *pTLV;
+  char *szUin = cDetails->getString(0x32, 1); // User ID
+
+  isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
+
+  if (IsStringUIN(szUin))
+  {
+    isr.uin = atoi(szUin);
+    SAFE_FREE((void**)&szUin);
+  }
+  else
+  {
+    isr.uin = 0;
+    isr.uid = szUin;
+  }
+
+  pTLV = cDetails->getTLV(0x50, 1);
+  if (pTLV && pTLV->wLen > 0)
+    isr.hdr.email = cDetails->getString(0x50, 1); // Verified e-mail
+  else
+    isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
+  if (!strlennull(isr.hdr.email))
+    SAFE_FREE((void**)&isr.hdr.email);
+
+  isr.firstName = cDetails->getString(0x64, 1); // First Name
+  if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
+    SAFE_FREE((void**)&isr.firstName);
+  isr.lastName = cDetails->getString(0x6E, 1); // Last Name
+  if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
+    SAFE_FREE((void**)&isr.lastName);
+  isr.nick = cDetails->getString(0x78, 1); // Nick
+  if (!utf8_decode(isr.nick, &isr.hdr.nick))
+    SAFE_FREE((void**)&isr.nick);
+
+  switch (cDetails->getNumber(0x82, 1)) // Gender
+  {
+  case 1: 
+    isr.gender = 'F';
+    break;
+  case 2:
+    isr.gender = 'M';
+    break;
+  }
+
+  pTLV = cDetails->getTLV(0x96, 1);
+  if (pTLV && pTLV->wLen >= 4)
+  {
+    BYTE *buf = pTLV->pData;
+    oscar_tlv_chain *chain = readIntoTLVChain(&buf, pTLV->wLen, 0);
+    if (chain)
+      isr.country = chain->getDWord(0x8C, 1); // Home Country
+    disposeChain(&chain);
+  }
+
+  isr.auth = !cDetails->getByte(0x19A, 1); // Require Authorization
+  isr.maritalStatus = cDetails->getNumber(0x12C, 1); // Marital Status
+
+/// TODO: calculate Age if Birthdate is available
+//  writeDbInfoSettingTLVDate(hContact, "BirthYear", "BirthMonth", "BirthDay", cDetails, 0x1A4);
+
+  // Finally, broadcast the result
+  BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
+
+  // Release memory
+  SAFE_FREE((void**)&isr.nick); /// FIXME: Reduce memory allocation
+  SAFE_FREE((void**)&isr.firstName);
+  SAFE_FREE((void**)&isr.lastName);
+  SAFE_FREE((void**)&isr.hdr.nick);
+  SAFE_FREE((void**)&isr.hdr.firstName);
+  SAFE_FREE((void**)&isr.hdr.lastName);
+  SAFE_FREE((void**)&isr.hdr.email);
+
+  // Search is over, broadcast final ack
+  if (wReplySubType == META_DIRECTORY_RESPONSE)
+    BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+}
+
+
+void CIcqProto::handleDirectoryUpdateResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype)
+{
+  WORD wBytesRemaining = 0;
+	snac_header requestSnac = {0};
+  BYTE requestResult;
+
+  if (wPacketLen >= 2)
+    unpackLEWord(&databuf, &wBytesRemaining);
+  wPacketLen -= 2;
+  _ASSERTE(wPacketLen == wBytesRemaining);
+
+	if (!unpackSnacHeader(&requestSnac, &databuf, &wPacketLen) || !requestSnac.bValid)
+	{
+		NetLog_Server("Error: Failed to parse directory response");
+    return;
+	}
+
+  cookie_directory_data *pCookieData;
+  HANDLE hContact;
+  // check request cookie
+  if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
+  {
+		NetLog_Server("Warning: Ignoring unrequested directory reply type (x%x, x%x)", requestSnac.wFamily, requestSnac.wSubtype);
+		return;
+	}
+  /// FIXME: we should really check the snac contents according to cookie data here ?? 
+
+  if (wPacketLen >= 3)
+    unpackByte(&databuf, &requestResult);
+  else
+  {
+    NetLog_Server("Error: Malformed directory response");
+    ReleaseCookie(wCookie);
+    return;
+  }
+  if (requestResult != 1 && requestResult != 4)
+  {
+    NetLog_Server("Error: Directory request failed, status %u", requestResult);
+
+    if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
+			BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
+
+    ReleaseCookie(wCookie);
+    return;
+  }
+  WORD wLen;
+
+  unpackWord(&databuf, &wLen);
+  wPacketLen -= 3;
+  if (wLen)
+    NetLog_Server("Warning: Data in error message present!");
+
+  if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
+    BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+  if (wPacketLen == 0x18)
+  {
+    DWORD64 qwMetaTime;
+    BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    unpackQWord(&databuf, &qwMetaTime);
+    setSettingBlob(NULL, DBSETTING_METAINFO_TIME, (BYTE*)&qwMetaTime, 8);
+
+    if (memcmp(databuf, pbEmptyMetaToken, 0x10))
+      setSettingBlob(NULL, DBSETTING_METAINFO_TOKEN, databuf, 0x10);
+  }
+  ReleaseCookie(wCookie);
 }

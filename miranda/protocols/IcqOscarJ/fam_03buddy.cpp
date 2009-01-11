@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,7 +39,7 @@
 extern capstr capShortCaps;
 extern char* cliSpamBot;
 
-void CIcqProto::handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
+void CIcqProto::handleBuddyFam(BYTE* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
 	switch (pSnacHeader->wSubtype)
 	{
@@ -78,35 +78,78 @@ void CIcqProto::handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_
 	}
 }
 
-void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
+
+void CIcqProto::handleReplyBuddy(BYTE *buf, WORD wPackLen)
 {
-	oscar_tlv* tlv = getTLV(pChain, 0x1D, 1);
+	oscar_tlv_chain *pChain;
+
+	pChain = readIntoTLVChain(&buf, wPackLen, 0);
+
+	if (pChain)
+	{
+		DWORD wMaxUins;
+		DWORD wMaxWatchers;
+    DWORD wMaxTemporary;
+
+		wMaxUins = pChain->getWord(1, 1);
+		wMaxWatchers = pChain->getWord(2, 1);
+    wMaxTemporary = pChain->getWord(4, 1);
+
+		NetLog_Server("MaxUINs %u", wMaxUins);
+		NetLog_Server("MaxWatchers %u", wMaxWatchers);
+    NetLog_Server("MaxTemporary %u", wMaxTemporary);
+
+		disposeChain(&pChain);
+	}
+	else
+	{
+		NetLog_Server("Error: Malformed BuddyReply");
+	}
+}
+
+
+int unpackSessionDataItem(oscar_tlv_chain *pChain, WORD wItemType, BYTE **ppItemData, WORD *pwItemSize, BYTE *pbItemFlags)
+{
+	oscar_tlv* tlv = pChain->getTLV(0x1D, 1);
 	int len = 0;
-	char* data;
+	BYTE* data;
 
 	if (tlv) 
 	{
 		len = tlv->wLen;
-		data = (char*)tlv->pData;
+		data = tlv->pData;
 	}
 
 	while (len >= 4)
-	{ // parse online message items one by one
-		WORD itemType = data[0] << 8 | data[1];
-		BYTE itemLen = data[3];
+	{ // parse session data items one by one
+    WORD itemType;
+    BYTE itemFlags;
+    BYTE itemLen;
+
+    unpackWord(&data, &itemType);
+    unpackByte(&data, &itemFlags);
+    unpackByte(&data, &itemLen);
+    len -= 4;
 
 		// just some validity check
-		if (itemLen + 4 > len) 
-			itemLen = len - 4;
+		if (itemLen > len) 
+			itemLen = len;
 
-		if (itemType == 0x0E)
-		{ // mood data
-			*pMood = data + 4;
-			*cbMood = itemLen;
+		if (itemType == wItemType)
+		{ // found the requested item
+      if (ppItemData)
+			  *ppItemData = data;
+      if (pwItemSize)
+			  *pwItemSize = itemLen;
+      if (pbItemFlags)
+        *pbItemFlags = itemFlags;
+
+      return 1; // Success
 		}
-		data += itemLen + 4;
-		len -= itemLen + 4;
+		data += itemLen;
+		len -= itemLen;
 	}
+  return 0;
 }
 
 
@@ -121,7 +164,7 @@ void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
 // TLV(F) Session timer (in seconds)
 // TLV(14) Instance number (AIM only)
 // TLV(19) Short capabilities
-// TLV(1D) Avatar Info / Expressions
+// TLV(1D) Session Data (Avatar, Mood, etc.)
 
 void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 {
@@ -190,15 +233,15 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			return;
 
 		// Get Class word
-		wClass = getWordFromChain(pChain, 0x01, 1);
+		wClass = pChain->getWord(0x01, 1);
 
 		if (dwUIN)
 		{
 			// Get DC info TLV
-			pTLV = getTLV(pChain, 0x0C, 1);
+			pTLV = pChain->getTLV(0x0C, 1);
 			if (pTLV && (pTLV->wLen >= 15))
 			{
-				unsigned char* pBuffer;
+				BYTE* pBuffer;
 
 				pBuffer = pTLV->pData;
 				unpackDWord(&pBuffer, &dwRealIP);
@@ -223,10 +266,10 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			}
 
 			// Get Status info TLV
-			pTLV = getTLV(pChain, 0x06, 1);
+			pTLV = pChain->getTLV(0x06, 1);
 			if (pTLV && (pTLV->wLen >= 4))
 			{
-				unsigned char* pBuffer;
+				BYTE* pBuffer;
 
 				pBuffer = pTLV->pData;
 				unpackWord(&pBuffer, &wStatusFlags);
@@ -257,16 +300,16 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 #endif
 
 		// Get IP TLV
-		dwIP = getDWordFromChain(pChain, 0x0a, 1);
+		dwIP = pChain->getDWord(0x0A, 1);
 
 		// Get Online Since TLV
-		dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
+		dwOnlineSince = pChain->getDWord(0x03, 1);
 
 		// Get Member Since TLV
-		dwMemberSince = getDWordFromChain(pChain, 0x05, 1);
+		dwMemberSince = pChain->getDWord(0x05, 1);
 
 		// Get Idle timer TLV
-		wIdleTimer = getWordFromChain(pChain, 0x04, 1);
+		wIdleTimer = pChain->getWord(0x04, 1);
 		if (wIdleTimer)
 		{
 			time(&tIdleTS);
@@ -287,7 +330,7 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			wOldStatus = getContactStatus(hContact);
 
 			// Get Avatar Hash TLV
-			pTLV = getTLV(pChain, 0x1D, 1);
+			pTLV = pChain->getTLV(0x1D, 1);
 			if (pTLV)
 				handleAvatarContactHash(dwUIN, szUID, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
 			else
@@ -305,8 +348,8 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 					oscar_tlv* pNewTLV;
 
 					// Get Location Capability Info TLVs
-					pTLV = getTLV(pChain, 0x0D, 1);
-					pNewTLV = getTLV(pChain, 0x19, 1);
+					pTLV = pChain->getTLV(0x0D, 1);
+					pNewTLV = pChain->getTLV(0x19, 1);
 
 					if (pTLV && (pTLV->wLen >= 16))
 						capLen = pTLV->wLen;
@@ -372,9 +415,9 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
 					{ // handle Xtraz status
 						char* moodData = NULL;
-						int moodSize = 0;
+						WORD moodSize = 0;
 
-						extractMoodData(pChain, &moodData, &moodSize);
+						unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
 						handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
 					}
 
@@ -399,19 +442,20 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 				szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
 				// Get Capability Info TLV
-				pTLV = getTLV(pChain, 0x0D, 1);
+				pTLV = pChain->getTLV(0x0D, 1);
 
 				if (pTLV && (pTLV->wLen >= 16))
 				{ // handle Xtraz status
 					char* moodData = NULL;
-					int moodSize = 0;
+					WORD moodSize = 0;
 
-					extractMoodData(pChain, &moodData, &moodSize);
+					unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
 					handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
 				}
 			}
+      // Process Status Note
+      parseStatusNote(dwUIN, szUID, hContact, pChain);
 		}
-
 		// Free TLV chain
 		disposeChain(&pChain);
 	}
@@ -451,11 +495,9 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
 		// Update info?
 		if (dwUIN)
-		{
-			DWORD dwUpdateThreshold = getSettingByte(NULL, "InfoUpdate", UPDATE_THRESHOLD)*3600*24;
-
-			if ((time(NULL) - getSettingDword(hContact, "InfoTS", 0)) > dwUpdateThreshold)
-				icq_QueueUser(hContact);
+    { // check if the local copy of user details is up-to-date
+		  if (IsMetaInfoChanged(hContact))
+			  icq_QueueUser(hContact);
 		}
 	}
 
@@ -478,6 +520,7 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 	}
 }
 
+
 void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 {
 	HANDLE hContact;
@@ -485,6 +528,7 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 	uid_str szUID;
 
 	do {
+    oscar_tlv_chain *pChain = NULL;
 		WORD wTLVCount;
 
 		// Unpack the sender's user ID
@@ -508,7 +552,17 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 			wLen -= 4;
 
 			// stop parsing overflowed packet
-			if (wTLVLen > wLen) return;
+			if (wTLVLen > wLen) 
+      {
+        disposeChain(&pChain);
+        return;
+      }
+
+      if (wTLVType == 0x1D)
+      { // read only TLV with Session data into chain
+        BYTE *pTLV = buf - 4;
+        pChain = readIntoTLVChain(&pTLV, wLen + 4, 1);
+      }
 
 			buf += wTLVLen;
 			wLen -= wTLVLen;
@@ -519,47 +573,116 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 		hContact = HContactFromUID(dwUIN, szUID, NULL);
 
 		// Skip contacts that are not already on our list or are already offline
-		if (hContact != INVALID_HANDLE_VALUE && getContactStatus(hContact) != ID_STATUS_OFFLINE)
-		{
-			NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+		if (hContact != INVALID_HANDLE_VALUE)
+    {
+      // Process Status Note (offline status note)
+      parseStatusNote(dwUIN, szUID, hContact, pChain);
 
-			setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-			setSettingDword(hContact, "IdleTS", 0);
-			// close Direct Connections to that user
-			CloseContactDirectConns(hContact);
-			// Reset DC status
-			setSettingByte(hContact, "DCStatus", 0);
-			// clear Xtraz status
-			handleXStatusCaps(hContact, NULL, 0, NULL, 0);
+      if (getContactStatus(hContact) != ID_STATUS_OFFLINE)
+		  {
+  			NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+
+	  		setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+		  	setSettingDword(hContact, "IdleTS", 0);
+			  // close Direct Connections to that user
+			  CloseContactDirectConns(hContact);
+  			// Reset DC status
+	  		setSettingByte(hContact, "DCStatus", 0);
+		  	// clear Xtraz status
+			  handleXStatusCaps(hContact, NULL, 0, NULL, 0);
+      }
 		}
+
+    // Release memory
+    disposeChain(&pChain);
 	}
-		while (wLen >= 1);
+	while (wLen >= 1);
 }
 
-void CIcqProto::handleReplyBuddy(BYTE *buf, WORD wPackLen)
+
+void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar_tlv_chain *pChain)
 {
-	oscar_tlv_chain *pChain;
+  DWORD dwStatusNoteTS = time(NULL);
+  char *szStatusNote = NULL;
+  BYTE *pStatusNoteTS, *pStatusNote;
+  WORD wStatusNoteTSLen, wStatusNoteLen;
+  BYTE bStatusNoteFlags;
 
-	pChain = readIntoTLVChain(&buf, wPackLen, 0);
+  if (unpackSessionDataItem(pChain, 0x0D, &pStatusNoteTS, &wStatusNoteTSLen, NULL) && wStatusNoteTSLen == sizeof(DWORD))
+    unpackDWord(&pStatusNoteTS, &dwStatusNoteTS);
 
-	if (pChain)
-	{
-		DWORD wMaxUins;
-		DWORD wMaxWatchers;
+  // Get Status Note session item
+  if (unpackSessionDataItem(pChain, 0x02, &pStatusNote, &wStatusNoteLen, &bStatusNoteFlags) && (bStatusNoteFlags & 4) == 4 && wStatusNoteLen >= 4)
+  {
+    BYTE *buf = pStatusNote;
+    WORD buflen = wStatusNoteLen - 2;
+    WORD wTextLen;
 
-		wMaxUins = getWordFromChain(pChain, 1, 1);
-		wMaxWatchers = getWordFromChain(pChain, 2, 1);
+    unpackWord(&buf, &wTextLen);
+    if (wTextLen > buflen)
+      wTextLen = buflen;
 
-		NetLog_Server("MaxUINs %u", wMaxUins);
-		NetLog_Server("MaxWatchers %u", wMaxWatchers);
+    if (wTextLen > 0)
+    {
+      szStatusNote = (char*)_alloca(wStatusNoteLen + 1);
+      unpackString(&buf, szStatusNote, wTextLen);
+      szStatusNote[wTextLen] = '\0';
+      buflen -= wTextLen;
+    
+      WORD wEncodingType = 0;
+      char *szEncoding;
 
-		disposeChain(&pChain);
-	}
-	else
-	{
-		NetLog_Server("Error: Malformed BuddyReply");
-	}
+      if (buflen >= 2)
+        unpackWord(&buf, &wEncodingType);
+    
+      if (wEncodingType == 1 && buflen > 6)
+      { // Encoding specified
+        buf += 2;
+        buflen -= 2;
+        unpackWord(&buf, &wTextLen);
+        if (wTextLen > buflen)
+          wTextLen = buflen;
+        szEncoding = (char*)_alloca(wTextLen + 1);
+        unpackString(&buf, szEncoding, wTextLen);
+        szEncoding[wTextLen] = '\0';
+      }
+      else if (UTF8_IsValid(szStatusNote))
+        szEncoding = "utf-8";
+
+      szStatusNote = ApplyEncoding(szStatusNote, szEncoding);
+    }
+  }
+  // Check if the status note was changed
+  if (dwStatusNoteTS > getSettingDword(hContact, DBSETTING_STATUS_NOTE_TIME, 0))
+  {
+    DBVARIANT dbv = {0};
+
+    if (strlennull(szStatusNote) || (!getSettingString(hContact, DBSETTING_STATUS_NOTE, &dbv) && (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8) && strlennull(dbv.pszVal)))
+      NetLog_Server("%s changed status note to \"%s\"", strUID(dwUin, szUid), szStatusNote ? szStatusNote : "");
+
+    ICQFreeVariant(&dbv);
+
+    if (szStatusNote)
+      setSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, szStatusNote);
+    else
+      deleteSetting(hContact, DBSETTING_STATUS_NOTE);
+    setSettingDword(hContact, DBSETTING_STATUS_NOTE_TIME, dwStatusNoteTS);
+
+    { // Broadcase a notification
+      int nNoteLen = strlennull(szStatusNote);
+      char *szNoteAnsi = NULL;
+
+      if (nNoteLen)
+      { // the broadcast does not support unicode
+        szNoteAnsi = (char*)_alloca(nNoteLen + 1);
+        utf8_decode_static(szStatusNote, szNoteAnsi, strlennull(szStatusNote) + 1);
+      }
+      BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szNoteAnsi);
+    }
+  }
+  SAFE_FREE((void**)&szStatusNote);
 }
+
 
 void CIcqProto::handleNotifyRejected(BYTE *buf, WORD wPackLen)
 {

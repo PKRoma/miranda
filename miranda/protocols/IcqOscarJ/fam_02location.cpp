@@ -57,7 +57,7 @@ void CIcqProto::handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, sn
 		{ 
 			WORD wError;
 			HANDLE hCookieContact;
-			fam15_cookie_data *pCookieData;
+			cookie_fam15_data *pCookieData;
 
 
 			if (wBufferLength >= 2)
@@ -116,7 +116,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 	WORD wWarningLevel;
 	HANDLE hCookieContact;
 	WORD status;
-	message_cookie_data *pCookieData;
+	cookie_message_data *pCookieData;
 
 	// Unpack the sender's user ID
 	if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
@@ -168,7 +168,6 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 			// Read user info TLVs
 			{
 				oscar_tlv_chain* pChain;
-				oscar_tlv* pTLV;
 				BYTE *tmp;
 				char *szMsg = NULL;
 
@@ -188,10 +187,11 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				// Get extra chain
 				if (pChain = readIntoTLVChain(&buf, wLen, 2))
 				{
-					char* szEncoding = NULL;
+          oscar_tlv *pTLV;
+					char *szEncoding = NULL;
 
 					// Get Profile encoding TLV
-					pTLV = getTLV(pChain, 0x01, 1);
+					pTLV = pChain->getTLV(0x01, 1);
 					if (pTLV && (pTLV->wLen >= 1))
 					{
 						szEncoding = (char*)_alloca(pTLV->wLen + 1);
@@ -199,7 +199,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 						szEncoding[pTLV->wLen] = '\0';
 					}
 					// Get Profile info TLV
-					pTLV = getTLV(pChain, 0x02, 1);
+					pTLV = pChain->getTLV(0x02, 1);
 					if (pTLV && (pTLV->wLen >= 1))
 					{
 						szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);
@@ -253,11 +253,11 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					return;
 
 				// Get Class word
-				wClass = getWordFromChain(pChain, 0x01, 1);
+				wClass = pChain->getWord(0x01, 1);
 
 				if (dwUIN)
 				{ // Get DC info TLV
-					pTLV = getTLV(pChain, 0x0C, 1);
+					pTLV = pChain->getTLV(0x0C, 1);
 					if (pTLV && (pTLV->wLen >= 15))
 					{
 						BYTE* pBuffer;
@@ -280,7 +280,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					}
 				}
 				// Get Online Since TLV
-				dwOnlineSince = getDWordFromChain(pChain, 0x03, 1);
+				dwOnlineSince = pChain->getDWord(0x03, 1);
 
 				disposeChain(&pChain);
 
@@ -291,7 +291,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				  // Get extra chain
 				  if (pChain = readIntoTLVChain(&buf, wLen, 2))
 				  {
-					  pTLV = getTLV(pChain, 0x05, 1);
+					  pTLV = pChain->getTLV(0x05, 1);
 					  if (pTLV && (pTLV->wLen > 0))
 					  {
 						  capBuf = pTLV->pData;
@@ -362,7 +362,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					char* szEncoding = NULL;
 
 					// Get Away encoding TLV
-					pTLV = getTLV(pChain, 0x03, 1);
+					pTLV = pChain->getTLV(0x03, 1);
 					if (pTLV && (pTLV->wLen >= 1))
 					{
 						szEncoding = (char*)_alloca(pTLV->wLen + 1);
@@ -370,7 +370,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 						szEncoding[pTLV->wLen] = '\0';
 					}
 					// Get Away info TLV
-					pTLV = getTLV(pChain, 0x04, 1);
+					pTLV = pChain->getTLV(0x04, 1);
 					if (pTLV && (pTLV->wLen >= 1))
 					{
 						szMsg = (char*)SAFE_MALLOC(pTLV->wLen + 2);

@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2008 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/tlv.c,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
@@ -99,9 +99,10 @@ oscar_tlv_chain* readIntoTLVChain(BYTE **buf, WORD wLen, int maxTlvs)
 // If wIndex = 1, the first matching TLV will be returned, if wIndex = 2,
 // the second matching one will be returned.
 // wIndex must be > 0
-oscar_tlv* getTLV(oscar_tlv_chain *list, WORD wType, WORD wIndex)
+oscar_tlv* oscar_tlv_chain::getTLV(WORD wType, WORD wIndex)
 {
   int i = 0;
+  oscar_tlv_chain *list = this;
 
   while (list)
   {
@@ -115,30 +116,101 @@ oscar_tlv* getTLV(oscar_tlv_chain *list, WORD wType, WORD wIndex)
   return NULL;
 }
 
-WORD getLenFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
-{
-  oscar_tlv *tlv;
-  WORD wLen = 0;
 
-  tlv = getTLV(list, wType, wIndex);
+WORD oscar_tlv_chain::getChainLength()
+{
+  int len = 0;
+  oscar_tlv_chain *list = this;
+
+  while (list)
+  {
+    len += list->tlv.wLen + 4;
+    list = list->next;
+  }
+  return len;
+}
+
+
+oscar_tlv* oscar_tlv_chain::putTLV(WORD wType, WORD wLen, BYTE *pData, BOOL bReplace)
+{
+  oscar_tlv *tlv = getTLV(wType, 1);
+
+  if (tlv && bReplace)
+  {
+    SAFE_FREE((void**)&tlv->pData);
+  }
+  else
+  {
+    oscar_tlv_chain *last = this;
+
+    while (last && last->next)
+      last = last->next;
+
+    if (last)
+    {
+      last->next = (oscar_tlv_chain*)SAFE_MALLOC(sizeof(oscar_tlv_chain));
+      tlv = &last->next->tlv;
+      tlv->wType = wType;
+    }
+  }
   if (tlv)
   {
-    wLen = tlv->wLen;
+    tlv->wLen = wLen;
+    tlv->pData = (PBYTE)SAFE_MALLOC(wLen);
+    memcpy(tlv->pData, pData, wLen);
+  }
+  return tlv;
+}
+
+
+oscar_tlv_chain* oscar_tlv_chain::removeTLV(oscar_tlv *tlv)
+{
+  oscar_tlv_chain *list = this, *prev = NULL, *chain = this;
+
+  while (list)
+  {
+    if (&list->tlv == tlv)
+    {
+      if (prev) // relink
+        prev->next = list->next;
+      else if (list->next)
+      { // move second item's tlv to the first item
+        list->tlv = list->next->tlv;
+        list = list->next;
+      }
+      else // result is an empty chain (NULL)
+        chain = NULL;
+      // release chain item memory
+      SAFE_FREE((void**)&list->tlv.pData);
+      SAFE_FREE((void**)&list);
+    }
+    prev = list;
+    list = list->next;
   }
 
-  return wLen;
+  return chain;
 }
+
+
+WORD oscar_tlv_chain::getLength(WORD wType, WORD wIndex)
+{
+  oscar_tlv *tlv = getTLV(wType, wIndex);
+  if (tlv)
+    return tlv->wLen;
+
+  return 0;
+}
+
 
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 /* Values are returned in MSB format */
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
-DWORD getDWordFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
+DWORD oscar_tlv_chain::getDWord(WORD wType, WORD wIndex)
 {
-  oscar_tlv *tlv;
   DWORD dw = 0;
 
-  tlv = getTLV(list, wType, wIndex);
+  oscar_tlv *tlv = getTLV(wType, wIndex);
   if (tlv && tlv->wLen >= 4)
   {
     dw |= (*((tlv->pData)+0) << 24);
@@ -150,12 +222,12 @@ DWORD getDWordFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
   return dw;
 }
 
-WORD getWordFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
+
+WORD oscar_tlv_chain::getWord(WORD wType, WORD wIndex)
 {
-  oscar_tlv *tlv;
   WORD w = 0;
 
-  tlv = getTLV(list, wType, wIndex);
+  oscar_tlv *tlv = getTLV(wType, wIndex);
   if (tlv && tlv->wLen >= 2)
   {
     w |= (*((tlv->pData)+0) << 8);
@@ -165,12 +237,12 @@ WORD getWordFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
   return w;
 }
 
-BYTE getByteFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
+
+BYTE oscar_tlv_chain::getByte(WORD wType, WORD wIndex)
 {
-  oscar_tlv *tlv;
   BYTE b = 0;
 
-  tlv = getTLV(list, wType, wIndex);
+  oscar_tlv *tlv = getTLV(wType, wIndex);
   if (tlv && tlv->wLen)
   {
     b = *(tlv->pData);
@@ -179,44 +251,148 @@ BYTE getByteFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
   return b;
 }
 
-BYTE* getStrFromChain(oscar_tlv_chain *list, WORD wType, WORD wIndex)
-{
-  oscar_tlv *tlv;
-  BYTE *str = NULL;
 
-  tlv = getTLV(list, wType, wIndex);
+int oscar_tlv_chain::getNumber(WORD wType, WORD wIndex)
+{
+  oscar_tlv *tlv = getTLV(wType, wIndex);
+
   if (tlv)
   {
-    str = (BYTE*)SAFE_MALLOC(tlv->wLen+1); /* For \0 */
+    if (tlv->wLen == 1)
+      return getByte(wType, wIndex);
+    else if (tlv->wLen == 2)
+      return getWord(wType, wIndex);
+    else if (tlv->wLen == 4)
+      return getDWord(wType, wIndex);
+  }
+  return 0;
+}
+
+
+double oscar_tlv_chain::getDouble(WORD wType, WORD wIndex)
+{
+  oscar_tlv *tlv = getTLV(wType, wIndex);
+
+  if (tlv && tlv->wLen == 8)
+  {
+    BYTE *buf = tlv->pData;
+    double d = 0;
+
+    unpackQWord(&buf, (DWORD64*)&d);
+
+    return d;
+  }
+  return 0;
+}
+
+
+char* oscar_tlv_chain::getString(WORD wType, WORD wIndex)
+{
+  char *str = NULL;
+
+  oscar_tlv *tlv = getTLV(wType, wIndex);
+  if (tlv)
+  {
+    str = (char*)SAFE_MALLOC(tlv->wLen + 1); /* For \0 */
 
     if (!str) return NULL;
 
     memcpy(str, tlv->pData, tlv->wLen);
-    *(str+tlv->wLen) = '\0';
+    str[tlv->wLen] = '\0';
   }
 
   return str;
 }
 
-void disposeChain(oscar_tlv_chain **list)
-{
-  oscar_tlv_chain *now;
 
-  if (!list || !*list)
+void disposeChain(oscar_tlv_chain **chain)
+{
+  if (!chain || !*chain)
     return;
 
-  now = *list;
+  oscar_tlv_chain *now = *chain;
   
   while (now)
   {
-    oscar_tlv_chain *temp;
+    oscar_tlv_chain *next = now->next;
 
     SAFE_FREE((void**)&now->tlv.pData);
-
-    temp = now->next;
     SAFE_FREE((void**)&now);
-    now = temp;
+    now = next;
+  }
+
+  *chain = NULL;
+}
+
+
+oscar_tlv_record_list* readIntoTLVRecordList(BYTE **buf, WORD wLen, int nCount)
+{
+  oscar_tlv_record_list *list = NULL, *last;
+
+  while (wLen >= 2)
+  {
+    WORD wRecordSize;
+
+    unpackWord(buf, &wRecordSize);
+    wLen -= 2;
+    if (wRecordSize && wRecordSize <= wLen)
+    {
+      oscar_tlv_record_list *pRecord = (oscar_tlv_record_list*)SAFE_MALLOC(sizeof(oscar_tlv_record_list));
+      BYTE *pData = *buf;
+
+      *buf += wRecordSize;
+      wLen -= wRecordSize;
+
+      pRecord->item = readIntoTLVChain(&pData, wRecordSize, 0);
+      if (pRecord->item)
+      { // keep the order
+        if (list)
+          last->next = pRecord;
+        else
+          list = pRecord;
+
+        last = pRecord;
+      }
+      else
+        SAFE_FREE((void**)&pRecord);
+    }
+
+    if (--nCount == 0) break;
+  }
+  return list;
+}
+
+
+void disposeRecordList(oscar_tlv_record_list** list)
+{
+  if (!list || !*list)
+    return;
+
+  oscar_tlv_record_list *now = *list;
+  
+  while (now)
+  {
+    oscar_tlv_record_list *next = now->next;
+
+    disposeChain(&now->item);
+    SAFE_FREE((void**)&now);
+    now = next;
   }
 
   *list = NULL;
+}
+
+
+oscar_tlv_chain* oscar_tlv_record_list::getRecordByTLV(WORD wType, int nValue)
+{
+  oscar_tlv_chain *list = item;
+
+  while (list)
+  {
+    if (list->getTLV(wType, 1) && list->getNumber(wType, 1) == nValue)
+      return list;
+    list = list->next;
+  }
+
+  return NULL;
 }

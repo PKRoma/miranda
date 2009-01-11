@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera, George Hazan
+// Copyright © 2004-2009 Joe Kucera, George Hazan
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -137,6 +137,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateResidentSetting("IdleTS");
 	CreateResidentSetting("LogonTS");
 	CreateResidentSetting("DCStatus");
+  CreateResidentSetting(DBSETTING_STATUS_NOTE_TIME);
+  CreateResidentSetting(DBSETTING_STATUS_MOOD);
 
 	// Setup services
 	CreateProtoService(PS_GETNAME, &CIcqProto::GetName);
@@ -144,6 +146,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(PS_CREATEACCMGRUI, &CIcqProto::OnCreateAccMgrUI );
 	CreateProtoService(MS_ICQ_SENDSMS, &CIcqProto::SendSms);
 	CreateProtoService(PS_SET_NICKNAME, &CIcqProto::SetNickName);
+
+  CreateProtoService(PS_GETINFOSETTING, &CIcqProto::GetInfoSetting);
 
 	CreateProtoService(PSS_ADDED, &CIcqProto::SendYouWereAdded);
 	// Session password API
@@ -757,12 +761,12 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 		break;
 
 	case PFLAGNUM_3:
-		nReturn = PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND |
-			PF2_FREECHAT;
+		nReturn = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND |
+			PF2_FREECHAT | PF2_INVISIBLE;
 		break;
 
 	case PFLAGNUM_4:
-		nReturn = PF4_SUPPORTIDLE | PF4_IMSENDUTF;
+		nReturn = PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_INFOSETTINGSVC;
 		if (m_bAvatarsEnabled)
 			nReturn |= PF4_AVATARS;
 #ifdef DBG_CAPMTN
@@ -842,19 +846,19 @@ HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetInfo - retrieves a contact info
 
-int __cdecl CIcqProto::GetInfo( HANDLE hContact, int infoType )
+int __cdecl CIcqProto::GetInfo(HANDLE hContact, int infoType)
 {
-	if ( icqOnline())
+	if (icqOnline())
 	{
 		DWORD dwUin;
 		uid_str szUid;
 
-		if ( getContactUid(hContact, &dwUin, &szUid))
+		if (getContactUid(hContact, &dwUin, &szUid))
 			return 1; // Invalid contact
 
 		DWORD dwCookie;
 		if (dwUin)
-			dwCookie = icq_sendGetInfoServ(hContact, dwUin, (infoType & SGIF_MINIMAL) != 0, (infoType & SGIF_ONOPEN) != 0);
+			dwCookie = icq_sendGetInfoServ(hContact, dwUin, (infoType & SGIF_ONOPEN) != 0);
 		else // TODO: this needs something better
 			dwCookie = icq_sendGetAimProfileServ(hContact, szUid);
 
@@ -865,7 +869,7 @@ int __cdecl CIcqProto::GetInfo( HANDLE hContact, int infoType )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// SearchBasic - searches the contact by JID
+// SearchBasic - searches the contact by UID
 
 void CIcqProto::CheekySearchThread( void* )
 {
@@ -988,8 +992,18 @@ HANDLE __cdecl CIcqProto::SearchByName(const char *nick, const char *firstName, 
 	{
 		if (nick || firstName || lastName)
 		{
+      char *nickUtf = ansi_to_utf8(nick);
+      char *firstNameUtf = ansi_to_utf8(firstName);
+      char *lastNameUtf = ansi_to_utf8(lastName);
+
 			// Success
-			return (HANDLE)SearchByNames(nick, firstName, lastName);
+			HANDLE dwCookie = (HANDLE)SearchByNames(nickUtf, firstNameUtf, lastNameUtf, 0);
+
+      SAFE_FREE((void**)&nickUtf);
+      SAFE_FREE((void**)&firstNameUtf);
+      SAFE_FREE((void**)&lastNameUtf);
+
+      return dwCookie;
 		}
 	}
 
@@ -1166,7 +1180,6 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 					if (i == nContacts)
 					{
-						message_cookie_data* pCookieData;
 						icq_packet mData, mNames;
 
 #ifdef _DEBUG
@@ -1233,7 +1246,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 						}
 
 						// Set up the ack type
-						pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, hContact, dwUin, FALSE);
+						cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_CONTACTS, hContact, dwUin, FALSE);
 
 						// AIM clients do not send acknowledgement
 						if (!dwUin && pCookieData->nAckType == ACKTYPE_CLIENT)
@@ -1296,7 +1309,6 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 					if (i == nContacts)
 					{
-						message_cookie_data* pCookieData;
 						char* pBody;
 						char* pBuffer;
 
@@ -1335,7 +1347,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 						}
 
 						// Set up the ack type
-						pCookieData = CreateMsgCookieData(MTYPE_CONTACTS, hContact, dwUin, TRUE);
+						cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_CONTACTS, hContact, dwUin, TRUE);
 
 						if (m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 						{
@@ -1598,8 +1610,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		// Looks OK
 		else
 		{
-			message_cookie_data* pCookieData;
-
 			if (!puszText && m_bUtfEnabled == 2 && !IsUSASCII(pszText, strlennull(pszText))
 				&& CheckContactCapabilities(hContact, CAPF_UTF) && getSettingByte(hContact, "UnicodeSend", 1))
 			{ // text is not unicode and contains national chars and we should send all this as Unicode, so do it
@@ -1635,7 +1645,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				}
 			}
 			// Set up the ack type
-			pCookieData = CreateMsgCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
+			cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
 
 #ifdef _DEBUG
 			NetLog_Server("Send %s message - Message cap is %u", puszText ? "unicode" : "", CheckContactCapabilities(hContact, CAPF_SRV_RELAY));
@@ -1694,7 +1704,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					return dwCookie;
 				}
 				// set flag for offline messages - to allow proper error handling
-				if (wRecipientStatus == ID_STATUS_OFFLINE) ((message_cookie_data_ex*)pCookieData)->isOffline = TRUE;
+				if (wRecipientStatus == ID_STATUS_OFFLINE) ((cookie_message_data_ext*)pCookieData)->isOffline = TRUE;
 
 				if (pwszText)
 					dwCookie = icq_SendChannel1MessageW(dwUin, szUID, hContact, pwszText, pCookieData);
@@ -1796,7 +1806,6 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 		// Looks OK
 		else
 		{
-			message_cookie_data* pCookieData;
 			char* szDesc;
 			char* szBody;
 			int nBodyLen;
@@ -1805,7 +1814,7 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 
 
 			// Set up the ack type
-			pCookieData = CreateMsgCookieData(MTYPE_URL, hContact, dwUin, TRUE);
+			cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_URL, hContact, dwUin, TRUE);
 
 			// Format the body
 			nUrlLen = strlennull(url);
@@ -1919,28 +1928,19 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 	return 1; // Failure
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_SetStatus - sets the protocol status
 
-void CIcqProto::updateAimAwayMsg()
+int __cdecl CIcqProto::SetStatus(int iNewStatus)
 {
-	char **szMsg = MirandaStatusToAwayMsg(m_iStatus);
-
-	EnterCriticalSection(&m_modeMsgsMutex);
-	if (szMsg)
-		icq_sendSetAimAwayMsgServ(*szMsg);
-	LeaveCriticalSection(&m_modeMsgsMutex);
-}
-
-int __cdecl CIcqProto::SetStatus( int iNewStatus )
-{
-	int nNewStatus = MirandaStatusToSupported( iNewStatus );
+	int nNewStatus = MirandaStatusToSupported(iNewStatus);
 
 	// check if netlib handles are ready
 	if (!m_hServerNetlibUser)
 		return 0;
 
-	if (m_bTempVisListEnabled) // remove temporary visible users
+	if (m_bTempVisListEnabled && icqOnline()) // remove temporary visible users
 		sendEntireListServ(ICQ_BOS_FAMILY, ICQ_CLI_REMOVETEMPVISIBLE, BUL_TEMPVISIBLE);
 
 	if (nNewStatus != m_iStatus)
@@ -1953,6 +1953,23 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 		if (nNewStatus == ID_STATUS_OFFLINE)
     { // for quick logoff
 			m_iDesiredStatus = nNewStatus;
+
+      if (icqOnline())
+      { // set offline status note (otherwise the old will remain)
+        setSettingString(NULL, DBSETTING_STATUS_MOOD, "");
+
+        char **szOfflineNote = MirandaStatusToAwayMsg(nNewStatus);
+
+        EnterCriticalSection(&m_modeMsgsMutex);
+        if (szOfflineNote)
+        {
+          if (*szOfflineNote)
+            SetStatusNote(*szOfflineNote, 0);
+          else // set empty note
+            SetStatusNote("", 0);
+        }
+        LeaveCriticalSection(&m_modeMsgsMutex);
+      }
 
       if (hServerConn)
       { // Connected, Send disconnect packet
@@ -1972,8 +1989,6 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 			// We are offline and need to connect
 			case ID_STATUS_OFFLINE:
 				{
-					char *pszPwd;
-
 					// Update user connection settings
 					UpdateGlobalSettings();
 
@@ -1992,7 +2007,7 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 					SetCurrentStatus(ID_STATUS_CONNECTING);
 
 					// Read password from database
-					pszPwd = GetUserPassword(FALSE);
+					char *pszPwd = GetUserPassword(FALSE);
 
 					if (pszPwd)
 						icq_login(pszPwd);
@@ -2011,32 +2026,67 @@ int __cdecl CIcqProto::SetStatus( int iNewStatus )
 			default:
 				SetCurrentStatus(nNewStatus);
 
+        char *szStatusNote = NULL;
+        
+        if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
+        {
+          BYTE bXStatus = getContactXStatus(NULL);
+
+          if (bXStatus && moodXStatus[bXStatus-1] != -1)
+          { // use custom status message as status note
+            szStatusNote = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
+          }
+        }
+
+        if (!szStatusNote)
+        { // get standard status message
+          EnterCriticalSection(&m_modeMsgsMutex);
+
+          char **pszStatusNote = MirandaStatusToAwayMsg(nNewStatus);
+          if (pszStatusNote)
+            szStatusNote = null_strdup(*pszStatusNote);
+          LeaveCriticalSection(&m_modeMsgsMutex);
+        }
+
+        if (!szStatusNote)
+          // nothing available set empty status note
+          szStatusNote = null_strdup("");
+
+        //! This is a bit tricky, we do trigger status note change thread and then
+        // change the status note right away (this spares one packet) - so SetStatusNote()
+        // will only change User Details Directory
+        SetStatusNote(szStatusNote, 6000);
+
 				if (m_iStatus == ID_STATUS_INVISIBLE)
 				{
 					if (m_bSsiEnabled)
 						updateServVisibilityCode(3);
-					icq_setstatus(MirandaStatusToIcq(m_iStatus), FALSE);
-					// Tell whos on our visible list
-					icq_sendEntireVisInvisList(0);
-					if (m_bAimEnabled)
-						updateAimAwayMsg();
+					icq_setstatus(MirandaStatusToIcq(m_iStatus), szStatusNote);
 				}
 				else
 				{
-					icq_setstatus(MirandaStatusToIcq(m_iStatus), FALSE);
+					icq_setstatus(MirandaStatusToIcq(m_iStatus), szStatusNote);
 					if (m_bSsiEnabled)
 						updateServVisibilityCode(4);
-					// Tell whos on our invisible list
-					icq_sendEntireVisInvisList(1);
-					if (m_bAimEnabled)
-						updateAimAwayMsg();
 				}
+				if (m_bAimEnabled)
+        {
+          EnterCriticalSection(&m_modeMsgsMutex);
+
+          char **pszStatusNote = MirandaStatusToAwayMsg(nNewStatus);
+          if (pszStatusNote)
+        		icq_sendSetAimAwayMsgServ(*pszStatusNote);
+          LeaveCriticalSection(&m_modeMsgsMutex);
+        }
+
+        SAFE_FREE((void**)&szStatusNote);
 			}
 		}
 	}
 
 	return 0;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvAuth - returns a contact's away message
@@ -2054,21 +2104,65 @@ int __cdecl CIcqProto::RecvAuth(WPARAM wParam, LPARAM lParam)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
+// GetAwayMsgThread - return a contact's status message
+
+struct status_message_thread_data
+{
+  HANDLE hContact;
+  char *szMessage;
+  HANDLE hProcess;
+};
+
+void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
+{
+  status_message_thread_data *pThreadData = (status_message_thread_data*)pStatusData;
+	
+  if (pThreadData)
+  {
+    char *szAnsiMsg = NULL;
+
+    // wait a little
+    Sleep(100);
+
+    if (utf8_decode(pThreadData->szMessage, &szAnsiMsg))
+      BroadcastAck(pThreadData->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, pThreadData->hProcess, (LPARAM)szAnsiMsg);
+
+    SAFE_FREE((void**)&szAnsiMsg);
+    SAFE_FREE((void**)&pThreadData);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
 // PS_GetAwayMsg - returns a contact's away message
 
 int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 {
-	if ( !icqOnline())
-		return 0;
-
 	DWORD dwUin;
 	uid_str szUID;
-	WORD wStatus;
 
 	if (getContactUid(hContact, &dwUin, &szUID))
 		return 0; // Invalid contact
 
-	wStatus = getContactStatus(hContact);
+  // First check if the contact has Status Note, if yes give it
+  char *szStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, NULL);
+
+  if (strlennull(szStatusNote) > 0)
+  { // Give Status Note
+    status_message_thread_data *pThreadData = (status_message_thread_data*)SAFE_MALLOC(sizeof(status_message_thread_data));
+
+    pThreadData->hContact = hContact;
+    pThreadData->szMessage = szStatusNote;
+    pThreadData->hProcess = (HANDLE)GenerateCookie(0);
+    ForkThread(GetAwayMsgThread, pThreadData);
+
+    return (int)pThreadData->hProcess;
+  }
+  SAFE_FREE((void**)&szStatusNote);
+
+  if (!icqOnline())
+		return 0;
+
+	WORD wStatus = getContactStatus(hContact);
 
 	if (dwUin)
 	{
@@ -2108,7 +2202,7 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 				int iRes = icq_sendGetAwayMsgDirect(hContact, wMessageType);
 				if (iRes) return iRes; // we succeded, return
 			}
-			if (CheckContactCapabilities(hContact, CAPF_STATUSMSGEXT))
+			if (CheckContactCapabilities(hContact, CAPF_STATUSMSG_EXT))
 				return icq_sendGetAwayMsgServExt(hContact, dwUin, wMessageType,
 				(WORD)(getSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
 			else
@@ -2139,17 +2233,15 @@ int __cdecl CIcqProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char
 	return 1;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_SetAwayMsg - sets the away status message
 
-int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 {
-	char **ppszMsg = NULL;
-	char *szNewUtf = NULL;
-
 	EnterCriticalSection(&m_modeMsgsMutex);
 
-	ppszMsg = MirandaStatusToAwayMsg(status);
+	char **ppszMsg = MirandaStatusToAwayMsg(status);
 	if (!ppszMsg)
 	{
 		LeaveCriticalSection(&m_modeMsgsMutex);
@@ -2157,7 +2249,7 @@ int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
 	}
 
 	// Prepare UTF-8 status message
-	szNewUtf = ansi_to_utf8(msg);
+	char *szNewUtf = ansi_to_utf8(msg);
 
 	if (strcmpnull(szNewUtf, *ppszMsg))
 	{
@@ -2168,8 +2260,23 @@ int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
 		*ppszMsg = szNewUtf;
 		szNewUtf = NULL;
 
-		if (m_bAimEnabled && (m_iStatus == status))
-			icq_sendSetAimAwayMsgServ(*ppszMsg);
+    if (icqOnline())
+    { // update current status note
+      char *szNote = *ppszMsg ? *ppszMsg : "";
+
+      if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
+      {
+        BYTE bXStatus = getContactXStatus(NULL);
+    
+        if (!bXStatus || moodXStatus[bXStatus-1] == -1)
+          SetStatusNote(szNote, 1000);
+      }
+      else
+        SetStatusNote(szNote, 1000);
+
+  		if (m_bAimEnabled && (m_iStatus == status))
+	  		icq_sendSetAimAwayMsgServ(*ppszMsg);
+    }
 	}
 	SAFE_FREE((void**)&szNewUtf);
 
@@ -2177,6 +2284,7 @@ int __cdecl CIcqProto::SetAwayMsg( int status, const char* msg )
 
 	return 0; // Success
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PS_UserIsTyping - sends a UTN notification

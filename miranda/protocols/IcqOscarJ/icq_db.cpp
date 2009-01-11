@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -63,7 +63,7 @@ WORD CIcqProto::getSettingWord(HANDLE hContact, const char* szSetting, WORD wDef
 
 DWORD CIcqProto::getSettingDword(HANDLE hContact, const char* szSetting, DWORD dwDef)
 {
-	DBVARIANT dbv;
+  DBVARIANT dbv = {0};
 	DBCONTACTGETSETTING cgs;
 	DWORD dwRes;
 
@@ -80,6 +80,23 @@ DWORD CIcqProto::getSettingDword(HANDLE hContact, const char* szSetting, DWORD d
 
 	ICQFreeVariant(&dbv);
 	return dwRes;
+}
+
+double CIcqProto::getSettingDouble(HANDLE hContact, const char *szSetting, double dDef)
+{
+  DBVARIANT dbv = {0};
+  double dRes;
+
+  if (getSetting(hContact, szSetting, &dbv))
+    return dDef; // not found, give default
+
+  if (dbv.type != DBVT_BLOB || dbv.cpbVal != sizeof(double))
+    dRes = dDef;
+  else
+    dRes = *(double*)dbv.pbVal;
+
+  ICQFreeVariant(&dbv);
+  return dRes;
 }
 
 DWORD CIcqProto::getContactUin(HANDLE hContact)
@@ -187,6 +204,11 @@ int CIcqProto::setSettingWord(HANDLE hContact, const char* szSetting, WORD wValu
 int CIcqProto::setSettingDword(HANDLE hContact, const char* szSetting, DWORD dwValue)
 {
 	return DBWriteContactSettingDword(hContact, m_szModuleName, szSetting, dwValue);
+}
+
+int CIcqProto::setSettingDouble(HANDLE hContact, const char *szSetting, double dValue)
+{
+  return setSettingBlob(hContact, szSetting, (BYTE*)&dValue, sizeof(double));
 }
 
 int CIcqProto::setSettingString(HANDLE hContact, const char* szSetting, const char* szValue)

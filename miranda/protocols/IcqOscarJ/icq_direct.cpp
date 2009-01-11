@@ -275,10 +275,10 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 		}
 		else if (dc.type == DIRECTCONN_REVERSE)
 		{
-			reverse_cookie *pCookie = (reverse_cookie*)dtsi->pvExtra;
+			cookie_reverse_connect *pCookie = (cookie_reverse_connect*)dtsi->pvExtra;
 
-			dwReqMsgID1 = pCookie->pMessage.dwMsgID1;
-			dwReqMsgID2 = pCookie->pMessage.dwMsgID2;
+			dwReqMsgID1 = pCookie->dwMsgID1;
+			dwReqMsgID2 = pCookie->dwMsgID2;
 			dc.dwReqId = (DWORD)pCookie->ft;
 			SAFE_FREE((void**)&pCookie);
 		}
@@ -329,21 +329,21 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 			{ // only if the contact support ICQ DC connections
 				if (dc.type != DIRECTCONN_REVERSE)
 				{ // try reverse connect
-					reverse_cookie *pCookie = (reverse_cookie*)SAFE_MALLOC(sizeof(reverse_cookie));
+					cookie_reverse_connect *pCookie = (cookie_reverse_connect*)SAFE_MALLOC(sizeof(cookie_reverse_connect));
 					DWORD dwCookie;
 
 					NetLog_Direct("connect() failed (%d), trying reverse.", GetLastError());
 
 					if (pCookie)
 					{ // init cookie
-						InitMessageCookie(&pCookie->pMessage);
-						pCookie->pMessage.bMessageType = MTYPE_REVERSE_REQUEST;
+						InitMessageCookie(pCookie);
+						pCookie->bMessageType = MTYPE_REVERSE_REQUEST;
 						pCookie->hContact = dc.hContact;
 						pCookie->dwUin = dc.dwRemoteUin;
 						pCookie->type = dc.type;
 						pCookie->ft = dc.ft;
 						dwCookie = AllocateCookie(CKT_REVERSEDIRECT, 0, dc.hContact, pCookie);
-						icq_sendReverseReq(&dc, dwCookie, (message_cookie_data*)pCookie);
+						icq_sendReverseReq(&dc, dwCookie, (cookie_message_data*)pCookie);
 						goto LBL_Exit;
 					}
 					
@@ -549,7 +549,7 @@ void CIcqProto::handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 
 		if (dc->incoming && dc->type == DIRECTCONN_REVERSE)
 		{
-			reverse_cookie* pCookie;
+			cookie_reverse_connect *pCookie;
 
 			dc->incoming = 0;
 
@@ -682,7 +682,7 @@ void CIcqProto::handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 				dc->type = DIRECTCONN_REVERSE;
 				if (!dc->dwRemoteUin)
 				{ // we need to load cookie (licq)
-					reverse_cookie* pCookie;
+					cookie_reverse_connect *pCookie;
 
 					if (FindCookie(dc->dwReqId, NULL, (void**)&pCookie) && pCookie)
 					{ // valid reverse DC, check and init session

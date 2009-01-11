@@ -81,7 +81,7 @@ void CIcqProto::handleDataChannel(unsigned char *pBuffer, WORD wBufferLength, se
 			break;
 
 		case ICQ_LISTS_FAMILY:
-			handleServClistFam(pBuffer, wBufferLength, &snacHeader, info);
+			handleServCListFam(pBuffer, wBufferLength, &snacHeader, info);
 			break;
 
 		case ICQ_EXTENSIONS_FAMILY:

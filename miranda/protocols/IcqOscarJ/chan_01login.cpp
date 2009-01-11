@@ -69,7 +69,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 #endif
 
 			serverPacketInit(&packet, (WORD)(14 + wUinLen));
-			packFNACHeaderFull(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
+			packFNACHeader(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_AUTH_REQUEST, 0, 0);
 			packTLV(&packet, 0x0001, wUinLen, (LPBYTE)szUin);
 			sendServPacket(&packet);  // request login digest
 		}

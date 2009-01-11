@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -92,7 +92,7 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
     WORD wItemAction;
     icq_packet groupPacket = {0};
     icq_packet groupPacket2 = {0}; 
-    servlistcookie* pGroupCookie = NULL;
+    cookie_servlist_action* pGroupCookie = NULL;
     int nEndOperations;
 
     // first check if the state is calm
@@ -158,7 +158,7 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
     { // setup group packet(s) & cookie
       int totalSize = 0;
       int i;
-      servlistcookie *pGroupCookie;
+      cookie_servlist_action *pGroupCookie;
       DWORD dwGroupCookie;
       // determine the total size of the packet
       for(i = 0; i < pItem->nItems; i++)
@@ -187,10 +187,10 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
 
       if (pItem->nItems > 1)
       { // pack all packet's data, create group cookie
-        pGroupCookie = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+        pGroupCookie = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
         pGroupCookie->dwAction = SSA_ACTION_GROUP;
         pGroupCookie->dwGroupCount = pItem->nItems;
-        pGroupCookie->pGroupItems = (servlistcookie**)SAFE_MALLOC(pItem->nItems * sizeof(servlistcookie*));
+        pGroupCookie->pGroupItems = (cookie_servlist_action**)SAFE_MALLOC(pItem->nItems * sizeof(cookie_servlist_action*));
         for (i = 0; i < pItem->nItems; i++)
         { // build group cookie data - assign cookies datas
           pGroupCookie->pGroupItems[i] = pItem->pItems[i]->cookie;
@@ -201,7 +201,7 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
         dwGroupCookie = AllocateCookie(CKT_SERVERLIST, wItemAction, 0, pGroupCookie);
         // prepare packet data
         serverPacketInit(&groupPacket, (WORD)(totalSize + 0x0A)); // FLAP size added inside
-        packFNACHeaderFull(&groupPacket, ICQ_LISTS_FAMILY, wItemAction, 0, dwGroupCookie);
+        packFNACHeader(&groupPacket, ICQ_LISTS_FAMILY, wItemAction, 0, dwGroupCookie);
         for (i = 0; i < pItem->nItems; i++)
           packBuffer(&groupPacket, pItem->pItems[i]->packet.pData + 0x10, (WORD)(pItem->pItems[i]->packet.wLen - 0x10));
 
@@ -213,17 +213,17 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
           for(i = 0; i < pItem->nItems; i++)
             totalSize += ((servlistgroupitemdouble*)(pItem->pItems[i]))->packet2.wLen - 0x10;
 
-          pGroupCookie = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+          pGroupCookie = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
           pGroupCookie->dwAction = SSA_ACTION_GROUP;
           pGroupCookie->dwGroupCount = pItem->nItems;
-          pGroupCookie->pGroupItems = (servlistcookie**)SAFE_MALLOC(pItem->nItems * sizeof(servlistcookie*));
+          pGroupCookie->pGroupItems = (cookie_servlist_action**)SAFE_MALLOC(pItem->nItems * sizeof(cookie_servlist_action*));
           for (i = 0; i < pItem->nItems; i++)
             pGroupCookie->pGroupItems[i] = pItem->pItems[i]->cookie;
           // allocate cookie id
           dwGroupCookie = AllocateCookie(CKT_SERVERLIST, wItemAction, 0, pGroupCookie);
           // prepare packet data
           serverPacketInit(&groupPacket2, (WORD)(totalSize + 0x0A)); // FLAP size added inside
-          packFNACHeaderFull(&groupPacket2, ICQ_LISTS_FAMILY, wItemAction, 0, dwGroupCookie);
+          packFNACHeader(&groupPacket2, ICQ_LISTS_FAMILY, wItemAction, 0, dwGroupCookie);
           for (i = 0; i < pItem->nItems; i++)
             packBuffer(&groupPacket2, ((servlistgroupitemdouble*)(pItem->pItems[i]))->packet2.pData + 0x10, (WORD)(((servlistgroupitemdouble*)(pItem->pItems[i]))->packet2.wLen - 0x10));
         }
@@ -365,7 +365,7 @@ int CIcqProto::servlistHandlePrimitives(DWORD dwOperation)
 
 void CIcqProto::servlistPostPacket(icq_packet* packet, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout)
 {
-  servlistcookie* pCookie;
+  cookie_servlist_action* pCookie;
 
   if (servlistHandlePrimitives(dwOperation))
     return;
@@ -403,7 +403,7 @@ void CIcqProto::servlistPostPacket(icq_packet* packet, DWORD dwCookie, DWORD dwO
 
 void CIcqProto::servlistPostPacketDouble(icq_packet* packet1, DWORD dwCookie, DWORD dwOperation, DWORD dwTimeout, icq_packet* packet2, WORD wAction2)
 {
-  servlistcookie* pCookie;
+  cookie_servlist_action* pCookie;
 
   if (servlistHandlePrimitives(dwOperation))
     return;
@@ -435,7 +435,7 @@ void CIcqProto::servlistPostPacketDouble(icq_packet* packet1, DWORD dwCookie, DW
     pGroupItem->cookie = pCookie;
     pGroupItem->wAction2 = wAction2;
     // packets data are alloced, keep them until they are sent
-    memcpy(&pGroupItem->packet1, packet1, sizeof(icq_packet));
+    memcpy(&pGroupItem->packet, packet1, sizeof(icq_packet));
     memcpy(&pGroupItem->packet2, packet2, sizeof(icq_packet));
 
     servlistQueueAddGroupItem((servlistgroupitem*)pGroupItem, dwTimeout);
@@ -1119,7 +1119,7 @@ DWORD CIcqProto::icq_sendServerItem(DWORD dwCookie, WORD wAction, WORD wGroupId,
 
 	// Build the packet
 	serverPacketInit(&packet, (WORD)(nNameLen + 20 + wTLVlen));
-	packFNACHeaderFull(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
+	packFNACHeader(&packet, ICQ_LISTS_FAMILY, wAction, 0, dwCookie);
 	packWord(&packet, (WORD)nNameLen);
 	if (nNameLen) 
 		packBuffer(&packet, (LPBYTE)szName, (WORD)nNameLen);
@@ -1202,7 +1202,8 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
   {
     nMetaTimeLen = dbv.cpbVal;
     pMetaTime = (BYTE*)_alloca(dbv.cpbVal);
-    memcpy(pMetaTime, dbv.pbVal, dbv.cpbVal);
+    for (int i = 0; i < dbv.cpbVal; i++)
+      pMetaTime[i] = dbv.pbVal[dbv.cpbVal - i - 1];
 
     ICQFreeVariant(&dbv);
   }
@@ -1305,7 +1306,7 @@ DWORD CIcqProto::icq_sendServerGroup(DWORD dwCookie, WORD wAction, WORD wGroupId
 
 DWORD CIcqProto::icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType)
 {
-	servlistcookie *ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+	cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 	DWORD dwCookie;
 
 	if (ack)
@@ -1887,7 +1888,7 @@ char* CIcqProto::getServListUniqueGroupName(const char *szGroupName, int bAlloce
 // this is the second part of recursive event-driven procedure
 int CIcqProto::servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult)
 {
-	servlistcookie* clue = (servlistcookie*)param;
+	cookie_servlist_action* clue = (cookie_servlist_action*)param;
   char *szSubGroupName = clue->szGroupName;
   char *szSubGroup;
   int wSubGroupLevel = -1;
@@ -1930,7 +1931,7 @@ int CIcqProto::servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGro
 
 	if (!CheckServerID(wSubGroupID, 0))
 	{ // the next id is free, so create our group with that id
-		servlistcookie *ack;
+		cookie_servlist_action *ack;
 		DWORD dwCookie;
 		char *szSubGroupItem = (char*)SAFE_MALLOC(strlennull(szSubGroupName) + wSubGroupLevel + 1);
 
@@ -1947,7 +1948,7 @@ int CIcqProto::servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGro
       // check and create unique group name (Miranda does allow more subgroups with the same name!)
       szSubGroupItem = getServListUniqueGroupName(szSubGroupItem, TRUE);
 
-			if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+			if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
 			{ // we have cookie good, go on
 #ifdef _DEBUG
         NetLog_Server("Server-List: Creating sub-group \"%s\", parent group \"%s\".", szSubGroupItem, szGroup);
@@ -1992,10 +1993,10 @@ int CIcqProto::servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPAR
 
   if (!strstrnull(szGroup, "\\") || m_bSsiSimpleGroups)
   { // a root group can be simply created without problems; simple groups are mapped directly
-    servlistcookie* ack;
+    cookie_servlist_action* ack;
     DWORD dwCookie;
 
-    if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+    if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
     { // we have cookie good, go on
 #ifdef _DEBUG
       NetLog_Server("Server-List: Creating root group \"%s\".", szGroup);
@@ -2015,7 +2016,7 @@ int CIcqProto::servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPAR
   else
   { // this is a sub-group
     char* szSub = null_strdup(szGroup); // create subgroup, recursive, event-driven, possibly relocate
-    servlistcookie* ack;
+    cookie_servlist_action* ack;
     char *szLast;
 
     if (strstrnull(szSub, "\\"))
@@ -2025,7 +2026,7 @@ int CIcqProto::servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPAR
       szLast[-1] = '\0'; 
     }
     // make parent group id
-    ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+    ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
     if (ack)
     {
       ack->szGroupName = null_strdup(szLast); // groupname
@@ -2064,7 +2065,7 @@ void CIcqProto::servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDI
 int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult)
 {
 	WORD wItemID;
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
 
   if (ack) SAFE_FREE((void**)&ack->szGroup);
@@ -2110,7 +2111,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
 int CIcqProto::servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult)
 {
   WORD wItemID;
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // removing obsolete items, just free the memory
@@ -2142,7 +2143,7 @@ void CIcqProto::servlistAddContact(HANDLE hContact, const char *pszGroup)
 {
   DWORD dwUin;
   uid_str szUid;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
   // Get UID
   if (getContactUid(hContact, &dwUin, &szUid))
@@ -2151,7 +2152,7 @@ void CIcqProto::servlistAddContact(HANDLE hContact, const char *pszGroup)
     return;
   }
 
-	if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
 	{ // Could not do anything without cookie
 		NetLog_Server("Failed to add contact to server side list (%s)", "malloc failed");
 		return;
@@ -2171,7 +2172,7 @@ int CIcqProto::servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD
 {
   WORD wGroupID;
   WORD wItemID;
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
 
   if (nResult == PENDING_RESULT_PURGE)
@@ -2218,7 +2219,7 @@ void CIcqProto::servlistRemoveContact(HANDLE hContact)
 {
 	DWORD dwUin;
 	uid_str szUid;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
 	// Get UID
 	if (getContactUid(hContact, &dwUin, &szUid))
@@ -2228,7 +2229,7 @@ void CIcqProto::servlistRemoveContact(HANDLE hContact)
 		return;
 	}
 
-	if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
 	{ // Could not do anything without cookie
 		NetLog_Server("Failed to remove contact from server side list (%s)", "malloc failed");
 		return;
@@ -2247,7 +2248,7 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
 {
 	WORD wItemID;
 	WORD wGroupID;
-	servlistcookie* ack = (servlistcookie*)lParam;
+	cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
 	DWORD dwCookie, dwCookie2;
 
   if (ack) SAFE_FREE((void**)&ack->szGroup);
@@ -2307,7 +2308,7 @@ int CIcqProto::servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD g
 {
   WORD wItemID;
   WORD wGroupID;
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // removing obsolete items, just free the memory
@@ -2341,7 +2342,7 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 {
   DWORD dwUin;
   uid_str szUid;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
   if (!hContact) return; // we do not move us, caused our uin was wrongly added to list
 
@@ -2365,7 +2366,7 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 			return;
 	}
 
-	if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
 	{ // Could not do anything without cookie
 		NetLog_Server("Failed to add contact to server side list (%s)", "malloc failed");
 		return;
@@ -2385,7 +2386,7 @@ int CIcqProto::servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD
 {
   WORD wItemID;
   WORD wGroupID;
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
 
   if (nResult == PENDING_RESULT_PURGE)
@@ -2435,7 +2436,7 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 {
 	DWORD dwUin;
 	uid_str szUid;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
 	// Get UID
 	if (getContactUid(hContact, &dwUin, &szUid))
@@ -2445,7 +2446,7 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 		return;
 	}
 
-	if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
 	{
 		// Could not allocate cookie - use old fake
     NetLog_Server("Failed to update contact's details on server side list (%s)", "malloc failed");
@@ -2463,7 +2464,7 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 
 int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult)
 {
-  servlistcookie *ack = (servlistcookie*)lParam;
+  cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
   void* groupData;
   int groupSize;
@@ -2503,7 +2504,7 @@ int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPA
 
 void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup)
 {
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
   char *szGroupName, *szNewGroupName, *szLast;
   int nGroupLevel = getServListGroupLevel(wGroupId);
   int i;
@@ -2552,7 +2553,7 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
   else // simple groups do not require any conversion
     szNewGroupName = null_strdup(szNewGroup);
 
-	if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
 	{ // cookie failed
     NetLog_Server("Error: Failed to allocate cookie");
 
@@ -2568,7 +2569,7 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
 
 int CIcqProto::servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult)
 {
-  servlistcookie* ack = (servlistcookie*)lParam;
+  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
   DWORD dwCookie;
   WORD wGroupID;
   char* szGroupName;
@@ -2614,11 +2615,11 @@ int CIcqProto::servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPAR
 
 void CIcqProto::servlistRemoveGroup(const char *szGroup, WORD wGroupId)
 {
-  servlistcookie *ack;
+  cookie_servlist_action *ack;
 
   if (!szGroup) return;
 
-  if (!(ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie))))
+  if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
   { // cookie failed
     NetLog_Server("Error: Failed to allocate cookie");
     return;
@@ -2643,9 +2644,9 @@ void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)
 	if (wContactId && wGroupId)
 	{
 		DWORD dwCookie;
-		servlistcookie* ack;
+		cookie_servlist_action* ack;
 
-		if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+		if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
 		{ // we have cookie good, go on
 			ack->hContact = hContact;
 			ack->wContactId = wContactId;

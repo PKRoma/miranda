@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,6 +39,7 @@
 HINSTANCE hInst;
 PLUGINLINK* pluginLink;
 MM_INTERFACE mmi;
+UTF8_INTERFACE utfi;
 MD5_INTERFACE md5i;
 LIST_INTERFACE li;
 
@@ -49,11 +50,11 @@ DWORD MIRANDA_VERSION;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,4),
+	PLUGIN_MAKE_VERSION(0,5,0,5),
 	"Support for ICQ network, enhanced.",
 	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
 	"jokusoftware@miranda-im.org",
-	"(C) 2000-2008 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera",
+	"(C) 2000-2009 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera",
 	"http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
@@ -62,11 +63,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.8.0.19 or greater
-	// We need the new MS_DB_MODULE_DELETE database utility service
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 19))
+	// Only load for 0.8.0.27 or greater
+	// We need the new Contact Info service support PS_GETINFOSETTING
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 27))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.19 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.27 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -105,6 +106,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pluginLink = link;
 	mir_getLI( &li );
 	mir_getMMI( &mmi );
+	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
 
 	{ // Are we running under unicode Miranda core ?

@@ -36,7 +36,8 @@
 
 #include "icqoscar.h"
 
-struct oscarthreadstartinfo {
+struct oscarthreadstartinfo 
+{
 	int type;
 	int incoming;
 	HANDLE hContact;
@@ -105,7 +106,7 @@ oscar_filetransfer* CIcqProto::CreateOscarTransfer()
 	EnterCriticalSection(&oftMutex);
 
 	fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
-	fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
+	fileTransferList[fileTransferCount++] = ft;
 
 #ifdef _DEBUG
 	NetLog_Direct("OFT: FT struct 0x%x created", ft);
@@ -193,7 +194,7 @@ oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, D
 
 	for (i = 0; i < fileTransferCount; i++)
 	{
-		if (((basic_filetransfer*)fileTransferList[i])->ft_magic == FT_MAGIC_OSCAR)
+		if (fileTransferList[i]->ft_magic == FT_MAGIC_OSCAR)
 		{
 			oscar_filetransfer *oft = (oscar_filetransfer*)fileTransferList[i];
 
@@ -412,7 +413,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 
 		if (chain)
 		{
-			WORD wAckType = getWordFromChain(chain, 0x0A, 1);
+			WORD wAckType = chain->getWord(0x0A, 1);
 
 			if (wAckType == 1)
 			{ // This is first request in this OFT
@@ -443,15 +444,15 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 				// init filetransfer structure
 				ft->pMessage.dwMsgID1 = dwID1;
 				ft->pMessage.dwMsgID2 = dwID2;
-				ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
-				ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-				ft->dwRemoteInternalIP = getDWordFromChain(chain, 0x03, 1);
-				ft->dwRemoteExternalIP = getDWordFromChain(chain, 0x04, 1);
-				ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
+				ft->bUseProxy = chain->getTLV(0x10, 1) ? 1 : 0;
+				ft->dwProxyIP = chain->getDWord(0x02, 1);
+				ft->dwRemoteInternalIP = chain->getDWord(0x03, 1);
+				ft->dwRemoteExternalIP = chain->getDWord(0x04, 1);
+				ft->wRemotePort = chain->getWord(0x05, 1);
 				ft->wReqNum = wAckType;
 
 				{ // User Message
-					oscar_tlv* tlv = getTLV(chain, 0x0C, 1);
+					oscar_tlv* tlv = chain->getTLV(0x0C, 1);
 
 					if (tlv)
 					{ // parse User Message
@@ -462,7 +463,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						pszDescription[tlv->wLen] = '\0';
 						pszDescription[tlv->wLen+1] = '\0';
 						{ // apply User Message encoding
-							oscar_tlv *charset = getTLV(chain, 0x0D, 1);
+							oscar_tlv *charset = chain->getTLV(0x0D, 1);
 							char *str = pszDescription;
 							char *bTag,*eTag;
 
@@ -511,7 +512,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					if (!strlennull(pszDescription)) pszDescription = ICQTranslateUtf(LPGEN("No description given"));
 				}
 				{ // parse File Transfer Info block
-					oscar_tlv* tlv = getTLV(chain, 0x2711, 1);
+					oscar_tlv* tlv = chain->getTLV(0x2711, 1);
 
 					// sanity check
 					if (!tlv || tlv->wLen < 8)
@@ -545,7 +546,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 						pszFileName = "";
 
 					{ // apply Filename / Directory Name encoding
-						oscar_tlv* charset = getTLV(chain, 0x2712, 1);
+						oscar_tlv* charset = chain->getTLV(0x2712, 1);
 
 						if (charset)
 						{
@@ -575,7 +576,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					}
 				}
 				{ // Total Size TLV (ICQ 6 and AIM 6)
-					oscar_tlv *tlv = getTLV(chain, 0x2713, 1);
+					oscar_tlv *tlv = chain->getTLV(0x2713, 1);
 
 					if (tlv && tlv->wLen >= 8)
 					{
@@ -630,11 +631,11 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					{
 						ReleaseOscarListener((oscar_listener**)&ft->listener);
 
-						ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
-						ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-						ft->dwRemoteInternalIP = getDWordFromChain(chain, 0x03, 1);
-						ft->dwRemoteExternalIP = getDWordFromChain(chain, 0x04, 1);
-						ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
+						ft->bUseProxy = chain->getTLV(0x10, 1) ? 1 : 0;
+						ft->dwProxyIP = chain->getDWord(0x02, 1);
+						ft->dwRemoteInternalIP = chain->getDWord(0x03, 1);
+						ft->dwRemoteExternalIP = chain->getDWord(0x04, 1);
+						ft->wRemotePort = chain->getWord(0x05, 1);
 
 						OpenOscarConnection(hContact, ft, ft->bUseProxy ? OCT_PROXY_RECV: OCT_REVERSE);
 					}
@@ -660,9 +661,9 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 
 					ReleaseOscarListener((oscar_listener**)&ft->listener);
 
-					ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
-					ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-					ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
+					ft->bUseProxy = chain->getTLV(0x10, 1) ? 1 : 0;
+					ft->dwProxyIP = chain->getDWord(0x02, 1);
+					ft->wRemotePort = chain->getWord(0x05, 1);
 
 					if (ft->bUseProxy && ft->dwProxyIP)
 					{ // Init proxy connection
@@ -685,9 +686,9 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 					NetLog_Direct("OFT: Redirect received (%d)", wAckType);
 
 					ft->wReqNum = wAckType;
-					ft->bUseProxy = getTLV(chain, 0x10, 1) ? 1 : 0;
-					ft->dwProxyIP = getDWordFromChain(chain, 0x02, 1);
-					ft->wRemotePort = getWordFromChain(chain, 0x05, 1);
+					ft->bUseProxy = chain->getTLV(0x10, 1) ? 1 : 0;
+					ft->dwProxyIP = chain->getDWord(0x02, 1);
+					ft->wRemotePort = chain->getWord(0x05, 1);
 
 					if (ft->bUseProxy && ft->dwProxyIP)
 					{ // Init proxy connection

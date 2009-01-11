@@ -218,9 +218,9 @@ static void enumServerGroups(CIcqProto* ppro)
 static DWORD sendUploadGroup(CIcqProto* ppro, WORD wAction, WORD wGroupId, char* szItemName)
 {
 	DWORD dwCookie;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
-	if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+	if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
 	{ // we have cookie good, go on
 		ack->wGroupId = wGroupId;
 		ack->dwAction = SSA_SERVLIST_ACK;
@@ -236,9 +236,9 @@ static DWORD sendUploadGroup(CIcqProto* ppro, WORD wAction, WORD wGroupId, char*
 static DWORD sendUploadBuddy(CIcqProto* ppro, HANDLE hContact, WORD wAction, DWORD dwUin, char *szUID, WORD wContactId, WORD wGroupId, WORD wItemType)
 {
 	DWORD dwCookie;
-	servlistcookie* ack;
+	cookie_servlist_action* ack;
 
-	if (ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie)))
+	if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
 	{ // we have cookie good, go on
 		ack->hContact = hContact;
 		ack->wContactId = wContactId;
@@ -421,7 +421,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				{
 					void* groupData;
 					int groupSize;
-					servlistcookie* ack;
+					cookie_servlist_action* ack;
 
 					ppro->setServListGroupName(wNewGroupId, szNewGroupName); // add group to list
 					ppro->setServListGroupLinkID(szNewGroupName, wNewGroupId); // grouppath is known
@@ -431,7 +431,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 					*(((WORD*)groupData)+(groupSize>>1)) = wNewGroupId; // add this new group id
 					groupSize += 2;
 
-					ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+					ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 					if (ack)
 					{
 						DWORD dwCookie; // we do not use this
@@ -454,7 +454,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 				{
 					void* groupData;
 					int groupSize;
-					servlistcookie* ack;
+					cookie_servlist_action* ack;
 
 					ppro->FreeServerID(wNewGroupId, SSIT_GROUP);
 					ppro->setServListGroupName(wNewGroupId, NULL); // remove group from list
@@ -462,7 +462,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 					groupData = ppro->collectGroups(&groupSize);
 
-					ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+					ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 					if (ack)
 					{
 						DWORD dwCookie; // we do not use this
@@ -829,7 +829,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 					if (groupData = ppro->collectBuddyGroup(wNewGroupId, &groupSize))
 					{ // the group is still not empty, just update it
 						char* pszGroup = ppro->getServListGroupName(wNewGroupId);
-						servlistcookie* ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+						cookie_servlist_action* ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 
 						ack->dwAction = SSA_SERVLIST_ACK;
 						ack->wGroupId = wNewGroupId;
@@ -855,7 +855,7 @@ static BOOL CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wParam,L
 						else // update empty group
 						{
 							char *pszGroup = ppro->getServListGroupName(wNewGroupId);
-							servlistcookie *ack = (servlistcookie*)SAFE_MALLOC(sizeof(servlistcookie));
+							cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 
 							ack->dwAction = SSA_SERVLIST_ACK;
 							ack->wGroupId = wNewGroupId;

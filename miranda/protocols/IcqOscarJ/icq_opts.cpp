@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -293,14 +293,15 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				PBYTE buf=NULL;
 				int buflen=0;
 
-				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ppro->getSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
+/*				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ppro->getSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
 				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
-				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);
+				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);*/
 
-				ppackTLVByte(&buf, &buflen, (BYTE)!ppro->getSettingByte(NULL, "Auth", 1), TLV_AUTH, 1);
-				ppackTLVByte(&buf, &buflen, (BYTE)ppro->getSettingByte(NULL, "WebAware", 0), TLV_WEBAWARE, 1);
+				ppackTLVWord(&buf, &buflen, 0x19A, (WORD)!ppro->getSettingByte(NULL, "Auth", 1));
+				ppackTLVByte(&buf, &buflen, 0x212, ppro->getSettingByte(NULL, "WebAware", 0));
+        ppackTLVWord(&buf, &buflen, 0x1F9, ppro->getSettingByte(NULL, "PrivacyLevel", 1));
 
-				ppro->icq_changeUserDetailsServ(META_SET_FULLINFO_REQ, (char*)buf, (WORD)buflen);
+				ppro->icq_changeUserDirectoryInfoServ(buf, (WORD)buflen, DIRECTORYREQUEST_UPDATEPRIVACY);
 
 				SAFE_FREE((void**)&buf);
 
@@ -312,17 +313,13 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					{
 						if (ppro->m_bSsiEnabled)
 							ppro->updateServVisibilityCode(3);
-						ppro->icq_setstatus(wStatus, FALSE);
-						// Tell who is on our visible list
-						ppro->icq_sendEntireVisInvisList(0);
+						ppro->icq_setstatus(wStatus, NULL);
 					}
 					else
 					{
-						ppro->icq_setstatus(wStatus, FALSE);
+						ppro->icq_setstatus(wStatus, NULL);
 						if (ppro->m_bSsiEnabled)
 							ppro->updateServVisibilityCode(4);
-						// Tell who is on our invisible list
-						ppro->icq_sendEntireVisInvisList(1);
 					}
 				}
 			}

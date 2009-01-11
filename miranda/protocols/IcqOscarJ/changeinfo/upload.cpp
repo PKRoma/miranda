@@ -3,7 +3,7 @@
 //                ________________________________________
 //
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,78 +34,65 @@
 
 #include "icqoscar.h"
 
-HFONT  hListFont;
-char   Password[10];
-HANDLE hUpload[2];
-HWND   hwndList;
-int    iEditItem;
 
 int CIcqProto::StringToListItemId(const char *szSetting,int def)
 {
-	int i,listCount;
+	int i;
 	char *szValue;
-	ListTypeDataItem *list;
+	FieldNamesItem *list;
 
 	for(i=0;i<settingCount;i++)
 		if(!strcmpnull(szSetting,setting[i].szDbSetting))
 			break;
 
-	if(i==settingCount) return def;
+	if (i==settingCount) return def;
 
-	list=(ListTypeDataItem*)setting[i].pList;
-	listCount=setting[i].listCount;
+	list = (FieldNamesItem*)setting[i].pList;
 
 	szValue = getSettingStringUtf(NULL, szSetting, NULL);
 	if (!szValue)
 		return def;
 
-	for(i=0;i<listCount;i++)
-		if(!strcmpnull(list[i].szValue, szValue))
+  for (i=0; list[i].text; i++)
+		if (!strcmpnull(list[i].text, szValue))
 			break;
 
 	SAFE_FREE((void**)&szValue);
-	if(i==listCount) return def;
+	if (!list[i].text) return def;
 
-	return list[i].id;
+	return list[i].code;
 }
 
-int CIcqProto::UploadSettings(HWND hwndParent)
+
+int ChangeInfoData::UploadSettings(void)
 {
-	if (!icqOnline())
+	if (!ppro->icqOnline())
 	{
-		MessageBoxUtf(hwndParent, LPGEN("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGEN("Change ICQ Details"), MB_OK);
+		MessageBoxUtf(hwndDlg, LPGEN("You are not currently connected to the ICQ network. You must be online in order to update your information on the server."), LPGEN("Change ICQ Details"), MB_OK);
 		return 0;
 	}
 
-	hUpload[0] = (HANDLE)ChangeInfoEx(CIXT_FULL, 0);
+	hUpload[0] = (HANDLE)ppro->ChangeInfoEx(CIXT_FULL, 0);
 
 	//password
-	char* tmp = GetUserPassword(TRUE);
+	char* tmp = ppro->GetUserPassword(TRUE);
 	if (tmp)
 	{
 		if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
 		{
-			int buflen = 0; // re-init buffer
-			PBYTE buf = NULL;
-			ppackLELNTS(&buf, &buflen, tmp);
+			hUpload[1] = (HANDLE)ppro->icq_changeUserPasswordServ(tmp);
+			char szPwd[16] = {0};
 
-			hUpload[1] = (HANDLE)icq_changeUserDetailsServ(META_SET_PASSWORD_REQ, (char*)buf, (WORD)buflen);
+			if (!ppro->getSettingStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
+			{ // password is stored in DB, update
+				char ptmp[16];
 
-			{
-				char szPwd[16] = {0};
+				strcpy(ptmp, tmp);
 
-				if (!getSettingStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
-				{ // password is stored in DB, update
-					char ptmp[16];
+				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
 
-					strcpy(ptmp, tmp);
-
-					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ptmp), (LPARAM)ptmp);
-
-					setSettingString(NULL, "Password", ptmp);
-				}
+				ppro->setSettingString(NULL, "Password", ptmp);
 			}
-			SAFE_FREE((void**)&buf);
 		}
 	}
 

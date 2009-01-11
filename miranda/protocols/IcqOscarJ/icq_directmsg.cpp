@@ -170,7 +170,7 @@ void CIcqProto::handleDirectMessage(directconnect* dc, PBYTE buf, WORD wLen)
 		else
 		{
 			HANDLE hCookieContact;
-			message_cookie_data* pCookieData = NULL;
+			cookie_message_data *pCookieData = NULL;
 
 			if (!FindCookie(wCookie, &hCookieContact, (void**)&pCookieData))
 			{
@@ -307,7 +307,7 @@ void CIcqProto::handleDirectGreetingMessage(directconnect* dc, PBYTE buf, WORD w
 	else if (typeId && wCommand == DIRECT_ACK)
 	{
 		HANDLE hCookieContact;
-		message_cookie_data* pCookieData = NULL;
+		cookie_message_data *pCookieData = NULL;
 
 		if (!FindCookie(wCookie, &hCookieContact, (void**)&pCookieData))
 		{

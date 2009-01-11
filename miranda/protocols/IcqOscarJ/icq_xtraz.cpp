@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -95,10 +95,10 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 						{ // apply privacy rules
 							NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
-							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUSNAME, "");
+							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUS_NAME, "");
 							szXName = MangleXml((char*)tmp, strlennull(tmp));
 							SAFE_FREE((void**)&tmp);
-							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUSMSG, "");
+							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
 							szXMsg = MangleXml((char*)tmp, strlennull(tmp));
 							SAFE_FREE((void**)&tmp);
 
@@ -237,11 +237,11 @@ NextVal:
 							*szEnd = '\0';
 							szXName = DemangleXml(szNode, strlennull(szNode));
 							// check if the name changed
-							szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+							szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
 							if (strcmpnull(szOldXName, szXName))
 								bChanged = TRUE;
 							SAFE_FREE((void**)&szOldXName);
-							setSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, szXName);
+							setSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, szXName);
 							SAFE_FREE((void**)&szXName);
 							*szEnd = ' ';
 						}
@@ -256,11 +256,11 @@ NextVal:
 							*szEnd = '\0';
 							szXMsg = DemangleXml(szNode, strlennull(szNode));
 							// check if the decription changed
-							szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUSNAME, NULL);
+							szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
 							if (strcmpnull(szOldXMsg, szXMsg))
 								bChanged = TRUE;
 							SAFE_FREE((void**)&szOldXMsg);
-							setSettingStringUtf(hContact, DBSETTING_XSTATUSMSG, szXMsg);
+							setSettingStringUtf(hContact, DBSETTING_XSTATUS_MSG, szXMsg);
 							SAFE_FREE((void**)&szXMsg);
 						}
 						BroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
@@ -414,7 +414,6 @@ DWORD CIcqProto::SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* sz
 	int nBodyLen;
 	char *szBody;
 	DWORD dwCookie;
-	message_cookie_data* pCookieData;
 
 	if (getContactUid(hContact, &dwUin, NULL))
 		return 0; // Invalid contact
@@ -431,7 +430,7 @@ DWORD CIcqProto::SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* sz
 	SAFE_FREE((void**)&szNotifyBody);
 
 	// Set up the ack type
-	pCookieData = CreateMessageCookie(MTYPE_SCRIPT_NOTIFY, ACKTYPE_CLIENT);
+	cookie_message_data *pCookieData = CreateMessageCookie(MTYPE_SCRIPT_NOTIFY, ACKTYPE_CLIENT);
 	dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
 	// have we a open DC, send through that

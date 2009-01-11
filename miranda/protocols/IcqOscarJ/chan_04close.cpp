@@ -74,7 +74,7 @@ void CIcqProto::handleCloseChannel(unsigned char *buf, WORD datalen, serverthrea
 	if (chain = readIntoTLVChain(&buf, datalen, 0))
 	{
 		// TLV 9 errors (runtime errors?)
-		wError = getWordFromChain(chain, 0x09, 1);
+		wError = chain->getWord(0x09, 1);
 		if (wError)
 		{
 			SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -102,14 +102,16 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 		return; // Invalid data
 	}
 
+  // TLV 0x8E SSL State
+
 	// TLV 8 errors (signon errors?)
-	wError = getWordFromChain(chain, 0x08, 1);
+	wError = chain->getWord(0x08, 1);
 	if (wError)
 	{
 		handleSignonError(wError);
 
 		// we return only if the server did not gave us cookie (possible to connect with soft error)
-		if (!getLenFromChain(chain, 0x06, 1)) 
+		if (!chain->getLength(0x06, 1)) 
 		{
 			disposeChain(&chain);
 			SetCurrentStatus(ID_STATUS_OFFLINE);
@@ -120,9 +122,9 @@ void CIcqProto::handleLoginReply(unsigned char *buf, WORD datalen, serverthread_
 
 	// We are in the login phase and no errors were reported.
 	// Extract communication server info.
-	info->newServer = (char*)getStrFromChain(chain, 0x05, 1);
-	info->cookieData = getStrFromChain(chain, 0x06, 1);
-	info->cookieDataLen = getLenFromChain(chain, 0x06, 1);
+	info->newServer = chain->getString(0x05, 1);
+	info->cookieData = (BYTE*)chain->getString(0x06, 1);
+	info->cookieDataLen = chain->getLength(0x06, 1);
 
 	// We dont need this anymore
 	disposeChain(&chain);

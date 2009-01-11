@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -68,6 +68,7 @@ void __fastcall packQWord(icq_packet *, DWORD64);
 void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue);
 void packTLVWord(icq_packet *pPacket, WORD wType, WORD wData);
 void packTLVDWord(icq_packet *pPacket, WORD wType, DWORD dwData);
+void packTLVUID(icq_packet *pPacket, WORD wType, DWORD dwUin, const char *szUid);
 
 void packBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
 //void packLEWordSizedBuffer(icq_packet* pPacket, const BYTE* pbyBuffer, WORD wLength);
@@ -75,25 +76,39 @@ int __fastcall getUINLen(DWORD dwUin);
 int __fastcall getUIDLen(DWORD dwUin, const char *szUid);
 void __fastcall packUIN(icq_packet *pPacket, DWORD dwUin);
 void __fastcall packUID(icq_packet *pPacket, DWORD dwUin, const char *szUid);
-void packFNACHeader(icq_packet *d, WORD wFamily, WORD wSubtype);
-void packFNACHeaderFull(icq_packet *d, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD wSeq);
+
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype);
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence);
+void packFNACHeader(icq_packet *pPacket, WORD wFamily, WORD wSubtype, WORD wFlags, DWORD dwSequence, WORD wVersion);
 
 void __fastcall packLEWord(icq_packet *, WORD);
 void __fastcall packLEDWord(icq_packet *, DWORD);
 
-void packTLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType);
+void packLETLVLNTS(PBYTE *buf, int *bufpos, const char *str, WORD wType);
 
 void ppackByte(PBYTE *buf,int *buflen,BYTE b);
+void ppackWord(PBYTE *buf, int *buflen, WORD w);
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w);
 void ppackLEDWord(PBYTE *buf,int *buflen,DWORD d);
 void ppackLELNTS(PBYTE *buf, int *buflen, const char *str);
+void ppackBuffer(PBYTE *buf, int *buflen, WORD wLength,  const BYTE *pbyValue);
 
-void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
-void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
-void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
-void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
-void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
-void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
+void ppackTLV(PBYTE *buf, int *buflen, WORD wType, WORD wLength, const BYTE *pbyValue);
+void ppackTLVByte(PBYTE *buf, int *buflen, WORD wType, BYTE bValue);
+void ppackTLVWord(PBYTE *buf, int *buflen, WORD wType, WORD wValue);
+void ppackTLVDWord(PBYTE *buf, int *buflen, WORD wType, DWORD dwValue);
+void ppackTLVDouble(PBYTE *buf, int *buflen, WORD wType, double dValue);
+void ppackTLVUID(PBYTE *buf, int *buflen, WORD wType, DWORD dwUin, const char *szUid);
+
+void ppackLETLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always);
+void ppackLETLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always);
+void ppackLETLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always);
+void ppackLETLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE always);
+void ppackLETLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wType, BYTE always);
+void ppackLETLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wType);
+
+void ppackTLVBlockItems(PBYTE *buf, int *buflen, WORD wType, int *nItems, PBYTE *pBlock, WORD *wLength, BOOL bSingleItem);
+void ppackTLVBlockItem(PBYTE *buf, int *buflen, WORD wType, PBYTE *pItem, WORD *wLength);
 
 void __fastcall unpackByte(unsigned char **, BYTE *);
 void __fastcall unpackWord(unsigned char **, WORD *);

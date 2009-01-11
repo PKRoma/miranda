@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -34,15 +34,6 @@
 
 #include "icqoscar.h"
 
-extern HFONT  hListFont;
-extern char   Password[10];
-extern HANDLE hUpload[2];
-extern HWND   hwndList;
-extern int    iEditItem;
-
-static int editTopIndex;
-static HANDLE hAckHook = NULL;
-static HFONT hMyFont = NULL;
 
 #define DM_PROTOACK  (WM_USER+10)
 
@@ -66,13 +57,14 @@ static int DrawTextUtf(HDC hDC, char *text, LPRECT lpRect, UINT uFormat, LPSIZE 
 	return res;
 }
 
-static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
+
+void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 {
 	char *text;
 	int alloced=0;
 	char str[MAX_PATH];
 
-	if (setting[i].value == 0 && !(setting[i].displayType & LIF_ZEROISVALID))
+	if (settingData[i].value == 0 && !(setting[i].displayType & LIF_ZEROISVALID))
 	{
 		SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
 
@@ -86,28 +78,29 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 		switch (setting[i].displayType & LIM_TYPE) {
 		case LI_STRING:
 		case LI_LONGSTRING:
-			text = BinaryToEscapes((char*)setting[i].value);
+			text = BinaryToEscapes((char*)settingData[i].value);
 			alloced = 1;
 			break;
 
 		case LI_NUMBER:
 			text = str;
-			_itoa(setting[i].value, text, 10);
+			_itoa(settingData[i].value, text, 10);
 			break;
 
 		case LI_LIST:
 			if (setting[i].dbType == DBVT_ASCIIZ) 
-				text = ICQTranslateUtfStatic((char*)setting[i].value, str, MAX_PATH);
+				text = ICQTranslateUtfStatic((char*)settingData[i].value, str, MAX_PATH);
 			else 
 			{
 				int j;
 
 				text = ICQTranslateUtfStatic(LPGEN("Unknown value"), str, MAX_PATH);
 
-				for(j=0; j < setting[i].listCount; j++)
-					if (((ListTypeDataItem*)setting[i].pList)[j].id == setting[i].value) 
+        FieldNamesItem *list = (FieldNamesItem*)setting[i].pList;
+        for (j=0; list[j].text; j++)
+					if (list[j].code == settingData[i].value) 
 					{
-						text = ICQTranslateUtfStatic(((ListTypeDataItem*)setting[i].pList)[j].szValue, str, MAX_PATH);
+						text = ICQTranslateUtfStatic(list[j].text, str, MAX_PATH);
 						break;
 					}
 			}
@@ -116,7 +109,7 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 	}
 	if (setting[i].displayType & LIF_PASSWORD) 
 	{
-		if (setting[i].changed) 
+		if (settingData[i].changed) 
 		{
 			int i;
 			for (i=0; text[i]; i++) text[i] = '*';
@@ -146,7 +139,8 @@ static void PaintItemSetting(HDC hdc,RECT *rc,int i,UINT itemState)
 	if (alloced) SAFE_FREE((void**)&text);
 }
 
-static int InfoDlg_Resize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
+
+static int ChangeInfoDlg_Resize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 {
 	switch (urc->wId) {
 	case IDC_LIST:
@@ -162,51 +156,58 @@ static int InfoDlg_Resize(HWND hwndDlg,LPARAM lParam,UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT | RD_ANCHORY_TOP; // default
 }
 
+
 BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CIcqProto* ppro = (CIcqProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	ChangeInfoData* dat = (ChangeInfoData*)GetWindowLong(hwndDlg, GWL_USERDATA);
 
 	switch(msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
 
-		hwndList = GetDlgItem(hwndDlg,IDC_LIST);
-		ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT);
-		iEditItem = -1;
+    dat = new ChangeInfoData();
+		SetWindowLong(hwndDlg, GWL_USERDATA, (LPARAM)dat);
+
+    dat->hwndDlg = hwndDlg;
+    dat->ppro = (CIcqProto*)lParam;
+		dat->hwndList = GetDlgItem(hwndDlg, IDC_LIST);
+
+		ListView_SetExtendedListViewStyle(dat->hwndList, LVS_EX_FULLROWSELECT);
+		dat->iEditItem = -1;
 		{
+      HFONT hFont;
 			LOGFONT lf;
 
-			hListFont=(HFONT)SendMessage(hwndList,WM_GETFONT,0,0);
-			GetObject(hListFont,sizeof(lf),&lf);
-			lf.lfHeight-=5;
-			hMyFont=CreateFontIndirect(&lf);
-			SendMessage(hwndList,WM_SETFONT,(WPARAM)hMyFont,0);
+			dat->hListFont = (HFONT)SendMessage(dat->hwndList, WM_GETFONT, 0, 0);
+			GetObject(dat->hListFont, sizeof(lf), &lf);
+			lf.lfHeight -= 5;
+			hFont = CreateFontIndirect(&lf);
+			SendMessage(dat->hwndList, WM_SETFONT, (WPARAM)hFont, 0);
 		}
-		{  
-			LV_COLUMN lvc={0};
+		{ // Prepare ListView Columns
+			LV_COLUMN lvc = {0};
 			RECT rc;
 
-			GetClientRect(hwndList,&rc);
-			rc.right-=GetSystemMetrics(SM_CXVSCROLL);
+			GetClientRect(dat->hwndList, &rc);
+			rc.right -= GetSystemMetrics(SM_CXVSCROLL);
 			lvc.mask = LVCF_WIDTH;
-			lvc.cx = rc.right/3;
-			ListView_InsertColumn(hwndList, 0, &lvc);
-			lvc.cx = rc.right-lvc.cx;
-			ListView_InsertColumn(hwndList, 1, &lvc);
+			lvc.cx = rc.right / 3;
+			ListView_InsertColumn(dat->hwndList, 0, &lvc);
+			lvc.cx = rc.right - lvc.cx;
+			ListView_InsertColumn(dat->hwndList, 1, &lvc);
 		}
-		{  
-			LV_ITEM lvi={0};
+		{ // Prepare Setting Items
+			LV_ITEM lvi = {0};
 			lvi.mask = LVIF_PARAM;
 
-			for (lvi.iItem=0;lvi.iItem<settingCount;lvi.iItem++) 
+			for (lvi.iItem=0; lvi.iItem<settingCount; lvi.iItem++) 
 			{
-				lvi.lParam=lvi.iItem;
-				ListView_InsertItem(hwndList, &lvi);
+				lvi.lParam = lvi.iItem;
+				ListView_InsertItem(dat->hwndList, &lvi);
 			}
 		}
 
-		SendMessage(GetParent(hwndDlg),PSM_CHANGED,0,0);
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		return TRUE;
 
 	case WM_NOTIFY:
@@ -214,34 +215,32 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case 0:
 			switch (((LPNMHDR)lParam)->code) {
 			case PSN_PARAMCHANGED:
-				ppro = ( CIcqProto* )(( PSHNOTIFY* )lParam )->lParam;
-				SetWindowLong(hwndDlg, GWL_USERDATA, LPARAM(ppro));
-				ppro->LoadSettingsFromDb(0);
+				dat->ppro = (CIcqProto*)((PSHNOTIFY*)lParam)->lParam;
+				dat->LoadSettingsFromDb(0);
 				{
-					char *pwd = ppro->GetUserPassword(TRUE);
-					strcpy(Password, (pwd) ? pwd : "" );
+					char *pwd = dat->ppro->GetUserPassword(TRUE);
+					strcpy(dat->Password, (pwd) ? pwd : "" ); /// FIXME
 				}
 				break;
 
 			case PSN_INFOCHANGED:
-				ppro->LoadSettingsFromDb(1);
+				dat->LoadSettingsFromDb(1);
 				break;
 
 			case PSN_KILLACTIVE:
-				EndStringEdit(1);
-				EndListEdit(1);
+				dat->EndStringEdit(1);
+				dat->EndListEdit(1);
 				break;
 
 			case PSN_APPLY:
-				if (ppro->ChangesMade()) 
+				if (dat->ChangesMade()) 
 				{
 					if (IDYES!=MessageBoxUtf(hwndDlg, LPGEN("You've made some changes to your ICQ details but it has not been saved to the server. Are you sure you want to close this dialog?"), LPGEN("Change ICQ Details"), MB_YESNOCANCEL))
 					{
-						SetWindowLong(hwndDlg,DWL_MSGRESULT,PSNRET_INVALID_NOCHANGEPAGE);
+						SetWindowLong(hwndDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE);
 						return TRUE;
 					}
 				}
-				PostMessage(hwndList,WM_SETFONT,(WPARAM)hListFont,0);
 				break;
 			}
 			break;
@@ -249,12 +248,12 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case IDC_LIST:
 			switch (((LPNMHDR)lParam)->code) {
 			case LVN_GETDISPINFO:
-				if (iEditItem != -1) 
+				if (dat->iEditItem != -1) 
 				{
-					if (editTopIndex != ListView_GetTopIndex(hwndList)) 
+					if (dat->editTopIndex != ListView_GetTopIndex(dat->hwndList)) 
 					{
-						EndStringEdit(1);
-						EndListEdit(1);
+						dat->EndStringEdit(1);
+						dat->EndListEdit(1);
 					}
 				}
 				break;
@@ -265,21 +264,21 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					switch(cd->nmcd.dwDrawStage) {
 					case CDDS_PREPAINT:
-						SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_NOTIFYSUBITEMDRAW);
+						SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW);
 						return TRUE;
 
 					case CDDS_ITEMPREPAINT:
 						{
 							RECT rc;
 
-							ListView_GetItemRect(hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
+							ListView_GetItemRect(dat->hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
 
-							if (GetWindowLong(hwndList, GWL_STYLE) & WS_DISABLED)
+							if (GetWindowLong(dat->hwndList, GWL_STYLE) & WS_DISABLED)
 							{  // Disabled List
 								SetTextColor(cd->nmcd.hdc, cd->clrText);
 								FillRect(cd->nmcd.hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 							}
-							else if ((cd->nmcd.uItemState & CDIS_SELECTED || iEditItem == (int)cd->nmcd.dwItemSpec)
+							else if ((cd->nmcd.uItemState & CDIS_SELECTED || dat->iEditItem == (int)cd->nmcd.dwItemSpec)
 								&& setting[cd->nmcd.lItemlParam].displayType != LI_DIVIDER)
 							{  // Selected item
 								SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
@@ -299,9 +298,9 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								char *szText = ICQTranslateUtfStatic(setting[cd->nmcd.lItemlParam].szDescription, str, MAX_PATH);
 								HFONT hoFont;
 
-								hoFont = (HFONT)SelectObject(cd->nmcd.hdc, hListFont);
+								hoFont = (HFONT)SelectObject(cd->nmcd.hdc, dat->hListFont);
 								SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_3DSHADOW));
-								ListView_GetItemRect(hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
+								ListView_GetItemRect(dat->hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
 								DrawTextUtf(cd->nmcd.hdc, szText, &rc, DT_CENTER|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, &textSize);
 								rcLine.top = (rc.top + rc.bottom)/2-1;
 								rcLine.bottom = rcLine.top+2;
@@ -311,6 +310,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								rcLine.left = (rc.left + rc.right + textSize.cx)/2 + 3;
 								rcLine.right = rc.right-3;
 								DrawEdge(cd->nmcd.hdc, &rcLine, BDR_SUNKENOUTER, BF_RECT);
+                SelectObject(cd->nmcd.hdc, hoFont);
 								SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
 							}
 							else
@@ -324,22 +324,23 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							RECT rc;
 							HFONT hoFont;
 
-							hoFont=(HFONT)SelectObject(cd->nmcd.hdc,hListFont);
-							ListView_GetSubItemRect(hwndList,cd->nmcd.dwItemSpec,cd->iSubItem,LVIR_BOUNDS,&rc);
+							hoFont = (HFONT)SelectObject(cd->nmcd.hdc, dat->hListFont);
+							ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
 
 							if (cd->iSubItem==0)  
 							{
 								RECT rc2;
 								char str[MAX_PATH];
 
-								ListView_GetSubItemRect(hwndList,cd->nmcd.dwItemSpec,1,LVIR_BOUNDS,&rc2);
+								ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, 1, LVIR_BOUNDS, &rc2);
 								rc.right=rc2.left;
 								rc.left+=2;
 								DrawTextUtf(cd->nmcd.hdc, ICQTranslateUtfStatic(setting[cd->nmcd.lItemlParam].szDescription, str, MAX_PATH), &rc, DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, NULL);
 							}
 							else 
-								PaintItemSetting(cd->nmcd.hdc, &rc, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
-							SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
+								dat->PaintItemSetting(cd->nmcd.hdc, &rc, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
+              SelectObject(cd->nmcd.hdc, hoFont);
+							SetWindowLong(hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT);
 
 							return TRUE;
 						}
@@ -352,25 +353,25 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					LV_ITEM lvi;
 					RECT rc;
 
-					EndStringEdit(1);
-					EndListEdit(1);
+					dat->EndStringEdit(1);
+					dat->EndListEdit(1);
 					if (nm->iSubItem != 1) break;
 					lvi.mask = LVIF_PARAM|LVIF_STATE;
 					lvi.stateMask = 0xFFFFFFFF;
 					lvi.iItem = nm->iItem; lvi.iSubItem = nm->iSubItem;
-					ListView_GetItem(hwndList, &lvi);
+					ListView_GetItem(dat->hwndList, &lvi);
 					if (!(lvi.state & LVIS_SELECTED)) break;
-					ListView_EnsureVisible(hwndList, lvi.iItem, FALSE);
-					ListView_GetSubItemRect(hwndList, lvi.iItem, lvi.iSubItem, LVIR_BOUNDS, &rc);
-					editTopIndex = ListView_GetTopIndex(hwndList);
+					ListView_EnsureVisible(dat->hwndList, lvi.iItem, FALSE);
+					ListView_GetSubItemRect(dat->hwndList, lvi.iItem, lvi.iSubItem, LVIR_BOUNDS, &rc);
+					dat->editTopIndex = ListView_GetTopIndex(dat->hwndList);
 					switch (setting[lvi.lParam].displayType & LIM_TYPE) {
 					case LI_STRING:
 					case LI_LONGSTRING:
 					case LI_NUMBER:
-						BeginStringEdit(nm->iItem, &rc, lvi. lParam, 0);
+						dat->BeginStringEdit(nm->iItem, &rc, lvi. lParam, 0);
 						break;
 					case LI_LIST:
-						BeginListEdit(nm->iItem, &rc, lvi. lParam, 0);
+						dat->BeginListEdit(nm->iItem, &rc, lvi. lParam, 0);
 						break;
 					}
 					break;
@@ -381,44 +382,44 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					LV_ITEM lvi;
 					RECT rc;
 
-					EndStringEdit(1);
-					EndListEdit(1);
+					dat->EndStringEdit(1);
+					dat->EndListEdit(1);
 					if(nm->wVKey==VK_SPACE || nm->wVKey==VK_RETURN || nm->wVKey==VK_F2) nm->wVKey=0;
 					if(nm->wVKey && (nm->wVKey<'0' || (nm->wVKey>'9' && nm->wVKey<'A') || (nm->wVKey>'Z' && nm->wVKey<VK_NUMPAD0) || nm->wVKey>=VK_F1))
 						break;
 					lvi.mask=LVIF_PARAM|LVIF_STATE;
 					lvi.stateMask=0xFFFFFFFF;
-					lvi.iItem=ListView_GetNextItem(hwndList,-1,LVNI_ALL|LVNI_SELECTED);
-					if(lvi.iItem==-1) break;
+					lvi.iItem = ListView_GetNextItem(dat->hwndList, -1, LVNI_ALL|LVNI_SELECTED);
+					if (lvi.iItem==-1) break;
 					lvi.iSubItem=1;
-					ListView_GetItem(hwndList,&lvi);
-					ListView_EnsureVisible(hwndList,lvi.iItem,FALSE);
-					ListView_GetSubItemRect(hwndList,lvi.iItem,lvi.iSubItem,LVIR_BOUNDS,&rc);
-					editTopIndex=ListView_GetTopIndex(hwndList);
+					ListView_GetItem(dat->hwndList,&lvi);
+					ListView_EnsureVisible(dat->hwndList,lvi.iItem,FALSE);
+					ListView_GetSubItemRect(dat->hwndList,lvi.iItem,lvi.iSubItem,LVIR_BOUNDS,&rc);
+					dat->editTopIndex = ListView_GetTopIndex(dat->hwndList);
 					switch(setting[lvi.lParam].displayType & LIM_TYPE) {
 					case LI_STRING:
 					case LI_LONGSTRING:
 					case LI_NUMBER:
-						BeginStringEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
+						dat->BeginStringEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
 						break;
 					case LI_LIST:
-						BeginListEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
+						dat->BeginListEdit(lvi.iItem,&rc,lvi.lParam,nm->wVKey);
 						break;
 					}
-					SetWindowLong(hwndDlg,DWL_MSGRESULT,TRUE);
+					SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
 					return TRUE;
 				}
 			case NM_KILLFOCUS:
-				if(!IsStringEditWindow(GetFocus())) EndStringEdit(1);
-				if(!IsListEditWindow(GetFocus())) EndListEdit(1);
+				if(!IsStringEditWindow(GetFocus())) dat->EndStringEdit(1);
+				if(!IsListEditWindow(GetFocus())) dat->EndListEdit(1);
 				break;
 			}
 			break;
 		}
 		break;
 	case WM_KILLFOCUS:
-		EndStringEdit(1);
-		EndListEdit(1);
+		dat->EndStringEdit(1);
+		dat->EndListEdit(1);
 		break;
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
@@ -427,7 +428,7 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 
 		case IDC_SAVE:
-			if (!ppro->SaveSettingsToDb(hwndDlg))
+			if (!dat->SaveSettingsToDb(hwndDlg))
 				break;
 
 			EnableDlgItem(hwndDlg, IDC_SAVE, FALSE);
@@ -438,15 +439,15 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			EnableDlgItem(hwndDlg, IDC_UPLOADING, TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_UPLOADING), SW_SHOW);
-			hAckHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
+			dat->hAckHook = HookEventMessage(ME_PROTO_ACK, hwndDlg, DM_PROTOACK);
 
-			if (!ppro->UploadSettings(hwndDlg)) 
+			if (!dat->UploadSettings()) 
 			{
 				EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
 				EnableDlgItem(hwndDlg, IDC_LIST, TRUE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_UPLOADING), SW_HIDE);
-				UnhookEvent(hAckHook); 
-				hAckHook = NULL;
+				UnhookEvent(dat->hAckHook); 
+				dat->hAckHook = NULL;
 			}
 			break;
 		}
@@ -462,16 +463,16 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			urd.hwndDlg = hwndDlg;
 			urd.lParam = 0; // user-defined
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_INFO_CHANGEINFO);
-			urd.pfnResizer = InfoDlg_Resize;
+			urd.pfnResizer = ChangeInfoDlg_Resize;
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) &urd);
 
 			{ // update listview column widths
 				RECT rc;
 
-				GetClientRect(hwndList,&rc);
-				rc.right-=GetSystemMetrics(SM_CXVSCROLL);
-				ListView_SetColumnWidth(hwndList, 0, rc.right/3);
-				ListView_SetColumnWidth(hwndList, 1, rc.right - rc.right/3);
+				GetClientRect(dat->hwndList, &rc);
+				rc.right -= GetSystemMetrics(SM_CXVSCROLL);
+				ListView_SetColumnWidth(dat->hwndList, 0, rc.right / 3);
+				ListView_SetColumnWidth(dat->hwndList, 1, rc.right - rc.right / 3);
 			}
 			break;
 		}
@@ -486,19 +487,20 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (ack->type != ACKTYPE_SETINFO) break;
 			if (ack->result == ACKRESULT_SUCCESS)
 			{
-				for (i=0; i < SIZEOF(hUpload); i++)
-					if (hUpload[i] && ack->hProcess == hUpload[i]) break;
+				for (i=0; i < SIZEOF(dat->hUpload); i++)
+					if (dat->hUpload[i] && ack->hProcess == dat->hUpload[i]) break;
 
-				if (i == SIZEOF(hUpload)) break;
-				hUpload[i] = NULL;
-				for (done = 0, i = 0; i < SIZEOF(hUpload); i++)
-					done += hUpload[i] == NULL;
-				null_snprintf(buf, sizeof(buf), "%s%d%%", ICQTranslateUtfStatic(LPGEN("Upload in progress..."), str, MAX_PATH), 100*done/(SIZEOF(hUpload)));
+				if (i == SIZEOF(dat->hUpload)) break;
+				dat->hUpload[i] = NULL;
+				for (done = 0, i = 0; i < SIZEOF(dat->hUpload); i++)
+					done += dat->hUpload[i] == NULL;
+				null_snprintf(buf, sizeof(buf), "%s%d%%", ICQTranslateUtfStatic(LPGEN("Upload in progress..."), str, MAX_PATH), 100*done/(SIZEOF(dat->hUpload)));
 				SetDlgItemTextUtf(hwndDlg, IDC_UPLOADING, buf);
-				if (done < SIZEOF(hUpload)) break;
+				if (done < SIZEOF(dat->hUpload)) break;
 
-				ppro->ClearChangeFlags();
-				UnhookEvent(hAckHook); hAckHook = NULL;
+				dat->ClearChangeFlags();
+				UnhookEvent(dat->hAckHook); 
+        dat->hAckHook = NULL;
 				EnableDlgItem(hwndDlg, IDC_LIST, TRUE);
 				EnableDlgItem(hwndDlg, IDC_UPLOADING, FALSE);
 				SetDlgItemTextUtf(hwndDlg, IDC_UPLOADING, ICQTranslateUtfStatic(LPGEN("Upload complete"), str, MAX_PATH));
@@ -506,24 +508,29 @@ BOOL CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			else if (ack->result==ACKRESULT_FAILED)
 			{
-				UnhookEvent(hAckHook); 
-				hAckHook = NULL;
+				UnhookEvent(dat->hAckHook); 
+				dat->hAckHook = NULL;
 				EnableDlgItem(hwndDlg, IDC_LIST, TRUE);
 				EnableDlgItem(hwndDlg, IDC_UPLOADING, FALSE);
 				SetDlgItemTextUtf(hwndDlg, IDC_UPLOADING, ICQTranslateUtfStatic(LPGEN("Upload FAILED"), str, MAX_PATH));
 				SendMessage(GetParent(hwndDlg), PSM_FORCECHANGED, 0, 0);
+        EnableDlgItem(hwndDlg, IDC_SAVE, TRUE);
 			}
 			break;
 		}
 	case WM_DESTROY:
-		if(hAckHook) 
+		if (dat->hAckHook) 
 		{
-			UnhookEvent(hAckHook);
-			hAckHook=NULL;
+			UnhookEvent(dat->hAckHook);
+			dat->hAckHook = NULL;
 		}
-		//SendMessage(hwndList,WM_GETFONT,0,0);
-		DeleteObject(hMyFont);
-		ppro->FreeStoredDbSettings();
+    {
+      HFONT hFont = (HFONT)SendMessage(dat->hwndList, WM_GETFONT, 0, 0);
+		  DeleteObject(hFont);
+    }
+		dat->FreeStoredDbSettings();
+    SetWindowLong(hwndDlg, GWL_USERDATA, NULL);
+    delete dat;
 		break;
 	}
 	return FALSE;
