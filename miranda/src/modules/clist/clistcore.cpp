@@ -64,6 +64,7 @@ static int srvRetrieveInterface( WPARAM, LPARAM lParam )
 
 	if ( interfaceInited == 0 ) {
 		cli.version = 6;
+		cli.bDisplayLocked = TRUE;
 
 		cli.pfnClcOptionsChanged               = fnClcOptionsChanged;
 		cli.pfnClcBroadcast                    = fnClcBroadcast;

@@ -913,20 +913,17 @@ void RebuildMenuOrder( void )
 		if (flags == 0)
 			continue;
 
-		char protoName[128];
 		int j;
 		HICON ic;
 
 		//adding root
 		TMO_MenuItem tmi = { 0 };
-		memset( protoName, 0, 128 );
 		tmi.cbSize = sizeof(tmi);
 		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE;
 		tmi.position = pos++;
 		tmi.hIcon=(HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
 		ic = tmi.hIcon;
 		tmi.root = NULL;
-		CallProtoService( pa->szModuleName, PS_GETNAME, sizeof(protoName), (LPARAM)protoName );
 		tmi.ptszName = pa->tszAccountName;
 		{
 			//owner data
@@ -942,7 +939,6 @@ void RebuildMenuOrder( void )
 		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE;
 		tmi.root = rootmenu;
 		tmi.position = pos++;
-		tmi.ptszName = pa->tszAccountName;
 		tmi.hIcon = ic;
 		{
 			//owner data
@@ -955,9 +951,13 @@ void RebuildMenuOrder( void )
 		if ( DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
 			tmi.flags |= CMIF_CHECKED;
 
-		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked ) {
-			char* p = NEWSTR_ALLOCA(protoName);
-			_snprintf( protoName, sizeof(protoName), Translate("%s (locked)"), p );
+		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked )
+		{
+			TCHAR buf[256];
+			_sntprintf( buf, SIZEOF(buf), TranslateT("%s (locked)"), pa->tszAccountName );
+			tmi.ptszName = buf;
+		} else {
+			tmi.ptszName = pa->tszAccountName;
 		}
 
 		PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
