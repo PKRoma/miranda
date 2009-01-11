@@ -129,6 +129,7 @@ static __inline unsigned long Proto_Status2Flag(int status)
 #define PF4_AVATARS		  0x00000020 // protocol has avatar support, added during v0.3.4 (2004/09/13)
 #define PF4_OFFLINEFILES  0x00000040 // protocols supports sending files to offline users (v0.5.2)
 #define PF4_IMSENDUTF     0x00000080 // protocol is able to process messages in utf-8 (v.0.7.0+)
+#define PF4_INFOSETTINGSVC 0x00000100 // protocol supports user info translation services (v0.8.0+)
 
 #define PFLAG_UNIQUEIDTEXT  100    //returns a static buffer of text describing the unique field by which this protocol identifies users (already translated), or NULL
 
@@ -443,6 +444,20 @@ typedef struct {
 //lParam=(LPARAM)0
 //Returns 0 on success, nonzero on failure
 #define PS_LEAVECHAT "/LeaveChat"
+
+//Asks a protocol to read contact information and translate them (for a lookup fields)  v0.8.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=(LPARAM)(DBCONTACTGETSETTING*)&dbcgs
+//The flag PF4_INFOSETTINGSVC indicates that a protocol supports this. Basically it should
+//do the same as MS_DB_CONTACT_GETSETTING_STR, except that for a lookup settings (e.g. Language)
+//it returns string instead of an ID stored in the database.
+//Caller is responsible for free()ing dbcgs.pValue->pszVal and pbVal if they are
+//returned. You must **NOT** do this from your version of free() you have to use Miranda's free()
+//you can get a function pointer to Miranda's free() via MS_SYSTEM_GET_MMI, see m_system.h
+//Returns 0 on success or nonzero if the setting name was not found or hContact
+//was invalid
+#define PS_GETINFOSETTING "/GetInfoSetting"
+
 
 /****************************** SENDING SERVICES *************************/
 //these should be called with CallContactService()
