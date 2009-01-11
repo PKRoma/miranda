@@ -86,6 +86,7 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
 
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 {
+	LoadMsgLogIcons();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
 	Chat_FontsChanged(wParam, lParam);
 	return 0;

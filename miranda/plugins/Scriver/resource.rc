@@ -112,37 +112,39 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Layout",IDC_STATIC,0,0,304,133
 	CONTROL         "Show titlebar",IDC_SHOWTITLEBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,12,140,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,12,180,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,23,138,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,23,180,10
 	CONTROL         "Show toolbar ",IDC_SHOWTOOLBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,34,140,10
-    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,52,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,48,40,8
-    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,48,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,48,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,59,40,8
-    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,59,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,59,22,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,34,180,10
+
     CONTROL         "Use the contact's status icon as the window icon",
-                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,75,
+                    IDC_STATUSWIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,45,
                     292,10
     CONTROL         "Show progress indicator",IDC_SHOWPROGRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,86,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,56,180,10
     CONTROL         "Enable avatar support",
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    8,97,292,10
+                    8,67,180,10
     CONTROL         "Limit height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,108,106,10
-    EDITTEXT        IDC_AVATARHEIGHTMIN,148,107,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,108,35,8
-    EDITTEXT        IDC_AVATARHEIGHT,230,107,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,108,35,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
+    EDITTEXT        IDC_AVATARHEIGHTMIN,148,77,28,12,ES_AUTOHSCROLL
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,78,60,8
+    EDITTEXT        IDC_AVATARHEIGHT,230,77,28,12,ES_AUTOHSCROLL
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,78,60,8
     CONTROL         "Use original size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
-                    WS_TABSTOP,20,119,106,10
+                    WS_TABSTOP,20,89,180,10
+
+    CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,107,180,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,103,40,8
+    CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,103,70,11
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,103,22,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,114,40,8
+    CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,114,70,11
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,114,22,8
 
 END
 
@@ -566,7 +568,7 @@ IDI_BKGCOLOR            ICON                    "res/chat/bkgcolor.ico"
 IDI_CHANMGR             ICON                    "res/chat/window.ico"
 IDI_COLOR               ICON                    "res/chat/color.ico"
 IDI_FILTER              ICON                    "res/chat/filter.ico"
-IDI_CHAT_HISTORY        ICON                    "res/chat/history.ico"
+IDI_CHAT_HISTORY        ICON                    "res/history.ico"
 IDI_NICKLIST            ICON                    "res/chat/nicklist.ico"
 IDI_STATUS3             ICON                    "res/chat/4.ico"
 IDI_STATUS2             ICON                    "res/chat/3.ico"
@@ -681,8 +683,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,0,10
- PRODUCTVERSION 2,8,0,10
+ FILEVERSION 2,8,0,27
+ PRODUCTVERSION 2,8,0,27
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -700,14 +702,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.8.0.25\0"
+            VALUE "FileVersion", "2.8.0.27\0"
             VALUE "InternalName", "scriver\0"
             VALUE "LegalCopyright", "Copyright (c) 2000-2008 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.8.0.25\0"
+            VALUE "ProductVersion", "2.8.0.27\0"
             VALUE "SpecialBuild", "\0"
         END
     END

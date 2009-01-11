@@ -88,7 +88,7 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
  	return res;
 }
 
-static int buttonIcons[] = {SMF_ICON_CLOSEX, -1, SMF_ICON_USERDETAILS, SMF_ICON_SMILEY, SMF_ICON_ADD, SMF_ICON_HISTORY, SMF_ICON_QUOTE, SMF_ICON_CANCEL, SMF_ICON_SEND};
+static int buttonIcons[] = {SMF_ICON_CLOSEX, SMF_ICON_QUOTE, SMF_ICON_SMILEY, SMF_ICON_ADD, -1, SMF_ICON_USERDETAILS, SMF_ICON_HISTORY, SMF_ICON_CANCEL, SMF_ICON_SEND};
 
 void LoadGlobalIcons() {
 	int i;

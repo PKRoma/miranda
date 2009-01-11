@@ -66,6 +66,7 @@ int Chat_PreShutdown(WPARAM wParam,LPARAM lParam)
 int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 {
 	LoadLogFonts();
+	LoadMsgLogBitmaps();
 	{
 		LOGFONT lf;
 		HFONT hFont;

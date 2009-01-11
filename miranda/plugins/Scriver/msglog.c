@@ -160,7 +160,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 //			if (dat->hwndLog != NULL)
 				return 1;
 	}
-	
+
 	heFlags = HistoryEvents_GetFlags(dbei->eventType);
 	if (heFlags != -1)
 		return (heFlags & HISTORYEVENTS_FLAG_SHOW_IM_SRMM) == HISTORYEVENTS_FLAG_SHOW_IM_SRMM;
@@ -320,7 +320,6 @@ static int AppendUnicodeOrAnsiiToBufferL(char **buffer, int *cbBufferEnd, int *c
 static int AppendAnsiToBufferL(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, unsigned char * line, int maxLen)
 {
 	WCHAR *wline = a2w(line, maxLen);
-	int end = *cbBufferEnd;
 	int i = AppendUnicodeOrAnsiiToBufferL(buffer, cbBufferEnd, cbBufferAlloced, wline, maxLen, TRUE);
 	mir_free(wline);
 	return i;

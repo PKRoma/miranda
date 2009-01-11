@@ -81,7 +81,7 @@ END_GROUPLOOP:
 		return NULL;
 
 		CallService(MS_PROTO_ADDTOCONTACT, (WPARAM) hContact, (LPARAM) pszModule);
-	if ( pszGroup && lstrlen( pszGroup ) > 0 )
+	if ( lstrlen( pszGroup ) > 0 )
 		DBWriteContactSettingTString(hContact, "CList", "Group", pszGroup );
 		else
 			DBDeleteContactSetting(hContact, "CList", "Group");

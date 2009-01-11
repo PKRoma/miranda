@@ -48,10 +48,10 @@ extern HINSTANCE g_hInst;
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc, OldLogEditProc;
-static TCHAR *buttonNames[] = {_T("User Menu"), _T("User Details"), _T("Smiley"), _T("Add Contact"), _T("History"), _T("Quote"), _T("Close"), _T("Send")};
-static const UINT buttonControls[] = { IDC_USERMENU, IDC_DETAILS, IDC_SMILEYS, IDC_ADD, IDC_HISTORY, IDC_QUOTE, IDCANCEL, IDOK};
+static TCHAR *buttonNames[] = {_T("Quote"), _T("Smiley"), _T("Add Contact"), _T("User Menu"), _T("User Details"), _T("History"), _T("Close"), _T("Send")};
+static const UINT buttonControls[] = { IDC_QUOTE, IDC_SMILEYS, IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDCANCEL, IDOK};
 static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
-static UINT buttonSpacing[] = { 0, 0, 12, 0, 0, 0, 0, 0};
+static UINT buttonSpacing[] = { 4, 10, 10, 0, 0, 0, 0, 0};
 static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
 
 static DWORD CALLBACK StreamOutCallback(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
@@ -533,7 +533,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	ParentWindowData *pdat = dat->parent;
 	int rPos, vPos, aPos;
 	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
-	int splitterHeight = 2;
+	int splitterHeight = 3;
 	int hSplitterMinTop = toolbarHeight + dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight;
 
 	if (h-hSplitterPos < hSplitterMinTop) {
@@ -544,28 +544,50 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	}
 	dat->splitterPos = hSplitterPos;
 	SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
-	if (hSplitterPos + toolbarHeight < dat->avatarHeight) {
-		hSplitterPos = dat->avatarHeight - toolbarHeight;
+
+	
+	if (hSplitterPos + toolbarHeight - 1 < dat->avatarHeight) {
+		hSplitterPos = dat->avatarHeight - toolbarHeight + 1;
 	}
 	dat->splitterPos = hSplitterPos;
 	hdwp = BeginDeferWindowPos(12);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, 0, w-vSplitterPos, h-hSplitterPos-toolbarHeight, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + splitterHeight, w-(dat->avatarWidth ? dat->avatarWidth+1 : 0), hSplitterPos - splitterHeight, SWP_NOZORDER);
-	/* make the splitter a little bit bigger */
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + splitterHeight + 1, w-(dat->avatarWidth ? dat->avatarWidth+1 : 0), hSplitterPos - splitterHeight, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w-dat->avatarWidth, splitterHeight + 1, SWP_NOZORDER);
-	if (dat->avatarHeight + 1 < hSplitterPos) {
+	if (dat->avatarHeight + 1 < hSplitterPos - splitterHeight) {
 		rPos = w;
-		aPos = h - (hSplitterPos + dat->avatarHeight - 1) / 2;
+		aPos = h - (hSplitterPos + dat->avatarHeight - splitterHeight - 1) / 2;
 	} else {
 		rPos = w - dat->avatarWidth;
-		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight + 1) / 2;
+		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight -1) / 2;
 	}
 	vPos = h - hSplitterPos - toolbarHeight + 1;
-	hdwp = ResizeToolbar(hwndDlg, hdwp, rPos, vPos, toolbarHeight - splitterHeight, SIZEOF(buttonControls),
+	hdwp = ResizeToolbar(hwndDlg, hdwp, rPos, vPos, toolbarHeight, SIZEOF(buttonControls),
 					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
 
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, aPos, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
-//	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, h - (hSplitterPos + toolbarHeight + dat->avatarHeight)/2, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
+	
+
+	/*
+	if (hSplitterPos - splitterHeight - toolbarHeight - 2< dat->avatarHeight) {
+		hSplitterPos = dat->avatarHeight + splitterHeight + toolbarHeight + 2;
+	}
+	dat->splitterPos = hSplitterPos;
+	hdwp = BeginDeferWindowPos(12);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, 0, w-vSplitterPos, h-hSplitterPos, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + splitterHeight, w-(dat->avatarWidth ? dat->avatarWidth+1 : 0), hSplitterPos - splitterHeight - toolbarHeight -2, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w-dat->avatarWidth, splitterHeight + 1, SWP_NOZORDER);
+	if (dat->avatarHeight + 1 < hSplitterPos - toolbarHeight) {
+		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight - 1) / 2;
+	} else {
+		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight + 1) / 2;
+	}
+	vPos = h - toolbarHeight;
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, vPos, toolbarHeight, SIZEOF(buttonControls),
+					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
+
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, aPos, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
+*/
 	EndDeferWindowPos(hdwp);
 	if (dat->windowData.hwndLog != NULL) {
 		IEVIEWWINDOW ieWindow;
@@ -586,7 +608,62 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
 	}
 }
+/*
+static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int w, int h) {
+	HDWP hdwp;
+	ParentWindowData *pdat = dat->parent;
+	int vPos, aPos;
+	int vSplitterPos = 0, hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
+	int splitterHeight = 4;
+	int hSplitterMinTop = dat->minLogBoxHeight, hSplitterMinBottom = dat->minEditBoxHeight + toolbarHeight + splitterHeight;
 
+	if (h-hSplitterPos < hSplitterMinTop) {
+		hSplitterPos = h - hSplitterMinTop;
+	}
+	if (hSplitterPos < hSplitterMinBottom) {
+		hSplitterPos = hSplitterMinBottom;
+	}
+	dat->splitterPos = hSplitterPos;
+	SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
+	if (hSplitterPos - splitterHeight - toolbarHeight - 2< dat->avatarHeight) {
+		hSplitterPos = dat->avatarHeight + splitterHeight + toolbarHeight + 2;
+	}
+	dat->splitterPos = hSplitterPos;
+	hdwp = BeginDeferWindowPos(12);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 0, 0, w-vSplitterPos, h-hSplitterPos, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, h - hSplitterPos + splitterHeight, w-(dat->avatarWidth ? dat->avatarWidth+1 : 0), hSplitterPos - splitterHeight - toolbarHeight -2, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, w-dat->avatarWidth, splitterHeight + 1, SWP_NOZORDER);
+	if (dat->avatarHeight + 1 < hSplitterPos - toolbarHeight) {
+		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight - 1) / 2;
+	} else {
+		aPos = h - (hSplitterPos + toolbarHeight + dat->avatarHeight + 1) / 2;
+	}
+	vPos = h - toolbarHeight;
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, vPos, toolbarHeight, SIZEOF(buttonControls),
+					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
+
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-dat->avatarWidth, aPos, dat->avatarWidth, dat->avatarHeight, SWP_NOZORDER);
+	EndDeferWindowPos(hdwp);
+	if (dat->windowData.hwndLog != NULL) {
+		IEVIEWWINDOW ieWindow;
+		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
+		ieWindow.iType = IEW_SETPOS;
+		ieWindow.parent = hwndDlg;
+		ieWindow.hwnd = dat->windowData.hwndLog;
+        ieWindow.x = 0;
+        ieWindow.y = 0;
+        ieWindow.cx = w-vSplitterPos;
+        ieWindow.cy = h-hSplitterPos - toolbarHeight - 1;
+		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
+	} else {
+		RedrawWindow(GetDlgItem(hwndDlg, IDC_LOG), NULL, NULL, RDW_INVALIDATE);
+	}
+	RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
+	if (g_dat->flags&SMF_AVATAR && IsWindowVisible(GetDlgItem(hwndDlg, IDC_AVATAR))) {
+		RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+	}
+}
+*/
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 {
 	if (dat->parent->hwndActive == hwndDlg) {
@@ -792,7 +869,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->minEditBoxHeight = dat->minEditInit.bottom - dat->minEditInit.top;
 			dat->minLogBoxHeight = dat->minEditBoxHeight;
 			dat->splitterPos = (int) DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterPos", (DWORD) - 1);
-			dat->toolbarSize.cy = DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 24);
+			dat->toolbarSize.cy = 24;//DBGetContactSettingDword((g_dat->flags & SMF_SAVESPLITTERPERCONTACT) ? dat->windowData.hContact : NULL, SRMMMOD, "splitterHeight", (DWORD) 24);
 			dat->toolbarSize.cy = max(min(dat->toolbarSize.cy, 24), 18);
 			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
 			if (dat->splitterPos == -1) {
@@ -1096,7 +1173,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 			return 0;
 		}
-		dat->avatarHeight = dat->splitterPos + ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
+		dat->avatarHeight = dat->splitterPos - ((pdat->flags2&SMF2_SHOWTOOLBAR) ? dat->toolbarSize.cy : 0);//- 3;
 		if (g_dat->flags & SMF_LIMITAVATARH) {
 			if (dat->avatarHeight < g_dat->limitAvatarMinH) {
 				dat->avatarHeight = g_dat->limitAvatarMinH;

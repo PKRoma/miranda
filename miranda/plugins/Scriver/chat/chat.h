@@ -362,15 +362,6 @@ int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
 int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
 void   ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground);
-int    Service_Register(WPARAM wParam, LPARAM lParam);
-int    Service_AddEvent(WPARAM wParam, LPARAM lParam);
-int    Service_GetAddEventPtr(WPARAM wParam, LPARAM lParam);
-int    Service_NewChat(WPARAM wParam, LPARAM lParam);
-int    Service_ItemData(WPARAM wParam, LPARAM lParam);
-int    Service_SetSBText(WPARAM wParam, LPARAM lParam);
-int    Service_SetVisibility(WPARAM wParam, LPARAM lParam);
-int    Service_GetCount(WPARAM wParam,LPARAM lParam);
-int    Service_GetInfo(WPARAM wParam,LPARAM lParam);
 
 //manager.c
 void          SetActiveSession(const TCHAR* pszID, const char* pszModule);

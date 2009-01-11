@@ -186,7 +186,8 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
 
 
 static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
-	int toolbarHeight = 22;
+	int toolbarHeight = 24;
+	int splitterHeight = 3;
 	int logBottom, toolbarTopY;
 	HDWP hdwp;
 	BOOL      bNick = si->iType!=GCW_SERVER && si->bNicklistEnabled;
@@ -225,9 +226,25 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LOG), 0, 0, 0, bNick?w - si->iSplitterX:w, logBottom, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 1, toolbarTopY, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), 0, w - si->iSplitterX, 1, 2, toolbarTopY - 1, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, 2, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + 2, bSend?w-64:w, si->iSplitterY - 2, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + 2, 64, si->iSplitterY - 3, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, splitterHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + splitterHeight, bSend?w-64:w, si->iSplitterY - splitterHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + splitterHeight, 64, si->iSplitterY - splitterHeight - 1, SWP_NOZORDER);
+/*
+
+	toolbarTopY = h - toolbarHeight;
+	if (si->windowData.hwndLog != NULL) {
+		logBottom = (h - si->iSplitterY) / 2;
+	} else {
+		logBottom = h - si->iSplitterY;
+	}
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LOG), 0, 0, 0, bNick?w - si->iSplitterX:w, logBottom, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 1, h - si->iSplitterY, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), 0, w - si->iSplitterX, 1, 2, h - si->iSplitterY, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, splitterHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + splitterHeight, bSend?w-64:w, si->iSplitterY - toolbarHeight - splitterHeight, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + splitterHeight, 64, si->iSplitterY - toolbarHeight - splitterHeight - 1, SWP_NOZORDER);
+	
+*/
 
 	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, toolbarHeight - 1, SIZEOF(buttonControls), buttonControls, buttonWidth, buttonSpacing, buttonAlignment, buttonVisibility);
 	EndDeferWindowPos(hdwp);
@@ -1765,11 +1782,6 @@ LABEL_SHOWWINDOW:
       }   }
       break;
 
-
-
-
-
-
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_ACTIVE)
          break;
@@ -2189,6 +2201,23 @@ LABEL_SHOWWINDOW:
 	case WM_LBUTTONDOWN:
 		SendMessage(GetParent(hwndDlg), WM_LBUTTONDOWN, wParam, lParam);
 		return TRUE;
+
+	case DM_GETCONTEXTMENU:
+		{
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) si->windowData.hContact, 0);
+			SetWindowLong(hwndDlg, DWL_MSGRESULT, (LONG)hMenu);
+			return TRUE;
+		}
+
+	case WM_CONTEXTMENU:
+		if (GetParent(hwndDlg) == (HWND) wParam) {
+			POINT pt;
+			HMENU hMenu = (HMENU) CallService(MS_CLIST_MENUBUILDCONTACT, (WPARAM) si->windowData.hContact, 0);
+			GetCursorPos(&pt);
+			TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hwndDlg, NULL);
+			DestroyMenu(hMenu);
+		}
+		break;
 
    case WM_CLOSE:
       SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 0);
