@@ -246,9 +246,16 @@ static int svcHotkeyUnregister(WPARAM, LPARAM lParam)
 	cbNamePrefix = strlen(pszNamePrefix);
 
 	for (i = 0; i < hotkeys.getCount(); ++i)
+	{
+		char *pszCurrentName = hotkeys[i]->rootHotkey ?
+			hotkeys[i]->rootHotkey->pszName :
+			hotkeys[i]->pszName;
+		if (!pszCurrentName) continue;
+
 		hotkeys[i]->UnregisterHotkey =
-			!lstrcmpA(hotkeys[i]->pszName, pszName) ||
-			!strncmp(hotkeys[i]->pszName, pszNamePrefix, cbNamePrefix);
+			!lstrcmpA(pszCurrentName, pszName) ||
+			!strncmp(pszCurrentName, pszNamePrefix, cbNamePrefix);
+	}
 
 	if (g_hwndOptions)
 		SendMessage(g_hwndOptions, WM_APP, 0, 0);
