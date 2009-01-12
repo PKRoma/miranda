@@ -1440,10 +1440,14 @@ void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const TC
 	DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszTitle);
 
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/text", m_szModuleName, pszSlot);
-	if (pszText)
+	if (pszText) {
 		DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszText);
-	else
+	} else
+	{
+		// set empty text first too make resident setting manager happy
+		DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 		DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+	}
 }
 
 char *CJabberProto::ReadAdvStatusA(HANDLE hContact, const char *pszSlot, const char *pszValue)
