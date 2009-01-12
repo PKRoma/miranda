@@ -55,7 +55,7 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	    if (state != 1 || !is_my_contact(msgEvData->hContact)) 
             return 0;
 
-        if (getWord(msgEvData->hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+        if (getWord(msgEvData->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
             return 0;
 
         DBVARIANT dbv;
@@ -359,7 +359,7 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	    if ((wParam & GAIF_FORCE ) != 0 && res != GAIR_SUCCESS)
 	    {
-		    WORD wStatus = getWord( AI->hContact, "Status", ID_STATUS_OFFLINE );
+		    WORD wStatus = getWord( AI->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE );
 		    if ( wStatus == ID_STATUS_OFFLINE ) 
 		    {
 			    deleteSetting( AI->hContact, "AvatarHash" );

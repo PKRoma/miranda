@@ -18,7 +18,7 @@
 
 //Miranda IM includes
 #pragma warning( disable: 4100 )
-#pragma warning( disable: 4201 )
+
 #include <newpluginapi.h>
 #include <m_avatars.h>
 #include <m_button.h>
@@ -54,6 +54,7 @@
 #include "flap.h"
 #include "snac.h"
 #include "tlv.h"
+
 //rest o includes
 #include "avatars.h"
 #include "utility.h"
@@ -69,9 +70,6 @@
 #include "theme.h"
 #include "ui.h"
 #include "proto.h"
-
-//Packet Stuff
-#define MSG_LEN							4089
 
 //Extended Status Icon Numbers
 #define ACCOUNT_TYPE_UNCONFIRMED		1
@@ -102,7 +100,6 @@
 #define AIM_KEY_DM						"DisableModeMsg"
 #define AIM_KEY_FI						"FormatIncoming"//html->bbcodes
 #define AIM_KEY_FO						"FormatOutgoing"//bbcodes->html
-#define AIM_KEY_FR						"FirstRun"
 #define AIM_KEY_II						"InstantIdle"
 #define AIM_KEY_IIT						"InstantIdleTS"
 #define AIM_KEY_CM						"CheckMail"
@@ -110,30 +107,9 @@
 #define AIM_KEY_DA						"DisableAvatars"
 #define AIM_KEY_DSSL					"DisableSSL"
 
-//Other plugin Option Keys
-#define OTH_KEY_AI						"AwayIgnore"
-#define OTH_KEY_AD						"AwayDefault"
-#define OTH_KEY_AM						"AwayMsg"
-#define OTH_KEY_OI						"OccupiedIgnore"
-#define OTH_KEY_OD						"OccupiedDefault"
-#define OTH_KEY_OM						"OccupiedMsg"
-#define OTH_KEY_NI						"NaIgnore"
-#define OTH_KEY_ND						"NaDefault"
-#define OTH_KEY_NM						"NaMsg"
-#define OTH_KEY_DI						"DndIgnore"
-#define OTH_KEY_DD						"DndDefault"
-#define OTH_KEY_DM						"DndMsg"
-#define OTH_KEY_PI						"OtpIgnore"
-#define OTH_KEY_PD						"OtpDefault"
-#define OTH_KEY_PM						"OtpMsg"
-#define OTH_KEY_LI						"OtlIgnore"
-#define OTH_KEY_LD						"OtlDefault"
-#define OTH_KEY_LM						"OtlMsg"
-
 #define OTH_KEY_SM						"StatusMsg"
 #define OTH_KEY_GP						"Group"
 //Module Name Key
-#define MOD_KEY_SA						"SRAway"
 #define MOD_KEY_CL						"CList"
 //Settings Keys
 #define AIM_KEY_PR						"Profile"
@@ -196,7 +172,9 @@
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
 #define AIM_MSG_TYPE_UNICODE			"text/x-aolrtf; charset=\"unicode-2-0\""
 #define AIM_TOOL_VERSION				"\x01\x10\x08\xf1"
+
 extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
+
 //Supported Clients
 #define CLIENT_UNKNOWN					"?"
 #define CLIENT_AIM5						"AIM 5.x"
@@ -229,7 +207,8 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_SMS						"SMS"
 #define CLIENT_TERRAIM					"TerraIM"
 #define CLIENT_TRILLIAN_PRO				"Trillian Pro"
-#define CLIENT_TRILLIAN					"Trillian"
+#define CLIENT_TRILLIAN					"Trillian"\
+
 //Aim Caps
 #define AIM_CAPS_LENGTH					16
 

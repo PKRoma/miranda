@@ -339,7 +339,7 @@ DWORD __cdecl CAimProto::GetCaps( int type, HANDLE hContact )
 
 HICON __cdecl CAimProto::GetIcon( int iconIndex )
 {
-	return ( LOWORD(iconIndex) == PLI_PROTOCOL) ? CopyIcon(LoadIconEx("aim")) : 0;
+	return (LOWORD(iconIndex) == PLI_PROTOCOL) ? CopyIcon(LoadIconEx("aim")) : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -347,7 +347,7 @@ HICON __cdecl CAimProto::GetIcon( int iconIndex )
 
 int __cdecl CAimProto::GetInfo( HANDLE hContact, int infoType )
 {
-	return 0;
+	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -743,7 +743,7 @@ int __cdecl CAimProto::UserIsTyping( HANDLE hContact, int type )
 {
 	if (state != 1) return 0;
 
-    if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+    if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
         return 0;
 
 	DBVARIANT dbv;
