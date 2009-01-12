@@ -278,11 +278,8 @@ void  CMsnProto::MSN_CloseConnections()
 {
 	EnterCriticalSection( &sttLock );
 
-	NETLIBSELECT nls = {0};
+	NETLIBSELECTEX nls = {0};
 	nls.cbSize = sizeof(nls);
-
-	unsigned data;
-	NETLIBBUFFER nlb = { (char*)&data, 1, MSG_PEEK };
 
 	for ( int i=0; i < sttThreads.getCount(); i++ ) {
 		ThreadData* T = &sttThreads[ i ];
@@ -295,21 +292,20 @@ void  CMsnProto::MSN_CloseConnections()
 			if (T->s != NULL)
 			{
 				nls.hReadConns[0] = T->s;
-				int res = MSN_CallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
-				if (res > 0)
-					res = MSN_CallService( MS_NETLIB_RECV, ( WPARAM )T->s, ( LPARAM )&nlb ) <= 0;
-				if ( res == 0)
+				int res = MSN_CallService(MS_NETLIB_SELECTEX, 0, ( LPARAM )&nls);
+                if (res >= 0 || nls.hReadStatus[0] == 0)
 				{
-					T->sendPacket( "OUT", NULL );
+					T->sendPacket("OUT", NULL);
 					T->termPending = true;
 				}
 			}
 			break;
 
 		case SERVER_P2P_DIRECT :
-			MSN_CallService( MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0 );
+			MSN_CallService(MS_NETLIB_SHUTDOWN, (WPARAM)T->s, 0);
 			break;
-	}	}
+	    }	
+    }
 
 	LeaveCriticalSection( &sttLock );
 }

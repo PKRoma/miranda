@@ -366,12 +366,12 @@ void CMsnProto::MsnInitMenus( void )
 
 void CMsnProto::MsnUninitMenus( void )
 {
-	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
 	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItems[0], 0 );
 	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[0], 0 );
 	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[1], 0 );
 	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[2], 0 );
 	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[3], 0 );
+	MSN_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )blockMenuItem, 0 );
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )menuItemsAll[4], 0 );
 	MSN_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )menuItemsAll[5], 0 );

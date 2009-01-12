@@ -294,12 +294,6 @@ void CMsnProto::MSN_GoOffline(void)
 {
 	if (m_iStatus == ID_STATUS_OFFLINE) return;
 
-	if ( !Miranda_Terminated() )
-	{
-		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
-		SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
-	}
-
 	msnLoggedIn = false;
 
 	mir_free(msnPreviousUUX);
@@ -323,7 +317,14 @@ void CMsnProto::MSN_GoOffline(void)
 			}
 
 		hContact = ( HANDLE )MSN_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 );
-}	}
+    }	
+
+    if ( !Miranda_Terminated() )
+	{
+		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
+		SendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE );
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendMessage - formats and sends a MSG packet through the server
