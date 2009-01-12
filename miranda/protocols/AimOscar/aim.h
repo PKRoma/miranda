@@ -138,8 +138,6 @@
 //Settings Keys
 #define AIM_KEY_PR						"Profile"
 #define AIM_KEY_LA						"LastAwayChange"
-#define AIM_MOD_IG						"ID2Group"
-#define AIM_MOD_GI						"Group2ID"
 //Contact Keys
 #define AIM_KEY_BI						"BuddyId"
 #define AIM_KEY_GI						"GroupId"

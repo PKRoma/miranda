@@ -166,9 +166,12 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 		{
 			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
             unsigned short group_id = group_list.find_id(szOldName);
-			aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
-            group_list.remove_by_id(group_id);
-		    update_server_group("", 0);
+            if (group_id)
+            {
+			    aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
+                group_list.remove_by_id(group_id);
+		        update_server_group("", 0);
+            }
 			mir_free(szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
