@@ -739,6 +739,15 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 }
 
 //////////////////////////////////////////////////////////
+// gets caccount manager GUI
+extern BOOL CALLBACK gg_acc_mgr_guidlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+static int gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+{
+	return (int) CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_ACCMGRUI), (HWND)lParam, gg_acc_mgr_guidlgproc, (LPARAM) gg);
+}
+
+//////////////////////////////////////////////////////////
 // Dummies for function that have to be implemented
 
 HANDLE gg_dummy_addtolistbyevent(PROTO_INTERFACE *proto, int flags, int iContact, HANDLE hDbEvent) { return NULL; }
@@ -810,4 +819,5 @@ void gg_registerservices(GGPROTO *gg)
 	
 	CreateProtoService(PS_GETSTATUS, gg_getstatus, gg);
 	CreateProtoService(PS_GETNAME, gg_getname, gg);
+	CreateProtoService(PS_CREATEACCMGRUI, gg_get_acc_mgr_gui, gg);
 }

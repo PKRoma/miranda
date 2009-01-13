@@ -65,6 +65,7 @@
 #define IDD_OPT_GG_CONFERENCE	314
 #define IDD_IMAGE_RECV			315
 #define IDD_IMAGE_SEND			316
+#define IDD_ACCMGRUI 			317
 
 #define IDC_UIN 				401
 #define IDC_PASSWORD			402

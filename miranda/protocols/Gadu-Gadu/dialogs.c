@@ -527,7 +527,7 @@ static BOOL CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								DBFreeVariant(&dbv);
 							}
 							else
-								SetDlgItemText(hwndDlg, IDC_PASSWORD, "");
+								SetDlgItemText(hwndDlg, IDC_EMAIL, "");
 
 							// Update links
 							gg_optsdlgcheck(hwndDlg);
@@ -1018,4 +1018,116 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// Proc: Account manager options dialog
+BOOL CALLBACK gg_acc_mgr_guidlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+////////////////////////////////////////////////////////////////////////////////////////////
+{
+	switch (msg) {
+		case WM_INITDIALOG:
+		{
+			DBVARIANT dbv;
+			DWORD num;
+			GGPROTO *gg = (GGPROTO *)lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
+
+			TranslateDialogDefault(hwndDlg);
+			if (num = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
+				SetDlgItemText(hwndDlg, IDC_UIN, ditoa(num));
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+				CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+				SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+			if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
+				SetDlgItemText(hwndDlg, IDC_EMAIL, dbv.pszVal);
+				DBFreeVariant(&dbv);
+			}
+			break;
+		}
+		case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) {
+				case IDC_CREATEACCOUNT:
+				{
+					// Readup data
+					GGUSERUTILDLGDATA dat;
+					int ret;
+					char pass[128], email[128];
+					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+					GetDlgItemText(hwndDlg, IDC_UIN, pass, sizeof(pass));
+					dat.uin = atoi(pass);
+					GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
+					GetDlgItemText(hwndDlg, IDC_EMAIL, email, sizeof(email));
+					dat.pass = pass;
+					dat.email = email;
+					dat.gg = gg;
+					dat.mode = GG_USERUTIL_CREATE;
+					ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CREATEACCOUNT), hwndDlg, gg_userutildlgproc, (LPARAM)&dat);
+
+					if(ret == IDOK)
+					{
+						DBVARIANT dbv;
+						DWORD num;
+						GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+						// Show reload required window
+						ShowWindow(GetDlgItem(hwndDlg, IDC_RELOADREQD), SW_SHOW);
+
+						// Update uin
+						if (num = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
+							SetDlgItemText(hwndDlg, IDC_UIN, ditoa(num));
+						else
+							SetDlgItemText(hwndDlg, IDC_UIN, "");
+
+						// Update password
+						if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv)) {
+							CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
+							SetDlgItemText(hwndDlg, IDC_PASSWORD, dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							SetDlgItemText(hwndDlg, IDC_PASSWORD, "");
+
+						// Update e-mail
+						if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, &dbv)) {
+							SetDlgItemText(hwndDlg, IDC_EMAIL, dbv.pszVal);
+							DBFreeVariant(&dbv);
+						}
+						else
+							SetDlgItemText(hwndDlg, IDC_EMAIL, "");
+					}
+				}
+
+			}
+			break;
+		}
+		case WM_NOTIFY:
+		{
+			switch(((LPNMHDR)lParam)->idFrom)
+			{
+				case 0:
+				switch (((LPNMHDR) lParam)->code) {
+					case PSN_APPLY:
+					{
+						char str[128];
+						GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+						// Write Gadu-Gadu number
+						GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
+						DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, atoi(str));
+						// Write Gadu-Gadu password
+						GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
+						CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+						DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, str);
+						// Write Gadu-Gadu email
+						GetDlgItemText(hwndDlg, IDC_EMAIL, str, sizeof(str));
+						DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, str);
+					}
+				}
+			}
+			break;
+		}
+	}
+	return FALSE;
 }
