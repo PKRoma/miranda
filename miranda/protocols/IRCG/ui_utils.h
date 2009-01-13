@@ -194,6 +194,7 @@ public:
 	virtual ~CDlgBase();
 
 	// general utilities
+	void Create();
 	void Show();
 	int DoModal();
 
@@ -201,10 +202,6 @@ public:
 	__inline bool IsInitialized() const { return m_initialized; }
 	__inline void Close() { SendMessage(m_hwnd, WM_CLOSE, 0, 0); }
 	__inline const MSG *ActiveMessage() const { return &m_msg; }
-
-	// global jabber events
-	virtual void OnJabberOffline() {}
-	virtual void OnJabberOnline() {}
 
 	// dynamic creation support (mainly to avoid leaks in options)
 	struct CreateParam
@@ -226,6 +223,7 @@ public:
 	}
 
 	LRESULT m_lresult;
+
 protected:
 	HWND    m_hwnd;
 	HWND    m_hwndParent;
@@ -233,6 +231,10 @@ protected:
 	MSG     m_msg;
 	bool    m_isModal;
 	bool    m_initialized;
+	bool    m_forceResizable;
+
+	enum { CLOSE_ON_OK = 0x1, CLOSE_ON_CANCEL = 0x2 };
+	BYTE    m_autoClose;    // automatically close dialog on IDOK/CANCEL commands. default: CLOSE_ON_OK|CLOSE_ON_CANCEL
 
 	CCtrlBase* m_first;
 
@@ -246,7 +248,7 @@ protected:
 	virtual int Resizer(UTILRESIZECONTROL *urc);
 	virtual void OnApply() {}
 	virtual void OnReset() {}
-	virtual void OnChange(CCtrlBase *) {}
+	virtual void OnChange(CCtrlBase*) {}
 
 	// main dialog procedure
 	virtual BOOL DlgProc(UINT msg, WPARAM wParam, LPARAM lParam);
@@ -683,7 +685,7 @@ public:
 	int    AddStringA(const char *text, LPARAM data = 0 );
 	void   DeleteString(int index);
 	int    FindString(const TCHAR *str, int index = -1, bool exact = false);
-	int    FindStringA(char *str, int index = -1, bool exact = false);
+	int    FindStringA(const char *str, int index = -1, bool exact = false);
 	int    GetCount();
 	int    GetCurSel();
 	bool   GetDroppedState();

@@ -38,6 +38,8 @@ CDlgBase::CDlgBase(int idDialog, HWND hwndParent) :
 	m_first = NULL;
 	m_isModal = false;
 	m_initialized = false;
+	m_autoClose = CLOSE_ON_OK|CLOSE_ON_CANCEL;
+	m_forceResizable = false;
 }
 
 CDlgBase::~CDlgBase()
@@ -47,6 +49,11 @@ CDlgBase::~CDlgBase()
 
 	if (m_hwnd)
 		DestroyWindow(m_hwnd);
+}
+
+void CDlgBase::Create()
+{
+	ShowWindow(CreateDialogParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this), SW_HIDE);
 }
 
 void CDlgBase::Show()
@@ -62,7 +69,7 @@ int CDlgBase::DoModal()
 
 int CDlgBase::Resizer(UTILRESIZECONTROL*)
 {
-	return 0;
+	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
 BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
@@ -73,12 +80,13 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			m_initialized = false;
 			TranslateDialogDefault(m_hwnd);
-			{
-				for ( CCtrlBase* p = m_first; p != NULL; p = p->m_next )
-					AddControl( p );
-			}
+
+			for ( CCtrlBase* p = m_first; p != NULL; p = p->m_next )
+				AddControl( p );
+
 			NotifyControls(&CCtrlBase::OnInit);
 			OnInitDialog();
+
 			m_initialized = true;
 			return TRUE;
 		}
@@ -121,8 +129,12 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					return result;
 			}
 
-			if ( idCode == BN_CLICKED && ( idCtrl == IDOK || idCtrl == IDCANCEL ))
+			if (idCode == BN_CLICKED &&
+				((idCtrl == IDOK) && (m_autoClose & CLOSE_ON_OK) ||
+				(idCtrl == IDCANCEL) && (m_autoClose & CLOSE_ON_CANCEL)))
+			{
 				PostMessage( m_hwnd, WM_CLOSE, 0, 0 );
+			}
 			return FALSE;
 		}
 
@@ -152,14 +164,17 @@ BOOL CDlgBase::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case WM_SIZE:
 		{
-			UTILRESIZEDIALOG urd;
-			urd.cbSize = sizeof(urd);
-			urd.hwndDlg = m_hwnd;
-			urd.hInstance = hInst;
-			urd.lpTemplate = MAKEINTRESOURCEA(m_idDialog);
-			urd.lParam = 0;
-			urd.pfnResizer = GlobalDlgResizer;
-			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			if (m_forceResizable || (GetWindowLong(m_hwnd, GWL_STYLE) & WS_SIZEBOX))
+			{
+				UTILRESIZEDIALOG urd;
+				urd.cbSize = sizeof(urd);
+				urd.hwndDlg = m_hwnd;
+				urd.hInstance = hInst;
+				urd.lpTemplate = MAKEINTRESOURCEA(m_idDialog);
+				urd.lParam = 0;
+				urd.pfnResizer = GlobalDlgResizer;
+				CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			}
 			return TRUE;
 		}
 
@@ -277,7 +292,7 @@ int CCtrlCombo::FindString(const TCHAR *str, int index, bool exact )
 {	return SendMessage(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str);
 }
 
-int CCtrlCombo::FindStringA(char *str, int index, bool exact )
+int CCtrlCombo::FindStringA(const char *str, int index, bool exact )
 {	return SendMessageA(m_hwnd, exact?CB_FINDSTRINGEXACT:CB_FINDSTRING, index, (LPARAM)str);
 }
 
@@ -1619,7 +1634,7 @@ void CCtrlBase::OnInit()
 
 void CCtrlBase::OnDestroy()
 {
-	Unsubclass(); 
+	Unsubclass();
 	m_hwnd = NULL;
 }
 
