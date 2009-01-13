@@ -925,9 +925,11 @@ char* CIcqProto::detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass,
 							szClient = cliSpamBot;
 						else if (MatchShortCap(caps, wLen, &capAimIcon) && MatchShortCap(caps, wLen, &capAimDirect) && 
 							CheckContactCapabilities(hContact, CAPF_OSCAR_FILE | CAPF_UTF))
-						{ // detect libgaim
+						{ // detect libgaim/libpurple versions
 							if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
 								szClient = "Adium X"; // yeah, AFAIK only Adium has this fixed
+              else if (CheckContactCapabilities(hContact, CAPF_TYPING))
+                szClient = "libpurple";
 							else
 								szClient = "libgaim";
 						}
