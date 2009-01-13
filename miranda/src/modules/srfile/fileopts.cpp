@@ -74,6 +74,7 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				default: CheckDlgButton(hwndDlg, IDC_NOSCANNER, BST_CHECKED); break;
 			}
 			CheckDlgButton(hwndDlg, IDC_WARNBEFOREOPENING, DBGetContactSettingByte(NULL,"SRFile","WarnBeforeOpening",1) ? BST_CHECKED : BST_UNCHECKED);
+			
 			{	char szScanExe[MAX_PATH];
 				int i,iItem;
 				for( i=0; i < SIZEOF(virusScanners); i++ ) {
@@ -81,6 +82,11 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						iItem=SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
 						SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem,i);
 					}
+				}
+				if ( SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_GETCOUNT,0,0) == 0 )
+				{
+					iItem = SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)("") );
+					SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem, (LPARAM)-1);
 				}
 			}
 

@@ -145,20 +145,28 @@ static BOOL CALLBACK BoldGroupTitlesEnumChildren(HWND hwnd,LPARAM lParam)
 	return TRUE;
 }
 
+struct MoveChildParam
+{
+	HWND hDlg;
+	POINT offset;
+};
 static BOOL CALLBACK MoveEnumChildren(HWND hwnd,LPARAM lParam)
 {
-	POINT * offset = (POINT *) lParam;
+	struct MoveChildParam * param = ( struct MoveChildParam *) lParam;
 
 	RECT rcWnd;
 	GetWindowRect( hwnd, &rcWnd);
 
 	HWND hwndParent = GetParent( hwnd );
+	if ( hwndParent != param->hDlg )
+		return TRUE;	// Do not move subchilds
+
 	POINT pt; pt.x = 0; pt.y = 0;
 
 	ClientToScreen( hwndParent, &pt );
 	OffsetRect( &rcWnd, -pt.x, -pt.y );
 
-	SetWindowPos( hwnd, NULL, rcWnd.left + offset->x, rcWnd.top + offset->y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE );
+	SetWindowPos( hwnd, NULL, rcWnd.left + param->offset.x, rcWnd.top + param->offset.y, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE );
 
 	return TRUE;
 }
@@ -914,13 +922,16 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 							int newOffsetX = ( parentPageRect->right - parentPageRect->left - pageWidth ) >> 1;
 							int newOffsetY = dat->opd[dat->currentPage].insideTab ? 0 : ( parentPageRect->bottom - parentPageRect->top - pageHeight ) >> 1;
 
-							POINT offset;
-							offset.x = newOffsetX - dat->opd[dat->currentPage].offsetX;
-							offset.y = newOffsetY - dat->opd[dat->currentPage].offsetY;
+							struct MoveChildParam mcp;
+							mcp.hDlg     = dat->opd[dat->currentPage].hwnd;
+							mcp.offset.x = newOffsetX - dat->opd[dat->currentPage].offsetX;
+							mcp.offset.y = newOffsetY - dat->opd[dat->currentPage].offsetY;
 
-							if ( offset.x || offset.y )
+							
+							if ( mcp.offset.x || mcp.offset.y )
 							{
-								EnumChildWindows(dat->opd[dat->currentPage].hwnd,MoveEnumChildren,(LPARAM)(&offset));
+								
+								EnumChildWindows(dat->opd[dat->currentPage].hwnd,MoveEnumChildren,(LPARAM)(&mcp));
 
 								SetWindowPos( dat->opd[dat->currentPage].hwnd, NULL,
 									parentPageRect->left, parentPageRect->top, 
@@ -930,6 +941,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 								dat->opd[dat->currentPage].offsetX = newOffsetX;
 								dat->opd[dat->currentPage].offsetY = newOffsetY;
 							}
+							
 						}						
 
 						ShowWindow(dat->opd[dat->currentPage].hwnd,SW_SHOW);
