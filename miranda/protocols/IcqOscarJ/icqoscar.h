@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -99,6 +99,7 @@
 // ICQ plugin includes
 #include "globals.h"
 #include "i18n.h"
+#include "icq_db.h"
 #include "cookies.h"
 #include "capabilities.h"
 #include "icq_packet.h"
@@ -136,10 +137,3 @@
 #include "icq_popups.h"
 #include "icq_proto.h"
 #include "iconlib.h"
-
-int __fastcall ICQFreeVariant(DBVARIANT* dbv);
-
-// :TODO: This should not be here :p
-void icq_FirstRunCheck(void);
-
-BYTE* calcMD5Hash(char* szFile);

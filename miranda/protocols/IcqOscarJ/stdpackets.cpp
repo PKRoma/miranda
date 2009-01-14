@@ -261,7 +261,9 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
     DBVARIANT dbv = {DBVT_DELETED};
 
     if (!getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
-      szMoodData = dbv.pszVal;
+      szMoodData = null_strdup(dbv.pszVal);
+
+    ICQFreeVariant(&dbv);
 
     wStatusNoteLen = strlennull(szStatusNote);
     wStatusMoodLen = strlennull(szMoodData);
@@ -299,6 +301,8 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
     // Save current status note
     setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, szStatusNote);
 	}
+  // Release memory
+  SAFE_FREE((void**)&szMoodData);
 
 	// Send packet
 	sendServPacket(&packet);

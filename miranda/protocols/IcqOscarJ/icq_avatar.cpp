@@ -270,6 +270,53 @@ int DetectAvatarFormat(const char *szFile)
 }
 
 
+#define MD5_BLOCK_SIZE 1024*1024 /* use 1MB blocks */
+
+BYTE* calcMD5HashOfFile(const char *szFile)
+{
+	BYTE *res = NULL;
+
+	if (szFile)
+	{
+		HANDLE hFile = NULL, hMap = NULL;
+		BYTE *ppMap = NULL;
+
+		if ((hFile = CreateFileA(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
+			if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+			{
+				long cbFileSize = GetFileSize( hFile, NULL );
+
+				res = (BYTE*)SAFE_MALLOC(16*sizeof(char));
+				if (cbFileSize != 0 && res)
+				{
+					mir_md5_state_t state;
+					mir_md5_byte_t digest[16];
+					int dwOffset = 0;
+
+					mir_md5_init(&state);
+					while (dwOffset < cbFileSize)
+					{
+						int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
+
+						if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
+							break;
+						mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
+						UnmapViewOfFile(ppMap);
+						dwOffset += dwBlockSize;
+					}
+					mir_md5_finish(&state, digest);
+					memcpy(res, digest, 16);
+				}
+			}
+
+			if (hMap  != NULL) CloseHandle(hMap);
+			if (hFile != NULL) CloseHandle(hFile);
+	}
+
+	return res;
+}
+
+
 int CIcqProto::IsAvatarChanged(HANDLE hContact, BYTE* pHash, int nHashLen)
 {
 	DBVARIANT dbvSaved = {0};
@@ -407,7 +454,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 				}
 				else
 				{ // we know avatar filename
-					hash = calcMD5Hash(file);
+					hash = calcMD5HashOfFile(file);
 					if (!hash)
 					{ // hash could not be calculated - probably missing file, get avatar from server
 						char szFile[MAX_PATH + 4];
@@ -461,7 +508,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 					break;
 				}
 				DWORD dwPaFormat = DetectAvatarFormat(file);
-				BYTE *hash = calcMD5Hash(file);
+				BYTE *hash = calcMD5HashOfFile(file);
 
 				if (!hash)
 				{ // the hash could not be calculated, remove from server

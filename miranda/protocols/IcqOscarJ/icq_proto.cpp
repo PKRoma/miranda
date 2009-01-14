@@ -1930,6 +1930,41 @@ int __cdecl CIcqProto::SetApparentMode( HANDLE hContact, int mode )
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
+// PrepareStatusNote - returns correct status note for given status
+
+char* CIcqProto::PrepareStatusNote(int nStatus)
+{
+  char *szStatusNote = NULL;
+        
+  if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
+  {
+    BYTE bXStatus = getContactXStatus(NULL);
+
+    if (bXStatus && moodXStatus[bXStatus-1] != -1)
+    { // use custom status message as status note
+      szStatusNote = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
+    }
+  }
+
+  if (!szStatusNote)
+  { // get standard status message
+    EnterCriticalSection(&m_modeMsgsMutex);
+
+    char **pszStatusNote = MirandaStatusToAwayMsg(nStatus);
+    if (pszStatusNote)
+      szStatusNote = null_strdup(*pszStatusNote);
+    LeaveCriticalSection(&m_modeMsgsMutex);
+  }
+
+  if (!szStatusNote)
+    // nothing available set empty status note
+    szStatusNote = null_strdup("");
+
+  return szStatusNote;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////
 // PS_SetStatus - sets the protocol status
 
 int __cdecl CIcqProto::SetStatus(int iNewStatus)
@@ -1952,24 +1987,27 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
     { // for quick logoff
-			m_iDesiredStatus = nNewStatus;
-
       if (icqOnline())
       { // set offline status note (otherwise the old will remain)
-        setSettingString(NULL, DBSETTING_STATUS_MOOD, "");
+        char *szOfflineNote = PrepareStatusNote(nNewStatus);
 
-        char **szOfflineNote = MirandaStatusToAwayMsg(nNewStatus);
+        // Create unnamed event to wait until the status note change process is completed
+        m_hNotifyNameInfoEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-        EnterCriticalSection(&m_modeMsgsMutex);
-        if (szOfflineNote)
-        {
-          if (*szOfflineNote)
-            SetStatusNote(*szOfflineNote, 0);
-          else // set empty note
-            SetStatusNote("", 0);
-        }
-        LeaveCriticalSection(&m_modeMsgsMutex);
+        int bNoteChanged = SetStatusNote(szOfflineNote, 0, FALSE);
+
+        SAFE_FREE((void**)&szOfflineNote);
+
+        // Note was changed, wait until the process is over
+        if (bNoteChanged)
+          ICQWaitForSingleObject(m_hNotifyNameInfoEvent, 4000, TRUE);
+
+        // Release the event
+        CloseHandle(m_hNotifyNameInfoEvent);
+        m_hNotifyNameInfoEvent = NULL;
       }
+
+			m_iDesiredStatus = nNewStatus;
 
       if (hServerConn)
       { // Connected, Send disconnect packet
@@ -2026,36 +2064,12 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 			default:
 				SetCurrentStatus(nNewStatus);
 
-        char *szStatusNote = NULL;
+        char *szStatusNote = PrepareStatusNote(nNewStatus);
         
-        if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
-        {
-          BYTE bXStatus = getContactXStatus(NULL);
-
-          if (bXStatus && moodXStatus[bXStatus-1] != -1)
-          { // use custom status message as status note
-            szStatusNote = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
-          }
-        }
-
-        if (!szStatusNote)
-        { // get standard status message
-          EnterCriticalSection(&m_modeMsgsMutex);
-
-          char **pszStatusNote = MirandaStatusToAwayMsg(nNewStatus);
-          if (pszStatusNote)
-            szStatusNote = null_strdup(*pszStatusNote);
-          LeaveCriticalSection(&m_modeMsgsMutex);
-        }
-
-        if (!szStatusNote)
-          // nothing available set empty status note
-          szStatusNote = null_strdup("");
-
         //! This is a bit tricky, we do trigger status note change thread and then
         // change the status note right away (this spares one packet) - so SetStatusNote()
         // will only change User Details Directory
-        SetStatusNote(szStatusNote, 6000);
+        SetStatusNote(szStatusNote, 6000, FALSE);
 
 				if (m_iStatus == ID_STATUS_INVISIBLE)
 				{
@@ -2269,10 +2283,10 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
         BYTE bXStatus = getContactXStatus(NULL);
     
         if (!bXStatus || moodXStatus[bXStatus-1] == -1)
-          SetStatusNote(szNote, 1000);
+          SetStatusNote(szNote, 1000, FALSE);
       }
       else
-        SetStatusNote(szNote, 1000);
+        SetStatusNote(szNote, 1000, FALSE);
 
   		if (m_bAimEnabled && (m_iStatus == status))
 	  		icq_sendSetAimAwayMsgServ(*ppszMsg);

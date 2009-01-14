@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -53,7 +53,7 @@ void __cdecl CIcqProto::KeepAliveThread(void* arg)
 
 	for(;;)
 	{
-		DWORD dwWait = WaitForSingleObjectEx(info->hKeepAliveEvent, dwInterval, TRUE);
+		DWORD dwWait = ICQWaitForSingleObject(info->hKeepAliveEvent, dwInterval);
 
 		if (dwWait == WAIT_OBJECT_0) break; // we should end
 		else if (dwWait == WAIT_TIMEOUT)
@@ -93,7 +93,7 @@ void CIcqProto::StopKeepAlive(serverthread_info* info)
 		SetEvent(info->hKeepAliveEvent);
 
 		// wait for the thread to finish
-		WaitForSingleObjectEx(info->hKeepAliveThread, INFINITE, FALSE);
+		ICQWaitForSingleObject(info->hKeepAliveThread, INFINITE, TRUE);
 		CloseHandle(info->hKeepAliveThread);
 		info->hKeepAliveThread = NULL;
 	}

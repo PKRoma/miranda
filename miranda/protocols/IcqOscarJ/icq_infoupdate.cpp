@@ -214,7 +214,7 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
 			dwWait = WAIT_TIMEOUT;
 			while (bInfoUpdateRunning && dwWait == WAIT_TIMEOUT)
 			{ // wait for new work or until we should end
-				dwWait = WaitForSingleObjectEx(hInfoQueueEvent, 10000, TRUE);
+				dwWait = ICQWaitForSingleObject(hInfoQueueEvent, 10000);
 			}
 		}
 		if (!bInfoUpdateRunning) break;
@@ -390,7 +390,7 @@ void CIcqProto::icq_InfoUpdateCleanup(void)
 {
 	bInfoUpdateRunning = FALSE;
 	SetEvent(hInfoQueueEvent); // break queue loop
-	if (hInfoThread) WaitForSingleObjectEx(hInfoThread, INFINITE, TRUE);
+	if (hInfoThread) ICQWaitForSingleObject(hInfoThread, INFINITE, TRUE);
 	// Uninit mutex
 	DeleteCriticalSection(&infoUpdateMutex);
 	CloseHandle(hInfoQueueEvent);

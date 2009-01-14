@@ -292,8 +292,10 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_sendXtrazResponseDirect(HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
 
 	//----| fam_01service.cpp |-----------------------------------------------------------
-	void   handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-	char*  buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume);
+  HANDLE m_hNotifyNameInfoEvent;
+
+	void   handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info);
+	char*  buildUinList(int subtype, WORD wMaxLen, HANDLE *hContactResume);
 	void   sendEntireListServ(WORD wFamily, WORD wSubtype, int listType);
 	void   setUserInfo(void);
 	void   handleServUINSettings(int nPort, serverthread_info *info);
@@ -580,6 +582,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   __cdecl CheekySearchThread( void* );
 
   void   __cdecl GetAwayMsgThread( void *pStatusData );
+
+  char*  PrepareStatusNote(int nStatus);
 
 	//----| icq_rates.cpp |---------------------------------------------------------------
 	CRITICAL_SECTION ratesMutex;
@@ -974,8 +978,8 @@ struct CIcqProto : public PROTO_INTERFACE
 
   char   *setStatusNoteText, *setStatusMoodData;
   void   __cdecl SetStatusNoteThread(void *pArguments);
-  void   SetStatusNote(const char *szStatusNote, DWORD dwDelay);
-  void   SetStatusMood(const char *szMoodData, DWORD dwDelay);
+  int    SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForced);
+  int    SetStatusMood(const char *szMoodData, DWORD dwDelay);
 
 	BOOL   writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
 	BOOL   writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);

@@ -1226,9 +1226,13 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
 }
 
 
-void CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay)
+int CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForce)
 {
-  if (!icqOnline()) return;
+  int bChanged = FALSE;
+
+  // bForce is intended for login sequence - need to call this earlier than icqOnline()
+  // the process is delayed and icqOnline() is ready when needed inside SetStatusNoteThread()
+  if (!bForce && !icqOnline()) return bChanged;
 
   // reuse generic critical section (used for cookies list and object variables locks)
   EnterCriticalSection(&cookieMutex);
@@ -1243,9 +1247,11 @@ void CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay)
       setStatusNoteText = null_strdup(szStatusNote);
 
       if (dwDelay)
-			ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
+			  ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
       else // we cannot afford any delay, so do not run in separate thread
         SetStatusNoteThread(NULL);
+
+      bChanged = TRUE;
     }
     SAFE_FREE((void**)&szCurrentStatusNote);
   }
@@ -1253,14 +1259,20 @@ void CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay)
   { // only alter status note object with new status note, keep the thread waiting for execution
     SAFE_FREE((void**)&setStatusNoteText);
     setStatusNoteText = null_strdup(szStatusNote);
+
+    bChanged = TRUE;
   }
   LeaveCriticalSection(&cookieMutex);
+
+  return bChanged;
 }
 
 
-void CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
+int CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
 {
-  if (!icqOnline()) return;
+  int bChanged = FALSE;
+
+  if (!icqOnline()) return bChanged;
 
   // reuse generic critical section (used for cookies list and object variables locks)
   EnterCriticalSection(&cookieMutex);
@@ -1281,6 +1293,8 @@ void CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
         ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
       else // we cannot afford any delay, so do not run in separate thread
         SetStatusNoteThread(NULL);
+
+      bChanged = TRUE;
     }
     ICQFreeVariant(&dbv);
   }
@@ -1288,8 +1302,12 @@ void CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
   { // only alter status mood object with new status mood, keep the thread waiting for execution
     SAFE_FREE((void**)&setStatusMoodData);
     setStatusMoodData = null_strdup(szMoodData);
+
+    bChanged = TRUE;
   }
   LeaveCriticalSection(&cookieMutex);
+
+  return bChanged;
 }
 
 
@@ -1649,6 +1667,19 @@ void* __fastcall SAFE_REALLOC(void* p, size_t size)
 	else
 		return SAFE_MALLOC(size);
 }
+
+
+DWORD ICQWaitForSingleObject(HANDLE hObject, DWORD dwMilliseconds, int bWaitAlways)
+{
+  DWORD dwResult;
+
+  do { // will get WAIT_IO_COMPLETION for QueueUserAPC(), ignore it unless terminating
+		dwResult = WaitForSingleObjectEx(hObject, dwMilliseconds, TRUE);
+  } while (dwResult == WAIT_IO_COMPLETION && (bWaitAlways || !Miranda_Terminated()));
+
+  return dwResult;
+}
+
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc)
 {

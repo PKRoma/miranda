@@ -38,7 +38,7 @@
 
 extern capstr capXStatus[];
 
-void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
+void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info)
 {
 	icq_packet packet;
 
@@ -319,6 +319,9 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 				if (!m_bSsiEnabled || info->isMigrating)
 					handleServUINSettings(wListenPort, info);
 			}
+      else if (m_hNotifyNameInfoEvent)
+        // Just notify that the set status note & mood process is finished
+        SetEvent(m_hNotifyNameInfoEvent);
 		}
 		break;
 
@@ -529,51 +532,6 @@ void CIcqProto::handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, sna
 	}
 }
 
-#define MD5_BLOCK_SIZE 1024*1024 /* use 1MB blocks */
-
-BYTE* calcMD5Hash(char* szFile)
-{
-	BYTE *res = NULL;
-
-	if (szFile)
-	{
-		HANDLE hFile = NULL, hMap = NULL;
-		BYTE* ppMap = NULL;
-
-		if ((hFile = CreateFileA(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
-			if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
-			{
-				long cbFileSize = GetFileSize( hFile, NULL );
-
-				res = (BYTE*)SAFE_MALLOC(16*sizeof(char));
-				if (cbFileSize != 0 && res)
-				{
-					mir_md5_state_t state;
-					mir_md5_byte_t digest[16];
-					int dwOffset = 0;
-
-					mir_md5_init(&state);
-					while (dwOffset < cbFileSize)
-					{
-						int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
-
-						if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
-							break;
-						mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
-						UnmapViewOfFile(ppMap);
-						dwOffset += dwBlockSize;
-					}
-					mir_md5_finish(&state, digest);
-					memcpy(res, digest, 16);
-				}
-			}
-
-			if (hMap  != NULL) CloseHandle(hMap);
-			if (hFile != NULL) CloseHandle(hFile);
-	}
-
-	return res;
-}
 
 char* CIcqProto::buildUinList(int subtype, WORD wMaxLen, HANDLE* hContactResume)
 {
@@ -727,7 +685,6 @@ void CIcqProto::setUserInfo()
 #ifdef DBG_AIMCONTACTSEND
 	wAdditionalData += 16;
 #endif
-  wAdditionalData += 16;
 
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
@@ -794,10 +751,10 @@ void CIcqProto::setUserInfo()
   packDWord(&packet, 0xb069f1e7);
   packDWord(&packet, 0x57bb2e17);*/
 
-  packDWord(&packet, 0x67361515); /// icq lite audio chat Xtraz "ICQTalk" plugin
+/*  packDWord(&packet, 0x67361515); /// icq lite audio chat Xtraz "ICQTalk" plugin
   packDWord(&packet, 0x612d4c07);
   packDWord(&packet, 0x8f3dbde6);
-  packDWord(&packet, 0x408ea041);
+  packDWord(&packet, 0x408ea041);*/
 
 /*	packDWord(&packet, 0x178c2d9b); // Unknown cap
 	packDWord(&packet, 0xdaa545bb); /// icq lite video chat Xtraz "VideoRcv" plugin
@@ -850,24 +807,30 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 
 	// SNAC 1,1E: Set status
 	{
-		WORD wStatus;
 		DWORD dwDirectCookie = rand() ^ (rand() << 16);
-		BYTE bXStatus = getContactXStatus(NULL);
-		char szMoodId[32];
-		WORD cbMoodId = 0;
-		WORD cbMoodData = 0;
 
 		// Get status
-		wStatus = MirandaStatusToIcq(m_iDesiredStatus);
+		WORD wStatus = MirandaStatusToIcq(m_iDesiredStatus);
 
-		if (bXStatus && moodXStatus[bXStatus-1] != -1)
-		{ // prepare mood id
-			null_snprintf(szMoodId, SIZEOF(szMoodId), "icqmood%d", moodXStatus[bXStatus-1]);
-			cbMoodId = strlennull(szMoodId);
-			cbMoodData = 8;
-		}
+    // Get status note & mood
+    char *szStatusNote = PrepareStatusNote(m_iDesiredStatus);
+  	BYTE bXStatus = getContactXStatus(NULL);
+    char szMoodData[32];
 
-		serverPacketInit(&packet, (WORD)(71 + cbMoodId + cbMoodData));
+	  // prepare mood id
+  	if (bXStatus && moodXStatus[bXStatus-1] != -1)
+  	  null_snprintf(szMoodData, SIZEOF(szMoodData), "icqmood%d", moodXStatus[bXStatus-1]);
+	  else
+      szMoodData[0] = '\0';
+
+    //! Tricky code, this ensures that the status note will be saved to the directory
+    SetStatusNote(szStatusNote, m_bGatewayMode ? 5000 : 2500, TRUE);
+
+    WORD wStatusNoteLen = strlennull(szStatusNote);
+    WORD wStatusMoodLen = strlennull(szMoodData);
+    WORD wSessionDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
+
+		serverPacketInit(&packet, (WORD)(71 + (wSessionDataLen ? wSessionDataLen + 4 : 0)));
 		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
 		packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
 		packWord(&packet, GetMyStatusFlags());      // Status flags
@@ -890,14 +853,31 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 		packWord(&packet, 0x0000);                  // Unknown
 		packTLVWord(&packet, 0x001F, 0x0000);
 
-		if (cbMoodId)
-		{ // Pack mood data
-			packWord(&packet, 0x1D);              // TLV 1D
-			packWord(&packet, (WORD)(cbMoodId + 4)); // TLV length
-			packWord(&packet, 0x0E);              // Item Type
-			packWord(&packet, cbMoodId);          // Flags + Item Length
-			packBuffer(&packet, (LPBYTE)szMoodId, cbMoodId); // Mood
-		}
+	  if (wSessionDataLen)
+	  { // Pack session data
+		  packWord(&packet, 0x1D);                  // TLV 1D
+		  packWord(&packet, wSessionDataLen);       // TLV length
+      packWord(&packet, 0x02);                  // Item Type
+      if (wStatusNoteLen)
+      {
+        packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
+        packWord(&packet, wStatusNoteLen);      // Text Length
+        packBuffer(&packet, (LPBYTE)szStatusNote, wStatusNoteLen);
+        packWord(&packet, 0);                   // Encoding not specified (utf-8 is default)
+      }
+      else
+        packWord(&packet, 0);                   // Flags + Item Length
+		  packWord(&packet, 0x0E);                  // Item Type
+	    packWord(&packet, wStatusMoodLen);        // Flags + Item Length
+      if (wStatusMoodLen)
+	      packBuffer(&packet, (LPBYTE)szMoodData, wStatusMoodLen); // Mood
+
+      // Save current status note & mood
+      setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, szStatusNote);
+      setSettingString(NULL, DBSETTING_STATUS_MOOD, szMoodData);
+	  }
+    // Release memory
+    SAFE_FREE((void**)&szStatusNote);
 
 		sendServPacket(&packet);
 	}

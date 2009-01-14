@@ -601,7 +601,7 @@ int CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			return iRet;
 		}
 
-		hash = calcMD5Hash(szMyFile);
+		hash = calcMD5HashOfFile(szMyFile);
 		if (hash)
 		{
 			BYTE* ihash = (BYTE*)_alloca(0x14);

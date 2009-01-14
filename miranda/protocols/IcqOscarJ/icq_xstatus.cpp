@@ -446,7 +446,7 @@ void CIcqProto::updateServerCustomStatus(int fullUpdate)
     }
 
     if (szStatusNote)
-      SetStatusNote(szStatusNote, 1500);
+      SetStatusNote(szStatusNote, 1500, FALSE);
 
     SAFE_FREE((void**)&szStatusNote);
   }
