@@ -797,12 +797,13 @@ next:
 		int bufsz = nlhrReply->dataLength;
 		char* szData = NULL;
 
-		if (cenctype == 1)
+		switch (cenctype)
 		{
+        case 1:
 			szData = gzip_decode(nlhrReply->pData, &bufsz, 0x10 | MAX_WBITS);
-		}
-		else if (cenctype == 2)
-		{
+            break;
+
+        case 2:
 			szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
 			if (bufsz < 0)
 			{
@@ -810,9 +811,8 @@ next:
 				bufsz = nlhrReply->dataLength;
 				szData = gzip_decode(nlhrReply->pData, &bufsz, MAX_WBITS);
 			}
+            break;
 		}
-		else
-			bufsz = 0;
 
 		if (bufsz > 0)
 		{
