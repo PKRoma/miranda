@@ -53,13 +53,16 @@ void gg_icolib_init(GGPROTO *gg)
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
 	int i;
+	char szSectionName[100];
+
+	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN(GGDEF_PROTO));
 
 	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
 
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = Translate(GGDEF_PROTONAME);
+	sid.pszSection = szSectionName;
 
 	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++) {
 		char szSettingName[100];

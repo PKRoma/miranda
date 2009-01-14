@@ -410,7 +410,6 @@ struct CAimProto : public PROTO_INTERFACE
 	void   InitMenus(void);
     void   RemoveMenus(void);
 
-    void   InitIcons(void);
 	HICON  LoadIconEx(const char* name);
 	HANDLE GetIconHandle(const char* name);
 	void   ReleaseIconEx(const char* name);

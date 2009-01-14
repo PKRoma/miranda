@@ -68,7 +68,7 @@ static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]);
 
 static HANDLE hIconLibItem[icolstsz];
 
-void CAimProto::InitIcons(void)
+void AimInitIcons(void)
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
@@ -84,12 +84,12 @@ void CAimProto::InitIcons(void)
 	sid.pszSection = szSectionName;
 
 	for ( int i = 0; i < icolstsz; i++ ) {
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, iconList[i].szName );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", iconList[i].szName );
 
 		if (iconList[i].szSection)
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "Protocols/%s/%s", m_szModuleName, iconList[i].szSection );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), LPGEN("AIM"), iconList[i].szSection);
 		else
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "Protocols/%s", m_szModuleName );
+			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN("AIM"));
 
 		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -100,7 +100,7 @@ void CAimProto::InitIcons(void)
 HICON CAimProto::LoadIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", name );
 	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
 }
 
@@ -115,7 +115,7 @@ HANDLE CAimProto::GetIconHandle(const char* name)
 void CAimProto::ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
+	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", name );
 	CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
 }
 

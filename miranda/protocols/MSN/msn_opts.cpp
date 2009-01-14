@@ -55,13 +55,16 @@ HANDLE hIconLibItem[SIZEOF(iconList)];
 void MsnInitIcons( void )
 {
 	char szFile[MAX_PATH];
+	char szSectionName[100];
+
+	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN("MSN"));
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
-	sid.pszSection = (char*)LPGEN( "Protocols/MSN" );
+	sid.pszSection = szSectionName;
 
 	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
 		char szSettingName[100];

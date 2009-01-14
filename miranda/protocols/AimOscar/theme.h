@@ -7,5 +7,6 @@ extern HMODULE  themeAPIHandle; // handle to uxtheme.dll
 extern HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR);
 extern HRESULT  (WINAPI *MyCloseThemeData)(HANDLE);
 extern HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *);
+extern void AimInitIcons( void );
 void ThemeSupport();
 #endif

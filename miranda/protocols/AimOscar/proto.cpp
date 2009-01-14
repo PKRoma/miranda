@@ -37,7 +37,6 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	CreateProtoService(PS_JOINCHAT,       &CAimProto::OnJoinChat);
 	CreateProtoService(PS_LEAVECHAT,      &CAimProto::OnLeaveChat);
 
-    InitIcons();
 	InitMenus();
 
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);

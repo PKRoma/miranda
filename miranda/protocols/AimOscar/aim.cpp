@@ -111,6 +111,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pd.fnInit = protoInit;
 	pd.fnUninit = protoUninit;
 	CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM) & pd);
+
+	AimInitIcons();
 	return 0;
 }
 

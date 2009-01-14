@@ -247,6 +247,7 @@ void CJabberProto::IconsInit( void )
 	char szSettingName[100];
 	TCHAR szSectionName[100];
 	TCHAR szDescription[100];
+	TCHAR szRootSection[100];
 
 	sid.pszName = szSettingName;
 	sid.ptszSection = szSectionName;
@@ -254,20 +255,20 @@ void CJabberProto::IconsInit( void )
 
 	m_phIconLibItems = ( HANDLE* )mir_alloc( sizeof( HANDLE )*SIZEOF(iconList));
 
-	char *szRootSection = "Jabber/Accounts";
+	mir_sntprintf( szRootSection, SIZEOF(szRootSection), _T("%s/%s/%s"), LPGENT("Protocols"), LPGENT("Jabber"), LPGENT("Accounts") );
 
 	for ( int i = 0; i < SIZEOF(iconList); i++ ) {
 		TCHAR tmp[100];
 
 		if ( iconList[i].szSection ) {
-			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T(TCHAR_STR_PARAM) _T("/") _T(TCHAR_STR_PARAM), szRootSection, iconList[i].szSection );
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T("%s/") _T(TCHAR_STR_PARAM), szRootSection, iconList[i].szSection );
 			if (_tcsstr(szSectionName, _T("%s"))) {
 				mir_sntprintf(tmp, SIZEOF(tmp), szSectionName, m_tszUserName);
 				lstrcpy(szSectionName, tmp);
 			}
 		}
 		else {
-			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T(TCHAR_STR_PARAM), szRootSection );
+			mir_sntprintf( szSectionName, SIZEOF(szSectionName), _T("%s"), szRootSection );
 		}
 
 		if (strstr(iconList[i].szDescr, "%s")) {
@@ -400,30 +401,20 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,TCHAR *SectNa
 	HICON hi=ExtractIconFromPath(szFullPath,&nf);
 	if (hi) has_proto_icon=TRUE;
 	if (hi && nf) DestroyIcon(hi);
-	if (!ServiceExists(MS_SKIN2_ADDICON)) {
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
-		_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
-		hIcon=ExtractIconFromPath(szFullPath,needFree);
-		if (hIcon) return hIcon;
+	if ( IconName != NULL && SectName != NULL)  {
+		sid.cbSize = sizeof(sid);
+		sid.cx=16;
+		sid.cy=16;
+		sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
+		sid.ptszSection = SectName;
+		sid.pszName=IconName;
+		sid.ptszDescription=Description;
+		sid.pszDefaultFile=szMyPath;
+		sid.iDefaultIndex=i;
+		sid.flags = SIDF_TCHAR;
+		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
-	else {
-		if ( IconName != NULL && SectName != NULL)  {
-			sid.cbSize = sizeof(sid);
-			sid.cx=16;
-			sid.cy=16;
-			sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.ptszSection = SectName;
-			sid.pszName=IconName;
-			sid.ptszDescription=Description;
-			sid.pszDefaultFile=szMyPath;
-			sid.iDefaultIndex=i;
-			sid.flags = SIDF_TCHAR;
-			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		}
-		return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
-	}
-	return NULL;
+	return ((HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)IconName));
 }
 
 static HICON LoadSmallIcon(HINSTANCE hInstance, LPCTSTR lpIconName)
@@ -670,7 +661,8 @@ void g_IconsInit()
 	sid.pszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 
-	char *szRootSection = "Jabber";
+	char szRootSection[100];
+	mir_snprintf( szRootSection, SIZEOF(szRootSection), "%s/%s", LPGEN("Protocols"), LPGEN("Jabber") );
 
 	for ( int i = 0; i < SIZEOF(sharedIconList); i++ ) {
 		char szSettingName[100];
