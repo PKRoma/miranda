@@ -807,7 +807,6 @@ next:
 			szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
 			if (bufsz < 0)
 			{
-				mir_free(szData);
 				bufsz = nlhrReply->dataLength;
 				szData = gzip_decode(nlhrReply->pData, &bufsz, MAX_WBITS);
 			}
