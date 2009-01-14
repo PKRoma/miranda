@@ -196,7 +196,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		   || (nlhr->flags&NLHRF_SMARTREMOVEHOST
 		       && (!nlc->nlu->settings.useProxy
 			       || !(nlc->nlu->settings.proxyType==PROXYTYPE_HTTP || nlc->nlu->settings.proxyType==PROXYTYPE_HTTPS)))) {
-			pszUrl=ppath;
+           pszUrl = ppath[0] ? ppath : "/";
 		}
 		else pszUrl=nlhr->szUrl;
 	}
@@ -637,7 +637,13 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
     }
     while (gzip_err == Z_BUF_ERROR);
     
-    *len_ptr = gzip_err == Z_STREAM_END ? zstr.total_out : 0;
+    *len_ptr = gzip_err == Z_STREAM_END ? zstr.total_out : -1;
+    
+    if (*len_ptr <= 0)
+    {
+        mir_free(output_data);
+        output_data = NULL;
+    }
 
     return output_data;
 }
@@ -798,7 +804,7 @@ next:
 		else if (cenctype == 2)
 		{
 			szData = gzip_decode(nlhrReply->pData, &bufsz, -MAX_WBITS);
-			if (bufsz == 0)
+			if (bufsz < 0)
 			{
 				mir_free(szData);
 				bufsz = nlhrReply->dataLength;
@@ -808,7 +814,7 @@ next:
 		else
 			bufsz = 0;
 
-		if (bufsz)
+		if (bufsz > 0)
 		{
 			NetlibDumpData( (NetlibConnection*)hConnection, ( PBYTE )szData, bufsz, 0, dflags );
 			mir_free(nlhrReply->pData);
@@ -817,8 +823,12 @@ next:
 
 			memmove(&nlhrReply->headers[cenc], &nlhrReply->headers[cenc+1], (--nlhrReply->headersCount-cenc)*sizeof(nlhrReply->headers[0]));
 		}
-		else
-			mir_free(szData);
+        else if (bufsz == 0)
+        {
+			mir_free(nlhrReply->pData);
+			nlhrReply->pData = NULL;
+			nlhrReply->dataLength = 0; 
+        }
 	}
 
 	return nlhrReply;
