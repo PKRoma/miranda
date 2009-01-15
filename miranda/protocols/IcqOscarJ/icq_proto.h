@@ -316,34 +316,34 @@ struct CIcqProto : public PROTO_INTERFACE
 	icq_mode_messages m_modeMsgs;
 	CRITICAL_SECTION  m_modeMsgsMutex;
 
-	void   handleMsgFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
+	void   handleMsgFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
 
-	void   handleReplyICBM(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleRecvServMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleRecvServMsgType1(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
-	void   handleRecvServMsgType2(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
-	void   handleRecvServMsgType4(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
-	void   handleRecvServMsgError(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleServerAck(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleStatusMsgReply(const char* szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char* szMsg);
-	void   handleTypingNotification(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef);
-	void   handleRecvServMsgContacts(unsigned char *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
+	void   handleReplyICBM(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleRecvServMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
+	void   handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwTS1, DWORD dwTS2);
+	void   handleRecvServMsgType4(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwRef);
+	void   handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleServerAck(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleStatusMsgReply(const char *szPrefix, HANDLE hContact, DWORD dwUin, WORD wVersion, int bMsgType, WORD wCookie, const char *szMsg);
+	void   handleTypingNotification(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleMissedMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleOffineMessagesReply(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef);
+	void   handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand);
 	void   handleRuntimeError(WORD wError);
 
 	void   parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv);
-	void   parseServerGreeting(BYTE* pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
+	void   parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion);
 
 	HANDLE handleMessageAck(DWORD dwUin, WORD wCookie, WORD wVersion, int type, WORD wMsgLen, PBYTE buf, BYTE bFlags);
 	void   handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, BOOL bThruDC, message_ack_params *pAckParams);
 	void   sendMessageTypesAck(HANDLE hContact, int bUnicode, message_ack_params *pArgs);
 	void   sendTypingNotification(HANDLE hContact, WORD wMTNCode);
 
-	int    unpackPluginTypeId(BYTE** pBuffer, WORD* pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC);
+	int    unpackPluginTypeId(BYTE **pBuffer, WORD *pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC);
 
-	char*  convertMsgToUserSpecificUtf(HANDLE hContact, const char* szMsg);
+	char*  convertMsgToUserSpecificUtf(HANDLE hContact, const char *szMsg);
 
 	//----| fam_09bos.cpp |---------------------------------------------------------------
 	void   handleBosFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader);
