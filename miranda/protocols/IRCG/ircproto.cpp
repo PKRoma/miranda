@@ -238,6 +238,13 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	char szTemp[MAX_PATH];
 	char szTemp3[256];
 	NETLIBUSER nlu = {0};
+	char *name;
+
+#ifdef UNICODE
+	name = mir_u2a(m_tszUserName);
+#else
+	name = m_tszUserName;
+#endif
 
 	DBDeleteContactSetting( NULL, m_szModuleName, "JTemp" );
 
@@ -246,7 +253,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
 	nlu.szSettingsModule = m_szModuleName;
-	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s server connection"), m_szModuleName);
+	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s server connection"), name);
 	nlu.szDescriptiveName = szTemp;
 	hNetlib=(HANDLE)CallService( MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
@@ -254,9 +261,12 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS;
 	mir_snprintf(szTemp2, sizeof(szTemp2), "%s DCC", m_szModuleName);
 	nlu.szSettingsModule = szTemp2;
-	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s client-to-client connections"), m_szModuleName);
+	mir_snprintf(szTemp, sizeof(szTemp), Translate("%s client-to-client connections"), name);
 	nlu.szDescriptiveName = szTemp;
 	hNetlibDCC=(HANDLE)CallService( MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+#ifdef UNICODE
+	mir_free(name);
+#endif
 
 	//add as a known module in DB Editor ++
 	CallService( "DBEditorpp/RegisterSingleModule",(WPARAM)m_szModuleName,0);

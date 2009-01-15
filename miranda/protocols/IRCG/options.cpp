@@ -221,10 +221,23 @@ void CIrcProto::AddIcons(void)
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+	char szSectionName[100];
+	char *name;
+
+#ifdef UNICODE
+	name = mir_u2a(m_tszUserName);
+#else
+	name = m_tszUserName;
+#endif
+
+	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), name);
+#ifdef UNICODE
+	mir_free(name);
+#endif
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszSection = m_szModuleName;
+	sid.pszSection = szSectionName;
 	sid.pszDefaultFile = szFile;
 
 	hIconLibItems = new HANDLE[ SIZEOF(iconList) ];
