@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -2353,9 +2353,17 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         wLen -= wMsgLen;
 
         // This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
-        if (wLen < 20) return;
+        if (wLen < 20)
+        {
+          ReleaseCookie(dwCookie);
+          return;
+        }
 
-        if (!unpackPluginTypeId(&buf, &wLen, &typeId, &wFunctionId, FALSE)) return;
+        if (!unpackPluginTypeId(&buf, &wLen, &typeId, &wFunctionId, FALSE))
+        {
+          ReleaseCookie(dwCookie);
+          return;
+        }
 
         if (wLen < 4)
         {
@@ -2388,7 +2396,8 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             szMsg[dwDataLen] = '\0';
             handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
 
-            break;
+            ReleaseCookie(dwCookie);
+            return;
           }
           else
             ackType = ACKTYPE_MESSAGE;
@@ -2448,8 +2457,10 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
             handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg);
 
             SAFE_FREE(&szMsg);
+
+            ReleaseCookie(dwCookie);
           }
-          break;
+          return;
 
         default:
           NetLog_Server("Error: Unknown plugin message response, type %d.", typeId);
@@ -2492,8 +2503,10 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
         NetLog_Server("Reverse Connect request failed");
         // Set DC status to failed
         ICQWriteContactSettingByte(hContact, "DCStatus", 2);
+
+        ReleaseCookie(dwCookie);
       }
-      break;
+      return;
 
     case MTYPE_CHAT:
     default:
@@ -2501,8 +2514,7 @@ static void handleRecvMsgResponse(unsigned char *buf, WORD wLen, WORD wFlags, DW
       return;
     }
 
-    if (bMsgType != MTYPE_REVERSE_REQUEST && ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) ||
-      ackType != MTYPE_PLAIN))
+    if ((ackType == MTYPE_PLAIN && pCookieData && (pCookieData->nAckType == ACKTYPE_CLIENT)) || ackType != MTYPE_PLAIN)
     {
       ICQBroadcastAck(hContact, ackType, ACKRESULT_SUCCESS, (HANDLE)(WORD)dwCookie, 0);
     }
