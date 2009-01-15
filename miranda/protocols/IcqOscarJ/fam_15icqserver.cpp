@@ -791,6 +791,29 @@ void CIcqProto::handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WOR
 }
 
 
+static int calcAgeFromBirthDate(double dDate)
+{
+  if (dDate > 0)
+  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
+    SYSTEMTIME sDate = {0};
+    if (VariantTimeToSystemTime(dDate + 2, &sDate))
+    {
+      SYSTEMTIME sToday = {0};
+
+      GetLocalTime(&sToday);
+
+      int nAge = sToday.wYear - sDate.wYear;
+
+      if (sToday.wMonth < sDate.wMonth || (sToday.wMonth == sDate.wMonth && sToday.wDay < sDate.wDay))
+        nAge--;
+
+      return nAge;
+    }
+  }
+  return 0;
+}
+
+
 void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
   oscar_tlv *pTLV;
@@ -934,8 +957,17 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 
   writeDbInfoSettingTLVWord(hContact, "InfoCP", cDetails, 0x1C2);
 
-  // Remove deprecated setting (Age & Birthdate are not separate fields anymore)
-  deleteSetting(hContact, "Age");
+  if (hContact)
+  { // Handle deprecated setting (Age & Birthdate are not separate fields anymore)
+    int nAge = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
+  
+    if (nAge)
+      setSettingWord(hContact, "Age", nAge);
+    else
+      deleteSetting(hContact, "Age");
+  }
+  else // we do not need to calculate age for owner
+    deleteSetting(hContact, "Age");
 
   { // Save user info last update time and privacy token
     double dInfoTime;
@@ -1018,8 +1050,8 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
   isr.auth = !cDetails->getByte(0x19A, 1); // Require Authorization
   isr.maritalStatus = cDetails->getNumber(0x12C, 1); // Marital Status
 
-/// TODO: calculate Age if Birthdate is available
-//  writeDbInfoSettingTLVDate(hContact, "BirthYear", "BirthMonth", "BirthDay", cDetails, 0x1A4);
+  // calculate Age if Birthdate is available
+  isr.age = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
 
   // Finally, broadcast the result
   BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
