@@ -211,7 +211,7 @@ void CJabberProto::OnIqResultPrivacyListActive( HXML iqNode, CJabberIqInfo* pInf
 		RedrawWindow(GetDlgItem(m_pDlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 
-	BuildPrivacyListsMenu();
+	BuildPrivacyListsMenu( false );
 }
 
 void CJabberProto::OnIqResultPrivacyListDefault( HXML iqNode, CJabberIqInfo* pInfo )
@@ -300,7 +300,7 @@ void CJabberProto::OnIqResultPrivacyLists( HXML iqNode, CJabberIqInfo* pInfo )
 
 	UI_SAFE_NOTIFY(m_pDlgPrivacyLists, WM_JABBER_REFRESH);
 
-	BuildPrivacyListsMenu();
+	BuildPrivacyListsMenu( false );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -2267,11 +2267,12 @@ void CJabberProto::BuildPrivacyMenu()
 	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 }
 
-void CJabberProto::BuildPrivacyListsMenu()
+void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
 {
 	int i;
-	for ( i=0; i < m_hPrivacyMenuItems.getCount(); i++ )
-		JCallService( MO_REMOVEMENUITEM, (WPARAM)m_hPrivacyMenuItems[i], 0 );
+	if ( bDeleteOld )
+		for ( i=0; i < m_hPrivacyMenuItems.getCount(); i++ )
+			JCallService( MO_REMOVEMENUITEM, (WPARAM)m_hPrivacyMenuItems[i], 0 );
 	m_hPrivacyMenuItems.destroy();
 
 	m_privacyListManager.Lock();

@@ -643,7 +643,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuHandlePrivacyLists( WPARAM wParam, LPARAM lParam );
 
 	void   BuildPrivacyMenu( void );
-	void   BuildPrivacyListsMenu( void );
+	void   BuildPrivacyListsMenu( bool bDeleteOld );
 
 	void   QueryPrivacyLists( ThreadData *pThreadInfo = NULL );
 
