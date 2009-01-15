@@ -29,6 +29,7 @@ struct StandardIconDescription
 	char*  description;
 	int    resource_id;
 	int    pf2;
+	char*  section;
 	HANDLE hIcolibItem;
 };
 
@@ -72,9 +73,10 @@ struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_SHOWHIDE,    LPGEN("ShowHide"),         0xFFFFFFFF         },
 	{ SKINICON_OTHER_EXIT,        LPGEN("Exit"),             0xFFFFFFFF         },
 	{ SKINICON_OTHER_MAINMENU,    LPGEN("Main Menu"),       -IDI_MIRANDA        },
-	{ SKINICON_OTHER_STATUS,      LPGEN("Status"),           0xFFFFFFFF         },
+	{ SKINICON_OTHER_STATUS,      LPGEN("Status"),           0xFFFFFFFF       },
 	{ SKINICON_CHAT_JOIN,         LPGEN("Join chat"),       -IDI_JOINCHAT       },
-	{ SKINICON_CHAT_LEAVE,        LPGEN("Leave chat"),      -IDI_LEAVECHAT      }
+	{ SKINICON_CHAT_LEAVE,        LPGEN("Leave chat"),      -IDI_LEAVECHAT      },
+	{ SKINICON_OTHER_STATUS_LOCKED, LPGEN("Locked status"),      -IDI_STATUS_LOCKED,    0,     "Status Icons"}
 };
 
 struct StandardIconDescription statusIcons[] =
@@ -449,12 +451,12 @@ int LoadSkinIcons(void)
 	//
 	//  Add main icons to list
 	//
-	sid.pszSection = "Main Icons";
 	strcpy(iconName, mainIconsFmt);
 
 	iconNameSuffIndx = strlen(iconName);
 	for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
 		_itoa(i, iconName + iconNameSuffIndx, 10);
+		sid.pszSection = mainIcons[i].section == NULL ? "Main Icons" : mainIcons[i].section;
 		sid.pszName = iconName;
 		sid.pszDescription = mainIcons[i].description;
 		sid.iDefaultIndex = mainIcons[i].resource_id;

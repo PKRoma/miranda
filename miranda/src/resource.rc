@@ -1706,6 +1706,7 @@ IDI_WINDOW              ICON                    "res/icon_window.ico"
 IDI_WINDOWS             ICON                    "res/icon_windows.ico"
 IDI_JOINCHAT            ICON                    "res/chat_join.ico"
 IDI_LEAVECHAT           ICON                    "res/chat_leave.ico"
+IDI_STATUS_LOCKED       ICON                    "res/status_locked.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

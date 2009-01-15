@@ -109,7 +109,6 @@ IDI_ICQC7               ICON                    "res/7.ico"
 IDI_ICQC8               ICON                    "res/8.ico"
 IDI_SETVIEW             ICON                    "res/set_view.ico"
 IDI_RESETVIEW           ICON                    "res/reset_view.ico"
-IDI_STATUS_LOCKED       ICON                    "res/status_locked.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

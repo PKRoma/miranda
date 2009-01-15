@@ -7,7 +7,6 @@
 #define IDC_DROP                        183
 #define IDD_OPT_HOTKEY                  184
 #define IDR_CLISTMENU                   199
-#define IDI_STATUS_LOCKED			200
 #define IDC_HYPERLINKHAND               214
 #define IDC_DROPUSER                    215
 #define IDD_OPT_CLUI                    218

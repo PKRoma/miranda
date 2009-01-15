@@ -2264,22 +2264,10 @@ buttons_done:
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 					if (DBGetContactSettingByte(NULL, "CLUI", "sbar_showlocked", 1)) {
 						if (DBGetContactSettingByte(NULL, szProto, "LockMainStatus", 0)) {
-							HBRUSH hbr, hbrOld;
-							/*BLENDFUNCTION bf;
-
-							bf.SourceConstantAlpha = 20;
-							bf.AlphaFormat = 0;
-							bf.BlendFlags = 0;
-							bf.BlendOp = AC_SRC_OVER;
-							AlphaBlend(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, 16, 16, hdcLockedPoint,
-							           0, 0, 3, 3, bf);*/
-							BitBlt(hdcLockedPoint, 0, 0, 5, 5, dis->hDC, x + 12, ((dis->rcItem.top + dis->rcItem.bottom - 16) >> 1) + 11, SRCCOPY);
-							hbr = CreateSolidBrush(RGB(255, 0, 0));
-							hbrOld = SelectObject(hdcLockedPoint, hbr);
-							Ellipse(hdcLockedPoint, 0, 0, 5, 5);
-							BitBlt(dis->hDC, x + 12, ((dis->rcItem.top + dis->rcItem.bottom - 16) >> 1) + 11, 5, 5, hdcLockedPoint, 0, 0, SRCCOPY);
-							SelectObject(hdcLockedPoint, hbrOld);
-							DeleteObject(hbr);
+							hIcon = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
+							if (hIcon != NULL) {
+								DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+							}
 						}
 					}
 					x += 18;

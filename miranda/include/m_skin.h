@@ -77,6 +77,7 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_OTHER_STATUS       235     //v0.8.0.12+
 #define SKINICON_CHAT_JOIN          236     //v0.8.0.27+
 #define SKINICON_CHAT_LEAVE         237     //v0.8.0.27+
+#define SKINICON_OTHER_STATUS_LOCKED     238     //v0.8.0.28+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide

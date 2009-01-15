@@ -149,7 +149,6 @@
 #define IDI_RESETVIEW                   505
 #define IDI_ACCMGR                      282
 #define IDD_OPT_TOOLBAR                 507
-#define IDI_STATUS_LOCKED               508
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
 #define IDC_DEFBKCOLOR                  1001

@@ -121,6 +121,7 @@
 #define IDD_OPT_KEYWORDFILTER           288
 #define IDI_JOINCHAT                    289
 #define IDI_LEAVECHAT                   290
+#define IDI_STATUS_LOCKED               291
 #define IDD_CHOOSE_FONT_EFFECT          289
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002

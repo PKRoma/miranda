@@ -603,9 +603,9 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 							{
 								if ( ModernGetSettingByte( NULL,ProtosData[i].AccountName,"LockMainStatus",0 ) )
 								{
-									if ( g_StatusBarData.hLockIconHandle ) 
+									HICON hLockOverlay = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
+									if (hLockOverlay != NULL)
 									{
-										HICON hLockOverlay=(HICON)CallService( MS_SKIN2_GETICONBYHANDLE, 0 , (LPARAM) g_StatusBarData.hLockIconHandle );
 										mod_DrawIconEx_helper(hDC, x, iconY, hLockOverlay, GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 									}
 									
@@ -739,7 +739,6 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
     {
     case WM_CREATE:
 		g_StatusBarData.hTheme=xpt_AddThemeHandle(hwnd,L"STATUS");
-		g_StatusBarData.hLockIconHandle = RegisterIcolibIconHandle("STATUS_LOCK", "Status Icons",Translate("Status is Locked overlay"), _T("clisticons.dll"), 13, g_hInst, IDI_STATUS_LOCKED );			
 		break;
     case WM_DESTROY:
 		xpt_FreeThemeForWindow(hwnd);

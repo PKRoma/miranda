@@ -442,7 +442,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_STATUS_LOCKED        ICON                    "res/status_locked.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

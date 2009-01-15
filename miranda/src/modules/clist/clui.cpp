@@ -979,11 +979,10 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
 					IconLib_ReleaseIcon(hIcon,0);
 					if ( DBGetContactSettingByte( NULL, szProto, "LockMainStatus", 0 )) {
-						hIcon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"STATUS_LOCK");
+						hIcon = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
 						if (hIcon != NULL) {
 							DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - g_IconHeight) >> 1, hIcon,
 								g_IconWidth, g_IconHeight, 0, NULL, DI_NORMAL);
-							IconLib_ReleaseIcon(hIcon,0);
 						}
 
 					}
