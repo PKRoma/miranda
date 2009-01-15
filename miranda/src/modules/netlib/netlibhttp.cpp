@@ -637,14 +637,17 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
     }
     while (gzip_err == Z_BUF_ERROR);
     
-    *len_ptr = gzip_err == Z_STREAM_END ? zstr.total_out : -1;
+    gzip_len = gzip_err == Z_STREAM_END ? zstr.total_out : -1;
     
-    if (*len_ptr <= 0)
+    if (gzip_len <= 0)
     {
         mir_free(output_data);
         output_data = NULL;
     }
+    else
+        output_data[gzip_len] = 0;
 
+    *len_ptr = gzip_len;
     return output_data;
 }
 
