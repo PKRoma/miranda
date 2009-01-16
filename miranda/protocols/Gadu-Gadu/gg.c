@@ -239,8 +239,18 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 
 			nlu.cbSize = sizeof(nlu);
 			nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
-			nlu.szSettingsModule = GG_PROTO;
-			nlu.szDescriptiveName = "Gadu-Gadu connection";
+			nlu.szSettingsModule = gg->proto.m_szModuleName;
+			if (gg->unicode_core) {
+				WCHAR name[128];
+				_snwprintf(name, sizeof(name)/sizeof(name[0]), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
+				nlu.ptszDescriptiveName = (char *)name;
+				nlu.flags |= NUF_UNICODE;
+			} else {
+				char name[128];
+				mir_snprintf(name, sizeof(name)/sizeof(name[0]), Translate("%s connection"), gg->proto.m_tszUserName);
+				nlu.ptszDescriptiveName = name;
+			}
+
 			gg->netlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 			gg->hookOptsInit = HookProtoEvent(ME_OPT_INITIALISE, gg_options_init, gg);
 			gg->hookUserInfoInit = HookProtoEvent(ME_USERINFO_INITIALISE, gg_details_init, gg);
@@ -335,6 +345,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_img_destroy(gg);
 	gg_keepalive_destroy(gg);
 	gg_gc_destroy(gg);
+	gg_import_shutdown(gg);
 
 	// Close handles
 	LocalEventUnhook(gg->hookOptsInit);

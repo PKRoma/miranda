@@ -192,54 +192,44 @@ static void removeSpaces( TCHAR* p )
 
 struct
 {
-	char*  szDescr;
+	TCHAR*  szDescr;
 	char*  szName;
 	int    iSize;
 	int    defIconID;
 }
 static iconList[] =
 {
-	{ LPGEN("Main"),              "main",    16, IDI_MAIN    },
-	{ LPGEN("Add"),               "add",     16, IDI_ADD     },
-	{ LPGEN("Apply"),             "go",      16, IDI_GO      },
-	{ LPGEN("Edit"),              "rename",  16, IDI_RENAME  },
-	{ LPGEN("Cancel"),            "delete",  16, IDI_DELETE  },
-	{ LPGEN("Ignore"),            "block",   16, IDI_BLOCK   },
-	{ LPGEN("Channel list"),      "list",    16, IDI_LIST    },
-	{ LPGEN("Channel manager"),   "manager", 16, IDI_MANAGER },
-	{ LPGEN("Quick connect"),     "quick",   16, IDI_QUICK   },
-	{ LPGEN("Server window"),     "server",  16, IDI_SERVER  },
-	{ LPGEN("Show channel"),      "show",    16, IDI_SHOW    },
-	{ LPGEN("Join channel"),      "join",    16, IDI_JOIN    },
-	{ LPGEN("Leave Channel"),     "part",    16, IDI_PART    },
-	{ LPGEN("Question"),          "whois",   16, IDI_WHOIS   },
-	{ LPGEN("Incoming DCC Chat"), "dcc",     16, IDI_DCC     },
-	{ LPGEN("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
+	{ LPGENT("Main"),              "main",    16, IDI_MAIN    },
+	{ LPGENT("Add"),               "add",     16, IDI_ADD     },
+	{ LPGENT("Apply"),             "go",      16, IDI_GO      },
+	{ LPGENT("Edit"),              "rename",  16, IDI_RENAME  },
+	{ LPGENT("Cancel"),            "delete",  16, IDI_DELETE  },
+	{ LPGENT("Ignore"),            "block",   16, IDI_BLOCK   },
+	{ LPGENT("Channel list"),      "list",    16, IDI_LIST    },
+	{ LPGENT("Channel manager"),   "manager", 16, IDI_MANAGER },
+	{ LPGENT("Quick connect"),     "quick",   16, IDI_QUICK   },
+	{ LPGENT("Server window"),     "server",  16, IDI_SERVER  },
+	{ LPGENT("Show channel"),      "show",    16, IDI_SHOW    },
+	{ LPGENT("Join channel"),      "join",    16, IDI_JOIN    },
+	{ LPGENT("Leave Channel"),     "part",    16, IDI_PART    },
+	{ LPGENT("Question"),          "whois",   16, IDI_WHOIS   },
+	{ LPGENT("Incoming DCC Chat"), "dcc",     16, IDI_DCC     },
+	{ LPGENT("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
 };
 
 void CIrcProto::AddIcons(void)
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
-	char szSectionName[100];
-	char *name;
+	TCHAR szSectionName[100];
 
-#ifdef UNICODE
-	name = mir_u2a(m_tszUserName);
-#else
-	name = m_tszUserName;
-#endif
-
-	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), name);
-#ifdef UNICODE
-	mir_free(name);
-#endif
+	mir_sntprintf(szSectionName, SIZEOF( szSectionName ), _T("%s/%s"), LPGENT("Protocols"), m_tszUserName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszSection = szSectionName;
+	sid.ptszSection = szSectionName;
 	sid.pszDefaultFile = szFile;
-
+	sid.flags = SIDF_TCHAR;
 	hIconLibItems = new HANDLE[ SIZEOF(iconList) ];
 
 	// add them one by one
@@ -247,7 +237,7 @@ void CIrcProto::AddIcons(void)
 		char szTemp[255];
 		mir_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, iconList[i].szName );
 		sid.pszName = szTemp;
-		sid.pszDescription = iconList[i].szDescr;
+		sid.ptszDescription = iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		sid.cx = sid.cy = iconList[i].iSize;
 		hIconLibItems[i] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );

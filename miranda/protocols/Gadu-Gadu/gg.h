@@ -75,6 +75,7 @@ extern "C" {
 #include <m_message.h>
 #include <m_icolib.h>
 #include <m_imgsrvc.h>
+#include <m_genmenu.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -139,6 +140,8 @@ typedef struct
 		hookIconsChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
+	HANDLE hMainMenu[7];
+	HANDLE hContactMenu[1];
 } GGPROTO;
 
 typedef struct
@@ -395,6 +398,7 @@ int gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescripti
 
 /* Misc module initializers & destroyers */
 void gg_import_init(GGPROTO *gg);
+void gg_import_shutdown(GGPROTO *gg);
 void gg_chpass_init(GGPROTO *gg);
 void gg_userinfo_init(GGPROTO *gg);
 void gg_userinfo_destroy(GGPROTO *gg);

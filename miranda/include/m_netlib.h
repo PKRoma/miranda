@@ -81,7 +81,16 @@ typedef struct {
 #define NUF_NOOPTIONS     0x08  //don't create an options page for this. szDescriptiveName is never used.
 #define NUF_HTTPCONNS     0x10  //at least some connections are made for HTTP communication. Enables the HTTP proxy option in options.
 #define NUF_NOHTTPSOPTION 0x20  //disable the HTTPS proxy option in options. Use this if all communication is HTTP.
+#define NUF_UNICODE 0x40  //if set ptszDescriptiveName points to Unicode, otherwise it points to ANSI string
 #define MS_NETLIB_REGISTERUSER   "Netlib/RegisterUser"
+
+#if defined(_UNICODE)
+	#define NUF_TCHAR NUF_UNICODE
+#else
+	#define NUF_TCHAR 0
+#endif
+
+
 
 //Assign a Netlib user handle a set of dynamic HTTP headers to be used with all
 //

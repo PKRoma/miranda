@@ -84,7 +84,7 @@ int gg_img_init(GGPROTO *gg)
 	mi.pszName = LPGEN("&Image");
 	mi.pszService = service;
 	mi.pszContactOwner = GG_PROTONAME;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
+	gg->hContactMenu[0] = CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 
 	// Receive image
 	mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
@@ -138,6 +138,7 @@ int gg_img_destroy(GGPROTO *gg)
 
 	// Destroy list
 	list_destroy(gg->imagedlgs, 1);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hContactMenu[0], (LPARAM) 0);
 
 	return FALSE;
 }

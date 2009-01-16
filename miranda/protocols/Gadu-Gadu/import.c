@@ -647,7 +647,7 @@ void gg_import_init(GGPROTO *gg)
 	mi.hIcon = LoadIconEx(IDI_IMPORT_SERVER);
 	mi.pszName = LPGEN("Import List From &Server");
 	mi.pszService = service;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[2] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Import from textfile
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
@@ -658,7 +658,7 @@ void gg_import_init(GGPROTO *gg)
 	mi.hIcon = LoadIconEx(IDI_IMPORT_TEXT);
 	mi.pszName = LPGEN("Import List From &Text File...");
 	mi.pszService = service;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[3] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 
 	// Remove from server
@@ -670,7 +670,7 @@ void gg_import_init(GGPROTO *gg)
 	mi.hIcon = LoadIconEx(IDI_REMOVE_SERVER);
 	mi.pszName = LPGEN("&Remove List From Server");
 	mi.pszService = service;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[4] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to server
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
@@ -681,7 +681,7 @@ void gg_import_init(GGPROTO *gg)
 	mi.hIcon = LoadIconEx(IDI_EXPORT_SERVER);
 	mi.pszName = LPGEN("Export List To &Server");
 	mi.pszService = service;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[5] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to textfile
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
@@ -692,5 +692,14 @@ void gg_import_init(GGPROTO *gg)
 	mi.hIcon = LoadIconEx(IDI_EXPORT_TEXT);
 	mi.pszName = LPGEN("Export List To &Text File...");
 	mi.pszService = service;
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[6] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+}
+
+void gg_import_shutdown(GGPROTO *gg) 
+{
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[2], (LPARAM) 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[3], (LPARAM) 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[4], (LPARAM) 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[5], (LPARAM) 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[6], (LPARAM) 0);
 }

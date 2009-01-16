@@ -30,19 +30,13 @@ Last change by : $Author$
 BOOL CJabberProto::WsInit( void )
 {
 	NETLIBUSER nlu = {0};
-	char name[128];
+	TCHAR name[128];
 
-#ifdef UNICODE
-	char *szTmp = mir_u2a(m_tszUserName);
-	sprintf( name, "%s %s", szTmp, JTranslate( "connection" ));
-	mir_free(szTmp);
-#else
-	sprintf( name, "%s %s", m_tszUserName, JTranslate( "connection" ));
-#endif
+	mir_sntprintf( name, SIZEOF(name), TranslateT("%s connection"), m_tszUserName);
 
 	nlu.cbSize = sizeof( nlu );
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;	// | NUF_HTTPGATEWAY;
-	nlu.szDescriptiveName = name;
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS | NUF_TCHAR;	// | NUF_HTTPGATEWAY;
+	nlu.ptszDescriptiveName = name;
 	nlu.szSettingsModule = m_szModuleName;
 	//nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
 	//nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] ( WinNT; U ;Nav )";

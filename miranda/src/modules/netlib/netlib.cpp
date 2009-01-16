@@ -141,8 +141,16 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	thisUser=(struct NetlibUser*)mir_calloc(sizeof(struct NetlibUser));
 	thisUser->handleType=NLH_USER;
 	thisUser->user=*nlu;
+
+	if (nlu->szDescriptiveName) {
+#if defined( _UNICODE )
+		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? mir_wstrdup(nlu->ptszDescriptiveName) : a2t(nlu->szDescriptiveName));
+#else
+		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? u2a((WCHAR *)nlu->ptszDescriptiveName) : mir_strdup(nlu->szDescriptiveName));
+#endif
+	}
 	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
-	   || (nlu->szDescriptiveName && (thisUser->user.ptszDescriptiveName = a2t(nlu->szDescriptiveName))==NULL)
+	   || (nlu->szDescriptiveName && thisUser->user.ptszDescriptiveName ==NULL)
 	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return (int)(HANDLE)NULL;

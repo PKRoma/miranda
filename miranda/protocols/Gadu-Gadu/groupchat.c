@@ -72,7 +72,7 @@ int gg_gc_init(GGPROTO *gg)
 		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
-		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[0] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
@@ -82,7 +82,7 @@ int gg_gc_init(GGPROTO *gg)
 		mi.hIcon = NULL;
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
-		CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[1] = CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
 	}
 #ifdef DEBUGMODE
 	else
@@ -105,6 +105,11 @@ int gg_gc_destroy(GGPROTO *gg)
 	list_destroy(gg->chats, 1); gg->chats = NULL;
 	LocalEventUnhook(gg->hookGCUserEvent);
 	LocalEventUnhook(gg->hookGCMenuBuild);
+	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
+	{
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM) 0);
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
+	}
 
 	return 1;
 }
