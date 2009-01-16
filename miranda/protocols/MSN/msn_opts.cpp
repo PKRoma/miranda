@@ -32,7 +32,7 @@ struct _tag_iconList
 {
 	const char*  szDescr;
 	const char*  szName;
-	int    defIconID;
+	const int    defIconID;
 }
 static const iconList[] =
 {
@@ -52,50 +52,53 @@ static const iconList[] =
 HANDLE hIconLibItem[SIZEOF(iconList)];
 
 
-void MsnInitIcons( void )
+void MsnInitIcons(void)
 {
-	char szFile[MAX_PATH];
+	TCHAR szFile[MAX_PATH];
 	char szSectionName[100];
 
-	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN("MSN"));
-	GetModuleFileNameA(hInst, szFile, MAX_PATH);
+	mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("MSN"));
+	GetModuleFileName(hInst, szFile, SIZEOF(szFile));
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
+	sid.ptszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 	sid.pszSection = szSectionName;
+    sid.flags = SIDF_PATH_TCHAR;
 
-	for ( unsigned i = 0; i < SIZEOF(iconList); i++ ) {
+	for (unsigned i = 0; i < SIZEOF(iconList); i++) 
+    {
 		char szSettingName[100];
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "MSN_%s", iconList[i].szName );
+		mir_snprintf(szSettingName, sizeof(szSettingName), "MSN_%s", iconList[i].szName);
 		sid.pszName = szSettingName;
 		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		hIconLibItem[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-}	}
-
-HICON  LoadIconEx( const char* name )
-{
-	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%MSN_%s", name );
-	return ( HICON )MSN_CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+    }	
 }
 
-HANDLE  GetIconHandle( int iconId )
+HICON LoadIconEx(const char* name)
 {
-	for ( unsigned i=0; i < SIZEOF(iconList); i++ )
-		if ( iconList[i].defIconID == iconId )
+	char szSettingName[100];
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%MSN_%s", name);
+	return (HICON)MSN_CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
+}
+
+HANDLE GetIconHandle(int iconId)
+{
+	for (unsigned i=0; i < SIZEOF(iconList); i++)
+		if (iconList[i].defIconID == iconId)
 			return hIconLibItem[i];
 
 	return NULL;
 }
 
-void  ReleaseIconEx( const char* name )
+void  ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%MSN_%s", name );
-	MSN_CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%MSN_%s", name);
+	MSN_CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
 
 INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
