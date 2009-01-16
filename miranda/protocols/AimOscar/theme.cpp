@@ -1,22 +1,23 @@
 #include "aim.h"
 #include "theme.h"
 
+#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
+
 HMODULE  themeAPIHandle = NULL; // handle to uxtheme.dll
 HANDLE   (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
 HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
 HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT *,const RECT *) = 0;
-void ThemeSupport()
+
+void ThemeSupport(void)
 {
-	if (IsWinVerXPPlus()) {
-		if (!themeAPIHandle) {
-			themeAPIHandle = GetModuleHandleA("uxtheme");
-			if (themeAPIHandle)
-			{
-				MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
-				MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-				MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
-			}
-		}
+	if (!IsWinVerXPPlus()) return;
+
+	themeAPIHandle = GetModuleHandleA("uxtheme");
+	if (themeAPIHandle)
+	{
+		MyOpenThemeData = (HANDLE (WINAPI *)(HWND,LPCWSTR))MGPROC("OpenThemeData");
+		MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))MGPROC("CloseThemeData");
+		MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE,HDC,int,int,const RECT *,const RECT *))MGPROC("DrawThemeBackground");
 	}
 }
 
@@ -27,7 +28,7 @@ struct _tag_iconList
 {
 	const char*  szDescr;
 	const char*  szName;
-	int    defIconID;
+	int          defIconID;
 	const char*  szSection;
 }
 static const iconList[] =
@@ -63,50 +64,49 @@ static const iconList[] =
 	{	"Not Normal Script",      "nnorm_scrpt", IDI_NNORMALSCRIPT,   "Profile Editor" },
 };
 
+static HANDLE hIconLibItem[SIZEOF(iconList)];
 
-static const size_t icolstsz = sizeof(iconList)/sizeof(iconList[0]); 
-
-static HANDLE hIconLibItem[icolstsz];
-
-void AimInitIcons(void)
+void InitIcons(void)
 {
-	char szFile[MAX_PATH];
-	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
+	TCHAR szFile[MAX_PATH];
+	GetModuleFileName(hInstance, szFile, SIZEOF(szFile));
 
 	char szSettingName[100];
 	char szSectionName[100];
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszDefaultFile = szFile;
+	sid.ptszDefaultFile = szFile;
 	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
 	sid.pszSection = szSectionName;
+    sid.flags = SIDF_PATH_TCHAR;
 
-	for ( int i = 0; i < icolstsz; i++ ) {
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", iconList[i].szName );
+	for (int i = 0; i < SIZEOF(iconList); i++) 
+    {
+		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", "AIM", iconList[i].szName);
 
 		if (iconList[i].szSection)
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s/%s", LPGEN("Protocols"), LPGEN("AIM"), iconList[i].szSection);
+			mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", LPGEN("Protocols"), LPGEN("AIM"), iconList[i].szSection);
 		else
-			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN("AIM"));
+			mir_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", LPGEN("Protocols"), LPGEN("AIM"));
 
 		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		hIconLibItem[i] = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}	
 }
 
 HICON CAimProto::LoadIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", name );
-	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", "AIM", name);
+	return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
 }
 
 HANDLE CAimProto::GetIconHandle(const char* name)
 {
-	for (unsigned i=0; i < icolstsz; i++)
+	for (unsigned i=0; i < SIZEOF(iconList); i++)
 		if (strcmp(iconList[i].szName, name) == 0)
 			return hIconLibItem[i];
 	return NULL;
@@ -115,15 +115,12 @@ HANDLE CAimProto::GetIconHandle(const char* name)
 void CAimProto::ReleaseIconEx(const char* name)
 {
 	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", "AIM", name );
-	CallService( MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName );
+	mir_snprintf(szSettingName, sizeof(szSettingName ), "%s_%s", "AIM", name);
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPreBuildContactMenu
-
-int ExtraIconsRebuild(WPARAM wParam, LPARAM lParam);
-int ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 
 int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 {
@@ -132,11 +129,11 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 
 	CLISTMENUITEM mi;
 	ZeroMemory(&mi,sizeof(mi));
-	mi.cbSize=sizeof(mi);
+	mi.cbSize = sizeof(mi);
 
     //see if we should add the html away message context menu items
-	mi.flags=CMIM_FLAGS | CMIF_NOTOFFLINE;
-	if ( getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE ) != ID_STATUS_AWAY || isChatRoom)
+	mi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
+	if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) != ID_STATUS_AWAY || isChatRoom)
 		mi.flags |= CMIF_HIDDEN;
 
 	CallService(MS_CLIST_MODIFYMENUITEM,(WPARAM)hHTMLAwayContextMenuItem,(LPARAM)&mi);
