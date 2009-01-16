@@ -203,13 +203,6 @@ CMsnProto::~CMsnProto()
 int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
 	char szBuffer[ MAX_PATH ], szDbsettings[64];;
-	char *name;
-
-#ifdef UNICODE
-	name = mir_u2a(m_tszUserName);
-#else
-	name = m_tszUserName;
-#endif
 
 	NETLIBUSER nlu1 = {0};
 	nlu1.cbSize = sizeof( nlu1 );
@@ -218,7 +211,7 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	nlu1.szDescriptiveName = szBuffer;
 
 	mir_snprintf( szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName );
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), name );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), m_szModuleName );
 	hNetlibUserHttps = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu1 );
 
 	NETLIBUSER nlu = {0};
@@ -235,7 +228,7 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
 	}
 
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), name );
+	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szModuleName );
 	hNetlibUser = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
 	if ( getByte( "UseIeProxy", 0 )) {
@@ -282,9 +275,6 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 			MSN_CallService(MS_NETLIB_SETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
 		}	
 	}
-#ifdef UNICODE
-	mir_free(name);
-#endif
 
 	if ( msnHaveChatDll ) 
 	{

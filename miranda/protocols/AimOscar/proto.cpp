@@ -100,31 +100,21 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	if (store[len] == '\\') store[len] = '\0';
 	CWD = strldup(store);
 
-	char *name;
-#ifdef UNICODE
-	name = mir_u2a(m_tszUserName);
-#else
-	name = m_tszUserName;
-#endif
-
 	NETLIBUSER nlu = { 0 };
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
 	nlu.szSettingsModule = m_szModuleName;
-    mir_snprintf(store, sizeof(store), Translate("%s server connection"), name);
+    mir_snprintf(store, sizeof(store), "%s server connection", m_szModuleName);
 	nlu.szDescriptiveName = store;
 	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 
 	char szP2P[128];
 	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-    mir_snprintf(store, sizeof(store), Translate("%s Client-to-client connection"), name);
+    mir_snprintf(store, sizeof(store), "%s Client-to-client connection", m_szModuleName);
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
-#ifdef UNICODE
-	mir_free(name);
-#endif
 
 	if (getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
 		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
