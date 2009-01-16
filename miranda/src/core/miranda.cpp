@@ -492,6 +492,7 @@ static BOOL CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	switch (msg)
 	{
 	case WM_INITDIALOG:
+		TranslateDialogDefault( hwnd );
 		SetWindowLong(hwnd, GWL_USERDATA, lParam);
 		SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_SETRANGE, 0, MAKELPARAM(0, MIRANDA_PROCESS_WAIT_STEPS));
 		SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_SETSTEP, 1, 0);
