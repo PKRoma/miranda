@@ -603,6 +603,7 @@
 
 
 // Internal Constants
+#define ICQ_PROTOCOL_NAME           "ICQ"
 #define ICQ_PLUG_VERSION            0x80050005
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings

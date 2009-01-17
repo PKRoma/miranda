@@ -46,6 +46,8 @@ LIST_INTERFACE li;
 BYTE gbUnicodeCore;
 DWORD MIRANDA_VERSION;
 
+HANDLE hStaticServices[1];
+
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -132,7 +134,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	// Register the module
 	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize   = sizeof(pd);
-	pd.szName   = "ICQ";
+	pd.szName   = ICQ_PROTOCOL_NAME;
 	pd.type     = PROTOTYPE_PROTOCOL;
 	pd.fnInit   = icqProtoInit;
 	pd.fnUninit = icqProtoUninit;
@@ -142,13 +144,18 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	InitI18N();
 
   // Register static services
-  CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
+  hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
 
 	return 0;
 }
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
+  // Destroy static service functions
+  for (int i = 0; i < SIZEOF(hStaticServices); i++)
+    if (hStaticServices[i])
+      DestroyServiceFunction(hStaticServices[i]);
+
 	return 0;
 }
 
