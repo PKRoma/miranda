@@ -1,7 +1,7 @@
 #include "aim.h"
 #include "conv.h"
 
-#if _MSC_VER
+#ifdef _MSC_VER
 	#pragma warning( disable: 4706 )
 #endif
 
@@ -27,9 +27,9 @@ char* strip_html(char *src)
 		memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
 	}
 	rptr = dest;
-	while ((ptr = strstr(rptr, "<"))) {
+	while ((ptr = strchr(rptr, '<'))) {
 		ptrl = ptr + 1;
-		if ((ptrl = strstr(ptrl, ">"))) {
+		if ((ptrl = strchr(ptrl, '>'))) {
 			memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
 		}
 		else
@@ -499,11 +499,11 @@ void strip_tag(char* begin, char* end)
 //strip a tag within a string
 char* strip_tag_within(char* begin, char* end)
 {
-	while(char* sub_begin=strstr(begin,"<"))
+	while(char* sub_begin=strchr(begin,'<'))
 	{	
 		if(sub_begin<end)//less than the original ending
 		{
-			char* sub_end=strstr(begin,">");
+			char* sub_end=strchr(begin,'>');
 			strip_tag(sub_begin,sub_end);
 			end=end-(sub_end-sub_begin)-1;
 		}
@@ -522,7 +522,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	BOOL Bold=false;
 	BOOL Italic=false;
 	BOOL Underline=false;
-	char Face[32]="\0";
+	char Face[32]="";
 	COLORREF Color;
 	COLORREF BackColor;
 	int Size=0;
@@ -757,6 +757,6 @@ bool is_utf(const char* msg)
     return res;
 }
 
-#if _MSC_VER
+#ifdef _MSC_VER
 	#pragma warning( default: 4706 )
 #endif
