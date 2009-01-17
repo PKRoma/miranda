@@ -105,7 +105,7 @@ void __fastcall SAFE_FREE(void** p);
 void* __fastcall SAFE_MALLOC(size_t size);
 void* __fastcall SAFE_REALLOC(void* p, size_t size);
 
-__inline static SAFE_FREE(char** str) { SAFE_FREE((void**)str); }
+__inline static void SAFE_FREE(char** str) { SAFE_FREE((void**)str); }
 
 DWORD ICQWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds, int bWaitAlways = FALSE);
 
