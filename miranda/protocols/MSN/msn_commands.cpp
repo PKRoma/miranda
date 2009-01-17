@@ -1308,6 +1308,11 @@ LBL_InvalidCommand:
 
 				if ( getByte( "EnableDeliveryPopup", 0 ))
 					MSN_ShowPopup( hContact, TranslateT( "Chat session established by my request" ), 0 );
+
+                PROTO_AVATAR_INFORMATION ai = {0};
+                ai.cbSize = sizeof(ai);
+                ai.hContact = hContact;
+                GetAvatarInfo(GAIF_FORCE, (LPARAM)&ai);
 			}
 			else {
 				bool chatCreated = info->mChatID[0] != 0;
