@@ -135,19 +135,20 @@ static TCHAR *InitXStatusIconLibrary(TCHAR *buf, size_t buf_size)
 	return buf;
 }
 
+
 HICON CIcqProto::getXStatusIcon(int bStatus, UINT flags)
 {
-	char szTemp[64];
-	HICON icon;
+	HICON icon = NULL;
 
-	null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", bStatus - 1);
-	icon = IconLibGetIcon(szTemp);
+  if (bStatus > 0 && bStatus <= XSTATUS_COUNT)
+    icon = hXStatusIcons[bStatus - 1]->GetIcon();
 
-	if (flags & LR_SHARED)
+	if (flags & LR_SHARED || !icon)
 		return icon;
 	else
 		return CopyIcon(icon);
 }
+
 
 void CIcqProto::setContactExtraIcon(HANDLE hContact, HANDLE hIcon)
 {
@@ -784,7 +785,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 			CreateProtoServiceParam(srvFce+len, &CIcqProto::menuXStatus, i);
 
 		mi.flags = (i ? CMIF_ICONFROMICOLIB : 0) | (bXStatus == i?CMIF_CHECKED:0);
-		mi.icolibItem = i ? hXStatusIconsHandle[i-1] : NULL;
+		mi.icolibItem = i ? hXStatusIcons[i-1]->Handle() : NULL;
 		mi.pszName = i ? (char*)nameXStatus[i-1] : (char *)LPGEN("None");
 		mi.pszService = srvFce;
 		mi.pszContactOwner = m_szModuleName;
@@ -798,6 +799,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 	}
 }
 
+
 void CIcqProto::InitXStatusIcons()
 {
 	if (!m_bXStatusEnabled)
@@ -810,20 +812,31 @@ void CIcqProto::InitXStatusIcons()
 	char str1[64], str2[64];
   char *szAccountName = mtchar_to_utf8(m_tszUserName);
 	null_snprintf(szSection, sizeof(szSection), "%s%s%s", ICQTranslateUtfStatic(LPGEN("Status Icons/"), str1, 64), szAccountName, ICQTranslateUtfStatic(LPGEN("/Custom Status"), str2, 64));
-  SAFE_FREE((void**)&szAccountName);
+  SAFE_FREE(&szAccountName);
 
 	for (int i = 0; i < XSTATUS_COUNT; i++) 
 	{
 		char szTemp[64];
 
 		null_snprintf(szTemp, sizeof(szTemp), "xstatus%d", i);
-		hXStatusIconsHandle[i] = IconLibDefine(nameXStatus[i], szSection, szTemp, icon_lib, -(IDI_XSTATUS1+i));
+		hXStatusIcons[i] = IconLibDefine(nameXStatus[i], szSection, m_szModuleName, szTemp, icon_lib, -(IDI_XSTATUS1+i));
 	}
 
 	// initialize arrays for CList custom status icons
 	memset(bXStatusCListIconsValid, 0, sizeof(bXStatusCListIconsValid));
 	memset(hXStatusCListIcons, -1, sizeof(hXStatusCListIcons));
 }
+
+
+void CIcqProto::UninitXStatusIcons()
+{
+  for (int i = 0; i < XSTATUS_COUNT; i++)
+    IconLibRemove(&hXStatusIcons[i]);
+
+  // clear clist icon state indicators
+	memset(bXStatusCListIconsValid, 0, sizeof(bXStatusCListIconsValid));
+}
+
 
 int CIcqProto::ShowXStatusDetails(WPARAM wParam, LPARAM lParam)
 {

@@ -40,19 +40,16 @@
 
 typedef char uid_str[MAX_PATH];
 
-// from init.c
+// from init.cpp
 extern HINSTANCE hInst;
-
-// from init.h
-extern const int moodXStatus[];
-
 extern DWORD MIRANDA_VERSION;
-
-// from icqosc_svcs.c
-
 extern BYTE gbUnicodeCore;
 
-// from fam_04message.c
+extern IcqIconHandle hStaticIcons[];
+
+extern const int moodXStatus[];
+
+// from fam_04message.cpp
 struct icq_mode_messages
 {
   char *szOffline;

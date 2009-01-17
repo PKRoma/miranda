@@ -47,6 +47,7 @@ BYTE gbUnicodeCore;
 DWORD MIRANDA_VERSION;
 
 HANDLE hStaticServices[1];
+IcqIconHandle hStaticIcons[4];
 
 
 PLUGININFOEX pluginInfo = {
@@ -146,13 +147,35 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
   // Register static services
   hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
 
+  { // Define global icons
+    TCHAR lib[MAX_PATH];
+    char szSectionName[MAX_PATH];
+    char szProtocolsBuf[100], szNameBuf[100];
+
+    null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", 
+      ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
+      ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)));
+
+    GetModuleFileName(hInst, lib, MAX_PATH);
+    hStaticIcons[ISI_AUTH_REQUEST] = IconLibDefine(LPGEN("Request authorization"), szSectionName, NULL, "req_auth", lib, -IDI_AUTH_ASK);
+    hStaticIcons[ISI_AUTH_GRANT] = IconLibDefine(LPGEN("Grant authorization"), szSectionName, NULL, "grant_auth", lib, -IDI_AUTH_GRANT);
+    hStaticIcons[ISI_AUTH_REVOKE] = IconLibDefine(LPGEN("Revoke authorization"), szSectionName, NULL, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+    hStaticIcons[ISI_ADD_TO_SERVLIST] = IconLibDefine(LPGEN("Add to server list"), szSectionName, NULL, "add_to_server", lib, -IDI_SERVLIST_ADD);
+  }
+
 	return 0;
 }
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
+  int i;
+
+  // Release static icon handles
+  for (i = 0; i < SIZEOF(hStaticIcons); i++)
+    IconLibRemove(&hStaticIcons[i]);
+
   // Destroy static service functions
-  for (int i = 0; i < SIZEOF(hStaticServices); i++)
+  for (i = 0; i < SIZEOF(hStaticServices); i++)
     if (hStaticServices[i])
       DestroyServiceFunction(hStaticServices[i]);
 
@@ -186,27 +209,26 @@ static void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon)
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuItem, (LPARAM)&mi);
 }
 
-int CIcqProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM lParam)
+
+int CIcqProto::OnPreBuildContactMenu(WPARAM wParam, LPARAM lParam)
 {
-	BYTE bXStatus;
-
-	CListShowMenuItem(hUserMenuAuth, getSettingByte((HANDLE)wParam, "Auth", 0));
-	CListShowMenuItem(hUserMenuGrant, getSettingByte((HANDLE)wParam, "Grant", 0));
-	CListShowMenuItem(hUserMenuRevoke, (BYTE)(getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0)));
+	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_REQUEST], getSettingByte((HANDLE)wParam, "Auth", 0));
+	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_GRANT], getSettingByte((HANDLE)wParam, "Grant", 0));
+	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_REVOKE], getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0));
 	if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
-		CListShowMenuItem(hUserMenuAddServ, 1);
+		CListShowMenuItem(m_hContactMenuItems[ICMI_ADD_TO_SERVLIST], 1);
 	else
-		CListShowMenuItem(hUserMenuAddServ, 0);
+		CListShowMenuItem(m_hContactMenuItems[ICMI_ADD_TO_SERVLIST], 0);
 
-	bXStatus = getContactXStatus((HANDLE)wParam);
-	CListShowMenuItem(hUserMenuXStatus, (BYTE)(m_bHideXStatusUI ? 0 : bXStatus));
+	BYTE bXStatus = getContactXStatus((HANDLE)wParam);
+
+  CListShowMenuItem(m_hContactMenuItems[ICMI_XSTATUS_DETAILS], (BYTE)(m_bHideXStatusUI ? 0 : bXStatus));
 	if (bXStatus && !m_bHideXStatusUI)
-	{
-		CListSetMenuItemIcon(hUserMenuXStatus, getXStatusIcon(bXStatus, LR_SHARED));
-	}
+		CListSetMenuItemIcon(m_hContactMenuItems[ICMI_XSTATUS_DETAILS], getXStatusIcon(bXStatus, LR_SHARED));
 
 	return 0;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPrebuildContactMenu event
@@ -222,7 +244,7 @@ int CIcqProto::OnPreBuildStatusMenu(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 {
-	memset(bXStatusCListIconsValid,0,sizeof(bXStatusCListIconsValid));
+	memset(bXStatusCListIconsValid, 0, sizeof(bXStatusCListIconsValid));
 	return 0;
 }
 

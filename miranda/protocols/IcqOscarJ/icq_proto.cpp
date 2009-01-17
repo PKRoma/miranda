@@ -177,16 +177,19 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
-  { // Initialize IconLib icons (only 0.7+)
+  { // Initialize IconLib icons
     TCHAR lib[MAX_PATH];
-    char *szSectionName = mtchar_to_utf8(m_tszUserName);
+    char *szAccountName = mtchar_to_utf8(m_tszUserName);
+    char szSectionName[MAX_PATH];
+    char szProtocolsBuf[100], szNameBuf[100], szAccountsBuf[100];
+
+    null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", 
+      ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
+      ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)),
+      ICQTranslateUtfStatic(LPGEN("Accounts"), szAccountsBuf, sizeof(szAccountsBuf)));
 
     GetModuleFileName(hInst, lib, MAX_PATH);
-    hIconProtocol = IconLibDefine(LPGEN("Protocol Icon"), szSectionName, "main", lib, -IDI_ICQ);
-    hIconMenuAuth = IconLibDefine(LPGEN("Request authorization"), szSectionName, "req_auth", lib, -IDI_AUTH_ASK);
-    hIconMenuGrant = IconLibDefine(LPGEN("Grant authorization"), szSectionName, "grant_auth", lib, -IDI_AUTH_GRANT);
-    hIconMenuRevoke = IconLibDefine(LPGEN("Revoke authorization"), szSectionName, "revoke_auth", lib, -IDI_AUTH_REVOKE);
-    hIconMenuAddServ = IconLibDefine(LPGEN("Add to server list"), szSectionName, "add_to_server", lib, -IDI_SERVLIST_ADD);
+    m_hIconProtocol = IconLibDefine(szAccountName, szSectionName, m_szModuleName, "main", lib, -IDI_ICQ);
     SAFE_FREE((void**)&szSectionName);
   }
 
@@ -201,6 +204,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	icq_InitInfoUpdate();
 
 	// Init extra statuses
+ 	InitXStatusIcons();
+
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
 
@@ -209,15 +214,17 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	  HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
     bXStatusExtraIconsReady = 1;
   }
-	// This must be here - the events are called too early, WTF?
-	InitXStatusIcons();
+
+  NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
 }
+
 
 CIcqProto::~CIcqProto()
 {
 	if (m_bXStatusEnabled)
 		m_bXStatusEnabled = 10; // block clist changing
 
+  // Make sure all connections are closed
 	CloseContactDirectConns(NULL);
 	while ( true ) {
 		if ( !directConns.getCount())
@@ -226,14 +233,21 @@ CIcqProto::~CIcqProto()
 		Sleep(10);     /* yeah, ugly */
 	}
 
+  // Delete account items from contact menu
+  for (int i = 0; i < SIZEOF(m_hContactMenuItems); i++)
+	  CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)m_hContactMenuItems[i], 0);
+
+  // Serv-list update board clean-up
 	FlushServerIDs();
   /// TODO: make sure server-list handler thread is not running
   /// TODO: save state of server-list update board to DB
   servlistPendingFlushOperations();
 
+  // NetLib clean-up
 	NetLib_SafeCloseHandle(&m_hDirectNetlibUser);
 	NetLib_SafeCloseHandle(&m_hServerNetlibUser);
 
+  // Destroy hookable events
 	if (hsmsgrequest)
 		DestroyHookableEvent(hsmsgrequest);
 
@@ -243,6 +257,7 @@ CIcqProto::~CIcqProto()
 	if (hxstatusiconchanged)
 		DestroyHookableEvent(hxstatusiconchanged);
 
+  // Clean-up remaining protocol instance members
 	cookies.destroy();
 
 	UninitContactsCache();
@@ -269,6 +284,13 @@ CIcqProto::~CIcqProto()
 	SAFE_FREE((void**)&m_modeMsgs.szDnd);
 	SAFE_FREE((void**)&m_modeMsgs.szFfc);
 
+  // Remove account icons
+  UninitXStatusIcons();
+
+  IconLibRemove(&m_hIconProtocol);
+
+  NetLog_Server("%s: Protocol instance '%s' destroyed.", ICQ_PROTOCOL_NAME, m_szModuleName);
+
 	mir_free( m_szProtoName );
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -276,6 +298,25 @@ CIcqProto::~CIcqProto()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnModulesLoadedEx - performs hook registration
+
+static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hIcon, int nPosition, const char *szOwnerModule, const char *szServiceName, int flags)
+{
+  CLISTMENUITEM mi = {0};
+	char pszServiceName[MAX_PATH+30];
+
+	strcpy(pszServiceName, szOwnerModule);
+	strcat(pszServiceName, szServiceName);
+
+	mi.cbSize = sizeof(mi);
+	mi.position = nPosition;
+	mi.flags = CMIF_ICONFROMICOLIB | flags;
+	mi.icolibItem = hIcon->Handle();
+	mi.pszContactOwner = (char*)szOwnerModule;
+	mi.pszName = (char*)szName;
+	mi.pszService = pszServiceName;
+
+	return (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+}
 
 int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
@@ -322,7 +363,7 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	HookProtoEvent(ME_OPT_INITIALISE, &CIcqProto::OnOptionsInit);
 	HookProtoEvent(ME_USERINFO_INITIALISE, &CIcqProto::OnUserInfoInit);
-	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CIcqProto::OnPrebuildContactMenu);
+	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CIcqProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_IDLE_CHANGED, &CIcqProto::OnIdleChanged);
 
   // Register custom database events
@@ -342,56 +383,13 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	InitPopUps();
 	InitXStatusItems(FALSE);
 
-	{
-		CLISTMENUITEM mi;
-		char pszServiceName[MAX_PATH+30];
+  // Add account items to contact menu
+	m_hContactMenuItems[ICMI_AUTH_REQUEST] = CListAddContactMenuItem(LPGEN("Request authorization"), hStaticIcons[ISI_AUTH_REQUEST], 1000030000, m_szModuleName, MS_REQ_AUTH, 0);
+  m_hContactMenuItems[ICMI_AUTH_GRANT] = CListAddContactMenuItem(LPGEN("Grant authorization"), hStaticIcons[ISI_AUTH_GRANT], 1000029999, m_szModuleName, MS_GRANT_AUTH, 0);
+  m_hContactMenuItems[ICMI_AUTH_REVOKE] = CListAddContactMenuItem(LPGEN("Revoke authorization"), hStaticIcons[ISI_AUTH_REVOKE], 1000029998, m_szModuleName, MS_REVOKE_AUTH, 0);
+  m_hContactMenuItems[ICMI_ADD_TO_SERVLIST] = CListAddContactMenuItem(LPGEN("Add to server list"), hStaticIcons[ISI_ADD_TO_SERVLIST], -2049999999, m_szModuleName, MS_ICQ_ADDSERVCONTACT, 0);
 
-		strcpy(pszServiceName, m_szModuleName);
-		strcat(pszServiceName, MS_REQ_AUTH);
-
-		ZeroMemory(&mi, sizeof(mi));
-		mi.cbSize = sizeof(mi);
-		mi.position = 1000030000;
-		mi.flags = CMIF_ICONFROMICOLIB;
-		mi.icolibItem = hIconMenuAuth;
-		mi.pszContactOwner = m_szModuleName;
-		mi.pszName = LPGEN("Request authorization");
-		mi.pszService = pszServiceName;
-		hUserMenuAuth = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-
-		strcpy(pszServiceName, m_szModuleName);
-		strcat(pszServiceName, MS_GRANT_AUTH);
-
-		mi.position = 1000029999;
-		mi.icolibItem = hIconMenuGrant;
-		mi.pszName = LPGEN("Grant authorization");
-		hUserMenuGrant = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-
-		strcpy(pszServiceName, m_szModuleName);
-		strcat(pszServiceName, MS_REVOKE_AUTH);
-
-		mi.position = 1000029998;
-		mi.icolibItem = hIconMenuRevoke;
-		mi.pszName = LPGEN("Revoke authorization");
-		hUserMenuRevoke = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-
-		strcpy(pszServiceName, m_szModuleName);
-		strcat(pszServiceName, MS_ICQ_ADDSERVCONTACT);
-
-		mi.position = -2049999999;
-		mi.icolibItem = hIconMenuAddServ;
-		mi.pszName = LPGEN("Add to server list");
-		hUserMenuAddServ = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-
-		strcpy(pszServiceName, m_szModuleName);
-		strcat(pszServiceName, MS_XSTATUS_SHOWDETAILS);
-
-		mi.position = -2000004999;
-		mi.hIcon = NULL; // dynamically updated
-		mi.pszName = LPGEN("Show custom status details");
-		mi.flags = CMIF_NOTOFFLINE;
-		hUserMenuXStatus = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-	}
+  m_hContactMenuItems[ICMI_XSTATUS_DETAILS] = CListAddContactMenuItem(LPGEN("Show custom status details"), NULL, -2000004999, m_szModuleName, MS_XSTATUS_SHOWDETAILS, CMIF_NOTOFFLINE);
 
 	// TODO: add beta builds support to devel builds :)
 	CallService(MS_UPDATE_REGISTERFL, 1683, (WPARAM)&pluginInfo);
@@ -824,11 +822,11 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 
 HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 {
-	char *id;
+	IcqIconHandle hIcon = NULL;
 
 	switch (iconIndex & 0xFFFF) {
 	case PLI_PROTOCOL:
-		id = "main";
+		hIcon = m_hIconProtocol;
 		break;
 
 	default:
@@ -836,9 +834,9 @@ HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 	}
 
 	if ( iconIndex & PLIF_ICOLIBHANDLE )
-		return ( HICON )hIconProtocol;
+		return ( HICON )hIcon->Handle();
 	
-	HICON icon = IconLibGetIcon(id);
+	HICON icon = hIcon->GetIcon();
 	return (iconIndex & PLIF_ICOLIB) ? icon : CopyIcon(icon);
 }
 

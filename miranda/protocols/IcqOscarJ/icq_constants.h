@@ -43,6 +43,18 @@
 #define __ICQ_CONSTANTS_H
 
 
+/* Static icon indexes */
+#define ISI_AUTH_REQUEST            0
+#define ISI_AUTH_GRANT              1
+#define ISI_AUTH_REVOKE             2
+#define ISI_ADD_TO_SERVLIST         3
+
+/* Contact menu item indexes */
+#define ICMI_AUTH_REQUEST           0
+#define ICMI_AUTH_GRANT             1
+#define ICMI_AUTH_REVOKE            2
+#define ICMI_ADD_TO_SERVLIST        3
+#define ICMI_XSTATUS_DETAILS        4
 
 /* Some default settings */
 #define DEFAULT_SERVER_PORT         5190
@@ -603,7 +615,7 @@
 
 
 // Internal Constants
-#define ICQ_PROTOCOL_NAME           "ICQ"
+#define ICQ_PROTOCOL_NAME           LPGEN("ICQ")
 #define ICQ_PLUG_VERSION            0x80050005
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings

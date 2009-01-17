@@ -97,6 +97,7 @@
 #include "resource.h"
 
 // ICQ plugin includes
+#include "iconlib.h"
 #include "globals.h"
 #include "i18n.h"
 #include "icq_db.h"
@@ -136,4 +137,3 @@
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
 #include "icq_proto.h"
-#include "iconlib.h"

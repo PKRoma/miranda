@@ -161,7 +161,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int  __cdecl OnModulesLoaded( WPARAM, LPARAM );
 	int  __cdecl OnOptionsInit( WPARAM, LPARAM );
 	int  __cdecl OnPreShutdown( WPARAM, LPARAM );
-	int  __cdecl OnPrebuildContactMenu( WPARAM, LPARAM );
+	int  __cdecl OnPreBuildContactMenu( WPARAM, LPARAM );
 	int  __cdecl OnMsgUserTyping( WPARAM, LPARAM );
 	int  __cdecl OnProcessSrmmIconClick( WPARAM, LPARAM );
 	int  __cdecl OnProcessSrmmEvent( WPARAM, LPARAM );
@@ -175,8 +175,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	int  __cdecl OnPreBuildStatusMenu( WPARAM, LPARAM );
 
 	//====| Data |========================================================================
-	HANDLE hUserMenuAddServ, hUserMenuAuth, hUserMenuGrant, hUserMenuRevoke, hUserMenuXStatus;
-	HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
+	IcqIconHandle m_hIconProtocol;
+  HANDLE m_hContactMenuItems[5];
 	HANDLE m_hServerNetlibUser, m_hDirectNetlibUser;
 	HANDLE hsmsgrequest, hxstatuschanged, hxstatusiconchanged;
 
@@ -531,11 +531,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleFileTransferPacket(directconnect *dc, PBYTE buf, WORD wLen);
 	void   handleFileTransferIdle(directconnect *dc);
 
-	//----| icq_icolib.cpp |--------------------------------------------------------------
-	HANDLE IconLibDefine(const char *desc, const char *section, const char *ident, const TCHAR *def_file, int def_idx);
-	HICON  IconLibGetIcon(const char *ident);
-	void   IconLibReleaseIcon(const char *ident);
-
 	//----| icq_infoupdate.cpp |----------------------------------------------------------
 	CRITICAL_SECTION infoUpdateMutex;
 	HANDLE hInfoQueueEvent;
@@ -843,7 +838,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	HANDLE hHookExtraIconsApply;
   int    bXStatusExtraIconsReady;
 	HANDLE hXStatusExtraIcons[XSTATUS_COUNT];
-	HANDLE hXStatusIconsHandle[XSTATUS_COUNT];
+	IcqIconHandle hXStatusIcons[XSTATUS_COUNT];
 	HANDLE hXStatusItems[XSTATUS_COUNT + 1];
 
 	int    hXStatusCListIcons[XSTATUS_COUNT];
@@ -860,6 +855,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   updateServerCustomStatus(int fullUpdate);
 
 	void   InitXStatusIcons();
+  void   UninitXStatusIcons();
 
 	//----| icq_xtraz.cpp |---------------------------------------------------------------
 	void   handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
@@ -872,7 +868,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
 
 	//----| init.cpp |--------------------------------------------------------------------
-	HANDLE hIconProtocol;
 	void   UpdateGlobalSettings();
 
 	//----| loginpassword.cpp |-----------------------------------------------------------

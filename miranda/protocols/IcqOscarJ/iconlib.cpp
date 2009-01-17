@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,25 +37,27 @@
 #include "icqoscar.h"
 #include "m_icolib.h"
 
-HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const char *ident, const TCHAR *def_file, int def_idx)
+
+IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *module, const char *ident, const TCHAR *def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
   char szTemp[MAX_PATH];
   char szName[MAX_PATH + 128];
-  HANDLE hIcon;
 
   sid.cbSize = SKINICONDESC_SIZE;
   sid.pwszSection = make_unicode_string(section);
   sid.pwszDescription = make_unicode_string(ICQTranslateUtfStatic(desc, szTemp, MAX_PATH));
   sid.flags = SIDF_UNICODE | SIDF_PATH_TCHAR;
 
-  null_snprintf(szName, sizeof(szName), "%s_%s", m_szModuleName, ident);
+  null_snprintf(szName, sizeof(szName), "%s_%s", module ? module : ICQ_PROTOCOL_NAME, ident);
   sid.pszName = szName;
   sid.ptszDefaultFile = (TCHAR*)def_file;
   sid.iDefaultIndex = def_idx;
   sid.cx = sid.cy = 16;
 
-  hIcon = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+  IcqIconHandle hIcon = (IcqIconHandle)SAFE_MALLOC(sizeof(IcqIconHandle_s));
+  hIcon->szName = null_strdup(sid.pszName);
+  hIcon->hIcoLib = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
   SAFE_FREE((void**)&sid.pwszSection);
   SAFE_FREE((void**)&sid.pwszDescription);
@@ -63,19 +65,34 @@ HANDLE CIcqProto::IconLibDefine(const char *desc, const char *section, const cha
   return hIcon;
 }
 
-HICON CIcqProto::IconLibGetIcon(const char *ident)
+
+void IconLibRemove(IcqIconHandle *phIcon)
 {
-  char szTemp[MAX_PATH + 128];
+  if (phIcon && *phIcon)
+  {
+    IcqIconHandle hIcon = *phIcon;
 
-  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, ident);
-
-  return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
+    CallService(MS_SKIN2_REMOVEICON, 0, (LPARAM)hIcon->szName);
+    SAFE_FREE(&hIcon->szName);
+    SAFE_FREE((void**)phIcon);
+  }
 }
 
-void CIcqProto::IconLibReleaseIcon(const char *ident)
-{
-  char szTemp[MAX_PATH + 128];
 
-  null_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, ident);
-  CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szTemp);
+HANDLE IcqIconHandle_s::Handle()
+{
+  if (this)
+    return hIcoLib;
+
+  return NULL;
 }
+
+
+HICON IcqIconHandle_s::GetIcon()
+{
+  if (this)
+    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)hIcoLib);
+
+  return NULL;
+}
+
