@@ -202,25 +202,27 @@ CMsnProto::~CMsnProto()
 
 int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char szBuffer[ MAX_PATH ], szDbsettings[64];;
+	TCHAR szBuffer[MAX_PATH]; 
+    char  szDbsettings[64];
 
 	NETLIBUSER nlu1 = {0};
-	nlu1.cbSize = sizeof( nlu1 );
-	nlu1.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu1.cbSize = sizeof(nlu1);
+	nlu1.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 	nlu1.szSettingsModule = szDbsettings;
-	nlu1.szDescriptiveName = szBuffer;
+	nlu1.ptszDescriptiveName = szBuffer;
 
-	mir_snprintf( szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName );
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin HTTPS connections"), m_szModuleName );
-	hNetlibUserHttps = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu1 );
+	mir_snprintf(szDbsettings, sizeof(szDbsettings), "%s_HTTPS", m_szModuleName);
+	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin HTTPS connections"), m_tszUserName);
+	hNetlibUserHttps = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu1);
 
 	NETLIBUSER nlu = {0};
-	nlu.cbSize = sizeof( nlu );
-	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 	nlu.szSettingsModule = m_szModuleName;
-	nlu.szDescriptiveName = szBuffer;
+	nlu.ptszDescriptiveName = szBuffer;
 
-	if ( MyOptions.UseGateway ) {
+	if ( MyOptions.UseGateway ) 
+    {
 		nlu.flags |= NUF_HTTPGATEWAY;
 		nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
 		nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
@@ -228,12 +230,13 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
 	}
 
-	mir_snprintf( szBuffer, sizeof(szBuffer), MSN_Translate("%s plugin connections"), m_szModuleName );
-	hNetlibUser = ( HANDLE )MSN_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
+	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-	if ( getByte( "UseIeProxy", 0 )) {
-		NETLIBUSERSETTINGS nls = { 0 };
-		nls.cbSize = sizeof( nls );
+	if (getByte("UseIeProxy", 0)) 
+    {
+		NETLIBUSERSETTINGS nls = {0};
+		nls.cbSize = sizeof(nls);
 		MSN_CallService(MS_NETLIB_GETUSERSETTINGS, WPARAM(hNetlibUserHttps), LPARAM(&nls));
 
 		HKEY hSettings;
@@ -300,7 +303,6 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	HookProtoEvent( ME_IDLE_CHANGED,              &CMsnProto::OnIdleChanged );
 
     MsnInitMenus();
-
 	InitCustomFolders();
 
 	return 0;
