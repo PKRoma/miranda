@@ -242,7 +242,6 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
 	TCHAR          szSearch[255];
-	int            iSearchItem;
 
 	struct SESSION_INFO_TYPE *next;
 

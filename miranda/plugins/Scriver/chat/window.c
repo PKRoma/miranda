@@ -1009,7 +1009,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
         LPMSG lpmsg;
           if ( ( lpmsg = (LPMSG)lParam ) != NULL ) {
              if ( lpmsg->message == WM_KEYDOWN
-             && (lpmsg->wParam == VK_RETURN || (lpmsg->wParam == VK_TAB && (isAlt || isCtrl))))
+             && (lpmsg->wParam == VK_RETURN || lpmsg->wParam == VK_ESCAPE  || (lpmsg->wParam == VK_TAB && (isAlt || isCtrl))))
            return DLGC_WANTALLKEYS;
            }
          break;
@@ -1026,7 +1026,6 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		if (wParam == VK_ESCAPE || wParam == VK_UP || wParam == VK_DOWN || wParam == VK_NEXT ||
 				wParam == VK_PRIOR || wParam == VK_TAB || wParam == VK_HOME || wParam == VK_END) {
 			si->szSearch[0] = 0;
-			si->iSearchItem = -1;
 		}
 		break;
 	case WM_CHAR:
@@ -1035,10 +1034,8 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 		* simple incremental search for the user (nick) - list control
 		* typing esc or movement keys will clear the current search string
 		*/
-
 		if (wParam == 27 && si->szSearch[0]) {						// escape - reset everything
 			si->szSearch[0] = 0;
-			si->iSearchItem = -1;
 			break;
 		}
 		else if (wParam == '\b' && si->szSearch[0])					// backspace
@@ -1063,13 +1060,13 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			* iterate over the (sorted) list of nicknames and search for the
 			* string we have
 			*/
-
+			char *str = t2a(si->szSearch);
+			mir_free(str);
 			for (i = 0; i < iItems; i++) {
 				ui = UM_FindUserFromIndex(si->pUsers, i);
 				if (ui) {
 					if (!_tcsnicmp(ui->pszNick, si->szSearch, lstrlen(si->szSearch))) {
 						SendMessage(hwnd, LB_SETCURSEL, i, 0);
-						si->iSearchItem = i;
 						InvalidateRect(hwnd, NULL, FALSE);
 						return 0;
 					}
@@ -1077,8 +1074,9 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 			if (i == iItems) {
 				MessageBeep(MB_OK);
-				si->iSearchItem = -1;
+				si->szSearch[lstrlen(si->szSearch) - 1] = '\0';
 			}
+			return 0;
 		}
 		break;
 
