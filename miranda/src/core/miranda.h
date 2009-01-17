@@ -107,6 +107,7 @@ char*  LangPackTranslateString(const char *szEnglish, const int W);
 
 TCHAR*   a2t( const char* str );
 char*    t2a( const TCHAR* src );
+TCHAR*   u2t( const wchar_t* src );
 char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
 

@@ -143,11 +143,7 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	thisUser->user=*nlu;
 
 	if (nlu->szDescriptiveName) {
-#if defined( _UNICODE )
-		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? mir_wstrdup(nlu->ptszDescriptiveName) : a2t(nlu->szDescriptiveName));
-#else
-		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? u2a((WCHAR *)nlu->ptszDescriptiveName) : mir_strdup(nlu->szDescriptiveName));
-#endif
+		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? u2t(nlu->ptszDescriptiveName) : a2t(nlu->szDescriptiveName));
 	}
 	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
 	   || (nlu->szDescriptiveName && thisUser->user.ptszDescriptiveName ==NULL)

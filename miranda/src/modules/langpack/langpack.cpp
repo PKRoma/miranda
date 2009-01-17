@@ -387,6 +387,16 @@ char* t2a(const TCHAR* src)
 	#endif
 }
 
+TCHAR* u2t(const wchar_t* src)
+{
+	if (!src) return NULL;
+	#ifdef _UNICODE
+		return mir_wstrdup( src );
+	#else
+		return u2a( src );
+	#endif
+}
+
 char* u2a( const wchar_t* src )
 {
 	int codepage = LangPackGetDefaultCodePage();
