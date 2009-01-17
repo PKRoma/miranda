@@ -42,7 +42,6 @@
 
 #include <ctype.h>
 
-extern HANDLE hIconMenuAuth, hIconMenuGrant, hIconMenuRevoke, hIconMenuAddServ;
 extern PLUGININFOEX pluginInfo;
 
 #pragma warning(disable:4355)
@@ -284,7 +283,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	char pszP2PName[MAX_PATH+3];
 	char pszGroupsName[MAX_PATH+10];
 	char pszSrvGroupsName[MAX_PATH+10];
-	char szBuffer[MAX_PATH+64];
 	char* modules[5] = {0,0,0,0,0};
 
 	strcpy(pszP2PName, m_szModuleName);
@@ -300,10 +298,11 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	modules[3] = pszSrvGroupsName;
 	CallService("DBEditorpp/RegisterModule",(WPARAM)modules,(LPARAM)4);
 
-	null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s server connection"), m_szModuleName);
+	TCHAR szBuffer[MAX_PATH + 64];
+	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s server connection"), m_tszUserName);
 	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY;
-	nlu.szDescriptiveName = szBuffer;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY | NUF_TCHAR;
+	nlu.ptszDescriptiveName = szBuffer;
 	nlu.szSettingsModule = m_szModuleName;
 	nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";
 	nlu.szHttpGatewayUserAgent = "Mozilla/4.08 [en] (WinNT; U ;Nav)";
@@ -314,9 +313,9 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-	null_snprintf(szBuffer, sizeof szBuffer, ICQTranslate("%s client-to-client connections"), m_szModuleName);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-	nlu.szDescriptiveName = szBuffer;
+	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
+	nlu.ptszDescriptiveName = szBuffer;
 	nlu.szSettingsModule = pszP2PName;
 	nlu.minIncomingPorts = 1;
 	m_hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);

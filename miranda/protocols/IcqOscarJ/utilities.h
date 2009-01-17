@@ -79,11 +79,12 @@ size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
 int __fastcall stricmpnull(const char *str1, const char *str2);
 char* __fastcall strstrnull(const char *str, const char *substr);
-int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
+int null_snprintf(char *buffer, size_t count, const char *fmt, ...);
 char* __fastcall null_strdup(const char *string);
 size_t __fastcall null_strcut(char *string, size_t maxlen);
 
 size_t __fastcall strlennull(const WCHAR *string);
+int null_snprintf(WCHAR *buffer, size_t count, const WCHAR *fmt, ...);
 
 void parseServerAddress(char *szServer, WORD* wPort);
 
