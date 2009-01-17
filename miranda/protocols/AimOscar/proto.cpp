@@ -100,21 +100,23 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	if (store[len] == '\\') store[len] = '\0';
 	CWD = strldup(store);
 
-	NETLIBUSER nlu = { 0 };
+	TCHAR descr[MAX_PATH];
+
+    NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_UNICODE;
 	nlu.szSettingsModule = m_szModuleName;
-    mir_snprintf(store, sizeof(store), "%s server connection", m_szModuleName);
-	nlu.szDescriptiveName = store;
-	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
+    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
+	nlu.ptszDescriptiveName = descr;
+	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	char szP2P[128];
 	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING;
-    mir_snprintf(store, sizeof(store), "%s Client-to-client connection", m_szModuleName);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_UNICODE;
+    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
-	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
+	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	if (getWord( AIM_KEY_GP, 0xFFFF)==0xFFFF)
 		setWord( AIM_KEY_GP, DEFAULT_GRACE_PERIOD);
