@@ -553,7 +553,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 	ZeroMemory( item, sizeof( *item ));
 	item->name = mir_strdup( sid->pszName );
 	if ( utf ) {
-		item->description = u2t( sid->ptszDescription );
+		item->description = u2t( sid->pwszDescription );
 		#ifdef _UNICODE
 			item->section = IcoLib_AddSection( sid->pwszSection, TRUE );
 		#else
