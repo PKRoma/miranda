@@ -309,7 +309,7 @@ static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hI
 
 	mi.cbSize = sizeof(mi);
 	mi.position = nPosition;
-	mi.flags = CMIF_ICONFROMICOLIB | flags;
+  mi.flags = (hIcon ? CMIF_ICONFROMICOLIB : 0) | flags;
 	mi.icolibItem = hIcon->Handle();
 	mi.pszContactOwner = (char*)szOwnerModule;
 	mi.pszName = (char*)szName;
