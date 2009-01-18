@@ -809,6 +809,12 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 							pageline++;
 						}
 					}
+               		FITAG *tag;
+              		if( FreeImage_GetMetadataEx(FIMD_ANIMATION, pagedib, "FrameTime", FIDT_LONG, &tag) ) {
+			            delay_time = *(LONG *)FreeImage_GetTagValue(tag);
+               		    FreeImage_SetMetadataEx(FIMD_ANIMATION, dib, "FrameTime", ANIMTAG_FRAMETIME, FIDT_LONG, 1, 4, &delay_time);
+                    }
+
 					FreeImage_Unload(pagedib);
 				}
 			}
