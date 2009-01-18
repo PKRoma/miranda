@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -464,6 +464,21 @@ static SectionItem* IcoLib_AddSection(TCHAR *sectionName, BOOL create_new)
 	return NULL;
 }
 
+static void IcoLib_RemoveSection(SectionItem* section)
+{
+	if ( !section )
+		return;
+
+	int indx;
+
+	if (( indx = sectionList.getIndex( section )) != -1 ) {
+		sectionList.remove( indx );
+		SAFE_FREE(( void** )&section->name);
+		SAFE_FREE(( void** )&section );
+		bNeedRebuild = TRUE;
+	}
+}
+
 static IconItem* IcoLib_FindIcon(const char* pszIconName)
 {
 	int indx;
@@ -496,6 +511,11 @@ static void IcoLib_FreeIcon(IconItem* icon)
 	SAFE_FREE(( void** )&icon->description );
 	SAFE_FREE(( void** )&icon->default_file );
 	SAFE_FREE(( void** )&icon->temp_file );
+	if ( icon->section) {
+		if ( !--icon->section->ref_count)
+			IcoLib_RemoveSection( icon->section );
+		icon->section = NULL;
+	}
 	IconSourceItem_Release( &icon->source );
 	IconSourceItem_Release( &icon->default_icon );
 	SafeDestroyIcon( &icon->temp_icon );
@@ -533,30 +553,30 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 	ZeroMemory( item, sizeof( *item ));
 	item->name = mir_strdup( sid->pszName );
 	if ( utf ) {
+		item->description = u2t( sid->ptszDescription );
 		#ifdef _UNICODE
-			item->description = mir_tstrdup( sid->ptszDescription );
 			item->section = IcoLib_AddSection( sid->pwszSection, TRUE );
 		#else
 			char* pszSection = sid->pwszSection ? u2a( sid->pwszSection ) : NULL;
-			item->description = u2a( sid->pwszDescription );
 			item->section = IcoLib_AddSection( pszSection, TRUE );
 			SAFE_FREE(( void** )&pszSection );
 		#endif
 	}
 	else {
+		item->description = a2t( sid->pszDescription );
 		#ifdef _UNICODE
 			WCHAR* pwszSection = sid->pszSection ? a2u( sid->pszSection ) : NULL;
 
-			item->description = a2u( sid->pszDescription );
 			item->section = IcoLib_AddSection( pwszSection, TRUE );
 			SAFE_FREE(( void** )&pwszSection );
 		#else
-			item->description = mir_strdup( sid->pszDescription );
 			item->section = IcoLib_AddSection( sid->pszSection, TRUE );
 		#endif
 	}
-	if ( item->section )
+	if ( item->section ) {
+		item->section->ref_count++;
 		item->orderID = ++item->section->maxOrder;
+	}
 	else
 		item->orderID = 0;
 
@@ -1764,7 +1784,13 @@ BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						mir_free(treeItem);
 					}
 					break;
-		}	}	}
+			}	}
+			if ( bNeedRebuild )	{
+				EnterCriticalSection(&csIconList);
+				bNeedRebuild = FALSE;
+				LeaveCriticalSection(&csIconList);
+				SendMessage(hwndDlg, DM_REBUILD_CTREE, 0, 0);
+		}	}
 		break;
 	case WM_DESTROY:
 		{
