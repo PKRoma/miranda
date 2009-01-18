@@ -190,7 +190,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
     GetModuleFileName(hInst, lib, MAX_PATH);
     m_hIconProtocol = IconLibDefine(szAccountName, szSectionName, m_szModuleName, "main", lib, -IDI_ICQ);
-    SAFE_FREE((void**)&szSectionName);
+    SAFE_FREE(&szAccountName);
   }
 
 	// Reset a bunch of session specific settings
@@ -278,11 +278,11 @@ CIcqProto::~CIcqProto()
 	DeleteCriticalSection(&expectedFileRecvMutex);
 	DeleteCriticalSection(&cookieMutex);
 
-	SAFE_FREE((void**)&m_modeMsgs.szAway);
-	SAFE_FREE((void**)&m_modeMsgs.szNa);
-	SAFE_FREE((void**)&m_modeMsgs.szOccupied);
-	SAFE_FREE((void**)&m_modeMsgs.szDnd);
-	SAFE_FREE((void**)&m_modeMsgs.szFfc);
+	SAFE_FREE(&m_modeMsgs.szAway);
+	SAFE_FREE(&m_modeMsgs.szNa);
+	SAFE_FREE(&m_modeMsgs.szOccupied);
+	SAFE_FREE(&m_modeMsgs.szDnd);
+	SAFE_FREE(&m_modeMsgs.szFfc);
 
   // Remove account icons
   UninitXStatusIcons();
@@ -568,7 +568,7 @@ int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const char* szMessage )
 		{
 			char *utf = ansi_to_utf8(szMessage); // Miranda is ANSI only here
 			icq_sendAuthReqServ(dwUin, szUid, utf);
-			SAFE_FREE((void**)&utf);
+			SAFE_FREE(&utf);
 			return 0; // Success
 		}
 	}
@@ -996,9 +996,9 @@ HANDLE __cdecl CIcqProto::SearchByName(const char *nick, const char *firstName, 
 			// Success
 			HANDLE dwCookie = (HANDLE)SearchByNames(nickUtf, firstNameUtf, lastNameUtf, 0);
 
-      SAFE_FREE((void**)&nickUtf);
-      SAFE_FREE((void**)&firstNameUtf);
-      SAFE_FREE((void**)&lastNameUtf);
+      SAFE_FREE(&nickUtf);
+      SAFE_FREE(&firstNameUtf);
+      SAFE_FREE(&lastNameUtf);
 
       return dwCookie;
 		}
@@ -1229,8 +1229,8 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 						// Cleanup temporary list
 						for(i = 0; i < nContacts; i++)
 						{
-							SAFE_FREE((void**)&contacts[i].szNick);
-							SAFE_FREE((void**)&contacts[i].uid);
+							SAFE_FREE(&contacts[i].szNick);
+							SAFE_FREE(&contacts[i].uid);
 						}
 
 						// Rate check
@@ -1270,8 +1270,8 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 					for(i = 0; i < nContacts; i++)
 					{
-						SAFE_FREE((void**)&contacts[i].szNick);
-						SAFE_FREE((void**)&contacts[i].uid);
+						SAFE_FREE(&contacts[i].szNick);
+						SAFE_FREE(&contacts[i].uid);
 					}
 				}
 			}
@@ -1339,8 +1339,8 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 						for (i = 0; i < nContacts; i++)
 						{ // release memory
-							SAFE_FREE((void**)&contacts[i].szNick);
-							SAFE_FREE((void**)&contacts[i].uid);
+							SAFE_FREE(&contacts[i].szNick);
+							SAFE_FREE(&contacts[i].uid);
 						}
 
 						// Set up the ack type
@@ -1580,13 +1580,13 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				}
 				else if (!pszText)
 				{ // plain ascii unicode message, take as ansi if no ansi available
-					pszText = (char*)puszText;
+					pszText = puszText;
 					bNeedFreeA = bNeedFreeU;
 					puszText = NULL;
 				}
 				// dispose unicode message
 				if (bNeedFreeU)
-					SAFE_FREE((void**)&puszText);
+					SAFE_FREE(&puszText);
 				else
 					puszText = NULL;
 			}
@@ -1619,24 +1619,24 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				char *src, *mng;
 
 				if (puszText)
-					src = (char*)puszText;
+					src = puszText;
 				else
 					src = pszText;
 				mng = MangleXml(src, strlennull(src));
 				src = (char*)SAFE_MALLOC(strlennull(mng) + 28);
 				strcpy(src, "<HTML><BODY>");
 				strcat(src, mng);
-				SAFE_FREE((void**)&mng);
+				SAFE_FREE(&mng);
 				strcat(src, "</BODY></HTML>");
 				if (puszText)
 				{ // convert to UCS-2
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 					puszText = src;
 					bNeedFreeU = 1;
 				}
 				else
 				{
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
 					pszText = src;
 					bNeedFreeA = 1;
 				}
@@ -1655,15 +1655,15 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 				if (puszText)
 				{ // direct connection uses utf-8, prepare
-					dc_msg = (char*)puszText;
+					dc_msg = puszText;
 					dc_cap = CAP_UTF8MSGS;
 				}
 				dwCookie = icq_SendDirectMessage(hContact, dc_msg, strlennull(dc_msg), 1, pCookieData, dc_cap);
 
 				if (dwCookie)
 				{ // free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie; // we succeded, return
 				}
@@ -1682,8 +1682,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
 					SAFE_FREE((void**)&pwszText);
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
 				}
@@ -1695,8 +1695,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
 					SAFE_FREE((void**)&pwszText);
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
 				}
@@ -1732,8 +1732,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
 				}
@@ -1744,8 +1744,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-					if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+					if (bNeedFreeA) SAFE_FREE(&pszText);
+					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
 				}
@@ -1768,8 +1768,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			}
 		}
 		// free the buffers if alloced
-		if (bNeedFreeA) SAFE_FREE((void**)&pszText);
-		if (bNeedFreeU) SAFE_FREE((void**)&puszText);
+		if (bNeedFreeA) SAFE_FREE(&pszText);
+		if (bNeedFreeU) SAFE_FREE(&puszText);
 
 		return dwCookie; // Success
 	}
@@ -1993,7 +1993,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 
         int bNoteChanged = SetStatusNote(szOfflineNote, 0, FALSE);
 
-        SAFE_FREE((void**)&szOfflineNote);
+        SAFE_FREE(&szOfflineNote);
 
         // Note was changed, wait until the process is over
         if (bNoteChanged)
@@ -2090,7 +2090,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
           LeaveCriticalSection(&m_modeMsgsMutex);
         }
 
-        SAFE_FREE((void**)&szStatusNote);
+        SAFE_FREE(&szStatusNote);
 			}
 		}
 	}
@@ -2138,7 +2138,7 @@ void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
     if (utf8_decode(pThreadData->szMessage, &szAnsiMsg))
       BroadcastAck(pThreadData->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, pThreadData->hProcess, (LPARAM)szAnsiMsg);
 
-    SAFE_FREE((void**)&szAnsiMsg);
+    SAFE_FREE(&szAnsiMsg);
     SAFE_FREE((void**)&pThreadData);
   }
 }
@@ -2164,11 +2164,11 @@ int __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
     pThreadData->hContact = hContact;
     pThreadData->szMessage = szStatusNote;
     pThreadData->hProcess = (HANDLE)GenerateCookie(0);
-	 ForkThread(&CIcqProto::GetAwayMsgThread, pThreadData);
+    ForkThread(&CIcqProto::GetAwayMsgThread, pThreadData);
 
     return (int)pThreadData->hProcess;
   }
-  SAFE_FREE((void**)&szStatusNote);
+  SAFE_FREE(&szStatusNote);
 
   if (!icqOnline())
 		return 0;
@@ -2265,7 +2265,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 	if (strcmpnull(szNewUtf, *ppszMsg))
 	{
 		// Free old message
-		SAFE_FREE((void**)ppszMsg);
+		SAFE_FREE(ppszMsg);
 
 		// Set new message
 		*ppszMsg = szNewUtf;
@@ -2289,7 +2289,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 	  		icq_sendSetAimAwayMsgServ(*ppszMsg);
     }
 	}
-	SAFE_FREE((void**)&szNewUtf);
+	SAFE_FREE(&szNewUtf);
 
 	LeaveCriticalSection(&m_modeMsgsMutex);
 
