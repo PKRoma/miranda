@@ -221,7 +221,7 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 {
 	BuildPrivacyMenu();
 	if ( m_menuItemsStatus )
-		BuildPrivacyListsMenu( true );
+		BuildPrivacyListsMenu( false );
 	BuildPriorityMenu();
 	m_pepServices.RebuildMenu();
 	CheckMenuItems();

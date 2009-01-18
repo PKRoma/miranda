@@ -211,7 +211,7 @@ void CJabberProto::OnIqResultPrivacyListActive( HXML iqNode, CJabberIqInfo* pInf
 		RedrawWindow(GetDlgItem(m_pDlgPrivacyLists->GetHwnd(), IDC_LB_LISTS), NULL, NULL, RDW_INVALIDATE);
 	}
 
-	BuildPrivacyListsMenu( false );
+	BuildPrivacyListsMenu( true );
 }
 
 void CJabberProto::OnIqResultPrivacyListDefault( HXML iqNode, CJabberIqInfo* pInfo )
@@ -300,7 +300,7 @@ void CJabberProto::OnIqResultPrivacyLists( HXML iqNode, CJabberIqInfo* pInfo )
 
 	UI_SAFE_NOTIFY(m_pDlgPrivacyLists, WM_JABBER_REFRESH);
 
-	BuildPrivacyListsMenu( false );
+	BuildPrivacyListsMenu( true );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
