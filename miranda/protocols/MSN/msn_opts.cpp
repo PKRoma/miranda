@@ -32,7 +32,7 @@ struct _tag_iconList
 {
 	const char*  szDescr;
 	const char*  szName;
-	const int    defIconID;
+	int			 defIconID;
 }
 static const iconList[] =
 {
