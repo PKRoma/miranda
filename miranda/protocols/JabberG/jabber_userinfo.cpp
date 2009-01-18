@@ -314,7 +314,7 @@ static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM h
 
 	if (szAdvStatusIcon && szAdvStatusTitle) {
 		TCHAR szText[2048];
-		if ( szAdvStatusText )
+		if ( szAdvStatusText && *szAdvStatusText )
 			mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
 		else
 			mir_sntprintf(szText, 2047, _T("%s"), TranslateTS(szAdvStatusTitle));

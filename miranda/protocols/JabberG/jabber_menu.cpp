@@ -415,8 +415,8 @@ void CJabberProto::MenuInit()
 	// Contact menu initialization
 
 	// "Request authorization"
-	JCreateService( "/RequestAuth", &CJabberProto::OnMenuHandleRequestAuth );
-	strcpy( tDest, "/RequestAuth" );
+	JCreateService( "/ReqAuth", &CJabberProto::OnMenuHandleRequestAuth );
+	strcpy( tDest, "/ReqAuth" );
 	mi.pszName = LPGEN("Request authorization");
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.position = -2000001000;

@@ -1414,15 +1414,23 @@ void CJabberProto::RegisterAdvStatusSlot(const char *pszSlot)
 }
 
 void CJabberProto::ResetAdvStatus(HANDLE hContact, const char *pszSlot)
-{
+{	// set empty text before DBDeleteContactSetting to make resident setting manager happy
 	char szSetting[128];
+
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/id", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/icon", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/title", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
+
 	mir_snprintf(szSetting, SIZEOF(szSetting), "%s/%s/text", m_szModuleName, pszSlot);
+	DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 	DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
 }
 
@@ -1444,7 +1452,7 @@ void CJabberProto::WriteAdvStatus(HANDLE hContact, const char *pszSlot, const TC
 		DBWriteContactSettingTString(hContact, "AdvStatus", szSetting, pszText);
 	} else
 	{
-		// set empty text first too make resident setting manager happy
+		// set empty text before DBDeleteContactSetting to make resident setting manager happy
 		DBWriteContactSettingString(hContact, "AdvStatus", szSetting, "");
 		DBDeleteContactSetting(hContact, "AdvStatus", szSetting);
 	}
