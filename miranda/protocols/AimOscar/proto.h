@@ -1,5 +1,5 @@
-#ifndef _JABBER_PROTO_H_
-#define _JABBER_PROTO_H_
+#ifndef _AIM_PROTO_H_
+#define _AIM_PROTO_H_
 
 #include "m_protoint.h"
 
