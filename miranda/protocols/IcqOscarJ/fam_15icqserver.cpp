@@ -632,6 +632,9 @@ void CIcqProto::handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WOR
 	snac_header requestSnac = {0};
   BYTE requestResult;
 
+#ifdef _DEBUG
+  NetLog_Server("Received directory query response");
+#endif
   if (wPacketLen >= 2)
     unpackLEWord(&databuf, &wBytesRemaining);
   wPacketLen -= 2;
@@ -819,6 +822,13 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
   oscar_tlv *pTLV;
   WORD wRecordCount;
 
+#ifdef _DEBUG
+  {
+    char *szUid = cDetails->getString(0x32, 1);
+    NetLog_Server("Received user info for %s from directory", szUid);
+    SAFE_FREE(&szUid);
+  }
+#endif
   if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOMULTI && !hContact)
   {
     DWORD dwUin = 0;
@@ -836,10 +846,10 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
     if (hContact == INVALID_HANDLE_VALUE)
     {
       NetLog_Server("Error: Received details for unknown contact \"%s\"", szUid);
-      SAFE_FREE((void**)&szUid);
+      SAFE_FREE(&szUid);
       return;
     }
-    SAFE_FREE((void**)&szUid);
+    SAFE_FREE(&szUid);
   }
 
   pTLV = cDetails->getTLV(0x50, 1);
@@ -942,8 +952,8 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
       SetStatusNote(szClientStatusNote, 1000, TRUE);
 
     // Release memory
-    SAFE_FREE((void**)&szDirectoryStatusNote);
-    SAFE_FREE((void**)&szClientStatusNote);
+    SAFE_FREE(&szDirectoryStatusNote);
+    SAFE_FREE(&szClientStatusNote);
   }
 
   writeDbInfoSettingTLVByte(hContact, "PrivacyLevel", cDetails, 0x1F9);
@@ -1004,6 +1014,9 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
   oscar_tlv *pTLV;
   char *szUin = cDetails->getString(0x32, 1); // User ID
 
+#ifdef _DEBUG
+  NetLog_Server("Directory Search: Found user %s", szUin);
+#endif
   isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
 
   if (IsStringUIN(szUin))
@@ -1023,17 +1036,17 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
   else
     isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
   if (!strlennull(isr.hdr.email))
-    SAFE_FREE((void**)&isr.hdr.email);
+    SAFE_FREE(&isr.hdr.email);
 
   isr.firstName = cDetails->getString(0x64, 1); // First Name
   if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
-    SAFE_FREE((void**)&isr.firstName);
+    SAFE_FREE(&isr.firstName);
   isr.lastName = cDetails->getString(0x6E, 1); // Last Name
   if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
-    SAFE_FREE((void**)&isr.lastName);
+    SAFE_FREE(&isr.lastName);
   isr.nick = cDetails->getString(0x78, 1); // Nick
   if (!utf8_decode(isr.nick, &isr.hdr.nick))
-    SAFE_FREE((void**)&isr.nick);
+    SAFE_FREE(&isr.nick);
 
   switch (cDetails->getNumber(0x82, 1)) // Gender
   {
@@ -1065,13 +1078,13 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
   BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
 
   // Release memory
-  SAFE_FREE((void**)&isr.nick); /// FIXME: Reduce memory allocation
-  SAFE_FREE((void**)&isr.firstName);
-  SAFE_FREE((void**)&isr.lastName);
-  SAFE_FREE((void**)&isr.hdr.nick);
-  SAFE_FREE((void**)&isr.hdr.firstName);
-  SAFE_FREE((void**)&isr.hdr.lastName);
-  SAFE_FREE((void**)&isr.hdr.email);
+  SAFE_FREE(&isr.nick); /// FIXME: Reduce memory allocation
+  SAFE_FREE(&isr.firstName);
+  SAFE_FREE(&isr.lastName);
+  SAFE_FREE(&isr.hdr.nick);
+  SAFE_FREE(&isr.hdr.firstName);
+  SAFE_FREE(&isr.hdr.lastName);
+  SAFE_FREE(&isr.hdr.email);
 
   // Search is over, broadcast final ack
   if (wReplySubType == META_DIRECTORY_RESPONSE)
@@ -1085,6 +1098,9 @@ void CIcqProto::handleDirectoryUpdateResponse(BYTE *databuf, WORD wPacketLen, WO
 	snac_header requestSnac = {0};
   BYTE requestResult;
 
+#ifdef _DEBUG
+  NetLog_Server("Received directory update response");
+#endif
   if (wPacketLen >= 2)
     unpackLEWord(&databuf, &wBytesRemaining);
   wPacketLen -= 2;
