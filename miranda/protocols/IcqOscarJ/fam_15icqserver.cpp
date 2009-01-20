@@ -971,12 +971,20 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 
   { // Save user info last update time and privacy token
     double dInfoTime;
+    BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int bHasMetaToken = FALSE;
+
+    // Check if the details arrived with privacy token!
+    if ((pTLV = cDetails->getTLV(0x3C, 1)) && pTLV->wLen == 0x10 && memcmp(pTLV->pData, pbEmptyMetaToken, 0x10))
+      bHasMetaToken = TRUE;
 
     // !Important, we need to save the MDir server-item time - it can be newer than the one from the directory
     if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
       setSettingDouble(hContact, DBSETTING_METAINFO_SAVED, dInfoTime);
-    else
+    else if (bHasMetaToken || !hContact)
       writeDbInfoSettingTLVDouble(hContact, DBSETTING_METAINFO_SAVED, cDetails, 0x1CC);
+    else
+      setSettingDword(hContact, DBSETTING_METAINFO_SAVED, time(NULL));
   }
 //    writeDbInfoSettingTLVBlob(hContact, DBSETTING_METAINFO_TOKEN, cDetails, 0x3C); // no need to save again
 
