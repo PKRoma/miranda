@@ -84,7 +84,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "packets.h"
 #include "proxy.h"
 #include "resource.h"
-#include "server.h"
 #include "theme.h"
 #include "ui.h"
 #include "proto.h"
