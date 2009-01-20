@@ -224,7 +224,7 @@ extern const char AIM_CLIENT_ID_STRING[];		//Client id EXTERN
 #define CLIENT_SMS						"SMS"
 #define CLIENT_TERRAIM					"TerraIM"
 #define CLIENT_TRILLIAN_PRO				"Trillian Pro"
-#define CLIENT_TRILLIAN					"Trillian"\
+#define CLIENT_TRILLIAN					"Trillian"
 
 //Aim Caps
 #define AIM_CAPS_LENGTH					16
