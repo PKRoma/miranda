@@ -191,11 +191,17 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
 	setSettingDword(NULL, "LogonTS", 0); // clear logon time
 
 	servlistPendingFlushOperations(); // clear pending operations list
-	ratesRelease(&m_rates);
+	
+  EnterCriticalSection(&ratesMutex);
+  delete m_rates;
+  m_rates = NULL;
+	LeaveCriticalSection(&ratesMutex);
+
 	FlushServerIDs();         // clear server IDs list
 
 	NetLog_Server("%s thread ended.", "Server");
 }
+
 
 void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 {
@@ -316,7 +322,7 @@ void CIcqProto::sendServPacket(icq_packet* pPacket)
 
 		// Rates management
 		EnterCriticalSection(&ratesMutex);
-		ratesPacketSent(m_rates, pPacket);
+		m_rates->packetSent(pPacket);
 		LeaveCriticalSection(&ratesMutex);
 
 		// Send error
@@ -359,14 +365,13 @@ void CIcqProto::sendServPacketAsync(icq_packet *packet)
 
 int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
 {
-	WORD wGroup;
 	int result = FALSE;
 
 	EnterCriticalSection(&ratesMutex);
-	wGroup = ratesGroupFromSNAC(m_rates, wFamily, wCommand);
+	WORD wGroup = m_rates->getGroupFromSNAC(wFamily, wCommand);
 
 	// check if the rate is not over specified level
-	if (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, nLevel))
+	if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, nLevel))
 		result = TRUE;
 
 	LeaveCriticalSection(&ratesMutex);

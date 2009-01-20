@@ -229,9 +229,6 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
 			// Time to check for new users
 			if (!bInfoUpdateEnabled) continue; // we can't send requests now      
 
-#ifdef _DEBUG
-			NetLog_Server("Users %u", nInfoUserCount);
-#endif
 			if (nInfoUserCount && icqOnline())
 			{
         time_t now = time(NULL);
@@ -266,6 +263,9 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
           continue;
         }
 
+#ifdef _DEBUG
+  			NetLog_Server("Info-Update: Users %u in queue.", nInfoUserCount);
+#endif
         // Either some user is waiting long enough, or all users are ready (waited at least the minimum time)
 				EnterCriticalSection(&ratesMutex);
 				if (!m_rates)
@@ -273,10 +273,10 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
 					LeaveCriticalSection(&ratesMutex);
 					break;
 				}
-				WORD wGroup = ratesGroupFromSNAC(m_rates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
-				while (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_50))
+				WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
+				while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_IDLE_50))
 				{ // we are over rate, need to wait before sending
-					int nDelay = ratesDelayToLevel(m_rates, wGroup, ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_50) + 200);
+					int nDelay = m_rates->getDelayToLevel(wGroup, m_rates->getLimitLevel(wGroup, RML_IDLE_50) + 200);
 
 					LeaveCriticalSection(&ratesMutex);
 #ifdef _DEBUG

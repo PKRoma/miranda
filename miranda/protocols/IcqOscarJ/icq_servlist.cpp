@@ -134,12 +134,12 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
     // check item rate - too high -> sleep
     EnterCriticalSection(&ratesMutex);
     {
-      WORD wRateGroup = ratesGroupFromSNAC(m_rates, ICQ_LISTS_FAMILY, wItemAction);
+      WORD wRateGroup = m_rates->getGroupFromSNAC(ICQ_LISTS_FAMILY, wItemAction);
       int nRateLevel = bItemDouble ? RML_IDLE_30 : RML_IDLE_10;
 
-      while (ratesNextRateLevel(m_rates, wRateGroup) < ratesGetLimitLevel(m_rates, wRateGroup, nRateLevel))
+      while (m_rates->getNextRateLevel(wRateGroup) < m_rates->getLimitLevel(wRateGroup, nRateLevel))
       { // the rate is higher, keep sleeping
-        int nDelay = ratesDelayToLevel(m_rates, wRateGroup, ratesGetLimitLevel(m_rates, wRateGroup, nRateLevel));
+        int nDelay = m_rates->getDelayToLimitLevel(wRateGroup, nRateLevel);
 
         LeaveCriticalSection(&ratesMutex);
         // do not keep the queue frozen

@@ -82,7 +82,7 @@ DWORD CIcqProto::requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
 	rr.nRequestType = 0x101; // request
 	rr.nMinDelay = 1000;    // delay at least 1s
 	EnterCriticalSection(&ratesMutex);
-	rr.wGroup = ratesGroupFromSNAC(m_rates, ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
+	rr.wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
 	LeaveCriticalSection(&ratesMutex);
 
 	if (!handleRateItem(&rr, bAllowDelay))

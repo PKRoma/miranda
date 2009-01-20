@@ -2066,7 +2066,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, DWORD dwTimestamp, DWORD dwMsgID
 				rr.msgType = type;
 				rr.nRequestType = 0x102;
 				EnterCriticalSection(&ratesMutex);
-				rr.wGroup = ratesGroupFromSNAC(m_rates, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+				rr.wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
 				LeaveCriticalSection(&ratesMutex);
 
 				if (!handleRateItem(&rr, TRUE))

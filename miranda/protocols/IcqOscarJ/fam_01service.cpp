@@ -89,13 +89,9 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 		NetLog_Server("Sending Rate Info Ack");
 #endif
 		/* init rates management */
-		m_rates = ratesCreate(pBuffer, wBufferLength);
+		m_rates = new rates(this, pBuffer, wBufferLength);
 		/* ack rate levels */
-		serverPacketInit(&packet, 20);
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
-		packDWord(&packet, 0x00010002);
-		packDWord(&packet, 0x00030004);
-		packWord(&packet, 0x0005);
+    m_rates->initAckPacket(&packet);
 		sendServPacket(&packet);
 
 		/* CLI_REQINFO - This command requests from the server certain information about the client that is stored on the server. */
@@ -339,8 +335,9 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 			unpackWord(&pBuffer, &wClass);
 			pBuffer += 20;
 			unpackDWord(&pBuffer, &dwLevel);
+
 			EnterCriticalSection(&ratesMutex);
-			ratesUpdateLevel(m_rates, wClass, dwLevel);
+			m_rates->updateLevel(wClass, dwLevel);
 			LeaveCriticalSection(&ratesMutex);
 
 			if (wStatus == 2 || wStatus == 3)

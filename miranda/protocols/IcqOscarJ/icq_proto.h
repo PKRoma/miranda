@@ -582,18 +582,9 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//----| icq_rates.cpp |---------------------------------------------------------------
 	CRITICAL_SECTION ratesMutex;
-	rates* m_rates;
+	rates  *m_rates;
 
-	rates* ratesCreate(BYTE* pBuffer, WORD wLen);
-	void   ratesRelease(rates** pRates);
-
-	WORD   ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand);
-	WORD   ratesGroupFromPacket(rates* pRates, icq_packet* pPacket);
-
-	void   ratesPacketSent(rates* pRates, icq_packet* pPacket);
-	void   ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel);
-
-	CRITICAL_SECTION ratesListsMutex;  // we need to be thread safe
+  CRITICAL_SECTION ratesListsMutex;  // we need to be thread safe
 
 	rate_record **pendingList1; // rate queue for xtraz requests
 	int    pendingListSize1;

@@ -1128,11 +1128,11 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
 		  EnterCriticalSection(&ratesMutex);
 		  if (m_rates)
 		  { // rate management
-        WORD wGroup = ratesGroupFromSNAC(m_rates, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
+        WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
 
-  			while (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, RML_LIMIT))
+  			while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
 	  		{ // we are over rate, need to wait before sending
-		  		int nDelay = ratesDelayToLevel(m_rates, wGroup, ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_10));
+		  		int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
 
   				LeaveCriticalSection(&ratesMutex);
           LeaveCriticalSection(&cookieMutex);
@@ -1162,11 +1162,11 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
       EnterCriticalSection(&ratesMutex);
       if (m_rates)
       { // rate management
-        WORD wGroup = ratesGroupFromSNAC(m_rates, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+        WORD wGroup = m_rates->getGroupFromSNAC(ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
 
-        while (ratesNextRateLevel(m_rates, wGroup) < ratesGetLimitLevel(m_rates, wGroup, RML_LIMIT))
+        while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
         { // we are over rate, need to wait before sending
-          int nDelay = ratesDelayToLevel(m_rates, wGroup, ratesGetLimitLevel(m_rates, wGroup, RML_IDLE_10));
+          int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
 
           LeaveCriticalSection(&ratesMutex);
           LeaveCriticalSection(&cookieMutex);

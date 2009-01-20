@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -40,21 +40,29 @@
 // Rate Level 1 Management
 /////////////////////////////
 
-rates* CIcqProto::ratesCreate(BYTE* pBuffer, WORD wLen)
+rates::rates(CIcqProto *ppro, BYTE *pBuffer, WORD wLen)
 {
-	rates* pRates;
-	WORD wCount;
-	int i;
+  nGroups = 0;
+  memset(&groups, 0, MAX_RATES_GROUP_COUNT * sizeof(rates_group));
+  this->ppro = ppro;
 
+  // Parse Rate Data Block
+	WORD wCount;
 	unpackWord(&pBuffer, &wCount);
 	wLen -= 2;
 
-	pRates = (rates*)SAFE_MALLOC(sizeof(rates)+(wCount-1)*sizeof(rates_group));
-	pRates->nGroups = wCount;
+  if (wCount > MAX_RATES_GROUP_COUNT)
+  { // just sanity check
+    ppro->NetLog_Server("Rates: Error: Data packet contains too many rate groups!");
+    wCount = MAX_RATES_GROUP_COUNT;
+  }
+
+	nGroups = wCount;
 	// Parse Group details
+  int i;
 	for (i=0; i<wCount; i++)
 	{
-		rates_group* pGroup = &pRates->groups[i];
+		rates_group *pGroup = &groups[i];
 
 		if (wLen >= 35)
 		{
@@ -78,9 +86,8 @@ rates* CIcqProto::ratesCreate(BYTE* pBuffer, WORD wLen)
 	// Parse Group associated pairs
 	for (i=0; i<wCount; i++)
 	{
-		rates_group* pGroup = &pRates->groups[i];
+		rates_group *pGroup = &groups[i];
 		WORD wNum;
-		int n;
 
 		if (wLen<4) break;
 		pBuffer += 2; // Group ID
@@ -89,7 +96,7 @@ rates* CIcqProto::ratesCreate(BYTE* pBuffer, WORD wLen)
 		if (wLen < wNum*4) break;
 		pGroup->nPairs = wNum;
 		pGroup->pPairs = (WORD*)SAFE_MALLOC(wNum*4);
-		for (n=0; n<wNum*2; n++)
+		for (int n=0; n<wNum*2; n++)
 		{
 			WORD wItem;
 
@@ -97,48 +104,31 @@ rates* CIcqProto::ratesCreate(BYTE* pBuffer, WORD wLen)
 			pGroup->pPairs[n] = wItem;
 		}
 #ifdef _DEBUG
-		NetLog_Server("Rates: %d# %d pairs.", i+1, wNum);
+		ppro->NetLog_Server("Rates: %d# %d pairs.", i+1, wNum);
 #endif
 		wLen -= wNum*4;
 	}
-
-	return pRates;
 }
 
-void CIcqProto::ratesRelease(rates** pRates)
+
+rates::~rates()
 {
-	if (pRates)
-	{
-		rates* rates = *pRates;
+	for (int i = 0; i < nGroups; i++)
+		SAFE_FREE((void**)&groups[i].pPairs);
 
-		EnterCriticalSection(&ratesMutex);
-
-		if (rates)
-		{
-			int i;
-
-			for (i = 0; i < rates->nGroups; i++)
-			{
-				SAFE_FREE((void**)&rates->groups[i].pPairs);
-			}
-			SAFE_FREE((void**)pRates);
-		}
-		LeaveCriticalSection(&ratesMutex);
-	}
+  nGroups = 0;
 }
 
-WORD CIcqProto::ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand)
+
+WORD rates::getGroupFromSNAC(WORD wFamily, WORD wCommand)
 {
-	int i;
-
-	if (pRates)
+	if (this)
 	{
-		for (i = 0; i < pRates->nGroups; i++)
+		for (int i = 0; i < nGroups; i++)
 		{
-			rates_group* group = &pRates->groups[i];
-			int j;
+			rates_group* group = &groups[i];
 
-			for (j = 0; j < 2*group->nPairs; j += 2)
+			for (int j = 0; j < 2*group->nPairs; j += 2)
 			{
 				if (group->pPairs[j] == wFamily && group->pPairs[j + 1] == wCommand)
 				{ // we found the group
@@ -153,9 +143,9 @@ WORD CIcqProto::ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand)
 }
 
 
-WORD CIcqProto::ratesGroupFromPacket(rates* pRates, icq_packet* pPacket)
+WORD rates::getGroupFromPacket(icq_packet *pPacket)
 {
-	if (pRates)
+	if (this)
 	{
 		if (pPacket->nChannel == ICQ_DATA_CHAN && pPacket->wLen >= 0x10)
 		{
@@ -165,24 +155,27 @@ WORD CIcqProto::ratesGroupFromPacket(rates* pRates, icq_packet* pPacket)
 			unpackWord(&pBuf, &wFam);
 			unpackWord(&pBuf, &wCmd);
 
-			return ratesGroupFromSNAC(pRates, wFam, wCmd);
+			return getGroupFromSNAC(wFam, wCmd);
 		}
 	}
 	return 0;
 }
 
-static rates_group* getRatesGroup(rates* pRates, WORD wGroup)
+
+rates_group* rates::getGroup(WORD wGroup)
 {
-	if (pRates && wGroup <= pRates->nGroups)
-		return &pRates->groups[wGroup-1];
+	if (this && wGroup && wGroup <= nGroups)
+		return &groups[wGroup-1];
 
 	return NULL;
 }
 
-int ratesNextRateLevel(rates* pRates, WORD wGroup)
+
+int rates::getNextRateLevel(WORD wGroup)
 {
-	rates_group* pGroup = getRatesGroup(pRates, wGroup);
-	if (pGroup)
+	rates_group *pGroup = getGroup(wGroup);
+
+  if (pGroup)
 	{
 		int nLevel = pGroup->rCurrentLevel*(pGroup->dwWindowSize-1)/pGroup->dwWindowSize + (GetTickCount() - pGroup->tCurrentLevel)/pGroup->dwWindowSize;
 
@@ -191,43 +184,54 @@ int ratesNextRateLevel(rates* pRates, WORD wGroup)
 	return -1; // Failure
 }
 
-int ratesDelayToLevel(rates* pRates, WORD wGroup, int nLevel)
+
+int rates::getDelayToLevel(WORD wGroup, int nLevel)
 {
-	rates_group* pGroup = getRatesGroup(pRates, wGroup);
+	rates_group *pGroup = getGroup(wGroup);
+
 	if (pGroup)
 		return (nLevel - pGroup->rCurrentLevel)*pGroup->dwWindowSize + pGroup->rCurrentLevel;
 
 	return 0; // Failure
 }
 
-void CIcqProto::ratesPacketSent(rates* pRates, icq_packet* pPacket)
+
+int rates::getDelayToLimitLevel(WORD wGroup, int nLevel)
 {
-	if (pRates)
+  return getDelayToLevel(wGroup, getLimitLevel(wGroup, nLevel));
+}
+
+
+void rates::packetSent(icq_packet *pPacket)
+{
+	if (this)
 	{
-		WORD wGroup = ratesGroupFromPacket(pRates, pPacket);
+		WORD wGroup = getGroupFromPacket(pPacket);
 
 		if (wGroup)
-			ratesUpdateLevel(pRates, wGroup, ratesNextRateLevel(pRates, wGroup));
+			updateLevel(wGroup, getNextRateLevel(wGroup));
 	}
 }
 
-void CIcqProto::ratesUpdateLevel(rates* pRates, WORD wGroup, int nLevel)
+
+void rates::updateLevel(WORD wGroup, int nLevel)
 {
-	rates_group* pGroup = getRatesGroup(pRates, wGroup);
+	rates_group *pGroup = getGroup(wGroup);
 
 	if (pGroup)
 	{
 		pGroup->rCurrentLevel = nLevel;
 		pGroup->tCurrentLevel = GetTickCount();
 #ifdef _DEBUG
-		NetLog_Server("Rates: New level %d for #%d", nLevel, wGroup);
+		ppro->NetLog_Server("Rates: New level %d for #%d", nLevel, wGroup);
 #endif
 	}
 }
 
-int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
+
+int rates::getLimitLevel(WORD wGroup, int nLevel)
 {
-	rates_group* pGroup = getRatesGroup(pRates, wGroup);
+	rates_group *pGroup = getGroup(wGroup);
 
 	if (pGroup)
 	{
@@ -257,6 +261,16 @@ int ratesGetLimitLevel(rates* pRates, WORD wGroup, int nLevel)
 	}
 	return 9999; // some high number - without rates we allow anything
 }
+
+
+void rates::initAckPacket(icq_packet *pPacket)
+{
+	serverPacketInit(pPacket, 10 + nGroups * sizeof(WORD)); 
+	packFNACHeader(pPacket, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
+  for (WORD wGroup = 1; wGroup <= nGroups; wGroup++)
+    packWord(pPacket, wGroup);
+}
+
 
 
 //
@@ -316,9 +330,9 @@ void CIcqProto::RatesTimer1()
 	item = pendingList1[0];
 
 	EnterCriticalSection(&ratesMutex);
-	if (ratesNextRateLevel(m_rates, item->wGroup) < ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30))
+	if (m_rates->getNextRateLevel(item->wGroup) < m_rates->getLimitLevel(item->wGroup, RML_IDLE_30))
 	{ // the rate is higher, keep sleeping
-		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_50));
+		int nDelay = m_rates->getDelayToLimitLevel(item->wGroup, m_rates->getLimitLevel(item->wGroup, RML_IDLE_50));
 
 		LeaveCriticalSection(&ratesMutex);
 		LeaveCriticalSection(&ratesListsMutex);
@@ -354,7 +368,7 @@ void CIcqProto::RatesTimer1()
 	{
 		// in queue remained some items, setup timer
 		EnterCriticalSection(&ratesMutex);
-		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_50));
+		int nDelay = m_rates->getDelayToLimitLevel(item->wGroup, RML_IDLE_50);
 		LeaveCriticalSection(&ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
@@ -384,16 +398,13 @@ static void putItemToQueue1(CIcqProto* ppro, rate_record *item, int nLev)
 	}
 	else
 	{
-		rate_record *tmp;
-		int nDelay;
-
 		EnterCriticalSection(&ppro->ratesMutex);
-		nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_50));
+		int nDelay = ppro->m_rates->getDelayToLimitLevel(item->wGroup, RML_IDLE_50);
 		LeaveCriticalSection(&ppro->ratesMutex);
 
 		ppro->pendingListSize1++;
 		ppro->pendingList1 = (rate_record**)SAFE_MALLOC(sizeof(rate_record*));
-		tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
+		rate_record *tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
 		memcpy(tmp, item, sizeof(rate_record));
 		ppro->pendingList1[0] = tmp;
 
@@ -432,9 +443,9 @@ void CIcqProto::RatesTimer2()
 	item = pendingList2[0];
 
 	EnterCriticalSection(&ratesMutex);
-	if (ratesNextRateLevel(m_rates, item->wGroup) < ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_10))
+	if (m_rates->getNextRateLevel(item->wGroup) < m_rates->getLimitLevel(item->wGroup, RML_IDLE_10))
 	{ // the rate is higher, keep sleeping
-		int nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30));
+		int nDelay = m_rates->getDelayToLimitLevel(item->wGroup, RML_IDLE_30);
 
 		LeaveCriticalSection(&ratesMutex);
 		LeaveCriticalSection(&ratesListsMutex);
@@ -475,10 +486,8 @@ void CIcqProto::RatesTimer2()
 
 	if (bSetupTimer)
 	{ // in queue remained some items, setup timer
-		int nDelay;
-
 		EnterCriticalSection(&ratesMutex);
-		nDelay = ratesDelayToLevel(m_rates, item->wGroup, ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30));
+		int nDelay = m_rates->getDelayToLimitLevel(item->wGroup, RML_IDLE_30);
 		LeaveCriticalSection(&ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
@@ -524,10 +533,8 @@ static void putItemToQueue2(CIcqProto* ppro, rate_record *item, int nLev)
 
 	if (ppro->pendingListSize2 == 1)
 	{ // queue was empty setup timer
-		int nDelay;
-
 		EnterCriticalSection(&ppro->ratesMutex);
-		nDelay = ratesDelayToLevel(ppro->m_rates, item->wGroup, ratesGetLimitLevel(ppro->m_rates, item->wGroup, RML_IDLE_30));
+		int nDelay = ppro->m_rates->getDelayToLimitLevel(item->wGroup, RML_IDLE_30);
 		LeaveCriticalSection(&ppro->ratesMutex);
 
 		if (nDelay < 10) nDelay = 10;
@@ -544,32 +551,28 @@ int CIcqProto::handleRateItem(rate_record *item, BOOL bAllowDelay)
 
 	if (item->nRequestType == 0x101)
 	{ // xtraz request
-		int nLev, nLimit;
-
 		EnterCriticalSection(&ratesMutex);
-		nLev = ratesNextRateLevel(m_rates, item->wGroup);
-		nLimit = ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_50) + 200;
+		int nLevel = m_rates->getNextRateLevel(item->wGroup);
+		int nLimit = m_rates->getLimitLevel(item->wGroup, RML_IDLE_50) + 200;
 		LeaveCriticalSection(&ratesMutex);
 
-		if ((nLev < nLimit || item->nMinDelay) && bAllowDelay)
+		if ((nLevel < nLimit || item->nMinDelay) && bAllowDelay)
 		{ // limit reached or min delay configured, add to queue
-			putItemToQueue1(this, item, nLev);
+			putItemToQueue1(this, item, nLevel);
 			LeaveCriticalSection(&ratesListsMutex);
 			return 1;
 		}
 	}
 	else if (item->nRequestType == 0x102)
 	{ // msg response
-		int nLev, nLimit;
-
 		EnterCriticalSection(&ratesMutex);
-		nLev = ratesNextRateLevel(m_rates, item->wGroup);
-		nLimit = ratesGetLimitLevel(m_rates, item->wGroup, RML_IDLE_30) + 100;
+		int nLevel = m_rates->getNextRateLevel(item->wGroup);
+		int nLimit = m_rates->getLimitLevel(item->wGroup, RML_IDLE_30) + 100;
 		LeaveCriticalSection(&ratesMutex);
 
-		if (nLev < nLimit)
+		if (nLevel < nLimit)
 		{ // limit reached, add to queue
-			putItemToQueue2(this, item, nLev);
+			putItemToQueue2(this, item, nLevel);
 			LeaveCriticalSection(&ratesListsMutex);
 			return 1;
 		}

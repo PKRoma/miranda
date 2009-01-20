@@ -131,7 +131,7 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 								rr.bThruDC = bThruDC;
 								rr.nRequestType = 0x102;
 								EnterCriticalSection(&ratesMutex);
-								rr.wGroup = ratesGroupFromSNAC(m_rates, ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+								rr.wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
 								LeaveCriticalSection(&ratesMutex);
 								if (bThruDC || !handleRateItem(&rr, TRUE))
 									SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);

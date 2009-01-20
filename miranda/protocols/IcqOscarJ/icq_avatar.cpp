@@ -53,7 +53,7 @@ struct avatarthreadstartinfo
 	DWORD runTime[4];
 	int runCount;
 //
-	struct rates_s * rates;
+	rates *rates;
 };
 
 struct avatarrequest
@@ -818,9 +818,9 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, BYTE *ha
 
 			EnterCriticalSection(&ratesMutex);
 			{ // rate management
-				WORD wGroup = ratesGroupFromSNAC(atsi->rates, ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST);
+				WORD wGroup = atsi->rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST);
 
-				if (ratesNextRateLevel(atsi->rates, wGroup) < ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
+				if (atsi->rates->getNextRateLevel(wGroup) < atsi->rates->getLimitLevel(wGroup, RML_ALERT))
 				{ // we will be over quota if we send the request now, add to queue instead
 					bSendNow = FALSE;
 #ifdef _DEBUG
@@ -1087,9 +1087,9 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 
 				EnterCriticalSection(&ratesMutex);
 				{ // rate management
-					WORD wGroup = ratesGroupFromSNAC(atsi->rates, ICQ_AVATAR_FAMILY, (WORD)(reqdata->type == ART_UPLOAD ? ICQ_AVATAR_GET_REQUEST : ICQ_AVATAR_UPLOAD_REQUEST));
+					WORD wGroup = atsi->rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, (WORD)(reqdata->type == ART_UPLOAD ? ICQ_AVATAR_GET_REQUEST : ICQ_AVATAR_UPLOAD_REQUEST));
 
-					if (ratesNextRateLevel(atsi->rates, wGroup) < ratesGetLimitLevel(atsi->rates, wGroup, RML_ALERT))
+					if (atsi->rates->getNextRateLevel(wGroup) < atsi->rates->getLimitLevel(wGroup, RML_ALERT))
 					{ // we are over rate, leave queue and wait
 #ifdef _DEBUG
 						NetLog_Server("Rates: Leaving avatar queue processing");
@@ -1139,7 +1139,10 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 	NetLib_CloseConnection(&atsi->hConnection, FALSE); // Close the connection
 
 	// release rates
-	ratesRelease(&atsi->rates);
+	EnterCriticalSection(&ratesMutex);
+  delete atsi->rates;
+  atsi->rates = NULL;
+	LeaveCriticalSection(&ratesMutex);
 
 	DeleteCriticalSection(&atsi->localSeqMutex);
 
@@ -1248,9 +1251,7 @@ int CIcqProto::sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi
 
 			EnterCriticalSection(&ratesMutex); // TODO: we should have our own mutex
 			if (atsi->rates)
-			{
-				ratesPacketSent(atsi->rates, pPacket);
-			}
+				atsi->rates->packetSent(pPacket);
 			LeaveCriticalSection(&ratesMutex);
 		}
 	}
@@ -1361,13 +1362,9 @@ void CIcqProto::handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLengt
 		NetLog_Server("Sending Rate Info Ack");
 #endif
 		/* init rates management */
-		atsi->rates = ratesCreate(pBuffer, wBufferLength);
+		atsi->rates = new rates(this, pBuffer, wBufferLength);
 		/* ack rate levels */
-		serverPacketInit(&packet, 20); 
-		packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_RATE_ACK);
-		packDWord(&packet, 0x00010002);
-		packDWord(&packet, 0x00030004);
-		packWord(&packet, 0x0005);
+    atsi->rates->initAckPacket(&packet);
 		sendAvatarPacket(&packet, atsi);
 
 		// send cli_ready
