@@ -395,7 +395,7 @@ void ppackTLVDouble(PBYTE *buf, int *buflen, WORD wType, double dValue)
 {
   DWORD64 qwValue;
 
-  memcpy(&dValue, &qwValue, 8);
+  memcpy(&qwValue, &dValue, 8);
 
 	*buf = (PBYTE)SAFE_REALLOC(*buf, 12 + *buflen);
 	packWord(*buf + *buflen, wType);
