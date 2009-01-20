@@ -70,7 +70,6 @@ public:
 	WORD getGroupFromPacket(icq_packet *pPacket);
 
   int getLimitLevel(WORD wGroup, int nLevel);
-  int getDelayToLevel(WORD wGroup, int nLevel);
   int getDelayToLimitLevel(WORD wGroup, int nLevel);
   int getNextRateLevel(WORD wGroup);
 

@@ -185,20 +185,14 @@ int rates::getNextRateLevel(WORD wGroup)
 }
 
 
-int rates::getDelayToLevel(WORD wGroup, int nLevel)
+int rates::getDelayToLimitLevel(WORD wGroup, int nLevel)
 {
 	rates_group *pGroup = getGroup(wGroup);
 
 	if (pGroup)
-		return (nLevel - pGroup->rCurrentLevel)*pGroup->dwWindowSize + pGroup->rCurrentLevel;
+		return (getLimitLevel(wGroup, nLevel) - pGroup->rCurrentLevel)*pGroup->dwWindowSize + pGroup->rCurrentLevel;
 
 	return 0; // Failure
-}
-
-
-int rates::getDelayToLimitLevel(WORD wGroup, int nLevel)
-{
-  return getDelayToLevel(wGroup, getLimitLevel(wGroup, nLevel));
 }
 
 

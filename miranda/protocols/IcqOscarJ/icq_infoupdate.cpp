@@ -274,9 +274,9 @@ void __cdecl CIcqProto::InfoUpdateThread( void* )
 					break;
 				}
 				WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
-				while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_IDLE_50))
+				while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_IDLE_30))
 				{ // we are over rate, need to wait before sending
-					int nDelay = m_rates->getDelayToLevel(wGroup, m_rates->getLimitLevel(wGroup, RML_IDLE_50) + 200);
+					int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_50);
 
 					LeaveCriticalSection(&ratesMutex);
 #ifdef _DEBUG
