@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -138,7 +138,7 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
   packTLVWord(&packet, 0x001a, CLIENT_VERSION_BUILD);
   packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
   packTLV(&packet, 0x000f, 0x0002, CLIENT_LANGUAGE);
-  packTLV(&packet, 0x000e, 0x0002, CLIENT_LANGUAGE);
+  packTLV(&packet, 0x000e, 0x0002, CLIENT_COUNTRY);
 
   sendServPacket(&packet);
 }

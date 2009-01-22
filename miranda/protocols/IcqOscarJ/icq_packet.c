@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera, Bio
+// Copyright © 2004-2009 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,6 +36,15 @@
 
 #include "icqoscar.h"
 
+
+WORD generate_flap_sequence()
+{
+  DWORD n = rand(), s = 0, i;
+
+  for (i = n; i >>= 3; s += i);
+
+  return (WORD)((((0 - s) ^ (BYTE)n) & 7 ^ n) + 2);
+}
 
 
 void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen)
@@ -110,7 +119,7 @@ void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCooki
   packTLVWord(pPacket, 0x001a, CLIENT_VERSION_BUILD);
   packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
   packTLV(pPacket, 0x000f, 0x0002, CLIENT_LANGUAGE);
-  packTLV(pPacket, 0x000e, 0x0002, CLIENT_LANGUAGE);
+  packTLV(pPacket, 0x000e, 0x0002, CLIENT_COUNTRY);
 
   packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }

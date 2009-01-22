@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -441,7 +441,7 @@ void icq_login(const char* szPassword)
   stsi->szPass[stsi->wPassLen] = '\0';
 
   // Randomize sequence
-  wLocalSequence = (WORD)RandRange(0, 0x7fff);
+  wLocalSequence = generate_flap_sequence();
 
   dwLocalUIN = dwUin;
 

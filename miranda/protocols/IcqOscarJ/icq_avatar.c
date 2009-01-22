@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -420,7 +420,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   atsi = (avatarthreadstartinfo*)SAFE_MALLOC(sizeof(avatarthreadstartinfo));
   atsi->pendingLogin = 1;
   // Randomize sequence
-  atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
+  atsi->wLocalSequence = generate_flap_sequence();
   atsi->hConnection = hConn;
   atsi->pCookie = cookie;
   atsi->wCookieLen = cookieLen;
@@ -1185,7 +1185,7 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
 
   if (*(DWORD*)buf == 0x1000000)
   {  // here check if we received SRV_HELLO
-    atsi->wLocalSequence = (WORD)RandRange(0, 0xffff); 
+    atsi->wLocalSequence = generate_flap_sequence(); 
 
     serverCookieInit(&packet, atsi->pCookie, atsi->wCookieLen);
     sendAvatarPacket(&packet, atsi);
