@@ -500,39 +500,43 @@ void CMsnProto::MSN_ReceiveMessage( ThreadData* info, char* cmdString, char* par
 			MSN_CallService( MS_PROTO_CONTACTISTYPING, ( WPARAM ) hContact, 7 );
 		}
 	}
-	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) {
-		HANDLE tContact = info->mJoinedContacts[0];
+	else if ( !_strnicmp( tContentType, "text/x-msnmsgr-datacast", 23 )) 
+    {
+        if (info->mJoinedCount)
+        {
+            HANDLE tContact = info->mJoinedContacts[0];
 
-		if (IsChatHandle(tContact))
-		{
-			GC_INFO gci = {0};
-			gci.Flags = HCONTACT;
-			gci.pszModule = m_szModuleName;
-			gci.pszID = info->mChatID;
-			CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
-			tContact = gci.hContact;
-		}
+		    if (IsChatHandle(tContact))
+		    {
+			    GC_INFO gci = {0};
+			    gci.Flags = HCONTACT;
+			    gci.pszModule = m_szModuleName;
+			    gci.pszID = info->mChatID;
+			    CallServiceSync( MS_GC_GETINFO, 0, (LPARAM)&gci );
+			    tContact = gci.hContact;
+		    }
 
-		MimeHeaders tFileInfo;
-		tFileInfo.readFromBuffer( msgBody );
+		    MimeHeaders tFileInfo;
+		    tFileInfo.readFromBuffer( msgBody );
 
-		const char* id = tFileInfo[ "ID" ];
-		if (id != NULL)
-		{
-			switch (atol(id))
-			{
-				case 1:  // Nudge
+		    const char* id = tFileInfo[ "ID" ];
+		    if (id != NULL)
+		    {
+			    switch (atol(id))
+			    {
+				    case 1:  // Nudge
 
-					NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
-					break;
+					    NotifyEventHooks(hMSNNudge,(WPARAM) tContact,0);
+					    break;
 
-				case 2: // Wink
-					break;
+				    case 2: // Wink
+					    break;
 
-				case 4: // Action Message
-					break;
-			}
-		}
+				    case 4: // Action Message
+					    break;
+			    }
+		    }
+        }
 	}
 	else if ( !_strnicmp( tContentType,"text/x-msmsgsemailnotification", 30 ))
 		sttNotificationMessage( msgBody, false );

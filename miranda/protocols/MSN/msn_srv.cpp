@@ -270,8 +270,10 @@ void CMsnProto::MSN_SyncContactToServerGroup( HANDLE hContact, const char* szCon
 		const char* szGrpId  = ezxml_txt(cgrp);
 		cgrp = ezxml_next(cgrp);
 
-		if (strcmp(MSN_GetGroupById(szGrpId), szGrpName) == 0 || 
-			(cgrp == NULL && szGrpIdF == NULL)) 
+        const char* szGrpNameById = MSN_GetGroupById(szGrpId);
+
+		if (szGrpNameById && (strcmp(szGrpNameById, szGrpName) == 0 || 
+			(cgrp == NULL && szGrpIdF == NULL))) 
 			szGrpIdF = szGrpId;
 		else 
 			MSN_ABAddDelContactGroup(szContId, szGrpId, "ABGroupContactDelete");
