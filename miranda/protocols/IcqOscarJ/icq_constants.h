@@ -635,13 +635,13 @@
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
-#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
 #define CLIENT_ID_CODE              0x010a
 #define CLIENT_VERSION_MAJOR        0x0006
-#define CLIENT_VERSION_MINOR        0x0000
+#define CLIENT_VERSION_MINOR        0x0005
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x1B67
-#define CLIENT_DISTRIBUTION         0x00007535
+#define CLIENT_VERSION_BUILD        0x03ed
+#define CLIENT_DISTRIBUTION         0x00007537
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
 

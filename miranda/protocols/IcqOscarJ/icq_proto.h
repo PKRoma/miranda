@@ -226,7 +226,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void AddCapabilitiesFromBuffer(HANDLE hContact, BYTE* pbyBuffer, int nLength);
 
 	//----| chan_01login.cpp |------------------------------------------------------------
-	void   handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info);
+	void   handleLoginChannel(BYTE *buf, WORD datalen, serverthread_info *info);
 
 	//----| chan_02data.cpp |-------------------------------------------------------------
 	void   handleDataChannel(unsigned char *buf, WORD wLen, serverthread_info *info);
@@ -425,13 +425,13 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi /*= currentAvatarThread*/);
 
 	void   __cdecl AvatarThread(avatarthreadstartinfo *atsi);
-	int    handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi);
+	int    handleAvatarPackets(BYTE *buf, int buflen, avatarthreadstartinfo *atsi);
 
-	void   handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *atsi);
-	void   handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi);
+	void   handleAvatarLogin(BYTE *buf, WORD datalen, avatarthreadstartinfo *atsi);
+	void   handleAvatarData(BYTE *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi);
 
-	void   handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
-	void   handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi);
+	void   handleAvatarServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, avatarthreadstartinfo *atsi);
+	void   handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, avatarthreadstartinfo *atsi);
 
   void   handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BYTE nDataLen);
 	void   handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContact, BYTE *pHash, int nHashLen, WORD wOldStatus);

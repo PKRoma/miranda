@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -36,9 +36,8 @@
 
 #include "icqoscar.h"
 
-extern WORD wLocalSequence;
 
-void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
+void CIcqProto::handleLoginChannel(BYTE *buf, WORD datalen, serverthread_info *info)
 {
 	icq_packet packet;
 
@@ -92,7 +91,7 @@ void CIcqProto::handleLoginChannel(unsigned char *buf, WORD datalen, serverthrea
 	{
 		if (info->cookieDataLen)
 		{
-			wLocalSequence = (WORD)RandRange(0, 0xffff);
+			wLocalSequence = generate_flap_sequence();
 
 			serverCookieInit(&packet, info->cookieData, (WORD)info->cookieDataLen);
 			sendServPacket(&packet);

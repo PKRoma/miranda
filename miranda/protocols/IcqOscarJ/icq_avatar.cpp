@@ -91,8 +91,8 @@ static void FreeAvatarRequest(avatarrequest **request)
 			break;
 		case ART_GET:
 			SAFE_FREE((void**)&ar->hash);
-			SAFE_FREE((void**)&ar->szUid);
-			SAFE_FREE((void**)&ar->szFile);
+			SAFE_FREE(&ar->szUid);
+			SAFE_FREE(&ar->szFile);
 			break;
 		case ART_BLOCK:
 			break;
@@ -188,7 +188,7 @@ void CIcqProto::GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbL
 	// make sure the avatar cache directory exists
 	char *szDir = ansi_to_utf8(pszDest);
 	MakeDirUtf(szDir);
-	SAFE_FREE((void**)&szDir);
+	SAFE_FREE(&szDir);
 
 	if (dwUin != 0) 
 	{
@@ -395,7 +395,7 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) //
 	atsi->ppro = this;
 	atsi->pendingLogin = 1;
 	// Randomize sequence
-	atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
+	atsi->wLocalSequence = generate_flap_sequence();
 	atsi->hConnection = hConn;
 	atsi->pCookie = cookie;
 	atsi->wCookieLen = cookieLen;
@@ -491,7 +491,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 						}
 					}
 					SAFE_FREE((void**)&hash);
-					SAFE_FREE((void**)&file);
+					SAFE_FREE(&file);
 				}
 				break;
 			}
@@ -554,7 +554,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 					SAFE_FREE((void**)&hash);
 				}
 
-				SAFE_FREE((void**)&file);
+				SAFE_FREE(&file);
 				break;
       }
 			default:
@@ -863,7 +863,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, BYTE *ha
 					return dwCookie;
 				}
 				FreeCookie(dwCookie); // sending failed, free resources
-				SAFE_FREE((void**)&ack->szFile);
+				SAFE_FREE(&ack->szFile);
 				SAFE_FREE((void**)&ack->hash);
 				SAFE_FREE((void**)&ack);
 			}
@@ -1158,7 +1158,7 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 	NetLog_Server("%s thread ended.", "Avatar");
 }
 
-int CIcqProto::handleAvatarPackets(unsigned char* buf, int buflen, avatarthreadstartinfo* atsi)
+int CIcqProto::handleAvatarPackets(BYTE *buf, int buflen, avatarthreadstartinfo *atsi)
 {
 	BYTE channel;
 	WORD sequence;
@@ -1267,13 +1267,13 @@ int CIcqProto::sendAvatarPacket(icq_packet* pPacket, avatarthreadstartinfo* atsi
 	return lResult;
 }
 
-void CIcqProto::handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *atsi)
+void CIcqProto::handleAvatarLogin(BYTE *buf, WORD datalen, avatarthreadstartinfo *atsi)
 {
 	icq_packet packet;
 
 	if (*(DWORD*)buf == 0x1000000)
 	{  // here check if we received SRV_HELLO
-		atsi->wLocalSequence = (WORD)RandRange(0, 0xffff); 
+		atsi->wLocalSequence = generate_flap_sequence(); 
 
 		serverCookieInit(&packet, (LPBYTE)atsi->pCookie, atsi->wCookieLen);
 		sendAvatarPacket(&packet, atsi);
@@ -1291,7 +1291,7 @@ void CIcqProto::handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthread
 	}
 }
 
-void CIcqProto::handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi)
+void CIcqProto::handleAvatarData(BYTE *pBuffer, WORD wBufferLength, avatarthreadstartinfo *atsi)
 {
 	snac_header snacHeader = {0};
 
@@ -1323,7 +1323,7 @@ void CIcqProto::handleAvatarData(unsigned char *pBuffer, WORD wBufferLength, ava
 	}
 }
 
-void CIcqProto::handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi)
+void CIcqProto::handleAvatarServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, avatarthreadstartinfo *atsi)
 {
 	icq_packet packet;
 
@@ -1389,7 +1389,7 @@ void CIcqProto::handleAvatarServiceFam(unsigned char* pBuffer, WORD wBufferLengt
 	}
 }
 
-void CIcqProto::handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, avatarthreadstartinfo *atsi)
+void CIcqProto::handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, avatarthreadstartinfo *atsi)
 {
 	switch (pSnacHeader->wSubtype) {
 
@@ -1436,7 +1436,7 @@ void CIcqProto::handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac
 
 					BroadcastAck(pCookieData->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
 
-					SAFE_FREE((void**)&pCookieData->szFile);
+					SAFE_FREE(&pCookieData->szFile);
 					SAFE_FREE((void**)&pCookieData->hash);
 					SAFE_FREE((void**)&pCookieData);
 
@@ -1555,7 +1555,7 @@ void CIcqProto::handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac
 
 					BroadcastAck(pCookieData->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
 				}
-				SAFE_FREE((void**)&pCookieData->szFile);
+				SAFE_FREE(&pCookieData->szFile);
 				SAFE_FREE((void**)&pCookieData->hash);
 				SAFE_FREE((void**)&pCookieData);
 			}
@@ -1604,7 +1604,7 @@ void CIcqProto::handleAvatarFam(unsigned char *pBuffer, WORD wBufferLength, snac
 				if (pCookieData->dwUin)
 				{
 					NetLog_Server("Error: Avatar request failed");
-					SAFE_FREE((void**)&pCookieData->szFile);
+					SAFE_FREE(&pCookieData->szFile);
 					SAFE_FREE((void**)&pCookieData->hash);
 				}
 				else

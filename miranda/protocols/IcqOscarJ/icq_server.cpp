@@ -406,7 +406,7 @@ void CIcqProto::icq_login(const char* szPassword)
 	stsi->szPass[stsi->wPassLen] = '\0';
 
 	// Randomize sequence
-	wLocalSequence = (WORD)RandRange(0, 0x7fff);
+	wLocalSequence = generate_flap_sequence();
 
 	m_dwLocalUIN = dwUin;
 

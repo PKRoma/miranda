@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -118,15 +118,15 @@ void CIcqProto::sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
 
 	// Pack client identification details.
 	packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, (LPBYTE)CLIENT_ID_STRING);
-	packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
 	packTLVWord(&packet, 0x0017, CLIENT_VERSION_MAJOR);
 	packTLVWord(&packet, 0x0018, CLIENT_VERSION_MINOR);
 	packTLVWord(&packet, 0x0019, CLIENT_VERSION_LESSER);
 	packTLVWord(&packet, 0x001a, CLIENT_VERSION_BUILD);
+	packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
 	packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(&packet, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
-	packTLV(&packet, 0x000e, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
-//  packTLV(&packet, 0x0094, 0x0001, 0);  /// CLIENT_RECONNECT flag
+	packTLV(&packet, 0x000e, 0x0002, (LPBYTE)CLIENT_COUNTRY);
+//  packTLV(&packet, 0x0094, 0x0001, &bReconnect);  /// CLIENT_RECONNECT flag
 
 	sendServPacket(&packet);
 }

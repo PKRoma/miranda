@@ -36,6 +36,15 @@
 
 #include "icqoscar.h"
 
+WORD generate_flap_sequence()
+{
+  DWORD n = rand(), s = 0;
+
+  for (DWORD i = n; i >>= 3; s += i);
+
+  return (((0 - s) ^ (BYTE)n) & 7 ^ n) + 2;
+}
+
 void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen)
 {
 	pPacket->wPlace = 0;
@@ -91,14 +100,14 @@ void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCooki
 
 	// Pack client identification details.
 	packTLV(pPacket, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, (LPBYTE)CLIENT_ID_STRING);
-	packTLVWord(pPacket, 0x0016, CLIENT_ID_CODE);
 	packTLVWord(pPacket, 0x0017, CLIENT_VERSION_MAJOR);
 	packTLVWord(pPacket, 0x0018, CLIENT_VERSION_MINOR);
 	packTLVWord(pPacket, 0x0019, CLIENT_VERSION_LESSER);
 	packTLVWord(pPacket, 0x001a, CLIENT_VERSION_BUILD);
+	packTLVWord(pPacket, 0x0016, CLIENT_ID_CODE);
 	packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(pPacket, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
-	packTLV(pPacket, 0x000e, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
+	packTLV(pPacket, 0x000e, 0x0002, (LPBYTE)CLIENT_COUNTRY);
 
 	packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }

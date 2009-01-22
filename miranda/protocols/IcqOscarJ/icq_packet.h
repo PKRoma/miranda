@@ -53,6 +53,8 @@ struct icq_packet
 
 /*---------* Functions *---------------*/
 
+WORD generate_flap_sequence();
+
 void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen);
 void write_httphdr(icq_packet *d, WORD wType, DWORD dwSeq);
 void __fastcall write_flap(icq_packet *, BYTE);
