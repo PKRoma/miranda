@@ -55,12 +55,12 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
     aim_writetlv(0x4C,0,0,offset,buf);//signifies new password hash instead of old method
     aim_writetlv(0x03,(unsigned short)strlen(AIM_CLIENT_ID_STRING),AIM_CLIENT_ID_STRING,offset,buf);
-    aim_writetlv(0x16,sizeof(AIM_CLIENT_ID_NUMBER)-1,AIM_CLIENT_ID_NUMBER,offset,buf);
-    aim_writetlv(0x17,sizeof(AIM_CLIENT_MAJOR_VERSION)-1,AIM_CLIENT_MAJOR_VERSION,offset,buf);
-    aim_writetlv(0x18,sizeof(AIM_CLIENT_MINOR_VERSION)-1,AIM_CLIENT_MINOR_VERSION,offset,buf);
-    aim_writetlv(0x19,sizeof(AIM_CLIENT_LESSER_VERSION)-1,AIM_CLIENT_LESSER_VERSION,offset,buf);
-    aim_writetlv(0x1A,sizeof(AIM_CLIENT_BUILD_NUMBER)-1,AIM_CLIENT_BUILD_NUMBER,offset,buf);
-    aim_writetlv(0x14,sizeof(AIM_CLIENT_DISTRIBUTION_NUMBER)-1,AIM_CLIENT_DISTRIBUTION_NUMBER,offset,buf);
+    aim_writetlvshort(0x17,AIM_CLIENT_MAJOR_VERSION,offset,buf);
+    aim_writetlvshort(0x18,AIM_CLIENT_MINOR_VERSION,offset,buf);
+    aim_writetlvshort(0x19,AIM_CLIENT_LESSER_VERSION,offset,buf);
+    aim_writetlvshort(0x1A,AIM_CLIENT_BUILD_NUMBER,offset,buf);
+    aim_writetlvshort(0x16,AIM_CLIENT_ID_NUMBER,offset,buf);
+    aim_writetlvlong(0x14,AIM_CLIENT_DISTRIBUTION_NUMBER,offset,buf);
     aim_writetlv(0x0F,(unsigned short)strlen(language),language,offset,buf);
     aim_writetlv(0x0E,(unsigned short)strlen(country),country,offset,buf);
     aim_writetlvchar(0x4A,1,offset,buf);

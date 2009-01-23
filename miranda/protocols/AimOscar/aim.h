@@ -177,13 +177,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //Md5 Roasting stuff
 #define AIM_MD5_STRING					"AOL Instant Messenger (SM)"
 #define MD5_HASH_LENGTH					16
+
 //Aim Version Stuff
-#define AIM_CLIENT_ID_NUMBER			"\x01\x09"
-#define AIM_CLIENT_MAJOR_VERSION		"\0\x05"
-#define AIM_CLIENT_MINOR_VERSION		"\0\x09"
-#define AIM_CLIENT_LESSER_VERSION		"\0\0"
-#define AIM_CLIENT_BUILD_NUMBER			"\x17\x72"
-#define AIM_CLIENT_DISTRIBUTION_NUMBER	"\0\0\x01\x50"
+#define AIM_CLIENT_MAJOR_VERSION		5
+#define AIM_CLIENT_MINOR_VERSION		9
+#define AIM_CLIENT_LESSER_VERSION		0
+#define AIM_CLIENT_BUILD_NUMBER			0x1772
+#define AIM_CLIENT_ID_NUMBER			0x0109
+#define AIM_CLIENT_DISTRIBUTION_NUMBER	0x0150
+
 #define AIM_LANGUAGE					"en"
 #define AIM_COUNTRY						"us"
 #define AIM_MSG_TYPE					"text/x-aolrtf; charset=\"us-ascii\""
