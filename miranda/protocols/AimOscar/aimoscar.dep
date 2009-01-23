@@ -1,7 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
 
 .\aim.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -110,7 +109,6 @@
 	
 
 .\away.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -164,7 +162,6 @@
 	
 
 .\chat.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -218,7 +215,6 @@
 	
 
 .\client.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -272,7 +268,6 @@
 	
 
 .\connection.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -326,7 +321,6 @@
 	
 
 .\conv.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -380,7 +374,6 @@
 	
 
 .\direct_connect.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -434,7 +427,6 @@
 	
 
 .\error.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -488,7 +480,6 @@
 	
 
 .\file.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -542,7 +533,6 @@
 	
 
 .\flap.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -596,7 +586,6 @@
 	
 
 .\links.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -651,7 +640,6 @@
 	
 
 .\packets.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -705,7 +693,6 @@
 	
 
 .\popup.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -759,7 +746,6 @@
 	
 
 .\proto.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -813,7 +799,6 @@
 	
 
 .\proxy.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -867,7 +852,6 @@
 	
 
 .\server.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -921,7 +905,6 @@
 	
 
 .\services.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -975,7 +958,6 @@
 	
 
 .\snac.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1029,7 +1011,6 @@
 	
 
 .\strl.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1083,7 +1064,6 @@
 	
 
 .\theme.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1137,7 +1117,6 @@
 	
 
 .\thread.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1191,7 +1170,6 @@
 	
 
 .\tlv.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1245,7 +1223,6 @@
 	
 
 .\ui.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1299,7 +1276,6 @@
 	
 
 .\utility.cpp : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
