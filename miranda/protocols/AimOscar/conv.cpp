@@ -61,7 +61,7 @@ char* strip_html(char *src)
 char* strip_special_chars(char *src, HANDLE hContact)
 {
 	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN, &dbv))
+	if (!DBGetContactSettingString(hContact, AIM_PROTOCOL_NAME, AIM_KEY_SN, &dbv))
 	{
 		char *ptr;
 		char* dest=strldup(src,lstrlenA(src));
