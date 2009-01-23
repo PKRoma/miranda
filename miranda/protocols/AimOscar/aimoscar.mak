@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on aimoscar.dsp
 !IF "$(CFG)" == ""
-CFG=aim - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to aim - Win32 Debug Unicode.
+CFG=aim - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to aim - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "aim - Win32 Release" && "$(CFG)" != "aim - Win32 Debug" && "$(CFG)" != "aim - Win32 Release Unicode" && "$(CFG)" != "aim - Win32 Debug Unicode"

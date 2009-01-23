@@ -1,6 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by aimoscar.mak
 
 .\aim.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -45,7 +46,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -56,6 +56,7 @@
 	
 
 .\avatars.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -100,7 +101,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -110,6 +110,7 @@
 	
 
 .\away.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -154,7 +155,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -164,6 +164,7 @@
 	
 
 .\chat.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -208,7 +209,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -218,6 +218,7 @@
 	
 
 .\client.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -262,7 +263,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -272,6 +272,7 @@
 	
 
 .\connection.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -316,7 +317,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -326,6 +326,7 @@
 	
 
 .\conv.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -370,7 +371,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -380,6 +380,7 @@
 	
 
 .\direct_connect.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -424,7 +425,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -434,6 +434,7 @@
 	
 
 .\error.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -478,7 +479,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -488,6 +488,7 @@
 	
 
 .\file.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -532,7 +533,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -542,6 +542,7 @@
 	
 
 .\flap.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -586,7 +587,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -596,6 +596,7 @@
 	
 
 .\links.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -641,7 +642,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -651,6 +651,7 @@
 	
 
 .\packets.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -695,7 +696,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -705,6 +705,7 @@
 	
 
 .\popup.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -749,7 +750,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -759,6 +759,7 @@
 	
 
 .\proto.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -803,7 +804,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -813,6 +813,7 @@
 	
 
 .\proxy.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -857,7 +858,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -867,6 +867,7 @@
 	
 
 .\server.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -911,7 +912,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -921,6 +921,7 @@
 	
 
 .\services.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -965,7 +966,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -975,6 +975,7 @@
 	
 
 .\snac.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1019,7 +1020,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1029,6 +1029,7 @@
 	
 
 .\strl.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1073,7 +1074,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1083,6 +1083,7 @@
 	
 
 .\theme.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1127,7 +1128,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1137,6 +1137,7 @@
 	
 
 .\thread.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1181,7 +1182,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1191,6 +1191,7 @@
 	
 
 .\tlv.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1235,7 +1236,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1245,6 +1245,7 @@
 	
 
 .\ui.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1289,7 +1290,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
@@ -1299,6 +1299,7 @@
 	
 
 .\utility.cpp : \
+	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1343,7 +1344,6 @@
 	".\packets.h"\
 	".\proto.h"\
 	".\proxy.h"\
-	".\server.h"\
 	".\snac.h"\
 	".\strl.h"\
 	".\theme.h"\
