@@ -494,12 +494,12 @@ LBL_FatalError:
 
 			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
-			bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
-			Log( "bytesParsed = %d", bytesParsed );
 			#if defined( _UNICODE )
+				bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
 				mir_free(str);
 			#endif
 
+			Log( "bytesParsed = %d", bytesParsed );
 			tag = NULL;
 
 			if ( xmlGetName( root ) == NULL ) {
