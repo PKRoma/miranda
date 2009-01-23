@@ -20,6 +20,13 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.14
+Bugfixes:
+ - AIM: Fixed timeout issue
+ - ICQ: Minor packet issue
+ - ICQ: Login enhancements
+ - Fix typo in sound options
+
 * New in 0.7.13
 Enhancements:
  - Installer remembers install options for upgrades

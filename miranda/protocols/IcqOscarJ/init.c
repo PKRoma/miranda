@@ -69,11 +69,11 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   NULL,
-  PLUGIN_MAKE_VERSION(0,3,10,15),
+  PLUGIN_MAKE_VERSION(0,3,10,16),
   "Support for ICQ network, enhanced.",
   "Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
   "jokusoftware@miranda-im.org",
-  "(C) 2000-2008 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
+  "(C) 2000-2009 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, J.Kucera",
   "http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
   0,  //not transient
   0,   //doesn't replace anything built-in
