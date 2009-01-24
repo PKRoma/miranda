@@ -34,15 +34,14 @@ BYTE nameOrder[NAMEORDERCOUNT];
 
 static int GetDatabaseString( CONTACTINFO *ci, const char* setting, DBVARIANT* dbv )
 {
-	int proto_service = ( CallProtoService(ci->szProto,PS_GETCAPS,PFLAGNUM_4,0) & PF4_INFOSETTINGSVC ) ? TRUE : FALSE;
+    if (CallProtoService(ci->szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_INFOSETTINGSVC)
+    {
+        DBCONTACTGETSETTING cgs = { ci->szProto, setting, dbv };
+        dbv->type = (ci->dwFlag & CNF_UNICODE) ? DBVT_WCHAR : DBVT_ASCIIZ;
 
-  if ( proto_service )
-  {
-    DBCONTACTGETSETTING cgs={ci->szProto,setting,dbv};
-	  dbv->type= ( ci->dwFlag & CNF_UNICODE ) ? DBVT_WCHAR : DBVT_ASCIIZ;
-
-	  return CallProtoService(ci->szProto,PS_GETINFOSETTING,(WPARAM)ci->hContact,(LPARAM)&cgs);
-  }
+        int res = CallProtoService(ci->szProto, PS_GETINFOSETTING, (WPARAM)ci->hContact, (LPARAM)&cgs);
+        if (res != CALLSERVICE_NOTFOUND) return res;
+    }
 
 	if ( ci->dwFlag & CNF_UNICODE )
 		return DBGetContactSettingWString(ci->hContact,ci->szProto,setting,dbv);
