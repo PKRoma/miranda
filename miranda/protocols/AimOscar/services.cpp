@@ -443,11 +443,12 @@ int CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFileName = (char*)lParam;
 
+	char tFileName[MAX_PATH];
+	get_avatar_filename(NULL, tFileName, sizeof(tFileName), NULL);
+	remove(tFileName);
+
     if (szFileName == NULL)
 	{
-		char tFileName[MAX_PATH];
-		get_avatar_filename(NULL, tFileName, sizeof(tFileName), NULL);
-		remove(tFileName);
         aim_set_avatar_hash(hServerConn, seqno, 0, 5, "\x02\x01\xd2\x04\x72");
 	}
 	else

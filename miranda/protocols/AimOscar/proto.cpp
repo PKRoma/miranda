@@ -29,6 +29,12 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
+	char store[MAX_PATH];
+	CallService(MS_DB_GETPROFILEPATH, MAX_PATH,(LPARAM)&store);
+    size_t len = strlen(store) - 1;
+	if (store[len] == '\\') store[len] = '\0';
+	CWD = strldup(store);
+
 	//create some events
 	hAvatarEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
 	hChatNavEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -111,12 +117,6 @@ CAimProto::~CAimProto()
 
 int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
-	char store[MAX_PATH];
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH,(LPARAM)&store);
-    size_t len = strlen(store) - 1;
-	if (store[len] == '\\') store[len] = '\0';
-	CWD = strldup(store);
-
 	TCHAR descr[MAX_PATH];
 
     NETLIBUSER nlu = {0};
@@ -784,6 +784,15 @@ int __cdecl CAimProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 		case EV_PROTO_ONLOAD:    return OnModulesLoaded( 0, 0 );
 		case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+		case EV_PROTO_ONRENAME:
+		{	
+			CLISTMENUITEM clmi = { 0 };
+			clmi.cbSize = sizeof( CLISTMENUITEM );
+			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.ptszName = m_tszUserName;
+			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuRoot, ( LPARAM )&clmi );
+            break;
+		}
 	}
 	return 1;
 }
