@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project,
+Copyright 2000-2009 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -485,7 +485,7 @@ typedef struct {
 //lParam=(LPARAM)(const char*)szMessage
 //returns a hProcess corresponding to the one in the ack event.
 //Will send an ack when the message actually gets sent
-//type=ACKTYPE_MESSAGE, result=success/failure, lParam=0
+//type=ACKTYPE_MESSAGE, result=success/failure, (char*)lParam=error message or NULL.
 //Protocols modules are free to define flags starting at 0x10000
 //The event will *not* be added to the database automatically.
 #define PSS_MESSAGE      "/SendMsg"
@@ -498,7 +498,7 @@ typedef struct {
 //separator being a single nul (\0). If there is no description, do not forget
 //to end the URL with two nuls.
 //Will send an ack when the message actually gets sent
-//type=ACKTYPE_URL, result=success/failure, lParam=0
+//type=ACKTYPE_URL, result=success/failure, (char*)lParam=error message or NULL.
 //Protocols modules are free to define flags starting at 0x10000
 //The event will *not* be added to the database automatically.
 #define PSS_URL          "/SendUrl"
@@ -512,7 +512,7 @@ typedef struct {
 //includes one or more contacts that cannot be transferred using this protocol
 //the function will fail.
 //Will send an ack when the contacts actually get sent
-//type=ACKTYPE_CONTACTS, result=success/failure, lParam=0
+//type=ACKTYPE_CONTACTS, result=success/failure, (char*)lParam=error message or NULL.
 //No flags have yet been defined.
 //The event will *not* be added to the database automatically.
 #define PSS_CONTACTS          "/SendContacts"
