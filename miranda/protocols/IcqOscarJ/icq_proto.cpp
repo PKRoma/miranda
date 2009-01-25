@@ -763,7 +763,7 @@ DWORD __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 		break;
 
 	case PFLAGNUM_4:
-		nReturn = PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_INFOSETTINGSVC;
+		nReturn = PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_IMSENDOFFLINE | PF4_INFOSETTINGSVC;
 		if (m_bAvatarsEnabled)
 			nReturn |= PF4_AVATARS;
 #ifdef DBG_CAPMTN
