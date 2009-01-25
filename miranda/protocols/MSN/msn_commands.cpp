@@ -67,6 +67,7 @@ void CMsnProto::sttSetMirVer( HANDLE hContact, DWORD dwValue, bool always )
 		"WLM 8.0",
 		"WLM 8.1",
 		"WLM 8.5",
+		"WLM 9.0 Beta",
 		"WLM 9.0",
 		"WLM Unknown",
 	};
@@ -704,7 +705,9 @@ void CMsnProto::sttProcessRemove( char* buf, size_t len )
 
 void CMsnProto::sttProcessStatusMessage( char* buf, unsigned len, HANDLE hContact )
 {
-	ezxml_t xmli = ezxml_parse_str(buf, len);
+	if (hContact == NULL) return;
+
+    ezxml_t xmli = ezxml_parse_str(buf, len);
 
 	// Process status message info
 	const char* szStatMsg = ezxml_txt(ezxml_child(xmli, "PSM"));
@@ -1452,8 +1455,6 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
-			if ( hContact == NULL )
-				break;
 
 			int len = atol( data.datalen );
 			if ( len < 0 || len > 4000 )
@@ -1474,15 +1475,14 @@ LBL_InvalidCommand:
 				goto LBL_InvalidCommand;
 
 			HANDLE hContact = MSN_HContactFromEmail( data.email, data.email, false, false );
-			if ( hContact == NULL )
-				break;
-
 			int len = atol( data.datalen );
 			if ( len < 0 || len > 4000 )
 				goto LBL_InvalidCommand;
 
 			HReadBuffer buf(info, 0);
 			char* msgBody = (char*)buf.surelyRead(len);
+
+			if ( hContact == NULL ) break;
 
 			switch (atol(data.typeId))
 			{
@@ -1500,6 +1500,7 @@ LBL_InvalidCommand:
 					// TURN setup
 					break;
 			}
+            break;
 		}
 
 		case ' LRU':    // URL : Hotmail, Spaces URL 
@@ -1619,8 +1620,19 @@ LBL_InvalidCommand:
 			break;
 
 		case ' XUU':   // UUX: MSNP11 addition
-			break;
+        {
+            char* tWords[ 1 ];
 
+            if ( sttDivideWords( params, SIZEOF(tWords), tWords ) != SIZEOF(tWords))
+	            goto LBL_InvalidCommand;
+
+            int len = atol( tWords[0] );
+            if ( len < 0 || len > 4000 )
+	            goto LBL_InvalidCommand;
+
+            HReadBuffer( info, 0 ).surelyRead( len );
+            break;
+        }
 		case ' REV':	//******** VER: section 7.1 Protocol Versioning
 		{
 
