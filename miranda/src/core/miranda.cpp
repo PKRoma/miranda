@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MMI_SIZE_V2 (7*sizeof(void*))
 
 int InitialiseModularEngine(void);
+int LoadDefaultModules(void);
 void DestroyModularEngine(void);
 void UnloadNewPluginsModule(void);
 void UnloadDefaultModules(void);
@@ -559,12 +560,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
 		getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
 		closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI,"CloseThemeData");
-        enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
-    }
+		enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
+	}
 
+	InitialiseModularEngine();
 	ParseCommandLine();
 
-	if (InitialiseModularEngine())
+	if (LoadDefaultModules())
 	{
 		NotifyEventHooks(hShutdownEvent,0,0);
 		UnloadDefaultModules();

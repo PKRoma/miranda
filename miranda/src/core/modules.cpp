@@ -147,7 +147,7 @@ void UnloadNetlibModule(void);
 void UnloadProtocolsModule(void);
 void UnloadAccountsModule(void);
 
-static int LoadDefaultModules(void)
+int LoadDefaultModules(void)
 {
 	int *disableDefaultModule = 0;
 
@@ -233,7 +233,7 @@ int InitialiseModularEngine(void)
 	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hMainThread,THREAD_SET_CONTEXT,FALSE,0);
 
 	hMissingService = CreateHookableEvent(ME_SYSTEM_MISSINGSERVICE);
-	return LoadDefaultModules();
+	return 0;
 }
 
 void DestroyModularEngine(void)
