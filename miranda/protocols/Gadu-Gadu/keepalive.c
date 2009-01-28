@@ -28,13 +28,24 @@ GGPROTO *g_timers[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
-	GGPROTO *gg = g_timers[idEvent];
-	if (gg_isonline(gg))
+	int i;
+	GGPROTO *gg;
+	
+	//Search for GGPROTO* context
+	for(i = 0; i < MAX_TIMERS; i++)
+		if(g_timers[i]->timer == idEvent)
+			break;
+
+	if(i < MAX_TIMERS)
 	{
-#ifdef DEBUGMODE
-		gg_netlog(gg, "Sending keep-alive");
-#endif
-		gg_ping(gg->sess);
+		gg = g_timers[i];
+		if (gg_isonline(gg))
+		{
+	#ifdef DEBUGMODE
+			gg_netlog(gg, "Sending keep-alive");
+	#endif
+			gg_ping(gg->sess);
+		}
 	}
 }
 
@@ -43,10 +54,10 @@ void gg_keepalive_init(GGPROTO *gg)
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_KEEPALIVE, GG_KEYDEF_KEEPALIVE))
 	{
 		int i;
-		for(i = 0; i < MAX_TIMERS && g_timers[i] == NULL; i++);
+		for(i = 0; i < MAX_TIMERS && g_timers[i] != NULL; i++);
 		if(i < MAX_TIMERS)
 		{
-			gg->timer = SetTimer(NULL, i, 1000 * 60, gg_keepalive);
+			gg->timer = SetTimer(NULL, 0, 1000 * 30, gg_keepalive);
 			g_timers[i] = gg;
 		}
 	}
