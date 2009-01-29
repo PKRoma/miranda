@@ -265,6 +265,10 @@ SOURCE=.\jabber_misc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_notes.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_opt.cpp
 # ADD CPP /Yu
 # End Source File
@@ -396,6 +400,10 @@ SOURCE=.\jabber_iq_handlers.h
 # Begin Source File
 
 SOURCE=.\jabber_list.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_notes.h
 # End Source File
 # Begin Source File
 

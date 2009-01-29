@@ -772,6 +772,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_notes.cpp">
+			</File>
+			<File
 				RelativePath="jabber_opt.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1164,6 +1167,9 @@
 			</File>
 			<File
 				RelativePath="jabber_list.h">
+			</File>
+			<File
+				RelativePath=".\jabber_notes.h">
 			</File>
 			<File
 				RelativePath=".\jabber_opttree.h">
