@@ -3,7 +3,8 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-09  George Hazan
-Copyright ( C ) 2007     Maxim Mluhov
+Copyright ( C ) 2007-09  Maxim Mluhov
+Copyright ( C ) 2007-09  Victor Pavlychko
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,10 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/jabber_iqid.cpp $
-Revision       : $Revision: 8809 $
-Last change on : $Date: 2009-01-09 22:36:06 +0200 (Ïò, 09 Ñ³÷ 2009) $
-Last change by : $Author: m_mluhov $
+File name      : $URL$
+Revision       : $Revision$
+Last change on : $Date$
+Last change by : $Author$
 
 */
 
