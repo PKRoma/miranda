@@ -95,7 +95,6 @@
 #define IDI_TRANSPORTL                  223
 #define IDD_DIALOG1                     224
 #define IDD_GROUPCHAT_INFO              224
-#define IDD_NOTES                       225
 #define IDD_OPT_JABBER4                 226
 #define IDD_DIALOG2                     227
 #define IDD_ACCMGRUI                    227
@@ -103,6 +102,11 @@
 #define IDI_ICON3                       229
 #define IDI_HTTP_AUTH                   229
 #define IDD_PEP_SIMPLE                  230
+#define IDD_DIALOG3                     231
+#define IDD_NOTEBOOK                    231
+#define IDD_NOTE_EDIT                   232
+#define IDI_NOTES                       233
+#define IDI_SEND_NOTE                   234
 #define IDC_STATUSBAR                   999
 #define IDC_EDIT_USERNAME               1000
 #define IDC_SAVE                        1000
@@ -337,6 +341,7 @@
 #define IDC_LIST1                       1264
 #define IDC_LV_INFO                     1264
 #define IDC_LB_LISTS                    1264
+#define IDC_LST_NOTES                   1264
 #define IDC_TITLE1                      1265
 #define IDC_CONSOLE                     1266
 #define IDC_CONSOLEIN                   1267
@@ -376,13 +381,13 @@
 #define IDC_EDIT1                       1294
 #define IDC_FILTER                      1294
 #define IDC_TXT_NICK                    1294
-#define IDC_TEXT                        1294
 #define IDC_TXT_QUIT                    1294
 #define IDC_HTTP_AUTH_INFO              1294
 #define IDC_EDIT_HTTP_AUTH_INFO         1294
 #define IDC_TXT_URL                     1294
 #define IDC_TXT_INPUT                   1294
 #define IDC_TXT_DESCRIPTION             1294
+#define IDC_TXT_TITLE                   1294
 #define IDC_BTN_FILTER                  1295
 #define IDC_BTN_NOFILTER                1295
 #define IDC_TXT_ID                      1295
@@ -403,12 +408,16 @@
 #define IDC_TXT_AFFILIATION             1299
 #define IDC_ICO_STATUS                  1300
 #define IDC_TXT_RICHEDIT                1302
-#define IDC_TREE                        1303
 #define IDC_EDIT2                       1304
 #define IDC_TXT_SLAP                    1304
+#define IDC_TXT_TAGS                    1304
 #define IDC_HTTP_DENY                   1305
 #define IDC_EMAILS                      1306
+#define IDC_TV_FILTER                   1307
 #define IDC_PHONES                      1308
+#define IDC_EDIT3                       1308
+#define IDC_TXT_TEXT                    1308
+#define IDC_ST_TAGS                     1309
 #define IDC_UPDATE                      1313
 #define IDC_STATUS                      1414
 #define IDC_INSTRUCTIONS                1414
@@ -454,9 +463,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        231
+#define _APS_NEXT_RESOURCE_VALUE        235
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1307
+#define _APS_NEXT_CONTROL_VALUE         1310
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -1065,6 +1065,11 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		return;
 	}
 
+	if ( n = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MIRANDA_NOTES))) {
+		OnIncomingNote(from, xmlGetChild(n, "note"));
+		return;
+	}
+
 	JABBER_LIST_ITEM *chatItem = ListGetItemPtr( LIST_CHATROOM, from );
 	if (!lstrcmp( type, _T("groupchat")))
 	{

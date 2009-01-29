@@ -613,6 +613,8 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN,              NULL },
 	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH,            NULL },
 	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
+	{   LPGEN("Notes"),	                "notes",            IDI_NOTES,              NULL }, 
+	{   LPGEN("Send note"),             "sendnote",         IDI_SEND_NOTE,          NULL }, 
 	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
 	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
 	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },

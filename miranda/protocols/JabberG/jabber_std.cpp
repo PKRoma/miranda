@@ -129,6 +129,17 @@ int CJabberProto::JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv 
 	return DBGetContactSettingTString( hContact, m_szModuleName, valueName, dbv );
 }
 
+TCHAR *CJabberProto::JGetStringTStr( HANDLE hContact, char* valueName )
+{
+	DBVARIANT dbv = {0};
+	if (JGetStringT(hContact, valueName, &dbv))
+		return NULL;
+
+	TCHAR *res = mir_tstrdup(dbv.ptszVal);
+	JFreeVariant(&dbv);
+	return res;
+}
+
 WORD CJabberProto::JGetWord( HANDLE hContact, const char* valueName, int parDefltValue )
 {
 	return DBGetContactSettingWord( hContact, m_szModuleName, valueName, parDefltValue );

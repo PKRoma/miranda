@@ -261,7 +261,7 @@ public:
 
 	// general utilities
 	void Create();
-	void Show();
+	void Show(int nCmdShow = SW_SHOW);
 	int DoModal();
 
 	__inline HWND GetHwnd() const { return m_hwnd; }

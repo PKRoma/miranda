@@ -108,6 +108,15 @@ void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, CJabberIqInfo* pIn
 			<< XCHILDNS( _T("query"), _T(JABBER_FEAT_IQ_ROSTER)));
 }
 
+void CJabberProto::OnIqResultNotes( HXML iqNode, CJabberIqInfo* pInfo )
+{
+	if ( iqNode && pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT ) {
+		HXML hXmlData = XPathFmt( iqNode, _T("query[@xmlns='%s']/storage[@xmlns='%s']"),
+			_T(JABBER_FEAT_PRIVATE_STORAGE), _T(JABBER_FEAT_MIRANDA_NOTES));
+		if (hXmlData) m_notes.LoadXml(hXmlData);
+	}
+}
+
 void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 {
 	info->dwLoginRqs |= rq;
@@ -153,6 +162,14 @@ void CJabberProto::OnLoggedIn()
 		m_ThreadInfo->send(
 			XmlNodeIq( pIqInfo ) << XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 				<< XCHILDNS( _T("roster"), _T(JABBER_FEAT_NESTED_ROSTER_GROUPS)));
+	}
+
+	// Server-side notes
+	{
+		m_ThreadInfo->send(
+			XmlNodeIq(m_iqManager.AddHandler(&CJabberProto::OnIqResultNotes, JABBER_IQ_TYPE_GET))
+				<< XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
+				<< XCHILDNS( _T("storage"), _T(JABBER_FEAT_MIRANDA_NOTES)));
 	}
 
 	int iqId = SerialNext();

@@ -55,9 +55,9 @@ void CDlgBase::Create()
 	ShowWindow(CreateDialogParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this), SW_HIDE);
 }
 
-void CDlgBase::Show()
+void CDlgBase::Show(int nCmdShow)
 {
-	ShowWindow(CreateDialogParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this), SW_SHOW);
+	ShowWindow(CreateDialogParam(hInst, MAKEINTRESOURCE(m_idDialog), m_hwndParent, GlobalDlgProc, (LPARAM)(CDlgBase *)this), nCmdShow);
 }
 
 int CDlgBase::DoModal()

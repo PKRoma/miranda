@@ -36,6 +36,7 @@ Last change by : $Author: m_mluhov $
 #include "jabber_iq.h"
 #include "jabber_icolib.h"
 #include "jabber_xstatus.h"
+#include "jabber_notes.h"
 
 struct CJabberProto;
 typedef void ( __cdecl CJabberProto::*JThreadFunc )( void* );
@@ -229,6 +230,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	CJabberDlgBase *m_pDlgBookmarks;
 	CJabberDlgBase *m_pDlgServiceDiscovery;
 	CJabberDlgBase *m_pDlgJabberJoinGroupchat;
+	CJabberDlgBase *m_pDlgNotes;
 
 	HANDLE m_windowList;
 
@@ -278,9 +280,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE m_hMenuChangePassword;
 	HANDLE m_hMenuGroupchat;
 	HANDLE m_hMenuBookmarks;
+	HANDLE m_hMenuNotes;
 	HANDLE m_hMenuAddBookmark;
 
 	HANDLE m_hMenuCommands;
+	HANDLE m_hMenuSendNote;
 	HANDLE m_hMenuPrivacyLists;
 	HANDLE m_hMenuRosterControl;
 	HANDLE m_hMenuServiceDiscovery;
@@ -304,6 +308,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	int m_privacyMenuServiceAllocated;
 
 	TFilterInfo m_filterInfo;
+
+	CNoteList m_notes;
 
 	/*******************************************************************
 	* Function declarations
@@ -342,6 +348,16 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuHandleBookmarks( WPARAM wParam, LPARAM lParam );
 
 	int    AddEditBookmark( JABBER_LIST_ITEM* item );
+
+	//---- jabber_notes.c -----------------------------------------------------------------
+
+	void CJabberProto::ProcessIncomingNote(CNoteItem *pNote, bool ok);
+	void CJabberProto::ProcessOutgoingNote(CNoteItem *pNote, bool ok);
+
+	void CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml);
+
+	int    __cdecl CJabberProto::OnMenuSendNote(WPARAM, LPARAM);
+	int    __cdecl CJabberProto::OnMenuHandleNotes(WPARAM, LPARAM);
 
 	//---- jabber_byte.c -----------------------------------------------------------------
 
@@ -502,6 +518,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultMucGetOwnerList( HXML iqNode );
 	void   OnIqResultMucGetVoiceList( HXML iqNode );
 	void   OnIqResultNestedRosterGroups( HXML iqNode, CJabberIqInfo* pInfo );
+	void   OnIqResultNotes( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultSession( HXML iqNode );
 	void   OnIqResultSetAuth( HXML iqNode );
 	void   OnIqResultSetPassword( HXML iqNode );
@@ -697,6 +714,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
 	int    JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv );
 	int    JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv );
+	TCHAR *JGetStringTStr( HANDLE hContact, char* valueName );
 	WORD   JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 	void   JHookEvent( const char*, JEventFunc );
 	int    JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );

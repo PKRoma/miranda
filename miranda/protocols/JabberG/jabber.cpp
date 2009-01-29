@@ -141,6 +141,7 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 	UI_SAFE_CLOSE(m_pDlgBookmarks);
 	UI_SAFE_CLOSE(m_pDlgServiceDiscovery);
 	UI_SAFE_CLOSE(m_pDlgJabberJoinGroupchat);
+	UI_SAFE_CLOSE(m_pDlgNotes);
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();

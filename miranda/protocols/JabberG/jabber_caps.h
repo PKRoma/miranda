@@ -162,6 +162,8 @@ typedef unsigned __int64 JabberCapsBits;
 
 #define JABBER_FEAT_HTTP_AUTH                   "http://jabber.org/protocol/http-auth"
 
+#define JABBER_FEAT_MIRANDA_NOTES               "http://miranda-im.org/storage#notes"
+
 
 class CJabberClientPartialCaps
 {

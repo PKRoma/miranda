@@ -1027,6 +1027,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_notes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_opt.cpp"
 				>
 				<FileConfiguration
@@ -1532,6 +1536,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\jabber_notes.h"
+				>
+			</File>
+			<File
 				RelativePath=".\jabber_opttree.h"
 				>
 			</File>
@@ -1581,7 +1589,23 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icos\add2roster.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\addcontact.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\arrow_down.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\arrow_up.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\auth_revoke.ico"
 				>
 			</File>
 			<File
@@ -1589,7 +1613,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\bookmarks.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\command.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\console.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\delete.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_fail.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_in_progress.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\disco_ok.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\filter.ico"
 				>
 			</File>
 			<File
@@ -1609,11 +1661,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\go.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\grant.ico"
 				>
 			</File>
 			<File
 				RelativePath="icos\group.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\home.ico"
 				>
 			</File>
 			<File
@@ -1629,7 +1689,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\login.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\message.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\message_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\message_deny.ico"
 				>
 			</File>
 			<File
@@ -1637,7 +1709,59 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\openid.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\pages.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_active.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_any.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\plist_default.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_in_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_in_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_out_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\presence_out_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\privacy_lists.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\query_allow.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\query_deny.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\refresh.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\refresh_node.ico"
 				>
 			</File>
 			<File
@@ -1649,7 +1773,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\reset_filter.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\roster.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\rss.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\save.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\server.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\service_discovery.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\store.ico"
 				>
 			</File>
 			<File
@@ -1661,7 +1809,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icos\user2room.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\version.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\view_as_list.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\view_as_tree.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\weather.ico"
 				>
 			</File>
 			<File
