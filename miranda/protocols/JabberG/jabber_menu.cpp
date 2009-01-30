@@ -491,7 +491,7 @@ void CJabberProto::MenuInit()
 	mi.icolibItem = GetIconHandle( IDI_COMMAND );
 	m_hMenuCommands = ( HANDLE )JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
-	// Run Commands
+	// Send Note
 	JCreateService( "/SendNote", &CJabberProto::OnMenuSendNote );
 	strcpy( tDest, "/SendNote" );
 	mi.pszName = LPGEN("Send Note");
@@ -500,6 +500,7 @@ void CJabberProto::MenuInit()
 	m_hMenuSendNote = ( HANDLE )JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Resource selector
+	strcpy( tDest, "/ResourceSelectorDummySvc" );
 	mi.pszName = LPGEN("Jabber Resource");
 	mi.position = -1999901011;
 	mi.pszPopupName = (char *)-1;

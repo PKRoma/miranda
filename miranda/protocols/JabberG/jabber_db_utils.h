@@ -213,6 +213,8 @@ struct CJabberOptions
 	CMOption<BYTE> ShowTransport;
 	CMOption<BYTE> UseSSL;
 	CMOption<BYTE> UseTLS;
+	CMOption<BYTE> AcceptNotes;
+	CMOption<BYTE> AutosaveNotes;
 
 	CJabberOptions(PROTO_INTERFACE *proto):
 		BsDirect(proto, "BsDirect", FALSE),
@@ -257,7 +259,9 @@ struct CJabberOptions
 		ShowOSVersion(proto, "ShowOSVersion", TRUE),
 		ShowTransport(proto, "ShowTransport", TRUE),
 		UseSSL(proto, "UseSSL", FALSE),
-		UseTLS(proto, "UseTLS", TRUE)
+		UseTLS(proto, "UseTLS", TRUE),
+		AcceptNotes(proto, "AcceptNotes", TRUE),
+		AutosaveNotes(proto, "AutosaveNotes", FALSE)
 		{}
 /*
 JGetByte( hContact, "ChatRoom", 0 )

@@ -121,6 +121,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( JS_SETXSTATUS, &CJabberProto::OnSetXStatus );
 
 	JCreateService( JS_HTTP_AUTH, &CJabberProto::OnHttpAuthRequest );
+	JCreateService( JS_INCOMING_NOTE_EVENT, &CJabberProto::OnIncomingNoteEvent );
 
 	JCreateService( JS_SENDXML, &CJabberProto::ServiceSendXML );
 	JCreateService( PS_GETMYAVATAR, &CJabberProto::JabberGetAvatar );

@@ -286,6 +286,7 @@ enum {
 #define JS_SETXSTATUS              "/SetXStatus"
 
 #define JS_HTTP_AUTH               "/HttpAuthRequest"
+#define JS_INCOMING_NOTE_EVENT     "/IncomingNoteEvent"
 
 #define DBSETTING_DISPLAY_UID      "display_uid"
 #define DBSETTING_XSTATUSID        "XStatusId"

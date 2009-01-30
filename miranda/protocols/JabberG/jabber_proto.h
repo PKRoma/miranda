@@ -354,10 +354,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void CJabberProto::ProcessIncomingNote(CNoteItem *pNote, bool ok);
 	void CJabberProto::ProcessOutgoingNote(CNoteItem *pNote, bool ok);
 
-	void CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml);
+	bool CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml);
 
 	int    __cdecl CJabberProto::OnMenuSendNote(WPARAM, LPARAM);
 	int    __cdecl CJabberProto::OnMenuHandleNotes(WPARAM, LPARAM);
+	int    __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM);
 
 	//---- jabber_byte.c -----------------------------------------------------------------
 

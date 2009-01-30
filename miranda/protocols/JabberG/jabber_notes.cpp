@@ -132,7 +132,13 @@ bool CNoteItem::HasTag(const TCHAR *szTag)
 
 int CNoteItem::cmp(const CNoteItem *p1, const CNoteItem *p2)
 {
-	return lstrcmp(p1->m_szTitle, p2->m_szTitle);
+	int ret = 0;
+	if (ret = lstrcmp(p1->m_szTitle, p2->m_szTitle)) return ret;
+	if (ret = lstrcmp(p1->m_szText, p2->m_szText)) return ret;
+	if (ret = lstrcmp(p1->m_szTagsStr, p2->m_szTagsStr)) return ret;
+	if (p1 < p2) return -1;
+	if (p1 > p2) return 1;
+	return 0;
 }
 
 void CNoteList::AddNote(HXML hXml, TCHAR *szFrom)
@@ -247,6 +253,7 @@ CJabberDlgNoteItem::CJabberDlgNoteItem(CJabberProto *proto, CNoteItem *pNote, TF
 void CJabberDlgNoteItem::OnInitDialog()
 {
 	CSuper::OnInitDialog();
+	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("notes"));
 
 	if (m_fnProcess)
 	{
@@ -610,8 +617,10 @@ private:
 		if (idx != LB_ERR)
 		{
 			if (CNoteItem *pItem = (CNoteItem *)m_lstNotes.GetItemData(idx))
+			{
+				m_lstNotes.DeleteString(idx);
 				m_proto->m_notes.remove(pItem);
-			m_lstNotes.DeleteString(idx);
+			}
 		}
 		EnableControls();
 	}
@@ -713,6 +722,7 @@ void CJabberDlgNotes::OnClose()
 
 void CJabberDlgNotes::OnDestroy()
 {
+	m_tvFilter.DeleteAllItems();
 	m_proto->m_pDlgNotes = NULL;
 	CSuper::OnDestroy();
 }
@@ -766,7 +776,11 @@ void CJabberProto::ProcessIncomingNote(CNoteItem *pNote, bool ok)
 
 void CJabberProto::ProcessOutgoingNote(CNoteItem *pNote, bool ok)
 {
-	if (!ok || !pNote->IsNotEmpty()) return;
+	if (!ok || !pNote->IsNotEmpty())
+	{
+		delete pNote;
+		return;
+	}
 
 	TCHAR buf[1024];
 	mir_sntprintf(buf, SIZEOF(buf), _T("Incoming note: %s\n\n%s\nTags: %s"), 
@@ -783,33 +797,60 @@ void CJabberProto::ProcessOutgoingNote(CNoteItem *pNote, bool ok)
 	delete pNote;
 }
 
-struct JabberShowIncomingNoteParams
+bool CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml)
 {
-	CJabberProto *m_proto;
-	CNoteItem *m_note;
+	if (!m_options.AcceptNotes)
+		return false;
 
-	JabberShowIncomingNoteParams(CJabberProto *proto, CNoteItem *note): m_proto(proto), m_note(note) {}
-};
-
-static VOID CALLBACK JabberShowIncomingNoteProc(DWORD param)
-{
-	JabberShowIncomingNoteParams *params = (JabberShowIncomingNoteParams *)param;
-	CJabberDlgBase *pDlg = new CJabberDlgNoteItem(params->m_proto, params->m_note, &CJabberProto::ProcessIncomingNote);
-	pDlg->Show(SW_SHOWMINNOACTIVE);
-}
-
-void CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml)
-{
-	if (!szFrom || !hXml) return;
+	if (!szFrom || !hXml) return true;
 	CNoteItem *pItem = new CNoteItem(hXml, (TCHAR *)szFrom);
 	if (!pItem->IsNotEmpty())
 	{
 		delete pItem;
-		return;
+		return true;
 	}
 
-	QueueUserAPC(JabberShowIncomingNoteProc, hMainThread, (DWORD)new JabberShowIncomingNoteParams(this, pItem));
-	return;
+	if (m_options.AutosaveNotes)
+	{
+		ProcessIncomingNote(pItem, true);
+		return false;
+	}
+
+	CLISTEVENT cle = {0};
+	char szService[256];
+	mir_snprintf( szService, sizeof(szService),"%s%s", m_szModuleName, JS_INCOMING_NOTE_EVENT );
+	cle.cbSize = sizeof(CLISTEVENT);
+	cle.hIcon = (HICON)LoadIconEx("notes");
+	cle.flags = CLEF_PROTOCOLGLOBAL|CLEF_TCHAR;
+	cle.hDbEvent = (HANDLE)("test");
+	cle.lParam = (LPARAM)pItem;
+	cle.pszService = szService;
+	cle.ptszTooltip = TranslateT("Incoming note");
+	CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+	
+	return true;
+}
+
+int __cdecl CJabberProto::OnIncomingNoteEvent(WPARAM, LPARAM lParam)
+{
+	CLISTEVENT *pCle = (CLISTEVENT *)lParam;
+	CNoteItem *pNote = (CNoteItem *)pCle->lParam;
+	if ( !pNote )
+		return 0;
+
+	CJabberDlgBase *pDlg = new CJabberDlgNoteItem(this, pNote, &CJabberProto::ProcessIncomingNote);
+	pDlg->Show();
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Menu handling
+
+int __cdecl CJabberProto::OnMenuHandleNotes( WPARAM, LPARAM)
+{
+	UI_SAFE_OPEN_EX(CJabberDlgNotes, m_pDlgNotes, pDlg);
+	pDlg->UpdateData();
+	return 0;
 }
 
 int __cdecl CJabberProto::OnMenuSendNote(WPARAM wParam, LPARAM)
@@ -818,15 +859,5 @@ int __cdecl CJabberProto::OnMenuSendNote(WPARAM wParam, LPARAM)
 	CNoteItem *pItem = new CNoteItem(NULL, JGetStringTStr((HANDLE)wParam, "jid"));
 	CJabberDlgBase *pDlg = new CJabberDlgNoteItem(this, pItem, &CJabberProto::ProcessOutgoingNote);
 	pDlg->Show();
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// Launches the notebook window
-
-int __cdecl CJabberProto::OnMenuHandleNotes( WPARAM, LPARAM)
-{
-	UI_SAFE_OPEN_EX(CJabberDlgNotes, m_pDlgNotes, pDlg);
-	pDlg->UpdateData();
 	return 0;
 }
