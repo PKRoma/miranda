@@ -222,7 +222,7 @@ private:
 	void OnClose()
 	{
 		if (m_fnProcess) (m_proto->*m_fnProcess)(m_pNote, false);
-		CSuper::OnInitDialog();
+		CSuper::OnClose();
 	}
 };
 
@@ -604,8 +604,8 @@ private:
 			if (CNoteItem *pItem = (CNoteItem *)m_lstNotes.GetItemData(idx))
 			{
 				CJabberDlgNoteItem dlg(this, pItem);
-				dlg.DoModal();
-				m_proto->m_notes.Modify();
+				if (dlg.DoModal())
+					m_proto->m_notes.Modify();
 			}
 		}
 		EnableControls();
