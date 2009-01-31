@@ -786,13 +786,31 @@ void CJabberProto::ProcessOutgoingNote(CNoteItem *pNote, bool ok)
 	mir_sntprintf(buf, SIZEOF(buf), _T("Incoming note: %s\n\n%s\nTags: %s"), 
 		pNote->GetTitle(), pNote->GetText(), pNote->GetTagsStr());
 
+	JabberCapsBits jcb = GetResourceCapabilites( pNote->GetFrom(), TRUE );
+
+	if ( jcb & JABBER_RESOURCE_CAPS_ERROR )
+		jcb = JABBER_RESOURCE_CAPS_NONE;
+
+	int nMsgId = SerialNext();
+
 	XmlNode m(_T("message"));
-	m << XATTR(_T("type"), _T("chat")) << XATTR(_T("to"), pNote->GetFrom());
+	m << XATTR(_T("type"), _T("chat")) << XATTR( _T("to"), pNote->GetFrom() ) << XATTRID( nMsgId );
 	m << XCHILD(_T("body"), buf);
 	HXML hXmlItem = m << XCHILDNS(_T("x"), _T(JABBER_FEAT_MIRANDA_NOTES)) << XCHILD(_T("note"));
 	hXmlItem << XATTR(_T("tags"), pNote->GetTagsStr());
 	hXmlItem << XCHILD(_T("title"), pNote->GetTitle());
 	hXmlItem << XCHILD(_T("text"), pNote->GetText());
+
+	// message receipts XEP priority
+	if ( jcb & JABBER_CAPS_MESSAGE_RECEIPTS )
+		m << XCHILDNS( _T("request"), _T(JABBER_FEAT_MESSAGE_RECEIPTS));
+	else if ( jcb & JABBER_CAPS_MESSAGE_EVENTS ) {
+		HXML x = m << XCHILDNS( _T("x"), _T(JABBER_FEAT_MESSAGE_EVENTS));
+		x << XCHILD( _T("delivered")); x << XCHILD( _T("offline"));
+	}
+	else
+		nMsgId = -1;
+
 	m_ThreadInfo->send(m);
 	delete pNote;
 }
@@ -856,8 +874,13 @@ int __cdecl CJabberProto::OnMenuHandleNotes( WPARAM, LPARAM)
 int __cdecl CJabberProto::OnMenuSendNote(WPARAM wParam, LPARAM)
 {
 	if (!wParam) return 0;
-	CNoteItem *pItem = new CNoteItem(NULL, JGetStringTStr((HANDLE)wParam, "jid"));
+
+	TCHAR szClientJid[ 256 ];
+	GetClientJID( JGetStringTStr( (HANDLE)wParam, "jid"), szClientJid, SIZEOF( szClientJid ));
+
+	CNoteItem *pItem = new CNoteItem( NULL, szClientJid );
 	CJabberDlgBase *pDlg = new CJabberDlgNoteItem(this, pItem, &CJabberProto::ProcessOutgoingNote);
 	pDlg->Show();
+
 	return 0;
 }

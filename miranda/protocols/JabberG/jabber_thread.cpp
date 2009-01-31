@@ -1065,11 +1065,6 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		return;
 	}
 
-	if (n = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MIRANDA_NOTES))) {
-		if (OnIncomingNote(from, xmlGetChild(n, "note")))
-			return;
-	}
-
 	JABBER_LIST_ITEM *chatItem = ListGetItemPtr( LIST_CHATROOM, from );
 	if (!lstrcmp( type, _T("groupchat")))
 	{
@@ -1077,7 +1072,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		{	// process GC message
 			GroupchatProcessMessage( node );
 		} else
-		{	// got message from onknown conference... let's leave it :)
+		{	// got message from unknown conference... let's leave it :)
 //			TCHAR *conference = NEWTSTR_ALLOCA(from);
 //			if (TCHAR *s = _tcschr(conference, _T('/'))) *s = 0;
 //			XmlNode p( "presence" ); xmlAddAttr( p, "to", conference ); xmlAddAttr( p, "type", "unavailable" );
@@ -1145,6 +1140,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 	// chatstates paused event
 	if ( hContact && xmlGetChildByTag( node, "paused", "xmlns", _T( JABBER_FEAT_CHATSTATES )))
+		JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM )hContact, PROTOTYPE_CONTACTTYPING_OFF );
+
+	// chatstates inactive event
+	if ( hContact && xmlGetChildByTag( node, "inactive", "xmlns", _T( JABBER_FEAT_CHATSTATES )))
 		JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM )hContact, PROTOTYPE_CONTACTTYPING_OFF );
 
 	idStr = xmlGetAttrValue( node, _T("id"));
@@ -1231,6 +1230,11 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 		AddClistHttpAuthEvent( pParams );
 		return;
+	}
+
+	if (n = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MIRANDA_NOTES))) {
+		if (OnIncomingNote(from, xmlGetChild(n, "note")))
+			return;
 	}
 
 	for ( int i = 1; ( xNode = xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
