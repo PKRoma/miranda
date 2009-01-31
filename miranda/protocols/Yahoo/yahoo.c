@@ -445,7 +445,11 @@ void ext_yahoo_status_logon(int id, const char *who, int protocol, int stat, con
 		case 888327:
 				s = "Yahoo 9.0 for Vista";
 				break;
-			
+		
+		case 822366: /* Yahoo! Messenger 2.1.37 by RIM */
+				s = "Yahoo for Blackberry";
+				break;
+				
 		case 822543:  /* ? "Yahoo Version 3.0 beta 1 (build 18274) OSX" */
 		case 1572799: /* 8.0.x ??  */ 
 		case 2097087: /* 8.1.0.195 */ 
@@ -729,6 +733,7 @@ void ext_yahoo_buddy_added(int id, char *myid, char *who, char *group, int statu
 	switch (status) {
 		case 0: /* we are ok */
 		case 2: /* seems that we ok, not sure what this means.. we already on buddy list? */
+		case 40: /* When adding MSN Live contacts we get this one? */
 				DBDeleteContactSetting( hContact, "CList", "NotOnList" );
 				DBDeleteContactSetting( hContact, "CList", "Hidden" );
 				break;
