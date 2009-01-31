@@ -52,8 +52,11 @@ int PASCAL recv(SOCKET s, char FAR *buf, int len, int flags)
 	RecvResult = Netlib_Recv((HANDLE)s, buf, len, (len == 1) ? MSG_NODUMP : 0);
 	
 	//LOG(("Got bytes: %d, len: %d", RecvResult, len));
-    if (RecvResult == SOCKET_ERROR) {
-        LOG(("Receive error on socket: %d", s));
+	if (RecvResult == 0) {
+		LOG(("[recv] Connection closed gracefully."));
+        return 0;
+	} else if (RecvResult == SOCKET_ERROR) {
+        LOG(("[recv] Connection abortively closed"));
         return -1;
     }
 
