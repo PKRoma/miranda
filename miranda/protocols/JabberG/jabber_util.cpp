@@ -843,6 +843,12 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra )
 		_tcscat( szExtCaps, _T(JABBER_EXT_USER_ACTIVITY) );
 	}
 
+	if ( m_options.AcceptNotes ) {
+		if ( szExtCaps[0] )
+			_tcscat( szExtCaps, _T(" "));
+		_tcscat( szExtCaps, _T(JABBER_EXT_MIR_NOTES) );
+	}
+
 	if ( szExtCaps[0] )
 		xmlAddAttr( c, _T("ext"), szExtCaps );
 

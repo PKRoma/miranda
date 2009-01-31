@@ -70,6 +70,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_ATTENTION_0),          JABBER_CAPS_ATTENTION_0,          _T("Supports attention requests ('nudge')"), },
 	{	_T(JABBER_FEAT_USER_ACTIVITY),        JABBER_CAPS_USER_ACTIVITY,        _T("Can report information about user activity"), },
 	{	_T(JABBER_FEAT_USER_ACTIVITY_NOTIFY), JABBER_CAPS_USER_ACTIVITY_NOTIFY, _T("Receives information about user activity"), },
+	{	_T(JABBER_FEAT_MIRANDA_NOTES),        JABBER_CAPS_MIRANDA_NOTES,        _T("Supports Miranda IM notes extension"), },
 	{	NULL,                             0,                             NULL}
 };
 
@@ -79,6 +80,7 @@ JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_USER_MOOD),         JABBER_CAPS_USER_MOOD_NOTIFY     },
 	{	_T(JABBER_EXT_USER_TUNE),         JABBER_CAPS_USER_TUNE_NOTIFY     },
 	{	_T(JABBER_EXT_USER_ACTIVITY),     JABBER_CAPS_USER_ACTIVITY_NOTIFY },
+	{	_T(JABBER_EXT_MIR_NOTES),         JABBER_CAPS_MIRANDA_NOTES,       },
 	{	_T(__VERSION_STRING),             JABBER_CAPS_MIRANDA_PARTIAL      },
 	{	NULL,                             0                                }
 };

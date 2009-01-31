@@ -125,6 +125,8 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_USER_ACTIVITY_NOTIFY        ((JabberCapsBits)1<<36)
 #define JABBER_FEAT_ATTENTION_0                 "urn:xmpp:attention:0"
 #define JABBER_CAPS_ATTENTION_0                 ((JabberCapsBits)1<<37)
+#define JABBER_FEAT_MIRANDA_NOTES               "http://miranda-im.org/storage#notes"
+#define JABBER_CAPS_MIRANDA_NOTES               ((JabberCapsBits)1<<38)
 
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
@@ -142,6 +144,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_EXT_USER_MOOD                    "mood"
 #define JABBER_EXT_USER_TUNE                    "tune"
 #define JABBER_EXT_USER_ACTIVITY                "activity"
+#define JABBER_EXT_MIR_NOTES                    "mir_notes"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
 #define JABBER_FEAT_NESTED_ROSTER_GROUPS        "roster:delimiter"
@@ -161,8 +164,6 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
 
 #define JABBER_FEAT_HTTP_AUTH                   "http://jabber.org/protocol/http-auth"
-
-#define JABBER_FEAT_MIRANDA_NOTES               "http://miranda-im.org/storage#notes"
 
 
 class CJabberClientPartialCaps
