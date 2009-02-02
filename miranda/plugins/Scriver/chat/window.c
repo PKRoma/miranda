@@ -1905,6 +1905,8 @@ LABEL_SHOWWINDOW:
 		break;
 
 	case WM_COMMAND:
+		if (!lParam && CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) si->windowData.hContact))
+			break;
 		switch (LOWORD(wParam)) {
 		case IDC_CHAT_LIST:
 			if (HIWORD(wParam) == LBN_DBLCLK) {
