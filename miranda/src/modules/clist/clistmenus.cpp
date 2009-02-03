@@ -1164,7 +1164,7 @@ static int MenuProtoAck(WPARAM, LPARAM lParam)
 			break;
 	}	}
 
-	BuildStatusMenu(0,0);
+	//BuildStatusMenu(0,0);
 	return 0;
 }
 
