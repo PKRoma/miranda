@@ -715,7 +715,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    JGetStaticString( const char* valueName, HANDLE hContact, char* dest, int dest_len );
 	int    JGetStringUtf( HANDLE hContact, char* valueName, DBVARIANT* dbv );
 	int    JGetStringT( HANDLE hContact, char* valueName, DBVARIANT* dbv );
-	TCHAR *JGetStringTStr( HANDLE hContact, char* valueName );
+	TCHAR *JGetStringT( HANDLE hContact, char* valueName );
+	TCHAR *JGetStringT( HANDLE hContact, char* valueName, TCHAR *&out );
+	TCHAR *JGetStringT( HANDLE hContact, char* valueName, TCHAR *buf, int size );
 	WORD   JGetWord( HANDLE hContact, const char* valueName, int parDefltValue );
 	void   JHookEvent( const char*, JEventFunc );
 	int    JSendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );

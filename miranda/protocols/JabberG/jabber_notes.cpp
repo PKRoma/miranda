@@ -52,6 +52,35 @@ static TCHAR *StrTrimCopy(TCHAR *str)
 	return res;
 }
 
+static TCHAR *StrFixLines(TCHAR *str)
+{
+	TCHAR *p;
+	int add = 0;
+	bool prev_r = false;
+	bool prev_n = false;
+
+	for (p = str; p && *p; ++p)
+		if (*p == _T('\r') || *p == _T('\n'))
+			++add;
+
+	TCHAR *buf = (TCHAR *)mir_alloc((lstrlen(str) + add + 1) * sizeof(TCHAR));
+	TCHAR *res = buf;
+
+	for (p = str; p && *p; ++p)
+	{
+		if (*p == _T('\n') && !prev_r)
+			*res++ = _T('\r');
+		if (*p != _T('\r') && *p != _T('\n') && prev_r)
+			*res++ = _T('\n');
+		*res++ = *p;
+		prev_r = *p == _T('\r');
+		prev_n = *p == _T('\n');
+	}
+	*res = 0;
+
+	return buf;
+}
+
 CNoteItem::CNoteItem()
 {
 	m_szTitle = 
@@ -94,7 +123,7 @@ void CNoteItem::SetData(TCHAR *title, TCHAR *from, TCHAR *text, TCHAR *tags)
 	mir_free(m_szTagsStr);
 
 	m_szTitle = StrTrimCopy(title);
-	m_szText = StrTrimCopy(text);
+	m_szText = StrFixLines(text);
 	m_szFrom = StrTrimCopy(from);
 
 	const TCHAR *szTags = tags;
@@ -355,28 +384,6 @@ public:
 		return CSuper::CustomWndProc(msg, wParam, lParam);
 	}
 
-	void DrawGradient(HDC hdc, int x, int y, int width, int height, RGBQUAD *rgb0, RGBQUAD *rgb1)
-	{
-		int oldMode = SetBkMode(hdc, OPAQUE);
-		COLORREF oldColor = SetBkColor(hdc, 0);
-
-		RECT rc; SetRect(&rc, x, 0, x+width, 0);
-		for (int i=y+height; --i >= y; )
-		{
-			COLORREF color = RGB(
-				((y+height-i-1)*rgb0->rgbRed   + (i-y)*rgb1->rgbRed)   / (height-1),
-				((y+height-i-1)*rgb0->rgbGreen + (i-y)*rgb1->rgbGreen) / (height-1),
-				((y+height-i-1)*rgb0->rgbBlue  + (i-y)*rgb1->rgbBlue)  / (height-1));
-			rc.top = rc.bottom = i;
-			++rc.bottom;
-			SetBkColor(hdc, color);
-			ExtTextOutA(hdc, 0, 0, ETO_OPAQUE, &rc, "", 0, 0);
-		}
-
-		SetBkMode(hdc, oldMode);
-		SetBkColor(hdc, oldColor);
-	}
-
 	BOOL OnDrawItem(DRAWITEMSTRUCT *lps)
 	{
 		if (m_adding) return FALSE;
@@ -389,28 +396,18 @@ public:
 		SetBkMode(hdc, TRANSPARENT);
 		if (lps->itemState & ODS_SELECTED)
 		{
-			COLORREF cl0 = GetSysColor(COLOR_HIGHLIGHT);
-			COLORREF cl1 = GetSysColor(COLOR_HIGHLIGHT);
-			RGBQUAD rgb0 = { GetBValue(cl0) * .9, GetGValue(cl0) * .9, GetRValue(cl0) * .9 };
-			RGBQUAD rgb1 = { GetBValue(cl1), GetGValue(cl1), GetRValue(cl1) };
 			FillRect(hdc, &lps->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-			DrawGradient(hdc,
-				lps->rcItem.left, lps->rcItem.top,
-				lps->rcItem.right-lps->rcItem.left, min(lps->rcItem.bottom-lps->rcItem.top, 100),
-				&rgb0, &rgb1);
 			SetTextColor(hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
 		} else
 		{
-			COLORREF cl0 = GetSysColor(COLOR_WINDOW);
-			COLORREF cl1 = GetSysColor(COLOR_WINDOW);
-			RGBQUAD rgb0 = { GetBValue(cl0) * .9, GetGValue(cl0) * .9, GetRValue(cl0) * .9 };
-			RGBQUAD rgb1 = { GetBValue(cl1), GetGValue(cl1), GetRValue(cl1) };
 			FillRect(hdc, &lps->rcItem, GetSysColorBrush(COLOR_WINDOW));
-			DrawGradient(hdc,
-				lps->rcItem.left, lps->rcItem.top,
-				lps->rcItem.right-lps->rcItem.left, min(lps->rcItem.bottom-lps->rcItem.top, 100),
-				&rgb0, &rgb1);
 			SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+		}
+
+		if (lps->itemID)
+		{
+			RECT rcTmp = lps->rcItem; rcTmp.bottom = rcTmp.top+1;
+			FillRect(hdc, &rcTmp, GetSysColorBrush(COLOR_BTNSHADOW));
 		}
 
 		RECT rc = lps->rcItem;
@@ -517,7 +514,7 @@ private:
 		m_btnRemove.Enable(m_lstNotes.GetCurSel() != LB_ERR);
 	}
 
-	void InsertTag(HTREEITEM htiRoot, const TCHAR *tag)
+	void InsertTag(HTREEITEM htiRoot, const TCHAR *tag, bool bSelect)
 	{
 		TVINSERTSTRUCT tvi = {0};
 		tvi.hParent = htiRoot;
@@ -525,10 +522,11 @@ private:
 		tvi.itemex.mask = TVIF_TEXT|TVIF_PARAM;
 		tvi.itemex.pszText = (TCHAR *)tag;
 		tvi.itemex.lParam = (LPARAM)mir_tstrdup(tag);
-		m_tvFilter.InsertItem(&tvi);
+		HTREEITEM hti = m_tvFilter.InsertItem(&tvi);
+		if (bSelect) m_tvFilter.SelectItem(hti);
 	}
 
-	void PopulateTags(HTREEITEM htiRoot)
+	void PopulateTags(HTREEITEM htiRoot, TCHAR *szActiveTag)
 	{
 		LIST<TCHAR> tagSet(5, _tcscmp);
 		for (int i = 0; i < m_proto->m_notes.getCount(); ++i)
@@ -539,27 +537,42 @@ private:
 					tagSet.insert(tag);
 		}
 
+		bool selected = false;
 		for (int j = 0; j < tagSet.getCount(); ++j)
-			InsertTag(htiRoot, tagSet[j]);
+		{
+			bool select = !lstrcmp(szActiveTag, tagSet[j]);
+			selected |= select;
+			InsertTag(htiRoot, tagSet[j], select);
+		}
+
+		if (!selected)
+			m_tvFilter.SelectItem(htiRoot);
 
 		tagSet.destroy();
 	}
 
 	void RebuildTree()
 	{
+		TVITEMEX tvi = {0};
+		tvi.mask = TVIF_HANDLE|TVIF_PARAM;
+		tvi.hItem = m_tvFilter.GetSelection();
+		m_tvFilter.GetItem(&tvi);
+		TCHAR *szActiveTag = mir_tstrdup((TCHAR *)tvi.lParam);
+
 		m_tvFilter.DeleteAllItems();
 
-		TVINSERTSTRUCT tvi = {0};
-		tvi.hParent = NULL;
-		tvi.hInsertAfter = TVI_LAST;
-		tvi.itemex.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
-		tvi.itemex.stateMask = 
-		tvi.itemex.state = TVIS_BOLD|TVIS_EXPANDED;
-		tvi.itemex.pszText = TranslateT("All notes");
-		tvi.itemex.lParam = NULL;
-		m_tvFilter.InsertItem(&tvi);
+		TVINSERTSTRUCT tvis = {0};
+		tvis.hParent = NULL;
+		tvis.hInsertAfter = TVI_LAST;
+		tvis.itemex.mask = TVIF_TEXT|TVIF_PARAM|TVIF_STATE;
+		tvis.itemex.stateMask = 
+		tvis.itemex.state = TVIS_BOLD|TVIS_EXPANDED;
+		tvis.itemex.pszText = TranslateT("All tags");
+		tvis.itemex.lParam = NULL;
+		
 
-		PopulateTags(NULL);
+		PopulateTags(m_tvFilter.InsertItem(&tvis), szActiveTag);
+		mir_free(szActiveTag);
 	}
 
 	void InsertItem(CNoteItem &item)
@@ -605,7 +618,10 @@ private:
 			{
 				CJabberDlgNoteItem dlg(this, pItem);
 				if (dlg.DoModal())
+				{
 					m_proto->m_notes.Modify();
+					RebuildTree();
+				}
 			}
 		}
 		EnableControls();
@@ -621,6 +637,7 @@ private:
 				m_lstNotes.DeleteString(idx);
 				m_proto->m_notes.remove(pItem);
 			}
+			RebuildTree();
 		}
 		EnableControls();
 	}
@@ -678,7 +695,7 @@ CJabberDlgNotes::CJabberDlgNotes(CJabberProto *proto) :
 void CJabberDlgNotes::UpdateData()
 {
 	RebuildTree();
-	ListItems(NULL);
+	//ListItems(NULL);
 	EnableControls();
 }
 
@@ -695,10 +712,6 @@ void CJabberDlgNotes::OnInitDialog()
 	lfTmp = lf; lfTmp.lfHeight *= 0.8;
 	m_hfntSmall = CreateFontIndirect(&lfTmp);
 	m_lstNotes.SetFonts(m_hfntNormal, m_hfntSmall, m_hfntBold);
-
-//	m_btnAdd.Disable();
-//	m_btnEdit.Disable();
-//	m_btnRemove.Disable();
 
 	Utils_RestoreWindowPosition(m_hwnd, NULL, m_proto->m_szModuleName, "notesWnd_");
 }
@@ -828,7 +841,7 @@ bool CJabberProto::OnIncomingNote(const TCHAR *szFrom, HXML hXml)
 		return true;
 	}
 
-	if (m_options.AutosaveNotes)
+	if (m_options.AutosaveNotes && HContactFromJID(szFrom))
 	{
 		ProcessIncomingNote(pItem, true);
 		return false;
