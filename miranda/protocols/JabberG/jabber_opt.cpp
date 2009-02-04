@@ -918,10 +918,8 @@ public:
 #include <io.h>
 #define JM_STATUSCHANGED WM_USER+0x0001
 #ifdef UNICODE
-#define fputtc(str, file) fputw(str, file)
 #define fopent(name, mode) _wfopen(name, mode)
 #else
-#define fputtc(str, file) fputc(str, file)
 #define fopent(name, mode) fopen(name, mode)
 #endif
 
@@ -1225,33 +1223,25 @@ static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wPar
 	else return CallWindowProc( edat->OldEditProc, hEditor, msg, wParam, lParam);
 }
 
-#ifdef UNICODE
-void fputw( TCHAR ch, FILE * fp)
+void fputc_utf8( TCHAR ch, FILE * fp)
 {
-	TCHAR buf[2]={0};
-	char utf[10]={0};
-	char *str=utf;
-	buf[0]=ch;
-	WideCharToMultiByte(CP_UTF8,0,buf,-1,utf,sizeof(utf),NULL, NULL);
-	while ( *str!='\0' )
-	{
-		fputc(*str,fp);
-		str++;
-	}
-
+	TCHAR buf[2] = { ch, 0 };
+	char *str = mir_utf8encodeT(buf);
+	for (char *p = str; *p; ++p)
+		fputc(*p,fp);
+	mir_free(str);
 }
-#endif
 
 static void _RosterSaveString(FILE * fp, TCHAR * str, BOOL quotes=FALSE)
 {
-	if (quotes) fputtc(_T('\"'),fp);
+	if (quotes) fputc_utf8(_T('\"'),fp);
 	while ( *str!=_T('\0') )
 	{
-		fputtc(*str,fp);
-		if (quotes && *str==_T('\"')) fputtc(*str,fp);
+		fputc_utf8(*str,fp);
+		if (quotes && *str==_T('\"')) fputc_utf8(*str,fp);
 		str++;
 	}
-	if (quotes) fputtc(_T('\"'),fp);
+	if (quotes) fputc_utf8(_T('\"'),fp);
 }
 
 void CJabberProto::_RosterExportToFile(HWND hwndDlg)
@@ -1355,7 +1345,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 		return;
 	}
 	
-	char* buffer=(char*)mir_alloc(bufsize);
+	char* buffer=(char*)mir_calloc(bufsize+1); // zero-terminate it
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
 	_RosterListClear(hwndDlg);
