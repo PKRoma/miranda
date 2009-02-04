@@ -445,10 +445,10 @@ void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url
 void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
 {
 	y_filetransfer *ft;
-	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
+/*	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
 	NETLIBHTTPHEADER httpHeaders[3];
 	char  z[1024];
-	
+*/	
 	LOG(("[ext_yahoo_got_file7info] id: %i, ident:%s, who: %s, url: %s, fname: %s, ft_token: %s", id, me, who, url, fname, ft_token));
 	
 	ft = find_ft(ft_token);
@@ -464,24 +464,26 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 	
 	ft->url = strdup(url);
 	
-	SleepEx(1000, TRUE);
-	
+	//SleepEx(2000, TRUE); // Need to make sure our ACCEPT is delivered before we try to HEAD request
+/*	
 	nlhr.cbSize		= sizeof(nlhr);
 	nlhr.requestType= REQUEST_HEAD;
-	nlhr.flags		= NLHRF_DUMPASTEXT|NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+	nlhr.flags		= NLHRF_DUMPASTEXT;
 	nlhr.szUrl		= (char *)url;
 	nlhr.headers = httpHeaders;
-	nlhr.headersCount= 3;
+	nlhr.headersCount= 4;
 	
 	httpHeaders[0].szName="Cookie";
 	
-	mir_snprintf(z, 1024, "Y=%s; T=%s; C=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"), yahoo_get_cookie(id, "c"));
+	mir_snprintf(z, 1024, "Y=%s; T=%s; B=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"), yahoo_get_cookie(id, "b"));
 	httpHeaders[0].szValue=z;
 	
 	httpHeaders[1].szName="User-Agent";
 	httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
-	httpHeaders[2].szName="Cache-Control";
-	httpHeaders[2].szValue="no-cache";
+	httpHeaders[2].szName="Content-Length";
+	httpHeaders[2].szValue="0";
+	httpHeaders[3].szName="Cache-Control";
+	httpHeaders[3].szValue="no-cache";
 	
 	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hNetlibUser,(LPARAM)&nlhr);
 
@@ -502,6 +504,7 @@ void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char
 	} else {
 		LOG(("ERROR: No Reply???"));
 	}
+	*/
 	
 	mir_forkthread(yahoo_recv_filethread, (void *) ft);
 }
@@ -544,7 +547,7 @@ int YahooFileDeny(WPARAM wParam,LPARAM lParam)
 	YAHOO_DebugLog("[YahooFileDeny]");
 	
 	if ( !yahooLoggedIn || ft == NULL ) {
-		YAHOO_DebugLog("[YahooFileResume] Not logged-in or some other error!");
+		YAHOO_DebugLog("[YahooFileDeny] Not logged-in or some other error!");
 		return 1;
 	}
 
@@ -667,6 +670,9 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 		sf = new_ft(ylad->id, ccs->hContact, dbv.pszVal, ( char* )ccs->wParam,
 					files[0], tFileSize,
 					NULL, NULL, 0);
+
+		DBFreeVariant(&dbv);
+
 		if (sf == NULL) {
 			YAHOO_DebugLog("SF IS NULL!!!");
 			return 0;
@@ -675,7 +681,6 @@ int YahooSendFile(WPARAM wParam,LPARAM lParam)
 		LOG(("who: %s, msg: %s, filename: %s", sf->who, sf->msg, sf->filename));
 		mir_forkthread(yahoo_send_filethread, sf);
 		
-		DBFreeVariant(&dbv);
 		LOG(("Exiting SendRequest..."));
 		return (int)(HANDLE)sf;
 	}
