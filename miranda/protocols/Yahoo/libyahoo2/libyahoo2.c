@@ -338,6 +338,7 @@ static const value_string packet_keys[]={
 	{244, "client version"},
 	{254, "last name"},
 	{265, "FT7 Token"},
+	{266, "FT7 # Files"},
 	{267, "FT7 Preview"},
 	{317, "Stealth"},
 	{1002, "YIM6+"},
