@@ -384,6 +384,9 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					cbei.iItem++;
 				}
 				for(i=0;i<protoCount;i++) {
+					#ifdef  _UNICODE
+					TCHAR wszProtoName[ 64 ];
+					#endif
 					if(protos[i]->type!=PROTOTYPE_PROTOCOL) continue;
 					caps=(DWORD)CallProtoService(protos[i]->szName,PS_GETCAPS,PFLAGNUM_1,0);
 					if (!(caps&PF1_BASICSEARCH) && !(caps&PF1_EXTSEARCH) && !(caps&PF1_SEARCHBYEMAIL) && !(caps&PF1_SEARCHBYNAME))
@@ -392,7 +395,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					#if !defined( _UNICODE )
 						cbei.pszText=(char*)szProtoName;
 					#else
-					{	TCHAR wszProtoName[ 64 ];
+					{
 						MultiByteToWideChar( CP_ACP, 0, szProtoName, 64, wszProtoName, 64 );
 						cbei.pszText = wszProtoName;
 					}
