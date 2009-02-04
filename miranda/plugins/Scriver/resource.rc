@@ -127,24 +127,24 @@ BEGIN
                     IDC_AVATARSUPPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     8,67,180,10
     CONTROL         "Limit height to min.",IDC_LIMITAVATARH,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,78,127,10
     EDITTEXT        IDC_AVATARHEIGHTMIN,148,77,28,12,ES_AUTOHSCROLL
-    LTEXT           "and max.",IDC_AVATARTEXT1,188,78,60,8
+    LTEXT           "and max.",IDC_AVATARTEXT1,188,78,41,8
     EDITTEXT        IDC_AVATARHEIGHT,230,77,28,12,ES_AUTOHSCROLL
-    LTEXT           "pixels.",IDC_AVATARTEXT2,263,78,60,8
+    LTEXT           "pixels.",IDC_AVATARTEXT2,263,78,35,8
     CONTROL         "Use original size",IDC_ORIGINALAVATARH,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,20,89,180,10
 
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,8,107,180,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,103,40,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,107,140,10
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,103,36,8
     CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,103,70,11
-    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,103,22,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,114,40,8
+    LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,103,30,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,114,36,8
     CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,114,70,11
-    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,114,22,8
+    LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,114,30,8
 
 END
 
