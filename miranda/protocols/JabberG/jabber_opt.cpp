@@ -1360,12 +1360,8 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 	fclose(fp);
 	_RosterListClear(hwndDlg);
 
-	#if defined( _UNICODE )
-		TCHAR* newBuf = mir_a2t( buffer );
-		mir_free( buffer );
-	#else
-		TCHAR* newBuf = buffer;
-	#endif
+	TCHAR* newBuf = mir_utf8decodeT( buffer );
+	mir_free( buffer );
 
 	int nBytesProcessed = 0;
 	XmlNode node( newBuf, &nBytesProcessed, NULL );
