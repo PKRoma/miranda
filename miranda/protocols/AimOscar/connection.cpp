@@ -138,7 +138,10 @@ void CAimProto::aim_connection_authorization(void)
 							return;
 						}
 						else if (authres==2)
+                        {
+	                        sendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 							goto exit;
+                        }
 					}
 				}
 				else if(flap.cmp(0x04))
@@ -252,6 +255,7 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 				}
 				else if(flap.cmp(0x04))
 				{
+				    sendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 					LOG("Connection Negotiation Thread Ending: Flap 0x04");
 					goto exit;
 				}
