@@ -630,7 +630,7 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
       buflen -= wTextLen;
     
       WORD wEncodingType = 0;
-      char *szEncoding;
+      char *szEncoding = NULL;
 
       if (buflen >= 2)
         unpackWord(&buf, &wEncodingType);
