@@ -1223,26 +1223,7 @@ static BOOL CALLBACK _RosterItemNewEditProc( HWND hEditor, UINT msg, WPARAM wPar
 	else return CallWindowProc( edat->OldEditProc, hEditor, msg, wParam, lParam);
 }
 
-void fputc_utf8( TCHAR ch, FILE * fp)
-{
-	TCHAR buf[2] = { ch, 0 };
-	char *str = mir_utf8encodeT(buf);
-	for (char *p = str; *p; ++p)
-		fputc(*p,fp);
-	mir_free(str);
-}
 
-static void _RosterSaveString(FILE * fp, TCHAR * str, BOOL quotes=FALSE)
-{
-	if (quotes) fputc_utf8(_T('\"'),fp);
-	while ( *str!=_T('\0') )
-	{
-		fputc_utf8(*str,fp);
-		if (quotes && *str==_T('\"')) fputc_utf8(*str,fp);
-		str++;
-	}
-	if (quotes) fputc_utf8(_T('\"'),fp);
-}
 
 void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 {
@@ -1261,29 +1242,22 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 	ofn.lpstrDefExt = _T("xml");
 	if(!GetSaveFileName(&ofn)) return;
 
-	FILE * fp=fopent(filename,_T("w"));
+	FILE * fp = fopent(filename,_T("w"));
 	if (!fp) return;
 	HWND hList=GetDlgItem(hwndDlg, IDC_ROSTER);
 	int ListItemCount=ListView_GetItemCount(hList);
-	TCHAR *xmlExcelHeader=
-		_T(			"<?xml version=\"1.0\"?>	\n"											)
-		_T(			"<?mso-application progid=\"Excel.Sheet\"?> \n"							)
-		_T(			"<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" \n"	)
-		_T("\t\t\txmlns:o=\"urn:schemas-microsoft-com:office:office\"\n"					)
-		_T("\t\t\txmlns:x=\"urn:schemas-microsoft-com:office:excel\"\n"					)
-		_T("\t\t\txmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"\n"			)
-		_T("\t\t\txmlns:html=\"http://www.w3.org/TR/REC-html40\">\n"						)
-		_T("\t<ExcelWorkbook xmlns=\"urn:schemas-microsoft-com:office:excel\">\n"	)
-		_T("\t</ExcelWorkbook>\n"													)
-		_T("\t<Worksheet ss:Name=\"Exported roster\">\n"								)
-		_T("\t\t<Table>\n"																);
 
-	TCHAR *xmlExcelFooter=
-		_T("\t\t</Table>\n")
-		_T("\t</Worksheet>\n")
-		_T("</Workbook>\n");
+	XmlNode root(_T("Workbook"));
+	root << XATTR(_T("xmlns"), _T("urn:schemas-microsoft-com:office:spreadsheet"))
+	     << XATTR(_T("xmlns:o"), _T("urn:schemas-microsoft-com:office:office"))
+	     << XATTR(_T("xmlns:x"), _T("urn:schemas-microsoft-com:office:excel"))
+	     << XATTR(_T("xmlns:ss"), _T("urn:schemas-microsoft-com:office:spreadsheet"))
+	     << XATTR(_T("xmlns:html"), _T("http://www.w3.org/TR/REC-html40"));
+	root << XCHILD(_T("ExcelWorkbook"))
+	     << XATTR(_T("xmlns"), _T("urn:schemas-microsoft-com:office:excel"));
+	HXML table = root << XCHILD(_T("Worksheet")) << XATTR(_T("ss:Name"), _T("Exported roster")) 
+	                  << XCHILD(_T("Table"));
 
-	_RosterSaveString(fp,xmlExcelHeader);
 	for (int index=0; index<ListItemCount; index++)
 	{
 		TCHAR jid[260]={0};
@@ -1294,27 +1268,25 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 		ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
 		ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
 		ListView_GetItemText(hList, index, 3, subscr, SIZEOF(subscr));
-		_RosterSaveString(fp,_T("\t\t\t<Row>\n"));
-		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">+</Data></Cell>\n"));
-		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
-		_RosterSaveString(fp,jid);
-		_RosterSaveString(fp,_T("</Data></Cell>\n"));
 
-		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
-		_RosterSaveString(fp,name);
-		_RosterSaveString(fp,_T("</Data></Cell>\n"));
+		HXML node = table << XCHILD(_T("Row"));
+		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), _T("+")) << XATTR(_T("ss:Type"), _T("String"));
+		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), jid) << XATTR(_T("ss:Type"), _T("String"));
+		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), name) << XATTR(_T("ss:Type"), _T("String"));
+		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), group) << XATTR(_T("ss:Type"), _T("String"));
+		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), subscr) << XATTR(_T("ss:Type"), _T("String"));
 
-		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
-		_RosterSaveString(fp,group);
-		_RosterSaveString(fp,_T("</Data></Cell>\n"));
-
-		_RosterSaveString(fp,_T("\t\t\t\t<Cell><Data ss:Type=\"String\">"));
-		_RosterSaveString(fp,subscr);
-		_RosterSaveString(fp,_T("</Data></Cell>\n"));
-
-		_RosterSaveString(fp,_T("\t\t\t</Row>\n"));
 	}
-	_RosterSaveString(fp,xmlExcelFooter);
+	
+	char header[] = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n";
+	fwrite(header, 1, sizeof(header) - 1 /* for zero terminator */, fp);
+	
+	TCHAR *xtmp = xi.toString(root, NULL);
+	char *tmp = mir_utf8encodeT(xtmp);
+	xi.freeMem(xtmp);
+
+	fwrite(tmp, 1, strlen(tmp), fp);
+	mir_free(tmp);
 	fclose(fp);
 }
 
