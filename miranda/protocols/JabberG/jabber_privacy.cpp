@@ -1378,16 +1378,12 @@ void CJabberDlgPrivacyLists::CListFilter(HWND)
 bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 {
 	char idstr[33];
-	DBVARIANT dbv;
-
-	bool result = true;
-
 	_itoa((int)hGroup-1, idstr, 10);
 
-	if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
-		result = false;
-
-	DBFreeVariant(&dbv);
+	DBVARIANT dbv;
+	bool result = DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv) == 0;
+	if ( !result )
+		DBFreeVariant(&dbv);
 
 	return result;
 }
