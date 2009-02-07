@@ -2035,67 +2035,6 @@ buttons_done:
 					}
 					return FALSE;
 				}
-			} else if (((LPNMHDR) lParam)->hwndFrom == pcli->hwndStatus) {
-				switch (((LPNMHDR) lParam)->code) {
-					case NM_CLICK: {
-						unsigned int nParts, nPanel;
-						NMMOUSE *nm = (NMMOUSE *) lParam;
-						HMENU hMenu;
-						RECT rc;
-						POINT pt;
-						int pos = 0;
-						ProtocolData *pd = 0;
-						PROTOACCOUNT* pa;
-						char szBuffer[ 200 ];
-
-						hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
-						nParts = SendMessage(pcli->hwndStatus, SB_GETPARTS, 0, 0);
-						if (nm->dwItemSpec == 0xFFFFFFFE) {
-							nPanel = nParts - 1;
-							SendMessage(pcli->hwndStatus, SB_GETRECT, nPanel, (LPARAM) &rc);
-							if (nm->pt.x < rc.left)
-								return FALSE;
-						} else {
-							nPanel = nm->dwItemSpec;
-						}
-
-						//if (nParts > 1)
-						//    hMenu = GetSubMenu(hMenu, nPanel);
-
-						pd = (ProtocolData *)SendMessageA(pcli->hwndStatus, SB_GETTEXTA, (WPARAM)nPanel, (LPARAM)szBuffer);
-						if (pd == NULL)
-							break;
-						if (( pa = ProtoGetAccount( pd->RealName )) != NULL ) {
-							TCHAR szName[102];
-							int i;
-							HMENU hSubmenu = 0;
-
-							MENUITEMINFO mii = {0};
-							mii.cbSize = sizeof(mii);
-							mii.fMask = MIIM_STRING;
-							mii.dwTypeData = szName;
-							mii.cch = 100;
-
-							for (i = 0; i < GetMenuItemCount(hMenu); i++) {
-								if ((hSubmenu = GetSubMenu(hMenu, i)) == 0)
-									break;
-								mii.dwTypeData = szName;
-								mii.cch = 100;
-								GetMenuItemInfo(hSubmenu, 0, TRUE, &mii);
-								if (mii.dwTypeData && !lstrcmp(pa->tszAccountName, mii.dwTypeData)) {
-									hMenu = hSubmenu;
-									break;
-								}
-							}
-						}
-						SendMessage(pcli->hwndStatus, SB_GETRECT, nPanel, (LPARAM) &rc);
-						pt.x = rc.left;
-						pt.y = rc.top;
-						ClientToScreen(pcli->hwndStatus, &pt);
-						TrackPopupMenu(hMenu, TPM_BOTTOMALIGN | TPM_LEFTALIGN, pt.x, pt.y, 0, hwnd, NULL);
-						return FALSE;
-					}
-				}
 			}
 			break;
 		case WM_CONTEXTMENU: {

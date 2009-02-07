@@ -193,7 +193,6 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		PD = ( ProtocolData* )mir_alloc(sizeof(ProtocolData));
 		PD->RealName = mir_strdup( pa->szModuleName );
 		PD->statusbarpos = partCount;
-		PD->protopos = pa->iOrder;
 		{
 			int flags;
 			flags = SBT_OWNERDRAW;
