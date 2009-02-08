@@ -750,7 +750,6 @@
 	
 
 .\jabber_thread.cpp : \
-	"..\..\..\..\program files\microsoft platform sdk\include\windns.h"\
 	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
