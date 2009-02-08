@@ -1247,8 +1247,7 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 
 	//owner data
 	if ( mi->pszService ) {
-		lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc(sizeof(StatusMenuExecParam));
-		memset(smep,0,sizeof(StatusMenuExecParam));
+		smep = ( lpStatusMenuExecParam )mir_calloc(sizeof(StatusMenuExecParam));
 		smep->custom = TRUE;
 		smep->svc=mir_strdup(mi->pszService);
 		{
