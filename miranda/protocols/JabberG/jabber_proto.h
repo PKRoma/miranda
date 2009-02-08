@@ -305,6 +305,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	DWORD m_dwSDLastRefresh;
 	DWORD m_dwSDLastAutoDisco;
 
+	int m_hChooseMenuItem, m_hChooseMenuPos;
 	int m_privacyMenuServiceAllocated;
 
 	TFilterInfo m_filterInfo;

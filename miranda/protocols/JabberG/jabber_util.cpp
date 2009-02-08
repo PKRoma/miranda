@@ -1453,51 +1453,6 @@ BOOL CJabberProto::EnterString(TCHAR *result, size_t resultLen, TCHAR *caption, 
 }
 
 ////////////////////////////////////////////////////////////////////////
-// Choose protocol instance
-CJabberProto *JabberChooseInstance(bool bAllowOffline, bool /*atCursor*/)
-{
-	if (g_Instances.getCount() == 0) return NULL;
-	if (g_Instances.getCount() == 1)
-	{
-		if (bAllowOffline || ((g_Instances[0]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[0]->m_iStatus != ID_STATUS_CONNECTING)))
-			return g_Instances[0];
-		return NULL;
-	}
-
-	HMENU hMenu = JMenuCreate(true);
-
-	int nItems = 0;
-	int lastItemId = 0;
-	for (int i = 0; i < g_Instances.getCount(); ++i)
-	{
-		if (bAllowOffline || ((g_Instances[i]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[i]->m_iStatus != ID_STATUS_CONNECTING)))
-		{
-			++nItems;
-			lastItemId = i+1;
-			JMenuAddItem(hMenu, lastItemId,
-				g_Instances[i]->m_tszUserName,
-				LoadSkinnedProtoIcon(g_Instances[i]->m_szModuleName, g_Instances[i]->m_iStatus), false);
-		}
-	}
-
-	int res = lastItemId;
-	if (nItems > 1)
-	{
-		JMenuAddSeparator(hMenu);
-
-		JMenuAddItem(hMenu, 0,
-			TranslateT("Cancel"),
-			LoadSkinnedIconHandle(SKINICON_OTHER_DELETE), true);
-
-		res = JMenuShow(hMenu);
-	}
-
-	JMenuDestroy(hMenu, NULL, NULL);
-
-	return res ? g_Instances[res-1] : NULL;
-};
-
-////////////////////////////////////////////////////////////////////////
 // Premultiply bitmap channels for 32-bit bitmaps
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 {

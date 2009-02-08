@@ -694,15 +694,8 @@ char* __stdcall rtrim( char *string );
 
 //---- jabber_menu.c ------------------------------------------------
 
-int g_OnModernToolbarInit(WPARAM, LPARAM);
-
-HMENU  JMenuCreate(bool bRoot);
-void   JMenuAddItem(HMENU hMenu, LPARAM lParam, TCHAR *szText, HANDLE hIcon, bool bIcolib, bool bCkecked=false);
-void   JMenuAddPopup(HMENU hMenu, HMENU hPopup, TCHAR *szText, HANDLE hIcon, bool bIcolib);
-void   JMenuAddSeparator(HMENU hMenu);
-int    JMenuShow(HMENU hMenu);
-int    JMenuShow(HMENU hMenu, int x, int y);
-void   JMenuDestroy(HMENU hMenu, CJabberProto *ppro, void (CJabberProto::*pfnDestructor)(LPARAM lParam));
+void   g_MenuInit();
+int    g_OnModernToolbarInit(WPARAM, LPARAM);
 
 //---- jabber_misc.c ------------------------------------------------
 

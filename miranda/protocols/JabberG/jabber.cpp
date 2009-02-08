@@ -272,6 +272,7 @@ LBL_Error:
 	srand(( unsigned ) time( NULL ));
 
 	g_IconsInit();
+	g_MenuInit();
 	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 	hModulesLoadedTB = HookEvent(ME_TB_MODULELOADED, g_OnModernToolbarInit);
 	JabberUserInfoInit();
