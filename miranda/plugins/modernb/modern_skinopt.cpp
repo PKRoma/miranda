@@ -92,29 +92,8 @@ BOOL CALLBACK DlgSkinOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam 
 			int it;
 			TranslateDialogDefault( hwndDlg );
 			it = FillAvailableSkinList( hwndDlg );
-			{
-				/* Text Colors */
-				DWORD c1, c2, c3, c4;
-				c1 = ModernGetSettingDword( NULL, "Menu", "TextColour", CLCDEFAULT_TEXTCOLOUR );
-				c2 = ModernGetSettingDword( NULL, "Menu", "SelTextColour", CLCDEFAULT_MODERN_SELTEXTCOLOUR );
-				c3 = ModernGetSettingDword( NULL, "FrameTitleBar", "TextColour", CLCDEFAULT_TEXTCOLOUR );
-				c4 = ModernGetSettingDword( NULL, "StatusBar", "TextColour", CLCDEFAULT_TEXTCOLOUR );
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUNORMAL, CPM_SETCOLOUR, 0, c1 );                  
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUSELECTED, CPM_SETCOLOUR, 0, c2 );
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_FRAMES, CPM_SETCOLOUR, 0, c3 );
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_STATUSBAR, CPM_SETCOLOUR, 0, c4 );
-
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUNORMAL, CPM_SETDEFAULTCOLOUR, 0, c1 );                  
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUSELECTED, CPM_SETDEFAULTCOLOUR, 0, c2 );
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_FRAMES, CPM_SETDEFAULTCOLOUR, 0, c3 );
-				SendDlgItemMessage( hwndDlg, IDC_COLOUR_STATUSBAR, CPM_SETDEFAULTCOLOUR, 0, c4 );                              
-				/* End of Text colors */
-			}
-			{
-				HWND wnd = GetDlgItem( hwndDlg, IDC_TREE1 );
-				TreeView_SelectItem( wnd, ( HTREEITEM )it );						
-			}
-
+			HWND wnd = GetDlgItem( hwndDlg, IDC_TREE1 );
+			TreeView_SelectItem( wnd, ( HTREEITEM )it );						
 		}
 		return 0;
 	case WM_COMMAND:
@@ -429,19 +408,6 @@ BOOL CALLBACK DlgSkinOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam 
 				{
 					{
 						DWORD tick = GetTickCount( );
-						{
-							/* Text Colors */
-							DWORD c1, c2, c3, c4;
-							c1 = SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUNORMAL, CPM_GETCOLOUR, 0, 0 );
-							c2 = SendDlgItemMessage( hwndDlg, IDC_COLOUR_MENUSELECTED, CPM_GETCOLOUR, 0, 0 );
-							c3 = SendDlgItemMessage( hwndDlg, IDC_COLOUR_FRAMES, CPM_GETCOLOUR, 0, 0 );
-							c4 = SendDlgItemMessage( hwndDlg, IDC_COLOUR_STATUSBAR, CPM_GETCOLOUR, 0, 0 );
-							ModernWriteSettingDword( NULL, "Menu", "TextColour", c1 );
-							ModernWriteSettingDword( NULL, "Menu", "SelTextColour", c2 );
-							ModernWriteSettingDword( NULL, "FrameTitleBar", "TextColour", c3 );
-							ModernWriteSettingDword( NULL, "StatusBar", "TextColour", c4 );
-							/* End of Text colors */
-						}
 						pcli->pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
 						NotifyEventHooks( g_CluiData.hEventBkgrChanged, 0, 0 );
 						pcli->pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );	

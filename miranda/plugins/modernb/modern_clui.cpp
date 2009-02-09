@@ -100,6 +100,8 @@ int CLUI::OnEvent_FontReload(WPARAM wParam,LPARAM lParam)
     
     pcli->pfnClcBroadcast( INTM_RELOADOPTIONS, wParam, lParam );
 
+	g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
+	
     return 0;
 }
 

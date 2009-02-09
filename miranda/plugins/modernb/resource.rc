@@ -175,9 +175,6 @@ BEGIN
     CONTROL         "",IDC_PREVIEW,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE,180,16,113,167
     GROUPBOX        "Skin Preview",IDC_STATIC,175,5,123,182,WS_DISABLED
-    RTEXT           "Frame Titles Color",IDC_STATIC_COLOR4,199,209,66,8
-    CONTROL         "",IDC_COLOUR_FRAMES,"ColourPicker",WS_TABSTOP,270,207,
-                    32,11
     LTEXT           "WARNING: \tSkins can modify your current profile. Rollback is not possible. \n\t\tPlease BACKUP your database before applying skin.",
                     IDC_STATIC,3,188,294,17
     LTEXT           "* Restart may be required for all changes to take effect",
@@ -1277,9 +1274,6 @@ BEGIN
     LTEXT           "pixels",IDC_STATIC3,266,60,21,8
     LTEXT           "pixels",IDC_STATIC2,266,46,21,8
     LTEXT           "Gaps",-1,133,37,38,9
-    CONTROL         "",IDC_COLOUR_KEY,"ColourPicker",WS_TABSTOP,133,24,32,12
-    CONTROL         "Key color for owned frames",IDC_CHECKKEYCOLOR,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,172,21,72,20
     CONTROL         "Use Non-Layered mode",IDC_LAYERENGINE,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,74,102,11
     CONTROL         "Round corners",IDC_ROUNDCORNERS,"Button",

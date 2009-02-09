@@ -100,6 +100,7 @@ static struct FontOptionsList fontOptionsList[] = {
 
 struct ColourOptionsList
 {
+	char *   chGroup;
     char *   chName;
     TCHAR*   szGroup;
     TCHAR*   szDescr;    
@@ -108,13 +109,20 @@ struct ColourOptionsList
 
 static struct ColourOptionsList colourOptionsList[] = {
 
-	{ "BkColour",               CLCGROUP,            LPGENT( "Background"),            DEFAULT_BACKCOLOUR },
-	{ "Rows_BkColour",          CLCLINESGROUP,       LPGENT( "Background"),            DEFAULT_BACKCOLOUR },
-	{ "Frames_BkColour",        CLCFRAMESGROUP,      LPGENT( "Background"),            DEFAULT_BACKCOLOUR},
+	{ "CLC",			"BkColour",           CLCGROUP,				LPGENT( "Background"),									DEFAULT_BACKCOLOUR },
+	{ "CLC",			"Rows_BkColour",      CLCLINESGROUP,		LPGENT( "Background"),									DEFAULT_BACKCOLOUR },
+	{ "CLC",			"Frames_BkColour",    CLCFRAMESGROUP,		LPGENT( "Background"),									DEFAULT_BACKCOLOUR},
 
-    { "HotTextColour",      CLCCOLOURSGROUP,       LPGENT( "Hot text"),            CLCDEFAULT_MODERN_HOTTEXTCOLOUR },
-    { "SelTextColour",      CLCCOLOURSGROUP,       LPGENT( "Selected text"),       CLCDEFAULT_MODERN_SELTEXTCOLOUR },
-    { "QuickSearchColour",  CLCCOLOURSGROUP,       LPGENT( "Quick search text"),   CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR},
+    { "CLC",			"HotTextColour",      CLCCOLOURSGROUP,      LPGENT( "Hot text"),									CLCDEFAULT_MODERN_HOTTEXTCOLOUR },
+    { "CLC",			"SelTextColour",      CLCCOLOURSGROUP,      LPGENT( "Selected text"),								CLCDEFAULT_MODERN_SELTEXTCOLOUR },
+    { "CLC",			"QuickSearchColour",  CLCCOLOURSGROUP,      LPGENT( "Quick search text"),							CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR},
+
+	{ "Menu",			"TextColour",		  CLCCOLOURSGROUP,      LPGENT( "Menu text"),									CLCDEFAULT_TEXTCOLOUR},
+	{ "Menu",			"SelTextColour",	  CLCCOLOURSGROUP,      LPGENT( "Selected menu text"),							CLCDEFAULT_MODERN_SELTEXTCOLOUR},
+	{ "FrameTitleBar",	"TextColour",		  CLCCOLOURSGROUP,      LPGENT( "Frame title text"),							CLCDEFAULT_TEXTCOLOUR },
+	{ "StatusBar",		"TextColour",		  CLCCOLOURSGROUP,      LPGENT( "Statusbar text"),								CLCDEFAULT_TEXTCOLOUR},
+	{ "ModernSettings", "KeyColor",			  CLCCOLOURSGROUP,      LPGENT( "3rd party frames transparent back colour"),	SETTING_KEYCOLOR_DEFAULT},
+
 };
 
 void RegisterCLUIFonts( void )
@@ -1216,7 +1224,6 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
 		}
@@ -1269,8 +1276,6 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		CheckDlgButton(hwndDlg, IDC_LAYERENGINE, ((ModernGetSettingByte(NULL,"ModernData","EnableLayering",SETTING_ENABLELAYERING_DEFAULT)&&g_proc_UpdateLayeredWindow!=NULL) && !ModernGetSettingByte(NULL,"ModernData","DisableEngine", SETTING_DISABLESKIN_DEFAULT)) ? BST_UNCHECKED:BST_CHECKED);   
 
 		CheckDlgButton(hwndDlg, IDC_CHECKKEYCOLOR, ModernGetSettingByte(NULL,"ModernSettings","UseKeyColor",SETTING_USEKEYCOLOR_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
-		EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!fEnabled&&IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-		SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT));	
 		{
 			DBVARIANT dbv={0};
 			TCHAR *s=NULL;
@@ -1351,7 +1356,6 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AEROGLASS),!fEnabled && (g_proc_DWMEnableBlurBehindWindow != NULL));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_TITLEBAR_STATIC),fEnabled);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_CHECKKEYCOLOR),!fEnabled);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_ROUNDCORNERS),fEnabled);
 			if (LOWORD(wParam)==IDC_DISABLEENGINE)
@@ -1385,11 +1389,6 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			if (LOWORD(wParam)==IDC_BORDER) CheckDlgButton(hwndDlg, IDC_NOBORDERWND,BST_UNCHECKED);
 			else CheckDlgButton(hwndDlg, IDC_BORDER,BST_UNCHECKED); 
 
-		}
-		else if (LOWORD(wParam)==IDC_CHECKKEYCOLOR) 
-		{
-			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR_KEY),IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR));
-			SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_SETCOLOUR,0,ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT));
 		}
 		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
 			LOWORD(wParam)==IDC_LEFTMARGIN || LOWORD(wParam)==IDC_RIGHTMARGIN|| LOWORD(wParam)==IDC_TOPMARGIN || LOWORD(wParam)==IDC_BOTTOMMARGIN) 
@@ -1427,7 +1426,6 @@ static BOOL CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 					ModernDeleteSetting(NULL,"ModernData","EnableLayering");	
 			}
 			ModernWriteSettingByte(NULL,"ModernSettings","UseKeyColor",IsDlgButtonChecked(hwndDlg,IDC_CHECKKEYCOLOR)?1:0);
-			ModernWriteSettingDword(NULL,"ModernSettings","KeyColor",SendDlgItemMessage(hwndDlg,IDC_COLOUR_KEY,CPM_GETCOLOUR,0,0));
 			g_CluiData.fUseKeyColor=(BOOL)ModernGetSettingByte(NULL,"ModernSettings","UseKeyColor",SETTING_USEKEYCOLOR_DEFAULT);
 			g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
 			ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));

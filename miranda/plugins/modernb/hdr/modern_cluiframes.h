@@ -84,7 +84,7 @@ typedef struct tagFrameTitleBar{
 	BOOLEAN ShowTitleBar;
 	BOOLEAN ShowTitleBarTip;
 	COLORREF BackColour;
-    COLORREF TextColour;
+	COLORREF TextColour;
 	int oldstyles;
 	POINT oldpos;
 	RECT wndSize;
