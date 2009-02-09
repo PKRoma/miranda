@@ -49,7 +49,6 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="2"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
@@ -84,22 +83,22 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				IgnoreAllDefaultLibraries="false"
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
 				MapExports="false"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -168,7 +167,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
@@ -185,19 +184,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -267,7 +266,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
@@ -288,15 +287,14 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -328,6 +326,7 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -390,11 +389,9 @@
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="MSImg32.Lib comctl32.lib shlwapi.lib gdiplus.lib Delayimp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
-				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="gdiplus.dll"
 				GenerateDebugInformation="true"
-				GenerateMapFile="true"
 				MapExports="false"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -402,6 +399,7 @@
 				BaseAddress=""
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

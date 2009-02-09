@@ -5,7 +5,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\program files\platform sdk\include\specstrings.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
