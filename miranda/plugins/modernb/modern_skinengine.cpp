@@ -2967,281 +2967,280 @@ static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD hei
 	return FALSE;
 }
 
-static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpstring, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
+static int ske_AlphaTextOut (HDC hDC, LPCTSTR lpString, int nCount, RECT * lpRect, UINT format, DWORD ARGBcolor)
 {
-	HBITMAP destBitmap;
-	SIZE sz, fsize;
-	SIZE wsize={0};
-	HDC memdc;
-	HBITMAP hbmp,holdbmp;
-	HDC bufDC;
-	HBITMAP bufbmp,bufoldbmp;
-	BITMAP bmpdata;
-	BYTE * destBits;
-	BOOL noDIB=0;
-	BOOL is16bit=0;
-	BYTE * bits;
-	BYTE * bufbits;
-	HFONT hfnt, holdfnt;
-	LPTSTR lpString=NULL;
-
-	int drx=0;
-	int dry=0;
-	int dtx=0;
-	int dty=0;
-	int dtsy=0;
-	int dtey=0;
-	int dtsx=0;
-	int dtex=0;
-	RECT workRect;
-	workRect=*lpRect;
-	//DEBUG Reduce Usage twice
-	if (!bGammaWeightFilled)
+	if( !( lpString && lpRect ) )
 	{
-		int i;
-		for(i=0;i<256;i++)
-		{
-			double f;
-			double gamma=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma1",700)/1000;
-			double f2;
-			double gamma2=(double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma2",700)/1000;
-
-			f=(double)i/255;
-			f=pow(f,(1/gamma));
-			f2=(double)i/255;
-			f2=pow(f2,(1/gamma2));
-			pbGammaWeight[i]=(BYTE)(255*f);
-			pbGammaWeightAdv[i]=(BYTE)(255*f2);
-		}
-		bGammaWeightFilled=1;
+		DebugBreak();
+		return 0;
 	}
-	if (!lpstring) return 0;
-	lpString=mir_tstrdup(lpstring);
-	if (nCount==-1) nCount=lstrlen(lpString);
+
+	// Step first fill fast calc correction tables:
+	static bool _tables_empty = true;
+	static BYTE gammaTbl[256];			// Gamma correction table
+	static WORD blueMulTbl[256];		// blue  coefficient multiplication table
+	static WORD greenMulTbl[256];		// green coefficient multiplication table
+	static WORD redMulTbl[256];			// red   coefficient multiplication table
+	if ( _tables_empty )
+	{
+		// fill tables
+		double gammaCfPw = 1000 / (double)ModernGetSettingDword(NULL,"ModernData","AlphaTextOutGamma",700);
+		BYTE blueCf    = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutBlueCorrection", 28 );
+		BYTE redCf     = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutRed Correction", 77 );
+		BYTE greenCf   = ModernGetSettingByte(NULL,"ModernData","AlphaTextOutGreen Correction", 151 );
+
+		for( int i = 0; i < 256; i++ )
+		{
+			gammaTbl[i]= (BYTE)( 255 * pow( (double)i / 255, gammaCfPw ) );
+			blueMulTbl[i] = i * blueCf;
+			redMulTbl[i] = i * redCf;
+			greenMulTbl[i] = i * greenCf;
+		}
+	}
+
+	// Calc len of input string
+	if ( nCount == -1 ) nCount = lstrlen( lpString );
+
 	// retrieve destination bitmap bits
+	HBITMAP hDestBitmap = (HBITMAP) GetCurrentObject( hDC, OBJ_BITMAP );
+	BITMAP  bmpDest;
+	GetObject( hDestBitmap, sizeof(BITMAP), &bmpDest );
+
+	BOOL destHasNotDIB = FALSE;
+	BYTE * pDestBits = NULL;
+	if ( bmpDest.bmBits == NULL )
 	{
-		destBitmap=(HBITMAP)GetCurrentObject(hDC,OBJ_BITMAP);
-		GetObject(destBitmap, sizeof(BITMAP),&bmpdata);
-		if (bmpdata.bmBits==NULL)
-		{
-			noDIB=1;
-			destBits=(BYTE*)malloc(bmpdata.bmHeight*bmpdata.bmWidthBytes);
-			GetBitmapBits(destBitmap,bmpdata.bmHeight*bmpdata.bmWidthBytes,destBits);
-		}
-		else 
-			destBits=(BYTE*)bmpdata.bmBits;
-		is16bit=(bmpdata.bmBitsPixel)!=32;
+		destHasNotDIB = TRUE;
+		pDestBits = (BYTE*) malloc ( bmpDest.bmHeight * bmpDest.bmWidthBytes );
+		GetBitmapBits( hDestBitmap, bmpDest.bmHeight*bmpDest.bmWidthBytes, pDestBits );
 	}
-	// Create DC
+	else 
+		pDestBits=(BYTE*)bmpDest.bmBits;
+
+	BOOL isDest16bit=( bmpDest.bmBitsPixel ) != 32;
+
+
+	// Creating offscreen buffer
+	HDC hOffscreenDC = CreateCompatibleDC( hDC );
+
+	// Font to be used to draw text
+	HFONT hFont      = (HFONT)GetCurrentObject( hDC, OBJ_FONT);
+	HFONT hOldOffscreenFont = (HFONT)SelectObject( hOffscreenDC, hFont );
+
+	// Calculating text geometric size
+	RECT workRect = *lpRect;
+	int  workRectWidth  = workRect.right - workRect.left;
+	int  workRectHeight = workRect.bottom - workRect.top;
+	
+	SIZE textSize;
+	GetTextExtentPoint32( hOffscreenDC, lpString, nCount, &textSize );
+
+	LPCTSTR lpWorkString = lpString;
+	BOOL bNeedFreeWorkString = FALSE;
+
+	// if we need to cut the text with ellipsis
+	if ( ( format&DT_END_ELLIPSIS ) && textSize.cx > workRectWidth )
 	{
-		memdc=CreateCompatibleDC(hDC);
-		hfnt=(HFONT)GetCurrentObject(hDC,OBJ_FONT);
-		SetBkColor(memdc,0);
-		SetTextColor(memdc,RGB(255,255,255));
-		holdfnt=(HFONT)SelectObject(memdc,hfnt);
-	}
-	{
-		GetTextExtentPoint32(memdc,lpString,nCount,&sz);
-		if ((format&DT_END_ELLIPSIS) && sz.cx>workRect.right-workRect.left)
+		// Calc geometric width of ellipsis
+		SIZE szEllipsis;
+		GetTextExtentPoint32A(hOffscreenDC,"...",3,&szEllipsis);
+		szEllipsis.cx++;                                          // CORRECTION: some width correction
+
+		// Calc count of visible chars
+		int visibleCharCount = nCount;
+		if ( workRectWidth > szEllipsis.cx)
 		{
-			SIZE szElipses={0};
-			TCHAR *tem=NULL;
-			int number=0;
-			GetTextExtentPoint32A(memdc,"...",3,&szElipses);
-			szElipses.cx+=1;
-			if (workRect.right-workRect.left-szElipses.cx>0)
-				GetTextExtentExPoint(memdc,lpString,nCount,
-				workRect.right-workRect.left-szElipses.cx,
-				&number, NULL, &sz);
-			else
-				GetTextExtentExPoint(memdc,lpString,nCount,
-				0, &number, NULL, &sz);
+			GetTextExtentExPoint( hOffscreenDC, lpString, nCount,
+			                      workRectWidth - szEllipsis.cx,
+			                      &visibleCharCount, NULL, &textSize );
+		}
+		else
+		{
+			GetTextExtentExPoint( hOffscreenDC, lpString, nCount,
+			                     0, &visibleCharCount, NULL, &textSize);
+		}
 
-			tem=(TCHAR*)mir_alloc((number+5)*sizeof(TCHAR));
-			//memset(tem,0,(number+5)*sizeof(TCHAR));
-			memcpy((void*)tem,lpString,number*sizeof(TCHAR));
-			memcpy((void*)((TCHAR*)tem+number),_T("..."),3*sizeof(TCHAR));
-			//tem[number+3]=(TCHAR)'\0';
-			nCount=number+3;
-			mir_free_and_nill(lpString);
-			lpString=tem;
+		// replace end of string by elipsis
+		bNeedFreeWorkString = TRUE;
+		lpWorkString = (TCHAR*) malloc( ( visibleCharCount + 4) * sizeof(TCHAR) );
+		
+		memcpy( (void*) lpWorkString, lpString, visibleCharCount * sizeof(TCHAR) );
+		memcpy( (void*) ( lpWorkString + visibleCharCount ), _T("..."), 4 * sizeof(TCHAR)); // 3 + 1
+		
+		nCount = visibleCharCount + 3;
+	}
 
+	// Calc sizes and offsets
+
+	textSize.cx += 2;             // CORRECTION: for italic
+
+	SIZE fsize = textSize;        // ???
+
+	int drx = 0;                  // x-axis offset of draw point
+
+	if ( workRectWidth > textSize.cx )
+	{
+		if ( format & ( DT_RIGHT | DT_RTLREADING ) ) 
+		{
+			drx = workRectWidth - textSize.cx;
+		}
+		else if ( format & DT_CENTER ) 
+		{
+			drx = ( workRectWidth - textSize.cx ) >> 1;
 		}
 	}
-	// Calc Sizes
+	else
 	{
-		//Calc full text size
-		//GetTextExtentPoint32(memdc,lpString,nCount,&sz);
-		sz.cx+=2;
-		fsize=sz;
+		textSize.cx = workRectWidth;
+	}
+
+	int dry = 0;                  // y-axis offset of draw point
+
+	if ( workRectHeight > textSize.cy )
+	{
+		if ( format & DT_BOTTOM ) 
 		{
-			if (workRect.right-workRect.left>sz.cx)
-			{
-				if (format&(DT_RIGHT|DT_RTLREADING)) drx=workRect.right-workRect.left-sz.cx;
-				else if (format&DT_CENTER) 
-					drx=(workRect.right-workRect.left-sz.cx)>>1;
-				else drx=0;
-			}
-			else
-			{
-
-				sz.cx=workRect.right-workRect.left;
-				drx=0;
-				// Calc buffer size
-			}
-
-			if (workRect.bottom-workRect.top>sz.cy)
-			{
-				if (format&DT_BOTTOM) dry=workRect.bottom-workRect.top-sz.cy;
-				else if (format&DT_VCENTER) 
-					dry=(workRect.bottom-workRect.top-sz.cy)>>1;
-				else dry=0;
-			}
-			else
-			{
-				sz.cy=workRect.bottom-workRect.top;
-				dry=0;
-
-			}
+			dry = workRectHeight - textSize.cy;
 		}
-		//if (sz.cy>2000) DebugBreak();
-		sz.cx+=4;
-		sz.cy+=4;
-		if (sz.cx>0 && sz.cy>0) 
+		else if ( format & DT_VCENTER ) 
 		{
-			//Create text bitmap
-			{
-				hbmp=ske_CreateDIB32Point(sz.cx,sz.cy,(void**)&bits);
-				holdbmp=(HBITMAP)SelectObject(memdc,hbmp);
+			dry = ( workRectHeight - textSize.cy ) >> 1;
+		}
+	}
+	else
+	{
+		textSize.cy = workRectHeight;
+	}
 
-				bufDC=CreateCompatibleDC(hDC);
-				bufbmp=ske_CreateDIB32Point(sz.cx,sz.cy,(void**)&bufbits);
-				bufoldbmp=(HBITMAP)SelectObject(bufDC,bufbmp);
-				BitBlt(bufDC,0,0,sz.cx,sz.cy,hDC,workRect.left+drx-2,workRect.top+dry-2,SRCCOPY);
-			}
-			//Calc text draw offsets
-			//Draw text on temp bitmap
-			{
+	textSize.cx += 4;    // CORRECTION: for effects ???
+	textSize.cy += 4;	 // CORRECTION: for effects ???
 
-				TextOut(memdc,2,2,lpString,nCount);
-			}
+	if ( textSize.cx > 0 && textSize.cy > 0 )     // Ok we need to paint
+	{
+
+		// probably here are mess ofscreen and temp buff dc
+
+		//Create bitmap image for offscreen
+		BYTE * bits     = NULL;
+		HBITMAP hbmp    = ske_CreateDIB32Point( textSize.cx, textSize.cy, (void**)&bits );
+		HBITMAP holdbmp = (HBITMAP)SelectObject( hOffscreenDC, hbmp );
+
+		//Create buffer bitmap image for temp text
+		BYTE *  bufbits  = NULL;
+		HDC     bufDC     = CreateCompatibleDC( hDC );
+		HBITMAP bufbmp    = ske_CreateDIB32Point( textSize.cx, textSize.cy, (void**)&bufbits );
+		HBITMAP bufoldbmp = (HBITMAP)SelectObject( bufDC, bufbmp );
+		HFONT   hOldBufFont = (HFONT)SelectObject( bufDC, hFont );
+		SetBkColor( bufDC,  RGB( 0, 0, 0 ) );
+		SetTextColor( bufDC,RGB(255,255,255) );
+		
+		// Copy from destination to temp buffer
+		BitBlt( hOffscreenDC, 0, 0, textSize.cx, textSize.cy, hDC, workRect.left + drx - 2, workRect.top + dry - 2, SRCCOPY );
+
+		//Draw text on offscreen bitmap
+
+		TextOut( bufDC, 2, 2, lpString, nCount);
+
+		MODERNEFFECT effect;
+		if (ske_GetTextEffect( hDC, &effect ) ) 
+		{
+			ske_DrawTextEffect( bits, bufbits, textSize.cx, textSize.cy, &effect );	
+		}
+
+		//RenderText
+		RECT drawRect;
+		drawRect.left = 0; drawRect.top = 0;
+		drawRect.right = textSize.cx;
+		drawRect.bottom = textSize.cy;
+
+		DWORD x,y;
+		DWORD width=textSize.cx;
+		DWORD heigh=textSize.cy;
+
+		BYTE * pDestScanLine;
+		BYTE * pBufScanLine;
+		BYTE * pix;
+		BYTE * bufpix;
+
+		BYTE al = 255 - ((BYTE)( ARGBcolor >> 24 ));
+		BYTE r = GetRValue( ARGBcolor );
+		BYTE g = GetGValue( ARGBcolor );
+		BYTE b = GetBValue( ARGBcolor );      
+
+		for ( y = 2; y < heigh - 2; y++ )
+		{
+			int lineBytes = y * (width<<2);
+			
+			pDestScanLine = bits + lineBytes;
+			pBufScanLine  = bufbits + lineBytes;
+			
+			for( x = 2; x < width - 3; x++)
 			{
-				MODERNEFFECT effect={0};
-				if (ske_GetTextEffect(hDC,&effect)) 
-					ske_DrawTextEffect(bufbits,bits,sz.cx,sz.cy,&effect);	
-			}
-			//RenderText
-            RECT drawRect;
-            drawRect.left = 0; drawRect.top = 0;
-            drawRect.right = sz.cx;
-            drawRect.bottom = sz.cy;
-			{
-				DWORD x,y;
-				DWORD width=sz.cx;
-				DWORD heigh=sz.cy;
-				BYTE * ScanLine;
-				BYTE * BufScanLine;
-				BYTE * pix;
-				BYTE * bufpix;
-				BYTE r,g,b;
-				BYTE al=255-((BYTE)(ARGBcolor>>24));
-				r=GetRValue(ARGBcolor);
-				g=GetGValue(ARGBcolor);
-				b=GetBValue(ARGBcolor);      
-				for (y=0+dtsy; y<heigh-dtey;y++)
+				pix    = pDestScanLine + ( x<<2 );
+				bufpix = pBufScanLine  + ( x<<2 );
+
+				// Monochromatic
+				BYTE bx = gammaTbl[ bufpix[0] ];
+				BYTE gx = gammaTbl[ bufpix[1] ];
+				BYTE rx = gammaTbl[ bufpix[2] ];
+
+				if ( al != 255 )
 				{
-					int a=y*(width<<2);
-					ScanLine=bits+a;
-					BufScanLine=bufbits+a;
-					for(x=0+dtsx; x<width-dtex; x++)
-					{
-						BYTE bx,rx,gx,mx;
-						pix=ScanLine+x*4;
-						bufpix=BufScanLine+(x<<2);
-
-                        BYTE bm = pix[0];
-                        BYTE gm = pix[1];
-                        BYTE rm = pix[2];
-
-                        //BYTE col = bm = rm = gm ;
-
-						if (al!=255)
-						{
-                            //bx = gx = rx = pbGammaWeightAdv[ col ]*al/255;
-							bx=pbGammaWeightAdv[ bm ]*al/255;
-							gx=pbGammaWeightAdv[ gm ]*al/255;
-							rx=pbGammaWeightAdv[ rm ]*al/255;
-						}
-						else
-						{
-                            //bx = gx = rx = pbGammaWeightAdv[ col ];
-							 bx=pbGammaWeightAdv[ bm ];
-							 gx=pbGammaWeightAdv[ gm ];
-							 rx=pbGammaWeightAdv[ rm ];
-						}
-
-						bx=(pbGammaWeight[bx]*(255-b)+bx*(b))/255;
-						gx=(pbGammaWeight[gx]*(255-g)+gx*(g))/255;
-						rx=(pbGammaWeight[rx]*(255-r)+rx*(r))/255;
-
-                        mx=(BYTE)(max(max(bx,rx),gx));
-                        // mx=(BYTE)(((DWORD)bx+(DWORD)rx +(DWORD)gx)/3);
-
-						if (1) 
-						{
-							bx=(bx<mx)?(BYTE)(((WORD)bx*7+(WORD)mx)>>3):bx;
-							rx=(rx<mx)?(BYTE)(((WORD)rx*7+(WORD)mx)>>3):rx;
-							gx=(gx<mx)?(BYTE)(((WORD)gx*7+(WORD)mx)>>3):gx;
-							// reduce boldeness at white fonts
-						}
-						if (mx)                                      
-						{
-							short rrx,grx,brx;
-							BYTE axx=bufpix[3];
-							BYTE nx;
-							nx=pbGammaWeight[mx];
-							{
-
-
-								//Normalize components	to alpha level
-								bx=(nx*(255-axx)+bx*axx)/255;
-								gx=(nx*(255-axx)+gx*axx)/255;
-								rx=(nx*(255-axx)+rx*axx)/255;
-								mx=(nx*(255-axx)+mx*axx)/255;
-							}
-							{
-								brx=(short)((b-bufpix[0])*bx/255);
-								grx=(short)((g-bufpix[1])*gx/255);
-								rrx=(short)((r-bufpix[2])*rx/255);
-								bufpix[0]+=brx;
-								bufpix[1]+=grx;
-								bufpix[2]+=rrx;
-								bufpix[3]=(BYTE)(mx+(BYTE)(255-mx)*bufpix[3]/255);
-							}
-						}
-					}
+					bx*=al/255;
+					gx*=al/255;
+					rx*=al/255;
 				}
+				BYTE ax = (BYTE)( ( (DWORD)rx*77 + (DWORD)gx * 151 + (DWORD)bx *28 + 128 ) / 256 );
 
-			}
-			//Blend to destination
-			{
-				BitBlt(hDC,workRect.left+drx-2,workRect.top+dry-2,sz.cx,sz.cy,bufDC,0,0,SRCCOPY);
-			}
-			//free resources
+				if (ax)
+				{
 
-			{
-				SelectObject(memdc,holdbmp);
-				DeleteObject(hbmp);
-				SelectObject(bufDC,bufoldbmp);
-				DeleteObject(bufbmp);
-				mod_DeleteDC(bufDC);
-			}	
+
+					//Normalize components to gray
+					BYTE axx = 255 - ( ( r + g + b ) >> 2 ) ; // Coefficient of grayance, more white font - more gray edges
+					WORD atx = ax * (255 - axx);
+					bx=( atx + bx * axx )/255;
+					gx=( atx + gx * axx )/255;
+					rx=( atx + rx * axx )/255;
+
+					short rrx, grx, brx;
+					brx=(short)((b-pix[0])*bx/255);
+					grx=(short)((g-pix[1])*gx/255);
+					rrx=(short)((r-pix[2])*rx/255);
+
+					pix[0]+=brx;
+					pix[1]+=grx;
+					pix[2]+=rrx;
+					pix[3]=(BYTE)(ax+(BYTE)(255-ax)*pix[3]/255);
+				}
+			}
 		}
+
+		//Blit to destination
+		BitBlt( hDC, workRect.left + drx - 2, workRect.top + dry - 2, textSize.cx, textSize.cy, hOffscreenDC, 0, 0, SRCCOPY );
+
+		//free resources
+		{
+			SelectObject(hOffscreenDC,holdbmp);
+			DeleteObject(hbmp);
+			SelectObject(bufDC,bufoldbmp);
+			DeleteObject(bufbmp);
+			SelectObject(bufDC, hOldBufFont );
+			mod_DeleteDC(bufDC);
+		}	
 	}
-	SelectObject(memdc,holdfnt);
-	mod_DeleteDC(memdc); 
-	if (noDIB) free(destBits);
-	mir_free_and_nill(lpString);
+
+
+	// Final cleanup 
+	SelectObject( hOffscreenDC, hOldOffscreenFont );
+	DeleteDC( hOffscreenDC ); 
+	
+	if ( destHasNotDIB )
+		free( pDestBits );
+	
+	if ( bNeedFreeWorkString )
+		free( (void*)lpWorkString );
+	
 	return 0;
 }
 
