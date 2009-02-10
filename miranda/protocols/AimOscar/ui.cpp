@@ -819,6 +819,7 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_MG, ppro->getByte(AIM_KEY_MG, 1));//Manage Groups
 			CheckDlgButton(hwndDlg, IDC_DA, ppro->getByte(AIM_KEY_DA, 0));//Disable Avatars
 			CheckDlgButton(hwndDlg, IDC_DSSL, ppro->getByte(AIM_KEY_DSSL, 0));//Disable SSL
+			CheckDlgButton(hwndDlg, IDC_FSC, ppro->getByte(AIM_KEY_FSC, 0));//Force Single Client
 		}
 		break;
 
@@ -910,6 +911,10 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				//Disable SSL
 				ppro->setByte( AIM_KEY_DSSL, IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0);
 				//Disable SSL
+
+				//Force Single Login
+				ppro->setByte( AIM_KEY_FSC, IsDlgButtonChecked(hwndDlg, IDC_FSC) != 0);
+				//Force Single Login
 
                 //Force Proxy Transfer
 				ppro->setByte( AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);

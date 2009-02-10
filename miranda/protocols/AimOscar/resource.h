@@ -101,6 +101,8 @@
 #define IDC_FO                          1160
 #define IDC_DA                          1161
 #define IDC_DSSL                        1162
+#define IDC_FORCESNGLCLNT               1163
+#define IDC_FSC                         1163
 #define IDC_HF                          1170
 #define IDC_MASQ                        1180
 #define IDC_CM                          1191

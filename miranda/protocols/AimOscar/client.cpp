@@ -63,7 +63,8 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writetlvlong(0x14,AIM_CLIENT_DISTRIBUTION_NUMBER,offset,buf);
     aim_writetlv(0x0F,(unsigned short)strlen(language),language,offset,buf);
     aim_writetlv(0x0E,(unsigned short)strlen(country),country,offset,buf);
-    aim_writetlvchar(0x4A,1,offset,buf);
+    aim_writetlvchar(0x4A,getByte(AIM_KEY_FSC, 0) ? 3 : 1,offset,buf);
+//    aim_writetlvchar(0x94,0,offset,buf);
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

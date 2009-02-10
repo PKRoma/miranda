@@ -123,6 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_MG						"ManageGroups"
 #define AIM_KEY_DA						"DisableAvatars"
 #define AIM_KEY_DSSL					"DisableSSL"
+#define AIM_KEY_FSC					    "ForceSingleClient"
 
 #define OTH_KEY_SM						"StatusMsg"
 #define OTH_KEY_GP						"Group"
