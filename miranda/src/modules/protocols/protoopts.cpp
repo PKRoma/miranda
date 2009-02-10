@@ -681,6 +681,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				ScreenToClient( hwndList, &ptItem );
 				iItem = LOWORD(SendMessage(hwndList, LB_ITEMFROMPOINT, 0, MAKELPARAM(ptItem.x, ptItem.y)));
 				ListBox_SetCurSel(hwndList, iItem);
+                sttUpdateAccountInfo(hwndDlg, dat);
 				sttSelectItem(dat, hwndList, iItem);
 				SetFocus(hwndList);
 			}
@@ -744,6 +745,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						if (acc) {
 							mir_free(acc->tszAccountName);
 							acc->tszAccountName = (TCHAR *)lParam;
+                            WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, 2, ( LPARAM )acc );
 
 							ListBox_DeleteString(hwndList, iItem);
