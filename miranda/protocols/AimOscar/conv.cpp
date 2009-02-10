@@ -23,63 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	#pragma warning( disable: 4706 )
 #endif
 
-char* strip_html(char *src)
-{
-	char *ptr;
-	char *ptrl;
-	char *rptr;
-	char* dest = strldup(src);
-	while ((ptr = strstr(dest,"<P>")) != NULL || (ptr = strstr(dest, "<p>")) != NULL) {
-		memmove(ptr + 4, ptr + 3, strlen(ptr + 3) + 1);
-		memcpy(ptr, "\r\n\r\n", 4);
-	}
-	while ((ptr = strstr(dest,"</P>")) != NULL || (ptr = strstr(dest, "</p>")) != NULL) {
-		memcpy(ptr, "\r\n\r\n", 4);
-	}
-	while ((ptr = strstr(dest, "<BR>")) != NULL || (ptr = strstr(dest, "<br>")) != NULL) {
-		memcpy(ptr, "\r\n", 2);
-		memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
-	}
-	while ((ptr = strstr(dest, "<HR>")) != NULL || (ptr = strstr(dest, "<hr>")) != NULL) {
-		memcpy(ptr, "\r\n", 2);
-		memmove(ptr + 2, ptr + 4, strlen(ptr + 4) + 1);
-	}
-	rptr = dest;
-	while ((ptr = strchr(rptr, '<'))) {
-		ptrl = ptr + 1;
-		if ((ptrl = strchr(ptrl, '>'))) {
-			memmove(ptr, ptrl + 1, strlen(ptrl + 1) + 1);
-		}
-		else
-			rptr++;
-	}
-	ptrl = NULL;
-	while ((ptr = strstr(dest, "&quot;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = '"';
-		memmove(ptr + 1, ptr + 6, strlen(ptr + 6) + 1);
-		ptrl = ptr;
-	}
-	ptrl = NULL;
-	while ((ptr = strstr(dest, "&lt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = '<';
-		memmove(ptr + 1, ptr + 4, strlen(ptr + 4) + 1);
-		ptrl = ptr;
-	}
-	ptrl = NULL;
-	while ((ptr = strstr(dest, "&gt;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = '>';
-		memmove(ptr + 1, ptr + 4, strlen(ptr + 4) + 1);
-		ptrl = ptr;
-	}
-	ptrl = NULL;
-	while ((ptr = strstr(dest, "&amp;")) != NULL && (ptrl == NULL || ptr > ptrl)) {
-		*ptr = '&';
-		memmove(ptr + 1, ptr + 5, strlen(ptr + 5) + 1);
-		ptrl = ptr;
-	}
-	return dest;
-}
-
 char* process_status_msg (const char *str, const char* sn)
 {
     const char *src = str;
@@ -133,48 +76,85 @@ char* process_status_msg (const char *str, const char* sn)
     return res;
 }
 
-char* strip_carrots(char *src)// EAT!!!!!!!!!!!!!
+
+void  html_decode( char* str )
 {
-	char *ptr;
-	char* dest=strldup(src);
-	while ((ptr = strstr(dest, "<")) != NULL)
-	{
-		int addr=ptr-dest;
-		dest=renew(dest,strlen(dest)+1,3);
-		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 1);
-		memcpy(ptr,"&lt;",4);
+	char *p, *q;
+
+	if (str == NULL) return;
+
+	for ( p=q=str; *p!='\0'; p++,q++ ) 
+    {
+		if ( *p == '&' ) 
+        {
+			if      ( !strnicmp( p, "&amp;", 5 ))  { *q = '&';  p += 4; }
+			else if ( !strnicmp( p, "&apos;", 6 )) { *q = '\''; p += 5; }
+			else if ( !strnicmp( p, "&gt;", 4 ))   { *q = '>';  p += 3; }
+			else if ( !strnicmp( p, "&lt;", 4 ))   { *q = '<';  p += 3; }
+			else if ( !strnicmp( p, "&quot;", 6 )) { *q = '"';  p += 5; }
+			else { *q = *p;	}
+		}
+        else if ( *p == '<' )
+        {
+			if      ( !strnicmp( p, "<p>", 3 ))  { strcpy(q, "\r\n"); ++q; p += 2; }
+			else if ( !strnicmp( p, "</p>", 4 )) { strcpy(q, "\r\n\r\n"); q += 3; p += 3; }
+			else if ( !strnicmp( p, "<br>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
+			else if ( !strnicmp( p, "<hr>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
+            else { 
+                char *l = strchr(p, '>'); 
+                if (l) { p = l; --q; } else *q = *p; 
+            }
+		}
+		else 
+			*q = *p;
 	}
-	while ((ptr = strstr(dest, ">")) != NULL)
-	{
-		int addr=ptr-dest;
-		dest=renew(dest,strlen(dest)+1,3);
-		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 1);
-		memcpy(ptr,"&gt;",4);
-	}
-	return dest;
+	*q = '\0';
 }
 
-char* strip_linebreaks(char *src)
+
+char* html_encode( const char* str )
 {
-	char* dest=strldup(src);
-	char *ptr;
-	while ((ptr = strstr(dest, "\r")) != NULL)
-	{
-		memmove(ptr, ptr + 1, strlen(ptr + 1) + 1);
+	char* s, *q;
+    const char *p;
+	int c;
+
+	if (str == NULL) return NULL;
+
+	for ( c=0, p=str; *p!='\0'; p++ ) 
+    {
+		switch ( *p ) 
+        {
+		case '&' : c += 5; break;
+		case '\'': c += 6; break;
+		case '>' : c += 4; break;
+		case '<' : c += 4; break;
+		case '"' : c += 6; break;
+        case '\n': c += 4; break;
+		default: c++; break;
+		}
 	}
-	while ((ptr = strstr(dest, "\n")) != NULL)
-	{
-		int addr=ptr-dest;
-		dest=renew(dest,strlen(dest)+1,7);
-		ptr=dest+addr;
-		memmove(ptr + 4, ptr + 1, strlen(ptr + 1) + 4);
-		memcpy(ptr,"<br>",4);
+
+    s = new char[ c + 27 ]; 
+    strcpy(s, "<HTML><BODY>");
+    for ( p=str,q=s+12; *p!='\0'; p++ ) 
+    {
+		switch ( *p ) 
+        {
+		case '&' : memcpy( q, "&amp;", 5 );  q += 5; break;
+		case '\'': memcpy( q, "&apos;", 6 ); q += 6; break;
+		case '>' : memcpy( q, "&gt;", 4 );   q += 4; break;
+		case '<' : memcpy( q, "&lt;", 4 );   q += 4; break;
+		case '"' : memcpy( q, "&quot;", 6 ); q += 6; break;
+        case '\r': break;
+        case '\n': memcpy( q, "<BR>", 4 );   q += 4; break;
+		default: *q = *p; ++q; break;
+		}
 	}
-	dest[strlen(dest)]='\0';
-	return dest;
+    strcpy(q, "</BODY></HTML>");
+
+	return s;
 }
+
 
 char* html_to_bbcodes(char *src)
 {

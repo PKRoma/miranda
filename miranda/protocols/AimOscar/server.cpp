@@ -841,10 +841,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					    }
 					    else if(tlv.cmp(0x000c))
 					    {
-						    char* description= tlv.dup();
-						    msg_buf=strip_html(description);
+						    msg_buf=tlv.dup();
+						    html_decode(msg_buf);
 						    descr_included=1;
-						    delete[] description;
 					    }
 					    i+=tlv.len()+TLV_HEADER_SIZE;
 				    }
@@ -913,10 +912,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				msg_buf = bbuf;
 			}
 			LOG("Stripping html.");
-			char* bbuf = strip_html(msg_buf);
-			delete[] msg_buf;
-			msg_buf = bbuf;
-
+			html_decode(msg_buf);
 			if (is_offline)
 				pre.timestamp = offline_timestamp;
 			else
@@ -1725,18 +1721,16 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
                     wcs_htons(msgw);
                     char* msgu=mir_utf8encodeW(msgw);
                     delete[] msgw;
-		            char* bbuf = strip_html(msgu);
+		            html_decode(msgu);
+                    message=mir_utf8decodeT(msgu);                    
                     mir_free(msgu);
-                    message=mir_utf8decodeT(bbuf);
-                    delete[] bbuf;
                 }
                 else
                 {
 				    char* msg=tlv.dup();
-		            char* bbuf = strip_html(msg);
+		            html_decode(msg);
+                    message = mir_a2t(msg);
                     delete[] msg;
-                    message = mir_a2t(bbuf);
-                    delete[] bbuf;
                 }
             }
 			else if (tlv.cmp(0x0002))

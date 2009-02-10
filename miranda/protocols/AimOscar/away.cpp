@@ -42,17 +42,13 @@ char**  CAimProto::getStatusMsgLoc( int status )
 int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info
 {
 	unsigned short offset=0;
-	char* html_msg=NULL;
-	size_t msg_size=0;
-	if(msg!=NULL)
+	char* html_msg = NULL;
+	size_t msg_size = 0;
+	if (msg != NULL)
 	{
-		html_msg=strldup(msg);
 		setDword( AIM_KEY_LA, (DWORD)time(NULL));
-		char* smsg=strip_carrots(html_msg);
-		delete[] html_msg;
-		html_msg=strip_linebreaks(smsg);
-		delete[] smsg;
-		msg_size=strlen(html_msg);
+		html_msg = html_encode(msg);
+		msg_size = strlen(html_msg);
 	}
 
     const char *typ;

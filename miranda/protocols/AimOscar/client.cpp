@@ -179,7 +179,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
     DBVARIANT dbv;
     if (!getString(AIM_KEY_PR, &dbv))
     {
-        profile_buf=strip_linebreaks(dbv.pszVal);
+        profile_buf=strldup(dbv.pszVal);
         buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE)+strlen(profile_buf));
         DBFreeVariant(&dbv);
     }

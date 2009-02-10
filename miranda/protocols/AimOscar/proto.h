@@ -174,6 +174,8 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hAvatarEvent;
     HANDLE hAvatarsFolder;
 
+    OBJLIST <file_transfer> ft_list;
+
 	//chatnav connection stuff
 	unsigned short chatnav_seqno;
 	HANDLE hChatNavConn;

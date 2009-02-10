@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "m_genmenu.h"
 
 CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
-    : chat_rooms(5)
+    : chat_rooms(5), ft_list(2)
 {
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
@@ -556,7 +556,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		}
 	}
 
-	char* smsg = strip_carrots( msg );
+	char* smsg = html_encode( msg );
 	if (fl) mir_free(msg);
 
 	if ( getByte( AIM_KEY_FO, 0 )) 

@@ -20,9 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CONV_H
 
 char* process_status_msg (const char *src, const char* sn);
-char* strip_html(char *src);
-char* strip_carrots(char *src);
-char* strip_linebreaks(char *src);
+void  html_decode(char* str);
+char* html_encode(const char *src);
 char* html_to_bbcodes(char *src);
 char* bbcodes_to_html(const char *src);
 void strip_tag(char* begin, char* end);

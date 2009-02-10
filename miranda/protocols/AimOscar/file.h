@@ -57,7 +57,8 @@ class file_transfer
 {
 public:
 	HANDLE hContact;
-	char cookie[8];
+    char* sn;
+	char icbm_cookie[8];
 	char* file;
 	unsigned long total_size;
 
@@ -71,8 +72,7 @@ public:
 	bool force_proxy;
 
 	file_transfer()  { memset(this, 0, sizeof(*this)); }
-	~file_transfer() { delete[] file; }
+	~file_transfer() { if (file) delete[] file; if (sn) delete[] sn; }
 };
-
 
 #endif
