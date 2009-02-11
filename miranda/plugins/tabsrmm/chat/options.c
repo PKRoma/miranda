@@ -113,7 +113,7 @@ static struct FontOptionsList IM_fontOptionsList[] = {
 
 static struct FontOptionsList IP_fontOptionsList[] = {
 	{LPGENT("Nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
-	{LPGENT("UIN"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -10},
+	{LPGENT("User ID"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -10},
 	{LPGENT("Status"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -10},
 	{LPGENT("Protocol"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
 	{LPGENT("Contacts local time"), RGB(255, 0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -10},
