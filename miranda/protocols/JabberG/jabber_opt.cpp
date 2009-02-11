@@ -974,16 +974,16 @@ static void _RosterListClear(HWND hwndDlg)
 	column.mask=LVCF_TEXT;
 	column.cx=500;
 
-	column.pszText=_T("JID");
+	column.pszText=TranslateT("JID");
 	ListView_InsertColumn(hList, 1, &column);
 
-	column.pszText=_T("Nick Name");
+	column.pszText=TranslateT("Nick Name");
 	ListView_InsertColumn(hList, 2, &column);
 
-	column.pszText=_T("Group");
+	column.pszText=TranslateT("Group");
 	ListView_InsertColumn(hList, 3, &column);
 
-	column.pszText=_T("Subscription");
+	column.pszText=TranslateT("Subscription");
 	ListView_InsertColumn(hList, 4, &column);
 
 	RECT rc;

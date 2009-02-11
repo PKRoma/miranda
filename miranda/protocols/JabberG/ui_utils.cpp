@@ -377,7 +377,7 @@ CCtrlListBox::CCtrlListBox( CDlgBase* dlg, int ctrlId ) :
 {
 }
 
-BOOL CCtrlListBox::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
+BOOL CCtrlListBox::OnCommand(HWND, WORD, WORD idCode)
 {
 	switch (idCode)
 	{
@@ -587,7 +587,7 @@ CCtrlButton::CCtrlButton( CDlgBase* wnd, int idCtrl ) :
 {
 }
 
-BOOL CCtrlButton::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD idCode)
+BOOL CCtrlButton::OnCommand(HWND, WORD, WORD idCode)
 {
 	if ( idCode == BN_CLICKED || idCode == STN_CLICKED )
 		OnClick(this);
@@ -603,7 +603,7 @@ CCtrlHyperlink::CCtrlHyperlink( CDlgBase* wnd, int idCtrl, const char* url ) :
 {
 }
 
-BOOL CCtrlHyperlink::OnCommand(HWND /*hwndCtrl*/, WORD /*idCtrl*/, WORD /*idCode*/)
+BOOL CCtrlHyperlink::OnCommand(HWND, WORD, WORD)
 {
 	ShellExecuteA(m_hwnd, "open", m_url, "", "", SW_SHOW);
 	return FALSE;
@@ -616,7 +616,7 @@ CCtrlClc::CCtrlClc( CDlgBase* dlg, int ctrlId ):
 {
 }
 
-BOOL CCtrlClc::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
+BOOL CCtrlClc::OnNotify(int, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, (NMCLISTCONTROL *)pnmh };
 	switch (pnmh->code)
@@ -829,7 +829,7 @@ CCtrlListView::CCtrlListView( CDlgBase* dlg, int ctrlId ) :
 {
 }
 
-BOOL CCtrlListView::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
+BOOL CCtrlListView::OnNotify(int, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, pnmh };
 
@@ -1744,7 +1744,7 @@ CCtrlTreeView::CCtrlTreeView( CDlgBase* dlg, int ctrlId ):
 {
 }
 
-BOOL CCtrlTreeView::OnNotify(int /*idCtrl*/, NMHDR *pnmh)
+BOOL CCtrlTreeView::OnNotify(int, NMHDR *pnmh)
 {
 	TEventInfo evt = { this, pnmh };
 
@@ -1789,13 +1789,10 @@ void CCtrlTreeView::TranslateTree()
 
 		HTREEITEM hItemTmp = 0;
 		if (hItemTmp = GetChild(hItem))
-		{
 			hItem = hItemTmp;
-		} else
-		if (hItemTmp = GetNextSibling(hItem))
-		{
+		else if (hItemTmp = GetNextSibling(hItem))
 			hItem = hItemTmp;
-		} else
+		else
 		{
 			while (1)
 			{

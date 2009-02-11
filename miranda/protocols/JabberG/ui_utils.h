@@ -401,7 +401,6 @@ protected:
 	void Unsubclass();
 
 private:
-
 	WNDPROC m_wndproc;
 	static LRESULT CALLBACK GlobalSubclassWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
