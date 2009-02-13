@@ -258,6 +258,8 @@ static int StatusModeChange(WPARAM wParam,LPARAM lParam)
 	BOOL bScreenSaverRunning=FALSE;
 	char *szProto = (char*)lParam;
 
+  	if (protoModeMsgFlags == 0) return 0;
+
 	// If its a global change check the complete PFLAGNUM_3 flags to see if a popup might be needed
 	if(!szProto) {
 		if(!(protoModeMsgFlags&Proto_Status2Flag(wParam)))
@@ -393,6 +395,8 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 {
+   	if (protoModeMsgFlags == 0) return 0;
+
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
 	odp.position = 870000000;
@@ -406,24 +410,30 @@ static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 	return 0;
 }
 
+static int AwayMsgSendAccountsChanged(WPARAM, LPARAM)
+{
+	protoModeMsgFlags = 0;
+	for (int i=0; i < accounts.getCount(); i++)
+		protoModeMsgFlags |= CallProtoService(accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0);
+
+    return 0;
+}
+
 static int AwayMsgSendModulesLoaded(WPARAM, LPARAM)
 {
-	int i;
+    AwayMsgSendAccountsChanged(0, 0);
 
-	protoModeMsgFlags = 0;
-	for( i=0; i < accounts.getCount(); i++ )
-		protoModeMsgFlags |= CallProtoService( accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0 );
+    HookEvent(ME_CLIST_STATUSMODECHANGE, StatusModeChange);
+	HookEvent(ME_OPT_INITIALISE, AwayMsgOptInitialise);
 
-	if ( protoModeMsgFlags ) {
-		HookEvent( ME_CLIST_STATUSMODECHANGE, StatusModeChange );
-		HookEvent( ME_OPT_INITIALISE, AwayMsgOptInitialise );
-	}
-	return 0;
+    return 0;
 }
 
 int LoadAwayMessageSending(void)
 {
 	HookEvent(ME_SYSTEM_MODULESLOADED,AwayMsgSendModulesLoaded);
-	CreateServiceFunction(MS_AWAYMSG_GETSTATUSMSG, GetAwayMessage);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, AwayMsgSendAccountsChanged);
+    
+    CreateServiceFunction(MS_AWAYMSG_GETSTATUSMSG, GetAwayMessage);
 	return 0;
 }
