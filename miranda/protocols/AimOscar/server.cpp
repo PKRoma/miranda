@@ -568,9 +568,6 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
     {
         case 0x0000: //buddy record
 	    {
-		    if (strcmp(name, SYSTEM_BUDDY) == 0)//nobody likes that stupid aol buddy anyway
-                break;
-
             HANDLE hContact=contact_from_sn(name, true);
 		    if(hContact)
 		    {
