@@ -48,7 +48,7 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 	TCHAR* ptstr = NULL;
 	int unspecified=0;
 	char* szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	int proto_service = szProto ? (CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_INFOSETTINGSVC ? TRUE : FALSE) : FALSE;
+	bool proto_service = szProto && (CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_INFOSETTINGSVC);
 
 	dbv.type=DBVT_DELETED;
 	if(szModule==NULL) unspecified=1;
