@@ -45,7 +45,8 @@ static const UINT outgoingConnectionsControls[]={
 	  IDC_PROXYDNS,
 	IDC_SPECIFYPORTSO,
 	  IDC_PORTSRANGEO,
-	  IDC_STATIC54};
+	  IDC_STATIC54,
+    IDC_VALIDATESSL};
 static const UINT useProxyControls[]={
 	IDC_STATIC21,IDC_PROXYTYPE,
 	IDC_STATIC22,IDC_PROXYHOST,IDC_STATIC23,IDC_PROXYPORT,IDC_STOFTENPORT,
@@ -111,6 +112,7 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 {
 	if(sourceFlags&NUF_OUTGOING) {
 		if(*destFlags&NUF_OUTGOING) {
+			if(dest->validateSSL!=source->validateSSL) dest->validateSSL=2;
 			if(dest->useProxy!=source->useProxy) dest->useProxy=2;
 			if(dest->proxyType!=source->proxyType) dest->proxyType=0;
 			CombineSettingsStrings(&dest->szProxyServer,&source->szProxyServer);
@@ -124,6 +126,7 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 			CombineSettingsStrings(&dest->szOutgoingPorts,&source->szOutgoingPorts);
 		}
 		else {
+            dest->validateSSL=source->validateSSL;
 			dest->useProxy=source->useProxy;
 			dest->proxyType=source->proxyType;
 			dest->szProxyServer=source->szProxyServer;
@@ -202,6 +205,7 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 {
 	if(flags&NUF_OUTGOING) {
 		char szEncodedPassword[512];
+		DBWriteContactSettingByte(NULL,szSettingsModule,"NLValidateSSL",(BYTE)settings->validateSSL);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxy",(BYTE)settings->useProxy);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLProxyType",(BYTE)settings->proxyType);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyServer",settings->szProxyServer?settings->szProxyServer:"");
@@ -244,6 +248,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 		if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
 		CombineSettingsStructs(&combinedSettings,&flags,&netlibUser[iUser]->settings,netlibUser[iUser]->user.flags);
 	}
+    if(combinedSettings.validateSSL==2) combinedSettings.validateSSL=0;
 	if(combinedSettings.useProxy==2) combinedSettings.useProxy=0;
 	if(combinedSettings.proxyType==0) combinedSettings.proxyType=PROXYTYPE_SOCKS5;
 	if(combinedSettings.useProxyAuth==2) combinedSettings.useProxyAuth=0;
@@ -316,6 +321,7 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SetDlgItemTextA(hwndDlg,IDC_PROXYPASS,settings.szProxyAuthPassword?settings.szProxyAuthPassword:"");
 			CheckDlgButton(hwndDlg,IDC_PROXYDNS,settings.dnsThroughProxy);
 			CheckDlgButton(hwndDlg,IDC_PROXYAUTHNTLM,settings.useProxyAuthNtlm);
+			CheckDlgButton(hwndDlg,IDC_VALIDATESSL,settings.validateSSL);
 
 			ShowMultipleControls(hwndDlg,incomingConnectionsControls,SIZEOF(incomingConnectionsControls),flags&NUF_INCOMING?SW_SHOW:SW_HIDE);
 			CheckDlgButton(hwndDlg,IDC_SPECIFYPORTS,settings.specifyIncomingPorts);
@@ -428,6 +434,9 @@ static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
                 case IDC_ENABLEUPNP:
 					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,enableUPnP));
+                    break;
+                case IDC_VALIDATESSL:
+					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,validateSSL));
                     break;
                 case IDC_PROXYHOST:
 					if(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()) return 0;

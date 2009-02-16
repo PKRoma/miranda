@@ -50,7 +50,7 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	else {
 		NetlibDumpData( nlc, ( PBYTE )nlb->buf, nlb->len, 1, nlb->flags );
 		if (nlc->hSsl)
-			result = NetlibSslWrite( nlc->hSsl, nlb->buf, nlb->len );
+			result = si.write( nlc->hSsl, nlb->buf, nlb->len );
 		else
 			result = send( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
 	}
@@ -82,7 +82,7 @@ int NetlibRecv(WPARAM wParam,LPARAM lParam)
 	else
 	{
 		if (nlc->hSsl)
-			recvResult = NetlibSslRead( nlc->hSsl, nlb->buf, nlb->len, (nlb->flags & MSG_PEEK) != 0 );
+			recvResult = si.read( nlc->hSsl, nlb->buf, nlb->len, (nlb->flags & MSG_PEEK) != 0 );
 		else
 			recvResult = recv( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
 	}
@@ -112,7 +112,7 @@ static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int& pending)
 			return 0;
 		}
 		FD_SET(nlcCheck->s,fd);
-		if ( NetlibSslPending( nlcCheck->hSsl ))
+		if ( si.pending( nlcCheck->hSsl ))
 			pending++;
 	}
 	return 1;
@@ -181,7 +181,7 @@ int NetlibSelectEx(WPARAM, LPARAM lParam)
 		conn=(struct NetlibConnection*)nls->hReadConns[j];
 		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
 
-		if (NetlibSslPending(conn->hSsl))
+		if (si.pending(conn->hSsl))
 			nls->hReadStatus[j] = TRUE;
 		if (conn->usingHttpGateway && conn->nlhpi.szHttpGetUrl == NULL && conn->dataBuffer == NULL)
 			nls->hReadStatus[j] = (conn->pHttpProxyPacketQueue != NULL);

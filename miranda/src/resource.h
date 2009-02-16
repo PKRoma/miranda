@@ -120,9 +120,9 @@
 #define IDD_FTPAGE                      287
 #define IDD_OPT_KEYWORDFILTER           288
 #define IDI_JOINCHAT                    289
+#define IDD_CHOOSE_FONT_EFFECT          289
 #define IDI_LEAVECHAT                   290
 #define IDI_STATUS_LOCKED               291
-#define IDD_CHOOSE_FONT_EFFECT          289
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -145,6 +145,8 @@
 #define IDC_ST_ENTERURL                 1014
 #define IDC_SPECIFYPORTSO               1014
 #define IDC_ENABLEUPNP                  1015
+#define IDC_ENABLEUPNP2                 1016
+#define IDC_VALIDATESSL                 1016
 #define IDC_SHOWNAMES                   1024
 #define IDC_ABOUT                       1032
 #define IDC_MYNOTES                     1033

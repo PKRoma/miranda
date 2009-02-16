@@ -388,7 +388,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 }
 
 
-SslHandle *NetlibSslConnect(SOCKET s, const char* host)
+SslHandle *NetlibSslConnect(SOCKET s, const char* host, int verify)
 {
 	BOOL res, chkname;
 
@@ -399,7 +399,7 @@ SslHandle *NetlibSslConnect(SOCKET s, const char* host)
 
     chkname = host && inet_addr(host) == INADDR_NONE;
 
-	if (res) res = AcquireCredentials(ssl, FALSE, chkname);
+	if (res) res = AcquireCredentials(ssl, verify, chkname);
 	if (res) res = ClientConnect(ssl, host);
 
 	if (!res) 
@@ -742,4 +742,32 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 
 	mir_free(pbDataBuffer);
 	return scRet == SEC_E_OK ? num : SOCKET_ERROR;
+}
+
+static int GetSslApi(WPARAM, LPARAM lParam)
+{
+	SSL_API* si = (SSL_API*)lParam;
+	if (si == NULL) return FALSE;
+
+	if (si->cbSize != sizeof(SSL_API))
+		return FALSE;
+
+	si->connect  = (HSSL (__cdecl *)(SOCKET,const char *,int))NetlibSslConnect;
+	si->pending  = (BOOL (__cdecl *)(HSSL))NetlibSslPending;
+	si->read     = (int (__cdecl *)(HSSL,char *,int,int))NetlibSslRead;
+	si->write    = (int (__cdecl *)(HSSL,const char *,int))NetlibSslWrite;
+	si->shutdown = (void (__cdecl *)(HSSL))NetlibSslShutdown;
+	si->sfree    = (void (__cdecl *)(HSSL))NetlibSslFree;
+
+    return TRUE;
+}
+
+int LoadSslModule(void)
+{
+	CreateServiceFunction(MS_SYSTEM_GET_SI, GetSslApi);
+    return 0;
+}
+
+void UnloadSslModule(void)
+{
 }

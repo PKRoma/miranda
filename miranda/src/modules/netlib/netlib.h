@@ -20,15 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
-
 #define GetNetlibHandleType(h)  (h?*(int*)h:NLH_INVALID)
 #define NLH_INVALID      0
 #define NLH_USER         'USER'
 #define NLH_CONNECTION   'CONN'
 #define NLH_BOUNDPORT    'BIND'
 #define NLH_PACKETRECVER 'PCKT'
-
-struct SslHandle;
 
 struct NetlibUser {
 	int handleType;
@@ -67,7 +64,7 @@ struct NetlibConnection {
 	LONG dontCloseNow;
 	struct NetlibNestedCriticalSection ncsSend,ncsRecv;
 	HANDLE hNtlmSecurity;
-	SslHandle* hSsl;
+	HSSL hSsl;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
 	int pollingTimeout;
 	char* szHost;
@@ -180,11 +177,3 @@ static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int fl
 	NETLIBBUFFER nlb={buf,len,flags};
 	return NetlibRecv((WPARAM)nlc,(LPARAM)&nlb);
 }
-
-//netlibssl.c
-void NetlibSslFree(SslHandle *ssl);
-SslHandle* NetlibSslConnect(SOCKET s, const char* host);
-void NetlibSslShutdown(SslHandle *ssl);
-int NetlibSslWrite(SslHandle *ssl, const char *buf, int num);
-int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek);
-BOOL NetlibSslPending(SslHandle *ssl);

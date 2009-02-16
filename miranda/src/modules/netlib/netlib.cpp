@@ -31,6 +31,8 @@ CRITICAL_SECTION csNetlibUser;
 HANDLE hConnectionHeaderMutex, hSendEvent=NULL, hRecvEvent=NULL;
 DWORD g_LastConnectionTick; // protected by csNetlibUser
 
+SSL_API si;
+
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings)
 {
 	mir_free(settings->szIncomingPorts);
@@ -177,6 +179,7 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	thisUser->settings.specifyOutgoingPorts=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLSpecifyOutgoingPorts",0);
 	thisUser->settings.szOutgoingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLOutgoingPorts",0);
 	thisUser->settings.enableUPnP=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLEnableUPnP",1); //default to on
+	thisUser->settings.validateSSL=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLValidateSSL",0);
 
 	thisUser->toLog=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLlog",1);
 
@@ -262,8 +265,8 @@ int NetlibCloseHandle(WPARAM wParam, LPARAM)
 				}
 				if (nlc->hSsl)
 				{
-					NetlibSslShutdown(nlc->hSsl);
-					NetlibSslFree(nlc->hSsl);
+					si.shutdown(nlc->hSsl);
+					si.sfree(nlc->hSsl);
 					nlc->hSsl = NULL;
 				}
                 shutdown(nlc->s, 2);
@@ -348,7 +351,7 @@ int NetlibShutdown(WPARAM wParam, LPARAM)
 			case NLH_CONNECTION:
 				{
 					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
-		            NetlibSslShutdown(nlc->hSsl);
+		            si.shutdown(nlc->hSsl);
                     s = nlc->s;
 				}
 				break;
@@ -554,10 +557,15 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
 	CreateServiceFunction(MS_NETLIB_STARTSSL,NetlibStartSsl);
 
-	hRecvEvent = CreateHookableEvent( ME_NETLIB_FASTRECV );
-	hSendEvent = CreateHookableEvent( ME_NETLIB_FASTSEND );
+	hRecvEvent = CreateHookableEvent(ME_NETLIB_FASTRECV);
+	hSendEvent = CreateHookableEvent(ME_NETLIB_FASTSEND);
 
 	NetlibUPnPInit();
 	NetlibSecurityInit();
 	return 0;
+}
+
+void NetlibInitSsl(void)
+{
+    mir_getSI(&si);
 }

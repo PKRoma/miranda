@@ -588,7 +588,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	{
 		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
 
-		nlc->hSsl = NetlibSslConnect(nlc->s, nloc->szHost);
+        nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlu->settings.validateSSL);
 		if (nlc->hSsl == NULL)
 		{
 			Netlib_Logf(nlu,"(%d) Failure to negotiate SSL connection",nlc->s);
@@ -607,7 +607,7 @@ int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
     NETLIBSSL *sp = (NETLIBSSL*)lParam;
 
-    nlc->hSsl = NetlibSslConnect(nlc->s, sp ? sp->host : nlc->szHost);
+    nlc->hSsl = si.connect(nlc->s, sp ? sp->host : nlc->szHost, nlc->nlu->settings.validateSSL);
 
 	if (nlc->hSsl == NULL)
 		Netlib_Logf(nlc->nlu,"(%d) Failure to negotiate SSL connection",nlc->s);

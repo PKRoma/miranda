@@ -93,7 +93,9 @@ HINSTANCE GetInstByAddress( void* codePtr );
 int LoadSystemModule(void);		// core: m_system.h services
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
 int LoadNewPluginsModule(void);	// core: N.O. plugins
+int LoadSslModule(void);
 int LoadNetlibModule(void);		// core: network
+void NetlibInitSsl(void);
 int LoadLangPackModule(void);	// core: translation
 int LoadProtocolsModule(void);	// core: protocol manager
 int LoadAccountsModule(void);    // core: account manager
@@ -137,13 +139,13 @@ void UnloadContactListModule(void);
 void UnloadEventsModule(void);
 void UnloadIdleModule(void);
 void UnloadLangPackModule(void);
+void UnloadSslModule(void);
 void UnloadNetlibModule(void);
 void UnloadNewPlugins(void);
 void UnloadUpdateNotifyModule(void);
 void UnloadIcoLibModule(void);
 void UnloadSkinSounds(void);
 void UnloadSkinHotkeys(void);
-void UnloadNetlibModule(void);
 void UnloadProtocolsModule(void);
 void UnloadAccountsModule(void);
 
@@ -170,6 +172,9 @@ int LoadDefaultModules(void)
 		default: return 1;
 	}
 
+	//this info will be available at LoadNewPluginsModule()
+	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
+
 	if (LoadSkinSounds()) return 1;
 	if (LoadSkinHotkeys()) return 1;
 	if (LoadOptionsModule()) return 1;
@@ -182,10 +187,10 @@ int LoadDefaultModules(void)
 	if (LoadNewPluginsModule()) return 1;    // will call Load() on everything, clist will load first
 	if (LoadAccountsModule()) return 1;
 
-	//this info will be available at LoadNewPluginsModule()
-	disableDefaultModule=(int*)CallService(MS_PLUGINS_GETDISABLEDEFAULTARRAY,0,0);
+	if (!disableDefaultModule[DEFMOD_SSL]) if (LoadSslModule()) return 1;
+    NetlibInitSsl();
 
-	//order becomes less important below here
+    //order becomes less important below here
 	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_UIFINDADD]) if (LoadFindAddModule()) return 1;
 	if (!disableDefaultModule[DEFMOD_UIUSERINFO]) if (LoadUserInfoModule()) return 1;
@@ -221,6 +226,7 @@ void UnloadDefaultModules(void)
 	UnloadIdleModule();
 	UnloadUpdateNotifyModule();
 	UnloadNetlibModule();
+	UnloadSslModule();
 	UnloadLangPackModule();
 }
 
@@ -533,10 +539,13 @@ int UnhookEvent( HANDLE hHook )
 {
 	int i;
 	THook* p = NULL;
+
 	int hookId = ( int )hHook >> 16;
 	int subscriberId = (( int )hHook & 0xFFFF ) - 1;
 
-	EnterCriticalSection( &csHooks );
+    if (hHook == NULL) return 0;
+
+    EnterCriticalSection( &csHooks );
 	for ( i = 0; i < hooks.getCount(); i++ ) {
 		if ( hooks[i]->id == hookId ) {
 			p = hooks[i];
