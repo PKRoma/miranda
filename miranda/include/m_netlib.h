@@ -199,6 +199,7 @@ typedef struct {
 	int specifyOutgoingPorts; // 0.3.3a+
 	char *szOutgoingPorts; // 0.3.3a+
     int enableUPnP; //0.6.1+ only for NUF_INCOMING
+    int validateSSL;
 } NETLIBUSERSETTINGS;
 #define MS_NETLIB_GETUSERSETTINGS  "Netlib/GetUserSettings"
 
