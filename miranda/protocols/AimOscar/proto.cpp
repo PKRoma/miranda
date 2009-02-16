@@ -659,7 +659,7 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
     if (iNewStatus == ID_STATUS_OFFLINE)
     {
        	char** msgptr = getStatusMsgLoc(m_iStatus);
-        if (*msgptr)
+        if (msgptr && *msgptr)
         {
             if (m_iStatus == ID_STATUS_AWAY)
 		        aim_set_away(hServerConn,seqno,NULL);//unset away message
