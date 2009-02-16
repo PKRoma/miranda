@@ -658,8 +658,14 @@ int __cdecl CAimProto::SetStatus( int iNewStatus )
 
     if (iNewStatus == ID_STATUS_OFFLINE)
     {
-		aim_set_away(hServerConn,seqno,NULL);//unset away message
-		aim_set_statusmsg(hServerConn,seqno,NULL);//unset away message
+       	char** msgptr = getStatusMsgLoc(m_iStatus);
+        if (*msgptr)
+        {
+            if (m_iStatus == ID_STATUS_AWAY)
+		        aim_set_away(hServerConn,seqno,NULL);//unset away message
+            else
+		        aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
+        }
 		broadcast_status(ID_STATUS_OFFLINE);
         return 0;
     }
