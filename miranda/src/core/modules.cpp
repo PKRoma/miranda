@@ -236,7 +236,7 @@ int InitialiseModularEngine(void)
 	InitializeCriticalSection(&csServices);
 
 	mainThreadId=GetCurrentThreadId();
-	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hMainThread,THREAD_SET_CONTEXT,FALSE,0);
+	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 
 	hMissingService = CreateHookableEvent(ME_SYSTEM_MISSINGSERVICE);
 	return 0;
