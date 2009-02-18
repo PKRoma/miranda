@@ -587,8 +587,6 @@ int StatusMenuExecService(WPARAM wParam, LPARAM)
 				CallService(smep->svc, 0, (LPARAM)smep->hMenuItem);
 		}
 		else {
-			int i;
-
 			if ( smep->status == 0 && smep->protoindex !=0 && smep->proto != NULL ) {
 				PMO_IntMenuItem pimi;
 				char *prot = smep->proto;
@@ -626,15 +624,20 @@ int StatusMenuExecService(WPARAM wParam, LPARAM)
 			else {
 				int MenusProtoCount = 0;
 
-				for( i=0; i < accounts.getCount(); i++ )
-					MenusProtoCount += ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName )) ? 1 : 0;
+				for( int i=0; i < accounts.getCount(); i++ )
+					if ( cli.pfnGetProtocolVisibility( accounts[i]->szModuleName ))
+						MenusProtoCount++;
 
 				cli.currentDesiredStatusMode = smep->status;
 
-				for ( i=0; i < accounts.getCount(); i++ ) {
-					PROTOACCOUNT* pa = accounts[i];
-					if ( !( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 )))
-						CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
+				for ( int j=0; j < accounts.getCount(); j++ ) {
+					PROTOACCOUNT* pa = accounts[j];
+					if ( !cli.pfnGetProtocolVisibility( pa->szModuleName ))
+						continue;
+					if ( MenusProtoCount > 1 && DBGetContactSettingByte( NULL, pa->szModuleName, "LockMainStatus", 0 ))
+						continue;
+
+					CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
 				}
 				NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
 
