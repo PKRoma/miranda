@@ -2244,7 +2244,7 @@ void CJabberProto::BuildPrivacyMenu()
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.position = 1001;
+	mi.position = 1005;
 	mi.pszContactOwner = m_szModuleName;
 	mi.icolibItem = GetIconHandle(IDI_AGENTS);
 	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;

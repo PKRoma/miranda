@@ -267,34 +267,34 @@ struct CJabberProto : public PROTO_INTERFACE
 	int m_nIqCount;
 	int m_nIqAlloced;
 
-	HANDLE m_hMenuRoot;
-	HANDLE m_hMenuRequestAuth;
-	HANDLE m_hMenuGrantAuth;
-	HANDLE m_hMenuRevokeAuth;
-	HANDLE m_hMenuJoinLeave;
-	HANDLE m_hMenuConvert;
-	HANDLE m_hMenuRosterAdd;
-	HANDLE m_hMenuLogin;
-	HANDLE m_hMenuRefresh;
-	HANDLE m_hMenuAgent;
-	HANDLE m_hMenuChangePassword;
-	HANDLE m_hMenuGroupchat;
-	HANDLE m_hMenuBookmarks;
-	HANDLE m_hMenuNotes;
-	HANDLE m_hMenuAddBookmark;
+	HGENMENU m_hMenuRoot;
+	HGENMENU m_hMenuRequestAuth;
+	HGENMENU m_hMenuGrantAuth;
+	HGENMENU m_hMenuRevokeAuth;
+	HGENMENU m_hMenuJoinLeave;
+	HGENMENU m_hMenuConvert;
+	HGENMENU m_hMenuRosterAdd;
+	HGENMENU m_hMenuLogin;
+	HGENMENU m_hMenuRefresh;
+	HGENMENU m_hMenuAgent;
+	HGENMENU m_hMenuChangePassword;
+	HGENMENU m_hMenuGroupchat;
+	HGENMENU m_hMenuBookmarks;
+	HGENMENU m_hMenuNotes;
+	HGENMENU m_hMenuAddBookmark;
 
-	HANDLE m_hMenuCommands;
-	HANDLE m_hMenuSendNote;
-	HANDLE m_hMenuPrivacyLists;
-	HANDLE m_hMenuRosterControl;
-	HANDLE m_hMenuServiceDiscovery;
-	HANDLE m_hMenuSDMyTransports;
-	HANDLE m_hMenuSDTransports;
-	HANDLE m_hMenuSDConferences;
+	HGENMENU m_hMenuCommands;
+	HGENMENU m_hMenuSendNote;
+	HGENMENU m_hMenuPrivacyLists;
+	HGENMENU m_hMenuRosterControl;
+	HGENMENU m_hMenuServiceDiscovery;
+	HGENMENU m_hMenuSDMyTransports;
+	HGENMENU m_hMenuSDTransports;
+	HGENMENU m_hMenuSDConferences;
 
-	HANDLE m_hMenuResourcesRoot;
-	HANDLE m_hMenuResourcesActive;
-	HANDLE m_hMenuResourcesServer;
+	HGENMENU m_hMenuResourcesRoot;
+	HGENMENU m_hMenuResourcesActive;
+	HGENMENU m_hMenuResourcesServer;
 
 	HWND m_hwndCommandWindow;
 
@@ -598,6 +598,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    __cdecl OnMenuRosterAdd( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleRequestAuth( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuHandleGrantAuth( WPARAM wParam, LPARAM lParam );
+	int    __cdecl OnMenuOptions( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuTransportLogin( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuTransportResolve( WPARAM wParam, LPARAM lParam );
 	int    __cdecl OnMenuBookmarkAdd( WPARAM wParam, LPARAM lParam );
@@ -616,7 +617,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   BuildPriorityMenu();
 	void   UpdatePriorityMenu(short priority);
 
-	HANDLE m_hMenuPriorityRoot;
+	HGENMENU m_hMenuPriorityRoot;
 	short  m_priorityMenuVal;
 	bool   m_priorityMenuValSet;
 

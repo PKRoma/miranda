@@ -163,8 +163,8 @@ DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i,LOGFONTA *lf,COLORREF *colour);
 
 /* clistmenus.c */
-HANDLE fnGetProtocolMenu( const char* );
-int    fnGetProtocolVisibility( const char* accName );
+HGENMENU fnGetProtocolMenu( const char* );
+int      fnGetProtocolVisibility( const char* accName );
 
 int    fnGetAccountIndexByPos(int Pos);
 int    fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);

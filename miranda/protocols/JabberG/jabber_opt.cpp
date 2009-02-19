@@ -2135,6 +2135,19 @@ void CJabberProto::JabberUpdateDialogs( BOOL )
 		SendMessage(rrud.hwndDlg, JM_STATUSCHANGED, 0,0);
 }
 
+int __cdecl CJabberProto::OnMenuOptions( WPARAM, LPARAM )
+{
+	OPENOPTIONSDIALOG ood = {0};
+	ood.cbSize = sizeof(ood);
+	ood.pszGroup = "Network";
+	ood.pszPage = mir_t2a(m_tszUserName);
+	ood.pszTab = "Account";
+	CallService(MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood);
+
+	mir_free((void *)ood.pszPage);
+	return 0;
+}
+
 int CJabberProto::OnModernOptInit( WPARAM, LPARAM )
 {/*
 	static int iBoldControls[] =

@@ -1440,14 +1440,7 @@ void CJabberProto::WindowNotify(UINT msg, bool async)
 
 void CJabberProto::InfoFrame_OnSetup(CJabberInfoFrame_Event*)
 {
-	OPENOPTIONSDIALOG ood = {0};
-	ood.cbSize = sizeof(ood);
-	ood.pszGroup = "Network";
-	ood.pszPage = mir_t2a(m_tszUserName);
-	ood.pszTab = "Account";
-	CallService(MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood);
-
-	mir_free((void *)ood.pszPage);
+	OnMenuOptions(0,0);
 }
 
 void CJabberProto::InfoFrame_OnTransport(CJabberInfoFrame_Event *evt)

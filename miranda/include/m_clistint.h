@@ -365,8 +365,8 @@ typedef struct
 	int    currentStatusMenuItem, currentDesiredStatusMode;
 	BOOL   bDisplayLocked;
 
-	HANDLE ( *pfnGetProtocolMenu )( const char* );
-	int    ( *pfnStub2 )( int );
+	HGENMENU ( *pfnGetProtocolMenu )( const char* );
+	int      ( *pfnStub2 )( int );
 
 	int    ( *pfnGetProtocolVisibility )( const char* );
 	int    ( *pfnGetProtoIndexByPos )( PROTOCOLDESCRIPTOR** proto, int protoCnt, int Pos);

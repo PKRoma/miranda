@@ -930,8 +930,7 @@ void RebuildMenuOrder( void )
 		tmi.ptszName = pa->tszAccountName;
 		{
 			//owner data
-			lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
-			memset( smep, 0, sizeof( *smep ));
+			lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_calloc( sizeof( StatusMenuExecParam ));
 			smep->proto = mir_strdup(pa->szModuleName);
 			tmi.ownerdata = smep;
 		}
@@ -1000,12 +999,11 @@ void RebuildMenuOrder( void )
 			tmi.hIcon = LoadSkinProtoIcon( pa->szModuleName, statusModeList[j] );
 			{
 				//owner data
-				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_alloc( sizeof( StatusMenuExecParam ));
+				lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_calloc( sizeof( StatusMenuExecParam ));
 				smep->custom = FALSE;
 				smep->status = statusModeList[j];
 				smep->protoindex = i;
 				smep->proto = mir_strdup(pa->szModuleName);
-				smep->svc = NULL;
 				tmi.ownerdata = smep;
 			}
 
@@ -1184,7 +1182,7 @@ static MenuProto* FindProtocolMenu( const char* proto )
 	return NULL;
 }
 
-HANDLE fnGetProtocolMenu( const char* proto )
+HGENMENU fnGetProtocolMenu( const char* proto )
 {
 	MenuProto* mp = FindProtocolMenu( proto );
 	if ( mp )
