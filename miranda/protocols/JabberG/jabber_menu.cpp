@@ -452,7 +452,7 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 	strcpy( tDest, "/Options" );
 	mi.pszName = LPGEN("Options...");
 	mi.popupPosition = 200002;
-	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS );
+	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS);
 	JCallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Services..."
