@@ -94,7 +94,6 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 	sttEnableMenuItem( m_hMenuRequestAuth, FALSE );
 	sttEnableMenuItem( m_hMenuGrantAuth, FALSE );
 	sttEnableMenuItem( m_hMenuRevokeAuth, FALSE );
-	sttEnableMenuItem( m_hMenuJoinLeave, FALSE );
 	sttEnableMenuItem( m_hMenuCommands, FALSE );
 	sttEnableMenuItem( m_hMenuSendNote, FALSE );
 	sttEnableMenuItem( m_hMenuConvert, FALSE );
@@ -139,20 +138,8 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 			JFreeVariant( &dbv );
 	}	}
 
-	if ( bIsChatRoom == GCW_CHATROOM ) {
-		CLISTMENUITEM clmi = { 0 };
-		clmi.cbSize = sizeof( clmi );
-		clmi.flags = CMIM_NAME | CMIM_FLAGS;
-		if ( JGetWord( hContact, "Status", 0 ) == ID_STATUS_ONLINE )
-			clmi.pszName = (char *)LPGEN("&Leave");
-		else {
-			clmi.pszName = (char *)LPGEN("&Join");
-			clmi.flags |= CMIF_DEFAULT;
-		}
-
-		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuJoinLeave, ( LPARAM )&clmi );
+	if ( bIsChatRoom == GCW_CHATROOM )
 		return 0;
-	}
 
 	if ( bIsTransport ) {
 		sttEnableMenuItem( m_hMenuLogin, TRUE );
@@ -477,7 +464,7 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 	mi.pszName = LPGEN("Registered Transports");
 	mi.position = 2000050003;
 	mi.icolibItem = GetIconHandle( IDI_TRANSPORTL );
-	m_hMenuSDMyTransports = ( HGENMENU ) JCallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+	m_hMenuSDMyTransports = ( HGENMENU ) JCallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
 	JCreateService( "/SD/Transports", &CJabberProto::OnMenuHandleServiceDiscoveryTransports );
 	strcpy( tDest, "/SD/Transports" );
@@ -684,7 +671,7 @@ void CJabberProto::MenuInit()
 	mi.pszName = LPGEN("Add to Bookmarks");
 	mi.position = -1999901006;
 	mi.icolibItem = GetIconHandle( IDI_BOOKMARKS);
-	m_hMenuAddBookmark= ( HGENMENU ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+	m_hMenuAddBookmark = ( HGENMENU ) JCallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
 
 	// Login/logout
 	JCreateService( "/TransportLogin", &CJabberProto::OnMenuTransportLogin );
@@ -841,19 +828,11 @@ void CJabberProto::MenuUninit()
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuRequestAuth, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuGrantAuth, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuRevokeAuth, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuJoinLeave, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuConvert, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuRosterAdd, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuLogin, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuRefresh, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuAgent, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuChangePassword, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuGroupchat, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuBookmarks, 0 );
-	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuNotes, 0 );
 	JCallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )m_hMenuAddBookmark, 0 );
-
-	JCallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )m_hMenuRoot, 0 );
 
 	if ( m_phMenuResourceItems ) {
 		for ( int i=0; i < m_nMenuResourceItems; i++ )
@@ -878,7 +857,6 @@ void CJabberProto::CheckMenuItems()
 	if ( !m_menuItemsStatus )
 		clmi.flags |= CMIF_GRAYED;
 
-	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuAgent, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuChangePassword, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuGroupchat, ( LPARAM )&clmi );
 

@@ -271,12 +271,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	HGENMENU m_hMenuRequestAuth;
 	HGENMENU m_hMenuGrantAuth;
 	HGENMENU m_hMenuRevokeAuth;
-	HGENMENU m_hMenuJoinLeave;
 	HGENMENU m_hMenuConvert;
 	HGENMENU m_hMenuRosterAdd;
 	HGENMENU m_hMenuLogin;
 	HGENMENU m_hMenuRefresh;
-	HGENMENU m_hMenuAgent;
 	HGENMENU m_hMenuChangePassword;
 	HGENMENU m_hMenuGroupchat;
 	HGENMENU m_hMenuBookmarks;
