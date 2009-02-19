@@ -121,7 +121,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
     NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_UNICODE;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 	nlu.szSettingsModule = m_szModuleName;
     mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
 	nlu.ptszDescriptiveName = descr;
@@ -129,7 +129,7 @@ int CAimProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	char szP2P[128];
 	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
-	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_UNICODE;
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
     mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
