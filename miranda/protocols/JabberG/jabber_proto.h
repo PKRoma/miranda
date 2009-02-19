@@ -875,10 +875,10 @@ private:
 	CRITICAL_SECTION m_csSerial;
 	unsigned int m_nSerial;
 
-	HANDLE  m_hInitChat;
-	HANDLE  m_hPrebuildStatusMenu;
-	int     m_hPrivacyMenuRoot;
-	BOOL    m_menuItemsStatus;
+	HANDLE   m_hInitChat;
+	HANDLE   m_hPrebuildStatusMenu;
+	HGENMENU m_hPrivacyMenuRoot;
+	BOOL     m_menuItemsStatus;
 	LIST<void> m_hPrivacyMenuItems;
 	
 	int     m_nMenuResourceItems;

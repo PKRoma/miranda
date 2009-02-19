@@ -622,6 +622,8 @@ void CJabberProto::MenuInit()
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization
 
+	JCreateService( "/PrivacyLists", &CJabberProto::OnMenuHandlePrivacyLists );
+
 	// "Request authorization"
 	JCreateService( "/ReqAuth", &CJabberProto::OnMenuHandleRequestAuth );
 	strcpy( tDest, "/ReqAuth" );
