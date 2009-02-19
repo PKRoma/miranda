@@ -76,7 +76,7 @@ static void packServIcqDirectoryHeader(icq_packet *p, CIcqProto *ppro, WORD wLen
   packLEWord(p, wLen + 0x1A);
   packFNACHeader(p, 0x5b9, wCommand, 0, 0, 2);
   packWord(p, 0);
-  packWord(p, 0x4e2);
+  packWord(p, (WORD)GetACP());
   packDWord(p, 2);
 }
 
