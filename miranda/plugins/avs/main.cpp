@@ -2338,27 +2338,36 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
     bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
 
     SetStretchBltMode(r->hTargetDC, HALFTONE);
-    if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0) {
+	if (r->dwFlags & AVDRQ_FORCEFASTALPHA)
+	{
+		AlphaBlend(
+			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
+			hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
+	} else
+	if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA))
+	{
         StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
-    }
-    else {
+    } else
+	{
         /*
          * get around SUCKY AlphaBlend() rescaling quality...
          */
+		FIBITMAP *fb = fei->FI_CreateDIBFromHBITMAP(hbm);
+		FIBITMAP *fbResized = fei->FI_Rescale(fb, newWidth, newHeight, FILTER_BICUBIC);
+		HBITMAP hbmResized = fei->FI_CreateHBITMAPFromDIB(fbResized);
+		fei->FI_Unload(fb);
+		fei->FI_Unload(fbResized);
+
+		HBITMAP hbmTempOld;
         HDC hdcTemp = CreateCompatibleDC(r->hTargetDC);
-        HBITMAP hbmTemp;
-        HBITMAP hbmTempOld;//
+        hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmResized);
 
-        hbmTemp = CreateCompatibleBitmap(hdcAvatar, bmWidth, bmHeight);
-        hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmTemp);
+		AlphaBlend(
+			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
+			hdcTemp, 0, 0, newWidth, newHeight, bf);
 
-        //SetBkMode(hdcTemp, TRANSPARENT);
-        SetStretchBltMode(hdcTemp, HALFTONE);
-        StretchBlt(hdcTemp, 0, 0, bmWidth, bmHeight, r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, SRCCOPY);
-        AlphaBlend(hdcTemp, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-        StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcTemp, 0, 0, bmWidth, bmHeight, SRCCOPY);
         SelectObject(hdcTemp, hbmTempOld);
-        DeleteObject(hbmTemp);
+		DeleteObject(hbmResized);
         DeleteDC(hdcTemp);
     }
 
