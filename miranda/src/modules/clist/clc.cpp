@@ -123,19 +123,19 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 
 static int ClcAccountsChanged(WPARAM, LPARAM)
 {
-    int i, cnt;
+	int i, cnt;
 	for (i = 0, cnt = 0; i < accounts.getCount(); ++i)
-	    if (accounts[i]->bIsEnabled) ++cnt;
+		if (accounts[i]->bIsEnabled) ++cnt;
 
-    cli.hClcProtoCount = cnt;
+	cli.hClcProtoCount = cnt;
 	cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * cli.hClcProtoCount);
-    
-    for (i = 0, cnt = 0; i < accounts.getCount(); ++i) {
-        if (accounts[i]->bIsEnabled) {
-		    cli.clcProto[cnt].szProto = accounts[i]->szModuleName;
-		    cli.clcProto[cnt].dwStatus = ID_STATUS_OFFLINE;
-		    ++cnt;
-        }
+
+	for (i = 0, cnt = 0; i < accounts.getCount(); ++i) {
+		if (accounts[i]->bIsEnabled) {
+			cli.clcProto[cnt].szProto = accounts[i]->szModuleName;
+			cli.clcProto[cnt].dwStatus = ID_STATUS_OFFLINE;
+			++cnt;
+		}
 	}
 	return 0;
 }

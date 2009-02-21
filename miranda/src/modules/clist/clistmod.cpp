@@ -202,10 +202,20 @@ static int GetContactIcon(WPARAM wParam, LPARAM)
 		szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), hContact);
 }
 
+static void AddProtoIconIndex( PROTOACCOUNT* pa )
+{
+	protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
+	protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
+	for (int i = 0; i < SIZEOF(statusModeList); i++) {
+		int iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[i] );
+		if (i == 0)
+			protoIconIndex[protoIconIndexCount].iIconBase = iImg;
+	}
+	protoIconIndexCount++;
+}
+
 static int ContactListModulesLoaded(WPARAM, LPARAM)
 {
-	int i, j, iImg;
-
 	if ( !ServiceExists( MS_DB_CONTACT_GETSETTING_STR )) {
 		MessageBox( NULL, TranslateT( "This plugin requires db3x plugin version 0.5.1.0 or later" ), _T("CList"), MB_OK );
 		return 1;
@@ -216,17 +226,9 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 
 	protoIconIndexCount = 0;
 	protoIconIndex = NULL;
-	for (i = 0; i < accounts.getCount(); i++) {
-		PROTOACCOUNT* pa = accounts[i];
-		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
-		protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
-		for (j = 0; j < SIZEOF(statusModeList); j++) {
-			iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[j] );
-			if (j == 0)
-				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
-		}
-		protoIconIndexCount++;
-	}
+	for (int i = 0; i < accounts.getCount(); i++)
+		AddProtoIconIndex( accounts[i] );
+
 	cli.pfnLoadContactTree();
 
 	LoadCLUIModule();
@@ -238,23 +240,9 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 
 static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+	if ( eventCode == PRAC_ADDED )
+		AddProtoIconIndex(( PROTOACCOUNT* )lParam );
 
-	switch( eventCode ) {
-	case PRAC_ADDED:
-		CheckProtocolOrder();
-		RebuildMenuOrder();
-
-		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
-		protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
-		for (int j = 0; j < SIZEOF(statusModeList); j++) {
-			int iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[j] );
-			if (j == 0)
-				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
-		}
-		protoIconIndexCount++;
-		break;
-	}
 	return 0;
 }
 

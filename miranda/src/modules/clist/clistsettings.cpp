@@ -140,16 +140,15 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 	#endif
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
-			if (cacheEntry == NULL) {
+			if (cacheEntry == NULL)
 				return ci.pszVal;
-			}
-			else {
-				cacheEntry->name = ci.pszVal;
-				#if defined( _UNICODE )
-					cacheEntry->szName = u2a( ci.pszVal );
-				#endif
-				return ci.pszVal;
-		}	}
+
+			cacheEntry->name = ci.pszVal;
+			#if defined( _UNICODE )
+				cacheEntry->szName = u2a( ci.pszVal );
+			#endif
+			return ci.pszVal;
+		}
 
 		if (ci.type == CNFT_DWORD) {
 			if (cacheEntry == NULL) {
@@ -163,7 +162,6 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 				cacheEntry->name = buffer;
 				#if defined( _UNICODE )
 					cacheEntry->szName = u2a( buffer );
-				#else
 				#endif
 				return buffer;
 	}	}	}
