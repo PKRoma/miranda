@@ -91,6 +91,15 @@ __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+// called when number of accounts has been changed
+
+static int OnAccountsChanged( WPARAM wParam, LPARAM lParam )
+{
+	himlCListClc = (HIMAGELIST) CallService(MS_CLIST_GETICONSIMAGELIST, 0, 0);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 // called when all modules got loaded
 
 static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
@@ -149,6 +158,7 @@ LBL_Error:
 	CreateServiceFunction(MS_CLIST_GETSTATUSMODE, GetStatusMode);
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, OnAccountsChanged);
 	HookEvent(ME_OPT_INITIALISE, OnOptsInit);
 
 	InitCustomMenus();
