@@ -434,7 +434,6 @@ struct CAimProto : public PROTO_INTERFACE
     bool   is_my_contact(HANDLE hContact);
     HANDLE find_chat_contact(const char * room);
     HANDLE contact_from_sn(const char* sn, bool addIfNeeded = false, bool temporary = false);
-	void   add_contacts_to_groups();
 	void   add_contact_to_group(HANDLE hContact, const char* group);
     void   update_server_group(const char* group, unsigned short group_id);
 	void   offline_contacts();

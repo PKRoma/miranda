@@ -278,35 +278,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	}
 }
 
-void CAimProto::add_contacts_to_groups(void)
-{
-	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact)
-	{
-		if (is_my_contact(hContact))
-		{
-			unsigned short group_id = getGroupId(hContact, 1);	
-			if (group_id)
-			{
-                char* group = group_list.find_name(group_id);
-				if (group)
-				{
-                    bool ok = false;
-                    DBVARIANT dbv;
-                    if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
-                    {
-                        ok = strcmp(group, dbv.pszVal) == 0;
-                        DBFreeVariant(&dbv);
-                    }
-                    if (!ok)
-					    DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, group);
-				}
-			}
-		}
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
-	}
-}
-
 void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
 {
 	if(remove_settings)

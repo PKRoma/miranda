@@ -125,7 +125,7 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 	        if (state == 1 && is_my_contact(hContact))
             {
 				DBVARIANT dbv;
-				if(!DBGetContactSettingString(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
+				if(!DBGetContactSettingStringUtf(hContact,MOD_KEY_CL,OTH_KEY_GP,&dbv))
 				{
 					add_contact_to_group(hContact,dbv.pszVal);
 					DBFreeVariant(&dbv);
@@ -228,7 +228,7 @@ int CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 
     HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
-	if ( !DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv )) {
+	if ( !DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv )) {
 		add_contact_to_group(hContact, dbv.pszVal );
 		DBFreeVariant( &dbv );
 	}

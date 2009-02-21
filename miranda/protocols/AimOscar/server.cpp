@@ -591,7 +591,17 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
                         if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
                         {
                             ok = strcmp(group, dbv.pszVal) == 0;
-                            DBFreeVariant(&dbv);
+                            if (strcmp(dbv.pszVal, "MetaContacts Hidden Group") == 0)
+                            {
+	                            DBFreeVariant(&dbv);
+	                            if (!DBGetContactSettingStringUtf(hContact, "MetaContacts", "OldCListGroup", &dbv))
+                                {
+                                    ok = strcmp(group, dbv.pszVal) == 0;
+	                                DBFreeVariant(&dbv);
+                                }
+                            }
+                            else
+                                DBFreeVariant(&dbv);
                         }
                         if (!ok)
 		                    DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, group);
