@@ -69,7 +69,7 @@ BOOL CJabberProto::IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 	
 	mir_free( szFrom );
 	mir_free( szTo );
-	
+
 	return bRetVal;
 }
 
@@ -573,7 +573,8 @@ int CJabberProto::AdhocForwardHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocS
 
 		// remove clist events
 		xNode << XCHILD( _T("field")) << XATTR( _T("label"), _T("Mark messages as read")) << XATTR( _T("type"), _T("boolean"))
-			<< XATTR( _T("var"), _T("remove-clist-events")) << XCHILD( _T("value"), _T("1"));
+			<< XATTR( _T("var"), _T("remove-clist-events")) << XCHILD( _T("value"),
+			m_options.RcMarkMessagesAsRead == 1 ? _T("1") : _T("0") );
 
 		m_ThreadInfo->send( iq );
 		return JABBER_ADHOC_HANDLER_STATUS_EXECUTING;
@@ -597,6 +598,7 @@ int CJabberProto::AdhocForwardHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocS
 				bRemoveCListEvents = FALSE;
 			}
 		}
+		m_options.RcMarkMessagesAsRead = bRemoveCListEvents ? 1 : 0;
 
 		int nEventsSent = 0;
 		HANDLE hContact = ( HANDLE ) JCallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );

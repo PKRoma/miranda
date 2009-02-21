@@ -215,6 +215,7 @@ struct CJabberOptions
 	CMOption<BYTE> UseTLS;
 	CMOption<BYTE> AcceptNotes;
 	CMOption<BYTE> AutosaveNotes;
+	CMOption<BYTE> RcMarkMessagesAsRead;
 
 	CJabberOptions(PROTO_INTERFACE *proto):
 		BsDirect(proto, "BsDirect", FALSE),
@@ -261,7 +262,8 @@ struct CJabberOptions
 		UseSSL(proto, "UseSSL", FALSE),
 		UseTLS(proto, "UseTLS", TRUE),
 		AcceptNotes(proto, "AcceptNotes", TRUE),
-		AutosaveNotes(proto, "AutosaveNotes", FALSE)
+		AutosaveNotes(proto, "AutosaveNotes", FALSE),
+		RcMarkMessagesAsRead(proto, "RcMarkMessagesAsRead", 1)
 		{}
 /*
 JGetByte( hContact, "ChatRoom", 0 )
