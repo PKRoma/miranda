@@ -121,7 +121,7 @@ typedef struct {
 
 /* DB/Contact/GetProfileName service
 Gets the name of the profile currently being used by the database module. This
-is the same as the filename of the database, minus extension
+is the same as the filename of the database
   wParam=(WPARAM)(UINT)cbName
   lParam=(LPARAM)(char*)pszName
 pszName is a pointer to the buffer that receives the name of the profile
