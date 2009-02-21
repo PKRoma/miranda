@@ -141,12 +141,7 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL) {
-				size_t len = _tcslen(ci.pszVal);
-				buffer = (TCHAR*) mir_alloc( sizeof( TCHAR )*( len+1 ));
-				memcpy( buffer, ci.pszVal, len * sizeof( TCHAR ));
-				buffer[ len ] = 0;
-				mir_free(ci.pszVal);
-				return buffer;
+				return ci.pszVal;
 			}
 			else {
 				cacheEntry->name = ci.pszVal;

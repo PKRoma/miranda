@@ -85,10 +85,24 @@ static int UserOnlineAck(WPARAM, LPARAM lParam)
 static int UserOnlineModulesLoaded(WPARAM, LPARAM)
 {
 	// reset the counter
-	int j;
-	for ( j=0; j < accounts.getCount(); j++ )
+	for ( int j = 0; j < accounts.getCount(); j++ )
 		db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
 
+	return 0;
+}
+
+static int UserOnlineAccountsChanged( WPARAM eventCode, LPARAM lParam )
+{
+	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+
+	switch( eventCode ) {
+	case PRAC_ADDED:
+	case PRAC_CHECKED:
+		// reset the counter
+		if ( pa->bIsEnabled )
+			db_dword_set( NULL, "UserOnline", pa->szModuleName, GetTickCount());
+		break;
+	}
 	return 0;
 }
 
@@ -97,6 +111,7 @@ int LoadUserOnlineModule(void)
 	HookEvent(ME_DB_CONTACT_SETTINGCHANGED,UserOnlineSettingChanged);
 	HookEvent(ME_PROTO_ACK, UserOnlineAck);
 	HookEvent(ME_SYSTEM_MODULESLOADED, UserOnlineModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, UserOnlineAccountsChanged);
 	SkinAddNewSoundEx("UserOnline",Translate("Alerts"),Translate("Online"));
 	return 0;
 }

@@ -236,6 +236,28 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 	return 0;
 }
 
+static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
+{
+	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+
+	switch( eventCode ) {
+	case PRAC_ADDED:
+		CheckProtocolOrder();
+		RebuildMenuOrder();
+
+		protoIconIndex = (struct ProtoIconIndex *) mir_realloc(protoIconIndex, sizeof(struct ProtoIconIndex) * (protoIconIndexCount + 1));
+		protoIconIndex[protoIconIndexCount].szProto = pa->szModuleName;
+		for (int j = 0; j < SIZEOF(statusModeList); j++) {
+			int iImg = ImageList_AddIcon_ProtoIconLibLoaded(hCListImages, pa->szModuleName, statusModeList[j] );
+			if (j == 0)
+				protoIconIndex[protoIconIndexCount].iIconBase = iImg;
+		}
+		protoIconIndexCount++;
+		break;
+	}
+	return 0;
+}
+
 static int ContactDoubleClicked(WPARAM wParam, LPARAM)
 {
 	// Check and an event from the CList queue for this hContact
@@ -468,6 +490,7 @@ static int HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cl
 int LoadContactListModule2(void)
 {
 	HookEvent(ME_SYSTEM_MODULESLOADED, ContactListModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, ContactListAccountsChanged);
 	hContactSettingChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	HookEvent(ME_DB_CONTACT_ADDED, ContactAdded);
 	HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);

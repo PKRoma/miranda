@@ -121,17 +121,28 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static int ClcAccountsChanged(WPARAM, LPARAM)
+{
+    int i, cnt;
+	for (i = 0, cnt = 0; i < accounts.getCount(); ++i)
+	    if (accounts[i]->bIsEnabled) ++cnt;
+
+    cli.hClcProtoCount = cnt;
+	cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * cli.hClcProtoCount);
+    
+    for (i = 0, cnt = 0; i < accounts.getCount(); ++i) {
+        if (accounts[i]->bIsEnabled) {
+		    cli.clcProto[cnt].szProto = accounts[i]->szModuleName;
+		    cli.clcProto[cnt].dwStatus = ID_STATUS_OFFLINE;
+		    ++cnt;
+        }
+	}
+	return 0;
+}
+
 static int ClcModulesLoaded(WPARAM, LPARAM)
 {
-	int i;
-	for (i = 0; i < accounts.getCount(); i++) {
-		PROTOACCOUNT* pa = accounts[i];
-		cli.clcProto = (ClcProtoStatus *) mir_realloc(cli.clcProto, sizeof(ClcProtoStatus) * (cli.hClcProtoCount + 1));
-		cli.clcProto[cli.hClcProtoCount].szProto = pa->szModuleName;
-		cli.clcProto[cli.hClcProtoCount].dwStatus = ID_STATUS_OFFLINE;
-		cli.hClcProtoCount++;
-	}
-
+	ClcAccountsChanged(0, 0);
 	MTG_OnmodulesLoad();
 	return 0;
 }
@@ -213,6 +224,7 @@ int LoadCLCModule(void)
 	InitFileDropping();
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, ClcAccountsChanged);
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);
 	HookEvent(ME_DB_CONTACT_ADDED, ClcContactAdded);
 	HookEvent(ME_DB_CONTACT_DELETED, ClcContactDeleted);
@@ -231,7 +243,7 @@ void UnloadClcModule()
 	UnhookEvent(hAckHook);
 	UnhookEvent(hClcSettingsChanged);
 
-	if (cli.clcProto) mir_free(cli.clcProto);
+	mir_free(cli.clcProto);
 
 	FreeFileDropping();
 	FreeDisplayNameCache();
@@ -527,7 +539,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 0);
+				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
 				recalcScrollBar = 1;
 				cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
 				if (contact) {
@@ -543,7 +555,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 1);
+				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 0);
 				recalcScrollBar = 1;
 			}
 			else {

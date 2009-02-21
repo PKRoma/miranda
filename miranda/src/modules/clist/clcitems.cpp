@@ -240,28 +240,28 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			DWORD groupFlags;
 			TCHAR *szGroupName;
 			if (!(style & CLS_HIDEEMPTYGROUPS)) {
-				mir_free(dbv.pszVal);
+				mir_free(dbv.ptszVal);
 				return;
 			}
 			if (checkHideOffline && cli.pfnIsHiddenMode(dat, status)) {
 				for (i = 1;; i++) {
 					szGroupName = cli.pfnGetGroupName(i, &groupFlags);
 					if (szGroupName == NULL) {
-						mir_free(dbv.pszVal);
+						mir_free(dbv.ptszVal);
 						return;
 					}           //never happens
 					if (!lstrcmp(szGroupName, dbv.ptszVal))
 						break;
 				}
 				if (groupFlags & GROUPF_HIDEOFFLINE) {
-					mir_free(dbv.pszVal);
+					mir_free(dbv.ptszVal);
 					return;
 				}
 			}
 			for (i = 1;; i++) {
 				szGroupName = cli.pfnGetGroupName(i, &groupFlags);
 				if (szGroupName == NULL) {
-					mir_free(dbv.pszVal);
+					mir_free(dbv.ptszVal);
 					return;
 				}               //never happens
 				if (!lstrcmp(szGroupName, dbv.ptszVal))
@@ -272,7 +272,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 			}
 			group = cli.pfnAddGroup(hwnd, dat, dbv.ptszVal, groupFlags, i, 1);
 		}
-		mir_free(dbv.pszVal);
+		mir_free(dbv.ptszVal);
 	}
 	if (checkHideOffline) {
 		if (cli.pfnIsHiddenMode(dat, status) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {

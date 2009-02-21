@@ -245,6 +245,30 @@ static int SRFileModulesLoaded(WPARAM, LPARAM)
 	return 0;
 }
 
+static int SRFileAccountsChanged( WPARAM eventCode, LPARAM lParam )
+{
+	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+
+	switch( eventCode ) {
+	case PRAC_ADDED:
+		if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
+			CLISTMENUITEM mi = { 0 };
+			mi.cbSize = sizeof(mi);
+			mi.position = -2000020000;
+			mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
+			mi.pszName = LPGEN("&File");
+			mi.pszService = MS_FILE_SENDFILE;
+			mi.flags = CMIF_ICONFROMICOLIB;
+			if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
+				mi.flags |= CMIF_NOTOFFLINE;
+			mi.pszContactOwner = pa->szModuleName;
+			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+		}
+		break;
+	}
+	return 0;
+}
+
 int FtMgrShowCommand(WPARAM, LPARAM)
 {
 	FtMgr_Show(true);
@@ -281,6 +305,7 @@ int LoadSendRecvFileModule(void)
 	CreateServiceFunction("FtMgr/Show", FtMgrShowCommand);
 
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRFileModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED,SRFileAccountsChanged);
 	HookEvent(ME_DB_EVENT_ADDED,FileEventAdded);
 	HookEvent(ME_OPT_INITIALISE,FileOptInitialise);
 	CreateServiceFunction(MS_FILE_SENDFILE,SendFileCommand);
