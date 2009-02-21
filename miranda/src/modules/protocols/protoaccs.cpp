@@ -73,7 +73,7 @@ void LoadDbAccounts()
 			}
 
 			_itoa( OFFSET_ENABLED+i, buf, 10 );
-			pa->bIsEnabled = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+			pa->bIsEnabled = pa->bOldProto || DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
 
 			if ( !DBGetContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", &dbv )) {
 				pa->szProtoName = mir_strdup( dbv.pszVal );

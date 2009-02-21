@@ -724,6 +724,8 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					{
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
 						if ( pa ) {
+                            if ( pa->bOldProto ) break;
+
 							pa->bIsEnabled = !pa->bIsEnabled;
 							if ( pa->bIsEnabled ) {
 								if ( ActivateAccount( pa ))
