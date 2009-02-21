@@ -61,7 +61,6 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 			}
 		}
 		if ( m_ThreadInfo ) {
-			m_ThreadInfo->jabberServerCaps = JABBER_RESOURCE_CAPS_NONE;
 			HXML feature;
 			for ( i = 1; ( feature = xmlGetNthChild( query, _T("feature"), i )) != NULL; i++ ) {
 				const TCHAR *featureName = xmlGetAttrValue( feature, _T("var"));
@@ -70,14 +69,10 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 						if ( !_tcscmp( g_JabberFeatCapPairs[j].szFeature, featureName )) {
 							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
-						}
-					}
-				}
-			}
-		}
+		}	}	}	}	}
+
 		OnProcessLoginRq( m_ThreadInfo, JABBER_LOGIN_SERVERINFO);
-	}
-}
+}	}
 
 void CJabberProto::OnIqResultNestedRosterGroups( HXML iqNode, CJabberIqInfo* pInfo )
 {
