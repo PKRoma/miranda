@@ -788,6 +788,12 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx );
 					TCHAR buf[ 200 ];
 					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
+                    if (pa->bOldProto) 
+                    {
+					    MessageBox( NULL, TranslateT( "You need to disable plugin to delete this account" ), buf,
+                            MB_ICONERROR | MB_OK );
+                        break;
+                    }
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						// lock controls to avoid changes during remove process
 						ListBox_SetCurSel( hList, -1 );
