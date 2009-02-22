@@ -29,6 +29,14 @@ int CAimProto::GetStatus( WPARAM, LPARAM )
 	return m_iStatus;
 }
 
+int CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
+{
+    char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);
+	if (msgptr == NULL)	return 0;
+
+    return (lParam & SGMA_UNICODE) ? (int)mir_utf8decodeW(*msgptr) : (int)mir_utf8decodeA(*msgptr);
+}
+
 int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 {
 	if ( state != 1 ) {

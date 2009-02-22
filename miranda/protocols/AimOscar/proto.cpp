@@ -51,6 +51,7 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	
     CreateProtoService(PS_GETNAME,        &CAimProto::GetName);
 	CreateProtoService(PS_GETSTATUS,      &CAimProto::GetStatus);
+	CreateProtoService(PS_GETMYAWAYMSG,   &CAimProto::GetMyAwayMsg);
 
 	CreateProtoService(PS_GETAVATARINFO,  &CAimProto::GetAvatarInfo);
 	CreateProtoService(PS_GETMYAVATAR,    &CAimProto::GetAvatar);
