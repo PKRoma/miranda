@@ -292,8 +292,8 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		if (!IsWindowVisible(hwnd))
 			SetTimer(hwnd,TIMERID_REBUILDAFTER,10,NULL);
 		else
-			cli.pfnRebuildEntireList(hwnd,dat);
 		{
+			cli.pfnRebuildEntireList(hwnd,dat);
 			NMCLISTCONTROL nm;
 			nm.hdr.code = CLN_LISTREBUILT;
 			nm.hdr.hwndFrom = hwnd;
@@ -532,14 +532,15 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		else
 			status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
 
-		shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
+		DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+		shouldShow = (style & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
 			&& (!cli.pfnIsHiddenMode(dat, status)
 			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam); // this means an offline msg is flashing, so the contact should be shown
 		if (!cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
 			if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 0, 0);
+				cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, (style & CLS_CONTACTLIST) == 0, 0);
 				recalcScrollBar = 1;
 				cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
 				if (contact) {
@@ -549,13 +550,12 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			}	}
 		}
 		else { // item in list already
-			DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 			if (contact->iImage == (WORD) lParam)
 				break;
 			if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline)) {
 				if (dat->selection >= 0 && cli.pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 					hSelItem = cli.pfnContactToHItem(selcontact);
-				cli.pfnRemoveItemFromGroup(hwnd, group, contact, 0);
+				cli.pfnRemoveItemFromGroup(hwnd, group, contact, (style & CLS_CONTACTLIST) == 0);
 				recalcScrollBar = 1;
 			}
 			else {
