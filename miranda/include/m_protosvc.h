@@ -459,6 +459,21 @@ typedef struct {
 //was invalid
 #define PS_GETINFOSETTING "/GetInfoSetting"
 
+// Asks protocol for the status message for a status
+// wParam=(WORD) 0 for current status or a status id
+// lParam=SGMA_xxx
+// Returns status msg or NULL if there is none.  The protocol have to handle only the current 
+// status. Handling messages for other statuses is optional.
+// Remember to mir_free the return value
+
+#define SGMA_UNICODE 1        // return Unicode status
+#if defined( _UNICODE )
+	#define SGMA_TCHAR SGMA_UNICODE
+#else
+	#define SGMA_TCHAR 0
+#endif
+
+#define PS_GETMYAWAYMSG  "/GetMyAwayMsg"
 
 /****************************** SENDING SERVICES *************************/
 //these should be called with CallContactService()
