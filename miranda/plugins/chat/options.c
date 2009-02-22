@@ -421,50 +421,50 @@ void RegisterFonts( void )
 struct
 {
 	int	size;
-	char* szSection;
-	char* szDescr;
-	char* szName;
+	const char* szSection;
+	const char* szDescr;
+	const char* szName;
 	int   defIconID;
 }
 iconList[] =
 {
-	{	16, LPGEN("Chat windows"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
-	{	16, LPGEN("Chat windows"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
-	{	16, LPGEN("Chat windows"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
-	{	16, LPGEN("Chat windows"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
-	{	16, LPGEN("Chat windows"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
-	{	16, LPGEN("Chat windows"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
-	{	16, LPGEN("Chat windows"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
-	{	16, LPGEN("Chat windows"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
-	{	16, LPGEN("Chat windows"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
-	{	16, LPGEN("Chat windows"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
-	{	16, LPGEN("Chat windows"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
-	{	16, LPGEN("Chat windows"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
-	{	16, LPGEN("Chat windows"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
+	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
 
-	{	10, LPGEN("Chat windows"), LPGEN("Status 1 (10x10)"),      "chat_status0",   IDI_STATUS0    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 2 (10x10)"),      "chat_status1",   IDI_STATUS1    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 3 (10x10)"),      "chat_status2",   IDI_STATUS2    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 4 (10x10)"),      "chat_status3",   IDI_STATUS3    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 5 (10x10)"),      "chat_status4",   IDI_STATUS4    },
-	{	10, LPGEN("Chat windows"), LPGEN("Status 6 (10x10)"),      "chat_status5",   IDI_STATUS5    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 1 (10x10)"),      "chat_status0",   IDI_STATUS0    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 2 (10x10)"),      "chat_status1",   IDI_STATUS1    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 3 (10x10)"),      "chat_status2",   IDI_STATUS2    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 4 (10x10)"),      "chat_status3",   IDI_STATUS3    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 5 (10x10)"),      "chat_status4",   IDI_STATUS4    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 6 (10x10)"),      "chat_status5",   IDI_STATUS5    },
 
-	{	10, LPGEN("Chat log"), LPGEN("Message in (10x10)"),    "chat_log_message_in",   IDI_MESSAGE    },
-	{	10, LPGEN("Chat log"), LPGEN("Message out (10x10)"),   "chat_log_message_out",  IDI_MESSAGEOUT },
-	{	10, LPGEN("Chat log"), LPGEN("Action (10x10)"),        "chat_log_action",       IDI_ACTION     },
-	{	10, LPGEN("Chat log"), LPGEN("Add Status (10x10)"),    "chat_log_addstatus",    IDI_ADDSTATUS  },
-	{	10, LPGEN("Chat log"), LPGEN("Remove status (10x10)"), "chat_log_removestatus", IDI_REMSTATUS  },
-	{	10, LPGEN("Chat log"), LPGEN("Join (10x10)"),          "chat_log_join",         IDI_JOIN       },
-	{	10, LPGEN("Chat log"), LPGEN("Leave (10x10)"),         "chat_log_part",         IDI_PART       },
-	{	10, LPGEN("Chat log"), LPGEN("Quit (10x10)"),          "chat_log_quit",         IDI_QUIT       },
-	{	10, LPGEN("Chat log"), LPGEN("Kick (10x10)"),          "chat_log_kick",         IDI_KICK       },
-	{	10, LPGEN("Chat log"), LPGEN("Nickchange (10x10)"),    "chat_log_nick",         IDI_NICK       },
-	{	10, LPGEN("Chat log"), LPGEN("Notice (10x10)"),        "chat_log_notice",       IDI_NOTICE     },
-	{	10, LPGEN("Chat log"), LPGEN("Topic (10x10)"),         "chat_log_topic",        IDI_TOPIC      },
-	{	10, LPGEN("Chat log"), LPGEN("Highlight (10x10)"),     "chat_log_highlight",    IDI_HIGHLIGHT  },
-	{	10, LPGEN("Chat log"), LPGEN("Information (10x10)"),   "chat_log_info",         IDI_INFO       }
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Message in (10x10)"),    "chat_log_message_in",   IDI_MESSAGE    },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Message out (10x10)"),   "chat_log_message_out",  IDI_MESSAGEOUT },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Action (10x10)"),        "chat_log_action",       IDI_ACTION     },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Add Status (10x10)"),    "chat_log_addstatus",    IDI_ADDSTATUS  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Remove status (10x10)"), "chat_log_removestatus", IDI_REMSTATUS  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Join (10x10)"),          "chat_log_join",         IDI_JOIN       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Leave (10x10)"),         "chat_log_part",         IDI_PART       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Quit (10x10)"),          "chat_log_quit",         IDI_QUIT       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Kick (10x10)"),          "chat_log_kick",         IDI_KICK       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Nickchange (10x10)"),    "chat_log_nick",         IDI_NICK       },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Notice (10x10)"),        "chat_log_notice",       IDI_NOTICE     },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Topic (10x10)"),         "chat_log_topic",        IDI_TOPIC      },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Highlight (10x10)"),     "chat_log_highlight",    IDI_HIGHLIGHT  },
+	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats Log"), LPGEN("Information (10x10)"),   "chat_log_info",         IDI_INFO       }
 };
 
 void AddIcons(void)
@@ -479,9 +479,9 @@ void AddIcons(void)
 
 	for ( i = 0; i < SIZEOF(iconList); i++ ) {
 		sid.cx = sid.cy = iconList[i].size;
-		sid.pszSection = Translate( iconList[i].szSection );
-		sid.pszDescription = Translate( iconList[i].szDescr );
-		sid.pszName = iconList[i].szName;
+		sid.pszSection = (char*)iconList[i].szSection;
+		sid.pszDescription = (char*)iconList[i].szDescr;
+		sid.pszName = (char*)iconList[i].szName;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
