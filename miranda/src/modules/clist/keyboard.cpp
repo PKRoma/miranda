@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include <m_hotkeys.h>
 
+extern HANDLE hStatusModeChangeEvent;
+
 static int hkHideShow(WPARAM, LPARAM)
 {
 	cli.pfnShowHide(0,0);
@@ -76,6 +78,7 @@ static int hkAllOffline(WPARAM, LPARAM)
 	for (nProto = 0; nProto < accounts.getCount(); nProto++)
 		CallProtoService( accounts[nProto]->szModuleName, PS_SETSTATUS, ID_STATUS_OFFLINE, 0);
 
+    NotifyEventHooks( hStatusModeChangeEvent, ID_STATUS_OFFLINE, 0 );
 	return 0;
 }
 
