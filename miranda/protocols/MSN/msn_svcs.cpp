@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern int avsPresent;
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnGetName - obtain the protocol name
+// GetName - obtain the protocol name
 
 int CMsnProto::GetName( WPARAM wParam, LPARAM lParam )
 {
@@ -33,11 +33,22 @@ int CMsnProto::GetName( WPARAM wParam, LPARAM lParam )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnGetStatus - obtain the protocol status
+// GetStatus - obtain the protocol status
 
 int CMsnProto::GetStatus(WPARAM wParam,LPARAM lParam)
 {
 	return m_iStatus;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// GetMyAwayMsg - obtain the current away message
+
+int CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
+{
+    char** msgptr = GetStatusMsgLoc(wParam ? wParam : m_iStatus);
+	if (msgptr == NULL)	return 0;
+
+    return (lParam & SGMA_UNICODE) ? (int)mir_utf8decodeW(*msgptr) : (int)mir_utf8decodeA(*msgptr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +68,7 @@ int CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 	MSN_GetAvatarFileName( NULL, buf, size );
 	return _access(buf, 0);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnGetAvatarInfo - retrieve the avatar info
