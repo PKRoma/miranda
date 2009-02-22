@@ -1790,8 +1790,13 @@ void CJabberDlgPrivacyLists::btnActivate_OnClick(CCtrlButton *)
 	if ( m_proto->m_bJabberOnline )
 	{
 		m_proto->m_privacyListManager.Lock();
-		EnableWindow( GetDlgItem( m_hwnd, IDC_ACTIVATE ), FALSE );
 		CPrivacyList* pList = GetSelectedList(m_hwnd);
+		if ( pList && pList->IsModified() ) {
+			m_proto->m_privacyListManager.Unlock();
+			MessageBox( m_hwnd, TranslateT("Please save list before activating"), TranslateT("First, save the list"), MB_OK | MB_ICONSTOP );
+			return;
+		}
+		EnableWindow( GetDlgItem( m_hwnd, IDC_ACTIVATE ), FALSE );
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_ACTIVATE ), GWL_USERDATA, (DWORD)pList );
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListActive, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
 		HXML query = iq << XQUERY( _T(JABBER_FEAT_PRIVACY_LISTS));
@@ -1811,8 +1816,13 @@ void CJabberDlgPrivacyLists::btnSetDefault_OnClick(CCtrlButton *)
 	if ( m_proto->m_bJabberOnline )
 	{
 		m_proto->m_privacyListManager.Lock();
-		EnableWindow( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), FALSE );
 		CPrivacyList* pList = GetSelectedList(m_hwnd);
+		if ( pList && pList->IsModified() ) {
+			m_proto->m_privacyListManager.Unlock();
+			MessageBox( m_hwnd, TranslateT("Please save list before you make it the default list"), TranslateT("First, save the list"), MB_OK | MB_ICONSTOP );
+			return;
+		}
+		EnableWindow( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), FALSE );
 		SetWindowLong( GetDlgItem( m_hwnd, IDC_SET_DEFAULT ), GWL_USERDATA, (DWORD)pList );
 
 		XmlNodeIq iq( m_proto->m_iqManager.AddHandler( &CJabberProto::OnIqResultPrivacyListDefault, JABBER_IQ_TYPE_SET, NULL, 0, -1, pList ) );
