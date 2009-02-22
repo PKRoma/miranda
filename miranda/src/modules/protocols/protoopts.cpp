@@ -119,7 +119,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
 				PROTOACCOUNT* pa = param->pa;
 				switch( param->action ) {
-				case 4:
+				case PRAC_UPGRADED:
 					{
 						char szPlugin[ MAX_PATH ];
 						strncpy( szPlugin, pa->szProtoName, SIZEOF( szPlugin ));
@@ -135,7 +135,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					}
 					// fall through
 
-				case 1:
+				case PRAC_ADDED:
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
 					pa->bIsEnabled = pa->bIsVisible = TRUE;
@@ -149,7 +149,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 					mir_free(pa->tszAccountName);
 					pa->tszAccountName = mir_tstrdup( buf );
 				}
-				if ( param->action == 1 || param->action == 4 ) {
+				if ( param->action == PRAC_ADDED || param->action == PRAC_UPGRADED ) {
 					char buf[200];
 					GetDlgItemTextA( hwndDlg, IDC_PROTOTYPECOMBO, buf, sizeof( buf )); buf[sizeof(buf)-1] = 0;
 					pa->szProtoName = mir_strdup( buf );
@@ -734,7 +734,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							else DeactivateAccount( pa, TRUE );
 
 							WriteDbAccounts();
-							NotifyEventHooks( hAccListChanged, 5, ( LPARAM )pa );
+							NotifyEventHooks( hAccListChanged, PRAC_CHECKED, ( LPARAM )pa );
 							sttUpdateAccountInfo(hwndDlg, dat);
 							RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
 					}	}
@@ -748,7 +748,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 							mir_free(acc->tszAccountName);
 							acc->tszAccountName = (TCHAR *)lParam;
                             WriteDbAccounts();
-							NotifyEventHooks( hAccListChanged, 2, ( LPARAM )acc );
+							NotifyEventHooks( hAccListChanged, PRAC_CHANGED, ( LPARAM )acc );
 
 							ListBox_DeleteString(hwndList, iItem);
 							iItem = ListBox_AddString(hwndList, acc->tszAccountName);
@@ -765,7 +765,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 
 		case IDC_ADD:
 			{
-				AccFormDlgParam param = { 1, NULL };
+				AccFormDlgParam param = { PRAC_ADDED, NULL };
 				if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
 					SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 			}	}
@@ -776,7 +776,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
-					AccFormDlgParam param = { 2, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
+					AccFormDlgParam param = { PRAC_CHANGED, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
 					if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 			}	}	}
@@ -809,7 +809,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 						UnloadAccount( pa, TRUE );
 						EraseAccount( szSaveModule );
 						accounts.remove( pa );
-						NotifyEventHooks( hAccListChanged, 3, ( LPARAM )pa );
+						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 						WriteDbAccounts();
 						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
 
