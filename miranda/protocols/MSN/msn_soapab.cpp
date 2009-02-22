@@ -514,8 +514,11 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid)
 					deleteSetting( hContact, "Transport" );
 				}
 
-				ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
-				MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
+                if (netId != NETID_EMAIL)
+                {
+				    ezxml_t cgrp = ezxml_get(contInf, "groupIds", 0, "guid", -1);
+				    MSN_SyncContactToServerGroup( hContact, szContId, cgrp );
+                }
 
 				szTmp = ezxml_txt(ezxml_child(contInf, "CID"));
 				SetAbParam(hContact, "CID", szTmp);
