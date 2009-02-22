@@ -39,7 +39,6 @@ void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 int LoadCLUIModule(void);
 int InitClistHotKeys(void);
-void ClcRebuildAccountList(void);
 
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
@@ -241,9 +240,6 @@ static int ContactListModulesLoaded(WPARAM, LPARAM)
 
 static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-
-	if ( eventCode != PRAC_CHANGED)
-		ClcRebuildAccountList();
 	if ( eventCode == PRAC_ADDED )
 		AddProtoIconIndex(( PROTOACCOUNT* )lParam );
 

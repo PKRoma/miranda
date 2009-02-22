@@ -121,7 +121,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void ClcRebuildAccountList()
+static int ClcAccountsChanged(WPARAM, LPARAM)
 {
 	int i, cnt;
 	for (i = 0, cnt = 0; i < accounts.getCount(); ++i)
@@ -137,11 +137,12 @@ void ClcRebuildAccountList()
 			++cnt;
 		}
 	}
+	return 0;
 }
 
 static int ClcModulesLoaded(WPARAM, LPARAM)
 {
-	ClcRebuildAccountList();
+	ClcAccountsChanged(0, 0);
 	MTG_OnmodulesLoad();
 	return 0;
 }
@@ -223,6 +224,7 @@ int LoadCLCModule(void)
 	InitFileDropping();
 
 	HookEvent(ME_SYSTEM_MODULESLOADED, ClcModulesLoaded);
+	HookEvent(ME_PROTO_ACCLISTCHANGED, ClcAccountsChanged);
 	hClcSettingsChanged = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ClcSettingChanged);
 	HookEvent(ME_DB_CONTACT_ADDED, ClcContactAdded);
 	HookEvent(ME_DB_CONTACT_DELETED, ClcContactDeleted);
