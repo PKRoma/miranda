@@ -122,7 +122,7 @@ BOOL CList_SetOffline(HANDLE hContact, BOOL bHide)
 	return FALSE;
 }
 
-BOOL CList_SetAllOffline(BOOL bHide)
+BOOL CList_SetAllOffline(BOOL bHide, const char *pszModule)
 {
 	HANDLE hContact;
 	char* szProto;
@@ -131,12 +131,14 @@ BOOL CList_SetAllOffline(BOOL bHide)
 	while (hContact) {
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 		if (MM_FindModule(szProto)) {
-			int i = DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0);
-			if (i != 0) {
-				DBWriteContactSettingWord(hContact, szProto, "ApparentMode", (LPARAM)(WORD) 0);
-				DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-				//if (bHide && i == GCW_CHATROOM)
-				//	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+			if (!pszModule || (pszModule && !strcmp(pszModule, szProto))) {
+				int i = DBGetContactSettingByte(hContact, szProto, "ChatRoom", 0);
+				if (i != 0) {
+					DBWriteContactSettingWord(hContact, szProto, "ApparentMode", (LPARAM)(WORD) 0);
+					DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
+					//if (bHide && i == GCW_CHATROOM)
+					//	DBWriteContactSettingByte(hContact, "CList", "Hidden", 1);
+				}
 			}
 		}
 

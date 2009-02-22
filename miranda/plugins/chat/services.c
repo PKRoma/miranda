@@ -237,7 +237,7 @@ static int ModulesLoaded(WPARAM wParam,LPARAM lParam)
 	if ( ServiceExists( MS_IEVIEW_WINDOW ))
 		IEviewInstalled = TRUE;
 
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline(TRUE, NULL);
  	return 0;
 }
 
@@ -350,7 +350,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->pszHeader = Log_CreateRtfHeader(mi);
 
 		CheckColorsInModule((char*)gcr->pszModule);
-		CList_SetAllOffline(TRUE);
+		CList_SetAllOffline(TRUE, gcr->pszModule);
 
 		LeaveCriticalSection(&cs);
 		return 0;

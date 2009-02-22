@@ -212,7 +212,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->hOfflineTalkIcon = NULL;
 
 		CheckColorsInModule((char*)gcr->pszModule);
-		CList_SetAllOffline(TRUE);
+		CList_SetAllOffline(TRUE, gcr->pszModule);
 
 		LeaveCriticalSection(&cs);
 		return 0;

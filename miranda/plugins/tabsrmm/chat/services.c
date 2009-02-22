@@ -90,7 +90,7 @@ int Chat_ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if (ServiceExists(MS_IEVIEW_WINDOW))
 		IEviewInstalled = TRUE;
 
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline(TRUE, NULL);
 
 	g_chat_fully_initialized = TRUE;
 
@@ -212,7 +212,7 @@ static int Service_Register(WPARAM wParam, LPARAM lParam)
 		mi->pszHeader = Log_CreateRtfHeader(mi);
 
 		CheckColorsInModule((char*)gcr->pszModule);
-		CList_SetAllOffline(TRUE);
+		CList_SetAllOffline(TRUE, gcr->pszModule);
 
 		LeaveCriticalSection(&cs);
 		return 0;

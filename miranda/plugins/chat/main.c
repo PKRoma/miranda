@@ -155,7 +155,7 @@ int __declspec(dllexport) Unload(void)
 	DBWriteContactSettingDword(NULL, "Chat", "roomwidth" , g_Settings.iWidth);
 	DBWriteContactSettingDword(NULL, "Chat", "roomheight", g_Settings.iHeight);
 
-	CList_SetAllOffline(TRUE);
+	CList_SetAllOffline(TRUE, NULL);
 
 	mir_free( pszActiveWndID );
 	mir_free( pszActiveWndModule );
