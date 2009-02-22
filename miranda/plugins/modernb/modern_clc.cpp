@@ -1722,7 +1722,8 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 
 	nHiddenStatus=CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat);
     
-    bool isVisiblebyFilter  = ( ( ( GetWindowLong( hwnd, GWL_STYLE ) & CLS_SHOWHIDDEN ) && nHiddenStatus != -1 ) || !nHiddenStatus );
+	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    bool isVisiblebyFilter  = ( ( ( style & CLS_SHOWHIDDEN ) && nHiddenStatus != -1 ) || !nHiddenStatus );
     bool ifVisibleByClui    = !pcli->pfnIsHiddenMode( dat, status );      
     bool isVisible          = g_CluiData.bFilterEffective&CLVM_FILTER_STATUS ? TRUE : ifVisibleByClui;
     bool isIconChanged      = CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != LOWORD(lParam);
@@ -1737,7 +1738,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 		{
 			if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 				hSelItem = pcli->pfnContactToHItem(selcontact);
-			pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 0);
+			pcli->pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, (style & CLS_CONTACTLIST) == 0, 0);
 			recalcScrollBar = 1;
 			needRepaint=TRUE;
 			pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL);
@@ -1752,9 +1753,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 	}
 	else 
 	{
-
 		//item in list already
-		DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 		if (contact->iImage == lParam)
 			return 0;
 		if ( !shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE) && clcItemNotHiddenOffline(dat, group, contact))
@@ -1765,7 +1764,7 @@ static LRESULT clcOnIntmIconChanged(struct ClcData *dat, HWND hwnd, UINT msg, WP
 		{
 			if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 				hSelItem = pcli->pfnContactToHItem(selcontact);
-			pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 1);
+			pcli->pfnRemoveItemFromGroup(hwnd, group, contact, (style & CLS_CONTACTLIST) == 0);
 			needRepaint=TRUE;
 			recalcScrollBar = 1;
 			dat->NeedResort = 1;
