@@ -154,9 +154,6 @@ static BOOL CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wPara
 		}
 		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		return TRUE;
-	case WM_SHOWWINDOW:
-		SetFocus(GetDlgItem(hWnd,IDNO));
-		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDYES:
