@@ -429,7 +429,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 	EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the \"New\" button underneath the list to set up a new IM account."));
+	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the Plus sign underneath the list to set up a new IM account."));
 }
 
 static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
