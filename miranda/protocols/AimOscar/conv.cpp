@@ -141,7 +141,7 @@ char* html_encode( const char* str )
 		switch ( *p ) 
         {
 		case '&' : memcpy( q, "&amp;", 5 );  q += 5; break;
-		case '\'': memcpy( q, "&apos;", 6 ); q += 6; break;
+//		case '\'': memcpy( q, "&apos;", 6 ); q += 6; break;
 		case '>' : memcpy( q, "&gt;", 4 );   q += 4; break;
 		case '<' : memcpy( q, "&lt;", 4 );   q += 4; break;
 		case '"' : memcpy( q, "&quot;", 6 ); q += 6; break;
