@@ -282,6 +282,7 @@ Section Uninstall
 
   DeleteRegKey HKLM "SOFTWARE\Miranda"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe"
 SectionEnd
 
 Function .onInit
