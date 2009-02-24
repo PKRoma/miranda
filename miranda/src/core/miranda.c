@@ -346,22 +346,6 @@ static void __cdecl compactHeapsThread(void *dummy)
 	} //while
 }
 
-static void InsertRegistryKey(void)
-{
-	if(DBGetContactSettingByte(NULL,"_Sys","CreateRegKey",1)) {
-		HKEY hKey;
-		DWORD dw;
-		if(RegCreateKeyExA(HKEY_LOCAL_MACHINE,"SOFTWARE\\Miranda",0,NULL,0,KEY_CREATE_SUB_KEY|KEY_SET_VALUE,NULL,&hKey,&dw)==ERROR_SUCCESS) {
-			char str[MAX_PATH],*str2;
-			GetModuleFileNameA(NULL,str,SIZEOF(str));
-			str2=strrchr(str,'\\');
-			if(str2!=NULL) *str2=0;
-			RegSetValueExA(hKey,"Install_Dir",0,REG_SZ,(PBYTE)str,lstrlenA(str)+1);
-			RegCloseKey(hKey);
-		}
-	}
-}
-
 DWORD CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg==WM_NULL) SleepEx(0,TRUE);
@@ -444,7 +428,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		DestroyModularEngine();
 		return 1;
 	}
-	InsertRegistryKey();
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
 
 	// ensure that the kernel hooks the SystemShutdownProc() after all plugins

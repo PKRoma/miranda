@@ -4,7 +4,7 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.7.14"
+!define MIM_VERSION             "0.7.15"
 !define MIM_PREVIEW             "0" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
@@ -32,7 +32,7 @@ OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${
 !endif
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
-InstallDirRegKey                HKLM "Software\Miranda" "Install_Dir"
+InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
 SetCompressor                   lzma
 SetOverWrite                    on
 BrandingText                    "miranda-im.org"
@@ -142,6 +142,9 @@ Section "Miranda IM"
   
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
+
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 SectionEnd
 
