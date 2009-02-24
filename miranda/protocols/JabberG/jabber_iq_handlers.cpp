@@ -35,48 +35,276 @@ Last change by : $Author$
 
 extern int bSecureIM;
 
+#ifndef VER_SUITE_WH_SERVER
+	#define VER_SUITE_WH_SERVER                     0x00008000
+#endif
+
+#ifndef PRODUCT_ULTIMATE
+	#define PRODUCT_UNDEFINED                       0x00000000
+	#define PRODUCT_ULTIMATE                        0x00000001
+	#define PRODUCT_HOME_BASIC                      0x00000002
+	#define PRODUCT_HOME_PREMIUM                    0x00000003
+	#define PRODUCT_ENTERPRISE                      0x00000004
+	#define PRODUCT_HOME_BASIC_N                    0x00000005
+	#define PRODUCT_BUSINESS                        0x00000006
+	#define PRODUCT_STANDARD_SERVER                 0x00000007
+	#define PRODUCT_DATACENTER_SERVER               0x00000008
+	#define PRODUCT_SMALLBUSINESS_SERVER            0x00000009
+	#define PRODUCT_ENTERPRISE_SERVER               0x0000000A
+	#define PRODUCT_STARTER                         0x0000000B
+	#define PRODUCT_DATACENTER_SERVER_CORE          0x0000000C
+	#define PRODUCT_STANDARD_SERVER_CORE            0x0000000D
+	#define PRODUCT_ENTERPRISE_SERVER_CORE          0x0000000E
+	#define PRODUCT_ENTERPRISE_SERVER_IA64          0x0000000F
+	#define PRODUCT_BUSINESS_N                      0x00000010
+	#define PRODUCT_WEB_SERVER                      0x00000011
+	#define PRODUCT_CLUSTER_SERVER                  0x00000012
+	#define PRODUCT_HOME_SERVER                     0x00000013
+	#define PRODUCT_STORAGE_EXPRESS_SERVER          0x00000014
+	#define PRODUCT_STORAGE_STANDARD_SERVER         0x00000015
+	#define PRODUCT_STORAGE_WORKGROUP_SERVER        0x00000016
+	#define PRODUCT_STORAGE_ENTERPRISE_SERVER       0x00000017
+	#define PRODUCT_SERVER_FOR_SMALLBUSINESS        0x00000018
+	#define PRODUCT_SMALLBUSINESS_SERVER_PREMIUM    0x00000019
+	#define PRODUCT_UNLICENSED                      0xABCDABCD
+#endif
+
+typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
+typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+
+#define StringCchCopy(x,y,z)      lstrcpyn((x),(z),(y))
+#define StringCchCat(x,y,z)       lstrcat((x),(z))
+#define StringCchPrintf           mir_sntprintf
+
+// slightly modified sample from MSDN
+BOOL GetOSDisplayString(LPTSTR pszOS, int BUFSIZE)
+{
+	OSVERSIONINFOEX osvi;
+	SYSTEM_INFO si;
+	PGNSI pGNSI;
+	PGPI pGPI;
+	BOOL bOsVersionInfoEx;
+	DWORD dwType;
+
+	ZeroMemory(&si, sizeof(SYSTEM_INFO));
+	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+	if( !(bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi)) )
+		return FALSE;
+
+	// Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
+
+	pGNSI = (PGNSI) GetProcAddress(
+		GetModuleHandle(TEXT("kernel32.dll")), 
+		"GetNativeSystemInfo");
+	if(NULL != pGNSI)
+		pGNSI(&si);
+	else GetSystemInfo(&si);
+
+	if ( VER_PLATFORM_WIN32_NT==osvi.dwPlatformId && 
+		osvi.dwMajorVersion > 4 )
+	{
+		StringCchCopy(pszOS, BUFSIZE, TEXT("Microsoft "));
+
+		// Test for the specific product.
+
+		if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1 )
+		{
+			if( osvi.wProductType == VER_NT_WORKSTATION )
+				StringCchCat(pszOS, BUFSIZE, TEXT("Windows 7 "));
+			else StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 R2 " ));
+		}
+
+		if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0 )
+		{
+			if( osvi.wProductType == VER_NT_WORKSTATION )
+				StringCchCat(pszOS, BUFSIZE, TEXT("Windows Vista "));
+			else StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 " ));
+
+			pGPI = (PGPI) GetProcAddress(
+				GetModuleHandle(TEXT("kernel32.dll")), 
+				"GetProductInfo");
+
+			pGPI( 6, 0, 0, 0, &dwType);
+
+			switch( dwType )
+			{
+			case PRODUCT_ULTIMATE:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Ultimate Edition" ));
+				break;
+			case PRODUCT_HOME_PREMIUM:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Home Premium Edition" ));
+				break;
+			case PRODUCT_HOME_BASIC:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Home Basic Edition" ));
+				break;
+			case PRODUCT_ENTERPRISE:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition" ));
+				break;
+			case PRODUCT_BUSINESS:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Business Edition" ));
+				break;
+			case PRODUCT_STARTER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Starter Edition" ));
+				break;
+			case PRODUCT_CLUSTER_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Cluster Server Edition" ));
+				break;
+			case PRODUCT_DATACENTER_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Datacenter Edition" ));
+				break;
+			case PRODUCT_DATACENTER_SERVER_CORE:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Datacenter Edition (core installation)" ));
+				break;
+			case PRODUCT_ENTERPRISE_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition" ));
+				break;
+			case PRODUCT_ENTERPRISE_SERVER_CORE:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition (core installation)" ));
+				break;
+			case PRODUCT_ENTERPRISE_SERVER_IA64:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition for Itanium-based Systems" ));
+				break;
+			case PRODUCT_SMALLBUSINESS_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Small Business Server" ));
+				break;
+			case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Small Business Server Premium Edition" ));
+				break;
+			case PRODUCT_STANDARD_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Standard Edition" ));
+				break;
+			case PRODUCT_STANDARD_SERVER_CORE:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Standard Edition (core installation)" ));
+				break;
+			case PRODUCT_WEB_SERVER:
+				StringCchCat(pszOS, BUFSIZE, TEXT("Web Server Edition" ));
+				break;
+			}
+			if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64 )
+				StringCchCat(pszOS, BUFSIZE, TEXT( ", 64-bit" ));
+			else if (si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_INTEL )
+				StringCchCat(pszOS, BUFSIZE, TEXT(", 32-bit"));
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2 )
+		{
+			if( GetSystemMetrics(SM_SERVERR2) )
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Server 2003 R2, "));
+			else if ( osvi.wSuiteMask==VER_SUITE_STORAGE_SERVER )
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Storage Server 2003"));
+			else if ( osvi.wSuiteMask==VER_SUITE_WH_SERVER )
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Home Server"));
+			else if( osvi.wProductType == VER_NT_WORKSTATION &&
+				si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64)
+			{
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Windows XP Professional x64 Edition"));
+			}
+			else StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2003, "));
+
+			// Test for the server type.
+			if ( osvi.wProductType != VER_NT_WORKSTATION )
+			{
+				if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_IA64 )
+				{
+					if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Edition for Itanium-based Systems" ));
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise Edition for Itanium-based Systems" ));
+				}
+
+				else if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64 )
+				{
+					if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter x64 Edition" ));
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise x64 Edition" ));
+					else StringCchCat(pszOS, BUFSIZE, TEXT( "Standard x64 Edition" ));
+				}
+
+				else
+				{
+					if ( osvi.wSuiteMask & VER_SUITE_COMPUTE_SERVER )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Compute Cluster Edition" ));
+					else if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Edition" ));
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise Edition" ));
+					else if ( osvi.wSuiteMask & VER_SUITE_BLADE )
+						StringCchCat(pszOS, BUFSIZE, TEXT( "Web Edition" ));
+					else StringCchCat(pszOS, BUFSIZE, TEXT( "Standard Edition" ));
+				}
+			}
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )
+		{
+			StringCchCat(pszOS, BUFSIZE, TEXT("Windows XP "));
+			if( osvi.wSuiteMask & VER_SUITE_PERSONAL )
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Home Edition" ));
+			else StringCchCat(pszOS, BUFSIZE, TEXT( "Professional" ));
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0 )
+		{
+			StringCchCat(pszOS, BUFSIZE, TEXT("Windows 2000 "));
+
+			if ( osvi.wProductType == VER_NT_WORKSTATION )
+			{
+				StringCchCat(pszOS, BUFSIZE, TEXT( "Professional" ));
+			}
+			else 
+			{
+				if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+					StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Server" ));
+				else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+					StringCchCat(pszOS, BUFSIZE, TEXT( "Advanced Server" ));
+				else StringCchCat(pszOS, BUFSIZE, TEXT( "Server" ));
+			}
+		}
+
+		// Include service pack (if any) and build number.
+
+		if( _tcslen(osvi.szCSDVersion) > 0 )
+		{
+			StringCchCat(pszOS, BUFSIZE, TEXT(" ") );
+			StringCchCat(pszOS, BUFSIZE, osvi.szCSDVersion);
+		}
+
+		TCHAR buf[80];
+
+		StringCchPrintf( buf, 80, TEXT(" (build %d)"), osvi.dwBuildNumber);
+		StringCchCat(pszOS, BUFSIZE, buf);
+
+		return TRUE; 
+	}
+	else
+	{  
+		return FALSE;
+	}
+}
+
+
 void CJabberProto::OnIqRequestVersion( HXML, CJabberIqInfo* pInfo )
 {
 	if ( !pInfo->GetFrom() )
 		return;
 
-	TCHAR* os = NULL;
-
-	if ( m_options.ShowOSVersion ) {
-		OSVERSIONINFO osvi = { 0 };
-		osvi.dwOSVersionInfoSize = sizeof( OSVERSIONINFO );
-		if ( GetVersionEx( &osvi )) {
-			switch ( osvi.dwPlatformId ) {
-			case VER_PLATFORM_WIN32_NT:
-				if ( osvi.dwMajorVersion == 6 )
-					os = TranslateT( "Windows Vista" );
-				else if ( osvi.dwMajorVersion == 5 ) {
-					if ( osvi.dwMinorVersion == 2 ) os = TranslateT( "Windows Server 2003" );
-					else if ( osvi.dwMinorVersion == 1 ) os = TranslateT( "Windows XP" );
-					else if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 2000" );
-				}
-				else if ( osvi.dwMajorVersion <= 4 ) {
-					os = TranslateT( "Windows NT" );
-				}
-				break;
-			case VER_PLATFORM_WIN32_WINDOWS:
-				if ( osvi.dwMajorVersion == 4 ) {
-					if ( osvi.dwMinorVersion == 0 ) os = TranslateT( "Windows 95" );
-					if ( osvi.dwMinorVersion == 10 ) os = TranslateT( "Windows 98" );
-					if ( osvi.dwMinorVersion == 90 ) os = TranslateT( "Windows ME" );
-				}
-				break;
-		}	}
-
-		if ( os == NULL ) os = TranslateT( "Windows" );
-	}
-
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
 	query << XCHILD( _T("name"), _T("Miranda IM Jabber") );
 	query << XCHILD( _T("version"), _T(__VERSION_STRING) );
-	if ( os ) 
+
+	if ( m_options.ShowOSVersion )
+	{
+		TCHAR os[256] = {0};
+		if (!GetOSDisplayString(os, SIZEOF(os)))
+			lstrcpyn(os, _T("Microsoft Windows"), SIZEOF(os));
 		query << XCHILD( _T("os"), os );
+	}
+
 	m_ThreadInfo->send( iq );
 }
 
