@@ -151,12 +151,12 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_3DLOOK | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Import all contacts and all messages",IDC_RADIO_ALL,
-                    "Button",BS_AUTORADIOBUTTON | BS_LEFT | BS_TOP,7,10,206,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP | BS_LEFT | BS_TOP,7,10,206,
                     11
     CONTROL         "Only import contacts",IDC_RADIO_CONTACTS,"Button",
-                    BS_AUTORADIOBUTTON,7,42,206,10
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,7,42,206,10
     CONTROL         "Custom import",IDC_RADIO_CUSTOM,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED,7,74,206,10
+                    BS_AUTORADIOBUTTON | WS_TABSTOP | WS_DISABLED,7,74,206,10
     LTEXT           "Select this if you want to import as much data as possible. This is the recommended option.",
                     IDC_STATIC_ALL,26,20,187,16
     LTEXT           "Select this if you want to import contacts but don't want to import any message history.",
