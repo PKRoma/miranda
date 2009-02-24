@@ -783,7 +783,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			for(i=0;i<dat->searchCount;i++)
 				if(dat->search[i].hProcess==ack->hProcess && dat->search[i].hProcess != NULL && !lstrcmpA(dat->search[i].szProto,ack->szModule)) break;
 			if(i==dat->searchCount) break;
-			if(ack->result==ACKRESULT_SUCCESS) {
+			if(ack->result==ACKRESULT_SUCCESS || ack->result==ACKRESULT_FAILED) {
 				dat->searchCount--;
 				memmove(dat->search+i,dat->search+i+1,sizeof(struct ProtoSearchInfo)*(dat->searchCount-i));
 				if(dat->searchCount==0) {
