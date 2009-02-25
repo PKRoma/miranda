@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int LoadProtoChains(void);
 int LoadProtoOptions( void );
+int isProtoSuitable( PROTO_INTERFACE* ppi );
 
 HANDLE hAccListChanged;
 static HANDLE hAckEvent,hTypeEvent;
@@ -112,7 +113,8 @@ static int Proto_RegisterModule(WPARAM, LPARAM lParam)
 					pa->szModuleName = mir_strdup( pd->szName );
 					pa->szProtoName = mir_strdup( pd->szName );
 					pa->tszAccountName = mir_a2t( pd->szName );
-					pa->bIsVisible = pa->bIsEnabled = TRUE;
+					pa->bIsVisible = isProtoSuitable(ppi);
+                    pa->bIsEnabled = TRUE;
 					pa->iOrder = accounts.getCount();
 					accounts.insert( pa );
 				}

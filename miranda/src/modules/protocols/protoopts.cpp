@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-
 #include "m_protoint.h"
 
 #define LBN_MY_CHECK	0x1000
@@ -32,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_MY_RENAME	(WM_USER+0x1001)
 
 int  Proto_EnumProtocols( WPARAM, LPARAM );
+int isProtoSuitable( PROTO_INTERFACE* ppi );
 
 #define errMsg \
 "WARNING! The account is going to be deleted. It means that all its \
@@ -138,7 +138,9 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 				case PRAC_ADDED:
 					pa = (PROTOACCOUNT*)mir_calloc( sizeof( PROTOACCOUNT ));
 					pa->cbSize = sizeof( PROTOACCOUNT );
-					pa->bIsEnabled = pa->bIsVisible = TRUE;
+					pa->bIsEnabled = TRUE;
+                    pa->bIsVisible = isProtoSuitable(pa->ppro);
+                    
 					pa->iOrder = accounts.getCount();
 					pa->type = PROTOTYPE_PROTOCOL;
 					break;

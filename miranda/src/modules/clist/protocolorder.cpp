@@ -26,7 +26,7 @@ typedef struct {
 }
 	tempProtoItem;
 
-static int __inline isProtoSuitable( PROTO_INTERFACE* ppi )
+int isProtoSuitable( PROTO_INTERFACE* ppi )
 {
 	if ( ppi == NULL )
 		return TRUE;
