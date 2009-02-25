@@ -43,6 +43,16 @@ Are you absolutely sure?"
 To activate it, restart of Miranda is needed.\n\n\
 If you want to restart Miranda now, press Yes, if you want to upgrade another account, press No"
 
+#define legacyMsg \
+"This account uses legacy protocol plugin. \
+Use Miranda IM options dialogs to change it's preferences."
+
+#define welcomeMsg \
+"Welcome to Miranda IM's account manager!\n \
+Here you can set up your IM accounts.\n\n \
+Select an account from the list on the left to see the available options. \
+Alternatively, just click on the Plus sign underneath the list to set up a new IM account."
+
 static HWND hAccMgr = NULL;
 
 extern HANDLE hAccListChanged;
@@ -420,7 +430,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 				}
 				else {
 					ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-					SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("This account uses legacy protocol. Use Miranda IM options dialogs to change login information for it."));
+					SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(legacyMsg));
 			}	}
 			return;
 	}	}
@@ -431,7 +441,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 	EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options. Alternatively, just click on the Plus sign underneath the list to set up a new IM account."));
+	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(welcomeMsg));
 }
 
 static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
@@ -563,9 +573,17 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			lps->rcItem.top += 2;
 			lps->rcItem.bottom -= 2;
 
-			DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
-				LoadSkinnedIcon( IsAccountEnabled( acc ) ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
-				cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
+			if (acc->bOldProto)
+			{
+				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
+					LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT),
+					cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
+			} else
+			{
+				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
+					LoadSkinnedIcon( IsAccountEnabled( acc ) ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK),
+					cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
+			}
 
 			lps->rcItem.left += cxIcon + 2;
 
@@ -778,10 +796,8 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 				HWND hList = GetDlgItem( hwndDlg, IDC_ACCLIST );
 				int idx = ListBox_GetCurSel( hList );
 				if ( idx != -1 ) {
-					AccFormDlgParam param = { PRAC_CHANGED, ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx ) };
-					if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
-						SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
-			}	}	}
+					SendMessage(hList, WM_MY_RENAME, 0, 0);
+			}	}
 			break;
 
 		case IDC_REMOVE:
