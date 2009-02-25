@@ -99,7 +99,7 @@ static int UserOnlineAccountsChanged( WPARAM eventCode, LPARAM lParam )
 	case PRAC_ADDED:
 	case PRAC_CHECKED:
 		// reset the counter
-		if ( pa->bIsEnabled )
+		if ( IsAccountEnabled( pa ))
 			db_dword_set( NULL, "UserOnline", pa->szModuleName, GetTickCount());
 		break;
 	}
