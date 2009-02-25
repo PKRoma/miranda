@@ -25,6 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
+typedef HRESULT (STDAPICALLTYPE *pfnSHAutoComplete)(HWND,DWORD);
+extern pfnSHAutoComplete shAutoComplete;
+
 typedef HDESK (WINAPI* pfnOpenInputDesktop)( DWORD, BOOL, DWORD );
 extern pfnOpenInputDesktop openInputDesktop;
 

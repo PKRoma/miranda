@@ -393,13 +393,17 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		}
 
 		{
-			COMBOBOXINFO cbi;
-			cbi.cbSize = sizeof(COMBOBOXINFO);
-			GetComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
-			OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+            typedef BOOL (STDAPICALLTYPE *pfnGetComboBoxInfo)(HWND, PCOMBOBOXINFO);
+            pfnGetComboBoxInfo getComboBoxInfo = (pfnGetComboBoxInfo)GetProcAddress(GetModuleHandleA("user32"), "GetComboBoxInfo"); 
+
+            if (getComboBoxInfo)
+            {
+                COMBOBOXINFO cbi;
+			    cbi.cbSize = sizeof(COMBOBOXINFO);
+			    getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
+			    OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+            }
 		}
-
-
 
 		Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 		TranslateDialogDefault(hdlg);

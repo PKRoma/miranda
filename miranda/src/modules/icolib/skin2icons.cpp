@@ -1186,12 +1186,8 @@ BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetClientRect(hwndDlg, &rcThis);
 			SendMessage(hwndDlg, WM_SIZE, 0, MAKELPARAM(rcThis.right-rcThis.left, rcThis.bottom-rcThis.top));
 		}
-		{
-			HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
 
-			MySHAutoComplete = (HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
-			if (MySHAutoComplete) MySHAutoComplete(GetDlgItem(hwndDlg,IDC_ICONSET), 1);
-		}
+        if (shAutoComplete) shAutoComplete(GetDlgItem(hwndDlg,IDC_ICONSET), 1);
 		SetDlgItemText(hwndDlg,IDC_ICONSET,_T("icons.dll"));
 		return TRUE;
 

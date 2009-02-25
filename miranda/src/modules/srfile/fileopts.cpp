@@ -60,12 +60,10 @@ static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
 				SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
 			}
-			{	HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
 
-				MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
-				if(MySHAutoComplete) MySHAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
-			}
-			CheckDlgButton(hwndDlg, IDC_AUTOACCEPT, DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) ? BST_CHECKED : BST_UNCHECKED);
+			if (shAutoComplete) shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
+
+            CheckDlgButton(hwndDlg, IDC_AUTOACCEPT, DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL,"SRFile","AutoMin",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_AUTOCLOSE, DBGetContactSettingByte(NULL,"SRFile","AutoClose",0) ? BST_CHECKED : BST_UNCHECKED);
 			switch(DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE)) {

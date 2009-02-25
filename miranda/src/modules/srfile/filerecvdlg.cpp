@@ -254,10 +254,8 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		{	int i;
 			char idstr[32];
 			DBVARIANT dbv;
-			HRESULT (STDAPICALLTYPE *MySHAutoComplete)(HWND,DWORD);
 
-			MySHAutoComplete=(HRESULT (STDAPICALLTYPE*)(HWND,DWORD))GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
-			if(MySHAutoComplete) MySHAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
+            if (shAutoComplete) shAutoComplete(GetWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),GW_CHILD),1);
 			for(i=0;i<MAX_MRU_DIRS;i++) {
 				wsprintfA(idstr,"MruDir%d",i);
 				if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) break;

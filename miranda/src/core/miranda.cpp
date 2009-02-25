@@ -36,9 +36,12 @@ void UnloadDefaultModules(void);
 HINSTANCE GetInstByAddress( void* codePtr );
 
 typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
-pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx = NULL;
-pfnOpenInputDesktop openInputDesktop = NULL;
-pfnCloseDesktop closeDesktop = NULL;
+pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
+
+pfnSHAutoComplete shAutoComplete;
+
+pfnOpenInputDesktop openInputDesktop;
+pfnCloseDesktop closeDesktop;
 
 pfnOpenThemeData openThemeData;
 pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
@@ -531,9 +534,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 #endif
 
 	hUser32 = GetModuleHandleA("user32");
-	openInputDesktop = ( pfnOpenInputDesktop )GetProcAddress (hUser32, "OpenInputDesktop");
-	closeDesktop = ( pfnCloseDesktop )GetProcAddress (hUser32, "CloseDesktop");
+	openInputDesktop = (pfnOpenInputDesktop)GetProcAddress (hUser32, "OpenInputDesktop");
+	closeDesktop = (pfnCloseDesktop)GetProcAddress (hUser32, "CloseDesktop");
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
+
+    shAutoComplete = (pfnSHAutoComplete)GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
 
 	hThemeAPI = LoadLibraryA("uxtheme.dll");
 	if ( hThemeAPI )
