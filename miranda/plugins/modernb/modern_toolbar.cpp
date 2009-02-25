@@ -984,7 +984,6 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			BOOL bFloat = (GetParent(hwnd)!=pcli->hwndContactList);
 			if (g_CluiData.fDisableSkinEngine|| !g_CluiData.fLayered || bFloat )
 			{
-				HBRUSH hbr=CreateSolidBrush(RGB(255,0,255));
 				BeginPaint(hwnd,&ps);
 				if ((!g_CluiData.fLayered || bFloat) && !g_CluiData.fDisableSkinEngine)
 				{
