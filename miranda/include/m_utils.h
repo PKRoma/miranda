@@ -309,7 +309,7 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 #define MS_UTILS_GETRANDOM "Utils/GetRandom"
 
 //Replace variables in text
-//wParam=(char *)string
+//wParam=(char*/TCHAR*/WCHAR*)string (depends on RVF_UNICODE/RVF_TCHAR flag)
 //lParam=(REPLACEVARSDATA *) data about variables, item with key=0 terminates the list
 //returns new string, use mir_free to destroy
 typedef struct
