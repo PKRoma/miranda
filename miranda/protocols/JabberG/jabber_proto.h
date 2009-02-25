@@ -310,11 +310,21 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	CNoteList m_notes;
 
+	CRITICAL_SECTION m_csLastResourceMap;
+	void *m_pLastResourceList;
+	DWORD m_dwResourceToDbEventMap[256]; // last 128 messages (128+128)
+	DWORD m_dwResourceMapPointer;
+
 	/*******************************************************************
 	* Function declarations
 	*******************************************************************/
 
 	void   JabberUpdateDialogs( BOOL bEnable );
+
+	void   CleanLastResourceMap();
+	BOOL   IsLastResourceExists(void *pResource);
+	void*  AddToLastResourceMap( LPCTSTR szFullJid );
+	TCHAR* FindLastResourceByDbEvent( HANDLE hDbEvent );
 
 	//---- jabber_adhoc.cpp --------------------------------------------------------------
 

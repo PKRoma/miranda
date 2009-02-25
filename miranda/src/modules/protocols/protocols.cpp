@@ -172,8 +172,7 @@ static int Proto_RecvMessage(WPARAM, LPARAM lParam)
 		dbei.cbBlob += sizeof( wchar_t )*( wcslen(( wchar_t* )&pre->szMessage[dbei.cbBlob+1] )+1 );
 
 	dbei.pBlob = ( PBYTE ) pre->szMessage;
-	CallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
-	return 0;
+	return CallService( MS_DB_EVENT_ADD, ( WPARAM ) ccs->hContact, ( LPARAM )&dbei );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

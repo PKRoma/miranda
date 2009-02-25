@@ -81,11 +81,12 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_priorityMenuVal( 0 ),
 	m_priorityMenuValSet( false ),
 	m_hPrivacyMenuRoot( 0 ),
-	m_hPrivacyMenuItems( 10 )
+	m_hPrivacyMenuItems( 10 ),
+	m_pLastResourceList( NULL )
 {
 	InitializeCriticalSection( &m_csModeMsgMutex );
-
 	InitializeCriticalSection( &m_csLists );
+	InitializeCriticalSection( &m_csLastResourceMap );
 
 	m_szXmlStreamToBeInitialized = NULL;
 
@@ -170,6 +171,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 	mir_snprintf( text, sizeof( text ), "%s/%s", m_szModuleName, DBSETTING_DISPLAY_UID );
 	JCallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
+
+	CleanLastResourceMap();
 }
 
 CJabberProto::~CJabberProto()
@@ -191,14 +194,17 @@ CJabberProto::~CJabberProto()
 	if ( m_hInitChat )
 		DestroyHookableEvent( m_hInitChat );
 
+	CleanLastResourceMap();
+
 	ListWipe();
 	DeleteCriticalSection( &m_csLists );
 
 	mir_free( m_phIconLibItems );
 
 	DeleteCriticalSection( &m_filterInfo.csPatternLock );
-
 	DeleteCriticalSection( &m_csModeMsgMutex );
+	DeleteCriticalSection( &m_csLastResourceMap );
+
 	mir_free( m_modeMsgs.szOnline );
 	mir_free( m_modeMsgs.szAway );
 	mir_free( m_modeMsgs.szNa );
@@ -306,6 +312,8 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 
 		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM ) hContact, 0 );
 	}
+
+	CleanLastResourceMap();
 
 	return 0;
 }
@@ -903,7 +911,18 @@ int __cdecl CJabberProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
 int __cdecl CJabberProto::RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
 {
 	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, ( LPARAM )evt };
-	return JCallService( MS_PROTO_RECVMSG, 0, ( LPARAM )&ccs );
+	int nDbEvent = JCallService( MS_PROTO_RECVMSG, 0, ( LPARAM )&ccs );
+
+	EnterCriticalSection( &m_csLastResourceMap );
+	if (IsLastResourceExists( (void *)evt->lParam) ) {
+		m_dwResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( DWORD )nDbEvent;
+		m_dwResourceToDbEventMap[ m_dwResourceMapPointer++ ] = ( DWORD )evt->lParam;
+		if ( m_dwResourceMapPointer >= SIZEOF( m_dwResourceToDbEventMap ))
+			m_dwResourceMapPointer = 0;
+	}
+	LeaveCriticalSection( &m_csLastResourceMap );
+
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

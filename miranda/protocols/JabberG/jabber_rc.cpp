@@ -624,7 +624,15 @@ int CJabberProto::AdhocForwardHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocS
 										<< XCHILD( _T("body"), szEventText );
 
 									HXML addressesNode = msg << XCHILDNS( _T("addresses"), _T(JABBER_FEAT_EXT_ADDRESSING));
-									addressesNode << XCHILD( _T("address")) << XATTR( _T("type"), _T("ofrom")) << XATTR( _T("jid"), dbv.ptszVal );
+									TCHAR szOFrom[ 512 ];
+									EnterCriticalSection( &m_csLastResourceMap );
+									TCHAR *szOResource = FindLastResourceByDbEvent( hDbEvent );
+									if ( szOResource )
+										mir_sntprintf( szOFrom, SIZEOF( szOFrom ), _T("%s/%s"), dbv.ptszVal, szOResource );
+									else
+										mir_sntprintf( szOFrom, SIZEOF( szOFrom ), _T("%s"), dbv.ptszVal );
+									LeaveCriticalSection( &m_csLastResourceMap );
+									addressesNode << XCHILD( _T("address")) << XATTR( _T("type"), _T("ofrom")) << XATTR( _T("jid"), szOFrom );
 									addressesNode << XCHILD( _T("address")) << XATTR( _T("type"), _T("oto")) << XATTR( _T("jid"), m_ThreadInfo->fullJID );
 
 									time_t ltime = ( time_t )dbei.timestamp;

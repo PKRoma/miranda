@@ -631,6 +631,7 @@ typedef struct {
 //wParam=0
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
 //DB event: EVENTTYPE_MESSAGE, blob contains szMessage without 0 terminator
+//Returns a handle to the newly added event, or NULL on failure
 typedef struct {
 	DWORD flags;
 	DWORD timestamp;   //unix time

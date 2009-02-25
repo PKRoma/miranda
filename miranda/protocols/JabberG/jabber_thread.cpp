@@ -1399,7 +1399,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		recv.flags = PREF_UTF;
 		recv.timestamp = ( DWORD )msgTime;
 		recv.szMessage = buf;
-		recv.lParam = 0;
+
+		EnterCriticalSection( &m_csLastResourceMap );
+		recv.lParam = (LPARAM)AddToLastResourceMap( from );
+		LeaveCriticalSection( &m_csLastResourceMap );
 
 		CCSDATA ccs;
 		ccs.hContact = hContact;

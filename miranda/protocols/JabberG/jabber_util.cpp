@@ -1492,3 +1492,93 @@ void JabberBitmapPremultiplyChannels(HBITMAP hBitmap)
 
 	free(p);
 }
+
+// Last resource map
+void CJabberProto::CleanLastResourceMap()
+{
+	EnterCriticalSection( &m_csLastResourceMap );
+
+	m_dwResourceMapPointer = 0;
+	ZeroMemory( m_dwResourceToDbEventMap, sizeof( m_dwResourceToDbEventMap ));
+
+	while ( m_pLastResourceList ) {
+		void *pNext = (( void ** )m_pLastResourceList )[ 0 ];
+		mir_free( m_pLastResourceList );
+		m_pLastResourceList = pNext;
+	}
+
+	LeaveCriticalSection( &m_csLastResourceMap );
+}
+
+// lock CS before use
+BOOL CJabberProto::IsLastResourceExists( void *pResource )
+{
+	if ( !pResource )
+		return FALSE;
+
+	void *pOurResource = m_pLastResourceList;
+	while ( pOurResource ) {
+		if ( pOurResource == pResource )
+			return TRUE;
+		pOurResource = (( void ** )pOurResource)[ 0 ];
+	}
+	return FALSE;
+}
+
+// lock CS before use
+void* CJabberProto::AddToLastResourceMap( LPCTSTR szFullJid )
+{
+	// detach resource from full jid
+	const TCHAR* szResource = _tcschr( szFullJid, '/' );
+	if ( szResource == NULL )
+		return NULL;
+	if ( *++szResource == '\0' )
+		return NULL;
+
+	DWORD dwResourceCount = 0;
+
+	void *pNewTailResource = NULL;
+	void *pOurResource = m_pLastResourceList;
+	while ( pOurResource ) {
+		dwResourceCount++;
+
+		if ( !_tcscmp(( TCHAR * )(( BYTE * )pOurResource + sizeof( void * )), szResource ))
+			return pOurResource;
+
+		void *pTmp = (( void ** )pOurResource )[ 0 ];
+		if ( pTmp && !((( void ** )pTmp )[ 0 ]))
+			pNewTailResource = pOurResource;
+		pOurResource = pTmp;
+	}
+
+	if ( pNewTailResource && ( dwResourceCount > ( SIZEOF( m_dwResourceToDbEventMap ) / 2 ))) {
+		void *pTmp = (( void ** )pNewTailResource )[ 0 ];
+		(( void ** )pNewTailResource )[ 0 ] = NULL;
+		mir_free( pTmp );
+	}
+
+	void *pNewResource = mir_alloc( sizeof( void * ) + sizeof( TCHAR ) * ( _tcslen( szResource ) + 1 ));
+	if ( !pNewResource )
+		return NULL;
+
+	(( void ** )pNewResource)[ 0 ] = m_pLastResourceList;
+	_tcscpy(( TCHAR * )(( BYTE * )pNewResource + sizeof( void * )), szResource );
+
+	m_pLastResourceList = pNewResource;
+
+	return pNewResource;
+}
+
+// lock CS before use
+TCHAR* CJabberProto::FindLastResourceByDbEvent( HANDLE hDbEvent )
+{
+	for ( int i = 0; i < SIZEOF( m_dwResourceToDbEventMap ); i += 2 ) {
+		if ( m_dwResourceToDbEventMap[ i ] == ( DWORD )hDbEvent ) {
+			TCHAR *szRetVal = ( TCHAR * )( m_dwResourceToDbEventMap[ i + 1 ] + sizeof( void * ));
+			m_dwResourceToDbEventMap[ i ] = 0;
+			m_dwResourceToDbEventMap[ i + 1 ] = 0;
+			return szRetVal;
+		}
+	}
+	return NULL;
+}
