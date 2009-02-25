@@ -308,10 +308,47 @@ __inline static int Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,
 //Always returns 0
 #define MS_UTILS_GETRANDOM "Utils/GetRandom"
 
+//Replace variables in text
+//wParam=(char *)string
+//lParam=(REPLACEVARSDATA *) data about variables, item with key=0 terminates the list
+//returns new string, use mir_free to destroy
+typedef struct
+{
+	union
+	{
+		TCHAR *lptzKey;
+		char *lpszKey;
+		WCHAR *lpwzKey;
+	};
+	union
+	{
+		TCHAR *lptzValue;
+		char *lpszValue;
+		WCHAR *lpwzValue;
+	};
+} REPLACEVARSARRAY;
+
+typedef struct
+{
+	int cbSize;
+	DWORD dwFlags;
+	HANDLE hContact;
+	REPLACEVARSARRAY *variables;
+} REPLACEVARSDATA;
+
+#define RVF_UNICODE	1
 #ifdef _UNICODE
-	#define MS_UTILS_PATHTORELATIVEW "Utils/PathToRelativeW"
-	#define MS_UTILS_PATHTOABSOLUTEW "Utils/PathToAbsoluteW"
-	#define MS_UTILS_CREATEDIRTREEW "Utils/CreateDirTreeW"
+	#define RVF_TCHAR	RVF_UNICODE
+#else
+	#define RVF_TCHAR	0
+#endif
+
+#define MS_UTILS_REPLACEVARS "Utils/ReplaceVars"
+
+#ifdef _UNICODE
+	#define MS_UTILS_PATHTORELATIVEW  "Utils/PathToRelativeW"
+	#define MS_UTILS_PATHTOABSOLUTEW  "Utils/PathToAbsoluteW"
+	#define MS_UTILS_CREATEDIRTREEW   "Utils/CreateDirTreeW"
 
 	#define MS_UTILS_PATHTORELATIVET MS_UTILS_PATHTORELATIVEW
 	#define MS_UTILS_PATHTOABSOLUTET MS_UTILS_PATHTOABSOLUTEW

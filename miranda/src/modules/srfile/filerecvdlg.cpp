@@ -101,42 +101,27 @@ int BrowseForFolder(HWND hwnd,char *szPath)
 	return result;
 }
 
-static void ReplaceStr(char str[], int len, char *from, char *to)
+static REPLACEVARSARRAY sttVarsToReplace[] =
 {
-	char *tmp;
-	if ( tmp = strstr( str, from )) {
-		int pos = tmp - str;
-		int tlen = lstrlenA(from);
-
-		tmp = mir_strdup(str);
-		if (lstrlenA(to)>tlen)
-			tmp = (char*)mir_realloc(tmp, lstrlenA(tmp)+1+lstrlenA(to)-tlen);
-
-		MoveMemory(tmp+pos+lstrlenA(to), tmp+pos+tlen, lstrlenA(tmp)+1-pos-tlen);
-		CopyMemory(tmp+pos, to, lstrlenA(to));
-		mir_snprintf(str, len, "%s", tmp);
-		mir_free(tmp);
-	}
-}
+	{ ( TCHAR* )"///", ( TCHAR* )"//" },
+	{ ( TCHAR* )"//", ( TCHAR* )"/" },
+	{ ( TCHAR* )"()", ( TCHAR* )"" },
+	{ NULL, NULL }
+};
 
 static void patchDir( char* str, size_t strSize )
 {
-	size_t len;
-	char szWinUsProfile[64];
-	char szMirPath[MAX_PATH], szProfilePath[MAX_PATH];
-	szWinUsProfile[0] = szMirPath[0] = '\0';
+	REPLACEVARSDATA dat = { 0 };
+	dat.cbSize = sizeof( dat );
+	dat.variables = sttVarsToReplace;
 
-	//Path
-	GetModuleFileNameA(NULL, szMirPath, sizeof(szMirPath));
-	PathRemoveFileSpecA(szMirPath);
-	GetEnvironmentVariableA("USERPROFILE", szWinUsProfile, SIZEOF(szWinUsProfile));
-	CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+	char* result = ( char* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)str, (LPARAM)&dat );
+	if ( result ) {
+		strncpy( str, result, strSize );
+		mir_free( result );
+	}
 
-	ReplaceStr(str, strSize, "%userprofile%", szWinUsProfile);
-	ReplaceStr(str, strSize, "%miranda_path%", szMirPath);
-	ReplaceStr(str, strSize, "%miranda_profile%", szProfilePath);
-
-	len = lstrlenA( str );
+	size_t len = lstrlenA( str );
 	if ( len+1 < strSize && str[len-1] != '\\' )
 		lstrcpyA( str+len, "\\" );
 }
@@ -157,40 +142,14 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir, BOOL pat
 		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s\\%%userid%%", Translate("Received Files"));
 
 	if ( hContact ) {
-		CONTACTINFO ci;
-		char szNick[64];
-		char szUsername[64];
-		char szProto[64];
-		szUsername[0] = '\0';
-
-		ZeroMemory(&ci, sizeof(ci));
-		ci.cbSize = sizeof(ci);
-		ci.hContact = hContact;
-		ci.szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-		ci.dwFlag = CNF_UNIQUEID;
-		mir_snprintf(szProto, SIZEOF(szProto), "%s", ci.szProto);
-		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
-			switch (ci.type) {
-			case CNFT_ASCIIZ:
-				mir_snprintf(szUsername, SIZEOF(szUsername), "%s", ci.pszVal);
-				mir_free(ci.pszVal);
-				break;
-			case CNFT_DWORD:
-				mir_snprintf(szUsername, SIZEOF(szUsername), "%u", ci.dVal);
-				break;
-		}	}
-
-		mir_snprintf(szNick, SIZEOF(szNick), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
-		if (lstrlenA(szUsername)==0)
-			mir_snprintf(szUsername, SIZEOF(szUsername), "%s", (char*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME,(WPARAM)hContact,0));
-
-		RemoveInvalidFilenameChars(szProto);
-		RemoveInvalidFilenameChars(szNick);
-		RemoveInvalidFilenameChars(szUsername);
-		ReplaceStr(szTemp, sizeof(szTemp), "%nick%", szNick);
-		ReplaceStr(szTemp, sizeof(szTemp), "%userid%", szUsername);
-		ReplaceStr(szTemp, sizeof(szTemp), "%proto%", szProto);
-	}
+		REPLACEVARSDATA dat = { 0 };
+		dat.cbSize = sizeof( dat );
+		dat.hContact = hContact;
+		char* result = ( char* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)szTemp, (LPARAM)&dat );
+		if ( result ) {
+			strncpy( szTemp, result, SIZEOF(szTemp));
+			mir_free( result );
+	}	}
 
 	if (patchVars)
 		patchDir( szTemp, SIZEOF(szTemp));
@@ -211,10 +170,6 @@ void GetReceivedFilesDir(char *szDir,int cchDir)
 
 	if ( !szTemp[0] )
 		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s", Translate("Received Files"));
-
-	ReplaceStr( szTemp, SIZEOF(szTemp), "///", "//");
-	ReplaceStr( szTemp, SIZEOF(szTemp), "//", "/");
-	ReplaceStr( szTemp, SIZEOF(szTemp), "()", "");
 
 	patchDir( szTemp, SIZEOF(szTemp));
 	lstrcpynA( szDir, szTemp, cchDir );

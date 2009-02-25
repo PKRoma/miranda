@@ -21,10 +21,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+
 #include "../srfile/file.h"
 
 static char szMirandaPath[MAX_PATH];
 static char szMirandaPathLower[MAX_PATH];
+
+static int replaceVars(WPARAM wParam, LPARAM lParam);
 
 static int pathIsAbsolute(char *path)
 {
@@ -209,6 +214,201 @@ int InitPathUtilsW(void)
 }
 #endif
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Variables parser
+
+#define XSTR(target, s) _xstrselect(target, s, _T(s))
+
+static __forceinline int _xcscmp(const char *s1, const char *s2) { return strcmp(s1, s2); }
+static __forceinline int _xcsncmp(const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
+static __forceinline int _xcslen(const char *s1) { return strlen(s1); }
+static __forceinline char *_xcscpy(char *s1, const char *s2) { return strcpy(s1, s2); }
+static __forceinline char *_xcsncpy(char *s1, const char *s2, int n) { return strncpy(s1, s2, n); }
+static __forceinline char *_xstrselect(char *, char *s1, TCHAR *s2) { return s1; }
+static __forceinline char *_itox(char *, int a) { return itoa(a, (char *)mir_alloc(sizeof(char)*20), 10); }
+static __forceinline char *mir_a2x(char *, char *s) { return mir_strdup(s); }
+static __forceinline char *GetContactNickX(char *, HANDLE hContact)
+{
+	return mir_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
+}
+static __forceinline char *GetEnvironmentVariableX(char *variable)
+{
+	char result[512];
+	if (GetEnvironmentVariableA(variable, result, SIZEOF(result)))
+		return mir_strdup(result);
+	return NULL;
+}
+static __forceinline char *GetModulePathX(char *, HMODULE hModule)
+{
+	char result[MAX_PATH];
+	GetModuleFileNameA(hModule, result, sizeof(result));
+	PathRemoveFileSpecA(result);
+	return mir_strdup(result);
+}
+
+#ifdef _UNICODE
+static __forceinline int _xcscmp(const TCHAR *s1, const TCHAR *s2) { return _tcscmp(s1, s2); }
+static __forceinline int _xcsncmp(const TCHAR *s1, const TCHAR *s2, int n) { return _tcsncmp(s1, s2, n); }
+static __forceinline int _xcslen(const TCHAR *s1) { return _tcslen(s1); }
+static __forceinline TCHAR *_xcscpy(TCHAR *s1, const TCHAR *s2) { return _tcscpy(s1, s2); }
+static __forceinline TCHAR *_xcsncpy(TCHAR *s1, const TCHAR *s2, int n) { return _tcsncpy(s1, s2, n); }
+static __forceinline TCHAR *_xstrselect(TCHAR *, char *s1, TCHAR *s2) { return s2; }
+static __forceinline TCHAR *_itox(TCHAR *, int a) { return _itot(a, (TCHAR *)mir_alloc(sizeof(TCHAR)*20), 10); }
+static __forceinline TCHAR *mir_a2x(TCHAR *, char *s) { return mir_a2t(s); }
+static __forceinline TCHAR *GetContactNickX(TCHAR *, HANDLE hContact)
+{
+	return mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+}
+static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
+{
+	TCHAR result[512];
+	if (GetEnvironmentVariable(variable, result, SIZEOF(result)))
+		return mir_tstrdup(result);
+	return NULL;
+}
+static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
+{
+	TCHAR result[MAX_PATH];
+	GetModuleFileName(hModule, result, sizeof(result));
+	PathRemoveFileSpec(result);
+	return mir_tstrdup(result);
+}
+#endif
+
+template<typename XCHAR>
+XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
+{
+	XCHAR *theValue = NULL;
+	XCHAR *theKey = (XCHAR *)_alloca(sizeof(XCHAR) * (keyLength + 1));
+	_xcsncpy(theKey, key, keyLength);
+	theKey[keyLength] = 0;
+
+	if (hContact) {
+		if (!_xcscmp(theKey, XSTR(key, "nick")))
+			theValue = GetContactNickX(key, hContact);
+		else if (!_xcscmp(theKey, XSTR(key, "proto")))
+			theValue = mir_a2x(key, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
+		else if (!_xcscmp(theKey, XSTR(key, "userid"))) {
+			CONTACTINFO ci = {0};
+			ci.cbSize = sizeof(ci);
+			ci.hContact = hContact;
+			ci.szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+			ci.dwFlag = CNF_UNIQUEID;
+			if (sizeof(XCHAR) == sizeof(WCHAR)) ci.dwFlag |= CNF_UNICODE;
+			if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+				switch (ci.type) {
+				case CNFT_ASCIIZ:
+					theValue = (XCHAR *)ci.pszVal;
+					break;
+				case CNFT_DWORD:
+					theValue = _itox(key, ci.dVal);
+					break;
+		}	}	}
+	}
+	else {
+		if (!theValue) {
+			if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
+				theValue = GetModulePathX(key, NULL);
+			else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
+				char szProfilePath[MAX_PATH];
+				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+				theValue = mir_a2x(key, szProfilePath);
+		}	}
+
+		if (!theValue)
+			theValue = GetEnvironmentVariableX(theKey);
+	}
+
+	return theValue;
+}
+
+template<typename XCHAR>
+XCHAR *GetVariableFromArray(REPLACEVARSARRAY *vars, XCHAR *key, int keyLength, HANDLE hContact, bool *bFree)
+{
+	*bFree = false;
+	for (REPLACEVARSARRAY *var = vars; var && var->lptzKey; ++var)
+		if ((_xcslen((XCHAR *)var->lptzKey) == keyLength) && !_xcsncmp(key, (XCHAR *)var->lptzKey, keyLength))
+			return (XCHAR *)var->lptzValue;
+
+	*bFree = true;
+	return GetInternalVariable(key, keyLength, hContact);
+}
+
+template<typename XCHAR>
+XCHAR *ReplaceVariables(XCHAR *str, REPLACEVARSDATA *data)
+{
+	if (!str)
+		return NULL;
+
+	XCHAR *p;
+	XCHAR *varStart = 0;
+	int length = 0;
+	bool bFree;
+
+	for (p = str; *p; ++p) {
+		if (*p == '%') {
+			if (varStart) {
+				if (p == varStart)
+					length++;
+				else if (XCHAR *value = GetVariableFromArray(data->variables, varStart, p-varStart, data->hContact, &bFree)) {
+					length += _xcslen(value);
+					if (bFree) mir_free(value);
+				}
+				else // variable not found
+					length += p-varStart+2;
+
+				varStart = 0;
+			}
+			else varStart = p+1;
+		}
+		else if (!varStart)
+			length++;
+	}
+
+	XCHAR *result = (XCHAR *)mir_alloc(sizeof(XCHAR) * (length + 1));
+	XCHAR *q = result;
+
+	for (p = str; *p; ++p) {
+		if (*p == '%') {
+			if (varStart) {
+				if (p == varStart)
+					*q++ = '%';
+				else if (XCHAR *value = GetVariableFromArray(data->variables, varStart, p-varStart, data->hContact, &bFree)) {
+					_xcscpy(q, value);
+					q += _xcslen(value);
+					if (bFree) mir_free(value);
+				}
+				else {
+					// variable not found
+					_xcsncpy(q, varStart-1, p-varStart+2);
+					q += p-varStart+2;
+				}
+				varStart = 0;
+			}
+			else varStart = p+1;
+		}
+		else if (!varStart)
+			*q++ = *p;
+	}
+
+	*q = 0;
+
+	return result;
+}
+
+static int replaceVars(WPARAM wParam, LPARAM lParam)
+{
+	REPLACEVARSDATA *data = (REPLACEVARSDATA *)lParam;
+	if (!(data->dwFlags & RVF_UNICODE))
+		return (int)ReplaceVariables<char>((char *)wParam, data);
+
+#ifdef _UNICODE
+	return (int)ReplaceVariables<WCHAR>((WCHAR *)wParam, data);
+#else
+	return NULL;
+#endif
+}
+
 int InitPathUtils(void)
 {
 	char *p = 0;
@@ -221,6 +421,7 @@ int InitPathUtils(void)
 	CreateServiceFunction(MS_UTILS_PATHTORELATIVE, pathToRelative);
 	CreateServiceFunction(MS_UTILS_PATHTOABSOLUTE, pathToAbsolute);
 	CreateServiceFunction(MS_UTILS_CREATEDIRTREE, createDirTree);
+	CreateServiceFunction(MS_UTILS_REPLACEVARS, replaceVars);
 #ifdef _UNICODE
 	return InitPathUtilsW();
 #else
