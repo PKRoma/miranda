@@ -33,8 +33,9 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 {
 	if(snac.subcmp(0x0003))
 	{
-		char* server=0;
+		char* server=NULL;
 		int address=0;
+        unsigned char use_ssl=0;
 		while(address<snac.len())
 		{
 			TLV tlv(snac.val(address));
@@ -51,7 +52,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 					port = (unsigned short)atol(delim+1);
 					*delim = 0;
 				}
-				hServerConn = aim_connect(server, port, !getByte( AIM_KEY_DSSL, 0), "bos.oscar.aol.com");
+				hServerConn = aim_connect(server, port, use_ssl != 0, "bos.oscar.aol.com");
 				delete[] server;
 				if(hServerConn)
 				{
@@ -72,6 +73,10 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
                 char* email = tlv.dup();
                 setString(AIM_KEY_EM, email);
                 delete[] email;
+            }
+			else if(tlv.cmp(0x008e))
+            {
+                use_ssl=tlv.ubyte();
             }
 			address+=tlv.len()+4;
 		}

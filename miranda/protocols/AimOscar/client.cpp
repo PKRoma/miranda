@@ -38,10 +38,10 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
                                 const char* country, const char* username, const char* password)
 {
     unsigned short offset=0;
-    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*13+MD5_HASH_LENGTH+strlen(username)+strlen(AIM_CLIENT_ID_STRING)+15+strlen(language)+strlen(country));
     mir_md5_byte_t pass_hash[16];
     mir_md5_byte_t auth_hash[16];
     mir_md5_state_t state;
+    
     mir_md5_init(&state);
     mir_md5_append(&state,(const mir_md5_byte_t *)password, strlen(password));
     mir_md5_finish(&state,pass_hash);
@@ -50,6 +50,9 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     mir_md5_append(&state,(mir_md5_byte_t*)pass_hash,MD5_HASH_LENGTH);
     mir_md5_append(&state,(mir_md5_byte_t*)AIM_MD5_STRING, sizeof(AIM_MD5_STRING)-1);
     mir_md5_finish(&state,auth_hash);
+
+    char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*14+MD5_HASH_LENGTH+strlen(username)+strlen(AIM_CLIENT_ID_STRING)+15+strlen(language)+strlen(country));
+
     aim_writesnac(0x17,0x02,offset,buf);
     aim_writetlv(0x01,(unsigned short)strlen(username),username,offset,buf);
     aim_writetlv(0x25,MD5_HASH_LENGTH,(char*)auth_hash,offset,buf);
@@ -65,6 +68,8 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
     aim_writetlv(0x0E,(unsigned short)strlen(country),country,offset,buf);
     aim_writetlvchar(0x4A,getByte(AIM_KEY_FSC, 0) ? 3 : 1,offset,buf);
 //    aim_writetlvchar(0x94,0,offset,buf);
+    if (!getByte( AIM_KEY_DSSL, 0))
+        aim_writetlv(0x8c,0,NULL,offset,buf);                       // Request SSL connection
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
