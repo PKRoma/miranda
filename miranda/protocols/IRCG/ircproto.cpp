@@ -954,17 +954,8 @@ int __cdecl CIrcProto::SetStatus( int iNewStatus )
 
 int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 {
-	if ( !bChatInstalled ) {
-		MIRANDASYSTRAYNOTIFY msn;
-		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
-		msn.szProto = m_szModuleName;
-		msn.tszInfoTitle = TranslateT( "Information" );
-		msn.tszInfo = TranslateT( "This protocol is dependent on another plugin named \'Chat\'\nPlease download it from the Miranda IM website!" );
-		msn.dwInfoFlags = NIIF_ERROR | NIIF_INTERN_UNICODE;
-		msn.uTimeout = 15000;
-		CallService( MS_CLIST_SYSTRAY_NOTIFY, 0, ( LPARAM )&msn );
+	if ( !bChatInstalled )
 		return 0;
-	}
 
 	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(m_network) < 1 ) {
 		if (lstrlen(m_nick) > 0 && !m_disableDefaultServer) {
