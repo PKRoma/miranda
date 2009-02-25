@@ -44,11 +44,22 @@ int getProfilePath(char * buf, size_t cch)
 	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
 	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
+
+    char tmp = profiledir[9]; profiledir[9] = 0;
+    bool isAppData = _stricmp(profiledir, "%appdata%") == 0;
+    profiledir[9] = tmp;
+
+    if (isAppData && SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, exprofiledir)))
+    {
+        strncat(exprofiledir, profiledir+9, SIZEOF(exprofiledir) - strlen(exprofiledir)); 
+        exprofiledir[SIZEOF(exprofiledir)-1] = 0;
+        strcpy(profiledir, exprofiledir);
+    }
+
 	ExpandEnvironmentStringsA( profiledir, exprofiledir, SIZEOF( exprofiledir ));
 	if ( _fullpath( profiledir, exprofiledir, SIZEOF( profiledir )) != 0 ) {
 		DWORD dw;
 		CreateDirectoryTree( profiledir );
-		CreateDirectoryA( profiledir, NULL );
 		dw = GetFileAttributesA( profiledir );
 		if ( dw != INVALID_FILE_ATTRIBUTES && dw & FILE_ATTRIBUTE_DIRECTORY ) {
 			strncpy(buf, profiledir, cch);
