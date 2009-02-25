@@ -22,10 +22,20 @@ Contents
 --------------------------
 * New in 0.7.14
 Bugfixes:
+ - Windows compatibility improvements
+ - Registry key no longer written on launch of Miranda IM
+ - Improved keyboard support in import dialog
+ - Improved hotkey support in delete contact dialog
+ - Fixed issue with failed searches
+
+
+* New in 0.7.14
+Bugfixes:
  - AIM: Fixed timeout issue
  - ICQ: Minor packet issue
  - ICQ: Login enhancements
  - Fix typo in sound options
+
 
 * New in 0.7.13
 Enhancements:
