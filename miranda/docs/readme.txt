@@ -20,7 +20,7 @@ Contents
 
 1. Changes in this version
 --------------------------
-* New in 0.7.14
+* New in 0.7.15
 Bugfixes:
  - Windows compatibility improvements
  - Registry key no longer written on launch of Miranda IM
