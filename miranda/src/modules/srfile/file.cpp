@@ -220,26 +220,26 @@ static void RemoveUnreadFileEvents(void)
 	}
 }
 
+static void AddContactMenuItem( PROTOACCOUNT* pa )
+{
+	if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000020000;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
+		mi.pszName = LPGEN("&File");
+		mi.pszService = MS_FILE_SENDFILE;
+		mi.flags = CMIF_ICONFROMICOLIB;
+		if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
+			mi.flags |= CMIF_NOTOFFLINE;
+		mi.pszContactOwner = pa->szModuleName;
+		CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
+}	}
+
 static int SRFileModulesLoaded(WPARAM, LPARAM)
 {
-	int i;
-
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000020000;
-	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
-	mi.pszName = LPGEN("&File");
-	mi.pszService = MS_FILE_SENDFILE;
-
-	for ( i=0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[i];
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
-			mi.flags = CMIF_ICONFROMICOLIB;
-			if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
-				mi.flags |= CMIF_NOTOFFLINE;
-			mi.pszContactOwner = pa->szModuleName;
-			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	}	}
+	for ( int i=0; i < accounts.getCount(); i++ )
+		AddContactMenuItem( accounts[i] );
 
 	RemoveUnreadFileEvents();
 	return 0;
@@ -247,25 +247,9 @@ static int SRFileModulesLoaded(WPARAM, LPARAM)
 
 static int SRFileAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+	if ( eventCode == PRAC_ADDED )
+		AddContactMenuItem(( PROTOACCOUNT* )lParam );
 
-	switch( eventCode ) {
-	case PRAC_ADDED:
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_1, 0 ) & PF1_FILESEND ) {
-			CLISTMENUITEM mi = { 0 };
-			mi.cbSize = sizeof(mi);
-			mi.position = -2000020000;
-			mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
-			mi.pszName = LPGEN("&File");
-			mi.pszService = MS_FILE_SENDFILE;
-			mi.flags = CMIF_ICONFROMICOLIB;
-			if ( !( CallProtoService( pa->szModuleName, PS_GETCAPS,PFLAGNUM_4, 0 ) & PF4_OFFLINEFILES ))
-				mi.flags |= CMIF_NOTOFFLINE;
-			mi.pszContactOwner = pa->szModuleName;
-			CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-		}
-		break;
-	}
 	return 0;
 }
 

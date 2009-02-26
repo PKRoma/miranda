@@ -112,22 +112,24 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static void AddContactMenuItem( PROTOACCOUNT* pa )
+{
+	if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_URLSEND ) {
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.position = -2000040000;
+		mi.flags = CMIF_ICONFROMICOLIB;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
+		mi.pszName = LPGEN("Web Page Address (&URL)");
+		mi.pszService = MS_URL_SENDURL;
+		mi.pszContactOwner = pa->szModuleName;
+		CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
+}	}
+
 static int SRUrlModulesLoaded(WPARAM, LPARAM)
 {
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.position = -2000040000;
-	mi.flags = CMIF_ICONFROMICOLIB;
-	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
-	mi.pszName = LPGEN("Web Page Address (&URL)");
-	mi.pszService = MS_URL_SENDURL;
-
-	for ( int i = 0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[i];
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_URLSEND ) {
-			mi.pszContactOwner = pa->szModuleName;
-			CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-	}	}
+	for ( int i = 0; i < accounts.getCount(); i++ )
+		AddContactMenuItem( accounts[i] );
 
 	RestoreUnreadUrlAlerts();
 	return 0;
@@ -135,23 +137,9 @@ static int SRUrlModulesLoaded(WPARAM, LPARAM)
 
 static int SRUrlAccountsChanged( WPARAM eventCode, LPARAM lParam )
 {
-	PROTOACCOUNT* pa = (PROTOACCOUNT*)lParam;
+	if ( eventCode == PRAC_ADDED )
+		AddContactMenuItem(( PROTOACCOUNT* )lParam );
 
-	switch( eventCode ) {
-	case PRAC_ADDED:
-		if ( CallProtoService( pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_URLSEND ) {
-			CLISTMENUITEM mi = { 0 };
-			mi.cbSize = sizeof(mi);
-			mi.position = -2000040000;
-			mi.flags = CMIF_ICONFROMICOLIB;
-			mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
-			mi.pszName = LPGEN("Web Page Address (&URL)");
-			mi.pszService = MS_URL_SENDURL;
-			mi.pszContactOwner = pa->szModuleName;
-			CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-		}
-		break;
-	}
 	return 0;
 }
 

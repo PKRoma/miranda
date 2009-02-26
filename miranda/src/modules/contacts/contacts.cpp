@@ -60,7 +60,7 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 			ci->pszVal = dbv.ptszVal;
 			return 0;
 		}
-    DBFreeVariant( &dbv );
+		DBFreeVariant( &dbv );
 	}
 
 	if ( DBGetContactSetting( ci->hContact, ci->szProto, setting, &dbv ))
