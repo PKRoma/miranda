@@ -39,6 +39,7 @@ typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD
 pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
 
 pfnSHAutoComplete shAutoComplete;
+pfnSHGetFolderPathA shGetFolderPathA;
 
 pfnOpenInputDesktop openInputDesktop;
 pfnCloseDesktop closeDesktop;
@@ -527,7 +528,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 
 	hMirandaInst = hInstance;
 
-    setlocale(LC_ALL, "");
+	setlocale(LC_ALL, "");
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -538,11 +539,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	closeDesktop = (pfnCloseDesktop)GetProcAddress (hUser32, "CloseDesktop");
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
 
-    shAutoComplete = (pfnSHAutoComplete)GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
+	shAutoComplete = (pfnSHAutoComplete)GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
+	shGetFolderPathA = (pfnSHGetFolderPathA)GetProcAddress(GetModuleHandleA("shlwapi"),"SHGetFolderPathA");
 
 	hThemeAPI = LoadLibraryA("uxtheme.dll");
-	if ( hThemeAPI )
-	{
+	if ( hThemeAPI ) {
 		openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI,"OpenThemeData");
 		isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
 		drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
@@ -557,8 +558,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	InitialiseModularEngine();
 	ParseCommandLine();
 
-	if (LoadDefaultModules())
-	{
+	if (LoadDefaultModules()) {
 		NotifyEventHooks(hShutdownEvent,0,0);
 		UnloadDefaultModules();
 		UnloadNewPluginsModule();
@@ -783,8 +783,7 @@ int LoadSystemModule(void)
 {
 	InitCommonControls();
 
-	if (IsWinVerXPPlus())
-	{
+	if (IsWinVerXPPlus()) {
 		hAPCWindow=CreateWindowEx(0,_T("ComboLBox"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL);
 		SetClassLong(hAPCWindow, GCL_STYLE, GetClassLong(hAPCWindow, GCL_STYLE) | CS_DROPSHADOW);
 		DestroyWindow(hAPCWindow);
