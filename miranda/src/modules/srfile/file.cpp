@@ -298,7 +298,7 @@ int LoadSendRecvFileModule(void)
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_FILE );
 	mi.position = 1900000000;
-	mi.pszName = LPGEN("&File Transfers...");
+	mi.pszName = LPGEN("File &Transfers...");
 	mi.pszService = "FtMgr/Show"; //MS_PROTO_SHOWFTMGR;
 	CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 
