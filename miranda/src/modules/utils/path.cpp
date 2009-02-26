@@ -238,6 +238,13 @@ static __forceinline char *GetEnvironmentVariableX(char *variable)
 		return mir_strdup(result);
 	return NULL;
 }
+static __forceinline char *SHGetSpecialFolderPathX(int iCSIDL, char* var)
+{
+	char result[512];
+	if (SHGetSpecialFolderPathA(NULL, result, iCSIDL, FALSE))
+		return mir_strdup(result);
+	return NULL;
+}
 static __forceinline char *GetModulePathX(char *, HMODULE hModule)
 {
 	char result[MAX_PATH];
@@ -263,6 +270,13 @@ static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
 {
 	TCHAR result[512];
 	if (GetEnvironmentVariable(variable, result, SIZEOF(result)))
+		return mir_tstrdup(result);
+	return NULL;
+}
+static __forceinline TCHAR *SHGetSpecialFolderPathX(int iCSIDL, TCHAR* var)
+{
+	TCHAR result[512];
+	if (SHGetSpecialFolderPath(NULL, result, iCSIDL, FALSE))
 		return mir_tstrdup(result);
 	return NULL;
 }
@@ -309,6 +323,10 @@ XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
 		if (!theValue) {
 			if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
 				theValue = GetModulePathX(key, NULL);
+			else if (!_xcscmp(theKey, XSTR(key, "mydocuments")))
+				theValue = SHGetSpecialFolderPathX(CSIDL_PERSONAL, theKey);
+			else if (!_xcscmp(theKey, XSTR(key, "desktop")))
+				theValue = SHGetSpecialFolderPathX(CSIDL_DESKTOPDIRECTORY, theKey);
 			else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
 				char szProfilePath[MAX_PATH];
 				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
