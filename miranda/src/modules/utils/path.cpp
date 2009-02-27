@@ -331,6 +331,7 @@ XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
 				char szProfilePath[MAX_PATH];
 				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
 				theValue = mir_a2x(key, szProfilePath);
+			}
 			else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename"))) {
 				char szProfileName[MAX_PATH];
 				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
