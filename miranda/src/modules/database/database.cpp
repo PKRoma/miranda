@@ -227,11 +227,9 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 	char buf[256];
 	int err=0;	
 	// check if the file already exists
-	HANDLE hFile=CreateFileA(profile, GENERIC_READ|GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 	char * file = strrchr(profile,'\\');
 	file++;
-	if ( hFile != INVALID_HANDLE_VALUE ) {		
-		CloseHandle(hFile);		
+	if (_access(profile, 6) == 0) {		
 		mir_snprintf(buf, SIZEOF(buf), Translate("The profile '%s' already exists. Do you want to move it to the "
 			"Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\nWARNING: A profile may contain confidential information and should be properly deleted."),file);
 		// file already exists!
@@ -296,6 +294,19 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 	return DBPE_CONT;
 }
 
+// enumerate all plugins that had valid DatabasePluginInfo()
+static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
+{
+	char *szProfile = (char*)lParam;
+	if (dblink && dblink->cbSize == sizeof(DATABASELINK)) 
+    {
+		int err;
+		if (dblink->makeDatabase(szProfile, &err) == 0) 
+            return dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
+	}
+	return DBPE_CONT;
+}
+
 typedef struct {
 	char * profile;
 	UINT msg;
@@ -345,8 +356,12 @@ int LoadDatabaseModule(void)
 		PLUGIN_DB_ENUM dbe;
 
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
-		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 		dbe.lParam=(LPARAM)szProfile;
+
+        if (_access(szProfile, 0))
+		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
+        else
+		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 
 		// find a driver to support the given profile
 		rc=CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
@@ -361,9 +376,7 @@ int LoadDatabaseModule(void)
 			}
 			case 1: {
 				// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
-				HANDLE hFile;
-				hFile=CreateFileA(szProfile,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
-				if ( hFile == INVALID_HANDLE_VALUE ) {
+				if (_access(szProfile, 6)) {
 					if ( !FindMirandaForProfile(szProfile) ) {
 						// file is locked, tried to find miranda window, but that failed too.
 					}
@@ -373,7 +386,6 @@ int LoadDatabaseModule(void)
 					char * p = strrchr(szProfile,'\\');
 					mir_snprintf(buf,SIZEOF(buf),Translate("Miranda was unable to open '%s', its in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
 					MessageBoxA(0,buf,Translate("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
-					CloseHandle(hFile);					
 				}
 				break;
 			}
