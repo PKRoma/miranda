@@ -39,7 +39,8 @@ typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD
 pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
 
 pfnSHAutoComplete shAutoComplete;
-pfnSHGetFolderPathA shGetFolderPathA;
+pfnSHGetSpecialFolderPathA shGetSpecialFolderPathA;
+pfnSHGetSpecialFolderPathW shGetSpecialFolderPathW;
 
 pfnOpenInputDesktop openInputDesktop;
 pfnCloseDesktop closeDesktop;
@@ -524,7 +525,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 {
 	DWORD myPid=0;
 	int messageloop=1;
-	HMODULE hUser32, hThemeAPI;
+	HMODULE hUser32, hThemeAPI, hShFolder;
 
 	hMirandaInst = hInstance;
 
@@ -540,7 +541,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
 
 	shAutoComplete = (pfnSHAutoComplete)GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
-	shGetFolderPathA = (pfnSHGetFolderPathA)GetProcAddress(GetModuleHandleA("shlwapi"),"SHGetFolderPathA");
+
+    hShFolder = GetModuleHandleA("shell32");
+	shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(hShFolder,"SHGetSpecialFolderPathA");
+    shGetSpecialFolderPathW = (pfnSHGetSpecialFolderPathW)GetProcAddress(hShFolder,"SHGetSpecialFolderPathW");
+    if (shGetSpecialFolderPathA == NULL)
+    {
+        hShFolder = LoadLibraryA("ShFolder.dll");
+	    shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(hShFolder,"SHGetSpecialFolderPathA");
+	    shGetSpecialFolderPathW = (pfnSHGetSpecialFolderPathW)GetProcAddress(hShFolder,"SHGetSpecialFolderPathW");
+    }
 
 	hThemeAPI = LoadLibraryA("uxtheme.dll");
 	if ( hThemeAPI ) {

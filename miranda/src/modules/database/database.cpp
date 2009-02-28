@@ -40,17 +40,10 @@ int getProfilePath(char * buf, size_t cch)
 	dat.cbSize = sizeof( dat );
    	
     char* exprofiledir = (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)profiledir, (LPARAM)&dat);
-    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)(exprofiledir ? exprofiledir : ""), (LPARAM)buf);
+    size_t len = pathToAbsolute(exprofiledir[0] ? exprofiledir : ".", buf, NULL);
     mir_free(exprofiledir);
 
-    for(size_t len = strlen(buf); len--;)
-    {
-        if (buf[len] == '\\' || buf[len] == '/')
-            buf[len] = 0;
-        else
-            break;
-    }
-
+    if (len < (cch-1)) strcat(buf, "\\");
 	return 0;
 }
 
@@ -67,7 +60,7 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	unsigned int found = 0;
 
 	char searchspec[MAX_PATH];
-    mir_snprintf(searchspec, SIZEOF(searchspec), "%s\\*.dat", profiledir);
+    mir_snprintf(searchspec, SIZEOF(searchspec), "%s*.dat", profiledir);
 	
 	WIN32_FIND_DATAA ffd;
     HANDLE hFind = FindFirstFileA(searchspec, &ffd);
@@ -76,11 +69,11 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
         do
         {
 		    // make sure the first hit is actually a *.dat file
-		    if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
+		    if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
 		    {
 			    // copy the profile name early cos it might be the only one
-			    if (++found == 1) 
-                    mir_snprintf(szProfile, cch, "%s\\%s", profiledir, ffd.cFileName);
+			    if (++found == 1 && szProfile[0] == 0) 
+                    mir_snprintf(szProfile, cch, "%s%s", profiledir, ffd.cFileName);
 		    }
         }
 	    while (FindNextFileA(hFind, &ffd));
@@ -88,7 +81,7 @@ static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * n
 	}
 
 	if (noProfiles) 
-		*noProfiles = found != 0;
+		*noProfiles = found == 0;
 
     return found == 1;
 }
@@ -136,7 +129,9 @@ static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 	int rc = 0;
 	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
-        mir_snprintf(szProfile, cch, "%s\\%s%s", profiledir, buf, isValidProfileName(buf) ? "" : ".dat");
+        pathToAbsolute(buf, szProfile, profiledir); 
+        if (!isValidProfileName(szProfile))
+            strcat(szProfile, ".dat");
 	}
 	return rc;
 }
@@ -162,12 +157,12 @@ static int getProfileAutoRun(char * szProfile, size_t cch, char * profiledir)
 
 	if (szDefaultMirandaProfile[0] == 0) return 0;
 
-	mir_snprintf(szProfile, cch, "%s\\%s.dat", profiledir, szDefaultMirandaProfile);
+	mir_snprintf(szProfile, cch, "%s%s.dat", profiledir, szDefaultMirandaProfile);
 
     return 1;
 }
 
-static bool shouldAutoCreate(void)
+bool shouldAutoCreate(void)
 {
 	char ac[32];
 	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
@@ -204,7 +199,7 @@ static int getProfile(char * szProfile, size_t cch)
 	if (getProfileCmdLine(szProfile, cch, profiledir)) return 1;
 	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
 
-    if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+    if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
@@ -233,7 +228,7 @@ int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg)
 			sf.wFunc=FO_DELETE;
 			sf.pFrom=szName;
 			sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
-			mir_snprintf(szName, SIZEOF(szName),"%s\0",profile);
+			mir_snprintf(szName, SIZEOF(szName),"%s",profile);
 			if ( SHFileOperationA(&sf) != 0 ) {
 				mir_snprintf(buf, SIZEOF(buf),Translate("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
 				MessageBoxA(0,buf,Translate("Problem moving profile"),MB_ICONINFORMATION|MB_OK);
@@ -365,13 +360,9 @@ int LoadDatabaseModule(void)
 				MessageBoxA(0,buf,Translate("No profile support installed!"),MB_OK | MB_ICONERROR);
 				break;
 			}
-			case 1: {
+			case 1:
 				// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
-				if (_access(szProfile, 6)) {
-					if ( !FindMirandaForProfile(szProfile) ) {
-						// file is locked, tried to find miranda window, but that failed too.
-					}
-				} else {
+				if ( !FindMirandaForProfile(szProfile) ) {
 					// file isn't locked, just no driver could open it.
 					char buf[256];
 					char * p = strrchr(szProfile,'\\');
@@ -379,7 +370,6 @@ int LoadDatabaseModule(void)
 					MessageBoxA(0,buf,Translate("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
 				}
 				break;
-			}
 		}
 		iReturn = (rc != 0);
 	}

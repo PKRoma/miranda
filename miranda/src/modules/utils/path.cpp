@@ -33,7 +33,7 @@ static int replaceVars(WPARAM wParam, LPARAM lParam);
 
 static int pathIsAbsolute(char *path)
 {
-	if ( lstrlenA(path) <= 2 )
+	if ( strlen(path) <= 2 )
 		return 0;
 	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\'))
 		return 1;
@@ -65,23 +65,30 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
-	char *pSrc = (char*)wParam;
-	char *pOut = (char*)lParam;
+int pathToAbsolute(char *pSrc, char *pOut, char* base) 
+{
+    if (base == NULL) base = szMirandaPath;
 	if ( !pSrc || !strlen( pSrc ) || strlen( pSrc ) > MAX_PATH )
 		return 0;
-	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' )) {
+	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' && pSrc[0]!='.' )) {
 		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
 		return strlen(pOut);
 	}
 	else if ( pSrc[0] != '\\' ) {
-		mir_snprintf( pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc );
+		mir_snprintf( pOut, MAX_PATH, "%s%s", base, pSrc );
 		return strlen( pOut );
 	}
 	else {
-		mir_snprintf( pOut, MAX_PATH, "%s%s", szMirandaPath, pSrc+1 );
+		mir_snprintf( pOut, MAX_PATH, "%s%s", base, pSrc+1 );
 		return strlen(pOut);
 	}
+}
+
+static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
+	char *pSrc = (char*)wParam;
+	char *pOut = (char*)lParam;
+
+    return pathToAbsolute(pSrc, pOut, szMirandaPath);
 }
 
 int CreateDirectoryTree( const char *szDir )
@@ -241,7 +248,7 @@ static __forceinline char *GetEnvironmentVariableX(char *variable)
 static __forceinline char *SHGetSpecialFolderPathX(int iCSIDL, char* var)
 {
 	char result[512];
-	if (SHGetSpecialFolderPathA(NULL, result, iCSIDL, FALSE))
+	if (shGetSpecialFolderPathA && shGetSpecialFolderPathA(NULL, result, iCSIDL, FALSE))
 		return mir_strdup(result);
 	return NULL;
 }
@@ -284,7 +291,7 @@ static __forceinline TCHAR *GetEnvironmentVariableX(TCHAR *variable)
 static __forceinline TCHAR *SHGetSpecialFolderPathX(int iCSIDL, TCHAR* var)
 {
 	TCHAR result[512];
-	if (SHGetSpecialFolderPath(NULL, result, iCSIDL, FALSE))
+	if (shGetSpecialFolderPath && shGetSpecialFolderPath(NULL, result, iCSIDL, FALSE))
 		return mir_tstrdup(result);
 	return NULL;
 }

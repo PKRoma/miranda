@@ -65,6 +65,7 @@ extern char szDefaultMirandaProfile[MAX_PATH];
 void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
 void SetServiceModePlugin( int idx );
+bool shouldAutoCreate(void);
 
 static void ThemeDialogBackground(HWND hwnd)
 {
@@ -77,7 +78,7 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATAA ffd;
 	char searchspec[MAX_PATH];
-	mir_snprintf(searchspec, SIZEOF(searchspec), "%s\\*.dat", szProfileDir);
+	mir_snprintf(searchspec, SIZEOF(searchspec), "%s*.dat", szProfileDir);
 	hFind = FindFirstFileA(searchspec, &ffd);
 	if ( hFind == INVALID_HANDLE_VALUE )
 		return 0;
@@ -85,7 +86,7 @@ static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARA
 	do {
 		if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName( ffd.cFileName )) {
 			char buf[MAX_PATH];
-			mir_snprintf(buf,SIZEOF(buf),"%s\\%s",szProfileDir, ffd.cFileName);
+			mir_snprintf(buf,SIZEOF(buf),"%s%s",szProfileDir, ffd.cFileName);
 			if ( !callback(buf, ffd.cFileName, lParam ))
 				break;
 		}
@@ -121,22 +122,6 @@ static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 	return DBPE_CONT;
 }
 
-// returns 1 if autocreation of the profile is setup
-static int checkAutoCreateProfile(char * profile, size_t cch)
-{
-	char ac[32];
-	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
-	if (_stricmp(ac,"yes") != 0) return 0;
-
-	if (profile != NULL && cch != 0)
-    {
-		strncpy(profile, szDefaultMirandaProfile, cch); 
-        profile[cch-1] = 0;
-    }
-
-    return szDefaultMirandaProfile[0] != 0;
-}
-
 static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg,GWL_USERDATA);
@@ -169,9 +154,13 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		}
 		// decide if there is a default profile name given in the INI and if it should be used
 		{
-			char profile[MAX_PATH];
-			if (checkAutoCreateProfile(profile, SIZEOF(profile)))
+            if (shouldAutoCreate() || dat->pd->noProfiles)
+            {
+                char* profile = strrchr(dat->pd->szProfile, '\\');
+                if (profile) ++profile;
+                else profile = dat->pd->szProfile;
 				SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
+            }
 		}
 		// focus on the textbox
 		PostMessage( hwndDlg, WM_FOCUSTEXTBOX, 0, 0 );
@@ -204,7 +193,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				if ( szName[0] == 0 )
 					break;
 
-				mir_snprintf( dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, szName );
+				mir_snprintf( dat->pd->szProfile, MAX_PATH, "%s%s.dat", dat->pd->szProfileDir, szName );
 				dat->pd->newProfile = 1;
 				dat->pd->dblink = (DATABASELINK *)SendDlgItemMessage( hwndDlg, IDC_PROFILEDRIVERS, CB_GETITEMDATA, ( WPARAM )curSel, 0 );
 
@@ -418,7 +407,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						item.pszText = profile;
 						item.cchTextMax = SIZEOF(profile);
 						if ( SendMessageA(hwndList, LVM_GETITEMA, 0, (LPARAM)&item) && dat ) {
-							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s\\%s.dat", dat->pd->szProfileDir, profile);
+							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s%s.dat", dat->pd->szProfileDir, profile);
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);
 						}
 						return TRUE;
@@ -470,7 +459,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->opd[i].hwnd = NULL;
 				dat->opd[i].changed = 0;
 				tci.pszText = ( TCHAR* )odp[i].ptszTitle;
-				if (dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL, 0))
+				if (dat->prof->pd->noProfiles || shouldAutoCreate())
 					dat->currentPage = 1;
 				TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
 		}	}

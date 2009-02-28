@@ -28,8 +28,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 typedef HRESULT (STDAPICALLTYPE *pfnSHAutoComplete)(HWND,DWORD);
 extern pfnSHAutoComplete shAutoComplete;
 
-typedef HRESULT (STDAPICALLTYPE *pfnSHGetFolderPathA)(HWND, int, HANDLE, DWORD, LPSTR );
-extern pfnSHGetFolderPathA shGetFolderPathA;
+typedef HRESULT (STDAPICALLTYPE *pfnSHGetSpecialFolderPathA)(HWND, LPSTR,  int, BOOL );
+typedef HRESULT (STDAPICALLTYPE *pfnSHGetSpecialFolderPathW)(HWND, LPWSTR, int, BOOL );
+extern pfnSHGetSpecialFolderPathA shGetSpecialFolderPathA;
+extern pfnSHGetSpecialFolderPathW shGetSpecialFolderPathW;
+
+#ifdef _UNICODE
+#define shGetSpecialFolderPath shGetSpecialFolderPathW
+#else
+#define shGetSpecialFolderPath shGetSpecialFolderPathA
+#endif
 
 typedef HDESK (WINAPI* pfnOpenInputDesktop)( DWORD, BOOL, DWORD );
 extern pfnOpenInputDesktop openInputDesktop;
