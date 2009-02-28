@@ -1341,8 +1341,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "A new version of Miranda IM is now available.  Click the download button to download this new update.",
                     IDC_MESSAGE,7,7,245,21
-    LTEXT           "Current Version:",IDC_NEWVERSIONLABEL,7,47,65,8
-    LTEXT           "My Version:",IDC_STATIC,7,32,65,8
+    LTEXT           "Latest Version:",IDC_NEWVERSIONLABEL,7,47,65,8
+    LTEXT           "Your Version:",IDC_STATIC,7,32,65,8
     LTEXT           "",IDC_CURRENTVERSION,77,32,87,8
 	CONTROL         "",IDC_VERSION,"Hyperlink",WS_TABSTOP,77,47,87,8
     LTEXT           "",IDC_UPDATE,77,47,87,8
