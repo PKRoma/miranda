@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "profilemanager.h"
 #include "../srfile/file.h"
 
+typedef HRESULT (STDAPICALLTYPE *pfnSHGetSpecialFolderPathA)(HWND, LPSTR,  int, BOOL );
+
 // from the plugin loader, hate extern but the db frontend is pretty much tied
 extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
@@ -34,11 +36,10 @@ int getProfilePath(char * buf, size_t cch)
 {
 	char profiledir[MAX_PATH];
 	char exprofiledir[MAX_PATH];
-	char * p = 0;
-    #if defined( _UNICODE )
-    char tmp;
+	char * p = 0, tmp;
     int isAppData;
-    #endif
+	pfnSHGetSpecialFolderPathA shGetSpecialFolderPathA;
+	HANDLE hShFolder = NULL;
     
 	// grab the base location now
 	GetModuleFileNameA(NULL, buf, cch);
@@ -49,18 +50,26 @@ int getProfilePath(char * buf, size_t cch)
 	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
 	// get the string containing envars and maybe relative paths
 	// get rid of the vars 
-    #if defined( _UNICODE )
     tmp = profiledir[9]; profiledir[9] = 0;
-    isAppData = _stricmp(profiledir, "%appdata%") == 0 ? 1 : 0;
+    isAppData = _stricmp(profiledir, "%appdata%") == 0;
     profiledir[9] = tmp;
-    if (isAppData && SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, exprofiledir)))
+
+	shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(GetModuleHandleA("shell32"),"SHGetSpecialFolderPathA");
+    if (shGetSpecialFolderPathA == NULL)
+    {
+        hShFolder = LoadLibraryA("shfolder.dll");
+	    shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(hShFolder,"SHGetSpecialFolderPathA");
+    }
+
+	if (isAppData && shGetSpecialFolderPathA && shGetSpecialFolderPathA(NULL, exprofiledir, CSIDL_APPDATA, FALSE ))
     {
         strncat(exprofiledir, profiledir+9, SIZEOF(exprofiledir) - strlen(exprofiledir));
         exprofiledir[SIZEOF(exprofiledir)-1] = 0;
         strcpy(profiledir, exprofiledir);
     }
-    #endif
-    
+
+	if (hShFolder) FreeLibrary(hShFolder);
+
 	ExpandEnvironmentStringsA( profiledir, exprofiledir, SIZEOF( exprofiledir ));
 	if ( _fullpath( profiledir, exprofiledir, SIZEOF( profiledir )) != 0 ) {
 		DWORD dw;
