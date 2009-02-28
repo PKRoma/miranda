@@ -65,7 +65,6 @@ extern char szDefaultMirandaProfile[MAX_PATH];
 void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
 void SetServiceModePlugin( int idx );
-int checkAutoCreateProfile(char * profile, size_t cch);
 
 static void ThemeDialogBackground(HWND hwnd)
 {
@@ -120,6 +119,22 @@ static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
 	}
 	return DBPE_CONT;
+}
+
+// returns 1 if autocreation of the profile is setup
+static int checkAutoCreateProfile(char * profile, size_t cch)
+{
+	char ac[32];
+	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
+	if (_stricmp(ac,"yes") != 0) return 0;
+
+	if (profile != NULL && cch != 0)
+    {
+		strncpy(profile, szDefaultMirandaProfile, cch); 
+        profile[cch-1] = 0;
+    }
+
+    return szDefaultMirandaProfile[0] != 0;
 }
 
 static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

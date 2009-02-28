@@ -167,23 +167,14 @@ static int getProfileAutoRun(char * szProfile, size_t cch, char * profiledir)
     return 1;
 }
 
-// returns 1 if autocreation of the profile is setup, profile has to be at least MAX_PATH!
-int checkAutoCreateProfile(char * profile, size_t cch)
+static bool shouldAutoCreate(void)
 {
 	char ac[32];
 	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
-	if (_stricmp(ac,"yes") != 0) return 0;
-
-	if (profile != NULL && cch != 0)
-    {
-		strncpy(profile, szDefaultMirandaProfile, cch); 
-        profile[cch-1] = 0;
-    }
-
-    return szDefaultMirandaProfile[0] != 0;
+	return _stricmp(ac, "yes") == 0;
 }
 
-static void getDefaultProfile(void)
+ static void getDefaultProfile(void)
 {
 	char defaultProfile[MAX_PATH];
 	GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, SIZEOF(defaultProfile), mirandabootini);
@@ -208,10 +199,10 @@ static int getProfile(char * szProfile, size_t cch)
 	char profiledir[MAX_PATH];
     PROFILEMANAGERDATA pd = {0};
 
-    getProfilePath(profiledir,SIZEOF(profiledir));
+    getProfilePath(profiledir, SIZEOF(profiledir));
     getDefaultProfile();
-	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
-	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
+	if (getProfileCmdLine(szProfile, cch, profiledir)) return 1;
+	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
 
     if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {		
@@ -358,7 +349,7 @@ int LoadDatabaseModule(void)
 		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
 		dbe.lParam=(LPARAM)szProfile;
 
-        if (_access(szProfile, 0))
+        if (_access(szProfile, 0) && shouldAutoCreate())
 		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
         else
 		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
