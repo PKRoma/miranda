@@ -1,4 +1,4 @@
-set Version=0.7.15
+set Version=0.7.16
 set FileVer=miranda-im-v%Version%-ansi
 rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
