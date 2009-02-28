@@ -28,98 +28,69 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
 extern char mirandabootini[MAX_PATH];
+char szDefaultMirandaProfile[MAX_PATH];
 
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(char * buf, size_t cch)
 {
 	char profiledir[MAX_PATH];
-	char exprofiledir[MAX_PATH];
-	char * p = 0;
-	// grab the base location now
-	GetModuleFileNameA(NULL, buf, cch);
-	p = strrchr(buf, '\\');
-	if ( p != 0 ) *p=0;
-	// change to this location, or "." wont expand properly
-	_chdir(buf);
-	GetPrivateProfileStringA("Database", "ProfileDir", ".", profiledir, SIZEOF(profiledir), mirandabootini);
-	// get the string containing envars and maybe relative paths
-	// get rid of the vars 
+	GetPrivateProfileStringA("Database", "ProfileDir", "", profiledir, SIZEOF(profiledir), mirandabootini);
 
-	char tmp = profiledir[9]; profiledir[9] = 0;
-	bool isAppData = _stricmp(profiledir, "%appdata%") == 0;
-	profiledir[9] = tmp;
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof( dat );
+   	
+    char* exprofiledir = (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)profiledir, (LPARAM)&dat);
+    CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)(exprofiledir ? exprofiledir : ""), (LPARAM)buf);
+    mir_free(exprofiledir);
 
-	if (isAppData && shGetFolderPathA && SUCCEEDED(shGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, exprofiledir))) {
-		strncat(exprofiledir, profiledir+9, SIZEOF(exprofiledir) - strlen(exprofiledir)); 
-		exprofiledir[SIZEOF(exprofiledir)-1] = 0;
-		strcpy(profiledir, exprofiledir);
-	}
+    for(size_t len = strlen(buf); len--;)
+    {
+        if (buf[len] == '\\' || buf[len] == '/')
+            buf[len] = 0;
+        else
+            break;
+    }
 
-	ExpandEnvironmentStringsA( profiledir, exprofiledir, SIZEOF( exprofiledir ));
-	if ( _fullpath( profiledir, exprofiledir, SIZEOF( profiledir )) != 0 ) {
-		DWORD dw;
-		CreateDirectoryTree( profiledir );
-		dw = GetFileAttributesA( profiledir );
-		if ( dw != INVALID_FILE_ATTRIBUTES && dw & FILE_ATTRIBUTE_DIRECTORY ) {
-			strncpy(buf, profiledir, cch);
-			p = strrchr(buf, '\\');
-			// if the char after '\' is null then change '\' to null
-			if ( p != 0 && *(++p)==0 ) *(--p)=0;			
-			return 1;
-		}
-	}
-	// this never happens, usually C:\ is always returned	
 	return 0;
 }
 
 // returns 1 if *.dat spec is matched
-int isValidProfileName(char * name)
+int isValidProfileName(const char *name)
 {
-	char * p = strrchr(name, '.');	
-	if ( p ) {
-		p++;
-		if ( lstrcmpiA( p, "dat" ) == 0 ) { 
-			if ( p[3] == 0 ) return 1; 
-		}
-	}
-	return 0;
+    int len = strlen(name) - 4;
+    return len > 0 && _stricmp(&name[len], ".dat") == 0;
 }
 
 // returns 1 if a single profile (full path) is found within the profile dir
 static int getProfile1(char * szProfile, size_t cch, char * profiledir, BOOL * noProfiles)
 {
-	int rc = 1;
+	unsigned int found = 0;
+
 	char searchspec[MAX_PATH];
+    mir_snprintf(searchspec, SIZEOF(searchspec), "%s\\*.dat", profiledir);
+	
 	WIN32_FIND_DATAA ffd;
-	HANDLE hFind = INVALID_HANDLE_VALUE;
-	unsigned int found=0;
-	mir_snprintf(searchspec,SIZEOF(searchspec),"%s\\*.dat", profiledir);
-	hFind = FindFirstFileA(searchspec, &ffd);
-	if ( hFind != INVALID_HANDLE_VALUE ) 
+    HANDLE hFind = FindFirstFileA(searchspec, &ffd);
+	if (hFind != INVALID_HANDLE_VALUE) 
 	{
-		// make sure the first hit is actually a *.dat file
-		if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
-		{
-			// copy the profile name early cos it might be the only one
-			mir_snprintf(szProfile, cch, "%s\\%s", profiledir, ffd.cFileName);
-			found++;
-			// this might be the only dat but there might be a few wrong things returned before another *.dat
-			while ( FindNextFileA(hFind,&ffd) ) {
-				// found another *.dat, but valid?
-				if ( !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) {
-					rc=0;
-					found++;
-					break;
-				} //if
-			} // while
-		} //if
+        do
+        {
+		    // make sure the first hit is actually a *.dat file
+		    if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName) ) 
+		    {
+			    // copy the profile name early cos it might be the only one
+			    if (++found == 1) 
+                    mir_snprintf(szProfile, cch, "%s\\%s", profiledir, ffd.cFileName);
+		    }
+        }
+	    while (FindNextFileA(hFind, &ffd));
 		FindClose(hFind);
 	}
-	if ( found == 0 && noProfiles != 0 ) { 
-		*noProfiles=TRUE;
-		rc=0;
-	}
-	return rc;
+
+	if (noProfiles) 
+		*noProfiles = found != 0;
+
+    return found == 1;
 }
 
 // returns 1 if something that looks like a profile is there
@@ -130,7 +101,10 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 	char szThisParam[1024];
 	int firstParam=1;
 
-	while(szCmdLine[0]) {
+    REPLACEVARSDATA dat = {0};
+    dat.cbSize = sizeof(dat);
+
+    while(szCmdLine[0]) {
 		if(szCmdLine[0]=='"') {
 			szEndOfParam=strchr(szCmdLine+1,'"');
 			if(szEndOfParam==NULL) break;
@@ -145,7 +119,11 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 		while(*szCmdLine && *szCmdLine<=' ') szCmdLine++;
 		if(firstParam) {firstParam=0; continue;}   //first param is executable name
 		if(szThisParam[0]=='/' || szThisParam[0]=='-') continue;  //no switches supported
-		ExpandEnvironmentStringsA(szThisParam,szProfile,cch);
+
+        char* res = (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szThisParam, (LPARAM)&dat);
+        if (res == NULL) return 0;
+        strncpy(szProfile, res, cch); szProfile[cch-1] = 0;
+        mir_free(res);
 		return 1;
 	}
 	return 0;
@@ -154,25 +132,11 @@ static int getProfileCmdLineArgs(char * szProfile, size_t cch)
 // returns 1 if a valid filename (incl. dat) is found, includes fully qualified path
 static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
 {
-	char buf[MAX_PATH], *cwd;
-	HANDLE hFile;
+	char buf[MAX_PATH];
 	int rc = 0;
 	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
-		if ( !isValidProfileName(buf) ) mir_snprintf(buf, SIZEOF(buf)-5,"%s.dat",buf);
-		// change cwd for the moment to profiledir
-		if ( cwd = _getcwd(NULL, 0) )
-			_chdir(profiledir);
-		// expand the relative to a full path, which might fail
-		if ( _fullpath(szProfile, buf, cch) != 0 ) {
-			hFile=CreateFileA(szProfile, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
-			rc=hFile != INVALID_HANDLE_VALUE;
-			CloseHandle(hFile);
-		}
-		if( cwd ) {
-			_chdir(cwd);
-			free(cwd);
-		}
+        mir_snprintf(szProfile, cch, "%s\\%s%s", profiledir, buf, isValidProfileName(buf) ? "" : ".dat");
 	}
 	return rc;
 }
@@ -193,29 +157,63 @@ static int showProfileManager(void)
 static int getProfileAutoRun(char * szProfile, size_t cch, char * profiledir)
 {
 	char Mgr[32];
-	char env_profile[MAX_PATH];
-	char exp_profile[MAX_PATH];
 	GetPrivateProfileStringA("Database", "ShowProfileMgr", "", Mgr, SIZEOF(Mgr), mirandabootini);
-	if ( lstrcmpiA(Mgr,"never") ) return 0;		
-	GetPrivateProfileStringA("Database", "DefaultProfile", "", env_profile, SIZEOF(env_profile), mirandabootini);
-	if ( lstrlenA(env_profile) == 0 ) return 0;
-	ExpandEnvironmentStringsA(env_profile, exp_profile, SIZEOF(exp_profile));
-	mir_snprintf(szProfile, cch, "%s\\%s.dat", profiledir, exp_profile);
-	return 1;
+	if (_stricmp(Mgr,"never")) return 0;		
+
+	if (szDefaultMirandaProfile[0] == 0) return 0;
+
+	mir_snprintf(szProfile, cch, "%s\\%s.dat", profiledir, szDefaultMirandaProfile);
+
+    return 1;
 }
 
+// returns 1 if autocreation of the profile is setup, profile has to be at least MAX_PATH!
+int checkAutoCreateProfile(char * profile, size_t cch)
+{
+	char ac[32];
+	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
+	if (_stricmp(ac,"yes") != 0) return 0;
 
+	if (profile != NULL && cch != 0)
+    {
+		strncpy(profile, szDefaultMirandaProfile, cch); 
+        profile[cch-1] = 0;
+    }
+
+    return szDefaultMirandaProfile[0] != 0;
+}
+
+static void getDefaultProfile(void)
+{
+	char defaultProfile[MAX_PATH];
+	GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, SIZEOF(defaultProfile), mirandabootini);
+
+    REPLACEVARSDATA dat = {0};
+    dat.cbSize = sizeof(dat);
+
+    char* res = (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
+    if (res)
+    {
+        strncpy(szDefaultMirandaProfile, res, SIZEOF(szDefaultMirandaProfile)); 
+        szDefaultMirandaProfile[SIZEOF(szDefaultMirandaProfile)-1] = 0;
+        mir_free(res);
+    }
+    else
+        szDefaultMirandaProfile[0] = 0;
+}
 
 // returns 1 if a profile was selected
 static int getProfile(char * szProfile, size_t cch)
 {
 	char profiledir[MAX_PATH];
-	PROFILEMANAGERDATA pd;
-	ZeroMemory(&pd,sizeof(pd));
-	getProfilePath(profiledir,SIZEOF(profiledir));
+    PROFILEMANAGERDATA pd = {0};
+
+    getProfilePath(profiledir,SIZEOF(profiledir));
+    getDefaultProfile();
 	if ( getProfileCmdLine(szProfile, cch, profiledir) ) return 1;
 	if ( getProfileAutoRun(szProfile, cch, profiledir) ) return 1;
-	if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+
+    if ( !*szProfile && !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;

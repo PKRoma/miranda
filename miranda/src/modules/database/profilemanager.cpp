@@ -59,12 +59,13 @@ struct DetailsData {
 	struct DlgProfData * prof;
 };
 
-extern char mirandabootini[MAX_PATH]; // bad bad bad bad!
-static char szDefaultMirandaProfile[MAX_PATH];
+extern char mirandabootini[MAX_PATH]; 
+extern char szDefaultMirandaProfile[MAX_PATH];
 
 void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
 void SetServiceModePlugin( int idx );
+int checkAutoCreateProfile(char * profile, size_t cch);
 
 static void ThemeDialogBackground(HWND hwnd)
 {
@@ -121,22 +122,6 @@ static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 	return DBPE_CONT;
 }
 
-// returns 1 if autocreation of the profile is setup, profile has to be at least MAX_PATH!
-static int checkAutoCreateProfile(char * profile)
-{
-	char ac[MAX_PATH];
-	char env_profile[MAX_PATH];
-	GetPrivateProfileStringA("Database", "AutoCreate", "no", ac, SIZEOF(ac), mirandabootini);
-	if ( lstrcmpiA(ac,"yes") != 0 )
-		return 0;
-
-	GetPrivateProfileStringA("Database", "DefaultProfile", "", ac, SIZEOF(ac), mirandabootini);
-	ExpandEnvironmentStringsA(ac, env_profile, SIZEOF(env_profile));
-	if ( profile != NULL )
-		strcpy(profile, env_profile);
-	return lstrlenA(env_profile) > 0;
-}
-
 static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg,GWL_USERDATA);
@@ -170,7 +155,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		// decide if there is a default profile name given in the INI and if it should be used
 		{
 			char profile[MAX_PATH];
-			if ( checkAutoCreateProfile(( char* )&profile ))
+			if (checkAutoCreateProfile(profile, SIZEOF(profile)))
 				SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
 		}
 		// focus on the textbox
@@ -382,7 +367,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);
-			if ( lstrlenA(szDefaultMirandaProfile) == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 )
+			if ( szDefaultMirandaProfile[0] == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 )
 				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
@@ -470,7 +455,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->opd[i].hwnd = NULL;
 				dat->opd[i].changed = 0;
 				tci.pszText = ( TCHAR* )odp[i].ptszTitle;
-				if ( dat->prof->pd->noProfiles || checkAutoCreateProfile( NULL ))
+				if (dat->prof->pd->noProfiles || checkAutoCreateProfile(NULL, 0))
 					dat->currentPage = 1;
 				TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
 		}	}
@@ -707,12 +692,6 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 	struct DetailsPageInit opi;
 	opi.pageCount=0;
 	opi.odp=NULL;
-
-	{ // remember what the default profile is, if any.
-		char defaultProfile[MAX_PATH];
-		GetPrivateProfileStringA("Database", "DefaultProfile", "", defaultProfile, SIZEOF(defaultProfile), mirandabootini);
-		ExpandEnvironmentStringsA(defaultProfile, szDefaultMirandaProfile, SIZEOF(szDefaultMirandaProfile));
-	}
 
 	{
 		OPTIONSDIALOGPAGE odp;

@@ -252,6 +252,14 @@ static __forceinline char *GetModulePathX(char *, HMODULE hModule)
 	PathRemoveFileSpecA(result);
 	return mir_strdup(result);
 }
+static __forceinline char *GetUserNameX(char *)
+{
+	char result[128];
+    DWORD size = SIZEOF(result);
+	if (GetUserNameA(result, &size))
+		return mir_strdup(result);
+	return NULL;
+}
 
 #ifdef _UNICODE
 static __forceinline int _xcscmp(const TCHAR *s1, const TCHAR *s2) { return _tcscmp(s1, s2); }
@@ -286,6 +294,14 @@ static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
 	GetModuleFileName(hModule, result, sizeof(result));
 	PathRemoveFileSpec(result);
 	return mir_tstrdup(result);
+}
+static __forceinline TCHAR *GetUserNameX(TCHAR *)
+{
+	TCHAR result[128];
+    DWORD size = SIZEOF(result);
+	if (GetUserName(result, &size))
+		return mir_tstrdup(result);
+	return NULL;
 }
 #endif
 
@@ -323,6 +339,8 @@ XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
 		if (!theValue) {
 			if (!_xcscmp(theKey, XSTR(key, "miranda_path")))
 				theValue = GetModulePathX(key, NULL);
+			else if (!_xcscmp(theKey, XSTR(key, "appdata")))
+				theValue = SHGetSpecialFolderPathX(CSIDL_APPDATA, theKey);
 			else if (!_xcscmp(theKey, XSTR(key, "mydocuments")))
 				theValue = SHGetSpecialFolderPathX(CSIDL_PERSONAL, theKey);
 			else if (!_xcscmp(theKey, XSTR(key, "desktop")))
@@ -339,7 +357,10 @@ XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
 				if ( lstrcmpA( pos, ".dat" ) == 0 )
 					*pos = 0;
 				theValue = mir_a2x(key, szProfileName);
- 		}	}
+ 		    }	
+			else if (!_xcscmp(theKey, XSTR(key, "username")))
+				theValue = GetUserNameX(key);
+        }
 
 		if (!theValue)
 			theValue = GetEnvironmentVariableX(theKey);

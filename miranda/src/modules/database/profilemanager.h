@@ -35,5 +35,5 @@ int InitUtils(void);
 int makeDatabase(char * profile, DATABASELINK * link, HWND hwndDlg);
 int getProfileManager(PROFILEMANAGERDATA * pd);
 int getProfilePath(char * buf, size_t cch);
-int isValidProfileName(char * name);
+int isValidProfileName(const char * name);
 
