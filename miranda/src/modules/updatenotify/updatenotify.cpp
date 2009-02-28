@@ -349,15 +349,15 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szVersion);
 			mir_snprintf(szVersionTmp, SIZEOF(szVersionTmp), "%s", und->version?und->version:szVersion);
 			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szVersionTmp);
-			{
+			if (und->isNew) {
 				HFONT hFont;
 				LOGFONT lf;
 
-				hFont = (HFONT)SendDlgItemMessage(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, WM_GETFONT, 0, 0);
+				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
 				GetObject(hFont, sizeof(lf), &lf);
 				lf.lfWeight = FW_BOLD;
 				hFont = CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, WM_SETFONT, (WPARAM)hFont, 0);
+				SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
 				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_GETFONT, 0, 0);
 				GetObject(hFont, sizeof(lf), &lf);
 				lf.lfWeight = FW_BOLD;
