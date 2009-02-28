@@ -44,6 +44,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _WIN32_IE 0x0500
 #include <windows.h>
 #include <commctrl.h>
+#include <shlobj.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
