@@ -20,6 +20,10 @@ Contents
 
 1. Changes in this version
 --------------------------
+* New in 0.7.16
+Bugfixes:
+ - Windows compatibility improvements
+
 * New in 0.7.15
 Bugfixes:
  - Windows compatibility improvements
