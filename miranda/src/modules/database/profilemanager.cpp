@@ -440,7 +440,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
 		SetWindowLong( hwndDlg, GWL_USERDATA, (LONG)dat );
-		SetDlgItemTextA( hwndDlg, IDC_NAME, "Miranda IM Profile Manager" );
+		SetDlgItemText( hwndDlg, IDC_NAME, TranslateT("Miranda IM Profile Manager"));
 		{	LOGFONT lf;
 			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_NAME, WM_GETFONT, 0, 0 );
 			GetObject( hNormalFont, sizeof( lf ), &lf );
