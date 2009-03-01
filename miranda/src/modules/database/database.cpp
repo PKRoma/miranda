@@ -38,11 +38,15 @@ int getProfilePath(char * buf, size_t cch)
 
 	REPLACEVARSDATA dat = {0};
 	dat.cbSize = sizeof( dat );
-   	
+
+    if (profiledir[0] == 0)
+        strcpy(profiledir, "%miranda_path%");
+
     char* exprofiledir = (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)profiledir, (LPARAM)&dat);
-    size_t len = pathToAbsolute(exprofiledir[0] ? exprofiledir : ".", buf, NULL);
+    size_t len = pathToAbsolute(exprofiledir, buf, NULL);
     mir_free(exprofiledir);
 
+    
     if (len < (cch-1)) strcat(buf, "\\");
 	return 0;
 }
@@ -132,6 +136,14 @@ static int getProfileCmdLine(char * szProfile, size_t cch, char * profiledir)
         pathToAbsolute(buf, szProfile, profiledir); 
         if (!isValidProfileName(szProfile))
             strcat(szProfile, ".dat");
+
+        char *p = strrchr(buf, '\\');
+        if (p)
+        {
+            *p = 0;
+            size_t len = strlen(profiledir);
+            mir_snprintf(profiledir+len, cch-len, "%s\\", buf); 
+        }
 	}
 	return rc;
 }

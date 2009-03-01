@@ -159,7 +159,13 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 char* profile = strrchr(dat->pd->szProfile, '\\');
                 if (profile) ++profile;
                 else profile = dat->pd->szProfile;
-				SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
+
+                char *p = strrchr(profile, '.');
+                char c = 0;
+                if (p) { c = *p; *p = 0; } 
+
+                SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
+                if (c) *p = c;
             }
 		}
 		// focus on the textbox
@@ -189,7 +195,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				char szName[MAX_PATH];
 				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);
 				if ( curSel == CB_ERR ) break; // should never happen
-				GetWindowTextA( GetDlgItem( hwndDlg, IDC_PROFILENAME ), szName, SIZEOF( szName ));
+				GetDlgItemTextA(hwndDlg, IDC_PROFILENAME, szName, SIZEOF( szName ));
 				if ( szName[0] == 0 )
 					break;
 
