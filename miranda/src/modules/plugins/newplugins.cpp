@@ -961,7 +961,7 @@ int LoadNewPluginsModule(void)
 		if ( pluginListUI )
 			MessageBox(0, TranslateT("Unable to start any of the installed contact list plugins, I even ignored your preferences for which contact list couldn't load any."), _T(""), MB_OK | MB_ICONINFORMATION);
 		else
-			MessageBox(0, TranslateT("Can't find a contact list plugin! you need clist_classic or clist_mw.") , _T(""), MB_OK | MB_ICONINFORMATION);
+			MessageBox(0, TranslateT("Can't find a contact list plugin! you need clist_classic or any other clist plugin.") , _T(""), MB_OK | MB_ICONINFORMATION);
 		return 1;
 	}
 
