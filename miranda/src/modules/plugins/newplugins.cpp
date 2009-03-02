@@ -83,7 +83,7 @@ SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 static BOOL bModuleInitialized = FALSE;
 
 PLUGINLINK pluginCoreLink;
-char   mirandabootini[MAX_PATH];
+TCHAR   mirandabootini[MAX_PATH];
 static DWORD mirandaVersion;
 static int serviceModeIdx = -1;
 static pluginEntry * pluginListSM;
@@ -937,7 +937,7 @@ int LoadNewPluginsModule(void)
 		*slice=0;
 
 	// remember some useful options
-	askAboutIgnoredPlugins=(UINT) GetPrivateProfileIntA( "PluginLoader", "AskAboutIgnoredPlugins", 0, mirandabootini);
+	askAboutIgnoredPlugins=(UINT) GetPrivateProfileInt( _T("PluginLoader"), _T("AskAboutIgnoredPlugins"), 0, mirandabootini);
 
 	// if freeimage is present, load it to provide the basic core functions
 	if ( pluginList_freeimg != NULL ) {
@@ -1073,12 +1073,12 @@ int LoadNewPluginsModuleInfos(void)
 
 	// remember where the mirandaboot.ini goes
 	{
-		char exe[MAX_PATH];
-		char * slice;
-		GetModuleFileNameA(NULL, exe, SIZEOF(exe));
-		slice=strrchr(exe, '\\');
+		TCHAR exe[MAX_PATH];
+		TCHAR * slice;
+		GetModuleFileName(NULL, exe, SIZEOF(exe));
+		slice=_tcsrchr(exe, '\\');
 		if ( slice != NULL ) *slice=0;
-		mir_snprintf(mirandabootini, SIZEOF(mirandabootini), "%s\\mirandaboot.ini", exe);
+		mir_sntprintf(mirandabootini, SIZEOF(mirandabootini), _T("%s\\mirandaboot.ini"), exe);
 	}
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);

@@ -65,7 +65,7 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-int pathToAbsolute(char *pSrc, char *pOut, char* base) 
+int pathToAbsolute(char *pSrc, char *pOut, char* base)
 {
     if (base == NULL) base = szMirandaPath;
 	if ( !pSrc || !strlen( pSrc ) || strlen( pSrc ) > MAX_PATH )
@@ -84,11 +84,9 @@ int pathToAbsolute(char *pSrc, char *pOut, char* base)
 	}
 }
 
-static int pathToAbsolute(WPARAM wParam, LPARAM lParam) {
-	char *pSrc = (char*)wParam;
-	char *pOut = (char*)lParam;
-
-    return pathToAbsolute(pSrc, pOut, szMirandaPath);
+static int pathToAbsolute(WPARAM wParam, LPARAM lParam) 
+{
+    return pathToAbsolute((char*)wParam, (char*)lParam, szMirandaPath);
 }
 
 int CreateDirectoryTree( const char *szDir )
@@ -156,14 +154,12 @@ static int pathToRelativeW(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
+int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 {
-	TCHAR *pSrc = (TCHAR*)wParam;
-	TCHAR *pOut = (TCHAR*)lParam;
 	if ( !pSrc || !lstrlen( pSrc ) || lstrlen( pSrc ) > MAX_PATH)
 		return 0;
 
-	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' )) {
+	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0]!='.' )) {
 		mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
 		return lstrlen( pOut );
 	}
@@ -177,7 +173,12 @@ static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-int CreateDirectoryTreeW( const WCHAR* szDir )
+static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
+{
+    return pathToAbsoluteW((TCHAR*)wParam, (TCHAR*)lParam, szMirandaPathW);
+}
+
+ int CreateDirectoryTreeW( const WCHAR* szDir )
 {
 	DWORD  dwAttributes;
 	WCHAR* pszLastBackslash, szTestDir[ MAX_PATH ];

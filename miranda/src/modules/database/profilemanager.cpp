@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define WM_INPUTCHANGED (WM_USER + 0x3000)
 #define WM_FOCUSTEXTBOX (WM_USER + 0x3001)
 
-typedef BOOL (__cdecl *ENUMPROFILECALLBACK) (char * fullpath, char * profile, LPARAM lParam);
+typedef BOOL (__cdecl *ENUMPROFILECALLBACK) (TCHAR * fullpath, TCHAR * profile, LPARAM lParam);
 
 struct DetailsPageInit {
 	int pageCount;
@@ -59,8 +59,8 @@ struct DetailsData {
 	struct DlgProfData * prof;
 };
 
-extern char mirandabootini[MAX_PATH]; 
-extern char szDefaultMirandaProfile[MAX_PATH];
+extern TCHAR mirandabootini[MAX_PATH]; 
+extern TCHAR szDefaultMirandaProfile[MAX_PATH];
 
 void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
@@ -73,25 +73,25 @@ static void ThemeDialogBackground(HWND hwnd)
 		enableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
 }
 
-static int findProfiles(char * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
+static int findProfiles(TCHAR * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
 {
 	HANDLE hFind = INVALID_HANDLE_VALUE;
-	WIN32_FIND_DATAA ffd;
-	char searchspec[MAX_PATH];
-	mir_snprintf(searchspec, SIZEOF(searchspec), "%s*.dat", szProfileDir);
-	hFind = FindFirstFileA(searchspec, &ffd);
+	WIN32_FIND_DATA ffd;
+	TCHAR searchspec[MAX_PATH];
+	mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), szProfileDir);
+	hFind = FindFirstFile(searchspec, &ffd);
 	if ( hFind == INVALID_HANDLE_VALUE )
 		return 0;
 
 	do {
 		if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName( ffd.cFileName )) {
-			char buf[MAX_PATH];
-			mir_snprintf(buf,SIZEOF(buf),"%s%s",szProfileDir, ffd.cFileName);
+			TCHAR buf[MAX_PATH];
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s%s"), szProfileDir, ffd.cFileName);
 			if ( !callback(buf, ffd.cFileName, lParam ))
 				break;
 		}
 	}
-		while ( FindNextFileA(hFind, &ffd) );
+		while ( FindNextFile(hFind, &ffd) );
 	FindClose(hFind);
 	return 1;
 }
@@ -156,15 +156,15 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		{
             if (shouldAutoCreate() || dat->pd->noProfiles)
             {
-                char* profile = strrchr(dat->pd->szProfile, '\\');
+                TCHAR* profile = _tcsrchr(dat->pd->szProfile, '\\');
                 if (profile) ++profile;
                 else profile = dat->pd->szProfile;
 
-                char *p = strrchr(profile, '.');
-                char c = 0;
+                TCHAR *p = _tcsrchr(profile, '.');
+                TCHAR c = 0;
                 if (p) { c = *p; *p = 0; } 
 
-                SetDlgItemTextA(hwndDlg, IDC_PROFILENAME, profile);
+                SetDlgItemText(hwndDlg, IDC_PROFILENAME, profile);
                 if (c) *p = c;
             }
 		}
@@ -192,14 +192,14 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		{
 			NMHDR* hdr = ( NMHDR* )lParam;
 			if ( hdr && hdr->code == PSN_APPLY && dat && IsWindowVisible( hwndDlg )) {
-				char szName[MAX_PATH];
+				TCHAR szName[MAX_PATH];
 				LRESULT curSel = SendDlgItemMessage(hwndDlg,IDC_PROFILEDRIVERS,CB_GETCURSEL,0,0);
 				if ( curSel == CB_ERR ) break; // should never happen
-				GetDlgItemTextA(hwndDlg, IDC_PROFILENAME, szName, SIZEOF( szName ));
+				GetDlgItemText(hwndDlg, IDC_PROFILENAME, szName, SIZEOF( szName ));
 				if ( szName[0] == 0 )
 					break;
 
-				mir_snprintf( dat->pd->szProfile, MAX_PATH, "%s%s.dat", dat->pd->szProfileDir, szName );
+				mir_sntprintf( dat->pd->szProfile, MAX_PATH, _T("%s%s.dat"), dat->pd->szProfileDir, szName );
 				dat->pd->newProfile = 1;
 				dat->pd->dblink = (DATABASELINK *)SendDlgItemMessage( hwndDlg, IDC_PROFILEDRIVERS, CB_GETITEMDATA, ( WPARAM )curSel, 0 );
 
@@ -228,63 +228,70 @@ TCHAR* rtrim( TCHAR *string )
 
 static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 {
-	char* fullPath = (char*)lParam;
 	int error;
 
-	if ( dblink->grokHeader( fullPath, &error ) == 0 ) {
-		dblink->getFriendlyName( fullPath, MAX_PATH, 1 );
-		//strncpy( fullPath, pluginname, MAX_PATH );
+#ifdef _UNICODE
+	char fullpath[MAX_PATH];
+	WideCharToMultiByte(CP_ACP, 0, (TCHAR*)lParam, -1, fullpath, SIZEOF(fullpath), NULL, NULL);
+#else
+	char* fullpath = (char*)lParam;
+#endif
+
+	if (dblink->grokHeader(fullpath, &error) == 0) 
+    {
+		dblink->getFriendlyName(fullpath, SIZEOF(fullpath), 1);
+
+#ifdef _UNICODE
+	    MultiByteToWideChar(CP_ACP, 0, fullpath, -1, (TCHAR*)lParam, MAX_PATH);
+#endif
 		return DBPE_HALT;
 	}
 
 	return DBPE_CONT;
 }
 
-BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
+BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 {
 	HWND hwndDlg = (HWND) lParam;
 	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-	char sizeBuf[64];
-	LVITEMA item;
+	TCHAR sizeBuf[64];
+	LVITEM item;
 	int iItem=0;
 	struct _stat statbuf;
 	int bFileExists = FALSE;
-	char * p = strrchr(profile, '.');
-	strcpy(sizeBuf, "0 KB");
+	TCHAR * p = _tcsrchr(profile, '.');
+	_tcscpy(sizeBuf, _T("0 KB"));
 	if ( p != NULL ) *p=0;
 	ZeroMemory(&item,sizeof(item));
 	item.mask = LVIF_TEXT | LVIF_IMAGE;
 	item.pszText = profile;
 	item.iItem=0;
-	item.iImage=0;
-	{
-		FILE * fp = fopen(fullpath, "r+");
-		item.iImage = fp != NULL ? 0 : 1;
-		if ( _stat(fullpath, &statbuf) == 0) {
-			if ( statbuf.st_size > 1000000 ) {
-				mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%.3lf", (double)statbuf.st_size / 1048576.0 );
-				strcpy( sizeBuf+5, " MB" );
-			}
-			else {
-				mir_snprintf(sizeBuf,SIZEOF(sizeBuf),"%.3lf", (double)statbuf.st_size / 1024.0 );
-				strcpy( sizeBuf+5, " KB" );
-			}
-			bFileExists = TRUE;
+
+    if ( _tstat(fullpath, &statbuf) == 0) {
+		if ( statbuf.st_size > 1000000 ) {
+			mir_sntprintf(sizeBuf,SIZEOF(sizeBuf), _T("%.3lf"), (double)statbuf.st_size / 1048576.0 );
+			_tcscpy(sizeBuf+5, _T(" MB"));
 		}
-		if ( fp ) fclose(fp);
+		else {
+			mir_sntprintf(sizeBuf,SIZEOF(sizeBuf), _T("%.3lf"), (double)statbuf.st_size / 1024.0 );
+			_tcscpy(sizeBuf+5, _T(" KB"));
+		}
+		bFileExists = TRUE;
 	}
-	iItem = SendMessageA( hwndList, LVM_INSERTITEMA, 0, (LPARAM)&item );
-	if ( lstrcmpiA(szDefaultMirandaProfile, profile) == 0 )
+	item.iImage = !bFileExists;
+
+    iItem = SendMessage( hwndList, LVM_INSERTITEM, 0, (LPARAM)&item );
+	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 )
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
 	item.iItem = iItem;
 	item.iSubItem = 2;
 	item.pszText = sizeBuf;
-	SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
+	SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item );
 
 	if ( bFileExists ) {
 		PLUGIN_DB_ENUM dbe;
-		char szPath[ MAX_PATH ];
+		TCHAR szPath[MAX_PATH];
 
 		LVITEM item2;
 		item2.mask = LVIF_TEXT;
@@ -293,9 +300,9 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 		dbe.cbSize = sizeof(dbe);
 		dbe.pfnEnumCallback = (int(*)(char*,void*,LPARAM))DetectDbProvider;
 		dbe.lParam = (LPARAM)szPath;
-		strncpy( szPath, fullpath, sizeof(szPath));
+		_tcscpy(szPath, fullpath);
 		if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == 1 ) {
-			HANDLE hFile = CreateFileA(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
+			HANDLE hFile = CreateFile(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
 			if ( hFile == INVALID_HANDLE_VALUE) {
 				// file locked
 				item2.pszText = TranslateT( "<In Use>" );
@@ -306,7 +313,7 @@ BOOL EnumProfilesForList(char * fullpath, char * profile, LPARAM lParam)
 				CloseHandle(hFile);
 				item.pszText = szPath;
 				item.iSubItem = 1;
-				SendMessageA( hwndList, LVM_SETITEMTEXTA, iItem, (LPARAM)&item );
+				SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item );
 		}	}
 
 		item2.iSubItem = 3;
@@ -402,8 +409,8 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					case NM_DBLCLK:
 					{
 						HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-						LVITEMA item;
-						char profile[MAX_PATH];
+						LVITEM item;
+						TCHAR profile[MAX_PATH];
 
 						if ( dat == NULL )
 							break;
@@ -412,8 +419,8 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
 						item.pszText = profile;
 						item.cchTextMax = SIZEOF(profile);
-						if ( SendMessageA(hwndList, LVM_GETITEMA, 0, (LPARAM)&item) && dat ) {
-							mir_snprintf(dat->pd->szProfile, MAX_PATH, "%s%s.dat", dat->pd->szProfileDir, profile);
+						if ( SendMessage(hwndList, LVM_GETITEM, 0, (LPARAM)&item) && dat ) {
+							mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s%s.dat"), dat->pd->szProfileDir, profile);
 							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);
 						}
 						return TRUE;

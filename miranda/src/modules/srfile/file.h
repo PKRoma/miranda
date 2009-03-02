@@ -67,11 +67,14 @@ struct FileDlgData {
 
 // path.c
 int pathToAbsolute(char *pSrc, char *pOut, char* base);
+int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base);
 int CreateDirectoryTree(const char *szDir);
 int CreateDirectoryTreeW(const WCHAR *szDir);
 #if defined( _UNICODE )
+	#define pathToAbsoluteT pathToAbsoluteW
 	#define CreateDirectoryTreeT CreateDirectoryTreeW
 #else
+    #define pathToAbsoluteT pathToAbsolute
 	#define CreateDirectoryTreeT CreateDirectoryTree
 #endif
 

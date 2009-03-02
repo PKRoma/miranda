@@ -26,32 +26,35 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static BOOL bModuleInitialized = FALSE;
 static HANDLE hIniChangeNotification;
-extern char mirandabootini[MAX_PATH];
+extern TCHAR mirandabootini[MAX_PATH];
 
 static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SetDlgItemTextA(hwndDlg,IDC_ININAME,(char*)lParam);
-			{	char szSecurity[11],*pszSecurityInfo;
-			  	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),mirandabootini);
-				if(!lstrcmpiA(szSecurity,"all"))
-					pszSecurityInfo="Security systems to prevent malicious changes are in place and you will be warned before every change that is made.";
-				else if(!lstrcmpiA(szSecurity,"onlyunsafe"))
-					pszSecurityInfo="Security systems to prevent malicious changes are in place and you will be warned before changes that are known to be unsafe.";
-				else if(!lstrcmpiA(szSecurity,"none"))
-					pszSecurityInfo="Security systems to prevent malicious changes have been disabled. You will receive no further warnings.";
-				else pszSecurityInfo=NULL;
-				if(pszSecurityInfo) SetDlgItemTextA(hwndDlg,IDC_SECURITYINFO,ServiceExists(MS_LANGPACK_TRANSLATESTRING)?Translate(pszSecurityInfo):pszSecurityInfo);
+			SetDlgItemText(hwndDlg, IDC_ININAME, (TCHAR*)lParam);
+			{	
+                TCHAR szSecurity[11];
+                const TCHAR *pszSecurityInfo;
+			  	
+                GetPrivateProfileString(_T("AutoExec"), _T("Warn"), _T("notsafe"), szSecurity, SIZEOF(szSecurity), mirandabootini);
+				if(!lstrcmpi(szSecurity, _T("all")))
+					pszSecurityInfo = _T("Security systems to prevent malicious changes are in place and you will be warned before every change that is made.");
+				else if (!lstrcmpi(szSecurity, _T("onlyunsafe")))
+					pszSecurityInfo = _T("Security systems to prevent malicious changes are in place and you will be warned before changes that are known to be unsafe.");
+				else if (!lstrcmpi(szSecurity, _T("none")))
+					pszSecurityInfo = _T("Security systems to prevent malicious changes have been disabled. You will receive no further warnings.");
+				else pszSecurityInfo = NULL;
+				if (pszSecurityInfo) SetDlgItemText(hwndDlg, IDC_SECURITYINFO, TranslateTS(pszSecurityInfo));
 			}
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDC_VIEWINI:
-				{	char szPath[MAX_PATH];
-					GetDlgItemTextA(hwndDlg,IDC_ININAME,szPath,sizeof(szPath));
-					ShellExecuteA(hwndDlg,"open",szPath,NULL,NULL,SW_SHOW);
+				{	TCHAR szPath[MAX_PATH];
+					GetDlgItemText(hwndDlg, IDC_ININAME, szPath, SIZEOF(szPath));
+					ShellExecute(hwndDlg, _T("open"), szPath, NULL, NULL, SW_SHOW);
 					break;
 				}
 				case IDOK:
@@ -67,10 +70,10 @@ static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 
 static int IsInSpaceSeparatedList(const char *szWord,const char *szList)
 {
-	char *szItem,*szEnd;
+	const char *szItem,*szEnd;
 	int wordLen = lstrlenA(szWord);
 
-	for(szItem = (char*)szList;;) {
+	for(szItem = szList;;) {
 		szEnd = strchr(szItem,' ');
 		if (szEnd == NULL)
 			return !lstrcmpA( szItem, szWord );
@@ -82,7 +85,7 @@ static int IsInSpaceSeparatedList(const char *szWord,const char *szList)
 }	}
 
 struct warnSettingChangeInfo_t {
-	char *szIniPath;
+	TCHAR *szIniPath;
 	char *szSection;
 	char *szSafeSections;
 	char *szUnsafeSections;
@@ -98,22 +101,22 @@ static BOOL CALLBACK WarnIniChangeDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 	switch(message) {
 		case WM_INITDIALOG:
 		{	char szSettingName[256];
-			char *pszSecurityInfo;
+			const TCHAR *pszSecurityInfo;
 			warnInfo=(struct warnSettingChangeInfo_t*)lParam;
 			TranslateDialogDefault(hwndDlg);
-			SetDlgItemTextA(hwndDlg,IDC_ININAME,warnInfo->szIniPath);
+			SetDlgItemText(hwndDlg,IDC_ININAME,warnInfo->szIniPath);
 			lstrcpyA(szSettingName,warnInfo->szSection);
 			lstrcatA(szSettingName," / ");
 			lstrcatA(szSettingName,warnInfo->szName);
 			SetDlgItemTextA(hwndDlg,IDC_SETTINGNAME,szSettingName);
 			SetDlgItemTextA(hwndDlg,IDC_NEWVALUE,warnInfo->szValue);
 			if(IsInSpaceSeparatedList(warnInfo->szSection,warnInfo->szSafeSections))
-				pszSecurityInfo="This change is known to be safe.";
+				pszSecurityInfo=LPGENT("This change is known to be safe.");
 			else if(IsInSpaceSeparatedList(warnInfo->szSection,warnInfo->szUnsafeSections))
-				pszSecurityInfo="This change is known to be potentially hazardous.";
+				pszSecurityInfo=LPGENT("This change is known to be potentially hazardous.");
 			else
-				pszSecurityInfo="This change is not known to be safe.";
-			SetDlgItemTextA(hwndDlg,IDC_SECURITYINFO,ServiceExists(MS_LANGPACK_TRANSLATESTRING)?Translate(pszSecurityInfo):pszSecurityInfo);
+				pszSecurityInfo=LPGENT("This change is not known to be safe.");
+			SetDlgItemText(hwndDlg,IDC_SECURITYINFO,TranslateTS(pszSecurityInfo));
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -136,32 +139,32 @@ static BOOL CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 	switch(message) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SetDlgItemTextA(hwndDlg,IDC_ININAME,(char*)lParam);
-			SetDlgItemTextA(hwndDlg,IDC_NEWNAME,(char*)lParam);
+			SetDlgItemText(hwndDlg,IDC_ININAME,(TCHAR*)lParam);
+			SetDlgItemText(hwndDlg,IDC_NEWNAME,(TCHAR*)lParam);
 			return TRUE;
 		case WM_COMMAND:
-		{	char szIniPath[MAX_PATH];
-			GetDlgItemTextA(hwndDlg,IDC_ININAME,szIniPath,sizeof(szIniPath));
+		{	TCHAR szIniPath[MAX_PATH];
+			GetDlgItemText(hwndDlg,IDC_ININAME,szIniPath,SIZEOF(szIniPath));
 			switch(LOWORD(wParam)) {
 				case IDC_DELETE:
-					DeleteFileA(szIniPath);
+					DeleteFile(szIniPath);
 				case IDC_LEAVE:
 					EndDialog(hwndDlg,LOWORD(wParam));
 					break;
 				case IDC_RECYCLE:
-					{	SHFILEOPSTRUCTA shfo={0};
+					{	SHFILEOPSTRUCT shfo={0};
 						shfo.wFunc=FO_DELETE;
 						shfo.pFrom=szIniPath;
-						szIniPath[lstrlenA(szIniPath)+1]='\0';
+						szIniPath[lstrlen(szIniPath)+1]='\0';
 						shfo.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
-						SHFileOperationA(&shfo);
+						SHFileOperation(&shfo);
 					}
 					EndDialog(hwndDlg,LOWORD(wParam));
 					break;
 				case IDC_MOVE:
-					{	char szNewPath[MAX_PATH];
-						GetDlgItemTextA(hwndDlg,IDC_NEWNAME,szNewPath,sizeof(szNewPath));
-						MoveFileA(szIniPath,szNewPath);
+					{	TCHAR szNewPath[MAX_PATH];
+						GetDlgItemText(hwndDlg,IDC_NEWNAME,szNewPath,SIZEOF(szNewPath));
+						MoveFile(szIniPath,szNewPath);
 					}
 					EndDialog(hwndDlg,LOWORD(wParam));
 					break;
@@ -174,45 +177,58 @@ static BOOL CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 
 static void DoAutoExec(void)
 {
-	HANDLE hFind;
-	char szMirandaDir[MAX_PATH],szUse[7],szIniPath[MAX_PATH],szFindPath[MAX_PATH],szExpandedFindPath[MAX_PATH];
+	TCHAR szUse[7], szIniPath[MAX_PATH], szFindPath[MAX_PATH];
 	char szLine[2048];
-	char *str2;
-	WIN32_FIND_DATAA fd;
+	TCHAR *str2;
 	FILE *fp;
 	char szSection[128];
 	int lineLength;
-	char szSafeSections[2048],szUnsafeSections[2048],szSecurity[11],szOverrideSecurityFilename[MAX_PATH];
+	TCHAR buf[2048], szSecurity[11], szOverrideSecurityFilename[MAX_PATH];
+    char *szSafeSections, *szUnsafeSections;
 	int warnThisSection=0;
 
-	GetPrivateProfileStringA("AutoExec","Use","prompt",szUse,sizeof(szUse),mirandabootini);
-	if(!lstrcmpiA(szUse,"no")) return;
-	GetPrivateProfileStringA("AutoExec","Safe","CLC Icons CLUI CList SkinSounds",szSafeSections,sizeof(szSafeSections),mirandabootini);
-	GetPrivateProfileStringA("AutoExec","Unsafe","ICQ MSN",szUnsafeSections,sizeof(szUnsafeSections),mirandabootini);
-	GetPrivateProfileStringA("AutoExec","Warn","notsafe",szSecurity,sizeof(szSecurity),mirandabootini);
-	GetPrivateProfileStringA("AutoExec","OverrideSecurityFilename","",szOverrideSecurityFilename,sizeof(szOverrideSecurityFilename),mirandabootini);
-	GetModuleFileNameA(hMirandaInst,szMirandaDir,sizeof(szMirandaDir));
-	str2=strrchr(szMirandaDir,'\\');
-	if(str2!=NULL) *str2=0;
-	_chdir(szMirandaDir);
-	GetPrivateProfileStringA("AutoExec","Glob","autoexec_*.ini",szFindPath,sizeof(szFindPath),mirandabootini);
-	ExpandEnvironmentStringsA(szFindPath,szExpandedFindPath,sizeof(szExpandedFindPath));
-	hFind=FindFirstFileA(szExpandedFindPath,&fd);
-	if(hFind==INVALID_HANDLE_VALUE) return;
-	str2=strrchr(szExpandedFindPath,'\\');
-	if(str2==NULL) str2=szExpandedFindPath;
-	else str2++;
-	*str2='\0';
-	szSection[0]='\0';
+	GetPrivateProfileString(_T("AutoExec"),_T("Use"),_T("prompt"),szUse,SIZEOF(szUse),mirandabootini);
+	if(!lstrcmpi(szUse,_T("no"))) return;
+	GetPrivateProfileString(_T("AutoExec"),_T("Safe"),_T("CLC Icons CLUI CList SkinSounds"),buf,SIZEOF(buf),mirandabootini);
+    szSafeSections = mir_t2a(buf);
+	GetPrivateProfileString(_T("AutoExec"),_T("Unsafe"),_T("ICQ MSN"),buf,SIZEOF(buf),mirandabootini);
+    szUnsafeSections = mir_t2a(buf);
+	GetPrivateProfileString(_T("AutoExec"),_T("Warn"),_T("notsafe"),szSecurity,SIZEOF(szSecurity),mirandabootini);
+	GetPrivateProfileString(_T("AutoExec"),_T("OverrideSecurityFilename"),_T(""),szOverrideSecurityFilename,SIZEOF(szOverrideSecurityFilename),mirandabootini);
+	
+	GetPrivateProfileString(_T("AutoExec"),_T("Glob"),_T("autoexec_*.ini"),szFindPath,SIZEOF(szFindPath),mirandabootini);
+    
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+    dat.dwFlags = RVF_TCHAR;
+
+    TCHAR* szExpandedFindPath = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szFindPath, (LPARAM)&dat);
+    pathToAbsoluteT(szExpandedFindPath, szFindPath, NULL);
+    mir_free(szExpandedFindPath);
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(szFindPath, &fd);
+    if (hFind == INVALID_HANDLE_VALUE) 
+    {
+        mir_free(szSafeSections);
+        mir_free(szUnsafeSections);
+        return;
+    }
+
+    str2 = _tcsrchr(szFindPath, '\\');
+	if (str2 == NULL) szFindPath[0] = 0;
+	else str2[1] = 0;
+
+    szSection[0]='\0';
 	do {
-		lstrcpyA(szIniPath,szExpandedFindPath);
-		lstrcatA(szIniPath,fd.cFileName);
-		if(!lstrcmpiA(szUse,"prompt") && lstrcmpiA(fd.cFileName,szOverrideSecurityFilename)) {
+		lstrcpy(szIniPath, szFindPath);
+		lstrcat(szIniPath, fd.cFileName);
+		if(!lstrcmpi(szUse,_T("prompt")) && lstrcmpi(fd.cFileName,szOverrideSecurityFilename)) {
 			int result=DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_INSTALLINI),NULL,InstallIniDlgProc,(LPARAM)szIniPath);
 			if(result==IDC_NOTOALL) break;
 			if(result==IDCANCEL) continue;
 		}
-		fp=fopen(szIniPath,"rt");
+		fp=_tfopen(szIniPath,_T("rt"));
 		while(!feof(fp)) {
 			if(fgets(szLine,sizeof(szLine),fp)==NULL) break;
 			lineLength=lstrlenA(szLine);
@@ -225,13 +241,13 @@ static void DoAutoExec(void)
 					szSection[0]='\0';
 				else {
 					lstrcpynA(szSection,szLine+1,min(sizeof(szSection),szEnd-szLine));
-					if(!lstrcmpiA(szSecurity,"none")) warnThisSection=0;
-					else if(!lstrcmpiA(szSecurity,"notsafe"))
+					if(!lstrcmpi(szSecurity,_T("none"))) warnThisSection=0;
+					else if(!lstrcmpi(szSecurity,_T("notsafe")))
 						warnThisSection=!IsInSpaceSeparatedList(szSection,szSafeSections);
-					else if(!lstrcmpiA(szSecurity,"onlyunsafe"))
+					else if(!lstrcmpi(szSecurity,_T("onlyunsafe")))
 						warnThisSection=IsInSpaceSeparatedList(szSection,szUnsafeSections);
 					else warnThisSection=1;
-					if(!lstrcmpiA(fd.cFileName,szOverrideSecurityFilename)) warnThisSection=0;
+					if(!lstrcmpi(fd.cFileName,szOverrideSecurityFilename)) warnThisSection=0;
 				}
 			}
 			else {
@@ -303,45 +319,44 @@ static void DoAutoExec(void)
 							}
 							break;
 						default:
-							if(ServiceExists(MS_LANGPACK_TRANSLATESTRING))
-								MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s or n."),TranslateT("Install Database Settings"),MB_OK);
-							else
-								MessageBoxA(NULL,"Invalid setting type. The first character of every value must be b, w, d, l, s or n.","Install Database Settings",MB_OK);
+							MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s or n."),TranslateT("Install Database Settings"),MB_OK);
 							break;
 					}
 				}
 			}
 		}
 		fclose(fp);
-		if(!lstrcmpiA(fd.cFileName,szOverrideSecurityFilename))
-			DeleteFileA(szIniPath);
+		if(!lstrcmpi(fd.cFileName,szOverrideSecurityFilename))
+			DeleteFile(szIniPath);
 		else {
-			char szOnCompletion[8];
-			GetPrivateProfileStringA("AutoExec","OnCompletion","recycle",szOnCompletion,sizeof(szOnCompletion),mirandabootini);
-			if(!lstrcmpiA(szOnCompletion,"delete"))
-				DeleteFileA(szIniPath);
-			else if(!lstrcmpiA(szOnCompletion,"recycle")) {
-				SHFILEOPSTRUCTA shfo={0};
+			TCHAR szOnCompletion[8];
+			GetPrivateProfileString(_T("AutoExec"),_T("OnCompletion"),_T("recycle"),szOnCompletion,SIZEOF(szOnCompletion),mirandabootini);
+			if(!lstrcmpi(szOnCompletion,_T("delete")))
+				DeleteFile(szIniPath);
+			else if(!lstrcmpi(szOnCompletion,_T("recycle"))) {
+				SHFILEOPSTRUCT shfo={0};
 				shfo.wFunc=FO_DELETE;
 				shfo.pFrom=szIniPath;
-				szIniPath[lstrlenA(szIniPath)+1]='\0';
+				szIniPath[lstrlen(szIniPath)+1]='\0';
 				shfo.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
-				SHFileOperationA(&shfo);
+				SHFileOperation(&shfo);
 			}
-			else if(!lstrcmpiA(szOnCompletion,"rename")) {
-				char szRenamePrefix[MAX_PATH];
-				char szNewPath[MAX_PATH];
-				GetPrivateProfileStringA("AutoExec","RenamePrefix","done_",szRenamePrefix,sizeof(szRenamePrefix),mirandabootini);
-				lstrcpyA(szNewPath,szExpandedFindPath);
-				lstrcatA(szNewPath,szRenamePrefix);
-				lstrcatA(szNewPath,fd.cFileName);
-				MoveFileA(szIniPath,szNewPath);
+			else if(!lstrcmpi(szOnCompletion,_T("rename"))) {
+				TCHAR szRenamePrefix[MAX_PATH];
+				TCHAR szNewPath[MAX_PATH];
+				GetPrivateProfileString(_T("AutoExec"),_T("RenamePrefix"),_T("done_"),szRenamePrefix,SIZEOF(szRenamePrefix),mirandabootini);
+				lstrcpy(szNewPath,szFindPath);
+				lstrcat(szNewPath,szRenamePrefix);
+				lstrcat(szNewPath,fd.cFileName);
+				MoveFile(szIniPath,szNewPath);
 			}
-			else if(!lstrcmpiA(szOnCompletion,"ask"))
+			else if(!lstrcmpi(szOnCompletion,_T("ask")))
 				DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_INIIMPORTDONE),NULL,IniImportDoneDlgProc,(LPARAM)szIniPath);
 		}
-	} while(FindNextFileA(hFind,&fd));
+	} while (FindNextFile(hFind, &fd));
 	FindClose(hFind);
+    mir_free(szSafeSections);
+    mir_free(szUnsafeSections);
 }
 
 static int CheckIniImportNow(WPARAM, LPARAM)
@@ -353,19 +368,18 @@ static int CheckIniImportNow(WPARAM, LPARAM)
 
 int InitIni(void)
 {
-	char szMirandaDir[MAX_PATH];
-	char *str2;
+	TCHAR szMirandaDir[MAX_PATH], *str2;
 
 	bModuleInitialized = TRUE;
 
 	DoAutoExec();
-	GetModuleFileNameA(hMirandaInst,szMirandaDir,sizeof(szMirandaDir));
-	str2=strrchr(szMirandaDir,'\\');
-	if(str2!=NULL) *str2=0;
-	hIniChangeNotification=FindFirstChangeNotificationA(szMirandaDir,0,FILE_NOTIFY_CHANGE_FILE_NAME);
-	if(hIniChangeNotification!=INVALID_HANDLE_VALUE) {
-		CreateServiceFunction("DB/Ini/CheckImportNow",CheckIniImportNow);
-		CallService(MS_SYSTEM_WAITONHANDLE,(WPARAM)hIniChangeNotification,(LPARAM)"DB/Ini/CheckImportNow");
+	GetModuleFileName(hMirandaInst, szMirandaDir, SIZEOF(szMirandaDir));
+	str2 = _tcsrchr(szMirandaDir,'\\');
+	if (str2!=NULL) *str2=0;
+	hIniChangeNotification=FindFirstChangeNotification(szMirandaDir, 0, FILE_NOTIFY_CHANGE_FILE_NAME);
+	if (hIniChangeNotification != INVALID_HANDLE_VALUE) {
+		CreateServiceFunction("DB/Ini/CheckImportNow", CheckIniImportNow);
+		CallService(MS_SYSTEM_WAITONHANDLE, (WPARAM)hIniChangeNotification, (LPARAM)"DB/Ini/CheckImportNow");
 	}
 	return 0;
 }
