@@ -640,7 +640,7 @@ static int OkToExit(WPARAM, LPARAM)
 
 static int GetMirandaVersion(WPARAM, LPARAM)
 {
-	char filename[MAX_PATH];
+	TCHAR filename[MAX_PATH];
 	DWORD unused;
 	DWORD verInfoSize;
 	UINT blockSize;
@@ -648,11 +648,11 @@ static int GetMirandaVersion(WPARAM, LPARAM)
 	VS_FIXEDFILEINFO *vsffi;
 	DWORD ver;
 
-	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
-	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
+	GetModuleFileName(NULL,filename,SIZEOF(filename));
+	verInfoSize=GetFileVersionInfoSize(filename,&unused);
 	pVerInfo=mir_alloc(verInfoSize);
-	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
-	VerQueryValueA(pVerInfo,"\\",(PVOID*)&vsffi,&blockSize);
+	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
+	VerQueryValue(pVerInfo,_T("\\"),(PVOID*)&vsffi,&blockSize);
 	ver=(((vsffi->dwProductVersionMS>>16)&0xFF)<<24)|
 	    ((vsffi->dwProductVersionMS&0xFF)<<16)|
 		(((vsffi->dwProductVersionLS>>16)&0xFF)<<8)|
@@ -663,22 +663,18 @@ static int GetMirandaVersion(WPARAM, LPARAM)
 
 static int GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 {
-	char filename[MAX_PATH],*productVersion;
+	TCHAR filename[MAX_PATH], *productVersion;
 	DWORD unused;
 	DWORD verInfoSize;
 	UINT blockSize;
 	PVOID pVerInfo;
 
-	GetModuleFileNameA(NULL,filename,SIZEOF(filename));
-	verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
+	GetModuleFileName(NULL,filename,SIZEOF(filename));
+	verInfoSize=GetFileVersionInfoSize(filename,&unused);
 	pVerInfo=mir_alloc(verInfoSize);
-	GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
-	VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\ProductVersion",(LPVOID*)&productVersion,&blockSize);
-	#if defined( _UNICODE )
-		mir_snprintf(( char* )lParam, wParam, "%s Unicode", productVersion );
-	#else
-		lstrcpynA((char*)lParam,productVersion,wParam);
-	#endif
+	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
+	VerQueryValue(pVerInfo,_T("\\StringFileInfo\\000004b0\\ProductVersion"),(LPVOID*)&productVersion,&blockSize);
+	mir_snprintf(( char* )lParam, wParam, TCHAR_STR_PARAM " Unicode", productVersion );
 	mir_free(pVerInfo);
 	return 0;
 }

@@ -395,8 +395,8 @@ int LoadSkinIcons(void)
 {
 	SKINICONDESC sid;
 	int i, j = 0;
-	char iconName[MAX_PATH];
-	char moduleName[MAX_PATH];
+	char iconName[MAX_PATH], moduleName[MAX_PATH];
+    TCHAR modulePath[MAX_PATH];
 	int iconNameSuffIndx;
 	DBVARIANT dbv;
 
@@ -417,7 +417,7 @@ int LoadSkinIcons(void)
 		DBDeleteContactSetting( NULL, "Icons", moduleName );
 	}
 
-	while ( TRUE ) {
+	for ( ;; ) {
 		// get the next protocol name
 		moduleName[0] = 'p';
 		moduleName[1] = 0;
@@ -446,8 +446,9 @@ int LoadSkinIcons(void)
 	sid.cbSize = sizeof(sid);
 	sid.cx = GetSystemMetrics(SM_CXSMICON);
 	sid.cy = GetSystemMetrics(SM_CYSMICON);
-	GetModuleFileNameA(NULL, moduleName, sizeof(moduleName));
-	sid.pszDefaultFile = moduleName;
+	GetModuleFileName(NULL, modulePath, sizeof(modulePath));
+	sid.ptszDefaultFile = modulePath;
+    sid.flags = SIDF_PATH_TCHAR;
 	//
 	//  Add main icons to list
 	//

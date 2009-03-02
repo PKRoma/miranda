@@ -48,18 +48,18 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			hFont=CreateFontIndirect(&lf);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
 		}
-		{	char filename[MAX_PATH],*productCopyright;
+		{	TCHAR filename[MAX_PATH], *productCopyright;
 			DWORD unused;
 			DWORD verInfoSize;
 			UINT blockSize;
 			PVOID pVerInfo;
 
-			GetModuleFileNameA(NULL,filename,SIZEOF(filename));
-			verInfoSize=GetFileVersionInfoSizeA(filename,&unused);
+			GetModuleFileName(NULL,filename,SIZEOF(filename));
+			verInfoSize=GetFileVersionInfoSize(filename,&unused);
 			pVerInfo=mir_alloc(verInfoSize);
-			GetFileVersionInfoA(filename,0,verInfoSize,pVerInfo);
-			VerQueryValueA(pVerInfo,"\\StringFileInfo\\000004b0\\LegalCopyright",(LPVOID*)&productCopyright,&blockSize);
-			SetDlgItemTextA(hwndDlg,IDC_DEVS,productCopyright);
+			GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
+			VerQueryValue(pVerInfo,_T("\\StringFileInfo\\000004b0\\LegalCopyright"),(LPVOID*)&productCopyright,&blockSize);
+			SetDlgItemText(hwndDlg,IDC_DEVS,productCopyright);
 			mir_free(pVerInfo);
 		}
 		{	char productVersion[56];
