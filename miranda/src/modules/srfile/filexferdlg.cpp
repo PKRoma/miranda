@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static int CheckVirusScanned(HWND hwnd,struct FileDlgData *dat,int i)
 {
 	if(dat->send) return 1;
-	if(dat->fileVirusScanned == NULL) return 1;
+	if(dat->fileVirusScanned == NULL) return 0;
 	if(dat->fileVirusScanned[i]) return 1;
 	if(DBGetContactSettingByte(NULL,"SRFile","WarnBeforeOpening",1)==0) return 1;
 	return IDYES==MessageBox(hwnd,TranslateT("This file has not yet been scanned for viruses. Are you certain you want to open it?"),TranslateT("File Received"),MB_YESNO|MB_DEFBUTTON2);
