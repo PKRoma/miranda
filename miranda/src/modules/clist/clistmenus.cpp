@@ -1367,8 +1367,10 @@ void InitCustomMenus(void)
 		CLISTMENUITEM mi = { 0 };
 		mi.cbSize = sizeof( mi );
 		mi.position = 0x7fffffff;
+		mi.flags = CMIF_ICONFROMICOLIB;
 		mi.pszService = "CloseAction";
 		mi.pszName = LPGEN("E&xit");
+        mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_EXIT );
 		AddMainMenuItem( 0, ( LPARAM )&mi );
 	}
 

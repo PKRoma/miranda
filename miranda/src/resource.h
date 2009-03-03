@@ -123,6 +123,8 @@
 #define IDD_CHOOSE_FONT_EFFECT          289
 #define IDI_LEAVECHAT                   290
 #define IDI_STATUS_LOCKED               291
+#define IDI_SHOWHIDE                    293
+#define IDI_EXIT                        294
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -496,7 +498,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        289
+#define _APS_NEXT_RESOURCE_VALUE        295
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1731
 #define _APS_NEXT_SYMED_VALUE           101
