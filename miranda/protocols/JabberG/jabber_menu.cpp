@@ -413,14 +413,14 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( CLISTMENUITEM );
-	mi.flags = CMIM_FLAGS | CMIF_GRAYED;
+	if (( mi.hParentMenu = pcli->pfnGetProtocolMenu( m_szModuleName )) == NULL )
+		return 0;
 
 	char text[ 200 ];
 	strcpy( text, m_szModuleName );
 	char* tDest = text + strlen( text );
 	mi.pszService = text;
 
-	mi.hParentMenu = pcli->pfnGetProtocolMenu( m_szModuleName );
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
 	mi.position = 1001;
 
