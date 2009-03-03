@@ -463,7 +463,7 @@ int LoadSkinIcons(void)
 	iconNameSuffIndx = strlen(iconName);
 	for ( i = 0; i < SIZEOF(mainIcons); i++ ) {
 		_itoa(i, iconName + iconNameSuffIndx, 10);
-		sid.pszSection = mainIcons[i].section == NULL ? "Main Icons" : mainIcons[i].section;
+		sid.pszSection = mainIcons[i].section == NULL ? "Main Icons" : (char*)mainIcons[i].section;
 		sid.pszName = iconName;
 		sid.pszDescription = (char*)mainIcons[i].description;
 		sid.iDefaultIndex = mainIcons[i].resource_id;
