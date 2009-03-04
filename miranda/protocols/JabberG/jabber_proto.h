@@ -268,31 +268,17 @@ struct CJabberProto : public PROTO_INTERFACE
 	int m_nIqAlloced;
 
 	HGENMENU m_hMenuRoot;
-	HGENMENU m_hMenuRequestAuth;
-	HGENMENU m_hMenuGrantAuth;
-	HGENMENU m_hMenuRevokeAuth;
-	HGENMENU m_hMenuConvert;
-	HGENMENU m_hMenuRosterAdd;
-	HGENMENU m_hMenuLogin;
-	HGENMENU m_hMenuRefresh;
 	HGENMENU m_hMenuChangePassword;
 	HGENMENU m_hMenuGroupchat;
 	HGENMENU m_hMenuBookmarks;
 	HGENMENU m_hMenuNotes;
-	HGENMENU m_hMenuAddBookmark;
 
-	HGENMENU m_hMenuCommands;
-	HGENMENU m_hMenuSendNote;
 	HGENMENU m_hMenuPrivacyLists;
 	HGENMENU m_hMenuRosterControl;
 	HGENMENU m_hMenuServiceDiscovery;
 	HGENMENU m_hMenuSDMyTransports;
 	HGENMENU m_hMenuSDTransports;
 	HGENMENU m_hMenuSDConferences;
-
-	HGENMENU m_hMenuResourcesRoot;
-	HGENMENU m_hMenuResourcesActive;
-	HGENMENU m_hMenuResourcesServer;
 
 	HWND m_hwndCommandWindow;
 
@@ -622,7 +608,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	
 	void   AuthWorker( HANDLE hContact, char* authReqType );
 
-	void   BuildPriorityMenu();
 	void   UpdatePriorityMenu(short priority);
 
 	HGENMENU m_hMenuPriorityRoot;

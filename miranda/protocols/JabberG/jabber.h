@@ -695,6 +695,7 @@ char* __stdcall rtrim( char *string );
 //---- jabber_menu.c ------------------------------------------------
 
 void   g_MenuInit();
+void   g_MenuUninit();
 int    g_OnModernToolbarInit(WPARAM, LPARAM);
 
 //---- jabber_misc.c ------------------------------------------------

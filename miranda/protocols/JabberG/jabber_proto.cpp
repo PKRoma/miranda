@@ -145,7 +145,6 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildStatusMenu );
 	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
 	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
-	JHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CJabberProto::OnPrebuildContactMenu );
 	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
 	JHookEvent( ME_OPT_INITIALISE, &CJabberProto::OnOptionsInit );
 	JHookEvent( ME_SKIN2_ICONSCHANGED, &CJabberProto::OnReloadIcons );

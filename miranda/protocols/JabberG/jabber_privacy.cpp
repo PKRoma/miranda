@@ -2262,6 +2262,7 @@ void CJabberProto::BuildPrivacyMenu()
 	mi.hParentMenu = pcli->pfnGetProtocolMenu( m_szModuleName );
 	m_hPrivacyMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 
+	JCreateService( "/PrivacyLists", &CJabberProto::OnMenuHandlePrivacyLists );
 	char srvFce[MAX_PATH + 64];
 	mir_snprintf( srvFce, SIZEOF(srvFce), "%s/PrivacyLists", m_szModuleName );
 	mi.pszService = srvFce;
