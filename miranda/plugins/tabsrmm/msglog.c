@@ -198,8 +198,7 @@ void CacheLogFonts()
 	myGlobals.crStatus = DBGetContactSettingDword(NULL, FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crOldIncoming =DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", SRMSGDEFSET_BKGCOLOUR);
 	myGlobals.crOldOutgoing =DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGCOLOUR);
-
-	}
+}
 
 /*
 #define RTFPICTHEADERMAXSIZE   78

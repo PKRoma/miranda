@@ -1411,6 +1411,8 @@ static void FreeGlobalSettings(void)
 		DeleteObject(g_Settings.UserListFont);
 	if (g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
+	if (g_Settings.SelectionBGBrush)
+		DeleteObject(g_Settings.SelectionBGBrush);
 }
 
 int OptionsInit(void)
