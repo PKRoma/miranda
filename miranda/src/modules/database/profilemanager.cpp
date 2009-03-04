@@ -152,22 +152,21 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			SetWindowLong(hwndProfile,GWL_USERDATA,(LONG)proc);
 			SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
 		}
+
 		// decide if there is a default profile name given in the INI and if it should be used
-		{
-            if (shouldAutoCreate() || dat->pd->noProfiles)
-            {
-                TCHAR* profile = _tcsrchr(dat->pd->szProfile, '\\');
-                if (profile) ++profile;
-                else profile = dat->pd->szProfile;
+		if (shouldAutoCreate() || dat->pd->noProfiles) {
+			TCHAR* profile = _tcsrchr(dat->pd->szProfile, '\\');
+			if (profile) ++profile;
+			else profile = dat->pd->szProfile;
 
-                TCHAR *p = _tcsrchr(profile, '.');
-                TCHAR c = 0;
-                if (p) { c = *p; *p = 0; } 
+			TCHAR *p = _tcsrchr(profile, '.');
+			TCHAR c = 0;
+			if (p) { c = *p; *p = 0; } 
 
-                SetDlgItemText(hwndDlg, IDC_PROFILENAME, profile);
-                if (c) *p = c;
-            }
+			SetDlgItemText(hwndDlg, IDC_PROFILENAME, profile);
+			if (c) *p = c;
 		}
+
 		// focus on the textbox
 		PostMessage( hwndDlg, WM_FOCUSTEXTBOX, 0, 0 );
 		return TRUE;
@@ -287,7 +286,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 
 	item.iImage = bFileLocked;
 
-    iItem = SendMessage( hwndList, LVM_INSERTITEM, 0, (LPARAM)&item );
+	iItem = SendMessage( hwndList, LVM_INSERTITEM, 0, (LPARAM)&item );
 	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 )
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
