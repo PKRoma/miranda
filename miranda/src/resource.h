@@ -449,7 +449,6 @@
 #define IDC_PROTOTYPECOMBO              1715
 #define IDC_ACCINTERNALNAME             1716
 #define IDC_OPTIONS                     1717
-#define IDC_BUTTON1                     1718
 #define IDC_CLEAR                       1718
 #define IDC_PROGRESS1                   1719
 #define IDC_PROGRESSBAR                 1719

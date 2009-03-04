@@ -29,6 +29,7 @@ extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
 extern TCHAR mirandabootini[MAX_PATH];
 TCHAR szDefaultMirandaProfile[MAX_PATH];
+bool dbCreated;
 
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(TCHAR * buf, size_t cch)
@@ -259,6 +260,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
         mir_free(prf);
 		return 0;
 	}
+    dbCreated = true;
 	// the profile has been created! woot
     mir_free(prf);
 	return 1;
@@ -303,8 +305,11 @@ static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
     {
 		int err;
 	    char *szProfile = mir_t2a((TCHAR*)lParam);
-		if (dblink->makeDatabase(szProfile, &err) == 0) 
+		if (dblink->makeDatabase(szProfile, &err) == 0)
+        {
+            dbCreated = true;
             res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
+        }
         mir_free(szProfile);
 	}
 	return res;
