@@ -176,7 +176,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=shlwapi32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -659,7 +659,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=shlwapi32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1403,7 +1403,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=shlwapi32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
