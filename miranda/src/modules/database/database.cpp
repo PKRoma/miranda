@@ -60,35 +60,23 @@ int isValidProfileName(const TCHAR *name)
     return len > 0 && _tcsicmp(&name[len], _T(".dat")) == 0;
 }
 
+// returns 1 if the profile manager should be shown
+static int showProfileManager(void)
+{
+	TCHAR Mgr[32];
+	// is control pressed?
+	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
+	// wanna show it?
+	GetPrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T("never"), Mgr, SIZEOF(Mgr), mirandabootini);
+	if ( _tcsicmp(Mgr, _T("yes")) == 0 ) return 1;
+	return 0;
+}
+
 // returns 1 if a single profile (full path) is found within the profile dir
 static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
 {
 	unsigned int found = 0;
     bool req = szProfile[0] != 0, reqfd = false;
-
-	TCHAR searchspec[MAX_PATH];
-    mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
-	
-	WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile(searchspec, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) 
-	{
-        do
-        {
-		    // make sure the first hit is actually a *.dat file
-		    if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
-		    {
-			    // copy the profile name early cos it might be the only one
-			    if (++found == 1 && !req) 
-                    mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
-		    }
-        }
-	    while (FindNextFile(hFind, &ffd));
-		FindClose(hFind);
-	}
-
-	if (noProfiles) 
-		*noProfiles = found == 0;
 
     if (req)
     {
@@ -96,6 +84,34 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
         reqfd = fp != NULL;
         if (reqfd) fclose(fp);
     }
+
+    if (showProfileManager() || !reqfd)
+    {
+	    TCHAR searchspec[MAX_PATH];
+        mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
+    	
+	    WIN32_FIND_DATA ffd;
+        HANDLE hFind = FindFirstFile(searchspec, &ffd);
+	    if (hFind != INVALID_HANDLE_VALUE) 
+	    {
+            do
+            {
+		        // make sure the first hit is actually a *.dat file
+		        if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
+		        {
+			        // copy the profile name early cos it might be the only one
+			        if (++found == 1 && !req) 
+                        mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
+		        }
+            }
+	        while (FindNextFile(hFind, &ffd));
+		    FindClose(hFind);
+	    }
+        reqfd = false;
+    }
+
+    if (noProfiles) 
+	    *noProfiles = found == 0;
 
     return req ? reqfd : found == 1;
 }
@@ -159,18 +175,6 @@ static int getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	return rc;
 }
 
-// returns 1 if the profile manager should be shown
-static int showProfileManager(void)
-{
-	TCHAR Mgr[32];
-	// is control pressed?
-	if (GetAsyncKeyState(VK_CONTROL)&0x8000) return 1;
-	// wanna show it?
-	GetPrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T("never"), Mgr, SIZEOF(Mgr), mirandabootini);
-	if ( _tcsicmp(Mgr, _T("yes")) == 0 ) return 1;
-	return 0;
-}
-
 // returns 1 if a default profile should be selected instead of showing the manager.
 static int getProfileAutoRun(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 {
@@ -223,7 +227,7 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	if (getProfileCmdLine(szProfile, cch, profiledir)) return 1;
 	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
 
-    if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles) && !showProfileManager()) return 1;
+    if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
