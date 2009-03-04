@@ -325,11 +325,14 @@ static void DoAutoExec(void)
 	dat.cbSize = sizeof(dat);
     dat.dwFlags = RVF_TCHAR;
 
-    str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szOnCreateFilename, (LPARAM)&dat);
-    pathToAbsoluteT(str2, szIniPath, NULL);
-    mir_free(str2);
+    if (dbCreated && szOnCreateFilename[0])
+    {
+        str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szOnCreateFilename, (LPARAM)&dat);
+        pathToAbsoluteT(str2, szIniPath, NULL);
+        mir_free(str2);
 
-    if (dbCreated) ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, 0, 1);
+        ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, 0, 1);
+    }
 
     str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szFindPath, (LPARAM)&dat);
     pathToAbsoluteT(str2, szFindPath, NULL);
