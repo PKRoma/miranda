@@ -253,15 +253,18 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 {
 	HWND hwndDlg = (HWND) lParam;
 	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
+
 	TCHAR sizeBuf[64];
-	LVITEM item;
 	int iItem=0;
 	struct _stat statbuf;
-	int bFileExists = FALSE;
+	bool bFileExists = false, bFileLocked = true;
+
 	TCHAR * p = _tcsrchr(profile, '.');
 	_tcscpy(sizeBuf, _T("0 KB"));
 	if ( p != NULL ) *p=0;
-	ZeroMemory(&item,sizeof(item));
+	
+	LVITEM item;
+    ZeroMemory(&item,sizeof(item));
 	item.mask = LVIF_TEXT | LVIF_IMAGE;
 	item.pszText = profile;
 	item.iItem=0;
@@ -276,8 +279,13 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 			_tcscpy(sizeBuf+5, _T(" KB"));
 		}
 		bFileExists = TRUE;
+
+	    FILE* fp = _tfopen(fullpath, _T("r+"));
+	    bFileLocked = fp == NULL;
+        if (!bFileLocked) fclose(fp);
 	}
-	item.iImage = !bFileExists;
+
+	item.iImage = bFileLocked;
 
     iItem = SendMessage( hwndList, LVM_INSERTITEM, 0, (LPARAM)&item );
 	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 )
@@ -301,15 +309,13 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 		dbe.lParam = (LPARAM)szPath;
 		_tcscpy(szPath, fullpath);
 		if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == 1 ) {
-			HANDLE hFile = CreateFile(fullpath,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,0,NULL);
-			if ( hFile == INVALID_HANDLE_VALUE) {
+			if (bFileLocked) {
 				// file locked
 				item2.pszText = TranslateT( "<In Use>" );
 				item2.iSubItem = 1;
 				SendMessage( hwndList, LVM_SETITEMTEXT, iItem, ( LPARAM )&item2 );
 			}
 			else {
-				CloseHandle(hFile);
 				item.pszText = szPath;
 				item.iSubItem = 1;
 				SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item );
