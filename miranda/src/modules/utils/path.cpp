@@ -164,11 +164,11 @@ int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 		return lstrlen( pOut );
 	}
 	else if ( pSrc[0] != '\\' ) {
-		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc );
+		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), base, pSrc );
 		return lstrlen( pOut );
 	}
 	else {
-		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), szMirandaPathW, pSrc+1 );
+		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), base, pSrc+1 );
 		return lstrlen( pOut );
 	}
 }

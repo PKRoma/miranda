@@ -64,6 +64,7 @@ int isValidProfileName(const TCHAR *name)
 static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
 {
 	unsigned int found = 0;
+    bool req = szProfile[0] != 0, reqfd = false;
 
 	TCHAR searchspec[MAX_PATH];
     mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
@@ -75,10 +76,10 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
         do
         {
 		    // make sure the first hit is actually a *.dat file
-		    if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
+		    if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
 		    {
 			    // copy the profile name early cos it might be the only one
-			    if (++found == 1 && szProfile[0] == 0) 
+			    if (++found == 1 && !req) 
                     mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
 		    }
         }
@@ -89,7 +90,14 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	if (noProfiles) 
 		*noProfiles = found == 0;
 
-    return found == 1;
+    if (req)
+    {
+        FILE* fp = _tfopen(szProfile, _T("r+"));
+        reqfd = fp != NULL;
+        if (reqfd) fclose(fp);
+    }
+
+    return req ? reqfd : found == 1;
 }
 
 // returns 1 if something that looks like a profile is there
@@ -215,7 +223,7 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	if (getProfileCmdLine(szProfile, cch, profiledir)) return 1;
 	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
 
-    if ( !showProfileManager() && getProfile1(szProfile, cch, profiledir, &pd.noProfiles) ) return 1;
+    if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles) && !showProfileManager()) return 1;
 	else {		
 		pd.szProfile=szProfile;
 		pd.szProfileDir=profiledir;
