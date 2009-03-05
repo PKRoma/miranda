@@ -89,12 +89,14 @@ bool shouldAutoCreate(void)
 	return _tcsicmp(ac, _T("yes")) == 0;
 }
 
-static bool getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
+static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 {
-    if (szProfile[0]) return false;
+    if (szProfile[0]) return;
 
 	TCHAR defaultProfile[MAX_PATH];
 	GetPrivateProfileString(_T("Database"), _T("DefaultProfile"), _T(""), defaultProfile, SIZEOF(defaultProfile), mirandabootini);
+
+    if (defaultProfile[0] == 0) return;
 
 	REPLACEVARSDATA dat = {0};
 	dat.cbSize = sizeof(dat);
@@ -104,11 +106,8 @@ static bool getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	if (res) {
         mir_sntprintf(szProfile, cch, _T("%s%s%s"), profiledir, res, isValidProfileName(res) ? _T("") : _T(".dat"));
 		mir_free(res);
-        return fileExist(szProfile) || shouldAutoCreate();
 	}
 	else szProfile[0] = 0;
-
-    return false;
 }
 
 // returns 1 if a single profile (full path) is found within the profile dir
@@ -116,8 +115,8 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 {
 	unsigned int found = 0;
 
-	bool reqfd = fileExist(szProfile) || getDefaultProfile(szProfile, cch, profiledir);
     bool req = szProfile[0] != 0;
+	bool reqfd = req && (fileExist(szProfile) || shouldAutoCreate());
 
 	if (showProfileManager() || !reqfd) {
 		TCHAR searchspec[MAX_PATH];
@@ -201,14 +200,14 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 }
 
 // returns 1 if a default profile should be selected instead of showing the manager.
-static int getProfileAutoRun(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
+static int getProfileAutoRun(TCHAR * szProfile)
 {
 	TCHAR Mgr[32];
 	GetPrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T(""), Mgr, SIZEOF(Mgr), mirandabootini);
 	if (_tcsicmp(Mgr, _T("never")))
 		return 0;		
 
-    return getDefaultProfile(szProfile, cch, profiledir);
+    return fileExist(szProfile) || shouldAutoCreate();
 }
 
 // returns 1 if a profile was selected
@@ -218,8 +217,9 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	PROFILEMANAGERDATA pd = {0};
 
 	getProfilePath(profiledir, SIZEOF(profiledir));
-	getProfileCmdLine(szProfile, cch, profiledir);
-	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
+    getDefaultProfile(szProfile, cch, profiledir);
+    getProfileCmdLine(szProfile, cch, profiledir);
+	if (getProfileAutoRun(szProfile)) return 1;
 	if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
 
 	pd.szProfile=szProfile;
