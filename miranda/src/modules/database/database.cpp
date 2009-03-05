@@ -28,8 +28,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
 extern TCHAR mirandabootini[MAX_PATH];
-TCHAR szDefaultMirandaProfile[MAX_PATH];
 bool dbCreated;
+
+
+bool fileExist(TCHAR* fname)
+{
+    if (fname[0] == 0) return false;
+
+	FILE* fp = _tfopen(fname, _T("r+"));
+	bool res = fp != NULL;
+	if (res) fclose(fp);
+    return res;
+}
 
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(TCHAR * buf, size_t cch)
@@ -72,16 +82,42 @@ static int showProfileManager(void)
 	return ( _tcsicmp(Mgr, _T("yes")) == 0 );
 }
 
+bool shouldAutoCreate(void)
+{
+	TCHAR ac[32];
+	GetPrivateProfileString(_T("Database"), _T("AutoCreate"), _T(""), ac, SIZEOF(ac), mirandabootini);
+	return _tcsicmp(ac, _T("yes")) == 0;
+}
+
+static bool getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
+{
+    if (szProfile[0]) return false;
+
+	TCHAR defaultProfile[MAX_PATH];
+	GetPrivateProfileString(_T("Database"), _T("DefaultProfile"), _T(""), defaultProfile, SIZEOF(defaultProfile), mirandabootini);
+
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	dat.dwFlags = RVF_TCHAR;
+
+	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
+	if (res) {
+        mir_sntprintf(szProfile, cch, _T("%s%s%s"), profiledir, res, isValidProfileName(res) ? _T("") : _T(".dat"));
+		mir_free(res);
+        return fileExist(szProfile) || shouldAutoCreate();
+	}
+	else szProfile[0] = 0;
+
+    return false;
+}
+
 // returns 1 if a single profile (full path) is found within the profile dir
 static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
 {
 	unsigned int found = 0;
-	bool req = szProfile[0] != 0, reqfd = false;
-	if (req) {
-		FILE* fp = _tfopen(szProfile, _T("r+"));
-		reqfd = fp != NULL;
-		if (reqfd) fclose(fp);
-	}
+
+	bool reqfd = fileExist(szProfile) || getDefaultProfile(szProfile, cch, profiledir);
+    bool req = szProfile[0] != 0;
 
 	if (showProfileManager() || !reqfd) {
 		TCHAR searchspec[MAX_PATH];
@@ -107,7 +143,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	if (noProfiles) 
 		*noProfiles = found == 0;
 
-	return req ? reqfd : found == 1;
+    return req ? reqfd : found == 1;
 }
 
 // returns 1 if something that looks like a profile is there
@@ -147,11 +183,9 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 	return 0;
 }
 
-// returns 1 if a valid filename (incl. dat) is found, includes fully qualified path
-static int getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
+void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 {
 	TCHAR buf[MAX_PATH];
-	int rc = 0;
 	if ( getProfileCmdLineArgs(buf, SIZEOF(buf)) ) {
 		// have something that looks like a .dat, with or without .dat in the filename
 		pathToAbsoluteT(buf, szProfile, profiledir); 
@@ -164,8 +198,6 @@ static int getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 			size_t len = _tcslen(profiledir);
 			mir_sntprintf(profiledir+len, cch-len, _T("%s\\"), buf); 
 	}	}
-
-	return rc;
 }
 
 // returns 1 if a default profile should be selected instead of showing the manager.
@@ -176,36 +208,7 @@ static int getProfileAutoRun(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	if (_tcsicmp(Mgr, _T("never")))
 		return 0;		
 
-	if (szDefaultMirandaProfile[0] == 0)
-		return 0;
-
-	mir_sntprintf(szProfile, cch, _T("%s%s.dat"), profiledir, szDefaultMirandaProfile);
-	return 1;
-}
-
-bool shouldAutoCreate(void)
-{
-	TCHAR ac[32];
-	GetPrivateProfileString(_T("Database"), _T("AutoCreate"), _T("no"), ac, SIZEOF(ac), mirandabootini);
-	return _tcsicmp(ac, _T("yes")) == 0;
-}
-
-static void getDefaultProfile(void)
-{
-	TCHAR defaultProfile[MAX_PATH];
-	GetPrivateProfileString(_T("Database"), _T("DefaultProfile"), _T(""), defaultProfile, SIZEOF(defaultProfile), mirandabootini);
-
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
-	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
-	if (res) {
-		_tcsncpy(szDefaultMirandaProfile, res, SIZEOF(szDefaultMirandaProfile)); 
-		szDefaultMirandaProfile[SIZEOF(szDefaultMirandaProfile)-1] = 0;
-		mir_free(res);
-	}
-	else szDefaultMirandaProfile[0] = 0;
+    return getDefaultProfile(szProfile, cch, profiledir);
 }
 
 // returns 1 if a profile was selected
@@ -215,8 +218,7 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	PROFILEMANAGERDATA pd = {0};
 
 	getProfilePath(profiledir, SIZEOF(profiledir));
-	getDefaultProfile();
-	if (getProfileCmdLine(szProfile, cch, profiledir)) return 1;
+	getProfileCmdLine(szProfile, cch, profiledir);
 	if (getProfileAutoRun(szProfile, cch, profiledir)) return 1;
 	if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
 

@@ -59,8 +59,12 @@ struct DetailsData {
 	struct DlgProfData * prof;
 };
 
+struct ProfileEnumData {
+    HWND hwnd;
+    TCHAR* szProfile;
+};
+
 extern TCHAR mirandabootini[MAX_PATH]; 
-extern TCHAR szDefaultMirandaProfile[MAX_PATH];
 
 void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
@@ -250,8 +254,8 @@ static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 
 BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 {
-	HWND hwndDlg = (HWND) lParam;
-	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
+    ProfileEnumData *ped = (ProfileEnumData*)lParam;
+	HWND hwndList = GetDlgItem(ped->hwnd, IDC_PROFILELIST);
 
 	TCHAR sizeBuf[64];
 	int iItem=0;
@@ -287,7 +291,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 	item.iImage = bFileLocked;
 
 	iItem = SendMessage( hwndList, LVM_INSERTITEM, 0, (LPARAM)&item );
-	if ( lstrcmpi(szDefaultMirandaProfile, profile) == 0 )
+	if ( lstrcmpi(ped->szProfile, fullpath) == 0 )
 		ListView_SetItemState(hwndList, iItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 
 	item.iItem = iItem;
@@ -375,12 +379,14 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
+            SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
 			ListView_SetExtendedListViewStyle(hwndList,
 				ListView_GetExtendedListViewStyle(hwndList) | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
 
 			// find all the profiles
-			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)hwndDlg);
+            ProfileEnumData ped = { hwndDlg, dat->pd->szProfile };
+			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
 			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
 			return TRUE;
 		}
@@ -388,7 +394,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndList=GetDlgItem(hwndDlg,IDC_PROFILELIST);
 			SetFocus(hwndList);
-			if ( szDefaultMirandaProfile[0] == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 )
+            if ( dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST)) == 0 )
 				ListView_SetItemState(hwndList, 0, LVIS_SELECTED, LVIS_SELECTED);
 			break;
 		}
