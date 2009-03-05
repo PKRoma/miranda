@@ -7,6 +7,12 @@
 + = new feature
 - = removed
 
+0.8.0.4  - 2009/03/05
+
+                * Made project GCC / MingW32 compatible. Added makefile(s) and project
+				  files.
+
+
 0.8.0.2  - 2007/10/20
 
                 * advanced option to save position while moving or resizing (old behaviour)

@@ -201,8 +201,8 @@ int FreeOwnerDataGroupMenu (WPARAM wParam,LPARAM lParam)
 	lpGroupMenuExecParam mmep;
 	mmep=(lpGroupMenuExecParam)lParam;
 	if (mmep!=NULL) {
-		FreeAndNil(&mmep->szServiceName);
-		FreeAndNil(&mmep);
+		FreeAndNil((void *)&mmep->szServiceName);
+		FreeAndNil((void *)&mmep);
 	}
 
 	return(0);
@@ -642,8 +642,8 @@ int FreeOwnerDataSubGroupMenu (WPARAM wParam,LPARAM lParam)
 	lpSubGroupMenuExecParam mmep;
 	mmep=(lpSubGroupMenuExecParam)lParam;
 	if (mmep!=NULL) {
-		FreeAndNil(&mmep->szServiceName);
-		FreeAndNil(&mmep);
+		FreeAndNil((void *)&mmep->szServiceName);
+		FreeAndNil((void *)&mmep);
 	}
 
 	return(0);

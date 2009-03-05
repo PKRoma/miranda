@@ -1628,14 +1628,14 @@ static int CLUIFramesLoadMainMenu()
 	// create root menu
 	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_MIRANDA); //LoadIcon(g_hInst,MAKEINTRESOURCE(IDI_MIRANDA));
 	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB;
-	mi.position = 3000090000;
+	mi.position = (int)3000090000;
 	mi.pszPopupName = (char*) - 1;
 	mi.pszName = LPGEN("Frames");
 	mi.pszService = 0;
 	MainMIRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
 
 	// create frames menu
-	separator = 3000200000;
+	separator = (int)3000200000;
 	for (i = 0;i < nFramescount;i++) {
 		mi.hIcon = Frames[i].TitleBar.hicon;
 		mi.flags = CMIF_CHILDPOPUP | CMIF_ROOTPOPUP | CMIF_TCHAR;

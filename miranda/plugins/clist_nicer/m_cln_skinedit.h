@@ -1,3 +1,4 @@
+
 /*
  * services
  */
@@ -8,6 +9,8 @@
 /*
  * data structs
  */
+
+struct MessageWindowData;
 
 typedef struct _tagImageItem {
     char    szName[40];
@@ -35,7 +38,7 @@ typedef struct _tagButtonItem {
     LONG    normalGlyphMetrics[4];
     LONG    hoverGlyphMetrics[4];
     LONG    pressedGlyphMetrics[4];
-    DWORD   dwFlags;
+    DWORD   dwFlags, dwStockFlags;
     DWORD   uId;
     TCHAR   szTip[256];
     char    szService[256];
@@ -44,8 +47,14 @@ typedef struct _tagButtonItem {
     DWORD   type;
     void    (*pfnAction)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
     void    (*pfnCallback)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    TCHAR   tszLabel[40];
     struct  _tagButtonItem *nextItem;
 } ButtonItem;
+
+typedef struct _tagButtonSet {
+    ButtonItem  *items;
+    LONG        left, top, right, bottom;               // client area offsets, calculated from button layout
+} ButtonSet;
 
 typedef struct {
     char szName[40];
@@ -147,6 +156,7 @@ typedef struct _tagSkinDescription {
 #define BUTTON_NORMALGLYPHISICON 1024
 #define BUTTON_PRESSEDGLYPHISICON 2048
 #define BUTTON_HOVERGLYPHISICON 4096
+#define BUTTON_HASLABEL 8192
 
 #define CLCDEFAULT_GRADIENT 0
 #define CLCDEFAULT_CORNER 0

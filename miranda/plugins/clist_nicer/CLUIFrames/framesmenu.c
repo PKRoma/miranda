@@ -36,8 +36,8 @@ int FreeOwnerDataFrameMenu (WPARAM wParam,LPARAM lParam)
 
 	cmep=(lpFrameMenuExecParam)lParam;
 	if (cmep!=NULL){
-		FreeAndNil(&cmep->szServiceName);
-		FreeAndNil(&cmep);
+		FreeAndNil((void *)&cmep->szServiceName);
+		FreeAndNil((void *)&cmep);
 	}
 	return(0);
 }

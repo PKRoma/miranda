@@ -619,13 +619,152 @@ DWORD __fastcall HexStringToLong(const char *szSource)
     return(RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)));
 }
 
-static StatusItems_t default_item = 
-    {"{--Contact--}", "", 0, 
+static StatusItems_t default_item =  {
+	"{--Contact--}", "", 0,
      CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
      CLCDEFAULT_COLOR, CLCDEFAULT_COLOR2, CLCDEFAULT_COLOR2_TRANSPARENT, -1, 
      CLCDEFAULT_ALPHA, CLCDEFAULT_MRGN_LEFT, CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, 
-     CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE};
+     CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+};
 
+
+static void PreMultiply(HBITMAP hBitmap, int mode)
+{
+	BYTE *p = NULL;
+	DWORD dwLen;
+    int width, height, x, y;
+    BITMAP bmp;
+    BYTE alpha;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+    width = bmp.bmWidth;
+	height = bmp.bmHeight;
+	dwLen = width * height * 4;
+	p = (BYTE *)malloc(dwLen);
+    if(p) {
+        GetBitmapBits(hBitmap, dwLen, p);
+        for (y = 0; y < height; ++y) {
+            BYTE *px = p + width * 4 * y;
+
+            for (x = 0; x < width; ++x) {
+                if(mode) {
+                    alpha = px[3];
+                    px[0] = px[0] * alpha/255;
+                    px[1] = px[1] * alpha/255;
+                    px[2] = px[2] * alpha/255;
+                }
+                else
+                    px[3] = 255;
+                px += 4;
+            }
+        }
+        dwLen = SetBitmapBits(hBitmap, dwLen, p);
+        free(p);
+    }
+}
+
+static void CorrectBitmap32Alpha(HBITMAP hBitmap)
+{
+	BITMAP bmp;
+	DWORD dwLen;
+	BYTE *p;
+	int x, y;
+    BOOL fixIt = TRUE;
+
+	GetObject(hBitmap, sizeof(bmp), &bmp);
+
+	if (bmp.bmBitsPixel != 32)
+		return;
+
+	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
+	p = (BYTE *)malloc(dwLen);
+	if (p == NULL)
+		return;
+	memset(p, 0, dwLen);
+
+	GetBitmapBits(hBitmap, dwLen, p);
+
+	for (y = 0; y < bmp.bmHeight; ++y) {
+        BYTE *px = p + bmp.bmWidth * 4 * y;
+
+        for (x = 0; x < bmp.bmWidth; ++x)
+		{
+			if (px[3] != 0)
+			{
+				fixIt = FALSE;
+			}
+			else
+			{
+				px[3] = 255;
+			}
+
+			px += 4;
+		}
+	}
+
+	if (fixIt)
+	{
+		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
+	}
+
+	free(p);
+}
+
+static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
+{
+    HBITMAP hBitmap = 0;
+
+    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
+    if(hBitmap != 0)
+        CorrectBitmap32Alpha(hBitmap);
+
+    return hBitmap;
+}
+
+static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
+{
+    HBITMAP hbm = LoadPNG(fileName, item);
+    BITMAP bm;
+
+    if(hbm) {
+        item->hbm = hbm;
+        item->bf.BlendFlags = 0;
+        item->bf.BlendOp = AC_SRC_OVER;
+        item->bf.AlphaFormat = 0;
+
+        GetObject(hbm, sizeof(bm), &bm);
+        if(bm.bmBitsPixel == 32) {
+            PreMultiply(hbm, 1);
+            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
+            item->bf.AlphaFormat = AC_SRC_ALPHA;
+        }
+        item->width = bm.bmWidth;
+        item->height = bm.bmHeight;
+        item->inner_height = item->height - item->bTop - item->bBottom;
+        item->inner_width = item->width - item->bLeft - item->bRight;
+        if(item->bTop && item->bBottom && item->bLeft && item->bRight) {
+            item->dwFlags |= IMAGE_FLAG_DIVIDED;
+            if(item->inner_height <= 0 || item->inner_width <= 0) {
+                DeleteObject(hbm);
+                item->hbm = 0;
+                return;
+            }
+        }
+        item->hdc = CreateCompatibleDC(hdc);
+        item->hbmOld = SelectObject(item->hdc, item->hbm);
+    }
+}
+
+static void IMG_DeleteItem(ImageItem *item)
+{
+    if(!(item->dwFlags & IMAGE_GLYPH)) {
+        SelectObject(item->hdc, item->hbmOld);
+        DeleteObject(item->hbm);
+        DeleteDC(item->hdc);
+    }
+    if(item->fillBrush)
+        DeleteObject(item->fillBrush);
+}
 
 static void ReadItem(StatusItems_t *this_item, char *szItem, char *file)
 {
@@ -860,144 +999,6 @@ done_with_glyph:
     }
 imgread_done:
     ReleaseDC(pcli->hwndContactList, hdc);
-}
-
-static void PreMultiply(HBITMAP hBitmap, int mode)
-{
-	BYTE *p = NULL;
-	DWORD dwLen;
-    int width, height, x, y;
-    BITMAP bmp;
-    BYTE alpha;
-    
-	GetObject(hBitmap, sizeof(bmp), &bmp);
-    width = bmp.bmWidth;
-	height = bmp.bmHeight;
-	dwLen = width * height * 4;
-	p = (BYTE *)malloc(dwLen);
-    if(p) {
-        GetBitmapBits(hBitmap, dwLen, p);
-        for (y = 0; y < height; ++y) {
-            BYTE *px = p + width * 4 * y;
-
-            for (x = 0; x < width; ++x) {
-                if(mode) {
-                    alpha = px[3];
-                    px[0] = px[0] * alpha/255;
-                    px[1] = px[1] * alpha/255;
-                    px[2] = px[2] * alpha/255;
-                }
-                else
-                    px[3] = 255;
-                px += 4;
-            }
-        }
-        dwLen = SetBitmapBits(hBitmap, dwLen, p);
-        free(p);
-    }
-}
-
-static void CorrectBitmap32Alpha(HBITMAP hBitmap)
-{
-	BITMAP bmp;
-	DWORD dwLen;
-	BYTE *p;
-	int x, y;
-    BOOL fixIt = TRUE;
-
-	GetObject(hBitmap, sizeof(bmp), &bmp);
-
-	if (bmp.bmBitsPixel != 32)
-		return;
-
-	dwLen = bmp.bmWidth * bmp.bmHeight * (bmp.bmBitsPixel / 8);
-	p = (BYTE *)malloc(dwLen);
-	if (p == NULL)
-		return;
-	memset(p, 0, dwLen);
-
-	GetBitmapBits(hBitmap, dwLen, p);
-
-	for (y = 0; y < bmp.bmHeight; ++y) {
-        BYTE *px = p + bmp.bmWidth * 4 * y;
-
-        for (x = 0; x < bmp.bmWidth; ++x) 
-		{
-			if (px[3] != 0) 
-			{
-				fixIt = FALSE;
-			}
-			else
-			{
-				px[3] = 255;
-			}
-
-			px += 4;
-		}
-	}
-
-	if (fixIt)
-	{
-		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
-	}
-
-	free(p);
-}
-
-static HBITMAP LoadPNG(const char *szFilename, ImageItem *item)
-{
-    HBITMAP hBitmap = 0;
-
-    hBitmap = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)szFilename);
-    if(hBitmap != 0)
-        CorrectBitmap32Alpha(hBitmap);
-
-    return hBitmap;
-}
-
-static void IMG_CreateItem(ImageItem *item, const char *fileName, HDC hdc)
-{
-    HBITMAP hbm = LoadPNG(fileName, item);
-    BITMAP bm;
-
-    if(hbm) {
-        item->hbm = hbm;
-        item->bf.BlendFlags = 0;
-        item->bf.BlendOp = AC_SRC_OVER;
-        item->bf.AlphaFormat = 0;
-        
-        GetObject(hbm, sizeof(bm), &bm);
-        if(bm.bmBitsPixel == 32) {
-            PreMultiply(hbm, 1);
-            item->dwFlags |= IMAGE_PERPIXEL_ALPHA;
-            item->bf.AlphaFormat = AC_SRC_ALPHA;
-        }
-        item->width = bm.bmWidth;
-        item->height = bm.bmHeight;
-        item->inner_height = item->height - item->bTop - item->bBottom;
-        item->inner_width = item->width - item->bLeft - item->bRight;
-        if(item->bTop && item->bBottom && item->bLeft && item->bRight) {
-            item->dwFlags |= IMAGE_FLAG_DIVIDED;
-            if(item->inner_height <= 0 || item->inner_width <= 0) {
-                DeleteObject(hbm);
-                item->hbm = 0;
-                return;
-            }
-        }
-        item->hdc = CreateCompatibleDC(hdc);
-        item->hbmOld = SelectObject(item->hdc, item->hbm);
-    }
-}
-
-static void IMG_DeleteItem(ImageItem *item)
-{
-    if(!(item->dwFlags & IMAGE_GLYPH)) {
-        SelectObject(item->hdc, item->hbmOld);
-        DeleteObject(item->hbm);
-        DeleteDC(item->hdc);
-    }
-    if(item->fillBrush)
-        DeleteObject(item->fillBrush);
 }
 
 void IMG_DeleteItems()

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "resource.h"
-#include "m_userinfo.h"
+#include <m_userinfo.h>
 #include "cluiframes/cluiframes.h"
 #include "coolsb/coolscroll.h"
 
