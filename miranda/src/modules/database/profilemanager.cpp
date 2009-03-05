@@ -283,9 +283,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 		}
 		bFileExists = TRUE;
 
-	    FILE* fp = _tfopen(fullpath, _T("r+"));
-	    bFileLocked = fp == NULL;
-        if (!bFileLocked) fclose(fp);
+	    bFileLocked = !fileExist(fullpath);
 	}
 
 	item.iImage = bFileLocked;

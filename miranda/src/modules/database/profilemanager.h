@@ -36,4 +36,5 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg);
 int getProfileManager(PROFILEMANAGERDATA * pd);
 int getProfilePath(TCHAR * buf, size_t cch);
 int isValidProfileName(const TCHAR * name);
+bool fileExist(TCHAR* fname);
 
