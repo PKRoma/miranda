@@ -25,7 +25,7 @@ DEF := FREEIMAGE_EXPORTS
 BUILD := build
 ZLIB := $(BUILD)/zlib.dll
 
-CFLAGS := $(CFLAGS) $(if $(DEBUG),-g,-Os)
+CFLAGS := $(CFLAGS) $(if $(DEBUG),-g -D_DEBUG,-Os)
 LDFLAGS := $(LDFLAGS) $(if $(DEBUG),-g,-Wl,-s)
 
 CROSS_MINGW := i586-mingw32msvc i386-mingw32msvc i686-mingw32 i386-mingw32 mingw32 mingw
