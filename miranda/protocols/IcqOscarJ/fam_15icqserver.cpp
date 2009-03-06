@@ -156,10 +156,10 @@ void CIcqProto::handleExtensionServerInfo(BYTE *buf, WORD wPackLen, WORD wFlags)
 
 	if ((dataTlv->wLen == wPackLen) && (wPackLen >= 10))
 	{
-    WORD wBytesRemaining;
-    WORD wRequestType;
-    WORD wCookie;
-    DWORD dwMyUin;
+		WORD wBytesRemaining;
+		WORD wRequestType;
+		WORD wCookie;
+		DWORD dwMyUin;
 
 		unpackLEWord(&databuf, &wBytesRemaining);
 		unpackLEDWord(&databuf, &dwMyUin);
@@ -273,20 +273,20 @@ void CIcqProto::handleExtensionMetaResponse(BYTE *databuf, WORD wPacketLen, WORD
 			NetLog_Server("Error: Failure parsing META_SMS_DELIVERY_RECEIPT");
 			break;
 
-    case META_DIRECTORY_DATA:
-    case META_DIRECTORY_RESPONSE:
-      if (bResultCode == 0x0A)
-        handleDirectoryQueryResponse(databuf, wPacketLen, wCookie, wReplySubtype, wFlags);
-      else
-        NetLog_Server("Error: Directory request failed, code %u", bResultCode);
-      break;
+		case META_DIRECTORY_DATA:
+		case META_DIRECTORY_RESPONSE:
+			if (bResultCode == 0x0A)
+				handleDirectoryQueryResponse(databuf, wPacketLen, wCookie, wReplySubtype, wFlags);
+			else
+				NetLog_Server("Error: Directory request failed, code %u", bResultCode);
+			break;
 
-    case META_DIRECTORY_UPDATE_ACK:
-      if (bResultCode == 0x0A)
-        handleDirectoryUpdateResponse(databuf, wPacketLen, wCookie, wReplySubtype);
-      else
-        NetLog_Server("Error: Directory request failed, code %u", bResultCode);
-      break;
+		case META_DIRECTORY_UPDATE_ACK:
+			if (bResultCode == 0x0A)
+				handleDirectoryUpdateResponse(databuf, wPacketLen, wCookie, wReplySubtype);
+			else
+				NetLog_Server("Error: Directory request failed, code %u", bResultCode);
+			break;
 
 		default:
 			NetLog_Server("Warning: Ignored 15/03 replysubtype x%x", wReplySubtype);
@@ -486,11 +486,8 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 	case SRV_RANDOM_FOUND: // Random search server reply
 	default:
 		if (pCookie)
-		{
 			ReleaseCookie(wCookie);
-		}
 		break;
-
 	}
 
 	// For debugging purposes only
@@ -523,642 +520,642 @@ void CIcqProto::parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, 
 
 
 UserInfoRecordItem rEmail[] = {
-  {0x64, DBVT_ASCIIZ, "e-mail%u"}
+	{0x64, DBVT_ASCIIZ, "e-mail%u"}
 };
 
 UserInfoRecordItem rAddress[] = {
-  {0x64, DBVT_UTF8, "Street"},
-  {0x6E, DBVT_UTF8, "City"},
-  {0x78, DBVT_UTF8, "State"},
-  {0x82, DBVT_UTF8, "ZIP"},
-  {0x8C, DBVT_WORD, "Country"}
+	{0x64, DBVT_UTF8, "Street"},
+	{0x6E, DBVT_UTF8, "City"},
+	{0x78, DBVT_UTF8, "State"},
+	{0x82, DBVT_UTF8, "ZIP"},
+	{0x8C, DBVT_WORD, "Country"}
 };
 
 UserInfoRecordItem rOriginAddress[] = {
-  {0x64, DBVT_UTF8, "OriginStreet"},
-  {0x6E, DBVT_UTF8, "OriginCity"},
-  {0x78, DBVT_UTF8, "OriginState"},
-  {0x8C, DBVT_WORD, "OriginCountry"}
+	{0x64, DBVT_UTF8, "OriginStreet"},
+	{0x6E, DBVT_UTF8, "OriginCity"},
+	{0x78, DBVT_UTF8, "OriginState"},
+	{0x8C, DBVT_WORD, "OriginCountry"}
 };
 
 UserInfoRecordItem rCompany[] = {
-  {0x64, DBVT_UTF8, "CompanyPosition"},
-  {0x6E, DBVT_UTF8, "Company"},
-  {0x7D, DBVT_UTF8, "CompanyDepartment"},
-  {0x78, DBVT_ASCIIZ, "CompanyHomepage"},
-  {0x82, DBVT_WORD, "CompanyIndustry"},
-  {0xAA, DBVT_UTF8, "CompanyStreet"},
-  {0xB4, DBVT_UTF8, "CompanyCity"},
-  {0xBE, DBVT_UTF8, "CompanyState"},
-  {0xC8, DBVT_UTF8, "CompanyZIP"},
-  {0xD2, DBVT_WORD, "CompanyCountry"}
+	{0x64, DBVT_UTF8, "CompanyPosition"},
+	{0x6E, DBVT_UTF8, "Company"},
+	{0x7D, DBVT_UTF8, "CompanyDepartment"},
+	{0x78, DBVT_ASCIIZ, "CompanyHomepage"},
+	{0x82, DBVT_WORD, "CompanyIndustry"},
+	{0xAA, DBVT_UTF8, "CompanyStreet"},
+	{0xB4, DBVT_UTF8, "CompanyCity"},
+	{0xBE, DBVT_UTF8, "CompanyState"},
+	{0xC8, DBVT_UTF8, "CompanyZIP"},
+	{0xD2, DBVT_WORD, "CompanyCountry"}
 };
 
 UserInfoRecordItem rEducation[] = {
-  {0x64, DBVT_WORD, "StudyLevel"},
-  {0x6E, DBVT_UTF8, "StudyInstitute"},
-  {0x78, DBVT_UTF8, "StudyDegree"},
-  {0x8C, DBVT_WORD, "StudyYear"}
+	{0x64, DBVT_WORD, "StudyLevel"},
+	{0x6E, DBVT_UTF8, "StudyInstitute"},
+	{0x78, DBVT_UTF8, "StudyDegree"},
+	{0x8C, DBVT_WORD, "StudyYear"}
 };
 
 UserInfoRecordItem rInterest[] = {
-  {0x64, DBVT_UTF8, "Interest%uText"},
-  {0x6E, DBVT_WORD, "Interest%uCat"}
+	{0x64, DBVT_UTF8, "Interest%uText"},
+	{0x6E, DBVT_WORD, "Interest%uCat"}
 };
 
 
 int CIcqProto::parseUserInfoRecord(HANDLE hContact, oscar_tlv *pData, UserInfoRecordItem pRecordDef[], int nRecordDef, int nMaxRecords)
 {
-  int nRecords = 0;
+	int nRecords = 0;
 
-  if (pData && pData->wLen >= 2)
-  {
-    BYTE *pRecords = pData->pData;
-    WORD wRecordCount;
-    unpackWord(&pRecords, &wRecordCount);
-    oscar_tlv_record_list *cData = readIntoTLVRecordList(&pRecords, pData->wLen - 2, nMaxRecords > wRecordCount ? wRecordCount : nMaxRecords);
-    oscar_tlv_record_list *cDataItem = cData;
-    while (cDataItem)
-    {
-      oscar_tlv_chain *cItem = cDataItem->item;
+	if (pData && pData->wLen >= 2)
+	{
+		BYTE *pRecords = pData->pData;
+		WORD wRecordCount;
+		unpackWord(&pRecords, &wRecordCount);
+		oscar_tlv_record_list *cData = readIntoTLVRecordList(&pRecords, pData->wLen - 2, nMaxRecords > wRecordCount ? wRecordCount : nMaxRecords);
+		oscar_tlv_record_list *cDataItem = cData;
+		while (cDataItem)
+		{
+			oscar_tlv_chain *cItem = cDataItem->item;
 
-      for (int i = 0; i < nRecordDef; i++)
-      {
-        char szItemKey[MAX_PATH];
+			for (int i = 0; i < nRecordDef; i++)
+			{
+				char szItemKey[MAX_PATH];
 
-        null_snprintf(szItemKey, MAX_PATH, pRecordDef[i].szDbSetting, nRecords);
+				null_snprintf(szItemKey, MAX_PATH, pRecordDef[i].szDbSetting, nRecords);
 
-        switch (pRecordDef[i].dbType)
-        {
-        case DBVT_ASCIIZ:
-          writeDbInfoSettingTLVString(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
-          break;
+				switch (pRecordDef[i].dbType)
+				{
+				case DBVT_ASCIIZ:
+					writeDbInfoSettingTLVString(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+					break;
 
-        case DBVT_UTF8:
-          writeDbInfoSettingTLVStringUtf(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
-          break;
+				case DBVT_UTF8:
+					writeDbInfoSettingTLVStringUtf(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+					break;
 
-        case DBVT_WORD:
-			    writeDbInfoSettingTLVWord(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
-          break;
-        }
-      }
-      nRecords++;
+				case DBVT_WORD:
+					writeDbInfoSettingTLVWord(hContact, szItemKey, cItem, pRecordDef[i].wTLV);
+					break;
+				}
+			}
+			nRecords++;
 
-      cDataItem = cDataItem->next;
-    }
-    // release memory
-    disposeRecordList(&cData);
-  }
-  // remove old data from database
-  if (!nRecords || nMaxRecords > 1)
-    for (int i = nRecords + 1; i <= nMaxRecords; i++)
-      for (int j = 0; j < nRecordDef; j++)
-      {
-        char szItemKey[MAX_PATH];
+			cDataItem = cDataItem->next;
+		}
+		// release memory
+		disposeRecordList(&cData);
+	}
+	// remove old data from database
+	if (!nRecords || nMaxRecords > 1)
+		for (int i = nRecords + 1; i <= nMaxRecords; i++)
+			for (int j = 0; j < nRecordDef; j++)
+			{
+				char szItemKey[MAX_PATH];
 
-        null_snprintf(szItemKey, MAX_PATH, pRecordDef[j].szDbSetting, i);
+				null_snprintf(szItemKey, MAX_PATH, pRecordDef[j].szDbSetting, i);
 
-        deleteSetting(hContact, szItemKey);
-      }
+				deleteSetting(hContact, szItemKey);
+			}
 
-  return nRecords;
+	return nRecords;
 }
 
 
 void CIcqProto::handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, WORD wFlags)
 {
-  WORD wBytesRemaining = 0;
+	WORD wBytesRemaining = 0;
 	snac_header requestSnac = {0};
-  BYTE requestResult;
+	BYTE requestResult;
 
 #ifdef _DEBUG
-  NetLog_Server("Received directory query response");
+	NetLog_Server("Received directory query response");
 #endif
-  if (wPacketLen >= 2)
-    unpackLEWord(&databuf, &wBytesRemaining);
-  wPacketLen -= 2;
-  _ASSERTE(wPacketLen == wBytesRemaining);
+	if (wPacketLen >= 2)
+		unpackLEWord(&databuf, &wBytesRemaining);
+	wPacketLen -= 2;
+	_ASSERTE(wPacketLen == wBytesRemaining);
 
 	if (!unpackSnacHeader(&requestSnac, &databuf, &wPacketLen) || !requestSnac.bValid)
 	{
 		NetLog_Server("Error: Failed to parse directory response");
-    return;
+		return;
 	}
 
-  cookie_directory_data *pCookieData;
-  HANDLE hContact;
-  // check request cookie
-  if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
-  {
+	cookie_directory_data *pCookieData;
+	HANDLE hContact;
+	// check request cookie
+	if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
+	{
 		NetLog_Server("Warning: Ignoring unrequested directory reply type (x%x, x%x)", requestSnac.wFamily, requestSnac.wSubtype);
 		return;
 	}
-  /// FIXME: we should really check the snac contents according to cookie data here ?? 
+	/// FIXME: we should really check the snac contents according to cookie data here ?? 
 
 	// Check if this is the last packet for this request
 	BOOL bMoreDataFollows = wFlags&0x0001 && requestSnac.wFlags&0x0001;
 
-  if (wPacketLen >= 3) 
-    unpackByte(&databuf, &requestResult);
-  else
-  {
-    NetLog_Server("Error: Malformed directory response");
-    if (!bMoreDataFollows)
-      ReleaseCookie(wCookie);
-    return;
-  }
-  if (requestResult != 1 && requestResult != 4)
-  {
-    NetLog_Server("Error: Directory request failed, status %u", requestResult);
+	if (wPacketLen >= 3) 
+		unpackByte(&databuf, &requestResult);
+	else
+	{
+		NetLog_Server("Error: Malformed directory response");
+		if (!bMoreDataFollows)
+			ReleaseCookie(wCookie);
+		return;
+	}
+	if (requestResult != 1 && requestResult != 4)
+	{
+		NetLog_Server("Error: Directory request failed, status %u", requestResult);
 
-    if (!bMoreDataFollows)
-    {
-      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
-        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
-      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
-        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
-      ReleaseCookie(wCookie);
-    }
-    return;
-  }
-  WORD wLen;
+		if (!bMoreDataFollows)
+		{
+			if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+			else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+			ReleaseCookie(wCookie);
+		}
+		return;
+	}
+	WORD wLen;
 
-  unpackWord(&databuf, &wLen);
-  wPacketLen -= 3;
-  if (wLen)
-    NetLog_Server("Warning: Data in error message present!");
+	unpackWord(&databuf, &wLen);
+	wPacketLen -= 3;
+	if (wLen)
+		NetLog_Server("Warning: Data in error message present!");
 
-  if (wPacketLen <= 0x16)
-  { // sanity check
-    NetLog_Server("Error: Malformed directory response");
+	if (wPacketLen <= 0x16)
+	{ // sanity check
+		NetLog_Server("Error: Malformed directory response");
 
-    if (!bMoreDataFollows)
-    {
-      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
-        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
-      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
-        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
-      ReleaseCookie(wCookie);
-    }
-    return;
-  }
-  databuf += 0x10; // unknown stuff
-  wPacketLen -= 0x10;
+		if (!bMoreDataFollows)
+		{
+			if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+			else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+			ReleaseCookie(wCookie);
+		}
+		return;
+	}
+	databuf += 0x10; // unknown stuff
+	wPacketLen -= 0x10;
 
-  DWORD dwItemCount;
-  WORD wPageCount;
+	DWORD dwItemCount;
+	WORD wPageCount;
 
-/// FIXME: check itemcount, pagecount against the cookie data ???
+	/// FIXME: check itemcount, pagecount against the cookie data ???
 
-  unpackDWord(&databuf, &dwItemCount);
-  unpackWord(&databuf, &wPageCount);
-  wPacketLen -= 6;
+	unpackDWord(&databuf, &dwItemCount);
+	unpackWord(&databuf, &wPageCount);
+	wPacketLen -= 6;
 
-  if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH && !bMoreDataFollows)
-    NetLog_Server("Directory Search: %d contacts found (%u pages)", dwItemCount, wPageCount);
-  
-  if (wPacketLen <= 2)
-  { // sanity check, block expected
-    NetLog_Server("Error: Malformed directory response");
+	if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH && !bMoreDataFollows)
+		NetLog_Server("Directory Search: %d contacts found (%u pages)", dwItemCount, wPageCount);
 
-    if (!bMoreDataFollows)
-    {
-      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
-        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
-      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
-        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
-      ReleaseCookie(wCookie);
-    }
-    return;
-  }
-  WORD wData;
+	if (wPacketLen <= 2)
+	{ // sanity check, block expected
+		NetLog_Server("Error: Malformed directory response");
 
-  unpackWord(&databuf, &wData); // This probably the count of items following (a block)
-  wPacketLen -= 2;
-  if (wPacketLen >= 2 && wData >= 1)
-  {
-    unpackWord(&databuf, &wLen);  // This is the size of the first item
-    wPacketLen -= 2;
-  }
+		if (!bMoreDataFollows)
+		{
+			if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+			else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+			ReleaseCookie(wCookie);
+		}
+		return;
+	}
+	WORD wData;
 
-  if (wData == 0 && pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
-  {
-    NetLog_Server("Directory Search: No contacts found");
-    BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-    ReleaseCookie(wCookie);
-    return;
-  }
+	unpackWord(&databuf, &wData); // This probably the count of items following (a block)
+	wPacketLen -= 2;
+	if (wPacketLen >= 2 && wData >= 1)
+	{
+		unpackWord(&databuf, &wLen);  // This is the size of the first item
+		wPacketLen -= 2;
+	}
 
-  _ASSERTE(wData == 1 && wPacketLen == wLen);
-  if (wData != 1 || wPacketLen != wLen)
-  {
-    NetLog_Server("Error: Malformed directory response (missing data)");
+	if (wData == 0 && pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+	{
+		NetLog_Server("Directory Search: No contacts found");
+		BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+		ReleaseCookie(wCookie);
+		return;
+	}
 
-    if (!bMoreDataFollows)
-    {
-      if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
-        BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
-      else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
-        BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
-      ReleaseCookie(wCookie);
-    }
-    return;
-  }
-  oscar_tlv_chain *pDirectoryData = readIntoTLVChain(&databuf, wLen, -1);
-  if (pDirectoryData)
-  {
-    switch (pCookieData->bRequestType)
-    {
-    case DIRECTORYREQUEST_INFOOWNER:
-      hContact = NULL;
-    case DIRECTORYREQUEST_INFOUSER:
-    case DIRECTORYREQUEST_INFOMULTI:
-      parseDirectoryUserDetailsData(hContact, pDirectoryData, wCookie, pCookieData, wReplySubtype);
-      break;
+	_ASSERTE(wData == 1 && wPacketLen == wLen);
+	if (wData != 1 || wPacketLen != wLen)
+	{
+		NetLog_Server("Error: Malformed directory response (missing data)");
 
-    case DIRECTORYREQUEST_SEARCH:
-      parseDirectorySearchData(pDirectoryData, wCookie, pCookieData, wReplySubtype);
-      break;
+		if (!bMoreDataFollows)
+		{
+			if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE)1 ,0);
+			else if (pCookieData->bRequestType == DIRECTORYREQUEST_SEARCH)
+				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0); // should report error here, but Find/Add module does not support that
+			ReleaseCookie(wCookie);
+		}
+		return;
+	}
+	oscar_tlv_chain *pDirectoryData = readIntoTLVChain(&databuf, wLen, -1);
+	if (pDirectoryData)
+	{
+		switch (pCookieData->bRequestType)
+		{
+		case DIRECTORYREQUEST_INFOOWNER:
+			hContact = NULL;
+		case DIRECTORYREQUEST_INFOUSER:
+		case DIRECTORYREQUEST_INFOMULTI:
+			parseDirectoryUserDetailsData(hContact, pDirectoryData, wCookie, pCookieData, wReplySubtype);
+			break;
 
-    default:
-      NetLog_Server("Error: Unknown cookie type %x for directory response!", pCookieData->bRequestType);
-    }
-  }
-  else
-    NetLog_Server("Error: Failed parsing directory response");
+		case DIRECTORYREQUEST_SEARCH:
+			parseDirectorySearchData(pDirectoryData, wCookie, pCookieData, wReplySubtype);
+			break;
 
-  // Release Memory
-  if (!bMoreDataFollows)
-    ReleaseCookie(wCookie);
+		default:
+			NetLog_Server("Error: Unknown cookie type %x for directory response!", pCookieData->bRequestType);
+		}
+		disposeChain(&pDirectoryData);
+	}
+	else
+		NetLog_Server("Error: Failed parsing directory response");
+
+	// Release Memory
+	if (!bMoreDataFollows)
+		ReleaseCookie(wCookie);
 }
 
 
 static int calcAgeFromBirthDate(double dDate)
 {
-  if (dDate > 0)
-  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
-    SYSTEMTIME sDate = {0};
-    if (VariantTimeToSystemTime(dDate + 2, &sDate))
-    {
-      SYSTEMTIME sToday = {0};
+	if (dDate > 0)
+	{ // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
+		SYSTEMTIME sDate = {0};
+		if (VariantTimeToSystemTime(dDate + 2, &sDate))
+		{
+			SYSTEMTIME sToday = {0};
 
-      GetLocalTime(&sToday);
+			GetLocalTime(&sToday);
 
-      int nAge = sToday.wYear - sDate.wYear;
+			int nAge = sToday.wYear - sDate.wYear;
 
-      if (sToday.wMonth < sDate.wMonth || (sToday.wMonth == sDate.wMonth && sToday.wDay < sDate.wDay))
-        nAge--;
+			if (sToday.wMonth < sDate.wMonth || (sToday.wMonth == sDate.wMonth && sToday.wDay < sDate.wDay))
+				nAge--;
 
-      return nAge;
-    }
-  }
-  return 0;
+			return nAge;
+		}
+	}
+	return 0;
 }
 
 
 void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
-  oscar_tlv *pTLV;
-  WORD wRecordCount;
+	oscar_tlv *pTLV;
+	WORD wRecordCount;
 
 #ifdef _DEBUG
-  {
-    char *szUid = cDetails->getString(0x32, 1);
-    NetLog_Server("Received user info for %s from directory", szUid);
-    SAFE_FREE(&szUid);
-  }
+	{
+		char *szUid = cDetails->getString(0x32, 1);
+		NetLog_Server("Received user info for %s from directory", szUid);
+		SAFE_FREE(&szUid);
+	}
 #endif
-  if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOMULTI && !hContact)
-  {
-    DWORD dwUin = 0;
-    char *szUid = cDetails->getString(0x32, 1);
-    if (!szUid) 
-    {
-      NetLog_Server("Error: Received unrecognized data from the directory");
-      return;
-    }
+	if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOMULTI && !hContact)
+	{
+		DWORD dwUin = 0;
+		char *szUid = cDetails->getString(0x32, 1);
+		if (!szUid) 
+		{
+			NetLog_Server("Error: Received unrecognized data from the directory");
+			return;
+		}
 
-    if (IsStringUIN(szUid))
-      dwUin = atoi(szUid);
+		if (IsStringUIN(szUid))
+			dwUin = atoi(szUid);
 
-    hContact = HContactFromUID(dwUin, szUid, NULL);
-    if (hContact == INVALID_HANDLE_VALUE)
-    {
-      NetLog_Server("Error: Received details for unknown contact \"%s\"", szUid);
-      SAFE_FREE(&szUid);
-      return;
-    }
-    SAFE_FREE(&szUid);
-  }
+		hContact = HContactFromUID(dwUin, szUid, NULL);
+		if (hContact == INVALID_HANDLE_VALUE)
+		{
+			NetLog_Server("Error: Received details for unknown contact \"%s\"", szUid);
+			SAFE_FREE(&szUid);
+			return;
+		}
+		SAFE_FREE(&szUid);
+	}
 
-  pTLV = cDetails->getTLV(0x50, 1);
-  if (pTLV && pTLV->wLen > 0)
+	pTLV = cDetails->getTLV(0x50, 1);
+	if (pTLV && pTLV->wLen > 0)
 		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x50); // Verified e-mail
-  else
+	else
 		writeDbInfoSettingTLVStringUtf(hContact, "e-mail",  cDetails, 0x55); // Pending e-mail
 
 	writeDbInfoSettingTLVStringUtf(hContact, "FirstName", cDetails, 0x64);
 	writeDbInfoSettingTLVStringUtf(hContact, "LastName",  cDetails, 0x6E);
 	writeDbInfoSettingTLVStringUtf(hContact, "Nick",      cDetails, 0x78);
-  // Home Address
-  parseUserInfoRecord(hContact, cDetails->getTLV(0x96, 1), rAddress, SIZEOF(rAddress), 1);
-  // Origin Address
-  parseUserInfoRecord(hContact, cDetails->getTLV(0xA0, 1), rOriginAddress, SIZEOF(rOriginAddress), 1);
-  // Phones
-  pTLV = cDetails->getTLV(0xC8, 1);
-  if (pTLV && pTLV->wLen >= 2)
-  {
-    BYTE *pRecords = pTLV->pData;
-    unpackWord(&pRecords, &wRecordCount);
-    oscar_tlv_record_list *cPhones = readIntoTLVRecordList(&pRecords, pTLV->wLen - 2, wRecordCount);
-    if (cPhones)
-    {
-      oscar_tlv_chain *cPhone;
-      cPhone = cPhones->getRecordByTLV(0x6E, 1);
-      writeDbInfoSettingTLVString(hContact, "Phone", cPhone, 0x64);
-      cPhone = cPhones->getRecordByTLV(0x6E, 2);
-      writeDbInfoSettingTLVString(hContact, "CompanyPhone", cPhone, 0x64);
-      cPhone = cPhones->getRecordByTLV(0x6E, 3);
-      writeDbInfoSettingTLVString(hContact, "Cellular", cPhone, 0x64);
-      cPhone = cPhones->getRecordByTLV(0x6E, 4);
-      writeDbInfoSettingTLVString(hContact, "Fax", cPhone, 0x64);
-      cPhone = cPhones->getRecordByTLV(0x6E, 5);
-      writeDbInfoSettingTLVString(hContact, "CompanyFax", cPhone, 0x64);
+	// Home Address
+	parseUserInfoRecord(hContact, cDetails->getTLV(0x96, 1), rAddress, SIZEOF(rAddress), 1);
+	// Origin Address
+	parseUserInfoRecord(hContact, cDetails->getTLV(0xA0, 1), rOriginAddress, SIZEOF(rOriginAddress), 1);
+	// Phones
+	pTLV = cDetails->getTLV(0xC8, 1);
+	if (pTLV && pTLV->wLen >= 2)
+	{
+		BYTE *pRecords = pTLV->pData;
+		unpackWord(&pRecords, &wRecordCount);
+		oscar_tlv_record_list *cPhones = readIntoTLVRecordList(&pRecords, pTLV->wLen - 2, wRecordCount);
+		if (cPhones)
+		{
+			oscar_tlv_chain *cPhone;
+			cPhone = cPhones->getRecordByTLV(0x6E, 1);
+			writeDbInfoSettingTLVString(hContact, "Phone", cPhone, 0x64);
+			cPhone = cPhones->getRecordByTLV(0x6E, 2);
+			writeDbInfoSettingTLVString(hContact, "CompanyPhone", cPhone, 0x64);
+			cPhone = cPhones->getRecordByTLV(0x6E, 3);
+			writeDbInfoSettingTLVString(hContact, "Cellular", cPhone, 0x64);
+			cPhone = cPhones->getRecordByTLV(0x6E, 4);
+			writeDbInfoSettingTLVString(hContact, "Fax", cPhone, 0x64);
+			cPhone = cPhones->getRecordByTLV(0x6E, 5);
+			writeDbInfoSettingTLVString(hContact, "CompanyFax", cPhone, 0x64);
 
-      disposeRecordList(&cPhones);
-    }
-    else
-    { // Remove old data when phones not available
-      deleteSetting(hContact, "Phone");
-      deleteSetting(hContact, "CompanyPhone");
-      deleteSetting(hContact, "Cellular");
-      deleteSetting(hContact, "Fax");
-      deleteSetting(hContact, "CompanyFax");
-    }
-  }
-  else
-  { // Remove old data when phones not available
-    deleteSetting(hContact, "Phone");
-    deleteSetting(hContact, "CompanyPhone");
-    deleteSetting(hContact, "Cellular");
-    deleteSetting(hContact, "Fax");
-    deleteSetting(hContact, "CompanyFax");
-  }
-  // Emails
-  parseUserInfoRecord(hContact, cDetails->getTLV(0x8C, 1), rEmail, SIZEOF(rEmail), 4);
+			disposeRecordList(&cPhones);
+		}
+		else
+		{ // Remove old data when phones not available
+			deleteSetting(hContact, "Phone");
+			deleteSetting(hContact, "CompanyPhone");
+			deleteSetting(hContact, "Cellular");
+			deleteSetting(hContact, "Fax");
+			deleteSetting(hContact, "CompanyFax");
+		}
+	}
+	else
+	{ // Remove old data when phones not available
+		deleteSetting(hContact, "Phone");
+		deleteSetting(hContact, "CompanyPhone");
+		deleteSetting(hContact, "Cellular");
+		deleteSetting(hContact, "Fax");
+		deleteSetting(hContact, "CompanyFax");
+	}
+	// Emails
+	parseUserInfoRecord(hContact, cDetails->getTLV(0x8C, 1), rEmail, SIZEOF(rEmail), 4);
 
 	writeDbInfoSettingTLVByte(hContact, "Timezone", cDetails, 0x17C);
-  // Company
-  parseUserInfoRecord(hContact, cDetails->getTLV(0x118, 1), rCompany, SIZEOF(rCompany), 1);
-  // Education
-  parseUserInfoRecord(hContact, cDetails->getTLV(0x10E, 1), rEducation, SIZEOF(rEducation), 1);
+	// Company
+	parseUserInfoRecord(hContact, cDetails->getTLV(0x118, 1), rCompany, SIZEOF(rCompany), 1);
+	// Education
+	parseUserInfoRecord(hContact, cDetails->getTLV(0x10E, 1), rEducation, SIZEOF(rEducation), 1);
 
-  switch (cDetails->getNumber(0x82, 1))
-  {
-  case 1: 
-    setSettingByte(hContact, "Gender", 'F');
-    break;
-  case 2:
-    setSettingByte(hContact, "Gender", 'M');
-    break;
-  default:
-    deleteSetting(hContact, "Gender");
-  }
+	switch (cDetails->getNumber(0x82, 1))
+	{
+	case 1: 
+		setSettingByte(hContact, "Gender", 'F');
+		break;
+	case 2:
+		setSettingByte(hContact, "Gender", 'M');
+		break;
+	default:
+		deleteSetting(hContact, "Gender");
+	}
 
-  writeDbInfoSettingTLVString(hContact, "Homepage", cDetails, 0xFA);
-  writeDbInfoSettingTLVDate(hContact, "BirthYear", "BirthMonth", "BirthDay", cDetails, 0x1A4);
+	writeDbInfoSettingTLVString(hContact, "Homepage", cDetails, 0xFA);
+	writeDbInfoSettingTLVDate(hContact, "BirthYear", "BirthMonth", "BirthDay", cDetails, 0x1A4);
 
-  writeDbInfoSettingTLVByte(hContact, "Language1", cDetails, 0xAA);
-  writeDbInfoSettingTLVByte(hContact, "Language2", cDetails, 0xB4);
-  writeDbInfoSettingTLVByte(hContact, "Language3", cDetails, 0xBE);
+	writeDbInfoSettingTLVByte(hContact, "Language1", cDetails, 0xAA);
+	writeDbInfoSettingTLVByte(hContact, "Language2", cDetails, 0xB4);
+	writeDbInfoSettingTLVByte(hContact, "Language3", cDetails, 0xBE);
 
-  writeDbInfoSettingTLVByte(hContact, "MaritalStatus", cDetails, 0x12C);
-  // Interests
-  parseUserInfoRecord(hContact, cDetails->getTLV(0x122, 1), rInterest, SIZEOF(rInterest), 4);
+	writeDbInfoSettingTLVByte(hContact, "MaritalStatus", cDetails, 0x12C);
+	// Interests
+	parseUserInfoRecord(hContact, cDetails->getTLV(0x122, 1), rInterest, SIZEOF(rInterest), 4);
 
-  writeDbInfoSettingTLVStringUtf(hContact, "About", cDetails, 0x186);
+	writeDbInfoSettingTLVStringUtf(hContact, "About", cDetails, 0x186);
 
-  if (hContact)
-    writeDbInfoSettingTLVStringUtf(hContact, DBSETTING_STATUS_NOTE, cDetails, 0x226);
-  else
-  { // Owner contact needs special processing, in the database is current status note for the client
-    // We just received the last status note set on directory, if it differs call SetStatusNote() to 
-    // ensure the directory will be updated (it should be in process anyway)
-    char *szClientStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, NULL);
-    char *szDirectoryStatusNote = cDetails->getString(0x226, 1);
+	if (hContact)
+		writeDbInfoSettingTLVStringUtf(hContact, DBSETTING_STATUS_NOTE, cDetails, 0x226);
+	else
+	{ // Owner contact needs special processing, in the database is current status note for the client
+		// We just received the last status note set on directory, if it differs call SetStatusNote() to 
+		// ensure the directory will be updated (it should be in process anyway)
+		char *szClientStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, NULL);
+		char *szDirectoryStatusNote = cDetails->getString(0x226, 1);
 
-    if (strcmpnull(szClientStatusNote, szDirectoryStatusNote))
-      SetStatusNote(szClientStatusNote, 1000, TRUE);
+		if (strcmpnull(szClientStatusNote, szDirectoryStatusNote))
+			SetStatusNote(szClientStatusNote, 1000, TRUE);
 
-    // Release memory
-    SAFE_FREE(&szDirectoryStatusNote);
-    SAFE_FREE(&szClientStatusNote);
-  }
+		// Release memory
+		SAFE_FREE(&szDirectoryStatusNote);
+		SAFE_FREE(&szClientStatusNote);
+	}
 
-  writeDbInfoSettingTLVByte(hContact, "PrivacyLevel", cDetails, 0x1F9);
+	writeDbInfoSettingTLVByte(hContact, "PrivacyLevel", cDetails, 0x1F9);
 
-  if (!hContact)
-  {
-    setSettingByte(hContact, "Auth", !cDetails->getByte(0x19A, 1));
-    writeDbInfoSettingTLVByte(hContact, "WebAware", cDetails, 0x212);
-    writeDbInfoSettingTLVByte(hContact, "AllowSpam", cDetails, 0x1EA);
-  }
+	if (!hContact)
+	{
+		setSettingByte(hContact, "Auth", !cDetails->getByte(0x19A, 1));
+		writeDbInfoSettingTLVByte(hContact, "WebAware", cDetails, 0x212);
+		writeDbInfoSettingTLVByte(hContact, "AllowSpam", cDetails, 0x1EA);
+	}
 
-  writeDbInfoSettingTLVWord(hContact, "InfoCP", cDetails, 0x1C2);
+	writeDbInfoSettingTLVWord(hContact, "InfoCP", cDetails, 0x1C2);
 
-  if (hContact)
-  { // Handle deprecated setting (Age & Birthdate are not separate fields anymore)
-    int nAge = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
-  
-    if (nAge)
-      setSettingWord(hContact, "Age", nAge);
-    else
-      deleteSetting(hContact, "Age");
-  }
-  else // we do not need to calculate age for owner
-    deleteSetting(hContact, "Age");
+	if (hContact)
+	{ // Handle deprecated setting (Age & Birthdate are not separate fields anymore)
+		int nAge = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
 
-  { // Save user info last update time and privacy token
-    double dInfoTime;
-    BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    int bHasMetaToken = FALSE;
+		if (nAge)
+			setSettingWord(hContact, "Age", nAge);
+		else
+			deleteSetting(hContact, "Age");
+	}
+	else // we do not need to calculate age for owner
+		deleteSetting(hContact, "Age");
 
-    // Check if the details arrived with privacy token!
-    if ((pTLV = cDetails->getTLV(0x3C, 1)) && pTLV->wLen == 0x10 && memcmp(pTLV->pData, pbEmptyMetaToken, 0x10))
-      bHasMetaToken = TRUE;
+	{ // Save user info last update time and privacy token
+		double dInfoTime;
+		BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+		int bHasMetaToken = FALSE;
 
-    // !Important, we need to save the MDir server-item time - it can be newer than the one from the directory
-    if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
-      setSettingDouble(hContact, DBSETTING_METAINFO_SAVED, dInfoTime);
-    else if (bHasMetaToken || !hContact)
-      writeDbInfoSettingTLVDouble(hContact, DBSETTING_METAINFO_SAVED, cDetails, 0x1CC);
-    else
-      setSettingDword(hContact, DBSETTING_METAINFO_SAVED, time(NULL));
-  }
-//    writeDbInfoSettingTLVBlob(hContact, DBSETTING_METAINFO_TOKEN, cDetails, 0x3C); // no need to save again
+		// Check if the details arrived with privacy token!
+		if ((pTLV = cDetails->getTLV(0x3C, 1)) && pTLV->wLen == 0x10 && memcmp(pTLV->pData, pbEmptyMetaToken, 0x10))
+			bHasMetaToken = TRUE;
 
-  if (wReplySubType == META_DIRECTORY_RESPONSE)
-    if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
-      BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+		// !Important, we need to save the MDir server-item time - it can be newer than the one from the directory
+		if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
+			setSettingDouble(hContact, DBSETTING_METAINFO_SAVED, dInfoTime);
+		else if (bHasMetaToken || !hContact)
+			writeDbInfoSettingTLVDouble(hContact, DBSETTING_METAINFO_SAVED, cDetails, 0x1CC);
+		else
+			setSettingDword(hContact, DBSETTING_METAINFO_SAVED, time(NULL));
+	}
 
-  // Remove user from info update queue. Removing is fast so we always call this
-  // even if it is likely that the user is not queued at all.
-  icq_DequeueUser(getContactUin(hContact));
+	if (wReplySubType == META_DIRECTORY_RESPONSE)
+		if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOUSER)
+			BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
+
+	// Remove user from info update queue. Removing is fast so we always call this
+	// even if it is likely that the user is not queued at all.
+	icq_DequeueUser(getContactUin(hContact));
 }
 
 
 void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
-  ICQSEARCHRESULT isr = {0};
-  oscar_tlv *pTLV;
-  char *szUin = cDetails->getString(0x32, 1); // User ID
+	ICQSEARCHRESULT isr = {0};
+	oscar_tlv *pTLV;
+	char *szUin = cDetails->getString(0x32, 1); // User ID
 
 #ifdef _DEBUG
-  NetLog_Server("Directory Search: Found user %s", szUin);
+	NetLog_Server("Directory Search: Found user %s", szUin);
 #endif
-  isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
+	isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
 
-  if (IsStringUIN(szUin))
-  {
-    isr.uin = atoi(szUin);
-    SAFE_FREE((void**)&szUin);
-  }
-  else
-  {
-    isr.uin = 0;
-    isr.uid = szUin;
-  }
+	if (IsStringUIN(szUin))
+	{
+		isr.uin = atoi(szUin);
+		SAFE_FREE((void**)&szUin);
+	}
+	else
+	{
+		isr.uin = 0;
+		isr.uid = szUin;
+	}
 
-  pTLV = cDetails->getTLV(0x50, 1);
-  if (pTLV && pTLV->wLen > 0)
-    isr.hdr.email = cDetails->getString(0x50, 1); // Verified e-mail
-  else
-    isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
-  if (!strlennull(isr.hdr.email))
-    SAFE_FREE(&isr.hdr.email);
+	pTLV = cDetails->getTLV(0x50, 1);
+	if (pTLV && pTLV->wLen > 0)
+		isr.hdr.email = cDetails->getString(0x50, 1); // Verified e-mail
+	else
+		isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
+	if (!strlennull(isr.hdr.email))
+		SAFE_FREE(&isr.hdr.email);
 
-  isr.firstName = cDetails->getString(0x64, 1); // First Name
-  if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
-    SAFE_FREE(&isr.firstName);
-  isr.lastName = cDetails->getString(0x6E, 1); // Last Name
-  if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
-    SAFE_FREE(&isr.lastName);
-  isr.nick = cDetails->getString(0x78, 1); // Nick
-  if (!utf8_decode(isr.nick, &isr.hdr.nick))
-    SAFE_FREE(&isr.nick);
+	isr.firstName = cDetails->getString(0x64, 1); // First Name
+	if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
+		SAFE_FREE(&isr.firstName);
+	isr.lastName = cDetails->getString(0x6E, 1); // Last Name
+	if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
+		SAFE_FREE(&isr.lastName);
+	isr.nick = cDetails->getString(0x78, 1); // Nick
+	if (!utf8_decode(isr.nick, &isr.hdr.nick))
+		SAFE_FREE(&isr.nick);
 
-  switch (cDetails->getNumber(0x82, 1)) // Gender
-  {
-  case 1: 
-    isr.gender = 'F';
-    break;
-  case 2:
-    isr.gender = 'M';
-    break;
-  }
+	switch (cDetails->getNumber(0x82, 1)) // Gender
+	{
+	case 1: 
+		isr.gender = 'F';
+		break;
+	case 2:
+		isr.gender = 'M';
+		break;
+	}
 
-  pTLV = cDetails->getTLV(0x96, 1);
-  if (pTLV && pTLV->wLen >= 4)
-  {
-    BYTE *buf = pTLV->pData;
-    oscar_tlv_chain *chain = readIntoTLVChain(&buf, pTLV->wLen, 0);
-    if (chain)
-      isr.country = chain->getDWord(0x8C, 1); // Home Country
-    disposeChain(&chain);
-  }
+	pTLV = cDetails->getTLV(0x96, 1);
+	if (pTLV && pTLV->wLen >= 4)
+	{
+		BYTE *buf = pTLV->pData;
+		oscar_tlv_chain *chain = readIntoTLVChain(&buf, pTLV->wLen, 0);
+		if (chain)
+			isr.country = chain->getDWord(0x8C, 1); // Home Country
+		disposeChain(&chain);
+	}
 
-  isr.auth = !cDetails->getByte(0x19A, 1); // Require Authorization
-  isr.maritalStatus = cDetails->getNumber(0x12C, 1); // Marital Status
+	isr.auth = !cDetails->getByte(0x19A, 1); // Require Authorization
+	isr.maritalStatus = cDetails->getNumber(0x12C, 1); // Marital Status
 
-  // calculate Age if Birthdate is available
-  isr.age = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
+	// calculate Age if Birthdate is available
+	isr.age = calcAgeFromBirthDate(cDetails->getDouble(0x1A4, 1));
 
-  // Finally, broadcast the result
-  BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
+	// Finally, broadcast the result
+	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
 
-  // Release memory
-  SAFE_FREE(&isr.nick); /// FIXME: Reduce memory allocation
-  SAFE_FREE(&isr.firstName);
-  SAFE_FREE(&isr.lastName);
-  SAFE_FREE(&isr.hdr.nick);
-  SAFE_FREE(&isr.hdr.firstName);
-  SAFE_FREE(&isr.hdr.lastName);
-  SAFE_FREE(&isr.hdr.email);
+	// Release memory
+	SAFE_FREE(&isr.nick); /// FIXME: Reduce memory allocation
+	SAFE_FREE(&isr.firstName);
+	SAFE_FREE(&isr.lastName);
+	SAFE_FREE(&isr.hdr.nick);
+	SAFE_FREE(&isr.hdr.firstName);
+	SAFE_FREE(&isr.hdr.lastName);
+	SAFE_FREE(&isr.hdr.email);
 
-  // Search is over, broadcast final ack
-  if (wReplySubType == META_DIRECTORY_RESPONSE)
-    BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
+	// Search is over, broadcast final ack
+	if (wReplySubType == META_DIRECTORY_RESPONSE)
+		BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)dwCookie, 0);
 }
 
 
 void CIcqProto::handleDirectoryUpdateResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype)
 {
-  WORD wBytesRemaining = 0;
+	WORD wBytesRemaining = 0;
 	snac_header requestSnac = {0};
-  BYTE requestResult;
+	BYTE requestResult;
 
 #ifdef _DEBUG
-  NetLog_Server("Received directory update response");
+	NetLog_Server("Received directory update response");
 #endif
-  if (wPacketLen >= 2)
-    unpackLEWord(&databuf, &wBytesRemaining);
-  wPacketLen -= 2;
-  _ASSERTE(wPacketLen == wBytesRemaining);
+	if (wPacketLen >= 2)
+		unpackLEWord(&databuf, &wBytesRemaining);
+	wPacketLen -= 2;
+	_ASSERTE(wPacketLen == wBytesRemaining);
 
 	if (!unpackSnacHeader(&requestSnac, &databuf, &wPacketLen) || !requestSnac.bValid)
 	{
 		NetLog_Server("Error: Failed to parse directory response");
-    return;
+		return;
 	}
 
-  cookie_directory_data *pCookieData;
-  HANDLE hContact;
-  // check request cookie
-  if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
-  {
+	cookie_directory_data *pCookieData;
+	HANDLE hContact;
+	// check request cookie
+	if (!FindCookie(wCookie, &hContact, (void**)&pCookieData) || !pCookieData)
+	{
 		NetLog_Server("Warning: Ignoring unrequested directory reply type (x%x, x%x)", requestSnac.wFamily, requestSnac.wSubtype);
 		return;
 	}
-  /// FIXME: we should really check the snac contents according to cookie data here ?? 
+	/// FIXME: we should really check the snac contents according to cookie data here ?? 
 
-  if (wPacketLen >= 3)
-    unpackByte(&databuf, &requestResult);
-  else
-  {
-    NetLog_Server("Error: Malformed directory response");
-    ReleaseCookie(wCookie);
-    return;
-  }
-  if (requestResult != 1 && requestResult != 4)
-  {
-    NetLog_Server("Error: Directory request failed, status %u", requestResult);
+	if (wPacketLen >= 3)
+		unpackByte(&databuf, &requestResult);
+	else
+	{
+		NetLog_Server("Error: Malformed directory response");
+		ReleaseCookie(wCookie);
+		return;
+	}
+	if (requestResult != 1 && requestResult != 4)
+	{
+		NetLog_Server("Error: Directory request failed, status %u", requestResult);
 
-    if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
+		if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
 			BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
 
-    ReleaseCookie(wCookie);
-    return;
-  }
-  WORD wLen;
+		ReleaseCookie(wCookie);
+		return;
+	}
+	WORD wLen;
 
-  unpackWord(&databuf, &wLen);
-  wPacketLen -= 3;
-  if (wLen)
-    NetLog_Server("Warning: Data in error message present!");
+	unpackWord(&databuf, &wLen);
+	wPacketLen -= 3;
+	if (wLen)
+		NetLog_Server("Warning: Data in error message present!");
 
-  if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
-    BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-  if (wPacketLen == 0x18)
-  {
-    DWORD64 qwMetaTime;
-    BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	if (pCookieData->bRequestType == DIRECTORYREQUEST_UPDATEOWNER)
+		BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+	if (wPacketLen == 0x18)
+	{
+		DWORD64 qwMetaTime;
+		BYTE pbEmptyMetaToken[0x10] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    unpackQWord(&databuf, &qwMetaTime);
-    setSettingBlob(NULL, DBSETTING_METAINFO_TIME, (BYTE*)&qwMetaTime, 8);
+		unpackQWord(&databuf, &qwMetaTime);
+		setSettingBlob(NULL, DBSETTING_METAINFO_TIME, (BYTE*)&qwMetaTime, 8);
 
-    if (memcmp(databuf, pbEmptyMetaToken, 0x10))
-      setSettingBlob(NULL, DBSETTING_METAINFO_TOKEN, databuf, 0x10);
-  }
-  ReleaseCookie(wCookie);
+		if (memcmp(databuf, pbEmptyMetaToken, 0x10))
+			setSettingBlob(NULL, DBSETTING_METAINFO_TOKEN, databuf, 0x10);
+	}
+	ReleaseCookie(wCookie);
 }

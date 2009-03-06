@@ -72,21 +72,20 @@ static int CompareFT( const filetransfer* p1, const filetransfer* p2 )
 
 static int CompareContactsCache(const icq_contacts_cache *p1, const icq_contacts_cache *p2)
 {
-  if (p1->dwUin < p2->dwUin)
-    return -1;
+	if (p1->dwUin < p2->dwUin)
+		return -1;
 
-  if (p1->dwUin > p2->dwUin)
-    return 1;
+	if (p1->dwUin > p2->dwUin)
+		return 1;
 
-  return stricmpnull(p1->szUid, p2->szUid);
+	return stricmpnull(p1->szUid, p2->szUid);
 }
-
 
 CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	cookies(10, CompareCookies),
 	directConns(10, CompareConns),
 	expectedFileRecvs(10, CompareFT),
-  contactsCache(10, CompareContactsCache),
+	contactsCache(10, CompareContactsCache),
 	cheekySearchId( -1 ),
 	m_pendingAvatarsStart( 1 )
 {
@@ -136,8 +135,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateResidentSetting("IdleTS");
 	CreateResidentSetting("LogonTS");
 	CreateResidentSetting("DCStatus");
-  CreateResidentSetting(DBSETTING_STATUS_NOTE_TIME);
-  CreateResidentSetting(DBSETTING_STATUS_MOOD);
+	CreateResidentSetting(DBSETTING_STATUS_NOTE_TIME);
+	CreateResidentSetting(DBSETTING_STATUS_MOOD);
 
 	// Setup services
 	CreateProtoService(PS_GETNAME, &CIcqProto::GetName);
@@ -146,7 +145,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(MS_ICQ_SENDSMS, &CIcqProto::SendSms);
 	CreateProtoService(PS_SET_NICKNAME, &CIcqProto::SetNickName);
 
-  CreateProtoService(PS_GETINFOSETTING, &CIcqProto::GetInfoSetting);
+	CreateProtoService(PS_GETINFOSETTING, &CIcqProto::GetInfoSetting);
 
 	CreateProtoService(PSS_ADDED, &CIcqProto::SendYouWereAdded);
 	// Session password API
@@ -177,54 +176,53 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
-  { // Initialize IconLib icons
-    TCHAR lib[MAX_PATH];
-    char *szAccountName = mtchar_to_utf8(m_tszUserName);
-    char szSectionName[MAX_PATH];
-    char szProtocolsBuf[100], szNameBuf[100], szAccountsBuf[100];
+	{ // Initialize IconLib icons
+		TCHAR lib[MAX_PATH];
+		char *szAccountName = mtchar_to_utf8(m_tszUserName);
+		char szSectionName[MAX_PATH];
+		char szProtocolsBuf[100], szNameBuf[100], szAccountsBuf[100];
 
-    null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", 
-      ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
-      ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)),
-      ICQTranslateUtfStatic(LPGEN("Accounts"), szAccountsBuf, sizeof(szAccountsBuf)));
+		null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", 
+			ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
+			ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)),
+			ICQTranslateUtfStatic(LPGEN("Accounts"), szAccountsBuf, sizeof(szAccountsBuf)));
 
-    GetModuleFileName(hInst, lib, MAX_PATH);
-    m_hIconProtocol = IconLibDefine(szAccountName, szSectionName, m_szModuleName, "main", lib, -IDI_ICQ);
-    SAFE_FREE(&szAccountName);
-  }
+		GetModuleFileName(hInst, lib, MAX_PATH);
+		m_hIconProtocol = IconLibDefine(szAccountName, szSectionName, m_szModuleName, "main", lib, -IDI_ICQ);
+		SAFE_FREE(&szAccountName);
+	}
 
 	// Reset a bunch of session specific settings
 	UpdateGlobalSettings();
 	ResetSettingsOnLoad();
 
-  // Initialize Contacts Cache
- 	InitContactsCache();
+	// Initialize Contacts Cache
+	InitContactsCache();
 
-  // Startup Auto Info-Update thread
+	// Startup Auto Info-Update thread
 	icq_InitInfoUpdate();
 
 	// Init extra statuses
- 	InitXStatusIcons();
+	InitXStatusIcons();
 
 	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
 		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
 
 	if (HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild))
-  { // note if the Hook was successful (e.g. clist_nicer creates them too late)
-	  HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
-    bXStatusExtraIconsReady = 1;
-  }
+	{ // note if the Hook was successful (e.g. clist_nicer creates them too late)
+		HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
+		bXStatusExtraIconsReady = 1;
+	}
 
-  NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
+	NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
 }
-
 
 CIcqProto::~CIcqProto()
 {
 	if (m_bXStatusEnabled)
 		m_bXStatusEnabled = 10; // block clist changing
 
-  // Make sure all connections are closed
+	// Make sure all connections are closed
 	CloseContactDirectConns(NULL);
 	while ( true ) {
 		if ( !directConns.getCount())
@@ -233,21 +231,22 @@ CIcqProto::~CIcqProto()
 		Sleep(10);     /* yeah, ugly */
 	}
 
-  // Delete account items from contact menu
-  for (int i = 0; i < SIZEOF(m_hContactMenuItems); i++)
-	  CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)m_hContactMenuItems[i], 0);
+	// Delete account items from contact menu
+	for (int i = 0; i < SIZEOF(m_hContactMenuItems); i++)
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)m_hContactMenuItems[i], 0);
 
-  // Serv-list update board clean-up
+	// Serv-list update board clean-up
 	FlushServerIDs();
-  /// TODO: make sure server-list handler thread is not running
-  /// TODO: save state of server-list update board to DB
-  servlistPendingFlushOperations();
+	/// TODO: make sure server-list handler thread is not running
+	/// TODO: save state of server-list update board to DB
+	servlistPendingFlushOperations();
+	SAFE_FREE((void**)&servlistQueueList);
 
-  // NetLib clean-up
+	// NetLib clean-up
 	NetLib_SafeCloseHandle(&m_hDirectNetlibUser);
 	NetLib_SafeCloseHandle(&m_hServerNetlibUser);
 
-  // Destroy hookable events
+	// Destroy hookable events
 	if (hsmsgrequest)
 		DestroyHookableEvent(hsmsgrequest);
 
@@ -257,7 +256,7 @@ CIcqProto::~CIcqProto()
 	if (hxstatusiconchanged)
 		DestroyHookableEvent(hxstatusiconchanged);
 
-  // Clean-up remaining protocol instance members
+	// Clean-up remaining protocol instance members
 	cookies.destroy();
 
 	UninitContactsCache();
@@ -284,12 +283,12 @@ CIcqProto::~CIcqProto()
 	SAFE_FREE(&m_modeMsgs.szDnd);
 	SAFE_FREE(&m_modeMsgs.szFfc);
 
-  // Remove account icons
-  UninitXStatusIcons();
+	// Remove account icons
+	UninitXStatusIcons();
 
-  IconLibRemove(&m_hIconProtocol);
+	IconLibRemove(&m_hIconProtocol);
 
-  NetLog_Server("%s: Protocol instance '%s' destroyed.", ICQ_PROTOCOL_NAME, m_szModuleName);
+	NetLog_Server("%s: Protocol instance '%s' destroyed.", ICQ_PROTOCOL_NAME, m_szModuleName);
 
 	mir_free( m_szProtoName );
 	mir_free( m_szModuleName );
@@ -2271,31 +2270,30 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 		*ppszMsg = szNewUtf;
 		szNewUtf = NULL;
 
-    if (icqOnline())
-    { // update current status note
-      char *szNote = *ppszMsg ? *ppszMsg : "";
+		if (icqOnline())
+		{	// update current status note
+			char *szNote = *ppszMsg ? *ppszMsg : "";
 
-      if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
-      {
-        BYTE bXStatus = getContactXStatus(NULL);
-    
-        if (!bXStatus || moodXStatus[bXStatus-1] == -1)
-          SetStatusNote(szNote, 1000, FALSE);
-      }
-      else
-        SetStatusNote(szNote, 1000, FALSE);
+			if (getSettingByte(NULL, "XStatusMsgAsNote", DEFAULT_XSTATUS_STATUS_NOTE))
+			{
+				BYTE bXStatus = getContactXStatus(NULL);
+				if (!bXStatus || moodXStatus[bXStatus-1] == -1)
+					SetStatusNote(szNote, 1000, FALSE);
+			}
+			else
+				SetStatusNote(szNote, 1000, FALSE);
 
-  		if (m_bAimEnabled && (m_iStatus == status))
-	  		icq_sendSetAimAwayMsgServ(*ppszMsg);
-    }
+			if (m_bAimEnabled && (m_iStatus == status))
+				icq_sendSetAimAwayMsgServ(*ppszMsg);
+		}
 	}
 	SAFE_FREE(&szNewUtf);
+	SAFE_FREE(ppszMsg);
 
 	LeaveCriticalSection(&m_modeMsgsMutex);
 
 	return 0; // Success
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PS_UserIsTyping - sends a UTN notification
