@@ -2020,7 +2020,7 @@ static void CreateImageList(BOOL bInitial)
 
 	hIcon = CreateIcon(g_hInst, 16, 16, 1, 4, NULL, NULL);
 	ImageList_AddIcon(myGlobals.g_hImageList, hIcon);
-	ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
+	//ImageList_GetIcon(myGlobals.g_hImageList, 0, 0);
 	DestroyIcon(hIcon);
 
 	myGlobals.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);
