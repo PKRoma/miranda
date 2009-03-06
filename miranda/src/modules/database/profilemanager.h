@@ -37,4 +37,5 @@ int getProfileManager(PROFILEMANAGERDATA * pd);
 int getProfilePath(TCHAR * buf, size_t cch);
 int isValidProfileName(const TCHAR * name);
 bool fileExist(TCHAR* fname);
+bool shouldAutoCreate(TCHAR *szProfile);
 

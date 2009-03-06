@@ -66,10 +66,8 @@ struct ProfileEnumData {
 
 extern TCHAR mirandabootini[MAX_PATH]; 
 
-void SetServiceMode(void);
 char **GetSeviceModePluginsList(void);
 void SetServiceModePlugin( int idx );
-bool shouldAutoCreate(void);
 
 static void ThemeDialogBackground(HWND hwnd)
 {
@@ -158,7 +156,8 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		}
 
 		// decide if there is a default profile name given in the INI and if it should be used
-		if (shouldAutoCreate() || dat->pd->noProfiles) {
+		if (dat->pd->noProfiles || (shouldAutoCreate(dat->pd->szProfile) && _taccess(dat->pd->szProfile, 0))) 
+        {
 			TCHAR* profile = _tcsrchr(dat->pd->szProfile, '\\');
 			if (profile) ++profile;
 			else profile = dat->pd->szProfile;
@@ -480,7 +479,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->opd[i].hwnd = NULL;
 				dat->opd[i].changed = 0;
 				tci.pszText = ( TCHAR* )odp[i].ptszTitle;
-				if (dat->prof->pd->noProfiles || shouldAutoCreate())
+                if (dat->prof->pd->noProfiles || shouldAutoCreate(dat->prof->pd->szProfile))
 					dat->currentPage = 1;
 				TabCtrl_InsertItem( GetDlgItem(hwndDlg,IDC_TABS), i, &tci );
 		}	}
