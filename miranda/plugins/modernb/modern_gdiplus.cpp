@@ -232,7 +232,7 @@ BOOL GDIPlus_IsAnimatedGIF(TCHAR * szName)
 	// Get the number of frames in the first dimension.
 	nFrameCount = image.GetFrameCount(&pDimensionIDs[0]);
 
-	delete  pDimensionIDs;
+	delete[]  pDimensionIDs;
 
 	return (BOOL) (nFrameCount > 1);
 }
@@ -307,7 +307,7 @@ void GDIPlus_ExtractAnimatedGIF(TCHAR * szName, int width, int height, HBITMAP *
 	SelectObject(hdc,oldBmp);
 	DeleteDC(hdc);
 	free(pPropertyItem);
-	delete  pDimensionIDs;
+	delete[] pDimensionIDs;
 	if (pBitmap && pframesDelay && pframesCount && pSizeAvatar)
 	{
 	   *pBitmap=hBitmap;

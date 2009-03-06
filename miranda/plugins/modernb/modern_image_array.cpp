@@ -253,6 +253,7 @@ int ImageArray_AddImage(LP_IMAGE_ARRAY_DATA iad, HBITMAP hBmp, int pos)
 	// Set some draw states
 	SelectObject(iad->hdc, hNewBmp);
 	hdc_old = CreateCompatibleDC(iad->hdc); 
+	old_bmp = (HBITMAP)GetCurrentObject(hdc_old, OBJ_BITMAP);
 
 	SetBkMode(iad->hdc,TRANSPARENT);
 	{
@@ -302,7 +303,7 @@ int ImageArray_AddImage(LP_IMAGE_ARRAY_DATA iad, HBITMAP hBmp, int pos)
 			x = w;
 			y = 0;
 		}
-		old_bmp=(HBITMAP)SelectObject(hdc_old, hBmp);
+		SelectObject(hdc_old, hBmp);
 		BitBlt(iad->hdc, x, y, bm.bmWidth, bm.bmHeight, hdc_old, 0, 0, SRCCOPY);
 
 		// 3- old data
@@ -310,7 +311,7 @@ int ImageArray_AddImage(LP_IMAGE_ARRAY_DATA iad, HBITMAP hBmp, int pos)
 		{
 			int ox, oy;
 
-			old_bmp=(HBITMAP)SelectObject(hdc_old, iad->img);
+			SelectObject(hdc_old, iad->img);
 
 			if (iad->width_based)
 			{
@@ -339,7 +340,7 @@ int ImageArray_AddImage(LP_IMAGE_ARRAY_DATA iad, HBITMAP hBmp, int pos)
 	}
 
 	// restore things
-//	SelectObject(hdc_old,old_bmp);
+	SelectObject(hdc_old,old_bmp);
 	mod_DeleteDC(hdc_old);
 	if (iad->img != NULL) DeleteObject(iad->img);
 	iad->img = hNewBmp;

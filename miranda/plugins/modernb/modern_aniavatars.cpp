@@ -967,7 +967,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 		{
 			dat->bPlaying=FALSE;
 		}
-		DeleteDC(hDC_animation);
+		ReleaseDC(NULL,hDC_animation);
 		if (tempDC)
 		{
 			SelectObject(tempDC, hOldBmp);

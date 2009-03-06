@@ -2162,6 +2162,8 @@ static int _us_DoRemoveFrame(WPARAM wParam,LPARAM lParam)
 	DestroyWindow(g_pfwFrames[pos].hWnd);
 	g_pfwFrames[pos].hWnd=(HWND)-1;
 	DestroyWindow(g_pfwFrames[pos].TitleBar.hwnd);
+	if(g_pfwFrames[pos].TitleBar.hwndTip)
+		DestroyWindow(g_pfwFrames[pos].TitleBar.hwndTip);
 	g_pfwFrames[pos].TitleBar.hwnd=(HWND)-1;
 	if(g_pfwFrames[pos].ContainerWnd && g_pfwFrames[pos].ContainerWnd!=(HWND)-1) DestroyWindow(g_pfwFrames[pos].ContainerWnd);
 	g_pfwFrames[pos].ContainerWnd=(HWND)-1;
