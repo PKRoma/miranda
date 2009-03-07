@@ -72,13 +72,17 @@ int pathToAbsolute(char *pSrc, char *pOut, char* base)
 
 	if ( base == NULL )
 		base = szMirandaPath;
+
+    char buf[MAX_PATH];
 	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' && pSrc[0] != '.' ))
-		mir_snprintf(pOut, MAX_PATH, "%s", pSrc);
+		mir_snprintf( buf, MAX_PATH, "%s", pSrc );
 	else if ( pSrc[0] != '\\' )
-		mir_snprintf( pOut, MAX_PATH, "%s%s", base, pSrc );
+		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc );
 	else
-		mir_snprintf( pOut, MAX_PATH, "%s%s", base, pSrc+1 );
-	return strlen( pOut );
+		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc+1 );
+
+    size_t len = GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
+	return len;
 }
 
 static int pathToAbsolute(WPARAM wParam, LPARAM lParam) 
@@ -155,14 +159,17 @@ int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 
 	if ( base == NULL )
 		base = szMirandaPathW;
-	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0] != '.' ))
-		mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
-	else if ( pSrc[0] != '\\' )
-		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), base, pSrc );
-	else
-		mir_sntprintf( pOut, MAX_PATH, _T("%s%s"), base, pSrc+1 );
 
-	return lstrlen( pOut );
+    TCHAR buf[MAX_PATH];
+	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0] != '.' ))
+		mir_sntprintf( buf, MAX_PATH, _T("%s"), pSrc );
+	else if ( pSrc[0] != '\\' )
+		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc );
+	else
+		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc+1 );
+
+    size_t len = GetFullPathName(buf, MAX_PATH, pOut, NULL);
+	return len;
 }
 
 static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)
