@@ -573,7 +573,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			lps->rcItem.top += 2;
 			lps->rcItem.bottom -= 2;
 
-			if (acc->bOldProto)
+			if (acc->bOldProto || acc->bDynDisabled)
 			{
 				DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top,
 					LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT),
@@ -744,7 +744,7 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 					{
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, lParam);
 						if ( pa ) {
-							if ( pa->bOldProto )
+							if ( pa->bOldProto || pa->bDynDisabled)
 								break;
 
 							pa->bIsEnabled = !pa->bIsEnabled;

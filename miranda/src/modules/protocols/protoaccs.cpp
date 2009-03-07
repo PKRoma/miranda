@@ -73,7 +73,7 @@ void LoadDbAccounts()
 			}
 
 			_itoa( OFFSET_ENABLED+i, buf, 10 );
-			pa->bIsEnabled = pa->bOldProto || DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
+			pa->bIsEnabled = DBGetContactSettingDword( NULL, "Protocols", buf, 1 );
 
 			if ( !DBGetContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", &dbv )) {
 				pa->szProtoName = mir_strdup( dbv.pszVal );
@@ -209,6 +209,9 @@ int LoadAccountsModule( void )
 
 	for ( i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[i];
+
+        pa->bDynDisabled = !Proto_IsProtocolLoaded( pa->szProtoName );
+
 		if ( pa->ppro || !IsAccountEnabled( pa ))
 			continue;
 
@@ -419,7 +422,7 @@ int IsAccountEnabled( PROTOACCOUNT* pa )
 	if ( !pa )
 		return FALSE;
 
-	return ( pa->bIsEnabled && !pa->bDynDisabled );
+	return (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
