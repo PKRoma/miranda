@@ -44,7 +44,7 @@ typedef struct PLUGIN_DB_ENUM {
 //#define DEFMOD_PROTOCOLMSN  2	    //removed from v0.1.2.0+
 #define DEFMOD_UIFINDADD      3
 #define DEFMOD_UIUSERINFO     4
-//#define DEFMOD_SRMESSAGE    5     //removed from v0.3.3a (temp)
+#define DEFMOD_SRMESSAGE      5
 #define DEFMOD_SRURL          6
 #define DEFMOD_SREMAIL        7
 #define DEFMOD_SRAUTH         8
