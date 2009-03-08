@@ -65,19 +65,6 @@ struct FileDlgData {
 	HICON hIcon, hIconFolder;
 };
 
-// path.c
-int pathToAbsolute(char *pSrc, char *pOut, char* base);
-int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base);
-int CreateDirectoryTree(const char *szDir);
-int CreateDirectoryTreeW(const WCHAR *szDir);
-#if defined( _UNICODE )
-	#define pathToAbsoluteT pathToAbsoluteW
-	#define CreateDirectoryTreeT CreateDirectoryTreeW
-#else
-    #define pathToAbsoluteT pathToAbsolute
-	#define CreateDirectoryTreeT CreateDirectoryTree
-#endif
-
 //file.c
 #define UNITS_BYTES     1   // 0<=size<1000: "%d bytes"
 #define UNITS_KBPOINT1	2	// 1000<=size<100*1024: "%.1f KB"

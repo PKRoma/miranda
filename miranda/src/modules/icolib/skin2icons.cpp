@@ -117,15 +117,18 @@ static void __fastcall SafeDestroyIcon( HICON* icon )
 
 // Helper functions to manage Icon resources
 
-IconSourceFile* IconSourceFile_Get( const TCHAR* file )
+IconSourceFile* IconSourceFile_Get( const TCHAR* file, bool isPath )
 {
 	TCHAR fileFull[ MAX_PATH ];
 
 	if ( !file )
 		return NULL;
 
-	CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )file, ( LPARAM )fileFull );
-	/// TODO: convert path to long - eliminate duplicate items
+    if (isPath)
+	    pathToAbsoluteT( file, fileFull, NULL );
+	    /// TODO: convert path to long - eliminate duplicate items
+    else
+        _tcscpy( fileFull, file );
 
 	IconSourceFile key = { fileFull };
 	int ix;
@@ -146,8 +149,7 @@ int IconSourceFile_Release( IconSourceFile** pitem )
 {
 	if ( pitem && *pitem && (*pitem)->ref_count ) {
 		IconSourceFile* item = *pitem;
-		item->ref_count--;
-		if ( !item->ref_count ) {
+		if ( --item->ref_count <= 0 ) {
 			int indx;
 			if (( indx = iconSourceFileList.getIndex( item )) != -1 ) {
 				SAFE_FREE(( void** )&item->file );
@@ -331,7 +333,7 @@ IconSourceItem* GetIconSourceItem( const TCHAR* file, int indx, int cxIcon, int 
 	if ( !file )
 		return NULL;
 
-	IconSourceFile* r_file = IconSourceFile_Get( file );
+	IconSourceFile* r_file = IconSourceFile_Get( file, true );
 	IconSourceItem key = { r_file, indx, cxIcon, cyIcon };
 	int ix;
 	if (( ix = iconSourceList.getIndex( &key )) != -1 ) {
@@ -382,7 +384,7 @@ IconSourceItem* CreateStaticIconSourceItem( int cxIcon, int cyIcon )
 	} while ( iconSourceFileList.getIndex( &key ) != -1 );
 
 	IconSourceItem* newItem = (IconSourceItem*)mir_calloc( sizeof( IconSourceItem ));
-	newItem->file = IconSourceFile_Get( sourceName );
+	newItem->file = IconSourceFile_Get( sourceName, false );
 	newItem->indx = 0;
 	newItem->ref_count = 1;
 	newItem->cx = cxIcon;
@@ -434,7 +436,7 @@ static HICON ExtractIconFromPath( const TCHAR *path, int cxIcon, int cyIcon )
 		n = _ttoi( comma+1 );
 		*comma = 0;
 	}
-	CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )file, ( LPARAM )fileFull );
+	pathToAbsoluteT( file, fileFull, NULL );
 	hIcon = NULL;
 
 	//SHOULD BE REPLACED WITH GOOD ENOUGH FUNCTION
@@ -585,13 +587,13 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 			#ifdef _UNICODE
 				WCHAR fileFull[ MAX_PATH ];
 
-				CallService( MS_UTILS_PATHTOABSOLUTEW, ( WPARAM )sid->pwszDefaultFile, ( LPARAM )fileFull );
+				pathToAbsoluteW( sid->pwszDefaultFile, fileFull, NULL );
 				item->default_file = mir_wstrdup( fileFull );
 			#else
 				char* file = u2a( sid->pwszDefaultFile );
 				char fileFull[ MAX_PATH ];
 
-				CallService( MS_UTILS_PATHTOABSOLUTE, ( WPARAM )file, ( LPARAM )fileFull );
+				pathToAbsolute( file, fileFull, NULL );
 				SAFE_FREE(( void** )&file );
 				item->default_file = mir_strdup( fileFull );
 			#endif
@@ -601,13 +603,13 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 				WCHAR *file = a2u( sid->pszDefaultFile );
 				WCHAR fileFull[ MAX_PATH ];
 
-				CallService( MS_UTILS_PATHTOABSOLUTEW, ( WPARAM )file, ( LPARAM )fileFull );
+				pathToAbsoluteW( file, fileFull, NULL );
 				SAFE_FREE(( void** )&file );
 				item->default_file = mir_wstrdup( fileFull );
 			#else
 				char fileFull[ MAX_PATH ];
 
-				CallService( MS_UTILS_PATHTOABSOLUTE, ( WPARAM )sid->pszDefaultFile, ( LPARAM )fileFull );
+				pathToAbsolute( sid->pszDefaultFile, fileFull, NULL );
 				item->default_file = mir_strdup( fileFull );
 			#endif
 	}	}

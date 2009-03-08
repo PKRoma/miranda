@@ -31,7 +31,7 @@ static char szMirandaPathLower[MAX_PATH];
 
 static int replaceVars(WPARAM wParam, LPARAM lParam);
 
-static int pathIsAbsolute(char *path)
+static int pathIsAbsolute(const char *path)
 {
 	if ( strlen(path) <= 2 )
 		return 0;
@@ -65,7 +65,7 @@ static int pathToRelative(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-int pathToAbsolute(char *pSrc, char *pOut, char* base)
+int pathToAbsolute(const char *pSrc, char *pOut, char* base)
 {
 	if ( !pSrc || !strlen( pSrc ) || strlen( pSrc ) > MAX_PATH )
 		return 0;
@@ -75,14 +75,14 @@ int pathToAbsolute(char *pSrc, char *pOut, char* base)
 
     char buf[MAX_PATH];
 	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' && pSrc[0] != '.' ))
-		mir_snprintf( buf, MAX_PATH, "%s", pSrc );
+		return mir_snprintf( buf, MAX_PATH, "%s", pSrc );
 	else if ( pSrc[0] != '\\' )
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc );
 	else
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc+1 );
 
-    size_t len = GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
-	return len;
+
+    return GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
 }
 
 static int pathToAbsolute(WPARAM wParam, LPARAM lParam) 
@@ -121,7 +121,7 @@ static int createDirTree(WPARAM, LPARAM lParam)
 static TCHAR szMirandaPathW[MAX_PATH];
 static TCHAR szMirandaPathWLower[MAX_PATH];
 
-static int pathIsAbsoluteW(TCHAR *path)
+static int pathIsAbsoluteW(const TCHAR *path)
 {
 	if ( lstrlen(path) <= 2 )
 		return 0;
@@ -152,24 +152,23 @@ static int pathToRelativeW(WPARAM wParam, LPARAM lParam)
 	return lstrlen(pOut);
 }
 
-int pathToAbsoluteW(TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
+int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 {
-	if ( !pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
+	if ( !pSrc || !wcslen(pSrc) || wcslen(pSrc) > MAX_PATH)
 		return 0;
 
 	if ( base == NULL )
 		base = szMirandaPathW;
 
     TCHAR buf[MAX_PATH];
-	if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0] != '.' ))
-		mir_sntprintf( buf, MAX_PATH, _T("%s"), pSrc );
+    if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0] != '.' ))
+		return mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
 	else if ( pSrc[0] != '\\' )
 		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc );
 	else
 		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc+1 );
 
-    size_t len = GetFullPathName(buf, MAX_PATH, pOut, NULL);
-	return len;
+    return GetFullPathName(buf, MAX_PATH, pOut, NULL);
 }
 
 static int pathToAbsoluteW(WPARAM wParam, LPARAM lParam)

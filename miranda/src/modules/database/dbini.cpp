@@ -405,14 +405,12 @@ static int CheckIniImportNow(WPARAM, LPARAM)
 
 int InitIni(void)
 {
-	TCHAR szMirandaDir[MAX_PATH], *str2;
+	TCHAR szMirandaDir[MAX_PATH];
 
 	bModuleInitialized = true;
 
 	DoAutoExec();
-	GetModuleFileName(hMirandaInst, szMirandaDir, SIZEOF(szMirandaDir));
-	str2 = _tcsrchr(szMirandaDir,'\\');
-	if (str2!=NULL) *str2=0;
+    pathToAbsoluteT(_T("."), szMirandaDir, NULL);
 	hIniChangeNotification=FindFirstChangeNotification(szMirandaDir, 0, FILE_NOTIFY_CHANGE_FILE_NAME);
 	if (hIniChangeNotification != INVALID_HANDLE_VALUE) {
 		CreateServiceFunction("DB/Ini/CheckImportNow", CheckIniImportNow);

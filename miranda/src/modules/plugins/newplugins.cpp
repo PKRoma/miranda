@@ -1072,14 +1072,7 @@ int LoadNewPluginsModuleInfos(void)
 	pluginCoreLink.CallContactService             = CallContactService;
 
 	// remember where the mirandaboot.ini goes
-	{
-		TCHAR exe[MAX_PATH];
-		TCHAR * slice;
-		GetModuleFileName(NULL, exe, SIZEOF(exe));
-		slice=_tcsrchr(exe, '\\');
-		if ( slice != NULL ) *slice=0;
-		mir_sntprintf(mirandabootini, SIZEOF(mirandabootini), _T("%s\\mirandaboot.ini"), exe);
-	}
+    pathToAbsoluteT(_T("mirandaboot.ini"), mirandabootini, NULL);
 	// look for all *.dll's
 	enumPlugins(scanPluginsDir, 0, 0);
 	// the database will select which db plugin to use, or fail if no profile is selected

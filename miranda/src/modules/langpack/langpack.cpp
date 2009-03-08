@@ -323,24 +323,19 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 int LoadLangPackModule(void)
 {
 	HANDLE hFind;
-	TCHAR szSearch[MAX_PATH],*str2,szLangPack[MAX_PATH];
+	TCHAR szSearch[MAX_PATH];
 	WIN32_FIND_DATA fd;
 
 	bModuleInitialized = TRUE;
 
 	ZeroMemory(&langPack,sizeof(langPack));
 	LoadLangPackServices();
-	GetModuleFileName(hMirandaInst,szSearch,SIZEOF(szSearch));
-	str2=_tcsrchr(szSearch,'\\');
-	if(str2!=NULL) *str2=0;
-	else str2=szSearch;
-	lstrcat( szSearch, _T("\\langpack_*.txt"));
+    pathToAbsoluteT(_T("langpack_*.txt"), szSearch, NULL); 
 	hFind = FindFirstFile( szSearch, &fd );
 	if( hFind != INVALID_HANDLE_VALUE ) {
-		lstrcpy(str2+1,fd.cFileName);
-		lstrcpy(szLangPack,szSearch);
+        pathToAbsoluteT(fd.cFileName, szSearch, NULL); 
 		FindClose(hFind);
-		LoadLangPack(szLangPack);
+		LoadLangPack(szSearch);
 	}
 	return 0;
 }

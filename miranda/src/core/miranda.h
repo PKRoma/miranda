@@ -125,6 +125,20 @@ TCHAR*   u2t( const wchar_t* src );
 char*    u2a( const wchar_t* src );
 wchar_t* a2u( const char* src );
 
+/**** path.c ***************************************************************************/
+
+int pathToAbsolute(const char *pSrc, char *pOut, char* base);
+int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base);
+int CreateDirectoryTree(const char *szDir);
+int CreateDirectoryTreeW(const WCHAR *szDir);
+#if defined( _UNICODE )
+	#define pathToAbsoluteT pathToAbsoluteW
+	#define CreateDirectoryTreeT CreateDirectoryTreeW
+#else
+    #define pathToAbsoluteT pathToAbsolute
+	#define CreateDirectoryTreeT CreateDirectoryTree
+#endif
+
 /**** skin2icons.c *********************************************************************/
 
 HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid );

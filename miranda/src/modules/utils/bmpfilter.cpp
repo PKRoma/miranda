@@ -39,7 +39,7 @@ static int BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 	char szFilename[MAX_PATH];
 	int filenameLen;
     
-	if (!CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
+	if (!pathToAbsolute(szFile, szFilename, NULL))
 		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) {
