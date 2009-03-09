@@ -227,7 +227,7 @@ static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 
 		if (port++ == 65535) {
 			gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_listen() no free port found\n");
-			_close(fd);
+			gg_sock_close(fd);
 			errno = ENOENT;
 			return -1;
 		}
@@ -236,7 +236,7 @@ static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 	if (listen(fd, 1)) {
 		int errsv = errno;
 		gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_listen() unable to listen (%s)\n", strerror(errno));
-		_close(fd);
+		gg_sock_close(fd);
 		errno = errsv;
 		return -1;
 	}
@@ -451,7 +451,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 		goto fail;
 	}
 
-	if ((fd = _open(filename, O_RDONLY)) == -1) {
+	if ((fd = _open(filename, O_RDONLY | O_BINARY)) == -1) {
 		gg_debug_session(sess, GG_DEBUG_MISC, "// gg_dcc7_send_file() open() failed (%s)\n", strerror(errno));
 		goto fail;
 	}
@@ -463,7 +463,11 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 		hash = hash_buf;
 	}
 
+#ifdef _WIN32
+	if ((tmp = strrchr(filename1250, '\\')))
+#else
 	if ((tmp = strrchr(filename1250, '/')))
+#endif
 		filename1250 = tmp + 1;
 
 	if (!(dcc = gg_dcc7_send_file_common(sess, rcpt, fd, st.st_size, filename1250, hash, 1)))
@@ -969,7 +973,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
 #endif
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() can't set nonblocking (%s)\n", strerror(errno));
-				_close(fd);
+				gg_sock_close(fd);
 				e->type = GG_EVENT_DCC7_ERROR;
 				e->event.dcc_error = GG_ERROR_DCC7_HANDSHAKE;
 				return e;
@@ -1013,7 +1017,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 					e->type = GG_EVENT_DCC7_ERROR;
 					e->event.dcc_error = GG_ERROR_DCC7_NET;
 				}
-					
+
 				return e;
 			}
 

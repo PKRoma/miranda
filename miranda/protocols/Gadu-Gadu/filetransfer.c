@@ -34,7 +34,7 @@ void gg_dccwait(GGPROTO *gg)
 	if (GetCurrentThreadId() != gg->pth_dcc.dwThreadId && exitCode == STILL_ACTIVE)
 	{
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_dccstop(): Waiting until gg_dccmainthread() finished.");
+		gg_netlog(gg, "gg_dccwait(): Waiting until gg_dccmainthread() finished.");
 #endif
 		while (WaitForSingleObjectEx(gg->pth_dcc.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 	}
@@ -269,7 +269,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 				gg_dcc_socket_free(dcc);
 
 				// Check if it's main socket
-				if(dcc == gg->dcc) dcc = NULL;
+				if(dcc == gg->dcc) gg->dcc = NULL;
 				continue;
 			}
 #ifdef DEBUGMODE
@@ -351,16 +351,22 @@ void *__stdcall gg_dccmainthread(void *empty)
 					switch (e->event.dcc_error)
 					{
 						case GG_ERROR_DCC_HANDSHAKE:
-							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error handshake.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Handshake error.", dcc->peer_uin);
 							break;
 						case GG_ERROR_DCC_NET:
-							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error network.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Network error.", dcc->peer_uin);
+							break;
+						case GG_ERROR_DCC_FILE:
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, File read/write error.", dcc->peer_uin);
+							break;
+						case GG_ERROR_DCC_EOF:
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, End of file/connection error.", dcc->peer_uin);
 							break;
 						case GG_ERROR_DCC_REFUSED:
-							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error refused.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Connection refused error.", dcc->peer_uin);
 							break;
 						default:
-							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Error unknown.", dcc->peer_uin);
+							gg_netlog(gg, "gg_dccmainthread(): Client: %d, Unknown error.", dcc->peer_uin);
 					}
 #endif
 					// Don't do anything if it's main socket
@@ -442,7 +448,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 					int found = 0;
 
 #ifdef DEBUGMODE
-					gg_netlog(gg, "gg_dccmainthread(): Callback from client.", dcc->peer_uin);
+					gg_netlog(gg, "gg_dccmainthread(): Callback from client %d.", dcc->peer_uin);
 #endif
 					// Seek for stored callback request
 					for (l = gg->requests; l; l = l->next)
@@ -469,7 +475,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 							// Add request to watches
 							list_add(&gg->watches, req, 0);
 							// Free old dat
-							free(dcc);
+							gg_free_dcc(dcc);
 
 #ifdef DEBUGMODE
 							gg_netlog(gg, "gg_dccmainthread(): Found stored request to client %d, filename \"%s\" size %d, folder \"%s\".",
@@ -503,7 +509,13 @@ void *__stdcall gg_dccmainthread(void *empty)
 	for (l = gg->watches; l; l = l->next)
 	{
 		struct gg_dcc *dcc = l->data;
-		if(dcc) gg_dcc_socket_free(dcc);
+		if (dcc)
+		{
+			gg_dcc_socket_free(dcc);
+
+			// Check if it's main socket
+			if(dcc == gg->dcc) gg->dcc = NULL;
+		}
 	}
 	// Close all waiting for aknowledgle transfers
 	for (l = gg->transfers; l; l = l->next)
@@ -636,14 +648,14 @@ int gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, cons
 	pthread_mutex_unlock(&gg->ft_mutex);
 
 	// Open file for appending and check if ok
-	if(!(dcc->file_fd = _open(fileName, O_APPEND | O_BINARY)))
+	if((dcc->file_fd = _open(fileName, _O_WRONLY | _O_APPEND | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE)) == -1)
 	{
 		// Free transfer
 		gg_free_dcc(dcc);
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_fileallow(): Failed to create file \"%s\".", fileName);
 #endif
-		ProtoBroadcastAck(proto->m_szModuleName, dcc->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc, 0);
+		ProtoBroadcastAck(GG_PROTO, dcc->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc, 0);
 		return 0;
 	}
 

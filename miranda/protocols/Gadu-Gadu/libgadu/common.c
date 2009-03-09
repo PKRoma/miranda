@@ -343,7 +343,7 @@ int gg_connect(void *addr, int port, int async)
 	if (bind(sock, (struct sockaddr *) &myaddr, sizeof(myaddr)) == -1) {
 		gg_debug(GG_DEBUG_MISC, "// gg_connect() bind() failed (errno=%d, %s)\n", errno, strerror(errno));
 		errno2 = errno;
-		_close(sock);
+		gg_sock_close(sock);
 		errno = errno2;
 		return -1;
 	}
@@ -360,7 +360,7 @@ int gg_connect(void *addr, int port, int async)
 #endif
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() ioctl() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			_close(sock);
+			gg_sock_close(sock);
 			errno = errno2;
 			return -1;
 		}
@@ -374,7 +374,7 @@ int gg_connect(void *addr, int port, int async)
 		if (errno && (!async || errno != EINPROGRESS)) {
 			gg_debug(GG_DEBUG_MISC, "// gg_connect() connect() failed (errno=%d, %s)\n", errno, strerror(errno));
 			errno2 = errno;
-			_close(sock);
+			gg_sock_close(sock);
 			errno = errno2;
 			return -1;
 		}

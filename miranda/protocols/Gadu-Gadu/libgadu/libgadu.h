@@ -162,9 +162,9 @@ typedef   signed int    int32_t;
 #  define gg_sock_close(sock)			closesocket(sock)
 #  define gg_getsockopt(sock,level,name,val,len) getsockopt(sock,level,name,(char *)val,len)
 #else
-#  define gg_sock__write	write
-#  define gg_sock__read		read
-#  define gg_sock__close	_close
+#  define gg_sock_write		write
+#  define gg_sock_read		read
+#  define gg_sock_close		_close
 #  define gg_getsockopt		getsockopt
 #endif
 
@@ -1347,7 +1347,7 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 #define GG_HAS_AUDIO_MASK 0x40000000
 #define GG_HAS_AUDIO7_MASK 0x20000000
 #define GG_ERA_OMNIX_MASK 0x04000000
-#define GG_LIBGADU_VERSION "1.8.0"
+#define GG_LIBGADU_VERSION "1.8.2"
 
 #define GG_DEFAULT_DCC_PORT 1550
 
