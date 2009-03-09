@@ -429,6 +429,12 @@ struct gg_dcc7 {
 
 	int soft_timeout;	/**< Flaga mówiąca, że po przekroczeniu \c timeout należy wywołać \c gg_dcc7_watch_fd() */
 	int seek;		/**< Flaga mówiąca, że można zmieniać położenie w wysyłanym pliku */
+
+#ifdef GG_CONFIG_MIRANDA
+	void *contact;
+	char *folder;
+	uint32_t tick;
+#endif
 };
 
 /**

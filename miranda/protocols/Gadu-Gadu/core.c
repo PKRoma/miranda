@@ -839,6 +839,107 @@ retry:
 			case GG_EVENT_IMAGE_REQUEST:
 				gg_img_sendonrequest(gg, e);
 				break;
+
+			// Incoming direct connection
+			case GG_EVENT_DCC7_NEW:
+				{
+					struct gg_dcc7 *dcc7 = e->event.dcc7_new;
+#ifdef DEBUGMODE
+					gg_netlog(gg, "gg_mainthread(%x): Incoming direct connection.", gg);
+#endif
+					dcc7->contact = gg_getcontact(gg, dcc7->peer_uin, 0, 0, NULL);
+
+					// Check if user is on the list and if it is my uin
+					if(!dcc7->contact || DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, -1) != dcc7->uin) {
+						gg_dcc7_free(dcc7);
+						e->event.dcc7_new = NULL;
+						break;
+					}
+
+					// Add to waiting transfers
+					pthread_mutex_lock(&gg->ft_mutex);
+					list_add(&gg->transfers, dcc7, 0);
+					pthread_mutex_unlock(&gg->ft_mutex);
+
+					//////////////////////////////////////////////////
+					// Add file recv request
+					{
+						CCSDATA ccs;
+						PROTORECVEVENT pre;
+						char *szBlob;
+						char *szFilename = dcc7->filename;
+						char *szMsg = dcc7->filename;
+#ifdef DEBUGMODE
+						gg_netlog(gg, "gg_mainthread(%x): Client: %d, File ack filename \"%s\" size %d.", gg, dcc7->peer_uin,
+							dcc7->filename, dcc7->size);
+#endif
+						// Make new ggtransfer struct
+						szBlob = (char *)malloc(sizeof(DWORD) + strlen(szFilename) + strlen(szMsg) + 2);
+						// Store current dcc
+						*(PDWORD)szBlob = (DWORD)dcc7;
+						// Store filename
+						strcpy(szBlob + sizeof(DWORD), szFilename);
+						// Store description
+						strcpy(szBlob + sizeof(DWORD) + strlen(szFilename) + 1, szMsg);
+						ccs.szProtoService = PSR_FILE;
+						ccs.hContact = dcc7->contact;
+						ccs.wParam = 0;
+						ccs.lParam = (LPARAM)&pre;
+						pre.flags = 0;
+						pre.timestamp = time(NULL);
+						pre.szMessage = szBlob;
+						pre.lParam = 0;
+						CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+						free(szBlob);
+					}
+					e->event.dcc7_new = NULL;
+				}
+				break;
+
+			// Direct connection rejected
+			case GG_EVENT_DCC7_REJECT:
+				{
+					struct gg_dcc7 *dcc7 = e->event.dcc7_reject.dcc7;
+#ifdef DEBUGMODE
+					gg_netlog(gg, "gg_mainthread(%x): File transfer denied by client %d.", gg, dcc7->peer_uin);
+#endif
+					ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
+
+					// Remove from watches and free
+					pthread_mutex_lock(&gg->ft_mutex);
+					list_remove(&gg->watches, dcc7, 0);
+					pthread_mutex_unlock(&gg->ft_mutex);
+					gg_dcc7_free(dcc7);
+				}
+				break;
+
+#ifdef DEBUGMODE
+			// Direct connection error
+			case GG_EVENT_DCC7_ERROR:
+				{
+					switch (e->event.dcc7_error)
+					{
+						case GG_ERROR_DCC7_HANDSHAKE:
+							gg_netlog(gg, "gg_mainthread(%x): Handshake error.", gg);
+							break;
+						case GG_ERROR_DCC7_NET:
+							gg_netlog(gg, "gg_mainthread(%x): Network error.", gg);
+							break;
+						case GG_ERROR_DCC7_FILE:
+							gg_netlog(gg, "gg_mainthread(%x): File read/write error.", gg);
+							break;
+						case GG_ERROR_DCC7_EOF:
+							gg_netlog(gg, "gg_mainthread(%x): End of file/connection error.", gg);
+							break;
+						case GG_ERROR_DCC7_REFUSED:
+							gg_netlog(gg, "gg_mainthread(%x): Connection refused error.", gg);
+							break;
+						default:
+							gg_netlog(gg, "gg_mainthread(%x): Unknown error.", gg);
+					}
+				}
+				break;
+#endif
 		}
 		// Free event struct
 		gg_free_event(e);
