@@ -44,12 +44,12 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_UIN,79,14,102,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_PW,79,31,102,13,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Create new account",IDC_REGISTER,"Hyperlink",WS_TABSTOP,
-                    7,51,174,10
-    LTEXT           "ICQ number:",IDC_STATIC,7,16,65,8
-    LTEXT           "Password:",IDC_STATIC,7,33,66,8
+    LTEXT           "ICQ Number:",IDC_STATIC,0,0,53,12
+    EDITTEXT        IDC_UIN,54,0,131,12,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,0,16,53,12
+    EDITTEXT        IDC_PW,54,16,131,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "Create a new ICQ account",IDC_REGISTER,"Hyperlink",WS_TABSTOP,
+                    0,40,174,12
 END
 
 IDD_ASKAUTH DIALOGEX 0, 0, 186, 95

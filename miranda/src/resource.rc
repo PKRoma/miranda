@@ -1088,9 +1088,9 @@ BEGIN
     LTEXT           "Configure your IM accounts",IDC_DESCRIPTION,45,14,349,8,0,WS_EX_TRANSPARENT
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,410,1
     LISTBOX         IDC_ACCLIST,7,32,130,187,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Account information:",IDC_TXT_ACCOUNT,142,32,201,8
+    LTEXT           "Account Details:",IDC_TXT_ACCOUNT,142,32,201,8
     LTEXT           "Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options.  Alternatively, just click on the Plus sign underneath the list to set up a new IM account.",IDC_TXT_INFO,157,45,186,134
-    LTEXT           "Additional:",IDC_TXT_ADDITIONAL,142,184,201,8
+    LTEXT           "Additional Options:",IDC_TXT_ADDITIONAL,142,184,201,8
     CONTROL         "Configure network...",IDC_LNK_NETWORK,"Hyperlink",WS_TABSTOP,157,197,186,11
     CONTROL         "Get more protocols...",IDC_LNK_ADDONS,"Hyperlink",WS_TABSTOP,157,208,186,11
     CONTROL         "&Add...",IDC_ADD,"MButtonClass",WS_TABSTOP,7,224,16,14,WS_EX_NOACTIVATE | 0x10000000L

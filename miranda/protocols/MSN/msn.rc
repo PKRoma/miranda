@@ -7,7 +7,8 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
+#include <windows.h>
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -193,19 +194,18 @@ BEGIN
     LTEXT           "Last Name",IDC_STATIC,7,36,34,8
 END
 
-IDD_ACCMGRUI DIALOGEX 0, 0, 190, 113
+IDD_ACCMGRUI DIALOGEX 0, 0, 186, 134
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    RTEXT           "Live ID:",IDC_STATIC,11,29,52,8
-    EDITTEXT        IDC_HANDLE,67,27,100,12,ES_AUTOHSCROLL
-    RTEXT           "Password:",IDC_STATIC,11,45,52,8
-    EDITTEXT        IDC_PASSWORD,67,43,100,12,ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "Live ID:",IDC_STATIC,0,0,53,12
+    EDITTEXT        IDC_HANDLE,54,0,131,12,ES_AUTOHSCROLL
+    LTEXT           "Password:",IDC_STATIC,0,16,53,12
+    EDITTEXT        IDC_PASSWORD,54,16,131,12,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Create a new Windows Live account",IDC_NEWMSNACCOUNTLINK,
-                    "Hyperlink",WS_TABSTOP,7,81,176,8
+                    "Hyperlink",WS_TABSTOP,0,40,174,12
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
