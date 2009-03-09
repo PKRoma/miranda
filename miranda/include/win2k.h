@@ -76,6 +76,13 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define LVGS_COLLAPSIBLE        0x00000008
 #endif
 
+#ifndef SM_SERVERR2
+	#define SM_SERVERR2              89
+	#define VER_SUITE_STORAGE_SERVER 0x00002000
+	#define VER_SUITE_COMPUTE_SERVER 0x00004000
+	#define VER_SUITE_WH_SERVER      0x00008000
+#endif
+
 #if _MSC_VER
 	// uxtheme.h defines
 	#ifndef THEMEMGR_VERSION
@@ -295,6 +302,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define SPI_GETHOTTRACKING                  0x100E
 		#define BIF_NEWDIALOGSTYLE	0x0040
 		#define LVS_EX_LABELTIP     0x00004000
+		#define LVS_EX_DOUBLEBUFFER	0x00010000
 		#define DFCS_HOT 0x1000
 		#define FLASHW_TRAY 0x00000002;
 		typedef struct {
