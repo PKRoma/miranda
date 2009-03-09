@@ -165,7 +165,7 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
     {
 		if(szCmdLine[0]=='"') 
         {
-			szEndOfParam=_tcsrchr(szCmdLine+1,'"');
+			szEndOfParam=_tcschr(szCmdLine+1,'"');
 			if(szEndOfParam==NULL) break;
 			lstrcpyn(szThisParam,szCmdLine+1,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine));
 			szCmdLine=szEndOfParam+1;
@@ -199,12 +199,12 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 		if (!isValidProfileName(szProfile))
 			_tcscat(szProfile, _T(".dat"));
 
-		TCHAR *p = _tcsrchr(buf, '\\');
+		TCHAR *p = _tcsrchr(szProfile, '\\');
 		if (p) 
         {
-			*p = 0;
-			size_t len = _tcslen(profiledir);
-			mir_sntprintf(profiledir+len, cch-len, _T("%s\\"), buf); 
+            _tcscpy(profiledir, szProfile);
+            p = _tcsrchr(profiledir, '\\');
+			*(p+1) = 0;
 	    }	
     }
 }
