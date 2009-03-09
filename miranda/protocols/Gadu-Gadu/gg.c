@@ -227,6 +227,25 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 }
 
 //////////////////////////////////////////////////////////
+// Menus initialization
+void gg_menus_init(GGPROTO *gg)
+{
+	CLISTMENUITEM mi = {0};
+	char service[MAXMODULELABELLENGTH];
+
+	strcpy(service, gg->proto.m_szModuleName);
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_TCHAR;
+	mi.ptszPopupName = NULL;
+	mi.position = 500090000;
+	mi.hIcon = LoadIconEx(IDI_GG);
+	mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+	mi.pszService = service;
+	gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	mir_free(mi.ptszName);
+}
+
+//////////////////////////////////////////////////////////
 // Custom protocol event
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
@@ -263,6 +282,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 
 			// Init misc thingies
 			gg_icolib_init(gg);
+			gg_menus_init(gg);
 			gg_gc_init(gg);
 			gg_keepalive_init(gg);
 			gg_import_init(gg);
@@ -293,7 +313,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 
 //////////////////////////////////////////////////////////
 // Module instance initialization
-PROTO_INTERFACE * gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName)
+static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName)
 {
 	DWORD dwVersion;
 	GGPROTO *gg = malloc(sizeof(GGPROTO));
@@ -330,7 +350,7 @@ PROTO_INTERFACE * gg_proto_init(const char* pszProtoName, const TCHAR* tszUserNa
 	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(gg, dwVersion);
 
-	return (PROTO_INTERFACE *)gg;
+	return gg;
 }
 
 static int gg_proto_uninit(PROTO_INTERFACE *proto)
@@ -346,6 +366,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_keepalive_destroy(gg);
 	gg_gc_destroy(gg);
 	gg_import_shutdown(gg);
+	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], 0);
 
 	// Close handles
 	LocalEventUnhook(gg->hookOptsInit);
@@ -367,9 +388,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 
 	mir_free(gg->proto.m_szModuleName);
 	mir_free(gg->proto.m_tszUserName);
-#ifndef _UNICODE
 	mir_free(gg->name);
-#endif
 	free(gg->proto.vtbl);
 	free(gg);
 	return 0;
@@ -397,8 +416,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	ZeroMemory(&pd, sizeof(pd));
 	pd.cbSize = sizeof(pd);
 	pd.szName = GGDEF_PROTO;
-	pd.fnInit = gg_proto_init;
-	pd.fnUninit = gg_proto_uninit;
+	pd.fnInit = (pfnInitProto)gg_proto_init;
+	pd.fnUninit = (pfnUninitProto)gg_proto_uninit;
 	pd.type = PROTOTYPE_PROTOCOL;
 
 	// Register module

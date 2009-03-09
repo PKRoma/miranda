@@ -140,7 +140,7 @@ typedef struct
 		hookIconsChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
-	HANDLE hMainMenu[7];
+	HANDLE hMainMenu[8];
 	HANDLE hContactMenu[1];
 } GGPROTO;
 
@@ -369,7 +369,6 @@ int gg_isonline(GGPROTO *gg);
 int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 #endif
 
-int gg_netsend(HANDLE s, char *data, int datalen);
 void gg_broadcastnewstatus(GGPROTO *gg, int s);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
@@ -377,13 +376,12 @@ void gg_notifyall(GGPROTO *gg);
 void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
 char *gg_getstatusmsg(GGPROTO *gg, int status);
 void gg_dccstart(GGPROTO *gg);
-void gg_waitdcc(GGPROTO *gg);
 void gg_dccconnect(GGPROTO *gg, uin_t uin);
+void gg_dccwait(GGPROTO *gg);
 int gg_gettoken(GGPROTO *gg, GGTOKEN *token);
 void gg_parsecontacts(GGPROTO *gg, char *contacts);
 int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType);
 void gg_remindpassword(GGPROTO *gg, uin_t uin, const char *email);
-void gg_dccwait(GGPROTO *gg);
 void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName);
 int gg_img_releasepicture(void *img);
 int gg_img_display(GGPROTO *gg, HANDLE hContact, void *img);

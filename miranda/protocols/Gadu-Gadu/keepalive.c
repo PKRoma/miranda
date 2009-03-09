@@ -24,12 +24,11 @@
  * does not get full pointer but just 2 byte lower bytes.
  */
 #define MAX_TIMERS 8
-GGPROTO *g_timers[8] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+GGPROTO *g_timers[MAX_TIMERS] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
 	int i;
-	GGPROTO *gg;
 	
 	//Search for GGPROTO* context
 	for(i = 0; i < MAX_TIMERS; i++)
@@ -38,7 +37,7 @@ static void CALLBACK gg_keepalive(HWND hwnd, UINT message, UINT_PTR idEvent, DWO
 
 	if(i < MAX_TIMERS)
 	{
-		gg = g_timers[i];
+		GGPROTO *gg = g_timers[i];
 		if (gg_isonline(gg))
 		{
 	#ifdef DEBUGMODE
@@ -57,6 +56,9 @@ void gg_keepalive_init(GGPROTO *gg)
 		for(i = 0; i < MAX_TIMERS && g_timers[i] != NULL; i++);
 		if(i < MAX_TIMERS)
 		{
+	#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_keepalive_init(): Initializing Timer %d", i);
+	#endif
 			gg->timer = SetTimer(NULL, 0, 1000 * 30, gg_keepalive);
 			g_timers[i] = gg;
 		}
@@ -73,11 +75,13 @@ void gg_keepalive_destroy(GGPROTO *gg)
 		int i;
 		KillTimer(NULL, gg->timer);
 		for(i = 0; i < MAX_TIMERS; i++)
-			if(g_timers[i] == gg)
+			if(g_timers[i] == gg) {
 				g_timers[i] = NULL;
+				break;
+			}
 		gg->timer = 0;
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_destroykeepalive(): Killed Timer");
+		gg_netlog(gg, "gg_destroykeepalive(): Killed Timer %d", i);
 #endif
 	}
 #ifdef DEBUGMODE

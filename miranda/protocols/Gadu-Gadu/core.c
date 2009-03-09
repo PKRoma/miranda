@@ -1369,7 +1369,7 @@ const char *gg_version2string(int v)
 		case 0x29:
 			pstr = "7.6 build 1688"; break;
 		case 0x28:
-			pstr = "7.5.0 build 2201"; break;
+			pstr = "7.5 build 2201"; break;
 		case 0x27:
 			pstr = "7.0 build 22"; break;
 		case 0x26:
