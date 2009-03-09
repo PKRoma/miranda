@@ -199,7 +199,7 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 		if (!isValidProfileName(szProfile))
 			_tcscat(szProfile, _T(".dat"));
 
-		TCHAR *p = _tcsrchr(szProfile, '\\');
+		TCHAR *p = _tcsrchr(buf, '\\');
 		if (p) 
         {
             _tcscpy(profiledir, szProfile);
