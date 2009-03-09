@@ -817,19 +817,17 @@ struct GGDETAILSDLGDATA
 // Info Page : Proc
 static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct GGDETAILSDLGDATA *dat;
-	dat = (struct GGDETAILSDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct GGDETAILSDLGDATA *dat = (struct GGDETAILSDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
 	switch(msg)
 	{
 		case WM_INITDIALOG:
 		{
-			GGPROTO *gg = (GGPROTO *)lParam;
 			TranslateDialogDefault(hwndDlg);
-			dat = (struct GGDETAILSDLGDATA *)malloc(sizeof(struct GGDETAILSDLGDATA));
+			dat = (struct GGDETAILSDLGDATA *)mir_alloc(sizeof(struct GGDETAILSDLGDATA));
 			dat->hContact=(HANDLE)lParam;
 			dat->disableUpdate = FALSE;
 			dat->updating = FALSE;
-			dat->gg = gg;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			// Add genders
 			if(!dat->hContact)
@@ -847,6 +845,11 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case 0:
 					switch (((LPNMHDR)lParam)->code)
 					{
+						case PSN_PARAMCHANGED:
+						{
+							dat->gg = (GGPROTO *)((LPPSHNOTIFY)lParam)->lParam;
+							break;
+						}
 						case PSN_INFOCHANGED:
 						{
 							char *szProto;
@@ -871,7 +874,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							else
 								szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 							if (szProto == NULL)
-									break;
+								break;
 
 							// Disable when updating
 							if(dat) dat->disableUpdate = TRUE;
@@ -981,7 +984,7 @@ static BOOL CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			break;
 		case WM_DESTROY:
-			if(dat) free(dat);
+			if(dat) mir_free(dat);
 			break;
 	}
 	return FALSE;
@@ -998,7 +1001,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 	// Here goes init
 	{
-		OPTIONSDIALOGPAGE odp;
+		OPTIONSDIALOGPAGE odp = {0};
 
 		odp.cbSize = sizeof(odp);
 		odp.hIcon = NULL;
@@ -1006,16 +1009,15 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		odp.pfnDlgProc = gg_detailsdlgproc;
 		odp.position = -1900000000;
 		odp.pszTemplate = ((HANDLE)lParam != NULL) ? MAKEINTRESOURCE(IDD_INFO_GG) : MAKEINTRESOURCE(IDD_CHINFO_GG);
-		odp.ptszTitle = gg->proto.m_tszUserName;
+		odp.ptszTitle = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+		odp.dwInitParam = (LPARAM)gg;
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
+		mir_free(odp.ptszTitle);
 	}
 
 	// Start search for my data
 	if((HANDLE)lParam == NULL)
-	{
-		CCSDATA ccs; ZeroMemory(&ccs, sizeof(ccs));
 		gg_getinfo((PROTO_INTERFACE *)gg, NULL, 0);
-	}
 
 	return 0;
 }
