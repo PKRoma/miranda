@@ -124,37 +124,33 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 
 ////////////////////////////////////////////////////////////////////////////////
 // Options Page : Init
-
-#ifndef ETDT_ENABLETAB
-#define ETDT_DISABLE		0x00000001
-#define ETDT_ENABLE 		0x00000002
-#define ETDT_USETABTEXTURE	0x00000004
-#define ETDT_ENABLETAB		(ETDT_ENABLE | ETDT_USETABTEXTURE)
-#endif
-
-static HWND hwndGeneral = NULL, hwndConference = NULL, hwndAdvanced = NULL;
-static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = NULL;
-
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 	HMODULE	hUxTheme = NULL;
 
-	if(IsWinVerXPPlus())
-	{
-		if(hUxTheme = GetModuleHandle("uxtheme.dll"))
-			pfnEnableThemeDialogTexture = (BOOL (WINAPI *)(HANDLE, DWORD))GetProcAddress(hUxTheme, "EnableThemeDialogTexture");
-	}
-
 	odp.cbSize = sizeof(odp);
 	odp.position = 1003000;
 	odp.hInstance = hInstance;
-	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_MAIN);
 	odp.pszGroup = LPGEN("Network");
 	odp.pszTitle = GG_PROTONAME;
-	odp.pfnDlgProc = gg_mainoptsdlgproc;
-	odp.flags = ODPF_BOLDGROUPS;
 	odp.dwInitParam = (LPARAM)gg;
+
+	odp.pszTab = LPGEN("General");
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_GENERAL);
+	odp.pfnDlgProc = gg_genoptsdlgproc;
+	odp.flags = ODPF_BOLDGROUPS;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTab = LPGEN("Conference");
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_CONFERENCE);
+	odp.pfnDlgProc = gg_confoptsdlgproc;
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
+
+	odp.pszTab = LPGEN("Advanced");
+	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED);
+	odp.pfnDlgProc = gg_advoptsdlgproc;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
@@ -186,144 +182,6 @@ static void gg_optsdlgcheck(HWND hwndDlg)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CHEMAIL), SW_HIDE);
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CREATEACCOUNT), SW_SHOW);
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Proc: Tabs generator function
-
-static void gg_setoptionsdlgtotype(HWND hwnd, int iExpert)
-{
-	TCITEM tci;
-	RECT rcClient;
-	HWND hwndTab = GetDlgItem(hwnd, IDC_OPTIONSTAB);
-	int iPages = 0;
-	GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-	tci.mask = TCIF_PARAM | TCIF_TEXT;
-
-	GetClientRect(hwnd, &rcClient);
-	TabCtrl_DeleteAllItems(hwndTab);
-
-	if(!hwndGeneral)
-		hwndGeneral = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_GENERAL), hwnd, gg_genoptsdlgproc, (LPARAM)gg);
-
-	tci.lParam = (LPARAM)hwndGeneral;
-	tci.pszText = Translate("General");
-	TabCtrl_InsertItem(hwndTab, iPages++, &tci);
-	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8,rcClient.bottom - 29, 1);
-
-	if(!hwndConference)
-		hwndConference = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_CONFERENCE), hwnd, gg_confoptsdlgproc, (LPARAM)gg);
-
-	tci.lParam = (LPARAM)hwndConference;
-	tci.pszText = Translate("Conference");
-	TabCtrl_InsertItem(hwndTab, iPages++, &tci);
-	MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8, rcClient.bottom - 29, 1);
-
-	if(!hwndAdvanced)
-		hwndAdvanced = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED), hwnd, gg_advoptsdlgproc, (LPARAM)gg);
-
-	if(iExpert)
-	{
-		tci.lParam = (LPARAM)hwndAdvanced;
-		tci.pszText = Translate("Advanced");
-		TabCtrl_InsertItem(hwndTab, iPages++, &tci);
-		MoveWindow((HWND)tci.lParam, 5, 26, rcClient.right - 8, rcClient.bottom - 29, 1);
-	}
-
-	if(pfnEnableThemeDialogTexture)
-	{
-		if(hwndGeneral)
-			pfnEnableThemeDialogTexture(hwndGeneral, ETDT_ENABLETAB);
-		if(hwndConference)
-			pfnEnableThemeDialogTexture(hwndConference, ETDT_ENABLETAB);
-		if(hwndAdvanced)
-			pfnEnableThemeDialogTexture(hwndAdvanced, ETDT_ENABLETAB);
-	}
-
-	ShowWindow(hwndAdvanced, SW_HIDE);
-	ShowWindow(hwndConference, SW_HIDE);
-	ShowWindow(hwndGeneral, SW_SHOW);
-
-	TabCtrl_SetCurSel(hwndTab, 0);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// Proc: Main options dialog
-static BOOL CALLBACK gg_mainoptsdlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static int iInit = TRUE;
-
-	switch(msg)
-	{
-		case WM_INITDIALOG:
-		{
-			int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-			GGPROTO *gg = (GGPROTO *)lParam;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lParam);
-			iInit = TRUE;
-			gg_setoptionsdlgtotype(hwnd, iExpert);
-			iInit = FALSE;
-			return FALSE;
-		}
-		case WM_DESTROY:
-			hwndGeneral = hwndConference = hwndAdvanced = NULL;
-			break;
-		case PSM_CHANGED: // used so tabs dont have to call SendMessage(GetParent(GetParent(hwnd)), PSM_CHANGED, 0, 0);
-			if(!iInit)
-				SendMessage(GetParent(hwnd), PSM_CHANGED, 0, 0);
-			break;
-		case WM_NOTIFY:
-			switch(((LPNMHDR)lParam)->idFrom)
-			{
-				case 0:
-					switch(((LPNMHDR)lParam)->code)
-					{
-						case PSN_APPLY:
-						{
-							TCITEM tci;
-							int i,count = TabCtrl_GetItemCount(GetDlgItem(hwnd,IDC_OPTIONSTAB));
-							tci.mask = TCIF_PARAM;
-							for (i=0;i<count;i++)
-							{
-								TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),i,&tci);
-								SendMessage((HWND)tci.lParam,WM_NOTIFY,0,lParam);
-							}
-							break;
-						}
-						case PSN_EXPERTCHANGED:
-						{
-							int iExpert = SendMessage(GetParent(hwnd), PSM_ISEXPERT, 0, 0);
-							gg_setoptionsdlgtotype(hwnd, iExpert);
-							break;
-						}
-					}
-					break;
-				case IDC_OPTIONSTAB:
-					switch (((LPNMHDR)lParam)->code)
-					{
-						case TCN_SELCHANGING:
-						{
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-							ShowWindow((HWND)tci.lParam,SW_HIDE);
-							break;
-						}
-						case TCN_SELCHANGE:
-						{
-							TCITEM tci;
-							tci.mask = TCIF_PARAM;
-							TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
-							ShowWindow((HWND)tci.lParam,SW_SHOW);
-							break;
-						}
-					}
-					break;
-			}
-			break;
-	}
-	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
