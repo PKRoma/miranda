@@ -296,17 +296,22 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #endif
 			gg_img_shutdown(gg);
 			break;
-		/*
 		case EV_PROTO_ONOPTIONS:
+			return gg_options_init(gg, wParam, lParam);
 		case EV_PROTO_ONRENAME:
 		{	
-			CLISTMENUITEM clmi = { 0 };
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
-			clmi.ptszName = m_tszUserName;
-			CallService(MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi);
+			CLISTMENUITEM mi = {0};
+
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
+#endif
+			mi.cbSize = sizeof(mi);
+			mi.flags = CMIM_NAME | CMIF_TCHAR;
+			mi.ptszName = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM)&mi);
+
+			break;
 		}
-		*/	
 	}
 	return TRUE;
 }
