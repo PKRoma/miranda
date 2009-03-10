@@ -1461,6 +1461,12 @@ static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
+INT CALLBACK AccMgrDlgProc(HWND, UINT, WPARAM, LPARAM);
+INT CALLBACK DlgPluginOpt(HWND, UINT, WPARAM, LPARAM);
+INT CALLBACK DlgProcAwayMsgOpts(HWND, UINT, WPARAM, LPARAM);
+INT CALLBACK IdleOptsDlgProc(HWND, UINT, WPARAM, LPARAM);
+INT CALLBACK DlgProcIgnoreOpts(HWND, UINT, WPARAM, LPARAM);
+
 int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 {
 	static int iBoldControls[] =
@@ -1470,7 +1476,6 @@ int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 	};
 
 	MODERNOPTOBJECT obj = {0};
-
 	obj.cbSize = sizeof(obj);
 	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
 	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
@@ -1478,13 +1483,64 @@ int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 	obj.iSection = MODERNOPT_PAGE_SKINS;
 	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
 	obj.iBoldControls = iBoldControls;
-	obj.lptzSubsection = _T("Fonts");
+	obj.lptzSubsection = LPGENT("Fonts");
 	obj.lpzClassicGroup = "Customize";
 	obj.lpzClassicPage = "Fonts";
 	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
 
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_FONTS);
 	obj.pfnDlgProc = DlgProcModernOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.iSection = MODERNOPT_PAGE_ACCOUNTS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_ACCOUNTS);
+	obj.pfnDlgProc = AccMgrDlgProc;
+	obj.lpzClassicGroup = NULL;
+	obj.lpzClassicPage = "Network";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.iSection = MODERNOPT_PAGE_MODULES;
+	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
+	obj.lptzSubsection = LPGENT("Installed Plugins");
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_MODULES);
+	obj.pfnDlgProc = DlgPluginOpt;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = NULL;
+	obj.lpzClassicPage = "Plugins";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.dwFlags |= MODEROPT_FLG_NORESIZE;
+	obj.iSection = MODERNOPT_PAGE_STATUS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_STATUS);
+	obj.pfnDlgProc = DlgProcAwayMsgOpts;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = "Status";
+	obj.lpzClassicPage = "Messages";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+
+	obj.iSection = MODERNOPT_PAGE_STATUS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
+	obj.pfnDlgProc = IdleOptsDlgProc;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = "Status";
+	obj.lpzClassicPage = "Messages";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	obj.dwFlags &= ~MODEROPT_FLG_NORESIZE;
+
+	obj.iSection = MODERNOPT_PAGE_IGNORE;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IGNORE);
+	obj.pfnDlgProc = DlgProcIgnoreOpts;
+	obj.iBoldControls = iBoldControls;
+	obj.lpzClassicGroup = "Events";
+	obj.lpzClassicPage = "Ignore";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }
