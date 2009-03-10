@@ -27,9 +27,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK  *pluginLink;
 
-static char     g_szDBPath[MAX_PATH];		// database profile path (read at startup only)
+static char     g_szAvatarPath[MAX_PATH];		// avatar cache path (read at startup only)
 #if defined(_UNICODE)
-	static wchar_t  g_wszDBPath[MAX_PATH];
+	static wchar_t  g_wszAvatarPath[MAX_PATH];
+#endif
+static char     g_szDataPath[MAX_PATH];		// user datae path (read at startup only)
+#if defined(_UNICODE)
+	static wchar_t  g_wszDataPath[MAX_PATH];
 #endif
 static BOOL     g_MetaAvail = FALSE;
 BOOL            g_AvatarHistoryAvail = FALSE;
@@ -235,8 +239,8 @@ int AVS_pathToRelative(const char *pSrc, char *pOut)
 
         mir_snprintf(szTmp, SIZEOF(szTmp), "%s", pSrc);
         _strlwr(szTmp);
-        if (strstr(szTmp, g_szDBPath)) {
-            mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szDBPath) + 1);
+        if (strstr(szTmp, g_szAvatarPath)) {
+            mir_snprintf(pOut, MAX_PATH, "%s", pSrc + strlen(g_szAvatarPath) + 1);
             return strlen(pOut);
         }
         else {
@@ -254,7 +258,7 @@ int AVS_pathToAbsolute(const char *pSrc, char *pOut)
         return strlen(pOut);
     }
     else {
-        mir_snprintf(pOut, MAX_PATH, "%s\\%s", g_szDBPath, pSrc);
+        mir_snprintf(pOut, MAX_PATH, "%s\\%s", g_szAvatarPath, pSrc);
         return strlen(pOut);
     }
 }
@@ -269,7 +273,7 @@ int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut)
         return lstrlenW(pOut);
     }
     else {
-        mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_wszDBPath, pSrc);
+        mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_wszAvatarPath, pSrc);
         return lstrlenW(pOut);
     }
 }
@@ -1362,7 +1366,7 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
 			BOOL saved = TRUE;
 			if (FoldersGetCustomPath(hGlobalAvatarFolder, globalFile, sizeof(globalFile), ""))
 			{
-				mir_snprintf(globalFile, sizeof(globalFile), "%s\\%s", g_szDBPath, "GlobalAvatar");
+				mir_snprintf(globalFile, sizeof(globalFile), "%s\\%s", g_szDataPath, "GlobalAvatar");
 				CreateDirectoryA(globalFile, NULL);
 			}
 
@@ -2508,13 +2512,24 @@ static int LoadAvatarModule()
 	hMyAvatarChanged = CreateHookableEvent(ME_AV_MYAVATARCHANGED);
 
 	AllocCacheBlock();
-
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)g_szDBPath);
-	g_szDBPath[MAX_PATH - 1] = 0;
-	_strlwr(g_szDBPath);
+    
+    char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+    lstrcpynA(g_szAvatarPath, tmpPath, sizeof(g_szAvatarPath)-1);
+    mir_free(tmpPath);
+	g_szAvatarPath[MAX_PATH - 1] = 0;
+	_strlwr(g_szAvatarPath);
+    
+    tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+    lstrcpynA(g_szDataPath, tmpPath, sizeof(g_szDataPath)-1);
+    mir_free(tmpPath);
+	g_szDataPath[MAX_PATH - 1] = 0;
+	_strlwr(g_szDataPath);
+    
 #if defined(_UNICODE)
-	MultiByteToWideChar(CP_ACP, 0, g_szDBPath, MAX_PATH, g_wszDBPath, MAX_PATH);
-	g_wszDBPath[MAX_PATH - 1] = 0;
+	MultiByteToWideChar(CP_ACP, 0, g_szAvatarPath, MAX_PATH, g_wszAvatarPath, MAX_PATH);
+	g_wszAvatarPath[MAX_PATH - 1] = 0;
+	MultiByteToWideChar(CP_ACP, 0, g_szDataPath, MAX_PATH, g_wszDataPath, MAX_PATH);
+	g_wszDataPath[MAX_PATH - 1] = 0;
 #endif
 	return 0;
 }

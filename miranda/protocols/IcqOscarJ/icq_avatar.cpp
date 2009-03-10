@@ -174,8 +174,10 @@ void CIcqProto::GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbL
 	fgd.szPath = pszDest;
 	if (CallService(MS_FOLDERS_GET_PATH, (WPARAM)hAvatarsFolder, (LPARAM)&fgd))
 	{
-		CallService(MS_DB_GETPROFILEPATH, cbLen, (LPARAM)pszDest);
-
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+        
+        lstrcpynA(pszDest, tmpPath, cbLen-1);
+        mir_free(tmpPath);
 		tPathLen = strlennull(pszDest);
 		tPathLen += null_snprintf(pszDest + tPathLen, cbLen-tPathLen, "\\%s\\", m_szModuleName);
 	}

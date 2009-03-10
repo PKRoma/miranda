@@ -345,6 +345,17 @@ typedef struct
 
 #define MS_UTILS_REPLACEVARS "Utils/ReplaceVars"
 
+__inline static char* Utils_ReplaceVars(char *szData) {
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	return (char*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szData, (LPARAM)&dat);
+}
+__inline static TCHAR* Utils_ReplaceVarsT(TCHAR *szData) {
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+    dat.dwFlags = RVF_TCHAR;
+	return (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szData, (LPARAM)&dat);
+}
 #ifdef _UNICODE
 	#define MS_UTILS_PATHTORELATIVEW  "Utils/PathToRelativeW"
 	#define MS_UTILS_PATHTOABSOLUTEW  "Utils/PathToAbsoluteW"

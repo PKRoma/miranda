@@ -179,7 +179,9 @@ void  CMsnProto::MSN_GetAvatarFileName( HANDLE hContact, char* pszDest, size_t c
 	char* path = ( char* )alloca( cbLen );
 	if ( hMSNAvatarsFolder == NULL || FoldersGetCustomPath( hMSNAvatarsFolder, path, cbLen, "" ))
 	{
-		MSN_CallService( MS_DB_GETPROFILEPATH, cbLen, LPARAM( pszDest ));
+        char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+        lstrcpynA(pszDest, tmpPath, cbLen-1);
+        mir_free(tmpPath);
 		
 		tPathLen = strlen( pszDest );
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen,"\\%s", m_szModuleName);

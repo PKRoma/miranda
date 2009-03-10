@@ -29,11 +29,10 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
-	char store[MAX_PATH];
-	CallService(MS_DB_GETPROFILEPATH, MAX_PATH,(LPARAM)&store);
+    char *store = Utils_ReplaceVars("%miranda_avatarcache%");
     size_t len = strlen(store) - 1;
-	if (store[len] == '\\') store[len] = '\0';
-	CWD = strldup(store);
+    CWD = strldup(store);
+    mir_free(store);
 
 	//create some events
 	hAvatarEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
