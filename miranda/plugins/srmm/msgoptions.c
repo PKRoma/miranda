@@ -648,7 +648,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGDLG);
 	odp.pszTitle = LPGEN("Messaging");
-	odp.pszGroup = LPGEN("Events");
+	odp.pszGroup = LPGEN("Message Sessions");
 	odp.pfnDlgProc = DlgProcOptions;
 	odp.flags = ODPF_BOLDGROUPS;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
