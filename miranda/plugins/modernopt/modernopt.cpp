@@ -190,6 +190,7 @@ static BOOL CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LP
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
+		TranslateDialogDefault(hwndDlg); 
 		HIMAGELIST himl = 0;
 
 		dat = (struct ModernOptionsData *)lParam;
@@ -463,6 +464,7 @@ static int svcModernOpt_Show(WPARAM wParam, LPARAM lParam)
 		g_dwIdx = 0;
 		NotifyEventHooks(hevtModernOpt_Initialize, (WPARAM)dat, 0);
 		hwndModernOpt = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_MODERNOPT), NULL, ModernOptDlgProc, (LPARAM)dat);
+		TranslateDialogDefault(hwndModernOpt);
 		ShowWindow(hwndModernOpt, SW_SHOW);
 	} 
 	else SetForegroundWindow(hwndModernOpt);
