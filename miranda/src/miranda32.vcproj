@@ -1723,7 +1723,7 @@
 				Name="options"
 				Filter="">
 				<File
-					RelativePath=".\modules\modernopt\descbutton.cpp">
+					RelativePath=".\modules\options\descbutton.cpp">
 				</File>
 				<File
 					RelativePath=".\modules\options\filter.cpp">
@@ -1732,22 +1732,10 @@
 					RelativePath=".\modules\options\filter.h">
 				</File>
 				<File
-					RelativePath=".\modules\modernopt\headerbar.cpp">
+					RelativePath=".\modules\options\headerbar.cpp">
 				</File>
 				<File
-					RelativePath=".\modules\modernopt\iconheader.cpp">
-				</File>
-				<File
-					RelativePath=".\modules\modernopt\modernopt.cpp">
-				</File>
-				<File
-					RelativePath=".\modules\modernopt\mopt_home.cpp">
-				</File>
-				<File
-					RelativePath=".\modules\modernopt\mopt_ignore.cpp">
-				</File>
-				<File
-					RelativePath=".\modules\modernopt\mopt_selector.cpp">
+					RelativePath=".\modules\options\iconheader.cpp">
 				</File>
 				<File
 					RelativePath="modules\options\options.cpp">
