@@ -1940,11 +1940,23 @@
 				Name="options"
 				>
 				<File
+					RelativePath=".\modules\options\descbutton.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\options\filter.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\modules\options\filter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\headerbar.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\options\iconheader.cpp"
 					>
 				</File>
 				<File

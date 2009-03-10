@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include <winres.h>
 #include "resource.h"
@@ -23,7 +23,7 @@
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1252)
+#pragma code_page(1251)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 IDD_OPTIONS_PLUS DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -61,7 +61,7 @@ BEGIN
 END
 
 IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,167
@@ -130,7 +130,8 @@ BEGIN
 END
 
 IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
-STYLE DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | WS_BORDER
+STYLE DS_SETFONT | DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | 
+    WS_BORDER
 EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TOOLWINDOW
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -142,7 +143,7 @@ BEGIN
 END
 
 IDD_OPTIONSDIALOG DIALOGEX 0, 0, 312, 247
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -151,7 +152,8 @@ BEGIN
 END
 
 IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -181,7 +183,7 @@ BEGIN
 END
 
 IDD_MSGCONTAINER DIALOGEX 0, 0, 436, 233
-STYLE DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | 
     WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Dialog"
@@ -194,8 +196,8 @@ BEGIN
                     13,0x18000000L
 END
 
-IDD_USERPREFS DIALOG DISCARDABLE  0, 0, 286, 265
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+IDD_USERPREFS DIALOG  0, 0, 286, 265
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -249,15 +251,15 @@ BEGIN
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 211
-STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | 
-    WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "   "
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | 
-                    TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | 
-                    WS_TABSTOP,3,28,87,163
+                    TVS_FULLROWSELECT | WS_BORDER | WS_TABSTOP | 0x4000,3,28,
+                    87,163
     LTEXT           "Test",IDC_WHITERECT,66,0,288,25,0,WS_EX_TRANSPARENT
     CONTROL         10,IDC_LOGO,"Static",SS_BITMAP,0,0,67,25
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,-1,25,355,1
@@ -337,7 +339,7 @@ BEGIN
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,86
@@ -387,7 +389,7 @@ BEGIN
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,106
@@ -444,7 +446,7 @@ BEGIN
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 251
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Typing Notification",IDC_STATIC,7,0,269,121
@@ -482,7 +484,7 @@ BEGIN
 END
 
 IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
@@ -508,7 +510,8 @@ BEGIN
 END
 
 IDD_SELECTCONTAINER DIALOGEX 0, 0, 212, 147
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Select container"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -526,7 +529,7 @@ BEGIN
 END
 
 IDD_OPT_TOOLBAR DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TOOLBARTREE,"SysTreeView32",TVS_SHOWSELALWAYS | 
@@ -548,7 +551,7 @@ BEGIN
 END
 
 IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is available by:\n1. choosing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
@@ -589,7 +592,7 @@ BEGIN
 END
 
 IDD_OPT_TYPINGNOTIFYPOPUP DIALOGEX 0, 0, 318, 174
-STYLE DS_FIXEDSYS | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -640,7 +643,8 @@ BEGIN
 END
 
 IDD_TEMPLATEEDIT DIALOGEX 0, 0, 368, 231
-STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -648,7 +652,7 @@ BEGIN
     LISTBOX         IDC_TEMPLATELIST,8,14,97,81,LBS_OWNERDRAWVARIABLE | 
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Preview",IDC_STATIC,117,4,249,94
-    CONTROL         "",IDC_PREVIEW,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 
+    CONTROL         "",IDC_PREVIEW,"RichEdit20W",WS_VSCROLL | WS_TABSTOP | 
                     0x844,122,14,236,80
     GROUPBOX        "Edit template",IDC_STATIC,3,99,363,129
     EDITTEXT        IDC_EDITTEMPLATE,11,109,344,14,ES_AUTOHSCROLL
@@ -674,7 +678,7 @@ BEGIN
 END
 
 IDD_TABCONFIG DIALOGEX 0, 0, 303, 230
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Tab label colors",IDC_STATIC,6,10,144,80
@@ -777,19 +781,19 @@ BEGIN
 END
 
 IDD_VARIABLEHELP DIALOGEX 0, 0, 336, 238
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,120,217,88,14
-    CONTROL         "",IDC_HELPTEXT,"RichEdit20A",WS_VSCROLL | WS_TABSTOP | 
+    CONTROL         "",IDC_HELPTEXT,"RichEdit20W",WS_VSCROLL | WS_TABSTOP | 
                     0x844,6,7,322,206,WS_EX_CLIENTEDGE
 END
 
 IDD_ABOUT DIALOGEX 0, 0, 228, 140
-STYLE DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
-    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+    WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "About tabSRMM"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -808,7 +812,7 @@ BEGIN
 END
 
 IDD_SKINTABDIALOG DIALOGEX 0, 0, 312, 247
-STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -817,7 +821,7 @@ BEGIN
 END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 200
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window skin",IDC_STATIC,3,6,297,68
@@ -840,8 +844,8 @@ BEGIN
 END
 
 IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | 
+    WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -851,9 +855,9 @@ BEGIN
 END
 
 IDD_USERPREFS1 DIALOGEX 0, 0, 286, 265
-STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Icons",IDC_STATIC,8,36,266,42
     CONTROL         "Show icons",IDC_UPREFS_SHOWICONS,"Button",BS_AUTO3STATE | 
@@ -906,7 +910,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO MOVEABLE PURE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_HOTKEYSLAVE, DIALOG
     BEGIN
@@ -984,16 +988,16 @@ END
 // Cursor
 //
 
-IDC_HYPERLINKHAND       CURSOR  DISCARDABLE     "../../src/res/cursor_hyperlink.cur"
-IDC_DROP                CURSOR  DISCARDABLE     "../../src/res/cursor_drag_copy.CUR"
-IDC_DROPUSER            CURSOR  DISCARDABLE     "../../src/res/cursor_drop_user.cur"
+IDC_HYPERLINKHAND       CURSOR                  "../../src/res/cursor_hyperlink.cur"
+IDC_DROP                CURSOR                  "../../src/res/cursor_drag_copy.CUR"
+IDC_DROPUSER            CURSOR                  "../../src/res/cursor_drop_user.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_CONTEXT MENU DISCARDABLE 
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Log"
     BEGIN
@@ -1029,7 +1033,7 @@ BEGIN
     END
 END
 
-IDR_TABCONTEXT MENU DISCARDABLE 
+IDR_TABCONTEXT MENU 
 BEGIN
     POPUP "Tabmenu"
     BEGIN
@@ -1246,7 +1250,7 @@ BEGIN
     END
 END
 
-IDR_MENUBAR MENU DISCARDABLE 
+IDR_MENUBAR MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1326,7 +1330,7 @@ END
 // Bitmap
 //
 
-IDB_LOGO                BITMAP  MOVEABLE PURE   "res/LOGO.bmp"
+IDB_LOGO                BITMAP                  "res/LOGO.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1335,19 +1339,19 @@ IDB_LOGO                BITMAP  MOVEABLE PURE   "res/LOGO.bmp"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_IMGOPEN             ICON    DISCARDABLE     "tabmodplus/icons/imgopen.ico"
-IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
-IDI_ENABLED             ICON    DISCARDABLE     "res/res_TN/popup.ico"
-IDI_DISABLED            ICON    DISCARDABLE     "res/res_TN/popup_no.ico"
-IDI_IMGCLOSE            ICON    DISCARDABLE     "tabmodplus/icons/imgclose.ico"
+IDI_IMGOPEN             ICON                    "tabmodplus/icons/imgopen.ico"
+IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
+IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
+IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+IDI_ENABLED             ICON                    "res/res_TN/popup.ico"
+IDI_DISABLED            ICON                    "res/res_TN/popup_no.ico"
+IDI_IMGCLOSE            ICON                    "tabmodplus/icons/imgclose.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1355,18 +1359,124 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MODERNOPTS DIALOGEX 0, 0, 369, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Message sending:",IDC_TXT_TITLE2,0,64,185,8
+    LTEXT           "Window:",IDC_TXT_TITLE1,1,0,182,8
+    CONTROL         "Esc closes sessions (minimizes window, if disabled)",
+                    IDC_CLOSEONESC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,
+                    13,174,10
+    CONTROL         "Always pop up and activate new windows",IDC_ALWAYSPOPUP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,25,174,10
+    CONTROL         "Create new windows in minimized state",IDC_CREATEMIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,37,174,10
+    CONTROL         "Check1",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,49,174,10
+    CONTROL         "Send on Shift+Enter",IDC_SENDSHIFTENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,89,174,10
+    CONTROL         "Send message on Enter",IDC_SENDENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,101,174,10
+    CONTROL         "Send message on double Enter",IDC_SENDDBLENTER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,113,174,10
+    CONTROL         "Minimize the message window on send",IDC_MINSEND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,125,174,10
+    LTEXT           "Tabs:",IDC_TXT_TITLE4,184,0,183,8
+    CONTROL         "Use tabbed interface",IDC_USETABS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,194,13,173,10
+    CONTROL         "Create new tabs without activating them",
+                    IDC_CREATENOACTIVATE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,194,25,173,10
+    CONTROL         "Pop up minimized window when a new tab is created",
+                    IDC_POPUPONCREATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    194,37,173,10
+    CONTROL         "Automatically switch tabs in minimized windows",
+                    IDC_AUTOSWITCHTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    194,49,173,10
+    LTEXT           "History:",IDC_TXT_TITLE5,1,140,367,8
+    CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,10,153,135,10
+    CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",
+                    BS_AUTORADIOBUTTON,10,166,138,10
+    CONTROL         "Load previous events less than",IDC_LOADTIME,"Button",
+                    BS_AUTORADIOBUTTON,10,179,138,10
+    CONTROL         "Always trim message log to",IDC_ALWAYSTRIM,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,192,146,10
+    EDITTEXT        IDC_LOADCOUNTN,164,164,39,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "",IDC_LOADCOUNTSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK,203,163,10,14
+    EDITTEXT        IDC_LOADTIMEN,164,177,39,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "",IDC_LOADTIMESPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,175,10,
+                    14
+    EDITTEXT        IDC_TRIM,164,190,39,12,ES_RIGHT | ES_NUMBER | 
+                    WS_DISABLED
+    CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,200,189,10,
+                    14
+    LTEXT           "Events",IDC_STATIC,215,192,82,8
+    LTEXT           "minutes old",IDC_STMINSOLD,215,179,83,8,WS_DISABLED
+    LTEXT           "Notifications:",IDC_TXT_TITLE3,184,64,183,8
+    CONTROL         "Don't announce when dialog is open",IDC_NOOPENNOTIFY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,194,77,173,10
+    CONTROL         "Message events",IDC_NOTIFYMSG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,194,89,173,10
+    CONTROL         "File events",IDC_NOTIFYFILE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,194,101,173,10
+    CONTROL         "URL events",IDC_NOTIFYURL,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,194,113,173,10
+    CONTROL         "Other events",IDC_NOTIFYOTHER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,194,125,173,10
+    CONTROL         "Send message on Ctrl+Enter (always enabled)",
+                    IDC_SENDCTRLENTER,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
+                    WS_TABSTOP,10,77,174,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MODERNOPTS, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 184
+        VERTGUIDE, 194
+        BOTTOMMARGIN, 207
+        HORZGUIDE, 59
+        HORZGUIDE, 64
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE MOVEABLE PURE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE MOVEABLE PURE 
+2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include ""../../include/statusmodes.h""\r\r\n"
@@ -1374,14 +1484,14 @@ BEGIN
     "\r\0"
 END
 
-3 TEXTINCLUDE MOVEABLE PURE 
+3 TEXTINCLUDE 
 BEGIN
     "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

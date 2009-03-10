@@ -685,7 +685,7 @@ int Service_AddEvent(WPARAM wParam, LPARAM lParam)
 					if (si->hWnd)
 						g_TabSession.ptszTopic = si->ptszTopic;
 					DBWriteContactSettingTString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->ptszTopic));
-					if (DBGetContactSettingByte(NULL, "Chat", "TopicOnClist", 0))
+					if (DBGetContactSettingByte(NULL, "Chat", "TopicOnClist", 1))
 						DBWriteContactSettingTString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->ptszTopic));
 				}
 			}

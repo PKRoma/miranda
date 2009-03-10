@@ -53,7 +53,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Show client icon in status bar (fingerprint plugin required) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
 	0, _T("Enable typing sounds (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
 	0, _T("Disable animated GIF avatars (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
-	0, _T("Enable fix for nicklist scroll bar"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
+	0, _T("Enable fix for nicklist scroll bar"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_ScrollBarFix", 0,
 	0, _T("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, _T("Enable icon pack version check (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, _T("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,

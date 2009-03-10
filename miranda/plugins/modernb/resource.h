@@ -78,6 +78,7 @@
 #define IDD_OPT_META_CLC                279
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
+#define IDD_MODERNOPTS                  288
 #define IDI_ICON1                       290
 #define IDC_DEFAULTSUB                  293
 #define IDC_DROPMETA                    295
@@ -518,6 +519,7 @@
 #define IDC_ADVANCEDGROUP               1402
 #define IDC_BYADVANCED                  1403
 #define IDC_ADVANCED                    1404
+#define IDC_CHECK13                     1434
 #define IDC_STSIMPLERIGHT               1440
 #define IDC_NETLIBUSERS                 1443
 #define IDC_STOFTENPORT                 1445
@@ -626,15 +628,20 @@
 #define IDC_METASUB_HIDEOFFLINE         1616
 #define IDC_MIN_ROW_HEIGHT              1616
 #define IDC_MIN_ROW_HEIGHT_SPIN         1617
+#define IDC_TXT_TITLE1                  1617
 #define IDC_ROW_BORDER                  1618
+#define IDC_TXT_TITLE2                  1618
 #define IDC_ROW_BORDER_SPIN             1619
 #define IDC_AVATAR_SIZE                 1620
+#define IDC_TXT_TITLE4                  1620
 #define IDC_AVATAR_SIZE_SPIN            1621
 #define IDC_ROW_BORDER2                 1622
 #define IDC_AVATAR_CUSTOM_CORNER_SIZE   1622
+#define IDC_TXT_TITLE5                  1622
 #define IDC_ROW_BORDER3                 1623
 #define IDC_AVATAR_SIZE_SPIN2           1623
 #define IDC_AVATAR_CUSTOM_CORNER_SIZE_SPIN 1623
+#define IDC_TXT_TITLE3                  1623
 #define IDC_ROW_BORDER_SPIN2            1624
 #define IDC_AVATAR_WIDTH                1624
 #define IDC_ROW_BORDER_SPIN3            1625

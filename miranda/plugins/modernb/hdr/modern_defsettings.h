@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
+#undef	CLCDEFAULT_GROUPINDENT
+#undef	CLCDEFAULT_SHOWIDLE
 #undef  CLCDEFAULT_TEXTCOLOUR
 #undef  CLCDEFAULT_SELBKCOLOUR
 #undef  SETTING_ONTOP_DEFAULT
@@ -36,7 +38,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SETTING_ENABLESKINEDITOR_DEFAULT        0 //"ModernData", "EnableSkinEditor"
 #define SETTING_TOOLWINDOW_DEFAULT              1 //"CList","ToolWindow"
-#define SETTING_ONTOP_DEFAULT                   1 //"CList","OnTop"
+#define SETTING_ONTOP_DEFAULT                   0 //"CList","OnTop"
 #define SETTING_MIN2TRAY_DEFAULT                1 //"CList","Min2Tray"
 #define SETTING_TRAY1CLICK_DEFAULT              1 //"CList","Tray1Click"
 #define SETTING_HIDEOFFLINE_DEFAULT             0 //"CList", "HideOffline"
@@ -62,7 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_USECONNECTINGICON_DEFAULT       1 //! "CLUI","UseConnectingIcon"
 #define SETTING_SHOWXSTATUS_DEFAULT             6 //! "CLUI","ShowXStatus"
 #define SETTING_SHOWUNREADEMAILS_DEFAULT        0 //! "CLUI","ShowUnreadEmails"
-#define SETTING_SBARSHOW_DEFAULT                7 //! "CLUI","SBarShow"
+#define SETTING_SBARSHOW_DEFAULT                3 //! "CLUI","SBarShow"
 #define SETTING_SBARACCOUNTISCUSTOM_DEFAULT     0 //! "CLUI","AccountIsCustom"
 #define SETTING_SBARHIDEACCOUNT_DEFAULT         0 //! "CLUI","HideAccount"
 #define SETTING_SBARRIGHTCLK_DEFAULT            0 //! "CLUI","SBarRightClk"
@@ -83,7 +85,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_MINWIDTH_DEFAULT               18 //! "CLUI","MinWidth"
 #define SETTING_MAXSIZEHEIGHT_DEFAULT          75 //! "CLUI","MaxSizeHeight"
 #define SETTING_AUTOSIZEUPWARD_DEFAULT          0 //! "CLUI","AutoSizeUpward"
-#define SETTING_SNAPTOEDGES_DEFAULT             0 //! "CLUI","SnapToEdges"
+#define SETTING_SNAPTOEDGES_DEFAULT             1 //! "CLUI","SnapToEdges"
 #define SETTING_DOCKTOSIDES_DEFAULT				1 //! "CLUI","DockToSides",
 
 #define SETTING_PROTOSPERLINE_DEFAULT           0 //! "CLUI","StatusBarProtosPerLine"
@@ -93,16 +95,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_SBHILIGHTMODE_DEFAULT           0 //! "StatusBar","HiLightMode"
 #define SETTING_HIDETOOLTIPTIME_DEFAULT      5000 //! "CLUIFrames","HideToolTipTime"
 
-#define SETTING_EXTRA_ICON_EMAIL_DEFAULT        1 //!
-#define SETTING_EXTRA_ICON_PROTO_DEFAULT        1 //!
-#define SETTING_EXTRA_ICON_SMS_DEFAULT          1 //!
+#define SETTING_EXTRA_ICON_EMAIL_DEFAULT        0 //!
+#define SETTING_EXTRA_ICON_PROTO_DEFAULT        0 //!
+#define SETTING_EXTRA_ICON_SMS_DEFAULT          0 //!
 #define SETTING_EXTRA_ICON_ADV1_DEFAULT         1 //!
 #define SETTING_EXTRA_ICON_ADV2_DEFAULT         1 //!
-#define SETTING_EXTRA_ICON_WEB_DEFAULT          1 //!
+#define SETTING_EXTRA_ICON_WEB_DEFAULT          0 //!
 #define SETTING_EXTRA_ICON_CLIENT_DEFAULT       1 //!
 #define SETTING_EXTRA_ICON_VISMODE_DEFAULT      1 //!
-#define SETTING_EXTRA_ICON_ADV3_DEFAULT         0 //!
-#define SETTING_EXTRA_ICON_ADV4_DEFAULT         0 //!
+#define SETTING_EXTRA_ICON_ADV3_DEFAULT         1 //!
+#define SETTING_EXTRA_ICON_ADV4_DEFAULT         1 //!
 
 #define SETTING_EXTRACOLUMNSPACE_DEFAULT       18 //! "CLUI","ExtraColumnSpace"
 
@@ -111,7 +113,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SETTING_SHOWDELAY_DEFAULT               3 //! "ModernData","ShowDelay"
 #define SETTING_HIDEDELAY_DEFAULT               3 //! "ModernData","HideDelay"
 #define SETTING_HIDEBEHINDBORDERSIZE_DEFAULT    0 //! "ModernData","HideBehindBorderSize"
-#define SETTING_AEROGLASS_DEFAULT               0 //! "ModernData","AeroGlass"
+#define SETTING_AEROGLASS_DEFAULT               1 //! "ModernData","AeroGlass"
 
 #define SETTING_ROUNDCORNERS_DEFAULT            0 //! "CLC","RoundCorners"
 #define SETTING_GAPFRAMES_DEFAULT               1 //! "CLUIFrames","GapBetweenFrames"
@@ -139,8 +141,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
 #define SETTING_SORTBY1_DEFAULT        SORTBY_RATE //"CList","SortBy1"
-#define SETTING_SORTBY2_DEFAULT      SORTBY_STATUS //"CList","SortBy2"
-#define SETTING_SORTBY3_DEFAULT        SORTBY_NAME //"CList","SortBy3"
+#define SETTING_SORTBY2_DEFAULT        SORTBY_NAME //"CList","SortBy2"
+#define SETTING_SORTBY3_DEFAULT      SORTBY_STATUS //"CList","SortBy3"
 
 #define SETTING_PLACEOOFLINETOROOT_DEFAULT       0 //"CList","PlaceOfflineToRoot"
 #define SETTING_NOOFFLINEBOTTOM_DEFAULT          0 //"CList","NoOfflineBottom"
@@ -236,7 +238,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define CLCDEFAULT_EXSTYLE           (CLS_EX_EDITLABELS|CLS_EX_TRACKSELECT|CLS_EX_SHOWGROUPCOUNTS|CLS_EX_HIDECOUNTSWHENEMPTY|CLS_EX_TRACKSELECT|CLS_EX_NOTRANSLUCENTSEL)  //plus CLS_EX_NOSMOOTHSCROLL is got from the system
 #define CLCDEFAULT_SCROLLTIME        150 //"CLC","ScrollTime"
-#define CLCDEFAULT_GROUPINDENT       5 //"CLC","SubIndent"
+#define CLCDEFAULT_GROUPINDENT       20 //"CLC","SubIndent"
 #define CLCDEFAULT_BKCOLOUR          GetSysColor(COLOR_3DFACE)
 #define CLCDEFAULT_USEBITMAP         0 //"StatusBar","UseBitmap"
 #define CLCDEFAULT_BKBMPUSE          CLB_STRETCH //"StatusBar","BkBmpUse"
@@ -253,7 +255,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CLCDEFAULT_LEFTMARGIN        0 //"CLC","LeftMargin"
 #define CLCDEFAULT_RIGHTMARGIN       2 //"CLC","RightMargin"
 #define CLCDEFAULT_GAMMACORRECT      1 //"CLC","GammaCorrect"
-#define CLCDEFAULT_SHOWIDLE          0 //"CLC","ShowIdle"
+#define CLCDEFAULT_SHOWIDLE          1 //"CLC","ShowIdle"
 #define CLCDEFAULT_NOVSCROLL         0 //"CLC","NoVScrollBar"
 #define CLCDEFAULT_INFOTIPTIME       750 //"! "CLC","InfoTipHoverTime"
 #define CLCDEFAULT_COLLICONTOLEFT    0 //"! "FrameTitleBar","AlignCOLLIconToLeft"

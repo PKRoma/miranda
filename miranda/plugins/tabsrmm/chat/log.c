@@ -951,7 +951,7 @@ char * Log_CreateRtfHeader(MODULEINFO * mi)
 
 			szString[1] = 0;
 			szString[0] = 0x28;
-			LoadMsgDlgFont(17, &lf, NULL, CHAT_FONTMODULE);
+			LoadMsgDlgFont(FONTSECTION_CHAT, 17, &lf, NULL, CHAT_FONTMODULE);
 			hFont = CreateFontIndirect(&lf);
 			iText = GetTextPixelSize(szString, hFont, TRUE) + 3;
 			DeleteObject(hFont);
@@ -997,7 +997,7 @@ void LoadMsgLogBitmaps(void)
 	else
 		iIconSize = sizeX;
 
-	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", GetSysColor(COLOR_WINDOW)));
+	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, "Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
 	bih.biCompression = BI_RGB;

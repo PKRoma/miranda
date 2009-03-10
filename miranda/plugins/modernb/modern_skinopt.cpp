@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_sync.h"
 #include <m_utils.h>
 #include <m_database.h>
+#include <m_modernopt.h>
 
 /*******************************/
 // Main skin selection routine //
@@ -75,6 +76,21 @@ int SkinOptInit( WPARAM wParam, LPARAM lParam )
 			CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
 		}
 	}
+	return 0;
+}
+int ModernSkinOptInit( WPARAM wParam, LPARAM lParam )
+{
+	MODERNOPTOBJECT obj = {0};
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_SKINS;
+	obj.iType = MODERNOPT_TYPE_SELECTORPAGE;
+	obj.lptzSubsection = _T("Contact List");
+	obj.lpzThemeExtension = ".msf";
+	obj.lpzThemeModuleName = "ModernSkinSel";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }
 BOOL CALLBACK DlgSkinOpts( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -649,3 +665,121 @@ int AddItemToTree( HWND hTree, TCHAR * folder, TCHAR * itemName, void * data )
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+int SvcActiveSkin(WPARAM wParam, LPARAM lParam)
+{
+	TCHAR *skinfile;
+	TCHAR skinfull[MAX_PATH];
+	skinfile = ModernGetStringT( NULL, SKIN, "SkinFile" );
+	if ( skinfile )
+	{
+		CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )skinfile, ( LPARAM )skinfull );
+		mir_free(skinfile);
+		return (int)mir_tstrdup(skinfull);
+	}
+
+	return NULL;
+}
+
+int SvcApplySkin(WPARAM wParam, LPARAM lParam)
+{
+	ske_LoadSkinFromIniFile( (TCHAR *)lParam, FALSE );
+	ske_LoadSkinFromDB( );	
+	glOtherSkinWasLoaded = TRUE;
+	pcli->pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
+	Sync( CLUIFrames_OnClistResize_mod, 0, 0 );
+	ske_RedrawCompleteWindow( );        
+	Sync( CLUIFrames_OnClistResize_mod, 0, 0 );
+	{
+		HWND hwnd = pcli->hwndContactList;
+		RECT rc = {0};
+		GetWindowRect( hwnd, &rc );
+		Sync( CLUIFrames_OnMoving, hwnd, &rc );
+	}
+	if ( g_hCLUIOptionsWnd )
+	{
+		SendDlgItemMessage( g_hCLUIOptionsWnd, IDC_LEFTMARGINSPIN, UDM_SETPOS, 0, ModernGetSettingByte( NULL, "CLUI", "LeftClientMargin", SETTING_LEFTCLIENTMARIGN_DEFAULT ) );
+		SendDlgItemMessage( g_hCLUIOptionsWnd, IDC_RIGHTMARGINSPIN, UDM_SETPOS, 0, ModernGetSettingByte( NULL, "CLUI", "RightClientMargin", SETTING_RIGHTCLIENTMARIGN_DEFAULT ) );
+		SendDlgItemMessage( g_hCLUIOptionsWnd, IDC_TOPMARGINSPIN, UDM_SETPOS, 0, ModernGetSettingByte( NULL, "CLUI", "TopClientMargin", SETTING_TOPCLIENTMARIGN_DEFAULT ) );
+		SendDlgItemMessage( g_hCLUIOptionsWnd, IDC_BOTTOMMARGINSPIN, UDM_SETPOS, 0, ModernGetSettingByte( NULL, "CLUI", "BottomClientMargin", SETTING_BOTTOMCLIENTMARIGN_DEFAULT ) );
+	}
+	return 0;
+}
+
+int SvcPreviewSkin(WPARAM wParam, LPARAM lParam)
+{
+	DRAWITEMSTRUCT *dis = ( DRAWITEMSTRUCT * )wParam;
+
+	HDC imgDC;
+	HBITMAP imgOldbmp;
+	int mWidth, mHeight;
+	RECT workRect = {0};
+	mWidth = dis->rcItem.right-dis->rcItem.left;
+	mHeight = dis->rcItem.bottom-dis->rcItem.top;
+	workRect = dis->rcItem;
+	OffsetRect( &workRect, -workRect.left, -workRect.top );
+
+	if (lParam)
+	{
+		TCHAR prfn[MAX_PATH] = {0};
+		TCHAR imfn[MAX_PATH] = {0};
+		TCHAR skinfolder[MAX_PATH] = {0};
+		GetPrivateProfileString( _T( "Skin_Description_Section" ), _T( "Preview" ), _T( "" ), imfn, SIZEOF( imfn ), (LPCWSTR)lParam );
+		IniParser::GetSkinFolder( (LPCWSTR)lParam, skinfolder );
+		_sntprintf( prfn, SIZEOF( prfn ), _T("%s\\%s"), skinfolder, imfn );
+		CallService( MS_UTILS_PATHTOABSOLUTET, ( WPARAM )prfn, ( LPARAM ) imfn );
+		char * imfn_ch = mir_t2a( imfn ); 
+		hPreviewBitmap = ske_LoadGlyphImage( imfn_ch );
+		mir_free( imfn_ch );
+
+		if ( hPreviewBitmap )
+		{
+			//variables
+			BITMAP bmp = {0};
+			POINT imgPos = {0};
+			int wWidth, wHeight;
+			int dWidth, dHeight;
+			float xScale = 1, yScale = 1;
+			//GetSize
+			GetObject( hPreviewBitmap, sizeof( BITMAP ), &bmp );
+			wWidth = workRect.right-workRect.left;
+			wHeight = workRect.bottom-workRect.top;
+			if ( wWidth<bmp.bmWidth ) xScale = ( float )wWidth/bmp.bmWidth;
+			if ( wHeight<bmp.bmHeight ) yScale = ( float )wHeight/bmp.bmHeight;
+			xScale = min( xScale, yScale );
+			yScale = xScale;                    
+			dWidth = ( int )( xScale*bmp.bmWidth );
+			dHeight = ( int )( yScale*bmp.bmHeight );
+			//CalcPosition
+			imgPos.x = workRect.left+( ( wWidth-dWidth )>>1 );
+			imgPos.y = workRect.top+( ( wHeight-dHeight )>>1 );     
+			//DrawImage
+			if ( !g_CluiData.fGDIPlusFail ) //Use gdi+ engine
+			{
+				DrawAvatarImageWithGDIp( dis->hDC, imgPos.x, imgPos.y, dWidth, dHeight, hPreviewBitmap, 0, 0, bmp.bmWidth, bmp.bmHeight, 8, 255 );
+			}   
+			else
+			{
+				BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+				imgDC = CreateCompatibleDC( dis->hDC );
+				imgOldbmp = ( HBITMAP )SelectObject( imgDC, hPreviewBitmap );                 
+				ske_AlphaBlend( dis->hDC, imgPos.x, imgPos.y, dWidth, dHeight, imgDC, 0, 0, bmp.bmWidth, bmp.bmHeight, bf );
+				SelectObject( imgDC, imgOldbmp );
+				mod_DeleteDC( imgDC );
+			}
+			ske_UnloadGlyphImage(hPreviewBitmap);
+		}
+	}
+
+	return 0;
+}

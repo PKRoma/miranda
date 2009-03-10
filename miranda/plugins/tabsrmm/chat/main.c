@@ -50,7 +50,7 @@ int Chat_Load(PLUGINLINK *link)
 {
 	BOOL bFlag = FALSE;
 
-	if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 0))
+	if (!DBGetContactSettingByte(NULL, SRMSGMOD_T, "enable_chat", 1))
 		return 0;
 
 	g_chat_integration_enabled = 1;

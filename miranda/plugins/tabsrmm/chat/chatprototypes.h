@@ -20,9 +20,10 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 
 //options.c
+enum { FONTSECTION_AUTO, FONTSECTION_CHAT, FONTSECTION_IM, FONTSECTION_IP };
 int   OptionsInit(void);
 int   OptionsUnInit(void);
-void  LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, char* szMod );
+void  LoadMsgDlgFont(int section, int i, LOGFONT * lf, COLORREF * colour, char* szMod );
 void  LoadGlobalSettings(void);
 void  AddIcons(void);
 HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);

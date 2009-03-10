@@ -548,7 +548,7 @@ static int svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam)
 
 	case MODERNOPT_TYPE_SELECTORPAGE:
 		objCopy->optObject.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
-		objCopy->optObject.hInstance = GetModuleHandle(NULL);
+		objCopy->optObject.hInstance = hInst;
 		objCopy->optObject.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_SKINS);
 		objCopy->optObject.pfnDlgProc = ModernOptSelector_DlgProc;
 		objCopy->optObject.lptzSubsection = (objCopy->optObject.dwFlags & MODEROPT_FLG_UNICODE) ?

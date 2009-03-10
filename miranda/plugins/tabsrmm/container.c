@@ -1171,7 +1171,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			int i = 0;
 			ButtonItem *pbItem;
 			HWND  hwndButton = 0;
-			BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+			BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
 			BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
@@ -1294,7 +1294,7 @@ static BOOL CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			/*
 			 * tab tooltips...
 			 */
-			if (!fHaveTipper || DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 1) == 0) {
+			if (!fHaveTipper || DBGetContactSettingByte(NULL, SRMSGMOD_T, "d_tooltips", 0) == 0) {
 				pContainer->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP, CW_USEDEFAULT, CW_USEDEFAULT,
 													 CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hInst, (LPVOID) NULL);
 

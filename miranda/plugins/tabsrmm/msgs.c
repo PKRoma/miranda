@@ -505,8 +505,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
 			bAutoPopup = DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
-			bAutoCreate = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0);
-			bAutoContainer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 0);
+			bAutoCreate = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 1);
+			bAutoContainer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 1);
 			dwStatusMask = DBGetContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", -1);
 
 			bAllowAutoCreate = FALSE;
@@ -566,8 +566,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
 	bAutoPopup = DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
-	bAutoCreate = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 0);
-	bAutoContainer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 0);
+	bAutoCreate = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autotabs", 1);
+	bAutoContainer = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autocontainer", 1);
 	dwStatusMask = DBGetContactSettingDword(NULL, SRMSGMOD_T, "autopopupmask", -1);
 
 	bAllowAutoCreate = FALSE;
@@ -1875,7 +1875,7 @@ HWND CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hCont
 	wStatus = szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) newData.hContact, szProto, "Status", ID_STATUS_OFFLINE);
 	szStatus = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE)newData.hContact, szProto, "Status", ID_STATUS_OFFLINE), GCMDF_TCHAR);
 
-	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0))
+	if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 1))
 		mir_sntprintf(tabtitle, safe_sizeof(tabtitle), _T("%s (%s)  "), newcontactname, szStatus);
 	else
 		mir_sntprintf(tabtitle, safe_sizeof(tabtitle), _T("%s   "), newcontactname);
@@ -2217,7 +2217,7 @@ static int GetIconPackVersion(HMODULE hDLL)
 		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 3.5__"))
 			version = 4;
 	}
-	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 1))
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 0))
 		return version;
 
 	if (version == 0)
@@ -2348,6 +2348,8 @@ static void UnloadIcons()
 
 void ViewReleaseNotes()
 {
+	return; // kill those annoying release notes
+
 	if (show_relnotes)
 		return;
 

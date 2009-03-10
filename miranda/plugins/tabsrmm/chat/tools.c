@@ -643,7 +643,7 @@ void CheckColorsInModule(const char* pszModule)
 	MODULEINFO * pMod = MM_FindModule(pszModule);
 	int i = 0;
 	COLORREF crFG;
-	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
+	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
 	LoadLogfont(MSGFONTID_MESSAGEAREA, NULL, &crFG, FONTMODULE);
 

@@ -287,14 +287,14 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
 		}
 		n++;
 	}
-	def = GetSysColor(COLOR_WINDOW);
+	def = SRMSGDEFSET_BKGCOLOUR;
 
 	WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, SRMSGSET_BKGCOLOUR, def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Message Log", "OldIncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OldOutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", def), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OldIncomingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "OldOutgoingBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("Message Log", "StatusBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "statbg", def), szBuf, 10), szIniFilename);
 
 	WritePrivateProfileStringA("Message Log", "InputBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", def), szBuf, 10), szIniFilename);
@@ -304,8 +304,8 @@ void WriteThemeToINI(const char *szIniFilename, struct MessageWindowData *dat)
 	WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(DBGetContactSettingByte(NULL, SRMSGMOD_T, "extramicrolf", 0), szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("Chat", "UserListBG", _itoa(DBGetContactSettingDword(NULL, "Chat", "ColorNicklistBG", def), szBuf, 10), szIniFilename);
 
-	WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 20), szBuf, 10), szIniFilename);
+	WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 20), szBuf, 10), szIniFilename);
 
 	WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(DBGetContactSettingDword(NULL, FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
 
@@ -405,7 +405,7 @@ void ReadThemeFromINI(const char *szIniFilename, struct MessageWindowData *dat, 
 			}
 			n++;
 		}
-		def = GetSysColor(COLOR_WINDOW);
+		def = SRMSGDEFSET_BKGCOLOUR;
 		ReleaseDC(NULL, hdc);
 		DBWriteContactSettingDword(NULL, FONTMODULE, "ipfieldsbg",
 								   GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));

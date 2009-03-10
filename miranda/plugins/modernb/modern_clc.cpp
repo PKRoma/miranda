@@ -35,6 +35,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_clist.h"
 #include "hdr/modern_clcpaint.h"
 
+#include "m_modernopt.h"
+
+int ModernOptInit(WPARAM wParam,LPARAM lParam);
+int ModernSkinOptInit(WPARAM wParam,LPARAM lParam);
 
 /*
 *	Private module variables
@@ -65,6 +69,9 @@ static int clcHookModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	int i;
 	if (MirandaExiting()) return 0;
+
+	ModernHookEvent(ME_MODERNOPT_INITIALIZE,ModernOptInit);
+	ModernHookEvent(ME_MODERNOPT_INITIALIZE,ModernSkinOptInit);
 
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);

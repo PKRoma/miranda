@@ -1594,7 +1594,7 @@ unsigned int GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 		g_HPPAvail = ServiceExists("History++/ExtGrid/NewWindow");
 
 	myGlobals.g_WantIEView = g_IEViewAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
-	myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
+	myGlobals.g_WantHPP = g_HPPAvail && DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 
 	iWantIEView = (myGlobals.g_WantIEView) || (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == 1 && g_IEViewAvail);
 	iWantIEView = (DBGetContactSettingByte(hContact, SRMSGMOD_T, "ieview", 0) == (BYTE) - 1) ? 0 : iWantIEView;
@@ -2719,8 +2719,8 @@ void LoadThemeDefaults(HWND hwndDlg, struct MessageWindowData *dat)
 	dat->theme.outbg = myGlobals.crOutgoing;
 	dat->theme.bg = myGlobals.crDefault;
 	dat->theme.hgrid = DBGetContactSettingDword(NULL, FONTMODULE, "hgrid", RGB(224, 224, 224));
-	dat->theme.left_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0) * 15;
-	dat->theme.right_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0) * 15;
+	dat->theme.left_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 20) * 15;
+	dat->theme.right_indent = DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 20) * 15;
 	dat->theme.inputbg = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
 	for (i = 1; i <= 5; i++) {

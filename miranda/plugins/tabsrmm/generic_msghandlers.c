@@ -570,7 +570,7 @@ LRESULT DM_ThemeChanged(HWND hwnd, struct MessageWindowData *dat)
 	StatusItems_t *item_log = &StatusItems[ID_EXTBKHISTORY];
 	StatusItems_t *item_msg = &StatusItems[ID_EXTBKINPUTAREA];
 
-	dat->bFlatMsgLog = DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 0);
+	dat->bFlatMsgLog = DBGetContactSettingByte(NULL, SRMSGMOD_T, "flatlog", 1);
 
 	if (!dat->bFlatMsgLog)
 		dat->hTheme = (myGlobals.m_VSApiEnabled && pfnOpenThemeData) ? pfnOpenThemeData(hwnd, L"EDIT") : 0;

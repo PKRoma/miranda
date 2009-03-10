@@ -267,7 +267,7 @@ static void Chat_UpdateWindowState(HWND hwndDlg, struct MessageWindowData *dat, 
 
 static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
-	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
 	BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 	MODULEINFO *pInfo = si ? MM_FindModule(si->pszModule) : NULL;
 	BOOL bNicklistEnabled = si ? si->bNicklistEnabled : FALSE;
@@ -1003,7 +1003,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 
 			if (MM_FindModule(Parentsi->pszModule) && MM_FindModule(Parentsi->pszModule)->bBkgColor) {
 				int index = Chat_GetColorIndex(Parentsi->pszModule, cf.crBackColor);
-				COLORREF crB = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
+				COLORREF crB = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 				u = IsDlgButtonChecked(hwndParent, IDC_BKGCOLOR);
 
 				if (index >= 0) {
@@ -1963,7 +1963,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
 			//MAD
-			myGlobals.g_NickListScrollBarFix = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ScrollBarFix", 0);
+			myGlobals.g_NickListScrollBarFix = DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_ScrollBarFix", 1);
 
 			BB_InitDlgButtons(hwndDlg,dat);
 			//TODO: unify "change font color" button behavior in IM and Chat windows
@@ -2056,7 +2056,7 @@ BOOL CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				COLORREF	    crFore;
 				LOGFONTA        lf;
 				CHARFORMAT2A    cf2 = {0};
-				COLORREF crB = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
+				COLORREF crB = DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 
 				LoadLogfont(MSGFONTID_MESSAGEAREA, &lf, &crFore, FONTMODULE);
 				cf2.dwMask = CFM_COLOR | CFM_FACE | CFM_CHARSET | CFM_SIZE | CFM_WEIGHT | CFM_ITALIC | CFM_BACKCOLOR;
@@ -3185,7 +3185,7 @@ LABEL_SHOWWINDOW:
 						}
 					} else {
 						cf.dwMask = CFM_BACKCOLOR;
-						cf.crBackColor = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", GetSysColor(COLOR_WINDOW));
+						cf.crBackColor = (COLORREF)DBGetContactSettingDword(NULL, FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR);
 						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 					}
 				}

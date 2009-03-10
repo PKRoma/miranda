@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
@@ -41,6 +41,7 @@
 #define IDD_POPUP_OPT                   278
 #define IDR_ACCEL                       283
 #define IDR_TABCONTEXT                  286
+#define IDD_MODERNOPTS                  288
 #define IDD_SELECTCONTAINER             299
 #define IDD_CONTAINEROPTIONS            300
 #define IDD_OPT_CONTAINERS              301
@@ -518,6 +519,29 @@
 #define IDC_CUT_TITLEMAXSPIN            1420
 #define IDC_HELP_CONTAINERS             1421
 #define IDC_HELP_GENERAL                1422
+#define IDC_CLOSEONESC                  1423
+#define IDC_ALWAYSPOPUP                 1424
+#define IDC_CREATEMIN                   1425
+#define IDC_CHECK5                      1426
+#define IDC_SENDSHIFTENTER              1427
+#define IDC_SENDENTER                   1428
+#define IDC_SENDDBLENTER                1429
+#define IDC_MINSEND                     1430
+#define IDC_SENDCTRLENTER               1431
+#define IDC_USETABS                     1432
+#define IDC_NOOPENPOPUP                 1433
+#define IDC_NOOPENNOTIFY                1433
+#define IDC_CREATENOACTIVATE            1434
+#define IDC_NOTIFYMSG                   1435
+#define IDC_POPUPONCREATE               1436
+#define IDC_NOTIFYFILE                  1438
+#define IDC_NOTIFYURL                   1439
+#define IDC_NOTIFYOTHER                 1440
+#define IDC_TXT_TITLE1                  1617
+#define IDC_TXT_TITLE2                  1618
+#define IDC_TXT_TITLE4                  1620
+#define IDC_TXT_TITLE5                  1622
+#define IDC_TXT_TITLE3                  1623
 #define IDC_WHITERECT                   2000
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_TABSRMM                     2001
@@ -749,6 +773,7 @@
 #define ID_MESSAGELOGSETTINGS_GLOBAL    40251
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
+#define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
@@ -756,7 +781,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        13
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1423
+#define _APS_NEXT_CONTROL_VALUE         1424
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

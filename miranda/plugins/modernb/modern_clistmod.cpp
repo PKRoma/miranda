@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_commonprototypes.h"
 #include "hdr/modern_sync.h"
 #include "hdr/modern_clui.h"
+#include <m_modernopt.h>
 pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
 pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
 pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
@@ -49,6 +50,7 @@ int ContactAdded(WPARAM wParam,LPARAM lParam);
 int GetContactDisplayName(WPARAM wParam,LPARAM lParam);
 int CListOptInit(WPARAM wParam,LPARAM lParam);
 int SkinOptInit(WPARAM wParam,LPARAM lParam);
+int ModernSkinOptInit(WPARAM wParam,LPARAM lParam);
 int EventsProcessContactDoubleClick(HANDLE hContact);
 
 int TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam);
@@ -273,6 +275,10 @@ HRESULT PreLoadContactListModule()
 	return S_OK;
 }
 
+int SvcActiveSkin(WPARAM wParam, LPARAM lParam);
+int SvcPreviewSkin(WPARAM wParam, LPARAM lParam);
+int SvcApplySkin(WPARAM wParam, LPARAM lParam);
+
 HRESULT  CluiLoadModule()
 {
 	CreateServiceFunction(MS_CLUI_GETCAPS,CLUIGetCapsService);
@@ -281,6 +287,10 @@ HRESULT  CluiLoadModule()
 	hookSystemShutdown_CListMod  = ModernHookEvent(ME_SYSTEM_SHUTDOWN,CListMod_ContactListShutdownProc);
 	hookOptInitialise_CList      = ModernHookEvent(ME_OPT_INITIALISE,CListOptInit);
 	hookOptInitialise_Skin       = ModernHookEvent(ME_OPT_INITIALISE,SkinOptInit);
+
+	CreateServiceFunction("ModernSkinSel/Active", SvcActiveSkin);
+	CreateServiceFunction("ModernSkinSel/Preview", SvcPreviewSkin);
+	CreateServiceFunction("ModernSkinSel/Apply", SvcApplySkin);
 	
 	hookContactAdded_CListSettings = ModernHookEvent(ME_DB_CONTACT_ADDED,ContactAdded);	
 	CreateServiceFunction(MS_CLIST_TRAYICONPROCESSMESSAGE,cli_TrayIconProcessMessage);

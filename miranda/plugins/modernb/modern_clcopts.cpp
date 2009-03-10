@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "hdr/modern_defsettings.h"
 #include "hdr/modern_effectenum.h"
 #include "hdr/modern_sync.h"
+#include <m_modernopt.h>
 #include "m_fontservice.h"
 
 #define FONTF_NORMAL 0
@@ -36,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 struct FontOptionsList
 {
+	DWORD    dwFlags;
 	int		 fontID;
 	TCHAR*   szGroup;
 	TCHAR*   szDescr;
@@ -70,32 +72,32 @@ struct FontOptionsList
 
 static struct FontOptionsList fontOptionsList[] = {
 
-		{ FONTID_CONTACTS,              CLCGROUP,       LPGENT( "Standard contacts"),                                           DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_AWAY,                  CLCGROUP,       LPGENT( "Away contacts"),                                               DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_DND,                   CLCGROUP,       LPGENT( "DND contacts"),                                                DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_NA,                    CLCGROUP,       LPGENT( "NA contacts"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_OCCUPIED,              CLCGROUP,       LPGENT( "Occupied contacts"),                                           DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_CHAT,                  CLCGROUP,       LPGENT( "Free for chat contacts"),                                      DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_INVISIBLE,             CLCGROUP,       LPGENT( "Invisible contacts"),                                          DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_PHONE,                 CLCGROUP,       LPGENT( "On the phone contacts"),                                       DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_LUNCH,                 CLCGROUP,       LPGENT( "Out to lunch contacts"),                                       DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_OFFLINE,               CLCGROUP,       LPGENT( "Offline contacts"),                                            DEFAULT_GREYCOLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_INVIS,                 CLCGROUP,       LPGENT( "Online contacts to whom you have a different visibility"),     DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },		
-		{ FONTID_OFFINVIS,              CLCGROUP,       LPGENT( "Offline contacts to whom you have a different visibility"),    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_NOTONLIST,             CLCGROUP,       LPGENT( "Contacts who are 'not on list'"),                              DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_OPENGROUPS,            CLCGROUP,       LPGENT( "Open groups"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_BOLD, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_OPENGROUPCOUNTS,       CLCGROUP,       LPGENT( "Open group member counts"),                                    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_CLOSEDGROUPS,          CLCGROUP,       LPGENT( "Closed groups"),                                               DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_BOLD, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_CLOSEDGROUPCOUNTS,     CLCGROUP,       LPGENT( "Closed group member counts"),                                  DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_DIVIDERS,              CLCGROUP,       LPGENT( "Dividers"),                                                    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_CONTACTS,              CLCGROUP,       LPGENT( "Standard contacts"),                                           DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_AWAY,                  CLCGROUP,       LPGENT( "Away contacts"),                                               DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_DND,                   CLCGROUP,       LPGENT( "DND contacts"),                                                DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_NA,                    CLCGROUP,       LPGENT( "NA contacts"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_OCCUPIED,              CLCGROUP,       LPGENT( "Occupied contacts"),                                           DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_CHAT,                  CLCGROUP,       LPGENT( "Free for chat contacts"),                                      DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_INVISIBLE,             CLCGROUP,       LPGENT( "Invisible contacts"),                                          DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_PHONE,                 CLCGROUP,       LPGENT( "On the phone contacts"),                                       DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_LUNCH,                 CLCGROUP,       LPGENT( "Out to lunch contacts"),                                       DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_OFFLINE,               CLCGROUP,       LPGENT( "Offline contacts"),                                            DEFAULT_GREYCOLOUR, DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_INVIS,                 CLCGROUP,       LPGENT( "Online contacts to whom you have a different visibility"),     DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },		
+		{ FIDF_CLASSGENERAL, FONTID_OFFINVIS,              CLCGROUP,       LPGENT( "Offline contacts to whom you have a different visibility"),    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_NOTONLIST,             CLCGROUP,       LPGENT( "Contacts who are 'not on list'"),                              DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSHEADER,  FONTID_OPENGROUPS,            CLCGROUP,       LPGENT( "Open groups"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_BOLD, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSHEADER,  FONTID_OPENGROUPCOUNTS,       CLCGROUP,       LPGENT( "Open group member counts"),                                    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSHEADER,  FONTID_CLOSEDGROUPS,          CLCGROUP,       LPGENT( "Closed groups"),                                               DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_BOLD, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSHEADER,  FONTID_CLOSEDGROUPCOUNTS,     CLCGROUP,       LPGENT( "Closed group member counts"),                                  DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSSMALL,   FONTID_DIVIDERS,              CLCGROUP,       LPGENT( "Dividers"),                                                    DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
 		
-        { FONTID_SECONDLINE,            CLCLINESGROUP,  LPGENT( "Second line"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
-		{ FONTID_THIRDLINE,             CLCLINESGROUP,  LPGENT( "Third line"),                                                  DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
-		{ FONTID_CONTACT_TIME,          CLCLINESGROUP,  LPGENT( "Contact time"),                                                DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
+        { FIDF_CLASSSMALL,   FONTID_SECONDLINE,            CLCLINESGROUP,  LPGENT( "Second line"),                                                 DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSSMALL,   FONTID_THIRDLINE,             CLCLINESGROUP,  LPGENT( "Third line"),                                                  DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSSMALL,   FONTID_CONTACT_TIME,          CLCLINESGROUP,  LPGENT( "Contact time"),                                                DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SMALLSIZE, DEFAULT_EFFECT },
 		
-        { FONTID_STATUSBAR_PROTONAME,   CLCFRAMESGROUP, LPGENT( "Status bar text"),                                             DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_EVENTAREA,             CLCFRAMESGROUP, LPGENT( "Event area text"),                                             DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
-		{ FONTID_VIEMODES,              CLCFRAMESGROUP, LPGENT( "Current view mode text"),                                      DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+        { FIDF_CLASSGENERAL, FONTID_STATUSBAR_PROTONAME,   CLCFRAMESGROUP, LPGENT( "Status bar text"),                                             DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_EVENTAREA,             CLCFRAMESGROUP, LPGENT( "Event area text"),                                             DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
+		{ FIDF_CLASSGENERAL, FONTID_VIEMODES,              CLCFRAMESGROUP, LPGENT( "Current view mode text"),                                      DEFAULT_COLOUR,     DEFAULT_FAMILY, DEFAULT_CHARSET, FONTF_NORMAL, DEFAULT_SIZE, DEFAULT_EFFECT },
 };
 
 struct ColourOptionsList
@@ -138,7 +140,6 @@ void RegisterCLUIFonts( void )
 	int i, index = 0;
     
 	fontid.cbSize = FontID_SIZEOF_V2;
-	fontid.flags =  FIDF_DEFAULTVALID | FIDF_APPENDNAME | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS | FIDF_ALLOWREREGISTER | FIDF_NOAS;
     strncpy(fontid.dbSettingsGroup, "CLC", sizeof(fontid.dbSettingsGroup));
 
     effectid.cbSize = sizeof( EffectIDT );
@@ -146,6 +147,9 @@ void RegisterCLUIFonts( void )
    
 	for ( i = 0; i < SIZEOF(fontOptionsList); i++, index++ ) 
 	{
+		fontid.flags =  FIDF_DEFAULTVALID | FIDF_APPENDNAME | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS | FIDF_ALLOWREREGISTER | FIDF_NOAS;
+		fontid.flags |= fontOptionsList[i].dwFlags;
+
 		_tcsncpy(fontid.group, fontOptionsList[i].szGroup, SIZEOF(fontid.group));
 		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
 		sprintf(idstr, "Font%d", fontOptionsList[i].fontID);
@@ -1884,5 +1888,323 @@ int BackgroundsUnloadModule(void)
 	DestroyHookableEvent(g_CluiData.hEventBkgrChanged);
 	g_CluiData.hEventBkgrChanged=NULL;
 
+	return 0;
+}
+
+
+
+
+
+enum
+{
+	CBVT_NONE,
+	CBVT_CHAR,
+	CBVT_INT,
+	CBVT_BYTE,
+	CBVT_DWORD,
+	CBVT_BOOL,
+};
+
+struct OptCheckBox
+{
+	UINT idc;
+
+	DWORD defValue;		// should be full combined value for masked items!
+	DWORD dwBit;
+
+	BYTE dbType;
+	char *dbModule;
+	char *dbSetting;
+
+	BYTE valueType;
+	union
+	{
+		void *pValue;
+
+		char *charValue;
+		int *intValue;
+		BYTE *byteValue;
+		DWORD *dwordValue;
+		BOOL *boolValue;
+	};
+};
+
+DWORD OptCheckBox_LoadValue(struct OptCheckBox *cb)
+{
+	switch (cb->valueType)
+	{
+	case CBVT_NONE:
+		switch (cb->dbType)
+		{
+		case DBVT_BYTE:
+			return ModernGetSettingByte(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		case DBVT_WORD:
+			return ModernGetSettingWord(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		case DBVT_DWORD:
+			return ModernGetSettingDword(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		}
+		break;
+
+	case CBVT_CHAR:
+		return *cb->charValue;
+	case CBVT_INT:
+		return *cb->intValue;
+	case CBVT_BYTE:
+		return *cb->byteValue;
+	case CBVT_DWORD:
+		return *cb->dwordValue;
+	case CBVT_BOOL:
+		return *cb->boolValue;
+	}
+
+	return cb->defValue;
+}
+
+void OptCheckBox_Load(HWND hwnd, struct OptCheckBox *cb)
+{
+	DWORD value = OptCheckBox_LoadValue(cb);
+	if (cb->dwBit) value &= cb->dwBit;
+	CheckDlgButton(hwnd, cb->idc, value ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void OptCheckBox_Save(HWND hwnd, struct OptCheckBox *cb)
+{
+	DWORD value = IsDlgButtonChecked(hwnd, cb->idc) == BST_CHECKED;
+
+	if (cb->dwBit)
+	{
+		DWORD curValue = OptCheckBox_LoadValue(cb);
+		value = value ? (curValue | cb->dwBit) : (curValue & ~cb->dwBit);
+	}
+
+	switch (cb->dbType)
+	{
+	case DBVT_BYTE:
+		ModernWriteSettingByte(NULL, cb->dbModule, cb->dbSetting, (BYTE)value);
+		break;
+	case DBVT_WORD:
+		ModernWriteSettingWord(NULL, cb->dbModule, cb->dbSetting, (WORD)value);
+		break;
+	case DBVT_DWORD:
+		ModernWriteSettingDword(NULL, cb->dbModule, cb->dbSetting, (DWORD)value);
+		break;
+	}
+
+	switch (cb->valueType)
+	{
+	case CBVT_CHAR:
+		*cb->charValue = (char)value;
+		break;
+	case CBVT_INT:
+		*cb->intValue = (int)value;
+		break;
+	case CBVT_BYTE:
+		*cb->byteValue = (BYTE)value;
+		break;
+	case CBVT_DWORD:
+		*cb->dwordValue = (DWORD)value;
+		break;
+	case CBVT_BOOL:
+		*cb->boolValue = (BOOL)value;
+		break;
+	}
+}
+
+static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	struct OptCheckBox opts[] =
+	{
+		//{IDC_, def, bit, dbtype, dbmodule, dbsetting, valtype, pval},
+		{IDC_ONTOP, SETTING_ONTOP_DEFAULT, 0, DBVT_BYTE, "CList", "OnTop"},
+		{IDC_AUTOHIDE, SETTING_AUTOHIDE_DEFAULT, 0, DBVT_BYTE, "CList", "AutoHide"},
+//		{IDC_SHOWPROTO, TRUE,
+//		{IDC_SHOWSTATUS, FALSE,
+		{IDC_FADEINOUT, SETTING_FADEIN_DEFAULT, 0, DBVT_BYTE, "CLUI", "FadeInOut"},
+		{IDC_TRANSPARENT, SETTING_TRANSPARENT_DEFAULT, 0, DBVT_BYTE, "CList", "Transparent"},
+		{IDC_SHOWGROUPCOUNTS, GetDefaultExStyle(), CLS_EX_SHOWGROUPCOUNTS, DBVT_DWORD, "CLC", "ExStyle"},
+		{IDC_HIDECOUNTSWHENEMPTY, GetDefaultExStyle(), CLS_EX_HIDECOUNTSWHENEMPTY, DBVT_DWORD, "CLC", "ExStyle"},
+		{IDC_MINIMODE, SETTING_COMPACTMODE_DEFAULT, 0, DBVT_BYTE, "CLC", "CompactMode"},
+		{IDC_SHOW_AVATARS, SETTINGS_SHOWAVATARS_DEFAULT, 0, DBVT_BYTE, "CList","AvatarsShow"},
+		{IDC_SHOW_ANIAVATARS, FALSE, 0, DBVT_BYTE, "CList","AvatarsAnimated"},
+		{IDC_SHOW, SETTING_SHOWTIME_DEFAULT, 0, DBVT_BYTE, "CList", "ContactTimeShow"},
+	};
+
+	switch (msg)
+	{
+		case WM_INITDIALOG:
+		{
+			int i = 0;
+			int item;
+			int s1, s2, s3;
+
+			TranslateDialogDefault(hwndDlg);
+			for (i = 0; i < SIZEOF(opts); ++i)
+				OptCheckBox_Load(hwndDlg, opts+i);
+
+			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+			SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETRANGE,0,MAKELONG(900,1));
+			SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_SETPOS,0,MAKELONG(ModernGetSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),0));
+
+			if(!IsWinVer2000Plus())
+			{
+				EnableWindow(GetDlgItem(hwndDlg,IDC_FADEINOUT),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSPARENT),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_DROPSHADOW),FALSE);
+			}
+
+			if(!IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT))
+			{
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC11),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC12),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSACTIVE),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSINACTIVE),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_ACTIVEPERC),FALSE);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_INACTIVEPERC),FALSE);
+			}
+			SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_SETRANGE,FALSE,MAKELONG(1,255));
+			SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_SETRANGE,FALSE,MAKELONG(1,255));
+			SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_SETPOS,TRUE,ModernGetSettingByte(NULL,"CList","Alpha",SETTING_ALPHA_DEFAULT));
+			SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_SETPOS,TRUE,ModernGetSettingByte(NULL,"CList","AutoAlpha",SETTING_AUTOALPHA_DEFAULT));
+			SendMessage(hwndDlg,WM_HSCROLL,0x12345678,0);
+
+
+			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) 
+			{
+				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
+				SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_SETITEMDATA,item,(LPARAM)0);
+				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
+				SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_SETITEMDATA,item,(LPARAM)0);
+				item=SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_ADDSTRING,0,(LPARAM)TranslateTS(sortby[i]));
+				SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETITEMDATA,item,(LPARAM)0);
+
+			}
+			s1=ModernGetSettingByte(NULL,"CList","SortBy1",SETTING_SORTBY1_DEFAULT);
+			s2=ModernGetSettingByte(NULL,"CList","SortBy2",SETTING_SORTBY2_DEFAULT);
+			s3=ModernGetSettingByte(NULL,"CList","SortBy3",SETTING_SORTBY3_DEFAULT);
+
+			for (i=0; i<sizeof(sortby)/sizeof(char*); i++) 
+			{
+				if (s1==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_SETCURSEL,i,0);
+				if (s2==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_SETCURSEL,i,0);
+				if (s3==sortbyValue[i])
+					SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_SETCURSEL,i,0);		
+			}
+
+			return TRUE;
+		}
+
+		case WM_HSCROLL:
+		{	char str[10];
+			sprintf(str,"%d%%",100*SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_GETPOS,0,0)/255);
+			SetDlgItemTextA(hwndDlg,IDC_INACTIVEPERC,str);
+			sprintf(str,"%d%%",100*SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_GETPOS,0,0)/255);
+			SetDlgItemTextA(hwndDlg,IDC_ACTIVEPERC,str);
+			if(wParam!=0x12345678) SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
+			break;
+		}
+
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+			case IDC_AUTOHIDE:
+				EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIME),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_HIDETIMESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
+				break;
+			case IDC_TRANSPARENT:
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC11),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC12),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSACTIVE),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSINACTIVE),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_ACTIVEPERC),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_INACTIVEPERC),IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				break;
+			}
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+
+		case WM_NOTIFY:
+		{
+			switch (((LPNMHDR) lParam)->idFrom)
+			{
+				case 0:
+					switch (((LPNMHDR) lParam)->code)
+					{
+						case PSN_APPLY:
+						{
+							int i;
+
+							g_mutex_bChangingMode=TRUE;
+
+							for (i = 0; i < SIZEOF(opts); ++i)
+								OptCheckBox_Save(hwndDlg, opts+i);
+
+							SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+							ModernWriteSettingWord(NULL,"CList","HideTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_GETPOS,0,0));
+
+							ModernWriteSettingByte(NULL,"CList","Alpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_GETPOS,0,0));
+							ModernWriteSettingByte(NULL,"CList","AutoAlpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_GETPOS,0,0));
+
+							{
+								int s1=SendDlgItemMessage(hwndDlg,IDC_CLSORT1,CB_GETCURSEL,0,0);
+								int s2=SendDlgItemMessage(hwndDlg,IDC_CLSORT2,CB_GETCURSEL,0,0);
+								int s3=SendDlgItemMessage(hwndDlg,IDC_CLSORT3,CB_GETCURSEL,0,0);
+								if (s1>=0) s1=sortbyValue[s1];
+								if (s2>=0) s2=sortbyValue[s2];
+								if (s3>=0) s3=sortbyValue[s3];
+								ModernWriteSettingByte(NULL,"CList","SortBy1",(BYTE)s1);
+								ModernWriteSettingByte(NULL,"CList","SortBy2",(BYTE)s2);
+								ModernWriteSettingByte(NULL,"CList","SortBy3",(BYTE)s3);
+							}
+
+							ClcOptionsChanged();
+							AniAva_UpdateOptions();
+							ske_LoadSkinFromDB();
+							CLUI_UpdateLayeredMode();
+							CLUI_ChangeWindowMode();
+							SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
+							CLUI_ReloadCLUIOptions();
+							cliShowHide(0,1);			
+							g_mutex_bChangingMode=FALSE;
+							return TRUE;
+						}
+					}
+					break;
+			}
+			break;
+		}
+	}
+
+	return FALSE;
+}
+
+int ModernOptInit(WPARAM wParam,LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2,
+		IDC_TXT_TITLE3, IDC_TXT_TITLE4,
+		IDC_TXT_TITLE5,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_CLIST;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
+	obj.lptzSubsection = _T("Fonts");
+	obj.lpzClassicGroup = NULL;
+	obj.lpzClassicPage = "Contact List";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPTS);
+	obj.pfnDlgProc = DlgProcModernOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }

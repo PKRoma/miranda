@@ -37,6 +37,8 @@ DWORD g_mirandaVersion = 0;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
+LOGFONT lfDefault = {0};
+LOGFONTA lfDefaultA = {0};
 extern MYGLOBALS myGlobals;
 //MAD
 struct LIST_INTERFACE li;
@@ -58,7 +60,7 @@ PLUGININFOEX pluginInfo = {
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",
-	"� 2000-2008 Miranda Project",
+	"? 2000-2008 Miranda Project",
 	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
@@ -110,6 +112,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getLI(&li);
 	//
 
+	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
+	SystemParametersInfoA(SPI_GETICONTITLELOGFONT, sizeof(lfDefaultA), &lfDefaultA, FALSE);
 	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
 		MessageBox(0, _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), _T("tabSRMM"), MB_OK | MB_ICONERROR);
 		return 1;

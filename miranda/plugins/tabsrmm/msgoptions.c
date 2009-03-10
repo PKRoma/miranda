@@ -32,7 +32,7 @@ $Id$
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "uxtheme.h"
+#include <m_modernopt.h>
 
 //#include "m_MathModule.h"
 
@@ -53,6 +53,8 @@ extern		BOOL CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 extern		BOOL CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern		BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern		StatusItems_t StatusItems[];
+
+extern NEN_OPTIONS nen_options;
 
 BOOL CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -158,6 +160,31 @@ static BYTE MsgDlgGetFontDefaultCharset(const char* szFont)
 
 void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 {
+#ifdef _UNICODE
+	LOGFONT lfResult;
+	LoadMsgDlgFont((i < 100) ? FONTSECTION_IM : FONTSECTION_IP, i, &lfResult, colour, szModule);
+	if (lf)
+	{
+		lf->lfHeight				= lfResult.lfHeight;
+		lf->lfWidth					= lfResult.lfWidth;
+		lf->lfEscapement			= lfResult.lfEscapement;
+		lf->lfOrientation			= lfResult.lfOrientation;
+		lf->lfWeight				= lfResult.lfWeight;
+		lf->lfItalic				= lfResult.lfItalic;
+		lf->lfUnderline				= lfResult.lfUnderline;
+		lf->lfStrikeOut				= lfResult.lfStrikeOut;
+		lf->lfCharSet				= lfResult.lfCharSet;
+		lf->lfOutPrecision			= lfResult.lfOutPrecision;
+		lf->lfClipPrecision			= lfResult.lfClipPrecision;
+		lf->lfQuality				= lfResult.lfQuality;
+		lf->lfPitchAndFamily		= lfResult.lfPitchAndFamily;
+		wsprintfA(lf->lfFaceName, "%S", lfResult.lfFaceName);
+	}
+#else
+	LOGFONT lfResult;
+	LoadMsgDlgFont((i < 100) ? FONTSECTION_IM : FONTSECTION_IP, i, lf, colour, szModule);
+#endif
+/*
 	char str[20];
 	int style;
 	DBVARIANT dbv;
@@ -213,6 +240,7 @@ void LoadLogfont(int i, LOGFONTA * lf, COLORREF * colour, char *szModule)
 			lf->lfCharSet = DBGetContactSettingByte(NULL, szModule, str, MsgDlgGetFontDefaultCharset(lf->lfFaceName));
 		}
 	}
+*/
 }
 
 static struct LISTOPTIONSGROUP defaultGroups[] = {
@@ -223,7 +251,7 @@ static struct LISTOPTIONSGROUP defaultGroups[] = {
 };
 
 static struct LISTOPTIONSITEM defaultItems[] = {
-	0, _T("Send on SHIFT - Enter"), IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
+	0, _T("Send on SHIFT - Enter"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
 	0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
 	0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
 	0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
@@ -233,7 +261,7 @@ static struct LISTOPTIONSITEM defaultItems[] = {
 	0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
 	0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
-	0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+	0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
 	0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
 	0, NULL, 0, 0, 0, 0
 };
@@ -297,7 +325,7 @@ static BOOL CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Rounded border"));
 			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMSGMOD_T, "avborderclr", RGB(0, 0, 0)));
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1), 0);
+			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 0), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Globally on"));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("On, if present"));
@@ -485,7 +513,7 @@ static struct LISTOPTIONSITEM lvItems[] = {
 	0, _T("Underline timestamp/nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_UNDERLINE, 1,
 	0, _T("Show timestamp after nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_SWAPNICK, 1,
 //
-	0, _T("Log status changes"), 0, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
+	0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
 	0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
 	0, _T("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
 	0, _T("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
@@ -564,11 +592,11 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETRANGE, 0, MAKELONG(24 * 60, 0));
 			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME));
 
-			SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 0), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "IndentAmount", 20), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
 			SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_INDENTAMOUNT, &translated, FALSE));
 
-			SetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 0), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, DBGetContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", 20), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
 			SendDlgItemMessage(hwndDlg, IDC_RINDENTSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_INDENT, 0), 0);
@@ -594,7 +622,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_INSERTSTRING, -1, (LPARAM)_T("History++ plugin"));
 				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, 1, 0);
-				else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0))
+				else if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1))
 					SendDlgItemMessage(hwndDlg, IDC_MSGLOGDIDSPLAY, CB_SETCURSEL, have_ieview ? 2 : 1, 0);
 			}
 			return TRUE;
@@ -691,7 +719,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
 
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
+							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
 
 							if (msglogmode == 1) {
 								if (have_ieview)
@@ -917,20 +945,20 @@ static struct LISTOPTIONSGROUP tabGroups[] = {
 };
 
 static struct LISTOPTIONSITEM tabItems[] = {
-	0, _T("Show status text on tabs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
-	0, _T("Prefer xStatus icons when available"), 0, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
+	0, _T("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
+	0, _T("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
 	0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
-	0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
+	0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
 	0, _T("ALWAYS pop up and activate new message windows (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
-	0, _T("Create new tabs in existing windows without activating them"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
-	0, _T("Create new windows in minimized state"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
+	0, _T("Create new tabs in existing windows without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
+	0, _T("Create new windows in minimized state"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
 	0, _T("Pop up a minimized window when a new tab is created"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-	0, _T("New events will automatically switch tabs in minimized windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+	0, _T("New events will automatically switch tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
 	0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
-	0, _T("Flat toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
+	0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
 	0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
-	0, _T("No visible borders on text boxes"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
-	0, _T("Always use icon pack image on the smiley button"), 0, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
+	0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+	0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
 	0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
 	0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
 	//MAD
@@ -1007,7 +1035,7 @@ static BOOL CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("3D - Raised outer"));
 			SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Edged"));
 			SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Flat (no border at all)"));
-			SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN), 0);
+			SendDlgItemMessage(hwndDlg, IDC_IPFIELDBORDERS, CB_SETCURSEL, (WPARAM)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT), 0);
 			break;
 		}
 		case WM_COMMAND:
@@ -1259,9 +1287,418 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+enum
+{
+	CBVT_NONE,
+	CBVT_CHAR,
+	CBVT_INT,
+	CBVT_BYTE,
+	CBVT_DWORD,
+	CBVT_BOOL,
+};
+
+struct OptCheckBox
+{
+	UINT idc;
+
+	DWORD defValue;		// should be full combined value for masked items!
+	DWORD dwBit;
+
+	BYTE dbType;
+	char *dbModule;
+	char *dbSetting;
+
+	BYTE valueType;
+	union
+	{
+		void *pValue;
+
+		char *charValue;
+		int *intValue;
+		BYTE *byteValue;
+		DWORD *dwordValue;
+		BOOL *boolValue;
+	};
+};
+
+DWORD OptCheckBox_LoadValue(struct OptCheckBox *cb)
+{
+	switch (cb->valueType)
+	{
+	case CBVT_NONE:
+		switch (cb->dbType)
+		{
+		case DBVT_BYTE:
+			return DBGetContactSettingByte(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		case DBVT_WORD:
+			return DBGetContactSettingWord(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		case DBVT_DWORD:
+			return DBGetContactSettingDword(NULL, cb->dbModule, cb->dbSetting, cb->defValue);
+		}
+		break;
+
+	case CBVT_CHAR:
+		return *cb->charValue;
+	case CBVT_INT:
+		return *cb->intValue;
+	case CBVT_BYTE:
+		return *cb->byteValue;
+	case CBVT_DWORD:
+		return *cb->dwordValue;
+	case CBVT_BOOL:
+		return *cb->boolValue;
+	}
+
+	return cb->defValue;
+}
+
+void OptCheckBox_Load(HWND hwnd, struct OptCheckBox *cb)
+{
+	DWORD value = OptCheckBox_LoadValue(cb);
+	if (cb->dwBit) value &= cb->dwBit;
+	CheckDlgButton(hwnd, cb->idc, value ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void OptCheckBox_Save(HWND hwnd, struct OptCheckBox *cb)
+{
+	DWORD value = IsDlgButtonChecked(hwnd, cb->idc) == BST_CHECKED;
+
+	if (cb->dwBit)
+	{
+		DWORD curValue = OptCheckBox_LoadValue(cb);
+		value = value ? (curValue | cb->dwBit) : (curValue & ~cb->dwBit);
+	}
+
+	switch (cb->dbType)
+	{
+	case DBVT_BYTE:
+		DBWriteContactSettingByte(NULL, cb->dbModule, cb->dbSetting, (BYTE)value);
+		break;
+	case DBVT_WORD:
+		DBWriteContactSettingWord(NULL, cb->dbModule, cb->dbSetting, (WORD)value);
+		break;
+	case DBVT_DWORD:
+		DBWriteContactSettingDword(NULL, cb->dbModule, cb->dbSetting, (DWORD)value);
+		break;
+	}
+
+	switch (cb->valueType)
+	{
+	case CBVT_CHAR:
+		*cb->charValue = (char)value;
+		break;
+	case CBVT_INT:
+		*cb->intValue = (int)value;
+		break;
+	case CBVT_BYTE:
+		*cb->byteValue = (BYTE)value;
+		break;
+	case CBVT_DWORD:
+		*cb->dwordValue = (DWORD)value;
+		break;
+	case CBVT_BOOL:
+		*cb->boolValue = (BOOL)value;
+		break;
+	}
+}
+
+static BOOL CALLBACK DlgProcTabSrmmModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	struct OptCheckBox opts[] =
+	{
+		//{IDC_, def, bit, dbtype, dbmodule, dbsetting, valtype, pval},
+		{IDC_CLOSEONESC, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, "escmode"},
+		{IDC_ALWAYSPOPUP, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, SRMSGDEFSET_AUTOPOPUP},
+		{IDC_CREATEMIN, TRUE, 0, DBVT_BYTE, SRMSGMOD_T, "autocontainer"},
+		//{IDC_USETABS, , 0, DBVT_BYTE, SRMSGMOD_T, },
+		{IDC_CREATENOACTIVATE, TRUE, 0, DBVT_BYTE, SRMSGMOD_T, "autotabs"},
+		{IDC_POPUPONCREATE, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, "cpopup"},
+		{IDC_AUTOSWITCHTABS, TRUE, 0, DBVT_BYTE, SRMSGMOD_T, "autoswitchtabs"},
+		//{IDC_SENDCTRLENTER, , 0, DBVT_BYTE, SRMSGMOD_T, },
+		{IDC_SENDSHIFTENTER, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, "sendonshiftenter"},
+		{IDC_SENDENTER, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, SRMSGSET_SENDONENTER},
+		{IDC_SENDDBLENTER, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, "SendOnDblEnter"},
+		{IDC_MINSEND, FALSE, 0, DBVT_BYTE, SRMSGMOD_T, SRMSGSET_AUTOMIN},
+		{IDC_NOOPENNOTIFY, FALSE, 0, DBVT_BYTE, "tabSRMM_NEN", OPT_WINDOWCHECK, CBVT_BOOL, &nen_options.bWindowCheck},
+		{IDC_NOTIFYMSG, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_MESSAGE, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
+		{IDC_NOTIFYFILE, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_FILE, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
+		{IDC_NOTIFYURL, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_URL, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
+		{IDC_NOTIFYOTHER, MASK_MESSAGE|MASK_FILE|MASK_URL|MASK_OTHER, MASK_OTHER, DBVT_BYTE, "tabSRMM_NEN", OPT_MASKNOTIFY, CBVT_INT, &nen_options.maskNotify},
+	};
+
+//		0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
+//		0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
+//		0, _T("Disable ALL event notifications (check, if you're using an external plugin for event notifications)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
+
+/*
+	struct LISTOPTIONSITEM opts[] =
+	{
+		0, _T("Send on SHIFT - Enter"), IDC_SENDONSHIFTENTER, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
+		0, _T("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
+		0, _T("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
+		0, _T("Minimize the message window on send"), SRMSGDEFSET_AUTOMIN, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOMIN, 1,
+		//0, _T("Close the message window on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"AutoClose", 1,
+		//0, _T("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
+		//0, _T("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
+		//0, _T("Enable event API (support for third party plugins)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"eventapi", 2,
+		//0, _T("Allow PASTE AND SEND feature (Ctrl-D)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+		//0, _T("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
+		//0, _T("Show file events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 3,
+		//0, _T("Show url events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWURLS, 3,
+		//0, _T("Show timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWTIME, 4,
+		//0, _T("Show dates in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWDATES, 4,
+		//0, _T("Show seconds in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWSECONDS, 4,
+		//0, _T("Use contacts local time (if timezone info available)"), 0, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_LOCALTIME, 4,
+		//0, _T("Draw grid lines"), 1, LOI_TYPE_FLAG,  MWF_LOG_GRID, 0,
+		//0, _T("Show Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_SHOWICONS, 5,
+		//0, _T("Show Symbols"), 0, LOI_TYPE_FLAG, MWF_LOG_SYMBOLS, 5,
+		//0, _T("Use Incoming/Outgoing Icons"), 1, LOI_TYPE_FLAG, MWF_LOG_INOUTICONS, 5,
+		//0, _T("Use Message Grouping"), 1, LOI_TYPE_FLAG, MWF_LOG_GROUPMODE, 0,
+		//0, _T("Indent message body"), 1, LOI_TYPE_FLAG, MWF_LOG_INDENT, 0,
+		//0, _T("Simple text formatting (*bold* etc.)"), 0, LOI_TYPE_FLAG, MWF_LOG_TEXTFORMAT, 0,
+		//0, _T("Support BBCode formatting"), 1, LOI_TYPE_FLAG, MWF_LOG_BBCODE, 0,
+		//0, _T("Place dividers in inactive sessions"), 0, LOI_TYPE_SETTING, (UINT_PTR)"usedividers", 0,
+		//0, _T("Use popup configuration for placing dividers"), 0, LOI_TYPE_SETTING, (UINT_PTR)"div_popupconfig", 0,
+		0, _T("RTL is default text direction"), 0, LOI_TYPE_FLAG, MWF_LOG_RTL, 0,
+		////0, _T("Support Math Module plugin"), 1, LOI_TYPE_SETTING, (UINT_PTR)"wantmathmod", 1,
+		//0, _T("Show events at the new line (IEView Compatibility Mode)"), 1, LOI_TYPE_FLAG, MWF_LOG_NEWLINE, 1,
+		//0, _T("Underline timestamp/nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_UNDERLINE, 1,
+		//0, _T("Show timestamp after nickname (IEView Compatibility Mode)"), 0, LOI_TYPE_FLAG, MWF_LOG_SWAPNICK, 1,
+		0, _T("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
+		//0, _T("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
+		//0, _T("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
+		//0, _T("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
+		//0, _T("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
+		//0, _T("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
+		//0, _T("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
+		//0, _T("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
+		0, _T("ALWAYS pop up and activate new message windows (has PRIORITY!)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
+		0, _T("Create new tabs in existing windows without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
+		0, _T("Create new windows in minimized state"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
+		0, _T("Pop up a minimized window when a new tab is created"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
+		0, _T("New events will automatically switch tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+		//0, _T("Don't draw visual styles on toolbar buttons"), 0, LOI_TYPE_SETTING, (UINT_PTR)"nlflat", 2,
+		//0, _T("Flat toolbar buttons"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tbflat", 2,
+		//0, _T("Splitters have static edges (uncheck this to make them invisible)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"splitteredges", 2,
+		//0, _T("No visible borders on text boxes"), 1, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
+		//0, _T("Always use icon pack image on the smiley button"), 1, LOI_TYPE_SETTING, (UINT_PTR)"smbutton_override", 2,
+		//0, _T("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
+		0, _T("ESC closes sessions (minimizes window, if disabled)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode", 3,
+		//0, _T("ESC closes whole container(uncheck for closing per-tab)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"escmode_2", 3,
+		//0, _T("Close button only hides message container"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
+		//0, _T("Allow tabulation (uncheck for TAB focus-switching)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
+		//0, _T("Use global hotkeys (configure modifiers below)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"globalhotkeys", 3,
+		////0, _T("Force more aggressive window updates"), 1, LOI_TYPE_SETTING, (UINT_PTR)"aggromode", 3,
+		//0, _T("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
+		//0, _T("Dim icons for idle contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
+		//0, _T("Show a preview of the event"), IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
+//		0, _T("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
+		//0, _T("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
+		//0, _T("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
+		//0, _T("Show the floater"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.floaterMode, 2,
+		//0, _T("When floater is enabled, only show it while the contact list is minimized"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterOnlyMin, 2,
+		//0, _T("Show session list menu on the message windows status bar"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bFloaterInWin, 2,
+		//0, _T("Minimize containers to system tray or floater"), IDC_MINIMIZETOTRAY, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMinimizeToTray, 2,
+		//0, _T("Minimize and restore animated"), IDC_ANIMATED, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bAnimated, 2,
+		//0, _T("Merge popups \"per user\" (experimental, unstable)"), IDC_CHKMERGEPOPUP, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
+		//0, _T("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
+		//0, _T("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
+		//0, _T("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
+		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+		//0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
+		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+		//0, _T("Dismiss event"), MASK_REMOVE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActR, 4,
+		//0, _T("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+		//0, _T("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActTE, 5,
+//		0, _T("Disable ALL event notifications (check, if you're using an external plugin for event notifications)"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.iDisable, 0,
+//		0, _T("Message events"), MASK_MESSAGE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+//		0, _T("File events"), MASK_FILE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+//		0, _T("URL events"), MASK_URL, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+//		0, _T("Other events"), MASK_OTHER, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskNotify, 0,
+		//0, _T("Remove event popups for a contact when its message window becomes focused"), PU_REMOVE_ON_FOCUS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+		//0, _T("Remove event popups for a contact when you start typing a reply"), PU_REMOVE_ON_TYPE, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+		//0, _T("Remove event popups for a contact when you send a reply"), PU_REMOVE_ON_SEND, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.dwRemoveMask, 7,
+	};
+*/
+
+	switch (msg)
+	{
+		case WM_INITDIALOG:
+		{
+			int i = 0;
+			DWORD maxhist = DBGetContactSettingDword(NULL, SRMSGMOD_T, "maxhist", 0);
+
+			TranslateDialogDefault(hwndDlg);
+
+			for (i = 0; i < SIZEOF(opts); ++i)
+				OptCheckBox_Load(hwndDlg, opts+i);
+
+			// Always on!
+			CheckDlgButton(hwndDlg, IDC_SENDCTRLENTER, BST_CHECKED);
+
+			switch (DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY)) {
+				case LOADHISTORY_UNREAD:
+					CheckDlgButton(hwndDlg, IDC_LOADUNREAD, BST_CHECKED);
+					break;
+				case LOADHISTORY_COUNT:
+					CheckDlgButton(hwndDlg, IDC_LOADCOUNT, BST_CHECKED);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTN), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTSPIN), TRUE);
+					break;
+				case LOADHISTORY_TIME:
+					CheckDlgButton(hwndDlg, IDC_LOADTIME, BST_CHECKED);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMEN), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMESPIN), TRUE);
+					EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), TRUE);
+					break;
+			}
+
+			SendDlgItemMessage(hwndDlg, IDC_LOADCOUNTSPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
+			SendDlgItemMessage(hwndDlg, IDC_LOADCOUNTSPIN, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, SRMSGDEFSET_LOADCOUNT));
+			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETRANGE, 0, MAKELONG(24 * 60, 0));
+			SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_SETPOS, 0, DBGetContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, SRMSGDEFSET_LOADTIME));
+
+			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
+			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), maxhist != 0);
+			CheckDlgButton(hwndDlg, IDC_ALWAYSTRIM, maxhist != 0);
+
+			{
+				BOOL bTabOptGroups = DBGetContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0);
+				BOOL bTabOptLimit = DBGetContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0);
+				BOOL bTabOptSingle = DBGetContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0);
+
+				if (bTabOptSingle && !bTabOptGroups && !bTabOptLimit)
+					CheckDlgButton(hwndDlg, IDC_USETABS, BST_UNCHECKED);
+				else if (!bTabOptSingle && !bTabOptGroups && !bTabOptLimit)
+					CheckDlgButton(hwndDlg, IDC_USETABS, BST_CHECKED);
+				else
+				{
+					LONG s = (GetWindowLong(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE) & ~BS_TYPEMASK) | BS_AUTO3STATE;
+					SetWindowLong(GetDlgItem(hwndDlg, IDC_USETABS), GWL_STYLE, s);
+					CheckDlgButton(hwndDlg, IDC_USETABS, BST_INDETERMINATE);
+				}
+			}
+
+			return TRUE;
+		}
+
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDC_LOADUNREAD:
+				case IDC_LOADCOUNT:
+				case IDC_LOADTIME:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTN), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTSPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMEN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADTIMESPIN), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_STMINSOLD), IsDlgButtonChecked(hwndDlg, IDC_LOADTIME));
+					break;
+				case IDC_ALWAYSTRIM:
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM));
+					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM));
+					break;
+				case IDC_TRIM:
+					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+						return TRUE;
+					break;
+			}
+			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+			break;
+
+		case WM_NOTIFY:
+		{
+			switch (((LPNMHDR) lParam)->idFrom)
+			{
+				case 0:
+					switch (((LPNMHDR) lParam)->code)
+					{
+						case PSN_APPLY:
+						{
+							int i;
+							for (i = 0; i < SIZEOF(opts); ++i)
+								OptCheckBox_Save(hwndDlg, opts+i);
+
+							if (IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT))
+								DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_COUNT);
+							else if (IsDlgButtonChecked(hwndDlg, IDC_LOADTIME))
+								DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_TIME);
+							else
+								DBWriteContactSettingByte(NULL, SRMSGMOD, SRMSGSET_LOADHISTORY, LOADHISTORY_UNREAD);
+							DBWriteContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADCOUNT, (WORD) SendDlgItemMessage(hwndDlg, IDC_LOADCOUNTSPIN, UDM_GETPOS, 0, 0));
+							DBWriteContactSettingWord(NULL, SRMSGMOD, SRMSGSET_LOADTIME, (WORD) SendDlgItemMessage(hwndDlg, IDC_LOADTIMESPIN, UDM_GETPOS, 0, 0));
+
+							if (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM))
+								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxhist", (DWORD)SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_GETPOS, 0, 0));
+							else
+								DBWriteContactSettingDword(NULL, SRMSGMOD_T, "maxhist", 0);
+
+							switch (IsDlgButtonChecked(hwndDlg, IDC_USETABS))
+							{
+							case BST_UNCHECKED:
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0);
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0);
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 1);
+								break;
+							case BST_CHECKED:
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "useclistgroups", 0);
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "limittabs", 0);
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "singlewinmode", 0);
+								break;
+							}
+
+							ReloadGlobals();
+							WindowList_Broadcast(hMessageWindowList, DM_OPTIONSAPPLIED, 1, 0);
+
+							return TRUE;
+						}
+					}
+					break;
+			}
+			break;
+		}
+	}
+
+	return FALSE;
+}
+
+static int ModernOptInitialise(WPARAM wParam, LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2,
+		IDC_TXT_TITLE3, IDC_TXT_TITLE4,
+		IDC_TXT_TITLE5,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = g_hInst;
+	obj.iSection = MODERNOPT_PAGE_MSGS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
+	obj.lptzSubsection = _T("Fonts");
+	obj.lpzClassicGroup = NULL;
+	obj.lpzClassicPage = "Message Sessions";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPTS);
+	obj.pfnDlgProc = DlgProcTabSrmmModernOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	return 0;
+}
+
 int InitOptions(void)
 {
 	HookEvent(ME_OPT_INITIALISE, OptInitialise);
+	HookEvent(ME_MODERNOPT_INITIALIZE, ModernOptInitialise);
 	return 0;
 }
 
@@ -1861,14 +2298,14 @@ void ReloadGlobals()
 {
 	DWORD dwFlags = DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 
-	myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 1);
+	myGlobals.m_SendOnShiftEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "sendonshiftenter", 0);
 	myGlobals.m_SendOnEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
 	myGlobals.m_SendOnDblEnter = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "SendOnDblEnter", 0);
 	myGlobals.m_AutoLocaleSupport = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "al", 1);
-	myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 0);
+	myGlobals.m_AutoSwitchTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "autoswitchtabs", 1);
 	myGlobals.m_CutContactNameTo = (int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
 	myGlobals.m_CutContactNameOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "cuttitle", 0);
-	myGlobals.m_StatusOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 0);
+	myGlobals.m_StatusOnTabs = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "tabstatus", 1);
 	myGlobals.m_LogStatusChanges = (int)dwFlags&MWF_LOG_STATUSCHANGES;//DBGetContactSettingByte(NULL, SRMSGMOD_T, "logstatus", 0);
 	myGlobals.m_UseDividers = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "usedividers", 0);
 	myGlobals.m_DividersUsePopupConfig = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "div_popupconfig", 0);
@@ -1913,12 +2350,12 @@ void ReloadGlobals()
 	myGlobals.m_IdleDetect = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "detectidle", 1);
 	myGlobals.m_smcxicon = GetSystemMetrics(SM_CXSMICON);
 	myGlobals.m_smcyicon = GetSystemMetrics(SM_CYSMICON);
-	myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 0);
+	myGlobals.m_PasteAndSend = (int)DBGetContactSettingByte(NULL, SRMSGMOD_T, "pasteandsend", 1);
 	myGlobals.m_szNoStatus = TranslateTS(tszNoStatus);
-	myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_SUNKEN);
-	myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 1);
+	myGlobals.ipConfig.borderStyle = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "ipfieldborder", IPFIELD_FLAT);
+	myGlobals.bAvatarBoderType = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "avbordertype", 0);
 	myGlobals.m_LangPackCP = ServiceExists(MS_LANGPACK_GETCODEPAGE) ? CallService(MS_LANGPACK_GETCODEPAGE, 0, 0) : CP_ACP;
-	myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 0);
+	myGlobals.m_SmileyButtonOverride = (BYTE)DBGetContactSettingByte(NULL, SRMSGMOD_T, "smbutton_override", 1);
 	myGlobals.m_visualMessageSizeIndicator = DBGetContactSettingByte(NULL, SRMSGMOD_T, "msgsizebar", 0);
 	myGlobals.m_autoSplit = DBGetContactSettingByte(NULL, SRMSGMOD_T, "autosplit", 0);
 	myGlobals.m_FlashOnMTN = DBGetContactSettingByte(NULL, SRMSGMOD, SRMSGSET_SHOWTYPINGWINFLASH, SRMSGDEFSET_SHOWTYPINGWINFLASH);

@@ -564,7 +564,7 @@ void BB_InitDlgButtons(HWND hdlg,struct MessageWindowData *dat)
 	POINT ptSplitter;
 	int splitterY;
 	BYTE gap=DPISCALEX(myGlobals.g_iButtonsBarGap);
-	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+	BOOL isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
 	BOOL isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 	int cx=0, cy=0;
 	int lcount=LButtonsList->realCount;
