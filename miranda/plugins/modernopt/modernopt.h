@@ -43,12 +43,10 @@ struct ModernOptMainPageInfo
 
 extern struct ModernOptMainPageInfo g_ModernOptPages[MODERNOPT_PAGE_COUNT];
 
-extern HMODULE hMirandaInst, hInst;
+extern HMODULE hInst;
 
 BOOL CALLBACK ModernOptHome_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ModernOptSelector_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
-
-extern DLGPROC AccMgrDlgProc, IdleOptsDlgProc, DlgProcAwayMsgOpts, DlgPluginOpt, DlgProcIgnoreOpts, DlgProcIgnoreOpts;
 
 void ModernOptIgnore_AddItem(MODERNOPTOBJECT *obj);
 

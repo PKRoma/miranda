@@ -2,11 +2,9 @@
 #include "commonheaders.h"
 
 PLUGINLINK *pluginLink;
-HINSTANCE hInst, hMirandaInst;
+HINSTANCE hInst;
 MM_INTERFACE mmi;
 LIST_INTERFACE li;
-
-DLGPROC AccMgrDlgProc, IdleOptsDlgProc, DlgProcAwayMsgOpts, DlgPluginOpt, DlgProcIgnoreOpts;
 
 #if defined( _UNICODE )
 	// {621f886b-a7f6-457f-9d62-8ee84c275993}
@@ -67,13 +65,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	pluginLink = link;
 	mir_getMMI( &mmi );
 	mir_getLI( &li );
-
-	hMirandaInst = GetModuleHandle( NULL );
-	AccMgrDlgProc = ( DLGPROC )GetProcAddress( hMirandaInst, "AccMgrDlgProc" );
-	IdleOptsDlgProc = ( DLGPROC )GetProcAddress( hMirandaInst, "IdleOptsDlgProc" );
-	DlgProcAwayMsgOpts = ( DLGPROC )GetProcAddress( hMirandaInst, "DlgProcAwayMsgOpts" );
-	DlgPluginOpt = ( DLGPROC )GetProcAddress( hMirandaInst, "DlgPluginOpt" );
-	DlgProcIgnoreOpts = ( DLGPROC )GetProcAddress( hMirandaInst, "DlgProcIgnoreOpts" );
 
 	LoadModernOptsModule();
 	return 0;

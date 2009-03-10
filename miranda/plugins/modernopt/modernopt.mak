@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on modernopt.dsp
 !IF "$(CFG)" == ""
-CFG=modernopt - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to modernopt - Win32 Debug Unicode.
+CFG=modernopt - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to modernopt - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "modernopt - Win32 Release" && "$(CFG)" != "modernopt - Win32 Debug" && "$(CFG)" != "modernopt - Win32 Debug Unicode" && "$(CFG)" != "modernopt - Win32 Release Unicode"
