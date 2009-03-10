@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "m_fontservice.h"
-#include <m_modernopt.h>
 
 #include "FontService.h"
 
@@ -74,19 +73,19 @@ int LoadFontserviceModule( void )
 	CreateServiceFunction(MS_COLOUR_REGISTER, RegisterColour);
 	CreateServiceFunction(MS_COLOUR_GET, GetColour);
 
-    CreateServiceFunction(MS_EFFECT_REGISTER, RegisterEffect);
-    CreateServiceFunction(MS_EFFECT_GET, GetEffect);
+	CreateServiceFunction(MS_EFFECT_REGISTER, RegisterEffect);
+	CreateServiceFunction(MS_EFFECT_GET, GetEffect);
 
-	#if defined( _UNICODE )
-		CreateServiceFunction(MS_FONT_REGISTERW, RegisterFontW);
-		CreateServiceFunction(MS_FONT_GETW, GetFontW);
+#if defined( _UNICODE )
+	CreateServiceFunction(MS_FONT_REGISTERW, RegisterFontW);
+	CreateServiceFunction(MS_FONT_GETW, GetFontW);
 
-		CreateServiceFunction(MS_COLOUR_REGISTERW, RegisterColourW);
-		CreateServiceFunction(MS_COLOUR_GETW, GetColourW);
-        
-        CreateServiceFunction(MS_EFFECT_REGISTERW, RegisterEffectW);
-        CreateServiceFunction(MS_EFFECT_GETW, GetEffectW);
-	#endif
+	CreateServiceFunction(MS_COLOUR_REGISTERW, RegisterColourW);
+	CreateServiceFunction(MS_COLOUR_GETW, GetColourW);
+
+	CreateServiceFunction(MS_EFFECT_REGISTERW, RegisterEffectW);
+	CreateServiceFunction(MS_EFFECT_GETW, GetEffectW);
+#endif
 
 	hFontReloadEvent = CreateHookableEvent(ME_FONT_RELOAD);
 	hColourReloadEvent = CreateHookableEvent(ME_COLOUR_RELOAD);

@@ -44,7 +44,7 @@ static char *GetDefaultMessage(int status)
 
 static char *StatusModeToDbSetting(int status,const char *suffix)
 {
-    char *prefix;
+	char *prefix;
 	static char str[64];
 
 	switch(status) {
@@ -449,7 +449,8 @@ BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 {
-   	if (protoModeMsgFlags == 0) return 0;
+	if (protoModeMsgFlags == 0)
+		return 0;
 
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
@@ -464,30 +465,50 @@ static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 	return 0;
 }
 
+static int AwayMsgSendModernOptInit(WPARAM wParam, LPARAM)
+{
+	if (protoModeMsgFlags == 0)
+		return 0;
+
+	MODERNOPTOBJECT obj = {0};
+	obj.cbSize = sizeof(obj);
+	obj.hInstance = hMirandaInst;
+	obj.dwFlags = MODEROPT_FLG_NORESIZE;
+	obj.iSection = MODERNOPT_PAGE_STATUS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_STATUS);
+	obj.pfnDlgProc = DlgProcAwayMsgOpts;
+	obj.lpzClassicGroup = "Status";
+	obj.lpzClassicPage = "Messages";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	return 0;
+}
+
 static int AwayMsgSendAccountsChanged(WPARAM, LPARAM)
 {
 	protoModeMsgFlags = 0;
 	for (int i=0; i < accounts.getCount(); i++)
 		protoModeMsgFlags |= CallProtoService(accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0);
 
-    return 0;
+	return 0;
 }
 
 static int AwayMsgSendModulesLoaded(WPARAM, LPARAM)
 {
-    AwayMsgSendAccountsChanged(0, 0);
+	AwayMsgSendAccountsChanged(0, 0);
 
-    HookEvent(ME_CLIST_STATUSMODECHANGE, StatusModeChange);
+	HookEvent(ME_CLIST_STATUSMODECHANGE, StatusModeChange);
+	HookEvent(ME_MODERNOPT_INITIALIZE, AwayMsgSendModernOptInit);
 	HookEvent(ME_OPT_INITIALISE, AwayMsgOptInitialise);
-
-    return 0;
+	return 0;
 }
 
 int LoadAwayMessageSending(void)
 {
 	HookEvent(ME_SYSTEM_MODULESLOADED,AwayMsgSendModulesLoaded);
 	HookEvent(ME_PROTO_ACCLISTCHANGED, AwayMsgSendAccountsChanged);
-    
-    CreateServiceFunction(MS_AWAYMSG_GETSTATUSMSG, GetAwayMessage);
+
+	CreateServiceFunction(MS_AWAYMSG_GETSTATUSMSG, GetAwayMessage);
 	return 0;
 }

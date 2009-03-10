@@ -188,7 +188,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
+static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hIcons[IGNOREEVENT_MAX+2];
 	static HANDLE hItemAll,hItemUnknown;
@@ -427,31 +427,48 @@ static int IgnoreAddedNotify(WPARAM, LPARAM lParam)
 	return 0;
 }
 
+static int IgnoreModernOptInit(WPARAM wParam, LPARAM)
+{
+	MODERNOPTOBJECT obj = {0};
+	obj.cbSize = sizeof(obj);
+	obj.hInstance = hMirandaInst;
+	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.iSection = MODERNOPT_PAGE_IGNORE;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IGNORE);
+	obj.pfnDlgProc = DlgProcIgnoreOpts;
+	obj.lpzClassicGroup = "Events";
+	obj.lpzClassicPage = "Ignore";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	return 0;
+}
+
 int LoadIgnoreModule(void)
 {
-	PROTOCOLDESCRIPTOR pd;
-	HANDLE hContact;
-
-	ZeroMemory(&pd,sizeof(pd));
+	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize=sizeof(pd);
 	pd.szName="Ignore";
 	pd.type=PROTOTYPE_IGNORE;
 	CallService(MS_PROTO_REGISTERMODULE,0,(LPARAM)&pd);
-	hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
-	while(hContact!=NULL) {
-		if(!CallService(MS_PROTO_ISPROTOONCONTACT,(WPARAM)hContact,(LPARAM)"Ignore")) 
+
+	HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
+	while ( hContact != NULL ) {
+		if (!CallService(MS_PROTO_ISPROTOONCONTACT,(WPARAM)hContact,(LPARAM)"Ignore")) 
 			CallService(MS_PROTO_ADDTOCONTACT,(WPARAM)hContact,(LPARAM)"Ignore");
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);
 	}
-	HookEvent(ME_DB_CONTACT_ADDED,IgnoreContactAdded);
-	HookEvent(ME_DB_EVENT_FILTER_ADD,IgnoreAddedNotify);
+
 	CreateServiceFunction("Ignore"PSR_MESSAGE,IgnoreRecvMessage);
 	CreateServiceFunction("Ignore"PSR_URL,IgnoreRecvUrl);
 	CreateServiceFunction("Ignore"PSR_FILE,IgnoreRecvFile);
 	CreateServiceFunction("Ignore"PSR_AUTH,IgnoreRecvAuth);
-	HookEvent(ME_OPT_INITIALISE,IgnoreOptInitialise);
 	CreateServiceFunction(MS_IGNORE_ISIGNORED,IsIgnored);
 	CreateServiceFunction(MS_IGNORE_IGNORE,Ignore);
 	CreateServiceFunction(MS_IGNORE_UNIGNORE,Unignore);
+
+	HookEvent(ME_DB_CONTACT_ADDED,IgnoreContactAdded);
+	HookEvent(ME_DB_EVENT_FILTER_ADD,IgnoreAddedNotify);
+	HookEvent(ME_MODERNOPT_INITIALIZE, IgnoreModernOptInit);
+	HookEvent(ME_OPT_INITIALISE,IgnoreOptInitialise);
 	return 0;
 }

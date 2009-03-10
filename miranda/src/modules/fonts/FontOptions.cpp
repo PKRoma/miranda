@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "FontService.h"
-#include <m_modernopt.h>
 
 // *_w2 is working copy of list
 // *_w3 is stores initial configuration
@@ -1463,9 +1462,6 @@ static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 INT CALLBACK AccMgrDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT CALLBACK DlgPluginOpt(HWND, UINT, WPARAM, LPARAM);
-INT CALLBACK DlgProcAwayMsgOpts(HWND, UINT, WPARAM, LPARAM);
-INT CALLBACK IdleOptsDlgProc(HWND, UINT, WPARAM, LPARAM);
-INT CALLBACK DlgProcIgnoreOpts(HWND, UINT, WPARAM, LPARAM);
 
 int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 {
@@ -1479,7 +1475,7 @@ int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 	obj.cbSize = sizeof(obj);
 	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
 	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	obj.hInstance = GetModuleHandle(NULL);
+	obj.hInstance = hMirandaInst;
 	obj.iSection = MODERNOPT_PAGE_SKINS;
 	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
 	obj.iBoldControls = iBoldControls;
@@ -1510,37 +1506,6 @@ int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 	obj.lpzClassicGroup = NULL;
 	obj.lpzClassicPage = "Plugins";
 	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
-	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
-
-	obj.dwFlags |= MODEROPT_FLG_NORESIZE;
-	obj.iSection = MODERNOPT_PAGE_STATUS;
-	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
-	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_STATUS);
-	obj.pfnDlgProc = DlgProcAwayMsgOpts;
-	obj.iBoldControls = iBoldControls;
-	obj.lpzClassicGroup = "Status";
-	obj.lpzClassicPage = "Messages";
-	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
-	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
-
-	obj.iSection = MODERNOPT_PAGE_STATUS;
-	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
-	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
-	obj.pfnDlgProc = IdleOptsDlgProc;
-	obj.iBoldControls = iBoldControls;
-	obj.lpzClassicGroup = "Status";
-	obj.lpzClassicPage = "Messages";
-	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
-	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
-	obj.dwFlags &= ~MODEROPT_FLG_NORESIZE;
-
-	obj.iSection = MODERNOPT_PAGE_IGNORE;
-	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
-	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IGNORE);
-	obj.pfnDlgProc = DlgProcIgnoreOpts;
-	obj.iBoldControls = iBoldControls;
-	obj.lpzClassicGroup = "Events";
-	obj.lpzClassicPage = "Ignore";
 	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }

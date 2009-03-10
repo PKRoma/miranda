@@ -294,7 +294,7 @@ int IdleGetStatusIndex(WORD status)
     return 0;
 }
 
-BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -421,6 +421,23 @@ static int IdleGetInfo(WPARAM, LPARAM lParam)
 	return 0;
 }
 
+static int IdleModernOptInit(WPARAM wParam, LPARAM)
+{
+	MODERNOPTOBJECT obj = {0};
+	obj.cbSize = sizeof(obj);
+	obj.hInstance = hMirandaInst;
+	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.iSection = MODERNOPT_PAGE_STATUS;
+	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
+	obj.pfnDlgProc = IdleOptsDlgProc;
+	obj.lpzClassicGroup = "Status";
+	obj.lpzClassicPage = "Messages";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
+	return 0;
+}
+
 int LoadIdleModule(void)
 {
 	bModuleInitialized = TRUE;
@@ -431,6 +448,7 @@ int LoadIdleModule(void)
 	IdleObject_Create(&gIdleObject);
 	CreateServiceFunction(MS_IDLE_GETIDLEINFO, IdleGetInfo);
 	HookEvent(ME_OPT_INITIALISE, IdleOptInit);
+	HookEvent(ME_MODERNOPT_INITIALIZE, IdleModernOptInit);
 	return 0;
 }
 
