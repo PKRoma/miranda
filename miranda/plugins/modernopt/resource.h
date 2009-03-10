@@ -2,12 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
-#define IDD_MODERNOPT_MODULES           202
-#define IDD_MODERNOPT_STATUS            203
-#define IDD_MODERNOPT_IGNORE            204
-#define IDD_MODERNOPT_IDLE              205
+
 #define IDD_MODERNOPT_EMPTY             206
-#define IDD_MODERNOPT_ACCOUNTS          207
 #define IDD_MODERNOPT                   216
 #define IDD_MODERNOPT_HOME              219
 #define IDD_MODERNOPT_SKINS             220
@@ -38,4 +34,3 @@
 #define IDC_TXT_DUMMY                   1017
 #define IDC_SKINLIST                    1029
 #define IDC_PREVIEW1                    1030
-#define IDC_LV_LEGEND                   1034

@@ -31,6 +31,11 @@
 #define IDD_OPT_SOUND                   134
 #define IDI_RECVMSG                     136
 #define IDI_URL                         138
+#define IDD_MODERNOPT_ACCOUNTS          139
+#define IDD_MODERNOPT_MODULES           140
+#define IDD_MODERNOPT_STATUS            141
+#define IDD_MODERNOPT_IDLE              142
+#define IDD_MODERNOPT_IGNORE            143
 #define IDI_DND                         158
 #define IDI_OCCUPIED                    159
 #define IDI_USERDETAILS                 160
@@ -500,6 +505,7 @@
 #define IDC_CUSTOM1                     1732
 #define IDC_LV_ERRORS                   1733
 #define IDC_HEADERBAR                   1734
+#define IDC_LV_LEGEND                   1735
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
