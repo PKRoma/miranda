@@ -48,6 +48,7 @@ Last change by : $Author$
 #define _WIN32_IE 0x501
 #include <windows.h>
 #include <commctrl.h>
+#include <uxtheme.h>
 #include <process.h>
 #include <stdio.h>
 #include <stdarg.h>

@@ -29,8 +29,6 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_list.h"
 
-#include <uxtheme.h>
-
 #include "jabber_caps.h"
 #include "jabber_opttree.h"
 #include "sdk/m_wizard.h"

@@ -37,7 +37,6 @@
 #include "icqoscar.h"
 
 #include <win2k.h>
-#include <uxtheme.h>
 
 extern BOOL bPopUpService;
 
