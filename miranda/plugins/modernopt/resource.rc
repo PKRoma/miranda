@@ -1,0 +1,209 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+#include "../../src/resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#include <winres.h>
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MODERNOPT_STATUS DIALOGEX 0, 0, 369, 113
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_STATUS,2,54,16,97,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Do not reply to requests for this message",IDC_DONTREPLY,
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,0,33,10,10
+    CONTROL         "Do not pop up dialog asking for new message",IDC_NODIALOG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,93,264,10
+    CONTROL         "By default, use the same message as last time",IDC_USEPREVIOUS,
+                    "Button",BS_AUTORADIOBUTTON,105,13,227,10
+    CONTROL         "By default, use this message:",IDC_USESPECIFIC,"Button",BS_AUTORADIOBUTTON,105,26,227,10
+    EDITTEXT        IDC_MSG,125,39,244,38,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CTEXT           "Use %time% for the current time, %date% for the current date",IDC_STATIC,125,78,244,8,SS_CENTERIMAGE
+    LTEXT           "Status messages:",IDC_TXT_TITLE1,0,0,246,8
+    LISTBOX         IDC_LST_STATUS,10,13,90,95,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_MODERNOPT_SKINS DIALOGEX 0, 0, 260, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LISTBOX         IDC_SKINLIST,0,115,260,95,LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_PREVIEW1,"Static",SS_OWNERDRAW,0,0,260,110
+END
+
+IDD_MODERNOPT_MODULES DIALOGEX 0, 0, 260, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_PLUGINLONGINFO,65,133,194,25,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    EDITTEXT        IDC_PLUGINAUTHOR,65,160,194,12,ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    CONTROL         "",IDC_PLUGINEMAIL,"Hyperlink",WS_TABSTOP,65,172,194,10
+    CONTROL         "",IDC_PLUGINURL,"Hyperlink",WS_TABSTOP,65,184,194,10
+    EDITTEXT        IDC_PLUGINCPYR,65,197,194,12,ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | NOT WS_BORDER
+    RTEXT           "Description:",IDC_TXT_TITLE1,-1,133,60,10
+    RTEXT           "Author(s):",IDC_TXT_TITLE2,0,160,60,10
+    RTEXT           "E-mail:",IDC_TXT_TITLE3,0,172,60,10
+    RTEXT           "Homepage:",IDC_TXT_TITLE4,0,184,60,9
+    RTEXT           "Copyright:",IDC_TXT_TITLE6,0,197,60,10
+    CONTROL         "",IDC_PLUGLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_AUTOARRANGE | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,0,0,259,128
+END
+
+IDD_MODERNOPT_IGNORE DIALOGEX 0, 0, 369, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x3da,10,13,358,135,WS_EX_CLIENTEDGE
+    LTEXT           "Event icon legend:",IDC_TXT_TITLE2,0,153,119,8
+    LTEXT           "Choose events you wish to ingonre:",IDC_TXT_TITLE1,0,0,246,8
+    CONTROL         "",IDC_LV_LEGEND,"SysListView32",LVS_LIST | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,10,166,358,43
+END
+
+IDD_MODERNOPT_IDLE DIALOGEX 0, 0, 369, 59
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Become idle if computer is left unattended for:",IDC_IDLESHORT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,13,171,9
+    CONTROL         "Windows",IDC_IDLEONWINDOWS,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE,325,25,26,9
+    CONTROL         "Miranda",IDC_IDLEONMIRANDA,"Button",BS_AUTORADIOBUTTON | NOT WS_VISIBLE,287,37,15,9
+    EDITTEXT        IDC_IDLE1STTIME,181,11,27,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_IDLESPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,193,7,11,23
+    CONTROL         "Become idle if the screen saver is active",IDC_SCREENSAVER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,25,268,9
+    CONTROL         "Become idle if the computer is locked (2000/XP+ only)",IDC_LOCKED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,37,249,9
+    CONTROL         "Become idle if a terminal session is disconnected",IDC_IDLETERMINAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,49,265,10
+    CONTROL         "Do not let protocols report any idle information",IDC_IDLEPRIVATE,
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,303,13,22,9
+    LTEXT           "minute(s)",IDC_STATIC,213,13,76,9,SS_CENTERIMAGE
+    COMBOBOX        IDC_AASTATUS,325,46,23,50,CBS_DROPDOWNLIST | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Change my status mode to:",IDC_AASHORTIDLE,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,334,11,23,11
+    CONTROL         "Do not set status back to online when returning from idle",IDC_IDLESTATUSLOCK,
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,299,24,16,10
+    LTEXT           "Idle (auto-away):",IDC_TXT_TITLE1,0,0,246,8
+END
+
+IDD_MODERNOPT_HOME DIALOGEX 0, 0, 368, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Visit official Miranda IM website",IDC_BTN_HELP,
+                    "Hyperlink",WS_TABSTOP,15,180,338,9
+    CONTROL         "Switch to classic options",IDC_BTN_CLASSICOPT,"Hyperlink",WS_TABSTOP,15,195,338,9
+    CONTROL         "Custom1",IDC_BTN_ACCOUNTS,"MirandaDescButtonClass",0x0,15,0,160,41
+    CONTROL         "Custom1",IDC_BTN_PLUGINS,"MirandaDescButtonClass",0x0,193,135,160,41
+    CONTROL         "Custom1",IDC_BTN_IGNORE,"MirandaDescButtonClass",0x0,193,0,160,41
+    CONTROL         "`",IDC_BTN_SKINS,"MirandaDescButtonClass",0x0,15,45,160,41
+    CONTROL         "Custom1",IDC_BTN_STATUS,"MirandaDescButtonClass",0x0,193,45,160,41
+    CONTROL         "Custom1",IDC_BTN_CLIST,"MirandaDescButtonClass",0x0,15,90,160,41
+    CONTROL         "Custom1",IDC_BTN_ADVANCED,"MirandaDescButtonClass",0x0,193,90,160,41
+    CONTROL         "Custom1",IDC_BTN_MESSAGING,"MirandaDescButtonClass",0x0,15,135,160,41
+END
+
+IDD_MODERNOPT_EMPTY DIALOGEX 0, 0, 369, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CLIENTEDGE
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Sample page",IDC_STATIC,8,7,121,14
+END
+
+IDD_MODERNOPT_ACCOUNTS DIALOGEX 0, 0, 368, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LISTBOX         IDC_ACCLIST,0,0,162,192,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Account information:",IDC_TXT_ACCOUNT,167,0,201,8
+    LTEXT           "Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options.  Alternatively, just click on the ""New"" button underneath the list to set up a new IM account.",IDC_TXT_INFO,182,13,186,134
+    CONTROL         "&Add...",IDC_ADD,"MButtonClass",WS_TABSTOP,0,196,16,14,WS_EX_NOACTIVATE | 0x10000000L
+    CONTROL         "&Edit",IDC_EDIT,"MButtonClass",WS_TABSTOP,22,196,16,14,WS_EX_NOACTIVATE | 0x10000000L
+    CONTROL         "&Options",IDC_OPTIONS,"MButtonClass",WS_TABSTOP,38,196,16,14,WS_EX_NOACTIVATE | 0x10000000L
+    CONTROL         "&Upgrade",IDC_UPGRADE,"MButtonClass",WS_TABSTOP,54,196,16,14,WS_EX_NOACTIVATE | 0x10000000L
+    CONTROL         "&Remove...",IDC_REMOVE,"MButtonClass",WS_TABSTOP,76,196,16,14,WS_EX_NOACTIVATE | 0x10000000L
+    LTEXT           "Additional:",IDC_TXT_ADDITIONAL,167,157,201,8
+    CONTROL         "Configure network...",IDC_LNK_NETWORK,"Hyperlink",WS_TABSTOP,183,170,186,11
+    CONTROL         "Get more protocols...",IDC_LNK_ADDONS,"Hyperlink",WS_TABSTOP,183,181,186,11
+END
+
+IDD_MODERNOPT DIALOGEX 0, 0, 382, 286
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Miranda IM Options"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    CONTROL         "Custom1",IDC_ICOTABS,"MirandaIcoTabClass",WS_TABSTOP,0,0,382,42
+    CONTROL         "",IDC_TV_SUBSECTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_FULLROWSELECT | TVS_INFOTIP | WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,50,103,210
+    CTEXT           "Miranda IM Options",IDC_TXT_DUMMY,115,50,260,210,SS_CENTERIMAGE | NOT WS_VISIBLE | WS_BORDER
+    DEFPUSHBUTTON   "OK",IDOK,215,265,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,271,265,50,14
+    PUSHBUTTON      "Apply",IDC_BTN_APPLY,325,265,50,14,WS_DISABLED
+    CONTROL         "View help online",IDC_BTN_HELP,"Hyperlink",WS_TABSTOP,7,269,118,9
+    PUSHBUTTON      "Advanced",IDC_BTN_EXPERT,160,265,50,14,NOT WS_VISIBLE
+END
+
+IDD_OPTIONSPAGE DIALOGEX 0, 0, 321, 303
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Options"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "Options\nConfigure your Miranda Instant Messenger options",IDC_STATIC,
+                    "MHeaderbarCtrl",WS_TABSTOP,0,0,325,25
+    COMBOBOX        IDC_KEYWORD_FILTER,336,37,88,79,CBS_DROPDOWN | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,158,283,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,212,283,50,14
+    PUSHBUTTON      "Apply",IDC_APPLY,267,283,50,14
+    CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,4,32,313,249
+    CONTROL         "Show expert options",IDC_EXPERT,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,347,254,62,10
+    CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,4,30,313,251,SS_CENTERIMAGE
+    CONTROL         "",IDC_PAGETREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_NOHSCROLL | NOT WS_VISIBLE | WS_BORDER | WS_TABSTOP,347,86,52,137
+END
+
+IDI_BIG_ADVANCED        ICON                    "res/big_advanced.ico"
+IDI_BIG_BUDDYLIST       ICON                    "res/big_buddylist.ico"
+IDI_BIG_IGNORE          ICON                    "res/big_ignore.ico"
+IDI_BIG_MESSAGE         ICON                    "res/big_message.ico"
+IDI_BIG_MODULES         ICON                    "res/big_modules.ico"
+IDI_BIG_NETWORK         ICON                    "res/big_network.ico"
+IDI_BIG_SKINS           ICON                    "res/big_skins.ico"
+IDI_BIG_STATUS          ICON                    "res/big_status.ico"
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
+#endif
+
