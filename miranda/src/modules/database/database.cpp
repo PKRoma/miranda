@@ -372,7 +372,10 @@ int LoadDatabaseModule(void)
 {
 	int iReturn = 0;
 	TCHAR szProfile[MAX_PATH];
-	szProfile[0]=0;
+
+    pathToAbsoluteT(_T("."), szProfile, NULL);
+    _tchdir(szProfile);
+    szProfile[0] = 0;
 
 	// load the older basic services of the db
 	InitTime();

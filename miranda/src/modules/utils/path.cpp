@@ -74,13 +74,14 @@ int pathToAbsolute(const char *pSrc, char *pOut, char* base)
 		base = szMirandaPath;
 
     char buf[MAX_PATH];
-	if ( pathIsAbsolute( pSrc ) || ( !isalnum(pSrc[0]) && pSrc[0]!='\\' && pSrc[0] != '.' ))
-		return mir_snprintf( buf, MAX_PATH, "%s", pSrc );
+    if ( pSrc[0] < ' ')
+		return mir_snprintf( pOut, MAX_PATH, "%s", pSrc );
+    else if ( pathIsAbsolute( pSrc ))
+        return GetFullPathNameA(pSrc, MAX_PATH, pOut, NULL);
 	else if ( pSrc[0] != '\\' )
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc );
 	else
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc+1 );
-
 
     return GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
 }
@@ -161,8 +162,10 @@ int pathToAbsoluteW(const TCHAR *pSrc, TCHAR *pOut, TCHAR* base)
 		base = szMirandaPathW;
 
     TCHAR buf[MAX_PATH];
-    if ( pathIsAbsoluteW( pSrc ) || ( !_istalnum( pSrc[0] ) && pSrc[0] != '\\' && pSrc[0] != '.' ))
+    if ( pSrc[0] < ' ')
 		return mir_sntprintf( pOut, MAX_PATH, _T("%s"), pSrc );
+    else if ( pathIsAbsoluteW( pSrc ))
+        return GetFullPathName(pSrc, MAX_PATH, pOut, NULL);
 	else if ( pSrc[0] != '\\' )
 		mir_sntprintf( buf, MAX_PATH, _T("%s%s"), base, pSrc );
 	else
