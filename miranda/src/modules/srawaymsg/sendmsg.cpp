@@ -473,7 +473,7 @@ static int AwayMsgSendModernOptInit(WPARAM wParam, LPARAM)
 	MODERNOPTOBJECT obj = {0};
 	obj.cbSize = sizeof(obj);
 	obj.hInstance = hMirandaInst;
-	obj.dwFlags = MODEROPT_FLG_NORESIZE;
+	obj.dwFlags = MODEROPT_FLG_TCHAR | MODEROPT_FLG_NORESIZE;
 	obj.iSection = MODERNOPT_PAGE_STATUS;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_STATUS);

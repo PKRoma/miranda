@@ -333,7 +333,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONWINDOWS), checked);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLEONMIRANDA), checked);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLE1STTIME), checked);
-         EnableWindow(GetDlgItem(hwndDlg, IDC_AASTATUS), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_AASTATUS), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_IDLESTATUSLOCK), IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0);
 		break;
 	}
@@ -350,7 +350,7 @@ static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONTSDC, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLETERMINAL) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED));
-               DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0));
+			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_AAENABLE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_AASHORTIDLE)==BST_CHECKED?1:0));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLESTATUSLOCK)==BST_CHECKED?1:0));
 			{
 				int curSel = SendDlgItemMessage(hwndDlg, IDC_AASTATUS, CB_GETCURSEL, 0, 0);
@@ -426,7 +426,7 @@ static int IdleModernOptInit(WPARAM wParam, LPARAM)
 	MODERNOPTOBJECT obj = {0};
 	obj.cbSize = sizeof(obj);
 	obj.hInstance = hMirandaInst;
-	obj.dwFlags = MODEROPT_FLG_TCHAR;
+	obj.dwFlags = MODEROPT_FLG_TCHAR | MODEROPT_FLG_NORESIZE;
 	obj.iSection = MODERNOPT_PAGE_STATUS;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
