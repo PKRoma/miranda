@@ -767,7 +767,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				if (iLen > 0) {
 					TCHAR *pszName = NULL;
 					TCHAR *pszSelName = NULL;
-					pszText = mir_alloc(sizeof(TCHAR) * (iLen + 100));
+					size_t cbLen;
+					pszText = ( TCHAR* )alloca(sizeof(TCHAR) * (iLen + 100));
 
 					gt.cb = iLen + 99;
 					gt.flags = GT_DEFAULT;
@@ -778,16 +779,20 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 #endif
 
 					SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-					while (start > 0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
+					while (start > 0 /*&& pszText[start-1] != ' '*/ && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
 						start--;
 					while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 						end ++;
 
-					if (dat->szTabSave[0] == '\0')
-						lstrcpyn(dat->szTabSave, pszText + start, end - start + 1);
+					cbLen = end - start + 1;
+					if (dat->szTabSave[0] == '\0') {
+						size_t cbRealLen = min( SIZEOF(dat->szTabSave)-1, cbLen );
+						lstrcpyn(dat->szTabSave, pszText + start, cbRealLen);
+						dat->szTabSave[ cbRealLen ] = 0;
+					}
 
-					pszSelName = mir_alloc(sizeof(TCHAR) * (end - start + 1));
-					lstrcpyn(pszSelName, pszText + start, end - start + 1);
+					pszSelName = ( TCHAR* )alloca(sizeof(TCHAR) * (cbLen));
+					lstrcpyn(pszSelName, pszText + start, cbLen);
 					pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szTabSave, pszSelName);
 					if (pszName == NULL) {
 						pszName = dat->szTabSave;
@@ -795,14 +800,12 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						if (end != start)
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
 						dat->szTabSave[0] = '\0';
-					} else {
+					} 
+					else {
 						SendMessage(hwnd, EM_SETSEL, start, end);
 						if (end != start)
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
-					}
-					mir_free(pszText);
-					mir_free(pszSelName);
-				}
+				}	}
 
 				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
