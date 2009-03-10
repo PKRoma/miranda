@@ -51,9 +51,16 @@ pfnDrawThemeParentBackground drawThemeParentBackground;
 pfnDrawThemeBackground drawThemeBackground;
 pfnDrawThemeBackgroundEx drawThemeBackgroundEx;
 pfnDrawThemeText drawThemeText;
+pfnDrawThemeTextEx drawThemeTextEx;
 pfnGetThemeFont getThemeFont;
 pfnCloseThemeData closeThemeData;
 pfnEnableThemeDialogTexture enableThemeDialogTexture;
+pfnSetWindowTheme setWindowTheme;
+pfnSetWindowThemeAttribute setWindowThemeAttribute;
+pfnIsThemeActive isThemeActive;
+
+pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
+pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
 
 static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles,
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags);
@@ -525,7 +532,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 {
 	DWORD myPid=0;
 	int messageloop=1;
-	HMODULE hUser32, hThemeAPI, hShFolder;
+	HMODULE hUser32, hThemeAPI, hDwmApi, hShFolder;
 
 	hMirandaInst = hInstance;
 
@@ -560,10 +567,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI,"DrawThemeBackground");
 		drawThemeBackgroundEx = (pfnDrawThemeBackgroundEx)GetProcAddress(hThemeAPI,"DrawThemeBackgroundEx");
 		drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
+		drawThemeTextEx = (pfnDrawThemeTextEx)GetProcAddress(hThemeAPI,"DrawThemeTextEx");
 		getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
 		closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI,"CloseThemeData");
-		enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
+        enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
+        setWindowTheme = (pfnSetWindowTheme)GetProcAddress(hThemeAPI,"SetWindowTheme");
+        setWindowThemeAttribute = (pfnSetWindowThemeAttribute)GetProcAddress(hThemeAPI,"SetWindowThemeAttribute");
+        isThemeActive = (pfnIsThemeActive)GetProcAddress(hThemeAPI,"IsThemeActive");
+    }
+
+
+	hDwmApi = LoadLibraryA("dwmapi.dll");
+	if (hDwmApi)
+	{
+        dwmExtendFrameIntoClientArea = (pfnDwmExtendFrameIntoClientArea)GetProcAddress(hDwmApi,"DwmExtendFrameIntoClientArea");
+        dwmIsCompositionEnabled = (pfnDwmIsCompositionEnabled)GetProcAddress(hDwmApi,"DwmIsCompositionEnabled");
 	}
+
 
 	InitialiseModularEngine();
 	ParseCommandLine();

@@ -131,6 +131,7 @@ int LoadFontserviceModule(void); // ui: font manager
 int LoadIcoLibModule(void);   // ui: icons manager
 int LoadUpdateNotifyModule(void); // random: update notification
 int LoadServiceModePlugin(void);
+int LoadErrorsModule();
 
 void UnloadUtilsModule(void);
 void UnloadButtonModule(void);
@@ -148,7 +149,11 @@ void UnloadSkinSounds(void);
 void UnloadSkinHotkeys(void);
 void UnloadProtocolsModule(void);
 void UnloadAccountsModule(void);
+void UnloadErrorsModule(void);
 
+int LoadIcoTabsModule();
+int LoadHeaderbarModule();
+int LoadDescButtonModule();
 int LoadDefaultModules(void)
 {
 	int *disableDefaultModule = 0;
@@ -157,12 +162,16 @@ int LoadDefaultModules(void)
 	if (LoadSystemModule()) return 1;
 	if (LoadLangPackModule()) return 1; // langpack will be a system module in the new order so this is moved 'ere
 	if (LoadUtilsModule()) return 1;		//order not important for this, but no dependencies and no point in pluginising
+	if (LoadIcoTabsModule()) return 1;
+	if (LoadHeaderbarModule()) return 1;
 	if (LoadNewPluginsModuleInfos()) return 1;
 
 	// database is available here
 	if (LoadButtonModule()) return 1;
 	if (LoadIcoLibModule()) return 1;
 	if (LoadSkinIcons()) return 1;
+
+//	if (LoadErrorsModule()) return 1;
 
 	bServiceMode = LoadServiceModePlugin();
 	switch ( bServiceMode )
@@ -177,6 +186,8 @@ int LoadDefaultModules(void)
 
 	if (LoadSkinSounds()) return 1;
 	if (LoadSkinHotkeys()) return 1;
+
+	if (LoadDescButtonModule()) return 1;
 	if (LoadOptionsModule()) return 1;
 	if (LoadNetlibModule()) return 1;
 	if (LoadProtocolsModule()) return 1;
@@ -217,6 +228,7 @@ void UnloadDefaultModules(void)
 	UnloadProtocolsModule();
 	UnloadSkinSounds();
 	UnloadSkinHotkeys();
+//	UnloadErrorsModule();
 	UnloadIcoLibModule();
 	UnloadUtilsModule();
 	UnloadButtonModule();

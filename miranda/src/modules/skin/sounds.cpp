@@ -64,7 +64,7 @@ static int ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
 static int SkinPlaySoundDefault(WPARAM wParam, LPARAM lParam)
 {
 	char * pszFile = (char *) lParam;
-	if ( pszFile && (DBGetContactSettingByte(NULL,"Skin","UseSound",1) || (int)wParam==1))
+	if ( pszFile && (DBGetContactSettingByte(NULL,"Skin","UseSound",0) || (int)wParam==1))
 		PlaySoundA(pszFile, NULL, SND_ASYNC | SND_FILENAME | SND_NOWAIT);
 
 	return 0;
@@ -128,7 +128,7 @@ BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPa
 		SendMessage(hwndDlg, DM_HIDEPANE, 0, 0);
 		SendMessage(hwndDlg, DM_REBUILD_STREE, 0, 0);
 		TreeView_SetItemState(hwndTree, 0, TVIS_SELECTED, TVIS_SELECTED);
-		CheckDlgButton(hwndDlg, IDC_ENABLESOUNDS, DBGetContactSettingByte(NULL, "Skin", "UseSound", 1));
+		CheckDlgButton(hwndDlg, IDC_ENABLESOUNDS, DBGetContactSettingByte(NULL, "Skin", "UseSound", 0));
 		SendMessage(hwndDlg, DM_CHECKENABLED, 0, 0);
 		return TRUE;
 

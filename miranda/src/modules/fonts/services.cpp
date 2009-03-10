@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "FontService.h"
 
+COLORREF GetColorFromDefault(COLORREF cl);
+
 #if defined( _UNICODE )
 void ConvertFontSettings( FontSettings* fs, TFontSettings* fsw)
 {
@@ -219,7 +221,7 @@ void UpdateFontSettings(TFontID* font_id, TFontSettings* fontsettings)
 	COLORREF colour;
 	if ( GetFontSettingFromDB(font_id->dbSettingsGroup, font_id->prefix, &lf, &colour, font_id->flags) && (font_id->flags & FIDF_DEFAULTVALID)) {
 		CreateFromFontSettings(&font_id->deffontsettings, &lf );
-		colour = font_id->deffontsettings.colour;
+		colour = GetColorFromDefault(font_id->deffontsettings.colour);
 	}
 
 	fontsettings->style =
@@ -229,6 +231,40 @@ void UpdateFontSettings(TFontID* font_id, TFontSettings* fontsettings)
 	fontsettings->charset = lf.lfCharSet;
 	fontsettings->colour = colour;
 	_tcscpy(fontsettings->szFace, lf.lfFaceName);
+}
+
+static COLORREF sttMixColor(COLORREF cl1, COLORREF cl2, int q)
+{
+	return RGB(
+			(GetRValue(cl1) * q + GetRValue(cl2) * (255 - q)) / 255,
+			(GetGValue(cl1) * q + GetGValue(cl2) * (255 - q)) / 255,
+			(GetBValue(cl1) * q + GetBValue(cl2) * (255 - q)) / 255
+		);
+}
+
+COLORREF GetColorFromDefault(COLORREF cl)
+{
+/*
+	if (cl & 0x80000000)
+		return GetSysColor(cl & 0x7fffffff);
+
+	if (cl & 0x40000000)
+	{
+		switch (cl)
+		{
+		case MIRCOLOR_BTNHALF:	return sttMixColor(GetSysColor(COLOR_BTNFACE), GetSysColor(COLOR_BTNTEXT), 128);
+		case MIRCOLOR_WNDHALF:	return sttMixColor(GetSysColor(COLOR_WINDOW), GetSysColor(COLOR_WINDOWTEXT), 128);
+		case MIRCOLOR_SELHALF:	return sttMixColor(GetSysColor(COLOR_HIGHLIGHT), GetSysColor(COLOR_HIGHLIGHTTEXT), 128);
+		case MIRCOLOR_INBACK:	return sttMixColor(GetSysColor(COLOR_WINDOW), RGB(0,0,255), 245);
+		case MIRCOLOR_INTEXT:	return GetSysColor(COLOR_WINDOWTEXT);
+		case MIRCOLOR_INHALF:	return sttMixColor(GetColorFromDefault(MIRCOLOR_INBACK), GetColorFromDefault(MIRCOLOR_INTEXT), 128);
+		case MIRCOLOR_OUTBACK:	return sttMixColor(GetSysColor(COLOR_WINDOW), RGB(0,255,0), 245);
+		case MIRCOLOR_OUTTEXT:	return GetSysColor(COLOR_WINDOWTEXT);
+		case MIRCOLOR_OUTHALF:	return sttMixColor(GetColorFromDefault(MIRCOLOR_OUTBACK), GetColorFromDefault(MIRCOLOR_OUTTEXT), 128);
+		}
+	}
+*/
+	return cl;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -249,6 +285,16 @@ static int sttRegisterFontWorker( TFontID* font_id )
 		TFontID* newItem = new TFontID;
 		memset( newItem, 0, sizeof( TFontID ));
 		memcpy( newItem, font_id, font_id->cbSize);
+
+		if (!lstrcmp(newItem->deffontsettings.szFace, _T("MS Shell Dlg")))
+		{
+			LOGFONT lf;
+			SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, FALSE);
+			lstrcpyn(newItem->deffontsettings.szFace, lf.lfFaceName, SIZEOF(newItem->deffontsettings.szFace));
+			if (!newItem->deffontsettings.size)
+				newItem->deffontsettings.size = lf.lfHeight;
+		}
+
 		UpdateFontSettings( font_id, &newItem->value );
 		font_id_list.insert( newItem );
 	}
@@ -285,7 +331,7 @@ static int sttGetFontWorker( TFontID* font_id, LOGFONT* lf )
 		if ( !_tcsncmp( F.name, font_id->name, SIZEOF(F.name)) && !_tcsncmp( F.group, font_id->group, SIZEOF(F.group))) {
 			if ( GetFontSettingFromDB( F.dbSettingsGroup, F.prefix, lf, &colour, F.flags) && ( F.flags & FIDF_DEFAULTVALID )) {
 				CreateFromFontSettings( &F.deffontsettings, lf );
-				colour = F.deffontsettings.colour;
+				colour = GetColorFromDefault(F.deffontsettings.colour);
 			}
 
 			return (int)colour;
@@ -322,7 +368,7 @@ int GetFont(WPARAM wParam, LPARAM lParam)
 
 void UpdateColourSettings( TColourID* colour_id, COLORREF *colour)
 {
-	*colour = ( COLORREF )DBGetContactSettingDword(NULL, colour_id->dbSettingsGroup, colour_id->setting, colour_id->defcolour );
+	*colour = ( COLORREF )DBGetContactSettingDword(NULL, colour_id->dbSettingsGroup, colour_id->setting, GetColorFromDefault(colour_id->defcolour) );
 }
 
 static int sttRegisterColourWorker( TColourID* colour_id )
@@ -368,7 +414,7 @@ static int sttGetColourWorker( TColourID* colour_id )
 	for ( i = 0; i < colour_id_list.getCount(); i++ ) {
 		TColourID& C = colour_id_list[i];
 		if ( !_tcscmp( C.group, colour_id->group ) && !_tcscmp( C.name, colour_id->name ))
-			return (int)DBGetContactSettingDword(NULL, C.dbSettingsGroup, C.setting, C.defcolour);
+			return (int)DBGetContactSettingDword(NULL, C.dbSettingsGroup, C.setting, GetColorFromDefault(C.defcolour));
 	}
 
 	return -1;

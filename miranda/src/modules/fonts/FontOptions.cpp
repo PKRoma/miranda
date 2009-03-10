@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "FontService.h"
+#include <m_modernopt.h>
 
 // *_w2 is working copy of list
 // *_w3 is stores initial configuration
@@ -544,6 +545,61 @@ static INT_PTR CALLBACK ChooseEffectDlgProc( HWND hwndDlg, UINT uMsg, WPARAM wPa
 static BOOL ChooseEffectDialog( HWND hwndParent, TEffectSettings * es)
 {
 	return ( DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_CHOOSE_FONT_EFFECT), hwndParent, ChooseEffectDlgProc, (LPARAM) es ) == IDOK );
+}
+
+static void sttSaveFontData(HWND hwndDlg, TFontID &F)
+{
+	LOGFONT lf;
+	char str[128];
+
+	if ( F.flags & FIDF_APPENDNAME )
+		mir_snprintf(str, SIZEOF(str), "%sName", F.prefix);
+	else
+		mir_snprintf(str, SIZEOF(str), "%s", F.prefix);
+
+	if ( DBWriteContactSettingTString( NULL, F.dbSettingsGroup, str, F.value.szFace )) {
+		#if defined( _UNICODE )
+			char buff[1024];
+			WideCharToMultiByte(code_page, 0, F.value.szFace, -1, buff, 1024, 0, 0);
+			DBWriteContactSettingString(NULL, F.dbSettingsGroup, str, buff);
+		#endif
+	}
+
+	mir_snprintf(str, SIZEOF(str), "%sSize", F.prefix);
+	if ( F.flags & FIDF_SAVEACTUALHEIGHT ) {
+		HDC hdc;
+		SIZE size;
+		HFONT hFont, hOldFont;
+		CreateFromFontSettings( &F.value, &lf );
+		hFont = CreateFontIndirect( &lf );
+		hdc = GetDC(hwndDlg);
+		hOldFont = (HFONT)SelectObject( hdc, hFont );
+		GetTextExtentPoint32( hdc, _T("_W"), 2, &size);
+		ReleaseDC(hwndDlg, hdc);
+		SelectObject(hdc, hOldFont);
+		DeleteObject(hFont);
+
+		DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, (char)size.cy);
+	}
+	else if ( F.flags & FIDF_SAVEPOINTSIZE ) {
+		HDC hdc = GetDC(hwndDlg);
+		DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, (BYTE)-MulDiv(F.value.size, 72, GetDeviceCaps(hdc, LOGPIXELSY)));
+		ReleaseDC(hwndDlg, hdc);
+	}
+	else DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.size);
+
+	mir_snprintf(str, SIZEOF(str), "%sSty", F.prefix);
+	DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.style);
+	mir_snprintf(str, SIZEOF(str), "%sSet", F.prefix);
+	DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.charset);
+	mir_snprintf(str, SIZEOF(str), "%sCol", F.prefix);
+	DBWriteContactSettingDword(NULL, F.dbSettingsGroup, str, F.value.colour);
+	if ( F.flags & FIDF_NOAS ) {
+		mir_snprintf(str, SIZEOF(str), "%sAs", F.prefix);
+		DBWriteContactSettingWord(NULL, F.dbSettingsGroup, str, (WORD)0x00FF);
+	}
+	mir_snprintf(str, SIZEOF(str), "%sFlags", F.prefix);
+	DBWriteContactSettingWord(NULL, F.dbSettingsGroup, str, (WORD)F.flags);
 }
 
 static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1165,55 +1221,7 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			for ( i=0; i < font_id_list_w2.getCount(); i++ ) {
 				TFontID& F = font_id_list_w2[i];
-
-				if ( F.flags & FIDF_APPENDNAME )
-					wsprintfA(str, "%sName", F.prefix);
-				else
-					wsprintfA(str, "%s", F.prefix);
-
-				if ( DBWriteContactSettingTString( NULL, F.dbSettingsGroup, str, F.value.szFace )) {
-					#if defined( _UNICODE )
-						char buff[1024];
-						WideCharToMultiByte(code_page, 0, F.value.szFace, -1, buff, 1024, 0, 0);
-						DBWriteContactSettingString(NULL, F.dbSettingsGroup, str, buff);
-					#endif
-				}
-
-				wsprintfA(str, "%sSize", F.prefix);
-				if ( F.flags & FIDF_SAVEACTUALHEIGHT ) {
-					HDC hdc;
-					SIZE size;
-					HFONT hFont, hOldFont;
-					CreateFromFontSettings( &F.value, &lf );
-					hFont = CreateFontIndirect( &lf );
-					hdc = GetDC(hwndDlg);
-					hOldFont = (HFONT)SelectObject( hdc, hFont );
-					GetTextExtentPoint32( hdc, _T("_W"), 2, &size);
-					ReleaseDC(hwndDlg, hdc);
-					SelectObject(hdc, hOldFont);
-					DeleteObject(hFont);
-
-					DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, (char)size.cy);
-				}
-				else if ( F.flags & FIDF_SAVEPOINTSIZE ) {
-					HDC hdc = GetDC(hwndDlg);
-					DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, (BYTE)-MulDiv(F.value.size, 72, GetDeviceCaps(hdc, LOGPIXELSY)));
-					ReleaseDC(hwndDlg, hdc);
-				}
-				else DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.size);
-
-				wsprintfA(str, "%sSty", F.prefix);
-				DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.style);
-				wsprintfA(str, "%sSet", F.prefix);
-				DBWriteContactSettingByte(NULL, F.dbSettingsGroup, str, F.value.charset);
-				wsprintfA(str, "%sCol", F.prefix);
-				DBWriteContactSettingDword(NULL, F.dbSettingsGroup, str, F.value.colour);
-				if ( F.flags & FIDF_NOAS ) {
-					wsprintfA(str, "%sAs", F.prefix);
-					DBWriteContactSettingWord(NULL, F.dbSettingsGroup, str, (WORD)0x00FF);
-				}
-				wsprintfA(str, "%sFlags", F.prefix);
-				DBWriteContactSettingWord(NULL, F.dbSettingsGroup, str, (WORD)F.flags);
+				sttSaveFontData(hwndDlg, F);
 			}
 
 			for ( i=0; i < colour_id_list_w2.getCount(); i++ ) {
@@ -1293,5 +1301,190 @@ int OptInit(WPARAM wParam, LPARAM)
 	odp.nIDBottomSimpleControl	= 0;
 	odp.pfnDlgProc					= DlgProcLogOptions;
 	CallService( MS_OPT_ADDPAGE, wParam,( LPARAM )&odp );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static TFontID *sttFindFont(OBJLIST<TFontID> &fonts, char *module, char *prefix)
+{
+	for ( int i = 0; i < fonts.getCount(); i++ )
+	{
+		TFontID& F = fonts[i];
+		if ( !lstrcmpA(F.dbSettingsGroup, module) && !lstrcmpA(F.prefix, prefix) )
+			return &F;
+	}
+
+	return 0;
+}
+
+static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int i;
+	LOGFONT lf;
+
+	static TFontID fntHeader={0}, fntGeneral={0}, fntSmall={0};
+
+	switch (msg) {
+		case WM_INITDIALOG:
+		{
+			TranslateDialogDefault(hwndDlg);
+
+			fntHeader = *sttFindFont(font_id_list, "Fonts", "Header");
+			UpdateFontSettings(&fntHeader, &fntHeader.value);
+			fntGeneral = *sttFindFont(font_id_list, "Fonts", "Generic");
+			UpdateFontSettings(&fntGeneral, &fntGeneral.value);
+			fntSmall = *sttFindFont(font_id_list, "Fonts", "Small");
+			UpdateFontSettings(&fntSmall, &fntSmall.value);
+
+			return TRUE;
+		}
+
+		case WM_DRAWITEM:
+		{
+			TFontID *pf = 0;
+			DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
+			switch (dis->CtlID)
+			{
+			case IDC_PREVIEWHEADER:
+				pf = &fntHeader;
+				break;
+			case IDC_PREVIEWGENERAL:
+				pf = &fntGeneral;
+				break;
+			case IDC_PREVIEWSMALL:
+				pf = &fntSmall;
+				break;
+			}
+
+			if (!pf) break;
+
+			HFONT hFont = NULL, hoFont = NULL;
+			COLORREF clText = GetSysColor(COLOR_WINDOWTEXT);
+			CreateFromFontSettings(&pf->value, &lf);
+			hFont = CreateFontIndirect(&lf);
+			hoFont = (HFONT) SelectObject(dis->hDC, hFont);
+			SetBkMode(dis->hDC, TRANSPARENT);
+			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
+			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_BTNFACE));
+			DrawText(dis->hDC, _T("Sample Text"), _tcslen(_T("Sample Text")), &dis->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS|DT_CENTER);
+			if (hoFont) SelectObject(dis->hDC, hoFont);
+			return TRUE;
+		}
+
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+			case IDC_CHOOSEFONTHEADER:
+			case IDC_CHOOSEFONTGENERAL:
+			case IDC_CHOOSEFONTSMALL:
+			{
+				CHOOSEFONT cf = { 0 };
+				TFontID *pf = NULL;
+				switch (LOWORD(wParam))
+				{
+				case IDC_CHOOSEFONTHEADER:
+					pf = &fntHeader;
+					break;
+				case IDC_CHOOSEFONTGENERAL:
+					pf = &fntGeneral;
+					break;
+				case IDC_CHOOSEFONTSMALL:
+					pf = &fntSmall;
+					break;
+				};
+
+				CreateFromFontSettings(&pf->value, &lf);
+
+				cf.lStructSize = sizeof(cf);
+				cf.hwndOwner = hwndDlg;
+				cf.lpLogFont = &lf;
+				cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
+				if ( pf->flags & FIDF_ALLOWEFFECTS )
+				{
+					cf.Flags |= CF_EFFECTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK;
+					// use custom font dialog to disable colour selection
+					cf.hInstance = hMirandaInst;
+					cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
+					cf.lpfnHook = CFHookProc;
+				}
+
+				if (ChooseFont(&cf))
+				{
+					pf->value.size = (char)lf.lfHeight;
+					pf->value.style = (lf.lfWeight >= FW_BOLD ? DBFONTF_BOLD : 0) | (lf.lfItalic ? DBFONTF_ITALIC : 0) | (lf.lfUnderline ? DBFONTF_UNDERLINE : 0) | (lf.lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
+					pf->value.charset = lf.lfCharSet;
+					_tcscpy(pf->value.szFace, lf.lfFaceName);
+
+					InvalidateRect(GetDlgItem(hwndDlg, IDC_PREVIEWHEADER), NULL, TRUE);
+					InvalidateRect(GetDlgItem(hwndDlg, IDC_PREVIEWGENERAL), NULL, TRUE);
+					InvalidateRect(GetDlgItem(hwndDlg, IDC_PREVIEWSMALL), NULL, TRUE);
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				}
+				return TRUE;
+			}
+			}
+			break;
+
+		case WM_NOTIFY:
+			if (((LPNMHDR) lParam)->idFrom == 0 && ((LPNMHDR) lParam)->code == PSN_APPLY ) {
+				for ( i=0; i < font_id_list.getCount(); i++ )
+				{
+					TFontID &F = font_id_list[i];
+					if (F.deffontsettings.charset == SYMBOL_CHARSET) continue;
+
+					COLORREF cl = F.value.colour;
+					if ((F.flags&FIDF_CLASSMASK) == FIDF_CLASSHEADER ||
+						(F.flags&FIDF_CLASSMASK) == 0 &&
+							(_tcsstr(F.name, _T("Incoming nick")) ||
+							_tcsstr(F.name, _T("Outgoing nick")) ||
+							_tcsstr(F.name, _T("Incoming timestamp")) ||
+							_tcsstr(F.name, _T("Outgoing timestamp")))
+						)
+					{
+						F.value = fntHeader.value;
+					} else
+					if ((F.flags&FIDF_CLASSMASK) == FIDF_CLASSSMALL)
+					{
+						F.value = fntSmall.value;
+					} else
+					{
+						F.value = fntGeneral.value;
+					}
+					F.value.colour = cl;
+					sttSaveFontData(hwndDlg, F);
+				}
+
+				OptionsChanged();
+			}
+			break;
+	}
+	return FALSE;
+}
+
+int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
+{
+	static int iBoldControls[] =
+	{
+		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3,
+		MODERNOPT_CTRL_LAST
+	};
+
+	MODERNOPTOBJECT obj = {0};
+
+	obj.cbSize = sizeof(obj);
+	obj.dwFlags = MODEROPT_FLG_TCHAR|MODEROPT_FLG_NORESIZE;
+	obj.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+	obj.hInstance = GetModuleHandle(NULL);
+	obj.iSection = MODERNOPT_PAGE_SKINS;
+	obj.iType = MODERNOPT_TYPE_SUBSECTIONPAGE;
+	obj.iBoldControls = iBoldControls;
+	obj.lptzSubsection = _T("Fonts");
+	obj.lpzClassicGroup = "Customize";
+	obj.lpzClassicPage = "Fonts";
+	obj.lpzHelpUrl = "http://wiki.miranda-im.org/";
+
+	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_FONTS);
+	obj.pfnDlgProc = DlgProcModernOptions;
+	CallService(MS_MODERNOPT_ADDOBJECT, wParam, (LPARAM)&obj);
 	return 0;
 }

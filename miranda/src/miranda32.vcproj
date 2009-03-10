@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="vc7to6.lib oldnames.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../lib"
@@ -187,7 +187,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="vc7to6.lib oldnames.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories="../lib"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -1723,10 +1723,31 @@
 				Name="options"
 				Filter="">
 				<File
+					RelativePath=".\modules\modernopt\descbutton.cpp">
+				</File>
+				<File
 					RelativePath=".\modules\options\filter.cpp">
 				</File>
 				<File
 					RelativePath=".\modules\options\filter.h">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\headerbar.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\iconheader.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\modernopt.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\mopt_home.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\mopt_ignore.cpp">
+				</File>
+				<File
+					RelativePath=".\modules\modernopt\mopt_selector.cpp">
 				</File>
 				<File
 					RelativePath="modules\options\options.cpp">

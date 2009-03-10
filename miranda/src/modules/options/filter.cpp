@@ -29,68 +29,43 @@ HANDLE hOptionsInitialize;
 int HookFilterEvents()
 {
 	hOptionsInitialize = HookEvent(ME_OPT_INITIALISE, OnOptionsInitialise);
-	
 	return 0;
 }
 
 int UnhookFilterEvents()
 {
 	UnhookEvent(hOptionsInitialize);
-	
 	return 0;
 }
 
 int CALLBACK DlgProcOptSearch(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-		{
-			TranslateDialogDefault(hWnd);
-			
-			CheckDlgButton(hWnd, IDC_ENABLE_KEYWORDFILTERING, DBGetContactSettingWord(NULL, "Options", "EnableKeywordFiltering", TRUE) ? BST_CHECKED : BST_UNCHECKED);
-			
-			return TRUE;
+	switch (msg) {
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hWnd);
+		
+		CheckDlgButton(hWnd, IDC_ENABLE_KEYWORDFILTERING, DBGetContactSettingWord(NULL, "Options", "EnableKeywordFiltering", TRUE) ? BST_CHECKED : BST_UNCHECKED);
+		return TRUE;
+	
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case IDC_ENABLE_KEYWORDFILTERING:
+			SendMessage(GetParent(hWnd), PSM_CHANGED,0,0);
 			break;
 		}
-		
-		case WM_COMMAND:
-		{
-			switch (LOWORD(wParam))
-			{
-				case IDC_ENABLE_KEYWORDFILTERING:
-				{
-					SendMessage(GetParent(hWnd), PSM_CHANGED,0,0);
-				
-					break;
-				}
+		break;
+	
+	case WM_NOTIFY:
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			switch (((LPNMHDR)lParam)->code) {
+			case PSN_APPLY:
+				DBWriteContactSettingWord(NULL, "Options", "EnableKeywordFiltering", IsDlgButtonChecked(hWnd, IDC_ENABLE_KEYWORDFILTERING));
+				break;
 			}
-			
 			break;
 		}
-		
-		case WM_NOTIFY:
-		{
-			switch(((LPNMHDR)lParam)->idFrom)
-			{
-				case 0:
-				{
-					switch (((LPNMHDR)lParam)->code)
-					{
-						case PSN_APPLY:
-						{
-							DBWriteContactSettingWord(NULL, "Options", "EnableKeywordFiltering", IsDlgButtonChecked(hWnd, IDC_ENABLE_KEYWORDFILTERING));
-						
-							break;
-						}
-					}
-					
-					break;
-				}
-			}
-		
-			break;
-		}
+		break;
 	}
 	
 	return 0;
@@ -160,8 +135,7 @@ void AddFilterString(const PageHash key, TCHAR *data)
 	if (ContainsFilterString(key, data)) return;
 
 	CPageKeywords * values = filterStrings[key];
-	if ( values == NULL )
-	{
+	if ( values == NULL ) {
 		values = new CPageKeywords( key );
 		filterStrings.insert( values );
 	}
@@ -182,8 +156,7 @@ BOOL ContainsFilterString(const PageHash key, TCHAR *data)
 
 void AddTreeViewNodes(HWND hWndDlg, PageHash key, HTREEITEM root)
 {
-	if (root)
-	{
+	if (root) {
 		TCHAR title[2048] = {0};
 		
 		TVITEM item = {0};
@@ -193,17 +166,11 @@ void AddTreeViewNodes(HWND hWndDlg, PageHash key, HTREEITEM root)
 		item.cchTextMax = SIZEOF(title);
 		
 		if (TreeView_GetItem(hWndDlg, &item))
-		{
-				if (_tcslen(title) > 0)
-				{
-					AddFilterString(key, title);
-				}		
-		}
+			if (_tcslen(title) > 0)
+				AddFilterString(key, title);
 
 		HTREEITEM child = root;
-			
-		while (child)
-		{
+		while (child) {
 			child = TreeView_GetNextItem(hWndDlg, child, TVGN_CHILD);
 			AddTreeViewNodes(hWndDlg, key, child);
 		}
@@ -217,83 +184,51 @@ void AddDialogString(HWND hWndDlg, const PageHash key)
 	TCHAR title[2048];
 	GetWindowText(hWndDlg, title, SIZEOF( title ));
 	if (_tcslen(title) > 0)
-	{
 		AddFilterString(key, title);
-	}
 	
 	TCHAR szClass[64];
-	
 	GetClassName(hWndDlg,szClass, SIZEOF(szClass));
 	
-	if (lstrcmpi(szClass, _T("SysTreeView32")) == 0)
-	{
+	if (lstrcmpi(szClass, _T("SysTreeView32")) == 0) {
 		HTREEITEM hItem = TreeView_GetRoot(hWndDlg);
-		
 		AddTreeViewNodes(hWndDlg, key, hItem);
-		
 	}
-	else{
-		if (lstrcmpi(szClass, _T("listbox")) == 0)
-		{
-			if (GetWindowStyle(hWndDlg) & LBS_HASSTRINGS)
-			{
+	else {
+		if (lstrcmpi(szClass, _T("listbox")) == 0) {
+			if (GetWindowStyle(hWndDlg) & LBS_HASSTRINGS) {
 				int count = ListBox_GetCount(hWndDlg);
-				for (int i = 0; i < count; i++)
-				{
+				for (int i = 0; i < count; i++) {
 					title[0] = 0; //safety
 					int res = ListBox_GetText(hWndDlg, i, title);
-					if (res != LB_ERR)
-					{
+					if (res != LB_ERR) {
 						title[SIZEOF(title) - 1] = 0;
-						
 						if (_tcslen(title) > 0)
-						{
 							AddFilterString(key, title);
-						}
-					}
-				}
-			}
+			}	}	}
 		}
-		else{
-			if (lstrcmpi(szClass, _T("SysListView32")) == 0)
-			{
+		else {
+			if (lstrcmpi(szClass, _T("SysListView32")) == 0) {
 				int count = ListView_GetItemCount(hWndDlg);
-				for (int i = 0; i < count; i++)
-				{
+				for (int i = 0; i < count; i++) {
 					title[0] = 0; //safety
 					ListView_GetItemText(hWndDlg, i, 0, title, SIZEOF(title));
 					
 					if (_tcslen(title) > 0)
-					{
 						AddFilterString(key, title);
-					}
-				}
-			}
-			if (lstrcmpi(szClass, _T("combobox")) == 0)
-			{
-				if (GetWindowStyle(hWndDlg) & CBS_HASSTRINGS)
-				{ 
+			}	}
+
+			if (lstrcmpi(szClass, _T("combobox")) == 0) {
+				if (GetWindowStyle(hWndDlg) & CBS_HASSTRINGS) { 
 					int count = ComboBox_GetCount(hWndDlg);
-					for (int i = 0; i < count; i++)
-					{
+					for (int i = 0; i < count; i++) {
 						title[0] = 0; //safety
 						int res = ComboBox_GetLBText(hWndDlg, i, title);
-						if (res != CB_ERR)
-						{
+						if (res != CB_ERR) {
 							title[SIZEOF(title) - 1] = 0;
 							
 							if (_tcslen(title) > 0)
-							{
 								AddFilterString(key, title);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-}
+}	}	}	}	}	}	}
 
 static BOOL CALLBACK GetDialogStringsCallback(HWND hWnd,LPARAM lParam)
 {
@@ -310,8 +245,7 @@ void GetDialogStrings(int enableKeywordFiltering, const PageHash key, TCHAR *plu
 	if ( tab )   AddFilterString(key, tab);
 	if ( name )  AddFilterString(key, name);
 
-	if ((enableKeywordFiltering) && (hWnd != 0))
-	{
+	if ((enableKeywordFiltering) && (hWnd != 0)) {
 		AddDialogString(hWnd, key);
 		
 		EnumChildWindows(hWnd, GetDialogStringsCallback, (LPARAM) key);

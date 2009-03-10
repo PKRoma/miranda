@@ -298,9 +298,12 @@ struct AwayMsgDlgData {
 	struct AwayMsgInfo info[ SIZEOF(statusModes) ];
 	int oldPage;
 };
-static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+
+BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct AwayMsgDlgData *dat;
+
+	HWND hLst = GetDlgItem(hwndDlg, IDC_LST_STATUS);
 
 	dat=(struct AwayMsgDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
 	switch (msg)
@@ -316,8 +319,15 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))
 					continue;
 
-				j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
-				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
+				if (hLst)
+				{
+					j = SendDlgItemMessage( hwndDlg, IDC_LST_STATUS, LB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
+					SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_SETITEMDATA,j,statusModes[i]);
+				} else
+				{
+					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
+					SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
+				}
 
 				dat->info[j].ignore=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"Ignore"),0);
 				dat->info[j].noDialog=DBGetContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(statusModes[i],"NoDlg"),0);
@@ -328,15 +338,54 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				lstrcpyA(dat->info[j].msg,dbv.pszVal);
 				mir_free(dbv.pszVal);
 			}
-			SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETCURSEL,0,0);
-			SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
+			if (hLst)
+				SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_SETCURSEL,0,0);
+			else
+				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETCURSEL,0,0);
+			SendMessage(hwndDlg,WM_COMMAND,hLst?MAKEWPARAM(IDC_LST_STATUS,LBN_SELCHANGE):MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
 			return TRUE;
+		}
+		case WM_MEASUREITEM:
+		{
+			LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT)lParam;
+			if (mis->CtlID != IDC_LST_STATUS) break;
+			mis->itemHeight = 20;
+			break;
+		}
+		case WM_DRAWITEM:
+		{
+			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT)lParam;
+			if (dis->CtlID != IDC_LST_STATUS) break;
+			if (dis->itemID < 0) break;
+
+			TCHAR buf[128];
+			SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_GETTEXT, dis->itemID, (LPARAM)buf);
+
+			if (dis->itemState & (ODS_SELECTED|ODS_FOCUS))
+			{
+				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
+				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+			} else
+			{
+				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_WINDOW));
+				SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
+			}
+
+			RECT rc = dis->rcItem;
+			DrawIconEx(dis->hDC, 3, (rc.top+rc.bottom-16)/2, LoadSkinnedProtoIcon(NULL, dis->itemData), 16, 16, 0, NULL, DI_NORMAL);
+			rc.left += 25;
+			SetBkMode(dis->hDC, TRANSPARENT);
+			DrawText(dis->hDC, buf, -1, &rc, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_NOPREFIX);
+			break;
 		}
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
+				case IDC_LST_STATUS:
 				case IDC_STATUS:
-					if(HIWORD(wParam)==CBN_SELCHANGE) {
-						int i=SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETCURSEL,0,0);
+					if((HIWORD(wParam)==CBN_SELCHANGE) || (HIWORD(wParam)==LBN_SELCHANGE)) {
+						int i = hLst ?
+							SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_GETCURSEL,0,0) :
+							SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETCURSEL,0,0);
 						if(dat->oldPage!=-1) {
 							dat->info[dat->oldPage].ignore=IsDlgButtonChecked(hwndDlg,IDC_DONTREPLY);
 							dat->info[dat->oldPage].noDialog=IsDlgButtonChecked(hwndDlg,IDC_NODIALOG);
@@ -373,8 +422,13 @@ static BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						case PSN_APPLY:
 						{	int i,status;
 							SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
-							for(i=SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETCOUNT,0,0)-1;i>=0;i--) {
-								status=SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETITEMDATA,i,0);
+							i = hLst ?
+								(SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_GETCOUNT,0,0)-1) :
+								(SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETCOUNT,0,0)-1);
+							for(;i>=0;i--) {
+								status=hLst?
+									SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_GETITEMDATA,i,0):
+									SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETITEMDATA,i,0);
 								DBWriteContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(status,"Ignore"),(BYTE)dat->info[i].ignore);
 								DBWriteContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(status,"NoDlg"),(BYTE)dat->info[i].noDialog);
 								DBWriteContactSettingByte(NULL,"SRAway",StatusModeToDbSetting(status,"UsePrev"),(BYTE)dat->info[i].usePrevious);

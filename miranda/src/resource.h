@@ -16,6 +16,7 @@
 #define IDD_OPT_PROTOCOLORDER           109
 #define IDD_OPT_ICOLIB                  110
 #define IDD_ICOLIB_IMPORT               111
+#define IDD_MODERNOPT_FONTS             112
 #define IDD_ADDED                       115
 #define IDD_URLSEND                     119
 #define IDD_URLRECV                     120
@@ -123,8 +124,11 @@
 #define IDD_CHOOSE_FONT_EFFECT          289
 #define IDI_LEAVECHAT                   290
 #define IDI_STATUS_LOCKED               291
-#define IDI_SHOWHIDE                    293
-#define IDI_EXIT                        294
+#define IDI_SHOWHIDE                    292
+#define IDI_EXIT                        293
+#define IDD_ERROR_LIST                  300
+#define IDD_OPT_ERRORS                  301
+#define IDD_OPTIONSPAGE                 318
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -150,6 +154,14 @@
 #define IDC_ENABLEUPNP2                 1016
 #define IDC_VALIDATESSL                 1016
 #define IDC_SHOWNAMES                   1024
+#define IDC_COMBO1                      1024
+#define IDC_TXT_TITLE9                  1024
+#define IDC_COMBO2                      1025
+#define IDC_COMBO3                      1026
+#define IDC_COMBO4                      1027
+#define IDC_COMBO5                      1028
+#define IDC_COMBO6                      1029
+#define IDC_COMBO7                      1030
 #define IDC_ABOUT                       1032
 #define IDC_MYNOTES                     1033
 #define IDC_URLS                        1037
@@ -233,6 +245,8 @@
 #define IDC_PROXYAUTHNTLM               1160
 #define IDC_CHANGE                      1164
 #define IDC_PREVIEW                     1165
+#define IDC_PREVIEW2                    1166
+#define IDC_PREVIEW3                    1167
 #define IDC_CHOOSE                      1169
 #define IDC_TO                          1170
 #define IDC_VERSION                     1179
@@ -399,6 +413,20 @@
 #define IDC_CONTRIBLINK                 1586
 #define IDC_DEVS                        1589
 #define IDC_LOGO                        1591
+#define IDC_TXT_TITLE1                  1592
+#define IDC_TXT_TITLE2                  1593
+#define IDC_TXT_TITLE3                  1594
+#define IDC_TXT_TITLE4                  1595
+#define IDC_TXT_TITLE5                  1596
+#define IDC_TXT_TITLE6                  1597
+#define IDC_TXT_TITLE7                  1598
+#define IDC_TXT_TITLE8                  1599
+#define IDC_PREVIEWSMALL                1600
+#define IDC_PREVIEWGENERAL              1601
+#define IDC_PREVIEWHEADER               1602
+#define IDC_CHOOSEFONTHEADER            1603
+#define IDC_CHOOSEFONTGENERAL           1604
+#define IDC_CHOOSEFONTSMALL             1605
 #define IDC_IDLEONWINDOWS               1637
 #define IDC_IDLEONMIRANDA               1638
 #define IDC_SCREENSAVER                 1642
@@ -452,18 +480,26 @@
 #define IDC_CLEAR                       1718
 #define IDC_PROGRESS1                   1719
 #define IDC_PROGRESSBAR                 1719
+#define IDC_BUTTON2                     1719
+#define IDC_CHOOSEFONTNORMAL            1719
 #define IDC_TXT_ACCOUNT                 1720
+#define IDC_BUTTON3                     1720
 #define IDC_TXT_ADDITIONAL              1721
 #define IDC_TXT_INFO                    1722
 #define IDC_CONTACTNAME                 1724
 #define IDC_FRAME                       1725
 #define IDC_LIST1                       1726
 #define IDC_ALLFILES                    1726
+#define IDC_LST_STATUS                  1726
 #define IDC_ALLPRECENTAGE               1727
 #define IDC_ALLPRECENTS                 1727
 #define IDC_CLOSE                       1728
 #define IDC_ENABLE_KEYWORDFILTERING     1729
 #define IDC_BKGCOLOUR_STATIC            1730
+#define IDC_LST_ERRORS                  1731
+#define IDC_CUSTOM1                     1732
+#define IDC_LV_ERRORS                   1733
+#define IDC_HEADERBAR                   1734
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
@@ -497,9 +533,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        295
+#define _APS_NEXT_RESOURCE_VALUE        319
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1731
+#define _APS_NEXT_CONTROL_VALUE         1736
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -576,11 +576,23 @@ SOURCE=.\modules\netlib\netlibupnp.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\modules\options\descbutton.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\options\filter.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\modules\options\filter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\options\headerbar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\options\iconheader.cpp
 # End Source File
 # Begin Source File
 

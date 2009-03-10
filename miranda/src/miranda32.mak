@@ -27,10 +27,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 OUTDIR=.\Release
@@ -83,6 +79,7 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbutils.obj"
+	-@erase "$(INTDIR)\descbutton.obj"
 	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\extracticon.obj"
@@ -100,10 +97,12 @@ CLEAN :
 	-@erase "$(INTDIR)\genmenu.obj"
 	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\headerbar.obj"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\history.obj"
 	-@erase "$(INTDIR)\hotkeys.obj"
 	-@erase "$(INTDIR)\hyperlink.obj"
+	-@erase "$(INTDIR)\iconheader.obj"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
@@ -168,8 +167,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -213,7 +246,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\descbutton.obj" \
 	"$(INTDIR)\filter.obj" \
+	"$(INTDIR)\headerbar.obj" \
+	"$(INTDIR)\iconheader.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -379,6 +415,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
+	-@erase "$(INTDIR)\descbutton.obj"
+	-@erase "$(INTDIR)\descbutton.sbr"
 	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
@@ -413,6 +451,8 @@ CLEAN :
 	-@erase "$(INTDIR)\genmenuopt.sbr"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\groups.sbr"
+	-@erase "$(INTDIR)\headerbar.obj"
+	-@erase "$(INTDIR)\headerbar.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -421,6 +461,8 @@ CLEAN :
 	-@erase "$(INTDIR)\hotkeys.sbr"
 	-@erase "$(INTDIR)\hyperlink.obj"
 	-@erase "$(INTDIR)\hyperlink.sbr"
+	-@erase "$(INTDIR)\iconheader.obj"
+	-@erase "$(INTDIR)\iconheader.sbr"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
@@ -540,8 +582,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -581,7 +657,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibssl.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
+	"$(INTDIR)\descbutton.sbr" \
 	"$(INTDIR)\filter.sbr" \
+	"$(INTDIR)\headerbar.sbr" \
+	"$(INTDIR)\iconheader.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protoaccs.sbr" \
@@ -696,7 +775,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\descbutton.obj" \
 	"$(INTDIR)\filter.obj" \
+	"$(INTDIR)\headerbar.obj" \
+	"$(INTDIR)\iconheader.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -827,6 +909,7 @@ CLEAN :
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dbtime.obj"
 	-@erase "$(INTDIR)\dbutils.obj"
+	-@erase "$(INTDIR)\descbutton.obj"
 	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\email.obj"
 	-@erase "$(INTDIR)\extracticon.obj"
@@ -844,10 +927,12 @@ CLEAN :
 	-@erase "$(INTDIR)\genmenu.obj"
 	-@erase "$(INTDIR)\genmenuopt.obj"
 	-@erase "$(INTDIR)\groups.obj"
+	-@erase "$(INTDIR)\headerbar.obj"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\history.obj"
 	-@erase "$(INTDIR)\hotkeys.obj"
 	-@erase "$(INTDIR)\hyperlink.obj"
+	-@erase "$(INTDIR)\iconheader.obj"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\keyboard.obj"
@@ -912,8 +997,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -957,7 +1076,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\descbutton.obj" \
 	"$(INTDIR)\filter.obj" \
+	"$(INTDIR)\headerbar.obj" \
+	"$(INTDIR)\iconheader.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -1123,6 +1245,8 @@ CLEAN :
 	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
+	-@erase "$(INTDIR)\descbutton.obj"
+	-@erase "$(INTDIR)\descbutton.sbr"
 	-@erase "$(INTDIR)\Docking.obj"
 	-@erase "$(INTDIR)\Docking.sbr"
 	-@erase "$(INTDIR)\email.obj"
@@ -1157,6 +1281,8 @@ CLEAN :
 	-@erase "$(INTDIR)\genmenuopt.sbr"
 	-@erase "$(INTDIR)\groups.obj"
 	-@erase "$(INTDIR)\groups.sbr"
+	-@erase "$(INTDIR)\headerbar.obj"
+	-@erase "$(INTDIR)\headerbar.sbr"
 	-@erase "$(INTDIR)\help.obj"
 	-@erase "$(INTDIR)\help.sbr"
 	-@erase "$(INTDIR)\history.obj"
@@ -1165,6 +1291,8 @@ CLEAN :
 	-@erase "$(INTDIR)\hotkeys.sbr"
 	-@erase "$(INTDIR)\hyperlink.obj"
 	-@erase "$(INTDIR)\hyperlink.sbr"
+	-@erase "$(INTDIR)\iconheader.obj"
+	-@erase "$(INTDIR)\iconheader.sbr"
 	-@erase "$(INTDIR)\idle.obj"
 	-@erase "$(INTDIR)\idle.sbr"
 	-@erase "$(INTDIR)\ignore.obj"
@@ -1284,8 +1412,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
@@ -1325,7 +1487,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\netlibsock.sbr" \
 	"$(INTDIR)\netlibssl.sbr" \
 	"$(INTDIR)\netlibupnp.sbr" \
+	"$(INTDIR)\descbutton.sbr" \
 	"$(INTDIR)\filter.sbr" \
+	"$(INTDIR)\headerbar.sbr" \
+	"$(INTDIR)\iconheader.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\newplugins.sbr" \
 	"$(INTDIR)\protoaccs.sbr" \
@@ -1440,7 +1605,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\netlibsock.obj" \
 	"$(INTDIR)\netlibssl.obj" \
 	"$(INTDIR)\netlibupnp.obj" \
+	"$(INTDIR)\descbutton.obj" \
 	"$(INTDIR)\filter.obj" \
+	"$(INTDIR)\headerbar.obj" \
+	"$(INTDIR)\iconheader.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\newplugins.obj" \
 	"$(INTDIR)\protoaccs.obj" \
@@ -1520,36 +1688,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -2742,6 +2880,38 @@ SOURCE=.\modules\netlib\netlibupnp.cpp
 
 !ENDIF 
 
+SOURCE=.\modules\options\descbutton.cpp
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\descbutton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\descbutton.obj"	"$(INTDIR)\descbutton.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\descbutton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\descbutton.obj"	"$(INTDIR)\descbutton.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=.\modules\options\filter.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
@@ -2769,6 +2939,70 @@ SOURCE=.\modules\options\filter.cpp
 
 
 "$(INTDIR)\filter.obj"	"$(INTDIR)\filter.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\options\headerbar.cpp
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\headerbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\headerbar.obj"	"$(INTDIR)\headerbar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\headerbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\headerbar.obj"	"$(INTDIR)\headerbar.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\modules\options\iconheader.cpp
+
+!IF  "$(CFG)" == "miranda32 - Win32 Release"
+
+
+"$(INTDIR)\iconheader.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
+
+
+"$(INTDIR)\iconheader.obj"	"$(INTDIR)\iconheader.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
+
+
+"$(INTDIR)\iconheader.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
+
+
+"$(INTDIR)\iconheader.obj"	"$(INTDIR)\iconheader.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

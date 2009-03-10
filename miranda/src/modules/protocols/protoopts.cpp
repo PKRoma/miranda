@@ -444,7 +444,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(welcomeMsg));
 }
 
-static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
 	struct TAccMgrData *dat = (struct TAccMgrData *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
@@ -884,33 +884,24 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			break;
 
 		case IDOK:
-			{	int i;
-				PSHNOTIFY pshn = {0};
-				pshn.hdr.code = PSN_APPLY;
-				for (i = 0; i < accounts.getCount(); ++i) {
-					if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged) {
-						pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
-						SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-						accounts[i]->bAccMgrUIChanged = FALSE;
-				}	}
-				DestroyWindow(hwndDlg);
-				break;
-			}
-		case IDCANCEL:
-			{	int i;
-				PSHNOTIFY pshn = {0};
-				pshn.hdr.code = PSN_RESET;
-				for (i = 0; i < accounts.getCount(); ++i) {
-					if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
-					{
-						pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
-						SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
-						accounts[i]->bAccMgrUIChanged = FALSE;
-				}	}
-				DestroyWindow(hwndDlg);
-				break;
-			}
+		{
+			PSHNOTIFY pshn = {0};
+			pshn.hdr.code = PSN_APPLY;
+			pshn.hdr.hwndFrom = hwndDlg;
+			SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
+			DestroyWindow(hwndDlg);
 			break;
+		}
+
+		case IDCANCEL:
+		{
+			PSHNOTIFY pshn = {0};
+			pshn.hdr.code = PSN_RESET;
+			pshn.hdr.hwndFrom = hwndDlg;
+			SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
+			DestroyWindow(hwndDlg);
+			break;
+		}
 		}
 	case PSM_CHANGED:
 		{
@@ -919,10 +910,47 @@ static BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPA
 			if ( idx != -1 ) {
 				PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hList, idx);
 				if (acc)
+				{
 					acc->bAccMgrUIChanged = TRUE;
+					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+				}
 			}
 			break;
 		}
+	case WM_NOTIFY:
+		switch(((LPNMHDR)lParam)->idFrom) {
+		case 0:
+			switch (((LPNMHDR)lParam)->code)
+			{
+				case PSN_APPLY:
+				{	int i;
+					PSHNOTIFY pshn = {0};
+					pshn.hdr.code = PSN_APPLY;
+					for (i = 0; i < accounts.getCount(); ++i) {
+						if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged) {
+							pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+							SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+							accounts[i]->bAccMgrUIChanged = FALSE;
+					}	}
+					return TRUE;
+				}
+				case PSN_RESET:
+				{	int i;
+					PSHNOTIFY pshn = {0};
+					pshn.hdr.code = PSN_RESET;
+					for (i = 0; i < accounts.getCount(); ++i) {
+						if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
+						{
+							pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
+							SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
+							accounts[i]->bAccMgrUIChanged = FALSE;
+					}	}
+					return TRUE;
+				}
+			}
+			break;
+		}
+		break;
 	case WM_DESTROY:
 		{
 			for (int i = 0; i < accounts.getCount(); ++i) {

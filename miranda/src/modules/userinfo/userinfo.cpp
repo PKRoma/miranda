@@ -240,7 +240,10 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				GetWindowText( hwndDlg, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );
 				SetWindowText( hwndDlg, newTitle );
-				SetDlgItemText( hwndDlg, IDC_NAME, name );
+
+				GetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), oldTitle, SIZEOF( oldTitle ));
+				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );
+				SetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), newTitle );
 			}
 			{	LOGFONT lf;
 				HFONT hNormalFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_NAME,WM_GETFONT,0,0);

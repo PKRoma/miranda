@@ -165,9 +165,9 @@ static int Proto_RecvMessage(WPARAM, LPARAM lParam)
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.cbBlob = strlen( pre->szMessage ) + 1;
 	if ( pre->flags & PREF_CREATEREAD )
-		dbei.flags += DBEF_READ;
+		dbei.flags |= DBEF_READ;
 	if ( pre->flags & PREF_UTF )
-		dbei.flags += DBEF_UTF;
+		dbei.flags |= DBEF_UTF;
 	if ( pre->flags & PREF_UNICODE )
 		dbei.cbBlob += sizeof( wchar_t )*( wcslen(( wchar_t* )&pre->szMessage[dbei.cbBlob+1] )+1 );
 

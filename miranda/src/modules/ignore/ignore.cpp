@@ -188,7 +188,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
+BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hIcons[IGNOREEVENT_MAX+2];
 	static HANDLE hItemAll,hItemUnknown;
@@ -215,6 +215,7 @@ static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lP
 				for( i=0; i < SIZEOF(hIcons); i++ )
 					hIcons[i]=ImageList_GetIcon(hIml,1+i,ILD_NORMAL);
 			}
+
 			SendDlgItemMessage(hwndDlg,IDC_ALLICON,STM_SETICON,(WPARAM)hIcons[0],0);
 			SendDlgItemMessage(hwndDlg,IDC_NONEICON,STM_SETICON,(WPARAM)hIcons[1],0);
 			SendDlgItemMessage(hwndDlg,IDC_MSGICON,STM_SETICON,(WPARAM)hIcons[2],0);

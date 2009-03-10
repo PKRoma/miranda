@@ -28,6 +28,24 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
+IDD_MODERNOPT_FONTS DIALOGEX 0, 0, 260, 210
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "Headers:",IDC_TXT_TITLE1,0,0,259,8
+    PUSHBUTTON      "...",IDC_CHOOSEFONTHEADER,244,30,16,14
+    LTEXT           "This font will be used for each text chunk in ""caption"" context: be it group, nickname, title or anything else.",IDC_STATIC,10,11,249,16
+    LTEXT           "Normal text:",IDC_TXT_TITLE2,0,55,259,8
+    PUSHBUTTON      "...",IDC_CHOOSEFONTGENERAL,244,84,16,14
+    LTEXT           "Pick a default font to be used for most textual messages in all Miranda dialogs. This includes contact list, messaging, notifications and other.",IDC_STATIC,10,66,249,16
+    LTEXT           "Minor notes:",IDC_TXT_TITLE3,0,109,259,8
+    PUSHBUTTON      "...",IDC_CHOOSEFONTSMALL,244,139,16,14
+    LTEXT           "Sometimes you see less important notes, like status messages or user mood in contact list. This font will be used to display such king of information.",IDC_STATIC,10,120,249,16
+    CONTROL         "",IDC_PREVIEWSMALL,"Static",SS_OWNERDRAW,10,139,229,15,WS_EX_STATICEDGE
+    CONTROL         "",IDC_PREVIEWGENERAL,"Static",SS_OWNERDRAW,10,84,229,15,WS_EX_STATICEDGE
+    CONTROL         "",IDC_PREVIEWHEADER,"Static",SS_OWNERDRAW,10,30,229,15,WS_EX_STATICEDGE
+END
+
 IDD_ACCFORM DIALOGEX 0, 0, 205, 119
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -154,14 +172,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
 CAPTION "Miranda IM Profile Manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    CONTROL         "Miranda\nSelect or create your Miranda IM user profile",IDC_STATIC,
+                    "MHeaderbarCtrl",WS_TABSTOP,0,0,400,25
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,4,31,393,160
     PUSHBUTTON      "&Run",IDOK,298,194,48,14
     PUSHBUTTON      "&Exit",IDCANCEL,348,194,48,14
-    LTEXT           "",IDC_WHITERECT,0,0,400,26
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,410,1
-    ICON            IDI_DETAILSLOGO,IDC_LOGO,7,3,20,20
-    LTEXT           "Miranda",IDC_NAME,35,4,360,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Select or create your Miranda IM user profile",IDC_DESCRIPTION,45,14,349,8,0,WS_EX_TRANSPARENT
     RTEXT           "Start in Service Mode with",IDC_SM_LABEL,10,196,131,10
     COMBOBOX        IDC_SM_COMBO,146,195,143,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
@@ -206,19 +221,16 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Options"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    CONTROL         "Options\nConfigure your Miranda Instant Messenger options",IDC_STATIC,
+                    "MHeaderbarCtrl",WS_TABSTOP,0,0,428,25
+    COMBOBOX        IDC_KEYWORD_FILTER,337,3,88,79,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,265,283,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,319,283,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,374,283,50,14
     CONTROL         "Tree1",IDC_PAGETREE,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_TRACKSELECT | TVS_NOHSCROLL | WS_BORDER | WS_TABSTOP,4,30,102,250
     CONTROL         "",IDC_TAB,"SysTabControl32",NOT WS_VISIBLE | WS_TABSTOP,111,32,313,249
     CONTROL         "Show expert options",IDC_EXPERT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,284,102,10
-    CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,111,30,311,244,SS_CENTERIMAGE
-    LTEXT           "",IDC_WHITERECT,0,0,427,26
-    ICON            IDI_MIRANDA,IDC_LOGO,7,3,21,20
-    LTEXT           "Options",IDC_NAME,35,4,238,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Configure your Miranda Instant Messenger options",IDC_DESCRIPTION,45,14,226,8,0,WS_EX_TRANSPARENT
-    COMBOBOX        IDC_KEYWORD_FILTER,337,3,88,79,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,26,440,1
+    CTEXT           "Please select a subentry from the list",IDC_STNOPAGE,111,30,313,251,SS_CENTERIMAGE
 END
 
 IDD_READAWAYMSG DIALOGEX 0, 0, 187, 72
@@ -247,14 +259,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | 
 CAPTION "%s: User Details"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    CONTROL         "%s\nView personal user details and more",IDC_HEADERBAR,
+                    "MHeaderbarCtrl",WS_TABSTOP,0,0,318,25
     DEFPUSHBUTTON   "OK",IDOK,263,191,50,14
-    LTEXT           "",IDC_WHITERECT,0,0,318,26
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,26,320,1
-    ICON            IDI_DETAILSLOGO,IDC_LOGO,7,4,20,20
-    LTEXT           "",IDC_NAME,33,5,200,8,0,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_PAGETREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_TABSTOP,3,30,76,176,WS_EX_STATICEDGE
+    CONTROL         "",IDC_PAGETREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_HSCROLL | WS_TABSTOP,3,30,76,176,WS_EX_STATICEDGE
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | TCS_MULTILINE | WS_TABSTOP,85,29,228,158
-    LTEXT           "View personal user details and more.",IDC_STATIC,44,13,189,8,0,WS_EX_TRANSPARENT
     CTEXT           "Updating",IDC_UPDATING,145,194,113,8,SS_NOPREFIX | SS_CENTERIMAGE
     PUSHBUTTON      "Update Now",IDC_UPDATE,85,191,55,14,WS_DISABLED
 END
@@ -1082,11 +1091,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Accounts"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "",IDC_WHITERECT,0,0,400,26
-    ICON            IDI_DETAILSLOGO,IDC_LOGO,7,3,20,20
-    LTEXT           "Accounts",IDC_NAME,35,4,360,8,0,WS_EX_TRANSPARENT
-    LTEXT           "Configure your IM accounts",IDC_DESCRIPTION,45,14,349,8,0,WS_EX_TRANSPARENT
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,25,410,1
+    CONTROL         "Accounts\nConfigure your IM accounts",IDC_STATIC,
+                    "MHeaderbarCtrl",WS_TABSTOP,0,0,350,25
     LISTBOX         IDC_ACCLIST,7,32,130,187,LBS_SORT | LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Account Details:",IDC_TXT_ACCOUNT,142,32,201,8
     LTEXT           "Welcome to Miranda IM's account manager!\nHere you can set up your IM accounts.\n\nSelect an account from the list on the left to see the available options.  Alternatively, just click on the Plus sign underneath the list to set up a new IM account.",IDC_TXT_INFO,157,45,186,134
@@ -1140,6 +1146,23 @@ BEGIN
     LTEXT           "If this option is checked it allows you to search for option pages that contain the search string or plugin name.",IDC_STATIC,4,20,243,49
 END
 
+IDD_ERROR_LIST DIALOGEX 0, 0, 312, 209
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Error Console"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LISTBOX         IDC_LST_ERRORS,5,5,301,198,LBS_OWNERDRAWVARIABLE | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_OPT_ERRORS DIALOGEX 0, 0, 316, 251
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Error notifications",IDC_STATIC,0,0,315,250
+    CONTROL         "",IDC_LV_ERRORS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,10,306,235
+END
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1149,6 +1172,19 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_MODERNOPT_FONTS, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 239
+        VERTGUIDE, 244
+        HORZGUIDE, 30
+        HORZGUIDE, 45
+        HORZGUIDE, 84
+        HORZGUIDE, 99
+        HORZGUIDE, 139
+        HORZGUIDE, 154
+    END
+
     IDD_AUTHREQ, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1558,7 +1594,7 @@ BEGIN
 
     IDD_ACCMGR, DIALOG
     BEGIN
-        LEFTMARGIN, 7
+        VERTGUIDE, 7
         VERTGUIDE, 23
         VERTGUIDE, 28
         VERTGUIDE, 44
@@ -1570,6 +1606,7 @@ BEGIN
         VERTGUIDE, 157
         VERTGUIDE, 343
         BOTTOMMARGIN, 238
+        HORZGUIDE, 25
         HORZGUIDE, 32
         HORZGUIDE, 40
         HORZGUIDE, 45
@@ -1617,6 +1654,53 @@ BEGIN
         RIGHTMARGIN, 247
         TOPMARGIN, 4
         BOTTOMMARGIN, 69
+    END
+
+    IDD_MODERNOPT_STATUS, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 100
+        VERTGUIDE, 105
+        VERTGUIDE, 218
+        BOTTOMMARGIN, 103
+        HORZGUIDE, 8
+        HORZGUIDE, 13
+    END
+
+    IDD_MODERNOPT_MODULES, DIALOG
+    BEGIN
+        VERTGUIDE, 60
+        VERTGUIDE, 65
+        VERTGUIDE, 259
+    END
+
+    IDD_MODERNOPT_IDLE, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 181
+        HORZGUIDE, 8
+        HORZGUIDE, 22
+        HORZGUIDE, 34
+        HORZGUIDE, 46
+    END
+
+    IDD_MODERNOPT_ACCOUNTS, DIALOG
+    BEGIN
+        VERTGUIDE, 70
+        VERTGUIDE, 162
+        VERTGUIDE, 167
+        VERTGUIDE, 182
+        VERTGUIDE, 274
+        HORZGUIDE, 147
+        HORZGUIDE, 192
+        HORZGUIDE, 196
+    END
+
+    IDD_OPTIONSPAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 297
     END
 END
 #endif    // APSTUDIO_INVOKED
