@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -60,7 +60,7 @@ DWORD icq_sendGetAwayMsgServExt(HANDLE hContact, DWORD dwUin, int type, WORD wVe
 DWORD icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int type);
 void icq_sendSetAimAwayMsgServ(char *szMsg);
 
-DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID);
+DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *szUID);
 
 void icq_sendFileSendServv7(filetransfer* ft, const char *szFiles);
 void icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, int nAckType);
@@ -73,9 +73,9 @@ void icq_sendFileDenyServ(DWORD dwUin, filetransfer* ft, char *szReason, int nAc
 
 DWORD icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 DWORD icq_changeUserDetailsServ(WORD, const unsigned char *, WORD);
-void icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubType);
-void icq_sendNewContact(DWORD dwUin, char* szUid);
-//void icq_sendRemoveContact(DWORD dwUin, char* szUid);
+void icq_sendGenericContact(DWORD dwUin, const char* szUid, WORD wFamily, WORD wSubType);
+void icq_sendNewContact(DWORD dwUin, const char* szUid);
+//void icq_sendRemoveContact(DWORD dwUin, const char* szUid);
 void icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 void icq_sendEntireVisInvisList(int);
 void icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, const char **);

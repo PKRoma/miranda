@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1412,6 +1412,51 @@ void addServContactReady(WORD wGroupID, LPARAM lParam)
 
   if (wItemID)
   { // Only add the contact if it doesnt already have an ID
+    //!! THIS IS A DIRTY HACK
+    // ICQ server sometimes adds TLV(x6A) marking "not-in-list" contacts,
+    // so we need to remove it here in order to properly add contact to list
+    // This needs to be properly processed, that will be only in 0.5.x branch
+    DBVARIANT dbvData = {0};
+
+    if (!ICQGetContactSetting(ack->hContact, "ServerData", &dbvData))
+    {
+      BYTE *bufData = dbvData.pbVal;
+      WORD dataLen = dbvData.cpbVal;
+      oscar_tlv_chain *pItemData = readIntoTLVChain(&bufData, dataLen, 0);
+      ICQFreeVariant(&dbvData);
+      if (pItemData)
+      {
+        if (getTLV(pItemData, 0x6A, 1))
+        {
+          oscar_tlv_chain *list = pItemData;
+          BYTE *pNewData = (BYTE*)_alloca(dataLen);
+          int cbNewData = 0;
+          icq_packet pBuf;
+
+          // Initialize our handy data buffer
+          pBuf.wPlace = 0;
+          pBuf.pData = pNewData;
+          while (list) 
+          {
+            if (list->tlv.wType != 0x6A)
+            {
+              packTLV(&pBuf, list->tlv.wType, list->tlv.wLen, list->tlv.pData);
+              cbNewData += list->tlv.wLen + 4;
+            }
+
+            list = list->next;
+          }
+          ICQWriteContactSettingBlob(ack->hContact, "ServerData", pNewData, cbNewData);
+
+          // pending operation is kept for a reason!!!
+          updateServContact(ack->hContact);
+          disposeChain(&pItemData);
+          return;
+        }
+        disposeChain(&pItemData);
+      }
+    }
+
     RemovePendingOperation(ack->hContact, 0);
     NetLog_Server("Failed to add contact to server side list (%s)", "already there");
     return;

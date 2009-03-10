@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -551,7 +551,7 @@
 
 
 // Internal Constants
-#define ICQ_PLUG_VERSION            0x00030A0F
+#define ICQ_PLUG_VERSION            0x00030A11
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
@@ -571,13 +571,13 @@
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
-#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
 #define CLIENT_ID_CODE              0x010a
 #define CLIENT_VERSION_MAJOR        0x0006
-#define CLIENT_VERSION_MINOR        0x0000
+#define CLIENT_VERSION_MINOR        0x0005
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x1B67
-#define CLIENT_DISTRIBUTION         0x00007535
+#define CLIENT_VERSION_BUILD        0x0412
+#define CLIENT_DISTRIBUTION         0x00007537
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
 

@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -606,7 +606,7 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 
 
 
-HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
+HANDLE HContactFromUID(DWORD dwUIN, const char *pszUID, int *Added)
 {
   HANDLE hContact;
   DWORD dwUin;
@@ -1041,7 +1041,7 @@ int RandRange(int nLow, int nHigh)
 
 
 
-BOOL IsStringUIN(char* pszString)
+BOOL IsStringUIN(const char *pszString)
 {
   int i;
   int nLen = strlennull(pszString);

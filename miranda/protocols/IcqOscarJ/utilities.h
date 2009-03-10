@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -71,7 +71,7 @@ void InitCache();
 void UninitCache();
 void DeleteFromCache(HANDLE hContact);
 HANDLE HContactFromUIN(DWORD dwUin, int *Added);
-HANDLE HContactFromUID(DWORD dwUIN, char *pszUID, int *Added);
+HANDLE HContactFromUID(DWORD dwUIN, const char *pszUID, int *Added);
 char *NickFromHandle(HANDLE hContact);
 char *NickFromHandleUtf(HANDLE hContact);
 char *strUID(DWORD dwUIN, char *pszUID);
@@ -96,7 +96,7 @@ void ResetSettingsOnConnect(void);
 void ResetSettingsOnLoad(void);
 int RandRange(int nLow, int nHigh);
 
-BOOL IsStringUIN(char* pszString);
+BOOL IsStringUIN(const char *pszString);
 
 void icq_SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 

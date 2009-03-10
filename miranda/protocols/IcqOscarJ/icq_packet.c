@@ -228,7 +228,7 @@ int __fastcall getUINLen(DWORD dwUin)
 
 
 
-int __fastcall getUIDLen(DWORD dwUin, char* szUid)
+int __fastcall getUIDLen(DWORD dwUin, const char* szUid)
 {
   if (dwUin) 
     return getUINLen(dwUin);
@@ -251,7 +251,7 @@ void __fastcall packUIN(icq_packet* pPacket, DWORD dwUin)
 
 
 
-void __fastcall packUID(icq_packet* pPacket, DWORD dwUin, char* szUid)
+void __fastcall packUID(icq_packet* pPacket, DWORD dwUin, const char* szUid)
 {
   if (dwUin)
     packUIN(pPacket, dwUin);

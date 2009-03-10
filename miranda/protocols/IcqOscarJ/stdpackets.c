@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -745,7 +745,7 @@ void icq_sendSetAimAwayMsgServ(char *szMsg)
 
 
 
-DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, char *szUID)
+DWORD icq_sendCheckSpamBot(HANDLE hContact, DWORD dwUIN, const char *szUID)
 {
   icq_packet packet;
   DWORD dwCookie;
@@ -1369,7 +1369,7 @@ DWORD icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg)
 
 
 
-void icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubType)
+void icq_sendGenericContact(DWORD dwUin, const char* szUid, WORD wFamily, WORD wSubType)
 {
   icq_packet packet;
   int nUinLen;
@@ -1385,14 +1385,14 @@ void icq_sendGenericContact(DWORD dwUin, char* szUid, WORD wFamily, WORD wSubTyp
 
 
 
-void icq_sendNewContact(DWORD dwUin, char* szUid)
+void icq_sendNewContact(DWORD dwUin, const char* szUid)
 {
   icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOLIST);
 }
 
 
 
-/*void icq_sendRemoveContact(DWORD dwUin, char* szUid)
+/*void icq_sendRemoveContact(DWORD dwUin, const char* szUid)
 {
   icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_REMOVEFROMLIST);
 }*/

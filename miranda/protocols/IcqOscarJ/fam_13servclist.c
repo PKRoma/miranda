@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,9 +44,9 @@ extern int GroupNameExistsUtf(const char *name,int skipGroup);
 
 BOOL bIsSyncingCL = FALSE;
 
-static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded);
+static HANDLE HContactFromRecordName(const char *szRecordName, int *bAdded);
 
-static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf);
+static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, BYTE *buf);
 
 static int unpackServerListItem(unsigned char** pbuf, WORD* pwLen, char* pszRecordName, WORD* pwGroupId, WORD* pwItemId, WORD* pwItemType, WORD* pwTlvLength);
 
@@ -55,6 +55,11 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen);
 static void handleRecvAuthResponse(unsigned char *buf, WORD wLen);
 static void handleRecvAdded(unsigned char *buf, WORD wLen);
+
+static void handleServerCListItemAdd(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+static void handleServerCListItemUpdate(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+static void handleServerCListItemDelete(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+
 void sendRosterAck(void);
 
 
@@ -175,139 +180,70 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
   }
 
   case ICQ_LISTS_CLI_MODIFYSTART:
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x11, "Server is modifying contact list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", ICQ_LISTS_CLI_MODIFYSTART, "Server is modifying contact list");
     break;
 
   case ICQ_LISTS_CLI_MODIFYEND:
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x12, "End of server modification");
-    break;
-
-  case ICQ_LISTS_UPDATEGROUP:
-    if (wBufferLength >= 10)
-    {
-      WORD wGroupId, wItemId, wItemType, wTlvLen;
-      uid_str szUID;
-
-      if (unpackServerListItem(&pBuffer, &wBufferLength, szUID, &wGroupId, &wItemId, &wItemType, &wTlvLen))
-      {
-        HANDLE hContact = HContactFromRecordName(szUID, NULL);
-
-        if (wBufferLength >= wTlvLen && hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
-        { // a contact was updated on server
-          if (wTlvLen > 0)
-          { // parse details
-            oscar_tlv_chain *pChain = readIntoTLVChain(&pBuffer, (WORD)(wTlvLen), 0);
-
-            if (pChain) 
-            {
-              oscar_tlv* pAuth = getTLV(pChain, SSI_TLV_AWAITING_AUTH, 1);
-              BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
-
-              if (bAuth && !pAuth)
-              { // server authorized our contact
-                char str[MAX_PATH];
-                char msg[MAX_PATH];
-                char *nick = NickFromHandleUtf(hContact);
-
-                ICQWriteContactSettingByte(hContact, "Auth", 0);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" was authorized in the server list.", msg, MAX_PATH), nick);
-                icq_LogMessage(LOG_WARNING, str);
-                SAFE_FREE(&nick);
-              }
-              else if (!bAuth && pAuth)
-              { // server took away authorization of our contact
-                char str[MAX_PATH];
-                char msg[MAX_PATH];
-                char *nick = NickFromHandleUtf(hContact);
-
-                ICQWriteContactSettingByte(hContact, "Auth", 1);
-                null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("Contact \"%s\" lost its authorization in the server list.", msg, MAX_PATH), nick);
-                icq_LogMessage(LOG_WARNING, str);
-                SAFE_FREE(&nick);
-              }
-
-              { // update server's data - otherwise consequent operations can fail with 0x0E
-                unsigned char* data = (unsigned char*)_alloca(wTlvLen);
-                int datalen = getServerDataFromItemTLV(pChain, data);
-
-                if (datalen > 0)
-                  ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
-                else
-                  ICQDeleteContactSetting(hContact, "ServerData");
-              }
-
-              disposeChain(&pChain);
-
-              break;
-            }
-          }
-        }
-      }
-    }
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x09, "Server updated our contact on list");
-    break;
-
-  case ICQ_LISTS_REMOVEFROMLIST:
-    if (wBufferLength >= 10)
-    {
-      WORD wGroupId, wItemId, wItemType;
-      uid_str szUID;
-
-      if (unpackServerListItem(&pBuffer, &wBufferLength, szUID, &wGroupId, &wItemId, &wItemType, NULL))
-      {
-        HANDLE hContact = HContactFromRecordName(szUID, NULL);
-
-        if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
-        { // a contact was removed from our list
-          ICQDeleteContactSetting(hContact, "ServerId");
-          ICQDeleteContactSetting(hContact, "SrvGroupId");
-          ICQDeleteContactSetting(hContact, "Auth");
-          icq_sendNewContact(0, szUID); // add to CS to see him
-          {
-            char str[MAX_PATH];
-            char msg[MAX_PATH];
-            char *nick = NickFromHandleUtf(hContact);
-
-            null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic("User \"%s\" was removed from server list.", msg, MAX_PATH), nick);
-            icq_LogMessage(LOG_WARNING, str);
-            SAFE_FREE(&nick);
-          }
-        }
-      }
-    }
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x0A, "Server removed something from our list");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", ICQ_LISTS_CLI_MODIFYEND, "End of server modification");
     break;
 
   case ICQ_LISTS_ADDTOLIST:
-    if (wBufferLength >= 10)
+  case ICQ_LISTS_UPDATEGROUP:
+  case ICQ_LISTS_REMOVEFROMLIST:
     {
-      WORD wGroupId, wItemId, wItemType, wTlvLen;
+      int nItems = 0;
 
-      if (unpackServerListItem(&pBuffer, &wBufferLength, NULL, &wGroupId, &wItemId, &wItemType, &wTlvLen))
+      while (wBufferLength >= 10)
       {
-        if (wBufferLength >= wTlvLen && wItemType == SSI_ITEM_IMPORTTIME)
+        WORD wGroupId, wItemId, wItemType, wTlvLen;
+        uid_str szRecordName;
+
+        if (unpackServerListItem(&pBuffer, &wBufferLength, szRecordName, &wGroupId, &wItemId, &wItemType, &wTlvLen))
         {
-          if (wTlvLen > 0)
-          { // parse timestamp
-            oscar_tlv_chain *pChain = readIntoTLVChain(&pBuffer, (WORD)(wTlvLen), 0);
+          BYTE *buf = pBuffer;
+          oscar_tlv_chain *pChain = NULL;
 
-            if (pChain) 
-            {
-              ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pChain, SSI_TLV_TIMESTAMP, 1));
-              ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
-              disposeChain(&pChain);
+          nItems++;
 
-              NetLog_Server("Server added Import timestamp to list");
-
-              break;
-            }
+          // parse possible item's data
+          if (wBufferLength >= wTlvLen && wTlvLen > 0)
+          {
+            pChain = readIntoTLVChain(&buf, wTlvLen, 0);
+            pBuffer += wTlvLen;
+            wBufferLength -= wTlvLen;
           }
+          else if (wTlvLen > 0)
+            wBufferLength = 0;
+
+          // process item change
+          if (pSnacHeader->wSubtype == ICQ_LISTS_ADDTOLIST)
+            handleServerCListItemAdd(szRecordName, wGroupId, wItemId, wItemType, pChain);
+          else if (pSnacHeader->wSubtype == ICQ_LISTS_UPDATEGROUP)
+            handleServerCListItemUpdate(szRecordName, wGroupId, wItemId, wItemType, pChain);
+          else if (pSnacHeader->wSubtype == ICQ_LISTS_REMOVEFROMLIST)
+            handleServerCListItemDelete(szRecordName, wGroupId, wItemId, wItemType, pChain);
+
+          // release memory
+          disposeChain(&pChain);
         }
       }
-    }
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x08, "Server added something to our list");
-    break;
+      { // log packet basics
+        char *szChange;
+        char szLogText[MAX_PATH];
+		   
+        if (pSnacHeader->wSubtype == ICQ_LISTS_ADDTOLIST)
+          szChange = "Server added %u item(s) to list";
+        else if (pSnacHeader->wSubtype == ICQ_LISTS_UPDATEGROUP)
+          szChange = "Server updated %u item(s) on list";
+        else if (pSnacHeader->wSubtype == ICQ_LISTS_REMOVEFROMLIST)
+          szChange = "Server removed %u item(s) from list";
 
+        null_snprintf(szLogText, MAX_PATH, szChange, nItems);
+        NetLog_Server("Server sent SNAC(x13,x%02x) - %s", pSnacHeader->wSubtype, szLogText);
+      }
+    }
+    break;
+          
   case ICQ_LISTS_AUTHREQUEST:
     handleRecvAuthRequest(pBuffer, wBufferLength);
     break;
@@ -317,7 +253,7 @@ void handleServClistFam(unsigned char *pBuffer, WORD wBufferLength, snac_header*
     break;
 
   case ICQ_LISTS_AUTHGRANTED:
-    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", 0x15, "User granted us future authorization");
+    NetLog_Server("Server sent SNAC(x13,x%02x) - %s", ICQ_LISTS_AUTHGRANTED, "User granted us future authorization");
     break;
 
   case ICQ_LISTS_YOUWEREADDED:
@@ -809,7 +745,7 @@ static void handleServerCListAck(servlistcookie* sc, WORD wError)
 
 
 
-static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded)
+static HANDLE HContactFromRecordName(const char *szRecordName, int *bAdded)
 {
   HANDLE hContact = INVALID_HANDLE_VALUE;
 
@@ -829,7 +765,7 @@ static HANDLE HContactFromRecordName(char* szRecordName, int *bAdded)
 
 
 
-static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, unsigned char *buf)
+static int getServerDataFromItemTLV(oscar_tlv_chain* pChain, BYTE *buf)
 { // get server-list item's TLV data
   oscar_tlv_chain* list = pChain;
   int datalen = 0;
@@ -1436,6 +1372,113 @@ static void handleServerCList(unsigned char *buf, WORD wLen, WORD wFlags, server
   }
 }
 
+
+static void handleServerCListItemAdd(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData)
+{
+  if (wItemType == SSI_ITEM_IMPORTTIME)
+  {
+    if (pItemData) 
+    {
+      ICQWriteContactSettingDword(NULL, "ImportTS", getDWordFromChain(pItemData, SSI_TLV_TIMESTAMP, 1));
+      ICQWriteContactSettingWord(NULL, "SrvImportID", wItemId);
+
+			NetLog_Server("Server added Import timestamp to list");
+    }
+  }
+  // Reserve server-list ID
+  ReserveServerID(wItemId, wItemType == SSI_ITEM_GROUP ? SSIT_GROUP : SSIT_ITEM);
+}
+
+
+static void handleServerCListItemUpdate(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData)
+{
+  HANDLE hContact = (wItemType == SSI_ITEM_BUDDY || wItemType == SSI_ITEM_DENY || wItemType == SSI_ITEM_PERMIT || wItemType == SSI_ITEM_IGNORE) ? HContactFromRecordName(szRecordName, NULL) : NULL;
+
+  if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
+  { // a contact was updated on server
+    if (pItemData) 
+    {
+      oscar_tlv* pAuth = getTLV(pItemData, SSI_TLV_AWAITING_AUTH, 1);
+      BYTE bAuth = ICQGetContactSettingByte(hContact, "Auth", 0);
+
+      if (bAuth && !pAuth)
+      { // server authorized our contact
+        char str[MAX_PATH];
+        char msg[MAX_PATH];
+        char *nick = NickFromHandleUtf(hContact);
+
+        ICQWriteContactSettingByte(hContact, "Auth", 0);
+        null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("Contact \"%s\" was authorized in the server list."), msg, MAX_PATH), nick);
+        icq_LogMessage(LOG_WARNING, str);
+        SAFE_FREE(&nick);
+      }
+      else if (!bAuth && pAuth)
+      { // server took away authorization of our contact
+        char str[MAX_PATH];
+        char msg[MAX_PATH];
+        char *nick = NickFromHandleUtf(hContact);
+
+        ICQWriteContactSettingByte(hContact, "Auth", 1);
+        null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("Contact \"%s\" lost its authorization in the server list."), msg, MAX_PATH), nick);
+        icq_LogMessage(LOG_WARNING, str);
+        SAFE_FREE(&nick);
+      }
+
+      { // update server's data - otherwise consequent operations can fail with 0x0E
+        int wTLVLength = 0;
+        BYTE *data;
+        int datalen;
+        oscar_tlv_chain *list = pItemData;
+
+        while (list)
+        {
+          wTLVLength += list->tlv.wLen;
+          list = list->next;
+        }
+        
+        data = (BYTE*)_alloca(wTLVLength);
+        datalen = getServerDataFromItemTLV(pItemData, data);
+
+        if (datalen > 0)
+          ICQWriteContactSettingBlob(hContact, "ServerData", data, datalen);
+        else
+          ICQDeleteContactSetting(hContact, "ServerData");
+      }
+    }
+  }
+  else if (wItemType == SSI_ITEM_GROUP)
+  { // group updated
+    NetLog_Server("Server updated our group \"%s\" on list", szRecordName);
+  }
+}
+
+
+static void handleServerCListItemDelete(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData)
+{
+  HANDLE hContact = (wItemType == SSI_ITEM_BUDDY || wItemType == SSI_ITEM_DENY || wItemType == SSI_ITEM_PERMIT || wItemType == SSI_ITEM_IGNORE) ? HContactFromRecordName(szRecordName, NULL) : NULL;
+
+  if (hContact != INVALID_HANDLE_VALUE && wItemType == SSI_ITEM_BUDDY)
+	{ // a contact was removed from our list
+    if (ICQGetContactSettingWord(hContact, "ServerId", 0) == wItemId)
+    {
+      ICQDeleteContactSetting(hContact, "ServerId");
+      ICQDeleteContactSetting(hContact, "SrvGroupId");
+      ICQDeleteContactSetting(hContact, "Auth");
+
+      {
+        char str[MAX_PATH];
+        char msg[MAX_PATH];
+        char *nick = NickFromHandleUtf(hContact);
+
+        null_snprintf(str, MAX_PATH, ICQTranslateUtfStatic(LPGEN("User \"%s\" was removed from server list."), msg, MAX_PATH), nick);
+        icq_LogMessage(LOG_WARNING, str);
+        SAFE_FREE(&nick);
+      }
+    }
+  }
+  // Release server-list ID
+  FreeServerID(wItemId, wItemType == SSI_ITEM_GROUP ? SSIT_GROUP : SSIT_ITEM);
+}
 
 
 static void handleRecvAuthRequest(unsigned char *buf, WORD wLen)
