@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include "coolsb/coolscroll.h"
-#include <uxtheme.h>
 
 #define DBFONTF_BOLD       1
 #define DBFONTF_ITALIC     2

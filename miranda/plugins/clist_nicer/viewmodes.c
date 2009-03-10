@@ -28,7 +28,6 @@ $Id$
 #include "commonheaders.h"
 #include "m_variables.h"
 #include "cluiframes/cluiframes.h"
-#include <uxtheme.h>
 
 #define TIMERID_VIEWMODEEXPIRE 100
 

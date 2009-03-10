@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 #include "coolsb/coolscroll.h"
-#include "uxtheme.h"
 
 extern int g_hottrack;
 extern struct CluiData g_CluiData;

@@ -791,7 +791,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
             DeleteObject(hbmp);
             mod_DeleteDC(hdc2);
 
-			SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
+            SelectObject(hdc,GetStockObject(DEFAULT_GUI_FONT));
             ReleaseDC(hwnd,hdc);
             ValidateRect(hwnd,NULL);
         }

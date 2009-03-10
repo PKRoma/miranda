@@ -73,6 +73,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_stdhdr.h"
 #include <windows.h>
 #include <commctrl.h>
+#include <uxtheme.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
@@ -129,6 +130,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../m_api/m_toolbar.h"
 
 #include "../resource.h"
+
+#include "modern_layered_window_engine.h"
 
 // module name of MetaContacts plugin
 extern char *g_szMetaModuleName;

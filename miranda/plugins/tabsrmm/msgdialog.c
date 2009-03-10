@@ -30,7 +30,6 @@ $Id$
 #pragma hdrstop
 #include "sendqueue.h"
 #include "chat/chat.h"
-#include <uxtheme.h>
 
 #define TOOLBAR_PROTO_HIDDEN 1
 #define TOOLBAR_SEND_HIDDEN 2
@@ -1855,7 +1854,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			RECT rc;
 			POINT pt;
 			int i;
-			BOOL	isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 0);
+			BOOL	isFlat = DBGetContactSettingByte(NULL, SRMSGMOD_T, "tbflat", 1);
 			BOOL	isThemed = !DBGetContactSettingByte(NULL, SRMSGMOD_T, "nlflat", 0);
 			HWND	hwndItem;
 			int		dwLocalSmAdd = 0;
@@ -2319,7 +2318,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			if (szProto) {
 				dat->hTabIcon = dat->hTabStatusIcon = MY_GetContactIcon(dat);
 				//dat->hTabIcon = dat->hTabStatusIcon = LoadSkinnedProtoIcon(szProto, wStatus);
-				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 0))
+				if (DBGetContactSettingByte(NULL, SRMSGMOD_T, "use_xicons", 1))
 					dat->hXStatusIcon = GetXStatusIcon(dat);
 				SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BUTTONSETASFLATBTN + 11, 0, dat->dwFlagsEx & MWF_SHOW_ISIDLE ? 1 : 0);
 				SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));

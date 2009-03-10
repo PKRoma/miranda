@@ -39,7 +39,6 @@ Sets things like:
 
 #include "commonheaders.h"
 #pragma hdrstop
-#include "uxtheme.h"
 
 #define UPREF_ACTION_APPLYOPTIONS 1
 #define UPREF_ACTION_REMAKELOG 2
