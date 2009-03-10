@@ -20,6 +20,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#ifndef M_ICOLIB_H__
+#define M_ICOLIB_H__ 1
+
 #define SKINICONDESC_SIZE     sizeof(SKINICONDESC)  // v0.0.1.0+
 #define SKINICONDESC_SIZE_V1  0x18
 #define SKINICONDESC_SIZE_V2  0x1C                  // v0.0.0.2+
@@ -132,3 +136,5 @@ typedef struct {
 //  Icons change notification
 //
 #define ME_SKIN2_ICONSCHANGED "Skin2/IconsChanged"
+
+#endif /* M_ICOLIB_H__ */

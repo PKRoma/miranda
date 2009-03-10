@@ -126,6 +126,9 @@ typedef struct {
 } OPENOPTIONSDIALOG;
 #define MS_OPT_OPENOPTIONS  "Opt/OpenOptions"
 
+//Opens the options dialog, with only specified page    v0.8.0.x+
+#define MS_OPT_OPENOPTIONSPAGE  "Opt/OpenOptionsPage"
+
 #define SETTING_SHOWEXPERT_DEFAULT  1
 
 #endif  //M_OPTIONS_H__

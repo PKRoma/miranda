@@ -119,6 +119,87 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 		#define ETS_READONLY		6
 		#define ETS_ASSIST			7
 	#endif
+	#if !defined(DTBG_CLIPRECT)
+		#define DTBG_CLIPRECT           0x00000001  // rcClip has been specified
+		#define DTBG_DRAWSOLID          0x00000002  // DEPRECATED: draw transparent/alpha images as solid
+		#define DTBG_OMITBORDER         0x00000004  // don't draw border of part
+		#define DTBG_OMITCONTENT        0x00000008  // don't draw content area of part
+		#define DTBG_COMPUTINGREGION    0x00000010  // TRUE if calling to compute region
+		#define DTBG_MIRRORDC           0x00000020  // assume the hdc is mirrorred and
+																  // flip images as appropriate (currently 
+																  // only supported for bgtype=imagefile)
+		#define DTBG_NOMIRROR           0x00000040  // don't mirror the output, overrides everything else 
+
+		typedef struct _DTBGOPTS
+		{
+			DWORD dwSize;           // size of the struct
+			DWORD dwFlags;          // which options have been specified
+			RECT rcClip;            // clipping rectangle
+		} DTBGOPTS, *PDTBGOPTS;
+	#endif
+	#if !defined( DTT_COMPOSITED )
+		#define DTT_TEXTCOLOR       (1UL << 0)      // crText has been specified
+		#define DTT_BORDERCOLOR     (1UL << 1)      // crBorder has been specified
+		#define DTT_SHADOWCOLOR     (1UL << 2)      // crShadow has been specified
+		#define DTT_SHADOWTYPE      (1UL << 3)      // iTextShadowType has been specified
+		#define DTT_SHADOWOFFSET    (1UL << 4)      // ptShadowOffset has been specified
+		#define DTT_BORDERSIZE      (1UL << 5)      // iBorderSize has been specified
+		#define DTT_FONTPROP        (1UL << 6)      // iFontPropId has been specified
+		#define DTT_COLORPROP       (1UL << 7)      // iColorPropId has been specified
+		#define DTT_STATEID         (1UL << 8)      // IStateId has been specified
+		#define DTT_CALCRECT        (1UL << 9)      // Use pRect as and in/out parameter
+		#define DTT_APPLYOVERLAY    (1UL << 10)     // fApplyOverlay has been specified
+		#define DTT_GLOWSIZE        (1UL << 11)     // iGlowSize has been specified
+		#define DTT_CALLBACK        (1UL << 12)     // pfnDrawTextCallback has been specified
+		#define DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
+
+		typedef 
+		int
+		(WINAPI *DTT_CALLBACK_PROC)
+		(
+			HDC hdc,
+			LPWSTR pszText,
+			int cchText,
+			LPRECT prc,
+			UINT dwFlags,
+			LPARAM lParam);
+
+		typedef struct _DTTOPTS
+		{
+			DWORD             dwSize;              // size of the struct
+			DWORD             dwFlags;             // which options have been specified
+			COLORREF          crText;              // color to use for text fill
+			COLORREF          crBorder;            // color to use for text outline
+			COLORREF          crShadow;            // color to use for text shadow
+			int               iTextShadowType;     // TST_SINGLE or TST_CONTINUOUS
+			POINT             ptShadowOffset;      // where shadow is drawn (relative to text)
+			int               iBorderSize;         // Border radius around text
+			int               iFontPropId;         // Font property to use for the text instead of TMT_FONT
+			int               iColorPropId;        // Color property to use for the text instead of TMT_TEXTCOLOR
+			int               iStateId;            // Alternate state id
+			BOOL              fApplyOverlay;       // Overlay text on top of any text effect?
+			int               iGlowSize;           // Glow radious around text
+			DTT_CALLBACK_PROC pfnDrawTextCallback; // Callback for DrawText
+			LPARAM            lParam;              // Parameter for callback
+		} DTTOPTS, *PDTTOPTS; 
+
+		#define WTNCA_NODRAWCAPTION       0x00000001    // don't draw the window caption
+		#define WTNCA_NODRAWICON          0x00000002    // don't draw the system icon
+		#define WTNCA_NOSYSMENU           0x00000004    // don't expose the system menu icon functionality
+		#define WTNCA_NOMIRRORHELP        0x00000008    // don't mirror the question mark, even in RTL layout
+
+		enum WINDOWTHEMEATTRIBUTETYPE
+		{
+			WTA_NONCLIENT = 1
+		};
+
+		typedef struct _WTA_OPTIONS
+		{
+			DWORD dwFlags;          // values for each style option specified in the bitmask
+			DWORD dwMask;           // bitmask for flags that are changing
+											// valid options are: WTNCA_NODRAWCAPTION, WTNCA_NODRAWICON, WTNCA_NOSYSMENU
+		} WTA_OPTIONS, *PWTA_OPTIONS;
+	#endif
 #endif
 
 #if defined (__GNUC__)
@@ -194,9 +275,9 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define TS_HOTCHECKED       6
 	#ifndef TTM_SETTITLE
 	#ifndef UNICODE
-	#define TTM_SETTITLE TTM_SETTITLEA
+		#define TTM_SETTITLE TTM_SETTITLEA
 	#else
-	#define TTM_SETTITLE TTM_SETTITLEW
+		#define TTM_SETTITLE TTM_SETTITLEW
 	#endif
 	#endif
 	#define CBS_UNCHECKEDNORMAL 1
@@ -229,11 +310,11 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define LVS_EX_DOUBLEBUFFER	0x00010000
 	#define RES_ICON			1
 	#ifndef DFCS_HOT
-	#define DFCS_HOT			0x1000
+		#define DFCS_HOT			0x1000
 	#endif
 	#define IP_TTL				7
 	#ifndef IP_MULTICAST_IF
-	#define IP_MULTICAST_IF		32
+		#define IP_MULTICAST_IF		32
 	#endif
 	#define IMF_AUTOKEYBOARD	0x0001
 	#define IMF_AUTOFONTSIZEADJUST 0x0010
@@ -243,10 +324,10 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 	#define LOCALE_INVARIANT	(MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
 	#define EN_ALIGN_RTL_EC		0x0701
 	#ifndef OBJID_MENU
-	#define OBJID_MENU			((LONG)0xFFFFFFFD)
+		#define OBJID_MENU			((LONG)0xFFFFFFFD)
 	#endif
 	#ifndef OBJID_VSCROLL
-	#define OBJID_VSCROLL		((LONG)0xFFFFFFFB)
+		#define OBJID_VSCROLL		((LONG)0xFFFFFFFB)
 	#endif
 	#define TreeView_SetCheckState(hwndTV, hti, fCheck) \
 		TreeView_SetItemState(hwndTV, hti, INDEXTOSTATEIMAGEMASK((fCheck)?2:1), TVIS_STATEIMAGEMASK)

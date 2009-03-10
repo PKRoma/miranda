@@ -23,6 +23,12 @@
 #define FIDF_ALLOWREREGISTER	128		// allow plugins to register this font again (i.e. override already registered settings such as flags)
 #define FIDF_ALLOWEFFECTS		256		// allow setting of font effects (i.e. underline and strikeout)
 
+// font class
+#define FIDF_CLASSMASK			0x70000000
+#define FIDF_CLASSHEADER		0x10000000
+#define FIDF_CLASSGENERAL		0x20000000
+#define FIDF_CLASSSMALL			0x30000000
+
 // settings to be used for the value of 'deffontsettings' in the FontID structure below - i.e. defaults
 typedef struct FontSettings_tag
 {
