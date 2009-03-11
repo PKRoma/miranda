@@ -186,6 +186,21 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 	return hp;
 }
 
+////////////////////////////////////////////////////////////
+// Wait for thread to stop
+void gg_threadwait(GGPROTO *gg, pthread_t *thread)
+{
+	DWORD exitCode = 0;
+	GetExitCodeThread(thread->hThread, &exitCode);
+	if (GetCurrentThreadId() != thread->dwThreadId && exitCode == STILL_ACTIVE)
+	{
+#ifdef DEBUGMODE
+		gg_netlog(gg, "gg_threadwait(): Waiting until %s finished.", thread->dwThreadId == gg->pth_sess.dwThreadId ? "gg_mainthread()" : "gg_dccmainthread()");
+#endif
+		while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
+	}
+	pthread_detach(thread);
+}
 
 ////////////////////////////////////////////////////////////
 // Main connection session thread
@@ -960,11 +975,12 @@ retry:
 	}
 	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 
-	// Stop dcc server
 	ZeroMemory(&gg->pth_sess, sizeof(gg->pth_sess));
-	gg_dccwait(gg);
-	pthread_mutex_unlock(&gg->sess_mutex);
 
+	// Stop dcc server
+	gg_threadwait(gg, &gg->pth_dcc);
+
+	pthread_mutex_unlock(&gg->sess_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Ending", gg);

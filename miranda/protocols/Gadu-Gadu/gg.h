@@ -362,6 +362,7 @@ void gg_disconnect(GGPROTO *gg);
 int gg_refreshstatus(GGPROTO *gg, int status);
 HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick);
 void gg_registerservices(GGPROTO *gg);
+void gg_threadwait(GGPROTO *gg, pthread_t *thread);
 void *__stdcall gg_mainthread(void *empty);
 int gg_isonline(GGPROTO *gg);
 
@@ -377,7 +378,6 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 char *gg_getstatusmsg(GGPROTO *gg, int status);
 void gg_dccstart(GGPROTO *gg);
 void gg_dccconnect(GGPROTO *gg, uin_t uin);
-void gg_dccwait(GGPROTO *gg);
 int gg_gettoken(GGPROTO *gg, GGTOKEN *token);
 void gg_parsecontacts(GGPROTO *gg, char *contacts);
 int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType);

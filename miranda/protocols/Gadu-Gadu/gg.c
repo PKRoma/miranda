@@ -294,6 +294,8 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONEXIT)/gg_preshutdown(): signalling shutdown...");
 #endif
+			// Stop main connection session thread
+			gg_threadwait(gg, &gg->pth_sess);
 			gg_img_shutdown(gg);
 			break;
 		case EV_PROTO_ONOPTIONS:

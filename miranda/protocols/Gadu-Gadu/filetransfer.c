@@ -23,24 +23,6 @@
 #include <io.h>
 #include <fcntl.h>
 
-////////////////////////////////////////////////////////////
-// Stop dcc
-void gg_dccwait(GGPROTO *gg)
-{
-	// Wait for DCC socket service to die
-	DWORD exitCode = 0;
-	GetExitCodeThread(gg->pth_dcc.hThread, &exitCode);
-	// Wait for main connection server to die
-	if (GetCurrentThreadId() != gg->pth_dcc.dwThreadId && exitCode == STILL_ACTIVE)
-	{
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_dccwait(): Waiting until gg_dccmainthread() finished.");
-#endif
-		while (WaitForSingleObjectEx(gg->pth_dcc.hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-	}
-	pthread_detach(&gg->pth_dcc);
-}
-
 void *__stdcall gg_dccmainthread(void *empty);
 
 void gg_dccstart(GGPROTO *gg)
