@@ -436,6 +436,7 @@ XCHAR *ReplaceVariables(XCHAR *str, REPLACEVARSDATA *data)
 
 	XCHAR *result = (XCHAR *)mir_alloc(sizeof(XCHAR) * (length + 1));
 	XCHAR *q = result;
+	varStart = NULL;
 
 	for (p = str; *p; ++p) {
 		if (*p == '%') {
