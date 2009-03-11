@@ -207,6 +207,40 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 	return 0;
 }
 
+static int sttCheckServerDefaults( const char *szSetting, LPARAM lParam )
+{
+    int *empty = (int*)lParam;
+	*empty = 0;
+	return 1;
+}
+
+static int sttCheckDefaultServerIni() {
+    FILE* serverFile = NULL;
+    char *szIniFile = Utils_ReplaceVars("%miranda_userdata%\\IRC\\default_servers.ini");
+    char *szIniDir = Utils_ReplaceVars("%miranda_userdata%\\IRC\\");
+    
+    serverFile = fopen( szIniFile, "r" );
+    if (serverFile==NULL) {
+        if (_access(szIniDir, 0))
+            CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szIniDir);
+        serverFile = fopen( szIniFile, "a" );
+        if (serverFile) {
+            char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
+            if (pszSvrs)
+                fwrite(pszSvrs , 1 , lstrlenA(pszSvrs) + 1 , serverFile );
+            fclose(serverFile);
+            return 1;
+        }
+    }
+    else {
+        fclose(serverFile);      
+    }
+    mir_free(szIniFile);
+    mir_free(szIniDir);
+    return 0;
+
+}
+
 static void sttImportIni( const char* szIniFile )
 {
 	FILE* serverFile = fopen( szIniFile, "r" );
@@ -312,13 +346,26 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 		if ( IDYES == MessageBox(0,TranslateT("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),TranslateT("Information"),MB_YESNO|MB_ICONINFORMATION ))
 			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/");
 	}
-
+    
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, m_szModuleName);
 	sttImportIni( szTemp );
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath, m_szModuleName);
 	sttImportIni( szTemp );
 
+    if (sttCheckDefaultServerIni()) {
+        int empty = 1;
+        DBCONTACTENUMSETTINGS dbces;
+        dbces.pfnEnumProc = sttCheckServerDefaults;
+        dbces.lParam = ( LPARAM )&empty;
+        dbces.szModule = SERVERSMODULE;
+        CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
+        if (empty) {
+            char *szIniFile = Utils_ReplaceVars("%miranda_userdata%\\IRC\\default_servers.ini");
+            sttImportIni( szIniFile );
+            mir_free(szIniFile);
+        }
+    }
 	RereadServers();
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
