@@ -570,9 +570,9 @@ void CQuickDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
 
-	if ( m_proto->m_servers.getCount() > 0 ) {
-		for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
-			const SERVER_INFO& si = m_proto->m_servers[i];
+	if ( g_servers.getCount() > 0 ) {
+		for ( int i=0; i < g_servers.getCount(); i++ ) {
+			const SERVER_INFO& si = g_servers[i];
 			m_serverCombo.AddStringA( si.m_name, ( LPARAM )&si );
 		}
 	}

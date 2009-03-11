@@ -420,8 +420,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	COLORREF colors[16];
 	HICON    hIcon[13];
 
-	OBJLIST<SERVER_INFO> m_servers;
-
 	OBJLIST<CMString> vUserhostReasons;
 	OBJLIST<CMString> vWhoInProgress;
 
@@ -746,6 +744,7 @@ extern HINSTANCE hInst;
 
 extern char mirandapath[MAX_PATH];
 extern int mirVersion;
+extern OBJLIST<SERVER_INFO> g_servers;
 
 void   UpgradeCheck(void);
 

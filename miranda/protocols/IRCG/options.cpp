@@ -163,7 +163,7 @@ static int sttServerEnum( const char* szSetting, LPARAM lParam )
 	lstrcpynA( pData->m_group, p1, p2-p1+1 );
 
 	CIrcProto* ppro = ( CIrcProto* )lParam;
-	ppro->m_servers.insert( pData );
+	g_servers.insert( pData );
 	DBFreeVariant( &dbv );
 	return 0;
 }
@@ -513,8 +513,8 @@ void CConnectPrefsDlg::OnInitDialog()
 	m_proto->m_hwndConnect = m_hwnd;
 
 	//	Fill the servers combo box and create SERVER_INFO structures
-	for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
-		SERVER_INFO& si = m_proto->m_servers[i];
+	for ( int i=0; i < g_servers.getCount(); i++ ) {
+		SERVER_INFO& si = g_servers[i];
 		m_serverCombo.AddStringA( si.m_name, LPARAM( &si ));
 	}
 
@@ -634,7 +634,7 @@ void CConnectPrefsDlg::OnDeleteServer( CCtrlButton* )
 	TCHAR temp[200];
 	mir_sntprintf( temp, SIZEOF(temp), TranslateT("Do you want to delete\r\n%s"), (TCHAR*)_A2T(pData->m_name));
 	if ( MessageBox( m_hwnd, temp, TranslateT("Delete server"), MB_YESNO | MB_ICONQUESTION ) == IDYES ) {
-		m_proto->m_servers.remove( pData );
+		g_servers.remove( pData );
 
 		m_serverCombo.DeleteString( i );
 		if ( i >= m_serverCombo.GetCount())
@@ -810,7 +810,7 @@ void CConnectPrefsDlg::OnApply()
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
 		}	}
 
-		m_proto->m_servers.destroy();
+		g_servers.destroy();
 		m_proto->RereadServers();
 	}
 
@@ -1070,8 +1070,8 @@ void COtherPrefsDlg::OnInitDialog()
 	if ( m_proto->m_codepage == CP_UTF8 )
 		m_autodetect.Disable();
 
-	for ( i=0; i < m_proto->m_servers.getCount(); i++ ) {
-		SERVER_INFO& si = m_proto->m_servers[i];
+	for ( i=0; i < g_servers.getCount(); i++ ) {
+		SERVER_INFO& si = g_servers[i];
 		int idx = m_performCombo.FindStringA( si.m_group, -1, true );
 		if ( idx == CB_ERR ) {
 			idx = m_performCombo.AddStringA( si.m_group );
@@ -1781,8 +1781,8 @@ struct CDlgAccMgrUI : public CProtoDlgBase<CIrcProto>
 
 	virtual void OnInitDialog()
 	{
-		for ( int i=0; i < m_proto->m_servers.getCount(); i++ ) {
-			SERVER_INFO& si = m_proto->m_servers[i];
+		for ( int i=0; i < g_servers.getCount(); i++ ) {
+			SERVER_INFO& si = g_servers[i];
 			m_serverCombo.AddStringA( si.m_name, LPARAM( &si ));
 		}
 		m_serverCombo.SetCurSel( m_proto->m_serverComboSelection );

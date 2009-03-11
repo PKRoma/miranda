@@ -32,6 +32,13 @@ UTF8_INTERFACE utfi;
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
 
+static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
+{
+	return lstrcmpA( p1->m_name, p2->m_name );
+}
+
+OBJLIST<SERVER_INFO> g_servers( 20, CompareServers );
+
 void InitTimers( void );
 void UninitTimers( void );
 

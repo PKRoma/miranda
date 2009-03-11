@@ -24,18 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <m_genmenu.h>
 
-static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
-{
-	return lstrcmpA( p1->m_name, p2->m_name );
-}
-
 static int CompareSessions( const CDccSession* p1, const CDccSession* p2 )
 {
 	return int( p1->di->hContact ) - int( p2->di->hContact );
 }
 
 CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
-	m_servers( 20, CompareServers ),
 	m_dcc_chats( 10, CompareSessions ),
 	m_dcc_xfers( 10, CompareSessions ),
 	m_ignoreItems( 10, NULL ),
