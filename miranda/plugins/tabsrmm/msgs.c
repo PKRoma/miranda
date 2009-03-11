@@ -35,10 +35,8 @@ $Id$
 
 static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
- 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.13\\b0\\ul0\\par ",
+ 	"\\par\t\\b\\ul1 Release notes for version 2.2.1.14\\b0\\ul0\\par ",
 	"*\tFixed some translation issues.\\par ",
-	"*\tFixed bug #468 (in some rare cases, message window can stay invisible after creation).\\par ",
-	"*\tRe-enabled container transparency in skinned mode (Windows Vista only).\\par ",
 	"\t\\b View all release notes and history online:\\b0 \\par \thttp://miranda.or.at/TabSrmm:ChangeLog\\par ",
 	NULL
 };
@@ -124,6 +122,19 @@ HMODULE g_hIconDLL = 0;
 int     Chat_IconsChanged(WPARAM wp, LPARAM lp), Chat_ModulesLoaded(WPARAM wp, LPARAM lp);
 void    Chat_AddIcons(void);
 int     Chat_PreShutdown(WPARAM wParam, LPARAM lParam);
+
+/*
+ * display release notes dialog
+ */
+
+void ViewReleaseNotes()
+{
+	if (show_relnotes)
+		return;
+
+	show_relnotes = TRUE;
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
+}
 
 /*
  * fired event when user changes IEView plugin options. Apply them to all open tabs
@@ -2078,9 +2089,7 @@ static void InitAPI()
 int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType)
 {
 	MessageWindowEventData mwe = { 0 };
-	struct TABSRMM_SessionInfo se = {
-		0
-	};
+	struct TABSRMM_SessionInfo se = { 0 };
 	struct MessageWindowData *dat = (struct MessageWindowData *)GetWindowLong(hwnd, GWL_USERDATA);
 	BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
 
@@ -2217,7 +2226,12 @@ static int GetIconPackVersion(HMODULE hDLL)
 		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 3.5__"))
 			version = 4;
 	}
-	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 0))
+
+	/*
+	 * user may disable warnings about incompatible icon packs
+	 */
+
+	if(!DBGetContactSettingByte(NULL, SRMSGMOD_T, "adv_IconpackWarning", 1))
 		return version;
 
 	if (version == 0)
@@ -2340,21 +2354,6 @@ static void UnloadIcons()
 		if (myGlobals.m_AnimTrayIcons[i])
 			DestroyIcon(myGlobals.m_AnimTrayIcons[i]);
 	}
-}
-
-/*
- * display release notes dialog
- */
-
-void ViewReleaseNotes()
-{
-	return; // kill those annoying release notes
-
-	if (show_relnotes)
-		return;
-
-	show_relnotes = TRUE;
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARIABLEHELP), 0, DlgProcTemplateHelp, (LPARAM)relnotes);
 }
 
 /*

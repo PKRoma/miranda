@@ -40,8 +40,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/typingnotify.o \
 	${OBJECTDIR}/container.o \
 	${OBJECTDIR}/tabctrl.o \
-	${OBJECTDIR}/chat/options.o \
 	${OBJECTDIR}/chat/window.o \
+	${OBJECTDIR}/chat/options.o \
 	${OBJECTDIR}/TSButton.o \
 	${OBJECTDIR}/hotkeyhandler.o \
 	${OBJECTDIR}/chat/clist.o \
@@ -75,7 +75,7 @@ CXXFLAGS=
 FFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=build/tabsrmm_private.coff -luuid -luser32 -lshell32 -lole32 -lshlwapi -lcomctl32 -lcomdlg32 -lgdi32 -lkernel32
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -83,182 +83,182 @@ LDLIBSOPTIONS=
 
 dist/Release/${PLATFORM}/libtabsrmm.dll: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/${PLATFORM}
-	${LINK.cc} -shared -o dist/Release/${PLATFORM}/libtabsrmm.dll -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.cc} -shared -o dist/Release/${PLATFORM}/libtabsrmm.dll -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/formatting.o: formatting.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/formatting.o formatting.cpp
+	$(COMPILE.cc) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/formatting.o formatting.cpp
 
 ${OBJECTDIR}/tabmodplus/modplus.o: tabmodplus/modplus.c 
 	${MKDIR} -p ${OBJECTDIR}/tabmodplus
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/modplus.o tabmodplus/modplus.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/modplus.o tabmodplus/modplus.c
 
 ${OBJECTDIR}/containeroptions.o: containeroptions.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/containeroptions.o containeroptions.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/containeroptions.o containeroptions.c
 
 ${OBJECTDIR}/sendqueue.o: sendqueue.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/sendqueue.o sendqueue.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/sendqueue.o sendqueue.c
 
 ${OBJECTDIR}/themes.o: themes.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/themes.o themes.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/themes.o themes.c
 
 ${OBJECTDIR}/ImageDataObject.o: ImageDataObject.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/ImageDataObject.o ImageDataObject.cpp
+	$(COMPILE.cc) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/ImageDataObject.o ImageDataObject.cpp
 
 ${OBJECTDIR}/userprefs.o: userprefs.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/userprefs.o userprefs.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/userprefs.o userprefs.c
 
 ${OBJECTDIR}/msgs.o: msgs.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgs.o msgs.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgs.o msgs.c
 
 ${OBJECTDIR}/buttonsbar.o: buttonsbar.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/buttonsbar.o buttonsbar.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/buttonsbar.o buttonsbar.c
 
 ${OBJECTDIR}/typingnotify.o: typingnotify.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/typingnotify.o typingnotify.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/typingnotify.o typingnotify.c
 
 ${OBJECTDIR}/container.o: container.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/container.o container.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/container.o container.c
 
 ${OBJECTDIR}/tabctrl.o: tabctrl.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabctrl.o tabctrl.c
-
-${OBJECTDIR}/chat/options.o: chat/options.c 
-	${MKDIR} -p ${OBJECTDIR}/chat
-	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/options.o chat/options.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabctrl.o tabctrl.c
 
 ${OBJECTDIR}/chat/window.o: chat/window.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/window.o chat/window.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/window.o chat/window.c
+
+${OBJECTDIR}/chat/options.o: chat/options.c 
+	${MKDIR} -p ${OBJECTDIR}/chat
+	${RM} $@.d
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/options.o chat/options.c
 
 ${OBJECTDIR}/TSButton.o: TSButton.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/TSButton.o TSButton.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/TSButton.o TSButton.c
 
 ${OBJECTDIR}/hotkeyhandler.o: hotkeyhandler.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/hotkeyhandler.o hotkeyhandler.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/hotkeyhandler.o hotkeyhandler.c
 
 ${OBJECTDIR}/chat/clist.o: chat/clist.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/clist.o chat/clist.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/clist.o chat/clist.c
 
 ${OBJECTDIR}/chat/tools.o: chat/tools.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/tools.o chat/tools.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/tools.o chat/tools.c
 
 ${OBJECTDIR}/tabmodplus/msgoptions_plus.o: tabmodplus/msgoptions_plus.c 
 	${MKDIR} -p ${OBJECTDIR}/tabmodplus
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/msgoptions_plus.o tabmodplus/msgoptions_plus.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/tabmodplus/msgoptions_plus.o tabmodplus/msgoptions_plus.c
 
 ${OBJECTDIR}/trayicon.o: trayicon.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/trayicon.o trayicon.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/trayicon.o trayicon.c
 
 ${OBJECTDIR}/templates.o: templates.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/templates.o templates.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/templates.o templates.c
 
 ${OBJECTDIR}/eventpopups.o: eventpopups.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/eventpopups.o eventpopups.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/eventpopups.o eventpopups.c
 
 ${OBJECTDIR}/chat/message.o: chat/message.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/message.o chat/message.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/message.o chat/message.c
 
 ${OBJECTDIR}/srmm.o: srmm.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/srmm.o srmm.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/srmm.o srmm.c
 
 ${OBJECTDIR}/chat/main.o: chat/main.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/main.o chat/main.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/main.o chat/main.c
 
 ${OBJECTDIR}/chat/log.o: chat/log.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/log.o chat/log.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/log.o chat/log.c
 
 ${OBJECTDIR}/msgoptions.o: msgoptions.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgoptions.o msgoptions.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgoptions.o msgoptions.c
 
 ${OBJECTDIR}/chat/manager.o: chat/manager.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/manager.o chat/manager.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/manager.o chat/manager.c
 
 ${OBJECTDIR}/generic_msghandlers.o: generic_msghandlers.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/generic_msghandlers.o generic_msghandlers.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/generic_msghandlers.o generic_msghandlers.c
 
 ${OBJECTDIR}/msglog.o: msglog.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/msglog.o msglog.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msglog.o msglog.c
 
 ${OBJECTDIR}/selectcontainer.o: selectcontainer.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/selectcontainer.o selectcontainer.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/selectcontainer.o selectcontainer.c
 
 ${OBJECTDIR}/chat/services.o: chat/services.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/services.o chat/services.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/services.o chat/services.c
 
 ${OBJECTDIR}/chat/colorchooser.o: chat/colorchooser.c 
 	${MKDIR} -p ${OBJECTDIR}/chat
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/colorchooser.o chat/colorchooser.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/chat/colorchooser.o chat/colorchooser.c
 
 ${OBJECTDIR}/msgdialog.o: msgdialog.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdialog.o msgdialog.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdialog.o msgdialog.c
 
 ${OBJECTDIR}/msgdlgutils.o: msgdlgutils.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -O3 -Wall -s -I../../include -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdlgutils.o msgdlgutils.c
+	$(COMPILE.c) -O3 -s -D__GNUWIN32__ -I../../include -I../../include/mingw -MMD -MP -MF $@.d -o ${OBJECTDIR}/msgdlgutils.o msgdlgutils.c
 
 # Subprojects
 .build-subprojects:

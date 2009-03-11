@@ -56,7 +56,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"TabSRMM",
 #endif
-	PLUGIN_MAKE_VERSION(2, 2, 1, 13),
+	PLUGIN_MAKE_VERSION(2, 2, 1, 14),
 	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
 	"The Miranda developers team and contributors",
 	"silvercircle@gmail.com",

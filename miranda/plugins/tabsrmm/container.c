@@ -80,6 +80,8 @@ extern BOOL CALLBACK DlgProcTemplateHelp(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 extern TCHAR *NewTitle(HANDLE hContact, const TCHAR *szFormat, const TCHAR *szNickname, const TCHAR *szStatus, const TCHAR *szContainer, const char *szUin, const char *szProto, DWORD idle, UINT codePage, BYTE xStatus, WORD wStatus);
 
+extern void	 ViewReleaseNotes();
+
 // test
 
 TCHAR 	*szWarnClose = _T("Do you really want to close this session?");
@@ -819,7 +821,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					}
 					else if (msg == WM_NCLBUTTONUP) {
 						if (isMin)
-							PostMessage(hwndDlg, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+							SendMessage(hwndDlg, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 						else if (isMax) {
 							if (IsZoomed(hwndDlg))
 								PostMessage(hwndDlg, WM_SYSCOMMAND, SC_RESTORE, 0);
@@ -1941,10 +1943,10 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					//if (bSkinned) {
-					//	ShowWindow(hwndDlg, SW_SHOW);
-					//	return 0;
-					//}
+					if (bSkinned) {
+						ShowWindow(hwndDlg, SW_RESTORE);
+						return 0;
+					}
  					//MAD: to fix rare (windows?) bug...
  					ShowWindow(hwndDlg, SW_RESTORE);
  					//

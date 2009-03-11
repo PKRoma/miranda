@@ -9,8 +9,8 @@ TOP=`pwd`
 PLATFORM=MinGW-Windows
 TMPDIR=build/Release_Unicode/${PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=dist/Release_Unicode/${PLATFORM}/libtabsrmm.dll
-OUTPUT_BASENAME=libtabsrmm.dll
+OUTPUT_PATH=dist/Release_Unicode/${PLATFORM}/tabsrmm.dll
+OUTPUT_BASENAME=tabsrmm.dll
 PACKAGE_TOP_DIR=libtabsrmm.dll/
 
 # Functions

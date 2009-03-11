@@ -1,8 +1,8 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@ $Id$
 /*
  * nen / event popup stuff
  */
- 
+
 int         NEN_ReadOptions(NEN_OPTIONS *options);
 int         NEN_WriteOptions(NEN_OPTIONS *options);
 int         UpdateTrayMenu(struct MessageWindowData *dat, WORD wStatus, char *szProto, TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
@@ -90,7 +90,6 @@ void        GetLocaleID(struct MessageWindowData *dat, char *szKLName);
 int         GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLen);
 UINT        DrawRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 UINT        NcCalcRichEditFrame(HWND hwnd, struct MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-void        ViewReleaseNotes();
 HMENU       BuildContainerMenu();
 void        BuildCodePageList();
 void        PreTranslateDates();

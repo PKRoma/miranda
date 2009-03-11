@@ -614,7 +614,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		}
 	}
 
-	mir_forkthread(DoFlashAndSoundThread, params);
+	mir_forkthread((pThreadFunc)DoFlashAndSoundThread, params);
 	return TRUE;
 }
 

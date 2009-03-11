@@ -41,22 +41,22 @@ extern      void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
 
 
 struct CPTABLE cpTable[] = {
-	{ 874,	_T("Thai")	 }, 
-	{ 932,	_T("Japanese") }, 
-	{ 936,	_T("Simplified Chinese") }, 
+	{ 874,	_T("Thai")	 },
+	{ 932,	_T("Japanese") },
+	{ 936,	_T("Simplified Chinese") },
 	{ 949,	_T("Korean") },
-	{ 950,	_T("Traditional Chinese") }, 
-	{ 1250,	_T("Central European") }, 
-	{ 1251,	_T("Cyrillic") }, 
-	{ 20866,  _T("Cyrillic KOI8-R") }, 
-	{ 1252,	_T("Latin I") }, 
-	{ 1253,	_T("Greek") }, 
-	{ 1254,	_T("Turkish") }, 
-	{ 1255,	_T("Hebrew") }, 
-	{ 1256,	_T("Arabic") }, 
-	{ 1257,	_T("Baltic") }, 
-	{ 1258,	_T("Vietnamese") }, 
-	{ 1361,	_T("Korean (Johab)") }, 
+	{ 950,	_T("Traditional Chinese") },
+	{ 1250,	_T("Central European") },
+	{ 1251,	_T("Cyrillic") },
+	{ 20866,  _T("Cyrillic KOI8-R") },
+	{ 1252,	_T("Latin I") },
+	{ 1253,	_T("Greek") },
+	{ 1254,	_T("Turkish") },
+	{ 1255,	_T("Hebrew") },
+	{ 1256,	_T("Arabic") },
+	{ 1257,	_T("Baltic") },
+	{ 1258,	_T("Vietnamese") },
+	{ 1361,	_T("Korean (Johab)") },
 	{   -1,     NULL}
 };
 
@@ -360,7 +360,10 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 }
 #endif
 
-//same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
+/*
+ * same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
+ */
+
 static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
 	va_list va;
@@ -525,10 +528,10 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 	 */
 	AppendToBuffer(buffer, bufferEnd, bufferAlloced, "}");
 
-	/* 
-	 * indent: 
-	 * real indent is set in msgdialog.c (DM_OPTIONSAPPLIED) 
-	 */ 
+	/*
+	 * indent:
+	 * real indent is set in msgdialog.c (DM_OPTIONSAPPLIED)
+	 */
 
 	if (!(dat->dwFlags & MWF_LOG_INDENT))
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "\\li%u\\ri%u\\fi%u\\tx%u", 2*15, 2*15, 0, 70 * 15);
@@ -624,7 +627,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0); 
+	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0);
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted = NULL;
@@ -663,7 +666,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	if (dbei.eventType == EVENTTYPE_MESSAGE && !isSent)
 		dat->stats.lastReceivedChars = lstrlenA((char *) dbei.pBlob);
 
-	if (heFlags != -1) 
+	if (heFlags != -1)
 		rtfMessage = HistoryEvents_GetRichText(hDbEvent, &dbei);
 	if (rtfMessage == NULL) {
 		msg = DbGetEventTextT(&dbei, dat->codePage);
@@ -679,7 +682,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	/*
 	else
 	{
-#if defined( _UNICODE ) 
+#if defined( _UNICODE )
 		int wlen;
 		int msglen = lstrlenA((char *) dbei.pBlob) + 1;
 
@@ -728,7 +731,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 
 	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
 		 //MAD: ugly hack for hideOnClose...
-		if(IsWindowVisible(GetParent(dat->hwnd))){	
+		if(IsWindowVisible(GetParent(dat->hwnd))){
 			CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
 			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
 			}
@@ -762,7 +765,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	if (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG){
 		if(fIsStatusChangeEvent)
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 7, MSGDLGFONTCOUNT + 7);
-		else 
+		else
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0));
 	}else if (dwEffectiveFlags & MWF_LOG_GRID)
  		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
@@ -1695,7 +1698,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
  * NLS functions (for unicode version only) encoding stuff..
  */
 
-static BOOL CALLBACK LangAddCallback(LPCTSTR str)
+static CODEPAGE_ENUMPROC LangAddCallback(LPCTSTR str)
 {
 	int i, count;
 	UINT cp;
@@ -1714,10 +1717,9 @@ void BuildCodePageList()
 	myGlobals.g_hMenuEncoding = CreateMenu();
 	AppendMenu(myGlobals.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
 	AppendMenuA(myGlobals.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
-	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
+	EnumSystemCodePages((CODEPAGE_ENUMPROC)LangAddCallback, CP_INSTALLED);
 }
 
-#if defined(_UNICODE)
 static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code)
 {
 	static TCHAR szResult[100];
@@ -1743,7 +1745,7 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
 	}
 	return szResult;
 }
-#else
+/*
 static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
 {
 	static char szResult[100];
@@ -1769,7 +1771,8 @@ static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t che
 	}
 	return szResult;
 }
-#endif
+*/
+
 /*
  * decodes UTF-8 to unicode
  * taken from jabber protocol implementation and slightly modified

@@ -210,14 +210,15 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
 	time_t t = time(NULL);
 	struct tm *lt = localtime(&t);
 	static char *forbiddenCharacters = "%/\\'";
-	unsigned int i;
+	unsigned int i, j;
 	DWORD setView = 1;
 
 	mir_snprintf(szTimestamp, 100, "%04u %02u %02u_%02u%02u", lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
 
 	if (!myGlobals.szSkinsPath&&myGlobals.szDataPath)
 		mir_snprintf(szFinalPath, MAX_PATH,"%sSaved Contact Pictures\\%s", myGlobals.szDataPath, dat->bIsMeta ? dat->szMetaProto : dat->szProto);
-	else mir_snprintf(szFinalPath, MAX_PATH,"%s%s",myGlobals.szAvatarsPath,dat->bIsMeta ? dat->szMetaProto : dat->szProto);
+	else
+		mir_snprintf(szFinalPath, MAX_PATH,"%s%s",myGlobals.szAvatarsPath,dat->bIsMeta ? dat->szMetaProto : dat->szProto);
 
 	if (CreateDirectoryA(szFinalPath, 0) == 0) {
 		if (GetLastError() != ERROR_ALREADY_EXISTS) {
@@ -237,12 +238,16 @@ static void SaveAvatarToFile(struct MessageWindowData *dat, HBITMAP hbm, int isO
 		mir_snprintf(szFinalFilename, MAX_PATH,"%s.bmp", szBaseName);
 	}
 
+	/*
+	 * do not allow / or \ or % in the filename
+	 */
 	for (i = 0; i < strlen(forbiddenCharacters); i++) {
-		char *szFound = 0;
-
-		while ((szFound = strchr(szFinalFilename, forbiddenCharacters[i])) != NULL)
-			* szFound = '_';
+		for(j = 0; j < strlen(szFinalFilename); j++) {
+			if(szFinalFilename[j] == forbiddenCharacters[i])
+				szFinalFilename[j] = '_';
+		}
 	}
+
 	ofn.lpstrFilter = "Image files\0*.bmp;*.png;*.jpg;*.gif\0\0";
 	if (IsWinVer2000Plus()) {
 		ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
@@ -2837,11 +2842,12 @@ HICON GetXStatusIcon(struct MessageWindowData *dat)
 
 LRESULT GetSendButtonState(HWND hwnd)
 {
-HWND hwndIDok=GetDlgItem(hwnd, IDOK);
-if(hwndIDok)
-	return(SendMessage(hwndIDok, BUTTONSETASFLATBTN + 15, 0, 0));
-else
-	return 0;
+	HWND hwndIDok=GetDlgItem(hwnd, IDOK);
+
+	if(hwndIDok)
+		return(SendMessage(hwndIDok, BUTTONSETASFLATBTN + 15, 0, 0));
+	else
+		return 0;
 }
 
 void EnableSendButton(HWND hwnd, int iMode)

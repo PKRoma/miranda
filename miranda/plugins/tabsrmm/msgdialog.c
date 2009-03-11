@@ -48,7 +48,7 @@ extern struct GlobalLogSettings_t g_Settings;
 extern BOOL g_framelessSkinmode;
 extern HANDLE g_hEvent_MsgPopup;
 extern int    g_chat_integration_enabled;
-extern      int g_sessionshutdown;
+extern int g_sessionshutdown;
 
 extern PITA pfnIsThemeActive;
 extern POTD pfnOpenThemeData;
@@ -149,6 +149,7 @@ static BOOL IsUtfSendAvailable(HANDLE hContact)
 }
 
 // pt in screen coords
+
 static void ShowPopupMenu(HWND hwndDlg, struct MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 {
 	HMENU hMenu, hSubMenu;
@@ -362,9 +363,9 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 {
 
 	struct MessageWindowData *mwdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
-	BOOL isCtrl = GetKeyState(VK_CONTROL) & 0x8000;
+	BOOL isCtrl	 = GetKeyState(VK_CONTROL) & 0x8000;
 	BOOL isShift = GetKeyState(VK_SHIFT) & 0x8000;
-	BOOL isAlt = GetKeyState(VK_MENU) & 0x8000;
+	BOOL isAlt 	 = GetKeyState(VK_MENU) & 0x8000;
 
 	switch(msg) {
 
@@ -386,7 +387,6 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	}
 	return CallWindowProc(mwdat->oldIEViewProc, hwnd, msg, wParam, lParam);
 }
-//MAD_
 
 /*
  * update state of the container - this is called whenever a tab becomes active, no matter how and
@@ -525,11 +525,10 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 	if (dat->dwFlags & MWF_ERRORSTATE)
 		return;
 	 //MAD
-	if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)&&dat->hwndPanelPic)
-		{
+	if(!(dat->dwFlagsEx & MWF_SHOW_INFOPANEL)&&dat->hwndPanelPic) {
 		DestroyWindow(dat->hwndPanelPic);
-		 dat->hwndPanelPic=NULL;
-		}
+		dat->hwndPanelPic=NULL;
+	}
 	//
 	dat->iRealAvatarHeight = 0;
 	AdjustBottomAvatarDisplay(hwndDlg, dat);
@@ -539,11 +538,10 @@ static void ShowHideInfoPanel(HWND hwndDlg, struct MessageWindowData *dat)
 
 	if (dat->dwFlagsEx & MWF_SHOW_INFOPANEL) {
 		//MAD
-		if(dat->hwndContactPic)
-			{
+		if(dat->hwndContactPic)	{
 			DestroyWindow(dat->hwndContactPic);
 			dat->hwndContactPic=NULL;
-			}
+		}
 		//
 		GetAvatarVisibility(hwndDlg, dat);
 		ConfigurePanel(hwndDlg, dat);
@@ -1061,7 +1059,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 							mwdat->dwFlags &= ~MWF_NEEDHISTORYSAVE;
 						} else {
 							if (mwdat->pContainer->hwndStatus)
-								SetWindowTextA(mwdat->pContainer->hwndStatus, "The input history is empty.");
+								SetWindowText(mwdat->pContainer->hwndStatus, TranslateT("The input history is empty."));
 						}
 					}
 					return 0;
@@ -1269,7 +1267,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
 
-
+/*
+ * subclasses the avatar display controls, needed for skinning and to prevent
+ * it from flickering during resize/move operations.
+ */
 
 static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
