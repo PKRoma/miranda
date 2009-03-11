@@ -1698,7 +1698,7 @@ static void ReplaceIcons(HWND hwndDlg, struct MessageWindowData *dat, LONG start
  * NLS functions (for unicode version only) encoding stuff..
  */
 
-static CODEPAGE_ENUMPROC LangAddCallback(LPCTSTR str)
+static BOOL CALLBACK LangAddCallback(LPTSTR str)
 {
 	int i, count;
 	UINT cp;
@@ -1717,7 +1717,7 @@ void BuildCodePageList()
 	myGlobals.g_hMenuEncoding = CreateMenu();
 	AppendMenu(myGlobals.g_hMenuEncoding, MF_STRING, 500, TranslateT("Use default codepage"));
 	AppendMenuA(myGlobals.g_hMenuEncoding, MF_SEPARATOR, 0, 0);
-	EnumSystemCodePages((CODEPAGE_ENUMPROC)LangAddCallback, CP_INSTALLED);
+	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 
 static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, TCHAR code)
@@ -1745,33 +1745,6 @@ static TCHAR *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t ch
 	}
 	return szResult;
 }
-/*
-static char *Template_MakeRelativeDate(struct MessageWindowData *dat, time_t check, int groupBreak, char code)
-{
-	static char szResult[100];
-	DBTIMETOSTRING dbtts;
-	szResult[0] = 0;
-	dbtts.cbDest = 70;;
-	dbtts.szDest = szResult;
-
-	if ((code == 'R' || code == 'r') && check >= today) {
-		lstrcpyA(szResult, szToday);
-	} else if ((code == 'R' || code == 'r') && check > (today - 86400)) {
-		lstrcpyA(szResult, szYesterday);
-	} else {
-		if (code == 'D' || code == 'R')
-			dbtts.szFormat = "D";
-		else if (code == 'T')
-			dbtts.szFormat = "s";
-		else if (code == 't')
-			dbtts.szFormat = "t";
-		else
-			dbtts.szFormat = "d";
-		CallService(MS_DB_TIME_TIMESTAMPTOSTRING, check, (LPARAM)&dbtts);
-	}
-	return szResult;
-}
-*/
 
 /*
  * decodes UTF-8 to unicode

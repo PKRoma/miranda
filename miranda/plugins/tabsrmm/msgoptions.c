@@ -34,8 +34,6 @@ $Id$
 #pragma hdrstop
 #include <m_modernopt.h>
 
-//#include "m_MathModule.h"
-
 #define DM_GETSTATUSMASK (WM_USER + 10)
 
 extern		MYGLOBALS myGlobals;
@@ -719,15 +717,22 @@ static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingDword(NULL, SRMSGMOD_T, "RightIndent", (DWORD) GetDlgItemInt(hwndDlg, IDC_RIGHTINDENT, &translated, FALSE));
 
 							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 0);
-							DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+							switch(msglogmode) {
+							case 0:
+								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 0);
+								break;
 
-							if (msglogmode == 1) {
+							case 1:
 								if (have_ieview)
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_ieview", 1);
 								else
 									DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
-							} else if (msglogmode == 2)
+								break;
+							
+							case 2:
 								DBWriteContactSettingByte(NULL, SRMSGMOD_T, "default_hpp", 1);
+								break;
+							}
 
 							/*
 							* scan the tree view and obtain the options...
