@@ -1004,7 +1004,11 @@ void LoadGlobalSettings(void)
 			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
 		}
-		else lstrcpynA(pszTemp, "Logs\\", MAX_PATH);
+		else {
+            char *tmpPath = Utils_ReplaceVars("%miranda_logpath%\\Chat");
+            lstrcpynA(pszTemp, tmpPath, SIZEOF(pszTemp)-1);
+            mir_free(tmpPath);
+        }
 
 		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
 	}
