@@ -116,7 +116,7 @@ void CIrcProto::WriteSettings( TDbSetting* sets, int count )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static int sttServerEnum( const char* szSetting, LPARAM lParam )
+static int sttServerEnum( const char* szSetting, LPARAM )
 {
 	DBVARIANT dbv;
 	if ( DBGetContactSettingString( NULL, SERVERSMODULE, szSetting, &dbv ))
@@ -162,17 +162,17 @@ static int sttServerEnum( const char* szSetting, LPARAM lParam )
 	pData->m_group = ( char* )mir_alloc( p2-p1+1 );
 	lstrcpynA( pData->m_group, p1, p2-p1+1 );
 
-	CIrcProto* ppro = ( CIrcProto* )lParam;
 	g_servers.insert( pData );
 	DBFreeVariant( &dbv );
 	return 0;
 }
 
-void CIrcProto::RereadServers()
+void RereadServers()
 {
+	g_servers.destroy();
+
 	DBCONTACTENUMSETTINGS dbces;
 	dbces.pfnEnumProc = sttServerEnum;
-	dbces.lParam = ( LPARAM )this;
 	dbces.szModule = SERVERSMODULE;
 	CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
 }
@@ -810,8 +810,7 @@ void CConnectPrefsDlg::OnApply()
 				DBWriteContactSettingString( NULL, SERVERSMODULE, pData->m_name, TextLine );
 		}	}
 
-		g_servers.destroy();
-		m_proto->RereadServers();
+		RereadServers();
 	}
 
 	m_proto->WriteSettings( ConnectSettings, SIZEOF( ConnectSettings ));
@@ -1844,4 +1843,58 @@ int CIrcProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 	CDlgAccMgrUI *dlg = new CDlgAccMgrUI(this, (HWND)lParam);
 	dlg->Show();
 	return (int)dlg->GetHwnd();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Initialize servers list
+
+static void sttImportIni( const char* szIniFile )
+{
+	FILE* serverFile = fopen( szIniFile, "r" );
+	if ( serverFile == NULL )
+		return;
+
+	char buf1[ 500 ], buf2[ 200 ];
+	while ( fgets( buf1, sizeof( buf1 ), serverFile )) {
+		char* p = strchr( buf1, '=' );
+		if ( !p )
+			continue;
+
+		p++;
+		rtrim( p );
+		char* p1 = strstr( p, "SERVER:" );
+		if ( !p1 )
+			continue;
+
+		memcpy( buf2, p, int(p1-p));
+		buf2[ int(p1-p) ] = 0;
+		DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
+	}
+	fclose( serverFile );
+	::remove( szIniFile );
+}
+
+void InitServers()
+{
+	char szTemp[MAX_PATH];
+	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath );
+	sttImportIni( szTemp );
+
+	RereadServers();
+
+	if ( g_servers.getCount() == 0 ) {
+		char *szIniFile = Utils_ReplaceVars("%temp%\\default_servers.ini");
+		FILE *serverFile = fopen( szIniFile, "a" );
+		if (serverFile) {
+			char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
+			if (pszSvrs)
+				fwrite(pszSvrs , 1 , lstrlenA(pszSvrs) + 1 , serverFile );
+			fclose(serverFile);
+
+			sttImportIni( szIniFile );
+			RereadServers();
+		}
+
+		mir_free(szIniFile);
+	}
 }

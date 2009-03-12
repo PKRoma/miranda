@@ -201,32 +201,6 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 	return 0;
 }
 
-static void sttImportIni( const char* szIniFile )
-{
-	FILE* serverFile = fopen( szIniFile, "r" );
-	if ( serverFile == NULL )
-		return;
-
-	char buf1[ 500 ], buf2[ 200 ];
-	while ( fgets( buf1, sizeof( buf1 ), serverFile )) {
-		char* p = strchr( buf1, '=' );
-		if ( !p )
-			continue;
-
-		p++;
-		rtrim( p );
-		char* p1 = strstr( p, "SERVER:" );
-		if ( !p1 )
-			continue;
-
-		memcpy( buf2, p, int(p1-p));
-		buf2[ int(p1-p) ] = 0;
-		DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
-	}
-	fclose( serverFile );
-	::remove( szIniFile );
-}
-
 int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 {
 	char szTemp[MAX_PATH];
@@ -307,30 +281,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/");
 	}
     
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_servers.ini", mirandapath, m_szModuleName);
-	sttImportIni( szTemp );
-
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath, m_szModuleName);
-	sttImportIni( szTemp );
-
-	RereadServers();
-
-	if ( g_servers.getCount() == 0 ) {
-		char *szIniFile = Utils_ReplaceVars("%temp%\\default_servers.ini");
-		FILE *serverFile = fopen( szIniFile, "a" );
-		if (serverFile) {
-			char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
-			if (pszSvrs)
-				fwrite(pszSvrs , 1 , lstrlenA(pszSvrs) + 1 , serverFile );
-			fclose(serverFile);
-
-			sttImportIni( szIniFile );
-			RereadServers();
-		}
-
-		mir_free(szIniFile);
-	}
-
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );
 	if ( pszPerformData != NULL ) {

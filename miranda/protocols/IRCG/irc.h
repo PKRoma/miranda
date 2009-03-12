@@ -527,7 +527,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	HICON   LoadIconEx(int iIndex);
 	HANDLE  GetIconHandle(int iconId);
 	void    ReadSettings( TDbSetting* sets, int count );
-	void    RereadServers( void );
 	void    RewriteIgnoreSettings( void );
 	void    WriteSettings( TDbSetting* sets, int count );
 
@@ -756,6 +755,11 @@ VOID CALLBACK OnlineNotifTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWOR
 VOID CALLBACK OnlineNotifTimerProc3( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
 VOID CALLBACK DCCTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
 VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime );
+
+// options.cpp
+
+void InitServers( void );
+void RereadServers( void );
 
 // services.cpp
 

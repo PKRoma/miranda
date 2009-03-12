@@ -122,6 +122,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	}	}
 
 	InitTimers();
+	InitServers();
 
 	// register protocol
 	PROTOCOLDESCRIPTOR pd = { 0 };
