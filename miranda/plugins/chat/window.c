@@ -2704,6 +2704,7 @@ LABEL_SHOWWINDOW:
 		SendMessage(hwndDlg,GC_SAVEWNDPOS,0,0);
 
 		si->hWnd = NULL;
+		si->wState &= ~STATE_TALK;
 		DestroyWindow(si->hwndStatus);
 		si->hwndStatus = NULL;
 
