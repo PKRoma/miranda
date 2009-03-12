@@ -19,21 +19,24 @@ typedef struct {
 	int id;
 	char *who;
 	char *msg;
-	char *filename;
 	char *ftoken;
 	HANDLE hContact;
 	int  cancel;
 	char *url;
 	char *savepath;
-	unsigned long fsize;
 	HANDLE hWaitEvent;
 	DWORD action;
 	int y7;
+	YList *files;
+	PROTOFILETRANSFERSTATUS pfts;
 } y_filetransfer;
 
 /* libyahoo2 callback(s) */
 void ext_yahoo_got_file(int id, const char *me, const char *who, const char *url, long expires, const char *msg, const char *fname, unsigned long fesize, const char *ft_token, int y7);
+void ext_yahoo_got_files(int id, const char *me, const char *who, const char *ft_token, int y7, YList *files);
 void ext_yahoo_got_file7info(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token);
+void ext_yahoo_send_file7info(int id, const char *me, const char *who, const char *ft_token);
+void ext_yahoo_ft7_send_file(int id, const char *me, const char *who, const char *filename, const char *token, const char *ft_token);
 
 /* service functions */
 int YahooFileAllow(WPARAM wParam,LPARAM lParam);

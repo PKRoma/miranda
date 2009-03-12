@@ -500,6 +500,20 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, const char *me, const char 
 
 
 /*
+ * Name: ext_yahoo_got_files
+ * 	Called when someone sends you a file(s)
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	me   - the identity the file was sent to
+ * 	who  - the user who sent the file
+ *  ftoken - file token
+ *  y7    - flag signalling y7 transfer
+ * files - YList of files containing "struct yahoo_file_info" records
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_got_files)(int id, const char *me, const char *who, const char *ft_token, int y7, YList *files);
+
+
+/*
  * Name: ext_yahoo_got_file7info
  * 	Called when someone sends you a file
  * Params:
@@ -516,6 +530,27 @@ void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file)(int id, const char *me, const char 
  */
 void YAHOO_CALLBACK_TYPE(ext_yahoo_got_file7info)(int id, const char *me, const char *who, const char *url, const char *fname, const char *ft_token);
 
+/*
+ * Name: ext_yahoo_got_file7info
+ * 	Called when someone sends you a file
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	me   - the identity the file was sent to
+ * 	who  - the user who sent the file
+ *  ftoken - file token
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_send_file7info)(int id, const char *me, const char *who, const char *ft_token);
+
+/*
+ * Name: ext_yahoo_ft7_send_file
+ * 	Called when someone sends you a file
+ * Params:
+ * 	id   - the id that identifies the server connection
+ * 	me   - the identity the file was sent to
+ * 	who  - the user who sent the file
+ *  ftoken - file token
+ */
+void YAHOO_CALLBACK_TYPE(ext_yahoo_ft7_send_file)(int id, const char *me, const char *who, const char *filename, const char *token, const char *ft_token);
 
 /*
  * Name: ext_yahoo_contact_added

@@ -336,6 +336,7 @@ static const value_string packet_keys[]={
 	{232, "weird number (md5 hash?) [audible]"},
 	{241, "protocol"},
 	{244, "client version"},
+	{251, "File Preview?"},
 	{254, "last name"},
 	{265, "FT7 Token"},
 	{266, "FT7 # Files"},
@@ -1310,47 +1311,65 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 	struct yahoo_data *yd = yid->yd;
 	char *from=NULL;
 	char *to=NULL;
-	char *msg=NULL;
-	char *url=NULL;
-	long expires=0;
 
 	int service=0;
 	char *ft_token=NULL;
 	char *filename=NULL;
 	unsigned long filesize=0L;
-
-	YList *l;
+	
+	struct yahoo_file_info *fi;
+	YList *l, *files=NULL;
+	
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
 		switch (pair->key) {
-		case 4:
+		case 4: /* from */
 			from = pair->value;
 			break;
-		case 5:
+			
+		case 5: /* to */
 			to = pair->value;
 			break;
-		case 27:
+			
+		case 222: /* Services: 
+					1   - dl
+					2	- cancel
+					3	- send
+					*/
+			service = atol(pair->value);
+			break;
+			
+		case 265: /* this is the FT token for this batch/session */
+			ft_token = pair->value;
+			break;
+			
+			
+		case 27: /* filename */
 			filename = pair->value;
 			break;
 		
-		case 28:
+		case 28: /* file size */
 			filesize = atol(pair->value);
 			break;
 			
-		case 222:
-			service = atol(pair->value);
-			break;
-		case 265:
-			ft_token = pair->value;
+		case 301:  /* file terminator token usually set to 268 */
+			fi = y_new0(struct yahoo_file_info, 1);
+			fi->filename = strdup(filename);
+			fi->filesize = filesize;
+			
+			files = y_list_append(files, fi);
 			break;
 		}
 	}
 
 	switch (service) {
 	case 1: // FT7 
-		YAHOO_CALLBACK(ext_yahoo_got_file)(yd->client_id, to, from, url, expires, msg, filename, filesize, ft_token, 1);
+		YAHOO_CALLBACK(ext_yahoo_got_files)(yd->client_id, to, from, ft_token, service, files);
 		break;
 	case 2: // FT7 Cancelled
+		break;
+	case 3: // FT7 Send Files
+		YAHOO_CALLBACK(ext_yahoo_send_file7info)(yd->client_id, to, from, ft_token);
 		break;
 	}
 }
@@ -1418,6 +1437,19 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 	char *token = NULL;
 	unsigned long filesize=0L;
 
+	/**
+		TODO: Need to process FileTransfer7Info Disconnected Status.
+	
+		It doesn't send service but sends Status (66) = -1
+	[10:56:02 YAHOO] Key: (    1) ID                        Value: 'xxx'
+	[10:56:02 YAHOO] Key: (    4) ID/Nick                   Value: 'xxx'
+	[10:56:02 YAHOO] Key: (    5) To                        Value: 'xxxxxxx'
+	[10:56:02 YAHOO] Key: (   66) login status              Value: '-1'
+	[10:56:02 YAHOO] Key: (  251) (null)                    Value: 'likQolabUXpDajoIdTZKPw--AsM.A7RnMpJwfZjQmIm.SZea2CCIGPAjF0DTHjizENuccwdZueaEuA13irqIIdAJcPOT24yWnwwvIHYqcMg4foLt0LA-'
+	[10:56:02 YAHOO] Key: (  265) FT7 Token                 Value: '$t$1vTZy4AzepDkGzJoMBg$$'
+
+	*/
+	
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = l->data;
@@ -1502,6 +1534,68 @@ static void yahoo_process_filetransfer7info(struct yahoo_input_data *yid, struct
 		break;
 	}
 }
+static void yahoo_process_filetransfer7accept(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
+{
+	struct yahoo_data *yd = yid->yd;
+	char *from=NULL;
+	char *to=NULL;
+	int service=0;
+	char *ft_token=NULL;
+	char *filename=NULL;
+	char *token;
+
+	/**
+		TODO: Need to process FileTransfer7Info Disconnected Status.
+	
+		It doesn't send service but sends Status (66) = -1
+	[10:56:02 YAHOO] Key: (    1) ID                        Value: 'xxx'
+	[10:56:02 YAHOO] Key: (    4) ID/Nick                   Value: 'xxx'
+	[10:56:02 YAHOO] Key: (    5) To                        Value: 'xxxxxxx'
+	[10:56:02 YAHOO] Key: (   66) login status              Value: '-1'
+	[10:56:02 YAHOO] Key: (  251) (null)                    Value: 'likQolabUXpDajoIdTZKPw--AsM.A7RnMpJwfZjQmIm.SZea2CCIGPAjF0DTHjizENuccwdZueaEuA13irqIIdAJcPOT24yWnwwvIHYqcMg4foLt0LA-'
+	[10:56:02 YAHOO] Key: (  265) FT7 Token                 Value: '$t$1vTZy4AzepDkGzJoMBg$$'
+
+	*/
+	
+	YList *l;
+	for (l = pkt->hash; l; l = l->next) {
+		struct yahoo_pair *pair = l->data;
+		switch (pair->key) {
+		case 4:
+			from = pair->value;
+			break;
+		case 5:
+			to = pair->value;
+			break;
+		case 27:
+			filename = pair->value;
+			break;
+		
+		case 249:
+			service = atol(pair->value);
+			break;
+			
+		case 251:
+			token = pair->value;
+			break;
+			
+		case 265:
+			ft_token = pair->value;
+			break;
+		}
+	}
+
+	switch (service) {
+	case 1: // P2P
+		
+		break;
+		
+	case 3: // Relay
+		YAHOO_CALLBACK(ext_yahoo_ft7_send_file)(yd->client_id, to, from, filename, token, ft_token);
+		break;
+	}
+}
+
 
 static void yahoo_process_conference(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
@@ -4226,6 +4320,14 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 	case YAHOO_SERVICE_Y7_FILETRANSFERINFO:
 		yahoo_process_filetransfer7info(yid, pkt);
 		break;
+	case YAHOO_SERVICE_Y7_FILETRANSFERACCEPT:
+		/*
+		 * We need to parse this packet
+		 *
+		 *  Abort is signalled via status = -1 and  66 login status = -1 with FT_TOKEN
+		 */
+		yahoo_process_filetransfer7accept(yid, pkt);
+		break;
 	case YAHOO_SERVICE_Y7_CHANGE_GROUP:
 		yahoo_process_yahoo7_change_group(yid, pkt);
 		break;
@@ -6513,6 +6615,42 @@ void yahoo_send_file(int id, const char *who, const char *msg,
 			_yahoo_send_file_connected, sfd);
 }
 
+void yahoo_send_file_y7(int id, const char *from, const char *to, const char *relay_ip, 
+				unsigned long size, const char* token, yahoo_get_fd_callback callback, void *data)
+{
+	struct yahoo_data *yd = find_conn_by_id(id);
+	struct yahoo_input_data *yid;
+	struct yahoo_server_settings *yss;
+	struct yahoo_packet *pkt = NULL;
+	char size_str[10];
+	long content_length=0;
+	unsigned char buff[1024];
+	char url[255];
+	struct send_file_data *sfd;
+	const char *s;
+		
+	if(!yd)
+		return;
+
+	yss = yd->server_settings;
+
+	yid = y_new0(struct yahoo_input_data, 1);
+	yid->yd = yd;
+	yid->type = YAHOO_CONNECTION_FT;
+
+	s = yahoo_decode(token);
+	snprintf(url, sizeof(url), "http://%s/relay?token=%s&sender=%s&recver=%s", relay_ip, s, from, to);
+	
+	FREE(s);
+	
+	snprintf((char *)buff, sizeof(buff), "Y=%s; T=%s; B=%s;",
+			yd->cookie_y, yd->cookie_t, yd->cookie_b);
+	inputs = y_list_prepend(inputs, yid);
+
+	YAHOO_CALLBACK(ext_yahoo_send_http_request)(yid->yd->client_id, "POST", url, buff, size, callback, data);
+}
+
+
 void yahoo_send_avatar(int id, const char *name, unsigned long size, 
 		yahoo_get_fd_callback callback, void *data)
 {
@@ -6669,7 +6807,7 @@ void yahoo_request_buddy_avatar(int id, const char *buddy)
 	yahoo_packet_free(pkt);
 }
 
-void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command)
+void yahoo_ftdc_deny(int id, const char *buddy, const char *filename, const char *ft_token, int command)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -6715,7 +6853,7 @@ void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token)
 
 }
 
-void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token)
+void yahoo_ft7dc_deny(int id, const char *buddy, const char *ft_token)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -6731,6 +6869,28 @@ void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token)
 	yahoo_packet_hash(pkt, 5, buddy);
 	yahoo_packet_hash(pkt,265, ft_token);
 	yahoo_packet_hash(pkt,222, "4");
+
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+void yahoo_ft7dc_abort(int id, const char *buddy, const char *ft_token)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DISCONNECTED, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,66, "-1");
 
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
@@ -6754,6 +6914,117 @@ void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token)
 	yahoo_packet_hash(pkt,265, ft_token);
 	yahoo_packet_hash(pkt,66, "-3");
 
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+void yahoo_ft7dc_nextfile(int id, const char *buddy, const char *ft_token)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERACCEPT, YPACKET_STATUS_DEFAULT, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,271, "1");
+	
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+}
+
+char *yahoo_ft7dc_send(int id, const char *buddy, YList *files)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+	char ft_token[32]; // we only need 23 chars actually
+	YList *l=files;
+	mir_md5_byte_t result[16];
+	mir_md5_state_t ctx;
+
+	if(!yid)
+		return NULL;
+
+	mir_md5_init(&ctx);
+	mir_md5_append(&ctx, (mir_md5_byte_t *)buddy, strlen(buddy));
+	
+	snprintf(ft_token, 32, "%lu", time(NULL));
+	mir_md5_append(&ctx, (mir_md5_byte_t *)ft_token, strlen(ft_token));
+	mir_md5_finish(&ctx, result);
+	to_y64(ft_token, result, 16);
+	
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFER, YPACKET_STATUS_DEFAULT, yd->session_id);
+	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 5, buddy);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,222, "1");
+	
+	yahoo_packet_hash_int(pkt,266, y_list_length(files)); // files
+	
+	yahoo_packet_hash(pkt,302, "268");
+	yahoo_packet_hash(pkt,300, "268");
+	
+	while (l) {
+		struct yahoo_file_info * fi = l->data;
+		char *c = strrchr(fi->filename, '\\');
+		
+		if (c != NULL) {
+			c++;
+		} else {
+			c = fi->filename;
+		}
+		
+		yahoo_packet_hash(pkt, 27, c);
+		yahoo_packet_hash_int(pkt, 28, fi->filesize);
+		
+		if (l->next) {
+			yahoo_packet_hash(pkt,301, "268");
+			yahoo_packet_hash(pkt,300, "268");
+		}
+		
+		l = l->next;
+	}
+	
+	yahoo_packet_hash(pkt, 301, "268");
+	yahoo_packet_hash(pkt, 303, "268");
+	
+	yahoo_send_packet(yid, pkt, 0);
+	yahoo_packet_free(pkt);
+
+	return strdup(ft_token);
+}
+
+void yahoo_send_file7info(int id, const char *me, const char *who, const char *ft_token, const char* filename,
+							const char *relay_ip)
+{
+	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
+	struct yahoo_data *yd;
+	struct yahoo_packet *pkt = NULL;
+
+	if(!yid)
+		return;
+
+	yd = yid->yd;
+
+	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_FILETRANSFERINFO, YPACKET_STATUS_DEFAULT, yd->session_id);
+	yahoo_packet_hash(pkt, 1, me);
+	yahoo_packet_hash(pkt, 5, who);
+	yahoo_packet_hash(pkt,265, ft_token);
+	yahoo_packet_hash(pkt,27, filename);
+	yahoo_packet_hash(pkt,249, "3");
+	yahoo_packet_hash(pkt,250, relay_ip);
+	
 	yahoo_send_packet(yid, pkt, 0);
 	yahoo_packet_free(pkt);
 

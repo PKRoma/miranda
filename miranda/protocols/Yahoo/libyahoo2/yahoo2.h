@@ -203,10 +203,17 @@ void yahoo_send_picture_info(int id, const char *who, int type, const char *pic_
 void yahoo_send_picture_status(int id, int buddy_icon);
 void yahoo_send_picture_update(int id, const char *who, int type);
 
-void yahoo_ftdc_cancel(int id, const char *buddy, const char *filename, const char *ft_token, int command);
+void yahoo_ftdc_deny(int id, const char *buddy, const char *filename, const char *ft_token, int command);
 void yahoo_ft7dc_accept(int id, const char *buddy, const char *ft_token);
-void yahoo_ft7dc_cancel(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_deny(int id, const char *buddy, const char *ft_token);
 void yahoo_ft7dc_relay(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_abort(int id, const char *buddy, const char *ft_token);
+void yahoo_ft7dc_nextfile(int id, const char *buddy, const char *ft_token);
+char *yahoo_ft7dc_send(int id, const char *buddy, YList *files);
+void yahoo_send_file7info(int id, const char *me, const char *who, const char *ft_token, const char* filename,
+							const char *relay_ip);
+void yahoo_send_file_y7(int id, const char *from, const char *to, const char *relay_ip, 
+				unsigned long size, const char* ft_token, yahoo_get_fd_callback callback, void *data);							
 char *yahoo_webmessenger_idle_packet(int id, int* len);
 void yahoo_send_idle_packet(int id);
 void yahoo_send_im_ack(int id, const char *buddy, const char *seqn, int sendn);
