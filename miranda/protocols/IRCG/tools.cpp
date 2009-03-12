@@ -2,7 +2,7 @@
 IRC plugin for Miranda IM
 
 Copyright (C) 2003-05 Jurgen Persson
-Copyright (C) 2007-08 George Hazan
+Copyright (C) 2007-09 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -106,15 +106,30 @@ void CIrcProto::setWord( HANDLE hContact, const char* name, int value )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CIrcProto::AddToJTemp(CMString sCommand)
+void CIrcProto::AddToJTemp(TCHAR op, CMString& sCommand)
 {
+	CMString res;	
+
+	int pos = 0;
+	while( true ) {
+		CMString tmp = sCommand.Tokenize( _T(","), pos );
+		if ( pos == -1 )
+			break;
+
+		tmp = op + tmp;
+		if ( res.IsEmpty() )
+			res = tmp;
+		else
+			res += _T(" ") + tmp;
+	}
+
 	DBVARIANT dbv;
 	if ( !getTString( "JTemp", &dbv )) {
-		sCommand = CMString(dbv.ptszVal) + _T(" ") + sCommand;
+		res = CMString(dbv.ptszVal) + _T(" ") + res;
 		DBFreeVariant( &dbv );
 	}
 
-	setTString("JTemp", sCommand.c_str());
+	setTString("JTemp", res.c_str());
 }
 
 void CIrcProto::ircFork( IrcThreadFunc pFunc, void* arg )

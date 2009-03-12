@@ -2,7 +2,7 @@
 IRC plugin for Miranda IM
 
 Copyright (C) 2003-05 Jurgen Persson
-Copyright (C) 2007-08 George Hazan
+Copyright (C) 2007-09 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -235,7 +235,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if (command == _T("/clear")) {
+	if (command == _T("/clear")) {
 		CMString S;
 		if ( !one.IsEmpty() ) {
 			if ( one == _T("server"))
@@ -259,7 +259,8 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		CallChatEvent( WINDOW_CLEARLOG, (LPARAM)&gce);
 		return true;
 	}
-	else if ( command == _T("/ignore")) {
+	
+	if ( command == _T("/ignore")) {
 		if ( IsConnected() ) {
 			CMString IgnoreFlags;
 			TCHAR temp[500];
@@ -312,7 +313,8 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		}
 		return true;
 	}
-	else if (command == _T("/unignore")) {
+	
+	if (command == _T("/unignore")) {
 		if ( !_tcschr( one.c_str(), '!' ) && !_tcschr(one.c_str(), '@'))
 			one += _T("!*@*");
 		
@@ -325,7 +327,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if ( command == _T("/userhost")) {
+	if ( command == _T("/userhost")) {
  		if ( one.IsEmpty())
 			return true;
 
@@ -333,26 +335,37 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
  		return false;
  	}
  
-	else if ( command == _T("/joinx")) {
-		if ( one.IsEmpty())
-			return true;
+	if ( command == _T("/joinx")) {
+		if ( !one.IsEmpty()) {
+			for ( int i=1; ; i++ ) {
+				CMString tmp = GetWord( text.c_str(), i );
+				if ( tmp.IsEmpty())
+					break;
 
-		AddToJTemp( _T("X")+one );
+				AddToJTemp( 'X', tmp );
+			}
 
-		PostIrcMessage( _T("/JOIN %s"), GetWordAddress(text.c_str(), 1));
+			PostIrcMessage( _T("/JOIN %s"), GetWordAddress(text.c_str(), 1));
+		}
 		return true;
 	}
 
-	else if ( command == _T("/joinm")) {
-		if ( one.IsEmpty())
-			return true;
+	if ( command == _T("/joinm")) {
+		if ( !one.IsEmpty()) {
+			for ( int i=1; ; i++ ) {
+				CMString tmp = GetWord( text.c_str(), i );
+				if ( tmp.IsEmpty())
+					break;
 
-		AddToJTemp( _T("M")+one );
+				AddToJTemp( 'M', tmp );
+			}
 
-		PostIrcMessage( _T("/JOIN %s"), GetWordAddress(text.c_str(), 1));
+			PostIrcMessage( _T("/JOIN %s"), GetWordAddress(text.c_str(), 1));
+		}
 		return true;
 	}
-	else if (command == _T("/nusers")) {
+	
+	if (command == _T("/nusers")) {
 		TCHAR szTemp[40];
 		CMString S = MakeWndID(window);
 		GC_INFO gci = {0};
@@ -365,7 +378,8 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), szTemp, NULL, NULL, NULL, true, false); 
 		return true;
 	}
-	else if (command == _T("/echo")) {
+	
+	if (command == _T("/echo")) {
 		if ( one.IsEmpty())
 			return true;
 
@@ -382,7 +396,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 	
-	else if (command == _T("/buddycheck")) {
+	if (command == _T("/buddycheck")) {
 		if ( one.IsEmpty()) {
 			if (( m_autoOnlineNotification && !bTempDisableCheck) || bTempForceCheck )
 				DoEvent( GC_EVENT_INFORMATION, NULL, m_info.sNick.c_str(), TranslateT("The buddy check function is enabled"), NULL, NULL, NULL, true, false); 
@@ -414,14 +428,15 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		}	}
 		return true;
 	}
-	else if (command == _T("/whois")) {
+	
+	if (command == _T("/whois")) {
 		if ( one.IsEmpty())
 			return false;
 		m_manualWhoisCount++;
 		return false;
 	}
 
-	else if ( command == _T("/channelmanager")) {
+	if ( command == _T("/channelmanager")) {
 		if ( window && !hContact && IsChannel( window )) {
 			if ( IsConnected() ) {
 				if ( m_managerDlg != NULL ) {
@@ -433,17 +448,19 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 					m_managerDlg->Show();
 					m_managerDlg->InitManager( 1, window );
 		}	}	}
+
 		return true;
 	}
 
-	else if ( command == _T("/who")) {
+	if ( command == _T("/who")) {
 		if ( one.IsEmpty())
 			return true;
+
 		DoUserhostWithReason( 2, _T("U"), false, _T("%s"), one.c_str());
 		return false;
 	}
 
-	else if (command == _T("/hop")) {
+	if (command == _T("/hop")) {
 		if ( !IsChannel( window ))
 			return true;
 
@@ -473,7 +490,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 	
-	else if (command == _T("/list" )) {
+	if (command == _T("/list" )) {
 		if ( m_listDlg == NULL ) {
 			m_listDlg = new CListDlg( this );
 			m_listDlg->Show();
@@ -493,7 +510,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 	
-	else if (command == _T("/me")) {
+	if (command == _T("/me")) {
 		if ( one.IsEmpty())
 			return true;
 		
@@ -503,7 +520,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if (command == _T("/ame")) {
+	if (command == _T("/ame")) {
 		if ( one.IsEmpty())
 			return true;
 
@@ -513,7 +530,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 	
-	else if (command == _T("/amsg")) {
+	if (command == _T("/amsg")) {
 		if ( one.IsEmpty())
 			return true;
 		
@@ -523,7 +540,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if (command == _T("/msg")) {
+	if (command == _T("/msg")) {
 		if ( one.IsEmpty() || two.IsEmpty())
 			return true;
 
@@ -534,7 +551,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if (command == _T("/query")) {
+	if (command == _T("/query")) {
 		if ( one.IsEmpty() || IsChannel(one.c_str()))
 			return true;
 
@@ -555,8 +572,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 					CMString S = _T("S");
 					S += one;
 					DoUserhostWithReason(2, S.c_str(), true, one.c_str());
-				}
-			}
+			}	}
 			
 			CallService( MS_MSG_SENDMESSAGE, ( WPARAM )hContact2, 0 );
 		}
@@ -568,7 +584,8 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		}
 		return true;
 	}	
-	else if (command == _T("/ctcp")) {
+	
+	if (command == _T("/ctcp")) {
 		if ( one.IsEmpty() || two.IsEmpty())
 			return true;
 
@@ -595,7 +612,8 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 
 		return true;
 	}		
-	else if (command == _T("/dcc")) {
+	
+	if (command == _T("/dcc")) {
 		if ( one.IsEmpty() || two.IsEmpty())
 			return true;
 		
@@ -627,8 +645,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 						else {
 							S += two;
 							DoUserhostWithReason( 2, S.c_str(), true, two.c_str());
-						}
-					}
+					}	}
 					
 					if ( three.IsEmpty())
 						CallService( MS_FILE_SENDFILE, ( WPARAM )hContact, 0 );

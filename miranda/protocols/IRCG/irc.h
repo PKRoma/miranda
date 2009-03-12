@@ -2,7 +2,7 @@
 IRC plugin for Miranda IM
 
 Copyright (C) 2003-05 Jurgen Persson
-Copyright (C) 2007-08 George Hazan
+Copyright (C) 2007-09 George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -563,7 +563,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void __cdecl DisconnectServerThread( void* );
 
 	//tools.cpp
-	void     AddToJTemp(CMString sCommand);
+	void     AddToJTemp(TCHAR op, CMString& sCommand);
 	bool     AddWindowItemData(CMString window, const TCHAR* pszLimit, const TCHAR* pszMode, const TCHAR* pszPassword, const TCHAR* pszTopic);
 	int      CallChatEvent(WPARAM wParam, LPARAM lParam);
 	void     CreateProtoService( const char* serviceName, IrcServiceFunc pFunc );
