@@ -755,7 +755,7 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_log)(const char *fmt, ...);
  * 	
  * Returns: a tag to be used when removing the handler
  */
-int YAHOO_CALLBACK_TYPE(ext_yahoo_add_handler)(int id, int fd, yahoo_input_condition cond, void *data);
+unsigned int YAHOO_CALLBACK_TYPE(ext_yahoo_add_handler)(int id, int fd, yahoo_input_condition cond, void *data);
 
 
 /*
@@ -765,7 +765,7 @@ int YAHOO_CALLBACK_TYPE(ext_yahoo_add_handler)(int id, int fd, yahoo_input_condi
  * 	id   - the id that identifies the connection
  * 	tag  - the handler tag to remove
  */
-void YAHOO_CALLBACK_TYPE(ext_yahoo_remove_handler)(int id, int tag);
+void YAHOO_CALLBACK_TYPE(ext_yahoo_remove_handler)(int id, unsigned int tag);
 
 
 /*

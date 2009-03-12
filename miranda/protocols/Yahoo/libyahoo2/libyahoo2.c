@@ -1000,10 +1000,14 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 
 	yahoo_packet_read(pkt, data + pos, len - pos);	
 	
-	if( yid->type == YAHOO_CONNECTION_FT )
+	if( yid->type == YAHOO_CONNECTION_FT || 
+		( yid->type == YAHOO_CONNECTION_PAGER && 
+			( pkt->service == YAHOO_SERVICE_KEEPALIVE || pkt->service == YAHOO_SERVICE_PING ) )
+		) {
 		yahoo_send_data(yid->fd, data, len);
-	else
+	} else {
 		yahoo_add_to_send_queue(yid, data, len);
+	}
 	
 	FREE(data);
 }
@@ -4690,7 +4694,7 @@ int yahoo_write_ready(int id, int fd, void *data)
 
 
 	tx->len -= len;
-	LOG(("yahoo_write_ready(%d, %d) tx->len: %d, len: %d", id, fd, tx->len, len));
+	//LOG(("yahoo_write_ready(%d, %d) tx->len: %d, len: %d", id, fd, tx->len, len));
 	if(tx->len > 0) {
 		unsigned char *tmp = y_memdup(tx->queue + len, tx->len);
 		FREE(tx->queue);
@@ -4702,7 +4706,7 @@ int yahoo_write_ready(int id, int fd, void *data)
 		yid->txqueues = y_list_remove_link(yid->txqueues, yid->txqueues);
 		y_list_free_1(l);
 		if(!yid->txqueues) {
-			LOG(("yahoo_write_ready(%d, %d) !txqueues", id, fd));
+			//LOG(("yahoo_write_ready(%d, %d) !txqueues", id, fd));
 			YAHOO_CALLBACK(ext_yahoo_remove_handler)(id, yid->write_tag);
 			yid->write_tag = 0;
 		}
@@ -5068,7 +5072,7 @@ int yahoo_read_ready(int id, int fd, void *data)
 {
 	struct yahoo_input_data *yid = data;
 	struct yahoo_server_settings *yss;
-	char buf[1024];
+	char buf[4096];
 	int len;
 
 	//LOG(("read callback: id=%d fd=%d data=%p", id, fd, data));

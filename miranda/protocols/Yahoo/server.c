@@ -68,7 +68,7 @@ extern yahoo_local_account * ylad;
 void __cdecl yahoo_server_main(void *empty)
 {
 	int status = (int) empty;
-	time_t lLastPing, lLastKeepAlive;
+	time_t lLastPing, lLastKeepAlive, t;
     YList *l;
     NETLIBSELECTEX nls = {0};
 	int recvResult, ridx = 0, widx = 0, i;
@@ -138,18 +138,20 @@ void __cdecl yahoo_server_main(void *empty)
 			//YAHOO_DebugLog("HTTPGateway: %d", iHTTPGateway);
 			if	(!iHTTPGateway) {
 #endif					
-				if (yahooLoggedIn && time(NULL) - lLastKeepAlive >= 60) {
+				t = time(NULL); 
+
+				if (yahooLoggedIn && t - lLastKeepAlive >= 60) {
 					LOG(("[TIMER] Sending a keep alive message"));
 					yahoo_keepalive(ylad->id);
 					
-					lLastKeepAlive = time(NULL);
+					lLastKeepAlive = t;
 				}
 				
-				if (yahooLoggedIn && time(NULL) - lLastPing >= 3600) {
+				if (yahooLoggedIn && t - lLastPing >= 3600) {
 					LOG(("[TIMER] Sending ping"));
 					yahoo_send_ping(ylad->id);
 					
-					lLastPing = time(NULL);
+					lLastPing = t;
 				}
 				
 #ifdef HTTP_GATEWAY					

@@ -1134,7 +1134,7 @@ void ext_yahoo_got_ping(int id, const char *errormsg)
 			return;
 	}
     
-	LOG(("[ext_yahoo_got_ping] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
+	//LOG(("[ext_yahoo_got_ping] Status Check current: %d, CONNECTING: %d ", yahooStatus, ID_STATUS_CONNECTING));
 	
 	if (yahooStatus == ID_STATUS_CONNECTING) {
 		LOG(("[ext_yahoo_got_ping] We are connecting. Checking for different status. Start: %d, Current: %d", gStartStatus, yahooStatus));
@@ -1264,13 +1264,14 @@ int ext_yahoo_connect(const char *h, int p, int type)
 	LOG(("[ext_yahoo_connect] %s:%d type: %d", h, p, type));
 	
     ncon.cbSize = sizeof(ncon); 
+	ncon.flags = NLOCF_V2;
 	ncon.szHost = h;
     ncon.wPort = p;
-    	
+    ncon.timeout = 5;	
+	
 	if (type != YAHOO_CONNECTION_PAGER)
-		ncon.flags = NLOCF_HTTP;
-	
-	
+		ncon.flags |= NLOCF_HTTP;
+		
     con = (HANDLE) CallService(MS_NETLIB_OPENCONNECTION, (WPARAM) hNetlibUser, (LPARAM) & ncon);
     if (con == NULL)  {
 		LOG(("ERROR: Connect Failed!"));
@@ -1355,13 +1356,11 @@ void ext_yahoo_send_http_request(int id, const char *method, const char *url, co
  * Callback handling code starts here
  */
 YList *connections = NULL;
-static int connection_tags=0;
+static unsigned int connection_tags=0;
 
-int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
+unsigned int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data)
 {
 	struct _conn *c = y_new0(struct _conn, 1);
-	
-	LOG(("[ext_yahoo_add_handler] fd:%d id:%d tag %d", fd, id, c->tag));
 	
 	c->tag = ++connection_tags;
 	c->id = id;
@@ -1369,14 +1368,17 @@ int ext_yahoo_add_handler(int id, int fd, yahoo_input_condition cond, void *data
 	c->cond = cond;
 	c->data = data;
 
+	LOG(("[ext_yahoo_add_handler] fd:%d id:%d tag %d", fd, id, c->tag));
+	
 	connections = y_list_prepend(connections, c);
 
 	return c->tag;
 }
 
-void ext_yahoo_remove_handler(int id, int tag)
+void ext_yahoo_remove_handler(int id, unsigned int tag)
 {
 	YList *l;
+	
 	LOG(("[ext_yahoo_remove_handler] id:%d tag:%d ", id, tag));
 	
 	for(l = connections; l; l = y_list_next(l)) {
