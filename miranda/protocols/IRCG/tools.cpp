@@ -839,7 +839,7 @@ void CIrcProto::DoUserhostWithReason(int type, CMString reason, bool bSendComman
 
 	// Do command
 	if ( IsConnected() && bSendCommand )
-		*this << CIrcMessage( this, temp, getCodepage(), false, false);
+		SendIrcMessage( temp, false );
 }
 
 CMString CIrcProto::GetNextUserhostReason(int type)

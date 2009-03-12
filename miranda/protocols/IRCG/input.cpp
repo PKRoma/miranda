@@ -34,11 +34,9 @@ void CIrcProto::FormatMsg(CMString& text)
 	if (command == _T("/quit") || command == _T("/away")) 
 		S = GetWord(text.c_str(), 0) + _T(" :") + GetWordAddress(text.c_str(), 1);
 	else if (command == _T("/privmsg") || command == _T("/part") || command == _T("/topic") || command == _T("/notice")) {
-		S = GetWord(text.c_str(), 0) + _T(" ") + GetWord(text.c_str(), 1) ;
-		if (!GetWord(text.c_str(), 2).IsEmpty()) {
-			S += _T(" :");
-			S += CMString(GetWordAddress(text.c_str(), 1) +1 + lstrlen(GetWord(text.c_str(), 1).c_str()));
-		}
+		S = GetWord(text.c_str(), 0) + _T(" ") + GetWord(text.c_str(), 1) + _T(" :");
+		if (!GetWord(text.c_str(), 2).IsEmpty())
+			S += CMString(GetWordAddress(text.c_str(), 2));
 	}
 	else if (command == _T("/kick")) {
 		S = GetWord(text.c_str(), 0) + _T(" ") + GetWord(text.c_str(), 1) + _T(" ") + GetWord(text.c_str(), 2) + _T(" :") + GetWordAddress(text.c_str(), 3);
@@ -854,7 +852,7 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 				continue;
 			
 			CMString S = GetWordAddress( DoThis.c_str(), 1 );
-			*this << CIrcMessage( this, S.c_str(), codepage );
+			SendIrcMessage( S.c_str(), true, codepage );
 			continue;
 		}
 
@@ -896,12 +894,12 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 			}
 			else if( IsConnected() ) {
 				FormatMsg( DoThis );
-				*this << CIrcMessage( this, DoThis.c_str(), codepage, false, false );
+				SendIrcMessage( DoThis.c_str(), false, codepage );
 			}
 		}
 		else {
 			FormatMsg( DoThis );
-			*this << CIrcMessage( this, DoThis.c_str(), codepage, false, true );
+			SendIrcMessage( DoThis.c_str(), true, codepage );
 	}	}
 
 	return 1;

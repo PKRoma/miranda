@@ -78,8 +78,6 @@ public :
 	CIrcMessage& operator = (const CIrcMessage& m);
 	CIrcMessage& operator = (const TCHAR* lpszCmdLine);
 
-	CMString AsString() const;
-
 private :
 	void ParseIrcCommand(const TCHAR* lpszCmdLine);
 };

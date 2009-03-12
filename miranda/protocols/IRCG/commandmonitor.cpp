@@ -75,7 +75,7 @@ VOID CALLBACK KeepAliveTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 		mir_sntprintf(temp2, SIZEOF(temp2), _T("PING %u"), time(0));
 
 	if ( ppro->IsConnected())
-		*ppro << CIrcMessage( ppro, temp2, ppro->getCodepage(), false, false);
+		ppro->SendIrcMessage( temp2, false );
 }
 
 VOID CALLBACK OnlineNotifTimerProc3( HWND, UINT, UINT_PTR idEvent, DWORD )
@@ -268,7 +268,7 @@ bool CIrcProto::OnIrc_PING(const CIrcMessage* pmsg)
 {
 	TCHAR szResponse[100];
 	mir_sntprintf(szResponse, SIZEOF(szResponse), _T("PONG %s"), pmsg->parameters[0].c_str());
-	*this << CIrcMessage( this, szResponse, getCodepage() );
+	SendIrcMessage( szResponse );
 	return false;
 }
 
@@ -696,7 +696,7 @@ bool CIrcProto::OnIrc_PINGPONG( const CIrcMessage* pmsg )
 	if ( pmsg->m_bIncoming && pmsg->sCommand == _T("PING")) {
 		TCHAR szResponse[100];
 		mir_sntprintf(szResponse, SIZEOF(szResponse), _T("PONG %s"), pmsg->parameters[0].c_str());
-		*this << CIrcMessage( this, szResponse, getCodepage() );
+		SendIrcMessage( szResponse );
 	}
 
 	return true;
@@ -1861,7 +1861,7 @@ bool CIrcProto::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 		TCHAR m[200];
 		mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), m_alternativeNick );
 		if ( IsConnected() )
-			*this << irc::CIrcMessage( this, m, getCodepage() );
+			SendIrcMessage( m );
 
 		nickflag = true;
 	}

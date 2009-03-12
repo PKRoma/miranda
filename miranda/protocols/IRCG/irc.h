@@ -493,7 +493,8 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	bool     PostIrcMessage( const TCHAR* fmt, ...);
 
 	// irclib.cpp
-	UINT_PTR	DCCTimer;	
+	UINT_PTR	DCCTimer;
+	void     SendIrcMessage( const TCHAR*, bool bNotify = true, int codepage = -1 );
 
 	// ircproto.cpp
 	void __cdecl AckBasicSearch( void* param );
@@ -645,8 +646,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	__inline bool IsConnected() const { return con != NULL; }
 
 	// send-to-stream operators
-	CIrcProto& operator << (const CIrcMessage& m);
-
 	int getCodepage() const;
 	__inline void setCodepage( int aPage ) { codepage = aPage; }
 

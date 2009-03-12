@@ -161,30 +161,6 @@ end_of_prefix :
 			p1 = p2;
 }	}	}
 
-CMString CIrcMessage::AsString() const
-{
-	CMString s;
-
-	if ( prefix.sNick.GetLength() ) {
-		s += _T(":") + prefix.sNick;
-		if( prefix.sUser.GetLength() && prefix.sHost.GetLength() )
-			s += _T("!") + prefix.sUser + _T("@") + prefix.sHost;
-		s += _T(" ");
-	}
-
-	s += sCommand;
-
-	for ( int i=0; i < parameters.getCount(); i++ ) {
-		s += _T(" ");
-		if( i == parameters.getCount() - 1 && (_tcschr(parameters[i].c_str(), ' ') || parameters[i][0] == ':' ) )// is last parameter ?
-			s += _T(":");
-		s += parameters[i];
-	}
-
-	s += _T("\r\n");
-	return s;
-}
-
 ////////////////////////////////////////////////////////////////////
 
 int CIrcProto::getCodepage() const
@@ -192,18 +168,25 @@ int CIrcProto::getCodepage() const
 	return ( con != NULL ) ? codepage : CP_ACP;
 }
 
-CIrcProto& CIrcProto::operator << (const CIrcMessage& msg)
+void CIrcProto::SendIrcMessage( const TCHAR* msg, bool bNotify, int codepage )
 {
+	if ( codepage == -1 )
+		codepage = getCodepage();
+
 	if ( this ) {
-		char* str = mir_t2a_cp( msg.AsString().c_str(), msg.m_codePage );
-		NLSend(( const BYTE* )str, strlen( str ));
+		char* str = mir_t2a_cp( msg, codepage );
+		rtrim( str );
+		int cbLen = strlen( str );
+		str = ( char* )mir_realloc( str, cbLen+3 );
+		strcat( str, "\r\n" );
+		NLSend(( const BYTE* )str, cbLen+2 );
 		mir_free( str );
 		
-		if ( !msg.sCommand.IsEmpty() && msg.sCommand != _T("QUIT") && msg.m_bNotify )
-			Notify( &msg );
-	}
-	return *this;
-}
+		if ( bNotify ) {
+			CIrcMessage ircMsg( this, msg, codepage );
+			if ( !ircMsg.sCommand.IsEmpty() && ircMsg.sCommand != _T("QUIT"))
+				Notify( &ircMsg );
+}	}	}
 
 bool CIrcProto::Connect(const CIrcSessionInfo& info)
 {

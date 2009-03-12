@@ -201,40 +201,6 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 	return 0;
 }
 
-static int sttCheckServerDefaults( const char *szSetting, LPARAM lParam )
-{
-    int *empty = (int*)lParam;
-	*empty = 0;
-	return 1;
-}
-
-static int sttCheckDefaultServerIni() {
-    FILE* serverFile = NULL;
-    char *szIniFile = Utils_ReplaceVars("%miranda_userdata%\\IRC\\default_servers.ini");
-    char *szIniDir = Utils_ReplaceVars("%miranda_userdata%\\IRC\\");
-    
-    serverFile = fopen( szIniFile, "r" );
-    if (serverFile==NULL) {
-        if (_access(szIniDir, 0))
-            CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szIniDir);
-        serverFile = fopen( szIniFile, "a" );
-        if (serverFile) {
-            char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
-            if (pszSvrs)
-                fwrite(pszSvrs , 1 , lstrlenA(pszSvrs) + 1 , serverFile );
-            fclose(serverFile);
-            return 1;
-        }
-    }
-    else {
-        fclose(serverFile);      
-    }
-    mir_free(szIniFile);
-    mir_free(szIniDir);
-    return 0;
-
-}
-
 static void sttImportIni( const char* szIniFile )
 {
 	FILE* serverFile = fopen( szIniFile, "r" );
@@ -347,20 +313,23 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath, m_szModuleName);
 	sttImportIni( szTemp );
 
-    if (sttCheckDefaultServerIni()) {
-        int empty = 1;
-        DBCONTACTENUMSETTINGS dbces;
-        dbces.pfnEnumProc = sttCheckServerDefaults;
-        dbces.lParam = ( LPARAM )&empty;
-        dbces.szModule = SERVERSMODULE;
-        CallService( MS_DB_CONTACT_ENUMSETTINGS, NULL, (LPARAM)&dbces );
-        if (empty) {
-            char *szIniFile = Utils_ReplaceVars("%miranda_userdata%\\IRC\\default_servers.ini");
-            sttImportIni( szIniFile );
-            mir_free(szIniFile);
-        }
-    }
 	RereadServers();
+
+	if ( g_servers.getCount() == 0 ) {
+		char *szIniFile = Utils_ReplaceVars("%temp%\\default_servers.ini");
+		FILE *serverFile = fopen( szIniFile, "a" );
+		if (serverFile) {
+			char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
+			if (pszSvrs)
+				fwrite(pszSvrs , 1 , lstrlenA(pszSvrs) + 1 , serverFile );
+			fclose(serverFile);
+
+			sttImportIni( szIniFile );
+			RereadServers();
+		}
+
+		mir_free(szIniFile);
+	}
 
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );
@@ -1084,7 +1053,7 @@ int __cdecl CIrcProto::GetAwayMsg( HANDLE hContact )
 			CMString S = _T("WHOIS ");
 			S += dbv.ptszVal;
 			if (IsConnected())
-				*this << CIrcMessage( this, S.c_str(), getCodepage(), false, false);
+				SendIrcMessage( S.c_str(), false);
 			DBFreeVariant( &dbv);
 	}	}
 
