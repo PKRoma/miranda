@@ -161,7 +161,8 @@ struct MHeaderbarCtrl
 	// UI info
 	RECT		rc;
 	int			width, height;
-
+    HICON       hIcon;
+    
 	// control colors
 	RGBQUAD		rgbBkgTop, rgbBkgBottom;
 	COLORREF	clText;
@@ -290,8 +291,10 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	GetObject(hFont, sizeof(lf), &lf);
 	lf.lfWeight = FW_BOLD;
 	HFONT hFntBold = CreateFontIndirect(&lf);
-
-	DrawIcon(tempDC, 10, iTopSpace, LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO)));
+    
+    if (mit->hIcon)
+        DrawIcon(tempDC, 10, iTopSpace, mit->hIcon);
+    else DrawIcon(tempDC, 10, iTopSpace, LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO)));
 
 	RECT textRect;
 	textRect.left=50;
@@ -381,7 +384,12 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 	case WM_LBUTTONDOWN:
 		SendMessage(GetParent(hwndDlg), WM_SYSCOMMAND, 0xF012, 0);
 		return 0;
-
+    
+    case WM_SETICON:
+		itc->hIcon = (HICON)lParam;
+        InvalidateRect(hwndDlg, NULL, FALSE);
+		break;
+        
 	case WM_ERASEBKGND:
 		return 1;
 
