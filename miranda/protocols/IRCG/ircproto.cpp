@@ -442,19 +442,20 @@ int __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
-	if ( IsConnected() ) {
-		TCHAR* ptszFileName = mir_a2t_cp( szPath, getCodepage());
-		di->sPath = ptszFileName;
-		di->sFileAndPath = di->sPath + di->sFile;
-		mir_free( ptszFileName );
-
-		CDccSession* dcc = new CDccSession( this, di );
-		AddDCCSession( di, dcc );
-		dcc->Connect();
+	if ( !IsConnected() ) {
+		delete di;
+		return ( int )szPath;
 	}
-	else delete di;
 
-	return ( int )szPath;
+	TCHAR* ptszFileName = mir_a2t_cp( szPath, getCodepage());
+	di->sPath = ptszFileName;
+	di->sFileAndPath = di->sPath + di->sFile;
+	mir_free( ptszFileName );
+
+	CDccSession* dcc = new CDccSession( this, di );
+	AddDCCSession( di, dcc );
+	dcc->Connect();
+	return ( int )di;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
