@@ -307,7 +307,7 @@ void  CMsnProto::p2p_sendMsg( HANDLE hContact, unsigned appId, P2P_Header& hdrda
 
 		// add message header
 		if ( msgType == 1 ) {
- 			*(unsigned*)p = portion + sizeof( P2P_Header); p += 4;
+ 			*(unsigned*)p = portion + sizeof(P2P_Header); p += 4;
 		}
 		else
 		{
@@ -1044,7 +1044,7 @@ void CMsnProto::p2p_InitFileTransfer(
 
 				p2p_registerSession( ft );
 
-				int tFileNameLen = strlen( ft->std.currentFile );
+				size_t tFileNameLen = strlen( ft->std.currentFile );
 				char tComment[ 40 ];
 				int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
 				char* szBlob = ( char* )alloca( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
@@ -1686,8 +1686,8 @@ void  CMsnProto::p2p_invite( HANDLE hContact, int iAppID, filetransfer* ft )
 	ft->p2p_sessionid = sessionID;
 	ft->p2p_callID = getNewUuid();
 
-	char* pContext;
-	int   cbContext;
+	char*  pContext;
+	size_t cbContext;
 
 	switch ( iAppID ) 
 	{

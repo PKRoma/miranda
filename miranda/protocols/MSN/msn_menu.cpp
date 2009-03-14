@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////////////////
 // Block command callback function
 
-int CMsnProto::MsnBlockCommand( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnBlockCommand( WPARAM wParam, LPARAM )
 {
 	if ( msnLoggedIn ) 
 	{
@@ -58,7 +58,7 @@ int CMsnProto::MsnEditProfile( WPARAM, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSetupAlerts - goes to the alerts section at the live.com
 
-int CMsnProto::MsnSetupAlerts( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnSetupAlerts( WPARAM, LPARAM )
 {
     MsnInvokeMyURL(false, "http://alerts.live.com");
 	return 0;
@@ -67,7 +67,7 @@ int CMsnProto::MsnSetupAlerts( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnInviteCommand - invite command callback function
 
-int CMsnProto::MsnInviteCommand( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnInviteCommand( WPARAM wParam, LPARAM )
 {
 	ThreadData* tActiveThreads[ 64 ];
 	int tThreads = MSN_GetActiveThreads( tActiveThreads ), tChosenThread;
@@ -131,7 +131,7 @@ int CMsnProto::MsnInviteCommand( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnRebuildContactMenu - gray or ungray the block menus according to contact's status
 
-int CMsnProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
+int CMsnProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 {
 	char szEmail[ MSN_MAX_EMAIL_LEN ];
 	if ( !getStaticString(( HANDLE )wParam, "e-mail", szEmail, sizeof( szEmail ))) {
@@ -147,7 +147,7 @@ int CMsnProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSendNetMeeting - Netmeeting callback function
 
-int CMsnProto::MsnSendNetMeeting( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnSendNetMeeting( WPARAM wParam, LPARAM )
 {
 	if ( !msnLoggedIn ) return 0;
 
@@ -189,7 +189,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 		{
 			TranslateDialogDefault( hwndDlg );
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 
 			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "main" ));
@@ -206,7 +206,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 			switch(wParam)
 			{
 			case IDOK: {
-					CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					if ( proto->msnLoggedIn ) {
 						TCHAR str[ 130 ];
 						GetDlgItemText( hwndDlg, IDC_NICKNAME, str, SIZEOF( str ));
@@ -231,7 +231,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-int CMsnProto::SetNicknameUI( WPARAM wParam, LPARAM lParam )
+int CMsnProto::SetNicknameUI( WPARAM, LPARAM )
 {
 	HWND hwndSetNickname = CreateDialogParam (hInst, MAKEINTRESOURCE( IDD_SETNICKNAME ), 
 		NULL, DlgProcSetNickname, (LPARAM)this );
@@ -247,7 +247,7 @@ int CMsnProto::SetNicknameUI( WPARAM wParam, LPARAM lParam )
 
 static const char sttUrlPrefix[] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
 
-int CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM )
 {
 	char tUrl[ 20 + sizeof(sttUrlPrefix) ];
 	strcpy( tUrl, sttUrlPrefix );
@@ -260,7 +260,7 @@ int CMsnProto::MsnViewProfile( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnViewServiceStatus - display MSN services status
 
-int CMsnProto::MsnViewServiceStatus( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MsnViewServiceStatus( WPARAM, LPARAM )
 {
 	MSN_CallService( MS_UTILS_OPENURL, 1, ( LPARAM )"http://messenger.msn.com/Status.aspx" );
 	return 0;

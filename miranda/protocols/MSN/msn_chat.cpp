@@ -42,7 +42,7 @@ HANDLE CMsnProto::MSN_GetChatInernalHandle(HANDLE hContact)
 }
 
 
-int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM lParam )
+int CMsnProto::MSN_ChatInit( WPARAM wParam, LPARAM )
 {
 	ThreadData *info = (ThreadData*)wParam;
 	MyInterlockedIncrement( &sttChatID );
@@ -188,7 +188,7 @@ void CMsnProto::InviteUser(ThreadData* info) {
 		MSN_ChatStart(info);
 }	}
 
-int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam) 
+int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam) 
 {
 	GCHOOK *gch = (GCHOOK*) lParam;
 	if ( !gch )
@@ -315,7 +315,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int CMsnProto::MSN_GCMenuHook(WPARAM wParam,LPARAM lParam) 
+int CMsnProto::MSN_GCMenuHook(WPARAM, LPARAM lParam) 
 {
 	GCMENUITEMS *gcmi= (GCMENUITEMS*) lParam;
 

@@ -197,7 +197,7 @@ CMsnProto::~CMsnProto()
 }
 
 
-int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+int CMsnProto::OnModulesLoaded( WPARAM, LPARAM )
 {
 	TCHAR szBuffer[MAX_PATH]; 
     char  szDbsettings[64];
@@ -308,7 +308,7 @@ int CMsnProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPreShutdown - prepare a global Miranda shutdown
 
-int CMsnProto::OnPreShutdown( WPARAM wParam, LPARAM lParam )
+int CMsnProto::OnPreShutdown( WPARAM, LPARAM )
 {
 	MSN_CloseThreads();
 	return 0;
@@ -617,7 +617,7 @@ int __cdecl CMsnProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 		ft->std.workingDir = mir_strdup( szCurrDir );
 	}
 	else {
-		int len = strlen( ft->std.workingDir )-1;
+		size_t len = strlen( ft->std.workingDir )-1;
 		if ( ft->std.workingDir[ len ] == '\\' )
 			ft->std.workingDir[ len ] = 0;
 	}

@@ -112,7 +112,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		CMsnProto* proto = (CMsnProto*)lParam;
 
 		SetDlgItemTextA( hwndDlg, IDC_HANDLE, proto->MyOptions.szEmail );
@@ -186,7 +186,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 											TranslateT( "Server groups import may change your contact list layout after next login. Do you want to upload your groups to the server?" ),
 											TranslateT( "MSN Protocol" ), MB_YESNOCANCEL ))
 					{
-						CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+						CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 						proto->MSN_UploadServerGroups( NULL );
 					}
 				}
@@ -207,7 +207,7 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				char szFile[ MAX_PATH+2 ];
 				GetWindowTextA( tEditField, szFile, sizeof( szFile ));
 
-				int tSelectLen = 0;
+				size_t tSelectLen = 0;
 
 				if ( szFile[0] == '\"' ) {
 					char* p = strchr( szFile+1, '\"' );
@@ -254,7 +254,7 @@ LBL_Continue:
 			char  password[ 100 ], szEmail[MSN_MAX_EMAIL_LEN];
 			DBVARIANT dbv;
 
-			CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			GetDlgItemTextA( hwndDlg, IDC_HANDLE, szEmail, sizeof( szEmail ));
 			if ( strcmp( szEmail, proto->MyOptions.szEmail )) {
@@ -331,7 +331,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		{
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 			
 			CheckDlgButton( hwndDlg, IDC_USEGATEWAY, proto->MyOptions.UseGateway );
@@ -413,7 +413,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					break;
 
 				case IDC_USEGATEWAY: {
-					CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					bool tValue = !IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY );
 
 					HWND tWindow = GetDlgItem( hwndDlg, IDC_LOGINSERVER );
@@ -442,7 +442,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			bool restartRequired = false, reconnectRequired = false;
 			char str[ MAX_PATH ];
 
-			CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			bool tValue = IsDlgButtonChecked( hwndDlg, IDC_USEGATEWAY ) == BST_CHECKED;
 			if (proto->MyOptions.UseGateway != tValue ) {
@@ -509,7 +509,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		TranslateDialogDefault(hwndDlg);
 		bEnabled = false;
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		CMsnProto* proto = (CMsnProto*)lParam;
 
 		//Colours. First step is configuring the colours.
@@ -570,7 +570,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		case IDC_BGCOLOUR: //Fall through
 		case IDC_TEXTCOLOUR:
 			if ( HIWORD( wParam ) == CPN_COLOURCHANGED ) {
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				proto->MyOptions.BGColour = SendDlgItemMessage( hwndDlg, IDC_BGCOLOUR, CPM_GETCOLOUR, 0, 0 );
 				proto->MyOptions.TextColour = SendDlgItemMessage( hwndDlg, IDC_TEXTCOLOUR, CPM_GETCOLOUR, 0, 0 );
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -579,7 +579,7 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 		case IDC_USEWINCOLORS:
 			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				proto->MyOptions.UseWinColors = IsDlgButtonChecked( hwndDlg, IDC_USEWINCOLORS ) != 0;
 
 				EnableWindow( GetDlgItem( hwndDlg, IDC_BGCOLOUR ), !( proto->MyOptions.UseWinColors ));
@@ -590,14 +590,14 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 
 		case IDC_PREVIEW: 
 			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				proto->MSN_ShowPopup( TranslateT( "A New Hotmail has come!" ), TranslateT( "Test: Arrival Hotmail" ), MSN_HOTMAIL_POPUP );
 			}
 			break;
 
 		case IDC_PREVIEW2:
 			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				proto->MSN_ShowPopup( _T("john.doe@hotmail.com"), TranslateT( "Chat session established" ), 0, NULL );
 			}
 			break;
@@ -609,13 +609,13 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts( HWND hwndDlg, UINT msg, WPARAM 
 		case 0:
 			switch (((LPNMHDR)lParam)->code) {
 			case PSN_RESET: {
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				proto->LoadOptions();
 				return TRUE;
 				}
 
 			case PSN_APPLY: {
-				CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				
 				proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
 				DBWriteContactSettingDword(NULL, proto->ModuleName, "TextColour", proto->MyOptions.TextColour);
@@ -659,7 +659,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		{
 			TranslateDialogDefault(hwndDlg);
 
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 
 			SetDlgItemTextA( hwndDlg, IDC_HANDLE, proto->MyOptions.szEmail );
@@ -695,7 +695,7 @@ static INT_PTR CALLBACK DlgProcAccMgrUI( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			char  password[ 100 ], szEmail[MSN_MAX_EMAIL_LEN];
 			DBVARIANT dbv;
 
-			CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			GetDlgItemTextA( hwndDlg, IDC_HANDLE, szEmail, sizeof( szEmail ));
 			if ( strcmp( szEmail, proto->MyOptions.szEmail )) {

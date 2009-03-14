@@ -363,7 +363,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
 		{
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			HIMAGELIST hIml = ImageList_Create(
 				GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
@@ -402,7 +402,7 @@ INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 	case WM_NOTIFY:
 	{
-		CMsnProto* proto = (CMsnProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+		CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
 		if ( nmc->hdr.idFrom == 0 && nmc->hdr.code == (unsigned)PSN_APPLY )

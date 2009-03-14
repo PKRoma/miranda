@@ -18,10 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// this plugin is for Miranda 0.6 only
+// this plugin is for Miranda 0.8 only
 #define MIRANDA_VER 0x0800
-
-#define _WIN32_WINNT 0x0400
 
 #include "m_stdhdr.h"
 
@@ -208,7 +206,7 @@ char*  rtrim( char* string );
 wchar_t* rtrim( wchar_t* string );
 char* arrayToHex(BYTE* data, size_t datasz);
 
-extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
+LONG WINAPI MyInterlockedIncrement(PLONG pVal);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -463,9 +461,9 @@ struct ThreadData
 	void           processSessionData( const char* );
 	void           startThread( MsnThreadFunc , CMsnProto *prt );
 
-	int            send( const char data[], int datalen );
-	int            recv( char* data, long datalen );
-	int            recv_dg( char* data, long datalen );
+	int            send( const char data[], size_t datalen );
+	int            recv( char* data, size_t datalen );
+	int            recv_dg( char* data, size_t datalen );
 	bool           isTimeout( void );
 	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 

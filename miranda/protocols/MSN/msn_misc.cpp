@@ -22,12 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_proto.h"
 #include "version.h"
 
-typedef LONG ( WINAPI pIncrementFunc )( PLONG );
-static pIncrementFunc  MyInterlockedIncrement95;
-static pIncrementFunc  MyInterlockedIncrementInit;
-
-pIncrementFunc *MyInterlockedIncrement = MyInterlockedIncrementInit;
-
 static CRITICAL_SECTION csInterlocked95;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1070,30 +1064,13 @@ char* TWinErrorCode::getText()
 /////////////////////////////////////////////////////////////////////////////////////////
 // InterlockedIncrement emulation
 
-//I hate Microsoft (c) cyreve
-
-static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
+LONG WINAPI MyInterlockedIncrement(PLONG pVal)
 {
 	DWORD ret;
 	EnterCriticalSection(&csInterlocked95);
-	ret=++*pVal;
+	ret = ++*pVal;
 	LeaveCriticalSection(&csInterlocked95);
 	return ret;
-}
-
-//there's a possible hole here if too many people call this at the same time, but that doesn't happen
-
-static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
-{
-	DWORD ver = GetVersion();
-   if (( ver & 0x80000000 ) && LOWORD( ver ) == 0x0004 )
-	{
-		InitializeCriticalSection( &csInterlocked95 );
-		MyInterlockedIncrement = MyInterlockedIncrement95;
-	}
-   else  MyInterlockedIncrement = ( pIncrementFunc* )InterlockedIncrement;
-
-	return MyInterlockedIncrement( pVal );
 }
 
 // Process a string, and double all % characters, according to chat.dll's restrictions

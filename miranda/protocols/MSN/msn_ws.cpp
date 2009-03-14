@@ -33,7 +33,7 @@ static const char sttGatewayHeader[] =
 
 //=======================================================================================
 
-int ThreadData::send( const char data[], int datalen )
+int ThreadData::send( const char data[], size_t datalen )
 {
 	NETLIBBUFFER nlb = { (char*)data, datalen, 0 };
 
@@ -280,14 +280,14 @@ char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
 }
 
 
-int ThreadData::recv_dg( char* data, long datalen )
+int ThreadData::recv_dg( char* data, size_t datalen )
 {
 	time_t ts = time(NULL);
 	for(;;)
 	{
 		if ( mReadAheadBuffer != NULL ) {
-			int datasent = mEhoughData - (mReadAheadBufferPtr - mReadAheadBuffer);
-			int tBytesToCopy = ( datalen >= datasent ) ? datasent : datalen;
+			size_t datasent = mEhoughData - (mReadAheadBufferPtr - mReadAheadBuffer);
+			size_t tBytesToCopy = ( datalen >= datasent ) ? datasent : datalen;
 
 			if ( tBytesToCopy == 0 ) {
 				mir_free( mReadAheadBuffer );
@@ -373,7 +373,7 @@ int ThreadData::recv_dg( char* data, long datalen )
 	}
 }
 
-int ThreadData::recv( char* data, long datalen )
+int ThreadData::recv( char* data, size_t datalen )
 {
 	if ( proto->MyOptions.UseGateway && !proto->MyOptions.UseProxy )
 		if ( mType != SERVER_FILETRANS && mType != SERVER_P2P_DIRECT )
