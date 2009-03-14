@@ -778,7 +778,7 @@ void CMsnProto::MSN_ABAddGroup(const char* szGrpName)
 		    const char* szGrpId = ezxml_txt(ezxml_child(body, "guid"));
 		    MSN_AddGroup(szGrpName, szGrpId, false); 
         }
-        else if (status = 500)
+        else if (status == 500)
         {
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
             if (strcmp(szErr, "PassportAuthFail") == 0)
