@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_proto.h"
 #include <m_history.h>
 
-static LONG sttChatID = 0;
+static INT sttChatID = 0;
 
 HANDLE CMsnProto::MSN_GetChatInernalHandle(HANDLE hContact)
 {
