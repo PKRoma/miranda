@@ -23,9 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 #if defined( _UNICODE )
-	#define STR_VERSION_FORMAT "%s %S"
+	#define STR_VERSION_FORMAT "%s%S%S"
 #else
-	#define STR_VERSION_FORMAT "%s %s"
+	#define STR_VERSION_FORMAT "%s%s%s"
 #endif
 
 BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -34,20 +34,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		{	int h;
-			LOGFONT lf;
-			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_GETFONT,0,0);
-			iState=0;
-			GetObject(hFont,sizeof(lf),&lf);
-			h=lf.lfHeight;
-			lf.lfHeight=(int)(lf.lfHeight*1.5);
-			lf.lfWeight=FW_BOLD;
-			hFont=CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg,IDC_MIRANDA,WM_SETFONT,(WPARAM)hFont,0);
-			lf.lfHeight=h;
-			hFont=CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
-		}
 		{	TCHAR filename[MAX_PATH], *productCopyright;
 			DWORD unused;
 			DWORD verInfoSize;
@@ -62,11 +48,25 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemText(hwndDlg,IDC_DEVS,productCopyright);
 			mir_free(pVerInfo);
 		}
-		{	char productVersion[56];
+		{	char productVersion[56], *p;
+            int isAnsi = 0;
 			TCHAR str[64];
 			CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(productVersion),(LPARAM)productVersion);
-			mir_sntprintf(str,SIZEOF(str),_T(STR_VERSION_FORMAT), TranslateT("Version"), productVersion);
-			SetDlgItemText(hwndDlg,IDC_VERSION,str);
+            // Hide Unicode from version text as it is assumed at this point
+            p = strstr(productVersion, " Unicode"); 
+			if (p)
+				*p = '\0';
+            else
+                isAnsi = 1;
+			mir_sntprintf(str,SIZEOF(str),_T(STR_VERSION_FORMAT), TranslateT("v"), productVersion, isAnsi?" ANSI":"");
+            {
+                TCHAR oldTitle[256], newTitle[256];
+				GetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), oldTitle, SIZEOF( oldTitle ));
+				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, str );
+				SetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), newTitle );
+                SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)));
+			}
+            
 			mir_sntprintf(str,SIZEOF(str),TranslateT("Built %s %s"),_T(__DATE__),_T(__TIME__));
 			SetDlgItemText(hwndDlg,IDC_BUILDTIME,str);
 		}
@@ -99,7 +99,7 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			else {
 				iState = 1;
-				SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("< About"));
+				SetDlgItemText(hwndDlg, IDC_CONTRIBLINK, TranslateT("< Copyright"));
 				ShowWindow(GetDlgItem(hwndDlg, IDC_DEVS), SW_HIDE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_BUILDTIME), SW_HIDE);
 				ShowWindow(GetDlgItem(hwndDlg, IDC_CREDITSFILE), SW_SHOW);
@@ -111,12 +111,6 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CTLCOLOREDIT:
 	case WM_CTLCOLORSTATIC:
 		switch ( GetWindowLong(( HWND )lParam, GWL_ID )) {
-		case IDC_MIRANDA:
-			SetTextColor((HDC)wParam,RGB(180,10,10));
-			break;
-		case IDC_VERSION:
-			SetTextColor((HDC)wParam,GetSysColor(COLOR_GRAYTEXT));
-			break;
 		case IDC_WHITERECT:
 		case IDC_BUILDTIME:
 		case IDC_LOGO:
