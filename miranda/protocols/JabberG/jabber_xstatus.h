@@ -44,6 +44,7 @@ public:
 
 	void Publish();
 	void Retract();
+	void ResetPublish();
 
 	virtual void InitGui() {}
 	virtual void RebuildMenu() {}
@@ -56,7 +57,10 @@ protected:
 	TCHAR *m_node;
 	HANDLE m_hMenuItem;
 
+	int m_wasPublished;
+
 	virtual void CreateData( HXML ) = 0;
+	void ForceRepublishOnLogin();
 };
 
 class CPepServiceList: public OBJLIST<CPepService>
@@ -103,6 +107,12 @@ public:
 	{
 		for (int i = 0; i < getCount(); ++i)
 			(*this)[i].Retract();
+	}
+
+	void ResetPublishAll()
+	{
+		for(int i = 0; i < getCount(); ++i)
+			(*this)[i].ResetPublish();
 	}
 
 	CPepService *Find(TCHAR *node)

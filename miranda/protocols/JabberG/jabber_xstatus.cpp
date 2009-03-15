@@ -411,6 +411,8 @@ void CPepService::Publish()
 			<< XCHILD( _T("publish")) << XATTR( _T("node"), m_node )
 				<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
 	m_proto->m_ThreadInfo->send( iq );
+	
+	m_wasPublished = TRUE;
 }
 
 void CPepService::Retract()
@@ -420,6 +422,17 @@ void CPepService::Retract()
 			<< XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
 				<< XCHILD( _T("retract")) << XATTR( _T("node"), m_node) << XATTRI( _T("notify"), 1 )
 					<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
+}
+
+void CPepService::ResetPublish()
+{
+	m_wasPublished = FALSE;
+}
+
+void CPepService::ForceRepublishOnLogin()
+{
+	if(!m_wasPublished)
+		Publish();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -634,6 +647,9 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 	}
 
 	SetMood(hContact, moodType, moodText);
+
+	if (!hContact)
+		ForceRepublishOnLogin();
 }
 
 void CPepMood::CreateData( HXML n )
@@ -1021,6 +1037,9 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 	}
 
 	SetActivity(hContact, szFirstNode, szSecondNode, szText);
+
+	if (!hContact)
+		ForceRepublishOnLogin();
 }
 
 void CPepActivity::CreateData( HXML n )

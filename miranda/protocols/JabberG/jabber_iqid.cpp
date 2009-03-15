@@ -200,6 +200,8 @@ void CJabberProto::OnLoggedIn()
 	}
 	DBFreeVariant(&dbvSaved);
 	DBFreeVariant(&dbvHash);
+
+	m_pepServices.ResetPublishAll();
 }
 
 void CJabberProto::OnIqResultGetAuth( HXML iqNode )
