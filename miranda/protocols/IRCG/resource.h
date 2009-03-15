@@ -30,14 +30,15 @@
 #define IDI_MANAGER                     182
 #define IDI_QUICK                       184
 #define IDI_GO                          185
+#define IDI_APPLY                       185
 #define IDI_SHOW                        186
 #define IDI_LOGO                        187
 #define IDI_RENAME                      188
 #define IDI_SERVER                      189
 #define IDI_DCC                         196
-#define IDI_PART                        197
-#define IDI_JOIN                        198
 #define IDR_SERVERS                     200
+#define IDI_EDIT                        201
+#define IDI_IRCQUESTION                 202
 #define IDC_ENICK                       1000
 #define IDC_USERID                      1001
 #define IDC_INFO_NAME                   1001
@@ -244,7 +245,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        201
+#define _APS_NEXT_RESOURCE_VALUE        203
 #define _APS_NEXT_COMMAND_VALUE         40067
 #define _APS_NEXT_CONTROL_VALUE         1238
 #define _APS_NEXT_SYMED_VALUE           101

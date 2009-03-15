@@ -36,7 +36,6 @@ CMessageBoxDlg::CMessageBoxDlg( CIrcProto* _pro, DCCINFO* _dci ) :
 
 void CMessageBoxDlg::OnInitDialog()
 {
-	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON, (LPARAM)(HICON)LoadImage(NULL,IDI_QUESTION,IMAGE_ICON,48, 48,LR_SHARED), 0);
 }
 
 void CMessageBoxDlg::OnOk( CCtrlButton* )
@@ -215,6 +214,7 @@ CNickDlg::CNickDlg(CIrcProto *_pro) :
 void CNickDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
+	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_RENAME)); // Tell the dialog to use it
 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
@@ -797,10 +797,10 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_topic( this, IDC_TOPIC ),
 
 	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Add ban/invite/exception")),
-	m_edit( this, IDC_EDIT, _pro->LoadIconEx(IDI_RENAME), LPGEN("Edit selected ban/invite/exception")),
+	m_edit( this, IDC_EDIT, _pro->LoadIconEx(IDI_EDIT), LPGEN("Edit selected ban/invite/exception")),
 	m_remove( this, IDC_REMOVE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Delete selected ban/invite/exception")),
-	m_applyModes( this, IDC_APPLYMODES, _pro->LoadIconEx( IDI_GO ), LPGEN("Set these modes for the channel")),
-	m_applyTopic( this, IDC_APPLYTOPIC, _pro->LoadIconEx( IDI_GO ), LPGEN("Set this topic for the channel")),
+	m_applyModes( this, IDC_APPLYMODES, _pro->LoadIconEx( IDI_APPLY ), LPGEN("Set these modes for the channel")),
+	m_applyTopic( this, IDC_APPLYTOPIC, _pro->LoadIconEx( IDI_APPLY ), LPGEN("Set this topic for the channel")),
 
 	m_radio1( this, IDC_RADIO1 ),
 	m_radio2( this, IDC_RADIO2 ),
@@ -1383,6 +1383,8 @@ void CCoolIrcDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
 
 	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
+	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_IRCQUESTION)); // Tell the dialog to use it
+
 }
 
 void CCoolIrcDlg::OnDestroy()

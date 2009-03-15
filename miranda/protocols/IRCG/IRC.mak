@@ -2,34 +2,30 @@
 !IF "$(CFG)" == ""
 CFG=IRC - Win32 Release Unicode
 !MESSAGE No configuration specified. Defaulting to IRC - Win32 Release Unicode.
-!ENDIF
+!ENDIF 
 
 !IF "$(CFG)" != "IRC - Win32 Release" && "$(CFG)" != "IRC - Win32 Debug" && "$(CFG)" != "IRC - Win32 Debug Unicode" && "$(CFG)" != "IRC - Win32 Release Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "IRC.mak" CFG="IRC - Win32 Debug Unicode"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "IRC - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "IRC - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "IRC - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "IRC - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 !ERROR An invalid configuration is specified.
-!ENDIF
+!ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE
+!ELSE 
 NULL=nul
-!ENDIF
-
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
+!ENDIF 
 
 !IF  "$(CFG)" == "IRC - Win32 Release"
 
@@ -68,15 +64,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
-BSC32_SBRS= \
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
+BSC32_SBRS= \
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
@@ -84,6 +114,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\irclib.obj" \
 	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MString.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
@@ -92,8 +123,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\ui_utils.obj" \
 	"$(INTDIR)\userinfo.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\MString.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -138,15 +168,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
-BSC32_SBRS= \
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
+BSC32_SBRS= \
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
@@ -154,6 +218,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\irclib.obj" \
 	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MString.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
@@ -162,8 +227,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\ui_utils.obj" \
 	"$(INTDIR)\userinfo.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\MString.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -227,11 +291,45 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG"
+CPP=cl.exe
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
 BSC32_SBRS= \
 	"$(INTDIR)\clist.sbr" \
 	"$(INTDIR)\commandmonitor.sbr" \
@@ -239,6 +337,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\irclib.sbr" \
 	"$(INTDIR)\ircproto.sbr" \
 	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\MString.sbr" \
 	"$(INTDIR)\options.sbr" \
 	"$(INTDIR)\output.sbr" \
 	"$(INTDIR)\scripting.sbr" \
@@ -246,8 +345,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\tools.sbr" \
 	"$(INTDIR)\ui_utils.sbr" \
 	"$(INTDIR)\userinfo.sbr" \
-	"$(INTDIR)\windows.sbr" \
-	"$(INTDIR)\MString.sbr"
+	"$(INTDIR)\windows.sbr"
 
 "$(OUTDIR)\IRC.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -255,7 +353,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:yes /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/debug Unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
@@ -263,6 +361,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\irclib.obj" \
 	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MString.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
@@ -271,8 +370,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\ui_utils.obj" \
 	"$(INTDIR)\userinfo.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\MString.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\debug Unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -315,15 +413,49 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG"
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc"
-BSC32_SBRS= \
+CPP=cl.exe
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yu"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
+RSC_PROJ=/l 0x41d /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\IRC.bsc" 
+BSC32_SBRS= \
+	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib shlwapi.lib wsock32.lib /nologo /base:"0x54010000" /dll /incremental:no /pdb:"$(OUTDIR)\IRC.pdb" /map:"$(INTDIR)\IRC.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/IRC.dll" /implib:"$(OUTDIR)\IRC.lib" /filealign:512 
 LINK32_OBJS= \
 	"$(INTDIR)\clist.obj" \
 	"$(INTDIR)\commandmonitor.obj" \
@@ -331,6 +463,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\irclib.obj" \
 	"$(INTDIR)\ircproto.obj" \
 	"$(INTDIR)\main.obj" \
+	"$(INTDIR)\MString.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\output.obj" \
 	"$(INTDIR)\scripting.obj" \
@@ -339,54 +472,23 @@ LINK32_OBJS= \
 	"$(INTDIR)\ui_utils.obj" \
 	"$(INTDIR)\userinfo.obj" \
 	"$(INTDIR)\windows.obj" \
-	"$(INTDIR)\resource.res" \
-	"$(INTDIR)\MString.obj"
+	"$(INTDIR)\resource.res"
 
 "..\..\bin\release unicode\plugins\IRC.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $<
-<<
+!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("IRC.dep")
 !INCLUDE "IRC.dep"
-!ELSE
+!ELSE 
 !MESSAGE Warning: cannot find "IRC.dep"
-!ENDIF
-!ENDIF
+!ENDIF 
+!ENDIF 
 
 
 !IF "$(CFG)" == "IRC - Win32 Release" || "$(CFG)" == "IRC - Win32 Debug" || "$(CFG)" == "IRC - Win32 Debug Unicode" || "$(CFG)" == "IRC - Win32 Release Unicode"
@@ -416,7 +518,7 @@ SOURCE=.\clist.cpp
 "$(INTDIR)\clist.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\commandmonitor.cpp
 
@@ -444,7 +546,7 @@ SOURCE=.\commandmonitor.cpp
 "$(INTDIR)\commandmonitor.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\input.cpp
 
@@ -472,7 +574,7 @@ SOURCE=.\input.cpp
 "$(INTDIR)\input.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\irclib.cpp
 
@@ -500,7 +602,7 @@ SOURCE=.\irclib.cpp
 "$(INTDIR)\irclib.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\ircproto.cpp
 
@@ -528,13 +630,13 @@ SOURCE=.\ircproto.cpp
 "$(INTDIR)\ircproto.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\main.cpp
 
 !IF  "$(CFG)" == "IRC - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\IRC.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -544,7 +646,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\IRC.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -554,7 +656,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr"	"$(INTDIR)\IRC.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -564,7 +666,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "
 
 !ELSEIF  "$(CFG)" == "IRC - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "IRC_EXPORTS" /Fp"$(INTDIR)\IRC.pch" /Yc"irc.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\IRC.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -572,7 +674,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBU
 <<
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\MString.cpp
 
@@ -600,7 +702,7 @@ SOURCE=.\MString.cpp
 "$(INTDIR)\MString.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\options.cpp
 
@@ -628,7 +730,7 @@ SOURCE=.\options.cpp
 "$(INTDIR)\options.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\output.cpp
 
@@ -656,7 +758,7 @@ SOURCE=.\output.cpp
 "$(INTDIR)\output.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\scripting.cpp
 
@@ -684,7 +786,7 @@ SOURCE=.\scripting.cpp
 "$(INTDIR)\scripting.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\services.cpp
 
@@ -712,7 +814,7 @@ SOURCE=.\services.cpp
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\tools.cpp
 
@@ -740,7 +842,7 @@ SOURCE=.\tools.cpp
 "$(INTDIR)\tools.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\ui_utils.cpp
 
@@ -768,7 +870,7 @@ SOURCE=.\ui_utils.cpp
 "$(INTDIR)\ui_utils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\userinfo.cpp
 
@@ -796,7 +898,7 @@ SOURCE=.\userinfo.cpp
 "$(INTDIR)\userinfo.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\windows.cpp
 
@@ -824,7 +926,7 @@ SOURCE=.\windows.cpp
 "$(INTDIR)\windows.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\IRC.pch"
 
 
-!ENDIF
+!ENDIF 
 
 SOURCE=.\resource.rc
 
@@ -833,4 +935,5 @@ SOURCE=.\resource.rc
 
 
 
-!ENDIF
+!ENDIF 
+

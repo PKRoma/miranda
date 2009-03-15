@@ -297,10 +297,6 @@ SOURCE=.\Icons\hide.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\Icons\Icons\irc.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\Icons\irc.ico
 # End Source File
 # Begin Source File

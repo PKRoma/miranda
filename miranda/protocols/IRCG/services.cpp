@@ -53,13 +53,13 @@ void CIrcProto::InitMenus()
 		hMenuQuick= (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Join channel");
-		mi.icolibItem = GetIconHandle(IDI_JOIN);
+		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
 		strcpy( d, IRC_JOINCHANNEL );
 		mi.position = 500090001;
 		hMenuJoin = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Change your nickname");
-		mi.icolibItem = GetIconHandle(IDI_WHOIS);
+		mi.icolibItem = GetIconHandle(IDI_RENAME);
 		strcpy( d, IRC_CHANGENICK );
 		mi.position = 500090002;
 		hMenuNick = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
@@ -955,12 +955,12 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 
 			if (bIsOnline)
 				{ // for online chatrooms
-				clmi.icolibItem = GetIconHandle(IDI_PART);
+				clmi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_LEAVE);//GetIconHandle(IDI_PART);
 				clmi.pszName = LPGEN("&Leave channel");
 				}
 			else
 				{ // for offline chatrooms
-				clmi.icolibItem = GetIconHandle(IDI_JOIN);
+				clmi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
 				clmi.pszName = LPGEN("&Join channel");
 				if ( !IsConnected() )
 					clmi.flags |= CMIF_HIDDEN;				
