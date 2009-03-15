@@ -155,6 +155,7 @@ struct MHeaderbarCtrl
 	}
 
 	MHeaderbarCtrl() {}
+	~MHeaderbarCtrl() { free( controlsToRedraw ); }
 
 	HWND		hwnd;
 
@@ -166,6 +167,9 @@ struct MHeaderbarCtrl
 	// control colors
 	RGBQUAD		rgbBkgTop, rgbBkgBottom;
 	COLORREF	clText;
+
+	int			nControlsToRedraw;
+	HWND		*controlsToRedraw;
 };
 
 int UnloadHeaderbarModule(WPARAM wParam, LPARAM lParam) 
@@ -243,7 +247,6 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	int iTopSpace = IsAeroMode() ? 0 : 3;
 	PAINTSTRUCT ps;
 	HBITMAP hBmp, hOldBmp;
-	RECT temprc;
 
 	int titleLength = GetWindowTextLength(hwndDlg) + 1;
 	TCHAR *szTitle = (TCHAR *)mir_alloc(sizeof(TCHAR) * titleLength);
@@ -267,6 +270,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	hOldBmp=(HBITMAP)SelectObject(tempDC,hBmp);
 
 	if (IsAeroMode()) {
+		RECT temprc;
 		temprc.left=0;
 		temprc.right=mit->width;
 		temprc.top=0;
@@ -336,7 +340,31 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	mir_free(szTitle);
 
 	//Copy to output
+	if (mit->nControlsToRedraw)
+	{
+		RECT temprc;
+		temprc.left=0;
+		temprc.right=mit->width;
+		temprc.top=0;
+		temprc.bottom=mit->width;
+		HRGN hRgn = CreateRectRgnIndirect(&temprc);
+
+		for (int i = 0; i < mit->nControlsToRedraw; ++i)
+		{
+			GetWindowRect(mit->controlsToRedraw[i], &temprc);
+			MapWindowPoints(NULL, hwndDlg, (LPPOINT)&temprc, 2);
+			HRGN hRgnTmp = CreateRectRgnIndirect(&temprc);
+			CombineRgn(hRgn, hRgn, hRgnTmp, RGN_DIFF);
+			DeleteObject(hRgnTmp);
+		}
+		SelectClipRgn(hdc,hRgn);
+		DeleteObject(hRgn);
+	}
+
 	BitBlt(hdc,mit->rc.left,mit->rc.top,mit->width,mit->height,tempDC,0,0,SRCCOPY);
+
+	SelectClipRgn(hdc,NULL);
+
 	SelectObject(tempDC,hOldBmp);
 	DeleteObject(hBmp);
 	DeleteDC(tempDC);
@@ -366,6 +394,27 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			WTA_OPTIONS opts;
 			opts.dwFlags = opts.dwMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
 			setWindowThemeAttribute(GetParent(hwndDlg), WTA_NONCLIENT, &opts, sizeof(opts));
+		}
+
+		{	HWND hParent = GetParent(hwndDlg);
+			RECT rcWnd; GetWindowRect(hwndDlg, &rcWnd);
+			itc->controlsToRedraw = 0;
+			itc->nControlsToRedraw = 0;
+			for (HWND hChild = FindWindowEx(hParent, NULL, NULL, NULL); hChild; hChild = FindWindowEx(hParent, hChild, NULL, NULL))
+			{
+				if (hChild != hwndDlg)
+				{
+					RECT rcChild; GetWindowRect(hChild, &rcChild);
+					RECT rc;
+					IntersectRect(&rc, &rcChild, &rcWnd);
+					if (!IsRectEmpty(&rc))
+					{
+						++itc->nControlsToRedraw;
+						itc->controlsToRedraw = (HWND *)realloc(itc->controlsToRedraw, sizeof(HWND) * itc->nControlsToRedraw);
+						itc->controlsToRedraw[itc->nControlsToRedraw - 1] = hChild;
+					}
+				}
+			}
 		}
 
 		break;

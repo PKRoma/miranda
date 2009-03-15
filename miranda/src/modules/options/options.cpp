@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define OPENOPTIONSDIALOG_OLD_SIZE 12
 
-#define FILTER_TIMEOUT_TIMER 1001
+#define FILTER_TIMEOUT_TIMER 10012
 
 #define ALL_MODULES_FILTER _T("<all modules>")
 #define CORE_MODULES_FILTER _T("<core modules>")
@@ -269,63 +269,67 @@ static WNDPROC OptionsFilterDefaultProc = NULL;
 
 static LRESULT CALLBACK OptionsFilterSubclassProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if ( message == WM_PAINT ) {
-		if ( GetFocus() == hWnd || GetWindowTextLength( hWnd ) ) 
-			return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
+	if (message != WM_PAINT && message != WM_PRINT)
+		return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
 
-		RECT rc;
-		GetClientRect( hWnd, &rc);
-		HDC hdc;
-		PAINTSTRUCT paint;
+	if ( GetFocus() == hWnd || GetWindowTextLength( hWnd ) ) 
+		return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
+
+	RECT rc;
+	GetClientRect( hWnd, &rc);
+	HDC hdc;
+	PAINTSTRUCT paint;
+
+	if (message == WM_PAINT)
 		hdc = BeginPaint( hWnd, &paint);
+	else
+		hdc = (HDC)wParam;
 
-		TCHAR buf[255];
-		if ( bSearchState==1 && FilterLoadProgress < 100 && FilterLoadProgress > 0 )
-			mir_sntprintf( buf, SIZEOF(buf), TranslateT("Loading... %d%%"), FilterLoadProgress );
-		else
-			mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Search" ) );
+	TCHAR buf[255];
+	if ( bSearchState==1 && FilterLoadProgress < 100 && FilterLoadProgress > 0 )
+		mir_sntprintf( buf, SIZEOF(buf), TranslateT("Loading... %d%%"), FilterLoadProgress );
+	else
+		mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Search" ) );
 
-		BOOL bDrawnByTheme = FALSE;
-		
-		if ( openThemeData )  {
-			HTHEME hTheme = openThemeData( hWnd, _T("EDIT"));
-			if ( hTheme ) {
-				int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
-				if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
-					drawThemeParentBackground( hWnd, hdc, &rc );
+	BOOL bDrawnByTheme = FALSE;
+	
+	if ( openThemeData )  {
+		HTHEME hTheme = openThemeData( hWnd, _T("EDIT"));
+		if ( hTheme ) {
+			int style = IsWinVerVistaPlus() ? EP_BACKGROUND : EP_EDITTEXT;
+			if ( isThemeBackgroundPartiallyTransparent( hTheme, style, ETS_NORMAL) )
+				drawThemeParentBackground( hWnd, hdc, &rc );
 
-				DTBGOPTS dtbgopts = { sizeof(DTBGOPTS), DTBG_OMITBORDER };
-				dtbgopts.rcClip = rc;
+			DTBGOPTS dtbgopts = { sizeof(DTBGOPTS), DTBG_OMITBORDER };
+			dtbgopts.rcClip = rc;
 
-				drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
-				HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
-				HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
-				drawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
-				SelectObject( hdc, oldFont );
-				DeleteObject( hFont );
-				closeThemeData( hTheme );
-				bDrawnByTheme = TRUE;
-			}
-		}
-
-		if ( !bDrawnByTheme ) {
+			drawThemeBackgroundEx( hTheme, hdc, style, ETS_NORMAL, &rc, &dtbgopts );
 			HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
 			HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
-			SetTextColor( hdc, GetSysColor(COLOR_GRAYTEXT) );
-			FillRect( hdc, &rc, GetSysColorBrush( COLOR_WINDOW ) );
-			int oldMode = SetBkMode( hdc, TRANSPARENT );
-			DrawText( hdc, buf, -1, &rc, 0 );
-            SetBkMode( hdc, oldMode );
+			drawThemeText( hTheme, hdc,  EP_EDITTEXT, ETS_DISABLED, buf, -1, 0, 0, &rc );
 			SelectObject( hdc, oldFont );
 			DeleteObject( hFont );
+			closeThemeData( hTheme );
+			bDrawnByTheme = TRUE;
 		}
-	
-		// Paint into this DC
-		EndPaint( hWnd, &paint);
-		return 0;
 	}
 
-	return CallWindowProc(OptionsFilterDefaultProc, hWnd, message, wParam, lParam );
+	if ( !bDrawnByTheme ) {
+		HFONT hFont = (HFONT) GetStockObject( DEFAULT_GUI_FONT );
+		HFONT oldFont = (HFONT) SelectObject( hdc, hFont );
+		SetTextColor( hdc, GetSysColor(COLOR_GRAYTEXT) );
+		FillRect( hdc, &rc, GetSysColorBrush( COLOR_WINDOW ) );
+		int oldMode = SetBkMode( hdc, TRANSPARENT );
+		DrawText( hdc, buf, -1, &rc, 0 );
+        SetBkMode( hdc, oldMode );
+		SelectObject( hdc, oldFont );
+		DeleteObject( hFont );
+	}
+
+	if (message == WM_PAINT)
+		EndPaint( hWnd, &paint);
+
+	return 0;
 }
 
 static BOOL CheckPageShow( HWND hdlg, OptionsDlgData * dat, int i,  TCHAR * szFilterString )
@@ -335,6 +339,79 @@ static BOOL CheckPageShow( HWND hdlg, OptionsDlgData * dat, int i,  TCHAR * szFi
 	if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) return FALSE;
 	return TRUE;
 }
+
+static BOOL IsAeroMode()
+{
+	BOOL result;
+	return dwmIsCompositionEnabled && (dwmIsCompositionEnabled(&result) == S_OK) && result;
+}
+
+static void AeroPaintControl(HWND hwnd, HDC hdc, WNDPROC OldWndProc, UINT msg = WM_PRINT, LPARAM lpFlags = PRF_CLIENT|PRF_NONCLIENT)
+{
+	HBITMAP hBmp, hOldBmp;
+	RECT rc; GetClientRect(hwnd, &rc);
+	BYTE *pBits;
+
+	HDC tempDC = CreateCompatibleDC(hdc);
+
+	BITMAPINFO bmi;
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = rc.right;
+	bmi.bmiHeader.biHeight = -rc.bottom;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	hBmp = CreateDIBSection(tempDC, &bmi, DIB_RGB_COLORS, (void **)&pBits, NULL, 0);
+
+	hOldBmp = (HBITMAP)SelectObject(tempDC,hBmp);
+
+	//paint
+	SetPropA(hwnd, "Miranda.AeroRender.Active", (HANDLE)TRUE);
+	CallWindowProc(OldWndProc, hwnd, msg, (WPARAM)tempDC, lpFlags);
+	SetPropA(hwnd, "Miranda.AeroRender.Active", (HANDLE)FALSE);
+
+	// Fix alpha channel
+	GdiFlush();
+	for (int i = 0; i < rc.right*rc.bottom; ++i, pBits += 4)
+		if (!pBits[3]) pBits[3] = 255;
+
+	//Copy to output
+	BitBlt(hdc,0,0,rc.right,rc.bottom,tempDC,0,0,SRCCOPY);
+	SelectObject(tempDC,hOldBmp);
+	DeleteObject(hBmp);
+	DeleteDC(tempDC);
+}
+
+static LRESULT CALLBACK AeroPaintSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	WNDPROC OldWndProc = (WNDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	switch (msg)
+	{
+		case WM_CTLCOLOREDIT:
+			if (!GetPropA((HWND)lParam, "Miranda.AeroRender.Active"))
+				RedrawWindow((HWND)lParam, NULL, NULL, RDW_INVALIDATE);
+			break;
+
+		case WM_ERASEBKGND:
+			return TRUE;
+
+		case WM_PRINT:
+		case WM_PRINTCLIENT:
+			AeroPaintControl(hwnd, (HDC)wParam, OldWndProc, msg, lParam);
+			return TRUE;
+
+		case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			HDC hdc = BeginPaint(hwnd, &ps);
+			AeroPaintControl(hwnd, hdc, OldWndProc);
+			EndPaint(hwnd, &ps);
+			return TRUE;
+		}
+	}
+	return CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
+}
+
 static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLong( hdlg, GWL_USERDATA );
@@ -374,14 +451,23 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			typedef BOOL (STDAPICALLTYPE *pfnGetComboBoxInfo)(HWND, PCOMBOBOXINFO);
 			pfnGetComboBoxInfo getComboBoxInfo = (pfnGetComboBoxInfo)GetProcAddress(GetModuleHandleA("user32"), "GetComboBoxInfo"); 
 			if (getComboBoxInfo) {
-				 COMBOBOXINFO cbi;
-				 cbi.cbSize = sizeof(COMBOBOXINFO);
-				 getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
-				 OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+				COMBOBOXINFO cbi;
+				cbi.cbSize = sizeof(COMBOBOXINFO);
+				getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
+				OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+
+				if (IsAeroMode())
+				{
+					SetWindowLong(cbi.hwndCombo, GWL_USERDATA, GetWindowLong(cbi.hwndCombo, GWLP_WNDPROC));
+					SetWindowLong(cbi.hwndCombo, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+					SetWindowLong(cbi.hwndItem, GWL_USERDATA, GetWindowLong(cbi.hwndItem, GWLP_WNDPROC));
+					SetWindowLong(cbi.hwndItem, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+				}
 			}
 
 			Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 			TranslateDialogDefault(hdlg);
+			SendMessage(GetDlgItem(hdlg, IDC_HEADERBAR), WM_SETICON, 0, (LPARAM)LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)));
 			Window_SetIcon_IcoLib(hdlg, SKINICON_OTHER_OPTIONS);
 			CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
@@ -926,7 +1012,8 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		case IDC_KEYWORD_FILTER:
 			//add a timer - when the timer elapses filter the option pages
 			if ( (HIWORD(wParam)==CBN_SELCHANGE) || (HIWORD(wParam) == CBN_EDITCHANGE))
-				SetTimer(hdlg, FILTER_TIMEOUT_TIMER, 400, NULL); 
+				if (!SetTimer(hdlg, FILTER_TIMEOUT_TIMER, 400, NULL))
+					MessageBeep(MB_ICONSTOP);
 
 			break;
 
