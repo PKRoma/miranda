@@ -185,7 +185,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
     DBVARIANT dbv;
     if (!getString(AIM_KEY_PR, &dbv))
     {
-        profile_buf=strldup(dbv.pszVal);
+        profile_buf = NEWSTR_ALLOCA(dbv.pszVal);
         buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+AIM_CAPS_LENGTH*50+sizeof(AIM_MSG_TYPE)+strlen(profile_buf));
         DBFreeVariant(&dbv);
     }
@@ -212,7 +212,6 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
     {
         aim_writetlv(0x01,(unsigned short)sizeof(AIM_MSG_TYPE)-1,AIM_MSG_TYPE,offset,buf);
         aim_writetlv(0x02,(unsigned short)strlen(profile_buf),profile_buf,offset,buf);
-        delete[] profile_buf;
     }
     return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
@@ -220,9 +219,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char *msg)//user info
 {
     unsigned short offset=0;
-    int msg_size=0;
-    if(msg!=NULL)
-        msg_size=strlen(msg);
+    size_t msg_size = msg ? strlen(msg) : 0;
     char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+sizeof(AIM_MSG_TYPE)+msg_size);
     aim_writesnac(0x02,0x04,offset,buf);
     aim_writetlv(0x01,sizeof(AIM_MSG_TYPE),AIM_MSG_TYPE,offset,buf);
@@ -257,7 +254,7 @@ int CAimProto::aim_client_ready(HANDLE hServerConn,unsigned short &seqno)
     }
     if (hDirectBoundPort == NULL)
     {
-        ShowPopup(NULL,LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);
+        ShowPopup(LPGEN("Aim was unable to bind to a port. File transfers may not succeed in some cases."), 0);
     }
     LocalPort=nlb.wPort;
     InternalIP=nlb.dwInternalIP;

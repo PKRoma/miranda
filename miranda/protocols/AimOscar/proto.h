@@ -465,7 +465,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   load_extra_icons();
 
-	void   ShowPopup( const char* title, const char* msg, int flags, char* url = 0 );
+	void   ShowPopup( const char* msg, int flags, char* url = 0 );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	HANDLE CreateProtoEvent(const char* szEvent);

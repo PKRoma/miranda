@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 char *normalize_name(const char *s);
 char* lowercase_name(char* s);
-char* trim_name(const char* s);
 char* trim_str(char* s);
 void create_group(const char *group);
 void set_extra_icon(HANDLE hContact, HANDLE hImage, int column_type);
@@ -40,23 +39,14 @@ bool is_naim_ver_cap(char* cap);
 bool is_digsby_ver_cap(char* cap);
 unsigned short get_random(void);
 
-template <class T>
-T* renew(T* src, int size, int size_chg)
-{
-	T* dest=new T[size+size_chg];
-	memcpy(dest,src,size*sizeof(T));
-	delete[] src;
-	return dest;
-}
-
 struct BdListItem
 {
     char* name;
     unsigned short item_id;
 
     BdListItem() { name = NULL; item_id = 0; }
-    BdListItem(const char* snt, unsigned short id) { name = strldup(snt); item_id = id; }
-    ~BdListItem() { if (name) delete[] name; }
+    BdListItem(const char* snt, unsigned short id) { name = mir_strdup(snt); item_id = id; }
+    ~BdListItem() { mir_free(name); }
 };
 
 struct BdList : public OBJLIST<BdListItem>

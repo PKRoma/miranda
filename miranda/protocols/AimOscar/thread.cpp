@@ -27,12 +27,9 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 	local_ip = szDesc + lstrlenA(szDesc) + 1;
 	verified_ip = local_ip + lstrlenA(local_ip) + 1;
 	proxy_ip = verified_ip + lstrlenA(verified_ip) + 1;
-	DBVARIANT dbv;
-	if ( !getString(*hContact, AIM_KEY_SN, &dbv)) {
-		sn = strldup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else return;
+
+	sn = getSetting(*hContact, AIM_KEY_SN);
+	if (sn == NULL) return;
 
 	int peer_force_proxy = getByte(*hContact, AIM_KEY_FP, 0);
 	int force_proxy = getByte( AIM_KEY_FP, 0);
@@ -48,15 +45,11 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 			ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 		}
 		else {
-			if ( !getString( hContact, AIM_KEY_SN, &dbv )) {
-				LOG("We failed to connect to the buddy over the proxy transfer.");
-				char cookie[8];
-				read_cookie(hContact,cookie);
-				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
-				aim_file_ad(hServerConn,seqno,dbv.pszVal,cookie,true);
-				DBFreeVariant(&dbv);
-			}
-			else sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED,hContact,0);
+			LOG("We failed to connect to the buddy over the proxy transfer.");
+			char cookie[8];
+			read_cookie(hContact, cookie);
+			sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_FAILED, hContact, 0);
+			aim_file_ad(hServerConn, seqno, sn, cookie,true);
 		}
 	}
 	else if ( force_proxy ) { //we are forcing a proxy
@@ -101,7 +94,7 @@ void __cdecl CAimProto::accept_file_thread( void* param )//buddy sending file
 			}
 		}
 	}
-	delete[] (char*)param;
+	mir_free(param);
 }
 
 void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending file
@@ -154,7 +147,7 @@ void __cdecl CAimProto::redirected_file_thread( void* param )//we are sending fi
 			ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 		}
 	}
-	delete[] (char*)param;
+	mir_free(param);
 }
 
 void __cdecl CAimProto::proxy_file_thread( void* param ) //buddy sending file here
@@ -171,5 +164,5 @@ void __cdecl CAimProto::proxy_file_thread( void* param ) //buddy sending file he
 		setString( *hContact, AIM_KEY_IP, proxy_ip );
 		ForkThread( &CAimProto::aim_proxy_helper, *hContact );
 	}
-	delete[] (char*)param;
+	mir_free(param);
 }

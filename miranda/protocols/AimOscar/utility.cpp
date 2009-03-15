@@ -69,7 +69,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup(NULL,LPGEN("Please, enter a username in the options dialog."), 0);
+			ShowPopup(LPGEN("Please, enter a username in the options dialog."), 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -77,7 +77,7 @@ void CAimProto::start_connection(int status)
 			DBFreeVariant(&dbv);
 		else
 		{
-			ShowPopup(NULL,LPGEN("Please, enter a password in the options dialog."), 0);
+			ShowPopup(LPGEN("Please, enter a password in the options dialog."), 0);
 			broadcast_status(ID_STATUS_OFFLINE);
 			return;
 		}
@@ -165,7 +165,7 @@ HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool tempor
 				DBFreeVariant(&dbv);
                 if (found)
                 {
-			        delete[] norm_sn;
+			        mir_free(norm_sn);
 				    return hContact; 
                 }
 			}
@@ -185,7 +185,7 @@ HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool tempor
 			    LOG("Adding contact %s to client side list.",norm_sn);
 	            if ( temporary )
 		            DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
-			    delete[] norm_sn;
+			    mir_free(norm_sn);
 			    return hContact;
 		    }
 		    else
@@ -193,7 +193,7 @@ HANDLE CAimProto::contact_from_sn( const char* sn, bool addIfNeeded, bool tempor
 	    }
 	}
 
-    delete[] norm_sn;
+    mir_free(norm_sn);
 	return NULL;
 }
 
@@ -207,7 +207,7 @@ void CAimProto::update_server_group(const char* group, unsigned short group_id)
     else
     {
         user_id_array_size = (unsigned short)group_list.getCount();
-        user_id_array = new unsigned short[user_id_array_size];
+        user_id_array = (unsigned short*)mir_alloc(user_id_array_size * sizeof(unsigned short));
         for (unsigned short i=0; i<user_id_array_size; ++i)
             user_id_array[i] = _htons(group_list[i].item_id);
     }
@@ -216,7 +216,7 @@ void CAimProto::update_server_group(const char* group, unsigned short group_id)
     LOG("Modifying group %s:%u on the serverside list",group, group_id);
 	aim_mod_group(hServerConn, seqno, group, group_id, (char*)user_id_array, user_id_array_size);
 
-    delete[] user_id_array;
+    mir_free(user_id_array);
 }
 
 void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
@@ -426,20 +426,22 @@ void CAimProto::add_ES_icons()
 
 char *normalize_name(const char *s)
 {
-    if (s == NULL)
-        return NULL;
-	int length = strlen(s)+1;
-	char* buf=new char[length]; 
-	// static char buf[64];
-    int i, j;
-	strlcpy(buf, s, length);
-    for (i = 0, j = 0; buf[j]; i++, j++)
-	{
-        while (buf[j] == ' ')
-            j++;
-        buf[i] = (char)tolower(buf[j]);
+    if (s == NULL) return NULL;
+	
+    char* buf = mir_strdup(s);
+    _strlwr(buf);
+
+    char *p = strchr(buf, ' '); 
+    if (p)
+    {
+        char *q = p;
+        while (*p)
+	    {
+            if (*p != ' ') *(q++) = *p;
+            ++p;
+        }
+        *q = '\0';
     }
-    buf[i] = '\0';
     return buf;
 }
 
@@ -452,17 +454,6 @@ char* lowercase_name(char* s)
 	for (; s[i]; i++)
 		buf[i] = (char)tolower(s[i]);
 	buf[i] = '\0';
-	return buf;
-}
-
-char* trim_name(const char* s)
-{   
-	if (s == NULL)
-		return NULL;
-	static char buf[64];
-	while(s[0]==' ')
-		s++;
-	strlcpy(buf,s,strlen(s)+1);
 	return buf;
 }
 
@@ -550,7 +541,7 @@ unsigned short* CAimProto::get_members_of_group(unsigned short group_id,unsigned
                     unsigned short buddy_id = getBuddyId(hContact, i);
 					if (buddy_id)
 					{
-						list = renew(list, size, 1);
+						list = (unsigned short*)mir_realloc(list, size+sizeof(list[0]));
                         list[size++] = _htons(buddy_id);
 					}
 				}
@@ -656,14 +647,14 @@ int CAimProto::deleteGroupId(HANDLE hContact, int i)
 
 int CAimProto::open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir)
 {
-	path = new char[MAX_PATH];
+	path = (char*)mir_alloc(MAX_PATH);
 
     int pos = mir_snprintf(path, MAX_PATH, "%s\\%s", CWD, m_szModuleName);
 	if  (contact_dir)
     {
         char* norm_sn = normalize_name(sn);
 	    pos += mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", norm_sn);
-	    delete[] norm_sn;
+	    mir_free(norm_sn);
     }
 
     if (_access(path, 0))
@@ -687,13 +678,13 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 		_write(fid, s_msg, strlen(s_msg));
 		_close(fid);
 		execute_cmd(path);
-		delete[] path;
-		delete[] s_msg;
+		mir_free(path);
+		mir_free(s_msg);
 	}
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup(NULL, error, ERROR_POPUP);
+		ShowPopup(error, ERROR_POPUP);
 	}
 }
 
@@ -711,13 +702,13 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 		_write(fid, s_msg, strlen(s_msg));
 		_close(fid);
 		execute_cmd(path);
-		delete[] path;
-		delete[] s_msg;
+		mir_free(path);
+		mir_free(s_msg);
 	}
 	else
 	{
 		char* error=_strerror("Failed to open file: ");
-		ShowPopup(NULL, error, ERROR_POPUP);
+		ShowPopup(error, ERROR_POPUP);
 	}
 }
 
@@ -960,7 +951,7 @@ char* CAimProto::getSetting(HANDLE hContact, const char* setting)
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(hContact, m_szModuleName, setting, &dbv))
 	{
-		char* store=strldup(dbv.pszVal);
+		char* store = mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 		return store;
 	}

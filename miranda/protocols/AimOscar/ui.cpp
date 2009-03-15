@@ -81,9 +81,9 @@ void DrawMyControl(HDC hDC, HWND /*hwndButton*/, HANDLE hTheme, UINT iState, REC
 /////////////////////////////////////////////////////////////////////////////////////////
 // User info dialog
 
-static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -199,7 +199,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		default:
 			if (((LPNMHDR)lParam)->code == PSN_PARAMCHANGED ) {
 				ppro = ( CAimProto* )(( PSHNOTIFY* )lParam )->lParam;
-				SetWindowLong(hwndDlg, GWL_USERDATA, LPARAM( ppro ));
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, LPARAM( ppro ));
 
 				DBVARIANT dbv;
 				if (!ppro->getString(AIM_KEY_PR, &dbv))
@@ -595,9 +595,7 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				cf.cbSize = sizeof(cf);
 				cf.dwMask=CFM_FACE;
 				cf.dwEffects=0;
-				char face[128];
-				SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETCURSEL, 0, 0),(LPARAM)face);
-				strlcpy(cf.szFaceName,face,strlen(face)+1);
+				SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_TYPEFACE, CB_GETCURSEL, 0, 0),(LPARAM)cf.szFaceName);
 				SendDlgItemMessage(hwndDlg, IDC_PROFILE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 				SetFocus(GetDlgItem(hwndDlg, IDC_PROFILE));
 				break;
@@ -629,9 +627,9 @@ static BOOL CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 /////////////////////////////////////////////////////////////////////////////////////////
 // View admin dialog
 
-BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
     DBVARIANT dbv;
 
 	switch (msg) 
@@ -650,7 +648,7 @@ BOOL CALLBACK admin_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         {
 		case PSN_PARAMCHANGED:
 		    ppro = (CAimProto*)((LPPSHNOTIFY)lParam)->lParam;
-            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)ppro);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)ppro);
 
             if (ppro->wait_conn(ppro->hAdminConn, ppro->hAdminEvent, 0x07))             // Make a connection
             {
@@ -765,15 +763,15 @@ int CAimProto::EditProfile(WPARAM /*wParam*/, LPARAM /*lParam*/)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Options dialog
 
-static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 		{
 			DBVARIANT dbv;
@@ -1001,10 +999,10 @@ static BOOL CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 }
 
 
-static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     static const int btns[] = { IDC_ALLOWALL, IDC_BLOCKALL, IDC_ALLOWBELOW, IDC_BLOCKBELOW, IDC_ALLOWCONT };
-    CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+    CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
     int i;
 
 	switch (msg) 
@@ -1012,7 +1010,7 @@ static BOOL CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 
         CheckRadioButton(hwndDlg, IDC_ALLOWALL, IDC_BLOCKBELOW, btns[ppro->pd_mode-1]);
@@ -1155,7 +1153,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			TranslateDialogDefault(hwndDlg);
 
 			CAimProto* ppro = (CAimProto*)lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
 			DBVARIANT dbv;
 			if ( !ppro->getString(AIM_KEY_SN, &dbv))
@@ -1191,7 +1189,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) 
 		{
-			CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+			CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			char str[128];
 			GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
@@ -1217,15 +1215,15 @@ int CAimProto::SvcCreateAccMgrUI(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Instant idle dialog
 
-BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+        SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("idle"));
@@ -1277,15 +1275,15 @@ BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Join chat dialog
 
-BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	CAimProto* ppro = (CAimProto*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	CAimProto* ppro = (CAimProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->LoadIconEx("aol"));
 		break;
@@ -1397,16 +1395,16 @@ static void clist_chat_prepare(HANDLE hItem, HWND hwndList, CAimProto* ppro)
 }
 
 
-BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	invite_chat_param* param = (invite_chat_param*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	invite_chat_param* param = (invite_chat_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) 
     {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		param = (invite_chat_param*)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));
@@ -1492,16 +1490,16 @@ BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 /////////////////////////////////////////////////////////////////////////////////////////
 // Chat request dialog
 
-BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	invite_chat_req_param* param = (invite_chat_req_param*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	invite_chat_req_param* param = (invite_chat_req_param*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) 
     {
 	case WM_INITDIALOG:
 	    TranslateDialogDefault(hwndDlg);
 
-	    SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+	    SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 	    param = (invite_chat_req_param*)lParam;
 
 	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)param->ppro->LoadIconEx("aol"));

@@ -23,7 +23,7 @@ TLV::TLV(char* buf)
 {
 	type_=_htons((*(unsigned short*)&buf[0]));
 	length_=_htons((*(unsigned short*)&buf[2]));
-	value_=new char[length_+1];
+	value_=(char*)mir_alloc(length_+1);
 	memcpy(value_,&buf[4],length_);
 	value_[length_]='\0';
 }
@@ -33,14 +33,14 @@ TLV::TLV(unsigned short type, unsigned short length, const char* value)
 	length_=length;
 	if(length_>0)
 	{
-		value_=new char[length_+1];
+		value_=(char*)mir_alloc(length_+1);
 		memcpy(value_,value,length_);
 	}
 }
 TLV::~TLV()
 {
 	if(length_)
-		delete[] value_;
+		mir_free(value_);
 }
 int TLV::cmp(unsigned short type)
 {
@@ -51,7 +51,7 @@ int TLV::cmp(unsigned short type)
 }
 char* TLV::dup()//duplicates the tlv value
 {
-	char* value=new char[length_+1];
+	char* value=(char*)mir_alloc(length_+1);
 	memcpy(value,value_,length_);
 	value[length_]='\0';
 	return value;
@@ -59,7 +59,7 @@ char* TLV::dup()//duplicates the tlv value
 wchar_t* TLV::dupw()//duplicates the tlv value
 {
     size_t len = length_ / sizeof(wchar_t);
-	wchar_t* value=new wchar_t[len+1];
+	wchar_t* value=(wchar_t*)mir_alloc(sizeof(wchar_t)*(len+1));
 	memcpy(value,value_,length_);
 	value[len]=0;
 	return value;
@@ -82,11 +82,12 @@ unsigned char TLV::ubyte(int pos)
 }
 char* TLV::part(int pos, int length)//returns part of the tlv value
 {
-	if(pos+length>length_)
-		return 0;
-	char* value=new char[length+1];
-	memcpy(value,&value_[pos],length);
-	value[length]='\0';
+	if(pos+length > length_) return 0;
+
+	char* value = (char*)mir_alloc(length + 2);
+	memcpy(value, &value_[pos], length);
+	value[length]   = '\0';
+	value[length+1] = '\0';
 	return value;
 }
 unsigned short TLV::whole(char* buf)//returns the whole tlv

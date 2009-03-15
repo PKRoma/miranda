@@ -46,10 +46,10 @@ void __cdecl CAimProto::avatar_upload_thread( void* param )
         {
             aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
             aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
-            delete[] data;
+            mir_free(data);
         }
     }
-	delete[] file;
+	mir_free(file);
 }
 
 void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_size)//checks to see if the avatar needs requested
@@ -64,7 +64,7 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_siz
         if (saved_hash == NULL || strcmp(saved_hash, hash_string))
 			sendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
     
-        delete[] saved_hash;
+        mir_free(saved_hash);
     }
     else
     {
@@ -78,7 +78,7 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_siz
         sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
     }
 
-    delete[] hash_string;
+    mir_free(hash_string);
 }
 
 void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)
@@ -114,7 +114,7 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 		LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
 
     sendBroadcast( AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0 );
-	delete[] norm_sn;	
+	mir_free(norm_sn);	
 }
 
 int detect_image_type(const char* stream, const char* &type_ret)
@@ -180,7 +180,7 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 	{
         char* hash = getSetting(hContact, AIM_KEY_AH);
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
-        delete[] hash;
+        mir_free(hash);
     }
 	else 
 		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szModuleName);
@@ -216,7 +216,7 @@ bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &
 	if (fileId == -1) return false;
 
 	long  dwAvatar = _filelength(fileId);
-	char* pResult = new char[dwAvatar];
+	char* pResult = (char*)mir_alloc(dwAvatar);
 
 	_read(fileId, pResult, dwAvatar);
 	_close(fileId);
@@ -232,7 +232,7 @@ bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &
         size = (unsigned short)dwAvatar;
     }
     else
-        delete[] pResult;
+        mir_free(pResult);
 
     return true;
 }

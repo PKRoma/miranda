@@ -29,19 +29,16 @@ CAimProto::CAimProto( const char* aProtoName, const TCHAR* aUserName )
 	m_szProtoName[0] = (char)toupper( m_szProtoName[0] );
 	LOG( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
-    char *store = Utils_ReplaceVars("%miranda_avatarcache%");
-    size_t len = strlen(store) - 1;
-    CWD = strldup(store);
-    mir_free(store);
+    CWD = Utils_ReplaceVars("%miranda_avatarcache%");
 
 	//create some events
 	hAvatarEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
 	hChatNavEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	hAdminEvent  = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	char* p = NEWSTR_ALLOCA( m_szModuleName );
-	_strupr( p );
-	FILE_TRANSFER_KEY = strlcat(p,AIM_KEY_FT);
+    size_t ftlen = strlen(m_szModuleName) + sizeof(AIM_KEY_FT) + 1;
+	FILE_TRANSFER_KEY = (char*)mir_alloc(ftlen);
+    mir_snprintf(FILE_TRANSFER_KEY, ftlen, "%s"AIM_KEY_FT, m_szModuleName);
 
 	InitializeCriticalSection(&SendingMutex);
 	InitializeCriticalSection(&connMutex);
@@ -98,14 +95,14 @@ CAimProto::~CAimProto()
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
 
-	delete[] CWD;
-	delete[] COOKIE;
-	delete[] MAIL_COOKIE;
-	delete[] AVATAR_COOKIE;
-	delete[] CHATNAV_COOKIE;
-	delete[] ADMIN_COOKIE;
-	delete[] FILE_TRANSFER_KEY;
-	delete[] username;
+	mir_free(CWD);
+	mir_free(COOKIE);
+	mir_free(MAIL_COOKIE);
+	mir_free(AVATAR_COOKIE);
+	mir_free(CHATNAV_COOKIE);
+	mir_free(ADMIN_COOKIE);
+	mir_free(FILE_TRANSFER_KEY);
+	mir_free(username);
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
@@ -259,7 +256,7 @@ int __cdecl CAimProto::FileAllow( HANDLE hContact, HANDLE hTransfer, const char*
 		verified_ip = local_ip + lstrlenA(local_ip) + 1;
 		proxy_ip = verified_ip + lstrlenA(verified_ip) + 1;
 		int size = lstrlenA(szFile)+lstrlenA(szDesc)+lstrlenA(local_ip)+lstrlenA(verified_ip)+lstrlenA(proxy_ip)+5+sizeof(HANDLE);
-		char *data=new char[size];
+		char *data = (char*)mir_alloc(size);
 		memcpy(data,(char*)&hContact,sizeof(HANDLE));
 		memcpy(&data[sizeof(HANDLE)],szFile,size-sizeof(HANDLE));
 		setString( hContact, AIM_KEY_FN, szPath );
@@ -387,8 +384,8 @@ void __cdecl CAimProto::basic_search_ack_success( void* p )
 		    sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
         }
 	}
-	delete[] sn;
-	delete[] (char*)p;
+	mir_free(sn);
+	mir_free(p);
 }
 
 HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
@@ -397,7 +394,7 @@ HANDLE __cdecl CAimProto::SearchBasic( const char* szId )
 		return 0;
 
 	//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
-	ForkThread( &CAimProto::basic_search_ack_success, strldup(szId) );
+	ForkThread( &CAimProto::basic_search_ack_success, mir_strdup(szId) );
 	return ( HANDLE )1;
 }
 
@@ -484,7 +481,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 
 	if ( hContact && szDescription && ppszFiles ) {
 		if ( getByte( hContact, AIM_KEY_FT, 255 ) != 255 ) {
-			ShowPopup(NULL,LPGEN("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."), 0);
+			ShowPopup(LPGEN("Cannot start a file transfer with this contact while another file transfer with the same contact is pending."), 0);
 			return 0;
 		}
 
@@ -499,7 +496,7 @@ int __cdecl CAimProto::SendFile( HANDLE hContact, const char* szDescription, cha
 		if ( !getString(hContact, AIM_KEY_SN, &dbv )) {
 			for ( int file_amt = 0; files[file_amt]; file_amt++ )
 				if ( file_amt == 1 ) {
-					ShowPopup(NULL,LPGEN("Aim allows only one file to be sent at a time."), 0);
+					ShowPopup(LPGEN("Aim allows only one file to be sent at a time."), 0);
 					DBFreeVariant(&dbv);
 					return 0;
 				}
@@ -562,7 +559,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 	if ( getByte( AIM_KEY_FO, 0 )) 
 	{
 		msg = bbcodes_to_html(smsg);
-		delete[] smsg;
+		mir_free(smsg);
 	}
 	else 
 		msg = smsg;
@@ -580,7 +577,7 @@ int __cdecl CAimProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		mir_free(wmsg);
 	}
 
-	delete[] msg;
+	mir_free(msg);
 	DBFreeVariant(&dbv);
 	
 	if ( res && 0 == getByte( AIM_KEY_DC, 1))

@@ -27,7 +27,7 @@ char* process_status_msg (const char *str, const char* sn)
 {
     const char *src = str;
     size_t size = strlen(src) + 1;
-    char* res = new char[size];
+    char* res = (char*)mir_alloc(size);
     char* dest = res;
 
     for (; *src; ++src)
@@ -35,7 +35,7 @@ char* process_status_msg (const char *str, const char* sn)
         if (src[0] == '\n' && (src == str || src[-1] != '\r'))
         {
             int off = dest - res;
-            res = renew(res, size++, 1);
+            res = (char*)mir_realloc(res, ++size);
             dest = res + off;
             *(dest++) = '\r';
             *(dest++) = *src;
@@ -44,7 +44,7 @@ char* process_status_msg (const char *str, const char* sn)
         {
 	        size_t len = strlen(sn);
             int off = dest - res;
-            res = renew(res, size, len);
+            res = (char*)mir_realloc(res, size + len);
             dest = res + off;
             size += len;
 	        memcpy(dest, sn, len);
@@ -54,7 +54,7 @@ char* process_status_msg (const char *str, const char* sn)
         else if (src[0] == '%' && src[1] == 'd')
         {
             int off = dest - res;
-            res = renew(res, size, 20);
+            res = (char*)mir_realloc(res, size + 20);
             dest = res + off;
             size += 20;
             dest += GetDateFormatA(LOCALE_USER_DEFAULT, 0, NULL, NULL, dest, 20)-1;
@@ -63,7 +63,7 @@ char* process_status_msg (const char *str, const char* sn)
         else if (src[0] == '%' && src[1] == 't')
         {
             int off = dest - res;
-            res = renew(res, size, 20);
+            res = (char*)mir_realloc(res, size + 20);
             dest = res + off;
             size += 20;
             dest += GetTimeFormatA(LOCALE_USER_DEFAULT, 0, NULL, NULL, dest, 20)-1;
@@ -80,6 +80,7 @@ char* process_status_msg (const char *str, const char* sn)
 void  html_decode( char* str )
 {
 	char *p, *q;
+//    char *rstr = (char*)mir_alloc(strlen(str)*2);
 
 	if (str == NULL) return;
 
@@ -96,12 +97,32 @@ void  html_decode( char* str )
 		}
         else if ( *p == '<' )
         {
-			if      ( !strnicmp( p, "<p>", 3 ))  { strcpy(q, "\r\n"); ++q; p += 2; }
+			if      ( !strnicmp( p, "<p>",  3 )) { strcpy(q, "\r\n\r\n"); q += 3; p += 2; }
 			else if ( !strnicmp( p, "</p>", 4 )) { strcpy(q, "\r\n\r\n"); q += 3; p += 3; }
 			else if ( !strnicmp( p, "<br>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
 			else if ( !strnicmp( p, "<hr>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
+/*			
+            else if ( !strnicmp( p, "<b>",  3 )) { strcpy(q, "[b]");  q += 2; p += 2; }
+			else if ( !strnicmp( p, "</b>", 4 )) { strcpy(q, "[/b]"); q += 3; p += 3; }
+			else if ( !strnicmp( p, "<u>",  3 )) { strcpy(q, "[u]");  q += 2; p += 2; }
+			else if ( !strnicmp( p, "</u>", 4 )) { strcpy(q, "[/u]"); q += 3; p += 3; }
+			else if ( !strnicmp( p, "<i>",  3 )) { strcpy(q, "[i]");  q += 2; p += 2; }
+			else if ( !strnicmp( p, "</i>", 4 )) { strcpy(q, "[/i]"); q += 3; p += 3; }
+			else if ( !strnicmp( p, "<a href", 7 )) { 
+                strcpy(q, "[url"); q += 4; p += 7;
+                while (*p != '>' && *p) *(q++) = *(p++);
+                *q = ']'; --p;
+            }
+			else if ( !strnicmp( p, "<font", 5 )) {
+                char *l = strchr(p, '>');
+
+                strcpy(q, "[url"); q += 4; p += 7;
+                while (*p != '>' && *p) *(q++) = *(p++);
+                *q = ']'; --p;
+            }
+*/
             else { 
-                char *l = strchr(p, '>'); 
+                char *l = strchr(p, '>');
                 if (l) { p = l; --q; } else *q = *p; 
             }
 		}
@@ -134,7 +155,7 @@ char* html_encode( const char* str )
 		}
 	}
 
-    s = new char[ c + 27 ]; 
+    s = (char*)mir_alloc(c + 27); 
     strcpy(s, "<HTML><BODY>");
     for ( p=str,q=s+12; *p!='\0'; p++ ) 
     {
@@ -161,7 +182,7 @@ char* html_to_bbcodes(char *src)
 	char *ptr;
 	char *ptrl;
 	char *rptr;
-	char* dest = strldup(src);
+	char* dest = mir_strdup(src);
 	while ((ptr = strstr(dest, "<B>")) != NULL || (ptr = strstr(dest, "<b>")) != NULL)
 	{
 		*ptr = '[';
@@ -175,7 +196,7 @@ char* html_to_bbcodes(char *src)
 		}
 		else
 		{
-			dest=renew(dest,strlen(dest)+1,5);
+			dest=(char*)mir_realloc(dest,strlen(dest)+6);
 			memcpy(&dest[strlen(dest)],"[/b]",5);
 		}
 	}
@@ -192,7 +213,7 @@ char* html_to_bbcodes(char *src)
 		}
 		else
 		{
-			dest=renew(dest,strlen(dest)+1,5);
+			dest=(char*)mir_realloc(dest,strlen(dest)+6);
 			memcpy(&dest[strlen(dest)],"[/i]",5);
 		}
 	}
@@ -209,7 +230,7 @@ char* html_to_bbcodes(char *src)
 		}
 		else
 		{
-			dest=renew(dest,strlen(dest)+1,5);
+			dest=(char*)mir_realloc(dest,strlen(dest)+6);
 			memcpy(&dest[strlen(dest)],"[/u]",5);
 		}
 	}
@@ -240,7 +261,7 @@ char* html_to_bbcodes(char *src)
 				ptr=s2;
 				ptr=strip_tag_within(begin,ptr);
 				int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)+1,7);
+				dest=(char*)mir_realloc(dest,strlen(dest)+8);
 				rptr=dest;
 				ptr=rptr+addr;
 				memmove(ptr+6, ptr, strlen(ptr) + 1);
@@ -250,7 +271,7 @@ char* html_to_bbcodes(char *src)
 			{
 				strip_tag_within(begin,&dest[strlen(dest)]);
 				//int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)+1,7);
+				dest=(char*)mir_realloc(dest,strlen(dest)+8);
 				rptr=dest;
 				ptr=dest;
 				memcpy(&ptr[strlen(ptr)],"[/url]",7);
@@ -286,7 +307,7 @@ char* html_to_bbcodes(char *src)
 				ptr=s2;
 				ptr=strip_tag_within(begin,ptr);
 				int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)+1,7);
+				dest=(char*)mir_realloc(dest,strlen(dest)+8);
 				rptr=dest;
 				ptr=rptr+addr;
 				memmove(ptr+6, ptr, strlen(ptr) + 1);
@@ -296,7 +317,7 @@ char* html_to_bbcodes(char *src)
 			{
 				strip_tag_within(begin,&dest[strlen(dest)]);
 				//int addr=ptr-rptr;
-				dest=renew(dest,strlen(dest)+1,7);
+				dest=(char*)mir_realloc(dest,strlen(dest)+8);
 				rptr=dest;
 				ptr=dest;
 				memcpy(&ptr[strlen(ptr)],"[/url]",7);
@@ -309,7 +330,7 @@ char* html_to_bbcodes(char *src)
 	while (ptr = strstr(rptr, "<FONT COLOR=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)+1,7);
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
@@ -347,7 +368,7 @@ char* html_to_bbcodes(char *src)
 	while (ptr = strstr(rptr, "<font color=\""))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)+1,7);
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 6;
@@ -385,7 +406,7 @@ char* html_to_bbcodes(char *src)
 	while ((ptr = strstr(rptr, "<FONT COLOR=")) || (ptr = strstr(rptr, "<font color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)+1,7);
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
 		rptr=dest;
 		ptr=rptr+addr;
 		ptrl = ptr + 5;
@@ -414,7 +435,7 @@ char* bbcodes_to_html(const char *src)
 {
 	char *ptr;
 	char *rptr;
-	char* dest=strldup(src);
+	char* dest = mir_strdup(src);
 	while ((ptr = strstr(dest, "[b]")) != NULL) {
 		*ptr = '<';
 		*(ptr+1) = 'b';
@@ -449,7 +470,7 @@ char* bbcodes_to_html(const char *src)
 	while ((ptr = strstr(rptr, "[color=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)+1,7);
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
 		rptr=dest;
 		ptr=rptr+addr;
 		memmove(ptr+5, ptr, strlen(ptr) + 1);
@@ -469,7 +490,7 @@ char* bbcodes_to_html(const char *src)
 	while ((ptr = strstr(rptr, "[url=")))
 	{
 		int addr=ptr-rptr;
-		dest=renew(dest,strlen(dest)+1,7);
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
 		rptr=dest;
 		ptr=rptr+addr;
 		memmove(ptr+3, ptr, strlen(ptr)+1);
@@ -513,8 +534,8 @@ char* strip_tag_within(char* begin, char* end)
 
 char* rtf_to_html(HWND hwndDlg,int DlgItem)
 {
-	char* buf=new char[4024];
-	int pos=0;
+	char* buf=(char*)mir_alloc(4024);
+	size_t pos=0;
 	int start=0;
 	int end=1;
 	BOOL Bold=false;
@@ -564,14 +585,14 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			Bold=isBold;
 			if(isBold)
 			{
-				strlcpy(&buf[pos],"<b>",4);
+				strcpy(&buf[pos],"<b>");
 				pos+=3;
 			}
 			else
 			{
 				if(start!=0)
 				{
-					strlcpy(&buf[pos],"</b>",5);
+					strcpy(&buf[pos],"</b>");
 					pos+=4;	
 				}
 			}
@@ -581,14 +602,14 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			Italic=isItalic;
 			if(isItalic)
 			{
-				strlcpy(&buf[pos],"<i>",4);
+				strcpy(&buf[pos],"<i>");
 				pos+=3;
 			}
 			else
 			{
 				if(start!=0)
 				{
-					strlcpy(&buf[pos],"</i>",5);
+					strcpy(&buf[pos],"</i>");
 					pos+=4;	
 				}
 			}
@@ -598,14 +619,14 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			Underline=isUnderline;
 			if(isUnderline)
 			{
-				strlcpy(&buf[pos],"<u>",4);
+				strcpy(&buf[pos],"<u>");
 				pos+=3;
 			}
 			else
 			{
 				if(start!=0)
 				{
-					strlcpy(&buf[pos],"</u>",5);
+					strcpy(&buf[pos],"</u>");
 					pos+=4;	
 				}
 			}
@@ -615,70 +636,70 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			Size=isSize;
 			Color=isColor;
 			BackColor=isBackColor;
-			strlcpy(Face,cfOld.szFaceName,strlen(cfOld.szFaceName)+1);
+			strcpy(Face,cfOld.szFaceName);
 			if(start!=0)
 			{
-				strlcpy(&buf[pos],"</font>",8);
+				strcpy(&buf[pos],"</font>");
 				pos+=7;
 			}
-			strlcpy(&buf[pos],"<font",6);
+			strcpy(&buf[pos],"<font");
 			pos+=5;
-			strlcpy(&buf[pos],"	face=\"",8);
+			strcpy(&buf[pos],"	face=\"");
 			pos+=7;
-			strlcpy(&buf[pos],Face,strlen(Face)+1);
+			strcpy(&buf[pos],Face);
 			pos+=strlen(Face);
-			strlcpy(&buf[pos],"\"",2);
+			strcpy(&buf[pos],"\"");
 			pos++;
 			if(!(cfOld.dwEffects & CFE_AUTOBACKCOLOR))
 			{
-				strlcpy(&buf[pos]," back=#",7);
+				strcpy(&buf[pos]," back=#");
 				pos+=6;
 				char chBackColor[7];
 				_itoa((_htonl(BackColor)>>8),chBackColor,16);
-				int len=strlen(chBackColor);
+				size_t len=strlen(chBackColor);
 				if(len<6)
 				{
 					memmove(chBackColor+(6-len),chBackColor,len+1);
 					for(int i=0;i<6;i++)
 						chBackColor[i]='0';
 				}
-				strlcpy(&buf[pos],chBackColor,7);
+				strcpy(&buf[pos],chBackColor);
 				pos+=6;
 			}
 			if(!(cfOld.dwEffects & CFE_AUTOCOLOR))
 			{
-				strlcpy(&buf[pos]," color=#",9);
+				strcpy(&buf[pos]," color=#");
 				pos+=8;
 				char chColor[7];
 				_itoa((_htonl(Color)>>8),chColor,16);
-				int len=strlen(chColor);
+				size_t len=strlen(chColor);
 				if(len<6)
 				{
 					memmove(chColor+(6-len),chColor,len+1);
 					for(int i=0;i<6;i++)
 						chColor[i]='0';
 				}
-				strlcpy(&buf[pos],chColor,7);
+				strcpy(&buf[pos],chColor);
 				pos+=6;
 			}
-			strlcpy(&buf[pos]," size=",7);
+			strcpy(&buf[pos]," size=");
 			pos+=6;
 			char chSize[2];
 			_itoa(Size,chSize,10);
-			strlcpy(&buf[pos],chSize,2);
+			strcpy(&buf[pos],chSize);
 			pos++;
 
-			strlcpy(&buf[pos],">",2);
+			strcpy(&buf[pos],">");
 			pos++;
 		}
 		if(text[0]=='\r')
 		{
-			strlcpy(&buf[pos],"<br>",5);
+			strcpy(&buf[pos],"<br>");
 			pos+=4;
 		}
 		else
 		{
-			strlcpy(&buf[pos],text,2);
+			strcpy(&buf[pos],text);
 			pos++;
 		}
 		start++;
@@ -686,20 +707,20 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	}
 	if(Bold)
 	{
-		strlcpy(&buf[pos],"</b>",5);
+		strcpy(&buf[pos],"</b>");
 		pos+=4;	
 	}
 	if(Italic)
 	{
-		strlcpy(&buf[pos],"</i>",5);
+		strcpy(&buf[pos],"</i>");
 		pos+=4;	
 	}
 	if(Underline)
 	{
-		strlcpy(&buf[pos],"</u>",5);
+		strcpy(&buf[pos],"</u>");
 		pos+=4;	
 	}
-	strlcpy(&buf[pos],"</font>",8);
+	strcpy(&buf[pos],"</font>");
 	pos+=7;
 	return buf;
 }
@@ -712,7 +733,7 @@ void wcs_htons(wchar_t * ch)
 
 char* bytes_to_string(char* bytes, int num_bytes)
 {
-	char* string = new char[num_bytes*2+1];
+	char* string = (char*)mir_alloc(num_bytes*2+1);
 	for(int i=0;i<num_bytes;i++)
 	{
 		char store[2];
@@ -731,8 +752,8 @@ void string_to_bytes(char* string, char* bytes)
 {
 	char sbyte[3];
 	sbyte[2]='\0';
-	int length=strlen(string);
-	for(int i=0;i<length;i+=2)
+	size_t length=strlen(string);
+	for (size_t i=0; i<length; i+=2)
 	{
 		sbyte[0]=string[i];
 		sbyte[1]=string[i+1];

@@ -55,15 +55,13 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
     unsigned short typsz;
     if (is_utf(msg))
     {
-        typ=AIM_MSG_TYPE_UNICODE;
-        typsz=(unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
+        typ = AIM_MSG_TYPE_UNICODE;
+        typsz = (unsigned short)(sizeof(AIM_MSG_TYPE_UNICODE)-1);
         wchar_t* msgu = mir_utf8decodeW(html_msg);
-		delete[] html_msg;
-        msg_size=wcslen(msgu);
+		mir_free(html_msg);
         wcs_htons(msgu);
-        html_msg=(char*)wcsldup(msgu, msg_size);
-        msg_size *= sizeof(wchar_t);
-        mir_free(msgu);
+        html_msg = (char*)msgu;
+        msg_size = wcslen(msgu) * sizeof(wchar_t);
     }
     else
     {
@@ -77,12 +75,9 @@ int CAimProto::aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char 
     aim_writetlv(0x03,typsz,typ,offset,buf);
     aim_writetlv(0x04,(unsigned short)msg_size,html_msg,offset,buf);
     
-    if (html_msg) delete[] html_msg;
+    mir_free(html_msg);
 
-    if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-	    return 0;
-    else
-	    return -1;
+    return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg)//user info

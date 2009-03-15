@@ -76,28 +76,23 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 						*error=_htons(*error);
 						if(*error==0x000D)
 						{
-							LOG("Proxy FT Error: Bad Request");
-							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Bad Request.", 0);
+                            ShowPopup("Proxy Server File Transfer Error: Bad Request.", ERROR_POPUP);
 						}
 						else if(*error==0x0010)
 						{
-							LOG("Proxy FT Error: Initial Request Timed Out.");
-							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Initial Request Timed Out.", 0);
+                            ShowPopup("Proxy Server File Transfer Error: Initial Request Timed Out.", ERROR_POPUP);
 						}
 						else if(*error==0x001A)
 						{
-							LOG("Proxy FT Error: Accept Period Timed Out.");
-							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Accept Period Timed Out.", 0);
+                            ShowPopup("Proxy Server File Transfer Error: Accept Period Timed Out.", ERROR_POPUP);
 						}
 						else if(*error==0x000e)
 						{
-							LOG("Proxy FT Error: Incorrect command syntax.");
-							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Incorrect command syntax.", 0);
+                            ShowPopup("Proxy Server File Transfer Error: Incorrect command syntax.", ERROR_POPUP);
 						}
 						else if(*error==0x0016)
 						{
-							LOG("Proxy FT Error: Unknown command issued.");
-							ShowPopup("Aim Protocol: Proxy Server File Transfer Error","Unknown command issued.", 0);
+                            ShowPopup("Proxy Server File Transfer Error: Unknown command issued.", ERROR_POPUP);
 						}
 					}
 					else if(*type==0x0003)
@@ -106,55 +101,43 @@ void __cdecl CAimProto::aim_proxy_helper( void* hContact )
 						unsigned long* ip=(unsigned long*)&packetRecv.buffer[14];
 						*port=_htons(*port);
 						*ip=_htonl(*ip);
-						if ( !getString( hContact, AIM_KEY_SN, &dbv)) {
+						
+                        char* sn = getSetting(hContact, AIM_KEY_SN);
+						if (sn) 
+                        {
 							if ( stage == 1 && sender ) {
 								LOG("Stage 1 Proxy ft and we are the sender.");
-								char* sn=strldup(dbv.pszVal);
-								DBFreeVariant(&dbv);
 								char vip[20];
-								char *file, *descr;
-								unsigned long size;
 								long_ip_to_char_ip(*ip,vip);
 								setString( hContact, AIM_KEY_IP, vip );
-								if ( !getString( hContact, AIM_KEY_FN, &dbv )) {
-									file = strldup(dbv.pszVal);
-									DBFreeVariant(&dbv);
-									if ( !getString( hContact, AIM_KEY_FD, &dbv )) {
-										descr = strldup(dbv.pszVal);
-										DBFreeVariant(&dbv);
-										size = getDword(hContact, AIM_KEY_FS, 0);
-										if ( !size )
-											return;
+
+                                char *file = getSetting(hContact, AIM_KEY_FN);
+                                if (file)
+                                {
+                                    char *descr = getSetting(hContact, AIM_KEY_FD);
+									if (descr) 
+                                    {
+										unsigned size = getDword(hContact, AIM_KEY_FS, 0);
+                                        char* pszfile = strrchr(file, '\\');
+								        pszfile++;
+								        aim_send_file(hServerConn,seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
+								        mir_free(descr);
 									}
-									else
-										return;
+							        mir_free(file);
 								}
-								else 
-									return;
-								char* pszfile = strrchr(file, '\\');
-								pszfile++;
-								aim_send_file(hServerConn,seqno,sn,cookie,*ip,*port,1,1,pszfile,size,descr);
-								delete[] file;
-								delete[] sn;
-								delete[] descr;
 							}
 							else if(stage==2&&!sender)
 							{
 								LOG("Stage 2 Proxy ft and we are not the sender.");
 								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x02,*ip,*port);
-								DBFreeVariant(&dbv);
 							}
 							else if(stage==3&&sender)
 							{
 								LOG("Stage 3 Proxy ft and we are the sender.");
 								aim_file_proxy_request(hServerConn,seqno,dbv.pszVal,cookie,0x03,*ip,*port);
-								DBFreeVariant(&dbv);
-							}
-							else
-							{
-								DBFreeVariant(&dbv);
 							}
 						}
+						mir_free(sn);
 					}
 					else if(*type==0x0005) {
 						if ( !getString(hContact, AIM_KEY_IP, &dbv )) {

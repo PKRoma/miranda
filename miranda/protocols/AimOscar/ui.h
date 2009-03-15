@@ -32,7 +32,7 @@ struct invite_chat_param
     CAimProto* ppro;
     
     invite_chat_param(const char* idt, CAimProto* prt)
-    { id = strldup(idt); ppro = prt; }
+    { id = mir_strdup(idt); ppro = prt; }
 };
 
 struct invite_chat_req_param
@@ -44,16 +44,17 @@ struct invite_chat_req_param
     char* icbm_cookie;
     
     invite_chat_req_param(chatnav_param* cnpt, CAimProto* prt, char* msg, char* nm, char* icki)
-    { cnp = cnpt; ppro = prt; message = strldup(msg); name = strldup(nm); icbm_cookie = strldup(icki, 8); }
+    { cnp = cnpt; ppro = prt; message = mir_strdup(msg); name = mir_strdup(nm); 
+      icbm_cookie = (char*)mir_alloc(8); memcpy(icbm_cookie, icki, 8); }
 
     ~invite_chat_req_param()
-    { delete[] message; delete[] name; delete[] icbm_cookie; }
+    { mir_free(message); mir_free(name); mir_free(icbm_cookie); }
 };
 
-BOOL CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void CALLBACK chat_request_cb(PVOID dwParam);
 

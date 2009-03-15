@@ -26,9 +26,7 @@ struct CAimPopupData
 	{}
 
 	~CAimPopupData()
-	{	if ( url )
-			delete[] url;
-	}
+	{ mir_free(url); }
 
 	CAimProto* ppro;
 	char* url;
@@ -36,7 +34,8 @@ struct CAimPopupData
 
 LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
-	switch( message ) {
+	switch( message ) 
+    {
 	case WM_COMMAND:
 		if ( HIWORD( wParam ) == STN_CLICKED)
 		{
@@ -62,50 +61,44 @@ LRESULT CALLBACK PopupWindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void CAimProto::ShowPopup( const char* title, const char* msg, int flags, char* url)
+void CAimProto::ShowPopup(const char* msg, int flags, char* url)
 {
-	POPUPDATAEX ppd;
+    POPUPDATAT ppd = {0};
 
-	if (title == NULL) 
-    {    
-        size_t len = strlen(m_szModuleName) + 20;
-        char* ttl = (char*)alloca(len);
-        mir_snprintf(ttl, len, Translate("%s Protocol"), m_szModuleName);
-        title = ttl;
-    }
+    mir_sntprintf(ppd.lptzContactName, SIZEOF(ppd.lptzContactName), TranslateT("%s Protocol"), m_tszUserName);
 
 	if (flags & ERROR_POPUP) LOG(msg);
 
-    if ( !ServiceExists( MS_POPUP_ADDPOPUPEX ))
+    TCHAR *msgt = mir_a2t(msg);
+    mir_sntprintf(ppd.lptzText, SIZEOF(ppd.lptzText), _T("%s"), TranslateTS(msgt));
+    mir_free(msgt);
+
+    if (!ServiceExists( MS_POPUP_ADDPOPUPT))
 	{	
 		if (flags & MAIL_POPUP)
 		{
-			int size=strlen(msg)+20;
-			char* buf= (char*)alloca(size);
-			strlcpy(buf,msg,size);
-			strlcpy(&buf[strlen(msg)]," Open mail account?",size);
-			if ( MessageBoxA( NULL, buf, title, MB_YESNO | MB_ICONINFORMATION ) == IDYES )
+            size_t len = _tcslen(ppd.lptzText);
+            mir_sntprintf(&ppd.lptzText[len], SIZEOF(ppd.lptzText) - len, _T(" %s"), TranslateT("Open mail account?"));
+			if (MessageBox( NULL, ppd.lptzText, ppd.lptzContactName, MB_YESNO | MB_ICONINFORMATION ) == IDYES)
 				execute_cmd(url);
-
-			return;
 		}
 		else
 		{
-			MessageBoxA( NULL, msg, Translate("Aim Protocol"), MB_OK | MB_ICONINFORMATION );
-			return;
+			MessageBox(NULL, ppd.lptzText, ppd.lptzContactName, MB_OK | MB_ICONINFORMATION);
 		}
 	}
-	ZeroMemory(&ppd, sizeof(ppd) );
-	strcpy( ppd.lpzContactName, title );
-	strcpy( ppd.lpzText, Translate(msg));
-	ppd.PluginWindowProc = ( WNDPROC )PopupWindowProc;
-	ppd.lchIcon = LoadIconEx( "aim" );
-	if (flags & MAIL_POPUP)
-	{
-		ppd.PluginData = new CAimPopupData( this, url );
-		ppd.iSeconds = -1;
-	} 
-	else ppd.PluginData = new CAimPopupData( this, NULL );
-	CallService(MS_POPUP_ADDPOPUPEX, (WPARAM)&ppd, 0);	
-	return;
+    else
+    {
+	    ppd.PluginWindowProc = PopupWindowProc;
+	    ppd.lchIcon = LoadIconEx("aim");
+	    if (flags & MAIL_POPUP)
+	    {
+		    ppd.PluginData = new CAimPopupData(this, url);
+		    ppd.iSeconds = -1;
+	    } 
+	    else 
+            ppd.PluginData = new CAimPopupData(this, NULL);
+
+	    CallService(MS_POPUP_ADDPOPUPT, (WPARAM)&ppd, 0);	
+    }
 }

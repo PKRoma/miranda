@@ -224,7 +224,7 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 			    mir_free(szNewName);
             }
             else
-          		ShowPopup(NULL, LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
+          		ShowPopup(LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
 		}
 	}
 	return 0;
@@ -381,7 +381,7 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
             AI->format = detect_image_type(AI->filename);
             if (AI->format != PA_FORMAT_UNKNOWN) res = GAIR_SUCCESS;
         }
-        delete[] hashs;
+        mir_free(hashs);
 
 	    if ((wParam & GAIF_FORCE ) != 0 && res != GAIR_SUCCESS)
 	    {
@@ -392,13 +392,13 @@ int CAimProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		    }
 		    else 
 		    {
-                avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), strldup(hash));
+                avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), mir_strdup(hash));
 			    LOG("Starting avatar request thread for %s)", ar->sn);
 			    ForkThread(&CAimProto::avatar_request_thread, ar);
                 res = GAIR_WAITFOR;
 		    }
 	    }
-        delete[] hash;
+        mir_free(hash);
     }
 	return res;
 }
@@ -466,14 +466,14 @@ int CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
         if (!get_avatar_hash(szFileName, hash, &data, size))
             return 1;
 
-		char* tFileName = new char[MAX_PATH];
+		char* tFileName = (char*)mir_alloc(MAX_PATH);
         char *ext = strrchr(szFileName, '.');
 		get_avatar_filename(NULL, tFileName, MAX_PATH, ext);
 		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
 		if (fileId < 0)
         {
 //			ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
-            delete[] tFileName;         
+            mir_free(tFileName);         
             return 1; 
 		}
 		_write(fileId, data, size);

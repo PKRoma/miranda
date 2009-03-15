@@ -76,7 +76,7 @@ void CAimProto::aim_connection_authorization(void)
 	if (!getString(AIM_KEY_PW, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		password = strldup(dbv.pszVal);
+		password = mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -84,8 +84,8 @@ void CAimProto::aim_connection_authorization(void)
 
     if (!getString(AIM_KEY_SN, &dbv))
 	{
-        if (username) delete[] username;
-		username = strldup(dbv.pszVal);
+        mir_free(username);
+		username = mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -132,7 +132,7 @@ void CAimProto::aim_connection_authorization(void)
 						int authres=snac_authorization_reply(snac);
 						if(authres==1)
 						{
-							delete[] password;
+							mir_free(password);
 							Netlib_CloseHandle(hServerPacketRecver);
 							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
 							return;
@@ -154,7 +154,7 @@ void CAimProto::aim_connection_authorization(void)
 	}
 
 exit:
-	if (password) delete[] password;
+	mir_free(password);
 	if (m_iStatus!=ID_STATUS_OFFLINE) broadcast_status(ID_STATUS_OFFLINE);
 	if (hServerPacketRecver) Netlib_CloseHandle(hServerPacketRecver); hServerPacketRecver=NULL; 
 	Netlib_CloseHandle(hServerConn); hServerConn=NULL;
@@ -200,7 +200,7 @@ void __cdecl CAimProto::aim_protocol_negotiation( void* )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(hServerConn,seqno,COOKIE_LENGTH,COOKIE);//cookie challenge
-					delete[] COOKIE;
+					mir_free(COOKIE);
 					COOKIE=NULL;
 					COOKIE_LENGTH=0;
 				}
@@ -306,7 +306,7 @@ void __cdecl CAimProto::aim_mail_negotiation( void* )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(hMailConn,mail_seqno,MAIL_COOKIE_LENGTH,MAIL_COOKIE);//cookie challenge
-					delete[] MAIL_COOKIE;
+					mir_free(MAIL_COOKIE);
 					MAIL_COOKIE=NULL;
 					MAIL_COOKIE_LENGTH=0;
 				}
@@ -366,7 +366,7 @@ void __cdecl CAimProto::aim_avatar_negotiation( void* )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(hAvatarConn,avatar_seqno,AVATAR_COOKIE_LENGTH,AVATAR_COOKIE);//cookie challenge
-					delete[] AVATAR_COOKIE;
+					mir_free(AVATAR_COOKIE);
 					AVATAR_COOKIE=NULL;
 					AVATAR_COOKIE_LENGTH=0;
 				}
@@ -440,7 +440,7 @@ void __cdecl CAimProto::aim_chatnav_negotiation( void* )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(hChatNavConn,chatnav_seqno,CHATNAV_COOKIE_LENGTH,CHATNAV_COOKIE);//cookie challenge
-					delete[] CHATNAV_COOKIE;
+					mir_free(CHATNAV_COOKIE);
 					CHATNAV_COOKIE=NULL;
 					CHATNAV_COOKIE_LENGTH=0;
 				}
@@ -510,7 +510,7 @@ void __cdecl CAimProto::aim_chat_negotiation( void* param )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(item->hconn,item->seqno,item->CHAT_COOKIE_LENGTH,item->CHAT_COOKIE);//cookie challenge
-					delete[] item->CHAT_COOKIE;
+					mir_free(item->CHAT_COOKIE);
 					item->CHAT_COOKIE=NULL;
 					item->CHAT_COOKIE_LENGTH=0;
 				}
@@ -576,7 +576,7 @@ void __cdecl CAimProto::aim_admin_negotiation( void* )
 				if(flap.cmp(0x01))
 				{
 					aim_send_cookie(hAdminConn,admin_seqno,ADMIN_COOKIE_LENGTH,ADMIN_COOKIE);//cookie challenge
-					delete[] ADMIN_COOKIE;
+					mir_free(ADMIN_COOKIE);
 					ADMIN_COOKIE=NULL;
 					ADMIN_COOKIE_LENGTH=0;
 				}

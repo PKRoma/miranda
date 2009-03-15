@@ -27,23 +27,22 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 {
 	LOG("P2P: Entered file sending thread.");
 	DBVARIANT dbv;
-	char* file;
-	char* wd;
+	char *file, *wd;
 	int file_start_point=0;
 	unsigned long size;
 	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal);
+		file = mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
-		wd=strldup(file);
-		char* swd=strrchr(wd,'\\');
-		*swd='\0';
-		size=getDword(hContact, AIM_KEY_FS, 0);
-		if(!size)
-			return;
+		wd = mir_strdup(file);
+		char* swd = strrchr(wd,'\\');
+		*swd = '\0';
+		size = getDword(hContact, AIM_KEY_FS, 0);
+		if (!size) return;
 	}
 	else 
 		return;
+
 	char cookie[8];
 	read_cookie(hContact,cookie);
 	oft2 ft;
@@ -133,14 +132,14 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalProgress=0;
 						pfts.workingDir=wd;
 						sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
-						int bytes;
+						size_t bytes;
 						unsigned char buffer[1024*4];
 						unsigned int lNotify=GetTickCount()-500;
 						while ((bytes = fread(buffer, 1, 1024*4, fd)))
 						{
 							Netlib_Send(hNewConnection,(char*)&buffer,bytes,MSG_NODUMP);
-							pfts.currentFileProgress+=bytes;
-							pfts.totalProgress+=bytes;
+							pfts.currentFileProgress += bytes;
+							pfts.totalProgress += bytes;
 							if(GetTickCount()>lNotify+500)
 							{
 								sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DATA,hContact, (LPARAM) & pfts);
@@ -152,14 +151,14 @@ void CAimProto::sending_file(HANDLE hContact, HANDLE hNewConnection)
 						fclose(fd);
 					}
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
-					delete[] file;
+					mir_free(file);
 					return;
 				}
 				else if(type==0x0204)
 				{
 					LOG("P2P: Buddy says they got the file successfully");
 					sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS,hContact,0);
-					delete[] file;
+					mir_free(file);
 					return;
 				}
 				else if(type==0x0205)
@@ -206,8 +205,8 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	unsigned long size;
 	if (!getString(hContact, AIM_KEY_FN, &dbv))
 	{
-		file=strldup(dbv.pszVal);
-		pfts.workingDir=strldup(file);
+		file=mir_strdup(dbv.pszVal);
+		pfts.workingDir=mir_strdup(file);
 		DBFreeVariant(&dbv);
 	}
 	//start listen for packets stuff
@@ -257,13 +256,13 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 						pfts.totalBytes=size;
 						char* buf = (char*)&ft;
 						Netlib_Send(hNewConnection,buf,sizeof(oft2),0);
-						file=renew(file,lstrlenA(file)+1,lstrlenA((char*)&ft.filename)+1);
+						file = (char*)mir_realloc(file,lstrlenA(file)+1+lstrlenA((char*)&ft.filename)+1);
 						lstrcatA(file,(char*)&ft.filename);
 						pfts.currentFile=file;
 						fd = fopen(file, "wb");
 						if(!fd)
 						{
-							delete[] file;
+							mir_free(file);
 							return;
 						}
 						else
@@ -298,5 +297,5 @@ void CAimProto::receiving_file(HANDLE hContact, HANDLE hNewConnection)
 	}
 	if(accepted_file&&fd)
 		fclose(fd);
-	delete[] file;
+	mir_free(file);
 }

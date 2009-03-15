@@ -28,7 +28,7 @@ struct avatar_req_param
     { sn = tsn; hash = thash; }
 
     ~avatar_req_param()
-    { delete[] sn; delete[] hash; }
+    { mir_free(sn); mir_free(hash); }
 };
 
 int detect_image_type(const char* stream, const char* &type_ret);

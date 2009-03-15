@@ -68,7 +68,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <win2k.h>
 
 //independent includes
-#include "strl.h"
 #include "flap.h"
 #include "snac.h"
 #include "tlv.h"

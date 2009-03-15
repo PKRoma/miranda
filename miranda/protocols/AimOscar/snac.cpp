@@ -58,8 +58,8 @@ unsigned char SNAC::ubyte(int pos)
 }
 char* SNAC::part(int pos, int length)
 {
-	char* value=new char[length+1];
-	memcpy(value,&value_[pos],length);
-	value[length]='\0';
+	char* value = (char*)mir_alloc(length+1);
+	memcpy(value, &value_[pos], length);
+	value[length] = '\0';
 	return value;
 }

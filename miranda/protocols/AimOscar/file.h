@@ -72,7 +72,7 @@ public:
 	bool force_proxy;
 
 	file_transfer()  { memset(this, 0, sizeof(*this)); }
-	~file_transfer() { if (file) delete[] file; if (sn) delete[] sn; }
+	~file_transfer() { mir_free(file); mir_free(sn); }
 };
 
 #endif
