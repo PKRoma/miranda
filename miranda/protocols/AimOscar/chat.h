@@ -23,10 +23,10 @@ struct chatnav_param
 
     ~chatnav_param()
     { 
-        delete[] id; 
-        if (message) delete[] message;
-        if (sn) delete[] sn;
-        if (icbm_cookie) delete[] icbm_cookie;
+        mir_free(id); 
+        mir_free(message);
+        mir_free(sn);
+        mir_free(icbm_cookie);
     }
 }; 
 
@@ -47,7 +47,7 @@ struct chat_list_item
       cookie = mir_strdup(tcookie); exchange = ex; instance = in; }
 
     ~chat_list_item()
-    { delete[] id; }
+    { mir_free(id); }
 };
 
 #endif
