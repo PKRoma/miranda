@@ -23,10 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-#pragma comment(exestr, "\r\n\r\n Bio was here 8-) \r\n")
-
 BOOL safetyMode = TRUE;
-static int flushBuffersTimerId;
+static UINT_PTR flushBuffersTimerId;
 
 static PBYTE pNull = 0;
 static PBYTE pDbCache = NULL;
@@ -125,7 +123,7 @@ void DBFill(DWORD ofs,int bytes)
 	logg();
 }
 
-static VOID CALLBACK DoBufferFlushTimerProc(HWND hwnd,UINT message,UINT idEvent,DWORD dwTime)
+static VOID CALLBACK DoBufferFlushTimerProc(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime)
 {
     if (!pDbCache) return;
 
