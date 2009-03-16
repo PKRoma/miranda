@@ -113,8 +113,8 @@ int RichUtil_SubClass(HWND hwndEdit) {
 		if (!li.List_GetIndex(&sListInt, ru, &idx))
 			li.List_Insert(&sListInt, ru, idx);
 		LeaveCriticalSection(&csRich);
-		SetWindowLong(ru->hwnd, GWL_USERDATA, (LONG)ru); // Ugly hack
-		ru->origProc = (WNDPROC)SetWindowLong(ru->hwnd, GWL_WNDPROC, (LONG)&RichUtil_Proc);
+		SetWindowLongPtr(ru->hwnd, GWLP_USERDATA, (LONG)ru); // Ugly hack
+		ru->origProc = (WNDPROC)SetWindowLongPtr(ru->hwnd, GWLP_WNDPROC, (LONG)&RichUtil_Proc);
 		RichUtil_ClearUglyBorder(ru);
 		return 1;
 	}
@@ -217,8 +217,8 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 
 			if(IsWindow(hwnd)) {
-				if((WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC) == &RichUtil_Proc)
-					SetWindowLong(hwnd, GWL_WNDPROC, (LONG)ru->origProc);
+				if((WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC) == &RichUtil_Proc)
+					SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG)ru->origProc);
 			}
 			EnterCriticalSection(&csRich);
 			li.List_Remove(&sListInt, idx);

@@ -107,9 +107,9 @@ struct CREOleCallback
 	int nextStgId;
 };
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);
-BOOL CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat);
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
 void LoadMsgLogIcons(void);

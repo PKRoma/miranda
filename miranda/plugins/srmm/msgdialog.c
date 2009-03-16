@@ -171,7 +171,7 @@ static void SetDialogToType(HWND hwndDlg)
 	int icons_width;
 	RECT rc;
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat->hContact)
 		ShowMultipleControls(hwndDlg, infoLineControls, SIZEOF(infoLineControls), (g_dat->flags&SMF_SHOWINFO) ? SW_SHOW : SW_HIDE);
 	else
@@ -265,8 +265,8 @@ static void SetEditorText(HWND hwnd, const TCHAR* txt)
                                                   //todo: decide if this should be set or not
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct MessageWindowData *pdat = (struct MessageWindowData *)GetWindowLong(GetParent(hwnd),GWL_USERDATA);
-	struct MsgEditSubclassData *dat = (struct MsgEditSubclassData *) GetWindowLong(hwnd, GWL_USERDATA);
+	struct MessageWindowData *pdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
+	struct MsgEditSubclassData *dat = (struct MsgEditSubclassData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_DROPFILES:
@@ -275,7 +275,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 	case EM_SUBCLASSED:
 		dat = (struct MsgEditSubclassData *) malloc(sizeof(struct MsgEditSubclassData));
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG) dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG) dat);
 		dat->lastEnterTime = 0;
 		dat->keyboardMsgQueue = NULL;
 		dat->msgQueueCount = 0;
@@ -697,18 +697,18 @@ void Button_FreeIcon_IcoLib(HWND hwndDlg, int itemId)
 	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon,0);
 }
 
-BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *dat;
 
-	dat = (struct MessageWindowData *) GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		{
 			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
 			TranslateDialogDefault(hwndDlg);
 			dat = (struct MessageWindowData *) calloc(sizeof(struct MessageWindowData),1);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG) dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG) dat);
 			{
 				dat->hContact = newData->hContact;
 				NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
@@ -801,9 +801,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			}
 
-			OldMessageEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) MessageEditSubclassProc);
+			OldMessageEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG) MessageEditSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SUBCLASSED, 0, 0);
-			OldSplitterProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) SplitterSubclassProc);
+			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG) SplitterSubclassProc);
 			if (dat->hContact) {
 				int historyMode = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY);
 				// This finds the first message to display, it works like shit
@@ -1033,16 +1033,16 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			PROTO_AVATAR_INFORMATION pai;
 			int caps = 0, result;
 
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, 0);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 0);
 			if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
 				SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 				SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
-				SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+				SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 				return 0;
 			}
 			if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
 				ShowAvatar(hwndDlg, dat);
-				SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+				SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 				return 0;
 			}
 			ZeroMemory((void *)&pai, sizeof(pai));
@@ -1060,7 +1060,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
 				ShowAvatar(hwndDlg, dat);
 			}
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, 1);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 		}
 		break;
 
@@ -1309,7 +1309,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				state |= MSG_WINDOW_STATE_FOCUS;
 			if (IsIconic(hwndDlg))
 				state |= MSG_WINDOW_STATE_ICONIC;
-			SetWindowLong(hwndDlg, DWL_MSGRESULT, state);
+			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, state);
 			return TRUE;
 
 		}
@@ -1791,7 +1791,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						HCURSOR hCur = GetCursor();
 						if (hCur == LoadCursor(NULL, IDC_SIZENS) || hCur == LoadCursor(NULL, IDC_SIZEWE)
 							|| hCur == LoadCursor(NULL, IDC_SIZENESW) || hCur == LoadCursor(NULL, IDC_SIZENWSE)) {
-								SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 								return TRUE;
 							}
 						break;
@@ -1838,7 +1838,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						}
                         DestroyMenu(hSubMenu);
 						DestroyMenu(hMenu);
-						SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
 				}	}
 				break;
@@ -1847,7 +1847,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				switch (((ENLINK *) lParam)->msg) {
 				case WM_SETCURSOR:
 					SetCursor(hCurHyperlinkHand);
-					SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 					return TRUE;
 
 				case WM_RBUTTONDOWN:
@@ -1899,7 +1899,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 							free(tr.lpstrText);
 							DestroyMenu(hMenu);
-							SetWindowLong(hwndDlg, DWL_MSGRESULT, TRUE);
+							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 							return TRUE;
 						}
 						else {
@@ -2003,9 +2003,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
 		DBWriteContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", dat->splitterPos);
-		SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG) OldSplitterProc);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
-		SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG) OldMessageEditProc);
 		{
 			HFONT hFont;
 			hFont = (HFONT) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_GETFONT, 0, 0);
@@ -2041,7 +2041,7 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		Button_FreeIcon_IcoLib(hwndDlg, IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg, IDC_USERMENU);
 		free(dat);
-		SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 		break;
 	}
 	return FALSE;
