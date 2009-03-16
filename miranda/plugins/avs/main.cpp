@@ -128,12 +128,12 @@ PLUGININFOEX pluginInfoEx = {
 #endif
 };
 
-extern BOOL CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename, int format, BOOL square, BOOL grow);
@@ -227,7 +227,7 @@ static int AVS_pathIsAbsoluteW(const wchar_t *path)
 }
 #endif
 
-int AVS_pathToRelative(const char *pSrc, char *pOut)
+size_t AVS_pathToRelative(const char *pSrc, char *pOut)
 {
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
     if (!AVS_pathIsAbsolute(pSrc)) {
@@ -250,7 +250,7 @@ int AVS_pathToRelative(const char *pSrc, char *pOut)
     }
 }
 
-int AVS_pathToAbsolute(const char *pSrc, char *pOut)
+size_t AVS_pathToAbsolute(const char *pSrc, char *pOut)
 {
     if (!pSrc||!strlen(pSrc)||strlen(pSrc)>MAX_PATH) return 0;
     if (AVS_pathIsAbsolute(pSrc)||!isalnum(pSrc[0])) {
@@ -464,7 +464,7 @@ void MakePathRelative(HANDLE hContact, char *path)
 	char szFinalPath[MAX_PATH];
 	szFinalPath[0] = '\0';
 
-	int result = AVS_pathToRelative(path, szFinalPath);
+	size_t result = AVS_pathToRelative(path, szFinalPath);
 	if(result && lstrlenA(szFinalPath) > 0) {
 	   DBWriteContactSettingString(hContact, "ContactPhoto", "RFile", szFinalPath);
 	   if(!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
@@ -877,7 +877,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
 
 			OpenFileSubclassData *data = (OpenFileSubclassData *) malloc(sizeof(OpenFileSubclassData));
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG)data);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)data);
 			data->locking_request = (BYTE *)ofn->lCustData;
 			data->setView = TRUE;
 
@@ -889,14 +889,14 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	case WM_COMMAND:
 		if(LOWORD(wParam) == IDC_PROTECTAVATAR)
 		{
-			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			*(data->locking_request) = IsDlgButtonChecked(hwnd, IDC_PROTECTAVATAR) ? TRUE : FALSE;
 		}
 		break;
 
 	case WM_NOTIFY:
 		{
-			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (data->setView)
 			{
 				HWND hwndParent = GetParent(hwnd);
@@ -911,9 +911,9 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		break;
 
 	case WM_NCDESTROY:
-		OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLong(hwnd, GWL_USERDATA);
+		OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		free((OpenFileSubclassData *)data);
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG)0);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)0);
 		break;
 	}
 
@@ -1032,7 +1032,7 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 		{
 			InterlockedExchange(&hwndSetMyAvatar, (LONG) hwnd);
 
-            SetWindowLong(hwnd, GWL_USERDATA, (LONG)lParam);
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)lParam);
             OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
 			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
 			data->thumbnail = TRUE;
@@ -1050,7 +1050,7 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		case WM_NOTIFY:
 		{
-			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
 			if (data->thumbnail)
 			{
@@ -1066,7 +1066,7 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		case WM_DESTROY:
 		{
-			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLong(hwnd, GWL_USERDATA);
+			OPENFILENAMEA *ofn = (OPENFILENAMEA *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
 			data->square = IsDlgButtonChecked(hwnd, IDC_MAKE_SQUARE);
 			data->grow = IsDlgButtonChecked(hwnd, IDC_GROW);

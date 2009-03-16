@@ -21,8 +21,8 @@ extern int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 #define GET_PIXEL(__P__, __X__, __Y__) ( __P__ + width * 4 * (__Y__) + 4 * (__X__) )
 
 
-extern int AVS_pathToRelative(const char *sPrc, char *pOut);
-extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);
+extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
+extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
 extern int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut);
 extern FI_INTERFACE *fei;
 

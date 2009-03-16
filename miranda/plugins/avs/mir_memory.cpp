@@ -100,7 +100,7 @@ char *mir_dupToAscii(WCHAR *ptr)
 	if (ptr == NULL)
 		return NULL;
 
-	size_t size = lstrlenW(ptr) + 1;
+	int size = lstrlenW(ptr) + 1;
 	char *tmp = (char *) mir_alloc0(size);
 
 	WideCharToMultiByte(CP_ACP, 0, ptr, -1, tmp, size, NULL, NULL);

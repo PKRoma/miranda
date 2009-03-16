@@ -43,8 +43,8 @@ extern void DeleteAvatarFromCache(HANDLE, BOOL);
 extern HBITMAP LoadPNG(struct avatarCacheEntry *ace, char *szFilename);
 extern HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1);
 
-extern int AVS_pathToRelative(const char *sPrc, char *pOut);
-extern int AVS_pathToAbsolute(const char *pSrc, char *pOut);
+extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
+extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
 extern void MakePathRelative(HANDLE hContact, char *path);
 
 extern int ProtoServiceExists(const char *szModule,const char *szService);
@@ -131,7 +131,7 @@ static void SetProtoPic(char *szProto)
 
 static char g_selectedProto[100];
 
-BOOL CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG: {
@@ -198,7 +198,7 @@ BOOL CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 }
 
 
-BOOL CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
         case WM_INITDIALOG: {
@@ -229,7 +229,7 @@ BOOL CALLBACK DlgProcOptionsOwn(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 }
 
 
-BOOL CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HWND hwndList = GetDlgItem(hwndDlg, IDC_PROTOCOLS);
     HWND hwndChoosePic = GetDlgItem(hwndDlg, IDC_SETPROTOPIC);
@@ -453,10 +453,10 @@ void SaveTransparentData(HWND hwndDlg, HANDLE hContact, BOOL locked)
 		SaveTransparentData(hwndDlg, tmp);
 }
 
-BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HANDLE hContact;
-    struct WindowData *dat = (struct WindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    struct WindowData *dat = (struct WindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
     if(dat)
         hContact = dat->hContact;
@@ -471,7 +471,7 @@ BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
             if(dat)
                 dat->hContact = (HANDLE)lParam;
 
-            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
             hContact = (HANDLE)lParam;
             TranslateDialogDefault(hwndDlg);
             if(hContact) {
@@ -686,17 +686,17 @@ BOOL CALLBACK DlgProcAvatarOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
                 UnhookEvent(dat->hHook);
                 free(dat);
             }
-            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
             break;
         }
     }
     return FALSE;
 }
 
-BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     HANDLE hContact;
-    struct WindowData *dat = (struct WindowData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+    struct WindowData *dat = (struct WindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
     if(dat)
         hContact = dat->hContact;
@@ -716,7 +716,7 @@ BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			SendMessage(protopic, AVATAR_RESPECTHIDDEN, 0, (LPARAM) FALSE);
 			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
-            SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
             hContact = (HANDLE)lParam;
             TranslateDialogDefault(hwndDlg);
             SendMessage(hwndDlg, DM_SETAVATARNAME, 0, 0);
@@ -843,7 +843,7 @@ BOOL CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
         {
             if(dat)
                 free(dat);
-            SetWindowLong(hwndDlg, GWL_USERDATA, 0);
+            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
             break;
         }
     }
@@ -966,7 +966,7 @@ static void EnableDisableProtocols(HWND hwndDlg, BOOL init)
 	}
 }
 
-BOOL CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_INITDIALOG:
