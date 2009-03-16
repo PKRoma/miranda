@@ -75,6 +75,7 @@ static const struct StandardIconDescription mainIcons[] =
 	{ SKINICON_OTHER_STATUS,        LPGEN("Status"),          -IDI_ONLINE         },
 	{ SKINICON_CHAT_JOIN,           LPGEN("Join chat"),       -IDI_JOINCHAT       },
 	{ SKINICON_CHAT_LEAVE,          LPGEN("Leave chat"),      -IDI_LEAVECHAT      },
+	{ SKINICON_OTHER_GROUP,			LPGEN("Move to Group"),   -IDI_MOVETOGROUP    },
 	{ SKINICON_OTHER_STATUS_LOCKED, LPGEN("Locked status"),   -IDI_STATUS_LOCKED,    0,     "Status Icons"}
 };
 

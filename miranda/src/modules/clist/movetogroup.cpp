@@ -60,10 +60,6 @@ static void ModifyGroupItem(HANDLE hItem, TCHAR* name,int checked)
 
 static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 {
-	int i, pos;
-	TCHAR *szGroupName, *szContactGroup;
-	char intname[20];
-
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
 
@@ -71,7 +67,8 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 		mi.hParentMenu = NULL;
 		mi.position = 100000;
 		mi.pszName = LPGEN("&Move to Group");
-		mi.flags = CMIF_ROOTHANDLE;
+		mi.flags = CMIF_ROOTHANDLE | CMIF_ICONFROMICOLIB;
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_GROUP );
 		hMoveToGroupItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	}
 
@@ -80,10 +77,9 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 		lphGroupsItems = (HANDLE*)malloc(cbGroupsItems*sizeof(HANDLE));
 	}
 
-	szContactGroup = DBGetStringT((HANDLE)wParam, "CList", "Group");
+	TCHAR *szContactGroup = DBGetStringT((HANDLE)wParam, "CList", "Group");
 
-	i=1;
-	pos = 1000;
+	int i=1, pos = 1000;
 	if ( !nGroupsItems ) {
 		nGroupsItems++;
 		lphGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("<Root Group>"), pos++, -1, !szContactGroup);
@@ -93,15 +89,14 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 	pos += 100000; // Separator
 
 	while (TRUE) {
-		int checked;
-
+		char intname[20];
 		_itoa( i-1, intname, 10 );
-		szGroupName = DBGetStringT( 0, "CListGroups", intname );
+		TCHAR *szGroupName = DBGetStringT( 0, "CListGroups", intname );
 
 		if ( !szGroupName || !szGroupName[0] )
 			break;
 
-		checked = 0;
+		int checked = 0;
 		if ( szContactGroup && !_tcscmp( szContactGroup, szGroupName + 1 ))
 			checked = 1;
 
