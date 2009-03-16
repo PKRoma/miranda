@@ -436,7 +436,7 @@ static int checkHook( HANDLE hHook )
 	return 0;
 }
 
-static void CALLBACK HookToMainAPCFunc(DWORD dwParam)
+static void CALLBACK HookToMainAPCFunc(ULONG_PTR dwParam)
 {
 	THookToMainThreadItem* item = ( THookToMainThreadItem* )dwParam;
 
@@ -767,7 +767,7 @@ int CallService(const char *name,WPARAM wParam,LPARAM lParam)
 		default: return pfnService(wParam,lParam);
 }	}
 
-static void CALLBACK CallServiceToMainAPCFunc(DWORD dwParam)
+static void CALLBACK CallServiceToMainAPCFunc(ULONG_PTR dwParam)
 {
 	TServiceToMainThreadItem *item = (TServiceToMainThreadItem*) dwParam;
 	item->result = CallService(item->name, item->wParam, item->lParam);
@@ -801,7 +801,7 @@ int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 {
 	extern HWND hAPCWindow;
-	int r = QueueUserAPC(( void (__stdcall *)( DWORD ))func, hMainThread, ( DWORD )arg );
+	int r = QueueUserAPC(( void (__stdcall *)( ULONG_PTR ))func, hMainThread, ( DWORD )arg );
 	PostMessage(hAPCWindow,WM_NULL,0,0);
 	return r;
 }

@@ -33,15 +33,15 @@ struct AwayMsgDlgData {
 	HANDLE hAwayMsgEvent;
 };
 #define HM_AWAYMSG  (WM_USER+10)
-static BOOL CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	struct AwayMsgDlgData *dat;
-	dat=(struct AwayMsgDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct AwayMsgDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch(message) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 			dat->hContact=(HANDLE)lParam;
 			{
 #ifdef _UNICODE

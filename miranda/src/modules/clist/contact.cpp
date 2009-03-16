@@ -136,8 +136,8 @@ int fnCompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 	return _tcsicmp(namea, nameb);
 }
 
-static int resortTimerId = 0;
-static VOID CALLBACK SortContactsTimer(HWND, UINT, UINT, DWORD)
+static UINT_PTR resortTimerId = 0;
+static VOID CALLBACK SortContactsTimer(HWND, UINT, UINT_PTR, DWORD)
 {
 	KillTimer(NULL, resortTimerId);
 	resortTimerId = 0;

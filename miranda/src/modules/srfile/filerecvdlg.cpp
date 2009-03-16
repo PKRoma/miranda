@@ -175,11 +175,11 @@ void GetReceivedFilesDir(char *szDir,int cchDir)
 	lstrcpynA( szDir, szTemp, cchDir );
 }
 
-BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct FileDlgData *dat;
 
-	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct FileDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG: {
 		TCHAR *contactName;
@@ -188,7 +188,7 @@ BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		TranslateDialogDefault(hwndDlg);
 
 		dat=(struct FileDlgData*)mir_calloc(sizeof(struct FileDlgData));
-		SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 		dat->hContact=((CLISTEVENT*)lParam)->hContact;
 		dat->hDbEvent=((CLISTEVENT*)lParam)->hDbEvent;
 		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);

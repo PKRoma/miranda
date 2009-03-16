@@ -228,7 +228,7 @@ int    fnTrayIconUpdate( HICON hNewIcon, const TCHAR *szNewTip, const char *szPr
 void   fnTrayIconUpdateBase ( const char *szChangedProto );
 void   fnTrayIconUpdateWithImageList ( int iImage, const TCHAR *szNewTip, char *szPreferredProto );
 
-VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT idEvent, DWORD dwTime);
+VOID CALLBACK fnTrayCycleTimerProc(HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime);
 
 /* clui.c */
 LRESULT CALLBACK fnContactListWndProc ( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );

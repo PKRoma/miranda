@@ -208,7 +208,7 @@ static int InternalGetDIBSizes( HBITMAP bitmap, int* InfoHeaderSize, int* ImageS
 	else {
 		if ( bi.biClrUsed == 0 )
 			*InfoHeaderSize = sizeof(BITMAPINFOHEADER) +
-				sizeof(RGBQUAD) * (1 << bi.biBitCount);
+				sizeof(RGBQUAD) * (int)(1 << bi.biBitCount);
 		else
 			*InfoHeaderSize = sizeof(BITMAPINFOHEADER) +
 				sizeof(RGBQUAD) * bi.biClrUsed;
@@ -1075,7 +1075,7 @@ static TCHAR* OpenFileDlg( HWND hParent, const TCHAR* szFile, BOOL bAll )
 #define DM_UPDATEICONSPREVIEW   (WM_USER+13)
 #define DM_REBUILD_CTREE        (WM_USER+14)
 
-BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void DoOptionsChanged(HWND hwndDlg)
 {
@@ -1155,7 +1155,7 @@ static int IconDlg_Resize(HWND, LPARAM, UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT | RD_ANCHORY_TOP; // default
 }
 
-BOOL CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcIconImport(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hwndParent,hwndDragOver;
 	static int dragging;
@@ -1424,20 +1424,20 @@ static void SaveCollapseState( HWND hwndTree )
 		hti = ht;
 }	}
 
-BOOL CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct IcoLibOptsData *dat;
 	static HTREEITEM prevItem = 0;
 	static HWND hPreview = NULL;
 
-	dat = (struct IcoLibOptsData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+	dat = (struct IcoLibOptsData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
 		dat = (struct IcoLibOptsData*)mir_alloc(sizeof(struct IcoLibOptsData));
 		dat->hwndIndex = NULL;
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
 		//
 		//  Reset temporary data & upload sections list
 		//

@@ -384,7 +384,7 @@ static void AeroPaintControl(HWND hwnd, HDC hdc, WNDPROC OldWndProc, UINT msg = 
 
 static LRESULT CALLBACK AeroPaintSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	WNDPROC OldWndProc = (WNDPROC)GetWindowLong(hwnd, GWL_USERDATA);
+	WNDPROC OldWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_CTLCOLOREDIT:
@@ -412,9 +412,9 @@ static LRESULT CALLBACK AeroPaintSubclassProc(HWND hwnd, UINT msg, WPARAM wParam
 	return CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 }
 
-static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLong( hdlg, GWL_USERDATA );
+	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hdlg, GWLP_USERDATA );
 	static TCHAR szFilterString[1024]={0};	
 	switch ( message ) {
 	case WM_CTLCOLORSTATIC:
@@ -454,14 +454,14 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 				COMBOBOXINFO cbi;
 				cbi.cbSize = sizeof(COMBOBOXINFO);
 				getComboBoxInfo(GetDlgItem( hdlg, IDC_KEYWORD_FILTER), &cbi);
-				OptionsFilterDefaultProc = (WNDPROC)SetWindowLong( cbi.hwndItem, GWL_WNDPROC, (LONG) OptionsFilterSubclassProc );
+				OptionsFilterDefaultProc = (WNDPROC)SetWindowLongPtr( cbi.hwndItem, GWLP_WNDPROC, (LONG) OptionsFilterSubclassProc );
 
 				if (IsAeroMode())
 				{
-					SetWindowLong(cbi.hwndCombo, GWL_USERDATA, GetWindowLong(cbi.hwndCombo, GWLP_WNDPROC));
-					SetWindowLong(cbi.hwndCombo, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
-					SetWindowLong(cbi.hwndItem, GWL_USERDATA, GetWindowLong(cbi.hwndItem, GWLP_WNDPROC));
-					SetWindowLong(cbi.hwndItem, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+					SetWindowLongPtr(cbi.hwndCombo, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC));
+					SetWindowLongPtr(cbi.hwndCombo, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
+					SetWindowLongPtr(cbi.hwndItem, GWLP_USERDATA, GetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC));
+					SetWindowLongPtr(cbi.hwndItem, GWLP_WNDPROC, (LONG)AeroPaintSubclassProc);
 				}
 			}
 
@@ -472,7 +472,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 			CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
 			dat=(struct OptionsDlgData*)mir_alloc(sizeof(struct OptionsDlgData));
-			SetWindowLong(hdlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG)dat);
 			SetWindowText(hdlg,psh->pszCaption);
 			
 			dat->hBoldFont=(HFONT)SendDlgItemMessage(hdlg,IDC_EXPERT,WM_GETFONT,0,0);
@@ -774,11 +774,11 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		return TRUE;
 
 	case PSM_ISEXPERT:
-		SetWindowLong(hdlg,DWL_MSGRESULT,IsDlgButtonChecked(hdlg,IDC_EXPERT));
+		SetWindowLongPtr(hdlg,DWLP_MSGRESULT,IsDlgButtonChecked(hdlg,IDC_EXPERT));
 		return TRUE;
 
 	case PSM_GETBOLDFONT:
-		SetWindowLong(hdlg,DWL_MSGRESULT,(LONG)dat->hBoldFont);
+		SetWindowLongPtr(hdlg,DWLP_MSGRESULT,(LONG)dat->hBoldFont);
 		return TRUE;
 
 	case WM_NOTIFY:
@@ -787,7 +787,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 		case IDC_PAGETREE:
 			switch(((LPNMHDR)lParam)->code) {
 				case TVN_ITEMEXPANDING:
-					SetWindowLong(hdlg,DWL_MSGRESULT,FALSE);
+					SetWindowLongPtr(hdlg,DWLP_MSGRESULT,FALSE);
 					return TRUE;
 				case TCN_SELCHANGING:
 				case TVN_SELCHANGING:
@@ -798,7 +798,7 @@ static BOOL CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM 
 					pshn.hdr.idFrom=0;
 					pshn.lParam=0;
 					if(SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn)) {
-						SetWindowLong(hdlg,DWL_MSGRESULT,TRUE);
+						SetWindowLongPtr(hdlg,DWLP_MSGRESULT,TRUE);
 						return TRUE;
 					}
 					break;
@@ -1414,7 +1414,7 @@ int LoadOptionsModule(void)
 
 void CALLBACK FilterSearchTimerFunc( HWND hwnd, UINT, UINT_PTR, DWORD )
 {
-	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLong( hwnd, GWL_USERDATA );
+	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hwnd, GWLP_USERDATA );
 	if ( !dat )
 		return;
 	

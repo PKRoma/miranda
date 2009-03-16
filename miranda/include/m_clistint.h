@@ -399,7 +399,7 @@ typedef struct
 	void   ( *pfnLockTray )( void );
 	void   ( *pfnUnlockTray )( void );
 
-	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT idEvent, DWORD dwTime );
+	VOID ( CALLBACK *pfnTrayCycleTimerProc )( HWND hwnd, UINT message, UINT_PTR idEvent, DWORD dwTime );
 
 	/*************************************************************************************
 	 * version 6 additions (0.8.0.x) - accounts

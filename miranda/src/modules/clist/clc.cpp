@@ -1130,7 +1130,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	case WM_LBUTTONUP:
 		if (dat->iDragItem == -1)
 			break;
-		SetCursor((HCURSOR) GetClassLong(hwnd, GCL_HCURSOR));
+		SetCursor((HCURSOR) GetClassLongPtr(hwnd, GCLP_HCURSOR));
 		if (dat->exStyle & CLS_EX_TRACKSELECT) {
 			dat->iHotTrack = cli.pfnHitTest(hwnd, dat, (short) LOWORD(lParam), (short) HIWORD(lParam), NULL, NULL, NULL);
 			if (dat->iHotTrack == -1)

@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UPDATEANIMFRAMES 20
 
 int DetailsInit(WPARAM wParam,LPARAM lParam);
-static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static HANDLE hWindowList=NULL;
 static HANDLE hDetailsInitEvent;
 
@@ -214,9 +214,9 @@ static int UserInfoContactDelete(WPARAM wParam,LPARAM)
 
 #define HM_PROTOACK   (WM_USER+10)
 #define M_CHECKONLINE (WM_USER+11)
-static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DetailsData *dat =(struct DetailsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct DetailsData *dat =(struct DetailsData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -225,7 +225,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		{
 			PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
 			dat->hContact=(HANDLE)psh->pszCaption;
 			dat->hProtoAckEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_PROTOACK);
 			dat->infosUpdated=NULL;
@@ -433,7 +433,7 @@ static BOOL CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					pshn.hdr.idFrom=0;
 					pshn.lParam=(LPARAM)dat->hContact;
 					if(SendMessage(dat->opd[dat->currentPage].hwnd,WM_NOTIFY,0,(LPARAM)&pshn)) {
-						SetWindowLong(hwndDlg,DWL_MSGRESULT,TRUE);
+						SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,TRUE);
 						return TRUE;
 				}	}
 				break;

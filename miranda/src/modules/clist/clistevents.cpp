@@ -40,7 +40,7 @@ static int imlIconCount;
 
 extern HIMAGELIST hCListImages;
 
-static UINT flashTimerId;
+static UINT_PTR flashTimerId;
 static int iconsOn;
 static int disableTrayFlash;
 static int disableIconFlash;
@@ -124,7 +124,7 @@ static void ShowEventsInTray()
 	cli.pfnUnlockTray();	
 }
 
-static VOID CALLBACK IconFlashTimer(HWND, UINT, UINT idEvent, DWORD)
+static VOID CALLBACK IconFlashTimer(HWND, UINT, UINT_PTR idEvent, DWORD)
 {
 	int i, j;
 	ShowEventsInTray();

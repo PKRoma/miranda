@@ -601,7 +601,7 @@ static void sttSaveFontData(HWND hwndDlg, TFontID &F)
 	DBWriteContactSettingWord(NULL, F.dbSettingsGroup, str, (WORD)F.flags);
 }
 
-static BOOL CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int i;
 	LOGFONT lf;
@@ -1317,7 +1317,7 @@ static TFontID *sttFindFont(OBJLIST<TFontID> &fonts, char *module, char *prefix)
 	return 0;
 }
 
-static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int i;
 	LOGFONT lf;
@@ -1460,8 +1460,8 @@ static BOOL CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
-INT CALLBACK AccMgrDlgProc(HWND, UINT, WPARAM, LPARAM);
-INT CALLBACK DlgPluginOpt(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK AccMgrDlgProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK DlgPluginOpt(HWND, UINT, WPARAM, LPARAM);
 
 int FontsModernOptInit(WPARAM wParam, LPARAM lParam)
 {

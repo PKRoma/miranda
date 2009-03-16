@@ -127,13 +127,13 @@ static LRESULT CALLBACK IconCtrlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
 	switch(msg) {
 		case WM_LBUTTONDBLCLK:
-			ShellExecuteA(hwnd,NULL,((PROTOFILETRANSFERSTATUS*)GetWindowLong(GetParent(hwnd),GWL_USERDATA))->currentFile,NULL,NULL,SW_SHOW);
+			ShellExecuteA(hwnd,NULL,((PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA))->currentFile,NULL,NULL,SW_SHOW);
 			break;
 		case WM_RBUTTONUP:
 		{	POINT pt;
 			pt.x=(short)LOWORD(lParam); pt.y=(short)HIWORD(lParam);
 			ClientToScreen(hwnd,&pt);
-			DoAnnoyingShellCommand(hwnd,((PROTOFILETRANSFERSTATUS*)GetWindowLong(GetParent(hwnd),GWL_USERDATA))->currentFile,C_CONTEXTMENU,&pt);
+			DoAnnoyingShellCommand(hwnd,((PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA))->currentFile,C_CONTEXTMENU,&pt);
 			return 0;
 		}
 	}
@@ -197,11 +197,11 @@ void __cdecl LoadIconsAndTypesThread(void* param)
 	mir_free(info);
 }
 
-BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	PROTOFILETRANSFERSTATUS *fts;
 
-	fts=(PROTOFILETRANSFERSTATUS*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	fts=(PROTOFILETRANSFERSTATUS*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch(msg) {
 		case WM_INITDIALOG:
 		{	TCHAR szSize[64];
@@ -216,13 +216,13 @@ BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TranslateDialogDefault(hwndDlg);
 			fts=(PROTOFILETRANSFERSTATUS*)mir_alloc(sizeof(PROTOFILETRANSFERSTATUS));
 			CopyProtoFileTransferStatus(fts,dat->fts);
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)fts);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)fts);
 			SetDlgItemTextA(hwndDlg,IDC_FILENAME,fts->currentFile);
 			SetControlToUnixTime(hwndDlg,IDC_NEWDATE,fts->currentFileTime);
 			GetSensiblyFormattedSize(fts->currentFileSize,szSize,SIZEOF(szSize),0,1,NULL);
 			SetDlgItemText(hwndDlg,IDC_NEWSIZE,szSize);
 
-			pfnIconWindowProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWL_WNDPROC,(LONG)IconCtrlSubclassProc);
+			pfnIconWindowProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_EXISTINGICON),GWLP_WNDPROC,(LONG)IconCtrlSubclassProc);
 
 			hwndFocus=GetDlgItem(hwndDlg,IDC_RESUME);
 			if(_stat(fts->currentFile,&statbuf)==0) {

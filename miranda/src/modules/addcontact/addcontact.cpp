@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
+INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 {
 	ADDCONTACTSTRUCT *acs;
 
@@ -31,7 +31,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 		{
 			char szUin[10];
 			acs=(ADDCONTACTSTRUCT *)lparam;
-			SetWindowLong(hdlg,GWL_USERDATA,(LONG)acs);
+			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG)acs);
 
 			TranslateDialogDefault(hdlg);
 			Window_SetIcon_IcoLib(hdlg,SKINICON_OTHER_ADDCONTACT);
@@ -127,7 +127,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 		break;
 
 	case WM_COMMAND:
-		acs=(ADDCONTACTSTRUCT *)GetWindowLong(hdlg,GWL_USERDATA);
+		acs=(ADDCONTACTSTRUCT *)GetWindowLongPtr(hdlg,GWLP_USERDATA);
 
 		switch(LOWORD(wparam)) {
 		case IDC_AUTH:
@@ -212,7 +212,7 @@ BOOL CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lparam)
 
 	case WM_DESTROY:
 		Window_FreeIcon_IcoLib(hdlg);
-		acs = ( ADDCONTACTSTRUCT* )GetWindowLong(hdlg,GWL_USERDATA);
+		acs = ( ADDCONTACTSTRUCT* )GetWindowLongPtr(hdlg,GWLP_USERDATA);
 		if (acs) {
 			if (acs->psr) {
 				mir_free(acs->psr->nick);

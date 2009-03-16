@@ -30,7 +30,7 @@ static HANDLE hIniChangeNotification;
 extern TCHAR mirandabootini[MAX_PATH];
 extern bool dbCreated;
 
-static BOOL CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 		case WM_INITDIALOG:
@@ -96,7 +96,7 @@ struct warnSettingChangeInfo_t {
 	int warnNoMore,cancel;
 };
 
-static BOOL CALLBACK WarnIniChangeDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK WarnIniChangeDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	static struct warnSettingChangeInfo_t *warnInfo;
 
@@ -136,7 +136,7 @@ static BOOL CALLBACK WarnIniChangeDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 	return FALSE;
 }
 
-static BOOL CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	switch(message) {
 		case WM_INITDIALOG:

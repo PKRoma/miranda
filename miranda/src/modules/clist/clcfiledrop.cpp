@@ -245,7 +245,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 	return S_OK;
 }
 
-static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT idEvent, DWORD)
+static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT_PTR idEvent, DWORD)
 {
 	/* macro defines needed CLSID and IID declarations since
 	they have to be referenced */

@@ -25,11 +25,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HFONT hEmailFont=NULL;
 static HCURSOR hHandCursor=NULL;
 
-static BOOL CALLBACK EditUserEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK EditUserEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			if(*(char*)lParam) SetWindowText(hwndDlg,TranslateT("Edit E-Mail Address"));
 			TranslateDialogDefault(hwndDlg);
 			SetDlgItemTextA(hwndDlg,IDC_EMAIL,(char*)lParam);
@@ -38,7 +38,7 @@ static BOOL CALLBACK EditUserEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDOK:
-					GetDlgItemTextA(hwndDlg,IDC_EMAIL,(char*)GetWindowLong(hwndDlg,GWL_USERDATA),256);
+					GetDlgItemTextA(hwndDlg,IDC_EMAIL,(char*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA),256);
 					//fall through
 				case IDCANCEL:
 					EndDialog(hwndDlg,wParam);
@@ -52,7 +52,7 @@ static BOOL CALLBACK EditUserEmailDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
-static BOOL CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int noRecursion=0;
 
@@ -61,7 +61,7 @@ static BOOL CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		{	char *szText=(char*)lParam;
 			int i,item,countryCount;
 			struct CountryListEntry *countries;
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			if(szText[0]) SetWindowTextA(hwndDlg,"Edit Phone Number");
 			TranslateDialogDefault(hwndDlg);
 			if(lstrlenA(szText)>4 && !lstrcmpA(szText+lstrlenA(szText)-4," SMS")) {
@@ -83,7 +83,7 @@ static BOOL CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
 				case IDOK:
-					{	char *szText=(char*)GetWindowLong(hwndDlg,GWL_USERDATA);
+					{	char *szText=(char*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 						int isValid=1;
 						GetDlgItemTextA(hwndDlg,IDC_PHONE,szText,252);
 						if(lstrlenA(szText)<7 || szText[0]!='+') isValid=0;
@@ -194,11 +194,11 @@ static int IsOverEmail(HWND hwndDlg,TCHAR* szEmail,int cchEmail)
 }
 
 #define M_REMAKELISTS  (WM_USER+1)
-BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			if(hEmailFont) DeleteObject(hEmailFont);
 			{	LOGFONT lf;
 				hEmailFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_EMAILS,WM_GETFONT,0,0);
@@ -239,7 +239,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			char idstr[33];
 			TCHAR idstr2[33];
 			DBVARIANT dbv;
-			HANDLE hContact=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			HANDLE hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 			if (hContact != NULL) {
 				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
@@ -369,7 +369,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 							switch(nm->nmcd.dwDrawStage) {
 								case CDDS_PREPAINT:
 								case CDDS_ITEMPREPAINT:
-									SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_NOTIFYSUBITEMDRAW);
+									SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,CDRF_NOTIFYSUBITEMDRAW);
 									return TRUE;
 								case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
 								{
@@ -383,7 +383,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 										SetTextColor(nm->nmcd.hdc,RGB(0,0,255));
 										DrawText(nm->nmcd.hdc,szText,-1,&rc,DT_END_ELLIPSIS|DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_TOP);
 										SelectObject(nm->nmcd.hdc,hoFont);
-										SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
+										SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,CDRF_SKIPDEFAULT);
 										return TRUE;
 									}
 
@@ -402,7 +402,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 									else break;
 									DrawIconEx(nm->nmcd.hdc,(rc.left+rc.right-GetSystemMetrics(SM_CXSMICON))/2,(rc.top+rc.bottom-GetSystemMetrics(SM_CYSMICON))/2,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
 									IconLib_ReleaseIcon(hIcon, 0);
-									SetWindowLong(hwndDlg,DWL_MSGRESULT,CDRF_SKIPDEFAULT);
+									SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,CDRF_SKIPDEFAULT);
 									return TRUE;
 								}
 							}
@@ -412,7 +412,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						{	NMLISTVIEW *nm=(NMLISTVIEW*)lParam;
 							LVITEM lvi;
 							TCHAR szEmail[256];
-							HANDLE hContact=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+							HANDLE hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 							char *szIdTemplate=nm->hdr.idFrom==IDC_PHONES?"MyPhone%d":"Mye-mail%d";
 							LVHITTESTINFO hti;
 
@@ -497,7 +497,7 @@ BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			if(IsOverEmail(hwndDlg,NULL,0)) {
 				SetCursor(hHandCursor);
-				SetWindowLong(hwndDlg,DWL_MSGRESULT,TRUE);
+				SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,TRUE);
 				return TRUE;
 			}
 			break;

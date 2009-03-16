@@ -27,8 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DM_FINDNEXT  (WM_USER+10)
 #define DM_HREBUILD  (WM_USER+11)
 
-static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static HANDLE hWindowList=0;
 
 static int UserHistoryCommand(WPARAM wParam, LPARAM)
@@ -256,15 +256,15 @@ static int HistoryDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact;
 
-	hContact=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+	hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 		hContact = (HANDLE)lParam;
 		WindowList_Add(hWindowList,hwndDlg,hContact);
 		Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
@@ -405,12 +405,12 @@ static BOOL CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		return TRUE;
 
 	case WM_COMMAND:
@@ -418,7 +418,7 @@ static BOOL CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			case IDOK://find Next
 			{	
 				TCHAR str[128];
-				HWND hwndParent = ( HWND )GetWindowLong(hwndDlg, GWL_USERDATA);
+				HWND hwndParent = ( HWND )GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				GetDlgItemText(hwndDlg, IDC_FINDWHAT, str, SIZEOF(str));
 				CharUpperBuff(str,lstrlen(str));
 				SendMessage(hwndParent,DM_FINDNEXT,0,(LPARAM)str);

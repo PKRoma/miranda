@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -80,8 +80,8 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
                     SetDlgItemTextA(hwndDlg,IDC_UIN,buf[0]?buf:Translate("(Unknown)"));
                 }
             }
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG)hcontact);
 			mir_free(dbei.pBlob);
 			return TRUE;
 		}
@@ -91,7 +91,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			if ( dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
 				DBEVENTINFO dbei;
 				char *szProto;
-				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
@@ -113,7 +113,7 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 			case IDC_ADD:
-			{	HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			{	HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 				ADDCONTACTSTRUCT acs={0};
 
 				acs.handle=hDbEvent;
@@ -137,10 +137,10 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				return TRUE;
 			}
 			case IDC_DETAILS:
-				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)(HANDLE)GetWindowLong((HWND)lParam,GWL_USERDATA),0);
+				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)(HANDLE)GetWindowLongPtr((HWND)lParam,GWLP_USERDATA),0);
 				return TRUE;
 			case IDOK:
-			{	HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			{	HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 				ADDCONTACTSTRUCT acs={0};
 
 				acs.handle=hDbEvent;
@@ -163,14 +163,14 @@ BOOL CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static char szReason[256];
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			SendDlgItemMessage(hwndDlg,IDC_REASON,EM_LIMITTEXT,(WPARAM)256,0);
 			return TRUE;
 
@@ -182,9 +182,9 @@ BOOL CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
 				dbei.cbBlob=0;
-				CallService(MS_DB_EVENT_GET,(WPARAM)GetWindowLong(hwndDlg,GWL_USERDATA),(LPARAM)&dbei);
+				CallService(MS_DB_EVENT_GET,(WPARAM)GetWindowLongPtr(hwndDlg,GWLP_USERDATA),(LPARAM)&dbei);
 				GetDlgItemTextA(hwndDlg,IDC_REASON,szReason,256);
-				CallProtoService(dbei.szModule,PS_AUTHDENY,(WPARAM)GetWindowLong(hwndDlg,GWL_USERDATA),(LPARAM)szReason);
+				CallProtoService(dbei.szModule,PS_AUTHDENY,(WPARAM)GetWindowLongPtr(hwndDlg,GWLP_USERDATA),(LPARAM)szReason);
 			}
             // fall through
 		case WM_CLOSE:
@@ -195,7 +195,7 @@ BOOL CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -256,8 +256,8 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			}
 			SetDlgItemTextA(hwndDlg,IDC_MAIL,email[0]?email:Translate("(Unknown)"));
 			SetDlgItemTextA(hwndDlg,IDC_REASON,reason);
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_DETAILS),GWL_USERDATA,(LONG)hcontact);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS),GWLP_USERDATA,(LONG)hcontact);
 			mir_free(dbei.pBlob);
 		}
 		return TRUE;
@@ -267,7 +267,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if(dis->hwndItem==GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
 			DBEVENTINFO dbei;
 			char *szProto;
-			HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 			ZeroMemory(&dbei,sizeof(dbei));
 			dbei.cbSize=sizeof(dbei);
@@ -291,7 +291,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		switch (LOWORD(wParam)) {
 		case IDC_ADD:
 			{	
-				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 				ADDCONTACTSTRUCT acs={0};
 
 				acs.handle=hDbEvent;
@@ -316,13 +316,13 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return TRUE;
 		case IDC_DETAILS:
 			{	
-				HANDLE hcontact=(HANDLE)GetWindowLong((HWND)lParam,GWL_USERDATA);
+				HANDLE hcontact=(HANDLE)GetWindowLongPtr((HWND)lParam,GWLP_USERDATA);
 				CallService(MS_USERINFO_SHOWDIALOG,(WPARAM)hcontact,0);
 			}
 			return TRUE;
 		case IDOK:
 			{	
-				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 				DBEVENTINFO dbei;
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
@@ -334,7 +334,7 @@ BOOL CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			return TRUE;
 		case IDCANCEL:
 			{	
-				HANDLE hDbEvent=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 				DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_DENYREASON),hwndDlg,DenyReasonProc,(LPARAM)hDbEvent);
 			}
 			DestroyWindow(hwndDlg);

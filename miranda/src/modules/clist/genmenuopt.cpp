@@ -397,18 +397,18 @@ LRESULT CALLBACK LBTNDOWNProc(HWND hwnd,UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc(MyOldWindowProc,hwnd,uMsg,wParam,lParam);
 }
 
-static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct OrderData *dat = (struct OrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA);
+	struct OrderData *dat = (struct OrderData*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct OrderData*)mir_alloc(sizeof(struct OrderData));
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_USERDATA,(LONG)dat);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA,(LONG)dat);
 		dat->dragging=0;
-		MyOldWindowProc=(WNDPROC)GetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_WNDPROC);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWL_WNDPROC,(LONG)&LBTNDOWNProc);
+		MyOldWindowProc=(WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC,(LONG)&LBTNDOWNProc);
 		{
 			HIMAGELIST himlCheckBoxes;
 			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
@@ -515,7 +515,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			case NM_CUSTOMDRAW:
 				{
 					int i= handleCustomDraw(GetDlgItem(hwndDlg,IDC_MENUITEMS),(LPNMTVCUSTOMDRAW) lParam);
-					SetWindowLong(hwndDlg, DWL_MSGRESULT, i);
+					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, i);
 					return TRUE;
 				}
 
@@ -671,7 +671,7 @@ static BOOL CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 	case WM_DESTROY:
 	{
-		struct OrderData* dat = (struct OrderData*)GetWindowLong( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWL_USERDATA );
+		struct OrderData* dat = (struct OrderData*)GetWindowLongPtr( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWLP_USERDATA );
 		if ( dat )
 			mir_free( dat );
 
@@ -807,7 +807,7 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 	return 0;
 }
 
-BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int GenMenuOptInit(WPARAM wParam, LPARAM)
 {

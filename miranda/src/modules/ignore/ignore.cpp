@@ -188,7 +188,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-static BOOL CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hIcons[IGNOREEVENT_MAX+2];
 	static HANDLE hItemAll,hItemUnknown;

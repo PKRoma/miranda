@@ -32,8 +32,9 @@ int GetAverageMode();
 
 static UINT WM_TASKBARCREATED;
 static BOOL mToolTipTrayTips = FALSE;
-static int cycleTimerId = 0, cycleStep = 0;
-static int RefreshTimerId=0;   /////by FYR
+static UINT_PTR cycleTimerId = 0;
+static int cycleStep = 0;
+static UINT_PTR RefreshTimerId=0;   /////by FYR
 static CRITICAL_SECTION trayLockCS;
 
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
@@ -310,7 +311,7 @@ void fnTrayIconTaskbarCreated(HWND hwnd)
 	cli.pfnTrayIconInit(hwnd);
 }
 
-static VOID CALLBACK RefreshTimerProc(HWND, UINT, UINT, DWORD)
+static VOID CALLBACK RefreshTimerProc(HWND, UINT, UINT_PTR, DWORD)
 {
 	int i;
 	if ( RefreshTimerId ) {
@@ -427,7 +428,7 @@ void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPr
 	DestroyIcon(hIcon);
 }
 
-VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT, DWORD)
+VOID CALLBACK fnTrayCycleTimerProc(HWND, UINT, UINT_PTR, DWORD)
 {
 	initcheck;
 	lock;
@@ -562,8 +563,8 @@ void fnTrayIconIconsChanged(void)
 	ulock;
 }
 
-static int autoHideTimerId;
-static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT, UINT idEvent, DWORD)
+static UINT_PTR autoHideTimerId;
+static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT, UINT_PTR idEvent, DWORD)
 {
 	HWND hwndClui;
 	initcheck;

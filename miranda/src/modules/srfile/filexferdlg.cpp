@@ -177,17 +177,17 @@ static int FileTransferDlgResizer(HWND, LPARAM, UTILRESIZECONTROL *urc)
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
 
-BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct FileDlgData *dat=NULL;
 
-	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct FileDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat = (struct FileDlgData*)lParam;
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LPARAM)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LPARAM)dat);
 			dat->hNotifyEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_RECVEVENT);
 			dat->transferStatus.currentFileNumber = -1;
 			if(dat->send) {
@@ -505,7 +505,7 @@ BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 						pfr->szFilename=NULL;
 						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)mir_strdup(fts->currentFile),(LPARAM)pfr);
 					}
-					SetWindowLong(hwndDlg,DWL_MSGRESULT,1);
+					SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,1);
 					return TRUE;
 				}
 				case ACKRESULT_DATA:

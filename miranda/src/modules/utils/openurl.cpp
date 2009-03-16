@@ -44,7 +44,7 @@ static LRESULT CALLBACK DdeMessageWindow(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 			dat->hwndDde=(HWND)wParam;
 			return 0;
 		case WM_DDE_DATA:
-			UnpackDDElParam(msg,lParam,(PUINT)&hDdeData,(PUINT)&hSzItem);
+			UnpackDDElParam(msg,lParam,(PUINT_PTR)&hDdeData,(PUINT_PTR)&hSzItem);
 			dat->fData=1;
 			if(hDdeData) {
 				DDEDATA *data;
@@ -100,7 +100,7 @@ static int DoDdeRequest(const char *szItemName,HWND hwndDdeMsg)
 static int DdeOpenUrl(const char *szBrowser,char *szUrl,int newWindow,HWND hwndDdeMsg)
 {
 	ATOM hSzBrowser,hSzTopic;
-	DWORD dwResult;
+	DWORD_PTR dwResult;
 	char *szItemName;
 	struct DdeMsgWindowData *dat=(struct DdeMsgWindowData*)GetWindowLong(hwndDdeMsg,0);
 

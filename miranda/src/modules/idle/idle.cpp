@@ -145,7 +145,7 @@ BOOL IsTerminalDisconnected()
 }
 
 typedef struct {
-	UINT hTimer;
+	UINT_PTR hTimer;
 	unsigned int useridlecheck;
 	unsigned int state;
 	unsigned int minutes;	// user setting, number of minutes of inactivity to wait for
@@ -162,7 +162,7 @@ static IdleObject gIdleObject;
 static HANDLE hIdleEvent;
 static BOOL (WINAPI * MyGetLastInputInfo)(PLASTINPUTINFO);
 
-void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT idEvent, DWORD dwTime);
+void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT_PTR idEvent, DWORD dwTime);
 static BOOL IsWorkstationLocked(void);
 static BOOL IsScreenSaverRunning(void);
 
@@ -257,7 +257,7 @@ static void IdleObject_Tick(IdleObject * obj)
 		NotifyEventHooks(hIdleEvent, 0, flags);
 }	}
 
-void CALLBACK IdleTimer(HWND, UINT, UINT idEvent, DWORD)
+void CALLBACK IdleTimer(HWND, UINT, UINT_PTR idEvent, DWORD)
 {
 	if ( gIdleObject.hTimer == idEvent )
 		IdleObject_Tick( &gIdleObject );
@@ -294,7 +294,7 @@ int IdleGetStatusIndex(WORD status)
     return 0;
 }
 
-static BOOL CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:

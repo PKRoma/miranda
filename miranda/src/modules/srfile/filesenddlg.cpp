@@ -208,11 +208,11 @@ static LRESULT CALLBACK SendEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
 	return CallWindowProc(OldSendEditProc,hwnd,msg,wParam,lParam);
 }
 
-BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct FileDlgData *dat;
 
-	dat=(struct FileDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct FileDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
@@ -220,7 +220,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 		dat=(struct FileDlgData*)mir_alloc(sizeof(struct FileDlgData));
 		memset(dat,0,sizeof(struct FileDlgData));
-		SetWindowLong(hwndDlg,GWL_USERDATA,(long)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(long)dat);
 		dat->hContact=fsd->hContact;
 		dat->send=1;
 		dat->hPreshutdownEvent=HookEventMessage(ME_SYSTEM_PRESHUTDOWN,hwndDlg,M_PRESHUTDOWN);
@@ -229,7 +229,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 		TranslateDialogDefault(hwndDlg);
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
-		OldSendEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
 
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_EVENT_FILE);
 		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
@@ -361,7 +361,7 @@ BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_HISTORY);
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 		if(dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldSendEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)OldSendEditProc);
 		return TRUE;
 	}
 	return FALSE;

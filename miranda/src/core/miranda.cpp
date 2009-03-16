@@ -237,7 +237,7 @@ static int ForkThreadServiceEx(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // APC and mutex functions
 
-static void __stdcall DummyAPCFunc(DWORD)
+static void __stdcall DummyAPCFunc(ULONG_PTR)
 {
 	/* called in the context of thread that cleared it's APC queue */
 	return;
@@ -484,13 +484,13 @@ static int SystemShutdownProc(WPARAM, LPARAM)
 #define MIRANDA_PROCESS_WAIT_TIMEOUT        60000
 #define MIRANDA_PROCESS_WAIT_RESOLUTION     1000
 #define MIRANDA_PROCESS_WAIT_STEPS          (MIRANDA_PROCESS_WAIT_TIMEOUT/MIRANDA_PROCESS_WAIT_RESOLUTION)
-static BOOL CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwnd );
-		SetWindowLong(hwnd, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
 		SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_SETRANGE, 0, MAKELPARAM(0, MIRANDA_PROCESS_WAIT_STEPS));
 		SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_SETSTEP, 1, 0);
 		SetTimer(hwnd, 1, MIRANDA_PROCESS_WAIT_RESOLUTION, NULL);
@@ -499,7 +499,7 @@ static BOOL CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	case WM_TIMER:
 		if (SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_STEPIT, 0, 0) == MIRANDA_PROCESS_WAIT_STEPS)
 			EndDialog(hwnd, 0);
-		if (WaitForSingleObject((HANDLE)GetWindowLong(hwnd, GWL_USERDATA), 1) != WAIT_TIMEOUT)
+		if (WaitForSingleObject((HANDLE)GetWindowLongPtr(hwnd, GWLP_USERDATA), 1) != WAIT_TIMEOUT)
 		{
 			SendDlgItemMessage(hwnd, IDC_PROGRESSBAR, PBM_SETPOS, MIRANDA_PROCESS_WAIT_STEPS, 0);
 			EndDialog(hwnd, 0);
@@ -821,7 +821,7 @@ int LoadSystemModule(void)
 	}
 
 	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
-	SetWindowLong(hAPCWindow,GWL_WNDPROC,(LONG)APCWndProc);
+	SetWindowLongPtr(hAPCWindow,GWLP_WNDPROC,(LONG)APCWndProc);
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);
 	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
 	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);

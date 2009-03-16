@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "url.h"
 
-BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern HANDLE hUrlWindowList;
 
@@ -76,9 +76,9 @@ static void sttUpdateTitle( HWND hwndDlg, HANDLE hContact )
 		SetWindowText( hwndDlg, newtitle );
 }
 
-BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct UrlRcvData *dat = (struct UrlRcvData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct UrlRcvData *dat = (struct UrlRcvData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -90,7 +90,7 @@ BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
 
 		dat=(struct UrlRcvData*)mir_alloc(sizeof(struct UrlRcvData));
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
 
 		dat->hContact = ((CLISTEVENT*)lParam)->hContact;
 		dat->hDbEvent = ((CLISTEVENT*)lParam)->hDbEvent;
@@ -259,7 +259,7 @@ static HWND hwndDde;
 static HGLOBAL hGlobalDdeData;
 static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	UINT hSzItem;
+	UINT_PTR hSzItem;
 
 	switch(msg) {
 	case WM_DDE_ACK:
@@ -268,7 +268,7 @@ static LRESULT DdeMessage(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lParam)
 		break;
 
 	case WM_DDE_DATA:
-		UnpackDDElParam( msg, lParam, ( PUINT )&hGlobalDdeData, &hSzItem );
+		UnpackDDElParam( msg, lParam, ( PUINT_PTR )&hGlobalDdeData, &hSzItem );
 		ddeData = 1;
 		if( hGlobalDdeData ) {
 			DDEDATA* data = ( DDEDATA* )GlobalLock( hGlobalDdeData );
@@ -374,7 +374,7 @@ static void GetOpenBrowserUrlsForBrowser(const char *szBrowser,HWND hwndDlg,HWND
 	ATOM hSzBrowser,hSzTopic;
 	int windowCount,i;
 	DWORD *windowId;
-	DWORD dwResult;
+	DWORD_PTR dwResult;
 	HGLOBAL hData;
 	DDEDATA *data;
 	int dataLength;
@@ -461,9 +461,9 @@ static LRESULT CALLBACK SendEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
 	return CallWindowProc(OldSendEditProc,hwnd,msg,wParam,lParam);
 }
 
-BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct UrlSendData* dat = (struct UrlSendData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct UrlSendData* dat = (struct UrlSendData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
@@ -475,7 +475,7 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_LIMITTEXT, 450, 0);
 		dat=(struct UrlSendData*)mir_alloc(sizeof(struct UrlSendData));
-		SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 		dat->hContact=(HANDLE)lParam;
 		dat->hAckEvent=NULL;
 		dat->hSendId=NULL;
@@ -492,8 +492,8 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		if (SendDlgItemMessage(hwndDlg,IDC_URLS,CB_GETCOUNT,0,0))SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_URLS,CBN_SELCHANGE),0);
 		EnableWindow(GetDlgItem(hwndDlg, IDOK), (SendDlgItemMessage(hwndDlg, IDC_URLS, CB_GETCURSEL, 0, 0) == CB_ERR)?FALSE:TRUE);
 		Utils_RestoreWindowPositionNoSize(hwndDlg,NULL,"SRUrl","send");
-		OldSendEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MESSAGE),GWL_WNDPROC,(LONG)SendEditSubclassProc);
-		OldSendEditProc=(WNDPROC)SetWindowLong(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWL_WNDPROC,(LONG)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
+		OldSendEditProc=(WNDPROC)SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG)SendEditSubclassProc);
 
 		// From message dlg
 		if (!DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))
@@ -650,8 +650,8 @@ BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		Button_FreeIcon_IcoLib(hwndDlg,IDC_USERMENU);
 
 		WindowList_Remove(hUrlWindowList, hwndDlg);
-		SetWindowLong(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWL_WNDPROC,(LONG)OldSendEditProc);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_MESSAGE),GWL_WNDPROC,(LONG)OldSendEditProc);
+		SetWindowLongPtr(GetWindow(GetDlgItem(hwndDlg,IDC_URLS),GW_CHILD),GWLP_WNDPROC,(LONG)OldSendEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MESSAGE),GWLP_WNDPROC,(LONG)OldSendEditProc);
 		if(dat->hAckEvent) UnhookEvent(dat->hAckEvent);
 		if(dat->sendBuffer!=NULL) mir_free(dat->sendBuffer);
 		mir_free(dat);

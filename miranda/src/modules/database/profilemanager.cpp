@@ -105,7 +105,7 @@ static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, 
 			return 0;
 		PostMessage(GetParent(edit),WM_INPUTCHANGED,0,0);
 	}
-	return CallWindowProc((WNDPROC)GetWindowLong(edit,GWL_USERDATA),edit,msg,wParam,lParam);
+	return CallWindowProc((WNDPROC)GetWindowLongPtr(edit,GWLP_USERDATA),edit,msg,wParam,lParam);
 }
 
 static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
@@ -124,13 +124,13 @@ static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 	return DBPE_CONT;
 }
 
-static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct DlgProfData * dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault( hwndDlg );
-		SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		dat = (struct DlgProfData *)lParam;
 		{
 			// fill in the db plugins present
@@ -150,9 +150,9 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		// subclass the profile name box
 		{
 			HWND hwndProfile = GetDlgItem(hwndDlg, IDC_PROFILENAME);
-			WNDPROC proc = (WNDPROC)GetWindowLong(hwndProfile, GWL_WNDPROC);
-			SetWindowLong(hwndProfile,GWL_USERDATA,(LONG)proc);
-			SetWindowLong(hwndProfile,GWL_WNDPROC,(LONG)ProfileNameValidate);
+			WNDPROC proc = (WNDPROC)GetWindowLongPtr(hwndProfile, GWLP_WNDPROC);
+			SetWindowLongPtr(hwndProfile,GWLP_USERDATA,(LONG)proc);
+			SetWindowLongPtr(hwndProfile,GWLP_WNDPROC,(LONG)ProfileNameValidate);
 		}
 
 		// decide if there is a default profile name given in the INI and if it should be used
@@ -206,7 +206,7 @@ static BOOL CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 				dat->pd->dblink = (DATABASELINK *)SendDlgItemMessage( hwndDlg, IDC_PROFILEDRIVERS, CB_GETITEMDATA, ( WPARAM )curSel, 0 );
 
 				if ( makeDatabase( dat->pd->szProfile, dat->pd->dblink, hwndDlg ) == 0 ) {
-					SetWindowLong( hwndDlg, DWL_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE );
+					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, PSNRET_INVALID_NOCHANGEPAGE );
 		}	}	}
 		break;
 	}
@@ -332,9 +332,9 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 	return TRUE;
 }
 
-static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DlgProfData* dat = (struct DlgProfData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct DlgProfData* dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -346,7 +346,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			TranslateDialogDefault( hwndDlg );
 
 			dat = ( struct DlgProfData* ) lParam;
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 
 			// set columns
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -376,7 +376,7 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
-            SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
+            SetWindowLong(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
 			ListView_SetExtendedListViewStyle(hwndList,
 				ListView_GetExtendedListViewStyle(hwndList) | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
@@ -438,9 +438,9 @@ static BOOL CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DetailsData* dat = ( struct DetailsData* )GetWindowLong( hwndDlg, GWL_USERDATA );
+	struct DetailsData* dat = ( struct DetailsData* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -453,7 +453,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
-		SetWindowLong( hwndDlg, GWL_USERDATA, (LONG)dat );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG)dat );
 		SetDlgItemText( hwndDlg, IDC_NAME, TranslateT("Miranda IM Profile Manager"));
 		{	LOGFONT lf;
 			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_NAME, WM_GETFONT, 0, 0 );
@@ -578,7 +578,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				pshn.hdr.idFrom = 0;
 				pshn.lParam = 0;
 				if ( SendMessage( dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn )) {
-					SetWindowLong( hwndDlg, DWL_MSGRESULT, TRUE );
+					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
 					return TRUE;
 				}
 				break;
@@ -645,7 +645,7 @@ static BOOL CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 					pshn.hdr.hwndFrom = dat->opd[i].hwnd;
 					SendMessage( dat->opd[i].hwnd, WM_NOTIFY, 0, ( LPARAM )&pshn );
-					if ( GetWindowLong( dat->opd[i].hwnd, DWL_MSGRESULT ) == PSNRET_INVALID_NOCHANGEPAGE) {
+					if ( GetWindowLongPtr( dat->opd[i].hwnd, DWLP_MSGRESULT ) == PSNRET_INVALID_NOCHANGEPAGE) {
 						TabCtrl_SetCurSel( GetDlgItem( hwndDlg, IDC_TABS ), i );
 						if ( dat->currentPage != -1 )
 							ShowWindow( dat->opd[ dat->currentPage ].hwnd, SW_HIDE );

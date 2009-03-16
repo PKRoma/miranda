@@ -49,7 +49,7 @@ static const struct virusscannerinfo virusScanners[]={
 
 #define M_UPDATEENABLING   (WM_USER+100)
 #define M_SCANCMDLINESELCHANGE  (WM_USER+101)
-static BOOL CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:

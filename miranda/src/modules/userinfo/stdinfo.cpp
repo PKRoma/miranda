@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-BOOL CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define SVS_NORMAL        0
 #define SVS_GENDER        1
@@ -156,7 +156,7 @@ LBL_Exit:
 		DBFreeVariant(&dbv);
 }
 
-static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_INITDIALOG:
@@ -204,18 +204,18 @@ static BOOL CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLong(hwndDlg,GWL_USERDATA,lParam);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			TranslateDialogDefault(hwndDlg);
 			SetTimer(hwndDlg,1,1000,NULL);
 			SendMessage(hwndDlg,WM_TIMER,0,0);
 			return TRUE;
 		case WM_TIMER:
 		{	char *szProto;
-			HANDLE hContact=(HANDLE)GetWindowLong(hwndDlg,GWL_USERDATA);
+			HANDLE hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 			int timezone;
 			FILETIME ft;
 			LARGE_INTEGER lift;
@@ -282,7 +282,7 @@ static BOOL CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static BOOL CALLBACK WorkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK WorkDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_INITDIALOG:
@@ -338,7 +338,7 @@ void ResizeColumns(HWND hwndLV)
 		ListView_SetColumnWidth(hwndLV, nCol-1, LVSCW_AUTOSIZE);
 }
 
-static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_INITDIALOG:
@@ -453,7 +453,7 @@ static BOOL CALLBACK BackgroundDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static BOOL CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK NotesDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
 	case WM_INITDIALOG:

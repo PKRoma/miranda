@@ -59,8 +59,8 @@ static int UpdateNotifyMenuCommand(WPARAM wParam, LPARAM lParam);
 static VOID CALLBACK UpdateNotifyTimerCheck(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 static int UpdateNotifyMakeRequest(UpdateNotifyData *und);
 static void UpdateNotifyPerform(void *m);
-static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static int UpdateNotifyModulesLoaded(WPARAM, LPARAM) {
 	NETLIBUSER nlu;
@@ -315,7 +315,7 @@ static void UpdateNotifyPerform(void *)
 	dwUpdateThreadID = 0;
 }
 
-static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch ( msg ) {
 	case WM_INITDIALOG:
@@ -364,7 +364,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				hFont = CreateFontIndirect(&lf);
 				SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);
 			}
-			SetWindowLong(hwndDlg, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		}
 		break;
 
@@ -372,14 +372,14 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		switch (LOWORD(wParam)) {
 		case IDC_VERSION:
 			{
-				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				if (und&&und->notesUrl)
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)und->notesUrl);
 				break;
 			}
 		case IDC_DOWNLOAD:
 			{
-				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLong(hwndDlg, GWL_USERDATA);
+				UpdateNotifyData *und = (UpdateNotifyData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 				if (und&&und->downloadUrl) {
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)und->downloadUrl);
 					DestroyWindow(hwndDlg);
@@ -400,7 +400,7 @@ static BOOL CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static BOOL CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK UpdateNotifyOptsProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 	case WM_INITDIALOG:

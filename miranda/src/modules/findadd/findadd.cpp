@@ -290,9 +290,9 @@ static void SetListItemText( HWND hwndDlg, int idx, int col, char* szText )
 		ListView_SetItemText( GetDlgItem(hwndDlg,IDC_RESULTS), idx, col, TranslateT("<not specified>"));
 }
 
-static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct FindAddDlgData* dat = ( struct FindAddDlgData* )GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct FindAddDlgData* dat = ( struct FindAddDlgData* )GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_INITDIALOG:
@@ -306,7 +306,7 @@ static BOOL CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			memset(dat,0,sizeof(struct FindAddDlgData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 			dat->notSearchedYet=1;
 			dat->iLastColumnSortIndex=1;
 			dat->bSortAscending=1;

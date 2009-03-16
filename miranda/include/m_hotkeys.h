@@ -77,7 +77,7 @@ Subclassed control processes HKM_SETHOTKEY and HKM_GETHOTKEY similarly to
 windows' hotkey, in all other it acts just like normal editbox (beware of
 standart notifications that occur on text updates!)
 
-Subclass procedure uses GWL_USERDATA to store internal information. Do not
+Subclass procedure uses GWLP_USERDATA to store internal information. Do not
 use it for own purposes.
 */
 #define MS_HOTKEY_SUBCLASS			"CoreHotkeys/Subclass"

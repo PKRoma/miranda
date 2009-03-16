@@ -83,7 +83,7 @@ static char* rtrim( char* string )
    return string;
 }
 
-static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch( message ) {
 	case WM_INITDIALOG:
@@ -99,7 +99,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 			}
 			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
 		}
-		SetWindowLong( hwndDlg, GWL_USERDATA, lParam );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
 			if ( param->action == 1 ) // new account
@@ -126,7 +126,7 @@ static BOOL CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LP
 		switch( LOWORD(wParam)) {
 		case IDOK:
 			{
-				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLong( hwndDlg, GWL_USERDATA );
+				AccFormDlgParam* param = ( AccFormDlgParam* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 				PROTOACCOUNT* pa = param->pa;
 				switch( param->action ) {
 				case PRAC_UPGRADED:
@@ -258,12 +258,12 @@ static LRESULT CALLBACK sttEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 		DestroyWindow(hwnd);
 		return 0;
 	}
-	return CallWindowProc((WNDPROC)GetWindowLong(hwnd, GWL_USERDATA), hwnd, msg, wParam, lParam);
+	return CallWindowProc((WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA), hwnd, msg, wParam, lParam);
 }
 
 static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct TAccListData *dat = (struct TAccListData *)GetWindowLong(hwnd, GWL_USERDATA);
+	struct TAccListData *dat = (struct TAccListData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if ( !dat )
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
@@ -313,7 +313,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 	case WM_MY_RENAME:
 		{
 			RECT rc;
-			struct TAccMgrData *parentDat = (struct TAccMgrData *)GetWindowLong(GetParent(hwnd), GWL_USERDATA);
+			struct TAccMgrData *parentDat = (struct TAccMgrData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			PROTOACCOUNT *acc = (PROTOACCOUNT *)ListBox_GetItemData(hwnd, ListBox_GetCurSel(hwnd));
 			if (!acc)
 				return 0;
@@ -324,7 +324,7 @@ static LRESULT CALLBACK AccListWndProc(HWND hwnd,UINT msg, WPARAM wParam, LPARAM
 			++rc.top; --rc.right;
 
 			dat->hwndEdit = CreateWindow(_T("EDIT"), acc->tszAccountName, WS_CHILD|WS_BORDER|ES_AUTOHSCROLL, rc.left, rc.top, rc.right-rc.left, rc.bottom-rc.top, hwnd, NULL, hMirandaInst, NULL);
-			SetWindowLong(dat->hwndEdit, GWL_USERDATA, SetWindowLong(dat->hwndEdit, GWL_WNDPROC, (LONG)sttEditSubclassProc));
+			SetWindowLongPtr(dat->hwndEdit, GWLP_USERDATA, SetWindowLongPtr(dat->hwndEdit, GWLP_WNDPROC, (LONG)sttEditSubclassProc));
 			SendMessage(dat->hwndEdit, WM_SETFONT, (WPARAM)parentDat->hfntTitle, 0);
 			SendMessage(dat->hwndEdit, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN|EC_USEFONTINFO, 0);
 			SendMessage(dat->hwndEdit, EM_SETSEL, 0, (LPARAM) (-1));
@@ -365,14 +365,14 @@ static void sttSubclassAccList(HWND hwnd, BOOL subclass)
 	if (subclass) {
 		struct TAccListData *dat = (struct TAccListData *)mir_alloc(sizeof(struct TAccListData));
 		dat->iItem = -1;
-		dat->oldWndProc = (WNDPROC)GetWindowLong(hwnd, GWL_WNDPROC);
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG)dat);
-		SetWindowLong(hwnd, GWL_WNDPROC, (LONG)AccListWndProc);
+		dat->oldWndProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG)AccListWndProc);
 	}
 	else {
-		struct TAccListData *dat = (struct TAccListData *)GetWindowLong(hwnd, GWL_USERDATA);
-		SetWindowLong(hwnd, GWL_WNDPROC, (LONG)dat->oldWndProc);
-		SetWindowLong(hwnd, GWL_USERDATA, 0);
+		struct TAccListData *dat = (struct TAccListData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG)dat->oldWndProc);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		mir_free(dat);
 }	}
 
@@ -444,15 +444,15 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(welcomeMsg));
 }
 
-BOOL CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
 {
-	struct TAccMgrData *dat = (struct TAccMgrData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct TAccMgrData *dat = (struct TAccMgrData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch(message) {
 	case WM_INITDIALOG:
 		{
 			struct TAccMgrData *dat = (struct TAccMgrData *)mir_alloc(sizeof(struct TAccMgrData));
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
 
 			TranslateDialogDefault(hwndDlg);
 			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");

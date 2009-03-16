@@ -181,21 +181,21 @@ struct SetAwasMsgNewData {
 
 #define DM_SRAWAY_SHUTDOWN WM_USER+10
 
-static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	struct SetAwayMsgData* dat = ( struct SetAwayMsgData* )GetWindowLong(hwndDlg,GWL_USERDATA);
+	struct SetAwayMsgData* dat = ( struct SetAwayMsgData* )GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch(message) {
 	case WM_INITDIALOG:
 		{
 			struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)lParam;
 			TranslateDialogDefault(hwndDlg);
 			dat=(struct SetAwayMsgData*)mir_alloc(sizeof(struct SetAwayMsgData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 			dat->statusMode=newdat->statusMode;
 			dat->szProto=newdat->szProto;
 			mir_free(newdat);
 			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
-			OldMessageEditProc=(WNDPROC)SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)MessageEditSubclassProc);
+			OldMessageEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)MessageEditSubclassProc);
 			{	TCHAR str[256],format[128];
 				GetWindowText( hwndDlg, format, SIZEOF( format ));
 				mir_sntprintf( str, SIZEOF(str), format, cli.pfnGetStatusModeDescription( dat->statusMode, 0 ));
@@ -246,7 +246,7 @@ static BOOL CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,L
 			DBWriteContactSettingString(NULL,"SRAway",StatusModeToDbSetting(dat->statusMode,"Msg"),str);
 		}
 		Window_FreeIcon_IcoLib(hwndDlg);
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_MSG),GWL_WNDPROC,(LONG)OldMessageEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG)OldMessageEditProc);
 		mir_free(dat);
 		break;
 	}
@@ -299,13 +299,13 @@ struct AwayMsgDlgData {
 	int oldPage;
 };
 
-BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct AwayMsgDlgData *dat;
 
 	HWND hLst = GetDlgItem(hwndDlg, IDC_LST_STATUS);
 
-	dat=(struct AwayMsgDlgData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct AwayMsgDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
@@ -313,7 +313,7 @@ BOOL CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			DBVARIANT dbv;
 			TranslateDialogDefault(hwndDlg);
 			dat = (struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 			dat->oldPage=-1;
 			for ( i=0; i < SIZEOF(statusModes); i++ ) {
 				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))

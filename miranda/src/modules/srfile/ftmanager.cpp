@@ -92,9 +92,9 @@ static void LayoutTransfers(HWND hwnd, struct TFtPageData *dat)
 	}
 }
 
-static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct TFtPageData *dat = (struct TFtPageData *)GetWindowLong(hwnd, GWL_USERDATA);
+	struct TFtPageData *dat = (struct TFtPageData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (msg)
 	{
@@ -109,7 +109,7 @@ static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		dat = (struct TFtPageData *)mir_alloc(sizeof(struct TFtPageData));
 		dat->wnds = (struct TLayoutWindowList *)List_Create(0, 1);
 		dat->scrollPos = 0;
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
 		break;
 	}
 
@@ -175,7 +175,7 @@ static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				SendMessage(hwnd, WM_VSCROLL, (zDelta < 0) ? SB_LINEDOWN : SB_LINEUP, 0);
 		}
 
-		SetWindowLong(hwnd, DWL_MSGRESULT, 0);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, 0);
 		return TRUE;
 	}
 
@@ -236,9 +236,9 @@ static BOOL CALLBACK FtMgrPageDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
-static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLong(hwnd, GWL_USERDATA);
+	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (msg)
 	{
@@ -251,7 +251,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_alloc(sizeof(struct TFtMgrData));
-		SetWindowLong(hwnd, GWL_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)dat);
 
 		dat->hhkPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwnd, M_PRESHUTDOWN);
 		dat->hhkShutdown = HookEventMessage(ME_SYSTEM_SHUTDOWN, hwnd, WM_DESTROY);
@@ -412,7 +412,7 @@ static BOOL CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		DestroyWindow(dat->hwndIncoming);
 		DestroyWindow(dat->hwndOutgoing);
 		mir_free(dat);
-		SetWindowLong(hwnd, GWL_USERDATA, 0);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
 		break;
 	}
@@ -466,7 +466,7 @@ void FtMgr_ShowPage(int page)
 HWND FtMgr_AddTransfer(struct FileDlgData *fdd)
 {
 	bool bForceActivate = fdd->send || !DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0);
-	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLong(FtMgr_Show(bForceActivate), GWL_USERDATA);
+	struct TFtMgrData *dat = (struct TFtMgrData *)GetWindowLongPtr(FtMgr_Show(bForceActivate), GWLP_USERDATA);
 	HWND hwndBox = fdd->send ? dat->hwndOutgoing : dat->hwndIncoming;
 	HWND hwndFt = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
 	ShowWindow(hwndFt, SW_SHOW);

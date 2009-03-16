@@ -126,7 +126,7 @@ static void SetAllContactIcons(HWND hwndList)
 	} while(hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0));
 }
 
-static BOOL CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcVisibilityOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {
 	static HICON hVisibleIcon,hInvisibleIcon;
 	static HANDLE hItemAll;

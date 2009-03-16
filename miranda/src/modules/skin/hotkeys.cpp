@@ -397,7 +397,7 @@ static void sttHokeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
 
 static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	THotkeyBoxData *data = (THotkeyBoxData *)GetWindowLong(hwnd, GWL_USERDATA);
+	THotkeyBoxData *data = (THotkeyBoxData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	BOOL bKeyDown = FALSE;
 	if (!data) return 0;
 
@@ -462,8 +462,8 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 		case WM_DESTROY:
 		{
 			WNDPROC saveOldWndProc = data->oldWndProc;
-			SetWindowLong(hwnd, GWL_WNDPROC, (ULONG_PTR)data->oldWndProc);
-			SetWindowLong(hwnd, GWL_USERDATA, 0);
+			SetWindowLongPtr(hwnd, GWLP_WNDPROC, (ULONG_PTR)data->oldWndProc);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 			mir_free(data);
 			return CallWindowProc(saveOldWndProc, hwnd, msg, wParam, lParam);
 	}	}
@@ -474,15 +474,15 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 static void sttHotkeyEditCreate(HWND hwnd)
 {
 	THotkeyBoxData *data = (THotkeyBoxData *)mir_alloc(sizeof(THotkeyBoxData));
-	SetWindowLong(hwnd, GWL_USERDATA, (ULONG_PTR)data);
-	data->oldWndProc = (WNDPROC)SetWindowLong(hwnd, GWL_WNDPROC, (ULONG_PTR)sttHotkeyEditProc);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, (ULONG_PTR)data);
+	data->oldWndProc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (ULONG_PTR)sttHotkeyEditProc);
 }
 
 static void sttHotkeyEditDestroy(HWND hwnd)
 {
-	THotkeyBoxData *data = (THotkeyBoxData *)GetWindowLong(hwnd, GWL_USERDATA);
-	SetWindowLong(hwnd, GWL_WNDPROC, (ULONG_PTR)data->oldWndProc);
-	SetWindowLong(hwnd, GWL_USERDATA, 0);
+	THotkeyBoxData *data = (THotkeyBoxData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (ULONG_PTR)data->oldWndProc);
+	SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 	if (data) mir_free(data);
 }
 
@@ -739,7 +739,7 @@ static void sttOptionsDrawTextChunk(HDC hdc, TCHAR *text, RECT *rc)
 	rc->left += sz.cx;
 }
 
-static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL initialized = FALSE;
 	static int colWidth = 0;
@@ -1286,7 +1286,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					switch (param->nmcd.dwDrawStage) {
 					case CDDS_PREPAINT:
 					case CDDS_ITEMPREPAINT:
-						SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
+						SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW );
 						return TRUE;
 
 					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
@@ -1322,7 +1322,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 									SelectObject(param->nmcd.hdc, hfnt);
 								}
 
-								SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+								SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 								return TRUE;
 							}
 							
@@ -1330,7 +1330,7 @@ static int CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								RECT rc;
 								ListView_GetSubItemRect(lpnmhdr->hwndFrom, param->nmcd.dwItemSpec, param->iSubItem, LVIR_BOUNDS, &rc);
 								FillRect(param->nmcd.hdc, &rc, GetSysColorBrush(COLOR_WINDOW));
-								SetWindowLong( hwndDlg, DWL_MSGRESULT, CDRF_SKIPDEFAULT );
+								SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT );
 								return TRUE;
 							}
 							break;

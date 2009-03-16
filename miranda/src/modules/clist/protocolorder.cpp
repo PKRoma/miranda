@@ -108,9 +108,9 @@ int FillTree(HWND hwnd)
 	return 0;
 }
 
-BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ProtocolOrderData *dat = (struct ProtocolOrderData*)GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA);
+	struct ProtocolOrderData *dat = (struct ProtocolOrderData*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWLP_USERDATA);
 
 	switch (msg) {
 	case WM_DESTROY:
@@ -120,7 +120,7 @@ BOOL CALLBACK ProtocolOrderOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_INITDIALOG: 
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct ProtocolOrderData*)mir_alloc(sizeof(struct ProtocolOrderData));
-		SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_USERDATA,(long)dat);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWLP_USERDATA,(long)dat);
 		dat->dragging=0;
 
 		SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOCOLORDER),GWL_STYLE)|TVS_NOHSCROLL);

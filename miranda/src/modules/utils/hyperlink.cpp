@@ -142,7 +142,7 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 			if(!GetCursorPos(&pt)) return FALSE;
 			if(!ScreenToClient(hwnd,&pt)) return FALSE;
 			if(PtInRect(&dat->rcText,pt)) {
-				hCursor=(HCURSOR)GetClassLong(hwnd,GCL_HCURSOR);
+				hCursor=(HCURSOR)GetClassLongPtr(hwnd,GCLP_HCURSOR);
 				if(hCursor==NULL) hCursor=LoadCursor(NULL,IDC_HAND); /* Win2000+ */
 			}
 			else hCursor=LoadCursor(NULL,IDC_ARROW);

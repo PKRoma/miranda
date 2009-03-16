@@ -117,7 +117,7 @@ static HTREEITEM FindNamedTreeItemAtRoot(HWND hwndTree, const TCHAR* name)
 #define DM_HIDEPANE      (WM_USER+2)
 #define DM_SHOWPANE      (WM_USER+3)
 #define DM_CHECKENABLED  (WM_USER+4)
-BOOL CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hwndTree = NULL;
 	switch (msg) {

@@ -261,7 +261,7 @@ void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTING
 	LeaveCriticalSection(&csNetlibUser);
 }
 
-static BOOL CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{

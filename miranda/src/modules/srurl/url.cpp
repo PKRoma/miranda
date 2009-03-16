@@ -28,8 +28,8 @@ HANDLE hUrlWindowList = NULL;
 static HANDLE hEventContactSettingChange = NULL;
 HANDLE hContactDeleted=NULL;
 
-BOOL CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static int ReadUrlCommand(WPARAM, LPARAM lParam)
 {

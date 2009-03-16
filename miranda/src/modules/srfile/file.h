@@ -78,9 +78,9 @@ void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFER
 void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src);
 int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput);
 //filesenddlg.c
-BOOL CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcSendFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //filerecv.c
-BOOL CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir,BOOL substVars);
 void GetReceivedFilesDir(char *szDir,int cchDir);
 int BrowseForFolder(HWND hwnd,char *szPath);
@@ -90,9 +90,9 @@ struct TDlgProcFileExistsParam
 	HWND hwndParent;
 	PROTOFILETRANSFERSTATUS *fts;
 };
-BOOL CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //filexferdlg.c
-BOOL CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 //fileopts.c
 int FileOptInitialise(WPARAM wParam,LPARAM lParam);
 //ftmanager.c

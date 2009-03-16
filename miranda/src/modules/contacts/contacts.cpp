@@ -354,16 +354,16 @@ struct ContactOptionsData {
 	HTREEITEM hDragItem;
 };
 
-static BOOL CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
+static INT_PTR CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lParam)
 {	struct ContactOptionsData *dat;
 
-	dat=(struct ContactOptionsData*)GetWindowLong(hwndDlg,GWL_USERDATA);
+	dat=(struct ContactOptionsData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	switch (msg)
 	{
 		case WM_INITDIALOG:
 		{	TranslateDialogDefault(hwndDlg);
 			dat=(struct ContactOptionsData*)mir_alloc(sizeof(struct ContactOptionsData));
-			SetWindowLong(hwndDlg,GWL_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
 			dat->dragging=0;
 			SetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
 			{	TVINSERTSTRUCT tvis;
