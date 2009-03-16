@@ -408,9 +408,9 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					if(cap==0x134e)
 						l34e=1;
 				}
-				if(f002&f003&f004&f005)
+				if(f002&&f003&&f004&&f005)
 					strcpy(client,CLIENT_TRILLIAN_PRO);
-				else if(f004&f005&f007&f008||f004&f005&O104&O105)
+				else if((f004&&f005&&f007&&f008) || (f004&&f005&&O104&&O105))
 					strcpy(client,CLIENT_ICHAT);
 				else if(f003&f004&f005)
 					strcpy(client,CLIENT_TRILLIAN);
@@ -441,7 +441,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 					else
 						strcpy(client,CLIENT_AIM_TRITON);
 				}
-				else if(l346&&tlv.len()==2)
+				else if(l346&&l34e&&tlv.len()==4)
 					strcpy(client,CLIENT_MEEBO);
 				else if(l34e&&tlv.len()==2)
 					strcpy(client,CLIENT_BEEJIVE);

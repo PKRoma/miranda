@@ -47,7 +47,7 @@ struct chat_list_item
       cookie = mir_strdup(tcookie); exchange = ex; instance = in; }
 
     ~chat_list_item()
-    { mir_free(id); }
+    { mir_free(id); mir_free(cookie); }
 };
 
 #endif
