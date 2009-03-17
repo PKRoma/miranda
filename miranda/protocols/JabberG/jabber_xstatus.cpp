@@ -622,15 +622,19 @@ void CPepMood::InitGui()
 
 void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 {
-	HANDLE hContact = NULL;
+	HANDLE hContact = NULL, hSelfContact = NULL;
 	if (lstrcmp(from, m_proto->m_szJabberJID))
 	{
 		hContact = m_proto->HContactFromJID(from);
 		if (!hContact) return;
 	}
+	else
+		hSelfContact = m_proto->HContactFromJID(from);
 
 	if ( xmlGetChild( itemsNode, _T("retract")))
 	{
+		if (hSelfContact)
+			SetMood(hSelfContact, NULL, NULL);
 		SetMood(hContact, NULL, NULL);
 		return;
 	}
@@ -646,6 +650,8 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 			moodType = xmlGetName( n );
 	}
 
+	if (hSelfContact)
+		SetMood(hSelfContact, moodType, moodText);
 	SetMood(hContact, moodType, moodText);
 
 	if (!hContact)
@@ -1005,15 +1011,19 @@ void CPepActivity::InitGui()
 
 void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 {
-	HANDLE hContact = NULL;
+	HANDLE hContact = NULL, hSelfContact = NULL;
 	if (lstrcmp(from, m_proto->m_szJabberJID))
 	{
 		hContact = m_proto->HContactFromJID(from);
 		if (!hContact) return;
 	}
+	else
+		hSelfContact = m_proto->HContactFromJID(from);
 
 	if ( xmlGetChild( itemsNode, "retract"))
 	{
+		if (hSelfContact)
+			SetActivity(hSelfContact, NULL, NULL, NULL);
 		SetActivity(hContact, NULL, NULL, NULL);
 		return;
 	}
@@ -1036,6 +1046,8 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 		}
 	}
 
+	if (hSelfContact)
+		SetActivity(hSelfContact, szFirstNode, szSecondNode, szText);
 	SetActivity(hContact, szFirstNode, szSecondNode, szText);
 
 	if (!hContact)
