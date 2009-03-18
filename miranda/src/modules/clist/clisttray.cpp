@@ -203,7 +203,7 @@ int fnTrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int s
 
 	Shell_NotifyIcon(NIM_ADD, &nid);
 	cli.trayIcon[i].isBase = 1;
-	{ ulock; return i; }
+	ulock; return i;
 }
 
 void fnTrayIconRemove(HWND hwnd, const char *szProto)
@@ -398,27 +398,31 @@ int fnTrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto)
 				continue;
 			if (lstrcmpA(cli.trayIcon[i].szProto, szPreferredProto))
 				continue;
+
 			DestroyIcon(cli.trayIcon[i].hBaseIcon);
 			cli.trayIcon[i].hBaseIcon = hIcon;
-			{ ulock; return i; }
+			ulock; return i;
 		}
-		if ((cli.pfnGetProtocolVisibility(szPreferredProto)) &&
-			(GetAverageMode()==-1) &&
-			(DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) &&
-			!(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT)))
-		{ ulock; return -1; }
+		if ((cli.pfnGetProtocolVisibility(szPreferredProto))
+			 && (GetAverageMode()==-1) 
+          && (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT)==SETTING_TRAYICON_MULTI) 
+          && !(DBGetContactSettingByte(NULL,"CList","AlwaysMulti",SETTING_ALWAYSMULTI_DEFAULT)))
+			goto LBL_Error;
 	}
 
 	//if there wasn't a specific icon, there will only be one suitable
 	for (i = 0; i < cli.trayIconCount; i++) {
 		if (cli.trayIcon[i].id == 0)
 			continue;
+
 		DestroyIcon(cli.trayIcon[i].hBaseIcon);
 		cli.trayIcon[i].hBaseIcon = hIcon;
-		{ ulock; return i; }
+		ulock; return i;
 	}
+
+LBL_Error:
 	DestroyIcon(hIcon);
-	{ ulock; return -1; }
+	ulock; return -1;
 }
 
 void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPreferredProto)
@@ -541,7 +545,7 @@ void fnTrayIconSetToBase(char *szPreferredProto)
 		if ( lstrcmpA( cli.trayIcon[i].szProto, szPreferredProto ))
 			continue;
 		cli.pfnTrayIconUpdate( cli.trayIcon[i].hBaseIcon, NULL, szPreferredProto, 1);
-		{ ulock; return; }
+		ulock; return;
 	}
 
 	//if there wasn't a specific icon, there will only be one suitable
@@ -549,9 +553,9 @@ void fnTrayIconSetToBase(char *szPreferredProto)
 		if ( cli.trayIcon[i].id == 0 )
 			continue;
 		cli.pfnTrayIconUpdate( cli.trayIcon[i].hBaseIcon, NULL, szPreferredProto, 1);
-		{ ulock; return; }
+		ulock; return;
 	}
-	{ ulock; return; }
+	ulock; return;
 }
 
 void fnTrayIconIconsChanged(void)
@@ -571,12 +575,12 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd, UINT, UINT_PTR idEvent, DW
 	lock;
 	KillTimer(hwnd, idEvent);
 	hwndClui = cli.hwndContactList;
-	if (GetActiveWindow() == hwndClui)
-	{ ulock; return; }
-	ShowWindow(hwndClui, SW_HIDE);
-	if (MySetProcessWorkingSetSize != NULL)
-		MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
-	{ ulock; return; }
+	if (GetActiveWindow() != hwndClui) {
+		ShowWindow(hwndClui, SW_HIDE);
+		if (MySetProcessWorkingSetSize != NULL)
+			MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
+	}
+	ulock; return;
 }
 
 int fnTrayIconPauseAutoHide(WPARAM, LPARAM)
@@ -589,7 +593,7 @@ int fnTrayIconPauseAutoHide(WPARAM, LPARAM)
 			autoHideTimerId = SetTimer(NULL, 0, 1000 * DBGetContactSettingWord(NULL, "CList", "HideTime", SETTING_HIDETIME_DEFAULT), TrayIconAutoHideTimer);
 		}
 	}
-	{ ulock; return 0; }
+	ulock; return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
