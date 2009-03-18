@@ -60,7 +60,7 @@ PLUGININFOEX pluginInfo={
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
 		"Gennady Feldman",
 		"gena01@miranda-im.org",
-		"© 2003-2007 Gennady Feldman, Laurent Marechal",
+		"© 2003-2009 Gennady Feldman, Laurent Marechal",
 		"http://www.miranda-im.org",
 		0, //not transient
 		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
@@ -93,7 +93,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	char tModuleDescr[ 100 ];
 	NETLIBUSER nlu = {0};
 
-	wsprintf(tModuleDescr, "%s plugin connections", yahooProtocolName);
+	wsprintf(tModuleDescr, Translate( "%s plugin connections" ), yahooProtocolName);
 	
 	nlu.cbSize = sizeof(nlu);
 
@@ -104,7 +104,7 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 #endif
 
 	nlu.szSettingsModule = yahooProtocolName;
-	nlu.szDescriptiveName = Translate( tModuleDescr );
+	nlu.szDescriptiveName = tModuleDescr;
 	
 #ifdef HTTP_GATEWAY
 	// Here comes the Gateway Code! 
