@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on avs.dsp
 !IF "$(CFG)" == ""
-CFG=avs - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to avs - Win32 Debug Unicode.
+CFG=avs - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to avs - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "avs - Win32 Release" && "$(CFG)" != "avs - Win32 Debug" && "$(CFG)" != "avs - Win32 Release Unicode" && "$(CFG)" != "avs - Win32 Debug Unicode"
@@ -40,7 +40,6 @@ CLEAN :
 	-@erase "$(INTDIR)\avs.res"
 	-@erase "$(INTDIR)\image_utils.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\mir_dblists.obj"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
@@ -103,7 +102,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
@@ -134,8 +132,6 @@ CLEAN :
 	-@erase "$(INTDIR)\image_utils.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\mir_dblists.obj"
-	-@erase "$(INTDIR)\mir_dblists.sbr"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_memory.sbr"
 	-@erase "$(INTDIR)\mir_thread.obj"
@@ -200,7 +196,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mir_dblists.sbr" \
 	"$(INTDIR)\mir_memory.sbr" \
 	"$(INTDIR)\mir_thread.sbr" \
 	"$(INTDIR)\options.sbr" \
@@ -217,7 +212,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
@@ -242,7 +236,6 @@ CLEAN :
 	-@erase "$(INTDIR)\avs.res"
 	-@erase "$(INTDIR)\image_utils.obj"
 	-@erase "$(INTDIR)\main.obj"
-	-@erase "$(INTDIR)\mir_dblists.obj"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_thread.obj"
 	-@erase "$(INTDIR)\options.obj"
@@ -304,7 +297,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
@@ -335,8 +327,6 @@ CLEAN :
 	-@erase "$(INTDIR)\image_utils.sbr"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\main.sbr"
-	-@erase "$(INTDIR)\mir_dblists.obj"
-	-@erase "$(INTDIR)\mir_dblists.sbr"
 	-@erase "$(INTDIR)\mir_memory.obj"
 	-@erase "$(INTDIR)\mir_memory.sbr"
 	-@erase "$(INTDIR)\mir_thread.obj"
@@ -401,7 +391,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\acc.sbr" \
 	"$(INTDIR)\image_utils.sbr" \
 	"$(INTDIR)\main.sbr" \
-	"$(INTDIR)\mir_dblists.sbr" \
 	"$(INTDIR)\mir_memory.sbr" \
 	"$(INTDIR)\mir_thread.sbr" \
 	"$(INTDIR)\options.sbr" \
@@ -418,7 +407,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\acc.obj" \
 	"$(INTDIR)\image_utils.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\mir_dblists.obj" \
 	"$(INTDIR)\mir_memory.obj" \
 	"$(INTDIR)\mir_thread.obj" \
 	"$(INTDIR)\options.obj" \
@@ -523,34 +511,6 @@ SOURCE=.\main.cpp
 
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ENDIF 
-
-SOURCE=.\mir_dblists.cpp
-
-!IF  "$(CFG)" == "avs - Win32 Release"
-
-
-"$(INTDIR)\mir_dblists.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Debug"
-
-
-"$(INTDIR)\mir_dblists.obj"	"$(INTDIR)\mir_dblists.sbr" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Release Unicode"
-
-
-"$(INTDIR)\mir_dblists.obj" : $(SOURCE) "$(INTDIR)"
-
-
-!ELSEIF  "$(CFG)" == "avs - Win32 Debug Unicode"
-
-
-"$(INTDIR)\mir_dblists.obj"	"$(INTDIR)\mir_dblists.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 

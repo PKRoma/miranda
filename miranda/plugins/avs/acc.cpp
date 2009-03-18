@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-extern int g_MyAvatarsCount;
-extern struct protoPicCacheEntry *g_MyAvatars;
 extern FI_INTERFACE *fei;
 
 int GetImageFormat(char *filename);
@@ -47,8 +45,8 @@ typedef struct
 {
 	HANDLE hContact;
 	char proto[64];
-    HANDLE hHook;
-    HANDLE hHookMy;
+	HANDLE hHook;
+	HANDLE hHookMy;
 	HFONT hFont;   // font
 	COLORREF borderColor;
 	COLORREF bkgColor;
@@ -104,10 +102,10 @@ void ResizeFlash(HWND hwnd, ACCData* data)
 		}
 
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 		CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc);
 		CallService(MS_FAVATAR_SETPOS, (WPARAM)&fa, (LPARAM)&rc);
 	}
@@ -119,10 +117,10 @@ void SetBkgFlash(HWND hwnd, ACCData* data)
 		&& ServiceExists(MS_FAVATAR_SETBKCOLOR))
 	{
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 
 		if (data->bkgColor != -1)
 			CallService(MS_FAVATAR_SETBKCOLOR, (WPARAM)&fa, (LPARAM)data->bkgColor);
@@ -140,10 +138,10 @@ void DestroyFlash(HWND hwnd, ACCData* data)
 		&& ServiceExists(MS_FAVATAR_DESTROY))
 	{
 		FLASHAVATAR fa = {0}; 
-        fa.hContact = data->hContact;
+		fa.hContact = data->hContact;
 		fa.cProto = data->proto;
 		fa.hParentWindow = hwnd;
-        fa.id = 1675;
+		fa.id = 1675;
 		CallService(MS_FAVATAR_DESTROY, (WPARAM)&fa, 0);
 	}
 
@@ -163,9 +161,9 @@ void StartFlash(HWND hwnd, ACCData* data)
 	else if (data->proto[0] != '\0')
 	{
 		protoPicCacheEntry *ace = NULL;
-		for(int i = 0; i < g_MyAvatarsCount + 1; i++) 
+		for(int i = 0; i < g_MyAvatars.getCount(); i++) 
 		{
-			if (!strcmp(data->proto, g_MyAvatars[i].szProtoname))
+			if (!lstrcmpA(data->proto, g_MyAvatars[i].szProtoname))
 			{
 				ace = &g_MyAvatars[i];
 				break;

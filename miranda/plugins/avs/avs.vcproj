@@ -376,37 +376,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mir_dblists.cpp">
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mir_memory.cpp">
 				<FileConfiguration
 					Name="Debug Unicode|Win32">
@@ -544,9 +513,6 @@
 				RelativePath="image_utils.h">
 			</File>
 			<File
-				RelativePath="m_acc.h">
-			</File>
-			<File
 				RelativePath="m_avatarhistory.h">
 			</File>
 			<File
@@ -566,9 +532,6 @@
 			</File>
 			<File
 				RelativePath="m_updater.h">
-			</File>
-			<File
-				RelativePath="mir_dblists.h">
 			</File>
 			<File
 				RelativePath="mir_memory.h">

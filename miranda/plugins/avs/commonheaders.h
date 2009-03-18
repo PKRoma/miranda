@@ -39,9 +39,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 #include <win2k.h>
 
-extern "C"
-{
 #include <newpluginapi.h>
+#include <m_system_cpp.h>
 #include <m_clist.h>
 #include <m_clc.h>
 #include <m_clui.h>
@@ -67,13 +66,10 @@ extern "C"
 #include "m_metacontacts.h"
 #include "m_avatarhistory.h"
 
-}
-
 #include "resource.h"
 #include "m_updater.h"
 #include "m_flash.h"
 #include "image_utils.h"
-#include "mir_dblists.h"
 #include "mir_memory.h"
 #include "mir_thread.h"
 #include "poll.h"
@@ -95,19 +91,19 @@ extern "C"
 */
 
 // The same fields as avatarCacheEntry + proto name
-struct protoPicCacheEntry {
-	DWORD cbSize;                   // set to sizeof(struct)
-    HANDLE hContact;                // contacts handle, 0, if it is a protocol avatar
-    HBITMAP hbmPic;                 // bitmap handle of the picutre itself
-    DWORD dwFlags;                  // see above for flag values
-    LONG bmHeight, bmWidth;         // bitmap dimensions
-    time_t t_lastAccess;            // last access time (currently unused, but plugins should still
-                                    // use it whenever they access the avatar. may be used in the future
-                                    // to implement cache expiration
-    LPVOID lpDIBSection;			// unused field
-    char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
-    char szProtoname[100];
+struct protoPicCacheEntry : public avatarCacheEntry
+{
+	__inline void* operator new( size_t size ) {	return calloc( 1, size ); }
+	__inline void operator delete( void* p ) { free( p ); }
+
+	~protoPicCacheEntry();
+
+	char*  szProtoname;
+	TCHAR* tszAccName;
 };
+
+extern OBJLIST<protoPicCacheEntry> g_ProtoPictures, g_MyAvatars;
+
 
 int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode);
 
