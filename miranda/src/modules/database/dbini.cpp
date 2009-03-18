@@ -179,57 +179,68 @@ static INT_PTR CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wP
 
 static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsafeSections, int secur, bool secFN)
 {
-	FILE *fp;
-	int lineLength;
+	FILE *fp = _tfopen(szIniPath, _T("rt"));
+	if ( fp == NULL )
+		return;
+
 	bool warnThisSection = false;
+	char szSection[128]; szSection[0] = 0;
 
-    char szLine[2048];
-	char szSection[128] = "";
-
-	fp = _tfopen(szIniPath, _T("rt"));
 	while(!feof(fp)) {
-		if (fgets(szLine,sizeof(szLine),fp) == NULL) break;
-		lineLength = lstrlenA(szLine);
-		while (lineLength && (BYTE)(szLine[lineLength-1])<=' ') szLine[--lineLength]='\0';
-		if (szLine[0]==';' || szLine[0]<=' ') continue;
+		char szLine[2048];
+		if (fgets(szLine,sizeof(szLine),fp) == NULL) 
+			break;
+
+		int lineLength = lstrlenA(szLine);
+		while (lineLength && (BYTE)(szLine[lineLength-1])<=' ')
+			szLine[--lineLength]='\0';
+
+		if (szLine[0]==';' || szLine[0]<=' ') 
+			continue;
+
 		if (szLine[0]=='[') {
 			char *szEnd = strchr(szLine+1,']');
-			if (szEnd == NULL) continue;
+			if (szEnd == NULL)
+				continue;
+
 			if (szLine[1] == '!')
 				szSection[0] = '\0';
 			else {
 				lstrcpynA(szSection,szLine+1,min(sizeof(szSection),szEnd-szLine));
-                switch (secur)
-                {
-                case 0:
-                    warnThisSection = false;
-                    break;
+				switch (secur) {
+				case 0:
+					warnThisSection = false;
+					break;
 
-                case 1:
+				case 1:
 					warnThisSection = !IsInSpaceSeparatedList(szSection, szSafeSections);
-                    break;
+					break;
 
-                case 2:
+				case 2:
 					warnThisSection = !IsInSpaceSeparatedList(szSection, szUnsafeSections);
-                    break;
+					break;
 
-                default:
-				    warnThisSection = true;
-                    break;
-                }
+				default:
+					warnThisSection = true;
+					break;
+				}
 				if (secFN) warnThisSection=0;
 			}
+			continue;
 		}
-		else {
-			char *szValue;
-			char szName[128];
-			struct warnSettingChangeInfo_t warnInfo;
 
-			if(szSection[0]=='\0') continue;
-			szValue=strchr(szLine,'=');
-			if(szValue==NULL) continue;
-			lstrcpynA(szName,szLine,min(sizeof(szName),szValue-szLine+1));
-			szValue++;
+		if(szSection[0]=='\0')
+			continue;
+
+		char *szValue=strchr(szLine,'=');
+		if ( szValue == NULL )
+			continue;
+
+		char szName[128];
+		lstrcpynA(szName,szLine,min(sizeof(szName),szValue-szLine+1));
+		szValue++;
+		{
+			warnSettingChangeInfo_t warnInfo;
 			warnInfo.szIniPath=szIniPath;
 			warnInfo.szName=szName;
 			warnInfo.szSafeSections=szSafeSections;
@@ -238,61 +249,64 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 			warnInfo.szValue=szValue;
 			warnInfo.warnNoMore=0;
 			warnInfo.cancel=0;
-			if(!warnThisSection || IDNO!=DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_WARNINICHANGE),NULL,WarnIniChangeDlgProc,(LPARAM)&warnInfo)) {
-				if(warnInfo.cancel) break;
-				if(warnInfo.warnNoMore) warnThisSection=0;
-				switch(szValue[0]) {
-					case 'b':
-					case 'B':
-						DBWriteContactSettingByte(NULL,szSection,szName,(BYTE)strtol(szValue+1,NULL,0));
-						break;
-					case 'w':
-					case 'W':
-						DBWriteContactSettingWord(NULL,szSection,szName,(WORD)strtol(szValue+1,NULL,0));
-						break;
-					case 'd':
-					case 'D':
-						DBWriteContactSettingDword(NULL,szSection,szName,(DWORD)strtoul(szValue+1,NULL,0));
-						break;
-					case 'l':
-					case 'L':
-						DBDeleteContactSetting(NULL,szSection,szName);
-						break;
-					case 's':
-					case 'S':
-						DBWriteContactSettingString(NULL,szSection,szName,szValue+1);
-						break;
-					case 'u':
-					case 'U':
-						DBWriteContactSettingStringUtf(NULL,szSection,szName,szValue+1);
-						break;
-					case 'n':
-					case 'N':
-						{	PBYTE buf;
-							int len;
-							char *pszValue,*pszEnd;
-							DBCONTACTWRITESETTING cws;
+			if(warnThisSection && IDNO==DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_WARNINICHANGE),NULL,WarnIniChangeDlgProc,(LPARAM)&warnInfo))
+				continue;
+			if(warnInfo.cancel)
+				break;
+			if(warnInfo.warnNoMore)
+				warnThisSection=0;
+		}
 
-							buf=(PBYTE)mir_alloc(lstrlenA(szValue+1));
-							for(len=0,pszValue=szValue+1;;len++) {
-								buf[len]=(BYTE)strtol(pszValue,&pszEnd,0x10);
-								if(pszValue==pszEnd) break;
-								pszValue=pszEnd;
-							}
-							cws.szModule=szSection;
-							cws.szSetting=szName;
-							cws.value.type=DBVT_BLOB;
-							cws.value.pbVal=buf;
-							cws.value.cpbVal=len;
-							CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
-							mir_free(buf);
-						}
-						break;
-					default:
-						MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s or n."),TranslateT("Install Database Settings"),MB_OK);
-						break;
+		switch(szValue[0]) {
+		case 'b':
+		case 'B':
+			DBWriteContactSettingByte(NULL,szSection,szName,(BYTE)strtol(szValue+1,NULL,0));
+			break;
+		case 'w':
+		case 'W':
+			DBWriteContactSettingWord(NULL,szSection,szName,(WORD)strtol(szValue+1,NULL,0));
+			break;
+		case 'd':
+		case 'D':
+			DBWriteContactSettingDword(NULL,szSection,szName,(DWORD)strtoul(szValue+1,NULL,0));
+			break;
+		case 'l':
+		case 'L':
+			DBDeleteContactSetting(NULL,szSection,szName);
+			break;
+		case 's':
+		case 'S':
+			DBWriteContactSettingString(NULL,szSection,szName,szValue+1);
+			break;
+		case 'u':
+		case 'U':
+			DBWriteContactSettingStringUtf(NULL,szSection,szName,szValue+1);
+			break;
+		case 'n':
+		case 'N':
+			{	PBYTE buf;
+				int len;
+				char *pszValue,*pszEnd;
+				DBCONTACTWRITESETTING cws;
+
+				buf=(PBYTE)mir_alloc(lstrlenA(szValue+1));
+				for(len=0,pszValue=szValue+1;;len++) {
+					buf[len]=(BYTE)strtol(pszValue,&pszEnd,0x10);
+					if(pszValue==pszEnd) break;
+					pszValue=pszEnd;
 				}
+				cws.szModule=szSection;
+				cws.szSetting=szName;
+				cws.value.type=DBVT_BLOB;
+				cws.value.pbVal=buf;
+				cws.value.cpbVal=len;
+				CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)(HANDLE)NULL,(LPARAM)&cws);
+				mir_free(buf);
 			}
+			break;
+		default:
+			MessageBox(NULL,TranslateT("Invalid setting type. The first character of every value must be b, w, d, l, s or n."),TranslateT("Install Database Settings"),MB_OK);
+			break;
 		}
 	}
 	fclose(fp);
