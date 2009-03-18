@@ -163,8 +163,8 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 			}
 		} 
 
-        else if (p->cle.hContact != 0 && (p->cle.flags & CLEF_ONLYAFEW)) 
-        {
+		else if (p->cle.hContact != 0 && (p->cle.flags & CLEF_ONLYAFEW)) 
+		{
 			g_CluiData.iIconNotify = p->imlIconIndex;
 			g_CluiData.hUpdateContact = p->cle.hContact;
 		}
@@ -393,12 +393,15 @@ int EventArea_Create(HWND hCluiWnd)
   EventArea_ConfigureEventArea();
   return 0;
 }
+
 int EventArea_UnloadModule()
 {
-    // remove frame window
-    // remove all events data from menu
-    return 0;
+	// remove frame window
+	// remove all events data from menu
+	DestroyMenu( g_CluiData.hMenuNotify );
+	return 0;
 }
+
 #define IDC_NOTIFYBUTTON 1900
 static LRESULT CALLBACK EventArea_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
