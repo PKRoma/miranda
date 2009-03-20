@@ -259,9 +259,14 @@ HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting,
 
 	if ( nick->type && nick->pszVal[0] ) {
 		WriteVariant( hContact, "CList", "MyHandle", nick );
-		AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, nick->pszVal );
-	} else
-		AddMessage( LPGEN("Added %s contact %s"), pszProtoName, pszUserID );
+		if (nick->type == DBVT_UTF8) {
+			char *tmp = mir_utf8decodeA(nick->pszVal);
+			AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, tmp );
+			mir_free(tmp);
+		}
+		else AddMessage( LPGEN("Added %s contact %s, '%s'"), pszProtoName, pszUserID, nick->pszVal );
+	}
+	else AddMessage( LPGEN("Added %s contact %s"), pszProtoName, pszUserID );
 
 	FreeVariant( id );
 	FreeVariant( nick );
@@ -306,8 +311,11 @@ int CreateGroup(BYTE type, const char* name, HANDLE hContact)
 		if ( !lstrcmp(dbv.ptszVal + 1, tszGrpName + 1 )) {
 			if (hContact)
 				WriteVariant( hContact, "CList", "Group", &dbv );
-			else
-				AddMessage( LPGEN("Skipping duplicate group %s."), name);
+			else {
+				char *str = mir_t2a(tszGrpName + 1);
+				AddMessage( LPGEN("Skipping duplicate group %s."), str);
+				mir_free(str);
+			}
 
 			DBFreeVariant(&dbv);
 			return 0;
