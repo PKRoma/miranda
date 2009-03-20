@@ -53,14 +53,6 @@ BOOL CALLBACK ProgressPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPara
 		{
 			int i=SendDlgItemMessage(hdlg,IDC_STATUS,LB_ADDSTRING,0,lParam);
 			SendDlgItemMessage(hdlg,IDC_STATUS,LB_SETTOPINDEX,i,0);
-			#ifdef _DEBUG
-			{
-				FILE *stream;
-				stream = fopen("Import Debug.log", "a");
-				fprintf(stream, "%s\n", (char*)lParam);
-				fclose(stream);
-			}
-			#endif
 		}
 		break;
 
@@ -91,6 +83,16 @@ void AddMessage( const char* fmt, ... )
 	va_start( args, fmt );
 
 	mir_vsnprintf( msgBuf, sizeof(msgBuf), Translate(fmt), args );
+
+	#ifdef _LOGGING
+	{
+		FILE *stream;
+		stream = fopen("Import Debug.log", "a");
+		fprintf(stream, "%s\n", msgBuf);
+		fclose(stream);
+	}
+	#endif
+
 	#if defined( _UNICODE )
 	{	TCHAR* str = mir_a2t( msgBuf );
 		SendMessage( hdlgProgress, PROGM_ADDMESSAGE, 0, ( LPARAM )str );

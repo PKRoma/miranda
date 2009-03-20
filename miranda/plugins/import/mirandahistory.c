@@ -1,5 +1,5 @@
 /*
-Miranda ICQ: the free icq client for MS Windows 
+Miranda ICQ: the free icq client for MS Windows
 Copyright (C) 2000-2  Richard Hughes, Roland Rabien & Tristan Van de Vreede
 
 This program is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <time.h>
 #include "resource.h"
 #include "import.h"
-#include "../../miranda32/database/m_database.h"
 
 BOOL CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
 BOOL CALLBACK FinishedPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam);
@@ -32,13 +31,6 @@ static void OldMirandaHistoryImport(HWND hdlgProgress);
 HANDLE HContactFromUIN(DWORD uin);
 HANDLE HistoryImportFindContact(HWND hdlgProgress,DWORD uin,int addUnknown);
 static DWORD importOptions;
-#define IOPT_ADDUNKNOWN 1
-#define IOPT_MSGSENT    2
-#define IOPT_MSGRECV    4
-#define IOPT_URLSENT    8
-#define IOPT_URLRECV    16
-#define IOPT_AUTHREQ    32
-#define IOPT_ADDED      64
 
 BOOL CALLBACK MirandaHistoryPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {

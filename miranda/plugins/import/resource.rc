@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include <windows.h>\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"
@@ -101,7 +101,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Miranda has found Mirabilis ICQ databases corresponding to the following ICQ numbers. Please select the one you wish to import, or click ""Other Database"" if your database is not listed.",
                     IDC_STATIC,5,5,210,24
-    LISTBOX         IDC_LIST,5,31,210,36,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_LIST,5,31,210,36,LBS_SORT | LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Other Database...",IDC_OTHER,149,69,66,14
     RTEXT           "&Filename:",IDC_STATIC,5,88,34,8
@@ -116,7 +116,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Miranda has found Miranda profiles with the following names. Please select the one you wish to import, or click ""Other Profile"" if your profile is not listed, or if the list is empty.",
                     IDC_STATIC,5,10,210,24
-    LISTBOX         IDC_LIST,5,36,210,36,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_LIST,5,36,210,36,LBS_SORT | LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Other Profile...",IDC_OTHER,149,74,66,14
     RTEXT           "&Filename:",IDC_STATIC,5,93,34,8
@@ -128,10 +128,10 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_3DLOOK | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Now importing...",IDC_STATIC,5,11,62,8
-    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH | 
+    CONTROL         "Progress1",IDC_PROGRESS,"msctls_progress32",PBS_SMOOTH |
                     WS_BORDER,5,24,210,10
-    LISTBOX         IDC_STATUS,5,38,210,61,NOT LBS_NOTIFY | 
-                    LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | LBS_NOSEL | 
+    LISTBOX         IDC_STATUS,5,38,210,61,NOT LBS_NOTIFY |
+                    LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | LBS_NOSEL |
                     WS_VSCROLL | WS_TABSTOP
 END
 
@@ -181,7 +181,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "New contacts && groups",IDC_CONTACTS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,16,100,10
-    CONTROL         "System history",IDC_SYSTEM,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "System history",IDC_SYSTEM,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,120,16,98,10
     LTEXT           "Select items to import:",IDC_ALL,10,3,201,10,SS_NOTIFY
     CTEXT           "Incoming",IDC_INCOMING,2,34,86,10,SS_NOTIFY
@@ -202,9 +202,9 @@ BEGIN
                     68,10,10
     CONTROL         "",IDC_OUT_OTHER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     170,80,10,10
-    CONTROL         "Only since:",IDC_SINCE,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Only since:",IDC_SINCE,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,10,99,100,10
-    CONTROL         "",IDC_DATETIMEPICKER,"SysDateTimePick32",DTS_RIGHTALIGN | 
+    CONTROL         "",IDC_DATETIMEPICKER,"SysDateTimePick32",DTS_RIGHTALIGN |
                     WS_DISABLED | WS_TABSTOP,120,97,81,15
     CTEXT           "Messages",IDC_MSG,54,44,112,8,SS_NOTIFY
     CTEXT           "URLs",IDC_URL,54,56,112,8,SS_NOTIFY
@@ -221,7 +221,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_IMPORTTYPE, DIALOG
     BEGIN
@@ -338,8 +338,8 @@ IDI_IMPORT              ICON                    "import.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,0,1
- PRODUCTVERSION 0,7,0,1
+ FILEVERSION 0,8,0,1
+ PRODUCTVERSION 0,8,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -357,12 +357,12 @@ BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", " "
             VALUE "FileDescription", "Miranda IM Import Plugin"
-            VALUE "FileVersion", "0.8.0.0"
+            VALUE "FileVersion", "0.8.0.1"
             VALUE "InternalName", "import"
-            VALUE "LegalCopyright", "Copyright © 2000-2007,  Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan"
+            VALUE "LegalCopyright", "Copyright © 2000-2009,  Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan"
             VALUE "OriginalFilename", "import.dll"
             VALUE "ProductName", "Miranda IM"
-            VALUE "ProductVersion", "0.8.0.0"
+            VALUE "ProductVersion", "0.8.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -385,5 +385,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-

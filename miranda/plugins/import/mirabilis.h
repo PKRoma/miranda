@@ -34,8 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // ======================
 
 HANDLE HistoryImportFindContact(HWND hdlgProgress,DWORD uin,int addUnknown);
-int CreateGroup(HWND hdlgProgress, BYTE type, const char* name);
-void Utf8ToAnsi(const char *szIn, char *szOut, int cchOut);
 
 // =====================
 // == LOCAL FUNCTIONS ==

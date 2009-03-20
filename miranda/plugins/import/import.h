@@ -20,6 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+
+//#define _LOGGING   1
+
 #define MIRANDA_VER 0x0700
 
 #define _USE_32BIT_TIME_T
@@ -90,8 +93,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IOPT_MSGRECV    4
 #define IOPT_URLSENT    8
 #define IOPT_URLRECV    16
+#define IOPT_AUTHREQ    32
+#define IOPT_ADDED      64
+#define IOPT_FILESENT   128
+#define IOPT_FILERECV   256
+#define IOPT_OTHERSENT  512
+#define IOPT_OTHERRECV  1024
+#define IOPT_SYSTEM     2048
+#define IOPT_CONTACTS   4096
+#define IOPT_GROUPS     8192
+
+
+struct MM_INTERFACE mmi;
+struct UTF8_INTERFACE utfi;
 
 void AddMessage( const char* fmt, ... );
+
+int CreateGroup(BYTE type, const char* name, HANDLE hContact);
 
 extern HWND hdlgProgress;
 
