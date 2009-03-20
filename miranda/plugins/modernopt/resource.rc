@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "../../src/resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -74,9 +73,17 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,271,265,50,14
     PUSHBUTTON      "Apply",IDC_BTN_APPLY,325,265,50,14,WS_DISABLED
     CONTROL         "View help online",IDC_BTN_HELP,"Hyperlink",WS_TABSTOP,7,269,118,9
-    PUSHBUTTON      "Advanced",IDC_BTN_EXPERT,160,265,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Advanced",IDC_BTN_EXPERT,146,265,64,14,NOT WS_VISIBLE
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
 IDI_BIG_ADVANCED        ICON                    "res/big_advanced.ico"
 IDI_BIG_BUDDYLIST       ICON                    "res/big_buddylist.ico"
 IDI_BIG_IGNORE          ICON                    "res/big_ignore.ico"
@@ -85,6 +92,10 @@ IDI_BIG_MODULES         ICON                    "res/big_modules.ico"
 IDI_BIG_NETWORK         ICON                    "res/big_network.ico"
 IDI_BIG_SKINS           ICON                    "res/big_skins.ico"
 IDI_BIG_STATUS          ICON                    "res/big_status.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -95,6 +106,4 @@ IDI_BIG_STATUS          ICON                    "res/big_status.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-#endif
 

@@ -9,11 +9,9 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <windows.h>
-#include "../../include/statusmodes.h"
-
+#include "../../include/statusmodes.h"
 #include <version.h>
-
-
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1377,8 +1375,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,25,174,10
     CONTROL         "Create new windows in minimized state",IDC_CREATEMIN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,37,174,10
-    CONTROL         "Check1",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,49,174,10
+    CONTROL         "Check1",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | NOT 
+                    WS_VISIBLE | WS_TABSTOP,10,49,174,10
     CONTROL         "Send on Shift+Enter",IDC_SENDSHIFTENTER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,89,174,10
     CONTROL         "Send message on Enter",IDC_SENDENTER,"Button",

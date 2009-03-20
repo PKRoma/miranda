@@ -470,6 +470,38 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\Res\big_advanced.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_buddylist.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_ignore.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_message.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_modules.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_network.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_skins.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\big_status.ico"
+				>
+			</File>
+			<File
 				RelativePath="resource.rc"
 				>
 			</File>
