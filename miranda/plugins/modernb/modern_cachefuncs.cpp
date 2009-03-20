@@ -175,7 +175,7 @@ void CSmileyString::DestroySmileyList()
 
 	if ( plText == NULL ) return;
 
-	//if ( IsBadReadPtr( plText, sizeof(SortedList) ) )
+	if ( IsBadReadPtr( plText, sizeof(SortedList) ) )
 	{
 		plText = NULL;
 		return;
@@ -190,7 +190,7 @@ void CSmileyString::DestroySmileyList()
 			{
 				ClcContactTextPiece *piece = (ClcContactTextPiece *) plText->items[i];
 
-				//if ( !IsBadWritePtr(piece, sizeof(ClcContactTextPiece) ) )
+				if ( !IsBadWritePtr(piece, sizeof(ClcContactTextPiece) ) )
 				{
 					if (piece->type==TEXT_PIECE_TYPE_SMILEY && piece->smiley != g_hListeningToIcon)
 						DestroyIcon_protect(piece->smiley);
