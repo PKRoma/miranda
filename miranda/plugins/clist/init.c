@@ -123,7 +123,7 @@ static int OnOptsInit(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // menu status services
 
-static int GetStatusMode(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	return pcli->currentDesiredStatusMode;
 }
