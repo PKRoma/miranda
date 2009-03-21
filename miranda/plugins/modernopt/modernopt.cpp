@@ -34,7 +34,7 @@ extern HMODULE hInst;
 static HANDLE hevtModernOpt_Initialize = 0;
 
 static HWND hwndModernOpt = NULL;
-static BOOL CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
+static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam);
 
 struct ModernOptionsObject
 {
@@ -69,9 +69,9 @@ struct ModernOptionsData
 
 ////////////////////////////////////////////////////////////////////////////////
 // Forwards
-static int svcModernOpt_Show(WPARAM wParam, LPARAM lParam);
-static int svcModernOpt_SelectPage(WPARAM wParam, LPARAM lParam);
-static int svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcModernOpt_Show(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcModernOpt_SelectPage(WPARAM wParam, LPARAM lParam);
+static INT_PTR svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam);
 static int hookModernOpt_Initialize(WPARAM wParam, LPARAM lParam);
 
 static void ModernOptUI_ShowPage(HWND hwndDlg, struct ModernOptionsData *dat, int iPage);
@@ -180,9 +180,9 @@ static void sttNotifyPages(struct ModernOptionsData *dat, int code)
 	}
 }
 
-static BOOL CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ModernOptionsData *dat = (struct ModernOptionsData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	struct ModernOptionsData *dat = (struct ModernOptionsData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	int i;
 	HWND hwndCtrl;
@@ -224,7 +224,7 @@ static BOOL CALLBACK ModernOptDlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LP
 					i, TRUE);
 			}
 
-		SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 		ModernOptUI_SelectSection(hwndDlg, dat, 0);
 
@@ -457,7 +457,7 @@ static void ModernOptUI_SelectSection(HWND hwndDlg, struct ModernOptionsData *da
 
 ////////////////////////////////////////////////////////////////////////////////
 // Services
-static int svcModernOpt_Show(WPARAM wParam, LPARAM lParam)
+static INT_PTR svcModernOpt_Show(WPARAM wParam, LPARAM lParam)
 {
 	if (!hwndModernOpt) {
 		ModernOptionsData *dat = new ModernOptionsData;
@@ -472,14 +472,14 @@ static int svcModernOpt_Show(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int svcModernOpt_SelectPage(WPARAM wParam, LPARAM lParam)
+static INT_PTR svcModernOpt_SelectPage(WPARAM wParam, LPARAM lParam)
 {
 	struct ModernOptionsData *dat;
 
 	if (!hwndModernOpt)
 		return 0;
 
-	dat = (struct ModernOptionsData *)GetWindowLong(hwndModernOpt, GWL_USERDATA);
+	dat = (struct ModernOptionsData *)GetWindowLongPtr(hwndModernOpt, GWLP_USERDATA);
 	if (!dat)
 		return 0;
 
@@ -498,7 +498,7 @@ static int svcModernOpt_SelectPage(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam)
+static INT_PTR svcModernOpt_AddObject(WPARAM wParam, LPARAM lParam)
 {
 	struct ModernOptionsData *dat = (struct ModernOptionsData *)wParam;
 	MODERNOPTOBJECT *obj = (MODERNOPTOBJECT *)lParam;

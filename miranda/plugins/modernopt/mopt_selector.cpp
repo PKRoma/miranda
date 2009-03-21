@@ -227,9 +227,9 @@ static void CreatePreview(TSelectorData *sd, TCHAR *fn, LPDRAWITEMSTRUCT lps)
 	DeleteDC(hdc);
 }
 
-BOOL CALLBACK ModernOptSelector_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ModernOptSelector_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, LPARAM lParam)
 {
-	TSelectorData *sd = (TSelectorData *)GetWindowLong(hwndDlg, GWL_USERDATA);
+	TSelectorData *sd = (TSelectorData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	MODERNOPTOBJECT *&obj = sd->obj;
 
 	switch (msg) {
@@ -240,7 +240,7 @@ BOOL CALLBACK ModernOptSelector_DlgProc(HWND hwndDlg, UINT  msg, WPARAM wParam, 
 
 			sd->obj = (MODERNOPTOBJECT *)lParam;
 			sd->active = sttGetActiveSkin(obj);
-			SetWindowLong(hwndDlg, GWL_USERDATA, (LONG_PTR)sd);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)sd);
 
 			TCHAR *s = mir_a2t(obj->lpzThemeExtension);
 			BuildSkinList(GetDlgItem(hwndDlg, IDC_SKINLIST), s);
