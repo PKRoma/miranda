@@ -395,7 +395,7 @@ XCHAR *GetInternalVariable(XCHAR *key, int keyLength, HANDLE hContact)
 }
 
 template<typename XCHAR>
-XCHAR *GetVariableFromArray(REPLACEVARSARRAY *vars, XCHAR *key, int keyLength, HANDLE hContact, bool *bFree)
+XCHAR *GetVariableFromArray(REPLACEVARSARRAY *vars, XCHAR *key, size_t keyLength, HANDLE hContact, bool *bFree)
 {
 	*bFree = false;
 	for (REPLACEVARSARRAY *var = vars; var && var->lptzKey; ++var)

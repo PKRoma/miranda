@@ -75,7 +75,7 @@ int BrowseForFolder(HWND hwnd,char *szPath)
 {
 	BROWSEINFOA bi={0};
 	LPMALLOC pMalloc;
-	PIDLIST_ABSOLUTE pidlResult;
+	LPITEMIDLIST pidlResult;
 	int result=0;
 
 	if(SUCCEEDED(OleInitialize(NULL))) {
