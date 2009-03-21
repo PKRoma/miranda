@@ -136,7 +136,7 @@ static int HttpGatewaySendGet(struct NetlibConnection *nlc)
  * Gena01 - this is the old POST method, I renamed it and left it intact for ICQ support. it's called
  *          when we have both GET and POST URLs specified.
  */
-int NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,int len,int flags)
+INT_PTR NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,int len,int flags)
 {
 	NETLIBHTTPREQUEST nlhrSend={0},*nlhrReply;
 	NETLIBHTTPHEADER httpHeaders[4];
@@ -221,7 +221,7 @@ int NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,int le
 	return len;
 }
 
-int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags)
+INT_PTR NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags)
 {
 		struct NetlibHTTPProxyPacketQueue *p;
 
@@ -507,7 +507,7 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu
 	return 1;
 }
 
-int NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBHTTPPROXYINFO *nlhpi=(NETLIBHTTPPROXYINFO*)lParam;
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
@@ -527,7 +527,7 @@ int NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam)
+INT_PTR NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam)
 {
 	struct NetlibUser * nu = (struct NetlibUser*)wParam;
 	if (GetNetlibHandleType(nu)!=NLH_USER) return ERROR_INVALID_PARAMETER;
@@ -538,7 +538,7 @@ int NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int NetlibHttpSetPollingTimeout(WPARAM wParam, LPARAM lParam)
+INT_PTR NetlibHttpSetPollingTimeout(WPARAM wParam, LPARAM lParam)
 {
 	int oldTimeout;
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;

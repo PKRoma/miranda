@@ -90,7 +90,7 @@ void NetlibLeaveNestedCS(struct NetlibNestedCriticalSection *nlncs)
 	}
 }
 
-static int GetNetlibUserSettingInt(const char *szUserModule,const char *szSetting,int defValue)
+static INT_PTR GetNetlibUserSettingInt(const char *szUserModule,const char *szSetting,int defValue)
 {
 	DBVARIANT dbv;
 	if(DBGetContactSetting(NULL,szUserModule,szSetting,&dbv)
@@ -118,7 +118,7 @@ static char *GetNetlibUserSettingString(const char *szUserModule,const char *szS
 	}
 }
 
-static int NetlibRegisterUser(WPARAM, LPARAM lParam)
+static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 {
 	NETLIBUSER *nlu=(NETLIBUSER*)lParam;
 	struct NetlibUser *thisUser;
@@ -128,7 +128,7 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	   || (!(nlu->flags&NUF_NOOPTIONS) && nlu->szDescriptiveName==NULL)
 	   || (nlu->flags&NUF_HTTPGATEWAY && (nlu->pfnHttpGatewayInit==NULL))) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 
 	EnterCriticalSection(&csNetlibUser);
@@ -136,7 +136,7 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 		if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->szSettingsModule)) {
 			LeaveCriticalSection(&csNetlibUser);
 			SetLastError(ERROR_DUP_NAME);
-			return (int)(HANDLE)NULL;
+			return (INT_PTR)(HANDLE)NULL;
 		}
 	LeaveCriticalSection(&csNetlibUser);
 
@@ -151,7 +151,7 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	   || (nlu->szDescriptiveName && thisUser->user.ptszDescriptiveName ==NULL)
 	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 	if (nlu->szHttpGatewayHello)
 		thisUser->user.szHttpGatewayHello=mir_strdup(nlu->szHttpGatewayHello);
@@ -187,10 +187,10 @@ static int NetlibRegisterUser(WPARAM, LPARAM lParam)
 	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
 	netlibUser[netlibUserCount-1]=thisUser;
 	LeaveCriticalSection(&csNetlibUser);
-	return (int)thisUser;
+	return (INT_PTR)thisUser;
 }
 
-static int NetlibGetUserSettings(WPARAM wParam,LPARAM lParam)
+static INT_PTR NetlibGetUserSettings(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBUSERSETTINGS *nlus=(NETLIBUSERSETTINGS*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
@@ -203,7 +203,7 @@ static int NetlibGetUserSettings(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-static int NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
+static INT_PTR NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBUSERSETTINGS *nlus=(NETLIBUSERSETTINGS*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
@@ -216,7 +216,7 @@ static int NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
-int NetlibCloseHandle(WPARAM wParam, LPARAM)
+INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 {
 	switch(GetNetlibHandleType(wParam)) {
 		case NLH_USER:
@@ -314,7 +314,7 @@ int NetlibCloseHandle(WPARAM wParam, LPARAM)
 	return 1;
 }
 
-static int NetlibGetSocket(WPARAM wParam, LPARAM)
+static INT_PTR NetlibGetSocket(WPARAM wParam, LPARAM)
 {
 	SOCKET s;
 	if(wParam==0) {
@@ -325,10 +325,10 @@ static int NetlibGetSocket(WPARAM wParam, LPARAM)
 		WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
 		switch(GetNetlibHandleType(wParam)) {
 			case NLH_CONNECTION:
-				s=(int)((struct NetlibConnection*)wParam)->s;
+				s=((struct NetlibConnection*)wParam)->s;
 				break;
 			case NLH_BOUNDPORT:
-				s=(int)((struct NetlibBoundPort*)wParam)->s;
+				s=((struct NetlibBoundPort*)wParam)->s;
 				break;
 			default:
 				s=INVALID_SOCKET;
@@ -340,7 +340,7 @@ static int NetlibGetSocket(WPARAM wParam, LPARAM)
 	return s;
 }
 
-int NetlibShutdown(WPARAM wParam, LPARAM)
+INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 {
 	if (wParam) 
 	{
@@ -370,7 +370,7 @@ int NetlibShutdown(WPARAM wParam, LPARAM)
 }
 
 static char szHexDigits[]="0123456789ABCDEF";
-int NetlibHttpUrlEncode(WPARAM, LPARAM lParam)
+INT_PTR NetlibHttpUrlEncode(WPARAM,LPARAM lParam)
 {
 	unsigned char *szOutput,*szInput=(unsigned char*)lParam;
 	unsigned char *pszIn,*pszOut;
@@ -378,7 +378,7 @@ int NetlibHttpUrlEncode(WPARAM, LPARAM lParam)
 
 	if(szInput==NULL) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(char*)NULL;
+		return (INT_PTR)(char*)NULL;
 	}
 	for(outputLen=0,pszIn=szInput;*pszIn;pszIn++) {
 		if(isalnum(*pszIn) || *pszIn==' ') outputLen++;
@@ -387,7 +387,7 @@ int NetlibHttpUrlEncode(WPARAM, LPARAM lParam)
 	szOutput=(unsigned char*)HeapAlloc(GetProcessHeap(),0,outputLen+1);
 	if(szOutput==NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
-		return (int)(unsigned char*)NULL;
+		return (INT_PTR)(unsigned char*)NULL;
 	}
 	for(pszOut=szOutput,pszIn=szInput;*pszIn;pszIn++) {
 		if(isalnum(*pszIn)) *pszOut++=*pszIn;
@@ -399,11 +399,11 @@ int NetlibHttpUrlEncode(WPARAM, LPARAM lParam)
 		}
 	}
 	*pszOut='\0';
-	return (int)szOutput;
+	return (INT_PTR)szOutput;
 }
 
 static char base64chars[]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-int NetlibBase64Encode(WPARAM, LPARAM lParam)
+INT_PTR NetlibBase64Encode(WPARAM, LPARAM lParam)
 {
 	NETLIBBASE64 *nlb64=(NETLIBBASE64*)lParam;
 	int iIn;
@@ -453,7 +453,7 @@ static BYTE Base64CharToInt(char c)
 	return 255;
 }
 
-int NetlibBase64Decode(WPARAM, LPARAM lParam)
+INT_PTR NetlibBase64Decode(WPARAM, LPARAM lParam)
 {
 	NETLIBBASE64 *nlb64=(NETLIBBASE64*)lParam;
 	char *pszIn;

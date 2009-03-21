@@ -39,10 +39,10 @@ typedef int (*MIRANDAHOOKPARAM)(WPARAM,LPARAM,LPARAM);
 typedef int (*MIRANDAHOOKOBJ)(void*,WPARAM,LPARAM);
 typedef int (*MIRANDAHOOKOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
 
-typedef int (*MIRANDASERVICE)(WPARAM,LPARAM);
-typedef int (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
-typedef int (*MIRANDASERVICEOBJ)(void*,LPARAM,LPARAM);
-typedef int (*MIRANDASERVICEOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICE)(WPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEPARAM)(WPARAM,LPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEOBJ)(void*,LPARAM,LPARAM);
+typedef INT_PTR (*MIRANDASERVICEOBJPARAM)(void*,WPARAM,LPARAM,LPARAM);
 
 typedef struct
 {
@@ -232,7 +232,7 @@ Returns CALLSERVICE_NOTFOUND if no service function called 'name' has been
 created, or the value the service function returned otherwise.
 */
 #define CALLSERVICE_NOTFOUND      ((int)0x80000000)
-int CallService(const char *name,WPARAM wParam,LPARAM lParam);
+INT_PTR CallService(const char *name,WPARAM wParam,LPARAM lParam);
 
 /* ServiceExists
 Finds if a service with the given name exists
@@ -244,7 +244,7 @@ int ServiceExists(const char *name);
 Calls a given service executed within the context of the main thread
 only useful to multi threaded modules calling thread unsafe services!
 */
-int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
+INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
 
 /* CallFunctionAsync
 Calls a given function pointer, it doesn't go thru the core at all, it is

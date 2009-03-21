@@ -155,7 +155,7 @@ void fnSortContacts(void)
 	resortTimerId = SetTimer(NULL, 0, 500, SortContactsTimer);
 }
 
-int ContactChangeGroup(WPARAM wParam, LPARAM lParam)
+INT_PTR ContactChangeGroup(WPARAM wParam, LPARAM lParam)
 {
 	CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), NULL, NULL };
 

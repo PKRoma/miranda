@@ -171,7 +171,7 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 	return ( cacheEntry == NULL ) ? mir_tstrdup( buffer ) : buffer;
 }
 
-int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
+INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 {
 	CONTACTINFO ci;
 	ClcCacheEntryBase* cacheEntry = NULL;
@@ -185,10 +185,10 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 		cacheEntry = cli.pfnGetCacheEntry(hContact);
 		#if defined( _UNICODE )
 			if ( cacheEntry->szName )
-				return (int)cacheEntry->szName;
+				return (INT_PTR)cacheEntry->szName;
 		#else
 			if ( cacheEntry->name )
-				return (int)cacheEntry->name;
+				return (INT_PTR)cacheEntry->name;
 		#endif
 	}
 	ZeroMemory(&ci, sizeof(ci));
@@ -209,15 +209,15 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				#else
 					buffer = ci.pszVal;
 				#endif
-				return (int) buffer;
+				return (INT_PTR) buffer;
 			}
 			else {
 				cacheEntry->name = ci.pszVal;
 				#if defined( _UNICODE )
 					cacheEntry->szName = u2a( ci.pszVal );
-					return (int)cacheEntry->szName;
+					return (INT_PTR)cacheEntry->szName;
 				#else
-					return (int)cacheEntry->name;
+					return (INT_PTR)cacheEntry->name;
 				#endif
 			}
 		}
@@ -225,7 +225,7 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 			if (cacheEntry == NULL) {
 				buffer = ( char* )mir_alloc(15);
 				_ltoa(ci.dVal, buffer, 10 );
-				return (int) buffer;
+				return (INT_PTR) buffer;
 			}
 			else {
 				buffer = ( char* )mir_alloc(15);
@@ -236,15 +236,15 @@ int GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				#else
 					cacheEntry->name = buffer;
 				#endif
-				return (int) buffer;
+				return (INT_PTR) buffer;
 	}	}	}
 
 	CallContactService(hContact, PSS_GETINFO, SGIF_MINIMAL, 0);
 	buffer = Translate("(Unknown Contact)");
-	return (int) buffer;
+	return (INT_PTR) buffer;
 }
 
-int InvalidateDisplayName(WPARAM wParam, LPARAM)
+INT_PTR InvalidateDisplayName(WPARAM wParam, LPARAM)
 {
 	cli.pfnInvalidateDisplayNameCacheEntry((HANDLE)wParam);
 	return 0;

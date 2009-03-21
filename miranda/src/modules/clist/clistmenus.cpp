@@ -188,13 +188,13 @@ wparam=handle to the menu item returned by MS_CLIST_ADDCONTACTMENUITEM
 return 0 on success.
 */
 
-static int RemoveMainMenuItem(WPARAM wParam, LPARAM)
+static INT_PTR RemoveMainMenuItem(WPARAM wParam, LPARAM)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int BuildMainMenu(WPARAM, LPARAM)
+static INT_PTR BuildMainMenu(WPARAM, LPARAM)
 {
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hMainMenuObject;
@@ -204,10 +204,10 @@ static int BuildMainMenu(WPARAM, LPARAM)
 
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 	DrawMenuBar((HWND)CallService("CLUI/GetHwnd",(WPARAM)0,(LPARAM)0));
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
-static int AddMainMenuItem(WPARAM, LPARAM lParam)
+static INT_PTR AddMainMenuItem(WPARAM, LPARAM lParam)
 {
 	CLISTMENUITEM* mi = ( CLISTMENUITEM* )lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
@@ -238,7 +238,7 @@ static int AddMainMenuItem(WPARAM, LPARAM lParam)
 	}
 
 	PMO_IntMenuItem pimi = MO_AddNewMenuItem( hMainMenuObject, &tmi );
-	MO_SetOptionsMenuItem( pimi, OPT_MENUITEMSETUNIQNAME, ( int )mi->pszService );
+	MO_SetOptionsMenuItem( pimi, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )mi->pszService );
 	return ( int )pimi;
 }
 
@@ -250,7 +250,7 @@ int MainMenuCheckService(WPARAM, LPARAM)
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int MainMenuExecService(WPARAM wParam, LPARAM lParam)
+INT_PTR MainMenuExecService(WPARAM wParam, LPARAM lParam)
 {
 	lpMainMenuExecParam mmep = ( lpMainMenuExecParam )wParam;
 	if ( mmep != NULL ) {
@@ -263,7 +263,7 @@ int MainMenuExecService(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
-int FreeOwnerDataMainMenu(WPARAM, LPARAM lParam)
+INT_PTR FreeOwnerDataMainMenu(WPARAM, LPARAM lParam)
 {
 	lpMainMenuExecParam mmep = ( lpMainMenuExecParam )lParam;
 	if ( mmep != NULL ) {
@@ -276,13 +276,13 @@ int FreeOwnerDataMainMenu(WPARAM, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // CONTACT MENU
 
-static int RemoveContactMenuItem(WPARAM wParam, LPARAM)
+static INT_PTR RemoveContactMenuItem(WPARAM wParam, LPARAM)
 {
 	CallService(MO_REMOVEMENUITEM,wParam,0);
 	return 0;
 }
 
-static int AddContactMenuItem(WPARAM, LPARAM lParam)
+static INT_PTR AddContactMenuItem(WPARAM, LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
@@ -328,11 +328,11 @@ static int AddContactMenuItem(WPARAM, LPARAM lParam)
 			sprintf( buf,"%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", mi->ptszName );
 	}
 	else buf[0]='\0';
-	if (buf[0]) MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
-	return ( int )menuHandle;
+	if (buf[0]) MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
+	return ( INT_PTR )menuHandle;
 }
 
-static int BuildContactMenu(WPARAM wParam, LPARAM)
+static INT_PTR BuildContactMenu(WPARAM wParam, LPARAM)
 {
 	HANDLE hContact = ( HANDLE )wParam;
 	NotifyEventHooks(hPreBuildContactMenuEvent,(WPARAM)hContact,0);
@@ -351,13 +351,13 @@ static int BuildContactMenu(WPARAM wParam, LPARAM)
 	HMENU hMenu = CreatePopupMenu();
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
 
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
 //called with:
 //wparam - ownerdata
 //lparam - lparam from winproc
-int ContactMenuExecService(WPARAM wParam,LPARAM lParam)
+INT_PTR ContactMenuExecService(WPARAM wParam,LPARAM lParam)
 {
 	if (wParam!=0) {
 		lpContactMenuExecParam cmep=(lpContactMenuExecParam)wParam;
@@ -368,7 +368,7 @@ int ContactMenuExecService(WPARAM wParam,LPARAM lParam)
 }
 
 //true - ok,false ignore
-int ContactMenuCheckService(WPARAM wParam,LPARAM)
+INT_PTR ContactMenuCheckService(WPARAM wParam,LPARAM)
 {
 	PCheckProcParam pcpp = ( PCheckProcParam )wParam;
 	BuildContactParam *bcp=NULL;
@@ -400,7 +400,7 @@ int ContactMenuCheckService(WPARAM wParam,LPARAM)
 	return TRUE;
 }
 
-int FreeOwnerDataContactMenu (WPARAM, LPARAM lParam)
+INT_PTR FreeOwnerDataContactMenu (WPARAM, LPARAM lParam)
 {
 	lpContactMenuExecParam cmep = ( lpContactMenuExecParam )lParam;
 	if ( cmep != NULL ) {
@@ -465,7 +465,7 @@ BOOL __inline wildcmp(char * name, char * mask)
 		if(*mask != '?' && *mask != *name) name -= (size_t)(mask - last) - 1, mask = last;
 }	}
 
-int StatusMenuCheckService(WPARAM wParam, LPARAM)
+INT_PTR StatusMenuCheckService(WPARAM wParam, LPARAM)
 {
 	PCheckProcParam pcpp = ( PCheckProcParam )wParam;
 	if ( !pcpp )
@@ -578,7 +578,7 @@ int StatusMenuCheckService(WPARAM wParam, LPARAM)
 	return TRUE;
 }
 
-int StatusMenuExecService(WPARAM wParam, LPARAM)
+INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 {
 	lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )wParam;
 	if ( smep != NULL ) {
@@ -648,7 +648,7 @@ int StatusMenuExecService(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-int FreeOwnerDataStatusMenu(WPARAM, LPARAM lParam)
+INT_PTR FreeOwnerDataStatusMenu(WPARAM, LPARAM lParam)
 {
 	lpStatusMenuExecParam smep = (lpStatusMenuExecParam)lParam;
 	if ( smep != NULL ) {
@@ -664,7 +664,7 @@ int FreeOwnerDataStatusMenu(WPARAM, LPARAM lParam)
 // Other menu functions
 
 //wparam MenuItemHandle
-static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi=(CLISTMENUITEM*)lParam;
 	TMO_MenuItem tmi;
@@ -682,7 +682,7 @@ static int ModifyCustomMenuItem(WPARAM wParam,LPARAM lParam)
 	return MO_ModifyMenuItem(( PMO_IntMenuItem )wParam, &tmi );
 }
 
-int MenuProcessCommand(WPARAM wParam,LPARAM lParam)
+INT_PTR MenuProcessCommand(WPARAM wParam,LPARAM lParam)
 {
 	WORD cmd = LOWORD(wParam);
 
@@ -738,7 +738,7 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itda
 	return FALSE;
 }
 
-static int MenuProcessHotkey(WPARAM vKey, LPARAM)
+static INT_PTR MenuProcessHotkey(WPARAM vKey, LPARAM)
 {
 	if ( MO_ProcessHotKeys( hStatusMenuObject, vKey ))
 		return TRUE;
@@ -757,12 +757,12 @@ static int MenuIconsChanged(WPARAM, LPARAM)
 	return 0;
 }
 
-static int MeasureMenuItem(WPARAM, LPARAM lParam)
+static INT_PTR MeasureMenuItem(WPARAM, LPARAM lParam)
 {
 	return MO_MeasureMenuItem(( LPMEASUREITEMSTRUCT )lParam );
 }
 
-static int DrawMenuItem(WPARAM, LPARAM lParam)
+static INT_PTR DrawMenuItem(WPARAM, LPARAM lParam)
 {
 	return MO_DrawMenuItem(( LPDRAWITEMSTRUCT )lParam );
 }
@@ -784,14 +784,14 @@ int RecursiveDeleteMenu(HMENU hMenu)
 	return 0;
 }
 
-static int MenuGetMain(WPARAM, LPARAM)
+static INT_PTR MenuGetMain(WPARAM, LPARAM)
 {
 	RecursiveDeleteMenu(hMainMenu);
 	BuildMainMenu(0,0);
-	return (int)hMainMenu;
+	return (INT_PTR)hMainMenu;
 }
 
-static int BuildStatusMenu(WPARAM, LPARAM)
+static INT_PTR BuildStatusMenu(WPARAM, LPARAM)
 {
 	ListParam param = { 0 };
 	param.MenuObjectHandle = hStatusMenuObject;
@@ -799,10 +799,10 @@ static int BuildStatusMenu(WPARAM, LPARAM)
 	HMENU hMenu=hStatusMenu;
 	RecursiveDeleteMenu(hStatusMenu);
 	CallService(MO_BUILDMENU,(WPARAM)hMenu,(LPARAM)&param);
-	return (int)hMenu;
+	return (INT_PTR)hMenu;
 }
 
-static int SetStatusMode(WPARAM wParam, LPARAM)
+static INT_PTR SetStatusMode(WPARAM wParam, LPARAM)
 {
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
 	return 0;
@@ -879,11 +879,11 @@ void RebuildMenuOrder( void )
 	tmp.name = "StatusMenu";
 
 	hStatusMenuObject=(int)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
-	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataStatusMenu" );
+	MO_SetOptionsMenuObject( hStatusMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataStatusMenu" );
 
-	hStatusMainMenuHandles = ( PMO_IntMenuItem* )mir_alloc( SIZEOF(statusModeList) * sizeof( int ));
+	hStatusMainMenuHandles = ( PMO_IntMenuItem* )mir_alloc( SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
 	hStatusMainMenuHandlesCnt = SIZEOF(statusModeList);
-	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( int ));
+	memset( hStatusMainMenuHandles, 0, SIZEOF(statusModeList) * sizeof( PMO_IntMenuItem* ));
 
 	hStatusMenuHandles = ( tStatusMenuHandles* )mir_alloc(sizeof(tStatusMenuHandles)*accounts.getCount());
 	hStatusMenuHandlesCnt = accounts.getCount();
@@ -978,7 +978,7 @@ void RebuildMenuOrder( void )
 		{
 			char buf[256];
 			sprintf( buf, "RootProtocolIcon_%s", pa->szModuleName );
-			MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
+			MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 		}
 		DestroyIcon(tmi.hIcon);
 		pos += 100000;
@@ -1013,7 +1013,7 @@ void RebuildMenuOrder( void )
 			{
 				char buf[ 256 ];
 				sprintf(buf,"ProtocolIcon_%s_%s",pa->szModuleName,tmi.pszName);
-				MO_SetOptionsMenuItem( hStatusMenuHandles[i].menuhandle[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
+				MO_SetOptionsMenuItem( hStatusMenuHandles[i].menuhandle[j], OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 			}
 			IconLib_ReleaseIcon(tmi.hIcon,0);
 	}	}
@@ -1062,7 +1062,7 @@ void RebuildMenuOrder( void )
 			{
 				char buf[ 256 ];
 				mir_snprintf( buf, sizeof( buf ), "Root2ProtocolIcon_%s_%s", pa->szModuleName, tmi.pszName );
-				MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( int )buf );
+				MO_SetOptionsMenuItem( hStatusMainMenuHandles[j], OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 			}
 			IconLib_ReleaseIcon( tmi.hIcon, 0 );
 			break;
@@ -1191,7 +1191,7 @@ HGENMENU fnGetProtocolMenu( const char* proto )
 	return NULL;
 }
 
-static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
+static INT_PTR AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	CLISTMENUITEM *mi = ( CLISTMENUITEM* )lParam;
 	if ( mi->cbSize != sizeof( CLISTMENUITEM ))
@@ -1275,9 +1275,9 @@ static int AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	#else
 		mir_snprintf( buf, SIZEOF(buf), "%s/%s", pRoot ? pRoot->mi.ptszName : _T(""), mi->pszService ? mi->pszService : "" );
 	#endif
-	MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( int )buf );
+	MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 
-	return ( int )menuHandle;
+	return ( INT_PTR )menuHandle;
 }
 
 void InitCustomMenus(void)
@@ -1347,7 +1347,7 @@ void InitCustomMenus(void)
 	}
 
 	MO_SetOptionsMenuObject( hMainMenuObject, OPT_USERDEFINEDITEMS, TRUE );
-	MO_SetOptionsMenuObject( hMainMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataMainMenu" );
+	MO_SetOptionsMenuObject( hMainMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataMainMenu" );
 
 	//contact menu
 	{
@@ -1360,7 +1360,7 @@ void InitCustomMenus(void)
 	}
 
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_USERDEFINEDITEMS, TRUE );
-	MO_SetOptionsMenuObject( hContactMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (int)"CLISTMENUS/FreeOwnerDataContactMenu" );
+	MO_SetOptionsMenuObject( hContactMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataContactMenu" );
 
    // add exit command to menu
 	{

@@ -410,7 +410,7 @@ static void DoAutoExec(void)
     mir_free(szUnsafeSections);
 }
 
-static int CheckIniImportNow(WPARAM, LPARAM)
+static INT_PTR CheckIniImportNow(WPARAM, LPARAM)
 {
 	DoAutoExec();
 	FindNextChangeNotification(hIniChangeNotification);

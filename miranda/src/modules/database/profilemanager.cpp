@@ -151,8 +151,8 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			HWND hwndProfile = GetDlgItem(hwndDlg, IDC_PROFILENAME);
 			WNDPROC proc = (WNDPROC)GetWindowLongPtr(hwndProfile, GWLP_WNDPROC);
-			SetWindowLongPtr(hwndProfile,GWLP_USERDATA,(LONG)proc);
-			SetWindowLongPtr(hwndProfile,GWLP_WNDPROC,(LONG)ProfileNameValidate);
+			SetWindowLongPtr(hwndProfile,GWLP_USERDATA,(LONG_PTR)proc);
+			SetWindowLongPtr(hwndProfile,GWLP_WNDPROC,(LONG_PTR)ProfileNameValidate);
 		}
 
 		// decide if there is a default profile name given in the INI and if it should be used
@@ -346,7 +346,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			TranslateDialogDefault( hwndDlg );
 
 			dat = ( struct DlgProfData* ) lParam;
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 
 			// set columns
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -376,7 +376,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
-            SetWindowLong(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
+            SetWindowLongPtr(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
 			ListView_SetExtendedListViewStyle(hwndList,
 				ListView_GetExtendedListViewStyle(hwndList) | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
@@ -453,7 +453,7 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG)dat );
+		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 		SetDlgItemText( hwndDlg, IDC_NAME, TranslateT("Miranda IM Profile Manager"));
 		{	LOGFONT lf;
 			HFONT hNormalFont = ( HFONT )SendDlgItemMessage( hwndDlg, IDC_NAME, WM_GETFONT, 0, 0 );

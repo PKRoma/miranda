@@ -157,7 +157,7 @@ int MO_RemoveAllObjects()
 }
 
 //wparam=MenuObjectHandle
-int MO_RemoveMenuObject(WPARAM wParam, LPARAM)
+INT_PTR MO_RemoveMenuObject(WPARAM wParam, LPARAM)
 {
 	int objidx;
 
@@ -209,7 +209,7 @@ int MO_ProcessHotKeys( int menuHandle, int vKey )
 
 //wparam=MenuItemHandle
 //lparam=PMO_MenuItem
-int MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
+INT_PTR MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
 {
 	PMO_MenuItem mi = (PMO_MenuItem)lParam;
 	if ( !bIsGenMenuInited || mi == NULL )
@@ -235,7 +235,7 @@ static int FindDefaultItem( PMO_IntMenuItem pimi, void* )
 	return ( pimi->mi.flags & CMIF_DEFAULT ) ? TRUE : FALSE;
 }
 
-int MO_GetDefaultMenuItem(WPARAM wParam, LPARAM)
+INT_PTR MO_GetDefaultMenuItem(WPARAM wParam, LPARAM)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -316,7 +316,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 //wparam MenuItemHandle
 //return ownerdata useful to free ownerdata before delete menu item,
 //NULL on error.
-int MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
+INT_PTR MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -382,7 +382,7 @@ int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam)
 	return -1;
 }
 
-int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
+INT_PTR MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -419,7 +419,7 @@ int MO_ProcessCommand( PMO_IntMenuItem aHandle, LPARAM lParam )
 	return 1;
 }
 
-int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, int value )
+int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, INT_PTR value )
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -446,7 +446,7 @@ int MO_SetOptionsMenuItem( PMO_IntMenuItem aHandle, int setting, int value )
 	return res;
 }
 
-int MO_SetOptionsMenuObject( int handle, int setting, int value )
+int MO_SetOptionsMenuObject( int handle, int setting, INT_PTR value )
 {
 	int  pimoidx;
 	int  res = 0;
@@ -493,7 +493,7 @@ int MO_SetOptionsMenuObject( int handle, int setting, int value )
 //wparam=0;
 //lparam=PMenuParam;
 //result=MenuObjectHandle
-int MO_CreateNewMenuObject(WPARAM, LPARAM lParam)
+INT_PTR MO_CreateNewMenuObject(WPARAM, LPARAM lParam)
 {
 	PMenuParam pmp = ( PMenuParam )lParam;
 	if ( !bIsGenMenuInited || pmp == NULL )
@@ -526,7 +526,7 @@ static int FindParent( TMO_IntMenuItem* pimi, void* p )
 	return pimi->next == p;
 }
 
-int MO_RemoveMenuItem(WPARAM wParam, LPARAM)
+INT_PTR MO_RemoveMenuItem(WPARAM wParam, LPARAM)
 {
 	EnterCriticalSection( &csMenuHook );
 	PMO_IntMenuItem pimi = MO_GetIntMenuItem(( HGENMENU )wParam );
@@ -712,7 +712,7 @@ PMO_IntMenuItem MO_AddOldNewMenuItem( int menuobjecthandle, PMO_MenuItem pmi )
 			//copy pszPopupName
 			tmi.ptszName = ( TCHAR* )pmi->root;
 			if (( oldroot = MO_AddNewMenuItem( menuobjecthandle, &tmi )) != NULL )
-				MO_SetOptionsMenuItem( oldroot, OPT_MENUITEMSETUNIQNAME, (int)pmi->root );
+				MO_SetOptionsMenuItem( oldroot, OPT_MENUITEMSETUNIQNAME, (INT_PTR)pmi->root );
 		}
 		pmi->root = oldroot;
 
@@ -823,7 +823,7 @@ static void InsertMenuItemWithSeparators(HMENU hMenu, int uItem, MENUITEMINFO *l
 //wparam started hMenu
 //lparam ListParam*
 //result hMenu
-int MO_BuildMenu(WPARAM wParam,LPARAM lParam)
+INT_PTR MO_BuildMenu(WPARAM wParam,LPARAM lParam)
 {
 	if ( !bIsGenMenuInited )
 		return -1;
@@ -1145,7 +1145,7 @@ static int OnModulesLoaded(WPARAM, LPARAM)
 	return 0;
 }
 
-static int SRVMO_SetOptionsMenuObject( WPARAM, LPARAM lParam)
+static INT_PTR SRVMO_SetOptionsMenuObject( WPARAM, LPARAM lParam)
 {
 	lpOptParam lpop = ( lpOptParam )lParam;
 	if ( lpop == NULL )
@@ -1154,7 +1154,7 @@ static int SRVMO_SetOptionsMenuObject( WPARAM, LPARAM lParam)
 	return MO_SetOptionsMenuObject( lpop->Handle, lpop->Setting, lpop->Value );
 }
 
-static int SRVMO_SetOptionsMenuItem( WPARAM, LPARAM lParam)
+static INT_PTR SRVMO_SetOptionsMenuItem( WPARAM, LPARAM lParam)
 {
 	lpOptParam lpop = ( lpOptParam )lParam;
 	if ( lpop == NULL )

@@ -397,10 +397,10 @@ static int CListEventSettingsChanged(WPARAM wParam, LPARAM lParam)
 
 /***************************************************************************************/
 
-int AddEventSyncStub(WPARAM wParam, LPARAM lParam) { return CallServiceSync(MS_CLIST_ADDEVENT"_SYNC",wParam, lParam); }
-int AddEventStub(WPARAM, LPARAM lParam) { return cli.pfnAddEvent((CLISTEVENT*)lParam ) == NULL; }
-int RemoveEventStub(WPARAM wParam, LPARAM lParam) { return cli.pfnRemoveEvent((HANDLE)wParam,(HANDLE)lParam ); }
-int GetEventStub(WPARAM wParam, LPARAM lParam) { return (int)cli.pfnGetEvent((HANDLE)wParam,lParam); }
+INT_PTR AddEventSyncStub(WPARAM wParam, LPARAM lParam) { return CallServiceSync(MS_CLIST_ADDEVENT"_SYNC",wParam, lParam); }
+INT_PTR AddEventStub(WPARAM, LPARAM lParam) { return cli.pfnAddEvent((CLISTEVENT*)lParam ) == NULL; }
+INT_PTR RemoveEventStub(WPARAM wParam, LPARAM lParam) { return cli.pfnRemoveEvent((HANDLE)wParam,(HANDLE)lParam ); }
+INT_PTR GetEventStub(WPARAM wParam, LPARAM lParam) { return (INT_PTR)cli.pfnGetEvent((HANDLE)wParam,(int)lParam); }
 
 int InitCListEvents(void)
 {

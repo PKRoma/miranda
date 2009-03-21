@@ -119,10 +119,10 @@ typedef enum
 } ReqType;
 
 static BOOL txtParseParam(char* szData, char* presearch,
-						  char* start, char* finish, char* param, int size)
+						  char* start, char* finish, char* param, size_t size)
 {
 	char *cp, *cp1;
-	int len;
+	size_t len;
 
 	*param = 0;
 
@@ -142,7 +142,7 @@ static BOOL txtParseParam(char* szData, char* presearch,
 	if (cp1 == NULL) return FALSE;
 	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
 
-	len = min(cp1 - cp, size-1);
+	len = min((size_t)(cp1 - cp), size-1);
 	strncpy(param, cp, len);
 	param[len] = 0;
 

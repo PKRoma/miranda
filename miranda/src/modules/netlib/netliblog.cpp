@@ -102,7 +102,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			int i;
 			HWND hwndFilter = GetDlgItem(hwndDlg,IDC_FILTER);
 
-			SetWindowLong(hwndFilter, GWL_STYLE, GetWindowLong(hwndFilter, GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
+			SetWindowLongPtr(hwndFilter, GWL_STYLE, GetWindowLongPtr(hwndFilter, GWL_STYLE) | (TVS_NOHSCROLL | TVS_CHECKBOXES));
 
 			tvis.hParent=NULL;
 			tvis.hInsertAfter=TVI_SORT;
@@ -324,13 +324,13 @@ void NetlibLogShowOptions(void)
 	SetForegroundWindow(logOptions.hwndOpts);
 }
 
-static int ShowOptions(WPARAM, LPARAM)
+static INT_PTR ShowOptions(WPARAM, LPARAM)
 {
 	NetlibLogShowOptions();
 	return 0;
 }
 
-static int NetlibLog(WPARAM wParam,LPARAM lParam)
+static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	struct NetlibUser nludummy;

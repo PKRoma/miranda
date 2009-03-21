@@ -648,7 +648,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 /////////////////////////////////////////////////////////////////////////////////////////
 // IcoLib_RemoveIcon
 
-static int IcoLib_RemoveIcon( WPARAM, LPARAM lParam )
+static INT_PTR IcoLib_RemoveIcon( WPARAM, LPARAM lParam )
 {
 	if ( lParam ) {
 		int indx;
@@ -862,7 +862,7 @@ HANDLE IcoLib_IsManaged( HICON hIcon )
 // lParam: NULL
 // wParam: HICON
 
-static int IcoLib_AddRef( WPARAM wParam, LPARAM )
+static INT_PTR IcoLib_AddRef( WPARAM wParam, LPARAM )
 {
 	IconItem *item = NULL;
 
@@ -1437,7 +1437,7 @@ INT_PTR CALLBACK DlgProcIcoLibOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		hPreview = GetDlgItem(hwndDlg, IDC_PREVIEW);
 		dat = (struct IcoLibOptsData*)mir_alloc(sizeof(struct IcoLibOptsData));
 		dat->hwndIndex = NULL;
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)dat);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 		//
 		//  Reset temporary data & upload sections list
 		//
@@ -1842,20 +1842,20 @@ static int SkinSystemModulesLoaded( WPARAM, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Module initialization and finalization procedure
 
-static int sttIcoLib_AddNewIcon( WPARAM, LPARAM lParam )
-{	return (int)IcoLib_AddNewIcon(( SKINICONDESC* )lParam );
+static INT_PTR sttIcoLib_AddNewIcon( WPARAM, LPARAM lParam )
+{	return (INT_PTR)IcoLib_AddNewIcon(( SKINICONDESC* )lParam );
 }
 
-static int sttIcoLib_GetIcon( WPARAM, LPARAM lParam )
-{	return (int)IcoLib_GetIcon(( const char* )lParam );
+static INT_PTR sttIcoLib_GetIcon( WPARAM, LPARAM lParam )
+{	return (INT_PTR)IcoLib_GetIcon(( const char* )lParam );
 }
 
-static int sttIcoLib_GetIconHandle( WPARAM, LPARAM lParam )
-{	return (int)IcoLib_GetIconHandle(( const char* )lParam );
+static INT_PTR sttIcoLib_GetIconHandle( WPARAM, LPARAM lParam )
+{	return (INT_PTR)IcoLib_GetIconHandle(( const char* )lParam );
 }
 
-static int sttIcoLib_GetIconByHandle( WPARAM, LPARAM lParam )
-{	return (int)IcoLib_GetIconByHandle(( HANDLE )lParam );
+static INT_PTR sttIcoLib_GetIconByHandle( WPARAM, LPARAM lParam )
+{	return (INT_PTR)IcoLib_GetIconByHandle(( HANDLE )lParam );
 }
 
 int LoadIcoLibModule(void)

@@ -405,7 +405,7 @@ static int IdleOptInit(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int IdleGetInfo(WPARAM, LPARAM lParam)
+static INT_PTR IdleGetInfo(WPARAM, LPARAM lParam)
 {
 	MIRANDA_IDLE_INFO *mii = ( MIRANDA_IDLE_INFO* )lParam;
 	if ( !mii || ( mii->cbSize != sizeof(MIRANDA_IDLE_INFO) && mii->cbSize != MIRANDA_IDLE_INFO_SIZE_1 ))

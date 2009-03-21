@@ -654,7 +654,7 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT, UINT_PTR id, DWORD)
 	KillTimer(hwnd, id);
 }
 
-int fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
+INT_PTR fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG *msg = (MSG *) wParam;
 	switch (msg->message) {
@@ -832,7 +832,7 @@ typedef HRESULT(CALLBACK * DLLGETVERSIONPROC) (DLLVERSIONINFO *);
 
 static DLLVERSIONINFO dviShell;
 
-static int pfnCListTrayNotifyStub(WPARAM, LPARAM lParam )
+static INT_PTR pfnCListTrayNotifyStub(WPARAM, LPARAM lParam )
 {	return cli.pfnCListTrayNotify(( MIRANDASYSTRAYNOTIFY* )lParam );
 }
 

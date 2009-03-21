@@ -302,13 +302,13 @@ static int sttRegisterFontWorker( TFontID* font_id )
 }
 
 #if defined( _UNICODE )
-int RegisterFontW(WPARAM wParam, LPARAM )
+INT_PTR RegisterFontW(WPARAM wParam, LPARAM )
 {
 	return sttRegisterFontWorker(( TFontID* )wParam );
 }
 #endif
 
-int RegisterFont(WPARAM wParam, LPARAM)
+INT_PTR RegisterFont(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TFontID temp;
@@ -342,13 +342,13 @@ static int sttGetFontWorker( TFontID* font_id, LOGFONT* lf )
 }
 
 #if defined( _UNICODE )
-int GetFontW(WPARAM wParam, LPARAM lParam)
+INT_PTR GetFontW(WPARAM wParam, LPARAM lParam)
 {
 	return sttGetFontWorker(( TFontID* )wParam, ( LOGFONT* )lParam );
 }
 #endif
 
-int GetFont(WPARAM wParam, LPARAM lParam)
+INT_PTR GetFont(WPARAM wParam, LPARAM lParam)
 {
 	#if defined( _UNICODE )
 		TFontID temp;
@@ -387,13 +387,13 @@ static int sttRegisterColourWorker( TColourID* colour_id )
 }
 
 #if defined( _UNICODE )
-int RegisterColourW(WPARAM wParam, LPARAM)
+INT_PTR RegisterColourW(WPARAM wParam, LPARAM)
 {
 	return sttRegisterColourWorker(( TColourID* )wParam );
 }
 #endif
 
-int RegisterColour(WPARAM wParam, LPARAM)
+INT_PTR RegisterColour(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TColourID temp;
@@ -421,13 +421,13 @@ static int sttGetColourWorker( TColourID* colour_id )
 }
 
 #if defined( _UNICODE )
-int GetColourW(WPARAM wParam, LPARAM)
+INT_PTR GetColourW(WPARAM wParam, LPARAM)
 {
 	return sttGetColourWorker(( TColourID* )wParam );
 }
 #endif
 
-int GetColour(WPARAM wParam, LPARAM)
+INT_PTR GetColour(WPARAM wParam, LPARAM)
 {
 	#if defined( _UNICODE )
 		TColourID temp;
@@ -476,13 +476,13 @@ static int sttRegisterEffectWorker( TEffectID* effect_id )
 }
 
 #if defined( _UNICODE )
-int RegisterEffectW(WPARAM wParam, LPARAM lParam)
+INT_PTR RegisterEffectW(WPARAM wParam, LPARAM lParam)
 {
     return sttRegisterEffectWorker(( TEffectID* )wParam );
 }
 #endif
 
-int RegisterEffect(WPARAM wParam, LPARAM lParam)
+INT_PTR RegisterEffect(WPARAM wParam, LPARAM lParam)
 {
 #if defined( _UNICODE )
     TEffectID temp;
@@ -516,13 +516,13 @@ static int sttGetEffectWorker( TEffectID* effect_id, FONTEFFECT* effect )
 }
 
 #if defined( _UNICODE )
-int GetEffectW(WPARAM wParam, LPARAM lParam)
+INT_PTR GetEffectW(WPARAM wParam, LPARAM lParam)
 {
     return sttGetEffectWorker(( TEffectID* )wParam, ( FONTEFFECT* )lParam );
 }
 #endif
 
-int GetEffect(WPARAM wParam, LPARAM lParam)
+INT_PTR GetEffect(WPARAM wParam, LPARAM lParam)
 {
 #if defined( _UNICODE )
     TEffectID temp;

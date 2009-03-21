@@ -69,19 +69,19 @@ static int CompareSystemTimes(SYSTEMTIME *st,SYSTEMTIME *switchDate)
 	return CompareFileTime(&ft1,&ft2);
 }
 
-static int TimestampToLocal(WPARAM wParam, LPARAM)
+static INT_PTR TimestampToLocal(WPARAM wParam,LPARAM)
 {
 	TIME_ZONE_INFORMATION tzInfo;
 	LARGE_INTEGER liFiletime;
 	FILETIME filetime;
 	SYSTEMTIME st;
-	int iReturn = 0;
+	INT_PTR iReturn = 0;
 
 	GetTimeZoneInformation(&tzInfo);
 	if(tzInfo.StandardDate.wMonth==0)
 	{
 		//no daylight savings time
-		iReturn = (int)(wParam-tzInfo.Bias*60);
+		iReturn = (INT_PTR)(wParam-tzInfo.Bias*60);
 	}
 	else
 	{
@@ -97,11 +97,11 @@ static int TimestampToLocal(WPARAM wParam, LPARAM)
 			if(CompareSystemTimes(&st,&tzInfo.DaylightDate)<0 ||
 			   CompareSystemTimes(&st,&tzInfo.StandardDate)>0)
 			{
-				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
+				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
 			}
 			else
 			{
-				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
+				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
 			}
 		}
 		else
@@ -110,11 +110,11 @@ static int TimestampToLocal(WPARAM wParam, LPARAM)
 			if(CompareSystemTimes(&st,&tzInfo.StandardDate)<0 ||
 			   CompareSystemTimes(&st,&tzInfo.DaylightDate)>0)
 			{
-				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
+				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
 			}
 			else
 			{
-				iReturn = (int)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
+				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ static int TimestampToLocal(WPARAM wParam, LPARAM)
 	return iReturn;
 }
 
-static int TimestampToString(WPARAM wParam,LPARAM lParam)
+static INT_PTR TimestampToString(WPARAM wParam,LPARAM lParam)
 {
 	DBTIMETOSTRING *tts=(DBTIMETOSTRING*)lParam;
 	LARGE_INTEGER liFiletime;
@@ -130,7 +130,7 @@ static int TimestampToString(WPARAM wParam,LPARAM lParam)
 	SYSTEMTIME st;
 	char dateTimeStr[64];
 	char *pDest,*pFormat;
-	int destCharsLeft,dateTimeStrLen;
+	size_t destCharsLeft, dateTimeStrLen;
 
 	//this huge number is the difference between 1970 and 1601 in seconds
 	liFiletime.QuadPart=((__int64)11644473600+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
@@ -174,7 +174,7 @@ static int TimestampToString(WPARAM wParam,LPARAM lParam)
 }
 
 #if defined( _UNICODE )
-static int TimestampToStringW(WPARAM wParam,LPARAM lParam)
+static INT_PTR TimestampToStringW(WPARAM wParam,LPARAM lParam)
 {
 	DBTIMETOSTRINGT *tts = ( DBTIMETOSTRINGT* )lParam;
 	LARGE_INTEGER liFiletime;
@@ -182,7 +182,7 @@ static int TimestampToStringW(WPARAM wParam,LPARAM lParam)
 	SYSTEMTIME st;
 	TCHAR dateTimeStr[64];
 	TCHAR *pDest,*pFormat;
-	int destCharsLeft, dateTimeStrLen;
+	size_t destCharsLeft, dateTimeStrLen;
 
 	//this huge number is the difference between 1970 and 1601 in seconds
 	liFiletime.QuadPart=((__int64)11644473600+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;

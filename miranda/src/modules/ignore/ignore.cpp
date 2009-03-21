@@ -227,7 +227,7 @@ static INT_PTR CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM
 			SendDlgItemMessage(hwndDlg,IDC_TYPINGICON,STM_SETICON,(WPARAM)hIcons[8],0);
 
 			if(!SendMessage(GetParent(hwndDlg),PSM_ISEXPERT,0,0)) {
-				SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)&~(CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN));
+				SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)&~(CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN));
 				SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_AUTOREBUILD,0,0);
 			}
 
@@ -319,7 +319,7 @@ static INT_PTR CALLBACK DlgProcIgnoreOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM
 							return TRUE;
 						}
 						case PSN_EXPERTCHANGED:
-							SetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE,((PSHNOTIFY*)lParam)->lParam?GetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)|CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN:GetWindowLong(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)&~(CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN));
+							SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE,((PSHNOTIFY*)lParam)->lParam?GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)|CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN:GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_LIST),GWL_STYLE)&~(CLS_CHECKBOXES|CLS_GROUPCHECKBOXES|CLS_SHOWHIDDEN));
 							SendDlgItemMessage(hwndDlg,IDC_LIST,CLM_AUTOREBUILD,0,0);
 							break;
 					}
@@ -357,14 +357,14 @@ static int IgnoreOptInitialise(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int IsIgnored(WPARAM wParam,LPARAM lParam)
+static INT_PTR IsIgnored(WPARAM wParam,LPARAM lParam)
 {
 	DWORD mask=GetMask((HANDLE)wParam);
 	if(lParam<1 || lParam>IGNOREEVENT_MAX) return 1;
 	return (mask>>(lParam-1))&1;
 }
 
-static int Ignore(WPARAM wParam,LPARAM lParam)
+static INT_PTR Ignore(WPARAM wParam,LPARAM lParam)
 {
 	DWORD mask=GetMask((HANDLE)wParam);
 	if((lParam<1 || lParam>IGNOREEVENT_MAX) && lParam!=IGNOREEVENT_ALL) return 1;
@@ -374,7 +374,7 @@ static int Ignore(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-static int Unignore(WPARAM wParam,LPARAM lParam)
+static INT_PTR Unignore(WPARAM wParam,LPARAM lParam)
 {
 	DWORD mask=GetMask((HANDLE)wParam);
 	if((lParam<1 || lParam>IGNOREEVENT_MAX) && lParam!=IGNOREEVENT_ALL) return 1;
@@ -390,25 +390,25 @@ static int IgnoreContactAdded(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int IgnoreRecvMessage(WPARAM wParam,LPARAM lParam)
+static INT_PTR IgnoreRecvMessage(WPARAM wParam,LPARAM lParam)
 {
 	if(IsIgnored((WPARAM)((CCSDATA*)lParam)->hContact,IGNOREEVENT_MESSAGE)) return 1;
 	return CallService(MS_PROTO_CHAINRECV,wParam,lParam);
 }
 
-static int IgnoreRecvUrl(WPARAM wParam,LPARAM lParam)
+static INT_PTR IgnoreRecvUrl(WPARAM wParam,LPARAM lParam)
 {
 	if(IsIgnored((WPARAM)((CCSDATA*)lParam)->hContact,IGNOREEVENT_URL)) return 1;
 	return CallService(MS_PROTO_CHAINRECV,wParam,lParam);
 }
 
-static int IgnoreRecvFile(WPARAM wParam,LPARAM lParam)
+static INT_PTR IgnoreRecvFile(WPARAM wParam,LPARAM lParam)
 {
 	if(IsIgnored((WPARAM)((CCSDATA*)lParam)->hContact,IGNOREEVENT_FILE)) return 1;
 	return CallService(MS_PROTO_CHAINRECV,wParam,lParam);
 }
 
-static int IgnoreRecvAuth(WPARAM wParam,LPARAM lParam)
+static INT_PTR IgnoreRecvAuth(WPARAM wParam,LPARAM lParam)
 {
 	if(IsIgnored((WPARAM)((CCSDATA*)lParam)->hContact,IGNOREEVENT_AUTHORIZATION)) return 1;
 	return CallService(MS_PROTO_CHAINRECV,wParam,lParam);

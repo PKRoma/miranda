@@ -124,7 +124,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 	return 0;
 }
 
-static int MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
+static INT_PTR MTG_DOMOVE(WPARAM wParam,LPARAM lParam)
 {
 	CallService(MS_CLIST_CONTACTCHANGEGROUP, wParam, lParam < 0 ? 0 : lParam);
 	return 0;

@@ -58,7 +58,7 @@ static void fnReloadProtoMenus( void )
 	cli.pfnCluiProtocolStatusChanged(0,0);
 }
 
-static int srvRetrieveInterface( WPARAM, LPARAM lParam )
+static INT_PTR srvRetrieveInterface( WPARAM, LPARAM lParam )
 {
 	int rc;
 
@@ -211,7 +211,7 @@ static int srvRetrieveInterface( WPARAM, LPARAM lParam )
 		interfaceInited = 1;
 	}
 
-	return ( int )( LPARAM )&cli;
+	return ( LPARAM )&cli;
 }
 
 int LoadContactListModule()

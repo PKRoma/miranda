@@ -103,7 +103,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, D
 		return S_OK;
 	}
 	CallService(MS_CLIST_PAUSEAUTOHIDE, 0, 0);
-	dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
+	dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
 	shortPt.x = pt.x;
 	shortPt.y = pt.y;
 	ScreenToClient(hwndCurrentDrag, &shortPt);
@@ -145,7 +145,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, 
 	if (!lstrcmp(szWindowClass, CLISTCONTROL_CLASS)) {
 		struct ClcData *dat;
 		hwndCurrentDrag = hwnd;
-		dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
+		dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
 		originalSelection = dat->selection;
 		dat->showSelAlways = 1;
 	}
@@ -160,7 +160,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragLeave(struct CDropTarget *lpThis)
 		struct ClcData *dat;
 		if (lpThis->pDropTargetHelper)
 			lpThis->pDropTargetHelper->lpVtbl->DragLeave(lpThis->pDropTargetHelper);
-		dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
+		dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
 		dat->showSelAlways = 0;
 		dat->selection = originalSelection;
 		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
@@ -210,7 +210,7 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 	if (hwndCurrentDrag == NULL || S_OK != pData->lpVtbl->GetData(pData, &fe, &stg))
 		return S_OK;
 	hDrop = (HDROP) stg.hGlobal;
-	dat = (struct ClcData *) GetWindowLong(hwndCurrentDrag, 0);
+	dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
 
 	shortPt.x = pt.x;
 	shortPt.y = pt.y;

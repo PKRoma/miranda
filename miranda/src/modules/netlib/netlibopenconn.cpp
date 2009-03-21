@@ -474,7 +474,7 @@ unblock:
 	return rc;
 }
 
-int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
@@ -491,7 +491,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL 
 		|| !(nloc->cbSize==NETLIBOPENCONNECTION_V1_SIZE||nloc->cbSize==sizeof(NETLIBOPENCONNECTION)) || nloc->szHost==NULL || nloc->wPort==0) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 	nlc=(struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
 	nlc->handleType=NLH_CONNECTION;
@@ -519,7 +519,7 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 		if(nlc->sinProxy.sin_addr.S_un.S_addr)
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 		FreePartiallyInitedConnection(nlc);		
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 
 	if(nlu->settings.useProxy
@@ -528,28 +528,28 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	{
 		if(!WaitUntilWritable(nlc->s,30000)) {
 			FreePartiallyInitedConnection(nlc);
-			return (int)(HANDLE)NULL;
+			return (INT_PTR)NULL;
 		}
 
 		switch(nlu->settings.proxyType) {
 			case PROXYTYPE_SOCKS4:
 				if(!NetlibInitSocks4Connection(nlc,nlu,nloc)) {
 					FreePartiallyInitedConnection(nlc);
-					return (int)(HANDLE)NULL;
+					return (INT_PTR)NULL;
 				}
 				break;
 
 			case PROXYTYPE_SOCKS5:
 				if(!NetlibInitSocks5Connection(nlc,nlu,nloc)) {
 					FreePartiallyInitedConnection(nlc);
-					return (int)(HANDLE)NULL;
+					return (INT_PTR)NULL;
 				}
 				break;
 
 			case PROXYTYPE_HTTPS:
 				if(!NetlibInitHttpsConnection(nlc,nlu,nloc)) {
 					FreePartiallyInitedConnection(nlc);
-					return (int)(HANDLE)NULL;
+					return (INT_PTR)NULL;
 				}
 				break;
 
@@ -568,20 +568,20 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 							if(nlc->sinProxy.sin_addr.S_un.S_addr)
 								Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 							FreePartiallyInitedConnection(nlc);
-							return (int)(HANDLE)NULL;
+							return (INT_PTR)NULL;
 						}
 					}
 				}
 				else if(!NetlibInitHttpConnection(nlc,nlu,nloc)) {
 					FreePartiallyInitedConnection(nlc);
-					return (int)(HANDLE)NULL;
+					return (INT_PTR)NULL;
 				}
 				break;
 
 			default:
 				SetLastError(ERROR_INVALID_PARAMETER);
 				FreePartiallyInitedConnection(nlc);
-				return (int)(HANDLE)NULL;
+				return (INT_PTR)NULL;
 		}
 	}
 	if (NLOCF_SSL & nloc->flags)
@@ -599,10 +599,10 @@ int NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc->szHost = mir_strdup(nloc->szHost);
 
 	Netlib_Logf(nlu,"(%d) Connected to %s:%d",nlc->s,nloc->szHost,nloc->wPort);
-	return (int)nlc;
+	return (INT_PTR)nlc;
 }
 
-int NetlibStartSsl(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibStartSsl(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
     NETLIBSSL *sp = (NETLIBSSL*)lParam;

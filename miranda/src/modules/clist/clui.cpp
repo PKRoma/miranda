@@ -114,7 +114,7 @@ static int MenuItem_PreBuild(WPARAM, LPARAM)
 	return 0;
 }
 
-static int MenuItem_RenameContact(WPARAM, LPARAM)
+static INT_PTR MenuItem_RenameContact(WPARAM, LPARAM)
 {
 	TCHAR cls[128];
 	HANDLE hItem;
@@ -181,10 +181,10 @@ static INT_PTR CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wP
 	return FALSE;
 }
 
-static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
+static INT_PTR MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 {
 	//see notes about deleting contacts on PF1_SERVERCLIST servers in m_protosvc.h
-	int action;
+	UINT_PTR action;
 	
 	if (DBGetContactSettingByte(NULL, "CList", "ConfirmDelete", SETTING_CONFIRMDELETE_DEFAULT) && 
 		!(GetKeyState(VK_SHIFT)&0x8000) )
@@ -230,7 +230,7 @@ static int MenuItem_DeleteContact(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int MenuItem_AddContactToList(WPARAM wParam, LPARAM)
+static INT_PTR MenuItem_AddContactToList(WPARAM wParam, LPARAM)
 {
 	ADDCONTACTSTRUCT acs = { 0 };
 
@@ -505,7 +505,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		PostMessage(hwnd, M_CREATECLC, 0, 0);
 
 		if (cluiopt.transparent) {
-			SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE, GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 			if (MySetLayeredWindowAttributes)
 				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), (BYTE) cluiopt.alpha, LWA_ALPHA);
 		}
@@ -670,7 +670,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			break;
 		if (!DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0) || !IsWinVer2000Plus())
 			break;
-		if (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
+		if (GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
 			DWORD thisTick, startTick;
 			int sourceAlpha, destAlpha;
 			if (wParam) {
@@ -740,14 +740,14 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			break;
 		case POPUP_HIDEEMPTYGROUPS:
 			{
-				int newVal = !(GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS);
+				int newVal = !(GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS);
 				DBWriteContactSettingByte(NULL, "CList", "HideEmptyGroups", (BYTE) newVal);
 				SendMessage(cli.hwndContactTree, CLM_SETHIDEEMPTYGROUPS, newVal, 0);
 				break;
 			}
 		case POPUP_DISABLEGROUPS:
 			{
-				int newVal = !(GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS);
+				int newVal = !(GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS);
 				DBWriteContactSettingByte(NULL, "CList", "UseGroups", (BYTE) newVal);
 				SendMessage(cli.hwndContactTree, CLM_SETUSEGROUPS, newVal, 0);
 				break;
@@ -934,8 +934,8 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(hMenu, POPUP_HIDEOFFLINEROOT, SendMessage(cli.hwndContactTree, CLM_GETHIDEOFFLINEROOT, 0, 0) ? MF_CHECKED : MF_UNCHECKED);
 				CheckMenuItem(hMenu, POPUP_HIDEEMPTYGROUPS,
-					GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS ? MF_CHECKED : MF_UNCHECKED);
-				CheckMenuItem(hMenu, POPUP_DISABLEGROUPS, GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS ? MF_UNCHECKED : MF_CHECKED);
+					GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS ? MF_CHECKED : MF_UNCHECKED);
+				CheckMenuItem(hMenu, POPUP_DISABLEGROUPS, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS ? MF_UNCHECKED : MF_CHECKED);
 				TrackPopupMenu(hMenu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
 				DestroyMenu(hMenu);
 				return 0;

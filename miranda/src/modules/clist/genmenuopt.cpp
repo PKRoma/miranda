@@ -405,10 +405,10 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct OrderData*)mir_alloc(sizeof(struct OrderData));
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA,(LONG)dat);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA,(LONG_PTR)dat);
 		dat->dragging=0;
 		MyOldWindowProc=(WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
-		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC,(LONG)&LBTNDOWNProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC,(LONG_PTR)&LBTNDOWNProc);
 		{
 			HIMAGELIST himlCheckBoxes;
 			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);

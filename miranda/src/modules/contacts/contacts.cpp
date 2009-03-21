@@ -85,7 +85,7 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 	return 1;
 }
 
-static int GetContactInfo(WPARAM, LPARAM lParam) {
+static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 	DBVARIANT dbv;
 	CONTACTINFO *ci = (CONTACTINFO*)lParam;
 
@@ -170,14 +170,14 @@ static int GetContactInfo(WPARAM, LPARAM lParam) {
 				if(!GetDatabaseString(ci,"LastName",&dbv2)) {
 					ci->type = CNFT_ASCIIZ;
 					if ( ci->dwFlag & CNF_UNICODE ) {
-						int len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
+						size_t len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
 						WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*len );
 						if ( buf != NULL )
 							wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
 						ci->pszVal = ( TCHAR* )buf;
 					}
 					else {
-						int len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
+						size_t len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
 						char* buf = ( char* )mir_alloc( len );
 						if ( buf != NULL )
 							strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
@@ -194,7 +194,7 @@ static int GetContactInfo(WPARAM, LPARAM lParam) {
 		case CNF_UNIQUEID:
 		{
 			char *uid = (char*)CallProtoService(ci->szProto,PS_GETCAPS,PFLAG_UNIQUEIDSETTING,0);
-			if ((int)uid!=CALLSERVICE_NOTFOUND&&uid)
+			if ((INT_PTR)uid!=CALLSERVICE_NOTFOUND&&uid)
 				if (!ProcessDatabaseValueDefault(ci,uid))
 					return 0;
 
@@ -285,14 +285,14 @@ static int GetContactInfo(WPARAM, LPARAM lParam) {
 								ci->type = CNFT_ASCIIZ;
 
 								if ( ci->dwFlag & CNF_UNICODE ) {
-									int len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
+									size_t len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
 									WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*len );
 									if ( buf != NULL )
 										wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
 									ci->pszVal = ( TCHAR* )buf;
 								}
 								else {
-									int len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
+									size_t len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
 									char* buf = ( char* )mir_alloc( len );
 									if ( buf != NULL )
 										strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
@@ -363,9 +363,9 @@ static INT_PTR CALLBACK ContactOpts(HWND hwndDlg, UINT msg, WPARAM, LPARAM lPara
 		case WM_INITDIALOG:
 		{	TranslateDialogDefault(hwndDlg);
 			dat=(struct ContactOptionsData*)mir_alloc(sizeof(struct ContactOptionsData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->dragging=0;
-			SetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
+			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_NAMEORDER),GWL_STYLE)|TVS_NOHSCROLL);
 			{	TVINSERTSTRUCT tvis;
 				int i;
 				tvis.hParent = NULL;

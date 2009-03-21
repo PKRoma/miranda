@@ -459,7 +459,7 @@ int NotifyEventHooks( HANDLE hEvent, WPARAM wParam, LPARAM lParam )
 		item.wParam = wParam;
 		item.lParam = lParam;
 
-		QueueUserAPC( HookToMainAPCFunc, hMainThread, ( DWORD )&item );
+		QueueUserAPC( HookToMainAPCFunc, hMainThread, ( ULONG_PTR )&item );
 		PostMessage( hAPCWindow, WM_NULL, 0, 0 ); // let it process APC even if we're in a common dialog
 		WaitForSingleObject( item.hDoneEvent, INFINITE );
 		CloseHandle( item.hDoneEvent );
@@ -725,7 +725,7 @@ int ServiceExists(const char *name)
 	return ret;
 }
 
-int CallService(const char *name,WPARAM wParam,LPARAM lParam)
+INT_PTR CallService(const char *name,WPARAM wParam,LPARAM lParam)
 {
 	#ifdef _DEBUG
 		if (name==NULL) {
@@ -774,7 +774,7 @@ static void CALLBACK CallServiceToMainAPCFunc(ULONG_PTR dwParam)
 	SetEvent(item->hDoneEvent);
 }
 
-int CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
+INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 {
 	extern HWND hAPCWindow;
 

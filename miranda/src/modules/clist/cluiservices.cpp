@@ -23,29 +23,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "clc.h"
 
-static int GetHwnd(WPARAM, LPARAM)
+static INT_PTR GetHwnd(WPARAM, LPARAM)
 {
-	return (int)cli.hwndContactList;
+	return (INT_PTR)cli.hwndContactList;
 }
 
-static int GetHwndTree(WPARAM, LPARAM)
+static INT_PTR GetHwndTree(WPARAM, LPARAM)
 {
-	return (int)cli.hwndContactTree;
+	return (INT_PTR)cli.hwndContactTree;
 }
 
-static int CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
+static INT_PTR CluiProtocolStatusChanged(WPARAM wParam, LPARAM lParam)
 {
 	cli.pfnCluiProtocolStatusChanged( wParam, (const char*)lParam );
 	return 0;
 }
 
-int SortList(WPARAM, LPARAM)
+INT_PTR SortList(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int GroupAdded(WPARAM wParam, LPARAM lParam)
+static INT_PTR GroupAdded(WPARAM wParam, LPARAM lParam)
 {
 	//CLC does this automatically unless it's a new group
 	if (lParam) {
@@ -63,53 +63,53 @@ static int GroupAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int ContactSetIcon(WPARAM, LPARAM)
+static INT_PTR ContactSetIcon(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactDeleted(WPARAM, LPARAM)
+static INT_PTR ContactDeleted(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ContactAdded(WPARAM, LPARAM)
+static INT_PTR ContactAdded(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListBeginRebuild(WPARAM, LPARAM)
+static INT_PTR ListBeginRebuild(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int ListEndRebuild(WPARAM, LPARAM)
+static INT_PTR ListEndRebuild(WPARAM, LPARAM)
 {
 	int rebuild = 0;
 	//CLC does this automatically, but we need to force it if hideoffline or hideempty has changed
-	if ((DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) == 0) != ((GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEOFFLINE) == 0)) {
+	if ((DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT) == 0) != ((GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEOFFLINE) == 0)) {
 		if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT))
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) | CLS_HIDEOFFLINE);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) | CLS_HIDEOFFLINE);
 		else
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) & ~CLS_HIDEOFFLINE);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & ~CLS_HIDEOFFLINE);
 		rebuild = 1;
 	}
-	if ((DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) == 0) != ((GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) == 0)) {
+	if ((DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) == 0) != ((GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) == 0)) {
 		if (DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT))
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) | CLS_HIDEEMPTYGROUPS);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) | CLS_HIDEEMPTYGROUPS);
 		else
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) & ~CLS_HIDEEMPTYGROUPS);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & ~CLS_HIDEEMPTYGROUPS);
 		rebuild = 1;
 	}
-	if ((DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) == 0) != ((GetWindowLong(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS) == 0)) {
+	if ((DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) == 0) != ((GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & CLS_USEGROUPS) == 0)) {
 		if (DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT))
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) | CLS_USEGROUPS);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) | CLS_USEGROUPS);
 		else
-			SetWindowLong(cli.hwndContactTree, GWL_STYLE, GetWindowLong(cli.hwndContactTree, GWL_STYLE) & ~CLS_USEGROUPS);
+			SetWindowLongPtr(cli.hwndContactTree, GWL_STYLE, GetWindowLongPtr(cli.hwndContactTree, GWL_STYLE) & ~CLS_USEGROUPS);
 		rebuild = 1;
 	}
 	if (rebuild)
@@ -117,13 +117,13 @@ static int ListEndRebuild(WPARAM, LPARAM)
 	return 0;
 }
 
-static int ContactRenamed(WPARAM, LPARAM)
+static INT_PTR ContactRenamed(WPARAM, LPARAM)
 {
 	//unnecessary: CLC does this automatically
 	return 0;
 }
 
-static int GetCaps(WPARAM wParam, LPARAM)
+static INT_PTR GetCaps(WPARAM wParam, LPARAM)
 {
 	switch (wParam) {
 	case CLUICAPS_FLAGS1:

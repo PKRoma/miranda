@@ -92,10 +92,10 @@ int MO_MeasureMenuItem( LPMEASUREITEMSTRUCT mis );
 int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmiparam );
 int MO_ProcessCommand( PMO_IntMenuItem pimi, LPARAM lParam );
 int MO_ProcessHotKeys( int menuHandle, int vKey );
-int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, int value );
-int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, int value );
+int MO_SetOptionsMenuItem( PMO_IntMenuItem menuobjecthandle, int setting, INT_PTR value );
+int MO_SetOptionsMenuObject( int menuobjecthandle, int setting, INT_PTR value );
 
-int MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam);
+INT_PTR MO_ProcessCommandByMenuIdent(WPARAM wParam,LPARAM lParam);
 int MO_ProcessCommandBySubMenuIdent(int menuID, int command, LPARAM lParam);
 
 // function returns TRUE if the walk should be immediately stopped
@@ -116,7 +116,7 @@ BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles 
 int GenMenuOptInit(WPARAM wParam, LPARAM lParam);
 int GetMenuObjbyId(const int id);
 int GetMenuItembyId(const int objpos,const int id);
-int MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
+INT_PTR MO_GetMenuItem(WPARAM wParam,LPARAM lParam);
 void FreeAndNil(void **p);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);
 static int RemoveFromList(int pos,void **lpList,int *ListElemCount,int ElemSize);

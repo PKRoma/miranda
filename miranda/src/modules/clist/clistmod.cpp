@@ -23,18 +23,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "clc.h"
 
-int AddMainMenuItem(WPARAM wParam, LPARAM lParam);
-int AddContactMenuItem(WPARAM wParam, LPARAM lParam);
-int ContactChangeGroup(WPARAM wParam, LPARAM lParam);
+INT_PTR AddMainMenuItem(WPARAM wParam, LPARAM lParam);
+INT_PTR AddContactMenuItem(WPARAM wParam, LPARAM lParam);
+INT_PTR ContactChangeGroup(WPARAM wParam, LPARAM lParam);
 int InitCListEvents(void);
 void UninitCListEvents(void);
 int ContactSettingChanged(WPARAM wParam, LPARAM lParam);
 int ContactAdded(WPARAM wParam, LPARAM lParam);
 int ContactDeleted(WPARAM wParam, LPARAM lParam);
-int GetContactDisplayName(WPARAM wParam, LPARAM lParam);
-int InvalidateDisplayName(WPARAM wParam, LPARAM lParam);
+INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam);
+INT_PTR InvalidateDisplayName(WPARAM wParam, LPARAM lParam);
 int InitGroupServices(void);
-int Docking_IsDocked(WPARAM wParam, LPARAM lParam);
+INT_PTR Docking_IsDocked(WPARAM wParam, LPARAM lParam);
 void InitDisplayNameCache(void);
 void FreeDisplayNameCache(void);
 int LoadCLUIModule(void);
@@ -123,7 +123,7 @@ TCHAR* fnGetStatusModeDescription( int mode, int flags )
 	return szMode;
 }
 
-static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 {
 	#ifdef UNICODE
 		if ( !( lParam & GCMDF_TCHAR ))
@@ -133,11 +133,11 @@ static int GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 			char *buf2 = u2a(buf1);
 			_snprintf(szMode,sizeof(szMode),"%s",buf2);
 			mir_free(buf2);
-			return (int)szMode;
+			return (INT_PTR)szMode;
 		}
 	#endif
 
-	return (int)cli.pfnGetStatusModeDescription(wParam,lParam);
+	return (INT_PTR)cli.pfnGetStatusModeDescription(wParam,lParam);
 }
 
 static int ProtocolAck(WPARAM, LPARAM lParam)
@@ -193,7 +193,7 @@ int fnIconFromStatusMode(const char *szProto, int status, HANDLE )
 	return 1;
 }
 
-static int GetContactIcon(WPARAM wParam, LPARAM)
+static INT_PTR GetContactIcon(WPARAM wParam, LPARAM)
 {
 	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
 	HANDLE hContact = (HANDLE)wParam;
@@ -246,7 +246,7 @@ static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
 	return 0;
 }
 
-static int ContactDoubleClicked(WPARAM wParam, LPARAM)
+static INT_PTR ContactDoubleClicked(WPARAM wParam, LPARAM)
 {
 	// Check and an event from the CList queue for this hContact
 	if (cli.pfnEventsProcessContactDoubleClick((HANDLE) wParam))
@@ -255,12 +255,12 @@ static int ContactDoubleClicked(WPARAM wParam, LPARAM)
 	return 0;
 }
 
-static int GetIconsImageList(WPARAM, LPARAM)
+static INT_PTR GetIconsImageList(WPARAM, LPARAM)
 {
-	return (int) hCListImages;
+	return (INT_PTR)hCListImages;
 }
 
-static int ContactFilesDropped(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactFilesDropped(WPARAM wParam, LPARAM lParam)
 {
 	CallService(MS_FILE_SENDSPECIFICFILES, wParam, lParam);
 	return 0;
@@ -418,7 +418,7 @@ int fnShowHide(WPARAM, LPARAM)
 int GetStatusModeOrdering(int statusMode);
 extern int sortByStatus, sortByProto;
 
-static int CompareContacts( WPARAM wParam, LPARAM lParam )
+static INT_PTR CompareContacts( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE a = (HANDLE) wParam, b = (HANDLE) lParam;
 	TCHAR namea[128], *nameb;
@@ -468,12 +468,12 @@ static int CompareContacts( WPARAM wParam, LPARAM lParam )
 
 /***************************************************************************************/
 
-static int TrayIconProcessMessageStub( WPARAM wParam, LPARAM lParam ) {	return cli.pfnTrayIconProcessMessage( wParam, lParam ); }
-static int TrayIconPauseAutoHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnTrayIconPauseAutoHide( wParam, lParam ); }
-static int ShowHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnShowHide( wParam, lParam ); }
-static int SetHideOfflineStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnSetHideOffline( wParam, lParam ); }
-static int Docking_ProcessWindowMessageStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnDocking_ProcessWindowMessage( wParam, lParam ); }
-static int HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnHotkeysProcessMessage( wParam, lParam ); }
+static INT_PTR TrayIconProcessMessageStub( WPARAM wParam, LPARAM lParam ) {	return cli.pfnTrayIconProcessMessage( wParam, lParam ); }
+static INT_PTR TrayIconPauseAutoHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnTrayIconPauseAutoHide( wParam, lParam ); }
+static INT_PTR ShowHideStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnShowHide( wParam, lParam ); }
+static INT_PTR SetHideOfflineStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnSetHideOffline( wParam, lParam ); }
+static INT_PTR Docking_ProcessWindowMessageStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnDocking_ProcessWindowMessage( wParam, lParam ); }
+static INT_PTR HotkeysProcessMessageStub( WPARAM wParam, LPARAM lParam ) { return cli.pfnHotkeysProcessMessage( wParam, lParam ); }
 
 int LoadContactListModule2(void)
 {

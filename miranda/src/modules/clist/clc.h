@@ -169,7 +169,7 @@ int      fnGetProtocolVisibility( const char* accName );
 int    fnGetAccountIndexByPos(int Pos);
 int    fnGetProtoIndexByPos(PROTOCOLDESCRIPTOR ** proto, int protoCnt, int Pos);
 void   RebuildMenuOrder( void );
-int    MenuProcessCommand(WPARAM wParam,LPARAM lParam);
+INT_PTR    MenuProcessCommand(WPARAM wParam,LPARAM lParam);
 
 /* clistsettings.c */
 TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode );
@@ -219,7 +219,7 @@ void   fnTrayIconIconsChanged ( void );
 int    fnTrayIconInit( HWND hwnd );
 TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto );
 int    fnTrayIconPauseAutoHide ( WPARAM wParam, LPARAM lParam );
-int    fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
+INT_PTR    fnTrayIconProcessMessage ( WPARAM wParam, LPARAM lParam );
 void   fnTrayIconRemove(HWND hwnd, const char *szProto);
 int    fnTrayIconSetBaseInfo(HICON hIcon, const char *szPreferredProto);
 void   fnTrayIconSetToBase ( char *szPreferredProto );

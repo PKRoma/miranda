@@ -31,7 +31,7 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 		{
 			char szUin[10];
 			acs=(ADDCONTACTSTRUCT *)lparam;
-			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG)acs);
+			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG_PTR)acs);
 
 			TranslateDialogDefault(hdlg);
 			Window_SetIcon_IcoLib(hdlg,SKINICON_OTHER_ADDCONTACT);
@@ -229,7 +229,7 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 	return FALSE;
 }
 
-int AddContactDialog(WPARAM wParam,LPARAM lParam)
+INT_PTR AddContactDialog(WPARAM wParam,LPARAM lParam)
 {
 	if (lParam) {
 		ADDCONTACTSTRUCT* acs = ( ADDCONTACTSTRUCT* )mir_alloc(sizeof(ADDCONTACTSTRUCT));

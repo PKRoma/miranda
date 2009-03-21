@@ -145,7 +145,7 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 	return 0;
 }
 
-int NetlibBindPort(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 {
 	NETLIBBIND *nlb=(NETLIBBIND*)lParam;
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
@@ -156,13 +156,13 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_INCOMING) || nlb==NULL || nlb->pfnNewConnection==NULL) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 	if ( nlb->cbSize != sizeof(NETLIBBIND)   &&
 		 nlb->cbSize != NETLIBBIND_SIZEOF_V2 &&
 		 nlb->cbSize != NETLIBBIND_SIZEOF_V1 )
 	{
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)NULL;
 	}
 	nlbp=(struct NetlibBoundPort*)mir_calloc(sizeof(struct NetlibBoundPort));
 	nlbp->handleType=NLH_BOUNDPORT;
@@ -173,7 +173,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	if(nlbp->s==INVALID_SOCKET) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
 		mir_free(nlbp);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)NULL;
 	}
 	sin.sin_family=AF_INET;
 	sin.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -204,14 +204,14 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"bind",WSAGetLastError());
 		closesocket(nlbp->s);
 		mir_free(nlbp);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)NULL;
 	}
 
 	if(listen(nlbp->s,5)) {
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"listen",WSAGetLastError());
 		closesocket(nlbp->s);
 		mir_free(nlbp);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)NULL;
 	}
 
 	{	int len;
@@ -223,7 +223,7 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"getsockname",WSAGetLastError());
 			closesocket(nlbp->s);
 			mir_free(nlbp);
-			return (int)(HANDLE)NULL;
+			return (INT_PTR)NULL;
 		}
 		nlb->wPort=ntohs(sin.sin_port);
 		nlbp->wPort=nlb->wPort;
@@ -267,6 +267,6 @@ int NetlibBindPort(WPARAM wParam,LPARAM lParam)
 
 	}
 	nlbp->hThread=(HANDLE)forkthreadex(NULL,0,NetlibBindAcceptThread,0,nlbp,&dwThreadId);
-	return (int)nlbp;
+	return (INT_PTR)nlbp;
 }
 

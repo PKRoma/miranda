@@ -744,7 +744,7 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 	return scRet == SEC_E_OK ? num : SOCKET_ERROR;
 }
 
-static int GetSslApi(WPARAM, LPARAM lParam)
+static INT_PTR GetSslApi(WPARAM, LPARAM lParam)
 {
 	SSL_API* si = (SSL_API*)lParam;
 	if (si == NULL) return FALSE;

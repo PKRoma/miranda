@@ -110,7 +110,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 	case WM_CTLCOLOREDIT:
 	case WM_CTLCOLORSTATIC:
-		switch ( GetWindowLong(( HWND )lParam, GWL_ID )) {
+		switch ( GetWindowLongPtr(( HWND )lParam, GWL_ID )) {
 		case IDC_WHITERECT:
 		case IDC_BUILDTIME:
 		case IDC_LOGO:

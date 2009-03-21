@@ -306,7 +306,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			memset(dat,0,sizeof(struct FindAddDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG)dat);
+			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
 			dat->notSearchedYet=1;
 			dat->iLastColumnSortIndex=1;
 			dat->bSortAscending=1;
@@ -491,8 +491,8 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						#endif
 					}
 					else SetDlgItemText(hwndDlg,IDC_BYPROTOID,TranslateT("Handle"));
-					if(protoCaps&PF1_NUMERICUSERID) SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)|ES_NUMBER);
-					else SetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLong(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)&~ES_NUMBER);
+					if(protoCaps&PF1_NUMERICUSERID) SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)|ES_NUMBER);
+					else SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)&~ES_NUMBER);
 				}
 			}
 #define en(id,t) ShowWindow(GetDlgItem(hwndDlg,IDC_##id),dat->show##t?SW_SHOW:SW_HIDE)
@@ -932,7 +932,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	return FALSE;
 }
 
-static int FindAddCommand(WPARAM, LPARAM)
+static INT_PTR FindAddCommand(WPARAM, LPARAM)
 {
 	if(IsWindow(hwndFindAdd)) {
 		ShowWindow(hwndFindAdd,SW_SHOWNORMAL);

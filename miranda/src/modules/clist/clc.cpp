@@ -190,14 +190,14 @@ static int ClcIconsChanged(WPARAM, LPARAM)
 	return 0;
 }
 
-static int SetInfoTipHoverTime(WPARAM wParam, LPARAM)
+static INT_PTR SetInfoTipHoverTime(WPARAM wParam, LPARAM)
 {
 	DBWriteContactSettingWord(NULL, "CLC", "InfoTipHoverTime", (WORD) wParam);
 	cli.pfnClcBroadcast( INTM_SETINFOTIPHOVERTIME, wParam, 0);
 	return 0;
 }
 
-static int GetInfoTipHoverTime(WPARAM, LPARAM)
+static INT_PTR GetInfoTipHoverTime(WPARAM, LPARAM)
 {
 	return DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 750);
 }
@@ -259,7 +259,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 {
 	struct ClcData *dat;
 
-	dat = (struct ClcData *) GetWindowLong(hwnd, 0);
+	dat = (struct ClcData *) GetWindowLongPtr(hwnd, 0);
 	if (msg >= CLM_FIRST && msg < CLM_LAST)
 		return cli.pfnProcessExternalMessages(hwnd, dat, msg, wParam, lParam);
 
@@ -269,7 +269,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		cli.pfnRegisterFileDropping(hwnd);
 		if ( dat == NULL ) {
 			dat = (struct ClcData *) mir_calloc(sizeof(struct ClcData));
-			SetWindowLong(hwnd, 0, (LONG) dat);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR) dat);
 		}
 		{
 			int i;
@@ -302,7 +302,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		}
 		break;
 	case INTM_SCROLLBARCHANGED:
-		if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
 			if (dat->noVScrollbar)
 				ShowScrollBar(hwnd, SB_VERT, FALSE);
 			else
@@ -471,7 +471,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	case INTM_HIDDENCHANGED:
 	{
 		DBCONTACTWRITESETTING *dbcws = (DBCONTACTWRITESETTING *) lParam;
-		if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN)
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN)
 			break;
 		if (dbcws->value.type == DBVT_DELETED || dbcws->value.bVal == 0) {
 			if (cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, NULL, NULL, NULL))
@@ -497,7 +497,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			flags = contact->flags;
 		}
 		cli.pfnDeleteItemFromTree(hwnd, (HANDLE) wParam);
-		if (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
 			NMCLISTCONTROL nm;
 			cli.pfnAddContactToTree(hwnd, dat, (HANDLE) wParam, 1, 1);
 			if (cli.pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
@@ -532,7 +532,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		else
 			status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
 
-		DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+		DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 		shouldShow = (style & CLS_SHOWHIDDEN || !DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
 			&& (!cli.pfnIsHiddenMode(dat, status)
 			|| CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam); // this means an offline msg is flashing, so the contact should be shown
@@ -813,7 +813,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 			dat->szQuickSearch[lstrlen(dat->szQuickSearch) - 1] = '\0';
 		else if (wParam < ' ')
 			break;
-		else if (wParam == ' ' && dat->szQuickSearch[0] == '\0' && GetWindowLong(hwnd, GWL_STYLE) & CLS_CHECKBOXES) {
+		else if (wParam == ' ' && dat->szQuickSearch[0] == '\0' && GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_CHECKBOXES) {
 			struct ClcContact *contact;
 			NMCLISTCONTROL nm;
 			if (cli.pfnGetRowByIndex(dat, dat->selection, &contact, NULL) == -1)
@@ -1310,7 +1310,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 		case POPUP_NEWSUBGROUP:
 			if (contact->type != CLCIT_GROUP)
 				break;
-			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~CLS_HIDEEMPTYGROUPS);
+			SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) & ~CLS_HIDEEMPTYGROUPS);
 			CallService(MS_CLIST_GROUPCREATE, contact->groupId, 0);
 			break;
 		case POPUP_RENAMEGROUP:

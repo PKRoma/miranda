@@ -65,7 +65,7 @@ int getProfilePath(TCHAR * buf, size_t cch)
 // returns 1 if *.dat spec is matched
 int isValidProfileName(const TCHAR *name)
 {
-	int len = _tcslen(name) - 4;
+	size_t len = _tcslen(name) - 4;
 	return len > 0 && _tcsicmp(&name[len], _T(".dat")) == 0;
 }
 

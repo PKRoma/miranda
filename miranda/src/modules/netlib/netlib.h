@@ -89,37 +89,37 @@ struct NetlibPacketRecver {
 
 //netlib.c
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings);
-int NetlibCloseHandle(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibCloseHandle(WPARAM wParam,LPARAM lParam);
 void NetlibInitializeNestedCS(struct NetlibNestedCriticalSection *nlncs);
 void NetlibDeleteNestedCS(struct NetlibNestedCriticalSection *nlncs);
 #define NLNCS_SEND  0
 #define NLNCS_RECV  1
 int NetlibEnterNestedCS(struct NetlibConnection *nlc,int which);
 void NetlibLeaveNestedCS(struct NetlibNestedCriticalSection *nlncs);
-int NetlibBase64Encode(WPARAM wParam,LPARAM lParam);
-int NetlibBase64Decode(WPARAM wParam,LPARAM lParam);
-int NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibBase64Encode(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibBase64Decode(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
 
 //netlibbind.c
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);
-int NetlibBindPort(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam);
 bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn);
 
 //netlibhttp.c
-int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam);
-int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam);
-int NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
-int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
 NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags);
 
 //netlibhttpproxy.c
 int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc);
-int NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam);
-int NetlibHttpSetPollingTimeout(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibHttpSetPollingTimeout(WPARAM wParam,LPARAM lParam);
 int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int flags);
-int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags);
-int NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam);
+INT_PTR NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags);
+INT_PTR NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam);
 
 //netliblog.c
 void NetlibLogShowOptions(void);
@@ -131,27 +131,27 @@ void NetlibLogShutdown(void);
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost);
 int WaitUntilReadable(SOCKET s,DWORD dwTimeout);
 int WaitUntilWritable(SOCKET s,DWORD dwTimeout);
-int NetlibOpenConnection(WPARAM wParam,LPARAM lParam);
-int NetlibStartSsl(WPARAM wParam, LPARAM lParam);
+INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibStartSsl(WPARAM wParam, LPARAM lParam);
 
 //netlibopts.c
 int NetlibOptInitialise(WPARAM wParam,LPARAM lParam);
 void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTINGS *settings);
 
 //netlibpktrecver.c
-int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam);
-int NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam);
 
 //netlibsock.c
 #define NL_SELECT_READ  0x0001
 #define NL_SELECT_WRITE 0x0002
 #define NL_SELECT_ALL   (NL_SELECT_READ+NL_SELECT_WRITE)
 
-int NetlibSend(WPARAM wParam,LPARAM lParam);
-int NetlibRecv(WPARAM wParam,LPARAM lParam);
-int NetlibSelect(WPARAM wParam,LPARAM lParam);
-int NetlibSelectEx(WPARAM wParam,LPARAM lParam);
-int NetlibShutdown(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibSend(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibRecv(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibSelect(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibSelectEx(WPARAM wParam,LPARAM lParam);
+INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
 
 //netlibupnp.c
 BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
@@ -169,11 +169,11 @@ HANDLE NetlibInitSecurityProvider(char* provider);
 char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const char* login, const char* psw);
 
 
-static __inline int NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
+static __inline INT_PTR NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={(char*)buf,len,flags};
 	return NetlibSend((WPARAM)nlc,(LPARAM)&nlb);
 }
-static __inline int NLRecv(struct NetlibConnection *nlc,char *buf,int len,int flags) {
+static __inline INT_PTR NLRecv(struct NetlibConnection *nlc,char *buf,int len,int flags) {
 	NETLIBBUFFER nlb={buf,len,flags};
 	return NetlibRecv((WPARAM)nlc,(LPARAM)&nlb);
 }

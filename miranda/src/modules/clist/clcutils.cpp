@@ -73,7 +73,7 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	HDC hdc;
 	RECT clRect;
 	HFONT hFont;
-	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+	DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	POINT pt;
 	HWND hwndTmp, hwndRoot;
 
@@ -282,7 +282,7 @@ void fnRecalcScrollBar(HWND hwnd, struct ClcData *dat)
 	si.nPage = clRect.bottom;
 	si.nPos = dat->yScroll;
 
-	if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
+	if (GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
 		if (dat->noVScrollbar == 0)
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 	}
@@ -453,10 +453,10 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	case WM_KEYDOWN:
 		switch (wParam) {
 		case VK_RETURN:
-			cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+			cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 1);
 			return 0;
 		case VK_ESCAPE:
-			cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 0);
+			cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 0);
 			return 0;
 		}
 		break;
@@ -470,7 +470,7 @@ static LRESULT CALLBACK RenameEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		return DLGC_WANTMESSAGE;
 	case WM_KILLFOCUS:
-		cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLong(GetParent(hwnd), 0), 1);
+		cli.pfnEndRename(GetParent(hwnd), (struct ClcData *) GetWindowLongPtr(GetParent(hwnd), 0), 1);
 		return 0;
 	}
 	return CallWindowProc(OldRenameEditWndProc, hwnd, msg, wParam, lParam);
@@ -496,7 +496,7 @@ void fnBeginRenameSelection(HWND hwnd, struct ClcData *dat)
 	cli.pfnCalcEipPosition( dat, contact, group, &pt );
 	h = cli.pfnGetRowHeight(dat, dat->selection);
 	dat->hwndRenameEdit = CreateWindow( _T("EDIT"), contact->szText, WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, pt.x, pt.y, clRect.right - pt.x, h, hwnd, NULL, cli.hInst, NULL);
-	OldRenameEditWndProc = (WNDPROC) SetWindowLongPtr(dat->hwndRenameEdit, GWLP_WNDPROC, (LONG) RenameEditSubclassProc);
+	OldRenameEditWndProc = (WNDPROC) SetWindowLongPtr(dat->hwndRenameEdit, GWLP_WNDPROC, (LONG_PTR) RenameEditSubclassProc);
 	SendMessage(dat->hwndRenameEdit, WM_SETFONT, (WPARAM) (contact->type == CLCIT_GROUP ? dat->fontInfo[FONTID_GROUPS].hFont : dat->fontInfo[FONTID_CONTACTS].hFont), 0);
 	SendMessage(dat->hwndRenameEdit, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN | EC_USEFONTINFO, 0);
 	SendMessage(dat->hwndRenameEdit, EM_SETSEL, 0, (LPARAM) (-1));

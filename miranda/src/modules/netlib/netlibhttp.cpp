@@ -153,7 +153,7 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 	return bytesSent;
 }
 
-int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
@@ -361,7 +361,7 @@ int NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	return bytesSent;
 }
 
-int NetlibHttpFreeRequestStruct(WPARAM, LPARAM lParam)
+INT_PTR NetlibHttpFreeRequestStruct(WPARAM, LPARAM lParam)
 {
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
 
@@ -384,7 +384,7 @@ int NetlibHttpFreeRequestStruct(WPARAM, LPARAM lParam)
 	return 1;
 }
 
-int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr;
@@ -395,7 +395,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	int headersDone=0,firstLineLength;
 
 	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV))
-		return (int)(NETLIBHTTPREQUEST*)NULL;
+		return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 	dwRequestTimeoutTime=GetTickCount()+HTTPRECVHEADERSTIMEOUT;
 	nlhr=(NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize=sizeof(NETLIBHTTPREQUEST);
@@ -404,14 +404,14 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	if(!HttpPeekFirstResponseLine(nlc,dwRequestTimeoutTime,lParam|MSG_PEEK,&nlhr->resultCode,&nlhr->szResultDescr,&firstLineLength)) {
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
 		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-		return (int)(NETLIBHTTPREQUEST*)NULL;
+		return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 	}
 	bytesPeeked=NLRecv(nlc,buffer,firstLineLength,lParam|MSG_DUMPASTEXT);
 	if(bytesPeeked<firstLineLength) {
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
 		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 		if(bytesPeeked!=SOCKET_ERROR) SetLastError(ERROR_HANDLE_EOF);
-		return (int)(NETLIBHTTPREQUEST*)NULL;
+		return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 	}
 	for(;;) {
 		bytesPeeked=RecvWithTimeoutTime(nlc,dwRequestTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|lParam);
@@ -421,7 +421,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 			NetlibLeaveNestedCS(&nlc->ncsRecv);
 			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
-			return (int)(NETLIBHTTPREQUEST*)NULL;
+			return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 		}
 		buffer[bytesPeeked]='\0';
 		for(pbuffer=buffer;;) {
@@ -432,7 +432,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 					NetlibLeaveNestedCS(&nlc->ncsRecv);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 					if(pbuffer==buffer) SetLastError(ERROR_BUFFER_OVERFLOW);
-					return (int)(NETLIBHTTPREQUEST*)NULL;
+					return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 				}
 				Sleep(100);
 				break;
@@ -441,7 +441,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 				NetlibLeaveNestedCS(&nlc->ncsRecv);
 				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 				SetLastError(ERROR_BAD_FORMAT);
-				return (int)(NETLIBHTTPREQUEST*)NULL;
+				return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 			}
 			*peol='\0';
 			{
@@ -451,7 +451,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 					if(NLRecv(nlc,buffer,peol+2-buffer,lParam|MSG_DUMPASTEXT)==SOCKET_ERROR) {
 						NetlibLeaveNestedCS(&nlc->ncsRecv);
 						NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-						return (int)(NETLIBHTTPREQUEST*)NULL;
+						return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 					}
 					headersDone=1;
 					break;
@@ -461,7 +461,7 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 					NetlibLeaveNestedCS(&nlc->ncsRecv);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 					SetLastError(ERROR_INVALID_DATA);
-					return (int)(NETLIBHTTPREQUEST*)NULL;
+					return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
 				}
 				nlhr->headersCount++;
 				nlhr->headers=(NETLIBHTTPHEADER*)mir_realloc(nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
@@ -479,10 +479,10 @@ int NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		if(headersDone) break;
 	}
 	NetlibLeaveNestedCS(&nlc->ncsRecv);
-	return (int)nlhr;
+	return (INT_PTR)nlhr;
 }
 
-int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam,*nlhrReply;
@@ -491,7 +491,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 
 	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl==NULL || nlhr->szUrl[0]=='\0') {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(HANDLE)NULL;
+		return (INT_PTR)(HANDLE)NULL;
 	}
 
 	if (hConnection)
@@ -527,7 +527,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		else nloc.wPort = secur ? 443 : 80;
 		nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
 		hConnection=(HANDLE)NetlibOpenConnection((WPARAM)nlu,(LPARAM)&nloc);
-		if(hConnection==NULL) return (int)(HANDLE)NULL;
+		if(hConnection==NULL) return (INT_PTR)(HANDLE)NULL;
 	}
 
 	{
@@ -570,7 +570,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		if(NetlibHttpSendRequest((WPARAM)hConnection,(LPARAM)&nlhrSend)==SOCKET_ERROR) {
 			if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 			NetlibCloseHandle((WPARAM)hConnection,0);
-			return (int)(HANDLE)NULL;
+			return (INT_PTR)(HANDLE)NULL;
 		}
 		if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 	}
@@ -585,7 +585,7 @@ int NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 
     if ((nlhr->flags&NLHRF_PERSISTENT) == 0)
 	    NetlibCloseHandle((WPARAM)hConnection,0);
-	return (int)nlhrReply;
+	return (INT_PTR)nlhrReply;
 }
 
 void NetlibHttpSetLastErrorUsingHttpResult(int result)

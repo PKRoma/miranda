@@ -26,11 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern CRITICAL_SECTION csNetlibCloseHandle;
 extern HANDLE hConnectionHeaderMutex,hSendEvent,hRecvEvent;
 
-int NetlibSend(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibSend(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
-	int result;
+	INT_PTR result;
 
 	if ( nlb == NULL ) {
 		SetLastError(ERROR_INVALID_PARAMETER);
@@ -63,7 +63,7 @@ int NetlibSend(WPARAM wParam,LPARAM lParam)
 	return result;
 }
 
-int NetlibRecv(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibRecv(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 	NETLIBBUFFER* nlb = ( NETLIBBUFFER* )lParam;
@@ -118,7 +118,7 @@ static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int& pending)
 	return 1;
 }
 
-int NetlibSelect(WPARAM, LPARAM lParam)
+INT_PTR NetlibSelect(WPARAM,LPARAM lParam)
 {
 	NETLIBSELECT *nls=(NETLIBSELECT*)lParam;
 	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECT)) {
@@ -146,7 +146,7 @@ int NetlibSelect(WPARAM, LPARAM lParam)
 	return select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
 }
 
-int NetlibSelectEx(WPARAM, LPARAM lParam)
+INT_PTR NetlibSelectEx(WPARAM, LPARAM lParam)
 {
 	NETLIBSELECTEX *nls=(NETLIBSELECTEX*)lParam;
 	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECTEX)) {

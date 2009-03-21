@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HANDLE hGroupChangeEvent;
 
-static int RenameGroup(WPARAM wParam, LPARAM lParam);
-static int MoveGroupBefore(WPARAM wParam, LPARAM lParam);
+static INT_PTR RenameGroup(WPARAM wParam, LPARAM lParam);
+static INT_PTR MoveGroupBefore(WPARAM wParam, LPARAM lParam);
 
 static int CountGroups(void)
 {
@@ -64,7 +64,7 @@ static int GroupNameExists(const TCHAR *name, int skipGroup)
 	return 0;
 }
 
-static int CreateGroup(WPARAM wParam, LPARAM lParam)
+static INT_PTR CreateGroup(WPARAM wParam, LPARAM lParam)
 {
 	int newId = CountGroups();
 	TCHAR newBaseName[127], newName[128];
@@ -108,7 +108,7 @@ static int CreateGroup(WPARAM wParam, LPARAM lParam)
 	return newId + 1;
 }
 
-static int GetGroupName2(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetGroupName2(WPARAM wParam, LPARAM lParam)
 {
 	char idstr[33];
 	DBVARIANT dbv;
@@ -116,12 +116,12 @@ static int GetGroupName2(WPARAM wParam, LPARAM lParam)
 
 	_itoa(wParam - 1, idstr, 10);
 	if (DBGetContactSettingString(NULL, "CListGroups", idstr, &dbv))
-		return (int) (char *) NULL;
+		return (INT_PTR) (char *) NULL;
 	lstrcpynA(name, dbv.pszVal + 1, SIZEOF(name));
 	if ((DWORD *) lParam != NULL)
 		*(DWORD *) lParam = dbv.pszVal[0];
 	DBFreeVariant(&dbv);
-	return (int) name;
+	return (INT_PTR) name;
 }
 
 TCHAR* fnGetGroupName( int idx, DWORD* pdwFlags )
@@ -141,16 +141,16 @@ TCHAR* fnGetGroupName( int idx, DWORD* pdwFlags )
 	return name;
 }
 
-static int GetGroupName(WPARAM wParam, LPARAM lParam)
+static INT_PTR GetGroupName(WPARAM wParam, LPARAM lParam)
 {
-	int ret;
+	INT_PTR ret;
 	ret = GetGroupName2(wParam, lParam);
 	if ((int *) lParam)
 		*(int *) lParam = 0 != (*(int *) lParam & GROUPF_EXPANDED);
 	return ret;
 }
 
-static int DeleteGroup(WPARAM wParam, LPARAM)
+static INT_PTR DeleteGroup(WPARAM wParam, LPARAM)
 {
 	int i;
 	char str[33];
@@ -325,7 +325,7 @@ int fnRenameGroup( int groupID, TCHAR* newName )
 	return -1 != RenameGroupWithMove( groupID-1, newName, 1);
 }
 
-static int RenameGroup(WPARAM wParam, LPARAM lParam)
+static INT_PTR RenameGroup(WPARAM wParam, LPARAM lParam)
 {
 	#if defined( _UNICODE )
 		WCHAR* temp = a2u(( char* )lParam );
@@ -337,7 +337,7 @@ static int RenameGroup(WPARAM wParam, LPARAM lParam)
 	#endif
 }
 
-static int SetGroupExpandedState(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetGroupExpandedState(WPARAM wParam, LPARAM lParam)
 {
 	char idstr[33];
 	DBVARIANT dbv;
@@ -354,7 +354,7 @@ static int SetGroupExpandedState(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int SetGroupFlags(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetGroupFlags(WPARAM wParam, LPARAM lParam)
 {
 	char idstr[33];
 	DBVARIANT dbv;
@@ -373,7 +373,7 @@ static int SetGroupFlags(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
+static INT_PTR MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 {
 	int i, shuffleFrom, shuffleTo, shuffleDir;
 	char str[33];
@@ -434,7 +434,7 @@ static int MoveGroupBefore(WPARAM wParam, LPARAM lParam)
 	return shuffleTo + 1;
 }
 
-static int BuildGroupMenu(WPARAM, LPARAM)
+static INT_PTR BuildGroupMenu(WPARAM, LPARAM)
 {
 	char idstr[33];
 	DBVARIANT dbv;
@@ -446,7 +446,7 @@ static int BuildGroupMenu(WPARAM, LPARAM)
 	MENUITEMINFO mii = { 0 };
 
 	if (DBGetContactSettingStringUtf(NULL, "CListGroups", "0", &dbv))
-		return (int) (HMENU) NULL;
+		return (INT_PTR) (HMENU) NULL;
 	DBFreeVariant(&dbv);
 	hRootMenu = CreateMenu();
 	for (groupId = 0;; groupId++) {
@@ -525,7 +525,7 @@ static int BuildGroupMenu(WPARAM, LPARAM)
 
 		DBFreeVariant(&dbv);
 	}
-	return (int) hRootMenu;
+	return (INT_PTR) hRootMenu;
 }
 
 int InitGroupServices(void)

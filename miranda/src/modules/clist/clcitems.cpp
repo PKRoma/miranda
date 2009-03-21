@@ -44,7 +44,7 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 	int i, compareResult;
 
 	dat->needsResort = 1;
-	if (!(GetWindowLong(hwnd, GWL_STYLE) & CLS_USEGROUPS))
+	if (!(GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_USEGROUPS))
 		return &dat->list;
 
 	pNextField = ( TCHAR* )szName;
@@ -105,7 +105,7 @@ struct ClcGroup* fnAddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName,
 			group->groupId = pNextField ? 0 : groupId;
 			group->totalMembers = 0;
 			if (flags != (DWORD) - 1 && pNextField == NULL && calcTotalMembers) {
-				DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+				DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 				HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 				while (hContact) {
 					ClcCacheEntryBase* cache = cli.pfnGetCacheEntry( hContact );
@@ -220,7 +220,7 @@ void fnAddContactToTree(HWND hwnd, struct ClcData *dat, HANDLE hContact, int upd
 {
 	struct ClcGroup *group;
 	DBVARIANT dbv;
-	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+	DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	WORD status = ID_STATUS_OFFLINE;
 	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 
@@ -305,7 +305,7 @@ struct ClcGroup* fnRemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct
 	mir_free( group->cl.items[iContact] );
 	List_Remove(( SortedList* )&group->cl, iContact );
 
-	if ((GetWindowLong(hwnd, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) && group->cl.count == 0) {
+	if ((GetWindowLongPtr(hwnd, GWL_STYLE) & CLS_HIDEEMPTYGROUPS) && group->cl.count == 0) {
 		int i;
 		if (group->parent == NULL)
 			return group;
@@ -323,7 +323,7 @@ void fnDeleteItemFromTree(HWND hwnd, HANDLE hItem)
 {
 	struct ClcContact *contact;
 	struct ClcGroup *group;
-	struct ClcData *dat = (struct ClcData *) GetWindowLong(hwnd, 0);
+	struct ClcData *dat = (struct ClcData *) GetWindowLongPtr(hwnd, 0);
 
 	dat->needsResort = 1;
 	if (!cli.pfnFindItem(hwnd, dat, hItem, &contact, &group, NULL)) {
@@ -359,7 +359,7 @@ void fnDeleteItemFromTree(HWND hwnd, HANDLE hItem)
 void fnRebuildEntireList(HWND hwnd, struct ClcData *dat)
 {
 	char *szProto;
-	DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+	DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	HANDLE hContact;
 	struct ClcGroup *group;
 	DBVARIANT dbv;

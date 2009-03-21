@@ -37,7 +37,7 @@ static LIST<DBEVENTTYPEDESCR> eventTypes( 10, CompareEventTypes );
 
 static BOOL bModuleInitialized = FALSE;
 
-static int DbEventTypeRegister(WPARAM, LPARAM lParam)
+static INT_PTR DbEventTypeRegister(WPARAM, LPARAM lParam)
 {
 	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )lParam;
 	if ( eventTypes.getIndex( et ) == -1 ) {
@@ -74,7 +74,7 @@ static int DbEventTypeRegister(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int DbEventTypeGet(WPARAM wParam, LPARAM lParam)
+static INT_PTR DbEventTypeGet(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTTYPEDESCR tmp;
 	int idx;
@@ -84,10 +84,10 @@ static int DbEventTypeGet(WPARAM wParam, LPARAM lParam)
 	if ( !List_GetIndex(( SortedList* )&eventTypes, &tmp, &idx ))
 		return 0;
 
-	return ( int )eventTypes[idx];
+	return ( INT_PTR )eventTypes[idx];
 }
 
-static int DbEventGetText(WPARAM wParam, LPARAM lParam)
+static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTGETTEXT* egt = (DBEVENTGETTEXT*)lParam;
 	BOOL bIsDenyUnicode = (egt->datatype & DBVTF_DENYUNICODE);
@@ -105,9 +105,9 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 		char* descr = filename + lstrlenA( filename ) + 1;
 		switch ( egt->datatype ) {
 		case DBVT_WCHAR:
-			return ( int )a2t( *descr == 0 ? filename : descr );
+			return ( INT_PTR )a2t( *descr == 0 ? filename : descr );
 		case DBVT_ASCIIZ:
-			return ( int )mir_strdup( *descr == 0 ? filename : descr );
+			return ( INT_PTR )mir_strdup( *descr == 0 ? filename : descr );
 		}
 		return 0;
 	}
@@ -125,8 +125,8 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 			Utf8DecodeCP( NEWSTR_ALLOCA(( char* )dbei->pBlob), egt->codepage, &msg );
 		else {
 			// ушлепкам типа скотта торжественно посвящается
-			int msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
-			if ( msglen != (int) dbei->cbBlob ) {
+			size_t msglen = strlen(( char* )dbei->pBlob) + 1, msglenW = 0;
+			if ( msglen !=  dbei->cbBlob ) {
 				int i, count = (( dbei->cbBlob - msglen ) / sizeof( WCHAR ));
 				WCHAR* p = ( WCHAR* )&dbei->pBlob[ msglen ];
 				for (  i=0; i < count; i++ ) {
@@ -141,19 +141,19 @@ static int DbEventGetText(WPARAM wParam, LPARAM lParam)
 				msg = ( WCHAR* )mir_alloc( sizeof(TCHAR) * msglen );
 				MultiByteToWideChar( egt->codepage, 0, (char *) dbei->pBlob, -1, msg, msglen );
 		}	}
-		return ( int )msg;
+		return ( INT_PTR )msg;
 	}
 	else if ( egt->datatype == DBVT_ASCIIZ ) {
 		char* msg = mir_strdup(( char* )dbei->pBlob );
 		if (dbei->flags & DBEF_UTF)
 			Utf8DecodeCP( msg, egt->codepage, NULL );
 
-      return ( int )msg;
+      return ( INT_PTR )msg;
 	}
 	return 0;
 }
 
-static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
+static INT_PTR DbEventGetIcon( WPARAM wParam, LPARAM lParam )
 {
 	DBEVENTINFO* dbei = ( DBEVENTINFO* )lParam;
 	HICON icon = NULL;
@@ -162,7 +162,7 @@ static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
 	if ( et && ServiceExists( et->iconService )) {
 		icon = ( HICON )CallService( et->iconService, wParam, lParam );
 		if ( icon )
-			return ( int )icon;
+			return ( INT_PTR )icon;
 	}
 	if ( et && et->eventIcon )
 		icon = ( HICON )CallService( MS_SKIN2_GETICONBYHANDLE, 0, ( LPARAM )et->eventIcon );
@@ -190,9 +190,9 @@ static int DbEventGetIcon( WPARAM wParam, LPARAM lParam )
 	}
 
   if ( wParam & LR_SHARED )
-    return ( int )icon;
+    return ( INT_PTR )icon;
   else
-    return ( int )CopyIcon( icon );
+    return ( INT_PTR )CopyIcon( icon );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +204,7 @@ static int sttEnumVars( const char* szVarName, LPARAM lParam )
 	return 0;
 }
 
-static int DbDeleteModule( WPARAM, LPARAM lParam )
+static INT_PTR DbDeleteModule( WPARAM, LPARAM lParam )
 {
 	LIST<char> vars( 20, NULL );
 

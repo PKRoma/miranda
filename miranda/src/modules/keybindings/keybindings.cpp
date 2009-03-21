@@ -430,7 +430,7 @@ BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
-			OldEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_PREVIEW), GWL_WNDPROC, (LONG) KeyBindingsEditProc);
+			OldEditProc = (WNDPROC) SetWindowLong(GetDlgItem(hwndDlg, IDC_PREVIEW), GWL_WNDPROC, (LONG_PTR) KeyBindingsEditProc);
 			currentTreeItem = NULL;
 			loadTempKeyBindings();
 			buildTree(GetDlgItem(hwndDlg, IDC_CATEGORYLIST));
@@ -541,12 +541,12 @@ BOOL CALLBACK DlgProcKeyBindingsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-static int KBRegister( WPARAM wParam, LPARAM lParam )
+static INT_PTR KBRegister( WPARAM wParam, LPARAM lParam )
 {
 	return (int)addKeyBinding(( KEYBINDINGDESC* )lParam );
 }
 
-static int KBGet( WPARAM wParam, LPARAM lParam )
+static INT_PTR KBGet( WPARAM wParam, LPARAM lParam )
 {
 	KEYBINDINGDESC* desc = ( KEYBINDINGDESC* )lParam;
 	KeyBindingItem* item = (KeyBindingItem*)findKeyBinding(desc->pszActionGroup, desc->key[0]);

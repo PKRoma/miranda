@@ -31,7 +31,7 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static INT_PTR CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static HANDLE hWindowList=0;
 
-static int UserHistoryCommand(WPARAM wParam, LPARAM)
+static INT_PTR UserHistoryCommand(WPARAM wParam, LPARAM)
 {
 	HWND hwnd = WindowList_Find( hWindowList,( HANDLE )wParam );
 	if ( hwnd ) {
@@ -264,7 +264,7 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
+		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)lParam);
 		hContact = (HANDLE)lParam;
 		WindowList_Add(hWindowList,hwndDlg,hContact);
 		Utils_RestoreWindowPosition(hwndDlg,hContact,"History","");
@@ -410,7 +410,7 @@ static INT_PTR CALLBACK DlgProcHistoryFind(HWND hwndDlg, UINT msg, WPARAM wParam
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
 		return TRUE;
 
 	case WM_COMMAND:

@@ -26,13 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HANDLE hStatusModeChangeEvent;
 
-static int hkHideShow(WPARAM, LPARAM)
+static INT_PTR hkHideShow(WPARAM, LPARAM)
 {
 	cli.pfnShowHide(0,0);
 	return 0;
 }
 /*
-int hkSearch(WPARAM wParam,LPARAM lParam)
+INT_PTR hkSearch(WPARAM wParam,LPARAM lParam)
 {
 	DBVARIANT dbv={0};
 	if(!DBGetContactSettingString(NULL,"CList","SearchUrl",&dbv)) {
@@ -42,7 +42,7 @@ int hkSearch(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 */
-static int hkRead(WPARAM, LPARAM)
+static INT_PTR hkRead(WPARAM, LPARAM)
 {
 	if(cli.pfnEventsProcessTrayDoubleClick(0)==0) return TRUE;
 	SetForegroundWindow(cli.hwndContactList);
@@ -50,19 +50,19 @@ static int hkRead(WPARAM, LPARAM)
 	return 0;
 }
 
-static int hkOpts(WPARAM, LPARAM)
+static INT_PTR hkOpts(WPARAM, LPARAM)
 {
 	CallService("Options/OptionsCommand",0, 0);
 	return 0;
 }
 /*
-static int hkCloseMiranda(WPARAM wParam,LPARAM lParam)
+static INT_PTR hkCloseMiranda(WPARAM wParam,LPARAM lParam)
 {
 	CallService("CloseAction",0,0);
 	return 0;
 }
 
-int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
+INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 {
 	int nStatus = DBGetContactSettingWord(NULL, "CList", "Status", ID_STATUS_OFFLINE);
 	if (nStatus != ID_STATUS_OFFLINE)
@@ -71,7 +71,7 @@ int hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 */
-static int hkAllOffline(WPARAM, LPARAM)
+static INT_PTR hkAllOffline(WPARAM, LPARAM)
 {
 	int nProto;
 

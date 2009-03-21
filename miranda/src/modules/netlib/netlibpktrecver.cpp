@@ -23,19 +23,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
-int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	struct NetlibPacketRecver *nlpr;
 
 	if(GetNetlibHandleType(nlc)!=NLH_CONNECTION || lParam==0) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (int)(struct NetlibPacketRecver*)NULL;
+		return (INT_PTR)(struct NetlibPacketRecver*)NULL;
 	}
 	nlpr=(struct NetlibPacketRecver*)mir_calloc(sizeof(struct NetlibPacketRecver));
 	if(nlpr==NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
-		return (int)(struct NetlibPacketRecver*)NULL;
+		return (INT_PTR)(struct NetlibPacketRecver*)NULL;
 	}
 	nlpr->handleType=NLH_PACKETRECVER;
 	nlpr->nlc=nlc;
@@ -44,14 +44,14 @@ int NetlibPacketRecverCreate(WPARAM wParam,LPARAM lParam)
 	nlpr->packetRecver.buffer=(PBYTE)mir_alloc(nlpr->packetRecver.bufferSize);
 	nlpr->packetRecver.bytesUsed=0;
 	nlpr->packetRecver.bytesAvailable=0;
-	return (int)nlpr;
+	return (INT_PTR)nlpr;
 }
 
-int NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibPacketRecver *nlpr=(struct NetlibPacketRecver*)wParam;
 	NETLIBPACKETRECVER *nlprParam=(NETLIBPACKETRECVER*)lParam;
-	int recvResult;
+	INT_PTR recvResult;
 
 	if(GetNetlibHandleType(nlpr)!=NLH_PACKETRECVER || nlprParam==NULL || nlprParam->cbSize!=sizeof(NETLIBPACKETRECVER) || nlprParam->bytesUsed>nlpr->packetRecver.bytesAvailable) {
 		SetLastError(ERROR_INVALID_PARAMETER);

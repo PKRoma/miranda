@@ -42,7 +42,7 @@ void SaveColumnSizes(HWND hwndResults)
 	int i;
 	struct FindAddDlgData *dat;
 
-	dat=(struct FindAddDlgData*)GetWindowLong(GetParent(hwndResults),GWLP_USERDATA);
+	dat=(struct FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults),GWLP_USERDATA);
 	columnCount=Header_GetItemCount(ListView_GetHeader(hwndResults));
 	if(columnCount<=COLUMNID_EMAIL || columnCount>COLUMNID_HANDLE+1) return;
 	ListView_GetColumnOrderArray(hwndResults,columnCount,columnOrder);
@@ -85,7 +85,7 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 	int colOrdersValid;
 
 	defaultColumnSizes[COLUMNID_PROTO]=GetSystemMetrics(SM_CXSMICON)+4;
-	dat=(struct FindAddDlgData*)GetWindowLong(GetParent(hwndResults),GWLP_USERDATA);
+	dat=(struct FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults),GWLP_USERDATA);
 
 	if(szProto && !lstrcmpA(szProto,"ICQ"))
 		columnCount=COLUMNID_HANDLE+1;
@@ -154,7 +154,7 @@ static LPARAM ListView_GetItemLParam(HWND hwndList, int idx)
 
 int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
-	struct FindAddDlgData *dat=(struct FindAddDlgData*)GetWindowLong((HWND) lParamSort, GWLP_USERDATA);
+	struct FindAddDlgData *dat=(struct FindAddDlgData*)GetWindowLongPtr((HWND) lParamSort, GWLP_USERDATA);
 	int sortMultiplier;
 	int sortCol;
 	struct ListSearchResult *lsr1, *lsr2;
@@ -376,7 +376,7 @@ void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y)
 	int commandId;
 	struct ListSearchResult *lsr;
 
-	dat=(struct FindAddDlgData*)GetWindowLong(hwndDlg,GWLP_USERDATA);
+	dat=(struct FindAddDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 
 	{	LVITEM lvi;
 		if(ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_RESULTS))!=1) return;

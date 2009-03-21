@@ -85,7 +85,7 @@ static void Docking_AdjustPosition(HWND hwnd, RECT * rcDisplay, RECT * rc)
 	*rc = abd.rc;
 }
 
-int Docking_IsDocked(WPARAM, LPARAM)
+INT_PTR Docking_IsDocked(WPARAM, LPARAM)
 {
 	return docked;
 }

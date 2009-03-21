@@ -28,12 +28,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define FLAGS 0
 #endif
 
-static int TranslateString(WPARAM wParam,LPARAM lParam)
+static INT_PTR TranslateString(WPARAM wParam,LPARAM lParam)
 {
-	return (int)LangPackTranslateString((const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
+	return (INT_PTR)LangPackTranslateString((const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
 }
 
-static int TranslateMenu(WPARAM wParam,LPARAM lParam)
+static INT_PTR TranslateMenu(WPARAM wParam,LPARAM lParam)
 {
 	HMENU        hMenu = ( HMENU )wParam;
 	int          i;
@@ -83,13 +83,13 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 	if(!lstrcmpi(szClass,_T("static")) || !lstrcmpi(szClass,_T("hyperlink")) || !lstrcmpi(szClass,_T("button")) || !lstrcmpi(szClass,_T("MButtonClass")))
 		TranslateWindow( hwnd );
 	else if(!lstrcmpi(szClass,_T("edit"))) {
-		if(lptd->flags&LPTDF_NOIGNOREEDIT || GetWindowLong(hwnd,GWL_STYLE)&ES_READONLY)
+		if(lptd->flags&LPTDF_NOIGNOREEDIT || GetWindowLongPtr(hwnd,GWL_STYLE)&ES_READONLY)
 			TranslateWindow( hwnd );
 	}
 	return TRUE;
 }
 
-static int TranslateDialog(WPARAM, LPARAM lParam)
+static INT_PTR TranslateDialog(WPARAM, LPARAM lParam)
 {
 	LANGPACKTRANSLATEDIALOG *lptd=(LANGPACKTRANSLATEDIALOG*)lParam;
 	if(lptd==NULL||lptd->cbSize!=sizeof(LANGPACKTRANSLATEDIALOG)) return 1;
@@ -100,19 +100,19 @@ static int TranslateDialog(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-static int GetDefaultCodePage(WPARAM, LPARAM)
+static INT_PTR GetDefaultCodePage(WPARAM,LPARAM)
 {
 	return LangPackGetDefaultCodePage();
 }
 
-static int GetDefaultLocale(WPARAM, LPARAM)
+static INT_PTR GetDefaultLocale(WPARAM, LPARAM)
 {
 	return LangPackGetDefaultLocale();
 }
 
-static int PcharToTchar(WPARAM, LPARAM lParam)
+static INT_PTR PcharToTchar(WPARAM, LPARAM lParam)
 {
-	return ( int )LangPackPcharToTchar((char*)lParam );
+	return ( INT_PTR )LangPackPcharToTchar((char*)lParam );
 }
 
 int LoadLangPackServices(void)

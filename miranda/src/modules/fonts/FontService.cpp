@@ -32,23 +32,23 @@ HANDLE hFontReloadEvent, hColourReloadEvent;
 int OptInit( WPARAM, LPARAM );
 int FontsModernOptInit(WPARAM wParam, LPARAM lParam);
 
-int RegisterFont(WPARAM wParam, LPARAM lParam);
-int RegisterFontW(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterFont(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterFontW(WPARAM wParam, LPARAM lParam);
 
-int GetFont(WPARAM wParam, LPARAM lParam);
-int GetFontW(WPARAM wParam, LPARAM lParam);
+INT_PTR GetFont(WPARAM wParam, LPARAM lParam);
+INT_PTR GetFontW(WPARAM wParam, LPARAM lParam);
 
-int RegisterColour(WPARAM wParam, LPARAM lParam);
-int RegisterColourW(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterColour(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterColourW(WPARAM wParam, LPARAM lParam);
 
-int GetColour(WPARAM wParam, LPARAM lParam);
-int GetColourW(WPARAM wParam, LPARAM lParam);
+INT_PTR GetColour(WPARAM wParam, LPARAM lParam);
+INT_PTR GetColourW(WPARAM wParam, LPARAM lParam);
 
-int RegisterEffect(WPARAM wParam, LPARAM lParam);
-int RegisterEffectW(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterEffect(WPARAM wParam, LPARAM lParam);
+INT_PTR RegisterEffectW(WPARAM wParam, LPARAM lParam);
 
-int GetEffect(WPARAM wParam, LPARAM lParam);
-int GetEffectW(WPARAM wParam, LPARAM lParam);
+INT_PTR GetEffect(WPARAM wParam, LPARAM lParam);
+INT_PTR GetEffectW(WPARAM wParam, LPARAM lParam);
 
 static int OnPreShutdown(WPARAM, LPARAM)
 {
