@@ -385,7 +385,9 @@ LRESULT DM_UpdateLastMessage(HWND hwndDlg, struct MessageWindowData *dat)
 				}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				char fmt[100];
-				mir_snprintf(fmt, sizeof(fmt), Translate("UIN: %s"), dat->uin);
+				char *uidName = (char *)CallProtoService(dat->szProto, PS_GETCAPS, PFLAG_UNIQUEIDTEXT, 0);
+				if (!uidName) uidName = Translate("ID");
+				mir_snprintf(fmt, sizeof(fmt), "%s: %s", uidName, dat->uin);
 				SendMessageA(dat->pContainer->hwndStatus, SB_SETTEXTA, 0, (LPARAM) fmt);
 				} else {
 					TCHAR fmt[100];
