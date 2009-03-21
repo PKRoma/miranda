@@ -24,7 +24,7 @@ static HANDLE hServiceParseLink;
 
 extern OBJLIST<CAimProto> g_Instances;
 
-static int ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
+static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 {
 	if (lParam == 0) return 1; /* sanity check */
 
