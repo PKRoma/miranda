@@ -159,9 +159,9 @@ typedef struct {
 	HANDLE (*CreateServiceFunction)(const char *,MIRANDASERVICE);
 	HANDLE (*CreateTransientServiceFunction)(const char *,MIRANDASERVICE);
 	int (*DestroyServiceFunction)(HANDLE);
-	int (*CallService)(const char *,WPARAM,LPARAM);
+	INT_PTR (*CallService)(const char *,WPARAM,LPARAM);
 	int (*ServiceExists)(const char *);		  //v0.1.0.1+
-	int (*CallServiceSync)(const char *,WPARAM,LPARAM);		//v0.3.3+
+	INT_PTR (*CallServiceSync)(const char *,WPARAM,LPARAM);		//v0.3.3+
 	int (*CallFunctionAsync) (void (__stdcall *)(void *), void *);	//v0.3.4+
 	int (*SetHookDefaultForHookableEvent) (HANDLE, MIRANDAHOOK); // v0.3.4 (2004/09/15)
 	HANDLE (*CreateServiceFunctionParam)(const char *,MIRANDASERVICEPARAM,LPARAM); // v0.7+ (2007/04/24)
