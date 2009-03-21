@@ -29,14 +29,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DM_PROTOCOLCHANGED (WM_USER + 13)
 
 extern int _DebugPopup(HANDLE hContact, const char *fmt, ...);
-extern int SetAvatar(WPARAM wParam, LPARAM lParam);
+extern INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam);
 extern OBJLIST<protoPicCacheEntry> g_ProtoPictures;
 extern HANDLE hEventChanged;
 extern HINSTANCE g_hInst;
 extern HICON g_hIcon;
 
 extern int CreateAvatarInCache(HANDLE hContact, struct avatarCacheEntry *ace, char *szProto);
-extern int ProtectAvatar(WPARAM wParam, LPARAM lParam);
+extern INT_PTR ProtectAvatar(WPARAM wParam, LPARAM lParam);
 extern int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode);
 extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, int pa_format = 0);
 extern void DeleteAvatarFromCache(HANDLE, BOOL);

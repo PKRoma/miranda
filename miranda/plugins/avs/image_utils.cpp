@@ -55,7 +55,7 @@ void MakeBmpTransparent(HBITMAP hBitmap)
 // Returns a copy of the bitmap with the size especified
 // wParam = ResizeBitmap *
 // lParam = NULL
-int BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 {
 	// Call freeiamge service (is here only for backward compatibility)
 	return CallService(MS_IMG_RESIZE, wParam, lParam);
@@ -225,7 +225,7 @@ void SetHIMETRICtoDP(HDC hdc, SIZE* sz)
     sz->cy = pt.y;
 }
 
-int BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 {
     FIBITMAP *dib32 = NULL;
 
@@ -303,7 +303,7 @@ int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags)
 // Save an HBITMAP to an image
 // wParam = HBITMAP
 // lParam = filename
-int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
 	HBITMAP hBmp = (HBITMAP) wParam;
 	const char *szFile=(const char *)lParam;
@@ -325,7 +325,7 @@ int BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 }
 
 #if defined(_UNICODE)
-int BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 {
 	HBITMAP hBmp = (HBITMAP) wParam;
 	const wchar_t *wszFile=(const wchar_t *)lParam;
@@ -351,7 +351,7 @@ int BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 // lParam = PA_FORMAT_*   // image format
 // kept for compatibilty - with freeimage we can save all common formats
 
-int BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
+INT_PTR BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
     return 1;
 }

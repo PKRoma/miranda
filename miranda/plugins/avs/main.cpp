@@ -84,7 +84,7 @@ static DWORD GetFileSize(char *szFilename);
 
 void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto);
 int FetchAvatarFor(HANDLE hContact, char *szProto = NULL);
-static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam);
+static INT_PTR ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam);
 
 BOOL Proto_IsAvatarsEnabled(const char *proto);
 BOOL Proto_IsAvatarFormatSupported(const char *proto, int format);
@@ -850,7 +850,7 @@ static int ProtocolAck(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int ProtectAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR ProtectAvatar(WPARAM wParam, LPARAM lParam)
 {
     HANDLE hContact = (HANDLE)wParam;
     BYTE was_locked = DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0);
@@ -885,7 +885,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
 
 			OpenFileSubclassData *data = (OpenFileSubclassData *) malloc(sizeof(OpenFileSubclassData));
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)data);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)data);
 			data->locking_request = (BYTE *)ofn->lCustData;
 			data->setView = TRUE;
 
@@ -921,7 +921,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	case WM_NCDESTROY:
 		OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		free((OpenFileSubclassData *)data);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)0);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)0);
 		break;
 	}
 
@@ -934,7 +934,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
  * image filename (will be checked for existance, though)
  */
 
-int SetAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = 0;
 	BYTE is_locked = 0;
@@ -1011,7 +1011,7 @@ int SetAvatar(WPARAM wParam, LPARAM lParam)
 /*
  * see if is possible to set the avatar for the expecified protocol
  */
-static int CanSetMyAvatar(WPARAM wParam, LPARAM lParam)
+static INT_PTR CanSetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *protocol = (char *) wParam;
     if(protocol == NULL || fei == NULL)
@@ -1039,7 +1039,7 @@ static UINT_PTR CALLBACK SetMyAvatarHookProc(HWND hwnd, UINT msg, WPARAM wParam,
 		{
 			InterlockedExchange(&hwndSetMyAvatar, (LONG) hwnd);
 
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG)lParam);
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)lParam);
 			OPENFILENAMEA *ofn = (OPENFILENAMEA *)lParam;
 			SetMyAvatarHookData *data = (SetMyAvatarHookData *) ofn->lCustData;
 			data->thumbnail = TRUE;
@@ -1433,7 +1433,7 @@ static int InternalSetMyAvatar(char *protocol, char *szFinalName, SetMyAvatarHoo
  * if lParam == NULL, a open file dialog will be opened, otherwise, lParam is taken as a FULL
  * image filename (will be checked for existance, though)
  */
-static int SetMyAvatar(WPARAM wParam, LPARAM lParam)
+static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *protocol;
 	char FileName[MAX_PATH];
@@ -1745,14 +1745,14 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, char *originalFilename
 	return ret;
 }
 
-static int ContactOptions(WPARAM wParam, LPARAM lParam)
+static INT_PTR ContactOptions(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam)
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_AVATAROPTIONS), 0, DlgProcAvatarOptions, (LPARAM)wParam);
 	return 0;
 }
 
-int GetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	int i;
 	char *szProto = (char *)lParam;
@@ -1797,7 +1797,7 @@ HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1)
 	return hContact;
 }
 
-int GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
+INT_PTR GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
 {
 	if(wParam == 0 || g_shutDown || fei == NULL)
 		return 0;
@@ -1808,9 +1808,9 @@ int GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
 	// Get the node
 	struct CacheNode *node = FindAvatarInCache(hContact, TRUE);
 	if (node == NULL || !node->loaded)
-		return (int) GetProtoDefaultAvatar(hContact);
+        return (INT_PTR) GetProtoDefaultAvatar(hContact);
 	else
-		return (int) &node->ace;
+        return (INT_PTR) &node->ace;
 }
 
 
@@ -2153,7 +2153,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 	free(lpParam);
 }
 
-static int ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == NULL)
 		return -1;
@@ -2360,7 +2360,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 		DeleteDC(hdcAvatar);
 }
 
-int DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
+INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 {
 	AVATARDRAWREQUEST *r = (AVATARDRAWREQUEST *)lParam;
 	AVATARCACHEENTRY *ace = NULL;

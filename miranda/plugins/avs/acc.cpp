@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern FI_INTERFACE *fei;
 
 int GetImageFormat(char *filename);
-int DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
-int GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
-int GetMyAvatar(WPARAM wParam, LPARAM lParam);
+INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
+INT_PTR GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
+INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam);
 void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bmHeight, DWORD dwFlags);
 
 
@@ -469,7 +469,7 @@ BOOL ScreenToClient(HWND hWnd, LPRECT lpRect)
 
 static void Invalidate(HWND hwnd)
 {
-	ACCData* data =  (ACCData *) GetWindowLong(hwnd, 0);
+	ACCData* data =  (ACCData *) GetWindowLongPtr(hwnd, 0);
 	if (data->bkgColor == -1)
 	{
 		HWND parent = GetParent(hwnd);
@@ -517,18 +517,18 @@ static void DrawText(HDC hdc, HFONT hFont, const RECT &rc, const char *text)
 }
 
 static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM lParam) {
-	ACCData* data =  (ACCData *) GetWindowLong(hwnd, 0);
+	ACCData* data =  (ACCData *) GetWindowLongPtr(hwnd, 0);
 	switch(msg) 
 	{
 		case WM_NCCREATE:
 		{
-			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | BS_OWNERDRAW);
-			SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
+			SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) | BS_OWNERDRAW);
+			SetWindowLongPtr(hwnd, GWL_EXSTYLE, GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
 
 			data = (ACCData*) mir_alloc(sizeof(ACCData));
 			if (data == NULL) 
 				return FALSE;
-			SetWindowLong(hwnd, 0, (LONG)data);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR)data);
 
 			ZeroMemory(data, sizeof(ACCData));
             data->hHook = HookEventMessage(ME_AV_AVATARCHANGED, hwnd, DM_AVATARCHANGED);
@@ -553,7 +553,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
                 UnhookEvent(data->hHookMy);
 				mir_free(data);
 			}
-			SetWindowLong(hwnd, 0, (LONG)NULL);
+			SetWindowLongPtr(hwnd, 0, (LONG_PTR)NULL);
 			break;
 		}
 		case WM_SETFONT:
@@ -794,7 +794,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				avdrq.clrBorder = data->avatarBorderColor;
 				avdrq.radius = data->avatarRoundCornerRadius;
 
-				int ret;
+				INT_PTR ret;
 				if (data->showingAnimatedGif)
 				{
 					InternalDrawAvatar(&avdrq, data->ag.hbms[data->ag.frame.num], data->ag.logicalWidth, data->ag.logicalHeight, 0);
