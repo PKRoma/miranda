@@ -135,7 +135,7 @@ __inline static int SkinAddNewSoundEx(const char *name,const char *section,const
 	ssd.pszName=name;
 	ssd.pszSection=section;
 	ssd.pszDescription=description;
-	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+	return (int)CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
 __inline static int SkinAddNewSound(const char *name,const char *description,const char *defaultFile)
@@ -146,7 +146,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 	ssd.pszName=name;
 	ssd.pszDescription=description;
 	ssd.pszDefaultFile=defaultFile;
-	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+	return (int)CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
 //play a named sound event
@@ -155,7 +155,7 @@ __inline static int SkinAddNewSound(const char *name,const char *description,con
 //pszName should have been added with Skin/Sounds/AddNew, but if not the
 //function will not fail, it will play the Windows default sound instead.
 #define MS_SKIN_PLAYSOUND        "Skin/Sounds/Play"
-__inline static int SkinPlaySound(const char *name) {return CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
+__inline static int SkinPlaySound(const char *name) {return (int)CallService(MS_SKIN_PLAYSOUND,0,(LPARAM)name);}
 
 //sent when the icons DLL has been changed in the options dialog, and everyone
 //should re-make their image lists

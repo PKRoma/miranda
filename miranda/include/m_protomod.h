@@ -111,7 +111,7 @@ __inline static int ProtoBroadcastAck(const char *szModule,HANDLE hContact,int t
 	ack.szModule=szModule; ack.hContact=hContact;
 	ack.type=type; ack.result=result;
 	ack.hProcess=hProcess; ack.lParam=lParam;
-	return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
+	return (int)CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
 }
 
 /* -- Added during 0.3.4 (2004/09/27) development! -----
