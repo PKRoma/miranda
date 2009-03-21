@@ -271,12 +271,12 @@ struct HReadBuffer
 	HReadBuffer( ThreadData* info, int iStart = 0 );
 	~HReadBuffer();
 
-	BYTE* surelyRead( int parBytes );
+	BYTE* surelyRead( size_t parBytes );
 
 	ThreadData* owner;
 	BYTE*			buffer;
-	int			totalDataSize;
-	int			startOffset;
+	size_t			totalDataSize;
+	size_t			startOffset;
 };
 
 enum TInfoType
@@ -393,7 +393,7 @@ bool p2p_IsDlFileOk(filetransfer* ft);
 struct TQueueItem
 {
 	TQueueItem* next;
-	int  datalen;
+	size_t  datalen;
 	char data[1];
 };
 

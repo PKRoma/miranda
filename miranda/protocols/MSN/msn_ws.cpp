@@ -314,7 +314,7 @@ int ThreadData::recv_dg( char* data, size_t datalen )
 		}	
 		ts = time(NULL);
 
-		unsigned np = 0, dlen = 0;
+		size_t np = 0, dlen = 0;
 		
 		WaitForSingleObject( hQueueMutex, INFINITE );
 		TQueueItem* QI = mFirstQueueItem;

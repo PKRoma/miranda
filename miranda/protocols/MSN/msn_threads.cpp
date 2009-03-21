@@ -728,7 +728,7 @@ HReadBuffer::~HReadBuffer()
 		memmove( owner->mData, owner->mData + startOffset, owner->mBytesInData );
 }
 
-BYTE* HReadBuffer::surelyRead( int parBytes )
+BYTE* HReadBuffer::surelyRead( size_t parBytes )
 {
 	const int bufferSize = sizeof( owner->mData );
 

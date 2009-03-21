@@ -56,7 +56,7 @@ static HANDLE GetContact(char *arg, char **email, CMsnProto *proto)
 	video chat:    msnim:video?contact=netpassport@emailaddress.com
 */
 
-static int ServiceParseMsnimLink(WPARAM, LPARAM lParam)
+static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 {
 	if (lParam == 0) return 1; /* sanity check */
 

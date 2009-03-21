@@ -141,7 +141,7 @@ void CMsnProto::sttInviteMessage( ThreadData* info, char* msgBody, char* email, 
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup( Invcookie );
 
-		int tFileNameLen = strlen( ft->std.currentFile );
+		size_t tFileNameLen = strlen( ft->std.currentFile );
 		char tComment[ 40 ];
 		int tCommentLen = mir_snprintf( tComment, sizeof( tComment ), "%lu bytes", ft->std.currentFileSize );
 		char* szBlob = ( char* )mir_alloc( sizeof( DWORD ) + tFileNameLen + tCommentLen + 2 );
